@@ -2485,8 +2485,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create GPS L1 C/A signals
             for (available_gnss_prn_iter = available_gps_prn.cbegin();
-                 available_gnss_prn_iter != available_gps_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_gps_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_GPS_1C_signals_.emplace_back(
                         Gnss_Satellite(std::string("GPS"), *available_gnss_prn_iter),
@@ -2498,8 +2498,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create GPS L2C M signals
             for (available_gnss_prn_iter = available_gps_prn.cbegin();
-                 available_gnss_prn_iter != available_gps_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_gps_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_GPS_2S_signals_.emplace_back(
                         Gnss_Satellite(std::string("GPS"), *available_gnss_prn_iter),
@@ -2511,8 +2511,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create GPS L5 signals
             for (available_gnss_prn_iter = available_gps_prn.cbegin();
-                 available_gnss_prn_iter != available_gps_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_gps_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_GPS_L5_signals_.emplace_back(
                         Gnss_Satellite(std::string("GPS"), *available_gnss_prn_iter),
@@ -2524,8 +2524,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create SBAS L1 C/A signals
             for (available_gnss_prn_iter = available_sbas_prn.cbegin();
-                 available_gnss_prn_iter != available_sbas_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_sbas_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_SBAS_1C_signals_.emplace_back(
                         Gnss_Satellite(std::string("SBAS"), *available_gnss_prn_iter),
@@ -2537,8 +2537,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create the list of Galileo E1B signals
             for (available_gnss_prn_iter = available_galileo_prn.cbegin();
-                 available_gnss_prn_iter != available_galileo_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_galileo_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_GAL_1B_signals_.emplace_back(
                         Gnss_Satellite(std::string("Galileo"), *available_gnss_prn_iter),
@@ -2550,8 +2550,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create the list of Galileo E5a signals
             for (available_gnss_prn_iter = available_galileo_prn.cbegin();
-                 available_gnss_prn_iter != available_galileo_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_galileo_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_GAL_5X_signals_.emplace_back(
                         Gnss_Satellite(std::string("Galileo"), *available_gnss_prn_iter),
@@ -2563,8 +2563,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create the list of Galileo E5b signals
             for (available_gnss_prn_iter = available_galileo_prn.cbegin();
-                 available_gnss_prn_iter != available_galileo_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_galileo_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_GAL_7X_signals_.emplace_back(
                         Gnss_Satellite(std::string("Galileo"), *available_gnss_prn_iter),
@@ -2576,8 +2576,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create the list of Galileo E6 signals
             for (available_gnss_prn_iter = available_galileo_prn.cbegin();
-                 available_gnss_prn_iter != available_galileo_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_galileo_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_GAL_E6_signals_.emplace_back(
                         Gnss_Satellite(std::string("Galileo"), *available_gnss_prn_iter),
@@ -2589,8 +2589,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create the list of GLONASS L1 C/A signals
             for (available_gnss_prn_iter = available_glonass_prn.cbegin();
-                 available_gnss_prn_iter != available_glonass_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_glonass_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_GLO_1G_signals_.emplace_back(
                         Gnss_Satellite(std::string("Glonass"), *available_gnss_prn_iter),
@@ -2602,8 +2602,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create the list of GLONASS L2 C/A signals
             for (available_gnss_prn_iter = available_glonass_prn.cbegin();
-                 available_gnss_prn_iter != available_glonass_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_glonass_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_GLO_2G_signals_.emplace_back(
                         Gnss_Satellite(std::string("Glonass"), *available_gnss_prn_iter),
@@ -2615,8 +2615,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create the list of BeiDou B1C signals
             for (available_gnss_prn_iter = available_beidou_prn.cbegin();
-                 available_gnss_prn_iter != available_beidou_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_beidou_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_BDS_B1_signals_.emplace_back(
                         Gnss_Satellite(std::string("Beidou"), *available_gnss_prn_iter),
@@ -2628,8 +2628,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create the list of BeiDou B1C signals
             for (available_gnss_prn_iter = available_beidou_prn.cbegin();
-                 available_gnss_prn_iter != available_beidou_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_beidou_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_BDS_B3_signals_.emplace_back(
                         Gnss_Satellite(std::string("Beidou"), *available_gnss_prn_iter),

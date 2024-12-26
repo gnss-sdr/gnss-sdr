@@ -87,9 +87,7 @@ serial_t *openserial(const char *path, int mode, char *msg)
 
     const speed_t bs[] = {
         B300, B600, B1200, B2400, B4800, B9600, B19200, B38400, B57600, B115200, B230400};
-    struct termios ios
-    {
-    };
+    struct termios ios{};
     int rw = 0;
     tracet(3, "openserial: path=%s mode=%d\n", path, mode);
 
@@ -1104,9 +1102,7 @@ void updatetcpsvr(tcpsvr_t *tcpsvr, char *msg)
 /* accept client connection --------------------------------------------------*/
 int accsock(tcpsvr_t *tcpsvr, char *msg)
 {
-    struct sockaddr_in addr
-    {
-    };
+    struct sockaddr_in addr{};
     socket_t sock;
     socklen_t len = sizeof(addr);
     int i;

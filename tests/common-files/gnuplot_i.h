@@ -2095,7 +2095,7 @@ inline bool Gnuplot::get_program_path()
 
     // scan list for Gnuplot program files
     for (std::list<std::string>::const_iterator i = ls.begin();
-         i != ls.end(); ++i)
+        i != ls.end(); ++i)
         {
             tmp = (*i) + "/" + Gnuplot::m_sGNUPlotFileName;
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)

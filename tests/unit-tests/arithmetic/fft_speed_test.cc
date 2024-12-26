@@ -37,8 +37,7 @@ TEST(FFTSpeedTest, ArmadilloVSGNURadioExecutionTime)
     unsigned int fft_sizes[19] = {16, 25, 32, 45, 64, 95, 128, 195, 256, 325, 512, 785, 1024, 1503, 2048, 3127, 4096, 6349, 8192};
     double d_execution_time;
     EXPECT_NO_THROW(
-        for (unsigned int fft_size
-             : fft_sizes) {
+        for (unsigned int fft_size : fft_sizes) {
             d_fft_size = fft_size;
             auto d_gr_fft = gnss_fft_fwd_make_unique(d_fft_size);
             arma::arma_rng::set_seed_random();

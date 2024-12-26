@@ -1777,9 +1777,7 @@ gtime_t timeget()
 {
     gtime_t time;
     double ep[6] = {};
-    struct timeval tv
-    {
-    };
+    struct timeval tv{};
     struct tm *tt;
 
     if (!gettimeofday(&tv, nullptr) && (tt = gmtime(&tv.tv_sec)))

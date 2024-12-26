@@ -173,7 +173,7 @@ public:
         const std::vector<std::string>& s2_) : msg(msg_),
                                                nt(nt_),
                                                sequence1(s1_),
-                                               sequence2(s2_){};
+                                               sequence2(s2_) {};
     uint8_t msg{};
     uint8_t nt{};
     std::vector<std::string> sequence1;

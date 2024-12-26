@@ -62,6 +62,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 - Updated GSL implementation to v0.42.0. See the
   [gsl-lite release](https://github.com/gsl-lite/gsl-lite/releases/tag/v0.42.0).
+- Code formatting now based on clang-format 19.
 
 ### Improvements in Portability:
 

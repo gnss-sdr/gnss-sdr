@@ -97,7 +97,7 @@ bool Spirent_Motion_Csv_Dump_Reader::read_csv_obs()
                         line, boost::escaped_list_separator<char>('\\', ',', '\"'));
                     for (boost::tokenizer<boost::escaped_list_separator<char>>::iterator i(
                              tk.begin());
-                         i != tk.end(); ++i)
+                        i != tk.end(); ++i)
                         {
                             try
                                 {

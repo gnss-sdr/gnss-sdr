@@ -244,9 +244,7 @@ void ControlThread::init()
     else
         {
             // fill agnss_ref_time_
-            struct tm tm
-            {
-            };
+            struct tm tm{};
             if (strptime(ref_time_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) != nullptr)
                 {
                     agnss_ref_time_.seconds = timegm(&tm);
@@ -560,8 +558,8 @@ bool ControlThread::read_assistance_from_XML()
                 {
                     std::map<int, Gps_Ephemeris>::const_iterator gps_eph_iter;
                     for (gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.cbegin();
-                         gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
-                         gps_eph_iter++)
+                        gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
+                        gps_eph_iter++)
                         {
                             std::cout << "From XML file: Read NAV ephemeris for satellite " << Gnss_Satellite("GPS", gps_eph_iter->second.PRN) << '\n';
                             const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);
@@ -590,8 +588,8 @@ bool ControlThread::read_assistance_from_XML()
                 {
                     std::map<int, Gps_Almanac>::const_iterator gps_alm_iter;
                     for (gps_alm_iter = supl_client_ephemeris_.gps_almanac_map.cbegin();
-                         gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.cend();
-                         gps_alm_iter++)
+                        gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.cend();
+                        gps_alm_iter++)
                         {
                             std::cout << "From XML file: Read GPS almanac for satellite " << Gnss_Satellite("GPS", gps_alm_iter->second.PRN) << '\n';
                             const std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(gps_alm_iter->second);
@@ -608,8 +606,8 @@ bool ControlThread::read_assistance_from_XML()
                 {
                     std::map<int, Galileo_Ephemeris>::const_iterator gal_eph_iter;
                     for (gal_eph_iter = supl_client_ephemeris_.gal_ephemeris_map.cbegin();
-                         gal_eph_iter != supl_client_ephemeris_.gal_ephemeris_map.cend();
-                         gal_eph_iter++)
+                        gal_eph_iter != supl_client_ephemeris_.gal_ephemeris_map.cend();
+                        gal_eph_iter++)
                         {
                             std::cout << "From XML file: Read ephemeris for satellite " << Gnss_Satellite("Galileo", gal_eph_iter->second.PRN) << '\n';
                             const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(gal_eph_iter->second);
@@ -638,8 +636,8 @@ bool ControlThread::read_assistance_from_XML()
                 {
                     std::map<int, Galileo_Almanac>::const_iterator gal_alm_iter;
                     for (gal_alm_iter = supl_client_ephemeris_.gal_almanac_map.cbegin();
-                         gal_alm_iter != supl_client_ephemeris_.gal_almanac_map.cend();
-                         gal_alm_iter++)
+                        gal_alm_iter != supl_client_ephemeris_.gal_almanac_map.cend();
+                        gal_alm_iter++)
                         {
                             std::cout << "From XML file: Read Galileo almanac for satellite " << Gnss_Satellite("Galileo", gal_alm_iter->second.PRN) << '\n';
                             const std::shared_ptr<Galileo_Almanac> tmp_obj = std::make_shared<Galileo_Almanac>(gal_alm_iter->second);
@@ -655,8 +653,8 @@ bool ControlThread::read_assistance_from_XML()
                 {
                     std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_eph_iter;
                     for (gps_cnav_eph_iter = supl_client_ephemeris_.gps_cnav_ephemeris_map.cbegin();
-                         gps_cnav_eph_iter != supl_client_ephemeris_.gps_cnav_ephemeris_map.cend();
-                         gps_cnav_eph_iter++)
+                        gps_cnav_eph_iter != supl_client_ephemeris_.gps_cnav_ephemeris_map.cend();
+                        gps_cnav_eph_iter++)
                         {
                             std::cout << "From XML file: Read CNAV ephemeris for satellite " << Gnss_Satellite("GPS", gps_cnav_eph_iter->second.PRN) << '\n';
                             const std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(gps_cnav_eph_iter->second);
@@ -680,8 +678,8 @@ bool ControlThread::read_assistance_from_XML()
                 {
                     std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glo_gnav_eph_iter;
                     for (glo_gnav_eph_iter = supl_client_ephemeris_.glonass_gnav_ephemeris_map.cbegin();
-                         glo_gnav_eph_iter != supl_client_ephemeris_.glonass_gnav_ephemeris_map.cend();
-                         glo_gnav_eph_iter++)
+                        glo_gnav_eph_iter != supl_client_ephemeris_.glonass_gnav_ephemeris_map.cend();
+                        glo_gnav_eph_iter++)
                         {
                             std::cout << "From XML file: Read GLONASS GNAV ephemeris for satellite " << Gnss_Satellite("GLONASS", glo_gnav_eph_iter->second.PRN) << '\n';
                             const std::shared_ptr<Glonass_Gnav_Ephemeris> tmp_obj = std::make_shared<Glonass_Gnav_Ephemeris>(glo_gnav_eph_iter->second);
@@ -809,8 +807,8 @@ void ControlThread::assist_GNSS()
                         {
                             std::map<int, Gps_Ephemeris>::const_iterator gps_eph_iter;
                             for (gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.cbegin();
-                                 gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
-                                 gps_eph_iter++)
+                                gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
+                                gps_eph_iter++)
                                 {
                                     std::cout << "SUPL: Received ephemeris data for satellite " << Gnss_Satellite("GPS", gps_eph_iter->second.PRN) << '\n';
                                     const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);
@@ -846,8 +844,8 @@ void ControlThread::assist_GNSS()
                         {
                             std::map<int, Gps_Almanac>::const_iterator gps_alm_iter;
                             for (gps_alm_iter = supl_client_ephemeris_.gps_almanac_map.cbegin();
-                                 gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.cend();
-                                 gps_alm_iter++)
+                                gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.cend();
+                                gps_alm_iter++)
                                 {
                                     std::cout << "SUPL: Received almanac data for satellite " << Gnss_Satellite("GPS", gps_alm_iter->second.PRN) << '\n';
                                     const std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(gps_alm_iter->second);
@@ -900,8 +898,8 @@ void ControlThread::assist_GNSS()
                         {
                             std::map<int, Gps_Acq_Assist>::const_iterator gps_acq_iter;
                             for (gps_acq_iter = supl_client_acquisition_.gps_acq_map.cbegin();
-                                 gps_acq_iter != supl_client_acquisition_.gps_acq_map.cend();
-                                 gps_acq_iter++)
+                                gps_acq_iter != supl_client_acquisition_.gps_acq_map.cend();
+                                gps_acq_iter++)
                                 {
                                     std::cout << "SUPL: Received acquisition assistance data for satellite " << Gnss_Satellite("GPS", gps_acq_iter->second.PRN) << '\n';
                                     global_gps_acq_assist_map.write(gps_acq_iter->second.PRN, gps_acq_iter->second);
@@ -1046,9 +1044,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     std::vector<unsigned int> visible_gps;
     std::vector<unsigned int> visible_gal;
     const std::shared_ptr<PvtInterface> pvt_ptr = flowgraph_->get_pvt();
-    struct tm tstruct
-    {
-    };
+    struct tm tstruct{};
     char buf[80];
     tstruct = *gmtime(&rx_utc_time);
     strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S ", &tstruct);

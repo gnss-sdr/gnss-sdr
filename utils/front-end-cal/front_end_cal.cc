@@ -56,8 +56,8 @@ bool FrontEndCal::read_assistance_from_XML()
         {
             std::map<int, Gps_Ephemeris>::iterator gps_eph_iter;
             for (gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.begin();
-                 gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.end();
-                 gps_eph_iter++)
+                gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.end();
+                gps_eph_iter++)
                 {
                     std::cout << "SUPL: Read XML Ephemeris for GPS SV " << gps_eph_iter->first << '\n';
                     LOG(INFO) << "SUPL: Read XML Ephemeris for GPS SV " << gps_eph_iter->first;
@@ -134,8 +134,8 @@ int FrontEndCal::Get_SUPL_Assist()
                         {
                             std::map<int, Gps_Ephemeris>::iterator gps_eph_iter;
                             for (gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.begin();
-                                 gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.end();
-                                 gps_eph_iter++)
+                                gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.end();
+                                gps_eph_iter++)
                                 {
                                     LOG(INFO) << "SUPL: Received Ephemeris for GPS SV " << gps_eph_iter->first;
                                     std::cout << "SUPL: Received Ephemeris for GPS SV " << gps_eph_iter->first << '\n';
@@ -163,8 +163,8 @@ int FrontEndCal::Get_SUPL_Assist()
                         {
                             std::map<int, Gps_Almanac>::iterator gps_alm_iter;
                             for (gps_alm_iter = supl_client_ephemeris_.gps_almanac_map.begin();
-                                 gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.end();
-                                 gps_alm_iter++)
+                                gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.end();
+                                gps_alm_iter++)
                                 {
                                     LOG(INFO) << "SUPL: Received Almanac for GPS SV " << gps_alm_iter->first;
                                     std::cout << "SUPL: Received Almanac for GPS SV " << gps_alm_iter->first << '\n';
@@ -199,8 +199,8 @@ int FrontEndCal::Get_SUPL_Assist()
                         {
                             std::map<int, Gps_Acq_Assist>::iterator gps_acq_iter;
                             for (gps_acq_iter = supl_client_acquisition_.gps_acq_map.begin();
-                                 gps_acq_iter != supl_client_acquisition_.gps_acq_map.end();
-                                 gps_acq_iter++)
+                                gps_acq_iter != supl_client_acquisition_.gps_acq_map.end();
+                                gps_acq_iter++)
                                 {
                                     LOG(INFO) << "SUPL: Received Acquisition assistance for GPS SV " << gps_acq_iter->first;
                                     std::cout << "SUPL: Received Acquisition assistance for GPS SV " << gps_acq_iter->first << '\n';

@@ -171,8 +171,8 @@ void pcps_tong_acquisition_cc::init()
     // Count the number of bins
     d_num_doppler_bins = 0;
     for (auto doppler = static_cast<int32_t>(-d_doppler_max);
-         doppler <= static_cast<int32_t>(d_doppler_max);
-         doppler += d_doppler_step)
+        doppler <= static_cast<int32_t>(d_doppler_max);
+        doppler += d_doppler_step)
         {
             d_num_doppler_bins++;
         }

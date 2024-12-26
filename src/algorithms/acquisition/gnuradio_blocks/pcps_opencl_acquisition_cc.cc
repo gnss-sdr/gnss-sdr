@@ -269,8 +269,8 @@ void pcps_opencl_acquisition_cc::init()
     // Count the number of bins
     d_num_doppler_bins = 0;
     for (int doppler = static_cast<int>(-d_doppler_max);
-         doppler <= static_cast<int>(d_doppler_max);
-         doppler += d_doppler_step)
+        doppler <= static_cast<int>(d_doppler_max);
+        doppler += d_doppler_step)
         {
             d_num_doppler_bins++;
         }

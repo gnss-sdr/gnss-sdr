@@ -398,8 +398,8 @@ TEST(RTKLibSolverTest, test1)
         {
             std::map<int, Gps_Ephemeris>::const_iterator gps_eph_iter;
             for (gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.cbegin();
-                 gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
-                 gps_eph_iter++)
+                gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
+                gps_eph_iter++)
                 {
                     std::cout << "SUPL: Read XML Ephemeris for GPS SV " << gps_eph_iter->first << '\n';
                     std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);

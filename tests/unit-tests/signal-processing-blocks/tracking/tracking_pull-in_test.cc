@@ -1282,8 +1282,8 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                                 }
                                         }
                                 }  // end plot
-                        }          // end acquisition Delay errors loop
-                }                  // end acquisition Doppler errors loop
+                        }  // end acquisition Delay errors loop
+                }  // end acquisition Doppler errors loop
             pull_in_results_v_v.push_back(pull_in_results_v);
         }  // end CN0 LOOP
 

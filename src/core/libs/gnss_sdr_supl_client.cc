@@ -871,9 +871,9 @@ bool Gnss_Sdr_Supl_Client::read_gal_almanac_from_gsa(const std::string& file_nam
             return false;
         }
     for (pugi::xml_node almanac : doc.child("signalData")
-                                      .child("body")
-                                      .child("Almanacs")
-                                      .children("svAlmanac"))
+             .child("body")
+             .child("Almanacs")
+             .children("svAlmanac"))
         {
             Galileo_Almanac gal_alm;
             try

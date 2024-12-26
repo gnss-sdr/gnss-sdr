@@ -243,8 +243,8 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
     // Count the number of bins
     d_num_doppler_bins = 0;
     for (int doppler = -d_doppler_max;
-         doppler <= d_doppler_max;
-         doppler += d_doppler_step)
+        doppler <= d_doppler_max;
+        doppler += d_doppler_step)
         {
             d_num_doppler_bins++;
         }

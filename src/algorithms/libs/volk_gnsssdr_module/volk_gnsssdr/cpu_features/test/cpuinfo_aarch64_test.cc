@@ -137,7 +137,7 @@ TEST_F(CpuidAarch64Test, Aarch64FeaturesEnum)
     const char* last_name = GetAarch64FeaturesEnumName(AARCH64_LAST_);
     EXPECT_STREQ(last_name, "unknown_feature");
     for (int i = static_cast<int>(AARCH64_FP);
-         i != static_cast<int>(AARCH64_LAST_); ++i)
+        i != static_cast<int>(AARCH64_LAST_); ++i)
         {
             const auto feature = static_cast<Aarch64FeaturesEnum>(i);
             const char* name = GetAarch64FeaturesEnumName(feature);

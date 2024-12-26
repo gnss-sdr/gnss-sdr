@@ -208,7 +208,7 @@ void Galileo_Inav_Message::split_page(std::string page_string, int32_t flag_even
                             flag_CRC_test = false;
                         }
                 }  // end of CRC checksum control
-        }          // end if (page_string.at(0)=='1')
+        }  // end if (page_string.at(0)=='1')
     else
         {
             page_Even = page_string.substr(0, 114);

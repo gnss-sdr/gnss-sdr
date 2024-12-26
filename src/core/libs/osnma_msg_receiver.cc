@@ -206,7 +206,7 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
                         }
 
                     process_osnma_message(nma_msg);
-                }                                                                                                             // OSNMA frame received
+                }  // OSNMA frame received
             else if (msg_type_hash_code == typeid(std::shared_ptr<std::tuple<uint32_t, std::string, uint32_t>>).hash_code())  // Navigation data bits for OSNMA received
                 {
                     const auto inav_data = wht::any_cast<std::shared_ptr<std::tuple<uint32_t, std::string, uint32_t>>>(pmt::any_ref(msg));

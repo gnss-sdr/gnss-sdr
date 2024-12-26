@@ -249,7 +249,7 @@ std::map<int, arma::mat> ReadRinexObs(const std::string& rinex_file, char system
                                 }
                         }
                 }  // end while
-        }          // End of 'try' block
+        }  // End of 'try' block
     catch (const gnsstk::FFStreamError& e)
         {
             std::cout << e;
@@ -1408,8 +1408,8 @@ double compute_rx_clock_error(const std::string& rinex_nav_filename, const std::
                                     rx_clock_error_s = raimSolver.Solution(3) / gnsstk::C_MPS;
                                     break;
                                 }  // End of 'if( raimSolver.isValid() )'
-                        }          // End of 'if( rod.epochFlag == 0 || rod.epochFlag == 1 )'
-                }                  // End of 'while( roffs >> rod )'
+                        }  // End of 'if( rod.epochFlag == 0 || rod.epochFlag == 1 )'
+                }  // End of 'while( roffs >> rod )'
         }
     catch (const gnsstk::FFStreamError& e)
         {

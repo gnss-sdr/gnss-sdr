@@ -179,7 +179,7 @@ public:
     /*!
      * \brief Set resampler latency
      */
-    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override {};
 
 private:
     static const uint32_t downsampling_factor_default = 4;

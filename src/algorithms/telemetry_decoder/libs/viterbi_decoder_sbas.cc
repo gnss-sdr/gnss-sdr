@@ -277,7 +277,7 @@ int Viterbi_Decoder_Sbas::do_tb_and_decode(int traceback_length, int requested_d
     VLOG(BLOCK) << "overstep_length=" << overstep_length;
 
     for (it = d_trellis_paths.begin() + traceback_length;
-         it < d_trellis_paths.begin() + traceback_length + overstep_length; ++it)
+        it < d_trellis_paths.begin() + traceback_length + overstep_length; ++it)
         {
             state = it->get_anchestor_state_of_current_state(state);
         }

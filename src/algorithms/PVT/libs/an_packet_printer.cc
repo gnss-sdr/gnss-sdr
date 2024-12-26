@@ -107,8 +107,8 @@ void An_Packet_Printer::update_sdr_gnss_packet(sdr_gnss_packet_t* _packet, const
     const int max_reported_sats = *(&_packet->sats + 1) - _packet->sats;
 
     for (gnss_observables_iter = gnss_observables_map.cbegin();
-         gnss_observables_iter != gnss_observables_map.cend();
-         ++gnss_observables_iter)
+        gnss_observables_iter != gnss_observables_map.cend();
+        ++gnss_observables_iter)
         {
             if (gnss_observables_iter->second.Flag_valid_pseudorange)
                 {

@@ -248,7 +248,7 @@ ssize_t pxml_parse(int *stateContext, const void *xmlbuf, size_t size,
                         }
                     break;
                 } /* switch(*ptr) */
-        }         /* for() */
+        } /* for() */
 
     /*
      * Flush the partially processed chunk, state permitting.

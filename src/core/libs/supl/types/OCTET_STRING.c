@@ -775,10 +775,9 @@ static struct OCTET_STRING__xer_escape_table_s
     char *string;
     int size;
 } OCTET_STRING__xer_escape_table[] = {
-#define OSXET(s)         \
-    {                    \
-        s, sizeof(s) - 1 \
-    }
+#define OSXET(s) \
+    {            \
+        s, sizeof(s) - 1}
     OSXET("\074\156\165\154\057\076"), /* <nul/> */
     OSXET("\074\163\157\150\057\076"), /* <soh/> */
     OSXET("\074\163\164\170\057\076"), /* <stx/> */

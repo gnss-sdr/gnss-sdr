@@ -36,9 +36,7 @@ struct VOLK_CPU volk_gnsssdr_cpu;
 static inline unsigned long long _xgetbv(unsigned int index)
 {
     unsigned int eax, edx;
-    __VOLK_ASM __VOLK_VOLATILE("xgetbv"
-                               : "=a"(eax), "=d"(edx)
-                               : "c"(index));
+    __VOLK_ASM __VOLK_VOLATILE("xgetbv" : "=a"(eax), "=d"(edx) : "c"(index));
     return ((unsigned long long)edx << 32) | eax;
 }
 #define __xgetbv() _xgetbv(0)

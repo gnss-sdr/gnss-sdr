@@ -45,7 +45,7 @@ ssize_t ber_fetch_length(int _is_constructed, const void *bufptr, size_t size,
 
             oct &= 0x7F; /* Leave only the 7 LS bits */
             for (len = 0, buf++, skipped = 1; oct && (++skipped <= size);
-                 buf++, oct--)
+                buf++, oct--)
                 {
                     len = (len << 8) | *buf;
                     if (len < 0 || (len >> ((8 * sizeof(len)) - 8) && oct > 1))

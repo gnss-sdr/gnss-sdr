@@ -34,7 +34,7 @@ ssize_t ber_fetch_tag(const void *ptr, size_t size, ber_tlv_tag_t *tag_r)
      * The MSB is 0 if it is the last octet of the tag.
      */
     for (val = 0, ptr = ((const char *)ptr) + 1, skipped = 2; skipped <= size;
-         ptr = ((const char *)ptr) + 1, skipped++)
+        ptr = ((const char *)ptr) + 1, skipped++)
         {
             unsigned int oct = *(const uint8_t *)ptr;
             if (oct & 0x80)

@@ -216,7 +216,7 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
              *     step = (<member_number> * 2 + <microphase>).
              */
             for (edx = (ctx->step >> 1); edx < td->elements_count;
-                 edx++, ctx->step = (ctx->step & ~1) + 2)
+                edx++, ctx->step = (ctx->step & ~1) + 2)
                 {
                     void *memb_ptr;   /* Pointer to the member */
                     void **memb_ptr2; /* Pointer to that pointer */
@@ -1518,7 +1518,7 @@ asn_dec_rval_t SEQUENCE_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
 
     /* Fill DEFAULT members in extensions */
     for (edx = specs->roms_count; edx < specs->roms_count + specs->aoms_count;
-         edx++)
+        edx++)
         {
             asn_TYPE_member_t *elm = &td->elements[edx];
             void **memb_ptr2; /* Pointer to member pointer */
@@ -1700,7 +1700,7 @@ asn_enc_rval_t SEQUENCE_encode_uper(asn_TYPE_descriptor_t *td,
         td->elements_count, specs->ext_before);
     for (edx = 0; edx < ((specs->ext_after < 0) ? td->elements_count
                                                 : specs->ext_before - 1);
-         edx++)
+        edx++)
         {
             asn_TYPE_member_t *elm = &td->elements[edx];
             void *memb_ptr;   /* Pointer to the member */

@@ -147,8 +147,7 @@ static long GMTOFF(struct tm a)
         }                                                  \
     while (0);                                             \
     }                                                      \
-    while (0)                                              \
-        ;
+    while (0);
 
 #ifdef _EMULATE_TIMEGM
 static time_t timegm(struct tm *tm)
@@ -428,21 +427,21 @@ time_t asn_GT2time_frac(const GeneralizedTime_t *st, int *frac_value,
     memset(&tm_s, 0, sizeof(tm_s));
 #undef B2F
 #undef B2T
-#define B2F(var)                                    \
-    do                                              \
-        {                                           \
-            unsigned ch = *buf;                     \
-            if (ch < 0x30 || ch > 0x39)             \
-                {                                   \
-                    errno = EINVAL;                 \
-                    return -1;                      \
-                }                                   \
-            else                                    \
-                {                                   \
-                    (var) = (var)*10 + (ch - 0x30); \
-                    buf++;                          \
-                }                                   \
-        }                                           \
+#define B2F(var)                                      \
+    do                                                \
+        {                                             \
+            unsigned ch = *buf;                       \
+            if (ch < 0x30 || ch > 0x39)               \
+                {                                     \
+                    errno = EINVAL;                   \
+                    return -1;                        \
+                }                                     \
+            else                                      \
+                {                                     \
+                    (var) = (var) * 10 + (ch - 0x30); \
+                    buf++;                            \
+                }                                     \
+        }                                             \
     while (0)
 #define B2T(var) B2F(tm_s.var)
 

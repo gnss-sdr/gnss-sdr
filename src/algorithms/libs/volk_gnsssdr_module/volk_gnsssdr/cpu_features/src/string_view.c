@@ -119,7 +119,7 @@ static int ParsePositiveNumberWithBase(const StringView view, int base)
     int result = 0;
     StringView remainder = view;
     for (; remainder.size;
-         remainder = CpuFeatures_StringView_PopFront(remainder, 1))
+        remainder = CpuFeatures_StringView_PopFront(remainder, 1))
         {
             const int value = HexValue(CpuFeatures_StringView_Front(remainder));
             if (value < 0 || value >= base) return -1;

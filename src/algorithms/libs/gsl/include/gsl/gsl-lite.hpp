@@ -1611,7 +1611,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
 
     template <class T, size_t N>
     gsl_NODISCARD gsl_api inline gsl_constexpr auto
-    size(T const (&)[N]) gsl_noexcept->size_t
+    size(T const (&)[N]) gsl_noexcept -> size_t
     {
         return N;
     }
@@ -1625,7 +1625,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
 
     template <class T, size_t N>
     gsl_NODISCARD gsl_api inline gsl_constexpr auto
-    data(T (&arr)[N]) gsl_noexcept->T *
+    data(T (&arr)[N]) gsl_noexcept -> T *
     {
         return &arr[0];
     }
@@ -1646,7 +1646,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
 
     template <class E>
     gsl_NODISCARD inline gsl_constexpr auto
-    data(std::initializer_list<E> il) gsl_noexcept->E const *
+    data(std::initializer_list<E> il) gsl_noexcept -> E const *
     {
         return il.begin();
     }
@@ -1722,7 +1722,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
 
     template <class T, std::size_t N>
     gsl_NODISCARD gsl_constexpr auto
-    ssize(T const (&)[N]) gsl_noexcept->std::ptrdiff_t
+    ssize(T const (&)[N]) gsl_noexcept -> std::ptrdiff_t
     {
         return std::ptrdiff_t(N);
     }
@@ -2269,7 +2269,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
         }
 #endif  // gsl_CONFIG_DEFAULTS_VERSION < 1 || ! gsl_CPP17_OR_GREATER
 
-        gsl_SUPPRESS_MSGSL_WARNING(f .6)
+        gsl_SUPPRESS_MSGSL_WARNING(f.6)
 #if gsl_CONFIG_DEFAULTS_VERSION < 1  // we avoid the unnecessary virtual calls if modern defaults are selected
             virtual
 #endif
@@ -2330,7 +2330,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
         }
 #endif  // ! gsl_CPP17_OR_GREATER
 
-        gsl_SUPPRESS_MSGSL_WARNING(f .6) ~final_action_return() gsl_noexcept
+        gsl_SUPPRESS_MSGSL_WARNING(f.6) ~final_action_return() gsl_noexcept
         {
 #if !gsl_CPP17_OR_GREATER
             if (exception_count_ != 0xFF)  // abuse member as special "no-invoke" marker
@@ -2371,7 +2371,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
         }
 #endif  // ! gsl_CPP17_OR_GREATER
 
-        gsl_SUPPRESS_MSGSL_WARNING(f .6) ~final_action_error() gsl_noexcept
+        gsl_SUPPRESS_MSGSL_WARNING(f.6) ~final_action_error() gsl_noexcept
         {
 #if !gsl_CPP17_OR_GREATER
             if (exception_count_ != 0xFF)  // abuse member as special "no-invoke" marker
@@ -3496,21 +3496,21 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
     template <class T, class U>
     gsl_NODISCARD inline gsl_api gsl_constexpr gsl_TRAILING_RETURN_TYPE_(bool)
     operator==(not_null<T> const &l, not_null<U> const &r)
-        gsl_RETURN_DECLTYPE_(l.operator->() == r.operator->())
+        gsl_RETURN_DECLTYPE_(l.operator-> () == r.operator->())
     {
         return l.operator->() == r.operator->();
     }
     template <class T, class U>
     gsl_NODISCARD inline gsl_api gsl_constexpr gsl_TRAILING_RETURN_TYPE_(bool)
     operator==(not_null<T> const &l, U const &r)
-        gsl_RETURN_DECLTYPE_(l.operator->() == r)
+        gsl_RETURN_DECLTYPE_(l.operator-> () == r)
     {
         return l.operator->() == r;
     }
     template <class T, class U>
     gsl_NODISCARD inline gsl_api gsl_constexpr gsl_TRAILING_RETURN_TYPE_(bool)
     operator==(T const &l, not_null<U> const &r)
-        gsl_RETURN_DECLTYPE_(l == r.operator->())
+        gsl_RETURN_DECLTYPE_(l == r.operator-> ())
     {
         return l == r.operator->();
     }
@@ -3526,21 +3526,21 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
     template <class T, class U>
     gsl_NODISCARD inline gsl_api gsl_constexpr gsl_TRAILING_RETURN_TYPE_(bool)
     operator<(not_null<T> const &l, not_null<U> const &r)
-        gsl_RETURN_DECLTYPE_(l.operator->() < r.operator->())
+        gsl_RETURN_DECLTYPE_(l.operator-> () < r.operator->())
     {
         return l.operator->() < r.operator->();
     }
     template <class T, class U>
     gsl_NODISCARD inline gsl_api gsl_constexpr gsl_TRAILING_RETURN_TYPE_(bool)
     operator<(not_null<T> const &l, U const &r)
-        gsl_RETURN_DECLTYPE_(l.operator->() < r)
+        gsl_RETURN_DECLTYPE_(l.operator-> () < r)
     {
         return l.operator->() < r;
     }
     template <class T, class U>
     gsl_NODISCARD inline gsl_api gsl_constexpr gsl_TRAILING_RETURN_TYPE_(bool)
     operator<(T const &l, not_null<U> const &r)
-        gsl_RETURN_DECLTYPE_(l < r.operator->())
+        gsl_RETURN_DECLTYPE_(l < r.operator-> ())
     {
         return l < r.operator->();
     }
@@ -4357,7 +4357,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
 #if gsl_CONFIG(ALLOWS_NONSTRICT_SPAN_COMPARISON)
 
     template <class T, class U>
-    gsl_SUPPRESS_MSGSL_WARNING(stl .1)
+    gsl_SUPPRESS_MSGSL_WARNING(stl.1)
         gsl_NODISCARD inline gsl_constexpr bool
         operator==(span<T> const &l, span<U> const &r)
     {
@@ -4365,7 +4365,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
     }
 
     template <class T, class U>
-    gsl_SUPPRESS_MSGSL_WARNING(stl .1)
+    gsl_SUPPRESS_MSGSL_WARNING(stl.1)
         gsl_NODISCARD inline gsl_constexpr bool
         operator<(span<T> const &l, span<U> const &r)
     {
@@ -4375,7 +4375,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
 #else   // a.k.a. !gsl_CONFIG( ALLOWS_NONSTRICT_SPAN_COMPARISON )
 
     template <class T>
-    gsl_SUPPRESS_MSGSL_WARNING(stl .1)
+    gsl_SUPPRESS_MSGSL_WARNING(stl.1)
         gsl_NODISCARD inline gsl_constexpr bool
         operator==(span<T> const &l, span<T> const &r)
     {
@@ -4383,7 +4383,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
     }
 
     template <class T>
-    gsl_SUPPRESS_MSGSL_WARNING(stl .1)
+    gsl_SUPPRESS_MSGSL_WARNING(stl.1)
         gsl_NODISCARD inline gsl_constexpr bool
         operator<(span<T> const &l, span<T> const &r)
     {
@@ -4531,7 +4531,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
     template <class Container, class EP = decltype(std17::data(std::declval<Container &>()))>
     gsl_NODISCARD inline gsl_constexpr auto
     make_span(Container & cont)
-        ->span<typename std::remove_pointer<EP>::type>
+        -> span<typename std::remove_pointer<EP>::type>
     {
         return span<typename std::remove_pointer<EP>::type>(cont);
     }
@@ -4539,7 +4539,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
     template <class Container, class EP = decltype(std17::data(std::declval<Container &>()))>
     gsl_NODISCARD inline gsl_constexpr auto
     make_span(Container const &cont)
-        ->span<const typename std::remove_pointer<EP>::type>
+        -> span<const typename std::remove_pointer<EP>::type>
     {
         return span<const typename std::remove_pointer<EP>::type>(cont);
     }
@@ -5062,7 +5062,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
 #if gsl_CONFIG(ALLOWS_NONSTRICT_SPAN_COMPARISON)
 
     template <class T, class U>
-    gsl_SUPPRESS_MSGSL_WARNING(stl .1)
+    gsl_SUPPRESS_MSGSL_WARNING(stl.1)
         gsl_NODISCARD inline gsl_constexpr14 bool
         operator==(basic_string_span<T> const &l, U const &u) gsl_noexcept
     {
@@ -5072,7 +5072,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
     }
 
     template <class T, class U>
-    gsl_SUPPRESS_MSGSL_WARNING(stl .1)
+    gsl_SUPPRESS_MSGSL_WARNING(stl.1)
         gsl_NODISCARD inline gsl_constexpr14 bool
         operator<(basic_string_span<T> const &l, U const &u) gsl_noexcept
     {
@@ -5085,7 +5085,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
 
     template <class T, class U
                            gsl_ENABLE_IF_((!detail::is_basic_string_span<U>::value))>
-    gsl_SUPPRESS_MSGSL_WARNING(stl .1)
+    gsl_SUPPRESS_MSGSL_WARNING(stl.1)
         gsl_NODISCARD inline gsl_constexpr14 bool
         operator==(U const &u, basic_string_span<T> const &r) gsl_noexcept
     {
@@ -5096,7 +5096,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
 
     template <class T, class U
                            gsl_ENABLE_IF_((!detail::is_basic_string_span<U>::value))>
-    gsl_SUPPRESS_MSGSL_WARNING(stl .1)
+    gsl_SUPPRESS_MSGSL_WARNING(stl.1)
         gsl_NODISCARD inline gsl_constexpr14 bool
         operator<(U const &u, basic_string_span<T> const &r) gsl_noexcept
     {
@@ -5109,7 +5109,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
 #else  // gsl_CONFIG( ALLOWS_NONSTRICT_SPAN_COMPARISON )
 
     template <class T>
-    gsl_SUPPRESS_MSGSL_WARNING(stl .1)
+    gsl_SUPPRESS_MSGSL_WARNING(stl.1)
         gsl_NODISCARD inline gsl_constexpr14 bool
         operator==(basic_string_span<T> const &l, basic_string_span<T> const &r) gsl_noexcept
     {
@@ -5117,7 +5117,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
     }
 
     template <class T>
-    gsl_SUPPRESS_MSGSL_WARNING(stl .1)
+    gsl_SUPPRESS_MSGSL_WARNING(stl.1)
         gsl_NODISCARD inline gsl_constexpr14 bool
         operator<(basic_string_span<T> const &l, basic_string_span<T> const &r) gsl_noexcept
     {

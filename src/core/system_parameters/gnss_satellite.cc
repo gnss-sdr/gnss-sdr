@@ -78,11 +78,22 @@ bool operator==(const Gnss_Satellite& sat1, const Gnss_Satellite& sat2)
 
 // Copy constructor
 Gnss_Satellite::Gnss_Satellite(const Gnss_Satellite& other) noexcept
-    : system(other.system),
-      block(other.block),
-      PRN(other.PRN),
+    : PRN(other.PRN),
       rf_link(other.rf_link)
 {
+    try
+        {
+            system = other.system;
+            block = other.block;
+        }
+    catch (...)
+        {
+            // Handle failure by creating a valid but empty object
+            system.clear();
+            block.clear();
+            PRN = 0;
+            rf_link = 0;
+        }
 }
 
 
@@ -92,10 +103,22 @@ Gnss_Satellite& Gnss_Satellite::operator=(const Gnss_Satellite& rhs) noexcept
     // Only do assignment if RHS is a different object from this.
     if (this != &rhs)
         {
-            this->system = rhs.system;
-            this->block = rhs.block;
-            this->PRN = rhs.PRN;
-            this->rf_link = rhs.rf_link;
+            try
+                {
+                    // Copy strings first
+                    std::string tmp_system = rhs.system;
+                    std::string tmp_block = rhs.block;
+
+                    // If we get here, string copies succeeded
+                    system = std::move(tmp_system);
+                    block = std::move(tmp_block);
+                    PRN = rhs.PRN;
+                    rf_link = rhs.rf_link;
+                }
+            catch (...)
+                {
+                    // Keep object in valid state by not modifying it
+                }
         }
     return *this;
 }

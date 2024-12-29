@@ -831,7 +831,7 @@ private:
                 [this, &msg]() {
 #else
             boost::asio::post(io_context_,
-                [this, msg]() {
+                [this, &msg]() {
 #endif
                     bool write_in_progress = !write_msgs_.empty();
                     write_msgs_.push_back(msg);

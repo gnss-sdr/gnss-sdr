@@ -22,6 +22,7 @@
 
 #include "GPS_L1_CA.h"
 #include "gps_ephemeris.h"
+#include "gps_almanac.h"
 #include "gps_iono.h"
 #include "gps_utc_model.h"
 #include <bitset>
@@ -61,7 +62,12 @@ public:
     Gps_Iono get_iono();
 
     /*!
-     * \brief Obtain a GPS UTC model parameters class filled with current SV data
+     * \brief Obtain a GPS almanac class filled with current SV data
+     */
+    Gps_Almanac get_almanac();
+
+    /*!
+     * \brief Obtain a GPS Almanac  model parameters class filled with current SV data
      */
     Gps_Utc_Model get_utc_model();
 
@@ -133,6 +139,7 @@ public:
     }
 
     bool satellite_validation();
+    bool almanac_validation();
 
 private:
     uint64_t read_navigation_unsigned(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
@@ -194,6 +201,17 @@ private:
     // Almanac
     int32_t i_Toa{};   // Almanac reference time [s]
     int32_t i_WN_A{};  // Modulo 256 of the GPS week number to which the almanac reference time (i_Toa) is referenced
+    int32_t SV_Health{};  // Almanac SV healt
+    uint32_t a_PRN;       // Almanac PRN
+    double a_delta_i{};   // Inclination Angle at Reference Time (relative to i_0 = 0.30 semi-circles)
+    double a_M_0{};       // Mean Anomaly at Reference Time [semi-circles]
+    double a_ecc{};       // Eccentricity [dimensionless]
+    double a_sqrtA{};     // Square Root of the Semi-Major Axis [sqrt(m)]
+    double a_OMEGA_0{};   // Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
+    double a_omega{};     // Argument of Perigee [semi-cicles]
+    double a_OMEGAdot{};  // Rate of Right Ascension [semi-circles/s]
+    double a_af0{};       // Coefficient 0 of code phase offset model [s]
+    double a_af1{};       // Coefficient 1 of code phase offset model [s/s]
 
     // satellite identification info
     int32_t i_channel_ID{};
@@ -224,7 +242,8 @@ private:
     bool b_valid_ephemeris_set_flag{};  // flag indicating that this ephemeris set have passed the validation check
     bool flag_iono_valid{};             // If set, it indicates that the ionospheric parameters are filled (page 18 has arrived and decoded)
     bool flag_utc_model_valid{};        // If set, it indicates that the UTC model parameters are filled
-
+    bool flag_almanac_valid{};          // If set, it indicates that the almanac is filled
+    bool flag_almanac_week_valid{};     // If set, it indicates that the almanac week is valid
     /*  If true, enhanced level of integrity assurance.
      *
      *  If false, indicates that the conveying signal is provided with the legacy level of integrity assurance.

@@ -396,10 +396,19 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                     const std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(d_nav.get_utc_model());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                                 }
+                            if (d_nav.almanac_validation() == true)
+                                {
+                                    const std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(d_nav.get_almanac());
+                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                }
                             break;
                         case 5:
-                        // get almanac (if available)
-                        // TODO: implement almanac reader in navigation_message
+                            if (d_nav.almanac_validation() == true)
+                                {
+                                    const std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(d_nav.get_almanac());
+                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                }
+                            break;
                         default:
                             break;
                         }

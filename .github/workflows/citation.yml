@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2022 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+on:
+  push:
+    paths:
+      - CITATION.cff
+  pull_request:
+    paths:
+      - CITATION.cff
+  workflow_dispatch:
+
+name: CITATION.cff
+jobs:
+  Validate-CITATION-cff:
+    runs-on: ubuntu-latest
+    name: Validate CITATION.cff
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Validate CITATION.cff
+        uses: dieghernan/cff-validator@main
+      # Upload artifact in case of failure
+      - name: Update artifact
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: citation-cff-errors
+          path: citation_cff_errors.md

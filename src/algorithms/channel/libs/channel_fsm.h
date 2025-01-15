@@ -1,92 +1,86 @@
 /*!
  * \file channel_fsm.h
- * \brief Interface of the State Machine for channel using boost::statechart
- * \author Luis Esteve, 2011. luis(at)epsilon-formacion.com
+ * \brief Interface of the State Machine for channel
+ * \authors Javier Arribas, 2019. javiarribas@gmail.com
+ *          Antonio Ramos, 2017. antonio.ramos(at)cttc.es
+ *          Luis Esteve,   2011. luis(at)epsilon-formacion.com
  *
+ * -----------------------------------------------------------------------------
  *
- * -------------------------------------------------------------------------
- *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #ifndef GNSS_SDR_CHANNEL_FSM_H
 #define GNSS_SDR_CHANNEL_FSM_H
 
-#include <cstring>
-#include <iostream>
-#include <queue>
-#include <boost/statechart/state_machine.hpp>
-#include <boost/statechart/simple_state.hpp>
-#include <boost/statechart/state.hpp>
-#include <boost/statechart/transition.hpp>
-#include <boost/statechart/custom_reaction.hpp>
-#include <boost/mpl/list.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
-#include <gnuradio/msg_queue.h>
 #include "acquisition_interface.h"
-#include "tracking_interface.h"
+#include "concurrent_queue.h"
 #include "telemetry_decoder_interface.h"
+#include "tracking_interface.h"
+#include <pmt/pmt.h>
+#include <cstdint>
+#include <memory>
+#include <mutex>
 
+/** \addtogroup Channel
+ * \{ */
+/** \addtogroup Channel_libs channel_libs
+ * Library with utilities for a GNSS Channel.
+ * \{ */
 
-namespace sc = boost::statechart;
-namespace mpl = boost::mpl;
-
-struct channel_idle_fsm_S0;
-struct channel_acquiring_fsm_S1;
-struct channel_tracking_fsm_S2;
-struct channel_waiting_fsm_S3;
 
 /*!
- * \brief This class implements a State Machine for channel using boost::statechart
+ * \brief This class implements a State Machine for channel
  */
-class ChannelFsm: public sc::state_machine<ChannelFsm, channel_idle_fsm_S0>
+class ChannelFsm
 {
 public:
     ChannelFsm();
-    ChannelFsm(AcquisitionInterface *acquisition);
+    virtual ~ChannelFsm() = default;
+    explicit ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition);
 
-    void set_acquisition(AcquisitionInterface *acquisition);
-    void set_tracking(TrackingInterface *tracking);
-    void set_queue(boost::shared_ptr<gr::msg_queue> queue);
-    void set_channel(unsigned int channel);
+    void set_acquisition(std::shared_ptr<AcquisitionInterface> acquisition);
+    void set_tracking(std::shared_ptr<TrackingInterface> tracking);
+    void set_telemetry(std::shared_ptr<TelemetryDecoderInterface> telemetry);
+    void set_queue(Concurrent_Queue<pmt::pmt_t>* queue);
+    void set_channel(uint32_t channel);
     void start_acquisition();
-    void start_tracking();
-    void request_satellite();
 
-    //FSM EVENTS
-    void Event_start_acquisition();
-    void Event_valid_acquisition();
-    void Event_failed_acquisition_repeat();
-    void Event_failed_acquisition_no_repeat();
-    //void Event_gps_failed_tracking_reacq();
-    void Event_failed_tracking_standby();
+    // FSM EVENTS
+    bool Event_start_acquisition();
+    bool Event_start_acquisition_fpga();
+    bool Event_stop_channel();
+    bool Event_failed_tracking_standby();
+    virtual bool Event_valid_acquisition();
+    virtual bool Event_failed_acquisition_repeat();
+    virtual bool Event_failed_acquisition_no_repeat();
 
 private:
-    AcquisitionInterface *acq_;
-    TrackingInterface *trk_;
-    boost::shared_ptr<gr::msg_queue> queue_;
-    unsigned int channel_;
+    void start_tracking();
+    void stop_acquisition();
+    void stop_tracking();
+    void request_satellite();
+    void notify_stop_tracking();
+
+    std::shared_ptr<AcquisitionInterface> acq_;
+    std::shared_ptr<TrackingInterface> trk_;
+    std::shared_ptr<TelemetryDecoderInterface> nav_;
+
+    std::mutex mx_;
+
+    Concurrent_Queue<pmt::pmt_t>* queue_;
+
+    uint32_t channel_;
+    uint32_t state_;
 };
 
-#endif /*GNSS_SDR_CHANNEL_FSM_H*/
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_CHANNEL_FSM_H

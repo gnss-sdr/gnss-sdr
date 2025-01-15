@@ -4,91 +4,62 @@
  * \author Javier Arribas jarribas (at) cttc.es
  *
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #include "array_signal_conditioner.h"
-#include <iostream>
-#include <sstream>
-#include <boost/lexical_cast.hpp>
-#include <boost/thread/thread.hpp>
-#include <gnuradio/io_signature.h>
-#include <gnuradio/message.h>
+#include "configuration_interface.h"
+#include <utility>
+
+#if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
-#include "gnss_flowgraph.h"
-
-
-using google::LogMessage;
+#else
+#include <absl/log/log.h>
+#endif
 
 // Constructor
-ArraySignalConditioner::ArraySignalConditioner(ConfigurationInterface *configuration,
-        GNSSBlockInterface *data_type_adapt, GNSSBlockInterface *in_filt,
-        GNSSBlockInterface *res, std::string role, std::string implementation,
-        boost::shared_ptr<gr::msg_queue> queue) : data_type_adapt_(data_type_adapt),
-                in_filt_(in_filt), res_(res), role_(role), implementation_(implementation),
-                queue_(queue)
+ArraySignalConditioner::ArraySignalConditioner(std::shared_ptr<GNSSBlockInterface> data_type_adapt,
+    std::shared_ptr<GNSSBlockInterface> in_filt,
+    std::shared_ptr<GNSSBlockInterface> res,
+    std::string role) : data_type_adapt_(std::move(data_type_adapt)),
+                        in_filt_(std::move(in_filt)),
+                        res_(std::move(res)),
+                        role_(std::move(role)),
+                        connected_(false)
 {
-    connected_ = false;
-    if(configuration){ };
 }
-
-
-// Destructor
-ArraySignalConditioner::~ArraySignalConditioner()
-{
-    delete data_type_adapt_;
-    delete in_filt_;
-    delete res_;
-}
-
 
 
 void ArraySignalConditioner::connect(gr::top_block_sptr top_block)
 {
-	// note: the array signal conditioner do not have data type adapter, and must use the array input filter (multichannel)
+    // note: the array signal conditioner do not have data type adapter, and must use the array input filter (multichannel)
     if (connected_)
         {
             LOG(WARNING) << "Array Signal conditioner already connected internally";
             return;
         }
-    //data_type_adapt_->connect(top_block);
+    // data_type_adapt_->connect(top_block);
     in_filt_->connect(top_block);
     res_->connect(top_block);
 
-
-    //top_block->connect(data_type_adapt_->get_right_block(), 0, in_filt_->get_left_block(), 0);
-    //DLOG(INFO) << "data_type_adapter -> input_filter";
+    // top_block->connect(data_type_adapt_->get_right_block(), 0, in_filt_->get_left_block(), 0);
+    // DLOG(INFO) << "data_type_adapter -> input_filter";
 
     top_block->connect(in_filt_->get_right_block(), 0,
-                       res_->get_left_block(), 0);
+        res_->get_left_block(), 0);
 
     DLOG(INFO) << "Array input_filter -> resampler";
 
     connected_ = true;
 }
-
 
 
 void ArraySignalConditioner::disconnect(gr::top_block_sptr top_block)
@@ -99,14 +70,14 @@ void ArraySignalConditioner::disconnect(gr::top_block_sptr top_block)
             return;
         }
 
-    //top_block->disconnect(data_type_adapt_->get_right_block(), 0,
+    // top_block->disconnect(data_type_adapt_->get_right_block(), 0,
     //                      in_filt_->get_left_block(), 0);
     top_block->disconnect(in_filt_->get_right_block(), 0,
-                          res_->get_left_block(), 0);
+        res_->get_left_block(), 0);
 
-    //data_type_adapt_->disconnect(top_block);
+    // data_type_adapt_->disconnect(top_block);
     in_filt_->disconnect(top_block);
-    res_->disconnect(top_block);
+    res_->disconnect(std::move(top_block));
 
     connected_ = false;
 }
@@ -114,14 +85,12 @@ void ArraySignalConditioner::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr ArraySignalConditioner::get_left_block()
 {
-    //return data_type_adapt_->get_left_block();
+    // return data_type_adapt_->get_left_block();
     return in_filt_->get_left_block();
 }
-
 
 
 gr::basic_block_sptr ArraySignalConditioner::get_right_block()
 {
     return res_->get_right_block();
 }
-

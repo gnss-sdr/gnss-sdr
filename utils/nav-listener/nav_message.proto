@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-FileCopyrightText: 2021 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+syntax = "proto3";
+
+package gnss_sdr;
+
+message navMsg {
+  string system = 1;  // GNSS constellation: "G" for GPS, "R" for Glonass, "E" for Galileo, and "C" for Beidou.
+  string signal = 2;  // GNSS signal: "1C" for GPS L1 C/A, "1B" for Galileo E1b/c, "1G" for Glonass L1 C/A, "2S" for GPS L2 L2C(M), "2G" for Glonass L2 C/A, "L5" for GPS L5, "5X" for Galileo E5a, and "E6" for Galileo E6B.
+  int32 prn = 3;      // SV ID.
+  int32 tow_at_current_symbol_ms = 4;  // Time of week of the last symbol received, in ms
+  string nav_message = 5;  // for Galileo I/NAV: decoded half page (even or odd), 120 bits, as described in OS SIS ICD 2.0, paragraph 4.3.2.3. I/NAV Page Part.
+                           // for Galileo F/NAV: decoded word, 244 bits, as described in OS SIS ICD 2.0, paragraph 4.2.2. F/NAV Page Layout.
+                           // for Galileo HAS: decoded full HAS message (header + body), variable length, as described in Galileo HAS SIS ICD.
+                           // For GPS LNAV: decoded subframe, 300 bits, as described in IS-GPS-200M paragraph 20.3.2 Message Structure.
+                           // For GPS CNAV: decoded subframe, 300 bits, as described in IS-GPS-200M paragraph 30.3.3 Message Content.
+}

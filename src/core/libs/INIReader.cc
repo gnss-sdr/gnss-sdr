@@ -11,86 +11,93 @@
  * and value. It's done this way because it works well on low-memory
  * embedded systems, but also because it makes for a KISS implementation.
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  * inih and INIReader are released under the New BSD license:
  *
  * Copyright (c) 2009, Brush Technology
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *    * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the name of Brush Technology nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY BRUSH TECHNOLOGY ''AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL BRUSH TECHNOLOGY BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * SPDX-License-Identifier: BSD-3-Clause
  *
  * Go to the project home page for more info:
  *
- * http://code.google.com/p/inih/
- * -------------------------------------------------------------------------
+ * https://github.com/benhoyt/inih
+ * -----------------------------------------------------------------------------
  */
 
-#include <cctype>
-#include <cstdlib>
-#include "ini.h"
 #include "INIReader.h"
+#include "ini.h"
+#include <cctype>   // for tolower
+#include <cstdlib>  // for stro
+#include <utility>
 
-using std::string;
 
-INIReader::INIReader(string filename)
+INIReader::INIReader(const std::string& filename)
+    : _error(ini_parse(filename.c_str(), ValueHandler, this))
 {
-    _error = ini_parse(filename.c_str(), ValueHandler, this);
 }
 
-int INIReader::ParseError()
+
+int INIReader::ParseError() const
 {
     return _error;
 }
 
-string INIReader::Get(string section, string name, string default_value)
+
+std::string INIReader::Get(const std::string& section, const std::string& name, const std::string& default_value)
 {
-    string key = MakeKey(section, name);
+    std::string key = MakeKey(section, name);
     return _values.count(key) ? _values[key] : default_value;
 }
 
-long INIReader::GetInteger(string section, string name, long default_value)
+
+int64_t INIReader::GetInteger(const std::string& section, const std::string& name, int64_t default_value)
 {
-    string valstr = Get(section, name, "");
+    std::string valstr = Get(section, name, "");
     const char* value = valstr.c_str();
     char* end;
     // This parses "1234" (decimal) and also "0x4D2" (hex)
-    long n = strtol(value, &end, 0);
+    int64_t n = strtol(value, &end, 0);
     return end > value ? n : default_value;
 }
 
-string INIReader::MakeKey(string section, string name)
+
+std::string INIReader::MakeKey(const std::string& section, const std::string& name)
 {
-    string key = section + "." + name;
+    std::string key = section + "." + name;
     // Convert to lower case to make lookups case-insensitive
-    for (unsigned int i = 0; i < key.length(); i++)
-        key[i] = tolower(key[i]);
+    for (char& i : key)
+        {
+            i = tolower(i);
+        }
     return key;
 }
 
+
 int INIReader::ValueHandler(void* user, const char* section, const char* name,
-                            const char* value)
+    const char* value)
 {
-    INIReader* reader = (INIReader*)user;
+    auto* reader = static_cast<INIReader*>(user);
     reader->_values[MakeKey(section, name)] = value;
     return 1;
+}
+
+
+bool INIReader::HasSection(const std::string& section) const
+{
+    const std::string key = MakeKey(section, "");
+    auto pos = _values.lower_bound(key);
+    if (pos == _values.end())
+        {
+            return false;
+        }
+    // Does the key at the lower_bound pos start with "section"?
+    return pos->first.compare(0, key.length(), key) == 0;
+}
+
+
+bool INIReader::HasValue(const std::string& section, const std::string& name) const
+{
+    std::string key = MakeKey(section, name);
+    return _values.count(key);
 }

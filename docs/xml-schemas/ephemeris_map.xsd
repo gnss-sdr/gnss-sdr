@@ -1,0 +1,80 @@
+IODE_SF<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <!-- SPDX-License-Identifier: BSD-3-Clause -->
+  <!-- SPDX-FileCopyrightText: 2018-2021 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
+  <xs:element name="boost_serialization">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="GNSS-SDR_ephemeris_map">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:byte" name="count"/>
+              <xs:element type="xs:byte" name="item_version"/>
+              <xs:element name="item" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:byte" name="first"/>
+                    <xs:element name="second">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element type="xs:byte" name="PRN"/>
+                          <xs:element type="xs:int" name="tow"/>
+                          <xs:element type="xs:byte" name="IODE_SF2"/>
+                          <xs:element type="xs:byte" name="IODE_SF3"/>
+                          <xs:element type="xs:float" name="Crs"/>
+                          <xs:element type="xs:float" name="delta_n"/>
+                          <xs:element type="xs:float" name="M_0"/>
+                          <xs:element type="xs:float" name="Cuc"/>
+                          <xs:element type="xs:float" name="ecc"/>
+                          <xs:element type="xs:float" name="Cus"/>
+                          <xs:element type="xs:float" name="sqrtA"/>
+                          <xs:element type="xs:int" name="toe"/>
+                          <xs:element type="xs:int" name="toc"/>
+                          <xs:element type="xs:float" name="Cic"/>
+                          <xs:element type="xs:float" name="OMEGA_0"/>
+                          <xs:element type="xs:float" name="Cis"/>
+                          <xs:element type="xs:float" name="i_0"/>
+                          <xs:element type="xs:float" name="Crc"/>
+                          <xs:element type="xs:float" name="omega"/>
+                          <xs:element type="xs:float" name="OMEGAdot"/>
+                          <xs:element type="xs:float" name="idot"/>
+                          <xs:element type="xs:byte" name="code_on_L2"/>
+                          <xs:element type="xs:short" name="WN"/>
+                          <xs:element type="xs:byte" name="L2_P_data_flag"/>
+                          <xs:element type="xs:byte" name="SV_accuracy"/>
+                          <xs:element type="xs:byte" name="SV_health"/>
+                          <xs:element type="xs:float" name="TGD"/>
+                          <xs:element type="xs:byte" name="IODC"/>
+                          <xs:element type="xs:short" name="AODO"/>
+                          <xs:element type="xs:byte" name="fit_interval_flag"/>
+                          <xs:element type="xs:float" name="spare1"/>
+                          <xs:element type="xs:float" name="spare2"/>
+                          <xs:element type="xs:float" name="af0"/>
+                          <xs:element type="xs:float" name="af1"/>
+                          <xs:element type="xs:float" name="af2"/>
+                          <xs:element type="xs:byte" name="integrity_status_flag"/>
+                          <xs:element type="xs:byte" name="alert_flag"/>
+                          <xs:element type="xs:byte" name="antispoofing_flag"/>
+                        </xs:sequence>
+                        <xs:attribute type="xs:byte" name="class_id" use="optional"/>
+                        <xs:attribute type="xs:byte" name="tracking_level" use="optional"/>
+                        <xs:attribute type="xs:byte" name="version" use="optional"/>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute type="xs:byte" name="class_id" use="optional"/>
+                  <xs:attribute type="xs:byte" name="tracking_level" use="optional"/>
+                  <xs:attribute type="xs:byte" name="version" use="optional"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute type="xs:byte" name="class_id"/>
+            <xs:attribute type="xs:byte" name="tracking_level"/>
+            <xs:attribute type="xs:byte" name="version"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="signature"/>
+      <xs:attribute type="xs:byte" name="version"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

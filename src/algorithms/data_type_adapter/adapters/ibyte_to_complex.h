@@ -3,41 +3,31 @@
  * \brief Adapts an I/Q interleaved byte integer sample stream to a gr_complex (float) stream
  * \author Javier Arribas, jarribas(at)cttc.es
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_IBYTE_TO_COMPLEX_H_
-#define GNSS_SDR_IBYTE_TO_COMPLEX_H_
+#ifndef GNSS_SDR_IBYTE_TO_COMPLEX_H
+#define GNSS_SDR_IBYTE_TO_COMPLEX_H
 
-#include <string>
-#include <gnuradio/blocks/interleaved_short_to_complex.h>
-#include <gnuradio/blocks/char_to_short.h>
-#include <gnuradio/blocks/file_sink.h>
-#include <gnuradio/msg_queue.h>
-#include "gnss_synchro.h"
+#include "conjugate_cc.h"
 #include "gnss_block_interface.h"
+#include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/blocks/interleaved_char_to_complex.h>
+#include <cstdint>
+#include <string>
+
+/** \addtogroup Data_Type
+ * \{ */
+/** \addtogroup Data_type_adapters
+ * \{ */
 
 
 class ConfigurationInterface;
@@ -46,49 +36,51 @@ class ConfigurationInterface;
  * \brief Adapts an I/Q interleaved byte integer sample stream to a gr_complex (float) stream
  *
  */
-class IbyteToComplex: public GNSSBlockInterface
+class IbyteToComplex : public GNSSBlockInterface
 {
 public:
-    IbyteToComplex(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
+    IbyteToComplex(const ConfigurationInterface* configuration,
+        const std::string& role, unsigned int in_streams,
+        unsigned int out_streams);
 
-    virtual ~IbyteToComplex();
+    ~IbyteToComplex() = default;
 
-    std::string role()
+    inline std::string role() override
     {
         return role_;
     }
+
     //! Returns "Ibyte_To_Complex"
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Ibyte_To_Complex";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
-        return 0;
+        return 2 * sizeof(int8_t);
     }
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
 private:
-    gr::blocks::interleaved_short_to_complex::sptr gr_interleaved_short_to_complex_;
-    gr::blocks::char_to_short::sptr gr_char_to_short_;
-    ConfigurationInterface* config_;
-    bool dump_;
+    gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex_;
+    conjugate_cc_sptr conjugate_cc_;
+    gr::blocks::file_sink::sptr file_sink_;
     std::string dump_filename_;
     std::string input_item_type_;
     std::string output_item_type_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
-    gr::blocks::file_sink::sptr file_sink_;
+    bool inverted_spectrum;
+    bool dump_;
 };
 
-#endif
 
-
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_IBYTE_TO_COMPLEX_H

@@ -1,94 +1,67 @@
-/* -*- c++ -*- */
-/* Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
- *
+/*
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
 
-#include <iostream>
-#include <boost/program_options.hpp>
-#include "volk_gnsssdr/constants.h"
-#include "volk_gnsssdr/volk_gnsssdr.h"
+#include "volk_gnsssdr/volk_gnsssdr.h"    // for volk_gnsssdr_get_alignment, volk_gnsssdr_get_machine
+#include "volk_gnsssdr_option_helpers.h"  // for option_list, option_t
+#include <volk_gnsssdr/constants.h>       // for volk_gnsssdr_available_machines, volk_gnsssdr_c_compiler ...
+#include <iostream>                       // for operator<<, cout, ostream
+#include <string>                         // for string
 
-
-namespace po = boost::program_options;
-
-int
-main(int argc, char **argv)
+void print_alignment()
 {
-  po::options_description desc("Program options: volk_gnsssdr-config-info [options]");
-  po::variables_map vm;
+    std::cout << "Alignment in bytes: " << volk_gnsssdr_get_alignment() << '\n';
+}
 
-  desc.add_options()
-    ("help,h", "print help message")
-    ("prefix", "print VOLK installation prefix")
-    ("builddate", "print VOLK build date (RFC2822 format)")
-    ("cc", "print VOLK C compiler version")
-    ("cflags", "print VOLK CFLAGS")
-    ("all-machines", "print VOLK machines built into library")
-    ("avail-machines", "print VOLK machines the current platform can use")
-    ("machine", "print the VOLK machine that will be used")
-    ("version,v", "print VOLK version")
-    ;
 
-  try {
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);
-  }
-  catch (po::error& error){
-    std::cerr << "Error: " << error.what() << std::endl << std::endl;
-    std::cerr << desc << std::endl;
-    return 1;
-  }
+void print_malloc()
+{
+    // You don't want to change the volk_malloc code, so just copy the if/else
+    // structure from there and give an explanation for the implementations
+    std::cout << "Used malloc implementation: ";
+#if HAVE_POSIX_MEMALIGN
+    std::cout << "posix_memalign\n";
+#elif defined(_MSC_VER)
+    std::cout << "_aligned_malloc\n";
+#else
+    std::cout << "C11 aligned_alloc.\n";
+#endif
+}
 
-  if(vm.size() == 0 || vm.count("help")) {
-    std::cout << desc << std::endl;
-    return 1;
-  }
 
-  if(vm.count("prefix"))
-    std::cout << volk_gnsssdr_prefix() << std::endl;
+int main(int argc, char **argv)
+{
+    option_list our_options("volk_gnsssdr-config-info");
+    our_options.add(option_t("prefix", "", "print the VOLK_GNSSSDR installation prefix", volk_gnsssdr_prefix()));
+    our_options.add(option_t("cc", "", "print the VOLK_GNSSDR C compiler version", volk_gnsssdr_c_compiler()));
+    our_options.add(option_t("cflags", "", "print the VOLK_GNSSSDR CFLAGS", volk_gnsssdr_compiler_flags()));
+    our_options.add(option_t("all-machines", "", "print VOLK_GNSSSDR machines built", volk_gnsssdr_available_machines()));
+    our_options.add(option_t("avail-machines", "",
+        "print VOLK_GNSSSDR machines on the current "
+        "platform",
+        volk_gnsssdr_list_machines));
+    our_options.add(option_t("machine", "", "print the current VOLK_GNSSSDR machine that will be used",
+        volk_gnsssdr_get_machine()));
+    our_options.add(option_t("alignment", "", "print the memory alignment", print_alignment));
+    our_options.add(option_t("malloc", "", "print the malloc implementation used in volk_gnsssdr_malloc",
+        print_malloc));
+    our_options.add(option_t("version", "v", "print the VOLK_GNSSSDR version", volk_gnsssdr_version()));
 
-  if(vm.count("builddate"))
-    std::cout << volk_gnsssdr_build_date() << std::endl;
-
-  if(vm.count("version"))
-    std::cout << volk_gnsssdr_version() << std::endl;
-
-  if(vm.count("cc"))
-    std::cout << volk_gnsssdr_c_compiler() << std::endl;
-
-  if(vm.count("cflags"))
-    std::cout << volk_gnsssdr_compiler_flags() << std::endl;
-
-  // stick an extra ';' to make output of this and avail-machines the
-  // same structure for easier parsing
-  if(vm.count("all-machines"))
-    std::cout << volk_gnsssdr_available_machines() << ";" << std::endl;
-
-  if(vm.count("avail-machines")) {
-    volk_gnsssdr_list_machines();
-  }
-
-  if(vm.count("machine")) {
-    std::cout << volk_gnsssdr_get_machine() << std::endl;
-  }
-
-  return 0;
+    try
+        {
+            our_options.parse(argc, argv);
+        }
+    catch (...)
+        {
+            return 1;
+        }
+    return 0;
 }

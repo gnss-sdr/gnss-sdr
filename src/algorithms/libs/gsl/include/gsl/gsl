@@ -1,0 +1,22 @@
+//
+// gsl-lite is based on GSL: Guidelines Support Library.
+// For more information see https://github.com/martinmoene/gsl-lite
+//
+// Copyright (c) 2015 Martin Moene
+// Copyright (c) 2015 Microsoft Corporation. All rights reserved.
+//
+// SPDX-License-Identifier: MIT
+//
+
+// mimic MS include hierarchy
+
+#pragma once
+
+#ifndef GSL_GSL_H_INCLUDED
+#define GSL_GSL_H_INCLUDED
+
+#pragma message ("gsl/gsl is deprecated since version 0.38.1, use gsl/gsl-lite.hpp instead.")
+
+#include "gsl-lite.hpp"
+
+#endif  // GSL_GSL_H_INCLUDED

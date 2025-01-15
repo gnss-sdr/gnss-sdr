@@ -1,41 +1,76 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
-#
+# GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# GNSS-SDR is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GNSS-SDR is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
-#
+# SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-License-Identifier: BSD-3-Clause
 
-set(INPUT_FILTER_ADAPTER_SOURCES 
-     fir_filter.cc 
-     freq_xlating_fir_filter.cc
-     beamformer_filter.cc
+
+set(INPUT_FILTER_ADAPTER_SOURCES
+    fir_filter.cc
+    freq_xlating_fir_filter.cc
+    beamformer_filter.cc
+    pulse_blanking_filter.cc
+    notch_filter.cc
+    notch_filter_lite.cc
 )
 
-include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${VOLK_INCLUDE_DIRS}
+set(INPUT_FILTER_ADAPTER_HEADERS
+    fir_filter.h
+    freq_xlating_fir_filter.h
+    beamformer_filter.h
+    pulse_blanking_filter.h
+    notch_filter.h
+    notch_filter_lite.h
 )
 
-file(GLOB INPUT_FILTER_ADAPTER_HEADERS "*.h")
-add_library(input_filter_adapters ${INPUT_FILTER_ADAPTER_SOURCES} ${INPUT_FILTER_ADAPTER_HEADERS})
-source_group(Headers FILES ${INPUT_FILTER_ADAPTER_HEADERS})
-add_dependencies(input_filter_adapters glog-${glog_RELEASE} gnss_sp_libs)
-target_link_libraries(input_filter_adapters input_filter_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} gnss_sp_libs)
+list(SORT INPUT_FILTER_ADAPTER_HEADERS)
+list(SORT INPUT_FILTER_ADAPTER_SOURCES)
+
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(input_filter_adapters STATIC)
+    target_sources(input_filter_adapters
+        PRIVATE
+            ${INPUT_FILTER_ADAPTER_SOURCES}
+        PUBLIC
+            ${INPUT_FILTER_ADAPTER_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${INPUT_FILTER_ADAPTER_HEADERS})
+    add_library(input_filter_adapters
+        ${INPUT_FILTER_ADAPTER_SOURCES}
+        ${INPUT_FILTER_ADAPTER_HEADERS}
+    )
+endif()
+
+target_link_libraries(input_filter_adapters
+    PUBLIC
+        algorithms_libs
+        input_filter_gr_blocks
+    PRIVATE
+        Volk::volk
+)
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(input_filter_adapters PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(input_filter_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(input_filter_adapters PRIVATE absl::flags absl::log)
+endif()
+
+if(GNURADIO_IS_38_OR_GREATER)
+    target_compile_definitions(input_filter_adapters PUBLIC -DGR_GREATER_38=1)
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(input_filter_adapters
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET input_filter_adapters
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

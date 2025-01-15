@@ -4,63 +4,37 @@
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #include "signal_conditioner.h"
-#include <iostream>
-#include <sstream>
-#include <boost/lexical_cast.hpp>
-#include <boost/thread/thread.hpp>
-#include <gnuradio/io_signature.h>
-#include <gnuradio/message.h>
+#include <stdexcept>
+#include <utility>
+
+#if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
-#include "gnss_flowgraph.h"
-
-
-using google::LogMessage;
+#else
+#include <absl/log/log.h>
+#endif
 
 // Constructor
-SignalConditioner::SignalConditioner(ConfigurationInterface *configuration,
-        GNSSBlockInterface *data_type_adapt, GNSSBlockInterface *in_filt,
-        GNSSBlockInterface *res, std::string role, std::string implementation,
-        boost::shared_ptr<gr::msg_queue> queue) : data_type_adapt_(data_type_adapt),
-                in_filt_(in_filt), res_(res), role_(role), implementation_(implementation),
-                queue_(queue)
+SignalConditioner::SignalConditioner(std::shared_ptr<GNSSBlockInterface> data_type_adapt,
+    std::shared_ptr<GNSSBlockInterface> in_filt,
+    std::shared_ptr<GNSSBlockInterface> res,
+    std::string role) : data_type_adapt_(std::move(data_type_adapt)),
+                        in_filt_(std::move(in_filt)),
+                        res_(std::move(res)),
+                        role_(std::move(role)),
+                        connected_(false)
 {
-    connected_ = false;
-    if(configuration){ };
-}
-
-
-// Destructor
-SignalConditioner::~SignalConditioner()
-{
-    delete data_type_adapt_;
-    delete in_filt_;
-    delete res_;
 }
 
 
@@ -71,15 +45,46 @@ void SignalConditioner::connect(gr::top_block_sptr top_block)
             LOG(WARNING) << "Signal conditioner already connected internally";
             return;
         }
+    if (data_type_adapt_ == nullptr)
+        {
+            throw std::invalid_argument("DataTypeAdapter implementation not defined");
+        }
+    if (in_filt_ == nullptr)
+        {
+            throw std::invalid_argument("InputFilter implementation not defined");
+        }
+    if (res_ == nullptr)
+        {
+            throw std::invalid_argument("Resampler implementation not defined");
+        }
     data_type_adapt_->connect(top_block);
     in_filt_->connect(top_block);
     res_->connect(top_block);
 
-    top_block->connect(data_type_adapt_->get_right_block(), 0,
-                       in_filt_->get_left_block(), 0);
+    if (in_filt_->item_size() == 0)
+        {
+            throw std::invalid_argument("itemsize mismatch: Invalid input/ouput data type configuration for the InputFilter");
+        }
+
+    const size_t data_type_adapter_output_size = data_type_adapt_->get_right_block()->output_signature()->sizeof_stream_item(0);
+    const size_t input_filter_input_size = in_filt_->get_left_block()->input_signature()->sizeof_stream_item(0);
+    const size_t input_filter_output_size = in_filt_->get_right_block()->output_signature()->sizeof_stream_item(0);
+    const size_t resampler_input_size = res_->get_left_block()->input_signature()->sizeof_stream_item(0);
+
+    if (data_type_adapter_output_size != input_filter_input_size)
+        {
+            throw std::invalid_argument("itemsize mismatch: Invalid input/ouput data type configuration for the DataTypeAdapter/InputFilter connection");
+        }
+
+    if (input_filter_output_size != resampler_input_size)
+        {
+            throw std::invalid_argument("itemsize mismatch: Invalid input/ouput data type configuration for the Input Filter/Resampler connection");
+        }
+
+    top_block->connect(data_type_adapt_->get_right_block(), 0, in_filt_->get_left_block(), 0);
     DLOG(INFO) << "data_type_adapter -> input_filter";
-    top_block->connect(in_filt_->get_right_block(), 0,
-                       res_->get_left_block(), 0);
+
+    top_block->connect(in_filt_->get_right_block(), 0, res_->get_left_block(), 0);
     DLOG(INFO) << "input_filter -> resampler";
     connected_ = true;
 }
@@ -94,13 +99,13 @@ void SignalConditioner::disconnect(gr::top_block_sptr top_block)
         }
 
     top_block->disconnect(data_type_adapt_->get_right_block(), 0,
-                          in_filt_->get_left_block(), 0);
+        in_filt_->get_left_block(), 0);
     top_block->disconnect(in_filt_->get_right_block(), 0,
-                          res_->get_left_block(), 0);
+        res_->get_left_block(), 0);
 
     data_type_adapt_->disconnect(top_block);
     in_filt_->disconnect(top_block);
-    res_->disconnect(top_block);
+    res_->disconnect(std::move(top_block));
 
     connected_ = false;
 }
@@ -111,8 +116,8 @@ gr::basic_block_sptr SignalConditioner::get_left_block()
     return data_type_adapt_->get_left_block();
 }
 
+
 gr::basic_block_sptr SignalConditioner::get_right_block()
 {
     return res_->get_right_block();
 }
-

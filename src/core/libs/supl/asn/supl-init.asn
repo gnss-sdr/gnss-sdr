@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: BSD-1-Clause
+-- SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
 SUPL-INIT DEFINITIONS AUTOMATIC TAGS ::=
 BEGIN
 

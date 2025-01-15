@@ -8,37 +8,29 @@
  * instantiated directly if all inherited pure virtual methods have been
  * implemented by that class or a parent class.
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 
-#ifndef GNSS_SDR_TELEMETRY_DECODER_INTERFACE_H_
-#define GNSS_SDR_TELEMETRY_DECODER_INTERFACE_H_
+#ifndef GNSS_SDR_TELEMETRY_DECODER_INTERFACE_H
+#define GNSS_SDR_TELEMETRY_DECODER_INTERFACE_H
 
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
+
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup GNSS_Block_Interfaces
+ * \{ */
+
 
 /*!
  * \brief This abstract class represents an interface to a navigation GNSS block.
@@ -52,8 +44,11 @@ class TelemetryDecoderInterface : public GNSSBlockInterface
 {
 public:
     virtual void reset() = 0;
-    virtual void set_satellite(Gnss_Satellite sat) = 0;
+    virtual void set_satellite(const Gnss_Satellite& sat) = 0;
     virtual void set_channel(int channel) = 0;
 };
 
-#endif /* GNSS_SDR_TELEMETRY_DECODER_INTERFACE_H_ */
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_TELEMETRY_DECODER_INTERFACE_H

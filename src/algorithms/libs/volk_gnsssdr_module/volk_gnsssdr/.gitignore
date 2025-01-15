@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2011 Carles Fernandez-Prades <carles.fernandez(at)cttc.es>
+*~
+*.pyc
+*.pyo
+*.swp
+/*build*/
+/archives/
+/.DS_Store
+/gen/volk_gnsssdr_arch_defs.py
+/html/
+/out/
+.project
+.cproject
+.vagrant/
+.vscode/
+.vs/
+

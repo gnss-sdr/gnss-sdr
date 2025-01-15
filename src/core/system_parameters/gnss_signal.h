@@ -4,36 +4,30 @@
  * \author
  *  Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *  Javier Arribas, 2012. jarribas(at)cttc.es
- * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * -----------------------------------------------------------------------------
  *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GNSS_SIGNAL_H_
-#define GNSS_SDR_GNSS_SIGNAL_H_
+#ifndef GNSS_SDR_GNSS_SIGNAL_H
+#define GNSS_SDR_GNSS_SIGNAL_H
 
 #include "gnss_satellite.h"
+#include <ostream>
 #include <string>
+
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 
 /*!
  * \brief This class represents a GNSS signal.
@@ -42,17 +36,23 @@
  */
 class Gnss_Signal
 {
-private:
-    Gnss_Satellite satellite;
-    std::string signal;
 public:
-    Gnss_Signal();
+    Gnss_Signal() = default;
+    explicit Gnss_Signal(const std::string& signal_);
     Gnss_Signal(const Gnss_Satellite& satellite_, const std::string& signal_);
-    ~Gnss_Signal();
-    std::string get_signal_str() const; //!<  Get the satellite signal {"1C" for GPS L1 C/A, "2S" for GPS L2C (M), "1B" for Galileo E1B, "5X" for Galileo E5a}
-    Gnss_Satellite get_satellite() const;    //!< Get the Gnss_Satellite associated to the signal
-    friend bool operator== (const Gnss_Signal &, const Gnss_Signal &);    //!< operator== for comparison
-    friend std::ostream& operator<<(std::ostream &, const Gnss_Signal &); //!< operator<< for pretty printing
+    ~Gnss_Signal() = default;
+    std::string get_signal_str() const;    //!< Get the satellite signal {"1C" for GPS L1 C/A, "2S" for GPS L2C (M), "L5" for GPS L5, "1G" for GLONASS L1 C/A, "1B" for Galileo E1B, "5X" for Galileo E5a.
+    Gnss_Satellite get_satellite() const;  //!< Get the Gnss_Satellite associated to the signal
+
+    friend bool operator==(const Gnss_Signal& /*sig1*/, const Gnss_Signal& /*sig2*/);    //!< operator== for comparison
+    friend std::ostream& operator<<(std::ostream& /*out*/, const Gnss_Signal& /*sig*/);  //!< operator<< for pretty printing
+
+private:
+    Gnss_Satellite satellite{};
+    std::string signal{};
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GNSS_SIGNAL_H

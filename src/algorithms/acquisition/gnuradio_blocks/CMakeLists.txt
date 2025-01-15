@@ -1,25 +1,12 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
-#
+# GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# GNSS-SDR is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GNSS-SDR is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
-#
+# SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-License-Identifier: BSD-3-Clause
 
 
 set(ACQ_GR_BLOCKS_SOURCES
-    pcps_acquisition_cc.cc
-    pcps_multithread_acquisition_cc.cc
+    pcps_acquisition.cc
     pcps_assisted_acquisition_cc.cc
     pcps_acquisition_fine_doppler_cc.cc
     pcps_tong_acquisition_cc.cc
@@ -27,35 +14,117 @@ set(ACQ_GR_BLOCKS_SOURCES
     pcps_quicksync_acquisition_cc.cc
     galileo_pcps_8ms_acquisition_cc.cc
     galileo_e5a_noncoherent_iq_acquisition_caf_cc.cc
-) 
-    
-if(OPENCL_FOUND)
-    set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_opencl_acquisition_cc.cc)
-endif(OPENCL_FOUND)
-
-include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
+set(ACQ_GR_BLOCKS_HEADERS
+    pcps_acquisition.h
+    pcps_assisted_acquisition_cc.h
+    pcps_acquisition_fine_doppler_cc.h
+    pcps_tong_acquisition_cc.h
+    pcps_cccwsr_acquisition_cc.h
+    pcps_quicksync_acquisition_cc.h
+    galileo_pcps_8ms_acquisition_cc.h
+    galileo_e5a_noncoherent_iq_acquisition_caf_cc.h
+)
 
-if(OPENCL_FOUND)
-    include_directories( ${OPENCL_INCLUDE_DIRS} )
-    if(OS_IS_MACOSX)
-         set(OPT_LIBRARIES ${OPT_LIBRARIES} "-framework OpenCL") 
-    else(OS_IS_MACOSX)
-         set(OPT_LIBRARIES ${OPT_LIBRARIES} ${OPENCL_LIBRARIES})
-    endif(OS_IS_MACOSX)
-endif(OPENCL_FOUND)
+if(ENABLE_FPGA)
+    set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_acquisition_fpga.cc)
+    set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_acquisition_fpga.h)
+endif()
 
-file(GLOB ACQ_GR_BLOCKS_HEADERS "*.h")
-add_library(acq_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
-source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS}) 
-target_link_libraries(acq_gr_blocks gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES} ${OPT_LIBRARIES})
+if(ENABLE_OPENCL)
+    set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_opencl_acquisition_cc.cc)
+    set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_opencl_acquisition_cc.h)
+endif()
 
+list(SORT ACQ_GR_BLOCKS_HEADERS)
+list(SORT ACQ_GR_BLOCKS_SOURCES)
+
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(acquisition_gr_blocks STATIC)
+    target_sources(acquisition_gr_blocks
+        PRIVATE
+            ${ACQ_GR_BLOCKS_SOURCES}
+        PUBLIC
+            ${ACQ_GR_BLOCKS_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS})
+    add_library(acquisition_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
+endif()
+
+target_link_libraries(acquisition_gr_blocks
+    PUBLIC
+        algorithms_libs
+        acquisition_libs
+        channel_libs
+        core_system_parameters
+        Armadillo::armadillo
+        Gnuradio::runtime
+        Gnuradio::fft
+        Volk::volk
+        Volkgnsssdr::volkgnsssdr
+    PRIVATE
+        Matio::matio
+)
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(acquisition_gr_blocks PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(acquisition_gr_blocks PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(acquisition_gr_blocks PRIVATE absl::flags absl::log)
+endif()
+
+target_include_directories(acquisition_gr_blocks
+    PRIVATE
+        ${GNSSSDR_SOURCE_DIR}/src/core/receiver
+)
+
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(acquisition_gr_blocks
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
+if(ENABLE_ARMA_NO_DEBUG)
+    target_compile_definitions(acquisition_gr_blocks
+        PUBLIC -DARMA_NO_BOUND_CHECKING=1
+    )
+endif()
+
+if(has_span)
+    target_compile_definitions(acquisition_gr_blocks
+        PRIVATE -DHAS_STD_SPAN=1
+    )
+endif()
+
+if(ENABLE_OPENCL)
+    target_link_libraries(acquisition_gr_blocks PUBLIC OpenCL::OpenCL)
+    target_include_directories(acquisition_gr_blocks
+        PUBLIC
+            ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs/opencl
+    )
+endif()
+
+if(VOLK_VERSION)
+    if(VOLK_VERSION VERSION_GREATER 3.0.99)
+        target_compile_definitions(acquisition_gr_blocks
+            PRIVATE -DVOLK_EQUAL_OR_GREATER_31=1
+        )
+    endif()
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(acquisition_gr_blocks
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET acquisition_gr_blocks
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${GNSSSDR_SOURCE_DIR}/src/algorithms/libs/opencl>
+)

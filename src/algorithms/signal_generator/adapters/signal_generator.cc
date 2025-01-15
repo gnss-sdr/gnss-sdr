@@ -4,61 +4,57 @@
  * \author Marc Molina, 2013. marc.molina.pena@gmail.com
  *
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 
 #include "signal_generator.h"
-#include <glog/logging.h>
-#include "configuration_interface.h"
-#include "Galileo_E1.h"
+#include "Beidou_B1I.h"
+#include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
+#include "Galileo_E1.h"
 #include "Galileo_E5a.h"
+#include "Galileo_E5b.h"
+#include "Galileo_E6.h"
+#include "configuration_interface.h"
+#include <cstdint>
+#include <utility>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
-using google::LogMessage;
-
-SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue) :
-        role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+SignalGenerator::SignalGenerator(const ConfigurationInterface* configuration,
+    const std::string& role, unsigned int in_stream,
+    unsigned int out_stream,
+    Concurrent_Queue<pmt::pmt_t>* queue __attribute__((unused))) : role_(role),
+                                                                   in_stream_(in_stream),
+                                                                   out_stream_(out_stream),
+                                                                   dump_(configuration->property(role + ".dump", false))
 {
-    std::string default_item_type = "gr_complex";
-    std::string default_dump_file = "./data/gen_source.dat";
-    std::string default_system = "G";
-    std::string default_signal = "1C";
+    const std::string default_item_type("gr_complex");
+    const std::string default_dump_file("./data/gen_source.dat");
+    const std::string default_system("G");
+    const std::string default_signal("1C");
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-    unsigned int fs_in = configuration->property("SignalSource.fs_hz", 4e6);
-    bool data_flag = configuration->property("SignalSource.data_flag", false);
-    bool noise_flag = configuration->property("SignalSource.noise_flag", false);
-    float BW_BB = configuration->property("SignalSource.BW_BB", 1.0);
-    unsigned int num_satellites = configuration->property("SignalSource.num_satellites", 1);
+    const unsigned int fs_in = configuration->property("SignalSource.fs_hz", static_cast<unsigned>(4e6));
+    const bool data_flag = configuration->property("SignalSource.data_flag", false);
+    const bool noise_flag = configuration->property("SignalSource.noise_flag", false);
+    const float BW_BB = configuration->property("SignalSource.BW_BB", static_cast<float>(1.0));
+    const unsigned int num_satellites = configuration->property("SignalSource.num_satellites", 1);
 
     std::vector<std::string> signal1;
     std::vector<std::string> system;
@@ -67,6 +63,14 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
     std::vector<float> doppler_Hz;
     std::vector<unsigned int> delay_chips;
     std::vector<unsigned int> delay_sec;
+
+    signal1.reserve(num_satellites);
+    system.reserve(num_satellites);
+    PRN.reserve(num_satellites);
+    CN0_dB.reserve(num_satellites);
+    doppler_Hz.reserve(num_satellites);
+    delay_chips.reserve(num_satellites);
+    delay_sec.reserve(num_satellites);
 
     for (unsigned int sat_idx = 0; sat_idx < num_satellites; sat_idx++)
         {
@@ -84,31 +88,51 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
     // If there is only GPS signal (Galileo signal not present) -> vector duration = 1 ms
     unsigned int vector_length = 0;
     if (std::find(system.begin(), system.end(), "E") != system.end())
-    {
-	if (signal1[0].at(0)=='5')
-	    {
-		vector_length = round((float) fs_in / (Galileo_E5a_CODE_CHIP_RATE_HZ
-			/ Galileo_E5a_CODE_LENGTH_CHIPS));
-	    }
-	else
-	    {
-		vector_length = round((float)fs_in / (Galileo_E1_CODE_CHIP_RATE_HZ
-			/ Galileo_E1_B_CODE_LENGTH_CHIPS))
-                                	  * Galileo_E1_C_SECONDARY_CODE_LENGTH;
-	    }
-    }
+        {
+            if (signal1[0].at(0) == '5')
+                {
+                    vector_length = static_cast<unsigned int>(round(static_cast<float>(fs_in) / (GALILEO_E5A_CODE_CHIP_RATE_CPS / GALILEO_E5A_CODE_LENGTH_CHIPS)));
+                }
+            else if (signal1[0].at(0) == '7')
+                {
+                    vector_length = static_cast<unsigned int>(round(static_cast<float>(fs_in) / (GALILEO_E5B_CODE_CHIP_RATE_CPS / GALILEO_E5B_CODE_LENGTH_CHIPS)));
+                }
+            else if (signal1[0].at(1) == '6')
+                {
+                    vector_length = static_cast<unsigned int>(round(static_cast<float>(fs_in) / (GALILEO_E6_C_CODE_CHIP_RATE_CPS / GALILEO_E6_C_CODE_LENGTH_CHIPS)) * GALILEO_E6_C_SECONDARY_CODE_LENGTH_CHIPS);
+                }
+            else
+                {
+                    vector_length = static_cast<unsigned int>(round(static_cast<float>(fs_in) / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)) * GALILEO_E1_C_SECONDARY_CODE_LENGTH);
+                }
+        }
     else if (std::find(system.begin(), system.end(), "G") != system.end())
-    {
-        vector_length = round((float)fs_in
-                 / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
-    }
+        {
+            vector_length = static_cast<unsigned int>(round(static_cast<float>(fs_in) / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+        }
+    else if (std::find(system.begin(), system.end(), "R") != system.end())
+        {
+            if (signal1[0].at(0) == '1')
+                {
+                    vector_length = static_cast<unsigned int>(round(static_cast<float>(fs_in) / (GLONASS_L1_CA_CODE_RATE_CPS / GLONASS_L1_CA_CODE_LENGTH_CHIPS)));
+                }
+            else
+                {
+                    vector_length = static_cast<unsigned int>(round(static_cast<float>(fs_in) / (GLONASS_L2_CA_CODE_RATE_CPS / GLONASS_L2_CA_CODE_LENGTH_CHIPS)));
+                }
+        }
 
-    if (item_type_.compare("gr_complex") == 0)
+    else if (std::find(system.begin(), system.end(), "B") != system.end())
+        {
+            vector_length = static_cast<unsigned int>(round(static_cast<float>(fs_in) / (BEIDOU_B1I_CODE_RATE_CPS / BEIDOU_B1I_CODE_LENGTH_CHIPS)));
+        }
+
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             DLOG(INFO) << "Item size " << item_size_;
             gen_source_ = signal_make_generator_c(signal1, system, PRN, CN0_dB, doppler_Hz, delay_chips, delay_sec,
-                                             data_flag, noise_flag, fs_in, vector_length, BW_BB);
+                data_flag, noise_flag, fs_in, vector_length, BW_BB);
 
             vector_to_stream_ = gr::blocks::vector_to_stream::make(item_size_, vector_length);
 
@@ -119,7 +143,7 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type for resampler";
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
 
     if (dump_)
@@ -131,39 +155,42 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
         {
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
+    if (in_stream_ > 0)
+        {
+            LOG(ERROR) << "A signal source does not have an input stream";
+        }
+    if (out_stream_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
-
-
-SignalGenerator::~SignalGenerator()
-{}
 
 
 void SignalGenerator::connect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             top_block->connect(gen_source_, 0, vector_to_stream_, 0);
             DLOG(INFO) << "connected gen_source to vector_to_stream";
 
             if (dump_)
-            {
-                top_block->connect(vector_to_stream_, 0, file_sink_, 0);
-                DLOG(INFO) << "connected vector_to_stream_ to file sink";
-            }
-
+                {
+                    top_block->connect(vector_to_stream_, 0, file_sink_, 0);
+                    DLOG(INFO) << "connected vector_to_stream_ to file sink";
+                }
         }
 }
 
 
 void SignalGenerator::disconnect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             top_block->disconnect(gen_source_, 0, vector_to_stream_, 0);
             if (dump_)
-            {
-                top_block->disconnect(vector_to_stream_, 0, file_sink_, 0);
-            }
+                {
+                    top_block->disconnect(vector_to_stream_, 0, file_sink_, 0);
+                }
         }
 }
 

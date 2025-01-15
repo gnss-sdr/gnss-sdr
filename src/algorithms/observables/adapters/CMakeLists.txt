@@ -1,41 +1,53 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
-#
+# GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# GNSS-SDR is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GNSS-SDR is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
-#
+# SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-License-Identifier: BSD-3-Clause
 
-set(OBS_ADAPTER_SOURCES 
-	gps_l1_ca_observables.cc
-	galileo_e1_observables.cc
-	hybrid_observables.cc
-	mixed_observables.cc
+
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(obs_adapters STATIC)
+    target_sources(obs_adapters
+        PRIVATE
+            hybrid_observables.cc
+        PUBLIC
+            hybrid_observables.h
+    )
+else()
+    source_group(Headers FILES hybrid_observables.h)
+    add_library(obs_adapters hybrid_observables.cc hybrid_observables.h)
+endif()
+
+target_include_directories(obs_adapters
+    PUBLIC
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
-include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/observables/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+target_link_libraries(obs_adapters
+    PUBLIC
+        obs_gr_blocks
+        core_system_parameters
+    PRIVATE
+        gnss_sdr_flags
 )
 
-file(GLOB OBS_ADAPTER_HEADERS "*.h")
-add_library(obs_adapters ${OBS_ADAPTER_SOURCES} ${OBS_ADAPTER_HEADERS})
-source_group(Headers FILES ${OBS_ADAPTER_HEADERS})
-target_link_libraries(obs_adapters obs_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES})
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(obs_adapters PRIVATE Glog::glog)
+    target_compile_definitions(obs_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(obs_adapters PRIVATE absl::flags absl::log)
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(obs_adapters
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET obs_adapters
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

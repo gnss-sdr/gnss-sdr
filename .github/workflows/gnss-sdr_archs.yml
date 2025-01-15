@@ -1,0 +1,79 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2023 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+
+name: Run gnss-sdr in non-x86 archs
+
+on:
+  push:
+    branches:
+      - "**-archs"
+      - main
+  workflow_dispatch:
+
+jobs:
+  gnss-sdr-non-x86:
+    runs-on: ubuntu-latest
+    name: ${{ matrix.distro }} ${{ matrix.arch }} ${{ matrix.compiler.name }}
+
+    # Run steps on a matrix of archs.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: aarch64
+            distro: ubuntu22.04
+            compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
+          - arch: aarch64
+            distro: ubuntu22.04
+            compiler: { name: clang-14, cc: clang-14, cxx: clang++-14 }
+          - arch: armv7
+            distro: ubuntu22.04
+            compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
+          - arch: riscv64
+            distro: ubuntu22.04
+            compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
+          # - arch: ppc64le
+          #   distro: ubuntu22.04
+          #   compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
+          # - arch: s390x
+          #   distro: ubuntu22.04
+          #   compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: uraimo/run-on-arch-action@v2.7.1
+        name: Test in non-x86 container
+        continue-on-error: ${{ contains(fromJson('["ppc64le", "s390x"]'), matrix.arch) }}
+        id: test
+        with:
+          arch: ${{ matrix.arch }}
+          distro: ${{ matrix.distro }}
+          githubToken: ${{ github.token }} # Not required, but speeds up builds
+          setup: |
+            mkdir -p "${PWD}/testing"
+          dockerRunArgs: |
+            --volume "${PWD}:/gnss-sdr"
+          env: |
+            CC: ${{ matrix.compiler.cc }}
+            CXX: ${{ matrix.compiler.cxx }}
+          shell: /bin/sh
+          install: |
+            apt-get update -q -y
+            apt-get install -q -y ${{ matrix.compiler.name }} git ninja-build cmake \
+            libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev \
+            libboost-thread-dev libboost-chrono-dev libboost-serialization-dev \
+            liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev \
+            liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev \
+            libgnutls-openssl-dev libmatio-dev googletest protobuf-compiler libprotobuf-dev \
+            python3-mako liborc-0.4-dev
+          run: |
+            git config --global --add safe.directory /gnss-sdr
+            cd /gnss-sdr
+            cd testing
+            mkdir install
+            cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON -DCMAKE_INSTALL_PREFIX=/gnss-sdr/testing/install -DENABLE_INSTALL_TESTS=ON ..
+            echo "Build with $(nproc) thread(s)"
+            make -j$(nproc)
+            make install
+            cd install/bin
+            ./position_test

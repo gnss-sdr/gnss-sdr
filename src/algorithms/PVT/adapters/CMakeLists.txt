@@ -1,41 +1,67 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
-#
+# GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# GNSS-SDR is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GNSS-SDR is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
-#
+# SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-License-Identifier: BSD-3-Clause
 
-set(PVT_ADAPTER_SOURCES 
-	gps_l1_ca_pvt.cc
-	galileo_e1_pvt.cc
-	hybrid_pvt.cc
+
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(pvt_adapters STATIC)
+    target_sources(pvt_adapters
+        PRIVATE
+            rtklib_pvt.cc
+        PUBLIC
+            rtklib_pvt.h
+    )
+else()
+    source_group(Headers FILES rtklib_pvt.h)
+    add_library(pvt_adapters rtklib_pvt.cc rtklib_pvt.h)
+endif()
+
+target_link_libraries(pvt_adapters
+    PUBLIC
+        pvt_gr_blocks
+    PRIVATE
+        gnss_sdr_flags
+        pvt_libs
 )
 
-include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-     ${ARMADILLO_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(pvt_adapters PRIVATE Glog::glog)
+    target_compile_definitions(pvt_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(pvt_adapters PRIVATE absl::flags absl::log)
+endif()
+
+target_include_directories(pvt_adapters
+    PUBLIC
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
-file(GLOB PVT_ADAPTER_HEADERS "*.h")
-add_library(pvt_adapters ${PVT_ADAPTER_SOURCES} ${PVT_ADAPTER_HEADERS})
-source_group(Headers FILES ${PVT_ADAPTER_HEADERS})
-target_link_libraries(pvt_adapters pvt_gr_blocks ${ARMADILLO_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES})
+if((NOT (CMAKE_VERSION VERSION_LESS "3.1")) AND NOT (CMAKE_CXX_STANDARD VERSION_LESS 17))
+    target_compile_definitions(pvt_adapters
+        PRIVATE
+            -DUSE_STD_COMMON_FACTOR=1
+    )
+else()
+    if(USE_OLD_BOOST_MATH_COMMON_FACTOR)
+        target_compile_definitions(pvt_adapters
+            PRIVATE
+                -DUSE_OLD_BOOST_MATH_COMMON_FACTOR=1
+        )
+    endif()
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(pvt_adapters
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET pvt_adapters
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

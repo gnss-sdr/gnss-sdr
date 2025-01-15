@@ -1,48 +1,36 @@
 /*!
- * \file galileo_e5a_dll_fll_pll_tracking.h
+ * \file galileo_e5a_dll_pll_tracking.h
  * \brief Adapts a code DLL + carrier PLL
  *  tracking block to a TrackingInterface for Galileo E5a signals
- * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  Galileo E5a data and pilot Signals
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
  * \based on work from:
- * 		<ul>
+ *          <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *          </ul>
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_H_
-#define GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_H_
+#ifndef GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_H
+#define GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_H
 
-#include <string>
-#include <gnuradio/msg_queue.h>
+#include "dll_pll_veml_tracking.h"
 #include "tracking_interface.h"
-#include "galileo_e5a_dll_pll_tracking_cc.h"
+#include <string>
+
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_adapters
+ * \{ */
 
 
 class ConfigurationInterface;
@@ -53,63 +41,63 @@ class ConfigurationInterface;
 class GalileoE5aDllPllTracking : public TrackingInterface
 {
 public:
+    GalileoE5aDllPllTracking(
+        const ConfigurationInterface* configuration,
+        const std::string& role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
-    GalileoE5aDllPllTracking(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams,
-            boost::shared_ptr<gr::msg_queue> queue);
+    ~GalileoE5aDllPllTracking() = default;
 
-    virtual ~GalileoE5aDllPllTracking();
-
-    std::string role()
+    inline std::string role() override
     {
         return role_;
     }
 
     //! Returns "Galileo_E5a_DLL_PLL_Tracking"
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Galileo_E5a_DLL_PLL_Tracking";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return item_size_;
     }
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
-
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
     /*!
      * \brief Set tracking channel unique ID
      */
-    void set_channel(unsigned int channel);
+    void set_channel(unsigned int channel) override;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
+
+    void start_tracking() override;
 
     /*!
-     * \brief Set tracking channel internal queue
+     * \brief Stop running tracking
      */
-    void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
-
-    void start_tracking();
+    void stop_tracking() override;
 
 private:
-    galileo_e5a_dll_pll_tracking_cc_sptr tracking_;
+    dll_pll_veml_tracking_sptr tracking_sptr_;
+    std::string role_;
     size_t item_size_;
     unsigned int channel_;
-    std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
-    concurrent_queue<int> *channel_internal_queue_;
 };
 
-#endif /* GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_H_ */
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_H

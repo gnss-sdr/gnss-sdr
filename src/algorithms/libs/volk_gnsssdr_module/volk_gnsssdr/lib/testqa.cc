@@ -1,76 +1,155 @@
 /*
- * Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-#include "qa_utils.h"
-#include <volk_gnsssdr/volk_gnsssdr.h>
-#include <boost/test/unit_test.hpp>
+#include "kernel_tests.h"                       // for init_test_list
+#include "qa_utils.h"                           // for volk_gnsssdr_test_case_t, volk_gnsssdr_test_results_t
+#include "volk_gnsssdr/volk_gnsssdr_complex.h"  // for lv_32fc_t
+#include <fstream>                              // IWYU pragma: keep
+#include <iostream>                             // for operator<<, basic_ostream, char...
+#include <map>                                  // for map, map<>::iterator, _Rb_tree_iterator
+#include <sstream>                              // for stringstream
+#include <string>                               // for string, operator<<
+#include <utility>                              // for pair
+#include <vector>                               // for vector
 
-//GNSS-SDR PROTO-KERNELS
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_x2_multiply_8ic, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8u_x2_multiply_8u, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_x2_dot_prod_8ic, 1e-4, 0, 204603, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_s8ic_multiply_8ic, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_conjugate_8ic, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8i_x2_add_8i, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8i_index_max_16u, 3, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8i_accumulator_s8i, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_magnitude_squared_8i, 1e-4, 0, 20462, 1);
+void print_qa_xml(std::vector<volk_gnsssdr_test_results_t> results, unsigned int nfails);
 
-VOLK_RUN_TESTS(volk_gnsssdr_8i_max_s8i, 3, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_64f_accumulator_64f, 3, 0, 20462, 1);
+int main(int argc, char* argv[])
+{
+    bool qa_ret_val = 0;
 
-VOLK_RUN_TESTS(volk_gnsssdr_32fc_convert_16ic, 3, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_32fc_s32f_convert_8ic, 3, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_32fc_convert_8ic, 3, 0, 20462, 1);
+    float def_tol = 1e-6;
+    lv_32fc_t def_scalar = 327.0;
+    int def_iter = 1;
+    int def_vlen = 8111;
+    bool def_benchmark_mode = true;
+    std::string def_kernel_regex = "";
 
-VOLK_RUN_TESTS(volk_gnsssdr_32fc_x5_cw_epl_corr_32fc_x3, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_x5_cw_epl_corr_8ic_x3, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_16ic_x5_cw_epl_corr_32fc_x3, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3, 1e-4, 0, 20462, 1);
+    volk_gnsssdr_test_params_t test_params(def_tol, def_scalar, def_vlen, def_iter,
+        def_benchmark_mode, std::move(def_kernel_regex));
+    std::vector<volk_gnsssdr_test_case_t> test_cases = init_test_list(std::move(test_params));
+    std::vector<volk_gnsssdr_test_results_t> results;
+    if (argc > 1)
+        {
+            std::stringstream ss;
+            ss << argv[1];
+            if (ss.fail())
+                {
+                    std::cerr << "Test name not correctly set.\n";
+                    return 0;
+                }
+            for (unsigned int ii = 0; ii < test_cases.size(); ++ii)
+                {
+                    if (ss.str() == test_cases[ii].name())
+                        {
+                            volk_gnsssdr_test_case_t test_case = test_cases[ii];
+                            if (run_volk_gnsssdr_tests(test_case.desc(), test_case.kernel_ptr(),
+                                    test_case.name(),
+                                    test_case.test_parameters(), &results,
+                                    test_case.puppet_master_name()))
+                                {
+                                    return 1;
+                                }
+                            else
+                                {
+                                    return 0;
+                                }
+                        }
+                }
+            std::cerr << "Did not run a test for kernel: " << std::string(argv[1]) << " !\n";
+            return 0;
+        }
+    else
+        {
+            std::vector<std::string> qa_failures;
+            // Test every kernel reporting failures when they occur
+            for (unsigned int ii = 0; ii < test_cases.size(); ++ii)
+                {
+                    bool qa_result = false;
+                    volk_gnsssdr_test_case_t test_case = test_cases[ii];
+                    try
+                        {
+                            qa_result = run_volk_gnsssdr_tests(test_case.desc(), test_case.kernel_ptr(), test_case.name(),
+                                test_case.test_parameters(), &results, test_case.puppet_master_name());
+                        }
+                    catch (...)
+                        {
+                            // TODO: what exceptions might we need to catch and how do we handle them?
+                            std::cerr << "Exception found on kernel: " << test_case.name() << '\n';
+                            qa_result = false;
+                        }
 
-VOLK_RUN_TESTS(volk_gnsssdr_32fc_x7_cw_vepl_corr_32fc_x5, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_16ic_x7_cw_vepl_corr_32fc_x5, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_x7_cw_vepl_corr_safe_32fc_x5, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_x7_cw_vepl_corr_TEST_32fc_x5, 1e-4, 0, 20462, 1);
+                    if (qa_result)
+                        {
+                            std::cerr << "Failure on " << test_case.name() << '\n';
+                            qa_failures.push_back(test_case.name());
+                        }
+                }
 
-VOLK_RUN_TESTS(volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_s32f_x2_update_local_carrier_32fc, 1e-4, 0, 20462, 1);
+            // Generate XML results
+            print_qa_xml(std::move(results), qa_failures.size());
 
+            // Summarize QA results
+            std::cerr << "Kernel QA finished: " << qa_failures.size() << " failures out of "
+                      << test_cases.size() << " tests.\n";
+            if (qa_failures.size() > 0)
+                {
+                    std::cerr << "The following kernels failed QA:\n";
+                    for (unsigned int ii = 0; ii < qa_failures.size(); ++ii)
+                        {
+                            std::cerr << "    " << qa_failures[ii] << '\n';
+                        }
+                    qa_ret_val = 1;
+                }
+        }
 
+    return qa_ret_val;
+}
 
+/*
+ * This function prints qa results as XML output similar to output
+ * from Junit. For reference output see http://llg.cubic.org/docs/junit/
+ */
+void print_qa_xml(std::vector<volk_gnsssdr_test_results_t> results, unsigned int nfails)
+{
+    std::ofstream qa_file;
+    qa_file.open(".unittest/kernels.xml");
 
+    qa_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    qa_file << "<testsuites name=\"kernels\" "
+            << "tests=\"" << results.size() << "\" "
+            << "failures=\"" << nfails << "\" id=\"1\">\n";
 
+    // Results are in a vector by kernel. Each element has a result
+    // map containing time and arch name with test result
+    for (unsigned int ii = 0; ii < results.size(); ++ii)
+        {
+            volk_gnsssdr_test_results_t result = results[ii];
+            qa_file << "  <testsuite name=\"" << result.name << "\">\n";
 
+            std::map<std::string, volk_gnsssdr_test_time_t>::iterator kernel_time_pair;
+            for (kernel_time_pair = result.results.begin(); kernel_time_pair != result.results.end(); ++kernel_time_pair)
+                {
+                    volk_gnsssdr_test_time_t test_time = kernel_time_pair->second;
+                    qa_file << "    <testcase name=\"" << test_time.name << "\" "
+                            << "classname=\"" << result.name << "\" "
+                            << "time=\"" << test_time.time << "\">\n";
+                    if (!test_time.pass)
+                        qa_file << "      <failure "
+                                << "message=\"fail on arch " << test_time.name << "\">"
+                                << "</failure>\n";
+                    qa_file << "    </testcase>\n";
+                }
+            qa_file << "  </testsuite>\n";
+        }
 
-//VOLK_RUN_TESTS(volk_gnsssdr_16i_x5_add_quad_16i_x4, 1e-4, 2046, 10000);
-//VOLK_RUN_TESTS(volk_gnsssdr_16i_branch_4_state_8, 1e-4, 2046, 10000);
-//VOLK_RUN_TESTS(volk_gnsssdr_16i_max_star_16i, 0, 0, 20462, 10000);
-//VOLK_RUN_TESTS(volk_gnsssdr_16i_max_star_horizontal_16i, 0, 0, 20462, 10000);
-//VOLK_RUN_TESTS(volk_gnsssdr_16i_permute_and_scalar_add, 1e-4, 0, 2046, 1000);
-//VOLK_RUN_TESTS(volk_gnsssdr_16i_x4_quad_max_star_16i, 1e-4, 0, 2046, 1000);
-//VOLK_RUN_TESTS(volk_gnsssdr_16i_32fc_dot_prod_32fc, 1e-4, 0, 204602, 1);
-//VOLK_RUN_TESTS(volk_gnsssdr_32fc_x2_conjugate_dot_prod_32fc, 1e-4, 0, 2046, 10000);
-//VOLK_RUN_TESTS(volk_gnsssdr_32fc_s32f_x2_power_spectral_density_32f, 1e-4, 2046, 10000);
-//VOLK_RUN_TESTS(volk_gnsssdr_32f_s32f_32f_fm_detect_32f, 1e-4, 2046, 10000);
-//VOLK_RUN_TESTS(volk_gnsssdr_32u_popcnt, 0, 0, 2046, 10000);
-//VOLK_RUN_TESTS(volk_gnsssdr_64u_popcnt, 0, 0, 2046, 10000);
+    qa_file << "</testsuites>\n";
+    qa_file.close();
+}

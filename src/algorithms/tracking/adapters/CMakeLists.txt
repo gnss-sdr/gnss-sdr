@@ -1,48 +1,155 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
-#
+# GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# GNSS-SDR is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GNSS-SDR is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
-#
+# SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-License-Identifier: BSD-3-Clause
 
+set(OPT_TRACKING_ADAPTERS_SOURCES "")
+set(OPT_TRACKING_ADAPTERS_HEADERS "")
+if(ENABLE_CUDA)
+    set(OPT_TRACKING_ADAPTERS_SOURCES
+        gps_l1_ca_dll_pll_tracking_gpu.cc
+    )
+    set(OPT_TRACKING_ADAPTERS_HEADERS
+        gps_l1_ca_dll_pll_tracking_gpu.h
+    )
+endif()
 
-set(TRACKING_ADAPTER_SOURCES 
-     galileo_e1_dll_pll_veml_tracking.cc
-     galileo_volk_e1_dll_pll_veml_tracking.cc
-     galileo_e1_tcp_connector_tracking.cc
-     gps_l1_ca_dll_fll_pll_tracking.cc
-     gps_l1_ca_dll_pll_optim_tracking.cc
-     gps_l1_ca_dll_pll_tracking.cc
-     gps_l1_ca_tcp_connector_tracking.cc
-     galileo_e5a_dll_pll_tracking.cc
-     gps_l2_m_dll_pll_tracking.cc
+if(ENABLE_FPGA)
+    set(OPT_TRACKING_ADAPTERS_SOURCES
+        ${OPT_TRACKING_ADAPTERS_SOURCES}
+        gps_l1_ca_dll_pll_tracking_fpga.cc
+        gps_l2_m_dll_pll_tracking_fpga.cc
+        galileo_e1_dll_pll_veml_tracking_fpga.cc
+        galileo_e5a_dll_pll_tracking_fpga.cc
+        gps_l5_dll_pll_tracking_fpga.cc
+    )
+    set(OPT_TRACKING_ADAPTERS_HEADERS
+        ${OPT_TRACKING_ADAPTERS_HEADERS}
+        gps_l1_ca_dll_pll_tracking_fpga.h
+        gps_l2_m_dll_pll_tracking_fpga.h
+        galileo_e1_dll_pll_veml_tracking_fpga.h
+        galileo_e5a_dll_pll_tracking_fpga.h
+        gps_l5_dll_pll_tracking_fpga.h
+    )
+endif()
+
+set(TRACKING_ADAPTER_SOURCES
+    galileo_e1_dll_pll_veml_tracking.cc
+    galileo_e1_tcp_connector_tracking.cc
+    gps_l1_ca_dll_pll_tracking.cc
+    gps_l1_ca_tcp_connector_tracking.cc
+    galileo_e5a_dll_pll_tracking.cc
+    galileo_e5b_dll_pll_tracking.cc
+    galileo_e6_dll_pll_tracking.cc
+    gps_l2_m_dll_pll_tracking.cc
+    glonass_l1_ca_dll_pll_tracking.cc
+    glonass_l1_ca_dll_pll_c_aid_tracking.cc
+    gps_l1_ca_gaussian_tracking.cc
+    gps_l5_dll_pll_tracking.cc
+    glonass_l2_ca_dll_pll_tracking.cc
+    glonass_l2_ca_dll_pll_c_aid_tracking.cc
+    beidou_b1i_dll_pll_tracking.cc
+    beidou_b3i_dll_pll_tracking.cc
+    gps_l1_ca_kf_tracking.cc
+    ${OPT_TRACKING_ADAPTERS_SOURCES}
 )
 
-include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+set(TRACKING_ADAPTER_HEADERS
+    galileo_e1_dll_pll_veml_tracking.h
+    galileo_e1_tcp_connector_tracking.h
+    gps_l1_ca_dll_pll_tracking.h
+    gps_l1_ca_tcp_connector_tracking.h
+    galileo_e5a_dll_pll_tracking.h
+    galileo_e5b_dll_pll_tracking.h
+    galileo_e6_dll_pll_tracking.h
+    gps_l2_m_dll_pll_tracking.h
+    glonass_l1_ca_dll_pll_tracking.h
+    glonass_l1_ca_dll_pll_c_aid_tracking.h
+    gps_l1_ca_gaussian_tracking.h
+    gps_l5_dll_pll_tracking.h
+    glonass_l2_ca_dll_pll_tracking.h
+    glonass_l2_ca_dll_pll_c_aid_tracking.h
+    beidou_b1i_dll_pll_tracking.h
+    beidou_b3i_dll_pll_tracking.h
+    gps_l1_ca_kf_tracking.h
+    ${OPT_TRACKING_ADAPTERS_HEADERS}
 )
 
-file(GLOB TRACKING_ADAPTER_HEADERS "*.h")
-add_library(tracking_adapters ${TRACKING_ADAPTER_SOURCES} ${TRACKING_ADAPTER_HEADERS})
-source_group(Headers FILES ${TRACKING_ADAPTER_HEADERS})
-target_link_libraries(tracking_adapters tracking_gr_blocks gnss_sp_libs)
+list(SORT TRACKING_ADAPTER_HEADERS)
+list(SORT TRACKING_ADAPTER_SOURCES)
+
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(tracking_adapters STATIC)
+    target_sources(tracking_adapters
+        PRIVATE
+            ${TRACKING_ADAPTER_SOURCES}
+        PUBLIC
+            ${TRACKING_ADAPTER_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${TRACKING_ADAPTER_HEADERS})
+    add_library(tracking_adapters
+        ${TRACKING_ADAPTER_SOURCES}
+        ${TRACKING_ADAPTER_HEADERS}
+    )
+endif()
+
+target_link_libraries(tracking_adapters
+    PUBLIC
+        tracking_gr_blocks
+    PRIVATE
+        gnss_sdr_flags
+)
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(tracking_adapters PRIVATE Glog::glog)
+    target_compile_definitions(tracking_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(tracking_adapters PRIVATE absl::flags absl::log)
+endif()
+
+target_include_directories(tracking_adapters
+    PUBLIC
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
+)
+
+if(ENABLE_FPGA)
+    target_link_libraries(tracking_adapters
+        PRIVATE
+            core_libs
+    )
+endif()
+
+if(ENABLE_CUDA)
+    if(CMAKE_VERSION VERSION_GREATER 3.11)
+        target_include_directories(tracking_adapters
+            PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+        )
+    else()
+        target_link_libraries(tracking_adapters
+            PUBLIC ${CUDA_LIBRARIES}
+        )
+        target_include_directories(tracking_adapters
+            PUBLIC ${CUDA_INCLUDE_DIRS}
+        )
+    endif()
+    set_target_properties(tracking_adapters PROPERTIES
+        CUDA_SEPARABLE_COMPILATION ON
+        POSITION_INDEPENDENT_CODE ON
+    )
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(tracking_adapters
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET tracking_adapters
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

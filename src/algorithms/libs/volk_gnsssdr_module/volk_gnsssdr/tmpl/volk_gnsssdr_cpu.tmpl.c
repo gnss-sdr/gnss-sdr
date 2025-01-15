@@ -1,151 +1,79 @@
-/* Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
- *
+/*
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  */
 
+// clang-format off
 #include <volk_gnsssdr/volk_gnsssdr_cpu.h>
 #include <volk_gnsssdr/volk_gnsssdr_config_fixed.h>
 #include <stdlib.h>
+#include <string.h>
+// clang-format on
+
+#if defined(VOLK_CPU_FEATURES)
+#include "cpu_features_macros.h"
+#if defined(CPU_FEATURES_ARCH_X86)
+#include "cpuinfo_x86.h"
+#elif defined(CPU_FEATURES_ARCH_ARM)
+#include "cpuinfo_arm.h"
+#elif defined(CPU_FEATURES_ARCH_AARCH64)
+#include "cpuinfo_aarch64.h"
+#elif defined(CPU_FEATURES_ARCH_MIPS)
+#include "cpuinfo_mips.h"
+#elif defined(CPU_FEATURES_ARCH_PPC)
+#include "cpuinfo_ppc.h"
+#elif defined(CPU_FEATURES_ARCH_S390X)
+#include "cpuinfo_s390x.h"
+#elif defined(CPU_FEATURES_ARCH_RISCV)
+#include "cpuinfo_riscv.h"
+#endif
+
+// This is required for MSVC
+#if defined(__cplusplus)
+using namespace cpu_features;
+#endif
+#endif
 
 struct VOLK_CPU volk_gnsssdr_cpu;
 
-#if defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64)
-    #define VOLK_CPU_x86
+// clang-format off
+
+%for arch in archs:
+static int i_can_has_${arch.name} (void) {
+    %for check, params in arch.checks:
+        %if "neon" in arch.name:
+#if defined(CPU_FEATURES_ARCH_ARM)
+    if (GetArmInfo().features.${check} == 0){ return 0; }
 #endif
-
-#if defined(VOLK_CPU_x86)
-
-//implement get cpuid for gcc compilers using a system or local copy of cpuid.h
-#if defined(__GNUC__)
-    #if defined(HAVE_CPUID_H)
-        #include <cpuid.h>
-    #else
-        #include "gcc_x86_cpuid.h"
-    #endif
-    #define cpuid_x86(op, r) __get_cpuid(op, (unsigned int *)r+0, (unsigned int *)r+1, (unsigned int *)r+2, (unsigned int *)r+3)
-
-    /* Return Intel AVX extended CPU capabilities register.
-     * This function will bomb on non-AVX-capable machines, so
-     * check for AVX capability before executing.
-     */
-    #if ((__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ >= 2) || (__clang_major__ >= 3)) && defined(HAVE_XGETBV)
-    static inline unsigned long long _xgetbv(unsigned int index){
-        unsigned int eax, edx;
-        __asm__ __volatile__("xgetbv" : "=a"(eax), "=d"(edx) : "c"(index));
-        return ((unsigned long long)edx << 32) | eax;
-    }
-    #define __xgetbv() _xgetbv(0)
-    #else
-    #define __xgetbv() 0
-    #endif
-
-//implement get cpuid for MSVC compilers using __cpuid intrinsic
-#elif defined(_MSC_VER) && defined(HAVE_INTRIN_H)
-    #include <intrin.h>
-    #define cpuid_x86(op, r) __cpuid(((int*)r), op)
-
-    #if defined(_XCR_XFEATURE_ENABLED_MASK)
-    #define __xgetbv() _xgetbv(_XCR_XFEATURE_ENABLED_MASK)
-    #else
-    #define __xgetbv() 0
-    #endif
-
-#else
-    #error "A get cpuid for volk_gnsssdr is not available on this compiler..."
-#endif //defined(__GNUC__)
-
-#endif //defined(VOLK_CPU_x86)
-
-static inline unsigned int cpuid_x86_bit(unsigned int reg, unsigned int op, unsigned int bit) {
-#if defined(VOLK_CPU_x86)
-    unsigned int regs[4];
-    cpuid_x86(op, regs);
-    return regs[reg] >> bit & 0x01;
-#else
-    return 0;
+        %elif "mips" in arch.name:
+#if defined(CPU_FEATURES_ARCH_MIPS)
+    if (GetMipsInfo().features.${check} == 0){ return 0; }
 #endif
-}
-
-static inline unsigned int check_extended_cpuid(unsigned int val) {
-#if defined(VOLK_CPU_x86)
-    unsigned int regs[4];
-    cpuid_x86(0x80000000, regs);
-    return regs[0] >= val;
-#else
-    return 0;
+        %elif "ppc" in arch.name:
+#if defined(CPU_FEATURES_ARCH_PPC)
+    if (GetPPCInfo().features.${check} == 0){ return 0; }
 #endif
-}
-
-static inline unsigned int get_avx_enabled(void) {
-#if defined(VOLK_CPU_x86)
-    return __xgetbv() & 0x6;
-#else
-    return 0;
+        %elif "s390x" in arch.name:
+#if defined(CPU_FEATURES_ARCH_S390X)
+    if (GetS390XInfo().features.${check} == 0){ return 0; }
 #endif
-}
-
-//neon detection is linux specific
-#if defined(__arm__) && defined(__linux__)
-    #include <asm/hwcap.h>
-    #include <linux/auxvec.h>
-    #include <stdio.h>
-    #define VOLK_CPU_ARM
+        %elif "riscv" in arch.name:
+#if defined(CPU_FEATURES_ARCH_RISCV)
+    if (GetRiscvInfo().features.${check} == 0){ return 0; }
 #endif
-
-static int has_neon(void){
-#if defined(VOLK_CPU_ARM)
-    FILE *auxvec_f;
-    unsigned long auxvec[2];
-    unsigned int found_neon = 0;
-    auxvec_f = fopen("/proc/self/auxv", "rb");
-    if(!auxvec_f) return 0;
-
-    size_t r = 1;
-    //so auxv is basically 32b of ID and 32b of value
-    //so it goes like this
-    while(!found_neon && r) {
-      r = fread(auxvec, sizeof(unsigned long), 2, auxvec_f);
-      if((auxvec[0] == AT_HWCAP) && (auxvec[1] & HWCAP_NEON))
-        found_neon = 1;
-    }
-
-    fclose(auxvec_f);
-    return found_neon;
-#else
-    return 0;
+        %else:
+#if defined(CPU_FEATURES_ARCH_X86)
+    if (GetX86Info().features.${check} == 0){ return 0; }
 #endif
-}
-
-static int has_ppc(void){
-#ifdef __PPC__
-    return 1;
-#else
-    return 0;
-#endif
-}
-
-#for $arch in $archs
-static int i_can_has_$arch.name (void) {
-    #for $check, $params in $arch.checks
-    if ($(check)($(', '.join($params))) == 0) return 0;
-    #end for
+        %endif
+    %endfor
     return 1;
 }
-
-#end for
+%endfor
 
 #if defined(HAVE_FENV_H)
     #if defined(FE_TONEAREST)
@@ -172,17 +100,18 @@ static int i_can_has_$arch.name (void) {
 #endif
 
 void volk_gnsssdr_cpu_init() {
-    #for $arch in $archs
-    volk_gnsssdr_cpu.has_$arch.name = &i_can_has_$arch.name;
-    #end for
+    %for arch in archs:
+    volk_gnsssdr_cpu.has_${arch.name} = &i_can_has_${arch.name};
+    %endfor
     set_float_rounding();
 }
 
 unsigned int volk_gnsssdr_get_lvarch() {
     unsigned int retval = 0;
     volk_gnsssdr_cpu_init();
-    #for $arch in $archs
-    retval += volk_gnsssdr_cpu.has_$(arch.name)() << LV_$(arch.name.upper());
-    #end for
+    %for arch in archs:
+    retval += volk_gnsssdr_cpu.has_${arch.name}() << LV_${arch.name.upper()};
+    %endfor
     return retval;
 }
+// clang-format on

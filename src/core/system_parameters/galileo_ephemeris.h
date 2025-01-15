@@ -4,143 +4,118 @@
  * \author Javier Arribas, 2013. jarribas(at)cttc.es,
  * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 
-#ifndef GNSS_SDR_GALILEO_EPHEMERIS_H_
-#define GNSS_SDR_GALILEO_EPHEMERIS_H_
+#ifndef GNSS_SDR_GALILEO_EPHEMERIS_H
+#define GNSS_SDR_GALILEO_EPHEMERIS_H
 
-#include <iostream>
-#include <map>
-#include <boost/assign.hpp>
+#include "gnss_ephemeris.h"
 #include <boost/serialization/nvp.hpp>
-#include "Galileo_E1.h"
+#include <cstdint>
+
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 
 /*!
- * \brief This class is a storage and orbital model functions for the Galileo SV ephemeris data as described in Galileo ICD paragraph 5.1.1
- *  (See http://ec.europa.eu/enterprise/policies/satnav/galileo/files/galileo-os-sis-icd-issue1-revision1_en.pdf )
+ * \brief This class is a storage and orbital model functions for the Galileo SV
+ * ephemeris data as described in Galileo ICD paragraph 5.1.1
+ *
+ *  (See https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo_OS_SIS_ICD_v2.0.pdf )
  *
  */
-class Galileo_Ephemeris
+class Galileo_Ephemeris : public Gnss_Ephemeris
 {
 public:
-    /* Galileo ephemeris are 16 parameters and here are reported following the ICD order, paragraph 5.1.1.
-       The number in the name after underscore (_1, _2, _3 and so on) refers to the page were we can find that parameter */
-    bool flag_all_ephemeris;
-    int IOD_ephemeris;
-    int IOD_nav_1;
-    int SV_ID_PRN_4;
-    double M0_1;        //!< Mean anomaly at reference time [semi-circles]
-    double delta_n_3;   //!< Mean motion difference from computed value [semi-circles/sec]
-    double e_1;         //!< Eccentricity
-    double A_1;         //!< Square root of the semi-major axis [metres^1/2]
-    double OMEGA_0_2;   //!< Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
-    double i_0_2;       //!< Inclination angle at reference time  [semi-circles]
-    double omega_2;     //!< Argument of perigee [semi-circles]
-    double OMEGA_dot_3; //!< Rate of right ascension [semi-circles/sec]
-    double iDot_2;      //!< Rate of inclination angle [semi-circles/sec]
-    double C_uc_3;      //!< Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
-    double C_us_3;      //!< Amplitude of the sine harmonic correction term to the argument of latitude [radians]
-    double C_rc_3;      //!< Amplitude of the cosine harmonic correction term to the orbit radius [meters]
-    double C_rs_3;      //!< Amplitude of the sine harmonic correction term to the orbit radius [meters]
-    double C_ic_4;      //!< Amplitude of the cosine harmonic correction term to the angle of inclination [radians]
-    double C_is_4;      //!< Amplitude of the sine harmonic correction term to the angle of inclination [radians]
-    double t0e_1;       //!< Ephemeris reference time [s]
+    Galileo_Ephemeris()
+    {
+        this->System = 'E';
+    }
 
-    /*Clock correction parameters*/
-    double t0c_4;       //!< Clock correction data reference Time of Week [sec]
-    double af0_4;       //!< SV clock bias correction coefficient [s]
-    double af1_4;       //!< SV clock drift correction coefficient [s/s]
-    double af2_4;       //!< SV clock drift rate correction coefficient [s/s^2]
+    double Galileo_System_Time(double week_number, double TOW);  //!< Galileo System Time (GST), ICD paragraph 5.1.2
 
-    /*GST*/
-    //Not belong to ephemeris set (page 1 to 4)
-    double WN_5;        //!< Week number
-    double TOW_5;       //!< Time of Week
-    double Galileo_satClkDrift;
-    double Galileo_dtr; //!< relativistic clock correction term
+    int32_t IOD_ephemeris{};
+    int32_t IOD_nav{};
 
     // SV status
-    double SISA_3;
-    double E5b_HS_5;           //!< E5b Signal Health Status
-    double E1B_HS_5;           //!< E1B Signal Health Status
-    double E5b_DVS_5;          //!< E5b Data Validity Status
-    double E1B_DVS_5;          //!< E1B Data Validity Status
-    
-    double BGD_E1E5a_5;        //!< E1-E5a Broadcast Group Delay [s]
-    double BGD_E1E5b_5;        //!< E1-E5b Broadcast Group Delay [s]
+    int32_t SISA{};      //!< Signal in space accuracy index
+    int32_t E5a_HS{};    //!< E5a Signal Health Status
+    int32_t E5b_HS{};    //!< E5b Signal Health Status
+    int32_t E1B_HS{};    //!< E1B Signal Health Status
+    bool E5a_DVS{};      //!< E5a Data Validity Status
+    bool E5b_DVS{};      //!< E5b Data Validity Status
+    bool E1B_DVS{};      //!< E1B Data Validity Status
+    double BGD_E1E5a{};  //!< E1-E5a Broadcast Group Delay [s]
+    double BGD_E1E5b{};  //!< E1-E5b Broadcast Group Delay [s]
 
-    // satellite positions
-    double d_satpos_X;  //!< Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.
-    double d_satpos_Y;  //!< Earth-fixed coordinate y of the satellite [m]. Completes a right-handed, Earth-Centered, Earth-Fixed orthogonal coordinate system.
-    double d_satpos_Z;  //!< Earth-fixed coordinate z of the satellite [m]. The direction of the IERS (International Earth Rotation and Reference Systems Service) Reference Pole (IRP).
+    bool flag_all_ephemeris{};
 
-    // Satellite velocity
-    double d_satvel_X;  //!< Earth-fixed velocity coordinate x of the satellite [m]
-    double d_satvel_Y;  //!< Earth-fixed velocity coordinate y of the satellite [m]
-    double d_satvel_Z;  //!< Earth-fixed velocity coordinate z of the satellite [m]
-
-    unsigned int i_satellite_PRN; //!< SV PRN NUMBER
-
-    void satellitePosition(double transmitTime);            //!< Computes the ECEF SV coordinates and ECEF velocity
-    double Galileo_System_Time(double WN, double TOW);      //!< Galileo System Time (GST), ICD paragraph 5.1.2
-    double sv_clock_drift(double transmitTime);             //!< Satellite Time Correction Algorithm, ICD 5.1.4
-    double sv_clock_relativistic_term(double transmitTime); //!< Satellite Time Correction Algorithm, ICD 5.1.4
-    Galileo_Ephemeris();
-
-    template<class Archive>
+    template <class Archive>
 
     /*!
-     * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
+     * \brief Serialize is a boost standard method to be called by the boost XML
+     * serialization. Here is used to save the ephemeris data on disk file.
      */
-    void serialize(Archive& archive, const unsigned int version)
+    inline void serialize(Archive& archive, const uint32_t version)
     {
-        using boost::serialization::make_nvp;
+        if (version)
+            {
+            };
 
-        archive & make_nvp("i_satellite_PRN",i_satellite_PRN);
-        archive & make_nvp("M0_1", M0_1);
-        archive & make_nvp("e_1", e_1);
-        archive & make_nvp("A_1", A_1);
-        archive & make_nvp("OMEGA_0_2", OMEGA_0_2);
-        archive & make_nvp("i_0_2", i_0_2);
-        archive & make_nvp("omega_2", omega_2);
-        archive & make_nvp("OMEGA_dot_3", OMEGA_dot_3);
-        archive & make_nvp("iDot_2", iDot_2);
-        archive & make_nvp("C_uc_3", C_uc_3);
-        archive & make_nvp("C_us_3", C_us_3);
-        archive & make_nvp("C_rc_3", C_rc_3);
-        archive & make_nvp("C_rs_3", C_rs_3);
-        archive & make_nvp("C_ic_4", C_ic_4);
-        archive & make_nvp("C_is_4", C_is_4);
-        archive & make_nvp("t0e_1", t0e_1);
-        archive & make_nvp("t0c_4", t0c_4);
-        archive & make_nvp("af0_4", af0_4);
-        archive & make_nvp("af1_4", af1_4);
-        archive & make_nvp("af2_4", af2_4);
+        archive& BOOST_SERIALIZATION_NVP(PRN);
+        archive& BOOST_SERIALIZATION_NVP(M_0);
+        archive& BOOST_SERIALIZATION_NVP(delta_n);
+        archive& BOOST_SERIALIZATION_NVP(ecc);
+        archive& BOOST_SERIALIZATION_NVP(sqrtA);
+        archive& BOOST_SERIALIZATION_NVP(OMEGA_0);
+        archive& BOOST_SERIALIZATION_NVP(i_0);
+        archive& BOOST_SERIALIZATION_NVP(omega);
+        archive& BOOST_SERIALIZATION_NVP(OMEGAdot);
+        archive& BOOST_SERIALIZATION_NVP(idot);
+        archive& BOOST_SERIALIZATION_NVP(Cuc);
+        archive& BOOST_SERIALIZATION_NVP(Cus);
+        archive& BOOST_SERIALIZATION_NVP(Crc);
+        archive& BOOST_SERIALIZATION_NVP(Crs);
+        archive& BOOST_SERIALIZATION_NVP(Cic);
+        archive& BOOST_SERIALIZATION_NVP(Cis);
+        archive& BOOST_SERIALIZATION_NVP(toe);
+        archive& BOOST_SERIALIZATION_NVP(toc);
+        archive& BOOST_SERIALIZATION_NVP(af0);
+        archive& BOOST_SERIALIZATION_NVP(af1);
+        archive& BOOST_SERIALIZATION_NVP(af2);
+        archive& BOOST_SERIALIZATION_NVP(WN);
+        archive& BOOST_SERIALIZATION_NVP(tow);
+        archive& BOOST_SERIALIZATION_NVP(satClkDrift);
+        archive& BOOST_SERIALIZATION_NVP(dtr);
+
+        archive& BOOST_SERIALIZATION_NVP(IOD_ephemeris);
+        archive& BOOST_SERIALIZATION_NVP(IOD_nav);
+        archive& BOOST_SERIALIZATION_NVP(SISA);
+        archive& BOOST_SERIALIZATION_NVP(E5a_HS);
+        archive& BOOST_SERIALIZATION_NVP(E5b_HS);
+        archive& BOOST_SERIALIZATION_NVP(E1B_HS);
+        archive& BOOST_SERIALIZATION_NVP(E5a_DVS);
+        archive& BOOST_SERIALIZATION_NVP(E5b_DVS);
+        archive& BOOST_SERIALIZATION_NVP(E1B_DVS);
+        archive& BOOST_SERIALIZATION_NVP(BGD_E1E5a);
+        archive& BOOST_SERIALIZATION_NVP(BGD_E1E5b);
+        archive& BOOST_SERIALIZATION_NVP(flag_all_ephemeris);
     }
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GALILEO_EPHEMERIS_H

@@ -4,59 +4,44 @@
  * to a gr_complex (float) stream
  * \author Carles Fernandez-Prades, cfernandez(at)cttc.es
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #include "ishort_to_cshort.h"
-#include <glog/logging.h>
-#include <volk/volk.h>
 #include "configuration_interface.h"
+#include <volk/volk.h>
 
-using google::LogMessage;
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
-IshortToCshort::IshortToCshort(ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams,
-        boost::shared_ptr<gr::msg_queue> queue) :
-                config_(configuration), role_(role), in_streams_(in_streams),
-                out_streams_(out_streams), queue_(queue)
+IshortToCshort::IshortToCshort(const ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams),
+                                inverted_spectrum(configuration->property(role + ".inverted_spectrum", false)),
+                                dump_(configuration->property(role + ".dump", false))
 {
-
-    std::string default_input_item_type = "short";
-    std::string default_output_item_type = "cshort";
-    std::string default_dump_filename = "../data/input_filter.dat";
+    const std::string default_input_item_type("short");
+    const std::string default_output_item_type("cshort");
+    const std::string default_dump_filename("./data_type_adapter.dat");
 
     DLOG(INFO) << "role " << role_;
 
-    input_item_type_ = config_->property(role_ + ".input_item_type",
-                                         default_input_item_type);
-
-    dump_ = config_->property(role_ + ".dump", false);
-    dump_filename_ = config_->property(role_ + ".dump_filename",
-                                       default_dump_filename);
-
-    size_t item_size = sizeof(lv_16sc_t);
+    input_item_type_ = configuration->property(role_ + ".input_item_type", default_input_item_type);
+    dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
 
     interleaved_short_to_complex_short_ = make_interleaved_short_to_complex_short();
 
@@ -65,25 +50,48 @@ IshortToCshort::IshortToCshort(ConfigurationInterface* configuration, std::strin
     if (dump_)
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
+            const size_t item_size = sizeof(lv_16sc_t);
             file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
         }
-
+    if (inverted_spectrum)
+        {
+            conjugate_sc_ = make_conjugate_sc();
+        }
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
-
-
-IshortToCshort::~IshortToCshort()
-{}
 
 
 void IshortToCshort::connect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
-            top_block->connect(interleaved_short_to_complex_short_, 0, file_sink_, 0);
+            if (inverted_spectrum)
+                {
+                    top_block->connect(interleaved_short_to_complex_short_, 0, conjugate_sc_, 0);
+                    top_block->connect(conjugate_sc_, 0, file_sink_, 0);
+                }
+            else
+                {
+                    top_block->connect(interleaved_short_to_complex_short_, 0, file_sink_, 0);
+                }
         }
     else
         {
-            DLOG(INFO) << "Nothing to connect internally";
+            if (inverted_spectrum)
+                {
+                    top_block->connect(interleaved_short_to_complex_short_, 0, conjugate_sc_, 0);
+                }
+            else
+                {
+                    DLOG(INFO) << "Nothing to connect internally";
+                }
         }
 }
 
@@ -92,10 +100,24 @@ void IshortToCshort::disconnect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
-            top_block->disconnect(interleaved_short_to_complex_short_, 0, file_sink_, 0);
+            if (inverted_spectrum)
+                {
+                    top_block->disconnect(interleaved_short_to_complex_short_, 0, conjugate_sc_, 0);
+                    top_block->disconnect(conjugate_sc_, 0, file_sink_, 0);
+                }
+            else
+                {
+                    top_block->disconnect(interleaved_short_to_complex_short_, 0, file_sink_, 0);
+                }
+        }
+    else
+        {
+            if (inverted_spectrum)
+                {
+                    top_block->disconnect(interleaved_short_to_complex_short_, 0, conjugate_sc_, 0);
+                }
         }
 }
-
 
 
 gr::basic_block_sptr IshortToCshort::get_left_block()
@@ -104,10 +126,11 @@ gr::basic_block_sptr IshortToCshort::get_left_block()
 }
 
 
-
 gr::basic_block_sptr IshortToCshort::get_right_block()
 {
+    if (inverted_spectrum)
+        {
+            return conjugate_sc_;
+        }
     return interleaved_short_to_complex_short_;
 }
-
-

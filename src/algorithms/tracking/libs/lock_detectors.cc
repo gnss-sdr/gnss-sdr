@@ -21,68 +21,103 @@
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *          </ul>
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #include "lock_detectors.h"
-#include "GPS_L1_CA.h"
-#include "Galileo_E1.h"
-
+#include <cmath>
 
 /*
  * Signal-to-Noise (SNR) (\f$\rho\f$) estimator using the Signal-to-Noise Variance (SNV) estimator:
  * \f{equation}
- * 	\hat{\rho}=\frac{\hat{P}_s}{\hat{P}_n}=\frac{\hat{P}_s}{\hat{P}_{tot}-\hat{P}_s},
+ *     \hat{\rho}=\frac{\hat{P}_s}{\hat{P}_n}=\frac{\hat{P}_s}{\hat{P}_{tot}-\hat{P}_s},
  * \f}
  *  where \f$\hat{P}_s=\left(\frac{1}{N}\sum^{N-1}_{i=0}|Re(Pc(i))|\right)^2\f$ is the estimation of the signal power,
  * \f$\hat{P}_{tot}=\frac{1}{N}\sum^{N-1}_{i=0}|Pc(i)|^2\f$ is the estimator of the total power, \f$|\cdot|\f$ is the absolute value,
  * \f$Re(\cdot)\f$ stands for the real part of the value, and \f$Pc(i)\f$ is the prompt correlator output for the sample index i.
  *
- * The SNR value is converted to CN0 [dB-Hz], taking to account the receiver bandwidth and the PRN code gain, using the following formula:
+ * The SNR value is converted to CN0 [dB-Hz], taking to account the coherent integration time, using the following formula:
  * \f{equation}
- * 	CN0_{dB}=10*log(\hat{\rho})+10*log(\frac{f_s}{2})-10*log(L_{PRN}),
+ *     CN0_{dB}=10*log(\hat{\rho})-10*log(T_{int}),
  * \f}
- * where \f$f_s\f$ is the sampling frequency and \f$L_{PRN}\f$ is the PRN sequence length.
+ * where \f$T_{int}\f$ is the coherent integration time, in seconds.
  *
  */
-float cn0_svn_estimator(gr_complex* Prompt_buffer, int length, long fs_in, double code_length)
+float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_integration_time_s)
 {
-    float SNR = 0;
-    float SNR_dB_Hz = 0;
-    float Psig = 0;
-    float Ptot = 0;
-    for (int i=0; i<length; i++)
+    float SNR = 0.0;
+    float SNR_dB_Hz = 0.0;
+    float Psig = 0.0;
+    float Ptot = 0.0;
+    for (int i = 0; i < length; i++)
         {
             Psig += std::abs(Prompt_buffer[i].real());
             Ptot += Prompt_buffer[i].imag() * Prompt_buffer[i].imag() + Prompt_buffer[i].real() * Prompt_buffer[i].real();
         }
-    Psig = Psig / (float)length;
+    Psig /= static_cast<float>(length);
     Psig = Psig * Psig;
-    Ptot = Ptot / (float)length;
+    Ptot /= static_cast<float>(length);
     SNR = Psig / (Ptot - Psig);
-    SNR_dB_Hz = 10 * log10(SNR) + 10 * log10(fs_in/2) - 10 * log10((float)code_length);
+    SNR_dB_Hz = 10.0F * std::log10(SNR) - 10.0F * std::log10(coh_integration_time_s);
+    return SNR_dB_Hz;
+}
+
+
+/*
+ * Signal-to-Noise (SNR) (\f$\rho\f$) estimator using the Moments Method:
+ * \f{equation}
+ *  \hat{\rho}=\frac{\hat{P}_s}{\hat{P}_n}=\frac{\sqrt{2*\hat{M}_2^2 - \hat{M}_4 }}{\hat{M}_2-\sqrt{2*\hat{M}_2^2 - \hat{M}_4 }},
+ * \f}
+ *  where \f$\hat{P}_s=\left(\frac{1}{N}\sum^{N-1}_{i=0}|Re(Pc(i))|\right)^2\f$ is the estimation of the signal power,
+ * \f$ \hat{M}_2=\frac{1}{N}\sum^{N-1}_{i=0}|Pc(i)|^2 \f$, \f$\hat{M}_4 = \frac{1}{N}\sum^{N-1}_{i=0}|Pc(i)|^4 \f$, \f$|\cdot|\f$ is the absolute value,
+ * \f$Re(\cdot)\f$ stands for the real part of the value, and \f$Pc(i)\f$ is the prompt correlator output for the sample index i.
+ *
+ * The SNR value is converted to CN0 [dB-Hz], taking to account the coherent integration time, using the following formula:
+ * \f{equation}
+ *     CN0_{dB}=10*log(\hat{\rho})-10*log(T_{int}),
+ * \f}
+ * where \f$T_{int}\f$ is the coherent integration time, in seconds.
+ *
+ */
+float cn0_m2m4_estimator(const gr_complex* Prompt_buffer, int length, float coh_integration_time_s)
+{
+    float SNR_aux = 0.0;
+    float SNR_dB_Hz = 0.0;
+    float Psig = 0.0;
+    float m_2 = 0.0;
+    float m_4 = 0.0;
+    float aux;
+    const auto n = static_cast<float>(length);
+    for (int i = 0; i < length; i++)
+        {
+            Psig += std::abs(Prompt_buffer[i].real());
+            aux = Prompt_buffer[i].imag() * Prompt_buffer[i].imag() + Prompt_buffer[i].real() * Prompt_buffer[i].real();
+            m_2 += aux;
+            m_4 += (aux * aux);
+        }
+    Psig /= n;
+    Psig = Psig * Psig;
+    m_2 /= n;
+    m_4 /= n;
+    aux = std::sqrt(2.0F * m_2 * m_2 - m_4);
+    if (std::isnan(aux))
+        {
+            SNR_aux = Psig / (m_2 - Psig);
+        }
+    else
+        {
+            SNR_aux = aux / (m_2 - aux);
+        }
+    SNR_dB_Hz = 10.0F * std::log10(SNR_aux) - 10.0F * std::log10(coh_integration_time_s);
+
     return SNR_dB_Hz;
 }
 
@@ -90,24 +125,24 @@ float cn0_svn_estimator(gr_complex* Prompt_buffer, int length, long fs_in, doubl
 /*
  * The estimate of the cosine of twice the carrier phase error is given by
  * \f{equation}
- * 	\cos(2\phi)=\frac{NBD}{NBP},
+ *     \cos(2\phi)=\frac{NBD}{NBP},
  * \f}
  *  where \f$NBD=(\sum^{N-1}_{i=0}Im(Pc(i)))^2-(\sum^{N-1}_{i=0}Re(Pc(i)))^2\f$,
  *  \f$NBP=(\sum^{N-1}_{i=0}Im(Pc(i)))^2+(\sum^{N-1}_{i=0}Re(Pc(i)))^2\f$, and
  *  \f$Pc(i)\f$ is the prompt correlator output for the sample index i.
  */
-float carrier_lock_detector(gr_complex* Prompt_buffer, int length)
+float carrier_lock_detector(const gr_complex* Prompt_buffer, int length)
 {
-    float tmp_sum_I = 0;
-    float tmp_sum_Q = 0;
-    float NBD = 0;
-    float NBP = 0;
-    for (int i=0; i<length; i++)
+    float tmp_sum_I = 0.0;
+    float tmp_sum_Q = 0.0;
+    float NBD = 0.0;
+    float NBP = 0.0;
+    for (int i = 0; i < length; i++)
         {
             tmp_sum_I += Prompt_buffer[i].real();
             tmp_sum_Q += Prompt_buffer[i].imag();
         }
-    NBP = tmp_sum_I*tmp_sum_I + tmp_sum_Q*tmp_sum_Q;
-    NBD = tmp_sum_I*tmp_sum_I - tmp_sum_Q*tmp_sum_Q;
-    return NBD/NBP;
+    NBP = tmp_sum_I * tmp_sum_I + tmp_sum_Q * tmp_sum_Q;
+    NBD = tmp_sum_I * tmp_sum_I - tmp_sum_Q * tmp_sum_Q;
+    return NBD / NBP;
 }

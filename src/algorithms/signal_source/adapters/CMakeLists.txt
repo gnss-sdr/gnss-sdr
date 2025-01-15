@@ -1,173 +1,341 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
-#
+# GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# GNSS-SDR is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GNSS-SDR is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
-#
+# SPDX-FileCopyrightText: 2010-2022 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-License-Identifier: BSD-3-Clause
+
 
 # Optional drivers
 
-if(ENABLE_GN3S)
-     ##############################################
-     # GN3S (USB dongle)
-     ##############################################
+if(ENABLE_RAW_UDP AND PCAP_FOUND)
+    list(APPEND OPT_DRIVER_SOURCES custom_udp_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS custom_udp_signal_source.h)
+endif()
 
-     # find_package(GrGN3S)
-     # if not found, build it with ExternalPackage_Add
-     include(ExternalProject)
-     ExternalProject_Add(
-          gr-gn3s
-          SOURCE_DIR ${CMAKE_SOURCE_DIR}/drivers/gr-gn3s
-          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../../../gr-gn3s
-          UPDATE_COMMAND ""
-          PATCH_COMMAND ""
-          INSTALL_COMMAND ""
-     )
+if(ENABLE_PLUTOSDR)
+    ##############################################
+    # ADALM-PLUTO (Analog Devices Inc.)
+    ##############################################
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} plutosdr_signal_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} plutosdr_signal_source.h)
+    ##############################################
+    # CUSTOM AD936X IIO SOURCE
+    ##############################################
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} ad936x_custom_signal_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ad936x_custom_signal_source.h)
+endif()
 
-     # Set up variables
-     set(GRGN3S_INCLUDE_DIRS ${GRGN3S_DIR}/include ${GRGN3S_DIR} ${GRGN3S_DIR}/src)
-     set(GRGN3S_LIBRARIES
-         "${CMAKE_CURRENT_BINARY_DIR}/../../../../gr-gn3s/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gr-gn3s${CMAKE_SHARED_LIBRARY_SUFFIX}"
-     )
-     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GRGN3S_LIBRARIES})
-     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GRGN3S_INCLUDE_DIRS})
-     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gn3s_signal_source.cc)
+if(ENABLE_AD936X_SDR AND NOT ENABLE_PLUTOSDR)
+    ##############################################
+    # CUSTOM AD936X IIO SOURCE
+    ##############################################
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} ad936x_custom_signal_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ad936x_custom_signal_source.h)
+endif()
 
-     #  Copy GN3S firmware binary file to install folder
-     message(STATUS "Copying the GN3S firmware binary file to install folder")
-     file(COPY ${CMAKE_SOURCE_DIR}/firmware/GN3S_v2/bin/gn3s_firmware.ihx
-          DESTINATION ${CMAKE_SOURCE_DIR}/install/
-     )
-endif(ENABLE_GN3S)
+if(ENABLE_FMCOMMS2)
+    ###############################################
+    # FMCOMMS2 based SDR Hardware
+    ###############################################
+    list(APPEND OPT_DRIVER_SOURCES fmcomms2_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS fmcomms2_signal_source.h)
+endif()
 
-if(ENABLE_FLEXIBAND)
-     ##############################################
-     # TELEORBIT FLEXIBAND FRONTEND ADAPTER
-     ##############################################
-     if(OS_IS_MACOSX)
-          set(MACOSX_ARGS "-DCMAKE_CXX_COMPILER=/usr/bin/clang++")
-     endif(OS_IS_MACOSX)
-    find_package(teleorbit REQUIRED)
-    if(NOT TELEORBIT_FOUND)
-        message(FATAL_ERROR "Teleorbit Flexiband GNURadio driver required to build gnss-sdr with the optional FLEXIBAND adapter")
-    endif(NOT TELEORBIT_FOUND)
+if(ENABLE_AD9361)
+    ###############################################
+    # AD9361 DIRECT TO FPGA Hardware
+    ###############################################
+    list(APPEND OPT_DRIVER_SOURCES adrv9361_z7035_signal_source_fpga.cc)
+    list(APPEND OPT_DRIVER_HEADERS adrv9361_z7035_signal_source_fpga.h)
+    list(APPEND OPT_DRIVER_SOURCES fmcomms5_signal_source_fpga.cc)
+    list(APPEND OPT_DRIVER_HEADERS fmcomms5_signal_source_fpga.h)
+endif()
 
-     # Set up variables
-    set(FLEXIBAND_DRIVER_INCLUDE_DIRS
-        ${OPT_DRIVER_INCLUDE_DIRS}
-        ${TELEORBIT_INCLUDE_DIR}/teleorbit
-    )
-    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${TELEORBIT_LIBRARIES})
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${FLEXIBAND_DRIVER_INCLUDE_DIRS})
-    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} flexiband_signal_source.cc)
-endif(ENABLE_FLEXIBAND)
+if(ENABLE_MAX2771)
+    ###############################################
+    # MAX2771 EVKIT DIRECT TO FPGA Hardware
+    ###############################################
+    list(APPEND OPT_DRIVER_SOURCES max2771_evkit_signal_source_fpga.cc)
+    list(APPEND OPT_DRIVER_HEADERS max2771_evkit_signal_source_fpga.h)
+endif()
 
+if(ENABLE_DMA_PROXY)
+    ###############################################
+    # FPGA DMA source
+    ###############################################
+    list(APPEND OPT_DRIVER_SOURCES dma_signal_source_fpga.cc)
+    list(APPEND OPT_DRIVER_HEADERS dma_signal_source_fpga.h)
+endif()
+
+if(ENABLE_FLEXIBAND AND TELEORBIT_FOUND)
+    list(APPEND OPT_DRIVER_SOURCES flexiband_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS flexiband_signal_source.h)
+endif()
 
 if(ENABLE_ARRAY)
-     ##############################################
-     # GRDBFCTTC GNSS EXPERIMENTAL ARRAY PROTOTYPE
-     ##############################################
-     if(OS_IS_MACOSX)
-          set(MACOSX_ARGS "-DCMAKE_CXX_COMPILER=/usr/bin/clang++")
-     endif(OS_IS_MACOSX)
-     # find_package(GrDbfcttc)
-     # if not found, build it with ExternalPackage_Add
-     include(ExternalProject)
-     ExternalProject_Add(
-          gr-dbfcttc
-          SOURCE_DIR ${CMAKE_SOURCE_DIR}/drivers/gr-dbfcttc
-          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../../../gr-dbfcttc
-          UPDATE_COMMAND ""
-          PATCH_COMMAND ""
-          CMAKE_ARGS ${MACOSX_ARGS}
-          INSTALL_COMMAND ""
-     )
-
-     # Set up variables
-     set(GRDBFCTTC_INCLUDE_DIRS ${GRDBFCTTC_DIR}/include ${GRDBFCTTC_DIR} ${GRDBFCTTC_DIR}/src)
-     set(GRDBFCTTC_LIBRARIES
-         "${CMAKE_CURRENT_BINARY_DIR}/../../../../gr-dbfcttc/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gnuradio-dbfcttc${CMAKE_SHARED_LIBRARY_SUFFIX}"
-     )
-     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GRDBFCTTC_LIBRARIES})
-     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GRDBFCTTC_INCLUDE_DIRS})
-     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} raw_array_signal_source.cc)
-endif(ENABLE_ARRAY)
-
+    ##############################################
+    # DBFCTTC GNSS EXPERIMENTAL ARRAY PROTOTYPE
+    ##############################################
+    if(NOT GRDBFCTTC_FOUND)
+        message(" gr-dbfcttc not found, install it from https://github.com/gnss-sdr/gr-dbfcttc")
+        message(FATAL_ERROR "gr-dbfcttc required for building gnss-sdr with this option enabled")
+    endif()
+    list(APPEND OPT_DRIVER_SOURCES raw_array_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS raw_array_signal_source.h)
+endif()
 
 if(ENABLE_OSMOSDR)
     ################################################################################
-    # OsmoSDR - http://sdr.osmocom.org/trac/
+    # OsmoSDR - https://osmocom.org/projects/gr-osmosdr/
     ################################################################################
-    find_package(GrOsmoSDR REQUIRED)
-    if(NOT GROSMOSDR_FOUND)
-        message(FATAL_ERROR "gr-osmosdr required to build gnss-sdr with the optional OSMOSDR driver")
-    endif(NOT GROSMOSDR_FOUND)
+    if(GROSMOSDR_FOUND)
+        list(APPEND OPT_DRIVER_SOURCES osmosdr_signal_source.cc)
+        list(APPEND OPT_DRIVER_HEADERS osmosdr_signal_source.h)
+    endif()
+endif()
 
-    # set OSMO include dirs
-    set(OSMO_DRIVER_INCLUDE_DIRS
-        ${OPT_DRIVER_INCLUDE_DIRS}
-        ${GROSMOSDR_INCLUDE_DIR}/osmosdr
-    )
-    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} osmosdr_signal_source.cc)
-    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GROSMOSDR_LIBRARIES})
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${OSMO_DRIVER_INCLUDE_DIRS})
-endif(ENABLE_OSMOSDR)
+if(ENABLE_LIMESDR)
+    if(GRLIMESDR_FOUND)
+        list(APPEND OPT_DRIVER_SOURCES limesdr_signal_source.cc)
+        list(APPEND OPT_DRIVER_HEADERS limesdr_signal_source.h)
+    endif()
+endif()
 
 if(ENABLE_UHD)
-    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} uhd_signal_source.cc)
-    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${UHD_LIBRARIES} ${GNURADIO_UHD_LIBRARIES})
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${UHD_INCLUDE_DIRS})
-endif(ENABLE_UHD)
+    list(APPEND OPT_DRIVER_SOURCES uhd_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS uhd_signal_source.h)
+endif()
 
+if(ENABLE_ZMQ)
+    list(APPEND OPT_DRIVER_SOURCES zmq_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS zmq_signal_source.h)
+endif()
 
-set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc
-                                  gen_signal_source.cc
-                                  nsr_file_signal_source.cc
-                                  spir_file_signal_source.cc
-				  rtl_tcp_signal_source.cc
-                                  ${OPT_DRIVER_SOURCES}
+if(ENABLE_ION)
+    list(APPEND OPT_DRIVER_SOURCES ion_gsms_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS ion_gsms_signal_source.h)
+endif()
+
+set(SIGNAL_SOURCE_ADAPTER_SOURCES
+    signal_source_base.cc
+    file_source_base.cc
+    file_signal_source.cc
+    fifo_signal_source.cc
+    multichannel_file_signal_source.cc
+    gen_signal_source.cc
+    nsr_file_signal_source.cc
+    spir_file_signal_source.cc
+    spir_gss6450_file_signal_source.cc
+    rtl_tcp_signal_source.cc
+    labsat_signal_source.cc
+    two_bit_cpx_file_signal_source.cc
+    two_bit_packed_file_signal_source.cc
+    four_bit_cpx_file_signal_source.cc
+    file_timestamp_signal_source.cc
+    ${OPT_DRIVER_SOURCES}
 )
 
-
-include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${OPT_DRIVER_INCLUDE_DIRS}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/gnuradio_blocks
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${Boost_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${VOLK_INCLUDE_DIRS}
+set(SIGNAL_SOURCE_ADAPTER_HEADERS
+    signal_source_base.h
+    file_source_base.h
+    file_signal_source.h
+    fifo_signal_source.h
+    multichannel_file_signal_source.h
+    gen_signal_source.h
+    nsr_file_signal_source.h
+    spir_file_signal_source.h
+    spir_gss6450_file_signal_source.h
+    rtl_tcp_signal_source.h
+    labsat_signal_source.h
+    two_bit_cpx_file_signal_source.h
+    two_bit_packed_file_signal_source.h
+    four_bit_cpx_file_signal_source.h
+    file_timestamp_signal_source.h
+    ${OPT_DRIVER_HEADERS}
 )
 
-if(ARCH_64BITS)
-    add_definitions(-DARCH_64BITS=1)
-endif(ARCH_64BITS)
+list(SORT SIGNAL_SOURCE_ADAPTER_HEADERS)
+list(SORT SIGNAL_SOURCE_ADAPTER_SOURCES)
 
-add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(signal_source_adapters STATIC)
+    target_sources(signal_source_adapters
+        PRIVATE
+            ${SIGNAL_SOURCE_ADAPTER_SOURCES}
+        PUBLIC
+            ${SIGNAL_SOURCE_ADAPTER_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${SIGNAL_SOURCE_ADAPTER_HEADERS})
+    add_library(signal_source_adapters
+        ${SIGNAL_SOURCE_ADAPTER_SOURCES}
+        ${SIGNAL_SOURCE_ADAPTER_HEADERS}
+    )
+endif()
 
-file(GLOB SIGNAL_SOURCE_ADAPTER_HEADERS "*.h")
-add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES} ${SIGNAL_SOURCE_ADAPTER_HEADERS})
-source_group(Headers FILES ${SIGNAL_SOURCE_ADAPTER_HEADERS})
-target_link_libraries(signal_source_adapters signal_source_gr_blocks
-                                             ${Boost_LIBRARIES}
-                                             ${GNURADIO_PMT_LIBRARIES}
-                                             ${GNURADIO_BLOCKS_LIBRARIES}
-                                             ${OPT_LIBRARIES}
-                                             gnss_sp_libs
+if(GNURADIO_IS_38_OR_GREATER)
+    target_compile_definitions(signal_source_adapters PUBLIC -DGR_GREATER_38=1)
+endif()
+
+target_include_directories(signal_source_adapters
+    PUBLIC
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
+)
+
+if(ENABLE_FPGA OR ENABLE_AD9361 OR ENABLE_ION)
+    target_link_libraries(signal_source_adapters
+        PUBLIC
+            signal_source_libs
+        PRIVATE
+            core_libs
+    )
+endif()
+
+target_link_libraries(signal_source_adapters
+    PUBLIC
+        Boost::headers
+        Gnuradio::blocks
+        signal_source_gr_blocks
+    PRIVATE
+        algorithms_libs
+        gnss_sdr_flags
+        core_system_parameters
+        Volk::volk
+)
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(signal_source_adapters PRIVATE Glog::glog)
+    target_compile_definitions(signal_source_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(signal_source_adapters PRIVATE absl::flags absl::log)
+endif()
+
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(signal_source_adapters
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
+if(ENABLE_RAW_UDP AND PCAP_FOUND)
+    target_link_libraries(signal_source_adapters
+        PRIVATE
+            Pcap::pcap
+    )
+endif()
+
+if(ENABLE_UHD)
+    target_link_libraries(signal_source_adapters
+        PUBLIC
+            Gnuradio::uhd
+            Uhd::uhd  # for uhd/config.hpp in gnuradio/uhd/usrp_source.h
+    )
+endif()
+
+if(ENABLE_ZMQ)
+    target_link_libraries(signal_source_adapters
+        PUBLIC
+            Gnuradio::zeromq
+    )
+endif()
+
+if(ENABLE_OSMOSDR AND GROSMOSDR_FOUND)
+    target_link_libraries(signal_source_adapters
+        PUBLIC
+            Gnuradio::osmosdr
+    )
+endif()
+
+if(ENABLE_LIMESDR AND GRLIMESDR_FOUND)
+    target_link_libraries(signal_source_adapters
+        PUBLIC
+            Gnuradio::limesdr
+    )
+endif()
+
+if(LIBIIO_FOUND)
+    target_link_libraries(signal_source_adapters
+        PRIVATE
+            Iio::iio
+    )
+endif()
+
+if(ENABLE_AD9361 OR ENABLE_FMCOMMS2 OR ENABLE_PLUTOSDR OR ENABLE_AD936X_SDR)
+    if(LIBAD9361_VERSION)
+        if(LIBAD9361_VERSION VERSION_GREATER 0.1)
+            target_compile_definitions(signal_source_adapters
+                PRIVATE -DLIBAD9361_VERSION_GREATER_THAN_01=1
+            )
+        endif()
+    endif()
+endif()
+
+if(ENABLE_FLEXIBAND AND TELEORBIT_FOUND)
+    target_link_libraries(signal_source_adapters
+        PRIVATE
+            Gnuradio::teleorbit
+    )
+endif()
+
+if(ENABLE_ARRAY AND GRDBFCTTC_FOUND)
+    target_link_libraries(signal_source_adapters
+        PRIVATE
+            Gnuradio::dbfcttc
+    )
+endif()
+
+if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
+    if(GR_IIO_INCLUDE_HAS_GNURADIO)
+        target_compile_definitions(signal_source_adapters
+            PUBLIC -DGRIIO_INCLUDE_HAS_GNURADIO=1
+        )
+    endif()
+    if(GNURADIO_API_IIO)
+        target_compile_definitions(signal_source_adapters
+            PUBLIC -DGNURADIO_API_IIO=1
+        )
+    endif()
+    target_link_libraries(signal_source_adapters
+        PUBLIC
+            Gnuradio::iio
+            Boost::chrono
+        PRIVATE
+            Iio::iio
+    )
+    if(NOT GNURADIO_API_IIO)
+        target_link_libraries(signal_source_adapters
+            PRIVATE
+                Gnuradio::analog
+        )
+    endif()
+    if(GR_IIO_TEMPLATIZED_API)
+        target_compile_definitions(signal_source_adapters
+            PUBLIC -DGR_IIO_TEMPLATIZED_API=1
+        )
+    endif()
+endif()
+
+if(GR_LIMESDR_IS_G38_BRANCH)
+    target_compile_definitions(signal_source_adapters PRIVATE -DGR_LIMESDR_IS_G38_BRANCH=1)
+endif()
+
+if(GRLIMESDR_PPS)
+    target_compile_definitions(signal_source_adapters PRIVATE -DLimeSDR_PPS=1)
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(signal_source_adapters
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+target_compile_definitions(signal_source_adapters
+    PRIVATE -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
+)
+
+set_property(TARGET signal_source_adapters
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

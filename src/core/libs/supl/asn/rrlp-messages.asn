@@ -1,29 +1,32 @@
 RRLP-Messages
 -- { RRLP-messages }
 
+-- SPDX-License-Identifier: BSD-1-Clause
+-- SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+
 DEFINITIONS AUTOMATIC TAGS ::=
 
 BEGIN
 
 IMPORTS
-	MsrPosition-Req, MsrPosition-Rsp, AssistanceData,
-	ProtocolError
+    MsrPosition-Req, MsrPosition-Rsp, AssistanceData,
+    ProtocolError
 FROM
-	RRLP-Components 	-- { RRLP-Components }
+    RRLP-Components     -- { RRLP-Components }
 ;
 
 PDU ::= SEQUENCE {
-	referenceNumber			INTEGER (0..7),
-	component				RRLP-Component
+    referenceNumber            INTEGER (0..7),
+    component                RRLP-Component
 }
 
 RRLP-Component ::= CHOICE {
-	msrPositionReq			MsrPosition-Req,
-	msrPositionRsp			MsrPosition-Rsp,
-	assistanceData			AssistanceData,
-	assistanceDataAck		NULL,
-	protocolError			ProtocolError,
-	...
+    msrPositionReq            MsrPosition-Req,
+    msrPositionRsp            MsrPosition-Rsp,
+    assistanceData            AssistanceData,
+    assistanceDataAck        NULL,
+    protocolError            ProtocolError,
+    ...
 
 }
 

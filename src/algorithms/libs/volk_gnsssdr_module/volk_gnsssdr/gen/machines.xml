@@ -1,21 +1,21 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2014-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
 <grammar>
 
 <machine name="generic">
 <archs>generic orc|</archs>
 </machine>
 
-<!--
-<machine name="mmx">
-<archs>generic 32|64 mmx orc|</archs>
-</machine>
-
-<machine name="sse">
-<archs>generic 32|64| mmx| sse orc|</archs>
-</machine>
--->
-
 <machine name="neon">
-<archs>generic neon softfp|hardfp orc|</archs>
+<archs>generic neon orc|</archs>
+</machine>
+
+<machine name="neonv7">
+<archs>generic neon neonv7 softfp|hardfp orc|</archs>
+</machine>
+
+<machine name="neonv8">
+<archs>generic neon neonv8</archs>
 </machine>
 
 <!-- trailing | bar means generate without either for MSVC -->
@@ -24,23 +24,23 @@
 </machine>
 
 <machine name="sse3">
-<archs>generic 32|64 mmx sse sse2 sse3 orc|</archs>
+<archs>generic 32|64| mmx| sse sse2 sse3 orc|</archs>
 </machine>
 
 <machine name="ssse3">
-<archs>generic 32|64 mmx sse sse2 sse3 ssse3 orc|</archs>
+<archs>generic 32|64| mmx| sse sse2 sse3 ssse3 orc|</archs>
 </machine>
 
 <machine name="sse4_a">
-<archs>generic 32|64 mmx sse sse2 sse3 sse4_a popcount orc|</archs>
+<archs>generic 32|64| mmx| sse sse2 sse3 sse4_a popcount orc|</archs>
 </machine>
 
 <machine name="sse4_1">
-<archs>generic 32|64 mmx sse sse2 sse3 ssse3 sse4_1 orc|</archs>
+<archs>generic 32|64| mmx| sse sse2 sse3 ssse3 sse4_1 orc|</archs>
 </machine>
 
 <machine name="sse4_2">
-<archs>generic 32|64 mmx sse sse2 sse3 ssse3 sse4_1 sse4_2 popcount orc|</archs>
+<archs>generic 32|64| mmx| sse sse2 sse3 ssse3 sse4_1 sse4_2 popcount orc|</archs>
 </machine>
 
 <!-- trailing | bar means generate without either for MSVC -->
@@ -48,8 +48,19 @@
 <archs>generic 32|64| mmx| sse sse2 sse3 ssse3 sse4_1 sse4_2 popcount avx orc|</archs>
 </machine>
 
-<machine name="altivec">
-<archs>generic altivec</archs>
+<!-- trailing | bar means generate without either for MSVC -->
+<machine name="avx2">
+<archs>generic 32|64| mmx| sse sse2 sse3 ssse3 sse4_1 sse4_2 popcount avx fma avx2 orc|</archs>
+</machine>
+
+<!-- trailing | bar means generate without either for MSVC -->
+<machine name="avx512f">
+<archs>generic 32|64| mmx| sse sse2 sse3 ssse3 sse4_1 sse4_2 popcount avx fma avx2 avx512f orc|</archs>
+</machine>
+
+<!-- trailing | bar means generate without either for MSVC -->
+<machine name="avx512cd">
+<archs>generic 32|64| mmx| sse sse2 sse3 ssse3 sse4_1 sse4_2 popcount avx fma avx2 avx512f avx512cd orc|</archs>
 </machine>
 
 </grammar>

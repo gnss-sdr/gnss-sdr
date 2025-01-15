@@ -1,3 +1,9 @@
+# GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+# This file is part of GNSS-SDR.
+#
+# Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 The volk_gnsssdr_modtool tool is installed along with VOLK as a way of helping
 to construct, add to, and interogate the VOLK library or companion
 libraries.
@@ -10,8 +16,10 @@ modules.  If you need to design or work with VOLK kernels away from
 the canonical VOLK library, this is the tool.  If you need to tailor
 your own VOLK library for whatever reason, this is the tool.
 
-The canonical VOLK library installs a volk_gnsssdr.h and a libvolk_gnsssdr.so.  Your
-own library will install volk_gnsssdr_$name.h and libvolk_gnsssdr_$name.so.  Ya Gronk?
+The canonical VOLK-GNSSSDR library installs a volk_gnsssdr.h and a
+libvolk_gnsssdr.so. Your own library will install volk_gnsssdr_$name.h
+and libvolk_gnsssdr_$name.so.
+Ya Gronk?
 Good.
 
 There isn't a substantial difference between the canonical VOLK
@@ -76,8 +84,7 @@ This will put the code for the new kernel into
 
 Other kernels must be added by hand. See the following webpages for
 more information about creating VOLK kernels:
-  http://gnuradio.org/doc/doxygen/volk_gnsssdr_guide.html
-  http://gnuradio.org/redmine/projects/gnuradio/wiki/Volk
+  https://www.gnuradio.org/doc/doxygen/volk_guide.html
 
 
 ======================================================================
@@ -111,4 +118,3 @@ Options for Listing Kernels:
   -r, --remote-list
        Lists all kernels in another VOLK module that is specified
        using the -b option.
-

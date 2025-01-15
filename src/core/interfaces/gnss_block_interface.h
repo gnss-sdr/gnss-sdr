@@ -8,38 +8,54 @@
  * instantiated directly if all inherited pure virtual methods have been
  * implemented by that class or a parent class.
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 
-#ifndef GNSS_SDR_GNSS_BLOCK_INTERFACE_H_
-#define GNSS_SDR_GNSS_BLOCK_INTERFACE_H_
+#ifndef GNSS_SDR_GNSS_BLOCK_INTERFACE_H
+#define GNSS_SDR_GNSS_BLOCK_INTERFACE_H
 
+#include <gnuradio/top_block.h>
 #include <cassert>
 #include <string>
-#include <gnuradio/top_block.h>
+#include <utility>  // for std::forward
+
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup GNSS_Block_Interfaces
+ * \{ */
+
+// clang-format off
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+template <typename T>
+using gnss_shared_ptr = std::shared_ptr<T>;
+template <typename C, typename... Args>
+gnss_shared_ptr<C> gnss_make_shared(Args &&... args)
+{
+    return std::make_shared<C>(std::forward<Args>(args)...);
+}
+#else
+#include <boost/make_shared.hpp>
+#include <boost/shared_ptr.hpp>
+template <typename T>
+using gnss_shared_ptr = boost::shared_ptr<T>;
+template <typename C, typename... Args>
+gnss_shared_ptr<C> gnss_make_shared(Args &&... args)
+{
+    return boost::make_shared<C>(std::forward<Args>(args)...);
+}
+#endif
+// clang-format on
+
 
 /*!
  * \brief This abstract class represents an interface to GNSS blocks.
@@ -52,29 +68,40 @@
 class GNSSBlockInterface
 {
 public:
-	virtual ~GNSSBlockInterface()
-	{}
-	virtual std::string role() = 0;
-	virtual std::string implementation() = 0;
-	virtual size_t item_size() = 0;
-	virtual void connect(gr::top_block_sptr top_block) = 0;
-	virtual void disconnect(gr::top_block_sptr top_block) = 0;
+    virtual ~GNSSBlockInterface() = default;
+    virtual std::string role() = 0;
+    virtual std::string implementation() = 0;
+    virtual size_t item_size() = 0;
+    virtual void connect(gr::top_block_sptr top_block) = 0;
+    virtual void disconnect(gr::top_block_sptr top_block) = 0;
 
-	virtual gr::basic_block_sptr get_left_block() = 0;
-	virtual gr::basic_block_sptr get_right_block() = 0;
+    virtual gr::basic_block_sptr get_left_block() = 0;
+    virtual gr::basic_block_sptr get_right_block() = 0;
 
-	virtual gr::basic_block_sptr get_left_block(int RF_channel)
-	{
-		assert(RF_channel >= 0);
-		if (RF_channel == 0){}; // avoid unused param warning
-		return NULL; // added to support raw array access (non pure virtual to allow left unimplemented)= 0;
-	}
-	virtual gr::basic_block_sptr get_right_block(int RF_channel)
-	{
-		assert(RF_channel >= 0);
-		if (RF_channel == 0){};  // avoid unused param warning
-		return NULL; // added to support raw array access (non pure virtual to allow left unimplemented)= 0;
-	}
+    virtual gr::basic_block_sptr get_left_block(int RF_channel)
+    {
+        assert(RF_channel >= 0);
+        if (RF_channel == 0)
+            {
+            };  // avoid unused param warning
+        return nullptr;  // added to support raw array access (non pure virtual to allow left unimplemented)= 0;
+    }
+    virtual gr::basic_block_sptr get_right_block(int RF_channel)
+    {
+        assert(RF_channel >= 0);
+        if (RF_channel == 0)
+            {
+            };  // avoid unused param warning
+        return nullptr;  // added to support raw array access (non pure virtual to allow left unimplemented)= 0;
+    }
+
+    /*!
+     * \brief Start the flow of samples if needed.
+     */
+    virtual void start() {};
 };
 
-#endif /*GNSS_SDR_GNSS_BLOCK_INTERFACE_H_*/
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GNSS_BLOCK_INTERFACE_H

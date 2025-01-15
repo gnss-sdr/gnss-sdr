@@ -5,45 +5,36 @@
  *
  * This implementation has a text file as the source for the values of the parameters.
  * The file is in the INI format, containing sections and pairs of names and values.
- * For more information about the INI format, see http://en.wikipedia.org/wiki/INI_file
+ * For more information about the INI format, see https://en.wikipedia.org/wiki/INI_file
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 
+#ifndef GNSS_SDR_FILE_CONFIGURATION_H
+#define GNSS_SDR_FILE_CONFIGURATION_H
 
-#ifndef GNSS_SDR_FILE_CONFIGURATION_H_
-#define GNSS_SDR_FILE_CONFIGURATION_H_
-
+#include "INIReader.h"
 #include "configuration_interface.h"
+#include "in_memory_configuration.h"
+#include "string_converter.h"
+#include <cstdint>
 #include <memory>
 #include <string>
 
-class INIReader;
-class StringConverter;
-class InMemoryConfiguration;
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Core_Receiver
+ * \{ */
+
 
 /*!
  * \brief This class is an implementation of the interface ConfigurationInterface
@@ -52,30 +43,38 @@ class InMemoryConfiguration;
  * to a configuration file. This implementation has a text file as the source
  * for the values of the parameters.
  * The file is in the INI format, containing sections and pairs of names and values.
- * For more information about the INI format, see http://en.wikipedia.org/wiki/INI_file
+ * For more information about the INI format, see https://en.wikipedia.org/wiki/INI_file
  */
 class FileConfiguration : public ConfigurationInterface
 {
 public:
-    FileConfiguration(std::string filename);
+    explicit FileConfiguration(std::string filename);
     FileConfiguration();
-    //! Virtual destructor
-     ~FileConfiguration();
-    std::string property(std::string property_name, std::string default_value);
-    bool property(std::string property_name, bool default_value);
-    long property(std::string property_name, long default_value);
-    int property(std::string property_name, int default_value);
-    unsigned int property(std::string property_name, unsigned int default_value);
-    float property(std::string property_name, float default_value);
-    double property(std::string property_name, double default_value);
-    void set_property(std::string property_name, std::string value);
+    ~FileConfiguration() = default;
+    std::string property(std::string property_name, std::string default_value) const override;
+    bool property(std::string property_name, bool default_value) const override;
+    int64_t property(std::string property_name, int64_t default_value) const override;
+    uint64_t property(std::string property_name, uint64_t default_value) const override;
+    int32_t property(std::string property_name, int32_t default_value) const override;
+    uint32_t property(std::string property_name, uint32_t default_value) const override;
+    int16_t property(std::string property_name, int16_t default_value) const override;
+    uint16_t property(std::string property_name, uint16_t default_value) const override;
+    float property(std::string property_name, float default_value) const override;
+    double property(std::string property_name, double default_value) const override;
+    void set_property(std::string property_name, std::string value) override;
+    bool is_present(const std::string& property_name) const;
+    bool has_section() const;
+
 private:
     void init();
     std::string filename_;
-    std::shared_ptr<INIReader> ini_reader_;
-    std::shared_ptr<InMemoryConfiguration> overrided_;
+    std::unique_ptr<INIReader> ini_reader_;
+    std::unique_ptr<InMemoryConfiguration> overrided_;
     std::unique_ptr<StringConverter> converter_;
-    int error_;
+    int error_{};
 };
 
-#endif /*GNSS_SDR_FILE_CONFIGURATION_H_*/
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_FILE_CONFIGURATION_H

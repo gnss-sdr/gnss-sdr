@@ -1,41 +1,64 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
-#
+# GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# GNSS-SDR is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GNSS-SDR is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
-#
+# SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-License-Identifier: BSD-3-Clause
 
-set(SIGNAL_GENERATOR_ADAPTER_SOURCES signal_generator.cc)
 
-include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/signal_generator/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(signal_generator_adapters STATIC)
+    target_sources(signal_generator_adapters
+        PRIVATE
+            signal_generator.cc
+        PUBLIC
+            signal_generator.h
+    )
+else()
+    source_group(Headers FILES signal_generator.h)
+    add_library(signal_generator_adapters
+        signal_generator.cc
+        signal_generator.h
+    )
+endif()
+
+target_link_libraries(signal_generator_adapters
+    PUBLIC
+        Gnuradio::blocks
+        Gnuradio::pmt
+        signal_generator_gr_blocks
+    PRIVATE
+        core_system_parameters
 )
 
-file(GLOB SIGNAL_GENERATOR_ADAPTER_HEADERS "*.h")
-add_library(signal_generator_adapters ${SIGNAL_GENERATOR_ADAPTER_SOURCES} ${SIGNAL_GENERATOR_ADAPTER_HEADERS})
-source_group(Headers FILES ${SIGNAL_GENERATOR_ADAPTER_HEADERS})
-target_link_libraries(signal_generator_adapters gnss_sp_libs 
-                                                signal_generator_blocks 
-                                                ${GNURADIO_RUNTIME_LIBRARIES} 
-                                                ${GNURADIO_BLOCKS_LIBRARIES} 
-                                                ${GNURADIO_FILTER_LIBRARIES}
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(signal_generator_adapters PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(signal_generator_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(signal_generator_adapters PRIVATE absl::flags absl::log)
+endif()
+
+target_include_directories(signal_generator_adapters
+    PUBLIC
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
+        ${GNSSSDR_SOURCE_DIR}/src/core/receiver
+)
+
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(signal_generator_adapters
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(signal_generator_adapters
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET signal_generator_adapters
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

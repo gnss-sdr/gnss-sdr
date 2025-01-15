@@ -2,92 +2,77 @@
  * \file rtl_tcp_signal_source.cc
  * \brief Signal source for the Realtek RTL2832U USB dongle DVB-T receiver
  *        over TCP.
- * (see http://sdr.osmocom.org/trac/wiki/rtl-sdr for more information)
+ * (see https://osmocom.org/projects/rtl-sdr/wiki for more information)
  * \author Anthony Arnold, 2015. anthony.arnold(at)uqconnect.edu.au
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #include "rtl_tcp_signal_source.h"
-#include <glog/logging.h>
-#include <iostream>
-#include <boost/format.hpp>
-#include "configuration_interface.h"
-#include "gnss_sdr_valve.h"
 #include "GPS_L1_CA.h"
+#include "configuration_interface.h"
+#include "gnss_sdr_string_literals.h"
+#include "gnss_sdr_valve.h"
+#include <boost/exception/diagnostic_information.hpp>
+#include <cstdint>
+#include <iostream>
+#include <utility>
 
-using google::LogMessage;
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
+using namespace std::string_literals;
 
-RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream, unsigned int out_stream,
-        boost::shared_ptr<gr::msg_queue> queue) :
-                role_(role), in_stream_(in_stream), out_stream_(out_stream),
-                queue_(queue)
+RtlTcpSignalSource::RtlTcpSignalSource(const ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_stream,
+    unsigned int out_stream,
+    Concurrent_Queue<pmt::pmt_t>* queue)
+    : SignalSourceBase(configuration, role, "RtlTcp_Signal_Source"s),
+      samples_(configuration->property(role + ".samples", static_cast<uint64_t>(0))),
+      rf_gain_(configuration->property(role + ".rf_gain", 40.0)),
+      sample_rate_(configuration->property(role + ".sampling_frequency", 2000000)),
+      freq_(configuration->property(role + ".freq", static_cast<int>(GPS_L1_FREQ_HZ))),
+      gain_(configuration->property(role + ".gain", 40)),
+      if_gain_(configuration->property(role + ".if_gain", 40)),
+      in_stream_(in_stream),
+      out_stream_(out_stream),
+      AGC_enabled_(configuration->property(role + ".AGC_enabled", true)),
+      flip_iq_(configuration->property(role + ".flip_iq", false)),
+      dump_(configuration->property(role + ".dump", false))
 {
     // DUMP PARAMETERS
-    std::string empty = "";
-    std::string default_dump_file = "./data/signal_source.dat";
-    std::string default_item_type = "gr_complex";
-    samples_ = configuration->property(role + ".samples", 0);
-    dump_ = configuration->property(role + ".dump", false);
-    dump_filename_ = configuration->property(role + ".dump_filename",
-            default_dump_file);
+    const std::string default_dump_file("./data/signal_source.dat");
+    const std::string default_item_type("gr_complex");
+    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-    // rtl_tcp PARAMTERS
-    std::string default_address = "127.0.0.1";
-    short default_port = 1234;
-    AGC_enabled_ = configuration->property(role + ".AGC_enabled", true);
-    freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
-    gain_ = configuration->property(role + ".gain", (double)40.0);
-    rf_gain_ = configuration->property(role + ".rf_gain", (double)40.0);
-    if_gain_ = configuration->property(role + ".if_gain", (double)40.0);
-    sample_rate_ = configuration->property(role + ".sampling_frequency", (double)2.0e6);
+    // rtl_tcp PARAMETERS
+    const std::string default_address("127.0.0.1");
+    const int16_t default_port = 1234;
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     address_ = configuration->property(role + ".address", default_address);
     port_ = configuration->property(role + ".port", default_port);
-    flip_iq_ = configuration->property(role + ".flip_iq", false);
 
-    if (item_type_.compare("short") == 0)
+    if (item_type_ == "short")
         {
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
-    else if (item_type_.compare("gr_complex") == 0)
+    else if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             // 1. Make the gr block
-            try
-            {
-	       std::cout << "Connecting to " << address_ << ":" << port_ << std::endl;
-	       LOG (INFO) << "Connecting to " << address_ << ":" << port_;
-	       signal_source_ = rtl_tcp_make_signal_source_c (address_, port_, flip_iq_);
-            }
-            catch( boost::exception & e )
-            {
-	       DLOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
-            }
+            MakeBlock();
 
             // 2 set sampling rate
             signal_source_->set_sample_rate(sample_rate_);
@@ -99,36 +84,36 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
             signal_source_->set_agc_mode(true);
 
             if (this->AGC_enabled_ == true)
-            {
-                std::cout << "AGC enabled" << std::endl;
-                LOG(INFO) << "AGC enabled";
-                signal_source_->set_agc_mode(true);
-            }
+                {
+                    std::cout << "AGC enabled\n";
+                    LOG(INFO) << "AGC enabled";
+                    signal_source_->set_agc_mode(true);
+                }
             else
-            {
-                std::cout << "AGC disabled" << std::endl;
-                LOG(INFO) << "AGC disabled";
-                signal_source_->set_agc_mode(false);
+                {
+                    std::cout << "AGC disabled\n";
+                    LOG(INFO) << "AGC disabled";
+                    signal_source_->set_agc_mode(false);
 
-                std::cout << "Setting gain to " << gain_ << std::endl;
-                LOG(INFO) << "Setting gain to " << gain_;
-                signal_source_->set_gain(gain_);
+                    std::cout << "Setting gain to " << gain_ << '\n';
+                    LOG(INFO) << "Setting gain to " << gain_;
+                    signal_source_->set_gain(gain_);
 
-                std::cout << "Setting IF gain to " << if_gain_ << std::endl;
-                LOG(INFO) << "Setting IF gain to " << if_gain_;
-                signal_source_->set_if_gain(if_gain_);
-            }
+                    std::cout << "Setting IF gain to " << if_gain_ << '\n';
+                    LOG(INFO) << "Setting IF gain to " << if_gain_;
+                    signal_source_->set_if_gain(if_gain_);
+                }
         }
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type. Using short.";
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
 
-    if (samples_ != 0)
+    if (samples_ != 0ULL)
         {
             DLOG(INFO) << "Send STOP signal after " << samples_ << " samples";
-            valve_ = gnss_sdr_make_valve(item_size_, samples_, queue_);
+            valve_ = gnss_sdr_make_valve(item_size_, samples_, queue);
             DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
         }
 
@@ -138,50 +123,82 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
             file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
+    if (in_stream_ > 0)
+        {
+            LOG(ERROR) << "A signal source does not have an input stream";
+        }
+    if (out_stream_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
-RtlTcpSignalSource::~RtlTcpSignalSource()
-{}
-
-
-void RtlTcpSignalSource::connect(gr::top_block_sptr top_block) {
-   if ( samples_ ) {
-      top_block->connect (signal_source_, 0, valve_, 0);
-      DLOG(INFO) << "connected rtl tcp source to valve";
-      if ( dump_ ) {
-	 top_block->connect(valve_, 0, file_sink_, 0);
-	 DLOG(INFO) << "connected valve to file sink";
-      }
-   }
-   else if ( dump_ ) {
-	 top_block->connect(signal_source_, 0, file_sink_, 0);
-	 DLOG(INFO) << "connected rtl tcp source to file sink";
-   }
+void RtlTcpSignalSource::MakeBlock()
+{
+    try
+        {
+            std::cout << "Connecting to " << address_ << ":" << port_ << '\n';
+            LOG(INFO) << "Connecting to " << address_ << ":" << port_;
+            signal_source_ = rtl_tcp_make_signal_source_c(address_, port_, flip_iq_);
+        }
+    catch (const boost::exception& e)
+        {
+            LOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
+            throw std::runtime_error("Failure connecting to the device");
+        }
 }
 
-void RtlTcpSignalSource::disconnect(gr::top_block_sptr top_block) {
-   if ( samples_ ) {
-      top_block->disconnect (signal_source_, 0, valve_, 0);
-      if ( dump_ ) {
-	 top_block->disconnect(valve_, 0, file_sink_, 0);
-      }
-   }
-   else if ( dump_ ) {
-	 top_block->disconnect(signal_source_, 0, file_sink_, 0);
-   }
+
+void RtlTcpSignalSource::connect(gr::top_block_sptr top_block)
+{
+    if (samples_ != 0ULL)
+        {
+            top_block->connect(signal_source_, 0, valve_, 0);
+            DLOG(INFO) << "connected rtl tcp source to valve";
+            if (dump_)
+                {
+                    top_block->connect(valve_, 0, file_sink_, 0);
+                    DLOG(INFO) << "connected valve to file sink";
+                }
+        }
+    else if (dump_)
+        {
+            top_block->connect(signal_source_, 0, file_sink_, 0);
+            DLOG(INFO) << "connected rtl tcp source to file sink";
+        }
 }
 
-gr::basic_block_sptr RtlTcpSignalSource::get_left_block() {
+
+void RtlTcpSignalSource::disconnect(gr::top_block_sptr top_block)
+{
+    if (samples_ != 0ULL)
+        {
+            top_block->disconnect(signal_source_, 0, valve_, 0);
+            if (dump_)
+                {
+                    top_block->disconnect(valve_, 0, file_sink_, 0);
+                }
+        }
+    else if (dump_)
+        {
+            top_block->disconnect(signal_source_, 0, file_sink_, 0);
+        }
+}
+
+
+gr::basic_block_sptr RtlTcpSignalSource::get_left_block()
+{
     LOG(WARNING) << "Trying to get signal source left block.";
-    return gr::basic_block_sptr();
+    return {};
 }
 
-gr::basic_block_sptr RtlTcpSignalSource::get_right_block() {
-   if (samples_ != 0) {
-      return valve_;
-   }
-   else {
-     return signal_source_;
-   }
+
+gr::basic_block_sptr RtlTcpSignalSource::get_right_block()
+{
+    if (samples_ != 0ULL)
+        {
+            return valve_;
+        }
+    return signal_source_;
 }

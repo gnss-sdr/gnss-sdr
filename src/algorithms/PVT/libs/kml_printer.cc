@@ -2,205 +2,333 @@
  * \file kml_printer.cc
  * \brief Implementation of a class that prints PVT information to a kml file
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ *         Álvaro Cebrián Juan, 2018. acebrianjuan(at)gmail.com
  *
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #include "kml_printer.h"
-#include <ctime>
+#include "gnss_sdr_filesystem.h"
+#include "pvt_solution.h"
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <cstdlib>    // for mkstemp
+#include <ctime>      // for tm
+#include <exception>  // for exception
+#include <iomanip>    // for std::setprecision
+#include <iostream>   // for cout, cerr
+#include <sstream>
+#include <sys/stat.h>   // for S_IXUSR | S_IRWXG | S_IRWXO
+#include <sys/types.h>  // for mode_t
+
+#if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
-using google::LogMessage;
-
-bool Kml_Printer::set_headers(std::string filename)
+Kml_Printer::Kml_Printer(const std::string& base_path) : kml_base_path(base_path),
+                                                         indent("  "),
+                                                         positions_printed(false)
 {
-    time_t rawtime;
-    struct tm * timeinfo;
-    time ( &rawtime );
-    timeinfo = localtime ( &rawtime );
-    kml_file.open(filename.c_str());
-    if (kml_file.is_open())
+    fs::path full_path(fs::current_path());
+    const fs::path p(kml_base_path);
+    if (!fs::exists(p))
+        {
+            std::string new_folder;
+            for (const auto& folder : fs::path(kml_base_path))
+                {
+                    new_folder += folder.string();
+                    errorlib::error_code ec;
+                    if (!fs::exists(new_folder))
+                        {
+                            if (!fs::create_directory(new_folder, ec))
+                                {
+                                    std::cout << "Could not create the " << new_folder << " folder.\n";
+                                    kml_base_path = full_path.string();
+                                }
+                        }
+                    new_folder += fs::path::preferred_separator;
+                }
+        }
+    else
+        {
+            kml_base_path = p.string();
+        }
+    if (kml_base_path != ".")
+        {
+            std::cout << "KML files will be stored at " << kml_base_path << '\n';
+        }
+
+    kml_base_path = kml_base_path + fs::path::preferred_separator;
+
+    char tmp_filename_[] = "/tmp/file.XXXXXX";
+    mode_t mask = umask(S_IXUSR | S_IRWXG | S_IRWXO);
+    int fd = mkstemp(tmp_filename_);
+    if (fd == -1)
+        {
+            std::cerr << "Error in KML printer: failed to create temporary file\n";
+        }
+    else
+        {
+            close(fd);
+        }
+    umask(mask);
+    fs::path tmp_filename = fs::path(tmp_filename_);
+
+    tmp_file_str = tmp_filename.string();
+
+    point_id = 0;
+}
+
+
+bool Kml_Printer::set_headers(const std::string& filename, bool time_tag_name)
+{
+    const boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
+    const tm timeinfo = boost::posix_time::to_tm(pt);
+
+    if (time_tag_name)
+        {
+            std::stringstream strm0;
+            const int year = timeinfo.tm_year - 100;
+            strm0 << year;
+            const int month = timeinfo.tm_mon + 1;
+            if (month < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << month;
+            const int day = timeinfo.tm_mday;
+            if (day < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << day << "_";
+            const int hour = timeinfo.tm_hour;
+            if (hour < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << hour;
+            const int min = timeinfo.tm_min;
+            if (min < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << min;
+            const int sec = timeinfo.tm_sec;
+            if (sec < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << sec;
+
+            kml_filename = filename + "_" + strm0.str() + ".kml";
+        }
+    else
+        {
+            kml_filename = filename + ".kml";
+        }
+    kml_filename = kml_base_path + kml_filename;
+    kml_file.open(kml_filename.c_str());
+
+    tmp_file.open(tmp_file_str.c_str());
+
+    if (kml_file.is_open() && tmp_file.is_open())
         {
             DLOG(INFO) << "KML printer writing on " << filename.c_str();
             // Set iostream numeric format and precision
-            kml_file.setf(kml_file.fixed, kml_file.floatfield);
+            kml_file.setf(kml_file.std::ofstream::fixed, kml_file.std::ofstream::floatfield);
             kml_file << std::setprecision(14);
-            kml_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl
-                    << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl
-                    << "	<Document>" << std::endl
-                    << "	<name>GNSS Track</name>" << std::endl
-                    << "	<description>GNSS-SDR Receiver position log file created at " << asctime (timeinfo)
-                    << "	</description>" << std::endl
-                    << "<Style id=\"yellowLineGreenPoly\">" << std::endl
-                    << " <LineStyle>" << std::endl
-                    << " 	<color>7f00ffff</color>" << std::endl
-                    << "		<width>1</width>" << std::endl
-                    << "	</LineStyle>" << std::endl
-                    << "<PolyStyle>" << std::endl
-                    << "	<color>7f00ff00</color>" << std::endl
-                    << "</PolyStyle>" << std::endl
-                    << "</Style>" << std::endl
-                    << "<Placemark>" << std::endl
-                    << "<name>GNSS-SDR PVT</name>" << std::endl
-                    << "<description>GNSS-SDR position log</description>" << std::endl
-                    << "<styleUrl>#yellowLineGreenPoly</styleUrl>" << std::endl
-                    << "<LineString>" << std::endl
-                    << "<extrude>0</extrude>" << std::endl
-                    << "<tessellate>1</tessellate>" << std::endl
-                    << "<altitudeMode>absolute</altitudeMode>" << std::endl
-                    << "<coordinates>" << std::endl;
+
+            tmp_file.setf(tmp_file.std::ofstream::fixed, tmp_file.std::ofstream::floatfield);
+            tmp_file << std::setprecision(14);
+
+            kml_file << R"(<?xml version="1.0" encoding="UTF-8"?>)" << '\n'
+                     << R"(<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">)" << '\n'
+                     << indent << "<Document>\n"
+                     << indent << indent << "<name>GNSS Track</name>\n"
+                     << indent << indent << "<description><![CDATA[\n"
+                     << indent << indent << indent << "<table>\n"
+                     << indent << indent << indent << indent << "<tr><td>GNSS-SDR Receiver position log file created at " << pt << "</td></tr>\n"
+                     << indent << indent << indent << indent << "<tr><td>https://gnss-sdr.org/</td></tr>\n"
+                     << indent << indent << indent << "</table>\n"
+                     << indent << indent << "]]></description>\n"
+                     << indent << indent << "<!-- Normal track style -->\n"
+                     << indent << indent << "<Style id=\"track_n\">\n"
+                     << indent << indent << indent << "<IconStyle>\n"
+                     << indent << indent << indent << indent << "<color>ff00ffff</color>\n"
+                     << indent << indent << indent << indent << "<scale>0.3</scale>\n"
+                     << indent << indent << indent << indent << "<Icon>\n"
+                     << indent << indent << indent << indent << indent << "<href>http://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href>\n"
+                     << indent << indent << indent << indent << "</Icon>\n"
+                     << indent << indent << indent << "</IconStyle>\n"
+                     << indent << indent << indent << "<LabelStyle>\n"
+                     << indent << indent << indent << indent << "<scale>0</scale>\n"
+                     << indent << indent << indent << "</LabelStyle>\n"
+                     << indent << indent << "</Style>\n"
+                     << indent << indent << "<!-- Highlighted track style -->\n"
+                     << indent << indent << "<Style id=\"track_h\">\n"
+                     << indent << indent << indent << "<IconStyle>\n"
+                     << indent << indent << indent << indent << "<color>ff00ffff</color>\n"
+                     << indent << indent << indent << indent << "<scale>1</scale>\n"
+                     << indent << indent << indent << indent << "<Icon>\n"
+                     << indent << indent << indent << indent << indent << "<href>http://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href>\n"
+                     << indent << indent << indent << indent << "</Icon>\n"
+                     << indent << indent << indent << "</IconStyle>\n"
+                     << indent << indent << "</Style>\n"
+                     << indent << indent << "<StyleMap id=\"track\">\n"
+                     << indent << indent << indent << "<Pair>\n"
+                     << indent << indent << indent << indent << "<key>normal</key>\n"
+                     << indent << indent << indent << indent << "<styleUrl>#track_n</styleUrl>\n"
+                     << indent << indent << indent << "</Pair>\n"
+                     << indent << indent << indent << "<Pair>\n"
+                     << indent << indent << indent << indent << "<key>highlight</key>\n"
+                     << indent << indent << indent << indent << "<styleUrl>#track_h</styleUrl>\n"
+                     << indent << indent << indent << "</Pair>\n"
+                     << indent << indent << "</StyleMap>\n"
+                     << indent << indent << "<Style id=\"yellowLineGreenPoly\">\n"
+                     << indent << indent << indent << "<LineStyle>\n"
+                     << indent << indent << indent << indent << "<color>7f00ffff</color>\n"
+                     << indent << indent << indent << indent << "<width>1</width>\n"
+                     << indent << indent << indent << "</LineStyle>\n"
+                     << indent << indent << indent << "<PolyStyle>\n"
+                     << indent << indent << indent << indent << "<color>7f00ff00</color>\n"
+                     << indent << indent << indent << "</PolyStyle>\n"
+                     << indent << indent << "</Style>\n"
+                     << indent << indent << "<Folder>\n"
+                     << indent << indent << indent << "<name>Points</name>\n";
+
             return true;
         }
-    else
-        {
-            return false;
-        }
+    std::cout << "File " << kml_filename << " cannot be saved. Wrong permissions?\n";
+    return false;
 }
 
 
-
-bool Kml_Printer::print_position(const std::shared_ptr<gps_l1_ca_ls_pvt>& position, bool print_average_values)
+bool Kml_Printer::print_position(const Pvt_Solution* const position)
 {
-    double latitude;
-    double longitude;
-    double height;
+    positions_printed = true;
 
-    std::shared_ptr<gps_l1_ca_ls_pvt> position_ = position;
+    const double speed_over_ground = position->get_speed_over_ground();    // expressed in m/s
+    const double course_over_ground = position->get_course_over_ground();  // expressed in deg
 
-    if (print_average_values == false)
+    const double hdop = position->get_hdop();
+    const double vdop = position->get_vdop();
+    const double pdop = position->get_pdop();
+    std::string utc_time = to_iso_extended_string(position->get_position_UTC_time());
+    if (utc_time.length() < 23)
         {
-            latitude = position_->d_latitude_d;
-            longitude = position_->d_longitude_d;
-            height = position_->d_height_m;
+            utc_time += ".";
         }
-    else
-        {
-            latitude = position_->d_avg_latitude_d;
-            longitude = position_->d_avg_longitude_d;
-            height = position_->d_avg_height_m;
-        }
+    utc_time.resize(23, '0');  // time up to ms
+    utc_time.append("Z");      // UTC time zone
 
-    if (kml_file.is_open())
+    const double latitude = position->get_latitude();
+    const double longitude = position->get_longitude();
+    const double height = position->get_height();
+
+    if (kml_file.is_open() && tmp_file.is_open())
         {
-            kml_file << longitude << "," << latitude << "," << height << std::endl;
+            point_id++;
+            kml_file << indent << indent << indent << "<Placemark>\n"
+                     << indent << indent << indent << indent << "<name>" << point_id << "</name>\n"
+                     << indent << indent << indent << indent << "<snippet/>\n"
+                     << indent << indent << indent << indent << "<description><![CDATA[\n"
+                     << indent << indent << indent << indent << indent << "<table>\n"
+                     << indent << indent << indent << indent << indent << indent << "<tr><td>Time:</td><td>" << utc_time << "</td></tr>\n"
+                     << indent << indent << indent << indent << indent << indent << "<tr><td>Longitude:</td><td>" << longitude << "</td><td>deg</td></tr>\n"
+                     << indent << indent << indent << indent << indent << indent << "<tr><td>Latitude:</td><td>" << latitude << "</td><td>deg</td></tr>\n"
+                     << indent << indent << indent << indent << indent << indent << "<tr><td>Altitude:</td><td>" << height << "</td><td>m</td></tr>\n"
+                     << indent << indent << indent << indent << indent << indent << "<tr><td>Speed:</td><td>" << speed_over_ground << "</td><td>m/s</td></tr>\n"
+                     << indent << indent << indent << indent << indent << indent << "<tr><td>Course:</td><td>" << course_over_ground << "</td><td>deg</td></tr>\n"
+                     << indent << indent << indent << indent << indent << indent << "<tr><td>HDOP:</td><td>" << hdop << "</td></tr>\n"
+                     << indent << indent << indent << indent << indent << indent << "<tr><td>VDOP:</td><td>" << vdop << "</td></tr>\n"
+                     << indent << indent << indent << indent << indent << indent << "<tr><td>PDOP:</td><td>" << pdop << "</td></tr>\n"
+                     << indent << indent << indent << indent << indent << "</table>\n"
+                     << indent << indent << indent << indent << "]]></description>\n"
+                     << indent << indent << indent << indent << "<TimeStamp>\n"
+                     << indent << indent << indent << indent << indent << "<when>" << utc_time << "</when>\n"
+                     << indent << indent << indent << indent << "</TimeStamp>\n"
+                     << indent << indent << indent << indent << "<styleUrl>#track</styleUrl>\n"
+                     << indent << indent << indent << indent << "<Point>\n"
+                     << indent << indent << indent << indent << indent << "<altitudeMode>absolute</altitudeMode>\n"
+                     << indent << indent << indent << indent << indent << "<coordinates>" << longitude << "," << latitude << "," << height << "</coordinates>\n"
+                     << indent << indent << indent << indent << "</Point>\n"
+                     << indent << indent << indent << "</Placemark>\n";
+
+            tmp_file << indent << indent << indent << indent << indent
+                     << longitude << "," << latitude << "," << height << '\n';
+
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
-//ToDo: make the class ls_pvt generic and heritate the particular gps/gal/glo ls_pvt in order to
-// reuse kml_printer functions
-bool Kml_Printer::print_position_galileo(const std::shared_ptr<galileo_e1_ls_pvt>& position, bool print_average_values)
-{
-    double latitude;
-    double longitude;
-    double height;
-    std::shared_ptr<galileo_e1_ls_pvt> position_ = position;
-    if (print_average_values == false)
-        {
-            latitude = position_->d_latitude_d;
-            longitude = position_->d_longitude_d;
-            height = position_->d_height_m;
-        }
-    else
-        {
-            latitude = position_->d_avg_latitude_d;
-            longitude = position_->d_avg_longitude_d;
-            height = position_->d_avg_height_m;
-        }
-
-    if (kml_file.is_open())
-        {
-            kml_file << longitude << "," << latitude << "," << height << std::endl;
-            return true;
-        }
-    else
-        {
-            return false;
-        }
-}
-
-bool Kml_Printer::print_position_hybrid(const std::shared_ptr<hybrid_ls_pvt>& position, bool print_average_values)
-{
-    double latitude;
-    double longitude;
-    double height;
-    if (print_average_values == false)
-        {
-            latitude = position->d_latitude_d;
-            longitude = position->d_longitude_d;
-            height = position->d_height_m;
-        }
-    else
-        {
-            latitude = position->d_avg_latitude_d;
-            longitude = position->d_avg_longitude_d;
-            height = position->d_avg_height_m;
-        }
-
-    if (kml_file.is_open())
-        {
-            kml_file << longitude << "," << latitude << "," << height << std::endl;
-            return true;
-        }
-    else
-        {
-            return false;
-        }
-}
 
 bool Kml_Printer::close_file()
 {
-    if (kml_file.is_open())
+    if (kml_file.is_open() && tmp_file.is_open())
         {
-            kml_file << "</coordinates>" << std::endl
-                     << "</LineString>" << std::endl
-                     << "</Placemark>" << std::endl
-                     << "</Document>" << std::endl
+            tmp_file.close();
+
+            kml_file << indent << indent << "</Folder>"
+                     << indent << indent << "<Placemark>\n"
+                     << indent << indent << indent << "<name>Path</name>\n"
+                     << indent << indent << indent << "<styleUrl>#yellowLineGreenPoly</styleUrl>\n"
+                     << indent << indent << indent << "<LineString>\n"
+                     << indent << indent << indent << indent << "<extrude>0</extrude>\n"
+                     << indent << indent << indent << indent << "<tessellate>1</tessellate>\n"
+                     << indent << indent << indent << indent << "<altitudeMode>absolute</altitudeMode>\n"
+                     << indent << indent << indent << indent << "<coordinates>\n";
+
+            // Copy the contents of tmp_file into kml_file
+            std::ifstream src(tmp_file_str, std::ios::binary);
+            kml_file << src.rdbuf();
+
+            kml_file << indent << indent << indent << indent << "</coordinates>\n"
+                     << indent << indent << indent << "</LineString>\n"
+                     << indent << indent << "</Placemark>\n"
+                     << indent << "</Document>\n"
                      << "</kml>";
+
             kml_file.close();
+
             return true;
         }
-    else
+    return false;
+}
+
+
+Kml_Printer::~Kml_Printer()
+{
+    DLOG(INFO) << "KML printer destructor called.";
+    try
         {
-            return false;
+            close_file();
+        }
+    catch (const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
+    errorlib::error_code ec;
+    if (!fs::remove(fs::path(tmp_file_str), ec))
+        {
+            LOG(INFO) << "Error deleting temporary file";
+        }
+    if (!positions_printed)
+        {
+            if (!fs::remove(fs::path(kml_filename), ec))
+                {
+                    LOG(INFO) << "Error deleting temporary KML file";
+                }
         }
 }
-
-
-
-Kml_Printer::Kml_Printer () {}
-
-
-
-Kml_Printer::~Kml_Printer ()
-{
-    close_file();
-}
-

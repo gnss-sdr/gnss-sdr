@@ -1,0 +1,30 @@
+SPDX-License-Identifier: GPL-3.0-or-later
+SPDX-FileCopyrightText: 2022 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+--- CMakeLists.txt	2022-12-19 11:40:38.000000000 +0100
++++ CMakeLists.txt	2022-12-19 11:56:49.000000000 +0100
+@@ -21,6 +21,16 @@
+ 
+ # This sets up variables contining GNU standard installation locations.
+ include( GNUInstallDirs )
++if(POLICY CMP0063)
++    cmake_policy(SET CMP0063 NEW)
++    set(CMAKE_CXX_VISIBILITY_PRESET hidden)
++    set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
++else()
++    if((CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
++        add_definitions(-fvisibility=hidden)
++    endif()
++endif()
++
+ 
+ # Set a filename for collecting exported targets.
+ set( EXPORT_TARGETS_FILENAME "GNSSTKTargets" )
+@@ -177,7 +187,7 @@
+ elseif( WIN32 )
+   add_library( gnsstk ${GNSSTK_SRC_FILES} ${GNSSTK_INC_FILES} )
+ else()
+-  add_library( gnsstk SHARED ${GNSSTK_SRC_FILES} ${GNSSTK_INC_FILES} )
++  add_library( gnsstk STATIC ${GNSSTK_SRC_FILES} ${GNSSTK_INC_FILES} )
+ endif()
+ 
+ # always generate the header because it's an include file whose

@@ -1,222 +1,225 @@
 /*!
  * \file channel_fsm.cc
- * \brief Implementation of a State Machine for channel using boost::statechart
- * \author Luis Esteve, 2011. luis(at)epsilon-formacion.com
+ * \brief Implementation of a State Machine for channel
+ * \authors Javier Arribas, 2019. javiarribas@gmail.com
+ *          Antonio Ramos, 2017. antonio.ramos(at)cttc.es
+ *          Luis Esteve,   2011. luis(at)epsilon-formacion.com
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #include "channel_fsm.h"
-#include <list>
-#include <memory>
+#include "channel_event.h"
+#include <utility>
+
+#if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
-#include "control_message_factory.h"
-#include "channel.h"
-
-
-struct Ev_channel_start_acquisition: sc::event<Ev_channel_start_acquisition>
-{};
-
-struct Ev_channel_valid_acquisition: sc::event<Ev_channel_valid_acquisition>
-{};
-
-struct Ev_channel_failed_acquisition_repeat: sc::event<Ev_channel_failed_acquisition_repeat>
-{};
-
-struct Ev_channel_failed_acquisition_no_repeat: sc::event<Ev_channel_failed_acquisition_no_repeat>
-{};
-
-struct Ev_channel_failed_tracking_standby: sc::event<Ev_channel_failed_tracking_standby>
-{};
-
-//struct Ev_channel_failed_tracking_reacq: sc::event<Ev_channel_failed_tracking_reacq>
-//{};
-
-struct channel_idle_fsm_S0: public sc::state<channel_idle_fsm_S0, ChannelFsm>
-{
-public:
-    // sc::transition(event, next state)
-    typedef sc::transition<Ev_channel_start_acquisition, channel_acquiring_fsm_S1> reactions;
-    channel_idle_fsm_S0(my_context ctx) : my_base(ctx)
-    {
-        //std::cout << "Enter Channel_Idle_S0 " << std::endl;
-    }
-};
-
-
-struct channel_acquiring_fsm_S1: public sc::state<channel_acquiring_fsm_S1, ChannelFsm>
-{
-public:
-    typedef mpl::list<sc::transition<Ev_channel_failed_acquisition_no_repeat, channel_waiting_fsm_S3>,
-                      sc::transition<Ev_channel_failed_acquisition_repeat, channel_acquiring_fsm_S1>,
-                      sc::transition<Ev_channel_valid_acquisition, channel_tracking_fsm_S2> > reactions;
-
-    channel_acquiring_fsm_S1(my_context ctx) : my_base(ctx)
-    {
-        //std::cout << "Enter Channel_Acq_S1 " << std::endl;
-        context<ChannelFsm> ().start_acquisition();
-    }
-};
-
-
-struct channel_tracking_fsm_S2: public sc::state<channel_tracking_fsm_S2, ChannelFsm>
-{
-public:
-    typedef mpl::list<sc::transition<Ev_channel_failed_tracking_standby, channel_idle_fsm_S0>,
-                      sc::transition<Ev_channel_start_acquisition, channel_acquiring_fsm_S1>> reactions;
-
-    channel_tracking_fsm_S2(my_context ctx) : my_base(ctx)
-    {
-        //std::cout << "Enter Channel_tracking_S2 " << std::endl;
-        context<ChannelFsm> ().start_tracking();
-    }
-
-};
-
-
-struct channel_waiting_fsm_S3: public sc::state<channel_waiting_fsm_S3, ChannelFsm>
-{
-public:
-    typedef sc::transition<Ev_channel_start_acquisition,
-            channel_acquiring_fsm_S1> reactions;
-
-    channel_waiting_fsm_S3(my_context ctx) :
-        my_base(ctx)
-    {
-        //std::cout << "Enter Channel_waiting_S3 " << std::endl;
-        context<ChannelFsm> ().request_satellite();
-    }
-   // ~channel_waiting_fsm_S3(){}
-};
-
-
+#else
+#include <absl/log/log.h>
+#endif
 
 ChannelFsm::ChannelFsm()
+    : queue_(nullptr),
+      channel_(0U),
+      state_(0U)
 {
     acq_ = nullptr;
     trk_ = nullptr;
-    channel_ = 0;
-    initiate(); //start the FSM
 }
 
 
-
-ChannelFsm::ChannelFsm(AcquisitionInterface *acquisition) :
-	        acq_(acquisition)
+ChannelFsm::ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition)
+    : acq_(std::move(acquisition)),
+      queue_(nullptr),
+      channel_(0U),
+      state_(0U)
 {
     trk_ = nullptr;
-    channel_ = 0;
-    initiate(); //start the FSM
 }
 
 
-
-void ChannelFsm::Event_start_acquisition()
+bool ChannelFsm::Event_stop_channel()
 {
-    this->process_event(Ev_channel_start_acquisition());
+    std::lock_guard<std::mutex> lk(mx_);
+    DLOG(INFO) << "CH = " << channel_ << ". Ev stop channel";
+    switch (state_)
+        {
+        case 0:  // already in stanby
+            break;
+        case 1:  // acquisition
+            state_ = 0;
+            stop_acquisition();
+            break;
+        case 2:  // tracking
+            state_ = 0;
+            stop_tracking();
+            break;
+        default:
+            break;
+        }
+    return true;
 }
 
 
-void ChannelFsm::Event_valid_acquisition()
+bool ChannelFsm::Event_start_acquisition_fpga()
 {
-    this->process_event(Ev_channel_valid_acquisition());
+    std::lock_guard<std::mutex> lk(mx_);
+    if ((state_ == 1) || (state_ == 2))
+        {
+            return false;
+        }
+    state_ = 1;
+    DLOG(INFO) << "CH = " << channel_ << ". Ev start acquisition FPGA";
+    return true;
 }
 
 
-void ChannelFsm::Event_failed_acquisition_repeat()
+bool ChannelFsm::Event_start_acquisition()
 {
-    this->process_event(Ev_channel_failed_acquisition_repeat());
+    std::lock_guard<std::mutex> lk(mx_);
+    if ((state_ == 1) || (state_ == 2))
+        {
+            return false;
+        }
+    state_ = 1;
+    start_acquisition();
+    DLOG(INFO) << "CH = " << channel_ << ". Ev start acquisition";
+    return true;
 }
 
-void ChannelFsm::Event_failed_acquisition_no_repeat()
+
+bool ChannelFsm::Event_valid_acquisition()
 {
-    this->process_event(Ev_channel_failed_acquisition_no_repeat());
+    std::lock_guard<std::mutex> lk(mx_);
+    if (state_ != 1)
+        {
+            return false;
+        }
+    state_ = 2;
+    start_tracking();
+    DLOG(INFO) << "CH = " << channel_ << ". Ev valid acquisition";
+    return true;
 }
 
 
-// Something is wrong here, we are using a memory after it ts freed
-void ChannelFsm::Event_failed_tracking_standby()
+bool ChannelFsm::Event_failed_acquisition_repeat()
 {
-    this->process_event(Ev_channel_failed_tracking_standby());
+    std::lock_guard<std::mutex> lk(mx_);
+    if (state_ != 1)
+        {
+            return false;
+        }
+    state_ = 1;
+    start_acquisition();
+    DLOG(INFO) << "CH = " << channel_ << ". Ev failed acquisition repeat";
+    return true;
 }
 
-//void ChannelFsm::Event_failed_tracking_reacq() {
-//	this->process_event(Ev_channel_failed_tracking_reacq());
-//}
 
-void ChannelFsm::set_acquisition(AcquisitionInterface *acquisition)
+bool ChannelFsm::Event_failed_acquisition_no_repeat()
 {
-    acq_ = acquisition;
+    std::lock_guard<std::mutex> lk(mx_);
+    if (state_ != 1)
+        {
+            return false;
+        }
+    state_ = 3;
+    request_satellite();
+    DLOG(INFO) << "CH = " << channel_ << ". Ev failed acquisition no repeat";
+    return true;
 }
 
-void ChannelFsm::set_tracking(TrackingInterface *tracking)
+
+bool ChannelFsm::Event_failed_tracking_standby()
 {
-    trk_ = tracking;
+    std::lock_guard<std::mutex> lk(mx_);
+    if (state_ != 2)
+        {
+            return false;
+        }
+    state_ = 0U;
+    notify_stop_tracking();
+    DLOG(INFO) << "CH = " << channel_ << ". Ev failed tracking standby";
+    return true;
 }
 
-void ChannelFsm::set_queue(boost::shared_ptr<gr::msg_queue> queue)
+
+void ChannelFsm::set_acquisition(std::shared_ptr<AcquisitionInterface> acquisition)
 {
+    std::lock_guard<std::mutex> lk(mx_);
+    acq_ = std::move(acquisition);
+}
+
+
+void ChannelFsm::set_tracking(std::shared_ptr<TrackingInterface> tracking)
+{
+    std::lock_guard<std::mutex> lk(mx_);
+    trk_ = std::move(tracking);
+}
+
+
+void ChannelFsm::set_telemetry(std::shared_ptr<TelemetryDecoderInterface> telemetry)
+{
+    std::lock_guard<std::mutex> lk(mx_);
+    nav_ = std::move(telemetry);
+}
+
+
+void ChannelFsm::set_queue(Concurrent_Queue<pmt::pmt_t>* queue)
+{
+    std::lock_guard<std::mutex> lk(mx_);
     queue_ = queue;
 }
 
-void ChannelFsm::set_channel(unsigned int channel)
+
+void ChannelFsm::set_channel(uint32_t channel)
 {
+    std::lock_guard<std::mutex> lk(mx_);
     channel_ = channel;
 }
+
+
+void ChannelFsm::stop_acquisition()
+{
+    acq_->stop_acquisition();
+}
+
+
+void ChannelFsm::stop_tracking()
+{
+    trk_->stop_tracking();
+}
+
 
 void ChannelFsm::start_acquisition()
 {
     acq_->reset();
+    nav_->reset();
 }
+
 
 void ChannelFsm::start_tracking()
 {
-    //LOG_AT_LEVEL(INFO) << "Channel " << channel_
-    //<< " passing prn code phase " << acq_->prn_code_phase();
-    //LOG_AT_LEVEL(INFO) << "Channel " << channel_
-    //<< " passing doppler freq shift " << acq_->doppler_freq_shift();
-    //LOG_AT_LEVEL(INFO) << "Channel " << channel_
-    //<< " passing acquisition sample stamp "
-    //<< acq_->get_sample_stamp();
-    //trk_->set_prn_code_phase(acq_->prn_code_phase());
-    //trk_->set_doppler_freq_shift(acq_->doppler_freq_shift());
-    //trk_->set_acq_sample_stamp(acq_->get_sample_stamp());
     trk_->start_tracking();
-    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-    if (queue_ != gr::msg_queue::make())
-        {
-            queue_->handle(cmf->GetQueueMessage(channel_, 1));
-        }
+    queue_->push(pmt::make_any(channel_event_make(channel_, 1)));
 }
+
 
 void ChannelFsm::request_satellite()
 {
-    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-    if (queue_ != gr::msg_queue::make())
-        {
-            queue_->handle(cmf->GetQueueMessage(channel_, 0));
-        }
+    queue_->push(pmt::make_any(channel_event_make(channel_, 0)));
 }
 
+
+void ChannelFsm::notify_stop_tracking()
+{
+    queue_->push(pmt::make_any(channel_event_make(channel_, 2)));
+}

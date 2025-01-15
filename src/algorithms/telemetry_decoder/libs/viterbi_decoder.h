@@ -1,39 +1,32 @@
 /*!
  * \file viterbi_decoder.h
- * \brief Interface of a Viterbi decoder class based on the Iterative Solutions
- * Coded Modulation Library by Matthew C. Valenti
- * \author Daniel Fehr 2013. daniel.co(at)bluewin.ch
+ * \brief Class that implements a Viterbi decoder
+ * \author Carles Fernandez, 2021. cfernandez(at)cttc.es
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_VITERBI_DECODER_H_
-#define GNSS_SDR_VITERBI_DECODER_H_
+#ifndef GNSS_SDR_VITERBI_DECODER_H
+#define GNSS_SDR_VITERBI_DECODER_H
 
-#include <deque>
-#include <iostream>
+#include <array>
+#include <cstdint>
+#include <vector>
+
+/** \addtogroup Telemetry_Decoder
+ * \{ */
+/** \addtogroup Telemetry_Decoder_libs
+ * Utilities for the decoding of GNSS navigation messages.
+ * \{ */
+
 
 /*!
  * \brief Class that implements a Viterbi decoder
@@ -41,88 +34,97 @@
 class Viterbi_Decoder
 {
 public:
-    Viterbi_Decoder(const int g_encoder[], const int KK, const int nn);
-    ~Viterbi_Decoder();
-    void reset();
+    /*!
+     * \brief Constructor of a Viterbi decoder
+     * \param[in] KK  Constraint length
+     * \param[in] nn  Coding rate 1/n
+     * \param[in] LL  Data length
+     * \param[in] g   Polynomial G1 and G2
+     */
+    Viterbi_Decoder(int32_t KK, int32_t nn, int32_t LL, const std::array<int32_t, 2>& g);
 
     /*!
      * \brief Uses the Viterbi algorithm to perform hard-decision decoding of a convolutional code.
+     * \param[out] output_u_int    Hard decisions on the data bits
+     * \param[in] input_c The received signal in LLR-form. For BPSK, must be in form r = 2*a*y/(sigma^2).
      *
-     * \param[in]  input_c[]    The received signal in LLR-form. For BPSK, must be in form r = 2*a*y/(sigma^2).
-     * \param[in]  LL           The number of data bits to be decoded (does not include the mm zero-tail-bits)
-     *
-     * \return  output_u_int[] Hard decisions on the data bits (without the mm zero-tail-bits)
      */
-    float decode_block(const double input_c[], int* output_u_int, const int LL);
+    void decode(std::vector<int32_t>& output_u_int, const std::vector<float>& input_c);
 
-
-    float decode_continuous(const double sym[], const int traceback_depth, int output_u_int[],
-            const int nbits_requested, int &nbits_decoded);
+    /*!
+     * \brief Reset internal status
+     */
+    void reset();
 
 private:
-    class Prev
-    {
-    public:
-        int num_states;
-        Prev(int states, int t);
-        Prev(const Prev& prev);
-        Prev& operator=(const Prev& other);
-        ~Prev();
+    /*
+     * Function that creates the transit and output vectors
+     */
+    void nsc_transit(std::vector<int32_t>& output_p,
+        std::vector<int32_t>& trans_p,
+        int32_t input) const;
 
-        int get_anchestor_state_of_current_state(int current_state);
-        int get_bit_of_current_state(int current_state);
-        float get_metric_of_current_state(int current_state);
-        int get_t();
-        void set_current_state_as_ancestor_of_next_state(int next_state, int current_state);
-        void set_decoded_bit_for_next_state(int next_state, int bit);
-        void set_survivor_branch_metric_of_next_state(int next_state, float metric);
+    /*
+     *  Computes the branch metric used for decoding.
+     *  \return (returned float) The metric between the hypothetical symbol and the received vector
+     *  \param[in] symbol        The hypothetical symbol
+     *
+     */
+    float Gamma(int32_t symbol) const;
 
-    private:
-        int t;
-        int * state;
-        int * bit;
-        float * metric;
-        int * refcount;
-    };
+    /*
+     * Determines if a symbol has odd (1) or even (0) parity
+     *    Output parameters:
+     * \return (returned int): The symbol's parity = 1 for odd and 0 for even
+     *
+     * \param[in] symbol  The integer-valued symbol
+     * \param[in] length  The highest bit position in the symbol
+     *
+     * This function is used by nsc_enc_bit()
+     */
+    int32_t parity_counter(int32_t symbol, int32_t length) const;
 
-    // code properties
-    int d_KK;
-    int d_nn;
+    /*
+     * Convolutionally encodes a single bit using a rate 1/n encoder.
+     * Takes in one input bit at a time, and produces a n-bit output.
+     *
+     * \return (returned int): Computed output
+     *
+     * \param[in]  input     The input data bit (i.e. a 0 or 1).
+     * \param[in]  state_in  The starting state of the encoder (an int from 0 to 2^m-1).
+     * \param[out] state_out_p[]  An integer containing the final state of the encoder
+     *                               (i.e. the state after encoding this bit)
+     *
+     * This function is used by nsc_transit()
+     */
+    int32_t nsc_enc_bit(int32_t* state_out_p,
+        int32_t input,
+        int32_t state_in) const;
 
-    // derived code properties
-    int d_mm;
-    int d_states;
-    int d_number_symbols;
+    std::vector<float> d_prev_section{};
+    std::vector<float> d_next_section{};
 
-    // trellis definition
-    int* d_out0;
-    int* d_state0;
-    int* d_out1;
-    int* d_state1;
+    std::vector<float> d_rec_array{};
+    std::vector<float> d_metric_c{};
+    std::vector<int32_t> d_prev_bit{};
+    std::vector<int32_t> d_prev_state{};
+    std::array<int32_t, 2> d_g{};
 
-    // trellis state
-    float *d_pm_t;
-    std::deque<Prev> d_trellis_paths;
-    float *d_metric_c; /* Set of all possible branch metrics */
-    float *d_rec_array; /* Received values for one trellis section */
-    bool d_trellis_state_is_initialised;
+    std::vector<int32_t> d_out0;
+    std::vector<int32_t> d_out1;
+    std::vector<int32_t> d_state0;
+    std::vector<int32_t> d_state1;
 
-    // measures
-    float d_indicator_metric;
+    float d_MAXLOG = 1e7;  // Define infinity
+    int32_t d_KK{};
+    int32_t d_nn{};
+    int32_t d_LL{};
 
-    // operations on the trellis (change decoder state)
-    void init_trellis_state();
-    int do_acs(const double sym[], int nbits);
-    int do_traceback(size_t traceback_length);
-    int do_tb_and_decode(int traceback_length, int requested_decoding_length, int state, int bits[], float& indicator_metric);
-
-    // branch metric function
-    float gamma(float rec_array[], int symbol, int nn);
-
-    // trellis generation
-    void nsc_transit(int output_p[], int trans_p[], int input, const int g[], int KK, int nn);
-    int nsc_enc_bit(int state_out_p[], int input, int state_in, const int g[], int KK, int nn);
-    int parity_counter(int symbol, int length);
+    int32_t d_mm{};
+    int32_t d_states{};
+    int32_t d_number_symbols{};
 };
 
-#endif /* GNSS_SDR_VITERBI_DECODER_H_ */
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_VITERBI_DECODER_H

@@ -1,182 +1,123 @@
 /*!
- * \file gps_l1_ca_pcps_acquisition.cc
+ * \file gps_l2_m_pcps_acquisition.cc
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  GPS L1 C/A signals
+ *  GPS L2 M signals
  * \authors <ul>
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
  *          </ul>
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #include "gps_l2_m_pcps_acquisition.h"
-#include <iostream>
-#include <fstream>
-#include <stdexcept>
-#include <boost/math/distributions/exponential.hpp>
-#include <glog/logging.h>
-#include <gnuradio/msg_queue.h>
-#include "gps_l2c_signal.h"
 #include "GPS_L2C.h"
+#include "acq_conf.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
+#include "gps_l2c_signal_replica.h"
+#include <algorithm>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
-using google::LogMessage;
+#if HAS_STD_SPAN
+#include <span>
+namespace own = std;
+#else
+#include <gsl/gsl-lite.hpp>
+namespace own = gsl;
+#endif
 
 GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams,
-        gr::msg_queue::sptr queue) :
-    role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+    const ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : gnss_synchro_(nullptr),
+                                role_(role),
+                                threshold_(0),
+                                doppler_center_(0),
+                                channel_(0),
+                                doppler_step_(0),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
-    configuration_ = configuration;
-    std::string default_item_type = "gr_complex";
-    std::string default_dump_filename = "./data/acquisition.dat";
+    acq_parameters_.ms_per_code = 20;
+    acq_parameters_.SetFromConfiguration(configuration, role, GPS_L2_M_CODE_RATE_CPS, GPS_L2C_OPT_ACQ_FS_SPS);
 
-    LOG(INFO) << "role " << role;
+    DLOG(INFO) << "Role " << role;
 
-    item_type_ = configuration_->property(role + ".item_type",
-            default_item_type);
-    //float pfa =  configuration_->property(role + ".pfa", 0.0);
-
-    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
-    if_ = configuration_->property(role + ".ifreq", 0);
-    dump_ = configuration_->property(role + ".dump", false);
-    shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
-
-    bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
-
-    if (!bit_transition_flag_)
+#if USE_GLOG_AND_GFLAGS
+    if (FLAGS_doppler_max != 0)
         {
-            max_dwells_ = configuration_->property(role + ".max_dwells", 1);
+            acq_parameters_.doppler_max = FLAGS_doppler_max;
         }
-    else
+#else
+    if (absl::GetFlag(FLAGS_doppler_max) != 0)
         {
-            max_dwells_ = 2;
+            acq_parameters_.doppler_max = absl::GetFlag(FLAGS_doppler_max);
         }
+#endif
+    doppler_max_ = acq_parameters_.doppler_max;
+    doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
+    item_type_ = acq_parameters_.item_type;
+    item_size_ = acq_parameters_.it_size;
+    fs_in_ = acq_parameters_.fs_in;
 
-    dump_filename_ = configuration_->property(role + ".dump_filename",
-            default_dump_filename);
+    code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GPS_L2_M_CODE_RATE_CPS / GPS_L2_M_CODE_LENGTH_CHIPS)));
+    vector_length_ = static_cast<unsigned int>(std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2.0 : 1.0));
+    code_ = volk_gnsssdr::vector<std::complex<float>>(vector_length_);
 
-    //--- Find number of samples per spreading code -------------------------
-    code_length_ = round((double)fs_in_
-            / (GPS_L2_M_CODE_RATE_HZ / (double)GPS_L2_M_CODE_LENGTH_CHIPS));
+    acquisition_ = pcps_make_acquisition(acq_parameters_);
+    DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
-    vector_length_ = code_length_;
-
-    code_= new gr_complex[vector_length_];
-
-    // if (item_type_.compare("gr_complex") == 0 )
-    //         {
-    item_size_ = sizeof(gr_complex);
-    acquisition_cc_ = pcps_make_acquisition_cc(1, max_dwells_,
-            shift_resolution_, if_, fs_in_, code_length_, code_length_,
-            bit_transition_flag_, queue_, dump_, dump_filename_);
-
-    stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
-
-    DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
-    DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
-    //        }
-
-    if (item_type_.compare("cshort") == 0)
-        {
-            cshort_to_float_x2_ = make_cshort_to_float_x2();
-            float_to_complex_ = gr::blocks::float_to_complex::make();
-        }
-
-    if (item_type_.compare("cbyte") == 0)
+    if (item_type_ == "cbyte")
         {
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
             float_to_complex_ = gr::blocks::float_to_complex::make();
         }
-    //}
-    //else
-    // {
-    //     LOG(WARNING) << item_type_
-    //             << " unknown acquisition item type";
-    // }
 
-    gnss_synchro_ = 0;
-    threshold_ = 0.0;
-    doppler_max_ = 5000;
-    doppler_step_ = 250;
-    channel_internal_queue_ = 0;
-    channel_ = 0;
+    num_codes_ = acq_parameters_.sampled_ms / acq_parameters_.ms_per_code;
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 0)
+        {
+            LOG(ERROR) << "This implementation does not provide an output stream";
+        }
 }
 
 
-GpsL2MPcpsAcquisition::~GpsL2MPcpsAcquisition()
+void GpsL2MPcpsAcquisition::stop_acquisition()
 {
-    delete[] code_;
-}
-
-
-void GpsL2MPcpsAcquisition::set_channel(unsigned int channel)
-{
-    channel_ = channel;
-    //if (item_type_.compare("gr_complex") == 0)
-    //{
-    acquisition_cc_->set_channel(channel_);
-    //}
+    acquisition_->set_active(false);
 }
 
 
 void GpsL2MPcpsAcquisition::set_threshold(float threshold)
 {
-    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    threshold_ = threshold;
 
-    if(pfa == 0.0)
-        {
-            pfa = configuration_->property(role_ + ".pfa", 0.0);
-        }
-    if(pfa == 0.0)
-        {
-            threshold_ = threshold;
-        }
-    else
-        {
-            threshold_ = calculate_threshold(pfa);
-        }
-
-    DLOG(INFO) <<"Channel "<<channel_<<" Threshold = " << threshold_;
-
-   // if (item_type_.compare("gr_complex") == 0)
-    //    {
-            acquisition_cc_->set_threshold(threshold_);
-    //    }
+    acquisition_->set_threshold(threshold_);
 }
 
 
 void GpsL2MPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
 {
     doppler_max_ = doppler_max;
-    //   if (item_type_.compare("gr_complex") == 0)
-    //  {
-    acquisition_cc_->set_doppler_max(doppler_max_);
-    // }
+
+    acquisition_->set_doppler_max(doppler_max_);
 }
 
 
@@ -185,165 +126,106 @@ void GpsL2MPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
 void GpsL2MPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
-    //   if (item_type_.compare("gr_complex") == 0)
-    //      {
-    acquisition_cc_->set_doppler_step(doppler_step_);
-    //     }
 
+    acquisition_->set_doppler_step(doppler_step_);
 }
 
 
-void GpsL2MPcpsAcquisition::set_channel_queue(
-        concurrent_queue<int> *channel_internal_queue)
+void GpsL2MPcpsAcquisition::set_doppler_center(int doppler_center)
 {
-    channel_internal_queue_ = channel_internal_queue;
-    //  if (item_type_.compare("gr_complex") == 0)
-    //  {
-    acquisition_cc_->set_channel_queue(channel_internal_queue_);
-    //  }
+    doppler_center_ = doppler_center;
+
+    acquisition_->set_doppler_center(doppler_center_);
 }
 
 
 void GpsL2MPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
-    // if (item_type_.compare("gr_complex") == 0)
-    // {
-    acquisition_cc_->set_gnss_synchro(gnss_synchro_);
-    // }
+
+    acquisition_->set_gnss_synchro(gnss_synchro_);
 }
 
 
 signed int GpsL2MPcpsAcquisition::mag()
 {
-    // //    if (item_type_.compare("gr_complex") == 0)
-    //        {
-    return acquisition_cc_->mag();
-    //       }
-    //   else
-    //       {
-    //           return 0;
-    //      }
+    return acquisition_->mag();
 }
 
 
 void GpsL2MPcpsAcquisition::init()
 {
-    acquisition_cc_->init();
-    set_local_code();
+    acquisition_->init();
 }
 
 
 void GpsL2MPcpsAcquisition::set_local_code()
 {
-    // if (item_type_.compare("gr_complex") == 0)
-    //   {
-    gps_l2c_m_code_gen_complex_sampled(code_, gnss_synchro_->PRN, fs_in_);
-    acquisition_cc_->set_local_code(code_);
+    volk_gnsssdr::vector<std::complex<float>> code(code_length_);
 
-//    //debug
-//    std::ofstream d_dump_file;
-//    std::stringstream filename;
-//    std::streamsize n = 2 * sizeof(float) * (code_length_); // complex file write
-//    filename.str("");
-//    filename << "../data/local_prn_sampled.dat";
-//    d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-//    d_dump_file.write((char*)code_, n);
-//    d_dump_file.close();
+    if (acq_parameters_.use_automatic_resampler)
+        {
+            gps_l2c_m_code_gen_complex_sampled(code, gnss_synchro_->PRN, acq_parameters_.resampled_fs);
+        }
+    else
+        {
+            gps_l2c_m_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_);
+        }
 
-    //  }
+    own::span<gr_complex> code_span(code_.data(), vector_length_);
+    for (unsigned int i = 0; i < num_codes_; i++)
+        {
+            std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
+        }
+
+    acquisition_->set_local_code(code_.data());
 }
 
 
 void GpsL2MPcpsAcquisition::reset()
 {
-    //  if (item_type_.compare("gr_complex") == 0)
-    //  {
-    acquisition_cc_->set_active(true);
-    //  }
+    acquisition_->set_active(true);
 }
+
 
 void GpsL2MPcpsAcquisition::set_state(int state)
 {
-    //  if (item_type_.compare("gr_complex") == 0)
-    //  {
-    acquisition_cc_->set_state(state);
-    //  }
-}
-
-
-
-float GpsL2MPcpsAcquisition::calculate_threshold(float pfa)
-{
-    //Calculate the threshold
-    unsigned int frequency_bins = 0;
-    for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
-        {
-            frequency_bins++;
-        }
-    DLOG(INFO) << "Channel " << channel_<< "  Pfa = " << pfa;
-    unsigned int ncells = vector_length_ * frequency_bins;
-    double exponent = 1 / static_cast<double>(ncells);
-    double val = pow(1.0 - pfa, exponent);
-    double lambda = double(vector_length_);
-    boost::math::exponential_distribution<double> mydist (lambda);
-    float threshold = (float)quantile(mydist,val);
-
-    return threshold;
+    acquisition_->set_state(state);
 }
 
 
 void GpsL2MPcpsAcquisition::connect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex" || item_type_ == "cshort")
         {
-            top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
+            // nothing to connect
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cbyte")
         {
-            top_block->connect(cshort_to_float_x2_, 0, float_to_complex_, 0);
-            top_block->connect(cshort_to_float_x2_, 1, float_to_complex_, 1);
-            top_block->connect(float_to_complex_, 0, stream_to_vector_, 0);
-            top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
-        }
-    else if (item_type_.compare("cbyte") == 0)
-        {
+            // Since a byte-based acq implementation is not available,
+            // we just convert cshorts to gr_complex
             top_block->connect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
             top_block->connect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
-            top_block->connect(float_to_complex_, 0, stream_to_vector_, 0);
-            top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
+            top_block->connect(float_to_complex_, 0, acquisition_, 0);
         }
     else
         {
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
-
 }
 
 
 void GpsL2MPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex" || item_type_ == "cshort")
         {
-            top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
+            // nothing to disconnect
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cbyte")
         {
-            // Since a short-based acq implementation is not available,
-            // we just convert cshorts to gr_complex
-            top_block->disconnect(cshort_to_float_x2_, 0, float_to_complex_, 0);
-            top_block->disconnect(cshort_to_float_x2_, 1, float_to_complex_, 1);
-            top_block->disconnect(float_to_complex_, 0, stream_to_vector_, 0);
-            top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
-        }
-    else if (item_type_.compare("cbyte") == 0)
-        {
-            // Since a byte-based acq implementation is not available,
-            // we just convert cshorts to gr_complex
             top_block->disconnect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
             top_block->disconnect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
-            top_block->disconnect(float_to_complex_, 0, stream_to_vector_, 0);
-            top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
+            top_block->disconnect(float_to_complex_, 0, acquisition_, 0);
         }
     else
         {
@@ -354,28 +236,27 @@ void GpsL2MPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr GpsL2MPcpsAcquisition::get_left_block()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex" || item_type_ == "cshort")
         {
-            return stream_to_vector_;
+            return acquisition_;
         }
-    else if (item_type_.compare("cshort") == 0)
-        {
-            return cshort_to_float_x2_;
-        }
-    else if (item_type_.compare("cbyte") == 0)
+    if (item_type_ == "cbyte")
         {
             return cbyte_to_float_x2_;
         }
-    else
-        {
-            LOG(WARNING) << item_type_ << " unknown acquisition item type";
-            return nullptr;
-        }
+
+    LOG(WARNING) << item_type_ << " unknown acquisition item type";
+    return nullptr;
 }
 
 
 gr::basic_block_sptr GpsL2MPcpsAcquisition::get_right_block()
 {
-    return acquisition_cc_;
+    return acquisition_;
 }
 
+
+void GpsL2MPcpsAcquisition::set_resampler_latency(uint32_t latency_samples)
+{
+    acquisition_->set_resampler_latency(latency_samples);
+}

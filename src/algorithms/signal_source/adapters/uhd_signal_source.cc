@@ -3,53 +3,48 @@
  * \brief Universal Hardware Driver signal source
  * \author Javier Arribas, 2012. jarribas(at)cttc.es
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #include "uhd_signal_source.h"
-#include <iostream>
-#include <uhd/types/device_addr.hpp>
-#include <uhd/exception.hpp>
-#include <volk/volk.h>
-#include <glog/logging.h>
-#include "configuration_interface.h"
-#include "gnss_sdr_valve.h"
 #include "GPS_L1_CA.h"
+#include "configuration_interface.h"
+#include "gnss_sdr_create_directory.h"
+#include "gnss_sdr_filesystem.h"
+#include "gnss_sdr_string_literals.h"
+#include "gnss_sdr_valve.h"
+#include <uhd/exception.hpp>
+#include <uhd/types/device_addr.hpp>
+#include <volk/volk.h>
+#include <iostream>
+#include <utility>
 
-using google::LogMessage;
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
-UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream, unsigned int out_stream,
-        boost::shared_ptr<gr::msg_queue> queue) :
-                role_(role), in_stream_(in_stream), out_stream_(out_stream),
-                queue_(queue)
+using namespace std::string_literals;
+
+
+UhdSignalSource::UhdSignalSource(const ConfigurationInterface* configuration,
+    const std::string& role, unsigned int in_stream, unsigned int out_stream,
+    Concurrent_Queue<pmt::pmt_t>* queue)
+    : SignalSourceBase(configuration, role, "UHD_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream)
 {
     // DUMP PARAMETERS
-    std::string empty = "";
-    std::string default_dump_file = "./data/signal_source.dat";
-    std::string default_item_type = "cshort";
+    const std::string empty;
+    const std::string default_dump_file("./data/signal_source.dat");
+    const std::string default_item_type("cshort");
 
     // UHD COMMON PARAMETERS
     uhd::device_addr_t dev_addr;
@@ -58,29 +53,61 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
     // available transports on the system (ethernet, usb...).
     // To narrow down the discovery process to a particular device,
     // specify a transport key/value pair specific to your device.
-    if (empty.compare(device_address_) != 0) // if not empty
+    if (empty != device_address_)  // if not empty
         {
             dev_addr["addr"] = device_address_;
         }
-
+    // filter the device by serial number if required (useful for USB devices)
+    std::string device_serial = configuration->property(role + ".device_serial", empty);
+    if (empty != device_serial)  // if not empty
+        {
+            dev_addr["serial"] = device_serial;
+        }
     subdevice_ = configuration->property(role + ".subdevice", empty);
     clock_source_ = configuration->property(role + ".clock_source", std::string("internal"));
+    otw_format_ = configuration->property(role + ".otw_format", std::string("sc16"));
     RF_channels_ = configuration->property(role + ".RF_channels", 1);
-    sample_rate_ = configuration->property(role + ".sampling_frequency", (double)4.0e6);
+    sample_rate_ = configuration->property(role + ".sampling_frequency", 4.0e6);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
+
+    // UHD TRANSPORT PARAMETERS
+    // option to manually set device "num_recv_frames"
+    std::string device_num_recv_frames = configuration->property(role + ".device_num_recv_frames", empty);
+    if (empty != device_num_recv_frames)  // if not empty
+        {
+            dev_addr["num_recv_frames"] = device_num_recv_frames;
+        }
+    // option to manually set device "recv_frame_size"
+    std::string device_recv_frame_size = configuration->property(role + ".device_recv_frame_size", empty);
+    if (empty != device_recv_frame_size)  // if not empty
+        {
+            dev_addr["recv_frame_size"] = device_recv_frame_size;
+        }
 
     if (RF_channels_ == 1)
         {
             // Single RF channel UHD operation (backward compatible config file format)
             samples_.push_back(configuration->property(role + ".samples", 0));
-            dump_.push_back(configuration->property(role + ".dump", false));
-            dump_filename_.push_back(configuration->property(role + ".dump_filename", default_dump_file));
+            bool dump_source = configuration->property(role + ".dump", false);
+            dump_.push_back(dump_source);
+            std::string dump_source_filename = configuration->property(role + ".dump_filename", default_dump_file);
+            dump_filename_.push_back(dump_source_filename);
+            if (dump_source)
+                {
+                    std::string::size_type pos = dump_source_filename.find_last_of(fs::path::preferred_separator);
+                    if (pos != std::string::npos)
+                        {
+                            if (!gnss_sdr_create_directory(dump_source_filename.substr(0, pos)))
+                                {
+                                    std::cerr << "GNSS-SDR cannot create the " << dump_source_filename.substr(0, pos) << " folder. Wrong permissions?\n";
+                                }
+                        }
+                }
 
             freq_.push_back(configuration->property(role + ".freq", GPS_L1_FREQ_HZ));
-            gain_.push_back(configuration->property(role + ".gain", (double)50.0));
+            gain_.push_back(configuration->property(role + ".gain", 50.0));
 
-            IF_bandwidth_hz_.push_back(configuration->property(role + ".IF_bandwidth_hz", sample_rate_/2));
-
+            IF_bandwidth_hz_.push_back(configuration->property(role + ".IF_bandwidth_hz", sample_rate_ / 2));
         }
     else
         {
@@ -88,18 +115,31 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
             for (int i = 0; i < RF_channels_; i++)
                 {
                     // Single RF channel UHD operation (backward compatible config file format)
-                    samples_.push_back(configuration->property(role + ".samples" + boost::lexical_cast<std::string>(i), 0));
-                    dump_.push_back(configuration->property(role + ".dump" + boost::lexical_cast<std::string>(i), false));
-                    dump_filename_.push_back(configuration->property(role + ".dump_filename" + boost::lexical_cast<std::string>(i), default_dump_file));
+                    samples_.push_back(configuration->property(role + ".samples" + std::to_string(i), 0));
+                    bool dump_source = configuration->property(role + ".dump" + std::to_string(i), false);
+                    dump_.push_back(dump_source);
+                    std::string dump_source_filename = configuration->property(role + ".dump_filename" + std::to_string(i), std::to_string(i) + "_"s + default_dump_file);
+                    dump_filename_.push_back(dump_source_filename);
+                    if (dump_source)
+                        {
+                            std::string::size_type pos = dump_source_filename.find_last_of(fs::path::preferred_separator);
+                            if (pos != std::string::npos)
+                                {
+                                    if (!gnss_sdr_create_directory(dump_source_filename.substr(0, pos)))
+                                        {
+                                            std::cerr << "GNSS-SDR cannot create the " << dump_source_filename.substr(0, pos) << " folder. Wrong permissions?\n";
+                                        }
+                                }
+                        }
 
-                    freq_.push_back(configuration->property(role + ".freq" + boost::lexical_cast<std::string>(i), GPS_L1_FREQ_HZ));
-                    gain_.push_back(configuration->property(role + ".gain" + boost::lexical_cast<std::string>(i), (double)50.0));
+                    freq_.push_back(configuration->property(role + ".freq" + std::to_string(i), GPS_L1_FREQ_HZ));
+                    gain_.push_back(configuration->property(role + ".gain" + std::to_string(i), 50.0));
 
-                    IF_bandwidth_hz_.push_back(configuration->property(role + ".IF_bandwidth_hz" + boost::lexical_cast<std::string>(i), sample_rate_/2));
+                    IF_bandwidth_hz_.push_back(configuration->property(role + ".IF_bandwidth_hz" + std::to_string(i), sample_rate_ / 2));
                 }
         }
     // 1. Make the uhd driver instance
-    //uhd_source_= uhd::usrp::multi_usrp::make(dev_addr);
+    // uhd_source_= uhd::usrp::multi_usrp::make(dev_addr);
 
     // single source
     // param: device_addr the address to identify the hardware
@@ -108,26 +148,49 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
     //    fc32: Complex floating point (32-bit floats) range [-1.0, +1.0].
     //    sc16: Complex signed integer (16-bit integers) range [-32768, +32767].
     //     sc8: Complex signed integer (8-bit integers) range [-128, 127].
-    if (item_type_.compare("cbyte") == 0)
+    //! Convenience constructor for streamer args
+    //    stream_args_t(const std::string& cpu = "", const std::string& otw = "")
+    //    {
+    //        cpu_format = cpu;
+    //        otw_format = otw;
+    //    }
+    //
+    //
+    //     * The CPU format is a string that describes the format of host memory.
+    //     * Conversions for the following CPU formats have been implemented:
+    //     *  - fc64 - complex<double>
+    //     *  - fc32 - complex<float>
+    //     *  - sc16 - complex<int16_t>
+    //     *  - sc8 - complex<int8_t>
+    //     *
+    //     * The following are not implemented, but are listed to demonstrate naming convention:
+    //     *  - f32 - float
+    //     *  - f64 - double
+    //     *  - s16 - int16_t
+    //     *  - s8 - int8_t
+    //     *
+    //     * The CPU format can be chosen depending on what the application requires.
+
+    if (item_type_ == "cbyte")
         {
             item_size_ = sizeof(lv_8sc_t);
-            uhd_stream_args_ = uhd::stream_args_t("sc8");
+            uhd_stream_args_ = uhd::stream_args_t("sc8", otw_format_);
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             item_size_ = sizeof(lv_16sc_t);
-            uhd_stream_args_ = uhd::stream_args_t("sc16");
+            uhd_stream_args_ = uhd::stream_args_t("sc16", otw_format_);
         }
-    else if (item_type_.compare("gr_complex") == 0)
+    else if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
-            uhd_stream_args_ = uhd::stream_args_t("fc32");
+            uhd_stream_args_ = uhd::stream_args_t("fc32", otw_format_);
         }
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type. Using cshort.";
             item_size_ = sizeof(lv_16sc_t);
-            uhd_stream_args_ = uhd::stream_args_t("sc16");
+            uhd_stream_args_ = uhd::stream_args_t("sc16", otw_format_);
         }
 
     // select the number of channels and the subdevice specifications
@@ -158,34 +221,34 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
     // 2.2 set the sample rate for the usrp device
     uhd_source_->set_samp_rate(sample_rate_);
     // the actual sample rate may differ from the rate set
-    std::cout << boost::format("Sampling Rate for the USRP device: %f [sps]...") % (uhd_source_->get_samp_rate()) << std::endl;
-    LOG(INFO) << boost::format("Sampling Rate for the USRP device: %f [sps]...") % (uhd_source_->get_samp_rate());
+    std::cout << "Sampling Rate for the USRP device: " << uhd_source_->get_samp_rate() << " [sps]...\n";
+    LOG(INFO) << "Sampling Rate for the USRP device: " << uhd_source_->get_samp_rate() << " [sps]...";
 
     std::vector<std::string> sensor_names;
 
     for (int i = 0; i < RF_channels_; i++)
         {
-            std::cout << "UHD RF CHANNEL #" << i << " SETTINGS" << std::endl;
+            std::cout << "UHD RF CHANNEL #" << i << " SETTINGS\n";
             // 3. Tune the usrp device to the desired center frequency
             uhd_source_->set_center_freq(freq_.at(i), i);
-            std::cout << boost::format("Actual USRP center freq.: %f [Hz]...") % (uhd_source_->get_center_freq(i)) << std::endl;
-            LOG(INFO) << boost::format("Actual USRP center freq. set to: %f [Hz]...") % (uhd_source_->get_center_freq(i));
+            std::cout << "Actual USRP center freq.: " << uhd_source_->get_center_freq(i) << " [Hz]...\n";
+            LOG(INFO) << "Actual USRP center freq. set to: " << uhd_source_->get_center_freq(i) << " [Hz]...";
 
             // TODO: Assign the remnant IF from the PLL tune error
-            std::cout << boost::format("PLL Frequency tune error %f [Hz]...") % (uhd_source_->get_center_freq(i) - freq_.at(i)) << std::endl;
-            LOG(INFO) << boost::format("PLL Frequency tune error %f [Hz]...") % (uhd_source_->get_center_freq(i) - freq_.at(i));
+            std::cout << "PLL Frequency tune error: " << uhd_source_->get_center_freq(i) - freq_.at(i) << " [Hz]...\n";
+            LOG(INFO) << "PLL Frequency tune error: " << uhd_source_->get_center_freq(i) - freq_.at(i) << " [Hz]...";
 
             // 4. set the gain for the daughterboard
             uhd_source_->set_gain(gain_.at(i), i);
-            std::cout << boost::format("Actual daughterboard gain set to: %f dB...") % uhd_source_->get_gain(i) << std::endl;
-            LOG(INFO) << boost::format("Actual daughterboard gain set to: %f dB...") % uhd_source_->get_gain(i);
+            std::cout << "Actual daughterboard gain set to: " << uhd_source_->get_gain(i) << " dB...\n";
+            LOG(INFO) << "Actual daughterboard gain set to: " << uhd_source_->get_gain(i) << " dB...";
 
-            //5.  Set the bandpass filter on the RF frontend
-            std::cout << boost::format("Setting RF bandpass filter bandwidth to: %f [Hz]...") % IF_bandwidth_hz_.at(i) << std::endl;
+            // 5.  Set the bandpass filter on the RF frontend
+            std::cout << "Setting RF bandpass filter bandwidth to: " << IF_bandwidth_hz_.at(i) << " [Hz]...\n";
             uhd_source_->set_bandwidth(IF_bandwidth_hz_.at(i), i);
 
-            //set the antenna (optional)
-            //uhd_source_->set_antenna(ant);
+            // set the antenna (optional)
+            // uhd_source_->set_antenna(ant);
 
             // We should wait? #include <boost/thread.hpp>
             // boost::this_thread::sleep(boost::posix_time::seconds(1));
@@ -195,49 +258,51 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
             if (std::find(sensor_names.begin(), sensor_names.end(), "lo_locked") != sensor_names.end())
                 {
                     uhd::sensor_value_t lo_locked = uhd_source_->get_sensor("lo_locked", i);
-                    std::cout << boost::format("Check for front-end %s ...") % lo_locked.to_pp_string() << " is ";
+                    std::cout << "Check for front-end " << lo_locked.to_pp_string() << " is ... ";
                     if (lo_locked.to_bool() == true)
                         {
-                            std::cout << "Locked" << std::endl;
+                            std::cout << "Locked\n";
                         }
                     else
                         {
-                            std::cout << "UNLOCKED!" << std::endl;
+                            std::cout << "UNLOCKED!\n";
                         }
-                    //UHD_ASSERT_THROW(lo_locked.to_bool());
+                    // UHD_ASSERT_THROW(lo_locked.to_bool());
                 }
         }
 
-
     for (int i = 0; i < RF_channels_; i++)
         {
-            if (samples_.at(i) != 0)
+            if (samples_.at(i) != 0ULL)
                 {
-                    LOG(INFO) << "RF_channel "<< i << " Send STOP signal after " << samples_.at(i) << " samples";
-                    valve_.push_back(gnss_sdr_make_valve(item_size_, samples_.at(i), queue_));
+                    LOG(INFO) << "RF_channel " << i << " Send STOP signal after " << samples_.at(i) << " samples";
+                    valve_.emplace_back(gnss_sdr_make_valve(item_size_, samples_.at(i), queue));
                     DLOG(INFO) << "valve(" << valve_.at(i)->unique_id() << ")";
                 }
 
             if (dump_.at(i))
                 {
-                    LOG(INFO) << "RF_channel "<< i << "Dumping output into file " << dump_filename_.at(i);
+                    LOG(INFO) << "RF_channel " << i << "Dumping output into file " << dump_filename_.at(i);
                     file_sink_.push_back(gr::blocks::file_sink::make(item_size_, dump_filename_.at(i).c_str()));
                     DLOG(INFO) << "file_sink(" << file_sink_.at(i)->unique_id() << ")";
                 }
         }
+    if (in_stream_ > 0)
+        {
+            LOG(ERROR) << "A signal source does not have an input stream";
+        }
+    if (out_stream_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
-
-
-
-UhdSignalSource::~UhdSignalSource()
-{}
 
 
 void UhdSignalSource::connect(gr::top_block_sptr top_block)
 {
     for (int i = 0; i < RF_channels_; i++)
         {
-            if (samples_.at(i) != 0)
+            if (samples_.at(i) != 0ULL)
                 {
                     top_block->connect(uhd_source_, i, valve_.at(i), 0);
                     DLOG(INFO) << "connected usrp source to valve RF Channel " << i;
@@ -259,12 +324,12 @@ void UhdSignalSource::connect(gr::top_block_sptr top_block)
 }
 
 
-
 void UhdSignalSource::disconnect(gr::top_block_sptr top_block)
 {
+    uhd_source_->stop();
     for (int i = 0; i < RF_channels_; i++)
         {
-            if (samples_.at(i) != 0)
+            if (samples_.at(i) != 0ULL)
                 {
                     top_block->disconnect(uhd_source_, i, valve_.at(i), 0);
                     LOG(INFO) << "UHD source disconnected";
@@ -284,11 +349,10 @@ void UhdSignalSource::disconnect(gr::top_block_sptr top_block)
 }
 
 
-
 gr::basic_block_sptr UhdSignalSource::get_left_block()
 {
     LOG(WARNING) << "Trying to get signal source left block.";
-    //return gr_basic_block_sptr();
+    // return gr_basic_block_sptr();
     return gr::uhd::usrp_source::sptr();
 }
 
@@ -301,13 +365,10 @@ gr::basic_block_sptr UhdSignalSource::get_right_block()
 
 gr::basic_block_sptr UhdSignalSource::get_right_block(int RF_channel)
 {
-    //TODO: There is a incoherence here: Multichannel UHD is a single block with multiple outputs, but if the sample limit is enabled, the output is a multiple block!
-    if (samples_.at(RF_channel) != 0)
+    // TODO: There is a incoherence here: Multichannel UHD is a single block with multiple outputs, but if the sample limit is enabled, the output is a multiple block!
+    if (samples_.at(RF_channel) != 0ULL)
         {
             return valve_.at(RF_channel);
         }
-    else
-        {
-            return uhd_source_;
-        }
+    return uhd_source_;
 }

@@ -1,44 +1,25 @@
+# GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+# This file is part of GNSS-SDR.
 #
-# Copyright 2013 Free Software Foundation, Inc.
-#
-# This file is part of GNU Radio
-#
-# GNU Radio is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3, or (at your option)
-# any later version.
-#
-# GNU Radio is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GNU Radio; see the file COPYING.  If not, write to
-# the Free Software Foundation, Inc., 51 Franklin Street,
-# Boston, MA 02110-1301, USA.
-#
+# Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+from __future__ import print_function
 
 import os
-import glob
-import sys
 import re
 import glob
-import shutil
-import exceptions
-from sets import Set
 
-class volk_gnsssdr_modtool:
+class volk_gnsssdr_modtool(object):
     def __init__(self, cfg):
         self.volk_gnsssdr = re.compile('volk_gnsssdr');
         self.remove_after_underscore = re.compile("_.*");
-        self.volk_gnsssdr_run_tests = re.compile('^\s*VOLK_RUN_TESTS.*\n', re.MULTILINE);
-        self.volk_gnsssdr_profile = re.compile('^\s*(VOLK_PROFILE|VOLK_PUPPET_PROFILE).*\n', re.MULTILINE);
+        self.volk_gnsssdr_profile = re.compile(r'^\s*(VOLK_PROFILE|VOLK_PUPPET_PROFILE).*\n', re.MULTILINE);
         self.my_dict = cfg;
-        self.lastline = re.compile('\s*char path\[1024\];.*');
-        self.badassert = re.compile('^\s*assert\(toked\[0\] == "volk_gnsssdr_.*\n', re.MULTILINE);
+        self.lastline = re.compile(r'\s*char path\[1024\];.*');
+        self.badassert = re.compile(r'^\s*assert\(toked\[0\] == "volk_gnsssdr_.*\n', re.MULTILINE);
         self.goodassert = '    assert(toked[0] == "volk_gnsssdr");\n'
-        self.baderase = re.compile('^\s*toked.erase\(toked.begin\(\)\);.*\n', re.MULTILINE);
+        self.baderase = re.compile(r'^\s*toked.erase\(toked.begin\(\)\);.*\n', re.MULTILINE);
         self.gooderase = '    toked.erase(toked.begin());\n    toked.erase(toked.begin());\n';
 
     def get_basename(self, base=None):
@@ -57,10 +38,10 @@ class volk_gnsssdr_modtool:
         else:
             name = self.get_basename(base);
         if name == '':
-            hdr_files = glob.glob(os.path.join(base, "kernels/volk_gnsssdr/*.h"));
+            hdr_files = sorted(glob.glob(os.path.join(base, "kernels/volk_gnsssdr/*.h")));
             begins = re.compile("(?<=volk_gnsssdr_).*")
         else:
-            hdr_files = glob.glob(os.path.join(base, "kernels/volk_gnsssdr_" + name + "/*.h"));
+            hdr_files = sorted(glob.glob(os.path.join(base, "kernels/volk_gnsssdr_" + name + "/*.h")));
             begins = re.compile("(?<=volk_gnsssdr_" + name + "_).*")
 
         datatypes = [];
@@ -69,7 +50,7 @@ class volk_gnsssdr_modtool:
 
         for line in hdr_files:
 
-            subline = re.search(".*\.h.*", os.path.basename(line))
+            subline = re.search(r".*\.h.*", os.path.basename(line))
             if subline:
                 subsubline = begins.search(subline.group(0));
                 if subsubline:
@@ -85,7 +66,7 @@ class volk_gnsssdr_modtool:
             for dt in datatypes:
                 if dt in line:
                     #subline = re.search("(?<=volk_gnsssdr_)" + dt + ".*(?=\.h)", line);
-                    subline = re.search(begins.pattern[:-2] + dt + ".*(?=\.h)", line);
+                    subline = re.search(begins.pattern[:-2] + dt + r".*(?=\.h)", line);
                     if subline:
                         functions.append(subline.group(0));
 
@@ -95,23 +76,32 @@ class volk_gnsssdr_modtool:
 
         dest = os.path.join(self.my_dict['destination'], 'volk_gnsssdr_' + self.my_dict['name'])
         if os.path.exists(dest):
-            raise exceptions.IOError("Destination %s already exits!"%(dest));
+            raise IOError("Destination %s already exits!" % (dest));
 
         if not os.path.exists(os.path.join(self.my_dict['destination'], 'volk_gnsssdr_' + self.my_dict['name'], 'kernels/volk_gnsssdr_' + self.my_dict['name'])):
             os.makedirs(os.path.join(self.my_dict['destination'], 'volk_gnsssdr_' + self.my_dict['name'], 'kernels/volk_gnsssdr_' + self.my_dict['name']))
 
         current_kernel_names = self.get_current_kernels();
+        need_ifdef_updates = ["constant.h", "volk_complex.h", "volk_malloc.h", "volk_prefs.h",
+                              "volk_common.h", "volk_cpu.tmpl.h", "volk_config_fixed.tmpl.h",
+                              "volk_typedefs.h", "volk.tmpl.h"]
 
         for root, dirnames, filenames in os.walk(self.my_dict['base']):
             for name in filenames:
-                t_table = map(lambda a: re.search(a, name), current_kernel_names);
+                t_table = [re.search(a, name) for a in current_kernel_names]
                 t_table = set(t_table);
                 if t_table == set([None]):
                     infile = os.path.join(root, name);
                     instring = open(infile, 'r').read();
                     outstring = re.sub(self.volk_gnsssdr, 'volk_gnsssdr_' + self.my_dict['name'], instring);
+                    if name in need_ifdef_updates:
+                          outstring = re.sub(self.volk_included, 'INCLUDED_VOLK_' + self.my_dict['name'].upper(), outstring)
                     newname = re.sub(self.volk_gnsssdr, 'volk_gnsssdr_' + self.my_dict['name'], name);
                     relpath = os.path.relpath(infile, self.my_dict['base']);
+                    if name == 'VolkConfig.cmake.in':
+                        outstring = re.sub("VOLK", 'VOLK_' + self.my_dict['name'].upper(), outstring)
+                        newname = "Volk%sConfig.cmake.in" % self.my_dict['name']
+
                     newrelpath = re.sub(self.volk_gnsssdr, 'volk_gnsssdr_' + self.my_dict['name'], relpath);
                     dest = os.path.join(self.my_dict['destination'], 'volk_gnsssdr_' + self.my_dict['name'], os.path.dirname(newrelpath), newname);
 
@@ -156,7 +146,7 @@ class volk_gnsssdr_modtool:
         open(dest, 'w+').write(outstring);
 
         # copy orc proto-kernels if they exist
-        for orcfile in glob.glob(inpath + '/orc/' + top + name + '*.orc'):
+        for orcfile in sorted(glob.glob(inpath + '/kernels/volk_gnsssdr/asm/orc/' + top + name + '*.orc')):
             if os.path.isfile(orcfile):
                 instring = open(orcfile, 'r').read();
                 outstring = re.sub(oldvolk_gnsssdr, 'volk_gnsssdr_' + self.my_dict['name'], instring);
@@ -178,18 +168,13 @@ class volk_gnsssdr_modtool:
         base = os.path.join(self.my_dict['destination'], top[:-1]) ;
 
         if not name in self.get_current_kernels():
-
-            raise exceptions.IOError("Requested kernel %s is not in module %s"%(name,base));
-
-
+            raise IOError("Requested kernel %s is not in module %s" % (name,base));
 
         inpath = os.path.abspath(base);
-
-
         kernel = re.compile(name)
-        search_kernels = Set([kernel])
-        profile = re.compile('^\s*VOLK_PROFILE')
-        puppet = re.compile('^\s*VOLK_PUPPET')
+        search_kernels = set([kernel])
+        profile = re.compile(r'^\s*VOLK_PROFILE')
+        puppet = re.compile(r'^\s*VOLK_PUPPET')
         src_dest = os.path.join(inpath, 'apps/', top[:-1] + '_profile.cc');
         infile = open(src_dest);
         otherlines = infile.readlines();
@@ -225,14 +210,14 @@ class volk_gnsssdr_modtool:
 
         for kernel in search_kernels:
             infile = os.path.join(inpath, 'kernels/' + top[:-1] + '/' + top + kernel.pattern + '.h');
-            print "Removing kernel %s"%(kernel.pattern)
+            print("Removing kernel %s" % kernel.pattern)
             if os.path.exists(infile):
                 os.remove(infile);
         # remove the orc proto-kernels if they exist. There are no puppets here
         # so just need to glob for files matching kernel name
-        print glob.glob(inpath + '/orc/' + top + name + '*.orc');
+        print(glob.glob(inpath + '/kernel/volk/asm/orc/' + top + name + '*.orc'))
         for orcfile in glob.glob(inpath + '/orc/' + top + name + '*.orc'):
-            print orcfile
+            print(orcfile)
             if(os.path.exists(orcfile)):
                 os.remove(orcfile);
 
@@ -243,7 +228,7 @@ class volk_gnsssdr_modtool:
         else:
             basename = self.get_basename(base);
         if not name in self.get_current_kernels(base):
-            raise exceptions.IOError("Requested kernel %s is not in module %s"%(name,base));
+            raise IOError("Requested kernel %s is not in module %s" % (name, base));
 
         inpath = os.path.abspath(base);
         if len(basename) > 0:
@@ -255,10 +240,10 @@ class volk_gnsssdr_modtool:
         self.convert_kernel(oldvolk_gnsssdr, name, base, inpath, top);
 
         kernel = re.compile(name)
-        search_kernels = Set([kernel])
+        search_kernels = set([kernel])
 
-        profile = re.compile('^\s*VOLK_PROFILE')
-        puppet = re.compile('^\s*VOLK_PUPPET')
+        profile = re.compile(r'^\s*VOLK_PROFILE')
+        puppet = re.compile(r'^\s*VOLK_PUPPET')
         infile = open(os.path.join(inpath, 'apps/', oldvolk_gnsssdr.pattern + '_profile.cc'));
         otherinfile = open(os.path.join(self.my_dict['destination'], 'volk_gnsssdr_' + self.my_dict['name'], 'apps/volk_gnsssdr_' + self.my_dict['name'] + '_profile.cc'));
         dest = os.path.join(self.my_dict['destination'], 'volk_gnsssdr_' + self.my_dict['name'], 'apps/volk_gnsssdr_' + self.my_dict['name'] + '_profile.cc');
@@ -294,7 +279,7 @@ class volk_gnsssdr_modtool:
                 open(dest, 'a').write(otherline);
 
         for kernel in search_kernels:
-            print "Adding kernel %s from module %s"%(kernel.pattern,base)
+            print("Adding kernel %s from module %s" % (kernel.pattern, base))
 
         infile = open(os.path.join(inpath, 'lib/testqa.cc'));
         otherinfile = open(os.path.join(self.my_dict['destination'], 'volk_gnsssdr_' + self.my_dict['name'], 'lib/testqa.cc'));
@@ -305,9 +290,7 @@ class volk_gnsssdr_modtool:
         inserted = False;
         insert = False
         for otherline in otherlines:
-
-            if (re.match('\s*', otherline) == None or re.match('\s*#.*', otherline) == None):
-
+            if re.match(r'\s*', otherline) is None or re.match(r'\s*#.*', otherline) is None:
                 insert = True;
             if insert and not inserted:
                 inserted = True;
@@ -323,8 +306,3 @@ class volk_gnsssdr_modtool:
                     write_okay = False
             if write_okay:
                 open(dest, 'a').write(otherline);
-
-
-
-
-

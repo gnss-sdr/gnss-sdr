@@ -11,136 +11,110 @@
  * A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
  * Birkhauser, 2007
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #ifndef GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_CC_H
-#define	GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_CC_H
+#define GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_CC_H
 
+#include "cpu_multicorrelator.h"
+#include "gnss_block_interface.h"
+#include "gnss_synchro.h"
+#include "tcp_communication.h"
+#include <gnuradio/block.h>
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <fstream>
-#include <queue>
 #include <map>
 #include <string>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
-#include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
-#include "concurrent_queue.h"
-#include "gnss_synchro.h"
-#include "correlator.h"
-#include "tcp_communication.h"
+
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_gnuradio_blocks
+ * \{ */
 
 
 class Galileo_E1_Tcp_Connector_Tracking_cc;
 
-typedef boost::shared_ptr<Galileo_E1_Tcp_Connector_Tracking_cc> galileo_e1_tcp_connector_tracking_cc_sptr;
+using galileo_e1_tcp_connector_tracking_cc_sptr = gnss_shared_ptr<Galileo_E1_Tcp_Connector_Tracking_cc>;
 
 galileo_e1_tcp_connector_tracking_cc_sptr
-galileo_e1_tcp_connector_make_tracking_cc(long if_freq,
-                                   long fs_in, unsigned
-                                   int vector_length,
-                                   boost::shared_ptr<gr::msg_queue> queue,
-                                   bool dump,
-                                   std::string dump_filename,
-                                   float pll_bw_hz,
-                                   float dll_bw_hz,
-                                   float early_late_space_chips,
-                                   float very_early_late_space_chips,
-                                   size_t port_ch0);
+galileo_e1_tcp_connector_make_tracking_cc(
+    int64_t fs_in, uint32_t vector_length,
+    bool dump,
+    const std::string &dump_filename,
+    float pll_bw_hz,
+    float dll_bw_hz,
+    float early_late_space_chips,
+    float very_early_late_space_chips,
+    size_t port_ch0);
 
 /*!
  * \brief This class implements a code DLL + carrier PLL VEML (Very Early
  *  Minus Late) tracking block for Galileo E1 signals
  */
-class Galileo_E1_Tcp_Connector_Tracking_cc: public gr::block
+class Galileo_E1_Tcp_Connector_Tracking_cc : public gr::block
 {
 public:
     ~Galileo_E1_Tcp_Connector_Tracking_cc();
 
-    void set_channel(unsigned int channel);
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_channel(uint32_t channel);
+    void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
     void start_tracking();
-    void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
 
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
+    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
+
 private:
     friend galileo_e1_tcp_connector_tracking_cc_sptr
-    galileo_e1_tcp_connector_make_tracking_cc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            boost::shared_ptr<gr::msg_queue> queue,
-            bool dump,
-            std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float early_late_space_chips,
-            float very_early_late_space_chips,
-            size_t port_ch0);
+    galileo_e1_tcp_connector_make_tracking_cc(
+        int64_t fs_in, uint32_t vector_length,
+        bool dump,
+        const std::string &dump_filename,
+        float pll_bw_hz,
+        float dll_bw_hz,
+        float early_late_space_chips,
+        float very_early_late_space_chips,
+        size_t port_ch0);
 
-    Galileo_E1_Tcp_Connector_Tracking_cc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            boost::shared_ptr<gr::msg_queue> queue,
-            bool dump,
-            std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float early_late_space_chips,
-            float very_early_late_space_chips,
-            size_t port_ch0);
+    Galileo_E1_Tcp_Connector_Tracking_cc(
+        int64_t fs_in, uint32_t vector_length,
+        bool dump,
+        const std::string &dump_filename,
+        float pll_bw_hz,
+        float dll_bw_hz,
+        float early_late_space_chips,
+        float very_early_late_space_chips,
+        size_t port_ch0);
 
     void update_local_code();
 
     void update_local_carrier();
 
     // tracking configuration vars
-    boost::shared_ptr<gr::msg_queue> d_queue;
-    concurrent_queue<int> *d_channel_internal_queue;
-    unsigned int d_vector_length;
+    uint32_t d_vector_length;
     bool d_dump;
 
-    Gnss_Synchro* d_acquisition_gnss_synchro;
-    unsigned int d_channel;
-    int d_last_seg;
-    long d_if_freq;
-    long d_fs_in;
+    Gnss_Synchro *d_acquisition_gnss_synchro;
+    uint32_t d_channel;
 
+    int64_t d_fs_in;
+
+    int32_t d_correlation_length_samples;
+    int32_t d_n_correlator_taps;
     float d_early_late_spc_chips;
     float d_very_early_late_spc_chips;
 
-    gr_complex* d_ca_code;
-
-    gr_complex* d_very_early_code;
-    gr_complex* d_early_code;
-    gr_complex* d_prompt_code;
-    gr_complex* d_late_code;
-    gr_complex* d_very_late_code;
-    gr_complex* d_carr_sign;
+    volk_gnsssdr::vector<gr_complex> d_ca_code;
 
     gr_complex *d_Very_Early;
     gr_complex *d_Early;
@@ -158,7 +132,9 @@ private:
     float d_acq_carrier_doppler_hz;
 
     // correlator
-    Correlator d_correlator;
+    volk_gnsssdr::vector<float> d_local_code_shift_chips;
+    volk_gnsssdr::vector<gr_complex> d_correlator_outs;
+    Cpu_Multicorrelator multicorrelator_cpu;
 
     // tracking vars
     double d_code_freq_chips;
@@ -168,26 +144,25 @@ private:
     float d_code_phase_samples;
     size_t d_port_ch0;
     size_t d_port;
-    int d_listen_connection;
+    int32_t d_listen_connection;
     float d_control_id;
-    tcp_communication d_tcp_com;
+    Tcp_Communication d_tcp_com;
 
-    //PRN period in samples
-    int d_current_prn_length_samples;
-    int d_next_prn_length_samples;
-    //double d_sample_counter_seconds;
+    // PRN period in samples
+    int32_t d_current_prn_length_samples;
+    int32_t d_next_prn_length_samples;
 
-    //processing samples counters
-    unsigned long int d_sample_counter;
-    unsigned long int d_acq_sample_stamp;
+    // processing samples counters
+    uint64_t d_sample_counter;
+    uint64_t d_acq_sample_stamp;
 
     // CN0 estimation and lock detector
-    int d_cn0_estimation_counter;
-    gr_complex* d_Prompt_buffer;
+    int32_t d_cn0_estimation_counter;
+    volk_gnsssdr::vector<gr_complex> d_Prompt_buffer;
     float d_carrier_lock_test;
     float d_CN0_SNV_dB_Hz;
     float d_carrier_lock_threshold;
-    int d_carrier_lock_fail_counter;
+    int32_t d_carrier_lock_fail_counter;
 
     // control vars
     bool d_enable_tracking;
@@ -201,4 +176,7 @@ private:
     std::string sys;
 };
 
-#endif //GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_CC_H
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_CC_H

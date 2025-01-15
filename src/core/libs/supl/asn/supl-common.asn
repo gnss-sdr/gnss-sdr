@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: BSD-1-Clause
+-- SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
 ULP-Components DEFINITIONS AUTOMATIC TAGS ::=
 BEGIN
 
@@ -27,12 +29,12 @@ SETId ::= CHOICE {
   iPAddress  IPAddress,
   ...}
 
--- msisdn, mdn and imsi are a BCD (Binary Coded Decimal) string 
--- represent digits from 0 through 9, 
+-- msisdn, mdn and imsi are a BCD (Binary Coded Decimal) string
+-- represent digits from 0 through 9,
 -- two digits per octet, each digit encoded 0000 to 1001 (0 to 9)
 -- bits 8765 of octet n encoding digit 2n
 -- bits 4321 of octet n encoding digit 2(n-1) +1
--- not used digits in the string shall be filled with 1111 
+-- not used digits in the string shall be filled with 1111
 SlpSessionID ::= SEQUENCE {
   sessionID  OCTET STRING(SIZE (4)),
   slpId      SLPAddress}
@@ -64,7 +66,7 @@ CellInfo ::= CHOICE {
   ...}
 
 Position ::= SEQUENCE {
-  timestamp         UTCTime, -- shall include seconds and shall use UTC time. 
+  timestamp         UTCTime, -- shall include seconds and shall use UTC time.
   positionEstimate  PositionEstimate,
   velocity          Velocity OPTIONAL,
   ...}
@@ -192,15 +194,15 @@ CPICH-Ec-N0 ::= INTEGER(0..63)
 -- SPARE: CPICH- RSCP, data range from 0 to 91 and from 123 to 127.
 -- Values from 92 to 122 are spare
 -- the encoding of cpich-RSCP is (as per 25.331 V5.11.0)
--- cpich-RSCP = 123    CPICH RSCP <-120 dBm    
--- cpich-RSCP = 124    CPICH RSCP < -119 dBm    
--- cpich-RSCP = 125    CPICH RSCP < -118 dBm   
--- cpich-RSCP = 126    CPICH RSCP < -117 dBm   
+-- cpich-RSCP = 123    CPICH RSCP <-120 dBm
+-- cpich-RSCP = 124    CPICH RSCP < -119 dBm
+-- cpich-RSCP = 125    CPICH RSCP < -118 dBm
+-- cpich-RSCP = 126    CPICH RSCP < -117 dBm
 -- cpich-RSCP = 127    CPICH RSCP < -116 dBm
--- cpich-RSCP = 0      CPICH RSCP < -115 dBm   
--- cpich-RSCP = 1      CPICH       
--- cpich-RSCP = 89     CPICH RSCP < -26 dBm    
--- cpich-RSCP = 90     CPICH RSCP < -25 dBm    
+-- cpich-RSCP = 0      CPICH RSCP < -115 dBm
+-- cpich-RSCP = 1      CPICH
+-- cpich-RSCP = 89     CPICH RSCP < -26 dBm
+-- cpich-RSCP = 90     CPICH RSCP < -25 dBm
 -- cpich-RSCP = 91     CPICH RSCP       dBm
 
 CPICH-RSCP ::= INTEGER(0..127)

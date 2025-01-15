@@ -1,55 +1,191 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
-#
+# GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# GNSS-SDR is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GNSS-SDR is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
-#
+# SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-License-Identifier: BSD-3-Clause
+
+
+set(OPT_TRACKING_BLOCKS_SOURCES "")
+set(OPT_TRACKING_BLOCKS_HEADERS "")
+
+if(ENABLE_CUDA)
+    set(OPT_TRACKING_BLOCKS_SOURCES
+        gps_l1_ca_dll_pll_tracking_gpu_cc.cc
+    )
+    set(OPT_TRACKING_BLOCKS_HEADERS
+        gps_l1_ca_dll_pll_tracking_gpu_cc.h
+    )
+endif()
+
+if(ENABLE_FPGA)
+    set(OPT_TRACKING_BLOCKS_SOURCES
+        ${OPT_TRACKING_BLOCKS_SOURCES}
+        dll_pll_veml_tracking_fpga.cc
+    )
+    set(OPT_TRACKING_BLOCKS_HEADERS
+        ${OPT_TRACKING_BLOCKS_HEADERS}
+        dll_pll_veml_tracking_fpga.h
+    )
+endif()
 
 set(TRACKING_GR_BLOCKS_SOURCES
-     galileo_e1_dll_pll_veml_tracking_cc.cc
-     galileo_volk_e1_dll_pll_veml_tracking_cc.cc
-     galileo_e1_tcp_connector_tracking_cc.cc
-     gps_l1_ca_dll_fll_pll_tracking_cc.cc
-     gps_l1_ca_dll_pll_optim_tracking_cc.cc
-     gps_l1_ca_dll_pll_tracking_cc.cc
-     gps_l1_ca_tcp_connector_tracking_cc.cc
-     galileo_e5a_dll_pll_tracking_cc.cc
-     gps_l2_m_dll_pll_tracking_cc.cc
+    galileo_e1_tcp_connector_tracking_cc.cc
+    gps_l1_ca_tcp_connector_tracking_cc.cc
+    glonass_l1_ca_dll_pll_tracking_cc.cc
+    glonass_l1_ca_dll_pll_c_aid_tracking_cc.cc
+    glonass_l1_ca_dll_pll_c_aid_tracking_sc.cc
+    gps_l1_ca_gaussian_tracking_cc.cc
+    glonass_l2_ca_dll_pll_tracking_cc.cc
+    glonass_l2_ca_dll_pll_c_aid_tracking_cc.cc
+    glonass_l2_ca_dll_pll_c_aid_tracking_sc.cc
+    dll_pll_veml_tracking.cc
+    kf_tracking.cc
+    ${OPT_TRACKING_BLOCKS_SOURCES}
 )
 
-include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${Boost_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${VOLK_GNSSSDR_INCLUDE_DIRS}
+set(TRACKING_GR_BLOCKS_HEADERS
+    galileo_e1_tcp_connector_tracking_cc.h
+    gps_l1_ca_tcp_connector_tracking_cc.h
+    glonass_l1_ca_dll_pll_tracking_cc.h
+    glonass_l1_ca_dll_pll_c_aid_tracking_cc.h
+    glonass_l1_ca_dll_pll_c_aid_tracking_sc.h
+    gps_l1_ca_gaussian_tracking_cc.h
+    glonass_l2_ca_dll_pll_tracking_cc.h
+    glonass_l2_ca_dll_pll_c_aid_tracking_cc.h
+    glonass_l2_ca_dll_pll_c_aid_tracking_sc.h
+    dll_pll_veml_tracking.h
+    kf_tracking.h
+    ${OPT_TRACKING_BLOCKS_HEADERS}
 )
 
-if(ENABLE_GENERIC_ARCH)
-    add_definitions( -DGENERIC_ARCH=1 )
-endif(ENABLE_GENERIC_ARCH)
+list(SORT TRACKING_GR_BLOCKS_HEADERS)
+list(SORT TRACKING_GR_BLOCKS_SOURCES)
 
-file(GLOB TRACKING_GR_BLOCKS_HEADERS "*.h")
-add_library(tracking_gr_blocks ${TRACKING_GR_BLOCKS_SOURCES} ${TRACKING_GR_BLOCKS_HEADERS})
-source_group(Headers FILES ${TRACKING_GR_BLOCKS_HEADERS})
-target_link_libraries(tracking_gr_blocks tracking_lib ${GNURADIO_RUNTIME_LIBRARIES} gnss_sp_libs ${Boost_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES} )
-if(NOT VOLK_GNSSSDR_FOUND)
-    add_dependencies(tracking_gr_blocks volk_gnsssdr_module)
-endif(NOT VOLK_GNSSSDR_FOUND)
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(tracking_gr_blocks STATIC)
+    target_sources(tracking_gr_blocks
+        PRIVATE
+            ${TRACKING_GR_BLOCKS_SOURCES}
+        PUBLIC
+            ${TRACKING_GR_BLOCKS_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${TRACKING_GR_BLOCKS_HEADERS})
+    add_library(tracking_gr_blocks
+        ${TRACKING_GR_BLOCKS_SOURCES}
+        ${TRACKING_GR_BLOCKS_HEADERS}
+    )
+endif()
+
+target_link_libraries(tracking_gr_blocks
+    PUBLIC
+        Gnuradio::blocks
+        tracking_libs
+    PRIVATE
+        algorithms_libs
+        Matio::matio
+        gnss_sdr_flags
+)
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(tracking_gr_blocks PRIVATE Glog::glog)
+    target_compile_definitions(tracking_gr_blocks PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(tracking_gr_blocks PRIVATE absl::flags absl::log)
+endif()
+
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(tracking_gr_blocks
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
+target_include_directories(tracking_gr_blocks
+    PUBLIC
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
+)
+
+if(ENABLE_CUDA)
+    if(CMAKE_VERSION VERSION_GREATER 3.11)
+        target_include_directories(tracking_gr_blocks
+            PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+        )
+    else()
+        target_link_libraries(tracking_gr_blocks
+            PUBLIC cuda_correlator_lib
+        )
+        target_include_directories(tracking_gr_blocks
+            PUBLIC ${CUDA_INCLUDE_DIRS}
+        )
+    endif()
+    set_target_properties(tracking_gr_blocks PROPERTIES
+        CUDA_SEPARABLE_COMPILATION ON
+        POSITION_INDEPENDENT_CODE ON
+    )
+endif()
+
+if(ENABLE_ARMA_NO_DEBUG)
+    target_compile_definitions(tracking_gr_blocks
+        PUBLIC -DARMA_NO_BOUND_CHECKING=1
+    )
+endif()
+
+if(USE_GENERIC_LAMBDAS)
+    set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
+    set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
+    target_compile_definitions(tracking_gr_blocks
+        PRIVATE
+            "$<$<COMPILE_FEATURES:cxx_generic_lambdas>:${has_generic_lambdas}>"
+            "$<$<NOT:$<COMPILE_FEATURES:cxx_generic_lambdas>>:${no_has_generic_lambdas}>"
+    )
+else()
+    target_compile_definitions(tracking_gr_blocks
+        PRIVATE
+            -DHAS_GENERIC_LAMBDA=0
+    )
+endif()
+
+if(USE_BOOST_BIND_PLACEHOLDERS)
+    target_compile_definitions(tracking_gr_blocks
+        PRIVATE
+            -DUSE_BOOST_BIND_PLACEHOLDERS=1
+    )
+endif()
+
+if(has_span)
+    target_compile_definitions(tracking_gr_blocks
+        PUBLIC -DHAS_STD_SPAN=1
+    )
+endif()
+
+if(PMT_USES_BOOST_ANY)
+    target_compile_definitions(tracking_gr_blocks
+        PRIVATE
+            -DPMT_USES_BOOST_ANY=1
+    )
+    target_link_libraries(tracking_gr_blocks
+        PRIVATE
+            Boost::headers
+    )
+endif()
+
+if(GNURADIO_IS_38_OR_GREATER)
+    target_compile_definitions(tracking_gr_blocks
+        PRIVATE
+            -DGNURADIO_GREATER_THAN_38=1
+    )
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(tracking_gr_blocks
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET tracking_gr_blocks
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

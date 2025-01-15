@@ -1,0 +1,55 @@
+// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-FileCopyrightText: 2018-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+syntax = "proto3";
+
+package gnss_sdr;
+
+/* MonitorPvt represents a search query, with pagination options to
+ * indicate which results to include in the response. */
+message MonitorPvt {
+  uint32 tow_at_current_symbol_ms = 1;  // Time of week of the current symbol, in ms
+  uint32 week = 2;                      // PVT GPS week
+  double rx_time = 3;                   // PVT GPS time
+  double user_clk_offset = 4;           // User clock offset, in s
+
+  double pos_x = 5;  // Position X component in ECEF, expressed in m
+  double pos_y = 6;  // Position Y component in ECEF, expressed in m
+  double pos_z = 7;  // Position Z component in ECEF, expressed in m
+  double vel_x = 8;  // Velocity X component in ECEF, in m/s
+  double vel_y = 9;  // Velocity Y component in ECEF, in m/s
+  double vel_z = 10;  // Velocity Z component in ECEF, in m/s
+
+  double cov_xx = 11;  // Position variance in the Y component, in m2
+  double cov_yy = 12;  // Position variance in the Y component, in m2
+  double cov_zz = 13;  // Position variance in the Z component, in m2
+  double cov_xy = 14;  // Position XY covariance, in m2
+  double cov_yz = 15;  // Position YZ covariance, in m2
+  double cov_zx = 16;  // Position ZX covariance, in m2
+
+  double latitude = 17;   // Latitude, in deg. Positive: North
+  double longitude = 18;  // Longitude, in deg. Positive: East
+  double height = 19;     // Height, in m
+
+  uint32 valid_sats = 20;         // Number of valid satellites
+  uint32 solution_status = 21;    // RTKLIB solution status
+  uint32 solution_type = 22;      // RTKLIB solution type (0: xyz-ecef, 1: enu-baseline)
+  float ar_ratio_factor = 23;     // Ambiguity resolution ratio factor for validation
+  float ar_ratio_threshold = 24;  // Ambiguity resolution ratio threshold for validation
+
+  double gdop = 25;  // Geometric Dilution of Precision
+  double pdop = 26;  // Position (3D) Dilution of Precision
+  double hdop = 27;  // Horizontal Dilution of Precision
+  double vdop = 28;  // Vertical Dilution of Precision
+
+  double user_clk_drift_ppm = 29;  // User clock drift [ppm]
+  string utc_time = 30;            // PVT UTC time (rfc 3339 datetime string)
+
+  double vel_e = 31;  // Velocity East component in the local frame, in m/s
+  double vel_n = 32;  // Velocity North component in the local frame, in m/s
+  double vel_u = 33;  // Velocity Up component in the local frame, in m/s
+
+  double cog = 34;  // Course Over Ground, in deg
+
+  uint32 galhas_status = 35;  // Galileo HAS status: 1- HAS messages decoded and applied, 0 - HAS not available
+  string geohash = 36;        // Encoded geographic location. See https://en.wikipedia.org/wiki/Geohash
+}

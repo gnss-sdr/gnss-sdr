@@ -6,41 +6,41 @@
  *
  * \author Carles Fernandez-Prades, 2014. cfernandez(at)cttc.es
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_RTCM_PRINTER_H_
-#define GNSS_SDR_RTCM_PRINTER_H_
+#ifndef GNSS_SDR_RTCM_PRINTER_H
+#define GNSS_SDR_RTCM_PRINTER_H
 
-#include <bitset>   // std::bitset
-#include <fstream>  // std::ofstream
-#include <iostream> // std::cout
-#include <string>   // std::string
-#include <vector>
-#include <boost/crc.hpp>
+#include <cstdint>  // for int32_t
+#include <fstream>  // for std::ofstream
+#include <map>      // for std::map
+#include <memory>   // std::shared_ptr
+#include <string>
 
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup PVT_libs
+ * \{ */
+
+
+class Galileo_Ephemeris;
+class Glonass_Gnav_Ephemeris;
+class Glonass_Gnav_Utc_Model;
+class Gnss_Synchro;
+class Gps_CNAV_Ephemeris;
+class Gps_Ephemeris;
+class Rtcm;
+class Rtklib_Solver;
+class Galileo_HAS_data;
 
 /*!
  * \brief This class provides a implementation of a subset of the RTCM Standard 10403.2 messages
@@ -51,172 +51,158 @@ public:
     /*!
      * \brief Default constructor.
      */
-    Rtcm_Printer(std::string filename, bool flag_rtcm_tty_port, std::string rtcm_dump_filename);
-
-    /*!
-     * \brief Print RTCM 3.2 messages to the initialized device
-     */
-    //bool Print_Nmea_Line(gps_l1_ca_ls_pvt* position, bool print_average_values);
+    Rtcm_Printer(const std::string& filename,
+        bool flag_rtcm_file_dump,
+        bool flag_rtcm_server,
+        bool flag_rtcm_tty_port,
+        uint16_t rtcm_tcp_port,
+        uint16_t rtcm_station_id,
+        const std::string& rtcm_dump_devname,
+        bool time_tag_name = true,
+        const std::string& base_path = ".");
 
     /*!
      * \brief Default destructor.
      */
     ~Rtcm_Printer();
 
-    void print_M1001();
-    std::string print_M1005_test();
+    /*!
+     * \brief Print RTCM messages.
+     */
+    void Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
+        const std::map<int, Gnss_Synchro>& gnss_observables_map,
+        double rx_time,
+        int32_t type_of_rx,
+        int32_t rtcm_MSM_rate_ms,
+        int32_t rtcm_MT1019_rate_ms,
+        int32_t rtcm_MT1020_rate_ms,
+        int32_t rtcm_MT1045_rate_ms,
+        int32_t rtcm_MT1077_rate_ms,
+        int32_t rtcm_MT1097_rate_ms,
+        bool flag_write_RTCM_MSM_output,
+        bool flag_write_RTCM_1019_output,
+        bool flag_write_RTCM_1020_output,
+        bool flag_write_RTCM_1045_output,
+        bool enable_rx_clock_correction);
+
+    uint32_t lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);
+    uint32_t lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);
+    uint32_t lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);
+
+    /*!
+     * \brief Locks time for logging given GLONASS GNAV Broadcast Ephemeris
+     * \note Code added as part of GSoC 2017 program
+     * \params glonass_gnav_eph GLONASS GNAV Broadcast Ephemeris
+     * \params obs_time Time of observation at the moment of printing
+     * \params observables Set of observables as defined by the platform
+     * \return locked time during logging process
+     */
+    uint32_t lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);
+
+    void Print_IGM_Messages(const Galileo_HAS_data& has_data);
+
+    std::string print_MT1005_test();  //!<  For testing purposes
+
 private:
-    std::string rtcm_filename; // String with the RTCM log filename
-    std::ofstream rtcm_file_descriptor; // Output file stream for RTCM log file
+    bool Print_Rtcm_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
+    bool Print_Rtcm_MT1002(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
+    bool Print_Rtcm_MT1003(const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& cnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
+    bool Print_Rtcm_MT1004(const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& cnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
+
+    /*
+     * \brief Prints L1-Only GLONASS RTK Observables
+     * \details This GLONASS message type is not generally used or supported; type 1012 is to be preferred.
+     * \note Code added as part of GSoC 2017 program
+     * \param glonass_gnav_eph GLONASS GNAV Broadcast Ephemeris
+     * \param obs_time Time of observation at the moment of printing
+     * \param observables Set of observables as defined by the platform
+     * \return true or false upon operation success
+     */
+    bool Print_Rtcm_MT1009(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
+
+    /*
+     * \brief Prints Extended L1-Only GLONASS RTK Observables
+     * \details This GLONASS message type is used when only L1 data is present and bandwidth is very tight, often 1012 is used in such cases.
+     * \note Code added as part of GSoC 2017 program
+     * \param glonass_gnav_eph GLONASS GNAV Broadcast Ephemeris
+     * \param obs_time Time of observation at the moment of printing
+     * \param observables Set of observables as defined by the platform
+     * \return true or false upon operation success
+     */
+    bool Print_Rtcm_MT1010(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
+
+    /*
+     * \brief Prints L1&L2 GLONASS RTK Observables
+     * \details This GLONASS message type is not generally used or supported; type 1012 is to be preferred
+     * \note Code added as part of GSoC 2017 program
+     * \param glonass_gnav_ephL1 GLONASS L1 GNAV Broadcast Ephemeris for satellite
+     * \param glonass_gnav_ephL2 GLONASS L2 GNAV Broadcast Ephemeris for satellite
+     * \param obs_time Time of observation at the moment of printing
+     * \param observables Set of observables as defined by the platform
+     * \return true or false upon operation success
+     */
+    bool Print_Rtcm_MT1011(const Glonass_Gnav_Ephemeris& glonass_gnav_ephL1, const Glonass_Gnav_Ephemeris& glonass_gnav_ephL2, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
+
+    /*
+     * \brief Prints Extended L1&L2 GLONASS RTK Observables
+     * \details This GLONASS message type is the most common observational message type, with L1/L2/SNR content.  This is one of the most common messages found.
+     * \note Code added as part of GSoC 2017 program
+     * \param glonass_gnav_ephL1 GLONASS L1 GNAV Broadcast Ephemeris for satellite
+     * \param glonass_gnav_ephL2 GLONASS L2 GNAV Broadcast Ephemeris for satellite
+     * \param obs_time Time of observation at the moment of printing
+     * \param observables Set of observables as defined by the platform
+     * \return true or false upon operation success
+     */
+    bool Print_Rtcm_MT1012(const Glonass_Gnav_Ephemeris& glonass_gnav_ephL1, const Glonass_Gnav_Ephemeris& glonass_gnav_ephL2, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
+
+    bool Print_Rtcm_MT1019(const Gps_Ephemeris& gps_eph);      // GPS Ephemeris, should be broadcast in the event that the IODC does not match the IODE, and every 2 minutes.
+    bool Print_Rtcm_MT1045(const Galileo_Ephemeris& gal_eph);  // Galileo Ephemeris, should be broadcast every 2 minutes
+
+    /*
+     * \brief Prints GLONASS GNAV Ephemeris
+     * \details This GLONASS message should be broadcast every 2 minutes
+     * \note Code added as part of GSoC 2017 program
+     * \param glonass_gnav_eph GLONASS GNAV Broadcast Ephemeris
+     * \param utc_model GLONASS GNAV Clock Information broadcast in string 5
+     * \return true or false upon operation success
+     */
+    bool Print_Rtcm_MT1020(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glonass_Gnav_Utc_Model& utc_model);
+
+    bool Print_Rtcm_MSM(uint32_t msm_number,
+        const Gps_Ephemeris& gps_eph,
+        const Gps_CNAV_Ephemeris& gps_cnav_eph,
+        const Galileo_Ephemeris& gal_eph,
+        const Glonass_Gnav_Ephemeris& glo_gnav_eph,
+        double obs_time,
+        const std::map<int32_t, Gnss_Synchro>& observables,
+        uint32_t clock_steering_indicator,
+        uint32_t external_clock_indicator,
+        int32_t smooth_int,
+        bool divergence_free,
+        bool more_messages);
+
+    bool Print_IGM01(const Galileo_HAS_data& has_data);  // SSR Orbit Corrections
+    bool Print_IGM02(const Galileo_HAS_data& has_data);  // SSR Clock Corrections
+    bool Print_IGM03(const Galileo_HAS_data& has_data);  // SSR Combined Orbit & Clock Corrections
+    bool Print_IGM05(const Galileo_HAS_data& has_data);  // SSR Bias Corrections
+
+    int32_t init_serial(const std::string& serial_device);  // serial port control
+    void close_serial() const;
+    bool Print_Message(const std::string& message);
+
+    std::unique_ptr<Rtcm> rtcm;
+    std::ofstream rtcm_file_descriptor;  // Output file stream for RTCM log file
+    std::string rtcm_filename;           // String with the RTCM log filename
+    std::string rtcm_base_path;
     std::string rtcm_devname;
-    int rtcm_dev_descriptor; // RTCM serial device descriptor (i.e. COM port)
-    //gps_l1_ca_ls_pvt* d_PVT_data;
-    int init_serial (std::string serial_device); //serial port control
-    void close_serial ();
-
-    //std::bitset<8> DF001;
-    std::bitset<12> DF002;
-    std::bitset<12> DF003;
-    std::bitset<30> DF004;
-    std::bitset<1> DF005;
-    std::bitset<5> DF006;
-    std::bitset<1> DF007;
-    std::bitset<3> DF008;
-    std::bitset<6> DF009;
-    std::bitset<1> DF010;
-    std::bitset<24> DF011;
-    std::bitset<20> DF012;
-    std::bitset<7> DF013;
-    std::bitset<8> DF014;
-    std::bitset<8> DF015;
-
-
-    std::bitset<6> DF021;
-    std::bitset<1> DF022;
-    std::bitset<1> DF023;
-    std::bitset<1> DF024;
-    std::bitset<38> DF025;
-    std::bitset<38> DF026;
-    std::bitset<38> DF027;
-
-    // Contents of GPS Satellite Ephemeris Data, Message Type 1019
-    std::bitset<8> DF071;
-    std::bitset<10> DF076;
-    std::bitset<4> DF077;
-    std::bitset<2> DF078;
-    std::bitset<14> DF079;
-    std::bitset<16> DF081;
-    std::bitset<8> DF082;
-    std::bitset<16> DF083;
-    std::bitset<22> DF084;
-    std::bitset<10> DF085;
-    std::bitset<16> DF086;
-    std::bitset<16> DF087;
-
-    std::bitset<32> DF088;
-    std::bitset<16> DF089;
-    std::bitset<32> DF090;
-    std::bitset<16> DF091;
-    std::bitset<32> DF092;
-    std::bitset<16> DF093;
-    std::bitset<16> DF094;
-    std::bitset<32> DF095;
-    std::bitset<16> DF096;
-    std::bitset<32> DF097;
-    std::bitset<16> DF098;
-    std::bitset<32> DF099;
-    std::bitset<24> DF100;
-    std::bitset<8> DF101;
-    std::bitset<6> DF102;
-    std::bitset<1> DF103;
-    std::bitset<1> DF137;
-
-
-    std::bitset<1> DF141;
-    std::bitset<1> DF142;
-
-    // Contents of Galileo F/NAV Satellite Ephemeris Data, Message Type 1045
-    std::bitset<6> DF252;
-    std::bitset<12> DF289;
-    std::bitset<10> DF290;
-    std::bitset<8> DF291;
-    std::bitset<14> DF292;
-    std::bitset<14> DF293;
-    std::bitset<6> DF294;
-    std::bitset<21> DF295;
-    std::bitset<31> DF296;
-    std::bitset<16> DF297;
-    std::bitset<32> DF298;
-    std::bitset<14> DF299;
-    std::bitset<16> DF300;
-    std::bitset<32> DF301;
-    std::bitset<16> DF302;
-    std::bitset<32> DF303;
-    std::bitset<14> DF304;
-    std::bitset<16> DF305;
-    std::bitset<32> DF306;
-    std::bitset<16> DF307;
-    std::bitset<32> DF308;
-    std::bitset<16> DF309;
-    std::bitset<32> DF310;
-    std::bitset<24> DF311;
-    std::bitset<10> DF312;
-    std::bitset<2> DF314;
-    std::bitset<1> DF315;
-
-    std::bitset<2> DF364;
-
-    // Content of message header for MSM1, MSM2, MSM3, MSM4, MSM5, MSM6 and MSM7
-    std::bitset<1> DF393;
-    std::bitset<1> DF394;
-    std::bitset<1> DF395;
-    std::bitset<1> DF396; //variable
-    std::bitset<1> DF409;
-    std::bitset<1> DF411;
-    std::bitset<1> DF412;
-    std::bitset<1> DF417;
-    std::bitset<1> DF418;
-
-    // Content of Satellite data for MSM4 and MSM6
-    std::vector<std::bitset<8> > DF397; // 8*NSAT
-    std::vector<std::bitset<10> > DF398; // 10*NSAT
-
-    // Content of Satellite data for MSM5 and MSM7
-    std::vector<std::bitset<14> > DF399; // 14*NSAT
-
-    // Messages
-    std::bitset<64> message1001_header;
-    std::bitset<58> message1001_content;
-    std::bitset<64> message1002_header;
-    std::bitset<74> message1002_content;
-
-    std::bitset<488> message1019_content;
-
-    std::bitset<496> message1045_content;
-
-    std::bitset<169> MSM_header; // 169+X
-
-    std::vector<std::bitset<18> > MSM4_content; // 18 * Nsat
-
-    std::vector<std::bitset<36> > MSM5_content; // 36 * Nsat
-
-    std::bitset<122> get_M1001();
-    std::bitset<138> get_M1002();  //  GPS observables
-    std::bitset<488> get_M1019();  // GPS ephemeris
-    std::bitset<496> get_M1045();  // Galileo ephemeris
-    std::bitset<152> get_M1005_test();
-
-    void reset_data_fields ();
-
-    // Transport Layer
-    std::bitset<8> preamble;
-    std::bitset<6> reserved_field;
-    std::bitset<10> message_length;
-    std::bitset<24> crc_frame;
-    typedef boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> crc_24_q_type;
-    crc_24_q_type CRC_RTCM;
-    std::string add_CRC(const std::string& m);
-    std::string bin_to_hex(const std::string& s);
+    int32_t rtcm_dev_descriptor;  // RTCM serial device descriptor (i.e. COM port)
+    uint16_t port;
+    uint16_t station_id;
+    bool d_rtcm_writing_started;
+    bool d_rtcm_file_dump;
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_RTCM_PRINTER_H

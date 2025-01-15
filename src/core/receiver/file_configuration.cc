@@ -6,188 +6,187 @@
  *
  * This implementation has a text file as the source for the values of the parameters.
  * The file is in the INI format, containing sections and pairs of names and values.
- * For more information about the INI format, see http://en.wikipedia.org/wiki/INI_file
+ * For more information about the INI format, see https://en.wikipedia.org/wiki/INI_file
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #include "file_configuration.h"
-#include <string>
-#include <glog/logging.h>
-#include "INIReader.h"
-#include "string_converter.h"
-#include "in_memory_configuration.h"
+#include "gnss_sdr_make_unique.h"
+#include <iostream>
+#include <utility>
 
-using google::LogMessage;
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 FileConfiguration::FileConfiguration(std::string filename)
+    : filename_(std::move(filename))
 {
-    filename_ = filename;
     init();
 }
 
 
 FileConfiguration::FileConfiguration()
+    : filename_("./default_config_file.txt")
 {
-    filename_ = "./default_config_file.txt";
     init();
 }
 
 
-FileConfiguration::~FileConfiguration()
-{
-    LOG(INFO) << "Destructor called";
-}
-
-
-std::string FileConfiguration::property(std::string property_name, std::string default_value)
-{
-    if(overrided_->is_present(property_name))
-        {
-            return overrided_->property(property_name, default_value);
-        }
-    else
-        {
-            return ini_reader_->Get("GNSS-SDR", property_name, default_value);
-        }
-}
-
-
-bool FileConfiguration::property(std::string property_name, bool default_value)
-{
-    if(overrided_->is_present(property_name))
-        {
-            return overrided_->property(property_name, default_value);
-        }
-    else
-        {
-            std::string empty = "";
-            return converter_->convert(property(property_name, empty), default_value);
-        }
-}
-
-
-long FileConfiguration::property(std::string property_name, long default_value)
-{
-    if(overrided_->is_present(property_name))
-        {
-            return overrided_->property(property_name, default_value);
-        }
-    else
-        {
-            std::string empty = "";
-            return converter_->convert(property(property_name, empty), default_value);
-        }
-}
-
-
-
-int FileConfiguration::property(std::string property_name, int default_value)
-{
-    if(overrided_->is_present(property_name))
-        {
-            return overrided_->property(property_name, default_value);
-        }
-    else
-        {
-            std::string empty = "";
-            return converter_->convert(property(property_name, empty), default_value);
-        }
-}
-
-
-
-unsigned int FileConfiguration::property(std::string property_name, unsigned int default_value)
-{
-    if(overrided_->is_present(property_name))
-        {
-            return overrided_->property(property_name, default_value);
-        }
-    else
-        {
-            std::string empty = "";
-            return converter_->convert(property(property_name, empty), default_value);
-        }
-}
-
-
-
-float FileConfiguration::property(std::string property_name, float default_value)
-{
-    if(overrided_->is_present(property_name))
-        {
-            return overrided_->property(property_name, default_value);
-        }
-    else
-        {
-            std::string empty = "";
-            return converter_->convert(property(property_name, empty), default_value);
-        }
-}
-
-
-double FileConfiguration::property(std::string property_name, double default_value)
-{
-    if(overrided_->is_present(property_name))
-        {
-            return overrided_->property(property_name, default_value);
-        }
-    else
-        {
-            std::string empty = "";
-            return converter_->convert(property(property_name, empty), default_value);
-        }
-}
-
-
-
-void FileConfiguration::set_property(std::string property_name, std::string value)
-{
-    overrided_->set_property(property_name, value);
-}
-
-
-
 void FileConfiguration::init()
 {
-    std::unique_ptr<StringConverter> converter_(new StringConverter);
-    overrided_ = std::make_shared<InMemoryConfiguration>();
-    ini_reader_ = std::make_shared<INIReader>(filename_);
+    converter_ = std::make_unique<StringConverter>();
+    overrided_ = std::make_unique<InMemoryConfiguration>();
+    ini_reader_ = std::make_unique<INIReader>(filename_);
     error_ = ini_reader_->ParseError();
-    if(error_ == 0)
+    if (error_ == 0)
         {
             DLOG(INFO) << "Configuration file " << filename_ << " opened with no errors";
         }
-    else if(error_ > 0)
+    else if (error_ > 0)
         {
             LOG(WARNING) << "Configuration file " << filename_ << " contains errors in line " << error_;
         }
     else
         {
-            LOG(WARNING) << "Unable to open configuration file " << filename_;
+            std::cerr << "Unable to open configuration file " << filename_ << '\n';
         }
 }
 
 
+bool FileConfiguration::has_section() const
+{
+    return ini_reader_->HasSection("GNSS-SDR");
+}
+
+
+std::string FileConfiguration::property(std::string property_name, std::string default_value) const
+{
+    if (overrided_->is_present(property_name))
+        {
+            return overrided_->property(property_name, default_value);
+        }
+    return ini_reader_->Get("GNSS-SDR", property_name, default_value);
+}
+
+
+bool FileConfiguration::property(std::string property_name, bool default_value) const
+{
+    if (overrided_->is_present(property_name))
+        {
+            return overrided_->property(property_name, default_value);
+        }
+    const std::string empty;
+    return converter_->convert(property(std::move(property_name), empty), default_value);
+}
+
+
+int64_t FileConfiguration::property(std::string property_name, int64_t default_value) const
+{
+    if (overrided_->is_present(property_name))
+        {
+            return overrided_->property(property_name, default_value);
+        }
+    const std::string empty;
+    return converter_->convert(property(std::move(property_name), empty), default_value);
+}
+
+
+uint64_t FileConfiguration::property(std::string property_name, uint64_t default_value) const
+{
+    if (overrided_->is_present(property_name))
+        {
+            return overrided_->property(property_name, default_value);
+        }
+    const std::string empty;
+    return converter_->convert(property(std::move(property_name), empty), default_value);
+}
+
+
+int FileConfiguration::property(std::string property_name, int default_value) const
+{
+    if (overrided_->is_present(property_name))
+        {
+            return overrided_->property(property_name, default_value);
+        }
+    const std::string empty;
+    return converter_->convert(property(std::move(property_name), empty), default_value);
+}
+
+
+unsigned int FileConfiguration::property(std::string property_name, unsigned int default_value) const
+{
+    if (overrided_->is_present(property_name))
+        {
+            return overrided_->property(property_name, default_value);
+        }
+    const std::string empty;
+    return converter_->convert(property(std::move(property_name), empty), default_value);
+}
+
+
+uint16_t FileConfiguration::property(std::string property_name, uint16_t default_value) const
+{
+    if (overrided_->is_present(property_name))
+        {
+            return overrided_->property(property_name, default_value);
+        }
+    const std::string empty;
+    return converter_->convert(property(std::move(property_name), empty), default_value);
+}
+
+
+int16_t FileConfiguration::property(std::string property_name, int16_t default_value) const
+{
+    if (overrided_->is_present(property_name))
+        {
+            return overrided_->property(property_name, default_value);
+        }
+    const std::string empty;
+    return converter_->convert(property(std::move(property_name), empty), default_value);
+}
+
+
+float FileConfiguration::property(std::string property_name, float default_value) const
+{
+    if (overrided_->is_present(property_name))
+        {
+            return overrided_->property(property_name, default_value);
+        }
+    const std::string empty;
+    return converter_->convert(property(std::move(property_name), empty), default_value);
+}
+
+
+double FileConfiguration::property(std::string property_name, double default_value) const
+{
+    if (overrided_->is_present(property_name))
+        {
+            return overrided_->property(property_name, default_value);
+        }
+    const std::string empty;
+    return converter_->convert(property(std::move(property_name), empty), default_value);
+}
+
+
+void FileConfiguration::set_property(std::string property_name, std::string value)
+{
+    overrided_->set_property(std::move(property_name), std::move(value));
+}
+
+
+bool FileConfiguration::is_present(const std::string& property_name) const
+{
+    return (overrided_->is_present(property_name));
+}

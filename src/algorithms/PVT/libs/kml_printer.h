@@ -2,62 +2,60 @@
  * \file kml_printer.h
  * \brief Interface of a class that prints PVT information to a kml file
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ *         Álvaro Cebrián Juan, 2018. acebrianjuan(at)gmail.com
  *
+ * -----------------------------------------------------------------------------
  *
- * -------------------------------------------------------------------------
- *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 
-#ifndef GNSS_SDR_KML_PRINTER_H_
-#define GNSS_SDR_KML_PRINTER_H_
+#ifndef GNSS_SDR_KML_PRINTER_H
+#define GNSS_SDR_KML_PRINTER_H
 
-#include <iostream>
-#include <fstream>
-#include <memory>
+#include <fstream>  // for ofstream
 #include <string>
-#include "gps_l1_ca_ls_pvt.h"
-#include "galileo_e1_ls_pvt.h"
-#include "hybrid_ls_pvt.h"
+
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup PVT_libs
+ * \{ */
+
+
+class Pvt_Solution;
 
 /*!
  * \brief Prints PVT information to OGC KML format file (can be viewed with Google Earth)
  *
- * See http://www.opengeospatial.org/standards/kml
+ * See https://www.opengeospatial.org/standards/kml
  */
 class Kml_Printer
 {
+public:
+    explicit Kml_Printer(const std::string& base_path = std::string("."));
+    ~Kml_Printer();
+    bool set_headers(const std::string& filename, bool time_tag_name = true);
+    bool print_position(const Pvt_Solution* const position);
+    bool close_file();
+
 private:
     std::ofstream kml_file;
-public:
-    bool set_headers(std::string filename);
-    bool print_position(const std::shared_ptr<gps_l1_ca_ls_pvt>& position, bool print_average_values);
-    bool print_position_galileo(const std::shared_ptr<galileo_e1_ls_pvt>& position, bool print_average_values);
-    bool print_position_hybrid(const std::shared_ptr<hybrid_ls_pvt>& position, bool print_average_values);
-    bool close_file();
-    Kml_Printer();
-    ~Kml_Printer();
+    std::ofstream tmp_file;
+    std::string kml_filename;
+    std::string kml_base_path;
+    std::string tmp_file_str;
+    std::string indent;
+    unsigned int point_id;
+    bool positions_printed;
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_KML_PRINTER_H

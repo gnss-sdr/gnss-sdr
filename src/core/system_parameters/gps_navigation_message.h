@@ -21,8 +21,8 @@
 
 
 #include "GPS_L1_CA.h"
-#include "gps_ephemeris.h"
 #include "gps_almanac.h"
+#include "gps_ephemeris.h"
 #include "gps_iono.h"
 #include "gps_utc_model.h"
 #include <bitset>
@@ -199,8 +199,8 @@ private:
     double d_A_f2{};  // Coefficient 2 of code phase offset model [s/s^2]
 
     // Almanac
-    int32_t i_Toa{};   // Almanac reference time [s]
-    int32_t i_WN_A{};  // Modulo 256 of the GPS week number to which the almanac reference time (i_Toa) is referenced
+    int32_t i_Toa{};      // Almanac reference time [s]
+    int32_t i_WN_A{};     // Modulo 256 of the GPS week number to which the almanac reference time (i_Toa) is referenced
     int32_t SV_Health{};  // Almanac SV healt
     uint32_t a_PRN;       // Almanac PRN
     double a_delta_i{};   // Inclination Angle at Reference Time (relative to i_0 = 0.30 semi-circles)

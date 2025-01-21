@@ -226,7 +226,7 @@ const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV23({{253, 6}});
 const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV24({{259, 6}});
 
 
-// Almanac 
+// Almanac
 const std::vector<std::pair<int32_t, int32_t>> ALM_ECC({{69, 16}});
 constexpr double ALM_ECC_LSB = TWO_N21;
 const std::vector<std::pair<int32_t, int32_t>> ALM_TOA({{91, 8}});

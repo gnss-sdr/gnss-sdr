@@ -139,7 +139,7 @@ public:
     }
 
     bool satellite_validation();
-    bool almanac_validation();
+    bool almanac_validation() const;
 
 private:
     uint64_t read_navigation_unsigned(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;

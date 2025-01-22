@@ -21,8 +21,10 @@
 #include "osnma_helper.h"
 #include "osnma_msg_receiver.h"
 #include <gtest/gtest.h>
+#include <array>
 #include <bitset>
 #include <chrono>
+#include <cstdint>
 #include <fstream>
 #include <vector>
 

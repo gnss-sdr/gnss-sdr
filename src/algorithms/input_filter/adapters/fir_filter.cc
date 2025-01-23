@@ -153,14 +153,14 @@ void FirFilter::init()
 
     const int number_of_taps = config_->property(role_ + ".number_of_taps", default_number_of_taps);
     const unsigned int number_of_bands = config_->property(role_ + ".number_of_bands", default_number_of_bands);
-    const std::string filter_type = config_->property(role_ + ".filter_type", default_filter_type);
+    const std::string filter_type = config_->property(role_ + ".filter_type", std::move(default_filter_type));
     const int grid_density = config_->property(role_ + ".grid_density", default_grid_density);
 
-    input_item_type_ = config_->property(role_ + ".input_item_type", default_input_item_type);
-    output_item_type_ = config_->property(role_ + ".output_item_type", default_output_item_type);
-    taps_item_type_ = config_->property(role_ + ".taps_item_type", default_taps_item_type);
+    input_item_type_ = config_->property(role_ + ".input_item_type", std::move(default_input_item_type));
+    output_item_type_ = config_->property(role_ + ".output_item_type", std::move(default_output_item_type));
+    taps_item_type_ = config_->property(role_ + ".taps_item_type", std::move(default_taps_item_type));
     dump_ = config_->property(role_ + ".dump", false);
-    dump_filename_ = config_->property(role_ + ".dump_filename", default_dump_filename);
+    dump_filename_ = config_->property(role_ + ".dump_filename", std::move(default_dump_filename));
 
     std::vector<double> bands;
     std::vector<double> ampl;
@@ -194,7 +194,7 @@ void FirFilter::init()
     // It calculates the optimal (in the Chebyshev/minimax sense) FIR filter
     // impulse response given a set of band edges, the desired response on
     // those bands, and the weight given to the error in those bands.
-    const std::vector<double> taps_d = gr::filter::pm_remez(number_of_taps - 1, bands, ampl, error_w, filter_type, grid_density);
+    const std::vector<double> taps_d = gr::filter::pm_remez(number_of_taps - 1, bands, ampl, error_w, std::move(filter_type), grid_density);
     taps_ = std::vector<float>(taps_d.begin(), taps_d.end());
 }
 

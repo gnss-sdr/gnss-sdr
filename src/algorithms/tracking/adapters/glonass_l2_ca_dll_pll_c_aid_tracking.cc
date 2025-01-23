@@ -25,6 +25,7 @@
 #include "GLONASS_L1_L2_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include <utility>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -46,7 +47,7 @@ GlonassL2CaDllPllCAidTracking::GlonassL2CaDllPllCAidTracking(
 {
     // ################# CONFIGURATION PARAMETERS ########################
     const std::string default_item_type("gr_complex");
-    item_type_ = configuration->property(role_ + ".item_type", default_item_type);
+    item_type_ = configuration->property(role_ + ".item_type", std::move(default_item_type));
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     bool dump = configuration->property(role_ + ".dump", false);
@@ -81,7 +82,7 @@ GlonassL2CaDllPllCAidTracking::GlonassL2CaDllPllCAidTracking(
 
     float early_late_space_chips = configuration->property(role_ + ".early_late_space_chips", static_cast<float>(0.5));
     const std::string default_dump_filename("./track_ch");
-    std::string dump_filename = configuration->property(role_ + ".dump_filename", default_dump_filename);
+    std::string dump_filename = configuration->property(role_ + ".dump_filename", std::move(default_dump_filename));
     const auto vector_length = static_cast<int>(std::round(fs_in / (GLONASS_L2_CA_CODE_RATE_CPS / GLONASS_L2_CA_CODE_LENGTH_CHIPS)));
 
     // ################# MAKE TRACKING GNURadio object ###################

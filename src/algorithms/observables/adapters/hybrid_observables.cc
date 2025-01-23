@@ -20,6 +20,7 @@
 #include "gnss_sdr_flags.h"
 #include "obs_conf.h"
 #include <ostream>  // for operator<<
+#include <utility>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -37,7 +38,7 @@ HybridObservables::HybridObservables(const ConfigurationInterface* configuration
                                 dump_mat_(configuration->property(role + ".dump_mat", true))
 {
     const std::string default_dump_filename("./observables.dat");
-    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
+    dump_filename_ = configuration->property(role + ".dump_filename", std::move(default_dump_filename));
 
     Obs_Conf conf{};
     conf.dump = dump_;

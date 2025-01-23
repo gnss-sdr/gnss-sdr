@@ -53,7 +53,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     std::string default_dump_filename = "./acquisition.mat";
     Acq_Conf acq_parameters = Acq_Conf();
 
-    item_type_ = configuration->property(role_ + ".item_type", default_item_type);
+    item_type_ = configuration->property(role_ + ".item_type", std::move(default_item_type));
     int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;

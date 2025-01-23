@@ -3342,7 +3342,7 @@ std::vector<std::string> Rtcm::print_IGM01(const Galileo_HAS_data& has_data)
                 {
                     rtcm_message_queue->push(message);
                 }
-            msgs.push_back(message);
+            msgs.push_back(std::move(message));
         }
     return msgs;
 }
@@ -3366,7 +3366,7 @@ std::vector<std::string> Rtcm::print_IGM02(const Galileo_HAS_data& has_data)
                 {
                     rtcm_message_queue->push(message);
                 }
-            msgs.push_back(message);
+            msgs.push_back(std::move(message));
         }
     return msgs;
 }
@@ -3390,7 +3390,7 @@ std::vector<std::string> Rtcm::print_IGM03(const Galileo_HAS_data& has_data)
                 {
                     rtcm_message_queue->push(message);
                 }
-            msgs.push_back(message);
+            msgs.push_back(std::move(message));
         }
     return msgs;
 }
@@ -3416,7 +3416,7 @@ std::vector<std::string> Rtcm::print_IGM05(const Galileo_HAS_data& has_data)
                         {
                             rtcm_message_queue->push(message);
                         }
-                    msgs.push_back(message);
+                    msgs.push_back(std::move(message));
                 }
         }
     return msgs;

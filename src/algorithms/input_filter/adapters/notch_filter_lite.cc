@@ -20,6 +20,7 @@
 #include "notch_lite_cc.h"
 #include <boost/lexical_cast.hpp>
 #include <algorithm>  // for max
+#include <utility>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -53,8 +54,8 @@ NotchFilterLite::NotchFilterLite(const ConfigurationInterface* configuration,
     const int n_segments_est = configuration->property(role + ".segments_est", default_n_segments_est);
     const int n_segments_reset = configuration->property(role + ".segments_reset", default_n_segments_reset);
 
-    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
-    item_type_ = configuration->property(role + ".item_type", default_item_type);
+    dump_filename_ = configuration->property(role + ".dump_filename", std::move(default_dump_file));
+    item_type_ = configuration->property(role + ".item_type", std::move(default_item_type));
 
     int n_segments_coeff = static_cast<int>((samp_freq / coeff_rate) / static_cast<float>(length_));
     n_segments_coeff = std::max(1, n_segments_coeff);

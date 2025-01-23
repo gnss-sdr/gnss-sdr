@@ -46,7 +46,7 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
 {
     // ################# CONFIGURATION PARAMETERS ########################
     const std::string default_item_type("gr_complex");
-    std::string item_type = configuration->property(role_ + ".item_type", default_item_type);
+    std::string item_type = configuration->property(role_ + ".item_type", std::move(default_item_type));
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     bool dump = configuration->property(role_ + ".dump", false);
@@ -79,7 +79,7 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
     float very_early_late_space_chips = configuration->property(role_ + ".very_early_late_space_chips", static_cast<float>(0.5));
     size_t port_ch0 = configuration->property(role_ + ".port_ch0", 2060);
     const std::string default_dump_filename("./track_ch");
-    std::string dump_filename = configuration->property(role_ + ".dump_filename", default_dump_filename);
+    std::string dump_filename = configuration->property(role_ + ".dump_filename", std::move(default_dump_filename));
     const auto vector_length = static_cast<int>(std::round(fs_in / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
 
     // ################# MAKE TRACKING GNURadio object ###################

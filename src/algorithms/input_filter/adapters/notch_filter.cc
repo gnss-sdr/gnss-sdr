@@ -19,6 +19,7 @@
 #include "configuration_interface.h"
 #include "notch_cc.h"
 #include <boost/lexical_cast.hpp>
+#include <utility>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -49,8 +50,8 @@ NotchFilter::NotchFilter(const ConfigurationInterface* configuration,
     const int n_segments_est = configuration->property(role + ".segments_est", default_n_segments_est);
     const int n_segments_reset = configuration->property(role + ".segments_reset", default_n_segments_reset);
 
-    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
-    item_type_ = configuration->property(role + ".item_type", default_item_type);
+    dump_filename_ = configuration->property(role + ".dump_filename", std::move(default_dump_file));
+    item_type_ = configuration->property(role + ".item_type", std::move(default_item_type));
 
     DLOG(INFO) << "role " << role_;
     if (item_type_ == "gr_complex")

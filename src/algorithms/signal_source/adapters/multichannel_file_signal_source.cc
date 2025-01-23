@@ -54,7 +54,7 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(const ConfigurationIn
             filename_vec_.push_back(configuration->property(role + ".filename" + std::to_string(n), default_filename));
         }
 
-    item_type_ = configuration->property(role + ".item_type", default_item_type);
+    item_type_ = configuration->property(role + ".item_type", std::move(default_item_type));
     repeat_ = configuration->property(role + ".repeat", false);
     enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
 

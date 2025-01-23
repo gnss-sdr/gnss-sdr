@@ -337,7 +337,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(const ConfigurationInterface* configuration)
 {
     const std::string empty_implementation;
-    std::string implementation = configuration->property("Observables.implementation", empty_implementation);
+    std::string implementation = configuration->property("Observables.implementation", std::move(empty_implementation));
     LOG(INFO) << "Getting Observables with implementation " << implementation;
     if (implementation.find("_Observables") == std::string::npos)
         {
@@ -372,7 +372,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(const Confi
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(const ConfigurationInterface* configuration)
 {
     const std::string empty_implementation;
-    std::string implementation = configuration->property("PVT.implementation", empty_implementation);
+    std::string implementation = configuration->property("PVT.implementation", std::move(empty_implementation));
     LOG(INFO) << "Getting PVT with implementation " << implementation;
     if (implementation.find("_PVT") == std::string::npos)
         {
@@ -428,7 +428,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel(
     // Automatically detect input data type
     const std::string default_item_type("gr_complex");
     std::string acq_item_type = configuration->property("Acquisition_" + signal + appendix1 + item_prop, default_item_type);
-    std::string trk_item_type = configuration->property("Tracking_" + signal + appendix2 + item_prop, default_item_type);
+    std::string trk_item_type = configuration->property("Tracking_" + signal + appendix2 + item_prop, std::move(default_item_type));
     if (acq_item_type != trk_item_type)
         {
             std::cerr << "Configuration error: Acquisition and Tracking blocks must have the same input data type!\n";

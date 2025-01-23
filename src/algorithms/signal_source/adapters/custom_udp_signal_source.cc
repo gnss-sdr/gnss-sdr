@@ -19,6 +19,7 @@
 #include "configuration_interface.h"
 #include "gnss_sdr_string_literals.h"
 #include <iostream>
+#include <utility>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -45,20 +46,20 @@ CustomUDPSignalSource::CustomUDPSignalSource(const ConfigurationInterface* confi
     // DUMP PARAMETERS
     const std::string default_dump_file("./data/signal_source.dat");
     const std::string default_item_type("gr_complex");
-    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
+    dump_filename_ = configuration->property(role + ".dump_filename", std::move(default_dump_file));
 
     // network PARAMETERS
     const std::string default_capture_device("eth0");
     const std::string default_address("127.0.0.1");
     const int default_port = 1234;
-    const std::string address = configuration->property(role + ".origin_address", default_address);
-    std::string capture_device = configuration->property(role + ".capture_device", default_capture_device);
+    const std::string address = configuration->property(role + ".origin_address", std::move(default_address));
+    std::string capture_device = configuration->property(role + ".capture_device", std::move(default_capture_device));
     int port = configuration->property(role + ".port", default_port);
     int payload_bytes = configuration->property(role + ".payload_bytes", 1024);
 
     const std::string default_sample_type("cbyte");
-    const std::string sample_type = configuration->property(role + ".sample_type", default_sample_type);
-    item_type_ = configuration->property(role + ".item_type", default_item_type);
+    const std::string sample_type = configuration->property(role + ".sample_type", std::move(default_sample_type));
+    item_type_ = configuration->property(role + ".item_type", std::move(default_item_type));
 
     udp_gnss_rx_source_ = Gr_Complex_Ip_Packet_Source::make(capture_device,
         address,

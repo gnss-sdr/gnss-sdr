@@ -262,7 +262,7 @@ static void get_signatures_from_name(std::vector<volk_gnsssdr_type_t> &inputsig,
             std::string token = toked[token_index];
             try
                 {
-                    type = volk_gnsssdr_type_from_string(std::move(token));
+                    type = volk_gnsssdr_type_from_string(token);
                     if (side == SIDE_NAME) side = SIDE_OUTPUT;  // if this is the first one after the name...
 
                     if (side == SIDE_INPUT)
@@ -527,8 +527,8 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
     std::vector<volk_gnsssdr_test_results_t> *results,
     std::string puppet_master_name)
 {
-    return run_volk_gnsssdr_tests(desc, manual_func, name, test_params.tol(), test_params.scalar(),
-        test_params.vlen(), test_params.iter(), results, puppet_master_name,
+    return run_volk_gnsssdr_tests(desc, manual_func, std::move(name), test_params.tol(), test_params.scalar(),
+        test_params.vlen(), test_params.iter(), results, std::move(puppet_master_name),
         test_params.benchmark_mode());
 }
 
@@ -627,7 +627,7 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                     memcpy(arch_inbuff, inbuffs[j], vlen * inputsig[j].size * (inputsig[j].is_complex ? 2 : 1));
                     arch_buffs.push_back(arch_inbuff);
                 }
-            test_data.push_back(std::move(arch_buffs));
+            test_data.push_back(arch_buffs);
         }
 
     std::vector<volk_gnsssdr_type_t> both_sigs;

@@ -47,8 +47,8 @@ SignalGenerator::SignalGenerator(const ConfigurationInterface* configuration,
     const std::string default_system("G");
     const std::string default_signal("1C");
 
-    item_type_ = configuration->property(role + ".item_type", std::move(default_item_type));
-    dump_filename_ = configuration->property(role + ".dump_filename", std::move(default_dump_file));
+    item_type_ = configuration->property(role + ".item_type", default_item_type);
+    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
     const unsigned int fs_in = configuration->property("SignalSource.fs_hz", static_cast<unsigned>(4e6));
     const bool data_flag = configuration->property("SignalSource.data_flag", false);

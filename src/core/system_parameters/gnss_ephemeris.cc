@@ -69,12 +69,12 @@ double Gnss_Ephemeris::predicted_doppler(double rx_time_s,
     const std::vector<double> pos_sat = {sat_pos_vel[0], sat_pos_vel[1], sat_pos_vel[2]};
     const std::vector<double> vel_sat = {sat_pos_vel[3], sat_pos_vel[4], sat_pos_vel[5]};
 
-    std::vector<double> x_sr = std::move(pos_sat);
+    std::vector<double> x_sr = pos_sat;
     std::transform(x_sr.begin(), x_sr.end(), pos_rx.begin(), x_sr.begin(), std::minus<double>());  // pos_sat - pos_rx
 
     const double norm_x_sr = std::sqrt(std::inner_product(x_sr.begin(), x_sr.end(), x_sr.begin(), 0.0));  // Euclidean norm
 
-    std::vector<double> v_sr = std::move(vel_sat);
+    std::vector<double> v_sr = vel_sat;
     std::transform(v_sr.begin(), v_sr.end(), vel_rx.begin(), v_sr.begin(), std::minus<double>());  // vel_sat - vel_rx
 
     const double radial_vel = std::inner_product(v_sr.begin(), v_sr.end(), x_sr.begin(), 0.0) / norm_x_sr;

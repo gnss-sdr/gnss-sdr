@@ -39,8 +39,8 @@ IbyteToComplex::IbyteToComplex(const ConfigurationInterface* configuration, cons
 
     DLOG(INFO) << "role " << role_;
 
-    input_item_type_ = configuration->property(role_ + ".input_item_type", std::move(default_input_item_type));
-    dump_filename_ = configuration->property(role_ + ".dump_filename", std::move(default_dump_filename));
+    input_item_type_ = configuration->property(role_ + ".input_item_type", default_input_item_type);
+    dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
 
     gr_interleaved_char_to_complex_ = gr::blocks::interleaved_char_to_complex::make();
 

@@ -55,13 +55,13 @@ RtlTcpSignalSource::RtlTcpSignalSource(const ConfigurationInterface* configurati
     // DUMP PARAMETERS
     const std::string default_dump_file("./data/signal_source.dat");
     const std::string default_item_type("gr_complex");
-    dump_filename_ = configuration->property(role + ".dump_filename", std::move(default_dump_file));
+    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
     // rtl_tcp PARAMETERS
     const std::string default_address("127.0.0.1");
     const int16_t default_port = 1234;
-    item_type_ = configuration->property(role + ".item_type", std::move(default_item_type));
-    address_ = configuration->property(role + ".address", std::move(default_address));
+    item_type_ = configuration->property(role + ".item_type", default_item_type);
+    address_ = configuration->property(role + ".address", default_address);
     port_ = configuration->property(role + ".port", default_port);
 
     if (item_type_ == "short")

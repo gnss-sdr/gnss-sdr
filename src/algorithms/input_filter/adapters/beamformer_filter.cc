@@ -36,8 +36,8 @@ BeamformerFilter::BeamformerFilter(
 {
     const std::string default_item_type("gr_complex");
     const std::string default_dump_file("./input_filter.dat");
-    item_type_ = configuration->property(role + ".item_type", std::move(default_item_type));
-    dump_filename_ = configuration->property(role + ".dump_filename", std::move(default_dump_file));
+    item_type_ = configuration->property(role + ".item_type", default_item_type);
+    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
     DLOG(INFO) << "role " << role_;
     if (item_type_ == "gr_complex")
         {

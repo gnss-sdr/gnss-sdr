@@ -44,12 +44,12 @@ LabsatSignalSource::LabsatSignalSource(const ConfigurationInterface* configurati
     const std::string default_item_type("gr_complex");
     const std::string default_dump_file("./labsat_output.dat");
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    dump_filename_ = configuration->property(role + ".dump_filename", std::move(default_dump_file));
+    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
     const int64_t sampling_frequency_deprecated = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(16368000));
     const int64_t throttle_frequency_sps = configuration->property(role + ".throttle_frequency_sps", static_cast<int64_t>(sampling_frequency_deprecated));
 
-    std::string channels_to_read = configuration->property(role + ".selected_channel", std::move(default_item_type));
+    std::string channels_to_read = configuration->property(role + ".selected_channel", default_item_type);
     std::stringstream ss(channels_to_read);
     int found;
     while (ss.good())
@@ -70,7 +70,7 @@ LabsatSignalSource::LabsatSignalSource(const ConfigurationInterface* configurati
         }
 
     const std::string default_filename("./example_capture.LS3");
-    filename_ = configuration->property(role + ".filename", std::move(default_filename));
+    filename_ = configuration->property(role + ".filename", default_filename);
 
     const bool digital_io_enabled = configuration->property(role + ".digital_io_enabled", false);
 

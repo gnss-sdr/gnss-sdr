@@ -142,7 +142,7 @@ ControlThread::ControlThread()
     std::string pvt_impl = configuration_->property("PVT.implementation", empty_implementation);
     conf_has_pvt_ = !pvt_impl.empty();
 
-    std::string obs_impl = configuration_->property("Observables.implementation", std::move(empty_implementation));
+    std::string obs_impl = configuration_->property("Observables.implementation", empty_implementation);
     conf_has_observables_ = !obs_impl.empty();
 
     well_formatted_configuration_ = conf_file_has_section_ && conf_file_has_mandatory_globals_ && conf_has_signal_sources_ && conf_has_observables_ && conf_has_pvt_;
@@ -747,8 +747,8 @@ void ControlThread::assist_GNSS()
             std::cout << "SUPL RRLP GPS assistance enabled!\n";
             const std::string default_acq_server("supl.google.com");
             const std::string default_eph_server("supl.google.com");
-            supl_client_ephemeris_.server_name = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_server", std::move(default_acq_server));
-            supl_client_acquisition_.server_name = configuration_->property("GNSS-SDR.SUPL_gps_acquisition_server", std::move(default_eph_server));
+            supl_client_ephemeris_.server_name = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_server", default_acq_server);
+            supl_client_acquisition_.server_name = configuration_->property("GNSS-SDR.SUPL_gps_acquisition_server", default_eph_server);
             supl_client_ephemeris_.server_port = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_port", 7275);
             supl_client_acquisition_.server_port = configuration_->property("GNSS-SDR.SUPL_gps_acquisition_port", 7275);
             supl_mcc_ = configuration_->property("GNSS-SDR.SUPL_MCC", 244);
@@ -756,8 +756,8 @@ void ControlThread::assist_GNSS()
 
             const std::string default_lac("0x59e2");
             const std::string default_ci("0x31b0");
-            const std::string supl_lac_s = configuration_->property("GNSS-SDR.SUPL_LAC", std::move(default_lac));
-            const std::string supl_ci_s = configuration_->property("GNSS-SDR.SUPL_CI", std::move(default_ci));
+            const std::string supl_lac_s = configuration_->property("GNSS-SDR.SUPL_LAC", default_lac);
+            const std::string supl_ci_s = configuration_->property("GNSS-SDR.SUPL_CI", default_ci);
             try
                 {
                     supl_lac_ = std::stoi(supl_lac_s, nullptr, 0);

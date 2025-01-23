@@ -63,7 +63,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const std::string default_rtcm_dump_devname("/dev/pts/1");
     DLOG(INFO) << "role " << role;
     pvt_output_parameters.dump = configuration->property(role + ".dump", false);
-    pvt_output_parameters.dump_filename = configuration->property(role + ".dump_filename", std::move(default_dump_filename));
+    pvt_output_parameters.dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
     pvt_output_parameters.dump_mat = configuration->property(role + ".dump_mat", true);
 
     pvt_output_parameters.rtk_trace_level = configuration->property(role + ".rtk_trace_level"s, 0);
@@ -88,7 +88,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     // NMEA Printer settings
     pvt_output_parameters.flag_nmea_tty_port = configuration->property(role + ".flag_nmea_tty_port", false);
-    pvt_output_parameters.nmea_dump_filename = configuration->property(role + ".nmea_dump_filename", std::move(default_nmea_dump_filename));
+    pvt_output_parameters.nmea_dump_filename = configuration->property(role + ".nmea_dump_filename", default_nmea_dump_filename);
     pvt_output_parameters.nmea_dump_devname = configuration->property(role + ".nmea_dump_devname", default_nmea_dump_devname);
 
     // RINEX version
@@ -127,7 +127,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 #endif
     // RTCM Printer settings
     pvt_output_parameters.flag_rtcm_tty_port = configuration->property(role + ".flag_rtcm_tty_port", false);
-    pvt_output_parameters.rtcm_dump_devname = configuration->property(role + ".rtcm_dump_devname", std::move(default_rtcm_dump_devname));
+    pvt_output_parameters.rtcm_dump_devname = configuration->property(role + ".rtcm_dump_devname", default_rtcm_dump_devname);
     pvt_output_parameters.flag_rtcm_server = configuration->property(role + ".flag_rtcm_server", false);
     pvt_output_parameters.rtcm_tcp_port = configuration->property(role + ".rtcm_tcp_port", 2101);
     pvt_output_parameters.rtcm_station_id = configuration->property(role + ".rtcm_station_id", 1234);
@@ -158,7 +158,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     // Advanced Nativation Protocol Printer settings
     pvt_output_parameters.an_output_enabled = configuration->property(role + ".an_output_enabled", pvt_output_parameters.an_output_enabled);
-    pvt_output_parameters.an_dump_devname = configuration->property(role + ".an_dump_devname", std::move(default_nmea_dump_devname));
+    pvt_output_parameters.an_dump_devname = configuration->property(role + ".an_dump_devname", default_nmea_dump_devname);
     if (pvt_output_parameters.an_output_enabled && pvt_output_parameters.flag_nmea_tty_port)
         {
             if (pvt_output_parameters.nmea_dump_devname == pvt_output_parameters.an_dump_devname)
@@ -497,7 +497,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     // Settings 1
     int positioning_mode = -1;
     const std::string default_pos_mode("Single");
-    const std::string positioning_mode_str = configuration->property(role + ".positioning_mode", std::move(default_pos_mode));  // (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h
+    const std::string positioning_mode_str = configuration->property(role + ".positioning_mode", default_pos_mode);  // (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h
     if (positioning_mode_str == "Single")
         {
             positioning_mode = PMODE_SINGLE;
@@ -582,7 +582,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         }
 
     const std::string default_iono_model("OFF");
-    const std::string iono_model_str = configuration->property(role + ".iono_model", std::move(default_iono_model)); /*  (IONOOPT_XXX) see src/algorithms/libs/rtklib/rtklib.h */
+    const std::string iono_model_str = configuration->property(role + ".iono_model", default_iono_model); /*  (IONOOPT_XXX) see src/algorithms/libs/rtklib/rtklib.h */
     int iono_model = -1;
     if (iono_model_str == "OFF")
         {
@@ -621,7 +621,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     const std::string default_trop_model("OFF");
     int trop_model = -1;
-    const std::string trop_model_str = configuration->property(role + ".trop_model", std::move(default_trop_model)); /*  (TROPOPT_XXX) see src/algorithms/libs/rtklib/rtklib.h */
+    const std::string trop_model_str = configuration->property(role + ".trop_model", default_trop_model); /*  (TROPOPT_XXX) see src/algorithms/libs/rtklib/rtklib.h */
     if (trop_model_str == "OFF")
         {
             trop_model = TROPOPT_OFF;
@@ -699,7 +699,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     // Settings 2
     const std::string default_gps_ar("Continuous");
-    const std::string integer_ambiguity_resolution_gps_str = configuration->property(role + ".AR_GPS", std::move(default_gps_ar)); /* Integer Ambiguity Resolution mode for GPS (0:off,1:continuous,2:instantaneous,3:fix and hold,4:ppp-ar) */
+    const std::string integer_ambiguity_resolution_gps_str = configuration->property(role + ".AR_GPS", default_gps_ar); /* Integer Ambiguity Resolution mode for GPS (0:off,1:continuous,2:instantaneous,3:fix and hold,4:ppp-ar) */
     int integer_ambiguity_resolution_gps = -1;
     if (integer_ambiguity_resolution_gps_str == "OFF")
         {
@@ -883,7 +883,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     pvt_output_parameters.xml_output_path = configuration->property(role + ".xml_output_path", default_output_path);
     pvt_output_parameters.nmea_output_file_path = configuration->property(role + ".nmea_output_file_path", default_output_path);
     pvt_output_parameters.rtcm_output_file_path = configuration->property(role + ".rtcm_output_file_path", default_output_path);
-    pvt_output_parameters.has_output_file_path = configuration->property(role + ".has_output_file_path", std::move(default_output_path));
+    pvt_output_parameters.has_output_file_path = configuration->property(role + ".has_output_file_path", default_output_path);
 
     // Read PVT MONITOR Configuration
     pvt_output_parameters.monitor_enabled = configuration->property(role + ".enable_monitor", false);

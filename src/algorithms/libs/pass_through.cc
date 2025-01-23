@@ -40,7 +40,7 @@ Pass_Through::Pass_Through(const ConfigurationInterface* configuration,
       inverted_spectrum(configuration->property(role + ".inverted_spectrum", false))
 {
     const std::string default_item_type("gr_complex");
-    item_type_ = configuration->property(role + ".item_type", std::move(default_item_type));
+    item_type_ = configuration->property(role + ".item_type", default_item_type);
 
     if (item_type_ == "float")
         {

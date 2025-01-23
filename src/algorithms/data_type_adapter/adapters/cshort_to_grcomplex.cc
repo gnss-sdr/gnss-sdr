@@ -36,7 +36,7 @@ CshortToGrComplex::CshortToGrComplex(const ConfigurationInterface* configuration
 
     DLOG(INFO) << "role " << role_;
 
-    dump_filename_ = configuration->property(role_ + ".dump_filename", std::move(default_dump_filename));
+    dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
     cshort_to_gr_complex_ = make_cshort_to_gr_complex();
 
     DLOG(INFO) << "data_type_adapter_(" << cshort_to_gr_complex_->unique_id() << ")";

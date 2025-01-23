@@ -42,8 +42,8 @@ IbyteToCbyte::IbyteToCbyte(const ConfigurationInterface* configuration,
 
     DLOG(INFO) << "role " << role_;
 
-    input_item_type_ = configuration->property(role_ + ".input_item_type", std::move(default_input_item_type));
-    dump_filename_ = configuration->property(role_ + ".dump_filename", std::move(default_dump_filename));
+    input_item_type_ = configuration->property(role_ + ".input_item_type", default_input_item_type);
+    dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
 
     ibyte_to_cbyte_ = make_interleaved_byte_to_complex_byte();
 

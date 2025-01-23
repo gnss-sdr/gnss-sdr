@@ -56,8 +56,8 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInte
 {
     const std::string default_filename("./my_capture.dat");
     const std::string default_dump_filename("./my_capture_dump.dat");
-    filename_ = configuration->property(role + ".filename", std::move(default_filename));
-    dump_filename_ = configuration->property(role + ".dump_filename", std::move(default_dump_filename));
+    filename_ = configuration->property(role + ".filename", default_filename);
+    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
 
     const int64_t bytes_seek = configuration->property(role + ".bytes_to_skip", static_cast<int64_t>(65536));
     const double sample_size_byte = static_cast<double>(adc_bits_) / 4.0;

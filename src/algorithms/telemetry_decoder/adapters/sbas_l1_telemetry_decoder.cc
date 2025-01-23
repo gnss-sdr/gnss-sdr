@@ -36,7 +36,7 @@ SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(
                                 dump_(configuration->property(role + ".dump", false))
 {
     const std::string default_dump_filename("./navigation.dat");
-    dump_filename_ = configuration->property(role + ".dump_filename", std::move(default_dump_filename));
+    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     // make telemetry decoder object
     telemetry_decoder_ = sbas_l1_make_telemetry_decoder_gs(satellite_, dump_);  // TODO fix me
     DLOG(INFO) << "role " << role;

@@ -23,13 +23,13 @@ void Tlm_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     const std::string &role)
 {
     const std::string default_dumpname("telemetry");
-    dump_filename = configuration->property(role + ".dump_filename", std::move(default_dumpname));
+    dump_filename = configuration->property(role + ".dump_filename", default_dumpname);
     dump = configuration->property(role + ".dump", false);
     dump_mat = configuration->property(role + ".dump_mat", dump);
     remove_dat = configuration->property(role + ".remove_dat", false);
     dump_crc_stats = configuration->property(role + ".dump_crc_stats", false);
     const std::string default_crc_stats_dumpname("telemetry_crc_stats");
-    dump_crc_stats_filename = configuration->property(role + ".dump_crc_stats_filename", std::move(default_crc_stats_dumpname));
+    dump_crc_stats_filename = configuration->property(role + ".dump_crc_stats_filename", default_crc_stats_dumpname);
     enable_navdata_monitor = configuration->property("NavDataMonitor.enable_monitor", false);
     if (configuration->property("Channels_1B.count", 0) > 0)
         {

@@ -67,8 +67,8 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
 {
     const std::string default_item_type("gr_complex");
     const std::string default_dump_filename("./acquisition.dat");
-    item_type_ = configuration_->property(role_ + ".item_type", std::move(default_item_type));
-    dump_filename_ = configuration_->property(role_ + ".dump_filename", std::move(default_dump_filename));
+    item_type_ = configuration_->property(role_ + ".item_type", default_item_type);
+    dump_filename_ = configuration_->property(role_ + ".dump_filename", default_dump_filename);
     int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
 

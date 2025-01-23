@@ -52,8 +52,8 @@ PulseBlankingFilter::PulseBlankingFilter(const ConfigurationInterface* configura
     const double if_aux = configuration->property(role_ + ".if", default_if);
     const double if_ = configuration->property(role_ + ".IF", if_aux);
 
-    dump_filename_ = configuration->property(role_ + ".dump_filename", std::move(default_dump_filename));
-    item_type_ = configuration->property(role_ + ".item_type", std::move(default_item_type));
+    dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
+    item_type_ = configuration->property(role_ + ".item_type", default_item_type);
     dump_ = configuration->property(role_ + ".dump", false);
 
     DLOG(INFO) << "role " << role_;

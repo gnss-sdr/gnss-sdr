@@ -1523,7 +1523,7 @@ if(NOT CMAKE_VERSION VERSION_LESS 3.24
 endif()
 
 # Workaround for Clang 18+
-if(absl_FOUND)
+if(absl_FOUND AND NOT ENABLE_OWN_ABSEIL)
     if((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "17.99"))
         add_compile_options(-fclang-abi-compat=17)
     endif()

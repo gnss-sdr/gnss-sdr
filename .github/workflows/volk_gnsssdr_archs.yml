@@ -16,7 +16,7 @@ on:
 
 jobs:
   build-ubuntu-non-x86:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     name: ${{ matrix.distro }} ${{ matrix.arch }} ${{ matrix.compiler.name }}
 
     # Run steps on a matrix of archs.

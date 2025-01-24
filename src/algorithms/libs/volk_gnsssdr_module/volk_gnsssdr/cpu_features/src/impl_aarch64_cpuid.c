@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "cpu_features_macros.h"
+#include <stdint.h>
 
 #ifdef CPU_FEATURES_ARCH_AARCH64
 #if (defined(CPU_FEATURES_OS_FREEBSD) || defined(CPU_FEATURES_OS_OPENBSD) || \

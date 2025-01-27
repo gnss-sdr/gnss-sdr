@@ -37,6 +37,7 @@
 #include <cstddef>
 #include <exception>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <sstream>
 #include <utility>
@@ -867,9 +868,25 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                     tmp_float = static_cast<float>(d_code_freq_chips);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // PLL commands
-                    tmp_float = static_cast<float>(1.0 / (d_carr_phase_error_secs_Ti * CURRENT_INTEGRATION_TIME_S));
+                    float aux = static_cast<float>(d_carr_phase_error_secs_Ti * CURRENT_INTEGRATION_TIME_S);
+                    if (std::fabs(aux) > std::numeric_limits<float>::epsilon())
+                        {
+                            tmp_float = 1.0 / aux;
+                        }
+                    else
+                        {
+                            tmp_float = 0.0;
+                        }
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_float = static_cast<float>(1.0 / (d_code_error_filt_chips_Ti * CURRENT_INTEGRATION_TIME_S));
+                    aux = (d_code_error_filt_chips_Ti * CURRENT_INTEGRATION_TIME_S);
+                    if (std::fabs(aux) > std::numeric_limits<float>::epsilon())
+                        {
+                            tmp_float = 1.0 / aux;
+                        }
+                    else
+                        {
+                            tmp_float = 0.0;
+                        }
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // DLL commands
                     tmp_float = static_cast<float>(d_code_error_chips_Ti * CURRENT_INTEGRATION_TIME_S);

@@ -6006,32 +6006,37 @@ int32_t Rtcm::set_DF401(const Gnss_Synchro& gnss_synchro)
         {
             lambda = SPEED_OF_LIGHT_M_S / GPS_L1_FREQ_HZ;
         }
-    if ((sig == "2S") && (sys == "G"))
+    else if ((sig == "2S") && (sys == "G"))
         {
             lambda = SPEED_OF_LIGHT_M_S / GPS_L2_FREQ_HZ;
         }
-    if ((sig == "5X") && (sys == "E"))
+    else if ((sig == "5X") && (sys == "E"))
         {
             lambda = SPEED_OF_LIGHT_M_S / GALILEO_E5A_FREQ_HZ;
         }
-    if ((sig == "1B") && (sys == "E"))
+    else if ((sig == "1B") && (sys == "E"))
         {
             lambda = SPEED_OF_LIGHT_M_S / GALILEO_E1_FREQ_HZ;
         }
-    if ((sig == "7X") && (sys == "E"))
+    else if ((sig == "7X") && (sys == "E"))
         {
             lambda = SPEED_OF_LIGHT_M_S / GALILEO_E5B_FREQ_HZ;
         }
-    if ((sig == "1C") && (sys == "R"))
+    else if ((sig == "1C") && (sys == "R"))
         {
             lambda = SPEED_OF_LIGHT_M_S / ((GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_DFREQ_HZ * GLONASS_PRN.at(gnss_synchro.PRN))));
         }
-    if ((sig == "2C") && (sys == "R"))
+    else if ((sig == "2C") && (sys == "R"))
         {
             // TODO Need to add slot number and freq number to gnss_syncro
             lambda = SPEED_OF_LIGHT_M_S / (GLONASS_L2_CA_FREQ_HZ);
         }
-
+    else
+        {
+            // should not happen
+            LOG(WARNING) << "Unknown signal in the generation of RTCM message DF401";
+            lambda = SPEED_OF_LIGHT_M_S / GPS_L1_FREQ_HZ;
+        }
     double phrng_m = (gnss_synchro.Carrier_phase_rads / TWO_PI) * lambda - rough_range_m;
 
     /* Subtract phase - pseudorange integer cycle offset */
@@ -6182,30 +6187,36 @@ int32_t Rtcm::set_DF406(const Gnss_Synchro& gnss_synchro)
         {
             lambda = SPEED_OF_LIGHT_M_S / GPS_L1_FREQ_HZ;
         }
-    if ((sig_ == "2S") && (sys_ == "G"))
+    else if ((sig_ == "2S") && (sys_ == "G"))
         {
             lambda = SPEED_OF_LIGHT_M_S / GPS_L2_FREQ_HZ;
         }
-    if ((sig_ == "5X") && (sys_ == "E"))
+    else if ((sig_ == "5X") && (sys_ == "E"))
         {
             lambda = SPEED_OF_LIGHT_M_S / GALILEO_E5A_FREQ_HZ;
         }
-    if ((sig_ == "1B") && (sys_ == "E"))
+    else if ((sig_ == "1B") && (sys_ == "E"))
         {
             lambda = SPEED_OF_LIGHT_M_S / GALILEO_E1_FREQ_HZ;
         }
-    if ((sig_ == "7X") && (sys_ == "E"))
+    else if ((sig_ == "7X") && (sys_ == "E"))
         {
             lambda = SPEED_OF_LIGHT_M_S / GALILEO_E5B_FREQ_HZ;
         }
-    if ((sig_ == "1C") && (sys_ == "R"))
+    else if ((sig_ == "1C") && (sys_ == "R"))
         {
             lambda = SPEED_OF_LIGHT_M_S / (GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_DFREQ_HZ * GLONASS_PRN.at(gnss_synchro.PRN)));
         }
-    if ((sig_ == "2C") && (sys_ == "R"))
+    else if ((sig_ == "2C") && (sys_ == "R"))
         {
             // TODO Need to add slot number and freq number to gnss syncro
             lambda = SPEED_OF_LIGHT_M_S / (GLONASS_L2_CA_FREQ_HZ);
+        }
+    else
+        {
+            // should not happen
+            LOG(WARNING) << "Unknown signal in the generation of RTCM message DF406";
+            lambda = SPEED_OF_LIGHT_M_S / GPS_L1_FREQ_HZ;
         }
     phrng_m = (gnss_synchro.Carrier_phase_rads / TWO_PI) * lambda - rough_range_m;
 

@@ -868,7 +868,7 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                     tmp_float = static_cast<float>(d_code_freq_chips);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // PLL commands
-                    float aux = static_cast<float>(d_carr_phase_error_secs_Ti * CURRENT_INTEGRATION_TIME_S);
+                    auto aux = static_cast<float>(d_carr_phase_error_secs_Ti * CURRENT_INTEGRATION_TIME_S);
                     if (std::fabs(aux) > std::numeric_limits<float>::epsilon())
                         {
                             tmp_float = 1.0 / aux;

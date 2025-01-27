@@ -293,4 +293,23 @@
     <alignment>64</alignment>
 </arch>
 
+<arch name="riscv64">
+</arch>
+
+<arch name="rvv">
+    <flag compiler="gnu">-march=rv64gcv</flag>
+    <flag compiler="clang">-march=rv64gcv</flag>
+</arch>
+
+<arch name="rvvseg">
+    <flag compiler="gnu">-march=rv64gcv</flag>
+    <flag compiler="clang">-march=rv64gcv</flag>
+    <!-->
+        It's unclear how performance portable segmented load/stores are, so the
+        default rvv implementations avoid using them.
+        This is a pseudo arch for separate segmented load/store implementations,
+        and is expected to never be used standalone without "rvv".
+    </-->
+</arch>
+
 </grammar>

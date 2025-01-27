@@ -103,12 +103,27 @@ execute_process(
     OUTPUT_VARIABLE arch_flag_lines OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+try_compile(
+    HAVE_RVV_INTRINSICS
+    ${CMAKE_BINARY_DIR}
+    ${CMAKE_SOURCE_DIR}/cmake/Checks/check-rvv-intrinsics.c
+)
+if(HAVE_RVV_INTRINSICS)
+    message(STATUS "Checking RVV intrinsics - found")
+else()
+    message(STATUS "Checking RVV intrinsics - not found")
+endif()
+
 macro(check_arch arch_name)
     set(flags ${ARGN})
     set(have_${arch_name} TRUE)
+    string(SUBSTRING "${arch_name}" 0 2 arch_prefix)
     foreach(flag ${flags})
         if(MSVC AND (${flag} STREQUAL "/arch:SSE2" OR ${flag} STREQUAL "/arch:SSE"))
             # SSE/SSE2 is supported in MSVC since VS 2005 but flag not available when compiling 64-bit so do not check
+        elseif("${arch_prefix}" STREQUAL "rv" AND NOT HAVE_RVV_INTRINSICS)
+            message(STATUS "Skipping ${arch_name} due to missing RVV intrinsics support")
+            set(have_${arch_name} FALSE)
         else()
             include(CheckCXXCompilerFlag)
             set(have_flag have${flag})
@@ -273,6 +288,10 @@ if(NOT CROSSCOMPILE_MULTILIB AND CPU_IS_x86)
         force_arch(sse "Built-in for MSVC > 2013")
         force_arch(sse2 "Built-in for MSVC > 2013")
     endif()
+endif()
+
+if(NOT ${CMAKE_SYSTEM_PROCESSOR} MATCHES "^riscv64$")
+    overrule_arch(riscv64 "machine is not riscv64")
 endif()
 
 ########################################################################

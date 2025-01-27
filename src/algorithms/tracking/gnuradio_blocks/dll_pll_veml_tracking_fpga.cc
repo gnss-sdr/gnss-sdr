@@ -879,7 +879,10 @@ void dll_pll_veml_tracking_fpga::update_tracking_vars()
                         }
                     tmp_cp1 /= static_cast<double>(d_trk_parameters.smoother_length);
                     tmp_cp2 /= static_cast<double>(d_trk_parameters.smoother_length);
-                    d_code_phase_rate_step_chips = (tmp_cp2 - tmp_cp1) / tmp_samples;
+                    if (tmp_samples >= 1.0)
+                        {
+                            d_code_phase_rate_step_chips = (tmp_cp2 - tmp_cp1) / tmp_samples;
+                        }
                 }
         }
     // remnant code phase [chips]

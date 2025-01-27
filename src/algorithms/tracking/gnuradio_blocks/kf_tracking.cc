@@ -453,9 +453,14 @@ kf_tracking::kf_tracking(const Kf_Conf &conf_)
             d_code_samples_per_chip = 0U;
             d_symbols_per_bit = 0;
         }
-
-    d_beta = d_code_chip_rate / d_signal_carrier_freq;
-
+    if (d_signal_carrier_freq > 1.0)
+        {
+            d_beta = d_code_chip_rate / d_signal_carrier_freq;
+        }
+    else
+        {
+            d_beta = 0.0;
+        }
     // Initialization of local code replica
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
     d_tracking_code.resize(2 * d_code_length_chips, 0.0);
@@ -1280,7 +1285,10 @@ void kf_tracking::update_tracking_vars()
                         }
                     tmp_cp1 /= static_cast<double>(d_trk_parameters.smoother_length);
                     tmp_cp2 /= static_cast<double>(d_trk_parameters.smoother_length);
-                    d_carrier_phase_rate_step_rad = (tmp_cp2 - tmp_cp1) / tmp_samples;
+                    if (tmp_samples >= 1.0)
+                        {
+                            d_carrier_phase_rate_step_rad = (tmp_cp2 - tmp_cp1) / tmp_samples;
+                        }
                     d_x_old_old(3) = d_carrier_phase_rate_step_rad * d_trk_parameters.fs_in / TWO_PI;
                 }
         }

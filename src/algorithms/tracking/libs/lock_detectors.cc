@@ -59,13 +59,13 @@ float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_i
     float Psig = 0.0;
     float Ptot = 0.0;
     const float epsilon = std::numeric_limits<float>::epsilon();
-    if (length == 0 || coh_integration_time_s <= epsilon)
+    if (length == 0 || coh_integration_time_s < epsilon)
         {
             return -100.0;
         }
     for (int i = 0; i < length; i++)
         {
-            Psig += std::abs(Prompt_buffer[i].real());
+            Psig += std::fabs(Prompt_buffer[i].real());
             Ptot += Prompt_buffer[i].imag() * Prompt_buffer[i].imag() + Prompt_buffer[i].real() * Prompt_buffer[i].real();
         }
     Psig /= static_cast<float>(length);
@@ -117,7 +117,7 @@ float cn0_m2m4_estimator(const gr_complex* Prompt_buffer, int length, float coh_
         }
     for (int i = 0; i < length; i++)
         {
-            Psig += std::abs(Prompt_buffer[i].real());
+            Psig += std::fabs(Prompt_buffer[i].real());
             aux = Prompt_buffer[i].imag() * Prompt_buffer[i].imag() + Prompt_buffer[i].real() * Prompt_buffer[i].real();
             m_2 += aux;
             m_4 += (aux * aux);
@@ -131,7 +131,7 @@ float cn0_m2m4_estimator(const gr_complex* Prompt_buffer, int length, float coh_
     if (std::isnan(aux))
         {
             denominator = m_2 - Psig;
-            if (std::abs(denominator) <= epsilon)
+            if (std::fabs(denominator) < epsilon)
                 {
                     return -100.0;
                 }
@@ -140,14 +140,14 @@ float cn0_m2m4_estimator(const gr_complex* Prompt_buffer, int length, float coh_
     else
         {
             denominator = m_2 - aux;
-            if (std::abs(denominator) <= epsilon)
+            if (std::fabs(denominator) < epsilon)
                 {
                     return -100.0;
                 }
             SNR_aux = aux / denominator;
         }
 
-    if (SNR_aux <= epsilon)
+    if (std::fabs(SNR_aux) < epsilon)
         {
             return -100.0;
         }

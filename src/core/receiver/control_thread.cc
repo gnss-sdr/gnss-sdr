@@ -428,6 +428,7 @@ int ControlThread::run()
 
     // start the telecommand listener thread
     cmd_interface_.set_pvt(flowgraph_->get_pvt());
+    cmd_interface_.set_channels(flowgraph_->get_channels());
     cmd_interface_thread_ = std::thread(&ControlThread::telecommand_listener, this);
 
 #ifdef ENABLE_FPGA

@@ -153,6 +153,14 @@ public:
     }
 
     /*!
+     * \brief Returns a smart pointer to the Channels object
+     */
+    std::shared_ptr<std::vector<std::shared_ptr<ChannelInterface>>> get_channels()
+    {
+        return std::make_shared<std::vector<std::shared_ptr<ChannelInterface>>>(channels_);
+    }
+
+    /*!
      * \brief Priorize visible satellites in the specified vector
      */
     void priorize_satellites(const std::vector<std::pair<int, Gnss_Satellite>>& visible_satellites);

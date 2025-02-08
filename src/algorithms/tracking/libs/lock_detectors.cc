@@ -34,7 +34,6 @@
 
 #include "lock_detectors.h"
 #include <cmath>
-#include <limits>
 
 /*
  * Signal-to-Noise (SNR) (\f$\rho\f$) estimator using the Signal-to-Noise Variance (SNV) estimator:
@@ -58,8 +57,7 @@ float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_i
     float SNR_dB_Hz = 0.0;
     float Psig = 0.0;
     float Ptot = 0.0;
-    const float epsilon = std::numeric_limits<float>::epsilon();
-    if (length == 0 || coh_integration_time_s < epsilon)
+    if (length == 0 || coh_integration_time_s == 0.0)
         {
             return -100.0;
         }
@@ -72,14 +70,11 @@ float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_i
     Psig = Psig * Psig;
     Ptot /= static_cast<float>(length);
     float aux = Ptot - Psig;
-    if (aux > epsilon)
-        {
-            SNR = Psig / aux;
-        }
-    else
+    if (aux == 0.0)
         {
             return -100.0;
         }
+    SNR = Psig / aux;
     SNR_dB_Hz = 10.0F * std::log10(SNR) - 10.0F * std::log10(coh_integration_time_s);
     return SNR_dB_Hz;
 }
@@ -110,8 +105,7 @@ float cn0_m2m4_estimator(const gr_complex* Prompt_buffer, int length, float coh_
     float m_4 = 0.0;
     float aux;
     const auto n = static_cast<float>(length);
-    const float epsilon = std::numeric_limits<float>::epsilon();
-    if (length == 0 || coh_integration_time_s <= epsilon)
+    if (length == 0 || coh_integration_time_s == 0.0)
         {
             return -100.0;
         }
@@ -131,7 +125,7 @@ float cn0_m2m4_estimator(const gr_complex* Prompt_buffer, int length, float coh_
     if (std::isnan(aux))
         {
             denominator = m_2 - Psig;
-            if (std::fabs(denominator) < epsilon)
+            if (denominator == 0)
                 {
                     return -100.0;
                 }
@@ -140,14 +134,14 @@ float cn0_m2m4_estimator(const gr_complex* Prompt_buffer, int length, float coh_
     else
         {
             denominator = m_2 - aux;
-            if (std::fabs(denominator) < epsilon)
+            if (denominator == 0)
                 {
                     return -100.0;
                 }
             SNR_aux = aux / denominator;
         }
 
-    if (std::fabs(SNR_aux) < epsilon)
+    if (SNR_aux == 0)
         {
             return -100.0;
         }
@@ -179,7 +173,7 @@ float carrier_lock_detector(const gr_complex* Prompt_buffer, int length)
         }
     NBP = tmp_sum_I * tmp_sum_I + tmp_sum_Q * tmp_sum_Q;
     NBD = tmp_sum_I * tmp_sum_I - tmp_sum_Q * tmp_sum_Q;
-    if (NBP < std::numeric_limits<float>::epsilon())
+    if (NBP == 0)
         {
             return 0.0;
         }

@@ -40,7 +40,6 @@
 #include <cstddef>
 #include <exception>
 #include <iostream>
-#include <limits>
 #include <memory>
 #include <sstream>
 #include <utility>
@@ -874,7 +873,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // PLL commands
                     auto aux = static_cast<float>(d_carr_phase_error_secs_Ti * CURRENT_INTEGRATION_TIME_S);
-                    if (std::fabs(aux) > std::numeric_limits<float>::epsilon())
+                    if (aux != 0.0)
                         {
                             tmp_float = 1.0 / aux;
                         }
@@ -884,7 +883,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                         }
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     aux = (d_code_error_filt_chips_Ti * CURRENT_INTEGRATION_TIME_S);
-                    if (std::fabs(aux) > std::numeric_limits<float>::epsilon())
+                    if (aux != 0.0)
                         {
                             tmp_float = 1.0 / aux;
                         }

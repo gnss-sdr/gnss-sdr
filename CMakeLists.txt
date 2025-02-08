@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2010-2024 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2010-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 ################################################################################
@@ -362,7 +362,7 @@ set(GNSSSDR_GLOG_LOCAL_VERSION "0.7.1")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.28")
 set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "29.3")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.15")
-set(GNSSSDR_GTEST_LOCAL_VERSION "1.15.2")
+set(GNSSSDR_GTEST_LOCAL_VERSION "1.16.0")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "origin/master")
 set(GNSSSDR_GNSSTK_LOCAL_VERSION "14.3.0")
 set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.9.1")
@@ -404,6 +404,9 @@ if(CMAKE_CROSSCOMPILING OR CMAKE_VERSION VERSION_LESS "3.13" OR
     set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "21.12")
 endif()
 
+if(CMAKE_VERSION VERSION_LESS "3.16")
+    set(GNSSSDR_GTEST_LOCAL_VERSION "1.15.2")
+endif()
 if(CMAKE_VERSION VERSION_LESS "3.13" OR
   (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.3.1) OR
   (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0.0))
@@ -756,9 +759,7 @@ if(NOT BOOST_ROOT)
     # Workaround for Macports
     if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
         if(${DETECT_MACPORTS} EQUAL 0)
-            if(EXISTS "${MACPORTS_PREFIX}/libexec/boost/1.81")
-                set(BOOST_ROOT "${MACPORTS_PREFIX}/libexec/boost/1.81")
-            elseif(EXISTS "${MACPORTS_PREFIX}/libexec/boost/1.76")
+            if(EXISTS "${MACPORTS_PREFIX}/libexec/boost/1.76")
                 set(BOOST_ROOT "${MACPORTS_PREFIX}/libexec/boost/1.76")
             elseif(EXISTS "${MACPORTS_PREFIX}/libexec/boost/1.71")
                 set(BOOST_ROOT "${MACPORTS_PREFIX}/libexec/boost/1.71")

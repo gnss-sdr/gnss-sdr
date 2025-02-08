@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2011-2024 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+SPDX-FileCopyrightText: 2011-2025 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
 <!-- prettier-ignore-end -->
 
@@ -386,9 +386,9 @@ $ sudo apt-get install libblas-dev liblapack-dev       # For Debian/Ubuntu/Linux
 $ sudo yum install lapack-devel blas-devel             # For Fedora/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
 $ sudo pacman -S blas lapack                           # For Arch Linux
-$ wget https://sourceforge.net/projects/arma/files/armadillo-14.0.0.tar.xz
-$ tar xvfz armadillo-14.0.0.tar.xz
-$ cd armadillo-14.0.0
+$ wget https://sourceforge.net/projects/arma/files/armadillo-14.2.3.tar.xz
+$ tar xvfz armadillo-14.2.3.tar.xz
+$ cd armadillo-14.2.3
 $ cmake .
 $ make
 $ sudo make install
@@ -446,9 +446,9 @@ $ sudo pacman -S openssl                  # For Arch Linux
 #### Install [Matio](https://github.com/tbeu/matio "Matio's Homepage"), MATLAB MAT file I/O library
 
 ```
-$ wget https://github.com/tbeu/matio/releases/download/v1.5.26/matio-1.5.27.tar.gz
-$ tar xvfz matio-1.5.27.tar.gz
-$ cd matio-1.5.27
+$ wget https://github.com/tbeu/matio/releases/download/v1.5.28/matio-1.5.28.tar.gz
+$ tar xvfz matio-1.5.28.tar.gz
+$ cd matio-1.5.28
 $ ./configure
 $ make
 $ sudo make install
@@ -475,9 +475,9 @@ For more options, please check the
 #### Install [Pugixml](https://pugixml.org/ "Pugixml's Homepage"), a light-weight C++ XML processing library
 
 ```
-$ wget https://github.com/zeux/pugixml/releases/download/v1.14/pugixml-1.14.tar.gz
-$ tar xvfz pugixml-1.14.tar.gz
-$ cd pugixml-1.14
+$ wget https://github.com/zeux/pugixml/releases/download/v1.14/pugixml-1.15.tar.gz
+$ tar xvfz pugixml-1.15.tar.gz
+$ cd pugixml-1.15
 $ mkdir build && cd build
 $ cmake ..
 $ make
@@ -488,8 +488,8 @@ $ sudo ldconfig
 #### Download [GoogleTest](https://github.com/google/googletest "Googletest Homepage")
 
 ```
-$ wget https://github.com/google/googletest/archive/refs/tags/v1.15.2.zip
-$ unzip v1.15.2.zip
+$ wget https://github.com/google/googletest/archive/refs/tags/v1.16.0.zip
+$ unzip v1.16.0.zip
 ```
 
 Please **DO NOT build or install** Google Test. Every user needs to compile
@@ -513,10 +513,10 @@ downloaded resides. Just type in your terminal (or add it to your
 `$HOME/.bashrc` file for a permanent solution) the following line:
 
 ```
-export GTEST_DIR=/home/username/googletest-1.15.2
+export GTEST_DIR=/home/username/googletest-1.16.0
 ```
 
-changing `/home/username/googletest-1.15.2` by the actual path where you
+changing `/home/username/googletest-1.16.0` by the actual path where you
 unpacked Google Test. If the CMake script does not find that folder, or the
 environment variable is not defined, or the source code is not installed by a
 package, then it will download a fresh copy of the Google Test source code and
@@ -793,7 +793,7 @@ $ sudo port upgrade outdated
 $ sudo port install armadillo cmake pkgconfig protobuf3-cpp pugixml openssl3
 $ sudo port install gnuradio +uhd +grc +zeromq
 $ sudo port install boost matio libad9361-iio libiio
-$ sudo port install py311-mako
+$ sudo port install py313-mako
 $ sudo port install doxygen +docs
 ```
 
@@ -813,7 +813,7 @@ $ port select --list python
 and you can activate a certain version by typing:
 
 ```
-$ sudo port select --set python python311
+$ sudo port select --set python python313
 ```
 
 ### Homebrew

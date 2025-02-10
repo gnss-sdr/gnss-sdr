@@ -41,7 +41,7 @@ Nav_Msg_Udp_Listener::Nav_Msg_Udp_Listener(unsigned short port)
 
 /*
  * Blocking call to read nav_message from UDP port
- * return true if message parsed succesfully, false ow
+ * return true if message parsed successfully, false ow
  */
 bool Nav_Msg_Udp_Listener::receive_and_parse_nav_message(gnss_sdr::navMsg &message)
 {

@@ -66,7 +66,7 @@ DEFINE_bool(plot_gps_l1_gaussian_tracking_test, false, "Plots results of GpsL1CA
 ABSL_FLAG(bool, plot_gps_l1_gaussian_tracking_test, false, "Plots results of GpsL1CAGaussianTrackingTest with gnuplot");
 #endif
 
-// ######## GNURADIO BLOCK MESSAGE RECEVER #########
+// ######## GNURADIO BLOCK MESSAGE RECEIVER #########
 class GpsL1CAGaussianTrackingTest_msg_rx;
 
 

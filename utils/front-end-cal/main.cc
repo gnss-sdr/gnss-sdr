@@ -142,7 +142,7 @@ Concurrent_Queue<int> channel_internal_queue;
 std::vector<Gnss_Synchro> gnss_sync_vector;
 Gnss_Synchro gnss_synchro;
 
-// ######## GNURADIO BLOCK MESSAGE RECEVER #########
+// ######## GNURADIO BLOCK MESSAGE RECEIVER #########
 class FrontEndCal_msg_rx;
 
 using FrontEndCal_msg_rx_sptr = gnss_shared_ptr<FrontEndCal_msg_rx>;

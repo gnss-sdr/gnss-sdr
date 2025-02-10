@@ -123,7 +123,7 @@ ABSL_FLAG(bool, plot_acq_test, false, "Plots results with gnuplot, if available"
 ABSL_FLAG(int32_t, acq_test_skiphead, 0, "Number of samples to skip in the input file");
 #endif
 
-// ######## GNURADIO BLOCK MESSAGE RECEVER #########
+// ######## GNURADIO BLOCK MESSAGE RECEIVER #########
 class AcqPerfTest_msg_rx;
 
 using AcqPerfTest_msg_rx_sptr = gnss_shared_ptr<AcqPerfTest_msg_rx>;

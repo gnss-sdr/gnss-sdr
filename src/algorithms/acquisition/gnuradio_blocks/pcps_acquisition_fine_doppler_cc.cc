@@ -466,7 +466,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
      * TODO:     High sensitivity acquisition algorithm:
      *             State Machine:
      *             S0. StandBy. If d_active==1 -> S1
-     *             S1. ComputeGrid. Perform the FFT acqusition doppler and delay grid.
+     *             S1. ComputeGrid. Perform the FFT acquisition doppler and delay grid.
      *                 Accumulate the search grid matrix (#doppler_bins x #fft_size)
      *                 Compare maximum to threshold and decide positive or negative
      *                 If T>=gamma -> S4 else

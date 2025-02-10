@@ -60,7 +60,7 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
-// ######## GNURADIO BLOCK MESSAGE RECEVER FOR TRACKING MESSAGES #########
+// ######## GNURADIO BLOCK MESSAGE RECEIVER FOR TRACKING MESSAGES #########
 class GpsL1CADllPllTelemetryDecoderTest_msg_rx;
 
 using GpsL1CADllPllTelemetryDecoderTest_msg_rx_sptr = gnss_shared_ptr<GpsL1CADllPllTelemetryDecoderTest_msg_rx>;
@@ -120,7 +120,7 @@ GpsL1CADllPllTelemetryDecoderTest_msg_rx::~GpsL1CADllPllTelemetryDecoderTest_msg
 // ###########################################################
 
 
-// ######## GNURADIO BLOCK MESSAGE RECEVER FOR TLM MESSAGES #########
+// ######## GNURADIO BLOCK MESSAGE RECEIVER FOR TLM MESSAGES #########
 class GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx;
 
 using GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_sptr = std::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx>;

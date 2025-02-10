@@ -216,7 +216,7 @@ void Galileo_Inav_Message::split_page(std::string page_string, int32_t flag_even
 }
 
 
-// C: tells if W1-->W4 available from same blcok
+// C: tells if W1-->W4 available from same block
 bool Galileo_Inav_Message::have_new_ephemeris()  // Check if we have a new ephemeris stored in the galileo navigation class
 {
     if ((flag_ephemeris_1 == true) and (flag_ephemeris_2 == true) and (flag_ephemeris_3 == true) and (flag_ephemeris_4 == true) and (flag_iono_and_GST == true))

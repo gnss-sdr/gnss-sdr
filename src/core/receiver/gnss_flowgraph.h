@@ -153,7 +153,7 @@ public:
     }
 
     /*!
-     * \brief Priorize visible satellites in the specified vector
+     * \brief Prioritize visible satellites in the specified vector
      */
     void priorize_satellites(const std::vector<std::pair<int, Gnss_Satellite>>& visible_satellites);
 

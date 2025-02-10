@@ -1,6 +1,6 @@
 /*!
  * \file Galileo_OSNMA.h
- * \brief Galileo OSNMA mesage constants
+ * \brief Galileo OSNMA message constants
  * \author Carles Fernandez, 2023. cfernandez(at)cttc.es
  *
  *
@@ -46,7 +46,7 @@ const std::unordered_map<uint8_t, std::string> OSNMA_TABLE_2 = {
     {1, std::string("Nominal")},
     {2, std::string("End of Chain (EOC)")},
     {3, std::string("Chain Revoked (CREV)")},
-    {4, std::string("New Publick Key (NPK)")},
+    {4, std::string("New Public Key (NPK)")},
     {5, std::string("Public Key Revoked (PKREV)")},
     {6, std::string("New Merkle Tree (NMT)")},
     {7, std::string("Alert Message (AM)")}};  // key: cpks, value: cpks status

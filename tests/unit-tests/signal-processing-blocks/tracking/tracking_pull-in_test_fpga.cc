@@ -73,7 +73,7 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
-// ######## GNURADIO TRACKING BLOCK MESSAGE RECEVER #########
+// ######## GNURADIO TRACKING BLOCK MESSAGE RECEIVER #########
 class TrackingPullInTest_msg_rx_Fpga;
 
 using TrackingPullInTest_msg_rx_Fpga_sptr = gnss_shared_ptr<TrackingPullInTest_msg_rx_Fpga>;

@@ -219,7 +219,7 @@ https://gnss-sdr.org/design-forces/
   user pressing Ctrl+C, or another user application sending an interruption
   signal).
 - The estimated CN0 value is now printed in the terminal when navigation data is
-  succesfully decoded.
+  successfully decoded.
 - Fixed GPS navigation message satellite validation.
 - Latitude and longitude are now reported in the terminal with six decimal
   places (the sixth decimal place worths up to 0.11 m), instead of the
@@ -303,22 +303,22 @@ https://gnss-sdr.org/design-forces/
 - Fixed linking against libunwind when the glog library is built locally.
 - The configuration options at building time `-DENABLE_OWN_GLOG`,
   `-DENABLE_OWN_ARMADILLO`, and `-DENABLE_OWN_GNSSTK` can now be switched `ON`
-  and `OFF` without the need to start from an empty buiding folder.
+  and `OFF` without the need to start from an empty building folder.
 - Improved CMake handling of the spdlog library used by GNU Radio >= 3.10.
 - Make use of the C++20 standard if the environment allows for it.
 - Improved passing of compiler flags to `volk_gnsssdr` if the corresponding
   environment variables are defined. This fixes warnings in some packaging
   systems.
 - Improved support for the RISC-V architecture.
-- Test files are now donwloaded at configuration time instead of being included
+- Test files are now downloaded at configuration time instead of being included
   in the source tree. This allows for a smaller package and fixes Lintian
   `very-long-line-length-in-source-file` warnings since those files were not
   recognized as binaries. The configuration flag `-DENABLE_PACKAGING=ON` passed
   to CMake deactivates file downloading.
 - The `ENABLE_GENERIC_ARCH` building option was removed, simplifying the process
-  of buiding the software in non-x86 processor architectures.
+  of building the software in non-x86 processor architectures.
 - If the Protocol Buffers dependency is not found, it is downloaded, built and
-  statically linked at buiding time. If CMake >= 3.13 and the
+  statically linked at building time. If CMake >= 3.13 and the
   [Abseil C++ libraries](https://github.com/abseil/abseil-cpp) >= 20230117 are
   installed on your system, Protocol Buffers v22.2 will be used. If those
   requirements are not met, Protocol Buffers v21.4 will be used instead

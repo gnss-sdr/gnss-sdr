@@ -299,7 +299,7 @@ int openfile_(file_t *file, gtime_t time, char *msg)
                         {
                             file->tick_f = 0;
                         }
-                    /* adust time to read playback file */
+                    /* adjust time to read playback file */
                     timeset(file->time);
                 }
             else

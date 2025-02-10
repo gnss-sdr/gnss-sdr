@@ -95,7 +95,7 @@ const std::vector<std::pair<int32_t, int32_t> > CNAV_CUC({{249, 21}});
 constexpr double CNAV_CUC_LSB = TWO_N30;
 
 
-// MESSAGE TYPE 30 (CLOCK, IONO, GRUP DELAY)
+// MESSAGE TYPE 30 (CLOCK, IONO, GROUP DELAY)
 const std::vector<std::pair<int32_t, int32_t> > CNAV_TOP2({{39, 11}});
 constexpr int32_t CNAV_TOP2_LSB = 300;
 const std::vector<std::pair<int32_t, int32_t> > CNAV_URA_NED0({{50, 5}});

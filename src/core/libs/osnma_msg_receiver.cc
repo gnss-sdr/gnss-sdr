@@ -1714,7 +1714,7 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
         }
     // Fixed as well as  FLX Tags share first part - Eq. 22 ICD
     std::vector<uint8_t> m(5 + 2 * flxTags.size());  // each flx tag brings two bytes
-    m[0] = static_cast<uint8_t>(mack.PRNa);          // PRN_A - SVID of the satellite transmiting the tag
+    m[0] = static_cast<uint8_t>(mack.PRNa);          // PRN_A - SVID of the satellite transmitting the tag
     m[1] = static_cast<uint8_t>((GST_SFi & 0xFF000000) >> 24);
     m[2] = static_cast<uint8_t>((GST_SFi & 0x00FF0000) >> 16);
     m[3] = static_cast<uint8_t>((GST_SFi & 0x0000FF00) >> 8);
@@ -1970,7 +1970,7 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
         }
     // Fixed as well as  FLX Tags share first part - Eq. 22 ICD
     std::vector<uint8_t> m(5 + 2 * flxTags.size());  // each flx tag brings two bytes
-    m[0] = static_cast<uint8_t>(mack.PRNa);          // PRN_A - SVID of the satellite transmiting the tag
+    m[0] = static_cast<uint8_t>(mack.PRNa);          // PRN_A - SVID of the satellite transmitting the tag
     m[1] = static_cast<uint8_t>((GST_Sfi & 0xFF000000) >> 24);
     m[2] = static_cast<uint8_t>((GST_Sfi & 0x00FF0000) >> 16);
     m[3] = static_cast<uint8_t>((GST_Sfi & 0x0000FF00) >> 8);

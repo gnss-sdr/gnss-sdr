@@ -55,7 +55,7 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
-// ######## GNURADIO BLOCK MESSAGE RECEVER #########
+// ######## GNURADIO BLOCK MESSAGE RECEIVER #########
 class GalileoE6PcpsAcquisitionTest_msg_rx;
 
 using GalileoE6PcpsAcquisitionTest_msg_rx_sptr = gnss_shared_ptr<GalileoE6PcpsAcquisitionTest_msg_rx>;

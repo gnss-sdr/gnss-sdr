@@ -84,7 +84,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
     DLOG(INFO) << "role " << role;
     /*Calculate the folding factor value based on the formula described in the paper.
     This may be a bug, but acquisition also work by variying the folding factor at va-
-    lues different that the expressed in the paper. In adition, it is important to point
+    lues different that the expressed in the paper. In addition, it is important to point
     out that by making the folding factor smaller we were able to get QuickSync work with
     Galileo. Future work should be directed to test this assumption statistically.*/
 

@@ -61,7 +61,7 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
-// ######## GNURADIO BLOCK MESSAGE RECEVER #########
+// ######## GNURADIO BLOCK MESSAGE RECEIVER #########
 class BeidouB3iPcpsAcquisitionTest_msg_rx;
 
 using BeidouB3iPcpsAcquisitionTest_msg_rx_sptr = std::shared_ptr<BeidouB3iPcpsAcquisitionTest_msg_rx>;

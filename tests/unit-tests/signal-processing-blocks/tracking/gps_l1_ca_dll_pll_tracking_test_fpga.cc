@@ -161,7 +161,7 @@ void sending_thread(const gr::top_block_sptr &top_block, const char *file_name)
 }
 
 
-// ######## GNURADIO BLOCK MESSAGE RECEVER #########
+// ######## GNURADIO BLOCK MESSAGE RECEIVER #########
 class GpsL1CADllPllTrackingTestFpga_msg_rx;
 
 using GpsL1CADllPllTrackingTestFpga_msg_rx_sptr = gnss_shared_ptr<GpsL1CADllPllTrackingTestFpga_msg_rx>;

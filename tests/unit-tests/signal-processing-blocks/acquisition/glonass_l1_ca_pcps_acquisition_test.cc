@@ -48,7 +48,7 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
-// ######## GNURADIO BLOCK MESSAGE RECEVER #########
+// ######## GNURADIO BLOCK MESSAGE RECEIVER #########
 class GlonassL1CaPcpsAcquisitionTest_msg_rx;
 
 using GlonassL1CaPcpsAcquisitionTest_msg_rx_sptr = gnss_shared_ptr<GlonassL1CaPcpsAcquisitionTest_msg_rx>;

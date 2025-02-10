@@ -338,7 +338,7 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
      *             State Machine:
      *             S0. StandBy. If d_active==1 -> S1
      *             S1. GetAssist. Define search grid with assistance information. Reset grid matrix -> S2
-     *             S2. ComputeGrid. Perform the FFT acqusition doppler and delay grid.
+     *             S2. ComputeGrid. Perform the FFT acquisition doppler and delay grid.
      *                 Accumulate the search grid matrix (#doppler_bins x #fft_size)
      *                 Compare maximum to threshold and decide positive or negative
      *                 If T>=gamma -> S4 else

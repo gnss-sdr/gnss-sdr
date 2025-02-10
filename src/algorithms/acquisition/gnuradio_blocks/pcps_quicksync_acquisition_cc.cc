@@ -319,7 +319,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                     {
                         // Ensure that the signal is going to start with all samples
-                        // at zero. This is done to avoid over acumulation when performing
+                        // at zero. This is done to avoid over accumulation when performing
                         // the folding process to be stored in d_fft_if->get_inbuf()
                         d_signal_folded = std::vector<gr_complex>(d_fft_size, lv_cmake(0.0F, 0.0F));
                         std::copy(d_signal_folded.data(), d_signal_folded.data() + d_fft_size, d_fft_if->get_inbuf());

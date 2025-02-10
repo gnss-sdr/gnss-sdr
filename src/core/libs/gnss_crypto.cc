@@ -66,13 +66,13 @@ Gnss_Crypto::Gnss_Crypto()
     gnutls_global_init();
 #if !HAVE_GNUTLS_SIGN_ECDSA_SHA256
     LOG(WARNING) << "The GnuTLS library version you are linking against is too old for some OSNMA functions."
-                 << " Please do not trust OSNMA ouputs or upgrade your system to a newer version of GnuTLS or OpenSSL"
+                 << " Please do not trust OSNMA outputs or upgrade your system to a newer version of GnuTLS or OpenSSL"
                  << " and rebuild GNSS-SDR against it.";
 #endif
 #else  // OpenSSL
 #if !(USE_OPENSSL_3 || USE_OPENSSL_111)
     LOG(WARNING) << "The OpenSSL library version you are linking against is too old for some OSNMA functions."
-                 << " Please do not trust OSNMA ouputs or upgrade your system to a newer version of OpenSSL"
+                 << " Please do not trust OSNMA outputs or upgrade your system to a newer version of OpenSSL"
                  << " and rebuild GNSS-SDR against it.";
 #endif
 #endif
@@ -85,13 +85,13 @@ Gnss_Crypto::Gnss_Crypto(const std::string& certFilePath, const std::string& mer
     gnutls_global_init();
 #if !HAVE_GNUTLS_SIGN_ECDSA_SHA256
     LOG(WARNING) << "The GnuTLS library version you are linking against is too old for some OSNMA functions."
-                 << " Please do not trust OSNMA ouputs or upgrade your system to a newer version of GnuTLS or OpenSSL"
+                 << " Please do not trust OSNMA outputs or upgrade your system to a newer version of GnuTLS or OpenSSL"
                  << " and rebuild GNSS-SDR against it.";
 #endif
 #else  // OpenSSL
 #if !(USE_OPENSSL_3 || USE_OPENSSL_111)
     LOG(WARNING) << "The OpenSSL library version you are linking against is too old for some OSNMA functions."
-                 << " Please do not trust OSNMA ouputs or upgrade your system to a newer version of OpenSSL"
+                 << " Please do not trust OSNMA outputs or upgrade your system to a newer version of OpenSSL"
                  << " and rebuild GNSS-SDR against it.";
 #endif
 #endif

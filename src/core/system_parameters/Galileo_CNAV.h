@@ -1,6 +1,6 @@
 /*!
  * \file Galileo_CNAV.h
- * \brief Galileo CNAV mesage constants. Data from:
+ * \brief Galileo CNAV message constants. Data from:
  * Galileo High Accuracy Service Signal-In-Space Interface Control Document
  * (HAS SIS ICD) Issue 1.0, May 2022
  * \author Carles Fernandez-Prades, 2020-2022. cfernandez(at)cttc.es
@@ -57,7 +57,7 @@ constexpr size_t HAS_MSG_PHASE_DISCONTINUITY_INDICATOR_LENGTH = 2;   // HAS SIS 
 constexpr uint64_t MAX_SECONDS_REMEMBERING_MID = 150;  // HAS SIS ICD 1.0 Section 6.4.1 HAS Message Completion Time-out
 
 // Galileo CNAV message structure
-constexpr int32_t GALILEO_CNAV_SYMBOLS_PER_PAGE = 1000;  // Total numer of symbols per HAS page including the sync pattern
+constexpr int32_t GALILEO_CNAV_SYMBOLS_PER_PAGE = 1000;  // Total number of symbols per HAS page including the sync pattern
 constexpr int32_t GALILEO_CNAV_PREAMBLE_PERIOD_SYMBOLS = 1000;
 constexpr int32_t GALILEO_CNAV_PAGE_MS = 1;                             // Duration in ms of a CNAV page
 constexpr int32_t GALILEO_CNAV_INTERLEAVER_ROWS = 8;                    // HAS SIS ICD 1.0 Table 4

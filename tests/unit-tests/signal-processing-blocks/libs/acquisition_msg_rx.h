@@ -25,7 +25,7 @@
 #include <pmt/pmt.h>
 
 
-// ######## GNURADIO ACQUISITION BLOCK MESSAGE RECEVER #########
+// ######## GNURADIO ACQUISITION BLOCK MESSAGE RECEIVER #########
 class Acquisition_msg_rx;
 
 using Acquisition_msg_rx_sptr = gnss_shared_ptr<Acquisition_msg_rx>;

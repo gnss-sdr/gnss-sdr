@@ -154,7 +154,7 @@ $ make doc
 from the building folder. In both cases, <a href="https://www.doxygen.nl/" target="_blank">Doxygen</a> will generate HTML documentation that can be
 retrieved pointing your browser of preference to <tt>gnss-sdr/docs/html/index.html</tt>.
 
-There are two more extra targets available. In the buiding folder:
+There are two more extra targets available. In the building folder:
 \verbatim
 $ make doc-clean
 \endverbatim
@@ -186,7 +186,7 @@ If you checked out GNSS-SDR some days ago, it is possible that some developer ha
 $ git checkout next
 $ git pull https://github.com/gnss-sdr/gnss-sdr next
 \endverbatim
-Before rebuiling the source code, it is safe (and recommended) to remove the remainders of old builds:
+Before rebuilding the source code, it is safe (and recommended) to remove the remainders of old builds:
 \verbatim
 $ cd <building folder>
 $ sudo make uninstall  ; if you installed it before
@@ -633,7 +633,7 @@ More papers related to GNSS-SDR are available at the <a href="https://gnss-sdr.o
 
 \section now_what Ok, now what?
 In order to start using GNSS-SDR, you may want to populate <tt>gnss-sdr/data</tt> folder (or anywhere else on your system) with raw data files. By "raw data" we mean the output
-of a Radio Frequency front-end's Analog-to_Digital converter. GNSS-SDR needs signal samples already in baseband or in passband, at a suitable intemediate frequency (on the order of MHz).
+of a Radio Frequency front-end's Analog-to_Digital converter. GNSS-SDR needs signal samples already in baseband or in passband, at a suitable intermediate frequency (on the order of MHz).
 Prepare your configuration file, and then you are ready for going to the <tt> gnss-sdr/install</tt> folder, running <tt>./gnss-sdr</tt>, and see how the file is processed.
 Please ask the Developer Team for a signal sample if you need one, and they will do their best ;-)
 

@@ -43,7 +43,7 @@ Notch::Notch(float pfa,
       pfa_(pfa),
       noise_pow_est_(0.0),
       length_(length),          // Set the number of samples per segment
-      n_deg_fred_(2 * length),  // Number of dregrees of freedom,
+      n_deg_fred_(2 * length),  // Number of degrees of freedom,
       n_segments_(0),
       n_segments_est_(n_segments_est),      // Set the number of segments for noise power estimation
       n_segments_reset_(n_segments_reset),  // Set the period (in segments) when the noise power is estimated

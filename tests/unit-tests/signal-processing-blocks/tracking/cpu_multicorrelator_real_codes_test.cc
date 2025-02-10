@@ -109,7 +109,7 @@ TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTime)
     // local code resampler on GPU
     // generate local reference (1 sample per chip)
     gps_l1_ca_code_gen_float(own::span<float>(d_ca_code, static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(float)), 1, 0);
-    // generate inut signal
+    // generate input signal
     std::random_device r;
     std::default_random_engine e1(r());
     std::uniform_real_distribution<float> uniform_dist(0, 1);
@@ -215,7 +215,7 @@ TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTimeAlloc)
     // local code resampler on GPU
     // generate local reference (1 sample per chip)
     gps_l1_ca_code_gen_float(d_ca_code, 1, 0);
-    // generate inut signal
+    // generate input signal
     std::random_device r;
     std::default_random_engine e1(r());
     std::uniform_real_distribution<float> uniform_dist(0, 1);

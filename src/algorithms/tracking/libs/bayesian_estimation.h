@@ -50,7 +50,7 @@
  * a sequence of identically and independently distributed (IID) samples of a stationary
  * stochastic process by way of Bayesian inference using conjugate priors. The posterior
  * distribution is assumed to be Gaussian with mean \mathbf{\mu} and covariance \hat{\mathbf{C}},
- * which has a conjugate prior given by a normal-inverse-Wishart distribution with paramemters
+ * which has a conjugate prior given by a normal-inverse-Wishart distribution with parameters
  * \mathbf{\mu}_{0}, \kappa_{0}, \nu_{0}, and \mathbf{\Psi}.
  *
  * [1] TODO: Ref1

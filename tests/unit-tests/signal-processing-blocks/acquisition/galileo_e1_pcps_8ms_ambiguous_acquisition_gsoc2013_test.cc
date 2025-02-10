@@ -53,7 +53,7 @@ namespace wht = std;
 #endif
 
 
-// ######## GNURADIO BLOCK MESSAGE RECEVER #########
+// ######## GNURADIO BLOCK MESSAGE RECEIVER #########
 class GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx;
 
 using GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx_sptr = gnss_shared_ptr<GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx>;

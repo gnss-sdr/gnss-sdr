@@ -201,7 +201,7 @@ private:
     // Almanac
     int32_t i_Toa{};      // Almanac reference time [s]
     int32_t i_WN_A{};     // Modulo 256 of the GPS week number to which the almanac reference time (i_Toa) is referenced
-    int32_t SV_Health{};  // Almanac SV healt
+    int32_t SV_Health{};  // Almanac SV health
     uint32_t a_PRN{};     // Almanac PRN
     double a_delta_i{};   // Inclination Angle at Reference Time (relative to i_0 = 0.30 semi-circles)
     double a_M_0{};       // Mean Anomaly at Reference Time [semi-circles]

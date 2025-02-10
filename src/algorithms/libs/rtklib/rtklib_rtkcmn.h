@@ -31,14 +31,14 @@
  * References :
  *     [1] IS-GPS-200M, Navstar GPS Space Segment/Navigation User Interfaces,
  *         May, 2021
- *     [2] RTCA/DO-229C, Minimum operational performanc standards for global
+ *     [2] RTCA/DO-229C, Minimum operational performance standards for global
  *         positioning system/wide area augmentation system airborne equipment,
  *         RTCA inc, November 28, 2001
  *     [3] M.Rothacher, R.Schmid, ANTEX: The Antenna Exchange Format Version 1.4,
  *         15 September, 2010
  *     [4] A.Gelb ed., Applied Optimal Estimation, The M.I.T Press, 1974
  *     [5] A.E.Niell, Global mapping functions for the atmosphere delay at radio
- *         wavelengths, Jounal of geophysical research, 1996
+ *         wavelengths, Journal of geophysical research, 1996
  *     [6] W.Gurtner and L.Estey, RINEX The Receiver Independent Exchange Format
  *         Version 3.00, November 28, 2007
  *     [7] J.Kouba, A Guide to using International GNSS Service (IGS) products,

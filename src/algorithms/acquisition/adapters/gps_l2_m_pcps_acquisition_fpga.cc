@@ -227,7 +227,7 @@ void GpsL2MPcpsAcquisitionFpga::disconnect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    // Nothing to diconnect
+    // Nothing to disconnect
 }
 
 

@@ -138,7 +138,7 @@ template <typename WT>
 void IONGSMSChunkData::unpack_words(gr_vector_void_star& outputs, std::vector<int>& output_items)
 {
     WT* data = static_cast<WT*>(buffer_);
-    // TODO - Swap endiannes if needed
+    // TODO - Swap endianness if needed
 
     IONGSMSChunkUnpackingCtx<WT> ctx{
         chunk_.Shift(),

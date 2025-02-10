@@ -100,7 +100,7 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
-// ######## GNURADIO BLOCK MESSAGE RECEVER FOR TRACKING MESSAGES #########
+// ######## GNURADIO BLOCK MESSAGE RECEIVER FOR TRACKING MESSAGES #########
 class HybridObservablesTest_msg_rx;
 
 using HybridObservablesTest_msg_rx_sptr = gnss_shared_ptr<HybridObservablesTest_msg_rx>;
@@ -164,7 +164,7 @@ HybridObservablesTest_msg_rx::~HybridObservablesTest_msg_rx() = default;
 
 // ###########################################################
 
-// ######## GNURADIO BLOCK MESSAGE RECEVER FOR TLM MESSAGES #########
+// ######## GNURADIO BLOCK MESSAGE RECEIVER FOR TLM MESSAGES #########
 class HybridObservablesTest_tlm_msg_rx;
 
 

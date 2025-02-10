@@ -6,7 +6,7 @@
  * The implementation of this block is a combination of various helpful
  * sources. The data format and command structure is taken from the
  * original Osmocom rtl_tcp_source_f (https://git.osmocom.org/gr-osmosdr).
- * The aynchronous reading code comes from the examples provides
+ * The asynchronous reading code comes from the examples provides
  * by Boost.Asio and the bounded buffer producer-consumer solution is
  * taken from the Boost.CircularBuffer examples (https://www.boost.org/).
  *

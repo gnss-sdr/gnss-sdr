@@ -49,7 +49,7 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
-// ######## GNURADIO BLOCK MESSAGE RECEVER #########
+// ######## GNURADIO BLOCK MESSAGE RECEIVER #########
 class HasDecoderTester;
 
 using HasDecoderTester_sptr = gnss_shared_ptr<HasDecoderTester>;

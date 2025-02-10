@@ -461,7 +461,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             d_inav_nav.reset_osnma_nav_bits_adkd4();
         }
 
-    if (d_inav_nav.have_new_ephemeris() == true)  // C: tells if W1-->W4 available from same blcok (and W5!)
+    if (d_inav_nav.have_new_ephemeris() == true)  // C: tells if W1-->W4 available from same block (and W5!)
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_inav_nav.get_ephemeris());
@@ -496,7 +496,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
     else
         {
             // If we still do not have ephemeris, check if we have a reduced CED
-            if ((d_band == '1') && d_use_ced && !d_first_eph_sent && (d_inav_nav.have_new_reduced_ced() == true))  // C: W16 has some Eph. params, uneeded for OSNMa I guess
+            if ((d_band == '1') && d_use_ced && !d_first_eph_sent && (d_inav_nav.have_new_reduced_ced() == true))
                 {
                     const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_inav_nav.get_reduced_ced());
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));

@@ -34,7 +34,7 @@ FifoSignalSource::FifoSignalSource(ConfigurationInterface const* configuration,
     std::string const& role, unsigned int in_streams, unsigned int out_streams,
     [[maybe_unused]] Concurrent_Queue<pmt::pmt_t>* queue)
     : SignalSourceBase(configuration, role, "Fifo_Signal_Source"s),
-      item_size_(sizeof(gr_complex)),  // currenty output item size is always gr_complex
+      item_size_(sizeof(gr_complex)),  // currently output item size is always gr_complex
       fifo_reader_(FifoReader::make(configuration->property(role + ".filename", "./example_capture.dat"s),
           configuration->property(role + ".sample_type", "ishort"s))),
       dump_(configuration->property(role + ".dump", false)),

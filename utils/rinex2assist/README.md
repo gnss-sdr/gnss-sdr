@@ -51,7 +51,7 @@ $ rinex2assist /path/to/RINEX_nav_file
 ```
 
 The argument is mandatory (the name of the RINEX navigation file). The name
-`gps_ephemeris.xml` is given to the output if GPS NAV data is fould. If the
+`gps_ephemeris.xml` is given to the output if GPS NAV data is found. If the
 RINEX file contains Galileo data, the corresponding `gal_ephemeris.xml` file
 will be generated. The program is also able to extract parameters of the UTC and
 the Ionospheric models from the RINEX header, if available. They will be called

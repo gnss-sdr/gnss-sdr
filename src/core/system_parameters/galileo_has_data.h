@@ -124,7 +124,7 @@ public:
     uint8_t has_status;  //!< HASS - HAS Status (from HAS page header). See HAS SIS ICD 1.0 Section 3.1.1
     uint8_t message_id;  //!< MID - Message ID (from HAS page header). See HAS SIS ICD 1.0 Section 3.1
 
-    uint8_t Nsys;      //!< Number of GNSS for which corrections are provided. See HAS SIS ICD 1.0 Setion 5.2.1
+    uint8_t Nsys;      //!< Number of GNSS for which corrections are provided. See HAS SIS ICD 1.0 Section 5.2.1
     uint8_t Nsys_sub;  //!< Number of GNSS for which corrections are provided in clock subset corrections. See HAS SIS ICD 1.0 Section 5.2.2.1
 
     uint8_t validity_interval_index_orbit_corrections;          //!< VI - Validity Interval Index for Orbit corrections. See HAS SIS ICD 1.0 Section 5.2.2.1

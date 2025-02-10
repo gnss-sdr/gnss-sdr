@@ -93,7 +93,7 @@ private:
 
     double rf_gain_rx1_;
     double rf_gain_rx2_;
-    uint64_t freq_;  // frequency of local oscilator
+    uint64_t freq_;  // frequency of local oscillator
     uint64_t sample_rate_;
     uint64_t bandwidth_;
     uint64_t buffer_size_;  // reception buffer

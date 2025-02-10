@@ -96,7 +96,7 @@ TEST(GpuMulticorrelatorTest, MeasureExecutionTime)
     // local code resampler on GPU
     // generate local reference (1 sample per chip)
     gps_l1_ca_code_gen_complex(own::span<gr_complex>(d_ca_code, static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS)), 1, 0);
-    // generate inut signal
+    // generate input signal
     for (int n = 0; n < 2 * d_vector_length; n++)
         {
             in_gpu[n] = std::complex<float>(static_cast<float>(rand()) / static_cast<float>(RAND_MAX), static_cast<float>(rand()) / static_cast<float>(RAND_MAX));

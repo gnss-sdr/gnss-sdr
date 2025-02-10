@@ -156,7 +156,7 @@ private:
     int d_shortening{};  // shortening parameter
 
     uint8_t d_min_poly{};  // primitive polynomial
-    uint8_t d_a0{};        // auxiliar variable
+    uint8_t d_a0{};        // auxiliary variable
 };
 
 /** \} */

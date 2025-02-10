@@ -374,7 +374,7 @@ typedef struct
 
 typedef struct
 {                 /* observation data */
-    int n, nmax;  /* number of obervation data/allocated */
+    int n, nmax;  /* number of observation data/allocated */
     obsd_t *data; /* observation data records */
 } obs_t;
 
@@ -664,7 +664,7 @@ typedef struct
     double deph[3];           /* delta orbit {radial,along,cross} (m) */
     double ddeph[3];          /* dot delta orbit {radial,along,cross} (m/s) */
     double dclk[3];           /* delta clock {c0,c1,c2} (m,m/s,m/s^2) */
-    double hrclk;             /* high-rate clock corection (m) */
+    double hrclk;             /* high-rate clock correction (m) */
     float cbias[MAXCODE];     /* code biases (m) */
     double pbias[MAXCODE];    /* phase biases (m) */
     float stdpb[MAXCODE];     /* std-dev of phase biases (m) */
@@ -1159,7 +1159,7 @@ typedef struct
 
 
 typedef struct
-{                /* tcp cilent type */
+{                /* tcp client type */
     tcp_t svr;   /* tcp server control */
     int toinact; /* inactive timeout (ms) (0:no timeout) */
     int tirecon; /* reconnect interval (ms) (0:no reconnect) */

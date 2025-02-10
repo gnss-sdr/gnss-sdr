@@ -72,7 +72,7 @@ public:
     // Course Over Ground (COG) [deg]
     double cog;
 
-    // Galileo HAS status: 1- HAS messages decoded and applied, 0 - HAS not avaliable
+    // Galileo HAS status: 1- HAS messages decoded and applied, 0 - HAS not available
     uint32_t galhas_status;
 
     // NUMBER OF VALID SATS

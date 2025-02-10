@@ -747,7 +747,7 @@ int GNSSFlowgraph::connect_signal_conditioners()
                             reported_error.replace(pos, len, "Pass_Through");
                             pos = reported_error.find(replace_me, pos + 1);
                         }
-                    help_hint_ += " * Blocks within the Signal Conditioner are connected with mismatched input/ouput item size\n";
+                    help_hint_ += " * Blocks within the Signal Conditioner are connected with mismatched input/output item size\n";
                     help_hint_ += "   Reported error: " + reported_error + '\n';
                     help_hint_ += "   Check the Signal Conditioner documentation at https://gnss-sdr.org/docs/sp-blocks/signal-conditioner/\n";
                 }
@@ -1310,7 +1310,7 @@ int GNSSFlowgraph::connect_acquisition_monitor()
             top_block_->disconnect_all();
             return 1;
         }
-    DLOG(INFO) << "acqusition_monitor successfully connected to Channel blocks";
+    DLOG(INFO) << "acquisition_monitor successfully connected to Channel blocks";
     return 0;
 }
 

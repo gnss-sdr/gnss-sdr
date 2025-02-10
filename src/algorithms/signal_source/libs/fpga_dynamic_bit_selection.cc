@@ -137,7 +137,7 @@ void Fpga_dynamic_bit_selection::bit_selection_per_rf_band(volatile unsigned *d_
                 }
         }
 
-    // update bit selection corresopnding to frequency band 1
+    // update bit selection corresponding to frequency band 1
     d_map_base[0] = shift_out_bits;
 }
 

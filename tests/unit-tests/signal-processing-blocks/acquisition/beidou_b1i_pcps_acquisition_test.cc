@@ -62,7 +62,7 @@ namespace wht = std;
 #endif
 
 
-// ######## GNURADIO BLOCK MESSAGE RECEVER #########
+// ######## GNURADIO BLOCK MESSAGE RECEIVER #########
 class BeidouB1iPcpsAcquisitionTest_msg_rx;
 
 using BeidouB1iPcpsAcquisitionTest_msg_rx_sptr = std::shared_ptr<BeidouB1iPcpsAcquisitionTest_msg_rx>;

@@ -319,7 +319,7 @@ void rtl_tcp_signal_source_c::handle_read(const boost::system::error_code &ec,
                         unread_++;
                     }
             }
-            // let woker know that more data is available
+            // let worker know that more data is available
             not_empty_.notify_one();
 // Read some more
 #if USE_BOOST_BIND_PLACEHOLDERS

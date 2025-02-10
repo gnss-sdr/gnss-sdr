@@ -58,7 +58,7 @@ static gtime_t time_stat = {0, 0}; /* rtk status file time */
  * args   : char     *file   I   rtk status file
  *          int      level   I   rtk status level (0: off)
  * return : status (1:ok,0:error)
- * notes  : file can constain time keywords (%Y,%y,%m...) defined in reppath().
+ * notes  : file can contain time keywords (%Y,%y,%m...) defined in reppath().
  *          The time to replace keywords is based on UTC of CPU time.
  * output : solution status file record format
  *

@@ -30,7 +30,7 @@ function [satPositions, satClkCorr] = satpos(transmitTime, prnList, ...
 %% Initialize constants ===================================================
 numOfSatellites = size(prnList, 2);
 
-% GPS constatns
+% GPS constants
 
 gpsPi          = 3.1415926535898;  % Pi used in the GPS coordinate
 % system

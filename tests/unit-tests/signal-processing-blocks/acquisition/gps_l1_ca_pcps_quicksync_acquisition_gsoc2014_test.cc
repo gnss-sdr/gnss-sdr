@@ -64,7 +64,7 @@ ABSL_FLAG(double, value_threshold, 1, "Value of the threshold for the acquisitio
 ABSL_FLAG(int32_t, value_CN0_dB_0, 44, "Value for the CN0_dB_0 in channel 0");
 #endif
 
-// ######## GNURADIO BLOCK MESSAGE RECEVER #########
+// ######## GNURADIO BLOCK MESSAGE RECEIVER #########
 class GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx;
 
 using GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx_sptr = gnss_shared_ptr<GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx>;

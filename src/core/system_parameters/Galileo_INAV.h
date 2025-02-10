@@ -1,6 +1,6 @@
 /*!
  * \file Galileo_INAV.h
- * \brief Galileo INAV mesage constants
+ * \brief Galileo INAV message constants
  * \author Carles Fernandez, 2020. cfernandez(at)cttc.es
  *
  *
@@ -296,7 +296,7 @@ const std::vector<std::pair<int32_t, int32_t>> TIME_0_BIT({{7, 2}});
 const std::vector<std::pair<int32_t, int32_t>> WN_0_BIT({{97, 12}});
 const std::vector<std::pair<int32_t, int32_t>> TOW_0_BIT({{109, 20}});
 
-/* Secondary Synchronization Patters */
+/* Secondary Synchronization Patterns */
 constexpr char GALILEO_INAV_PLAIN_SSP1[9] = "00000100";
 constexpr char GALILEO_INAV_PLAIN_SSP2[9] = "00101011";
 constexpr char GALILEO_INAV_PLAIN_SSP3[9] = "00101111";

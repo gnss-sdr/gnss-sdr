@@ -394,23 +394,12 @@ endif()
 ########################################################################
 # Detect /lib versus /lib64
 ########################################################################
-if(${CMAKE_INSTALL_LIBDIR} MATCHES lib64)
-    set(LIB_SUFFIX 64)
-endif()
+include(GNUInstallDirs)
 
 
 ########################################################################
 # Setup the package config file
 ########################################################################
-# set variables found in the pc.in file
-if(NOT LIB_SUFFIX)
-    set(LIB_SUFFIX "")
-endif()
-set(prefix ${CMAKE_INSTALL_PREFIX})
-set(exec_prefix "\${prefix}")
-set(libdir "\${exec_prefix}/lib${LIB_SUFFIX}")
-set(includedir "\${prefix}/include")
-
 configure_file(
     ${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr.pc.in
     ${PROJECT_BINARY_DIR}/volk_gnsssdr.pc
@@ -419,7 +408,7 @@ configure_file(
 
 install(
     FILES ${PROJECT_BINARY_DIR}/volk_gnsssdr.pc
-    DESTINATION lib${LIB_SUFFIX}/pkgconfig
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
     COMPONENT "volk_gnsssdr_devel"
 )
 
@@ -427,7 +416,7 @@ install(
 # Install all headers in the include directories
 ########################################################################
 set(VOLK_RUNTIME_DIR bin)
-set(VOLK_LIBRARY_DIR lib${LIB_SUFFIX})
+set(VOLK_LIBRARY_DIR ${CMAKE_INSTALL_LIBDIR})
 set(VOLK_INCLUDE_DIR include)
 
 install(
@@ -524,7 +513,7 @@ configure_file(
 ########################################################################
 
 if(NOT CMAKE_MODULES_DIR)
-    set(CMAKE_MODULES_DIR lib${LIB_SUFFIX}/cmake)
+    set(CMAKE_MODULES_DIR ${CMAKE_INSTALL_LIBDIR}/cmake)
 endif()
 
 install(

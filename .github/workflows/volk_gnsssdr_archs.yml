@@ -76,3 +76,42 @@ jobs:
             ./apps/volk_gnsssdr-config-info --malloc
             ./apps/volk_gnsssdr-config-info --cc
             ctest -V
+
+
+  RISCV64-RVV-tests:
+    runs-on: ubuntu-24.04
+    name: RISCV64 RVV tests
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install packages
+      run: |
+        sudo apt-get update -q -y
+        sudo apt-get install -y python3-mako cmake qemu-user-static g++-14-riscv64-linux-gnu clang-18
+    - name: Test RVV with gcc-14 VLEN=128
+      run: |
+        mkdir -p gcc14_VLEN_128; cd gcc14_VLEN_128
+        CXX=riscv64-linux-gnu-g++-14 CC=riscv64-linux-gnu-gcc-14 VLEN=128 cmake -DCMAKE_TOOLCHAIN_FILE=../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/cmake/Toolchains/rv64gcv-linux-gnu.cmake ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/
+        make -j$(nproc)
+        ARGS=-V make test
+        cd ..; rm -rf gcc14_VLEN_128
+    - name: Test RVV with gcc-14 VLEN=256
+      run: |
+        mkdir -p gcc14_VLEN_256; cd gcc14_VLEN_256
+        CXX=riscv64-linux-gnu-g++-14 CC=riscv64-linux-gnu-gcc-14 VLEN=256 cmake -DCMAKE_TOOLCHAIN_FILE=../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/cmake/Toolchains/rv64gcv-linux-gnu.cmake  -DCMAKE_BUILD_TYPE=Release ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/
+        make -j$(nproc)
+        ARGS=-V make test
+        cd ..; rm -rf gcc14_VLEN_256
+    - name: Test RVV with clang-18 VLEN=512
+      run: |
+        mkdir -p clang18_VLEN_512; cd clang18_VLEN_512
+        CXX=clang++-18 CC=clang-18 CFLAGS=--target=riscv64-linux-gnu VLEN=512 cmake -DCMAKE_TOOLCHAIN_FILE=../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/cmake/Toolchains/rv64gcv-linux-gnu.cmake ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/
+        make -j$(nproc)
+        ARGS=-V make test
+        cd ..; rm -rf clang18_VLEN_512
+    - name: Test RVV with clang-18 VLEN=1024
+      run: |
+        mkdir -p clang18_VLEN_1024; cd clang18_VLEN_1024
+        CXX=clang++-18 CC=clang-18 CFLAGS=--target=riscv64-linux-gnu VLEN=1024 cmake -DCMAKE_TOOLCHAIN_FILE=../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/cmake/Toolchains/rv64gcv-linux-gnu.cmake -DCMAKE_BUILD_TYPE=Release ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/
+        make -j$(nproc)
+        ARGS=-V make test
+        cd ..; rm -rf clang18_VLEN_1024

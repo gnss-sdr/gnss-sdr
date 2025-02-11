@@ -28,7 +28,6 @@ list(APPEND CMAKE_MODULE_PATH ${GNSSSDR_SOURCE_DIR}/cmake/Modules)
 # Enable them at the command line by doing 'cmake -DENABLE_XXX=ON ..'
 ################################################################################
 include(FeatureSummary)
-include(GnsssdrLibPaths)
 
 # Support of optional RF front-ends
 option(ENABLE_UHD "Enable the use of UHD (driver for all USRP devices)" ON)
@@ -608,6 +607,13 @@ set_package_properties(Threads PROPERTIES
     PURPOSE "Used to implement parallelism."
     TYPE REQUIRED
 )
+
+
+
+################################################################################
+# Set GNSSSDR_LIB_PATHS
+################################################################################
+include(GnsssdrLibPaths)
 
 
 
@@ -1298,9 +1304,6 @@ if(NOT VOLKGNSSSDR_FOUND)
     CMAKE_SYSTEM_PROCESSOR MATCHES "^loongarch")
         set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
     endif()
-    if(${CMAKE_INSTALL_LIBDIR} MATCHES lib64)
-        set(VOLK_GNSSSDR_LIB_SUFFIX 64)
-    endif()
     if(CMAKE_VERSION VERSION_LESS 3.2)
         ExternalProject_Add(volk_gnsssdr_module
             PREFIX ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module
@@ -1318,7 +1321,7 @@ if(NOT VOLKGNSSSDR_FOUND)
     else()
         if(SUPPORTED_CPU_FEATURES_ARCH)
             set(VOLK_GNSSSDR_BUILD_BYPRODUCTS
-                ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/lib${VOLK_GNSSSDR_LIB_SUFFIX}/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
+                ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
                 ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
             )
             if(ENABLE_CPUFEATURES)
@@ -1341,7 +1344,7 @@ if(NOT VOLKGNSSSDR_FOUND)
                 set_package_properties(CPUFEATURES PROPERTIES
                     DESCRIPTION "A cross platform C99 library to get CPU features at runtime"
                 )
-                if((DEFINED VOLK_VERSION AND VOLK_VERSION VERSION_GREATER "2.3") OR (CMAKE_VERSION VERSION_LESS "3.13")) # avoid clash with volk's cpufeatures.
+                if((DEFINED VOLK_VERSION AND VOLK_VERSION VERSION_GREATER "2.3" AND VOLK_VERSION VERSION_LESS "3.1") OR (CMAKE_VERSION VERSION_LESS "3.13")) # avoid clash with volk's cpufeatures.
                     set(ENABLE_CPUFEATURES OFF)
                 else()
                     set_package_properties(CPUFEATURES PROPERTIES
@@ -1386,7 +1389,7 @@ if(NOT VOLKGNSSSDR_FOUND)
                 UPDATE_COMMAND ""
                 PATCH_COMMAND ""
                 BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND}
-                BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/lib${VOLK_GNSSSDR_LIB_SUFFIX}/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
+                BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
                     ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
                     ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr-config-info
                 INSTALL_DIR ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install
@@ -1400,7 +1403,7 @@ if(NOT VOLKGNSSSDR_FOUND)
     endif()
 
     add_library(volk_gnsssdr UNKNOWN IMPORTED)
-    set_property(TARGET volk_gnsssdr PROPERTY IMPORTED_LOCATION ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/lib${VOLK_GNSSSDR_LIB_SUFFIX}/libvolk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX})
+    set_property(TARGET volk_gnsssdr PROPERTY IMPORTED_LOCATION ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/libvolk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX})
     set(VOLK_GNSSSDR_INCLUDE_DIRS "${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/build/include/;${GNSSSDR_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/include;${ORC_INCLUDE_DIRS}")
     set(VOLK_GNSSSDR_LIBRARIES volk_gnsssdr ${ORC_LIBRARIES_STATIC})
     if(CPUFEATURES_FOUND)
@@ -1413,7 +1416,7 @@ if(NOT VOLKGNSSSDR_FOUND)
         add_dependencies(Volkgnsssdr::volkgnsssdr volk_gnsssdr_module)
         set_target_properties(Volkgnsssdr::volkgnsssdr PROPERTIES
             IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-            IMPORTED_LOCATION "${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/lib${VOLK_GNSSSDR_LIB_SUFFIX}/libvolk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}"
+            IMPORTED_LOCATION "${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/libvolk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}"
             INCLUDE_DIRECTORIES "${VOLK_GNSSSDR_INCLUDE_DIRS}"
             INTERFACE_INCLUDE_DIRECTORIES "${VOLK_GNSSSDR_INCLUDE_DIRS}"
             INTERFACE_LINK_LIBRARIES "${VOLK_GNSSSDR_LIBRARIES}"

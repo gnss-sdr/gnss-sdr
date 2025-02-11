@@ -655,8 +655,8 @@ if(NOT (ENABLE_STATIC_LIBS AND (CMAKE_GENERATOR STREQUAL Xcode)))
     # Install locations
     install(TARGETS volk_gnsssdr
         EXPORT VOLK_GNSSSDR-export
-        LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_runtime" # .so file
-        ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_devel"   # .lib file
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT "volk_gnsssdr_runtime" # .so file
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT "volk_gnsssdr_devel"   # .lib file
         RUNTIME DESTINATION bin              COMPONENT "volk_gnsssdr_runtime" # .dll file
     )
 endif()
@@ -703,7 +703,7 @@ if(ENABLE_STATIC_LIBS)
 
     install(TARGETS volk_gnsssdr_static
         EXPORT VOLK_GNSSSDR-export
-        ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_devel"
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT "volk_gnsssdr_devel"
     )
 endif()
 

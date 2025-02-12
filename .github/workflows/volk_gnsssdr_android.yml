@@ -32,30 +32,32 @@ jobs:
       - name: Update repositories
         run: sudo apt update
       - name: Install dependencies
-        run: sudo apt install -y cmake openjdk-11-jre-headless wget unzip make python3-mako
+        run: sudo apt install -y cmake python3-mako
+
+      # Setup Java
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       # Setup Android SDK, and auto-accept licenses
       - name: Install Android SDK
         run: |
-          wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip
-          mkdir android-sdk-linux
-          unzip -qq android-sdk.zip -d android-sdk-linux
-          export ANDROID_HOME=./android-sdk-linux
-          echo y | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=android-sdk-linux --update
+          wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip && \
+          mkdir android-sdk-linux && unzip -qq android-sdk.zip -d android-sdk-linux && export ANDROID_HOME=./android-sdk-linux && echo y | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=android-sdk-linux --update && \
           (echo y; echo y; echo y; echo y; echo y; echo y; echo y; echo y) | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=android-sdk-linux --licenses
+
       # Call SDKManager to install the Android NDK
       - name: Install Android NDK
-        run: $GITHUB_WORKSPACE/android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=$GITHUB_WORKSPACE/android-sdk-linux --install "ndk;24.0.8215888" --channel=3
+        run: $GITHUB_WORKSPACE/android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=$GITHUB_WORKSPACE/android-sdk-linux --install "ndk;27.2.12479018" --channel=3
+
       # Setup build directory
       - name: Setup ${{ matrix.arch.name }}
         shell: bash
         run: |
-          cd $GITHUB_WORKSPACE/
-          mkdir build
-          cd build
-          cmake -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/android-sdk-linux/ndk/24.0.8215888/build/cmake/android.toolchain.cmake \
-          -DANDROID_ABI=${{ matrix.arch.name }} \
-          -DANDROID_PLATFORM=android-24 \
-          ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+          cd $GITHUB_WORKSPACE/ && mkdir -p build && cd build && \
+          cmake -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/android-sdk-linux/ndk/27.2.12479018/build/cmake/android.toolchain.cmake -DANDROID_ABI=${{ matrix.arch.name }} -DANDROID_PLATFORM=android-34 ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+
       # Build
       - name: Build ${{ matrix.arch.name }}
         shell: bash

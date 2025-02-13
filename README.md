@@ -475,7 +475,7 @@ For more options, please check the
 #### Install [Pugixml](https://pugixml.org/ "Pugixml's Homepage"), a light-weight C++ XML processing library
 
 ```
-$ wget https://github.com/zeux/pugixml/releases/download/v1.14/pugixml-1.15.tar.gz
+$ wget https://github.com/zeux/pugixml/releases/download/v1.15/pugixml-1.15.tar.gz
 $ tar xvfz pugixml-1.15.tar.gz
 $ cd pugixml-1.15
 $ mkdir build && cd build

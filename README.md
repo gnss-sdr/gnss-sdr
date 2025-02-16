@@ -134,7 +134,8 @@ This section describes how to set up the compilation environment in GNU/Linux or
     Thumb-2 instruction set and above.
   - arm64: ARM 64 bits or ARMv8. Also known as AArch64.
   - i386: Intel x86 instruction set (32-bit microprocessors).
-  - loong64: 64-bit version of LoongArch, a RISC-style instruction set architecture developed by Loongson Technology.
+  - loong64: 64-bit version of LoongArch, a RISC-style instruction set
+    architecture developed by Loongson Technology.
   - mips: MIPS architecture (big-endian, such as those manufactured by SGI).
   - mipsel: MIPS architecture (little-endian, such as Loongson 3).
   - mips64el: 64-bit version of MIPS architecture.

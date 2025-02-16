@@ -23,12 +23,12 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
-if(NOT GNSSSDR_LIB_PATHS)
-    include(GnsssdrLibPaths)
-endif()
-
 if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
+endif()
+
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
 endif()
 
 pkg_check_modules(PC_PCAP libpcap QUIET)
@@ -81,9 +81,7 @@ else()
             ${PC_PCAP_INCLUDEDIR}
         PATHS
             ${PCAP_ROOT_USER_PROVIDED}/include
-            /usr/include
-            /usr/local/include
-            /opt/local/include
+            ${GNSSSDR_INCLUDE_PATHS}
     )
     find_library(PCAP_LIBRARY
         NAMES

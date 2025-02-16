@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2011-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2011-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 # Tries to find Gperftools.
@@ -33,6 +33,10 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
+endif()
+
 if(NOT GPERFTOOLS_ROOT)
     set(GPERFTOOLS_ROOT_USER_DEFINED /usr/local)
 else()
@@ -56,41 +60,27 @@ find_library(GPERFTOOLS_TCMALLOC
     NAMES tcmalloc
     PATHS ${GPERFTOOLS_ROOT_USER_DEFINED}/lib
           ${GPERFTOOLS_ROOT_USER_DEFINED}/lib64
-          /usr/lib
-          /usr/lib64
-          /usr/local/lib
-          /usr/local/lib64
-          /opt/local/lib
+          ${GNSSSDR_LIB_PATHS}
 )
 
 find_library(GPERFTOOLS_PROFILER
     NAMES profiler
     PATHS ${GPERFTOOLS_ROOT_USER_DEFINED}/lib
           ${GPERFTOOLS_ROOT_USER_DEFINED}/lib64
-          /usr/lib
-          /usr/lib64
-          /usr/local/lib
-          /usr/local/lib64
-          /opt/local/lib
+          ${GNSSSDR_LIB_PATHS}
 )
 
 find_library(GPERFTOOLS_TCMALLOC_AND_PROFILER
     NAMES tcmalloc_and_profiler
     PATHS ${GPERFTOOLS_ROOT_USER_DEFINED}/lib
           ${GPERFTOOLS_ROOT_USER_DEFINED}/lib64
-          /usr/lib
-          /usr/lib64
-          /usr/local/lib
-          /usr/local/lib64
-          /opt/local/lib
+          ${GNSSSDR_LIB_PATHS}
 )
 
 find_path(GPERFTOOLS_INCLUDE_DIR
     NAMES gperftools/heap-profiler.h
-    PATHS /usr/include
-          /usr/local/include
-          /opt/local/include
-          ${GPERFTOOLS_ROOT_USER_DEFINED}/include
+    PATHS ${GPERFTOOLS_ROOT_USER_DEFINED}/include
+          ${GNSSSDR_INCLUDE_PATHS}
 )
 
 set(GPERFTOOLS_LIBRARIES ${GPERFTOOLS_TCMALLOC_AND_PROFILER})

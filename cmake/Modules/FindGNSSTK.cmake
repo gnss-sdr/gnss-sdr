@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2022 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2022-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 # - Find gnsstk library
@@ -17,6 +17,10 @@
 
 if(NOT COMMAND feature_summary)
     include(FeatureSummary)
+endif()
+
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
 endif()
 
 if(NOT GNSSTK_ROOT)
@@ -35,17 +39,13 @@ unset(GNSSTK_INCLUDE_DIR CACHE)
 unset(GNSSTK_USES_GPSTK_NAMESPACE CACHE)
 find_path(GNSSTK_INCLUDE_DIR gnsstk/Rinex3ObsBase.hpp
     PATHS ${GNSSTK_ROOT_USER_DEFINED}/include
-          /usr/include
-          /usr/local/include
-          /opt/local/include
+          ${GNSSSDR_INCLUDE_PATHS}
 )
 set(GNSSTK_NAMES ${CMAKE_FIND_LIBRARY_PREFIXES}gnsstk${CMAKE_SHARED_LIBRARY_SUFFIX})
 if(NOT GNSSTK_INCLUDE_DIR)
     find_path(GNSSTK_INCLUDE_DIR gpstk/Rinex3ObsBase.hpp
         PATHS ${GNSSTK_ROOT_USER_DEFINED}/include
-              /usr/include
-              /usr/local/include
-              /opt/local/include
+              ${GNSSSDR_INCLUDE_PATHS}
     )
     if(GNSSTK_INCLUDE_DIR)
         set(GNSSTK_NAMES gpstk ${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
@@ -56,12 +56,8 @@ endif()
 include(GNUInstallDirs)
 
 find_library(GNSSTK_LIBRARY NAMES ${GNSSTK_NAMES}
-    PATHS ${GNSSTK_ROOT_USER_DEFINED}/lib
-          ${GNSSTK_ROOT_USER_DEFINED}/${CMAKE_INSTALL_LIBDIR}
-          /usr/local/lib
-          /usr/${CMAKE_INSTALL_LIBDIR}
-          /usr/local/${CMAKE_INSTALL_LIBDIR}
-          /opt/local/lib
+    PATHS ${GNSSTK_ROOT_USER_DEFINED}/${CMAKE_INSTALL_LIBDIR}
+          ${GNSSSDR_LIB_PATHS}
 )
 
 if(GNSSTK_LIBRARY AND GNSSTK_INCLUDE_DIR)

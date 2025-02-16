@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2011-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2011-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 # - Try to find GFlags
@@ -26,7 +26,7 @@ if(NOT COMMAND feature_summary)
 endif()
 
 if(NOT GNSSSDR_LIB_PATHS)
-    include(GnsssdrLibPaths)
+    include(GnsssdrFindPaths)
 endif()
 
 if(NOT GFLAGS_ROOT)
@@ -46,9 +46,8 @@ if(APPLE)
         libgflags.dylib
         PATHS
             ${GFLAGS_ROOT_USER_PROVIDED}/lib
-            /usr/local/lib
-            /opt/local/lib
-            /opt/homebrew/opt/gflags/lib
+            ${GNSSSDR_LIB_PATHS}
+            ${GNSSSDR_LIB_PATHS}/opt/gflags/lib
     )
 else()
     find_path(GFlags_ROOT_DIR
@@ -68,10 +67,8 @@ if(GFlags_ROOT_DIR)
         PATHS
             ${GFlags_ROOT_DIR}/src
             ${GFLAGS_ROOT_USER_PROVIDED}/include
-            /usr/include
-            /usr/local/include
-            /opt/local/include
-            /opt/homebrew/opt/gflags/include
+            ${GNSSSDR_INCLUDE_PATHS}
+            ${GNSSSDR_INCLUDE_PATHS}/opt/gflags/include
     )
 
     # Find the libraries

@@ -127,13 +127,14 @@ This section describes how to set up the compilation environment in GNU/Linux or
 - Tested distributions: Ubuntu 14.04 LTS and above; Debian 9.0 "stretch" and
   above; Arch Linux; Fedora 26 and above; OpenSUSE 42.3 and above.
 - Supported microprocessor architectures:
-  - i386: Intel x86 instruction set (32-bit microprocessors).
   - amd64: also known as x86-64, the 64-bit version of the x86 instruction set,
     originally created by AMD and implemented by AMD, Intel, VIA, and others.
   - armel: ARM embedded ABI, supported on ARM v4t and higher.
   - armhf: ARM hard float, ARMv7 + VFP3-D16 floating-point hardware extension +
     Thumb-2 instruction set and above.
-  - arm64: ARM 64 bits or ARMv8.
+  - arm64: ARM 64 bits or ARMv8. Also known as AArch64.
+  - i386: Intel x86 instruction set (32-bit microprocessors).
+  - loong64: 64-bit version of LoongArch, a RISC-style instruction set architecture developed by Loongson Technology.
   - mips: MIPS architecture (big-endian, such as those manufactured by SGI).
   - mipsel: MIPS architecture (little-endian, such as Loongson 3).
   - mips64el: 64-bit version of MIPS architecture.
@@ -792,7 +793,7 @@ $ sudo port selfupdate
 $ sudo port upgrade outdated
 $ sudo port install armadillo cmake pkgconfig protobuf3-cpp pugixml openssl3
 $ sudo port install gnuradio +uhd +grc +zeromq
-$ sudo port install boost matio libad9361-iio libiio
+$ sudo port install boost matio libad9361-iio libiio abseil
 $ sudo port install py313-mako
 $ sudo port install doxygen +docs
 ```

@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2011-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2011-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 # Tries to find gr-limesdr.
@@ -31,12 +31,12 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
-if(NOT GNSSSDR_LIB_PATHS)
-    include(GnsssdrLibPaths)
-endif()
-
 if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
+endif()
+
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
 endif()
 
 pkg_check_modules(GRLIMESDR_PKG QUIET gnuradio-limesdr)
@@ -61,9 +61,7 @@ find_path(GRLIMESDR_INCLUDE_DIR
         ${GRLIMESDR_PKG_INCLUDEDIR}
     PATHS
         ${GRLIMESDR_ROOT_USER_DEFINED}/include
-        /usr/include
-        /usr/local/include
-        /opt/local/include
+        ${GNSSSDR_INCLUDE_PATHS}
 )
 
 find_library(GRLIMESDR_LIBRARIES

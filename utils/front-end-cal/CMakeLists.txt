@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2010-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 
@@ -140,11 +140,7 @@ install(TARGETS front-end-cal
 )
 
 find_program(GZIP gzip
-    /bin
-    /usr/bin
-    /usr/local/bin
-    /opt/local/bin
-    /sbin
+    ${GNSSSDR_BIN_PATHS}
 )
 
 if(NOT GZIP_NOTFOUND)

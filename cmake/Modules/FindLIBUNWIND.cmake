@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2022 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2022-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 # Find the libunwind library
@@ -18,30 +18,22 @@ if(NOT COMMAND feature_summary)
 endif()
 
 if(NOT GNSSSDR_LIB_PATHS)
-    include(GnsssdrLibPaths)
+    include(GnsssdrFindPaths)
 endif()
 
 find_path(LIBUNWIND_INCLUDE_DIR
     NAMES
         libunwind.h
         unwind.h
-    HINTS
-        /usr
-        /usr/local
-        /opt/local
     PATH_SUFFIXES include
     PATHS "${LIBUNWIND_ROOT}/include"
+          ${GNSSSDR_INCLUDE_PATHS}
 )
 
 find_library(LIBUNWIND_GENERIC_LIBRARY
     NAMES
         libunwind
         unwind
-    HINTS
-        /usr
-        /usr/local
-        /opt/local
-    PATH_SUFFIXES lib lib64
     PATHS
         "${LIBUNWIND_ROOT}/lib"
         "${LIBUNWIND_ROOT}/lib64"
@@ -75,12 +67,8 @@ if(LIBUNWIND_INCLUDE_DIR)
                 NAMES
                     libunwind-${LIBUNWIND_ARCH}
                     "unwind-${LIBUNWIND_ARCH}"
-                HINTS
-                    /usr
-                    /usr/local
-                    /opt/local
-                PATH_SUFFIXES lib lib64
                 PATHS "${LIBUNWIND_ROOT}"
+                      ${GNSSSDR_LIB_PATHS}
             )
             if(NOT LIBUNWIND_SPECIFIC_LIBRARY)
                 message(STATUS " -- Failed to find unwind-${LIBUNWIND_ARCH}")

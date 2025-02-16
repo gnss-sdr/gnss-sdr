@@ -611,9 +611,9 @@ set_package_properties(Threads PROPERTIES
 
 
 ################################################################################
-# Set GNSSSDR_LIB_PATHS
+# Set GNSSSDR_LIB_PATHS and GNSSSDR_INCLUDE_PATHS
 ################################################################################
-include(GnsssdrLibPaths)
+include(GnsssdrFindPaths)
 
 
 
@@ -2234,21 +2234,21 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
     # Fix for macOS
     find_library(ARPACK_LIBRARY
         NAMES arpack
-        PATHS ${CMAKE_SYSTEM_LIBRARY_PATH} /opt/local/lib /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib /opt/local/lib64
+        PATHS ${CMAKE_SYSTEM_LIBRARY_PATH} ${GNSSSDR_LIB_PATHS}
     )
     if(ARPACK_LIBRARY)
         target_link_libraries(Armadillo::armadillo INTERFACE ${ARPACK_LIBRARY})
     endif()
     find_library(FLEXIBLAS_LIBRARY
         NAMES flexiblas
-        PATHS ${CMAKE_SYSTEM_LIBRARY_PATH} /opt/local/lib /lib64 /lib /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib /opt/local/lib64
+        PATHS ${CMAKE_SYSTEM_LIBRARY_PATH} ${GNSSSDR_LIB_PATHS}
     )
     if(FLEXIBLAS_LIBRARY)
         target_link_libraries(Armadillo::armadillo INTERFACE ${FLEXIBLAS_LIBRARY})
     endif()
     find_library(SUPERLU_LIBRARY
         NAMES superlu
-        PATHS ${CMAKE_SYSTEM_LIBRARY_PATH} /opt/local/lib /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib /opt/local/lib64
+        PATHS ${CMAKE_SYSTEM_LIBRARY_PATH} ${GNSSSDR_LIB_PATHS}
     )
     if(SUPERLU_LIBRARY)
         target_link_libraries(Armadillo::armadillo INTERFACE ${SUPERLU_LIBRARY})
@@ -2375,23 +2375,23 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
         endif()
 
         if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-            if((NOT EXISTS /usr/local/bin/glibtoolize AND NOT EXISTS /opt/local/bin/glibtoolize) OR
-                (NOT EXISTS /usr/local/bin/aclocal AND NOT EXISTS /opt/local/bin/aclocal))
+            if((NOT EXISTS /usr/local/bin/glibtoolize AND NOT EXISTS ${MACOS_PACKAGES_PREFIX}/bin/glibtoolize) OR
+                (NOT EXISTS /usr/local/bin/aclocal AND NOT EXISTS ${MACOS_PACKAGES_PREFIX}/bin/aclocal))
                 message(" libtool/automake tools have not been found.")
                 message(" You can try to install them by typing:")
                 message(" 'sudo port install libtool automake', if you use Macports, or 'brew install libtool automake', if you use Homebrew")
                 message(FATAL_ERROR "libtool/automake tools are required to build matio from source")
             endif()
             if(CMAKE_GENERATOR STREQUAL Xcode)
-                if(EXISTS /opt/local/bin/glibtoolize OR EXISTS /opt/local/bin/aclocal)
+                if(EXISTS ${MACOS_PACKAGES_PREFIX}/bin/glibtoolize OR EXISTS ${MACOS_PACKAGES_PREFIX}/bin/aclocal)
                     if(NOT EXISTS /usr/local/bin/glibtoolize OR NOT EXISTS /usr/local/bin/aclocal)
                         message(" WARNING: libtool/atomake binaries cannot be found by Xcode. Please do:")
-                        message("sudo ln -s /opt/local/bin/glibtoolize /usr/local/bin/")
-                        message("sudo ln -s /opt/local/bin/aclocal /usr/local/bin/")
-                        message("sudo ln -s /opt/local/bin/autom4te /usr/local/bin/")
-                        message("sudo ln -s /opt/local/bin/automake /usr/local/bin/")
-                        message("sudo ln -s /opt/local/bin/autoconf /usr/local/bin/")
-                        message("sudo ln -s /opt/local/bin/autoreconf /usr/local/bin/")  # not needed by Matio, but by Protocol Buffers
+                        message("sudo ln -s ${MACOS_PACKAGES_PREFIX}/bin/glibtoolize /usr/local/bin/")
+                        message("sudo ln -s ${MACOS_PACKAGES_PREFIX}/bin/aclocal /usr/local/bin/")
+                        message("sudo ln -s ${MACOS_PACKAGES_PREFIX}/bin/autom4te /usr/local/bin/")
+                        message("sudo ln -s ${MACOS_PACKAGES_PREFIX}/bin/automake /usr/local/bin/")
+                        message("sudo ln -s ${MACOS_PACKAGES_PREFIX}/bin/autoconf /usr/local/bin/")
+                        message("sudo ln -s ${MACOS_PACKAGES_PREFIX}/bin/autoreconf /usr/local/bin/")  # not needed by Matio, but by Protocol Buffers
                         message(FATAL_ERROR "libtool/automake tools cannot be found by Xcode")
                     endif()
                 endif()
@@ -2402,8 +2402,8 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
         get_filename_component(HDF5_BASE_DIR2 ${HDF5_FIRST_DIR} DIRECTORY)
         get_filename_component(HDF5_BASE_DIR ${HDF5_BASE_DIR2} DIRECTORY)
         if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-            if(EXISTS /opt/local/include/hdf5.h)
-                set(HDF5_BASE_DIR /opt/local)
+            if(EXISTS ${MACOS_PACKAGES_PREFIX}/include/hdf5.h)
+                set(HDF5_BASE_DIR ${MACOS_PACKAGES_PREFIX})
             endif()
             if(EXISTS /usr/local/include/hdf5.h)
                 set(HDF5_BASE_DIR /usr/local)
@@ -2785,23 +2785,23 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
                 endif()
             endif()
             if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-                if((NOT EXISTS /usr/local/bin/glibtoolize AND NOT EXISTS /opt/local/bin/glibtoolize) OR
-                    (NOT EXISTS /usr/local/bin/aclocal AND NOT EXISTS /opt/local/bin/aclocal))
+                if((NOT EXISTS /usr/local/bin/glibtoolize AND NOT EXISTS ${MACOS_PACKAGES_PREFIX}/bin/glibtoolize) OR
+                    (NOT EXISTS /usr/local/bin/aclocal AND NOT EXISTS ${MACOS_PACKAGES_PREFIX}/bin/aclocal))
                     message(" libtool/automake tools have not been found.")
                     message(" You can try to install them by typing:")
                     message(" 'sudo port install libtool automake', if you use Macports, or 'brew install libtool automake', if you use Homebrew")
                     message(FATAL_ERROR "libtool/automake tools are required to build Protocol Buffers from source")
                 endif()
                 if(CMAKE_GENERATOR STREQUAL Xcode)
-                    if(EXISTS /opt/local/bin/glibtoolize OR EXISTS /opt/local/bin/aclocal)
+                    if(EXISTS ${MACOS_PACKAGES_PREFIX}/bin/glibtoolize OR EXISTS ${MACOS_PACKAGES_PREFIX}/bin/aclocal)
                         if(NOT EXISTS /usr/local/bin/glibtoolize OR NOT EXISTS /usr/local/bin/aclocal)
                             message(" WARNING: libtool/automake binaries cannot be found by Xcode. Please do:")
-                            message("sudo ln -s /opt/local/bin/glibtoolize /usr/local/bin/")
-                            message("sudo ln -s /opt/local/bin/aclocal /usr/local/bin/")
-                            message("sudo ln -s /opt/local/bin/autom4te /usr/local/bin/")
-                            message("sudo ln -s /opt/local/bin/automake /usr/local/bin/")
-                            message("sudo ln -s /opt/local/bin/autoconf /usr/local/bin/")
-                            message("sudo ln -s /opt/local/bin/autoreconf /usr/local/bin/")
+                            message("sudo ln -s ${MACOS_PACKAGES_PREFIX}/bin/glibtoolize /usr/local/bin/")
+                            message("sudo ln -s ${MACOS_PACKAGES_PREFIX}/bin/aclocal /usr/local/bin/")
+                            message("sudo ln -s ${MACOS_PACKAGES_PREFIX}/bin/autom4te /usr/local/bin/")
+                            message("sudo ln -s ${MACOS_PACKAGES_PREFIX}/bin/automake /usr/local/bin/")
+                            message("sudo ln -s ${MACOS_PACKAGES_PREFIX}/bin/autoconf /usr/local/bin/")
+                            message("sudo ln -s ${MACOS_PACKAGES_PREFIX}/bin/autoreconf /usr/local/bin/")
                             message(FATAL_ERROR "libtool/automake tools cannot be found by Xcode")
                         endif()
                     endif()

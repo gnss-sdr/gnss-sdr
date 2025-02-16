@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2011-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2011-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 ########################################################################
@@ -15,6 +15,10 @@
 
 if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
+endif()
+
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
 endif()
 
 pkg_check_modules(PC_GR_DBFCTTC gr-dbfcttc)
@@ -46,9 +50,7 @@ find_path(
     NAMES dbfcttc/api.h
     HINTS ${PC_GR_DBFCTTC_INCLUDEDIR}
     PATHS ${GRDBFCTTC_ROOT_USER_DEFINED}/include
-          /usr/include
-          /usr/local/include
-          /opt/local/include
+          ${GNSSSDR_INCLUDE_PATHS}
 )
 
 find_library(
@@ -57,11 +59,7 @@ find_library(
     HINTS ${PC_GR_DBFCTTC_LIBDIR}
     PATHS ${GRDBFCTTC_ROOT_USER_DEFINED}/lib
           ${GRDBFCTTC_ROOT_USER_DEFINED}/lib64
-          /usr/lib
-          /usr/lib64
-          /usr/local/lib
-          /usr/local/lib64
-          /opt/local/lib
+          ${GNSSSDR_LIB_PATHS}
 )
 
 include(FindPackageHandleStandardArgs)

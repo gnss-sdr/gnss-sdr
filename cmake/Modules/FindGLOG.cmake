@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2011-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2011-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 # - Try to find the Google Glog library
@@ -24,12 +24,12 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
-if(NOT GNSSSDR_LIB_PATHS)
-    include(GnsssdrLibPaths)
-endif()
-
 if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
+endif()
+
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
 endif()
 
 if(NOT DEFINED GLOG_ROOT)
@@ -74,7 +74,7 @@ if(MSVC)
             ${PC_GLOG_INCLUDEDIR}
         PATHS
             ${GLOG_ROOT}/src/windows
-            ${GLOG_ROOT}/src/windows/glog
+        PATH_SUFFIXES glog
     )
 else()
     # Linux/OS X builds
@@ -82,11 +82,10 @@ else()
         HINTS
             ${PC_GLOG_INCLUDEDIR}
         PATHS
-            /usr/include/glog
-            /usr/local/include/glog
-            /opt/local/include/glog   # default location in Macports
-            /opt/homebrew/opt/glog/include/glog
-            ${GLOG_ROOT}/include/glog
+            ${GNSSSDR_INCLUDE_PATHS}
+            ${GNSSSDR_INCLUDE_PATHS}/opt/glog/include
+            ${GLOG_ROOT}/include
+        PATH_SUFFIXES glog
     )
 endif()
 

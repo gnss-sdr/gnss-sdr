@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2011-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2011-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 # - Find Log4cpp
@@ -19,12 +19,12 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
-if(NOT GNSSSDR_LIB_PATHS)
-    include(GnsssdrLibPaths)
-endif()
-
 if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
+endif()
+
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
 endif()
 
 pkg_check_modules(PC_LOG4CPP log4cpp QUIET)
@@ -52,9 +52,7 @@ set(LOG4CPP_ROOT_USER_PROVIDED
 
 find_path(LOG4CPP_INCLUDE_DIR log4cpp/Category.hh
     ${LOG4CPP_ROOT_USER_PROVIDED}/include
-    /usr/include
-    /usr/local/include
-    /opt/local/include
+    ${GNSSSDR_INCLUDE_PATHS}
     ${PC_LOG4CPP_INCLUDEDIR}
 )
 
@@ -77,8 +75,8 @@ find_library(LOG4CPP_LIBRARY
     NAMES ${LOG4CPP_NAMES}
     HINTS ${PC_LOG4CPP_LIBDIR}
     PATHS ${LOG4CPP_ROOT_USER_PROVIDED}/lib
-        ${LOG4CPP_ROOT_USER_PROVIDED}/lib64
-        ${GNSSSDR_LIB_PATHS}
+          ${LOG4CPP_ROOT_USER_PROVIDED}/lib64
+          ${GNSSSDR_LIB_PATHS}
 )
 
 if(LOG4CPP_INCLUDE_DIR AND LOG4CPP_LIBRARY)

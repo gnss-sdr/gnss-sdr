@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2011-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2011-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 # FindMATIO
@@ -56,7 +56,7 @@ if(NOT COMMAND feature_summary)
 endif()
 
 if(NOT GNSSSDR_LIB_PATHS)
-    include(GnsssdrLibPaths)
+    include(GnsssdrFindPaths)
 endif()
 
 if(NOT MATIO_ROOT)
@@ -76,9 +76,7 @@ find_path(MATIO_INCLUDE_DIR
     NAMES matio.h
     PATHS
         ${MATIO_ROOT_USER_DEFINED}/include
-        /usr/include
-        /usr/local/include
-        /opt/local/include
+        ${GNSSSDR_INCLUDE_PATHS}
         ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include
     DOC "The MATIO include directory"
 )

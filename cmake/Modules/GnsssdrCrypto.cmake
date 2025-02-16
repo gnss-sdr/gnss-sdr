@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2024 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2024-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 if(NOT COMMAND feature_summary)
@@ -9,7 +9,7 @@ if(NOT COMMAND feature_summary)
 endif()
 
 if(NOT GNSSSDR_LIB_PATHS)
-    include(GnsssdrLibPaths)
+    include(GnsssdrFindPaths)
 endif()
 
 ################################################################################
@@ -65,10 +65,7 @@ else()
 
     find_path(GNUTLS_INCLUDE_DIR NAMES gnutls/gnutls.h
         PATHS
-            /usr/include
-            /usr/local/include
-            /opt/local/include   # default location in Macports
-            /opt/homebrew/opt/gnutls/include/
+            ${GNSSSDR_INCLUDE_PATHS}
             ${GNUTLS_ROOT_DIR}/include/
     )
 

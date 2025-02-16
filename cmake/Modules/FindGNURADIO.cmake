@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2011-2022 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2011-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 ########################################################################
@@ -12,12 +12,12 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
-if(NOT GNSSSDR_LIB_PATHS)
-    include(GnsssdrLibPaths)
-endif()
-
 if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
+endif()
+
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
 endif()
 
 include(FindPackageHandleStandardArgs)
@@ -97,9 +97,7 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
         NAMES ${INCFILE}
         HINTS ${PC_INCDIR}
         PATHS ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/include
-              /usr/include
-              /usr/local/include
-              /opt/local/include
+              ${GNSSSDR_INCLUDE_PATHS}
     )
 
     # look for libs
@@ -107,8 +105,7 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
         find_library(${LIBVAR_NAME}_${libname}
             NAMES ${libname} ${libname}-${PC_GNURADIO_RUNTIME_VERSION}
             HINTS ${PC_LIBDIR}
-            PATHS ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/lib
-                  ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/lib64
+            PATHS ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/${CMAKE_INSTALL_LIBDIR}
                   ${GNSSSDR_LIB_PATHS}
         )
         list(APPEND ${LIBVAR_NAME} ${${LIBVAR_NAME}_${libname}})
@@ -197,9 +194,7 @@ if(NOT PC_GNURADIO_RUNTIME_VERSION)
     find_file(GNURADIO_VERSION_GREATER_THAN_373
         NAMES gnuradio/blocks/tsb_vector_sink_f.h
         PATHS ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/include
-              /usr/include
-              /usr/local/include
-              /opt/local/include
+              ${GNSSSDR_INCLUDE_PATHS}
     )
     if(GNURADIO_VERSION_GREATER_THAN_373)
         set(PC_GNURADIO_RUNTIME_VERSION "3.7.4+")
@@ -208,9 +203,7 @@ if(NOT PC_GNURADIO_RUNTIME_VERSION)
     find_file(GNURADIO_VERSION_GREATER_THAN_38
         NAMES gnuradio/filter/mmse_resampler_cc.h
         PATHS ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/include
-              /usr/include
-              /usr/local/include
-              /opt/local/include
+              ${GNSSSDR_INCLUDE_PATHS}
     )
     if(GNURADIO_VERSION_GREATER_THAN_38)
         set(PC_GNURADIO_RUNTIME_VERSION "3.8.0+")
@@ -278,9 +271,7 @@ if(GNURADIO_VERSION VERSION_GREATER 3.8.99)
         NAMES gnuradio/iio/api.h
         HINTS ${PC_GNURADIO_IIO_INCLUDEDIR}
         PATHS ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/include
-              /usr/include
-              /usr/local/include
-              /opt/local/include
+              ${GNSSSDR_INCLUDE_PATHS}
     )
 
     # look for libs

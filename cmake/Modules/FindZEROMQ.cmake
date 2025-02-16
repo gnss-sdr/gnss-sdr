@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2023 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2024-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 #
@@ -13,12 +13,12 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
-if(NOT GNSSSDR_LIB_PATHS)
-    include(GnsssdrLibPaths)
-endif()
-
 if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
+endif()
+
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
 endif()
 
 find_package(PkgConfig)
@@ -26,13 +26,13 @@ pkg_check_modules(PC_ZEROMQ "libzmq")
 
 find_path(ZEROMQ_INCLUDE_DIRS
     NAMES zmq.hpp
-    HINTS ${PC_ZEROMQ_INCLUDE_DIR} ${CMAKE_INSTALL_PREFIX}/include
-    PATHS /usr/local/include /usr/include /opt/local/include
+    HINTS ${PC_ZEROMQ_INCLUDE_DIR}
+    PATHS ${GNSSSDR_INCLUDE_PATHS}
 )
 
 find_library(ZEROMQ_LIBRARIES
     NAMES zmq libzmq.so.5 ${ZEROMQ_LIBRARY_NAME}
-    HINTS ${PC_ZEROMQ_LIBDIR} ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib64
+    HINTS ${PC_ZEROMQ_LIBDIR}
     PATHS ${GNSSSDR_LIB_PATHS}
 )
 

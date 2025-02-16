@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2011-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2011-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 #
@@ -13,12 +13,12 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
-if(NOT GNSSSDR_LIB_PATHS)
-    include(GnsssdrLibPaths)
-endif()
-
 if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
+endif()
+
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
 endif()
 
 pkg_check_modules(PC_IIO gnuradio-iio)
@@ -28,31 +28,31 @@ if(NOT GRIIO_ROOT)
 else()
     set(GRIIO_ROOT_USER_DEFINED ${GRIIO_ROOT})
 endif()
+
 if(DEFINED ENV{GRIIO_ROOT})
     set(GRIIO_ROOT_USER_DEFINED
         ${GRIIO_ROOT_USER_DEFINED}
         $ENV{GRIIO_ROOT}
     )
 endif()
+
 if(DEFINED ENV{IIO_DIR})
     set(GRIIO_ROOT_USER_DEFINED
         ${GRIIO_ROOT_USER_DEFINED}
         $ENV{IIO_DIR}
     )
 endif()
+
 set(GRIIO_ROOT_USER_DEFINED
     ${GRIIO_ROOT_USER_DEFINED}
     ${CMAKE_INSTALL_PREFIX}
 )
 
-
 find_path(IIO_INCLUDE_DIRS
     NAMES gnuradio/iio/api.h
     HINTS ${PC_IIO_INCLUDEDIR}
     PATHS ${GRIIO_ROOT_USER_DEFINED}/include
-          /usr/include
-          /usr/local/include
-          /opt/local/include
+          ${GNSSSDR_INCLUDE_PATHS}
 )
 
 if(IIO_INCLUDE_DIRS)
@@ -62,9 +62,7 @@ else()
         NAMES iio/api.h
         HINTS ${PC_IIO_INCLUDEDIR}
         PATHS ${GRIIO_ROOT_USER_DEFINED}/include
-              /usr/include
-              /usr/local/include
-              /opt/local/include
+              ${GNSSSDR_INCLUDE_PATHS}
     )
     set(GR_IIO_INCLUDE_HAS_GNURADIO FALSE)
 endif()

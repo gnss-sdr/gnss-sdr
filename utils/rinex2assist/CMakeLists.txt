@@ -54,9 +54,7 @@ if(CMAKE_VERSION VERSION_LESS 3.5)
 endif()
 
 find_program(UNCOMPRESS_EXECUTABLE uncompress
-    PATHS /bin
-    /usr/bin
-    /usr/sbin
+    PATHS ${GNSSSDR_BIN_PATHS}
 )
 
 if(TARGET Boost::iostreams AND TARGET Boost::serialization)

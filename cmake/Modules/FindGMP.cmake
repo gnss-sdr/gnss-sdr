@@ -1,15 +1,11 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2024 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2024-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 if(NOT COMMAND feature_summary)
     include(FeatureSummary)
-endif()
-
-if(NOT GNSSSDR_LIB_PATHS)
-    include(GnsssdrLibPaths)
 endif()
 
 if(NOT PKG_CONFIG_FOUND)
@@ -17,15 +13,16 @@ if(NOT PKG_CONFIG_FOUND)
 endif()
 pkg_check_modules(PC_GMP "gmp")
 
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
+endif()
+
 set(GMP_DEFINITIONS ${PC_GMP_CFLAGS_OTHER})
 
 find_path(GMP_INCLUDE_DIR
     NAMES gmpxx.h
     HINTS ${PC_GMP_INCLUDEDIR}
-    PATHS ${CMAKE_INSTALL_PREFIX}/include
-          /usr/local/include
-          /usr/include
-          /opt/local/include
+    PATHS ${GNSSSDR_INCLUDE_PATHS}
 )
 
 set(GMP_INCLUDE_DIRS ${GMP_INCLUDE_DIR})
@@ -35,16 +32,12 @@ find_library(GMPXX_LIBRARY
     NAMES gmpxx
     HINTS ${PC_GMP_LIBDIR}
     PATHS ${GNSSSDR_LIB_PATHS}
-          ${CMAKE_INSTALL_PREFIX}/lib
-          ${CMAKE_INSTALL_PREFIX}/lib64
 )
 
 find_library(GMP_LIBRARY
     NAMES gmp
     HINTS ${PC_GMP_LIBDIR}
     PATHS ${GNSSSDR_LIB_PATHS}
-          ${CMAKE_INSTALL_PREFIX}/lib
-          ${CMAKE_INSTALL_PREFIX}/lib64
 )
 
 set(GMP_LIBRARIES ${GMPXX_LIBRARY} ${GMP_LIBRARY})

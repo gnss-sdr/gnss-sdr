@@ -1,13 +1,13 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2021 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2021-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 set(FPHSA_NAME_MISMATCHED ON)
 
 if(NOT GNSSSDR_LIB_PATHS)
-    include(GnsssdrLibPaths)
+    include(GnsssdrFindPaths)
 endif()
 
 find_library(CPUFEATURES_LIBRARIES
@@ -18,13 +18,7 @@ find_library(CPUFEATURES_LIBRARIES
 find_path(CPUFEATURES_INCLUDE_DIR cpu_features_macros.h
     PATHS $ENV{CPUFEATURES_DIR}/include
           $ENV{CPUFEATURES_DIR}
-          /usr/include
-          /usr/local/include
-          ~/Library/Frameworks
-          /Library/Frameworks
-          /sw/include        # Fink
-          /opt/local/include # MacPorts
-          /opt/csw/include   # Blastwave
+          ${GNSSSDR_INCLUDE_PATHS}
     PATH_SUFFIXES cpu_features
 )
 

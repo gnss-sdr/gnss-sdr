@@ -120,13 +120,8 @@ if(NOT VOLKGNSSSDR_FOUND)
     )
 endif()
 
-find_program(GZIP
-    gzip
-    /bin
-    /usr/bin
-    /usr/local/bin
-    /opt/local/bin
-    /sbin
+find_program(GZIP gzip
+    ${GNSSSDR_BIN_PATHS}
 )
 
 if(NOT GZIP_NOTFOUND)

@@ -109,6 +109,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   place and, if not found, then it looks for GnuTLS as a fallback.
 - Allow linking against Boost 1.87.0.
 - Replace the System V queues by boost::interprocess, improving portability.
+- Improve detection of Homebrew or Macports in macOS.
 
 ### Reliability
 

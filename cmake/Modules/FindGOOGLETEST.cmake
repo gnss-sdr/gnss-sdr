@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2011-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2011-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 
@@ -21,6 +21,10 @@ endif()
 
 if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
+endif()
+
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
 endif()
 
 pkg_check_modules(PC_GTEST gtest)
@@ -44,10 +48,11 @@ find_path(LIBGTEST_DEV_DIR
         ${GTEST_DIR_USER_PROVIDED}/googletest
         /usr/src/googletest/googletest
         /usr/src/gtest
-        /usr/include/gtest
-        /usr/local/src/googletest/googletest
-        /opt/local/src/gtest-1.7.0
-        /opt/homebrew/opt/googletest/include/googletest/googletest
+        ${GNSSSDR_INCLUDE_PATHS}/gtest
+        ${GNSSSDR_INCLUDE_PATHS}/googletest
+        ${CMAKE_SYSTEM_PREFIX_PATH}/src/googletest/googletest
+        ${CMAKE_SYSTEM_PREFIX_PATH}/src/gtest-1.7.0
+        ${CMAKE_SYSTEM_PREFIX_PATH}/opt/googletest/include/googletest/googletest
 )
 
 find_path(GTEST_INCLUDE_DIRS
@@ -55,10 +60,9 @@ find_path(GTEST_INCLUDE_DIRS
     HINTS ${PC_GTEST_INCLUDEDIR}
     PATHS
         ${GTEST_DIR_USER_PROVIDED}/googletest/include
-        /usr/include
-        /usr/local/include
-        /opt/local/src/gtest-1.7.0/include
-        /opt/homebrew/opt/googletest/include
+        ${GNSSSDR_INCLUDE_PATHS}
+        ${CMAKE_SYSTEM_PREFIX_PATH}/src/gtest-1.7.0/include
+        ${CMAKE_SYSTEM_PREFIX_PATH}/opt/googletest/include
 )
 
 include(FindPackageHandleStandardArgs)

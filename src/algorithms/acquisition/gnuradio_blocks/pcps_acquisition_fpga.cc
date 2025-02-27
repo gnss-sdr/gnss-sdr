@@ -32,13 +32,13 @@
 #include <absl/log/log.h>
 #endif
 
-pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(Acq_Conf_Fpga& conf_)
+pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(Acq_Conf_Fpga *conf, uint32_t acq_buff_num, std::vector<std::pair<uint32_t, uint32_t>> &downsampling_filter_specs, uint32_t &max_FFT_size)
 {
-    return pcps_acquisition_fpga_sptr(new pcps_acquisition_fpga(conf_));
+    return pcps_acquisition_fpga_sptr(new pcps_acquisition_fpga(conf, acq_buff_num, downsampling_filter_specs, max_FFT_size));
 }
 
 
-pcps_acquisition_fpga::pcps_acquisition_fpga(Acq_Conf_Fpga& conf_)
+pcps_acquisition_fpga::pcps_acquisition_fpga(Acq_Conf_Fpga *conf_, uint32_t acq_buff_num, std::vector<std::pair<uint32_t, uint32_t>> &downsampling_filter_specs, uint32_t &max_FFT_size)
     : d_acq_parameters(conf_),
       d_gnss_synchro(nullptr),
       d_sample_counter(0ULL),
@@ -46,37 +46,34 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(Acq_Conf_Fpga& conf_)
       d_mag(0),
       d_input_power(0.0),
       d_test_statistics(0.0),
-      d_doppler_step2(d_acq_parameters.doppler_step2),
+      d_doppler_step2(d_acq_parameters->doppler_step2),
       d_doppler_center_step_two(0.0),
       d_doppler_center(0U),
       d_state(0),
       d_doppler_index(0U),
       d_channel(0U),
       d_doppler_step(0U),
-      d_doppler_max(d_acq_parameters.doppler_max),
-      d_fft_size(d_acq_parameters.samples_per_code),
+      d_doppler_max(d_acq_parameters->doppler_max),
       d_num_doppler_bins(0U),
-      d_downsampling_factor(d_acq_parameters.downsampling_factor),
-      d_select_queue_Fpga(d_acq_parameters.select_queue_Fpga),
-      d_total_block_exp(d_acq_parameters.total_block_exp),
-      d_num_doppler_bins_step2(d_acq_parameters.num_doppler_bins_step2),
-      d_max_num_acqs(d_acq_parameters.max_num_acqs),
+      d_total_block_exp(d_acq_parameters->total_block_exp),
+      d_num_doppler_bins_step2(d_acq_parameters->num_doppler_bins_step2),
+      d_max_num_acqs(d_acq_parameters->max_num_acqs),
       d_active(false),
-      d_make_2_steps(d_acq_parameters.make_2_steps)
+      d_make_2_steps(d_acq_parameters->make_2_steps)
 {
-    d_acquisition_fpga = std::make_unique<Fpga_Acquisition>(d_acq_parameters.device_name, d_acq_parameters.code_length, d_acq_parameters.doppler_max, d_fft_size,
-        d_acq_parameters.fs_in, d_acq_parameters.select_queue_Fpga, d_acq_parameters.all_fft_codes, d_acq_parameters.excludelimit);
+    d_acquisition_fpga = std::make_unique<Fpga_Acquisition>(d_acq_parameters->device_name, acq_buff_num,
+        downsampling_filter_specs, max_FFT_size);
 }
-
 
 void pcps_acquisition_fpga::set_local_code()
 {
     d_acquisition_fpga->set_local_code(d_gnss_synchro->PRN);
 }
 
-
 void pcps_acquisition_fpga::init()
 {
+    d_acquisition_fpga->init(d_acq_parameters->code_length, d_doppler_max, d_acq_parameters->fft_size,
+        d_acq_parameters->resampled_fs, d_acq_parameters->downsampling_filter_num, d_acq_parameters->excludelimit, d_acq_parameters->all_fft_codes);
     d_gnss_synchro->Flag_valid_acquisition = false;
     d_gnss_synchro->Flag_valid_symbol_output = false;
     d_gnss_synchro->Flag_valid_pseudorange = false;
@@ -89,7 +86,6 @@ void pcps_acquisition_fpga::init()
 
     d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(static_cast<int32_t>(d_doppler_max) - static_cast<int32_t>(-d_doppler_max)) / static_cast<double>(d_doppler_step))) + 1;
 }
-
 
 void pcps_acquisition_fpga::set_state(int32_t state)
 {
@@ -147,7 +143,7 @@ void pcps_acquisition_fpga::send_negative_acquisition()
                << ", magnitude " << d_mag
                << ", input signal power " << d_input_power;
 
-    if (d_acq_parameters.repeat_satellite == true)
+    if (d_acq_parameters->repeat_satellite == true)
         {
             d_channel_fsm.lock()->Event_failed_acquisition_repeat();
         }
@@ -164,14 +160,13 @@ void pcps_acquisition_fpga::acquisition_core(uint32_t num_doppler_bins, uint32_t
     float firstpeak = 0.0;
     float secondpeak = 0.0;
     uint32_t total_block_exp;
-    uint64_t initial_sample;
 
     d_acquisition_fpga->set_doppler_sweep(num_doppler_bins, doppler_step, doppler_min);
     d_acquisition_fpga->run_acquisition();
     d_acquisition_fpga->read_acquisition_results(&indext,
         &firstpeak,
         &secondpeak,
-        &initial_sample,
+        &d_sample_counter,
         &d_input_power,
         &d_doppler_index,
         &total_block_exp);
@@ -197,26 +192,8 @@ void pcps_acquisition_fpga::acquisition_core(uint32_t num_doppler_bins, uint32_t
         }
 
     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
-    d_sample_counter = initial_sample;
-
-    if (d_select_queue_Fpga == 0)
-        {
-            if (d_downsampling_factor > 1)
-                {
-                    d_gnss_synchro->Acq_delay_samples = static_cast<double>(d_downsampling_factor * (indext));
-                    d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor * static_cast<uint64_t>(d_sample_counter) - static_cast<uint64_t>(44);  // 33;  // 41;  // + 81*0.5;  // delay due to the downsampling filter in the acquisition
-                }
-            else
-                {
-                    d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext);
-                    d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;  // delay due to the downsampling filter in the acquisition
-                }
-        }
-    else
-        {
-            d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext);
-            d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;  // delay due to the downsampling filter in the acquisition
-        }
+    d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext);
+    d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
 }
 
 

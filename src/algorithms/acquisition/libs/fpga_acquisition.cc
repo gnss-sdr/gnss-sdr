@@ -26,7 +26,6 @@
 #include <iostream>          // for operator<<
 #include <sys/mman.h>        // libraries used by the GIPO
 #include <unistd.h>          // for write, close, read, ssize_t
-#include <utility>           // for move
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -47,34 +46,49 @@
     })
 #endif
 
-
 Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
-    uint32_t nsamples,
-    uint32_t doppler_max,
-    uint32_t nsamples_total,
-    int64_t fs_in,
     uint32_t select_queue,
-    uint32_t *all_fft_codes,
-    uint32_t excludelimit) : d_device_name(std::move(device_name)),
-                             d_fs_in(fs_in),
-                             d_fd(0),              // driver descriptor
-                             d_map_base(nullptr),  // driver memory map
-                             d_all_fft_codes(all_fft_codes),
-                             d_vector_length(nsamples_total),
-                             d_excludelimit(excludelimit),
-                             d_nsamples_total(nsamples_total),
-                             d_nsamples(nsamples),  // number of samples not including padding
-                             d_select_queue(select_queue),
-                             d_doppler_max(doppler_max),
-                             d_doppler_step(0),
-                             d_PRN(0)
+    std::vector<std::pair<uint32_t, uint32_t>> &downsampling_filter_specs,
+    uint32_t &max_FFT_size) : d_device_name(device_name),
+                              d_resampled_fs(0),
+                              d_map_base(nullptr),  // driver memory map
+                              d_all_fft_codes(nullptr),
+                              d_fd(0),  // driver descriptor
+                              d_fft_size(0),
+                              d_excludelimit(0),
+                              d_nsamples(0),  // number of samples not including padding
+                              d_filter_num(0),
+                              d_downsampling_factor(1),
+                              d_downsampling_filter_delay(0),
+                              d_select_queue(select_queue),
+                              d_doppler_max(0),
+                              d_doppler_step(0),
+                              d_PRN(0),
+                              d_IP_core_version(0)
 {
     Fpga_Acquisition::open_device();
     Fpga_Acquisition::reset_acquisition();
     Fpga_Acquisition::fpga_acquisition_test_register();
+    Fpga_Acquisition::read_ipcore_info(downsampling_filter_specs, max_FFT_size);
     Fpga_Acquisition::close_device();
-
     DLOG(INFO) << "Acquisition FPGA class created";
+}
+
+void Fpga_Acquisition::init(uint32_t nsamples, uint32_t doppler_max, uint32_t fft_size,
+    int64_t resampled_fs, uint32_t downsampling_filter_num, uint32_t excludelimit, uint32_t *all_fft_codes)
+{
+    d_resampled_fs = resampled_fs;
+    d_all_fft_codes = all_fft_codes;
+    d_fft_size = fft_size;
+    d_excludelimit = excludelimit;
+    d_nsamples = nsamples;
+    d_filter_num = downsampling_filter_num;
+    if (d_filter_num > 0)
+        {
+            d_downsampling_factor = d_downsampling_filter_specs[d_filter_num - 1].first;
+            d_downsampling_filter_delay = d_downsampling_filter_specs[d_filter_num - 1].second;
+        }
+    d_doppler_max = doppler_max;
 }
 
 
@@ -88,11 +102,11 @@ bool Fpga_Acquisition::set_local_code(uint32_t PRN)
 
 void Fpga_Acquisition::write_local_code()
 {
-    d_map_base[9] = LOCAL_CODE_CLEAR_MEM;
+    d_map_base[CLEAR_MEM_REG_ADDR] = LOCAL_CODE_CLEAR_MEM;
     // write local code
-    for (uint32_t k = 0; k < d_vector_length; k++)
+    for (uint32_t k = 0; k < d_fft_size; k++)
         {
-            d_map_base[6] = d_all_fft_codes[d_nsamples_total * (d_PRN - 1) + k];
+            d_map_base[PROG_MEM_ADDR] = d_all_fft_codes[d_fft_size * (d_PRN - 1) + k];
         }
 }
 
@@ -118,15 +132,12 @@ void Fpga_Acquisition::open_device()
 
 void Fpga_Acquisition::fpga_acquisition_test_register()
 {
-    // sanity check : check test register
-    const uint32_t writeval = TEST_REG_SANITY_CHECK;
-
     // write value to test register
-    d_map_base[15] = writeval;
+    d_map_base[TEST_REG_ADDR] = TEST_REG_SANITY_CHECK;
     // read value from test register
-    const uint32_t readval = d_map_base[15];
+    const uint32_t readval = d_map_base[TEST_REG_ADDR];
 
-    if (writeval != readval)
+    if (readval != TEST_REG_SANITY_CHECK)
         {
             LOG(WARNING) << "Acquisition test register sanity check failed";
         }
@@ -136,6 +147,50 @@ void Fpga_Acquisition::fpga_acquisition_test_register()
         }
 }
 
+void Fpga_Acquisition::read_ipcore_info(std::vector<std::pair<uint32_t, uint32_t>> &downsampling_filter_specs, uint32_t &max_FFT_size)
+{
+    d_IP_core_version = d_map_base[FPGA_IP_CORE_VERSION_REG_ADDR];
+    if (d_IP_core_version == FPGA_ACQ_IP_VERSION_1)
+        {
+            // FPGA acquisition IP core version FPGA_ACQ_IP_VERSION_1
+            max_FFT_size = d_map_base[MAX_FFT_SIZE_REG_ADDR];
+            if (d_select_queue == ACQ_BUFF_0)
+                {
+                    // Check if the requested downsampling filter is available on the FPGA and read its implemented latency.
+                    uint32_t downsampling_filter_dec_factors = d_map_base[DOWNSAMPLING_FILTER_DEC_FACTORS_REG_ADDR];
+                    uint32_t downsampling_filter_latencies = d_map_base[DOWNSAMPLING_FILTER_LATENCIES_REG_ADDR];
+                    for (uint32_t filt_num = 1; filt_num <= MAX_FILTERS_AVAILABLE; filt_num++)
+                        {
+                            // The information about the instantiated downsampling filters in the FPGA is ordered such that the largest downsampling factor is stored in the least significant bits (LSBs), while the smallest downsampling factor is stored in the most significant bits (MSBs).
+                            uint32_t dec_factor = downsampling_filter_dec_factors & BIT_MASK_4;
+                            downsampling_filter_dec_factors = downsampling_filter_dec_factors >> RSHIFT_4_BITS;
+
+                            uint32_t filter_latency = downsampling_filter_latencies & BIT_MASK_8;
+                            downsampling_filter_latencies = downsampling_filter_latencies >> RSHIFT_8_BITS;
+                            if (dec_factor != 0)
+                                {
+                                    downsampling_filter_specs.emplace_back(dec_factor, filter_latency);
+                                }
+                            else
+                                {
+                                    break;
+                                }
+                        }
+                }
+        }
+    else
+        {
+            // FPGA Acquisition IP core versions earlier than FPGA_ACQ_IP_VERSION_1
+            max_FFT_size = DEFAULT_MAX_FFT_SIZE;
+            if (d_select_queue == ACQ_BUFF_0)
+                {
+                    // An acquisition resampler with a downsampling factor of DEFAULT_DOWNSAMPLING_FACTOR is implemented in the L1/E1 frequency band
+                    downsampling_filter_specs.emplace_back(DEFAULT_DOWNSAMPLING_FACTOR, DEFAULT_DOWNSAMPLING_FILTER_DELAY);
+                }
+        }
+
+    d_downsampling_filter_specs = downsampling_filter_specs;
+}
 
 void Fpga_Acquisition::run_acquisition()
 {
@@ -149,7 +204,7 @@ void Fpga_Acquisition::run_acquisition()
         }
 
     // launch the acquisition process
-    d_map_base[8] = LAUNCH_ACQUISITION;  // writing a 1 to reg 8 launches the acquisition process
+    d_map_base[ACQ_COMMAND_FLAGS_REG_ADDR] = LAUNCH_ACQUISITION;  // writing a 1 to reg 8 launches the acquisition process
     int32_t irq_count;
 
     // wait for interrupt
@@ -164,7 +219,7 @@ void Fpga_Acquisition::run_acquisition()
 
 void Fpga_Acquisition::set_block_exp(uint32_t total_block_exp)
 {
-    d_map_base[11] = total_block_exp;
+    d_map_base[MAX_FFT_SCALING_FACTOR_REG_ADDR] = total_block_exp;
 }
 
 
@@ -172,59 +227,47 @@ void Fpga_Acquisition::set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_s
 {
     // The doppler step can never be outside the range -pi to +pi, otherwise there would be aliasing
     // The FPGA expects phase_step_rad between -1 (-pi) to +1 (+pi)
-    float phase_step_rad_real = 2.0F * (doppler_min) / static_cast<float>(d_fs_in);
-    auto phase_step_rad_int = static_cast<int32_t>(phase_step_rad_real * (POW_2_31));
-    d_map_base[3] = phase_step_rad_int;
+    float phase_step_rad_real = 2.0F * (doppler_min) / static_cast<float>(d_resampled_fs);
+    d_map_base[DOPPLER_MIN_REG_ADDR] = static_cast<int32_t>(phase_step_rad_real * (POW_2_31));
 
     // repeat the calculation with the doppler step
-    phase_step_rad_real = 2.0F * (doppler_step) / static_cast<float>(d_fs_in);
-    phase_step_rad_int = static_cast<int32_t>(phase_step_rad_real * (POW_2_31));  // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
-    d_map_base[4] = phase_step_rad_int;
+    phase_step_rad_real = 2.0F * (doppler_step) / static_cast<float>(d_resampled_fs);
+    d_map_base[DOPPLER_STEP_REG_ADDR] = static_cast<int32_t>(phase_step_rad_real * (POW_2_31));  // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
 
     // write number of doppler sweeps
-    d_map_base[5] = num_sweeps;
+    d_map_base[NUM_DOPPLER_SEARCH_STEPS_REG_ADDR] = num_sweeps;
 }
 
 
 void Fpga_Acquisition::configure_acquisition()
 {
     // Fpga_Acquisition::();
-    d_map_base[0] = d_select_queue;
-    d_map_base[1] = d_vector_length;
-    d_map_base[2] = d_nsamples;
-    d_map_base[7] = static_cast<int32_t>(std::log2(static_cast<float>(d_vector_length)));  // log2 FFTlength
-    d_map_base[12] = d_excludelimit;
+    d_map_base[FREQ_BAND_DOWNSAMPLE_REG_ADDR] = d_select_queue | (d_filter_num << 4);
+    d_map_base[FFT_LENGTH_REG_ADDR] = d_fft_size;
+    d_map_base[CORR_NSAMPLES_REG_ADDR] = d_nsamples;
+    d_map_base[LOG2_FFT_LENGTH_REG_ADDR] = static_cast<int32_t>(std::log2(static_cast<float>(d_fft_size)));  // log2 FFTlength
+    d_map_base[EXCL_LIM_REG_ADDR] = d_excludelimit;
 }
 
 
 void Fpga_Acquisition::read_acquisition_results(uint32_t *max_index,
     float *firstpeak, float *secondpeak, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index, uint32_t *total_blk_exp)
 {
-    uint32_t readval = d_map_base[1];  // read sample counter (LSW)
-    auto initial_sample_tmp = static_cast<uint64_t>(readval);
-
-    uint64_t readval_long = d_map_base[2];               // read sample counter (MSW)
-    uint64_t readval_long_shifted = readval_long << 32;  // 2^32
-
-    initial_sample_tmp += readval_long_shifted;  // 2^32
+    uint64_t initial_sample_tmp = (static_cast<uint64_t>(d_map_base[SAMPLESTAMP_MSW_REG_ADDR]) << 32) + (static_cast<uint64_t>(d_map_base[SAMPLESTAMP_LSW_REG_ADDR]));
+    uint32_t max_index_tmp = d_map_base[ACQ_DELAY_SAMPLES_REG_ADDR];  // read max index position
+    if (d_downsampling_factor > 1)
+        {
+            initial_sample_tmp *= static_cast<uint64_t>(d_downsampling_factor);        // take into account the downsampling factor for the sample stamp
+            initial_sample_tmp -= static_cast<uint64_t>(d_downsampling_filter_delay);  // take into account the downsampling filter delay
+            max_index_tmp *= d_downsampling_factor;                                    // take into account the downsampling factor for the acq. delay
+        }
     *initial_sample = initial_sample_tmp;
-
-    readval = d_map_base[3];  // read first peak value
-    *firstpeak = static_cast<float>(readval);
-
-    readval = d_map_base[4];  // read second peak value
-    *secondpeak = static_cast<float>(readval);
-
-    readval = d_map_base[5];  // read max index position
-    *max_index = readval;
-
-    *power_sum = 0;  // power sum is not used
-
-    readval = d_map_base[7];  // read doppler index -- this read releases the interrupt line
-    *doppler_index = readval;
-
-    readval = d_map_base[8];  // read FFT block exponent
-    *total_blk_exp = readval;
+    *max_index = max_index_tmp;
+    *firstpeak = d_map_base[MAG_SQ_FIRST_PEAK_REG_ADDR];       // read first peak value
+    *secondpeak = d_map_base[MAG_SQ_SECOND_PEAK_REG_ADDR];     // read second peak value
+    *power_sum = 0;                                            // The FPGA does not currently support power sum.
+    *doppler_index = d_map_base[DOPPLER_INDEX_REG_ADDR];       // read doppler index -- this read releases the interrupt line
+    *total_blk_exp = d_map_base[FFT_SCALING_FACTOR_REG_ADDR];  // read FFT block exponent
 }
 
 
@@ -241,30 +284,13 @@ void Fpga_Acquisition::close_device()
 
 void Fpga_Acquisition::reset_acquisition()
 {
-    d_map_base[8] = RESET_ACQUISITION;  // setting bit 2 of d_map_base[8] resets the acquisition. This causes a reset of all
-                                        // the FPGA HW modules including the multicorrelators
+    d_map_base[ACQ_COMMAND_FLAGS_REG_ADDR] = RESET_ACQUISITION;  // setting bit 2 resets the acquisition. This causes a reset of all
+                                                                 // the FPGA HW modules including the multicorrelators
 }
 
 
 void Fpga_Acquisition::stop_acquisition()
 {
-    d_map_base[8] = STOP_ACQUISITION;  // setting bit 3 of d_map_base[8] stops the acquisition module. This stops all
-                                       // the FPGA HW modules including the multicorrelators
-}
-
-
-// this function is only used for the unit tests
-void Fpga_Acquisition::read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor)
-{
-    uint32_t readval = d_map_base[8];
-    *total_scale_factor = readval;
-    // only the total scale factor is used for the tests (fw scale factor to be removed)
-    *fw_scale_factor = 0;
-}
-
-
-void Fpga_Acquisition::read_result_valid(uint32_t *result_valid)
-{
-    uint32_t readval = d_map_base[0];
-    *result_valid = readval;
+    d_map_base[ACQ_COMMAND_FLAGS_REG_ADDR] = STOP_ACQUISITION;  // setting bit 3 stops the acquisition module. This stops all
+                                                                // the FPGA HW modules including the multicorrelators
 }

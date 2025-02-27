@@ -182,17 +182,15 @@ public:
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override {};
 
 private:
-    static const uint32_t downsampling_factor_default = 4;
-    static const uint32_t fpga_buff_num = 0;  // L1/E1 band
-    static const uint32_t fpga_blk_exp = 13;  // default block exponent
+    static const uint32_t ACQ_BUFF_0 = 0;             // FPGA Acquisition IP buffer containing L1/E1 frequency band samples by default.
+    static const uint32_t DEFAULT_FPGA_BLK_EXP = 13;  // default block exponent
+    static const uint32_t QUANT_BITS_LOCAL_CODE = 16;
+    static const uint32_t SELECT_LSBITS = 0x0000FFFF;         // Select the 10 LSbits out of a 20-bit word
+    static const uint32_t SELECT_MSBITS = 0xFFFF0000;         // Select the 10 MSbits out of a 20-bit word
+    static const uint32_t SELECT_ALL_CODE_BITS = 0xFFFFFFFF;  // Select a 20 bit word
+    static const uint32_t SHL_CODE_BITS = 65536;              // shift left by 10 bits
 
-    // the following flags are FPGA-specific and they are using arrange the values of the fft of the local code in the way the FPGA
-    // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
-    static const uint32_t quant_bits_local_code = 16;
-    static const uint32_t select_lsbits = 0x0000FFFF;         // Select the 10 LSbits out of a 20-bit word
-    static const uint32_t select_msbits = 0xFFFF0000;         // Select the 10 MSbits out of a 20-bit word
-    static const uint32_t select_all_code_bits = 0xFFFFFFFF;  // Select a 20 bit word
-    static const uint32_t shl_code_bits = 65536;              // shift left by 10 bits
+    void generate_galileo_e1_prn_codes();
 
     pcps_acquisition_fpga_sptr acquisition_fpga_;
     volk_gnsssdr::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
@@ -200,7 +198,6 @@ private:
     Gnss_Synchro* gnss_synchro_;
     Acq_Conf_Fpga acq_parameters_;
     std::string role_;
-    int64_t fs_in_;
     int32_t doppler_center_;
     uint32_t channel_;
     uint32_t doppler_max_;

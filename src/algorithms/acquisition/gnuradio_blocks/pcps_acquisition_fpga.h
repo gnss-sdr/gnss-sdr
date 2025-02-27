@@ -32,7 +32,8 @@
 #include <cstdint>  // for uint32_t
 #include <memory>   // for shared_ptr
 #include <string>   // for string
-#include <utility>  // for move
+#include <utility>  // for for std::move, std::pair
+#include <vector>   // for std::vector
 
 /** \addtogroup Acquisition
  * \{ */
@@ -46,7 +47,7 @@ class pcps_acquisition_fpga;
 
 using pcps_acquisition_fpga_sptr = std::shared_ptr<pcps_acquisition_fpga>;
 
-pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(Acq_Conf_Fpga& conf_);
+pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(Acq_Conf_Fpga* conf_, uint32_t acq_buff_num, std::vector<std::pair<uint32_t, uint32_t>>& downsampling_filter_specs, uint32_t& max_FFT_size);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition that uses the FPGA.
@@ -168,8 +169,8 @@ public:
     void stop_acquisition();
 
 private:
-    friend pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(Acq_Conf_Fpga& conf_);
-    explicit pcps_acquisition_fpga(Acq_Conf_Fpga& conf_);
+    friend pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(Acq_Conf_Fpga* conf, uint32_t acq_buff_num, std::vector<std::pair<uint32_t, uint32_t>>& downsampling_filter_specs, uint32_t& max_FFT_size);
+    explicit pcps_acquisition_fpga(Acq_Conf_Fpga* conf, uint32_t acq_buff_num, std::vector<std::pair<uint32_t, uint32_t>>& downsampling_filter_specs, uint32_t& max_FFT_size);
 
     void send_negative_acquisition();
     void send_positive_acquisition();
@@ -179,7 +180,7 @@ private:
     std::shared_ptr<Fpga_Acquisition> d_acquisition_fpga;
     std::weak_ptr<ChannelFsm> d_channel_fsm;
 
-    Acq_Conf_Fpga d_acq_parameters;
+    Acq_Conf_Fpga* d_acq_parameters;
 
     Gnss_Synchro* d_gnss_synchro;
 
@@ -199,10 +200,7 @@ private:
     uint32_t d_channel;
     uint32_t d_doppler_step;
     uint32_t d_doppler_max;
-    uint32_t d_fft_size;
     uint32_t d_num_doppler_bins;
-    uint32_t d_downsampling_factor;
-    uint32_t d_select_queue_Fpga;
     uint32_t d_total_block_exp;
     uint32_t d_num_doppler_bins_step2;
     uint32_t d_max_num_acqs;

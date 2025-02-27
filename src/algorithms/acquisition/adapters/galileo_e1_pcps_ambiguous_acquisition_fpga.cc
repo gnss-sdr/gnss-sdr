@@ -49,7 +49,27 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
       out_streams_(out_streams),
       acquire_pilot_(configuration->property(role + ".acquire_pilot", false))
 {
-    acq_parameters_.SetFromConfiguration(configuration, role_, fpga_buff_num, fpga_blk_exp, downsampling_factor_default, GALILEO_E1_CODE_CHIP_RATE_CPS, GALILEO_E1_B_CODE_LENGTH_CHIPS);
+    // Set acquisition parameters
+    acq_parameters_.SetFromConfiguration(configuration, role_, DEFAULT_FPGA_BLK_EXP, GALILEO_E1_CODE_CHIP_RATE_CPS, GALILEO_E1_B_CODE_LENGTH_CHIPS);
+
+    // Query the capabilities of the instantiated FPGA Acquisition IP Core
+    std::vector<std::pair<uint32_t, uint32_t>> downsampling_filter_specs;
+    uint32_t max_FFT_size;
+    acquisition_fpga_ = pcps_make_acquisition_fpga(&acq_parameters_, ACQ_BUFF_0, downsampling_filter_specs, max_FFT_size);
+
+    // Configure the automatic resampler according to the capabilities of the instantiated FPGA Acquisition IP Core.
+    // When the FPGA is in use, the acquisition resampler operates only in the L1/E1 frequency band.
+    bool acq_configuration_valid = acq_parameters_.ConfigureAutomaticResampler(downsampling_filter_specs, max_FFT_size, GALILEO_E1_OPT_ACQ_FS_SPS);
+
+    if (!acq_configuration_valid)
+        {
+            std::cout << "The FPGA does not support the required sampling frequency of " << acq_parameters_.fs_in << " SPS for the L1/E1 band. Please update the sampling frequency in the configuration file." << std::endl;
+            exit(1);
+        }
+
+    DLOG(INFO) << "role " << role;
+
+    generate_galileo_e1_prn_codes();
 
 #if USE_GLOG_AND_GFLAGS
     if (FLAGS_doppler_max != 0)
@@ -64,10 +84,21 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
 #endif
     doppler_max_ = acq_parameters_.doppler_max;
     doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
-    fs_in_ = acq_parameters_.fs_in;
 
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 0)
+        {
+            LOG(ERROR) << "This implementation does not provide an output stream";
+        }
+}
+
+void GalileoE1PcpsAmbiguousAcquisitionFpga::generate_galileo_e1_prn_codes()
+{
     uint32_t code_length = acq_parameters_.code_length;
-    uint32_t nsamples_total = acq_parameters_.samples_per_code;
+    uint32_t nsamples_total = acq_parameters_.fft_size;
 
     // compute all the GALILEO E1 PRN Codes (this is done only once in the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
@@ -76,7 +107,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     volk_gnsssdr::vector<gr_complex> fft_codes_padded(nsamples_total);
     d_all_fft_codes_ = volk_gnsssdr::vector<uint32_t>(nsamples_total * GALILEO_E1_NUMBER_OF_CODES);  // memory containing all the possible fft codes for PRN 0 to 32
 
-    float max;  // temporary maxima search
+    float max;
     int32_t tmp;
     int32_t tmp2;
     int32_t local_code;
@@ -90,13 +121,13 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
                     // set local signal generator to Galileo E1 pilot component (1C)
                     std::array<char, 3> pilot_signal = {{'1', 'C', '\0'}};
                     galileo_e1_code_gen_complex_sampled(code, pilot_signal,
-                        cboc, PRN, fs_in_, 0, false);
+                        cboc, PRN, acq_parameters_.resampled_fs, 0, false);
                 }
             else
                 {
                     std::array<char, 3> data_signal = {{'1', 'B', '\0'}};
                     galileo_e1_code_gen_complex_sampled(code, data_signal,
-                        cboc, PRN, fs_in_, 0, false);
+                        cboc, PRN, acq_parameters_.resampled_fs, 0, false);
                 }
 
             if (acq_parameters_.enable_zero_padding)
@@ -129,29 +160,16 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
             // and package codes in a format that is ready to be written to the FPGA
             for (uint32_t i = 0; i < nsamples_total; i++)
                 {
-                    tmp = static_cast<int32_t>(floor(fft_codes_padded[i].real() * (pow(2, quant_bits_local_code - 1) - 1) / max));
-                    tmp2 = static_cast<int32_t>(floor(fft_codes_padded[i].imag() * (pow(2, quant_bits_local_code - 1) - 1) / max));
-                    local_code = (tmp & select_lsbits) | ((tmp2 * shl_code_bits) & select_msbits);  // put together the real part and the imaginary part
-                    fft_data = local_code & select_all_code_bits;
+                    tmp = static_cast<int32_t>(floor(fft_codes_padded[i].real() * (pow(2, QUANT_BITS_LOCAL_CODE - 1) - 1) / max));
+                    tmp2 = static_cast<int32_t>(floor(fft_codes_padded[i].imag() * (pow(2, QUANT_BITS_LOCAL_CODE - 1) - 1) / max));
+                    local_code = (tmp & SELECT_LSBITS) | ((tmp2 * SHL_CODE_BITS) & SELECT_MSBITS);  // put together the real part and the imaginary part
+                    fft_data = local_code & SELECT_ALL_CODE_BITS;
                     d_all_fft_codes_[i + (nsamples_total * (PRN - 1))] = fft_data;
                 }
         }
 
     acq_parameters_.all_fft_codes = d_all_fft_codes_.data();
-
-    DLOG(INFO) << "role " << role_;
-    acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters_);
-
-    if (in_streams_ > 1)
-        {
-            LOG(ERROR) << "This implementation only supports one input stream";
-        }
-    if (out_streams_ > 0)
-        {
-            LOG(ERROR) << "This implementation does not provide an output stream";
-        }
 }
-
 
 void GalileoE1PcpsAmbiguousAcquisitionFpga::stop_acquisition()
 {

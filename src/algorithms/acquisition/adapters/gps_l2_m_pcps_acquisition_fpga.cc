@@ -48,9 +48,27 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
-    acq_parameters_.SetFromConfiguration(configuration, role, fpga_buff_num, fpga_blk_exp, downsampling_factor_default, GPS_L2_M_CODE_RATE_CPS, GPS_L2_M_CODE_LENGTH_CHIPS);
+    // Set acquisition parameters
+    acq_parameters_.SetFromConfiguration(configuration, role_, DEFAULT_FPGA_BLK_EXP, GPS_L2_M_CODE_RATE_CPS, GPS_L2_M_CODE_LENGTH_CHIPS);
 
-    LOG(INFO) << "role " << role;
+    // Query the capabilities of the instantiated FPGA Acquisition IP Core. When the FPGA is in use, the acquisition resampler operates only in the L1/E1 frequency band.
+    std::vector<std::pair<uint32_t, uint32_t>> downsampling_filter_specs;
+    uint32_t max_FFT_size;
+    acquisition_fpga_ = pcps_make_acquisition_fpga(&acq_parameters_, ACQ_BUFF_1, downsampling_filter_specs, max_FFT_size);
+
+    // When the FPGA is in use, the acquisition resampler operates only in the L1/E1 frequency band.
+    // Check whether the acquisition configuration is supported by the FPGA.
+    bool acq_configuration_valid = acq_parameters_.Is_acq_config_valid(max_FFT_size);
+
+    if (!acq_configuration_valid)
+        {
+            std::cout << "The FPGA does not support the required sampling frequency of " << acq_parameters_.fs_in << " SPS for the L2 band. Please update the sampling frequency in the configuration file." << std::endl;
+            exit(1);
+        }
+
+    DLOG(INFO) << "role " << role;
+
+    generate_gps_l2c_m_prn_codes();
 
 #if USE_GLOG_AND_GFLAGS
     if (FLAGS_doppler_max != 0)
@@ -65,10 +83,21 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
 #endif
     doppler_max_ = acq_parameters_.doppler_max;
     doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
-    fs_in_ = acq_parameters_.fs_in;
 
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 0)
+        {
+            LOG(ERROR) << "This implementation does not provide an output stream";
+        }
+}
+
+void GpsL2MPcpsAcquisitionFpga::generate_gps_l2c_m_prn_codes()
+{
     uint32_t code_length = acq_parameters_.code_length;
-    uint32_t nsamples_total = acq_parameters_.samples_per_code;
+    uint32_t nsamples_total = acq_parameters_.fft_size;
 
     // compute all the GPS L2C PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
@@ -78,7 +107,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     volk_gnsssdr::vector<std::complex<float>> fft_codes_padded(nsamples_total);
     d_all_fft_codes_ = volk_gnsssdr::vector<uint32_t>(nsamples_total * NUM_PRNs);  // memory containing all the possible fft codes for PRN 0 to 32
 
-    float max;  // temporary maxima search
+    float max;
     int32_t tmp;
     int32_t tmp2;
     int32_t local_code;
@@ -86,7 +115,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
 
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            gps_l2c_m_code_gen_complex_sampled(code, PRN, fs_in_);
+            gps_l2c_m_code_gen_complex_sampled(code, PRN, acq_parameters_.fs_in);
 
             if (acq_parameters_.enable_zero_padding)
                 {
@@ -118,7 +147,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
                 {
                     tmp = static_cast<int32_t>(floor(fft_codes_padded[i].real() * (pow(2, QUANT_BITS_LOCAL_CODE - 1) - 1) / max));
                     tmp2 = static_cast<int32_t>(floor(fft_codes_padded[i].imag() * (pow(2, QUANT_BITS_LOCAL_CODE - 1) - 1) / max));
-                    local_code = (tmp & SELECT_LSBits) | ((tmp2 * SHL_CODE_BITS) & SELECT_MSBbits);  // put together the real part and the imaginary part
+                    local_code = (tmp & SELECT_LSBITS) | ((tmp2 * SHL_CODE_BITS) & SELECT_MSBITS);  // put together the real part and the imaginary part
                     fft_data = local_code & SELECT_ALL_CODE_BITS;
                     d_all_fft_codes_[i + (nsamples_total * (PRN - 1))] = fft_data;
 
@@ -128,19 +157,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
         }
 
     acq_parameters_.all_fft_codes = d_all_fft_codes_.data();
-
-    acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters_);
-
-    if (in_streams_ > 1)
-        {
-            LOG(ERROR) << "This implementation only supports one input stream";
-        }
-    if (out_streams_ > 0)
-        {
-            LOG(ERROR) << "This implementation does not provide an output stream";
-        }
 }
-
 
 void GpsL2MPcpsAcquisitionFpga::stop_acquisition()
 {

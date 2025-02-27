@@ -48,7 +48,28 @@ GalileoE5bPcpsAcquisitionFpga::GalileoE5bPcpsAcquisitionFpga(const Configuration
       acq_pilot_(configuration->property(role + ".acquire_pilot", false)),
       acq_iq_(configuration->property(role + ".acquire_iq", false))
 {
-    acq_parameters_.SetFromConfiguration(configuration, role_, fpga_buff_num, fpga_blk_exp, downsampling_factor_default, GALILEO_E5B_CODE_CHIP_RATE_CPS, GALILEO_E5B_CODE_LENGTH_CHIPS);
+    // Set acquisition parameters
+    acq_parameters_.SetFromConfiguration(configuration, role_, DEFAULT_FPGA_BLK_EXP, GALILEO_E5B_CODE_CHIP_RATE_CPS, GALILEO_E5B_CODE_LENGTH_CHIPS);
+
+    // Query the capabilities of the instantiated FPGA Acquisition IP Core. When the FPGA is in use, the acquisition resampler operates only in the L1/E1 frequency band.
+    std::vector<std::pair<uint32_t, uint32_t>> downsampling_filter_specs;
+    uint32_t max_FFT_size;
+    acquisition_fpga_ = pcps_make_acquisition_fpga(&acq_parameters_, ACQ_BUFF_1, downsampling_filter_specs, max_FFT_size);
+
+    // When the FPGA is in use, the acquisition resampler operates only in the L1/E1 frequency band.
+    // Check whether the acquisition configuration is supported by the FPGA.
+    bool acq_configuration_valid = acq_parameters_.Is_acq_config_valid(max_FFT_size);
+
+    if (!acq_configuration_valid)
+        {
+            std::cout << "The FPGA does not support the required sampling frequency of " << acq_parameters_.fs_in << " SPS for the E5b band. Please update the sampling frequency in the configuration file." << std::endl;
+            exit(1);
+        }
+
+    DLOG(INFO) << "role " << role;
+
+    generate_galileo_e5b_prn_codes();
+
 #if USE_GLOG_AND_GFLAGS
     if (FLAGS_doppler_max != 0)
         {
@@ -62,10 +83,21 @@ GalileoE5bPcpsAcquisitionFpga::GalileoE5bPcpsAcquisitionFpga(const Configuration
 #endif
     doppler_max_ = acq_parameters_.doppler_max;
     doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
-    fs_in_ = acq_parameters_.fs_in;
 
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 0)
+        {
+            LOG(ERROR) << "This implementation does not provide an output stream";
+        }
+}
+
+void GalileoE5bPcpsAcquisitionFpga::generate_galileo_e5b_prn_codes()
+{
     uint32_t code_length = acq_parameters_.code_length;
-    uint32_t nsamples_total = acq_parameters_.samples_per_code;
+    uint32_t nsamples_total = acq_parameters_.fft_size;
 
     // compute all the GALILEO E5b PRN Codes (this is done only once in the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
@@ -79,7 +111,7 @@ GalileoE5bPcpsAcquisitionFpga::GalileoE5bPcpsAcquisitionFpga(const Configuration
             acq_pilot_ = false;
         }
 
-    float max;  // temporary maxima search
+    float max;
     int32_t tmp;
     int32_t tmp2;
     int32_t local_code;
@@ -104,7 +136,7 @@ GalileoE5bPcpsAcquisitionFpga::GalileoE5bPcpsAcquisitionFpga(const Configuration
                     signal_[1] = 'I';
                 }
 
-            galileo_e5_b_code_gen_complex_sampled(code, PRN, signal_, fs_in_, 0);
+            galileo_e5_b_code_gen_complex_sampled(code, PRN, signal_, acq_parameters_.fs_in, 0);
 
             if (acq_parameters_.enable_zero_padding)
                 {
@@ -135,28 +167,16 @@ GalileoE5bPcpsAcquisitionFpga::GalileoE5bPcpsAcquisitionFpga(const Configuration
             // and package codes in a format that is ready to be written to the FPGA
             for (uint32_t i = 0; i < nsamples_total; i++)
                 {
-                    tmp = static_cast<int32_t>(floor(fft_codes_padded[i].real() * (pow(2, quant_bits_local_code - 1) - 1) / max));
-                    tmp2 = static_cast<int32_t>(floor(fft_codes_padded[i].imag() * (pow(2, quant_bits_local_code - 1) - 1) / max));
-                    local_code = (tmp & select_lsbits) | ((tmp2 * shl_code_bits) & select_msbits);  // put together the real part and the imaginary part
-                    fft_data = local_code & select_all_code_bits;
+                    tmp = static_cast<int32_t>(floor(fft_codes_padded[i].real() * (pow(2, QUANT_BITS_LOCAL_CODE - 1) - 1) / max));
+                    tmp2 = static_cast<int32_t>(floor(fft_codes_padded[i].imag() * (pow(2, QUANT_BITS_LOCAL_CODE - 1) - 1) / max));
+                    local_code = (tmp & SELECT_LSBITS) | ((tmp2 * SHL_CODE_BITS) & SELECT_MSBITS);  // put together the real part and the imaginary part
+                    fft_data = local_code & SELECT_ALL_CODE_BITS;
                     d_all_fft_codes_[i + (nsamples_total * (PRN - 1))] = fft_data;
                 }
         }
 
     acq_parameters_.all_fft_codes = d_all_fft_codes_.data();
-
-    acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters_);
-
-    if (in_streams_ > 1)
-        {
-            LOG(ERROR) << "This implementation only supports one input stream";
-        }
-    if (out_streams_ > 0)
-        {
-            LOG(ERROR) << "This implementation does not provide an output stream";
-        }
 }
-
 
 void GalileoE5bPcpsAcquisitionFpga::stop_acquisition()
 {

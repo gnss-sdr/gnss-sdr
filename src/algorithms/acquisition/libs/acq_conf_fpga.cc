@@ -96,10 +96,10 @@ bool Acq_Conf_Fpga::ConfigureAutomaticResampler(std::vector<std::pair<uint32_t, 
 
     if (optimal_downsampling_factor > 1)
         {
-            for (auto it = downsampling_filter_specs.begin(); it != downsampling_filter_specs.end(); ++it)
+            for (uint32_t k = 0; k < downsampling_filter_specs.size(); k++)
                 {
-                    uint32_t dec_factor = it->first;
-                    uint32_t filter_delay = it->second;
+                    uint32_t dec_factor = downsampling_filter_specs[k].first;
+                    uint32_t filter_delay = downsampling_filter_specs[k].second;
                     // Select the FPGA-supported downsampling factor that is the closest to, but smaller than, the target downsampling factor
                     if (optimal_downsampling_factor >= dec_factor)
                         {
@@ -107,7 +107,7 @@ bool Acq_Conf_Fpga::ConfigureAutomaticResampler(std::vector<std::pair<uint32_t, 
                             uint32_t fft_size_downsampled = (fft_size / dec_factor);
                             if (fft_size_downsampled <= max_FFT_size)
                                 {
-                                    downsampling_filter_num++;
+                                    downsampling_filter_num = k + 1;
                                     downsampling_factor = dec_factor;
                                     downsampling_filter_delay = filter_delay;
 

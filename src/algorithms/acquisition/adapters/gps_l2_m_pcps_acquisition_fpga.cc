@@ -63,7 +63,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     if (!acq_configuration_valid)
         {
             std::cout << "The FPGA does not support the required sampling frequency of " << acq_parameters_.fs_in << " SPS for the L2 band. Please update the sampling frequency in the configuration file." << std::endl;
-            exit(1);
+            exit(0);
         }
 
     DLOG(INFO) << "role " << role;

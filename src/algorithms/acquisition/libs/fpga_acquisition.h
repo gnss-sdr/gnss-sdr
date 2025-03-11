@@ -187,19 +187,20 @@ private:
     static const uint32_t MEM_LOCAL_CODE_WR_ENABLE = 0x0C000000;  // command to enable the ENA and WR pins of the internal memory of the multicorrelator
     static const uint32_t POW_2_2 = 4;                            // 2^2 (used for the conversion of floating point numbers to integers)
     static const uint32_t POW_2_31 = 2147483648;                  // 2^31 (used for the conversion of floating point numbers to integers)
-
-    static const uint32_t MAX_FILTERS_AVAILABLE = 2;               // maximum number of downsampling filters available in the FPGA by default
-    static const uint32_t DEFAULT_DOWNSAMPLING_FILTER_DELAY = 40;  // default downsampling filter delay (for FPGA Acquisition IP core versions earlier than FPGA_ACQ_IP_VERSION_1)
-    static const uint32_t DEFAULT_DOWNSAMPLING_FACTOR = 4;         // default downsampling factor (for FPGA Acquisition IP core versions earlier than FPGA_ACQ_IP_VERSION_1)
-    static const uint32_t DEFAULT_MAX_FFT_SIZE = 32768;            // default maximum FFT size supported by the FPGA
-    static const uint32_t ACQ_BUFF_0 = 0;                          // FPGA Acquisition IP buffer containing L1/E1 frequency band samples by default.
-    static const uint32_t ACQ_BUFF_1 = 0;                          // FPGA Acquisition IP buffer containing L2 or L5/E5a frequency band samples by default.
+    static const uint32_t MAX_FILTERS_AVAILABLE = 2;              // maximum number of downsampling filters available in the FPGA by default
+    static const uint32_t DEFAULT_MAX_FFT_SIZE = 32768;           // default maximum FFT size supported by the FPGA
+    static const uint32_t ACQ_BUFF_0 = 0;                         // FPGA Acquisition IP buffer containing L1/E1 frequency band samples by default.
+    static const uint32_t ACQ_BUFF_1 = 0;                         // FPGA Acquisition IP buffer containing L2 or L5/E5a frequency band samples by default.
 
     // bit manipulation
     static const uint32_t RSHIFT_4_BITS = 0x4;
     static const uint32_t RSHIFT_8_BITS = 0x8;
     static const uint32_t BIT_MASK_4 = 0xF;
     static const uint32_t BIT_MASK_8 = 0xFF;
+
+    // Downsampling default constants
+    const uint32_t DEFAULT_DOWNSAMPLING_FILTER_DELAY = 40;  // default downsampling filter delay (for FPGA Acquisition IP core versions earlier than FPGA_ACQ_IP_VERSION_1)
+    const uint32_t DEFAULT_DOWNSAMPLING_FACTOR = 4;         // default downsampling factor (for FPGA Acquisition IP core versions earlier than FPGA_ACQ_IP_VERSION_1)
 
     // private methods
     void fpga_acquisition_test_register(void);

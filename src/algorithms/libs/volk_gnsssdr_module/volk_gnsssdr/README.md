@@ -67,7 +67,7 @@ and will make use of it if already installed, thus avoiding to install it twice.
 First, make sure that the required dependencies are installed in your machine:
 
 ```
-$ sudo apt-get install build-essential python3-mako cmake git ca-certificates \
+$ sudo apt install build-essential python3-mako cmake git ca-certificates \
     libboost-dev libboost-filesystem-dev libboost-system-dev
 ```
 

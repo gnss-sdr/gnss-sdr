@@ -165,7 +165,7 @@ $ make pdfmanual
 will create a PDF manual at <tt>gnss-sdr/docs/GNSS-SDR_manual.pdf</tt>. Please note that the PDF generation requires some fonts to be installed on the host system.
 In Ubuntu, those fonts do not come by default. You can install them by doing:
 \verbatim
-$ sudo apt-get install texlive-fonts-recommended
+$ sudo apt install texlive-fonts-recommended
 \endverbatim
 and then run <tt> cmake ../</tt> and <tt>make pdfmanual</tt> again.
 

@@ -165,7 +165,7 @@ If you are using Debian 9, Ubuntu 14.10 or above, this can be done by copying
 and pasting the following line in a terminal:
 
 ```
-$ sudo apt-get install build-essential cmake git pkg-config libboost-dev libboost-date-time-dev \
+$ sudo apt install build-essential cmake git pkg-config libboost-dev libboost-date-time-dev \
        libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev \
        libboost-serialization-dev liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr \
        libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev \
@@ -315,7 +315,7 @@ tutorial.
 First of all, install some basic packages:
 
 ```
-$ sudo apt-get install git python3-pip
+$ sudo apt install git python3-pip
 ```
 
 Download, build and install PyBOMBS:
@@ -384,7 +384,7 @@ or manually as explained below, and then please follow instructions on how to
 #### Install [Armadillo](https://arma.sourceforge.net/ "Armadillo's Homepage"), a C++ linear algebra library
 
 ```
-$ sudo apt-get install libblas-dev liblapack-dev       # For Debian/Ubuntu/LinuxMint
+$ sudo apt install libblas-dev liblapack-dev       # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel             # For Fedora/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
 $ sudo pacman -S blas lapack                           # For Arch Linux
@@ -439,7 +439,7 @@ v20240116 is available in your system.
 #### Install the OpenSSL libraries
 
 ```
-$ sudo apt-get install libssl-dev         # For Debian/Ubuntu/LinuxMint
+$ sudo apt install libssl-dev             # For Debian/Ubuntu/LinuxMint
 $ sudo yum install openssl-devel          # For Fedora/CentOS/RHEL
 $ sudo zypper install openssl-devel       # For OpenSUSE
 $ sudo pacman -S openssl                  # For Arch Linux
@@ -604,7 +604,7 @@ directory at your preferred location and store your own configuration and data
 files there.
 
 You could be interested in creating the documentation (requires:
-`sudo apt-get install doxygen-latex` in Ubuntu/Debian) by doing:
+`sudo apt install doxygen-latex` in Ubuntu/Debian) by doing:
 
 ```
 $ cmake --build build --target doc
@@ -683,7 +683,7 @@ libraries and [gr-iio](https://github.com/analogdevicesinc/gr-iio.git) (>v0.3)
 gnuradio block:
 
 ```
-$ sudo apt-get install libxml2-dev bison flex
+$ sudo apt install libxml2-dev bison flex
 $ git clone https://github.com/analogdevicesinc/libiio.git
 $ cd libiio
 $ mkdir build

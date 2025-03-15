@@ -32,7 +32,7 @@ The building requires two extra dependencies: the Boost Iostreams library and
 the program `uncompress`:
 
 - The Boost Iostreams library can be installed through a package:
-  - In Debian / Ubuntu: `sudo apt-get install libboost-iostreams-dev`
+  - In Debian / Ubuntu: `sudo apt install libboost-iostreams-dev`
   - In Fedora / CentOS: `sudo yum install boost-iostreams`
   - In OpenSUSE: `sudo zypper install libboost_iostreams-devel`
   - In Arch Linux: included in `boost-libs` package.

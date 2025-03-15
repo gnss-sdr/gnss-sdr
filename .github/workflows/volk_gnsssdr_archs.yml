@@ -62,8 +62,8 @@ jobs:
             CXX: ${{ matrix.compiler.cxx }}
           shell: /bin/sh
           install: |
-            apt-get update -q -y
-            apt-get install -q -y git cmake python3-mako liborc-dev ${{ matrix.compiler.name }}
+            apt update
+            apt install -y git cmake python3-mako liborc-dev ${{ matrix.compiler.name }}
           run: |
             git config --global --add safe.directory /volk_gnsssdr
             cd /volk_gnsssdr
@@ -85,8 +85,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install packages
       run: |
-        sudo apt-get update -q -y
-        sudo apt-get install -y python3-mako cmake qemu-user-static g++-14-riscv64-linux-gnu clang-18
+        sudo apt update
+        sudo apt install -y python3-mako cmake qemu-user-static g++-14-riscv64-linux-gnu clang-18
     - name: Test RVV with gcc-14 VLEN=128
       run: |
         mkdir -p gcc14_VLEN_128; cd gcc14_VLEN_128

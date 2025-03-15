@@ -18,9 +18,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: install dependencies
         run: |
-          sudo apt-get update -y
+          sudo apt update
           sudo apt install -y libunwind-dev
-          sudo apt-get install -y --no-install-recommends ninja-build cmake \
+          sudo apt install -y --no-install-recommends ninja-build cmake \
           libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev \
           libboost-thread-dev libboost-chrono-dev libboost-serialization-dev \
           liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev \
@@ -170,7 +170,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: install dependencies
-        run: sudo apt-get install python3-pip && sudo pip3 install cpplint
+        run: sudo apt install python3-pip && sudo pip3 install cpplint
       - name: run checks
         run: "find ./src/ ./utils ./tests -iname *.h -o -iname *.cc | xargs cpplint
           --filter=-,+build/class,+build/deprecated,+build/explicit_make_pair,\

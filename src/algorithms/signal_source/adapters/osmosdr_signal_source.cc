@@ -153,8 +153,17 @@ OsmosdrSignalSource::OsmosdrSignalSource(const ConfigurationInterface* configura
         }
     if (out_stream_ > 1)
         {
-            LOG(ERROR) << "This implementation only supports one output stream";
+            if (osmosdr_args_.find("hackrf") != std::string::npos)
+            {
+                LOG(ERROR) << "HackRF One hardware supports only one output stream. "
+                           << "Please update your configuration to use only one channel.";
+            }
+            else
+            {
+                LOG(ERROR) << "This implementation only supports one output stream";
+            }
         }
+        
 }
 
 
@@ -166,6 +175,14 @@ void OsmosdrSignalSource::driver_instance()
                 {
                     std::cout << "OsmoSdr arguments: " << osmosdr_args_ << '\n';
                     LOG(INFO) << "OsmoSdr arguments: " << osmosdr_args_;
+                }
+                if (osmosdr_args_.find("hackrf") != std::string::npos && out_stream_ > 1)
+                    {
+                        LOG(ERROR) << "HackRF One supports only a single RF channel. You have configured " 
+                                   << out_stream_ << " output streams. Please update your configuration to use "
+                                   << "only one channel with this device.";
+                        throw std::invalid_argument("HackRF One supports only a single RF channel");
+                    }
                 }
             osmosdr_source_ = osmosdr::source::make(osmosdr_args_);
         }

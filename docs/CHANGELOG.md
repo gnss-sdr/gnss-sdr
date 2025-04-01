@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2011-2024 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+SPDX-FileCopyrightText: 2011-2025 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
 <!-- prettier-ignore-end -->
 
@@ -12,7 +12,7 @@ SPDX-FileCopyrightText: 2011-2024 Carles Fernandez-Prades <carles.fernandez@cttc
 
 All notable changes to GNSS-SDR will be documented in this file.
 
-## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+## [GNSS-SDR v0.0.20](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.20) - 2025-04-01
 
 ### Improvements in Interoperability:
 
@@ -74,30 +74,30 @@ All notable changes to GNSS-SDR will be documented in this file.
   [Logging](https://abseil.io/docs/cpp/guides/logging) and
   [Flags](https://abseil.io/docs/cpp/guides/flags) libraries. While gflags and
   glog have dutifully served GNSS-SDR for over a decade, they are now showing
-  signs of aging. The latest version of gflags dates back six years now, with
-  its last commit in the master branch occurring two years ago. Glog remains
-  well maintained, with its latest version v0.7.0 released in February 2024, but
-  with no active development of new features and stuck at C++14. Abseil, on the
-  other hand, represents a contemporary evolution in software development,
-  supports C++17 and C++20, and has absorbed the functionalities of flags and
-  logging from its predecessors. Furthermore, as Abseil has become a
-  prerequisite for the latest versions of Protocol Buffers, its eventual
-  inclusion in GNSS-SDR's indirect dependencies is inevitable. Leveraging Abseil
-  allows for eliminating the need for gflags and glog, thereby reducing the
-  number of mandatory dependencies for GNSS-SDR in forthcoming GNU/Linux
-  distributions. For seamless integration, GNSS-SDR requires a quite recent
-  minimum version of Abseil, v20240116. If an older version is detected, the
-  library will not be utilized, and GNSS-SDR will fall back to using gflags and
-  glog, which still can be used and are fully supported. A new CMake
-  configuration option `-DENABLE_GLOG_AND_GFLAGS=ON` is available to force the
-  usage of glog and gflags instead of Abseil, even if a valid version of that
-  library is present. If the Abseil version installed in your system is too old
-  but you still want to try it, you can also force the downloading and building
-  of a recent version with the new CMake configuration flag
-  `-DENABLE_OWN_ABSEIL=ON` (requires CMake >= 3.24, otherwise it has no effect).
-  This change has a downside in maintainability, since the source code becomes
-  plagued with preprocessor directives required to maintain compatibility both
-  with gflags and glog, and with Abseil.
+  signs of aging. The latest version of gflags dates back six years now,
+  although the master branch seems to be maintained. Glog remains well
+  maintained, with its latest version v0.7.1 released in June 2024, but with no
+  active development of new features and stuck at C++14. Abseil, on the other
+  hand, represents a contemporary evolution in software development, supports
+  C++17 and C++20, and has absorbed the functionalities of flags and logging
+  from its predecessors. Furthermore, as Abseil has become a prerequisite for
+  the latest versions of Protocol Buffers, its eventual inclusion in GNSS-SDR's
+  indirect dependencies is inevitable. Leveraging Abseil allows for eliminating
+  the need for gflags and glog, thereby reducing the number of mandatory
+  dependencies for GNSS-SDR in forthcoming GNU/Linux distributions. For seamless
+  integration, GNSS-SDR requires a quite recent minimum version of Abseil,
+  v20240116. If an older version is detected, the library will not be utilized,
+  and GNSS-SDR will fall back to using gflags and glog, which still can be used
+  and are fully supported. A new CMake configuration option
+  `-DENABLE_GLOG_AND_GFLAGS=ON` is available to force the usage of glog and
+  gflags instead of Abseil, even if a valid version of that library is present.
+  If the Abseil version installed in your system is too old but you still want
+  to try it, you can also force the downloading and building of a recent version
+  with the new CMake configuration flag `-DENABLE_OWN_ABSEIL=ON` (requires
+  CMake >= 3.24, otherwise it has no effect). This change has a downside in
+  maintainability, since the source code becomes plagued with preprocessor
+  directives required to maintain compatibility both with gflags and glog, and
+  with Abseil.
 - Historically, GNSS-SDR linked against the GnuTLS library for cryptographic
   functions. If GnuTLS was not found, then the building system looked for and
   linked against OpenSSL as a fallback. This was due to the OpenSSL 1.x dual
@@ -106,12 +106,14 @@ All notable changes to GNSS-SDR will be documented in this file.
   distributions. This issue was solved with the release of OpenSSL 3.0.0, which
   transitioned to the Apache License 2.0, fully compatible with GPL v3.0.
   Accordingly, the GNSS-SDR building system now looks for OpenSSL in the first
-  place and, if not found, then it looks for GnuTLS as a fallback.
+  place and, if not found, then it looks for GnuTLS as a fallback. The new CMake
+  configuration option `-DENABLE_GNUTLS=ON` allows linking against GnuTLS
+  instead of OpenSSL.
 - Allow linking against Boost 1.87.0.
 - Replace the System V queues by boost::interprocess, improving portability.
 - Improve detection of Homebrew or Macports in macOS.
 
-### Reliability
+### Improvements in Reliability
 
 - Implementation of the Galileo Open Service Navigation Message Authentication
   (OSNMA), a data authentication function for the Galileo Open Service worldwide

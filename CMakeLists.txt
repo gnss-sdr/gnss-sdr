@@ -16,7 +16,7 @@ endif()
 # Build type can still be overridden by setting -DCMAKE_BUILD_TYPE=
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
 
-cmake_minimum_required(VERSION 2.8.12...3.31)
+cmake_minimum_required(VERSION 2.8.12...4.0)
 project(gnss-sdr CXX C)
 
 set(GNSSSDR_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}) # Allows to be a sub-project
@@ -1610,16 +1610,37 @@ if(NOT absl_FOUND)
             if((CMAKE_VERSION VERSION_GREATER 3.12.0) AND NOT (CMAKE_GENERATOR STREQUAL Xcode))
                 set(PARALLEL_BUILD "--parallel 2")
             endif()
-            ExternalProject_Add(gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+            if(CMAKE_VERSION VERSION_LESS 4.0)
+                ExternalProject_Add(gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+                    PREFIX ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+                    GIT_REPOSITORY https://github.com/gflags/gflags.git
+                    GIT_TAG v${GNSSSDR_GFLAGS_LOCAL_VERSION}
+                    SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/gflags/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+                    BINARY_DIR ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+                    CMAKE_ARGS -DBUILD_SHARED_LIBS=OFF
+                        -DBUILD_STATIC_LIBS=ON
+                        -DBUILD_gflags_LIB=ON
+                        -DBUILD_gflags_nothreads_LIB=ON
+                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                        ${GFLAGS_TOOLCHAIN_FILE}
+                        -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+                    BUILD_COMMAND "${GFLAGS_BUILD_COMMAND} ${PARALLEL_BUILD}"
+                    BUILD_BYPRODUCTS ${GFLAGS_BUILD_BYPRODUCTS}
+                    UPDATE_COMMAND ""
+                    PATCH_COMMAND ""
+                    INSTALL_COMMAND ""
+                )
+                # Note: -DBUILD_gflags_nothreads_LIB=ON is required as a workaround to a bug in gflags 2.2.2. This is fixed in gflags master branch
+            else()
+                ExternalProject_Add(gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
                 PREFIX ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
                 GIT_REPOSITORY https://github.com/gflags/gflags.git
-                GIT_TAG v${GNSSSDR_GFLAGS_LOCAL_VERSION}
+                GIT_TAG 52e94563eba1968783864942fedf6e87e3c611f4
                 SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/gflags/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
                 BINARY_DIR ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
                 CMAKE_ARGS -DBUILD_SHARED_LIBS=OFF
                     -DBUILD_STATIC_LIBS=ON
                     -DBUILD_gflags_LIB=ON
-                    -DBUILD_gflags_nothreads_LIB=ON
                     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                     ${GFLAGS_TOOLCHAIN_FILE}
                     -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
@@ -1629,8 +1650,8 @@ if(NOT absl_FOUND)
                 PATCH_COMMAND ""
                 INSTALL_COMMAND ""
             )
+            endif()
         endif()
-        # Note: -DBUILD_gflags_nothreads_LIB=ON is required as a workaround to a bug in gflags 2.2.2. This is fixed in gflags master branch
 
         set(GFlags_INCLUDE_DIRS
             ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/include CACHE PATH "Local Gflags headers"

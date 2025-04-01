@@ -20,7 +20,6 @@
 
 #include "an_packet_printer.h"
 #include "rtklib_solver.h"  // for Rtklib_Solver
-#include <glog/logging.h>   // for DLOG
 #include <cmath>            // for M_PI
 #include <cstring>          // for memcpy
 #include <fcntl.h>          // for fcntl
@@ -28,6 +27,12 @@
 #include <limits>           // std::numeric_limits
 #include <termios.h>        // values for termios
 #include <unistd.h>         // for write(), read(), close()
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 An_Packet_Printer::An_Packet_Printer(const std::string& an_dump_devname)
@@ -102,8 +107,8 @@ void An_Packet_Printer::update_sdr_gnss_packet(sdr_gnss_packet_t* _packet, const
     const int max_reported_sats = *(&_packet->sats + 1) - _packet->sats;
 
     for (gnss_observables_iter = gnss_observables_map.cbegin();
-         gnss_observables_iter != gnss_observables_map.cend();
-         ++gnss_observables_iter)
+        gnss_observables_iter != gnss_observables_map.cend();
+        ++gnss_observables_iter)
         {
             if (gnss_observables_iter->second.Flag_valid_pseudorange)
                 {

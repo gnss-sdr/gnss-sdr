@@ -175,4 +175,51 @@
     <alignment>64</alignment>
 </arch>
 
+<arch name="riscv64">
+</arch>
+
+<!-->
+    tmpl/ currently assumes that every arch.name starting with "rv" requires
+    RVV intrinsics
+</-->
+<!-->
+    There is currently no mechanism in RISC-V to append extensions,
+    so each arch needs to specify all of them, and the order needs in the
+    machine definition needs to be from the fewest to the most extensions.
+    Fortunately, this maps quite well to the profiles concept.
+</-->
+<arch name="rvv">
+    <check name="V"></check>
+    <flag compiler="gnu">-march=rv64gcv</flag>
+    <flag compiler="clang">-march=rv64gcv</flag>
+</arch>
+
+<arch name="rvvseg">
+    <check name="V"></check>
+    <flag compiler="gnu">-march=rv64gcv</flag>
+    <flag compiler="clang">-march=rv64gcv</flag>
+    <!-->
+        It's unclear how performance portable segmented load/stores are, so the
+        default rvv implementations avoid using them.
+        This is a pseudo arch for separate segmented load/store implementations,
+        and is expected to never be used standalone without "rvv".
+    </-->
+</arch>
+
+<!-->
+    google/cpu_features currently doesn't support these extensions and profiles.
+</-->
+<!--arch name="rva22v">
+    <check name="V"></check>
+    <check name="B"></check>
+    <flag compiler="gnu">-march=rv64gcv_zba_zbb_zbs</flag>
+    <flag compiler="clang">-march=rv64gcv_zba_zbb_zbs</flag>
+</arch-->
+
+<!--arch name="rva23">
+    <check name="rva23"></check>
+    <flag compiler="gnu">-march=rva23u64</flag>
+    <flag compiler="clang">-march=rva23u64</flag>
+</arch-->
+
 </grammar>

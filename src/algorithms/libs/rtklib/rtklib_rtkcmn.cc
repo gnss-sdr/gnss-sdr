@@ -30,7 +30,6 @@
  *----------------------------------------------------------------------------*/
 
 #include "rtklib_rtkcmn.h"
-#include <glog/logging.h>
 #include <array>
 #include <cassert>
 #include <cstring>
@@ -42,6 +41,12 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 const double GPST0[] = {1980, 1, 6, 0, 0, 0}; /* gps time reference */
 const double GST0[] = {1999, 8, 22, 0, 0, 0}; /* galileo system time reference */
@@ -1034,7 +1039,7 @@ double *zeros(int n, int m)
         {
             return nullptr;
         }
-    if (!(p = static_cast<double *>(calloc(sizeof(double), n * m))))
+    if (!(p = static_cast<double *>(calloc(n * m, sizeof(double)))))
         {
             fatalerr("matrix memory allocation error: n=%d,m=%d\n", n, m);
         }
@@ -1111,7 +1116,7 @@ void cross3(const double *a, const double *b, double *c)
 /* normalize 3d vector ---------------------------------------------------------
  * normalize 3d vector
  * args   : double *a        I   vector a (3 x 1)
- *          double *b        O   normlized vector (3 x 1) || b || = 1
+ *          double *b        O   normalized vector (3 x 1) || b || = 1
  * return : status (1:ok,0:error)
  *-----------------------------------------------------------------------------*/
 int normv3(const double *a, double *b)
@@ -1228,7 +1233,7 @@ int solve(const char *tr, const double *A, const double *Y, int n,
  *          double *y        I   (weighted) measurements (m x 1)
  *          int    n,m       I   number of parameters and measurements (n <= m)
  *          double *x        O   estmated parameters (n x 1)
- *          double *Q        O   esimated parameters covariance matrix (n x n)
+ *          double *Q        O   estimated parameters covariance matrix (n x n)
  * return : status (0:ok,0>:error)
  * notes  : for weighted least square, replace A and y by A*w and w*y (w=W^(1/2))
  *          matirix stored by column-major order (fortran convention)
@@ -1772,9 +1777,7 @@ gtime_t timeget()
 {
     gtime_t time;
     double ep[6] = {};
-    struct timeval tv
-    {
-    };
+    struct timeval tv{};
     struct tm *tt;
 
     if (!gettimeofday(&tv, nullptr) && (tt = gmtime(&tv.tv_sec)))
@@ -1904,7 +1907,7 @@ int read_leaps_usno(FILE *fp)
  * return : status (1:ok,0:error)
  * notes  : The leap second table should be as follows or leapsec.dat provided
  *          by USNO.
- *          (1) The records in the table file cosist of the following fields:
+ *          (1) The records in the table file consist of the following fields:
  *              year month day hour min sec UTC-GPST(s)
  *          (2) The date and time indicate the start UTC time for the UTC-GPST
  *          (3) The date and time should be descending order.
@@ -4585,7 +4588,7 @@ double ionppp(const double *pos, const double *azel, double re,
 double tropmodel(gtime_t time __attribute__((unused)), const double *pos, const double *azel,
     double humi)
 {
-    const double temp0 = 15.0; /* temparature at sea level */
+    const double temp0 = 15.0; /* temperature  at sea level */
     double hgt;
     double pres;
     double temp;

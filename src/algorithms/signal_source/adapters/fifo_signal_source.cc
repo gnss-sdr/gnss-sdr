@@ -19,10 +19,14 @@
 #include "configuration_interface.h"
 #include "fifo_reader.h"
 #include "gnss_sdr_string_literals.h"
-#include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/file_source.h>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 using namespace std::string_literals;
 
@@ -30,8 +34,8 @@ FifoSignalSource::FifoSignalSource(ConfigurationInterface const* configuration,
     std::string const& role, unsigned int in_streams, unsigned int out_streams,
     [[maybe_unused]] Concurrent_Queue<pmt::pmt_t>* queue)
     : SignalSourceBase(configuration, role, "Fifo_Signal_Source"s),
-      item_size_(sizeof(gr_complex)),  // currenty output item size is always gr_complex
-      fifo_reader_(FifoReader::make(configuration->property(role + ".filename", "../data/example_capture.dat"s),
+      item_size_(sizeof(gr_complex)),  // currently output item size is always gr_complex
+      fifo_reader_(FifoReader::make(configuration->property(role + ".filename", "./example_capture.dat"s),
           configuration->property(role + ".sample_type", "ishort"s))),
       dump_(configuration->property(role + ".dump", false)),
       dump_filename_(configuration->property(role + ".dump_filename", "./data/signal_source.dat"s))

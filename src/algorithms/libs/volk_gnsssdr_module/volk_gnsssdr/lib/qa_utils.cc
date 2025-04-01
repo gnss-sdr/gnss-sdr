@@ -237,7 +237,7 @@ std::vector<std::string> split_signature(const std::string &protokernel_signatur
                 }
         }
     // Get the last one to the end of the string
-    signature_tokens.push_back(token);
+    signature_tokens.push_back(std::move(token));
     return signature_tokens;
 }
 
@@ -527,8 +527,8 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
     std::vector<volk_gnsssdr_test_results_t> *results,
     std::string puppet_master_name)
 {
-    return run_volk_gnsssdr_tests(desc, manual_func, name, test_params.tol(), test_params.scalar(),
-        test_params.vlen(), test_params.iter(), results, puppet_master_name,
+    return run_volk_gnsssdr_tests(desc, manual_func, std::move(name), test_params.tol(), test_params.scalar(),
+        test_params.vlen(), test_params.iter(), results, std::move(puppet_master_name),
         test_params.benchmark_mode());
 }
 

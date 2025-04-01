@@ -26,8 +26,13 @@
 #include "gps_ephemeris.h"             // for Gps_Ephemeris
 #include "pvt_conf.h"                  // for Pvt_Conf
 #include "rtklib_rtkpos.h"             // for rtkfree, rtkinit
-#include <glog/logging.h>              // for LOG
 #include <iostream>                    // for std::cout
+#include <utility>                     // for std::move
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 #if USE_STD_COMMON_FACTOR
 #include <numeric>
 namespace bc = std;
@@ -88,6 +93,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     // RINEX version
     pvt_output_parameters.rinex_version = configuration->property(role + ".rinex_version", 3);
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_RINEX_version == "3.01" || FLAGS_RINEX_version == "3.02" || FLAGS_RINEX_version == "3")
         {
             pvt_output_parameters.rinex_version = 3;
@@ -96,13 +102,29 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {
             pvt_output_parameters.rinex_version = 2;
         }
+#else
+    if (absl::GetFlag(FLAGS_RINEX_version) == "3.01" || absl::GetFlag(FLAGS_RINEX_version) == "3.02" || absl::GetFlag(FLAGS_RINEX_version) == "3")
+        {
+            pvt_output_parameters.rinex_version = 3;
+        }
+    else if (absl::GetFlag(FLAGS_RINEX_version) == "2.10" || absl::GetFlag(FLAGS_RINEX_version) == "2.11" || absl::GetFlag(FLAGS_RINEX_version) == "2")
+        {
+            pvt_output_parameters.rinex_version = 2;
+        }
+#endif
     pvt_output_parameters.rinexobs_rate_ms = bc::lcm(configuration->property(role + ".rinexobs_rate_ms", 1000), pvt_output_parameters.output_rate_ms);
     pvt_output_parameters.rinex_name = configuration->property(role + ".rinex_name", std::string("-"));
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_RINEX_name != "-")
         {
             pvt_output_parameters.rinex_name = FLAGS_RINEX_name;
         }
-
+#else
+    if (absl::GetFlag(FLAGS_RINEX_name) != "-")
+        {
+            pvt_output_parameters.rinex_name = absl::GetFlag(FLAGS_RINEX_name);
+        }
+#endif
     // RTCM Printer settings
     pvt_output_parameters.flag_rtcm_tty_port = configuration->property(role + ".flag_rtcm_tty_port", false);
     pvt_output_parameters.rtcm_dump_devname = configuration->property(role + ".rtcm_dump_devname", default_rtcm_dump_devname);
@@ -866,7 +888,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     // Read PVT MONITOR Configuration
     pvt_output_parameters.monitor_enabled = configuration->property(role + ".enable_monitor", false);
     pvt_output_parameters.udp_addresses = configuration->property(role + ".monitor_client_addresses", std::string("127.0.0.1"));
-    pvt_output_parameters.udp_port = configuration->property(role + ".monitor_udp_port", 1234);
+    pvt_output_parameters.udp_ports = configuration->property(role + ".monitor_udp_port", std::string("1234"));
     pvt_output_parameters.protobuf_enabled = configuration->property(role + ".enable_protobuf", true);
     if (configuration->property("Monitor.enable_protobuf", false) == true)
         {
@@ -897,6 +919,17 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     // Use unhealthy satellites
     pvt_output_parameters.use_unhealthy_sats = configuration->property(role + ".use_unhealthy_sats", pvt_output_parameters.use_unhealthy_sats);
+
+    // OSNMA
+    if (gal_1B_count > 0)
+        {
+            std::string osnma_mode = configuration->property("GNSS-SDR.osnma_mode", std::string(""));
+            bool enable_osnma = configuration->property("GNSS-SDR.osnma_enable", true);
+            if (enable_osnma && osnma_mode == "strict")
+                {
+                    pvt_output_parameters.osnma_strict = true;
+                }
+        }
 
     // make PVT object
     pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk);

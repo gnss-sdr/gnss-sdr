@@ -16,7 +16,6 @@
 
 #include "pcps_quicksync_acquisition_cc.h"
 #include "MATH_CONSTANTS.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
@@ -24,6 +23,12 @@
 #include <cmath>
 #include <exception>
 #include <sstream>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
@@ -178,8 +183,8 @@ void pcps_quicksync_acquisition_cc::init()
     // Count the number of bins
     d_num_doppler_bins = 0;
     for (auto doppler = static_cast<int32_t>(-d_doppler_max);
-         doppler <= static_cast<int32_t>(d_doppler_max);
-         doppler += d_doppler_step)
+        doppler <= static_cast<int32_t>(d_doppler_max);
+        doppler += d_doppler_step)
         {
             d_num_doppler_bins++;
         }
@@ -314,7 +319,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                     {
                         // Ensure that the signal is going to start with all samples
-                        // at zero. This is done to avoid over acumulation when performing
+                        // at zero. This is done to avoid over accumulation when performing
                         // the folding process to be stored in d_fft_if->get_inbuf()
                         d_signal_folded = std::vector<gr_complex>(d_fft_size, lv_cmake(0.0F, 0.0F));
                         std::copy(d_signal_folded.data(), d_signal_folded.data() + d_fft_size, d_fft_if->get_inbuf());
@@ -431,7 +436,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                                 std::stringstream filename;
                                 std::streamsize n = sizeof(float) * (d_fft_size);  // complex file write
                                 filename.str("");
-                                filename << "../data/test_statistics_" << d_gnss_synchro->System
+                                filename << "./test_statistics_" << d_gnss_synchro->System
                                          << "_" << d_gnss_synchro->Signal[0] << d_gnss_synchro->Signal[1] << "_sat_"
                                          << d_gnss_synchro->PRN << "_doppler_" << doppler << ".dat";
                                 d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);

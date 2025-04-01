@@ -17,19 +17,28 @@
 
 #include "monitor_pvt_udp_sink.h"
 #include <boost/archive/binary_oarchive.hpp>
+#include <boost/lexical_cast.hpp>
 #include <iostream>
 #include <sstream>
 
 
-Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(const std::vector<std::string>& addresses,
-    const uint16_t& port,
+Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(
+    const std::vector<std::string>& addresses,
+    const std::vector<std::string>& ports,
     bool protobuf_enabled) : socket{io_context},
                              use_protobuf(protobuf_enabled)
 {
     for (const auto& address : addresses)
         {
-            boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(address, error), port);
-            endpoints.push_back(endpoint);
+            for (const auto& port : ports)
+                {
+#if BOOST_ASIO_USE_FROM_STRING
+                    boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(address, error), boost::lexical_cast<int>(port));
+#else
+                    boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::make_address(address, error), boost::lexical_cast<int>(port));
+#endif
+                    endpoints.push_back(endpoint);
+                }
         }
 
     if (use_protobuf)
@@ -54,21 +63,23 @@ bool Monitor_Pvt_Udp_Sink::write_monitor_pvt(const Monitor_Pvt* const monitor_pv
             outbound_data = serdes.createProtobuffer(monitor_pvt);
         }
 
-    for (const auto& endpoint : endpoints)
+    try
         {
-            socket.open(endpoint.protocol(), error);
-
-            try
+            for (const auto& endpoint : endpoints)
                 {
-                    if (socket.send_to(boost::asio::buffer(outbound_data), endpoint) == 0)
+                    socket.open(endpoint.protocol(), error);  // NOLINT(bugprone-unused-return-value)
+
+                    if (socket.send_to(boost::asio::buffer(outbound_data), endpoint) == 0)  // this can throw
                         {
                             return false;
                         }
                 }
-            catch (boost::system::system_error const& e)
-                {
-                    return false;
-                }
         }
+    catch (boost::system::system_error const& e)
+        {
+            std::cerr << "Error sending PVT data: " << e.what() << '\n';
+            return false;
+        }
+
     return true;
 }

@@ -46,7 +46,7 @@
 class ModelFunction
 {
 public:
-    ModelFunction(){};
+    ModelFunction() {};
     virtual arma::vec operator()(const arma::vec& input) = 0;
     virtual ~ModelFunction() = default;
 };

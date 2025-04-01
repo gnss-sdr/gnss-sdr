@@ -27,7 +27,7 @@
  * Classes for data type conversion
  * \{ */
 /** \addtogroup Data_type_adapters data_type_adapters
- * Wrap GNU Radio data tyope adapter blocks with a GNSSBlockInterface
+ * Wrap GNU Radio data type adapter blocks with a GNSSBlockInterface
  * \{ */
 
 

@@ -29,7 +29,6 @@
 #include "gps_ephemeris.h"
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <glog/logging.h>
 #include <algorithm>  // for std::max, std::min, std::copy_n
 #include <array>
 #include <bitset>
@@ -46,6 +45,12 @@
 #include <thread>
 #include <utility>
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 /** \addtogroup PVT
  * \{ */
@@ -723,10 +728,10 @@ private:
                                 {
                                     if (first == true)
                                         {
-                                            LOG(INFO) << "Client says:";
+                                            DLOG(INFO) << "Client says:";
                                             first = false;
                                         }
-                                    LOG(INFO) << client_says;
+                                    DLOG(INFO) << client_says;
                                     client_says = client_says.substr(80, client_says.length() - 80);
                                 }
                             do_read_message_header();
@@ -796,21 +801,38 @@ private:
     {
     public:
         Tcp_Internal_Client(b_io_context& io_context,
+#if BOOST_ASIO_USE_RESOLVER_ITERATOR
             boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
             : io_context_(io_context), socket_(io_context)
         {
             do_connect(std::move(endpoint_iterator));
         }
+#else
+            boost::asio::ip::tcp::resolver::results_type endpoints)
+            : io_context_(io_context), socket_(io_context)
+        {
+            do_connect(std::move(endpoints));
+        }
+#endif
 
         inline void close()
         {
+#if BOOST_ASIO_USE_IOCONTEXT_POST
             io_context_.post([this]() { socket_.close(); });
+#else
+            boost::asio::post(io_context_, [this]() { socket_.close(); });
+#endif
         }
 
         inline void write(const Rtcm_Message& msg)
         {
+#if BOOST_ASIO_USE_IOCONTEXT_POST
             io_context_.post(
                 [this, &msg]() {
+#else
+            boost::asio::post(io_context_,
+                [this, &msg]() {
+#endif
                     bool write_in_progress = !write_msgs_.empty();
                     write_msgs_.push_back(msg);
                     if (!write_in_progress)
@@ -821,10 +843,17 @@ private:
         }
 
     private:
+#if BOOST_ASIO_USE_RESOLVER_ITERATOR
         inline void do_connect(boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
         {
             boost::asio::async_connect(socket_, std::move(endpoint_iterator),
                 [this](boost::system::error_code ec, boost::asio::ip::tcp::resolver::iterator) {
+#else
+        inline void do_connect(boost::asio::ip::tcp::resolver::results_type endpoints)
+        {
+            boost::asio::async_connect(socket_, std::move(endpoints),
+                [this](boost::system::error_code ec, boost::asio::ip::tcp::endpoint) {
+#endif
                     if (!ec)
                         {
                             do_read_message();
@@ -888,8 +917,13 @@ private:
             boost::asio::ip::tcp::resolver resolver(io_context);
             std::string host("localhost");
             std::string port_str = std::to_string(port);
+#if BOOST_ASIO_USE_RESOLVER_ITERATOR
             auto queue_endpoint_iterator = resolver.resolve({host.c_str(), port_str.c_str()});
             c = std::make_shared<Tcp_Internal_Client>(io_context, queue_endpoint_iterator);
+#else
+            auto endpoints = resolver.resolve(host, port_str);
+            c = std::make_shared<Tcp_Internal_Client>(io_context, endpoints);
+#endif
         }
 
         inline void do_read_queue()

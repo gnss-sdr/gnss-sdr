@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2011-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2011-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 # Tries to find gr-osmosdr.
@@ -35,6 +35,10 @@ if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
 endif()
 
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
+endif()
+
 pkg_check_modules(GROSMOSDR_PKG gnuradio-osmosdr)
 
 if(NOT GROSMOSDR_ROOT)
@@ -57,9 +61,7 @@ find_path(GROSMOSDR_INCLUDE_DIR
         ${GROSMOSDR_PKG_INCLUDEDIR}
     PATHS
         ${GROSMOSDR_ROOT_USER_DEFINED}/include
-        /usr/include
-        /usr/local/include
-        /opt/local/include
+        ${GNSSSDR_INCLUDE_PATHS}
 )
 
 find_library(GROSMOSDR_LIBRARIES
@@ -70,35 +72,7 @@ find_library(GROSMOSDR_LIBRARIES
     PATHS
         ${GROSMOSDR_ROOT_USER_DEFINED}/lib
         ${GROSMOSDR_ROOT_USER_DEFINED}/lib64
-        /usr/lib
-        /usr/lib64
-        /usr/lib/x86_64-linux-gnu
-        /usr/lib/i386-linux-gnu
-        /usr/lib/arm-linux-gnueabihf
-        /usr/lib/arm-linux-gnueabi
-        /usr/lib/aarch64-linux-gnu
-        /usr/lib/mipsel-linux-gnu
-        /usr/lib/mips-linux-gnu
-        /usr/lib/mips64el-linux-gnuabi64
-        /usr/lib/powerpc-linux-gnu
-        /usr/lib/powerpc64-linux-gnu
-        /usr/lib/powerpc64le-linux-gnu
-        /usr/lib/powerpc-linux-gnuspe
-        /usr/lib/hppa-linux-gnu
-        /usr/lib/s390x-linux-gnu
-        /usr/lib/i386-gnu
-        /usr/lib/hppa-linux-gnu
-        /usr/lib/x86_64-kfreebsd-gnu
-        /usr/lib/i386-kfreebsd-gnu
-        /usr/lib/m68k-linux-gnu
-        /usr/lib/sh4-linux-gnu
-        /usr/lib/sparc64-linux-gnu
-        /usr/lib/x86_64-linux-gnux32
-        /usr/lib/riscv64-linux-gnu
-        /usr/lib/alpha-linux-gnu
-        /usr/local/lib
-        /usr/local/lib64
-        /opt/local/lib
+        ${GNSSSDR_LIB_PATHS}
 )
 
 include(FindPackageHandleStandardArgs)

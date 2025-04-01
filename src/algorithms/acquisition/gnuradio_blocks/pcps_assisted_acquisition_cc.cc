@@ -20,7 +20,6 @@
 #include "MATH_CONSTANTS.h"
 #include "concurrent_map.h"
 #include "gps_acq_assist.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
@@ -30,6 +29,11 @@
 #include <sstream>
 #include <utility>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 extern Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
@@ -259,7 +263,7 @@ float pcps_assisted_acquisition_cc::search_maximum()
             std::stringstream filename;
             std::streamsize n = 2 * sizeof(float) * (d_fft_size);  // complex file write
             filename.str("");
-            filename << "../data/test_statistics_" << d_gnss_synchro->System
+            filename << "./test_statistics_" << d_gnss_synchro->System
                      << "_" << d_gnss_synchro->Signal[0] << d_gnss_synchro->Signal[1] << "_sat_"
                      << d_gnss_synchro->PRN << "_doppler_" << d_gnss_synchro->Acq_doppler_hz << ".dat";
             d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
@@ -334,7 +338,7 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
      *             State Machine:
      *             S0. StandBy. If d_active==1 -> S1
      *             S1. GetAssist. Define search grid with assistance information. Reset grid matrix -> S2
-     *             S2. ComputeGrid. Perform the FFT acqusition doppler and delay grid.
+     *             S2. ComputeGrid. Perform the FFT acquisition doppler and delay grid.
      *                 Accumulate the search grid matrix (#doppler_bins x #fft_size)
      *                 Compare maximum to threshold and decide positive or negative
      *                 If T>=gamma -> S4 else

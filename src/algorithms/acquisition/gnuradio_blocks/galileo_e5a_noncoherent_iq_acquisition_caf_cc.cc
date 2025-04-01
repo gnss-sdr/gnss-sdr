@@ -23,7 +23,6 @@
 
 #include "galileo_e5a_noncoherent_iq_acquisition_caf_cc.h"
 #include "MATH_CONSTANTS.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
@@ -31,6 +30,12 @@
 #include <array>
 #include <exception>
 #include <sstream>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
@@ -238,8 +243,8 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
     // Count the number of bins
     d_num_doppler_bins = 0;
     for (int doppler = -d_doppler_max;
-         doppler <= d_doppler_max;
-         doppler += d_doppler_step)
+        doppler <= d_doppler_max;
+        doppler += d_doppler_step)
         {
             d_num_doppler_bins++;
         }
@@ -586,7 +591,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                 std::stringstream filename;
                                 std::streamsize n = sizeof(float) * (d_fft_size);  // noncomplex file write
                                 filename.str("");
-                                filename << "../data/test_statistics_E5a_sat_"
+                                filename << "./test_statistics_E5a_sat_"
                                          << d_gnss_synchro->PRN << "_doppler_" << doppler << ".dat";
                                 d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
                                 if (d_sampled_ms > 1)  // If integration time > 1 code
@@ -689,7 +694,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                 std::stringstream filename;
                                 std::streamsize n = sizeof(float) * (d_num_doppler_bins);  // noncomplex file write
                                 filename.str("");
-                                filename << "../data/test_statistics_E5a_sat_" << d_gnss_synchro->PRN << "_CAF.dat";
+                                filename << "./test_statistics_E5a_sat_" << d_gnss_synchro->PRN << "_CAF.dat";
                                 d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
                                 d_dump_file.write(reinterpret_cast<char *>(d_CAF_vector.data()), n);
                                 d_dump_file.close();

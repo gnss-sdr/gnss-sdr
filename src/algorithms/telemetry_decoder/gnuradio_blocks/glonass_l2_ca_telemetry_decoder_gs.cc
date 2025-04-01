@@ -22,7 +22,6 @@
 #include "glonass_gnav_utc_model.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include "tlm_utils.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
@@ -34,6 +33,12 @@
 #include <iostream>         // for cout
 #include <memory>           // for shared_ptr, make_shared
 #include <utility>          // for std::move
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #define CRC_ERROR_LIMIT 6
 

@@ -2588,7 +2588,7 @@ public:
         return ::clUnloadPlatformCompiler(object_);
     }
 #endif  // #if defined(CL_VERSION_1_2)
-};      // class Platform
+};  // class Platform
 
 /**
  * Deprecated APIs for 1.2
@@ -4745,9 +4745,9 @@ public:
 
     //! \brief Default constructor - initializes to nullptr.
 #if defined(CL_VERSION_1_2)
-    BufferRenderGL() : ImageGL(){};
+    BufferRenderGL() : ImageGL() {};
 #else   // #if defined(CL_VERSION_1_2)
-    BufferRenderGL() : Image2DGL(){};
+    BufferRenderGL() : Image2DGL() {};
 #endif  // #if defined(CL_VERSION_1_2)
 
     /*! \brief Constructor from cl_mem - takes ownership.

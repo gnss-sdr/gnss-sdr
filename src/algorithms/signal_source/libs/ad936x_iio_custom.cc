@@ -1,6 +1,7 @@
 /*!
  * \file ad936x_iio_custom.cc
- * \brief A direct IIO custom front-end driver for the AD936x AD front-end family with special FPGA custom functionalities.
+ * \brief A direct IIO custom front-end driver for the AD936x AD front-end
+ * family with special FPGA custom functionalities.
  * \author Javier Arribas, jarribas(at)cttc.es
  * -----------------------------------------------------------------------------
  *
@@ -13,9 +14,9 @@
  * -----------------------------------------------------------------------------
  */
 #include "ad936x_iio_custom.h"
+#include "display.h"
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
-#include <glog/logging.h>
 #include <chrono>
 #include <cmath>
 #include <fstream>
@@ -24,28 +25,42 @@
 #include <utility>
 #include <vector>
 
-ad936x_iio_custom::ad936x_iio_custom(int debug_level_, int log_level_)
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
+
+ad936x_iio_custom::ad936x_iio_custom(
+    int debug_level_,
+    int log_level_) : n_channels(0),
+                      ctx(nullptr),
+                      phy(nullptr),
+                      stream_dev(nullptr),
+                      dds_dev(nullptr),
+                      receive_samples(false),
+                      fpga_overflow(false),
+                      sample_rate_sps(0),
+                      debug_level(debug_level_),
+                      log_level(log_level_),
+                      PPS_mode(false)
 {
-    receive_samples = false;
-    fpga_overflow = false;
-    sample_rate_sps = 0;
-    ctx = NULL;
-    phy = NULL;
-    dds_dev = NULL;
-    stream_dev = NULL;
-    debug_level = debug_level_;
-    log_level = log_level_;
-    PPS_mode = false;
-    n_channels = 0;
 }
+
 
 ad936x_iio_custom::~ad936x_iio_custom()
 {
     // disable TX
-    if (phy != NULL) PlutoTxEnable(false);
+    if (phy != nullptr)
+        {
+            PlutoTxEnable(false);
+        }
 
     // Close device
-    if (ctx != NULL) iio_context_destroy(ctx);
+    if (ctx != nullptr)
+        {
+            iio_context_destroy(ctx);
+        }
 }
 
 
@@ -54,12 +69,14 @@ void ad936x_iio_custom::set_gnsstime_queue(std::shared_ptr<Concurrent_Queue<Gnss
     GnssTime_queue = std::move(queue);
 }
 
+
 void ad936x_iio_custom::set_pps_samplestamp_queue(std::shared_ptr<Concurrent_Queue<PpsSamplestamp>> queue)
 {
     Pps_queue = std::move(queue);
 }
 
-bool ad936x_iio_custom::initialize_device(std::string pluto_device_uri, std::string board_type)
+
+bool ad936x_iio_custom::initialize_device(const std::string &pluto_device_uri, const std::string &board_type)
 {
     // Find devices
     if (pluto_device_uri == "local")
@@ -114,25 +131,24 @@ bool ad936x_iio_custom::initialize_device(std::string pluto_device_uri, std::str
             ctx = iio_create_context_from_uri(pluto_device_uri.c_str());
         }
 
-    if (ctx == NULL)
+    if (ctx == nullptr)
         {
             std::cout << "Unable to create context from uri: " << pluto_device_uri << std::endl;
             return false;
         }
 
-
     phy = iio_context_find_device(ctx, "ad9361-phy");
 
-    if (phy == NULL)
+    if (phy == nullptr)
         {
             std::cout << "Unable to find ad9361-phy device from uri: " << pluto_device_uri << std::endl;
             return false;
         }
 
-    if (board_type.compare("fmcomms5") == 0)
+    if (board_type == "fmcomms5")
         {
             stream_dev = iio_context_find_device(ctx, "cf-ad9361-A");  // first ad9361 in FMCOMMS5
-            if (stream_dev == NULL)
+            if (stream_dev == nullptr)
                 {
                     std::cout << "Unable to find cf-ad9361-A device from uri: " << pluto_device_uri << std::endl;
                     return false;
@@ -141,13 +157,13 @@ bool ad936x_iio_custom::initialize_device(std::string pluto_device_uri, std::str
     else
         {
             stream_dev = iio_context_find_device(ctx, "cf-ad9361-lpc");  // regular AD9361 stream device in single AD9361 boards
-            if (stream_dev == NULL)
+            if (stream_dev == nullptr)
                 {
                     std::cout << "Unable to find cf-ad9361-lpc device from uri: " << pluto_device_uri << std::endl;
                     return false;
                 };
             dds_dev = iio_context_find_device(ctx, "cf-ad9361-dds-core-lpc");  // DDS core for LO oscillator (external transverter operation)
-            if (stream_dev == NULL)
+            if (stream_dev == nullptr)
                 {
                     std::cout << "Warning: Unable to find cf-ad9361-dds-core-lpc device from uri: " << pluto_device_uri << std::endl;
                 };
@@ -160,23 +176,22 @@ bool ad936x_iio_custom::initialize_device(std::string pluto_device_uri, std::str
 void ad936x_iio_custom::configure_params(struct iio_device *phy,
     const std::vector<std::string> &params)
 {
-    for (std::vector<std::string>::const_iterator it = params.begin();
-         it != params.end(); ++it)
+    for (const auto &param : params)
         {
-            struct iio_channel *chn = NULL;
-            const char *attr = NULL;
+            struct iio_channel *chn = nullptr;
+            const char *attr = nullptr;
             size_t pos;
             int ret;
 
-            pos = it->find('=');
+            pos = param.find('=');
             if (pos == std::string::npos)
                 {
-                    std::cerr << "Malformed line: " << *it << std::endl;
+                    std::cerr << "Malformed line: " << param << std::endl;
                     continue;
                 }
 
-            std::string key = it->substr(0, pos);
-            std::string val = it->substr(pos + 1, std::string::npos);
+            std::string key = param.substr(0, pos);
+            std::string val = param.substr(pos + 1, std::string::npos);
 
             ret = iio_device_identify_filename(phy,
                 key.c_str(), &chn, &attr);
@@ -188,13 +203,19 @@ void ad936x_iio_custom::configure_params(struct iio_device *phy,
                 }
 
             if (chn)
-                ret = iio_channel_attr_write(chn,
-                    attr, val.c_str());
+                {
+                    ret = iio_channel_attr_write(chn,
+                        attr, val.c_str());
+                }
             else if (iio_device_find_attr(phy, attr))
-                ret = iio_device_attr_write(phy, attr, val.c_str());
+                {
+                    ret = iio_device_attr_write(phy, attr, val.c_str());
+                }
             else
-                ret = iio_device_debug_attr_write(phy,
-                    attr, val.c_str());
+                {
+                    ret = iio_device_debug_attr_write(phy,
+                        attr, val.c_str());
+                }
             if (ret < 0)
                 {
                     std::cerr << "Unable to write attribute " << key
@@ -208,9 +229,9 @@ void ad936x_iio_custom::set_params_rx(struct iio_device *phy_device,
     unsigned long long frequency,
     unsigned long samplerate, unsigned long bandwidth,
     bool quadrature, bool rfdc, bool bbdc,
-    std::string gain1, double gain1_value,
-    std::string gain2, double gain2_value,
-    std::string port_select)
+    const std::string &gain1, double gain1_value,
+    const std::string &gain2, double gain2_value,
+    const std::string &port_select)
 {
     std::vector<std::string> params;
 
@@ -281,7 +302,7 @@ bool ad936x_iio_custom::config_ad9361_dds(uint64_t freq_rf_tx_hz_,
                                  std::to_string(phase_dds_deg_ * 1000.0));
             params_dds.push_back("out_altvoltage0_TX1_I_F1_scale=" +
                                  std::to_string(scale_dds_));
-            params_dds.push_back("out_altvoltage0_TX1_I_F1_raw=1");
+            params_dds.emplace_back("out_altvoltage0_TX1_I_F1_raw=1");
             // DDS TX CH1 Q (tone #1)
             params_dds.push_back("out_altvoltage2_TX1_Q_F1_frequency=" +
                                  std::to_string(freq_dds_tx_hz_));
@@ -289,7 +310,7 @@ bool ad936x_iio_custom::config_ad9361_dds(uint64_t freq_rf_tx_hz_,
                                  std::to_string(phase_dds_deg_ * 1000.0 + 270000.0));
             params_dds.push_back("out_altvoltage2_TX1_Q_F1_scale=" +
                                  std::to_string(scale_dds_));
-            params_dds.push_back("out_altvoltage2_TX1_Q_F1_raw=1");
+            params_dds.emplace_back("out_altvoltage2_TX1_Q_F1_raw=1");
 
             configure_params(dds_dev, params_dds);
         }
@@ -310,7 +331,7 @@ bool ad936x_iio_custom::config_ad9361_dds(uint64_t freq_rf_tx_hz_,
                                  std::to_string(phase_dds_deg_ * 1000.0));
             params_dds.push_back("out_altvoltage4_TX2_I_F1_scale=" +
                                  std::to_string(scale_dds_));
-            params_dds.push_back("out_altvoltage4_TX2_I_F1_raw=1");
+            params_dds.emplace_back("out_altvoltage4_TX2_I_F1_raw=1");
             // DDS TX CH2 Q (tone #1)
             params_dds.push_back("out_altvoltage6_TX2_Q_F1_frequency=" +
                                  std::to_string(freq_dds_tx_hz_));
@@ -318,11 +339,10 @@ bool ad936x_iio_custom::config_ad9361_dds(uint64_t freq_rf_tx_hz_,
                                  std::to_string(phase_dds_deg_ * 1000.0 + 270000.0));
             params_dds.push_back("out_altvoltage6_TX2_Q_F1_scale=" +
                                  std::to_string(scale_dds_));
-            params_dds.push_back("out_altvoltage6_TX2_Q_F1_raw=1");
+            params_dds.emplace_back("out_altvoltage6_TX2_Q_F1_raw=1");
 
             configure_params(dds_dev, params_dds);
         }
-
 
     return true;
 }
@@ -330,7 +350,7 @@ bool ad936x_iio_custom::config_ad9361_dds(uint64_t freq_rf_tx_hz_,
 
 bool ad936x_iio_custom::check_device()
 {
-    if (stream_dev != NULL)
+    if (stream_dev != nullptr)
         {
             return true;
         }
@@ -340,10 +360,11 @@ bool ad936x_iio_custom::check_device()
         }
 }
 
+
 bool ad936x_iio_custom::get_iio_param(iio_device *dev, const std::string &param, std::string &value)
 {
-    struct iio_channel *chn = 0;
-    const char *attr = 0;
+    struct iio_channel *chn = nullptr;
+    const char *attr = nullptr;
     char valuestr[256];
     int ret;
     ssize_t nchars;
@@ -381,6 +402,7 @@ bool ad936x_iio_custom::get_iio_param(iio_device *dev, const std::string &param,
         }
 }
 
+
 bool ad936x_iio_custom::read_die_temp(double &temp_c)
 {
     std::string temp_mC_str;
@@ -389,9 +411,12 @@ bool ad936x_iio_custom::read_die_temp(double &temp_c)
         {
             try
                 {
-                    uint32_t temp_mC = boost::lexical_cast<uint32_t>(temp_mC_str);
+                    auto temp_mC = boost::lexical_cast<uint32_t>(temp_mC_str);
                     temp_c = static_cast<double>(temp_mC) / 1000.0;
-                    if (temp_c > 120) temp_c = -1;
+                    if (temp_c > 120)
+                        {
+                            temp_c = -1;
+                        }
                     return true;
                 }
             catch (const boost::bad_lexical_cast &e)
@@ -405,13 +430,15 @@ bool ad936x_iio_custom::read_die_temp(double &temp_c)
             return false;
         }
 }
+
+
 bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
     long long sample_rate_,
     long long freq_,
-    std::string rf_port_select_,
-    std::string rf_filter,
-    std::string gain_mode_rx0_,
-    std::string gain_mode_rx1_,
+    const std::string &rf_port_select_,
+    const std::string &rf_filter,
+    const std::string &gain_mode_rx0_,
+    const std::string &gain_mode_rx1_,
     double rf_gain_rx0_,
     double rf_gain_rx1_,
     bool enable_ch0,
@@ -420,18 +447,20 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
     double lo_attenuation_db_,
     bool high_side_lo_,
     int tx_lo_channel_)
-
 {
-    if (check_device() == false) return false;
+    if (check_device() == false)
+        {
+            return false;
+        }
 
     bool no_errors = true;
     std::cout << "Configuring phy device parameters...\n";
     int ret;
-    if (rf_filter.compare("Disabled") == 0)
+    if (rf_filter == "Disabled")
         {
             std::cout << "LNA Filter switch is disabled.\n";
         }
-    else if (rf_filter.compare("Auto") == 0)
+    else if (rf_filter == "Auto")
         {
             std::cout << "Selecting LNA RF filter based on the selected RF frequency... \n";
             if (freq_ == 1575420000)
@@ -488,9 +517,9 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
     params.push_back("out_voltage_rf_bandwidth=" +
                      std::to_string(bandwidth_));
 
-    params.push_back("in_voltage_quadrature_tracking_en=1");
-    params.push_back("in_voltage_rf_dc_offset_tracking_en=1");
-    params.push_back("in_voltage_bb_dc_offset_tracking_en=1");
+    params.emplace_back("in_voltage_quadrature_tracking_en=1");
+    params.emplace_back("in_voltage_rf_dc_offset_tracking_en=1");
+    params.emplace_back("in_voltage_bb_dc_offset_tracking_en=1");
 
     configure_params(phy, params);
 
@@ -605,14 +634,12 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
                             std::cerr << "Warning: rf_port_select write returned: " << ret << "\n";
                             no_errors = false;
                         }
-
                     //            ret = iio_channel_attr_write_longlong(phy_ch, "rf_bandwidth", bandwidth_);
                     //            if (ret < 0)
                     //                {
                     //                    std::cerr << "Warning: rf_bandwidth write returned: " << ret << "\n";
                     //                    no_errors = false;
                     //                }
-
                     long long set_rf_bw;
                     ret = iio_channel_attr_read_longlong(phy_ch, "rf_bandwidth", &set_rf_bw);
                     if (ret < 0)
@@ -624,7 +651,6 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
                         {
                             std::cerr << "Info: rf_bandwidth read returned: " << set_rf_bw << " Hz \n";
                         }
-
 
                     if (setRXGain(0, gain_mode_rx0_, rf_gain_rx0_) == false)
                         {
@@ -657,14 +683,12 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
                             std::cerr << "Warning: rf_port_select write returned: " << ret << "\n";
                             no_errors = false;
                         }
-
                     //            ret = iio_channel_attr_write_longlong(phy_ch, "rf_bandwidth", bandwidth_);
                     //            if (ret < 0)
                     //                {
                     //                    std::cerr << "Warning: rf_bandwidth write returned: " << ret << "\n";
                     //                    no_errors = false;
                     //                }
-
                     long long set_rf_bw;
                     ret = iio_channel_attr_read_longlong(phy_ch, "rf_bandwidth", &set_rf_bw);
                     if (ret < 0)
@@ -697,9 +721,13 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
     return no_errors;
 }
 
+
 bool ad936x_iio_custom::set_rx_frequency(long long freq_hz)
 {
-    if (check_device() == false) return false;
+    if (check_device() == false)
+        {
+            return false;
+        }
     // Configure RX LO channel (NOTICE that altvoltage0 is the RX LO oscillator!, altvoltage1 is the TX oscillator)
     struct iio_channel *lo_ch;
 
@@ -722,7 +750,10 @@ bool ad936x_iio_custom::set_rx_frequency(long long freq_hz)
 
 bool ad936x_iio_custom::get_rx_frequency(long long &freq_hz)
 {
-    if (check_device() == false) return false;
+    if (check_device() == false)
+        {
+            return false;
+        }
     // Configure RX LO channel (NOTICE that altvoltage0 is the RX LO oscillator!, altvoltage1 is the TX oscillator)
     struct iio_channel *lo_ch;
 
@@ -742,9 +773,13 @@ bool ad936x_iio_custom::get_rx_frequency(long long &freq_hz)
     return true;
 }
 
-bool ad936x_iio_custom::setRXGain(int ch_num, std::string gain_mode, double gain_dB)
+
+bool ad936x_iio_custom::setRXGain(int ch_num, const std::string &gain_mode, double gain_dB)
 {
-    if (check_device() == false) return false;
+    if (check_device() == false)
+        {
+            return false;
+        }
     std::vector<std::string> params;
     if (ch_num == 0)
         {
@@ -774,9 +809,13 @@ bool ad936x_iio_custom::setRXGain(int ch_num, std::string gain_mode, double gain
         }
 }
 
+
 double ad936x_iio_custom::get_rx_gain(int ch_num)
 {
-    if (check_device() == false) return -1;
+    if (check_device() == false)
+        {
+            return -1;
+        }
     double gain_dB;  // gain in dB
     int ret = 0;
     if (ch_num == 0)
@@ -807,10 +846,14 @@ double ad936x_iio_custom::get_rx_gain(int ch_num)
 
 bool ad936x_iio_custom::calibrate([[maybe_unused]] int ch, [[maybe_unused]] double bw_hz)
 {
-    if (check_device() == false) return false;
+    if (check_device() == false)
+        {
+            return false;
+        }
     // todo
     return true;
 }
+
 
 void ad936x_iio_custom::monitor_thread_fn()
 {
@@ -844,23 +887,26 @@ void ad936x_iio_custom::monitor_thread_fn()
             // } else {
             if (val & 4)
                 {
-                    std::cout << "WARNING: IIO status register reported overflow!\n";
-                    LOG(INFO) << "WARNING: IIO status register reported overflow!";
+                    std::cout
+                        << TEXT_BOLD_RED
+                        << "WARNING: IIO status register reported overflow!\n";
+                    LOG(WARNING) << "WARNING: IIO status register reported overflow!";
                 }
-
 
             /* Clear bits */
             if (val)
                 {
                     ret = iio_device_reg_write(stream_dev, 0x80000088, val);
                     if (ret)
-                        fprintf(stderr, "Failed to clearn DMA status register: %s\n",
-                            strerror(-ret));
+                        {
+                            fprintf(stderr, "Failed to clearn DMA status register: %s\n",
+                                strerror(-ret));
+                        }
                 }
             sleep(1);
         }
-    return;
 }
+
 
 void ad936x_iio_custom::stop_record()
 {
@@ -910,6 +956,7 @@ void ad936x_iio_custom::PlutoTxEnable(bool txon)
         }
 }
 
+
 void ad936x_iio_custom::setPlutoGpo(int p)
 {
     char pins[11];
@@ -928,7 +975,7 @@ void ad936x_iio_custom::setPlutoGpo(int p)
 }
 
 
-bool ad936x_iio_custom::select_rf_filter(std::string rf_filter)
+bool ad936x_iio_custom::select_rf_filter(const std::string &rf_filter)
 {
     // adi,gpo-manual-mode-enable Enables GPO manual mode, this will conflict with automatic ENSM slave and eLNA mode
     // adi,gpo-manual-mode-enable-mask Enable bit mask, setting or clearing bits will change the level of the corresponding output. Bit0 → GPO, Bit1 → GPO1, Bit2 → GPO2, Bit3 → GP03
@@ -948,8 +995,10 @@ bool ad936x_iio_custom::select_rf_filter(std::string rf_filter)
     //    1   Enable
     //    X   Enable Mask if Identifier=0xF
 
-
-    if (check_device() == false) return false;
+    if (check_device() == false)
+        {
+            return false;
+        }
     // int plutoGpo = 0;
     int ret;
     ret = iio_device_debug_attr_write(phy, "adi,gpo-manual-mode-enable", "1");
@@ -960,7 +1009,7 @@ bool ad936x_iio_custom::select_rf_filter(std::string rf_filter)
             return false;
         }
 
-    if (rf_filter.compare("E1") == 0)
+    if (rf_filter == "E1")
         {
             //  set gpio0 to switch L1 filter
             //            setPlutoGpo(plutoGpo);
@@ -971,7 +1020,7 @@ bool ad936x_iio_custom::select_rf_filter(std::string rf_filter)
                     return false;
                 }
         }
-    else if (rf_filter.compare("E5E6") == 0)
+    else if (rf_filter == "E5E6")
         {
             // set gpio0 to switch L5/L6 filter (GPO0)
             //            plutoGpo = plutoGpo | 0x10;
@@ -983,7 +1032,7 @@ bool ad936x_iio_custom::select_rf_filter(std::string rf_filter)
                     return false;
                 }
         }
-    if (rf_filter.compare("none") == 0)
+    if (rf_filter == "none")
         {
             std::cout << "RF external filter not selected\n";
         }
@@ -1001,6 +1050,8 @@ bool ad936x_iio_custom::select_rf_filter(std::string rf_filter)
 
     return true;
 }
+
+
 void ad936x_iio_custom::get_PPS_timestamp()
 {
     GnssTime tow;
@@ -1037,7 +1088,6 @@ void ad936x_iio_custom::get_PPS_timestamp()
             // record pps rise samplestamp associated to the absolute sample counter
             // PPS rising edge must be associated with the corresponding uBlox time message (tx once a second)
 
-
             if (GnssTime_queue->timed_wait_and_pop(tow, 2000) == false)
                 {
                     if (receive_samples == true)
@@ -1068,6 +1118,8 @@ void ad936x_iio_custom::get_PPS_timestamp()
                 }
         }
 }
+
+
 bool ad936x_iio_custom::start_sample_rx(bool ppsmode)
 {
     // using queues of smart pointers to preallocated buffers
@@ -1093,18 +1145,18 @@ bool ad936x_iio_custom::start_sample_rx(bool ppsmode)
     switch (n_channels)
         {
         case 1:
-            channels.push_back("voltage0");  // Channel 0 I
-            channels.push_back("voltage1");  // Channel 0 Q
+            channels.emplace_back("voltage0");  // Channel 0 I
+            channels.emplace_back("voltage1");  // Channel 0 Q
             break;
         case 2:
-            channels.push_back("voltage0");  // Channel 0 I
-            channels.push_back("voltage1");  // Channel 0 Q
-            channels.push_back("voltage2");  // Channel 1 I
-            channels.push_back("voltage3");  // Channel 1 Q
+            channels.emplace_back("voltage0");  // Channel 0 I
+            channels.emplace_back("voltage1");  // Channel 0 Q
+            channels.emplace_back("voltage2");  // Channel 1 I
+            channels.emplace_back("voltage3");  // Channel 1 Q
             break;
         default:
-            channels.push_back("voltage0");  // Channel 0 I
-            channels.push_back("voltage1");  // Channel 0 Q
+            channels.emplace_back("voltage0");  // Channel 0 I
+            channels.emplace_back("voltage1");  // Channel 0 Q
         }
 
     receive_samples = true;
@@ -1113,9 +1165,7 @@ bool ad936x_iio_custom::start_sample_rx(bool ppsmode)
     // start sample overflow detector
     overflow_monitor_thread = std::thread(&ad936x_iio_custom::monitor_thread_fn, this);
 
-
     // start PPS and GNSS Time capture thread
-
     if (ppsmode == true)
         {
             capture_time_thread = std::thread(&ad936x_iio_custom::get_PPS_timestamp, this);
@@ -1123,19 +1173,25 @@ bool ad936x_iio_custom::start_sample_rx(bool ppsmode)
     return true;
 }
 
+
 void ad936x_iio_custom::pop_sample_buffer(std::shared_ptr<ad936x_iio_samples> &current_buffer)
 {
     used_buffers.wait_and_pop(current_buffer);
 }
+
 
 void ad936x_iio_custom::push_sample_buffer(std::shared_ptr<ad936x_iio_samples> &current_buffer)
 {
     free_buffers.push(current_buffer);
 }
 
+
 void ad936x_iio_custom::capture(const std::vector<std::string> &channels)
 {
-    if (check_device() == false) return;
+    if (check_device() == false)
+        {
+            return;
+        }
 
     struct iio_buffer *rxbuf;
 
@@ -1163,16 +1219,14 @@ void ad936x_iio_custom::capture(const std::vector<std::string> &channels)
         }
     else
         {
-            for (std::vector<std::string>::const_iterator it =
-                     channels.begin();
-                 it != channels.end(); ++it)
+            for (const auto &channel : channels)
                 {
                     struct iio_channel *chn =
                         iio_device_find_channel(stream_dev,
-                            it->c_str(), false);
+                            channel.c_str(), false);
                     if (!chn)
                         {
-                            std::cerr << "Channel " << it->c_str() << " not found\n";
+                            std::cerr << "Channel " << channel.c_str() << " not found\n";
                             return;
                         }
                     else
@@ -1231,7 +1285,10 @@ void ad936x_iio_custom::capture(const std::vector<std::string> &channels)
 
             items_in_buffer = static_cast<unsigned long>(ret) / bytes_to_interleaved_iq_samples;
 
-            if (items_in_buffer == 0) return;
+            if (items_in_buffer == 0)
+                {
+                    return;
+                }
 
             current_samples->n_channels = n_channels;
             current_samples->n_interleaved_iq_samples = items_in_buffer;

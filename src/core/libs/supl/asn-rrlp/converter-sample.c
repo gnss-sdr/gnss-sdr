@@ -721,8 +721,8 @@ static void *data_decode_from_file(asn_TYPE_descriptor_t *pduType, FILE *file,
     rval.consumed = 0;
 
     for (tolerate_eof = 1; /* Allow EOF first time buffer is non-empty */
-         (rd = fread(fbuf, 1, fbuf_size, file)) || feof(file) == 0 ||
-         (tolerate_eof && DynamicBuffer.length);)
+        (rd = fread(fbuf, 1, fbuf_size, file)) || feof(file) == 0 ||
+        (tolerate_eof && DynamicBuffer.length);)
         {
             int ecbits = 0; /* Extra consumed bits in case of PER */
             uint8_t *i_bptr;

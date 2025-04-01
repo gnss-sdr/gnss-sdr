@@ -226,6 +226,29 @@ const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV23({{253, 6}});
 const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV24({{259, 6}});
 
 
+// Almanac
+const std::vector<std::pair<int32_t, int32_t>> ALM_ECC({{69, 16}});
+constexpr double ALM_ECC_LSB = TWO_N21;
+const std::vector<std::pair<int32_t, int32_t>> ALM_TOA({{91, 8}});
+constexpr int32_t ALM_TOA_LSB = static_cast<int32_t>(TWO_P12);
+const std::vector<std::pair<int32_t, int32_t>> ALM_DELTAI({{99, 16}});
+constexpr double ALM_DELTAI_LSB = TWO_N19;
+const std::vector<std::pair<int32_t, int32_t>> ALM_OMEGADOT({{121, 16}});
+constexpr double ALM_OMEGADOT_LSB = TWO_N38;
+const std::vector<std::pair<int32_t, int32_t>> ALM_SVHEALTH({{137, 8}});
+const std::vector<std::pair<int32_t, int32_t>> ALM_SQUAREA({{151, 24}});
+constexpr double ALM_SQUAREA_LSB = TWO_N11;
+const std::vector<std::pair<int32_t, int32_t>> ALM_OMEGAZERO({{181, 24}});
+constexpr double ALM_OMEGAZERO_LSB = TWO_N23;
+const std::vector<std::pair<int32_t, int32_t>> ALM_OMEGA({{211, 24}});
+constexpr double ALM_OMEGA_LSB = TWO_N23;
+const std::vector<std::pair<int32_t, int32_t>> ALM_MZERO({{241, 24}});
+constexpr double ALM_MZERO_LSB = TWO_N23;
+
+const std::vector<std::pair<int32_t, int32_t>> ALM_AF0({{271, 8}, {290, 3}});
+constexpr double ALM_AF0_LSB = TWO_N20;
+const std::vector<std::pair<int32_t, int32_t>> ALM_AF1({{279, 11}});
+constexpr double ALM_AF1_LSB = TWO_N38;
 /** \} */
 /** \} */
 #endif  // GNSS_SDR_GPS_L1_CA_H

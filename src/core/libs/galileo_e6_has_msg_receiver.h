@@ -28,6 +28,7 @@
 #include <pmt/pmt.h>               // for pmt::pmt_t
 #include <bitset>
 #include <cstdint>
+#include <map>
 #include <memory>  // for std::unique_ptr
 #include <string>
 #include <utility>  // std::pair
@@ -107,6 +108,8 @@ private:
     std::vector<std::vector<std::vector<std::vector<bool>>>> d_cell_mask;
     std::vector<uint8_t> d_nsys_in_mask;
     std::vector<std::vector<uint8_t>> d_nav_message_mask;
+
+    std::map<std::pair<uint8_t, uint8_t>, std::vector<uint16_t>> d_iod_ref_map;
 
     uint8_t d_current_has_status{};
     uint8_t d_current_message_id{};

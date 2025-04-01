@@ -17,7 +17,6 @@
 #include "sbas_l1_telemetry_decoder_gs.h"
 #include "gnss_synchro.h"
 #include "viterbi_decoder_sbas.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt_sugar.h>  // for mp
 #include <algorithm>        // for copy
@@ -26,6 +25,12 @@
 #include <exception>  // for exception
 #include <iomanip>    // for operator<<, setw
 #include <utility>    // for std::move
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 // logging levels
 #define EVENT 2      // logs important events which don't occur every block
@@ -197,8 +202,8 @@ bool sbas_l1_telemetry_decoder_gs::Symbol_Aligner_And_Decoder::get_bits(const st
     const int32_t nbits_requested = symbols.size() / D_SYMBOLS_PER_BIT;
     int32_t nbits_decoded;
     // fill two vectors with the two possible symbol alignments
-    std::vector<double> symbols_vd1(symbols);  // aligned symbol vector -> copy input symbol vector
-    std::vector<double> symbols_vd2;           // shifted symbol vector -> add past sample in front of input vector
+    const std::vector<double> &symbols_vd1(symbols);  // aligned symbol vector -> copy input symbol vector
+    std::vector<double> symbols_vd2;                  // shifted symbol vector -> add past sample in front of input vector
     symbols_vd2.push_back(d_past_symbol);
     for (auto symbol_it = symbols.cbegin(); symbol_it != symbols.cend() - 1; ++symbol_it)
         {

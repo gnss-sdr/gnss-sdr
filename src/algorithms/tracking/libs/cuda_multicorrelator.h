@@ -46,7 +46,7 @@ struct GPU_Complex
 {
     float r;
     float i;
-    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex(){};
+    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex() {};
     CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex(float a, float b) : r(a), i(b) {}
     CUDA_CALLABLE_MEMBER_DEVICE float magnitude2(void) { return r * r + i * i; }
     CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex operator*(const GPU_Complex& a)

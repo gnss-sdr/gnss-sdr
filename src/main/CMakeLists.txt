@@ -16,12 +16,23 @@ target_link_libraries(gnss-sdr
     PRIVATE
         algorithms_libs
         core_receiver
+        gnss_sdr_flags
         Boost::headers
         Boost::thread
-        Gflags::gflags
-        Glog::glog
         Threads::Threads
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(gnss-sdr PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(gnss-sdr PUBLIC -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(gnss-sdr PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize absl::log_sink absl::log_sink_registry)
+    target_link_libraries(gnss-sdr INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
+endif()
+
+if(NOT ENABLE_LOG)
+    target_compile_definitions(gnss-sdr PRIVATE -DGOOGLE_STRIP_LOG=1)
+endif()
 
 target_compile_definitions(gnss-sdr PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
 
@@ -65,6 +76,9 @@ if(ENABLE_STRIP)
     set_target_properties(gnss-sdr PROPERTIES LINK_FLAGS "-s")
 endif()
 
+include(XcodeRemoveWarningDuplicates)
+xcode_remove_warning_duplicates(gnss-sdr)
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(gnss-sdr
@@ -106,13 +120,8 @@ if(NOT VOLKGNSSSDR_FOUND)
     )
 endif()
 
-find_program(GZIP
-    gzip
-    /bin
-    /usr/bin
-    /usr/local/bin
-    /opt/local/bin
-    /sbin
+find_program(GZIP gzip
+    ${GNSSSDR_BIN_PATHS}
 )
 
 if(NOT GZIP_NOTFOUND)

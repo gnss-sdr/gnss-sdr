@@ -87,10 +87,9 @@ constexpr int32_t GLONASS_CA_NBR_SATS = 24;  // STRING DATA WITHOUT PREAMBLE
 constexpr int32_t GLONASS_L1_CA_HISTORY_DEEP = 100;
 
 // NAVIGATION MESSAGE DEMODULATION AND DECODING
-#define GLONASS_GNAV_PREAMBLE                                                                    \
-    {                                                                                            \
-        1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0 \
-    }
+#define GLONASS_GNAV_PREAMBLE \
+    {                         \
+        1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0}
 constexpr double GLONASS_GNAV_PREAMBLE_DURATION_S = 0.300;
 constexpr int32_t GLONASS_GNAV_PREAMBLE_LENGTH_BITS = 30;
 constexpr int32_t GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS = 300;

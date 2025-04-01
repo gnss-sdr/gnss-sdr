@@ -19,12 +19,16 @@
 #include "pulse_blanking_filter.h"
 #include "configuration_interface.h"
 #include <boost/lexical_cast.hpp>
-#include <glog/logging.h>
 #include <gnuradio/filter/firdes.h>
 #include <cmath>
 #include <utility>
 #include <vector>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 PulseBlankingFilter::PulseBlankingFilter(const ConfigurationInterface* configuration,
     std::string role,
@@ -35,7 +39,7 @@ PulseBlankingFilter::PulseBlankingFilter(const ConfigurationInterface* configura
       out_streams_(out_streams)
 {
     const std::string default_item_type("gr_complex");
-    const std::string default_dump_filename("../data/input_filter.dat");
+    const std::string default_dump_filename("./input_filter.dat");
     const float default_pfa_ = 0.04;
     const float pfa = configuration->property(role_ + ".pfa", default_pfa_);
     const int default_length_ = 32;

@@ -57,15 +57,24 @@ float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_i
     float SNR_dB_Hz = 0.0;
     float Psig = 0.0;
     float Ptot = 0.0;
+    if (length == 0 || coh_integration_time_s == 0.0)
+        {
+            return -100.0;
+        }
     for (int i = 0; i < length; i++)
         {
-            Psig += std::abs(Prompt_buffer[i].real());
+            Psig += std::fabs(Prompt_buffer[i].real());
             Ptot += Prompt_buffer[i].imag() * Prompt_buffer[i].imag() + Prompt_buffer[i].real() * Prompt_buffer[i].real();
         }
     Psig /= static_cast<float>(length);
     Psig = Psig * Psig;
     Ptot /= static_cast<float>(length);
-    SNR = Psig / (Ptot - Psig);
+    float aux = Ptot - Psig;
+    if (aux == 0.0)
+        {
+            return -100.0;
+        }
+    SNR = Psig / aux;
     SNR_dB_Hz = 10.0F * std::log10(SNR) - 10.0F * std::log10(coh_integration_time_s);
     return SNR_dB_Hz;
 }
@@ -96,9 +105,13 @@ float cn0_m2m4_estimator(const gr_complex* Prompt_buffer, int length, float coh_
     float m_4 = 0.0;
     float aux;
     const auto n = static_cast<float>(length);
+    if (length == 0 || coh_integration_time_s == 0.0)
+        {
+            return -100.0;
+        }
     for (int i = 0; i < length; i++)
         {
-            Psig += std::abs(Prompt_buffer[i].real());
+            Psig += std::fabs(Prompt_buffer[i].real());
             aux = Prompt_buffer[i].imag() * Prompt_buffer[i].imag() + Prompt_buffer[i].real() * Prompt_buffer[i].real();
             m_2 += aux;
             m_4 += (aux * aux);
@@ -108,13 +121,29 @@ float cn0_m2m4_estimator(const gr_complex* Prompt_buffer, int length, float coh_
     m_2 /= n;
     m_4 /= n;
     aux = std::sqrt(2.0F * m_2 * m_2 - m_4);
+    float denominator;
     if (std::isnan(aux))
         {
-            SNR_aux = Psig / (m_2 - Psig);
+            denominator = m_2 - Psig;
+            if (denominator == 0)
+                {
+                    return -100.0;
+                }
+            SNR_aux = Psig / denominator;
         }
     else
         {
-            SNR_aux = aux / (m_2 - aux);
+            denominator = m_2 - aux;
+            if (denominator == 0)
+                {
+                    return -100.0;
+                }
+            SNR_aux = aux / denominator;
+        }
+
+    if (SNR_aux == 0)
+        {
+            return -100.0;
         }
     SNR_dB_Hz = 10.0F * std::log10(SNR_aux) - 10.0F * std::log10(coh_integration_time_s);
 
@@ -144,5 +173,9 @@ float carrier_lock_detector(const gr_complex* Prompt_buffer, int length)
         }
     NBP = tmp_sum_I * tmp_sum_I + tmp_sum_Q * tmp_sum_Q;
     NBD = tmp_sum_I * tmp_sum_I - tmp_sum_Q * tmp_sum_Q;
+    if (NBP == 0)
+        {
+            return 0.0;
+        }
     return NBD / NBP;
 }

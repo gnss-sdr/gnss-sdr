@@ -37,10 +37,21 @@ endif()
 target_link_libraries(conditioner_adapters
     PUBLIC
         Gnuradio::runtime
-    PRIVATE
-        Gflags::gflags
-        Glog::glog
 )
+
+if(GNURADIO_VERSION VERSION_LESS 3.9)
+    target_link_libraries(conditioner_adapters
+        PUBLIC
+            Boost::headers
+    )
+endif()
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(conditioner_adapters PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(conditioner_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(conditioner_adapters PRIVATE absl::flags absl::log)
+endif()
 
 target_include_directories(conditioner_adapters
     PUBLIC

@@ -21,10 +21,14 @@
 
 #include "file_configuration.h"
 #include "gnss_sdr_make_unique.h"
-#include <glog/logging.h>
 #include <iostream>
 #include <utility>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 FileConfiguration::FileConfiguration(std::string filename)
     : filename_(std::move(filename))
@@ -71,7 +75,7 @@ std::string FileConfiguration::property(std::string property_name, std::string d
 {
     if (overrided_->is_present(property_name))
         {
-            return overrided_->property(property_name, default_value);
+            return overrided_->property(std::move(property_name), std::move(default_value));
         }
     return ini_reader_->Get("GNSS-SDR", property_name, default_value);
 }
@@ -81,7 +85,7 @@ bool FileConfiguration::property(std::string property_name, bool default_value) 
 {
     if (overrided_->is_present(property_name))
         {
-            return overrided_->property(property_name, default_value);
+            return overrided_->property(std::move(property_name), default_value);
         }
     const std::string empty;
     return converter_->convert(property(std::move(property_name), empty), default_value);
@@ -92,7 +96,7 @@ int64_t FileConfiguration::property(std::string property_name, int64_t default_v
 {
     if (overrided_->is_present(property_name))
         {
-            return overrided_->property(property_name, default_value);
+            return overrided_->property(std::move(property_name), default_value);
         }
     const std::string empty;
     return converter_->convert(property(std::move(property_name), empty), default_value);
@@ -103,7 +107,7 @@ uint64_t FileConfiguration::property(std::string property_name, uint64_t default
 {
     if (overrided_->is_present(property_name))
         {
-            return overrided_->property(property_name, default_value);
+            return overrided_->property(std::move(property_name), default_value);
         }
     const std::string empty;
     return converter_->convert(property(std::move(property_name), empty), default_value);
@@ -114,7 +118,7 @@ int FileConfiguration::property(std::string property_name, int default_value) co
 {
     if (overrided_->is_present(property_name))
         {
-            return overrided_->property(property_name, default_value);
+            return overrided_->property(std::move(property_name), default_value);
         }
     const std::string empty;
     return converter_->convert(property(std::move(property_name), empty), default_value);
@@ -125,7 +129,7 @@ unsigned int FileConfiguration::property(std::string property_name, unsigned int
 {
     if (overrided_->is_present(property_name))
         {
-            return overrided_->property(property_name, default_value);
+            return overrided_->property(std::move(property_name), default_value);
         }
     const std::string empty;
     return converter_->convert(property(std::move(property_name), empty), default_value);
@@ -136,7 +140,7 @@ uint16_t FileConfiguration::property(std::string property_name, uint16_t default
 {
     if (overrided_->is_present(property_name))
         {
-            return overrided_->property(property_name, default_value);
+            return overrided_->property(std::move(property_name), default_value);
         }
     const std::string empty;
     return converter_->convert(property(std::move(property_name), empty), default_value);
@@ -147,7 +151,7 @@ int16_t FileConfiguration::property(std::string property_name, int16_t default_v
 {
     if (overrided_->is_present(property_name))
         {
-            return overrided_->property(property_name, default_value);
+            return overrided_->property(std::move(property_name), default_value);
         }
     const std::string empty;
     return converter_->convert(property(std::move(property_name), empty), default_value);
@@ -158,7 +162,7 @@ float FileConfiguration::property(std::string property_name, float default_value
 {
     if (overrided_->is_present(property_name))
         {
-            return overrided_->property(property_name, default_value);
+            return overrided_->property(std::move(property_name), default_value);
         }
     const std::string empty;
     return converter_->convert(property(std::move(property_name), empty), default_value);
@@ -169,7 +173,7 @@ double FileConfiguration::property(std::string property_name, double default_val
 {
     if (overrided_->is_present(property_name))
         {
-            return overrided_->property(property_name, default_value);
+            return overrided_->property(std::move(property_name), default_value);
         }
     const std::string empty;
     return converter_->convert(property(std::move(property_name), empty), default_value);

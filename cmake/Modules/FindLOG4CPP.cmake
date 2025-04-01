@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2011-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2011-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 # - Find Log4cpp
@@ -21,6 +21,10 @@ endif()
 
 if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
+endif()
+
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
 endif()
 
 pkg_check_modules(PC_LOG4CPP log4cpp QUIET)
@@ -48,9 +52,7 @@ set(LOG4CPP_ROOT_USER_PROVIDED
 
 find_path(LOG4CPP_INCLUDE_DIR log4cpp/Category.hh
     ${LOG4CPP_ROOT_USER_PROVIDED}/include
-    /usr/include
-    /usr/local/include
-    /opt/local/include
+    ${GNSSSDR_INCLUDE_PATHS}
     ${PC_LOG4CPP_INCLUDEDIR}
 )
 
@@ -73,36 +75,8 @@ find_library(LOG4CPP_LIBRARY
     NAMES ${LOG4CPP_NAMES}
     HINTS ${PC_LOG4CPP_LIBDIR}
     PATHS ${LOG4CPP_ROOT_USER_PROVIDED}/lib
-        ${LOG4CPP_ROOT_USER_PROVIDED}/lib64
-        /usr/lib
-        /usr/lib64
-        /usr/lib/x86_64-linux-gnu
-        /usr/lib/i386-linux-gnu
-        /usr/lib/arm-linux-gnueabihf
-        /usr/lib/arm-linux-gnueabi
-        /usr/lib/aarch64-linux-gnu
-        /usr/lib/mipsel-linux-gnu
-        /usr/lib/mips-linux-gnu
-        /usr/lib/mips64el-linux-gnuabi64
-        /usr/lib/powerpc-linux-gnu
-        /usr/lib/powerpc64-linux-gnu
-        /usr/lib/powerpc64le-linux-gnu
-        /usr/lib/powerpc-linux-gnuspe
-        /usr/lib/hppa-linux-gnu
-        /usr/lib/s390x-linux-gnu
-        /usr/lib/i386-gnu
-        /usr/lib/hppa-linux-gnu
-        /usr/lib/x86_64-kfreebsd-gnu
-        /usr/lib/i386-kfreebsd-gnu
-        /usr/lib/m68k-linux-gnu
-        /usr/lib/sh4-linux-gnu
-        /usr/lib/sparc64-linux-gnu
-        /usr/lib/x86_64-linux-gnux32
-        /usr/lib/alpha-linux-gnu
-        /usr/lib/riscv64-linux-gnu
-        /usr/local/lib
-        /usr/local/lib64
-        /opt/local/lib
+          ${LOG4CPP_ROOT_USER_PROVIDED}/lib64
+          ${GNSSSDR_LIB_PATHS}
 )
 
 if(LOG4CPP_INCLUDE_DIR AND LOG4CPP_LIBRARY)
@@ -121,7 +95,7 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(LOG4CPP DEFAULT_MSG LOG4CPP_INCLUDE_DIRS LOG4CPP_LIBRARIES)
 
 set_package_properties(LOG4CPP PROPERTIES
-    URL "http://log4cpp.sourceforge.net/"
+    URL "https://log4cpp.sourceforge.net/"
 )
 
 if(LOG4CPP_FOUND AND PC_LOG4CPP_VERSION)

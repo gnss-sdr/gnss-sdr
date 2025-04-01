@@ -17,12 +17,14 @@
 
 #include "gnss_synchro_udp_sink.h"
 #include <boost/archive/binary_oarchive.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/serialization/vector.hpp>
 #include <iostream>
 #include <sstream>
 
-Gnss_Synchro_Udp_Sink::Gnss_Synchro_Udp_Sink(const std::vector<std::string>& addresses,
-    const uint16_t& port,
+Gnss_Synchro_Udp_Sink::Gnss_Synchro_Udp_Sink(
+    const std::vector<std::string>& addresses,
+    const std::vector<std::string>& ports,
     bool enable_protobuf)
     : socket{io_context},
       use_protobuf(enable_protobuf)
@@ -33,8 +35,17 @@ Gnss_Synchro_Udp_Sink::Gnss_Synchro_Udp_Sink(const std::vector<std::string>& add
         }
     for (const auto& address : addresses)
         {
-            boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(address, error), port);
-            endpoints.push_back(endpoint);
+            for (const auto& port : ports)
+                {
+                    boost::asio::ip::udp::endpoint endpoint(
+#if BOOST_ASIO_USE_FROM_STRING
+                        boost::asio::ip::address::from_string(address, error),
+#else
+                        boost::asio::ip::make_address(address, error),
+#endif
+                        boost::lexical_cast<int>(port));
+                    endpoints.push_back(endpoint);
+                }
         }
 }
 
@@ -53,22 +64,24 @@ bool Gnss_Synchro_Udp_Sink::write_gnss_synchro(const std::vector<Gnss_Synchro>& 
         {
             outbound_data = serdes.createProtobuffer(stocks);
         }
-    for (const auto& endpoint : endpoints)
-        {
-            socket.open(endpoint.protocol(), error);
 
-            try
+    try
+        {
+            for (const auto& endpoint : endpoints)
                 {
-                    if (socket.send_to(boost::asio::buffer(outbound_data), endpoint) == 0)
+                    socket.open(endpoint.protocol(), error);  // NOLINT(bugprone-unused-return-value)
+
+                    if (socket.send_to(boost::asio::buffer(outbound_data), endpoint) == 0)  // this can throw
                         {
-                            std::cerr << "Gnss_Synchro_Udp_Sink sent 0 bytes\n";
+                            return false;
                         }
                 }
-            catch (boost::system::system_error const& e)
-                {
-                    std::cerr << e.what() << '\n';
-                    return false;
-                }
         }
+    catch (const boost::system::system_error& e)
+        {
+            std::cerr << "Error sending data: " << e.what() << '\n';
+            return false;
+        }
+
     return true;
 }

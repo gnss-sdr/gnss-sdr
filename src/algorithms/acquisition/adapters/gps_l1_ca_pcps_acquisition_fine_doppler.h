@@ -142,7 +142,7 @@ public:
      */
     void stop_acquisition() override;
 
-    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override {};
 
 private:
     pcps_acquisition_fine_doppler_cc_sptr acquisition_cc_;

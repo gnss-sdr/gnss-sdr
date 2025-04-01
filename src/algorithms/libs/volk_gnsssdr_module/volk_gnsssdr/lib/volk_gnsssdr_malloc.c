@@ -40,7 +40,7 @@ void *volk_gnsssdr_malloc(size_t size, size_t alignment)
             return NULL;
         }
     // Tweak size to satisfy ASAN (the GCC address sanitizer).
-    // Calling 'volk_gnsssdr_malloc' might therefor result in the allocation of more memory than
+    // Calling 'volk_gnsssdr_malloc' might therefore result in the allocation of more memory than
     // requested for correct alignment. Any allocation size change here will in general not
     // impact the end result since initial size alignment is required either way.
     if (size % alignment)

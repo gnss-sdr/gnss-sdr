@@ -87,7 +87,7 @@ private:
     std::string item_type_;
     double rf_gain_;
     int64_t samples_;
-    uint64_t freq_;  // frequency of local oscilator
+    uint64_t freq_;  // frequency of local oscillator
     uint64_t sample_rate_;
     uint64_t bandwidth_;
     uint64_t buffer_size_;  // reception buffer

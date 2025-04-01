@@ -2383,7 +2383,7 @@ void outprcopt(FILE *fp, const prcopt_t *opt)
 
 
 /* output solution header ------------------------------------------------------
- * output solution heade to file
+ * output solution header to file
  * args   : FILE   *fp       I   output file pointer
  *          solopt_t *opt    I   solution options
  * return : none

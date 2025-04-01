@@ -29,7 +29,7 @@
  *
  *
  * References :
- *     [1] RTCA/DO-229C, Minimum operational performanc standards for global
+ *     [1] RTCA/DO-229C, Minimum operational performance standards for global
  *         positioning system/wide area augmentation system airborne equipment,
  *         RTCA inc, November 28, 2001
  *     [2] IS-QZSS v.1.1, Quasi-Zenith Satellite System Navigation Service

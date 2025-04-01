@@ -46,15 +46,9 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU" AND (CMAKE_VERSION VERSION_GREATER "3
     target_compile_options(core_libs_supl PUBLIC $<$<COMPILE_LANGUAGE:C>:${MY_C_FLAGS}>)
 endif()
 
-if(OPENSSL_FOUND)
-    target_compile_definitions(core_libs_supl PUBLIC -DUSE_OPENSSL_FALLBACK=1)
-endif()
-
-target_link_libraries(core_libs_supl
-    PUBLIC
-        ${GNUTLS_LIBRARIES}
-        ${GNUTLS_OPENSSL_LIBRARY}
-)
+# links to the appropriate library and defines
+# USE_GNUTLS_FALLBACK, USE_OPENSSL_3, or USE_OPENSSL_111 accordingly.
+link_to_crypto_dependencies(core_libs_supl)
 
 target_include_directories(core_libs_supl
     PUBLIC

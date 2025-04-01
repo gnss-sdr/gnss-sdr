@@ -25,6 +25,14 @@ if(ENABLE_PLUTOSDR)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ad936x_custom_signal_source.h)
 endif()
 
+if(ENABLE_AD936X_SDR AND NOT ENABLE_PLUTOSDR)
+    ##############################################
+    # CUSTOM AD936X IIO SOURCE
+    ##############################################
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} ad936x_custom_signal_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ad936x_custom_signal_source.h)
+endif()
+
 if(ENABLE_FMCOMMS2)
     ###############################################
     # FMCOMMS2 based SDR Hardware
@@ -37,8 +45,26 @@ if(ENABLE_AD9361)
     ###############################################
     # AD9361 DIRECT TO FPGA Hardware
     ###############################################
-    list(APPEND OPT_DRIVER_SOURCES ad9361_fpga_signal_source.cc)
-    list(APPEND OPT_DRIVER_HEADERS ad9361_fpga_signal_source.h)
+    list(APPEND OPT_DRIVER_SOURCES adrv9361_z7035_signal_source_fpga.cc)
+    list(APPEND OPT_DRIVER_HEADERS adrv9361_z7035_signal_source_fpga.h)
+    list(APPEND OPT_DRIVER_SOURCES fmcomms5_signal_source_fpga.cc)
+    list(APPEND OPT_DRIVER_HEADERS fmcomms5_signal_source_fpga.h)
+endif()
+
+if(ENABLE_MAX2771)
+    ###############################################
+    # MAX2771 EVKIT DIRECT TO FPGA Hardware
+    ###############################################
+    list(APPEND OPT_DRIVER_SOURCES max2771_evkit_signal_source_fpga.cc)
+    list(APPEND OPT_DRIVER_HEADERS max2771_evkit_signal_source_fpga.h)
+endif()
+
+if(ENABLE_DMA_PROXY)
+    ###############################################
+    # FPGA DMA source
+    ###############################################
+    list(APPEND OPT_DRIVER_SOURCES dma_signal_source_fpga.cc)
+    list(APPEND OPT_DRIVER_HEADERS dma_signal_source_fpga.h)
 endif()
 
 if(ENABLE_FLEXIBAND AND TELEORBIT_FOUND)
@@ -83,6 +109,11 @@ endif()
 if(ENABLE_ZMQ)
     list(APPEND OPT_DRIVER_SOURCES zmq_signal_source.cc)
     list(APPEND OPT_DRIVER_HEADERS zmq_signal_source.h)
+endif()
+
+if(ENABLE_ION)
+    list(APPEND OPT_DRIVER_SOURCES ion_gsms_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS ion_gsms_signal_source.h)
 endif()
 
 set(SIGNAL_SOURCE_ADAPTER_SOURCES
@@ -151,7 +182,7 @@ target_include_directories(signal_source_adapters
         ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
-if(ENABLE_FPGA OR ENABLE_AD9361)
+if(ENABLE_FPGA OR ENABLE_AD9361 OR ENABLE_ION)
     target_link_libraries(signal_source_adapters
         PUBLIC
             signal_source_libs
@@ -169,9 +200,15 @@ target_link_libraries(signal_source_adapters
         algorithms_libs
         gnss_sdr_flags
         core_system_parameters
-        Glog::glog
         Volk::volk
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(signal_source_adapters PRIVATE Glog::glog)
+    target_compile_definitions(signal_source_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(signal_source_adapters PRIVATE absl::flags absl::log)
+endif()
 
 if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(signal_source_adapters
@@ -215,14 +252,14 @@ if(ENABLE_LIMESDR AND GRLIMESDR_FOUND)
     )
 endif()
 
-if(ENABLE_AD9361 AND LIBIIO_FOUND)
+if(LIBIIO_FOUND)
     target_link_libraries(signal_source_adapters
         PRIVATE
             Iio::iio
     )
 endif()
 
-if(ENABLE_AD9361 OR ENABLE_FMCOMMS2 OR ENABLE_PLUTOSDR)
+if(ENABLE_AD9361 OR ENABLE_FMCOMMS2 OR ENABLE_PLUTOSDR OR ENABLE_AD936X_SDR)
     if(LIBAD9361_VERSION)
         if(LIBAD9361_VERSION VERSION_GREATER 0.1)
             target_compile_definitions(signal_source_adapters

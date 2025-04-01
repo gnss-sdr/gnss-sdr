@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2014 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 # SPDX-License-Identifier: GPL-3.0-or-later
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-libdir=@libdir@
-includedir=@includedir@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=@CMAKE_INSTALL_PREFIX@
+libdir=@CMAKE_INSTALL_FULL_LIBDIR@
+includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
 LV_CXXFLAGS=@LV_CXXFLAGS@
 
 

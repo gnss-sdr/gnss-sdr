@@ -1,6 +1,6 @@
 /*!
  * \file Galileo_FNAV.h
- * \brief Galileo FNAV mesage constants
+ * \brief Galileo FNAV message constants
  * \author Carles Fernandez, 2020. cfernandez(at)cttc.es
  *
  *

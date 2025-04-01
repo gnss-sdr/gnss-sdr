@@ -61,7 +61,7 @@ static int i_can_has_${arch.name} (void) {
 #if defined(CPU_FEATURES_ARCH_S390X)
     if (GetS390XInfo().features.${check} == 0){ return 0; }
 #endif
-        %elif "riscv" in arch.name:
+        %elif "riscv" in arch.name or arch.name[:2] == "rv":
 #if defined(CPU_FEATURES_ARCH_RISCV)
     if (GetRiscvInfo().features.${check} == 0){ return 0; }
 #endif

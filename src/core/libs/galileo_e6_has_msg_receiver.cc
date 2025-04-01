@@ -23,7 +23,6 @@
 #include "galileo_has_page.h"       // for Galileo_HAS_page
 #include "gnss_sdr_make_unique.h"   // for std::make_unique in C++11
 #include "reed_solomon.h"           // for ReedSolomon
-#include <glog/logging.h>           // for DLOG
 #include <gnuradio/io_signature.h>  // for gr::io_signature::make
 #include <algorithm>                // for std::find, std::count
 #include <cmath>                    // for std::remainder
@@ -33,6 +32,12 @@
 #include <sstream>                  // for std::stringstream
 #include <stdexcept>                // for std::out_of_range
 #include <typeinfo>                 // for typeid
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else
@@ -630,6 +635,7 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                         }
                 }
 
+            d_iod_ref_map[std::make_pair(d_HAS_data.header.iod_set_id, d_HAS_data.header.mask_id)] = d_HAS_data.gnss_iod;
             DLOG(INFO) << debug_print_vector("gnss_iod", d_HAS_data.gnss_iod);
             DLOG(INFO) << debug_print_vector("delta_radial", d_HAS_data.delta_radial);
             DLOG(INFO) << debug_print_vector("delta_in_track", d_HAS_data.delta_in_track);
@@ -654,6 +660,11 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                 {
                     d_HAS_data.delta_clock_correction[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_CLOCK_CORRECTION_LENGTH));
                     message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_CORRECTION_LENGTH, message.end());
+                }
+            auto ref_it = d_iod_ref_map.find(std::make_pair(d_HAS_data.header.iod_set_id, d_HAS_data.header.mask_id));
+            if (ref_it != d_iod_ref_map.end())
+                {
+                    d_HAS_data.gnss_iod = ref_it->second;
                 }
 
             DLOG(INFO) << debug_print_vector("delta_clock_multiplier", d_HAS_data.delta_clock_multiplier);

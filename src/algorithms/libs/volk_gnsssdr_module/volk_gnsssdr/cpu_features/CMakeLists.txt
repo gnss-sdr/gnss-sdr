@@ -3,12 +3,6 @@
 
 cmake_minimum_required(VERSION 3.13)
 
-# option() honors normal variables.
-# see: https://cmake.org/cmake/help/git-stage/policy/CMP0077.html
-if(POLICY CMP0077)
-  cmake_policy(SET CMP0077 NEW)
-endif()
-
 project(CpuFeatures VERSION 0.9.0 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 99)
@@ -54,7 +48,7 @@ option(BUILD_SHARED_LIBS "Build library as shared." OFF)
 # Force PIC on unix when building shared libs
 # see: https://en.wikipedia.org/wiki/Position-independent_code
 if(BUILD_SHARED_LIBS AND UNIX)
-  option(CMAKE_POSITION_INDEPENDENT_CODE "Build with Position Independant Code." ON)
+  option(CMAKE_POSITION_INDEPENDENT_CODE "Build with Position Independent Code." ON)
 endif()
 
 include(CheckIncludeFile)
@@ -151,7 +145,7 @@ if(UNIX)
   add_library(unix_based_hardware_detection OBJECT
     ${PROJECT_SOURCE_DIR}/include/internal/hwcaps.h
     ${PROJECT_SOURCE_DIR}/src/hwcaps_linux_or_android.c
-    ${PROJECT_SOURCE_DIR}/src/hwcaps_freebsd.c
+    ${PROJECT_SOURCE_DIR}/src/hwcaps_freebsd_or_openbsd.c
     ${PROJECT_SOURCE_DIR}/src/hwcaps.c
   )
   setup_include_and_definitions(unix_based_hardware_detection)

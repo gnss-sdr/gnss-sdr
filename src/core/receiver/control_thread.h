@@ -160,7 +160,7 @@ private:
 
     void telecommand_listener();
     void keyboard_listener();
-    void sysv_queue_listener();
+    void message_queue_listener();
     void print_help_at_exit() const;
 
     // default filename for assistance data
@@ -179,6 +179,8 @@ private:
     const std::string gal_almanac_default_xml_filename_ = "./gal_almanac.xml";
     const std::string gps_almanac_default_xml_filename_ = "./gps_almanac.xml";
 
+    const std::string control_message_queue_name_ = "receiver_control_queue";
+
     const size_t channel_event_type_hash_code_ = typeid(channel_event_sptr).hash_code();
     const size_t command_event_type_hash_code_ = typeid(command_event_sptr).hash_code();
 
@@ -188,7 +190,7 @@ private:
 
     std::thread cmd_interface_thread_;
     std::thread keyboard_thread_;
-    std::thread sysv_queue_thread_;
+    std::thread message_queue_thread_;
     std::thread gps_acq_assist_data_collector_thread_;
 
 #ifdef ENABLE_FPGA
@@ -210,7 +212,6 @@ private:
 
     unsigned int processed_control_messages_;
     unsigned int applied_actions_;
-    int msqid_;
 
     bool well_formatted_configuration_;
     bool conf_file_has_section_;

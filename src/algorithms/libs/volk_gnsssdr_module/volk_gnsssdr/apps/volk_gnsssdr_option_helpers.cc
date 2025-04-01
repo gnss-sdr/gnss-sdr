@@ -111,8 +111,8 @@ void option_list::parse(int argc, char** argv)
     for (int arg_number = 0; arg_number < argc; ++arg_number)
         {
             for (std::vector<option_t>::iterator this_option = d_internal_list.begin();
-                 this_option != d_internal_list.end();
-                 this_option++)
+                this_option != d_internal_list.end();
+                this_option++)
                 {
                     int int_val = INT_MIN;
                     if (this_option->longform == std::string(argv[arg_number]) ||
@@ -254,8 +254,8 @@ void option_list::help()
     std::cout << d_program_name << std::endl;
     std::cout << "  -h [ --help ] \t\tdisplay this help message" << std::endl;
     for (std::vector<option_t>::iterator this_option = d_internal_list.begin();
-         this_option != d_internal_list.end();
-         this_option++)
+        this_option != d_internal_list.end();
+        this_option++)
         {
             std::string help_line("  ");
             if (this_option->shortform == "-")

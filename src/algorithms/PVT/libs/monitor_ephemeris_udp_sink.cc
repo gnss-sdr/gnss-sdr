@@ -28,7 +28,11 @@ Monitor_Ephemeris_Udp_Sink::Monitor_Ephemeris_Udp_Sink(const std::vector<std::st
 {
     for (const auto& address : addresses)
         {
+#if BOOST_ASIO_USE_FROM_STRING
             boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(address, error), port);
+#else
+            boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::make_address(address, error), port);
+#endif
             endpoints.push_back(endpoint);
         }
     if (use_protobuf)
@@ -55,22 +59,24 @@ bool Monitor_Ephemeris_Udp_Sink::write_galileo_ephemeris(const std::shared_ptr<G
             outbound_data.append(serdes_gal.createProtobuffer(monitor_gal_eph));
         }
 
-    for (const auto& endpoint : endpoints)
+    try
         {
-            socket.open(endpoint.protocol(), error);
-
-            try
+            for (const auto& endpoint : endpoints)
                 {
-                    if (socket.send_to(boost::asio::buffer(outbound_data), endpoint) == 0)
+                    socket.open(endpoint.protocol(), error);  // NOLINT(bugprone-unused-return-value)
+
+                    if (socket.send_to(boost::asio::buffer(outbound_data), endpoint) == 0)  // this can throw
                         {
                             return false;
                         }
                 }
-            catch (boost::system::system_error const& e)
-                {
-                    return false;
-                }
         }
+    catch (const boost::system::system_error& e)
+        {
+            std::cerr << "Error sending Galileo ephemeris: " << e.what() << '\n';
+            return false;
+        }
+
     return true;
 }
 
@@ -91,21 +97,23 @@ bool Monitor_Ephemeris_Udp_Sink::write_gps_ephemeris(const std::shared_ptr<Gps_E
             outbound_data.append(serdes_gps.createProtobuffer(monitor_gps_eph));
         }
 
-    for (const auto& endpoint : endpoints)
+    try
         {
-            socket.open(endpoint.protocol(), error);
-
-            try
+            for (const auto& endpoint : endpoints)
                 {
-                    if (socket.send_to(boost::asio::buffer(outbound_data), endpoint) == 0)
+                    socket.open(endpoint.protocol(), error);  // NOLINT(bugprone-unused-return-value)
+
+                    if (socket.send_to(boost::asio::buffer(outbound_data), endpoint) == 0)  // this can throw
                         {
                             return false;
                         }
                 }
-            catch (boost::system::system_error const& e)
-                {
-                    return false;
-                }
         }
+    catch (const boost::system::system_error& e)
+        {
+            std::cerr << "Error sending GPS ephemeris: " << e.what() << '\n';
+            return false;
+        }
+
     return true;
 }

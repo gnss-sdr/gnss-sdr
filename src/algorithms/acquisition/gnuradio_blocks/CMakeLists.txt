@@ -65,10 +65,15 @@ target_link_libraries(acquisition_gr_blocks
         Volk::volk
         Volkgnsssdr::volkgnsssdr
     PRIVATE
-        Gflags::gflags
-        Glog::glog
         Matio::matio
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(acquisition_gr_blocks PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(acquisition_gr_blocks PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(acquisition_gr_blocks PRIVATE absl::flags absl::log)
+endif()
 
 target_include_directories(acquisition_gr_blocks
     PRIVATE

@@ -97,6 +97,14 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     endif()
 endif()
 
+# Fix for Boost Asio > 1.86. address::from_string was deprecated in Boost 1.71
+if(Boost_VERSION_STRING VERSION_LESS 1.71.0)
+    target_compile_definitions(core_monitor
+        PRIVATE
+            -DBOOST_ASIO_USE_FROM_STRING=1
+    )
+endif()
+
 set_property(TARGET core_monitor
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

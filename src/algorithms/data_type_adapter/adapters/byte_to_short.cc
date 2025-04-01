@@ -16,8 +16,13 @@
 
 #include "byte_to_short.h"
 #include "configuration_interface.h"
-#include <glog/logging.h>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 ByteToShort::ByteToShort(const ConfigurationInterface* configuration,
@@ -30,7 +35,7 @@ ByteToShort::ByteToShort(const ConfigurationInterface* configuration,
 {
     const std::string default_input_item_type("byte");
     const std::string default_output_item_type("short");
-    const std::string default_dump_filename("../data/input_filter.dat");
+    const std::string default_dump_filename("./data_type_adapter.dat");
 
     DLOG(INFO) << "role " << role_;
 

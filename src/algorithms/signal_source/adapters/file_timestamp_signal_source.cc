@@ -18,8 +18,13 @@
 #include "file_timestamp_signal_source.h"
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_string_literals.h"
-#include <glog/logging.h>
 #include <string>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 using namespace std::string_literals;
 
@@ -29,7 +34,7 @@ FileTimestampSignalSource::FileTimestampSignalSource(const ConfigurationInterfac
     unsigned int out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue)
     : FileSourceBase(configuration, role, "File_Timestamp_Signal_Source"s, queue, "byte"s),
-      timestamp_file_(configuration->property(role + ".timestamp_filename"s, "../data/example_capture_timestamp.dat"s)),
+      timestamp_file_(configuration->property(role + ".timestamp_filename"s, "./example_capture_timestamp.dat"s)),
       timestamp_clock_offset_ms_(configuration->property(role + ".timestamp_clock_offset_ms"s, 0.0))
 {
     if (in_streams > 0)
@@ -41,11 +46,18 @@ FileTimestampSignalSource::FileTimestampSignalSource(const ConfigurationInterfac
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 
-    // override value with commandline flag, if present
+        // override value with commandline flag, if present
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_timestamp_source != "-")
         {
             timestamp_file_ = FLAGS_timestamp_source;
         }
+#else
+    if (absl::GetFlag(FLAGS_timestamp_source) != "-")
+        {
+            timestamp_file_ = absl::GetFlag(FLAGS_timestamp_source);
+        }
+#endif
 }
 
 

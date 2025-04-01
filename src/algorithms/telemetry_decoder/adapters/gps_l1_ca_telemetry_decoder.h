@@ -32,7 +32,7 @@
  * Classes for the decoding of GNSS Navigation messages.
  * \{ */
 /** \addtogroup Telemetry_Decoder_adapters telemetry_decoder_adapters
- * Wrap GNU Radio blocs for the decoding of GNSS Navigation messages with a
+ * Wrap GNU Radio blocks for the decoding of GNSS Navigation messages with a
  * TelemetryDecoderInterface
  * \{ */
 

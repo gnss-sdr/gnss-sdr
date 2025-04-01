@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2011-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2011-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 #
@@ -19,6 +19,10 @@ endif()
 
 if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
+endif()
+
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
 endif()
 
 pkg_check_modules(PC_VOLK_GNSSSDR QUIET volk_gnsssdr)
@@ -51,9 +55,7 @@ find_path(VOLK_GNSSSDR_INCLUDE_DIRS
     NAMES volk_gnsssdr/volk_gnsssdr.h
     HINTS ${PC_VOLK_GNSSSDR_INCLUDEDIR}
     PATHS ${VOLKGNSSSDR_ROOT_USER_PROVIDED}/include
-          /usr/include
-          /usr/local/include
-          /opt/local/include
+          ${GNSSSDR_INCLUDE_PATHS}
 )
 
 find_library(VOLK_GNSSSDR_LIBRARIES
@@ -61,11 +63,7 @@ find_library(VOLK_GNSSSDR_LIBRARIES
     HINTS ${PC_VOLK_GNSSSDR_LIBDIR}
     PATHS ${VOLKGNSSSDR_ROOT_USER_PROVIDED}/lib
           ${VOLKGNSSSDR_ROOT_USER_PROVIDED}/lib64
-          /usr/lib
-          /usr/lib64
-          /usr/local/lib
-          /usr/local/lib64
-          /opt/local/lib
+          ${GNSSSDR_LIB_PATHS}
 )
 
 include(FindPackageHandleStandardArgs)

@@ -17,7 +17,6 @@
 
 #include "galileo_pcps_8ms_acquisition_cc.h"
 #include "MATH_CONSTANTS.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
@@ -26,6 +25,11 @@
 #include <exception>
 #include <sstream>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 galileo_pcps_8ms_acquisition_cc_sptr galileo_pcps_8ms_make_acquisition_cc(
     uint32_t sampled_ms,
@@ -157,8 +161,8 @@ void galileo_pcps_8ms_acquisition_cc::init()
     // Count the number of bins
     d_num_doppler_bins = 0;
     for (auto doppler = static_cast<int32_t>(-d_doppler_max);
-         doppler <= static_cast<int32_t>(d_doppler_max);
-         doppler += d_doppler_step)
+        doppler <= static_cast<int32_t>(d_doppler_max);
+        doppler += d_doppler_step)
         {
             d_num_doppler_bins++;
         }
@@ -332,7 +336,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                                 std::stringstream filename;
                                 std::streamsize n = 2 * sizeof(float) * (d_fft_size);  // complex file write
                                 filename.str("");
-                                filename << "../data/test_statistics_" << d_gnss_synchro->System
+                                filename << "./test_statistics_" << d_gnss_synchro->System
                                          << "_" << d_gnss_synchro->Signal[0] << d_gnss_synchro->Signal[1] << "_sat_"
                                          << d_gnss_synchro->PRN << "_doppler_" << doppler << ".dat";
                                 d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);

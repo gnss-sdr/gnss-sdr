@@ -6,7 +6,7 @@
 
 # - Find pcap
 # Find the PCAP includes and library
-# http://www.tcpdump.org/
+# https://www.tcpdump.org/
 #
 # The environment variable PCAPDIR allows to specify where to find
 # libpcap in non standard location.
@@ -25,6 +25,10 @@ endif()
 
 if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
+endif()
+
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
 endif()
 
 pkg_check_modules(PC_PCAP libpcap QUIET)
@@ -77,9 +81,7 @@ else()
             ${PC_PCAP_INCLUDEDIR}
         PATHS
             ${PCAP_ROOT_USER_PROVIDED}/include
-            /usr/include
-            /usr/local/include
-            /opt/local/include
+            ${GNSSSDR_INCLUDE_PATHS}
     )
     find_library(PCAP_LIBRARY
         NAMES
@@ -88,32 +90,7 @@ else()
             ${PC_PCAP_LIBDIR}
         PATHS
             ${PCAP_ROOT_USER_PROVIDED}/lib
-            /usr/lib
-            /usr/lib64
-            /usr/lib/alpha-linux-gnu
-            /usr/lib/x86_64-linux-gnu
-            /usr/lib/aarch64-linux-gnu
-            /usr/lib/arm-linux-gnueabi
-            /usr/lib/arm-linux-gnueabihf
-            /usr/lib/hppa-linux-gnu
-            /usr/lib/i386-linux-gnu
-            /usr/lib/m68k-linux-gnu
-            /usr/lib/mips-linux-gnu
-            /usr/lib/mips64el-linux-gnuabi64
-            /usr/lib/mipsel-linux-gnu
-            /usr/lib/powerpc-linux-gnuspe
-            /usr/lib/powerpc64-linux-gnu
-            /usr/lib/powerpc64le-linux-gnu
-            /usr/lib/riscv64-linux-gnu
-            /usr/lib/s390x-linux-gnu
-            /usr/lib/sh4-linux-gnu
-            /usr/lib/sparc64-linux-gnu
-            /usr/lib/x86_64-linux-gnux32
-            /usr/lib/x86_64-kfreebsd-gnu
-            /usr/lib/i386-kfreebsd-gnu
-            /usr/local/lib
-            /usr/local/lib64
-            /opt/local/lib
+            ${GNSSSDR_LIB_PATHS}
     )
 endif()
 

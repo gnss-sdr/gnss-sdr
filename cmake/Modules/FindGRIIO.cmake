@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2011-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2011-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 #
@@ -17,6 +17,10 @@ if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
 endif()
 
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
+endif()
+
 pkg_check_modules(PC_IIO gnuradio-iio)
 
 if(NOT GRIIO_ROOT)
@@ -24,31 +28,31 @@ if(NOT GRIIO_ROOT)
 else()
     set(GRIIO_ROOT_USER_DEFINED ${GRIIO_ROOT})
 endif()
+
 if(DEFINED ENV{GRIIO_ROOT})
     set(GRIIO_ROOT_USER_DEFINED
         ${GRIIO_ROOT_USER_DEFINED}
         $ENV{GRIIO_ROOT}
     )
 endif()
+
 if(DEFINED ENV{IIO_DIR})
     set(GRIIO_ROOT_USER_DEFINED
         ${GRIIO_ROOT_USER_DEFINED}
         $ENV{IIO_DIR}
     )
 endif()
+
 set(GRIIO_ROOT_USER_DEFINED
     ${GRIIO_ROOT_USER_DEFINED}
     ${CMAKE_INSTALL_PREFIX}
 )
 
-
 find_path(IIO_INCLUDE_DIRS
     NAMES gnuradio/iio/api.h
     HINTS ${PC_IIO_INCLUDEDIR}
     PATHS ${GRIIO_ROOT_USER_DEFINED}/include
-          /usr/include
-          /usr/local/include
-          /opt/local/include
+          ${GNSSSDR_INCLUDE_PATHS}
 )
 
 if(IIO_INCLUDE_DIRS)
@@ -58,9 +62,7 @@ else()
         NAMES iio/api.h
         HINTS ${PC_IIO_INCLUDEDIR}
         PATHS ${GRIIO_ROOT_USER_DEFINED}/include
-              /usr/include
-              /usr/local/include
-              /opt/local/include
+              ${GNSSSDR_INCLUDE_PATHS}
     )
     set(GR_IIO_INCLUDE_HAS_GNURADIO FALSE)
 endif()
@@ -70,35 +72,7 @@ find_library(IIO_LIBRARIES
     HINTS ${PC_IIO_LIBDIR}
     PATHS ${GRIIO_ROOT_USER_DEFINED}/lib
           ${GRIIO_ROOT_USER_DEFINED}/lib64
-          /usr/lib
-          /usr/lib64
-          /usr/lib/x86_64-linux-gnu
-          /usr/lib/i386-linux-gnu
-          /usr/lib/alpha-linux-gnu
-          /usr/lib/aarch64-linux-gnu
-          /usr/lib/arm-linux-gnueabi
-          /usr/lib/arm-linux-gnueabihf
-          /usr/lib/hppa-linux-gnu
-          /usr/lib/i686-gnu
-          /usr/lib/i686-linux-gnu
-          /usr/lib/x86_64-kfreebsd-gnu
-          /usr/lib/i686-kfreebsd-gnu
-          /usr/lib/m68k-linux-gnu
-          /usr/lib/mips-linux-gnu
-          /usr/lib/mips64el-linux-gnuabi64
-          /usr/lib/mipsel-linux-gnu
-          /usr/lib/powerpc-linux-gnu
-          /usr/lib/powerpc-linux-gnuspe
-          /usr/lib/powerpc64-linux-gnu
-          /usr/lib/powerpc64le-linux-gnu
-          /usr/lib/riscv64-linux-gnu
-          /usr/lib/s390x-linux-gnu
-          /usr/lib/sparc64-linux-gnu
-          /usr/lib/x86_64-linux-gnux32
-          /usr/lib/sh4-linux-gnu
-          /usr/local/lib
-          /usr/local/lib64
-          /opt/local/lib
+          ${GNSSSDR_LIB_PATHS}
 )
 
 include(FindPackageHandleStandardArgs)

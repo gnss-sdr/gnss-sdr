@@ -35,7 +35,6 @@
 #include "gnss_sdr_filesystem.h"
 #include "rtklib_rtkpos.h"
 #include "rtklib_solution.h"
-#include <glog/logging.h>
 #include <matio.h>
 #include <algorithm>
 #include <cmath>
@@ -43,6 +42,11 @@
 #include <utility>
 #include <vector>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     const Pvt_Conf &conf,
@@ -929,8 +933,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     bool band2 = false;
 
     for (gnss_observables_iter = gnss_observables_map.cbegin();
-         gnss_observables_iter != gnss_observables_map.cend();
-         ++gnss_observables_iter)
+        gnss_observables_iter != gnss_observables_map.cend();
+        ++gnss_observables_iter)
         {
             switch (gnss_observables_iter->second.System)
                 {
@@ -958,8 +962,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
         }
 
     for (gnss_observables_iter = gnss_observables_map.cbegin();
-         gnss_observables_iter != gnss_observables_map.cend();
-         ++gnss_observables_iter)  // CHECK INCONSISTENCY when combining GLONASS + other system
+        gnss_observables_iter != gnss_observables_map.cend();
+        ++gnss_observables_iter)  // CHECK INCONSISTENCY when combining GLONASS + other system
         {
             switch (gnss_observables_iter->second.System)
                 {
@@ -1602,7 +1606,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     ecef2pos(pvt_sol.rr, pos.data());
                     ecef2enu(pos.data(), &pvt_sol.rr[3], enuv.data());
                     this->set_speed_over_ground(norm_rtk(enuv.data(), 2));
-                    double new_cog = -9999.0;  // COG not estimated due to insuficient velocity
+                    double new_cog = -9999.0;  // COG not estimated due to insufficient velocity
                     if (ground_speed_ms >= 1.0)
                         {
                             new_cog = atan2(enuv[0], enuv[1]) * R2D;
@@ -1692,7 +1696,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // Course Over Ground (cog) [deg]
                     d_monitor_pvt.cog = new_cog;
 
-                    // Galileo HAS status: 1- HAS messages decoded and applied, 0 - HAS not avaliable
+                    // Galileo HAS status: 1- HAS messages decoded and applied, 0 - HAS not available
                     if (d_has_obs_corr_map.empty())
                         {
                             d_monitor_pvt.galhas_status = 0;

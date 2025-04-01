@@ -88,9 +88,15 @@ target_link_libraries(tracking_libs
         algorithms_libs
     PRIVATE
         gnss_sdr_flags
-        Glog::glog
         Gnuradio::runtime
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(tracking_libs PRIVATE Glog::glog)
+    target_compile_definitions(tracking_libs PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(tracking_libs PRIVATE absl::flags absl::log)
+endif()
 
 if(ENABLE_CUDA)
     if(CMAKE_VERSION VERSION_GREATER 3.11)

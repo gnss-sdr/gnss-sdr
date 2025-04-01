@@ -20,7 +20,6 @@
 #include "gnss_sdr_filesystem.h"
 #include "pvt_solution.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <glog/logging.h>
 #include <cstdlib>    // for mkstemp
 #include <ctime>      // for tm
 #include <exception>  // for exception
@@ -30,6 +29,11 @@
 #include <sys/stat.h>   // for S_IXUSR | S_IRWXG | S_IRWXO
 #include <sys/types.h>  // for mode_t
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 Kml_Printer::Kml_Printer(const std::string& base_path) : kml_base_path(base_path),
                                                          indent("  "),
@@ -315,9 +319,13 @@ Kml_Printer::~Kml_Printer()
         {
             std::cerr << e.what() << '\n';
         }
+    errorlib::error_code ec;
+    if (!fs::remove(fs::path(tmp_file_str), ec))
+        {
+            LOG(INFO) << "Error deleting temporary file";
+        }
     if (!positions_printed)
         {
-            errorlib::error_code ec;
             if (!fs::remove(fs::path(kml_filename), ec))
                 {
                     LOG(INFO) << "Error deleting temporary KML file";

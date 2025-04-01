@@ -23,7 +23,6 @@
 #include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_synchro.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
 #include <pmt/pmt.h>
@@ -35,6 +34,12 @@
 #include <iostream>   // for cerr, cout
 #include <limits>     // for numeric_limits
 #include <utility>    // for move
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if PMT_USES_BOOST_ANY
 #include <boost/any.hpp>
@@ -607,7 +612,7 @@ void hybrid_observables_gs::set_tag_timestamp_in_sdr_timeframe(const std::vector
     // to an absolute GPS TOW samplestamp associated with the current set of pseudoranges
     if (!d_TimeChannelTagTimestamps.empty())
         {
-            double fs = 0;
+            double fs = 0.0;
             std::vector<Gnss_Synchro>::const_iterator it;
             for (it = data.begin(); it != data.end(); it++)
                 {
@@ -617,21 +622,24 @@ void hybrid_observables_gs::set_tag_timestamp_in_sdr_timeframe(const std::vector
                             break;
                         }
                 }
-
+            if (fs < 1.0)
+                {
+                    return;
+                }
             double delta_rxtime_to_tag;
             GnssTime current_tag;
             do
                 {
                     current_tag = d_TimeChannelTagTimestamps.front();
                     delta_rxtime_to_tag = (static_cast<double>(rx_clock) / fs) - current_tag.rx_time;  // delta time relative to receiver's start time
-                    if (delta_rxtime_to_tag >= 0)
+                    if (delta_rxtime_to_tag >= 0.0)
                         {
                             d_TimeChannelTagTimestamps.pop();
                         }
                 }
-            while (delta_rxtime_to_tag >= 0.1 and !d_TimeChannelTagTimestamps.empty());
+            while (delta_rxtime_to_tag >= 0.1 && !d_TimeChannelTagTimestamps.empty());
 
-            if (delta_rxtime_to_tag >= 0 and delta_rxtime_to_tag <= 0.1)
+            if (delta_rxtime_to_tag >= 0.0 && delta_rxtime_to_tag <= 0.1)
                 {
                     // std::cout << "[Time ch][" << delta_rxtime_to_tag
                     //           << "] OBS RX TimeTag Week: " << current_tag.week

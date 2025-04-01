@@ -9,15 +9,15 @@
 #if defined(CPU_FEATURES_OS_WINDOWS)
 #include "internal/windows_utils.h"
 #endif  // CPU_FEATURES_OS_WINDOWS
-#if defined(CPU_FEATURES_OS_FREEBSD) || defined(CPU_FEATURES_OS_LINUX)
+#if defined(CPU_FEATURES_OS_FREEBSD) || defined(CPU_FEATURES_OS_OPENBSD) || defined(CPU_FEATURES_OS_LINUX)
 #include "internal/cpuid_aarch64.h"
-#endif  // defined(CPU_FEATURES_OS_FREEBSD) || defined(CPU_FEATURES_OS_LINUX)
+#endif  // defined(CPU_FEATURES_OS_FREEBSD) || defined(CPU_FEATURES_OS_OPENBSD) || defined(CPU_FEATURES_OS_LINUX)
 
 namespace cpu_features
 {
 class FakeCpuAarch64
 {
-#if defined(CPU_FEATURES_OS_FREEBSD) || defined(CPU_FEATURES_OS_LINUX)
+#if defined(CPU_FEATURES_OS_FREEBSD) || defined(CPU_FEATURES_OS_OPENBSD) || defined(CPU_FEATURES_OS_LINUX)
 public:
     uint64_t GetMidrEl1() const { return _midr_el1; }
 
@@ -87,11 +87,8 @@ static FakeCpuAarch64& cpu()
 }
 
 // Define OS dependent mock functions
-#if defined(CPU_FEATURES_OS_FREEBSD) || defined(CPU_FEATURES_OS_LINUX)
-extern "C" uint64_t GetMidrEl1(void)
-{
-    return cpu().GetMidrEl1();
-}
+#if defined(CPU_FEATURES_OS_FREEBSD) || defined(CPU_FEATURES_OS_OPENBSD) || defined(CPU_FEATURES_OS_LINUX)
+extern "C" uint64_t GetMidrEl1(void) { return cpu().GetMidrEl1(); }
 #elif defined(CPU_FEATURES_OS_MACOS)
 extern "C" bool GetDarwinSysCtlByName(const char* name)
 {
@@ -137,7 +134,7 @@ TEST_F(CpuidAarch64Test, Aarch64FeaturesEnum)
     const char* last_name = GetAarch64FeaturesEnumName(AARCH64_LAST_);
     EXPECT_STREQ(last_name, "unknown_feature");
     for (int i = static_cast<int>(AARCH64_FP);
-         i != static_cast<int>(AARCH64_LAST_); ++i)
+        i != static_cast<int>(AARCH64_LAST_); ++i)
         {
             const auto feature = static_cast<Aarch64FeaturesEnum>(i);
             const char* name = GetAarch64FeaturesEnumName(feature);
@@ -148,7 +145,7 @@ TEST_F(CpuidAarch64Test, Aarch64FeaturesEnum)
 }
 
 // AT_HWCAP tests
-#if defined(CPU_FEATURES_OS_LINUX) || defined(CPU_FEATURES_OS_FREEBSD)
+#if defined(CPU_FEATURES_OS_LINUX) || defined(CPU_FEATURES_OS_FREEBSD) || defined(CPU_FEATURES_OS_OPENBSD)
 TEST_F(CpuidAarch64Test, FromHardwareCap)
 {
     ResetHwcaps();
@@ -218,7 +215,7 @@ TEST_F(CpuidAarch64Test, FromHardwareCap2)
     EXPECT_FALSE(info.features.dgh);
     EXPECT_FALSE(info.features.rng);
 }
-#endif  // defined(CPU_FEATURES_OS_LINUX) || defined(CPU_FEATURES_OS_FREEBSD)
+#endif  // defined(CPU_FEATURES_OS_LINUX) || defined(CPU_FEATURES_OS_FREEBSD) || defined(CPU_FEATURES_OS_OPENBSD)
 
 // OS dependent tests
 #if defined(CPU_FEATURES_OS_LINUX)
@@ -324,6 +321,26 @@ CPU revision    : 3)");
     EXPECT_FALSE(info.features.smebi32i32);
     EXPECT_FALSE(info.features.smeb16b16);
     EXPECT_FALSE(info.features.smef16f16);
+    EXPECT_FALSE(info.features.mops);
+    EXPECT_FALSE(info.features.hbc);
+    EXPECT_FALSE(info.features.sveb16b16);
+    EXPECT_FALSE(info.features.lrcpc3);
+    EXPECT_FALSE(info.features.lse128);
+    EXPECT_FALSE(info.features.fpmr);
+    EXPECT_FALSE(info.features.lut);
+    EXPECT_FALSE(info.features.faminmax);
+    EXPECT_FALSE(info.features.f8cvt);
+    EXPECT_FALSE(info.features.f8fma);
+    EXPECT_FALSE(info.features.f8dp4);
+    EXPECT_FALSE(info.features.f8dp2);
+    EXPECT_FALSE(info.features.f8e4m3);
+    EXPECT_FALSE(info.features.f8e5m2);
+    EXPECT_FALSE(info.features.smelutv2);
+    EXPECT_FALSE(info.features.smef8f16);
+    EXPECT_FALSE(info.features.smef8f32);
+    EXPECT_FALSE(info.features.smesf8fma);
+    EXPECT_FALSE(info.features.smesf8dp4);
+    EXPECT_FALSE(info.features.smesf8dp2);
 }
 #elif defined(CPU_FEATURES_OS_MACOS)
 TEST_F(CpuidAarch64Test, FromDarwinSysctlFromName)
@@ -411,7 +428,7 @@ TEST_F(CpuidAarch64Test, WINDOWS_AARCH64_RPI4)
     EXPECT_FALSE(info.features.jscvt);
     EXPECT_FALSE(info.features.lrcpc);
 }
-#elif defined(CPU_FEATURES_OS_FREEBSD)
+#elif defined(CPU_FEATURES_OS_FREEBSD) || defined(CPU_FEATURES_OS_OPENBSD)
 TEST_F(CpuidAarch64Test, MrsMidrEl1_RPI4)
 {
     ResetHwcaps();

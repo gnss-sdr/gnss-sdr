@@ -7,6 +7,10 @@
 # Avoid using the BLAS and LAPACK implementations that comes with the Accelerate
 # framework, which causes a bug when the BeiDou constellation is enabled
 
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
+endif()
+
 if(NOT BLAS_ROOT)
     set(BLAS_ROOT_USER_DEFINED /usr/local/lib)
 else()
@@ -24,8 +28,8 @@ find_library(BLAS_LIBRARIES
     PATHS
         ${BLAS_ROOT_USER_DEFINED}
         ${BLAS_ROOT_USER_DEFINED}/lapack
-        /opt/local/lib/lapack
-        /opt/local/lib/
+        ${GNSSSDR_LIB_PATHS}/lapack
+        ${GNSSSDR_LIB_PATHS}
         /usr/local/opt/lapack/lib
         /opt/homebrew/opt/lapack/lib
     NO_DEFAULT_PATH
@@ -46,7 +50,7 @@ find_library(LAPACK_LIBRARIES
     PATHS
         ${BLAS_ROOT_USER_DEFINED}
         ${BLAS_ROOT_USER_DEFINED}/lapack
-        /opt/local/lib/lapack
+        ${GNSSSDR_LIB_PATHS}/lapack
         /usr/local/opt/lapack/lib
         /opt/homebrew/opt/lapack/lib
     NO_DEFAULT_PATH

@@ -20,9 +20,13 @@
 #include "rtl_tcp_commands.h"
 #include <boost/bind/bind.hpp>
 #include <boost/thread/thread.hpp>
-#include <glog/logging.h>
 #include <map>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 namespace ip = boost::asio::ip;
 
@@ -64,9 +68,11 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
         {
             lookup_[i] = (static_cast<float>(i & 0xff) - 127.4F) * (1.0F / 128.0F);
         }
-
-    // 2. Set socket options
+#if BOOST_ASIO_USE_FROM_STRING
     ip::address addr = ip::address::from_string(address, ec);
+#else
+    ip::address addr = ip::make_address(address, ec);
+#endif
     if (ec)
         {
             std::cout << address << " is not an IP address\n";
@@ -74,20 +80,22 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
             return;
         }
     ip::tcp::endpoint ep(addr, port);
-    socket_.open(ep.protocol(), ec);
+
+    // 2. Set socket options
+    socket_.open(ep.protocol(), ec);  // NOLINT(bugprone-unused-return-value)
     if (ec)
         {
             std::cout << "Failed to open socket.\n";
             LOG(ERROR) << "Failed to open socket.";
         }
 
-    socket_.set_option(boost::asio::socket_base::reuse_address(true), ec);
+    socket_.set_option(boost::asio::socket_base::reuse_address(true), ec);  // NOLINT(bugprone-unused-return-value)
     if (ec)
         {
             std::cout << "Failed to set reuse address option: " << ec << '\n';
             LOG(WARNING) << "Failed to set reuse address option";
         }
-    socket_.set_option(boost::asio::socket_base::linger(true, 0), ec);
+    socket_.set_option(boost::asio::socket_base::linger(true, 0), ec);  // NOLINT(bugprone-unused-return-value)
     if (ec)
         {
             std::cout << "Failed to set linger option: " << ec << '\n';
@@ -95,8 +103,7 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
         }
 
     // 3. Connect socket
-
-    socket_.connect(ep, ec);
+    socket_.connect(ep, ec);  // NOLINT(bugprone-unused-return-value)
     if (ec)
         {
             std::cout << "Failed to connect to " << addr << ":" << port
@@ -109,7 +116,7 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
     LOG(INFO) << "Connected to " << addr << ":" << port;
 
     // 4. Set nodelay
-    socket_.set_option(ip::tcp::no_delay(true), ec);
+    socket_.set_option(ip::tcp::no_delay(true), ec);  // NOLINT(bugprone-unused-return-value)
     if (ec)
         {
             std::cout << "Failed to set no delay option.\n";
@@ -312,7 +319,7 @@ void rtl_tcp_signal_source_c::handle_read(const boost::system::error_code &ec,
                         unread_++;
                     }
             }
-            // let woker know that more data is available
+            // let worker know that more data is available
             not_empty_.notify_one();
 // Read some more
 #if USE_BOOST_BIND_PLACEHOLDERS

@@ -58,8 +58,8 @@ jobs:
             CXX: ${{ matrix.compiler.cxx }}
           shell: /bin/sh
           install: |
-            apt-get update -q -y
-            apt-get install -q -y ${{ matrix.compiler.name }} git ninja-build cmake \
+            apt update
+            apt install -y ${{ matrix.compiler.name }} git ninja-build cmake \
             libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev \
             libboost-thread-dev libboost-chrono-dev libboost-serialization-dev \
             liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev \

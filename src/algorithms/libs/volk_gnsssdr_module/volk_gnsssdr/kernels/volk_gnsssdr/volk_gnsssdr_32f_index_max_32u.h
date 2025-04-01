@@ -534,4 +534,48 @@ static inline void volk_gnsssdr_32f_index_max_32u_neon(uint32_t* target, const f
 
 #endif /* LV_HAVE_NEON */
 
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+
+static inline void volk_gnsssdr_32f_index_max_32u_rvv(uint32_t* target, const float* src0, uint32_t num_points)
+{
+    if (num_points == 0)
+        {
+            return;
+        }
+    float max_val = src0[0];
+    uint32_t max_idx = 0;
+    size_t vl;
+
+    // Process in chunks
+    for (size_t i = 0; i < num_points; i += vl)
+        {
+            // Set vector length for this iteration
+            vl = __riscv_vsetvl_e32m1(num_points - i);
+
+            // Load vector of values
+            vfloat32m1_t v_vals = __riscv_vle32_v_f32m1(&src0[i], vl);
+
+            // Process each element in the vector
+            for (size_t j = 0; j < vl; j++)
+                {
+                    float val = __riscv_vfmv_f_s_f32m1_f32(v_vals);
+                    if (val > max_val)
+                        {
+                            max_val = val;
+                            max_idx = i + j;
+                        }
+                    // Shift to next element by reloading
+                    if (j + 1 < vl)
+                        {
+                            v_vals = __riscv_vle32_v_f32m1(&src0[i + j + 1], vl - j - 1);
+                        }
+                }
+        }
+
+    target[0] = max_idx;
+}
+
+#endif /* LV_HAVE_RVV */
+
 #endif /* INCLUDED_volk_gnsssdr_32f_index_max_32u_H */

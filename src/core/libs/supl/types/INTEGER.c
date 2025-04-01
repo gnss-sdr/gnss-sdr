@@ -294,7 +294,7 @@ static int INTEGER__compar_enum2value(const void *kp, const void *am)
 
     /* Compare strings */
     for (ptr = key->start, end = key->stop, name = el->enum_name; ptr < end;
-         ptr++, name++)
+        ptr++, name++)
         {
             if (*ptr != *name)
                 {

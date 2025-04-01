@@ -18,11 +18,14 @@
 #define GNSS_SDR_RTKLIB_PVT_GS_H
 
 #include "gnss_block_interface.h"
+#include "gnss_sdr_make_unique.h"
 #include "gnss_synchro.h"
 #include "gnss_time.h"
+#include "osnma_data.h"
 #include "rtklib.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/interprocess/ipc/message_queue.hpp>
 #include <gnuradio/sync_block.h>  // for sync_block
 #include <gnuradio/types.h>       // for gr_vector_const_void_star
 #include <pmt/pmt.h>              // for pmt_t
@@ -34,8 +37,8 @@
 #include <map>                    // for map
 #include <memory>                 // for shared_ptr, unique_ptr
 #include <queue>                  // for std::queue
+#include <set>                    // for std::set
 #include <string>                 // for string
-#include <sys/types.h>            // for key_t
 #include <vector>                 // for vector
 
 /** \addtogroup PVT
@@ -144,6 +147,8 @@ private:
 
     void msg_handler_has_data(const pmt::pmt_t& msg);
 
+    void msg_handler_osnma(const pmt::pmt_t& msg);
+
     void initialize_and_apply_carrier_phase_offset();
 
     void apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observables_map,
@@ -162,13 +167,7 @@ private:
 
     std::vector<std::string> split_string(const std::string& s, char delim) const;
 
-    typedef struct
-    {
-        long mtype;  // NOLINT(google-runtime-int)
-        double ttff;
-    } d_ttff_msgbuf;
-    bool send_sys_v_ttff_msg(d_ttff_msgbuf ttff) const;
-
+    bool send_ttff_msg(double ttff) const;
     bool save_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
     bool load_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
 
@@ -176,6 +175,8 @@ private:
 
     std::shared_ptr<Rtklib_Solver> d_internal_pvt_solver;
     std::shared_ptr<Rtklib_Solver> d_user_pvt_solver;
+
+    std::unique_ptr<boost::interprocess::message_queue> d_mq;
 
     std::unique_ptr<Rinex_Printer> d_rp;
     std::unique_ptr<Kml_Printer> d_kml_dump;
@@ -191,6 +192,7 @@ private:
     std::chrono::time_point<std::chrono::system_clock> d_start;
     std::chrono::time_point<std::chrono::system_clock> d_end;
 
+    std::string d_queue_name;
     std::string d_dump_filename;
     std::string d_xml_base_path;
     std::string d_local_time_str;
@@ -201,6 +203,7 @@ private:
     std::map<int, Gnss_Synchro> d_gnss_observables_map;
     std::map<int, Gnss_Synchro> d_gnss_observables_map_t0;
     std::map<int, Gnss_Synchro> d_gnss_observables_map_t1;
+    std::map<uint32_t, std::set<uint32_t>> d_auth_nav_data_map;
 
     std::queue<GnssTime> d_TimeChannelTagTimestamps;
 
@@ -232,9 +235,6 @@ private:
     double d_rx_time;
     uint64_t d_local_counter_ms;
     uint64_t d_timestamp_rx_clock_offset_correction_msg_ms;
-
-    key_t d_sysv_msg_key;
-    int d_sysv_msqid;
 
     int32_t d_rinexobs_rate_ms;
     int32_t d_rtcm_MT1045_rate_ms;  // Galileo Broadcast Ephemeris
@@ -278,6 +278,7 @@ private:
     bool d_log_timetag;
     bool d_use_has_corrections;
     bool d_use_unhealthy_sats;
+    bool d_osnma_strict;
 };
 
 

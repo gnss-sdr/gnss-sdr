@@ -130,14 +130,14 @@ public:
      * \brief Restart acquisition algorithm
      */
     void reset() override;
-    void set_state(int state __attribute__((unused))) override{};
+    void set_state(int state __attribute__((unused))) override {};
 
     /*!
      * \brief Stop running acquisition
      */
     void stop_acquisition() override;
 
-    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override {};
 
 private:
     pcps_assisted_acquisition_cc_sptr acquisition_cc_;

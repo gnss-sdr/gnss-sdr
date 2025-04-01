@@ -16,9 +16,14 @@
  */
 
 #include "viterbi_decoder_sbas.h"
-#include <glog/logging.h>
 #include <algorithm>  // for fill_n
 #include <ostream>    // for operator<<, basic_ostream, char_traits
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 // logging
 #define EVENT 2   // logs important events which don't occur every block
@@ -272,7 +277,7 @@ int Viterbi_Decoder_Sbas::do_tb_and_decode(int traceback_length, int requested_d
     VLOG(BLOCK) << "overstep_length=" << overstep_length;
 
     for (it = d_trellis_paths.begin() + traceback_length;
-         it < d_trellis_paths.begin() + traceback_length + overstep_length; ++it)
+        it < d_trellis_paths.begin() + traceback_length + overstep_length; ++it)
         {
             state = it->get_anchestor_state_of_current_state(state);
         }

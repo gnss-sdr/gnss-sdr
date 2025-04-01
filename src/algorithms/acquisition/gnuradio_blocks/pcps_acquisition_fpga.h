@@ -29,11 +29,11 @@
 #include "acq_conf_fpga.h"
 #include "channel_fsm.h"
 #include "fpga_acquisition.h"
-#include <glog/logging.h>
 #include <cstdint>  // for uint32_t
 #include <memory>   // for shared_ptr
 #include <string>   // for string
-#include <utility>  // for move
+#include <utility>  // for for std::move, std::pair
+#include <vector>   // for std::vector
 
 /** \addtogroup Acquisition
  * \{ */
@@ -47,7 +47,7 @@ class pcps_acquisition_fpga;
 
 using pcps_acquisition_fpga_sptr = std::shared_ptr<pcps_acquisition_fpga>;
 
-pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(Acq_Conf_Fpga& conf_);
+pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(Acq_Conf_Fpga* conf_, uint32_t acq_buff_num, std::vector<std::pair<uint32_t, uint32_t>>& downsampling_filter_specs, uint32_t& max_FFT_size);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition that uses the FPGA.
@@ -156,14 +156,7 @@ public:
      * \brief Set Doppler center frequency for the grid search. It will refresh the Doppler grid.
      * \param doppler_center - Frequency center of the search grid [Hz].
      */
-    inline void set_doppler_center(int32_t doppler_center)
-    {
-        if (doppler_center != d_doppler_center)
-            {
-                DLOG(INFO) << " Doppler assistance for Channel: " << d_channel << " => Doppler: " << doppler_center << "[Hz]";
-                d_doppler_center = doppler_center;
-            }
-    }
+    void set_doppler_center(int32_t doppler_center);
 
     /*!
      * \brief This function triggers a HW reset of the FPGA PL.
@@ -176,8 +169,8 @@ public:
     void stop_acquisition();
 
 private:
-    friend pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(Acq_Conf_Fpga& conf_);
-    explicit pcps_acquisition_fpga(Acq_Conf_Fpga& conf_);
+    friend pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(Acq_Conf_Fpga* conf, uint32_t acq_buff_num, std::vector<std::pair<uint32_t, uint32_t>>& downsampling_filter_specs, uint32_t& max_FFT_size);
+    explicit pcps_acquisition_fpga(Acq_Conf_Fpga* conf, uint32_t acq_buff_num, std::vector<std::pair<uint32_t, uint32_t>>& downsampling_filter_specs, uint32_t& max_FFT_size);
 
     void send_negative_acquisition();
     void send_positive_acquisition();
@@ -187,7 +180,7 @@ private:
     std::shared_ptr<Fpga_Acquisition> d_acquisition_fpga;
     std::weak_ptr<ChannelFsm> d_channel_fsm;
 
-    Acq_Conf_Fpga d_acq_parameters;
+    Acq_Conf_Fpga* d_acq_parameters;
 
     Gnss_Synchro* d_gnss_synchro;
 
@@ -207,10 +200,7 @@ private:
     uint32_t d_channel;
     uint32_t d_doppler_step;
     uint32_t d_doppler_max;
-    uint32_t d_fft_size;
     uint32_t d_num_doppler_bins;
-    uint32_t d_downsampling_factor;
-    uint32_t d_select_queue_Fpga;
     uint32_t d_total_block_exp;
     uint32_t d_num_doppler_bins_step2;
     uint32_t d_max_num_acqs;

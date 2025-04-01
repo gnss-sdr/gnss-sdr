@@ -8,7 +8,7 @@
  * This block takes in a signal stream and performs direct resampling.
  * The theory behind this block can be found in Chapter 7.5 of the following
  * book:
- * R. Lyons, Undestanding Digital Signal Processing, 3rd ed., Pearson Education,
+ * R. Lyons, Understanding Digital Signal Processing, 3rd ed., Pearson Education,
  * 2010.
  *
  * -----------------------------------------------------------------------------

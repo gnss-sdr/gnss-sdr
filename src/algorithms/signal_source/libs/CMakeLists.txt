@@ -7,33 +7,49 @@
 
 set(OPT_SIGNAL_SOURCE_LIB_SOURCES "")
 set(OPT_SIGNAL_SOURCE_LIB_HEADERS "")
+
 if(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
     set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} ad9361_manager.cc)
-    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_SOURCES} ad9361_manager.h)
+    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} ad9361_manager.h)
 endif()
 
-if(ENABLE_FPGA OR ENABLE_AD9361)
+if(ENABLE_MAX2771)
+    set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} fpga_spidev.cc)
+    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} fpga_spidev.h)
+endif()
+
+if(ENABLE_FPGA)
     set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} fpga_switch.cc)
     set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} fpga_switch.h)
     set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} fpga_dynamic_bit_selection.cc)
     set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} fpga_dynamic_bit_selection.h)
-    set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} fpga_buffer_monitor.cc)
-    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} fpga_buffer_monitor.h)
+endif()
+
+if(ENABLE_DMA_PROXY)
     set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} fpga_dma-proxy.cc)
     set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} fpga_dma-proxy.h)
 endif()
 
-
-if(ENABLE_PLUTOSDR)
-    set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} ad936x_iio_samples.cc)
-    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_SOURCES} ad936x_iio_samples.h)
-    set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} ad936x_iio_custom.cc)
-    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_SOURCES} ad936x_iio_custom.h)
-    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_SOURCES} pps_samplestamp.h)
-    set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} ppstcprx.cc)
-    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_SOURCES} ppstcprx.h)
+if((ENABLE_FPGA AND ENABLE_AD9361) OR ENABLE_MAX2771)
+    set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} fpga_buffer_monitor.cc)
+    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} fpga_buffer_monitor.h)
 endif()
 
+if(ENABLE_PLUTOSDR OR ENABLE_AD936X_SDR)
+    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} ad936x_iio_samples.h)
+    set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} ad936x_iio_custom.cc)
+    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} ad936x_iio_custom.h)
+    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} pps_samplestamp.h)
+    set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} ppstcprx.cc)
+    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} ppstcprx.h)
+endif()
+
+if(ENABLE_ION)
+    set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} ion_gsms_chunk_data.cc)
+    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} ion_gsms_chunk_data.h)
+    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} ion_gsms_stream_encodings.h)
+    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} ion_gsms_chunk_unpacking_ctx.h)
+endif()
 
 set(SIGNAL_SOURCE_LIB_SOURCES
     rtl_tcp_commands.cc
@@ -74,10 +90,15 @@ target_link_libraries(signal_source_libs
         Boost::headers
         Gnuradio::runtime
     PRIVATE
-        Gflags::gflags
-        Glog::glog
         core_libs
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(signal_source_libs PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(signal_source_libs PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(signal_source_libs PRIVATE absl::flags absl::log)
+endif()
 
 target_include_directories(signal_source_libs
     PUBLIC
@@ -92,7 +113,7 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
-if(ENABLE_FMCOMMS2 OR ENABLE_AD9361 OR ENABLE_PLUTOSDR)
+if(ENABLE_FMCOMMS2 OR ENABLE_AD9361 OR ENABLE_PLUTOSDR OR ENABLE_AD936X_SDR)
     target_link_libraries(signal_source_libs
         PUBLIC
             Iio::iio
@@ -113,6 +134,10 @@ if(ENABLE_FPGA OR ENABLE_AD9361)
         PUBLIC
             algorithms_libs
         )
+endif()
+
+if(ENABLE_ION)
+    target_link_libraries(signal_source_libs PUBLIC ION::ion algorithms_libs)
 endif()
 
 if(ENABLE_CLANG_TIDY)

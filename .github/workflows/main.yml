@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2020-2022 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+# SPDX-FileCopyrightText: 2020-2024 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 name: Simple CI
 
 on:
@@ -18,9 +18,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: install dependencies
         run: |
-          sudo apt-get update -y
+          sudo apt update
           sudo apt install -y libunwind-dev
-          sudo apt-get install -y --no-install-recommends ninja-build cmake \
+          sudo apt install -y --no-install-recommends ninja-build cmake \
           libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev \
           libboost-thread-dev libboost-chrono-dev libboost-serialization-dev \
           liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev \
@@ -28,18 +28,23 @@ jobs:
           libgnutls-openssl-dev libmatio-dev googletest protobuf-compiler libprotobuf-dev \
           python3-mako liborc-0.4-dev
       - name: configure
-        run: cd build && cmake -GNinja ..
+        run: cmake -S . -B build -GNinja
       - name: build
-        run: cd build && ninja
+        run: cmake --build build
       - name: check
-        run: cd build && ninja check && ../install/volk_gnsssdr_profile && ../install/run_tests
+        run: cmake --build build --target check && ./install/volk_gnsssdr_profile && ./install/run_tests
       - name: default position_test
-        run: cd build && cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON .. && ninja && ../install/position_test
+        run: |
+          cmake -S . -B build -DENABLE_SYSTEM_TESTING_EXTRA=ON -DENABLE_UNIT_TESTING_EXTRA=OFF && \
+          cmake --build build && ./install/position_test && ./install/run_tests --gtest_filter=Osnma*
 
   build-macos:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'      
       - name: install dependencies
         run: |
           brew update
@@ -53,21 +58,27 @@ jobs:
           rm /usr/local/bin/pydoc3.1* || true
           rm /usr/local/bin/python3.1* || true
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-          brew install ninja hdf5 automake armadillo lapack libmatio \
-          gflags glog gnuradio log4cpp openssl pugixml protobuf python-mako
+          brew link --overwrite python@3.12
+          brew install ninja hdf5 automake armadillo lapack libmatio gnuradio openssl pugixml protobuf boost
+          pip3 install mako
       - name: configure
-        run: cd build && cmake -GNinja ..
+        run: cmake -S . -B build -GNinja
       - name: build
-        run: cd build && ninja
+        run: cmake --build build
       - name: check
-        run: cd build && ninja check && ../install/volk_gnsssdr_profile && ../install/run_tests
+        run: cmake --build build --target check && ./install/volk_gnsssdr_profile && ./install/run_tests
       - name: default position_test
-        run: cd build && cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON .. && ninja && ../install/position_test
+        run: |
+          cmake -S . -B build -DENABLE_SYSTEM_TESTING_EXTRA=ON -DENABLE_UNIT_TESTING_EXTRA=OFF && \
+          cmake --build build && ./install/position_test && ./install/run_tests --gtest_filter=Osnma*
 
   build-macos-xcode:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: install dependencies
         run: |
           brew update
@@ -81,40 +92,49 @@ jobs:
           rm /usr/local/bin/pydoc3.1* || true
           rm /usr/local/bin/python3.1* || true
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-          brew install ninja pkg-config hdf5 automake armadillo lapack libmatio \
-          gflags glog gnuradio log4cpp openssl pugixml protobuf python-mako
+          brew link --overwrite python@3.12
+          brew install ninja pkg-config hdf5 automake armadillo lapack libmatio gnuradio openssl pugixml protobuf boost
+          pip3 install mako          
       - name: configure
-        run: cd build && cmake -GXcode ..
+        run: cmake -S . -B build -GXcode
       - name: build
-        run: cd build && xcodebuild -configuration Release
+        run: cmake --build build --config Release
       - name: check
         run: |
-          cd build
-          xcodebuild -configuration Release -target check
-          ../install/volk_gnsssdr_profile
-          ../install/run_tests
+          cmake --build build --config Release --target check
+          ./install/volk_gnsssdr_profile
+          ./install/run_tests
       - name: default position_test
         run: |
-          cd build
-          cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON ..
-          xcodebuild -configuration Release -target position_test
-          ../install/position_test
+          cmake -S . -B build -DENABLE_SYSTEM_TESTING_EXTRA=ON -DENABLE_UNIT_TESTING_EXTRA=OFF
+          cmake --build build --config Release --target position_test
+          ./install/position_test
+          ./install/run_tests --gtest_filter=Osnma*
 
   clang-format:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        path:
+          - 'src'
+          - 'tests'
+          - 'utils'
     steps:
       - uses: actions/checkout@v4
       - name: run clang-format
-        uses: jidicula/clang-format-action@v4.11.0
+        uses: jidicula/clang-format-action@v4.14.0
         with:
-          clang-format-version: "15"
-          check-path: "src"
-          exclude-regex: '(libs\/gsl\/)|^.*\.(cu|proto)$'
+          clang-format-version: "19"
+          check-path: ${{ matrix.path }}
+          exclude-regex: '(libs\/gsl\/)|(tmpl)|(cpu_features)|^.*\.(cu|proto)$'
 
   clang-tidy:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: install dependencies
         run: |
           brew update
@@ -128,15 +148,16 @@ jobs:
           rm /usr/local/bin/pydoc3.1* || true
           rm /usr/local/bin/python3.1* || true
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-          brew install llvm pkg-config hdf5 armadillo lapack gflags glog gnuradio libmatio \
-          log4cpp openssl pugixml protobuf python-mako
+          brew link --overwrite python@3.12
+          brew install ninja pkg-config hdf5 automake armadillo lapack libmatio gnuradio openssl pugixml protobuf llvm boost
+          pip3 install mako
           ln -s $(brew --prefix llvm)/bin/clang-tidy /usr/local/bin
           ln -s $(brew --prefix llvm)/bin/clang-apply-replacements /usr/local/bin
-          ln -s $(brew --prefix llvm)/bin/run-clang-tidy /usr/local/bin
+          ln -s $(brew --prefix llvm)/bin/run-clang-tidy.py /usr/local/bin
       - name: Prepare run
-        run: cd build && cmake .. && make volk_gnsssdr_module gtest-1.13.0 core_monitor core_libs pvt_libs
+        run: cmake -S . -B build && cmake --build build --target volk_gnsssdr_module gtest-1.16.0 core_monitor core_libs pvt_libs
       - name: run clang-tidy
-        run: cd build && run-clang-tidy -fix
+        run: cd build && /opt/homebrew/opt/llvm/bin/run-clang-tidy -fix
       - name: check
         run: |
           git diff > clang_tidy.patch
@@ -149,11 +170,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: install dependencies
-        run: sudo apt-get install python3-pip && sudo pip3 install cpplint
+        run: sudo apt install python3-pip && sudo pip3 install cpplint
       - name: run checks
-        run: "find ./src/ -iname *.h -o -iname *.cc | xargs cpplint
-          --filter=-,+build/class,+build/c++14,+build/deprecated,+build/explicit_make_pair,\
-          +build/include_what_you_use,+build/printf_format,+build/storage_class,\
+        run: "find ./src/ ./utils ./tests -iname *.h -o -iname *.cc | xargs cpplint
+          --filter=-,+build/class,+build/deprecated,+build/explicit_make_pair,\
+          +build/forward_decl,+build/printf_format,+build/storage_class,\
           +readability/constructors,+readability/namespace,+readability/newline,\
           +readability/utf8,+runtime/casting,+runtime/explicit,\
           +runtime/indentation_namespace,+runtime/init,+runtime/invalid_increment,\
@@ -163,7 +184,7 @@ jobs:
           +whitespace/end-of-line,+whitespace/ending-newline,+whitespace/semicolon,\
           +whitespace/tab --exclude=./src/core/interfaces/gnss_block_interface.h
           --exclude=./src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/cpu_features/test/hwcaps_for_testing.*
-          --exclude=./src/utils/nav-listener/build/nav_message.pb.h"
+          --exclude=./utils/nav-listener/build/nav_message.pb.h"
 
   prettier-markdown:
     runs-on: ubuntu-latest
@@ -180,7 +201,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: install dependencies
         run: |
-          sudo python -m pip install --upgrade pip
           sudo pip install cmakelint
       - name: check CMake scripts
         run: find . -iname "CMakeLists.txt" -o -iname "*.cmake" | xargs cmakelint --filter=-linelength,-readability/wonkycase
@@ -189,21 +209,21 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install mako
       - name: configure
         shell: powershell
-        run: cd build; cmake -G "Visual Studio 17 2022" ..\src\algorithms\libs\volk_gnsssdr_module\volk_gnsssdr
+        run: cmake -S src\algorithms\libs\volk_gnsssdr_module\volk_gnsssdr -B build -G "Visual Studio 17 2022"
       - name: build
         run: cmake --build build --config Release
       - name: test
         shell: powershell
-        run: cd build; ctest -C Release
+        run: ctest -C Release --test-dir build
       - name: install
         run: cmake --install build
       - name: run profile
@@ -216,11 +236,11 @@ jobs:
       - name: install dependencies
         run: sudo apt install python3-mako liborc-dev
       - name: configure
-        run: cd build && cmake ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+        run: cmake -S src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr -B build
       - name: build
-        run: cd build && make -j2
+        run: cmake --build build
       - name: install
-        run: cd build && sudo make install && sudo ldconfig
+        run: sudo cmake --install build && sudo ldconfig
       - name: test
         run: volk_gnsssdr_profile
 
@@ -228,29 +248,39 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - name: install dependencies
-        run: pip3 install mako
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mako
       - name: configure
-        run: cd build && cmake ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+        run: cmake -S src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr -B build
       - name: build
-        run: cd build && make -j2 && sudo make install
+        run: cmake --build build && sudo cmake --install build
       - name: test
-        run: cd build && ctest -C Release --exclude-regex volk_gnsssdr_32fc_32f_rotator_dotprodxnpuppet_32fc
+        run: ctest -C Release --test-dir build --exclude-regex volk_gnsssdr_32fc_32f_rotator_dotprodxnpuppet_32fc
 
   volk-gnsssdr-macos-xcode:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - name: install dependencies
-        run: pip3 install mako
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mako
       - name: configure
-        run: cd build && cmake -GXcode ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+        run: cmake -S src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr -B build -GXcode
       - name: build
-        run: cd build && xcodebuild -configuration Release
+        run: cmake --build build --config Release
       - name: install
-        run: cd build && sudo xcodebuild -configuration Release -target install
+        run: sudo cmake --install build
       - name: test
-        run: cd build && ctest -C Release --exclude-regex volk_gnsssdr_32fc_32f_rotator_dotprodxnpuppet_32fc
+        run: ctest -C Release --test-dir build --exclude-regex --exclude-regex volk_gnsssdr_32fc_32f_rotator_dotprodxnpuppet_32fc
 
   shellcheck:
     runs-on: ubuntu-latest
@@ -259,7 +289,7 @@ jobs:
       - name: install dependencies
         run: sudo apt install shellcheck
       - name: check scripts
-        run: shellcheck src/utils/scripts/*
+        run: shellcheck utils/scripts/*
 
   REUSE-compliance:
     runs-on: ubuntu-latest

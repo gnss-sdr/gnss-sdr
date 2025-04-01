@@ -3825,7 +3825,7 @@ int decode_msm7(rtcm_t *rtcm, int sys)
             i += 10;
         }
     for (j = 0; j < ncell; j++)
-        { /* half-cycle amiguity */
+        { /* half-cycle ambiguity */
             half[j] = getbitu(rtcm->buff, i, 1);
             i += 1;
         }

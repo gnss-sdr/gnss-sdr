@@ -16,10 +16,14 @@
  */
 
 #include "signal_conditioner.h"
-#include <glog/logging.h>
 #include <stdexcept>
 #include <utility>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 // Constructor
 SignalConditioner::SignalConditioner(std::shared_ptr<GNSSBlockInterface> data_type_adapt,
@@ -59,7 +63,7 @@ void SignalConditioner::connect(gr::top_block_sptr top_block)
 
     if (in_filt_->item_size() == 0)
         {
-            throw std::invalid_argument("itemsize mismatch: Invalid input/ouput data type configuration for the InputFilter");
+            throw std::invalid_argument("itemsize mismatch: Invalid input/output data type configuration for the InputFilter");
         }
 
     const size_t data_type_adapter_output_size = data_type_adapt_->get_right_block()->output_signature()->sizeof_stream_item(0);
@@ -69,12 +73,12 @@ void SignalConditioner::connect(gr::top_block_sptr top_block)
 
     if (data_type_adapter_output_size != input_filter_input_size)
         {
-            throw std::invalid_argument("itemsize mismatch: Invalid input/ouput data type configuration for the DataTypeAdapter/InputFilter connection");
+            throw std::invalid_argument("itemsize mismatch: Invalid input/output data type configuration for the DataTypeAdapter/InputFilter connection");
         }
 
     if (input_filter_output_size != resampler_input_size)
         {
-            throw std::invalid_argument("itemsize mismatch: Invalid input/ouput data type configuration for the Input Filter/Resampler connection");
+            throw std::invalid_argument("itemsize mismatch: Invalid input/output data type configuration for the Input Filter/Resampler connection");
         }
 
     top_block->connect(data_type_adapt_->get_right_block(), 0, in_filt_->get_left_block(), 0);

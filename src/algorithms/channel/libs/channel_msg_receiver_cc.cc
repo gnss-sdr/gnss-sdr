@@ -17,11 +17,16 @@
 
 
 #include "channel_msg_receiver_cc.h"
-#include <glog/logging.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/io_signature.h>
 #include <cstdint>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if PMT_USES_BOOST_ANY
 #include <boost/any.hpp>

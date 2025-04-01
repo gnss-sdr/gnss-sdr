@@ -1,8 +1,12 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2011-2021 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2011-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
+
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
+endif()
 
 if(GNSSSIMULATOR_ROOT)
     set(GNSSSIMULATOR_ROOT_USER_DEFINED ${GNSSSIMULATOR_ROOT})
@@ -25,7 +29,8 @@ find_program(SW_GENERATOR_BIN gnss_sim
         ${GNSSSIMULATOR_ROOT_USER_DEFINED}
         /usr
         /usr/local
-        /opt/local
+        ${CMAKE_SYSTEM_PREFIX_PATH}
+        ${CMAKE_INSTALL_FULL_BINDIR}
     PATH_SUFFIXES bin
     ONLY_CMAKE_FIND_ROOT_PATH
 )

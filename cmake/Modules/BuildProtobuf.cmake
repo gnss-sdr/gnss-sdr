@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2023 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2023-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 # Downloads and builds the protoc compiler and static libraries of Protocol
@@ -13,7 +13,7 @@
 
 
 if(NOT GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION)
-    set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "25.0")
+    set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "30.2")
 endif()
 
 if(NOT GNSSSDR_BINARY_DIR)
@@ -55,6 +55,11 @@ list(APPEND UTF8_LIBRARIES
     ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}utf8_range${CMAKE_STATIC_LIBRARY_SUFFIX}
 )
 
+set(ABSL_OPTION "")
+if(CMAKE_VERSION VERSION_LESS "3.16" OR GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION VERSION_LESS "30.0")
+    set(ABSL_OPTION "-Dprotobuf_ABSL_PROVIDER=package")
+endif()
+
 ExternalProject_Add(protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
     PREFIX ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
     GIT_REPOSITORY https://github.com/protocolbuffers/protobuf
@@ -73,7 +78,7 @@ ExternalProject_Add(protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
         -DCMAKE_VISIBILITY_INLINES_HIDDEN=1
         -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
         -Dprotobuf_BUILD_TESTS=OFF
-        -Dprotobuf_ABSL_PROVIDER=package
+        ${ABSL_OPTION}
         ${USE_ZLIB}
     BUILD_COMMAND ${CMAKE_COMMAND}
         "--build" "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}"

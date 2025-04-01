@@ -1,18 +1,19 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2021 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2021-2025 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrFindPaths)
+endif()
 
 find_program(GNUPLOT_EXECUTABLE
     NAMES
         gnuplot
         pgnuplot
     PATHS
-        /usr/bin
-        /usr/local/bin
-        /opt/local/bin
+        ${GNSSSDR_BIN_PATHS}
     ONLY_CMAKE_FIND_ROOT_PATH
 )
 

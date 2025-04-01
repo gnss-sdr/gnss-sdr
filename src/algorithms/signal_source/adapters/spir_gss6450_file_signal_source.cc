@@ -19,12 +19,18 @@
 #include "spir_gss6450_file_signal_source.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_string_literals.h"
-#include <glog/logging.h>
 #include <exception>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/check.h>
+#include <absl/log/log.h>
+#endif
 
 using namespace std::string_literals;
 
@@ -48,8 +54,8 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInte
       enable_throttle_control_(configuration->property(role + ".enable_throttle_control", false)),
       endian_swap_(configuration->property(role + ".endian", false))
 {
-    const std::string default_filename("../data/my_capture.dat");
-    const std::string default_dump_filename("../data/my_capture_dump.dat");
+    const std::string default_filename("./my_capture.dat");
+    const std::string default_dump_filename("./my_capture_dump.dat");
     filename_ = configuration->property(role + ".filename", default_filename);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
 

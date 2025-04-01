@@ -57,10 +57,10 @@ public:
         return role_;
     }
 
-    //! Returns "GPS_L2_M_DLL_PLL_Tracking_Fpga"
+    //! Returns "GPS_L2_M_DLL_PLL_Tracking_FPGA"
     inline std::string implementation() override
     {
-        return "GPS_L2_M_DLL_PLL_Tracking_Fpga";
+        return "GPS_L2_M_DLL_PLL_Tracking_FPGA";
     }
 
     inline size_t item_size() override

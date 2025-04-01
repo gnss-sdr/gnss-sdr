@@ -83,7 +83,7 @@ public:
         assert(RF_channel >= 0);
         if (RF_channel == 0)
             {
-            };           // avoid unused param warning
+            };  // avoid unused param warning
         return nullptr;  // added to support raw array access (non pure virtual to allow left unimplemented)= 0;
     }
     virtual gr::basic_block_sptr get_right_block(int RF_channel)
@@ -91,14 +91,14 @@ public:
         assert(RF_channel >= 0);
         if (RF_channel == 0)
             {
-            };           // avoid unused param warning
+            };  // avoid unused param warning
         return nullptr;  // added to support raw array access (non pure virtual to allow left unimplemented)= 0;
     }
 
     /*!
      * \brief Start the flow of samples if needed.
      */
-    virtual void start(){};
+    virtual void start() {};
 };
 
 

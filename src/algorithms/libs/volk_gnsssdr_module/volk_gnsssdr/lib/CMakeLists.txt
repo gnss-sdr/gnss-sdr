@@ -4,6 +4,7 @@
 # SPDX-FileCopyrightText: 2010-2021 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
+include(XcodeRemoveWarningDuplicates)
 
 ########################################################################
 # header file detection
@@ -102,12 +103,27 @@ execute_process(
     OUTPUT_VARIABLE arch_flag_lines OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+try_compile(
+    HAVE_RVV_INTRINSICS
+    ${CMAKE_BINARY_DIR}
+    ${CMAKE_SOURCE_DIR}/cmake/Checks/check-rvv-intrinsics.c
+)
+if(HAVE_RVV_INTRINSICS)
+    message(STATUS "Checking RVV intrinsics - found")
+else()
+    message(STATUS "Checking RVV intrinsics - not found")
+endif()
+
 macro(check_arch arch_name)
     set(flags ${ARGN})
     set(have_${arch_name} TRUE)
+    string(SUBSTRING "${arch_name}" 0 2 arch_prefix)
     foreach(flag ${flags})
         if(MSVC AND (${flag} STREQUAL "/arch:SSE2" OR ${flag} STREQUAL "/arch:SSE"))
             # SSE/SSE2 is supported in MSVC since VS 2005 but flag not available when compiling 64-bit so do not check
+        elseif("${arch_prefix}" STREQUAL "rv" AND NOT HAVE_RVV_INTRINSICS)
+            message(STATUS "Skipping ${arch_name} due to missing RVV intrinsics support")
+            set(have_${arch_name} FALSE)
         else()
             include(CheckCXXCompilerFlag)
             set(have_flag have${flag})
@@ -256,22 +272,41 @@ endif()
 ########################################################################
 if(NOT CROSSCOMPILE_MULTILIB AND CPU_IS_x86)
     include(CheckTypeSize)
-    check_type_size("void*[8]" SIZEOF_CPU BUILTIN_TYPES_ONLY)
-    if(${SIZEOF_CPU} EQUAL 64)
-        overrule_arch(32 "CPU width is 64 bits")
-    endif()
-    if(${SIZEOF_CPU} EQUAL 32)
-        overrule_arch(64 "CPU width is 32 bits")
+    if(CMAKE_VERSION VERSION_LESS 3.10)
+        check_type_size("void*[8]" SIZEOF_CPU BUILTIN_TYPES_ONLY)
+        if(${SIZEOF_CPU} EQUAL 64)
+            overrule_arch(32 "CPU width is 64 bits")
+        endif()
+        if(${SIZEOF_CPU} EQUAL 32)
+            overrule_arch(64 "CPU width is 32 bits")
+        endif()
+    else()
+        cmake_host_system_information(RESULT ASSUME_64BIT_HOST QUERY IS_64BIT)
+        if(ASSUME_64BIT_HOST)
+            overrule_arch(32 "CPU width is 64 bits")
+        else()
+            overrule_arch(64 "CPU width is 32 bits")
+        endif()
     endif()
 
     # MSVC 64 bit does not have MMX, overrule it
     if(MSVC)
-        if(${SIZEOF_CPU} EQUAL 64)
-            overrule_arch(mmx "No MMX for Win64")
+        if(CMAKE_VERSION VERSION_LESS 3.10)
+            if(${SIZEOF_CPU} EQUAL 64)
+                overrule_arch(mmx "No MMX for Win64")
+            endif()
+        else()
+            if(ASSUME_64BIT_HOST)
+                overrule_arch(mmx "No MMX for Win64")
+            endif()
         endif()
         force_arch(sse "Built-in for MSVC > 2013")
         force_arch(sse2 "Built-in for MSVC > 2013")
     endif()
+endif()
+
+if(NOT ${CMAKE_SYSTEM_PROCESSOR} MATCHES "^riscv64$")
+    overrule_arch(riscv64 "machine is not riscv64")
 endif()
 
 ########################################################################
@@ -595,6 +630,9 @@ if(NOT (ENABLE_STATIC_LIBS AND (CMAKE_GENERATOR STREQUAL Xcode)))
     else()
         target_link_libraries(volk_gnsssdr PUBLIC ${volk_gnsssdr_libraries})
     endif()
+
+    xcode_remove_warning_duplicates(volk_gnsssdr)
+
     target_include_directories(volk_gnsssdr
         PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
         PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -632,8 +670,8 @@ if(NOT (ENABLE_STATIC_LIBS AND (CMAKE_GENERATOR STREQUAL Xcode)))
     # Install locations
     install(TARGETS volk_gnsssdr
         EXPORT VOLK_GNSSSDR-export
-        LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_runtime" # .so file
-        ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_devel"   # .lib file
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT "volk_gnsssdr_runtime" # .so file
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT "volk_gnsssdr_devel"   # .lib file
         RUNTIME DESTINATION bin              COMPONENT "volk_gnsssdr_runtime" # .dll file
     )
 endif()
@@ -676,9 +714,11 @@ if(ENABLE_STATIC_LIBS)
     )
     set_target_properties(volk_gnsssdr_static PROPERTIES OUTPUT_NAME volk_gnsssdr)
 
+    xcode_remove_warning_duplicates(volk_gnsssdr_static)
+
     install(TARGETS volk_gnsssdr_static
         EXPORT VOLK_GNSSSDR-export
-        ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_devel"
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT "volk_gnsssdr_devel"
     )
 endif()
 
@@ -702,6 +742,9 @@ if(ENABLE_TESTING)
             TARGET_DEPS volk_gnsssdr
         )
     endif()
+
+    xcode_remove_warning_duplicates(volk_gnsssdr_test_all)
+
     foreach(kernel ${h_files})
         get_filename_component(kernel ${kernel} NAME)
         string(REPLACE ".h" "" kernel ${kernel})

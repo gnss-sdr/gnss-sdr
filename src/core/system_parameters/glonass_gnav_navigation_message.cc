@@ -19,9 +19,14 @@
 #include "glonass_gnav_navigation_message.h"
 #include "MATH_CONSTANTS.h"  // for TWO_N20, TWO_N30, TWO_N14, TWO_N15, TWO_N18
 #include "gnss_satellite.h"
-#include <glog/logging.h>
 #include <cstddef>  // for size_t
 #include <ostream>  // for operator<<
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 Glonass_Gnav_Navigation_Message::Glonass_Gnav_Navigation_Message()
@@ -360,7 +365,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
                             flag_TOW_new = true;
                         }
 
-                    // 4) Set time of day (tod) when ephemeris data is complety decoded
+                    // 4) Set time of day (tod) when ephemeris data is completely decoded
                     gnav_ephemeris.d_tod = gnav_ephemeris.d_t_k + 2 * d_string_ID;
                 }
 

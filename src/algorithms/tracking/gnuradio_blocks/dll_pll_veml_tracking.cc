@@ -45,7 +45,6 @@
 #include "gps_sdr_signal_replica.h"
 #include "lock_detectors.h"
 #include "tracking_discriminators.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>   // for io_signature
 #include <gnuradio/thread/thread.h>  // for scoped_lock
 #include <matio.h>                   // for Mat_VarCreate
@@ -60,6 +59,12 @@
 #include <memory>
 #include <numeric>
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else
@@ -1251,7 +1256,10 @@ void dll_pll_veml_tracking::update_tracking_vars()
                         }
                     tmp_cp1 /= static_cast<double>(d_trk_parameters.smoother_length);
                     tmp_cp2 /= static_cast<double>(d_trk_parameters.smoother_length);
-                    d_code_phase_rate_step_chips = (tmp_cp2 - tmp_cp1) / tmp_samples;
+                    if (tmp_samples >= 1.0)
+                        {
+                            d_code_phase_rate_step_chips = (tmp_cp2 - tmp_cp1) / tmp_samples;
+                        }
                 }
         }
     // remnant code phase [chips]
@@ -1859,7 +1867,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                                 if (next_state)
                                                     {
                                                         LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
-                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
                                                         std::cout << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
                                                                   << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
                                                     }

@@ -52,6 +52,7 @@
 #include "monitor_pvt.h"
 #include "monitor_pvt_udp_sink.h"
 #include "nmea_printer.h"
+#include "osnma_data.h"
 #include "pvt_conf.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
@@ -64,7 +65,6 @@
 #include <boost/exception/exception.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/nvp.hpp>  // for nvp, make_nvp
-#include <glog/logging.h>               // for LOG
 #include <gnuradio/io_signature.h>      // for io_signature
 #include <pmt/pmt_sugar.h>              // for mp
 #include <algorithm>                    // for sort, unique
@@ -77,10 +77,14 @@
 #include <locale>                       // for locale
 #include <sstream>                      // for ostringstream
 #include <stdexcept>                    // for length_error
-#include <sys/ipc.h>                    // for IPC_CREAT
-#include <sys/msg.h>                    // for msgctl
 #include <typeinfo>                     // for std::type_info, typeid
 #include <utility>                      // for pair
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else
@@ -124,6 +128,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     : gr::sync_block("rtklib_pvt_gs",
           gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
           gr::io_signature::make(0, 0, 0)),
+      d_queue_name("gnss_sdr_ttff_message_queue"),
       d_dump_filename(conf_.dump_filename),
       d_geohash(std::make_unique<Geohash>()),
       d_gps_ephemeris_sptr_type_hash_code(typeid(std::shared_ptr<Gps_Ephemeris>).hash_code()),
@@ -179,7 +184,8 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_an_printer_enabled(conf_.an_output_enabled),
       d_log_timetag(conf_.log_source_timetag),
       d_use_has_corrections(conf_.use_has_corrections),
-      d_use_unhealthy_sats(conf_.use_unhealthy_sats)
+      d_use_unhealthy_sats(conf_.use_unhealthy_sats),
+      d_osnma_strict(conf_.osnma_strict)
 {
     // Send feedback message to observables block with the receiver clock offset
     this->message_port_register_out(pmt::mp("pvt_to_observables"));
@@ -211,6 +217,19 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         boost::bind(&rtklib_pvt_gs::msg_handler_has_data, this, boost::placeholders::_1));
 #else
         boost::bind(&rtklib_pvt_gs::msg_handler_has_data, this, _1));
+#endif
+#endif
+
+    // Galileo OSNMA messages port in
+    this->message_port_register_in(pmt::mp("OSNMA_to_PVT"));
+    this->set_msg_handler(pmt::mp("OSNMA_to_PVT"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto&& PH1) { msg_handler_osnma(PH1); });
+#else
+#if USE_BOOST_BIND_PLACEHOLDERS
+        boost::bind(&rtklib_pvt_gs::msg_handler_osnma, this, boost::placeholders::_1));
+#else
+        boost::bind(&rtklib_pvt_gs::msg_handler_osnma, this, _1));
 #endif
 #endif
 
@@ -462,7 +481,12 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
             udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
 
-            d_udp_sink_ptr = std::make_unique<Monitor_Pvt_Udp_Sink>(udp_addr_vec, conf_.udp_port, conf_.protobuf_enabled);
+            std::string port_string = conf_.udp_ports;
+            std::vector<std::string> udp_port_vec = split_string(port_string, '_');
+            std::sort(udp_port_vec.begin(), udp_port_vec.end());
+            udp_port_vec.erase(std::unique(udp_port_vec.begin(), udp_port_vec.end()), udp_port_vec.end());
+
+            d_udp_sink_ptr = std::make_unique<Monitor_Pvt_Udp_Sink>(udp_addr_vec, udp_port_vec, conf_.protobuf_enabled);
         }
     else
         {
@@ -484,14 +508,26 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             d_eph_udp_sink_ptr = nullptr;
         }
 
-    // Create Sys V message queue
+    // Create message queue
     d_first_fix = true;
-    d_sysv_msg_key = 1101;
-    const int msgflg = IPC_CREAT | 0666;
-    if ((d_sysv_msqid = msgget(d_sysv_msg_key, msgflg)) == -1)
+    const std::size_t max_num_messages = 100;
+    try
         {
-            std::cout << "GNSS-SDR cannot create System V message queues.\n";
-            LOG(WARNING) << "The System V message queue is not available. Error: " << errno << " - " << strerror(errno);
+            // Remove any existing queue with the same name
+            boost::interprocess::message_queue::remove(d_queue_name.c_str());
+
+            // Create a new message queue
+            d_mq = std::make_unique<boost::interprocess::message_queue>(
+                boost::interprocess::create_only,  // Create a new queue
+                d_queue_name.c_str(),              // Queue name
+                max_num_messages,                  // Maximum number of messages
+                sizeof(double)                     // Maximum message size
+            );
+        }
+
+    catch (const boost::interprocess::interprocess_exception& e)
+        {
+            std::cerr << "Error creating message queue: " << e.what() << std::endl;
         }
 
     // Display time in local time zone
@@ -576,9 +612,9 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 rtklib_pvt_gs::~rtklib_pvt_gs()
 {
     DLOG(INFO) << "PVT block destructor called.";
-    if (d_sysv_msqid != -1)
+    if (d_mq)
         {
-            msgctl(d_sysv_msqid, IPC_RMID, nullptr);
+            boost::interprocess::message_queue::remove(d_queue_name.c_str());
         }
     try
         {
@@ -1629,6 +1665,28 @@ void rtklib_pvt_gs::msg_handler_has_data(const pmt::pmt_t& msg)
 }
 
 
+void rtklib_pvt_gs::msg_handler_osnma(const pmt::pmt_t& msg)
+{
+    try
+        {
+            // Still not sure about what we should receive here.
+            // It should be a structure with the list of PRNs authenticated (NavData and utcData,
+            // so with ADKD0 and ADKD12 validated), their corresponding TOW at the beginning
+            // of the authenticated subframe, and maybe the COP.
+            const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
+            if (msg_type_hash_code == typeid(std::shared_ptr<OSNMA_NavData>).hash_code())
+                {
+                    const auto osnma_data = wht::any_cast<std::shared_ptr<OSNMA_NavData>>(pmt::any_ref(msg));
+                    d_auth_nav_data_map[osnma_data->get_prn_d()].insert(osnma_data->get_IOD_nav());
+                }
+        }
+    catch (const wht::bad_any_cast& e)
+        {
+            LOG(WARNING) << "msg_handler_osnma Bad any_cast: " << e.what();
+        }
+}
+
+
 std::map<int, Gps_Ephemeris> rtklib_pvt_gs::get_gps_ephemeris_map() const
 {
     return d_internal_pvt_solver->gps_ephemeris_map;
@@ -1685,21 +1743,19 @@ void rtklib_pvt_gs::clear_ephemeris()
 }
 
 
-bool rtklib_pvt_gs::send_sys_v_ttff_msg(d_ttff_msgbuf ttff) const
+bool rtklib_pvt_gs::send_ttff_msg(double ttff) const
 {
-    if (d_sysv_msqid != -1)
+    if (d_mq)
         {
-            // Fill Sys V message structures
-            int msgsend_size;
-            d_ttff_msgbuf msg;
-            msg.ttff = ttff.ttff;
-            msgsend_size = sizeof(msg.ttff);
-            msg.mtype = 1;  // default message ID
-
-            // SEND SOLUTION OVER A MESSAGE QUEUE
-            // non-blocking Sys V message send
-            msgsnd(d_sysv_msqid, &msg, msgsend_size, IPC_NOWAIT);
-            return true;
+            try
+                {
+                    d_mq->send(&ttff, sizeof(ttff), 0);  // Priority 0
+                    return true;
+                }
+            catch (const boost::interprocess::interprocess_exception& e)
+                {
+                    std::cerr << "Error sending message: " << e.what() << std::endl;
+                }
         }
     return false;
 }
@@ -1987,7 +2043,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                             bool store_valid_observable = false;
 
-                            if (tmp_eph_iter_gps != d_internal_pvt_solver->gps_ephemeris_map.cend())
+                            if (!d_osnma_strict && tmp_eph_iter_gps != d_internal_pvt_solver->gps_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_gps->second.PRN;
                                     if ((prn_aux == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal, 2) == std::string("1C")) && (d_use_unhealthy_sats || (tmp_eph_iter_gps->second.SV_health == 0)))
@@ -2003,10 +2059,25 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             ((std::string(in[i][epoch].Signal, 2) == std::string("5X")) && (d_use_unhealthy_sats || ((tmp_eph_iter_gal->second.E5a_DVS == false) && (tmp_eph_iter_gal->second.E5a_HS == 0)))) ||
                                             ((std::string(in[i][epoch].Signal, 2) == std::string("7X")) && (d_use_unhealthy_sats || ((tmp_eph_iter_gal->second.E5b_DVS == false) && (tmp_eph_iter_gal->second.E5b_HS == 0))))))
                                         {
-                                            store_valid_observable = true;
+                                            if (d_osnma_strict && ((std::string(in[i][epoch].Signal, 2) == std::string("1B")) || ((std::string(in[i][epoch].Signal, 2) == std::string("7X")))))
+                                                {
+                                                    // Pick up only authenticated satellites
+                                                    auto IOD_nav_list = d_auth_nav_data_map.find(tmp_eph_iter_gal->second.PRN);
+                                                    if (IOD_nav_list != d_auth_nav_data_map.cend())
+                                                        {
+                                                            if (IOD_nav_list->second.find(tmp_eph_iter_gal->second.IOD_nav) != IOD_nav_list->second.cend())
+                                                                {
+                                                                    store_valid_observable = true;
+                                                                }
+                                                        }
+                                                }
+                                            else
+                                                {
+                                                    store_valid_observable = true;
+                                                }
                                         }
                                 }
-                            if (tmp_eph_iter_cnav != d_internal_pvt_solver->gps_cnav_ephemeris_map.cend())
+                            if (!d_osnma_strict && tmp_eph_iter_cnav != d_internal_pvt_solver->gps_cnav_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_cnav->second.PRN;
                                     if ((prn_aux == in[i][epoch].PRN) && (((std::string(in[i][epoch].Signal, 2) == std::string("2S")) || (std::string(in[i][epoch].Signal, 2) == std::string("L5")))))
@@ -2014,7 +2085,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             store_valid_observable = true;
                                         }
                                 }
-                            if (tmp_eph_iter_glo_gnav != d_internal_pvt_solver->glonass_gnav_ephemeris_map.cend())
+                            if (!d_osnma_strict && tmp_eph_iter_glo_gnav != d_internal_pvt_solver->glonass_gnav_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_glo_gnav->second.PRN;
                                     if ((prn_aux == in[i][epoch].PRN) && ((std::string(in[i][epoch].Signal, 2) == std::string("1G")) || (std::string(in[i][epoch].Signal, 2) == std::string("2G"))))
@@ -2022,7 +2093,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             store_valid_observable = true;
                                         }
                                 }
-                            if (tmp_eph_iter_bds_dnav != d_internal_pvt_solver->beidou_dnav_ephemeris_map.cend())
+                            if (!d_osnma_strict && tmp_eph_iter_bds_dnav != d_internal_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_bds_dnav->second.PRN;
                                     if ((prn_aux == in[i][epoch].PRN) && (((std::string(in[i][epoch].Signal, 2) == std::string("B1")) || (std::string(in[i][epoch].Signal, 2) == std::string("B3"))) && (d_use_unhealthy_sats || (tmp_eph_iter_bds_dnav->second.SV_health == 0))))
@@ -2032,7 +2103,14 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 }
                             if (std::string(in[i][epoch].Signal, 2) == std::string("E6"))
                                 {
-                                    store_valid_observable = true;
+                                    if (d_osnma_strict)
+                                        {
+                                            // TODO
+                                        }
+                                    else
+                                        {
+                                            store_valid_observable = true;
+                                        }
                                 }
 
                             if (store_valid_observable)
@@ -2168,7 +2246,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             d_gnss_observables_map_t1 = d_gnss_observables_map;
 
                                             // ### select the rx_time and interpolate observables at that time
-                                            if (!d_gnss_observables_map_t0.empty())
+                                            if (!d_gnss_observables_map_t0.empty() && !d_gnss_observables_map_t1.empty())
                                                 {
                                                     const auto t0_int_ms = static_cast<uint32_t>(d_gnss_observables_map_t0.cbegin()->second.RX_time * 1000.0);
                                                     const uint32_t adjust_next_obs_interval_ms = d_observable_interval_ms - t0_int_ms % d_observable_interval_ms;
@@ -2320,12 +2398,10 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                 }
                                             std::cout << " is Lat = " << d_user_pvt_solver->get_latitude() << " [deg], Long = " << d_user_pvt_solver->get_longitude()
                                                       << " [deg], Height= " << d_user_pvt_solver->get_height() << " [m]\n";
-                                            d_ttff_msgbuf ttff;
-                                            ttff.mtype = 1;
                                             d_end = std::chrono::system_clock::now();
                                             std::chrono::duration<double> elapsed_seconds = d_end - d_start;
-                                            ttff.ttff = elapsed_seconds.count();
-                                            send_sys_v_ttff_msg(ttff);
+                                            double ttff = elapsed_seconds.count();
+                                            send_ttff_msg(ttff);
                                             d_first_fix = false;
                                         }
                                     if (d_kml_output_enabled)

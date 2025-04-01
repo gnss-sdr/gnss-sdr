@@ -21,16 +21,22 @@ endif()
 target_link_libraries(pvt_gr_blocks
     PUBLIC
         algorithms_libs_rtklib
+        Boost::headers
         Boost::date_time
         Gnuradio::pmt
         Gnuradio::runtime
     PRIVATE
         algorithms_libs
         pvt_libs
-        Gflags::gflags
-        Glog::glog
         Boost::serialization
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(pvt_gr_blocks PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(pvt_gr_blocks PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(pvt_gr_blocks PRIVATE absl::log)
+endif()
 
 if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(pvt_gr_blocks

@@ -60,11 +60,11 @@ public:
     }
 
     /*!
-     * \brief Returns "GPS_L2_M_PCPS_Acquisition_Fpga"
+     * \brief Returns "GPS_L2_M_PCPS_Acquisition_FPGA"
      */
     inline std::string implementation() override
     {
-        return "GPS_L2_M_PCPS_Acquisition_Fpga";
+        return "GPS_L2_M_PCPS_Acquisition_FPGA";
     }
 
     inline size_t item_size() override
@@ -147,19 +147,19 @@ public:
      */
     void stop_acquisition() override;
 
-    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override {};
 
 private:
-    static const uint32_t downsampling_factor_default = 1;
-    static const uint32_t fpga_buff_num = 0;  // L2 band
-    static const uint32_t fpga_blk_exp = 13;  // default block exponent
-
+    static const uint32_t ACQ_BUFF_1 = 1;             // FPGA Acquisition IP buffer containing L2 or L5/E5 frequency band samples by default.
+    static const uint32_t DEFAULT_FPGA_BLK_EXP = 13;  // default block exponent
     static const uint32_t NUM_PRNs = 32;
     static const uint32_t QUANT_BITS_LOCAL_CODE = 16;
-    static const uint32_t SELECT_LSBits = 0x0000FFFF;         // Select the 10 LSbits out of a 20-bit word
-    static const uint32_t SELECT_MSBbits = 0xFFFF0000;        // Select the 10 MSbits out of a 20-bit word
+    static const uint32_t SELECT_LSBITS = 0x0000FFFF;         // Select the 10 LSbits out of a 20-bit word
+    static const uint32_t SELECT_MSBITS = 0xFFFF0000;         // Select the 10 MSbits out of a 20-bit word
     static const uint32_t SELECT_ALL_CODE_BITS = 0xFFFFFFFF;  // Select a 20 bit word
     static const uint32_t SHL_CODE_BITS = 65536;              // shift left by 10 bits
+
+    void generate_gps_l2c_m_prn_codes();
 
     pcps_acquisition_fpga_sptr acquisition_fpga_;
     volk_gnsssdr::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
@@ -167,7 +167,6 @@ private:
     Gnss_Synchro* gnss_synchro_;
     Acq_Conf_Fpga acq_parameters_;
     std::string role_;
-    int64_t fs_in_;
     float threshold_;
     unsigned int channel_;
     unsigned int doppler_max_;

@@ -27,6 +27,7 @@
 #include "Galileo_E5a.h"
 #include "Galileo_E5b.h"
 #include "Galileo_E6.h"
+#include "Galileo_OSNMA.h"
 #include "channel.h"
 #include "channel_fsm.h"
 #include "channel_interface.h"
@@ -40,7 +41,6 @@
 #include "signal_source_interface.h"
 #include <boost/lexical_cast.hpp>    // for boost::lexical_cast
 #include <boost/tokenizer.hpp>       // for boost::tokenizer
-#include <glog/logging.h>            // for LOG
 #include <gnuradio/basic_block.h>    // for basic_block
 #include <gnuradio/filter/firdes.h>  // for gr::filter::firdes
 #include <gnuradio/io_signature.h>   // for io_signature
@@ -49,6 +49,7 @@
 #include <algorithm>                 // for transform, sort, unique
 #include <cmath>                     // for floor
 #include <cstddef>                   // for size_t
+#include <cstdlib>                   // for exit
 #include <exception>                 // for exception
 #include <iostream>                  // for operator<<
 #include <iterator>                  // for insert_iterator, inserter
@@ -58,6 +59,12 @@
 #include <stdexcept>                 // for invalid_argument
 #include <thread>                    // for std::thread
 #include <utility>                   // for std::move
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #ifdef GR_GREATER_38
 #include <gnuradio/filter/fir_filter_blk.h>
@@ -76,6 +83,7 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
       connected_(false),
       running_(false),
       multiband_(GNSSFlowgraph::is_multiband()),
+      enable_osnma_rx_(false),
       enable_e6_has_rx_(false)
 {
     enable_fpga_offloading_ = configuration_->property("GNSS-SDR.enable_FPGA", false);
@@ -114,14 +122,32 @@ void GNSSFlowgraph::init()
             galileo_tow_map_ = nullptr;
         }
 
+    if (configuration_->property("Channels_1B.count", 0) > 0 && configuration_->property("GNSS-SDR.osnma_enable", true))
+        {
+            enable_osnma_rx_ = true;
+            const auto certFilePath = configuration_->property("GNSS-SDR.osnma_public_key", CRTFILE_DEFAULT);
+            const auto merKleTreePath = configuration_->property("GNSS-SDR.osnma_merkletree", MERKLEFILE_DEFAULT);
+            std::string osnma_mode = configuration_->property("GNSS-SDR.osnma_mode", std::string(""));
+            bool strict_mode = false;
+            if (osnma_mode == "strict")
+                {
+                    strict_mode = true;
+                }
+            osnma_rx_ = osnma_msg_receiver_make(certFilePath, merKleTreePath, strict_mode);
+        }
+    else
+        {
+            osnma_rx_ = nullptr;
+        }
+
     // 1. read the number of RF front-ends available (one file_source per RF front-end)
     int sources_count_deprecated = configuration_->property("Receiver.sources_count", 1);
     sources_count_ = configuration_->property("GNSS-SDR.num_sources", sources_count_deprecated);
 
     // Avoid segmentation fault caused by wrong configuration
-    if (sources_count_ == 2 && block_factory->GetSignalSource(configuration_.get(), queue_.get(), 0)->implementation() == "Multichannel_File_Signal_Source")
+    if (sources_count_ == 2 && configuration_->property("SignalSource.implementation", std::string("")) == "Multichannel_File_Signal_Source")
         {
-            std::cout << " * Please set GNSS-SDR.num_sources=1 in your configuraiion file\n";
+            std::cout << " * Please set GNSS-SDR.num_sources=1 in your configuration file\n";
             std::cout << "   if you are using the Multichannel_File_Signal_Source implementation.\n";
             sources_count_ = 1;
         }
@@ -131,7 +157,13 @@ void GNSSFlowgraph::init()
     for (int i = 0; i < sources_count_; i++)
         {
             DLOG(INFO) << "Creating source " << i;
-            sig_source_.push_back(block_factory->GetSignalSource(configuration_.get(), queue_.get(), i));
+            auto check_not_nullptr = block_factory->GetSignalSource(configuration_.get(), queue_.get(), i);
+            if (!check_not_nullptr)
+                {
+                    std::cout << "GNSS-SDR program ended.\n";
+                    exit(1);
+                }
+            sig_source_.push_back(std::move(check_not_nullptr));
             if (enable_fpga_offloading_ == false)
                 {
                     auto& src = sig_source_.back();
@@ -205,11 +237,17 @@ void GNSSFlowgraph::init()
             std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
             udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
 
+            std::string udp_port_string = configuration_->property("Monitor.udp_port", std::string("1234"));
+            std::vector<std::string> udp_port_vec = split_string(udp_port_string, '_');
+            std::sort(udp_port_vec.begin(), udp_port_vec.end());
+            udp_port_vec.erase(std::unique(udp_port_vec.begin(), udp_port_vec.end()), udp_port_vec.end());
+
             // Instantiate monitor object
             GnssSynchroMonitor_ = gnss_synchro_make_monitor(channels_count_,
                 configuration_->property("Monitor.decimation_factor", 1),
-                configuration_->property("Monitor.udp_port", 1234),
-                udp_addr_vec, enable_protobuf);
+                udp_port_vec,
+                udp_addr_vec,
+                enable_protobuf);
         }
 
     /*
@@ -229,10 +267,16 @@ void GNSSFlowgraph::init()
             std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
             udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
 
+            std::string udp_port_string = configuration_->property("AcquisitionMonitor.udp_port", std::string("1235"));
+            std::vector<std::string> udp_port_vec = split_string(udp_port_string, '_');
+            std::sort(udp_port_vec.begin(), udp_port_vec.end());
+            udp_port_vec.erase(std::unique(udp_port_vec.begin(), udp_port_vec.end()), udp_port_vec.end());
+
             GnssSynchroAcquisitionMonitor_ = gnss_synchro_make_monitor(channels_count_,
                 configuration_->property("AcquisitionMonitor.decimation_factor", 1),
-                configuration_->property("AcquisitionMonitor.udp_port", 1235),
-                udp_addr_vec, enable_protobuf);
+                udp_port_vec,
+                udp_addr_vec,
+                enable_protobuf);
         }
 
     /*
@@ -252,14 +296,20 @@ void GNSSFlowgraph::init()
             std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
             udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
 
+            std::string udp_port_string = configuration_->property("TrackingMonitor.udp_port", std::string("1236"));
+            std::vector<std::string> udp_port_vec = split_string(udp_port_string, '_');
+            std::sort(udp_port_vec.begin(), udp_port_vec.end());
+            udp_port_vec.erase(std::unique(udp_port_vec.begin(), udp_port_vec.end()), udp_port_vec.end());
+
             GnssSynchroTrackingMonitor_ = gnss_synchro_make_monitor(channels_count_,
                 configuration_->property("TrackingMonitor.decimation_factor", 1),
-                configuration_->property("TrackingMonitor.udp_port", 1236),
-                udp_addr_vec, enable_protobuf);
+                udp_port_vec,
+                udp_addr_vec,
+                enable_protobuf);
         }
 
     /*
-     * Instantiate the receiver av message monitor block, if required
+     * Instantiate the receiver nav message monitor block, if required
      */
     enable_navdata_monitor_ = configuration_->property("NavDataMonitor.enable_monitor", false);
     if (enable_navdata_monitor_)
@@ -490,6 +540,14 @@ int GNSSFlowgraph::connect_desktop_flowgraph()
                 }
         }
 
+    if (enable_osnma_rx_)
+        {
+            if (connect_osnma() != 0)
+                {
+                    return 1;
+                }
+        }
+
     // Activate acquisition in enabled channels
     std::lock_guard<std::mutex> lock(signal_list_mutex_);
     for (int i = 0; i < channels_count_; i++)
@@ -542,7 +600,7 @@ int GNSSFlowgraph::connect_fpga_flowgraph()
             if (src == nullptr)
                 {
                     help_hint_ += " * Check implementation name for SignalSource block.\n";
-                    help_hint_ += "   Signal Source block implementation for FPGA off-loading should be Ad9361_Fpga_Signal_Source\n";
+                    help_hint_ += "   Signal Source block implementation for FPGA off-loading should be Ad9361_Signal_Source_Fpga or Fpga_DMA_2Signal_Source\n";
                     return 1;
                 }
             if (src->item_size() == 0)
@@ -605,6 +663,14 @@ int GNSSFlowgraph::connect_fpga_flowgraph()
                     return 1;
                 }
             if (connect_galileo_tow_map() != 0)
+                {
+                    return 1;
+                }
+        }
+
+    if (enable_osnma_rx_)
+        {
+            if (connect_osnma() != 0)
                 {
                     return 1;
                 }
@@ -681,7 +747,7 @@ int GNSSFlowgraph::connect_signal_conditioners()
                             reported_error.replace(pos, len, "Pass_Through");
                             pos = reported_error.find(replace_me, pos + 1);
                         }
-                    help_hint_ += " * Blocks within the Signal Conditioner are connected with mismatched input/ouput item size\n";
+                    help_hint_ += " * Blocks within the Signal Conditioner are connected with mismatched input/output item size\n";
                     help_hint_ += "   Reported error: " + reported_error + '\n';
                     help_hint_ += "   Check the Signal Conditioner documentation at https://gnss-sdr.org/docs/sp-blocks/signal-conditioner/\n";
                 }
@@ -961,7 +1027,7 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
                                         }
                                     else
                                         {
-                                            if (j == 0)
+                                            if (j == 0 || !src->get_right_block(j))
                                                 {
                                                     // RF_channel 0 backward compatibility with single channel sources
                                                     LOG(INFO) << "connecting sig_source_ " << i << " stream " << 0 << " to conditioner " << signal_conditioner_ID;
@@ -1244,7 +1310,7 @@ int GNSSFlowgraph::connect_acquisition_monitor()
             top_block_->disconnect_all();
             return 1;
         }
-    DLOG(INFO) << "acqusition_monitor successfully connected to Channel blocks";
+    DLOG(INFO) << "acquisition_monitor successfully connected to Channel blocks";
     return 0;
 }
 
@@ -1331,6 +1397,42 @@ int GNSSFlowgraph::connect_monitors()
                     return 1;
                 }
         }
+    return 0;
+}
+
+
+int GNSSFlowgraph::connect_osnma()
+{
+    try
+        {
+            bool gal_e1_channels = false;
+            for (int i = 0; i < channels_count_; i++)
+                {
+                    const std::string gnss_signal = channels_.at(i)->get_signal().get_signal_str();
+                    switch (mapStringValues_[gnss_signal])
+                        {
+                        case evGAL_1B:
+                            top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("OSNMA_from_TLM"), osnma_rx_, pmt::mp("OSNMA_from_TLM"));
+                            gal_e1_channels = true;
+                            break;
+
+                        default:
+                            break;
+                        }
+                }
+
+            if (gal_e1_channels == true)
+                {
+                    top_block_->msg_connect(osnma_rx_, pmt::mp("OSNMA_to_PVT"), pvt_->get_left_block(), pmt::mp("OSNMA_to_PVT"));
+                }
+        }
+    catch (const std::exception& e)
+        {
+            LOG(ERROR) << "Can't connect Galileo OSNMA msg ports: " << e.what();
+            top_block_->disconnect_all();
+            return 1;
+        }
+    DLOG(INFO) << "Galileo OSNMA message ports connected";
     return 0;
 }
 
@@ -2181,7 +2283,7 @@ void GNSSFlowgraph::set_signals_list()
 
     std::string sv_list = configuration_->property("Galileo.prns", std::string(""));
 
-    if (sv_list.length() > 0)
+    if (!sv_list.empty())
         {
             // Reset the available prns:
             std::set<unsigned int> tmp_set;
@@ -2221,7 +2323,7 @@ void GNSSFlowgraph::set_signals_list()
 
     sv_list = configuration_->property("GPS.prns", std::string(""));
 
-    if (sv_list.length() > 0)
+    if (!sv_list.empty())
         {
             // Reset the available prns:
             std::set<unsigned int> tmp_set;
@@ -2261,7 +2363,7 @@ void GNSSFlowgraph::set_signals_list()
 
     sv_list = configuration_->property("SBAS.prns", std::string(""));
 
-    if (sv_list.length() > 0)
+    if (!sv_list.empty())
         {
             // Reset the available prns:
             std::set<unsigned int> tmp_set;
@@ -2301,7 +2403,7 @@ void GNSSFlowgraph::set_signals_list()
 
     sv_list = configuration_->property("Glonass.prns", std::string(""));
 
-    if (sv_list.length() > 0)
+    if (!sv_list.empty())
         {
             // Reset the available prns:
             std::set<unsigned int> tmp_set;
@@ -2341,7 +2443,7 @@ void GNSSFlowgraph::set_signals_list()
 
     sv_list = configuration_->property("Beidou.prns", std::string(""));
 
-    if (sv_list.length() > 0)
+    if (!sv_list.empty())
         {
             // Reset the available prns:
             std::set<unsigned int> tmp_set;
@@ -2383,8 +2485,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create GPS L1 C/A signals
             for (available_gnss_prn_iter = available_gps_prn.cbegin();
-                 available_gnss_prn_iter != available_gps_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_gps_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_GPS_1C_signals_.emplace_back(
                         Gnss_Satellite(std::string("GPS"), *available_gnss_prn_iter),
@@ -2396,8 +2498,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create GPS L2C M signals
             for (available_gnss_prn_iter = available_gps_prn.cbegin();
-                 available_gnss_prn_iter != available_gps_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_gps_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_GPS_2S_signals_.emplace_back(
                         Gnss_Satellite(std::string("GPS"), *available_gnss_prn_iter),
@@ -2409,8 +2511,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create GPS L5 signals
             for (available_gnss_prn_iter = available_gps_prn.cbegin();
-                 available_gnss_prn_iter != available_gps_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_gps_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_GPS_L5_signals_.emplace_back(
                         Gnss_Satellite(std::string("GPS"), *available_gnss_prn_iter),
@@ -2422,8 +2524,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create SBAS L1 C/A signals
             for (available_gnss_prn_iter = available_sbas_prn.cbegin();
-                 available_gnss_prn_iter != available_sbas_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_sbas_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_SBAS_1C_signals_.emplace_back(
                         Gnss_Satellite(std::string("SBAS"), *available_gnss_prn_iter),
@@ -2435,8 +2537,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create the list of Galileo E1B signals
             for (available_gnss_prn_iter = available_galileo_prn.cbegin();
-                 available_gnss_prn_iter != available_galileo_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_galileo_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_GAL_1B_signals_.emplace_back(
                         Gnss_Satellite(std::string("Galileo"), *available_gnss_prn_iter),
@@ -2448,8 +2550,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create the list of Galileo E5a signals
             for (available_gnss_prn_iter = available_galileo_prn.cbegin();
-                 available_gnss_prn_iter != available_galileo_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_galileo_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_GAL_5X_signals_.emplace_back(
                         Gnss_Satellite(std::string("Galileo"), *available_gnss_prn_iter),
@@ -2461,8 +2563,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create the list of Galileo E5b signals
             for (available_gnss_prn_iter = available_galileo_prn.cbegin();
-                 available_gnss_prn_iter != available_galileo_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_galileo_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_GAL_7X_signals_.emplace_back(
                         Gnss_Satellite(std::string("Galileo"), *available_gnss_prn_iter),
@@ -2474,8 +2576,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create the list of Galileo E6 signals
             for (available_gnss_prn_iter = available_galileo_prn.cbegin();
-                 available_gnss_prn_iter != available_galileo_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_galileo_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_GAL_E6_signals_.emplace_back(
                         Gnss_Satellite(std::string("Galileo"), *available_gnss_prn_iter),
@@ -2487,8 +2589,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create the list of GLONASS L1 C/A signals
             for (available_gnss_prn_iter = available_glonass_prn.cbegin();
-                 available_gnss_prn_iter != available_glonass_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_glonass_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_GLO_1G_signals_.emplace_back(
                         Gnss_Satellite(std::string("Glonass"), *available_gnss_prn_iter),
@@ -2500,8 +2602,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create the list of GLONASS L2 C/A signals
             for (available_gnss_prn_iter = available_glonass_prn.cbegin();
-                 available_gnss_prn_iter != available_glonass_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_glonass_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_GLO_2G_signals_.emplace_back(
                         Gnss_Satellite(std::string("Glonass"), *available_gnss_prn_iter),
@@ -2513,8 +2615,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create the list of BeiDou B1C signals
             for (available_gnss_prn_iter = available_beidou_prn.cbegin();
-                 available_gnss_prn_iter != available_beidou_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_beidou_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_BDS_B1_signals_.emplace_back(
                         Gnss_Satellite(std::string("Beidou"), *available_gnss_prn_iter),
@@ -2526,8 +2628,8 @@ void GNSSFlowgraph::set_signals_list()
         {
             // Loop to create the list of BeiDou B1C signals
             for (available_gnss_prn_iter = available_beidou_prn.cbegin();
-                 available_gnss_prn_iter != available_beidou_prn.cend();
-                 available_gnss_prn_iter++)
+                available_gnss_prn_iter != available_beidou_prn.cend();
+                available_gnss_prn_iter++)
                 {
                     available_BDS_B3_signals_.emplace_back(
                         Gnss_Satellite(std::string("Beidou"), *available_gnss_prn_iter),

@@ -84,9 +84,7 @@ private:
 
     boost::thread *d_pcap_thread;
     // boost::mutex d_mutex;
-    struct sockaddr_in si_me
-    {
-    };
+    struct sockaddr_in si_me{};
     std::string d_src_device;
     std::string d_origin_address;
     pcap_t *descr;  // ethernet pcap device descriptor

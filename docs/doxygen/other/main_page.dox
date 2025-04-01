@@ -77,19 +77,19 @@ As outputs, it provides:
 In principle, GNSS-SDR can be built in any Unix-like system. In practice, it depends on being able to install all the required dependencies. See the <a href="https://gnss-sdr.org/build-and-install/" target="_blank">building guide</a> page for details about the project's
 dependencies and build process. Mainly, it consists on installing <a href="https://www.gnuradio.org/" target="_blank">GNU Radio</a> plus some few more libraries:
 
-\li <a href="http://arma.sourceforge.net/" target="_blank">Armadillo</a>, a C++ linear algebra library,
+\li <a href="https://arma.sourceforge.net/" target="_blank">Armadillo</a>, a C++ linear algebra library,
 \li <a href="https://www.boost.org/" target="_blank">Boost</a>, a set of free peer-reviewed portable C++ source libraries,
 \li <a href="https://github.com/gflags/gflags" target="_blank">Gflags</a>, a library that implements commandline flags processing,
 \li <a href="https://github.com/google/glog" target="_blank">Glog</a>, a library that implements application-level logging,
 \li <a href="https://github.com/google/googletest" target="_blank">Googletest</a>, Google's framework for writing C++ tests,
 \li <a href="https://www.makotemplates.org/" target="_blank">Mako</a>, a template library written in Python,
 \li <a href="https://github.com/tbeu/matio" target="_blank">Matio</a>, a MATLAB MAT File I/O Library,
-\li <a href="https://developers.google.com/protocol-buffers" target="_blank">Protocol Buffers</a>, a language-neutral, platform-neutral extensible mechanism for serializing structured data,
+\li <a href="https://protobuf.dev/" target="_blank">Protocol Buffers</a>, a language-neutral, platform-neutral extensible mechanism for serializing structured data,
 \li <a href="https://pugixml.org/" target="_blank">PugiXML</a>, a light-weight, simple and fast XML parser for C++ with XPath support,
 \li <a href="https://www.libvolk.org" target="_blank">Volk</a>, a Vector-Optimized Library of Kernels which provides an abstraction of optimized math routines targeting several SIMD processors,
 
 and, optionally,
-\li GNU Radio modules for hardware interface (<a href="https://github.com/gnuradio/gnuradio/tree/main/gr-uhd" target="_blank">gr-uhd</a>, <a href="http://git.osmocom.org/gr-osmosdr" target="_blank">gr-osmosdr</a>, <a href="https://github.com/analogdevicesinc/gr-iio" target="_blank">gr-iio</a>),
+\li GNU Radio modules for hardware interface (<a href="https://github.com/gnuradio/gnuradio/tree/main/gr-uhd" target="_blank">gr-uhd</a>, <a href="https://gitea.osmocom.org/sdr/gr-osmosdr" target="_blank">gr-osmosdr</a>, <a href="https://github.com/analogdevicesinc/gr-iio" target="_blank">gr-iio</a>),
 \li <a href="https://github.com/google/benchmark" target="_blank">Benchmark</a>, a library to benchmark code snippets,
 \li <a href="https://github.com/gperftools/gperftools" target="_blank">Gperftools</a>, which provides fast, multi-threaded malloc() and performance analysis tools.
 
@@ -101,10 +101,8 @@ $ git clone https://github.com/gnss-sdr/gnss-sdr
 This will create a folder named gnss-sdr with the following structure:
 \verbatim
  |-gnss-sdr
- |---build       <- where gnss-sdr is built
  |---cmake       <- CMake-related files
  |---conf        <- Configuration files. Each file represents one receiver.
- |---data        <- Populate this folder with your captured data.
  |---docs        <- Contains documentation-related files
  |---install     <- Executables
  |---src         <- Source code folder
@@ -127,13 +125,13 @@ This will create a folder named gnss-sdr with the following structure:
  |-------receiver
  |-------system_parameters
  |-----main
- |-----tests
- |-----utils     <- some utilities (e.g. Matlab scripts)
+ |---tests
+ |---utils     <- some utilities (e.g. Matlab scripts)
 \endverbatim
 
 You are now ready to build GNSS-SDR by using <a href="https://cmake.org/" target="_blank">CMake</a> as building tool:
 \verbatim
-$ cd gnss-sdr/build
+$ cd gnss-sdr && mkdir build && cd build
 $ cmake ..
 $ make
 \endverbatim
@@ -153,10 +151,10 @@ You can create the documentation by doing:
 $ make doc
 \endverbatim
 
-from the <tt>gnss-sdr/build</tt> folder. In both cases, <a href="https://www.doxygen.nl/" target="_blank">Doxygen</a> will generate HTML documentation that can be
+from the building folder. In both cases, <a href="https://www.doxygen.nl/" target="_blank">Doxygen</a> will generate HTML documentation that can be
 retrieved pointing your browser of preference to <tt>gnss-sdr/docs/html/index.html</tt>.
 
-There are two more extra targets available. From the <tt>gnss-sdr/build</tt> folder:
+There are two more extra targets available. In the building folder:
 \verbatim
 $ make doc-clean
 \endverbatim
@@ -167,7 +165,7 @@ $ make pdfmanual
 will create a PDF manual at <tt>gnss-sdr/docs/GNSS-SDR_manual.pdf</tt>. Please note that the PDF generation requires some fonts to be installed on the host system.
 In Ubuntu, those fonts do not come by default. You can install them by doing:
 \verbatim
-$ sudo apt-get install texlive-fonts-recommended
+$ sudo apt install texlive-fonts-recommended
 \endverbatim
 and then run <tt> cmake ../</tt> and <tt>make pdfmanual</tt> again.
 
@@ -177,10 +175,9 @@ By default, CMake will build the Release version, meaning that the compiler will
 a RF front-end and you need to attain real time. If working with a file (and thus without real-time constraints), you may want to obtain more information about
 the internals of the receiver, as well as more fine-grained logging. This can be done by building the Debug version, by doing:
 \verbatim
-$ cd gnss-sdr/build
+$ cd gnss-sdr && mkdir build-debug && cd build-debug
 $ cmake -DCMAKE_BUILD_TYPE=Debug ..
 $ make
-$ sudo make install
 \endverbatim
 
 \subsection updating_gnss-sdr Updating GNSS-SDR
@@ -189,10 +186,10 @@ If you checked out GNSS-SDR some days ago, it is possible that some developer ha
 $ git checkout next
 $ git pull https://github.com/gnss-sdr/gnss-sdr next
 \endverbatim
-Before rebuiling the source code, it is safe (and recommended) to remove the remainders of old builds:
+Before rebuilding the source code, it is safe (and recommended) to remove the remainders of old builds:
 \verbatim
-$ cd gnss-sdr/build
-$ sudo make uninstall
+$ cd <building folder>
+$ sudo make uninstall  ; if you installed it before
 $ rm -rf *
 \endverbatim
 
@@ -215,7 +212,7 @@ and we will be happy to upload it to the server.
 You can use a single configuration file for processing
 different data files, specifying the file to be processed with the <tt>--signal_source</tt> flag:
 \verbatim
-$ gnss-sdr --config_file=../conf/my_receiver.conf --signal_source=../data/my_captured_data.dat
+$ gnss-sdr --config_file=../conf/my_receiver.conf --signal_source=./my_captured_data.dat
 \endverbatim
 This will override the <tt>SignalSource.filename</tt> specified in the configuration file.
 
@@ -636,7 +633,7 @@ More papers related to GNSS-SDR are available at the <a href="https://gnss-sdr.o
 
 \section now_what Ok, now what?
 In order to start using GNSS-SDR, you may want to populate <tt>gnss-sdr/data</tt> folder (or anywhere else on your system) with raw data files. By "raw data" we mean the output
-of a Radio Frequency front-end's Analog-to_Digital converter. GNSS-SDR needs signal samples already in baseband or in passband, at a suitable intemediate frequency (on the order of MHz).
+of a Radio Frequency front-end's Analog-to_Digital converter. GNSS-SDR needs signal samples already in baseband or in passband, at a suitable intermediate frequency (on the order of MHz).
 Prepare your configuration file, and then you are ready for going to the <tt> gnss-sdr/install</tt> folder, running <tt>./gnss-sdr</tt>, and see how the file is processed.
 Please ask the Developer Team for a signal sample if you need one, and they will do their best ;-)
 

@@ -21,8 +21,13 @@
 #include "galileo_e1_signal_replica.h"
 #include "gnss_sdr_flags.h"
 #include <boost/math/distributions/exponential.hpp>
-#include <glog/logging.h>
 #include <algorithm>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_STD_SPAN
 #include <span>
@@ -52,16 +57,23 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
       dump_(configuration_->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
-    const std::string default_dump_filename("../data/acquisition.dat");
+    const std::string default_dump_filename("./acquisition.dat");
     item_type_ = configuration_->property(role_ + ".item_type", default_item_type);
     int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     dump_filename_ = configuration_->property(role_ + ".dump_filename", default_dump_filename);
 
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_doppler_max != 0)
         {
             doppler_max_ = FLAGS_doppler_max;
         }
+#else
+    if (absl::GetFlag(FLAGS_doppler_max) != 0)
+        {
+            doppler_max_ = absl::GetFlag(FLAGS_doppler_max);
+        }
+#endif
 
     if (sampled_ms_ % 4 != 0)
         {

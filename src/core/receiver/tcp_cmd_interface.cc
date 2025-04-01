@@ -146,9 +146,7 @@ std::string TcpCmdInterface::status(const std::vector<std::string> &commandLine 
             &course_over_ground_deg,
             &UTC_time) == true)
         {
-            struct tm tstruct
-            {
-            };
+            struct tm tstruct{};
             std::array<char, 80> buf1{};
             tstruct = *gmtime(&UTC_time);
             strftime(buf1.data(), buf1.size(), "%d/%m/%Y %H:%M:%S", &tstruct);
@@ -179,9 +177,7 @@ std::string TcpCmdInterface::hotstart(const std::vector<std::string> &commandLin
     if (commandLine.size() > 5)
         {
             // Read commandline time parameter
-            struct tm tm
-            {
-            };
+            struct tm tm{};
             const std::string tmp_str = commandLine.at(1) + commandLine.at(2);
             if (strptime(tmp_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
                 {
@@ -227,9 +223,7 @@ std::string TcpCmdInterface::warmstart(const std::vector<std::string> &commandLi
     if (commandLine.size() > 5)
         {
             // Read commandline time parameter
-            struct tm tm
-            {
-            };
+            struct tm tm{};
             const std::string tmp_str = commandLine.at(1) + commandLine.at(2);
             if (strptime(tmp_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
                 {
@@ -323,10 +317,10 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                             std::cout << "TcpCmdInterface: Telecommand TCP interface listening on port " << tcp_port << '\n';
 
                             boost::asio::ip::tcp::socket socket(context);
-                            acceptor.accept(socket, not_throw);
+                            acceptor.accept(socket, not_throw);  // NOLINT(bugprone-unused-return-value)
                             if (not_throw)
                                 {
-                                    std::cerr << "TcpCmdInterface: Error when binding the port in the socket\n";
+                                    std::cerr << "TcpCmdInterface: Error when binding the port to the socket: " << not_throw.message() << '\n';
                                     continue;
                                 }
 

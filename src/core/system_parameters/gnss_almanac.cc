@@ -21,6 +21,7 @@
 #include <cmath>
 #include <functional>
 #include <numeric>
+#include <utility>
 #include <vector>
 
 double Gnss_Almanac::check_t(double time) const

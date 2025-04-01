@@ -22,8 +22,13 @@
 #include "galileo_e1_signal_replica.h"
 #include "gnss_sdr_flags.h"
 #include <boost/math/distributions/exponential.hpp>
-#include <glog/logging.h>
 #include <algorithm>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_STD_SPAN
 #include <span>
@@ -51,10 +56,17 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     acq_parameters_.ms_per_code = 4;
     acq_parameters_.SetFromConfiguration(configuration_, role_, GALILEO_E1_CODE_CHIP_RATE_CPS, GALILEO_E1_OPT_ACQ_FS_SPS);
 
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_doppler_max != 0)
         {
             acq_parameters_.doppler_max = FLAGS_doppler_max;
         }
+#else
+    if (absl::GetFlag(FLAGS_doppler_max) != 0)
+        {
+            acq_parameters_.doppler_max = absl::GetFlag(FLAGS_doppler_max);
+        }
+#endif
     doppler_max_ = acq_parameters_.doppler_max;
     doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
     item_type_ = acq_parameters_.item_type;

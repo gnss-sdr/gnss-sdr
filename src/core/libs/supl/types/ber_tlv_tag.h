@@ -22,7 +22,7 @@ extern "C"
 /*
  * Tag class is encoded together with tag value for optimization purposes.
  */
-#define BER_TAG_CLASS(tag) ((tag)&0x3)
+#define BER_TAG_CLASS(tag) ((tag) & 0x3)
 #define BER_TAG_VALUE(tag) ((tag) >> 2)
 #define BER_TLV_CONSTRUCTED(tagptr) \
     (((*(const uint8_t *)tagptr) & 0x20) ? 1 : 0)

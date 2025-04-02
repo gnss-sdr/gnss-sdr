@@ -161,7 +161,7 @@ option(ENABLE_ORC "Use (if available) the Optimized Inner Loop Runtime Compiler 
 ################################################################################
 # GNSS-SDR version information
 ################################################################################
-set(THIS_IS_A_RELEASE OFF)   # only related to version name, no further implications.
+set(THIS_IS_A_RELEASE ON)   # only related to version name, no further implications.
 if(NOT ${THIS_IS_A_RELEASE})
     find_package(Git)
     set_package_properties(Git PROPERTIES
@@ -196,7 +196,7 @@ endif()
 
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_API_COMPAT 0)
-if(${THIS_IS_A_RELEASE} ON)
+if(${THIS_IS_A_RELEASE})
     set(VERSION_INFO_MINOR_VERSION 20)
 else()
     set(VERSION_INFO_MINOR_VERSION 20.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})

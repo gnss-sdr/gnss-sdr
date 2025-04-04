@@ -12,7 +12,17 @@ SPDX-FileCopyrightText: 2011-2025 Carles Fernandez-Prades <carles.fernandez@cttc
 
 All notable changes to GNSS-SDR will be documented in this file.
 
+## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+
+### Improvements in Maintainability:
+
+- Added a CI job to detect lines longer than 512 characters (avoid this
+  [lintian tag](https://lintian.debian.org/tags/very-long-line-length-in-source-file.html)
+  warning).
+
 ## [GNSS-SDR v0.0.20](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.20) - 2025-04-01
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15126929.svg)](https://doi.org/10.5281/zenodo.15126929)
 
 ### Improvements in Interoperability:
 

@@ -299,3 +299,33 @@ jobs:
         uses: docker://fsfe/reuse
         with:
           args: lint
+
+  long-line-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find lines longer than 512 characters
+        run: |
+          set -uo pipefail
+          echo "🔍 Checking for lines with >512 characters ..."
+          FLAG_FILE=$(mktemp) > "$FLAG_FILE"
+          find . \( -name "*.c" -o -name "*.cpp" -o -name "*.cc" -o -name "*.h" -o -name "*.hpp" -o -name "*.py" -o -name "*.txt" -o -name "*.sh" -o -name "*.proto" -o -name "*.yml" \) -print0 \
+            | while IFS= read -r -d '' file; do
+              awk -v fname="$file" 'length($0) > 512 {
+                gsub(/^\.\/?/, "", fname)
+                printf "::error file=%s,line=%d::Line exceeds 512 characters\n", fname, NR
+                print fname ":" NR ": " $0
+              }' "$file" || true
+              if awk 'length($0) > 512 { exit 1 }' "$file"; then
+                :
+              else
+                echo 1 > "$FLAG_FILE"
+              fi
+            done
+          if grep -q 1 "$FLAG_FILE"; then
+            echo "❌ One or more lines exceed 512 characters"
+            exit 1
+          else
+            echo "✅ No long lines found."
+          fi
+          rm -f "$FLAG_FILE"

@@ -12,11 +12,11 @@ message MonitorPvt {
   double rx_time = 3;                   // PVT GPS time
   double user_clk_offset = 4;           // User clock offset, in s
 
-  double pos_x = 5;  // Position X component in ECEF, expressed in m
-  double pos_y = 6;  // Position Y component in ECEF, expressed in m
-  double pos_z = 7;  // Position Z component in ECEF, expressed in m
-  double vel_x = 8;  // Velocity X component in ECEF, in m/s
-  double vel_y = 9;  // Velocity Y component in ECEF, in m/s
+  double pos_x = 5;   // Position X component in ECEF, expressed in m
+  double pos_y = 6;   // Position Y component in ECEF, expressed in m
+  double pos_z = 7;   // Position Z component in ECEF, expressed in m
+  double vel_x = 8;   // Velocity X component in ECEF, in m/s
+  double vel_y = 9;   // Velocity Y component in ECEF, in m/s
   double vel_z = 10;  // Velocity Z component in ECEF, in m/s
 
   double cov_xx = 11;  // Position variance in the Y component, in m2

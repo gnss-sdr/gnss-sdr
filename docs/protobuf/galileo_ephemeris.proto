@@ -24,10 +24,10 @@ message GalileoEphemeris {
   int32 toe = 17;       // Ephemeris reference time [s]
 
   // Clock correction parameters
-  int32 toc = 18;    // Clock correction data reference Time of Week [sec]
-  double af0 = 19;   // SV clock bias correction coefficient [s]
-  double af1 = 20;   // SV clock drift correction coefficient [s/s]
-  double af2 = 21;   // SV clock drift rate correction coefficient [s/s^2]
+  int32 toc = 18;   // Clock correction data reference Time of Week [sec]
+  double af0 = 19;  // SV clock bias correction coefficient [s]
+  double af1 = 20;  // SV clock drift correction coefficient [s/s]
+  double af2 = 21;  // SV clock drift rate correction coefficient [s/s^2]
 
   double satClkDrift = 22;  // SV clock drift
   double dtr = 23;          // Relativistic clock correction term

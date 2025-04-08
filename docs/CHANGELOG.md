@@ -19,6 +19,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Added a CI job to detect lines longer than 512 characters (avoid this
   [lintian tag](https://lintian.debian.org/tags/very-long-line-length-in-source-file.html)
   warning).
+- Added formatting of `.proto` files with clang-format. Added check in CI job.
 
 ## [GNSS-SDR v0.0.20](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.20) - 2025-04-01
 

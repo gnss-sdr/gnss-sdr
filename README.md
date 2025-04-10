@@ -69,8 +69,7 @@ information about this open-source, software-defined GNSS receiver.
       - [Fedora](#fedora)
       - [openSUSE](#opensuse)
       - [Rocky Linux](#rocky-linux)
-    - [Alternative 2: Install dependencies using PyBOMBS](#alternative-2-install-dependencies-using-pybombs)
-    - [Manual installation of other required dependencies](#manual-installation-of-other-required-dependencies)
+    - [Alternative 2: Manual installation of required dependencies](#alternative-2-manual-installation-of-required-dependencies)
       - [Install Armadillo, a C++ linear algebra library](#install-armadillo-a-c-linear-algebra-library)
       - [Install Gflags, a commandline flags processing module for C++](#install-gflags-a-commandline-flags-processing-module-for-c)
       - [Install Glog, a library that implements application-level logging](#install-glog-a-library-that-implements-application-level-logging)
@@ -165,7 +164,7 @@ If you are using Debian 9, Ubuntu 14.10 or above, this can be done by copying
 and pasting the following line in a terminal:
 
 ```
-$ sudo apt install build-essential cmake git pkg-config libboost-dev libboost-date-time-dev \
+$ sudo apt install build-essential cmake git pkgconf libboost-dev libboost-date-time-dev \
        libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev \
        libboost-serialization-dev liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr \
        libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev \
@@ -182,17 +181,6 @@ In distributions older than Ubuntu 21.04 Hirsute / Debian 11, the package
 
 In distributions older than Ubuntu 22.04 Jammy / Debian 12, the package
 `libssl-dev` must be replaced by `libgnutls-openssl-dev`.
-
-**Note for Ubuntu 14.04 LTS "trusty" users:** you will need to build from source
-and install GNU Radio manually, as explained below, since GNSS-SDR requires
-`gnuradio-dev` >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the
-packages above BUT EXCEPT `libuhd-dev`, `gnuradio-dev`, and `gr-osmosdr` (and
-remove them if they are already installed in your machine), and install those
-dependencies using PyBOMBS. The same applies to `libmatio-dev`: Ubuntu 14.04
-came with 1.5.2 and the minimum required version is 1.5.3. Please do not install
-the `libmatio-dev` package and install `libtool`, `automake` and `libhdf5-dev`
-instead. A recent version of the library will be downloaded and built
-automatically if CMake does not find it installed.
 
 In distributions older than Ubuntu 16.04 or Debian 9, `python3-mako` must be
 replaced by `python-mako`. For Ubuntu 14.04, you will need to add the package
@@ -298,88 +286,7 @@ $ yum install -y make gcc gcc-c++ kernel-devel cmake git boost-devel \
 Once you have installed these packages, you can jump directly to
 [download the source code and build GNSS-SDR](#clone-gnss-sdrs-git-repository).
 
-### Alternative 2: Install dependencies using PyBOMBS
-
-This option is adequate if you are interested in development, in working with
-the most recent versions of software dependencies, want more fine-tuning on the
-installed versions, or simply in building everything from the scratch just for
-the fun of it. In such cases, we recommend using
-[PyBOMBS](https://github.com/gnuradio/pybombs "Python Build Overlay Managed Bundle System")
-(Python Build Overlay Managed Bundle System), GNU Radio's meta-package manager
-tool that installs software from source, or whatever the local package manager
-is, that automatically does all the work for you. Please take a look at the
-configuration options and general PyBOMBS usage at
-https://github.com/gnuradio/pybombs. Here we provide a quick step-by-step
-tutorial.
-
-First of all, install some basic packages:
-
-```
-$ sudo apt install git python3-pip
-```
-
-Download, build and install PyBOMBS:
-
-```
-$ sudo pip3 install --upgrade git+https://github.com/gnuradio/pybombs.git
-```
-
-Apply a configuration:
-
-```
-$ pybombs auto-config
-```
-
-Add list of default recipes:
-
-```
-$ pybombs recipes add-defaults
-```
-
-Download, build and install GNU Radio, related drivers, and some other extra
-modules into the directory `/path/to/prefix` (replace this path by your
-preferred one, for instance `$HOME/sdr`):
-
-```
-$ pybombs prefix init /path/to/prefix -a myprefix -R gnuradio-default
-```
-
-This will perform a local installation of the dependencies under
-`/path/to/prefix`, so they will not be visible when opening a new terminal. In
-order to make them available, you will need to set up the adequate environment
-variables:
-
-```
-$ cd /path/to/prefix
-$ . ./setup_env.sh
-```
-
-Now you are ready to use GNU Radio and to jump into building GNSS-SDR after
-installing a few other dependencies. Actually, those are steps that PyBOMBS can
-do for you as well:
-
-```
-$ pybombs install gnss-sdr
-```
-
-By default, PyBOMBS installs the ‘next’ branch of GNSS-SDR development, which is
-the most recent version of the source code. This behavior can be modified by
-altering the corresponding recipe at
-`$HOME/.pybombs/recipes/gr-recipes/gnss-sdr.lwr`
-
-In case you do not want to use PyBOMBS and prefer to build and install GNSS-SDR
-step by step (i.e., cloning the repository and doing the usual
-`cmake .. && make && make install` dance), Armadillo, GFlags, Glog, GnuTLS, and
-Matio can be installed either by using PyBOMBS:
-
-```
-$ pybombs install armadillo gflags glog gnutls matio
-```
-
-or manually as explained below, and then please follow instructions on how to
-[download the source code and build GNSS-SDR](#clone-gnss-sdrs-git-repository).
-
-### Manual installation of other required dependencies
+### Alternative 2: Manual installation of required dependencies
 
 #### Install [Armadillo](https://arma.sourceforge.net/ "Armadillo's Homepage"), a C++ linear algebra library
 
@@ -929,8 +836,6 @@ do so.
   to build, ship, and run distributed applications, whether on laptops, data
   center VMs, or the cloud. Visit
   [https://github.com/carlesfernandez/docker-gnsssdr](https://github.com/carlesfernandez/docker-gnsssdr)
-  or
-  [https://github.com/carlesfernandez/docker-pybombs-gnsssdr](https://github.com/carlesfernandez/docker-pybombs-gnsssdr)
   for instructions.
 
 - **Snap package**: [Snaps](https://snapcraft.io) are Linux packages aimed for

@@ -3350,11 +3350,27 @@ endif()
 if(ENABLE_ION)
     include(FetchContent)
     set(CMAKE_POLICY_DEFAULT_CMP0063 NEW)
+    # Fix for CMake 4.0
+    set(ION_METADATA_PATCH_COMMAND "")
+    if(NOT CMAKE_VERSION VERSION_LESS 4.0)
+        find_program(Patch_EXECUTABLE NAME patch PATHS ENV PATH)
+        if(NOT Patch_EXECUTABLE)
+            message(FATAL_ERROR "The patch command is not found. It is required to build the ION GNSS-SDR Metadata Standard. Please check your OS documentation and install the patch command.")
+        endif()
+        set(ION_METADATA_PATCH_COMMAND
+            ${Patch_EXECUTABLE} -p0 -i ${GNSSSDR_SOURCE_DIR}/tests/data/ion_gnss_standard_cmake.patch
+        )
+    endif()
+    # Patch only once
+    if(EXISTS ${GNSSSDR_BINARY_DIR}/thirdparty/gnss-metadata-standard/CMakeLists.txt)
+        set(ION_METADATA_PATCH_COMMAND "")
+    endif()
     FetchContent_Declare(
         gnss_metadata_standard
         GIT_REPOSITORY https://github.com/IonMetadataWorkingGroup/GNSS-Metadata-Standard
         GIT_TAG 220d116e10db5e403e21b77a1fa25aa35feda198
         SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/gnss-metadata-standard
+        PATCH_COMMAND ${ION_METADATA_PATCH_COMMAND}
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/gnss-metadata-standard
         BINARY_DIR ${GNSSSDR_BINARY_DIR}/gnss-metadata-standard
     )

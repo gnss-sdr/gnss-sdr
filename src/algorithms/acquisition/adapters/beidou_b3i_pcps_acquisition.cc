@@ -76,6 +76,8 @@ BeidouB3iPcpsAcquisition::BeidouB3iPcpsAcquisition(
     code_ = volk_gnsssdr::vector<std::complex<float>>(vector_length_);
 
     acquisition_ = pcps_make_acquisition(acq_parameters_);
+    // Ugly hack to make tracking lock onto highest correlation peak
+    acquisition_->set_history(vector_length_);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
     if (item_type_ == "cbyte")

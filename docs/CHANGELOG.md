@@ -21,6 +21,15 @@ All notable changes to GNSS-SDR will be documented in this file.
   warning).
 - Added formatting of `.proto` files with clang-format. Added check in CI job.
 
+### Improvements in Portability:
+
+- Fix building option `-DENABLE_ION=ON` when using CMake >= 4.0.
+
+See the definitions of concepts and metrics at
+https://gnss-sdr.org/design-forces/
+
+&nbsp;
+
 ## [GNSS-SDR v0.0.20](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.20) - 2025-04-01
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15126929.svg)](https://doi.org/10.5281/zenodo.15126929)

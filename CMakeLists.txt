@@ -3365,13 +3365,17 @@ if(ENABLE_ION)
     if(EXISTS ${GNSSSDR_BINARY_DIR}/thirdparty/gnss-metadata-standard/CMakeLists.txt)
         set(ION_METADATA_PATCH_COMMAND "")
     endif()
+    set(NO_WARNING_FLAGS "")
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang" AND NOT WIN32)
+        set(NO_WARNING_FLAGS "-DCMAKE_CXX_FLAGS_INIT=-w" "-DCMAKE_C_FLAGS_INIT=-w")
+    endif()
     FetchContent_Declare(
         gnss_metadata_standard
         GIT_REPOSITORY https://github.com/IonMetadataWorkingGroup/GNSS-Metadata-Standard
         GIT_TAG 220d116e10db5e403e21b77a1fa25aa35feda198
         SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/gnss-metadata-standard
         PATCH_COMMAND ${ION_METADATA_PATCH_COMMAND}
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/gnss-metadata-standard
+        CMAKE_ARGS ${NO_WARNING_FLAGS} -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/gnss-metadata-standard
         BINARY_DIR ${GNSSSDR_BINARY_DIR}/gnss-metadata-standard
     )
     FetchContent_MakeAvailable(gnss_metadata_standard)

@@ -7,7 +7,7 @@ SPDX-FileCopyrightText: 2025 Carles Fernandez-Prades <carles.fernandez@cttc.es>
  endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
  
 -cmake_minimum_required(VERSION 2.8)
-+cmake_minimum_required(VERSION 2.8.12...3.5)
++cmake_minimum_required(VERSION 2.8.12...3.10)
  project(GNSS_METADATA_STANDARD CXX C)
  
  file(RELATIVE_PATH RELATIVE_CMAKE_CALL ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})

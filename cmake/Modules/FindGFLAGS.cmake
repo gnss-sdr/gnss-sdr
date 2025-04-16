@@ -47,7 +47,7 @@ if(APPLE)
         PATHS
             ${GFLAGS_ROOT_USER_PROVIDED}/lib
             ${GNSSSDR_LIB_PATHS}
-            ${GNSSSDR_LIB_PATHS}/opt/gflags/lib
+        PATH_SUFFIXES opt/gflags/lib
     )
 else()
     find_path(GFlags_ROOT_DIR
@@ -68,7 +68,7 @@ if(GFlags_ROOT_DIR)
             ${GFlags_ROOT_DIR}/src
             ${GFLAGS_ROOT_USER_PROVIDED}/include
             ${GNSSSDR_INCLUDE_PATHS}
-            ${GNSSSDR_INCLUDE_PATHS}/opt/gflags/include
+        PATH_SUFFIXES opt/gflags/include
     )
 
     # Find the libraries

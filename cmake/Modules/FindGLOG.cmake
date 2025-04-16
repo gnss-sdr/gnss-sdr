@@ -83,9 +83,8 @@ else()
             ${PC_GLOG_INCLUDEDIR}
         PATHS
             ${GNSSSDR_INCLUDE_PATHS}
-            ${GNSSSDR_INCLUDE_PATHS}/opt/glog/include
             ${GLOG_ROOT}/include
-        PATH_SUFFIXES glog
+        PATH_SUFFIXES glog opt/glog/include
     )
 endif()
 

@@ -52,11 +52,8 @@ find_path(PUGIXML_INCLUDE_DIR
     NAMES pugixml.hpp
     HINTS ${PC_PUGIXML_INCLUDEDIR}
     PATHS ${PUGIXML_ROOT_USER_DEFINED}/include
-          ${PUGIXML_ROOT_USER_DEFINED}/include/pugixml-${PC_PUGIXML_VERSION}
-          ${PUGIXML_ROOT_USER_DEFINED}/include/pugixml-1.9
           ${GNSSSDR_INCLUDE_PATHS}
-          ${GNSSSDR_INCLUDE_PATHS}/pugixml-${PC_PUGIXML_VERSION}
-          ${GNSSSDR_INCLUDE_PATHS}/pugixml-1.9
+    PATH_SUFFIXES pugixml-${PC_PUGIXML_VERSION} pugixml-1.9
 )
 
 find_library(PUGIXML_LIBRARY
@@ -64,13 +61,8 @@ find_library(PUGIXML_LIBRARY
     HINTS ${PC_PUGIXML_LIBDIR}
     PATHS ${PUGIXML_ROOT_USER_DEFINED}/lib
           ${PUGIXML_ROOT_USER_DEFINED}/lib64
-          ${PUGIXML_ROOT_USER_DEFINED}/lib/pugixml-${PC_PUGIXML_VERSION}
-          ${PUGIXML_ROOT_USER_DEFINED}/lib64/pugixml-${PC_PUGIXML_VERSION}
-          ${PUGIXML_ROOT_USER_DEFINED}}/lib/pugixml-1.9
-          ${PUGIXML_ROOT_USER_DEFINED}/lib64/pugixml-1.9
           ${GNSSSDR_LIB_PATHS}
-          ${GNSSSDR_LIB_PATHS}/pugixml-${PC_PUGIXML_VERSION}
-          ${GNSSSDR_LIB_PATHS}/pugixml-1.9
+    PATH_SUFFIXES pugixml-${PC_PUGIXML_VERSION} pugixml-1.9
 )
 
 # Support the REQUIRED and QUIET arguments, and set PUGIXML_FOUND if found.

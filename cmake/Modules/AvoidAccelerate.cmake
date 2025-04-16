@@ -27,11 +27,10 @@ find_library(BLAS_LIBRARIES
     NAMES libblas.dylib libopenblas.dylib
     PATHS
         ${BLAS_ROOT_USER_DEFINED}
-        ${BLAS_ROOT_USER_DEFINED}/lapack
-        ${GNSSSDR_LIB_PATHS}/lapack
         ${GNSSSDR_LIB_PATHS}
         /usr/local/opt/lapack/lib
         /opt/homebrew/opt/lapack/lib
+    PATH_SUFFIXES lapack
     NO_DEFAULT_PATH
     NO_SYSTEM_ENVIRONMENT_PATH
     NO_CMAKE_ENVIRONMENT_PATH
@@ -49,10 +48,10 @@ find_library(LAPACK_LIBRARIES
     liblapack.dylib
     PATHS
         ${BLAS_ROOT_USER_DEFINED}
-        ${BLAS_ROOT_USER_DEFINED}/lapack
-        ${GNSSSDR_LIB_PATHS}/lapack
+        ${GNSSSDR_LIB_PATHS}
         /usr/local/opt/lapack/lib
         /opt/homebrew/opt/lapack/lib
+    PATH_SUFFIXES lapack
     NO_DEFAULT_PATH
     NO_SYSTEM_ENVIRONMENT_PATH
     NO_CMAKE_ENVIRONMENT_PATH

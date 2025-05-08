@@ -31,6 +31,7 @@ set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
     unpack_2bit_samples.cc
     unpack_spir_gss6450_samples.cc
     labsat23_source.cc
+    extra_data_source.cc
     ${OPT_DRIVER_SOURCES}
 )
 
@@ -45,6 +46,7 @@ set(SIGNAL_SOURCE_GR_BLOCKS_HEADERS
     unpack_2bit_samples.h
     unpack_spir_gss6450_samples.h
     labsat23_source.h
+    extra_data_source.h
     ${OPT_DRIVER_HEADERS}
 )
 

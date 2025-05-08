@@ -70,6 +70,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
       d_smooth_filter_M(static_cast<double>(conf_.smoothing_factor)),
       d_T_rx_step_s(static_cast<double>(conf_.observable_interval_ms) / 1000.0),
       d_last_rx_clock_round20ms_error(0.0),
+      d_ref_channel(0U),
       d_T_rx_TOW_ms(0U),
       d_T_rx_step_ms(conf_.observable_interval_ms),
       d_T_status_report_timer_ms(0),
@@ -225,6 +226,7 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
                         {
                         case 1:  // reset TOW
                             d_T_rx_TOW_ms = 0;
+                            d_ref_channel = 0;
                             d_last_rx_clock_round20ms_error = 0;
                             d_T_rx_TOW_set = false;
                             for (uint32_t n = 0; n < d_nchannels_out; n++)
@@ -508,17 +510,20 @@ void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
         {
             // int32_t TOW_ref = std::numeric_limits<uint32_t>::max();
             uint32_t TOW_ref = 0U;
+            uint32_t ref_ch = 0U;
             for (it = data.cbegin(); it != data.cend(); it++)
                 {
                     if (it->Flag_valid_word)
                         {
                             if (it->TOW_at_current_symbol_ms > TOW_ref)
                                 {
+                                    ref_ch = it->Channel_ID;
                                     TOW_ref = it->TOW_at_current_symbol_ms;
                                     d_T_rx_TOW_set = true;
                                 }
                         }
                 }
+            d_ref_channel = ref_ch;
             d_T_rx_TOW_ms = TOW_ref;
             // align the receiver clock to integer multiple of d_T_rx_step_ms
             if (d_T_rx_TOW_ms % d_T_rx_step_ms)
@@ -657,6 +662,22 @@ void hybrid_observables_gs::set_tag_timestamp_in_sdr_timeframe(const std::vector
         }
 }
 
+void hybrid_observables_gs::propagate_extra_data(const std::vector<Gnss_Synchro> &data)
+{
+    if (d_extra_data_tags.empty())
+        {
+            return;
+        }
+
+    do
+        {
+            auto &tag = d_extra_data_tags.front();
+            add_item_tag(0, this->nitems_written(0) + 1, tag.key, tag.value);
+            d_extra_data_tags.pop();
+        }
+    while (!d_extra_data_tags.empty());
+}
+
 
 int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)),
     gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
@@ -671,9 +692,21 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
         {
             d_Rx_clock_buffer.push_back(in[d_nchannels_in - 1][0].Tracking_sample_counter);
 
-            // time tags
             std::vector<gr::tag_t> tags_vec;
-            this->get_tags_in_range(tags_vec, d_nchannels_in - 1, this->nitems_read(d_nchannels_in - 1), this->nitems_read(d_nchannels_in - 1) + 1);
+            // extra data tags
+            get_tags_in_range(tags_vec, d_nchannels_in - 1, this->nitems_read(d_nchannels_in - 1), this->nitems_read(d_nchannels_in - 1) + 1, pmt::mp("extra_data"));
+            // std::cout << "OBS (" << std::to_string(tags_vec.size()) << ")" << std::endl;
+            while (!d_extra_data_tags.empty())
+                {
+                    d_extra_data_tags.pop();
+                }
+            for (const auto &tag : tags_vec)
+                {
+                    d_extra_data_tags.emplace(tag);
+                }
+            // time tags
+            tags_vec.clear();
+            this->get_tags_in_range(tags_vec, d_nchannels_in - 1, this->nitems_read(d_nchannels_in - 1), this->nitems_read(d_nchannels_in - 1) + 1, pmt::mp("timetag"));
             for (const auto &it : tags_vec)
                 {
                     try
@@ -759,6 +792,8 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
         {
             std::vector<Gnss_Synchro> epoch_data(d_nchannels_out);
             int32_t n_valid = 0;
+            std::vector<gr::tag_t> tags{};
+
             for (uint32_t n = 0; n < d_nchannels_out; n++)
                 {
                     Gnss_Synchro interpolated_gnss_synchro{};
@@ -794,6 +829,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                 {
                     compute_pranges(epoch_data);
                     set_tag_timestamp_in_sdr_timeframe(epoch_data, d_Rx_clock_buffer.front());
+                    propagate_extra_data(epoch_data);
                 }
 
             // Carrier smoothing (optional)

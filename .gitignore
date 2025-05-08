@@ -3,6 +3,7 @@
 *~
 .*.swp
 /build/
+/.build/
 /build*/
 /cmake-build-debug/
 /data/

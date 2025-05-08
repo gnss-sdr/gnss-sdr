@@ -79,6 +79,9 @@ private:
     void smooth_pseudoranges(std::vector<Gnss_Synchro>& data);
 
     void set_tag_timestamp_in_sdr_timeframe(const std::vector<Gnss_Synchro>& data, uint64_t rx_clock);
+
+    void propagate_extra_data(const std::vector<Gnss_Synchro> &data);
+
     int32_t save_matfile() const;
 
     Obs_Conf d_conf;
@@ -89,6 +92,8 @@ private:
 
     std::vector<std::queue<GnssTime>> d_SourceTagTimestamps;
     std::queue<GnssTime> d_TimeChannelTagTimestamps;
+
+    std::queue<gr::tag_t> d_extra_data_tags;
 
     std::vector<bool> d_channel_last_pll_lock;
     std::vector<double> d_channel_last_pseudorange_smooth;
@@ -102,6 +107,7 @@ private:
     double d_T_rx_step_s;
     double d_last_rx_clock_round20ms_error;
 
+    uint32_t d_ref_channel;
     uint32_t d_T_rx_TOW_ms;
     uint32_t d_T_rx_step_ms;
     uint32_t d_T_status_report_timer_ms;

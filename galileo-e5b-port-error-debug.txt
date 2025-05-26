@@ -1,0 +1,131 @@
+[GNSS-SDR]
+
+;######### GLOBAL OPTIONS ##################
+GNSS-SDR.internal_fs_sps=10000000
+
+;######### SIGNAL_SOURCE CONFIG ############
+SignalSource.implementation=Osmosdr_Signal_Source
+SignalSource.item_type=gr_complex
+SignalSource.sampling_frequency=10000000
+;SignalSource.rf_bw=8000000
+
+SignalSource.freq=1207140000
+;SignalSource.freq=100000000
+SignalSource.rf_gain=40
+SignalSource.if_gain=40
+SignalSource.AGC_enabled=false
+SignalSource.samples=0
+SignalSource.repeat=false
+SignalSource.gain=60
+SignalSource.osmosdr_args=bladerf,biastee=1
+
+SignalSource.enable_throttle_control=false
+SignalSource.dump=false
+SignalSource.dump_filename=./signal_source.dat
+
+;######### SIGNAL_CONDITIONER CONFIG ############
+SignalConditioner.implementation=Signal_Conditioner
+
+;######### DATA_TYPE_ADAPTER CONFIG ############
+DataTypeAdapter.implementation=Pass_Through
+
+;######### INPUT_FILTER CONFIG ############
+;InputFilter.implementation=Freq_Xlating_Fir_Filter
+InputFilter.implementation=Pass_Through
+InputFilter.decimation_factor=1
+InputFilter.input_item_type=gr_complex
+InputFilter.output_item_type=gr_complex
+InputFilter.taps_item_type=float
+InputFilter.number_of_taps=5
+InputFilter.number_of_bands=2
+InputFilter.band1_begin=0.0
+InputFilter.band1_end=0.85
+InputFilter.band2_begin=0.9
+InputFilter.band2_end=1.0
+InputFilter.ampl1_begin=1.0
+InputFilter.ampl1_end=1.0
+InputFilter.ampl2_begin=0.0
+InputFilter.ampl2_end=0.0
+InputFilter.band1_error=1.0
+InputFilter.band2_error=1.0
+InputFilter.filter_type=bandpass
+InputFilter.grid_density=16
+InputFilter.dump=false
+InputFilter.dump_filename=../data/input_filter.dat
+
+;######### RESAMPLER CONFIG ############
+Resampler.implementation=Pass_Through
+
+;######### CHANNELS GLOBAL CONFIG ############
+Channels_7X.count=4
+Channels.in_acquisition=1
+
+;######### ACQUISITION 7X CONFIG ############
+Acquisition_7X.implementation=Galileo_E5b_PCPS_Acquisition
+Acquisition_7X.item_type=gr_complex
+Acquisition_7X.coherent_integration_time_ms=1
+;Acquisition_7X.pfa=0.01
+Acquisition_7X.pfa=0.001
+Acquisition_7X.doppler_max=5000
+Acquisition_7X.doppler_step=200
+Acquisition_7X.bit_transition_flag=false
+Acquisition_7X.max_dwells=1
+Acquisition_7X.CAF_window_hz=0
+Acquisition_7X.Zero_padding=0
+Acquisition_7X.dump=false
+Acquisition_7X.dump_filename=./acq_dump.dat
+
+;######### TRACKING GLOBAL CONFIG ############
+Tracking_7X.implementation=Galileo_E5b_DLL_PLL_Tracking
+Tracking_7X.item_type=gr_complex
+Tracking_7X.extend_correlation_symbols=20
+Tracking_7X.pll_bw_hz=30.0
+Tracking_7X.dll_bw_hz=10.0
+Tracking_7X.pll_bw_narrow_hz=10.0
+Tracking_7X.dll_bw_narrow_hz=2.0
+Tracking_7X.order=3
+Tracking_7X.early_late_space_chips=0.5
+Tracking_7X.fll_bw_hz=20
+Tracking_7X.enable_fll_pull_in=true
+Tracking_7X.enable_fll_steady_state=false
+Tracking_7X.cn0_min=29
+Tracking_7X.dump=false
+Tracking_7X.dump_filename=./tracking_ch_
+
+;######### TELEMETRY DECODER CONFIG ############
+TelemetryDecoder_7X.implementation=Galileo_E5b_Telemetry_Decoder
+TelemetryDecoder_7X.dump=false
+
+;######### OBSERVABLES CONFIG ############
+Observables.implementation=Hybrid_Observables
+Observables.dump=false
+Observables.dump_filename=./observables.dat
+
+;######### PVT CONFIG ############
+;#implementation: Position Velocity and Time (PVT) implementation algorithm:
+;######### PVT CONFIG ############
+PVT.implementation=RTKLIB_PVT
+PVT.positioning_mode=PPP_Static ; options: Single, Static, Kinematic, PPP_Static, PPP_Kinematic
+PVT.iono_model=Broadcast ; options: OFF, Broadcast, SBAS, Iono-Free-LC, Estimate_STEC, IONEX
+PVT.trop_model=Saastamoinen ; options: OFF, Saastamoinen, SBAS, Estimate_ZTD, Estimate_ZTD_Grad
+PVT.output_rate_ms=100
+PVT.display_rate_ms=500
+PVT.dump_filename=./PVT
+PVT.nmea_dump_filename=./gnss_sdr_pvt.nmea;
+PVT.flag_nmea_tty_port=false
+PVT.nmea_dump_devname=/dev/pts/7
+PVT.flag_rtcm_server=false
+PVT.flag_rtcm_tty_port=false
+PVT.rtcm_dump_devname=/dev/pts/1
+PVT.dump=false
+
+;#dump: Enable or disable the PVT internal binary data file logging [true] or [false]
+PVT.dump=false
+PVT.enable_monitor=true
+PVT.monitor_client_addresses=127.0.0.1
+PVT.monitor_udp_port=1111
+
+Monitor.enable_monitor=true
+Monitor.decimation_factor=8
+Monitor.client_addresses=127.0.0.1
+Monitor.udp_port=1112

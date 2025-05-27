@@ -19,8 +19,7 @@
 #include "glonass_l2_signal_replica.h"
 #include <array>
 #include <bitset>
-
-const auto AUX_CEIL = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
+#include <cmath>
 
 void glonass_l2_ca_code_gen_complex(own::span<std::complex<float>> dest, uint32_t chip_shift)
 {
@@ -104,8 +103,8 @@ void glonass_l2_ca_code_gen_complex_sampled(own::span<std::complex<float>> dest,
             // number of samples per millisecond (because one C/A code period is
             // one millisecond).
 
-            aux = (ts * (static_cast<float>(i) + 1)) / tc;
-            codeValueIndex = AUX_CEIL(aux) - 1;
+            aux = ts * static_cast<float>(i) / tc;
+            codeValueIndex = static_cast<int32_t>(std::floor(aux));
 
             // --- Make the digitized version of the C/A code ------------------
             // The "upsampled" code is made by selecting values form the CA code

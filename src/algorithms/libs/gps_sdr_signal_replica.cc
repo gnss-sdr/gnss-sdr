@@ -19,8 +19,7 @@
 #include "gps_sdr_signal_replica.h"
 #include <array>
 #include <bitset>
-
-const auto AUX_CEIL = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
+#include <cmath>
 
 void gps_l1_ca_code_gen_int(own::span<int32_t> dest, int32_t prn, uint32_t chip_shift)
 {
@@ -144,7 +143,6 @@ void gps_l1_ca_code_gen_complex_sampled(own::span<std::complex<float>> dest, uin
     const float ts = 1.0F / static_cast<float>(sampling_freq);  // Sampling period in sec
     std::array<std::complex<float>, 1023> code_aux{};
     int32_t codeValueIndex;
-    float aux;
 
     gps_l1_ca_code_gen_complex(code_aux, prn, chip_shift);  // generate C/A code 1 sample per chip
 
@@ -157,8 +155,7 @@ void gps_l1_ca_code_gen_complex_sampled(own::span<std::complex<float>> dest, uin
             // number of samples per millisecond (because one C/A code period is one
             // millisecond).
 
-            aux = (ts * (static_cast<float>(i) + 1)) / tc;
-            codeValueIndex = AUX_CEIL(aux) - 1;
+            codeValueIndex = static_cast<int32_t>(std::floor(ts * static_cast<float>(i) / tc));
 
             // --- Make the digitized version of the C/A code -------------------
             // The "upsampled" code is made by selecting values form the CA code

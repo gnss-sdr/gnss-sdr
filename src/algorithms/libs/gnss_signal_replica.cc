@@ -19,10 +19,9 @@
 #include "gnss_signal_replica.h"
 #include "MATH_CONSTANTS.h"
 #include <gnuradio/fxpt_nco.h>
+#include <cmath>
 #include <cstddef>  // for size_t
 
-
-const auto AUX_CEIL2 = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
 void complex_exp_gen(own::span<std::complex<float>> dest, double freq, double sampling_freq)
 {
@@ -258,13 +257,11 @@ void resampler(const own::span<float> from, own::span<float> dest, float fs_in,
     float fs_out)
 {
     uint32_t codeValueIndex;
-    float aux;
     const float t_out = 1.0F / fs_out;  // Output sampling period
     const size_t dest_size = dest.size();
     for (size_t i = 0; i < dest_size - 1; i++)
         {
-            aux = (t_out * (static_cast<float>(i) + 1.0F)) * fs_in;
-            codeValueIndex = AUX_CEIL2(aux) - 1;
+            codeValueIndex = static_cast<uint32_t>(std::floor(t_out * i * fs_in));
             dest[i] = from[codeValueIndex];
         }
     // Correct the last index (due to number rounding issues)
@@ -281,8 +278,8 @@ void resampler(own::span<const std::complex<float>> from, own::span<std::complex
     const size_t dest_size = dest.size();
     for (size_t i = 0; i < dest_size - 1; i++)
         {
-            aux = (t_out * (static_cast<float>(i) + 1.0F)) * fs_in;
-            codeValueIndex = AUX_CEIL2(aux) - 1;
+            aux = (t_out * (static_cast<float>(i))) * fs_in;
+            codeValueIndex = static_cast<uint32_t>(std::floor(aux));
             dest[i] = from[codeValueIndex];
         }
     // Correct the last index (due to number rounding issues)

@@ -92,7 +92,7 @@ void gps_l2c_m_code_gen_complex_sampled(own::span<std::complex<float>> dest, uin
             // === Digitizing ==================================================
 
             // --- Make index array to read L2C code values --------------------
-            codeValueIndex = std::ceil((ts * (static_cast<float>(i) + 1.0F)) / tc) - 1;
+            codeValueIndex = static_cast<int32_t>(std::floor(ts * static_cast<float>(i) / tc));
 
             // --- Make the digitized version of the L2C code ------------------
             if (i == samplesPerCode - 1)

@@ -112,10 +112,10 @@ protected:
     virtual double packetsPerSample() const;
 
     //! Compute the number of samples to skip
-    virtual size_t samplesToSkip() const;
+    virtual uint64_t samplesToSkip() const;
 
     //! Compute the number of samples in the file
-    size_t computeSamplesInFile() const;
+    uint64_t computeSamplesInFile() const;
 
     //! Abstracted front-end source. Sub-classes may override if they create specialized chains to
     //! decode source files into a usable format

@@ -36,6 +36,8 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Added a GNSS skyplot visualization utility at `utils/skyplot/skyplot.py`,
   which generates a skyplot from a RINEX navigation file and saves the image in
   PDF format. It requires `numpy` and `matplotlib`.
+- `File_Signal_Source` fixed file length and sample skip calculations on 32-bit
+  systems.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

@@ -56,6 +56,7 @@ public:
     virtual float property(std::string property_name, float default_value) const = 0;
     virtual double property(std::string property_name, double default_value) const = 0;
     virtual void set_property(std::string property_name, std::string value) = 0;
+    virtual bool is_present(const std::string& property_name) const = 0;
 };
 
 

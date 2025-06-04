@@ -57,7 +57,7 @@ public:
     double property(std::string property_name, double default_value) const override;
     void set_property(std::string property_name, std::string value) override;
     void supersede_property(const std::string& property_name, const std::string& value);
-    bool is_present(const std::string& property_name) const;
+    bool is_present(const std::string& property_name) const override;
 
 private:
     std::map<std::string, std::string> properties_;

@@ -19,6 +19,7 @@
 #define GNSS_SDR_FILE_SOURCE_BASE_H
 
 #include "concurrent_queue.h"
+#include "sensor_data_source.h"
 #include "signal_source_base.h"
 #include <gnuradio/blocks/file_sink.h>  // for dump
 #include <gnuradio/blocks/file_source.h>
@@ -28,7 +29,6 @@
 #include <string>
 #include <tuple>
 
-#include "extra_data_source.h"
 
 /** \addtogroup Signal_Source
  * \{ */
@@ -133,7 +133,7 @@ protected:
     gnss_shared_ptr<gr::block> valve() const;
     gnss_shared_ptr<gr::block> throttle() const;
     gnss_shared_ptr<gr::block> sink() const;
-    ExtraDataSource::sptr extra_data_source() const;
+    SensorDataSource::sptr sensor_data_source() const;
 
     // The methods create the various blocks, if enabled, and return access to them. The created
     // object is also held in this class
@@ -141,7 +141,7 @@ protected:
     gr::blocks::throttle::sptr create_throttle();
     gnss_shared_ptr<gr::block> create_valve();
     gr::blocks::file_sink::sptr create_sink();
-    ExtraDataSource::sptr create_extra_data_source();
+    SensorDataSource::sptr create_sensor_data_source();
 
     // Subclass hooks to augment created objects, as required
     virtual void create_file_source_hook();
@@ -159,7 +159,7 @@ private:
     gr::blocks::file_source::sptr file_source_;
     gr::blocks::throttle::sptr throttle_;
     gr::blocks::file_sink::sptr sink_;
-    ExtraDataSource::sptr extra_data_source_;
+    SensorDataSource::sptr sensor_data_source_;
 
     // The valve allows only the configured number of samples through, then it closes.
 
@@ -186,13 +186,7 @@ private:
     bool dump_;
 
     // Configuration for Extra Data source
-    bool attach_extra_data_;
-    std::string ed_path_;
-    std::size_t ed_offset_in_file_;
-    std::size_t ed_item_size_;
-    bool ed_repeat_;
-    std::size_t ed_offset_in_samples_;
-    std::size_t ed_sample_period_;
+    SensorDataSourceConfiguration sensor_data_source_configuration_;
 };
 
 /** \} */

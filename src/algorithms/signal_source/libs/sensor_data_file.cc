@@ -1,5 +1,5 @@
 /*!
- * \file extra_data_file.cc
+ * \file sensor_data_file.cc
  * \brief  Provides a simple abstraction for reading contiguous binary data from a file
  * \author Victor Castillo, 2024. victorcastilloaguero(at).gmail.es
  *
@@ -14,20 +14,26 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "extra_data_file.h"
+#include "sensor_data_file.h"
 #include <cstring>
 
-ExtraDataFile::ExtraDataFile(
+SensorDataFile::SensorDataFile(
     const std::string& path,
+    const std::size_t& sample_delay,
+    const std::size_t& sample_period,
     const std::size_t& offset_in_file,
     const std::size_t& item_size,
     const bool& repeat)
     : path_(path),
       file_(path_),
+      sample_delay_(sample_delay),
+      sample_period_(sample_period),
       offset_in_file_(offset_in_file),
       item_size_(item_size),
       repeat_(repeat),
       done_(false),
+      chunks_read_(0),
+      last_sample_stamp_(sample_delay),
       io_buffer_size_(item_size * IO_BUFFER_CAPACITY),
       offset_in_io_buffer_(io_buffer_size_)  // Set to end of buffer so that first look up will trigger a read.
 {
@@ -36,20 +42,20 @@ ExtraDataFile::ExtraDataFile(
     io_buffer_.resize(io_buffer_size_);
 }
 
-void ExtraDataFile::reset()
+void SensorDataFile::reset()
 {
     file_.seekg(offset_in_file_, std::ios_base::beg);
     offset_in_io_buffer_ = io_buffer_size_;
     done_ = false;
 }
 
-std::vector<uint8_t> ExtraDataFile::read_item()
+bool SensorDataFile::read_item(std::vector<uint8_t>& buffer)
 {
     if (offset_in_io_buffer_ >= io_buffer_size_)
         {
             if (done_)
                 {
-                    return {};
+                    return false;
                 }
             else
                 {
@@ -57,13 +63,30 @@ std::vector<uint8_t> ExtraDataFile::read_item()
                 }
         }
 
-    std::vector<uint8_t> item_buf{};
-    read_into_item_buffer(item_buf);
-
-    return item_buf;
+    chunks_read_++;
+    read_into_item_buffer(buffer);
+    return true;
 }
 
-void ExtraDataFile::read_into_io_buffer()
+bool SensorDataFile::read_until_sample(std::size_t end_sample, std::size_t& sample_stamp, std::vector<uint8_t>& buffer)
+{
+    if (last_sample_stamp_ + sample_period_ < end_sample)
+        {
+            last_sample_stamp_ += sample_period_;
+            sample_stamp = last_sample_stamp_;
+            read_item(buffer);
+            return true;
+        }
+
+    return false;
+}
+
+std::size_t SensorDataFile::get_chunks_read() const
+{
+    return chunks_read_;
+}
+
+void SensorDataFile::read_into_io_buffer()
 {
     file_.read(reinterpret_cast<char*>(&io_buffer_[0]), io_buffer_size_);
     const std::size_t bytes_read = file_.gcount();
@@ -85,7 +108,7 @@ void ExtraDataFile::read_into_io_buffer()
     offset_in_io_buffer_ = 0;
 }
 
-void ExtraDataFile::read_into_item_buffer(std::vector<uint8_t>& item_buf)
+void SensorDataFile::read_into_item_buffer(std::vector<uint8_t>& item_buf)
 {
     item_buf.resize(item_size_);
     std::memcpy(item_buf.data(), &io_buffer_[offset_in_io_buffer_], item_size_);

@@ -662,20 +662,20 @@ void hybrid_observables_gs::set_tag_timestamp_in_sdr_timeframe(const std::vector
         }
 }
 
-void hybrid_observables_gs::propagate_extra_data(const std::vector<Gnss_Synchro> &data)
+void hybrid_observables_gs::propagate_sensor_data(const std::vector<Gnss_Synchro> &data)
 {
-    if (d_extra_data_tags.empty())
+    if (d_sensor_data_tags.empty())
         {
             return;
         }
 
     do
         {
-            auto &tag = d_extra_data_tags.front();
+            auto &tag = d_sensor_data_tags.front();
             add_item_tag(0, this->nitems_written(0) + 1, tag.key, tag.value);
-            d_extra_data_tags.pop();
+            d_sensor_data_tags.pop();
         }
-    while (!d_extra_data_tags.empty());
+    while (!d_sensor_data_tags.empty());
 }
 
 
@@ -693,16 +693,16 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
             d_Rx_clock_buffer.push_back(in[d_nchannels_in - 1][0].Tracking_sample_counter);
 
             std::vector<gr::tag_t> tags_vec;
-            // extra data tags
-            get_tags_in_range(tags_vec, d_nchannels_in - 1, this->nitems_read(d_nchannels_in - 1), this->nitems_read(d_nchannels_in - 1) + 1, pmt::mp("extra_data"));
+            // sensor data tags
+            get_tags_in_range(tags_vec, d_nchannels_in - 1, this->nitems_read(d_nchannels_in - 1), this->nitems_read(d_nchannels_in - 1) + 1, pmt::mp("sensor_data"));
             // std::cout << "OBS (" << std::to_string(tags_vec.size()) << ")" << std::endl;
-            while (!d_extra_data_tags.empty())
+            while (!d_sensor_data_tags.empty())
                 {
-                    d_extra_data_tags.pop();
+                    d_sensor_data_tags.pop();
                 }
             for (const auto &tag : tags_vec)
                 {
-                    d_extra_data_tags.emplace(tag);
+                    d_sensor_data_tags.emplace(tag);
                 }
             // time tags
             tags_vec.clear();
@@ -829,7 +829,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                 {
                     compute_pranges(epoch_data);
                     set_tag_timestamp_in_sdr_timeframe(epoch_data, d_Rx_clock_buffer.front());
-                    propagate_extra_data(epoch_data);
+                    propagate_sensor_data(epoch_data);
                 }
 
             // Carrier smoothing (optional)

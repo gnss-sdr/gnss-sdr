@@ -62,7 +62,7 @@ public:
     float property(std::string property_name, float default_value) const override;
     double property(std::string property_name, double default_value) const override;
     void set_property(std::string property_name, std::string value) override;
-    bool is_present(const std::string& property_name) const;
+    bool is_present(const std::string& property_name) const override;
     bool has_section() const;
 
 private:

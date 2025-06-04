@@ -1988,34 +1988,9 @@ void rtklib_pvt_gs::update_HAS_corrections()
 int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
-    // *************** time tags ****************
-    if (d_enable_rx_clock_correction == false)  // todo: currently only works if clock correction is disabled
-        {
-            std::vector<gr::tag_t> tags_vec;
-            // time tag from obs to pvt is always propagated in channel 0
-            this->get_tags_in_range(tags_vec, 0, this->nitems_read(0), this->nitems_read(0) + noutput_items, pmt::mp("timetag"));
-            for (const auto& it : tags_vec)
-                {
-                    try
-                        {
-                            if (pmt::any_ref(it.value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
-                                {
-                                    const auto timetag = wht::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it.value));
-                                    // std::cout << "PVT timetag: " << timetag->rx_time << '\n';
-                                    d_TimeChannelTagTimestamps.push(*timetag);
-                                }
-                            else
-                                {
-                                    std::cout << "hash code not match\n";
-                                }
-                        }
-                    catch (const wht::bad_any_cast& e)
-                        {
-                            std::cout << "msg Bad any_cast: " << e.what();
-                        }
-                }
-        }
-    // ************ end time tags **************
+    std::vector<gr::tag_t> sensor_tags;
+    this->get_tags_in_range(sensor_tags, 0, this->nitems_read(0), this->nitems_read(0) + noutput_items, pmt::mp("sensor_data"));
+    SensorDataAggregator sensor_data{sensor_tags};
 
     for (int32_t epoch = 0; epoch < noutput_items; epoch++)
         {

@@ -78,15 +78,24 @@ const std::vector<SensorDataConfiguration>& SensorDataSourceConfiguration::senso
 
 void SensorDataSourceConfiguration::configure_files(const ConfigurationInterface* configuration)
 {
-    uint64_t file_count = configuration->property(CONFIGURATION_ROLE + ".file_count"s, 1UL);
-    for (uint64_t id = 0; id < file_count; ++id)
+    for (uint64_t id = 0;; ++id)
         {
             std::string role = CONFIGURATION_ROLE + ".file" + std::to_string(id);
+
+            // Find out which sensor this is
+            const std::string filename = configuration->property(role + ".filename"s, std::string{""});
+
+            if (filename.empty())
+                {
+                    // No more files
+                    break;
+                }
+
             files_.emplace(
                 id,
                 SensorDataFileConfiguration{
                     .id = id,
-                    .filename = configuration->property(role + ".filename"s, std::string{""}),
+                    .filename = filename,
                     .repeat = configuration->property(role + ".repeat"s, false),
                     .chunk_size = configuration->property(role + ".chunk_size"s, 0UL),
                     .file_offset = configuration->property(role + ".file_offset"s, 0UL),

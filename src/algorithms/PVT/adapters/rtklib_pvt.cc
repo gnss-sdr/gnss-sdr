@@ -86,6 +86,10 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     pvt_output_parameters.system_ecef_pos_sd_m = configuration->property(role + ".kf_system_ecef_pos_sd_m", 2.0);
     pvt_output_parameters.system_ecef_vel_sd_ms = configuration->property(role + ".kf_system_ecef_vel_sd_ms", 0.5);
 
+    // PVT Sensor data settings
+    SensorDataSourceConfiguration sensor_data_configuration{configuration};
+    pvt_output_parameters.kf_use_imu_vel = configuration->property(role + ".kf_use_imu_vel", false);
+
     // NMEA Printer settings
     pvt_output_parameters.flag_nmea_tty_port = configuration->property(role + ".flag_nmea_tty_port", false);
     pvt_output_parameters.nmea_dump_filename = configuration->property(role + ".nmea_dump_filename", default_nmea_dump_filename);
@@ -628,7 +632,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         }
 
     // make PVT object
-    pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk);
+    pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk, sensor_data_configuration);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
     if (out_streams_ > 0)
         {

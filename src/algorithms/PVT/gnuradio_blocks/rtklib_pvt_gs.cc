@@ -114,17 +114,20 @@ namespace wht = std;
 
 rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,
-    const rtk_t& rtk)
+    const rtk_t& rtk,
+    const SensorDataSourceConfiguration& sensor_data_configuration)
 {
     return rtklib_pvt_gs_sptr(new rtklib_pvt_gs(nchannels,
         conf_,
-        rtk));
+        rtk,
+        sensor_data_configuration));
 }
 
 
 rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,
-    const rtk_t& rtk)
+    const rtk_t& rtk,
+    const SensorDataSourceConfiguration& sensor_data_configuration)
     : gr::sync_block("rtklib_pvt_gs",
           gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
           gr::io_signature::make(0, 0, 0)),
@@ -604,6 +607,16 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
                     d_log_timetag = false;
                 }
         }
+
+    // Sensor Data
+    std::vector<SensorIdentifier::value_type> required_sensors{};
+    if (conf_.kf_use_imu_vel)
+        {
+            required_sensors.emplace_back(SensorIdentifier::IMU_VEL_X);
+            required_sensors.emplace_back(SensorIdentifier::IMU_VEL_Y);
+            required_sensors.emplace_back(SensorIdentifier::IMU_VEL_Z);
+        }
+    d_sensor_data_aggregator = std::make_unique<SensorDataAggregator>(sensor_data_configuration, required_sensors);
 
     d_start = std::chrono::system_clock::now();
 }
@@ -1989,8 +2002,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
     gr_vector_void_star& output_items __attribute__((unused)))
 {
     std::vector<gr::tag_t> sensor_tags;
-    this->get_tags_in_range(sensor_tags, 0, this->nitems_read(0), this->nitems_read(0) + noutput_items, pmt::mp("sensor_data"));
-    SensorDataAggregator sensor_data{sensor_tags};
+    this->get_tags_in_range(sensor_tags, 0, this->nitems_read(0), this->nitems_read(0) + noutput_items, d_sensor_data_aggregator->SENSOR_DATA_TAG);
+    d_sensor_data_aggregator->update(sensor_tags);
 
     for (int32_t epoch = 0; epoch < noutput_items; epoch++)
         {
@@ -2159,7 +2172,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     // old_time_debug = d_gnss_observables_map.cbegin()->second.RX_time * 1000.0;
                     uint32_t current_RX_time_ms = 0;
                     // #### solve PVT and store the corrected observable set
-                    if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, d_observable_interval_ms / 1000.0))
+                    if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, d_observable_interval_ms / 1000.0, *d_sensor_data_aggregator))
                         {
                             d_pvt_errors_counter = 0;  // Reset consecutive PVT error counter
                             const double Rx_clock_offset_s = d_internal_pvt_solver->get_time_offset_s();
@@ -2273,7 +2286,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     // compute on the fly PVT solution
                     if (flag_compute_pvt_output == true)
                         {
-                            flag_pvt_valid = d_user_pvt_solver->get_PVT(d_gnss_observables_map, d_output_rate_ms / 1000.0);
+                            flag_pvt_valid = d_user_pvt_solver->get_PVT(d_gnss_observables_map, d_output_rate_ms / 1000.0, *d_sensor_data_aggregator);
                         }
 
                     if (flag_pvt_valid == true)

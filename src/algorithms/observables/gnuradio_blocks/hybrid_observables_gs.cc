@@ -693,9 +693,8 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
             d_Rx_clock_buffer.push_back(in[d_nchannels_in - 1][0].Tracking_sample_counter);
 
             std::vector<gr::tag_t> tags_vec;
-            // sensor data tags
+            // Propagate sensor data tags
             get_tags_in_range(tags_vec, d_nchannels_in - 1, this->nitems_read(d_nchannels_in - 1), this->nitems_read(d_nchannels_in - 1) + 1, pmt::mp("sensor_data"));
-            // std::cout << "OBS (" << std::to_string(tags_vec.size()) << ")" << std::endl;
             while (!d_sensor_data_tags.empty())
                 {
                     d_sensor_data_tags.pop();
@@ -704,6 +703,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                 {
                     d_sensor_data_tags.emplace(tag);
                 }
+
             // time tags
             tags_vec.clear();
             this->get_tags_in_range(tags_vec, d_nchannels_in - 1, this->nitems_read(d_nchannels_in - 1), this->nitems_read(d_nchannels_in - 1) + 1, pmt::mp("timetag"));
@@ -792,8 +792,6 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
         {
             std::vector<Gnss_Synchro> epoch_data(d_nchannels_out);
             int32_t n_valid = 0;
-            std::vector<gr::tag_t> tags{};
-
             for (uint32_t n = 0; n < d_nchannels_out; n++)
                 {
                     Gnss_Synchro interpolated_gnss_synchro{};

@@ -67,22 +67,22 @@ set(GNSS_SPLIBS_HEADERS
     gnss_time.h
 )
 
-if (ENABLE_SENSOR_DATA)
-    set(GNSS_SPLIBS_HEADERS ${GNSS_SPLIBS_HEADERS}
-        sensor_data/sensor_data_type.h
-        sensor_data/sensor_identifier.h
-        sensor_data/sensor_data_file.h
-        sensor_data/sensor_data_source_configuration.h
-        sensor_data/sensor_data_aggregator.h
-    )
-    set(GNSS_SPLIBS_SOURCES ${GNSS_SPLIBS_SOURCES}
-        sensor_data/sensor_data_type.cc
-        sensor_data/sensor_identifier.cc
-        sensor_data/sensor_data_file.cc
-        sensor_data/sensor_data_source_configuration.cc
-        sensor_data/sensor_data_aggregator.cc
-    )
-endif ()
+set(GNSS_SPLIBS_HEADERS ${GNSS_SPLIBS_HEADERS}
+    sensor_data/sensor_data_type.h
+    sensor_data/sensor_identifier.h
+    sensor_data/sensor_data_file.h
+    sensor_data/sensor_data_source_configuration.h
+    sensor_data/sensor_data_source.h
+    sensor_data/sensor_data_aggregator.h
+)
+set(GNSS_SPLIBS_SOURCES ${GNSS_SPLIBS_SOURCES}
+    sensor_data/sensor_data_type.cc
+    sensor_data/sensor_identifier.cc
+    sensor_data/sensor_data_file.cc
+    sensor_data/sensor_data_source_configuration.cc
+    sensor_data/sensor_data_source.cc
+    sensor_data/sensor_data_aggregator.cc
+)
 
 if(ENABLE_OPENCL)
     set(GNSS_SPLIBS_SOURCES ${GNSS_SPLIBS_SOURCES}

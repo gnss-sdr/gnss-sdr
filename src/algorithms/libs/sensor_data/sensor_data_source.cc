@@ -14,7 +14,7 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "sensor_data_source.h"
+#include "sensor_data/sensor_data_source.h"
 #include "sensor_data/sensor_data_file.h"
 #include <pmt/pmt.h>
 
@@ -35,6 +35,12 @@ SensorDataSource::SensorDataSource(
       item_size_(io_signature->sizeof_stream_item(0)),
       items_per_sample_(configuration.get_items_per_sample())
 {
+    if (not configuration.validate())
+        {
+            DLOG(ERROR) << "Failed to validate sensor data configuration";
+            throw std::runtime_error("Failed to validate sensor data configuration");
+        }
+
     // Open needed data files
     for (const auto& file_pair : configuration.files())
         {

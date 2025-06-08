@@ -20,11 +20,6 @@ if(ENABLE_ION)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ion_gsms.h)
 endif()
 
-if (ENABLE_SENSOR_DATA)
-    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} sensor_data_source.cc)
-    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} sensor_data_source.h)
-endif ()
-
 set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
     fifo_reader.cc
     unpack_byte_2bit_samples.cc

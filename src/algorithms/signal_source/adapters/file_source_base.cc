@@ -211,7 +211,7 @@ void FileSourceBase::connect(gr::top_block_sptr top_block)
     if (sensor_data_source())
         {
             top_block->connect(std::move(output), 0, sensor_data_source(), 0);
-            DLOG(INFO) << "connected output to extra data source, which now becomes the new output";
+            DLOG(INFO) << "connected output to sensor data source, which now becomes the new output";
             output = sensor_data_source();
         }
 

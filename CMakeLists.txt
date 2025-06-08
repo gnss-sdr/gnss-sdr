@@ -58,8 +58,6 @@ option(ENABLE_ZMQ "Enable GNU Radio ZeroMQ Messaging, requires gr-zeromq" ON)
 
 option(ENABLE_ION "Enable ION GNSS-SDR Metadata Standard signal source" OFF)
 
-option(ENABLE_SENSOR_DATA "Enable sensor data source" ON)
-
 # Performance analysis tools
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
 

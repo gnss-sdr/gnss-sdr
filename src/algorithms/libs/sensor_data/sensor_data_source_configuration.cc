@@ -16,8 +16,8 @@
 
 #include "sensor_data_source_configuration.h"
 
-SensorDataSourceConfiguration::SensorDataSourceConfiguration(const ConfigurationInterface* configuration, bool enabled)
-    : enabled_(enabled), items_per_sample_(1)
+SensorDataSourceConfiguration::SensorDataSourceConfiguration(const ConfigurationInterface* configuration)
+    : enabled_(configuration->property("SensorData.enabled"s, false)), items_per_sample_(1)
 {
     if (enabled_)
         {
@@ -35,6 +35,25 @@ bool SensorDataSourceConfiguration::is_enabled() const
 {
     return enabled_;
 }
+
+bool SensorDataSourceConfiguration::is_sensor_provided(SensorIdentifier::value_type sensor_id) const
+{
+    if (not enabled_)
+        {
+            return false;
+        }
+
+    bool sensor_found = false;
+    for (const auto& sensor : sensors_)
+        {
+            if (sensor_id == sensor.identifier)
+                {
+                    sensor_found = true;
+                }
+        }
+    return sensor_found;
+}
+
 
 void SensorDataSourceConfiguration::set_items_per_sample(uint64_t items_per_sample)
 {
@@ -78,10 +97,18 @@ void SensorDataSourceConfiguration::configure_files(const ConfigurationInterface
 
 void SensorDataSourceConfiguration::configure_sensors(const ConfigurationInterface* configuration)
 {
-    uint64_t sensor_count = configuration->property(CONFIGURATION_ROLE + ".sensor_count"s, 1UL);
-    for (uint64_t id = 0; id < sensor_count; ++id)
+    for (uint64_t id = 0;; ++id)
         {
             std::string role = CONFIGURATION_ROLE + ".sensor" + std::to_string(id);
+
+            // Find out which sensor this is
+            const std::string sensor_identifier = configuration->property(role + ".data"s, std::string{"UNDEFINED"});
+
+            if (sensor_identifier == "UNDEFINED")
+                {
+                    // No more sensors
+                    break;
+                }
 
             // Configure sensor data type, default to same data type as previous sensor
             SensorDataType::value_type data_type = SensorDataType::FLOAT;
@@ -115,9 +142,6 @@ void SensorDataSourceConfiguration::configure_sensors(const ConfigurationInterfa
                 {
                     file_id = configuration->property(role + ".file"s, 0UL);
                 }
-
-            // Find out which sensor this is
-            const std::string sensor_identifier = configuration->property(role + ".data"s, std::string{"UNDEFINED"});
 
             if (sensor_identifier != "UNDEFINED")
                 {

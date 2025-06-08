@@ -61,7 +61,7 @@ FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std:
       repeat_(configuration->property(role_ + ".repeat"s, false)),
       enable_throttle_control_(configuration->property(role_ + ".enable_throttle_control"s, false)),
       dump_(configuration->property(role_ + ".dump"s, false)),
-      sensor_data_source_configuration_(configuration, configuration->property(role_ + ".sensor_data.enabled"s, false))
+      sensor_data_source_configuration_(configuration)
 {
     minimum_tail_s_ = std::max(configuration->property("Acquisition_1C.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
     minimum_tail_s_ = std::max(configuration->property("Acquisition_2S.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);

@@ -15,7 +15,7 @@
  */
 
 #include "sensor_data_source.h"
-#include "sensor_data_file.h"
+#include "sensor_data/sensor_data_file.h"
 #include <pmt/pmt.h>
 
 #if USE_GLOG_AND_GFLAGS
@@ -83,15 +83,16 @@ int SensorDataSource::work(int noutput_items,
     gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items)
 {
+    static pmt::pmt_t TAG_KEY = pmt::mp("sensor_data");
+    static pmt::pmt_t CHUNK_COUNT_KEY = pmt::mp("CHUNK_COUNT");
+    static pmt::pmt_t SAMPLE_STAMP_KEY = pmt::mp("SAMPLE_STAMP");
+
     std::memcpy(output_items[0], input_items[0], noutput_items * item_size_);
 
     const uint64_t total_items_written = nitems_written(0) + noutput_items;
 
     std::size_t sample_stamp;
     std::vector<uint8_t> chunk{};
-    pmt::pmt_t tag_key = pmt::mp("sensor_data");
-    pmt::pmt_t chunk_count_key = pmt::mp("CHUNK_COUNT");
-    pmt::pmt_t sample_stamp_key = pmt::mp("SAMPLE_STAMP");
     for (auto& file_pair : sensor_data_files_)
         {
             const auto& file_id = file_pair.first;
@@ -99,13 +100,13 @@ int SensorDataSource::work(int noutput_items,
             while (data_file->read_until_sample(total_items_written, sample_stamp, chunk))
                 {
                     pmt::pmt_t data_tag = pmt::make_dict();
-                    data_tag = pmt::dict_add(data_tag, sample_stamp_key, pmt::from_long(sample_stamp / items_per_sample_));
-                    data_tag = pmt::dict_add(data_tag, chunk_count_key, pmt::from_long(data_file->get_chunks_read()));
+                    data_tag = pmt::dict_add(data_tag, SAMPLE_STAMP_KEY, pmt::from_uint64(sample_stamp / items_per_sample_));
+                    data_tag = pmt::dict_add(data_tag, CHUNK_COUNT_KEY, pmt::from_long(data_file->get_chunks_read()));
                     for (const auto& sensor : sensor_config_map_.at(file_id))
                         {
                             data_tag = pmt::dict_add(data_tag, sensor.tag_key, SensorDataType::make_value(sensor.type, &chunk[sensor.offset]));
                         }
-                    add_item_tag(0, sample_stamp, tag_key, data_tag);
+                    add_item_tag(0, sample_stamp, TAG_KEY, data_tag);
                 }
         }
 

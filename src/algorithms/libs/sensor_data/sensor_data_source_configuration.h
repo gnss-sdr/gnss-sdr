@@ -60,11 +60,13 @@ struct SensorDataConfiguration
 class SensorDataSourceConfiguration
 {
 public:
-    explicit SensorDataSourceConfiguration(const ConfigurationInterface* configuration, bool enabled);
+    explicit SensorDataSourceConfiguration(const ConfigurationInterface* configuration);
 
     bool validate() const;
 
     bool is_enabled() const;
+
+    bool is_sensor_provided(SensorIdentifier::value_type sensor_id) const;
 
     const std::unordered_map<uint64_t, SensorDataFileConfiguration>& files() const;
 

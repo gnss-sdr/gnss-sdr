@@ -15,6 +15,13 @@
  */
 
 #include "sensor_data_source_configuration.h"
+#include <fstream>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 SensorDataSourceConfiguration::SensorDataSourceConfiguration(const ConfigurationInterface* configuration)
     : enabled_(configuration->property("SensorData.enabled"s, false)), items_per_sample_(1)
@@ -168,18 +175,42 @@ void SensorDataSourceConfiguration::configure_sensors(const ConfigurationInterfa
 
 bool SensorDataSourceConfiguration::validate_files() const
 {
+    bool ok = true;
     for (const auto& file : files_)
         {
-            // TODO - Implement
+            std::ifstream test_file{file.second.filename};
+            if (not test_file.good())
+                {
+                    DLOG(ERROR) << "Failed to open file '" << file.second.filename << "'";
+                    ok = false;
+                }
+
+            // More validation here if needed...
         }
-    return true;
+    return ok;
 }
 
 bool SensorDataSourceConfiguration::validate_sensors() const
 {
+    bool ok = true;
     for (const auto& sensor : sensors_)
         {
-            // TODO - Implement
+            if (not files_.contains(sensor.file_id))
+                {
+                    DLOG(ERROR) << "Sensor (" << std::to_string(sensor.id) << ") references file (" << std::to_string(sensor.file_id) << "), which does not exist.";
+                    ok = false;
+                    // Validation from here on (for this sensor) depends on the file existing, so we continue
+                    continue;
+                }
+
+            const SensorDataFileConfiguration& file = files_.at(sensor.file_id);
+            if ((sensor.offset + SensorDataType::get_size(sensor.type)) > file.chunk_size)
+                {
+                    DLOG(ERROR) << "Sensor (" << std::to_string(sensor.id) << ") is out of bounds. Check sensor offset, type or file chunk_size.";
+                    ok = false;
+                }
+
+            // More validation here if needed...
         }
-    return true;
+    return ok;
 }

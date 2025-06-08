@@ -61,6 +61,7 @@
 #include "pvt_solution.h"
 #include "rtklib.h"
 #include "rtklib_conversions.h"
+#include "sensor_data/sensor_data_aggregator.h"
 #include <array>
 #include <cstdint>
 #include <fstream>
@@ -90,7 +91,7 @@ public:
 
     ~Rtklib_Solver();
 
-    bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, double kf_update_interval_s);
+    bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, double kf_update_interval_s, const SensorDataAggregator& sensor_data_aggregator);
 
     double get_hdop() const override;
     double get_vdop() const override;

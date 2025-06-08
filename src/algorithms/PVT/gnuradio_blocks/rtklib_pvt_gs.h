@@ -23,6 +23,8 @@
 #include "gnss_time.h"
 #include "osnma_data.h"
 #include "rtklib.h"
+#include "sensor_data/sensor_data_aggregator.h"
+#include "sensor_data/sensor_data_source_configuration.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/interprocess/ipc/message_queue.hpp>
@@ -74,7 +76,8 @@ using rtklib_pvt_gs_sptr = gnss_shared_ptr<rtklib_pvt_gs>;
 
 rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,
-    const rtk_t& rtk);
+    const rtk_t& rtk,
+    const SensorDataSourceConfiguration& sensor_data_configuration);
 
 /*!
  * \brief This class implements a block that computes the PVT solution using the RTKLIB integrated library
@@ -135,11 +138,13 @@ public:
 private:
     friend rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
         const Pvt_Conf& conf_,
-        const rtk_t& rtk);
+        const rtk_t& rtk,
+        const SensorDataSourceConfiguration& sensor_data_configuration);
 
     rtklib_pvt_gs(uint32_t nchannels,
         const Pvt_Conf& conf_,
-        const rtk_t& rtk);
+        const rtk_t& rtk,
+        const SensorDataSourceConfiguration& sensor_data_configuration);
 
     void log_source_timetag_info(double RX_time_ns, double TAG_time_ns);
 
@@ -172,6 +177,8 @@ private:
     bool load_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
 
     std::fstream d_log_timetag_file;
+
+    std::unique_ptr<SensorDataAggregator> d_sensor_data_aggregator;
 
     std::shared_ptr<Rtklib_Solver> d_internal_pvt_solver;
     std::shared_ptr<Rtklib_Solver> d_user_pvt_solver;

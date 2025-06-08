@@ -906,7 +906,7 @@ void Rtklib_Solver::get_current_has_obs_correction(const std::string &signal, ui
 }
 
 
-bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, double kf_update_interval_s)
+bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, double kf_update_interval_s, const SensorDataAggregator &sensor_data_aggregator)
 {
     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
     std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
@@ -1556,6 +1556,14 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 {
                                     arma::vec p = {pvt_sol.rr[0], pvt_sol.rr[1], pvt_sol.rr[2]};
                                     arma::vec v = {pvt_sol.rr[3], pvt_sol.rr[4], pvt_sol.rr[5]};
+                                    if (d_conf.kf_use_imu_vel)
+                                        {
+                                            v = {
+                                                sensor_data_aggregator.get_last_f32(SensorIdentifier::IMU_VEL_X).value,
+                                                sensor_data_aggregator.get_last_f32(SensorIdentifier::IMU_VEL_Y).value,
+                                                sensor_data_aggregator.get_last_f32(SensorIdentifier::IMU_VEL_Z).value};
+                                        }
+
 
                                     d_pvt_kf.init_Kf(p,
                                         v,
@@ -1569,6 +1577,14 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 {
                                     arma::vec p = {pvt_sol.rr[0], pvt_sol.rr[1], pvt_sol.rr[2]};
                                     arma::vec v = {pvt_sol.rr[3], pvt_sol.rr[4], pvt_sol.rr[5]};
+                                    if (d_conf.kf_use_imu_vel)
+                                        {
+                                            v = {
+                                                sensor_data_aggregator.get_last_f32(SensorIdentifier::IMU_VEL_X).value,
+                                                sensor_data_aggregator.get_last_f32(SensorIdentifier::IMU_VEL_Y).value,
+                                                sensor_data_aggregator.get_last_f32(SensorIdentifier::IMU_VEL_Z).value};
+                                        }
+
                                     d_pvt_kf.run_Kf(p, v);
                                     d_pvt_kf.get_pv_Kf(p, v);
                                     pvt_sol.rr[0] = p[0];  // [m]

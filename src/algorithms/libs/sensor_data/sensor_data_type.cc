@@ -15,14 +15,24 @@
  */
 
 #include "sensor_data_type.h"
-#include <cstdint>
 #include <pmt/pmt.h>
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 
 SensorDataType::value_type SensorDataType::from_string(const std::string& s)
 {
-    if (s == "float" or s == "FLOAT")
+    std::string str = s;
+    for (char& c : str)
+        {
+            c = toupper(c);
+        }
+
+    if (str == "UINT64")
+        {
+            return SensorDataType::UINT64;
+        }
+    else if (str == "FLOAT")
         {
             return SensorDataType::FLOAT;
         }
@@ -33,8 +43,10 @@ std::string SensorDataType::to_string(const SensorDataType::value_type& v)
 {
     switch (v)
         {
+        case SensorDataType::UINT64:
+            return "UINT64";
         case SensorDataType::FLOAT:
-            return "float";
+            return "FLOAT";
         default:
             return "UNKNOWN SENSOR";
         }
@@ -44,6 +56,8 @@ uint64_t SensorDataType::get_size(const SensorDataType::value_type& v)
 {
     switch (v)
         {
+        case SensorDataType::UINT64:
+            return sizeof(uint64_t);
         case SensorDataType::FLOAT:
             return sizeof(float);
         default:
@@ -55,6 +69,8 @@ pmt::pmt_t SensorDataType::make_value(const SensorDataType::value_type& v, void*
 {
     switch (v)
         {
+        case SensorDataType::UINT64:
+            return pmt::from_uint64(*static_cast<uint64_t*>(value));
         case SensorDataType::FLOAT:
             return pmt::from_float(*static_cast<float*>(value));
         default:

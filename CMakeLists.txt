@@ -50,13 +50,15 @@ option(ENABLE_DMA_PROXY "Enable the use of the DMA direct to FPGA hardware, requ
 
 option(ENABLE_RAW_UDP "Enable the use of high-optimized custom UDP packet sample source, requires libpcap" OFF)
 
-option(ENABLE_FLEXIBAND "Enable the use of the signal source adater for the Teleorbit Flexiband GNU Radio driver" OFF)
+option(ENABLE_FLEXIBAND "Enable the use of the signal source adapter for the Teleorbit Flexiband GNU Radio driver" OFF)
 
 option(ENABLE_ARRAY "Enable the use of CTTC's antenna array front-end as signal source (experimental)" OFF)
 
 option(ENABLE_ZMQ "Enable GNU Radio ZeroMQ Messaging, requires gr-zeromq" ON)
 
 option(ENABLE_ION "Enable ION GNSS-SDR Metadata Standard signal source" OFF)
+
+option(ENABLE_SENSOR_DATA "Enable sensor data source" ON)
 
 # Performance analysis tools
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)

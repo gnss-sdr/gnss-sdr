@@ -20,6 +20,11 @@ if(ENABLE_ION)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ion_gsms.h)
 endif()
 
+if (ENABLE_SENSOR_DATA)
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} sensor_data_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} sensor_data_source.h)
+endif ()
+
 set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
     fifo_reader.cc
     unpack_byte_2bit_samples.cc
@@ -31,7 +36,6 @@ set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
     unpack_2bit_samples.cc
     unpack_spir_gss6450_samples.cc
     labsat23_source.cc
-    sensor_data_source.cc
     ${OPT_DRIVER_SOURCES}
 )
 
@@ -46,7 +50,6 @@ set(SIGNAL_SOURCE_GR_BLOCKS_HEADERS
     unpack_2bit_samples.h
     unpack_spir_gss6450_samples.h
     labsat23_source.h
-    sensor_data_source.h
     ${OPT_DRIVER_HEADERS}
 )
 

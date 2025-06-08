@@ -18,9 +18,9 @@
 #ifndef GNSS_SDR_SENSOR_DATA_SOURCE_H
 #define GNSS_SDR_SENSOR_DATA_SOURCE_H
 
+#include "sensor_data/sensor_data_file.h"
+#include "sensor_data/sensor_data_source_configuration.h"
 #include "gnss_block_interface.h"
-#include "sensor_data_file.h"
-#include "sensor_data_source_configuration.h"
 #include <gnuradio/sync_block.h>  // for sync_block
 #include <gnuradio/types.h>       // for gr_vector_const_void_star
 #include <cstddef>                // for size_t
@@ -51,57 +51,6 @@ private:
     std::size_t item_size_;
     std::size_t items_per_sample_;
 };
-
-class SensorDataAggregator
-{
-public:
-    explicit SensorDataAggregator(std::vector<gr::tag_t> tags)
-    {
-        for (const auto& sensor_tag : tags)
-            {
-                if (sensor_tag.value->is_dict())
-                    {
-                        append_data(sensor_tag.value);
-                    }
-            }
-    }
-
-    auto get(SensorIdentifier::value_type sensor_id) const
-    {
-        if (data_.contains(sensor_id))
-            {
-                return data_.at(sensor_id);
-            }
-        else
-            {
-                return {};
-            }
-    }
-
-private:
-    void append_data(const pmt::pmt_t& data)
-    {
-        pmt::pmt_t data_list = pmt::dict_items(data);
-        while (not pmt::is_null(data_list))
-            {
-                pmt::pmt_t pair = pmt::car(data_list);
-                pmt::pmt_t key = pmt::car(pair);
-                pmt::pmt_t val = pmt::cdr(pair);
-
-                std::string key_str = pmt::write_string(key);
-                SensorIdentifier::value_type sensor_id = SensorIdentifier::from_string(key_str);
-
-                if (not data_.contains(sensor_id))
-                    {
-                        data_[sensor_id] = {};
-                    }
-                data_[sensor_id].emplace_back(val);
-            }
-    }
-
-    std::unordered_map<SensorIdentifier::value_type, std::vector<pmt::pmt_t>> data_{};
-};
-
 
 /** \} */
 /** \} */

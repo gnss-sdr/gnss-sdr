@@ -1,5 +1,5 @@
 /*!
- * \file sensor_identifier.h
+ * \file sensor_data_type.h
  * \brief
  * \author Victor Castillo, 2025. victorcastilloaguero(at).gmail.es
  *
@@ -15,9 +15,11 @@
  */
 
 
-#ifndef GNSS_SDR_SENSOR_IDENTIFIER_H
-#define GNSS_SDR_SENSOR_IDENTIFIER_H
+#ifndef GNSS_SDR_SENSOR_DATA_TYPE_H
+#define GNSS_SDR_SENSOR_DATA_TYPE_H
 
+#include <cstdint>
+#include <pmt/pmt.h>
 #include <string>
 
 /** \addtogroup Signal_Source
@@ -25,30 +27,25 @@
 /** \addtogroup Signal_Source_libs
  * \{ */
 
-struct SensorIdentifier
+struct SensorDataType
 {
-    SensorIdentifier() = delete;
+    SensorDataType() = delete;
     enum value_type
     {
-        IMU_VEL_X,
-        IMU_VEL_Y,
-        IMU_VEL_Z,
-        IMU_ACC_X,
-        IMU_ACC_Y,
-        IMU_ACC_Z,
-        IMU_ANG_VEL_X,
-        IMU_ANG_VEL_Y,
-        IMU_ANG_VEL_Z,
-        IMU_ANG_ACC_X,
-        IMU_ANG_ACC_Y,
-        IMU_ANG_ACC_Z,
+        UINT64,
+        FLOAT
     };
 
     static value_type from_string(const std::string& s);
 
     static std::string to_string(const value_type& v);
+
+    static uint64_t get_size(const value_type& v);
+
+    static pmt::pmt_t make_value(const value_type& v, void* value);
 };
+
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_SENSOR_IDENTIFIER_H
+#endif  // GNSS_SDR_SENSOR_DATA_TYPE_H

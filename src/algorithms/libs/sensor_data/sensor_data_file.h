@@ -51,6 +51,7 @@ public:
     bool read_until_sample(std::size_t end_sample, std::size_t& sample_stamp, std::vector<uint8_t>& buffer);
 
     std::size_t get_chunks_read() const;
+
 private:
     bool read_item(std::vector<uint8_t>& buffer);
 

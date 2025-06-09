@@ -2105,7 +2105,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 {
                     add_item_tag(0, this->nitems_written(0) + 1, tag.key, tag.value);
                 }
-            
+
             *out[0] = std::move(current_synchro_data);
             return 1;
         }

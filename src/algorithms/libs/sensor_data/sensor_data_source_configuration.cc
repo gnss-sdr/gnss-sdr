@@ -104,10 +104,10 @@ void SensorDataSourceConfiguration::configure_files(const ConfigurationInterface
                     .id = id,
                     .filename = filename,
                     .repeat = configuration->property(role + ".repeat"s, false),
-                    .chunk_size = configuration->property(role + ".chunk_size"s, 0UL),
-                    .file_offset = configuration->property(role + ".file_offset"s, 0UL),
-                    .sample_offset = configuration->property(role + ".sample_offset"s, 0UL),
-                    .sample_period = configuration->property(role + ".sample_period"s, 0UL)});
+                    .chunk_size = configuration->property(role + ".chunk_size"s, uint64_t{0UL}),
+                    .file_offset = configuration->property(role + ".file_offset"s, uint64_t{0UL}),
+                    .sample_offset = configuration->property(role + ".sample_offset"s, uint64_t{0UL}),
+                    .sample_period = configuration->property(role + ".sample_period"s, uint64_t{0UL})});
         }
 }
 
@@ -145,7 +145,7 @@ void SensorDataSourceConfiguration::configure_sensors(const ConfigurationInterfa
                 }
             else
                 {
-                    offset = configuration->property(role + ".offset"s, 0UL);
+                    offset = configuration->property(role + ".offset"s, uint64_t{0UL});
                 }
 
             // Configure file_id, default to previous sensor file_id
@@ -156,7 +156,7 @@ void SensorDataSourceConfiguration::configure_sensors(const ConfigurationInterfa
                 }
             else
                 {
-                    file_id = configuration->property(role + ".file"s, 0UL);
+                    file_id = configuration->property(role + ".file"s, uint64_t{0UL});
                 }
 
             if (sensor_identifier != "UNDEFINED")

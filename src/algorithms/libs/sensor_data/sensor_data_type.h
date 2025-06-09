@@ -31,7 +31,7 @@ struct SensorDataType
     SensorDataType() = delete;
     enum value_type
     {
-        UINT64, // Used internally for SAMPLE_STAMP and CHUNK_COUNT
+        UINT64,  // Used internally for SAMPLE_STAMP and CHUNK_COUNT
         F32,
         F64,
         I32,

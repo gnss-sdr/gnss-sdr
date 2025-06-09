@@ -18,13 +18,12 @@
 #ifndef GNSS_SDR_SENSOR_DATA_SOURCE_H
 #define GNSS_SDR_SENSOR_DATA_SOURCE_H
 
+#include "gnss_block_interface.h"
 #include "sensor_data/sensor_data_file.h"
 #include "sensor_data/sensor_data_source_configuration.h"
-#include "gnss_block_interface.h"
 #include <gnuradio/sync_block.h>  // for sync_block
 #include <gnuradio/types.h>       // for gr_vector_const_void_star
 #include <cstddef>                // for size_t
-#include <cstdint>
 
 /** \addtogroup Algorithms_Library
  * \{ */

@@ -32,9 +32,13 @@ SensorDataAggregator::SensorDataAggregator(const SensorDataSourceConfiguration& 
                     // Populate sensor sample maps
                     switch (SensorIdentifier::get_internal_type(required_sensor))
                         {
-                        case SensorDataType::FLOAT:
+                        case SensorDataType::F32:
                             f32_data_[required_sensor] = {};
                             break;
+
+                            // More maps to be populated in the future for different types
+                            // For now, all supported sensors are represented as f32
+
                         default:
                             break;
                         }
@@ -69,6 +73,8 @@ void SensorDataAggregator::update(const std::vector<gr::tag_t>& tags)
                     sensor_samples.emplace_back(last_sample);
                 }
         }
+    // More maps to be cleared in the future for different types
+    // For now, all supported sensors are represented as f32
 
     // Append new data
     for (const auto& sensor_tag : tags)
@@ -119,7 +125,7 @@ void SensorDataAggregator::append_data(const pmt::pmt_t& data_dict)
                 {
                     switch (SensorIdentifier::get_internal_type(sensor_id))
                         {
-                        case SensorDataType::FLOAT:
+                        case SensorDataType::F32:
                             if (f32_data_.contains(sensor_id))
                                 {
                                     f32_data_.at(sensor_id).emplace_back(
@@ -127,6 +133,10 @@ void SensorDataAggregator::append_data(const pmt::pmt_t& data_dict)
                                         pmt::to_float(val));
                                 }
                             break;
+
+                            // More types to be handled in the future for different types
+                            // For now, all supported sensors are represented as f32
+
                         default:
                             break;
                         }

@@ -127,7 +127,7 @@ void SensorDataSourceConfiguration::configure_sensors(const ConfigurationInterfa
                 }
 
             // Configure sensor data type, default to same data type as previous sensor
-            SensorDataType::value_type data_type = SensorDataType::FLOAT;
+            SensorDataType::value_type data_type = SensorDataType::F32;
             if (id > 0 and not configuration->is_present(role + ".type"))
                 {
                     data_type = sensors_[id - 1].type;

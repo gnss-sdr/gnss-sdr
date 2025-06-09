@@ -32,8 +32,12 @@ struct SensorDataType
     SensorDataType() = delete;
     enum value_type
     {
-        UINT64,
-        FLOAT
+        UINT64, // Used internally for SAMPLE_STAMP and CHUNK_COUNT
+        F32,
+        F64,
+        I32,
+        I64,
+        // More types can be added here, don't forget to update the static functions
     };
 
     static value_type from_string(const std::string& s);

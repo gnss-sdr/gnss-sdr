@@ -1736,6 +1736,9 @@ int64_t dll_pll_veml_tracking::uint64diff(uint64_t first, uint64_t second)
 int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
+    // std::vector<gr::tag_t> tags{};
+    // get_tags_in_window(tags, 0, 0, ninput_items[0], pmt::mp("sensor_data"));
+
     gr::thread::scoped_lock l(d_setlock);
     const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
@@ -2095,16 +2098,14 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     d_timetag_waiting = false;
                 }
 
+            // Propagate sensor data tags
             std::vector<gr::tag_t> tags{};
-            // get_tags_in_window(tags, 0, 0, ninput_items[0], pmt::mp("extra_data"));
-            get_tags_in_range(tags, 0, nitems_read(0) - d_current_prn_length_samples, nitems_read(0), pmt::mp("extra_data"));
-
+            get_tags_in_range(tags, 0, nitems_read(0) - d_current_prn_length_samples, nitems_read(0), pmt::mp("sensor_data"));
             for (const auto &tag : tags)
                 {
                     add_item_tag(0, this->nitems_written(0) + 1, tag.key, tag.value);
-                    // std::cout << "[ED TAG (TRK)] [" << std::to_string(tag.offset) << "] ";
-                    // std::cout << std::endl;
                 }
+            
             *out[0] = std::move(current_synchro_data);
             return 1;
         }

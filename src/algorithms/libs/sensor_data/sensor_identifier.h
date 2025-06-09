@@ -31,8 +31,8 @@ struct SensorIdentifier
     SensorIdentifier() = delete;
     enum value_type : unsigned short
     {
-        SAMPLE_STAMP = 0,
-        CHUNK_COUNT,
+        SAMPLE_STAMP = 0,  // Used internally
+        CHUNK_COUNT,       // Used internally
         IMU_VEL_X,
         IMU_VEL_Y,
         IMU_VEL_Z,

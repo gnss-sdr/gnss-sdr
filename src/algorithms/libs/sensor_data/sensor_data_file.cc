@@ -25,7 +25,7 @@ SensorDataFile::SensorDataFile(
     const std::size_t& item_size,
     const bool& repeat)
     : path_(path),
-      file_(path_),
+      file_(path_, std::ios::binary),
       sample_delay_(sample_delay),
       sample_period_(sample_period),
       offset_in_file_(offset_in_file),
@@ -44,6 +44,7 @@ SensorDataFile::SensorDataFile(
 
 void SensorDataFile::reset()
 {
+    file_.clear();
     file_.seekg(offset_in_file_, std::ios_base::beg);
     offset_in_io_buffer_ = io_buffer_size_;
     done_ = false;
@@ -97,6 +98,12 @@ void SensorDataFile::read_into_io_buffer()
                 {
                     reset();
                     file_.read(reinterpret_cast<char*>(&io_buffer_[bytes_read]), io_buffer_size_ - bytes_read);
+                    const std::size_t new_bytes_read = file_.gcount();
+                    if (new_bytes_read < io_buffer_size_ - bytes_read)
+                        {
+                            // Buffer is too big for this file
+                            io_buffer_size_ = bytes_read + new_bytes_read;
+                        }
                 }
             else
                 {

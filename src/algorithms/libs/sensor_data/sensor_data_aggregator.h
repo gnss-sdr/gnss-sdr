@@ -46,13 +46,16 @@ public:
     void update(const std::vector<gr::tag_t>& tags);
 
     const std::vector<SensorDataSample<float>>& get_f32(SensorIdentifier::value_type sensor_id) const;
-
     SensorDataSample<float> get_last_f32(SensorIdentifier::value_type sensor_id) const;
 
+    // More getters to be added in the future for different types
+    // For now, all supported sensors are represented as f32
 private:
     void append_data(const pmt::pmt_t& data_dict);
 
     std::unordered_map<SensorIdentifier::value_type, std::vector<SensorDataSample<float>>> f32_data_{};
+    // More maps to be added in the future for different types
+    // For now, all supported sensors are represented as f32
 };
 
 

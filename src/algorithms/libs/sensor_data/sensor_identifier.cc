@@ -16,6 +16,7 @@
 
 #include "sensor_identifier.h"
 #include "sensor_data_type.h"
+#include <iostream>
 #include <stdexcept>
 #include <string>
 
@@ -28,7 +29,10 @@ struct ConversionEntry
 };
 
 static const ConversionEntry conversion_table[] = {
-    {SensorDataType::FLOAT, SensorDataType::FLOAT, [](const pmt::pmt_t& val) { return val; }},
+    {SensorDataType::F32, SensorDataType::F32, [](const pmt::pmt_t& val) { return val; }},
+    {SensorDataType::F64, SensorDataType::F32, [](const pmt::pmt_t& val) { return pmt::from_float(pmt::to_double(val)); }},
+    {SensorDataType::I32, SensorDataType::F32, [](const pmt::pmt_t& val) { return pmt::from_float(pmt::to_long(val)); }},
+    {SensorDataType::I64, SensorDataType::F32, [](const pmt::pmt_t& val) { return pmt::from_float(pmt::to_long(val)); }},
 };
 
 const ConversionEntry* lookup_conversion(SensorDataType::value_type from_type, SensorDataType::value_type to_type)
@@ -168,9 +172,9 @@ SensorDataType::value_type SensorIdentifier::get_internal_type(value_type sensor
         case IMU_ANG_ACC_X:
         case IMU_ANG_ACC_Y:
         case IMU_ANG_ACC_Z:
-            return SensorDataType::FLOAT;
+            return SensorDataType::F32;
         default:
-            return SensorDataType::FLOAT;
+            return SensorDataType::F32;
         }
 }
 
@@ -180,6 +184,7 @@ pmt::pmt_t SensorIdentifier::convert_to_internal_type(value_type sensor_id, Sens
     const ConversionEntry* conversion = lookup_conversion(original_type, get_internal_type(sensor_id));
     if (conversion == nullptr)
         {
+            throw std::runtime_error("Could not convert sensor value to internal type");
         }
 
     return conversion->conversion_fun(value);

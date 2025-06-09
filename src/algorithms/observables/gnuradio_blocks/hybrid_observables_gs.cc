@@ -70,7 +70,6 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
       d_smooth_filter_M(static_cast<double>(conf_.smoothing_factor)),
       d_T_rx_step_s(static_cast<double>(conf_.observable_interval_ms) / 1000.0),
       d_last_rx_clock_round20ms_error(0.0),
-      d_ref_channel(0U),
       d_T_rx_TOW_ms(0U),
       d_T_rx_step_ms(conf_.observable_interval_ms),
       d_T_status_report_timer_ms(0),
@@ -226,7 +225,6 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
                         {
                         case 1:  // reset TOW
                             d_T_rx_TOW_ms = 0;
-                            d_ref_channel = 0;
                             d_last_rx_clock_round20ms_error = 0;
                             d_T_rx_TOW_set = false;
                             for (uint32_t n = 0; n < d_nchannels_out; n++)
@@ -510,20 +508,17 @@ void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
         {
             // int32_t TOW_ref = std::numeric_limits<uint32_t>::max();
             uint32_t TOW_ref = 0U;
-            uint32_t ref_ch = 0U;
             for (it = data.cbegin(); it != data.cend(); it++)
                 {
                     if (it->Flag_valid_word)
                         {
                             if (it->TOW_at_current_symbol_ms > TOW_ref)
                                 {
-                                    ref_ch = it->Channel_ID;
                                     TOW_ref = it->TOW_at_current_symbol_ms;
                                     d_T_rx_TOW_set = true;
                                 }
                         }
                 }
-            d_ref_channel = ref_ch;
             d_T_rx_TOW_ms = TOW_ref;
             // align the receiver clock to integer multiple of d_T_rx_step_ms
             if (d_T_rx_TOW_ms % d_T_rx_step_ms)

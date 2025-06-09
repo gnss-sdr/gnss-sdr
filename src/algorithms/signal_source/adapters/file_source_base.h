@@ -18,8 +18,8 @@
 #ifndef GNSS_SDR_FILE_SOURCE_BASE_H
 #define GNSS_SDR_FILE_SOURCE_BASE_H
 
-#include "../../libs/sensor_data/sensor_data_source.h"
 #include "concurrent_queue.h"
+#include "sensor_data/sensor_data_source.h"
 #include "signal_source_base.h"
 #include <gnuradio/blocks/file_sink.h>  // for dump
 #include <gnuradio/blocks/file_source.h>

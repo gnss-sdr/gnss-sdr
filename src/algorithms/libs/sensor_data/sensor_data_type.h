@@ -18,13 +18,12 @@
 #ifndef GNSS_SDR_SENSOR_DATA_TYPE_H
 #define GNSS_SDR_SENSOR_DATA_TYPE_H
 
-#include <cstdint>
 #include <pmt/pmt.h>
 #include <string>
 
-/** \addtogroup Signal_Source
+/** \addtogroup Algorithms_Library
  * \{ */
-/** \addtogroup Signal_Source_libs
+/** \addtogroup Algorithm_libs algorithms_libs
  * \{ */
 
 struct SensorDataType

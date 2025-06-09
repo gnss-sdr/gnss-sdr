@@ -25,16 +25,14 @@
 #include <string>
 #include <vector>
 
-/** \addtogroup Signal_Source
+/** \addtogroup Algorithms_Library
  * \{ */
-/** \addtogroup Signal_Source_libs
+/** \addtogroup Algorithm_libs algorithms_libs
  * \{ */
 
 
 class SensorDataFile
 {
-    static constexpr std::size_t IO_BUFFER_CAPACITY = 1024;
-
 public:
     using sptr = std::shared_ptr<SensorDataFile>;
     using id_type = std::size_t;
@@ -60,7 +58,6 @@ private:
 
     void read_into_item_buffer(std::vector<uint8_t>& item_buf);
 
-private:
     std::string path_;
     std::ifstream file_;
     std::size_t sample_delay_;

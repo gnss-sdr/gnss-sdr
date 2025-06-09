@@ -17,6 +17,9 @@
 #include "sensor_data_file.h"
 #include <cstring>
 
+
+static const std::size_t IO_BUFFER_MAX_SIZE = 1024;
+
 SensorDataFile::SensorDataFile(
     const std::string& path,
     const std::size_t& sample_delay,
@@ -34,7 +37,7 @@ SensorDataFile::SensorDataFile(
       done_(false),
       chunks_read_(0),
       last_sample_stamp_(sample_delay),
-      io_buffer_size_(item_size * IO_BUFFER_CAPACITY),
+      io_buffer_size_(item_size * IO_BUFFER_MAX_SIZE),
       offset_in_io_buffer_(io_buffer_size_)  // Set to end of buffer so that first look up will trigger a read.
 {
     file_.seekg(offset_in_file_, std::ios_base::beg);

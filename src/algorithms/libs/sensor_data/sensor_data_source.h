@@ -25,11 +25,10 @@
 #include <gnuradio/types.h>       // for gr_vector_const_void_star
 #include <cstddef>                // for size_t
 #include <cstdint>
-#include <string>
 
-/** \addtogroup Signal_Source
+/** \addtogroup Algorithms_Library
  * \{ */
-/** \addtogroup Signal_Source_gnuradio_blocks
+/** \addtogroup Algorithm_libs algorithms_libs
  * \{ */
 
 class SensorDataSource : public gr::sync_block

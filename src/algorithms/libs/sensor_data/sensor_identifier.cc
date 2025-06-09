@@ -16,7 +16,6 @@
 
 #include "sensor_identifier.h"
 #include "sensor_data_type.h"
-#include <iostream>
 #include <stdexcept>
 #include <string>
 

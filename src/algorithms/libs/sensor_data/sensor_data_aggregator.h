@@ -1,6 +1,6 @@
 /*!
  * \file sensor_data_aggregator.h
- * \brief  GNURadio block that adds extra data to the sample stream.
+ * \brief  Aggregates sensor samples from gnu radio stream tags into typed lists for easy access
  * \author Victor Castillo, 2024. victorcastilloaguero(at).gmail.es
  *
  * -----------------------------------------------------------------------------
@@ -24,9 +24,9 @@
 #include <string>
 #include <vector>
 
-/** \addtogroup Signal_Source
+/** \addtogroup Algorithms_Library
  * \{ */
-/** \addtogroup Signal_Source_libs
+/** \addtogroup Algorithm_libs algorithms_libs
  * \{ */
 
 template <typename DataType>

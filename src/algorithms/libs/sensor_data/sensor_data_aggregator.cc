@@ -1,6 +1,6 @@
 /*!
- * \file sensor_data_file.cc
- * \brief  Provides a simple abstraction for reading contiguous binary data from a file
+ * \file sensor_data_aggregator.cc
+ * \brief  Aggregates sensor samples from gnu radio stream tags into typed lists for easy access
  * \author Victor Castillo, 2024. victorcastilloaguero(at).gmail.es
  *
  * -----------------------------------------------------------------------------

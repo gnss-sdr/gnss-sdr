@@ -1,6 +1,6 @@
 /*!
  * \file sensor_data_source_configuration.h
- * \brief  GNURadio block that adds extra data to the sample stream.
+ * \brief
  * \author Victor Castillo, 2024. victorcastilloaguero(at).gmail.es
  *
  * -----------------------------------------------------------------------------
@@ -24,9 +24,9 @@
 #include <string>
 #include <unordered_map>
 
-/** \addtogroup Signal_Source
+/** \addtogroup Algorithms_Library
  * \{ */
-/** \addtogroup Signal_Source_gnuradio_blocks
+/** \addtogroup Algorithm_libs algorithms_libs
  * \{ */
 
 using namespace std::string_literals;

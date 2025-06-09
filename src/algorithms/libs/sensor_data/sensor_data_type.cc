@@ -16,7 +16,6 @@
 
 #include "sensor_data_type.h"
 #include <pmt/pmt.h>
-#include <cstdint>
 #include <stdexcept>
 #include <string>
 

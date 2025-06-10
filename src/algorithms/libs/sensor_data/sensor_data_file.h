@@ -21,6 +21,7 @@
 #include <cstddef>  // for size_t
 #include <cstdint>
 #include <fstream>
+#include <gnss_block_interface.h>
 #include <memory>
 #include <string>
 #include <vector>

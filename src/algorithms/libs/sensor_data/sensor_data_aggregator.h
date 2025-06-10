@@ -20,8 +20,8 @@
 
 #include "sensor_data_source_configuration.h"
 #include "sensor_identifier.h"
+#include <gnuradio/tags.h>
 #include <gnss_block_interface.h>
-#include <string>
 #include <vector>
 
 /** \addtogroup Algorithms_Library

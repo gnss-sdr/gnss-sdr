@@ -15,6 +15,8 @@
  */
 
 #include "sensor_data_aggregator.h"
+#include <string>
+#include <sstream>
 
 
 SensorDataAggregator::SensorDataAggregator(const SensorDataSourceConfiguration& configuration, const std::vector<SensorIdentifier::value_type>& required_sensors)

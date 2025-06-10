@@ -657,7 +657,7 @@ void hybrid_observables_gs::set_tag_timestamp_in_sdr_timeframe(const std::vector
         }
 }
 
-void hybrid_observables_gs::propagate_sensor_data(const std::vector<Gnss_Synchro> &data)
+void hybrid_observables_gs::propagate_sensor_data()
 {
     if (d_sensor_data_tags.empty())
         {
@@ -822,7 +822,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                 {
                     compute_pranges(epoch_data);
                     set_tag_timestamp_in_sdr_timeframe(epoch_data, d_Rx_clock_buffer.front());
-                    propagate_sensor_data(epoch_data);
+                    propagate_sensor_data();
                 }
 
             // Carrier smoothing (optional)

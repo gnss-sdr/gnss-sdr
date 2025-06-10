@@ -203,14 +203,14 @@ void FileSourceBase::connect(gr::top_block_sptr top_block)
     // DUMP
     if (sink())
         {
-            top_block->connect(std::move(output), 0, sink(), 0);
+            top_block->connect(output, 0, sink(), 0);
             DLOG(INFO) << "connected output to file sink";
         }
 
-    // EXTRA DATA
+    // SENSOR DATA
     if (sensor_data_source())
         {
-            top_block->connect(std::move(output), 0, sensor_data_source(), 0);
+            top_block->connect(output, 0, sensor_data_source(), 0);
             DLOG(INFO) << "connected output to sensor data source, which now becomes the new output";
             output = sensor_data_source();
         }
@@ -259,15 +259,14 @@ void FileSourceBase::disconnect(gr::top_block_sptr top_block)
     // DUMP
     if (sink())
         {
-            top_block->disconnect(std::move(output), 0, sink(), 0);
+            top_block->disconnect(output, 0, sink(), 0);
             DLOG(INFO) << "disconnected output to file sink";
         }
 
-    // EXTRA DATA
+    // SENSOR DATA
     if (sensor_data_source())
         {
-            // TODO - FIXME: This is NOT okay, `output` is the extra data source, not the valve/source/throttle/whatever is left of this
-            top_block->disconnect(std::move(output), 0, sensor_data_source(), 0);
+            top_block->disconnect(output, 0, sensor_data_source(), 0);
             DLOG(INFO) << "disconnected output to extra data source";
             output = sensor_data_source();
         }

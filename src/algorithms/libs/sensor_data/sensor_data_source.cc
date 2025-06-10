@@ -57,7 +57,7 @@ SensorDataSource::SensorDataSource(
 
             sensor_data_files_.emplace(id, std::make_shared<SensorDataFile>(file.filename, s_offset, s_period, file.file_offset, file.chunk_size, file.repeat));
 
-            if (not sensor_config_map_.contains(id))
+            if (sensor_config_map_.find(id) == sensor_config_map_.end())
                 {
                     sensor_config_map_[id] = {};
                 }

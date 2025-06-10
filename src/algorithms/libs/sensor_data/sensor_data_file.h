@@ -62,7 +62,6 @@ private:
 
     std::string path_;
     std::ifstream file_;
-    std::size_t sample_delay_;
     std::size_t sample_period_;
     std::size_t offset_in_file_;
     std::size_t item_size_;

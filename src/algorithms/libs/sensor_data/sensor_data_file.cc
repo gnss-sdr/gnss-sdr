@@ -29,7 +29,6 @@ SensorDataFile::SensorDataFile(
     const bool& repeat)
     : path_(path),
       file_(path_, std::ios::binary),
-      sample_delay_(sample_delay),
       sample_period_(sample_period),
       offset_in_file_(offset_in_file),
       item_size_(item_size),

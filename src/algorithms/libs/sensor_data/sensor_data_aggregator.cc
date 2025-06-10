@@ -126,7 +126,7 @@ void SensorDataAggregator::append_data(const pmt::pmt_t& data_dict)
                     switch (SensorIdentifier::get_internal_type(sensor_id))
                         {
                         case SensorDataType::F32:
-                            if (f32_data_.contains(sensor_id))
+                            if (f32_data_.find(sensor_id) != f32_data_.end())
                                 {
                                     f32_data_.at(sensor_id).push_back(SensorDataSample<float>{
                                         .rf_sample_stamp = sample_stamp,

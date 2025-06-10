@@ -195,7 +195,7 @@ bool SensorDataSourceConfiguration::validate_sensors() const
     bool ok = true;
     for (const auto& sensor : sensors_)
         {
-            if (not files_.contains(sensor.file_id))
+            if (files_.find(sensor.file_id) == files_.end())
                 {
                     DLOG(ERROR) << "Sensor (" << std::to_string(sensor.id) << ") references file (" << std::to_string(sensor.file_id) << "), which does not exist.";
                     ok = false;

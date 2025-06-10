@@ -82,7 +82,7 @@ uint64_t SensorDataType::get_size(const SensorDataType::value_type& v)
         case SensorDataType::I32:
             return sizeof(int);
         case SensorDataType::I64:
-            return sizeof(long);
+            return sizeof(int64_t);
         default:
             return 0UL;
         }
@@ -99,9 +99,9 @@ pmt::pmt_t SensorDataType::make_value(const SensorDataType::value_type& v, void*
         case SensorDataType::F64:
             return pmt::from_double(*static_cast<double*>(value));
         case SensorDataType::I32:
-            return pmt::from_long(long{*static_cast<int*>(value)});
+            return pmt::from_long(int64_t{*static_cast<int*>(value)});
         case SensorDataType::I64:
-            return pmt::from_long(*static_cast<long*>(value));
+            return pmt::from_long(*static_cast<int64_t*>(value));
         default:
             throw std::runtime_error{"Unknown sensor data type: " + to_string(v)};
         }

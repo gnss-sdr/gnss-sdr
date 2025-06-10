@@ -601,7 +601,7 @@ SensorDataSource::sptr FileSourceBase::create_sensor_data_source()
                 {
                     sensor_data_source_configuration_.set_items_per_sample(2);
                 }
-            sensor_data_source_ = std::make_shared<SensorDataSource>(
+            sensor_data_source_ = gnss_make_shared<SensorDataSource>(
                 sensor_data_source_configuration_,
                 gr::io_signature::make(1, 1, item_size_));
             DLOG(INFO) << "sensor_data_source(" << sensor_data_source_->unique_id() << ")";

@@ -35,7 +35,7 @@
 class SensorDataFile
 {
 public:
-    using sptr = std::shared_ptr<SensorDataFile>;
+    using sptr = gnss_shared_ptr<SensorDataFile>;
     using id_type = std::size_t;
 
     SensorDataFile(

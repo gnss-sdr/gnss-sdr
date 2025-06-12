@@ -659,18 +659,14 @@ void hybrid_observables_gs::set_tag_timestamp_in_sdr_timeframe(const std::vector
 
 void hybrid_observables_gs::propagate_sensor_data()
 {
-    if (d_sensor_data_tags.empty())
+    while (!d_sensor_data_tags.empty())
         {
-            return;
+            {
+                auto &tag = d_sensor_data_tags.front();
+                add_item_tag(0, this->nitems_written(0) + 1, tag.key, tag.value);
+                d_sensor_data_tags.pop();
+            }
         }
-
-    do
-        {
-            auto &tag = d_sensor_data_tags.front();
-            add_item_tag(0, this->nitems_written(0) + 1, tag.key, tag.value);
-            d_sensor_data_tags.pop();
-        }
-    while (!d_sensor_data_tags.empty());
 }
 
 

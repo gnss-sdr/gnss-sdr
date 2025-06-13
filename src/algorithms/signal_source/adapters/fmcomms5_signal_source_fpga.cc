@@ -307,7 +307,7 @@ void Fmcomms5SignalSourceFPGA::run_buffer_monitor_process()
                     // If a buffer overflow is detected, the receiver may not function correctly.
                     // This compromises system reliability and can lead to undefined behavior.
                     // To prevent further issues, execution is halted.
-            		LOG(ERROR) << "Buffer Overflow Detected – Execution Halted";
+                    LOG(ERROR) << "Buffer Overflow Detected – Execution Halted";
                     exit(1);
                 }
             std::this_thread::sleep_for(std::chrono::milliseconds(buffer_monitor_period_ms));

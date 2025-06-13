@@ -61,7 +61,7 @@ public:
     /*!
      * \brief This function checks buffer overflow and monitors the FPGA buffer status
      */
-    void check_buffer_overflow_and_monitor_buffer_status();
+    bool check_buffer_overflow_and_monitor_buffer_status();
 
 private:
     const std::string BUFFER_MONITOR_DEVICE_NAME = std::string("buffer_monitor");  // buffer monitor device name

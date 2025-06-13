@@ -302,7 +302,14 @@ void Fmcomms5SignalSourceFPGA::run_buffer_monitor_process()
 
     while (enable_ovf_check_buffer_monitor_active)
         {
-            buffer_monitor_fpga->check_buffer_overflow_and_monitor_buffer_status();
+            if (buffer_monitor_fpga->check_buffer_overflow_and_monitor_buffer_status())
+                {
+                    // If a buffer overflow is detected, the receiver may not function correctly.
+                    // This compromises system reliability and can lead to undefined behavior.
+                    // To prevent further issues, execution is halted.
+            		LOG(ERROR) << "Buffer Overflow Detected – Execution Halted";
+                    exit(1);
+                }
             std::this_thread::sleep_for(std::chrono::milliseconds(buffer_monitor_period_ms));
             std::lock_guard<std::mutex> lock(buffer_monitor_mutex);
             if (enable_ovf_check_buffer_monitor_active_ == false)

@@ -161,8 +161,9 @@ Fpga_buffer_monitor::~Fpga_buffer_monitor()
 }
 
 
-void Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status()
+bool Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status()
 {
+    bool buffer_overflow = false;
     // check buffer overflow flags
     uint32_t buffer_overflow_status = d_map_base[overflow_flags_reg_addr];
 
@@ -176,6 +177,7 @@ void Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status()
                 {
                     LOG(ERROR) << "FPGA Buffer overflow";
                 }
+            buffer_overflow = true;
         }
 
     if (d_num_freq_bands > 1)
@@ -184,6 +186,7 @@ void Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status()
                 {
                     LOG(ERROR) << "FPGA Buffer overflow in frequency band 1";
                 }
+            buffer_overflow = true;
         }
 
     // buffer monitor
@@ -242,6 +245,7 @@ void Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status()
                 {
                     d_dump_file << std::endl;
                 }
+            return buffer_overflow;
         }
 }
 

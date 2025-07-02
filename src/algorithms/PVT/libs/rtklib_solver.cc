@@ -57,7 +57,8 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
                              d_conf(conf),
                              d_signal_enabled_flags(signal_enabled_flags),
                              d_flag_dump_enabled(flag_dump_to_file),
-                             d_flag_dump_mat_enabled(flag_dump_to_mat)
+                             d_flag_dump_mat_enabled(flag_dump_to_mat),
+                             vtl_data(nullptr)
 {
     // see freq index at src/algorithms/libs/rtklib/rtklib_rtkcmn.cc
     // function: satwavelen
@@ -148,6 +149,12 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
                             LOG(WARNING) << "Exception opening RTKLIB dump file " << e.what();
                         }
                 }
+        }
+
+    if (d_conf.enable_pvt_vtl == true)
+        {
+            vtl_data = std::make_unique<Vtl_Data>();
+            vtl_data->init_storage(d_conf.vtl_gps_channels + d_conf.vtl_gal_channels);
         }
 }
 

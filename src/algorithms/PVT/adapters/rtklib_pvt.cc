@@ -90,6 +90,32 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     SensorDataSourceConfiguration sensor_data_configuration{configuration};
     pvt_output_parameters.kf_use_imu_vel = configuration->property(role + ".kf_use_imu_vel", false);
 
+    // PVT VTL settings
+    const int gps_1C_count = configuration->property("Channels_1C.count", 0);
+    const int gps_2S_count = configuration->property("Channels_2S.count", 0);
+    const int gps_L5_count = configuration->property("Channels_L5.count", 0);
+    const int gal_1B_count = configuration->property("Channels_1B.count", 0);
+    const int gal_E5a_count = configuration->property("Channels_5X.count", 0);
+    const int gal_E5b_count = configuration->property("Channels_7X.count", 0);
+    const int gal_E6_count = configuration->property("Channels_E6.count", 0);
+    pvt_output_parameters.enable_pvt_vtl = configuration->property(role + ".enable_pvt_vtl", false);
+    pvt_output_parameters.enable_pvt_output_vtl = configuration->property(role + ".enable_pvt_output_vtl", false);
+    pvt_output_parameters.enable_pvt_closure_vtl = configuration->property(role + ".enable_pvt_closure_vtl", false);
+    pvt_output_parameters.vtl_kinematic = configuration->property(role + ".vtl_kinematic", false);
+    pvt_output_parameters.vtl_dump = configuration->property(role + ".vtl_dump", pvt_output_parameters.vtl_dump);
+    pvt_output_parameters.vtl_dump_filename = configuration->property(role + ".vtl_dump_filename", pvt_output_parameters.vtl_dump_filename);
+    pvt_output_parameters.vtl_gps_channels = gps_1C_count + gps_2S_count + gps_L5_count;
+    pvt_output_parameters.vtl_gal_channels = gal_1B_count + gal_E5a_count + gal_E5b_count + gal_E6_count;
+    pvt_output_parameters.vtl_init_pos_ecef_sd_m = configuration->property(role + ".vtl_init_pos_ecef_sd_m", 10.0);
+    pvt_output_parameters.vtl_init_vel_ecef_sd_ms = configuration->property(role + ".vtl_init_vel_ecef_sd_ms", 5.0);
+    pvt_output_parameters.vtl_init_clk_b_sd_m = configuration->property(role + ".vtl_init_clk_b_sd_m", 100.0);
+    pvt_output_parameters.vtl_init_clk_d_sd_ms = configuration->property(role + ".vtl_init_clk_d_sd_ms", 100.0);
+    pvt_output_parameters.vtl_sys_acc_noise_sd_ms2 = configuration->property(role + ".vtl_sys_acc_noise_sd_ms2", 0.1);
+    pvt_output_parameters.vtl_sys_clk_b_noise_sd_m = configuration->property(role + ".vtl_sys_clk_b_noise_sd_m", 0);
+    pvt_output_parameters.vtl_sys_clk_d_noise_sd_ms = configuration->property(role + ".vtl_sys_clk_d_noise_sd_ms", 0);
+    pvt_output_parameters.vtl_meas_prange_sd_m = configuration->property(role + ".vtl_meas_prange_sd_m", 7.75);
+    pvt_output_parameters.vtl_meas_prange_rate_sd_ms = configuration->property(role + ".vtl_meas_prange_rate_sd_ms", 0.45);
+
     // NMEA Printer settings
     pvt_output_parameters.flag_nmea_tty_port = configuration->property(role + ".flag_nmea_tty_port", false);
     pvt_output_parameters.nmea_dump_filename = configuration->property(role + ".nmea_dump_filename", default_nmea_dump_filename);

@@ -106,6 +106,25 @@ public:
 
     // Sensor Data parameters
     bool kf_use_imu_vel = false;
+
+    // PVT VTL parameters
+    bool enable_pvt_vtl = false;
+    bool enable_pvt_output_vtl = false;
+    bool enable_pvt_closure_vtl = false;
+    bool vtl_kinematic = false;
+    bool vtl_dump = false;
+    std::string vtl_dump_filename;
+    int vtl_gps_channels = 5;
+    int vtl_gal_channels = 5;
+    double vtl_init_pos_ecef_sd_m = 10.0;
+    double vtl_init_vel_ecef_sd_ms = 5.0;
+    double vtl_init_clk_b_sd_m = 100.0;
+    double vtl_init_clk_d_sd_ms = 100.0;
+    double vtl_sys_acc_noise_sd_ms2 = 0.1;
+    double vtl_sys_clk_b_noise_sd_m = 0.0;
+    double vtl_sys_clk_d_noise_sd_ms = 0.0;
+    double vtl_meas_prange_sd_m = 7.75;
+    double vtl_meas_prange_rate_sd_ms = 0.45;
 };
 
 

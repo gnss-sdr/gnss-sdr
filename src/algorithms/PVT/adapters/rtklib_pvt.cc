@@ -59,6 +59,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     // dump parameters
     const std::string default_dump_filename("./pvt.dat");
     const std::string default_nmea_dump_filename("./nmea_pvt.nmea");
+    const std::string default_vtl_dump_filename("./vtl.dat");
     const std::string default_nmea_dump_devname("/dev/tty1");
     const std::string default_rtcm_dump_devname("/dev/pts/1");
     DLOG(INFO) << "role " << role;
@@ -102,8 +103,8 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     pvt_output_parameters.enable_pvt_output_vtl = configuration->property(role + ".enable_pvt_output_vtl", false);
     pvt_output_parameters.enable_pvt_closure_vtl = configuration->property(role + ".enable_pvt_closure_vtl", false);
     pvt_output_parameters.vtl_kinematic = configuration->property(role + ".vtl_kinematic", false);
-    pvt_output_parameters.vtl_dump = configuration->property(role + ".vtl_dump", pvt_output_parameters.vtl_dump);
-    pvt_output_parameters.vtl_dump_filename = configuration->property(role + ".vtl_dump_filename", pvt_output_parameters.vtl_dump_filename);
+    pvt_output_parameters.vtl_dump = configuration->property(role + ".vtl_dump", false);
+    pvt_output_parameters.vtl_dump_filename = configuration->property(role + ".vtl_dump_filename", default_vtl_dump_filename);
     pvt_output_parameters.vtl_gps_channels = gps_1C_count + gps_2S_count + gps_L5_count;
     pvt_output_parameters.vtl_gal_channels = gal_1B_count + gal_E5a_count + gal_E5b_count + gal_E6_count;
     pvt_output_parameters.vtl_init_pos_ecef_sd_m = configuration->property(role + ".vtl_init_pos_ecef_sd_m", 10.0);

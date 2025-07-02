@@ -27,6 +27,7 @@ set(PVT_LIB_SOURCES
     signal_enabled_flags.cc
     receiver_type.cc
     vtl_data.cc
+    vtl_core.cc
 )
 
 set(PVT_LIB_HEADERS

@@ -28,14 +28,15 @@
 class TrackingCmd
 {
 public:
-    TrackingCmd();
-
-    bool enable_carrier_nco_cmd = false;
-    bool enable_code_nco_cmd = false;
-    double code_freq_chips = 0.0;
-    double carrier_freq_hz = 0.0;
+    bool enable_pll_vtl_feedack = false;
+    bool enable_dll_vtl_feedack = false;
+    bool enable_smooth_pr = false;
+    double pll_vtl_freq_hz = 0.0;
+    double dll_vtl_freq_hz = 0.0;
+    double ch_sample_counter = 0.0;
     double carrier_freq_rate_hz_s = 0.0;
-    uint64_t sample_counter = 0UL;
+    uint32_t channel_id = 0;
+    uint32_t prn_id = 0;
 };
 
 /** \} */

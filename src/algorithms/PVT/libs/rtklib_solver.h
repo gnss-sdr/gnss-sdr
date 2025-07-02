@@ -62,6 +62,7 @@
 #include "rtklib.h"
 #include "rtklib_conversions.h"
 #include "sensor_data/sensor_data_aggregator.h"
+#include "vtl_core.h"
 #include "vtl_data.h"
 #include <array>
 #include <cstdint>
@@ -162,6 +163,7 @@ private:
 
     // vector tracking
     std::unique_ptr<Vtl_Data> vtl_data;
+    std::unique_ptr<Vtl_Core> vtl_Core;
 };
 
 

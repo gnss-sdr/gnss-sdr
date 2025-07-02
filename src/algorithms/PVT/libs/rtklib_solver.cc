@@ -58,7 +58,8 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
                              d_signal_enabled_flags(signal_enabled_flags),
                              d_flag_dump_enabled(flag_dump_to_file),
                              d_flag_dump_mat_enabled(flag_dump_to_mat),
-                             vtl_data(nullptr)
+                             vtl_data(nullptr),
+                             vtl_Core(nullptr)
 {
     // see freq index at src/algorithms/libs/rtklib/rtklib_rtkcmn.cc
     // function: satwavelen
@@ -155,6 +156,8 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
         {
             vtl_data = std::make_unique<Vtl_Data>();
             vtl_data->init_storage(d_conf.vtl_gps_channels + d_conf.vtl_gal_channels);
+            vtl_Core = std::make_unique<Vtl_Core>(d_conf);
+            vtl_Core->vtl_init(d_conf);
         }
 }
 

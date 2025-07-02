@@ -136,6 +136,7 @@ private:
     void check_has_orbit_clock_validity(const std::map<int, Gnss_Synchro>& obs_map);
     void get_has_biases(const std::map<int, Gnss_Synchro>& obs_map);
     void get_current_has_obs_correction(const std::string& signal, uint32_t tow_obs, int prn);
+    const Gnss_Synchro* get_synchro(const std::map<int, Gnss_Synchro>& map, const Gnss_Synchro& freq1_synchro);
 
     std::array<obsd_t, MAXOBS> d_obs_data{};
     std::array<double, 4> d_dop{};
@@ -164,6 +165,10 @@ private:
     // vector tracking
     std::unique_ptr<Vtl_Data> vtl_data;
     std::unique_ptr<Vtl_Core> vtl_Core;
+    uint32_t d_rx_clk_b_idx;
+    uint32_t d_rx_clk_d_idx;
+    int vtl_epoch;
+    bool vtl_output;
 };
 
 

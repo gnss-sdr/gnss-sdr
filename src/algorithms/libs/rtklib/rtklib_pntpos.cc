@@ -409,7 +409,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
     const double *dts, const double *vare, const int *svh,
     const nav_t *nav, const double *x, const prcopt_t *opt,
     double *v, double *H, double *var, double *azel, int *vsat,
-    double *resp, int *ns)
+    double *resp, int *ns, double *obs_pr, double *tropo_m, double *iono_m, double *code_bias_m)
 {
     double r;
     double dion;
@@ -443,6 +443,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
         {
             vsat[i] = 0;
             azel[i * 2] = azel[1 + i * 2] = resp[i] = 0.0;
+            obs_pr[i] = 0;
 
             if (!(sys = satsys(obs[i].sat, nullptr)))
                 {
@@ -505,6 +506,23 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                 }
             /* pseudorange residual */
             v[nv] = P - (r + dtr - SPEED_OF_LIGHT_M_S * dts[i * 2] + dion + dtrp);
+            iono_m[i] = dion;
+            tropo_m[i] = dtrp;
+            int j;
+            if (obs[i].code[0] != CODE_NONE)
+                {
+                    j = 0;
+                }
+            else if (obs[i].code[1] != CODE_NONE)
+                {
+                    j = 1;
+                }
+            else
+                {
+                    j = 2;
+                }
+            code_bias_m[i] = obs[i].P[j] - P;
+            obs_pr[i] = obs[i].P[j];
 
             /* design matrix */
             for (j = 0; j < NX; j++)
@@ -684,7 +702,8 @@ arma::vec rough_bancroft(const arma::mat &B_pass)
 int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     const double *vare, const int *svh, const nav_t *nav,
     const prcopt_t *opt, sol_t *sol, double *azel, int *vsat,
-    double *resp, char *msg)
+    double *resp, char *msg, std::vector<double> &obs_pr_vec, std::vector<double> &tropo_m_vec,
+    std::vector<double> &iono_m_vec, std::vector<double> &code_bias_m_vec)
 {
     double x[NX] = {0};
     double dx[NX];
@@ -701,6 +720,14 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     int nv;
     int ns;
     char msg_aux[128];
+    double *obs_pr;
+    double *tropo_m;
+    double *iono_m;
+    double *code_bias_m;
+    obs_pr = mat(n + 4, 1);
+    tropo_m = mat(n + 4, 1);
+    iono_m = mat(n + 4, 1);
+    code_bias_m = mat(n + 4, 1);
 
     trace(3, "estpos  : n=%d\n", n);
 
@@ -744,7 +771,7 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     for (i = 0; i < MAXITR; i++)
         {
             /* pseudorange residuals */
-            nv = rescode(i, obs, n, rs, dts, vare, svh, nav, x, opt, v, H, var, azel, vsat, resp, &ns);
+            nv = rescode(i, obs, n, rs, dts, vare, svh, nav, x, opt, v, H, var, azel, vsat, resp, &ns, obs_pr, tropo_m, iono_m, code_bias_m);
 
             if (nv < NX)
                 {
@@ -798,6 +825,13 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
                     if ((stat = valsol(azel, vsat, n, opt, v, nv, NX, msg)))
                         {
                             sol->stat = opt->sateph == EPHOPT_SBAS ? SOLQ_SBAS : SOLQ_SINGLE;
+                        }
+                    for (k = 0; k < n; k++)
+                        {
+                            obs_pr_vec.push_back(obs_pr[k]);
+                            tropo_m_vec.push_back(tropo_m[k]);
+                            iono_m_vec.push_back(iono_m[k]);
+                            code_bias_m_vec.push_back(code_bias_m[k]);
                         }
                     free(v);
                     free(H);
@@ -876,8 +910,12 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
                     svh_e[k++] = svh[j];
                 }
             /* estimate receiver position without a satellite */
+            std::vector<double> obs_pr_vec;
+            std::vector<double> tropo_m_vec;
+            std::vector<double> iono_m_vec;
+            std::vector<double> code_bias_m_vec;
             if (!estpos(obs_e, n - 1, rs_e, dts_e, vare_e, svh_e, nav, opt, &sol_e, azel_e,
-                    vsat_e, resp_e, msg_e))
+                    vsat_e, resp_e, msg_e, obs_pr_vec, tropo_m_vec, iono_m_vec, code_bias_m_vec))
                 {
                     trace(3, "raim_fde: exsat=%2d (%s)\n", obs[i].sat, msg);
                     continue;
@@ -1087,11 +1125,12 @@ void estvel(const obsd_t *obs, int n, const double *rs, const double *dts,
  *-----------------------------------------------------------------------------*/
 int pntpos(const obsd_t *obs, int n, const nav_t *nav,
     const prcopt_t *opt, sol_t *sol, double *azel, ssat_t *ssat,
-    char *msg)
+    char *msg, std::vector<double> &obs_pr_vec, std::vector<double> &tropo_m_vec,
+    std::vector<double> &iono_m_vec, std::vector<double> &code_bias_m_vec, double *rs, double *dts)
 {
     prcopt_t opt_ = *opt;
-    double *rs;
-    double *dts;
+    // double *rs;
+    // double *dts;
     double *var;
     double *azel_;
     double *resp;
@@ -1113,8 +1152,8 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
     sol->time = obs[0].time;
     msg[0] = '\0';
 
-    rs = mat(6, n);
-    dts = mat(2, n);
+    // rs = mat(6, n);
+    // dts = mat(2, n);
     var = mat(1, n);
     azel_ = zeros(2, n);
     resp = mat(1, n);
@@ -1131,7 +1170,8 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
     satposs(sol->time, obs, n, nav, opt_.sateph, rs, dts, var, svh.data());
 
     /* estimate receiver position with pseudorange */
-    stat = estpos(obs, n, rs, dts, var, svh.data(), nav, &opt_, sol, azel_, vsat.data(), resp, msg);
+    stat = estpos(obs, n, rs, dts, var, svh.data(), nav, &opt_, sol, azel_, vsat.data(), resp, msg, obs_pr_vec, tropo_m_vec,
+        iono_m_vec, code_bias_m_vec);
 
     /* raim fde */
     if (!stat && n >= 6 && opt->posopt[4])
@@ -1173,8 +1213,8 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
                     ssat[obs[i].sat - 1].resp[0] = resp[i];
                 }
         }
-    free(rs);
-    free(dts);
+    // free(rs);
+    // free(dts);
     free(var);
     free(azel_);
     free(resp);

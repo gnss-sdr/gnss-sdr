@@ -34,6 +34,7 @@
 
 #include "rtklib.h"
 #include "rtklib_rtkcmn.h"
+#include <vector>
 
 /** \addtogroup PVT
  * \{ */
@@ -174,7 +175,10 @@ void rtkinit(rtk_t *rtk, const prcopt_t *opt);
 
 void rtkfree(rtk_t *rtk);
 
-int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
+int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav,
+    std::vector<double> &obs_pr_vec, std::vector<double> &tropo_m_vec,
+    std::vector<double> &iono_m_vec, std::vector<double> &code_bias_m_vec,
+    double *rs, double *dts);
 
 
 /** \} */

@@ -91,6 +91,12 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     pvt_output_parameters.kf_use_imu_vel = configuration->property(role + ".kf_use_imu_vel", false);
 
     // PVT VTL settings
+    pvt_output_parameters.enable_pvt_vtl = configuration->property(role + ".enable_pvt_vtl", false);
+    pvt_output_parameters.enable_pvt_output_vtl = configuration->property(role + ".enable_pvt_output_vtl", false);
+    pvt_output_parameters.enable_pvt_closure_vtl = configuration->property(role + ".enable_pvt_closure_vtl", false);
+    pvt_output_parameters.vtl_kinematic = configuration->property(role + ".vtl_kinematic", false);
+    pvt_output_parameters.vtl_dump = configuration->property(role + ".vtl_dump", pvt_output_parameters.vtl_dump);
+    pvt_output_parameters.vtl_dump_filename = configuration->property(role + ".vtl_dump_filename", pvt_output_parameters.vtl_dump_filename);
     const int gps_1C_count = configuration->property("Channels_1C.count", 0);
     const int gps_2S_count = configuration->property("Channels_2S.count", 0);
     const int gps_L5_count = configuration->property("Channels_L5.count", 0);
@@ -98,12 +104,6 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const int gal_E5a_count = configuration->property("Channels_5X.count", 0);
     const int gal_E5b_count = configuration->property("Channels_7X.count", 0);
     const int gal_E6_count = configuration->property("Channels_E6.count", 0);
-    pvt_output_parameters.enable_pvt_vtl = configuration->property(role + ".enable_pvt_vtl", false);
-    pvt_output_parameters.enable_pvt_output_vtl = configuration->property(role + ".enable_pvt_output_vtl", false);
-    pvt_output_parameters.enable_pvt_closure_vtl = configuration->property(role + ".enable_pvt_closure_vtl", false);
-    pvt_output_parameters.vtl_kinematic = configuration->property(role + ".vtl_kinematic", false);
-    pvt_output_parameters.vtl_dump = configuration->property(role + ".vtl_dump", pvt_output_parameters.vtl_dump);
-    pvt_output_parameters.vtl_dump_filename = configuration->property(role + ".vtl_dump_filename", pvt_output_parameters.vtl_dump_filename);
     pvt_output_parameters.vtl_gps_channels = gps_1C_count + gps_2S_count + gps_L5_count;
     pvt_output_parameters.vtl_gal_channels = gal_1B_count + gal_E5a_count + gal_E5b_count + gal_E6_count;
     pvt_output_parameters.vtl_init_pos_ecef_sd_m = configuration->property(role + ".vtl_init_pos_ecef_sd_m", 10.0);

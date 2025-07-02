@@ -665,12 +665,6 @@ void Vtl_Core::saveVTLdata(const Vtl_Data &rtk_data)
                     tmp_double = ekf_comp_Z(i + N_ch);
                     dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                 }
-            // rtk code freq
-            for (int i = 0; i < N_ch; i++)
-                {
-                    tmp_double = rtk_data.code_freq(i);
-                    dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                }
             // VTL code freq
             for (int i = 0; i < N_ch; i++)
                 {

@@ -158,6 +158,10 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
             vtl_data->init_storage(d_conf.vtl_gps_channels + d_conf.vtl_gal_channels);
             vtl_Core = std::make_unique<Vtl_Core>(d_conf);
             vtl_Core->vtl_init(d_conf);
+            vtl_epoch = 0;
+            vtl_output = false;
+            d_rx_clk_b_idx = (d_conf.vtl_gal_channels > 0) ? 7 : 6;
+            d_rx_clk_d_idx = d_rx_clk_b_idx + 1;
         }
 }
 
@@ -907,6 +911,17 @@ void Rtklib_Solver::get_current_has_obs_correction(const std::string &signal, ui
         }
 }
 
+const Gnss_Synchro *Rtklib_Solver::get_synchro(const std::map<int, Gnss_Synchro> &map, const Gnss_Synchro &freq1_synchro)
+{
+    for (const auto &[freq2_ch_id, freq2_synchro] : map)
+        {
+            if (freq2_synchro.System == freq1_synchro.System && freq2_synchro.PRN == freq1_synchro.PRN && freq2_ch_id != freq1_synchro.Channel_ID)
+                {
+                    return &freq2_synchro;
+                }
+        }
+    return nullptr;
+}
 
 bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, double kf_update_interval_s, const SensorDataAggregator &sensor_data_aggregator)
 {
@@ -1505,7 +1520,18 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         }
                 }
 
-            result = rtkpos(&d_rtk, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data);
+            int N_sv = valid_obs + glo_valid_obs;
+            std::vector<double> obs_pr_vec;
+            std::vector<double> tropo_m_vec;
+            std::vector<double> iono_m_vec;
+            std::vector<double> code_bias_m_vec;
+            std::vector<double> rho_vec;
+            double *rs;
+            double *dts;
+            rs = mat(6, N_sv);
+            dts = mat(2, N_sv);
+
+            result = rtkpos(&d_rtk, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data, obs_pr_vec, tropo_m_vec, iono_m_vec, code_bias_m_vec, rs, dts);
 
             if (result == 0)
                 {
@@ -1605,6 +1631,142 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             rx_position_and_time[3] = pvt_sol.dtr[2] + pvt_sol.dtr[0] / SPEED_OF_LIGHT_M_S;
                         }
                     this->set_rx_pos({rx_position_and_time[0], rx_position_and_time[1], rx_position_and_time[2]});  // save ECEF position for the next iteration
+
+
+                    /********************  VECTOR TRACKING LOOP  ********************/
+                    if ((d_conf.enable_pvt_vtl) && (kf_update_interval_s == 0.02))  // 20ms - observable interval
+                        {
+                            vtl_data->clear_storage();
+                            uint8_t ch_id;
+                            gnss_observables_iter = gnss_observables_map.cbegin();
+
+                            // timming
+                            vtl_data->dt_s = gnss_observables_iter->second.RX_time - vtl_data->rx_time;
+                            vtl_data->rx_time = gnss_observables_iter->second.RX_time;
+
+                            int j = 0;
+                            for (int n = 0; n < d_rtk.sol.ns; n++)
+                                {
+                                    // one observation per satellite - exclude invalid observables
+                                    while (gnss_observables_iter->second.Pseudorange_m != obs_pr_vec[j])
+                                        {
+                                            if (obs_pr_vec[j] == 0)
+                                                {
+                                                    j++;
+                                                }
+                                            else
+                                                {
+                                                    ++gnss_observables_iter;
+                                                }
+                                        }
+
+                                    const uint8_t idx6n = 6 * j;
+                                    const uint8_t idx2n = 2 * j;
+
+                                    // channel id
+                                    ch_id = gnss_observables_iter->second.Channel_ID;
+                                    vtl_data->rx_ch(ch_id) = ch_id;
+
+                                    // satellite info
+                                    vtl_data->sv_id(ch_id) = gnss_observables_iter->second.PRN;
+                                    vtl_data->sv_p.row(ch_id) = arma::Row<double>({rs[0 + idx6n], rs[1 + idx6n], rs[2 + idx6n]});
+                                    vtl_data->sv_v.row(ch_id) = arma::Row<double>({rs[3 + idx6n], rs[4 + idx6n], rs[5 + idx6n]});
+                                    vtl_data->sv_clk.row(ch_id) = arma::Row<double>({dts[0 + idx2n] * SPEED_OF_LIGHT_M_S, dts[1 + idx2n] * SPEED_OF_LIGHT_M_S});
+                                    vtl_data->sv_elev(ch_id) = d_rtk.ssat[d_obs_data.at(j).sat - 1].azel[1];
+                                    // atmosferic and code bias
+                                    vtl_data->tropo_bias(ch_id) = tropo_m_vec[j];
+                                    vtl_data->iono_bias(ch_id) = iono_m_vec[j];
+                                    vtl_data->code_bias(ch_id) = code_bias_m_vec[j];
+
+                                    // tracking info
+                                    vtl_data->CN0_dB_hz(ch_id) = gnss_observables_iter->second.CN0_dB_hz;
+
+                                    // observations
+                                    vtl_data->ch_sample_counter(ch_id) = gnss_observables_iter->second.Tracking_sample_counter;
+                                    // pseudorange
+                                    vtl_data->obs_pr(ch_id) = gnss_observables_iter->second.Pseudorange_m;
+
+                                    // pseudorange rate
+                                    if (std::string(gnss_observables_iter->second.Signal) == "1C" || std::string(gnss_observables_iter->second.Signal) == "1B")
+                                        {
+                                            vtl_data->obs_prr(ch_id) = -gnss_observables_iter->second.Carrier_Doppler_hz * Lambda_GPS_L1;
+                                            vtl_data->band(ch_id) = 0;  // L1E1
+                                        }
+                                    else
+                                        {
+                                            vtl_data->obs_prr(ch_id) = -gnss_observables_iter->second.Carrier_Doppler_hz * Lambda_GPS_L5;
+                                            vtl_data->band(ch_id) = 1;  // L5E5
+                                        }
+
+                                    // available observations
+                                    vtl_data->active_ch(ch_id) = 1;
+                                    // new observations
+                                    if (vtl_data->past_active_ch(ch_id) == 0)
+                                        {
+                                            vtl_data->new_ch(ch_id) = 1;
+                                        }
+
+                                    // needs at least one vtl epoch to have feedback
+                                    if ((vtl_epoch >= 20) && (!vtl_data->new_ch(ch_id)))  // close loop after 20 epochs
+                                        {
+                                            vtl_data->loop_closure(ch_id) = d_conf.enable_pvt_closure_vtl ? 1 : 0;
+                                        }
+
+                                    // in dual-frequency get channel info from both frequencies
+                                    if (d_rtk.opt.ionoopt == IONOOPT_IFLC)
+                                        {
+                                            const Gnss_Synchro *freq2_signal = get_synchro(gnss_observables_map, gnss_observables_iter->second);
+                                            vtl_data->rx_ch2(ch_id) = freq2_signal->Channel_ID;
+                                            vtl_data->ch2_sample_counter(ch_id) = freq2_signal->Tracking_sample_counter;
+                                        }
+
+                                    ++gnss_observables_iter;
+                                    j++;
+                                }
+
+                            // ionosphere option
+                            vtl_data->ionoopt = d_rtk.opt.ionoopt;
+
+                            // number of observations
+                            vtl_data->N_sv = arma::sum(vtl_data->active_ch == 1);
+                            // which observations disappeard?
+                            vtl_data->old_ch = vtl_data->past_active_ch % (1 - vtl_data->active_ch);
+
+                            // VTL initialization from rtklib
+                            // receiver position and velocity
+                            vtl_data->rx_p = {pvt_sol.rr[0], pvt_sol.rr[1], pvt_sol.rr[2]};
+                            vtl_data->rx_v = {pvt_sol.rr[3], pvt_sol.rr[4], pvt_sol.rr[5]};
+                            // receiver clock offset and receiver clock drift
+                            vtl_data->rx_clk = {(pvt_sol.dtr[0]) * SPEED_OF_LIGHT_M_S,
+                                (pvt_sol.dtr[0] + pvt_sol.dtr[2]) * SPEED_OF_LIGHT_M_S,
+                                pvt_sol.dtr[5]};
+
+                            // current active channels
+                            vtl_data->past_active_ch = vtl_data->active_ch;
+
+                            // execute VTL
+                            vtl_Core->vtl_work(*vtl_data);
+
+
+                            // 60s + 2s, output VTL estimation
+                            vtl_output = (vtl_epoch == 20) ? d_conf.enable_pvt_output_vtl : vtl_output;  // VTL output after 10 epochs
+
+                            vtl_epoch++;
+                        }
+                    if (vtl_output)
+                        {
+                            // replace rx pos, vel, clk b/d, with vtl data
+                            const arma::colvec &rx_pvt = vtl_Core->get_rx_pvt();
+                            pvt_sol.rr[0] = rx_pvt[0];
+                            pvt_sol.rr[1] = rx_pvt[2];
+                            pvt_sol.rr[2] = rx_pvt[4];
+                            pvt_sol.rr[3] = rx_pvt[1];
+                            pvt_sol.rr[4] = rx_pvt[3];
+                            pvt_sol.rr[5] = rx_pvt[5];
+                            rx_position_and_time[3] = rx_pvt[d_rx_clk_b_idx] / SPEED_OF_LIGHT_M_S;
+                            pvt_sol.dtr[5] = rx_pvt[d_rx_clk_d_idx];
+                            this->set_rx_pos({pvt_sol.rr[0], pvt_sol.rr[1], pvt_sol.rr[2]});
+                        }
 
                     // compute Ground speed and COG
                     double ground_speed_ms = 0.0;

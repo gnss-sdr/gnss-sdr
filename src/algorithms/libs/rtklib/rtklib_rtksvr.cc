@@ -602,7 +602,15 @@ void *rtksvrthread(void *arg)
                         }
                     /* rtk positioning */
                     rtksvrlock(svr);
-                    rtkpos(&svr->rtk, obs.data, obs.n, &svr->nav);
+                    std::vector<double> obs_pr_vec;
+                    std::vector<double> tropo_m_vec;
+                    std::vector<double> iono_m_vec;
+                    std::vector<double> code_bias_m_vec;
+                    double *rs;
+                    double *dts;
+                    rs = mat(6, 2);
+                    dts = mat(2, 2);
+                    rtkpos(&svr->rtk, obs.data, obs.n, &svr->nav, obs_pr_vec, tropo_m_vec, iono_m_vec, code_bias_m_vec, rs, dts);
                     rtksvrunlock(svr);
 
                     if (svr->rtk.sol.stat != SOLQ_NONE)

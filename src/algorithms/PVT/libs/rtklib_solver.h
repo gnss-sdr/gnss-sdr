@@ -62,6 +62,7 @@
 #include "rtklib.h"
 #include "rtklib_conversions.h"
 #include "sensor_data/sensor_data_aggregator.h"
+#include "vtl_data.h"
 #include <array>
 #include <cstdint>
 #include <fstream>
@@ -158,6 +159,9 @@ private:
     uint32_t d_signal_enabled_flags;
     bool d_flag_dump_enabled;
     bool d_flag_dump_mat_enabled;
+
+    // vector tracking
+    std::unique_ptr<Vtl_Data> vtl_data;
 };
 
 

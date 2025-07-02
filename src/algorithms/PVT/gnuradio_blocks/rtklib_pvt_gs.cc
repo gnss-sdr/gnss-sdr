@@ -2206,6 +2206,24 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     // #### solve PVT and store the corrected observable set
                     if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, d_observable_interval_ms / 1000.0, *d_sensor_data_aggregator))
                         {
+                            if (d_internal_pvt_solver->vtl_output == true)
+                                {
+                                    try
+                                        {
+                                            const auto& trk_cmds = d_internal_pvt_solver->vtl_Core->get_trk_cmd_outs();
+                                            for (const auto& cmd : trk_cmds)
+                                                {
+                                                    // Create shared_ptr from the TrackingCmd instance
+                                                    std::shared_ptr<TrackingCmd> trk_cmd_test = std::make_shared<TrackingCmd>(cmd);
+                                                    this->message_port_pub(pmt::mp("pvt_to_trk"), pmt::make_any(trk_cmd_test));
+                                                }
+                                        }
+                                    catch (std::exception& ex)
+                                        {
+                                            std::cout << "Error accessing VTL tracking commands: " << ex.what() << "\n";
+                                        }
+                                }
+
                             d_pvt_errors_counter = 0;  // Reset consecutive PVT error counter
                             const double Rx_clock_offset_s = d_internal_pvt_solver->get_time_offset_s();
 

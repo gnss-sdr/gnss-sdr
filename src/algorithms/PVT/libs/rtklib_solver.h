@@ -163,10 +163,13 @@ private:
     bool d_flag_dump_mat_enabled;
 
     // vector tracking
-    std::unique_ptr<Vtl_Data> vtl_data;
-    std::unique_ptr<Vtl_Core> vtl_Core;
     uint32_t d_rx_clk_b_idx;
     uint32_t d_rx_clk_d_idx;
+
+public:
+    // vector tracking
+    std::unique_ptr<Vtl_Data> vtl_data;
+    std::unique_ptr<Vtl_Core> vtl_Core;
     int vtl_epoch;
     bool vtl_output;
 };

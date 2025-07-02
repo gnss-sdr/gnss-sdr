@@ -45,6 +45,7 @@
 #include "gps_sdr_signal_replica.h"
 #include "lock_detectors.h"
 #include "tracking_discriminators.h"
+#include "trackingcmd.h"
 #include <gnuradio/io_signature.h>   // for io_signature
 #include <gnuradio/thread/thread.h>  // for scoped_lock
 #include <matio.h>                   // for Mat_VarCreate
@@ -153,6 +154,19 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
         boost::bind(&dll_pll_veml_tracking::msg_handler_telemetry_to_trk, this, boost::placeholders::_1));
 #else
         boost::bind(&dll_pll_veml_tracking::msg_handler_telemetry_to_trk, this, _1));
+#endif
+#endif
+    // PVT message port input
+    this->message_port_register_in(pmt::mp("pvt_to_trk"));
+    this->set_msg_handler(
+        pmt::mp("pvt_to_trk"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto &&PH1) { msg_handler_pvt_to_trk(PH1); });
+#else
+#if USE_BOOST_BIND_PLACEHOLDERS
+        boost::bind(&dll_pll_veml_tracking::msg_handler_pvt_to_trk, this, boost::placeholders::_1));
+#else
+        boost::bind(&dll_pll_veml_tracking::msg_handler_pvt_to_trk, this, _1));
 #endif
 #endif
 
@@ -606,6 +620,11 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
     d_last_timetag_samplecounter = 0;
     d_timetag_waiting = false;
     set_tag_propagation_policy(TPP_DONT);  // no tag propagation, the time tag will be adjusted and regenerated in work()
+
+    d_VTL_pll_en = false;
+    d_VTL_dll_en = false;
+    d_prn_id = 0;
+    d_VTL_dll_weight_shift = 0;
 }
 
 
@@ -641,6 +660,68 @@ void dll_pll_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
     catch (std::exception &ex)
         {
             LOG(WARNING) << "msg_handler_telemetry_to_trk Bad any_cast: " << ex.what();
+        }
+}
+
+
+void dll_pll_veml_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
+{
+    try
+        {
+            if (pmt::any_ref(msg).type().hash_code() == typeid(const std::shared_ptr<TrackingCmd>).hash_code())
+                {
+                    const auto cmd = wht::any_cast<const std::shared_ptr<TrackingCmd>>(pmt::any_ref(msg));
+                    if (cmd->channel_id == this->d_channel)
+                        {
+                            gr::thread::scoped_lock lock(d_setlock);
+                            d_prn_id = cmd->prn_id;
+                            d_sample_counter_VTL = cmd->ch_sample_counter;
+
+                            // PLL
+                            d_carr_freq_hz_VTL = cmd->pll_vtl_freq_hz;
+                            d_carr_freq_hz_s_VTL = cmd->carrier_freq_rate_hz_s;
+                            if (d_VTL_pll_en && (cmd->enable_pll_vtl_feedack == false))
+                                {
+                                    d_carrier_loop_filter.initialize(d_acq_carrier_doppler_hz);
+                                }
+                            d_VTL_pll_en = cmd->enable_pll_vtl_feedack;
+
+                            // DLL
+                            d_code_freq_hz_VTL = cmd->dll_vtl_freq_hz;
+                            if (d_signal_type == "1B" || d_signal_type == "1C")
+                                {
+                                    d_code_freq_hz_s_VTL = cmd->carrier_freq_rate_hz_s / GPS_L1_FREQ_HZ / GPS_L1_CA_CODE_RATE_CPS;
+                                }
+                            else
+                                {
+                                    d_code_freq_hz_s_VTL = cmd->carrier_freq_rate_hz_s / GPS_L5_FREQ_HZ / GPS_L5I_CODE_RATE_CPS;
+                                }
+
+
+                            d_G_vtl = 1;  // start with 100% weight to VTL feedback
+                            if (d_signal_type == "1B")
+                                {
+                                    d_VTL_dll_weight_shift = 0.2;  // shift 20% to traditional tracking each epoch
+                                }
+                            else
+                                {
+                                    d_VTL_dll_weight_shift = 0.05;  // shift 5%
+                                }
+                            if (d_VTL_dll_en && (cmd->enable_dll_vtl_feedack == false))
+                                {
+                                    d_code_loop_filter.initialize();
+                                }
+                            d_VTL_dll_en = cmd->enable_dll_vtl_feedack;
+                        }
+                }
+            else
+                {
+                    std::cout << "hash code not match\n";
+                }
+        }
+    catch (const wht::bad_any_cast &e)
+        {
+            LOG(WARNING) << "msg_handler_pvt_to_trk Bad any_cast: " << e.what();
         }
 }
 
@@ -1111,6 +1192,13 @@ void dll_pll_veml_tracking::run_dll_pll()
     // New carrier Doppler frequency estimation
     d_carrier_doppler_hz = d_carr_error_filt_hz;
 
+    // VPLL
+    if (d_VTL_pll_en)
+        {
+            double delta_t_s = static_cast<double>(this->nitems_read(0) - d_sample_counter_VTL) / d_trk_parameters.fs_in;
+            d_carrier_doppler_hz = d_carr_freq_hz_VTL + delta_t_s * d_carr_freq_hz_s_VTL;
+        }
+
     //    std::cout << "d_carrier_doppler_hz: " << d_carrier_doppler_hz << '\n';
     //    std::cout << "d_CN0_SNV_dB_Hz: " << this->d_CN0_SNV_dB_Hz << '\n';
 
@@ -1131,6 +1219,18 @@ void dll_pll_veml_tracking::run_dll_pll()
     if (d_trk_parameters.carrier_aiding)
         {
             d_code_freq_chips += d_carrier_doppler_hz * d_code_chip_rate / d_signal_carrier_freq;
+        }
+
+    // VDLL
+    if (d_VTL_dll_en)
+        {
+            double delta_t_s = static_cast<double>(this->nitems_read(0) - d_sample_counter_VTL) / d_trk_parameters.fs_in;
+            d_code_freq_chips = d_G_vtl * (d_code_freq_hz_VTL + delta_t_s * d_code_freq_hz_s_VTL) + (1 - d_G_vtl) * d_code_freq_chips;
+
+            if (d_G_vtl > 0)
+                {
+                    d_G_vtl -= d_VTL_dll_weight_shift;
+                }
         }
 
     // Experimental: detect Carrier Doppler vs. Code Doppler incoherence and correct the Carrier Doppler

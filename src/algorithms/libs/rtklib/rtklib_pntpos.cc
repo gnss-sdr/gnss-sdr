@@ -409,11 +409,10 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
     const double *dts, const double *vare, const int *svh,
     const nav_t *nav, const double *x, const prcopt_t *opt,
     double *v, double *H, double *var, double *azel, int *vsat,
-    double *resp, int *ns, double *obs_pr, double *tropo_m, double *iono_m, double *code_bias_m)
+    double *resp, int *ns, double *pr, double *dion, 
+    double *dtrp, double *dcb)
 {
     double r;
-    double dion;
-    double dtrp;
     double vmeas;
     double vion;
     double vtrp;
@@ -443,7 +442,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
         {
             vsat[i] = 0;
             azel[i * 2] = azel[1 + i * 2] = resp[i] = 0.0;
-            obs_pr[i] = 0;
+            pr[i] = 0;
 
             if (!(sys = satsys(obs[i].sat, nullptr)))
                 {
@@ -486,7 +485,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
 
             /* ionospheric corrections */
             if (!ionocorr(obs[i].time, nav, obs[i].sat, pos, azel + i * 2,
-                    iter > 0 ? opt->ionoopt : IONOOPT_BRDC, &dion, &vion))
+                    iter > 0 ? opt->ionoopt : IONOOPT_BRDC, dion + i, &vion))
                 {
                     trace(4, "ionocorr error\n");
                     continue;
@@ -495,19 +494,17 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
             /* GPS-L1 -> L1/B1 */
             if ((lam_L1 = nav->lam[obs[i].sat - 1][0]) > 0.0)
                 {
-                    dion *= std::pow(lam_L1 / LAM_CARR[0], 2.0);
+                    dion[i] *= std::pow(lam_L1 / LAM_CARR[0], 2.0);
                 }
             /* tropospheric corrections */
             if (!tropcorr(obs[i].time, nav, pos, azel + i * 2,
-                    iter > 0 ? opt->tropopt : TROPOPT_SAAS, &dtrp, &vtrp))
+                    iter > 0 ? opt->tropopt : TROPOPT_SAAS, dtrp + i, &vtrp))
                 {
                     trace(4, "tropocorr error\n");
                     continue;
                 }
             /* pseudorange residual */
-            v[nv] = P - (r + dtr - SPEED_OF_LIGHT_M_S * dts[i * 2] + dion + dtrp);
-            iono_m[i] = dion;
-            tropo_m[i] = dtrp;
+            v[nv] = P - (r + dtr - SPEED_OF_LIGHT_M_S * dts[i * 2] + dion[i] + dtrp[i]);
             int j;
             if (obs[i].code[0] != CODE_NONE)
                 {
@@ -521,8 +518,8 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                 {
                     j = 2;
                 }
-            code_bias_m[i] = obs[i].P[j] - P;
-            obs_pr[i] = obs[i].P[j];
+            dcb[i] = obs[i].P[j] - P;
+            pr[i] = obs[i].P[j];
 
             /* design matrix */
             for (j = 0; j < NX; j++)
@@ -702,8 +699,8 @@ arma::vec rough_bancroft(const arma::mat &B_pass)
 int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     const double *vare, const int *svh, const nav_t *nav,
     const prcopt_t *opt, sol_t *sol, double *azel, int *vsat,
-    double *resp, char *msg, std::vector<double> &obs_pr_vec, std::vector<double> &tropo_m_vec,
-    std::vector<double> &iono_m_vec, std::vector<double> &code_bias_m_vec)
+    double *resp, char *msg, double *prange, double *dion, double *dtrp, 
+    double *dcb)
 {
     double x[NX] = {0};
     double dx[NX];
@@ -720,14 +717,6 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     int nv;
     int ns;
     char msg_aux[128];
-    double *obs_pr;
-    double *tropo_m;
-    double *iono_m;
-    double *code_bias_m;
-    obs_pr = mat(n + 4, 1);
-    tropo_m = mat(n + 4, 1);
-    iono_m = mat(n + 4, 1);
-    code_bias_m = mat(n + 4, 1);
 
     trace(3, "estpos  : n=%d\n", n);
 
@@ -771,7 +760,7 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     for (i = 0; i < MAXITR; i++)
         {
             /* pseudorange residuals */
-            nv = rescode(i, obs, n, rs, dts, vare, svh, nav, x, opt, v, H, var, azel, vsat, resp, &ns, obs_pr, tropo_m, iono_m, code_bias_m);
+            nv = rescode(i, obs, n, rs, dts, vare, svh, nav, x, opt, v, H, var, azel, vsat, resp, &ns, prange, dion, dtrp, dcb);
 
             if (nv < NX)
                 {
@@ -826,13 +815,6 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
                         {
                             sol->stat = opt->sateph == EPHOPT_SBAS ? SOLQ_SBAS : SOLQ_SINGLE;
                         }
-                    for (k = 0; k < n; k++)
-                        {
-                            obs_pr_vec.push_back(obs_pr[k]);
-                            tropo_m_vec.push_back(tropo_m[k]);
-                            iono_m_vec.push_back(iono_m[k]);
-                            code_bias_m_vec.push_back(code_bias_m[k]);
-                        }
                     free(v);
                     free(H);
                     free(var);
@@ -858,7 +840,9 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
 int raim_fde(const obsd_t *obs, int n, const double *rs,
     const double *dts, const double *vare, const int *svh,
     const nav_t *nav, const prcopt_t *opt, sol_t *sol,
-    double *azel, int *vsat, double *resp, char *msg)
+    double *azel, int *vsat, double *resp, char *msg, 
+    double *prange, double *dion, double *dtrp, 
+    double *dcb)
 {
     obsd_t *obs_e;
     sol_t sol_e = {{0, 0}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0};
@@ -869,6 +853,10 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
     double *vare_e;
     double *azel_e;
     double *resp_e;
+    double *prange_e;
+    double *dion_e;
+    double *dtrp_e;
+    double *dcb_e;
     double rms_e;
     double rms = 100.0;
     int i;
@@ -893,6 +881,10 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
     svh_e = imat(1, n);
     vsat_e = imat(1, n);
     resp_e = mat(1, n);
+    prange_e = mat(1, n);
+    dion_e = mat(1, n);
+    dtrp_e = mat(1, n);
+    dcb_e = mat(1, n);
 
     for (i = 0; i < n; i++)
         {
@@ -915,7 +907,7 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
             std::vector<double> iono_m_vec;
             std::vector<double> code_bias_m_vec;
             if (!estpos(obs_e, n - 1, rs_e, dts_e, vare_e, svh_e, nav, opt, &sol_e, azel_e,
-                    vsat_e, resp_e, msg_e, obs_pr_vec, tropo_m_vec, iono_m_vec, code_bias_m_vec))
+                    vsat_e, resp_e, msg_e, prange_e, dion_e, dtrp_e, dcb_e))
                 {
                     trace(3, "raim_fde: exsat=%2d (%s)\n", obs[i].sat, msg);
                     continue;
@@ -953,7 +945,11 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
                         }
                     matcpy(azel + 2 * j, azel_e + 2 * k, 2, 1);
                     vsat[j] = vsat_e[k];
-                    resp[j] = resp_e[k++];
+                    resp[j] = resp_e[k];
+                    prange[j] = prange_e[k];
+                    dion[j] = dion_e[k];
+                    dtrp[j] = dtrp_e[k];
+                    dcb[j] = dcb_e[k++];
                 }
             stat = 1;
             *sol = sol_e;
@@ -1125,15 +1121,18 @@ void estvel(const obsd_t *obs, int n, const double *rs, const double *dts,
  *-----------------------------------------------------------------------------*/
 int pntpos(const obsd_t *obs, int n, const nav_t *nav,
     const prcopt_t *opt, sol_t *sol, double *azel, ssat_t *ssat,
-    char *msg, std::vector<double> &obs_pr_vec, std::vector<double> &tropo_m_vec,
-    std::vector<double> &iono_m_vec, std::vector<double> &code_bias_m_vec, double *rs, double *dts)
+    char *msg)
 {
     prcopt_t opt_ = *opt;
-    // double *rs;
-    // double *dts;
+    double *rs;
+    double *dts;
     double *var;
     double *azel_;
     double *resp;
+    double *prange;
+    double *dion;
+    double *dtrp;
+    double *dcb;
     int i;
     int stat;
     std::vector<int> vsat(MAXOBS, 0);
@@ -1152,11 +1151,15 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
     sol->time = obs[0].time;
     msg[0] = '\0';
 
-    // rs = mat(6, n);
-    // dts = mat(2, n);
+    rs = mat(6, n);
+    dts = mat(2, n);
     var = mat(1, n);
     azel_ = zeros(2, n);
     resp = mat(1, n);
+    prange = mat(1, n);
+    dion = mat(1, n);
+    dtrp = mat(1, n);
+    dcb = mat(1, n);
 
     if (opt_.mode != PMODE_SINGLE)
         { /* for precise positioning */
@@ -1170,13 +1173,14 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
     satposs(sol->time, obs, n, nav, opt_.sateph, rs, dts, var, svh.data());
 
     /* estimate receiver position with pseudorange */
-    stat = estpos(obs, n, rs, dts, var, svh.data(), nav, &opt_, sol, azel_, vsat.data(), resp, msg, obs_pr_vec, tropo_m_vec,
-        iono_m_vec, code_bias_m_vec);
+    stat = estpos(obs, n, rs, dts, var, svh.data(), nav, &opt_, sol, azel_, vsat.data(), resp, msg, prange, dion,
+        dtrp, dcb);
 
     /* raim fde */
     if (!stat && n >= 6 && opt->posopt[4])
         {
-            stat = raim_fde(obs, n, rs, dts, var, svh.data(), nav, &opt_, sol, azel_, vsat.data(), resp, msg);
+            stat = raim_fde(obs, n, rs, dts, var, svh.data(), nav, &opt_, sol, azel_, vsat.data(), resp, msg, 
+            prange, dion, dtrp, dcb);
         }
     /* estimate receiver velocity with doppler */
     if (stat)
@@ -1205,18 +1209,29 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
                     ssat[obs[i].sat - 1].azel[0] = azel_[i * 2];
                     ssat[obs[i].sat - 1].azel[1] = azel_[1 + i * 2];
                     ssat[obs[i].sat - 1].snr[0] = obs[i].SNR[0];
+                    std::memcpy(ssat[obs[i].sat - 1].sat_obs[0].rs, &rs[i * 6], 6 * sizeof(double));
+                    ssat[obs[i].sat - 1].sat_obs[0].prange = prange[i];
                     if (!vsat[i])
                         {
                             continue;
                         }
                     ssat[obs[i].sat - 1].vs = 1;
                     ssat[obs[i].sat - 1].resp[0] = resp[i];
+                    ssat[obs[i].sat - 1].sat_obs[0].dts[0] = dts[i * 2 + 0];
+                    ssat[obs[i].sat - 1].sat_obs[0].dts[1] = dts[i * 2 + 1];
+                    ssat[obs[i].sat - 1].sat_obs[0].dion = dion[i];
+                    ssat[obs[i].sat - 1].sat_obs[0].dtrp = dtrp[i];
+                    ssat[obs[i].sat - 1].sat_obs[0].dcb = dcb[i];
                 }
         }
-    // free(rs);
-    // free(dts);
+    free(rs);
+    free(dts);
     free(var);
     free(azel_);
     free(resp);
+    free(prange);
+    free(dion);
+    free(dtrp);
+    free(dcb);
     return stat;
 }

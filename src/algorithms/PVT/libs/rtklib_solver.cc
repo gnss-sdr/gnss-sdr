@@ -1520,18 +1520,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         }
                 }
 
-            int N_sv = valid_obs + glo_valid_obs;
-            std::vector<double> obs_pr_vec;
-            std::vector<double> tropo_m_vec;
-            std::vector<double> iono_m_vec;
-            std::vector<double> code_bias_m_vec;
-            std::vector<double> rho_vec;
-            double *rs;
-            double *dts;
-            rs = mat(6, N_sv);
-            dts = mat(2, N_sv);
-
-            result = rtkpos(&d_rtk, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data, obs_pr_vec, tropo_m_vec, iono_m_vec, code_bias_m_vec, rs, dts);
+            result = rtkpos(&d_rtk, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data);
 
             if (result == 0)
                 {
@@ -1647,21 +1636,15 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             int j = 0;
                             for (int n = 0; n < d_rtk.sol.ns; n++)
                                 {
-                                    // one observation per satellite - exclude invalid observables
-                                    while (gnss_observables_iter->second.Pseudorange_m != obs_pr_vec[j])
+                                    // one observation per satellite (IFLC) - exclude invalid observables
+                                    while (gnss_observables_iter->second.Pseudorange_m != d_rtk.ssat[d_obs_data.at(j).sat - 1].sat_obs[0].prange)
                                         {
-                                            if (obs_pr_vec[j] == 0)
+                                            ++gnss_observables_iter;
+                                            if (!d_rtk.ssat[d_obs_data.at(j).sat - 1].vs)
                                                 {
                                                     j++;
                                                 }
-                                            else
-                                                {
-                                                    ++gnss_observables_iter;
-                                                }
                                         }
-
-                                    const uint8_t idx6n = 6 * j;
-                                    const uint8_t idx2n = 2 * j;
 
                                     // channel id
                                     ch_id = gnss_observables_iter->second.Channel_ID;
@@ -1669,14 +1652,16 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                                     // satellite info
                                     vtl_data->sv_id(ch_id) = gnss_observables_iter->second.PRN;
-                                    vtl_data->sv_p.row(ch_id) = arma::Row<double>({rs[0 + idx6n], rs[1 + idx6n], rs[2 + idx6n]});
-                                    vtl_data->sv_v.row(ch_id) = arma::Row<double>({rs[3 + idx6n], rs[4 + idx6n], rs[5 + idx6n]});
-                                    vtl_data->sv_clk.row(ch_id) = arma::Row<double>({dts[0 + idx2n] * SPEED_OF_LIGHT_M_S, dts[1 + idx2n] * SPEED_OF_LIGHT_M_S});
+                                    double *svPosVel = d_rtk.ssat[d_obs_data.at(j).sat - 1].sat_obs[0].rs;
+                                    double *svClk = d_rtk.ssat[d_obs_data.at(j).sat - 1].sat_obs[0].dts;
+                                    vtl_data->sv_p.row(ch_id) = arma::Row<double>({svPosVel[0], svPosVel[1], svPosVel[2]});
+                                    vtl_data->sv_v.row(ch_id) = arma::Row<double>({svPosVel[3], svPosVel[4], svPosVel[5]});
+                                    vtl_data->sv_clk.row(ch_id) = arma::Row<double>({svClk[0] * SPEED_OF_LIGHT_M_S, svClk[1] * SPEED_OF_LIGHT_M_S});
                                     vtl_data->sv_elev(ch_id) = d_rtk.ssat[d_obs_data.at(j).sat - 1].azel[1];
                                     // atmosferic and code bias
-                                    vtl_data->tropo_bias(ch_id) = tropo_m_vec[j];
-                                    vtl_data->iono_bias(ch_id) = iono_m_vec[j];
-                                    vtl_data->code_bias(ch_id) = code_bias_m_vec[j];
+                                    vtl_data->tropo_bias(ch_id) = d_rtk.ssat[d_obs_data.at(j).sat - 1].sat_obs[0].dtrp;
+                                    vtl_data->iono_bias(ch_id) = d_rtk.ssat[d_obs_data.at(j).sat - 1].sat_obs[0].dion;
+                                    vtl_data->code_bias(ch_id) = d_rtk.ssat[d_obs_data.at(j).sat - 1].sat_obs[0].dcb;
 
                                     // tracking info
                                     vtl_data->CN0_dB_hz(ch_id) = gnss_observables_iter->second.CN0_dB_hz;

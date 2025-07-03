@@ -409,7 +409,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
     const double *dts, const double *vare, const int *svh,
     const nav_t *nav, const double *x, const prcopt_t *opt,
     double *v, double *H, double *var, double *azel, int *vsat,
-    double *resp, int *ns, double *pr, double *dion, 
+    double *resp, int *ns, double *pr, double *dion,
     double *dtrp, double *dcb)
 {
     double r;
@@ -699,7 +699,7 @@ arma::vec rough_bancroft(const arma::mat &B_pass)
 int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     const double *vare, const int *svh, const nav_t *nav,
     const prcopt_t *opt, sol_t *sol, double *azel, int *vsat,
-    double *resp, char *msg, double *prange, double *dion, double *dtrp, 
+    double *resp, char *msg, double *prange, double *dion, double *dtrp,
     double *dcb)
 {
     double x[NX] = {0};
@@ -840,8 +840,8 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
 int raim_fde(const obsd_t *obs, int n, const double *rs,
     const double *dts, const double *vare, const int *svh,
     const nav_t *nav, const prcopt_t *opt, sol_t *sol,
-    double *azel, int *vsat, double *resp, char *msg, 
-    double *prange, double *dion, double *dtrp, 
+    double *azel, int *vsat, double *resp, char *msg,
+    double *prange, double *dion, double *dtrp,
     double *dcb)
 {
     obsd_t *obs_e;
@@ -1179,8 +1179,8 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
     /* raim fde */
     if (!stat && n >= 6 && opt->posopt[4])
         {
-            stat = raim_fde(obs, n, rs, dts, var, svh.data(), nav, &opt_, sol, azel_, vsat.data(), resp, msg, 
-            prange, dion, dtrp, dcb);
+            stat = raim_fde(obs, n, rs, dts, var, svh.data(), nav, &opt_, sol, azel_, vsat.data(), resp, msg,
+                prange, dion, dtrp, dcb);
         }
     /* estimate receiver velocity with doppler */
     if (stat)

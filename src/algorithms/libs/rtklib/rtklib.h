@@ -1027,13 +1027,14 @@ typedef struct
 } solopt_t;
 
 
-typedef struct {
-    double  rs[6];  /* satellite position|velocity (ecef) (m|m/s) */
-    double  dts[2];  /* satellite clock bias/drift (s|s/s) */
-    double  prange;  /* pseudorange (m) */
-    double  dtrp;  /* tropospheric delay (m) */
-    double  dion;  /* ionospheric delay (m) */
-    double  dcb;  /* code bias delay (m) */
+typedef struct
+{
+    double rs[6];  /* satellite position|velocity (ecef) (m|m/s) */
+    double dts[2]; /* satellite clock bias/drift (s|s/s) */
+    double prange; /* pseudorange (m) */
+    double dtrp;   /* tropospheric delay (m) */
+    double dion;   /* ionospheric delay (m) */
+    double dcb;    /* code bias delay (m) */
 } sat_obs_t;
 
 

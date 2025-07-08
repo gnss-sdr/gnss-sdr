@@ -355,6 +355,8 @@ int An_Packet_Printer::init_serial(const std::string& serial_device)
     // enable receiver, set 8 bit data, ignore control lines
     // options.c_cflag |= (CLOCAL | CREAD | CS8);
     options.c_iflag = IGNPAR;
+    // Output flags: disable \n to \r\n conversion and all post-processing
+    options.c_oflag &= ~(ONLCR | OPOST);
 
     // set the new port options
     tcsetattr(fd, TCSANOW, &options);

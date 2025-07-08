@@ -52,7 +52,7 @@ struct sdr_gnss_packet_t
         uint8_t prn;      // PRN ID. Galileo sats expressed as PRN + 100
         uint8_t snr;      // in [dB-Hz]
         int16_t doppler;  // in [Hz], saturates at +32767 / -32768 Hz
-    } sats[6];
+    } sats[16];
 
     uint32_t reserved;
     uint16_t status;
@@ -62,7 +62,7 @@ struct sdr_gnss_packet_t
 struct an_packet_t
 {
     uint8_t header[4];
-    uint8_t data[73];  // SDR_GNSS_PACKET_LENGTH
+    uint8_t data[113];  // SDR_GNSS_PACKET_LENGTH
 };
 
 
@@ -108,7 +108,7 @@ private:
             0xfb1e, 0x8bf9, 0x9bd8, 0xabbb, 0xbb9a, 0x4a75, 0x5a54, 0x6a37, 0x7a16, 0x0af1, 0x1ad0, 0x2ab3, 0x3a92, 0xfd2e, 0xed0f, 0xdd6c, 0xcd4d, 0xbdaa, 0xad8b, 0x9de8, 0x8dc9, 0x7c26, 0x6c07, 0x5c64,
             0x4c45, 0x3ca2, 0x2c83, 0x1ce0, 0x0cc1, 0xef1f, 0xff3e, 0xcf5d, 0xdf7c, 0xaf9b, 0xbfba, 0x8fd9, 0x9ff8, 0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0}};
 
-    const size_t SDR_GNSS_PACKET_LENGTH = 73;
+    const size_t SDR_GNSS_PACKET_LENGTH = 113;
     const uint8_t SDR_GNSS_PACKET_ID = 201;
 
     int init_serial(const std::string& serial_device);

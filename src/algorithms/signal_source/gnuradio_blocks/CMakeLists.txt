@@ -29,6 +29,7 @@ set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
     unpack_short_byte_samples.cc
     rtl_tcp_signal_source_c.cc
     unpack_2bit_samples.cc
+    unpack_ntlab_2bit_samples.cc
     unpack_spir_gss6450_samples.cc
     labsat23_source.cc
     ${OPT_DRIVER_SOURCES}
@@ -43,6 +44,7 @@ set(SIGNAL_SOURCE_GR_BLOCKS_HEADERS
     unpack_short_byte_samples.h
     rtl_tcp_signal_source_c.h
     unpack_2bit_samples.h
+    unpack_ntlab_2bit_samples.h
     unpack_spir_gss6450_samples.h
     labsat23_source.h
     ${OPT_DRIVER_HEADERS}

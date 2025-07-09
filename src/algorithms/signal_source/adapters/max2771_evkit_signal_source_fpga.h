@@ -51,7 +51,7 @@ public:
 
     ~MAX2771EVKITSignalSourceFPGA();
 
-    std::vector<uint32_t> setup_regs(void);
+    std::vector<uint32_t> setup_regs(uint64_t freq);
 
     inline size_t item_size() override
     {
@@ -64,8 +64,12 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
-    const std::string default_dump_filename = std::string("FPGA_buffer_monitor_dump.dat");
-    const uint64_t default_bandwidth = 2500000;
+    const std::string DEFAULT_BUFF_MON_FILENAME = std::string("FPGA_buffer_monitor_dump.dat");
+    const std::string FREQ_BAND_0_SPI_DEVICE_NAME = std::string("/dev/spidev2.0");  // Switch UIO device name
+    const std::string FREQ_BAND_1_SPI_DEVICE_NAME = std::string("/dev/spidev1.0");  // Switch UIO device name
+    const uint32_t MAX_NUM_FREQ_BANDS = 2;
+    const uint32_t DEFAULT_NUM_FREQ_BANDS = 1;
+    const uint64_t DEFAULT_BANDWIDTH = 2500000;
     const uint32_t default_filter_order = 5;
     const uint64_t default_sampling_rate = 4092000;
     const uint32_t default_PGA_gain_value = 0x3A;  // default PGA gain when AGC is off
@@ -136,9 +140,12 @@ private:
     std::shared_ptr<Fpga_buffer_monitor> buffer_monitor_fpga;
     std::shared_ptr<Fpga_spidev> spidev_fpga;
 
-    uint64_t freq_;  // frequency of local oscillator
+    uint64_t freq_;   // Tuning frequency in single-band mode
+    uint64_t freq0_;  // Tuning frequency for band 0 when dual-band mode is enabled
+    uint64_t freq1_;  // Tuning frequency for band 1 when dual-band mode is enabled
     uint64_t sample_rate_;
 
+    uint32_t RF_channels_;
     uint32_t in_stream_;
     uint32_t out_stream_;
     uint32_t bandwidth_;     // 2500000, 4200000, 8700000, 16400000, 23400000, 36000000

@@ -55,7 +55,7 @@ SensorDataSource::SensorDataSource(
                     s_period *= items_per_sample_;
                 }
 
-            sensor_data_files_.emplace(id, std::make_shared<SensorDataFile>(file.filename, s_offset, s_period, file.file_offset, file.chunk_size, file.repeat));
+            sensor_data_files_.emplace(id, gnss_make_shared<SensorDataFile>(file.filename, s_offset, s_period, file.file_offset, file.chunk_size, file.repeat));
 
             if (sensor_config_map_.find(id) == sensor_config_map_.end())
                 {

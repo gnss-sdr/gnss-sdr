@@ -42,10 +42,13 @@ MAX2771EVKITSignalSourceFPGA::MAX2771EVKITSignalSourceFPGA(const ConfigurationIn
     Concurrent_Queue<pmt::pmt_t> *queue __attribute__((unused)))
     : SignalSourceBase(configuration, role, "MAX2771_EVKIT_Signal_Source_FPGA"s),
       freq_(configuration->property(role + ".freq", static_cast<uint64_t>(GPS_L1_FREQ_HZ))),
+      freq0_(configuration->property(role + ".freq0", freq_)),
+      freq1_(configuration->property(role + ".freq1", static_cast<uint64_t>(GPS_L5_FREQ_HZ))),
       sample_rate_(configuration->property(role + ".sampling_frequency", default_sampling_rate)),
+      RF_channels_(configuration->property(role + ".RF_channels", 1)),
       in_stream_(in_stream),
       out_stream_(out_stream),
-      bandwidth_(configuration->property(role + ".bandwidth", default_bandwidth)),
+      bandwidth_(configuration->property(role + ".bandwidth", DEFAULT_BANDWIDTH)),
       filter_order_(configuration->property(role + ".filter_order", default_filter_order)),
       gain_in_(configuration->property(role + ".PGA_gain", default_PGA_gain_value)),
       item_size_(sizeof(int8_t)),
@@ -62,13 +65,29 @@ MAX2771EVKITSignalSourceFPGA::MAX2771EVKITSignalSourceFPGA(const ConfigurationIn
 #endif
 {
     // some basic checks
-    if (freq_ != GPS_L1_FREQ_HZ and freq_ != GPS_L2_FREQ_HZ and freq_ != GPS_L5_FREQ_HZ)
+    if (RF_channels_ > MAX_NUM_FREQ_BANDS)
         {
-            std::cout << "Configuration parameter freq should take values " << GPS_L1_FREQ_HZ << ", " << GPS_L2_FREQ_HZ << ", or " << GPS_L5_FREQ_HZ << "\n";
-            std::cout << "Error: provided value freq = " << freq_ << " is not among valid values\n";
-            std::cout << " This parameter has been set to its default value freq = " << GPS_L1_FREQ_HZ << '\n';
-            LOG(WARNING) << "Invalid configuration value for freq parameter. Set to freq = " << GPS_L1_FREQ_HZ;
-            freq_ = GPS_L1_FREQ_HZ;
+            std::cout << "Configuration parameter RF_channels supports values up to and including " << MAX_NUM_FREQ_BANDS << "\n";
+            std::cout << "Error: provided value RF_channels = " << RF_channels_ << " is not among valid values\n";
+            std::cout << " This parameter has been set to its default value RF_channels = " << DEFAULT_NUM_FREQ_BANDS << '\n';
+            LOG(WARNING) << "Invalid configuration value for RF_channels parameter. Set to RF_channels = " << DEFAULT_NUM_FREQ_BANDS;
+        }
+    if (freq0_ != GPS_L1_FREQ_HZ)
+        {
+            std::string freq_name = (RF_channels_ == 1) ? "freq" : "freq0";
+            std::cout << "Configuration parameter " << freq_name << " should take values " << GPS_L1_FREQ_HZ << ", " << GPS_L2_FREQ_HZ << ", or " << GPS_L5_FREQ_HZ << "\n";
+            std::cout << "Error: provided value " << freq_name << " = " << freq0_ << " is not among valid values\n";
+            std::cout << " This parameter has been set to its default value " << freq_name << " = " << GPS_L1_FREQ_HZ << '\n';
+            LOG(WARNING) << "Invalid configuration value for " << freq_name << " parameter. Set to " << freq_name << " = " << GPS_L1_FREQ_HZ;
+            freq0_ = GPS_L1_FREQ_HZ;
+        }
+    if (freq1_ != GPS_L2_FREQ_HZ and freq1_ != GPS_L5_FREQ_HZ)
+        {
+            std::cout << "Configuration parameter freq1 should take values " << GPS_L1_FREQ_HZ << ", " << GPS_L2_FREQ_HZ << ", or " << GPS_L5_FREQ_HZ << "\n";
+            std::cout << "Error: provided value freq1 = " << freq1_ << " is not among valid values\n";
+            std::cout << " This parameter has been set to its default value freq1 = " << GPS_L5_FREQ_HZ << '\n';
+            LOG(WARNING) << "Invalid configuration value for freq1 parameter. Set to freq1 = " << GPS_L5_FREQ_HZ;
+            freq1_ = GPS_L5_FREQ_HZ;
         }
     if (sample_rate_ != 4092000 and sample_rate_ != 8184000 and sample_rate_ != 16368000 and sample_rate_ != 32736000)
         {
@@ -82,9 +101,9 @@ MAX2771EVKITSignalSourceFPGA::MAX2771EVKITSignalSourceFPGA(const ConfigurationIn
         {
             std::cout << "Configuration parameter bandwidth can only take the following values: 2500000, 4200000, 8700000, 16400000, 23400000, and 36000000 Hz\n";
             std::cout << "Error: provided value bandwidth = " << bandwidth_ << " is not among valid values\n";
-            std::cout << " This parameter has been set to its default value bandwidth = " << default_bandwidth << '\n';
-            LOG(WARNING) << "Invalid configuration value for bandwidth parameter. Set to bandwidth = " << default_bandwidth;
-            bandwidth_ = default_bandwidth;
+            std::cout << " This parameter has been set to its default value bandwidth = " << DEFAULT_BANDWIDTH << '\n';
+            LOG(WARNING) << "Invalid configuration value for bandwidth parameter. Set to bandwidth = " << DEFAULT_BANDWIDTH;
+            bandwidth_ = DEFAULT_BANDWIDTH;
         }
     if (filter_order_ != 3 and filter_order_ != 5)
         {
@@ -103,29 +122,52 @@ MAX2771EVKITSignalSourceFPGA::MAX2771EVKITSignalSourceFPGA(const ConfigurationIn
             gain_in_ = default_PGA_gain_value;
         }
 
-    std::vector<uint32_t> register_values = setup_regs();
+    // Create and initialize the SPI interface
 
     spidev_fpga = std::make_shared<Fpga_spidev>();
 
-    if (spidev_fpga->SPI_open())
+    // configure analog-front-end for frequency band 0
+
+    std::vector<uint32_t> register_values = setup_regs(freq0_);
+    if (spidev_fpga->SPI_open(FREQ_BAND_0_SPI_DEVICE_NAME))
         {
-            std::cerr << "Cannot open SPI device\n";
-            // stop the receiver
-            queue->push(pmt::make_any(command_event_make(200, 0)));
+            std::cerr << "Cannot open " << FREQ_BAND_0_SPI_DEVICE_NAME << " device\n";
+            queue->push(pmt::make_any(command_event_make(200, 0)));  // stop the receiver
             return;
         }
-
     if (configure(register_values))
         {
             std::cerr << "Error configuring the MAX2771 device " << '\n';
         }
-
     if (spidev_fpga->SPI_close())
         {
-            std::cerr << "Error closing SPI device " << '\n';
+            std::cerr << "Error closing " << FREQ_BAND_0_SPI_DEVICE_NAME << " device\n";
         }
 
-    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+    // configure analog-front-end for frequency band 1 if enabled
+
+    if (RF_channels_ == MAX_NUM_FREQ_BANDS)
+        {
+            register_values = setup_regs(freq1_);
+            if (spidev_fpga->SPI_open(FREQ_BAND_1_SPI_DEVICE_NAME))
+                {
+                    std::cerr << "Cannot open " << FREQ_BAND_1_SPI_DEVICE_NAME << " device\n";
+                    queue->push(pmt::make_any(command_event_make(200, 0)));  // stop the receiver
+                    return;
+                }
+            if (configure(register_values))
+                {
+                    std::cerr << "Error configuring the MAX2771 device " << '\n';
+                }
+            if (spidev_fpga->SPI_close())
+                {
+                    std::cerr << "Error closing " << FREQ_BAND_1_SPI_DEVICE_NAME << " device\n";
+                }
+        }
+
+    // configure buffer monitor
+
+    std::string dump_filename = configuration->property(role + ".dump_filename", DEFAULT_BUFF_MON_FILENAME);
 
     buffer_monitor_fpga = std::make_shared<Fpga_buffer_monitor>(NUM_FREQ_BANDS, dump_, dump_filename);
     thread_buffer_monitor = std::thread([&] { run_buffer_monitor_process(); });
@@ -141,7 +183,7 @@ MAX2771EVKITSignalSourceFPGA::MAX2771EVKITSignalSourceFPGA(const ConfigurationIn
 }
 
 
-std::vector<uint32_t> MAX2771EVKITSignalSourceFPGA::setup_regs(void)
+std::vector<uint32_t> MAX2771EVKITSignalSourceFPGA::setup_regs(uint64_t freq)
 {
     auto register_values = std::vector<uint32_t>(MAX2771_NUM_REGS);
     uint32_t LNA_mode = (LNA_active_) ? 0x0 : 0x2;
@@ -274,7 +316,7 @@ std::vector<uint32_t> MAX2771EVKITSignalSourceFPGA::setup_regs(void)
         0x0;          // reserved
 
     uint32_t freq_sel;
-    switch (freq_)
+    switch (freq)
         {
         case static_cast<uint64_t>(GPS_L1_FREQ_HZ):
             freq_sel = 0x604;
@@ -380,24 +422,43 @@ MAX2771EVKITSignalSourceFPGA::~MAX2771EVKITSignalSourceFPGA()
     // cleanup and exit
     if (rf_shutdown_)
         {
+            // stop analog-front-end for frequency band 0
+
             chipen_ = false;
             std::cout << "* MAX2771 Disabling RX streaming channels\n";
-            std::vector<uint32_t> register_values = setup_regs();
-
-            if (spidev_fpga->SPI_open())
+            std::vector<uint32_t> register_values = setup_regs(freq0_);
+            if (spidev_fpga->SPI_open(FREQ_BAND_0_SPI_DEVICE_NAME))
                 {
-                    std::cerr << "Cannot open SPI device\n";
+                    std::cerr << "Cannot open " << FREQ_BAND_0_SPI_DEVICE_NAME << " device\n";
                     return;
                 }
-
             if (configure(register_values))
                 {
                     std::cerr << "Error disabling the MAX2771 device " << '\n';
                 }
-
             if (spidev_fpga->SPI_close())
                 {
-                    std::cerr << "Error closing SPI device " << '\n';
+                    std::cerr << "Error closing " << FREQ_BAND_0_SPI_DEVICE_NAME << " device\n";
+                }
+
+            // stop analog-front-end for frequency band 1 if enabled
+            if (RF_channels_ == MAX_NUM_FREQ_BANDS)
+                {
+                    std::cout << "* MAX2771 Disabling RX streaming channels\n";
+                    register_values = setup_regs(freq1_);
+                    if (spidev_fpga->SPI_open(FREQ_BAND_1_SPI_DEVICE_NAME))
+                        {
+                            std::cerr << "Cannot open " << FREQ_BAND_1_SPI_DEVICE_NAME << " device\n";
+                            return;
+                        }
+                    if (configure(register_values))
+                        {
+                            std::cerr << "Error disabling the MAX2771 device " << '\n';
+                        }
+                    if (spidev_fpga->SPI_close())
+                        {
+                            std::cerr << "Error closing " << FREQ_BAND_1_SPI_DEVICE_NAME << " device\n";
+                        }
                 }
         }
 

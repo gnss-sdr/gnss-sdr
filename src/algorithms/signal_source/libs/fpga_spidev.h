@@ -44,7 +44,7 @@ public:
     /*!
      * \brief Open the SPI device driver.
      */
-    int SPI_open(void);
+    int SPI_open(std::string spi_device_name);
 
     /*!
      * \brief Close the SPI device driver
@@ -53,7 +53,7 @@ public:
 
 private:
     static const uint32_t SPI_SPEED = 250000;
-    const std::string SPI_DEVICE_NAME = std::string("/dev/spidev2.0");  // Switch UIO device name
+    // const std::string SPI_DEVICE_NAME = std::string("/dev/spidev2.0");  // Switch UIO device name
 
     int d_fd;
 };

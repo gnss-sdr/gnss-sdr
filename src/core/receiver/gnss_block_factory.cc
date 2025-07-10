@@ -323,7 +323,7 @@ std::unique_ptr<SignalSourceInterface> get_signal_source_block(
         }
     else if (implementation == "NTLab_File_Signal_Source")
         {
-            return std::make_unique<MultiChannelTwoBitPackedFileSignalSource>(configuration, role, in_streams, out_streams, queue);
+            return std::make_unique<NTLabFileSignalSource>(configuration, role, in_streams, out_streams, queue);
         }
     else if (implementation == "Spir_File_Signal_Source")
         {

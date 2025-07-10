@@ -35,8 +35,7 @@ unpack_ntlab_2bit_samples::unpack_ntlab_2bit_samples(size_t item_size,
     : sync_interpolator("unpack_ntlab_2bit_samples",
           gr::io_signature::make(1, 1, item_size),
           gr::io_signature::make(nchannels, nchannels, sizeof(float)),
-          1),  // we make 4 floats out for every byte in
-      item_size_(item_size),
+          SAMPLES_PER_BYTE / nchannels),
       nchannels_(nchannels)
 {
 }
@@ -47,41 +46,32 @@ int unpack_ntlab_2bit_samples::work(int noutput_items,
     gr_vector_void_star &output_items)
 {
     auto const *in = reinterpret_cast<signed char const *>(input_items[0]);
+    int const nch = nchannels_;
 
-    float *out[4];
-    for (int n = 0; n < nchannels_; ++n)
+    std::vector<float *> out(nch);
+    for (int ch = 0; ch < nch; ++ch)
         {
-            out[n] = static_cast<float *>(output_items[n]);
+            out[ch] = static_cast<float *>(output_items[ch]);
         }
 
-    const int nbytes = noutput_items;
-
-    for (int i = 0; i < nbytes; ++i)
+    for (int i = 0; i < noutput_items; ++i)
         {
-            // Unpack each of the four 2-bit samples in the byte 'b' into four real-valued outputs.
-            //
-            // The NTLAB format encodes samples as sign+magnitude pairs in each byte:
-            //   bits 7-6 = [M0 S0] -> sample 0
-            //   bits 5-4 = [M1 S1] -> sample 1
-            //   bits 3-2 = [M2 S2] -> sample 2
-            //   bits 1-0 = [M3 S3] -> sample 3
-            //
-            // Here we loop over channel index n = 0...3, compute the bit shift to extract
-            // the two bits for that channel (shift = 6,4,2,0), then:
-            //   - M = magnitude bit (1->|sample|=3, 0->|sample|=1)
-            //   - S = sign     bit (1->positive, 0->negative)
-            // We reconstruct the signed sample value (+/-1 or +/-3) and store it in out[n][i].
-            uint8_t b = static_cast<uint8_t>(in[i]);
-            for (int n = 0; n < nchannels_; ++n)
+            auto b = static_cast<uint8_t>(in[i]);
+            int j = 0;
+            for (int n = 0; n < SAMPLES_PER_BYTE; ++n)
                 {
                     int shift = 2 * (3 - n);           // 6, 4, 2, 0
                     int M = (b >> (shift + 1)) & 0x1;  // magnitude bit
                     int S = (b >> shift) & 0x1;        // sign bit
                     int mag = M ? 3 : 1;
                     int val = S ? +mag : -mag;
-                    out[n][i] = static_cast<float>(val);
+
+                    out[j][i] = static_cast<float>(val);
+
+                    if (++j == nch)  // iterate through each channel
+                        j = 0;
                 }
         }
 
-    return nbytes;
+    return noutput_items;
 }

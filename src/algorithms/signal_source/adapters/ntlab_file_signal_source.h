@@ -40,14 +40,14 @@ class ConfigurationInterface;
  * \brief Class that reads signals samples from a file
  * and adapts it to a SignalSourceInterface
  */
-class MultiChannelTwoBitPackedFileSignalSource : public FileSourceBase
+class NTLabFileSignalSource : public FileSourceBase
 {
 public:
-    MultiChannelTwoBitPackedFileSignalSource(const ConfigurationInterface* configuration,
+    NTLabFileSignalSource(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_streams,
         unsigned int out_streams, Concurrent_Queue<pmt::pmt_t>* queue);
 
-    ~MultiChannelTwoBitPackedFileSignalSource() = default;
+    ~NTLabFileSignalSource() = default;
 
     gr::basic_block_sptr get_left_block() override;
     gr::basic_block_sptr get_right_block() override;

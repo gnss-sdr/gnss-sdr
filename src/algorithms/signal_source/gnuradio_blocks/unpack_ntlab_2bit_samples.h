@@ -41,6 +41,17 @@ unpack_ntlab_2bit_samples_sptr make_unpack_ntlab_2bit_samples(
 /*!
  * \brief This class implements conversion between byte packet multichannel samples
  *  to 2bit samples 1 byte = 4 2bit samples
+ *
+ * Unpack each of the four 2-bit samples in the byte 'b' into four real-valued outputs.
+ *
+ * The NTLAB format encodes samples as sign+magnitude pairs in each byte:
+ * bits 7-6 = [M0 S0] -> sample 0
+ * bits 5-4 = [M1 S1] -> sample 1
+ * bits 3-2 = [M2 S2] -> sample 2
+ * bits 1-0 = [M3 S3] -> sample 3
+ *
+ * M = magnitude bit (1->|sample|=3, 0->|sample|=1)
+ * S = sign     bit (1->positive, 0->negative)
  */
 class unpack_ntlab_2bit_samples : public gr::sync_interpolator
 {
@@ -55,12 +66,12 @@ public:
         gr_vector_void_star &output_items);
 
 private:
+    static constexpr int SAMPLES_PER_BYTE = 4;
+
     friend unpack_ntlab_2bit_samples_sptr make_unpack_ntlab_2bit_samples_sptr(
         size_t item_size,
         int nchannels);
 
-    std::vector<int8_t> work_buffer_;
-    size_t item_size_;
     int nchannels_;
 };
 

@@ -28,13 +28,13 @@
 
 using namespace std::string_literals;
 
-MultiChannelTwoBitPackedFileSignalSource::MultiChannelTwoBitPackedFileSignalSource(
+NTLabFileSignalSource::NTLabFileSignalSource(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue)
-    : FileSourceBase(configuration, role, "ntlab_file_signal_source"s, queue, "byte"s),
+    : FileSourceBase(configuration, role, "NTLab_File_Signal_Source"s, queue, "byte"s),
       sample_type_(configuration->property(role + ".sample_type", "real"s))
 {
     int default_n_channlels_ = 4;
@@ -42,6 +42,10 @@ MultiChannelTwoBitPackedFileSignalSource::MultiChannelTwoBitPackedFileSignalSour
     if (n_channels_ == 0)
         {
             n_channels_ = configuration->property(role + ".RF_channels", default_n_channlels_);
+        }
+    if ((n_channels_ != 1) && (n_channels_ != 2) && (n_channels_ != 4))
+        {
+            LOG(ERROR) << "Number of channels must be 1, 2 or 4 (got " << n_channels_ << ")";
         }
 
     if (in_streams > 0)
@@ -54,7 +58,7 @@ MultiChannelTwoBitPackedFileSignalSource::MultiChannelTwoBitPackedFileSignalSour
         }
 }
 
-std::tuple<size_t, bool> MultiChannelTwoBitPackedFileSignalSource::itemTypeToSize()
+std::tuple<size_t, bool> NTLabFileSignalSource::itemTypeToSize()
 {
     auto is_complex_t = false;
     auto item_size = sizeof(char);  // default
@@ -80,23 +84,23 @@ std::tuple<size_t, bool> MultiChannelTwoBitPackedFileSignalSource::itemTypeToSiz
     return std::make_tuple(item_size, is_complex_t);
 }
 
-double MultiChannelTwoBitPackedFileSignalSource::packetsPerSample() const
+double NTLabFileSignalSource::packetsPerSample() const
 {
     return 1.0;
 }
 
-gnss_shared_ptr<gr::block> MultiChannelTwoBitPackedFileSignalSource::source() const
+gnss_shared_ptr<gr::block> NTLabFileSignalSource::source() const
 {
     return unpack_samples_;
 }
 
-void MultiChannelTwoBitPackedFileSignalSource::create_file_source_hook()
+void NTLabFileSignalSource::create_file_source_hook()
 {
     unpack_samples_ = make_unpack_ntlab_2bit_samples(item_size(), n_channels_);
     DLOG(INFO) << "unpack_byte_2bit_samples(" << unpack_samples_->unique_id() << ")";
 }
 
-void MultiChannelTwoBitPackedFileSignalSource::pre_connect_hook(gr::top_block_sptr top_block)
+void NTLabFileSignalSource::pre_connect_hook(gr::top_block_sptr top_block)
 {
     top_block->connect(file_source(), 0, unpack_samples_, 0);
     DLOG(INFO) << "connected file source to samples unpacker";
@@ -108,7 +112,7 @@ void MultiChannelTwoBitPackedFileSignalSource::pre_connect_hook(gr::top_block_sp
         }
 }
 
-void MultiChannelTwoBitPackedFileSignalSource::pre_disconnect_hook(gr::top_block_sptr top_block)
+void NTLabFileSignalSource::pre_disconnect_hook(gr::top_block_sptr top_block)
 {
     top_block->disconnect(file_source(), 0, unpack_samples_, 0);
     DLOG(INFO) << "disconnected file source of samples unpacker";
@@ -120,13 +124,13 @@ void MultiChannelTwoBitPackedFileSignalSource::pre_disconnect_hook(gr::top_block
         }
 }
 
-gr::basic_block_sptr MultiChannelTwoBitPackedFileSignalSource::get_left_block()
+gr::basic_block_sptr NTLabFileSignalSource::get_left_block()
 {
     LOG(WARNING) << "Left block of a signal source should not be retrieved";
     return gr::block_sptr();
 }
 
-gr::basic_block_sptr MultiChannelTwoBitPackedFileSignalSource::get_right_block()
+gr::basic_block_sptr NTLabFileSignalSource::get_right_block()
 {
     return valve();
 }

@@ -64,15 +64,15 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
-    const std::string DEFAULT_BUFF_MON_FILENAME = std::string("FPGA_buffer_monitor_dump.dat");
-    const std::string FREQ_BAND_0_SPI_DEVICE_NAME = std::string("/dev/spidev2.0");  // Switch UIO device name
-    const std::string FREQ_BAND_1_SPI_DEVICE_NAME = std::string("/dev/spidev1.0");  // Switch UIO device name
-    const uint32_t MAX_NUM_FREQ_BANDS = 2;
-    const uint32_t DEFAULT_NUM_FREQ_BANDS = 1;  // Default number of frequency bands used
-    const uint64_t DEFAULT_BANDWIDTH = 2500000;
-    const uint32_t DEFAULT_FILTER_ORDER = 5;
-    const uint64_t DEFAULT_SAMPLING_RATE = 4092000;
-    const uint32_t DEFAULT_PGA_GAIN_VALUE = 0x3A;  // default PGA gain when AGC is off
+    const std::string DEFAULT_BUFF_MON_FILENAME = std::string("FPGA_buffer_monitor_dump.dat");  // Default buffer monitor output file
+    const std::string FREQ_BAND_0_SPI_DEVICE_NAME = std::string("/dev/spidev2.0");              // SPI 0 device name
+    const std::string FREQ_BAND_1_SPI_DEVICE_NAME = std::string("/dev/spidev1.0");              // SPI 1 device name
+    const uint32_t MAX_NUM_FREQ_BANDS = 2;                                                      // Maximum number of frequency bands
+    const uint32_t DEFAULT_NUM_FREQ_BANDS = 1;                                                  // Default number of frequency bands used
+    const uint64_t DEFAULT_BANDWIDTH = 16400000;                                                // Default bandwidth
+    const uint32_t DEFAULT_FILTER_ORDER = 5;                                                    // Default filter order
+    const uint64_t DEFAULT_SAMPLING_RATE = 16368000;                                            // Default sampling rate
+    const uint32_t DEFAULT_PGA_GAIN_VALUE = 0x3A;                                               // default PGA gain when AGC is off
     // max PGA gain value
     const uint32_t MAX_PGA_GAIN_VALUE = 0x3F;
     // check buffer overflow and perform buffer monitoring every 1s by default

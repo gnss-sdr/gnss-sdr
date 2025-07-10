@@ -24,6 +24,7 @@
 
 int Fpga_spidev::SPI_open(std::string spi_device_name)
 {
+    std::cout << "opening SPI device file " << spi_device_name << std::endl;
     if ((d_fd = open(spi_device_name.c_str(), O_RDWR)) < 0)
         {
             std::cerr << "Failed to open the " << spi_device_name << " device file \n";

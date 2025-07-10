@@ -1,14 +1,14 @@
 /*!
  * \file sensor_identifier.cc
  * \brief
- * \author Victor Castillo, 2025. victorcastilloaguero(at).gmail.es
+ * \author Victor Castillo, 2025. victorcastilloaguero(at)gmail.com
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2024-2025  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -27,12 +27,14 @@ struct ConversionEntry
     pmt::pmt_t (*conversion_fun)(const pmt::pmt_t&);
 };
 
+
 static const ConversionEntry conversion_table[] = {
     {SensorDataType::F32, SensorDataType::F32, [](const pmt::pmt_t& val) { return val; }},
     {SensorDataType::F64, SensorDataType::F32, [](const pmt::pmt_t& val) { return pmt::from_float(pmt::to_double(val)); }},
     {SensorDataType::I32, SensorDataType::F32, [](const pmt::pmt_t& val) { return pmt::from_float(pmt::to_long(val)); }},
     {SensorDataType::I64, SensorDataType::F32, [](const pmt::pmt_t& val) { return pmt::from_float(pmt::to_long(val)); }},
 };
+
 
 const ConversionEntry* lookup_conversion(SensorDataType::value_type from_type, SensorDataType::value_type to_type)
 {
@@ -107,6 +109,7 @@ SensorIdentifier::value_type SensorIdentifier::from_string(const std::string& s)
         }
     throw std::runtime_error{"Unknown sensor identifier: " + s};
 }
+
 
 std::string SensorIdentifier::to_string(SensorIdentifier::value_type v)
 {

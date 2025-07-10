@@ -1,14 +1,14 @@
 /*!
  * \file sensor_data_aggregator.cc
  * \brief  Aggregates sensor samples from gnu radio stream tags into typed lists for easy access
- * \author Victor Castillo, 2024. victorcastilloaguero(at).gmail.es
+ * \author Victor Castillo, 2024. victorcastilloaguero(at)gmail.com
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2024-2025  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -62,6 +62,7 @@ SensorDataAggregator::SensorDataAggregator(const SensorDataSourceConfiguration& 
         }
 }
 
+
 void SensorDataAggregator::update(const std::vector<gr::tag_t>& tags)
 {
     // Delete all data except last sample for each sensor
@@ -81,12 +82,13 @@ void SensorDataAggregator::update(const std::vector<gr::tag_t>& tags)
     // Append new data
     for (const auto& sensor_tag : tags)
         {
-            if (sensor_tag.value->is_dict())
+            if (pmt::is_dict(sensor_tag.value))
                 {
                     append_data(sensor_tag.value);
                 }
         }
 }
+
 
 const std::vector<SensorDataSample<float>>& SensorDataAggregator::get_f32(SensorIdentifier::value_type sensor_id) const
 {
@@ -94,6 +96,7 @@ const std::vector<SensorDataSample<float>>& SensorDataAggregator::get_f32(Sensor
     // If a required sensor is not provided, the error is handled on construction.
     return f32_data_.at(sensor_id);
 }
+
 
 SensorDataSample<float> SensorDataAggregator::get_last_f32(SensorIdentifier::value_type sensor_id) const
 {
@@ -130,9 +133,7 @@ void SensorDataAggregator::append_data(const pmt::pmt_t& data_dict)
                         case SensorDataType::F32:
                             if (f32_data_.find(sensor_id) != f32_data_.end())
                                 {
-                                    f32_data_.at(sensor_id).push_back(SensorDataSample<float>{
-                                        .rf_sample_stamp = sample_stamp,
-                                        .value = pmt::to_float(val)});
+                                    f32_data_.at(sensor_id).emplace_back(sample_stamp, pmt::to_float(val));
                                 }
                             break;
 

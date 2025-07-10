@@ -1,14 +1,14 @@
 /*!
  * \file sensor_data_source_configuration.cc
  * \brief
- * \author Victor Castillo, 2025. victorcastilloaguero(at).gmail.es
+ * \author Victor Castillo, 2025. victorcastilloaguero(at)gmail.com
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2024-2025  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -33,15 +33,18 @@ SensorDataSourceConfiguration::SensorDataSourceConfiguration(const Configuration
         }
 }
 
+
 bool SensorDataSourceConfiguration::validate() const
 {
     return validate_files() and validate_sensors();
 }
 
+
 bool SensorDataSourceConfiguration::is_enabled() const
 {
     return enabled_;
 }
+
 
 bool SensorDataSourceConfiguration::is_sensor_provided(SensorIdentifier::value_type sensor_id) const
 {
@@ -67,6 +70,7 @@ void SensorDataSourceConfiguration::set_items_per_sample(uint64_t items_per_samp
     items_per_sample_ = items_per_sample;
 }
 
+
 uint64_t SensorDataSourceConfiguration::get_items_per_sample() const
 {
     return items_per_sample_;
@@ -78,10 +82,12 @@ const std::unordered_map<uint64_t, SensorDataFileConfiguration>& SensorDataSourc
     return files_;
 }
 
+
 const std::vector<SensorDataConfiguration>& SensorDataSourceConfiguration::sensors() const
 {
     return sensors_;
 }
+
 
 void SensorDataSourceConfiguration::configure_files(const ConfigurationInterface* configuration)
 {
@@ -102,14 +108,15 @@ void SensorDataSourceConfiguration::configure_files(const ConfigurationInterface
                 id,
                 SensorDataFileConfiguration{
                     .id = id,
-                    .filename = filename,
-                    .repeat = configuration->property(role + ".repeat"s, false),
                     .chunk_size = configuration->property(role + ".chunk_size"s, uint64_t{0UL}),
                     .file_offset = configuration->property(role + ".file_offset"s, uint64_t{0UL}),
                     .sample_offset = configuration->property(role + ".sample_offset"s, uint64_t{0UL}),
-                    .sample_period = configuration->property(role + ".sample_period"s, uint64_t{0UL})});
+                    .sample_period = configuration->property(role + ".sample_period"s, uint64_t{0UL}),
+                    .filename = filename,
+                    .repeat = configuration->property(role + ".repeat"s, false)});
         }
 }
+
 
 void SensorDataSourceConfiguration::configure_sensors(const ConfigurationInterface* configuration)
 {
@@ -164,9 +171,9 @@ void SensorDataSourceConfiguration::configure_sensors(const ConfigurationInterfa
                     sensors_.emplace_back(SensorDataConfiguration{
                         .id = id,
                         .file_id = file_id,
+                        .offset = offset,
                         .identifier = SensorIdentifier::from_string(sensor_identifier),
                         .type = data_type,
-                        .offset = offset,
                         .tag_key = pmt::mp(sensor_identifier)});
                 }
         }
@@ -189,6 +196,7 @@ bool SensorDataSourceConfiguration::validate_files() const
         }
     return ok;
 }
+
 
 bool SensorDataSourceConfiguration::validate_sensors() const
 {

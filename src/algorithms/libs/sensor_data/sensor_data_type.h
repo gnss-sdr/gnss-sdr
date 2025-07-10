@@ -1,14 +1,14 @@
 /*!
  * \file sensor_data_type.h
  * \brief
- * \author Victor Castillo, 2025. victorcastilloaguero(at).gmail.es
+ * \author Victor Castillo, 2025. victorcastilloaguero(at)gmail.com
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2024-2025  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------

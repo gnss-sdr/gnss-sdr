@@ -1,14 +1,14 @@
 /*!
  * \file sensor_identifier.h
  * \brief
- * \author Victor Castillo, 2025. victorcastilloaguero(at).gmail.es
+ * \author Victor Castillo, 2025. victorcastilloaguero(at)gmail.com
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2024-2025  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -19,6 +19,7 @@
 #define GNSS_SDR_SENSOR_IDENTIFIER_H
 
 #include "sensor_data_type.h"
+#include <functional>
 #include <string>
 
 /** \addtogroup Algorithms_Library
@@ -57,6 +58,21 @@ struct SensorIdentifier
 
     static pmt::pmt_t convert_to_internal_type(value_type sensor_id, SensorDataType::value_type original_type, const pmt::pmt_t& value);
 };
+
+
+// Fix for C++11
+namespace std
+{
+template <>
+struct hash<SensorIdentifier::value_type>
+{
+    std::size_t operator()(const SensorIdentifier::value_type& key) const noexcept
+    {
+        return std::hash<unsigned short>()(static_cast<unsigned short>(key));
+    }
+};
+}  // namespace std
+
 
 /** \} */
 /** \} */

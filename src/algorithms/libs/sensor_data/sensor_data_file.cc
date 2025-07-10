@@ -1,14 +1,14 @@
 /*!
  * \file sensor_data_file.cc
  * \brief  Provides a simple abstraction for reading contiguous binary data from a file
- * \author Victor Castillo, 2024. victorcastilloaguero(at).gmail.es
+ * \author Victor Castillo, 2024. victorcastilloaguero(at)gmail.com
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2024-2025  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -32,17 +32,18 @@ SensorDataFile::SensorDataFile(
       sample_period_(sample_period),
       offset_in_file_(offset_in_file),
       item_size_(item_size),
-      repeat_(repeat),
-      done_(false),
       chunks_read_(0),
       last_sample_stamp_(sample_delay),
       io_buffer_size_(item_size * IO_BUFFER_MAX_SIZE),
-      offset_in_io_buffer_(io_buffer_size_)  // Set to end of buffer so that first look up will trigger a read.
+      offset_in_io_buffer_(io_buffer_size_),  // Set to end of buffer so that first look up will trigger a read.
+      repeat_(repeat),
+      done_(false)
 {
     file_.seekg(offset_in_file_, std::ios_base::beg);
 
     io_buffer_.resize(io_buffer_size_);
 }
+
 
 void SensorDataFile::reset()
 {
@@ -51,6 +52,7 @@ void SensorDataFile::reset()
     offset_in_io_buffer_ = io_buffer_size_;
     done_ = false;
 }
+
 
 bool SensorDataFile::read_item(std::vector<uint8_t>& buffer)
 {
@@ -71,6 +73,7 @@ bool SensorDataFile::read_item(std::vector<uint8_t>& buffer)
     return true;
 }
 
+
 bool SensorDataFile::read_until_sample(std::size_t end_sample, std::size_t& sample_stamp, std::vector<uint8_t>& buffer)
 {
     if (last_sample_stamp_ + sample_period_ < end_sample)
@@ -84,10 +87,12 @@ bool SensorDataFile::read_until_sample(std::size_t end_sample, std::size_t& samp
     return false;
 }
 
+
 std::size_t SensorDataFile::get_chunks_read() const
 {
     return chunks_read_;
 }
+
 
 void SensorDataFile::read_into_io_buffer()
 {
@@ -116,6 +121,7 @@ void SensorDataFile::read_into_io_buffer()
 
     offset_in_io_buffer_ = 0;
 }
+
 
 void SensorDataFile::read_into_item_buffer(std::vector<uint8_t>& item_buf)
 {

@@ -1,14 +1,14 @@
 /*!
  * \file sensor_data_aggregator.h
  * \brief  Aggregates sensor samples from gnu radio stream tags into typed lists for easy access
- * \author Victor Castillo, 2024. victorcastilloaguero(at).gmail.es
+ * \author Victor Castillo, 2024. victorcastilloaguero(at)gmail.com
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2024-2025  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -21,6 +21,7 @@
 #include "sensor_data_source_configuration.h"
 #include "sensor_identifier.h"
 #include <gnuradio/tags.h>
+#include <cstdint>
 #include <gnss_block_interface.h>
 #include <vector>
 
@@ -29,12 +30,17 @@
 /** \addtogroup Algorithm_libs algorithms_libs
  * \{ */
 
+
 template <typename DataType>
 struct SensorDataSample
 {
-    uint64_t rf_sample_stamp{};
-    DataType value{};
+    uint64_t timestamp;
+    DataType value;
+    constexpr SensorDataSample() = default;
+    constexpr SensorDataSample(uint64_t t, DataType v)
+        : timestamp(t), value(v) {}
 };
+
 
 class SensorDataAggregator
 {

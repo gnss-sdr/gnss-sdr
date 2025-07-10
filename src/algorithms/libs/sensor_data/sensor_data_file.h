@@ -1,14 +1,14 @@
 /*!
  * \file sensor_data_file.h
  * \brief  Provides a simple abstraction for reading contiguous binary data from a file
- * \author Victor Castillo, 2024. victorcastilloaguero(at).gmail.es
+ * \author Victor Castillo, 2024. victorcastilloaguero(at)gmail.com
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2024-2025  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -46,7 +46,6 @@ public:
         const std::size_t& item_size,
         const bool& repeat);
 
-
     void reset();
 
     bool read_until_sample(std::size_t end_sample, std::size_t& sample_stamp, std::vector<uint8_t>& buffer);
@@ -65,14 +64,14 @@ private:
     std::size_t sample_period_;
     std::size_t offset_in_file_;
     std::size_t item_size_;
-    bool repeat_;
-    bool done_;
 
     std::size_t chunks_read_;
     std::size_t last_sample_stamp_;
     std::vector<uint8_t> io_buffer_;
     std::size_t io_buffer_size_;
     std::size_t offset_in_io_buffer_;
+    bool repeat_;
+    bool done_;
 };
 
 /** \} */

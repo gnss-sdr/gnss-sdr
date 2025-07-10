@@ -1,14 +1,14 @@
 /*!
  * \file sensor_data_source.cc
  * \brief  GNURadio block that adds extra data to the sample stream.
- * \author Victor Castillo, 2024. victorcastilloaguero(at).gmail.es
+ * \author Victor Castillo, 2024. victorcastilloaguero(at)gmail.com
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2024-2025  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -84,6 +84,7 @@ SensorDataSource::SensorDataSource(
             std::cout << "ERROR: This block only supports adding data to a single stream." << "\n";
         }
 }
+
 
 int SensorDataSource::work(int noutput_items,
     gr_vector_const_void_star& input_items,

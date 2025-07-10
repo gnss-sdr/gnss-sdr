@@ -122,6 +122,7 @@ target_link_libraries(algorithms_libs
         Gnuradio::runtime
         Gnuradio::blocks
         Gnuradio::fft
+        Gnuradio::pmt
     PRIVATE
         core_system_parameters
         Volk::volk

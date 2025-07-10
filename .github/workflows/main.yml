@@ -191,10 +191,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: install dependencies
-        run: sudo npm install --global prettier
-      - name: check markdown
-        run: find . -iname "*.md" | xargs prettier --parser markdown --print-width 80 --prose-wrap always --list-different
+      - name: Set up latest Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: latest
+      - name: Install prettier
+        run: npm install --global prettier
+      - name: Process markdown files
+        run: prettier --parser markdown --print-width 80 --prose-wrap always --write "**/*.md"
+      - name: Show required fixes
+        run: git diff --exit-code
 
   cmakelint:
     runs-on: ubuntu-latest

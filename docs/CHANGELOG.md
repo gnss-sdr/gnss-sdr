@@ -57,7 +57,6 @@ https://gnss-sdr.org/design-forces/
   https://www.youtube.com/watch?v=HnZkKj9a-QM
 - Add the following signal sources for use when GNSS-SDR is operating on SoC
   FPGA boards (`-DENABLE_FPGA=ON`):
-
   - `ADRV9361_Z7035_Signal_Source_FPGA`: Analog Devices ADRV9361-Z7035 board.
   - `FMCOMMS5_Signal_Source_FPGA`: FMCOMMS5 analog front-end.
   - `MAX2771_EVKIT_Signal_Source_FPGA`: MAX2771 evaluation kit analog front-end.
@@ -66,7 +65,6 @@ https://gnss-sdr.org/design-forces/
   When building GNSS-SDR for the SoC FPGA, the following options can be passed
   to CMake with possible values of `ON` or `OFF`, and their default value is
   `OFF`:
-
   - `-DENABLE_AD9361`: Checks if the IIO driver is installed and builds the
     `ADRV9361_Z7035_Signal_Source_FPGA` and the `FMCOMMS5_Signal_Source_FPGA`
     sources.
@@ -165,7 +163,6 @@ https://gnss-sdr.org/design-forces/
   more conventional folder structure. This may disrupt user pipelines that
   relied on the previous structure and could break development branches that
   were branched off from `next` before this change. The key changes are:
-
   - The `tests` and `utils` directories have been moved from the `src` folder to
     the root of the source tree.
   - The empty `build` and `data` folders have been removed. Users can create a

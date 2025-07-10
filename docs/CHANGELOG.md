@@ -14,6 +14,11 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Interoperability:
+
+- Enabled multi-band processing off-loading to the FPGA when using the MAX2771
+  RF front-end.
+
 ### Improvements in Maintainability:
 
 - Added a CI job to detect lines longer than 512 characters (avoid this
@@ -27,7 +32,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Portability:
 
-- Fix building option `-DENABLE_ION=ON` when using CMake >= 4.0.
+- Fixed building option `-DENABLE_ION=ON` when using CMake >= 4.0.
 - Updated `gsl-lite` to v1.0.1. See the
   [gsl-lite release](https://github.com/gsl-lite/gsl-lite/releases/tag/v1.0.1).
 

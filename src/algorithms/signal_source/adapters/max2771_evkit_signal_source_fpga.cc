@@ -44,13 +44,13 @@ MAX2771EVKITSignalSourceFPGA::MAX2771EVKITSignalSourceFPGA(const ConfigurationIn
       freq_(configuration->property(role + ".freq", static_cast<uint64_t>(GPS_L1_FREQ_HZ))),
       freq0_(configuration->property(role + ".freq0", freq_)),
       freq1_(configuration->property(role + ".freq1", static_cast<uint64_t>(GPS_L5_FREQ_HZ))),
-      sample_rate_(configuration->property(role + ".sampling_frequency", default_sampling_rate)),
+      sample_rate_(configuration->property(role + ".sampling_frequency", DEFAULT_SAMPLING_RATE)),
       RF_channels_(configuration->property(role + ".RF_channels", DEFAULT_NUM_FREQ_BANDS)),
       in_stream_(in_stream),
       out_stream_(out_stream),
       bandwidth_(configuration->property(role + ".bandwidth", DEFAULT_BANDWIDTH)),
-      filter_order_(configuration->property(role + ".filter_order", default_filter_order)),
-      gain_in_(configuration->property(role + ".PGA_gain", default_PGA_gain_value)),
+      filter_order_(configuration->property(role + ".filter_order", DEFAULT_FILTER_ORDER)),
+      gain_in_(configuration->property(role + ".PGA_gain", DEFAULT_PGA_GAIN_VALUE)),
       item_size_(sizeof(int8_t)),
       chipen_(true),
       if_filter_gain_(configuration->property(role + ".enable_IF_filter_gain", true)),
@@ -93,9 +93,9 @@ MAX2771EVKITSignalSourceFPGA::MAX2771EVKITSignalSourceFPGA(const ConfigurationIn
         {
             std::cout << "Configuration parameter sampling_frequency should take values 4092000, 8184000, 16368000, or 32736000\n";
             std::cout << "Error: provided value sampling_frequency = " << sample_rate_ << " is not among valid values\n";
-            std::cout << " This parameter has been set to its default value sampling_frequency = " << default_sampling_rate << '\n';
-            LOG(WARNING) << "Invalid configuration value for sampling_frequency parameter. Set to sampling_frequency = " << default_sampling_rate;
-            sample_rate_ = default_sampling_rate;
+            std::cout << " This parameter has been set to its default value sampling_frequency = " << DEFAULT_SAMPLING_RATE << '\n';
+            LOG(WARNING) << "Invalid configuration value for sampling_frequency parameter. Set to sampling_frequency = " << DEFAULT_SAMPLING_RATE;
+            sample_rate_ = DEFAULT_SAMPLING_RATE;
         }
     if (bandwidth_ != 2500000 and bandwidth_ != 4200000 and bandwidth_ != 8700000 and bandwidth_ != 16400000 and bandwidth_ != 23400000 and bandwidth_ != 36000000)
         {
@@ -109,17 +109,17 @@ MAX2771EVKITSignalSourceFPGA::MAX2771EVKITSignalSourceFPGA(const ConfigurationIn
         {
             std::cout << "Configuration parameter filter_order should take values 3 or 5\n";
             std::cout << "Error: provided value filter_order = " << filter_order_ << " is not among valid values\n";
-            std::cout << " This parameter has been set to its default value filter_order = " << default_filter_order << '\n';
-            LOG(WARNING) << "Invalid configuration value for filter_order parameter. Set to filter_order = " << default_filter_order;
-            filter_order_ = default_filter_order;
+            std::cout << " This parameter has been set to its default value filter_order = " << DEFAULT_FILTER_ORDER << '\n';
+            LOG(WARNING) << "Invalid configuration value for filter_order parameter. Set to filter_order = " << DEFAULT_FILTER_ORDER;
+            filter_order_ = DEFAULT_FILTER_ORDER;
         }
-    if (gain_in_ > max_PGA_gain_value)
+    if (gain_in_ > MAX_PGA_GAIN_VALUE)
         {
-            std::cout << "Configuration parameter PGA_gain should be up to " << max_PGA_gain_value << "\n";
+            std::cout << "Configuration parameter PGA_gain should be up to " << MAX_PGA_GAIN_VALUE << "\n";
             std::cout << "Error: provided value PGA_gain = " << gain_in_ << " is not among valid values\n";
-            std::cout << " This parameter has been set to its default value PGA_gain = " << default_PGA_gain_value << '\n';
-            LOG(WARNING) << "Invalid configuration value for PGA_gain parameter. Set to PGA_gain = " << default_PGA_gain_value;
-            gain_in_ = default_PGA_gain_value;
+            std::cout << " This parameter has been set to its default value PGA_gain = " << DEFAULT_PGA_GAIN_VALUE << '\n';
+            LOG(WARNING) << "Invalid configuration value for PGA_gain parameter. Set to PGA_gain = " << DEFAULT_PGA_GAIN_VALUE;
+            gain_in_ = DEFAULT_PGA_GAIN_VALUE;
         }
 
     // Create and initialize the SPI interface
@@ -483,7 +483,7 @@ void MAX2771EVKITSignalSourceFPGA::run_buffer_monitor_process()
 {
     bool enable_ovf_check_buffer_monitor_active = true;
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(buffer_monitoring_initial_delay_ms));
+    std::this_thread::sleep_for(std::chrono::milliseconds(BUFFER_MONITOR_INITIAL_DELAY_MS));
 
     while (enable_ovf_check_buffer_monitor_active)
         {
@@ -495,7 +495,7 @@ void MAX2771EVKITSignalSourceFPGA::run_buffer_monitor_process()
                     LOG(ERROR) << "Buffer Overflow Detected – Execution Halted";
                     exit(1);
                 }
-            std::this_thread::sleep_for(std::chrono::milliseconds(buffer_monitor_period_ms));
+            std::this_thread::sleep_for(std::chrono::milliseconds(BUFFER_MONITOR_PERIOD_MS));
             std::lock_guard<std::mutex> lock(buffer_monitor_mutex);
             if (enable_ovf_check_buffer_monitor_active_ == false)
                 {

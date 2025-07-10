@@ -70,15 +70,15 @@ private:
     const uint32_t MAX_NUM_FREQ_BANDS = 2;
     const uint32_t DEFAULT_NUM_FREQ_BANDS = 1;  // Default number of frequency bands used
     const uint64_t DEFAULT_BANDWIDTH = 2500000;
-    const uint32_t default_filter_order = 5;
-    const uint64_t default_sampling_rate = 4092000;
-    const uint32_t default_PGA_gain_value = 0x3A;  // default PGA gain when AGC is off
+    const uint32_t DEFAULT_FILTER_ORDER = 5;
+    const uint64_t DEFAULT_SAMPLING_RATE = 4092000;
+    const uint32_t DEFAULT_PGA_GAIN_VALUE = 0x3A;  // default PGA gain when AGC is off
     // max PGA gain value
-    const uint32_t max_PGA_gain_value = 0x3F;
+    const uint32_t MAX_PGA_GAIN_VALUE = 0x3F;
     // check buffer overflow and perform buffer monitoring every 1s by default
-    const uint32_t buffer_monitor_period_ms = 1000;
+    const uint32_t BUFFER_MONITOR_PERIOD_MS = 1000;
     // buffer overflow and buffer monitoring initial delay
-    const uint32_t buffer_monitoring_initial_delay_ms = 2000;
+    const uint32_t BUFFER_MONITOR_INITIAL_DELAY_MS = 2000;
     // MAX2771 number of configuration registers
     const uint32_t MAX2771_NUM_REGS = 11;
     // MAX2771 configuration register fields

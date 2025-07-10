@@ -45,7 +45,7 @@ MAX2771EVKITSignalSourceFPGA::MAX2771EVKITSignalSourceFPGA(const ConfigurationIn
       freq0_(configuration->property(role + ".freq0", freq_)),
       freq1_(configuration->property(role + ".freq1", static_cast<uint64_t>(GPS_L5_FREQ_HZ))),
       sample_rate_(configuration->property(role + ".sampling_frequency", default_sampling_rate)),
-      RF_channels_(configuration->property(role + ".RF_channels", 1)),
+      RF_channels_(configuration->property(role + ".RF_channels", DEFAULT_NUM_FREQ_BANDS)),
       in_stream_(in_stream),
       out_stream_(out_stream),
       bandwidth_(configuration->property(role + ".bandwidth", DEFAULT_BANDWIDTH)),
@@ -75,13 +75,13 @@ MAX2771EVKITSignalSourceFPGA::MAX2771EVKITSignalSourceFPGA(const ConfigurationIn
     if (freq0_ != GPS_L1_FREQ_HZ)
         {
             std::string freq_name = (RF_channels_ == 1) ? "freq" : "freq0";
-            std::cout << "Configuration parameter " << freq_name << " should take values " << GPS_L1_FREQ_HZ << ", " << GPS_L2_FREQ_HZ << ", or " << GPS_L5_FREQ_HZ << "\n";
-            std::cout << "Error: provided value " << freq_name << " = " << freq0_ << " is not among valid values\n";
+            std::cout << "Configuration parameter " << freq_name << " should take value " << GPS_L1_FREQ_HZ << "\n";
+            std::cout << "Error: provided value " << freq_name << " = " << freq0_ << " is not a valid value\n";
             std::cout << " This parameter has been set to its default value " << freq_name << " = " << GPS_L1_FREQ_HZ << '\n';
             LOG(WARNING) << "Invalid configuration value for " << freq_name << " parameter. Set to " << freq_name << " = " << GPS_L1_FREQ_HZ;
             freq0_ = GPS_L1_FREQ_HZ;
         }
-    if (freq1_ != GPS_L2_FREQ_HZ and freq1_ != GPS_L5_FREQ_HZ)
+    if (freq1_ != GPS_L1_FREQ_HZ and freq1_ != GPS_L2_FREQ_HZ and freq1_ != GPS_L5_FREQ_HZ)
         {
             std::cout << "Configuration parameter freq1 should take values " << GPS_L1_FREQ_HZ << ", " << GPS_L2_FREQ_HZ << ", or " << GPS_L5_FREQ_HZ << "\n";
             std::cout << "Error: provided value freq1 = " << freq1_ << " is not among valid values\n";
@@ -169,7 +169,7 @@ MAX2771EVKITSignalSourceFPGA::MAX2771EVKITSignalSourceFPGA(const ConfigurationIn
 
     std::string dump_filename = configuration->property(role + ".dump_filename", DEFAULT_BUFF_MON_FILENAME);
 
-    buffer_monitor_fpga = std::make_shared<Fpga_buffer_monitor>(NUM_FREQ_BANDS, dump_, dump_filename);
+    buffer_monitor_fpga = std::make_shared<Fpga_buffer_monitor>(DEFAULT_NUM_FREQ_BANDS, dump_, dump_filename);
     thread_buffer_monitor = std::thread([&] { run_buffer_monitor_process(); });
 
     if (in_stream_ > 0)
@@ -217,6 +217,8 @@ std::vector<uint32_t> MAX2771EVKITSignalSourceFPGA::setup_regs(uint64_t freq)
     uint32_t Filter_order_sel = (filter_order_ == 5) ? 0x0 : 0x1;
     uint32_t IF_filter_gain_sel = (if_filter_gain_) ? 0x1 : 0x0;
 
+    uint32_t mixermode_sel = (freq == GPS_L1_FREQ_HZ) ? MIXERMODE_HIGH_BAND : MIXERMODE_LOW_BAND;
+
     register_values[0] =  // configuration 1 register
         (chipen_select << 31) +
         (IDLE << 30) +
@@ -226,7 +228,7 @@ std::vector<uint32_t> MAX2771EVKITSignalSourceFPGA::setup_regs(uint64_t freq)
         (0x1 << 18) +  // reserved
         (MIXPOLE << 17) +
         (LNA_mode << 15) +
-        (MIXERMODE << 13) +
+        (mixermode_sel << 13) +
         (FCEN << 6) +
         (Filter_Bandwidth << 3) +
         (Filter_order_sel << 2) +
@@ -293,9 +295,11 @@ std::vector<uint32_t> MAX2771EVKITSignalSourceFPGA::setup_regs(uint64_t freq)
             clock_out_div_ratio = 0x1;  // default XTAL frequency
         }
 
+    uint32_t loband_sel = (freq == GPS_L1_FREQ_HZ) ? LOBAND_L1 : LOBAND_L5;
+
     register_values[3] =  // PLL configuration register
         (clock_out_div_ratio << 29) +
-        (LOBAND << 28) +
+        (loband_sel << 28) +
         (0x1 << 27) +  // reserved
         (0x0 << 26) +  // reserved
         (0x0 << 25) +  // reserved

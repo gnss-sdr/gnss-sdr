@@ -69,7 +69,9 @@ int unpack_ntlab_2bit_samples::work(int noutput_items,
                     out[j][i] = static_cast<float>(val);
 
                     if (++j == nch)  // iterate through each channel
-                        j = 0;
+                        {
+                            j = 0;
+                        }
                 }
         }
 

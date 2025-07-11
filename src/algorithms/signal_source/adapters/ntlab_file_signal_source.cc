@@ -41,7 +41,8 @@ NTLabFileSignalSource::NTLabFileSignalSource(
     n_channels_ = configuration->property(role + ".RF_channels", default_n_channlels_);
     if ((n_channels_ != 1) && (n_channels_ != 2) && (n_channels_ != 4))
         {
-            LOG(ERROR) << "Number of channels must be 1, 2 or 4 (got " << n_channels_ << ")";
+            n_channels_ = 4;
+            LOG(ERROR) << "Number of channels must be 1, 2 or 4 (got " << n_channels_ << "). Using 4.";
         }
 
     if (in_streams > 0)

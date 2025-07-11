@@ -38,11 +38,7 @@ NTLabFileSignalSource::NTLabFileSignalSource(
       sample_type_(configuration->property(role + ".sample_type", "real"s))
 {
     int default_n_channlels_ = 4;
-    n_channels_ = configuration->property(role + ".total_channels", default_n_channlels_);
-    if (n_channels_ == 0)
-        {
-            n_channels_ = configuration->property(role + ".RF_channels", default_n_channlels_);
-        }
+    n_channels_ = configuration->property(role + ".RF_channels", default_n_channlels_);
     if ((n_channels_ != 1) && (n_channels_ != 2) && (n_channels_ != 4))
         {
             LOG(ERROR) << "Number of channels must be 1, 2 or 4 (got " << n_channels_ << ")";
@@ -86,7 +82,7 @@ std::tuple<size_t, bool> NTLabFileSignalSource::itemTypeToSize()
 
 double NTLabFileSignalSource::packetsPerSample() const
 {
-    return 1.0;
+    return 4 / n_channels_;  // sampling instants in one byte depend on channel count
 }
 
 gnss_shared_ptr<gr::block> NTLabFileSignalSource::source() const

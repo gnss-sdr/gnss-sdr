@@ -102,6 +102,7 @@
 #include "notch_filter.h"
 #include "notch_filter_lite.h"
 #include "nsr_file_signal_source.h"
+#include "ntlab_file_signal_source.h"
 #include "pass_through.h"
 #include "pulse_blanking_filter.h"
 #include "rtklib_pvt.h"
@@ -319,6 +320,10 @@ std::unique_ptr<SignalSourceInterface> get_signal_source_block(
     else if (implementation == "Two_Bit_Packed_File_Signal_Source")
         {
             return std::make_unique<TwoBitPackedFileSignalSource>(configuration, role, in_streams, out_streams, queue);
+        }
+    else if (implementation == "NTLab_File_Signal_Source")
+        {
+            return std::make_unique<NTLabFileSignalSource>(configuration, role, in_streams, out_streams, queue);
         }
     else if (implementation == "Spir_File_Signal_Source")
         {

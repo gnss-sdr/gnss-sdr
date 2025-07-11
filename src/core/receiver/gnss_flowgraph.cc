@@ -2192,6 +2192,14 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
     std::string assist_signal = "";
     auto& available_signals = available_signals_map_.at(searched_signal);
 
+    if (available_signals.empty())
+        {
+            const auto& entry = signal_mapping.at(searched_signal);
+            const auto& gnss_system_str = entry.first;
+            const auto& signal_pretty_str = entry.second;
+            throw std::runtime_error("More ACQUISITION channels than PRNs for signal " + gnss_system_str + " " + signal_pretty_str);
+        }
+
     switch (mapStringValues_[searched_signal])
         {
         case evGPS_2S:
@@ -2250,7 +2258,11 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
         {
             result = available_signals.front();
             available_signals.pop_front();
-            available_signals.push_back(result);
+            const std::string sys = result.get_satellite().get_system();
+            if ((sys == "Glonass") || (sys == "Beidou"))
+                {
+                    available_signals.push_back(result);
+                }
         }
 
     return result;

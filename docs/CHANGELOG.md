@@ -43,6 +43,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   PDF format. It requires `numpy` and `matplotlib`.
 - `File_Signal_Source` fixed file length and sample skip calculations on 32-bit
   systems.
+- Fixed tracking the same PRN in multiple channels. Previously, this could
+  happen when the number of acquisition channels was close to the number of
+  available PRNs for a given signal.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

@@ -18,6 +18,8 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 - Enabled multi-band processing off-loading to the FPGA when using the MAX2771
   RF front-end.
+- Added a new Signal Source implementation `NTLab_File_Signal_Source`, which is
+  able to read files grabbed from [NTLab](https://ntlab.lt/) RF front-ends.
 
 ### Improvements in Maintainability:
 

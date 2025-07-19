@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.13)
 
-project(CpuFeatures VERSION 0.10.0 LANGUAGES C)
+project(CpuFeatures VERSION 0.10.1 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 99)
 
@@ -213,10 +213,6 @@ if(BUILD_TESTING)
   # Automatically incorporate googletest into the CMake Project if target not
   # found.
   enable_language(CXX)
-
-  set(CMAKE_CXX_STANDARD 14)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  set(CMAKE_CXX_EXTENSIONS OFF) # prefer use of -std14 instead of -gnustd14
 
   if(NOT TARGET gtest OR NOT TARGET gmock_main)
     # Download and unpack googletest at configure time.

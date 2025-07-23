@@ -14,11 +14,12 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "gnss_sdr_filesystem.h"
 #include "pvt_conf.h"
+#include "receiver_type.h"
 #include "rinex_printer.h"
 #include "rtklib_rtkpos.h"
 #include "rtklib_solver.h"
+#include <gtest/gtest.h>
 #include <fstream>
 #include <string>
 #include <utility>
@@ -146,7 +147,8 @@ TEST_F(RinexPrinterTest, GalileoObsHeader)
 {
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 4, false, false);
+    const auto signal_enabled_flags = GAL_1B;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
     auto eph = Galileo_Ephemeris();
     eph.PRN = 1;
     pvt_solution->galileo_ephemeris_map[1] = std::move(eph);
@@ -158,11 +160,7 @@ TEST_F(RinexPrinterTest, GalileoObsHeader)
 
     auto rp = std::make_shared<Rinex_Printer>();
 
-    rp->print_rinex_annotation(pvt_solution.get(),
-        gnss_observables_map,
-        0.0,
-        4,
-        true);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];
@@ -196,11 +194,7 @@ TEST_F(RinexPrinterTest, GalileoObsHeader)
 
     auto rp2 = std::make_shared<Rinex_Printer>();
 
-    rp2->print_rinex_annotation(pvt_solution.get(),
-        gnss_observables_map,
-        0.0,
-        15,
-        true);
+    rp2->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, GAL_1B | GAL_E5b, true);
     obsfile = rp2->get_obsfilename();
     navfile = rp2->get_navfilename()[0];
 
@@ -234,7 +228,8 @@ TEST_F(RinexPrinterTest, GlonassObsHeader)
 {
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 28, false, false);
+    const auto signal_enabled_flags = GLO_1G;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
     auto eph = Glonass_Gnav_Ephemeris();
     eph.PRN = 1;
     pvt_solution->glonass_gnav_ephemeris_map[1] = std::move(eph);
@@ -246,11 +241,7 @@ TEST_F(RinexPrinterTest, GlonassObsHeader)
 
     auto rp = std::make_shared<Rinex_Printer>(3);
 
-    rp->print_rinex_annotation(pvt_solution.get(),
-        gnss_observables_map,
-        0.0,
-        23,
-        true);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];
@@ -296,7 +287,8 @@ TEST_F(RinexPrinterTest, MixedObsHeader)
     eph_gps.PRN = 1;
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 106, false, false);
+    const auto signal_enabled_flags = GPS_1C | GAL_1B | GAL_E5a;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
     pvt_solution->galileo_ephemeris_map[1] = std::move(eph_gal);
 
     pvt_solution->gps_ephemeris_map[1] = std::move(eph_gps);
@@ -309,11 +301,7 @@ TEST_F(RinexPrinterTest, MixedObsHeader)
 
     auto rp = std::make_shared<Rinex_Printer>();
 
-    rp->print_rinex_annotation(pvt_solution.get(),
-        gnss_observables_map,
-        0.0,
-        33,
-        true);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];
@@ -368,7 +356,8 @@ TEST_F(RinexPrinterTest, MixedObsHeaderGpsGlo)
     eph_gps.PRN = 1;
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 26, false, false);
+    const auto signal_enabled_flags = GPS_1C | GLO_1G;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
     pvt_solution->glonass_gnav_ephemeris_map[1] = std::move(eph_glo);
 
     pvt_solution->gps_ephemeris_map[1] = std::move(eph_gps);
@@ -381,11 +370,7 @@ TEST_F(RinexPrinterTest, MixedObsHeaderGpsGlo)
 
     auto rp = std::make_shared<Rinex_Printer>();
 
-    rp->print_rinex_annotation(pvt_solution.get(),
-        gnss_observables_map,
-        0.0,
-        26,
-        true);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];
@@ -437,7 +422,8 @@ TEST_F(RinexPrinterTest, GalileoObsLog)
     eph.PRN = 1;
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 4, false, false);
+    const auto signal_enabled_flags = GAL_1B;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
     pvt_solution->galileo_ephemeris_map[1] = eph;
     std::map<int, Gnss_Synchro> gnss_observables_map;
 
@@ -474,11 +460,7 @@ TEST_F(RinexPrinterTest, GalileoObsLog)
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
 
     auto rp = std::make_shared<Rinex_Printer>();
-    rp->print_rinex_annotation(pvt_solution.get(),
-        gnss_observables_map,
-        0.0,
-        4,
-        true);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];
@@ -519,7 +501,8 @@ TEST_F(RinexPrinterTest, GlonassObsLog)
     eph.PRN = 22;
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 23, false, false);
+    const auto signal_enabled_flags = GLO_1G;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
     pvt_solution->glonass_gnav_ephemeris_map[1] = eph;
     std::map<int, Gnss_Synchro> gnss_observables_map;
 
@@ -556,11 +539,7 @@ TEST_F(RinexPrinterTest, GlonassObsLog)
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
 
     auto rp = std::make_shared<Rinex_Printer>();
-    rp->print_rinex_annotation(pvt_solution.get(),
-        gnss_observables_map,
-        0.0,
-        23,
-        true);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];
@@ -603,7 +582,8 @@ TEST_F(RinexPrinterTest, GpsObsLogDualBand)
     eph_cnav.PRN = 1;
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 7, false, false);
+    const auto signal_enabled_flags = GPS_1C | GPS_2S;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
     pvt_solution->gps_ephemeris_map[1] = std::move(eph);
     pvt_solution->gps_cnav_ephemeris_map[1] = std::move(eph_cnav);
     std::map<int, Gnss_Synchro> gnss_observables_map;
@@ -653,11 +633,7 @@ TEST_F(RinexPrinterTest, GpsObsLogDualBand)
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
 
     auto rp = std::make_shared<Rinex_Printer>();
-    rp->print_rinex_annotation(pvt_solution.get(),
-        gnss_observables_map,
-        0.0,
-        7,
-        true);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];
@@ -693,7 +669,8 @@ TEST_F(RinexPrinterTest, GalileoObsLogDualBand)
 {
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 14, false, false);
+    const auto signal_enabled_flags = GAL_1B | GAL_E5a;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
     auto eph = Galileo_Ephemeris();
     eph.PRN = 1;
     pvt_solution->galileo_ephemeris_map[1] = eph;
@@ -745,11 +722,7 @@ TEST_F(RinexPrinterTest, GalileoObsLogDualBand)
 
     auto rp = std::make_shared<Rinex_Printer>();
 
-    rp->print_rinex_annotation(pvt_solution.get(),
-        gnss_observables_map,
-        0.0,
-        14,
-        true);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];
@@ -795,7 +768,8 @@ TEST_F(RinexPrinterTest, MixedObsLog)
     eph_gal.PRN = 1;
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 9, false, false);
+    const auto signal_enabled_flags = GPS_1C | GAL_1B;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
     pvt_solution->gps_ephemeris_map[1] = std::move(eph_gps);
     pvt_solution->galileo_ephemeris_map[1] = std::move(eph_gal);
     std::map<int, Gnss_Synchro> gnss_observables_map;
@@ -875,11 +849,7 @@ TEST_F(RinexPrinterTest, MixedObsLog)
 
     auto rp = std::make_shared<Rinex_Printer>();
 
-    rp->print_rinex_annotation(pvt_solution.get(),
-        gnss_observables_map,
-        0.0,
-        9,
-        true);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];
@@ -921,7 +891,8 @@ TEST_F(RinexPrinterTest, MixedObsLogGpsGlo)
     eph_glo.PRN = 1;
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 26, false, false);
+    const auto signal_enabled_flags = GPS_1C | GLO_1G;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
     pvt_solution->gps_ephemeris_map[1] = std::move(eph_gps);
     pvt_solution->glonass_gnav_ephemeris_map[1] = std::move(eph_glo);
     std::map<int, Gnss_Synchro> gnss_observables_map;
@@ -999,11 +970,7 @@ TEST_F(RinexPrinterTest, MixedObsLogGpsGlo)
 
     auto rp = std::make_shared<Rinex_Printer>();
 
-    rp->print_rinex_annotation(pvt_solution.get(),
-        gnss_observables_map,
-        0.0,
-        26,
-        true);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];

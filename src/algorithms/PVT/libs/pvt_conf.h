@@ -52,7 +52,7 @@ public:
     std::string udp_eph_addresses;
     std::string log_source_timetag_file;
 
-    uint32_t type_of_receiver = 0;
+    uint32_t signal_enabled_flags = 0;
     uint32_t observable_interval_ms = 20;
 
     int32_t output_rate_ms = 0;

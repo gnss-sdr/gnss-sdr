@@ -191,7 +191,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     pvt_output_parameters.an_rate_ms = configuration->property(role + ".an_rate_ms", pvt_output_parameters.an_rate_ms);
 
     const Signal_Enabled_Flags signal_enabled_flags(configuration);
-    pvt_output_parameters.type_of_receiver = get_type_of_receiver(signal_enabled_flags);
+    pvt_output_parameters.signal_enabled_flags = signal_enabled_flags.flags;
 
     // RTKLIB PVT solver options
     // Settings 1

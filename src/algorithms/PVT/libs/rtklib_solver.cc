@@ -33,10 +33,9 @@
 #include "rtklib_solver.h"
 #include "Beidou_DNAV.h"
 #include "gnss_sdr_filesystem.h"
+#include "receiver_type.h"
 #include "rtklib_rtkpos.h"
-#include "rtklib_solution.h"
 #include <matio.h>
-#include <algorithm>
 #include <cmath>
 #include <exception>
 #include <utility>
@@ -51,12 +50,12 @@
 Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     const Pvt_Conf &conf,
     const std::string &dump_filename,
-    uint32_t type_of_rx,
+    uint32_t signal_enabled_flags,
     bool flag_dump_to_file,
     bool flag_dump_to_mat) : d_dump_filename(dump_filename),
                              d_rtk(rtk),
                              d_conf(conf),
-                             d_type_of_rx(type_of_rx),
+                             d_signal_enabled_flags(signal_enabled_flags),
                              d_flag_dump_enabled(flag_dump_to_file),
                              d_flag_dump_mat_enabled(flag_dump_to_mat)
 {
@@ -78,65 +77,58 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     d_rtklib_band_index["L5"] = 2;
     d_rtklib_band_index["E6"] = 0;
 
-    switch (d_type_of_rx)
+    const Signal_Enabled_Flags flags(d_signal_enabled_flags);
+
+    if (flags.check_only_enabled(GAL_E5b) ||
+        flags.check_only_enabled(GPS_1C, GAL_E5b) ||
+        flags.check_only_enabled(GAL_1B, GAL_E5b) ||
+        flags.check_only_enabled(GPS_2S, GAL_E5b))
         {
-        case 6:  // E5b only
             d_rtklib_freq_index[2] = 4;
-            break;
-        case 11:  // GPS L1 C/A + Galileo E5b
-            d_rtklib_freq_index[2] = 4;
-            break;
-        case 15:  // Galileo E1B + Galileo E5b
-            d_rtklib_freq_index[2] = 4;
-            break;
-        case 18:  // GPS L2C + Galileo E5b
-            d_rtklib_freq_index[2] = 4;
-            break;
-        case 19:  // Galileo E5a + Galileo E5b
+        }
+    else if (flags.check_only_enabled(GAL_E5a, GAL_E5b))
+        {
             d_rtklib_band_index["5X"] = 0;
             d_rtklib_freq_index[0] = 2;
             d_rtklib_freq_index[2] = 4;
-            break;
-        case 20:  // GPS L5 + Galileo E5b
+        }
+    else if (flags.check_only_enabled(GPS_L5, GAL_E5b))
+        {
             d_rtklib_band_index["L5"] = 0;
             d_rtklib_freq_index[0] = 2;
             d_rtklib_freq_index[2] = 4;
-            break;
-        case 100:  // E6B only
+        }
+    else if (flags.check_only_enabled(GAL_E6))
+        {
             d_rtklib_freq_index[0] = 3;
-            break;
-        case 101:  // E1 + E6B
+        }
+    else if (flags.check_only_enabled(GAL_1B, GAL_E6) ||
+             flags.check_only_enabled(GAL_E5a, GAL_E6) ||
+             flags.check_only_enabled(GAL_1B, GAL_E5a, GAL_E6))
+        {
             d_rtklib_band_index["E6"] = 1;
             d_rtklib_freq_index[1] = 3;
-            break;
-        case 102:  // E5a + E6B
-            d_rtklib_band_index["E6"] = 1;
-            d_rtklib_freq_index[1] = 3;
-            break;
-        case 103:  // E5b + E6B
+        }
+    else if (flags.check_only_enabled(GAL_E5b, GAL_E6) ||
+             flags.check_only_enabled(GAL_1B, GAL_E5b, GAL_E6))
+        {
             d_rtklib_band_index["E6"] = 1;
             d_rtklib_freq_index[1] = 3;
             d_rtklib_freq_index[2] = 4;
-            break;
-        case 104:  // Galileo E1B + Galileo E5a + Galileo E6B
+        }
+    else if (flags.check_only_enabled(GAL_1B, GAL_E5a, GAL_E6) ||
+             flags.check_only_enabled(GPS_1C, GAL_1B, GAL_E6) ||
+             flags.check_only_enabled(GPS_1C, GAL_E6))
+        {
             d_rtklib_band_index["E6"] = 1;
             d_rtklib_freq_index[1] = 3;
-            break;
-        case 105:  // Galileo E1B + Galileo E5b + Galileo E6B
-            d_rtklib_freq_index[2] = 4;
-            d_rtklib_band_index["E6"] = 1;
-            d_rtklib_freq_index[1] = 3;
-            break;
-        case 106:  // GPS L1 C/A + Galileo E1B + Galileo E6B
-        case 107:  // GPS L1 C/A + Galileo E6B
-            d_rtklib_band_index["E6"] = 1;
-            d_rtklib_freq_index[1] = 3;
-            break;
-        case 108:  // GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a + Galileo E6B
+        }
+    else if (flags.check_only_enabled(GPS_1C, GAL_1B, GPS_L5, GAL_E5a, GAL_E5b))
+        {
             d_rtklib_band_index["E6"] = 2;
             d_rtklib_freq_index[2] = 3;
-            break;
         }
+
     // auto empty_map = std::map < int, HAS_obs_corrections >> ();
     // d_has_obs_corr_map["L1 C/A"] = empty_map;
 

@@ -40,8 +40,8 @@ class Signal_Enabled_Flags
 {
 public:
     explicit Signal_Enabled_Flags(const ConfigurationInterface* configuration);
+    explicit Signal_Enabled_Flags(uint32_t flags_);
 
-#if NO_FOLD_EXPRESSIONS
     template <typename T>
     uint32_t or_all(const T& value) const
     {
@@ -57,30 +57,16 @@ public:
     template <typename... Args>
     bool check_only_enabled(const Args&... args) const
     {
-        return (flags_ ^ or_all(args...)) == 0;
+        return (flags ^ or_all(args...)) == 0;
     }
 
     template <typename... Args>
     bool check_any_enabled(const Args&... args) const
     {
-        return (flags_ & or_all(args...)) > 0;
-    }
-#else
-    template <typename... Args>
-    bool check_only_enabled(const Args&... args) const
-    {
-        return (flags_ ^ (args | ...)) == 0;
+        return (flags & or_all(args...)) > 0;
     }
 
-    template <typename... Args>
-    bool check_any_enabled(const Args&... args) const
-    {
-        return (flags_ & (args | ...)) > 0;
-    }
-#endif
-
-private:
-    uint32_t flags_;
+    const uint32_t flags;
 };
 
 // Infer the type of receiver

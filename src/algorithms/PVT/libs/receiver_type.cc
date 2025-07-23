@@ -18,8 +18,12 @@
 #include "configuration_interface.h"  // for ConfigurationInterface
 #include <vector>                     // for vector
 
-Signal_Enabled_Flags::Signal_Enabled_Flags(const ConfigurationInterface* configuration) : flags_(0)
+namespace
 {
+uint32_t flags_from_config(const ConfigurationInterface* configuration)
+{
+    uint32_t flags = 0;
+
     const std::vector<std::pair<uint32_t, std::string>> signal_flag_to_prop = {
         {GPS_1C, "Channels_1C.count"},
         {GPS_2S, "Channels_2S.count"},
@@ -33,22 +37,30 @@ Signal_Enabled_Flags::Signal_Enabled_Flags(const ConfigurationInterface* configu
         {BDS_B1, "Channels_B1.count"},
         {BDS_B3, "Channels_B3.count"}};
 
-#if NO_FOLD_EXPRESSIONS
     for (const auto& pair_aux : signal_flag_to_prop)
         {
             auto flag = pair_aux.first;
             auto prop = pair_aux.second;
-#else
-    for (const auto& [flag, prop] : signal_flag_to_prop)
-        {
-#endif
             const auto enabled = configuration->property(prop, 0) > 0;
 
             if (enabled)
                 {
-                    flags_ |= flag;
+                    flags |= flag;
                 }
         }
+
+    return flags;
+}
+}  // namespace
+
+
+Signal_Enabled_Flags::Signal_Enabled_Flags(const ConfigurationInterface* configuration) : flags(flags_from_config(configuration))
+{
+}
+
+
+Signal_Enabled_Flags::Signal_Enabled_Flags(uint32_t flags_) : flags(flags_)
+{
 }
 
 

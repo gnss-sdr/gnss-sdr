@@ -2458,17 +2458,12 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         }
                                     if (d_rtcm_enabled)
                                         {
-                                            const Signal_Enabled_Flags flags(d_signal_enabled_flags);
-
                                             d_rtcm_printer->Print_Rtcm_Messages(d_user_pvt_solver.get(),
                                                 d_gnss_observables_map,
                                                 d_rx_time,
-                                                get_type_of_receiver(flags),
-                                                d_rtcm_MSM_rate_ms,
-                                                d_rtcm_MT1019_rate_ms,
-                                                d_rtcm_MT1020_rate_ms,
-                                                d_rtcm_MT1045_rate_ms,
+                                                d_signal_enabled_flags,
                                                 d_rtcm_MT1077_rate_ms,
+                                                d_rtcm_MT1087_rate_ms,
                                                 d_rtcm_MT1097_rate_ms,
                                                 flag_write_RTCM_MSM_output,
                                                 flag_write_RTCM_1019_output,

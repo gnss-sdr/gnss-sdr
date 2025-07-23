@@ -26,7 +26,7 @@
 #include "gps_ephemeris.h"             // for Gps_Ephemeris
 #include "pvt_conf.h"                  // for Pvt_Conf
 #include "rtklib_rtkpos.h"             // for rtkfree, rtkinit
-#include "signal_enabled_flags.h"      // for get_type_of_receiver
+#include "signal_enabled_flags.h"      // for signal_enabled_flags
 #include <iostream>                    // for std::cout
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>

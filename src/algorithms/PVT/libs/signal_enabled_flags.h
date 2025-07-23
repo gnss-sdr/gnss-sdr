@@ -1,6 +1,6 @@
 /*!
- * \file receiver_type.h
- * \brief Helper function to get the receiver type
+ * \file signal_enabled_flags.h
+ * \brief Class to check the enabled signals
  * \author Mathieu Favreau, 2025. favreau.mathieu(at)hotmail.com
  *
  * -----------------------------------------------------------------------------
@@ -14,8 +14,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_RECEIVER_TYPE_H
-#define GNSS_SDR_RECEIVER_TYPE_H
+#ifndef GNSS_SDR_SIGNAL_ENABLED_FLAGS_H
+#define GNSS_SDR_SIGNAL_ENABLED_FLAGS_H
 
 #include <cstdint>
 
@@ -69,4 +69,4 @@ public:
     const uint32_t flags;
 };
 
-#endif  // GNSS_SDR_RECEIVER_TYPE_H
+#endif  // GNSS_SDR_SIGNAL_ENABLED_FLAGS_H

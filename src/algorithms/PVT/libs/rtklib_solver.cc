@@ -33,8 +33,8 @@
 #include "rtklib_solver.h"
 #include "Beidou_DNAV.h"
 #include "gnss_sdr_filesystem.h"
-#include "receiver_type.h"
 #include "rtklib_rtkpos.h"
+#include "signal_enabled_flags.h"
 #include <matio.h>
 #include <cmath>
 #include <exception>

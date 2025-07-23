@@ -35,8 +35,8 @@
 #include "gps_iono.h"
 #include "gps_navigation_message.h"
 #include "gps_utc_model.h"
-#include "receiver_type.h"
 #include "rtklib_solver.h"
+#include "signal_enabled_flags.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
 #include <boost/date_time/time_zone_base.hpp>

@@ -25,8 +25,8 @@
 #include "gps_almanac.h"               // for Gps_Almanac
 #include "gps_ephemeris.h"             // for Gps_Ephemeris
 #include "pvt_conf.h"                  // for Pvt_Conf
-#include "receiver_type.h"             // for get_type_of_receiver
 #include "rtklib_rtkpos.h"             // for rtkfree, rtkinit
+#include "signal_enabled_flags.h"      // for get_type_of_receiver
 #include <iostream>                    // for std::cout
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>

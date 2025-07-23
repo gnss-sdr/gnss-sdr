@@ -1,6 +1,6 @@
 /*!
- * \file receiver_type.cc
- * \brief Helper function to get the receiver type
+ * \file signal_enabled_flags.cc
+ * \brief Class to check the enabled signals
  * \author Mathieu Favreau, 2025. favreau.mathieu(at)hotmail.com
  *
  * -----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "receiver_type.h"
+#include "signal_enabled_flags.h"
 #include "configuration_interface.h"  // for ConfigurationInterface
 #include <vector>                     // for vector
 

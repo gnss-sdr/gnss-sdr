@@ -54,11 +54,11 @@
 #include "nmea_printer.h"
 #include "osnma_data.h"
 #include "pvt_conf.h"
-#include "receiver_type.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_solver.h"
+#include "signal_enabled_flags.h"
 #include "trackingcmd.h"
 #include <boost/archive/xml_iarchive.hpp>  // for xml_iarchive
 #include <boost/archive/xml_oarchive.hpp>  // for xml_oarchive

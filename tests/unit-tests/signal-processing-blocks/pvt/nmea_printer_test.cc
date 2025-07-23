@@ -17,9 +17,9 @@
 
 #include "nmea_printer.h"
 #include "pvt_conf.h"
-#include "receiver_type.h"
 #include "rtklib_rtkpos.h"
 #include "rtklib_solver.h"
+#include "signal_enabled_flags.h"
 #include <gtest/gtest.h>
 #include <fstream>
 #include <string>

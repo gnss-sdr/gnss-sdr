@@ -27,9 +27,9 @@
 #include "gnss_synchro.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_ephemeris.h"
-#include "receiver_type.h"
 #include "rtcm.h"
 #include "rtklib_solver.h"
+#include "signal_enabled_flags.h"
 #include <boost/exception/diagnostic_information.hpp>
 #include <ctime>      // for tm
 #include <exception>  // for exception

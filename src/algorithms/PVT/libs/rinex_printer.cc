@@ -687,9 +687,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                             d_rinex_header_updated = true;  // do not write header anymore
                         }
                 }
-            else if (flags.check_only_enabled(GPS_L5, GAL_E5a) &&
-                     gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend() &&
-                     galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+            else if (flags.check_only_enabled(GPS_L5, GAL_E5a))
                 {
                     if ((gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend()) && (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()))
                         {

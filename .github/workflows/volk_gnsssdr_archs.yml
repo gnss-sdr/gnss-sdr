@@ -1,13 +1,17 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2023 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 
-name: Run gnss-sdr in non-x86 archs
+name: Run volk_gnsssdr in non-x86 archs
 
 on:
   push:
-    branches:
-      - "**-archs"
-      - main
+    paths:
+      - "src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/**"
+      - "CMakeLists.txt"
+  pull_request:
+    paths:
+      - "src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/**"
+      - "CMakeLists.txt"
   workflow_dispatch:
 
 jobs:
@@ -21,23 +25,20 @@ jobs:
       matrix:
         include:
           - arch: aarch64
-            distro: ubuntu22.04
-            compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
+            distro: ubuntu24.04
+            compiler: { name: g++-14, cc: gcc-14, cxx: g++-14 }
           - arch: aarch64
-            distro: ubuntu22.04
-            compiler: { name: clang-14, cc: clang-14, cxx: clang++-14 }
+            distro: ubuntu24.04
+            compiler: { name: clang-18, cc: clang-18, cxx: clang++-18 }
           - arch: armv7
-            distro: ubuntu22.04
-            compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
+            distro: ubuntu24.04
+            compiler: { name: g++-14, cc: gcc-14, cxx: g++-14 }
           - arch: riscv64
-            distro: ubuntu22.04
-            compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
-          # - arch: ppc64le
-          #   distro: ubuntu22.04
-          #   compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
-          # - arch: s390x
-          #   distro: ubuntu22.04
-          #   compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
+            distro: ubuntu24.04
+            compiler: { name: g++-14, cc: gcc-14, cxx: g++-14 }
+          - arch: riscv64
+            distro: ubuntu24.04
+            compiler: { name: clang-18, cc: clang-18, cxx: clang++-18 }
 
     steps:
       - uses: actions/checkout@v4
@@ -59,21 +60,14 @@ jobs:
           shell: /bin/sh
           install: |
             apt update
-            apt install -y ${{ matrix.compiler.name }} git ninja-build cmake \
-            libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev \
-            libboost-thread-dev libboost-chrono-dev libboost-serialization-dev \
-            liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev \
-            liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev \
-            libgnutls-openssl-dev libmatio-dev googletest protobuf-compiler libprotobuf-dev \
-            python3-mako liborc-0.4-dev
+            apt install -y ${{ matrix.compiler.name }} git cmake python3-mako liborc-0.4-dev
           run: |
             git config --global --add safe.directory /gnss-sdr
             cd /gnss-sdr
             cd testing
             mkdir install
-            cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON -DCMAKE_INSTALL_PREFIX=/gnss-sdr/testing/install -DENABLE_INSTALL_TESTS=ON ..
-            echo "Build with $(nproc) thread(s)"
-            make -j$(nproc)
+            cmake -DCMAKE_INSTALL_PREFIX=/gnss-sdr/testing/install ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+            make
             make install
             cd install/bin
-            ./position_test
+            LD_LIBRARY_PATH=/gnss-sdr/testing/install/lib/ ./volk_gnsssdr_profile

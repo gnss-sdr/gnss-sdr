@@ -292,9 +292,9 @@ Once you have installed these packages, you can jump directly to
 
 ```
 $ sudo apt install libblas-dev liblapack-dev       # For Debian/Ubuntu/LinuxMint
-$ sudo yum install lapack-devel blas-devel             # For Fedora/RHEL
-$ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
-$ sudo pacman -S blas lapack                           # For Arch Linux
+$ sudo yum install lapack-devel blas-devel         # For Fedora/RHEL
+$ sudo zypper install lapack-devel blas-devel      # For OpenSUSE
+$ sudo pacman -S blas lapack                       # For Arch Linux
 $ wget https://sourceforge.net/projects/arma/files/armadillo-14.6.0.tar.xz
 $ tar xvfz armadillo-14.6.0.tar.xz
 $ cd armadillo-14.6.0
@@ -730,7 +730,7 @@ $ sudo port select --set python python313
 First, install [Homebrew](https://brew.sh/). Paste this in a terminal prompt:
 
 ```
-$ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
 The script explains what it will do, and then it pauses before doing it. There

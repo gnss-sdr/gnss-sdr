@@ -2357,6 +2357,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                     const bool rtcm_MT1077_enabled = d_rtcm_MT1077_rate_ms != 0;
                                     const bool rtcm_MT1087_enabled = d_rtcm_MT1087_rate_ms != 0;
                                     const bool rtcm_MT1097_enabled = d_rtcm_MT1097_rate_ms != 0;
+                                    const bool rtcm_MSM_enabled = d_rtcm_MSM_rate_ms != 0;
 
                                     if (d_display_rate_ms != 0)
                                         {
@@ -2379,7 +2380,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                     flag_write_RTCM_1020_output = true;
                                                 }
                                         }
-                                    if (rtcm_MT1045_enabled != 0)
+                                    if (rtcm_MT1045_enabled)
                                         {
                                             if (current_RX_time_ms % d_rtcm_MT1045_rate_ms == 0)
                                                 {
@@ -2401,7 +2402,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                     //         last_RTCM_1097_output_time = current_RX_time;
                                     //     }
 
-                                    if (d_rtcm_MSM_rate_ms != 0)
+                                    if (rtcm_MSM_enabled)
                                         {
                                             if (current_RX_time_ms % d_rtcm_MSM_rate_ms == 0)
                                                 {
@@ -2473,6 +2474,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                 d_gnss_observables_map,
                                                 d_rx_time,
                                                 d_signal_enabled_flags,
+                                                rtcm_MSM_enabled,
                                                 rtcm_MT1019_enabled,
                                                 rtcm_MT1020_enabled,
                                                 rtcm_MT1045_enabled,

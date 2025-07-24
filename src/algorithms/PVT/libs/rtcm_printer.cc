@@ -227,6 +227,7 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
     const std::map<int, Gnss_Synchro>& gnss_observables_map,
     double rx_time,
     uint32_t signal_enabled_flags,
+    bool rtcm_MSM_enabled,
     bool rtcm_MT1019_enabled,
     bool rtcm_MT1020_enabled,
     bool rtcm_MT1045_enabled,
@@ -251,7 +252,7 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
             const auto print_MT1019 = (!d_rtcm_has_written_once && rtcm_MT1019_enabled) || flag_write_RTCM_1019_output;
             const auto print_MT1020 = (!d_rtcm_has_written_once && rtcm_MT1020_enabled) || flag_write_RTCM_1020_output;
             const auto print_MT1045 = (!d_rtcm_has_written_once && rtcm_MT1045_enabled) || flag_write_RTCM_1045_output;
-            const auto Print_MSM = !d_rtcm_has_written_once || flag_write_RTCM_MSM_output;
+            const auto print_MSM = (!d_rtcm_has_written_once && rtcm_MSM_enabled) || flag_write_RTCM_MSM_output;
 
             if (print_MT1019 && flags.check_any_enabled(GPS_1C))
                 {
@@ -274,7 +275,7 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
                             Print_Rtcm_MT1045(gal_eph_iter.second);
                         }
                 }
-            if (Print_MSM)
+            if (print_MSM)
                 {
                     if (rtcm_MT1077_enabled && (flags.check_only_enabled(GPS_1C) || flags.check_only_enabled(GPS_1C, GAL_E6)))
                         {

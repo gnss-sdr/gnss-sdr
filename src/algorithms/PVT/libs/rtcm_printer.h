@@ -73,6 +73,7 @@ public:
         const std::map<int, Gnss_Synchro>& gnss_observables_map,
         double rx_time,
         uint32_t signal_enabled_flags,
+        bool rtcm_MSM_enabled,
         bool rtcm_MT1019_enabled,
         bool rtcm_MT1020_enabled,
         bool rtcm_MT1045_enabled,

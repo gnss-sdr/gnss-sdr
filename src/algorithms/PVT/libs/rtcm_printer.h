@@ -72,12 +72,9 @@ public:
     void Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
         const std::map<int, Gnss_Synchro>& gnss_observables_map,
         double rx_time,
-        int32_t type_of_rx,
-        int32_t rtcm_MSM_rate_ms,
-        int32_t rtcm_MT1019_rate_ms,
-        int32_t rtcm_MT1020_rate_ms,
-        int32_t rtcm_MT1045_rate_ms,
+        uint32_t signal_enabled_flags,
         int32_t rtcm_MT1077_rate_ms,
+        int32_t rtcm_MT1087_rate_ms,
         int32_t rtcm_MT1097_rate_ms,
         bool flag_write_RTCM_MSM_output,
         bool flag_write_RTCM_1019_output,
@@ -198,7 +195,6 @@ private:
     int32_t rtcm_dev_descriptor;  // RTCM serial device descriptor (i.e. COM port)
     uint16_t port;
     uint16_t station_id;
-    bool d_rtcm_writing_started;
     bool d_rtcm_file_dump;
 };
 

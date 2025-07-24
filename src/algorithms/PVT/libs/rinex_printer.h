@@ -170,37 +170,37 @@ public:
     void print_rinex_annotation(const Rtklib_Solver* pvt_solver,
         const std::map<int, Gnss_Synchro>& gnss_observables_map,
         double rx_time,
-        int type_of_rx,
+        uint32_t signal_enabled_flags,
         bool flag_write_RINEX_obs_output);
 
     /*!
      * \brief Print RINEX annotation for GPS NAV message
      */
-    void log_rinex_nav_gps_nav(int type_of_rx,
+    void log_rinex_nav_gps_nav(uint32_t signal_enabled_flags,
         const std::map<int32_t, Gps_Ephemeris>& new_eph);
 
     /*!
      * \brief Print RINEX annotation for GPS CNAV message
      */
-    void log_rinex_nav_gps_cnav(int type_of_rx,
+    void log_rinex_nav_gps_cnav(uint32_t signal_enabled_flags,
         const std::map<int32_t, Gps_CNAV_Ephemeris>& new_cnav_eph);
 
     /*!
      * \brief Print RINEX annotation for Galileo NAV message
      */
-    void log_rinex_nav_gal_nav(int type_of_rx,
+    void log_rinex_nav_gal_nav(uint32_t signal_enabled_flags,
         const std::map<int32_t, Galileo_Ephemeris>& new_gal_eph);
 
     /*!
      * \brief Print RINEX annotation for Glonass GNAV message
      */
-    void log_rinex_nav_glo_gnav(int type_of_rx,
+    void log_rinex_nav_glo_gnav(uint32_t signal_enabled_flags,
         const std::map<int32_t, Glonass_Gnav_Ephemeris>& new_glo_eph);
 
     /*!
      * \brief Print RINEX annotation for BeiDou DNAV message
      */
-    void log_rinex_nav_bds_dnav(int type_of_rx,
+    void log_rinex_nav_bds_dnav(uint32_t signal_enabled_flags,
         const std::map<int32_t, Beidou_Dnav_Ephemeris>& new_bds_eph);
 
     /*!
@@ -1002,7 +1002,7 @@ private:
     std::fstream sbsFile;     // Output file stream for RINEX SBAS raw data file
     std::fstream navGalFile;  // Output file stream for RINEX Galileo navigation data file
     std::fstream navGloFile;  // Output file stream for RINEX GLONASS navigation data file
-    std::fstream navBdsFile;  // Output file stream for RINEX Galileo navigation data file
+    std::fstream navBdsFile;  // Output file stream for RINEX Beidou navigation data file
     std::fstream navMixFile;  // Output file stream for RINEX Mixed navigation data file
 
     std::string navfilename;                      // Name of RINEX navigation file for GPS L1

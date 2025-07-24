@@ -24,7 +24,7 @@ set(PVT_LIB_SOURCES
     has_simple_printer.cc
     geohash.cc
     pvt_kf.cc
-    receiver_type.cc
+    signal_enabled_flags.cc
 )
 
 set(PVT_LIB_HEADERS
@@ -48,7 +48,7 @@ set(PVT_LIB_HEADERS
     has_simple_printer.h
     geohash.h
     pvt_kf.h
-    receiver_type.h
+    signal_enabled_flags.h
 )
 
 list(SORT PVT_LIB_HEADERS)

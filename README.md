@@ -270,15 +270,15 @@ Once you have installed these packages, you can jump directly to
 
 #### Rocky Linux
 
-If you are using Rocky Linux:
+If you are using Rocky Linux 9 or newer:
 
 ```
-$ dnf install -y 'dnf-command(config-manager)'
-$ dnf config-manager --set-enabled powertools
-$ yum install -y epel-release
-$ yum install -y make gcc gcc-c++ kernel-devel cmake git boost-devel \
+$ dnf update -y
+$ dnf install -y epel-release
+$ dnf config-manager --set-enabled crb
+$ dnf install -y make gcc gcc-c++ kernel-devel cmake git boost-devel \
        boost-date-time boost-system boost-thread boost-chrono boost-serialization \
-       log4cpp-devel gmp-devel uhd-devel gnuradio-devel pugixml-devel matio-devel \
+       spdlog-devel gmp-devel uhd-devel gnuradio-devel pugixml-devel matio-devel \
        protobuf-devel glog-devel libpcap-devel blas-devel lapack-devel \
        armadillo-devel openssl-devel python3-mako libarchive
 ```
@@ -295,9 +295,9 @@ $ sudo apt install libblas-dev liblapack-dev       # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel         # For Fedora/RHEL
 $ sudo zypper install lapack-devel blas-devel      # For OpenSUSE
 $ sudo pacman -S blas lapack                       # For Arch Linux
-$ wget https://sourceforge.net/projects/arma/files/armadillo-14.6.0.tar.xz
-$ tar xvfz armadillo-14.6.0.tar.xz
-$ cd armadillo-14.6.0
+$ wget https://sourceforge.net/projects/arma/files/armadillo-14.6.1.tar.xz
+$ tar xvfz armadillo-14.6.1.tar.xz
+$ cd armadillo-14.6.1
 $ cmake .
 $ make
 $ sudo make install

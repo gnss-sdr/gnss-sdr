@@ -58,6 +58,7 @@
 #include "rtcm_printer.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_solver.h"
+#include "signal_enabled_flags.h"
 #include "trackingcmd.h"
 #include <boost/archive/xml_iarchive.hpp>  // for xml_iarchive
 #include <boost/archive/xml_oarchive.hpp>  // for xml_oarchive
@@ -169,7 +170,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_report_rate_ms(1000),
       d_max_obs_block_rx_clock_offset_ms(conf_.max_obs_block_rx_clock_offset_ms),
       d_nchannels(nchannels),
-      d_type_of_rx(conf_.type_of_receiver),
+      d_signal_enabled_flags(conf_.signal_enabled_flags),
       d_observable_interval_ms(conf_.observable_interval_ms),
       d_pvt_errors_counter(0),
       d_dump(conf_.dump),
@@ -455,8 +456,10 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             d_xml_base_path = d_xml_base_path + fs::path::preferred_separator;
         }
 
+    const Signal_Enabled_Flags signal_enabled_flags(d_signal_enabled_flags);
+
     // Initialize HAS simple printer
-    d_enable_has_messages = (((d_type_of_rx >= 100) && (d_type_of_rx < 109)) && (conf_.output_enabled));
+    d_enable_has_messages = (signal_enabled_flags.check_any_enabled(GAL_E6) && (conf_.output_enabled));
     if (d_enable_has_messages)
         {
             d_has_simple_printer = std::make_unique<Has_Simple_Printer>(conf_.has_output_file_path);
@@ -573,19 +576,19 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         {
             // setup two PVT solvers: internal solver for rx clock and user solver
             // user PVT solver
-            d_user_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, conf_, dump_ls_pvt_filename, d_type_of_rx, d_dump, d_dump_mat);
+            d_user_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, conf_, dump_ls_pvt_filename, d_signal_enabled_flags, d_dump, d_dump_mat);
             d_user_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
 
             // internal PVT solver, mainly used to estimate the receiver clock
             rtk_t internal_rtk = rtk;
             internal_rtk.opt.mode = PMODE_SINGLE;  // use single positioning mode in internal PVT solver
-            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(internal_rtk, conf_, dump_ls_pvt_filename, d_type_of_rx, false, false);
+            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(internal_rtk, conf_, dump_ls_pvt_filename, d_signal_enabled_flags, false, false);
             d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
         }
     else
         {
             // only one solver, customized by the user options
-            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, conf_, dump_ls_pvt_filename, d_type_of_rx, d_dump, d_dump_mat);
+            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, conf_, dump_ls_pvt_filename, d_signal_enabled_flags, d_dump, d_dump_mat);
             d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
             d_user_pvt_solver = d_internal_pvt_solver;
         }
@@ -1232,7 +1235,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     // New record!
                                     std::map<int32_t, Gps_Ephemeris> new_eph;
                                     new_eph[gps_eph->PRN] = *gps_eph;
-                                    d_rp->log_rinex_nav_gps_nav(d_type_of_rx, new_eph);
+                                    d_rp->log_rinex_nav_gps_nav(d_signal_enabled_flags, new_eph);
                                 }
                         }
                     d_internal_pvt_solver->gps_ephemeris_map[gps_eph->PRN] = *gps_eph;
@@ -1300,7 +1303,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     // New record!
                                     std::map<int32_t, Gps_CNAV_Ephemeris> new_cnav_eph;
                                     new_cnav_eph[gps_cnav_ephemeris->PRN] = *gps_cnav_ephemeris;
-                                    d_rp->log_rinex_nav_gps_cnav(d_type_of_rx, new_cnav_eph);
+                                    d_rp->log_rinex_nav_gps_cnav(d_signal_enabled_flags, new_cnav_eph);
                                 }
                         }
                     d_internal_pvt_solver->gps_cnav_ephemeris_map[gps_cnav_ephemeris->PRN] = *gps_cnav_ephemeris;
@@ -1392,7 +1395,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     // New record!
                                     std::map<int32_t, Galileo_Ephemeris> new_gal_eph;
                                     new_gal_eph[galileo_eph->PRN] = *galileo_eph;
-                                    d_rp->log_rinex_nav_gal_nav(d_type_of_rx, new_gal_eph);
+                                    d_rp->log_rinex_nav_gal_nav(d_signal_enabled_flags, new_gal_eph);
                                 }
                         }
                     d_internal_pvt_solver->galileo_ephemeris_map[galileo_eph->PRN] = *galileo_eph;
@@ -1515,7 +1518,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     // New record!
                                     std::map<int32_t, Glonass_Gnav_Ephemeris> new_glo_eph;
                                     new_glo_eph[glonass_gnav_eph->PRN] = *glonass_gnav_eph;
-                                    d_rp->log_rinex_nav_glo_gnav(d_type_of_rx, new_glo_eph);
+                                    d_rp->log_rinex_nav_glo_gnav(d_signal_enabled_flags, new_glo_eph);
                                 }
                         }
                     d_internal_pvt_solver->glonass_gnav_ephemeris_map[glonass_gnav_eph->PRN] = *glonass_gnav_eph;
@@ -1578,7 +1581,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     // New record!
                                     std::map<int32_t, Beidou_Dnav_Ephemeris> new_bds_eph;
                                     new_bds_eph[bds_dnav_eph->PRN] = *bds_dnav_eph;
-                                    d_rp->log_rinex_nav_bds_dnav(d_type_of_rx, new_bds_eph);
+                                    d_rp->log_rinex_nav_bds_dnav(d_signal_enabled_flags, new_bds_eph);
                                 }
                         }
                     d_internal_pvt_solver->beidou_dnav_ephemeris_map[bds_dnav_eph->PRN] = *bds_dnav_eph;
@@ -2346,6 +2349,16 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                     // save_gnss_synchro_map_xml("./gnss_synchro_map.xml");
                                     // getchar(); // stop the execution
                                     // end debug
+
+                                    // allows deactivating messages by setting rate = 0
+                                    const bool rtcm_MT1019_enabled = d_rtcm_MT1019_rate_ms != 0;
+                                    const bool rtcm_MT1020_enabled = d_rtcm_MT1020_rate_ms != 0;
+                                    const bool rtcm_MT1045_enabled = d_rtcm_MT1045_rate_ms != 0;
+                                    const bool rtcm_MT1077_enabled = d_rtcm_MT1077_rate_ms != 0;
+                                    const bool rtcm_MT1087_enabled = d_rtcm_MT1087_rate_ms != 0;
+                                    const bool rtcm_MT1097_enabled = d_rtcm_MT1097_rate_ms != 0;
+                                    const bool rtcm_MSM_enabled = d_rtcm_MSM_rate_ms != 0;
+
                                     if (d_display_rate_ms != 0)
                                         {
                                             if (current_RX_time_ms % d_display_rate_ms == 0)
@@ -2353,27 +2366,28 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                     flag_display_pvt = true;
                                                 }
                                         }
-                                    if (d_rtcm_MT1019_rate_ms != 0)  // allows deactivating messages by setting rate = 0
+                                    if (rtcm_MT1019_enabled)
                                         {
                                             if (current_RX_time_ms % d_rtcm_MT1019_rate_ms == 0)
                                                 {
                                                     flag_write_RTCM_1019_output = true;
                                                 }
                                         }
-                                    if (d_rtcm_MT1020_rate_ms != 0)  // allows deactivating messages by setting rate = 0
+                                    if (rtcm_MT1020_enabled)  // allows deactivating messages by setting rate = 0
                                         {
                                             if (current_RX_time_ms % d_rtcm_MT1020_rate_ms == 0)
                                                 {
                                                     flag_write_RTCM_1020_output = true;
                                                 }
                                         }
-                                    if (d_rtcm_MT1045_rate_ms != 0)
+                                    if (rtcm_MT1045_enabled)
                                         {
                                             if (current_RX_time_ms % d_rtcm_MT1045_rate_ms == 0)
                                                 {
                                                     flag_write_RTCM_1045_output = true;
                                                 }
                                         }
+
                                     // TODO: RTCM 1077, 1087 and 1097 are not used, so, disable the output rates
                                     // if (current_RX_time_ms % d_rtcm_MT1077_rate_ms==0 && d_rtcm_MT1077_rate_ms != 0)
                                     //     {
@@ -2387,7 +2401,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                     //     {
                                     //         last_RTCM_1097_output_time = current_RX_time;
                                     //     }
-                                    if (d_rtcm_MSM_rate_ms != 0)
+
+                                    if (rtcm_MSM_enabled)
                                         {
                                             if (current_RX_time_ms % d_rtcm_MSM_rate_ms == 0)
                                                 {
@@ -2451,20 +2466,21 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         }
                                     if (d_rinex_output_enabled)
                                         {
-                                            d_rp->print_rinex_annotation(d_user_pvt_solver.get(), d_gnss_observables_map, d_rx_time, d_type_of_rx, flag_write_RINEX_obs_output);
+                                            d_rp->print_rinex_annotation(d_user_pvt_solver.get(), d_gnss_observables_map, d_rx_time, d_signal_enabled_flags, flag_write_RINEX_obs_output);
                                         }
                                     if (d_rtcm_enabled)
                                         {
                                             d_rtcm_printer->Print_Rtcm_Messages(d_user_pvt_solver.get(),
                                                 d_gnss_observables_map,
                                                 d_rx_time,
-                                                d_type_of_rx,
-                                                d_rtcm_MSM_rate_ms,
-                                                d_rtcm_MT1019_rate_ms,
-                                                d_rtcm_MT1020_rate_ms,
-                                                d_rtcm_MT1045_rate_ms,
-                                                d_rtcm_MT1077_rate_ms,
-                                                d_rtcm_MT1097_rate_ms,
+                                                d_signal_enabled_flags,
+                                                rtcm_MSM_enabled,
+                                                rtcm_MT1019_enabled,
+                                                rtcm_MT1020_enabled,
+                                                rtcm_MT1045_enabled,
+                                                rtcm_MT1077_enabled,
+                                                rtcm_MT1087_enabled,
+                                                rtcm_MT1097_enabled,
                                                 flag_write_RTCM_MSM_output,
                                                 flag_write_RTCM_1019_output,
                                                 flag_write_RTCM_1020_output,

@@ -262,7 +262,7 @@ private:
     int32_t d_max_obs_block_rx_clock_offset_ms;
 
     uint32_t d_nchannels;
-    uint32_t d_type_of_rx;
+    uint32_t d_signal_enabled_flags;
     uint32_t d_observable_interval_ms;
     uint32_t d_pvt_errors_counter;
 

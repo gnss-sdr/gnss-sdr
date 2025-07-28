@@ -100,107 +100,43 @@ public:
      * prints the RINEX headers for navigation and observation files. If it is
      * not the first annotation, it only annotates the observation, and updates
      * the navigation header if UTC data was not available when writing it for
-     * the first time. The meaning of type_of_rx is as follows:
-     *
-     * type_of_rx    | Signals
-     * ------------- | -------------
-     *     0   |  Unknown
-     *     1   |  GPS L1 C/A
-     *     2   |  GPS L2C
-     *     3   |  GPS L5
-     *     4   |  Galileo E1B
-     *     5   |  Galileo E5a
-     *     6   |  Galileo E5b
-     *     7   |  GPS L1 C/A + GPS L2C
-     *     8   |  GPS L1 C/A + GPS L5
-     *     9   |  GPS L1 C/A + Galileo E1B
-     *    10   |  GPS L1 C/A + Galileo E5a
-     *    11   |  GPS L1 C/A + Galileo E5b
-     *    12   |  Galileo E1B + GPS L2C
-     *    13   |  Galileo E5a + GPS L5
-     *    14   |  Galileo E1B + Galileo E5a
-     *    15   |  Galileo E1B + Galileo E5b
-     *    16   |  GPS L2C + GPS L5
-     *    17   |  GPS L2C + Galileo E5a
-     *    20   |  GPS L5 + Galileo E5b
-     *    21   |  GPS L1 C/A + Galileo E1B + GPS L2C
-     *    22   |  GPS L1 C/A + Galileo E1B + GPS L5
-     *    23   |  GLONASS L1 C/A
-     *    24   |  GLONASS L2 C/A
-     *    25   |  GLONASS L1 C/A + GLONASS L2 C/A
-     *    26   |  GPS L1 C/A + GLONASS L1 C/A
-     *    27   |  Galileo E1B + GLONASS L1 C/A
-     *    28   |  GPS L2C + GLONASS L1 C/A
-     *    29   |  GPS L1 C/A + GLONASS L2 C/A
-     *    30   |  Galileo E1B + GLONASS L2 C/A
-     *    31   |  GPS L2C + GLONASS L2 C/A
-     *    32   |  GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a
-     *    33   |  GPS L1 C/A + Galileo E1B + Galileo E5a
-     *    100   |  Galileo E6B
-     *    101   |  Galileo E1B + Galileo E6B
-     *    102   |  Galileo E5a + Galileo E6B
-     *    103   |  Galileo E5b + Galileo E6B
-     *    104   |  Galileo E1B + Galileo E5a + Galileo E6B
-     *    105   |  Galileo E1B + Galileo E5b + Galileo E6B
-     *    106   |  GPS L1 C/A + Galileo E1B + Galileo E6B
-     *    107   |  GPS L1 C/A + Galileo E6B
-     *    108   |  GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a + Galileo E6B
-     *    500   |  BeiDou B1I
-     *    501   |  BeiDou B1I + GPS L1 C/A
-     *    502   |  BeiDou B1I + Galileo E1B
-     *    503   |  BeiDou B1I + GLONASS L1 C/A
-     *    504   |  BeiDou B1I + GPS L1 C/A + Galileo E1B
-     *    505   |  BeiDou B1I + GPS L1 C/A + GLONASS L1 C/A + Galileo E1B
-     *    506   |  BeiDou B1I + Beidou B3I
-     *    600   |  BeiDou B3I
-     *    601   |  BeiDou B3I + GPS L2C
-     *    602   |  BeiDou B3I + GLONASS L2 C/A
-     *    603   |  BeiDou B3I + GPS L2C + GLONASS L2 C/A
-     *    604   |  BeiDou B3I + GPS L1 C/A
-     *    605   |  BeiDou B3I + Galileo E1B
-     *    606   |  BeiDou B3I + GLONASS L1 C/A
-     *    607   |  BeiDou B3I + GPS L1 C/A + Galileo E1B
-     *    608   |  BeiDou B3I + GPS L1 C/A + Galileo E1B + BeiDou B1I
-     *    609   |  BeiDou B3I + GPS L1 C/A + Galileo E1B + GLONASS L1 C/A
-     *    610   |  BeiDou B3I + GPS L1 C/A + Galileo E1B + GLONASS L1 C/A + BeiDou B1I
-     *    1000  |  GPS L1 C/A + GPS L2C + GPS L5
-     *    1001  |  GPS L1 C/A + Galileo E1B + GPS L2C + GPS L5 + Galileo E5a
+     * the first time.
      *
      */
     void print_rinex_annotation(const Rtklib_Solver* pvt_solver,
         const std::map<int, Gnss_Synchro>& gnss_observables_map,
         double rx_time,
-        int type_of_rx,
+        uint32_t signal_enabled_flags,
         bool flag_write_RINEX_obs_output);
 
     /*!
      * \brief Print RINEX annotation for GPS NAV message
      */
-    void log_rinex_nav_gps_nav(int type_of_rx,
+    void log_rinex_nav_gps_nav(uint32_t signal_enabled_flags,
         const std::map<int32_t, Gps_Ephemeris>& new_eph);
 
     /*!
      * \brief Print RINEX annotation for GPS CNAV message
      */
-    void log_rinex_nav_gps_cnav(int type_of_rx,
+    void log_rinex_nav_gps_cnav(uint32_t signal_enabled_flags,
         const std::map<int32_t, Gps_CNAV_Ephemeris>& new_cnav_eph);
 
     /*!
      * \brief Print RINEX annotation for Galileo NAV message
      */
-    void log_rinex_nav_gal_nav(int type_of_rx,
+    void log_rinex_nav_gal_nav(uint32_t signal_enabled_flags,
         const std::map<int32_t, Galileo_Ephemeris>& new_gal_eph);
 
     /*!
      * \brief Print RINEX annotation for Glonass GNAV message
      */
-    void log_rinex_nav_glo_gnav(int type_of_rx,
+    void log_rinex_nav_glo_gnav(uint32_t signal_enabled_flags,
         const std::map<int32_t, Glonass_Gnav_Ephemeris>& new_glo_eph);
 
     /*!
      * \brief Print RINEX annotation for BeiDou DNAV message
      */
-    void log_rinex_nav_bds_dnav(int type_of_rx,
+    void log_rinex_nav_bds_dnav(uint32_t signal_enabled_flags,
         const std::map<int32_t, Beidou_Dnav_Ephemeris>& new_bds_eph);
 
     /*!
@@ -1002,7 +938,7 @@ private:
     std::fstream sbsFile;     // Output file stream for RINEX SBAS raw data file
     std::fstream navGalFile;  // Output file stream for RINEX Galileo navigation data file
     std::fstream navGloFile;  // Output file stream for RINEX GLONASS navigation data file
-    std::fstream navBdsFile;  // Output file stream for RINEX Galileo navigation data file
+    std::fstream navBdsFile;  // Output file stream for RINEX Beidou navigation data file
     std::fstream navMixFile;  // Output file stream for RINEX Mixed navigation data file
 
     std::string navfilename;                      // Name of RINEX navigation file for GPS L1

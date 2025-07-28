@@ -85,7 +85,7 @@ public:
     Rtklib_Solver(const rtk_t& rtk,
         const Pvt_Conf& conf,
         const std::string& dump_filename,
-        uint32_t type_of_rx,
+        uint32_t signal_enabled_flags,
         bool flag_dump_to_file,
         bool flag_dump_to_mat);
 
@@ -155,7 +155,7 @@ private:
     Monitor_Pvt d_monitor_pvt{};
     Pvt_Conf d_conf;
     Pvt_Kf d_pvt_kf;
-    uint32_t d_type_of_rx;
+    uint32_t d_signal_enabled_flags;
     bool d_flag_dump_enabled;
     bool d_flag_dump_mat_enabled;
 };

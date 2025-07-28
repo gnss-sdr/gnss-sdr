@@ -418,9 +418,9 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
             else if (only_beidou && beidou_dnav_ephemeris_iter != pvt_solver->beidou_dnav_ephemeris_map.cend())
                 {
                     rinex_obs_header(obsFile, beidou_dnav_ephemeris_iter->second, rx_time, signal);
-                    rinex_nav_header(navFile, pvt_solver->beidou_dnav_iono, pvt_solver->beidou_dnav_utc_model);
+                    rinex_nav_header(navBdsFile, pvt_solver->beidou_dnav_iono, pvt_solver->beidou_dnav_utc_model);
                     output_navfilename.push_back(navBdsfilename);
-                    log_rinex_nav(navFile, pvt_solver->beidou_dnav_ephemeris_map);
+                    log_rinex_nav(navBdsFile, pvt_solver->beidou_dnav_ephemeris_map);
                 }
             else if ((flags.check_only_enabled(GPS_1C, GPS_2S) ||
                          flags.check_only_enabled(GPS_1C, GPS_L5) ||
@@ -1013,7 +1013,7 @@ std::string Rinex_Printer::createFilename(const std::string& type, const std::st
     fileType.insert(std::pair<std::string, std::string>("RINEX_FILE_TYPE_SBAS", "B"));       // B - SBAS broadcast data file.
     fileType.insert(std::pair<std::string, std::string>("RINEX_FILE_TYPE_CLK", "C"));        // C - Clock file.
     fileType.insert(std::pair<std::string, std::string>("RINEX_FILE_TYPE_SUMMARY", "S"));    // S - Summary file (used e.g., by IGS, not a standard!).
-    fileType.insert(std::pair<std::string, std::string>("RINEX_FILE_TYPE_BDS_NAV", "F"));    // G - GLONASS navigation file.
+    fileType.insert(std::pair<std::string, std::string>("RINEX_FILE_TYPE_BDS_NAV", "F"));    // F - BeiDou navigation file.
 
     const boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
     const tm pt_tm = boost::posix_time::to_tm(pt);

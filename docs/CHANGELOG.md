@@ -31,6 +31,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   implementations, greatly improving maintainability, simplifying the addition
   of new signals, and eliminating a lot of duplicated code. Awesome contribution
   by @MathieuFavreau.
+- Refactored the internal handling of multi-signal configurations in the PVT
+  block for improved maintainability and extensibility. Another excellent
+  contribution by @MathieuFavreau.
 
 ### Improvements in Portability:
 

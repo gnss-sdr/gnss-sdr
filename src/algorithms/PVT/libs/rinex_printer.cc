@@ -57,6 +57,72 @@
 #include <absl/log/log.h>
 #endif
 
+namespace
+{
+std::string enabled_signal_flags_to_string(const Signal_Enabled_Flags& flags)
+{
+    std::vector<std::string> signal_str_vector;
+
+    if (flags.check_any_enabled(GPS_1C))
+        {
+            signal_str_vector.emplace_back("1C");
+        }
+    if (flags.check_any_enabled(GPS_2S))
+        {
+            signal_str_vector.emplace_back("2S");
+        }
+    if (flags.check_any_enabled(GPS_L5))
+        {
+            signal_str_vector.emplace_back("L5");
+        }
+    if (flags.check_any_enabled(GAL_1B))
+        {
+            signal_str_vector.emplace_back("1B");
+        }
+    if (flags.check_any_enabled(GAL_E5a))
+        {
+            signal_str_vector.emplace_back("5X");
+        }
+    if (flags.check_any_enabled(GAL_E5b))
+        {
+            signal_str_vector.emplace_back("7X");
+        }
+    if (flags.check_any_enabled(GAL_E6))
+        {
+            signal_str_vector.emplace_back("E6");
+        }
+    if (flags.check_any_enabled(GLO_1G))
+        {
+            signal_str_vector.emplace_back("1G");
+        }
+    if (flags.check_any_enabled(GLO_2G))
+        {
+            signal_str_vector.emplace_back("2G");
+        }
+    if (flags.check_any_enabled(BDS_B1))
+        {
+            signal_str_vector.emplace_back("B1");
+        }
+    if (flags.check_any_enabled(BDS_B3))
+        {
+            signal_str_vector.emplace_back("B3");
+        }
+
+    std::ostringstream oss;
+
+    for (size_t i = 0; i < signal_str_vector.size(); ++i)
+        {
+            oss << signal_str_vector[i];
+            if (i != signal_str_vector.size() - 1)
+                {
+                    oss << ' ';
+                }
+        }
+
+    return oss.str();
+}
+}  // namespace
+
 Rinex_Printer::Rinex_Printer(int32_t conf_version,
     const std::string& base_path,
     const std::string& base_name) : d_fake_cnav_iode(1),
@@ -292,72 +358,6 @@ Rinex_Printer::~Rinex_Printer()
                 }
         }
 }
-
-namespace
-{
-std::string enabled_signal_flags_to_string(const Signal_Enabled_Flags& flags)
-{
-    std::vector<std::string> signal_str_vector;
-
-    if (flags.check_any_enabled(GPS_1C))
-        {
-            signal_str_vector.emplace_back("1C");
-        }
-    if (flags.check_any_enabled(GPS_2S))
-        {
-            signal_str_vector.emplace_back("2S");
-        }
-    if (flags.check_any_enabled(GPS_L5))
-        {
-            signal_str_vector.emplace_back("L5");
-        }
-    if (flags.check_any_enabled(GAL_1B))
-        {
-            signal_str_vector.emplace_back("1B");
-        }
-    if (flags.check_any_enabled(GAL_E5a))
-        {
-            signal_str_vector.emplace_back("5X");
-        }
-    if (flags.check_any_enabled(GAL_E5b))
-        {
-            signal_str_vector.emplace_back("7X");
-        }
-    if (flags.check_any_enabled(GAL_E6))
-        {
-            signal_str_vector.emplace_back("E6");
-        }
-    if (flags.check_any_enabled(GLO_1G))
-        {
-            signal_str_vector.emplace_back("1G");
-        }
-    if (flags.check_any_enabled(GLO_2G))
-        {
-            signal_str_vector.emplace_back("2G");
-        }
-    if (flags.check_any_enabled(BDS_B1))
-        {
-            signal_str_vector.emplace_back("B1");
-        }
-    if (flags.check_any_enabled(BDS_B3))
-        {
-            signal_str_vector.emplace_back("B3");
-        }
-
-    std::ostringstream oss;
-
-    for (size_t i = 0; i < signal_str_vector.size(); ++i)
-        {
-            oss << signal_str_vector[i];
-            if (i != signal_str_vector.size() - 1)
-                {
-                    oss << ' ';
-                }
-        }
-
-    return oss.str();
-}
-}  // namespace
 
 void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
     const std::map<int, Gnss_Synchro>& gnss_observables_map,
@@ -687,9 +687,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                             d_rinex_header_updated = true;  // do not write header anymore
                         }
                 }
-            else if (flags.check_only_enabled(GPS_L5, GAL_E5a) &&
-                     gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend() &&
-                     galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+            else if (flags.check_only_enabled(GPS_L5, GAL_E5a))
                 {
                     if ((gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend()) && (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()))
                         {

@@ -2349,6 +2349,16 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                     // save_gnss_synchro_map_xml("./gnss_synchro_map.xml");
                                     // getchar(); // stop the execution
                                     // end debug
+
+                                    // allows deactivating messages by setting rate = 0
+                                    const bool rtcm_MT1019_enabled = d_rtcm_MT1019_rate_ms != 0;
+                                    const bool rtcm_MT1020_enabled = d_rtcm_MT1020_rate_ms != 0;
+                                    const bool rtcm_MT1045_enabled = d_rtcm_MT1045_rate_ms != 0;
+                                    const bool rtcm_MT1077_enabled = d_rtcm_MT1077_rate_ms != 0;
+                                    const bool rtcm_MT1087_enabled = d_rtcm_MT1087_rate_ms != 0;
+                                    const bool rtcm_MT1097_enabled = d_rtcm_MT1097_rate_ms != 0;
+                                    const bool rtcm_MSM_enabled = d_rtcm_MSM_rate_ms != 0;
+
                                     if (d_display_rate_ms != 0)
                                         {
                                             if (current_RX_time_ms % d_display_rate_ms == 0)
@@ -2356,27 +2366,28 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                     flag_display_pvt = true;
                                                 }
                                         }
-                                    if (d_rtcm_MT1019_rate_ms != 0)  // allows deactivating messages by setting rate = 0
+                                    if (rtcm_MT1019_enabled)
                                         {
                                             if (current_RX_time_ms % d_rtcm_MT1019_rate_ms == 0)
                                                 {
                                                     flag_write_RTCM_1019_output = true;
                                                 }
                                         }
-                                    if (d_rtcm_MT1020_rate_ms != 0)  // allows deactivating messages by setting rate = 0
+                                    if (rtcm_MT1020_enabled)  // allows deactivating messages by setting rate = 0
                                         {
                                             if (current_RX_time_ms % d_rtcm_MT1020_rate_ms == 0)
                                                 {
                                                     flag_write_RTCM_1020_output = true;
                                                 }
                                         }
-                                    if (d_rtcm_MT1045_rate_ms != 0)
+                                    if (rtcm_MT1045_enabled)
                                         {
                                             if (current_RX_time_ms % d_rtcm_MT1045_rate_ms == 0)
                                                 {
                                                     flag_write_RTCM_1045_output = true;
                                                 }
                                         }
+
                                     // TODO: RTCM 1077, 1087 and 1097 are not used, so, disable the output rates
                                     // if (current_RX_time_ms % d_rtcm_MT1077_rate_ms==0 && d_rtcm_MT1077_rate_ms != 0)
                                     //     {
@@ -2390,7 +2401,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                     //     {
                                     //         last_RTCM_1097_output_time = current_RX_time;
                                     //     }
-                                    if (d_rtcm_MSM_rate_ms != 0)
+
+                                    if (rtcm_MSM_enabled)
                                         {
                                             if (current_RX_time_ms % d_rtcm_MSM_rate_ms == 0)
                                                 {
@@ -2462,9 +2474,13 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                 d_gnss_observables_map,
                                                 d_rx_time,
                                                 d_signal_enabled_flags,
-                                                d_rtcm_MT1077_rate_ms,
-                                                d_rtcm_MT1087_rate_ms,
-                                                d_rtcm_MT1097_rate_ms,
+                                                rtcm_MSM_enabled,
+                                                rtcm_MT1019_enabled,
+                                                rtcm_MT1020_enabled,
+                                                rtcm_MT1045_enabled,
+                                                rtcm_MT1077_enabled,
+                                                rtcm_MT1087_enabled,
+                                                rtcm_MT1097_enabled,
                                                 flag_write_RTCM_MSM_output,
                                                 flag_write_RTCM_1019_output,
                                                 flag_write_RTCM_1020_output,

@@ -40,7 +40,7 @@ uint32_t flags_from_config(const ConfigurationInterface* configuration)
     for (const auto& pair_aux : signal_flag_to_prop)
         {
             auto flag = pair_aux.first;
-            auto prop = pair_aux.second;
+            const auto& prop = pair_aux.second;
             const auto enabled = configuration->property(prop, 0) > 0;
 
             if (enabled)

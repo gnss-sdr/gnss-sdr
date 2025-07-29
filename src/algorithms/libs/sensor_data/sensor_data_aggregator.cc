@@ -17,7 +17,7 @@
 #include "sensor_data_aggregator.h"
 #include <sstream>
 #include <string>
-
+#include <utility>
 
 SensorDataAggregator::SensorDataAggregator(const SensorDataSourceConfiguration& configuration, const std::vector<SensorIdentifier::value_type>& required_sensors)
 {
@@ -123,7 +123,7 @@ void SensorDataAggregator::append_data(const pmt::pmt_t& data_dict)
             pmt::pmt_t key = pmt::car(pair);
             pmt::pmt_t val = pmt::cdr(pair);
 
-            std::string key_str = pmt::write_string(key);
+            std::string key_str = pmt::write_string(std::move(key));
             SensorIdentifier::value_type sensor_id = SensorIdentifier::from_string(key_str);
 
             if (sensor_id != SensorIdentifier::SAMPLE_STAMP and sensor_id != SensorIdentifier::CHUNK_COUNT)
@@ -133,7 +133,7 @@ void SensorDataAggregator::append_data(const pmt::pmt_t& data_dict)
                         case SensorDataType::F32:
                             if (f32_data_.find(sensor_id) != f32_data_.end())
                                 {
-                                    f32_data_.at(sensor_id).emplace_back(sample_stamp, pmt::to_float(val));
+                                    f32_data_.at(sensor_id).emplace_back(sample_stamp, pmt::to_float(std::move(val)));
                                 }
                             break;
 

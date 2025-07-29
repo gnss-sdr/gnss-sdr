@@ -108,7 +108,7 @@ void beidou_b3i_code_gen_int(own::span<int> dest, int32_t prn, uint32_t chip_shi
             std::bitset<13>(std::string("0010001001110"))};
 
     // A simple error check
-    if ((prn_idx < 0) || (prn_idx > 63))
+    if ((prn_idx < 0) || (prn_idx > 62))
         {
             return;
         }

@@ -55,6 +55,7 @@ NTLabFileSignalSource::NTLabFileSignalSource(
         }
 }
 
+
 std::tuple<size_t, bool> NTLabFileSignalSource::itemTypeToSize()
 {
     auto is_complex_t = false;
@@ -81,21 +82,25 @@ std::tuple<size_t, bool> NTLabFileSignalSource::itemTypeToSize()
     return std::make_tuple(item_size, is_complex_t);
 }
 
+
 double NTLabFileSignalSource::packetsPerSample() const
 {
-    return 4 / n_channels_;  // sampling instants in one byte depend on channel count
+    return 4.0 / n_channels_;  // sampling instants in one byte depend on channel count
 }
+
 
 gnss_shared_ptr<gr::block> NTLabFileSignalSource::source() const
 {
     return unpack_samples_;
 }
 
+
 void NTLabFileSignalSource::create_file_source_hook()
 {
     unpack_samples_ = make_unpack_ntlab_2bit_samples(item_size(), n_channels_);
     DLOG(INFO) << "unpack_byte_2bit_samples(" << unpack_samples_->unique_id() << ")";
 }
+
 
 void NTLabFileSignalSource::pre_connect_hook(gr::top_block_sptr top_block)
 {
@@ -109,6 +114,7 @@ void NTLabFileSignalSource::pre_connect_hook(gr::top_block_sptr top_block)
         }
 }
 
+
 void NTLabFileSignalSource::pre_disconnect_hook(gr::top_block_sptr top_block)
 {
     top_block->disconnect(file_source(), 0, unpack_samples_, 0);
@@ -121,11 +127,13 @@ void NTLabFileSignalSource::pre_disconnect_hook(gr::top_block_sptr top_block)
         }
 }
 
+
 gr::basic_block_sptr NTLabFileSignalSource::get_left_block()
 {
     LOG(WARNING) << "Left block of a signal source should not be retrieved";
     return gr::block_sptr();
 }
+
 
 gr::basic_block_sptr NTLabFileSignalSource::get_right_block()
 {

@@ -205,6 +205,44 @@ static inline void volk_gnsssdr_8i_x2_add_8i_a_avx2(char* cVector, const char* a
 #endif /* LV_HAVE_SSE2 */
 
 
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+
+static inline void volk_gnsssdr_8i_x2_add_8i_rvv(char* cVector, const char* aVector, const char* bVector, unsigned int num_points)
+{
+    size_t n = num_points;
+
+    // Initialize pointers to track progress as stripmine
+    // Macro expects `int8_t`, and `char`'s signedness
+    // depends on implementation
+    signed char* cPtr = (signed char*) cVector; // For consistency
+    const signed char* aPtr = (const signed char*) aVector;
+    const signed char* bPtr = (const signed char*) bVector;
+
+    for (size_t vl; n > 0; n -= vl, cPtr += vl, aPtr += vl, bPtr += vl)
+        {
+            // Setup state to handle max length vectors of 1-byte numbers
+            // Also collect how many elements were actually processed
+            vl = __riscv_vsetvl_e8m8(n);
+
+            // Load a[0..vl), b[0..vl)
+            vint8m8_t aVal = __riscv_vle8_v_i8m8(aPtr, vl);
+            vint8m8_t bVal = __riscv_vle8_v_i8m8(bPtr, vl);
+
+            // c[i] = a[i] + b[i]
+            vint8m8_t cVal = __riscv_vadd_vv_i8m8(aVal, bVal, vl);
+
+            // Store c[0..vl)
+            __riscv_vse8_v_i8m8(cPtr, cVal, vl);
+
+            // In looping, decrement the number of
+            // elements left and increment the pointers
+            // by the number of elements processed
+        }
+}
+#endif /* LV_HAVE_RVV */
+
+
 #ifdef LV_HAVE_ORC
 
 extern void volk_gnsssdr_8i_x2_add_8i_a_orc_impl(char* cVector, const char* aVector, const char* bVector, unsigned int num_points);

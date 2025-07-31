@@ -279,8 +279,7 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_rvv(unsigned char* cVector, co
 
     for (size_t vl; n > 0; n -= vl, cPtr += vl, aPtr += vl, bPtr += vl)
         {
-            // Initialize state to handle maximum
-            // size vectors of bytes
+            // Record how many elements will actually be processed
             vl = __riscv_vsetvl_e8m8(n);
 
             // Load a[0..vl), b[0..vl)

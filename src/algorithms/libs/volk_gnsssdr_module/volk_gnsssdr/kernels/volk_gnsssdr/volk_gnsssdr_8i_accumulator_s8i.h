@@ -219,6 +219,48 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_u_avx2(char* result, const ch
 #endif /* LV_HAVE_SSE3 */
 
 
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+
+static inline void volk_gnsssdr_8i_accumulator_s8i_rvv(char* result, const char* inputBuffer, unsigned int num_points)
+{
+    size_t n = num_points;
+
+    // Initialize pointer of correct type
+    // to keep track while stripmining
+    const signed char* inPtr = (const signed char*) inputBuffer;
+
+    // acc[0] = 0
+    vint8m1_t accVal = __riscv_vmv_v_x_i8m1(0, 1);
+
+    for (size_t vl; n > 0; n -= vl, inPtr += vl)
+        {
+            // Setup state to handle max length vectors of 1-byte numbers
+            // Also collect how many elements were actually processed
+            vl = __riscv_vsetvl_e8m8(n);
+
+            // Load in[0..vl)
+            vint8m8_t inVal = __riscv_vle8_v_i8m8(inPtr, vl);
+
+            // acc[0] = sum( acc[0], in[0..vl) )
+            accVal = __riscv_vredsum_vs_i8m8_i8m1(inVal, accVal, vl);
+
+            // On looping, decrement the number of
+            // elements left and increase the pointers
+            // by the number of elements processed
+        }
+
+    // Explicitly cast to type accepted by macro
+    signed char* resPtr = (signed char*) result;
+
+    // *result = acc[0]
+    // NOTE: With this implementation,
+    // if n == 0, then *result = 0
+    __riscv_vse8_v_i8m1(resPtr, accVal, 1);
+}
+#endif /* LV_HAVE_RVV */
+
+
 #ifdef LV_HAVE_ORC
 
 extern void volk_gnsssdr_8i_accumulator_s8i_a_orc_impl(short* result, const char* inputBuffer, unsigned int num_points);

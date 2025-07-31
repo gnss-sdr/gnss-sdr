@@ -221,8 +221,7 @@ static inline void volk_gnsssdr_8i_x2_add_8i_rvv(char* cVector, const char* aVec
 
     for (size_t vl; n > 0; n -= vl, cPtr += vl, aPtr += vl, bPtr += vl)
         {
-            // Setup state to handle max length vectors of 1-byte numbers
-            // Also collect how many elements were actually processed
+            // Record how many elements will actually be processed
             vl = __riscv_vsetvl_e8m8(n);
 
             // Load a[0..vl), b[0..vl)

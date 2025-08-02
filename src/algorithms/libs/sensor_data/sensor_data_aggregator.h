@@ -53,6 +53,7 @@ public:
 
     const std::vector<SensorDataSample<float>>& get_f32(SensorIdentifier::value_type sensor_id) const;
     SensorDataSample<float> get_last_f32(SensorIdentifier::value_type sensor_id) const;
+    SensorDataSample<float> get_average_f32(SensorIdentifier::value_type sensor_id) const;
 
     // More getters to be added in the future for different types
     // For now, all supported sensors are represented as f32

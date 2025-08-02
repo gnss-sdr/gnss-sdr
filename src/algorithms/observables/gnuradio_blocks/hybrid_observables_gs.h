@@ -80,7 +80,7 @@ private:
 
     void set_tag_timestamp_in_sdr_timeframe(const std::vector<Gnss_Synchro>& data, uint64_t rx_clock);
 
-    void propagate_sensor_data();
+    void propagate_sensor_data(const std::vector<Gnss_Synchro> &data);
 
     int32_t save_matfile() const;
 
@@ -94,6 +94,7 @@ private:
     std::queue<GnssTime> d_TimeChannelTagTimestamps;
 
     std::queue<gr::tag_t> d_sensor_data_tags;
+    std::uint64_t d_trq_last_sample;
 
     std::vector<bool> d_channel_last_pll_lock;
     std::vector<double> d_channel_last_pseudorange_smooth;

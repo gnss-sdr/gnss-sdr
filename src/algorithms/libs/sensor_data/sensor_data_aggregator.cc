@@ -110,6 +110,35 @@ SensorDataSample<float> SensorDataAggregator::get_last_f32(SensorIdentifier::val
     return samples.back();
 }
 
+SensorDataSample<float> SensorDataAggregator::get_average_f32(SensorIdentifier::value_type sensor_id) const
+{
+    // The map is populated on construction with empty vectors for each provided sensor.
+    // If a required sensor is not provided, the error is handled on construction.
+    const std::vector<SensorDataSample<float>> samples = f32_data_.at(sensor_id);
+    if (samples.empty())
+        {
+            return {0, 0};
+        }
+    float acc = 0.0;
+    float count = 0;
+    bool first = true;
+    for (const auto& sample : samples)
+        {
+            if (first)
+                {
+                    first = false;
+                    continue;
+                }
+            acc += sample.value;
+            ++count;
+        }
+    if (count == 0)
+        {
+            return {samples.back().timestamp, 0};
+        }
+    return {samples.back().timestamp, acc / count};
+}
+
 
 void SensorDataAggregator::append_data(const pmt::pmt_t& data_dict)
 {

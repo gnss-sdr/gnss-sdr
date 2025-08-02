@@ -23,6 +23,7 @@
 #include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_synchro.h"
+#include "sensor_data/sensor_identifier.h"
 #include <gnuradio/io_signature.h>
 #include <matio.h>
 #include <pmt/pmt.h>
@@ -657,16 +658,38 @@ void hybrid_observables_gs::set_tag_timestamp_in_sdr_timeframe(const std::vector
         }
 }
 
-void hybrid_observables_gs::propagate_sensor_data()
+void hybrid_observables_gs::propagate_sensor_data(const std::vector<Gnss_Synchro> &data)
 {
+    static pmt::pmt_t SAMPLE_STAMP_KEY = pmt::mp(SensorIdentifier::to_string(SensorIdentifier::SAMPLE_STAMP));
+    uint64_t current_sample = data[0].Tracking_sample_counter * 10;
+    if (d_trq_last_sample == 0)
+        {
+            d_trq_last_sample = current_sample;
+            while (!d_sensor_data_tags.empty())
+                {
+                    d_sensor_data_tags.pop();
+                }
+            return;
+        }
     while (!d_sensor_data_tags.empty())
         {
-            {
-                auto &tag = d_sensor_data_tags.front();
-                add_item_tag(0, this->nitems_written(0) + 1, tag.key, tag.value);
-                d_sensor_data_tags.pop();
-            }
+            auto &tag = d_sensor_data_tags.front();
+            uint64_t tag_sample = pmt::to_uint64(pmt::dict_ref(tag.value, SAMPLE_STAMP_KEY, pmt::from_uint64(0)));
+
+            if (tag_sample <= current_sample)
+                {
+                    if (tag_sample > d_trq_last_sample)
+                        {
+                            add_item_tag(0, this->nitems_written(0) + 1, tag.key, tag.value);
+                        }
+                    d_sensor_data_tags.pop();
+                }
+            else
+                {
+                    break;
+                }
         }
+    d_trq_last_sample = current_sample;
 }
 
 
@@ -685,11 +708,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
 
             std::vector<gr::tag_t> tags_vec;
             // Propagate sensor data tags
-            get_tags_in_range(tags_vec, d_nchannels_in - 1, this->nitems_read(d_nchannels_in - 1), this->nitems_read(d_nchannels_in - 1) + 1, pmt::mp("sensor_data"));
-            while (!d_sensor_data_tags.empty())
-                {
-                    d_sensor_data_tags.pop();
-                }
+            get_tags_in_range(tags_vec, d_nchannels_in - 1, this->nitems_read(d_nchannels_in - 1), this->nitems_read(d_nchannels_in - 1) + ninput_items[d_nchannels_in - 1], pmt::mp("sensor_data"));
             for (const auto &tag : tags_vec)
                 {
                     d_sensor_data_tags.emplace(tag);
@@ -818,7 +837,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                 {
                     compute_pranges(epoch_data);
                     set_tag_timestamp_in_sdr_timeframe(epoch_data, d_Rx_clock_buffer.front());
-                    propagate_sensor_data();
+                    propagate_sensor_data(epoch_data);
                 }
 
             // Carrier smoothing (optional)

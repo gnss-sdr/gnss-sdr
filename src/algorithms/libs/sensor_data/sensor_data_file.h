@@ -66,7 +66,7 @@ private:
     std::size_t item_size_;
 
     std::size_t chunks_read_;
-    std::size_t last_sample_stamp_;
+    std::size_t next_sample_stamp_;
     std::vector<uint8_t> io_buffer_;
     std::size_t io_buffer_size_;
     std::size_t offset_in_io_buffer_;

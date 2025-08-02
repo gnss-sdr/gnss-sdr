@@ -33,7 +33,7 @@ SensorDataFile::SensorDataFile(
       offset_in_file_(offset_in_file),
       item_size_(item_size),
       chunks_read_(0),
-      last_sample_stamp_(sample_delay),
+      next_sample_stamp_(sample_delay),
       io_buffer_size_(item_size * IO_BUFFER_MAX_SIZE),
       offset_in_io_buffer_(io_buffer_size_),  // Set to end of buffer so that first look up will trigger a read.
       repeat_(repeat),
@@ -76,10 +76,10 @@ bool SensorDataFile::read_item(std::vector<uint8_t>& buffer)
 
 bool SensorDataFile::read_until_sample(std::size_t end_sample, std::size_t& sample_stamp, std::vector<uint8_t>& buffer)
 {
-    if (last_sample_stamp_ + sample_period_ < end_sample)
+    if (next_sample_stamp_ + sample_period_ < end_sample)
         {
-            last_sample_stamp_ += sample_period_;
-            sample_stamp = last_sample_stamp_;
+            sample_stamp = next_sample_stamp_;
+            next_sample_stamp_ += sample_period_;
             read_item(buffer);
             return true;
         }

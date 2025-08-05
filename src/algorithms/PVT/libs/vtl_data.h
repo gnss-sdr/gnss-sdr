@@ -74,7 +74,8 @@ public:
     u_int8_t active_N_gps_ch;     // active gps channels
     u_int8_t active_N_gal_ch;     // active gps channels
 
-    arma::colvec loop_closure;  // vtl loop closure
+    arma::colvec enable_VDLL;  // vtl VDLL closure
+    arma::colvec enable_VPLL;  // vtl VDLL closure
 
     double rx_time;
     double dt_s;

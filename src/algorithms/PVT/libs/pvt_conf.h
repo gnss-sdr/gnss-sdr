@@ -110,7 +110,8 @@ public:
     // PVT VTL parameters
     bool enable_pvt_vtl = false;
     bool enable_pvt_output_vtl = false;
-    bool enable_pvt_closure_vtl = false;
+    bool enable_VDLL_vtl = false;
+    bool enable_VPLL_vtl = false;
     bool vtl_kinematic = false;
     bool vtl_dump = false;
     std::string vtl_dump_filename;

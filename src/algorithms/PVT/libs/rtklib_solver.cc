@@ -1694,7 +1694,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     // needs at least one vtl epoch to have feedback
                                     if ((vtl_epoch >= 20) && (!vtl_data->new_ch(ch_id)))  // close loop after 20 epochs
                                         {
-                                            vtl_data->loop_closure(ch_id) = d_conf.enable_pvt_closure_vtl ? 1 : 0;
+                                            vtl_data->enable_VDLL(ch_id) = d_conf.enable_VDLL_vtl ? 1 : 0;
+                                            vtl_data->enable_VPLL(ch_id) = d_conf.enable_VPLL_vtl ? 1 : 0;
                                         }
 
                                     // in dual-frequency get channel info from both frequencies

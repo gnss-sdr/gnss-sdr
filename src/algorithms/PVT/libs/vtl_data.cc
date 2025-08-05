@@ -52,7 +52,8 @@ void Vtl_Data::init_storage(int N_sv)
     new_ch = arma::vec(N_sv);
     old_ch = arma::vec(N_sv);
 
-    loop_closure = arma::vec(N_sv);
+    enable_VDLL = arma::vec(N_sv);
+    enable_VPLL = arma::vec(N_sv);
 
     rx_time = 0.0;
     dt_s = 0.0;
@@ -63,5 +64,6 @@ void Vtl_Data::clear_storage()
     active_ch.zeros();
     new_ch.zeros();
     old_ch.zeros();
-    loop_closure.zeros();
+    enable_VDLL.zeros();
+    enable_VPLL.zeros();
 }

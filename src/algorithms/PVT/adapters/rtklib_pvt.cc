@@ -101,7 +101,8 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const int gal_E6_count = configuration->property("Channels_E6.count", 0);
     pvt_output_parameters.enable_pvt_vtl = configuration->property(role + ".enable_pvt_vtl", false);
     pvt_output_parameters.enable_pvt_output_vtl = configuration->property(role + ".enable_pvt_output_vtl", false);
-    pvt_output_parameters.enable_pvt_closure_vtl = configuration->property(role + ".enable_pvt_closure_vtl", false);
+    pvt_output_parameters.enable_VDLL_vtl = configuration->property(role + ".enable_VDLL_vtl", false);
+    pvt_output_parameters.enable_VPLL_vtl = configuration->property(role + ".enable_VPLL_vtl", false);
     pvt_output_parameters.vtl_kinematic = configuration->property(role + ".vtl_kinematic", false);
     pvt_output_parameters.vtl_dump = configuration->property(role + ".vtl_dump", false);
     pvt_output_parameters.vtl_dump_filename = configuration->property(role + ".vtl_dump_filename", default_vtl_dump_filename);

@@ -445,11 +445,11 @@ void Vtl_Core::send_vtl_feedback(const Vtl_Data &rtk_data)
             trk_cmd.prn_id = rtk_data.sv_id(aidx(i));
             trk_cmd.ch_sample_counter = rtk_data.ch_sample_counter(aidx(i));
             // PLL
-            trk_cmd.enable_pll_vtl_feedack = false;
+            trk_cmd.enable_pll_vtl_feedack = rtk_data.enable_VPLL(aidx(i));
             trk_cmd.pll_vtl_freq_hz = -ekf_updt_comp_Z(aidx(i) + N_ch) / carrier_lambda;  // pseudorange rate
             trk_cmd.carrier_freq_rate_hz_s = 0;                                           // pseudorange acceleration
             // DLL
-            trk_cmd.enable_dll_vtl_feedack = rtk_data.loop_closure(aidx(i));                       // VDLL only
+            trk_cmd.enable_dll_vtl_feedack = rtk_data.enable_VDLL(aidx(i));                       // VDLL
             trk_cmd.dll_vtl_freq_hz = code_freq - ekf_updt_comp_Z(aidx(i) + N_ch) * range_factor;  // pseudorange rate
 
             trk_cmd_outs.push_back(trk_cmd);

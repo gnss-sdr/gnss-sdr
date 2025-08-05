@@ -25,7 +25,6 @@ set(PVT_LIB_SOURCES
     geohash.cc
     pvt_kf.cc
     signal_enabled_flags.cc
-    receiver_type.cc
     vtl_data.cc
     vtl_core.cc
 )

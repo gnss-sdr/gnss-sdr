@@ -277,16 +277,15 @@ void Vtl_Core::update_process(double dt_s)
     const double q_pv = vtl_sys_acc_noise_var_m2s4 * T3 / 2;
     const double q_vv = vtl_sys_acc_noise_var_m2s4 * T2;
 
-    // PVA
     arma::mat Q_PV(2, 2, arma::fill::zeros);
     Q_PV(i_px, i_px) = q_pp;
     Q_PV(i_px, i_vx) = q_pv;
     Q_PV(i_vx, i_px) = q_pv;
     Q_PV(i_vx, i_vx) = q_vv;
     // 3 motion axes (x, y, z)
-    ekf_Q.submat(i_px, i_px, i_vx, i_vx) = vtl_kinematic ? Q_PV : arma::zeros(2, 2);
-    ekf_Q.submat(i_py, i_py, i_vy, i_vy) = vtl_kinematic ? Q_PV : arma::zeros(2, 2);
-    ekf_Q.submat(i_pz, i_pz, i_vz, i_vz) = vtl_kinematic ? Q_PV : arma::zeros(2, 2);
+    ekf_Q.submat(i_px, i_px, i_vx, i_vx) = vtl_kinematic ? Q_PV : (arma::ones(2, 2) * 1e-10);
+    ekf_Q.submat(i_py, i_py, i_vy, i_vy) = vtl_kinematic ? Q_PV : (arma::ones(2, 2) * 1e-10);
+    ekf_Q.submat(i_pz, i_pz, i_vz, i_vz) = vtl_kinematic ? Q_PV : (arma::ones(2, 2) * 1e-10);
 
     // Clock
     const double clk_b_noise_var_m2 = S_f + vtl_sys_clk_b_noise_var_m2;

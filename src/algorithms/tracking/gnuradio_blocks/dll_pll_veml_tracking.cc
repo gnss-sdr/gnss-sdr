@@ -624,7 +624,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
     d_VTL_pll_en = false;
     d_VTL_dll_en = false;
     d_prn_id = 0;
-    d_VTL_dll_weight_shift = 0;
+    d_W_shift_vtl = 0;
 }
 
 
@@ -688,25 +688,26 @@ void dll_pll_veml_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
 
                             // DLL
                             d_code_freq_hz_VTL = cmd->dll_vtl_freq_hz;
-                            if (d_signal_type == "1B" || d_signal_type == "1C")
+                            if (d_signal_type == "1C" || d_signal_type == "1B")
                                 {
                                     d_code_freq_hz_s_VTL = cmd->carrier_freq_rate_hz_s / GPS_L1_FREQ_HZ / GPS_L1_CA_CODE_RATE_CPS;
                                 }
-                            else
+                            else if (d_signal_type == "L5" || d_signal_type == "5X")
                                 {
                                     d_code_freq_hz_s_VTL = cmd->carrier_freq_rate_hz_s / GPS_L5_FREQ_HZ / GPS_L5I_CODE_RATE_CPS;
                                 }
 
 
-                            d_G_vtl = 1;  // start with 100% weight to VTL feedback
+                            d_W_vtl = 1;  // start with 100% weight to VTL feedback
                             if (d_signal_type == "1B")
                                 {
-                                    d_VTL_dll_weight_shift = 0.2;  // shift 20% to traditional tracking each epoch
+                                    d_W_shift_vtl = 0.2;  // shift 20% to traditional tracking each epoch
                                 }
-                            else
+                            else if (d_signal_type == "1C" || d_signal_type == "L5" || d_signal_type == "5X")
                                 {
-                                    d_VTL_dll_weight_shift = 0.05;  // shift 5%
+                                    d_W_shift_vtl = 0.05;  // shift 5%
                                 }
+
                             if (d_VTL_dll_en && (cmd->enable_dll_vtl_feedack == false))
                                 {
                                     d_code_loop_filter.initialize();
@@ -1196,7 +1197,7 @@ void dll_pll_veml_tracking::run_dll_pll()
     if (d_VTL_pll_en)
         {
             double delta_t_s = static_cast<double>(this->nitems_read(0) - d_sample_counter_VTL) / d_trk_parameters.fs_in;
-            d_carrier_doppler_hz = d_carr_freq_hz_VTL + delta_t_s * d_carr_freq_hz_s_VTL;
+            d_carrier_doppler_hz = d_W_vtl * (d_carr_freq_hz_VTL + delta_t_s * d_carr_freq_hz_s_VTL) + (1 - d_W_vtl) * d_carrier_doppler_hz;
         }
 
     //    std::cout << "d_carrier_doppler_hz: " << d_carrier_doppler_hz << '\n';
@@ -1225,12 +1226,12 @@ void dll_pll_veml_tracking::run_dll_pll()
     if (d_VTL_dll_en)
         {
             double delta_t_s = static_cast<double>(this->nitems_read(0) - d_sample_counter_VTL) / d_trk_parameters.fs_in;
-            d_code_freq_chips = d_G_vtl * (d_code_freq_hz_VTL + delta_t_s * d_code_freq_hz_s_VTL) + (1 - d_G_vtl) * d_code_freq_chips;
+            d_code_freq_chips = d_W_vtl * (d_code_freq_hz_VTL + delta_t_s * d_code_freq_hz_s_VTL) + (1 - d_W_vtl) * d_code_freq_chips;
+        }
 
-            if (d_G_vtl > 0)
-                {
-                    d_G_vtl -= d_VTL_dll_weight_shift;
-                }
+    if (d_W_vtl > 0)
+        {
+            d_W_vtl -= d_W_shift_vtl;
         }
 
     // Experimental: detect Carrier Doppler vs. Code Doppler incoherence and correct the Carrier Doppler

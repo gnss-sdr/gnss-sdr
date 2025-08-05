@@ -1677,7 +1677,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             vtl_data->obs_prr(ch_id) = -gnss_observables_iter->second.Carrier_Doppler_hz * Lambda_GPS_L1;
                                             vtl_data->band(ch_id) = 0;  // L1E1
                                         }
-                                    else
+                                    else if (std::string(gnss_observables_iter->second.Signal) == "L5" || std::string(gnss_observables_iter->second.Signal) == "5X")
                                         {
                                             vtl_data->obs_prr(ch_id) = -gnss_observables_iter->second.Carrier_Doppler_hz * Lambda_GPS_L5;
                                             vtl_data->band(ch_id) = 1;  // L5E5

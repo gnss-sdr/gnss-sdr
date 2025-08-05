@@ -132,7 +132,7 @@ private:
     double d_code_freq_hz_VTL;
     double d_code_freq_hz_s_VTL;
     double d_sample_counter_VTL;
-    double d_G_vtl;
+    double d_W_vtl;
     double d_carrier_doppler_hz;
     double d_acc_carrier_phase_rad;
     double d_rem_code_phase_chips;
@@ -216,7 +216,7 @@ private:
     bool d_VTL_pll_en;
     bool d_VTL_dll_en;
     uint32_t d_prn_id;
-    float d_VTL_dll_weight_shift;
+    float d_W_shift_vtl;
 };
 
 

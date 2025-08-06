@@ -59,7 +59,7 @@ public:
     arma::colvec band;        // frequency band
     arma::colvec code_freq;
     arma::colvec CN0_dB_hz;
-    arma::colvec ch_sample_counter;
+    arma::colvec PVT_sample_counter;
     arma::colvec ch2_sample_counter;
     int ionoopt;  // ionosphere option
 

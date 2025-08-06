@@ -625,6 +625,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
     d_VTL_dll_en = false;
     d_prn_id = 0;
     d_W_shift_vtl = 0;
+    d_PVT_sample_counter = 0;
 }
 
 
@@ -675,7 +676,7 @@ void dll_pll_veml_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                         {
                             gr::thread::scoped_lock lock(d_setlock);
                             d_prn_id = cmd->prn_id;
-                            d_sample_counter_VTL = cmd->ch_sample_counter;
+                            d_PVT_sample_counter = cmd->PVT_sample_counter;
 
                             // PLL
                             d_carr_freq_hz_VTL = cmd->pll_vtl_freq_hz;
@@ -1196,8 +1197,8 @@ void dll_pll_veml_tracking::run_dll_pll()
     // VPLL
     if (d_VTL_pll_en)
         {
-            double delta_t_s = static_cast<double>(this->nitems_read(0) - d_sample_counter_VTL) / d_trk_parameters.fs_in;
-            d_carrier_doppler_hz = d_W_vtl * (d_carr_freq_hz_VTL + delta_t_s * d_carr_freq_hz_s_VTL) + (1 - d_W_vtl) * d_carrier_doppler_hz;
+            double pvt_trk_diff_time_s = static_cast<double>(this->nitems_read(0) - d_PVT_sample_counter) / d_trk_parameters.fs_in;  // time propagation of VTL feedback
+            d_carrier_doppler_hz = d_W_vtl * (d_carr_freq_hz_VTL + pvt_trk_diff_time_s * d_carr_freq_hz_s_VTL) + (1 - d_W_vtl) * d_carrier_doppler_hz;
         }
 
     //    std::cout << "d_carrier_doppler_hz: " << d_carrier_doppler_hz << '\n';
@@ -1225,13 +1226,13 @@ void dll_pll_veml_tracking::run_dll_pll()
     // VDLL
     if (d_VTL_dll_en)
         {
-            double delta_t_s = static_cast<double>(this->nitems_read(0) - d_sample_counter_VTL) / d_trk_parameters.fs_in;
-            d_code_freq_chips = d_W_vtl * (d_code_freq_hz_VTL + delta_t_s * d_code_freq_hz_s_VTL) + (1 - d_W_vtl) * d_code_freq_chips;
+            double pvt_trk_diff_time_s = static_cast<double>(this->nitems_read(0) - d_PVT_sample_counter) / d_trk_parameters.fs_in;
+            d_code_freq_chips = d_W_vtl * (d_code_freq_hz_VTL + pvt_trk_diff_time_s * d_code_freq_hz_s_VTL) + (1 - d_W_vtl) * d_code_freq_chips;
         }
 
     if (d_W_vtl > 0)
         {
-            d_W_vtl -= d_W_shift_vtl;
+            d_W_vtl -= d_W_shift_vtl;  // shift weight from VTL feedback to tracking loops
         }
 
     // Experimental: detect Carrier Doppler vs. Code Doppler incoherence and correct the Carrier Doppler
@@ -1568,6 +1569,9 @@ void dll_pll_veml_tracking::log_data()
                     tmp_float = static_cast<float>(d_rem_code_phase_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     tmp_double = static_cast<double>(this->nitems_read(0) + d_current_prn_length_samples);
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                    // PVT TRK sample diff
+                    tmp_double = static_cast<double>(this->nitems_read(0) - d_PVT_sample_counter);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     // PRN
                     uint32_t prn_ = d_acquisition_gnss_synchro->PRN;

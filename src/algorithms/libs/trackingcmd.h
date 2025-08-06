@@ -33,7 +33,7 @@ public:
     bool enable_smooth_pr = false;
     double pll_vtl_freq_hz = 0.0;
     double dll_vtl_freq_hz = 0.0;
-    double ch_sample_counter = 0.0;
+    double PVT_sample_counter = 0.0;
     double carrier_freq_rate_hz_s = 0.0;
     uint32_t channel_id = 0;
     uint32_t prn_id = 0;

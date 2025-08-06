@@ -43,6 +43,7 @@ plot_last_outputs = 0
 channels = 5
 first_channel = 0
 doppler_opt = 1
+PVT_TRK_diff = 0
 settings['numberOfChannels'] = channels
 
 path = '/home/labnav/Desktop/TEST_IRENE/tracking'
@@ -107,4 +108,20 @@ for N in range (1, channels+1):
         plt.title('Doppler frequency channel ' + str(N))
 
         plt.savefig(os.path.join(fig_path, f'Doppler_freq_ch_{N}.png'))
+        plt.show()
+
+    # Plot time offset between PVT and Tracking:
+    if PVT_TRK_diff == 1:
+        if not os.path.exists(fig_path):
+            os.makedirs(fig_path)
+
+        plt.figure()
+        plt.plot(trackResults[N - 1]['prn_start_time_s'],
+                 [x/(sampling_freq/1000) for x in GNSS_tracking[N - 1]['PVT_TRK_diff']
+                 [start_sample:]])
+        plt.xlabel('Time(s)')
+        plt.ylabel('Offset(ms)')
+        plt.title('PVT Tracking Time Offset ' + str(N))
+
+        plt.savefig(os.path.join(fig_path, f'PVT_TRK_diff_{N}.png'))
         plt.show()

@@ -131,7 +131,7 @@ private:
     double d_carr_freq_hz_s_VTL;
     double d_code_freq_hz_VTL;
     double d_code_freq_hz_s_VTL;
-    double d_sample_counter_VTL;
+    double d_PVT_sample_counter;
     double d_W_vtl;
     double d_carrier_doppler_hz;
     double d_acc_carrier_phase_rad;

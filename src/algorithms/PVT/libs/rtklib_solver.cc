@@ -1667,7 +1667,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     vtl_data->CN0_dB_hz(ch_id) = gnss_observables_iter->second.CN0_dB_hz;
 
                                     // observations
-                                    vtl_data->ch_sample_counter(ch_id) = gnss_observables_iter->second.Tracking_sample_counter;
+                                    vtl_data->PVT_sample_counter(ch_id) = gnss_observables_iter->second.Tracking_sample_counter;
                                     // pseudorange
                                     vtl_data->obs_pr(ch_id) = gnss_observables_iter->second.Pseudorange_m;
 

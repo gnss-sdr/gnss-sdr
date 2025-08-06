@@ -40,7 +40,7 @@ void Vtl_Data::init_storage(int N_sv)
     band = arma::vec(N_sv);
     code_freq = arma::vec(N_sv);
     CN0_dB_hz = arma::vec(N_sv);
-    ch_sample_counter = arma::vec(N_sv);
+    PVT_sample_counter = arma::vec(N_sv);
     ch2_sample_counter = arma::vec(N_sv);
     ionoopt = 0;
 

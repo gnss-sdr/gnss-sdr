@@ -1232,7 +1232,7 @@ void add_obs_sys_obs_type(std::fstream& out,
 
     for (const auto& it : band_to_code_map)
         {
-            if (bands.find(it.first))
+            if (bands.find(it.first) != std::string::npos)
                 {
                     obsCodes.emplace_back(observationCode.at(it.second));
                     number_of_observations += 4;
@@ -2458,14 +2458,14 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
                 }
             line += std::string(1, ' ');
             line += leftJustify("DELTA-UTC: A0,A1,T,W", 20);
+            lengthCheck(line);
+            out << line << '\n';
         }
 
     if (d_version == 3)
         {
             out << get_gps_time_corr_line(utc_model, eph, d_pre_2009_file) << '\n';
         }
-    lengthCheck(line);
-    out << line << '\n';
 
     // -------- Line 6 leap seconds
     // For leap second information, see https://endruntechnologies.com/support/leap-seconds

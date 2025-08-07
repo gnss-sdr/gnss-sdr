@@ -38,7 +38,9 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
         set_property(TARGET obsdiff PROPERTY CXX_STANDARD 14)  # Required by GPSTk v3.0.0
     endif()
     # Do not show warnings raised by GPSTk / GNSSTk
-    target_compile_options(obsdiff PRIVATE -w)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang" AND NOT WIN32)
+        target_compile_options(obsdiff PRIVATE -w)
+    endif()
 
     if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
         add_dependencies(obsdiff armadillo-${armadillo_RELEASE})

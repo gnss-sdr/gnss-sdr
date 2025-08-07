@@ -3364,7 +3364,7 @@ if(ENABLE_ION)
             message(FATAL_ERROR "The patch command is not found. It is required to build the ION GNSS-SDR Metadata Standard. Please check your OS documentation and install the patch command.")
         endif()
         set(ION_METADATA_PATCH_COMMAND
-            ${Patch_EXECUTABLE} -p0 -i ${GNSSSDR_SOURCE_DIR}/tests/data/ion_gnss_standard_cmake.patch
+            ${Patch_EXECUTABLE} -p0 -i ${GNSSSDR_SOURCE_DIR}/utils/patches/ion_gnss_standard_cmake.patch
         )
     endif()
     # Patch only once

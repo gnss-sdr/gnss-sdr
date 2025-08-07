@@ -74,7 +74,9 @@ if(TARGET Boost::iostreams AND TARGET Boost::serialization)
     endif()
 
     # Do not show warnings raised by GPSTk / GNSSTk
-    target_compile_options(rinex2assist PRIVATE -w)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang" AND NOT WIN32)
+        target_compile_options(rinex2assist PRIVATE -w)
+    endif()
 
     target_link_libraries(rinex2assist
         PRIVATE

@@ -2,6 +2,15 @@ SPDX-License-Identifier: GPL-3.0-or-later
 SPDX-FileCopyrightText: 2022 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 --- CMakeLists.txt	2022-12-19 11:40:38.000000000 +0100
 +++ CMakeLists.txt	2022-12-19 11:56:49.000000000 +0100
+@@ -6,7 +6,7 @@
+ #           Is dependend on by $GNSSTK/build.sh
+ #============================================================
+ 
+-cmake_minimum_required( VERSION 3.7.2 )
++cmake_minimum_required( VERSION 3.7.2...3.10 )
+ 
+ project( GNSSTK )
+ set( GNSSTK_VERSION_MAJOR "15" )
 @@ -21,6 +21,16 @@
  
  # This sets up variables contining GNU standard installation locations.

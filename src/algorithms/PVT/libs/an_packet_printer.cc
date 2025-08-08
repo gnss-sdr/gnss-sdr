@@ -104,7 +104,7 @@ void An_Packet_Printer::update_sdr_gnss_packet(sdr_gnss_packet_t* _packet, const
     uint8_t num_gal_sats = 0;
     std::size_t index = 0;
     bool fix_3d = pvt->is_valid_position();
-    const auto max_reported_sats = std::size(_packet->sats);
+    const auto max_reported_sats = sizeof(_packet->sats) / sizeof(_packet->sats[0]);
 
     for (gnss_observables_iter = gnss_observables_map.cbegin();
         gnss_observables_iter != gnss_observables_map.cend();

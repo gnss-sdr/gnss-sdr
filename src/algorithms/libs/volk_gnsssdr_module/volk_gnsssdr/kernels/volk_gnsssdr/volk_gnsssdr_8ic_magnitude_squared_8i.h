@@ -175,6 +175,49 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_a_sse3(char* magnitudeV
 #endif /* LV_HAVE_SSSE3 */
 
 
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+
+static inline void volk_gnsssdr_8ic_magnitude_squared_8i_rvv(char* magnitudeVector, const lv_8sc_t* complexVector, unsigned int num_points)
+{
+    size_t n = num_points;
+
+    // Initialize pointers to track progress as stripmine
+    // Assuming that intended to use `signed char`,
+    // as `char`'s signedness is implementation-specific
+    signed char* outPtr = (signed char*) magnitudeVector;
+    const signed char* inPtr = (const signed char*) complexVector;
+
+    for (size_t vl; n > 0; n -= vl, outPtr += vl, inPtr += vl * 2)
+        {
+            // Record how many elements will actually be processed
+            vl = __riscv_vsetvl_e8m4(n);
+
+            // Load inReal[0..vl), inImag[0..vl)
+            vint8m4x2_t inVal = __riscv_vlseg2e8_v_i8m4x2(inPtr, vl);
+            vint8m4_t inRealVal = __riscv_vget_v_i8m4x2_i8m4(inVal, 0);
+            vint8m4_t inImagVal = __riscv_vget_v_i8m4x2_i8m4(inVal, 1);
+
+            // mag[i] = inReal[i] * inReal[i]
+            vint8m4_t magVal = __riscv_vmul_vv_i8m4(inRealVal, inRealVal, vl);
+
+            // mag[i] = (inImag[i] * inImag[i]) + mag[i]
+            magVal = __riscv_vmacc_vv_i8m4(magVal, inImagVal, inImagVal, vl);
+
+            // Store mag[0..vl)
+            __riscv_vse8_v_i8m4(outPtr, magVal, vl);
+
+            // In looping, decrease the number of
+            // elements left and increment the pointers
+            // by the number of elements processed,
+            // taking into account how each complex number
+            // stored in `inPtr` is two 1-byte `char`s
+        }
+}
+
+#endif /* LV_HAVE_RVV */
+
+
 #ifdef LV_HAVE_ORC
 
 extern void volk_gnsssdr_8ic_magnitude_squared_8i_a_orc_impl(char* magnitudeVector, const lv_8sc_t* complexVector, unsigned int num_points);

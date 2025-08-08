@@ -824,7 +824,7 @@ std::string get_iono_line(const std::string& identifier, double value0, double v
     return line;
 }
 
-std::string get_time_corr_line(const std::string& identifier, double a0, double a1, std::optional<int32_t> tot = {}, std::optional<int32_t> wn = {})
+std::string get_time_corr_line(const std::string& identifier, double a0, double a1, const int32_t* tot = nullptr, const int32_t* wn = nullptr)
 {
     std::string line;
 
@@ -832,10 +832,10 @@ std::string get_time_corr_line(const std::string& identifier, double a0, double 
     line += rightJustify(doub2for(a0, 16, 2), 18);
     line += rightJustify(doub2for(a1, 15, 2), 16);
 
-    if (tot.has_value() && wn.has_value())
+    if (tot && wn)
         {
-            line += rightJustify(std::to_string(tot.value()), 7);
-            line += rightJustify(std::to_string(wn.value()), 5);
+            line += rightJustify(std::to_string(*tot), 7);
+            line += rightJustify(std::to_string(*wn), 5);
             line += std::string(10, ' ');
         }
     else
@@ -939,17 +939,17 @@ std::string get_gps_time_corr_line(const Gps_Utc_Model& utc_model, const Gps_Eph
                 }
         }
 
-    return get_time_corr_line("GPUT", utc_model.A0, utc_model.A1, utc_model.tot, WN_T);
+    return get_time_corr_line("GPUT", utc_model.A0, utc_model.A1, &utc_model.tot, &WN_T);
 }
 
 std::string get_gps_time_corr_line(const Gps_CNAV_Utc_Model& utc_model)
 {
-    return get_time_corr_line("GPUT", utc_model.A0, utc_model.A1, utc_model.tot, utc_model.WN_T);
+    return get_time_corr_line("GPUT", utc_model.A0, utc_model.A1, &utc_model.tot, &utc_model.WN_T);
 }
 
 std::string get_galileo_time_corr_line(const Galileo_Utc_Model& utc_model)
 {
-    return get_time_corr_line("GAUT", utc_model.A0, utc_model.A1, utc_model.tot, utc_model.WNot);
+    return get_time_corr_line("GAUT", utc_model.A0, utc_model.A1, &utc_model.tot, &utc_model.WNot);
 }
 
 std::string get_beidou_time_corr_line(const Beidou_Dnav_Utc_Model& utc_model)
@@ -964,7 +964,7 @@ std::string get_glonass_time_corr_line(const Glonass_Gnav_Utc_Model& utc_model)
 
 std::string get_gps_to_galileo_time_corr_line(const Galileo_Utc_Model& utc_model)
 {
-    return get_time_corr_line("GPGA", utc_model.A_0G, utc_model.A_1G, utc_model.t_0G, utc_model.WN_0G);
+    return get_time_corr_line("GPGA", utc_model.A_0G, utc_model.A_1G, &utc_model.t_0G, &utc_model.WN_0G);
 }
 
 std::string get_glonass_to_gps_time_corr_line(const Glonass_Gnav_Utc_Model& utc_model)
@@ -1038,18 +1038,18 @@ std::string get_nav_sv_epoch_svclk_line(const boost::posix_time::ptime& p_utc_ti
     return line;
 }
 
-std::string get_nav_broadcast_orbit(std::optional<double> value0, std::optional<double> value1, std::optional<double> value2, std::optional<double> value3, uint32_t version = 3)
+std::string get_nav_broadcast_orbit(const double* value0, const double* value1, const double* value2, const double* value3, uint32_t version = 3)
 {
     std::string line;
 
     line += std::string(version + 2, ' ');
-    line += value0.has_value() ? doub2for(value0.value(), 18, 2) : std::string(18, ' ');
+    line += value0 ? doub2for(*value0, 18, 2) : std::string(18, ' ');
     line += std::string(1, ' ');
-    line += value1.has_value() ? doub2for(value1.value(), 18, 2) : std::string(18, ' ');
+    line += value1 ? doub2for(*value1, 18, 2) : std::string(18, ' ');
     line += std::string(1, ' ');
-    line += value2.has_value() ? doub2for(value2.value(), 18, 2) : std::string(18, ' ');
+    line += value2 ? doub2for(*value2, 18, 2) : std::string(18, ' ');
     line += std::string(1, ' ');
-    line += value3.has_value() ? doub2for(value3.value(), 18, 2) : std::string(18, ' ');
+    line += value3 ? doub2for(*value3, 18, 2) : std::string(18, ' ');
 
     if (version == 2)
         {
@@ -3520,7 +3520,13 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
 
             // -------- BROADCAST ORBIT - 1
             const bool discontinued_reception = eph.IODE_SF2 != eph.IODE_SF3;
-            out << get_nav_broadcast_orbit(discontinued_reception ? std::optional<double>{} : eph.IODE_SF2, eph.Crs, eph.delta_n, eph.M_0, d_version) << '\n';
+            const double* p_value0 = nullptr;
+            if (!discontinued_reception)
+                {
+                    const auto iode_d = static_cast<double>(eph.IODE_SF2);
+                    p_value0 = &iode_d;
+                }
+            out << get_nav_broadcast_orbit(p_value0, &eph.Crs, &eph.delta_n, &eph.M_0, d_version) << '\n';
 
             // If there is a discontinued reception the ephemeris is not validated
             if (discontinued_reception)
@@ -3529,13 +3535,14 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
                 }
 
             // -------- BROADCAST ORBIT - 2
-            out << get_nav_broadcast_orbit(eph.Cuc, eph.ecc, eph.Cus, eph.sqrtA, d_version) << '\n';
+            out << get_nav_broadcast_orbit(&eph.Cuc, &eph.ecc, &eph.Cus, &eph.sqrtA, d_version) << '\n';
 
             // -------- BROADCAST ORBIT - 3
-            out << get_nav_broadcast_orbit(eph.toe, eph.Cic, eph.OMEGA_0, eph.Cis, d_version) << '\n';
+            const auto toe_d = static_cast<double>(eph.toe);
+            out << get_nav_broadcast_orbit(&toe_d, &eph.Cic, &eph.OMEGA_0, &eph.Cis, d_version) << '\n';
 
             // -------- BROADCAST ORBIT - 4
-            out << get_nav_broadcast_orbit(eph.i_0, eph.Crc, eph.omega, eph.OMEGAdot, d_version) << '\n';
+            out << get_nav_broadcast_orbit(&eph.i_0, &eph.Crc, &eph.omega, &eph.OMEGAdot, d_version) << '\n';
 
             // -------- BROADCAST ORBIT - 5
 
@@ -3561,10 +3568,15 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
                     GPS_week_continuous_number += 1.0;
                 }
 
-            out << get_nav_broadcast_orbit(eph.idot, static_cast<double>(eph.code_on_L2), GPS_week_continuous_number, static_cast<double>(eph.code_on_L2), d_version) << '\n';
+            auto aux1 = static_cast<double>(eph.code_on_L2);
+
+            out << get_nav_broadcast_orbit(&eph.idot, &aux1, &GPS_week_continuous_number, &aux1, d_version) << '\n';
 
             // -------- BROADCAST ORBIT - 6
-            out << get_nav_broadcast_orbit(static_cast<double>(eph.SV_accuracy), static_cast<double>(eph.SV_health), eph.TGD, eph.IODC, d_version) << '\n';
+            aux1 = static_cast<double>(eph.SV_accuracy);
+            const auto aux2 = static_cast<double>(eph.SV_health);
+            const auto aux3 = static_cast<double>(eph.IODC);
+            out << get_nav_broadcast_orbit(&aux1, &aux2, &eph.TGD, &aux3, d_version) << '\n';
 
             // -------- BROADCAST ORBIT - 7
             double tx_time_of_message = eph.tow;
@@ -3623,8 +3635,8 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
                             curve_fit_interval = 26;
                         }
                 }
-
-            out << get_nav_broadcast_orbit(tx_time_of_message, curve_fit_interval == 4 ? 0.0 : 1.0, {}, {}, d_version) << '\n';
+            const double fit_d = (curve_fit_interval == 4 ? 0.0 : 1.0);
+            out << get_nav_broadcast_orbit(&tx_time_of_message, &fit_d, nullptr, nullptr, d_version) << '\n';
         }
 }
 
@@ -3657,16 +3669,17 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
                         }
                 }
 
-            out << get_nav_broadcast_orbit(d_fake_cnav_iode, eph.Crs, eph.delta_n, eph.M_0) << '\n';
+            out << get_nav_broadcast_orbit(&d_fake_cnav_iode, &eph.Crs, &eph.delta_n, &eph.M_0) << '\n';
 
             // -------- BROADCAST ORBIT - 2
-            out << get_nav_broadcast_orbit(eph.Cuc, eph.ecc, eph.Cus, eph.sqrtA) << '\n';
+            out << get_nav_broadcast_orbit(&eph.Cuc, &eph.ecc, &eph.Cus, &eph.sqrtA) << '\n';
 
             // -------- BROADCAST ORBIT - 3
-            out << get_nav_broadcast_orbit(std::max(eph.toe1, eph.toe2), eph.Cic, eph.OMEGA_0, eph.Cis) << '\n';
+            double max_d = std::max(eph.toe1, eph.toe2);
+            out << get_nav_broadcast_orbit(&max_d, &eph.Cic, &eph.OMEGA_0, &eph.Cis) << '\n';
 
             // -------- BROADCAST ORBIT - 4
-            out << get_nav_broadcast_orbit(eph.i_0, eph.Crc, eph.omega, eph.OMEGAdot) << '\n';
+            out << get_nav_broadcast_orbit(&eph.i_0, &eph.Crc, &eph.omega, &eph.OMEGAdot) << '\n';
 
             // -------- BROADCAST ORBIT - 5
 
@@ -3676,14 +3689,17 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
                 {
                     GPS_week_continuous_number += 1.0;
                 }
-
-            out << get_nav_broadcast_orbit(eph.idot, 0.0, GPS_week_continuous_number, 0.0) << '\n';  // No data flag for L2 P code
+            const double zero = 0.0;
+            out << get_nav_broadcast_orbit(&eph.idot, &zero, &GPS_week_continuous_number, &zero) << '\n';  // No data flag for L2 P code
 
             // -------- BROADCAST ORBIT - 6
-            out << get_nav_broadcast_orbit(static_cast<double>(eph.URA), static_cast<double>(eph.signal_health), eph.TGD, d_fake_cnav_iode) << '\n';  // no IODC in CNAV, so we fake it (see above)
+            const auto ura_d = static_cast<double>(eph.URA);
+            const auto health_d = static_cast<double>(eph.signal_health);
+            out << get_nav_broadcast_orbit(&ura_d, &health_d, &eph.TGD, &d_fake_cnav_iode) << '\n';  // no IODC in CNAV, so we fake it (see above)
 
             // -------- BROADCAST ORBIT - 7
-            out << get_nav_broadcast_orbit(eph.tow, 0.0, {}, {}) << '\n';  // ?? Curve fit interval not defined in CNAV
+            const auto tow_d = static_cast<double>(eph.tow);
+            out << get_nav_broadcast_orbit(&tow_d, &zero, nullptr, nullptr) << '\n';  // ?? Curve fit interval not defined in CNAV
         }
 }
 
@@ -3702,26 +3718,28 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gal
             out << get_nav_sv_epoch_svclk_line(p_utc_time, sys_char, eph.PRN, eph.af0, eph.af1, eph.af2) << '\n';
 
             // -------- BROADCAST ORBIT - 1
-            out << get_nav_broadcast_orbit(static_cast<double>(eph.IOD_ephemeris), eph.Crs, eph.delta_n, eph.M_0) << '\n';
+            const auto iod_d = static_cast<double>(eph.IOD_ephemeris);
+            out << get_nav_broadcast_orbit(&iod_d, &eph.Crs, &eph.delta_n, &eph.M_0) << '\n';
 
             // -------- BROADCAST ORBIT - 2
-            out << get_nav_broadcast_orbit(eph.Cuc, eph.ecc, eph.Cus, eph.sqrtA) << '\n';
+            out << get_nav_broadcast_orbit(&eph.Cuc, &eph.ecc, &eph.Cus, &eph.sqrtA) << '\n';
 
             // -------- BROADCAST ORBIT - 3
-            out << get_nav_broadcast_orbit(eph.toe, eph.Cic, eph.OMEGA_0, eph.Cis) << '\n';
+            const auto toe_d = static_cast<double>(eph.toe);
+            out << get_nav_broadcast_orbit(&toe_d, &eph.Cic, &eph.OMEGA_0, &eph.Cis) << '\n';
 
             // -------- BROADCAST ORBIT - 4
-            out << get_nav_broadcast_orbit(eph.i_0, eph.Crc, eph.omega, eph.OMEGAdot) << '\n';
+            out << get_nav_broadcast_orbit(&eph.i_0, &eph.Crc, &eph.omega, &eph.OMEGAdot) << '\n';
 
             // -------- BROADCAST ORBIT - 5
             const std::string iNAVE1B("1000000001");
-            const int32_t data_source_INAV = static_cast<double>(toInt(iNAVE1B, 10));
+            const auto data_source_INAV = static_cast<double>(toInt(iNAVE1B, 10));
 
             const auto GST_week = static_cast<double>(eph.WN);
             const double num_GST_rollovers = floor((GST_week + 1024.0) / 4096.0);
             const double Galileo_week_continuous_number = GST_week + 1024.0 + num_GST_rollovers * 4096.0;
-
-            out << get_nav_broadcast_orbit(eph.idot, data_source_INAV, Galileo_week_continuous_number, 0.0) << '\n';
+            const double zero = 0.0;
+            out << get_nav_broadcast_orbit(&eph.idot, &data_source_INAV, &Galileo_week_continuous_number, &zero) << '\n';
 
             // -------- BROADCAST ORBIT - 6
             std::string E1B_HS;
@@ -3762,10 +3780,12 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gal
             std::string E1B_DVS = std::to_string(eph.E1B_DVS);
             const std::string SVhealth_str = std::move(E5B_HS) + std::to_string(eph.E5b_DVS) + "11" + "1" + std::move(E1B_DVS) + std::move(E1B_HS) + std::to_string(eph.E1B_DVS);
             const auto SVhealth = static_cast<double>(toInt(SVhealth_str, 9));
-            out << get_nav_broadcast_orbit(eph.SISA, SVhealth, eph.BGD_E1E5a, eph.BGD_E1E5b) << '\n';
+            const auto SISA_d = static_cast<double>(eph.SISA);
+            out << get_nav_broadcast_orbit(&SISA_d, &SVhealth, &eph.BGD_E1E5a, &eph.BGD_E1E5b) << '\n';
 
             // -------- BROADCAST ORBIT - 7
-            out << get_nav_broadcast_orbit(eph.tow, 0.0, {}, {}) << '\n';
+            const auto tow_d = static_cast<double>(eph.tow);
+            out << get_nav_broadcast_orbit(&tow_d, &zero, nullptr, nullptr) << '\n';
         }
 }
 
@@ -3868,13 +3888,14 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Glo
             line.clear();
 
             // -------- BROADCAST ORBIT - 1
-            out << get_nav_broadcast_orbit(eph.d_Xn, eph.d_VXn, eph.d_AXn, eph.d_B_n, d_version) << '\n';
+            out << get_nav_broadcast_orbit(&eph.d_Xn, &eph.d_VXn, &eph.d_AXn, &eph.d_B_n, d_version) << '\n';
 
             // -------- BROADCAST ORBIT - 2
-            out << get_nav_broadcast_orbit(eph.d_Yn, eph.d_VYn, eph.d_AYn, eph.i_satellite_freq_channel, d_version) << '\n';
+            const auto freq_channel_d = static_cast<double>(eph.i_satellite_freq_channel);
+            out << get_nav_broadcast_orbit(&eph.d_Yn, &eph.d_VYn, &eph.d_AYn, &freq_channel_d, d_version) << '\n';
 
             // -------- BROADCAST ORBIT - 3
-            out << get_nav_broadcast_orbit(eph.d_Zn, eph.d_VZn, eph.d_AZn, eph.d_E_n, d_version) << '\n';
+            out << get_nav_broadcast_orbit(&eph.d_Zn, &eph.d_VZn, &eph.d_AZn, &eph.d_E_n, d_version) << '\n';
         }
 }
 
@@ -3934,25 +3955,30 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Bei
             out << get_nav_sv_epoch_svclk_line(p_utc_time, sys_char, eph.PRN, eph.af0, eph.af1, eph.af2) << '\n';
 
             // -------- BROADCAST ORBIT - 1
-            out << get_nav_broadcast_orbit(eph.AODE, eph.Crs, eph.delta_n, eph.M_0) << '\n';
+            out << get_nav_broadcast_orbit(&eph.AODE, &eph.Crs, &eph.delta_n, &eph.M_0) << '\n';
 
             // -------- BROADCAST ORBIT - 2
-            out << get_nav_broadcast_orbit(eph.Cuc, eph.ecc, eph.Cus, eph.sqrtA) << '\n';
+            out << get_nav_broadcast_orbit(&eph.Cuc, &eph.ecc, &eph.Cus, &eph.sqrtA) << '\n';
 
             // -------- BROADCAST ORBIT - 3
-            out << get_nav_broadcast_orbit(eph.toe, eph.Cic, eph.OMEGA_0, eph.Cis) << '\n';
+            const auto toe_d = static_cast<double>(eph.toe);
+            out << get_nav_broadcast_orbit(&toe_d, &eph.Cic, &eph.OMEGA_0, &eph.Cis) << '\n';
 
             // -------- BROADCAST ORBIT - 4
-            out << get_nav_broadcast_orbit(eph.i_0, eph.Crc, eph.omega, eph.OMEGAdot) << '\n';
+            out << get_nav_broadcast_orbit(&eph.i_0, &eph.Crc, &eph.omega, &eph.OMEGAdot) << '\n';
 
             // -------- BROADCAST ORBIT - 5
-            out << get_nav_broadcast_orbit(eph.idot, {}, static_cast<double>(eph.WN), {}) << '\n';
+            const auto wn_d = static_cast<double>(eph.WN);
+            out << get_nav_broadcast_orbit(&eph.idot, nullptr, &wn_d, nullptr) << '\n';
 
             // -------- BROADCAST ORBIT - 6
-            out << get_nav_broadcast_orbit(static_cast<double>(eph.SV_accuracy), static_cast<double>(eph.SV_health), eph.TGD1, eph.TGD2) << '\n';
+            const auto acc_d = static_cast<double>(eph.SV_accuracy);
+            const auto health_d = static_cast<double>(eph.SV_health);
+            out << get_nav_broadcast_orbit(&acc_d, &health_d, &eph.TGD1, &eph.TGD2) << '\n';
 
             // -------- BROADCAST ORBIT - 7
-            out << get_nav_broadcast_orbit(eph.tow, eph.AODC, {}, {}) << '\n';
+            const auto tow_d = static_cast<double>(eph.tow);
+            out << get_nav_broadcast_orbit(&tow_d, &eph.AODC, nullptr, nullptr) << '\n';
         }
 }
 

@@ -959,7 +959,7 @@ std::string get_beidou_time_corr_line(const Beidou_Dnav_Utc_Model& utc_model)
 
 std::string get_glonass_time_corr_line(const Glonass_Gnav_Utc_Model& utc_model)
 {
-    return get_time_corr_line("GLUT", utc_model.d_tau_c, 0.0, 0, 0);
+    return get_time_corr_line("GLUT", utc_model.d_tau_c, 0.0, nullptr, nullptr);
 }
 
 std::string get_gps_to_galileo_time_corr_line(const Galileo_Utc_Model& utc_model)
@@ -969,7 +969,7 @@ std::string get_gps_to_galileo_time_corr_line(const Galileo_Utc_Model& utc_model
 
 std::string get_glonass_to_gps_time_corr_line(const Glonass_Gnav_Utc_Model& utc_model)
 {
-    return get_time_corr_line("GLGP", utc_model.d_tau_gps, 0.0, 0, 0);
+    return get_time_corr_line("GLGP", utc_model.d_tau_gps, 0.0, nullptr, nullptr);
 }
 
 std::string get_leap_second_line(const Gps_Utc_Model& utc_model)

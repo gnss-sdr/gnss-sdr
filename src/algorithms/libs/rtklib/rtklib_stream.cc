@@ -2264,7 +2264,7 @@ int stropen(stream_t *stream, int type, int mode, const char *path)
             stream->port = openserial(path, mode, stream->msg);
             break;
         case STR_FILE:
-            stream->port = openfile(path, mode, stream->msg);
+            stream->port = openfile(std::string(path), mode, stream->msg);
             break;
         case STR_TCPSVR:
             stream->port = opentcpsvr(path, stream->msg);

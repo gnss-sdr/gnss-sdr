@@ -4115,7 +4115,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
 
     add_obs_observer_agency(out);
 
-    add_obs_rec_type(out, gnss_sdr_version);
+    add_obs_rec_type(out, std::move(gnss_sdr_version));
 
     add_obs_antenna(out);
 
@@ -4326,7 +4326,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 
     add_obs_observer_agency(out);
 
-    add_obs_rec_type(out, gnss_sdr_version);
+    add_obs_rec_type(out, std::move(gnss_sdr_version));
 
     add_obs_antenna(out);
 
@@ -4520,7 +4520,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
 
     add_obs_observer_agency(out);
 
-    add_obs_rec_type(out, gnss_sdr_version);
+    add_obs_rec_type(out, std::move(gnss_sdr_version));
 
     add_obs_antenna(out);
 
@@ -4670,7 +4670,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
 
     add_obs_observer_agency(out);
 
-    add_obs_rec_type(out, gnss_sdr_version);
+    add_obs_rec_type(out, std::move(gnss_sdr_version));
 
     add_obs_antenna(out);
 
@@ -4794,7 +4794,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
 
     add_obs_observer_agency(out);
 
-    add_obs_rec_type(out, gnss_sdr_version);
+    add_obs_rec_type(out, std::move(gnss_sdr_version));
 
     add_obs_antenna(out);
 
@@ -4935,7 +4935,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
 
     add_obs_observer_agency(out);
 
-    add_obs_rec_type(out, gnss_sdr_version);
+    add_obs_rec_type(out, std::move(gnss_sdr_version));
 
     add_obs_antenna(out);
 
@@ -5034,7 +5034,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
 
     add_obs_observer_agency(out);
 
-    add_obs_rec_type(out, gnss_sdr_version);
+    add_obs_rec_type(out, std::move(gnss_sdr_version));
 
     add_obs_antenna(out);
 
@@ -5138,7 +5138,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 
     add_obs_observer_agency(out);
 
-    add_obs_rec_type(out, gnss_sdr_version);
+    add_obs_rec_type(out, std::move(gnss_sdr_version));
 
     add_obs_antenna(out);
 
@@ -5240,7 +5240,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
 
     add_obs_observer_agency(out);
 
-    add_obs_rec_type(out, gnss_sdr_version);
+    add_obs_rec_type(out, std::move(gnss_sdr_version));
 
     add_obs_antenna(out);
 
@@ -5346,7 +5346,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
 
     add_obs_observer_agency(out);
 
-    add_obs_rec_type(out, gnss_sdr_version);
+    add_obs_rec_type(out, std::move(gnss_sdr_version));
 
     add_obs_antenna(out);
 
@@ -5465,7 +5465,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 
     add_obs_observer_agency(out);
 
-    add_obs_rec_type(out, gnss_sdr_version);
+    add_obs_rec_type(out, std::move(gnss_sdr_version));
 
     add_obs_antenna(out);
 
@@ -5556,7 +5556,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Beidou_Dnav_Epheme
 
     add_obs_observer_agency(out);
 
-    add_obs_rec_type(out, gnss_sdr_version);
+    add_obs_rec_type(out, std::move(gnss_sdr_version));
 
     add_obs_antenna(out);
 

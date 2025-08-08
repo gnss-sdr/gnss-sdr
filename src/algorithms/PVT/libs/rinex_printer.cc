@@ -40,9 +40,9 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
 #include <boost/date_time/time_zone_base.hpp>
-#include <algorithm>  // for min and max
+#include <algorithm>  // for min and max, swap
 #include <array>
-#include <cmath>  // for floor
+#include <cmath>  // for floor, abs
 #include <exception>
 #include <iostream>  // for cout
 #include <ostream>
@@ -549,91 +549,63 @@ std::string& sci2for(std::string& aStr,
     std::string::size_type expLen,
     bool checkSwitch)
 {
-    std::string::size_type idx = aStr.find('.', startPos);
-    int expAdd = 0;
-    std::string exp;
-    int64_t iexp;
-    // If checkSwitch is false, always redo the exponential. Otherwise,
-    // set it to false.
-    bool redoexp = !checkSwitch;
-
-    // Check for decimal place within specified boundaries
-    if ((idx <= 0) || (idx >= (startPos + length - expLen - 1)))
+    const auto dotIdx = aStr.find('.', startPos);
+    if (dotIdx == std::string::npos || dotIdx <= startPos || dotIdx >= (startPos + length - expLen - 1))
         {
-            // Error: no decimal point in string
+            // Invalid position for decimal point
             return aStr;
         }
 
-    // Here, account for the possibility that there are
-    // no numbers to the left of the decimal, but do not
-    // account for the possibility of non-scientific
-    // notation (more than one digit to the left of the
-    // decimal)
-    if (idx > startPos)
+    bool redoExp = !checkSwitch;
+    int expAdd = 0;
+
+    // Swap digit before '.' if exists, e.g., "1.234E5" -> ".1234E6"
+    if (dotIdx > startPos)
         {
-            redoexp = true;
-            // Swap digit and decimal.
-            aStr[idx] = aStr[idx - 1];
-            aStr[idx - 1] = '.';
-            // Only add one to the exponent if the number is non-zero
+            redoExp = true;
+            std::swap(aStr[dotIdx], aStr[dotIdx - 1]);
             if (asDouble(aStr.substr(startPos, length)) != 0.0)
                 {
                     expAdd = 1;
                 }
         }
 
-    idx = aStr.find('e', startPos);
-    if (idx == std::string::npos)
+    // Find exponent marker ('e' or 'E')
+    auto expIdx = aStr.find('e', startPos);
+    if (expIdx == std::string::npos)
         {
-            idx = aStr.find('E', startPos);
-            if (idx == std::string::npos)
+            expIdx = aStr.find('E', startPos);
+            if (expIdx == std::string::npos)
                 {
-                    // Error: no 'e' or 'E' in string";
+                    // No exponent found; not a scientific notation
+                    return aStr;
                 }
         }
 
-    // Change the exponent character to D normally, or E of checkSwitch is false.
-    if (checkSwitch)
-        {
-            aStr[idx] = 'D';
-        }
-    else
-        {
-            aStr[idx] = 'E';
-        }
+    // Replace exponent letter: 'D' for Fortran-style, or 'E' if checkSwitch is false
+    aStr[expIdx] = checkSwitch ? 'D' : 'E';
 
-    // Change the exponent itself
-    if (redoexp)
+    if (redoExp)
         {
-            exp = aStr.substr(idx + 1, std::string::npos);
-            iexp = asInt(exp);
-            iexp += expAdd;
+            std::string expStr = aStr.substr(expIdx + 1);
+            int64_t expVal = asInt(expStr) + expAdd;
 
-            aStr.erase(idx + 1);
-            if (iexp < 0)
-                {
-                    aStr += "-";
-                    iexp -= iexp * 2;
-                }
-            else
-                {
-                    aStr += "+";
-                }
-
-            aStr += rightJustify(asString(iexp), expLen, '0');
+            // Replace exponent part
+            aStr.erase(expIdx + 1);
+            aStr += (expVal < 0) ? "-" : "+";
+            aStr += rightJustify(asString(std::abs(expVal)), expLen, '0');
         }
 
-    // if the number is positive, append a space
-    // (if it's negative, there's a leading '-'
-    if (aStr[0] == '.')
+    // Ensure leading space for positive values starting with '.'
+    if (aStr[startPos] == '.')
         {
-            aStr.insert(static_cast<std::string::size_type>(0), 1, ' ');
+            aStr.insert(startPos, 1, ' ');
         }
 
-    // If checkSwitch is false, add on one leading zero to the string
-    if (!checkSwitch)
+    // If checkSwitch is false, always insert a leading 0 before the decimal
+    if (!checkSwitch && aStr[startPos + 1] == '.')
         {
-            aStr.insert(static_cast<std::string::size_type>(1), 1, '0');
+            aStr.insert(startPos + 1, 1, '0');
         }
 
     return aStr;

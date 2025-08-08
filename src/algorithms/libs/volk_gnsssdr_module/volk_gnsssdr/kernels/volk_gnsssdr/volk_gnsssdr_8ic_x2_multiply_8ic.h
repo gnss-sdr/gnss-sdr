@@ -287,6 +287,62 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_sse4_1(lv_8sc_t* cVector, 
 #endif /* LV_HAVE_SSE4_1 */
 
 
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+
+static inline void volk_gnsssdr_8ic_x2_multiply_8ic_rvv(lv_8sc_t* cVector, const lv_8sc_t* aVector, const lv_8sc_t* bVector, unsigned int num_points) {
+    size_t n = num_points;
+
+    // Initialize pointers to track progress as stripmine
+    // Assuming that intended to use `signed char`
+    // as `char`'s signedness is implementation-specific
+    signed char* cPtr = (signed char*) cVector;
+    const signed char* aPtr = (const signed char*) aVector;
+    const signed char* bPtr = (const signed char*) bVector;
+
+    for (size_t vl; n > 0; n -= vl, cPtr += vl * 2, aPtr += vl * 2, bPtr += vl * 2) {
+        // Record how many elements will actually be processed
+        vl = __riscv_vsetvl_e8m4(n);
+
+        // Load aReal[0..vl), aImag[0..vl)
+        vint8m4x2_t aVal = __riscv_vlseg2e8_v_i8m4x2(aPtr, vl);
+        vint8m4_t aRealVal = __riscv_vget_v_i8m4x2_i8m4(aVal, 0);
+        vint8m4_t aImagVal = __riscv_vget_v_i8m4x2_i8m4(aVal, 1);
+
+        // Load bReal[0..vl), bImag[0..vl)
+        vint8m4x2_t bVal = __riscv_vlseg2e8_v_i8m4x2(bPtr, vl);
+        vint8m4_t bRealVal = __riscv_vget_v_i8m4x2_i8m4(bVal, 0);
+        vint8m4_t bImagVal = __riscv_vget_v_i8m4x2_i8m4(bVal, 1);
+
+        // cReal[i] = aReal[i] * bReal[i]
+        vint8m4_t cRealVal = __riscv_vmul_vv_i8m4(aRealVal, bRealVal, vl);
+
+        // cReal[i] = -(aImag[i] * bImag[i]) + cReal[i]
+        cRealVal = __riscv_vnmsac_vv_i8m4(cRealVal, aImagVal, bImagVal, vl);
+
+        // cImag[i] = aReal[i] * bImag[i]
+        vint8m4_t cImagVal = __riscv_vmul_vv_i8m4(aRealVal, bImagVal, vl);
+
+        // cImag[i] = (aImag[i] * bReal[i]) + cImag[i]
+        cImagVal = __riscv_vmacc_vv_i8m4(cImagVal, aImagVal, bRealVal, vl);
+
+        // Store cReal[0..vl), cImag[0..vl)
+        vint8m4x2_t cVal = __riscv_vset_v_i8m4_i8m4x2(
+            __riscv_vundefined_i8m4x2(), 0, cRealVal
+        );
+        cVal = __riscv_vset_v_i8m4_i8m4x2(cVal, 1, cImagVal);
+        __riscv_vsseg2e8_v_i8m4x2(cPtr, cVal, vl);
+
+        // In looping, decrement the number of
+        // elements left and increment the pointers
+        // by the number of elements processed,
+        // taking into account how the `vl` complex
+        // numbers are each stored as two 1-byte `char`s
+    }
+}
+#endif /* LV_HAVE_RVV */
+
+
 #ifdef LV_HAVE_ORC
 
 extern void volk_gnsssdr_8ic_x2_multiply_8ic_a_orc_impl(lv_8sc_t* cVector, const lv_8sc_t* aVector, const lv_8sc_t* bVector, unsigned int num_points);

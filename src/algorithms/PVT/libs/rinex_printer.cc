@@ -67,6 +67,7 @@ const std::unordered_map<std::string, std::string> satelliteSystem = {
     {"Beidou", "C"},
     {"Mixed", "M"}};  // RINEX v3.02 codes
 
+
 std::string enabled_signal_flags_to_string(const Signal_Enabled_Flags& flags)
 {
     std::vector<std::string> signal_str_vector;
@@ -129,6 +130,7 @@ std::string enabled_signal_flags_to_string(const Signal_Enabled_Flags& flags)
 
     return oss.str();
 }
+
 
 std::map<std::string, std::string> getObservationCodes()
 {
@@ -202,6 +204,7 @@ std::map<std::string, std::string> getObservationCodes()
         {"GLONASS_G1_CA_v2", "1"}};
 }
 
+
 std::map<std::string, std::string> getObservationTypes()
 {
     return {
@@ -218,6 +221,7 @@ std::map<std::string, std::string> getObservationTypes()
         {"SIGNAL_STRENGTH_v2", "S"},
     };
 }
+
 
 std::string getAndCreateBaseRinexPath(const std::string& base_path)
 {
@@ -253,6 +257,7 @@ std::string getAndCreateBaseRinexPath(const std::string& base_path)
 
     return base_rinex_path;
 }
+
 
 /* Creates RINEX file names according to the naming convention
  *
@@ -364,10 +369,12 @@ std::string createFilename(const std::string& type, const std::string& base_name
     return filename;
 }
 
+
 std::string getFilePath(const std::string& type, const std::string& base_name, const std::string& base_rinex_path)
 {
     return base_rinex_path + fs::path::preferred_separator + createFilename(type, base_name);
 }
+
 
 /*
  * (modified versions from GNSSTk https://github.com/SGL-UT/gnsstk)
@@ -383,7 +390,6 @@ std::string getFilePath(const std::string& type, const std::string& base_name, c
  * \param[in] length new desired length of string.
  * \param[in] pad character to pad string with (blank by default).
  * \return a reference to \a s.  */
-
 std::string& leftJustify(std::string& s,
     std::string::size_type length,
     char pad)
@@ -398,6 +404,7 @@ std::string& leftJustify(std::string& s,
         }
     return s;
 }
+
 
 /*
  * If the string is bigger than length, truncate it from the right.
@@ -420,6 +427,7 @@ std::string leftJustify(const std::string& s,
     return leftJustify(t, length, pad);
 }
 
+
 /*
  * Right-justifies the receiver in a string of the specified
  * length. If the receiver's data is shorter than the
@@ -441,6 +449,7 @@ std::string& rightJustify(std::string& s,
     return s;
 }
 
+
 /*
  * Right-justifies the receiver in a string of the specified
  * length (const version). If the receiver's data is shorter than the
@@ -455,6 +464,7 @@ std::string rightJustify(const std::string& s,
     return rightJustify(t, length, pad);
 }
 
+
 /*
  * Convert a string to a double precision floating point number.
  * @param s string containing a number.
@@ -464,6 +474,7 @@ double asDouble(const std::string& s)
 {
     return strtod(s.c_str(), nullptr);
 }
+
 
 int toInt(const std::string& bitString, int sLength)
 {
@@ -476,6 +487,7 @@ int toInt(const std::string& bitString, int sLength)
         }
     return num;
 }
+
 
 /*
  * Convert a string to an integer.
@@ -501,18 +513,6 @@ std::string asString(double x, std::string::size_type precision = 17)
     return ss.str();
 }
 
-/*
- * Convert a long double to a string in fixed notation.
- * @param x long double.
- * @param precision the number of decimal places you want displayed.
- * @return string representation of \a x.
- */
-// std::string asString(long double x, std::string::size_type precision = 21)
-// {
-//     std::ostringstream ss;
-//     ss << std::fixed << std::setprecision(precision) << x;
-//     return ss.str();
-// }
 
 /*
  * Convert any old object to a string.
@@ -528,12 +528,6 @@ std::string asString(const X x)
     return ss.str();
 }
 
-// std::string asFixWidthString(int x, int width, char fill_digit)
-// {
-//     std::ostringstream ss;
-//     ss << std::setfill(fill_digit) << std::setw(width) << x;
-//     return ss.str().substr(ss.str().size() - width);
-// }
 
 /*
  * Convert scientific notation to FORTRAN notation.
@@ -645,6 +639,7 @@ std::string& sci2for(std::string& aStr,
     return aStr;
 }
 
+
 /*
  * Convert a double to a scientific notation number.
  * @param d the double to convert
@@ -695,6 +690,7 @@ std::string doub2sci(double d,
     return toReturn;
 }
 
+
 /*
  * Convert double precision floating point to a string
  * containing the number in FORTRAN notation.
@@ -731,6 +727,7 @@ std::string doub2for(double d,
     return toReturn;
 }
 
+
 /*
  *  Checks that the line is 80 characters length
  */
@@ -745,6 +742,7 @@ void lengthCheck(const std::string& line)
         }
 }
 
+
 void override_stream_with_new_data(std::fstream& out, const std::string& filename, const std::vector<std::string>& data, int64_t seek_pos)
 {
     out.close();
@@ -758,6 +756,7 @@ void override_stream_with_new_data(std::fstream& out, const std::string& filenam
     out.open(filename, std::ios::out | std::ios::app);
     out.seekp(seek_pos);
 }
+
 
 void add_header_start(std::fstream& out, const std::string& type, const std::string& constellation, const std::string& local_time, const std::string& version)
 {
@@ -807,6 +806,7 @@ void add_header_start(std::fstream& out, const std::string& type, const std::str
     out << line << '\n';
 }
 
+
 std::string get_iono_line(const std::string& identifier, double value0, double value1, double value2, double value3)
 {
     std::string line;
@@ -823,6 +823,7 @@ std::string get_iono_line(const std::string& identifier, double value0, double v
 
     return line;
 }
+
 
 std::string get_time_corr_line(const std::string& identifier, double a0, double a1, const int32_t* tot = nullptr, const int32_t* wn = nullptr)
 {
@@ -849,6 +850,7 @@ std::string get_time_corr_line(const std::string& identifier, double a0, double 
     return line;
 }
 
+
 // For leap second information, see https://endruntechnologies.com/support/leap-seconds
 std::string get_leap_second_line(int32_t Delta_tLS, int32_t Delta_tLSF, int32_t WN_LSF, int32_t DN)
 {
@@ -864,6 +866,7 @@ std::string get_leap_second_line(int32_t Delta_tLS, int32_t Delta_tLSF, int32_t 
 
     return line;
 }
+
 
 std::string get_end_of_header_line()
 {
@@ -882,35 +885,42 @@ std::string get_gps_iono_alpha_line(const Gps_Iono& iono)
     return get_iono_line("GPSA", iono.alpha0, iono.alpha1, iono.alpha2, iono.alpha3);
 }
 
+
 std::string get_gps_iono_beta_line(const Gps_Iono& iono)
 {
     return get_iono_line("GPSB", iono.beta0, iono.beta1, iono.beta2, iono.beta3);
 }
+
 
 std::string get_gps_iono_alpha_line(const Gps_CNAV_Iono& iono)
 {
     return get_iono_line("GPSA", iono.alpha0, iono.alpha1, iono.alpha2, iono.alpha3);
 }
 
+
 std::string get_gps_iono_beta_line(const Gps_CNAV_Iono& iono)
 {
     return get_iono_line("GPSB", iono.beta0, iono.beta1, iono.beta2, iono.beta3);
 }
+
 
 std::string get_galileo_iono_alpha_line(const Galileo_Iono& iono)
 {
     return get_iono_line("GAL ", iono.ai0, iono.ai1, iono.ai2, 0.0);
 }
 
+
 std::string get_beidou_iono_alpha_line(const Beidou_Dnav_Iono& iono)
 {
     return get_iono_line("BDSA", iono.alpha0, iono.alpha1, iono.alpha2, iono.alpha3);
 }
 
+
 std::string get_beidou_iono_beta_line(const Beidou_Dnav_Iono& iono)
 {
     return get_iono_line("BDSB", iono.beta0, iono.beta1, iono.beta2, iono.beta3);
 }
+
 
 std::string get_gps_time_corr_line(const Gps_Utc_Model& utc_model, const Gps_Ephemeris& gps_eph, bool pre_2009_file)
 {
@@ -942,50 +952,60 @@ std::string get_gps_time_corr_line(const Gps_Utc_Model& utc_model, const Gps_Eph
     return get_time_corr_line("GPUT", utc_model.A0, utc_model.A1, &utc_model.tot, &WN_T);
 }
 
+
 std::string get_gps_time_corr_line(const Gps_CNAV_Utc_Model& utc_model)
 {
     return get_time_corr_line("GPUT", utc_model.A0, utc_model.A1, &utc_model.tot, &utc_model.WN_T);
 }
+
 
 std::string get_galileo_time_corr_line(const Galileo_Utc_Model& utc_model)
 {
     return get_time_corr_line("GAUT", utc_model.A0, utc_model.A1, &utc_model.tot, &utc_model.WNot);
 }
 
+
 std::string get_beidou_time_corr_line(const Beidou_Dnav_Utc_Model& utc_model)
 {
     return get_time_corr_line("BDUT", utc_model.A0_UTC, utc_model.A1_UTC);
 }
+
 
 std::string get_glonass_time_corr_line(const Glonass_Gnav_Utc_Model& utc_model)
 {
     return get_time_corr_line("GLUT", utc_model.d_tau_c, 0.0, nullptr, nullptr);
 }
 
+
 std::string get_gps_to_galileo_time_corr_line(const Galileo_Utc_Model& utc_model)
 {
     return get_time_corr_line("GPGA", utc_model.A_0G, utc_model.A_1G, &utc_model.t_0G, &utc_model.WN_0G);
 }
+
 
 std::string get_glonass_to_gps_time_corr_line(const Glonass_Gnav_Utc_Model& utc_model)
 {
     return get_time_corr_line("GLGP", utc_model.d_tau_gps, 0.0, nullptr, nullptr);
 }
 
+
 std::string get_leap_second_line(const Gps_Utc_Model& utc_model)
 {
     return get_leap_second_line(utc_model.DeltaT_LS, utc_model.DeltaT_LSF, utc_model.WN_LSF, utc_model.DN);
 }
+
 
 std::string get_leap_second_line(const Gps_CNAV_Utc_Model& utc_model)
 {
     return get_leap_second_line(utc_model.DeltaT_LS, utc_model.DeltaT_LSF, utc_model.WN_LSF, utc_model.DN);
 }
 
+
 std::string get_leap_second_line(const Galileo_Utc_Model& utc_model)
 {
     return get_leap_second_line(utc_model.Delta_tLS, utc_model.Delta_tLSF, utc_model.WN_LSF, utc_model.DN);
 }
+
 
 std::string get_leap_second_line(const Beidou_Dnav_Utc_Model& utc_model)
 {
@@ -1038,6 +1058,7 @@ std::string get_nav_sv_epoch_svclk_line(const boost::posix_time::ptime& p_utc_ti
     return line;
 }
 
+
 std::string get_nav_broadcast_orbit(const double* value0, const double* value1, const double* value2, const double* value3, uint32_t version = 3)
 {
     std::string line;
@@ -1060,6 +1081,7 @@ std::string get_nav_broadcast_orbit(const double* value0, const double* value1, 
 
     return line;
 }
+
 
 void add_obs_observer_agency(std::fstream& out)
 {
@@ -1087,6 +1109,7 @@ void add_obs_observer_agency(std::fstream& out)
     out << line << '\n';
 }
 
+
 void add_obs_rec_type(std::fstream& out, std::string gnss_sdr_version)
 {
     std::string line;
@@ -1104,6 +1127,7 @@ void add_obs_rec_type(std::fstream& out, std::string gnss_sdr_version)
     lengthCheck(line);
     out << line << '\n';
 }
+
 
 void add_obs_antenna(std::fstream& out)
 {
@@ -1147,6 +1171,7 @@ void add_obs_antenna(std::fstream& out)
     out << line << '\n';
 }
 
+
 void add_obs_signal_strength(std::fstream& out)
 {
     std::string line;
@@ -1157,6 +1182,7 @@ void add_obs_signal_strength(std::fstream& out)
     lengthCheck(line);
     out << line << '\n';
 }
+
 
 void add_obs_time_first_obs(std::fstream& out, const boost::posix_time::ptime& p_gps_time, double gps_tow)
 {
@@ -1180,6 +1206,7 @@ void add_obs_time_first_obs(std::fstream& out, const boost::posix_time::ptime& p
     lengthCheck(line);
     out << line << '\n';
 }
+
 
 void add_obs_sys_obs_type(std::fstream& out,
     const std::string& sys_char,
@@ -1220,6 +1247,7 @@ void add_obs_sys_obs_type(std::fstream& out,
     out << line << '\n';
 }
 
+
 void add_obs_sys_obs_type(std::fstream& out,
     const std::string& constellation,
     const std::string& bands,
@@ -1245,6 +1273,7 @@ void add_obs_sys_obs_type(std::fstream& out,
     add_obs_sys_obs_type(out, sys_char, number_of_observations, observationType, obsCodes);
 }
 
+
 void add_obs_sys_obs_type_gps(std::fstream& out,
     const std::string& bands,
     const std::map<std::string, std::string>& observationType,
@@ -1258,6 +1287,7 @@ void add_obs_sys_obs_type_gps(std::fstream& out,
 
     add_obs_sys_obs_type(out, "GPS", bands, observationType, observationCode, band_to_code_map);
 }
+
 
 void add_obs_sys_obs_type_galileo(std::fstream& out,
     const std::string& bands,
@@ -1274,6 +1304,7 @@ void add_obs_sys_obs_type_galileo(std::fstream& out,
     add_obs_sys_obs_type(out, "Galileo", bands, observationType, observationCode, band_to_code_map);
 }
 
+
 void add_obs_sys_obs_type_glonass(std::fstream& out,
     const std::string& bands,
     const std::map<std::string, std::string>& observationType,
@@ -1286,6 +1317,7 @@ void add_obs_sys_obs_type_glonass(std::fstream& out,
 
     add_obs_sys_obs_type(out, "GLONASS", bands, observationType, observationCode, band_to_code_map);
 }
+
 
 void add_obs_sys_obs_type_beidou(std::fstream& out,
     const std::string& bands,
@@ -1302,11 +1334,13 @@ void add_obs_sys_obs_type_beidou(std::fstream& out,
 
 }  // namespace
 
+
 Rinex_Printer::Rinex_Printer(int version,
     const std::string& base_path,
     const std::string& base_name) : Rinex_Printer(base_name, getAndCreateBaseRinexPath(base_path), version)
 {
 }
+
 
 Rinex_Printer::Rinex_Printer(const std::string& base_name,
     const std::string& base_rinex_path,
@@ -1406,6 +1440,7 @@ Rinex_Printer::~Rinex_Printer()
                 }
         }
 }
+
 
 void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
     const std::map<int, Gnss_Synchro>& gnss_observables_map,

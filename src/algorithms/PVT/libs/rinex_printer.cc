@@ -3556,9 +3556,10 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             // -------- BROADCAST ORBIT - 1
             const bool discontinued_reception = eph.IODE_SF2 != eph.IODE_SF3;
             const double* p_value0 = nullptr;
+            double iode_d = 0.0;
             if (!discontinued_reception)
                 {
-                    const auto iode_d = static_cast<double>(eph.IODE_SF2);
+                    iode_d = static_cast<double>(eph.IODE_SF2);
                     p_value0 = &iode_d;
                 }
             out << get_nav_broadcast_orbit(p_value0, &eph.Crs, &eph.delta_n, &eph.M_0, d_version) << '\n';

@@ -363,7 +363,7 @@ set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "31.1")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.15")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.17.0")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "origin/master")
-set(GNSSSDR_GNSSTK_LOCAL_VERSION "14.3.0")
+set(GNSSSDR_GNSSTK_LOCAL_VERSION "15.0.0")
 set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.9.4")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 set(GNSSSDR_ABSL_LOCAL_VERSION "origin/master") # live at head (see https://abseil.io/about/releases)
@@ -3364,7 +3364,7 @@ if(ENABLE_ION)
             message(FATAL_ERROR "The patch command is not found. It is required to build the ION GNSS-SDR Metadata Standard. Please check your OS documentation and install the patch command.")
         endif()
         set(ION_METADATA_PATCH_COMMAND
-            ${Patch_EXECUTABLE} -p0 -i ${GNSSSDR_SOURCE_DIR}/tests/data/ion_gnss_standard_cmake.patch
+            ${Patch_EXECUTABLE} -p0 -i ${GNSSSDR_SOURCE_DIR}/utils/patches/ion_gnss_standard_cmake.patch
         )
     endif()
     # Patch only once

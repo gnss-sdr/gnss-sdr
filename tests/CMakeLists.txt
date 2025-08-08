@@ -366,14 +366,13 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         if(CMAKE_VERSION VERSION_GREATER 3.17.0)
             set(GNSSTK_PATCH_COMMAND
                 cd ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION} &&
-                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${GNSSSDR_SOURCE_DIR}/tests/data/gnsstk_static14.patch &&
-                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/core/lib/GNSSCore/ObsID.hpp < ${GNSSSDR_SOURCE_DIR}/tests/data/gnsstk_gcc13.patch
+                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${GNSSSDR_SOURCE_DIR}/utils/patches/gnsstk_static15.patch
             )
         else()
             set(GNSSTK_PATCH_COMMAND
                 cd ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION} &&
-                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${GNSSSDR_SOURCE_DIR}/tests/data/gnsstk_static13.patch &&
-                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/core/lib/GNSSCore/ObsID.hpp < ${GNSSSDR_SOURCE_DIR}/tests/data/gnsstk_gcc13.patch
+                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${GNSSSDR_SOURCE_DIR}/utils/patches/gnsstk_static13.patch &&
+                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/core/lib/GNSSCore/ObsID.hpp < ${GNSSSDR_SOURCE_DIR}/utils/patches/gnsstk_gcc13.patch
             )
         endif()
         # Patch only once
@@ -407,8 +406,8 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
                     set(GNSSTK_PARALLEL_BUILD "-j${NUMBER_OF_PROCESSORS}")
                 endif()
             endif()
-            if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-                set(GNSSTK_FLAGS "-DCMAKE_CXX_FLAGS:STRING=-w")  # Fix for clang in aarch64
+            if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang" AND NOT WIN32)
+                set(GNSSTK_FLAGS "-DCMAKE_CXX_FLAGS:STRING=-w")
             endif()
             if(CMAKE_VERSION VERSION_GREATER 3.17.0)
                 set(GNSSTK_CXX_STANDARD 17)

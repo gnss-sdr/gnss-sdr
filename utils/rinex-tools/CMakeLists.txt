@@ -37,18 +37,9 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     if(GNSSTK_VERSION AND "${GNSSTK_VERSION}" VERSION_LESS 3.0.1)
         set_property(TARGET obsdiff PROPERTY CXX_STANDARD 14)  # Required by GPSTk v3.0.0
     endif()
-    # Do not show warnings raised by GPSTk v3.0.0
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        target_compile_options(obsdiff
-            PRIVATE
-                -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare -Wno-reorder -Wno-deprecated-copy -Wno-extra -Wno-unused-but-set-variable -Wno-unknown-pragmas
-        )
-    endif()
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        target_compile_options(obsdiff
-            PRIVATE
-                -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare -Wno-reorder
-        )
+    # Do not show warnings raised by GPSTk / GNSSTk
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang" AND NOT WIN32)
+        target_compile_options(obsdiff PRIVATE -w)
     endif()
 
     if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)

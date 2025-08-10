@@ -975,30 +975,29 @@ uint16_t galileo_e6_has_msg_receiver::read_has_message_body_uint16(const std::st
 
 int16_t galileo_e6_has_msg_receiver::read_has_message_body_int16(const std::string& bits) const
 {
-    int16_t value = 0;
-    const size_t len = bits.length();
+    if (bits.empty() || bits.length() > 16)
+        {
+            LOG(WARNING) << "Invalid binary string length for int16_t: " << bits.length();
+            return 0;
+        }
 
-    // read the MSB and perform the sign extension
+    uint16_t value = 0;
+    for (const char c : bits)
+        {
+            if (c != '0' && c != '1')
+                {
+                    LOG(WARNING) << "Invalid character in binary string: " << c;
+                    return 0;
+                }
+            value = static_cast<uint16_t>((value << 1) | (c - '0'));
+        }
+
+    // If sign bit is set, sign-extend to 16-bit
     if (bits[0] == '1')
         {
-            value ^= 0xFFFF;  // 16 bits variable
+            return static_cast<int16_t>(value | (0xFFFF << bits.length()));
         }
-    else
-        {
-            value &= 0;
-        }
-
-    for (size_t j = 0; j < len; j++)
-        {
-            value *= 2;       // shift left the signed integer
-            value &= 0xFFFE;  // reset the corresponding bit (for the 16 bits variable)
-            if (bits[j] == '1')
-                {
-                    value += 1;  // insert the bit
-                }
-        }
-
-    return value;
+    return static_cast<int16_t>(value);
 }
 
 

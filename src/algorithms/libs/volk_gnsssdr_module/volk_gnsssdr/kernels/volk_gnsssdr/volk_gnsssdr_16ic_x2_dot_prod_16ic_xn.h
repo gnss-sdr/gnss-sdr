@@ -722,4 +722,80 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_optvma(lv_16sc_t* 
 }
 #endif /* LV_HAVE_NEON */
 
+
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_rvv(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a, int num_a_vectors, unsigned int num_points) {
+    int n_vec = num_a_vectors;
+
+    for (int i = 0; i < n_vec; i++)
+        {
+            size_t n = num_points;
+
+            short* resPtr = (short*) &result[i];
+
+            // Initialize pointers to track progress as stripmine
+            const short* comPtr = (const short*) in_common;
+            const short* aPtr = (const short*) in_a[i];
+
+            // Use 32-bit accumulator in order to saturate
+            // to 16 bits
+            // accReal[0] = 0
+            vint32m1_t accRealVal = __riscv_vmv_s_x_i32m1(0, 1);
+            // accImag[0] = 0
+            vint32m1_t accImagVal = __riscv_vmv_s_x_i32m1(0, 1);
+
+            for (size_t vl; n > 0; n -= vl, comPtr += vl * 2, aPtr += vl * 2)
+                {
+                    // Record how many elements will actually be processed
+                    vl = __riscv_vsetvl_e16m4(n);
+
+                    // Load comReal[0..vl), comImag[0..vl)
+                    vint16m4x2_t comVal = __riscv_vlseg2e16_v_i16m4x2(comPtr, vl);
+                    vint16m4_t comRealVal = __riscv_vget_v_i16m4x2_i16m4(comVal, 0);
+                    vint16m4_t comImagVal = __riscv_vget_v_i16m4x2_i16m4(comVal, 1);
+
+                    // Load aReal[0..vl), aImag[0..vl)
+                    vint16m4x2_t aVal = __riscv_vlseg2e16_v_i16m4x2(aPtr, vl);
+                    vint16m4_t aRealVal = __riscv_vget_v_i16m4x2_i16m4(aVal, 0);
+                    vint16m4_t aImagVal = __riscv_vget_v_i16m4x2_i16m4(aVal, 1);
+
+                    // outReal[i] = -(comImag[i] * aImag[i]) + comReal[i] * aReal[i]
+                    vint16m4_t outRealVal = __riscv_vmul_vv_i16m4(comRealVal, aRealVal, vl);
+                    outRealVal = __riscv_vnmsac_vv_i16m4(outRealVal, comImagVal, aImagVal, vl);
+
+                    // accReal[0] = sum( accReal[0], outReal[0..vl) )
+                    accRealVal = __riscv_vwredsum_vs_i16m4_i32m1(outRealVal, accRealVal, vl);
+
+                    // Saturate accReal[0] within 16 bits
+                    accRealVal = __riscv_vmin_vx_i32m1(accRealVal, 32767, 1);
+                    accRealVal = __riscv_vmax_vx_i32m1(accRealVal, -32768, 1);
+
+                    // outImag[i] = (comImag[i] * aReal[i]) + comReal[i] * aImag[i]
+                    vint16m4_t outImagVal = __riscv_vmul_vv_i16m4(comRealVal, aImagVal, vl);
+                    outImagVal = __riscv_vmacc_vv_i16m4(outImagVal, comImagVal, aRealVal, vl);
+
+                    // accImag[0] = sum( accImag[0], outImag[0..vl) )
+                    accImagVal = __riscv_vwredsum_vs_i16m4_i32m1(outImagVal, accImagVal, vl);
+
+                    // Saturate accImag[0] within 16 bits
+                    accImagVal = __riscv_vmin_vx_i32m1(accImagVal, 32767, 1);
+                    accImagVal = __riscv_vmax_vx_i32m1(accImagVal, -32768, 1);
+
+                    // In looping, decrement the number of
+                    // elements left and increment the pointers
+                    // by the number of elements processed,
+                    // taking into account how the `vl` complex
+                    // numbers are each stored as 2 `short`s
+                }
+
+            // Real part of resultant complex number
+            resPtr[0] = (short) __riscv_vmv_x_s_i32m1_i32(accRealVal);
+            // Imaginary part of resultant complex number
+            resPtr[1] = (short) __riscv_vmv_x_s_i32m1_i32(accImagVal);
+        }
+}
+#endif /* LV_HAVE_RVV */
+
 #endif /* INCLUDED_volk_gnsssdr_16ic_xn_dot_prod_16ic_xn_H */

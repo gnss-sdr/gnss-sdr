@@ -1223,7 +1223,7 @@ void dll_pll_veml_tracking::update_tracking_vars()
                         }
                     tmp_cp1 /= static_cast<double>(d_trk_parameters.smoother_length);
                     tmp_cp2 /= static_cast<double>(d_trk_parameters.smoother_length);
-                    d_carrier_phase_rate_step_rad = (tmp_cp2 - tmp_cp1) / tmp_samples;
+                    d_carrier_phase_rate_step_rad = (tmp_samples != 0) ? (tmp_cp2 - tmp_cp1) / tmp_samples : 0.0;
                 }
         }
     // std::cout << d_carrier_phase_rate_step_rad * d_trk_parameters.fs_in * d_trk_parameters.fs_in / TWO_PI << '\n';

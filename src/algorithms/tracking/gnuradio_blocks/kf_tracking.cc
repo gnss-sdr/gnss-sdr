@@ -1285,10 +1285,7 @@ void kf_tracking::update_tracking_vars()
                         }
                     tmp_cp1 /= static_cast<double>(d_trk_parameters.smoother_length);
                     tmp_cp2 /= static_cast<double>(d_trk_parameters.smoother_length);
-                    if (tmp_samples >= 1.0)
-                        {
-                            d_carrier_phase_rate_step_rad = (tmp_cp2 - tmp_cp1) / tmp_samples;
-                        }
+                    d_carrier_phase_rate_step_rad = (tmp_samples != 0) ? (tmp_cp2 - tmp_cp1) / tmp_samples : 0.0;
                     d_x_old_old(3) = d_carrier_phase_rate_step_rad * d_trk_parameters.fs_in / TWO_PI;
                 }
         }
@@ -1320,7 +1317,7 @@ void kf_tracking::update_tracking_vars()
                         }
                     tmp_cp1 /= static_cast<double>(d_trk_parameters.smoother_length);
                     tmp_cp2 /= static_cast<double>(d_trk_parameters.smoother_length);
-                    d_code_phase_rate_step_chips = (tmp_cp2 - tmp_cp1) / tmp_samples;
+                    d_code_phase_rate_step_chips = (tmp_samples != 0) ? (tmp_cp2 - tmp_cp1) / tmp_samples : 0.0;
                 }
         }
 

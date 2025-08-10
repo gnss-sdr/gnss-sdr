@@ -399,17 +399,32 @@ void osnma_msg_receiver::read_dsm_header(uint8_t dsm_header)
  * */
 void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_msg)
 {
+    if (osnma_msg->hkroot.size() <= 2)
+        {
+            LOG(WARNING) << "OSNMA hkroot too short, skipping";
+            return;
+        }
     // Fill d_dsm_message. dsm_block_id provides the offset within the dsm message.
     size_t index = 0;
-    for (const auto* it = osnma_msg->hkroot.cbegin() + 2; it != osnma_msg->hkroot.cend(); ++it)
+    const size_t offset = SIZE_DSM_BLOCKS_BYTES * d_osnma_data.d_dsm_header.dsm_block_id;
+    auto& dsm_buf = d_dsm_message[d_osnma_data.d_dsm_header.dsm_id];
+
+    for (const auto* it = osnma_msg->hkroot.cbegin() + 2; it != osnma_msg->hkroot.cend(); ++it, ++index)
         {
-            d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][SIZE_DSM_BLOCKS_BYTES * d_osnma_data.d_dsm_header.dsm_block_id + index] = *it;
-            index++;
+            if (offset + index < dsm_buf.size())
+                {
+                    dsm_buf[offset + index] = *it;
+                }
+            else
+                {
+                    LOG(ERROR) << "OSNMA: DSM buffer overflow prevented";
+                    return;
+                }
         }
     // First block indicates number of blocks in DSM message
     if (d_osnma_data.d_dsm_header.dsm_block_id == 0)
         {
-            uint8_t nb = d_dsm_reader->get_number_blocks_index(d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][0]);
+            uint8_t nb = d_dsm_reader->get_number_blocks_index(dsm_buf[0]);
             uint16_t number_of_blocks = 0;
             if (d_osnma_data.d_dsm_header.dsm_id < 12)
                 {
@@ -420,7 +435,7 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
                             number_of_blocks = it->second.first;
                         }
                 }
-            else if (d_osnma_data.d_dsm_header.dsm_id >= 12 && d_osnma_data.d_dsm_header.dsm_id < 16)
+            else if (d_osnma_data.d_dsm_header.dsm_id < 16)
                 {
                     // DSM-PKR Table 3
                     const auto it = OSNMA_TABLE_3.find(nb);
@@ -429,49 +444,41 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
                             number_of_blocks = it->second.first;
                         }
                 }
-
+            else
+                {
+                    LOG(WARNING) << "Galileo OSNMA: Wrong DSM ID";
+                    return;
+                }
             d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] = number_of_blocks;
             LOG(INFO) << "Galileo OSNMA: number of blocks in this message: " << static_cast<uint32_t>(number_of_blocks);
             if (number_of_blocks == 0)
                 {
                     // Something is wrong, start over
                     LOG(WARNING) << "OSNMA: Wrong number of blocks, start over";
-                    d_dsm_message[d_osnma_data.d_dsm_header.dsm_id] = std::array<uint8_t, 256>{};
-                    d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id] = std::array<uint8_t, 16>{};
+                    dsm_buf = {};
+                    d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id] = {};
                 }
         }
     // Annotate bid
     d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id][d_osnma_data.d_dsm_header.dsm_block_id] = 1;
-    std::stringstream available_blocks;
-    available_blocks << "Galileo OSNMA: Available blocks for DSM_ID " << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_id) << ": [ ";
-    if (d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] == 0)  // block 0 not received yet
+
+    // Build availability string
+    std::ostringstream available_blocks;
+    available_blocks << "Galileo OSNMA: Available blocks for DSM_ID "
+                     << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_id) << ": [ ";
+
+    const auto& blocks = d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id];
+    uint16_t total_blocks = d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id];
+    if (total_blocks == 0)
         {
-            for (auto id_received : d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id])
-                {
-                    if (id_received == 0)
-                        {
-                            available_blocks << "- ";
-                        }
-                    else
-                        {
-                            available_blocks << "X ";
-                        }
-                }
+            total_blocks = blocks.size();
         }
-    else
+
+    for (uint16_t k = 0; k < total_blocks; k++)
         {
-            for (uint16_t k = 0; k < d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id]; k++)
-                {
-                    if (d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id][k] == 0)
-                        {
-                            available_blocks << "- ";
-                        }
-                    else
-                        {
-                            available_blocks << "X ";
-                        }
-                }
+            available_blocks << (blocks[k] == 0 ? "- " : "X ");
         }
+
     available_blocks << "]";
     LOG(INFO) << available_blocks.str();
     std::cout << available_blocks.str() << std::endl;
@@ -777,7 +784,10 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             LOG(WARNING) << "Galileo OSNMA: Reserved message received";
             std::cerr << "Galileo OSNMA: Reserved message received" << std::endl;
         }
-    d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] = 0;  // TODO - reset during header parsing in PKREV?
+    if (d_osnma_data.d_dsm_header.dsm_id < d_number_of_blocks.size())
+        {
+            d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] = 0;  // TODO - reset during header parsing in PKREV?
+        }
 }
 
 
@@ -1295,22 +1305,26 @@ std::vector<uint8_t> osnma_msg_receiver::compute_merkle_root(const DSM_PKR_messa
     for (size_t i = 0; i < 4; i++)
         {
             x_next.clear();
-            bool leaf_is_on_right = ((dsm_pkr_message.mid / (1 << (i))) % 2) == 1;
+            x_next.reserve(64);  // we always append 32 + 32 bytes
+
+            bool leaf_is_on_right = ((dsm_pkr_message.mid >> i) & 1) != 0;
+            const auto* itn_start = dsm_pkr_message.itn.begin() + (32 * i);
+            const auto* itn_end = itn_start + 32;
 
             if (leaf_is_on_right)
                 {
-                    // Leaf is on the right -> first the itn, then concatenate the leaf
-                    x_next.insert(x_next.end(), &dsm_pkr_message.itn[32 * i], &dsm_pkr_message.itn[32 * i + 32]);
+                    // Leaf is on the right -> first the itn, then the leaf
+                    x_next.insert(x_next.end(), itn_start, itn_end);
                     x_next.insert(x_next.end(), x_current.begin(), x_current.end());
                 }
             else
                 {
-                    // Leaf is on the left -> first the leaf, then concatenate the itn
+                    // Leaf is on the left -> first the leaf, then the itn
                     x_next.insert(x_next.end(), x_current.begin(), x_current.end());
-                    x_next.insert(x_next.end(), &dsm_pkr_message.itn[32 * i], &dsm_pkr_message.itn[32 * i + 32]);
+                    x_next.insert(x_next.end(), itn_start, itn_end);
                 }
 
-            // Compute the next node.
+            // Compute the next node
             x_current = d_crypto->compute_SHA_256(x_next);
         }
     return x_current;
@@ -1326,9 +1340,11 @@ std::vector<uint8_t> osnma_msg_receiver::compute_merkle_root(const DSM_PKR_messa
 std::vector<uint8_t> osnma_msg_receiver::get_merkle_tree_leaves(const DSM_PKR_message& dsm_pkr_message) const
 {
     // build base leaf m_i according to OSNMA SIS ICD v1.1, section 6.2 DSM-PKR Verification
+    constexpr uint8_t MASK_4BITS = 0x0F;
     std::vector<uint8_t> m_i;
-    m_i.push_back(static_cast<uint8_t>((dsm_pkr_message.npkt << 4) + dsm_pkr_message.npktid));
-    m_i.insert(m_i.end(), dsm_pkr_message.npk.begin(), dsm_pkr_message.npk.end());
+    m_i.reserve(1 + dsm_pkr_message.npk.size());
+    m_i.emplace_back(static_cast<uint8_t>(((dsm_pkr_message.npkt & MASK_4BITS) << 4) | (dsm_pkr_message.npktid & MASK_4BITS)));
+    m_i.insert(m_i.end(), dsm_pkr_message.npk.cbegin(), dsm_pkr_message.npk.cend());
     return m_i;
 }
 

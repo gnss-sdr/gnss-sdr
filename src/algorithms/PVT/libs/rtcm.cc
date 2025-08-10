@@ -277,26 +277,29 @@ uint32_t Rtcm::bin_to_uint(const std::string& s) const
 
 int32_t Rtcm::bin_to_int(const std::string& s) const
 {
-    if (s.length() > 32)
+    if (s.empty() || s.length() > 32)
         {
-            LOG(WARNING) << "Cannot convert to a int32_t";
+            LOG(WARNING) << "Invalid binary string length for int32_t: " << s.length();
             return 0;
         }
-    int32_t reading;
+    uint32_t value = 0;
+    for (const char c : s)
+        {
+            if (c != '0' && c != '1')
+                {
+                    LOG(WARNING) << "Invalid character in binary string: " << c;
+                    return 0;
+                }
+            value = (value << 1) | static_cast<uint32_t>(c - '0');
+        }
 
-    // Handle negative numbers
-    if (s.substr(0, 1) != "0")
+    // If the sign bit is set (two's complement), sign-extend
+    if (s[0] == '1')
         {
-            // Computing two's complement
-            boost::dynamic_bitset<> original_bitset(s);
-            original_bitset.flip();
-            reading = -(original_bitset.to_ulong() + 1);
+            // Shift left so the sign bit lands in int32_t's sign position, then arithmetic shift right
+            return static_cast<int32_t>(value << (32 - s.length())) >> (32 - s.length());
         }
-    else
-        {
-            reading = strtol(s.c_str(), nullptr, 2);
-        }
-    return reading;
+    return static_cast<int32_t>(value);
 }
 
 

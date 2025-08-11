@@ -107,7 +107,7 @@ BeidouB3iPcpsAcquisitionTest_msg_rx::BeidouB3iPcpsAcquisitionTest_msg_rx() : gr:
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
 #if HAS_GENERIC_LAMBDA
-        [this](auto &&PH1) { msg_handler_channel_events(PH1); });
+        [this](auto &&PH1) { msg_handler_channel_events(std::forward<decltype(PH1)>(PH1)); });
 #else
 #if USE_BOOST_BIND_PLACEHOLDERS
         boost::bind(&BeidouB3iPcpsAcquisitionTest_msg_rx::msg_handler_channel_events, this, boost::placeholders::_1));

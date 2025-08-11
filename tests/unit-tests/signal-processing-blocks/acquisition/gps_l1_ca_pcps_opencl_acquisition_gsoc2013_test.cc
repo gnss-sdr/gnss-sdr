@@ -36,6 +36,7 @@
 #include <chrono>
 #include <memory>
 #include <thread>
+#include <utility>
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind/bind.hpp>
@@ -100,7 +101,7 @@ GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx::GpsL1CaPcpsOpenClAcquisitionGSo
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
 #if HAS_GENERIC_LAMBDA
-        [this](auto&& PH1) { msg_handler_channel_events(PH1); });
+        [this](auto&& PH1) { msg_handler_channel_events(std::forward<decltype(PH1)>(PH1)); });
 #else
 #if USE_BOOST_BIND_PLACEHOLDERS
         boost::bind(&GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx::msg_handler_channel_events, this, boost::placeholders::_1));

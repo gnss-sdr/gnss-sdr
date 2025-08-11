@@ -35,6 +35,7 @@
 #include <memory>
 #include <thread>
 #include <unistd.h>
+#include <utility>
 
 #if USE_GLOG_AND_GFLAGS
 #include <gflags/gflags.h>
@@ -130,7 +131,7 @@ TEST_F(ControlThreadTest /*unused*/, InstantiateRunControlMessages /*unused*/)
     control_queue->push(pmt::make_any(channel_event_make(1, 0)));
     control_queue->push(pmt::make_any(command_event_make(200, 0)));
 
-    control_thread->set_control_queue(control_queue);
+    control_thread->set_control_queue(std::move(control_queue));
     try
         {
             control_thread->run();
@@ -193,7 +194,7 @@ TEST_F(ControlThreadTest /*unused*/, InstantiateRunControlMessages2 /*unused*/)
     control_queue2->push(pmt::make_any(channel_event_make(3, 0)));
     control_queue2->push(pmt::make_any(command_event_make(200, 0)));
 
-    control_thread2->set_control_queue(control_queue2);
+    control_thread2->set_control_queue(std::move(control_queue2));
 
     try
         {
@@ -250,7 +251,7 @@ TEST_F(ControlThreadTest /*unused*/, StopReceiverProgrammatically /*unused*/)
 
     std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config);
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
-    control_thread->set_control_queue(control_queue);
+    control_thread->set_control_queue(std::move(control_queue));
 
     std::thread stop_receiver_thread(stop_receiver);
 

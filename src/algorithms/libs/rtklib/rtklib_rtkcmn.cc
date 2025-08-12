@@ -1570,15 +1570,12 @@ void time2epoch(gtime_t t, double *ep)
     const int mday[] = {/* # of days in a month */
         31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31,
         31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-    int days;
-    int sec;
-    int mon;
-    int day;
+    const auto days = static_cast<int>(t.time / 86400); /* leap year if year%4==0 in 1901-2099 */
+    const auto sec = static_cast<int>(t.time - static_cast<time_t>(days) * 86400);
+    int day = days % 1461; /*  Days in current 4-year cycle */
+    int mon = 0;
 
-    /* leap year if year%4==0 in 1901-2099 */
-    days = static_cast<int>(t.time / 86400);
-    sec = static_cast<int>(t.time - static_cast<time_t>(days) * 86400);
-    for (day = days % 1461, mon = 0; mon < 48; mon++)
+    for (; mon < 48; mon++)
         {
             if (day >= mday[mon])
                 {
@@ -1589,11 +1586,15 @@ void time2epoch(gtime_t t, double *ep)
                     break;
                 }
         }
-    ep[0] = 1970 + days / 1461 * 4 + mon / 12;
+    const int years_4cycle = days / 1461; /* Full 4-year cycles since 1970 */
+    const int years_in_cycle = mon / 12;  /*  Full years in current cycle */
+    const int hour = sec / 3600;
+    const int minutes = sec % 3600 / 60;
+    ep[0] = 1970 + years_4cycle * 4 + years_in_cycle;
     ep[1] = mon % 12 + 1;
     ep[2] = day + 1;
-    ep[3] = sec / 3600;
-    ep[4] = sec % 3600 / 60;
+    ep[3] = static_cast<double>(hour);
+    ep[4] = static_cast<double>(minutes);
     ep[5] = sec % 60 + t.sec;
 }
 

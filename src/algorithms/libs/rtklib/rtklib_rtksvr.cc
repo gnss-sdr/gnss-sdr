@@ -67,40 +67,47 @@ void writesol(rtksvr_t *svr, int index)
 {
     solopt_t solopt = SOLOPT_DEFAULT;
     unsigned char buff[MAXSOLMSG];
-    int i;
     int n;
 
     tracet(4, "writesol: index=%d\n", index);
 
-    for (i = 0; i < 2; i++)
+    /* Helper lambda to output & save a solution buffer safely */
+    auto output_and_save = [&](unsigned char *buf, int len, int stream_id, int sol_index) {
+        if (len > 0 && len <= MAXSOLMSG)
+            {
+                strwrite(svr->stream + stream_id, buf, len);
+                saveoutbuf(svr, buf, len, sol_index);
+            }
+    };
+
+    for (int i = 0; i < 2; i++)
         {
-            /* output solution */
+            /* Normal solution */
             n = outsols(buff, &svr->rtk.sol, svr->rtk.rb, svr->solopt + i);
-            strwrite(svr->stream + i + 3, buff, n);
+            output_and_save(buff, n, i + 3, i);
 
-            /* save output buffer */
-            saveoutbuf(svr, buff, n, i);
-
-            /* output extended solution */
+            /* Extended solution */
             n = outsolexs(buff, &svr->rtk.sol, svr->rtk.ssat, svr->solopt + i);
-            strwrite(svr->stream + i + 3, buff, n);
-
-            /* save output buffer */
-            saveoutbuf(svr, buff, n, i);
+            output_and_save(buff, n, i + 3, i);
         }
-    /* output solution to monitor port */
+
+    /* Output solution to monitor port */
     if (svr->moni)
         {
             n = outsols(buff, &svr->rtk.sol, svr->rtk.rb, &solopt);
-            strwrite(svr->moni, buff, n);
+            if (n > 0 && n <= MAXSOLMSG)
+                {
+                    strwrite(svr->moni, buff, n);
+                }
         }
-    /* save solution buffer */
+
+    /* Save solution buffer */
+    rtksvrlock(svr);
     if (svr->nsol < MAXSOLBUF)
         {
-            rtksvrlock(svr);
             svr->solbuf[svr->nsol++] = svr->rtk.sol;
-            rtksvrunlock(svr);
         }
+    rtksvrunlock(svr);
 }
 
 
@@ -1055,26 +1062,48 @@ int rtksvrstart(rtksvr_t *svr, int cycle, int buffsize, int *strs,
  *-----------------------------------------------------------------------------*/
 void rtksvrstop(rtksvr_t *svr, char **cmds)
 {
-    int i;
+    if (!svr || !cmds)
+        {
+            tracet(1, "rtksvrstop: Invalid arguments\n");
+            return;
+        }
 
     tracet(3, "rtksvrstop:\n");
 
-    /* write stop commands to input streams */
+    /* copy stop commands to input streams */
+    char *local_cmds[3] = {nullptr, nullptr, nullptr};
     rtksvrlock(svr);
-    for (i = 0; i < 3; i++)
+    for (int i = 0; i < 3; i++)
         {
-            if (cmds[i])
-                {
-                    strsendcmd(svr->stream + i, cmds[i]);
-                }
+            local_cmds[i] = cmds[i];
         }
     rtksvrunlock(svr);
 
-    /* stop rtk server */
-    svr->state = 0;
+    /* write stop commands to input streams */
+    for (int i = 0; i < 3; i++)
+        {
+            if (local_cmds[i])
+                {
+                    strsendcmd(svr->stream + i, local_cmds[i]);
+                }
+        }
 
-    /* free rtk server thread */
-    pthread_join(svr->thread, nullptr);
+    rtksvrlock(svr);
+    svr->state = 0;
+    rtksvrunlock(svr);
+
+    if (svr->thread)
+        {
+            int ret = pthread_join(svr->thread, nullptr);
+            if (ret != 0)
+                {
+                    tracet(1, "rtksvrstop: pthread_join failed with code %d\n", ret);
+                }
+            else
+                {
+                    svr->thread = nullptr;
+                }
+        }
 }
 
 

@@ -494,62 +494,83 @@ int readdcbf(const char *file, nav_t *nav, const sta_t *sta)
     double cbias;
     char buff[256];
     char str1[32];
-    char str2[32] = "";
+    char str2[32];
     int i;
     int j;
     int sat;
-    int type = 0;
+    int type = 0; /* 0 = none, 1=P1-P2, 2=P1-C1, 3=P2-C2 */
 
     trace(3, "readdcbf: file=%s\n", file);
 
-    if (!(fp = fopen(file, "re")))
+    if (!(fp = fopen(file, "r")))
         {
             trace(2, "dcb parameters file open error: %s\n", file);
             return 0;
         }
+
     while (fgets(buff, sizeof(buff), fp))
         {
+            /* Detect section headers */
             if (strstr(buff, "DIFFERENTIAL (P1-P2) CODE BIASES"))
                 {
                     type = 1;
+                    continue;
                 }
             else if (strstr(buff, "DIFFERENTIAL (P1-C1) CODE BIASES"))
                 {
                     type = 2;
+                    continue;
                 }
             else if (strstr(buff, "DIFFERENTIAL (P2-C2) CODE BIASES"))
                 {
                     type = 3;
+                    continue;
                 }
 
-            if (!type || sscanf(buff, "%s %s", str1, str2) < 1)
+            /* Skip lines until we are in a known section */
+            if (!type)
                 {
                     continue;
                 }
 
-            if ((cbias = str2num(buff, 26, 9)) == 0.0)
+            /* Parse tokens */
+            str1[0] = '\0';
+            str2[0] = '\0';
+            if (sscanf(buff, "%31s %31s", str1, str2) < 1)
                 {
                     continue;
+                }
+
+            /* Parse bias value */
+            cbias = str2num(buff, 26, 9);
+            if (fabs(cbias) < 1e-12)
+                {
+                    continue; /* skip zero/near-zero biases */
                 }
 
             if (sta && (!strcmp(str1, "G") || !strcmp(str1, "R")))
-                { /* receiver dcb */
+                {
+                    /* Receiver DCB  */
                     for (i = 0; i < MAXRCV; i++)
                         {
                             if (!strcmp(sta[i].name, str2))
                                 {
+                                    j = !strcmp(str1, "G") ? 0 : 1;
+                                    nav->rbias[i][j][type - 1] = cbias * 1e-9 * SPEED_OF_LIGHT_M_S;  // ns -> m
                                     break;
                                 }
                         }
-                    if (i < MAXRCV)
-                        {
-                            j = !strcmp(str1, "G") ? 0 : 1;
-                            nav->rbias[i][j][type - 1] = cbias * 1e-9 * SPEED_OF_LIGHT_M_S; /* ns -> m */
-                        }
                 }
-            else if ((sat = satid2no(str1)))
-                {                                                                      /* satellite dcb */
-                    nav->cbias[sat - 1][type - 1] = cbias * 1e-9 * SPEED_OF_LIGHT_M_S; /* ns -> m */
+            else if ((sat = satid2no(str1)) > 0)
+                {
+                    /* Satellite DCB */
+                    nav->cbias[sat - 1][type - 1] = cbias * 1e-9 * SPEED_OF_LIGHT_M_S;  // ns -> m
+                }
+
+            /* reset type when a blank line is found (end of section) */
+            if (buff[0] == '\n' || buff[0] == '\r')
+                {
+                    type = 0;
                 }
         }
     fclose(fp);

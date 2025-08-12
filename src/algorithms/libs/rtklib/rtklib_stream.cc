@@ -380,7 +380,7 @@ file_t *openfile(std::string const &path, int mode, char *msg)
 
 
     /* file options */
-    while (not tokens.empty())
+    while (!tokens.empty())
         {
             auto tag = tokens.front();
             tokens.pop_front();
@@ -512,82 +512,101 @@ int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
 {
     struct timeval tv = {0, 0};
     fd_set rs;
-    unsigned int t;
-    unsigned int tick;
     int nr = 0;
-    size_t fpos;
 
     if (!file)
         {
             return 0;
         }
+
     tracet(4, "readfile: fp=%p nmax=%d\n", file->fp, nmax);
 
+    /* Input from stdin */
     if (file->fp == stdin)
         {
-            /* input from stdin */
-            std::memset(&rs, 0, sizeof(fd_set));
+            FD_ZERO(&rs);
             FD_SET(0, &rs);
-            if (!select(1, &rs, nullptr, nullptr, &tv))
+            if (select(1, &rs, nullptr, nullptr, &tv) <= 0)
                 {
                     return 0;
                 }
-            if ((nr = read(0, buff, nmax)) < 0)
-                {
-                    return 0;
-                }
-            return nr;
+            nr = read(0, buff, nmax);
+            return (nr > 0) ? nr : 0;
         }
+
+    /* If there is a .tag file for replay */
     if (file->fp_tag)
         {
+            unsigned int t;
             if (file->repmode)
-                { /* slave */
-                    t = (tick_master + file->offset);
+                {
+                    /* slave mode */
+                    t = tick_master + file->offset;
                 }
             else
-                { /* master */
+                {
+                    /* master mode */
                     t = static_cast<unsigned int>((tickget() - file->tick) * file->speed + file->start * 1000.0);
                 }
+
             for (;;)
-                { /* seek file position */
-                    if (fread(&tick, sizeof(tick), 1, file->fp_tag) < 1 ||
-                        fread(&fpos, sizeof(fpos), 1, file->fp_tag) < 1)
+                {
+                    struct
+                    {
+                        unsigned int tick;
+                        size_t fpos;
+                    } record;
+
+                    if (fread(&record, sizeof(record), 1, file->fp_tag) < 1)
                         {
-                            if (fseek(file->fp, 0, SEEK_END) != 0)
+                            if (fseeko(file->fp, 0, SEEK_END) != 0)
                                 {
                                     trace(1, "fseek error");
                                 }
-                            std::snprintf(msg, MAXSTRPATH, "end");
+                            if (msg)
+                                {
+                                    std::snprintf(msg, MAXSTRPATH, "end");
+                                }
                             break;
                         }
+
+                    /* Time control */
                     if (file->repmode || file->speed > 0.0)
                         {
-                            if (static_cast<int>(tick - t) < 1)
+                            int64_t diff = static_cast<int64_t>(record.tick) - static_cast<int64_t>(t);
+                            if (diff < 1)
                                 {
-                                    continue;
+                                    continue;  // wait until tick is reached
                                 }
                         }
+
                     if (!file->repmode)
                         {
-                            tick_master = tick;
+                            tick_master = record.tick;
                         }
 
-                    std::snprintf(msg, MAXSTRPATH, "T%+.1fs", static_cast<int>(tick) < 0 ? 0.0 : static_cast<int>(tick) / 1000.0);
-
-                    if (static_cast<int>(fpos - file->fpos) >= nmax)
+                    if (msg)
                         {
-                            if (fseek(file->fp, fpos, SEEK_SET) != 0)
+                            double seconds = record.tick > 0 ? record.tick / 1000.0 : 0.0;
+                            std::snprintf(msg, MAXSTRPATH, "T%+.1fs", seconds);
+                        }
+
+                    /* If jump in file position */
+                    if (static_cast<int64_t>(record.fpos) - static_cast<int64_t>(file->fpos) >= nmax)
+                        {
+                            if (fseeko(file->fp, static_cast<off_t>(record.fpos), SEEK_SET) != 0)
                                 {
                                     trace(1, "Error fseek");
                                 }
-                            file->fpos = fpos;
+                            file->fpos = record.fpos;
                             return 0;
                         }
-                    nmax = static_cast<int>(fpos - file->fpos);
+
+                    nmax = static_cast<int>(record.fpos - file->fpos);
 
                     if (file->repmode || file->speed > 0.0)
                         {
-                            if (fseek(file->fp_tag, -static_cast<int64_t>(sizeof(tick) + sizeof(fpos)), SEEK_CUR) != 0)
+                            if (fseeko(file->fp_tag, -static_cast<off_t>(sizeof(record)), SEEK_CUR) != 0)
                                 {
                                     trace(1, "Error fseek");
                                 }
@@ -595,16 +614,19 @@ int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
                     break;
                 }
         }
+
+    /* Read data from main file */
     if (nmax > 0)
         {
-            nr = fread(buff, 1, nmax, file->fp);
+            nr = static_cast<int>(fread(buff, 1, nmax, file->fp));
             file->fpos += nr;
-            if (nr <= 0)
+            if (nr <= 0 && msg)
                 {
                     std::snprintf(msg, MAXSTRPATH, "end");
                 }
         }
-    tracet(5, "readfile: fp=%p \n nr=%d fpos=%u\n", file->fp, nr, file->fpos);
+
+    tracet(5, "readfile: fp=%p nr=%d fpos=%zu\n", file->fp, nr, file->fpos);
     return nr;
 }
 
@@ -2245,14 +2267,15 @@ void strinit(stream_t *stream)
 int stropen(stream_t *stream, int type, int mode, const char *path)
 {
     tracet(3, "stropen: type=%d mode=%d path=%s\n", type, mode, path);
-
+    if (!stream || !path)
+        {
+            return 0; /* invalid arguments */
+        }
+    strlock(stream);
     stream->type = type;
     stream->mode = mode;
-    if (strlen(path) < MAXSTRPATH)
-        {
-            std::strncpy(stream->path, path, MAXSTRPATH - 1);
-            stream->path[MAXSTRPATH - 1] = '\0';
-        }
+    std::strncpy(stream->path, path, MAXSTRPATH - 1);
+    stream->path[MAXSTRPATH - 1] = '\0';
     stream->inb = stream->inr = stream->outb = stream->outr = 0;
     stream->tick = tickget();
     stream->inbt = stream->outbt = 0;
@@ -2288,8 +2311,9 @@ int stropen(stream_t *stream, int type, int mode, const char *path)
             stream->state = 0;
             return 1;
         }
-    stream->state = !stream->port ? -1 : 1;
-    return stream->port != nullptr;
+    stream->state = (stream->port != nullptr) ? 1 : -1;
+    strunlock(stream);
+    return (stream->port != nullptr) ? 1 : 0;
 }
 
 

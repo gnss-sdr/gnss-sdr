@@ -626,7 +626,7 @@ int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
                 }
         }
 
-    tracet(5, "readfile: fp=%p nr=%d fpos=%zu\n", file->fp, nr, file->fpos);
+    tracet(5, "readfile: fp=%p \n nr=%d fpos=%u\n", file->fp, nr, file->fpos);
     return nr;
 }
 
@@ -2271,7 +2271,6 @@ int stropen(stream_t *stream, int type, int mode, const char *path)
         {
             return 0; /* invalid arguments */
         }
-    strlock(stream);
     stream->type = type;
     stream->mode = mode;
     std::strncpy(stream->path, path, MAXSTRPATH - 1);
@@ -2312,7 +2311,6 @@ int stropen(stream_t *stream, int type, int mode, const char *path)
             return 1;
         }
     stream->state = (stream->port != nullptr) ? 1 : -1;
-    strunlock(stream);
     return (stream->port != nullptr) ? 1 : 0;
 }
 

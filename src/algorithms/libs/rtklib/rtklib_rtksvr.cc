@@ -1099,10 +1099,6 @@ void rtksvrstop(rtksvr_t *svr, char **cmds)
                 {
                     tracet(1, "rtksvrstop: pthread_join failed with code %d\n", ret);
                 }
-            else
-                {
-                    svr->thread = nullptr;
-                }
         }
 }
 

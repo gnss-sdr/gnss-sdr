@@ -571,7 +571,7 @@ int GNSSFlowgraph::connect_desktop_flowgraph()
     for (int i = 0; i < channels_count_; i++)
         {
             LOG(INFO) << "Channel " << i << " assigned to " << channels_.at(i)->get_signal();
-            if (channels_state_[i] == 1)
+            if (channels_state_[i] == 2)
                 {
 #if ENABLE_FPGA
                     if (enable_fpga_offloading_)
@@ -1696,7 +1696,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                 {
                     LOG(WARNING) << e.what();
                 }
-            if ((acq_channels_count_ < max_acq_channels_) && (channels_state_[current_channel] == 0))
+            if ((acq_channels_count_ < max_acq_channels_) && (channels_state_[current_channel] <= 1))
                 {
                     bool is_primary_freq = true;
                     bool assistance_available = false;
@@ -1705,7 +1705,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                     float estimated_doppler;
                     double RX_time;
 
-                    if (sat_ == 0)
+                    if ((sat_ == 0) && (channels_state_[current_channel] == 0))
                         {
                             gnss_signal = search_next_signal(channels_[current_channel]->get_signal().get_signal_str(),
                                 is_primary_freq,
@@ -1723,7 +1723,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
 
                     if (start_acquisition == true)
                         {
-                            channels_state_[current_channel] = 1;
+                            channels_state_[current_channel] = 2;
                             acq_channels_count_++;
                             DLOG(INFO) << "Channel " << current_channel
                                        << " Starting acquisition " << channels_[current_channel]->get_signal().get_satellite()
@@ -1830,7 +1830,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             // If the satellite is in the list of available ones, remove it.
             remove_signal(gs);
 
-            channels_state_[who] = 2;
+            channels_state_[who] = 3;
             if (acq_channels_count_ > 0)
                 {
                     acq_channels_count_--;
@@ -1845,7 +1845,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             if (acq_channels_count_ < max_acq_channels_)
                 {
                     // try to acquire the same satellite
-                    channels_state_[who] = 1;
+                    channels_state_[who] = 2;
                     acq_channels_count_++;
                     DLOG(INFO) << "Channel " << who << " Starting acquisition " << gs.get_satellite() << ", Signal " << gs.get_signal_str();
                     channels_[who]->set_signal(channels_[who]->get_signal());
@@ -1878,7 +1878,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         case 10:  // request standby mode
             for (size_t n = 0; n < channels_.size(); n++)
                 {
-                    if (channels_state_[n] == 1 or channels_state_[n] == 2)  // channel in acquisition or in tracking
+                    if (channels_state_[n] == 2 or channels_state_[n] == 3)  // channel in acquisition or in tracking
                         {
                             // recover the satellite assigned
                             Gnss_Signal gs_assigned = channels_[n]->get_signal();
@@ -1949,7 +1949,7 @@ void GNSSFlowgraph::start_acquisition_helper()
     std::lock_guard<std::mutex> lock(signal_list_mutex_);
     for (int i = 0; i < channels_count_; i++)
         {
-            if (channels_state_[i] == 1)
+            if (channels_state_[i] == 2)
                 {
 #if ENABLE_FPGA
                     if (enable_fpga_offloading_)
@@ -2119,11 +2119,11 @@ void GNSSFlowgraph::set_channels_state()
         {
             if (i < max_acq_channels_)
                 {
-                    channels_state_.push_back(1);
+                    channels_state_.push_back(2);
                 }
             else
                 {
-                    channels_state_.push_back(0);
+                    channels_state_.push_back(1);
                 }
             DLOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
         }
@@ -2258,11 +2258,6 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
         {
             result = available_signals.front();
             available_signals.pop_front();
-            const std::string sys = result.get_satellite().get_system();
-            if ((sys == "Glonass") || (sys == "Beidou"))
-                {
-                    available_signals.push_back(result);
-                }
         }
 
     return result;

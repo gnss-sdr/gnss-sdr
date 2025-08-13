@@ -532,7 +532,7 @@ def main():
         action='store_true',
         help='Run without displaying plot window'
     )
-    # Add the observation filename
+    # Add the use-obs flag
     parser.add_argument(
         '--use-obs',
         action='store_true',

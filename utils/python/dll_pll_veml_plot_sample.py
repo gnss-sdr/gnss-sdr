@@ -54,6 +54,12 @@ for N in range(1, channels+1):
                                      f'trk_dump_ch{N-1+first_channel}.dat')
     GNSS_tracking.append(dll_pll_veml_read_tracking_dump(tracking_log_path))
 
+# Store all PVT_TRK_diff plots in one figure
+if PVT_TRK_diff == 1:
+    all_times = []
+    all_offsets = []
+    all_prns = []
+
 # GNSS-SDR format conversion to Python GPS receiver
 for N in range (1, channels+1):
     if 0 < plot_last_outputs < len(GNSS_tracking[N - 1].get("code_freq_hz")):
@@ -123,5 +129,27 @@ for N in range (1, channels+1):
         plt.ylabel('Offset(ms)')
         plt.title('PVT Tracking Time Offset ' + str(N))
 
-        plt.savefig(os.path.join(fig_path, f'PVT_TRK_diff_{N}.png'))
+        # Set y-axis limits
+        plt.ylim(200, 500)
+
+        plt.savefig(os.path.join(fig_path, f'PVT_TRK_diff_ch_{N}.png'))
         plt.show()
+
+        # Save data for the combined plot
+        all_times.append(trackResults[N - 1]['prn_start_time_s'])
+        all_offsets.append([x / (sampling_freq / 1000) for x in GNSS_tracking[N - 1]['PVT_TRK_diff'][start_sample:]])
+        all_prns.append(int(trackResults[N - 1]['PRN'][0]))
+
+# ---- Combined plot for all satellites ----
+if PVT_TRK_diff == 1 and all_times:
+    plt.figure()
+    for t, y, prn in zip(all_times, all_offsets, all_prns):
+        plt.plot(t, y, label=f"PRN {prn}")
+    plt.xlabel("Time(s)")
+    plt.ylabel("Offset(ms)")
+    plt.title("PVT Tracking Time Offset - All Satellites")
+    plt.ylim(200, 500)
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(os.path.join(fig_path, "PVT_TRK_diff_all_ch.png"))
+    plt.show()

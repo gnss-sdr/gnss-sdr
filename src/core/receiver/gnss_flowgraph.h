@@ -244,7 +244,7 @@ private:
     gnss_sdr_fpga_sample_counter_sptr ch_out_fpga_sample_counter_;
 #endif
 
-    std::vector<unsigned int> channels_state_;
+    std::vector<unsigned int> channels_state_;  // 0 - Idle, 1 - Assigned, 2 - Acquisition, 3 - Tracking
 
     std::unordered_map<std::string, std::list<Gnss_Signal>> available_signals_map_;
 

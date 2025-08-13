@@ -205,15 +205,12 @@ def calculate_satellite_position(ephemeris, transmit_time):
         # Semi-major axis
         a = ephemeris['sqrt_a'] ** 2
 
-        # Time difference from ephemeris reference time
-        tk = transmit_time - ephemeris['toe']
-
         # Corrected mean motion
         n0 = sqrt(mu / (a ** 3))
         n = n0 + ephemeris['delta_n']
 
         # Mean anomaly
-        mk = ephemeris['m0'] + n * tk
+        mk = ephemeris['m0'] + n * transmit_time
 
         # Solve Kepler's equation for eccentric anomaly (Ek)
         ek = mk
@@ -237,7 +234,7 @@ def calculate_satellite_position(ephemeris, transmit_time):
         # Corrected argument of latitude, radius and inclination
         uk = phi_k + delta_uk
         rk = a * (1 - ephemeris['ecc'] * cos(ek)) + delta_rk
-        ik = ephemeris['i0'] + delta_ik + ephemeris['idot'] * tk
+        ik = ephemeris['i0'] + delta_ik + ephemeris['idot'] * transmit_time
 
         # Positions in orbital plane
         xk_prime = rk * cos(uk)
@@ -246,7 +243,7 @@ def calculate_satellite_position(ephemeris, transmit_time):
         # Corrected longitude of ascending node
         omega_k = (
             ephemeris['omega0']
-            + (ephemeris['omega_dot'] - omega_e_dot) * tk
+            + (ephemeris['omega_dot'] - omega_e_dot) * transmit_time
             - omega_e_dot * ephemeris['toe']
         )
 

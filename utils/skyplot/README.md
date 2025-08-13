@@ -16,8 +16,8 @@ showing satellite visibility over time.
 ## Features
 
 - Processes RINEX navigation files.
-- Optionally uses an OBS file to limit plot to the receiver observation
-  time (--use-obs).
+- Optionally uses an OBS file to limit plot to the receiver observation time
+  (--use-obs).
   - When enabled, the tool looks for a matching file by replacing the last
     character of the NAV filename with O/o and uses it if found.
 - Calculates satellite positions using broadcast ephemeris.
@@ -63,7 +63,8 @@ showing satellite visibility over time.
   ```
   ./skyplot.py brdc0010.22n 40.7128 -74.0060 10.0
   ```
-- Skyplot from custom location (Santiago, Chile) using receiver observation time:
+- Skyplot from custom location (Santiago, Chile) using receiver observation
+  time:
   ```
   ./skyplot.py brdc0010.22n -33.4592 -70.6453 520.0 --use-obs
   ```

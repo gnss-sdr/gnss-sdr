@@ -16,9 +16,9 @@ showing satellite visibility over time.
 ## Features
 
 - Processes RINEX navigation files.
-- Optionally uses an OBS file to limit plot to the receiver active processing 
+- Optionally uses an OBS file to limit plot to the receiver active processing
   time (--use-obs).
-  - When enabled, the tool looks for a matching file by replacing the last 
+  - When enabled, the tool looks for a matching file by replacing the last
     character of the NAV filename with O/o and uses it if found.
 - Calculates satellite positions using broadcast ephemeris.
 - Plots satellite tracks in azimuth-elevation coordinates.

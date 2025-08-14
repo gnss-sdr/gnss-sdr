@@ -360,7 +360,7 @@ def ecef_to_az_el(x, y, z, obs_lat, obs_lon, obs_alt):
 def plot_satellite_tracks(satellites, obs_lat, obs_lon, obs_alt,
                          footer_text=None, filename=None,
                          show_plot=True, start_time=None, 
-                         end_time=None):
+                         end_time=None, elev_mask=5.0):
     """Plot trajectories for all visible satellites"""
     plt.rcParams["font.family"] = "Times New Roman"
     fig = plt.figure(figsize=(8, 8))
@@ -428,7 +428,7 @@ def plot_satellite_tracks(satellites, obs_lat, obs_lon, obs_alt,
         current_seg_el = []
         for _, x, y, z in positions:
             azimuth, elevation = ecef_to_az_el(x, y, z, obs_lat, obs_lon, obs_alt)
-            if elevation > 5:
+            if elevation > elev_mask:
                 current_seg_az.append(azimuth)
                 current_seg_el.append(elevation)
             else:
@@ -535,6 +535,11 @@ def main():
         action='store_true',
         help='Use corresponding RINEX observation file to bound the skyplot to the receiver time window'
     )
+    # Add the elev-mask flag.
+    parser.add_argument(
+        '--elev-mask', type=float, default=5.0,
+        help='Elevation mask in degrees for plotting satellite tracks (default: 5°)'
+    )
 
     # Parse known args (this ignores other positional args)
     args, remaining_args = parser.parse_known_args()
@@ -542,10 +547,10 @@ def main():
     # Handle help manually
     if '-h' in remaining_args or '--help' in remaining_args:
         print("""
-Usage: python skyplot.py <RINEX_FILE> [LATITUDE] [LONGITUDE] [ALTITUDE] [--use-obs] [--no-show]
+Usage: python skyplot.py <RINEX_FILE> [LATITUDE] [LONGITUDE] [ALTITUDE] [--use-obs] [--elev-mask] [--no-show]
 
 Example:
-  python skyplot.py brdc0010.22n 41.275 1.9876 80.0 --use-obs --no-show
+  python skyplot.py brdc0010.22n 41.275 1.9876 80.0 --use-obs --no-show --elev-mask=10
 """)
         sys.exit(0)
 
@@ -649,7 +654,8 @@ Example:
         filename=filename,
         show_plot=not args.no_show,
         start_time=use_start,
-        end_time=use_end
+        end_time=use_end,
+        elev_mask=args.elev_mask
     )
 
 

@@ -17,11 +17,12 @@ showing satellite visibility over time.
 
 - Processes RINEX navigation files.
 - Optionally uses an OBS file to limit plot to the receiver observation time
-  (--use-obs).
+  (`--use-obs`).
   - When enabled, the tool looks for a matching file by replacing the last
     character of the NAV filename with O/o and uses it if found.
 - Calculates satellite positions using broadcast ephemeris.
 - Plots satellite tracks in azimuth-elevation coordinates.
+- Elevation mask set to 5°, configurable via the `--elev-mask` flag.
 - Color-codes satellites by constellation (GPS, Galileo, GLONASS, BeiDou).
 - Customizable observer location.
 - Outputs high-quality image in PDF format.
@@ -39,7 +40,7 @@ showing satellite visibility over time.
 ### Basic Command
 
 ```
-./skyplot.py <RINEX_FILE> [LATITUDE] [LONGITUDE] [ALTITUDE] [--use-obs] [--no-show]
+./skyplot.py <RINEX_FILE> [LATITUDE] [LONGITUDE] [ALTITUDE] [--use-obs] [--elev-mask] [--no-show]
 ```
 
 ### Arguments

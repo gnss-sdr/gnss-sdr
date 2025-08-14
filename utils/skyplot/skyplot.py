@@ -2,9 +2,10 @@
 """
  skyplot.py
 
- Reads a RINEX navigation file and generates a skyplot
+ Reads a RINEX navigation file and generates a skyplot. Optionally, a RINEX observation file can 
+ also be read to match the skyplot to the receiver processing time.
 
- Usage: python skyplot.py <RINEX_NAV_FILE> [observer_lat] [observer_lon] [observer_alt]
+ Usage: python skyplot.py <RINEX_NAV_FILE> [observer_lat] [observer_lon] [observer_alt] [--use-obs] 
 
  -----------------------------------------------------------------------------
 
@@ -26,6 +27,54 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+
+
+def _read_obs_time_bounds(obs_path):
+    """Return (start_time, end_time) from a RINEX 2/3 OBS file by scanning epoch lines.
+    If parsing fails or the file is not OBS, return (None, None).
+    """
+    try:
+        with open(obs_path, 'r', encoding='utf-8', errors='ignore') as f:
+            # Detect OBS in header and skip to END OF HEADER
+            is_obs = False
+            for line in f:
+                if "RINEX VERSION / TYPE" in line:
+                    # Robust OBS detection:
+                    # In RINEX 2/3 the file-type letter at col 21 (0-based idx 20)
+                    tchar = line[20:21]
+                    if tchar == 'O' or 'OBSERVATION DATA' in line:
+                        is_obs = True
+                if "END OF HEADER" in line:
+                    break
+            if not is_obs:
+                return (None, None)
+
+            start_time = None
+            end_time = None
+
+            for line in f:
+                if not line.strip():
+                    continue
+                if line.startswith('>'):  # RINEX 3 epoch line
+                    yyyy = int(line[2:6]); mm = int(line[7:9]); dd = int(line[10:12])
+                    hh = int(line[13:15]); mi = int(line[16:18]); ss = float(line[19:29])
+                    epoch = datetime(yyyy, mm, dd, hh, mi, int(ss), int((ss % 1)*1e6))
+                else:
+                    # RINEX 2 epoch line
+                    try:
+                        yy = int(line[1:3]); mm = int(line[4:6]); dd = int(line[7:9])
+                        hh = int(line[10:12]); mi = int(line[13:15]); ss = float(line[15:26])
+                        yyyy = 1900 + yy if yy >= 80 else 2000 + yy
+                        epoch = datetime(yyyy, mm, dd, hh, mi, int(ss), int((ss % 1)*1e6))
+                    except Exception:
+                        continue
+                if start_time is None or epoch < start_time:
+                    start_time = epoch
+                if end_time is None or epoch > end_time:
+                    end_time = epoch
+            return (start_time, end_time)
+    except Exception:
+        return (None, None)
 
 
 def parse_rinex_float(s):
@@ -205,15 +254,12 @@ def calculate_satellite_position(ephemeris, transmit_time):
         # Semi-major axis
         a = ephemeris['sqrt_a'] ** 2
 
-        # Time difference from ephemeris reference time
-        tk = transmit_time - ephemeris['toe']
-
         # Corrected mean motion
         n0 = sqrt(mu / (a ** 3))
         n = n0 + ephemeris['delta_n']
 
         # Mean anomaly
-        mk = ephemeris['m0'] + n * tk
+        mk = ephemeris['m0'] + n * transmit_time
 
         # Solve Kepler's equation for eccentric anomaly (Ek)
         ek = mk
@@ -237,7 +283,7 @@ def calculate_satellite_position(ephemeris, transmit_time):
         # Corrected argument of latitude, radius and inclination
         uk = phi_k + delta_uk
         rk = a * (1 - ephemeris['ecc'] * cos(ek)) + delta_rk
-        ik = ephemeris['i0'] + delta_ik + ephemeris['idot'] * tk
+        ik = ephemeris['i0'] + delta_ik + ephemeris['idot'] * transmit_time
 
         # Positions in orbital plane
         xk_prime = rk * cos(uk)
@@ -246,7 +292,7 @@ def calculate_satellite_position(ephemeris, transmit_time):
         # Corrected longitude of ascending node
         omega_k = (
             ephemeris['omega0']
-            + (ephemeris['omega_dot'] - omega_e_dot) * tk
+            + (ephemeris['omega_dot'] - omega_e_dot) * transmit_time
             - omega_e_dot * ephemeris['toe']
         )
 
@@ -313,7 +359,8 @@ def ecef_to_az_el(x, y, z, obs_lat, obs_lon, obs_alt):
 
 def plot_satellite_tracks(satellites, obs_lat, obs_lon, obs_alt,
                          footer_text=None, filename=None,
-                         show_plot=True):
+                         show_plot=True, start_time=None, 
+                         end_time=None):
     """Plot trajectories for all visible satellites"""
     plt.rcParams["font.family"] = "Times New Roman"
     fig = plt.figure(figsize=(8, 8))
@@ -361,12 +408,21 @@ def plot_satellite_tracks(satellites, obs_lat, obs_lon, obs_alt,
         # Get the most recent ephemeris
         if not ephemeris_list:
             continue
-        ephemeris = max(ephemeris_list, key=lambda x: x['epoch'])
+
+        mid_time = start_time + (end_time - start_time) / 2
+        prev_eph = [e for e in ephemeris_list if e['epoch'] <= mid_time]  # Previous ephemeris
+
+        if prev_eph:  # Pick the most recent ephemeris before or at the midpoint
+            ephemeris = max(prev_eph, key=lambda e: e['epoch'])
+        else:  # Pick the ephemeris whose epoch is closest in time to the midpoint
+            ephemeris = min(ephemeris_list, key=lambda e: abs((e['epoch'] - mid_time).total_seconds()))
 
         # Calculate trajectory
-        all_epochs = sorted({e['epoch'] for prn_data in satellites.values() for e in prn_data})
-        start_time = min(all_epochs)
-        end_time = max(all_epochs)
+        if start_time is None or end_time is None:
+            all_epochs = sorted({e['epoch'] for prn_data in satellites.values() for e in prn_data})
+            start_time = min(all_epochs)
+            end_time = max(all_epochs)
+
         positions = calculate_satellite_positions(ephemeris, start_time, end_time)
 
         az = []
@@ -470,11 +526,17 @@ def main():
         add_help=False
     )
 
-    # Add only the no-show flag
+    # Add the no-show flag
     parser.add_argument(
         '--no-show', 
         action='store_true',
         help='Run without displaying plot window'
+    )
+    # Add the use-obs flag
+    parser.add_argument(
+        '--use-obs',
+        action='store_true',
+        help='Use corresponding RINEX observation file to bound the skyplot to the receiver time window'
     )
 
     # Parse known args (this ignores other positional args)
@@ -483,10 +545,10 @@ def main():
     # Handle help manually
     if '-h' in remaining_args or '--help' in remaining_args:
         print("""
-Usage: python skyplot.py <RINEX_FILE> [LATITUDE] [LONGITUDE] [ALTITUDE] [--no-show]
+Usage: python skyplot.py <RINEX_FILE> [LATITUDE] [LONGITUDE] [ALTITUDE] [--use-obs] [--no-show]
 
 Example:
-  python skyplot.py brdc0010.22n 41.275 1.9876 80.0 --no-show
+  python skyplot.py brdc0010.22n 41.275 1.9876 80.0 --use-obs --no-show
 """)
         sys.exit(0)
 
@@ -549,8 +611,38 @@ Example:
         print(f"- {system_name} ({system}): {count} satellites")
 
     # Generate the combined skyplot
+    # Time window: OBS bounds if provided; else NAV span
+    use_start, use_end = all_epochs[0], all_epochs[-1]
+    if args.use_obs:
+        tried = []
+        obs_path = None
+        stem = filename[:-1]
+
+        for s in ('O', 'o'):  # Try uppercase then lowercase
+            candidate = stem + s
+            tried.append(candidate)
+            if Path(candidate).exists():
+                obs_path = candidate
+                break
+
+        if obs_path:
+            obs_start, obs_end = _read_obs_time_bounds(obs_path)
+            if obs_start and obs_end:
+                use_start, use_end = obs_start, obs_end
+                print(f"\nObservation window detected from {obs_path}: {use_start} → {use_end}")
+            else:
+                print(f"\nWarning: Could not read valid times from {obs_path}. Using NAV span instead.")
+        else:
+            print(f"\nOBS file not found. Tried: {', '.join(tried)}. Using NAV span instead.")
+
+    # Ensure at least two samples with the default 5-minute step
+    if (use_end - use_start) < timedelta(minutes=5):
+        use_end = use_start + timedelta(minutes=5)
+
+    # Generate the combined skyplot
     print("\nGenerating skyplot...")
-    footer = f"From {all_epochs[0]} to {all_epochs[-1]} UTC"
+    footer = f"From {use_start} to {use_end} UTC"
+
     plot_satellite_tracks(
         satellites,
         obs_lat,
@@ -558,7 +650,9 @@ Example:
         obs_alt,
         footer_text=footer,
         filename=filename,
-        show_plot=not args.no_show
+        show_plot=not args.no_show,
+        start_time=use_start,
+        end_time=use_end
     )
 
 

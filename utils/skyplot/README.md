@@ -24,6 +24,7 @@ showing satellite visibility over time.
 - Plots satellite tracks in azimuth-elevation coordinates.
 - Elevation mask set to 5°, configurable via the `--elev-mask` flag.
 - Color-codes satellites by constellation (GPS, Galileo, GLONASS, BeiDou).
+- Constellations to plot can be configured via the `--system` flag.
 - Customizable observer location.
 - Outputs high-quality image in PDF format.
 - Non-interactive mode for CI jobs (with `--no-show` flag).
@@ -40,7 +41,7 @@ showing satellite visibility over time.
 ### Basic Command
 
 ```
-./skyplot.py <RINEX_FILE> [LATITUDE] [LONGITUDE] [ALTITUDE] [--use-obs] [--elev-mask] [--no-show]
+./skyplot.py <RINEX_FILE> [LATITUDE] [LONGITUDE] [ALTITUDE] [--use-obs] [--elev-mask] [--system ...] [--no-show]
 ```
 
 ### Arguments
@@ -52,6 +53,8 @@ showing satellite visibility over time.
 | `LONGITUDE`      | Optional | degrees (°) | East/West position     | 1.9876°E |
 | `ALTITUDE`       | Optional | meters (m)  | Height above sea level | 80.0 m   |
 | `--use-obs`      | Optional | -           | Use RINEX obs data     | -        |
+| `--elev-mask`    | Optional | degrees (°) | Elevation mask         | 5°       |
+| `--system`       | Optional | -           | Systems to plot        | All      |
 | `--no-show`      | Optional | -           | Do not show plot       | -        |
 
 ### Examples
@@ -72,6 +75,14 @@ showing satellite visibility over time.
 - Non-interactive mode (for CI jobs):
   ```
   ./skyplot.py brdc0010.22n -33.4592 -70.6453 520.0 --no-show
+  ```
+- Only plot GPS and Galileo satellites:
+  ```
+  ./skyplot.py brdc0010.22n -33.4592 -70.6453 520.0 --system GPS Galileo
+  ```
+  or
+  ```
+  ./skyplot.py brdc0010.22n -33.4592 -70.6453 520.0 --system G E
   ```
 
 ## Output

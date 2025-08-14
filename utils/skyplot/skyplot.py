@@ -517,6 +517,17 @@ def plot_satellite_tracks(satellites, obs_lat, obs_lon, obs_alt,
 
 def main():
     """Generate the skyplot"""
+    # Set system names and codes
+    system_name_to_code = {
+        'GPS': 'G',
+        'GLONASS': 'R',
+        'GALILEO': 'E',
+        'BEIDOU': 'C',
+        'QZSS': 'J',
+        'IRNSS': 'I',
+        'SBAS': 'S'
+    }
+
     # Set up argument parser
     parser = argparse.ArgumentParser(
         description='Generate GNSS skyplot from RINEX navigation file',
@@ -540,17 +551,22 @@ def main():
         '--elev-mask', type=float, default=5.0,
         help='Elevation mask in degrees for plotting satellite tracks (default: 5°)'
     )
-
+    # Add the system flag.
+    parser.add_argument(
+        '--system',
+        nargs='+',
+        help='Only plot satellites from these systems (e.g., G R E or GPS Galileo GLONASS)'
+    )
     # Parse known args (this ignores other positional args)
     args, remaining_args = parser.parse_known_args()
 
     # Handle help manually
     if '-h' in remaining_args or '--help' in remaining_args:
         print("""
-Usage: python skyplot.py <RINEX_FILE> [LATITUDE] [LONGITUDE] [ALTITUDE] [--use-obs] [--elev-mask] [--no-show]
+Usage: python skyplot.py <RINEX_FILE> [LATITUDE] [LONGITUDE] [ALTITUDE] [--use-obs] [--elev-mask] [--system ...] [--no-show]
 
 Example:
-  python skyplot.py brdc0010.22n 41.275 1.9876 80.0 --use-obs --no-show --elev-mask=10
+  python skyplot.py brdc0010.22n 41.275 1.9876 80.0 --use-obs --no-show --elev-mask=10 --system GPS Galileo
 """)
         sys.exit(0)
 
@@ -586,6 +602,21 @@ Example:
     if not satellites:
         print("No satellite data found in the file.")
         return
+
+    if args.system:
+        systems_upper = set()
+        for s in args.system:
+            s_upper = s.upper()
+            if s_upper in system_name_to_code:
+                systems_upper.add(system_name_to_code[s_upper])
+            else:
+                systems_upper.add(s_upper)  # Assume user passed the code
+
+        satellites = {prn: eph_list for prn, eph_list in satellites.items() if prn[0].upper() in systems_upper}
+
+        if not satellites:
+            print(f"No satellites found for systems: {', '.join(sorted(systems_upper))}")
+            return
 
     # Print summary information
     all_epochs = sorted(list(set(

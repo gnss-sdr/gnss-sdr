@@ -405,19 +405,16 @@ def plot_satellite_tracks(satellites, obs_lat, obs_lon, obs_alt,
     for prn, ephemeris_list in satellites.items():
         color = system_colors.get(prn[0], 'purple')  # Default to purple for unknown systems
 
-        # Get the most recent ephemeris
         if not ephemeris_list:
             continue
 
         mid_time = start_time + (end_time - start_time) / 2
-        prev_eph = [e for e in ephemeris_list if e['epoch'] <= mid_time]  # Previous ephemeris
-
-        if prev_eph:  # Pick the most recent ephemeris before or at the midpoint
+        prev_eph = [e for e in ephemeris_list if e['epoch'] <= mid_time]
+        if prev_eph:
             ephemeris = max(prev_eph, key=lambda e: e['epoch'])
-        else:  # Pick the ephemeris whose epoch is closest in time to the midpoint
+        else:
             ephemeris = min(ephemeris_list, key=lambda e: abs((e['epoch'] - mid_time).total_seconds()))
 
-        # Calculate trajectory
         if start_time is None or end_time is None:
             all_epochs = sorted({e['epoch'] for prn_data in satellites.values() for e in prn_data})
             start_time = min(all_epochs)
@@ -425,50 +422,54 @@ def plot_satellite_tracks(satellites, obs_lat, obs_lon, obs_alt,
 
         positions = calculate_satellite_positions(ephemeris, start_time, end_time)
 
-        az = []
-        el = []
+        # Split into visible segments
+        segments = []
+        current_seg_az = []
+        current_seg_el = []
         for _, x, y, z in positions:
             azimuth, elevation = ecef_to_az_el(x, y, z, obs_lat, obs_lon, obs_alt)
-            if elevation > 5:  # Above horizon
-                az.append(azimuth)
-                el.append(elevation)
+            if elevation > 5:
+                current_seg_az.append(azimuth)
+                current_seg_el.append(elevation)
+            else:
+                if len(current_seg_az) > 1:
+                    segments.append((current_seg_az, current_seg_el))
+                current_seg_az, current_seg_el = [], []
+        if len(current_seg_az) > 1:
+            segments.append((current_seg_az, current_seg_el))
 
-        if len(az) > 1:
-            # Convert to polar coordinates
-            theta = np.radians(az)
-            r = 90 - np.array(el)
-
-            # Plot trajectory
+        # Plot each segment separately
+        for az_seg, el_seg in segments:
+            theta = np.radians(az_seg)
+            r = 90 - np.array(el_seg)
             ax.plot(theta, r, '-', color=color, alpha=0.7, linewidth=2.5)
 
-            # Add arrow at last point
-            if len(theta) >= 2:  # Need at least 2 points for direction
+            # Arrow at end
+            if len(theta) >= 2:
                 dx = theta[-1] - theta[-2]
                 dy = r[-1] - r[-2]
-
-                # Extend endpoint
                 arrow_length_factor = 1.3
                 extended_theta = theta[-2] + dx * arrow_length_factor
                 extended_r = r[-2] + dy * arrow_length_factor
                 ax.annotate('',
-                           xytext=(theta[-1], r[-1]),
-                           xy=(extended_theta, extended_r),
-                           arrowprops={
-                            'arrowstyle': '->',
-                            'color': color,
-                            'alpha': 0.9,
-                            'linewidth': 1.5,
-                            'shrinkA': 0,
-                            'shrinkB': 0
-                          })
+                            xytext=(theta[-1], r[-1]),
+                            xy=(extended_theta, extended_r),
+                            arrowprops={
+                                'arrowstyle': '->',
+                                'color': color,
+                                'alpha': 0.9,
+                                'linewidth': 1.5,
+                                'shrinkA': 0,
+                                'shrinkB': 0
+                            })
 
-            # Label at midpoint
+            # Label at midpoint of the segment
             mid_idx = len(theta)//2
             ax.text(theta[mid_idx], r[mid_idx], prn,
                     fontsize=12, ha='center', va='center',
                     bbox={"facecolor": "white", "alpha": 0.8, "pad": 2})
 
-    # Create legend elements only for present systems
+    # Legend for present systems
     legend_elements = [
         plt.Line2D([0], [0], marker='o', color='w',
                   label=f'{system_names[sys]} ({sys})',
@@ -476,15 +477,11 @@ def plot_satellite_tracks(satellites, obs_lat, obs_lon, obs_alt,
                   markersize=10)
         for sys in present_systems
     ]
-
-    # Add legend if we have any systems to show
     if legend_elements:
-        ax.legend(
-            handles=legend_elements,
-            loc='upper right',
-            bbox_to_anchor=(1.3, 1.1),
-            fontsize=14
-        )
+        ax.legend(handles=legend_elements,
+                  loc='upper right',
+                  bbox_to_anchor=(1.3, 1.1),
+                  fontsize=14)
 
     lat_deg = np.degrees(obs_lat)
     lon_deg = np.degrees(obs_lon)

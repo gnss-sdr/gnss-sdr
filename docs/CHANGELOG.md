@@ -41,6 +41,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Updated `gsl-lite` to v1.0.1. See the
   [gsl-lite release](https://github.com/gsl-lite/gsl-lite/releases/tag/v1.0.1).
 - Updated local `cpu_features` library to v0.10.1.
+- Allow linking against Boost 1.89.0.
 
 ### Improvements in Usability:
 

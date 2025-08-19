@@ -1010,7 +1010,7 @@ if(Boost_VERSION_STRING VERSION_LESS 1.70.0)
     )
 endif()
 
-# Fox for CentOS 7 with cmake3 and gcc8
+# Fix for CentOS 7 with cmake3 and gcc8
 if(Boost_VERSION_STRING VERSION_LESS "1.60")
     set(USE_GENERIC_LAMBDAS OFF)
 endif()
@@ -1018,6 +1018,11 @@ endif()
 # Fix for Boost >= 1.73
 if(Boost_VERSION_STRING VERSION_GREATER 1.72.99)
     set(USE_BOOST_BIND_PLACEHOLDERS ON)
+endif()
+
+# Fix for Boost >= 1.89 - Boost::system becomes header-only
+if(Boost_VERSION_STRING VERSION_GREATER 1.88.99)
+    add_library(Boost::system ALIAS Boost::headers)
 endif()
 
 

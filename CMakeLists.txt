@@ -921,41 +921,43 @@ if(Boost_VERSION_STRING VERSION_GREATER 1.70.99)
         TYPE REQUIRED
     )
     set_package_properties(boost_atomic PROPERTIES
-        URL "https://www.boost.org/doc/libs/release/doc/html/atomic.html"
+        URL "https://www.boost.org/doc/libs/latest/libs/atomic/doc/html/index.html"
         DESCRIPTION "Provides atomic data types and operations on those types"
         PURPOSE "Required by Boost Thread."
         TYPE REQUIRED
     )
     set_package_properties(boost_chrono PROPERTIES
-        URL "https://www.boost.org/doc/libs/release/doc/html/chrono.html"
+        URL "https://www.boost.org/doc/libs/latest/doc/html/chrono.html"
         DESCRIPTION "Useful time utilities"
         PURPOSE "Required by Boost Thread."
         TYPE REQUIRED
     )
     set_package_properties(boost_date_time PROPERTIES
-        URL "https://www.boost.org/doc/libs/release/doc/html/date_time.html"
+        URL "https://www.boost.org/doc/libs/latest/doc/html/date_time.html"
         DESCRIPTION "A set of date-time libraries"
         PURPOSE "Required by Boost Thread."
         TYPE REQUIRED
     )
     set_package_properties(boost_serialization PROPERTIES
-        URL "https://www.boost.org/doc/libs/release/libs/serialization/doc/index.html"
+        URL "https://www.boost.org/doc/libs/latest/libs/serialization/doc/index.html"
         DESCRIPTION "Reversible deconstruction of C++ data structures to sequences of bytes"
         PURPOSE "Used for serializing data."
         TYPE REQUIRED
     )
-    set_package_properties(boost_system PROPERTIES
-        URL "https://www.boost.org/doc/libs/release/libs/system/doc/html/system.html"
-        DESCRIPTION "Extensible error reporting library"
-        PURPOSE "Used for error reporting."
-        TYPE REQUIRED
-    )
     set_package_properties(boost_thread PROPERTIES
-        URL "https://www.boost.org/doc/libs/release/doc/html/thread.html"
+        URL "https://www.boost.org/doc/libs/latest/doc/html/thread.html"
         DESCRIPTION "Portable C++ multi-threading"
         PURPOSE "Used by GNU Radio multi-threading system."
         TYPE REQUIRED
     )
+    if(Boost_VERSION_STRING VERSION_LESS 1.88.99)
+        set_package_properties(boost_system PROPERTIES
+            URL "https://www.boost.org/doc/libs/latest/libs/system/doc/html/system.html"
+            DESCRIPTION "Extensible error reporting library"
+            PURPOSE "Used for error reporting."
+            TYPE REQUIRED
+        )
+    endif()
     if(NOT ${FILESYSTEM_FOUND})
         set_package_properties(boost_filesystem PROPERTIES
             URL "https://www.boost.org/doc/libs/release/libs/filesystem/doc/index.htm"

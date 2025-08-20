@@ -461,4 +461,48 @@ static inline void volk_gnsssdr_32fc_convert_16ic_generic(lv_16sc_t* outputVecto
 }
 #endif /* LV_HAVE_GENERIC */
 
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+
+static inline void volk_gnsssdr_32fc_convert_16ic_rvv(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
+{
+    size_t n = num_points;
+
+    // Initialize pointers to keep track as stripmine
+    short* outPtr = (short*) outputVector;
+    const float* inPtr = (const float*) inputVector;
+
+    for (size_t vl; n > 0; n -= vl, outPtr += vl * 2, inPtr += vl * 2)
+        {
+            // Record how many elements will actually be processed
+            vl = __riscv_vsetvl_e32m4(n);
+
+            // Load inReal[0..vl), inImag[0..vl)
+            vfloat32m4x2_t inVal = __riscv_vlseg2e32_v_f32m4x2(inPtr, vl);
+            vfloat32m4_t inRealVal = __riscv_vget_v_f32m4x2_f32m4(inVal, 0);
+            vfloat32m4_t inImagVal = __riscv_vget_v_f32m4x2_f32m4(inVal, 1);
+
+            // outReal[i] = (short) inReal[i]
+            vint16m2_t outRealVal = __riscv_vfncvt_x_f_w_i16m2(inRealVal, vl);
+
+            // outImag[i] = (short) inImag[i]
+            vint16m2_t outImagVal = __riscv_vfncvt_x_f_w_i16m2(inImagVal, vl);
+
+            // Store outReal[0..vl), outImag[0..vl)
+            vint16m2x2_t outVal = __riscv_vset_v_i16m2_i16m2x2(
+                __riscv_vundefined_i16m2x2(), 0, outRealVal
+            );
+            outVal = __riscv_vset_v_i16m2_i16m2x2(outVal, 1, outImagVal);
+            __riscv_vsseg2e16_v_i16m2x2(outPtr, outVal, vl);
+
+            // In looping, decrement the number of
+            // elements left and increment the pointers
+            // by the number of elements processed,
+            // accounting how the `vl` complex numbers
+            // are each stored as two numbers of their
+            // corresponding size.
+        }
+}
+#endif /* LV_HAVE_RVV */
+
 #endif /* INCLUDED_volk_gnsssdr_32fc_convert_16ic_H */

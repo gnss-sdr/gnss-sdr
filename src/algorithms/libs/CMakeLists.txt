@@ -149,7 +149,7 @@ if(FILESYSTEM_FOUND)
     endif()
     target_link_libraries(algorithms_libs PUBLIC std::filesystem)
 else()
-    target_link_libraries(algorithms_libs PUBLIC Boost::filesystem Boost::system)
+    target_link_libraries(algorithms_libs PUBLIC Boost::filesystem $<$<BOOL:${NEED_BOOST_SYSTEM}>:Boost::system>)
 endif()
 
 if(has_span)
@@ -228,7 +228,12 @@ if(FILESYSTEM_FOUND)
     endif()
     target_link_libraries(gnss_sdr_flags PRIVATE std::filesystem)
 else()
-    target_link_libraries(gnss_sdr_flags PRIVATE Boost::filesystem Boost::system)
+    target_link_libraries(gnss_sdr_flags
+        PRIVATE
+            Boost::filesystem
+            $<$<BOOL:${NEED_BOOST_SYSTEM}>:Boost::system>
+            $<$<NOT:$<BOOL:${NEED_BOOST_SYSTEM}>>:Boost::headers>
+    )
 endif()
 
 if(ENABLE_GLOG_AND_GFLAGS)

@@ -94,7 +94,12 @@ if(FILESYSTEM_FOUND)
     endif()
     target_link_libraries(algorithms_libs_rtklib PUBLIC std::filesystem)
 else()
-    target_link_libraries(algorithms_libs_rtklib PUBLIC Boost::filesystem Boost::system)
+    target_link_libraries(algorithms_libs_rtklib
+        PUBLIC
+            Boost::filesystem
+            $<$<BOOL:${NEED_BOOST_SYSTEM}>:Boost::system>
+            $<$<NOT:$<BOOL:${NEED_BOOST_SYSTEM}>>:Boost::headers>
+    )
 endif()
 
 set_property(TARGET algorithms_libs_rtklib

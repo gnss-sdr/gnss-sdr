@@ -797,19 +797,15 @@ set(BOOST_COMPONENTS atomic chrono date_time serialization system thread)
 if(NOT ${FILESYSTEM_FOUND})
     set(BOOST_COMPONENTS ${BOOST_COMPONENTS} filesystem)
 endif()
-if(CMAKE_VERSION VERSION_LESS 3.30)
-    find_package(Boost ${GNSSSDR_BOOST_MIN_VERSION} COMPONENTS ${BOOST_COMPONENTS} REQUIRED)
+find_package(Boost ${GNSSSDR_BOOST_MIN_VERSION} COMPONENTS ${BOOST_COMPONENTS})
+if(Boost_FOUND)
+    get_filename_component(BOOST_PREFIX ${Boost_INCLUDE_DIRS} DIRECTORY)
+    message(STATUS "Found Boost v${Boost_VERSION_STRING} at ${BOOST_PREFIX}")
 else()
-    find_package(Boost ${GNSSSDR_BOOST_MIN_VERSION} COMPONENTS ${BOOST_COMPONENTS})
-    if(Boost_FOUND)
-        get_filename_component(BOOST_PREFIX ${Boost_INCLUDE_DIRS} DIRECTORY)
-        message(STATUS "Found Boost v${Boost_VERSION_STRING} at ${BOOST_PREFIX}")
-    else()
-        message(STATUS "Trying deprecated FindBoost Module ...")
-        if(POLICY CMP0167)
-            cmake_policy(SET CMP0167 OLD)
-            find_package(Boost ${GNSSSDR_BOOST_MIN_VERSION} REQUIRED COMPONENTS ${BOOST_COMPONENTS})
-        endif()
+    message(STATUS "Trying deprecated FindBoost Module ...")
+    if(POLICY CMP0167)
+        cmake_policy(SET CMP0167 OLD)
+        find_package(Boost ${GNSSSDR_BOOST_MIN_VERSION} REQUIRED COMPONENTS ${BOOST_COMPONENTS})
     endif()
 endif()
 if(NOT Boost_FOUND)
@@ -914,45 +910,47 @@ endif()
 
 # Provide package descriptions if Boost >= 1.71.00
 if(Boost_VERSION_STRING VERSION_GREATER 1.70.99)
+    set(boost_version_string "${Boost_VERSION_STRING}")
+    string(REPLACE "." "_" boost_version_underscored "${boost_version_string}")
     set_package_properties(boost_headers PROPERTIES
-        URL "https://www.boost.org/"
+        URL "https://www.boost.org/libraries/${Boost_VERSION_STRING}/grid/"
         DESCRIPTION "Header files of Boost libraries"
         PURPOSE "Used widely across the source code."
         TYPE REQUIRED
     )
     set_package_properties(boost_atomic PROPERTIES
-        URL "https://www.boost.org/doc/libs/latest/libs/atomic/doc/html/index.html"
+        URL "https://www.boost.org/doc/libs/${boost_version_underscored}/doc/html/index.html"
         DESCRIPTION "Provides atomic data types and operations on those types"
         PURPOSE "Required by Boost Thread."
         TYPE REQUIRED
     )
     set_package_properties(boost_chrono PROPERTIES
-        URL "https://www.boost.org/doc/libs/latest/doc/html/chrono.html"
+        URL "https://www.boost.org/doc/libs/${boost_version_underscored}/doc/html/chrono.html"
         DESCRIPTION "Useful time utilities"
         PURPOSE "Required by Boost Thread."
         TYPE REQUIRED
     )
     set_package_properties(boost_date_time PROPERTIES
-        URL "https://www.boost.org/doc/libs/latest/doc/html/date_time.html"
+        URL "https://www.boost.org/doc/libs/${boost_version_underscored}/doc/html/date_time.html"
         DESCRIPTION "A set of date-time libraries"
         PURPOSE "Required by Boost Thread."
         TYPE REQUIRED
     )
     set_package_properties(boost_serialization PROPERTIES
-        URL "https://www.boost.org/doc/libs/latest/libs/serialization/doc/index.html"
+        URL "https://www.boost.org/doc/libs/${boost_version_underscored}/libs/serialization/doc/index.html"
         DESCRIPTION "Reversible deconstruction of C++ data structures to sequences of bytes"
         PURPOSE "Used for serializing data."
         TYPE REQUIRED
     )
     set_package_properties(boost_thread PROPERTIES
-        URL "https://www.boost.org/doc/libs/latest/doc/html/thread.html"
+        URL "https://www.boost.org/doc/libs/${boost_version_underscored}/doc/html/thread.html"
         DESCRIPTION "Portable C++ multi-threading"
         PURPOSE "Used by GNU Radio multi-threading system."
         TYPE REQUIRED
     )
     if(Boost_VERSION_STRING VERSION_LESS 1.88.99)
         set_package_properties(boost_system PROPERTIES
-            URL "https://www.boost.org/doc/libs/latest/libs/system/doc/html/system.html"
+            URL "https://www.boost.org/doc/libs/${boost_version_underscored}/libs/system/doc/html/system.html"
             DESCRIPTION "Extensible error reporting library"
             PURPOSE "Used for error reporting."
             TYPE REQUIRED
@@ -960,7 +958,7 @@ if(Boost_VERSION_STRING VERSION_GREATER 1.70.99)
     endif()
     if(NOT ${FILESYSTEM_FOUND})
         set_package_properties(boost_filesystem PROPERTIES
-            URL "https://www.boost.org/doc/libs/release/libs/filesystem/doc/index.htm"
+            URL "https://www.boost.org/doc/libs/${boost_version_underscored}/libs/filesystem/doc/index.htm"
             DESCRIPTION "Portable facilities to manipulate paths and files"
             PURPOSE "Used for output file handling."
             TYPE REQUIRED
@@ -1023,8 +1021,10 @@ if(Boost_VERSION_STRING VERSION_GREATER 1.72.99)
 endif()
 
 # Fix for Boost >= 1.89 - Boost::system becomes header-only
-if(Boost_VERSION_STRING VERSION_GREATER 1.88.99)
-    add_library(Boost::system ALIAS Boost::headers)
+if(Boost_VERSION_STRING VERSION_LESS 1.89.0)
+    set(NEED_BOOST_SYSTEM ON)
+else()
+    set(NEED_BOOST_SYSTEM OFF)
 endif()
 
 

@@ -44,7 +44,7 @@ endif()
 target_link_libraries(core_monitor
     PUBLIC
         Boost::headers
-        Boost::system
+        $<$<BOOL:${NEED_BOOST_SYSTEM}>:Boost::system>
         Gnuradio::runtime
         protobuf::libprotobuf
         core_system_parameters

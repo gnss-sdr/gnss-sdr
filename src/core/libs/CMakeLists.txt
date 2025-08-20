@@ -102,7 +102,7 @@ target_link_libraries(core_libs
     PRIVATE
         algorithms_libs
         Boost::serialization
-        Boost::system
+        $<$<BOOL:${NEED_BOOST_SYSTEM}>:Boost::system>
         Pugixml::pugixml
 )
 

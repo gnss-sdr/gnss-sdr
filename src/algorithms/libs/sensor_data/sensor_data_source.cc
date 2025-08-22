@@ -115,7 +115,7 @@ int SensorDataSource::work(int noutput_items,
                             pmt::pmt_t value = SensorIdentifier::convert_to_internal_type(sensor.identifier, sensor.type, raw_value);
                             data_tag = pmt::dict_add(data_tag, sensor.tag_key, value);
                         }
-                    add_item_tag(0, sample_stamp, TAG_KEY, data_tag);
+                    add_item_tag(0, nitems_written(0), TAG_KEY, data_tag);
                 }
         }
 

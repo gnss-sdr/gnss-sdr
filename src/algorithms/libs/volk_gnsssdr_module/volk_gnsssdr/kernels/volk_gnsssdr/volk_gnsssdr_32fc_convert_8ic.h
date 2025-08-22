@@ -481,6 +481,12 @@ static inline void volk_gnsssdr_32fc_convert_8ic_rvv(lv_8sc_t* outputVector, con
             vfloat32m4_t tmp32RealVal = __riscv_vfmul_vf_f32m4(inRealVal, (float) 127, vl);
             vfloat32m4_t tmp32ImagVal = __riscv_vfmul_vf_f32m4(inImagVal, (float) 127, vl);
 
+            // Saturate tmpReal[i], tmpImag[i] to 8 bits
+            tmp32RealVal = __riscv_vfmin_vf_f32m4(tmp32RealVal, (float) 127, vl);
+            tmp32RealVal = __riscv_vfmax_vf_f32m4(tmp32RealVal, (float) -128, vl);
+            tmp32ImagVal = __riscv_vfmin_vf_f32m4(tmp32ImagVal, (float) 127, vl);
+            tmp32ImagVal = __riscv_vfmax_vf_f32m4(tmp32ImagVal, (float) -128, vl);
+
             // outReal[i] = (signed char) tmpReal[i]
             vint16m2_t tmp16RealVal = __riscv_vfncvt_x_f_w_i16m2(tmp32RealVal, vl);
             vint8m1_t outRealVal = __riscv_vncvt_x_x_w_i8m1(tmp16RealVal, vl);

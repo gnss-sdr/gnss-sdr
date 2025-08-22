@@ -33,6 +33,10 @@ static const ConversionEntry conversion_table[] = {
     {SensorDataType::F64, SensorDataType::F32, [](const pmt::pmt_t& val) { return pmt::from_float(pmt::to_double(val)); }},
     {SensorDataType::I32, SensorDataType::F32, [](const pmt::pmt_t& val) { return pmt::from_float(pmt::to_long(val)); }},
     {SensorDataType::I64, SensorDataType::F32, [](const pmt::pmt_t& val) { return pmt::from_float(pmt::to_long(val)); }},
+    {SensorDataType::F32, SensorDataType::F64, [](const pmt::pmt_t& val) { return pmt::from_double(pmt::to_float(val)); }},
+    {SensorDataType::F64, SensorDataType::F64, [](const pmt::pmt_t& val) { return val; }},
+    {SensorDataType::I32, SensorDataType::F64, [](const pmt::pmt_t& val) { return pmt::from_double(pmt::to_long(val)); }},
+    {SensorDataType::I64, SensorDataType::F64, [](const pmt::pmt_t& val) { return pmt::from_double(pmt::to_long(val)); }},
 };
 
 
@@ -174,7 +178,7 @@ SensorDataType::value_type SensorIdentifier::get_internal_type(value_type sensor
         case IMU_ANG_ACC_X:
         case IMU_ANG_ACC_Y:
         case IMU_ANG_ACC_Z:
-            return SensorDataType::F32;
+            return SensorDataType::F64;
         default:
             return SensorDataType::F32;
         }

@@ -37,6 +37,9 @@ SensorDataAggregator::SensorDataAggregator(const SensorDataSourceConfiguration& 
                         case SensorDataType::F32:
                             f32_data_[required_sensor] = {};
                             break;
+                        case SensorDataType::F64:
+                            f64_data_[required_sensor] = {};
+                            break;
 
                             // More maps to be populated in the future for different types
                             // For now, all supported sensors are represented as f32
@@ -72,6 +75,16 @@ void SensorDataAggregator::update(const std::vector<gr::tag_t>& tags)
             if (not sensor_samples.empty())
                 {
                     SensorDataSample<float> last_sample = sensor_samples.back();
+                    sensor_samples.clear();
+                    sensor_samples.emplace_back(last_sample);
+                }
+        }
+    for (auto& sensor_data : f64_data_)
+        {
+            std::vector<SensorDataSample<double>>& sensor_samples = sensor_data.second;
+            if (not sensor_samples.empty())
+                {
+                    SensorDataSample<double> last_sample = sensor_samples.back();
                     sensor_samples.clear();
                     sensor_samples.emplace_back(last_sample);
                 }
@@ -140,6 +153,56 @@ SensorDataSample<float> SensorDataAggregator::get_average_f32(SensorIdentifier::
 }
 
 
+const std::vector<SensorDataSample<double>>& SensorDataAggregator::get_f64(SensorIdentifier::value_type sensor_id) const
+{
+    // The map is populated on construction with empty vectors for each provided sensor.
+    // If a required sensor is not provided, the error is handled on construction.
+    return f64_data_.at(sensor_id);
+}
+
+
+SensorDataSample<double> SensorDataAggregator::get_last_f64(SensorIdentifier::value_type sensor_id) const
+{
+    // The map is populated on construction with empty vectors for each provided sensor.
+    // If a required sensor is not provided, the error is handled on construction.
+    const std::vector<SensorDataSample<double>> samples = f64_data_.at(sensor_id);
+    if (samples.empty())
+        {
+            return {0, 0};
+        }
+    return samples.back();
+}
+
+SensorDataSample<double> SensorDataAggregator::get_average_f64(SensorIdentifier::value_type sensor_id) const
+{
+    // The map is populated on construction with empty vectors for each provided sensor.
+    // If a required sensor is not provided, the error is handled on construction.
+    const std::vector<SensorDataSample<double>> samples = f64_data_.at(sensor_id);
+    if (samples.empty())
+        {
+            return {0, 0};
+        }
+    double acc = 0.0;
+    double count = 0;
+    bool first = true;
+    for (const auto& sample : samples)
+        {
+            if (first)
+                {
+                    first = false;
+                    continue;
+                }
+            acc += sample.value;
+            ++count;
+        }
+    if (count == 0)
+        {
+            return {samples.back().timestamp, 0};
+        }
+    return {samples.back().timestamp, acc / count};
+}
+
+
 void SensorDataAggregator::append_data(const pmt::pmt_t& data_dict)
 {
     static pmt::pmt_t SAMPLE_STAMP_KEY = pmt::mp(SensorIdentifier::to_string(SensorIdentifier::SAMPLE_STAMP));
@@ -163,6 +226,12 @@ void SensorDataAggregator::append_data(const pmt::pmt_t& data_dict)
                             if (f32_data_.find(sensor_id) != f32_data_.end())
                                 {
                                     f32_data_.at(sensor_id).emplace_back(sample_stamp, pmt::to_float(std::move(val)));
+                                }
+                            break;
+                        case SensorDataType::F64:
+                            if (f64_data_.find(sensor_id) != f64_data_.end())
+                                {
+                                    f64_data_.at(sensor_id).emplace_back(sample_stamp, pmt::to_double(std::move(val)));
                                 }
                             break;
 

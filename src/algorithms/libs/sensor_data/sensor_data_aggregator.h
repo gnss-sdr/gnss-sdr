@@ -55,12 +55,17 @@ public:
     SensorDataSample<float> get_last_f32(SensorIdentifier::value_type sensor_id) const;
     SensorDataSample<float> get_average_f32(SensorIdentifier::value_type sensor_id) const;
 
+    const std::vector<SensorDataSample<double>>& get_f64(SensorIdentifier::value_type sensor_id) const;
+    SensorDataSample<double> get_last_f64(SensorIdentifier::value_type sensor_id) const;
+    SensorDataSample<double> get_average_f64(SensorIdentifier::value_type sensor_id) const;
+
     // More getters to be added in the future for different types
     // For now, all supported sensors are represented as f32
 private:
     void append_data(const pmt::pmt_t& data_dict);
 
     std::unordered_map<SensorIdentifier::value_type, std::vector<SensorDataSample<float>>> f32_data_{};
+    std::unordered_map<SensorIdentifier::value_type, std::vector<SensorDataSample<double>>> f64_data_{};
     // More maps to be added in the future for different types
     // For now, all supported sensors are represented as f32
 };

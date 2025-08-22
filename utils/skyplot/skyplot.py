@@ -2,10 +2,17 @@
 """
  skyplot.py
 
- Reads a RINEX navigation file and generates a skyplot. Optionally, a RINEX observation file can 
- also be read to match the skyplot to the receiver processing time.
+ Reads a RINEX navigation file and generates a skyplot. Optionally, a RINEX
+ observation file can also be read to match the skyplot to the receiver
+ processing time.
 
- Usage: python skyplot.py <RINEX_NAV_FILE> [observer_lat] [observer_lon] [observer_alt] [--use-obs] 
+ Usage:
+    skyplot.py <RINEX_NAV_FILE> [observer_lat] [observer_lon] [observer_alt]
+                [--elev-mask ELEV_MASK]
+                [--format {pdf,eps,png,svg}]
+                [--no-show]
+                [--system SYSTEM [SYSTEM ...]]
+                [--use-obs]
 
  -----------------------------------------------------------------------------
 
@@ -25,9 +32,15 @@ from datetime import datetime, timedelta
 from math import atan2, cos, sin, sqrt
 from pathlib import Path
 
-import matplotlib.pyplot as plt
-import numpy as np
+try:
+    import matplotlib.pyplot as plt
+    import numpy as np
+except ImportError:
+    print("Error: This script requires matplotlib and numpy.")
+    print("Install them with: pip install matplotlib numpy")
+    sys.exit(1)
 
+__version__ = "1.0.0"
 
 def _read_obs_time_bounds(obs_path):
     """Return (start_time, end_time) from a RINEX 2/3 OBS file by scanning epoch lines.
@@ -360,9 +373,15 @@ def ecef_to_az_el(x, y, z, obs_lat, obs_lon, obs_alt):
 def plot_satellite_tracks(satellites, obs_lat, obs_lon, obs_alt,
                          footer_text=None, filename=None,
                          show_plot=True, start_time=None, 
-                         end_time=None, elev_mask=5.0):
+                         end_time=None, elev_mask=5.0,
+                         output_format="pdf"):
     """Plot trajectories for all visible satellites"""
-    plt.rcParams["font.family"] = "Times New Roman"
+    plt.rcParams['pdf.fonttype'] = 42  # TrueType fonts
+    plt.rcParams['ps.fonttype'] = 42   # TrueType fonts
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = ['Times New Roman', 'Times', 'DejaVu Serif']
+    plt.rcParams['mathtext.fontset'] = 'dejavuserif'  # For math text
+    plt.rcParams['svg.fonttype'] = 'none'             # Make SVG text editable
     fig = plt.figure(figsize=(8, 8))
     ax = fig.add_subplot(111, projection='polar')
     ax.tick_params(labelsize=16, pad=7)
@@ -442,13 +461,13 @@ def plot_satellite_tracks(satellites, obs_lat, obs_lon, obs_alt,
         for az_seg, el_seg in segments:
             theta = np.radians(az_seg)
             r = 90 - np.array(el_seg)
-            ax.plot(theta, r, '-', color=color, alpha=0.7, linewidth=2.5)
+            ax.plot(theta, r, '-', color=color, alpha=0.7, linewidth=2.5, zorder=1)
 
             # Arrow at end
             if len(theta) >= 2:
                 dx = theta[-1] - theta[-2]
                 dy = r[-1] - r[-2]
-                arrow_length_factor = 1.3
+                arrow_length_factor = 1.8
                 extended_theta = theta[-2] + dx * arrow_length_factor
                 extended_r = r[-2] + dy * arrow_length_factor
                 ax.annotate('',
@@ -461,13 +480,15 @@ def plot_satellite_tracks(satellites, obs_lat, obs_lon, obs_alt,
                                 'linewidth': 1.5,
                                 'shrinkA': 0,
                                 'shrinkB': 0
-                            })
+                            },
+                            zorder=2)
 
             # Label at midpoint of the segment
             mid_idx = len(theta)//2
             ax.text(theta[mid_idx], r[mid_idx], prn,
                     fontsize=12, ha='center', va='center',
-                    bbox={"facecolor": "white", "alpha": 0.8, "pad": 2})
+                    bbox={"facecolor": "white", "alpha": 0.8, "pad": 2},
+                    zorder=3)
 
     # Legend for present systems
     legend_elements = [
@@ -503,11 +524,11 @@ def plot_satellite_tracks(satellites, obs_lat, obs_lon, obs_alt,
     if filename:
         filename_no_path = Path(filename).name
         filename_no_dots = filename_no_path.replace('.', '_')
-        output_name = f"skyplot_{filename_no_dots}.pdf"
+        output_name = f"skyplot_{filename_no_dots}.{output_format}"
     else:
-        output_name = "skyplot.pdf"
+        output_name = f"skyplot.{output_format}"
 
-    plt.savefig(output_name, format='pdf', bbox_inches='tight')
+    plt.savefig(output_name, format=output_format, bbox_inches='tight')
     print(f"Image saved as {output_name}")
     if show_plot:
         plt.show()
@@ -517,177 +538,198 @@ def plot_satellite_tracks(satellites, obs_lat, obs_lon, obs_alt,
 
 def main():
     """Generate the skyplot"""
-    # Set system names and codes
-    system_name_to_code = {
-        'GPS': 'G',
-        'GLONASS': 'R',
-        'GALILEO': 'E',
-        'BEIDOU': 'C',
-        'QZSS': 'J',
-        'IRNSS': 'I',
-        'SBAS': 'S'
-    }
-
-    # Set up argument parser
-    parser = argparse.ArgumentParser(
-        description='Generate GNSS skyplot from RINEX navigation file',
-        add_help=False
-    )
-
-    # Add the no-show flag
-    parser.add_argument(
-        '--no-show', 
-        action='store_true',
-        help='Run without displaying plot window'
-    )
-    # Add the use-obs flag
-    parser.add_argument(
-        '--use-obs',
-        action='store_true',
-        help='Use corresponding RINEX observation file to bound the skyplot to the receiver time window'
-    )
-    # Add the elev-mask flag.
-    parser.add_argument(
-        '--elev-mask', type=float, default=5.0,
-        help='Elevation mask in degrees for plotting satellite tracks (default: 5°)'
-    )
-    # Add the system flag.
-    parser.add_argument(
-        '--system',
-        nargs='+',
-        help='Only plot satellites from these systems (e.g., G R E or GPS Galileo GLONASS)'
-    )
-    # Parse known args (this ignores other positional args)
-    args, remaining_args = parser.parse_known_args()
-
-    # Handle help manually
-    if '-h' in remaining_args or '--help' in remaining_args:
-        print("""
-Usage: python skyplot.py <RINEX_FILE> [LATITUDE] [LONGITUDE] [ALTITUDE] [--use-obs] [--elev-mask] [--system ...] [--no-show]
-
-Example:
-  python skyplot.py brdc0010.22n 41.275 1.9876 80.0 --use-obs --no-show --elev-mask=10 --system GPS Galileo
-""")
-        sys.exit(0)
-
-    if len(remaining_args) < 1:
-        print("Error: RINEX file required")
-        sys.exit(1)
-
-    filename = remaining_args[0]
-
-    # Default observer location (Castelldefels, Barcelona, Spain)
-    obs_lat = np.radians(41.2750)
-    obs_lon = np.radians(1.9876)
-    obs_alt = 80.0
-
-    # Override with command line arguments if provided
-    if len(remaining_args) >= 4:
-        try:
-            obs_lat = np.radians(float(remaining_args[1]))
-            obs_lon = np.radians(float(remaining_args[2]))
-            if len(remaining_args) >= 5:
-                obs_alt = float(remaining_args[3])
-        except ValueError:
-            print("Invalid observer coordinates. Using defaults.")
-
-    # Read RINEX file
-    print(f"Reading {filename}...")
     try:
-        satellites = read_rinex_nav(filename)
-    except FileNotFoundError:
-        print(f"Error: File '{filename}' not found.")
-        return
+        # Set system names and codes
+        system_name_to_code = {
+            'GPS': 'G',
+            'GLONASS': 'R',
+            'GALILEO': 'E',
+            'BEIDOU': 'C',
+            'QZSS': 'J',
+            'IRNSS': 'I',
+            'SBAS': 'S'
+        }
 
-    if not satellites:
-        print("No satellite data found in the file.")
-        return
+        # Set up argument parser
+        parser = argparse.ArgumentParser(
+            description='Generate a GNSS skyplot from a RINEX navigation file',
+            epilog="Example: skyplot.py brdc0010.22n -33.4592 -70.6453 520.0 --format png --system G E --elev-mask 10 --no-show"
+        )
 
-    if args.system:
-        systems_upper = set()
-        for s in args.system:
-            s_upper = s.upper()
-            if s_upper in system_name_to_code:
-                systems_upper.add(system_name_to_code[s_upper])
-            else:
-                systems_upper.add(s_upper)  # Assume user passed the code
+        # Positional arguments
+        parser.add_argument(
+            'filename',
+            help='RINEX navigation file path'
+        )
 
-        satellites = {prn: eph_list for prn, eph_list in satellites.items() if prn[0].upper() in systems_upper}
+        parser.add_argument(
+            'lat', nargs='?', type=float, default=41.2750,
+            help='Observer latitude in degrees (default: 41.275° N)'
+        )
+
+        parser.add_argument(
+            'lon', nargs='?', type=float, default=1.9876,
+            help='Observer longitude in degrees (default: 1.9876° E)'
+        )
+
+        parser.add_argument(
+            'alt', nargs='?', type=float, default=80.0,
+            help='Observer altitude in meters (default: 80.0 m)'
+        )
+
+        # Optional arguments
+        parser.add_argument(
+            '--elev-mask',
+            type=float,
+            default=5.0,
+            help='Elevation mask in degrees for plotting satellite tracks (default: 5°)'
+        )
+
+        parser.add_argument(
+            '--format',
+            type=str,
+            default="pdf",
+            choices=["pdf", "eps", "png", "svg"],
+            help='Output file format for plot (default: pdf)'
+        )
+
+        parser.add_argument(
+            '--no-show',
+            action='store_true',
+            help='Run without displaying plot window'
+        )
+
+        parser.add_argument(
+            '--system',
+            nargs='+',
+            help='Only plot satellites from these systems (e.g., G R E or GPS GLONASS Galileo)'
+        )
+
+        parser.add_argument(
+            '--use-obs',
+            action='store_true',
+            help='Use corresponding RINEX observation file to bound the skyplot to the receiver time window'
+        )
+
+        parser.add_argument(
+            "-v", "--version",
+            action="version",
+            version=f"%(prog)s {__version__}",
+            help="Show program version and exit"
+        )
+
+        # Parse all arguments with full validation
+        args = parser.parse_args()
+
+        # Convert coordinates to radians
+        obs_lat = np.radians(args.lat)
+        obs_lon = np.radians(args.lon)
+        obs_alt = args.alt
+        filename = args.filename
+
+        # Read RINEX file
+        print(f"Reading {filename}...")
+        try:
+            satellites = read_rinex_nav(filename)
+        except FileNotFoundError:
+            print(f"Error: File '{filename}' not found.")
+            return 1
 
         if not satellites:
-            print(f"No satellites found for systems: {', '.join(sorted(systems_upper))}")
-            return
+            print("No satellite data found in the file.")
+            return 1
 
-    # Print summary information
-    all_epochs = sorted(list(set(
-        e['epoch'] for prn, ephemerides in satellites.items() for e in ephemerides
-    )))
-    print("\nFile contains:")
-    print(f"- {len(satellites)} unique satellites")
-    print(f"- {len(all_epochs)} unique epochs")
-    print(f"- From {all_epochs[0]} to {all_epochs[-1]}")
+        if args.system:
+            systems_upper = set()
+            for s in args.system:
+                s_upper = s.upper()
+                if s_upper in system_name_to_code:
+                    systems_upper.add(system_name_to_code[s_upper])
+                else:
+                    systems_upper.add(s_upper)  # Assume user passed the code
 
-    # Calculate and print satellite counts by system
-    system_counts = {}
-    for prn in satellites:
-        system = prn[0]
-        system_counts[system] = system_counts.get(system, 0) + 1
+            satellites = {prn: eph_list for prn, eph_list in satellites.items() if prn[0].upper() in systems_upper}
 
-    print("\nSatellite systems found:")
-    for system, count in sorted(system_counts.items()):
-        system_name = {
-            'G': 'GPS',
-            'R': 'GLONASS',
-            'E': 'Galileo',
-            'C': 'BeiDou'
-        }.get(system, 'Unknown')
-        print(f"- {system_name} ({system}): {count} satellites")
+            if not satellites:
+                print(f"No satellites found for systems: {', '.join(sorted(systems_upper))}")
+                return 1
 
-    # Generate the combined skyplot
-    # Time window: OBS bounds if provided; else NAV span
-    use_start, use_end = all_epochs[0], all_epochs[-1]
-    if args.use_obs:
-        tried = []
-        obs_path = None
-        stem = filename[:-1]
+        # Print summary information
+        all_epochs = sorted(list(set(
+            e['epoch'] for prn, ephemerides in satellites.items() for e in ephemerides
+        )))
+        print("\nFile contains:")
+        print(f"- {len(satellites)} unique satellites")
+        print(f"- {len(all_epochs)} unique epochs")
+        print(f"- From {all_epochs[0]} to {all_epochs[-1]}")
 
-        for s in ('O', 'o'):  # Try uppercase then lowercase
-            candidate = stem + s
-            tried.append(candidate)
-            if Path(candidate).exists():
-                obs_path = candidate
-                break
+        # Calculate and print satellite counts by system
+        system_counts = {}
+        for prn in satellites:
+            system = prn[0]
+            system_counts[system] = system_counts.get(system, 0) + 1
 
-        if obs_path:
-            obs_start, obs_end = _read_obs_time_bounds(obs_path)
-            if obs_start and obs_end:
-                use_start, use_end = obs_start, obs_end
-                print(f"\nObservation window detected from {obs_path}: {use_start} → {use_end}")
+        print("\nSatellite systems found:")
+        for system, count in sorted(system_counts.items()):
+            system_name = {
+                'G': 'GPS',
+                'R': 'GLONASS',
+                'E': 'Galileo',
+                'C': 'BeiDou'
+            }.get(system, 'Unknown')
+            print(f"- {system_name} ({system}): {count} satellites")
+
+        # Generate the combined skyplot
+        # Time window: OBS bounds if provided; else NAV span
+        use_start, use_end = all_epochs[0], all_epochs[-1]
+        if args.use_obs:
+            tried = []
+            obs_path = None
+            stem = filename[:-1]
+
+            for s in ('O', 'o'):  # Try uppercase then lowercase
+                candidate = stem + s
+                tried.append(candidate)
+                if Path(candidate).exists():
+                    obs_path = candidate
+                    break
+
+            if obs_path:
+                obs_start, obs_end = _read_obs_time_bounds(obs_path)
+                if obs_start and obs_end:
+                    use_start, use_end = obs_start, obs_end
+                    print(f"\nObservation window detected from {obs_path}: {use_start} → {use_end}")
+                else:
+                    print(f"\nWarning: Could not read valid times from {obs_path}. Using NAV span instead.")
             else:
-                print(f"\nWarning: Could not read valid times from {obs_path}. Using NAV span instead.")
-        else:
-            print(f"\nOBS file not found. Tried: {', '.join(tried)}. Using NAV span instead.")
+                print(f"\nOBS file not found. Tried: {', '.join(tried)}. Using NAV span instead.")
 
-    # Ensure at least two samples with the default 5-minute step
-    if (use_end - use_start) < timedelta(minutes=5):
-        use_end = use_start + timedelta(minutes=5)
+        # Ensure at least two samples with the default 5-minute step
+        if (use_end - use_start) < timedelta(minutes=5):
+            use_end = use_start + timedelta(minutes=5)
 
-    # Generate the combined skyplot
-    print("\nGenerating skyplot...")
-    footer = f"From {use_start} to {use_end} UTC"
+        # Generate the combined skyplot
+        print("\nGenerating skyplot...")
+        footer = f"From {use_start} to {use_end} UTC"
 
-    plot_satellite_tracks(
-        satellites,
-        obs_lat,
-        obs_lon,
-        obs_alt,
-        footer_text=footer,
-        filename=filename,
-        show_plot=not args.no_show,
-        start_time=use_start,
-        end_time=use_end,
-        elev_mask=args.elev_mask
-    )
+        plot_satellite_tracks(
+            satellites,
+            obs_lat,
+            obs_lon,
+            obs_alt,
+            footer_text=footer,
+            filename=filename,
+            show_plot=not args.no_show,
+            start_time=use_start,
+            end_time=use_end,
+            elev_mask=args.elev_mask,
+            output_format=args.format
+        )
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return 1
+
+    return 0
 
 
 if __name__ == "__main__":

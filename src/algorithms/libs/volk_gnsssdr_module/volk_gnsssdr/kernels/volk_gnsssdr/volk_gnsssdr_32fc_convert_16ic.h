@@ -482,6 +482,12 @@ static inline void volk_gnsssdr_32fc_convert_16ic_rvv(lv_16sc_t* outputVector, c
             vfloat32m4_t inRealVal = __riscv_vget_v_f32m4x2_f32m4(inVal, 0);
             vfloat32m4_t inImagVal = __riscv_vget_v_f32m4x2_f32m4(inVal, 1);
 
+            // Saturate inReal[i], inImag[i] to 16 bits
+            inRealVal = __riscv_vfmin_vf_f32m4(inRealVal, (float) 32767, vl);
+            inRealVal = __riscv_vfmax_vf_f32m4(inRealVal, (float) -32768, vl);
+            inImagVal = __riscv_vfmin_vf_f32m4(inImagVal, (float) 32767, vl);
+            inImagVal = __riscv_vfmax_vf_f32m4(inImagVal, (float) -32768, vl);
+
             // outReal[i] = (short) inReal[i]
             vint16m2_t outRealVal = __riscv_vfncvt_x_f_w_i16m2(inRealVal, vl);
 

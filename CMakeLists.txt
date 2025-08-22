@@ -1539,6 +1539,9 @@ if(NOT CMAKE_VERSION VERSION_LESS 3.24
                 DESCRIPTION "A collection of C++ library code designed to augment the C++ standard library (found: v${absl_VERSION}, but it is too old and it will not be used)"
             )
         endif()
+        if(absl_FOUND)
+            set_package_properties(absl PROPERTIES TYPE REQUIRED)
+        endif()
     endif()
 endif()
 

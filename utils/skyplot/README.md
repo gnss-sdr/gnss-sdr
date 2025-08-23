@@ -20,15 +20,16 @@ showing satellite visibility over time.
 - Plots satellite tracks in azimuth-elevation coordinates.
 - Customizable observer location.
 - Color-codes satellites by constellation (GPS, Galileo, GLONASS, BeiDou).
-- Elevation mask set to 5°, configurable via the `--elev-mask` option.
+- Elevation mask set to 5°, configurable via the `--elev-mask` optional
+  argument.
 - Outputs high-quality image in PDF format. EPS, PNG, and SVG formats are also
-  available via the `--format` option.
-- Non-interactive mode for CI jobs with the `--no-show` option.
-- Constellations to plot can be configured via the `--system` option.
-- Optionally uses an OBS file to limit plot to the receiver observation time
-  (`--use-obs`).
-  - When enabled, the tool looks for a matching file by replacing the last
-    character of the NAV filename with `O`/`o` and uses it if found.
+  available via the `--format` optional argument.
+- Non-interactive mode for CI jobs with the `--no-show` optional argument.
+- Constellations to plot can be configured via the `--system` optional argument.
+- Optionally, it uses the corresponding RINEX observation file to limit the plot
+  to the receiver observation time via the`--use-obs` optional argument.
+  - If this argument is set, the tool looks for a matching file following
+    standard RINEX naming conventions, and uses it if found.
 
 ## Requirements
 
@@ -103,7 +104,8 @@ The script generates a PDF file named `skyplot_<RINEX_FILE>.pdf` (with dots in
 
 - Satellite trajectories over all epochs in the file.
   - NAV file - ephemeris time range (default).
-  - Receiver observation if `--use-obs` is specified and OBS file is found.
+  - Receiver observation time if `--use-obs` is specified and the RINEX OBS file
+    is found.
 - Color-coded by constellation.
 - Observer location in title.
 - Time range in footer.

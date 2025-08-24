@@ -466,40 +466,33 @@ static inline void volk_gnsssdr_32fc_convert_16ic_generic(lv_16sc_t* outputVecto
 
 static inline void volk_gnsssdr_32fc_convert_16ic_rvv(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
 {
-    size_t n = num_points;
+    // Will be converting by number, with each
+    // complex number containing two component numbers
+    size_t n = num_points * 2;
 
     // Initialize pointers to keep track as stripmine
     short* outPtr = (short*) outputVector;
     const float* inPtr = (const float*) inputVector;
 
-    for (size_t vl; n > 0; n -= vl, outPtr += vl * 2, inPtr += vl * 2)
+    for (size_t vl; n > 0; n -= vl, outPtr += vl, inPtr += vl)
         {
             // Record how many elements will actually be processed
-            vl = __riscv_vsetvl_e32m4(n);
+            vl = __riscv_vsetvl_e32m8(n);
 
-            // Load inReal[0..vl), inImag[0..vl)
-            vfloat32m4x2_t inVal = __riscv_vlseg2e32_v_f32m4x2(inPtr, vl);
-            vfloat32m4_t inRealVal = __riscv_vget_v_f32m4x2_f32m4(inVal, 0);
-            vfloat32m4_t inImagVal = __riscv_vget_v_f32m4x2_f32m4(inVal, 1);
+            // Don't have to segment load/store since converting
+            // both real and imaginary components
+            // Load in[0..vl)
+            vfloat32m8_t inVal = __riscv_vle32_v_f32m8(inPtr, vl);
 
-            // Saturate inReal[i], inImag[i] to 16 bits
-            inRealVal = __riscv_vfmin_vf_f32m4(inRealVal, (float) 32767, vl);
-            inRealVal = __riscv_vfmax_vf_f32m4(inRealVal, (float) -32768, vl);
-            inImagVal = __riscv_vfmin_vf_f32m4(inImagVal, (float) 32767, vl);
-            inImagVal = __riscv_vfmax_vf_f32m4(inImagVal, (float) -32768, vl);
+            // Saturate in[i] to 16 bits
+            inVal = __riscv_vfmin_vf_f32m8(inVal, (float) 32767, vl);
+            inVal = __riscv_vfmax_vf_f32m8(inVal, (float) -32768, vl);
 
-            // outReal[i] = (short) inReal[i]
-            vint16m2_t outRealVal = __riscv_vfncvt_x_f_w_i16m2(inRealVal, vl);
+            // out[i] = (short) in[i]
+            vint16m4_t outVal = __riscv_vfncvt_x_f_w_i16m4(inVal, vl);
 
-            // outImag[i] = (short) inImag[i]
-            vint16m2_t outImagVal = __riscv_vfncvt_x_f_w_i16m2(inImagVal, vl);
-
-            // Store outReal[0..vl), outImag[0..vl)
-            vint16m2x2_t outVal = __riscv_vset_v_i16m2_i16m2x2(
-                __riscv_vundefined_i16m2x2(), 0, outRealVal
-            );
-            outVal = __riscv_vset_v_i16m2_i16m2x2(outVal, 1, outImagVal);
-            __riscv_vsseg2e16_v_i16m2x2(outPtr, outVal, vl);
+            // Store out[0..vl)
+            __riscv_vse16_v_i16m4(outPtr, outVal, vl);
 
             // In looping, decrement the number of
             // elements left and increment the pointers

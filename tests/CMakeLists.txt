@@ -368,12 +368,24 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
                 cd ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION} &&
                 ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${GNSSSDR_SOURCE_DIR}/utils/patches/gnsstk_static15.patch
             )
+            if(NOT (${GNSSSDR_GNSSTK_LOCAL_VERSION} VERSION_LESS 14.0))
+                set(GNSSTK_PATCH_COMMAND
+                    cd ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION} &&
+                    ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/core/lib/NewNav/GLOCNavHeader.hpp < ${GNSSSDR_SOURCE_DIR}/utils/patches/gnsstk_gcc15.patch
+                )
+            endif()
         else()
             set(GNSSTK_PATCH_COMMAND
                 cd ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION} &&
                 ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${GNSSSDR_SOURCE_DIR}/utils/patches/gnsstk_static13.patch &&
                 ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/core/lib/GNSSCore/ObsID.hpp < ${GNSSSDR_SOURCE_DIR}/utils/patches/gnsstk_gcc13.patch
             )
+            if(NOT (${GNSSSDR_GNSSTK_LOCAL_VERSION} VERSION_LESS 14.0))
+                set(GNSSTK_PATCH_COMMAND
+                    cd ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION} &&
+                    ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/core/lib/NewNav/GLOCNavHeader.hpp < ${GNSSSDR_SOURCE_DIR}/utils/patches/gnsstk_gcc15.patch
+                )
+            endif()
         endif()
         # Patch only once
         if(EXISTS ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt)

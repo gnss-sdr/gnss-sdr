@@ -2,7 +2,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 SPDX-FileCopyrightText: 2025 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 --- GLOCNavHeader.hpp 2025-08-23 16:53:25.000000000 +0100
 +++ GLOCNavHeader.hpp 2025-08-23 16:55:14.000000000 +0100
-@@ -39,5 +39,6 @@
+@@ -39,6 +39,7 @@
  #ifndef GNSSTK_GLOCNAVHEADER_HPP
  #define GNSSTK_GLOCNAVHEADER_HPP
  

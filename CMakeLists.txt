@@ -16,7 +16,7 @@ endif()
 # Build type can still be overridden by setting -DCMAKE_BUILD_TYPE=
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
 
-cmake_minimum_required(VERSION 2.8.12...4.0)
+cmake_minimum_required(VERSION 2.8.12...4.1)
 project(gnss-sdr CXX C)
 
 set(GNSSSDR_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}) # Allows to be a sub-project
@@ -355,7 +355,7 @@ set(GNSSSDR_ABSEIL_MIN_VERSION "20240116")
 ################################################################################
 # Versions to download and build (but not to install system-wide) if not found
 ################################################################################
-set(GNSSSDR_ARMADILLO_LOCAL_VERSION "14.6.x")
+set(GNSSSDR_ARMADILLO_LOCAL_VERSION "15.0.x")
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.7.1")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.28")
@@ -371,6 +371,9 @@ set(GNSSSDR_ABSL_LOCAL_VERSION "origin/master") # live at head (see https://abse
 # Downgrade versions if requirements are not met
 if(CMAKE_VERSION VERSION_LESS "3.5")
     set(GNSSSDR_ARMADILLO_LOCAL_VERSION "12.8.x")
+endif()
+if(CMAKE_VERSION VERSION_LESS "3.10")
+    set(GNSSSDR_ARMADILLO_LOCAL_VERSION "14.6.x")
 endif()
 
 if(CMAKE_VERSION VERSION_LESS "3.22")

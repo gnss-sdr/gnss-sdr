@@ -875,7 +875,11 @@ def plot_satellite_tracks(satellites, obs_lat, obs_lon, obs_alt,
     plt.savefig(output_name, format=output_format, bbox_inches='tight')
     print(f"Image saved as {output_name}")
     if show_plot:
-        plt.show()
+        try:
+            plt.show()
+        except KeyboardInterrupt:
+            print("\nExecution interrupted by the user. Exiting.")
+            plt.close()
     else:
         plt.close()
 

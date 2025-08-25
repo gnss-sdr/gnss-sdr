@@ -457,7 +457,9 @@ static inline void volk_gnsssdr_32fc_convert_8ic_neon(lv_8sc_t* outputVector, co
 
 static inline void volk_gnsssdr_32fc_convert_8ic_rvv(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
 {
-    size_t n = num_points;
+    // Will be converting by number, with each
+    // complex number containing two component numbers
+    size_t n = num_points * 2;
 
     // Initialize pointers to keep track as stripmine
     // Assuming `signed char` is intended, as `char`'s
@@ -465,42 +467,31 @@ static inline void volk_gnsssdr_32fc_convert_8ic_rvv(lv_8sc_t* outputVector, con
     signed char* outPtr = (signed char*) outputVector;
     const float* inPtr = (const float*) inputVector;
 
-    for (size_t vl; n > 0; n -= vl, outPtr += vl * 2, inPtr += vl * 2)
+    for (size_t vl; n > 0; n -= vl, outPtr += vl, inPtr += vl)
         {
             // Record how many elements will actually be processed
-            vl = __riscv_vsetvl_e32m4(n);
+            vl = __riscv_vsetvl_e32m8(n);
 
-            // Load inReal[0..vl), inImag[0..vl)
-            vfloat32m4x2_t inVal = __riscv_vlseg2e32_v_f32m4x2(inPtr, vl);
-            vfloat32m4_t inRealVal = __riscv_vget_v_f32m4x2_f32m4(inVal, 0);
-            vfloat32m4_t inImagVal = __riscv_vget_v_f32m4x2_f32m4(inVal, 1);
+            // Don't have to segment load/store since converting
+            // both real and imaginary components
+            // Load in[0..vl)
+            vfloat32m8_t inVal = __riscv_vle32_v_f32m8(inPtr, vl);
 
             // For some reason, generic implementation
             // multiplies float by `INT8_MAX` before converting
-            // tmpReal[i], tmpImag[i] *= INT8_MAX
-            vfloat32m4_t tmp32RealVal = __riscv_vfmul_vf_f32m4(inRealVal, (float) 127, vl);
-            vfloat32m4_t tmp32ImagVal = __riscv_vfmul_vf_f32m4(inImagVal, (float) 127, vl);
+            // tmp[i] *= INT8_MAX
+            vfloat32m8_t tmp32Val = __riscv_vfmul_vf_f32m8(inVal, (float) 127, vl);
 
-            // Saturate tmpReal[i], tmpImag[i] to 8 bits
-            tmp32RealVal = __riscv_vfmin_vf_f32m4(tmp32RealVal, (float) 127, vl);
-            tmp32RealVal = __riscv_vfmax_vf_f32m4(tmp32RealVal, (float) -128, vl);
-            tmp32ImagVal = __riscv_vfmin_vf_f32m4(tmp32ImagVal, (float) 127, vl);
-            tmp32ImagVal = __riscv_vfmax_vf_f32m4(tmp32ImagVal, (float) -128, vl);
+            // Saturate tmp[i] to 8 bits
+            tmp32Val = __riscv_vfmin_vf_f32m8(tmp32Val, (float) 127, vl);
+            tmp32Val = __riscv_vfmax_vf_f32m8(tmp32Val, (float) -128, vl);
 
-            // outReal[i] = (signed char) tmpReal[i]
-            vint16m2_t tmp16RealVal = __riscv_vfncvt_x_f_w_i16m2(tmp32RealVal, vl);
-            vint8m1_t outRealVal = __riscv_vncvt_x_x_w_i8m1(tmp16RealVal, vl);
+            // out[i] = (signed char) tmp[i]
+            vint16m4_t tmp16Val = __riscv_vfncvt_x_f_w_i16m4(tmp32Val, vl);
+            vint8m2_t outVal = __riscv_vncvt_x_x_w_i8m2(tmp16Val, vl);
 
-            // outImag[i] = (signed char) tmpImag[i]
-            vint16m2_t tmp16ImagVal = __riscv_vfncvt_x_f_w_i16m2(tmp32ImagVal, vl);
-            vint8m1_t outImagVal = __riscv_vncvt_x_x_w_i8m1(tmp16ImagVal, vl);
-
-            // Store outReal[0..vl), outImag[0..vl)
-            vint8m1x2_t outVal = __riscv_vset_v_i8m1_i8m1x2(
-                __riscv_vundefined_i8m1x2(), 0, outRealVal
-            );
-            outVal = __riscv_vset_v_i8m1_i8m1x2(outVal, 1, outImagVal);
-            __riscv_vsseg2e8_v_i8m1x2(outPtr, outVal, vl);
+            // Store out[0..vl)
+            __riscv_vse8_v_i8m2(outPtr, outVal, vl);
 
             // In looping, decrement the number of
             // elements left and increment the pointers

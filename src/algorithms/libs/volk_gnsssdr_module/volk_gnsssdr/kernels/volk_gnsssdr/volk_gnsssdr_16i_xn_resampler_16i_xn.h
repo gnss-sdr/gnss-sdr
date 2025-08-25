@@ -594,8 +594,66 @@ static inline void volk_gnsssdr_16i_xn_resampler_16i_xn_neon(int16_t** result, c
         }
 }
 
-
 #endif
 
+
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+static inline void volk_gnsssdr_16i_xn_resampler_16i_xn_rvv(int16_t** result, const int16_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
+{
+
+    for (int current_correlator_tap = 0; current_correlator_tap < num_out_vectors; current_correlator_tap++)
+        {
+            // Stores address offsets from `local_code` to load from and
+            // then store in `result[current_correlator_tap]`
+            unsigned int offsetBuffer[num_points];
+
+            for (int i = 0; i < num_points; i++)
+                {
+                    // resample code for current tap
+                    int local_code_chip_index = (int)floor(code_phase_step_chips * (float)i + shifts_chips[current_correlator_tap] - rem_code_phase_chips);
+                    // Take into account that in multitap correlators, the shifts can be negative!
+                    if (local_code_chip_index < 0) local_code_chip_index += (int)code_length_chips * (abs(local_code_chip_index) / code_length_chips + 1);
+                    local_code_chip_index = local_code_chip_index % code_length_chips;
+
+                    // `local_code_chip_index` should be some positive, valid
+                    // index to `local_code`
+                    // Convert from index to raw address offset
+                    offsetBuffer[i] = (unsigned int) (local_code_chip_index * 2);
+                }
+
+            size_t n = num_points;
+
+            // Initialize pointers to track progress as stripmine
+            int16_t* outPtr = result[current_correlator_tap];
+            const int16_t* inPtr = local_code;
+            const unsigned int* offsetPtr = (const unsigned int*) offsetBuffer;
+
+            for (size_t vl; n > 0; n -= vl, outPtr += vl, offsetPtr += vl)
+                {
+                    // Use LMUL of 4 since EEW/SEW of indexed load is 2,
+                    // meaning that to use u32 as indices to load
+                    // i16m4, index vector needs to be u32m8
+                    // Record how many data elements will actually be processed
+                    vl = __riscv_vsetvl_e16m4(n);
+
+                    // Load offset[0..vl)
+                    vuint32m8_t offsetVal = __riscv_vle32_v_u32m8(offsetPtr, vl);
+
+                    // This indexed load is unordered to hopefully boost run time
+                    // out[i] = in[offset[i]]
+                    vint16m4_t outVal = __riscv_vluxei32_v_i16m4(inPtr, offsetVal, vl);
+
+                    // Store out[0..vl)
+                    __riscv_vse16_v_i16m4(outPtr, outVal, vl);
+
+                    // In looping, decrement the number of
+                    // elements left and increment stripmining pointers
+                    // by the number of elements processed
+                }
+        }
+}
+
+#endif /* LV_HAVE_RVV */
 
 #endif /*INCLUDED_volk_gnsssdr_16i_xn_resampler_16i_xn_H*/

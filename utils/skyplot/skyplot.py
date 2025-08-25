@@ -76,7 +76,7 @@ def read_obs_time_bounds(obs_path: str) -> Tuple[Optional[datetime], Optional[da
 
             # --- Scan for epoch lines ---
             for line in f:
-                line = line.strip()
+                line = line.rstrip()
                 if not line:
                     continue
 

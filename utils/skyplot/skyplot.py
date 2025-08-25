@@ -486,9 +486,8 @@ def read_rinex_nav(filename):
                 day = int(parts[3])
                 hour = int(parts[4])
                 minute = int(parts[5])
-                second = float(parts[6])
+                second = float(parts[6][:2])
                 epoch = datetime(year, month, day, hour, minute, int(second), int((second % 1) * 1e6))
-
                 lines = [current_line]
                 line_count = 4 if system == 'R' or system == 'S' else 7
                 for _ in range(line_count):
@@ -543,7 +542,7 @@ def read_rinex_nav(filename):
                         'z_acc': parse_rinex_float(lines[3][42:61]) if len(lines) > 3 else None,
                         'extra': lines[4:]
                     }
-                else:
+                elif system in ('G', 'E', 'C', 'I', 'J'):
                     ephemeris = {
                         'prn': prn,
                         'epoch': epoch,
@@ -578,8 +577,11 @@ def read_rinex_nav(filename):
                         'fit_interval': parse_rinex_float(lines[7][23:42]) if len(lines) > 7 else None,
                         'extra': lines[8:]
                     }
+                else:
+                    ephemeris = []
 
-                satellites.setdefault(prn, []).append(ephemeris)
+                if ephemeris:
+                    satellites.setdefault(prn, []).append(ephemeris)
 
             except (ValueError, IndexError):
                 # Skip to next line

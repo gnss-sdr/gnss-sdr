@@ -43,6 +43,11 @@ except ImportError:
 
 __version__ = "1.0.0"
 
+# Default position: Castelldefels, Barcelona
+DEFAULT_LAT = 41.275
+DEFAULT_LON = 1.9876
+DEFAULT_ALT = 80.0
+
 def read_obs_time_bounds(obs_path: str) -> Tuple[Optional[datetime], Optional[datetime]]:
     """
     Return (start_time, end_time) from a RINEX observation file (v2/3/4)
@@ -186,6 +191,52 @@ def find_obs_for_nav(nav_file: str) -> Optional[str]:
 
     print(f"OBS file not found. Tried: {', '.join(tried)}.")
     return None
+
+
+def ecef_to_geodetic(x: float, y: float, z: float) -> Tuple[float, float, float]:
+    """Convert ECEF (X, Y, Z) to (lat, lon, h)."""
+    # WGS84 constants
+    a = 6378137.0        # semi-major axis
+    f = 1 / 298.257223563
+    e2 = f * (2 - f)
+
+    lon = atan2(y, x)
+    r = sqrt(x*x + y*y)
+    lat = atan2(z, r * (1 - e2))  # initial guess
+
+    # Iterative improvement
+    for _ in range(5):
+        N = a / sqrt(1 - e2 * sin(lat)**2)
+        h = r / cos(lat) - N
+        lat = atan2(z, r * (1 - e2 * (N / (N + h))))
+
+    N = a / sqrt(1 - e2 * sin(lat)**2)
+    h = r / cos(lat) - N
+
+    return np.degrees(lat), np.degrees(lon), h
+
+
+def get_approx_position_from_obs(obs_file: str) -> Optional[Tuple[float, float, float]]:
+    """Read APPROX POSITION XYZ from an OBS RINEX file header.
+       Returns (lat, lon, h) in degrees/meters or None if not valid."""
+    try:
+        with open(obs_file, "r") as f:
+            for line in f:
+                if "APPROX POSITION XYZ" in line:
+                    parts = line.split()
+                    if len(parts) >= 3:
+                        try:
+                            x, y, z = map(float, parts[0:3])
+                        except ValueError:
+                            return None
+                        # Check if position is valid (not all zeros)
+                        if abs(x) < 1e-6 and abs(y) < 1e-6 and abs(z) < 1e-6:
+                            return None
+                        # Convert ECEF → geodetic
+                        return ecef_to_geodetic(x, y, z)
+        return None
+    except OSError:
+        return None
 
 
 def parse_rinex_float(s: str) -> float:
@@ -398,7 +449,7 @@ def read_rinex_nav(filename):
                     if ephemeris:
                         satellites.setdefault(prn, []).append(ephemeris)
 
-                except (ValueError, IndexError) as e:
+                except (ValueError, IndexError):
                     # Skip malformed block; advance
                     current_line = f.readline()
                     line_number += 1
@@ -857,18 +908,18 @@ def main():
         )
 
         parser.add_argument(
-            'lat', nargs='?', type=float, default=41.2750,
-            help='Observer latitude in degrees (default: 41.275° N)'
+            'lat', nargs='?', type=float, default=DEFAULT_LAT,
+            help=f'Observer latitude in degrees (default: {DEFAULT_LAT}° N)'
         )
 
         parser.add_argument(
-            'lon', nargs='?', type=float, default=1.9876,
-            help='Observer longitude in degrees (default: 1.9876° E)'
+            'lon', nargs='?', type=float, default=DEFAULT_LON,
+            help=f'Observer longitude in degrees (default: {DEFAULT_LON}° E)'
         )
 
         parser.add_argument(
-            'alt', nargs='?', type=float, default=80.0,
-            help='Observer altitude in meters (default: 80.0 m)'
+            'alt', nargs='?', type=float, default=DEFAULT_ALT,
+            help=f'Observer altitude in meters (default: {DEFAULT_ALT} m)'
         )
 
         # Optional arguments
@@ -915,11 +966,18 @@ def main():
         # Parse all arguments with full validation
         args = parser.parse_args()
 
+        filename = args.filename
+        user_provided_position = (
+                (args.lat != DEFAULT_LAT) or
+                (args.lon != DEFAULT_LON) or
+                (args.alt != DEFAULT_ALT)
+            )
+
         # Convert coordinates to radians
         obs_lat = np.radians(args.lat)
         obs_lon = np.radians(args.lon)
         obs_alt = args.alt
-        filename = args.filename
+
 
         # Read RINEX file
         print(f"Reading {filename} ...")
@@ -989,6 +1047,14 @@ def main():
                     print(f"\nObservation window detected in {obs_path}: from {use_start} to {use_end}")
                 else:
                     print(f"\nWarning: Could not read valid times from {obs_path}. Using NAV span instead.")
+                if not user_provided_position:
+                    approx_pos = get_approx_position_from_obs(obs_path)
+                    if approx_pos is not None:
+                        lat, lon, h = approx_pos
+                        obs_lat = np.radians(lat)
+                        obs_lon = np.radians(lon)
+                        obs_alt = h
+                        print(f"\nObserver position found in {obs_path}: lat {lat:.2f}°, lon {lon:.2f}°, height {h:.2f} m.")
 
         # Ensure at least two samples with the default 5-minute step
         if (use_end - use_start) < timedelta(minutes=5):

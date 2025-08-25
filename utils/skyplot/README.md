@@ -30,6 +30,13 @@ showing satellite visibility over time.
   to the receiver observation time via the`--use-obs` optional argument.
   - If this argument is set, the tool looks for a matching file following
     standard RINEX naming conventions, and uses it if found.
+  - If this argument is set and the observation file is found, the position
+    selection logic is:
+    1. If user provides latitude, longitude, and altitude as positional
+       arguments, that position is always used.
+    2. Otherwise, if the provided observation file contains a valid
+       `APPROX POSITION XYZ` field in its header, that position is used.
+    3. Otherwise, the default position is used.
 
 ## Requirements
 

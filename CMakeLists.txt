@@ -369,11 +369,12 @@ set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 set(GNSSSDR_ABSL_LOCAL_VERSION "origin/master") # live at head (see https://abseil.io/about/releases)
 
 # Downgrade versions if requirements are not met
-if(CMAKE_VERSION VERSION_LESS "3.5")
-    set(GNSSSDR_ARMADILLO_LOCAL_VERSION "12.8.x")
-endif()
+
 if(CMAKE_VERSION VERSION_LESS "3.10")
     set(GNSSSDR_ARMADILLO_LOCAL_VERSION "14.6.x")
+endif()
+if(CMAKE_VERSION VERSION_LESS "3.5")
+    set(GNSSSDR_ARMADILLO_LOCAL_VERSION "12.8.x")
 endif()
 
 if(CMAKE_VERSION VERSION_LESS "3.22")

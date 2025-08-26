@@ -630,7 +630,7 @@ static inline void volk_gnsssdr_32f_xn_resampler_32f_xn_rvv(float** result, cons
                     vuint32m8_t iVal = __riscv_vadd_vx_u32m8(idVal, currI, vl);
                     vfloat32m8_t floatIVal = __riscv_vfcvt_f_xu_v_f32m8(iVal, vl);
 
-                    // iterIndex[i] = floatIVal[i] * code_phase_step_chips
+                    // iterIndex[i] = floatI[i] * code_phase_step_chips
                     vfloat32m8_t iterIndexVal = __riscv_vfmul_vf_f32m8(floatIVal, code_phase_step_chips, vl);
 
                     // overflowIndex[i] = (int) floor(iterIndex[i] + constIndexShift)
@@ -659,7 +659,7 @@ static inline void volk_gnsssdr_32f_xn_resampler_32f_xn_rvv(float** result, cons
                     __riscv_vse32_v_f32m8(outPtr, outVal, vl);
 
                     // In looping, decrement the number of
-                    // elements left and increment stripmining pointers
+                    // elements left and increment stripmining variables
                     // by the number of elements processed
                 }
         }

@@ -788,7 +788,7 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_rvv(lv_32fc_t** result
                     vuint32m4_t iVal = __riscv_vadd_vx_u32m4(idVal, currI, vl);
                     vfloat32m4_t floatIVal = __riscv_vfcvt_f_xu_v_f32m4(iVal, vl);
 
-                    // iterIndex[i] = floatIVal[i] * code_phase_step_chips
+                    // iterIndex[i] = floatI[i] * code_phase_step_chips
                     vfloat32m4_t iterIndexVal = __riscv_vfmul_vf_f32m4(floatIVal, code_phase_step_chips, vl);
 
                     // overflowIndex[i] = (int) floor(iterIndex[i] + constIndexShift)
@@ -806,7 +806,7 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_rvv(lv_32fc_t** result
                     vuint32m4_t finalIndexVal = __riscv_vreinterpret_v_i32m4_u32m4(indexVal);
 
                     // Convert to address offset
-                    // offset[i] = finalIndex[i] * sizeof(float)
+                    // offset[i] = finalIndex[i] * sizeof(lv_32fc_t)
                     vuint32m4_t offsetVal = __riscv_vmul_vx_u32m4(finalIndexVal, sizeof(lv_32fc_t), vl);
 
                     // This indexed load is unordered to hopefully boost run time
@@ -817,7 +817,7 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_rvv(lv_32fc_t** result
                     __riscv_vse64_v_i64m8(outPtr, outVal, vl);
 
                     // In looping, decrement the number of
-                    // elements left and increment stripmining pointers
+                    // elements left and increment stripmining variables
                     // by the number of elements processed
                 }
         }

@@ -604,50 +604,53 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_rvv(lv_16sc_t** result
     // To make easier to work with in RVV, just interpret the two 16-bit components
     // of each complex number as a single 32-bit number to move around
 
-    for (int current_correlator_tap = 0; current_correlator_tap < num_out_vectors; current_correlator_tap++) {
-        // Stores address offsets from `local_code` to load from and
-        // then store in `result[current_correlator_tap]`
-        unsigned int offsetBuffer[num_points];
+    for (int current_correlator_tap = 0; current_correlator_tap < num_out_vectors; current_correlator_tap++)
+        {
+            // Stores address offsets from `local_code` to load from and
+            // then store in `result[current_correlator_tap]`
+            unsigned int offsetBuffer[num_points];
 
-        for (int i = 0; i < num_points; i++) {
-            // resample code for current tap
-            int local_code_chip_index = (int)floor(code_phase_step_chips * (float)i + shifts_chips[current_correlator_tap] - rem_code_phase_chips);
-            // Take into account that in multitap correlators, the shifts can be negative!
-            if (local_code_chip_index < 0) local_code_chip_index += (int)code_length_chips * (abs(local_code_chip_index) / code_length_chips + 1);
-            local_code_chip_index = local_code_chip_index % code_length_chips;
+            for (int i = 0; i < num_points; i++)
+                {
+                    // resample code for current tap
+                    int local_code_chip_index = (int)floor(code_phase_step_chips * (float)i + shifts_chips[current_correlator_tap] - rem_code_phase_chips);
+                    // Take into account that in multitap correlators, the shifts can be negative!
+                    if (local_code_chip_index < 0) local_code_chip_index += (int)code_length_chips * (abs(local_code_chip_index) / code_length_chips + 1);
+                    local_code_chip_index = local_code_chip_index % code_length_chips;
 
-            // `local_code_chip_index` should be some positive, valid
-            // index to `local_code`
-            // Convert from index to raw address offset
-            offsetBuffer[i] = (unsigned int) (local_code_chip_index * 4);
+                    // `local_code_chip_index` should be some positive, valid
+                    // index to `local_code`
+                    // Convert from index to raw address offset
+                    offsetBuffer[i] = (unsigned int) (local_code_chip_index * 4);
+                }
+
+            size_t n = num_points;
+
+            // Initialize pointers to track progress as stripmine
+            int* outPtr = (int*) result[current_correlator_tap];
+            const int* inPtr = (const int*) local_code;
+            const unsigned int* offsetPtr = (const unsigned int*) offsetBuffer;
+
+            for (size_t vl; n > 0; n -= vl, outPtr += vl, offsetPtr += vl)
+                {
+                    // Record how many elements will actually be processed
+                    vl = __riscv_vsetvl_e32m8(n);
+
+                    // Load offset[0..vl)
+                    vuint32m8_t offsetVal = __riscv_vle32_v_u32m8(offsetPtr, vl);
+
+                    // This indexed load is unordered to hopefully boost run time
+                    // out[i] = in[offset[i]]
+                    vint32m8_t outVal = __riscv_vluxei32_v_i32m8(inPtr, offsetVal, vl);
+
+                    // Store out[0..vl)
+                    __riscv_vse32_v_i32m8(outPtr, outVal, vl);
+
+                    // In looping, decrement the number of
+                    // elements left and increment stripmining pointers
+                    // by the number of elements processed
+                }
         }
-
-        size_t n = num_points;
-
-        // Initialize pointers to track progress as stripmine
-        int* outPtr = (int*) result[current_correlator_tap];
-        const int* inPtr = (const int*) local_code;
-        const unsigned int* offsetPtr = (const unsigned int*) offsetBuffer;
-
-        for (size_t vl; n > 0; n -= vl, outPtr += vl, offsetPtr += vl) {
-            // Record how many elements will actually be processed
-            vl = __riscv_vsetvl_e32m8(n);
-
-            // Load offset[0..vl)
-            vuint32m8_t offsetVal = __riscv_vle32_v_u32m8(offsetPtr, vl);
-
-            // This indexed load is unordered to hopefully boost run time
-            // out[i] = in[offset[i]]
-            vint32m8_t outVal = __riscv_vluxei32_v_i32m8(inPtr, offsetVal, vl);
-
-            // Store out[0..vl)
-            __riscv_vse32_v_i32m8(outPtr, outVal, vl);
-
-            // In looping, decrement the number of
-            // elements left and increment stripmining pointers
-            // by the number of elements processed
-        }
-    }
 }
 
 #endif

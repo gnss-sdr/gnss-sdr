@@ -330,4 +330,85 @@ static inline void volk_gnsssdr_16ic_resampler_fast_16ic_neon(lv_16sc_t* result,
 
 #endif /* LV_HAVE_NEON */
 
+
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+
+static inline void volk_gnsssdr_16ic_resampler_fast_16ic_rvv(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int num_output_samples)
+{
+    // To make easier to work with in RVV, just interpret the two 16-bit components
+    // of each complex number as a single 32-bit number to move around
+
+    // Initialize reference pointer, as stays same and not stripmined
+    const int* inPtr = (const int*) local_code;
+
+    size_t n = num_output_samples;
+
+    const float constIndexShift = rem_code_phase_chips;
+
+    // Initialize pointer to track progress as stripmine
+    int* outPtr = (int*) result;
+    // Simulates how, compared to generic implementation, `i` continues
+    // increasing across different vector computation batches
+    unsigned int currI = 0;
+
+    for (size_t vl; n > 0; n -= vl, outPtr += vl, currI += vl)
+        {
+            // Record how many elements will actually be processed
+            vl = __riscv_vsetvl_e32m8(n);
+
+            // floatI[i] = (float) (i + currI);
+            vuint32m8_t idVal = __riscv_vid_v_u32m8(vl);
+            vuint32m8_t iVal = __riscv_vadd_vx_u32m8(idVal, currI, vl);
+            vfloat32m8_t floatIVal = __riscv_vfcvt_f_xu_v_f32m8(iVal, vl);
+
+            // iterIndex[i] = floatI[i] * code_phase_step_chips
+            vfloat32m8_t iterIndexVal = __riscv_vfmul_vf_f32m8(floatIVal, code_phase_step_chips, vl);
+
+            // overflowIndex[i] = (int) floor(iterIndex[i] + constIndexShift)
+            vfloat32m8_t shiftedIndexVal = __riscv_vfadd_vf_f32m8(iterIndexVal, constIndexShift, vl);
+            vint32m8_t overflowIndexVal = __riscv_vfcvt_x_f_v_i32m8_rm(shiftedIndexVal, __RISCV_FRM_RDN, vl);
+
+            // Note on performance: Could technically do a "nested ternary" here,
+            // where only check the second conditional for an element if the first conditional
+            // was false. This would increase performance only in cases where both the
+            // microarchitecture is actually able to optimize masked vector functions AND
+            // there are enough negative indices that the skipped comparisons make up for
+            // the additional mask inversion instruction. At this point, seems like optimizing
+            // for pennies, so did not implement this and went for the clearer approach below
+
+            // Wrap to valid index in `local_code`, given that phase cannot be more
+            // than twice of `code_length_chips`, positive or negative
+            // index[i] = overflowIndex[i]
+            // index[i] = index[i] < 0 ? index[i] + code_length_chips : index[i]
+            // index[i] = index[i] > (code_length_chips - 1) ? index[i] - code_length_chips : index[i]
+            vint32m8_t indexVal = overflowIndexVal;
+            vbool4_t indexMaskVal = __riscv_vmslt_vx_i32m8_b4(indexVal, 0, vl);
+            indexVal = __riscv_vadd_vx_i32m8_mu(indexMaskVal, indexVal, indexVal, code_length_chips, vl);
+            indexMaskVal = __riscv_vmsgt_vx_i32m8_b4(indexVal, code_length_chips - 1, vl);
+            indexVal = __riscv_vsub_vx_i32m8_mu(indexMaskVal, indexVal, indexVal, code_length_chips, vl);
+
+            // After above, should now be guaranteed positive and valid index
+            // finalIndex[i] = (unsigned int) index[i]
+            vuint32m8_t finalIndexVal = __riscv_vreinterpret_v_i32m8_u32m8(indexVal);
+
+            // Convert to address offset
+            // offset[i] = finalIndex[i] * sizeof(lv_16sc_t)
+            vuint32m8_t offsetVal = __riscv_vmul_vx_u32m8(finalIndexVal, sizeof(lv_16sc_t), vl);
+
+            // This indexed load is unordered to hopefully boost run time
+            // out[i] = in[offset[i]]
+            vint32m8_t outVal = __riscv_vluxei32_v_i32m8(inPtr, offsetVal, vl);
+
+            // Store out[0..vl)
+            __riscv_vse32_v_i32m8(outPtr, outVal, vl);
+
+            // In looping, decrement the number of
+            // elements left and increment stripmining variables
+            // by the number of elements processed
+        }
+}
+
+#endif /* LV_HAVE_RVV */
+
 #endif /* INCLUDED_volk_gnsssdr_16ic_resampler_fast_16ic_H */

@@ -604,40 +604,51 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_rvv(lv_16sc_t** result
     // To make easier to work with in RVV, just interpret the two 16-bit components
     // of each complex number as a single 32-bit number to move around
 
+    // Initialize reference pointer, as stays same across loops
+    const int* inPtr = (const int*) local_code;
+
     for (int current_correlator_tap = 0; current_correlator_tap < num_out_vectors; current_correlator_tap++)
         {
-            // Stores address offsets from `local_code` to load from and
-            // then store in `result[current_correlator_tap]`
-            unsigned int offsetBuffer[num_points];
-
-            for (int i = 0; i < num_points; i++)
-                {
-                    // resample code for current tap
-                    int local_code_chip_index = (int)floor(code_phase_step_chips * (float)i + shifts_chips[current_correlator_tap] - rem_code_phase_chips);
-                    // Take into account that in multitap correlators, the shifts can be negative!
-                    if (local_code_chip_index < 0) local_code_chip_index += (int)code_length_chips * (abs(local_code_chip_index) / code_length_chips + 1);
-                    local_code_chip_index = local_code_chip_index % code_length_chips;
-
-                    // `local_code_chip_index` should be some positive, valid
-                    // index to `local_code`
-                    // Convert from index to raw address offset
-                    offsetBuffer[i] = (unsigned int) (local_code_chip_index * 4);
-                }
-
             size_t n = num_points;
+
+            const float constIndexShift = shifts_chips[current_correlator_tap] - rem_code_phase_chips;
 
             // Initialize pointers to track progress as stripmine
             int* outPtr = (int*) result[current_correlator_tap];
-            const int* inPtr = (const int*) local_code;
-            const unsigned int* offsetPtr = (const unsigned int*) offsetBuffer;
+            // Simulates how, compared to generic implementation, `i` continues
+            // increasing across different vector computatation batches
+            unsigned int currI = 0;
 
-            for (size_t vl; n > 0; n -= vl, outPtr += vl, offsetPtr += vl)
+            for (size_t vl; n > 0; n -= vl, outPtr += vl, currI += vl)
                 {
-                    // Record how many elements will actually be processed
+                    // Record how many data elements will actually be processed
                     vl = __riscv_vsetvl_e32m8(n);
 
-                    // Load offset[0..vl)
-                    vuint32m8_t offsetVal = __riscv_vle32_v_u32m8(offsetPtr, vl);
+                    // floatI[i] = (float) (i + currI)
+                    vuint32m8_t idVal = __riscv_vid_v_u32m8(vl);
+                    vuint32m8_t iVal = __riscv_vadd_vx_u32m8(idVal, currI, vl);
+                    vfloat32m8_t floatIVal = __riscv_vfcvt_f_xu_v_f32m8(iVal, vl);
+
+                    // iterIndex[i] = floatIVal[i] * code_phase_step_chips
+                    vfloat32m8_t iterIndexVal = __riscv_vfmul_vf_f32m8(floatIVal, code_phase_step_chips, vl);
+
+                    // overflowIndex[i] = (int) floor(iterIndex[i] + constIndexShift)
+                    vfloat32m8_t shiftedIndexVal = __riscv_vfadd_vf_f32m8(iterIndexVal, constIndexShift, vl);
+                    vint32m8_t overflowIndexVal = __riscv_vfcvt_x_f_v_i32m8_rm(shiftedIndexVal, __RISCV_FRM_RDN, vl);
+
+                    // Wrap to valid index in `local_code`, handling negative values
+                    // index[i] = ( code_length_chips + ( overflowIndex[i] % code_length_chips ) ) % code_length_chips
+                    vint32m8_t indexVal = __riscv_vrem_vx_i32m8(overflowIndexVal, code_length_chips, vl);
+                    indexVal = __riscv_vadd_vx_i32m8(indexVal, code_length_chips, vl);
+                    indexVal = __riscv_vrem_vx_i32m8(indexVal, code_length_chips, vl);
+
+                    // After above, should now be guaranteed positive and valid index
+                    // finalIndex[i] = (unsigned int) index[i];
+                    vuint32m8_t finalIndexVal = __riscv_vreinterpret_v_i32m8_u32m8(indexVal);
+
+                    // Convert to address offset
+                    // offset[i] = finalIndex[i] * sizeof(float)
+                    vuint32m8_t offsetVal = __riscv_vmul_vx_u32m8(finalIndexVal, sizeof(lv_16sc_t), vl);
 
                     // This indexed load is unordered to hopefully boost run time
                     // out[i] = in[offset[i]]

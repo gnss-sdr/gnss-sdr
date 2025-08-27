@@ -212,10 +212,7 @@ static inline void volk_gnsssdr_16ic_conjugate_16ic_rvv(lv_16sc_t* cVector, cons
             vint16m4_t negImagVal = __riscv_vneg_v_i16m4(aImagVal, vl);
 
             // Store aReal[0..vl), negImag[0..vl)
-            vint16m4x2_t cVal = __riscv_vset_v_i16m4_i16m4x2(
-                __riscv_vundefined_i16m4x2(), 0, aRealVal
-            );
-            cVal = __riscv_vset_v_i16m4_i16m4x2(cVal, 1, negImagVal);
+            vint16m4x2_t cVal = __riscv_vcreate_v_i16m4x2(aRealVal, negImagVal);
             __riscv_vsseg2e16_v_i16m4x2(cPtr, cVal, vl);
 
             // In looping, decrease the number of

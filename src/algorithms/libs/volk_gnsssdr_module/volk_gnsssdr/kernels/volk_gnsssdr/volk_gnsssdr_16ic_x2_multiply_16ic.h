@@ -367,10 +367,7 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_rvv(lv_16sc_t* result, con
             resImagVal = __riscv_vmacc_vv_i16m4(resImagVal, aImagVal, bRealVal, vl);
 
             // Store resReal[0..vl), resImag[0..vl)
-            vint16m4x2_t resVal = __riscv_vset_v_i16m4_i16m4x2(
-                __riscv_vundefined_i16m4x2(), 0, resRealVal
-            );
-            resVal = __riscv_vset_v_i16m4_i16m4x2(resVal, 1, resImagVal);
+            vint16m4x2_t resVal = __riscv_vcreate_v_i16m4x2(resRealVal, resImagVal);
             __riscv_vsseg2e16_v_i16m4x2(resPtr, resVal, vl);
 
             // In looping, decrement the number of

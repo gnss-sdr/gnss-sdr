@@ -380,10 +380,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_rvv(lv_8sc_t* cVector, const l
             vint8m4_t negImagVal = __riscv_vneg_v_i8m4(aImagVal, vl);
 
             // Store aReal[0..vl), negImag[0..vl) into `cPtr`
-            vint8m4x2_t cVal = __riscv_vset_v_i8m4_i8m4x2(
-                __riscv_vundefined_i8m4x2(), 0, aRealVal
-            );
-            cVal = __riscv_vset_v_i8m4_i8m4x2(cVal, 1, negImagVal);
+            vint8m4x2_t cVal = __riscv_vcreate_v_i8m4x2(aRealVal, negImagVal);
             __riscv_vsseg2e8_v_i8m4x2(cPtr, cVal, vl);
 
             // In looping, decrease the number of

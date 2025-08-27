@@ -220,4 +220,44 @@ static inline void volk_gnsssdr_64f_accumulator_64f_a_sse3(double* result, const
 }
 #endif /* LV_HAVE_SSE3 */
 
+
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+
+static inline void volk_gnsssdr_64f_accumulator_64f_rvv(double* result, const double* inputBuffer, unsigned int num_points)
+{
+    size_t n = num_points;
+
+    // Initialize pointers of correct type
+    // to keep track while stripmining
+    const double* inPtr = inputBuffer;
+
+    // acc[0] = 0
+    vfloat64m1_t accVal = __riscv_vfmv_v_f_f64m1((double) 0, 1);
+
+    for (size_t vl; n > 0; n -= vl, inPtr += vl)
+        {
+            // Record how many elements will actually be processed
+            vl = __riscv_vsetvl_e64m8(n);
+
+            // Load in[0..vl)
+            vfloat64m8_t inVal = __riscv_vle64_v_f64m8(inPtr, vl);
+
+            // Keep ordered just in case matters
+            // acc[0] = sum ( acc[0], in[0..vl) )
+            accVal = __riscv_vfredosum_vs_f64m8_f64m1(inVal, accVal, vl);
+
+            // On looping, decrement the number of
+            // elements left and increase the pointers
+            // by the number of elements processed
+        }
+
+    // For clarity, initialize pointer
+    double* resPtr = result;
+
+    // *result = acc[0]
+    __riscv_vse64_v_f64m1(resPtr, accVal, 1);
+}
+#endif /* LV_HAVE_RVV */
+
 #endif /* INCLUDED_volk_gnsssdr_64f_accumulator_64f_H */

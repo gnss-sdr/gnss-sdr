@@ -547,6 +547,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_inav_nav.get_utc_model());
+            LOG(INFO) << "Galileo leap second Delta_tLS=" << tmp_obj->Delta_tLS;
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             if (d_band == '1')
                 {
@@ -704,6 +705,7 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
     if (d_fnav_nav.have_new_utc_model() == true)
         {
             const std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_fnav_nav.get_utc_model());
+            LOG(INFO) << "Galileo leap second Delta_tLS=" << tmp_obj->Delta_tLS;
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
 #if __cplusplus == 201103L
             const int default_precision = std::cout.precision();

@@ -32,7 +32,7 @@ Vtl_Core::Vtl_Core(const Pvt_Conf &conf)
       dump_filename(conf.vtl_dump_filename),                // vtl dump file name
       N_ch(conf.vtl_gps_channels + conf.vtl_gal_channels),  // total allocated channels
       N_st((conf.vtl_gal_channels > 0) ? 9 : 8),            // x, vx, y, vy, z, vz, b (gps), b (gal), d
-      N_meas(N_ch * 2),                                     // 3 measurements (pr, prr, pracc) per channel
+      N_meas(N_ch * 2),                                     // 2 measurements (pr, prr) per channel
       N_st_idx(arma::linspace<arma::uvec>(0, N_st - 1, N_st)),
       i_clkb_E(i_clkb_G + 1),
       i_clkd((conf.vtl_gal_channels > 0) ? (i_clkb_G + 2) : (i_clkb_G + 1))
@@ -582,27 +582,27 @@ void Vtl_Core::saveVTLdata(const Vtl_Data &rtk_data)
             // ekf rx d
             tmp_double = ekf_X(i_clkd);
             dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-            // rtk rx p
+            // rtklib rx p
             tmp_double = rtk_data.rx_p(0);
             dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
             tmp_double = rtk_data.rx_p(1);
             dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
             tmp_double = rtk_data.rx_p(2);
             dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-            // rtk rx v
+            // rtklib rx v
             tmp_double = rtk_data.rx_v(0);
             dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
             tmp_double = rtk_data.rx_v(1);
             dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
             tmp_double = rtk_data.rx_v(2);
             dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-            // rtk rx b gps
+            // rtklib rx b gps
             tmp_double = rtk_data.rx_clk(0);
             dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-            // rtk rx b gal
+            // rtklib rx b gal
             tmp_double = rtk_data.rx_clk(1);
             dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-            // rtk rx d
+            // rtklib rx d
             tmp_double = rtk_data.rx_clk(2);
             dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
@@ -640,25 +640,25 @@ void Vtl_Core::saveVTLdata(const Vtl_Data &rtk_data)
                     dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                 }
 
-            // rtk code pseudorange
+            // observed pseudorange
             for (int i = 0; i < N_ch; i++)
                 {
                     tmp_double = rtk_data.obs_pr(i);
                     dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                 }
-            // rtk code pseudorange rate
+            // observed pseudorange rate
             for (int i = 0; i < N_ch; i++)
                 {
                     tmp_double = rtk_data.obs_prr(i);
                     dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                 }
-            // vtl code pseudorange
+            // computed pseudorange
             for (int i = 0; i < N_ch; i++)
                 {
                     tmp_double = ekf_comp_Z(i);
                     dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                 }
-            // vtl code pseudorange rate
+            // computed pseudorange rate
             for (int i = 0; i < N_ch; i++)
                 {
                     tmp_double = ekf_comp_Z(i + N_ch);

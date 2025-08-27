@@ -22,8 +22,8 @@ showing satellite visibility over time.
 - Color-codes satellites by constellation (GPS, Galileo, GLONASS, BeiDou).
 - Elevation mask set to 5°, configurable via the `--elev-mask` optional
   argument.
-- Outputs high-quality image in PDF format. EPS, PNG, and SVG formats are also
-  available via the `--format` optional argument.
+- Outputs high-quality image in PDF format. EPS, JPG, PNG, and SVG formats are
+  also available via the `--format` optional argument.
 - Non-interactive mode for CI jobs with the `--no-show` optional argument.
 - Constellations to plot can be configured via the `--system` optional argument.
 - Optionally, it uses the corresponding RINEX observation file to limit the plot
@@ -52,7 +52,7 @@ showing satellite visibility over time.
 ```
 ./skyplot.py <RINEX_FILE> [LATITUDE] [LONGITUDE] [ALTITUDE]
              [--elev-mask ELEV_MASK]
-             [--format {pdf,eps,png,svg}]
+             [--format {pdf,eps,jpg,png,svg}]
              [--no-show]
              [--system SYSTEM [SYSTEM ...]]
              [--use-obs]
@@ -60,17 +60,17 @@ showing satellite visibility over time.
 
 ### Arguments
 
-| Argument         | Type     | Units       | Description              | Default  |
-| ---------------- | -------- | ----------- | ------------------------ | -------- |
-| `RINEX_NAV_FILE` | Required | -           | RINEX nav file path      | -        |
-| `LATITUDE`       | Optional | degrees (°) | North/South position     | 41.275°N |
-| `LONGITUDE`      | Optional | degrees (°) | East/West position       | 1.9876°E |
-| `ALTITUDE`       | Optional | meters (m)  | Height above sea level   | 80.0 m   |
-| `--elev-mask`    | Optional | degrees (°) | Elevation mask           | 5°       |
-| `--format`       | Optional | -           | Output {pdf,eps,png,svg} | pdf      |
-| `--no-show`      | Optional | -           | Do not show plot         | -        |
-| `--system`       | Optional | -           | Systems to plot          | All      |
-| `--use-obs`      | Optional | -           | Use RINEX obs data       | -        |
+| Argument         | Type     | Units       | Description            | Default  |
+| ---------------- | -------- | ----------- | ---------------------- | -------- |
+| `RINEX_NAV_FILE` | Required | -           | RINEX nav file path    | -        |
+| `LATITUDE`       | Optional | degrees (°) | North/South position   | 41.275°N |
+| `LONGITUDE`      | Optional | degrees (°) | East/West position     | 1.9876°E |
+| `ALTITUDE`       | Optional | meters (m)  | Height above sea level | 80.0 m   |
+| `--elev-mask`    | Optional | degrees (°) | Elevation mask         | 5°       |
+| `--format`       | Optional | -           | Output file format     | pdf      |
+| `--no-show`      | Optional | -           | Do not show plot       | -        |
+| `--system`       | Optional | -           | Systems to plot        | All      |
+| `--use-obs`      | Optional | -           | Use RINEX obs file     | -        |
 
 ### Examples
 
@@ -118,5 +118,5 @@ The script generates a PDF file named `skyplot_<RINEX_FILE>.pdf` (with dots in
 - Time range in footer.
 - Embedded fonts that display consistently across all systems and generate
   publication-ready figures.
-- EPS, PNG, and SVG output formats available via `--format eps`, `--format png`,
-  and `--format svg`.
+- EPS, JPG, PNG, and SVG output formats available via `--format eps`,
+  `--format jpg`, `--format png`, and `--format svg`.

@@ -4,7 +4,7 @@ plotVTL.py
 
  Plotting module for GNSS-SDR Vector Tracking Loop (VTL) dumps.
 
- Pedro Pereira, 2025. pereirapedro@gmail.com
+ Pedro Pereira, 2025. pereirapedrocp@gmail.com
 
  Expected GNSS_vtl keys (from vtl_read_dump.py):
     nepoch, receiver_time_s, vtl_dt_s,

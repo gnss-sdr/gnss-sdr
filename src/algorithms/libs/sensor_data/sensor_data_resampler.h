@@ -1,6 +1,6 @@
 /*!
  * \file sensor_data_resampler.h
- * \brief  Updates timestamp within sensor data tags. To be used within resampler blocks.
+ * \brief  Updates timestamp within sensor data tags. To be used in resampler blocks.
  * \author Victor Castillo, 2024. victorcastilloaguero(at)gmail.com
  *
  * -----------------------------------------------------------------------------
@@ -27,6 +27,13 @@
  * \{ */
 
 
+/** \brief Updates timestamp within sensor data tags. To be used in resampler blocks.
+ *
+ *  \param tags Stream tags as retrieved by `get_tags_in_window` or `get_tags_in_range`.
+ *  \param freq_in Input RF sample rate.
+ *  \param freq_out Output RF sample rate.
+ *  \return Stream tags to be added with `add_item_tag`.
+ */
 std::vector<gr::tag_t> resample_sensor_data_tags(const std::vector<gr::tag_t>& tags, double freq_in, double freq_out);
 
 

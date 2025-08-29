@@ -1,6 +1,6 @@
 /*!
  * \file sensor_data_resampler.cc
- * \brief  Updates timestamp within sensor data tags. To be used within resampler blocks.
+ * \brief  Updates timestamp within sensor data tags. To be used in resampler blocks.
  * \author Victor Castillo, 2024. victorcastilloaguero(at)gmail.com
  *
  * -----------------------------------------------------------------------------

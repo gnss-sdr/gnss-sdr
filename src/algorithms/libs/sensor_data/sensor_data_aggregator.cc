@@ -42,7 +42,6 @@ SensorDataAggregator::SensorDataAggregator(const SensorDataSourceConfiguration& 
                             break;
 
                             // More maps to be populated in the future for different types
-                            // For now, all supported sensors are represented as f32
 
                         default:
                             break;
@@ -90,7 +89,6 @@ void SensorDataAggregator::update(const std::vector<gr::tag_t>& tags)
                 }
         }
     // More maps to be cleared in the future for different types
-    // For now, all supported sensors are represented as f32
 
     // Append new data
     for (const auto& sensor_tag : tags)
@@ -236,7 +234,6 @@ void SensorDataAggregator::append_data(const pmt::pmt_t& data_dict)
                             break;
 
                             // More types to be handled in the future for different types
-                            // For now, all supported sensors are represented as f32
 
                         default:
                             break;

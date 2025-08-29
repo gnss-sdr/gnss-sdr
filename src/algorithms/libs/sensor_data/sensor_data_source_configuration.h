@@ -19,7 +19,6 @@
 #define GNSS_SDR_SENSOR_DATA_SOURCE_CONFIGURATION_H
 
 #include "configuration_interface.h"
-#include "gnss_sdr_string_literals.h"
 #include "sensor_data_type.h"
 #include "sensor_identifier.h"
 #include <string>
@@ -29,10 +28,6 @@
  * \{ */
 /** \addtogroup Algorithm_libs algorithms_libs
  * \{ */
-
-using namespace std::string_literals;
-
-static std::string CONFIGURATION_ROLE = "SensorData";
 
 class ConfigurationInterface;
 

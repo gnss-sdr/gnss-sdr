@@ -15,6 +15,7 @@
  */
 
 #include "sensor_data_source_configuration.h"
+#include "gnss_sdr_string_literals.h"
 #include <fstream>
 
 #if USE_GLOG_AND_GFLAGS
@@ -22,6 +23,11 @@
 #else
 #include <absl/log/log.h>
 #endif
+
+using namespace std::string_literals;
+
+static std::string CONFIGURATION_ROLE = "SensorData";
+
 
 SensorDataSourceConfiguration::SensorDataSourceConfiguration(const ConfigurationInterface* configuration)
     : enabled_(configuration->property("SensorData.enabled"s, false)), items_per_sample_(1)

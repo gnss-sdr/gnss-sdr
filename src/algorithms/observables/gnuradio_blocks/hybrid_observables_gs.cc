@@ -662,12 +662,9 @@ void hybrid_observables_gs::propagate_sensor_data(const std::vector<Gnss_Synchro
 {
     static pmt::pmt_t SAMPLE_STAMP_KEY = pmt::mp(SensorIdentifier::to_string(SensorIdentifier::SAMPLE_STAMP));
     uint64_t current_sample = 0;
-    for (const Gnss_Synchro& item: data)
+    for (const Gnss_Synchro &item : data)
         {
-            if (item.Tracking_sample_counter > current_sample)
-                {
-                    current_sample = item.Tracking_sample_counter;
-                }
+            current_sample = std::max(current_sample, item.Tracking_sample_counter);
         }
 
     if (d_trq_last_sample == 0)

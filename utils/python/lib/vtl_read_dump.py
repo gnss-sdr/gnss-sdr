@@ -5,7 +5,7 @@
  Read GNSS-SDR Vector Tracking dump binary file into Python.
  Opens GNSS-SDR vector tracking binary log file .dat and returns the contents
 
- Pedro Pereira, 2025. pereirapedro@gmail.com
+ Pedro Pereira, 2025. pereirapedrocp@gmail.com
 
     Args:
         settings: receiver settings.

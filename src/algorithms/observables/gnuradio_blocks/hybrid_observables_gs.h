@@ -94,7 +94,7 @@ private:
     std::queue<GnssTime> d_TimeChannelTagTimestamps;
 
     std::queue<gr::tag_t> d_sensor_data_tags;
-    std::uint64_t d_trq_last_sample;
+    std::uint64_t d_trq_last_sample{0};
 
     std::vector<bool> d_channel_last_pll_lock;
     std::vector<double> d_channel_last_pseudorange_smooth;

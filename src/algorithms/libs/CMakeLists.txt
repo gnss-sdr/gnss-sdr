@@ -74,6 +74,7 @@ set(GNSS_SPLIBS_HEADERS ${GNSS_SPLIBS_HEADERS}
     sensor_data/sensor_data_source_configuration.h
     sensor_data/sensor_data_source.h
     sensor_data/sensor_data_aggregator.h
+    sensor_data/sensor_data_resampler.h
 )
 set(GNSS_SPLIBS_SOURCES ${GNSS_SPLIBS_SOURCES}
     sensor_data/sensor_data_type.cc
@@ -82,6 +83,7 @@ set(GNSS_SPLIBS_SOURCES ${GNSS_SPLIBS_SOURCES}
     sensor_data/sensor_data_source_configuration.cc
     sensor_data/sensor_data_source.cc
     sensor_data/sensor_data_aggregator.cc
+    sensor_data/sensor_data_resampler.cc
 )
 
 if(ENABLE_OPENCL)

@@ -661,7 +661,15 @@ void hybrid_observables_gs::set_tag_timestamp_in_sdr_timeframe(const std::vector
 void hybrid_observables_gs::propagate_sensor_data(const std::vector<Gnss_Synchro> &data)
 {
     static pmt::pmt_t SAMPLE_STAMP_KEY = pmt::mp(SensorIdentifier::to_string(SensorIdentifier::SAMPLE_STAMP));
-    uint64_t current_sample = data[0].Tracking_sample_counter * 10;
+    uint64_t current_sample = 0;
+    for (const Gnss_Synchro& item: data)
+        {
+            if (item.Tracking_sample_counter > current_sample)
+                {
+                    current_sample = item.Tracking_sample_counter;
+                }
+        }
+
     if (d_trq_last_sample == 0)
         {
             d_trq_last_sample = current_sample;

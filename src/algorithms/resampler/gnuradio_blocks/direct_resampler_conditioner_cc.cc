@@ -18,6 +18,8 @@
 
 
 #include "direct_resampler_conditioner_cc.h"
+#include "../../libs/sensor_data/sensor_data_resampler.h"
+#include "../../libs/sensor_data/sensor_identifier.h"
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>  // for gr_complex
 #include <algorithm>    // for min
@@ -57,6 +59,10 @@ direct_resampler_conditioner_cc::direct_resampler_conditioner_cc(
 #else
     this->set_relative_rate(sample_freq_out / sample_freq_in);
 #endif
+
+    // Do not propagate tags, they carry a sample offset that is not properly updated in
+    // this resampler and thus needs manual handling.
+    this->set_tag_propagation_policy(TPP_DONT);
 }
 
 
@@ -108,6 +114,15 @@ int direct_resampler_conditioner_cc::general_work(int noutput_items,
                     lcv++;
                 }
         }
+
+    // Sensor data tag resampling
+    std::vector<gr::tag_t> sensor_tags;
+    this->get_tags_in_window(sensor_tags, 0, 0, std::min(count, ninput_items[0]), pmt::mp("sensor_data"));
+    for (auto &tag : resample_sensor_data_tags(sensor_tags, d_sample_freq_in, d_sample_freq_out))
+        {
+            this->add_item_tag(0, tag);
+        }
+
 
     consume_each(std::min(count, ninput_items[0]));
     return lcv;

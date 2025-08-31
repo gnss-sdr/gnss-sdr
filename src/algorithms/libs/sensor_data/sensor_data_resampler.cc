@@ -21,7 +21,7 @@ std::vector<gr::tag_t> resample_sensor_data_tags(const std::vector<gr::tag_t>& t
 {
     static pmt::pmt_t SAMPLE_STAMP_KEY = pmt::mp(SensorIdentifier::to_string(SensorIdentifier::SAMPLE_STAMP));
     std::vector<gr::tag_t> new_tags{};
-    for (auto& tag : tags)
+    for (const auto& tag : tags)
         {
             if (pmt::dict_has_key(tag.value, SAMPLE_STAMP_KEY))
                 {

@@ -24,8 +24,6 @@
 #include <absl/log/log.h>
 #endif
 
-using namespace std::string_literals;
-
 SensorDataSource::SensorDataSource(
     const SensorDataSourceConfiguration& configuration,
     const gr::io_signature::sptr& io_signature)

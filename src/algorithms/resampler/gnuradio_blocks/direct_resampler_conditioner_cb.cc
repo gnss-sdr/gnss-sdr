@@ -18,8 +18,8 @@
 
 
 #include "direct_resampler_conditioner_cb.h"
-#include "../../libs/sensor_data/sensor_data_resampler.h"
-#include "../../libs/sensor_data/sensor_identifier.h"
+#include "sensor_data/sensor_data_resampler.h"
+#include "sensor_data/sensor_identifier.h"
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>  // for lv_8sc_t
 #include <algorithm>    // for min

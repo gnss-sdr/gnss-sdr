@@ -41,6 +41,7 @@ target_link_libraries(resampler_gr_blocks
         Gnuradio::runtime
         Boost::headers   # Fix for homebrew
     PRIVATE
+        algorithms_libs
         Volk::volk
 )
 

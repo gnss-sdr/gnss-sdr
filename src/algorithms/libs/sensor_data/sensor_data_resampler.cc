@@ -25,7 +25,9 @@ std::vector<gr::tag_t> resample_sensor_data_tags(const std::vector<gr::tag_t>& t
         {
             if (pmt::dict_has_key(tag.value, SAMPLE_STAMP_KEY))
                 {
-                    auto& new_tag = new_tags.emplace_back();
+                    new_tags.emplace_back();
+                    auto& new_tag = new_tags.back();
+
                     uint64_t sample_stamp = pmt::to_uint64(pmt::dict_ref(tag.value, SAMPLE_STAMP_KEY, pmt::from_uint64(0)));
                     sample_stamp = sample_stamp * freq_out / freq_in;
                     new_tag.offset = tag.offset * freq_out / freq_in;

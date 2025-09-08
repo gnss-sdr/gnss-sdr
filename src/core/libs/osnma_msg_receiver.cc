@@ -643,7 +643,10 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                 {
                                     applicable_kroot_msg.verified = true;
                                     std::cout << "Galileo OSNMA: DSM-KROOT authentication successful!" << std::endl;
-                                    LOG(INFO) << "Galileo OSNMA: DSM-KROOT authentication successful!";
+                                    LOG(INFO) << "Galileo OSNMA: DSM-KROOT authentication successful for WNk="
+                                              << static_cast<uint32_t>(applicable_kroot_msg.wn_k)
+                                              << " and TOWHk="
+                                              << static_cast<uint32_t>(applicable_kroot_msg.towh_k) * 3600;
                                     if (d_flag_alert_message)
                                         {
                                             LOG(WARNING) << "Galileo OSNMA: DSM-KROOT :: Alert message verification :: SUCCESS. ";
@@ -1123,7 +1126,7 @@ void osnma_msg_receiver::process_mack_message()
                     // add tag0 first
                     Tag tag0(*mack);
                     d_tags_awaiting_verify.insert(std::pair<uint32_t, Tag>(mack->TOW, tag0));
-                    LOG(INFO) << "Galileo OSNMA: Add Tag0 Id= "
+                    LOG(INFO) << "Galileo OSNMA: Add Tag0_Id="
                               << tag0.tag_id
                               << ", value=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
                               << tag0.received_tag << std::dec
@@ -1135,13 +1138,13 @@ void osnma_msg_receiver::process_mack_message()
                               << static_cast<unsigned>(tag0.PRNa)
                               << ", PRNd="
                               << static_cast<unsigned>(tag0.PRN_d);
-                    std::vector<MACK_tag_and_info> macseq_verified_tags = verify_macseq_new(*mack);
+                    std::vector<MACK_tag_and_info> macseq_verified_tags = verify_macseq(*mack);
                     for (auto& tag_and_info : macseq_verified_tags)
                         {
                             // add tags of current mack to the verification queue
                             Tag t(tag_and_info, mack->TOW, mack->WN, mack->PRNa, tag_and_info.counter);
                             d_tags_awaiting_verify.insert(std::pair<uint32_t, Tag>(mack->TOW, t));
-                            LOG(INFO) << "Galileo OSNMA: Add Tag Id= "
+                            LOG(INFO) << "Galileo OSNMA: Add Tag_Id="
                                       << t.tag_id
                                       << ", value=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
                                       << t.received_tag << std::dec
@@ -1236,7 +1239,7 @@ void osnma_msg_receiver::process_mack_message()
                     // case 2: adkd=0/4 and t.Tow + 30 < current TOW
                     // case 3: any adkd and t.Tow > current TOW
                     it.second.skipped++;
-                    LOG(WARNING) << "Galileo OSNMA: Tag verification :: SKIPPED (x" << it.second.skipped << ")for Tag Id= "
+                    LOG(WARNING) << "Galileo OSNMA: Tag verification :: SKIPPED (x" << it.second.skipped << ") for Tag_Id="
                                  << it.second.tag_id
                                  << ", value=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
                                  << it.second.received_tag << std::dec
@@ -1658,116 +1661,11 @@ void osnma_msg_receiver::control_tags_awaiting_verify_size()
         {
             auto it = d_tags_awaiting_verify.begin();
             LOG(INFO) << "Galileo OSNMA: Tag verification :: DELETED tag due to exceeding buffer size. "
-                      << "Tag Id= " << it->second.tag_id
+                      << "Tag_Id=" << it->second.tag_id
                       << ", TOW=" << it->first
                       << ", ADKD=" << static_cast<unsigned>(it->second.ADKD)
                       << ", from satellite " << it->second.PRNa;
             d_tags_awaiting_verify.erase(it);
-        }
-}
-
-
-// TODO - remove this method
-/**
- * @brief Verifies the MACSEQ of a received MACK_message.
- *
- * \details checks for each tag in the retrieved mack message if its flexible (MACSEQ) or not (MACSEQ/MACLT depending on configuration param, and
- * verifies according to Eqs. 20, 21 SIS ICD.
- * @param message The MACK_message to verify.
- * @return True if the MACSEQ is valid, false otherwise.
- */
-bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
-{
-    // MACSEQ verification
-    uint32_t GST_SFi = d_GST_Sf - 30;                                   // time of the start of SF containing MACSEQ
-    std::vector<uint8_t> applicable_key = d_tesla_keys[mack.TOW + 30];  // current tesla key ie transmitted in the next subframe
-    std::vector<std::string> sq1{};
-    std::vector<std::string> sq2{};
-    std::vector<std::string> applicable_sequence;
-    const auto it = OSNMA_TABLE_16.find(d_osnma_data.d_dsm_kroot_message.maclt);
-    // TODO as per RG example appears that the seq. q shall also be validated against either next or former Sf (depending on GST)
-    if (it != OSNMA_TABLE_16.cend())
-        {
-            sq1 = it->second.sequence1;
-            sq2 = it->second.sequence2;
-        }
-    // Assign relevant sequence based on subframe time
-    if (mack.TOW % 60 < 30)  // tried GST_Sf and it does not support the data present.
-        {
-            applicable_sequence = std::move(sq1);
-        }
-    else if (mack.TOW % 60 >= 30)
-        {
-            applicable_sequence = std::move(sq2);
-        }
-    if (mack.tag_and_info.size() != applicable_sequence.size() - 1)
-        {
-            LOG(WARNING) << "Galileo OSNMA: Number of retrieved tags does not match MACLT sequence size!";
-            return false;
-        }
-    std::vector<uint8_t> flxTags{};
-    std::string tempADKD;
-    // MACLT verification
-    for (size_t i = 0; i < mack.tag_and_info.size(); i++)
-        {
-            tempADKD = applicable_sequence[i + 1];
-            if (tempADKD == "FLX")
-                {
-                    flxTags.push_back(i);  // C: just need to save the index in the sequence
-                }
-            else if (mack.tag_and_info[i].tag_info.ADKD != std::stoi(applicable_sequence[i + 1]))
-                {
-                    // fill index of tags failed
-                    LOG(WARNING) << "Galileo OSNMA: MACSEQ verification :: FAILURE :: ADKD mismatch against MAC Look-up table.";
-                    return false;  // TODO macseq shall be individual to each tag, a wrongly verified macseq should not discard the whole MACK tags
-                }
-        }
-
-    if (flxTags.empty())
-        {
-            LOG(INFO) << "Galileo OSNMA: MACSEQ verification :: SUCCESS :: ADKD matches MAC Look-up table.";
-            return true;
-        }
-    // Fixed as well as  FLX Tags share first part - Eq. 22 ICD
-    std::vector<uint8_t> m(5 + 2 * flxTags.size());  // each flx tag brings two bytes
-    m[0] = static_cast<uint8_t>(mack.PRNa);          // PRN_A - SVID of the satellite transmitting the tag
-    m[1] = static_cast<uint8_t>((GST_SFi & 0xFF000000) >> 24);
-    m[2] = static_cast<uint8_t>((GST_SFi & 0x00FF0000) >> 16);
-    m[3] = static_cast<uint8_t>((GST_SFi & 0x0000FF00) >> 8);
-    m[4] = static_cast<uint8_t>(GST_SFi & 0x000000FF);
-    // Case tags flexible - Eq. 21 ICD
-    for (size_t i = 0; i < flxTags.size(); i++)
-        {
-            m[2 * i + 5] = mack.tag_and_info[flxTags[i]].tag_info.PRN_d;
-            m[2 * i + 6] = mack.tag_and_info[flxTags[i]].tag_info.ADKD << 4 |
-                           mack.tag_and_info[flxTags[i]].tag_info.cop;
-        }
-    // compute mac
-    std::vector<uint8_t> mac;
-    if (d_osnma_data.d_dsm_kroot_message.mf == 0)  // C: HMAC-SHA-256
-        {
-            mac = d_crypto->compute_HMAC_SHA_256(applicable_key, m);
-        }
-    else if (d_osnma_data.d_dsm_kroot_message.mf == 1)  // C: CMAC-AES
-        {
-            mac = d_crypto->compute_CMAC_AES(applicable_key, m);
-        }
-    // Truncate the twelve MSBits and compare with received MACSEQ
-    uint16_t mac_msb = 0;
-    if (!mac.empty())
-        {
-            mac_msb = (mac[0] << 8) + mac[1];
-        }
-    uint16_t computed_macseq = (mac_msb & 0xFFF0) >> 4;
-    if (computed_macseq == mack.header.macseq)
-        {
-            LOG(INFO) << "Galileo OSNMA: MACSEQ verification :: SUCCESS :: FLX tags verification OK";
-            return true;
-        }
-    else
-        {
-            LOG(WARNING) << "Galileo OSNMA: MACSEQ verification :: FAILURE :: FLX tags verification failed";
-            return false;
         }
 }
 
@@ -1914,7 +1812,7 @@ std::vector<uint8_t> osnma_msg_receiver::hash_chain(uint32_t num_of_hashes_neede
  * @param mack The MACK message object to verify the MAC sequence for.
  * @return vector MACK_tag_and_info for which the MACSEQ was successful
  */
-std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_message& mack)
+std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq(const MACK_message& mack)
 {
     std::vector<MACK_tag_and_info> verified_tags{};
 

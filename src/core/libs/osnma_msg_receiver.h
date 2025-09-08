@@ -90,8 +90,6 @@ private:
     bool verify_tag(Tag& tag) const;
     bool tag_has_nav_data_available(const Tag& t) const;
     bool tag_has_key_available(const Tag& t) const;
-    bool verify_macseq(const MACK_message& mack);
-
     bool store_dsm_kroot(const std::vector<uint8_t>& dsm, const uint8_t nma_header) const;
 
     std::pair<std::vector<uint8_t>, uint8_t> parse_dsm_kroot() const;
@@ -99,7 +97,7 @@ private:
     std::vector<uint8_t> compute_merkle_root(const DSM_PKR_message& dsm_pkr_message, const std::vector<uint8_t>& m_i) const;
     std::vector<uint8_t> build_message(Tag& tag) const;
     std::vector<uint8_t> hash_chain(uint32_t num_of_hashes_needed, const std::vector<uint8_t>& key, uint32_t GST_SFi, const uint8_t lk_bytes) const;
-    std::vector<MACK_tag_and_info> verify_macseq_new(const MACK_message& mack);
+    std::vector<MACK_tag_and_info> verify_macseq(const MACK_message& mack);
 
     std::map<uint32_t, std::map<uint32_t, OSNMA_NavData>> d_satellite_nav_data;  // map holding OSNMA_NavData sorted by SVID (first key) and TOW (second key).
     std::map<uint32_t, std::vector<uint8_t>> d_tesla_keys;                       // tesla keys over time, sorted by TOW

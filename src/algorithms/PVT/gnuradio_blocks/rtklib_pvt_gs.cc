@@ -1390,7 +1390,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                             new_annotation = true;
                                         }
                                 }
-                            if(galileo_eph->WN == 0 || galileo_eph->PRN > 36)
+                            if (galileo_eph->WN == 0 || galileo_eph->PRN > 36)
                                 {
                                     new_annotation = false;
                                 }

@@ -45,9 +45,14 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Usability:
 
-- Added a GNSS skyplot visualization utility at `utils/skyplot/skyplot.py`,
-  which generates a skyplot from a RINEX navigation file and saves the image in
-  PDF format. It requires `numpy` and `matplotlib`.
+- Added a Python-based GNSS skyplot visualization utility at
+  `utils/skyplot/skyplot.py`, which generates a skyplot from a RINEX navigation
+  file and saves the image in usual image formats. It requires `numpy` and
+  `matplotlib`.
+- Added a Python-based OSNMA timeline viewer visualization utility at
+  `utils/osnma-log-viewer/osnma_log_viewer.py`, which generates a plot from a
+  GNSS-SDR log file containing OSNMA messages. It requires `matplotlib` and
+  `pandas`.
 - `File_Signal_Source` fixed file length and sample skip calculations on 32-bit
   systems.
 - Fixed tracking the same PRN in multiple channels. Previously, this could

@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+
+# Temporary/backup files
+*~
+*.bak
+*.tmp
+.DS_Store
+
+*.log
+*log.*
+
+# Output files
+*.pdf
+*.png
+*.jpg
+*.svg
+*.eps
+*.ps

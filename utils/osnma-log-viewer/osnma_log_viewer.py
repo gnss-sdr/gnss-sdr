@@ -333,10 +333,14 @@ def main():
             print(f"Supported extensions: {', '.join(valid_extensions)}")
             sys.exit(1)
 
+        print(f"Reading file {log_file} ...")
         df = parse_osnma_log(log_file)
         if df.empty:
             print("No OSNMA authentication records found in the log file.")
             sys.exit(0)
+
+        successful_total_tags = df.shape[0]
+        print(f"Found {successful_total_tags} validated OSNMA tags.")
 
         # Read time limits
         start_datetime = None
@@ -390,6 +394,10 @@ def main():
                 "No OSNMA authentication records found in the log file for the specified time period."
             )
             sys.exit(0)
+
+        tags_in_period = df.shape[0]
+        if successful_total_tags != tags_in_period:
+            print(f"A total of {tags_in_period} tags will be plotted for the specified time period.")
 
         print(
             "Generating Galileo's navigation message authentication timeline plot ..."

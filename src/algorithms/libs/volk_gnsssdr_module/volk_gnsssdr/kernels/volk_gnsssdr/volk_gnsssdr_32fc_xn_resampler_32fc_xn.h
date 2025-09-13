@@ -764,7 +764,7 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_rvv(lv_32fc_t** result
     // of each complex number as a single 64-bit number to move around
 
     // Initialize reference pointer, as stays same across loops
-    const long* inPtr = (const long*) local_code;
+    const long* inPtr = (const long*)local_code;
 
     for (int current_correlator_tap = 0; current_correlator_tap < num_out_vectors; current_correlator_tap++)
         {
@@ -773,7 +773,7 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_rvv(lv_32fc_t** result
             const float constIndexShift = shifts_chips[current_correlator_tap] - rem_code_phase_chips;
 
             // Initialize pointers to track progress as stripmine
-            long* outPtr = (long*) result[current_correlator_tap];
+            long* outPtr = (long*)result[current_correlator_tap];
             // Simulates how, compared to generic implementation, `i` continues
             // increasing across different vector computatation batches
             unsigned int currI = 0;

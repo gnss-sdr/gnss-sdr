@@ -335,9 +335,9 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_rvv(lv_16sc_t* result, con
     size_t n = num_points;
 
     // Initialize pointers to keep track as stripmine
-    short* resPtr = (short*) result;
-    const short* aPtr = (const short*) in_a;
-    const short* bPtr = (const short*) in_b;
+    short* resPtr = (short*)result;
+    const short* aPtr = (const short*)in_a;
+    const short* bPtr = (const short*)in_b;
 
     for (size_t vl; n > 0; n -= vl, resPtr += vl * 2, aPtr += vl * 2, bPtr += vl * 2)
         {

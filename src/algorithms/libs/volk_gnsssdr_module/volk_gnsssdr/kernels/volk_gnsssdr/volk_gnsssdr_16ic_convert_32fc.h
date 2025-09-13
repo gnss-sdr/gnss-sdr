@@ -275,8 +275,8 @@ static inline void volk_gnsssdr_16ic_convert_32fc_rvv(lv_32fc_t* outputVector, c
     size_t n = num_points * 2;
 
     // Initialize pointers to keep track as stripmine
-    float* outPtr = (float*) outputVector;
-    const short* inPtr = (const short*) inputVector;
+    float* outPtr = (float*)outputVector;
+    const short* inPtr = (const short*)inputVector;
 
     for (size_t vl; n > 0; n -= vl, outPtr += vl, inPtr += vl)
         {

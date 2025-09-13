@@ -78,7 +78,7 @@ static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_generic(fl
             if (local_code_chip_index < 0) local_code_chip_index += (int)code_length_chips * (abs(local_code_chip_index) / code_length_chips + 1);
             local_code_chip_index = local_code_chip_index % code_length_chips;
             result[0][n] = local_code[local_code_chip_index];
-       }
+        }
 
     // adjacent correlators
     unsigned int shift_samples = 0;

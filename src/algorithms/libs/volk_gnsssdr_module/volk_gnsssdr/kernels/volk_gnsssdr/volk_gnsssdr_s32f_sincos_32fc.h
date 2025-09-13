@@ -937,7 +937,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_neon(lv_32fc_t *out, const floa
 #include <riscv_vector.h>
 
 // Reverse-engineered from NEON implementation
-static inline void volk_gnsssdr_s32f_sincos_32fc_rvv(lv_32fc_t* out, const float phase_inc, float* phase, unsigned int num_points)
+static inline void volk_gnsssdr_s32f_sincos_32fc_rvv(lv_32fc_t *out, const float phase_inc, float *phase, unsigned int num_points)
 {
     // Copied from other implementations, specifically NEON
     const float c_minus_cephes_DP1 = -0.78515625;
@@ -954,10 +954,10 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_rvv(lv_32fc_t* out, const float
     size_t n = num_points;
 
     // Initialize other pointers for consistency
-    float* phasePtr = phase;
+    float *phasePtr = phase;
 
     // Initialize pointers to keep track as stripmine
-    float* outPtr = (float*) out;
+    float *outPtr = (float *)out;
 
     for (size_t vl; n > 0; n -= vl, outPtr += vl * 2)
         {
@@ -979,7 +979,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_rvv(lv_32fc_t* out, const float
 
             // Save initial signs
             // signMask[i] = phase[i] < 0
-            vbool8_t signMask = __riscv_vmflt_vf_f32m4_b8(phaseVal, (float) 0, vl);
+            vbool8_t signMask = __riscv_vmflt_vf_f32m4_b8(phaseVal, (float)0, vl);
 
             // x[i] = |phase[i]|
             vfloat32m4_t xVal = __riscv_vfabs_v_f32m4(phaseVal, vl);
@@ -1054,11 +1054,9 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_rvv(lv_32fc_t* out, const float
             // outImag[i] = sinSignMask ? -sin[i] : sin[i]
             // outReal[i] = cosSignMask ? cos[i] : -cos[i]
             vfloat32m4_t outImagVal = __riscv_vmerge_vvm_f32m4(
-                sinVal, __riscv_vfneg_v_f32m4(sinVal, vl), sinSignMask, vl
-            );
+                sinVal, __riscv_vfneg_v_f32m4(sinVal, vl), sinSignMask, vl);
             vfloat32m4_t outRealVal = __riscv_vmerge_vvm_f32m4(
-                __riscv_vfneg_v_f32m4(cosVal, vl), cosVal, cosSignMask, vl
-            );
+                __riscv_vfneg_v_f32m4(cosVal, vl), cosVal, cosSignMask, vl);
 
             // Store out[0..vl)
             vfloat32m4x2_t outVal = __riscv_vcreate_v_f32m4x2(outRealVal, outImagVal);
@@ -1074,7 +1072,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_rvv(lv_32fc_t* out, const float
             // In looping, decrement the number of
             // elements left and increment the pointers
             // by the number of elements processed,
-            // taking into account how the output `vl` 
+            // taking into account how the output `vl`
             // complex numbers are stored as 2 `float`s
         }
 }

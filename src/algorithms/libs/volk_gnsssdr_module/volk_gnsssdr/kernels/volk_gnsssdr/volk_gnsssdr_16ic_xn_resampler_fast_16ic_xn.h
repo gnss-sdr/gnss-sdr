@@ -382,10 +382,10 @@ static inline void volk_gnsssdr_16ic_xn_resampler_fast_16ic_xn_rvv(lv_16sc_t** r
     // of each complex number as a single 32-bit number to move around
 
     // Initialize reference pointer, as stays same and not stripmined
-    const int* inPtr = (const int*) local_code;
+    const int* inPtr = (const int*)local_code;
 
     // Initialize variable to clearer, applicable type
-    int code_len = (int) code_length_chips;
+    int code_len = (int)code_length_chips;
 
     for (int current_vector = 0; current_vector < num_out_vectors; current_vector++)
         {
@@ -394,7 +394,7 @@ static inline void volk_gnsssdr_16ic_xn_resampler_fast_16ic_xn_rvv(lv_16sc_t** r
             const float constIndexShift = rem_code_phase_chips[current_vector];
 
             // Initialize pointer to track progress as stripmine
-            int* outPtr = (int*) result[current_vector];
+            int* outPtr = (int*)result[current_vector];
             // Simulates how, compared to generic implementation, `i` continues
             // increasing across different vector computation batches
             unsigned int currI = 0;

@@ -228,7 +228,7 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_rvv(char* result, const char*
 
     // Initialize pointer of correct type
     // to keep track while stripmining
-    const signed char* inPtr = (const signed char*) inputBuffer;
+    const signed char* inPtr = (const signed char*)inputBuffer;
 
     // acc[0] = 0
     vint8m1_t accVal = __riscv_vmv_v_x_i8m1(0, 1);
@@ -251,7 +251,7 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_rvv(char* result, const char*
         }
 
     // Explicitly cast to type accepted by macro
-    signed char* resPtr = (signed char*) result;
+    signed char* resPtr = (signed char*)result;
 
     // *result = acc[0]
     // NOTE: With this implementation,

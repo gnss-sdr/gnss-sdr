@@ -471,8 +471,8 @@ static inline void volk_gnsssdr_32fc_convert_16ic_rvv(lv_16sc_t* outputVector, c
     size_t n = num_points * 2;
 
     // Initialize pointers to keep track as stripmine
-    short* outPtr = (short*) outputVector;
-    const float* inPtr = (const float*) inputVector;
+    short* outPtr = (short*)outputVector;
+    const float* inPtr = (const float*)inputVector;
 
     for (size_t vl; n > 0; n -= vl, outPtr += vl, inPtr += vl)
         {
@@ -485,8 +485,8 @@ static inline void volk_gnsssdr_32fc_convert_16ic_rvv(lv_16sc_t* outputVector, c
             vfloat32m8_t inVal = __riscv_vle32_v_f32m8(inPtr, vl);
 
             // Saturate in[i] to 16 bits
-            inVal = __riscv_vfmin_vf_f32m8(inVal, (float) 32767, vl);
-            inVal = __riscv_vfmax_vf_f32m8(inVal, (float) -32768, vl);
+            inVal = __riscv_vfmin_vf_f32m8(inVal, (float)32767, vl);
+            inVal = __riscv_vfmax_vf_f32m8(inVal, (float)-32768, vl);
 
             // out[i] = (short) in[i]
             vint16m4_t outVal = __riscv_vfncvt_x_f_w_i16m4(inVal, vl);

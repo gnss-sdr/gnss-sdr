@@ -233,7 +233,7 @@ static inline void volk_gnsssdr_64f_accumulator_64f_rvv(double* result, const do
     const double* inPtr = inputBuffer;
 
     // acc[0] = 0
-    vfloat64m1_t accVal = __riscv_vfmv_v_f_f64m1((double) 0, 1);
+    vfloat64m1_t accVal = __riscv_vfmv_v_f_f64m1((double)0, 1);
 
     for (size_t vl; n > 0; n -= vl, inPtr += vl)
         {

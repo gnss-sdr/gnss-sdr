@@ -185,8 +185,8 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_rvv(char* magnitudeVect
     // Initialize pointers to track progress as stripmine
     // Assuming that intended to use `signed char`,
     // as `char`'s signedness is implementation-specific
-    signed char* outPtr = (signed char*) magnitudeVector;
-    const signed char* inPtr = (const signed char*) complexVector;
+    signed char* outPtr = (signed char*)magnitudeVector;
+    const signed char* inPtr = (const signed char*)complexVector;
 
     for (size_t vl; n > 0; n -= vl, outPtr += vl, inPtr += vl * 2)
         {

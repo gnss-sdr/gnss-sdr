@@ -263,7 +263,6 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_a_avx2(unsigned char* cChar, c
 #endif /* LV_HAVE_SSE3 */
 
 
-
 #ifdef LV_HAVE_RVV
 #include <riscv_vector.h>
 

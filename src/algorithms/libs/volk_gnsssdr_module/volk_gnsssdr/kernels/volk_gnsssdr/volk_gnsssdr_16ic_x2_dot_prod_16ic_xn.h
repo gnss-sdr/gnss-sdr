@@ -726,18 +726,19 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_optvma(lv_16sc_t* 
 #ifdef LV_HAVE_RVV
 #include <riscv_vector.h>
 
-static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_rvv(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a, int num_a_vectors, unsigned int num_points) {
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_rvv(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a, int num_a_vectors, unsigned int num_points)
+{
     int n_vec = num_a_vectors;
 
     for (int i = 0; i < n_vec; i++)
         {
             size_t n = num_points;
 
-            short* resPtr = (short*) &result[i];
+            short* resPtr = (short*)&result[i];
 
             // Initialize pointers to track progress as stripmine
-            const short* comPtr = (const short*) in_common;
-            const short* aPtr = (const short*) in_a[i];
+            const short* comPtr = (const short*)in_common;
+            const short* aPtr = (const short*)in_a[i];
 
             // Use 32-bit accumulator in order to saturate
             // to 16 bits
@@ -791,9 +792,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_rvv(lv_16sc_t* result, 
                 }
 
             // Real part of resultant complex number
-            resPtr[0] = (short) __riscv_vmv_x_s_i32m1_i32(accRealVal);
+            resPtr[0] = (short)__riscv_vmv_x_s_i32m1_i32(accRealVal);
             // Imaginary part of resultant complex number
-            resPtr[1] = (short) __riscv_vmv_x_s_i32m1_i32(accImagVal);
+            resPtr[1] = (short)__riscv_vmv_x_s_i32m1_i32(accImagVal);
         }
 }
 #endif /* LV_HAVE_RVV */

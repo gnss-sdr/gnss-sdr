@@ -493,13 +493,13 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_rvv(lv_8sc_t* result, const 
 
     // Explicitly cast in order to directly fill
     // with calculated values
-    signed char* resPtr = (signed char*) result;
+    signed char* resPtr = (signed char*)result;
 
     // Initialize pointers to track progress as stripmine
     // Assuming that intended to use `signed char`,
     // as `char`'s signedness is implementation-specific
-    const signed char* aPtr = (const signed char*) in_a;
-    const signed char* bPtr = (const signed char*) in_b;
+    const signed char* aPtr = (const signed char*)in_a;
+    const signed char* bPtr = (const signed char*)in_b;
 
     // accReal[0] = 0
     vint8m1_t accRealVal = __riscv_vmv_s_x_i8m1(0, 1);

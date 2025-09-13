@@ -215,9 +215,9 @@ static inline void volk_gnsssdr_8i_x2_add_8i_rvv(char* cVector, const char* aVec
     // Initialize pointers to track progress as stripmine
     // Macro expects `int8_t`, and `char`'s signedness
     // depends on implementation
-    signed char* cPtr = (signed char*) cVector; // For consistency
-    const signed char* aPtr = (const signed char*) aVector;
-    const signed char* bPtr = (const signed char*) bVector;
+    signed char* cPtr = (signed char*)cVector;  // For consistency
+    const signed char* aPtr = (const signed char*)aVector;
+    const signed char* bPtr = (const signed char*)bVector;
 
     for (size_t vl; n > 0; n -= vl, cPtr += vl, aPtr += vl, bPtr += vl)
         {

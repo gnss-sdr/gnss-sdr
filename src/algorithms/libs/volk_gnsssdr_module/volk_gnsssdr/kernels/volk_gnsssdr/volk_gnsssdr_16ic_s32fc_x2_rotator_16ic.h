@@ -969,12 +969,12 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_rvv(lv_16sc_t* outVec
     size_t ROTATOR_RELOAD = 512;
 
     // Initialize reference pointers of compatible type that will not be stripmined
-    float* phasePtr = (float*) phase;
-    float* phaseIncPtr = (float*) phase_inc;
+    float* phasePtr = (float*)phase;
+    float* phaseIncPtr = (float*)phase_inc;
 
     // Initialize pointers of compatible type to track progress as stripmine
-    short* outPtr = (short*) outVector;
-    const short* inPtr = (const short*) inVector;
+    short* outPtr = (short*)outVector;
+    const short* inPtr = (const short*)inVector;
 
     for (int _ = 0; _ < num_points / ROTATOR_RELOAD; _++)
         {
@@ -1058,7 +1058,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_rvv(lv_16sc_t* outVec
                     // numbers are each stored as two 16-bit numbers
                 }
 
-            // Regenerate phase
+                // Regenerate phase
 #ifdef __cplusplus
             (*phase) /= std::abs((*phase));
 #else

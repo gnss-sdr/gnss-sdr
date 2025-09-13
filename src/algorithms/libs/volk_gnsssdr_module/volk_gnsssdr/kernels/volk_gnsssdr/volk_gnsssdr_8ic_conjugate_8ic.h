@@ -363,8 +363,8 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_rvv(lv_8sc_t* cVector, const l
     // Initialize pointers to track progress as stripmine
     // Assuming that intended to use `signed char`,
     // as `char`'s signedness is implementation-specific
-    signed char* cPtr = (signed char*) cVector;
-    const signed char* aPtr = (const signed char*) aVector;
+    signed char* cPtr = (signed char*)cVector;
+    const signed char* aPtr = (const signed char*)aVector;
 
     for (size_t vl; n > 0; n -= vl, cPtr += vl * 2, aPtr += vl * 2)
         {

@@ -797,24 +797,23 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_rvv(lv_32fc_t* 
     size_t ROTATOR_RELOAD = 256;
 
     // Initialize reference pointers of compatible type that will not be stripmined
-    float* phasePtr = (float*) phase;
+    float* phasePtr = (float*)phase;
 
     // Initialize pointers of compatible type to track progress as stripmine
-    float* outPtr = (float*) result;
-    const float* comPtr = (const float*) in_common;
-    const float** inPtrBuf = (const float**) volk_gnsssdr_malloc(
-        num_a_vectors * sizeof(*in_a), volk_gnsssdr_get_alignment()
-    );
+    float* outPtr = (float*)result;
+    const float* comPtr = (const float*)in_common;
+    const float** inPtrBuf = (const float**)volk_gnsssdr_malloc(
+        num_a_vectors * sizeof(*in_a), volk_gnsssdr_get_alignment());
 
     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
-    {
-        // Initialize `out` to zero
-        result[n_vec] = lv_cmake(0.0f, 0.0f);
+        {
+            // Initialize `out` to zero
+            result[n_vec] = lv_cmake(0.0f, 0.0f);
 
-        // Treat complex number as struct containting
-        // two 16-bit integers
-        inPtrBuf[n_vec] = (float*) in_a[n_vec];
-    }
+            // Treat complex number as struct containting
+            // two 16-bit integers
+            inPtrBuf[n_vec] = (float*)in_a[n_vec];
+        }
 
     for (int _ = 0; _ < num_points / ROTATOR_RELOAD; _++)
         {
@@ -913,7 +912,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_rvv(lv_32fc_t* 
                     // elements left and increment the pointers
                     // by the number of elements processed
                 }
-            // Regenerate phase
+                // Regenerate phase
 #ifdef __cplusplus
             (*phase) /= std::abs((*phase));
 #else

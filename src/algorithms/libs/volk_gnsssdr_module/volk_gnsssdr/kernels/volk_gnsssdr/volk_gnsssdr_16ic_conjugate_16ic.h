@@ -195,8 +195,8 @@ static inline void volk_gnsssdr_16ic_conjugate_16ic_rvv(lv_16sc_t* cVector, cons
     size_t n = num_points;
 
     // Initialize pointers to keep track as stripmine
-    short* cPtr = (short*) cVector;
-    const short* aPtr = (short*) aVector;
+    short* cPtr = (short*)cVector;
+    const short* aPtr = (short*)aVector;
 
     for (size_t vl; n > 0; n -= vl, cPtr += vl * 2, aPtr += vl * 2)
         {

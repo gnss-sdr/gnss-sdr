@@ -791,24 +791,22 @@ static inline void volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn_rvv(lv_16sc_t*
     size_t ROTATOR_RELOAD = 256;
 
     // Initialize reference pointers of compatible type that will not be stripmined
-    float* phasePtr = (float*) phase;
+    float* phasePtr = (float*)phase;
 
     // Initialize pointers of compatible type to track progress as stripmine
-    short* outPtr = (short*) result;
-    const short* comPtr = (const short*) in_common;
-    const short** inPtrBuf = (const short**) volk_gnsssdr_malloc(
-        num_a_vectors * sizeof(*in_a), volk_gnsssdr_get_alignment()
-    );
+    short* outPtr = (short*)result;
+    const short* comPtr = (const short*)in_common;
+    const short** inPtrBuf = (const short**)volk_gnsssdr_malloc(num_a_vectors * sizeof(*in_a), volk_gnsssdr_get_alignment());
 
     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
-    {
-        // Initialize `out` to zero
-        result[n_vec] = lv_cmake(0, 0);
+        {
+            // Initialize `out` to zero
+            result[n_vec] = lv_cmake(0, 0);
 
-        // Create copies in case pointers within `in_a` are not meant to be modified
-        // (in which case function signature should be `const short* const* in_a`)
-        inPtrBuf[n_vec] = in_a[n_vec];
-    }
+            // Create copies in case pointers within `in_a` are not meant to be modified
+            // (in which case function signature should be `const short* const* in_a`)
+            inPtrBuf[n_vec] = in_a[n_vec];
+        }
 
     for (int _ = 0; _ < num_points / ROTATOR_RELOAD; _++)
         {
@@ -882,8 +880,8 @@ static inline void volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn_rvv(lv_16sc_t*
                             vint16m2_t outImagVal = __riscv_vmul_vv_i16m2(inVal, comProdImagVal, vl);
 
                             // Load accumulator
-                            vint32m1_t accRealVal = __riscv_vmv_s_x_i32m1((int) outPtr[2 * n_vec], 1);
-                            vint32m1_t accImagVal = __riscv_vmv_s_x_i32m1((int) outPtr[2 * n_vec + 1], 1);
+                            vint32m1_t accRealVal = __riscv_vmv_s_x_i32m1((int)outPtr[2 * n_vec], 1);
+                            vint32m1_t accImagVal = __riscv_vmv_s_x_i32m1((int)outPtr[2 * n_vec + 1], 1);
 
                             // acc[0] = sum( acc[0], out[0..vl) )
                             accRealVal = __riscv_vwredsum_vs_i16m2_i32m1(outRealVal, accRealVal, vl);
@@ -898,8 +896,8 @@ static inline void volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn_rvv(lv_16sc_t*
                             accImagVal = __riscv_vmax_vx_i32m1(accImagVal, -32768, 1);
 
                             // Store acc[0]
-                            outPtr[2 * n_vec] = (short) __riscv_vmv_x_s_i32m1_i32(accRealVal);
-                            outPtr[2 * n_vec + 1] = (short) __riscv_vmv_x_s_i32m1_i32(accImagVal);
+                            outPtr[2 * n_vec] = (short)__riscv_vmv_x_s_i32m1_i32(accRealVal);
+                            outPtr[2 * n_vec + 1] = (short)__riscv_vmv_x_s_i32m1_i32(accImagVal);
 
                             // Increment this pointer
                             inPtrBuf[n_vec] += vl;
@@ -918,7 +916,7 @@ static inline void volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn_rvv(lv_16sc_t*
                     // elements left and increment the pointers
                     // by the number of elements processed
                 }
-            // Regenerate phase
+                // Regenerate phase
 #ifdef __cplusplus
             (*phase) /= std::abs((*phase));
 #else
@@ -996,8 +994,8 @@ static inline void volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn_rvv(lv_16sc_t*
                     vint16m2_t outImagVal = __riscv_vmul_vv_i16m2(inVal, comProdImagVal, vl);
 
                     // Load accumulator
-                    vint32m1_t accRealVal = __riscv_vmv_s_x_i32m1((int) outPtr[2 * n_vec], 1);
-                    vint32m1_t accImagVal = __riscv_vmv_s_x_i32m1((int) outPtr[2 * n_vec + 1], 1);
+                    vint32m1_t accRealVal = __riscv_vmv_s_x_i32m1((int)outPtr[2 * n_vec], 1);
+                    vint32m1_t accImagVal = __riscv_vmv_s_x_i32m1((int)outPtr[2 * n_vec + 1], 1);
 
                     // acc[0] = sum( acc[0], out[0..vl) )
                     accRealVal = __riscv_vwredsum_vs_i16m2_i32m1(outRealVal, accRealVal, vl);
@@ -1012,8 +1010,8 @@ static inline void volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn_rvv(lv_16sc_t*
                     accImagVal = __riscv_vmax_vx_i32m1(accImagVal, -32768, 1);
 
                     // Store acc[0]
-                    outPtr[2 * n_vec] = (short) __riscv_vmv_x_s_i32m1_i32(accRealVal);
-                    outPtr[2 * n_vec + 1] = (short) __riscv_vmv_x_s_i32m1_i32(accImagVal);
+                    outPtr[2 * n_vec] = (short)__riscv_vmv_x_s_i32m1_i32(accRealVal);
+                    outPtr[2 * n_vec + 1] = (short)__riscv_vmv_x_s_i32m1_i32(accImagVal);
 
                     // Increment this pointer
                     inPtrBuf[n_vec] += vl;

@@ -565,11 +565,11 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_rvv(lv_16sc_t* result, con
 
     // Explicitly cast in order to directly fill
     // with calculated values
-    short* resPtr = (short*) result;
+    short* resPtr = (short*)result;
 
     // Initialize pointers to track progress as stripmine
-    const short* aPtr = (const short*) in_a;
-    const short* bPtr = (const short*) in_b;
+    const short* aPtr = (const short*)in_a;
+    const short* bPtr = (const short*)in_b;
 
     // Use 32-bit accumulator in order to saturate
     // to 16 bits
@@ -623,9 +623,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_rvv(lv_16sc_t* result, con
         }
 
     // Real part of resultant complex number
-    resPtr[0] = (short) __riscv_vmv_x_s_i32m1_i32(accRealVal);
+    resPtr[0] = (short)__riscv_vmv_x_s_i32m1_i32(accRealVal);
     // Imaginary part of resultant complex number
-    resPtr[1] = (short) __riscv_vmv_x_s_i32m1_i32(accImagVal);
+    resPtr[1] = (short)__riscv_vmv_x_s_i32m1_i32(accImagVal);
 }
 #endif /* LV_HAVE_RVV */
 

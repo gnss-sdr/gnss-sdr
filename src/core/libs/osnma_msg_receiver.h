@@ -83,7 +83,6 @@ private:
     void process_mack_message();
     void remove_verified_tags();
     void control_tags_awaiting_verify_size();
-    void display_data();
     void send_data_to_pvt(const std::vector<OSNMA_NavData>& data);
 
     bool verify_tesla_key(std::vector<uint8_t>& key, uint32_t TOW);

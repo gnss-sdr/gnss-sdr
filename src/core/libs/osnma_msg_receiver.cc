@@ -80,15 +80,15 @@ osnma_msg_receiver::osnma_msg_receiver(const std::string& crtFilePath,
     d_nav_data_manager = std::make_unique<OSNMA_NavDataManager>();
 
     if (d_crypto->have_public_key())
-        {  // Hot start is enabled
-            LOG(WARNING) << "OSNMA Public Key available, trying to find DSM-KROOT saved";
+        {
+            LOG(INFO) << "OSNMA Public Key available, trying to find DSM-KROOT saved";
             std::cout << "OSNMA Public Key available, trying to find DSM-KROOT saved" << std::endl;
             d_public_key_verified = true;
 
             auto dsm_nmah = parse_dsm_kroot();
             if (!dsm_nmah.first.empty())
                 {
-                    LOG(WARNING) << "OSNMA DSM-KROOT and NMA Header successfully read from file " << KROOTFILE_DEFAULT;
+                    LOG(INFO) << "OSNMA DSM-KROOT and NMA Header successfully read from file " << KROOTFILE_DEFAULT;
                     std::cout << "OSNMA DSM-KROOT and NMA Header successfully read from file " << KROOTFILE_DEFAULT << std::endl;
                     d_flag_hot_start = true;
                     process_dsm_message(dsm_nmah.first, dsm_nmah.second);
@@ -97,9 +97,14 @@ osnma_msg_receiver::osnma_msg_receiver(const std::string& crtFilePath,
                 }
             else
                 {
-                    LOG(WARNING) << "OSNMA DSM-KROOT not available :: WARM START";
+                    LOG(INFO) << "OSNMA DSM-KROOT not available :: WARM START";
                     std::cout << "OSNMA DSM-KROOT not available :: WARM START" << std::endl;
                 }
+        }
+    else
+        {
+            LOG(INFO) << "OSNMA Public Key not available :: COLD START";
+            std::cout << "OSNMA Public Key not available :: COLD START" << std::endl;
         }
 
     //  register OSNMA input message port from telemetry blocks
@@ -394,6 +399,7 @@ void osnma_msg_receiver::read_dsm_header(uint8_t dsm_header)
               << " with DSM_ID " << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_id);
 }
 
+
 /*
  * accumulates dsm messages
  * */
@@ -483,6 +489,7 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
     LOG(INFO) << available_blocks.str();
     std::cout << available_blocks.str() << std::endl;
 }
+
 
 /**
  * @brief Process DSM block of an OSNMA message.
@@ -783,9 +790,16 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
         }
     else
         {
-            // Reserved message?
-            LOG(WARNING) << "Galileo OSNMA: Reserved message received";
-            std::cerr << "Galileo OSNMA: Reserved message received" << std::endl;
+            if (!d_public_key_verified && d_osnma_data.d_dsm_header.dsm_id < 12)
+                {
+                    LOG(INFO) << "Galileo OSNMA: DSM-KROOT message received but no Public Key available to authenticate the TESLA root key";
+                    std::cerr << "Galileo OSNMA: DSM-KROOT message received but no Public Key available to authenticate the TESLA root key" << std::endl;
+                }
+            else
+                {
+                    LOG(INFO) << "Galileo OSNMA: Reserved message received";
+                    std::cerr << "Galileo OSNMA: Reserved message received" << std::endl;
+                }
         }
     if (d_osnma_data.d_dsm_header.dsm_id < d_number_of_blocks.size())
         {
@@ -1509,24 +1523,6 @@ std::vector<uint8_t> osnma_msg_receiver::build_message(Tag& tag) const
 }
 
 
-void osnma_msg_receiver::display_data()
-{
-    //    if(d_satellite_nav_data.empty())
-    //        return;
-    //
-    //    for(const auto& satellite : d_satellite_nav_data) {
-    //            std::cout << "SV_ID: " << satellite.first << std::endl;
-    //            for(const auto& towData : satellite.second) {
-    //                    std::cout << "\tTOW: " << towData.first << " key: ";
-    //                    for(size_t i = 0; i < towData.second.d_mack_message.key.size(); i++) {
-    //                        std::cout << std::hex << std::setfill('0') << std::setw(2)
-    //                              << static_cast<int>(towData.second.d_mack_message.key[i]) << " ";
-    //                    }
-    //                }
-    //        }
-}
-
-
 bool osnma_msg_receiver::verify_tesla_key(std::vector<uint8_t>& key, uint32_t TOW)
 {
     uint32_t num_of_hashes_needed;
@@ -1987,6 +1983,7 @@ std::pair<std::vector<uint8_t>, uint8_t> osnma_msg_receiver::parse_dsm_kroot() c
 
     return {dsm_msg, nma_header};
 }
+
 
 void osnma_msg_receiver::set_merkle_root(const std::vector<uint8_t>& v)
 {

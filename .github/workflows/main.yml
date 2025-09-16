@@ -287,7 +287,7 @@ jobs:
       - name: install
         run: sudo cmake --install build
       - name: test
-        run: ctest -C Release --test-dir build --exclude-regex --exclude-regex volk_gnsssdr_32fc_32f_rotator_dotprodxnpuppet_32fc
+        run: ctest -C Release --test-dir build --exclude-regex volk_gnsssdr_32fc_32f_rotator_dotprodxnpuppet_32fc
 
   shellcheck:
     runs-on: ubuntu-latest

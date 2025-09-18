@@ -130,35 +130,34 @@ jobs:
           exclude-regex: '(libs\/gsl\/)|(tmpl)|(cpu_features)|^.*\.(cu)$'
 
   clang-tidy:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
+    env:
+      CLANG_VERSION: 20
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-      - name: install dependencies
+      - name: Install dependencies
         run: |
-          brew update
-          rm /usr/local/bin/2to3 || true
-          rm /usr/local/bin/idle3 || true
-          rm /usr/local/bin/pydoc3 || true
-          rm /usr/local/bin/python3 || true
-          rm /usr/local/bin/python3-config || true
-          rm /usr/local/bin/2to3-3.1* || true
-          rm /usr/local/bin/idle3.1* || true
-          rm /usr/local/bin/pydoc3.1* || true
-          rm /usr/local/bin/python3.1* || true
-          export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-          brew link --overwrite python@3.12
-          brew install ninja pkg-config hdf5 automake armadillo lapack libmatio gnuradio openssl pugixml protobuf llvm boost
-          pip3 install mako
-          ln -s $(brew --prefix llvm)/bin/clang-tidy /usr/local/bin
-          ln -s $(brew --prefix llvm)/bin/clang-apply-replacements /usr/local/bin
-          ln -s $(brew --prefix llvm)/bin/run-clang-tidy.py /usr/local/bin
+          sudo apt update
+          sudo apt install -y --no-install-recommends cmake \
+          clang-${CLANG_VERSION} clang-tidy-${CLANG_VERSION} clang-format-${CLANG_VERSION} \
+          libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev \
+          libboost-thread-dev libboost-chrono-dev libboost-serialization-dev \
+          liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev \
+          liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libunwind-dev \
+          libgnutls-openssl-dev libmatio-dev googletest protobuf-compiler libprotobuf-dev \
+          python3-mako liborc-0.4-dev
+          sudo ln -sf /usr/lib/llvm-${CLANG_VERSION}/bin/clang /usr/bin/clang
+          sudo ln -sf /usr/lib/llvm-${CLANG_VERSION}/bin/clang /usr/bin/clang++
+          sudo ln -sf /usr/lib/llvm-${CLANG_VERSION}/bin/clang-format /usr/bin/clang-format
+          sudo ln -sf /usr/lib/llvm-${CLANG_VERSION}/bin/clang-tidy /usr/bin/clang-tidy
+          sudo ln -sf /usr/lib/llvm-${CLANG_VERSION}/bin/run-clang-tidy /usr/bin/run-clang-tidy
       - name: Prepare run
-        run: cmake -S . -B build && cmake --build build --target volk_gnsssdr_module gtest-1.17.0 core_monitor core_libs pvt_libs
-      - name: run clang-tidy
-        run: cd build && /opt/homebrew/opt/llvm/bin/run-clang-tidy -fix
+        run: |
+          cmake -S . -B build-tidy -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_C_COMPILER=/usr/bin/clang
+          cmake --build build-tidy --target volk_gnsssdr_module gtest-1.17.0 core_monitor core_libs pvt_libs
+      - name: Run clang-tidy
+        run: |
+          cd build-tidy && run-clang-tidy -fix
       - name: check
         run: |
           git diff > clang_tidy.patch

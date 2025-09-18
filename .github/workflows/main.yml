@@ -157,7 +157,7 @@ jobs:
           cmake --build build-tidy --target volk_gnsssdr_module gtest-1.17.0 core_monitor core_libs pvt_libs
       - name: Run clang-tidy
         run: |
-          cd build-tidy && run-clang-tidy -fix
+          cd build-tidy && run-clang-tidy -fix -format
       - name: check
         run: |
           git diff > clang_tidy.patch

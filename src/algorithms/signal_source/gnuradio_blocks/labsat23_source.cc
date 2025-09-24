@@ -645,7 +645,7 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
     std::cout << '\n';
 
     d_ls3w_samples_per_register = this->number_of_samples_per_ls3w_register();
-    d_ls3w_spare_bits = 64 - d_ls3w_samples_per_register * d_ls3w_QUA * 2;
+    d_ls3w_spare_bits = 64 - d_ls3w_samples_per_register * d_ls3w_CHN * d_ls3w_QUA * 2;
     for (auto ch_select : d_channel_selector_config)
         {
             d_ls3w_selected_channel_offset.push_back((ch_select - 1) * d_ls3w_QUA * 2);

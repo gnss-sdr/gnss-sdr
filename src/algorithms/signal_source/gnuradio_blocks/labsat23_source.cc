@@ -20,6 +20,7 @@
 #include "labsat23_source.h"
 #include "INIReader.h"
 #include "command_event.h"
+#include "gnss_sdr_filesystem.h"
 #include <bitset>
 
 #if HAS_BOOST_ENDIAN
@@ -92,33 +93,6 @@ void read_file_register_to_local_endian(std::ifstream &binary_input_file, uint64
 #endif
 }
 
-std::string get_extension(const std::string &path)
-{
-    size_t slash_pos = path.find_last_of("/\\");  // handle directories
-    size_t dot_pos = path.find_last_of('.');
-
-    // No dot or dot is in the directory part, no extension
-    if (dot_pos == std::string::npos || (slash_pos != std::string::npos && dot_pos < slash_pos))
-        {
-            return "";  // no extension
-        }
-
-    return path.substr(dot_pos);  // includes the dot
-}
-
-std::string replace_extension(const std::string &path, const std::string &new_ext)
-{
-    const auto dot_pos = path.find_last_of('.');
-    if (dot_pos == std::string::npos)
-        {
-            return path + new_ext;  // no extension just append
-        }
-    else
-        {
-            return path.substr(0, dot_pos) + new_ext;
-        }
-}
-
 }  // namespace
 
 
@@ -163,10 +137,11 @@ labsat23_source::labsat23_source(const char *signal_file_basename,
                     std::cout << "LabSat file version 4 detected.\n";
                 }
 
-            const auto ini_file = replace_extension(signal_file, ".ini");
+            fs::path file_path(signal_file);
+            file_path.replace_extension(".ini");
 
             // Read ini file
-            if (read_ls3w_ini(ini_file) != 0)
+            if (read_ls3w_ini(file_path) != 0)
                 {
                     exit(1);
                 }
@@ -208,7 +183,8 @@ labsat23_source::~labsat23_source()
 
 std::string labsat23_source::generate_filename()
 {
-    const auto extension = get_extension(d_signal_file_basename);
+    fs::path file_path(d_signal_file_basename);
+    const auto extension = file_path.extension();
 
     if (extension == ".ls2" or extension == ".LS2")
         {

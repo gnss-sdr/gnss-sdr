@@ -46,8 +46,9 @@ LabsatSignalSource::LabsatSignalSource(const ConfigurationInterface* configurati
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-    const int64_t sampling_frequency_deprecated = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(16368000));
-    const int64_t throttle_frequency_sps = configuration->property(role + ".throttle_frequency_sps", static_cast<int64_t>(sampling_frequency_deprecated));
+    const int64_t sampling_frequency = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(16368000));
+    const int64_t throttle_frequency_sps = configuration->property(role + ".throttle_frequency_sps", static_cast<int64_t>(sampling_frequency));
+    const double seconds_to_skip = configuration->property(role + ".seconds_to_skip", 0.);
 
     std::string channels_to_read = configuration->property(role + ".selected_channel", default_item_type);
     std::stringstream ss(channels_to_read);
@@ -77,7 +78,7 @@ LabsatSignalSource::LabsatSignalSource(const ConfigurationInterface* configurati
     if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
-            labsat23_source_ = labsat23_make_source_sptr(filename_.c_str(), channels_selector_vec_, queue, digital_io_enabled);
+            labsat23_source_ = labsat23_make_source_sptr(filename_.c_str(), channels_selector_vec_, queue, digital_io_enabled, sampling_frequency, seconds_to_skip);
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "labsat23_source_(" << labsat23_source_->unique_id() << ")";
         }

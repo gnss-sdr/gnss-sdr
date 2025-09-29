@@ -43,7 +43,9 @@ labsat23_source_sptr labsat23_make_source_sptr(
     const char *signal_file_basename,
     const std::vector<int> &channel_selector,
     Concurrent_Queue<pmt::pmt_t> *queue,
-    bool digital_io_enabled);
+    bool digital_io_enabled,
+    int64_t sampling_frequency,
+    double seconds_to_skip);
 
 /*!
  * \brief This class implements conversion between Labsat 2, 3 and 3 Wideband
@@ -64,12 +66,16 @@ private:
         const char *signal_file_basename,
         const std::vector<int> &channel_selector,
         Concurrent_Queue<pmt::pmt_t> *queue,
-        bool digital_io_enabled);
+        bool digital_io_enabled,
+        int64_t sampling_frequency,
+        double seconds_to_skip);
 
     labsat23_source(const char *signal_file_basename,
         const std::vector<int> &channel_selector,
         Concurrent_Queue<pmt::pmt_t> *queue,
-        bool digital_io_enabled);
+        bool digital_io_enabled,
+        int64_t sampling_frequency,
+        double seconds_to_skip);
 
     std::string generate_filename();
 

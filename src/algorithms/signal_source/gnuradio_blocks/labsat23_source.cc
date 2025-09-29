@@ -27,6 +27,12 @@
 #include <boost/endian/conversion.hpp>
 #endif
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
+
 namespace
 {
 void write_iq_from_bitset(const std::bitset<64> &bs, int bit_offset, int qua, gr_complex &out)
@@ -96,27 +102,36 @@ void read_file_register_to_local_endian(std::ifstream &binary_input_file, uint64
 }  // namespace
 
 
-labsat23_source_sptr labsat23_make_source_sptr(const char *signal_file_basename, const std::vector<int> &channel_selector, Concurrent_Queue<pmt::pmt_t> *queue, bool digital_io_enabled)
+labsat23_source_sptr labsat23_make_source_sptr(
+    const char *signal_file_basename,
+    const std::vector<int> &channel_selector,
+    Concurrent_Queue<pmt::pmt_t> *queue,
+    bool digital_io_enabled,
+    int64_t sampling_frequency,
+    double seconds_to_skip)
 {
-    return labsat23_source_sptr(new labsat23_source(signal_file_basename, channel_selector, queue, digital_io_enabled));
+    return labsat23_source_sptr(new labsat23_source(signal_file_basename, channel_selector, queue, digital_io_enabled, sampling_frequency, seconds_to_skip));
 }
 
 
-labsat23_source::labsat23_source(const char *signal_file_basename,
+labsat23_source::labsat23_source(
+    const char *signal_file_basename,
     const std::vector<int> &channel_selector,
     Concurrent_Queue<pmt::pmt_t> *queue,
-    bool digital_io_enabled) : gr::block("labsat23_source",
-                                   gr::io_signature::make(0, 0, 0),
-                                   gr::io_signature::make(1, 3, sizeof(gr_complex))),
-                               d_queue(queue),
-                               d_channel_selector_config(channel_selector),
-                               d_current_file_number(0),
-                               d_labsat_version(0),
-                               d_channel_selector(0),
-                               d_ref_clock(0),
-                               d_bits_per_sample(0),
-                               d_header_parsed(false),
-                               d_ls3w_digital_io_enabled(digital_io_enabled)
+    bool digital_io_enabled,
+    int64_t sampling_frequency,
+    double seconds_to_skip) : gr::block("labsat23_source",
+                                  gr::io_signature::make(0, 0, 0),
+                                  gr::io_signature::make(1, 3, sizeof(gr_complex))),
+                              d_queue(queue),
+                              d_channel_selector_config(channel_selector),
+                              d_current_file_number(0),
+                              d_labsat_version(0),
+                              d_channel_selector(0),
+                              d_ref_clock(0),
+                              d_bits_per_sample(0),
+                              d_header_parsed(false),
+                              d_ls3w_digital_io_enabled(digital_io_enabled)
 {
     d_signal_file_basename = std::string(signal_file_basename);
     std::string signal_file;
@@ -151,7 +166,42 @@ labsat23_source::labsat23_source(const char *signal_file_basename,
 
     if (binary_input_file.is_open())
         {
-            std::cout << "LabSat file source is reading samples from " << signal_file << '\n';
+            std::cout << "LabSat file source is reading samples from " << signal_file;
+
+            if (d_is_ls4)
+                {
+                    const auto size = fs::file_size(d_signal_file_basename);
+                    const auto samples = (size * CHAR_BIT) / d_ls3w_SFT;
+                    const auto samples_to_skip = static_cast<size_t>(seconds_to_skip * sampling_frequency);
+                    const auto samples_to_read = static_cast<int64_t>(samples - samples_to_skip);
+
+                    std::cout << ", which contains " << samples << " samples (" << size << " bytes)\n";
+
+                    if (samples_to_read < 0)
+                        {
+                            std::cout << "File duration is smaller then the seconds to skip!\n";
+                            exit(1);
+                        }
+
+                    const auto signal_duration_s = static_cast<double>(samples_to_read) / sampling_frequency;
+
+                    std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]\n";
+
+                    if (samples_to_skip > 0)
+                        {
+                            const auto bytes_to_skip = (samples_to_skip * d_ls3w_SFT) / CHAR_BIT;
+                            LOG(INFO) << "Skipping " << samples_to_skip << " samples of the input file";
+
+                            if (!binary_input_file.seekg(bytes_to_skip, std::ios::beg))
+                                {
+                                    LOG(ERROR) << "Error skipping bytes!";
+                                }
+                        }
+                }
+            else
+                {
+                    std::cout << '\n';
+                }
         }
     else
         {

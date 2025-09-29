@@ -352,4 +352,44 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_neon(lv_8sc_t* cVector, const 
 }
 #endif /* LV_HAVE_NEON */
 
+
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+
+static inline void volk_gnsssdr_8ic_conjugate_8ic_rvv(lv_8sc_t* cVector, const lv_8sc_t* aVector, unsigned int num_points)
+{
+    size_t n = num_points;
+
+    // Initialize pointers to track progress as stripmine
+    // Assuming that intended to use `signed char`,
+    // as `char`'s signedness is implementation-specific
+    signed char* cPtr = (signed char*)cVector;
+    const signed char* aPtr = (const signed char*)aVector;
+
+    for (size_t vl; n > 0; n -= vl, cPtr += vl * 2, aPtr += vl * 2)
+        {
+            // Record how many elements will actually be processed
+            vl = __riscv_vsetvl_e8m4(n);
+
+            // Load aReal[0..vl), aImag[0..vl)
+            vint8m4x2_t aVal = __riscv_vlseg2e8_v_i8m4x2(aPtr, vl);
+            vint8m4_t aRealVal = __riscv_vget_v_i8m4x2_i8m4(aVal, 0);
+            vint8m4_t aImagVal = __riscv_vget_v_i8m4x2_i8m4(aVal, 1);
+
+            // negImag[i] = -aImag[i]
+            vint8m4_t negImagVal = __riscv_vneg_v_i8m4(aImagVal, vl);
+
+            // Store aReal[0..vl), negImag[0..vl) into `cPtr`
+            vint8m4x2_t cVal = __riscv_vcreate_v_i8m4x2(aRealVal, negImagVal);
+            __riscv_vsseg2e8_v_i8m4x2(cPtr, cVal, vl);
+
+            // In looping, decrease the number of
+            // elements left and increase the pointers
+            // by the number of elements processed,
+            // taking into account how each complex number
+            // stored in `cPtr` and `aPtr` is two 1-byte chars
+        }
+}
+#endif /* LV_HAVE_RVV */
+
 #endif /* INCLUDED_volk_gnsssdr_8ic_conjugate_8ic_H */

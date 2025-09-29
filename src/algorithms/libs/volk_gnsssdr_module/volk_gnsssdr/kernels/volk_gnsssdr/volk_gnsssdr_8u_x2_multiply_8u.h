@@ -263,6 +263,43 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_a_avx2(unsigned char* cChar, c
 #endif /* LV_HAVE_SSE3 */
 
 
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+
+static inline void volk_gnsssdr_8u_x2_multiply_8u_rvv(unsigned char* cVector, const unsigned char* aVector, const unsigned char* bVector, unsigned int num_points)
+{
+    size_t n = num_points;
+
+    // Initialize pointers to keep track
+    // while stripmining
+    unsigned char* cPtr = cVector;
+    const unsigned char* aPtr = aVector;
+    const unsigned char* bPtr = bVector;
+
+    for (size_t vl; n > 0; n -= vl, cPtr += vl, aPtr += vl, bPtr += vl)
+        {
+            // Record how many elements will actually be processed
+            vl = __riscv_vsetvl_e8m8(n);
+
+            // Load a[0..vl), b[0..vl)
+            vuint8m8_t aVal = __riscv_vle8_v_u8m8(aPtr, vl);
+            vuint8m8_t bVal = __riscv_vle8_v_u8m8(bPtr, vl);
+
+            // c[i] = lower byte of (a[i] * b[i])
+            vuint8m8_t cVal = __riscv_vmul_vv_u8m8(aVal, bVal, vl);
+
+            // Store c[0..vl)
+            __riscv_vse8_v_u8m8(cPtr, cVal, vl);
+
+            // In looping, decrease the number of
+            // elements left and increment the pointers
+            // by the number of elements processed
+        }
+}
+
+#endif /* LV_HAVE_RVV */
+
+
 #ifdef LV_HAVE_ORC
 
 extern void volk_gnsssdr_8u_x2_multiply_8u_a_orc_impl(unsigned char* cVector, const unsigned char* aVector, const unsigned char* bVector, unsigned int num_points);

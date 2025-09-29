@@ -98,4 +98,14 @@ static inline void volk_gnsssdr_s32f_sincospuppet_32fc_neon(lv_32fc_t* out, cons
 }
 #endif /* LV_HAVE_NEON  */
 
+
+#ifdef LV_HAVE_RVV
+static inline void volk_gnsssdr_s32f_sincospuppet_32fc_rvv(lv_32fc_t* out, const float phase_inc, unsigned int num_points)
+{
+    float phase[1];
+    phase[0] = 3;
+    volk_gnsssdr_s32f_sincos_32fc_rvv(out, phase_inc, phase, num_points);
+}
+#endif /* LV_HAVE_RVV  */
+
 #endif /* INCLUDED_volk_gnsssdr_s32f_sincospuppet_32fc_H */

@@ -461,4 +461,47 @@ static inline void volk_gnsssdr_32fc_convert_16ic_generic(lv_16sc_t* outputVecto
 }
 #endif /* LV_HAVE_GENERIC */
 
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+
+static inline void volk_gnsssdr_32fc_convert_16ic_rvv(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
+{
+    // Will be converting by number, with each
+    // complex number containing two component numbers
+    size_t n = num_points * 2;
+
+    // Initialize pointers to keep track as stripmine
+    short* outPtr = (short*)outputVector;
+    const float* inPtr = (const float*)inputVector;
+
+    for (size_t vl; n > 0; n -= vl, outPtr += vl, inPtr += vl)
+        {
+            // Record how many elements will actually be processed
+            vl = __riscv_vsetvl_e32m8(n);
+
+            // Don't have to segment load/store since converting
+            // both real and imaginary components
+            // Load in[0..vl)
+            vfloat32m8_t inVal = __riscv_vle32_v_f32m8(inPtr, vl);
+
+            // Saturate in[i] to 16 bits
+            inVal = __riscv_vfmin_vf_f32m8(inVal, (float)32767, vl);
+            inVal = __riscv_vfmax_vf_f32m8(inVal, (float)-32768, vl);
+
+            // out[i] = (short) in[i]
+            vint16m4_t outVal = __riscv_vfncvt_x_f_w_i16m4(inVal, vl);
+
+            // Store out[0..vl)
+            __riscv_vse16_v_i16m4(outPtr, outVal, vl);
+
+            // In looping, decrement the number of
+            // elements left and increment the pointers
+            // by the number of elements processed,
+            // accounting how the `vl` complex numbers
+            // are each stored as two numbers of their
+            // corresponding size.
+        }
+}
+#endif /* LV_HAVE_RVV */
+
 #endif /* INCLUDED_volk_gnsssdr_32fc_convert_16ic_H */

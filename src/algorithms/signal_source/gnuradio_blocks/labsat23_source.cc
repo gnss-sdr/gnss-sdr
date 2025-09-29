@@ -97,7 +97,7 @@ std::string get_extension(const std::string &path)
     size_t slash_pos = path.find_last_of("/\\");  // handle directories
     size_t dot_pos = path.find_last_of('.');
 
-    // No dot or dot is in the directory part → no extension
+    // No dot or dot is in the directory part, no extension
     if (dot_pos == std::string::npos || (slash_pos != std::string::npos && dot_pos < slash_pos))
         {
             return "";  // no extension

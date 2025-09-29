@@ -189,12 +189,35 @@ labsat23_source::labsat23_source(
 
                     if (samples_to_skip > 0)
                         {
-                            const auto bytes_to_skip = (samples_to_skip * d_ls3w_SFT) / CHAR_BIT;
                             LOG(INFO) << "Skipping " << samples_to_skip << " samples of the input file";
 
-                            if (!binary_input_file.seekg(bytes_to_skip, std::ios::beg))
+                            // We assume all buffers have same size and take advantage of integer rounding
+                            const auto bytes_to_skip = (samples_to_skip * d_ls3w_SFT) / CHAR_BIT;
+                            const auto bytes_to_skip_per_channel = bytes_to_skip / d_ls3w_CHN;
+                            const auto nb_of_channel_buffer_to_skip = bytes_to_skip_per_channel / d_ls4_BUFF_SIZE;
+                            const auto bytes_to_seek_per_channel = nb_of_channel_buffer_to_skip * d_ls4_BUFF_SIZE;
+                            const auto bytes_to_seek = bytes_to_seek_per_channel * d_ls3w_CHN;
+                            const auto bytes_to_read_per_channel = bytes_to_skip_per_channel - bytes_to_seek_per_channel;
+
+                            // Advance in the file by a multiple of buffers, then read one buffer of each channel
+                            if (!binary_input_file.seekg(bytes_to_seek, std::ios::beg) || !read_ls4_data())
                                 {
                                     LOG(ERROR) << "Error skipping bytes!";
+                                    exit(1);
+                                }
+
+                            // Advances the indices to start at the correct index in the buffer we just read
+                            if (d_ls4_BUFF_SIZE_A > 0)
+                                {
+                                    d_data_index_a += (bytes_to_read_per_channel / sizeof(uint64_t));
+                                }
+                            if (d_ls4_BUFF_SIZE_B > 0)
+                                {
+                                    d_data_index_b += (bytes_to_read_per_channel / sizeof(uint64_t));
+                                }
+                            if (d_ls4_BUFF_SIZE_C > 0)
+                                {
+                                    d_data_index_c += (bytes_to_read_per_channel / sizeof(uint64_t));
                                 }
                         }
                 }
@@ -691,6 +714,8 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
 
                                 if (buffer_size > 0)
                                     {
+                                        d_ls4_BUFF_SIZE = buffer_size;
+
                                         if (buffer_size % sizeof(uint64_t) != 0)
                                             {
                                                 std::cerr << "\nConfiguration error: RF " << channel_name << " is BUFF SIZE is not a multiple of " << sizeof(uint64_t) << ".\n";
@@ -1060,25 +1085,10 @@ int labsat23_source::parse_ls4_data(int noutput_items, std::vector<gr_complex *>
                 {
                     if ((d_data_index_a + d_data_index_b + d_data_index_c) >= d_read_index)
                         {
-                            const auto read_file = [this](int size, auto &data) {
-                                if (size > 0)
-                                    {
-                                        binary_input_file.read(reinterpret_cast<char *>(data.data()), size);
-                                        d_read_index += data.size();
-                                        if (binary_input_file.gcount() != size)
-                                            {
-                                                std::cout << "End of file reached, LabSat source stop.\n";
-                                                d_queue->push(pmt::make_any(command_event_make(200, 0)));
-                                                return false;
-                                            }
-                                    }
-                                return true;
-                            };
-
-                            if (!read_file(d_ls4_BUFF_SIZE_A, d_ls4_data_a) ||
-                                !read_file(d_ls4_BUFF_SIZE_B, d_ls4_data_b) ||
-                                !read_file(d_ls4_BUFF_SIZE_C, d_ls4_data_c))
+                            if (!read_ls4_data())
                                 {
+                                    std::cout << "End of file reached, LabSat source stop.\n";
+                                    d_queue->push(pmt::make_any(command_event_make(200, 0)));
                                     return -1;
                                 }
                         }
@@ -1135,6 +1145,26 @@ int labsat23_source::parse_ls4_data(int noutput_items, std::vector<gr_complex *>
             d_queue->push(pmt::make_any(command_event_make(200, 0)));
             return -1;
         }
+}
+
+bool labsat23_source::read_ls4_data()
+{
+    const auto read_file = [this](int size, auto &data) {
+        if (size > 0)
+            {
+                binary_input_file.read(reinterpret_cast<char *>(data.data()), size);
+                d_read_index += data.size();
+                if (binary_input_file.gcount() != size)
+                    {
+                        return false;
+                    }
+            }
+        return true;
+    };
+
+    return read_file(d_ls4_BUFF_SIZE_A, d_ls4_data_a) &&
+           read_file(d_ls4_BUFF_SIZE_B, d_ls4_data_b) &&
+           read_file(d_ls4_BUFF_SIZE_C, d_ls4_data_c);
 }
 
 

@@ -88,6 +88,7 @@ private:
     int parse_ls23_data(int noutput_items, std::vector<gr_complex *> out);
     int parse_ls3w_data(int noutput_items, std::vector<gr_complex *> out);
     int parse_ls4_data(int noutput_items, std::vector<gr_complex *> out);
+    bool read_ls4_data();
 
     std::ifstream binary_input_file;
     std::string d_signal_file_basename;
@@ -129,6 +130,7 @@ private:
     int32_t d_ls4_BUFF_SIZE_A{};
     int32_t d_ls4_BUFF_SIZE_B{};
     int32_t d_ls4_BUFF_SIZE_C{};
+    int32_t d_ls4_BUFF_SIZE{};
 
     std::vector<uint64_t> d_ls4_data_a;
     std::vector<uint64_t> d_ls4_data_b;

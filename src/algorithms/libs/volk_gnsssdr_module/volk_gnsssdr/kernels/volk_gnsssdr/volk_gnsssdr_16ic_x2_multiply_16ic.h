@@ -326,4 +326,58 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_neon(lv_16sc_t* out, const
 }
 #endif /* LV_HAVE_NEON*/
 
+
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+
+static inline void volk_gnsssdr_16ic_x2_multiply_16ic_rvv(lv_16sc_t* result, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
+{
+    size_t n = num_points;
+
+    // Initialize pointers to keep track as stripmine
+    short* resPtr = (short*)result;
+    const short* aPtr = (const short*)in_a;
+    const short* bPtr = (const short*)in_b;
+
+    for (size_t vl; n > 0; n -= vl, resPtr += vl * 2, aPtr += vl * 2, bPtr += vl * 2)
+        {
+            // Record how many elements that will actually be processed
+            vl = __riscv_vsetvl_e16m4(n);
+
+            // Load aReal[0..vl), aImag[0..vl)
+            vint16m4x2_t aVal = __riscv_vlseg2e16_v_i16m4x2(aPtr, vl);
+            vint16m4_t aRealVal = __riscv_vget_v_i16m4x2_i16m4(aVal, 0);
+            vint16m4_t aImagVal = __riscv_vget_v_i16m4x2_i16m4(aVal, 1);
+
+            // Load bReal[0..vl), bImag[0..vl)
+            vint16m4x2_t bVal = __riscv_vlseg2e16_v_i16m4x2(bPtr, vl);
+            vint16m4_t bRealVal = __riscv_vget_v_i16m4x2_i16m4(bVal, 0);
+            vint16m4_t bImagVal = __riscv_vget_v_i16m4x2_i16m4(bVal, 1);
+
+            // resReal[i] = aReal[i] * bReal[i]
+            vint16m4_t resRealVal = __riscv_vmul_vv_i16m4(aRealVal, bRealVal, vl);
+
+            // resReal[i] = -(aImag[i] * bImag[i]) + resReal[i]
+            resRealVal = __riscv_vnmsac_vv_i16m4(resRealVal, aImagVal, bImagVal, vl);
+
+            // resImag[i] = aReal[i] * bImag[i]
+            vint16m4_t resImagVal = __riscv_vmul_vv_i16m4(aRealVal, bImagVal, vl);
+
+            // resImag[i] = (aImag[i] * bReal[i]) + resImag[i]
+            resImagVal = __riscv_vmacc_vv_i16m4(resImagVal, aImagVal, bRealVal, vl);
+
+            // Store resReal[0..vl), resImag[0..vl)
+            vint16m4x2_t resVal = __riscv_vcreate_v_i16m4x2(resRealVal, resImagVal);
+            __riscv_vsseg2e16_v_i16m4x2(resPtr, resVal, vl);
+
+            // In looping, decrement the number of
+            // elements left and increment the pointers
+            // by the numebr of elements processed,
+            // taking into account how the `vl` complex
+            // numbers are each stored as 2 `short`s
+        }
+}
+
+#endif /* LV_HAVE_RVV */
+
 #endif /* INCLUDED_volk_gnsssdr_16ic_x2_multiply_16ic_H */

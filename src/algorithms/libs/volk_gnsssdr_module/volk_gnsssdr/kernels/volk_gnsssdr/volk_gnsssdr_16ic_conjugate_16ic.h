@@ -186,4 +186,42 @@ static inline void volk_gnsssdr_16ic_conjugate_16ic_u_avx2(lv_16sc_t* cVector, c
 }
 #endif /* LV_HAVE_AVX2 */
 
+
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+
+static inline void volk_gnsssdr_16ic_conjugate_16ic_rvv(lv_16sc_t* cVector, const lv_16sc_t* aVector, unsigned int num_points)
+{
+    size_t n = num_points;
+
+    // Initialize pointers to keep track as stripmine
+    short* cPtr = (short*)cVector;
+    const short* aPtr = (short*)aVector;
+
+    for (size_t vl; n > 0; n -= vl, cPtr += vl * 2, aPtr += vl * 2)
+        {
+            // Record number of elements that will actually be processed
+            vl = __riscv_vsetvl_e16m4(n);
+
+            // Load aReal[0..vl), aImag[0..vl)
+            vint16m4x2_t aVal = __riscv_vlseg2e16_v_i16m4x2(aPtr, vl);
+            vint16m4_t aRealVal = __riscv_vget_v_i16m4x2_i16m4(aVal, 0);
+            vint16m4_t aImagVal = __riscv_vget_v_i16m4x2_i16m4(aVal, 1);
+
+            // negImag[i] = -aImag[i]
+            vint16m4_t negImagVal = __riscv_vneg_v_i16m4(aImagVal, vl);
+
+            // Store aReal[0..vl), negImag[0..vl)
+            vint16m4x2_t cVal = __riscv_vcreate_v_i16m4x2(aRealVal, negImagVal);
+            __riscv_vsseg2e16_v_i16m4x2(cPtr, cVal, vl);
+
+            // In looping, decrease the number of
+            // elements left and increase the pointers
+            // by the number of elements processed,
+            // taking into account how each complex number
+            // stored in `cPtr` and `aPtr` is two 2-byte ints
+        }
+}
+#endif /* LV_HAVE_RVV */
+
 #endif /* INCLUDED_volk_gnsssdr_16ic_conjugate_16ic_H */

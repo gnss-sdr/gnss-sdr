@@ -686,4 +686,84 @@ static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_u_avx(floa
 //
 // #endif
 
+
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+
+static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_rvv(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
+{
+    // To make easier to work with in RVV, just interpret the two 32-bit components
+    // of each complex number as a single 64-bit number to move around
+
+    // Initialize reference pointer, as don't stripmine through
+    const float* inPtr = local_code;
+
+    size_t n = num_points;
+
+    const float constIndexShift = shifts_chips[0] - rem_code_phase_chips;
+
+    // Initialize pointers to track progress as stripmine
+    float* outPtr = result[0];
+    // Simulates how, compared to generic implementation, `i` continues
+    // increasing across different vector computatation batches
+    unsigned int currI = 0;
+
+    for (size_t vl; n > 0; n -= vl, outPtr += vl, currI += vl)
+        {
+            // Record how many data elements will actually be processed
+            vl = __riscv_vsetvl_e32m8(n);
+
+            // floatI[i] = (float) (i + currI)
+            vuint32m8_t idVal = __riscv_vid_v_u32m8(vl);
+            vuint32m8_t iVal = __riscv_vadd_vx_u32m8(idVal, currI, vl);
+            vfloat32m8_t floatIVal = __riscv_vfcvt_f_xu_v_f32m8(iVal, vl);
+
+            // iterIndex[i] = floatI[i] * code_phase_step_chips + (floatI[i] * floatI[i])
+            // iterIndex[i] = +(( floatI[i] ^ 2 ) * code_phase_rate_step_chips) + iterIndex[i]
+            vfloat32m8_t iterIndexVal = __riscv_vfmul_vf_f32m8(floatIVal, code_phase_step_chips, vl);
+            vfloat32m8_t floatISqVal = __riscv_vfmul_vv_f32m8(floatIVal, floatIVal, vl);
+            iterIndexVal = __riscv_vfmacc_vf_f32m8(iterIndexVal, code_phase_rate_step_chips, floatISqVal, vl);
+
+            // overflowIndex[i] = (int) floor(iterIndex[i] + constIndexShift)
+            vfloat32m8_t shiftedIndexVal = __riscv_vfadd_vf_f32m8(iterIndexVal, constIndexShift, vl);
+            vint32m8_t overflowIndexVal = __riscv_vfcvt_x_f_v_i32m8_rm(shiftedIndexVal, __RISCV_FRM_RDN, vl);
+
+            // Wrap to valid index in `local_code`, handling negative values
+            // index[i] = ( code_length_chips + ( overflowIndex[i] % code_length_chips ) ) % code_length_chips
+            vint32m8_t indexVal = __riscv_vrem_vx_i32m8(overflowIndexVal, code_length_chips, vl);
+            indexVal = __riscv_vadd_vx_i32m8(indexVal, code_length_chips, vl);
+            indexVal = __riscv_vrem_vx_i32m8(indexVal, code_length_chips, vl);
+
+            // After above, should now be guaranteed positive and valid index
+            // finalIndex[i] = (unsigned int) index[i];
+            vuint32m8_t finalIndexVal = __riscv_vreinterpret_v_i32m8_u32m8(indexVal);
+
+            // Convert to address offset
+            // offset[i] = finalIndex[i] * sizeof(float)
+            vuint32m8_t offsetVal = __riscv_vmul_vx_u32m8(finalIndexVal, sizeof(float), vl);
+
+            // This indexed load is unordered to hopefully boost run time
+            // out[i] = in[offset[i]]
+            vfloat32m8_t outVal = __riscv_vluxei32_v_f32m8(inPtr, offsetVal, vl);
+
+            // Store out[0..vl)
+            __riscv_vse32_v_f32m8(outPtr, outVal, vl);
+
+            // In looping, decrement the number of
+            // elements left and increment stripmining variables
+            // by the number of elements processed
+        }
+
+    // adjacent correlators
+    unsigned int shift_samples = 0;
+    for (int current_correlator_tap = 1; current_correlator_tap < num_out_vectors; current_correlator_tap++)
+        {
+            shift_samples += (int)round((shifts_chips[current_correlator_tap] - shifts_chips[current_correlator_tap - 1]) / code_phase_step_chips);
+            memcpy(&result[current_correlator_tap][0], &result[0][shift_samples], (num_points - shift_samples) * sizeof(float));
+            memcpy(&result[current_correlator_tap][num_points - shift_samples], &result[0][0], shift_samples * sizeof(float));
+        }
+}
+
+#endif
+
 #endif /* INCLUDED_volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_H */

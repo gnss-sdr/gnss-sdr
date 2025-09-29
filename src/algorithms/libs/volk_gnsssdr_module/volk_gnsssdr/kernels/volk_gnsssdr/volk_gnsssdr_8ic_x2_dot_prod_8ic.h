@@ -483,4 +483,83 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_neon(lv_8sc_t* result, const
 }
 #endif /* LV_HAVE_NEON */
 
+
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+
+static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_rvv(lv_8sc_t* result, const lv_8sc_t* in_a, const lv_8sc_t* in_b, unsigned int num_points)
+{
+    size_t n = num_points;
+
+    // Explicitly cast in order to directly fill
+    // with calculated values
+    signed char* resPtr = (signed char*)result;
+
+    // Initialize pointers to track progress as stripmine
+    // Assuming that intended to use `signed char`,
+    // as `char`'s signedness is implementation-specific
+    const signed char* aPtr = (const signed char*)in_a;
+    const signed char* bPtr = (const signed char*)in_b;
+
+    // accReal[0] = 0
+    vint8m1_t accRealVal = __riscv_vmv_s_x_i8m1(0, 1);
+    // accImag[0] = 0
+    vint8m1_t accImagVal = __riscv_vmv_s_x_i8m1(0, 1);
+
+    for (size_t vl; n > 0; n -= vl, aPtr += vl * 2, bPtr += vl * 2)
+        {
+            // Record how many elements will actually be processed
+            // Using an EMUL of 4 so that can maximize vector group
+            // length while having 6 register groups used at full
+            // capacity (with 2 vector registers being used to
+            // each store a single scalar)
+            vl = __riscv_vsetvl_e8m4(n);
+
+            // Given that complex numbers are stored as
+            // addr: aPtr    | aPtr + 1 | aPtr + 2 | aPtr + 3
+            //       real_0  | imag_0   | real_1   | imag_1
+            // Load aReal[0..vl), aImag[0..vl)
+            vint8m4x2_t aVal = __riscv_vlseg2e8_v_i8m4x2(aPtr, vl);
+            vint8m4_t aRealVal = __riscv_vget_v_i8m4x2_i8m4(aVal, 0);
+            vint8m4_t aImagVal = __riscv_vget_v_i8m4x2_i8m4(aVal, 1);
+
+            // Load bReal[0..vl), vImag[0..vl)
+            vint8m4x2_t bVal = __riscv_vlseg2e8_v_i8m4x2(bPtr, vl);
+            vint8m4_t bRealVal = __riscv_vget_v_i8m4x2_i8m4(bVal, 0);
+            vint8m4_t bImagVal = __riscv_vget_v_i8m4x2_i8m4(bVal, 1);
+
+            // outReal[i] = aReal[i] * bReal[i]
+            vint8m4_t outRealVal = __riscv_vmul_vv_i8m4(aRealVal, bRealVal, vl);
+
+            // outReal[i] = -(aImag[i] * bImag[i]) + outReal[i]
+            outRealVal = __riscv_vnmsac_vv_i8m4(outRealVal, aImagVal, bImagVal, vl);
+
+            // accReal[0] = sum( accReal[0], outReal[0..vl) )
+            accRealVal = __riscv_vredsum_vs_i8m4_i8m1(outRealVal, accRealVal, vl);
+
+            // outImag[i] = aReal[i] * bImag[i]
+            vint8m4_t outImagVal = __riscv_vmul_vv_i8m4(aRealVal, bImagVal, vl);
+
+            // outImag[i] = (aImag[i] * bReal[i]) + outImag[i]
+            outImagVal = __riscv_vmacc_vv_i8m4(outImagVal, aImagVal, bRealVal, vl);
+
+            // accImag[0] = sum( accImag[0], outImag[0..vl) )
+            accImagVal = __riscv_vredsum_vs_i8m4_i8m1(outImagVal, accImagVal, vl);
+
+            // In looping, decrement the number of
+            // elements left and increment the pointers
+            // by the number of elements processed.
+            // However, have to account for how `vl`
+            // complex numbers are being loaded, meaning
+            // that `vl * 2` `signed char`s are being
+            // loaded from both `aPtr` and `bPtr`
+        }
+
+    // Real part of resultant complex number
+    resPtr[0] = __riscv_vmv_x_s_i8m1_i8(accRealVal);
+    // Complex part of resultant complex number
+    resPtr[1] = __riscv_vmv_x_s_i8m1_i8(accImagVal);
+}
+#endif /* LV_HAVE_RVV */
+
 #endif /*INCLUDED_volk_gnsssdr_8ic_x2_dot_prod_8ic_H*/

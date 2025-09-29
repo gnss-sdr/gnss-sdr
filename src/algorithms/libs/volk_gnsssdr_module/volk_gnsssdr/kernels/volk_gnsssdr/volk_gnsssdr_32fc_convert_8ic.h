@@ -452,4 +452,55 @@ static inline void volk_gnsssdr_32fc_convert_8ic_neon(lv_8sc_t* outputVector, co
 
 #endif /* LV_HAVE_NEON */
 
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+
+static inline void volk_gnsssdr_32fc_convert_8ic_rvv(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
+{
+    // Will be converting by number, with each
+    // complex number containing two component numbers
+    size_t n = num_points * 2;
+
+    // Initialize pointers to keep track as stripmine
+    // Assuming `signed char` is intended, as `char`'s
+    // signedness is implementation-based
+    signed char* outPtr = (signed char*)outputVector;
+    const float* inPtr = (const float*)inputVector;
+
+    for (size_t vl; n > 0; n -= vl, outPtr += vl, inPtr += vl)
+        {
+            // Record how many elements will actually be processed
+            vl = __riscv_vsetvl_e32m8(n);
+
+            // Don't have to segment load/store since converting
+            // both real and imaginary components
+            // Load in[0..vl)
+            vfloat32m8_t inVal = __riscv_vle32_v_f32m8(inPtr, vl);
+
+            // For some reason, generic implementation
+            // multiplies float by `INT8_MAX` before converting
+            // tmp[i] *= INT8_MAX
+            vfloat32m8_t tmp32Val = __riscv_vfmul_vf_f32m8(inVal, (float)127, vl);
+
+            // Saturate tmp[i] to 8 bits
+            tmp32Val = __riscv_vfmin_vf_f32m8(tmp32Val, (float)127, vl);
+            tmp32Val = __riscv_vfmax_vf_f32m8(tmp32Val, (float)-128, vl);
+
+            // out[i] = (signed char) tmp[i]
+            vint16m4_t tmp16Val = __riscv_vfncvt_x_f_w_i16m4(tmp32Val, vl);
+            vint8m2_t outVal = __riscv_vncvt_x_x_w_i8m2(tmp16Val, vl);
+
+            // Store out[0..vl)
+            __riscv_vse8_v_i8m2(outPtr, outVal, vl);
+
+            // In looping, decrement the number of
+            // elements left and increment the pointers
+            // by the number of elements processed,
+            // accounting how the `vl` complex numbers
+            // are each stored as two numbers of their
+            // corresponding size.
+        }
+}
+#endif /* LV_HAVE_RVV */
+
 #endif /* INCLUDED_volk_gnsssdr_32fc_convert_8ic_H */

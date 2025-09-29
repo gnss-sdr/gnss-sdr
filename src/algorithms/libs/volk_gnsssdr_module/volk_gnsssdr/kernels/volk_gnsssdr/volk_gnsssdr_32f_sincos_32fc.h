@@ -734,4 +734,131 @@ static inline void volk_gnsssdr_32f_sincos_32fc_neon(lv_32fc_t* out, const float
 #endif /* LV_HAVE_NEON  */
 
 
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+
+// Reverse-engineered from NEON implementation
+static inline void volk_gnsssdr_32f_sincos_32fc_rvv(lv_32fc_t* out, const float* in, unsigned int num_points)
+{
+    // Copied from other implementations, specifically NEON
+    const float c_minus_cephes_DP1 = -0.78515625;
+    const float c_minus_cephes_DP2 = -2.4187564849853515625e-4;
+    const float c_minus_cephes_DP3 = -3.77489497744594108e-8;
+    const float c_sincof_p0 = -1.9515295891E-4;
+    const float c_sincof_p1 = 8.3321608736E-3;
+    const float c_sincof_p2 = -1.6666654611E-1;
+    const float c_coscof_p0 = 2.443315711809948E-005;
+    const float c_coscof_p1 = -1.388731625493765E-003;
+    const float c_coscof_p2 = 4.166664568298827E-002;
+    const float c_cephes_FOPI = 1.27323954473516;
+
+    size_t n = num_points;
+
+    // Initialize pointers to keep track as stripmine
+    float* outPtr = (float*)out;
+    const float* inPtr = in;
+
+    for (size_t vl; n > 0; n -= vl, outPtr += vl * 2, inPtr += vl)
+        {
+            // Record how many elements will actually be processed
+            vl = __riscv_vsetvl_e32m4(n);
+
+            // Load in[0..vl)
+            vfloat32m4_t inVal = __riscv_vle32_v_f32m4(inPtr, vl);
+
+            // Save initial signs
+            // signMask[i] = in[i] < 0
+            vbool8_t signMask = __riscv_vmflt_vf_f32m4_b8(inVal, (float)0, vl);
+
+            // x[i] = |in[i]|
+            vfloat32m4_t xVal = __riscv_vfabs_v_f32m4(inVal, vl);
+
+            // y[i] = (4/PI) * x[i]
+            vfloat32m4_t yVal = __riscv_vfmul_vf_f32m4(xVal, c_cephes_FOPI, vl);
+
+            // Quantize (reduce) y into discrete chunks to approximate into,
+            // and use the integer version to do some neat bit masking in order
+            // to encode sin/cos signs
+            // reduced[i] = ( ((unsigned int) y[i] + 1) / 2 ) * 2 = ((unsigned int) y[i] + 1) & ~1
+            vuint32m4_t reducedVal = __riscv_vfcvt_xu_f_v_u32m4(yVal, vl);
+            reducedVal = __riscv_vadd_vx_u32m4(reducedVal, 1, vl);
+            reducedVal = __riscv_vand_vx_u32m4(reducedVal, ~1, vl);
+
+            // Save which polynomial should be used
+            // polyMask[i] = reduced[i] & 2 != 0
+            vuint32m4_t polyTempVal = __riscv_vand_vx_u32m4(reducedVal, 2, vl);
+            vbool8_t polyMask = __riscv_vmsne_vx_u32m4_b8(polyTempVal, 0, vl);
+
+            // Save sign value for sin, cos, encoded within LSB 3:1
+            // sinSignMask[i] = signMask[i] ^ ( reduced[i] & 4 != 0 )
+            vuint32m4_t sinSignTempVal = __riscv_vand_vx_u32m4(reducedVal, 4, vl);
+            vbool8_t sinSignMask = __riscv_vmsne_vx_u32m4_b8(sinSignTempVal, 0, vl);
+            sinSignMask = __riscv_vmxor_mm_b8(signMask, sinSignMask, vl);
+
+            // Encoded the opposite to sinSignMask, i.e. 0 is positive for cosSignMask
+            // cosSignMask[i] = ( reduced[i] - 2 ) & 4 != 0
+            vuint32m4_t cosSignTempVal = __riscv_vsub_vx_u32m4(reducedVal, 2, vl);
+            cosSignTempVal = __riscv_vand_vx_u32m4(cosSignTempVal, 4, vl);
+            vbool8_t cosSignMask = __riscv_vmsne_vx_u32m4_b8(cosSignTempVal, 0, vl);
+
+            // reducedY[i] = (float) reduced[i]
+            vfloat32m4_t reducedYVal = __riscv_vfcvt_f_xu_v_f32m4(reducedVal, vl);
+
+            // The magic pass: "Extended precision modular arithmetic"
+            // x[i] = ((in[i] + reducedY[i] * -DP1) + reducedY[i] * -DP2) + reducedY[i] * -DP3;
+            vfloat32m4_t xmm1Val = __riscv_vfmul_vf_f32m4(reducedYVal, c_minus_cephes_DP1, vl);
+            xVal = __riscv_vfadd_vv_f32m4(xVal, xmm1Val, vl);
+            vfloat32m4_t xmm2Val = __riscv_vfmul_vf_f32m4(reducedYVal, c_minus_cephes_DP2, vl);
+            xVal = __riscv_vfadd_vv_f32m4(xVal, xmm2Val, vl);
+            vfloat32m4_t xmm3Val = __riscv_vfmul_vf_f32m4(reducedYVal, c_minus_cephes_DP3, vl);
+            xVal = __riscv_vfadd_vv_f32m4(xVal, xmm3Val, vl);
+
+            // Calculate both polynomials; one for 0 <= x <= PI / 4,
+            //  other for PI / 4 <= x <= PI / 2
+            vfloat32m4_t xSqVal = __riscv_vfmul_vv_f32m4(xVal, xVal, vl);
+
+            vfloat32m4_t y1Val = __riscv_vfmul_vf_f32m4(xSqVal, c_coscof_p0, vl);
+            y1Val = __riscv_vfadd_vf_f32m4(y1Val, c_coscof_p1, vl);
+            y1Val = __riscv_vfmul_vv_f32m4(y1Val, xSqVal, vl);
+            y1Val = __riscv_vfadd_vf_f32m4(y1Val, c_coscof_p2, vl);
+            y1Val = __riscv_vfmul_vv_f32m4(y1Val, xSqVal, vl);
+            y1Val = __riscv_vfmul_vv_f32m4(y1Val, xSqVal, vl);
+            y1Val = __riscv_vfsub_vv_f32m4(y1Val, __riscv_vfmul_vf_f32m4(xSqVal, 0.5f, vl), vl);
+            y1Val = __riscv_vfadd_vf_f32m4(y1Val, 1, vl);
+
+            vfloat32m4_t y2Val = __riscv_vfmul_vf_f32m4(xSqVal, c_sincof_p0, vl);
+            y2Val = __riscv_vfadd_vf_f32m4(y2Val, c_sincof_p1, vl);
+            y2Val = __riscv_vfmul_vv_f32m4(y2Val, xSqVal, vl);
+            y2Val = __riscv_vfadd_vf_f32m4(y2Val, c_sincof_p2, vl);
+            y2Val = __riscv_vfmul_vv_f32m4(y2Val, xSqVal, vl);
+            y2Val = __riscv_vfmul_vv_f32m4(y2Val, xVal, vl);
+            y2Val = __riscv_vfadd_vv_f32m4(y2Val, xVal, vl);
+
+            // Output results
+            // sin[i] = polyMask ? y1[i] : y2[i]
+            // cos[i] = polyMask ? y2[i] : y1[i]
+            vfloat32m4_t sinVal = __riscv_vmerge_vvm_f32m4(y2Val, y1Val, polyMask, vl);
+            vfloat32m4_t cosVal = __riscv_vmerge_vvm_f32m4(y1Val, y2Val, polyMask, vl);
+
+            // outImag[i] = sinSignMask ? -sin[i] : sin[i]
+            // outReal[i] = cosSignMask ? cos[i] : -cos[i]
+            vfloat32m4_t outImagVal = __riscv_vmerge_vvm_f32m4(
+                sinVal, __riscv_vfneg_v_f32m4(sinVal, vl), sinSignMask, vl);
+            vfloat32m4_t outRealVal = __riscv_vmerge_vvm_f32m4(
+                __riscv_vfneg_v_f32m4(cosVal, vl), cosVal, cosSignMask, vl);
+
+            // Store out[0..vl)
+            vfloat32m4x2_t outVal = __riscv_vcreate_v_f32m4x2(outRealVal, outImagVal);
+            __riscv_vsseg2e32_v_f32m4x2(outPtr, outVal, vl);
+
+            // In looping, decrement the number of
+            // elements left and increment the pointers
+            // by the number of elements processed,
+            // taking into account how the output `vl`
+            // complex numbers are stored as 2 `float`s
+        }
+}
+
+#endif /* LV_HAVE_RVV */
+
 #endif /* INCLUDED_volk_gnsssdr_32f_sincos_32fc_H  */

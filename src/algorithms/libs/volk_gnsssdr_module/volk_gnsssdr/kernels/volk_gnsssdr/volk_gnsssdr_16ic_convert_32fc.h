@@ -265,4 +265,44 @@ static inline void volk_gnsssdr_16ic_convert_32fc_neon(lv_32fc_t* outputVector, 
 }
 #endif /* LV_HAVE_NEON */
 
+#ifdef LV_HAVE_RVV
+#include <riscv_vector.h>
+
+static inline void volk_gnsssdr_16ic_convert_32fc_rvv(lv_32fc_t* outputVector, const lv_16sc_t* inputVector, unsigned int num_points)
+{
+    // Will be converting by number, with each
+    // complex number containing two component numbers
+    size_t n = num_points * 2;
+
+    // Initialize pointers to keep track as stripmine
+    float* outPtr = (float*)outputVector;
+    const short* inPtr = (const short*)inputVector;
+
+    for (size_t vl; n > 0; n -= vl, outPtr += vl, inPtr += vl)
+        {
+            // Record how many elements will actually be processed
+            // Only use a EMUL of 4 so that when widen, EMUL = 8
+            vl = __riscv_vsetvl_e16m4(n);
+
+            // Don't have to segment store/load since converting
+            // both real and imaginary components
+            // Load in[0..vl)
+            vint16m4_t inVal = __riscv_vle16_v_i16m4(inPtr, vl);
+
+            // out[i] = (float) in[i]
+            vfloat32m8_t outVal = __riscv_vfwcvt_f_x_v_f32m8(inVal, vl);
+
+            // Store out[0..vl)
+            __riscv_vse32_v_f32m8(outPtr, outVal, vl);
+
+            // In looping, decrement the number
+            // elements left and increment the pointers
+            // by the number of elements processed,
+            // taking into account how the `vl` complex
+            // numbers are each stored as two numbers
+            // of their corresponding size
+        }
+}
+#endif /* LV_HAVE_RVV */
+
 #endif /* INCLUDED_volk_gnsssdr_32fc_convert_16ic_H */

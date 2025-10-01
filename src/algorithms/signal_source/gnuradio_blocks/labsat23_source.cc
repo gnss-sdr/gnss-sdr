@@ -156,7 +156,7 @@ labsat23_source::labsat23_source(
             file_path.replace_extension(".ini");
 
             // Read ini file
-            if (read_ls3w_ini(file_path) != 0)
+            if (read_ls3w_ini(file_path.string()) != 0)
                 {
                     exit(1);
                 }

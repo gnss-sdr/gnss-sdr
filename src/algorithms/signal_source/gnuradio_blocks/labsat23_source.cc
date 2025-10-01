@@ -684,55 +684,54 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
                 }
         }
 
-    const auto channel_handler = [this, &ini_reader, &empty_string](const std::string &channel_char, int32_t &cf, int32_t &bw, int32_t &buffer_size, std::vector<uint64_t> &buffer)
-        {
-            const auto channel_name = "channel " + channel_char;
+    const auto channel_handler = [this, &ini_reader, &empty_string](const std::string &channel_char, int32_t &cf, int32_t &bw, int32_t &buffer_size, std::vector<uint64_t> &buffer) {
+        const auto channel_name = "channel " + channel_char;
 
-            if (ini_reader->HasSection(channel_name))
-                {
-                    const auto cf_str = ini_reader->Get(channel_name, "CF" + channel_char, empty_string);
-                    if (!cf_str.empty())
-                        {
-                            std::stringstream cf_ss(cf_str);
-                            cf_ss >> cf;
-                            std::cout << "LabSat center frequency for RF " << channel_name << ": " << cf << " Hz\n";
-                        }
+        if (ini_reader->HasSection(channel_name))
+            {
+                const auto cf_str = ini_reader->Get(channel_name, "CF" + channel_char, empty_string);
+                if (!cf_str.empty())
+                    {
+                        std::stringstream cf_ss(cf_str);
+                        cf_ss >> cf;
+                        std::cout << "LabSat center frequency for RF " << channel_name << ": " << cf << " Hz\n";
+                    }
 
-                    const auto bw_str = ini_reader->Get(channel_name, "BW" + channel_char, empty_string);
-                    if (!bw_str.empty())
-                        {
-                            std::stringstream bw_ss(bw_str);
-                            bw_ss >> bw;
-                            std::cout << "LabSat RF filter bandwidth for RF " << channel_name << ": " << bw << " Hz\n";
-                        }
+                const auto bw_str = ini_reader->Get(channel_name, "BW" + channel_char, empty_string);
+                if (!bw_str.empty())
+                    {
+                        std::stringstream bw_ss(bw_str);
+                        bw_ss >> bw;
+                        std::cout << "LabSat RF filter bandwidth for RF " << channel_name << ": " << bw << " Hz\n";
+                    }
 
-                    if (d_is_ls4)
-                        {
-                            const auto buffer_size_str = ini_reader->Get(channel_name, "BUF_SIZE_" + channel_char, empty_string);
-                            if (!buffer_size_str.empty())
-                                {
-                                    std::stringstream buff_size_ss(buffer_size_str);
-                                    buff_size_ss >> buffer_size;
+                if (d_is_ls4)
+                    {
+                        const auto buffer_size_str = ini_reader->Get(channel_name, "BUF_SIZE_" + channel_char, empty_string);
+                        if (!buffer_size_str.empty())
+                            {
+                                std::stringstream buff_size_ss(buffer_size_str);
+                                buff_size_ss >> buffer_size;
 
-                                    if (buffer_size > 0)
-                                        {
-                                            d_ls4_BUFF_SIZE = buffer_size;
+                                if (buffer_size > 0)
+                                    {
+                                        d_ls4_BUFF_SIZE = buffer_size;
 
-                                            if (buffer_size % sizeof(uint64_t) != 0)
-                                                {
-                                                    std::cerr << "\nConfiguration error: RF " << channel_name << " is BUFF SIZE is not a multiple of " << sizeof(uint64_t) << ".\n";
-                                                    std::cerr << "Exiting the program.\n";
-                                                    return false;
-                                                }
+                                        if (buffer_size % sizeof(uint64_t) != 0)
+                                            {
+                                                std::cerr << "\nConfiguration error: RF " << channel_name << " is BUFF SIZE is not a multiple of " << sizeof(uint64_t) << ".\n";
+                                                std::cerr << "Exiting the program.\n";
+                                                return false;
+                                            }
 
-                                            buffer.resize(buffer_size / sizeof(uint64_t));
-                                        }
-                                    std::cout << "LabSat RF BUFFER SIZE for RF " << channel_name << ": " << buffer_size << " bytes\n";
-                                }
-                        }
-                }
-            return true;
-        };
+                                        buffer.resize(buffer_size / sizeof(uint64_t));
+                                    }
+                                std::cout << "LabSat RF BUFFER SIZE for RF " << channel_name << ": " << buffer_size << " bytes\n";
+                            }
+                    }
+            }
+        return true;
+    };
 
     if (!channel_handler("A", d_ls3w_CFA, d_ls3w_BWA, d_ls4_BUFF_SIZE_A, d_ls4_data_a) ||
         !channel_handler("B", d_ls3w_CFB, d_ls3w_BWB, d_ls4_BUFF_SIZE_B, d_ls4_data_b) ||
@@ -1099,16 +1098,15 @@ int labsat23_source::parse_ls4_data(int noutput_items, std::vector<gr_complex *>
                         {
                             gr_complex *aux = out[channel_index];
 
-                            const auto data_parser = [shift, item_count, output_index](uint64_t data_index, int32_t qua, std::vector<uint64_t> &data, gr_complex *out_samples)
-                                {
-                                    std::bitset<64> bs(data[data_index % data.size()]);
-                                    invert_bitset(bs);
+                            const auto data_parser = [shift, item_count, output_index](uint64_t data_index, int32_t qua, std::vector<uint64_t> &data, gr_complex *out_samples) {
+                                std::bitset<64> bs(data[data_index % data.size()]);
+                                invert_bitset(bs);
 
-                                    for (int i = 0; i < item_count; ++i)
-                                        {
-                                            write_iq_from_bitset(bs, i * shift, qua, out_samples[output_index + i]);
-                                        }
-                                };
+                                for (int i = 0; i < item_count; ++i)
+                                    {
+                                        write_iq_from_bitset(bs, i * shift, qua, out_samples[output_index + i]);
+                                    }
+                            };
 
                             switch (d_channel_selector_config[channel_index])
                                 {
@@ -1152,19 +1150,18 @@ int labsat23_source::parse_ls4_data(int noutput_items, std::vector<gr_complex *>
 
 bool labsat23_source::read_ls4_data()
 {
-    const auto read_file = [this](int size, auto &data)
-        {
-            if (size > 0)
-                {
-                    binary_input_file.read(reinterpret_cast<char *>(data.data()), size);
-                    d_read_index += data.size();
-                    if (binary_input_file.gcount() != size)
-                        {
-                            return false;
-                        }
-                }
-            return true;
-        };
+    const auto read_file = [this](int size, auto &data) {
+        if (size > 0)
+            {
+                binary_input_file.read(reinterpret_cast<char *>(data.data()), size);
+                d_read_index += data.size();
+                if (binary_input_file.gcount() != size)
+                    {
+                        return false;
+                    }
+            }
+        return true;
+    };
 
     return read_file(d_ls4_BUFF_SIZE_A, d_ls4_data_a) &&
            read_file(d_ls4_BUFF_SIZE_B, d_ls4_data_b) &&

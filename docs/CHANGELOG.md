@@ -20,6 +20,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   RF front-end.
 - Added a new Signal Source implementation `NTLab_File_Signal_Source`, which is
   able to read files grabbed from [NTLab](https://ntlab.lt/) RF front-ends.
+- Improved `Labsat_Signal_Source` by fixing multi-channel file reading from
+  LabSat 3 recordings and adding initial support for LabSat 4.
 
 ### Improvements in Maintainability:
 

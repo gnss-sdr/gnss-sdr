@@ -1150,7 +1150,7 @@ int labsat23_source::parse_ls4_data(int noutput_items, std::vector<gr_complex *>
 
 bool labsat23_source::read_ls4_data()
 {
-    const auto read_file = [this](int size, auto &data) {
+    const auto read_file = [this](int size, std::vector<uint64_t> &data) {
         if (size > 0)
             {
                 binary_input_file.read(reinterpret_cast<char *>(data.data()), size);

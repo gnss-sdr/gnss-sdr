@@ -44,7 +44,6 @@ labsat23_source_sptr labsat23_make_source_sptr(
     const std::vector<int> &channel_selector,
     Concurrent_Queue<pmt::pmt_t> *queue,
     bool digital_io_enabled,
-    int64_t sampling_frequency,
     double seconds_to_skip);
 
 /*!
@@ -67,14 +66,12 @@ private:
         const std::vector<int> &channel_selector,
         Concurrent_Queue<pmt::pmt_t> *queue,
         bool digital_io_enabled,
-        int64_t sampling_frequency,
         double seconds_to_skip);
 
     labsat23_source(const char *signal_file_basename,
         const std::vector<int> &channel_selector,
         Concurrent_Queue<pmt::pmt_t> *queue,
         bool digital_io_enabled,
-        int64_t sampling_frequency,
         double seconds_to_skip);
 
     std::string generate_filename();
@@ -127,10 +124,12 @@ private:
     uint64_t d_data_index_b{0};
     uint64_t d_data_index_c{0};
 
-    int32_t d_ls4_BUFF_SIZE_A{};
-    int32_t d_ls4_BUFF_SIZE_B{};
-    int32_t d_ls4_BUFF_SIZE_C{};
-    int32_t d_ls4_BUFF_SIZE{};
+    int32_t d_ls4_BW_MAX{0};
+
+    int32_t d_ls4_BUFF_SIZE_A{0};
+    int32_t d_ls4_BUFF_SIZE_B{0};
+    int32_t d_ls4_BUFF_SIZE_C{0};
+    int32_t d_ls4_BUFF_SIZE{0};
 
     std::vector<uint64_t> d_ls4_data_a;
     std::vector<uint64_t> d_ls4_data_b;

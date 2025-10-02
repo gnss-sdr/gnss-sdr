@@ -208,7 +208,7 @@ int main(int argc, char** argv)
                     gps_utc_model.tot = hdr.mapTimeCorr["GPUT"].refSOW;
                     gps_utc_model.WN_T = hdr.mapTimeCorr["GPUT"].refWeek;
 #else
-                    if (hdr.mapTimeCorr["GPUT"].refTime != gnsstk::Epoch(gnsstk::CommonTime::BEGINNING_OF_TIME))
+                    if (hdr.mapTimeCorr["GPUT"].refTime != gnsstk::CommonTime::BEGINNING_OF_TIME)
                         {
                             gnsstk::GPSWeekSecond gws(hdr.mapTimeCorr["GPUT"].refTime);
                             gps_utc_model.tot = gws.getSOW();
@@ -240,7 +240,7 @@ int main(int argc, char** argv)
                     gal_utc_model.tot = hdr.mapTimeCorr["GAUT"].refSOW;
                     gal_utc_model.WNot = hdr.mapTimeCorr["GAUT"].refWeek;
 #else
-                    if (hdr.mapTimeCorr["GAUT"].refTime != gnsstk::Epoch(gnsstk::CommonTime::BEGINNING_OF_TIME))
+                    if (hdr.mapTimeCorr["GAUT"].refTime != gnsstk::CommonTime::BEGINNING_OF_TIME)
                         {
                             gnsstk::GPSWeekSecond gws(hdr.mapTimeCorr["GAUT"].refTime);
                             gal_utc_model.tot = gws.getSOW();

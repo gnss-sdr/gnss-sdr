@@ -21,6 +21,7 @@
 #include "INIReader.h"
 #include "command_event.h"
 #include "gnss_sdr_filesystem.h"
+#include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include <bitset>
 #include <unordered_set>
 

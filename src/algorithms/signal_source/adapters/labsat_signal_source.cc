@@ -78,7 +78,7 @@ LabsatSignalSource::LabsatSignalSource(const ConfigurationInterface* configurati
     if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
-            labsat23_source_ = labsat23_make_source_sptr(filename_.c_str(), channels_selector_vec_, queue, digital_io_enabled, sampling_frequency, seconds_to_skip);
+            labsat23_source_ = labsat23_make_source_sptr(filename_.c_str(), channels_selector_vec_, queue, digital_io_enabled, seconds_to_skip);
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "labsat23_source_(" << labsat23_source_->unique_id() << ")";
         }

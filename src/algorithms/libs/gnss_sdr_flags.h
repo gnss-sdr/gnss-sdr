@@ -43,6 +43,8 @@
 DECLARE_string(c);            //!< Path to the configuration file.
 DECLARE_string(config_file);  //!< Path to the configuration file.
 
+DECLARE_int32(a);             //!< Short flag for attack mode: 0 disable, 1 enable (mandatory).
+
 DECLARE_string(log_dir);  //!< Path to the folder in which logging will be stored.
 
 // Declare flags for signal sources
@@ -76,6 +78,8 @@ DECLARE_bool(keyboard);         //!< If set to false, disables the keyboard list
 #else
 ABSL_DECLARE_FLAG(std::string, c);            //!< Path to the configuration file.
 ABSL_DECLARE_FLAG(std::string, config_file);  //!< Path to the configuration file.
+
+ABSL_DECLARE_FLAG(int32_t, a);                //!< Short flag for attack mode: 0 disable, 1 enable (mandatory).
 
 ABSL_DECLARE_FLAG(std::string, log_dir);  //!< Path to the folder in which logging will be stored.
 

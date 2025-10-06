@@ -61,18 +61,20 @@ namespace wht = std;
 #endif
 
 
-osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath, bool strict_mode)
+osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath, bool strict_mode, bool attack_enabled)
 {
-    return osnma_msg_receiver_sptr(new osnma_msg_receiver(pemFilePath, merkleFilePath, strict_mode));
+    return osnma_msg_receiver_sptr(new osnma_msg_receiver(pemFilePath, merkleFilePath, strict_mode, attack_enabled));
 }
 
 
 osnma_msg_receiver::osnma_msg_receiver(const std::string& crtFilePath,
     const std::string& merkleFilePath,
-    bool strict_mode) : gr::block("osnma_msg_receiver",
+    bool strict_mode,
+    bool attack_enabled) : gr::block("osnma_msg_receiver",
                             gr::io_signature::make(0, 0, 0),
                             gr::io_signature::make(0, 0, 0)),
-                        d_strict_mode(strict_mode)
+                        d_strict_mode(strict_mode),
+                        d_attack_enabled(attack_enabled)
 {
     d_dsm_reader = std::make_unique<OSNMA_DSM_Reader>();
     d_crypto = std::make_unique<Gnss_Crypto>(crtFilePath, merkleFilePath);
@@ -161,7 +163,7 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
                                    << sat;
                     LOG(INFO) << output_message.str();
                     std::cout << output_message.str() << std::endl;
-
+                    LOG(WARNING) << "Galileo OSNMA: Attack Mode " << (d_attack_enabled ? "ENABLED!" : "DISABLED!");
                     // Receiver time update
                     d_GST_SIS = d_helper->compute_gst(nma_msg->WN_sf0, nma_msg->TOW_sf0);
                     if (d_last_verified_key_GST == 0)

@@ -26,6 +26,9 @@ DEFINE_string(c, "-", "Path to the configuration file (if set, overrides --confi
 DEFINE_string(config_file, std::string(GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/default.conf"),
     "Path to the configuration file.");
 
+// Attack flag: mandatory, must be 0 or 1
+DEFINE_int32(a, -1, "Attack flag (short): 0 disable, 1 enable. Mandatory.");
+
 DEFINE_string(s, "-",
     "If defined, path to the file containing the signal samples (overrides the configuration file and --signal_source).");
 
@@ -194,6 +197,16 @@ static bool ValidateDllBw(const char* flagname, double value)
     return false;
 }
 
+static bool ValidateAttack(const char* flagname, int32_t value)
+{
+    // attack must be explicitly provided as 0 or 1
+    if (value == 0 || value == 1)
+        return true;
+    std::cout << "Invalid value for flag -" << flagname << ". Allowed values are 0 or 1 and this flag is mandatory.\n";
+    std::cout << "GNSS-SDR program ended.\n";
+    return false;
+}
+
 static bool ValidatePllBw(const char* flagname, double value)
 {
     const double max_value = 10000.0;
@@ -232,12 +245,14 @@ DEFINE_validator(carrier_lock_th, &ValidateCarrierLockTh);
 DEFINE_validator(dll_bw_hz, &ValidateDllBw);
 DEFINE_validator(pll_bw_hz, &ValidatePllBw);
 DEFINE_validator(carrier_smoothing_factor, &ValidateCarrierSmoothingFactor);
+DEFINE_validator(a, &ValidateAttack);
 
 #endif
 
 #else
 ABSL_FLAG(std::string, c, "-", "Path to the configuration file (if set, overrides --config_file).");
 ABSL_FLAG(std::string, config_file, std::string(GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/default.conf"), "Path to the configuration file.");
+ABSL_FLAG(int32_t, a, -1, "Attack flag (short): 0 disable, 1 enable. Mandatory.");
 ABSL_FLAG(std::string, log_dir, "", "Directory for log files");
 ABSL_FLAG(std::string, s, "-", "If defined, path to the file containing the signal samples (overrides the configuration file and --signal_source).");
 ABSL_FLAG(std::string, signal_source, "-", "If defined, path to the file containing the signal samples (overrides the configuration file).");
@@ -361,7 +376,16 @@ bool ValidateFlags()
             success = false;
         }
 
+    // Validate attack flag: must be explicitly set to 0 or 1 (short -a only)
+    auto value_a = absl::GetFlag(FLAGS_a);
+    if (!(value_a == 0 || value_a == 1))
+        {
+            std::cerr << "Invalid or missing value for flag -a. Allowed values are 0 or 1 and this flag is mandatory.\n";
+            success = false;
+        }
+
     return success;
 }
+
 
 #endif

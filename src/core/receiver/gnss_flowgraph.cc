@@ -39,6 +39,7 @@
 #include "gnss_synchro_monitor.h"
 #include "nav_message_monitor.h"
 #include "signal_source_interface.h"
+#include "gnss_sdr_flags.h"
 #include <boost/lexical_cast.hpp>    // for boost::lexical_cast
 #include <boost/tokenizer.hpp>       // for boost::tokenizer
 #include <gnuradio/basic_block.h>    // for basic_block
@@ -151,7 +152,14 @@ void GNSSFlowgraph::init()
                 {
                     strict_mode = true;
                 }
-            osnma_rx_ = osnma_msg_receiver_make(certFilePath, merKleTreePath, strict_mode);
+            // Read CLI flag for attack mode and pass it to the OSNMA block
+            bool attack_enabled = false;
+#if USE_GLOG_AND_GFLAGS
+            attack_enabled = (FLAGS_a == 1);
+#else
+            attack_enabled = (absl::GetFlag(FLAGS_a) == 1);
+#endif
+            osnma_rx_ = osnma_msg_receiver_make(certFilePath, merKleTreePath, strict_mode, attack_enabled);
         }
     else
         {

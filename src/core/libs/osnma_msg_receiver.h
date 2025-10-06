@@ -50,7 +50,7 @@ class osnma_msg_receiver;
 
 using osnma_msg_receiver_sptr = gnss_shared_ptr<osnma_msg_receiver>;
 
-osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath, bool strict_mode = false);
+osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath, bool strict_mode = false, bool attack_enabled = false);
 
 /*!
  * \brief GNU Radio block that receives asynchronous OSNMA messages
@@ -68,8 +68,8 @@ public:
     void set_merkle_root(const std::vector<uint8_t>& v);        //!< Public for benchmarking purposes
 
 private:
-    friend osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath, bool strict_mode);
-    osnma_msg_receiver(const std::string& crtFilePath, const std::string& merkleFilePath, bool strict_mode);
+    friend osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath, bool strict_mode, bool attack_enabled);
+    osnma_msg_receiver(const std::string& crtFilePath, const std::string& merkleFilePath, bool strict_mode, bool attack_enabled);
 
     void process_osnma_message(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void read_nma_header(uint8_t nma_header);
@@ -143,6 +143,7 @@ private:
     bool d_kroot_verified{false};
     bool d_tesla_key_verified{false};
     bool d_strict_mode{false};
+    bool d_attack_enabled{false};
     bool d_flag_hot_start{false};
     bool d_flag_PK_renewal{false};
     bool d_flag_PK_revocation{false};

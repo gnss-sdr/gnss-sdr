@@ -118,6 +118,8 @@ private:
     bool d_ls3w_digital_io_enabled = false;
 
     // Data members for Labsat 4
+    int32_t d_number_sample_per_output{0};
+    int32_t d_number_register_per_output{0};
     uint64_t d_read_index{0};
 
     uint64_t d_data_index_a{0};

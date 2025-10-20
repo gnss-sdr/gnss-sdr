@@ -44,7 +44,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.12'      
+          python-version: '3.13'      
       - name: install dependencies
         run: |
           brew update
@@ -58,7 +58,7 @@ jobs:
           rm /usr/local/bin/pydoc3.1* || true
           rm /usr/local/bin/python3.1* || true
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-          brew link --overwrite python@3.12
+          brew link --overwrite python@3.13
           brew install ninja hdf5 automake armadillo lapack libmatio gnuradio openssl pugixml protobuf boost
           pip3 install mako
       - name: configure
@@ -78,7 +78,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: '3.13'
       - name: install dependencies
         run: |
           brew update
@@ -92,7 +92,7 @@ jobs:
           rm /usr/local/bin/pydoc3.1* || true
           rm /usr/local/bin/python3.1* || true
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-          brew link --overwrite python@3.12
+          brew link --overwrite python@3.13
           brew install ninja pkg-config hdf5 automake armadillo lapack libmatio gnuradio openssl pugixml protobuf boost
           pip3 install mako          
       - name: configure

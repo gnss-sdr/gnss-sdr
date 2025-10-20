@@ -191,7 +191,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Set up latest Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: latest
       - name: Install prettier

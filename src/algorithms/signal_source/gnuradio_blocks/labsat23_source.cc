@@ -893,22 +893,22 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
 
     const std::set<int> channel_selector_config_set(d_channel_selector_config.begin(), d_channel_selector_config.end());
     const std::vector<int> unique_channel_selector_config(channel_selector_config_set.begin(), channel_selector_config_set.end());
-    const auto channel_count = static_cast<int>(unique_channel_selector_config.size());
-    std::cout << "LabSat selected channel" << ((channel_count > 1) ? "s" : "") << ": ";
+    const auto selected_channel_count = static_cast<int>(unique_channel_selector_config.size());
+    std::cout << "LabSat selected channel" << ((selected_channel_count > 1) ? "s" : "") << ": ";
 
-    for (int i = 0; i < channel_count; ++i)
+    for (int i = 0; i < selected_channel_count; ++i)
         {
             const auto channel_id = unique_channel_selector_config.at(i);
             const auto &channel_char = d_channel_map.at(channel_id).identifier;
 
-            if (channel_id > channel_count)
+            if (channel_id > d_ls3w_CHN)
                 {
                     std::cerr << "\nConfiguration error: RF channel " << channel_char << " is selected but not found in data file.\n";
                     std::cerr << "Exiting the program.\n";
                     return -1;
                 }
 
-            std::cout << channel_char << (i + 1 < channel_count ? ", " : "");
+            std::cout << channel_char << (i + 1 < selected_channel_count ? ", " : "");
         }
 
     std::cout << '\n';

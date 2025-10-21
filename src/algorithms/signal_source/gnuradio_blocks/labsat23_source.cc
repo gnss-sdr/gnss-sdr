@@ -200,10 +200,6 @@ labsat23_source::labsat23_source(
                               d_header_parsed(false),
                               d_ls3w_digital_io_enabled(digital_io_enabled)
 {
-    d_channel_state_a.identifier = "A";
-    d_channel_state_b.identifier = "B";
-    d_channel_state_c.identifier = "C";
-
     d_signal_file_basename = std::string(signal_file_basename);
     std::string signal_file;
     this->set_output_multiple(8);
@@ -277,7 +273,7 @@ labsat23_source::labsat23_source(
 
                             int64_t total_bytes_to_seek = 0;
 
-                            for (const auto &channel_map_it : d_channel_map)
+                            for (auto &channel_map_it : d_channel_map)
                                 {
                                     auto &channel = channel_map_it.second;
 
@@ -773,7 +769,7 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
                             std::cout << "LabSat max bandwidth : " << d_ls4_BW_MAX << " Hz.\n";
                         }
 
-                    for (const auto &channel_map_it : d_channel_map)
+                    for (auto &channel_map_it : d_channel_map)
                         {
                             auto &channel = channel_map_it.second;
                             const auto bw_div_str = ini_reader->Get("config", "BW_DIV_" + channel.identifier, empty_string);
@@ -788,7 +784,7 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
                 }
         }
 
-    for (const auto &channel_map_it : d_channel_map)
+    for (auto &channel_map_it : d_channel_map)
         {
             auto &channel = channel_map_it.second;
             const auto channel_name = "channel " + channel.identifier;
@@ -841,17 +837,23 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
             d_number_register_per_output = d_ls3w_QUA == 12 ? 3 : 1;
             d_number_sample_per_output = (d_number_register_per_output * 64) / (d_ls3w_QUA * 2);
 
-            const auto expected_max_bandwidth_a = d_channel_state_a.bandwidth * d_channel_state_a.bw_div + d_ls4_BW_MAX % d_channel_state_a.bw_div;
-            const auto expected_max_bandwidth_b = d_channel_state_b.bandwidth * d_channel_state_b.bw_div + d_ls4_BW_MAX % d_channel_state_b.bw_div;
-            const auto expected_max_bandwidth_c = d_channel_state_c.bandwidth * d_channel_state_c.bw_div + d_ls4_BW_MAX % d_channel_state_c.bw_div;
+            std::vector<int32_t> bandwidths = {d_ls4_BW_MAX};
+            std::vector<int32_t> relative_buff_sizes;
 
-            if (!are_equal_ignore_nonpositive({d_ls4_BW_MAX, expected_max_bandwidth_a, expected_max_bandwidth_b, expected_max_bandwidth_c}))
+            for (const auto &channel_map_it : d_channel_map)
+                {
+                    const auto &channel = channel_map_it.second;
+                    bandwidths.emplace_back(channel.bandwidth * channel.bw_div + d_ls4_BW_MAX % channel.bw_div);
+                    relative_buff_sizes.emplace_back(channel.buff_size * channel.bw_div);
+                }
+
+            if (!are_equal_ignore_nonpositive(bandwidths))
                 {
                     std::cerr << "\nConfiguration error: Bandwidth configuration is invalid.\n";
                     std::cerr << "Exiting the program.\n";
                     return -1;
                 }
-            if (!are_equal_ignore_nonpositive({d_channel_state_a.buff_size * d_channel_state_a.bw_div, d_channel_state_b.buff_size * d_channel_state_b.bw_div, d_channel_state_c.buff_size * d_channel_state_c.bw_div}))
+            if (!are_equal_ignore_nonpositive(relative_buff_sizes))
                 {
                     std::cerr << "\nConfiguration error: Buffer size configuration is invalid.\n";
                     std::cerr << "Exiting the program.\n";
@@ -878,7 +880,7 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
 
             const auto selected_bw_div = static_cast<double>(selected_bw_divs[0]);
 
-            for (const auto &channel_map_it : d_channel_map)
+            for (auto &channel_map_it : d_channel_map)
                 {
                     auto &channel = channel_map_it.second;
 
@@ -1203,7 +1205,15 @@ int labsat23_source::parse_ls4_data(int noutput_items, std::vector<gr_complex *>
 
             for (int j = 0; j < registers_to_read; j++)
                 {
-                    if ((d_channel_state_a.data_index + d_channel_state_b.data_index + d_channel_state_c.data_index) >= d_read_index)
+                    uint64_t total_data_index = 0;
+
+                    for (const auto &channel_map_it : d_channel_map)
+                        {
+                            const auto &channel = channel_map_it.second;
+                            total_data_index += channel.data_index;
+                        }
+
+                    if (total_data_index >= d_read_index)
                         {
                             if (!read_ls4_data())
                                 {
@@ -1222,7 +1232,7 @@ int labsat23_source::parse_ls4_data(int noutput_items, std::vector<gr_complex *>
 
                     output_index += d_number_sample_per_output;
 
-                    for (const auto &channel_map_it : d_channel_map)
+                    for (auto &channel_map_it : d_channel_map)
                         {
                             auto &channel = channel_map_it.second;
                             if (channel.buff_size > 0)
@@ -1245,7 +1255,7 @@ int labsat23_source::parse_ls4_data(int noutput_items, std::vector<gr_complex *>
 
 bool labsat23_source::read_ls4_data()
 {
-    for (const auto &channel_map_it : d_channel_map)
+    for (auto &channel_map_it : d_channel_map)
         {
             auto &channel = channel_map_it.second;
 

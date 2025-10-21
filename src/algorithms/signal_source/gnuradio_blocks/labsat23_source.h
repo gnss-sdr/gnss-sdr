@@ -126,14 +126,10 @@ private:
         int32_t buff_size{0};
         int32_t number_sample_per_output{0};
         uint64_t data_index{0};
-        std::vector<uint64_t> data;
+        std::vector<uint64_t> data{};
     };
 
-    ChannelState d_channel_state_a;
-    ChannelState d_channel_state_b;
-    ChannelState d_channel_state_c;
-
-    std::map<int32_t, ChannelState &> d_channel_map{{1, d_channel_state_a}, {2, d_channel_state_b}, {3, d_channel_state_c}};
+    std::map<int32_t, ChannelState> d_channel_map{{1, ChannelState{"A"}}, {2, ChannelState{"B"}}, {3, ChannelState{"C"}}};
 };
 
 

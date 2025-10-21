@@ -147,8 +147,7 @@ void read_file_register_to_local_endian(std::ifstream &binary_input_file, uint64
 #endif
 }
 
-template <typename T = std::initializer_list<int32_t>>
-bool are_equal_ignore_nonpositive(const T &values)
+bool are_equal_ignore_nonpositive(const std::vector<int32_t> &values)
 {
     std::vector<int32_t> positives;
     for (const auto &v : values)

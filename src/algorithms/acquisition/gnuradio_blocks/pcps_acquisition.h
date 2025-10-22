@@ -179,7 +179,7 @@ public:
     inline void set_doppler_max(uint32_t doppler_max)
     {
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
-        d_acq_parameters.doppler_max = doppler_max;
+        d_doppler_max = doppler_max;
     }
 
     /*!
@@ -212,13 +212,16 @@ private:
     void update_local_carrier(own::span<gr_complex> carrier_vector, float freq) const;
     void update_grid_doppler_wipeoffs();
     void update_grid_doppler_wipeoffs_step2();
+    void doppler_grid(const gr_complex* in, int32_t effective_fft_size);
+    float get_test_statistics(uint32_t& indext, int32_t& doppler);
+    void update_synchro(uint32_t indext, int32_t doppler, uint64_t samp_count);
     void acquisition_core(uint64_t samp_count);
-    void send_negative_acquisition();
-    void send_positive_acquisition();
-    void dump_results(int32_t effective_fft_size);
+    void send_negative_acquisition(float test_statistics);
+    void send_positive_acquisition(float test_statistics);
+    void dump_results(int32_t effective_fft_size, float test_statistics);
     bool is_fdma();
     bool start() override;
-    void calculate_threshold(void);
+    void calculate_threshold();
     float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
     float max_to_input_power_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
 
@@ -235,7 +238,7 @@ private:
     std::unique_ptr<gnss_fft_complex_rev> d_ifft;
     std::weak_ptr<ChannelFsm> d_channel_fsm;
 
-    Acq_Conf d_acq_parameters;
+    const Acq_Conf d_acq_parameters;
     Gnss_Synchro* d_gnss_synchro;
     arma::fmat d_grid;
     arma::fmat d_narrow_grid;
@@ -249,29 +252,30 @@ private:
     float d_threshold;
     float d_mag;
     float d_input_power;
-    float d_test_statistics;
     float d_doppler_center_step_two;
+    float d_doppler_max;
 
     int32_t d_state;
     int32_t d_positive_acq;
     int32_t d_doppler_center;
     int32_t d_doppler_bias;
     uint32_t d_channel;
-    uint32_t d_samplesPerChip;
+    const uint32_t d_samplesPerChip;
     uint32_t d_doppler_step;
     uint32_t d_num_noncoherent_integrations_counter;
-    uint32_t d_fft_size;
-    uint32_t d_consumed_samples;
+    const uint32_t d_consumed_samples;
+    const uint32_t d_fft_size;
     uint32_t d_num_doppler_bins;
-    uint32_t d_num_doppler_bins_step2;
-    uint32_t d_dump_channel;
+    const uint32_t d_num_doppler_bins_step2;
+    const uint32_t d_dump_channel;
     uint32_t d_buffer_count;
+    uint32_t d_resampler_latency_samples;
 
     bool d_active;
     bool d_worker_active;
-    bool d_cshort;
+    const bool d_cshort;
     bool d_step_two;
-    bool d_use_CFAR_algorithm_flag;
+    const bool d_use_CFAR_algorithm_flag;
     bool d_dump;
 };
 

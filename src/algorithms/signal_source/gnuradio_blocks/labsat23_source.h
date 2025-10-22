@@ -105,12 +105,6 @@ private:
     int32_t d_ls3w_QUA{};
     int32_t d_ls3w_CHN{};
     int32_t d_ls3w_SFT{};
-    int32_t d_ls3w_CFA{};
-    int32_t d_ls3w_CFB{};
-    int32_t d_ls3w_CFC{};
-    int32_t d_ls3w_BWA{};
-    int32_t d_ls3w_BWB{};
-    int32_t d_ls3w_BWC{};
     int d_ls3w_spare_bits{};
     int d_ls3w_samples_per_register{};
     bool d_is_ls3w = false;
@@ -118,24 +112,24 @@ private:
     bool d_ls3w_digital_io_enabled = false;
 
     // Data members for Labsat 4
+    int32_t d_ls4_BW_MAX{0};
     int32_t d_number_sample_per_output{0};
     int32_t d_number_register_per_output{0};
     uint64_t d_read_index{0};
 
-    uint64_t d_data_index_a{0};
-    uint64_t d_data_index_b{0};
-    uint64_t d_data_index_c{0};
+    struct ChannelState
+    {
+        std::string identifier;
+        int32_t center_freq{0};
+        int32_t bandwidth{0};
+        int32_t bw_div{0};
+        int32_t buff_size{0};
+        int32_t number_sample_per_output{0};
+        uint64_t data_index{0};
+        std::vector<uint64_t> data{};
+    };
 
-    int32_t d_ls4_BW_MAX{0};
-
-    int32_t d_ls4_BUFF_SIZE_A{0};
-    int32_t d_ls4_BUFF_SIZE_B{0};
-    int32_t d_ls4_BUFF_SIZE_C{0};
-    int32_t d_ls4_BUFF_SIZE{0};
-
-    std::vector<uint64_t> d_ls4_data_a;
-    std::vector<uint64_t> d_ls4_data_b;
-    std::vector<uint64_t> d_ls4_data_c;
+    std::map<int32_t, ChannelState> d_channel_map{{1, ChannelState{"A"}}, {2, ChannelState{"B"}}, {3, ChannelState{"C"}}};
 };
 
 

@@ -1,16 +1,17 @@
 /*!
  * \file labsat23_source.cc
  *
- * \brief Unpacks capture files in the LabSat 2 (ls2), LabSat 3 (ls3), or LabSat
- * 3 Wideband (LS3W) formats.
+ * \brief Unpacks capture files in the LabSat 2 (ls2), LabSat 3 (ls3), LabSat 3
+ * Wideband (LS3W), and Labsat 4 (ls4) formats.
  * \author Javier Arribas jarribas (at) cttc.es
+ *         Mathieu Favreau favreau.mathieu (at) hotmail.com
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2025  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------

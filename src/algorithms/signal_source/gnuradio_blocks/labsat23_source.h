@@ -1,16 +1,17 @@
 /*!
  * \file labsat23_source.h
  *
- * \brief Unpacks capture files in the LabSat 2 (ls2), LabSat 3 (ls3), or LabSat
- * 3 Wideband (LS3W) formats.
+ * \brief Unpacks capture files in the LabSat 2 (ls2), LabSat 3 (ls3), LabSat 3
+ * Wideband (LS3W), and Labsat 4 (ls4) formats.
  * \author Javier Arribas jarribas (at) cttc.es
+ *         Mathieu Favreau favreau.mathieu (at) hotmail.com
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2025  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -26,7 +27,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <fstream>
+#include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 /** \addtogroup Signal_Source
@@ -127,9 +130,12 @@ private:
         int32_t number_sample_per_output{0};
         uint64_t data_index{0};
         std::vector<uint64_t> data{};
+
+        ChannelState(const std::string &id) : identifier(id) {}
     };
 
-    std::map<int32_t, ChannelState> d_channel_map{{1, ChannelState{"A"}}, {2, ChannelState{"B"}}, {3, ChannelState{"C"}}};
+    std::map<int32_t, ChannelState> d_channel_map{
+        std::make_pair(1, ChannelState{"A"}), std::make_pair(2, ChannelState{"B"}), std::make_pair(3, ChannelState{"C"})};
 };
 
 

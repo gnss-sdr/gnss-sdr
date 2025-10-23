@@ -1,16 +1,17 @@
 /*!
  * \file labsat23_source.cc
  *
- * \brief Unpacks capture files in the LabSat 2 (ls2), LabSat 3 (ls3), or LabSat
- * 3 Wideband (LS3W) formats.
+ * \brief Unpacks capture files in the LabSat 2 (ls2), LabSat 3 (ls3), LabSat 3
+ * Wideband (LS3W), and Labsat 4 (ls4) formats.
  * \author Javier Arribas jarribas (at) cttc.es
+ *         Mathieu Favreau favreau.mathieu (at) hotmail.com
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2025  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -23,6 +24,7 @@
 #include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include <bitset>
+#include <set>
 #include <unordered_set>
 
 #if HAS_BOOST_ENDIAN
@@ -146,7 +148,7 @@ void read_file_register_to_local_endian(std::ifstream &binary_input_file, uint64
 #endif
 }
 
-bool are_equal_ignore_nonpositive(std::initializer_list<int32_t> values)
+bool are_equal_ignore_nonpositive(const std::vector<int32_t> &values)
 {
     std::vector<int32_t> positives;
     for (const auto &v : values)
@@ -239,53 +241,59 @@ labsat23_source::labsat23_source(
                     this->set_output_multiple(d_number_sample_per_output);
 
                     const auto size = fs::file_size(d_signal_file_basename);
-                    const auto samples = (size * CHAR_BIT) / d_ls3w_SFT;
-                    const auto samples_to_skip = static_cast<size_t>(seconds_to_skip * d_ls3w_SMP);
-                    const auto samples_to_read = static_cast<int64_t>(samples - samples_to_skip);
+                    const auto bits = size * CHAR_BIT;
 
-                    std::cout << ", which contains " << samples << " samples (" << size << " bytes)\n";
+                    double bw_factor = 0;
 
-                    if (samples_to_read < 0)
+                    for (const auto &channel_map_it : d_channel_map)
                         {
-                            std::cout << "File duration is smaller then the seconds to skip!\n";
-                            exit(1);
+                            const auto &channel = channel_map_it.second;
+
+                            if (channel.buff_size > 0)
+                                {
+                                    bw_factor += 1.0 / channel.bw_div;
+                                }
                         }
 
-                    const auto signal_duration_s = static_cast<double>(samples_to_read) / d_ls3w_SMP;
+                    const auto bits_per_sample = d_ls3w_QUA * 2;  // I and Q
+                    const auto samples = bits / bits_per_sample;
+                    const auto signal_duration_s = bits / (bits_per_sample * bw_factor * d_ls3w_SMP);
+                    std::cout << ", which contains " << samples << " samples (" << size << " bytes)\n";
+                    std::cout << "GNSS signal recorded time to be processed: " << (signal_duration_s - seconds_to_skip) << " [s]\n";
 
-                    std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]\n";
-
-                    if (samples_to_skip > 0)
+                    if (seconds_to_skip > 0)
                         {
-                            LOG(INFO) << "Skipping " << samples_to_skip << " samples of the input file";
-
-                            // We assume all buffers have same size and take advantage of integer rounding
-                            const auto bytes_to_skip = (samples_to_skip * d_ls3w_SFT) / CHAR_BIT;
-                            const auto bytes_to_skip_per_channel = bytes_to_skip / d_ls3w_CHN;
-                            const auto nb_of_channel_buffer_to_skip = bytes_to_skip_per_channel / d_ls4_BUFF_SIZE;
-                            const auto bytes_to_seek_per_channel = nb_of_channel_buffer_to_skip * d_ls4_BUFF_SIZE;
-                            const auto bytes_to_seek = bytes_to_seek_per_channel * d_ls3w_CHN;
-                            const auto bytes_to_read_per_channel = bytes_to_skip_per_channel - bytes_to_seek_per_channel;
-
-                            // Advance in the file by a multiple of buffers, then read one buffer of each channel
-                            if (!binary_input_file.seekg(bytes_to_seek, std::ios::beg) || !read_ls4_data())
+                            if (signal_duration_s < seconds_to_skip)
                                 {
-                                    LOG(ERROR) << "Error skipping bytes!";
+                                    std::cout << "File duration is smaller then the seconds to skip!\n";
                                     exit(1);
                                 }
 
-                            // Advances the indices to start at the correct index in the buffer we just read
-                            if (d_ls4_BUFF_SIZE_A > 0)
+                            LOG(INFO) << "Skipping " << seconds_to_skip << " seconds of the input file";
+
+                            int64_t total_bytes_to_seek = 0;
+
+                            for (auto &channel_map_it : d_channel_map)
                                 {
-                                    d_data_index_a += (bytes_to_read_per_channel / sizeof(uint64_t));
+                                    auto &channel = channel_map_it.second;
+
+                                    if (channel.buff_size > 0)
+                                        {
+                                            const auto samples_to_skip = static_cast<int64_t>(seconds_to_skip * (static_cast<double>(d_ls3w_SMP) / channel.bw_div));
+                                            const auto bytes_to_skip = (samples_to_skip * bits_per_sample) / CHAR_BIT;
+                                            const auto buffers_to_skip = bytes_to_skip / channel.buff_size;
+                                            const auto bytes_to_seek = buffers_to_skip * channel.buff_size;
+                                            const auto bytes_to_read = bytes_to_skip - bytes_to_seek;
+                                            total_bytes_to_seek += bytes_to_seek;
+                                            channel.data_index = (bytes_to_read / sizeof(uint64_t));  // Can be set before read is called
+                                        }
                                 }
-                            if (d_ls4_BUFF_SIZE_B > 0)
+
+                            // Advance in the file by a multiple of buffers, then read one buffer of each channel
+                            if (!binary_input_file.seekg(total_bytes_to_seek, std::ios::beg) || !read_ls4_data())
                                 {
-                                    d_data_index_b += (bytes_to_read_per_channel / sizeof(uint64_t));
-                                }
-                            if (d_ls4_BUFF_SIZE_C > 0)
-                                {
-                                    d_data_index_c += (bytes_to_read_per_channel / sizeof(uint64_t));
+                                    LOG(ERROR) << "Error skipping bytes!";
+                                    exit(1);
                                 }
                         }
                 }
@@ -758,128 +766,152 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
                         {
                             std::stringstream ls4_bw_max_ss(ls4_bw_max);
                             ls4_bw_max_ss >> d_ls4_BW_MAX;
-                            std::cout << "LabSat max bandwidth : " << d_ls4_BW_MAX << "Hz.\n";
+                            std::cout << "LabSat max bandwidth : " << d_ls4_BW_MAX << " Hz.\n";
+                        }
+
+                    for (auto &channel_map_it : d_channel_map)
+                        {
+                            auto &channel = channel_map_it.second;
+                            const auto bw_div_str = ini_reader->Get("config", "BW_DIV_" + channel.identifier, empty_string);
+
+                            if (!bw_div_str.empty())
+                                {
+                                    std::stringstream bw_div_ss(bw_div_str);
+                                    bw_div_ss >> channel.bw_div;
+                                    std::cout << "LabSat bandwidth div " << channel.identifier << " : " << channel.bw_div << ".\n";
+                                }
                         }
                 }
         }
 
-    const auto channel_handler = [this, &ini_reader, &empty_string](const std::string &channel_char, int32_t &cf, int32_t &bw, int32_t &buffer_size, std::vector<uint64_t> &buffer) {
-        const auto channel_name = "channel " + channel_char;
-
-        if (ini_reader->HasSection(channel_name))
-            {
-                const auto cf_str = ini_reader->Get(channel_name, "CF" + channel_char, empty_string);
-                if (!cf_str.empty())
-                    {
-                        std::stringstream cf_ss(cf_str);
-                        cf_ss >> cf;
-                        std::cout << "LabSat center frequency for RF " << channel_name << ": " << cf << " Hz\n";
-                    }
-
-                const auto bw_str = ini_reader->Get(channel_name, "BW" + channel_char, empty_string);
-                if (!bw_str.empty())
-                    {
-                        std::stringstream bw_ss(bw_str);
-                        bw_ss >> bw;
-                        std::cout << "LabSat RF filter bandwidth for RF " << channel_name << ": " << bw << " Hz\n";
-                    }
-
-                if (d_is_ls4)
-                    {
-                        const auto buffer_size_str = ini_reader->Get(channel_name, "BUF_SIZE_" + channel_char, empty_string);
-                        if (!buffer_size_str.empty())
-                            {
-                                std::stringstream buff_size_ss(buffer_size_str);
-                                buff_size_ss >> buffer_size;
-
-                                if (buffer_size > 0)
-                                    {
-                                        d_ls4_BUFF_SIZE = buffer_size;
-
-                                        if (buffer_size % sizeof(uint64_t) != 0)
-                                            {
-                                                std::cerr << "\nConfiguration error: RF " << channel_name << " is BUFF SIZE is not a multiple of " << sizeof(uint64_t) << ".\n";
-                                                std::cerr << "Exiting the program.\n";
-                                                return false;
-                                            }
-
-                                        buffer.resize(buffer_size / sizeof(uint64_t));
-                                    }
-                                std::cout << "LabSat RF BUFFER SIZE for RF " << channel_name << ": " << buffer_size << " bytes\n";
-                            }
-                    }
-            }
-        return true;
-    };
-
-    if (!channel_handler("A", d_ls3w_CFA, d_ls3w_BWA, d_ls4_BUFF_SIZE_A, d_ls4_data_a) ||
-        !channel_handler("B", d_ls3w_CFB, d_ls3w_BWB, d_ls4_BUFF_SIZE_B, d_ls4_data_b) ||
-        !channel_handler("C", d_ls3w_CFC, d_ls3w_BWC, d_ls4_BUFF_SIZE_C, d_ls4_data_c))
+    for (auto &channel_map_it : d_channel_map)
         {
-            return -1;
+            auto &channel = channel_map_it.second;
+            const auto channel_name = "channel " + channel.identifier;
+
+            if (ini_reader->HasSection(channel_name))
+                {
+                    const auto cf_str = ini_reader->Get(channel_name, "CF" + channel.identifier, empty_string);
+                    if (!cf_str.empty())
+                        {
+                            std::stringstream cf_ss(cf_str);
+                            cf_ss >> channel.center_freq;
+                            std::cout << "LabSat center frequency for RF " << channel_name << ": " << channel.center_freq << " Hz\n";
+                        }
+
+                    const auto bw_str = ini_reader->Get(channel_name, "BW" + channel.identifier, empty_string);
+                    if (!bw_str.empty())
+                        {
+                            std::stringstream bw_ss(bw_str);
+                            bw_ss >> channel.bandwidth;
+                            std::cout << "LabSat RF filter bandwidth for RF " << channel_name << ": " << channel.bandwidth << " Hz\n";
+                        }
+
+                    if (d_is_ls4)
+                        {
+                            const auto buffer_size_str = ini_reader->Get(channel_name, "BUF_SIZE_" + channel.identifier, empty_string);
+                            if (!buffer_size_str.empty())
+                                {
+                                    std::stringstream buff_size_ss(buffer_size_str);
+                                    buff_size_ss >> channel.buff_size;
+
+                                    if (channel.buff_size > 0)
+                                        {
+                                            if (channel.buff_size % sizeof(uint64_t) != 0)
+                                                {
+                                                    std::cerr << "\nConfiguration error: RF " << channel_name << " is BUFF SIZE is not a multiple of " << sizeof(uint64_t) << ".\n";
+                                                    std::cerr << "Exiting the program.\n";
+                                                    return -1;
+                                                }
+
+                                            channel.data.resize(channel.buff_size / sizeof(uint64_t));
+                                        }
+                                    std::cout << "LabSat RF BUFFER SIZE for RF " << channel_name << ": " << channel.buff_size << " bytes\n";
+                                }
+                        }
+                }
         }
 
     if (d_is_ls4)
         {
-            if (!are_equal_ignore_nonpositive({d_ls4_BW_MAX, d_ls3w_BWA, d_ls3w_BWB, d_ls3w_BWC}))
+            d_number_register_per_output = d_ls3w_QUA == 12 ? 3 : 1;
+            d_number_sample_per_output = (d_number_register_per_output * 64) / (d_ls3w_QUA * 2);
+
+            std::vector<int32_t> bandwidths = {d_ls4_BW_MAX};
+            std::vector<int32_t> relative_buff_sizes;
+
+            for (const auto &channel_map_it : d_channel_map)
                 {
-                    std::cerr << "\nConfiguration error: Currently does not support channels with different bandwidths or different from max bandwidth for LS4 files.\n";
+                    const auto &channel = channel_map_it.second;
+                    bandwidths.emplace_back(channel.bandwidth * channel.bw_div + d_ls4_BW_MAX % channel.bw_div);
+                    relative_buff_sizes.emplace_back(channel.buff_size * channel.bw_div);
+                }
+
+            if (!are_equal_ignore_nonpositive(bandwidths))
+                {
+                    std::cerr << "\nConfiguration error: Bandwidth configuration is invalid.\n";
                     std::cerr << "Exiting the program.\n";
                     return -1;
                 }
-            if (!are_equal_ignore_nonpositive({d_ls4_BUFF_SIZE_A, d_ls4_BUFF_SIZE_B, d_ls4_BUFF_SIZE_C}))
+            if (!are_equal_ignore_nonpositive(relative_buff_sizes))
                 {
-                    std::cerr << "\nConfiguration error: Currently does not support channels with different buffer sizes for LS4 files.\n";
+                    std::cerr << "\nConfiguration error: Buffer size configuration is invalid.\n";
                     std::cerr << "Exiting the program.\n";
                     return -1;
+                }
+
+            std::vector<int32_t> selected_bw_divs;
+            selected_bw_divs.reserve(d_channel_selector_config.size());
+
+            for (const auto channel_id : d_channel_selector_config)
+                {
+                    selected_bw_divs.push_back(d_channel_map.at(channel_id).bw_div);
+                }
+
+            if (!are_equal_ignore_nonpositive(selected_bw_divs))
+                {
+                    if (d_channel_selector_config.size() > 1)
+                        {
+                            std::cerr << "\nConfiguration error: Selecting multiple channels with different bandwidths is not supported.\n";
+                            std::cerr << "Exiting the program.\n";
+                            return -1;
+                        }
+                }
+
+            const auto selected_bw_div = static_cast<double>(selected_bw_divs[0]);
+
+            for (auto &channel_map_it : d_channel_map)
+                {
+                    auto &channel = channel_map_it.second;
+
+                    if (channel.buff_size > 0)
+                        {
+                            // This ensures we increment the indices correctly when all channels do not have the same bandwidth
+                            channel.number_sample_per_output = d_number_register_per_output * (selected_bw_div / channel.bw_div);
+                        }
                 }
         }
 
-    std::cout << "LabSat selected channel" << ((d_channel_selector_config.size() > 1) ? "s" : "") << ": ";
-    if (std::find(d_channel_selector_config.begin(), d_channel_selector_config.end(), 1) != d_channel_selector_config.end())
+    const std::set<int> channel_selector_config_set(d_channel_selector_config.begin(), d_channel_selector_config.end());
+    const std::vector<int> unique_channel_selector_config(channel_selector_config_set.begin(), channel_selector_config_set.end());
+    const auto selected_channel_count = static_cast<int>(unique_channel_selector_config.size());
+    std::cout << "LabSat selected channel" << ((selected_channel_count > 1) ? "s" : "") << ": ";
+
+    for (int i = 0; i < selected_channel_count; ++i)
         {
-            std::cout << "A";
-        }
-    if (std::find(d_channel_selector_config.begin(), d_channel_selector_config.end(), 2) != d_channel_selector_config.end())
-        {
-            if (d_ls3w_CHN > 1)
+            const auto channel_id = unique_channel_selector_config.at(i);
+            const auto &channel_char = d_channel_map.at(channel_id).identifier;
+
+            if (channel_id > d_ls3w_CHN)
                 {
-                    if (d_channel_selector_config.size() == 1)
-                        {
-                            std::cout << "B";
-                        }
-                    else
-                        {
-                            std::cout << ", B";
-                        }
-                }
-            else
-                {
-                    std::cerr << "\nConfiguration error: RF channel B is selected but not found in data file.\n";
+                    std::cerr << "\nConfiguration error: RF channel " << channel_char << " is selected but not found in data file.\n";
                     std::cerr << "Exiting the program.\n";
                     return -1;
                 }
+
+            std::cout << channel_char << (i + 1 < selected_channel_count ? ", " : "");
         }
-    if (std::find(d_channel_selector_config.begin(), d_channel_selector_config.end(), 3) != d_channel_selector_config.end())
-        {
-            if (d_ls3w_CHN > 2)
-                {
-                    if (d_channel_selector_config.size() == 1)
-                        {
-                            std::cout << "C";
-                        }
-                    else
-                        {
-                            std::cout << ", C";
-                        }
-                }
-            else
-                {
-                    std::cerr << "\nConfiguration error: RF channel C is selected but not found in data file.\n";
-                    std::cerr << "Exiting the program.\n";
-                    return -1;
-                }
-        }
+
     std::cout << '\n';
 
     d_ls3w_samples_per_register = this->number_of_samples_per_ls3w_register();
@@ -1173,7 +1205,15 @@ int labsat23_source::parse_ls4_data(int noutput_items, std::vector<gr_complex *>
 
             for (int j = 0; j < registers_to_read; j++)
                 {
-                    if ((d_data_index_a + d_data_index_b + d_data_index_c) >= d_read_index)
+                    uint64_t total_data_index = 0;
+
+                    for (const auto &channel_map_it : d_channel_map)
+                        {
+                            const auto &channel = channel_map_it.second;
+                            total_data_index += channel.data_index;
+                        }
+
+                    if (total_data_index >= d_read_index)
                         {
                             if (!read_ls4_data())
                                 {
@@ -1186,34 +1226,19 @@ int labsat23_source::parse_ls4_data(int noutput_items, std::vector<gr_complex *>
                     for (size_t channel_index = 0; channel_index < d_channel_selector_config.size(); ++channel_index)
                         {
                             gr_complex *aux = out[channel_index];
-
-                            switch (d_channel_selector_config[channel_index])
-                                {
-                                case 1:
-                                    write_samples_ls4(d_data_index_a, output_index, d_number_sample_per_output, d_ls3w_QUA, d_ls4_data_a, aux);
-                                    break;
-                                case 2:
-                                    write_samples_ls4(d_data_index_b, output_index, d_number_sample_per_output, d_ls3w_QUA, d_ls4_data_b, aux);
-                                    break;
-                                case 3:
-                                    write_samples_ls4(d_data_index_c, output_index, d_number_sample_per_output, d_ls3w_QUA, d_ls4_data_c, aux);
-                                    break;
-                                }
+                            auto &channel = d_channel_map.at(d_channel_selector_config[channel_index]);
+                            write_samples_ls4(channel.data_index, output_index, d_number_sample_per_output, d_ls3w_QUA, channel.data, aux);
                         }
 
                     output_index += d_number_sample_per_output;
 
-                    if (d_ls4_BUFF_SIZE_A > 0)
+                    for (auto &channel_map_it : d_channel_map)
                         {
-                            d_data_index_a += d_number_register_per_output;
-                        }
-                    if (d_ls4_BUFF_SIZE_B > 0)
-                        {
-                            d_data_index_b += d_number_register_per_output;
-                        }
-                    if (d_ls4_BUFF_SIZE_C > 0)
-                        {
-                            d_data_index_c += d_number_register_per_output;
+                            auto &channel = channel_map_it.second;
+                            if (channel.buff_size > 0)
+                                {
+                                    channel.data_index += channel.number_sample_per_output;
+                                }
                         }
                 }
 
@@ -1230,22 +1255,22 @@ int labsat23_source::parse_ls4_data(int noutput_items, std::vector<gr_complex *>
 
 bool labsat23_source::read_ls4_data()
 {
-    const auto read_file = [this](int size, std::vector<uint64_t> &data) {
-        if (size > 0)
-            {
-                binary_input_file.read(reinterpret_cast<char *>(data.data()), size);
-                d_read_index += data.size();
-                if (binary_input_file.gcount() != size)
-                    {
-                        return false;
-                    }
-            }
-        return true;
-    };
+    for (auto &channel_map_it : d_channel_map)
+        {
+            auto &channel = channel_map_it.second;
 
-    return read_file(d_ls4_BUFF_SIZE_A, d_ls4_data_a) &&
-           read_file(d_ls4_BUFF_SIZE_B, d_ls4_data_b) &&
-           read_file(d_ls4_BUFF_SIZE_C, d_ls4_data_c);
+            if (channel.buff_size > 0)
+                {
+                    binary_input_file.read(reinterpret_cast<char *>(channel.data.data()), channel.buff_size);
+                    d_read_index += channel.data.size();
+                    if (binary_input_file.gcount() != channel.buff_size)
+                        {
+                            return false;
+                        }
+                }
+        }
+
+    return true;
 }
 
 

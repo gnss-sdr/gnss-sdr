@@ -1412,7 +1412,8 @@ void add_obs_sys_obs_type_beidou(std::fstream& out,
 }
 
 
-void add_obs_sys_obs_type_glonass_v2(std::fstream& out,
+void add_obs_sys_obs_type_v2(std::fstream& out,
+    const std::string& codeKey,
     const std::map<std::string, std::string>& observationType,
     const std::map<std::string, std::string>& observationCode)
 {
@@ -1421,18 +1422,14 @@ void add_obs_sys_obs_type_glonass_v2(std::fstream& out,
     strm << 4;
     line += rightJustify(strm.str(), 6);
     // per type of observation
-    // GLONASS L1 C/A PSEUDORANGE
     line += rightJustify(observationType.at("PSEUDORANGE_CA_v2"), 5);
-    line += observationCode.at("GLONASS_G1_CA_v2");
-    // GLONASS L1 PHASE
+    line += observationCode.at(codeKey);
     line += rightJustify(observationType.at("CARRIER_PHASE_CA_v2"), 5);
-    line += observationCode.at("GLONASS_G1_CA_v2");
-    // GLONASS DOPPLER L1
+    line += observationCode.at(codeKey);
     line += rightJustify(observationType.at("DOPPLER_v2"), 5);
-    line += observationCode.at("GLONASS_G1_CA_v2");
-    // GLONASS L1 SIGNAL STRENGTH
+    line += observationCode.at(codeKey);
     line += rightJustify(observationType.at("SIGNAL_STRENGTH_v2"), 5);
-    line += observationCode.at("GLONASS_G1_CA_v2");
+    line += observationCode.at(codeKey);
     line += std::string(60 - line.size(), ' ');
     line += leftJustify("# / TYPES OF OBSERV", 20);
     lengthCheck(line);
@@ -4173,7 +4170,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
     if (d_version == 2)
         {
             // -------- SYS / OBS TYPES
-            add_obs_sys_obs_type_glonass_v2(out, observationType, observationCode);
+            add_obs_sys_obs_type_v2(out, "GLONASS_G1_CA_v2", observationType, observationCode);
         }
 
     // -------- Signal Strength units (Only version 3)
@@ -4232,7 +4229,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     if (d_version == 2)
         {
             // -------- SYS / OBS TYPES
-            add_obs_sys_obs_type_glonass_v2(out, observationType, observationCode);
+            add_obs_sys_obs_type_v2(out, "GLONASS_G1_CA_v2", observationType, observationCode);
         }
 
     // -------- Signal Strength units (only version 3)
@@ -4365,7 +4362,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
     if (d_version == 2)
         {
             // -------- SYS / OBS TYPES
-            add_obs_sys_obs_type_glonass_v2(out, observationType, observationCode);
+            add_obs_sys_obs_type_v2(out, "GPS_L1_CA_v2", observationType, observationCode);
         }
 
     if (d_version == 3)

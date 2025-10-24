@@ -4195,7 +4195,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
             add_obs_glonass_slot_freq(out);
 
             // -------- GLONASS CODE/PHS/BIS
-            add_obs_glonass_code_phase_bias(out, observationType, observationType);
+            add_obs_glonass_code_phase_bias(out, observationType, observationCode);
         }
 
     // -------- END OF HEADER
@@ -4251,7 +4251,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
             add_obs_glonass_slot_freq(out);
 
             // -------- GLONASS CODE/PHS/BIS
-            add_obs_glonass_code_phase_bias(out, observationType, observationType);
+            add_obs_glonass_code_phase_bias(out, observationType, observationCode);
         }
 
     // -------- end of header
@@ -4294,7 +4294,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     add_obs_glonass_slot_freq(out);
 
     // -------- GLONASS CODE/PHS/BIS
-    add_obs_glonass_code_phase_bias(out, observationType, observationType);
+    add_obs_glonass_code_phase_bias(out, observationType, observationCode);
 
     // -------- end of header
     out << get_end_of_header_line() << '\n';

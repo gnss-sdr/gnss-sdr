@@ -20,11 +20,10 @@
 #include "configuration_interface.h"
 #include "galileo_e5_signal_replica.h"
 #include "gnss_sdr_fft.h"
-#include "gnss_sdr_flags.h"
-#include <gnuradio/gr_complex.h>  // for gr_complex
-#include <volk/volk.h>            // for volk_32fc_conjugate_32fc
+#include <volk/volk.h>  // for volk_32fc_conjugate_32fc
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <algorithm>  // for copy_n
+#include <array>      // for array
 #include <cmath>      // for abs, pow, floor
 #include <complex>    // for complex
 
@@ -39,65 +38,27 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams)
-    : gnss_synchro_(nullptr),
-      role_(role),
-      doppler_center_(0),
-      channel_(0),
-      in_streams_(in_streams),
-      out_streams_(out_streams),
-      acq_pilot_(configuration->property(role + ".acquire_pilot", false)),
-      acq_iq_(configuration->property(role + ".acquire_iq", false))
+    : BasePcpsAcquisitionFpga(configuration,
+          role,
+          GALILEO_E5A_CODE_CHIP_RATE_CPS,
+          GALILEO_E5A_CODE_LENGTH_CHIPS,
+          0.0,
+          DEFAULT_FPGA_BLK_EXP,
+          ACQ_BUFF_1,
+          in_streams,
+          out_streams)
 {
-    // Set acquisition parameters
-    acq_parameters_.SetFromConfiguration(configuration, role_, DEFAULT_FPGA_BLK_EXP, GALILEO_E5A_CODE_CHIP_RATE_CPS, GALILEO_E5A_CODE_LENGTH_CHIPS);
-
-    // Query the capabilities of the instantiated FPGA Acquisition IP Core. When the FPGA is in use, the acquisition resampler operates only in the L1/E1 frequency band.
-    std::vector<std::pair<uint32_t, uint32_t>> downsampling_filter_specs;
-    uint32_t max_FFT_size;
-    acquisition_fpga_ = pcps_make_acquisition_fpga(&acq_parameters_, ACQ_BUFF_1, downsampling_filter_specs, max_FFT_size);
-
-    // When the FPGA is in use, the acquisition resampler operates only in the L1/E1 frequency band.
-    // Check whether the acquisition configuration is supported by the FPGA.
-    bool acq_configuration_valid = acq_parameters_.Is_acq_config_valid(max_FFT_size);
-
-    if (!acq_configuration_valid)
-        {
-            std::cout << "The FPGA acquisition IP does not support the required sampling frequency of " << acq_parameters_.fs_in << " SPS for the L5/E5a band. Please update the sampling frequency in the configuration file." << std::endl;
-            exit(0);
-        }
-
-    DLOG(INFO) << "role " << role;
-
+    acq_pilot_ = configuration->property(role + ".acquire_pilot", false);
+    acq_iq_ = configuration->property(role + ".acquire_iq", false);
     generate_galileo_e5a_prn_codes();
-
-#if USE_GLOG_AND_GFLAGS
-    if (FLAGS_doppler_max != 0)
-        {
-            acq_parameters_.doppler_max = FLAGS_doppler_max;
-        }
-#else
-    if (absl::GetFlag(FLAGS_doppler_max) != 0)
-        {
-            acq_parameters_.doppler_max = absl::GetFlag(FLAGS_doppler_max);
-        }
-#endif
-    doppler_max_ = acq_parameters_.doppler_max;
-    doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
-
-    if (in_streams_ > 1)
-        {
-            LOG(ERROR) << "This implementation only supports one input stream";
-        }
-    if (out_streams_ > 0)
-        {
-            LOG(ERROR) << "This implementation does not provide an output stream";
-        }
+    DLOG(INFO) << "Initialized FPGA acquisition adapter for role " << role;
 }
+
 
 void GalileoE5aPcpsAcquisitionFpga::generate_galileo_e5a_prn_codes()
 {
-    uint32_t code_length = acq_parameters_.code_length;
-    uint32_t nsamples_total = acq_parameters_.fft_size;
+    const uint32_t code_length = acq_parameters_.code_length;
+    const uint32_t nsamples_total = acq_parameters_.fft_size;
 
     // compute all the GALILEO E5 PRN Codes (this is done only once in the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
@@ -117,7 +78,7 @@ void GalileoE5aPcpsAcquisitionFpga::generate_galileo_e5a_prn_codes()
     int32_t local_code;
     int32_t fft_data;
 
-    for (uint32_t PRN = 1; PRN <= GALILEO_E5A_NUMBER_OF_CODES; PRN++)
+    for (uint32_t prn = 1; prn <= GALILEO_E5A_NUMBER_OF_CODES; prn++)
         {
             std::array<char, 3> signal_;
             signal_[0] = '5';
@@ -136,7 +97,7 @@ void GalileoE5aPcpsAcquisitionFpga::generate_galileo_e5a_prn_codes()
                     signal_[1] = 'I';
                 }
 
-            galileo_e5_a_code_gen_complex_sampled(code, PRN, signal_, acq_parameters_.fs_in, 0);
+            galileo_e5_a_code_gen_complex_sampled(code, prn, signal_, acq_parameters_.fs_in, 0);
 
             if (acq_parameters_.enable_zero_padding)
                 {
@@ -145,7 +106,6 @@ void GalileoE5aPcpsAcquisitionFpga::generate_galileo_e5a_prn_codes()
                     // Fill in zero padding for the rest
                     std::fill(code.begin() + (acq_parameters_.enable_zero_padding ? 2 * code_length : code_length), code.end(), std::complex<float>(0.0, 0.0));
                 }
-
 
             std::copy_n(code.data(), nsamples_total, fft_if->get_inbuf());                    // copy to FFT buffer
             fft_if->execute();                                                                // Run the FFT of local code
@@ -171,111 +131,9 @@ void GalileoE5aPcpsAcquisitionFpga::generate_galileo_e5a_prn_codes()
                     tmp2 = static_cast<int32_t>(floor(fft_code[i].imag() * (pow(2, QUANT_BITS_LOCAL_CODE - 1) - 1) / max));
                     local_code = (tmp & SELECT_LSBITS) | ((tmp2 * SHL_CODE_BITS) & SELECT_MSBITS);  // put together the real part and the imaginary part
                     fft_data = local_code & SELECT_ALL_CODE_BITS;
-                    d_all_fft_codes_[i + (nsamples_total * (PRN - 1))] = fft_data;
+                    d_all_fft_codes_[i + (nsamples_total * (prn - 1))] = fft_data;
                 }
         }
 
     acq_parameters_.all_fft_codes = d_all_fft_codes_.data();
-}
-
-void GalileoE5aPcpsAcquisitionFpga::stop_acquisition()
-{
-    // stop the acquisition and the other FPGA modules.
-    acquisition_fpga_->stop_acquisition();
-}
-
-
-void GalileoE5aPcpsAcquisitionFpga::set_threshold(float threshold)
-{
-    DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold;
-    acquisition_fpga_->set_threshold(threshold);
-}
-
-
-void GalileoE5aPcpsAcquisitionFpga::set_doppler_max(unsigned int doppler_max)
-{
-    doppler_max_ = doppler_max;
-    acquisition_fpga_->set_doppler_max(doppler_max_);
-}
-
-
-void GalileoE5aPcpsAcquisitionFpga::set_doppler_step(unsigned int doppler_step)
-{
-    doppler_step_ = doppler_step;
-    acquisition_fpga_->set_doppler_step(doppler_step_);
-}
-
-
-void GalileoE5aPcpsAcquisitionFpga::set_doppler_center(int doppler_center)
-{
-    doppler_center_ = doppler_center;
-
-    acquisition_fpga_->set_doppler_center(doppler_center_);
-}
-
-
-void GalileoE5aPcpsAcquisitionFpga::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
-{
-    gnss_synchro_ = gnss_synchro;
-    acquisition_fpga_->set_gnss_synchro(gnss_synchro_);
-}
-
-
-signed int GalileoE5aPcpsAcquisitionFpga::mag()
-{
-    return acquisition_fpga_->mag();
-}
-
-
-void GalileoE5aPcpsAcquisitionFpga::init()
-{
-    acquisition_fpga_->init();
-}
-
-
-void GalileoE5aPcpsAcquisitionFpga::set_local_code()
-{
-    acquisition_fpga_->set_local_code();
-}
-
-
-void GalileoE5aPcpsAcquisitionFpga::reset()
-{
-    acquisition_fpga_->set_active(true);
-}
-
-
-void GalileoE5aPcpsAcquisitionFpga::set_state(int state)
-{
-    acquisition_fpga_->set_state(state);
-}
-
-
-void GalileoE5aPcpsAcquisitionFpga::connect(gr::top_block_sptr top_block)
-{
-    if (top_block)
-        { /* top_block is not null */
-        };
-    // Nothing to connect
-}
-
-
-void GalileoE5aPcpsAcquisitionFpga::disconnect(gr::top_block_sptr top_block)
-{
-    if (top_block)
-        { /* top_block is not null */
-        };
-    // Nothing to disconnect
-}
-
-
-gr::basic_block_sptr GalileoE5aPcpsAcquisitionFpga::get_left_block()
-{
-    return nullptr;
-}
-
-
-gr::basic_block_sptr GalileoE5aPcpsAcquisitionFpga::get_right_block()
-{
-    return nullptr;
 }

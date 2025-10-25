@@ -704,20 +704,7 @@ private:
         const Beidou_Dnav_Utc_Model& utc_model,
         const Beidou_Dnav_Iono& beidou_dnav_iono) const;
 
-    void update_obs_header(std::fstream& out,
-        const Gps_Utc_Model& utc_model) const;
-
-    void update_obs_header(std::fstream& out,
-        const Gps_CNAV_Utc_Model& utc_model) const;
-
-    void update_obs_header(std::fstream& out,
-        const Galileo_Utc_Model& galileo_utc_model) const;
-
-    void update_obs_header(std::fstream& out,
-        const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model) const;
-
-    void update_obs_header(std::fstream& out,
-        const Beidou_Dnav_Utc_Model& utc_model) const;
+    void update_obs_header(std::fstream& out, const std::string& leap_second_line) const;
 
     /*
      * Generation of RINEX signal strength indicators

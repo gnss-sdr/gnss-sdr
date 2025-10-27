@@ -606,6 +606,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
     d_last_timetag_samplecounter = 0;
     d_timetag_waiting = false;
     set_tag_propagation_policy(TPP_DONT);  // no tag propagation, the time tag will be adjusted and regenerated in work()
+    d_last_tow_received = std::make_shared<TOW_to_trk>();
 }
 
 
@@ -623,7 +624,7 @@ void dll_pll_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
 {
     try
         {
-            if (pmt::any_ref(msg).type().hash_code() == int_type_hash_code)
+            if (pmt::any_ref(msg).type().hash_code() == d_int_type_hash_code)
                 {
                     const int tlm_event = wht::any_cast<int>(pmt::any_ref(msg));
                     if (tlm_event == 1)
@@ -631,6 +632,14 @@ void dll_pll_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
                             DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
                             gr::thread::scoped_lock lock(d_setlock);
                             d_carrier_lock_fail_counter = 200000;  // force loss-of-lock condition
+                        }
+                }
+            if (pmt::any_ref(msg).type().hash_code() == d_tow_to_trk_type_hash_code)
+                {
+                    const auto tow_event = wht::any_cast<const std::shared_ptr<TOW_to_trk>>(pmt::any_ref(msg));
+                    if (tow_event->signal == d_signal_type && tow_event->channel == static_cast<int32_t>(d_channel) && tow_event->prn == d_acquisition_gnss_synchro->PRN)
+                        {
+                            d_last_tow_received = tow_event;
                         }
                 }
         }
@@ -2103,6 +2112,11 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     add_item_tag(0, this->nitems_written(0) + 1, tag.key, tag.value);
                 }
 
+            // Estimate TOW if received from telemetry
+            if (d_last_tow_received->prn == current_synchro_data.PRN)  // ensure we have received async messages
+                {
+                    // TODO: Estimate TOW from d_last_tow_received and store it in current_synchro_data.TOW_at_current_symbol_ms
+                }
             *out[0] = std::move(current_synchro_data);
             return 1;
         }

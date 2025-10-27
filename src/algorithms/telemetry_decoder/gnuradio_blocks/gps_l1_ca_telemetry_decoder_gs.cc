@@ -24,6 +24,7 @@
 #include "gps_iono.h"              // for Gps_Iono
 #include "gps_utc_model.h"         // for Gps_Utc_Model
 #include "tlm_utils.h"
+#include "tow_to_trk.h"
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
@@ -694,6 +695,15 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                             LOG(WARNING) << "Exception writing observables dump file " << e.what();
                         }
                 }
+
+            // SEND TOW TO THE TRACKING BLOCK
+            const std::shared_ptr<TOW_to_trk> tmp_tow_obj = std::make_shared<TOW_to_trk>(TOW_to_trk(
+                std::string("1C"),
+                d_channel,
+                d_TOW_at_current_symbol_ms,
+                current_symbol.Tracking_sample_counter,
+                d_nav.get_GPS_week(), d_nav.get_satellite_PRN()));
+            this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(tmp_tow_obj));
 
             // 3. Make the output (move the object contents to the GNU Radio reserved memory)
             *out[0] = std::move(current_symbol);

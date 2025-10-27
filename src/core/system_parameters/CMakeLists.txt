@@ -96,6 +96,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     Galileo_OSNMA.h
     osnma_data.h
     osnma_dsm_reader.h
+    tow_to_trk.h
 )
 
 list(SORT SYSTEM_PARAMETERS_HEADERS)

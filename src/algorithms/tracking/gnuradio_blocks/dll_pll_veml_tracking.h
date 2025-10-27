@@ -22,7 +22,8 @@
 #include "dll_pll_conf.h"
 #include "exponential_smoother.h"
 #include "gnss_block_interface.h"
-#include "gnss_time.h"                // for timetags produced by File_Timestamp_Signal_Source
+#include "gnss_time.h"  // for timetags produced by File_Timestamp_Signal_Source
+#include "tow_to_trk.h"
 #include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
 #include "tracking_loop_filter.h"     // for DLL filter
 #include <boost/circular_buffer.hpp>
@@ -112,7 +113,8 @@ private:
     boost::circular_buffer<std::pair<double, double>> d_carr_ph_history;
     boost::circular_buffer<gr_complex> d_Prompt_circular_buffer;
 
-    const size_t int_type_hash_code = typeid(int).hash_code();
+    const size_t d_int_type_hash_code = typeid(int).hash_code();
+    const size_t d_tow_to_trk_type_hash_code = typeid(std::shared_ptr<TOW_to_trk>).hash_code();
 
     double d_signal_carrier_freq;
     double d_code_period;
@@ -168,6 +170,7 @@ private:
     // uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
     GnssTime d_last_timetag{};
+    std::shared_ptr<TOW_to_trk> d_last_tow_received;
     uint64_t d_last_timetag_samplecounter;
     bool d_timetag_waiting;
 

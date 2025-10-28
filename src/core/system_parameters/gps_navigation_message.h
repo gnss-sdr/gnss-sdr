@@ -91,7 +91,7 @@ public:
     }
 
     /*!
-     * \brief Sets Time of Week, in seconds
+     * \brief Gets GPS Week Number
      */
     inline int32_t get_GPS_week() const
     {

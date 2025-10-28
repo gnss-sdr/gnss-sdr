@@ -2115,8 +2115,13 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
             // Estimate TOW if received from telemetry
             if (d_last_tow_received->prn == current_synchro_data.PRN)  // ensure we have received async messages
                 {
-                    // TODO: Estimate TOW from d_last_tow_received and store it in current_synchro_data.TOW_at_current_symbol_ms
+                    double time_diff_s = (static_cast<double>(current_synchro_data.Tracking_sample_counter) - static_cast<double>(d_last_tow_received->sample_stamp)) / d_trk_parameters.fs_in;
+                    uint64_t time_diff_ms = static_cast<uint64_t>((time_diff_s * 1000.0));
+                    uint64_t estimated_tow_ms = (d_last_tow_received->tow + time_diff_ms) % 604800000;  // round to milliseconds in a week
+                    // std::cout << "Channel:" << d_channel <<  "  Time_diff: " << time_diff_s << " estimated_tow_ms: "  << estimated_tow_ms << std::endl;
+                    current_synchro_data.TOW_at_current_symbol_ms = estimated_tow_ms;
                 }
+
             *out[0] = std::move(current_synchro_data);
             return 1;
         }

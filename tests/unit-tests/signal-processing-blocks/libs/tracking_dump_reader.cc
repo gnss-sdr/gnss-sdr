@@ -45,6 +45,8 @@ bool Tracking_Dump_Reader::read_binary_obs()
             d_dump_file.read(reinterpret_cast<char *>(&aux1), sizeof(float));
             d_dump_file.read(reinterpret_cast<char *>(&aux2), sizeof(double));
             d_dump_file.read(reinterpret_cast<char *>(&PRN), sizeof(unsigned int));
+            d_dump_file.read(reinterpret_cast<char *>(&TOW_ms), sizeof(uint64_t));
+            d_dump_file.read(reinterpret_cast<char *>(&WN), sizeof(int32_t));
         }
     catch (const std::ifstream::failure &e)
         {
@@ -72,7 +74,8 @@ int64_t Tracking_Dump_Reader::num_epochs()
     int number_of_double_vars = 1;
     int number_of_float_vars = 19;
     int epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
-                           sizeof(float) * number_of_float_vars + sizeof(unsigned int);
+                           sizeof(float) * number_of_float_vars + sizeof(unsigned int) +
+                           sizeof(uint64_t) + sizeof(int32_t);
     std::ifstream tmpfile(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
     if (tmpfile.is_open())
         {
@@ -80,7 +83,6 @@ int64_t Tracking_Dump_Reader::num_epochs()
             int64_t nepoch = size / epoch_size_bytes;
             return nepoch;
         }
-
 
     return 0;
 }

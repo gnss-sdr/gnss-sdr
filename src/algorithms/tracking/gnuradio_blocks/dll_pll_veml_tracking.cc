@@ -1195,6 +1195,8 @@ void dll_pll_veml_tracking::clear_tracking_vars()
     d_Prompt_circular_buffer.clear();
     d_carrier_phase_rate_step_rad = 0.0;
     d_code_phase_rate_step_chips = 0.0;
+    d_tow_from_telemetry_ms = 0ULL;
+    d_wn_from_telemetry = 0;
     d_carr_ph_history.clear();
     d_code_ph_history.clear();
 }
@@ -1480,6 +1482,12 @@ void dll_pll_veml_tracking::log_data()
                     // PRN
                     uint32_t prn_ = d_acquisition_gnss_synchro->PRN;
                     d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(uint32_t));
+                    // TOW
+                    uint64_t tow_ = d_tow_from_telemetry_ms;
+                    d_dump_file.write(reinterpret_cast<char *>(&tow_), sizeof(uint64_t));
+                    // Week Number
+                    uint32_t wn_ = d_wn_from_telemetry;
+                    d_dump_file.write(reinterpret_cast<char *>(&wn_), sizeof(uint32_t));
                 }
             catch (const std::ofstream::failure &e)
                 {
@@ -1496,7 +1504,8 @@ int32_t dll_pll_veml_tracking::save_matfile() const
     const int32_t number_of_double_vars = 1;
     const int32_t number_of_float_vars = 19;
     const int32_t epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
-                                     sizeof(float) * number_of_float_vars + sizeof(uint32_t);
+                                     sizeof(float) * number_of_float_vars + sizeof(uint32_t) +
+                                     sizeof(uint64_t) + sizeof(int32_t);
     std::ifstream dump_file;
     std::string dump_filename_ = d_dump_filename;
     // add channel number to the filename
@@ -1548,6 +1557,8 @@ int32_t dll_pll_veml_tracking::save_matfile() const
     auto aux1 = std::vector<float>(num_epoch);
     auto aux2 = std::vector<double>(num_epoch);
     auto PRN = std::vector<uint32_t>(num_epoch);
+    auto TOW = std::vector<uint64_t>(num_epoch);
+    auto WN = std::vector<int32_t>(num_epoch);
     try
         {
             if (dump_file.is_open())
@@ -1576,6 +1587,8 @@ int32_t dll_pll_veml_tracking::save_matfile() const
                             dump_file.read(reinterpret_cast<char *>(&aux1[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&aux2[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&PRN[i]), sizeof(uint32_t));
+                            dump_file.read(reinterpret_cast<char *>(&TOW[i]), sizeof(uint64_t));
+                            dump_file.read(reinterpret_cast<char *>(&WN[i]), sizeof(int32_t));
                         }
                 }
             dump_file.close();
@@ -1683,6 +1696,14 @@ int32_t dll_pll_veml_tracking::save_matfile() const
             matvar = Mat_VarCreate("PRN", MAT_C_UINT32, MAT_T_UINT32, 2, dims.data(), PRN.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("TOW_ms", MAT_C_UINT64, MAT_T_UINT64, 2, dims.data(), TOW.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("WN", MAT_C_INT32, MAT_T_INT32, 2, dims.data(), WN.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
         }
     Mat_Close(matfp);
     return 0;
@@ -1751,10 +1772,11 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
     current_synchro_data.Flag_valid_symbol_output = false;
     bool loss_of_lock = false;
+    d_tow_from_telemetry_ms = 0ULL;
+    d_wn_from_telemetry = 0U;
 
     if (d_pull_in_transitory == true)
         {
-            // if (d_trk_parameters.pull_in_time_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
             if (d_trk_parameters.pull_in_time_s < (this->nitems_read(0) - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
                 {
                     d_pull_in_transitory = false;
@@ -1762,6 +1784,21 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     d_code_lock_fail_counter = 0;
                 }
         }
+
+    // Estimate TOW if received from telemetry
+    if (d_last_tow_received->prn == d_acquisition_gnss_synchro->PRN)  // ensure we have received async messages
+        {
+            double time_diff_s = (static_cast<double>(this->nitems_read(0)) - static_cast<double>(d_last_tow_received->sample_stamp)) / d_trk_parameters.fs_in;
+            uint64_t time_diff_ms = static_cast<uint64_t>((time_diff_s * 1000.0));
+            d_tow_from_telemetry_ms = (d_last_tow_received->tow + time_diff_ms) % static_cast<uint64_t>(604800000);  // round to milliseconds in a week
+            d_wn_from_telemetry = d_last_tow_received->wn;
+            if (d_tow_from_telemetry_ms < d_last_tow_received->tow)
+                {
+                    d_wn_from_telemetry = d_last_tow_received->wn + 1;
+                }
+            // std::cout << "Channel:" << d_channel <<  "  Time_diff: " << time_diff_ms << " d_tow_from_telemetry_ms: "  << d_tow_from_telemetry_ms << std::endl;
+        }
+
     switch (d_state)
         {
         case 0:  // Standby - Consume samples at full throttle, do nothing
@@ -2043,7 +2080,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     }
             }
         }
-
+    current_synchro_data.TOW_at_current_symbol_ms = d_tow_from_telemetry_ms;
     // time tags
     std::vector<gr::tag_t> tags_vec;
     this->get_tags_in_range(tags_vec, 0, this->nitems_read(0), this->nitems_read(0) + d_current_prn_length_samples);
@@ -2084,6 +2121,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
             current_synchro_data.Flag_valid_symbol_output = !loss_of_lock;
             current_synchro_data.Flag_PLL_180_deg_phase_locked = d_Flag_PLL_180_deg_phase_locked;
 
+
             // generate new tag associated with gnss-synchro object
 
             if (d_timetag_waiting == true)
@@ -2110,16 +2148,6 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
             for (const auto &tag : tags)
                 {
                     add_item_tag(0, this->nitems_written(0) + 1, tag.key, tag.value);
-                }
-
-            // Estimate TOW if received from telemetry
-            if (d_last_tow_received->prn == current_synchro_data.PRN)  // ensure we have received async messages
-                {
-                    double time_diff_s = (static_cast<double>(current_synchro_data.Tracking_sample_counter) - static_cast<double>(d_last_tow_received->sample_stamp)) / d_trk_parameters.fs_in;
-                    uint64_t time_diff_ms = static_cast<uint64_t>((time_diff_s * 1000.0));
-                    uint64_t estimated_tow_ms = (d_last_tow_received->tow + time_diff_ms) % 604800000;  // round to milliseconds in a week
-                    // std::cout << "Channel:" << d_channel <<  "  Time_diff: " << time_diff_s << " estimated_tow_ms: "  << estimated_tow_ms << std::endl;
-                    current_synchro_data.TOW_at_current_symbol_ms = estimated_tow_ms;
                 }
 
             *out[0] = std::move(current_synchro_data);

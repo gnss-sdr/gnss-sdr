@@ -177,6 +177,9 @@ private:
     float *d_prompt_data_shift;
     float d_rem_carr_phase_rad;
 
+    uint64_t d_tow_from_telemetry_ms{};
+    int32_t d_wn_from_telemetry{};
+
     int32_t d_symbols_per_bit;
     int32_t d_state;
     int32_t d_correlation_length_ms;

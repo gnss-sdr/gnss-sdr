@@ -70,6 +70,8 @@ public:
     double aux2;
 
     unsigned int PRN;
+    uint64_t TOW_ms;
+    int32_t WN;
 
 private:
     std::string d_dump_filename;

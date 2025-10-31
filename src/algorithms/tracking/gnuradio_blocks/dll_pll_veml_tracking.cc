@@ -1789,8 +1789,8 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
     if (d_last_tow_received->prn == d_acquisition_gnss_synchro->PRN)  // ensure we have received async messages
         {
             const double time_diff_s = (static_cast<double>(this->nitems_read(0)) +
-                                     d_current_prn_length_samples - static_cast<double>(d_last_tow_received->sample_stamp)) /
-                                 d_trk_parameters.fs_in;
+                                           d_current_prn_length_samples - static_cast<double>(d_last_tow_received->sample_stamp)) /
+                                       d_trk_parameters.fs_in;
             const auto time_diff_ms = static_cast<uint64_t>((time_diff_s * 1000.0));
             d_tow_from_telemetry_ms = (d_last_tow_received->tow + time_diff_ms) % static_cast<uint64_t>(604800000);  // round to milliseconds in a week
 

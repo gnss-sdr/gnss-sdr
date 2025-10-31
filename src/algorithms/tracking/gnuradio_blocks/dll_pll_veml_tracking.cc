@@ -1788,10 +1788,10 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
     // Estimate TOW if received from telemetry
     if (d_last_tow_received->prn == d_acquisition_gnss_synchro->PRN)  // ensure we have received async messages
         {
-            double time_diff_s = (static_cast<double>(this->nitems_read(0)) +
+            const double time_diff_s = (static_cast<double>(this->nitems_read(0)) +
                                      d_current_prn_length_samples - static_cast<double>(d_last_tow_received->sample_stamp)) /
                                  d_trk_parameters.fs_in;
-            uint64_t time_diff_ms = static_cast<uint64_t>((time_diff_s * 1000.0));
+            const auto time_diff_ms = static_cast<uint64_t>((time_diff_s * 1000.0));
             d_tow_from_telemetry_ms = (d_last_tow_received->tow + time_diff_ms) % static_cast<uint64_t>(604800000);  // round to milliseconds in a week
 
             if (d_tow_from_telemetry_ms < d_last_tow_received->tow)
@@ -2085,6 +2085,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     }
             }
         }
+
     current_synchro_data.TOW_at_current_symbol_ms = d_tow_from_telemetry_ms;
     // time tags
     std::vector<gr::tag_t> tags_vec;
@@ -2126,9 +2127,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
             current_synchro_data.Flag_valid_symbol_output = !loss_of_lock;
             current_synchro_data.Flag_PLL_180_deg_phase_locked = d_Flag_PLL_180_deg_phase_locked;
 
-
             // generate new tag associated with gnss-synchro object
-
             if (d_timetag_waiting == true)
                 {
                     int64_t diff_samplecount = uint64diff(current_synchro_data.Tracking_sample_counter, d_last_timetag_samplecounter);

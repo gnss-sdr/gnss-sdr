@@ -162,10 +162,3 @@ GalileoE1DllPllVemlTrackingFpga::~GalileoE1DllPllVemlTrackingFpga()
             volk_gnsssdr_free(data_codes_ptr_);
         }
 }
-
-
-bool GalileoE1DllPllVemlTrackingFpga::find_alternative_device(std::string& device_io_name [[maybe_unused]])
-{
-    // Galileo E1 does not use an alternative FPGA accelerator
-    return false;
-}

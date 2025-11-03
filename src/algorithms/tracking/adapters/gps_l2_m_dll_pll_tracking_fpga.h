@@ -58,7 +58,6 @@ public:
     }
 
 private:
-    bool find_alternative_device(std::string& device_io_name);
     int32_t* prn_codes_ptr_;  // Pointer to local PRN codes
 };
 

@@ -133,10 +133,3 @@ GpsL2MDllPllTrackingFpga::~GpsL2MDllPllTrackingFpga()
 {
     volk_gnsssdr_free(prn_codes_ptr_);
 }
-
-
-bool GpsL2MDllPllTrackingFpga::find_alternative_device(std::string& device_io_name [[maybe_unused]])
-{
-    // No fallback FPGA accelerator for GPS L2M
-    return false;
-}

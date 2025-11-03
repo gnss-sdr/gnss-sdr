@@ -49,7 +49,6 @@ public:
     }
 
 private:
-    bool find_alternative_device(std::string& device_io_name);
     int32_t* prn_codes_ptr_;
     int32_t* data_codes_ptr_;
     bool track_pilot_;

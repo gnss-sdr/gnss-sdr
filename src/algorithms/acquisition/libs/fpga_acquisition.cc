@@ -26,6 +26,7 @@
 #include <iostream>          // for operator<<
 #include <sys/mman.h>        // libraries used by the GIPO
 #include <unistd.h>          // for write, close, read, ssize_t
+#include <utility>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -49,7 +50,7 @@
 Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
     uint32_t select_queue,
     std::vector<std::pair<uint32_t, uint32_t>> &downsampling_filter_specs,
-    uint32_t &max_FFT_size) : d_device_name(device_name),
+    uint32_t &max_FFT_size) : d_device_name(std::move(device_name)),
                               d_resampled_fs(0),
                               d_map_base(nullptr),  // driver memory map
                               d_all_fft_codes(nullptr),
@@ -73,6 +74,7 @@ Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
     Fpga_Acquisition::close_device();
     DLOG(INFO) << "Acquisition FPGA class created";
 }
+
 
 void Fpga_Acquisition::init(uint32_t nsamples, uint32_t doppler_max, uint32_t fft_size,
     int64_t resampled_fs, uint32_t downsampling_filter_num, uint32_t excludelimit, uint32_t *all_fft_codes)
@@ -147,6 +149,7 @@ void Fpga_Acquisition::fpga_acquisition_test_register()
         }
 }
 
+
 void Fpga_Acquisition::read_ipcore_info(std::vector<std::pair<uint32_t, uint32_t>> &downsampling_filter_specs, uint32_t &max_FFT_size)
 {
     d_IP_core_version = d_map_base[FPGA_IP_CORE_VERSION_REG_ADDR];
@@ -191,6 +194,7 @@ void Fpga_Acquisition::read_ipcore_info(std::vector<std::pair<uint32_t, uint32_t
 
     d_downsampling_filter_specs = downsampling_filter_specs;
 }
+
 
 void Fpga_Acquisition::run_acquisition()
 {

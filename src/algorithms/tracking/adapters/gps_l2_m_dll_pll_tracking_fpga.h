@@ -23,89 +23,45 @@
 #ifndef GNSS_SDR_GPS_L2_M_DLL_PLL_TRACKING_FPGA_H
 #define GNSS_SDR_GPS_L2_M_DLL_PLL_TRACKING_FPGA_H
 
-#include "dll_pll_veml_tracking_fpga.h"
-#include "tracking_interface.h"
-#include <gnuradio/runtime_types.h>
-#include <cstddef>
-#include <string>
+#include "base_dll_pll_tracking_fpga.h"
 
-/** \addtogroup Tracking
- * \{ */
-/** \addtogroup Tracking_adapters
- * \{ */
-
-
-class Gnss_Synchro;
-class ConfigurationInterface;
+//** \addtogroup Tracking
+//  * \{ */
+// /** \addtogroup Tracking_adapters
+//  * \{ */
 
 /*!
- * \brief This class implements a code DLL + carrier PLL tracking loop
+ * \brief Adapter for a GPS L2M DLL+PLL tracking loop implemented in FPGA
  */
-class GpsL2MDllPllTrackingFpga : public TrackingInterface
+class GpsL2MDllPllTrackingFpga : public BaseDllPllTrackingFpga
 {
 public:
-    GpsL2MDllPllTrackingFpga(
-        const ConfigurationInterface* configuration,
+    /*!
+     * \brief Constructor
+     */
+    GpsL2MDllPllTrackingFpga(const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL2MDllPllTrackingFpga();
+    /*!
+     * \brief Destructor
+     */
+    ~GpsL2MDllPllTrackingFpga() override;
 
-    inline std::string role() override
-    {
-        return role_;
-    }
-
-    //! Returns "GPS_L2_M_DLL_PLL_Tracking_FPGA"
-    inline std::string implementation() override
+    /*!
+     * \brief Returns "GPS_L2_M_DLL_PLL_Tracking_FPGA"
+     */
+    std::string implementation() override
     {
         return "GPS_L2_M_DLL_PLL_Tracking_FPGA";
     }
 
-    inline size_t item_size() override
-    {
-        return sizeof(int);
-    }
-
-    void connect(gr::top_block_sptr top_block) override;
-    void disconnect(gr::top_block_sptr top_block) override;
-    gr::basic_block_sptr get_left_block() override;
-    gr::basic_block_sptr get_right_block() override;
-
-    /*!
-     * \brief Set tracking channel unique ID
-     */
-    void set_channel(unsigned int channel) override;
-
-    /*!
-     * \brief Set acquisition/tracking common Gnss_Synchro object pointer
-     * to efficiently exchange synchronization data between acquisition and tracking blocks
-     */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
-
-    void start_tracking() override;
-
-    /*!
-     * \brief Stop running tracking
-     */
-    void stop_tracking() override;
-
 private:
-    const std::string default_device_name_GPS_L2 = "multicorrelator_resampler_S00_AXI";  // UIO device name
-    static const uint32_t NUM_PRNs = 32;
-
-    dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc_sptr_;
-    std::string role_;
-    std::string device_name_;
-    int* prn_codes_ptr_;
-    uint32_t num_prev_assigned_ch_;
-    unsigned int channel_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
+    bool find_alternative_device(std::string& device_io_name);
+    int32_t* prn_codes_ptr_;  // Pointer to local PRN codes
 };
 
-
-/** \} */
-/** \} */
+// /** \} */
+// /** \} */
 #endif  // GNSS_SDR_GPS_L2_M_DLL_PLL_TRACKING_FPGA_H

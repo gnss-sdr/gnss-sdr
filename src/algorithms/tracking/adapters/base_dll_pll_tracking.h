@@ -58,7 +58,7 @@ public:
     inline std::string role() override final { return role_; }
 
     /*!
-     * \brief Get item_size( from the Tracking block adapter
+     * \brief Get item_size from the Tracking block adapter
      */
     inline size_t item_size() override final { return item_size_; }
 

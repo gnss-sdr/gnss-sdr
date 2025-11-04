@@ -414,7 +414,8 @@ void pcps_acquisition::dump_results(int32_t effective_fft_size, float test_stati
 
             dims[0] = static_cast<size_t>(1);
             dims[1] = static_cast<size_t>(1);
-            matvar = Mat_VarCreate("doppler_max", MAT_C_INT32, MAT_T_INT32, 1, dims.data(), &d_doppler_max, 0);
+            auto doppler_max = d_doppler_max;
+            matvar = Mat_VarCreate("doppler_max", MAT_C_INT32, MAT_T_INT32, 1, dims.data(), &doppler_max, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 

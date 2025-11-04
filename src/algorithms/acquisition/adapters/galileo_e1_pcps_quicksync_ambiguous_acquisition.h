@@ -104,11 +104,6 @@ public:
     void set_threshold(float threshold) override;
 
     /*!
-     * \brief Set maximum Doppler off grid search
-     */
-    void set_doppler_max(unsigned int doppler_max) override;
-
-    /*!
      * \brief Set Doppler steps for the grid search
      */
     void set_doppler_step(unsigned int doppler_step) override;

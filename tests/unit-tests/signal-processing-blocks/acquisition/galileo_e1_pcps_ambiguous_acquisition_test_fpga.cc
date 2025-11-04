@@ -335,7 +335,6 @@ bool GalileoE1PcpsAmbiguousAcquisitionTestFpga::acquire_signal()
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     acquisition->set_channel_fsm(channel_fsm_);
     acquisition->set_channel(1);
-    acquisition->set_doppler_max(doppler_max);
     acquisition->set_doppler_step(doppler_step);
     acquisition->set_doppler_center(0);
     acquisition->set_threshold(0.001);

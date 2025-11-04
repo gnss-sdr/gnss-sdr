@@ -378,10 +378,6 @@ TEST_F(GalileoE5bPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(5000);
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
         acquisition->set_doppler_step(100);
     }) << "Failure setting doppler_step.";
 

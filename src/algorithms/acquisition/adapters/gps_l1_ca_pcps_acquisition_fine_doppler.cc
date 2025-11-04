@@ -116,13 +116,6 @@ void GpsL1CaPcpsAcquisitionFineDoppler::set_threshold(float threshold)
 }
 
 
-void GpsL1CaPcpsAcquisitionFineDoppler::set_doppler_max(unsigned int doppler_max)
-{
-    doppler_max_ = static_cast<int>(doppler_max);
-    acquisition_cc_->set_doppler_max(doppler_max_);
-}
-
-
 void GpsL1CaPcpsAcquisitionFineDoppler::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;

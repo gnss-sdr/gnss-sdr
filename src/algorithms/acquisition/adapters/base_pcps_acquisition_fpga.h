@@ -71,7 +71,6 @@ public:
     void set_channel(unsigned int channel) override;
     void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override;
     void set_threshold(float threshold) override;
-    void set_doppler_max(unsigned int doppler_max) override;
     void set_doppler_step(unsigned int doppler_step) override;
     void set_doppler_center(int doppler_center) override;
     void set_state(int state) override;

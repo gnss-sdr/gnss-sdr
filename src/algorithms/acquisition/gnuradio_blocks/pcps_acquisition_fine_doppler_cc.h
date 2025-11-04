@@ -146,15 +146,6 @@ public:
     }
 
     /*!
-     * \brief Set maximum Doppler grid search
-     * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
-     */
-    inline void set_doppler_max(unsigned int doppler_max)
-    {
-        d_config_doppler_max = doppler_max;
-    }
-
-    /*!
      * \brief Set Doppler steps for the grid search
      * \param doppler_step - Frequency bin of the search grid [Hz].
      */

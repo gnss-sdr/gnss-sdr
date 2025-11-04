@@ -854,7 +854,6 @@ int AcquisitionPerformanceTest::run_receiver()
 
     acquisition->set_gnss_synchro(&gnss_synchro);
     acquisition->set_channel(0);
-    acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
     acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 500));
     acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
     acquisition->init();

@@ -473,13 +473,13 @@ int main(int argc, char** argv)
 
             int64_t fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", 2048000);
             configuration->set_property("Acquisition.max_dwells", "10");
+            configuration->set_property("Acquisition.doppler_max", "10000");
 
             auto acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFineDoppler>(configuration.get(), "Acquisition", 1, 1);
 
             acquisition->set_channel(1);
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_threshold(configuration->property("Acquisition.threshold", 2.0));
-            acquisition->set_doppler_max(configuration->property("Acquisition.doppler_max", 10000));
             acquisition->set_doppler_step(configuration->property("Acquisition.doppler_step", 250));
 
             gr::block_sptr source;

@@ -88,15 +88,6 @@ public:
         uint32_t *total_blk_exp);
 
     /*!
-     * \brief Set maximum Doppler grid search
-     * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
-     */
-    void set_doppler_max(uint32_t doppler_max)
-    {
-        d_doppler_max = doppler_max;
-    }
-
-    /*!
      * \brief Set Doppler steps for the grid search
      * \param doppler_step - Frequency bin of the search grid [Hz].
      */

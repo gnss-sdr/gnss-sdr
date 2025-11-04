@@ -24,8 +24,6 @@
 #include "Beidou_B1I.h"
 #include "configuration_interface.h"
 #include "display.h"
-#include "dll_pll_conf.h"
-#include "gnss_sdr_flags.h"
 #include <algorithm>
 #include <array>
 
@@ -38,120 +36,57 @@
 BeidouB1iDllPllTracking::BeidouB1iDllPllTracking(
     const ConfigurationInterface* configuration,
     const std::string& role,
-    unsigned int in_streams, unsigned int out_streams)
-    : role_(role),
-      item_size_(sizeof(gr_complex)),
-      channel_(0),
-      in_streams_(in_streams),
-      out_streams_(out_streams)
+    unsigned int in_streams,
+    unsigned int out_streams)
+    : BaseDllPllTracking(configuration, role, in_streams, out_streams)
 {
-    Dll_Pll_Conf trk_params = Dll_Pll_Conf();
-    trk_params.SetFromConfiguration(configuration, role_);
+    configure_tracking_parameters(configuration);
+    create_tracking_block();
+}
 
-    const auto vector_length = static_cast<int>(std::round(trk_params.fs_in / (BEIDOU_B1I_CODE_RATE_CPS / BEIDOU_B1I_CODE_LENGTH_CHIPS)));
-    trk_params.vector_length = vector_length;
-    if (trk_params.extend_correlation_symbols < 1)
+
+void BeidouB1iDllPllTracking::configure_tracking_parameters(
+    const ConfigurationInterface* configuration)
+{
+    const auto vector_length = static_cast<int>(std::round(config_params().fs_in / (BEIDOU_B1I_CODE_RATE_CPS / BEIDOU_B1I_CODE_LENGTH_CHIPS)));
+    config_params().vector_length = vector_length;
+    config_params().system = 'C';
+    const std::array<char, 3> sig{'B', '1', '\0'};
+    std::copy_n(sig.data(), 3, config_params().signal);
+    if (config_params().extend_correlation_symbols < 1)
         {
-            trk_params.extend_correlation_symbols = 1;
+            config_params().extend_correlation_symbols = 1;
             std::cout << TEXT_RED << "WARNING: BEIDOU B1I. extend_correlation_symbols must be bigger than 1. Coherent integration has been set to 1 symbol (1 ms)" << TEXT_RESET << '\n';
         }
-    else if (trk_params.extend_correlation_symbols > 20)
+    else if (config_params().extend_correlation_symbols > 20)
         {
-            trk_params.extend_correlation_symbols = 20;
+            config_params().extend_correlation_symbols = 20;
             std::cout << TEXT_RED << "WARNING: BEIDOU B1I. extend_correlation_symbols must be lower than 21. Coherent integration has been set to 20 symbols (20 ms)" << TEXT_RESET << '\n';
         }
-    trk_params.track_pilot = configuration->property(role_ + ".track_pilot", false);
-    if (trk_params.track_pilot)
+    config_params().track_pilot = configuration->property(role() + ".track_pilot", false);
+    if (config_params().track_pilot)
         {
             std::cout << TEXT_RED << "WARNING: BEIDOU B1I does not have pilot signal. Data tracking has been enabled" << TEXT_RESET << '\n';
-            trk_params.track_pilot = false;
+            config_params().track_pilot = false;
         }
-    if ((trk_params.extend_correlation_symbols > 1) && (trk_params.pll_bw_narrow_hz > trk_params.pll_bw_hz or trk_params.dll_bw_narrow_hz > trk_params.dll_bw_hz))
+    if ((config_params().extend_correlation_symbols > 1) && (config_params().pll_bw_narrow_hz > config_params().pll_bw_hz or config_params().dll_bw_narrow_hz > config_params().dll_bw_hz))
         {
             std::cout << TEXT_RED << "WARNING: BEIDOU B1I. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << '\n';
         }
-    trk_params.system = 'C';
-    const std::array<char, 3> sig{'B', '1', '\0'};
-    std::copy_n(sig.data(), 3, trk_params.signal);
+}
 
-    // ################# Make a GNU Radio Tracking block object ################
-    DLOG(INFO) << "role " << role_;
-    if (trk_params.item_type == "gr_complex")
+
+void BeidouB1iDllPllTracking::create_tracking_block()
+{
+    if (config_params().item_type == "gr_complex")
         {
-            tracking_sptr_ = dll_pll_veml_make_tracking(trk_params);
+            tracking_sptr_ = dll_pll_veml_make_tracking(config_params());
             DLOG(INFO) << "tracking(" << tracking_sptr_->unique_id() << ")";
         }
     else
         {
-            item_size_ = 0;
+            set_item_size(0);
             tracking_sptr_ = nullptr;
-            LOG(WARNING) << trk_params.item_type << " unknown tracking item type.";
+            LOG(WARNING) << config_params().item_type << " unknown tracking item type.";
         }
-
-    if (in_streams_ > 1)
-        {
-            LOG(ERROR) << "This implementation only supports one input stream";
-        }
-    if (out_streams_ > 1)
-        {
-            LOG(ERROR) << "This implementation only supports one output stream";
-        }
-}
-
-
-void BeidouB1iDllPllTracking::start_tracking()
-{
-    tracking_sptr_->start_tracking();
-}
-
-
-void BeidouB1iDllPllTracking::stop_tracking()
-{
-    tracking_sptr_->stop_tracking();
-}
-
-
-/*
- * Set tracking channel unique ID
- */
-void BeidouB1iDllPllTracking::set_channel(unsigned int channel)
-{
-    channel_ = channel;
-    tracking_sptr_->set_channel(channel);
-}
-
-
-void BeidouB1iDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
-{
-    tracking_sptr_->set_gnss_synchro(p_gnss_synchro);
-}
-
-
-void BeidouB1iDllPllTracking::connect(gr::top_block_sptr top_block)
-{
-    if (top_block)
-        { /* top_block is not null */
-        };
-    // nothing to connect, now the tracking uses gr_sync_decimator
-}
-
-
-void BeidouB1iDllPllTracking::disconnect(gr::top_block_sptr top_block)
-{
-    if (top_block)
-        { /* top_block is not null */
-        };
-    // nothing to disconnect, now the tracking uses gr_sync_decimator
-}
-
-
-gr::basic_block_sptr BeidouB1iDllPllTracking::get_left_block()
-{
-    return tracking_sptr_;
-}
-
-
-gr::basic_block_sptr BeidouB1iDllPllTracking::get_right_block()
-{
-    return tracking_sptr_;
 }

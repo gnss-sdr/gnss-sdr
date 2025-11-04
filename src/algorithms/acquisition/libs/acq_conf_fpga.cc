@@ -22,12 +22,6 @@
 #include <iostream>
 #include <utility>
 
-#if USE_GLOG_AND_GFLAGS
-#include <glog/logging.h>
-#else
-#include <absl/log/log.h>
-#endif
-
 void Acq_Conf_Fpga::SetFromConfiguration(const ConfigurationInterface *configuration,
     const std::string &role, uint32_t blk_exp, double code_chips_per_sec, double num_chips_per_code)
 {
@@ -89,6 +83,7 @@ void Acq_Conf_Fpga::SetFromConfiguration(const ConfigurationInterface *configura
     total_block_exp = configuration->property(role + ".total_block_exp", blk_exp);
 }
 
+
 bool Acq_Conf_Fpga::ConfigureAutomaticResampler(std::vector<std::pair<uint32_t, uint32_t>> downsampling_filter_specs, uint32_t max_FFT_size, double opt_freq)
 {
     bool acq_configuration_valid = false;
@@ -135,7 +130,8 @@ bool Acq_Conf_Fpga::ConfigureAutomaticResampler(std::vector<std::pair<uint32_t, 
     return acq_configuration_valid;
 }
 
-bool Acq_Conf_Fpga::Is_acq_config_valid(uint32_t max_FFT_size)
+
+bool Acq_Conf_Fpga::Is_acq_config_valid(uint32_t max_FFT_size) const
 {
     if (fft_size <= max_FFT_size)
         {

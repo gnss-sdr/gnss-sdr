@@ -24,8 +24,6 @@
 #include "Galileo_E1.h"
 #include "configuration_interface.h"
 #include "display.h"
-#include "dll_pll_conf.h"
-#include "gnss_sdr_flags.h"
 #include <algorithm>
 #include <array>
 
@@ -40,113 +38,50 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams)
-    : role_(role),
-      item_size_(sizeof(gr_complex)),
-      channel_(0),
-      in_streams_(in_streams),
-      out_streams_(out_streams)
+    : BaseDllPllTracking(configuration, role, in_streams, out_streams)
 {
-    Dll_Pll_Conf trk_params = Dll_Pll_Conf();
-    trk_params.SetFromConfiguration(configuration, role_);
+    configure_tracking_parameters(configuration);
+    create_tracking_block();
+}
 
-    if (trk_params.extend_correlation_symbols < 1)
+
+void GalileoE1DllPllVemlTracking::configure_tracking_parameters(
+    const ConfigurationInterface* configuration [[maybe_unused]])
+{
+    const auto vector_length = static_cast<int>(std::round(config_params().fs_in / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
+    config_params().vector_length = vector_length;
+    config_params().system = 'E';
+    const std::array<char, 3> sig{'1', 'B', '\0'};
+    std::copy_n(sig.data(), 3, config_params().signal);
+
+    if (config_params().extend_correlation_symbols < 1)
         {
-            trk_params.extend_correlation_symbols = 1;
+            config_params().extend_correlation_symbols = 1;
             std::cout << TEXT_RED << "WARNING: Galileo E1. extend_correlation_symbols must be bigger than 0. Coherent integration has been set to 1 symbol (4 ms)" << TEXT_RESET << '\n';
         }
-    else if (!trk_params.track_pilot and trk_params.extend_correlation_symbols > 1)
+    else if (!config_params().track_pilot && config_params().extend_correlation_symbols > 1)
         {
-            trk_params.extend_correlation_symbols = 1;
+            config_params().extend_correlation_symbols = 1;
             std::cout << TEXT_RED << "WARNING: Galileo E1. Extended coherent integration is not allowed when tracking the data component. Coherent integration has been set to 4 ms (1 symbol)" << TEXT_RESET << '\n';
         }
-    if ((trk_params.extend_correlation_symbols > 1) and (trk_params.pll_bw_narrow_hz > trk_params.pll_bw_hz or trk_params.dll_bw_narrow_hz > trk_params.dll_bw_hz))
+    if ((config_params().extend_correlation_symbols > 1) and (config_params().pll_bw_narrow_hz > config_params().pll_bw_hz or config_params().dll_bw_narrow_hz > config_params().dll_bw_hz))
         {
             std::cout << TEXT_RED << "WARNING: Galileo E1. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << '\n';
         }
-    const auto vector_length = static_cast<int>(std::round(trk_params.fs_in / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
-    trk_params.vector_length = vector_length;
-    trk_params.system = 'E';
-    const std::array<char, 3> sig{'1', 'B', '\0'};
-    std::copy_n(sig.data(), 3, trk_params.signal);
+}
 
-    // ################# Make a GNU Radio Tracking block object ################
-    DLOG(INFO) << "role " << role_;
-    if (trk_params.item_type == "gr_complex")
+
+void GalileoE1DllPllVemlTracking::create_tracking_block()
+{
+    if (config_params().item_type == "gr_complex")
         {
-            tracking_sptr_ = dll_pll_veml_make_tracking(trk_params);
+            tracking_sptr_ = dll_pll_veml_make_tracking(config_params());
             DLOG(INFO) << "tracking(" << tracking_sptr_->unique_id() << ")";
         }
     else
         {
-            item_size_ = 0;
+            set_item_size(0);
             tracking_sptr_ = nullptr;
-            LOG(WARNING) << trk_params.item_type << " unknown tracking item type.";
+            LOG(WARNING) << config_params().item_type << " unknown tracking item type.";
         }
-
-    if (in_streams_ > 1)
-        {
-            LOG(ERROR) << "This implementation only supports one input stream";
-        }
-    if (out_streams_ > 1)
-        {
-            LOG(ERROR) << "This implementation only supports one output stream";
-        }
-}
-
-
-void GalileoE1DllPllVemlTracking::stop_tracking()
-{
-    tracking_sptr_->stop_tracking();
-}
-
-
-void GalileoE1DllPllVemlTracking::start_tracking()
-{
-    tracking_sptr_->start_tracking();
-}
-
-
-/*
- * Set tracking channel unique ID
- */
-void GalileoE1DllPllVemlTracking::set_channel(unsigned int channel)
-{
-    channel_ = channel;
-    tracking_sptr_->set_channel(channel);
-}
-
-
-void GalileoE1DllPllVemlTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
-{
-    tracking_sptr_->set_gnss_synchro(p_gnss_synchro);
-}
-
-
-void GalileoE1DllPllVemlTracking::connect(gr::top_block_sptr top_block)
-{
-    if (top_block)
-        { /* top_block is not null */
-        };
-    // nothing to connect, now the tracking uses gr_sync_decimator
-}
-
-
-void GalileoE1DllPllVemlTracking::disconnect(gr::top_block_sptr top_block)
-{
-    if (top_block)
-        { /* top_block is not null */
-        };
-    // nothing to disconnect, now the tracking uses gr_sync_decimator
-}
-
-
-gr::basic_block_sptr GalileoE1DllPllVemlTracking::get_left_block()
-{
-    return tracking_sptr_;
-}
-
-
-gr::basic_block_sptr GalileoE1DllPllVemlTracking::get_right_block()
-{
-    return tracking_sptr_;
 }

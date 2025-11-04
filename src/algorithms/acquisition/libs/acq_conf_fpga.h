@@ -41,19 +41,20 @@ public:
 
     bool ConfigureAutomaticResampler(std::vector<std::pair<uint32_t, uint32_t>> downsampling_filter_specs, uint32_t max_FFT_size, double opt_freq);
 
-    bool Is_acq_config_valid(uint32_t max_FFT_size);
+    bool Is_acq_config_valid(uint32_t max_FFT_size) const;
 
     /* PCPS Acquisition configuration */
     std::string device_name = "uio0";
-    uint32_t *all_fft_codes = NULL;  // pointer to memory that contains all the code ffts
     double code_rate_cps;
     double code_length_chips;
-    int64_t fs_in{4000000LL};
-    int64_t resampled_fs{4000000LL};
     float doppler_step{250.0};
     float doppler_step2{125.0};
+
+    int64_t fs_in{4000000LL};
+    int64_t resampled_fs{4000000LL};
+
+    uint32_t *all_fft_codes = nullptr;  // pointer to memory that contains all the code ffts
     uint32_t num_doppler_bins_step2{4U};
-    int32_t doppler_max{5000};
     uint32_t downsampling_filter_num{0U};
     uint32_t downsampling_factor{1U};
     uint32_t downsampling_filter_delay{0U};
@@ -62,6 +63,8 @@ public:
     uint32_t max_num_acqs{2U};
     uint32_t fft_size{1U};
     uint32_t code_length{16000U};
+    int32_t doppler_max{5000};
+
     bool make_2_steps{false};
     bool enable_zero_padding{false};
     bool repeat_satellite{false};

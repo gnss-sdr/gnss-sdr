@@ -33,7 +33,7 @@
 #include <absl/log/log.h>
 #endif
 
-Fpga_Switch::Fpga_Switch(void)
+Fpga_Switch::Fpga_Switch()
 {
     std::string device_io_name;  // Switch UIO device file
     // find the uio device file corresponding to the switch.

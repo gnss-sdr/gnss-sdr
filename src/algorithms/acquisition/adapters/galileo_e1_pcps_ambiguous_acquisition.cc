@@ -26,6 +26,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     unsigned int in_streams,
     unsigned int out_streams)
     : BasePcpsAcquisition(configuration, role, in_streams, out_streams, GALILEO_E1_CODE_CHIP_RATE_CPS, GALILEO_E1_OPT_ACQ_FS_SPS, GALILEO_E1_B_CODE_LENGTH_CHIPS, 4),
+      configuration_(configuration),
       acquire_pilot_(configuration->property(role + ".acquire_pilot", false))
 {
 }

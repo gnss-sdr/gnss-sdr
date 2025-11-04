@@ -52,6 +52,11 @@ public:
     /*!
      * \brief Set acquisition channel unique ID
      */
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
+
+    /*!
+     * \brief Set acquisition channel unique ID
+     */
     void set_channel(unsigned int channel) override;
 
 private:
@@ -61,6 +66,7 @@ private:
     const bool acquire_pilot_;
 
     bool cboc{false};
+    Gnss_Synchro* gnss_synchro_;
 };
 
 

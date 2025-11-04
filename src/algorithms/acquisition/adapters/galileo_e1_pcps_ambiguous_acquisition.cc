@@ -32,6 +32,13 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
 }
 
 
+void GalileoE1PcpsAmbiguousAcquisition::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+{
+    gnss_synchro_ = p_gnss_synchro;
+    BasePcpsAcquisition::set_gnss_synchro(p_gnss_synchro);
+}
+
+
 void GalileoE1PcpsAmbiguousAcquisition::set_channel(unsigned int channel)
 {
     cboc = configuration_->property("Acquisition" + std::to_string(channel) + ".cboc", false);
@@ -49,7 +56,10 @@ void GalileoE1PcpsAmbiguousAcquisition::code_gen_complex_sampled(own::span<std::
         }
     else
         {
-            const std::array<char, 3> signal_str = {{'1', 'B', '\0'}};
-            galileo_e1_code_gen_complex_sampled(dest, signal_str, cboc, prn, sampling_freq, 0, false);
+            std::array<char, 3> Signal_{};
+            Signal_[0] = gnss_synchro_->Signal[0];
+            Signal_[1] = gnss_synchro_->Signal[1];
+            Signal_[2] = '\0';
+            galileo_e1_code_gen_complex_sampled(dest, Signal_, cboc, prn, sampling_freq, 0, false);
         }
 }

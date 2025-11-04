@@ -46,10 +46,10 @@ GalileoE5bPcpsAcquisitionFpga::GalileoE5bPcpsAcquisitionFpga(
           DEFAULT_FPGA_BLK_EXP,
           ACQ_BUFF_1,
           in_streams,
-          out_streams)
+          out_streams),
+      acq_pilot_(configuration->property(role + ".acquire_pilot", false)),
+      acq_iq_(configuration->property(role + ".acquire_iq", false))
 {
-    acq_pilot_ = configuration->property(role + ".acquire_pilot", false);
-    acq_iq_ = configuration->property(role + ".acquire_iq", false);
     generate_galileo_e5b_prn_codes();
     DLOG(INFO) << "Initialized FPGA acquisition adapter for role " << role;
 }

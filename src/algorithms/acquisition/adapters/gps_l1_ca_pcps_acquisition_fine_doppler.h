@@ -156,13 +156,10 @@ private:
     size_t item_size_;
     float threshold_;
     int doppler_max_;
-    int max_dwells_;
     unsigned int vector_length_;
     unsigned int channel_;
     unsigned int doppler_step_;
     unsigned int sampled_ms_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
     bool dump_;
 };
 

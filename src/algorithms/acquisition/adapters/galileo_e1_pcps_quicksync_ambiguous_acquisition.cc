@@ -51,8 +51,6 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
       doppler_max_(configuration_->property(role + ".doppler_max", 5000)),
       doppler_step_(0),
       sampled_ms_(configuration_->property(role + ".coherent_integration_time_ms", 8)),
-      in_streams_(in_streams),
-      out_streams_(out_streams),
       bit_transition_flag_(configuration_->property(role + ".bit_transition_flag", false)),
       dump_(configuration_->property(role + ".dump", false))
 {
@@ -112,15 +110,12 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
     // vector_length_ = (sampled_ms_/folding_factor_) * code_length_;
     vector_length_ = sampled_ms_ * samples_per_ms;
 
+    unsigned int max_dwells = 2;
+
     if (!bit_transition_flag_)
         {
-            max_dwells_ = configuration_->property(role + ".max_dwells", 1);
+            max_dwells = configuration_->property(role + ".max_dwells", 1);
         }
-    else
-        {
-            max_dwells_ = 2;
-        }
-
 
     bool enable_monitor_output = configuration_->property("AcquisitionMonitor.enable_monitor", false);
 
@@ -133,7 +128,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
     if (item_type_ == "gr_complex")
         {
             acquisition_cc_ = pcps_quicksync_make_acquisition_cc(folding_factor_,
-                sampled_ms_, max_dwells_, doppler_max_, fs_in_,
+                sampled_ms_, max_dwells, doppler_max_, fs_in_,
                 samples_per_ms, code_length_, bit_transition_flag_,
                 dump_, dump_filename_, enable_monitor_output);
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_,
@@ -150,11 +145,11 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
 
-    if (in_streams_ > 1)
+    if (in_streams > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
         }
-    if (out_streams_ > 0)
+    if (out_streams > 0)
         {
             LOG(ERROR) << "This implementation does not provide an output stream";
         }

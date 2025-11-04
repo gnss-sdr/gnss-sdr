@@ -46,16 +46,10 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
       gnss_synchro_(nullptr),
       role_(role),
       item_size_(sizeof(gr_complex)),
-      threshold_(0.0),
       channel_(0),
       doppler_max_(configuration->property(role + ".doppler_max", 5000)),
       doppler_step_(0),
       sampled_ms_(configuration_->property(role + ".coherent_integration_time_ms", 1)),
-      tong_init_val_(configuration->property(role + ".tong_init_val", 1)),
-      tong_max_val_(configuration->property(role + ".tong_max_val", 2)),
-      tong_max_dwells_(configuration->property(role + ".tong_max_dwells", tong_max_val_ + 1)),
-      in_streams_(in_streams),
-      out_streams_(out_streams),
       dump_(configuration_->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
@@ -90,8 +84,11 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
 
     if (item_type_ == "gr_complex")
         {
+            const unsigned int tong_init_val = configuration->property(role + ".tong_init_val", 1);
+            const unsigned int tong_max_val = configuration->property(role + ".tong_max_val", 2);
+            const unsigned int tong_max_dwells = configuration->property(role + ".tong_max_dwells", tong_max_val + 1);
             acquisition_cc_ = pcps_tong_make_acquisition_cc(sampled_ms_, doppler_max_, fs_in_,
-                code_length_, code_length_, tong_init_val_, tong_max_val_, tong_max_dwells_,
+                code_length_, code_length_, tong_init_val, tong_max_val, tong_max_dwells,
                 dump_, dump_filename_, enable_monitor_output);
 
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
@@ -106,11 +103,11 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
 
-    if (in_streams_ > 1)
+    if (in_streams > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
         }
-    if (out_streams_ > 0)
+    if (out_streams > 0)
         {
             LOG(ERROR) << "This implementation does not provide an output stream";
         }
@@ -132,20 +129,16 @@ void GpsL1CaPcpsTongAcquisition::set_threshold(float threshold)
         {
             pfa = configuration_->property(role_ + ".pfa", static_cast<float>(0.0));
         }
-    if (pfa == 0.0)
+    if (pfa != 0.0)
         {
-            threshold_ = threshold;
-        }
-    else
-        {
-            threshold_ = calculate_threshold(pfa);
+            threshold = calculate_threshold(pfa);
         }
 
-    DLOG(INFO) << "Channel " << channel_ << "  Threshold = " << threshold_;
+    DLOG(INFO) << "Channel " << channel_ << "  Threshold = " << threshold;
 
     if (item_type_ == "gr_complex")
         {
-            acquisition_cc_->set_threshold(threshold_);
+            acquisition_cc_->set_threshold(threshold);
         }
 }
 

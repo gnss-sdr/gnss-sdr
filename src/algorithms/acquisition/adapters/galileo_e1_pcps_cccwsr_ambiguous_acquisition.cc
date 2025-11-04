@@ -42,9 +42,6 @@ GalileoE1PcpsCccwsrAmbiguousAcquisition::GalileoE1PcpsCccwsrAmbiguousAcquisition
       doppler_max_(configuration_->property(role + ".doppler_max", 5000)),
       doppler_step_(0),
       sampled_ms_(configuration_->property(role + ".coherent_integration_time_ms", 4)),
-      max_dwells_(configuration_->property(role + ".max_dwells", 1)),
-      in_streams_(in_streams),
-      out_streams_(out_streams),
       dump_(configuration_->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
@@ -90,7 +87,8 @@ GalileoE1PcpsCccwsrAmbiguousAcquisition::GalileoE1PcpsCccwsrAmbiguousAcquisition
     DLOG(INFO) << "role " << role_;
     if (item_type_ == "gr_complex")
         {
-            acquisition_cc_ = pcps_cccwsr_make_acquisition_cc(sampled_ms_, max_dwells_,
+            unsigned int max_dwells = configuration_->property(role + ".max_dwells", 1);
+            acquisition_cc_ = pcps_cccwsr_make_acquisition_cc(sampled_ms_, max_dwells,
                 doppler_max_, fs_in_, samples_per_ms, code_length_,
                 dump_, dump_filename_, enable_monitor_output);
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
@@ -106,11 +104,11 @@ GalileoE1PcpsCccwsrAmbiguousAcquisition::GalileoE1PcpsCccwsrAmbiguousAcquisition
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
 
-    if (in_streams_ > 1)
+    if (in_streams > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
         }
-    if (out_streams_ > 0)
+    if (out_streams > 0)
         {
             LOG(ERROR) << "This implementation does not provide an output stream";
         }

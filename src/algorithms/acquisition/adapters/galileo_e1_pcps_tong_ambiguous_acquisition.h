@@ -168,8 +168,6 @@ private:
     unsigned int tong_init_val_;
     unsigned int tong_max_val_;
     unsigned int tong_max_dwells_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
     bool dump_;
 };
 

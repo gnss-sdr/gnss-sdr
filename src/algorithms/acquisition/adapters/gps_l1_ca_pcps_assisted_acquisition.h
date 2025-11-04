@@ -86,8 +86,7 @@ public:
      */
     inline void set_channel(unsigned int channel) override
     {
-        channel_ = channel;
-        acquisition_cc_->set_channel(channel_);
+        acquisition_cc_->set_channel(channel);
     }
 
     /*!
@@ -95,8 +94,7 @@ public:
      */
     inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
-        channel_fsm_ = std::move(channel_fsm);
-        acquisition_cc_->set_channel_fsm(channel_fsm_);
+        acquisition_cc_->set_channel_fsm(std::move(channel_fsm));
     }
 
     /*!
@@ -141,11 +139,8 @@ public:
 
 private:
     pcps_assisted_acquisition_cc_sptr acquisition_cc_;
-    std::weak_ptr<ChannelFsm> channel_fsm_;
     std::vector<std::complex<float>> code_;
 
-    std::string item_type_;
-    std::string dump_filename_;
     std::string role_;
 
     Gnss_Synchro* gnss_synchro_;
@@ -153,16 +148,7 @@ private:
     size_t item_size_;
     int64_t fs_in_;
 
-    float threshold_;
-    int doppler_max_;
-    int doppler_min_;
-    int max_dwells_;
     unsigned int vector_length_;
-    unsigned int channel_;
-    unsigned int doppler_step_;
-    unsigned int sampled_ms_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
 
     bool dump_;
 };

@@ -19,17 +19,7 @@
 #ifndef GNSS_SDR_GLONASS_L2_CA_PCPS_ACQUISITION_H
 #define GNSS_SDR_GLONASS_L2_CA_PCPS_ACQUISITION_H
 
-#include "acq_conf.h"
 #include "base_pcps_acquisition.h"
-#include "channel_fsm.h"
-#include "complex_byte_to_float_x2.h"
-#include "gnss_synchro.h"
-#include "pcps_acquisition.h"
-#include <gnuradio/blocks/float_to_complex.h>
-#include <volk_gnsssdr/volk_gnsssdr_alloc.h>
-#include <memory>
-#include <string>
-#include <utility>
 
 /** \addtogroup Acquisition
  * \{ */

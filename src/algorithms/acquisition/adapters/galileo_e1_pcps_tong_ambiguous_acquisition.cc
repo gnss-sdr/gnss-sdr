@@ -54,8 +54,6 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
       tong_init_val_(configuration->property(role + ".tong_init_val", 1)),
       tong_max_val_(configuration->property(role + ".tong_max_val", 2)),
       tong_max_dwells_(configuration->property(role + ".tong_max_dwells", tong_max_val_ + 1)),
-      in_streams_(in_streams),
-      out_streams_(out_streams),
       dump_(configuration_->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
@@ -120,11 +118,11 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
 
-    if (in_streams_ > 1)
+    if (in_streams > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
         }
-    if (out_streams_ > 0)
+    if (out_streams > 0)
         {
             LOG(ERROR) << "This implementation does not provide an output stream";
         }

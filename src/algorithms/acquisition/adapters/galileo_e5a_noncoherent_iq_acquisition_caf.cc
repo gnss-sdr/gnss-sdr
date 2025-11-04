@@ -59,9 +59,6 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
       doppler_max_(configuration_->property(role + ".doppler_max", 5000)),
       doppler_step_(0),
       sampled_ms_(configuration_->property(role + ".coherent_integration_time_ms", 1)),
-      max_dwells_(configuration_->property(role + ".max_dwells", 1)),
-      in_streams_(in_streams),
-      out_streams_(out_streams),
       bit_transition_flag_(configuration_->property(role + ".bit_transition_flag", false)),
       dump_(configuration_->property(role + ".dump", false))
 {
@@ -116,7 +113,8 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
         }
     if (item_type_ == "gr_complex")
         {
-            acquisition_cc_ = galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(sampled_ms_, max_dwells_,
+            unsigned int max_dwells = configuration_->property(role + ".max_dwells", 1);
+            acquisition_cc_ = galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(sampled_ms_, max_dwells,
                 doppler_max_, fs_in_, code_length_, code_length_, bit_transition_flag_,
                 dump_, dump_filename_, both_signal_components, CAF_window_hz_, Zero_padding, enable_monitor_output);
         }
@@ -127,11 +125,11 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
 
-    if (in_streams_ > 1)
+    if (in_streams > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
         }
-    if (out_streams_ > 0)
+    if (out_streams > 0)
         {
             LOG(ERROR) << "This implementation does not provide an output stream";
         }

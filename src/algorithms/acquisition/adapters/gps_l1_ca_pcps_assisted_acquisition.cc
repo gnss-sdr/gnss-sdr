@@ -57,7 +57,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
 #else
     if (absl::GetFlag(FLAGS_doppler_max) != 0)
         {
-            doppler_max_ = absl::GetFlag(FLAGS_doppler_max);
+            doppler_max = absl::GetFlag(FLAGS_doppler_max);
         }
 #endif
     const int doppler_min = configuration->property(role_ + ".doppler_min", -doppler_max);

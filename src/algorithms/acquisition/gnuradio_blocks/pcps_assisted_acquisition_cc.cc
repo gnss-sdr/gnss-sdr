@@ -40,19 +40,19 @@ extern Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(
     int32_t max_dwells, uint32_t sampled_ms, int32_t doppler_max, int32_t doppler_min,
-    int64_t fs_in, int32_t samples_per_ms, bool dump,
+    int32_t doppler_step, int64_t fs_in, int32_t samples_per_ms, bool dump,
     const std::string &dump_filename, bool enable_monitor_output)
 {
     return pcps_assisted_acquisition_cc_sptr(
         new pcps_assisted_acquisition_cc(max_dwells, sampled_ms, doppler_max, doppler_min,
-            fs_in, samples_per_ms, dump, dump_filename, enable_monitor_output));
+            doppler_step, fs_in, samples_per_ms, dump, dump_filename, enable_monitor_output));
 }
 
 
 pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
     int32_t max_dwells, uint32_t sampled_ms, int32_t doppler_max, int32_t doppler_min,
-    int64_t fs_in, int32_t samples_per_ms, bool dump, const std::string &dump_filename,
-    bool enable_monitor_output)
+    int32_t doppler_step, int64_t fs_in, int32_t samples_per_ms, bool dump,
+    const std::string &dump_filename, bool enable_monitor_output)
     : gr::block("pcps_assisted_acquisition_cc",
           gr::io_signature::make(1, 1, sizeof(gr_complex)),
           gr::io_signature::make(0, 1, sizeof(Gnss_Synchro))),
@@ -77,7 +77,7 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
       d_config_doppler_max(doppler_max),
       d_config_doppler_min(doppler_min),
       d_num_doppler_points(0),
-      d_doppler_step(0),
+      d_doppler_step(doppler_step),
       d_state(0),
       d_well_count(0),
       d_active(false),
@@ -91,12 +91,6 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
 
     d_fft_if = gnss_fft_fwd_make_unique(d_fft_size);
     d_ifft = gnss_fft_rev_make_unique(d_fft_size);
-}
-
-
-void pcps_assisted_acquisition_cc::set_doppler_step(uint32_t doppler_step)
-{
-    d_doppler_step = doppler_step;
 }
 
 

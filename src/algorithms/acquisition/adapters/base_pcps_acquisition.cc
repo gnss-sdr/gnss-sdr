@@ -51,10 +51,18 @@ Acq_Conf get_acq_conf(const ConfigurationInterface* configuration, const std::st
         {
             acq_parameters.doppler_max = FLAGS_doppler_max;
         }
+    if (FLAGS_doppler_step != 0)
+        {
+            acq_parameters.doppler_step = static_cast<float>(FLAGS_doppler_step);
+        }
 #else
     if (absl::GetFlag(FLAGS_doppler_max) != 0)
         {
             acq_parameters.doppler_max = absl::GetFlag(FLAGS_doppler_max);
+        }
+    if (absl::GetFlag(FLAGS_doppler_step) != 0)
+        {
+            acq_parameters.doppler_step = static_cast<float>(absl::GetFlag(FLAGS_doppler_step));
         }
 #endif
 
@@ -106,12 +114,6 @@ void BasePcpsAcquisition::stop_acquisition()
 void BasePcpsAcquisition::set_threshold(float threshold)
 {
     acquisition_->set_threshold(threshold);
-}
-
-
-void BasePcpsAcquisition::set_doppler_step(unsigned int doppler_step)
-{
-    acquisition_->set_doppler_step(doppler_step);
 }
 
 

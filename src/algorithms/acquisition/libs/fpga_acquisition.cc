@@ -64,7 +64,6 @@ Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
                               d_downsampling_filter_delay(0),
                               d_select_queue(select_queue),
                               d_doppler_max(doppler_max),
-                              d_doppler_step(0),
                               d_PRN(0),
                               d_IP_core_version(0)
 {

@@ -89,15 +89,6 @@ public:
         uint32_t *total_blk_exp);
 
     /*!
-     * \brief Set Doppler steps for the grid search
-     * \param doppler_step - Frequency bin of the search grid [Hz].
-     */
-    void set_doppler_step(uint32_t doppler_step)
-    {
-        d_doppler_step = doppler_step;
-    }
-
-    /*!
      * \brief Reset the FPGA PL.
      */
     void reset_acquisition();
@@ -212,7 +203,6 @@ private:
     uint32_t d_downsampling_filter_delay;  // Impulse response delay of the downsampling filter
     uint32_t d_select_queue;               // queue selection
     const uint32_t d_doppler_max;          // max doppler
-    uint32_t d_doppler_step;               // doppler step
     uint32_t d_PRN;                        // PRN
     uint32_t d_IP_core_version;            // FPGA acquisition IP core version
 };

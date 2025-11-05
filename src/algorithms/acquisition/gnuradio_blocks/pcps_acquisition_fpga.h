@@ -133,16 +133,6 @@ public:
     }
 
     /*!
-     * \brief Set Doppler steps for the grid search
-     * \param doppler_step - Frequency bin of the search grid [Hz].
-     */
-    inline void set_doppler_step(uint32_t doppler_step)
-    {
-        d_doppler_step = doppler_step;
-        d_acquisition_fpga->set_doppler_step(doppler_step);
-    }
-
-    /*!
      * \brief Set Doppler center frequency for the grid search. It will refresh the Doppler grid.
      * \param doppler_center - Frequency center of the search grid [Hz].
      */
@@ -188,9 +178,9 @@ private:
 
     uint32_t d_doppler_index;
     uint32_t d_channel;
-    uint32_t d_doppler_step;
+    const uint32_t d_doppler_step;
     const uint32_t d_doppler_max;
-    uint32_t d_num_doppler_bins;
+    const uint32_t d_num_doppler_bins;
     uint32_t d_total_block_exp;
     uint32_t d_num_doppler_bins_step2;
     uint32_t d_max_num_acqs;

@@ -480,7 +480,6 @@ int main(int argc, char** argv)
             acquisition->set_channel(1);
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_threshold(configuration->property("Acquisition.threshold", 2.0));
-            acquisition->set_doppler_step(configuration->property("Acquisition.doppler_step", 250));
 
             gr::block_sptr source;
             source = gr::blocks::file_source::make(sizeof(gr_complex), "tmp_capture.dat");

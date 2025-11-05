@@ -77,7 +77,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_num_noncoherent_integrations_counter(0U),
       d_consumed_samples(conf_.sampled_ms * conf_.samples_per_ms * (conf_.bit_transition_flag ? 2.0 : 1.0)),
       d_fft_size(conf_.sampled_ms == conf_.ms_per_code ? d_consumed_samples : d_consumed_samples * 2),
-      d_num_doppler_bins(0U),
+      d_num_doppler_bins(static_cast<uint32_t>(std::ceil(static_cast<double>(2 * d_doppler_max) / static_cast<double>(d_doppler_step)))),
       d_num_doppler_bins_step2(conf_.num_doppler_bins_step2),
       d_dump_channel(conf_.dump_channel),
       d_buffer_count(0U),
@@ -251,8 +251,6 @@ void pcps_acquisition::init()
     d_mag = 0.0;
     d_input_power = 0.0;
 
-    d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(2 * d_doppler_max) / static_cast<double>(d_doppler_step)));
-
     // Create the carrier Doppler wipeoff signals
     if (d_grid_doppler_wipeoffs.empty())
         {
@@ -419,7 +417,8 @@ void pcps_acquisition::dump_results(int32_t effective_fft_size, float test_stati
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("doppler_step", MAT_C_INT32, MAT_T_INT32, 1, dims.data(), &d_doppler_step, 0);
+            auto doppler_step = d_doppler_step;
+            matvar = Mat_VarCreate("doppler_step", MAT_C_INT32, MAT_T_INT32, 1, dims.data(), &doppler_step, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
@@ -704,7 +703,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
 
     DLOG(INFO) << "Channel: " << d_channel
                << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-               << " ,sample stamp: " << samp_count << ", threshold: "
+               << " , sample stamp: " << samp_count << ", threshold: "
                << d_threshold << ", doppler_max: " << d_doppler_max
                << ", doppler_step: " << d_doppler_step
                << ", use_CFAR_algorithm_flag: " << (d_use_CFAR_algorithm_flag ? "true" : "false");

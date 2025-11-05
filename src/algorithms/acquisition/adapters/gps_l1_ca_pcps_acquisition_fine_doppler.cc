@@ -42,7 +42,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
       threshold_(0.0),
       doppler_max_(configuration->property(role + ".doppler_max", 5000)),
       channel_(0),
-      doppler_step_(0),
+      doppler_step_(configuration->property(role + ".doppler_step", 500)),
       sampled_ms_(configuration->property(role + ".coherent_integration_time_ms", 1)),
       dump_(configuration->property(role + ".dump", false))
 {
@@ -63,13 +63,22 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
         {
             doppler_max_ = FLAGS_doppler_max;
         }
+    if (FLAGS_doppler_step != 0)
+        {
+            doppler_step_ = static_cast<uint32_t>(FLAGS_doppler_step);
+        }
 #else
     if (absl::GetFlag(FLAGS_doppler_max) != 0)
         {
             doppler_max_ = absl::GetFlag(FLAGS_doppler_max);
         }
+    if (absl::GetFlag(FLAGS_doppler_step) != 0)
+        {
+            doppler_step_ = static_cast<uint32_t>(absl::GetFlag(FLAGS_doppler_step));
+        }
 #endif
     acq_parameters.doppler_max = doppler_max_;
+    acq_parameters.doppler_step = doppler_step_;
     acq_parameters.sampled_ms = sampled_ms_;
     acq_parameters.max_dwells = configuration->property(role + ".max_dwells", 1);
     acq_parameters.blocking_on_standby = configuration->property(role + ".blocking_on_standby", false);
@@ -113,13 +122,6 @@ void GpsL1CaPcpsAcquisitionFineDoppler::set_threshold(float threshold)
 {
     threshold_ = threshold;
     acquisition_cc_->set_threshold(threshold_);
-}
-
-
-void GpsL1CaPcpsAcquisitionFineDoppler::set_doppler_step(unsigned int doppler_step)
-{
-    doppler_step_ = doppler_step;
-    acquisition_cc_->set_doppler_step(doppler_step_);
 }
 
 

@@ -35,6 +35,9 @@ void Acq_Conf_Fpga::SetFromConfiguration(const ConfigurationInterface *configura
     // max doppler
     doppler_max = configuration->property(role + ".doppler_max", doppler_max);
 
+    // max doppler
+    doppler_step = configuration->property(role + ".doppler_step", 500);
+
     // code chips per second
     code_rate_cps = code_chips_per_sec;
 

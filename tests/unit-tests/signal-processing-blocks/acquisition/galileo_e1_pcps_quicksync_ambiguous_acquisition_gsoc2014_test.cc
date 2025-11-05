@@ -479,7 +479,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::config_3()
     config->set_property("Acquisition_1B.bit_transition_flag", "false");
     config->set_property("Acquisition_1B.threshold", "0.2");
     config->set_property("Acquisition_1B.doppler_max", "10000");
-    config->set_property("Acquisition_1B.doppler_step", "125");
+    config->set_property("Acquisition_1B.doppler_step", "50");
     config->set_property("Acquisition_1B.folding_factor", "4");
     config->set_property("Acquisition_1B.dump", "false");
 }
@@ -639,10 +639,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_step(config->property("Acquisition_1B.doppler_step", 125));
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->set_threshold(1);
     }) << "Failure setting threshold.";
 
@@ -725,10 +721,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_step(50);
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->set_threshold(5);
     }) << "Failure setting threshold.";
 
@@ -806,10 +798,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
     ASSERT_NO_THROW({
         acquisition->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(config->property("Acquisition_1B.doppler_step", 500));
-    }) << "Failure setting doppler_step.";
 
     ASSERT_NO_THROW({
         acquisition->set_threshold(config->property("Acquisition_1B.threshold", 0.0));

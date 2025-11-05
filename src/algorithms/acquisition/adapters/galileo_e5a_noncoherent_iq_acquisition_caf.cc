@@ -57,7 +57,7 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
       CAF_window_hz_(configuration_->property(role + ".CAF_window_hz", 0)),
       channel_(0),
       doppler_max_(configuration_->property(role + ".doppler_max", 5000)),
-      doppler_step_(0),
+      doppler_step_(configuration_->property(role + ".doppler_step", 500)),
       sampled_ms_(configuration_->property(role + ".coherent_integration_time_ms", 1)),
       bit_transition_flag_(configuration_->property(role + ".bit_transition_flag", false)),
       dump_(configuration_->property(role + ".dump", false))
@@ -74,10 +74,18 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
         {
             doppler_max_ = FLAGS_doppler_max;
         }
+    if (FLAGS_doppler_step != 0)
+        {
+            doppler_step_ = static_cast<uint32_t>(FLAGS_doppler_step);
+        }
 #else
     if (absl::GetFlag(FLAGS_doppler_max) != 0)
         {
             doppler_max_ = absl::GetFlag(FLAGS_doppler_max);
+        }
+    if (absl::GetFlag(FLAGS_doppler_step) != 0)
+        {
+            doppler_step_ = static_cast<uint32_t>(absl::GetFlag(FLAGS_doppler_step));
         }
 #endif
 
@@ -115,7 +123,7 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
         {
             unsigned int max_dwells = configuration_->property(role + ".max_dwells", 1);
             acquisition_cc_ = galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(sampled_ms_, max_dwells,
-                doppler_max_, fs_in_, code_length_, code_length_, bit_transition_flag_,
+                doppler_max_, doppler_step_, fs_in_, code_length_, code_length_, bit_transition_flag_,
                 dump_, dump_filename_, both_signal_components, CAF_window_hz_, Zero_padding, enable_monitor_output);
         }
     else
@@ -166,16 +174,6 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::set_threshold(float threshold)
     if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_threshold(threshold_);
-        }
-}
-
-
-void GalileoE5aNoncoherentIQAcquisitionCaf::set_doppler_step(unsigned int doppler_step)
-{
-    doppler_step_ = doppler_step;
-    if (item_type_ == "gr_complex")
-        {
-            acquisition_cc_->set_doppler_step(doppler_step_);
         }
 }
 

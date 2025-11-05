@@ -49,7 +49,7 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
       threshold_(0.0),
       channel_(0),
       doppler_max_(configuration_->property(role + ".doppler_max", 5000)),
-      doppler_step_(0),
+      doppler_step_(configuration_->property(role + ".doppler_step", 500)),
       sampled_ms_(configuration_->property(role + ".coherent_integration_time_ms", 4)),
       dump_(configuration_->property(role + ".dump", false))
 {
@@ -65,10 +65,18 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
         {
             doppler_max_ = FLAGS_doppler_max;
         }
+    if (FLAGS_doppler_step != 0)
+        {
+            doppler_step_ = static_cast<uint32_t>(FLAGS_doppler_step);
+        }
 #else
     if (absl::GetFlag(FLAGS_doppler_max) != 0)
         {
             doppler_max_ = absl::GetFlag(FLAGS_doppler_max);
+        }
+    if (absl::GetFlag(FLAGS_doppler_step) != 0)
+        {
+            doppler_step_ = static_cast<uint32_t>(absl::GetFlag(FLAGS_doppler_step));
         }
 #endif
 
@@ -97,7 +105,7 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
         {
             unsigned int max_dwells = configuration_->property(role + ".max_dwells", 1);
             acquisition_cc_ = galileo_pcps_8ms_make_acquisition_cc(sampled_ms_, max_dwells,
-                doppler_max_, fs_in_, samples_per_ms, code_length_,
+                doppler_max_, doppler_step_, fs_in_, samples_per_ms, code_length_,
                 dump_, dump_filename_, enable_monitor_output);
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
             DLOG(INFO) << "stream_to_vector("
@@ -153,16 +161,6 @@ void GalileoE1Pcps8msAmbiguousAcquisition::set_threshold(float threshold)
     if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_threshold(threshold_);
-        }
-}
-
-
-void GalileoE1Pcps8msAmbiguousAcquisition::set_doppler_step(unsigned int doppler_step)
-{
-    doppler_step_ = doppler_step;
-    if (item_type_ == "gr_complex")
-        {
-            acquisition_cc_->set_doppler_step(doppler_step_);
         }
 }
 

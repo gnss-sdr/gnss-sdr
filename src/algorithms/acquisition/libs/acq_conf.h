@@ -46,7 +46,7 @@ public:
 
     size_t it_size{sizeof(gr_complex)};
 
-    float doppler_step{250.0};
+    float doppler_step{500.0};
     float samples_per_ms{0.0};
     float doppler_step2{125.0};
     float pfa{0.0};

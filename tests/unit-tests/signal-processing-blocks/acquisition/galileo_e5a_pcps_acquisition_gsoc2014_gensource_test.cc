@@ -586,10 +586,6 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_step(config->property("Acquisition_5X.doppler_step", 100));
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->set_threshold(config->property("Acquisition_5X.threshold", 0.0001));
     }) << "Failure setting threshold.";
 

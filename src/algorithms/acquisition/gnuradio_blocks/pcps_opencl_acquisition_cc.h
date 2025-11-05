@@ -264,7 +264,7 @@ private:
     int d_opencl;
 
     uint32_t d_doppler_resolution;
-    uint32_t d_doppler_max;
+    const uint32_t d_doppler_max;
     uint32_t d_doppler_step;
     uint32_t d_sampled_ms;
     uint32_t d_max_dwells;

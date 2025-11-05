@@ -189,7 +189,7 @@ private:
     uint32_t d_doppler_index;
     uint32_t d_channel;
     uint32_t d_doppler_step;
-    uint32_t d_doppler_max;
+    const uint32_t d_doppler_max;
     uint32_t d_num_doppler_bins;
     uint32_t d_total_block_exp;
     uint32_t d_num_doppler_bins_step2;

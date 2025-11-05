@@ -208,7 +208,7 @@ private:
     int32_t d_samples_per_code;
     uint32_t d_channel;
     uint32_t d_doppler_resolution;
-    uint32_t d_doppler_max;
+    const uint32_t d_doppler_max;
     uint32_t d_doppler_step;
     uint32_t d_sampled_ms;
     uint32_t d_max_dwells;

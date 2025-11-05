@@ -49,6 +49,7 @@
 
 Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
     uint32_t select_queue,
+    uint32_t doppler_max,
     std::vector<std::pair<uint32_t, uint32_t>> &downsampling_filter_specs,
     uint32_t &max_FFT_size) : d_device_name(std::move(device_name)),
                               d_resampled_fs(0),
@@ -62,7 +63,7 @@ Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
                               d_downsampling_factor(1),
                               d_downsampling_filter_delay(0),
                               d_select_queue(select_queue),
-                              d_doppler_max(0),
+                              d_doppler_max(doppler_max),
                               d_doppler_step(0),
                               d_PRN(0),
                               d_IP_core_version(0)
@@ -76,7 +77,7 @@ Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
 }
 
 
-void Fpga_Acquisition::init(uint32_t nsamples, uint32_t doppler_max, uint32_t fft_size,
+void Fpga_Acquisition::init(uint32_t nsamples uint32_t fft_size,
     int64_t resampled_fs, uint32_t downsampling_filter_num, uint32_t excludelimit, uint32_t *all_fft_codes)
 {
     d_resampled_fs = resampled_fs;
@@ -90,7 +91,6 @@ void Fpga_Acquisition::init(uint32_t nsamples, uint32_t doppler_max, uint32_t ff
             d_downsampling_factor = d_downsampling_filter_specs[d_filter_num - 1].first;
             d_downsampling_filter_delay = d_downsampling_filter_specs[d_filter_num - 1].second;
         }
-    d_doppler_max = doppler_max;
 }
 
 

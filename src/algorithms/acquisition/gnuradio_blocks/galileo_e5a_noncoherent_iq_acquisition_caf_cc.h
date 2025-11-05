@@ -234,7 +234,7 @@ private:
     int d_CAF_window_hz;
     int d_buffer_count;
     int d_doppler_resolution;
-    int d_doppler_max;
+    const int d_doppler_max;
     int d_doppler_step;
     int d_fft_size;
     int d_num_doppler_bins;

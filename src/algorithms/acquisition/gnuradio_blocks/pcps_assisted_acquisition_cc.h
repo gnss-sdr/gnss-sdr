@@ -224,7 +224,7 @@ private:
     int32_t d_gnuradio_forecast_samples;
     int32_t d_doppler_max;
     int32_t d_doppler_min;
-    int32_t d_config_doppler_max;
+    const int32_t d_config_doppler_max;
     int32_t d_config_doppler_min;
     int32_t d_num_doppler_points;
     int32_t d_doppler_step;

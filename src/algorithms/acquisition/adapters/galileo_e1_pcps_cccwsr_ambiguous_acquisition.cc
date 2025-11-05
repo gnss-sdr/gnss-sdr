@@ -42,7 +42,8 @@ GalileoE1PcpsCccwsrAmbiguousAcquisition::GalileoE1PcpsCccwsrAmbiguousAcquisition
       doppler_max_(configuration_->property(role + ".doppler_max", 5000)),
       doppler_step_(0),
       sampled_ms_(configuration_->property(role + ".coherent_integration_time_ms", 4)),
-      dump_(configuration_->property(role + ".dump", false))
+      dump_(configuration_->property(role + ".dump", false)),
+      cboc_(configuration_->property(role + ".cboc", false))
 {
     const std::string default_item_type("gr_complex");
     const std::string default_dump_filename("./acquisition.dat");
@@ -187,18 +188,11 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisition::set_local_code()
 {
     if (item_type_ == "gr_complex")
         {
-            bool cboc = configuration_->property(
-                "Acquisition" + std::to_string(channel_) + ".cboc", false);
-
             std::array<char, 3> signal = {{'1', 'B', '\0'}};
-
-            galileo_e1_code_gen_complex_sampled(code_data_, signal,
-                cboc, gnss_synchro_->PRN, fs_in_, 0, false);
+            galileo_e1_code_gen_complex_sampled(code_data_, signal, cboc_, gnss_synchro_->PRN, fs_in_, 0, false);
 
             std::array<char, 3> signal_C = {{'1', 'C', '\0'}};
-
-            galileo_e1_code_gen_complex_sampled(code_pilot_, signal_C,
-                cboc, gnss_synchro_->PRN, fs_in_, 0, false);
+            galileo_e1_code_gen_complex_sampled(code_pilot_, signal_C, cboc_, gnss_synchro_->PRN, fs_in_, 0, false);
 
             acquisition_cc_->set_local_code(code_data_.data(), code_pilot_.data());
         }

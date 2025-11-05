@@ -165,6 +165,7 @@ private:
     unsigned int doppler_step_;
     unsigned int sampled_ms_;
     bool dump_;
+    const bool cboc_;
 };
 
 

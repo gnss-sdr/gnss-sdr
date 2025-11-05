@@ -52,7 +52,8 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
       doppler_step_(0),
       sampled_ms_(configuration_->property(role + ".coherent_integration_time_ms", 8)),
       bit_transition_flag_(configuration_->property(role + ".bit_transition_flag", false)),
-      dump_(configuration_->property(role + ".dump", false))
+      dump_(configuration_->property(role + ".dump", false)),
+      cboc_(configuration_->property(role + ".cboc", false))
 {
     const std::string default_item_type("gr_complex");
     const std::string default_dump_filename("./acquisition.dat");
@@ -242,17 +243,13 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisition::set_local_code()
 {
     if (item_type_ == "gr_complex")
         {
-            bool cboc = configuration_->property(
-                "Acquisition" + std::to_string(channel_) + ".cboc", false);
-
             std::vector<std::complex<float>> code(code_length_);
             std::array<char, 3> Signal_{};
             Signal_[0] = gnss_synchro_->Signal[0];
             Signal_[1] = gnss_synchro_->Signal[1];
             Signal_[2] = '\0';
 
-            galileo_e1_code_gen_complex_sampled(code, Signal_,
-                cboc, gnss_synchro_->PRN, fs_in_, 0, false);
+            galileo_e1_code_gen_complex_sampled(code, Signal_, cboc_, gnss_synchro_->PRN, fs_in_, 0, false);
 
             own::span<gr_complex> code_span(code_.data(), vector_length_);
             for (unsigned int i = 0; i < (sampled_ms_ / (folding_factor_ * 4)); i++)

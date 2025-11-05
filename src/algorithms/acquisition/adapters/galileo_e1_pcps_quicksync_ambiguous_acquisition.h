@@ -169,6 +169,7 @@ private:
     unsigned int folding_factor_;
     bool bit_transition_flag_;
     bool dump_;
+    const bool cboc_;
 };
 
 

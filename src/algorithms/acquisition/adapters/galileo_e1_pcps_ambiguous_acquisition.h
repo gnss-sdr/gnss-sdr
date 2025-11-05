@@ -54,18 +54,12 @@ public:
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
-    /*!
-     * \brief Set acquisition channel unique ID
-     */
-    void set_channel(unsigned int channel) override;
-
 private:
     void code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int32_t sampling_freq) override;
 
     const ConfigurationInterface* configuration_;
     const bool acquire_pilot_;
-
-    bool cboc{false};
+    const bool cboc_;
     Gnss_Synchro* gnss_synchro_;
 };
 

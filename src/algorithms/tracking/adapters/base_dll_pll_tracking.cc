@@ -29,19 +29,15 @@ BaseDllPllTracking::BaseDllPllTracking(
     unsigned int in_streams,
     unsigned int out_streams)
     : role_(std::move(role)),
-      item_size_(sizeof(gr_complex)),
-      channel_(0),
-      in_streams_(in_streams),
-      out_streams_(out_streams)
+      item_size_(sizeof(gr_complex))
 {
-    trk_params_ = Dll_Pll_Conf();
     trk_params_.SetFromConfiguration(configuration, role_);
 
-    if (in_streams_ > 1)
+    if (in_streams > 1)
         {
             LOG(ERROR) << "Only one input stream is supported.";
         }
-    if (out_streams_ > 1)
+    if (out_streams > 1)
         {
             LOG(ERROR) << "Only one output stream is supported.";
         }
@@ -80,7 +76,6 @@ gr::basic_block_sptr BaseDllPllTracking::get_right_block()
 
 void BaseDllPllTracking::set_channel(unsigned int channel)
 {
-    channel_ = channel;
     tracking_sptr_->set_channel(channel);
 }
 

@@ -24,7 +24,14 @@ GalileoE5bPcpsAcquisition::GalileoE5bPcpsAcquisition(const ConfigurationInterfac
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams)
-    : BasePcpsAcquisition(configuration, role, in_streams, out_streams, GALILEO_E5B_CODE_CHIP_RATE_CPS, GALILEO_E5B_OPT_ACQ_FS_SPS, GALILEO_E5B_CODE_LENGTH_CHIPS, 1),
+    : BasePcpsAcquisition(configuration,
+          role,
+          in_streams,
+          out_streams,
+          GALILEO_E5B_CODE_CHIP_RATE_CPS,
+          GALILEO_E5B_OPT_ACQ_FS_SPS,
+          GALILEO_E5B_CODE_LENGTH_CHIPS,
+          GALILEO_E5B_CODE_PERIOD_MS),
       acq_pilot_(configuration->property(role + ".acquire_pilot", false)),
       acq_iq_(configuration->property(role + ".acquire_iq", false))
 {

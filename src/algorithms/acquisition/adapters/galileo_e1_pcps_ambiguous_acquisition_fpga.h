@@ -26,8 +26,6 @@
  * \{ */
 
 
-class ConfigurationInterface;
-
 /*!
  * \brief This class adapts a PCPS acquisition block off-loaded on an FPGA
  * to an AcquisitionInterface for Galileo E1 Signals
@@ -55,7 +53,7 @@ public:
 private:
     static const uint32_t DEFAULT_FPGA_BLK_EXP = 13;  // default block exponent
     void generate_galileo_e1_prn_codes();
-    bool acquire_pilot_;
+    const bool acquire_pilot_;
 };
 
 

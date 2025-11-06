@@ -34,6 +34,7 @@ constexpr double BEIDOU_B1I_CODE_RATE_CPS = 2.046e6;     //!< Beidou B1I code ra
 constexpr double BEIDOU_B1I_CODE_LENGTH_CHIPS = 2046.0;  //!< Beidou B1I code length [chips]
 constexpr double BEIDOU_B1I_CODE_PERIOD_S = 0.001;       //!< Beidou B1I code period [seconds]
 constexpr double BEIDOU_B1I_PREAMBLE_DURATION_S = 0.220;
+constexpr double BEIDOU_B1I_OPT_ACQ_FS_SPS = 10e6;
 constexpr uint32_t BEIDOU_B1I_CODE_PERIOD_MS = 1;  //!< Beidou B1I code period [ms]
 constexpr uint32_t BEIDOU_B1I_PREAMBLE_LENGTH_BITS = 11;
 constexpr uint32_t BEIDOU_B1I_PREAMBLE_LENGTH_SYMBOLS = 220;

@@ -41,12 +41,9 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
       item_size_(sizeof(gr_complex)),
       threshold_(0.0),
       doppler_max_(configuration->property(role + ".doppler_max", 5000)),
-      max_dwells_(configuration->property(role + ".max_dwells", 1)),
       channel_(0),
       doppler_step_(0),
       sampled_ms_(configuration->property(role + ".coherent_integration_time_ms", 1)),
-      in_streams_(in_streams),
-      out_streams_(out_streams),
       dump_(configuration->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
@@ -74,7 +71,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
 #endif
     acq_parameters.doppler_max = doppler_max_;
     acq_parameters.sampled_ms = sampled_ms_;
-    acq_parameters.max_dwells = max_dwells_;
+    acq_parameters.max_dwells = configuration->property(role + ".max_dwells", 1);
     acq_parameters.blocking_on_standby = configuration->property(role + ".blocking_on_standby", false);
 
     // -- Find number of samples per spreading code -------------------------
@@ -94,11 +91,11 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
 
-    if (in_streams_ > 1)
+    if (in_streams > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
         }
-    if (out_streams_ > 0)
+    if (out_streams > 0)
         {
             LOG(ERROR) << "This implementation does not provide an output stream";
         }

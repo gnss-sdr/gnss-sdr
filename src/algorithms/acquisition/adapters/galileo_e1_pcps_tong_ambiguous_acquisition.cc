@@ -54,9 +54,8 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
       tong_init_val_(configuration->property(role + ".tong_init_val", 1)),
       tong_max_val_(configuration->property(role + ".tong_max_val", 2)),
       tong_max_dwells_(configuration->property(role + ".tong_max_dwells", tong_max_val_ + 1)),
-      in_streams_(in_streams),
-      out_streams_(out_streams),
-      dump_(configuration_->property(role + ".dump", false))
+      dump_(configuration_->property(role + ".dump", false)),
+      cboc_(configuration_->property(role + ".cboc", false))
 {
     const std::string default_item_type("gr_complex");
     const std::string default_dump_filename("./acquisition.dat");
@@ -120,11 +119,11 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
 
-    if (in_streams_ > 1)
+    if (in_streams > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
         }
-    if (out_streams_ > 0)
+    if (out_streams > 0)
         {
             LOG(ERROR) << "This implementation does not provide an output stream";
         }
@@ -217,16 +216,12 @@ void GalileoE1PcpsTongAmbiguousAcquisition::set_local_code()
 {
     if (item_type_ == "gr_complex")
         {
-            bool cboc = configuration_->property(
-                "Acquisition" + std::to_string(channel_) + ".cboc", false);
-
             std::vector<std::complex<float>> code(code_length_);
             std::array<char, 3> Signal_{};
             Signal_[0] = gnss_synchro_->Signal[0];
             Signal_[1] = gnss_synchro_->Signal[1];
             Signal_[2] = '\0';
-            galileo_e1_code_gen_complex_sampled(code, Signal_,
-                cboc, gnss_synchro_->PRN, fs_in_, 0, false);
+            galileo_e1_code_gen_complex_sampled(code, Signal_, cboc_, gnss_synchro_->PRN, fs_in_, 0, false);
 
             own::span<gr_complex> code_span(code_.data(), vector_length_);
             for (unsigned int i = 0; i < sampled_ms_ / 4; i++)

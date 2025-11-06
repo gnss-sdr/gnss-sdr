@@ -163,10 +163,8 @@ private:
     unsigned int doppler_max_;
     unsigned int doppler_step_;
     unsigned int sampled_ms_;
-    unsigned int max_dwells_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
     bool dump_;
+    const bool cboc_;
 };
 
 

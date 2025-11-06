@@ -117,11 +117,8 @@ protected:
 private:
     // Managed by the base class
     Dll_Pll_Conf trk_params_;
-    std::string role_;
+    const std::string role_;
     size_t item_size_;
-    unsigned int channel_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
 };
 
 /** \} */

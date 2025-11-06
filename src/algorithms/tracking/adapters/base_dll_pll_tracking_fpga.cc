@@ -32,17 +32,14 @@ BaseDllPllTrackingFpga::BaseDllPllTrackingFpga(
     unsigned int out_streams)
     : role_(role),
       channel_(0),
-      num_prev_assigned_ch_(0),
-      in_streams_(in_streams),
-      out_streams_(out_streams)
+      num_prev_assigned_ch_(0)
 {
-    trk_params_ = Dll_Pll_Conf_Fpga();
     trk_params_.SetFromConfiguration(configuration, role_);
-    if (in_streams_ > 1)
+    if (in_streams > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
         }
-    if (out_streams_ > 1)
+    if (out_streams > 1)
         {
             LOG(ERROR) << "This implementation only supports one output stream";
         }
@@ -95,7 +92,7 @@ void BaseDllPllTrackingFpga::set_channel(unsigned int channel)
     channel_ = channel;
     std::string device_io_name;
 
-    if (find_uio_dev_file_name(device_io_name, device_name_, channel_ - num_prev_assigned_ch_) < 0)
+    if (find_uio_dev_file_name(device_io_name, device_name_, channel - num_prev_assigned_ch_) < 0)
         {
             if (!find_alternative_device(device_io_name))
                 {

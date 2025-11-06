@@ -33,6 +33,7 @@ constexpr double BEIDOU_B3I_CODE_RATE_CPS = 10.23e6;      //!< BeiDou B3I code r
 constexpr double BEIDOU_B3I_CODE_LENGTH_CHIPS = 10230.0;  //!< BeiDou B3I code length [chips]
 constexpr double BEIDOU_B3I_CODE_PERIOD_S = 0.001;        //!< BeiDou B3I code period [seconds]
 constexpr double BEIDOU_B3I_PREAMBLE_DURATION_S = 0.220;
+constexpr double BEIDOU_B3I_OPT_ACQ_FS_SPS = 10e6;
 constexpr uint32_t BEIDOU_B3I_CODE_PERIOD_MS = 1;  //!< BeiDou B3I code period [ms]
 constexpr uint32_t BEIDOU_B3I_PREAMBLE_LENGTH_BITS = 11;
 constexpr uint32_t BEIDOU_B3I_PREAMBLE_LENGTH_SYMBOLS = 220;  // **************

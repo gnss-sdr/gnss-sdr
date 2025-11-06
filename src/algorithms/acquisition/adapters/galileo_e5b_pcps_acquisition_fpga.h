@@ -27,8 +27,6 @@
  * \{ */
 
 
-class ConfigurationInterface;
-
 /*!
  * \brief This class adapts a PCPS acquisition block off-loaded on an FPGA
  * to an AcquisitionInterface for Galileo E5b signals
@@ -56,7 +54,7 @@ private:
     static const uint32_t DEFAULT_FPGA_BLK_EXP = 13;  // default block exponent
     void generate_galileo_e5b_prn_codes();
     bool acq_pilot_;
-    bool acq_iq_;
+    const bool acq_iq_;
 };
 
 

@@ -26,7 +26,15 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : BasePcpsAcquisition(configuration, role, in_streams, out_streams, GPS_L5I_CODE_RATE_CPS, GPS_L5_OPT_ACQ_FS_SPS, GPS_L5I_CODE_LENGTH_CHIPS, 1)
+    unsigned int out_streams)
+    : BasePcpsAcquisition(configuration,
+          role,
+          in_streams,
+          out_streams,
+          GPS_L5I_CODE_RATE_CPS,
+          GPS_L5_OPT_ACQ_FS_SPS,
+          GPS_L5I_CODE_LENGTH_CHIPS,
+          GPS_L5I_PERIOD_MS)
 {
 }
 

@@ -47,9 +47,7 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
       role_(role),
       threshold_(0.0),
       channel_(0),
-      doppler_step_(0),
-      in_streams_(in_streams),
-      out_streams_(out_streams)
+      doppler_step_(0)
 {
     const std::string default_item_type("gr_complex");
     std::string default_dump_filename = "./data/acquisition.dat";
@@ -78,13 +76,11 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
 
     bit_transition_flag_ = configuration->property("Acquisition.bit_transition_flag", false);
 
+    unsigned int max_dwells = 2;
+
     if (!bit_transition_flag_)
         {
-            max_dwells_ = configuration->property(role + ".max_dwells", 1);
-        }
-    else
-        {
-            max_dwells_ = 2;
+            max_dwells = configuration->property(role + ".max_dwells", 1);
         }
 
     dump_filename_ = configuration->property(role + ".dump_filename",
@@ -100,7 +96,7 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
     if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
-            acquisition_cc_ = pcps_make_opencl_acquisition_cc(sampled_ms_, max_dwells_,
+            acquisition_cc_ = pcps_make_opencl_acquisition_cc(sampled_ms_, max_dwells,
                 doppler_max_, fs_in_, code_length_, code_length_,
                 bit_transition_flag_, dump_, dump_filename_, false);
 
@@ -115,11 +111,11 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
 
-    if (in_streams_ > 1)
+    if (in_streams > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
         }
-    if (out_streams_ > 0)
+    if (out_streams > 0)
         {
             LOG(ERROR) << "This implementation does not provide an output stream";
         }

@@ -28,7 +28,6 @@
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <utility>
 
 /** \addtogroup Acquisition
  * Classes for GNSS signal acquisition
@@ -93,21 +92,13 @@ protected:
     static const uint32_t ACQ_BUFF_1 = 1;                     // FPGA Acquisition IP buffer containing L2 or L5/E5 frequency band samples by default.
 
     // Members subclasses must set
-    pcps_acquisition_fpga_sptr acquisition_fpga_;
     volk_gnsssdr::vector<uint32_t> d_all_fft_codes_;
     Acq_Conf_Fpga acq_parameters_;
-    int32_t doppler_center_;
-    uint32_t doppler_max_;
-    uint32_t doppler_step_;
 
 private:
     // Managed entirely by the base class
-    std::weak_ptr<ChannelFsm> channel_fsm_;
-    std::string role_;
-    Gnss_Synchro* gnss_synchro_;
-    uint32_t channel_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
+    pcps_acquisition_fpga_sptr acquisition_fpga_;
+    const std::string role_;
 };
 
 

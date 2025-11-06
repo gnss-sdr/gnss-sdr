@@ -125,11 +125,9 @@ protected:
 
 private:
     Dll_Pll_Conf_Fpga trk_params_;
-    std::string role_;
+    const std::string role_;
     uint32_t channel_;
     uint32_t num_prev_assigned_ch_;
-    uint32_t in_streams_;
-    uint32_t out_streams_;
 };
 
 /** \} */

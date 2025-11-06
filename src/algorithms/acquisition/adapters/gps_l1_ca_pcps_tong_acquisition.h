@@ -159,18 +159,12 @@ private:
     std::string role_;
     int64_t fs_in_;
     size_t item_size_;
-    float threshold_;
     unsigned int vector_length_;
     unsigned int code_length_;
     unsigned int channel_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
     unsigned int sampled_ms_;
-    unsigned int tong_init_val_;
-    unsigned int tong_max_val_;
-    unsigned int tong_max_dwells_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
     bool dump_;
 };
 

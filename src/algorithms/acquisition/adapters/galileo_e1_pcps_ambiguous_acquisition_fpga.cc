@@ -48,9 +48,9 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
           DEFAULT_FPGA_BLK_EXP,
           ACQ_BUFF_0,
           in_streams,
-          out_streams)
+          out_streams),
+      acquire_pilot_(configuration->property(role + ".acquire_pilot", false))
 {
-    acquire_pilot_ = configuration->property(role + ".acquire_pilot", false);
     generate_galileo_e1_prn_codes();
     DLOG(INFO) << "Initialized FPGA acquisition adapter for role " << role;
 }

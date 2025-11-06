@@ -24,7 +24,15 @@ GalileoE6PcpsAcquisition::GalileoE6PcpsAcquisition(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : BasePcpsAcquisition(configuration, role, in_streams, out_streams, GALILEO_E6_B_CODE_CHIP_RATE_CPS, GALILEO_E6_OPT_ACQ_FS_SPS, GALILEO_E6_B_CODE_LENGTH_CHIPS, 1)
+    unsigned int out_streams)
+    : BasePcpsAcquisition(configuration,
+          role,
+          in_streams,
+          out_streams,
+          GALILEO_E6_B_CODE_CHIP_RATE_CPS,
+          GALILEO_E6_OPT_ACQ_FS_SPS,
+          GALILEO_E6_B_CODE_LENGTH_CHIPS,
+          GALILEO_E6_CODE_PERIOD_MS)
 {
 }
 

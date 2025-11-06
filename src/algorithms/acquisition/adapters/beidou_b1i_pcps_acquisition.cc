@@ -26,7 +26,15 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : BasePcpsAcquisition(configuration, role, in_streams, out_streams, BEIDOU_B1I_CODE_RATE_CPS, 10e6, BEIDOU_B1I_CODE_LENGTH_CHIPS, 1)
+    unsigned int out_streams)
+    : BasePcpsAcquisition(configuration,
+          role,
+          in_streams,
+          out_streams,
+          BEIDOU_B1I_CODE_RATE_CPS,
+          BEIDOU_B1I_OPT_ACQ_FS_SPS,
+          BEIDOU_B1I_CODE_LENGTH_CHIPS,
+          BEIDOU_B1I_CODE_PERIOD_MS)
 {
 }
 

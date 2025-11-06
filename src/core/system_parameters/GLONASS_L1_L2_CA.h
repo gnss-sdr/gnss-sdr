@@ -81,6 +81,8 @@ constexpr double GLONASS_L1_CA_CODE_PERIOD_S = 0.001;       //!< GLONASS L1 C/A 
 constexpr double GLONASS_L1_CA_CHIP_PERIOD_S = 1.9569e-06;  //!< GLONASS L1 C/A chip period [seconds]
 constexpr double GLONASS_L1_CA_SYMBOL_RATE_BPS = 1000.0;
 
+constexpr uint32_t GLONASS_L1_CA_CODE_PEROD_MS = 1;
+constexpr uint32_t GLONASS_L2_CA_CODE_PEROD_MS = 1;
 constexpr int32_t GLONASS_CA_NBR_SATS = 24;  // STRING DATA WITHOUT PREAMBLE
 
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION

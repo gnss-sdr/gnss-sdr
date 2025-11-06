@@ -57,7 +57,6 @@ public:
 private:
     void code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int32_t sampling_freq) override;
 
-    const ConfigurationInterface* configuration_;
     const bool acquire_pilot_;
     const bool cboc_;
     Gnss_Synchro* gnss_synchro_;

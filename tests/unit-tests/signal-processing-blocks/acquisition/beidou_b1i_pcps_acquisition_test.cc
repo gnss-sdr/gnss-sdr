@@ -323,10 +323,6 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(doppler_max);
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
         acquisition->set_doppler_step(doppler_step);
     }) << "Failure setting doppler_step.";
 

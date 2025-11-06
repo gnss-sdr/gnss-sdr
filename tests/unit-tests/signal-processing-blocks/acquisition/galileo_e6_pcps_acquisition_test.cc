@@ -373,10 +373,6 @@ TEST_F(GalileoE6PcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(5000);
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
         acquisition->set_doppler_step(100);
     }) << "Failure setting doppler_step.";
 

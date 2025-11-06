@@ -45,6 +45,7 @@ public:
     Fpga_Acquisition(
         std::string device_name,
         uint32_t select_queue,
+        uint32_t doppler_max,
         std::vector<std::pair<uint32_t, uint32_t>> &downsampling_filter_specs,
         uint32_t &max_FFT_size);
 
@@ -57,7 +58,7 @@ public:
      * \brief Initialize acquisition parameters
      */
     // void init(uint32_t samples_per_code, uint32_t code_length, int64_t resampled_fs, uint32_t *all_fft_codes);
-    void init(uint32_t nsamples, uint32_t doppler_max, uint32_t d_fft_size,
+    void init(uint32_t nsamples, uint32_t d_fft_size,
         int64_t resampled_fs, uint32_t downsampling_filter_num, uint32_t excludelimit, uint32_t *all_fft_codes);
 
     /*!
@@ -86,15 +87,6 @@ public:
         float *power_sum,
         uint32_t *doppler_index,
         uint32_t *total_blk_exp);
-
-    /*!
-     * \brief Set maximum Doppler grid search
-     * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
-     */
-    void set_doppler_max(uint32_t doppler_max)
-    {
-        d_doppler_max = doppler_max;
-    }
 
     /*!
      * \brief Set Doppler steps for the grid search
@@ -219,7 +211,7 @@ private:
     uint32_t d_downsampling_factor;        // downsampling_factor
     uint32_t d_downsampling_filter_delay;  // Impulse response delay of the downsampling filter
     uint32_t d_select_queue;               // queue selection
-    uint32_t d_doppler_max;                // max doppler
+    const uint32_t d_doppler_max;          // max doppler
     uint32_t d_doppler_step;               // doppler step
     uint32_t d_PRN;                        // PRN
     uint32_t d_IP_core_version;            // FPGA acquisition IP core version

@@ -62,7 +62,7 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(Acq_Conf_Fpga *conf_, uint32_t acq_
       d_make_2_steps(d_acq_parameters->make_2_steps)
 {
     d_acquisition_fpga = std::make_unique<Fpga_Acquisition>(d_acq_parameters->device_name, acq_buff_num,
-        downsampling_filter_specs, max_FFT_size);
+        d_doppler_max, downsampling_filter_specs, max_FFT_size);
 }
 
 void pcps_acquisition_fpga::set_local_code()
@@ -72,7 +72,7 @@ void pcps_acquisition_fpga::set_local_code()
 
 void pcps_acquisition_fpga::init()
 {
-    d_acquisition_fpga->init(d_acq_parameters->code_length, d_doppler_max, d_acq_parameters->fft_size,
+    d_acquisition_fpga->init(d_acq_parameters->code_length, d_acq_parameters->fft_size,
         d_acq_parameters->resampled_fs, d_acq_parameters->downsampling_filter_num, d_acq_parameters->excludelimit, d_acq_parameters->all_fft_codes);
     d_gnss_synchro->Flag_valid_acquisition = false;
     d_gnss_synchro->Flag_valid_symbol_output = false;

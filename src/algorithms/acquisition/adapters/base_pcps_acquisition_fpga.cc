@@ -158,15 +158,6 @@ void BasePcpsAcquisitionFpga::set_threshold(float threshold)
 }
 
 
-void BasePcpsAcquisitionFpga::set_doppler_max(unsigned int doppler_max)
-{
-    if (acquisition_fpga_)
-        {
-            acquisition_fpga_->set_doppler_max(doppler_max);
-        }
-}
-
-
 void BasePcpsAcquisitionFpga::set_doppler_step(unsigned int doppler_step)
 {
     if (acquisition_fpga_)

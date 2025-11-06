@@ -109,12 +109,6 @@ void BasePcpsAcquisition::set_threshold(float threshold)
 }
 
 
-void BasePcpsAcquisition::set_doppler_max(unsigned int doppler_max)
-{
-    acquisition_->set_doppler_max(doppler_max);
-}
-
-
 void BasePcpsAcquisition::set_doppler_step(unsigned int doppler_step)
 {
     acquisition_->set_doppler_step(doppler_step);

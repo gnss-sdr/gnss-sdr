@@ -173,16 +173,6 @@ public:
     }
 
     /*!
-     * \brief Set maximum Doppler grid search
-     * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
-     */
-    inline void set_doppler_max(uint32_t doppler_max)
-    {
-        gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
-        d_doppler_max = doppler_max;
-    }
-
-    /*!
      * \brief Set Doppler steps for the grid search
      * \param doppler_step - Frequency bin of the search grid [Hz].
      */
@@ -253,7 +243,7 @@ private:
     float d_mag;
     float d_input_power;
     float d_doppler_center_step_two;
-    float d_doppler_max;
+    const float d_doppler_max;
 
     int32_t d_state;
     int32_t d_positive_acq;

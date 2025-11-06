@@ -155,16 +155,6 @@ void GpsL1CaPcpsOpenClAcquisition::set_threshold(float threshold)
 }
 
 
-void GpsL1CaPcpsOpenClAcquisition::set_doppler_max(unsigned int doppler_max)
-{
-    doppler_max_ = doppler_max;
-    if (item_type_ == "gr_complex")
-        {
-            acquisition_cc_->set_doppler_max(doppler_max_);
-        }
-}
-
-
 void GpsL1CaPcpsOpenClAcquisition::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;

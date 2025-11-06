@@ -239,10 +239,6 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(10000);
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
         acquisition->set_doppler_step(500);
     }) << "Failure setting doppler_step.";
 

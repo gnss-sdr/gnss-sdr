@@ -163,15 +163,6 @@ public:
     }
 
     /*!
-     * \brief Set maximum Doppler grid search
-     * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
-     */
-    inline void set_doppler_max(uint32_t doppler_max)
-    {
-        d_doppler_max = doppler_max;
-    }
-
-    /*!
      * \brief Set Doppler steps for the grid search
      * \param doppler_step - Frequency bin of the search grid [Hz].
      */
@@ -247,7 +238,7 @@ private:
     uint32_t d_channel;
     uint32_t d_folding_factor;  // also referred in the paper as 'p'
     uint32_t d_doppler_resolution;
-    uint32_t d_doppler_max;
+    const uint32_t d_doppler_max;
     uint32_t d_doppler_step;
     uint32_t d_sampled_ms;
     uint32_t d_max_dwells;

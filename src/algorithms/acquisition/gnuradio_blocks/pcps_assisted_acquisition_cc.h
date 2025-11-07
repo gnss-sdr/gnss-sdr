@@ -152,15 +152,6 @@ public:
     }
 
     /*!
-     * \brief Set maximum Doppler grid search
-     * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
-     */
-    inline void set_doppler_max(uint32_t doppler_max)
-    {
-        d_doppler_max = doppler_max;
-    }
-
-    /*!
      * \brief Set Doppler steps for the grid search
      * \param doppler_step - Frequency bin of the search grid [Hz].
      */
@@ -233,7 +224,7 @@ private:
     int32_t d_gnuradio_forecast_samples;
     int32_t d_doppler_max;
     int32_t d_doppler_min;
-    int32_t d_config_doppler_max;
+    const int32_t d_config_doppler_max;
     int32_t d_config_doppler_min;
     int32_t d_num_doppler_points;
     int32_t d_doppler_step;

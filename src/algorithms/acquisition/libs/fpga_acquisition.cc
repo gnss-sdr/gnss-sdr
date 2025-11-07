@@ -77,7 +77,7 @@ Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
 }
 
 
-void Fpga_Acquisition::init(uint32_t nsamples uint32_t fft_size,
+void Fpga_Acquisition::init(uint32_t nsamples, uint32_t fft_size,
     int64_t resampled_fs, uint32_t downsampling_filter_num, uint32_t excludelimit, uint32_t *all_fft_codes)
 {
     d_resampled_fs = resampled_fs;

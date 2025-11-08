@@ -49,7 +49,6 @@
 
 Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
     uint32_t select_queue,
-    uint32_t doppler_max,
     std::vector<std::pair<uint32_t, uint32_t>> &downsampling_filter_specs,
     uint32_t &max_FFT_size) : d_device_name(std::move(device_name)),
                               d_resampled_fs(0),
@@ -63,7 +62,6 @@ Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
                               d_downsampling_factor(1),
                               d_downsampling_filter_delay(0),
                               d_select_queue(select_queue),
-                              d_doppler_max(doppler_max),
                               d_PRN(0),
                               d_IP_core_version(0)
 {

@@ -47,7 +47,8 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
       role_(role),
       threshold_(0.0),
       channel_(0),
-      doppler_step_(0)
+      doppler_max_(configuration->property(role + ".doppler_max", 5000)),
+      doppler_step_(configuration->property(role + ".doppler_step", 500))
 {
     const std::string default_item_type("gr_complex");
     std::string default_dump_filename = "./data/acquisition.dat";
@@ -60,16 +61,23 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
     int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     dump_ = configuration->property(role + ".dump", false);
-    doppler_max_ = configuration->property(role + ".doppler_max", 5000);
 #if USE_GLOG_AND_GFLAGS
     if (FLAGS_doppler_max != 0)
         {
             doppler_max_ = FLAGS_doppler_max;
         }
+    if (FLAGS_doppler_step != 0)
+        {
+            doppler_step_ = static_cast<uint32_t>(FLAGS_doppler_step);
+        }
 #else
     if (absl::GetFlag(FLAGS_doppler_max) != 0)
         {
             doppler_max_ = absl::GetFlag(FLAGS_doppler_max);
+        }
+    if (absl::GetFlag(FLAGS_doppler_step) != 0)
+        {
+            doppler_step_ = static_cast<uint32_t>(absl::GetFlag(FLAGS_doppler_step));
         }
 #endif
     sampled_ms_ = configuration->property(role + ".coherent_integration_time_ms", 1);
@@ -97,7 +105,7 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
         {
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_make_opencl_acquisition_cc(sampled_ms_, max_dwells,
-                doppler_max_, fs_in_, code_length_, code_length_,
+                doppler_max_, doppler_step_, fs_in_, code_length_, code_length_,
                 bit_transition_flag_, dump_, dump_filename_, false);
 
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
@@ -151,16 +159,6 @@ void GpsL1CaPcpsOpenClAcquisition::set_threshold(float threshold)
     if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_threshold(threshold_);
-        }
-}
-
-
-void GpsL1CaPcpsOpenClAcquisition::set_doppler_step(unsigned int doppler_step)
-{
-    doppler_step_ = doppler_step;
-    if (item_type_ == "gr_complex")
-        {
-            acquisition_cc_->set_doppler_step(doppler_step_);
         }
 }
 

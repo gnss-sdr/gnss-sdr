@@ -99,11 +99,6 @@ public:
     void set_threshold(float threshold) override;
 
     /*!
-     * \brief Set Doppler steps for the grid search
-     */
-    void set_doppler_step(unsigned int doppler_step) override;
-
-    /*!
      * \brief Set Doppler center for the grid search
      */
     void set_doppler_center(int doppler_center) override;

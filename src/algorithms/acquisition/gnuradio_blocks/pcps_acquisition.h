@@ -173,16 +173,6 @@ public:
     }
 
     /*!
-     * \brief Set Doppler steps for the grid search
-     * \param doppler_step - Frequency bin of the search grid [Hz].
-     */
-    inline void set_doppler_step(uint32_t doppler_step)
-    {
-        gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
-        d_doppler_step = doppler_step;
-    }
-
-    /*!
      * \brief Set Doppler center frequency for the grid search. It will refresh the Doppler grid.
      * \param doppler_center - Frequency center of the search grid [Hz].
      */
@@ -251,11 +241,11 @@ private:
     int32_t d_doppler_bias;
     uint32_t d_channel;
     const uint32_t d_samplesPerChip;
-    uint32_t d_doppler_step;
+    const uint32_t d_doppler_step;
     uint32_t d_num_noncoherent_integrations_counter;
     const uint32_t d_consumed_samples;
     const uint32_t d_fft_size;
-    uint32_t d_num_doppler_bins;
+    const uint32_t d_num_doppler_bins;
     const uint32_t d_num_doppler_bins_step2;
     const uint32_t d_dump_channel;
     uint32_t d_buffer_count;

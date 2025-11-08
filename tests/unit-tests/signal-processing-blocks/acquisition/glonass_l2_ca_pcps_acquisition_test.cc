@@ -490,10 +490,6 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_step(500);
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->set_threshold(0.0005);
     }) << "Failure setting threshold.";
 
@@ -570,10 +566,6 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResultsProbabilities)
     ASSERT_NO_THROW({
         acquisition->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(config->property("Acquisition_2G.doppler_step", 500));
-    }) << "Failure setting doppler_step.";
 
     ASSERT_NO_THROW({
         acquisition->set_threshold(config->property("Acquisition_2G.threshold", 0.0));

@@ -48,7 +48,9 @@ using galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr = gnss_shared_ptr<galile
 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
     unsigned int sampled_ms,
     unsigned int max_dwells,
-    unsigned int doppler_max, int64_t fs_in,
+    unsigned int doppler_max,
+    unsigned int doppler_step,
+    int64_t fs_in,
     int samples_per_ms, int samples_per_code,
     bool bit_transition_flag,
     bool dump,
@@ -146,15 +148,6 @@ public:
     }
 
     /*!
-     * \brief Set Doppler steps for the grid search
-     * \param doppler_step - Frequency bin of the search grid [Hz].
-     */
-    inline void set_doppler_step(unsigned int doppler_step)
-    {
-        d_doppler_step = doppler_step;
-    }
-
-    /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.
      */
     int general_work(int noutput_items, gr_vector_int& ninput_items,
@@ -166,7 +159,9 @@ private:
     galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
         unsigned int sampled_ms,
         unsigned int max_dwells,
-        unsigned int doppler_max, int64_t fs_in,
+        unsigned int doppler_max,
+        unsigned int doppler_step,
+        int64_t fs_in,
         int samples_per_ms, int samples_per_code,
         bool bit_transition_flag,
         bool dump,
@@ -179,7 +174,9 @@ private:
     galileo_e5a_noncoherentIQ_acquisition_caf_cc(
         unsigned int sampled_ms,
         unsigned int max_dwells,
-        unsigned int doppler_max, int64_t fs_in,
+        unsigned int doppler_max,
+        unsigned int doppler_step,
+        int64_t fs_in,
         int samples_per_ms, int samples_per_code,
         bool bit_transition_flag,
         bool dump,
@@ -235,7 +232,7 @@ private:
     int d_buffer_count;
     int d_doppler_resolution;
     const int d_doppler_max;
-    int d_doppler_step;
+    const int d_doppler_step;
     int d_fft_size;
     int d_num_doppler_bins;
     unsigned int d_gr_stream_buffer;

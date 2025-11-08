@@ -60,6 +60,7 @@ pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(
     uint32_t sampled_ms,
     int32_t doppler_max,
     int32_t doppler_min,
+    int32_t doppler_step,
     int64_t fs_in,
     int32_t samples_per_ms,
     bool dump,
@@ -152,12 +153,6 @@ public:
     }
 
     /*!
-     * \brief Set Doppler steps for the grid search
-     * \param doppler_step - Frequency bin of the search grid [Hz].
-     */
-    void set_doppler_step(uint32_t doppler_step);
-
-    /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.
      */
     int general_work(int noutput_items, gr_vector_int& ninput_items,
@@ -169,13 +164,13 @@ public:
 private:
     friend pcps_assisted_acquisition_cc_sptr
     pcps_make_assisted_acquisition_cc(int32_t max_dwells, uint32_t sampled_ms,
-        int32_t doppler_max, int32_t doppler_min, int64_t fs_in,
-        int32_t samples_per_ms, bool dump,
+        int32_t doppler_max, int32_t doppler_min, int32_t doppler_step,
+        int64_t fs_in, int32_t samples_per_ms, bool dump,
         const std::string& dump_filename, bool enable_monitor_output);
 
     pcps_assisted_acquisition_cc(int32_t max_dwells, uint32_t sampled_ms,
-        int32_t doppler_max, int32_t doppler_min, int64_t fs_in,
-        int32_t samples_per_ms, bool dump,
+        int32_t doppler_max, int32_t doppler_min, int32_t doppler_step,
+        int64_t fs_in, int32_t samples_per_ms, bool dump,
         const std::string& dump_filename, bool enable_monitor_output);
 
     void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift,
@@ -227,7 +222,7 @@ private:
     const int32_t d_config_doppler_max;
     int32_t d_config_doppler_min;
     int32_t d_num_doppler_points;
-    int32_t d_doppler_step;
+    const int32_t d_doppler_step;
     int32_t d_state;
     int32_t d_well_count;
 

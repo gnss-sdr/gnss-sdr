@@ -66,6 +66,7 @@ pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(
     uint32_t sampled_ms,
     uint32_t max_dwells,
     uint32_t doppler_max,
+    uint32_t doppler_step,
     int64_t fs_in,
     int samples_per_ms,
     int samples_per_code,
@@ -161,15 +162,6 @@ public:
         d_threshold = threshold;
     }
 
-    /*!
-     * \brief Set Doppler steps for the grid search
-     * \param doppler_step - Frequency bin of the search grid [Hz].
-     */
-    inline void set_doppler_step(uint32_t doppler_step)
-    {
-        d_doppler_step = doppler_step;
-    }
-
     inline bool opencl_ready() const
     {
         bool ready = false;
@@ -194,7 +186,7 @@ public:
 private:
     friend pcps_opencl_acquisition_cc_sptr
     pcps_make_opencl_acquisition_cc(uint32_t sampled_ms, uint32_t max_dwells,
-        uint32_t doppler_max, int64_t fs_in,
+        uint32_t doppler_max, uint32_t doppler_step, int64_t fs_in,
         int samples_per_ms, int samples_per_code,
         bool bit_transition_flag,
         bool dump,
@@ -202,7 +194,7 @@ private:
         bool enable_monitor_output);
 
     pcps_opencl_acquisition_cc(uint32_t sampled_ms, uint32_t max_dwells,
-        uint32_t doppler_max, int64_t fs_in,
+        uint32_t doppler_max, uint32_t doppler_step, int64_t fs_in,
         int samples_per_ms, int samples_per_code,
         bool bit_transition_flag,
         bool dump,
@@ -265,7 +257,7 @@ private:
 
     uint32_t d_doppler_resolution;
     const uint32_t d_doppler_max;
-    uint32_t d_doppler_step;
+    const uint32_t d_doppler_step;
     uint32_t d_sampled_ms;
     uint32_t d_max_dwells;
     uint32_t d_well_count;

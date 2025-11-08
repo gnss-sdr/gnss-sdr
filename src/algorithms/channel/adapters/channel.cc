@@ -74,28 +74,7 @@ Channel::Channel(const ConfigurationInterface* configuration,
                 }
         }
 
-    // IMPORTANT: Do not change the order between set_doppler_step and set_threshold
-
-    uint32_t doppler_step = configuration->property("Acquisition_" + signal_str + std::to_string(channel_) + ".doppler_step", 0);
-    if (doppler_step == 0)
-        {
-            doppler_step = configuration->property("Acquisition_" + signal_str + ".doppler_step", 500);
-        }
-#if USE_GLOG_AND_GFLAGS
-    if (FLAGS_doppler_step != 0)
-        {
-            doppler_step = static_cast<uint32_t>(FLAGS_doppler_step);
-        }
-#else
-    if (absl::GetFlag(FLAGS_doppler_step) != 0)
-        {
-            doppler_step = static_cast<uint32_t>(absl::GetFlag(FLAGS_doppler_step));
-        }
-#endif
-    DLOG(INFO) << "Channel " << channel_ << " Doppler_step = " << doppler_step;
-
-    acq_->set_doppler_step(doppler_step);
-
+    // IMPORTANT: For future reference set_threshold needs to be called after doppler step is set (currently done at acquisition construction)
     float threshold = configuration->property("Acquisition_" + signal_str + std::to_string(channel_) + ".threshold", static_cast<float>(0.0));
     if (threshold == 0.0)
         {

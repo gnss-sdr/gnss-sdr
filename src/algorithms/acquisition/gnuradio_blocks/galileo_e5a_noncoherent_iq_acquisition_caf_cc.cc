@@ -41,7 +41,9 @@
 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
     unsigned int sampled_ms,
     unsigned int max_dwells,
-    unsigned int doppler_max, int64_t fs_in,
+    unsigned int doppler_max,
+    unsigned int doppler_step,
+    int64_t fs_in,
     int samples_per_ms, int samples_per_code,
     bool bit_transition_flag,
     bool dump,
@@ -52,7 +54,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make
     bool enable_monitor_output)
 {
     return galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr(
-        new galileo_e5a_noncoherentIQ_acquisition_caf_cc(sampled_ms, max_dwells, doppler_max, fs_in, samples_per_ms,
+        new galileo_e5a_noncoherentIQ_acquisition_caf_cc(sampled_ms, max_dwells, doppler_max, doppler_step, fs_in, samples_per_ms,
             samples_per_code, bit_transition_flag, dump, dump_filename, both_signal_components_, CAF_window_hz_, Zero_padding_, enable_monitor_output));
 }
 
@@ -61,6 +63,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     unsigned int sampled_ms,
     unsigned int max_dwells,
     unsigned int doppler_max,
+    unsigned int doppler_step,
     int64_t fs_in,
     int samples_per_ms,
     int samples_per_code,
@@ -90,7 +93,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
       d_buffer_count(0),
       d_doppler_resolution(0),
       d_doppler_max(static_cast<int>(doppler_max)),
-      d_doppler_step(250),
+      d_doppler_step(doppler_step),
       d_fft_size(static_cast<int>(sampled_ms) * d_samples_per_ms),
       d_num_doppler_bins(0),
       d_gr_stream_buffer(0),

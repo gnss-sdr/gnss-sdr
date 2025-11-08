@@ -35,6 +35,7 @@ galileo_pcps_8ms_acquisition_cc_sptr galileo_pcps_8ms_make_acquisition_cc(
     uint32_t sampled_ms,
     uint32_t max_dwells,
     uint32_t doppler_max,
+    uint32_t doppler_step,
     int64_t fs_in,
     int32_t samples_per_ms,
     int32_t samples_per_code,
@@ -43,7 +44,7 @@ galileo_pcps_8ms_acquisition_cc_sptr galileo_pcps_8ms_make_acquisition_cc(
     bool enable_monitor_output)
 {
     return galileo_pcps_8ms_acquisition_cc_sptr(
-        new galileo_pcps_8ms_acquisition_cc(sampled_ms, max_dwells, doppler_max, fs_in, samples_per_ms,
+        new galileo_pcps_8ms_acquisition_cc(sampled_ms, max_dwells, doppler_max, doppler_step, fs_in, samples_per_ms,
             samples_per_code, dump, dump_filename, enable_monitor_output));
 }
 
@@ -52,6 +53,7 @@ galileo_pcps_8ms_acquisition_cc::galileo_pcps_8ms_acquisition_cc(
     uint32_t sampled_ms,
     uint32_t max_dwells,
     uint32_t doppler_max,
+    uint32_t doppler_step,
     int64_t fs_in,
     int32_t samples_per_ms,
     int32_t samples_per_code,
@@ -76,7 +78,7 @@ galileo_pcps_8ms_acquisition_cc::galileo_pcps_8ms_acquisition_cc(
       d_channel(0),
       d_doppler_resolution(0),
       d_doppler_max(doppler_max),
-      d_doppler_step(0),
+      d_doppler_step(doppler_step),
       d_sampled_ms(sampled_ms),
       d_max_dwells(max_dwells),
       d_well_count(0),

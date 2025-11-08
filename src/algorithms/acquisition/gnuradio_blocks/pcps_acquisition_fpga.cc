@@ -52,9 +52,9 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(Acq_Conf_Fpga *conf_, uint32_t acq_
       d_state(0),
       d_doppler_index(0U),
       d_channel(0U),
-      d_doppler_step(0U),
+      d_doppler_step(d_acq_parameters->doppler_step),
       d_doppler_max(d_acq_parameters->doppler_max),
-      d_num_doppler_bins(0U),
+      d_num_doppler_bins(static_cast<uint32_t>(std::ceil(static_cast<double>(static_cast<int32_t>(d_doppler_max) - static_cast<int32_t>(-d_doppler_max)) / static_cast<double>(d_doppler_step))) + 1),
       d_total_block_exp(d_acq_parameters->total_block_exp),
       d_num_doppler_bins_step2(d_acq_parameters->num_doppler_bins_step2),
       d_max_num_acqs(d_acq_parameters->max_num_acqs),
@@ -83,8 +83,6 @@ void pcps_acquisition_fpga::init()
     d_gnss_synchro->Acq_samplestamp_samples = 0;
     d_mag = 0.0;
     d_input_power = 0.0;
-
-    d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(static_cast<int32_t>(d_doppler_max) - static_cast<int32_t>(-d_doppler_max)) / static_cast<double>(d_doppler_step))) + 1;
 }
 
 void pcps_acquisition_fpga::set_state(int32_t state)

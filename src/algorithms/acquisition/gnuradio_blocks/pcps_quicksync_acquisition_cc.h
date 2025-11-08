@@ -66,6 +66,7 @@ pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
     uint32_t sampled_ms,
     uint32_t max_dwells,
     uint32_t doppler_max,
+    uint32_t doppler_step,
     int64_t fs_in,
     int32_t samples_per_ms,
     int32_t samples_per_code,
@@ -163,15 +164,6 @@ public:
     }
 
     /*!
-     * \brief Set Doppler steps for the grid search
-     * \param doppler_step - Frequency bin of the search grid [Hz].
-     */
-    inline void set_doppler_step(uint32_t doppler_step)
-    {
-        d_doppler_step = doppler_step;
-    }
-
-    /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.
      */
     int general_work(int noutput_items, gr_vector_int& ninput_items,
@@ -182,7 +174,7 @@ private:
     friend pcps_quicksync_acquisition_cc_sptr
     pcps_quicksync_make_acquisition_cc(uint32_t folding_factor,
         uint32_t sampled_ms, uint32_t max_dwells,
-        uint32_t doppler_max, int64_t fs_in,
+        uint32_t doppler_max, uint32_t doppler_step, int64_t fs_in,
         int32_t samples_per_ms, int32_t samples_per_code,
         bool bit_transition_flag,
         bool dump,
@@ -191,7 +183,7 @@ private:
 
     pcps_quicksync_acquisition_cc(uint32_t folding_factor,
         uint32_t sampled_ms, uint32_t max_dwells,
-        uint32_t doppler_max, int64_t fs_in,
+        uint32_t doppler_max, uint32_t doppler_step, int64_t fs_in,
         int32_t samples_per_ms, int32_t samples_per_code,
         bool bit_transition_flag,
         bool dump,
@@ -239,7 +231,7 @@ private:
     uint32_t d_folding_factor;  // also referred in the paper as 'p'
     uint32_t d_doppler_resolution;
     const uint32_t d_doppler_max;
-    uint32_t d_doppler_step;
+    const uint32_t d_doppler_step;
     uint32_t d_sampled_ms;
     uint32_t d_max_dwells;
     uint32_t d_well_count;

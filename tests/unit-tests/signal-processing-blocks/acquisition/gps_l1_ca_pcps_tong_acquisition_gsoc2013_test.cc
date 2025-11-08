@@ -480,10 +480,6 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_step(config->property("Acquisition_1C.doppler_step", 500));
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->set_threshold(config->property("Acquisition_1C.threshold", 0.0));
     }) << "Failure setting threshold.";
 
@@ -561,10 +557,6 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
     ASSERT_NO_THROW({
         acquisition->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(config->property("Acquisition_1C.doppler_step", 500));
-    }) << "Failure setting doppler_step.";
 
     ASSERT_NO_THROW({
         acquisition->set_threshold(config->property("Acquisition_1C.threshold", 0.0));

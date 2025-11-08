@@ -83,10 +83,18 @@ BasePcpsAcquisitionFpga::BasePcpsAcquisitionFpga(
         {
             acq_parameters_.doppler_max = FLAGS_doppler_max;
         }
+    if (FLAGS_doppler_step != 0)
+        {
+            acq_parameters_.doppler_step = static_cast<float>(FLAGS_doppler_step);
+        }
 #else
     if (absl::GetFlag(FLAGS_doppler_max) != 0)
         {
             acq_parameters_.doppler_max = absl::GetFlag(FLAGS_doppler_max);
+        }
+    if (absl::GetFlag(FLAGS_doppler_step) != 0)
+        {
+            acq_parameters_.doppler_step = static_cast<float>(absl::GetFlag(FLAGS_doppler_step));
         }
 #endif
 }
@@ -154,15 +162,6 @@ void BasePcpsAcquisitionFpga::set_threshold(float threshold)
     if (acquisition_fpga_)
         {
             acquisition_fpga_->set_threshold(threshold);
-        }
-}
-
-
-void BasePcpsAcquisitionFpga::set_doppler_step(unsigned int doppler_step)
-{
-    if (acquisition_fpga_)
-        {
-            acquisition_fpga_->set_doppler_step(doppler_step);
         }
 }
 

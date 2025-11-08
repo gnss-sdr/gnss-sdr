@@ -60,12 +60,12 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
       d_samples_per_ms(static_cast<int>(conf_.samples_per_ms)),
       d_max_dwells(conf_.max_dwells),
       d_config_doppler_max(conf_.doppler_max),
-      d_num_doppler_points(0),
+      d_doppler_step(conf_.doppler_step),
+      d_num_doppler_points(floor(std::abs(2 * d_config_doppler_max) / d_doppler_step)),
       d_well_count(0),
       d_n_samples_in_buffer(0),
       d_fft_size(d_samples_per_ms),
       d_gnuradio_forecast_samples(d_fft_size),
-      d_doppler_step(0),
       d_channel(0),
       d_dump_channel(0),
       d_active(false),
@@ -78,6 +78,8 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
     d_10_ms_buffer = volk_gnsssdr::vector<gr_complex>(50 * d_samples_per_ms);
     d_fft_if = gnss_fft_fwd_make_unique(d_fft_size);
     d_ifft = gnss_fft_rev_make_unique(d_fft_size);
+    d_grid_data = volk_gnsssdr::vector<volk_gnsssdr::vector<float>>(d_num_doppler_points, volk_gnsssdr::vector<float>(d_fft_size));
+    update_carrier_wipeoff();
 
     // this implementation can only produce dumps in channel 0
     // todo: migrate config parameters to the unified acquisition config class
@@ -111,6 +113,8 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
                     std::cerr << "GNSS-SDR cannot create dump file for the Acquisition block. Wrong permissions?\n";
                     d_dump = false;
                 }
+
+            grid_ = arma::fmat(d_fft_size, d_num_doppler_points, arma::fill::zeros);
         }
 }
 
@@ -128,24 +132,6 @@ unsigned int pcps_acquisition_fine_doppler_cc::nextPowerOf2(unsigned int n)
     n |= n >> 16U;
     n++;
     return n;
-}
-
-
-void pcps_acquisition_fine_doppler_cc::set_doppler_step(unsigned int doppler_step)
-{
-    d_doppler_step = doppler_step;
-    // Create the search grid array
-
-    d_num_doppler_points = floor(std::abs(2 * d_config_doppler_max) / d_doppler_step);
-
-    d_grid_data = volk_gnsssdr::vector<volk_gnsssdr::vector<float>>(d_num_doppler_points, volk_gnsssdr::vector<float>(d_fft_size));
-
-    if (d_dump)
-        {
-            grid_ = arma::fmat(d_fft_size, d_num_doppler_points, arma::fill::zeros);
-        }
-
-    update_carrier_wipeoff();
 }
 
 
@@ -648,7 +634,8 @@ void pcps_acquisition_fine_doppler_cc::dump_results(int effective_fft_size)
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("doppler_step", MAT_C_INT32, MAT_T_INT32, 1, dims.data(), &d_doppler_step, 0);
+            auto doppler_step = d_doppler_step;
+            matvar = Mat_VarCreate("doppler_step", MAT_C_INT32, MAT_T_INT32, 1, dims.data(), &doppler_step, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 

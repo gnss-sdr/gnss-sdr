@@ -700,11 +700,9 @@ bool HybridObservablesTestFpga::acquire_signal()
     acquisition->set_channel_fsm(channel_fsm_);
     acquisition->set_channel(0);
 #if USE_GLOG_AND_GFLAGS
-    acquisition->set_doppler_step(config->property("Acquisition.doppler_step", FLAGS_external_signal_acquisition_doppler_step_hz));
     acquisition->set_doppler_center(0);
     acquisition->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
 #else
-    acquisition->set_doppler_step(config->property("Acquisition.doppler_step", absl::GetFlag(FLAGS_external_signal_acquisition_doppler_step_hz)));
     acquisition->set_doppler_center(0);
     acquisition->set_threshold(config->property("Acquisition.threshold", absl::GetFlag(FLAGS_external_signal_acquisition_threshold)));
 #endif

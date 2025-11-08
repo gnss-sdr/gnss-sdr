@@ -58,7 +58,7 @@
 
 pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(
     uint32_t sampled_ms, uint32_t max_dwells,
-    uint32_t doppler_max, int64_t fs_in,
+    uint32_t doppler_max, uint32_t doppler_step, int64_t fs_in,
     int samples_per_ms, int samples_per_code,
     bool bit_transition_flag,
     bool dump,
@@ -66,7 +66,7 @@ pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(
     bool enable_monitor_output)
 {
     return pcps_opencl_acquisition_cc_sptr(
-        new pcps_opencl_acquisition_cc(sampled_ms, max_dwells, doppler_max, fs_in, samples_per_ms,
+        new pcps_opencl_acquisition_cc(sampled_ms, max_dwells, doppler_max, doppler_step, fs_in, samples_per_ms,
             samples_per_code, bit_transition_flag, dump, dump_filename, enable_monitor_output));
 }
 
@@ -75,6 +75,7 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
     uint32_t sampled_ms,
     uint32_t max_dwells,
     uint32_t doppler_max,
+    uint32_t doppler_step,
     int64_t fs_in,
     int samples_per_ms,
     int samples_per_code,
@@ -95,6 +96,7 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
       d_samples_per_code(samples_per_code),
       d_state(0),
       d_doppler_max(doppler_max),
+      d_doppler_step(doppler_step),
       d_sampled_ms(sampled_ms),
       d_max_dwells(max_dwells),
       d_well_count(0),

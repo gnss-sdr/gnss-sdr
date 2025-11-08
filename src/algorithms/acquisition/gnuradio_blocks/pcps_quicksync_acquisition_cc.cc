@@ -36,6 +36,7 @@ pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
     uint32_t sampled_ms,
     uint32_t max_dwells,
     uint32_t doppler_max,
+    uint32_t doppler_step,
     int64_t fs_in,
     int32_t samples_per_ms,
     int32_t samples_per_code,
@@ -48,7 +49,7 @@ pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
         new pcps_quicksync_acquisition_cc(
             folding_factor,
             sampled_ms, max_dwells, doppler_max,
-            fs_in, samples_per_ms,
+            doppler_step, fs_in, samples_per_ms,
             samples_per_code,
             bit_transition_flag,
             dump, dump_filename,
@@ -59,7 +60,7 @@ pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
 pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     uint32_t folding_factor,
     uint32_t sampled_ms, uint32_t max_dwells,
-    uint32_t doppler_max, int64_t fs_in,
+    uint32_t doppler_max, uint32_t doppler_step, int64_t fs_in,
     int32_t samples_per_ms, int32_t samples_per_code,
     bool bit_transition_flag,
     bool dump,
@@ -85,7 +86,7 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
       d_folding_factor(folding_factor),
       d_doppler_resolution(0),
       d_doppler_max(doppler_max),
-      d_doppler_step(0),
+      d_doppler_step(doppler_step),
       d_sampled_ms(sampled_ms),
       d_max_dwells(max_dwells),
       d_well_count(0),
@@ -174,11 +175,6 @@ void pcps_quicksync_acquisition_cc::init()
     d_gnss_synchro->Acq_doppler_step = 0U;
     d_mag = 0.0;
     d_input_power = 0.0;
-
-    if (d_doppler_step == 0)
-        {
-            d_doppler_step = 250;
-        }
 
     // Count the number of bins
     d_num_doppler_bins = 0;

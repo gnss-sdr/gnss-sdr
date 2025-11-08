@@ -48,16 +48,25 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
 
     int doppler_max = configuration->property(role + ".doppler_max", 5000);
+    int doppler_step = configuration->property(role + ".doppler_step", 500);
 
 #if USE_GLOG_AND_GFLAGS
     if (FLAGS_doppler_max != 0)
         {
             doppler_max = FLAGS_doppler_max;
         }
+    if (FLAGS_doppler_step != 0)
+        {
+            doppler_step = static_cast<uint32_t>(FLAGS_doppler_step);
+        }
 #else
     if (absl::GetFlag(FLAGS_doppler_max) != 0)
         {
             doppler_max = absl::GetFlag(FLAGS_doppler_max);
+        }
+    if (absl::GetFlag(FLAGS_doppler_step) != 0)
+        {
+            doppler_step = static_cast<uint32_t>(absl::GetFlag(FLAGS_doppler_step));
         }
 #endif
     const int doppler_min = configuration->property(role_ + ".doppler_min", -doppler_max);
@@ -74,7 +83,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
             const unsigned int max_dwells = configuration->property(role + ".max_dwells", 1);
             const unsigned int sampled_ms = configuration->property(role + ".coherent_integration_time_ms", 1);
             acquisition_cc_ = pcps_make_assisted_acquisition_cc(max_dwells, sampled_ms,
-                doppler_max, doppler_min, fs_in_, vector_length_,
+                doppler_max, doppler_min, doppler_step, fs_in_, vector_length_,
                 dump_, dump_filename, enable_monitor_output);
         }
     else
@@ -105,12 +114,6 @@ void GpsL1CaPcpsAssistedAcquisition::stop_acquisition()
 void GpsL1CaPcpsAssistedAcquisition::set_threshold(float threshold)
 {
     acquisition_cc_->set_threshold(threshold);
-}
-
-
-void GpsL1CaPcpsAssistedAcquisition::set_doppler_step(unsigned int doppler_step)
-{
-    acquisition_cc_->set_doppler_step(doppler_step);
 }
 
 

@@ -53,7 +53,7 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
     int32_t max_dwells, uint32_t sampled_ms, int32_t doppler_max, int32_t doppler_min,
     int32_t doppler_step, int64_t fs_in, int32_t samples_per_ms, bool dump,
     const std::string &dump_filename, bool enable_monitor_output)
-    : gr::block("pcps_assisted_acquisition_cc",
+    : acquisition_impl_interface("pcps_assisted_acquisition_cc",
           gr::io_signature::make(1, 1, sizeof(gr_complex)),
           gr::io_signature::make(0, 1, sizeof(Gnss_Synchro))),
       d_dump_filename(dump_filename),

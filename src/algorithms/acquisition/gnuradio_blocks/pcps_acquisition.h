@@ -38,6 +38,7 @@
 #ifndef GNSS_SDR_PCPS_ACQUISITION_H
 #define GNSS_SDR_PCPS_ACQUISITION_H
 
+#include "acquisition_impl_interface.h"
 #if ARMA_NO_BOUND_CHECKING
 #define ARMA_NO_DEBUG 1
 #endif
@@ -89,7 +90,7 @@ pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_);
  * Check \ref Navitec2012 "An Open Source Galileo E1 Software Receiver",
  * Algorithm 1, for a pseudocode description of this implementation.
  */
-class pcps_acquisition : public gr::block
+class pcps_acquisition : public acquisition_impl_interface
 {
 public:
     ~pcps_acquisition() override = default;
@@ -97,14 +98,14 @@ public:
     /*!
      * \brief Initializes acquisition algorithm and reserves memory.
      */
-    void init();
+    void init() override;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to exchange synchronization data between acquisition and tracking blocks.
      * \param p_gnss_synchro Satellite information shared by the processing blocks.
      */
-    inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+    inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override
     {
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
         d_gnss_synchro = p_gnss_synchro;
@@ -114,21 +115,21 @@ public:
      * \brief Sets local code for PCPS acquisition algorithm.
      * \param code - Pointer to the PRN code.
      */
-    void set_local_code(std::complex<float>* code);
+    void set_local_code(std::complex<float>* code) override;
 
     /*!
      * \brief If set to 1, ensures that acquisition starts at the
      * first available sample.
      * \param state - int=1 forces start of acquisition
      */
-    void set_state(int32_t state);
+    void set_state(int32_t state) override;
 
     void set_resampler_latency(uint32_t latency_samples);
 
     /*!
      * \brief Returns the maximum peak of grid search.
      */
-    inline uint32_t mag() const
+    inline uint32_t mag() const override
     {
         return d_mag;
     }
@@ -138,7 +139,7 @@ public:
      * active mode
      * \param active - bool that activates/deactivates the block.
      */
-    inline void set_active(bool active)
+    inline void set_active(bool active) override
     {
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
         d_active = active;
@@ -148,7 +149,7 @@ public:
      * \brief Set acquisition channel unique ID
      * \param channel - receiver channel.
      */
-    inline void set_channel(uint32_t channel)
+    inline void set_channel(uint32_t channel) override
     {
         d_channel = channel;
     }
@@ -156,7 +157,7 @@ public:
     /*!
      * \brief Set channel fsm associated to this acquisition instance
      */
-    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm)
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
         d_channel_fsm = std::move(channel_fsm);
     }
@@ -166,7 +167,7 @@ public:
      * \param threshold - Threshold for signal detection (check \ref Navitec2012,
      * Algorithm 1, for a definition of this threshold).
      */
-    inline void set_threshold(float threshold)
+    inline void set_threshold(float threshold) override
     {
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
         d_threshold = threshold;

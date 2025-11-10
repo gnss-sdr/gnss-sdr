@@ -26,9 +26,6 @@
 /** \addtogroup Acq_adapters
  * \{ */
 
-
-class ConfigurationInterface;
-
 /*!
  * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
  *  for GLONASS L2 C/A signals

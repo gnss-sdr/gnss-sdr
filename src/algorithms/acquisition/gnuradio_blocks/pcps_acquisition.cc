@@ -54,7 +54,7 @@ pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_)
 
 
 pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
-    : gr::block("pcps_acquisition",
+    : acquisition_impl_interface("pcps_acquisition",
           gr::io_signature::make(1, 1, conf_.it_size),
           gr::io_signature::make(0, 1, sizeof(Gnss_Synchro))),
       d_acq_parameters(conf_),

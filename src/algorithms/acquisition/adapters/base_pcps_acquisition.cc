@@ -77,6 +77,7 @@ BasePcpsAcquisition::BasePcpsAcquisition(
     double opt_freq,
     double code_length_chips,
     uint32_t ms_per_code) : acq_parameters_(get_acq_conf(configuration, role, chip_rate, opt_freq, ms_per_code)),
+                            gnss_synchro_(nullptr),
                             role_(role),
                             vector_length_(std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2.0 : 1.0)),
                             code_length_(static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (chip_rate / code_length_chips)))),

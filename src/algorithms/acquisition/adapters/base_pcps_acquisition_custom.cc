@@ -76,9 +76,9 @@ BasePcpsAcquisitionCustom::BasePcpsAcquisitionCustom(
     bool use_stream_to_vector,
     bool compute_threshold_from_pfa)
     : acq_parameters_(get_acq_conf(configuration, role, chip_rate, 0, ms_per_code)),
-      ms_per_code_(ms_per_code),
+      num_codes_(acq_parameters_.sampled_ms / ms_per_code),
       code_length_(static_cast<unsigned int>(round(acq_parameters_.fs_in / (chip_rate / code_length_chips)))),
-      vector_length_(code_length_ * static_cast<int>(acq_parameters_.sampled_ms / ms_per_code)),
+      vector_length_(code_length_ * num_codes_),
       gnss_synchro_(nullptr),
       channel_(0),
       code_(vector_length_),
@@ -247,10 +247,8 @@ void BasePcpsAcquisitionCustom::set_local_code()
             std::vector<std::complex<float>> code(code_length_);
             code_gen_complex_sampled(code, gnss_synchro_->PRN, acq_parameters_.fs_in);
 
-            const auto num_codes = acq_parameters_.sampled_ms / ms_per_code_;
-
             own::span<gr_complex> code_span(code_.data(), vector_length_);
-            for (unsigned int i = 0; i < num_codes; i++)
+            for (unsigned int i = 0; i < num_codes_; i++)
                 {
                     std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
                 }

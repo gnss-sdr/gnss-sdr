@@ -122,7 +122,7 @@ protected:
     bool is_type_gr_complex() const { return is_type_gr_complex_; }
 
     const Acq_Conf acq_parameters_;
-    const unsigned int ms_per_code_;
+    const unsigned int num_codes_;
     const unsigned int code_length_;
     const unsigned int vector_length_;
     acquisition_impl_interface_sptr acquisition_cc_;

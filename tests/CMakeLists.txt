@@ -1046,9 +1046,10 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
 
     xcode_remove_warning_duplicates(flowgraph_test)
 
-    add_test(flowgraph_test flowgraph_test)
-
-    set_property(TEST flowgraph_test PROPERTY TIMEOUT 30)
+    if(NOT ENABLE_UNIT_TESTING_MINIMAL)
+        add_test(flowgraph_test flowgraph_test)
+        set_property(TEST flowgraph_test PROPERTY TIMEOUT 30)
+    endif()
 endif()
 
 
@@ -1108,9 +1109,10 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
 
     xcode_remove_warning_duplicates(gnss_block_test)
 
-    add_test(gnss_block_test gnss_block_test)
-
-    set_property(TEST gnss_block_test PROPERTY TIMEOUT 60)
+    if(NOT ENABLE_UNIT_TESTING_MINIMAL)
+        add_test(gnss_block_test gnss_block_test)
+        set_property(TEST gnss_block_test PROPERTY TIMEOUT 60)
+    endif()
 endif()
 
 
@@ -1250,7 +1252,10 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
 
     xcode_remove_warning_duplicates(acq_test)
 
-    add_test(acq_test acq_test)
+    if(NOT ENABLE_UNIT_TESTING_MINIMAL)
+        add_test(acq_test acq_test)
+        set_property(TEST acq_test PROPERTY TIMEOUT 30)
+    endif()
 
     if(USE_GENERIC_LAMBDAS)
         set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
@@ -1272,7 +1277,6 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
                 -DUSE_BOOST_BIND_PLACEHOLDERS=1
         )
     endif()
-    set_property(TEST acq_test PROPERTY TIMEOUT 30)
 endif()
 
 
@@ -1353,9 +1357,10 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
 
     xcode_remove_warning_duplicates(trk_test)
 
-    add_test(trk_test trk_test)
-
-    set_property(TEST trk_test PROPERTY TIMEOUT 30)
+    if(NOT ENABLE_UNIT_TESTING_MINIMAL)
+        add_test(trk_test trk_test)
+        set_property(TEST trk_test PROPERTY TIMEOUT 30)
+    endif()
 endif()
 
 #########################################################
@@ -1391,9 +1396,10 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
 
     xcode_remove_warning_duplicates(control_thread_test)
 
-    add_test(control_thread_test control_thread_test)
-
-    set_property(TEST control_thread_test PROPERTY TIMEOUT 30)
+    if(NOT ENABLE_UNIT_TESTING_MINIMAL)
+        add_test(control_thread_test control_thread_test)
+        set_property(TEST control_thread_test PROPERTY TIMEOUT 30)
+    endif()
 endif()
 
 #########################################################
@@ -1404,15 +1410,22 @@ else()
     if(ENABLE_FPGA)
         add_dependencies(check matio_test)
     else()
-        add_dependencies(check
-            control_thread_test
-            flowgraph_test
-            gnss_block_test
-            gnuradio_block_test
-            acq_test
-            trk_test
-            matio_test
-        )
+        if(ENABLE_UNIT_TESTING_MINIMAL)
+            add_dependencies(check
+                gnuradio_block_test
+                matio_test
+            )
+        else()
+            add_dependencies(check
+                control_thread_test
+                flowgraph_test
+                gnss_block_test
+                gnuradio_block_test
+                acq_test
+                trk_test
+                matio_test
+            )
+        endif()
     endif()
 endif()
 

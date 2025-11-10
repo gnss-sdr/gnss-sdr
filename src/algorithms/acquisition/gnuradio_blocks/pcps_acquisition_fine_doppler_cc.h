@@ -180,7 +180,7 @@ private:
     float compute_CAF();
     void reset_grid();
     void update_carrier_wipeoff();
-    bool start();
+    bool start() override;
 
     std::weak_ptr<ChannelFsm> d_channel_fsm;
     std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;

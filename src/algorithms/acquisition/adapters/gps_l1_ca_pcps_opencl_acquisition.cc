@@ -20,6 +20,7 @@
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
 #include "gps_sdr_signal_replica.h"
+#include "pcps_opencl_acquisition_cc.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <algorithm>
 
@@ -29,244 +30,53 @@
 #include <absl/log/log.h>
 #endif
 
-#if HAS_STD_SPAN
-#include <span>
-namespace own = std;
-#else
-#include <gsl-lite/gsl-lite.hpp>
-namespace own = gsl_lite;
-#endif
 
 GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams)
-    : configuration_(configuration),
-      gnss_synchro_(nullptr),
-      role_(role),
-      threshold_(0.0),
-      channel_(0),
-      doppler_max_(configuration->property(role + ".doppler_max", 5000)),
-      doppler_step_(configuration->property(role + ".doppler_step", 500))
+    : BasePcpsAcquisitionCustom(
+          configuration,
+          role,
+          in_streams,
+          out_streams,
+          configuration->property(role + ".coherent_integration_time_ms", GPS_L1_CA_CODE_PERIOD_MS),
+          GPS_L1_CA_CODE_RATE_CPS,
+          GPS_L1_CA_CODE_LENGTH_CHIPS,
+          GPS_L1_CA_CODE_PERIOD_MS,
+          true,
+          true),
+      opencl_ready_(false)
 {
-    const std::string default_item_type("gr_complex");
-    std::string default_dump_filename = "./data/acquisition.dat";
-
-    DLOG(INFO) << "role " << role;
-
-    item_type_ = configuration->property(role + ".item_type",
-        default_item_type);
-
-    int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
-    fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    dump_ = configuration->property(role + ".dump", false);
-#if USE_GLOG_AND_GFLAGS
-    if (FLAGS_doppler_max != 0)
+    if (is_type_gr_complex())
         {
-            doppler_max_ = FLAGS_doppler_max;
-        }
-    if (FLAGS_doppler_step != 0)
-        {
-            doppler_step_ = static_cast<uint32_t>(FLAGS_doppler_step);
-        }
-#else
-    if (absl::GetFlag(FLAGS_doppler_max) != 0)
-        {
-            doppler_max_ = absl::GetFlag(FLAGS_doppler_max);
-        }
-    if (absl::GetFlag(FLAGS_doppler_step) != 0)
-        {
-            doppler_step_ = static_cast<uint32_t>(absl::GetFlag(FLAGS_doppler_step));
-        }
-#endif
-    sampled_ms_ = configuration->property(role + ".coherent_integration_time_ms", 1);
+            const auto bit_transition_flag = configuration->property(role + ".bit_transition_flag", false);
 
-    bit_transition_flag_ = configuration->property("Acquisition.bit_transition_flag", false);
+            unsigned int max_dwells = 2;
 
-    unsigned int max_dwells = 2;
-
-    if (!bit_transition_flag_)
-        {
-            max_dwells = configuration->property(role + ".max_dwells", 1);
-        }
-
-    dump_filename_ = configuration->property(role + ".dump_filename",
-        default_dump_filename);
-
-    // -- Find number of samples per spreading code -------------------------
-    code_length_ = static_cast<unsigned int>(round(fs_in_ / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
-
-    vector_length_ = code_length_ * sampled_ms_;
-
-    code_ = std::vector<std::complex<float>>(vector_length_);
-
-    if (item_type_ == "gr_complex")
-        {
-            item_size_ = sizeof(gr_complex);
-            acquisition_cc_ = pcps_make_opencl_acquisition_cc(sampled_ms_, max_dwells,
-                doppler_max_, doppler_step_, fs_in_, code_length_, code_length_,
-                bit_transition_flag_, dump_, dump_filename_, false);
-
-            stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
-
-            DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
-            DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
-        }
-    else
-        {
-            item_size_ = sizeof(gr_complex);
-            LOG(WARNING) << item_type_ << " unknown acquisition item type";
-        }
-
-    if (in_streams > 1)
-        {
-            LOG(ERROR) << "This implementation only supports one input stream";
-        }
-    if (out_streams > 0)
-        {
-            LOG(ERROR) << "This implementation does not provide an output stream";
-        }
-}
-
-
-void GpsL1CaPcpsOpenClAcquisition::stop_acquisition()
-{
-    acquisition_cc_->set_active(false);
-    acquisition_cc_->set_state(0);
-}
-
-
-void GpsL1CaPcpsOpenClAcquisition::set_threshold(float threshold)
-{
-    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", static_cast<float>(0.0));
-
-    if (pfa == 0.0)
-        {
-            pfa = configuration_->property(role_ + ".pfa", static_cast<float>(0.0));
-        }
-    if (pfa == 0.0)
-        {
-            threshold_ = threshold;
-        }
-    else
-        {
-            threshold_ = calculate_threshold(pfa);
-        }
-
-    DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
-
-    if (item_type_ == "gr_complex")
-        {
-            acquisition_cc_->set_threshold(threshold_);
-        }
-}
-
-
-void GpsL1CaPcpsOpenClAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
-{
-    gnss_synchro_ = gnss_synchro;
-    if (item_type_ == "gr_complex")
-        {
-            acquisition_cc_->set_gnss_synchro(gnss_synchro_);
-        }
-}
-
-
-signed int GpsL1CaPcpsOpenClAcquisition::mag()
-{
-    if (item_type_ == "gr_complex")
-        {
-            return acquisition_cc_->mag();
-        }
-    else
-        {
-            return 0;
-        }
-}
-
-
-void GpsL1CaPcpsOpenClAcquisition::init()
-{
-    acquisition_cc_->init();
-}
-
-
-void GpsL1CaPcpsOpenClAcquisition::set_local_code()
-{
-    if (item_type_ == "gr_complex")
-        {
-            std::vector<std::complex<float>> code(code_length_);
-
-            gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
-
-            own::span<gr_complex> code_span(code_.data(), vector_length_);
-            for (unsigned int i = 0; i < sampled_ms_; i++)
+            if (!bit_transition_flag)
                 {
-                    std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
+                    max_dwells = configuration->property(role + ".max_dwells", 1);
                 }
 
-            acquisition_cc_->set_local_code(code_.data());
+            const std::string default_dump_filename = "./acquisition.dat";
+            const auto dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+            const auto dump = configuration->property(role + ".dump", false);
+
+            auto acquisition_cc = pcps_make_opencl_acquisition_cc(sampled_ms_, max_dwells,
+                doppler_max_, doppler_step_, fs_in_, code_length_, code_length_,
+                bit_transition_flag, dump, dump_filename, false);
+
+            opencl_ready_ = acquisition_cc->opencl_ready();
+            acquisition_cc_ = std::move(acquisition_cc);
+
+            DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
 }
 
 
-void GpsL1CaPcpsOpenClAcquisition::reset()
+void GpsL1CaPcpsOpenClAcquisition::code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int32_t sampling_freq)
 {
-    if (item_type_ == "gr_complex")
-        {
-            acquisition_cc_->set_active(true);
-        }
-}
-
-
-float GpsL1CaPcpsOpenClAcquisition::calculate_threshold(float pfa) const
-{
-    // Calculate the threshold
-    unsigned int frequency_bins = 0;
-    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += static_cast<int>(doppler_step_))
-        {
-            frequency_bins++;
-        }
-
-    DLOG(INFO) << "Channel " << channel_ << "  Pfa = " << pfa;
-
-    unsigned int ncells = vector_length_ * frequency_bins;
-    double exponent = 1 / static_cast<double>(ncells);
-    double val = pow(1.0 - pfa, exponent);
-    auto lambda = static_cast<double>(vector_length_);
-    boost::math::exponential_distribution<double> mydist(lambda);
-    auto threshold = static_cast<float>(quantile(mydist, val));
-
-    return threshold;
-}
-
-
-void GpsL1CaPcpsOpenClAcquisition::connect(gr::top_block_sptr top_block)
-{
-    if (item_type_ == "gr_complex")
-        {
-            top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
-        }
-}
-
-
-void GpsL1CaPcpsOpenClAcquisition::disconnect(gr::top_block_sptr top_block)
-{
-    if (item_type_ == "gr_complex")
-        {
-            top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
-        }
-}
-
-
-gr::basic_block_sptr GpsL1CaPcpsOpenClAcquisition::get_left_block()
-{
-    return stream_to_vector_;
-}
-
-
-gr::basic_block_sptr GpsL1CaPcpsOpenClAcquisition::get_right_block()
-{
-    return acquisition_cc_;
+    gps_l1_ca_code_gen_complex_sampled(dest, prn, sampling_freq, 0);
 }

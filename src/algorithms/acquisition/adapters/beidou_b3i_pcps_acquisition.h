@@ -25,9 +25,6 @@
 /** \addtogroup Acq_adapters
  * \{ */
 
-
-class ConfigurationInterface;
-
 /*!
  * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
  *  for BeiDou B3I signals

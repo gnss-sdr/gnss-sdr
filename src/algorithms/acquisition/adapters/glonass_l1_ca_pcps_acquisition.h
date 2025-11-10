@@ -27,9 +27,6 @@
 /** \addtogroup Acq_adapters
  * \{ */
 
-
-class ConfigurationInterface;
-
 /*!
  * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
  *  for GPS L1 C/A signals

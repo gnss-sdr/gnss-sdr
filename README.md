@@ -186,6 +186,9 @@ In distributions older than Ubuntu 16.04 or Debian 9, `python3-mako` must be
 replaced by `python-mako`. For Ubuntu 14.04, you will need to add the package
 `python-six` to the list of dependencies.
 
+Starting from Debian 13 / Ubuntu 25.10, `libabsl-dev` can replace
+`libgflags-dev` and `libgoogle-glog-dev`.
+
 Once you have installed these packages, you can jump directly to
 [download the source code and build GNSS-SDR](#clone-gnss-sdrs-git-repository).
 
@@ -355,9 +358,9 @@ $ sudo pacman -S openssl                  # For Arch Linux
 #### Install [Matio](https://github.com/tbeu/matio "Matio's Homepage"), MATLAB MAT file I/O library
 
 ```
-$ wget https://github.com/tbeu/matio/releases/download/v1.5.28/matio-1.5.28.tar.gz
-$ tar xvfz matio-1.5.28.tar.gz
-$ cd matio-1.5.28
+$ wget https://github.com/tbeu/matio/releases/download/v1.5.29/matio-1.5.29.tar.gz
+$ tar xvfz matio-1.5.29.tar.gz
+$ cd matio-1.5.29
 $ ./configure
 $ make
 $ sudo make install

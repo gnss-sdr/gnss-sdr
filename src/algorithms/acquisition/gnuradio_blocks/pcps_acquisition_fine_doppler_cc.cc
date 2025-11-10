@@ -26,8 +26,6 @@
 #include <volk/volk.h>
 #include <algorithm>  // std::rotate, std::fill_n
 #include <array>
-#include <sstream>
-#include <vector>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -44,7 +42,7 @@ pcps_acquisition_fine_doppler_cc_sptr pcps_make_acquisition_fine_doppler_cc(cons
 
 
 pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Conf &conf_)
-    : gr::block("pcps_acquisition_fine_doppler_cc",
+    : acquisition_impl_interface("pcps_acquisition_fine_doppler_cc",
           gr::io_signature::make(1, 1, sizeof(gr_complex)),
           gr::io_signature::make(0, 1, sizeof(Gnss_Synchro))),
       d_dump_filename(conf_.dump_filename),

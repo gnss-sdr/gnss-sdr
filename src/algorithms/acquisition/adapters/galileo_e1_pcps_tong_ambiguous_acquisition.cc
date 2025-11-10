@@ -17,11 +17,9 @@
 
 #include "galileo_e1_pcps_tong_ambiguous_acquisition.h"
 #include "Galileo_E1.h"
-#include "configuration_interface.h"
 #include "galileo_e1_signal_replica.h"
-#include "gnss_sdr_flags.h"
+#include "pcps_tong_acquisition_cc.h"
 #include <boost/math/distributions/exponential.hpp>
-#include <algorithm>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -29,259 +27,46 @@
 #include <absl/log/log.h>
 #endif
 
-#if HAS_STD_SPAN
-#include <span>
-namespace own = std;
-#else
-#include <gsl-lite/gsl-lite.hpp>
-namespace own = gsl_lite;
-#endif
 
 GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams)
-    : configuration_(configuration),
-      gnss_synchro_(nullptr),
-      role_(role),
-      item_size_(sizeof(gr_complex)),
-      threshold_(0.0),
-      channel_(0),
-      doppler_max_(configuration_->property(role + ".doppler_max", 5000)),
-      doppler_step_(configuration_->property(role + ".doppler_step", 500)),
-      sampled_ms_(configuration_->property(role + ".coherent_integration_time_ms", 4)),
-      tong_init_val_(configuration->property(role + ".tong_init_val", 1)),
-      tong_max_val_(configuration->property(role + ".tong_max_val", 2)),
-      tong_max_dwells_(configuration->property(role + ".tong_max_dwells", tong_max_val_ + 1)),
-      dump_(configuration_->property(role + ".dump", false)),
-      cboc_(configuration_->property(role + ".cboc", false))
+    : BasePcpsAcquisitionCustom(
+          configuration,
+          role,
+          in_streams,
+          out_streams,
+          GALILEO_E1_CODE_CHIP_RATE_CPS,
+          GALILEO_E1_B_CODE_LENGTH_CHIPS,
+          GALILEO_E1_CODE_PERIOD_MS,
+          true,
+          true),
+      cboc_(configuration->property(role + ".cboc", false))
 {
-    const std::string default_item_type("gr_complex");
-    const std::string default_dump_filename("./acquisition.dat");
-
-    DLOG(INFO) << "role " << role_;
-
-    item_type_ = configuration_->property(role_ + ".item_type", default_item_type);
-    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
-    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    dump_filename_ = configuration_->property(role_ + ".dump_filename", default_dump_filename);
-
-    if (sampled_ms_ % 4 != 0)
+    if (is_type_gr_complex())
         {
-            sampled_ms_ = static_cast<int>(sampled_ms_ / 4) * 4;
-            LOG(WARNING) << "coherent_integration_time should be multiple of "
-                         << "Galileo code length (4 ms). coherent_integration_time = "
-                         << sampled_ms_ << " ms will be used.";
-        }
+            const auto samples_per_ms = static_cast<int>(code_length_) / GALILEO_E1_CODE_PERIOD_MS;
+            const auto tong_init_val = configuration->property(role + ".tong_init_val", 1U);
+            const auto tong_max_val = configuration->property(role + ".tong_max_val", 2U);
+            const auto tong_max_dwells = configuration->property(role + ".tong_max_dwells", tong_max_val + 1U);
 
-#if USE_GLOG_AND_GFLAGS
-    if (FLAGS_doppler_max != 0)
-        {
-            doppler_max_ = FLAGS_doppler_max;
-        }
-    if (FLAGS_doppler_step != 0)
-        {
-            doppler_step_ = static_cast<uint32_t>(FLAGS_doppler_step);
-        }
-#else
-    if (absl::GetFlag(FLAGS_doppler_max) != 0)
-        {
-            doppler_max_ = absl::GetFlag(FLAGS_doppler_max);
-        }
-    if (absl::GetFlag(FLAGS_doppler_step) != 0)
-        {
-            doppler_step_ = static_cast<uint32_t>(absl::GetFlag(FLAGS_doppler_step));
-        }
-#endif
+            acquisition_cc_ = pcps_tong_make_acquisition_cc(acq_parameters_.sampled_ms, acq_parameters_.doppler_max,
+                acq_parameters_.doppler_step, acq_parameters_.fs_in, samples_per_ms, code_length_, tong_init_val,
+                tong_max_val, tong_max_dwells, acq_parameters_.dump, acq_parameters_.dump_filename, acq_parameters_.enable_monitor_output);
 
-    bool enable_monitor_output = configuration_->property("AcquisitionMonitor.enable_monitor", false);
-
-    // -- Find number of samples per spreading code (4 ms)  -----------------
-
-    code_length_ = static_cast<unsigned int>(round(
-        fs_in_ / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
-
-    vector_length_ = code_length_ * static_cast<int>(sampled_ms_ / 4);
-
-    auto samples_per_ms = static_cast<int>(code_length_) / 4;
-
-    code_ = std::vector<std::complex<float>>(vector_length_);
-
-    if (item_type_ == "gr_complex")
-        {
-            acquisition_cc_ = pcps_tong_make_acquisition_cc(sampled_ms_, doppler_max_,
-                doppler_step_, fs_in_, samples_per_ms, code_length_, tong_init_val_,
-                tong_max_val_, tong_max_dwells_, dump_, dump_filename_, enable_monitor_output);
-
-            stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
-            DLOG(INFO) << "stream_to_vector("
-                       << stream_to_vector_->unique_id() << ")";
-            DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id()
-                       << ")";
-        }
-    else
-        {
-            item_size_ = 0;
-            acquisition_cc_ = nullptr;
-            LOG(WARNING) << item_type_ << " unknown acquisition item type";
-        }
-
-    if (in_streams > 1)
-        {
-            LOG(ERROR) << "This implementation only supports one input stream";
-        }
-    if (out_streams > 0)
-        {
-            LOG(ERROR) << "This implementation does not provide an output stream";
+            DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
 }
 
 
-void GalileoE1PcpsTongAmbiguousAcquisition::stop_acquisition()
+void GalileoE1PcpsTongAmbiguousAcquisition::code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int32_t sampling_freq)
 {
-    acquisition_cc_->set_state(0);
-    acquisition_cc_->set_active(false);
-}
+    std::array<char, 3> Signal_{};
+    Signal_[0] = gnss_synchro_->Signal[0];
+    Signal_[1] = gnss_synchro_->Signal[1];
+    Signal_[2] = '\0';
 
-
-void GalileoE1PcpsTongAmbiguousAcquisition::set_threshold(float threshold)
-{
-    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", static_cast<float>(0.0));
-
-    if (pfa == 0.0)
-        {
-            pfa = configuration_->property(role_ + ".pfa", static_cast<float>(0.0));
-        }
-
-    if (pfa == 0.0)
-        {
-            threshold_ = threshold;
-        }
-    else
-        {
-            threshold_ = calculate_threshold(pfa);
-        }
-
-    DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
-
-    if (item_type_ == "gr_complex")
-        {
-            acquisition_cc_->set_threshold(threshold_);
-        }
-}
-
-
-void GalileoE1PcpsTongAmbiguousAcquisition::set_gnss_synchro(
-    Gnss_Synchro* gnss_synchro)
-{
-    gnss_synchro_ = gnss_synchro;
-    if (item_type_ == "gr_complex")
-        {
-            acquisition_cc_->set_gnss_synchro(gnss_synchro_);
-        }
-}
-
-
-signed int GalileoE1PcpsTongAmbiguousAcquisition::mag()
-{
-    if (item_type_ == "gr_complex")
-        {
-            return acquisition_cc_->mag();
-        }
-    return 0;
-}
-
-
-void GalileoE1PcpsTongAmbiguousAcquisition::init()
-{
-    acquisition_cc_->init();
-}
-
-
-void GalileoE1PcpsTongAmbiguousAcquisition::set_local_code()
-{
-    if (item_type_ == "gr_complex")
-        {
-            std::vector<std::complex<float>> code(code_length_);
-            std::array<char, 3> Signal_{};
-            Signal_[0] = gnss_synchro_->Signal[0];
-            Signal_[1] = gnss_synchro_->Signal[1];
-            Signal_[2] = '\0';
-            galileo_e1_code_gen_complex_sampled(code, Signal_, cboc_, gnss_synchro_->PRN, fs_in_, 0, false);
-
-            own::span<gr_complex> code_span(code_.data(), vector_length_);
-            for (unsigned int i = 0; i < sampled_ms_ / 4; i++)
-                {
-                    std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
-                }
-
-            acquisition_cc_->set_local_code(code_.data());
-        }
-}
-
-
-void GalileoE1PcpsTongAmbiguousAcquisition::reset()
-{
-    if (item_type_ == "gr_complex")
-        {
-            acquisition_cc_->set_active(true);
-        }
-}
-
-
-void GalileoE1PcpsTongAmbiguousAcquisition::set_state(int state)
-{
-    acquisition_cc_->set_state(state);
-}
-
-
-float GalileoE1PcpsTongAmbiguousAcquisition::calculate_threshold(float pfa) const
-{
-    unsigned int frequency_bins = 0;
-    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += static_cast<int>(doppler_step_))
-        {
-            frequency_bins++;
-        }
-
-    DLOG(INFO) << "Channel " << channel_ << "  Pfa = " << pfa;
-
-    unsigned int ncells = vector_length_ * frequency_bins;
-    double exponent = 1 / static_cast<double>(ncells);
-    double val = pow(1.0 - pfa, exponent);
-    auto lambda = static_cast<double>(vector_length_);
-    boost::math::exponential_distribution<double> mydist(lambda);
-    auto threshold = static_cast<float>(quantile(mydist, val));
-
-    return threshold;
-}
-
-
-void GalileoE1PcpsTongAmbiguousAcquisition::connect(gr::top_block_sptr top_block)
-{
-    if (item_type_ == "gr_complex")
-        {
-            top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
-        }
-}
-
-
-void GalileoE1PcpsTongAmbiguousAcquisition::disconnect(gr::top_block_sptr top_block)
-{
-    if (item_type_ == "gr_complex")
-        {
-            top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
-        }
-}
-
-
-gr::basic_block_sptr GalileoE1PcpsTongAmbiguousAcquisition::get_left_block()
-{
-    return stream_to_vector_;
-}
-
-
-gr::basic_block_sptr GalileoE1PcpsTongAmbiguousAcquisition::get_right_block()
-{
-    return acquisition_cc_;
+    galileo_e1_code_gen_complex_sampled(dest, Signal_, cboc_, prn, sampling_freq, 0, false);
 }

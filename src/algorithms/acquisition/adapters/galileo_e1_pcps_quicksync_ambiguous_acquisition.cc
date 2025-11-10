@@ -119,6 +119,9 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
     // vector_length_ = (sampled_ms_/folding_factor_) * code_length_;
     vector_length_ = sampled_ms_ * samples_per_ms;
 
+    // 8/2 * code_length_
+    // 8 * code_length_ / 4
+
     unsigned int max_dwells = 2;
 
     if (!bit_transition_flag_)

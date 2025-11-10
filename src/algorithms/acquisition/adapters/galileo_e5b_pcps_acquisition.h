@@ -27,9 +27,6 @@
 /** \addtogroup Acq_adapters
  * \{ */
 
-
-class ConfigurationInterface;
-
 class GalileoE5bPcpsAcquisition : public BasePcpsAcquisition
 {
 public:

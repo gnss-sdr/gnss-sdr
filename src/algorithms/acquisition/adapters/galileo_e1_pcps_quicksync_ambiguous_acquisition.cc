@@ -19,9 +19,8 @@
 #include "Galileo_E1.h"
 #include "configuration_interface.h"
 #include "galileo_e1_signal_replica.h"
-#include "gnss_sdr_flags.h"
+#include "pcps_quicksync_acquisition_cc.h"
 #include <boost/math/distributions/exponential.hpp>
-#include <algorithm>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -29,252 +28,69 @@
 #include <absl/log/log.h>
 #endif
 
-#if HAS_STD_SPAN
-#include <span>
-namespace own = std;
-#else
-#include <gsl-lite/gsl-lite.hpp>
-namespace own = gsl_lite;
-#endif
+namespace
+{
+uint32_t get_folding_factor(const ConfigurationInterface* configuration, const std::string& role)
+{
+    /*  Calculate the folding factor value based on the formula described in the paper.
+        This may be a bug, but acquisition also work by variying the folding factor at va-
+        lues different that the expressed in the paper. In addition, it is important to point
+        out that by making the folding factor smaller we were able to get QuickSync work with
+        Galileo. Future work should be directed to test this assumption statistically. */
+
+    // return static_cast<unsigned int>(ceil(sqrt(log2(code_length_))));
+    return configuration->property(role + ".folding_factor", 2);
+}
+}  // namespace
 
 GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcquisition(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams)
-    : configuration_(configuration),
-      role_(role),
-      gnss_synchro_(nullptr),
-      item_size_(sizeof(gr_complex)),
-      threshold_(0.0),
-      channel_(0),
-      doppler_max_(configuration_->property(role + ".doppler_max", 5000)),
-      doppler_step_(configuration_->property(role + ".doppler_step", 500)),
-      sampled_ms_(configuration_->property(role + ".coherent_integration_time_ms", 8)),
-      bit_transition_flag_(configuration_->property(role + ".bit_transition_flag", false)),
-      dump_(configuration_->property(role + ".dump", false)),
-      cboc_(configuration_->property(role + ".cboc", false))
+    : BasePcpsAcquisitionCustom(
+          configuration,
+          role,
+          in_streams,
+          out_streams,
+          GALILEO_E1_CODE_CHIP_RATE_CPS,
+          GALILEO_E1_B_CODE_LENGTH_CHIPS,
+          GALILEO_E1_CODE_PERIOD_MS * get_folding_factor(configuration, role),
+          true,
+          true),
+      folding_factor_(get_folding_factor(configuration, role)),
+      cboc_(configuration->property(role + ".cboc", false))
 {
-    const std::string default_item_type("gr_complex");
-    const std::string default_dump_filename("./acquisition.dat");
-    item_type_ = configuration_->property(role + ".item_type", default_item_type);
-    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
-    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
-
-#if USE_GLOG_AND_GFLAGS
-    if (FLAGS_doppler_max != 0)
+    if (is_type_gr_complex())
         {
-            doppler_max_ = FLAGS_doppler_max;
-        }
-    if (FLAGS_doppler_step != 0)
-        {
-            doppler_step_ = static_cast<uint32_t>(FLAGS_doppler_step);
-        }
-#else
-    if (absl::GetFlag(FLAGS_doppler_max) != 0)
-        {
-            doppler_max_ = absl::GetFlag(FLAGS_doppler_max);
-        }
-    if (absl::GetFlag(FLAGS_doppler_step) != 0)
-        {
-            doppler_step_ = static_cast<uint32_t>(absl::GetFlag(FLAGS_doppler_step));
-        }
-#endif
+            // const auto samples_per_ms = static_cast<int>(round(code_length_ / acq_parameters_.sampled_ms));
+            const unsigned int max_dwells = acq_parameters_.bit_transition_flag ? 2 : acq_parameters_.max_dwells;
 
-    /* --- Find number of samples per spreading code (4 ms)  -----------------*/
-    code_length_ = static_cast<unsigned int>(round(
-        fs_in_ / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
-
-    auto samples_per_ms = static_cast<int>(round(code_length_ / 4.0));
-
-    DLOG(INFO) << "role " << role;
-    /*Calculate the folding factor value based on the formula described in the paper.
-    This may be a bug, but acquisition also work by variying the folding factor at va-
-    lues different that the expressed in the paper. In addition, it is important to point
-    out that by making the folding factor smaller we were able to get QuickSync work with
-    Galileo. Future work should be directed to test this assumption statistically.*/
-
-    // folding_factor_ = static_cast<unsigned int>(ceil(sqrt(log2(code_length_))));
-    folding_factor_ = configuration_->property(role + ".folding_factor", 2);
-
-    if (sampled_ms_ % (folding_factor_ * 4) != 0)
-        {
-            LOG(WARNING) << "QuickSync Algorithm requires a coherent_integration_time"
-                         << " multiple of " << (folding_factor_ * 4) << "ms, Value entered "
-                         << sampled_ms_ << " ms";
-
-            if (sampled_ms_ < (folding_factor_ * 4))
-                {
-                    sampled_ms_ = static_cast<int>(folding_factor_ * 4);
-                }
-            else
-                {
-                    sampled_ms_ = static_cast<int>(sampled_ms_ / (folding_factor_ * 4)) * (folding_factor_ * 4);
-                }
-            LOG(WARNING) << "coherent_integration_time should be multiple of "
-                         << "Galileo code length (4 ms). coherent_integration_time = "
-                         << sampled_ms_ << " ms will be used.";
-        }
-    // vector_length_ = (sampled_ms_/folding_factor_) * code_length_;
-    vector_length_ = sampled_ms_ * samples_per_ms;
-
-    // 8/2 * code_length_
-    // 8 * code_length_ / 4
-
-    unsigned int max_dwells = 2;
-
-    if (!bit_transition_flag_)
-        {
-            max_dwells = configuration_->property(role + ".max_dwells", 1);
-        }
-
-    bool enable_monitor_output = configuration_->property("AcquisitionMonitor.enable_monitor", false);
-
-    code_ = std::vector<std::complex<float>>(code_length_);
-    LOG(INFO) << "Vector Length: " << vector_length_
-              << ", Samples per ms: " << samples_per_ms
-              << ", Folding factor: " << folding_factor_
-              << ", Sampled  ms: " << sampled_ms_
-              << ", Code Length: " << code_length_;
-    if (item_type_ == "gr_complex")
-        {
             acquisition_cc_ = pcps_quicksync_make_acquisition_cc(folding_factor_,
-                sampled_ms_, max_dwells, doppler_max_, doppler_step_, fs_in_,
-                samples_per_ms, code_length_, bit_transition_flag_,
-                dump_, dump_filename_, enable_monitor_output);
-            stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_,
-                vector_length_);
-            DLOG(INFO) << "stream_to_vector_quicksync("
-                       << stream_to_vector_->unique_id() << ")";
-            DLOG(INFO) << "acquisition_quicksync(" << acquisition_cc_->unique_id()
-                       << ")";
-        }
-    else
-        {
-            acquisition_cc_ = nullptr;
-            item_size_ = 0;
-            LOG(WARNING) << item_type_ << " unknown acquisition item type";
-        }
+                vector_length_, max_dwells, acq_parameters_.doppler_max, acq_parameters_.doppler_step,
+                acq_parameters_.fs_in, code_length_, acq_parameters_.bit_transition_flag,
+                acq_parameters_.dump, acq_parameters_.dump_filename, acq_parameters_.enable_monitor_output);
 
-    if (in_streams > 1)
-        {
-            LOG(ERROR) << "This implementation only supports one input stream";
-        }
-    if (out_streams > 0)
-        {
-            LOG(ERROR) << "This implementation does not provide an output stream";
+            DLOG(INFO) << "acquisition_quicksync(" << acquisition_cc_->unique_id() << ")";
         }
 }
 
 
-void GalileoE1PcpsQuickSyncAmbiguousAcquisition::stop_acquisition()
+void GalileoE1PcpsQuickSyncAmbiguousAcquisition::code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int32_t sampling_freq)
 {
-    acquisition_cc_->set_state(0);
-    acquisition_cc_->set_active(false);
-}
+    std::array<char, 3> Signal_{};
+    Signal_[0] = gnss_synchro_->Signal[0];
+    Signal_[1] = gnss_synchro_->Signal[1];
+    Signal_[2] = '\0';
 
-
-void GalileoE1PcpsQuickSyncAmbiguousAcquisition::set_threshold(float threshold)
-{
-    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", static_cast<float>(0.0));
-
-    if (pfa == 0.0)
-        {
-            pfa = configuration_->property(role_ + ".pfa", static_cast<float>(0.0));
-        }
-
-    if (pfa == 0.0)
-        {
-            threshold_ = threshold;
-        }
-    else
-        {
-            threshold_ = calculate_threshold(pfa);
-        }
-
-    DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
-
-    if (item_type_ == "gr_complex")
-        {
-            acquisition_cc_->set_threshold(threshold_);
-        }
-}
-
-
-void GalileoE1PcpsQuickSyncAmbiguousAcquisition::set_gnss_synchro(
-    Gnss_Synchro* gnss_synchro)
-{
-    gnss_synchro_ = gnss_synchro;
-    if (item_type_ == "gr_complex")
-        {
-            acquisition_cc_->set_gnss_synchro(gnss_synchro_);
-        }
-}
-
-
-signed int
-GalileoE1PcpsQuickSyncAmbiguousAcquisition::mag()
-{
-    if (item_type_ == "gr_complex")
-        {
-            return acquisition_cc_->mag();
-        }
-    return 0;
-}
-
-
-void GalileoE1PcpsQuickSyncAmbiguousAcquisition::init()
-{
-    acquisition_cc_->init();
-}
-
-
-void GalileoE1PcpsQuickSyncAmbiguousAcquisition::set_local_code()
-{
-    if (item_type_ == "gr_complex")
-        {
-            std::vector<std::complex<float>> code(code_length_);
-            std::array<char, 3> Signal_{};
-            Signal_[0] = gnss_synchro_->Signal[0];
-            Signal_[1] = gnss_synchro_->Signal[1];
-            Signal_[2] = '\0';
-
-            galileo_e1_code_gen_complex_sampled(code, Signal_, cboc_, gnss_synchro_->PRN, fs_in_, 0, false);
-
-            own::span<gr_complex> code_span(code_.data(), vector_length_);
-            for (unsigned int i = 0; i < (sampled_ms_ / (folding_factor_ * 4)); i++)
-                {
-                    std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
-                }
-
-            acquisition_cc_->set_local_code(code_.data());
-        }
-}
-
-
-void GalileoE1PcpsQuickSyncAmbiguousAcquisition::reset()
-{
-    if (item_type_ == "gr_complex")
-        {
-            acquisition_cc_->set_active(true);
-        }
-}
-
-
-void GalileoE1PcpsQuickSyncAmbiguousAcquisition::set_state(int state)
-{
-    if (item_type_ == "gr_complex")
-        {
-            acquisition_cc_->set_state(state);
-        }
+    galileo_e1_code_gen_complex_sampled(dest, Signal_, cboc_, prn, sampling_freq, 0, false);
 }
 
 
 float GalileoE1PcpsQuickSyncAmbiguousAcquisition::calculate_threshold(float pfa) const
 {
     unsigned int frequency_bins = 0;
-    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += static_cast<int>(doppler_step_))
+    for (int doppler = -acq_parameters_.doppler_max; doppler <= acq_parameters_.doppler_max; doppler += static_cast<int>(acq_parameters_.doppler_step))
         {
             frequency_bins++;
         }
@@ -289,34 +105,4 @@ float GalileoE1PcpsQuickSyncAmbiguousAcquisition::calculate_threshold(float pfa)
     auto threshold = static_cast<float>(quantile(mydist, val));
 
     return threshold;
-}
-
-
-void GalileoE1PcpsQuickSyncAmbiguousAcquisition::connect(gr::top_block_sptr top_block)
-{
-    if (item_type_ == "gr_complex")
-        {
-            top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
-        }
-}
-
-
-void GalileoE1PcpsQuickSyncAmbiguousAcquisition::disconnect(gr::top_block_sptr top_block)
-{
-    if (item_type_ == "gr_complex")
-        {
-            top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
-        }
-}
-
-
-gr::basic_block_sptr GalileoE1PcpsQuickSyncAmbiguousAcquisition::get_left_block()
-{
-    return stream_to_vector_;
-}
-
-
-gr::basic_block_sptr GalileoE1PcpsQuickSyncAmbiguousAcquisition::get_right_block()
-{
-    return acquisition_cc_;
 }

@@ -84,7 +84,7 @@ BasePcpsAcquisitionCustom::BasePcpsAcquisitionCustom(
     unsigned int ms_per_code,
     bool use_stream_to_vector,
     bool compute_threshold_from_pfa)
-    : fs_in_(configuration->property("GNSS-SDR.internal_fs_sps", configuration->property("GNSS-SDR.internal_fs_hz", 4000000L))),
+    : fs_in_(configuration->property("GNSS-SDR.internal_fs_sps", configuration->property("GNSS-SDR.internal_fs_hz", static_cast<int64_t>(4000000)))),
       doppler_max_(get_doppler_max(configuration, role)),
       doppler_step_(get_doppler_step(configuration, role)),
       sampled_ms_(sampled_ms),

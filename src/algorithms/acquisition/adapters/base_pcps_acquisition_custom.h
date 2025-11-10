@@ -25,6 +25,7 @@
 #include "pcps_acquisition.h"
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>
+#include <climits>
 
 /** \addtogroup Acquisition
  * Classes for GNSS signal acquisition
@@ -50,7 +51,8 @@ public:
         double code_length_chips,
         unsigned int ms_per_code,
         bool use_stream_to_vector,
-        bool compute_threshold_from_pfa);
+        bool compute_threshold_from_pfa,
+        uint32_t max_sampled_ms = INT_MAX);
 
     ~BasePcpsAcquisitionCustom() = default;
 

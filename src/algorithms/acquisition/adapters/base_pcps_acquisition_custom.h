@@ -1,5 +1,5 @@
 /*!
- * \file base_ca_pcps_acquisition.h
+ * \file base_ca_pcps_acquisition_custom.h
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface
  * \authors <ul>
  *          <li> Mathieu Favreau, 2025. favreau.mathieu(at)hotmail.com
@@ -16,15 +16,14 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_BASE_PCPS_ACQUISITION_H
-#define GNSS_SDR_BASE_PCPS_ACQUISITION_H
+#ifndef GNSS_SDR_BASE_PCPS_ACQUISITION_CUSTOM_H
+#define GNSS_SDR_BASE_PCPS_ACQUISITION_CUSTOM_H
 
-#include "acq_conf.h"
+#include "acquisition_impl_interface.h"
 #include "channel_fsm.h"
-#include "complex_byte_to_float_x2.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
-#include <gnuradio/blocks/float_to_complex.h>
+#include <gnuradio/blocks/stream_to_vector.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 
 /** \addtogroup Acquisition
@@ -40,30 +39,25 @@ class ConfigurationInterface;
 /*!
  * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
  */
-class BasePcpsAcquisition : public AcquisitionInterface
+class BasePcpsAcquisitionCustom : public AcquisitionInterface
 {
 public:
-    BasePcpsAcquisition(
-        const ConfigurationInterface* configuration,
+    BasePcpsAcquisitionCustom(const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams,
+        unsigned int sampled_ms,
         double chip_rate,
-        double opt_freq,
         double code_length_chips,
-        uint32_t ms_per_code);
+        unsigned int ms_per_code,
+        bool use_stream_to_vector,
+        bool compute_threshold_from_pfa);
 
-    ~BasePcpsAcquisition() = default;
+    ~BasePcpsAcquisitionCustom() = default;
 
-    inline std::string role() override
-    {
-        return role_;
-    }
+    inline std::string role() override { return role_; }
 
-    inline size_t item_size() override
-    {
-        return acq_parameters_.it_size;
-    }
+    inline size_t item_size() override { return item_size_; }
 
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;
@@ -80,28 +74,12 @@ public:
     /*!
      * \brief Set acquisition channel unique ID
      */
-    inline void set_channel(unsigned int channel) override
-    {
-        acquisition_->set_channel(channel);
-    }
+    void set_channel(unsigned int channel) override;
 
     /*!
      * \brief Set channel fsm associated to this acquisition instance
      */
-    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
-    {
-        acquisition_->set_channel_fsm(std::move(channel_fsm));
-    }
-
-    /*!
-     * \brief Set statistics threshold of PCPS algorithm
-     */
-    void set_threshold(float threshold) override;
-
-    /*!
-     * \brief Set Doppler center for the grid search
-     */
-    void set_doppler_center(int doppler_center) override;
+    void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override;
 
     /*!
      * \brief Initializes acquisition algorithm.
@@ -119,40 +97,59 @@ public:
     void reset() override;
 
     /*!
-     * \brief If state = 1, it forces the block to start acquiring from the first sample
-     */
-    void set_state(int state) override;
-
-    /*!
      * \brief Stop running acquisition
      */
     void stop_acquisition() override;
 
     /*!
-     * \brief Sets the resampler latency to account it in the acquisition code delay estimation
+     * \brief If state = 1, it forces the block to start acquiring from the first sample
      */
-    void set_resampler_latency(uint32_t latency_samples) override;
+    void set_state(int state) override;
+
+    /*!
+     * \brief Set statistics threshold of PCPS algorithm
+     */
+    void set_threshold(float threshold) override;
+
+    void set_resampler_latency(uint32_t /*latency_samples*/) override {};
 
     /*!
      * \brief Sets local code
      */
     void set_local_code() override;
 
+
+protected:
+    bool is_type_gr_complex() const { return is_type_gr_complex_; }
+
+    const int64_t fs_in_;
+    const unsigned int doppler_max_;
+    const unsigned int doppler_step_;
+    const unsigned int sampled_ms_;
+    const unsigned int ms_per_code_;
+    const unsigned int code_length_;
+    const unsigned int vector_length_;
+    acquisition_impl_interface_sptr acquisition_cc_;
+    Gnss_Synchro* gnss_synchro_;
+    unsigned int channel_;
+
 private:
+    float calculate_threshold(float pfa) const;
+
     /*!
      * \brief Generate code
      */
     virtual void code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int32_t sampling_freq) = 0;
 
-    const Acq_Conf acq_parameters_;
-    gr::blocks::float_to_complex::sptr float_to_complex_;
-    complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
-    Gnss_Synchro* gnss_synchro_;
-    const std::string role_;
-    const unsigned int vector_length_;
-    const unsigned int code_length_;
     volk_gnsssdr::vector<std::complex<float>> code_;
-    pcps_acquisition_sptr acquisition_;
+    gr::blocks::stream_to_vector::sptr stream_to_vector_;
+    const std::string item_type_;
+    const std::string role_;
+    const bool is_type_gr_complex_;
+    const size_t item_size_;
+    const float pfa_;
+    const bool use_stream_to_vector_;
+    const bool compute_threshold_from_pfa_;
 };
 
 

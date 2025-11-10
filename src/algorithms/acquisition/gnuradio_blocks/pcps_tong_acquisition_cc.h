@@ -37,6 +37,7 @@
 #ifndef GNSS_SDR_PCPS_TONG_ACQUISITION_CC_H
 #define GNSS_SDR_PCPS_TONG_ACQUISITION_CC_H
 
+#include "acquisition_impl_interface.h"
 #include "channel_fsm.h"
 #include "gnss_sdr_fft.h"
 #include "gnss_synchro.h"
@@ -76,7 +77,7 @@ pcps_tong_acquisition_cc_sptr pcps_tong_make_acquisition_cc(
  * \brief This class implements a Parallel Code Phase Search Acquisition with
  * Tong algorithm.
  */
-class pcps_tong_acquisition_cc : public gr::block
+class pcps_tong_acquisition_cc : public acquisition_impl_interface
 {
 public:
     /*!
@@ -89,7 +90,7 @@ public:
      * to exchange synchronization data between acquisition and tracking blocks.
      * \param p_gnss_synchro Satellite information shared by the processing blocks.
      */
-    inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+    inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override
     {
         d_gnss_synchro = p_gnss_synchro;
     }
@@ -97,7 +98,7 @@ public:
     /*!
      * \brief Returns the maximum peak of grid search.
      */
-    inline uint32_t mag() const
+    inline uint32_t mag() const override
     {
         return d_mag;
     }
@@ -105,20 +106,20 @@ public:
     /*!
      * \brief Initializes acquisition algorithm.
      */
-    void init();
+    void init() override;
 
     /*!
      * \brief Sets local code for TONG acquisition algorithm.
      * \param code - Pointer to the PRN code.
      */
-    void set_local_code(std::complex<float>* code);
+    void set_local_code(std::complex<float>* code) override;
 
     /*!
      * \brief Starts acquisition algorithm, turning from standby mode to
      * active mode
      * \param active - bool that activates/deactivates the block.
      */
-    inline void set_active(bool active)
+    inline void set_active(bool active) override
     {
         d_active = active;
     }
@@ -128,13 +129,13 @@ public:
      * first available sample.
      * \param state - int=1 forces start of acquisition
      */
-    void set_state(int32_t state);
+    void set_state(int32_t state) override;
 
     /*!
      * \brief Set acquisition channel unique ID
      * \param channel - receiver channel.
      */
-    inline void set_channel(uint32_t channel)
+    inline void set_channel(uint32_t channel) override
     {
         d_channel = channel;
     }
@@ -142,7 +143,7 @@ public:
     /*!
      * \brief Set channel fsm associated to this acquisition instance
      */
-    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm)
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
         d_channel_fsm = std::move(channel_fsm);
     }
@@ -152,7 +153,7 @@ public:
      * \param threshold - Threshold for signal detection (check \ref Navitec2012,
      * Algorithm 1, for a definition of this threshold).
      */
-    inline void set_threshold(float threshold)
+    inline void set_threshold(float threshold) override
     {
         d_threshold = threshold;
     }
@@ -162,7 +163,7 @@ public:
      */
     int general_work(int noutput_items, gr_vector_int& ninput_items,
         gr_vector_const_void_star& input_items,
-        gr_vector_void_star& output_items);
+        gr_vector_void_star& output_items) override;
 
 private:
     friend pcps_tong_acquisition_cc_sptr

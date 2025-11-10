@@ -1,11 +1,8 @@
 /*!
- * \file gps_l1_ca_pcps_acquisition.cc
- * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  GPS L1 C/A signals
+ * \file base_ca_pcps_acquisition.h
+ * \brief Adapts a PCPS acquisition block to an AcquisitionInterface
  * \authors <ul>
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
- *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
- *          <li> Marc Molina, 2013. marc.molina.pena(at)gmail.com
+ *          <li> Mathieu Favreau, 2025. favreau.mathieu(at)hotmail.com
  *          </ul>
  *
  * -----------------------------------------------------------------------------
@@ -13,7 +10,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2025  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------

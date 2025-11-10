@@ -40,7 +40,6 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
           role,
           in_streams,
           out_streams,
-          configuration->property(role + ".coherent_integration_time_ms", GPS_L1_CA_CODE_PERIOD_MS),
           GPS_L1_CA_CODE_RATE_CPS,
           GPS_L1_CA_CODE_LENGTH_CHIPS,
           GPS_L1_CA_CODE_PERIOD_MS,
@@ -49,18 +48,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
 {
     if (is_type_gr_complex())
         {
-            const std::string default_dump_filename = "./acquisition.mat";
-
-            Acq_Conf acq_parameters = Acq_Conf();
-            acq_parameters.fs_in = fs_in_;
-            acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil(GPS_L1_CA_CHIP_PERIOD_S * static_cast<float>(fs_in_)));
-            acq_parameters.dump = configuration->property(role + ".dump", false);
-            acq_parameters.dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-            acq_parameters.doppler_max = doppler_max_;
-            acq_parameters.doppler_step = doppler_step_;
-            acq_parameters.sampled_ms = sampled_ms_;
-            acq_parameters.max_dwells = configuration->property(role + ".max_dwells", 1);
-            acq_parameters.blocking_on_standby = configuration->property(role + ".blocking_on_standby", false);
+            Acq_Conf acq_parameters = acq_parameters_;
             acq_parameters.samples_per_ms = static_cast<float>(vector_length_);
 
             acquisition_cc_ = pcps_make_acquisition_fine_doppler_cc(acq_parameters);

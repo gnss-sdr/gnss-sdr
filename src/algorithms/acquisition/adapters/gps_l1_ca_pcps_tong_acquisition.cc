@@ -38,7 +38,6 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
           role,
           in_streams,
           out_streams,
-          configuration->property(role + ".coherent_integration_time_ms", GPS_L1_CA_CODE_PERIOD_MS),
           GPS_L1_CA_CODE_RATE_CPS,
           GPS_L1_CA_CODE_LENGTH_CHIPS,
           GPS_L1_CA_CODE_PERIOD_MS,
@@ -47,17 +46,13 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
 {
     if (is_type_gr_complex())
         {
-            const std::string default_dump_filename("./acquisition.dat");
-            const auto dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-            const auto enable_monitor_output = configuration->property("AcquisitionMonitor.enable_monitor", false);
-            const auto dump = configuration->property(role + ".dump", false);
             const auto tong_init_val = configuration->property(role + ".tong_init_val", 1U);
             const auto tong_max_val = configuration->property(role + ".tong_max_val", 2U);
             const auto tong_max_dwells = configuration->property(role + ".tong_max_dwells", tong_max_val + 1U);
 
-            acquisition_cc_ = pcps_tong_make_acquisition_cc(sampled_ms_, doppler_max_, doppler_step_, fs_in_,
+            acquisition_cc_ = pcps_tong_make_acquisition_cc(acq_parameters_.sampled_ms, acq_parameters_.doppler_max, acq_parameters_.doppler_step, acq_parameters_.fs_in,
                 code_length_, code_length_, tong_init_val, tong_max_val, tong_max_dwells,
-                dump, dump_filename, enable_monitor_output);
+                acq_parameters_.dump, acq_parameters_.dump_filename, acq_parameters_.enable_monitor_output);
 
             DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }

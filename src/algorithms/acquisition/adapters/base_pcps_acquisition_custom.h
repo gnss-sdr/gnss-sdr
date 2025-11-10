@@ -46,7 +46,6 @@ public:
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams,
-        unsigned int sampled_ms,
         double chip_rate,
         double code_length_chips,
         unsigned int ms_per_code,
@@ -122,10 +121,7 @@ public:
 protected:
     bool is_type_gr_complex() const { return is_type_gr_complex_; }
 
-    const int64_t fs_in_;
-    const unsigned int doppler_max_;
-    const unsigned int doppler_step_;
-    const unsigned int sampled_ms_;
+    const Acq_Conf acq_parameters_;
     const unsigned int ms_per_code_;
     const unsigned int code_length_;
     const unsigned int vector_length_;
@@ -143,11 +139,9 @@ private:
 
     volk_gnsssdr::vector<std::complex<float>> code_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
-    const std::string item_type_;
     const std::string role_;
     const bool is_type_gr_complex_;
     const size_t item_size_;
-    const float pfa_;
     const bool use_stream_to_vector_;
     const bool compute_threshold_from_pfa_;
 };

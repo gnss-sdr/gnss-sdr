@@ -30,75 +30,61 @@
 
 namespace
 {
-const std::string default_item_type("gr_complex");
 const std::string default_dump_filename("./acquisition.dat");
 
-unsigned int get_doppler_max(const ConfigurationInterface* configuration, const std::string& role)
+Acq_Conf get_acq_conf(const ConfigurationInterface* configuration, const std::string& role, double chip_rate, double opt_freq, uint32_t ms_per_code)
 {
-    unsigned int doppler_max = configuration->property(role + ".doppler_max", 5000);
+    Acq_Conf acq_parameters;
+    acq_parameters.ms_per_code = ms_per_code;
+    acq_parameters.sampled_ms = ms_per_code;               // Set as default value
+    acq_parameters.dump_filename = default_dump_filename;  // Set as default value
+    acq_parameters.SetFromConfiguration(configuration, role, chip_rate, opt_freq);
 
 #if USE_GLOG_AND_GFLAGS
     if (FLAGS_doppler_max != 0)
         {
-            doppler_max = FLAGS_doppler_max;
+            acq_parameters.doppler_max = FLAGS_doppler_max;
+        }
+    if (FLAGS_doppler_step != 0)
+        {
+            acq_parameters.doppler_step = static_cast<float>(FLAGS_doppler_step);
         }
 #else
     if (absl::GetFlag(FLAGS_doppler_max) != 0)
         {
-            doppler_max = absl::GetFlag(FLAGS_doppler_max);
+            acq_parameters.doppler_max = absl::GetFlag(FLAGS_doppler_max);
         }
-#endif
-
-    return doppler_max;
-}
-
-unsigned int get_doppler_step(const ConfigurationInterface* configuration, const std::string& role)
-{
-    unsigned int doppler_step = configuration->property(role + ".doppler_step", 500);
-
-#if USE_GLOG_AND_GFLAGS
-    if (FLAGS_doppler_step != 0)
-        {
-            doppler_step = static_cast<uint32_t>(FLAGS_doppler_step);
-        }
-#else
     if (absl::GetFlag(FLAGS_doppler_step) != 0)
         {
-            doppler_step = static_cast<uint32_t>(absl::GetFlag(FLAGS_doppler_step));
+            acq_parameters.doppler_step = static_cast<float>(absl::GetFlag(FLAGS_doppler_step));
         }
 #endif
 
-    return doppler_step;
+    return acq_parameters;
 }
-
 }  // namespace
+
 
 BasePcpsAcquisitionCustom::BasePcpsAcquisitionCustom(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams,
-    unsigned int sampled_ms,
     double chip_rate,
     double code_length_chips,
     unsigned int ms_per_code,
     bool use_stream_to_vector,
     bool compute_threshold_from_pfa)
-    : fs_in_(configuration->property("GNSS-SDR.internal_fs_sps", configuration->property("GNSS-SDR.internal_fs_hz", static_cast<int64_t>(4000000)))),
-      doppler_max_(get_doppler_max(configuration, role)),
-      doppler_step_(get_doppler_step(configuration, role)),
-      sampled_ms_(sampled_ms),
+    : acq_parameters_(get_acq_conf(configuration, role, chip_rate, 0, ms_per_code)),
       ms_per_code_(ms_per_code),
-      code_length_(static_cast<unsigned int>(round(fs_in_ / (chip_rate / code_length_chips)))),
-      vector_length_(code_length_ * static_cast<int>(sampled_ms_ / ms_per_code)),
+      code_length_(static_cast<unsigned int>(round(acq_parameters_.fs_in / (chip_rate / code_length_chips)))),
+      vector_length_(code_length_ * static_cast<int>(acq_parameters_.sampled_ms / ms_per_code)),
       gnss_synchro_(nullptr),
       channel_(0),
       code_(vector_length_),
-      item_type_(configuration->property(role + ".item_type", default_item_type)),
       role_(role),
-      is_type_gr_complex_(item_type_ == "gr_complex"),
+      is_type_gr_complex_(acq_parameters_.item_type == "gr_complex"),
       item_size_(is_type_gr_complex_ ? sizeof(gr_complex) : 0),
-      pfa_(configuration->property(role + ".pfa", 0.0F)),
       use_stream_to_vector_(use_stream_to_vector),
       compute_threshold_from_pfa_(compute_threshold_from_pfa)
 {
@@ -114,7 +100,7 @@ BasePcpsAcquisitionCustom::BasePcpsAcquisitionCustom(
         }
     else
         {
-            LOG(WARNING) << item_type_ << " unknown acquisition item type";
+            LOG(WARNING) << acq_parameters_.item_type << " unknown acquisition item type";
         }
 
     if (in_streams > 1)
@@ -243,9 +229,9 @@ void BasePcpsAcquisitionCustom::set_threshold(float threshold)
 {
     if (is_type_gr_complex_)
         {
-            if (compute_threshold_from_pfa_ && pfa_ != 0)
+            if (compute_threshold_from_pfa_ && acq_parameters_.pfa != 0)
                 {
-                    threshold = calculate_threshold(pfa_);
+                    threshold = calculate_threshold(acq_parameters_.pfa);
                     DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold;
                 }
 
@@ -259,9 +245,9 @@ void BasePcpsAcquisitionCustom::set_local_code()
     if (is_type_gr_complex())
         {
             std::vector<std::complex<float>> code(code_length_);
-            code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_);
+            code_gen_complex_sampled(code, gnss_synchro_->PRN, acq_parameters_.fs_in);
 
-            const auto num_codes = sampled_ms_ / ms_per_code_;
+            const auto num_codes = acq_parameters_.sampled_ms / ms_per_code_;
 
             own::span<gr_complex> code_span(code_.data(), vector_length_);
             for (unsigned int i = 0; i < num_codes; i++)
@@ -278,7 +264,7 @@ float BasePcpsAcquisitionCustom::calculate_threshold(float pfa) const
 {
     // Calculate the threshold
     unsigned int frequency_bins = 0;
-    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += static_cast<int>(doppler_step_))
+    for (int doppler = -acq_parameters_.doppler_max; doppler <= acq_parameters_.doppler_max; doppler += static_cast<int>(acq_parameters_.doppler_step))
         {
             frequency_bins++;
         }

@@ -41,7 +41,6 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
           role,
           in_streams,
           out_streams,
-          configuration->property(role + ".coherent_integration_time_ms", GPS_L1_CA_CODE_PERIOD_MS),
           GPS_L1_CA_CODE_RATE_CPS,
           GPS_L1_CA_CODE_LENGTH_CHIPS,
           GPS_L1_CA_CODE_PERIOD_MS,
@@ -51,22 +50,11 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
 {
     if (is_type_gr_complex())
         {
-            const auto bit_transition_flag = configuration->property(role + ".bit_transition_flag", false);
+            const unsigned int max_dwells = acq_parameters_.bit_transition_flag ? 2 : acq_parameters_.max_dwells;
 
-            unsigned int max_dwells = 2;
-
-            if (!bit_transition_flag)
-                {
-                    max_dwells = configuration->property(role + ".max_dwells", 1);
-                }
-
-            const std::string default_dump_filename = "./acquisition.dat";
-            const auto dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-            const auto dump = configuration->property(role + ".dump", false);
-
-            auto acquisition_cc = pcps_make_opencl_acquisition_cc(sampled_ms_, max_dwells,
-                doppler_max_, doppler_step_, fs_in_, code_length_, code_length_,
-                bit_transition_flag, dump, dump_filename, false);
+            auto acquisition_cc = pcps_make_opencl_acquisition_cc(acq_parameters_.sampled_ms, max_dwells,
+                acq_parameters_.doppler_max, acq_parameters_.doppler_step, acq_parameters_.fs_in, code_length_, code_length_,
+                acq_parameters_.bit_transition_flag, acq_parameters_.dump, acq_parameters_.dump_filename, false);
 
             opencl_ready_ = acquisition_cc->opencl_ready();
             acquisition_cc_ = std::move(acquisition_cc);

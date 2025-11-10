@@ -27,24 +27,6 @@
 #include <absl/log/log.h>
 #endif
 
-namespace
-{
-unsigned int get_sampled_ms(const ConfigurationInterface* configuration, const std::string& role)
-{
-    unsigned int sampled_ms = configuration->property(role + ".coherent_integration_time_ms", GALILEO_E1_CODE_PERIOD_MS);
-
-    if (sampled_ms % GALILEO_E1_CODE_PERIOD_MS != 0)
-        {
-            sampled_ms = static_cast<int>(sampled_ms / GALILEO_E1_CODE_PERIOD_MS) * GALILEO_E1_CODE_PERIOD_MS;
-            LOG(WARNING) << "coherent_integration_time should be multiple of "
-                         << "Galileo code length (" << GALILEO_E1_CODE_PERIOD_MS << " ms). coherent_integration_time = "
-                         << sampled_ms << " ms will be used.";
-        }
-
-    return sampled_ms;
-}
-}  // namespace
-
 
 GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
     const ConfigurationInterface* configuration,
@@ -56,7 +38,6 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
           role,
           in_streams,
           out_streams,
-          get_sampled_ms(configuration, role),
           GALILEO_E1_CODE_CHIP_RATE_CPS,
           GALILEO_E1_B_CODE_LENGTH_CHIPS,
           GALILEO_E1_CODE_PERIOD_MS,
@@ -67,15 +48,10 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
     if (is_type_gr_complex())
         {
             const auto samples_per_ms = static_cast<int>(code_length_) / GALILEO_E1_CODE_PERIOD_MS;
-            const std::string default_dump_filename("./acquisition.dat");
-            const auto dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-            const auto enable_monitor_output = configuration->property("AcquisitionMonitor.enable_monitor", false);
-            const auto dump = configuration->property(role + ".dump", false);
-            const auto max_dwells = configuration->property(role + ".max_dwells", 1U);
 
-            acquisition_cc_ = galileo_pcps_8ms_make_acquisition_cc(sampled_ms_, max_dwells,
-                doppler_max_, doppler_step_, fs_in_, samples_per_ms, code_length_,
-                dump, dump_filename, enable_monitor_output);
+            acquisition_cc_ = galileo_pcps_8ms_make_acquisition_cc(acq_parameters_.sampled_ms, acq_parameters_.max_dwells,
+                acq_parameters_.doppler_max, acq_parameters_.doppler_step, acq_parameters_.fs_in, samples_per_ms, code_length_,
+                acq_parameters_.dump, acq_parameters_.dump_filename, acq_parameters_.enable_monitor_output);
 
             DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }

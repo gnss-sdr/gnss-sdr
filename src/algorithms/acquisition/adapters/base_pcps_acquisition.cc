@@ -41,6 +41,7 @@ Acq_Conf get_acq_conf(const ConfigurationInterface* configuration, const std::st
 {
     Acq_Conf acq_parameters;
     acq_parameters.ms_per_code = ms_per_code;
+    acq_parameters.sampled_ms = ms_per_code;  // Set as default value
     acq_parameters.SetFromConfiguration(configuration, role, chip_rate, opt_freq);
 
 #if USE_GLOG_AND_GFLAGS

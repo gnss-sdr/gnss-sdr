@@ -54,7 +54,6 @@ private:
     // We don't implement this function since we override set_local_code
     void code_gen_complex_sampled(own::span<std::complex<float>> /*dest*/, uint32_t /*prn*/, int32_t /*sampling_freq*/) override {}
 
-    std::vector<std::complex<float>> code_data_;
     std::vector<std::complex<float>> code_pilot_;
     const bool cboc_;
 };

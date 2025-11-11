@@ -83,7 +83,6 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
           get_max_sampled_ms(configuration, role)),
       zero_padding_(get_zero_padding(configuration, role)),
       caf_window_hz_(configuration->property(role + ".CAF_window_hz", 0)),
-      codeI_(vector_length_),
       codeQ_(vector_length_)
 {
     if (is_type_gr_complex())
@@ -102,6 +101,7 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::set_local_code()
 {
     if (is_type_gr_complex())
         {
+            auto& codeI_ = code_;
             std::vector<std::complex<float>> codeI(code_length_);
             std::vector<std::complex<float>> codeQ(code_length_);
 
@@ -120,8 +120,8 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::set_local_code()
                 }
             // WARNING: 3ms are coherently integrated. Secondary sequence (1,1,1)
             // is generated, and modulated in the 'block'.
-            own::span<gr_complex> codeQ_span(codeQ_.data(), vector_length_);
             own::span<gr_complex> codeI_span(codeI_.data(), vector_length_);
+            own::span<gr_complex> codeQ_span(codeQ_.data(), vector_length_);
             if (zero_padding_ == 0)  // if no zero_padding
                 {
                     for (unsigned int i = 0; i < acq_parameters_.sampled_ms; i++)

@@ -43,7 +43,6 @@ GalileoE1PcpsCccwsrAmbiguousAcquisition::GalileoE1PcpsCccwsrAmbiguousAcquisition
           GALILEO_E1_CODE_PERIOD_MS,
           true,
           false),
-      code_data_(vector_length_),
       code_pilot_(vector_length_),
       cboc_(configuration->property(role + ".cboc", false))
 {
@@ -64,6 +63,8 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisition::set_local_code()
 {
     if (is_type_gr_complex())
         {
+            auto& code_data_ = code_;
+
             std::array<char, 3> signal = {{'1', 'B', '\0'}};
             galileo_e1_code_gen_complex_sampled(code_data_, signal, cboc_, gnss_synchro_->PRN, acq_parameters_.fs_in, 0, false);
 

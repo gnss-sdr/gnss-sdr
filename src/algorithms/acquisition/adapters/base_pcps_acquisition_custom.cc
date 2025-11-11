@@ -32,7 +32,13 @@ namespace
 {
 const std::string default_dump_filename("./acquisition.dat");
 
-Acq_Conf get_acq_conf(const ConfigurationInterface* configuration, const std::string& role, double chip_rate, double opt_freq, uint32_t ms_per_code, uint32_t max_sampled_ms)
+Acq_Conf get_acq_conf(
+    const ConfigurationInterface* configuration,
+    const std::string& role,
+    double chip_rate,
+    double opt_freq,
+    uint32_t ms_per_code,
+    uint32_t max_sampled_ms)
 {
     Acq_Conf acq_parameters;
     acq_parameters.ms_per_code = ms_per_code;

@@ -61,7 +61,6 @@ private:
     const int zero_padding_;
     const int caf_window_hz_;
 
-    std::vector<std::complex<float>> codeI_;
     std::vector<std::complex<float>> codeQ_;
 };
 

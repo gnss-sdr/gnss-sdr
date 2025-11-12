@@ -130,7 +130,7 @@ protected:
     unsigned int channel_;
 
 private:
-    float calculate_threshold(float pfa) const;
+    virtual float calculate_threshold(float pfa) const;
 
     /*!
      * \brief Generate code

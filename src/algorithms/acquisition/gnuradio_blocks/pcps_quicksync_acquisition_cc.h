@@ -37,6 +37,7 @@
 #ifndef GNSS_SDR_PCPS_QUICKSYNC_ACQUISITION_CC_H
 #define GNSS_SDR_PCPS_QUICKSYNC_ACQUISITION_CC_H
 
+#include "acquisition_impl_interface.h"
 #include "channel_fsm.h"
 #include "gnss_sdr_fft.h"
 #include "gnss_synchro.h"
@@ -63,12 +64,11 @@ using pcps_quicksync_acquisition_cc_sptr = gnss_shared_ptr<pcps_quicksync_acquis
 
 pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
     uint32_t folding_factor,
-    uint32_t sampled_ms,
+    uint32_t vector_length,
     uint32_t max_dwells,
     uint32_t doppler_max,
     uint32_t doppler_step,
     int64_t fs_in,
-    int32_t samples_per_ms,
     int32_t samples_per_code,
     bool bit_transition_flag,
     bool dump,
@@ -82,7 +82,7 @@ pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
  * Check \ref Navitec2012 "Faster GPS via the Sparse Fourier Transform",
  * for details of its implementation and functionality.
  */
-class pcps_quicksync_acquisition_cc : public gr::block
+class pcps_quicksync_acquisition_cc : public acquisition_impl_interface
 {
 public:
     /*!
@@ -95,7 +95,7 @@ public:
      * to exchange synchronization data between acquisition and tracking blocks.
      * \param p_gnss_synchro Satellite information shared by the processing blocks.
      */
-    inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+    inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override
     {
         d_gnss_synchro = p_gnss_synchro;
     }
@@ -103,7 +103,7 @@ public:
     /*!
      * \brief Returns the maximum peak of grid search.
      */
-    inline uint32_t mag() const
+    inline uint32_t mag() const override
     {
         return d_mag;
     }
@@ -111,20 +111,20 @@ public:
     /*!
      * \brief Initializes acquisition algorithm.
      */
-    void init();
+    void init() override;
 
     /*!
      * \brief Sets local code for PCPS acquisition algorithm.
      * \param code - Pointer to the PRN code.
      */
-    void set_local_code(std::complex<float>* code);
+    void set_local_code(std::complex<float>* code) override;
 
     /*!
      * \brief Starts acquisition algorithm, turning from standby mode to
      * active mode
      * \param active - bool that activates/deactivates the block.
      */
-    inline void set_active(bool active)
+    inline void set_active(bool active) override
     {
         d_active = active;
     }
@@ -134,13 +134,13 @@ public:
      * first available sample.
      * \param state - int=1 forces start of acquisition
      */
-    void set_state(int32_t state);
+    void set_state(int32_t state) override;
 
     /*!
      * \brief Set acquisition channel unique ID
      * \param channel - receiver channel.
      */
-    inline void set_channel(uint32_t channel)
+    inline void set_channel(uint32_t channel) override
     {
         d_channel = channel;
     }
@@ -148,7 +148,7 @@ public:
     /*!
      * \brief Set channel fsm associated to this acquisition instance
      */
-    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm)
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
         d_channel_fsm = std::move(channel_fsm);
     }
@@ -158,7 +158,7 @@ public:
      * \param threshold - Threshold for signal detection (check \ref Navitec2012,
      * Algorithm 1, for a definition of this threshold).
      */
-    inline void set_threshold(float threshold)
+    inline void set_threshold(float threshold) override
     {
         d_threshold = threshold;
     }
@@ -168,23 +168,23 @@ public:
      */
     int general_work(int noutput_items, gr_vector_int& ninput_items,
         gr_vector_const_void_star& input_items,
-        gr_vector_void_star& output_items);
+        gr_vector_void_star& output_items) override;
 
 private:
     friend pcps_quicksync_acquisition_cc_sptr
     pcps_quicksync_make_acquisition_cc(uint32_t folding_factor,
-        uint32_t sampled_ms, uint32_t max_dwells,
+        uint32_t vector_length, uint32_t max_dwells,
         uint32_t doppler_max, uint32_t doppler_step, int64_t fs_in,
-        int32_t samples_per_ms, int32_t samples_per_code,
+        int32_t samples_per_code,
         bool bit_transition_flag,
         bool dump,
         const std::string& dump_filename,
         bool enable_monitor_output);
 
     pcps_quicksync_acquisition_cc(uint32_t folding_factor,
-        uint32_t sampled_ms, uint32_t max_dwells,
+        uint32_t vector_length, uint32_t max_dwells,
         uint32_t doppler_max, uint32_t doppler_step, int64_t fs_in,
-        int32_t samples_per_ms, int32_t samples_per_code,
+        int32_t samples_per_code,
         bool bit_transition_flag,
         bool dump,
         const std::string& dump_filename,
@@ -224,7 +224,7 @@ private:
     float d_mag;
     float d_input_power;
     float d_test_statistics;
-    int32_t d_samples_per_ms;
+    const int32_t d_vector_length;
     int32_t d_samples_per_code;
     int32_t d_state;
     uint32_t d_channel;
@@ -232,7 +232,6 @@ private:
     uint32_t d_doppler_resolution;
     const uint32_t d_doppler_max;
     const uint32_t d_doppler_step;
-    uint32_t d_sampled_ms;
     uint32_t d_max_dwells;
     uint32_t d_well_count;
     uint32_t d_fft_size;

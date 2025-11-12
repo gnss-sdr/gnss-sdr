@@ -33,12 +33,11 @@
 
 pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
     uint32_t folding_factor,
-    uint32_t sampled_ms,
+    uint32_t vector_length,
     uint32_t max_dwells,
     uint32_t doppler_max,
     uint32_t doppler_step,
     int64_t fs_in,
-    int32_t samples_per_ms,
     int32_t samples_per_code,
     bool bit_transition_flag,
     bool dump,
@@ -48,8 +47,8 @@ pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
     return pcps_quicksync_acquisition_cc_sptr(
         new pcps_quicksync_acquisition_cc(
             folding_factor,
-            sampled_ms, max_dwells, doppler_max,
-            doppler_step, fs_in, samples_per_ms,
+            vector_length, max_dwells, doppler_max,
+            doppler_step, fs_in,
             samples_per_code,
             bit_transition_flag,
             dump, dump_filename,
@@ -58,16 +57,15 @@ pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
 
 
 pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
-    uint32_t folding_factor,
-    uint32_t sampled_ms, uint32_t max_dwells,
+    uint32_t folding_factor, uint32_t vector_length, uint32_t max_dwells,
     uint32_t doppler_max, uint32_t doppler_step, int64_t fs_in,
-    int32_t samples_per_ms, int32_t samples_per_code,
+    int32_t samples_per_code,
     bool bit_transition_flag,
     bool dump,
     const std::string& dump_filename,
     bool enable_monitor_output)
-    : gr::block("pcps_quicksync_acquisition_cc",
-          gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)),
+    : acquisition_impl_interface("pcps_quicksync_acquisition_cc",
+          gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * vector_length)),
           gr::io_signature::make(0, 1, sizeof(Gnss_Synchro))),
       d_dump_filename(dump_filename),
       d_gnss_synchro(nullptr),
@@ -79,7 +77,7 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
       d_mag(0),
       d_input_power(0.0),
       d_test_statistics(0),
-      d_samples_per_ms(samples_per_ms),
+      d_vector_length(vector_length),
       d_samples_per_code(samples_per_code),
       d_state(0),
       d_channel(0),
@@ -87,7 +85,6 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
       d_doppler_resolution(0),
       d_doppler_max(doppler_max),
       d_doppler_step(doppler_step),
-      d_sampled_ms(sampled_ms),
       d_max_dwells(max_dwells),
       d_well_count(0),
       d_fft_size((d_samples_per_code) / d_folding_factor),
@@ -257,7 +254,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                         d_state = 1;
                     }
 
-                d_sample_counter += static_cast<uint64_t>(d_sampled_ms) * d_samples_per_ms * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_vector_length) * ninput_items[0];  // sample counter
                 consume_each(ninput_items[0]);
                 // DLOG(INFO) << "END CASE 0";
                 break;
@@ -291,7 +288,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 d_test_statistics = 0.0;
                 d_noise_floor_power = 0.0;
 
-                d_sample_counter += static_cast<uint64_t>(d_sampled_ms) * d_samples_per_ms;  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_vector_length);  // sample counter
 
                 d_well_count++;
 
@@ -495,7 +492,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += static_cast<uint64_t>(d_sampled_ms) * d_samples_per_ms * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_vector_length) * ninput_items[0];  // sample counter
                 consume_each(ninput_items[0]);
 
                 acquisition_message = 1;
@@ -538,7 +535,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += static_cast<uint64_t>(d_sampled_ms) * d_samples_per_ms * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_vector_length) * ninput_items[0];  // sample counter
                 consume_each(ninput_items[0]);
 
                 acquisition_message = 2;

@@ -244,7 +244,6 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
 
     acquisition->set_local_code();
     acquisition->reset();
-    acquisition->init();
 
     ASSERT_NO_THROW({
         std::string path = std::string(TEST_PATH);

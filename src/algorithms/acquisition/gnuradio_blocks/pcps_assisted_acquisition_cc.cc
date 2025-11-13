@@ -64,14 +64,12 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(const Acq_Conf &conf)
       d_state(0),
       d_well_count(0),
       d_active(false),
-      d_disable_assist(false)
+      d_disable_assist(false),
+      d_fft_if(gnss_fft_fwd_make_unique(d_fft_size)),
+      d_ifft(gnss_fft_rev_make_unique(d_fft_size)),
+      d_fft_codes(d_fft_size)
 {
     this->message_port_register_out(pmt::mp("events"));
-
-    d_fft_codes = std::vector<gr_complex>(d_fft_size);
-
-    d_fft_if = gnss_fft_fwd_make_unique(d_fft_size);
-    d_ifft = gnss_fft_rev_make_unique(d_fft_size);
 }
 
 
@@ -98,22 +96,6 @@ pcps_assisted_acquisition_cc::~pcps_assisted_acquisition_cc()
 void pcps_assisted_acquisition_cc::set_local_code(std::complex<float> *code)
 {
     std::copy(code, code + d_fft_size, d_fft_if->get_inbuf());
-}
-
-
-void pcps_assisted_acquisition_cc::init()
-{
-    d_gnss_synchro->Flag_valid_acquisition = false;
-    d_gnss_synchro->Flag_valid_symbol_output = false;
-    d_gnss_synchro->Flag_valid_pseudorange = false;
-    d_gnss_synchro->Flag_valid_word = false;
-    d_gnss_synchro->Acq_doppler_step = 0U;
-    d_gnss_synchro->Acq_delay_samples = 0.0;
-    d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
-    d_input_power = 0.0;
-    d_state = 0;
-
     d_fft_if->execute();  // We need the FFT of local code
 
     // Conjugate the local code

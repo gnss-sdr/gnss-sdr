@@ -342,7 +342,6 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
     channel_fsm_->Event_clear_test_result();
 
     acquisition->stop_acquisition();  // reset the whole system including the sample counters
-    acquisition->init();
     acquisition->set_local_code();
 
     args.skip_used_samples = 0;

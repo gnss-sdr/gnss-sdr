@@ -62,25 +62,38 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
       d_fft_size(d_samples_per_code / d_folding_factor),
       d_num_doppler_bins(0),
       d_code_phase(0),
-      d_active(false)
+      d_active(false),
+      d_fft_if(gnss_fft_fwd_make_unique(d_fft_size)),
+      d_ifft(gnss_fft_rev_make_unique(d_fft_size)),
+      d_code(d_samples_per_code, lv_cmake(0.0F, 0.0F)),
+      d_fft_codes(d_fft_size),
+      d_signal_folded(d_fft_size),
+      d_code_folded(d_fft_size, lv_cmake(0.0F, 0.0F)),
+      d_magnitude(d_samples_per_code * d_folding_factor),
+      d_corr_output_f(d_folding_factor),
+      d_magnitude_folded(d_fft_size),
+      d_possible_delay(d_folding_factor)
 {
     this->message_port_register_out(pmt::mp("events"));
 
-    d_fft_codes = std::vector<gr_complex>(d_fft_size);
-    d_magnitude = std::vector<float>(d_samples_per_code * d_folding_factor);
-    d_magnitude_folded = std::vector<float>(d_fft_size);
-    d_possible_delay = std::vector<uint32_t>(d_folding_factor);
-    d_corr_output_f = std::vector<float>(d_folding_factor);
-
     // Create the d_code vector, which would store the values of the code in its
     // original form to perform later correlation in time domain
-    d_code = std::vector<gr_complex>(d_samples_per_code, lv_cmake(0.0F, 0.0F));
 
-    d_fft_if = gnss_fft_fwd_make_unique(d_fft_size);
-    d_ifft = gnss_fft_rev_make_unique(d_fft_size);
+    // Count the number of bins
+    for (auto doppler = -d_acq_params.doppler_max; doppler <= d_acq_params.doppler_max; doppler += d_acq_params.doppler_step)
+        {
+            d_num_doppler_bins++;
+        }
 
-    d_code_folded = std::vector<gr_complex>(d_fft_size, lv_cmake(0.0F, 0.0F));
-    d_signal_folded = std::vector<gr_complex>(d_fft_size);
+    // Create the carrier Doppler wipeoff signals
+    d_grid_doppler_wipeoffs = std::vector<std::vector<gr_complex>>(d_num_doppler_bins, std::vector<gr_complex>(d_samples_per_code * d_folding_factor));
+    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+        {
+            int32_t doppler = -d_acq_params.doppler_max + d_acq_params.doppler_step * doppler_index;
+            float phase_step_rad = static_cast<float>(TWO_PI) * doppler / static_cast<float>(d_acq_params.fs_in);
+            std::array<float, 1> _phase{};
+            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index].data(), -phase_step_rad, _phase.data(), d_samples_per_code * d_folding_factor);
+        }
 }
 
 
@@ -126,38 +139,6 @@ void pcps_quicksync_acquisition_cc::set_local_code(std::complex<float>* code)
 
     // Conjugate the local code
     volk_32fc_conjugate_32fc(d_fft_codes.data(), d_fft_if->get_outbuf(), d_fft_size);
-}
-
-
-void pcps_quicksync_acquisition_cc::init()
-{
-    d_gnss_synchro->Flag_valid_acquisition = false;
-    d_gnss_synchro->Flag_valid_symbol_output = false;
-    d_gnss_synchro->Flag_valid_pseudorange = false;
-    d_gnss_synchro->Flag_valid_word = false;
-    d_gnss_synchro->Acq_delay_samples = 0.0;
-    d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
-    d_gnss_synchro->Acq_doppler_step = 0U;
-    d_mag = 0.0;
-    d_input_power = 0.0;
-
-    // Count the number of bins
-    d_num_doppler_bins = 0;
-    for (auto doppler = -d_acq_params.doppler_max; doppler <= d_acq_params.doppler_max; doppler += d_acq_params.doppler_step)
-        {
-            d_num_doppler_bins++;
-        }
-
-    // Create the carrier Doppler wipeoff signals
-    d_grid_doppler_wipeoffs = std::vector<std::vector<gr_complex>>(d_num_doppler_bins, std::vector<gr_complex>(d_samples_per_code * d_folding_factor));
-    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
-        {
-            int32_t doppler = -d_acq_params.doppler_max + d_acq_params.doppler_step * doppler_index;
-            float phase_step_rad = static_cast<float>(TWO_PI) * doppler / static_cast<float>(d_acq_params.fs_in);
-            std::array<float, 1> _phase{};
-            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index].data(), -phase_step_rad, _phase.data(), d_samples_per_code * d_folding_factor);
-        }
 }
 
 

@@ -92,11 +92,6 @@ public:
     }
 
     /*!
-     * \brief Initializes acquisition algorithm.
-     */
-    void init() override;
-
-    /*!
      * \brief Sets local code for PCPS acquisition algorithm.
      * \param code - Pointer to the PRN code.
      */
@@ -169,14 +164,6 @@ private:
     void reset_grid();
     void redefine_grid();
 
-    std::weak_ptr<ChannelFsm> d_channel_fsm;
-    std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
-    std::unique_ptr<gnss_fft_complex_rev> d_ifft;
-
-    std::vector<std::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
-    std::vector<std::vector<float>> d_grid_data;
-    std::vector<gr_complex> d_fft_codes;
-
     std::string d_satellite_str;
     const Acq_Conf d_acq_params;
 
@@ -203,6 +190,14 @@ private:
 
     bool d_active;
     bool d_disable_assist;
+
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
+    std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
+    std::unique_ptr<gnss_fft_complex_rev> d_ifft;
+
+    std::vector<std::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
+    std::vector<std::vector<float>> d_grid_data;
+    std::vector<gr_complex> d_fft_codes;
 };
 
 

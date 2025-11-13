@@ -350,7 +350,6 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     }) << "Failure connecting the blocks of acquisition test.";
 
     acquisition->set_local_code();
-    acquisition->init();
     acquisition->reset();
 
     EXPECT_NO_THROW({

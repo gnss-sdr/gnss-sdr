@@ -135,12 +135,6 @@ signed int BasePcpsAcquisition::mag()
 }
 
 
-void BasePcpsAcquisition::init()
-{
-    acquisition_->init();
-}
-
-
 void BasePcpsAcquisition::reset()
 {
     acquisition_->set_active(true);

@@ -32,7 +32,13 @@ namespace
 {
 const std::string default_dump_filename("./acquisition.dat");
 
-Acq_Conf get_acq_conf(const ConfigurationInterface* configuration, const std::string& role, double chip_rate, double opt_freq, uint32_t ms_per_code)
+Acq_Conf get_acq_conf(
+    const ConfigurationInterface* configuration,
+    const std::string& role,
+    double chip_rate,
+    double opt_freq,
+    uint32_t ms_per_code,
+    uint32_t max_sampled_ms)
 {
     Acq_Conf acq_parameters;
     acq_parameters.ms_per_code = ms_per_code;
@@ -60,6 +66,13 @@ Acq_Conf get_acq_conf(const ConfigurationInterface* configuration, const std::st
         }
 #endif
 
+    if (acq_parameters.sampled_ms > max_sampled_ms)
+        {
+            acq_parameters.sampled_ms = max_sampled_ms;
+            DLOG(INFO) << "Coherent integration time should be " << max_sampled_ms << " ms or less. Changing to " << max_sampled_ms << "ms ";
+            std::cout << "Too high coherent integration time. Changing to " << max_sampled_ms << "ms\n";
+        }
+
     return acq_parameters;
 }
 }  // namespace
@@ -74,8 +87,9 @@ BasePcpsAcquisitionCustom::BasePcpsAcquisitionCustom(
     double code_length_chips,
     unsigned int ms_per_code,
     bool use_stream_to_vector,
-    bool compute_threshold_from_pfa)
-    : acq_parameters_(get_acq_conf(configuration, role, chip_rate, 0, ms_per_code)),
+    bool compute_threshold_from_pfa,
+    uint32_t max_sampled_ms)
+    : acq_parameters_(get_acq_conf(configuration, role, chip_rate, 0, ms_per_code, max_sampled_ms)),
       num_codes_(acq_parameters_.sampled_ms / ms_per_code),
       code_length_(static_cast<unsigned int>(round(acq_parameters_.fs_in / (chip_rate / code_length_chips)))),
       vector_length_(code_length_ * num_codes_),

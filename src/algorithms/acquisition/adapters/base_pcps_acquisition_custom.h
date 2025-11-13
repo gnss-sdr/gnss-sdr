@@ -25,6 +25,7 @@
 #include "pcps_acquisition.h"
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>
+#include <limits>
 
 /** \addtogroup Acquisition
  * Classes for GNSS signal acquisition
@@ -50,7 +51,8 @@ public:
         double code_length_chips,
         unsigned int ms_per_code,
         bool use_stream_to_vector,
-        bool compute_threshold_from_pfa);
+        bool compute_threshold_from_pfa,
+        uint32_t max_sampled_ms = std::numeric_limits<uint32_t>::max());
 
     ~BasePcpsAcquisitionCustom() = default;
 
@@ -128,16 +130,16 @@ protected:
     acquisition_impl_interface_sptr acquisition_cc_;
     Gnss_Synchro* gnss_synchro_;
     unsigned int channel_;
+    volk_gnsssdr::vector<std::complex<float>> code_;
 
 private:
-    float calculate_threshold(float pfa) const;
+    virtual float calculate_threshold(float pfa) const;
 
     /*!
      * \brief Generate code
      */
     virtual void code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int32_t sampling_freq) = 0;
 
-    volk_gnsssdr::vector<std::complex<float>> code_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
     const std::string role_;
     const bool is_type_gr_complex_;

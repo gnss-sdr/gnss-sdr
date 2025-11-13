@@ -34,7 +34,8 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
           GALILEO_E1_B_CODE_LENGTH_CHIPS,
           GALILEO_E1_CODE_PERIOD_MS),
       acquire_pilot_(configuration->property(role + ".acquire_pilot", false)),
-      cboc_(configuration->property(role + ".cboc", false))
+      cboc_(configuration->property(role + ".cboc", false)),
+      gnss_synchro_(nullptr)
 {
 }
 

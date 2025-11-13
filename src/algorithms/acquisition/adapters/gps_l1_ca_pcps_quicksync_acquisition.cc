@@ -80,7 +80,7 @@ float GpsL1CaPcpsQuickSyncAcquisition::calculate_threshold(float pfa) const
 {
     // Calculate the threshold
     unsigned int frequency_bins = 0;
-    for (int doppler = -acq_parameters_.doppler_max; doppler <= acq_parameters_.doppler_max; doppler += acq_parameters_.doppler_step)
+    for (int doppler = -acq_parameters_.doppler_max; doppler <= acq_parameters_.doppler_max; doppler += static_cast<int>(acq_parameters_.doppler_step))
         {
             frequency_bins++;
         }

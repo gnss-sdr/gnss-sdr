@@ -1287,17 +1287,14 @@ int labsat23_source::general_work(int noutput_items,
 
     if (!d_is_ls3w && !d_is_ls4)
         {
-            return parse_ls23_data(noutput_items, out);
+            return parse_ls23_data(noutput_items, std::move(out));
         }
     else if (d_is_ls3w)  // Labsat 3 Wideband
         {
-            return parse_ls3w_data(noutput_items, out);
+            return parse_ls3w_data(noutput_items, std::move(out));
         }
     else  // Labsat 4
         {
-            return parse_ls4_data(noutput_items, out);
+            return parse_ls4_data(noutput_items, std::move(out));
         }
-
-    std::cout << "Warning!!\n";
-    return 0;
 }

@@ -3582,7 +3582,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Beidou_Dnav_Utc_M
 void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_Ephemeris>& eph_map) const
 {
     std::string line;
-    const auto sys_char = satelliteSystem.at("GPS");
+    const auto& sys_char = satelliteSystem.at("GPS");
 
     for (const auto& gps_ephemeris_iter : eph_map)
         {
@@ -3802,7 +3802,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
 
 void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_CNAV_Ephemeris>& eph_map)
 {
-    const auto sys_char = satelliteSystem.at("GPS");
+    const auto& sys_char = satelliteSystem.at("GPS");
 
     for (const auto& gps_ephemeris_iter : eph_map)
         {
@@ -3864,7 +3864,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
 
 void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Galileo_Ephemeris>& eph_map) const
 {
-    const auto sys_char = satelliteSystem.at("Galileo");
+    const auto& sys_char = satelliteSystem.at("Galileo");
 
     for (const auto& galileo_ephemeris_iter : eph_map)
         {
@@ -3950,7 +3950,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gal
 void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Glonass_Gnav_Ephemeris>& eph_map) const
 {
     std::string line;
-    const auto sys_char = satelliteSystem.at("GLONASS");
+    const auto& sys_char = satelliteSystem.at("GLONASS");
 
     for (const auto& glonass_gnav_ephemeris_iter : eph_map)
         {
@@ -4099,7 +4099,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gal
 
 void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Beidou_Dnav_Ephemeris>& eph_map) const
 {
-    const auto sys_char = satelliteSystem.at("Beidou");
+    const auto& sys_char = satelliteSystem.at("Beidou");
 
     for (const auto& bds_ephemeris_iter : eph_map)
         {

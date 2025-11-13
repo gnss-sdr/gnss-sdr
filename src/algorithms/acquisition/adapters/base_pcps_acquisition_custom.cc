@@ -224,17 +224,7 @@ void BasePcpsAcquisitionCustom::stop_acquisition()
 {
     if (is_type_gr_complex_)
         {
-            acquisition_cc_->set_state(0);
             acquisition_cc_->set_active(false);
-        }
-}
-
-
-void BasePcpsAcquisitionCustom::set_state(int state)
-{
-    if (is_type_gr_complex_)
-        {
-            acquisition_cc_->set_state(state);
         }
 }
 

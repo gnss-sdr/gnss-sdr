@@ -294,7 +294,6 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
         acquisition->set_local_code();
         acquisition->init();
         acquisition->reset();
-        acquisition->set_state(1);
     }) << "Failure starting acquisition";
 
     EXPECT_NO_THROW({

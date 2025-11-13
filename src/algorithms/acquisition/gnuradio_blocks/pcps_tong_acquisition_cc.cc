@@ -163,76 +163,43 @@ void pcps_tong_acquisition_cc::init()
 }
 
 
-void pcps_tong_acquisition_cc::set_state(int32_t state)
-{
-    d_state = state;
-    if (d_state == 1)
-        {
-            d_gnss_synchro->Acq_delay_samples = 0.0;
-            d_gnss_synchro->Acq_doppler_hz = 0.0;
-            d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
-            d_gnss_synchro->Acq_doppler_step = 0U;
-            d_dwell_count = 0;
-            d_tong_count = d_tong_init_val;
-            d_mag = 0.0;
-            d_input_power = 0.0;
-            d_test_statistics = 0.0;
-
-            for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
-                {
-                    for (uint32_t i = 0; i < d_fft_size; i++)
-                        {
-                            d_grid_data[doppler_index][i] = 0.0;
-                        }
-                }
-        }
-    else if (d_state == 0)
-        {
-        }
-    else
-        {
-            LOG(ERROR) << "State can only be set to 0 or 1";
-        }
-}
-
-
 int pcps_tong_acquisition_cc::general_work(int noutput_items,
     gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
     int32_t acquisition_message = -1;  // 0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
 
+    if (!d_active)
+        {
+            d_sample_counter += static_cast<uint64_t>(d_fft_size) * ninput_items[0];  // sample counter
+            consume_each(ninput_items[0]);
+            return 0;
+        }
+
     switch (d_state)
         {
         case 0:
             {
-                if (d_active)
+                // restart acquisition variables
+                d_gnss_synchro->Acq_delay_samples = 0.0;
+                d_gnss_synchro->Acq_doppler_hz = 0.0;
+                d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+                d_gnss_synchro->Acq_doppler_step = 0U;
+                d_dwell_count = 0;
+                d_tong_count = d_tong_init_val;
+                d_mag = 0.0;
+                d_input_power = 0.0;
+                d_test_statistics = 0.0;
+
+                for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                     {
-                        // restart acquisition variables
-                        d_gnss_synchro->Acq_delay_samples = 0.0;
-                        d_gnss_synchro->Acq_doppler_hz = 0.0;
-                        d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
-                        d_gnss_synchro->Acq_doppler_step = 0U;
-                        d_dwell_count = 0;
-                        d_tong_count = d_tong_init_val;
-                        d_mag = 0.0;
-                        d_input_power = 0.0;
-                        d_test_statistics = 0.0;
-
-                        for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+                        for (uint32_t i = 0; i < d_fft_size; i++)
                             {
-                                for (uint32_t i = 0; i < d_fft_size; i++)
-                                    {
-                                        d_grid_data[doppler_index][i] = 0.0;
-                                    }
+                                d_grid_data[doppler_index][i] = 0.0;
                             }
-
-                        d_state = 1;
                     }
 
-                d_sample_counter += static_cast<uint64_t>(d_fft_size) * ninput_items[0];  // sample counter
-                consume_each(ninput_items[0]);
-
+                d_state = 1;
                 break;
             }
 

@@ -175,15 +175,6 @@ void BasePcpsAcquisitionFpga::set_doppler_center(int doppler_center)
 }
 
 
-void BasePcpsAcquisitionFpga::set_state(int state)
-{
-    if (acquisition_fpga_)
-        {
-            acquisition_fpga_->set_state(state);
-        }
-}
-
-
 void BasePcpsAcquisitionFpga::reset()
 {
     if (acquisition_fpga_)

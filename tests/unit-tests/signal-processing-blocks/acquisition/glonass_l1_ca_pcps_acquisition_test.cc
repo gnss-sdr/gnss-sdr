@@ -243,7 +243,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure connecting acquisition to the top_block.";
 
     acquisition->set_local_code();
-    acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
+    acquisition->reset();
     acquisition->init();
 
     ASSERT_NO_THROW({

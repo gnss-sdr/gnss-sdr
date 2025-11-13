@@ -542,7 +542,7 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
 #endif
     acquisition->init();
     acquisition->set_local_code();
-    acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
+    acquisition->reset();
     acquisition->connect(top_block_acq);
 
     gr::blocks::file_source::sptr file_source;
@@ -691,7 +691,6 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             acquisition->init();
             acquisition->set_local_code();
             acquisition->reset();
-            acquisition->set_state(1);
             msg_rx->rx_message = 0;
             top_block_acq->run();
             if (start_msg == true)

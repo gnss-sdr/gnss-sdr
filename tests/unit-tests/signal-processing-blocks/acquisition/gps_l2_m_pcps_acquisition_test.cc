@@ -355,8 +355,8 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
 
     ASSERT_NO_THROW({
         acquisition->set_local_code();
-        acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
         acquisition->init();
+        acquisition->reset();
     }) << "Failure set_state and init acquisition test";
 
     EXPECT_NO_THROW({

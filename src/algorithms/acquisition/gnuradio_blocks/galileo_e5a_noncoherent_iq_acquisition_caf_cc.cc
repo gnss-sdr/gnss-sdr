@@ -74,7 +74,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     int CAF_window_hz_,
     int Zero_padding_,
     bool enable_monitor_output)
-    : gr::block("galileo_e5a_noncoherentIQ_acquisition_caf_cc",
+    : acquisition_impl_interface("galileo_e5a_noncoherentIQ_acquisition_caf_cc",
           gr::io_signature::make(1, 1, sizeof(gr_complex)),
           gr::io_signature::make(0, 1, sizeof(Gnss_Synchro))),
       d_dump_filename(dump_filename),

@@ -67,7 +67,7 @@ pcps_cccwsr_acquisition_cc::pcps_cccwsr_acquisition_cc(
     bool dump,
     const std::string &dump_filename,
     bool enable_monitor_output)
-    : gr::block("pcps_cccwsr_acquisition_cc",
+    : acquisition_impl_interface("pcps_cccwsr_acquisition_cc",
           gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)),
           gr::io_signature::make(0, 1, sizeof(Gnss_Synchro))),
       d_dump_filename(dump_filename),

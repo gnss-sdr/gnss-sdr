@@ -37,16 +37,15 @@
 #ifndef GNSS_SDR_PCPS_QUICKSYNC_ACQUISITION_CC_H
 #define GNSS_SDR_PCPS_QUICKSYNC_ACQUISITION_CC_H
 
+#include "acq_conf.h"
 #include "acquisition_impl_interface.h"
 #include "channel_fsm.h"
 #include "gnss_sdr_fft.h"
 #include "gnss_synchro.h"
 #include <gnuradio/block.h>
 #include <gnuradio/gr_complex.h>
-#include <algorithm>
 #include <cassert>
 #include <fstream>
-#include <functional>
 #include <memory>  // for weak_ptr
 #include <string>
 #include <utility>
@@ -63,17 +62,7 @@ class pcps_quicksync_acquisition_cc;
 using pcps_quicksync_acquisition_cc_sptr = gnss_shared_ptr<pcps_quicksync_acquisition_cc>;
 
 pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
-    uint32_t folding_factor,
-    uint32_t vector_length,
-    uint32_t max_dwells,
-    uint32_t doppler_max,
-    uint32_t doppler_step,
-    int64_t fs_in,
-    int32_t samples_per_code,
-    bool bit_transition_flag,
-    bool dump,
-    const std::string& dump_filename,
-    bool enable_monitor_output);
+    const Acq_Conf& conf, uint32_t folding_factor, uint32_t vector_length, uint32_t max_dwells, int32_t samples_per_code);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition with
@@ -172,26 +161,13 @@ public:
 
 private:
     friend pcps_quicksync_acquisition_cc_sptr
-    pcps_quicksync_make_acquisition_cc(uint32_t folding_factor,
-        uint32_t vector_length, uint32_t max_dwells,
-        uint32_t doppler_max, uint32_t doppler_step, int64_t fs_in,
-        int32_t samples_per_code,
-        bool bit_transition_flag,
-        bool dump,
-        const std::string& dump_filename,
-        bool enable_monitor_output);
+    pcps_quicksync_make_acquisition_cc(
+        const Acq_Conf& conf, uint32_t folding_factor, uint32_t vector_length, uint32_t max_dwells, int32_t samples_per_code);
 
-    pcps_quicksync_acquisition_cc(uint32_t folding_factor,
-        uint32_t vector_length, uint32_t max_dwells,
-        uint32_t doppler_max, uint32_t doppler_step, int64_t fs_in,
-        int32_t samples_per_code,
-        bool bit_transition_flag,
-        bool dump,
-        const std::string& dump_filename,
-        bool enable_monitor_output);
+    explicit pcps_quicksync_acquisition_cc(
+        const Acq_Conf& conf, uint32_t folding_factor, uint32_t vector_length, uint32_t max_dwells, int32_t samples_per_code);
 
-    void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift,
-        int32_t doppler_offset);
+    void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift, int32_t doppler_offset);
 
     std::weak_ptr<ChannelFsm> d_channel_fsm;
 
@@ -208,40 +184,32 @@ private:
     std::vector<float> d_magnitude_folded;
     std::vector<uint32_t> d_possible_delay;
 
-    std::string d_dump_filename;
     std::string d_satellite_str;
+    const Acq_Conf d_acq_params;
 
     std::ofstream d_dump_file;
 
     Gnss_Synchro* d_gnss_synchro;
 
-    int64_t d_fs_in;
     uint64_t d_sample_counter;
 
     float d_noise_floor_power;
     float d_threshold;
-    float d_doppler_freq;
     float d_mag;
     float d_input_power;
     float d_test_statistics;
     const int32_t d_vector_length;
-    int32_t d_samples_per_code;
+    const int32_t d_samples_per_code;
     int32_t d_state;
     uint32_t d_channel;
-    uint32_t d_folding_factor;  // also referred in the paper as 'p'
-    uint32_t d_doppler_resolution;
-    const uint32_t d_doppler_max;
-    const uint32_t d_doppler_step;
-    uint32_t d_max_dwells;
+    const uint32_t d_folding_factor;  // also referred in the paper as 'p'
+    const uint32_t d_max_dwells;
     uint32_t d_well_count;
-    uint32_t d_fft_size;
+    const uint32_t d_fft_size;
     uint32_t d_num_doppler_bins;
     uint32_t d_code_phase;
 
-    bool d_bit_transition_flag;
     bool d_active;
-    bool d_dump;
-    bool d_enable_monitor_output;
 };
 
 

@@ -38,6 +38,7 @@
 #define GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H
 
 #define CL_SILENCE_DEPRECATION
+#include "acq_conf.h"
 #include "acquisition_impl_interface.h"
 #include "channel_fsm.h"
 #include "gnss_block_interface.h"
@@ -63,18 +64,7 @@ class pcps_opencl_acquisition_cc;
 
 using pcps_opencl_acquisition_cc_sptr = gnss_shared_ptr<pcps_opencl_acquisition_cc>;
 
-pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(
-    uint32_t sampled_ms,
-    uint32_t max_dwells,
-    uint32_t doppler_max,
-    uint32_t doppler_step,
-    int64_t fs_in,
-    int samples_per_ms,
-    int samples_per_code,
-    bool bit_transition_flag,
-    bool dump,
-    const std::string& dump_filename,
-    bool enable_monitor_output);
+pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(const Acq_Conf& conf, uint32_t max_dwells);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition.
@@ -186,24 +176,11 @@ public:
 
 private:
     friend pcps_opencl_acquisition_cc_sptr
-    pcps_make_opencl_acquisition_cc(uint32_t sampled_ms, uint32_t max_dwells,
-        uint32_t doppler_max, uint32_t doppler_step, int64_t fs_in,
-        int samples_per_ms, int samples_per_code,
-        bool bit_transition_flag,
-        bool dump,
-        const std::string& dump_filename,
-        bool enable_monitor_output);
+    pcps_make_opencl_acquisition_cc(const Acq_Conf& conf, uint32_t max_dwells);
 
-    pcps_opencl_acquisition_cc(uint32_t sampled_ms, uint32_t max_dwells,
-        uint32_t doppler_max, uint32_t doppler_step, int64_t fs_in,
-        int samples_per_ms, int samples_per_code,
-        bool bit_transition_flag,
-        bool dump,
-        const std::string& dump_filename,
-        bool enable_monitor_output);
+    explicit pcps_opencl_acquisition_cc(const Acq_Conf& conf, uint32_t max_dwells);
 
-    void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
-        int doppler_offset);
+    void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift, int doppler_offset);
 
     int init_opencl_environment(const std::string& kernel_filename);
 
@@ -233,47 +210,36 @@ private:
     std::vector<uint64_t> d_sample_counter_buffer;
     std::vector<float> d_magnitude;
 
-    std::string d_dump_filename;
     std::string d_satellite_str;
+    const Acq_Conf d_acq_params;
 
     std::ofstream d_dump_file;
 
     Gnss_Synchro* d_gnss_synchro;
 
-    int64_t d_fs_in;
     uint64_t d_sample_counter;
 
     int* d_max_doppler_indexs;
 
     float d_threshold;
-    float d_doppler_freq;
     float d_mag;
     float d_input_power;
     float d_test_statistics;
 
-    int d_samples_per_ms;
-    int d_samples_per_code;
     int d_state;
     int d_opencl;
 
-    uint32_t d_doppler_resolution;
-    const uint32_t d_doppler_max;
-    const uint32_t d_doppler_step;
-    uint32_t d_sampled_ms;
     uint32_t d_max_dwells;
     uint32_t d_well_count;
-    uint32_t d_fft_size;
+    const uint32_t d_fft_size;
     uint32_t d_fft_size_pow2;
     uint32_t d_num_doppler_bins;
     uint32_t d_code_phase;
     uint32_t d_channel;
     uint32_t d_in_dwell_count;
 
-    bool d_bit_transition_flag;
     bool d_active;
     bool d_core_working;
-    bool d_dump;
-    bool d_enable_monitor_output;
 };
 
 

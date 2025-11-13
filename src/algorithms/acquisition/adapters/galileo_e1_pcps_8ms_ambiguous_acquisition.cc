@@ -47,12 +47,7 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
 {
     if (is_type_gr_complex())
         {
-            const auto samples_per_ms = static_cast<int>(code_length_) / GALILEO_E1_CODE_PERIOD_MS;
-
-            acquisition_cc_ = galileo_pcps_8ms_make_acquisition_cc(acq_parameters_.sampled_ms, acq_parameters_.max_dwells,
-                acq_parameters_.doppler_max, acq_parameters_.doppler_step, acq_parameters_.fs_in, samples_per_ms, code_length_,
-                acq_parameters_.dump, acq_parameters_.dump_filename, acq_parameters_.enable_monitor_output);
-
+            acquisition_cc_ = galileo_pcps_8ms_make_acquisition_cc(acq_parameters_);
             DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
 }

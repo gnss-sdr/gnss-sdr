@@ -50,9 +50,7 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
             const auto tong_max_val = configuration->property(role + ".tong_max_val", 2U);
             const auto tong_max_dwells = configuration->property(role + ".tong_max_dwells", tong_max_val + 1U);
 
-            acquisition_cc_ = pcps_tong_make_acquisition_cc(acq_parameters_.sampled_ms, acq_parameters_.doppler_max, acq_parameters_.doppler_step, acq_parameters_.fs_in,
-                code_length_, code_length_, tong_init_val, tong_max_val, tong_max_dwells,
-                acq_parameters_.dump, acq_parameters_.dump_filename, acq_parameters_.enable_monitor_output);
+            acquisition_cc_ = pcps_tong_make_acquisition_cc(acq_parameters_, tong_init_val, tong_max_val, tong_max_dwells);
 
             DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }

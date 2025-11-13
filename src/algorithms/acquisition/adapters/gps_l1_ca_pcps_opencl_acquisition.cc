@@ -51,10 +51,7 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
     if (is_type_gr_complex())
         {
             const unsigned int max_dwells = acq_parameters_.bit_transition_flag ? 2 : acq_parameters_.max_dwells;
-
-            auto acquisition_cc = pcps_make_opencl_acquisition_cc(acq_parameters_.sampled_ms, max_dwells,
-                acq_parameters_.doppler_max, acq_parameters_.doppler_step, acq_parameters_.fs_in, code_length_, code_length_,
-                acq_parameters_.bit_transition_flag, acq_parameters_.dump, acq_parameters_.dump_filename, false);
+            auto acquisition_cc = pcps_make_opencl_acquisition_cc(acq_parameters_, max_dwells);
 
             opencl_ready_ = acquisition_cc->opencl_ready();
             acquisition_cc_ = std::move(acquisition_cc);

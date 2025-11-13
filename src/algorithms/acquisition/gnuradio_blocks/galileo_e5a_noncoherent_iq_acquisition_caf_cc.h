@@ -24,6 +24,7 @@
 #ifndef GNSS_SDR_GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_CC_H
 #define GNSS_SDR_GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_CC_H
 
+#include "acq_conf.h"
 #include "acquisition_impl_interface.h"
 #include "channel_fsm.h"
 #include "gnss_sdr_fft.h"
@@ -47,19 +48,10 @@ class galileo_e5a_noncoherentIQ_acquisition_caf_cc;
 using galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr = gnss_shared_ptr<galileo_e5a_noncoherentIQ_acquisition_caf_cc>;
 
 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
-    unsigned int sampled_ms,
-    unsigned int max_dwells,
-    unsigned int doppler_max,
-    unsigned int doppler_step,
-    int64_t fs_in,
-    int samples_per_ms, int samples_per_code,
-    bool bit_transition_flag,
-    bool dump,
-    const std::string& dump_filename,
-    bool both_signal_components_,
-    int CAF_window_hz_,
-    int Zero_padding_,
-    bool enable_monitor_output);
+    const Acq_Conf& conf,
+    bool both_signal_components,
+    int CAF_window_hz,
+    int Zero_padding);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition.
@@ -158,34 +150,16 @@ public:
 private:
     friend galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr
     galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
-        unsigned int sampled_ms,
-        unsigned int max_dwells,
-        unsigned int doppler_max,
-        unsigned int doppler_step,
-        int64_t fs_in,
-        int samples_per_ms, int samples_per_code,
-        bool bit_transition_flag,
-        bool dump,
-        const std::string& dump_filename,
-        bool both_signal_components_,
-        int CAF_window_hz_,
-        int Zero_padding_,
-        bool enable_monitor_output);
+        const Acq_Conf& conf,
+        bool both_signal_components,
+        int CAF_window_hz,
+        int Zero_padding);
 
     galileo_e5a_noncoherentIQ_acquisition_caf_cc(
-        unsigned int sampled_ms,
-        unsigned int max_dwells,
-        unsigned int doppler_max,
-        unsigned int doppler_step,
-        int64_t fs_in,
-        int samples_per_ms, int samples_per_code,
-        bool bit_transition_flag,
-        bool dump,
-        const std::string& dump_filename,
-        bool both_signal_components_,
-        int CAF_window_hz_,
-        int Zero_padding_,
-        bool enable_monitor_output);
+        const Acq_Conf& conf,
+        bool both_signal_components,
+        int CAF_window_hz,
+        int Zero_padding);
 
     void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
         int doppler_offset);
@@ -211,43 +185,33 @@ private:
     std::vector<float> d_CAF_vector_Q;
 
     std::string d_satellite_str;
-    std::string d_dump_filename;
 
+    const Acq_Conf d_acq_params;
     std::ofstream d_dump_file;
 
     Gnss_Synchro* d_gnss_synchro;
 
-    int64_t d_fs_in;
     uint64_t d_sample_counter;
 
     float d_threshold;
-    float d_doppler_freq;
     float d_mag;
     float d_input_power;
     float d_test_statistics;
 
     int d_state;
-    int d_samples_per_ms;
-    int d_samples_per_code;
-    int d_CAF_window_hz;
+    const int d_CAF_window_hz;
     int d_buffer_count;
     int d_doppler_resolution;
-    const int d_doppler_max;
-    const int d_doppler_step;
-    int d_fft_size;
+    const int d_fft_size;
     int d_num_doppler_bins;
     unsigned int d_gr_stream_buffer;
     unsigned int d_channel;
-    unsigned int d_max_dwells;
     unsigned int d_well_count;
     unsigned int d_sampled_ms;
     unsigned int d_code_phase;
 
-    bool d_bit_transition_flag;
     bool d_active;
-    bool d_dump;
-    bool d_both_signal_components;
-    bool d_enable_monitor_output;
+    const bool d_both_signal_components;
 };
 
 

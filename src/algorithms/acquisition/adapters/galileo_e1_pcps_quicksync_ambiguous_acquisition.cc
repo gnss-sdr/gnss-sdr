@@ -66,10 +66,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
             // const auto samples_per_ms = static_cast<int>(round(code_length_ / acq_parameters_.sampled_ms));
             const unsigned int max_dwells = acq_parameters_.bit_transition_flag ? 2 : acq_parameters_.max_dwells;
 
-            acquisition_cc_ = pcps_quicksync_make_acquisition_cc(folding_factor_,
-                vector_length_, max_dwells, acq_parameters_.doppler_max, acq_parameters_.doppler_step,
-                acq_parameters_.fs_in, code_length_, acq_parameters_.bit_transition_flag,
-                acq_parameters_.dump, acq_parameters_.dump_filename, acq_parameters_.enable_monitor_output);
+            acquisition_cc_ = pcps_quicksync_make_acquisition_cc(acq_parameters_, folding_factor_, vector_length_, max_dwells, code_length_);
 
             DLOG(INFO) << "acquisition_quicksync(" << acquisition_cc_->unique_id() << ")";
         }
@@ -90,7 +87,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisition::code_gen_complex_sampled(own::s
 float GalileoE1PcpsQuickSyncAmbiguousAcquisition::calculate_threshold(float pfa) const
 {
     unsigned int frequency_bins = 0;
-    for (int doppler = -acq_parameters_.doppler_max; doppler <= acq_parameters_.doppler_max; doppler += static_cast<int>(acq_parameters_.doppler_step))
+    for (int doppler = -acq_parameters_.doppler_max; doppler <= acq_parameters_.doppler_max; doppler += acq_parameters_.doppler_step)
         {
             frequency_bins++;
         }

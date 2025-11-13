@@ -47,14 +47,11 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
 {
     if (is_type_gr_complex())
         {
-            const auto samples_per_ms = static_cast<int>(code_length_) / GALILEO_E1_CODE_PERIOD_MS;
             const auto tong_init_val = configuration->property(role + ".tong_init_val", 1U);
             const auto tong_max_val = configuration->property(role + ".tong_max_val", 2U);
             const auto tong_max_dwells = configuration->property(role + ".tong_max_dwells", tong_max_val + 1U);
 
-            acquisition_cc_ = pcps_tong_make_acquisition_cc(acq_parameters_.sampled_ms, acq_parameters_.doppler_max,
-                acq_parameters_.doppler_step, acq_parameters_.fs_in, samples_per_ms, code_length_, tong_init_val,
-                tong_max_val, tong_max_dwells, acq_parameters_.dump, acq_parameters_.dump_filename, acq_parameters_.enable_monitor_output);
+            acquisition_cc_ = pcps_tong_make_acquisition_cc(acq_parameters_, tong_init_val, tong_max_val, tong_max_dwells);
 
             DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }

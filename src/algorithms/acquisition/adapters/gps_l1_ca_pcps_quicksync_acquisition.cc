@@ -64,8 +64,8 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
             const unsigned int max_dwells = acq_parameters_.bit_transition_flag ? 2 : acq_parameters_.max_dwells;
 
             acquisition_cc_ = pcps_quicksync_make_acquisition_cc(folding_factor_,
-                vector_length_, max_dwells, acq_parameters_.doppler_max, acq_parameters_.doppler_step, acq_parameters_.fs_in, code_length_, acq_parameters_.bit_transition_flag,
-                acq_parameters_.dump, acq_parameters_.dump_filename, acq_parameters_.enable_monitor_output);
+                vector_length_, max_dwells, acq_parameters_.doppler_max, acq_parameters_.doppler_step, acq_parameters_.fs_in, code_length_,
+                acq_parameters_.bit_transition_flag, acq_parameters_.dump, acq_parameters_.dump_filename, acq_parameters_.enable_monitor_output);
 
             DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
@@ -82,7 +82,7 @@ float GpsL1CaPcpsQuickSyncAcquisition::calculate_threshold(float pfa) const
 {
     // Calculate the threshold
     unsigned int frequency_bins = 0;
-    for (int doppler = -acq_parameters_.doppler_max; doppler <= acq_parameters_.doppler_max; doppler += acq_parameters_.doppler_step)
+    for (int doppler = -acq_parameters_.doppler_max; doppler <= acq_parameters_.doppler_max; doppler += static_cast<int>(acq_parameters_.doppler_step))
         {
             frequency_bins++;
         }

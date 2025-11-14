@@ -39,83 +39,53 @@
 
 
 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
-    unsigned int sampled_ms,
-    unsigned int max_dwells,
-    unsigned int doppler_max,
-    unsigned int doppler_step,
-    int64_t fs_in,
-    int samples_per_ms, int samples_per_code,
-    bool bit_transition_flag,
-    bool dump,
-    const std::string &dump_filename,
-    bool both_signal_components_,
-    int CAF_window_hz_,
-    int Zero_padding_,
-    bool enable_monitor_output)
+    const Acq_Conf &conf,
+    bool both_signal_components,
+    int CAF_window_hz,
+    int Zero_padding)
 {
     return galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr(
-        new galileo_e5a_noncoherentIQ_acquisition_caf_cc(sampled_ms, max_dwells, doppler_max, doppler_step, fs_in, samples_per_ms,
-            samples_per_code, bit_transition_flag, dump, dump_filename, both_signal_components_, CAF_window_hz_, Zero_padding_, enable_monitor_output));
+        new galileo_e5a_noncoherentIQ_acquisition_caf_cc(conf, both_signal_components, CAF_window_hz, Zero_padding));
 }
 
 
 galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisition_caf_cc(
-    unsigned int sampled_ms,
-    unsigned int max_dwells,
-    unsigned int doppler_max,
-    unsigned int doppler_step,
-    int64_t fs_in,
-    int samples_per_ms,
-    int samples_per_code,
-    bool bit_transition_flag,
-    bool dump,
-    const std::string &dump_filename,
-    bool both_signal_components_,
-    int CAF_window_hz_,
-    int Zero_padding_,
-    bool enable_monitor_output)
+    const Acq_Conf &conf,
+    bool both_signal_components,
+    int CAF_window_hz,
+    int Zero_padding)
     : acquisition_impl_interface("galileo_e5a_noncoherentIQ_acquisition_caf_cc",
           gr::io_signature::make(1, 1, sizeof(gr_complex)),
           gr::io_signature::make(0, 1, sizeof(Gnss_Synchro))),
-      d_dump_filename(dump_filename),
+      d_acq_params(conf),
       d_gnss_synchro(nullptr),
-      d_fs_in(fs_in),
       d_sample_counter(0ULL),
       d_threshold(0),
-      d_doppler_freq(0),
       d_mag(0),
       d_input_power(0.0),
       d_test_statistics(0),
       d_state(0),
-      d_samples_per_ms(samples_per_ms),
-      d_samples_per_code(samples_per_code),
-      d_CAF_window_hz(CAF_window_hz_),
+      d_CAF_window_hz(CAF_window_hz),
       d_buffer_count(0),
       d_doppler_resolution(0),
-      d_doppler_max(static_cast<int>(doppler_max)),
-      d_doppler_step(doppler_step),
-      d_fft_size(static_cast<int>(sampled_ms) * d_samples_per_ms),
+      d_fft_size(static_cast<int>(conf.sampled_ms) * conf.samples_per_ms),
       d_num_doppler_bins(0),
       d_gr_stream_buffer(0),
       d_channel(0),
-      d_max_dwells(max_dwells),
       d_well_count(0),
       d_code_phase(0),
-      d_bit_transition_flag(bit_transition_flag),
       d_active(false),
-      d_dump(dump),
-      d_both_signal_components(both_signal_components_),
-      d_enable_monitor_output(enable_monitor_output)
+      d_both_signal_components(both_signal_components)
 {
     this->message_port_register_out(pmt::mp("events"));
 
-    if (Zero_padding_ > 0)
+    if (Zero_padding > 0)
         {
             d_sampled_ms = 1;
         }
     else
         {
-            d_sampled_ms = sampled_ms;
+            d_sampled_ms = conf.sampled_ms;
         }
 
     d_inbuffer = std::vector<gr_complex>(d_fft_size);
@@ -149,14 +119,14 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::~galileo_e5a_noncoherentIQ_acquisi
 {
     try
         {
-            if (d_dump)
+            if (d_acq_params.dump)
                 {
                     d_dump_file.close();
                 }
         }
     catch (const std::ofstream::failure &e)
         {
-            std::cerr << "Problem closing Acquisition dump file: " << d_dump_filename << '\n';
+            std::cerr << "Problem closing Acquisition dump file: " << d_acq_params.dump_filename << '\n';
         }
     catch (const std::exception &e)
         {
@@ -196,11 +166,11 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::set_local_code(std::complex<f
             auto minus_one = gr_complex(-1, 0);
             volk_32fc_s32fc_multiply2_32fc(&(d_fft_if->get_inbuf())[0],
                 &codeI[0], &minus_one,
-                d_samples_per_code);
+                static_cast<int32_t>(d_acq_params.samples_per_code));
 #else
             volk_32fc_s32fc_multiply_32fc(&(d_fft_if->get_inbuf())[0],
                 &codeI[0], gr_complex(-1, 0),
-                d_samples_per_code);
+                static_cast<int32_t>(d_acq_params.samples_per_code));
 #endif
             d_fft_if->execute();  // We need the FFT of local code
 
@@ -214,11 +184,11 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::set_local_code(std::complex<f
                     auto minus_one = gr_complex(-1, 0);
                     volk_32fc_s32fc_multiply2_32fc(&(d_fft_if->get_inbuf())[0],
                         &codeQ[0], &minus_one,
-                        d_samples_per_code);
+                        static_cast<int32_t>(d_acq_params.samples_per_code));
 #else
                     volk_32fc_s32fc_multiply_32fc(&(d_fft_if->get_inbuf())[0],
                         &codeQ[0], gr_complex(-1, 0),
-                        d_samples_per_code);
+                        static_cast<int32_t>(d_acq_params.samples_per_code));
 #endif
                     d_fft_if->execute();  // We need the FFT of local code
 
@@ -245,9 +215,7 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
 
     // Count the number of bins
     d_num_doppler_bins = 0;
-    for (int doppler = -d_doppler_max;
-        doppler <= d_doppler_max;
-        doppler += d_doppler_step)
+    for (int doppler = -d_acq_params.doppler_max; doppler <= d_acq_params.doppler_max; doppler += d_acq_params.doppler_step)
         {
             d_num_doppler_bins++;
         }
@@ -256,8 +224,8 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
     d_grid_doppler_wipeoffs = std::vector<std::vector<gr_complex>>(d_num_doppler_bins, std::vector<gr_complex>(d_fft_size));
     for (int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            int doppler = -d_doppler_max + d_doppler_step * doppler_index;
-            float phase_step_rad = static_cast<float>(TWO_PI) * static_cast<float>(doppler) / static_cast<float>(d_fs_in);
+            int doppler = -d_acq_params.doppler_max + d_acq_params.doppler_step * doppler_index;
+            float phase_step_rad = static_cast<float>(TWO_PI) * static_cast<float>(doppler) / static_cast<float>(d_acq_params.fs_in);
             std::array<float, 1> _phase{};
             volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index].data(), -phase_step_rad, _phase.data(), d_fft_size);
         }
@@ -399,8 +367,8 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                 DLOG(INFO) << "Channel: " << d_channel
                            << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
                            << " ,sample stamp: " << d_sample_counter << ", threshold: "
-                           << d_threshold << ", doppler_max: " << d_doppler_max
-                           << ", doppler_step: " << d_doppler_step;
+                           << d_threshold << ", doppler_max: " << d_acq_params.doppler_max
+                           << ", doppler_step: " << d_acq_params.doppler_step;
 
                 // 1- Compute the input signal power estimation
                 volk_32fc_magnitude_squared_32f(d_magnitudeIA.data(), d_inbuffer.data(), d_fft_size);
@@ -411,7 +379,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                 for (int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                     {
                         // doppler search steps
-                        doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
+                        doppler = -d_acq_params.doppler_max + d_acq_params.doppler_step * doppler_index;
 
                         volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), d_inbuffer.data(),
                             d_grid_doppler_wipeoffs[doppler_index].data(), d_fft_size);
@@ -577,19 +545,19 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                 // the maximum test statistics in the previous dwell is greater than
                                 // current d_mag/d_input_power). Note that d_test_statistics is not
                                 // restarted between consecutive dwells in multidwell operation.
-                                if (d_test_statistics < (d_mag / d_input_power) || !d_bit_transition_flag)
+                                if (d_test_statistics < (d_mag / d_input_power) || !d_acq_params.bit_transition_flag)
                                     {
-                                        d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
+                                        d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % static_cast<int32_t>(d_acq_params.samples_per_code));
                                         d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                                         d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
-                                        d_gnss_synchro->Acq_doppler_step = d_doppler_step;
+                                        d_gnss_synchro->Acq_doppler_step = d_acq_params.doppler_step;
                                         // 5- Compute the test statistics and compare to the threshold
                                         d_test_statistics = d_mag / d_input_power;
                                     }
                             }
 
                         // Record results to file if required
-                        if (d_dump)
+                        if (d_acq_params.dump)
                             {
                                 std::stringstream filename;
                                 std::streamsize n = sizeof(float) * (d_fft_size);  // noncomplex file write
@@ -621,7 +589,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                     {
                         int CAF_bins_half;
                         std::array<float, 1> accum{};
-                        CAF_bins_half = d_CAF_window_hz / (2 * d_doppler_step);
+                        CAF_bins_half = d_CAF_window_hz / (2 * d_acq_params.doppler_step);
                         float weighting_factor;
                         weighting_factor = 0.5F / static_cast<float>(CAF_bins_half);
                         // weighting_factor = 0;
@@ -689,10 +657,10 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 
                         // Recompute the maximum doppler peak
                         volk_gnsssdr_32f_index_max_32u(&indext, d_CAF_vector.data(), d_num_doppler_bins);
-                        doppler = -d_doppler_max + d_doppler_step * static_cast<int>(indext);
+                        doppler = -d_acq_params.doppler_max + d_acq_params.doppler_step * static_cast<int>(indext);
                         d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                         // Dump if required, appended at the end of the file
-                        if (d_dump)
+                        if (d_acq_params.dump)
                             {
                                 std::stringstream filename;
                                 std::streamsize n = sizeof(float) * (d_num_doppler_bins);  // noncomplex file write
@@ -704,7 +672,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                             }
                     }
 
-                if (d_well_count == d_max_dwells)
+                if (d_well_count == d_acq_params.max_dwells)
                     {
                         if (d_test_statistics > d_threshold)
                             {
@@ -746,7 +714,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                 consume_each(ninput_items[0]);
 
                 // Copy and push current Gnss_Synchro to monitor queue
-                if (d_enable_monitor_output)
+                if (d_acq_params.enable_monitor_output)
                     {
                         auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
                         Gnss_Synchro current_synchro_data = Gnss_Synchro();

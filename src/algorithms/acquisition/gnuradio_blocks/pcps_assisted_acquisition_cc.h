@@ -34,6 +34,7 @@
 #ifndef GNSS_SDR_PCPS_ASSISTED_ACQUISITION_CC_H
 #define GNSS_SDR_PCPS_ASSISTED_ACQUISITION_CC_H
 
+#include "acq_conf.h"
 #include "acquisition_impl_interface.h"
 #include "channel_fsm.h"
 #include "gnss_sdr_fft.h"
@@ -56,17 +57,7 @@ class pcps_assisted_acquisition_cc;
 
 using pcps_assisted_acquisition_cc_sptr = gnss_shared_ptr<pcps_assisted_acquisition_cc>;
 
-pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(
-    int32_t max_dwells,
-    uint32_t sampled_ms,
-    int32_t doppler_max,
-    int32_t doppler_min,
-    int32_t doppler_step,
-    int64_t fs_in,
-    int32_t samples_per_ms,
-    bool dump,
-    const std::string& dump_filename,
-    bool enable_monitor_output);
+pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(const Acq_Conf& conf);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition.
@@ -165,18 +156,11 @@ private:
     void forecast(int noutput_items, gr_vector_int& ninput_items_required) override;
 
     friend pcps_assisted_acquisition_cc_sptr
-    pcps_make_assisted_acquisition_cc(int32_t max_dwells, uint32_t sampled_ms,
-        int32_t doppler_max, int32_t doppler_min, int32_t doppler_step,
-        int64_t fs_in, int32_t samples_per_ms, bool dump,
-        const std::string& dump_filename, bool enable_monitor_output);
+    pcps_make_assisted_acquisition_cc(const Acq_Conf& conf);
 
-    pcps_assisted_acquisition_cc(int32_t max_dwells, uint32_t sampled_ms,
-        int32_t doppler_max, int32_t doppler_min, int32_t doppler_step,
-        int64_t fs_in, int32_t samples_per_ms, bool dump,
-        const std::string& dump_filename, bool enable_monitor_output);
+    explicit pcps_assisted_acquisition_cc(const Acq_Conf& conf);
 
-    void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift,
-        int32_t doppler_offset);
+    void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift, int32_t doppler_offset);
 
     int32_t compute_and_accumulate_grid(gr_vector_const_void_star& input_items);
     float estimate_input_power(gr_vector_const_void_star& input_items) const;
@@ -194,44 +178,31 @@ private:
     std::vector<gr_complex> d_fft_codes;
 
     std::string d_satellite_str;
-    std::string d_dump_filename;
+    const Acq_Conf d_acq_params;
 
     std::ofstream d_dump_file;
 
     Gnss_Synchro* d_gnss_synchro;
 
-    int64_t d_fs_in;
     uint64_t d_sample_counter;
 
     float d_threshold;
-    float d_doppler_freq;
     float d_input_power;
     float d_test_statistics;
 
-    uint32_t d_doppler_resolution;
     uint32_t d_channel;
-    uint32_t d_sampled_ms;
     uint32_t d_code_phase;
+    const uint32_t d_fft_size;
 
-    int32_t d_samples_per_ms;
-
-    uint32_t d_fft_size;
-
-    int32_t d_max_dwells;
-    int32_t d_gnuradio_forecast_samples;
+    const int32_t d_gnuradio_forecast_samples;
     int32_t d_doppler_max;
     int32_t d_doppler_min;
-    const int32_t d_config_doppler_max;
-    int32_t d_config_doppler_min;
     int32_t d_num_doppler_points;
-    const int32_t d_doppler_step;
     int32_t d_state;
     int32_t d_well_count;
 
     bool d_active;
     bool d_disable_assist;
-    bool d_dump;
-    bool d_enable_monitor_output;
 };
 
 

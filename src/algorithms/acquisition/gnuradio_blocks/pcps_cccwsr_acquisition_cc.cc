@@ -38,63 +38,32 @@
 #endif
 
 
-pcps_cccwsr_acquisition_cc_sptr pcps_cccwsr_make_acquisition_cc(
-    uint32_t sampled_ms,
-    uint32_t max_dwells,
-    uint32_t doppler_max,
-    uint32_t doppler_step,
-    int64_t fs_in,
-    int32_t samples_per_ms,
-    int32_t samples_per_code,
-    bool dump,
-    const std::string &dump_filename,
-    bool enable_monitor_output)
+pcps_cccwsr_acquisition_cc_sptr pcps_cccwsr_make_acquisition_cc(const Acq_Conf &conf)
 {
-    return pcps_cccwsr_acquisition_cc_sptr(
-        new pcps_cccwsr_acquisition_cc(sampled_ms, max_dwells, doppler_max, doppler_step, fs_in,
-            samples_per_ms, samples_per_code, dump, dump_filename, enable_monitor_output));
+    return pcps_cccwsr_acquisition_cc_sptr(new pcps_cccwsr_acquisition_cc(conf));
 }
 
 
-pcps_cccwsr_acquisition_cc::pcps_cccwsr_acquisition_cc(
-    uint32_t sampled_ms,
-    uint32_t max_dwells,
-    uint32_t doppler_max,
-    uint32_t doppler_step,
-    int64_t fs_in,
-    int32_t samples_per_ms,
-    int32_t samples_per_code,
-    bool dump,
-    const std::string &dump_filename,
-    bool enable_monitor_output)
+pcps_cccwsr_acquisition_cc::pcps_cccwsr_acquisition_cc(const Acq_Conf &conf)
     : acquisition_impl_interface("pcps_cccwsr_acquisition_cc",
-          gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)),
+          gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * conf.sampled_ms * conf.samples_per_ms)),
           gr::io_signature::make(0, 1, sizeof(Gnss_Synchro))),
-      d_dump_filename(dump_filename),
+      d_acq_params(conf),
       d_gnss_synchro(nullptr),
-      d_fs_in(fs_in),
+      d_fs_in(conf.fs_in),
       d_sample_counter(0ULL),
       d_threshold(0),
-      d_doppler_freq(0),
       d_mag(0),
       d_input_power(0.0),
       d_test_statistics(0),
       d_state(0),
-      d_samples_per_ms(samples_per_ms),
-      d_samples_per_code(samples_per_code),
       d_doppler_resolution(0),
-      d_doppler_max(doppler_max),
-      d_doppler_step(doppler_step),
-      d_sampled_ms(sampled_ms),
-      d_max_dwells(max_dwells),
       d_well_count(0),
-      d_fft_size(d_sampled_ms * d_samples_per_ms),
+      d_fft_size(conf.sampled_ms * conf.samples_per_ms),
       d_num_doppler_bins(0),
       d_code_phase(0),
       d_channel(0),
-      d_active(false),
-      d_dump(dump),
-      d_enable_monitor_output(enable_monitor_output)
+      d_active(false)
 {
     this->message_port_register_out(pmt::mp("events"));
 
@@ -115,14 +84,14 @@ pcps_cccwsr_acquisition_cc::~pcps_cccwsr_acquisition_cc()
 {
     try
         {
-            if (d_dump)
+            if (d_acq_params.dump)
                 {
                     d_dump_file.close();
                 }
         }
     catch (const std::ofstream::failure &e)
         {
-            std::cerr << "Problem closing Acquisition dump file: " << d_dump_filename << '\n';
+            std::cerr << "Problem closing Acquisition dump file: " << d_acq_params.dump_filename << '\n';
         }
     catch (const std::exception &e)
         {
@@ -167,9 +136,7 @@ void pcps_cccwsr_acquisition_cc::init()
 
     // Count the number of bins
     d_num_doppler_bins = 0;
-    for (auto doppler = static_cast<int32_t>(-d_doppler_max);
-        doppler <= static_cast<int32_t>(d_doppler_max);
-        doppler += d_doppler_step)
+    for (auto doppler = -d_acq_params.doppler_max; doppler <= d_acq_params.doppler_max; doppler += d_acq_params.doppler_step)
         {
             d_num_doppler_bins++;
         }
@@ -178,7 +145,7 @@ void pcps_cccwsr_acquisition_cc::init()
     d_grid_doppler_wipeoffs = std::vector<std::vector<gr_complex>>(d_num_doppler_bins, std::vector<gr_complex>(d_fft_size));
     for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            int32_t doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_step * doppler_index;
+            int32_t doppler = -d_acq_params.doppler_max + d_acq_params.doppler_step * doppler_index;
             float phase_step_rad = static_cast<float>(TWO_PI) * doppler / static_cast<float>(d_fs_in);
             std::array<float, 1> _phase{};
             volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index].data(), -phase_step_rad, _phase.data(), d_fft_size);
@@ -261,8 +228,8 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                 DLOG(INFO) << "Channel: " << d_channel
                            << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
                            << " ,sample stamp: " << d_sample_counter << ", threshold: "
-                           << d_threshold << ", doppler_max: " << d_doppler_max
-                           << ", doppler_step: " << d_doppler_step;
+                           << d_threshold << ", doppler_max: " << d_acq_params.doppler_max
+                           << ", doppler_step: " << d_acq_params.doppler_step;
 
                 // 1- Compute the input signal power estimation
                 volk_32fc_magnitude_squared_32f(d_magnitude.data(), in, d_fft_size);
@@ -273,7 +240,7 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                 for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                     {
                         // doppler search steps
-                        doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_step * doppler_index;
+                        doppler = -d_acq_params.doppler_max + d_acq_params.doppler_step * doppler_index;
 
                         volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,
                             d_grid_doppler_wipeoffs[doppler_index].data(), d_fft_size);
@@ -342,14 +309,14 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                         if (d_mag < magt)
                             {
                                 d_mag = magt;
-                                d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
+                                d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % static_cast<int32_t>(d_acq_params.samples_per_code));
                                 d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                                 d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
-                                d_gnss_synchro->Acq_doppler_step = d_doppler_step;
+                                d_gnss_synchro->Acq_doppler_step = d_acq_params.doppler_step;
                             }
 
                         // Record results to file if required
-                        if (d_dump)
+                        if (d_acq_params.dump)
                             {
                                 std::stringstream filename;
                                 std::streamsize n = 2 * sizeof(float) * (d_fft_size);  // complex file write
@@ -372,7 +339,7 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                     {
                         d_state = 2;  // Positive acquisition
                     }
-                else if (d_well_count == d_max_dwells)
+                else if (d_well_count == d_acq_params.max_dwells)
                     {
                         d_state = 3;  // Negative acquisition
                     }
@@ -405,7 +372,7 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                 this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
 
                 // Copy and push current Gnss_Synchro to monitor queue
-                if (d_enable_monitor_output)
+                if (d_acq_params.enable_monitor_output)
                     {
                         auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
                         Gnss_Synchro current_synchro_data = Gnss_Synchro();

@@ -46,7 +46,6 @@ public:
 
     size_t it_size{sizeof(gr_complex)};
 
-    float doppler_step{500.0};
     float samples_per_ms{0.0};
     float doppler_step2{125.0};
     float pfa{0.0};
@@ -64,6 +63,7 @@ public:
     uint32_t dump_channel{0U};
     int32_t doppler_max{5000};
     int32_t doppler_min{-5000};
+    int32_t doppler_step{500};
 
     bool bit_transition_flag{false};
     bool use_CFAR_algorithm_flag{true};

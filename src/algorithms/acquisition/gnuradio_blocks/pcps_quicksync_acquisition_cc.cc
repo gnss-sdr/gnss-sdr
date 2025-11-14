@@ -32,48 +32,23 @@
 
 
 pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
-    uint32_t folding_factor,
-    uint32_t vector_length,
-    uint32_t max_dwells,
-    uint32_t doppler_max,
-    uint32_t doppler_step,
-    int64_t fs_in,
-    int32_t samples_per_code,
-    bool bit_transition_flag,
-    bool dump,
-    const std::string& dump_filename,
-    bool enable_monitor_output)
+    const Acq_Conf& conf, uint32_t folding_factor, uint32_t vector_length, uint32_t max_dwells, int32_t samples_per_code)
 {
     return pcps_quicksync_acquisition_cc_sptr(
-        new pcps_quicksync_acquisition_cc(
-            folding_factor,
-            vector_length, max_dwells, doppler_max,
-            doppler_step, fs_in,
-            samples_per_code,
-            bit_transition_flag,
-            dump, dump_filename,
-            enable_monitor_output));
+        new pcps_quicksync_acquisition_cc(conf, folding_factor, vector_length, max_dwells, samples_per_code));
 }
 
 
 pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
-    uint32_t folding_factor, uint32_t vector_length, uint32_t max_dwells,
-    uint32_t doppler_max, uint32_t doppler_step, int64_t fs_in,
-    int32_t samples_per_code,
-    bool bit_transition_flag,
-    bool dump,
-    const std::string& dump_filename,
-    bool enable_monitor_output)
+    const Acq_Conf& conf, uint32_t folding_factor, uint32_t vector_length, uint32_t max_dwells, int32_t samples_per_code)
     : acquisition_impl_interface("pcps_quicksync_acquisition_cc",
           gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * vector_length)),
           gr::io_signature::make(0, 1, sizeof(Gnss_Synchro))),
-      d_dump_filename(dump_filename),
+      d_acq_params(conf),
       d_gnss_synchro(nullptr),
-      d_fs_in(fs_in),
       d_sample_counter(0ULL),
       d_noise_floor_power(0),
       d_threshold(0),
-      d_doppler_freq(0),
       d_mag(0),
       d_input_power(0.0),
       d_test_statistics(0),
@@ -82,18 +57,12 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
       d_state(0),
       d_channel(0),
       d_folding_factor(folding_factor),
-      d_doppler_resolution(0),
-      d_doppler_max(doppler_max),
-      d_doppler_step(doppler_step),
       d_max_dwells(max_dwells),
       d_well_count(0),
-      d_fft_size((d_samples_per_code) / d_folding_factor),
+      d_fft_size(d_samples_per_code / d_folding_factor),
       d_num_doppler_bins(0),
       d_code_phase(0),
-      d_bit_transition_flag(bit_transition_flag),
-      d_active(false),
-      d_dump(dump),
-      d_enable_monitor_output(enable_monitor_output)
+      d_active(false)
 {
     this->message_port_register_out(pmt::mp("events"));
 
@@ -119,14 +88,14 @@ pcps_quicksync_acquisition_cc::~pcps_quicksync_acquisition_cc()
 {
     try
         {
-            if (d_dump)
+            if (d_acq_params.dump)
                 {
                     d_dump_file.close();
                 }
         }
     catch (const std::ofstream::failure& e)
         {
-            std::cerr << "Problem closing Acquisition dump file: " << d_dump_filename << '\n';
+            std::cerr << "Problem closing Acquisition dump file: " << d_acq_params.dump_filename << '\n';
         }
     catch (const std::exception& e)
         {
@@ -175,9 +144,7 @@ void pcps_quicksync_acquisition_cc::init()
 
     // Count the number of bins
     d_num_doppler_bins = 0;
-    for (auto doppler = static_cast<int32_t>(-d_doppler_max);
-        doppler <= static_cast<int32_t>(d_doppler_max);
-        doppler += d_doppler_step)
+    for (auto doppler = -d_acq_params.doppler_max; doppler <= d_acq_params.doppler_max; doppler += d_acq_params.doppler_step)
         {
             d_num_doppler_bins++;
         }
@@ -186,8 +153,8 @@ void pcps_quicksync_acquisition_cc::init()
     d_grid_doppler_wipeoffs = std::vector<std::vector<gr_complex>>(d_num_doppler_bins, std::vector<gr_complex>(d_samples_per_code * d_folding_factor));
     for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            int32_t doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_step * doppler_index;
-            float phase_step_rad = static_cast<float>(TWO_PI) * doppler / static_cast<float>(d_fs_in);
+            int32_t doppler = -d_acq_params.doppler_max + d_acq_params.doppler_step * doppler_index;
+            float phase_step_rad = static_cast<float>(TWO_PI) * doppler / static_cast<float>(d_acq_params.fs_in);
             std::array<float, 1> _phase{};
             volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index].data(), -phase_step_rad, _phase.data(), d_samples_per_code * d_folding_factor);
         }
@@ -298,8 +265,8 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                            << " ,algorithm: pcps_quicksync_acquisition"
                            << " ,folding factor: " << d_folding_factor
                            << " ,sample stamp: " << d_sample_counter << ", threshold: "
-                           << d_threshold << ", doppler_max: " << d_doppler_max
-                           << ", doppler_step: " << d_doppler_step << ", Signal Size: "
+                           << d_threshold << ", doppler_max: " << d_acq_params.doppler_max
+                           << ", doppler_step: " << d_acq_params.doppler_step << ", Signal Size: "
                            << d_samples_per_code * d_folding_factor;
 
 
@@ -319,7 +286,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
 
                         // Doppler search steps and then multiplication of the incoming
                         // signal with the doppler wipeoffs to eliminate frequency offset
-                        doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_step * doppler_index;
+                        doppler = -d_acq_params.doppler_max + d_acq_params.doppler_step * doppler_index;
 
                         // Perform multiplication of the incoming signal with the
                         // complex exponential vector. This removes the frequency doppler
@@ -376,7 +343,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                                 // the maximum test statistics in the previous dwell is greater than
                                 // current d_mag/d_input_power). Note that d_test_statistics is not
                                 // restarted between consecutive dwells in multidwell operation.
-                                if (d_test_statistics < (d_mag / d_input_power) || !d_bit_transition_flag)
+                                if (d_test_statistics < (d_mag / d_input_power) || !d_acq_params.bit_transition_flag)
                                     {
                                         uint32_t detected_delay_samples_folded = 0;
                                         detected_delay_samples_folded = (indext % d_samples_per_code);
@@ -413,7 +380,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                                         d_gnss_synchro->Acq_delay_samples = static_cast<double>(d_possible_delay[indext]);
                                         d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                                         d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
-                                        d_gnss_synchro->Acq_doppler_step = d_doppler_step;
+                                        d_gnss_synchro->Acq_doppler_step = d_acq_params.doppler_step;
 
                                         // 5- Compute the test statistics and compare to the threshold d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
                                         d_test_statistics = d_mag / d_input_power;
@@ -421,7 +388,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                             }
 
                         // Record results to file if required
-                        if (d_dump)
+                        if (d_acq_params.dump)
                             {
                                 // Since QuickSYnc performs a folded correlation in frequency by means
                                 // of the FFT, it is essential to also keep the values obtained from the
@@ -438,7 +405,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                             }
                     }
 
-                if (!d_bit_transition_flag)
+                if (!d_acq_params.bit_transition_flag)
                     {
                         if (d_test_statistics > d_threshold)
                             {
@@ -500,7 +467,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 // DLOG(INFO) << "END CASE 2";
 
                 // Copy and push current Gnss_Synchro to monitor queue
-                if (d_enable_monitor_output)
+                if (d_acq_params.enable_monitor_output)
                     {
                         auto** out = reinterpret_cast<Gnss_Synchro**>(&output_items[0]);
                         Gnss_Synchro current_synchro_data = Gnss_Synchro();

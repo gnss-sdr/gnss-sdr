@@ -53,7 +53,7 @@ Acq_Conf get_acq_conf(
         }
     if (FLAGS_doppler_step != 0)
         {
-            acq_parameters.doppler_step = static_cast<float>(FLAGS_doppler_step);
+            acq_parameters.doppler_step = FLAGS_doppler_step;
         }
 #else
     if (absl::GetFlag(FLAGS_doppler_max) != 0)
@@ -62,7 +62,7 @@ Acq_Conf get_acq_conf(
         }
     if (absl::GetFlag(FLAGS_doppler_step) != 0)
         {
-            acq_parameters.doppler_step = static_cast<float>(absl::GetFlag(FLAGS_doppler_step));
+            acq_parameters.doppler_step = absl::GetFlag(FLAGS_doppler_step);
         }
 #endif
 
@@ -276,7 +276,7 @@ float BasePcpsAcquisitionCustom::calculate_threshold(float pfa) const
 {
     // Calculate the threshold
     unsigned int frequency_bins = 0;
-    for (int doppler = -acq_parameters_.doppler_max; doppler <= acq_parameters_.doppler_max; doppler += static_cast<int>(acq_parameters_.doppler_step))
+    for (int doppler = -acq_parameters_.doppler_max; doppler <= acq_parameters_.doppler_max; doppler += acq_parameters_.doppler_step)
         {
             frequency_bins++;
         }

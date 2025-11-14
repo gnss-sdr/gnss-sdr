@@ -51,7 +51,7 @@ Acq_Conf get_acq_conf(const ConfigurationInterface* configuration, const std::st
         }
     if (FLAGS_doppler_step != 0)
         {
-            acq_parameters.doppler_step = static_cast<float>(FLAGS_doppler_step);
+            acq_parameters.doppler_step = FLAGS_doppler_step;
         }
 #else
     if (absl::GetFlag(FLAGS_doppler_max) != 0)
@@ -60,7 +60,7 @@ Acq_Conf get_acq_conf(const ConfigurationInterface* configuration, const std::st
         }
     if (absl::GetFlag(FLAGS_doppler_step) != 0)
         {
-            acq_parameters.doppler_step = static_cast<float>(absl::GetFlag(FLAGS_doppler_step));
+            acq_parameters.doppler_step = absl::GetFlag(FLAGS_doppler_step);
         }
 #endif
 

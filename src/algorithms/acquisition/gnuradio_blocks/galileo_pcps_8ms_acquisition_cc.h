@@ -18,6 +18,7 @@
 #ifndef GNSS_SDR_PCPS_8MS_ACQUISITION_CC_H
 #define GNSS_SDR_PCPS_8MS_ACQUISITION_CC_H
 
+#include "acq_conf.h"
 #include "acquisition_impl_interface.h"
 #include "channel_fsm.h"
 #include "gnss_sdr_fft.h"
@@ -41,16 +42,7 @@ class galileo_pcps_8ms_acquisition_cc;
 using galileo_pcps_8ms_acquisition_cc_sptr = gnss_shared_ptr<galileo_pcps_8ms_acquisition_cc>;
 
 galileo_pcps_8ms_acquisition_cc_sptr
-galileo_pcps_8ms_make_acquisition_cc(uint32_t sampled_ms,
-    uint32_t max_dwells,
-    uint32_t doppler_max,
-    uint32_t doppler_step,
-    int64_t fs_in,
-    int32_t samples_per_ms,
-    int32_t samples_per_code,
-    bool dump,
-    const std::string& dump_filename,
-    bool enable_monitor_output);
+galileo_pcps_8ms_make_acquisition_cc(const Acq_Conf& conf);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition for
@@ -146,29 +138,9 @@ public:
 
 private:
     friend galileo_pcps_8ms_acquisition_cc_sptr
-    galileo_pcps_8ms_make_acquisition_cc(
-        uint32_t sampled_ms,
-        uint32_t max_dwells,
-        uint32_t doppler_max,
-        uint32_t doppler_step,
-        int64_t fs_in,
-        int32_t samples_per_ms,
-        int32_t samples_per_code,
-        bool dump,
-        const std::string& dump_filename,
-        bool enable_monitor_output);
+    galileo_pcps_8ms_make_acquisition_cc(const Acq_Conf& conf);
 
-    galileo_pcps_8ms_acquisition_cc(
-        uint32_t sampled_ms,
-        uint32_t max_dwells,
-        uint32_t doppler_max,
-        uint32_t doppler_step,
-        int64_t fs_in,
-        int32_t samples_per_ms,
-        int32_t samples_per_code,
-        bool dump,
-        const std::string& dump_filename,
-        bool enable_monitor_output);
+    explicit galileo_pcps_8ms_acquisition_cc(const Acq_Conf& conf);
 
     void calculate_magnitudes(
         gr_complex* fft_begin,
@@ -185,36 +157,25 @@ private:
     std::vector<float> d_magnitude;
 
     std::string d_satellite_str;
-    std::string d_dump_filename;
+    const Acq_Conf d_acq_params;
     std::ofstream d_dump_file;
 
     Gnss_Synchro* d_gnss_synchro;
 
-    int64_t d_fs_in;
     uint64_t d_sample_counter;
 
     float d_threshold;
-    float d_doppler_freq;
     float d_mag;
     float d_input_power;
     float d_test_statistics;
     int32_t d_state;
-    int32_t d_samples_per_ms;
-    int32_t d_samples_per_code;
     uint32_t d_channel;
-    uint32_t d_doppler_resolution;
-    const uint32_t d_doppler_max;
-    const uint32_t d_doppler_step;
-    uint32_t d_sampled_ms;
-    uint32_t d_max_dwells;
     uint32_t d_well_count;
-    uint32_t d_fft_size;
+    const uint32_t d_fft_size;
     uint32_t d_num_doppler_bins;
     uint32_t d_code_phase;
 
     bool d_active;
-    bool d_dump;
-    bool d_enable_monitor_output;
 };
 
 

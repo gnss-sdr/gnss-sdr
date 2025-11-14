@@ -195,13 +195,12 @@ private:
     arma::fmat grid_;
 
     std::string d_satellite_str;
+
+    const Acq_Conf d_acq_params;
     std::string d_dump_filename;
 
     Gnss_Synchro* d_gnss_synchro;
 
-    Acq_Conf acq_parameters;
-
-    const int64_t d_fs_in;
     int64_t d_dump_number;
     uint64_t d_sample_counter;
 
@@ -210,10 +209,6 @@ private:
 
     int d_positive_acq;
     int d_state;
-    int d_samples_per_ms;
-    int d_max_dwells;
-    const int d_config_doppler_max;
-    const unsigned int d_doppler_step;
     const int d_num_doppler_points;
     int d_well_count;
     int d_n_samples_in_buffer;

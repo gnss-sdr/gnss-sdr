@@ -47,12 +47,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
 {
     if (is_type_gr_complex())
         {
-            const auto doppler_min = configuration->property(role + ".doppler_min", -acq_parameters_.doppler_max);
-
-            acquisition_cc_ = pcps_make_assisted_acquisition_cc(acq_parameters_.max_dwells, acq_parameters_.sampled_ms,
-                acq_parameters_.doppler_max, doppler_min, acq_parameters_.doppler_step, acq_parameters_.fs_in, vector_length_,
-                acq_parameters_.dump, acq_parameters_.dump_filename, acq_parameters_.enable_monitor_output);
-
+            acquisition_cc_ = pcps_make_assisted_acquisition_cc(acq_parameters_);
             DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
 }

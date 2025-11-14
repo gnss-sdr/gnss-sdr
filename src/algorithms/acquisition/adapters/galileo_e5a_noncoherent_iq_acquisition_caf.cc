@@ -90,9 +90,8 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
             const auto sig = configuration->property("Channel.signal", std::string("5X"));
             const auto both_signal_components = (sig.at(0) == '5' && sig.at(1) == 'X');
 
-            acquisition_cc_ = galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(acq_parameters_.sampled_ms, acq_parameters_.max_dwells,
-                acq_parameters_.doppler_max, acq_parameters_.doppler_step, acq_parameters_.fs_in, code_length_, code_length_, acq_parameters_.bit_transition_flag,
-                acq_parameters_.dump, acq_parameters_.dump_filename, both_signal_components, caf_window_hz_, zero_padding_, acq_parameters_.enable_monitor_output);
+            acquisition_cc_ = galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
+                acq_parameters_, both_signal_components, caf_window_hz_, zero_padding_);
         }
 }
 

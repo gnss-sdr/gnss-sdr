@@ -45,24 +45,19 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
     : acquisition_impl_interface("pcps_acquisition_fine_doppler_cc",
           gr::io_signature::make(1, 1, sizeof(gr_complex)),
           gr::io_signature::make(0, 1, sizeof(Gnss_Synchro))),
+      d_acq_params(conf_),
       d_dump_filename(conf_.dump_filename),
       d_gnss_synchro(nullptr),
-      acq_parameters(conf_),
-      d_fs_in(conf_.fs_in),
       d_dump_number(0),
       d_sample_counter(0ULL),
       d_threshold(0),
       d_test_statistics(0),
       d_positive_acq(0),
       d_state(0),
-      d_samples_per_ms(static_cast<int>(conf_.samples_per_ms)),
-      d_max_dwells(conf_.max_dwells),
-      d_config_doppler_max(conf_.doppler_max),
-      d_doppler_step(conf_.doppler_step),
-      d_num_doppler_points(floor(std::abs(2 * d_config_doppler_max) / d_doppler_step)),
+      d_num_doppler_points(floor(std::abs(2 * d_acq_params.doppler_max) / d_acq_params.doppler_step)),
       d_well_count(0),
       d_n_samples_in_buffer(0),
-      d_fft_size(d_samples_per_ms),
+      d_fft_size(static_cast<int32_t>(conf_.samples_per_ms)),
       d_gnuradio_forecast_samples(d_fft_size),
       d_channel(0),
       d_dump_channel(0),
@@ -73,7 +68,7 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
 
     d_fft_codes = volk_gnsssdr::vector<gr_complex>(d_fft_size);
     d_magnitude = volk_gnsssdr::vector<float>(d_fft_size);
-    d_10_ms_buffer = volk_gnsssdr::vector<gr_complex>(50 * d_samples_per_ms);
+    d_10_ms_buffer = volk_gnsssdr::vector<gr_complex>(50 * d_fft_size);
     d_fft_if = gnss_fft_fwd_make_unique(d_fft_size);
     d_ifft = gnss_fft_rev_make_unique(d_fft_size);
     d_grid_data = volk_gnsssdr::vector<volk_gnsssdr::vector<float>>(d_num_doppler_points, volk_gnsssdr::vector<float>(d_fft_size));
@@ -188,10 +183,10 @@ void pcps_acquisition_fine_doppler_cc::update_carrier_wipeoff()
     d_grid_doppler_wipeoffs = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>(d_num_doppler_points, volk_gnsssdr::vector<std::complex<float>>(d_fft_size));
     for (int doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {
-            doppler_hz = static_cast<int>(d_doppler_step) * doppler_index - d_config_doppler_max;
+            doppler_hz = d_acq_params.doppler_step * doppler_index - d_acq_params.doppler_step;
             // doppler search steps
             // compute the carrier doppler wipe-off signal and store it
-            phase_step_rad = static_cast<float>(TWO_PI) * static_cast<float>(doppler_hz) / static_cast<float>(d_fs_in);
+            phase_step_rad = static_cast<float>(TWO_PI) * static_cast<float>(doppler_hz) / static_cast<float>(d_acq_params.fs_in);
             float _phase[1];
             _phase[0] = 0;
             volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index].data(), -phase_step_rad, _phase, d_fft_size);
@@ -228,7 +223,7 @@ float pcps_acquisition_fine_doppler_cc::compute_CAF()
         }
 
     // -- - Find 1 chip wide code phase exclude range around the peak
-    uint32_t samplesPerChip = ceil(GPS_L1_CA_CHIP_PERIOD_S * static_cast<float>(this->d_fs_in));
+    uint32_t samplesPerChip = ceil(GPS_L1_CA_CHIP_PERIOD_S * static_cast<float>(d_acq_params.fs_in));
     int32_t excludeRangeIndex1 = index_time - samplesPerChip;
     int32_t excludeRangeIndex2 = index_time + samplesPerChip;
 
@@ -263,9 +258,9 @@ float pcps_acquisition_fine_doppler_cc::compute_CAF()
 
     // 4- record the maximum peak and the associated synchronization parameters
     d_gnss_synchro->Acq_delay_samples = static_cast<double>(index_time);
-    d_gnss_synchro->Acq_doppler_hz = static_cast<double>(index_doppler * d_doppler_step - d_config_doppler_max);
+    d_gnss_synchro->Acq_doppler_hz = static_cast<double>(index_doppler * d_acq_params.doppler_step - d_acq_params.doppler_max);
     d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
-    d_gnss_synchro->Acq_doppler_step = d_doppler_step;
+    d_gnss_synchro->Acq_doppler_step = d_acq_params.doppler_step;
 
     return d_test_statistics;
 }
@@ -291,8 +286,8 @@ int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_cons
     DLOG(INFO) << "Channel: " << d_channel
                << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
                << " ,sample stamp: " << d_sample_counter << ", threshold: "
-               << d_threshold << ", doppler_max: " << d_config_doppler_max
-               << ", doppler_step: " << d_doppler_step;
+               << d_threshold << ", doppler_max: " << d_acq_params.doppler_max
+               << ", doppler_step: " << d_acq_params.doppler_step;
 
     // 2- Doppler frequency search loop
     volk_gnsssdr::vector<float> p_tmp_vector(d_fft_size);
@@ -349,7 +344,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
     // 1. generate local code aligned with the acquisition code phase estimation
     volk_gnsssdr::vector<gr_complex> code_replica(signal_samples);
 
-    gps_l1_ca_code_gen_complex_sampled(code_replica, d_gnss_synchro->PRN, d_fs_in, 0);
+    gps_l1_ca_code_gen_complex_sampled(code_replica, d_gnss_synchro->PRN, d_acq_params.fs_in, 0);
 
     int shift_index = static_cast<int>(d_gnss_synchro->Acq_delay_samples);
 
@@ -382,13 +377,13 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
 
     for (int k = 0; k < (fft_size_extended / 2); k++)
         {
-            fftFreqBins[counter] = ((static_cast<float>(d_fs_in) / 2.0) * static_cast<float>(k)) / (static_cast<float>(fft_size_extended) / 2.0);
+            fftFreqBins[counter] = ((static_cast<float>(d_acq_params.fs_in) / 2.0) * static_cast<float>(k)) / (static_cast<float>(fft_size_extended) / 2.0);
             counter++;
         }
 
     for (int k = fft_size_extended / 2; k > 0; k--)
         {
-            fftFreqBins[counter] = ((-static_cast<float>(d_fs_in) / 2.0) * static_cast<float>(k)) / (static_cast<float>(fft_size_extended) / 2.0);
+            fftFreqBins[counter] = ((-static_cast<float>(d_acq_params.fs_in) / 2.0) * static_cast<float>(k)) / (static_cast<float>(fft_size_extended) / 2.0);
             counter++;
         }
 
@@ -472,7 +467,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                     d_n_samples_in_buffer = 0;
                     d_state = 1;
                 }
-            if (!acq_parameters.blocking_on_standby)
+            if (!d_acq_params.blocking_on_standby)
                 {
                     d_sample_counter += static_cast<uint64_t>(d_fft_size);  // sample counter
                     consume_each(d_fft_size);
@@ -483,7 +478,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             std::copy(in_aux, in_aux + d_fft_size, &d_10_ms_buffer[d_n_samples_in_buffer]);
             d_n_samples_in_buffer += d_fft_size;
             d_well_count++;
-            if (d_well_count >= d_max_dwells)
+            if (d_well_count >= static_cast<int32_t>(d_acq_params.max_dwells))
                 {
                     d_state = 2;
                 }
@@ -504,7 +499,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
 
             break;
         case 3:  // Fine doppler estimation
-            samples_remaining = 10 * d_samples_per_ms - d_n_samples_in_buffer;
+            samples_remaining = 10 * static_cast<int32_t>(d_acq_params.samples_per_ms) - d_n_samples_in_buffer;
 
             if (samples_remaining > noutput_items)
                 {
@@ -544,13 +539,13 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             // Send message to channel port //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
             this->message_port_pub(pmt::mp("events"), pmt::from_long(1));
             d_state = 0;
-            if (!acq_parameters.blocking_on_standby)
+            if (!d_acq_params.blocking_on_standby)
                 {
                     d_sample_counter += static_cast<uint64_t>(noutput_items);  // sample counter
                     consume_each(noutput_items);
                 }
             // Copy and push current Gnss_Synchro to monitor queue
-            if (acq_parameters.enable_monitor_output)
+            if (d_acq_params.enable_monitor_output)
                 {
                     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
                     Gnss_Synchro current_synchro_data = Gnss_Synchro();
@@ -577,7 +572,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             // Send message to channel port //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
             this->message_port_pub(pmt::mp("events"), pmt::from_long(2));
             d_state = 0;
-            if (!acq_parameters.blocking_on_standby)
+            if (!d_acq_params.blocking_on_standby)
                 {
                     d_sample_counter += static_cast<uint64_t>(noutput_items);  // sample counter
                     consume_each(noutput_items);
@@ -585,7 +580,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             break;
         default:
             d_state = 0;
-            if (!acq_parameters.blocking_on_standby)
+            if (!d_acq_params.blocking_on_standby)
                 {
                     d_sample_counter += static_cast<uint64_t>(noutput_items);  // sample counter
                     consume_each(noutput_items);
@@ -627,12 +622,12 @@ void pcps_acquisition_fine_doppler_cc::dump_results(int effective_fft_size)
 
             dims[0] = static_cast<size_t>(1);
             dims[1] = static_cast<size_t>(1);
-            auto doppler_max = d_config_doppler_max;
+            auto doppler_max = d_acq_params.doppler_max;
             matvar = Mat_VarCreate("doppler_max", MAT_C_INT32, MAT_T_INT32, 1, dims.data(), &doppler_max, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            auto doppler_step = d_doppler_step;
+            auto doppler_step = d_acq_params.doppler_step;
             matvar = Mat_VarCreate("doppler_step", MAT_C_INT32, MAT_T_INT32, 1, dims.data(), &doppler_step, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);

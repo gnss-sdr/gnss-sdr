@@ -704,7 +704,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
 {
     LOG(INFO) << "Start validation of results with noise+interference test";
     config_3();
-    config->set_property("Acquisition_1B.blocking_on_standby", "true");  // Ensure that acquisition starts at the first sample
     top_block = gr::make_top_block("Acquisition test");
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
 
@@ -783,7 +782,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
 TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResultsProbabilities)
 {
     config_2();
-    config->set_property("Acquisition_1B.blocking_on_standby", "true");  // Ensure that acquisition starts at the first sample
     top_block = gr::make_top_block("Acquisition test");
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
 

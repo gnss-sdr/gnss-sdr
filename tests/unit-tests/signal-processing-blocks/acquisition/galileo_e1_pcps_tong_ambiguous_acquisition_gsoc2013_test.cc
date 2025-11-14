@@ -550,7 +550,6 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
 TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
 {
     config_2();
-    config->set_property("Acquisition_1B.blocking_on_standby", "true");  // Ensure that acquisition starts at the first sample
     top_block = gr::make_top_block("Acquisition test");
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
@@ -602,6 +601,7 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsPro
                 }
 
             acquisition->set_local_code();
+            acquisition->reset();
             start_queue();
 
             EXPECT_NO_THROW({

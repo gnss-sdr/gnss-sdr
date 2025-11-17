@@ -87,28 +87,6 @@ void pcps_acquisition_fpga::init()
     d_input_power = 0.0;
 }
 
-void pcps_acquisition_fpga::set_state(int32_t state)
-{
-    d_state = state;
-    if (d_state == 1)
-        {
-            d_gnss_synchro->Acq_delay_samples = 0.0;
-            d_gnss_synchro->Acq_doppler_hz = 0.0;
-            d_gnss_synchro->Acq_samplestamp_samples = 0;
-            d_mag = 0.0;
-            d_input_power = 0.0;
-            d_test_statistics = 0.0;
-            d_active = true;
-        }
-    else if (d_state == 0)
-        {
-        }
-    else
-        {
-            LOG(ERROR) << "State can only be set to 0 or 1";
-        }
-}
-
 
 void pcps_acquisition_fpga::send_positive_acquisition()
 {

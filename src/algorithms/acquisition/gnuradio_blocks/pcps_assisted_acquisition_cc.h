@@ -109,6 +109,11 @@ public:
      */
     inline void set_active(bool active) override
     {
+        if (!active)
+            {
+                d_state = 0;
+            }
+
         d_active = active;
     }
 
@@ -137,11 +142,6 @@ public:
     inline void set_threshold(float threshold) override
     {
         d_threshold = threshold;
-    }
-
-    inline void set_state(int32_t state) override
-    {
-        d_state = state;
     }
 
     /*!

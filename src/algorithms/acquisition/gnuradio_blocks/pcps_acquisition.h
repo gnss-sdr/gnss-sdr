@@ -117,13 +117,6 @@ public:
      */
     void set_local_code(std::complex<float>* code) override;
 
-    /*!
-     * \brief If set to 1, ensures that acquisition starts at the
-     * first available sample.
-     * \param state - int=1 forces start of acquisition
-     */
-    void set_state(int32_t state) override;
-
     void set_resampler_latency(uint32_t latency_samples);
 
     /*!

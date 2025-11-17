@@ -411,32 +411,6 @@ bool pcps_acquisition_fine_doppler_cc::start()
 }
 
 
-void pcps_acquisition_fine_doppler_cc::set_state(int state)
-{
-    // gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
-    d_state = state;
-
-    if (d_state == 1)
-        {
-            d_gnss_synchro->Acq_delay_samples = 0.0;
-            d_gnss_synchro->Acq_doppler_hz = 0.0;
-            d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
-            d_gnss_synchro->Acq_doppler_step = 0U;
-            d_well_count = 0;
-            d_test_statistics = 0.0;
-            d_active = true;
-            reset_grid();
-        }
-    else if (d_state == 0)
-        {
-        }
-    else
-        {
-            LOG(ERROR) << "State can only be set to 0 or 1";
-        }
-}
-
-
 int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
     gr_vector_int &ninput_items __attribute__((unused)), gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
@@ -458,20 +432,26 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
     int return_value = 0;  // Number of Gnss_Syncro objects produced
     int samples_remaining;
     const auto *in_aux = reinterpret_cast<const gr_complex *>(input_items[0]);
+
+    if (!d_active)
+        {
+            d_sample_counter += static_cast<uint64_t>(d_fft_size);  // sample counter
+            consume_each(ninput_items[0]);
+            return 0;
+        }
+
     switch (d_state)
         {
         case 0:  // S0. StandBy
-            if (d_active == true)
-                {
-                    reset_grid();
-                    d_n_samples_in_buffer = 0;
-                    d_state = 1;
-                }
-            if (!d_acq_params.blocking_on_standby)
-                {
-                    d_sample_counter += static_cast<uint64_t>(d_fft_size);  // sample counter
-                    consume_each(d_fft_size);
-                }
+            d_gnss_synchro->Acq_delay_samples = 0.0;
+            d_gnss_synchro->Acq_doppler_hz = 0.0;
+            d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+            d_gnss_synchro->Acq_doppler_step = 0U;
+            d_well_count = 0;
+            d_test_statistics = 0.0;
+            reset_grid();
+            d_n_samples_in_buffer = 0;
+            d_state = 1;
             break;
         case 1:  // S1. ComputeGrid
             compute_and_accumulate_grid(input_items);

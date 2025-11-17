@@ -57,7 +57,6 @@ public:
     virtual void set_doppler_center(int /*doppler_center*/) {}
     virtual void init() = 0;
     virtual void set_local_code() = 0;
-    virtual void set_state(int state) = 0;
     virtual signed int mag() = 0;
     virtual void reset() = 0;
     virtual void stop_acquisition() = 0;

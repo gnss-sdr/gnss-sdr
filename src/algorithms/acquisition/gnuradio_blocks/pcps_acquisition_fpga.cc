@@ -167,6 +167,9 @@ void pcps_acquisition_fpga::set_active(bool active)
     d_active = active;
     d_input_power = 0.0;
     d_mag = 0.0;
+    d_gnss_synchro->Acq_delay_samples = 0.0;
+    d_gnss_synchro->Acq_doppler_hz = 0.0;
+    d_gnss_synchro->Acq_samplestamp_samples = 0;
 
     DLOG(INFO) << "Channel: " << d_channel
                << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN

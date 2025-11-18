@@ -856,10 +856,8 @@ int AcquisitionPerformanceTest::run_receiver()
     acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
     acquisition->set_local_code();
     acquisition->reset();
-
     acquisition->connect(top_block);
 
-    acquisition->reset();
     top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
     top_block->connect(gr_interleaved_char_to_complex, 0, skiphead, 0);
     top_block->connect(skiphead, 0, valve, 0);

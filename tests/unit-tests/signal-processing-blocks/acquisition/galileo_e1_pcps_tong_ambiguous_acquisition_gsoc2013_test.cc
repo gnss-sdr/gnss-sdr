@@ -522,7 +522,6 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
             acquisition->reset();
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
-            acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW({
@@ -602,7 +601,7 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsPro
                 }
 
             acquisition->set_local_code();
-            acquisition->set_state(1);
+            acquisition->reset();
             start_queue();
 
             EXPECT_NO_THROW({

@@ -61,7 +61,6 @@ public:
     virtual void init() = 0;
     virtual void set_local_code(std::complex<float>* /*code*/) {};
     virtual void set_local_code(std::complex<float>* /*code_data*/, std::complex<float>* /*code_pilot*/) {};
-    virtual void set_state(int32_t state) = 0;
     virtual uint32_t mag() const = 0;
     virtual void set_active(bool active) = 0;
 };

@@ -593,7 +593,6 @@ void AcquisitionPerformanceTest::process_message()
 {
     measurement_counter++;
     acquisition->reset();
-    acquisition->set_state(1);
     std::cout << "Progress: " << round(static_cast<float>(measurement_counter) / static_cast<float>(num_of_measurements) * 100.0) << "% \r" << std::flush;
     if (measurement_counter == num_of_measurements)
         {
@@ -857,8 +856,8 @@ int AcquisitionPerformanceTest::run_receiver()
     acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
     acquisition->init();
     acquisition->set_local_code();
+    acquisition->reset();
 
-    acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
     acquisition->connect(top_block);
 
     acquisition->reset();

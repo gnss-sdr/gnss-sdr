@@ -244,30 +244,6 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
 }
 
 
-void galileo_e5a_noncoherentIQ_acquisition_caf_cc::set_state(int state)
-{
-    d_state = state;
-    if (d_state == 1)
-        {
-            d_gnss_synchro->Acq_delay_samples = 0.0;
-            d_gnss_synchro->Acq_doppler_hz = 0.0;
-            d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
-            d_gnss_synchro->Acq_doppler_step = 0U;
-            d_well_count = 0;
-            d_mag = 0.0;
-            d_input_power = 0.0;
-            d_test_statistics = 0.0;
-        }
-    else if (d_state == 0)
-        {
-        }
-    else
-        {
-            LOG(ERROR) << "State can only be set to 0 or 1";
-        }
-}
-
-
 int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items __attribute__((unused)),
     gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
@@ -286,6 +262,14 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 
     int acquisition_message = -1;  // 0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
     int return_value = 0;          // 0=Produces no Gnss_Synchro objects
+
+    if (!d_active)
+        {
+            d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
+            consume_each(ninput_items[0]);
+            return 0;
+        }
+
     /* States: 0 Stop Channel
      *         1 Load the buffer until it reaches fft_size
      *         2 Acquisition algorithm
@@ -296,22 +280,16 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
         {
         case 0:
             {
-                if (d_active)
-                    {
-                        // restart acquisition variables
-                        d_gnss_synchro->Acq_delay_samples = 0.0;
-                        d_gnss_synchro->Acq_doppler_hz = 0.0;
-                        d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
-                        d_gnss_synchro->Acq_doppler_step = 0U;
-                        d_well_count = 0;
-                        d_mag = 0.0;
-                        d_input_power = 0.0;
-                        d_test_statistics = 0.0;
-                        d_state = 1;
-                    }
-                d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
-                consume_each(ninput_items[0]);
-
+                // restart acquisition variables
+                d_gnss_synchro->Acq_delay_samples = 0.0;
+                d_gnss_synchro->Acq_doppler_hz = 0.0;
+                d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+                d_gnss_synchro->Acq_doppler_step = 0U;
+                d_well_count = 0;
+                d_mag = 0.0;
+                d_input_power = 0.0;
+                d_test_statistics = 0.0;
+                d_state = 1;
                 break;
             }
         case 1:

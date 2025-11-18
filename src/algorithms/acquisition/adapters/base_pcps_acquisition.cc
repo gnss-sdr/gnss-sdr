@@ -147,12 +147,6 @@ void BasePcpsAcquisition::reset()
 }
 
 
-void BasePcpsAcquisition::set_state(int state)
-{
-    acquisition_->set_state(state);
-}
-
-
 void BasePcpsAcquisition::connect(gr::top_block_sptr top_block)
 {
     if (acq_parameters_.item_type == "gr_complex" || acq_parameters_.item_type == "cshort")

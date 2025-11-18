@@ -352,7 +352,6 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     acquisition->set_local_code();
     acquisition->init();
     acquisition->reset();
-    acquisition->set_state(1);
 
     EXPECT_NO_THROW({
         start = std::chrono::system_clock::now();

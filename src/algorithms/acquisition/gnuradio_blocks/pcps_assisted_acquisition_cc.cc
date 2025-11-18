@@ -325,15 +325,17 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
      *             S5. Negative_Acq: Send message and stop acq -> S0
      */
 
+    if (!d_active)
+        {
+            d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
+            consume_each(ninput_items[0]);
+            return 0;
+        }
+
     switch (d_state)
         {
         case 0:  // S0. StandBy
-            if (d_active == true)
-                {
-                    d_state = 1;
-                }
-            d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
-            consume_each(ninput_items[0]);
+            d_state = 1;
             break;
         case 1:  // S1. GetAssist
             get_assistance();

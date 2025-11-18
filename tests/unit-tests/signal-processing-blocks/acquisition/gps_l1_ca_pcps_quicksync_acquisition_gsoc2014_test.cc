@@ -649,7 +649,6 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
             acquisition->reset();
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
-            acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW({
@@ -734,7 +733,6 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsWithNoise
             acquisition->reset();
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
-            acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW({
@@ -813,7 +811,6 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
             acquisition->reset();
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
-            acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW({

@@ -103,11 +103,6 @@ public:
     void stop_acquisition() override;
 
     /*!
-     * \brief If state = 1, it forces the block to start acquiring from the first sample
-     */
-    void set_state(int state) override;
-
-    /*!
      * \brief Set statistics threshold of PCPS algorithm
      */
     void set_threshold(float threshold) override;

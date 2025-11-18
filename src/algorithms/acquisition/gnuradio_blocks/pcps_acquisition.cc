@@ -303,29 +303,6 @@ void pcps_acquisition::update_grid_doppler_wipeoffs_step2()
 }
 
 
-void pcps_acquisition::set_state(int32_t state)
-{
-    gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
-    d_state = state;
-    if (d_state == 1)
-        {
-            d_gnss_synchro->Acq_delay_samples = 0.0;
-            d_gnss_synchro->Acq_doppler_hz = 0.0;
-            d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
-            d_gnss_synchro->Acq_doppler_step = 0U;
-            d_mag = 0.0;
-            d_active = true;
-        }
-    else if (d_state == 0)
-        {
-        }
-    else
-        {
-            LOG(ERROR) << "State can only be set to 0 or 1";
-        }
-}
-
-
 void pcps_acquisition::send_positive_acquisition(float test_statistics)
 {
     // Declare positive acquisition using a message port
@@ -916,11 +893,6 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 d_mag = 0.0;
                 d_state = 1;
                 d_buffer_count = 0U;
-                if (!d_acq_parameters.blocking_on_standby)
-                    {
-                        d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
-                        consume_each(ninput_items[0]);
-                    }
                 break;
             }
         case 1:

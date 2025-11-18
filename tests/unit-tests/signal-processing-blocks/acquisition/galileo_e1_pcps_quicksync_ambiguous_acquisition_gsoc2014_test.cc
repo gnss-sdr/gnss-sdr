@@ -676,7 +676,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
             acquisition->reset();
-            acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW({
@@ -758,7 +757,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
             acquisition->reset();
-            acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW({
@@ -838,7 +836,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
             acquisition->reset();
-            acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW({

@@ -249,7 +249,7 @@ void BeidouB1iPcpsAcquisitionTest::plot_grid()
 TEST_F(BeidouB1iPcpsAcquisitionTest, Instantiate)
 {
     init();
-    std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = boost::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition_B1", 1, 0);
+    std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = std::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition_B1", 1, 0);
 }
 
 
@@ -263,7 +263,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ConnectAndRun)
 
     top_block = gr::make_top_block("Acquisition test");
     init();
-    std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = boost::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition_B1", 1, 0);
+    std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = std::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition_B1", 1, 0);
     std::shared_ptr<BeidouB1iPcpsAcquisitionTest_msg_rx> msg_rx = BeidouB1iPcpsAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW({
@@ -336,8 +336,8 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure connecting the blocks of acquisition test.";
 
     acquisition->set_local_code();
-    acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
     acquisition->init();
+    acquisition->reset();
 
     EXPECT_NO_THROW({
         start = std::chrono::system_clock::now();

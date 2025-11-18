@@ -514,7 +514,7 @@ TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, ValidationOfResults)
                 }
 
             acquisition->set_local_code();
-            acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
+            acquisition->reset();
             start_queue();
 
             EXPECT_NO_THROW({

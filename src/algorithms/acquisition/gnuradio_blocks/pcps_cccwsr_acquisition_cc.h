@@ -97,15 +97,13 @@ public:
      */
     inline void set_active(bool active) override
     {
+        if (!active)
+            {
+                d_state = 0;
+            }
+
         d_active = active;
     }
-
-    /*!
-     * \brief If set to 1, ensures that acquisition starts at the
-     * first available sample.
-     * \param state - int=1 forces start of acquisition
-     */
-    void set_state(int32_t state) override;
 
     /*!
      * \brief Set acquisition channel unique ID

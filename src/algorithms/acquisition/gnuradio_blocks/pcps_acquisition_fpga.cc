@@ -42,7 +42,7 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(Acq_Conf_Fpga *conf_, uint32_t acq_
     : d_acq_parameters(conf_),
       d_gnss_synchro(nullptr),
       d_sample_counter(0ULL),
-      d_threshold(0.0),
+      d_threshold(conf_.threshold),
       d_mag(0),
       d_input_power(0.0),
       d_test_statistics(0.0),

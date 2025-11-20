@@ -259,7 +259,7 @@ void GlonassL2CaPcpsAcquisitionTest::config_1()
         std::to_string(integration_time_ms));
     config->set_property("Acquisition_2G.max_dwells", "1");
     config->set_property("Acquisition_2G.implementation", "GLONASS_L2_CA_PCPS_Acquisition");
-    config->set_property("Acquisition_2G.threshold", "0.8");
+    config->set_property("Acquisition_2G.threshold", "0.0005");
     config->set_property("Acquisition_2G.doppler_max", "10000");
     config->set_property("Acquisition_2G.doppler_step", "250");
     config->set_property("Acquisition_2G.bit_transition_flag", "false");
@@ -490,10 +490,6 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_threshold(0.0005);
-    }) << "Failure setting threshold.";
-
-    ASSERT_NO_THROW({
         acquisition->connect(top_block);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting acquisition to the top_block.";
@@ -564,10 +560,6 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResultsProbabilities)
     ASSERT_NO_THROW({
         acquisition->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_threshold(config->property("Acquisition_2G.threshold", 0.0));
-    }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);

@@ -68,6 +68,7 @@ void Acq_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     num_doppler_bins_step2 = configuration->property(role + ".second_nbins", num_doppler_bins_step2);
     doppler_step2 = configuration->property(role + ".second_doppler_step", doppler_step2);
     doppler_step = configuration->property(role + ".doppler_step", doppler_step);
+    threshold = configuration->property(role + ".threshold", threshold);
     pfa = configuration->property(role + ".pfa", pfa);
     if ((pfa < 0.0) or (pfa > 1.0))
         {

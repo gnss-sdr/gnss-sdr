@@ -111,16 +111,6 @@ public:
     }
 
     /*!
-     * \brief Set statistics threshold of PCPS algorithm.
-     * \param threshold - Threshold for signal detection (check \ref Navitec2012,
-     * Algorithm 1, for a definition of this threshold).
-     */
-    inline void set_threshold(float threshold)
-    {
-        d_threshold = threshold;
-    }
-
-    /*!
      * \brief Set Doppler center frequency for the grid search. It will refresh the Doppler grid.
      * \param doppler_center - Frequency center of the search grid [Hz].
      */
@@ -154,7 +144,7 @@ private:
 
     uint64_t d_sample_counter;
 
-    float d_threshold;
+    const float d_threshold;
     float d_mag;
     float d_input_power;
     float d_test_statistics;

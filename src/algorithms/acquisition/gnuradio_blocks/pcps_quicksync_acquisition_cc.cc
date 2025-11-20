@@ -31,29 +31,25 @@
 #endif
 
 
-pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
-    const Acq_Conf& conf, uint32_t folding_factor, uint32_t vector_length, uint32_t max_dwells, int32_t samples_per_code)
+pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(const Acq_Conf& conf, uint32_t folding_factor, uint32_t max_dwells)
 {
-    return pcps_quicksync_acquisition_cc_sptr(
-        new pcps_quicksync_acquisition_cc(conf, folding_factor, vector_length, max_dwells, samples_per_code));
+    return pcps_quicksync_acquisition_cc_sptr(new pcps_quicksync_acquisition_cc(conf, folding_factor, max_dwells));
 }
 
 
-pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
-    const Acq_Conf& conf, uint32_t folding_factor, uint32_t vector_length, uint32_t max_dwells, int32_t samples_per_code)
+pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(const Acq_Conf& conf, uint32_t folding_factor, uint32_t max_dwells)
     : acquisition_impl_interface("pcps_quicksync_acquisition_cc",
-          gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * vector_length)),
+          gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * conf.vector_length)),
           gr::io_signature::make(0, 1, sizeof(Gnss_Synchro))),
       d_acq_params(conf),
       d_gnss_synchro(nullptr),
       d_sample_counter(0ULL),
       d_noise_floor_power(0),
-      d_threshold(0),
       d_mag(0),
       d_input_power(0.0),
       d_test_statistics(0),
-      d_vector_length(vector_length),
-      d_samples_per_code(samples_per_code),
+      d_vector_length(conf.vector_length),
+      d_samples_per_code(conf.code_length),
       d_state(0),
       d_channel(0),
       d_folding_factor(folding_factor),
@@ -217,12 +213,12 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 d_well_count++;
 
                 DLOG(INFO) << "Channel: " << d_channel
-                           << " , doing acquisition of satellite: "
-                           << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-                           << " ,algorithm: pcps_quicksync_acquisition"
-                           << " ,folding factor: " << d_folding_factor
-                           << " ,sample stamp: " << d_sample_counter << ", threshold: "
-                           << d_threshold << ", doppler_max: " << d_acq_params.doppler_max
+                           << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
+                           << " , algorithm: pcps_quicksync_acquisition"
+                           << " , folding factor: " << d_folding_factor
+                           << " , sample stamp: " << d_sample_counter
+                           << ", threshold: " << d_acq_params.threshold
+                           << ", doppler_max: " << d_acq_params.doppler_max
                            << ", doppler_step: " << d_acq_params.doppler_step << ", Signal Size: "
                            << d_samples_per_code * d_folding_factor;
 
@@ -364,7 +360,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
 
                 if (!d_acq_params.bit_transition_flag)
                     {
-                        if (d_test_statistics > d_threshold)
+                        if (d_test_statistics > d_acq_params.threshold)
                             {
                                 d_state = 2;  // Positive acquisition
                             }
@@ -377,7 +373,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                     {
                         if (d_well_count == d_max_dwells)  // d_max_dwells = 2
                             {
-                                if (d_test_statistics > d_threshold)
+                                if (d_test_statistics > d_acq_params.threshold)
                                     {
                                         d_state = 2;  // Positive acquisition
                                     }
@@ -401,7 +397,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
                 DLOG(INFO) << "sample_stamp " << d_sample_counter;
                 DLOG(INFO) << "test statistics value " << d_test_statistics;
-                DLOG(INFO) << "test statistics threshold " << d_threshold;
+                DLOG(INFO) << "test statistics threshold " << d_acq_params.threshold;
                 DLOG(INFO) << "folding factor " << d_folding_factor;
                 DLOG(INFO) << "possible delay correlation output";
                 for (int32_t i = 0; i < static_cast<int32_t>(d_folding_factor); i++)
@@ -444,7 +440,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
                 DLOG(INFO) << "sample_stamp " << d_sample_counter;
                 DLOG(INFO) << "test statistics value " << d_test_statistics;
-                DLOG(INFO) << "test statistics threshold " << d_threshold;
+                DLOG(INFO) << "test statistics threshold " << d_acq_params.threshold;
                 DLOG(INFO) << "folding factor " << d_folding_factor;
                 DLOG(INFO) << "possible delay    corr output";
                 for (int32_t i = 0; i < static_cast<int32_t>(d_folding_factor); i++)

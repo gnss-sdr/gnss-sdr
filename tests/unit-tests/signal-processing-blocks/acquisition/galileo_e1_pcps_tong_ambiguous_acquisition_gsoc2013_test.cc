@@ -256,7 +256,7 @@ void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::config_1()
         std::to_string(integration_time_ms));
     config->set_property("Acquisition_1B.tong_init_val", "1");
     config->set_property("Acquisition_1B.tong_max_val", "8");
-    config->set_property("Acquisition_1B.threshold", "0.3");
+    config->set_property("Acquisition_1B.threshold", "0.01");
     config->set_property("Acquisition_1B.doppler_max", "10000");
     config->set_property("Acquisition_1B.doppler_step", "100");
     config->set_property("Acquisition_1B.dump", "false");
@@ -486,10 +486,6 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_threshold(0.01);
-    }) << "Failure setting threshold.";
-
-    ASSERT_NO_THROW({
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
@@ -563,10 +559,6 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsPro
     ASSERT_NO_THROW({
         acquisition->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_threshold(config->property("Acquisition_1B.threshold", 0.00028));
-    }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);

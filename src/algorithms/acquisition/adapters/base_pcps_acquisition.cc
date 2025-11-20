@@ -110,12 +110,6 @@ void BasePcpsAcquisition::stop_acquisition()
 }
 
 
-void BasePcpsAcquisition::set_threshold(float threshold)
-{
-    acquisition_->set_threshold(threshold);
-}
-
-
 void BasePcpsAcquisition::set_doppler_center(int doppler_center)
 {
     acquisition_->set_doppler_center(doppler_center);

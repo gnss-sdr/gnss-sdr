@@ -48,6 +48,7 @@ public:
 
     float samples_per_ms{0.0};
     float doppler_step2{125.0};
+    float threshold{0.0};
     float pfa{0.0};
     float pfa2{0.0};
     float samples_per_code{0.0};
@@ -73,6 +74,11 @@ public:
     bool make_2_steps{false};
     bool use_automatic_resampler{false};
     bool enable_monitor_output{false};
+
+    // Not part of the configuration interface
+    uint32_t num_codes{0};
+    uint32_t code_length{0};
+    uint32_t vector_length{0};
 
 private:
     void SetDerivedParams();

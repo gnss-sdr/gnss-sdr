@@ -136,16 +136,6 @@ public:
         d_channel_fsm = channel_fsm;
     }
 
-    /*!
-     * \brief Set statistics threshold of PCPS algorithm.
-     * \param threshold - Threshold for signal detection (check \ref Navitec2012,
-     * Algorithm 1, for a definition of this threshold).
-     */
-    inline void set_threshold(float threshold) override
-    {
-        d_threshold = threshold;
-    }
-
     inline bool opencl_ready() const
     {
         bool ready = false;
@@ -202,7 +192,6 @@ private:
 
     int* d_max_doppler_indexs;
 
-    float d_threshold;
     float d_mag;
     float d_input_power;
     float d_test_statistics;

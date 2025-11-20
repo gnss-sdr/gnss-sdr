@@ -37,6 +37,35 @@
 
 class ConfigurationInterface;
 
+class ThresholdComputeInterface
+{
+public:
+    virtual float calculate_threshold(const Acq_Conf& acq_parameters) const = 0;
+};
+
+class ThresholdComputeBasic : public ThresholdComputeInterface
+{
+public:
+    float calculate_threshold(const Acq_Conf& acq_parameters) const override;
+};
+
+class ThresholdComputeDoppler : public ThresholdComputeInterface
+{
+public:
+    float calculate_threshold(const Acq_Conf& acq_parameters) const override;
+};
+
+class ThresholdComputeQuickSync : public ThresholdComputeInterface
+{
+public:
+    explicit ThresholdComputeQuickSync(uint32_t folding_factor);
+
+    float calculate_threshold(const Acq_Conf& acq_parameters) const override;
+
+private:
+    const uint32_t folding_factor_;
+};
+
 /*!
  * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
  */
@@ -51,7 +80,7 @@ public:
         double code_length_chips,
         unsigned int ms_per_code,
         bool use_stream_to_vector,
-        bool compute_threshold_from_pfa,
+        const ThresholdComputeInterface& threshold_compute,
         uint32_t max_sampled_ms = std::numeric_limits<uint32_t>::max());
 
     ~BasePcpsAcquisitionCustom() = default;
@@ -97,11 +126,6 @@ public:
      */
     void stop_acquisition() override;
 
-    /*!
-     * \brief Set statistics threshold of PCPS algorithm
-     */
-    void set_threshold(float threshold) override;
-
     void set_resampler_latency(uint32_t /*latency_samples*/) override {};
 
     /*!
@@ -114,17 +138,12 @@ protected:
     bool is_type_gr_complex() const { return is_type_gr_complex_; }
 
     const Acq_Conf acq_parameters_;
-    const unsigned int num_codes_;
-    const unsigned int code_length_;
-    const unsigned int vector_length_;
     acquisition_impl_interface_sptr acquisition_cc_;
     Gnss_Synchro* gnss_synchro_;
     unsigned int channel_;
     volk_gnsssdr::vector<std::complex<float>> code_;
 
 private:
-    virtual float calculate_threshold(float pfa) const;
-
     /*!
      * \brief Generate code
      */
@@ -135,7 +154,6 @@ private:
     const bool is_type_gr_complex_;
     const size_t item_size_;
     const bool use_stream_to_vector_;
-    const bool compute_threshold_from_pfa_;
 };
 
 

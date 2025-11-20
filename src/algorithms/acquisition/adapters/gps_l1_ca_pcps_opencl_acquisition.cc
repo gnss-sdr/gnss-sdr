@@ -45,17 +45,15 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
           GPS_L1_CA_CODE_LENGTH_CHIPS,
           GPS_L1_CA_CODE_PERIOD_MS,
           true,
-          true),
+          ThresholdComputeDoppler()),
       opencl_ready_(false)
 {
     if (is_type_gr_complex())
         {
             const unsigned int max_dwells = acq_parameters_.bit_transition_flag ? 2 : acq_parameters_.max_dwells;
             auto acquisition_cc = pcps_make_opencl_acquisition_cc(acq_parameters_, max_dwells);
-
             opencl_ready_ = acquisition_cc->opencl_ready();
             acquisition_cc_ = std::move(acquisition_cc);
-
             DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
 }

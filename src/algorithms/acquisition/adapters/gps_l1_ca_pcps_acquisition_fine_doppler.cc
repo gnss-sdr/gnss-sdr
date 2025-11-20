@@ -44,15 +44,13 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
           GPS_L1_CA_CODE_LENGTH_CHIPS,
           GPS_L1_CA_CODE_PERIOD_MS,
           false,
-          false)
+          ThresholdComputeBasic())
 {
     if (is_type_gr_complex())
         {
             Acq_Conf acq_parameters = acq_parameters_;
-            acq_parameters.samples_per_ms = static_cast<float>(vector_length_);
-
+            acq_parameters.samples_per_ms = static_cast<float>(acq_parameters.vector_length);
             acquisition_cc_ = pcps_make_acquisition_fine_doppler_cc(acq_parameters);
-
             DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
 }

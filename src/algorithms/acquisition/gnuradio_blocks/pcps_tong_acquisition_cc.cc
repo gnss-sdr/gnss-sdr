@@ -73,7 +73,6 @@ pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
       d_acq_params(conf),
       d_gnss_synchro(nullptr),
       d_sample_counter(0ULL),
-      d_threshold(0),
       d_mag(0),
       d_input_power(0.0),
       d_test_statistics(0),
@@ -202,8 +201,9 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
 
                 DLOG(INFO) << "Channel: " << d_channel
                            << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-                           << " ,sample stamp: " << d_sample_counter << ", threshold: "
-                           << d_threshold << ", doppler_max: " << d_acq_params.doppler_max
+                           << " , sample stamp: " << d_sample_counter
+                           << ", threshold: " << d_acq_params.threshold
+                           << ", doppler_max: " << d_acq_params.doppler_max
                            << ", doppler_step: " << d_acq_params.doppler_step;
 
                 // 1- Compute the input signal power estimation
@@ -276,7 +276,7 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
                 // 5- Compute the test statistics and compare to the threshold
                 d_test_statistics = d_mag;
 
-                if (d_test_statistics > d_threshold * d_dwell_count)
+                if (d_test_statistics > d_acq_params.threshold * d_dwell_count)
                     {
                         d_tong_count++;
                         if (d_tong_count == d_tong_max_val)
@@ -309,7 +309,7 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
                 DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
                 DLOG(INFO) << "sample_stamp " << d_sample_counter;
                 DLOG(INFO) << "test statistics value " << d_test_statistics;
-                DLOG(INFO) << "test statistics threshold " << d_threshold;
+                DLOG(INFO) << "test statistics threshold " << d_acq_params.threshold;
                 DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
                 DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
                 DLOG(INFO) << "magnitude " << d_mag;
@@ -344,7 +344,7 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
                 DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
                 DLOG(INFO) << "sample_stamp " << d_sample_counter;
                 DLOG(INFO) << "test statistics value " << d_test_statistics;
-                DLOG(INFO) << "test statistics threshold " << d_threshold;
+                DLOG(INFO) << "test statistics threshold " << d_acq_params.threshold;
                 DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
                 DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
                 DLOG(INFO) << "magnitude " << d_mag;

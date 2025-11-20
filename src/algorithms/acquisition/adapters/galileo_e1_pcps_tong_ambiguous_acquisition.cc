@@ -42,7 +42,7 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
           GALILEO_E1_B_CODE_LENGTH_CHIPS,
           GALILEO_E1_CODE_PERIOD_MS,
           true,
-          true),
+          ThresholdComputeDoppler()),
       cboc_(configuration->property(role + ".cboc", false))
 {
     if (is_type_gr_complex())

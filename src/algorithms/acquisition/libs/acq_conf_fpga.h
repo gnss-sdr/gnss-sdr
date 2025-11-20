@@ -49,6 +49,7 @@ public:
     double code_length_chips;
     float doppler_step{250.0};
     float doppler_step2{125.0};
+    float threshold{0.0};
 
     int64_t fs_in{4000000LL};
     int64_t resampled_fs{4000000LL};

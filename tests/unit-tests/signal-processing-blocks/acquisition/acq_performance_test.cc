@@ -853,7 +853,6 @@ int AcquisitionPerformanceTest::run_receiver()
 
     acquisition->set_gnss_synchro(&gnss_synchro);
     acquisition->set_channel(0);
-    acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
     acquisition->set_local_code();
     acquisition->reset();
     acquisition->connect(top_block);

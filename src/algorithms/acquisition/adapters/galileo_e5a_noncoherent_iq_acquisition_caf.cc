@@ -79,11 +79,11 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
           GALILEO_E5A_CODE_LENGTH_CHIPS,
           GALILEO_E5A_CODE_PERIOD_MS,
           false,
-          true,
+          ThresholdComputeDoppler(),
           get_max_sampled_ms(configuration, role)),
       zero_padding_(get_zero_padding(configuration, role)),
       caf_window_hz_(configuration->property(role + ".CAF_window_hz", 0)),
-      codeQ_(vector_length_)
+      codeQ_(acq_parameters_.vector_length)
 {
     if (is_type_gr_complex())
         {
@@ -100,9 +100,12 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::set_local_code()
 {
     if (is_type_gr_complex())
         {
+            const auto code_length = acq_parameters_.code_length;
+            const auto vector_length = acq_parameters_.vector_length;
+
             auto& codeI_ = code_;
-            std::vector<std::complex<float>> codeI(code_length_);
-            std::vector<std::complex<float>> codeQ(code_length_);
+            std::vector<std::complex<float>> codeI(code_length);
+            std::vector<std::complex<float>> codeQ(code_length);
 
             if (gnss_synchro_->Signal[0] == '5' && gnss_synchro_->Signal[1] == 'X')
                 {
@@ -119,26 +122,26 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::set_local_code()
                 }
             // WARNING: 3ms are coherently integrated. Secondary sequence (1,1,1)
             // is generated, and modulated in the 'block'.
-            own::span<gr_complex> codeI_span(codeI_.data(), vector_length_);
-            own::span<gr_complex> codeQ_span(codeQ_.data(), vector_length_);
+            own::span<gr_complex> codeI_span(codeI_.data(), vector_length);
+            own::span<gr_complex> codeQ_span(codeQ_.data(), vector_length);
             if (zero_padding_ == 0)  // if no zero_padding
                 {
                     for (unsigned int i = 0; i < acq_parameters_.sampled_ms; i++)
                         {
-                            std::copy_n(codeI.data(), code_length_, codeI_span.subspan(i * code_length_, code_length_).data());
+                            std::copy_n(codeI.data(), code_length, codeI_span.subspan(i * code_length, code_length).data());
                             if (gnss_synchro_->Signal[0] == '5' && gnss_synchro_->Signal[1] == 'X')
                                 {
-                                    std::copy_n(codeQ.data(), code_length_, codeQ_span.subspan(i * code_length_, code_length_).data());
+                                    std::copy_n(codeQ.data(), code_length, codeQ_span.subspan(i * code_length, code_length).data());
                                 }
                         }
                 }
             else
                 {
                     // 1ms code + 1ms zero padding
-                    std::copy_n(codeI.data(), code_length_, codeI_.data());
+                    std::copy_n(codeI.data(), code_length, codeI_.data());
                     if (gnss_synchro_->Signal[0] == '5' && gnss_synchro_->Signal[1] == 'X')
                         {
-                            std::copy_n(codeQ.data(), code_length_, codeQ_.data());
+                            std::copy_n(codeQ.data(), code_length, codeQ_.data());
                         }
                 }
 

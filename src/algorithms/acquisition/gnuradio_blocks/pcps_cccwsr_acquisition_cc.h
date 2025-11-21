@@ -79,11 +79,6 @@ public:
     }
 
     /*!
-     * \brief Initializes acquisition algorithm.
-     */
-    void init() override;
-
-    /*!
      * \brief Sets local code for CCCWSR acquisition algorithm.
      * \param data_code - Pointer to the data PRN code.
      * \param pilot_code - Pointer to the pilot PRN code.
@@ -147,20 +142,6 @@ private:
 
     void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift, int32_t doppler_offset);
 
-    std::weak_ptr<ChannelFsm> d_channel_fsm;
-
-    std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
-    std::unique_ptr<gnss_fft_complex_rev> d_ifft;
-
-    std::vector<std::vector<gr_complex>> d_grid_doppler_wipeoffs;
-    std::vector<gr_complex> d_fft_code_data;
-    std::vector<gr_complex> d_fft_code_pilot;
-    std::vector<gr_complex> d_data_correlation;
-    std::vector<gr_complex> d_pilot_correlation;
-    std::vector<gr_complex> d_correlation_plus;
-    std::vector<gr_complex> d_correlation_minus;
-    std::vector<float> d_magnitude;
-
     std::ofstream d_dump_file;
     std::string d_satellite_str;
     const Acq_Conf d_acq_params;
@@ -184,6 +165,20 @@ private:
     uint32_t d_channel;
 
     bool d_active;
+
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
+
+    std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
+    std::unique_ptr<gnss_fft_complex_rev> d_ifft;
+
+    std::vector<std::vector<gr_complex>> d_grid_doppler_wipeoffs;
+    std::vector<gr_complex> d_fft_code_data;
+    std::vector<gr_complex> d_fft_code_pilot;
+    std::vector<gr_complex> d_data_correlation;
+    std::vector<gr_complex> d_pilot_correlation;
+    std::vector<gr_complex> d_correlation_plus;
+    std::vector<gr_complex> d_correlation_minus;
+    std::vector<float> d_magnitude;
 };
 
 

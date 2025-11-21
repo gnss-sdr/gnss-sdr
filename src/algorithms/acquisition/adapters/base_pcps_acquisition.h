@@ -103,10 +103,6 @@ public:
      */
     void set_doppler_center(int doppler_center) override;
 
-    /*!
-     * \brief Initializes acquisition algorithm.
-     */
-    void init() override;
 
     /*!
      * \brief Returns the maximum peak of grid search

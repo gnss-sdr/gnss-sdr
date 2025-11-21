@@ -192,15 +192,6 @@ void BasePcpsAcquisitionCustom::set_channel_fsm(std::weak_ptr<ChannelFsm> channe
 }
 
 
-void BasePcpsAcquisitionCustom::init()
-{
-    if (is_type_gr_complex_)
-        {
-            acquisition_cc_->init();
-        }
-}
-
-
 signed int BasePcpsAcquisitionCustom::mag()
 {
     if (is_type_gr_complex_)

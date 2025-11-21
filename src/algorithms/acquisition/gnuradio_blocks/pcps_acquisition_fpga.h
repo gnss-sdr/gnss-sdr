@@ -82,11 +82,6 @@ public:
     }
 
     /*!
-     * \brief Initializes acquisition algorithm.
-     */
-    void init();
-
-    /*!
      * \brief Sets local code for PCPS acquisition algorithm.
      */
     void set_local_code();

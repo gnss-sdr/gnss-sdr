@@ -755,7 +755,6 @@ bool HybridObservablesTestFpga::acquire_signal()
             channel_fsm_->Event_clear_test_result();
 
             acquisition->stop_acquisition();  // reset the whole system including the sample counters
-            acquisition->init();
             acquisition->set_local_code();
 
             if ((implementation == "GPS_L1_CA_DLL_PLL_Tracking_FPGA") or (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking_FPGA"))

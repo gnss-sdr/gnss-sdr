@@ -87,7 +87,15 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_cshort(conf_.it_size != sizeof(gr_complex)),
       d_step_two(false),
       d_use_CFAR_algorithm_flag(conf_.use_CFAR_algorithm_flag),
-      d_dump(conf_.dump)
+      d_dump(conf_.dump),
+      d_magnitude_grid(d_num_doppler_bins, volk_gnsssdr::vector<float>(d_fft_size)),
+      d_tmp_buffer(d_fft_size),
+      d_input_signal(d_fft_size),
+      d_grid_doppler_wipeoffs(d_num_doppler_bins, volk_gnsssdr::vector<std::complex<float>>(d_fft_size)),
+      d_fft_codes(d_fft_size),
+      d_data_buffer(d_consumed_samples),
+      d_fft_if(gnss_fft_fwd_make_unique(d_fft_size)),
+      d_ifft(gnss_fft_rev_make_unique(d_fft_size))
 {
     this->message_port_register_out(pmt::mp("events"));
 
@@ -109,20 +117,22 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
     //  d_acq_parameters.max_dwells = 1;  // Activation of d_acq_parameters.bit_transition_flag invalidates the value of d_acq_parameters.max_dwells
     // }
 
-    d_tmp_buffer = volk_gnsssdr::vector<float>(d_fft_size);
-    d_fft_codes = volk_gnsssdr::vector<std::complex<float>>(d_fft_size);
-    d_input_signal = volk_gnsssdr::vector<std::complex<float>>(d_fft_size);
-    d_fft_if = gnss_fft_fwd_make_unique(d_fft_size);
-    d_ifft = gnss_fft_rev_make_unique(d_fft_size);
-
-    d_grid = arma::fmat();
-    d_narrow_grid = arma::fmat();
-
-    d_data_buffer = volk_gnsssdr::vector<std::complex<float>>(d_consumed_samples);
     if (d_cshort)
         {
             d_data_buffer_sc = volk_gnsssdr::vector<lv_16sc_t>(d_consumed_samples);
         }
+
+    if (d_acq_parameters.make_2_steps && (d_grid_doppler_wipeoffs_step_two.empty()))
+        {
+            d_grid_doppler_wipeoffs_step_two = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>(d_num_doppler_bins_step2, volk_gnsssdr::vector<std::complex<float>>(d_fft_size));
+        }
+
+    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+        {
+            std::fill(d_magnitude_grid[doppler_index].begin(), d_magnitude_grid[doppler_index].end(), 0.0);
+        }
+
+    update_grid_doppler_wipeoffs();
 
     if (d_dump)
         {
@@ -154,6 +164,10 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
                     std::cerr << "GNSS-SDR cannot create dump file for the Acquisition block. Wrong permissions?\n";
                     d_dump = false;
                 }
+
+            const uint32_t effective_fft_size = (d_acq_parameters.bit_transition_flag ? (d_fft_size / 2) : d_fft_size);
+            d_grid = arma::fmat(effective_fft_size, d_num_doppler_bins, arma::fill::zeros);
+            d_narrow_grid = arma::fmat(effective_fft_size, d_num_doppler_bins_step2, arma::fill::zeros);
         }
 }
 
@@ -235,51 +249,6 @@ void pcps_acquisition::update_local_carrier(own::span<gr_complex> carrier_vector
         }
     std::array<float, 1> _phase{};
     volk_gnsssdr_s32f_sincos_32fc(carrier_vector.data(), -phase_step_rad, _phase.data(), carrier_vector.size());
-}
-
-
-void pcps_acquisition::init()
-{
-    d_gnss_synchro->Flag_valid_acquisition = false;
-    d_gnss_synchro->Flag_valid_symbol_output = false;
-    d_gnss_synchro->Flag_valid_pseudorange = false;
-    d_gnss_synchro->Flag_valid_word = false;
-    d_gnss_synchro->Acq_doppler_step = 0U;
-    d_gnss_synchro->Acq_delay_samples = 0.0;
-    d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
-    d_mag = 0.0;
-    d_input_power = 0.0;
-
-    // Create the carrier Doppler wipeoff signals
-    if (d_grid_doppler_wipeoffs.empty())
-        {
-            d_grid_doppler_wipeoffs = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>(d_num_doppler_bins, volk_gnsssdr::vector<std::complex<float>>(d_fft_size));
-        }
-    if (d_acq_parameters.make_2_steps && (d_grid_doppler_wipeoffs_step_two.empty()))
-        {
-            d_grid_doppler_wipeoffs_step_two = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>(d_num_doppler_bins_step2, volk_gnsssdr::vector<std::complex<float>>(d_fft_size));
-        }
-
-    if (d_magnitude_grid.empty())
-        {
-            d_magnitude_grid = volk_gnsssdr::vector<volk_gnsssdr::vector<float>>(d_num_doppler_bins, volk_gnsssdr::vector<float>(d_fft_size));
-        }
-
-    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
-        {
-            std::fill(d_magnitude_grid[doppler_index].begin(), d_magnitude_grid[doppler_index].end(), 0.0);
-        }
-
-    update_grid_doppler_wipeoffs();
-    d_worker_active = false;
-
-    if (d_dump)
-        {
-            const uint32_t effective_fft_size = (d_acq_parameters.bit_transition_flag ? (d_fft_size / 2) : d_fft_size);
-            d_grid = arma::fmat(effective_fft_size, d_num_doppler_bins, arma::fill::zeros);
-            d_narrow_grid = arma::fmat(effective_fft_size, d_num_doppler_bins_step2, arma::fill::zeros);
-        }
 }
 
 

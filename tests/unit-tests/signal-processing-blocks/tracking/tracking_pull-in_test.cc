@@ -540,7 +540,6 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
 #else
     acquisition->set_threshold(config->property("Acquisition.threshold", absl::GetFlag(FLAGS_external_signal_acquisition_threshold)));
 #endif
-    acquisition->init();
     acquisition->set_local_code();
     acquisition->reset();
     acquisition->connect(top_block_acq);
@@ -688,7 +687,6 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
         {
             tmp_gnss_synchro.PRN = PRN;
             acquisition->set_gnss_synchro(&tmp_gnss_synchro);
-            acquisition->init();
             acquisition->set_local_code();
             acquisition->reset();
             msg_rx->rx_message = 0;

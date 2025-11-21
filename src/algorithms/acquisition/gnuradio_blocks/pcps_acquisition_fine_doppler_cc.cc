@@ -62,16 +62,16 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
       d_channel(0),
       d_dump_channel(0),
       d_active(false),
-      d_dump(conf_.dump)
+      d_dump(conf_.dump),
+      d_fft_if(gnss_fft_fwd_make_unique(d_fft_size)),
+      d_ifft(gnss_fft_rev_make_unique(d_fft_size)),
+      d_grid_data(d_num_doppler_points, volk_gnsssdr::vector<float>(d_fft_size)),
+      d_fft_codes(d_fft_size),
+      d_10_ms_buffer(50 * d_fft_size),
+      d_magnitude(d_fft_size)
 {
     this->message_port_register_out(pmt::mp("events"));
 
-    d_fft_codes = volk_gnsssdr::vector<gr_complex>(d_fft_size);
-    d_magnitude = volk_gnsssdr::vector<float>(d_fft_size);
-    d_10_ms_buffer = volk_gnsssdr::vector<gr_complex>(50 * d_fft_size);
-    d_fft_if = gnss_fft_fwd_make_unique(d_fft_size);
-    d_ifft = gnss_fft_rev_make_unique(d_fft_size);
-    d_grid_data = volk_gnsssdr::vector<volk_gnsssdr::vector<float>>(d_num_doppler_points, volk_gnsssdr::vector<float>(d_fft_size));
     update_carrier_wipeoff();
 
     // this implementation can only produce dumps in channel 0
@@ -134,20 +134,6 @@ void pcps_acquisition_fine_doppler_cc::set_local_code(std::complex<float> *code)
     d_fft_if->execute();  // We need the FFT of local code
     // Conjugate the local code
     volk_32fc_conjugate_32fc(d_fft_codes.data(), d_fft_if->get_outbuf(), d_fft_size);
-}
-
-
-void pcps_acquisition_fine_doppler_cc::init()
-{
-    d_gnss_synchro->Flag_valid_acquisition = false;
-    d_gnss_synchro->Flag_valid_symbol_output = false;
-    d_gnss_synchro->Flag_valid_pseudorange = false;
-    d_gnss_synchro->Flag_valid_word = false;
-    d_gnss_synchro->Acq_doppler_step = 0U;
-    d_gnss_synchro->Acq_delay_samples = 0.0;
-    d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
-    d_state = 0;
 }
 
 

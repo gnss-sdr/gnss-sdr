@@ -74,7 +74,6 @@ public:
     void set_doppler_center(int doppler_center) override;
     void reset() override;
     void stop_acquisition() override;
-    void init() override;
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override {}
     void set_local_code() override;
 

@@ -79,14 +79,13 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(const Acq_Conf &conf, uin
       d_num_doppler_bins(0),
       d_in_dwell_count(0),
       d_active(false),
-      d_core_working(false)
+      d_core_working(false),
+      d_in_buffer(d_max_dwells, std::vector<gr_complex>(d_fft_size)),
+      d_magnitude(d_fft_size),
+      d_fft_codes(d_fft_size_pow2),
+      d_zero_vector(d_fft_size_pow2 - d_fft_size, 0.0)
 {
     this->message_port_register_out(pmt::mp("events"));
-
-    d_in_buffer = std::vector<std::vector<gr_complex>>(d_max_dwells, std::vector<gr_complex>(d_fft_size));
-    d_magnitude = std::vector<float>(d_fft_size);
-    d_fft_codes = std::vector<gr_complex>(d_fft_size_pow2);
-    d_zero_vector = std::vector<gr_complex>(d_fft_size_pow2 - d_fft_size, 0.0);
 
     d_opencl = init_opencl_environment("math_kernel.cl");
 
@@ -97,6 +96,44 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(const Acq_Conf &conf, uin
 
             // Inverse FFT
             d_ifft = gnss_fft_rev_make_unique(d_fft_size);
+        }
+
+    // Count the number of bins
+    for (int doppler = -d_acq_params.doppler_max; doppler <= d_acq_params.doppler_max; doppler += d_acq_params.doppler_step)
+        {
+            d_num_doppler_bins++;
+        }
+
+    // Create the carrier Doppler wipeoff signals
+    d_grid_doppler_wipeoffs = std::vector<std::vector<gr_complex>>(d_num_doppler_bins, std::vector<gr_complex>(d_fft_size));
+    if (d_opencl == 0)
+        {
+            d_cl_buffer_grid_doppler_wipeoffs = new cl::Buffer *[d_num_doppler_bins];
+        }
+
+    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+        {
+            int doppler = -d_acq_params.doppler_max + d_acq_params.doppler_step * doppler_index;
+            float phase_step_rad = static_cast<float>(TWO_PI) * doppler / static_cast<float>(d_acq_params.fs_in);
+            std::array<float, 1> _phase{};
+            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index].data(), -phase_step_rad, _phase.data(), d_fft_size);
+
+            if (d_opencl == 0)
+                {
+                    d_cl_buffer_grid_doppler_wipeoffs[doppler_index] =
+                        new cl::Buffer(d_cl_context, CL_MEM_READ_WRITE, sizeof(gr_complex) * d_fft_size);
+
+                    d_cl_queue->enqueueWriteBuffer(*(d_cl_buffer_grid_doppler_wipeoffs[doppler_index]),
+                        CL_TRUE, 0, sizeof(gr_complex) * d_fft_size,
+                        d_grid_doppler_wipeoffs[doppler_index].data());
+                }
+        }
+
+    // zero padding in buffer_1 (FFT input)
+    if (d_opencl == 0)
+        {
+            d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_1, CL_TRUE, sizeof(gr_complex) * d_fft_size,
+                sizeof(gr_complex) * (d_fft_size_pow2 - d_fft_size), d_zero_vector.data());
         }
 }
 
@@ -223,60 +260,6 @@ int pcps_opencl_acquisition_cc::init_opencl_environment(const std::string &kerne
         }
 
     return 0;
-}
-
-
-void pcps_opencl_acquisition_cc::init()
-{
-    d_gnss_synchro->Flag_valid_acquisition = false;
-    d_gnss_synchro->Flag_valid_symbol_output = false;
-    d_gnss_synchro->Flag_valid_pseudorange = false;
-    d_gnss_synchro->Flag_valid_word = false;
-    d_gnss_synchro->Acq_doppler_step = 0U;
-    d_gnss_synchro->Acq_delay_samples = 0.0;
-    d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
-    d_mag = 0.0;
-    d_input_power = 0.0;
-
-    // Count the number of bins
-    d_num_doppler_bins = 0;
-    for (int doppler = -d_acq_params.doppler_max; doppler <= d_acq_params.doppler_max; doppler += d_acq_params.doppler_step)
-        {
-            d_num_doppler_bins++;
-        }
-
-    // Create the carrier Doppler wipeoff signals
-    d_grid_doppler_wipeoffs = std::vector<std::vector<gr_complex>>(d_num_doppler_bins, std::vector<gr_complex>(d_fft_size));
-    if (d_opencl == 0)
-        {
-            d_cl_buffer_grid_doppler_wipeoffs = new cl::Buffer *[d_num_doppler_bins];
-        }
-
-    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
-        {
-            int doppler = -d_acq_params.doppler_max + d_acq_params.doppler_step * doppler_index;
-            float phase_step_rad = static_cast<float>(TWO_PI) * doppler / static_cast<float>(d_acq_params.fs_in);
-            std::array<float, 1> _phase{};
-            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index].data(), -phase_step_rad, _phase.data(), d_fft_size);
-
-            if (d_opencl == 0)
-                {
-                    d_cl_buffer_grid_doppler_wipeoffs[doppler_index] =
-                        new cl::Buffer(d_cl_context, CL_MEM_READ_WRITE, sizeof(gr_complex) * d_fft_size);
-
-                    d_cl_queue->enqueueWriteBuffer(*(d_cl_buffer_grid_doppler_wipeoffs[doppler_index]),
-                        CL_TRUE, 0, sizeof(gr_complex) * d_fft_size,
-                        d_grid_doppler_wipeoffs[doppler_index].data());
-                }
-        }
-
-    // zero padding in buffer_1 (FFT input)
-    if (d_opencl == 0)
-        {
-            d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_1, CL_TRUE, sizeof(gr_complex) * d_fft_size,
-                sizeof(gr_complex) * (d_fft_size_pow2 - d_fft_size), d_zero_vector.data());
-        }
 }
 
 
@@ -492,7 +475,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
 
             // In the previous operation, we store the result in the first d_fft_size positions
             // of d_cl_buffer_1. The rest d_fft_size_pow2-d_fft_size already have zeros
-            // (zero-padding is made in init() for optimization purposes).
+            // (zero-padding is made in constructor for optimization purposes).
             clFFT_ExecuteInterleaved((*d_cl_queue)(), d_cl_fft_plan, d_cl_fft_batch_size,
                 clFFT_Forward, (*d_cl_buffer_1)(), (*d_cl_buffer_2)(),
                 0, nullptr, nullptr);

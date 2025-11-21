@@ -335,7 +335,6 @@ TEST_F(BeidouB3iPcpsAcquisitionTest, ValidationOfResults)
 
     acquisition->set_local_code();
     acquisition->reset();
-    acquisition->init();
 
     EXPECT_NO_THROW({
         start = std::chrono::system_clock::now();

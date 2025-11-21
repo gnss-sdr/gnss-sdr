@@ -336,7 +336,6 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure connecting the blocks of acquisition test.";
 
     acquisition->set_local_code();
-    acquisition->init();
     acquisition->reset();
 
     EXPECT_NO_THROW({

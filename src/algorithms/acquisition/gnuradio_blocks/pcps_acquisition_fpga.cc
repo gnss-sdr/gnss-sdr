@@ -65,26 +65,13 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(Acq_Conf_Fpga *conf_, uint32_t acq_
         acq_buff_num,
         downsampling_filter_specs,
         max_FFT_size);
+    d_acquisition_fpga->init(d_acq_parameters->code_length, d_acq_parameters->fft_size,
+        d_acq_parameters->resampled_fs, d_acq_parameters->downsampling_filter_num, d_acq_parameters->excludelimit, d_acq_parameters->all_fft_codes);
 }
 
 void pcps_acquisition_fpga::set_local_code()
 {
     d_acquisition_fpga->set_local_code(d_gnss_synchro->PRN);
-}
-
-void pcps_acquisition_fpga::init()
-{
-    d_acquisition_fpga->init(d_acq_parameters->code_length, d_acq_parameters->fft_size,
-        d_acq_parameters->resampled_fs, d_acq_parameters->downsampling_filter_num, d_acq_parameters->excludelimit, d_acq_parameters->all_fft_codes);
-    d_gnss_synchro->Flag_valid_acquisition = false;
-    d_gnss_synchro->Flag_valid_symbol_output = false;
-    d_gnss_synchro->Flag_valid_pseudorange = false;
-    d_gnss_synchro->Flag_valid_word = false;
-    d_gnss_synchro->Acq_delay_samples = 0.0;
-    d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0;
-    d_mag = 0.0;
-    d_input_power = 0.0;
 }
 
 
@@ -180,6 +167,9 @@ void pcps_acquisition_fpga::set_active(bool active)
     d_active = active;
     d_input_power = 0.0;
     d_mag = 0.0;
+    d_gnss_synchro->Acq_delay_samples = 0.0;
+    d_gnss_synchro->Acq_doppler_hz = 0.0;
+    d_gnss_synchro->Acq_samplestamp_samples = 0;
 
     DLOG(INFO) << "Channel: " << d_channel
                << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN

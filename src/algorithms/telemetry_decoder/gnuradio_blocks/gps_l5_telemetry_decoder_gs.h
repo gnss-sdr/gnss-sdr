@@ -22,6 +22,7 @@
 #include "gnss_satellite.h"               // for Gnss_Satellite
 #include "gps_cnav_navigation_message.h"  // for Gps_CNAV_Navigation_Message
 #include "nav_message_packet.h"
+#include "telemetry_impl_base.h"
 #include "tlm_conf.h"
 #include "tlm_crc_stats.h"
 #include <boost/circular_buffer.hpp>
@@ -55,13 +56,13 @@ gps_l5_telemetry_decoder_gs_sptr gps_l5_make_telemetry_decoder_gs(
  * \brief This class implements a GPS L5 Telemetry decoder
  *
  */
-class gps_l5_telemetry_decoder_gs : public gr::block
+class gps_l5_telemetry_decoder_gs : public telemetry_impl_base
 {
 public:
     ~gps_l5_telemetry_decoder_gs() override;
-    void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
-    void set_channel(int32_t channel);                    //!< Set receiver's channel
-    void reset();
+    void set_satellite(const Gnss_Satellite &satellite) override;  //!< Set satellite PRN
+    void set_channel(int32_t channel) override;                    //!< Set receiver's channel
+    void reset() override;
     int general_work(int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 

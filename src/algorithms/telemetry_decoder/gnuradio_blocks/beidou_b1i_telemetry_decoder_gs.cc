@@ -55,9 +55,9 @@ beidou_b1i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_
 
 beidou_b1i_telemetry_decoder_gs::beidou_b1i_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    const Tlm_Conf &conf) : gr::block("beidou_b1i_telemetry_decoder_gs",
-                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+    const Tlm_Conf &conf) : telemetry_impl_base("beidou_b1i_telemetry_decoder_gs",
+                                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+                                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
                             d_dump_filename(conf.dump_filename),
                             d_sample_counter(0),
                             d_preamble_index(0),

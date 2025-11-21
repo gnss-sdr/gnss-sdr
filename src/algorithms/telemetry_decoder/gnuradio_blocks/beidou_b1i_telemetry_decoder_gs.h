@@ -24,6 +24,7 @@
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
 #include "nav_message_packet.h"
+#include "telemetry_impl_base.h"
 #include "tlm_conf.h"
 #include "tlm_crc_stats.h"
 #include <boost/circular_buffer.hpp>
@@ -54,13 +55,13 @@ beidou_b1i_telemetry_decoder_gs_sptr beidou_b1i_make_telemetry_decoder_gs(
  * \brief This class implements a block that decodes the BeiDou DNAV data.
  * \note Code added as part of GSoC 2018 program
  */
-class beidou_b1i_telemetry_decoder_gs : public gr::block
+class beidou_b1i_telemetry_decoder_gs : public telemetry_impl_base
 {
 public:
-    ~beidou_b1i_telemetry_decoder_gs() override;          //!< Class destructor
-    void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
-    void set_channel(int channel);                        //!< Set receiver's channel
-    void reset();
+    ~beidou_b1i_telemetry_decoder_gs() override;                   //!< Class destructor
+    void set_satellite(const Gnss_Satellite &satellite) override;  //!< Set satellite PRN
+    void set_channel(int channel) override;                        //!< Set receiver's channel
+    void reset() override;
 
     /*!
      * \brief This is where all signal processing takes place

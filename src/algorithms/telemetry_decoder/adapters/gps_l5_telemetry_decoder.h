@@ -20,13 +20,7 @@
 #define GNSS_SDR_GPS_L5_TELEMETRY_DECODER_H
 
 
-#include "gnss_satellite.h"
-#include "gnss_synchro.h"
-#include "gps_l5_telemetry_decoder_gs.h"
-#include "telemetry_decoder_interface.h"
-#include "tlm_conf.h"
-#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
-#include <cstddef>                   // for size_t
+#include "telemetry_decoder_adapter_base.h"
 #include <string>
 
 /** \addtogroup Telemetry_Decoder
@@ -34,13 +28,10 @@
 /** \addtogroup Telemetry_Decoder_adapters
  * \{ */
 
-
-class ConfigurationInterface;
-
 /*!
  * \brief This class implements a NAV data decoder for GPS L5
  */
-class GpsL5TelemetryDecoder : public TelemetryDecoderInterface
+class GpsL5TelemetryDecoder : public TelemetryDecoderAdapterBase
 {
 public:
     GpsL5TelemetryDecoder(
@@ -49,44 +40,11 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    inline std::string role() override
-    {
-        return role_;
-    }
-
     //! Returns "GPS_L5_Telemetry_Decoder"
     inline std::string implementation() override
     {
         return "GPS_L5_Telemetry_Decoder";
     }
-
-    void connect(gr::top_block_sptr top_block) override;
-    void disconnect(gr::top_block_sptr top_block) override;
-    gr::basic_block_sptr get_left_block() override;
-    gr::basic_block_sptr get_right_block() override;
-
-    void set_satellite(const Gnss_Satellite& satellite) override;
-
-    inline void set_channel(int channel) override { telemetry_decoder_->set_channel(channel); }
-
-    inline void reset() override
-    {
-        telemetry_decoder_->reset();
-    }
-
-    inline size_t item_size() override
-    {
-        return sizeof(Gnss_Synchro);
-    }
-
-private:
-    gps_l5_telemetry_decoder_gs_sptr telemetry_decoder_;
-    Gnss_Satellite satellite_;
-    Tlm_Conf tlm_parameters_;
-    std::string dump_filename_;
-    std::string role_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
 };
 
 

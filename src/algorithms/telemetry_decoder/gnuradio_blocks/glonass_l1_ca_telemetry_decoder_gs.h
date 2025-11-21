@@ -25,6 +25,7 @@
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
 #include "nav_message_packet.h"
+#include "telemetry_impl_base.h"
 #include "tlm_conf.h"
 #include "tlm_crc_stats.h"
 #include <boost/circular_buffer.hpp>
@@ -56,13 +57,13 @@ glonass_l1_ca_telemetry_decoder_gs_sptr glonass_l1_ca_make_telemetry_decoder_gs(
  * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  *
  */
-class glonass_l1_ca_telemetry_decoder_gs : public gr::block
+class glonass_l1_ca_telemetry_decoder_gs : public telemetry_impl_base
 {
 public:
-    ~glonass_l1_ca_telemetry_decoder_gs() override;       //!< Class destructor
-    void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
-    void set_channel(int32_t channel);                    //!< Set receiver's channel
-    inline void reset() {};
+    ~glonass_l1_ca_telemetry_decoder_gs() override;                //!< Class destructor
+    void set_satellite(const Gnss_Satellite &satellite) override;  //!< Set satellite PRN
+    void set_channel(int32_t channel) override;                    //!< Set receiver's channel
+    inline void reset() override {};
 
     /*!
      * \brief This is where all signal processing takes place

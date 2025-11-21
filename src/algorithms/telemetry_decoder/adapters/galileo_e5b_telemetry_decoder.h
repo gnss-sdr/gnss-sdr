@@ -49,7 +49,6 @@ public:
     {
         return "Galileo_E5b_Telemetry_Decoder";
     }
-
 };
 
 

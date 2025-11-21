@@ -48,7 +48,6 @@ public:
     {
         return "Galileo_E6_Telemetry_Decoder";
     }
-
 };
 
 

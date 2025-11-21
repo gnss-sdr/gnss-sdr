@@ -98,11 +98,6 @@ public:
     }
 
     /*!
-     * \brief Initializes acquisition algorithm.
-     */
-    void init() override;
-
-    /*!
      * \brief Sets local code for PCPS acquisition algorithm.
      * \param code - Pointer to the PRN code.
      */
@@ -180,16 +175,6 @@ private:
     void update_carrier_wipeoff();
     bool start() override;
 
-    std::weak_ptr<ChannelFsm> d_channel_fsm;
-    std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
-    std::unique_ptr<gnss_fft_complex_rev> d_ifft;
-
-    volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
-    volk_gnsssdr::vector<volk_gnsssdr::vector<float>> d_grid_data;
-    volk_gnsssdr::vector<gr_complex> d_fft_codes;
-    volk_gnsssdr::vector<gr_complex> d_10_ms_buffer;
-    volk_gnsssdr::vector<float> d_magnitude;
-
     arma::fmat grid_;
 
     std::string d_satellite_str;
@@ -217,6 +202,16 @@ private:
 
     bool d_active;
     bool d_dump;
+
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
+    std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
+    std::unique_ptr<gnss_fft_complex_rev> d_ifft;
+
+    volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
+    volk_gnsssdr::vector<volk_gnsssdr::vector<float>> d_grid_data;
+    volk_gnsssdr::vector<gr_complex> d_fft_codes;
+    volk_gnsssdr::vector<gr_complex> d_10_ms_buffer;
+    volk_gnsssdr::vector<float> d_magnitude;
 };
 
 

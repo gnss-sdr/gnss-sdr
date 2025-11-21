@@ -58,7 +58,6 @@ public:
     virtual void set_channel(uint32_t channel_id) = 0;
     virtual void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) = 0;
     virtual void set_threshold(float threshold) = 0;
-    virtual void init() = 0;
     virtual void set_local_code(std::complex<float>* /*code*/) {};
     virtual void set_local_code(std::complex<float>* /*code_data*/, std::complex<float>* /*code_pilot*/) {};
     virtual uint32_t mag() const = 0;

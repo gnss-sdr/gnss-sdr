@@ -495,7 +495,6 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
-    acquisition->init();
     acquisition->reset();
 
     ASSERT_NO_THROW({
@@ -578,7 +577,6 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResultsProbabili
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
-    acquisition->init();
     acquisition->reset();
 
     ASSERT_NO_THROW({
@@ -608,7 +606,6 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResultsProbabili
                 }
 
             acquisition->set_gnss_synchro(&gnss_synchro);
-            acquisition->init();
             acquisition->reset();
             acquisition->set_local_code();
             start_queue();

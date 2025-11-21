@@ -490,8 +490,6 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResults)
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
-    acquisition->init();
-
     if (!acquisition->opencl_ready())
         {
             std::cout << "OpenCL Platform is not ready.\n";
@@ -570,7 +568,6 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResultsProbabilitie
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
-    acquisition->init();
     if (!acquisition->opencl_ready())
         {
             std::cout << "OpenCL Platform is not ready.\n";

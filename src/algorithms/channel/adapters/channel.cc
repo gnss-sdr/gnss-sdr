@@ -19,7 +19,6 @@
 #include "acquisition_interface.h"
 #include "channel_fsm.h"
 #include "configuration_interface.h"
-#include "gnss_sdr_flags.h"
 #include "telemetry_decoder_interface.h"
 #include "tracking_interface.h"
 #include <stdexcept>  // for std::invalid_argument
@@ -82,8 +81,6 @@ Channel::Channel(const ConfigurationInterface* configuration,
         }
 
     acq_->set_threshold(threshold);
-
-    acq_->init();
 
     channel_fsm_->set_acquisition(acq_);
     channel_fsm_->set_tracking(trk_);

@@ -86,11 +86,6 @@ public:
     }
 
     /*!
-     * \brief Initializes acquisition algorithm.
-     */
-    void init() override;
-
-    /*!
      * \brief Sets local code for PCPS acquisition algorithm.
      * \param code - Pointer to the PRN code.
      */
@@ -164,24 +159,6 @@ private:
 
     float estimate_input_power(gr_complex* in);
 
-    std::weak_ptr<ChannelFsm> d_channel_fsm;
-    std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
-    std::unique_ptr<gnss_fft_complex_rev> d_ifft;
-
-    std::vector<std::vector<gr_complex>> d_grid_doppler_wipeoffs;
-    std::vector<gr_complex> d_fft_code_I_A;
-    std::vector<gr_complex> d_fft_code_I_B;
-    std::vector<gr_complex> d_fft_code_Q_A;
-    std::vector<gr_complex> d_fft_code_Q_B;
-    std::vector<gr_complex> d_inbuffer;
-    std::vector<float> d_magnitudeIA;
-    std::vector<float> d_magnitudeIB;
-    std::vector<float> d_magnitudeQA;
-    std::vector<float> d_magnitudeQB;
-    std::vector<float> d_CAF_vector;
-    std::vector<float> d_CAF_vector_I;
-    std::vector<float> d_CAF_vector_Q;
-
     std::string d_satellite_str;
 
     const Acq_Conf d_acq_params;
@@ -210,6 +187,24 @@ private:
 
     bool d_active;
     const bool d_both_signal_components;
+
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
+    std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
+    std::unique_ptr<gnss_fft_complex_rev> d_ifft;
+
+    std::vector<std::vector<gr_complex>> d_grid_doppler_wipeoffs;
+    std::vector<gr_complex> d_fft_code_I_A;
+    std::vector<gr_complex> d_fft_code_I_B;
+    std::vector<gr_complex> d_fft_code_Q_A;
+    std::vector<gr_complex> d_fft_code_Q_B;
+    std::vector<gr_complex> d_inbuffer;
+    std::vector<float> d_magnitudeIA;
+    std::vector<float> d_magnitudeIB;
+    std::vector<float> d_magnitudeQA;
+    std::vector<float> d_magnitudeQB;
+    std::vector<float> d_CAF_vector;
+    std::vector<float> d_CAF_vector_I;
+    std::vector<float> d_CAF_vector_Q;
 };
 
 

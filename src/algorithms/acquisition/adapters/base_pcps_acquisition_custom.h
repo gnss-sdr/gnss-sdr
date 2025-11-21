@@ -83,11 +83,6 @@ public:
     void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override;
 
     /*!
-     * \brief Initializes acquisition algorithm.
-     */
-    void init() override;
-
-    /*!
      * \brief Returns the maximum peak of grid search
      */
     signed int mag() override;

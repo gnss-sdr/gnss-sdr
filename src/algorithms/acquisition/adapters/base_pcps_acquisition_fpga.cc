@@ -193,15 +193,6 @@ void BasePcpsAcquisitionFpga::stop_acquisition()
 }
 
 
-void BasePcpsAcquisitionFpga::init()
-{
-    if (acquisition_fpga_)
-        {
-            acquisition_fpga_->init();
-        }
-}
-
-
 signed int BasePcpsAcquisitionFpga::mag()
 {
     if (acquisition_fpga_)

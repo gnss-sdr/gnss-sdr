@@ -99,11 +99,6 @@ public:
     }
 
     /*!
-     * \brief Initializes acquisition algorithm.
-     */
-    void init() override;
-
-    /*!
      * \brief Sets local code for PCPS acquisition algorithm.
      * \param code - Pointer to the PRN code.
      */
@@ -196,18 +191,6 @@ private:
     clFFT_Plan d_cl_fft_plan;
     cl_int d_cl_fft_batch_size;
 
-    std::weak_ptr<ChannelFsm> d_channel_fsm;
-
-    std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
-    std::unique_ptr<gnss_fft_complex_rev> d_ifft;
-
-    std::vector<std::vector<gr_complex>> d_grid_doppler_wipeoffs;
-    std::vector<std::vector<gr_complex>> d_in_buffer;
-    std::vector<gr_complex> d_fft_codes;
-    std::vector<gr_complex> d_zero_vector;
-    std::vector<uint64_t> d_sample_counter_buffer;
-    std::vector<float> d_magnitude;
-
     std::string d_satellite_str;
     const Acq_Conf d_acq_params;
 
@@ -238,6 +221,18 @@ private:
 
     bool d_active;
     bool d_core_working;
+
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
+
+    std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
+    std::unique_ptr<gnss_fft_complex_rev> d_ifft;
+
+    std::vector<std::vector<gr_complex>> d_grid_doppler_wipeoffs;
+    std::vector<std::vector<gr_complex>> d_in_buffer;
+    std::vector<gr_complex> d_fft_codes;
+    std::vector<gr_complex> d_zero_vector;
+    std::vector<uint64_t> d_sample_counter_buffer;
+    std::vector<float> d_magnitude;
 };
 
 

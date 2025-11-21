@@ -27,7 +27,6 @@
 #include "glonass_gnav_utc_model.h"
 #include <bitset>
 #include <cstdint>
-#include <map>
 #include <string>
 #include <utility>  // for pair
 #include <vector>   // for vector
@@ -49,7 +48,7 @@ public:
     /*!
      * Default constructor
      */
-    Glonass_Gnav_Navigation_Message();
+    Glonass_Gnav_Navigation_Message() = default;
 
     /*!
      * \brief Compute CRC for GLONASS GNAV strings
@@ -177,8 +176,6 @@ private:
     Glonass_Gnav_Ephemeris gnav_ephemeris{};                   // Ephemeris information decoded
     Glonass_Gnav_Utc_Model gnav_utc_model{};                   // UTC model information
     Glonass_Gnav_Almanac gnav_almanac[GLONASS_CA_NBR_SATS]{};  // Almanac information for all 24 satellites
-
-    std::map<int, std::string> satelliteBlock;  // Map that stores to which block the PRN belongs
 
     double d_previous_tb{};                       // Previous iode for the Glonass_Gnav_Ephemeris object. Used to determine when new data arrives
     double d_previous_Na[GLONASS_CA_NBR_SATS]{};  // Previous time for almanac of the Glonass_Gnav_Almanac object

@@ -19,13 +19,7 @@
 #ifndef GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_H
 #define GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_H
 
-#include "gnss_satellite.h"  // for Gnss_Satellite
-#include "gnss_synchro.h"
-#include "gps_l1_ca_telemetry_decoder_gs.h"
-#include "telemetry_decoder_interface.h"
-#include "tlm_conf.h"
-#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
-#include <cstddef>                   // for size_t
+#include "telemetry_decoder_adapter_base.h"
 #include <string>
 
 /** \addtogroup Telemetry_Decoder Telemetry Decoder
@@ -37,12 +31,10 @@
  * \{ */
 
 
-class ConfigurationInterface;
-
 /*!
  * \brief This class implements a NAV data decoder for GPS L1 C/A
  */
-class GpsL1CaTelemetryDecoder : public TelemetryDecoderInterface
+class GpsL1CaTelemetryDecoder : public TelemetryDecoderAdapterBase
 {
 public:
     GpsL1CaTelemetryDecoder(
@@ -51,43 +43,11 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    void connect(gr::top_block_sptr top_block) override;
-    void disconnect(gr::top_block_sptr top_block) override;
-    gr::basic_block_sptr get_left_block() override;
-    gr::basic_block_sptr get_right_block() override;
-
-    void set_satellite(const Gnss_Satellite& satellite) override;
-
-    inline std::string role() override
-    {
-        return role_;
-    }
-
     //! Returns "GPS_L1_CA_Telemetry_Decoder"
     inline std::string implementation() override
     {
         return "GPS_L1_CA_Telemetry_Decoder";
     }
-
-    inline void set_channel(int channel) override { telemetry_decoder_->set_channel(channel); }
-
-    inline void reset() override
-    {
-        telemetry_decoder_->reset();
-    }
-
-    inline size_t item_size() override
-    {
-        return sizeof(Gnss_Synchro);
-    }
-
-private:
-    gps_l1_ca_telemetry_decoder_gs_sptr telemetry_decoder_;
-    Gnss_Satellite satellite_;
-    Tlm_Conf tlm_parameters_;
-    std::string role_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
 };
 
 

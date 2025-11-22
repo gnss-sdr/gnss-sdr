@@ -36,7 +36,7 @@ class ConfigurationInterface;
  * \{
  */
 
- /*!
+/*!
  * \brief Base class for Telemetry Decoder adapters
  */
 class TelemetryDecoderAdapterBase : public TelemetryDecoderInterface

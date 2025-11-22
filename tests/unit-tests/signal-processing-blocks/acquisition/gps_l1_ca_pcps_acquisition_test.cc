@@ -334,14 +334,6 @@ TEST_F(GpsL1CaPcpsAcquisitionTest /*unused*/, ValidationOfResults /*unused*/)
     }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(doppler_max);
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(doppler_step);
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
@@ -355,8 +347,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest /*unused*/, ValidationOfResults /*unused*/)
     }) << "Failure connecting the blocks of acquisition test.";
 
     acquisition->set_local_code();
-    acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
-    acquisition->init();
+    acquisition->reset();
 
     EXPECT_NO_THROW({
         start = std::chrono::system_clock::now();

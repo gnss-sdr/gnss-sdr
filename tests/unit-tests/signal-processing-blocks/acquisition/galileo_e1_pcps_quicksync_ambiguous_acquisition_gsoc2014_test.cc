@@ -479,7 +479,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::config_3()
     config->set_property("Acquisition_1B.bit_transition_flag", "false");
     config->set_property("Acquisition_1B.threshold", "0.2");
     config->set_property("Acquisition_1B.doppler_max", "10000");
-    config->set_property("Acquisition_1B.doppler_step", "125");
+    config->set_property("Acquisition_1B.doppler_step", "50");
     config->set_property("Acquisition_1B.folding_factor", "4");
     config->set_property("Acquisition_1B.dump", "false");
 }
@@ -639,14 +639,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(config->property("Acquisition_1B.doppler_max", 10000));
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(config->property("Acquisition_1B.doppler_step", 125));
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->set_threshold(1);
     }) << "Failure setting threshold.";
 
@@ -654,7 +646,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
-    acquisition->init();
     acquisition->reset();
 
     ASSERT_NO_THROW({
@@ -684,7 +675,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
             acquisition->reset();
-            acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW({
@@ -729,14 +719,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(config->property("Acquisition_1B.doppler_max", 10000));
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(50);
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->set_threshold(5);
     }) << "Failure setting threshold.";
 
@@ -744,7 +726,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
-    acquisition->init();
     acquisition->reset();
 
     ASSERT_NO_THROW({
@@ -774,7 +755,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
             acquisition->reset();
-            acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW({
@@ -816,22 +796,12 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(config->property("Acquisition_1B.doppler_max", 10000));
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(config->property("Acquisition_1B.doppler_step", 500));
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->set_threshold(config->property("Acquisition_1B.threshold", 0.0));
     }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
-
-    acquisition->init();
 
     ASSERT_NO_THROW({
         std::shared_ptr<GNSSBlockInterface> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue.get());
@@ -862,7 +832,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
             acquisition->reset();
-            acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW({

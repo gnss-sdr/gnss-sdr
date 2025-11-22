@@ -483,22 +483,12 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResults)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(config->property("Acquisition_1C.doppler_max", 10000));
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(config->property("Acquisition_1C.doppler_step", 500));
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->set_threshold(config->property("Acquisition_1C.threshold", 0.0));
     }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
-
-    acquisition->init();
 
     if (!acquisition->opencl_ready())
         {
@@ -571,14 +561,6 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResultsProbabilitie
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(config->property("Acquisition_1C.doppler_max", 10000));
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(config->property("Acquisition_1C.doppler_step", 500));
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->set_threshold(config->property("Acquisition_1C.threshold", 0.0));
     }) << "Failure setting threshold.";
 
@@ -586,7 +568,6 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResultsProbabilitie
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
-    acquisition->init();
     if (!acquisition->opencl_ready())
         {
             std::cout << "OpenCL Platform is not ready.\n";

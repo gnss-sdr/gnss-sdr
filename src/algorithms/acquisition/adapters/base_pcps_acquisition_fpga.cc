@@ -36,20 +36,13 @@ BasePcpsAcquisitionFpga::BasePcpsAcquisitionFpga(
     uint32_t acq_buff,
     unsigned int in_streams,
     unsigned int out_streams)
-    : doppler_center_(0),
-      doppler_max_(0),
-      doppler_step_(0),
-      role_(std::move(role)),
-      gnss_synchro_(nullptr),
-      channel_(0),
-      in_streams_(in_streams),
-      out_streams_(out_streams)
+    : role_(std::move(role))
 {
-    if (in_streams_ > 1)
+    if (in_streams > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
         }
-    if (out_streams_ > 0)
+    if (out_streams > 0)
         {
             LOG(ERROR) << "This implementation does not provide an output stream";
         }
@@ -90,14 +83,20 @@ BasePcpsAcquisitionFpga::BasePcpsAcquisitionFpga(
         {
             acq_parameters_.doppler_max = FLAGS_doppler_max;
         }
+    if (FLAGS_doppler_step != 0)
+        {
+            acq_parameters_.doppler_step = static_cast<float>(FLAGS_doppler_step);
+        }
 #else
     if (absl::GetFlag(FLAGS_doppler_max) != 0)
         {
             acq_parameters_.doppler_max = absl::GetFlag(FLAGS_doppler_max);
         }
+    if (absl::GetFlag(FLAGS_doppler_step) != 0)
+        {
+            acq_parameters_.doppler_step = static_cast<float>(absl::GetFlag(FLAGS_doppler_step));
+        }
 #endif
-    doppler_max_ = acq_parameters_.doppler_max;
-    doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
 }
 
 
@@ -133,30 +132,27 @@ gr::basic_block_sptr BasePcpsAcquisitionFpga::get_right_block()
 
 void BasePcpsAcquisitionFpga::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
-    gnss_synchro_ = gnss_synchro;
     if (acquisition_fpga_)
         {
-            acquisition_fpga_->set_gnss_synchro(gnss_synchro_);
+            acquisition_fpga_->set_gnss_synchro(gnss_synchro);
         }
 }
 
 
 void BasePcpsAcquisitionFpga::set_channel(unsigned int channel)
 {
-    channel_ = channel;
     if (acquisition_fpga_)
         {
-            acquisition_fpga_->set_channel(channel_);
+            acquisition_fpga_->set_channel(channel);
         }
 }
 
 
 void BasePcpsAcquisitionFpga::set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm)
 {
-    channel_fsm_ = std::move(channel_fsm);
     if (acquisition_fpga_)
         {
-            acquisition_fpga_->set_channel_fsm(channel_fsm_);
+            acquisition_fpga_->set_channel_fsm(channel_fsm);
         }
 }
 
@@ -170,41 +166,11 @@ void BasePcpsAcquisitionFpga::set_threshold(float threshold)
 }
 
 
-void BasePcpsAcquisitionFpga::set_doppler_max(unsigned int doppler_max)
-{
-    doppler_max_ = doppler_max;
-    if (acquisition_fpga_)
-        {
-            acquisition_fpga_->set_doppler_max(doppler_max_);
-        }
-}
-
-
-void BasePcpsAcquisitionFpga::set_doppler_step(unsigned int doppler_step)
-{
-    doppler_step_ = doppler_step;
-    if (acquisition_fpga_)
-        {
-            acquisition_fpga_->set_doppler_step(doppler_step_);
-        }
-}
-
-
 void BasePcpsAcquisitionFpga::set_doppler_center(int doppler_center)
 {
-    doppler_center_ = doppler_center;
     if (acquisition_fpga_)
         {
-            acquisition_fpga_->set_doppler_center(doppler_center_);
-        }
-}
-
-
-void BasePcpsAcquisitionFpga::set_state(int state)
-{
-    if (acquisition_fpga_)
-        {
-            acquisition_fpga_->set_state(state);
+            acquisition_fpga_->set_doppler_center(doppler_center);
         }
 }
 
@@ -223,15 +189,6 @@ void BasePcpsAcquisitionFpga::stop_acquisition()
     if (acquisition_fpga_)
         {
             acquisition_fpga_->stop_acquisition();
-        }
-}
-
-
-void BasePcpsAcquisitionFpga::init()
-{
-    if (acquisition_fpga_)
-        {
-            acquisition_fpga_->init();
         }
 }
 

@@ -334,8 +334,6 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     acquisition->set_channel_fsm(channel_fsm_);
     acquisition->set_channel(1);
-    acquisition->set_doppler_max(doppler_max);
-    acquisition->set_doppler_step(doppler_step);
     acquisition->set_doppler_center(0);
     acquisition->set_threshold(0.001);
 
@@ -344,7 +342,6 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
     channel_fsm_->Event_clear_test_result();
 
     acquisition->stop_acquisition();  // reset the whole system including the sample counters
-    acquisition->init();
     acquisition->set_local_code();
 
     args.skip_used_samples = 0;

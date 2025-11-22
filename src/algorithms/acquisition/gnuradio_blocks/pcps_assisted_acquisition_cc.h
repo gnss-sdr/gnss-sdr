@@ -34,6 +34,8 @@
 #ifndef GNSS_SDR_PCPS_ASSISTED_ACQUISITION_CC_H
 #define GNSS_SDR_PCPS_ASSISTED_ACQUISITION_CC_H
 
+#include "acq_conf.h"
+#include "acquisition_impl_interface.h"
 #include "channel_fsm.h"
 #include "gnss_sdr_fft.h"
 #include "gnss_synchro.h"
@@ -55,16 +57,7 @@ class pcps_assisted_acquisition_cc;
 
 using pcps_assisted_acquisition_cc_sptr = gnss_shared_ptr<pcps_assisted_acquisition_cc>;
 
-pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(
-    int32_t max_dwells,
-    uint32_t sampled_ms,
-    int32_t doppler_max,
-    int32_t doppler_min,
-    int64_t fs_in,
-    int32_t samples_per_ms,
-    bool dump,
-    const std::string& dump_filename,
-    bool enable_monitor_output);
+pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(const Acq_Conf& conf);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition.
@@ -72,7 +65,7 @@ pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(
  * Check \ref Navitec2012 "An Open Source Galileo E1 Software Receiver",
  * Algorithm 1, for a pseudocode description of this implementation.
  */
-class pcps_assisted_acquisition_cc : public gr::block
+class pcps_assisted_acquisition_cc : public acquisition_impl_interface
 {
 public:
     /*!
@@ -85,7 +78,7 @@ public:
      * to exchange synchronization data between acquisition and tracking blocks.
      * \param p_gnss_synchro Satellite information shared by the processing blocks.
      */
-    inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+    inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override
     {
         d_gnss_synchro = p_gnss_synchro;
     }
@@ -93,29 +86,29 @@ public:
     /*!
      * \brief Returns the maximum peak of grid search.
      */
-    inline uint32_t mag() const
+    inline uint32_t mag() const override
     {
         return d_test_statistics;
     }
 
     /*!
-     * \brief Initializes acquisition algorithm.
-     */
-    void init();
-
-    /*!
      * \brief Sets local code for PCPS acquisition algorithm.
      * \param code - Pointer to the PRN code.
      */
-    void set_local_code(std::complex<float>* code);
+    void set_local_code(std::complex<float>* code) override;
 
     /*!
      * \brief Starts acquisition algorithm, turning from standby mode to
      * active mode
      * \param active - bool that activates/deactivates the block.
      */
-    inline void set_active(bool active)
+    inline void set_active(bool active) override
     {
+        if (!active)
+            {
+                d_state = 0;
+            }
+
         d_active = active;
     }
 
@@ -123,7 +116,7 @@ public:
      * \brief Set acquisition channel unique ID
      * \param channel - receiver channel.
      */
-    inline void set_channel(uint32_t channel)
+    inline void set_channel(uint32_t channel) override
     {
         d_channel = channel;
     }
@@ -131,7 +124,7 @@ public:
     /*!
      * \brief Set channel fsm associated to this acquisition instance
      */
-    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm)
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
         d_channel_fsm = std::move(channel_fsm);
     }
@@ -141,54 +134,28 @@ public:
      * \param threshold - Threshold for signal detection (check \ref Navitec2012,
      * Algorithm 1, for a definition of this threshold).
      */
-    inline void set_threshold(float threshold)
+    inline void set_threshold(float threshold) override
     {
         d_threshold = threshold;
     }
-
-    inline void set_state(int32_t state)
-    {
-        d_state = state;
-    }
-
-    /*!
-     * \brief Set maximum Doppler grid search
-     * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
-     */
-    inline void set_doppler_max(uint32_t doppler_max)
-    {
-        d_doppler_max = doppler_max;
-    }
-
-    /*!
-     * \brief Set Doppler steps for the grid search
-     * \param doppler_step - Frequency bin of the search grid [Hz].
-     */
-    void set_doppler_step(uint32_t doppler_step);
 
     /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.
      */
     int general_work(int noutput_items, gr_vector_int& ninput_items,
         gr_vector_const_void_star& input_items,
-        gr_vector_void_star& output_items);
+        gr_vector_void_star& output_items) override;
 
-    void forecast(int noutput_items, gr_vector_int& ninput_items_required);
 
 private:
+    void forecast(int noutput_items, gr_vector_int& ninput_items_required) override;
+
     friend pcps_assisted_acquisition_cc_sptr
-    pcps_make_assisted_acquisition_cc(int32_t max_dwells, uint32_t sampled_ms,
-        int32_t doppler_max, int32_t doppler_min, int64_t fs_in,
-        int32_t samples_per_ms, bool dump,
-        const std::string& dump_filename, bool enable_monitor_output);
+    pcps_make_assisted_acquisition_cc(const Acq_Conf& conf);
 
-    pcps_assisted_acquisition_cc(int32_t max_dwells, uint32_t sampled_ms,
-        int32_t doppler_max, int32_t doppler_min, int64_t fs_in,
-        int32_t samples_per_ms, bool dump,
-        const std::string& dump_filename, bool enable_monitor_output);
+    explicit pcps_assisted_acquisition_cc(const Acq_Conf& conf);
 
-    void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift,
-        int32_t doppler_offset);
+    void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift, int32_t doppler_offset);
 
     int32_t compute_and_accumulate_grid(gr_vector_const_void_star& input_items);
     float estimate_input_power(gr_vector_const_void_star& input_items) const;
@@ -197,6 +164,33 @@ private:
     void reset_grid();
     void redefine_grid();
 
+    std::string d_satellite_str;
+    const Acq_Conf d_acq_params;
+
+    std::ofstream d_dump_file;
+
+    Gnss_Synchro* d_gnss_synchro;
+
+    uint64_t d_sample_counter;
+
+    float d_threshold;
+    float d_input_power;
+    float d_test_statistics;
+
+    uint32_t d_channel;
+    uint32_t d_code_phase;
+    const uint32_t d_fft_size;
+
+    const int32_t d_gnuradio_forecast_samples;
+    int32_t d_doppler_max;
+    int32_t d_doppler_min;
+    int32_t d_num_doppler_points;
+    int32_t d_state;
+    int32_t d_well_count;
+
+    bool d_active;
+    bool d_disable_assist;
+
     std::weak_ptr<ChannelFsm> d_channel_fsm;
     std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
     std::unique_ptr<gnss_fft_complex_rev> d_ifft;
@@ -204,46 +198,6 @@ private:
     std::vector<std::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
     std::vector<std::vector<float>> d_grid_data;
     std::vector<gr_complex> d_fft_codes;
-
-    std::string d_satellite_str;
-    std::string d_dump_filename;
-
-    std::ofstream d_dump_file;
-
-    Gnss_Synchro* d_gnss_synchro;
-
-    int64_t d_fs_in;
-    uint64_t d_sample_counter;
-
-    float d_threshold;
-    float d_doppler_freq;
-    float d_input_power;
-    float d_test_statistics;
-
-    uint32_t d_doppler_resolution;
-    uint32_t d_channel;
-    uint32_t d_sampled_ms;
-    uint32_t d_code_phase;
-
-    int32_t d_samples_per_ms;
-
-    uint32_t d_fft_size;
-
-    int32_t d_max_dwells;
-    int32_t d_gnuradio_forecast_samples;
-    int32_t d_doppler_max;
-    int32_t d_doppler_min;
-    int32_t d_config_doppler_max;
-    int32_t d_config_doppler_min;
-    int32_t d_num_doppler_points;
-    int32_t d_doppler_step;
-    int32_t d_state;
-    int32_t d_well_count;
-
-    bool d_active;
-    bool d_disable_assist;
-    bool d_dump;
-    bool d_enable_monitor_output;
 };
 
 

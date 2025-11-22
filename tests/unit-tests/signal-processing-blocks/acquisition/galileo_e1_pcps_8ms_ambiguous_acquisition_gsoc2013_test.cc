@@ -457,14 +457,6 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(config->property("Acquisition_1B.doppler_max", 10000));
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(config->property("Acquisition_1B.doppler_step", 500));
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->set_threshold(config->property("Acquisition_1B.threshold", 0.0));
     }) << "Failure setting threshold.";
 
@@ -507,22 +499,12 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(config->property("Acquisition_1B.doppler_max", 10000));
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(config->property("Acquisition_1B.doppler_step", 500));
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->set_threshold(config->property("Acquisition_1B.threshold", 0.0));
     }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
-
-    acquisition->init();
 
     ASSERT_NO_THROW({
         std::shared_ptr<GNSSBlockInterface> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue.get());
@@ -549,7 +531,7 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
                 }
 
             acquisition->set_local_code();
-            // acquisition->set_state(1);
+            acquisition->reset();
             start_queue();
 
             EXPECT_NO_THROW({
@@ -594,22 +576,12 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProb
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(config->property("Acquisition_1B.doppler_max", 10000));
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(config->property("Acquisition_1B.doppler_step", 500));
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->set_threshold(config->property("Acquisition_1B.threshold", 0.0));
     }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
-
-    acquisition->init();
 
     ASSERT_NO_THROW({
         std::shared_ptr<GNSSBlockInterface> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue.get());
@@ -638,7 +610,7 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProb
                 }
 
             acquisition->set_local_code();
-            // acquisition->set_state(1);
+            acquisition->reset();
             start_queue();
 
             EXPECT_NO_THROW({

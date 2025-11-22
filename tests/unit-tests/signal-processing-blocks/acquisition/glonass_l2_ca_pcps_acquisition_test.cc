@@ -490,14 +490,6 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(10000);
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(500);
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->set_threshold(0.0005);
     }) << "Failure setting threshold.";
 
@@ -505,8 +497,6 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResults)
         acquisition->connect(top_block);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting acquisition to the top_block.";
-
-    acquisition->init();
 
     ASSERT_NO_THROW({
         std::shared_ptr<GNSSBlockInterface> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue.get());
@@ -532,7 +522,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResults)
                 }
 
             acquisition->set_local_code();
-            acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
+            acquisition->reset();
             start_queue();
 
             EXPECT_NO_THROW({
@@ -576,14 +566,6 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResultsProbabilities)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(config->property("Acquisition_2G.doppler_max", 10000));
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(config->property("Acquisition_2G.doppler_step", 500));
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->set_threshold(config->property("Acquisition_2G.threshold", 0.0));
     }) << "Failure setting threshold.";
 
@@ -591,8 +573,6 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResultsProbabilities)
         acquisition->connect(top_block);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting acquisition to the top_block.";
-
-    acquisition->init();
 
     ASSERT_NO_THROW({
         std::shared_ptr<GNSSBlockInterface> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue.get());

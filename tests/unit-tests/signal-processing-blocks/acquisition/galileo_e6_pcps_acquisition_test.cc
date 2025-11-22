@@ -373,14 +373,6 @@ TEST_F(GalileoE6PcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(5000);
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(100);
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
@@ -395,7 +387,6 @@ TEST_F(GalileoE6PcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure connecting the blocks of acquisition test.";
 
     acquisition->reset();
-    acquisition->init();
 
     // i = 0 --> satellite in acquisition is visible
     // i = 1 --> satellite in acquisition is not visible
@@ -419,7 +410,7 @@ TEST_F(GalileoE6PcpsAcquisitionTest, ValidationOfResults)
 
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
-            acquisition->set_state(1);
+            acquisition->reset();
             start_queue();
 
             EXPECT_NO_THROW({

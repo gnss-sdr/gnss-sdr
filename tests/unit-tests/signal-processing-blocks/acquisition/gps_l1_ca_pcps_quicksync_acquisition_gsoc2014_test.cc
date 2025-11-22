@@ -611,14 +611,6 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(10000);
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(250);
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->set_threshold(100);
     }) << "Failure setting threshold.";
 
@@ -626,7 +618,6 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
-    acquisition->init();
     acquisition->reset();
 
     ASSERT_NO_THROW({
@@ -657,7 +648,6 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
             acquisition->reset();
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
-            acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW({
@@ -704,14 +694,6 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsWithNoise
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(10000);
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(250);
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->set_threshold(100);
     }) << "Failure setting threshold.";
 
@@ -719,7 +701,6 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsWithNoise
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
-    acquisition->init();
     acquisition->reset();
 
     ASSERT_NO_THROW({
@@ -750,7 +731,6 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsWithNoise
             acquisition->reset();
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
-            acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW({
@@ -797,7 +777,6 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
-    acquisition->init();
     acquisition->reset();
 
     ASSERT_NO_THROW({
@@ -829,7 +808,6 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
             acquisition->reset();
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
-            acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW({

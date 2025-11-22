@@ -1,11 +1,8 @@
 /*!
- * \file gps_l1_ca_pcps_acquisition.cc
- * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  GPS L1 C/A signals
+ * \file base_ca_pcps_acquisition.h
+ * \brief Adapts a PCPS acquisition block to an AcquisitionInterface
  * \authors <ul>
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
- *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
- *          <li> Marc Molina, 2013. marc.molina.pena(at)gmail.com
+ *          <li> Mathieu Favreau, 2025. favreau.mathieu(at)hotmail.com
  *          </ul>
  *
  * -----------------------------------------------------------------------------
@@ -13,7 +10,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2025  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -44,6 +41,7 @@ Acq_Conf get_acq_conf(const ConfigurationInterface* configuration, const std::st
 {
     Acq_Conf acq_parameters;
     acq_parameters.ms_per_code = ms_per_code;
+    acq_parameters.sampled_ms = ms_per_code;  // Set as default value
     acq_parameters.SetFromConfiguration(configuration, role, chip_rate, opt_freq);
 
 #if USE_GLOG_AND_GFLAGS
@@ -51,10 +49,18 @@ Acq_Conf get_acq_conf(const ConfigurationInterface* configuration, const std::st
         {
             acq_parameters.doppler_max = FLAGS_doppler_max;
         }
+    if (FLAGS_doppler_step != 0)
+        {
+            acq_parameters.doppler_step = FLAGS_doppler_step;
+        }
 #else
     if (absl::GetFlag(FLAGS_doppler_max) != 0)
         {
             acq_parameters.doppler_max = absl::GetFlag(FLAGS_doppler_max);
+        }
+    if (absl::GetFlag(FLAGS_doppler_step) != 0)
+        {
+            acq_parameters.doppler_step = absl::GetFlag(FLAGS_doppler_step);
         }
 #endif
 
@@ -71,6 +77,7 @@ BasePcpsAcquisition::BasePcpsAcquisition(
     double opt_freq,
     double code_length_chips,
     uint32_t ms_per_code) : acq_parameters_(get_acq_conf(configuration, role, chip_rate, opt_freq, ms_per_code)),
+                            gnss_synchro_(nullptr),
                             role_(role),
                             vector_length_(std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2.0 : 1.0)),
                             code_length_(static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (chip_rate / code_length_chips)))),
@@ -109,18 +116,6 @@ void BasePcpsAcquisition::set_threshold(float threshold)
 }
 
 
-void BasePcpsAcquisition::set_doppler_max(unsigned int doppler_max)
-{
-    acquisition_->set_doppler_max(doppler_max);
-}
-
-
-void BasePcpsAcquisition::set_doppler_step(unsigned int doppler_step)
-{
-    acquisition_->set_doppler_step(doppler_step);
-}
-
-
 void BasePcpsAcquisition::set_doppler_center(int doppler_center)
 {
     acquisition_->set_doppler_center(doppler_center);
@@ -140,21 +135,9 @@ signed int BasePcpsAcquisition::mag()
 }
 
 
-void BasePcpsAcquisition::init()
-{
-    acquisition_->init();
-}
-
-
 void BasePcpsAcquisition::reset()
 {
     acquisition_->set_active(true);
-}
-
-
-void BasePcpsAcquisition::set_state(int state)
-{
-    acquisition_->set_state(state);
 }
 
 

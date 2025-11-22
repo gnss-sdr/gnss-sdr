@@ -17,78 +17,18 @@
  * -----------------------------------------------------------------------------
  */
 
-
 #include "galileo_e5b_telemetry_decoder.h"
-#include "configuration_interface.h"
-
-#if USE_GLOG_AND_GFLAGS
-#include <glog/logging.h>
-#else
-#include <absl/log/log.h>
-#endif
-
+#include "galileo_telemetry_decoder_gs.h"
 
 GalileoE5bTelemetryDecoder::GalileoE5bTelemetryDecoder(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : role_(role),
-                                in_streams_(in_streams),
-                                out_streams_(out_streams)
+    unsigned int out_streams)
+    : TelemetryDecoderAdapterBase(configuration,
+          role,
+          in_streams,
+          out_streams)
 {
-    DLOG(INFO) << "role " << role;
-    tlm_parameters_.SetFromConfiguration(configuration, role);
-    // make telemetry decoder object
-    telemetry_decoder_ = galileo_make_telemetry_decoder_gs(satellite_, tlm_parameters_, 1);  // unified galileo decoder set to INAV (frame_type=1)
-    DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
-
-    if (in_streams_ > 1)
-        {
-            LOG(ERROR) << "This implementation only supports one input stream";
-        }
-    if (out_streams_ > 1)
-        {
-            LOG(ERROR) << "This implementation only supports one output stream";
-        }
-}
-
-
-void GalileoE5bTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)
-{
-    satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    telemetry_decoder_->set_satellite(satellite_);
-    DLOG(INFO) << "GALILEO TELEMETRY DECODER: satellite set to " << satellite_;
-}
-
-
-void GalileoE5bTelemetryDecoder::connect(gr::top_block_sptr top_block)
-{
-    if (top_block)
-        {
-            /* top_block is not null */
-        };
-    // Nothing to connect internally
-    DLOG(INFO) << "nothing to connect internally";
-}
-
-
-void GalileoE5bTelemetryDecoder::disconnect(gr::top_block_sptr top_block)
-{
-    if (top_block)
-        {
-            /* top_block is not null */
-        };
-    // Nothing to disconnect
-}
-
-
-gr::basic_block_sptr GalileoE5bTelemetryDecoder::get_left_block()
-{
-    return telemetry_decoder_;
-}
-
-
-gr::basic_block_sptr GalileoE5bTelemetryDecoder::get_right_block()
-{
-    return telemetry_decoder_;
+    InitializeDecoder(galileo_make_telemetry_decoder_gs(satellite(), tlm_parameters_, 1));
 }

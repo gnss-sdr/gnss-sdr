@@ -18,6 +18,7 @@ endif()
 if(ENABLE_FPGA)
     set(OPT_TRACKING_ADAPTERS_SOURCES
         ${OPT_TRACKING_ADAPTERS_SOURCES}
+        base_dll_pll_tracking_fpga.cc
         gps_l1_ca_dll_pll_tracking_fpga.cc
         gps_l2_m_dll_pll_tracking_fpga.cc
         galileo_e1_dll_pll_veml_tracking_fpga.cc
@@ -26,6 +27,7 @@ if(ENABLE_FPGA)
     )
     set(OPT_TRACKING_ADAPTERS_HEADERS
         ${OPT_TRACKING_ADAPTERS_HEADERS}
+        base_dll_pll_tracking_fpga.h
         gps_l1_ca_dll_pll_tracking_fpga.h
         gps_l2_m_dll_pll_tracking_fpga.h
         galileo_e1_dll_pll_veml_tracking_fpga.h
@@ -35,6 +37,7 @@ if(ENABLE_FPGA)
 endif()
 
 set(TRACKING_ADAPTER_SOURCES
+    base_dll_pll_tracking.cc
     galileo_e1_dll_pll_veml_tracking.cc
     galileo_e1_tcp_connector_tracking.cc
     gps_l1_ca_dll_pll_tracking.cc
@@ -56,6 +59,7 @@ set(TRACKING_ADAPTER_SOURCES
 )
 
 set(TRACKING_ADAPTER_HEADERS
+    base_dll_pll_tracking.h
     galileo_e1_dll_pll_veml_tracking.h
     galileo_e1_tcp_connector_tracking.h
     gps_l1_ca_dll_pll_tracking.h

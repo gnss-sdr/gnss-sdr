@@ -29,18 +29,6 @@
 #endif
 
 
-Glonass_Gnav_Navigation_Message::Glonass_Gnav_Navigation_Message()
-{
-    auto gnss_sat = Gnss_Satellite();
-    std::string _system("GLONASS");
-    // TODO SHould number of channels be hardcoded?
-    for (uint32_t i = 1; i < 14; i++)
-        {
-            satelliteBlock[i] = gnss_sat.what_block(_system, i);
-        }
-}
-
-
 bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS>& bits) const
 {
     uint32_t sum_bits = 0;

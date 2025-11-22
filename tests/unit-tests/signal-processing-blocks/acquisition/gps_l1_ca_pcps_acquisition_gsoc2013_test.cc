@@ -484,19 +484,9 @@ TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, ValidationOfResults)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(10000);
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(500);
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->connect(top_block);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting acquisition to the top_block.";
-
-    acquisition->init();
 
     ASSERT_NO_THROW({
         std::shared_ptr<GNSSBlockInterface> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue.get());
@@ -522,7 +512,7 @@ TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, ValidationOfResults)
                 }
 
             acquisition->set_local_code();
-            acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
+            acquisition->reset();
             start_queue();
 
             EXPECT_NO_THROW({
@@ -566,19 +556,9 @@ TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(config->property("Acquisition_1C.doppler_max", 10000));
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(config->property("Acquisition_1C.doppler_step", 500));
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->connect(top_block);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting acquisition to the top_block.";
-
-    acquisition->init();
 
     ASSERT_NO_THROW({
         std::shared_ptr<GNSSBlockInterface> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue.get());

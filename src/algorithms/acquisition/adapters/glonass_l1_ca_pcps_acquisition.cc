@@ -26,7 +26,15 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : BasePcpsAcquisition(configuration, role, in_streams, out_streams, GLONASS_L1_CA_CODE_RATE_CPS, 100e6, GLONASS_L1_CA_CODE_LENGTH_CHIPS, 1)
+    unsigned int out_streams)
+    : BasePcpsAcquisition(configuration,
+          role,
+          in_streams,
+          out_streams,
+          GLONASS_L1_CA_CODE_RATE_CPS,
+          100e6,
+          GLONASS_L1_CA_CODE_LENGTH_CHIPS,
+          GLONASS_L1_CA_CODE_PEROD_MS)
 {
 }
 

@@ -27,9 +27,6 @@
 /** \addtogroup Acq_adapters
  * \{ */
 
-
-class ConfigurationInterface;
-
 /*!
  * \brief This class adapts a PCPS acquisition block off-loaded on an FPGA
  * to an AcquisitionInterface for GPS L2 M signals

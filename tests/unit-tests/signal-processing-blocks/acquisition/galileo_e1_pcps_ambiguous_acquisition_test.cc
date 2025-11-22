@@ -337,14 +337,6 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(config->property("Acquisition_1B.doppler_max", doppler_max));
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(config->property("Acquisition_1B.doppler_step", doppler_step));
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
@@ -358,9 +350,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     }) << "Failure connecting the blocks of acquisition test.";
 
     acquisition->set_local_code();
-    acquisition->init();
     acquisition->reset();
-    acquisition->set_state(1);
 
     EXPECT_NO_THROW({
         start = std::chrono::system_clock::now();

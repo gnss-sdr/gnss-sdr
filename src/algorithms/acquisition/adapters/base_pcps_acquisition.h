@@ -2,7 +2,7 @@
  * \file base_ca_pcps_acquisition.h
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface
  * \authors <ul>
- *          <li> Mathieu Favreau, 2011. favreau.mathieu(at)hotmail.com
+ *          <li> Mathieu Favreau, 2025. favreau.mathieu(at)hotmail.com
  *          </ul>
  *
  * -----------------------------------------------------------------------------
@@ -99,24 +99,10 @@ public:
     void set_threshold(float threshold) override;
 
     /*!
-     * \brief Set maximum Doppler off grid search
-     */
-    void set_doppler_max(unsigned int doppler_max) override;
-
-    /*!
-     * \brief Set Doppler steps for the grid search
-     */
-    void set_doppler_step(unsigned int doppler_step) override;
-
-    /*!
      * \brief Set Doppler center for the grid search
      */
     void set_doppler_center(int doppler_center) override;
 
-    /*!
-     * \brief Initializes acquisition algorithm.
-     */
-    void init() override;
 
     /*!
      * \brief Returns the maximum peak of grid search
@@ -127,11 +113,6 @@ public:
      * \brief Restart acquisition algorithm
      */
     void reset() override;
-
-    /*!
-     * \brief If state = 1, it forces the block to start acquiring from the first sample
-     */
-    void set_state(int state) override;
 
     /*!
      * \brief Stop running acquisition

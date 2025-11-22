@@ -174,7 +174,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::init()
     // config->set_property("Acquisition_1B.threshold", "2.5");
     config->set_property("Acquisition_1B.pfa", "0.001");
     config->set_property("Acquisition_1B.doppler_max", "10000");
-    config->set_property("Acquisition_1B.doppler_step", "125");
+    config->set_property("Acquisition_1B.doppler_step", "250");
     config->set_property("Acquisition_1B.repeat_satellite", "false");
     config->set_property("Acquisition_1B.cboc", "true");
 }
@@ -276,14 +276,6 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
     }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(config->property("Acquisition_1B.doppler_max", 10000));
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(config->property("Acquisition_1B.doppler_step", 250));
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
@@ -300,9 +292,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
     ASSERT_NO_THROW({
         start_queue();
         acquisition->set_local_code();
-        acquisition->init();
         acquisition->reset();
-        acquisition->set_state(1);
     }) << "Failure starting acquisition";
 
     EXPECT_NO_THROW({

@@ -28,7 +28,6 @@
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <utility>
 
 /** \addtogroup Acquisition
  * Classes for GNSS signal acquisition
@@ -72,13 +71,9 @@ public:
     void set_channel(unsigned int channel) override;
     void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override;
     void set_threshold(float threshold) override;
-    void set_doppler_max(unsigned int doppler_max) override;
-    void set_doppler_step(unsigned int doppler_step) override;
     void set_doppler_center(int doppler_center) override;
-    void set_state(int state) override;
     void reset() override;
     void stop_acquisition() override;
-    void init() override;
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override {}
     void set_local_code() override;
 
@@ -93,21 +88,13 @@ protected:
     static const uint32_t ACQ_BUFF_1 = 1;                     // FPGA Acquisition IP buffer containing L2 or L5/E5 frequency band samples by default.
 
     // Members subclasses must set
-    pcps_acquisition_fpga_sptr acquisition_fpga_;
     volk_gnsssdr::vector<uint32_t> d_all_fft_codes_;
     Acq_Conf_Fpga acq_parameters_;
-    int32_t doppler_center_;
-    uint32_t doppler_max_;
-    uint32_t doppler_step_;
 
 private:
     // Managed entirely by the base class
-    std::weak_ptr<ChannelFsm> channel_fsm_;
-    std::string role_;
-    Gnss_Synchro* gnss_synchro_;
-    uint32_t channel_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
+    pcps_acquisition_fpga_sptr acquisition_fpga_;
+    const std::string role_;
 };
 
 

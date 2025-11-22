@@ -38,6 +38,7 @@
 #ifndef GNSS_SDR_PCPS_ACQUISITION_H
 #define GNSS_SDR_PCPS_ACQUISITION_H
 
+#include "acquisition_impl_interface.h"
 #if ARMA_NO_BOUND_CHECKING
 #define ARMA_NO_DEBUG 1
 #endif
@@ -89,22 +90,17 @@ pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_);
  * Check \ref Navitec2012 "An Open Source Galileo E1 Software Receiver",
  * Algorithm 1, for a pseudocode description of this implementation.
  */
-class pcps_acquisition : public gr::block
+class pcps_acquisition : public acquisition_impl_interface
 {
 public:
     ~pcps_acquisition() override = default;
-
-    /*!
-     * \brief Initializes acquisition algorithm and reserves memory.
-     */
-    void init();
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to exchange synchronization data between acquisition and tracking blocks.
      * \param p_gnss_synchro Satellite information shared by the processing blocks.
      */
-    inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+    inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override
     {
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
         d_gnss_synchro = p_gnss_synchro;
@@ -114,21 +110,14 @@ public:
      * \brief Sets local code for PCPS acquisition algorithm.
      * \param code - Pointer to the PRN code.
      */
-    void set_local_code(std::complex<float>* code);
-
-    /*!
-     * \brief If set to 1, ensures that acquisition starts at the
-     * first available sample.
-     * \param state - int=1 forces start of acquisition
-     */
-    void set_state(int32_t state);
+    void set_local_code(std::complex<float>* code) override;
 
     void set_resampler_latency(uint32_t latency_samples);
 
     /*!
      * \brief Returns the maximum peak of grid search.
      */
-    inline uint32_t mag() const
+    inline uint32_t mag() const override
     {
         return d_mag;
     }
@@ -138,7 +127,7 @@ public:
      * active mode
      * \param active - bool that activates/deactivates the block.
      */
-    inline void set_active(bool active)
+    inline void set_active(bool active) override
     {
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
         d_active = active;
@@ -148,7 +137,7 @@ public:
      * \brief Set acquisition channel unique ID
      * \param channel - receiver channel.
      */
-    inline void set_channel(uint32_t channel)
+    inline void set_channel(uint32_t channel) override
     {
         d_channel = channel;
     }
@@ -156,7 +145,7 @@ public:
     /*!
      * \brief Set channel fsm associated to this acquisition instance
      */
-    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm)
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
         d_channel_fsm = std::move(channel_fsm);
     }
@@ -166,30 +155,10 @@ public:
      * \param threshold - Threshold for signal detection (check \ref Navitec2012,
      * Algorithm 1, for a definition of this threshold).
      */
-    inline void set_threshold(float threshold)
+    inline void set_threshold(float threshold) override
     {
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
         d_threshold = threshold;
-    }
-
-    /*!
-     * \brief Set maximum Doppler grid search
-     * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
-     */
-    inline void set_doppler_max(uint32_t doppler_max)
-    {
-        gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
-        d_doppler_max = doppler_max;
-    }
-
-    /*!
-     * \brief Set Doppler steps for the grid search
-     * \param doppler_step - Frequency bin of the search grid [Hz].
-     */
-    inline void set_doppler_step(uint32_t doppler_step)
-    {
-        gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
-        d_doppler_step = doppler_step;
     }
 
     /*!
@@ -225,19 +194,6 @@ private:
     float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
     float max_to_input_power_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
 
-    volk_gnsssdr::vector<volk_gnsssdr::vector<float>> d_magnitude_grid;
-    volk_gnsssdr::vector<float> d_tmp_buffer;
-    volk_gnsssdr::vector<std::complex<float>> d_input_signal;
-    volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
-    volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_grid_doppler_wipeoffs_step_two;
-    volk_gnsssdr::vector<std::complex<float>> d_fft_codes;
-    volk_gnsssdr::vector<std::complex<float>> d_data_buffer;
-    volk_gnsssdr::vector<lv_16sc_t> d_data_buffer_sc;
-
-    std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
-    std::unique_ptr<gnss_fft_complex_rev> d_ifft;
-    std::weak_ptr<ChannelFsm> d_channel_fsm;
-
     const Acq_Conf d_acq_parameters;
     Gnss_Synchro* d_gnss_synchro;
     arma::fmat d_grid;
@@ -253,7 +209,7 @@ private:
     float d_mag;
     float d_input_power;
     float d_doppler_center_step_two;
-    float d_doppler_max;
+    const float d_doppler_max;
 
     int32_t d_state;
     int32_t d_positive_acq;
@@ -261,11 +217,11 @@ private:
     int32_t d_doppler_bias;
     uint32_t d_channel;
     const uint32_t d_samplesPerChip;
-    uint32_t d_doppler_step;
+    const uint32_t d_doppler_step;
     uint32_t d_num_noncoherent_integrations_counter;
     const uint32_t d_consumed_samples;
     const uint32_t d_fft_size;
-    uint32_t d_num_doppler_bins;
+    const uint32_t d_num_doppler_bins;
     const uint32_t d_num_doppler_bins_step2;
     const uint32_t d_dump_channel;
     uint32_t d_buffer_count;
@@ -277,6 +233,19 @@ private:
     bool d_step_two;
     const bool d_use_CFAR_algorithm_flag;
     bool d_dump;
+
+    volk_gnsssdr::vector<volk_gnsssdr::vector<float>> d_magnitude_grid;
+    volk_gnsssdr::vector<float> d_tmp_buffer;
+    volk_gnsssdr::vector<std::complex<float>> d_input_signal;
+    volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
+    volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_grid_doppler_wipeoffs_step_two;
+    volk_gnsssdr::vector<std::complex<float>> d_fft_codes;
+    volk_gnsssdr::vector<std::complex<float>> d_data_buffer;
+    volk_gnsssdr::vector<lv_16sc_t> d_data_buffer_sc;
+
+    std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
+    std::unique_ptr<gnss_fft_complex_rev> d_ifft;
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
 };
 
 

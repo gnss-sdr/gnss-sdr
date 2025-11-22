@@ -239,20 +239,11 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(10000);
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(500);
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
     acquisition->set_local_code();
-    acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
-    acquisition->init();
+    acquisition->reset();
 
     ASSERT_NO_THROW({
         std::string path = std::string(TEST_PATH);

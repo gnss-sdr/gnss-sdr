@@ -543,17 +543,12 @@ bool HybridObservablesTest::acquire_signal()
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     acquisition->set_channel(0);
 #if USE_GLOG_AND_GFLAGS
-    acquisition->set_doppler_max(config->property("Acquisition.doppler_max", FLAGS_external_signal_acquisition_doppler_max_hz));
-    acquisition->set_doppler_step(config->property("Acquisition.doppler_step", FLAGS_external_signal_acquisition_doppler_step_hz));
     acquisition->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
 #else
-    acquisition->set_doppler_max(config->property("Acquisition.doppler_max", absl::GetFlag(FLAGS_external_signal_acquisition_doppler_max_hz)));
-    acquisition->set_doppler_step(config->property("Acquisition.doppler_step", absl::GetFlag(FLAGS_external_signal_acquisition_doppler_step_hz)));
     acquisition->set_threshold(config->property("Acquisition.threshold", absl::GetFlag(FLAGS_external_signal_acquisition_threshold)));
 #endif
-    acquisition->init();
     acquisition->set_local_code();
-    acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
+    acquisition->reset();
     acquisition->connect(top_block_acq);
 
     gr::blocks::file_source::sptr file_source;
@@ -696,10 +691,8 @@ bool HybridObservablesTest::acquire_signal()
         {
             tmp_gnss_synchro.PRN = PRN;
             acquisition->set_gnss_synchro(&tmp_gnss_synchro);
-            acquisition->init();
             acquisition->set_local_code();
             acquisition->reset();
-            acquisition->set_state(1);
             msg_rx->rx_message = 0;
             top_block_acq->run();
             if (start_msg == true)

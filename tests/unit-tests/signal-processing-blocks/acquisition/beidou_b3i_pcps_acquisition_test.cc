@@ -247,7 +247,7 @@ void BeidouB3iPcpsAcquisitionTest::plot_grid()
 TEST_F(BeidouB3iPcpsAcquisitionTest, Instantiate)
 {
     init();
-    std::shared_ptr<BeidouB3iPcpsAcquisition> acquisition = boost::make_shared<BeidouB3iPcpsAcquisition>(config.get(), "Acquisition_B3", 1, 0);
+    std::shared_ptr<BeidouB3iPcpsAcquisition> acquisition = std::make_shared<BeidouB3iPcpsAcquisition>(config.get(), "Acquisition_B3", 1, 0);
 }
 
 
@@ -261,7 +261,7 @@ TEST_F(BeidouB3iPcpsAcquisitionTest, ConnectAndRun)
 
     top_block = gr::make_top_block("Acquisition test");
     init();
-    std::shared_ptr<BeidouB3iPcpsAcquisition> acquisition = boost::make_shared<BeidouB3iPcpsAcquisition>(config.get(), "Acquisition_B3", 1, 0);
+    std::shared_ptr<BeidouB3iPcpsAcquisition> acquisition = std::make_shared<BeidouB3iPcpsAcquisition>(config.get(), "Acquisition_B3", 1, 0);
     std::shared_ptr<BeidouB3iPcpsAcquisitionTest_msg_rx> msg_rx = BeidouB3iPcpsAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW({
@@ -321,14 +321,6 @@ TEST_F(BeidouB3iPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(doppler_max);
-    }) << "Failure setting doppler_max.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_doppler_step(doppler_step);
-    }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
@@ -342,8 +334,7 @@ TEST_F(BeidouB3iPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure connecting the blocks of acquisition test.";
 
     acquisition->set_local_code();
-    acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
-    acquisition->init();
+    acquisition->reset();
 
     EXPECT_NO_THROW({
         start = std::chrono::system_clock::now();

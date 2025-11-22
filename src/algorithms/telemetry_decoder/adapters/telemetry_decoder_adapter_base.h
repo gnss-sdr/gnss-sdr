@@ -36,6 +36,9 @@ class ConfigurationInterface;
  * \{
  */
 
+ /*!
+ * \brief Base class for Telemetry Decoder adapters
+ */
 class TelemetryDecoderAdapterBase : public TelemetryDecoderInterface
 {
 public:
@@ -69,11 +72,10 @@ protected:
 
     const Gnss_Satellite& satellite() const;
 
-    telemetry_impl_base_sptr telemetry_decoder_;
-
     Tlm_Conf tlm_parameters_;
 
 private:
+    telemetry_impl_base_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
     std::string role_;
     unsigned int in_streams_ = 0;

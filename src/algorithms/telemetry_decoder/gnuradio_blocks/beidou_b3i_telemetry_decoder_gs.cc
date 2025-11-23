@@ -26,6 +26,7 @@
 #include "gnss_synchro.h"
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
+#include "tow_to_trk.h"
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
 #include <cstddef>          // for size_t
@@ -78,7 +79,8 @@ beidou_b3i_telemetry_decoder_gs::beidou_b3i_telemetry_decoder_gs(
       d_dump_mat(conf.dump_mat),
       d_remove_dat(conf.remove_dat),
       d_enable_navdata_monitor(conf.enable_navdata_monitor),
-      d_dump_crc_stats(conf.dump_crc_stats)
+      d_dump_crc_stats(conf.dump_crc_stats),
+      d_tow_to_trk(conf.tow_to_trk)
 {
     configure_basic_outputs();
 
@@ -697,6 +699,18 @@ int beidou_b3i_telemetry_decoder_gs::general_work(
                         {
                             LOG(WARNING) << "Exception writing Telemetry GPS L5 dump file " << e.what();
                         }
+                }
+
+            // SEND TOW TO THE TRACKING BLOCK
+            if (d_tow_to_trk)
+                {
+                    const std::shared_ptr<TOW_to_trk> tmp_tow_obj = std::make_shared<TOW_to_trk>(TOW_to_trk(
+                        std::string(current_symbol.Signal),
+                        d_channel,
+                        d_TOW_at_current_symbol_ms,
+                        current_symbol.Tracking_sample_counter,
+                        d_nav.get_ephemeris().WN, d_satellite.get_PRN()));
+                    this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(tmp_tow_obj));
                 }
 
             // 3. Make the output (move the object contents to the GNURadio reserved memory)

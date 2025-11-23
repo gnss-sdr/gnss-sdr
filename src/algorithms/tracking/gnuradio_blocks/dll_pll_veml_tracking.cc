@@ -634,7 +634,7 @@ void dll_pll_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
                             d_carrier_lock_fail_counter = 200000;  // force loss-of-lock condition
                         }
                 }
-            if (pmt::any_ref(msg).type().hash_code() == d_tow_to_trk_type_hash_code)
+            if (d_trk_parameters.tow_to_trk && pmt::any_ref(msg).type().hash_code() == d_tow_to_trk_type_hash_code)
                 {
                     const auto tow_event = wht::any_cast<const std::shared_ptr<TOW_to_trk>>(pmt::any_ref(msg));
                     if (tow_event->signal == d_signal_type && tow_event->channel == static_cast<int32_t>(d_channel) && tow_event->prn == d_acquisition_gnss_synchro->PRN)
@@ -1786,7 +1786,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
         }
 
     // Estimate TOW if received from telemetry
-    if (d_last_tow_received->prn == d_acquisition_gnss_synchro->PRN)  // ensure we have received async messages
+    if (d_trk_parameters.tow_to_trk && (d_last_tow_received->prn == d_acquisition_gnss_synchro->PRN))  // ensure we have received async messages
         {
             const double time_diff_s = (static_cast<double>(this->nitems_read(0)) +
                                            d_current_prn_length_samples - static_cast<double>(d_last_tow_received->sample_stamp)) /

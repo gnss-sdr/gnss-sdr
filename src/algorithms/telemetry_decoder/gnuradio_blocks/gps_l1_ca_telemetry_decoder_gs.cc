@@ -100,7 +100,8 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
                             d_dump_mat(conf.dump_mat),
                             d_remove_dat(conf.remove_dat),
                             d_enable_navdata_monitor(conf.enable_navdata_monitor),
-                            d_dump_crc_stats(conf.dump_crc_stats)
+                            d_dump_crc_stats(conf.dump_crc_stats),
+                            d_tow_to_trk(conf.tow_to_trk)
 {
     configure_basic_outputs();
 
@@ -672,13 +673,16 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                 }
 
             // SEND TOW TO THE TRACKING BLOCK
-            const std::shared_ptr<TOW_to_trk> tmp_tow_obj = std::make_shared<TOW_to_trk>(TOW_to_trk(
-                std::string("1C"),
-                d_channel,
-                d_TOW_at_current_symbol_ms,
-                current_symbol.Tracking_sample_counter,
-                d_nav.get_GPS_week(), d_nav.get_satellite_PRN()));
-            this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(tmp_tow_obj));
+            if (d_tow_to_trk)
+                {
+                    const std::shared_ptr<TOW_to_trk> tmp_tow_obj = std::make_shared<TOW_to_trk>(TOW_to_trk(
+                        std::string("1C"),
+                        d_channel,
+                        d_TOW_at_current_symbol_ms,
+                        current_symbol.Tracking_sample_counter,
+                        d_nav.get_GPS_week(), d_nav.get_satellite_PRN()));
+                    this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(tmp_tow_obj));
+                }
 
             // 3. Make the output (move the object contents to the GNU Radio reserved memory)
             *out[0] = std::move(current_symbol);

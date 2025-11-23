@@ -33,6 +33,7 @@
 #include "gnss_synchro.h"            // for Gnss_Synchro
 #include "tlm_crc_stats.h"           // for Tlm_CRC_Stats
 #include "tlm_utils.h"               // for save_tlm_matfile, tlm_remove_file
+#include "tow_to_trk.h"              // for TOW_to_trk
 #include "viterbi_decoder.h"         // for Viterbi_Decoder
 #include <pmt/pmt_sugar.h>           // for pmt::mp
 #include <array>                     // for std::array
@@ -113,7 +114,8 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                       d_E6_TOW_set(false),
                       d_there_are_e1_channels(conf.there_are_e1_channels),
                       d_there_are_e6_channels(conf.there_are_e6_channels),
-                      d_use_ced(conf.use_ced)
+                      d_use_ced(conf.use_ced),
+                      d_tow_to_trk(conf.tow_to_trk)
 {
     configure_basic_outputs();
 
@@ -1420,6 +1422,32 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                             LOG(WARNING) << "Exception writing navigation data dump file " << e.what();
                         }
                 }
+
+            // SEND TOW TO THE TRACKING BLOCK
+            if (d_tow_to_trk)
+                {
+                    int32_t gal_week;
+                    switch (d_frame_type)
+                        {
+                        case 1:
+                            gal_week = d_inav_nav.get_Galileo_week();
+                            break;
+                        case 2:
+                            gal_week = d_fnav_nav.get_ephemeris().WN;
+                            break;
+                        default:
+                            gal_week = 0;
+                            break;
+                        }
+                    const std::shared_ptr<TOW_to_trk> tmp_tow_obj = std::make_shared<TOW_to_trk>(TOW_to_trk(
+                        std::string(current_symbol.Signal),
+                        d_channel,
+                        d_TOW_at_current_symbol_ms,
+                        current_symbol.Tracking_sample_counter,
+                        gal_week, d_satellite.get_PRN()));
+                    this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(tmp_tow_obj));
+                }
+
             // 3. Make the output (move the object contents to the GNURadio reserved memory)
             *out[0] = std::move(current_symbol);
             return 1;

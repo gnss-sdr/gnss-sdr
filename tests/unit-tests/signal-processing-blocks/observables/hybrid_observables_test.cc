@@ -540,13 +540,14 @@ bool HybridObservablesTest::acquire_signal()
             throw(std::exception());
         }
 
+#if USE_GLOG_AND_GFLAGS
+    config->set_property("Acquisition.threshold", std::to_string(FLAGS_external_signal_acquisition_threshold));
+#else
+    config->set_property("Acquisition.threshold", absl::GetFlag(FLAGS_external_signal_acquisition_threshold));
+#endif
+
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     acquisition->set_channel(0);
-#if USE_GLOG_AND_GFLAGS
-    acquisition->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
-#else
-    acquisition->set_threshold(config->property("Acquisition.threshold", absl::GetFlag(FLAGS_external_signal_acquisition_threshold)));
-#endif
     acquisition->set_local_code();
     acquisition->reset();
     acquisition->connect(top_block_acq);

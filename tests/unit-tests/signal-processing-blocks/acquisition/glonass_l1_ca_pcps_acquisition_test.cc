@@ -164,7 +164,7 @@ void GlonassL1CaPcpsAcquisitionTest::init()
     config->set_property("Acquisition_1G.dump", "true");
     config->set_property("Acquisition_1G.dump_filename", "./acquisition");
     config->set_property("Acquisition_1G.implementation", "Glonass_L1_CA_PCPS_Acquisition");
-    config->set_property("Acquisition_1G.threshold", "0.001");
+    config->set_property("Acquisition_1G.threshold", "0.005");
     config->set_property("Acquisition_1G.doppler_max", "5000");
     config->set_property("Acquisition_1G.doppler_step", "500");
     config->set_property("Acquisition_1G.repeat_satellite", "false");
@@ -233,10 +233,6 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     ASSERT_NO_THROW({
         acquisition->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_threshold(0.005);
-    }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);

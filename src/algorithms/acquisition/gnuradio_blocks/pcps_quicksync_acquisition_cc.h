@@ -61,8 +61,7 @@ class pcps_quicksync_acquisition_cc;
 
 using pcps_quicksync_acquisition_cc_sptr = gnss_shared_ptr<pcps_quicksync_acquisition_cc>;
 
-pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
-    const Acq_Conf& conf, uint32_t folding_factor, uint32_t vector_length, uint32_t max_dwells, int32_t samples_per_code);
+pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(const Acq_Conf& conf, uint32_t folding_factor, uint32_t max_dwells);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition with
@@ -136,16 +135,6 @@ public:
     }
 
     /*!
-     * \brief Set statistics threshold of PCPS algorithm.
-     * \param threshold - Threshold for signal detection (check \ref Navitec2012,
-     * Algorithm 1, for a definition of this threshold).
-     */
-    inline void set_threshold(float threshold) override
-    {
-        d_threshold = threshold;
-    }
-
-    /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.
      */
     int general_work(int noutput_items, gr_vector_int& ninput_items,
@@ -154,11 +143,9 @@ public:
 
 private:
     friend pcps_quicksync_acquisition_cc_sptr
-    pcps_quicksync_make_acquisition_cc(
-        const Acq_Conf& conf, uint32_t folding_factor, uint32_t vector_length, uint32_t max_dwells, int32_t samples_per_code);
+    pcps_quicksync_make_acquisition_cc(const Acq_Conf& conf, uint32_t folding_factor, uint32_t max_dwells);
 
-    explicit pcps_quicksync_acquisition_cc(
-        const Acq_Conf& conf, uint32_t folding_factor, uint32_t vector_length, uint32_t max_dwells, int32_t samples_per_code);
+    explicit pcps_quicksync_acquisition_cc(const Acq_Conf& conf, uint32_t folding_factor, uint32_t max_dwells);
 
     void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift, int32_t doppler_offset);
 
@@ -172,7 +159,6 @@ private:
     uint64_t d_sample_counter;
 
     float d_noise_floor_power;
-    float d_threshold;
     float d_mag;
     float d_input_power;
     float d_test_statistics;

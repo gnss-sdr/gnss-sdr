@@ -174,7 +174,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::init()
             config->set_property("Acquisition_1B.dump", "false");
         }
     config->set_property("Acquisition_1B.dump_filename", "./tmp-acq-gal1/acquisition");
-    // config->set_property("Acquisition_1B.threshold", "2.5");
+    config->set_property("Acquisition_1B.threshold", std::to_string(1e-9));
     config->set_property("Acquisition_1B.pfa", "0.001");
     config->set_property("Acquisition_1B.doppler_max", std::to_string(doppler_max));
     config->set_property("Acquisition_1B.doppler_step", std::to_string(doppler_step));
@@ -331,10 +331,6 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     ASSERT_NO_THROW({
         acquisition->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_threshold(config->property("Acquisition_1B.threshold", 1e-9));
-    }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);

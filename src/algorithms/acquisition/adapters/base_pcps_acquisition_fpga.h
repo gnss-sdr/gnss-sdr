@@ -70,7 +70,6 @@ public:
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
     void set_channel(unsigned int channel) override;
     void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override;
-    void set_threshold(float threshold) override;
     void set_doppler_center(int doppler_center) override;
     void reset() override;
     void stop_acquisition() override;

@@ -118,16 +118,6 @@ public:
     }
 
     /*!
-     * \brief Set statistics threshold of CCCWSR algorithm.
-     * \param threshold - Threshold for signal detection (check \ref Navitec2012,
-     * Algorithm 1, for a definition of this threshold).
-     */
-    inline void set_threshold(float threshold) override
-    {
-        d_threshold = threshold;
-    }
-
-    /*!
      * \brief Coherent Channel Combining With Sign Recovery Acquisition signal processing.
      */
     int general_work(int noutput_items, gr_vector_int& ninput_items,
@@ -151,7 +141,6 @@ private:
     int64_t d_fs_in;
     uint64_t d_sample_counter;
 
-    float d_threshold;
     float d_mag;
     float d_input_power;
     float d_test_statistics;

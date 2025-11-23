@@ -137,16 +137,6 @@ public:
     }
 
     /*!
-     * \brief Set statistics threshold of PCPS algorithm.
-     * \param threshold - Threshold for signal detection (check \ref Navitec2012,
-     * Algorithm 1, for a definition of this threshold).
-     */
-    inline void set_threshold(float threshold) override
-    {
-        d_threshold = threshold;
-    }
-
-    /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.
      */
     int general_work(int noutput_items, gr_vector_int& ninput_items,
@@ -187,7 +177,6 @@ private:
     int64_t d_dump_number;
     uint64_t d_sample_counter;
 
-    float d_threshold;
     float d_test_statistics;
 
     int d_positive_acq;

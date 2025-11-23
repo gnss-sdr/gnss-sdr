@@ -272,7 +272,7 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_1()
     config->set_property("Acquisition_1C.coherent_integration_time_ms",
         std::to_string(integration_time_ms));
     config->set_property("Acquisition_1C.max_dwells", "1");
-    config->set_property("Acquisition_1C.threshold", "250");
+    config->set_property("Acquisition_1C.threshold", "100");
     config->set_property("Acquisition_1C.doppler_max", "10000");
     config->set_property("Acquisition_1C.doppler_step", "250");
     config->set_property("Acquisition_1C.bit_transition_flag", "false");
@@ -611,10 +611,6 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_threshold(100);
-    }) << "Failure setting threshold.";
-
-    ASSERT_NO_THROW({
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
@@ -692,10 +688,6 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsWithNoise
     ASSERT_NO_THROW({
         acquisition->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_threshold(100);
-    }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);

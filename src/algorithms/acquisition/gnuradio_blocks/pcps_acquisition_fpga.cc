@@ -32,17 +32,26 @@
 #include <absl/log/log.h>
 #endif
 
-pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(Acq_Conf_Fpga *conf, uint32_t acq_buff_num, std::vector<std::pair<uint32_t, uint32_t>> &downsampling_filter_specs, uint32_t &max_FFT_size)
+pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(Acq_Conf_Fpga *conf,
+    uint32_t acq_buff_num,
+    std::vector<std::pair<uint32_t, uint32_t>> &downsampling_filter_specs,
+    uint32_t &max_FFT_size)
 {
-    return pcps_acquisition_fpga_sptr(new pcps_acquisition_fpga(conf, acq_buff_num, downsampling_filter_specs, max_FFT_size));
+    return pcps_acquisition_fpga_sptr(new pcps_acquisition_fpga(conf,
+        acq_buff_num,
+        downsampling_filter_specs,
+        max_FFT_size));
 }
 
 
-pcps_acquisition_fpga::pcps_acquisition_fpga(Acq_Conf_Fpga *conf_, uint32_t acq_buff_num, std::vector<std::pair<uint32_t, uint32_t>> &downsampling_filter_specs, uint32_t &max_FFT_size)
+pcps_acquisition_fpga::pcps_acquisition_fpga(Acq_Conf_Fpga *conf_,
+    uint32_t acq_buff_num,
+    std::vector<std::pair<uint32_t, uint32_t>> &downsampling_filter_specs,
+    uint32_t &max_FFT_size)
     : d_acq_parameters(conf_),
       d_gnss_synchro(nullptr),
       d_sample_counter(0ULL),
-      d_threshold(conf_.threshold),
+      d_threshold(conf_->threshold),
       d_mag(0),
       d_input_power(0.0),
       d_test_statistics(0.0),

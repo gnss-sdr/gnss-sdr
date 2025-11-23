@@ -148,4 +148,5 @@ void Dll_Pll_Conf::SetFromConfiguration(const ConfigurationInterface *configurat
         }
     carrier_lock_test_smoother_samples = configuration->property(role + ".carrier_lock_test_smoother_samples", carrier_lock_test_smoother_samples);
     carrier_lock_test_smoother_alpha = configuration->property(role + ".carrier_lock_test_smoother_alpha", carrier_lock_test_smoother_alpha);
+    tow_to_trk = configuration->property("GNSS-SDR.tow_to_trk", false);
 }

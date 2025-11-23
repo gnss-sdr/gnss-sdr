@@ -45,6 +45,7 @@ public:
     bool there_are_e1_channels{false};
     bool there_are_e6_channels{false};
     bool use_ced{false};
+    bool tow_to_trk{false};
 };
 
 

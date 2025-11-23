@@ -40,4 +40,5 @@ void Tlm_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
         {
             there_are_e6_channels = true;
         }
+    tow_to_trk = configuration->property("GNSS-SDR.tow_to_trk", false);
 }

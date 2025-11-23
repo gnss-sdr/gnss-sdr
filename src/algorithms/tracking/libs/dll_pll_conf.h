@@ -80,6 +80,7 @@ public:
     bool high_dyn{false};
     bool dump{false};
     bool dump_mat{true};
+    bool tow_to_trk{false};
 };
 
 

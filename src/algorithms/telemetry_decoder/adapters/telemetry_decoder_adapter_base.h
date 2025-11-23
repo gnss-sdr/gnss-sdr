@@ -21,7 +21,7 @@
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
 #include "telemetry_decoder_interface.h"
-#include "telemetry_impl_base.h"
+#include "telemetry_impl_interface.h"
 #include "tlm_conf.h"
 #include <gnuradio/runtime_types.h>
 #include <cstddef>
@@ -68,14 +68,14 @@ public:
     size_t item_size() override;
 
 protected:
-    void InitializeDecoder(telemetry_impl_base_sptr decoder);
+    void InitializeDecoder(telemetry_impl_interface_sptr decoder);
 
     const Gnss_Satellite& satellite() const;
 
     Tlm_Conf tlm_parameters_;
 
 private:
-    telemetry_impl_base_sptr telemetry_decoder_;
+    telemetry_impl_interface_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
     std::string role_;
     unsigned int in_streams_ = 0;

@@ -21,24 +21,17 @@
 #ifndef GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H
 #define GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H
 
-#include "galileo_cnav_message.h"  // for Galileo_Cnav_Message
-#include "galileo_fnav_message.h"  // for Galileo_Fnav_Message
-#include "galileo_inav_message.h"  // for Galileo_Inav_Message
-#include "gnss_block_interface.h"  // for gnss_shared_ptr (adapts smart pointer type to GNU Radio version)
-#include "gnss_satellite.h"        // for Gnss_Satellite
-#include "gnss_time.h"             // for GnssTime
-#include "nav_message_packet.h"    // for Nav_Message_Packet
-#include "telemetry_impl_base.h"
-#include "tlm_conf.h"                 // for Tlm_Conf
-#include <boost/circular_buffer.hpp>  // for boost::circular_buffer
-#include <gnuradio/block.h>           // for block
-#include <gnuradio/types.h>           // for gr_vector_const_void_star
-#include <pmt/pmt.h>                  // for pmt::pmt_t
-#include <cstdint>                    // for int32_t, uint32_t
-#include <fstream>                    // for std::ofstream
-#include <memory>                     // for std::unique_ptr
-#include <string>                     // for std::string
-#include <vector>                     // for std::vector
+#include "galileo_cnav_message.h"      // for Galileo_Cnav_Message
+#include "galileo_fnav_message.h"      // for Galileo_Fnav_Message
+#include "galileo_inav_message.h"      // for Galileo_Inav_Message
+#include "gnss_time.h"                 // for GnssTime
+#include "nav_message_packet.h"        // for Nav_Message_Packet
+#include "telemetry_impl_interface.h"  // for telemetry_impl_interface
+#include "tlm_conf.h"                  // for Tlm_Conf
+#include <boost/circular_buffer.hpp>   // for boost::circular_buffer
+#include <gnuradio/types.h>            // for gr_vector_const_void_star
+#include <pmt/pmt.h>                   // for pmt::pmt_t
+#include <vector>                      // for std::vector
 
 /** \addtogroup Telemetry_Decoder
  * \{ */
@@ -46,7 +39,6 @@
  * \{ */
 
 class Viterbi_Decoder;               // forward declaration
-class Tlm_CRC_Stats;                 // forward declaration
 class galileo_telemetry_decoder_gs;  // forward declaration
 
 using galileo_telemetry_decoder_gs_sptr = gnss_shared_ptr<galileo_telemetry_decoder_gs>;
@@ -59,7 +51,7 @@ galileo_telemetry_decoder_gs_sptr galileo_make_telemetry_decoder_gs(
 /*!
  * \brief This class implements a block that decodes the INAV and FNAV data defined in Galileo ICD
  */
-class galileo_telemetry_decoder_gs : public telemetry_impl_base
+class galileo_telemetry_decoder_gs : public telemetry_impl_interface
 {
 public:
     ~galileo_telemetry_decoder_gs() override;

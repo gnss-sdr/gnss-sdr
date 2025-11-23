@@ -34,7 +34,6 @@
 #include "tlm_crc_stats.h"           // for Tlm_CRC_Stats
 #include "tlm_utils.h"               // for save_tlm_matfile, tlm_remove_file
 #include "viterbi_decoder.h"         // for Viterbi_Decoder
-#include <gnuradio/io_signature.h>   // for gr::io_signature::make
 #include <pmt/pmt_sugar.h>           // for pmt::mp
 #include <array>                     // for std::array
 #include <cmath>                     // for std::fmod, std::abs
@@ -47,7 +46,6 @@
 #include <stdexcept>                 // for std::out_of_range
 #include <tuple>                     // for std::tuple
 #include <typeinfo>                  // for typeid
-#include <utility>                   // for std::pair
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -80,7 +78,7 @@ galileo_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Con
 galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
     const Tlm_Conf &conf,
-    int frame_type) : telemetry_impl_base("galileo_telemetry_decoder_gs",
+    int frame_type) : telemetry_impl_interface("galileo_telemetry_decoder_gs",
                           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
                       d_dump_filename(conf.dump_filename),
@@ -117,12 +115,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                       d_there_are_e6_channels(conf.there_are_e6_channels),
                       d_use_ced(conf.use_ced)
 {
-    // prevent telemetry symbols accumulation in output buffers
-    this->set_max_noutput_items(1);
-    // Ephemeris data port out
-    this->message_port_register_out(pmt::mp("telemetry"));
-    // Control messages to tracking block
-    this->message_port_register_out(pmt::mp("telemetry_to_trk"));
+    configure_basic_outputs();
 
     if (d_there_are_e1_channels)
         {
@@ -868,32 +861,9 @@ void galileo_telemetry_decoder_gs::set_channel(int32_t channel)
 {
     d_channel = channel;
     DLOG(INFO) << "Navigation channel set to " << channel;
-    // ############# ENABLE DATA FILE LOG #################
-    if (d_dump == true)
-        {
-            if (d_dump_file.is_open() == false)
-                {
-                    try
-                        {
-                            d_dump_filename.append(std::to_string(d_channel));
-                            d_dump_filename.append(".dat");
-                            d_dump_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
-                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
-                        }
-                    catch (const std::ofstream::failure &e)
-                        {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
-                        }
-                }
-        }
 
-    if (d_dump_crc_stats)
-        {
-            // set the channel number for the telemetry CRC statistics
-            // disable the telemetry CRC statistics if there is a problem opening the output file
-            d_dump_crc_stats = d_Tlm_CRC_Stats->set_channel(d_channel);
-        }
+    configure_dump_file(d_channel, d_dump, d_dump_filename, d_dump_file);
+    configure_crc_stats_channel(d_channel, d_dump_crc_stats, d_Tlm_CRC_Stats);
 }
 
 

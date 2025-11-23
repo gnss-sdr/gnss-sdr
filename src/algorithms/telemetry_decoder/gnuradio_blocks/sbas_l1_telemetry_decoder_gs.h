@@ -17,19 +17,11 @@
 #ifndef GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_GS_H
 #define GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_GS_H
 
-#include "gnss_block_interface.h"
-#include "gnss_satellite.h"
 #include "telemetry_impl_base.h"
-#include <boost/crc.hpp>  // for crc_optimal
-#include <gnuradio/block.h>
+#include <boost/crc.hpp>     // for crc_optimal
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <cstddef>           // for size_t
-#include <cstdint>
 #include <deque>
-#include <fstream>
-#include <memory>  // for std::shared_ptr
-#include <string>
-#include <utility>  // for pair
 #include <vector>
 
 /** \addtogroup Telemetry_Decoder

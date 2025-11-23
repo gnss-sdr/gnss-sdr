@@ -6,6 +6,7 @@
 
 
 set(TELEMETRY_DECODER_GR_BLOCKS_SOURCES
+    telemetry_impl_base.cc
     gps_l1_ca_telemetry_decoder_gs.cc
     gps_l2c_telemetry_decoder_gs.cc
     gps_l5_telemetry_decoder_gs.cc

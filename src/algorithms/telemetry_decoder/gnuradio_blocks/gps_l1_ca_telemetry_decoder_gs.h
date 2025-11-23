@@ -16,24 +16,18 @@
 
 #ifndef GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_GS_H
 #define GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_GS_H
+
 #include "GPS_L1_CA.h"
-#include "gnss_block_interface.h"
-#include "gnss_satellite.h"
 #include "gnss_synchro.h"
 #include "gnss_time.h"  // for timetags produced by Tracking
 #include "gps_navigation_message.h"
 #include "nav_message_packet.h"
 #include "telemetry_impl_base.h"
 #include "tlm_conf.h"
-#include "tlm_crc_stats.h"
 #include <boost/circular_buffer.hpp>
-#include <gnuradio/block.h>  // for block
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <array>             // for array
-#include <cstdint>           // for int32_t
-#include <fstream>           // for ofstream
-#include <memory>            // for std::unique_ptr
-#include <string>            // for string
+
 
 /** \addtogroup Telemetry_Decoder
  * \{ */

@@ -21,8 +21,8 @@
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
+#include "tlm_crc_stats.h"
 #include "tlm_utils.h"
-#include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
 #include <cmath>            // for floor, round
@@ -31,8 +31,6 @@
 #include <exception>        // for exception
 #include <iomanip>          // for std::setprecision
 #include <iostream>         // for cout
-#include <memory>           // for shared_ptr, make_shared
-#include <utility>          // for std::move
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -71,12 +69,8 @@ glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(
                             d_enable_navdata_monitor(conf.enable_navdata_monitor),
                             d_dump_crc_stats(conf.dump_crc_stats)
 {
-    // prevent telemetry symbols accumulation in output buffers
-    this->set_max_noutput_items(1);
-    // Ephemeris data port out
-    this->message_port_register_out(pmt::mp("telemetry"));
-    // Control messages to tracking block
-    this->message_port_register_out(pmt::mp("telemetry_to_trk"));
+    configure_basic_outputs();
+
     this->message_port_register_out(pmt::mp("preamble_timestamp_samples"));
 
     if (d_enable_navdata_monitor)

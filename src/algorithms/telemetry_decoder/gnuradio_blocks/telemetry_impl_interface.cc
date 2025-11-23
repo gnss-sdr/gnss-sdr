@@ -1,5 +1,5 @@
 /*!
- * \file telemetry_impl_base.cc
+ * \file telemetry_impl_interface.cc
  * \brief Base class for telemetry decoder GNU Radio blocks.
  * \author Carles Fernandez-Prades, 2025 cfernandez@cttc.es
  *
@@ -14,7 +14,7 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "telemetry_impl_base.h"
+#include "telemetry_impl_interface.h"
 #include "tlm_crc_stats.h"
 #include <pmt/pmt_sugar.h>
 
@@ -24,7 +24,7 @@
 #include <absl/log/log.h>
 #endif
 
-void telemetry_impl_base::configure_basic_outputs()
+void telemetry_impl_interface::configure_basic_outputs()
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
@@ -35,7 +35,7 @@ void telemetry_impl_base::configure_basic_outputs()
 }
 
 
-void telemetry_impl_base::configure_dump_file(int32_t channel,
+void telemetry_impl_interface::configure_dump_file(int32_t channel,
     bool enable_dump,
     std::string& dump_filename,
     std::ofstream& dump_file) const
@@ -60,7 +60,7 @@ void telemetry_impl_base::configure_dump_file(int32_t channel,
 }
 
 
-void telemetry_impl_base::configure_crc_stats_channel(int32_t channel,
+void telemetry_impl_interface::configure_crc_stats_channel(int32_t channel,
     bool& dump_crc_stats,
     std::unique_ptr<Tlm_CRC_Stats>& crc_stats) const
 {

@@ -23,7 +23,7 @@
 #include "glonass_gnav_navigation_message.h"
 #include "gnss_synchro.h"
 #include "nav_message_packet.h"
-#include "telemetry_impl_base.h"
+#include "telemetry_impl_interface.h"
 #include "tlm_conf.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
@@ -49,7 +49,7 @@ glonass_l1_ca_telemetry_decoder_gs_sptr glonass_l1_ca_make_telemetry_decoder_gs(
  * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  *
  */
-class glonass_l1_ca_telemetry_decoder_gs : public telemetry_impl_base
+class glonass_l1_ca_telemetry_decoder_gs : public telemetry_impl_interface
 {
 public:
     ~glonass_l1_ca_telemetry_decoder_gs() override;                //!< Class destructor

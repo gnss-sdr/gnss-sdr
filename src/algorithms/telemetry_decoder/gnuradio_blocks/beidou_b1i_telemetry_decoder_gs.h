@@ -22,7 +22,7 @@
 
 #include "beidou_dnav_navigation_message.h"
 #include "nav_message_packet.h"
-#include "telemetry_impl_base.h"
+#include "telemetry_impl_interface.h"
 #include "tlm_conf.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
@@ -48,7 +48,7 @@ beidou_b1i_telemetry_decoder_gs_sptr beidou_b1i_make_telemetry_decoder_gs(
  * \brief This class implements a block that decodes the BeiDou DNAV data.
  * \note Code added as part of GSoC 2018 program
  */
-class beidou_b1i_telemetry_decoder_gs : public telemetry_impl_base
+class beidou_b1i_telemetry_decoder_gs : public telemetry_impl_interface
 {
 public:
     ~beidou_b1i_telemetry_decoder_gs() override;                   //!< Class destructor

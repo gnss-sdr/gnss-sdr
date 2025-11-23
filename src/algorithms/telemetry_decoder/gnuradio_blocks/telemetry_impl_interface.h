@@ -1,5 +1,5 @@
 /*!
- * \file telemetry_impl_base.h
+ * \file telemetry_impl_interface.h
  * \brief Base class for telemetry decoder GNU Radio blocks.
  * \author Carles Fernandez-Prades, 2025 cfernandez@cttc.es
  *
@@ -14,8 +14,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_TELEMETRY_IMPL_BASE_H
-#define GNSS_SDR_TELEMETRY_IMPL_BASE_H
+#ifndef GNSS_SDR_TELEMETRY_IMPL_INTERFACE_H
+#define GNSS_SDR_TELEMETRY_IMPL_INTERFACE_H
 
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
@@ -36,23 +36,23 @@ class Tlm_CRC_Stats;
  * \{
  */
 
-class telemetry_impl_base;
-using telemetry_impl_base_sptr = gnss_shared_ptr<telemetry_impl_base>;
+class telemetry_impl_interface;
+using telemetry_impl_interface_sptr = gnss_shared_ptr<telemetry_impl_interface>;
 
 /*!
  * \brief Common base class for telemetry decoder GNU Radio implementations.
  */
-class telemetry_impl_base : public gr::block
+class telemetry_impl_interface : public gr::block
 {
 public:
-    telemetry_impl_base(const std::string& name,
+    telemetry_impl_interface(const std::string& name,
         gr::io_signature::sptr input_signature,
         gr::io_signature::sptr output_signature)
         : gr::block(name,
               std::move(input_signature),
               std::move(output_signature)) {}
 
-    ~telemetry_impl_base() override = default;
+    ~telemetry_impl_interface() override = default;
 
     virtual void set_satellite(const Gnss_Satellite& satellite) = 0;
     virtual void set_channel(int channel) = 0;
@@ -74,4 +74,4 @@ protected:
 /** \} */
 /** \} */
 
-#endif  // GNSS_SDR_TELEMETRY_IMPL_BASE_H
+#endif  // GNSS_SDR_TELEMETRY_IMPL_INTERFACE_H

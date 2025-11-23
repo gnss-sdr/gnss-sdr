@@ -21,17 +21,17 @@
 #ifndef GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H
 #define GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H
 
-#include "galileo_cnav_message.h"     // for Galileo_Cnav_Message
-#include "galileo_fnav_message.h"     // for Galileo_Fnav_Message
-#include "galileo_inav_message.h"     // for Galileo_Inav_Message
-#include "gnss_time.h"                // for GnssTime
-#include "nav_message_packet.h"       // for Nav_Message_Packet
-#include "telemetry_impl_base.h"      // for telemetry_impl_base
-#include "tlm_conf.h"                 // for Tlm_Conf
-#include <boost/circular_buffer.hpp>  // for boost::circular_buffer
-#include <gnuradio/types.h>           // for gr_vector_const_void_star
-#include <pmt/pmt.h>                  // for pmt::pmt_t
-#include <vector>                     // for std::vector
+#include "galileo_cnav_message.h"      // for Galileo_Cnav_Message
+#include "galileo_fnav_message.h"      // for Galileo_Fnav_Message
+#include "galileo_inav_message.h"      // for Galileo_Inav_Message
+#include "gnss_time.h"                 // for GnssTime
+#include "nav_message_packet.h"        // for Nav_Message_Packet
+#include "telemetry_impl_interface.h"  // for telemetry_impl_interface
+#include "tlm_conf.h"                  // for Tlm_Conf
+#include <boost/circular_buffer.hpp>   // for boost::circular_buffer
+#include <gnuradio/types.h>            // for gr_vector_const_void_star
+#include <pmt/pmt.h>                   // for pmt::pmt_t
+#include <vector>                      // for std::vector
 
 /** \addtogroup Telemetry_Decoder
  * \{ */
@@ -51,7 +51,7 @@ galileo_telemetry_decoder_gs_sptr galileo_make_telemetry_decoder_gs(
 /*!
  * \brief This class implements a block that decodes the INAV and FNAV data defined in Galileo ICD
  */
-class galileo_telemetry_decoder_gs : public telemetry_impl_base
+class galileo_telemetry_decoder_gs : public telemetry_impl_interface
 {
 public:
     ~galileo_telemetry_decoder_gs() override;

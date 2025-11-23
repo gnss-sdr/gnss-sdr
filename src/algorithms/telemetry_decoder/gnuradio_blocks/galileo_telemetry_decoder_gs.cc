@@ -79,7 +79,7 @@ galileo_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Con
 galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
     const Tlm_Conf &conf,
-    int frame_type) : telemetry_impl_base("galileo_telemetry_decoder_gs",
+    int frame_type) : telemetry_impl_interface("galileo_telemetry_decoder_gs",
                           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
                       d_dump_filename(conf.dump_filename),

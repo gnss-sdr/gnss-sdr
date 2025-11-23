@@ -50,7 +50,7 @@ TelemetryDecoderAdapterBase::TelemetryDecoderAdapterBase(const ConfigurationInte
 }
 
 
-void TelemetryDecoderAdapterBase::InitializeDecoder(telemetry_impl_base_sptr decoder)
+void TelemetryDecoderAdapterBase::InitializeDecoder(telemetry_impl_interface_sptr decoder)
 {
     telemetry_decoder_ = std::move(decoder);
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";

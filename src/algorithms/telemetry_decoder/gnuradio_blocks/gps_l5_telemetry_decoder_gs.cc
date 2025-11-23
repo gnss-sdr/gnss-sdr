@@ -50,7 +50,7 @@ gps_l5_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf
 
 gps_l5_telemetry_decoder_gs::gps_l5_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    const Tlm_Conf &conf) : telemetry_impl_base("gps_l5_telemetry_decoder_gs",
+    const Tlm_Conf &conf) : telemetry_impl_interface("gps_l5_telemetry_decoder_gs",
                                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
                             d_dump_filename(conf.dump_filename),

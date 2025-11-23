@@ -42,16 +42,14 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
           GPS_L1_CA_CODE_LENGTH_CHIPS,
           GPS_L1_CA_CODE_PERIOD_MS,
           true,
-          true)
+          ThresholdComputeDoppler())
 {
     if (is_type_gr_complex())
         {
             const auto tong_init_val = configuration->property(role + ".tong_init_val", 1U);
             const auto tong_max_val = configuration->property(role + ".tong_max_val", 2U);
             const auto tong_max_dwells = configuration->property(role + ".tong_max_dwells", tong_max_val + 1U);
-
             acquisition_cc_ = pcps_tong_make_acquisition_cc(acq_parameters_, tong_init_val, tong_max_val, tong_max_dwells);
-
             DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
 }

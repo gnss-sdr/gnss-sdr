@@ -36,9 +36,11 @@ Acq_Conf get_acq_conf(
     const ConfigurationInterface* configuration,
     const std::string& role,
     double chip_rate,
+    double code_length_chips,
     double opt_freq,
     uint32_t ms_per_code,
-    uint32_t max_sampled_ms)
+    uint32_t max_sampled_ms,
+    const ThresholdComputeInterface& threshold_compute)
 {
     Acq_Conf acq_parameters;
     acq_parameters.ms_per_code = ms_per_code;
@@ -73,10 +75,71 @@ Acq_Conf get_acq_conf(
             std::cout << "Too high coherent integration time. Changing to " << max_sampled_ms << "ms\n";
         }
 
+    acq_parameters.num_codes = acq_parameters.sampled_ms / ms_per_code;
+    acq_parameters.code_length = static_cast<unsigned int>(round(acq_parameters.fs_in / (chip_rate / code_length_chips)));
+    acq_parameters.vector_length = acq_parameters.code_length * acq_parameters.num_codes;
+    acq_parameters.threshold = threshold_compute.calculate_threshold(acq_parameters);
+
     return acq_parameters;
 }
 }  // namespace
 
+
+float ThresholdComputeBasic::calculate_threshold(const Acq_Conf& acq_parameters) const
+{
+    return acq_parameters.threshold;
+}
+
+float ThresholdComputeDoppler::calculate_threshold(const Acq_Conf& acq_parameters) const
+{
+    if (acq_parameters.pfa != 0)
+        {
+            // Calculate the threshold
+            unsigned int frequency_bins = 0;
+            for (int doppler = -acq_parameters.doppler_max; doppler <= acq_parameters.doppler_max; doppler += acq_parameters.doppler_step)
+                {
+                    frequency_bins++;
+                }
+
+            const auto ncells = acq_parameters.vector_length * frequency_bins;
+            const auto exponent = 1 / static_cast<double>(ncells);
+            const auto val = pow(1.0 - acq_parameters.pfa, exponent);
+            const auto lambda = static_cast<double>(acq_parameters.vector_length);
+            boost::math::exponential_distribution<double> mydist(lambda);
+            const auto threshold = static_cast<float>(quantile(mydist, val));
+
+            return threshold;
+        }
+
+    return acq_parameters.threshold;
+}
+
+ThresholdComputeQuickSync::ThresholdComputeQuickSync(uint32_t folding_factor) : folding_factor_(folding_factor)
+{
+}
+
+float ThresholdComputeQuickSync::calculate_threshold(const Acq_Conf& acq_parameters) const
+{
+    if (acq_parameters.pfa != 0)
+        {
+            // Calculate the threshold
+            unsigned int frequency_bins = 0;
+            for (int doppler = -acq_parameters.doppler_max; doppler <= acq_parameters.doppler_max; doppler += static_cast<int>(acq_parameters.doppler_step))
+                {
+                    frequency_bins++;
+                }
+
+            const auto ncells = (acq_parameters.code_length / folding_factor_) * frequency_bins;
+            const auto exponent = 1.0 / static_cast<double>(ncells);
+            const auto val = pow(1.0 - acq_parameters.pfa, exponent);
+            const auto lambda = static_cast<double>(acq_parameters.code_length) / static_cast<double>(folding_factor_);
+            boost::math::exponential_distribution<double> mydist(lambda);
+            const auto threshold = static_cast<float>(quantile(mydist, val));
+            return threshold;
+        }
+
+    return acq_parameters.threshold;
+}
 
 BasePcpsAcquisitionCustom::BasePcpsAcquisitionCustom(
     const ConfigurationInterface* configuration,
@@ -87,20 +150,16 @@ BasePcpsAcquisitionCustom::BasePcpsAcquisitionCustom(
     double code_length_chips,
     unsigned int ms_per_code,
     bool use_stream_to_vector,
-    bool compute_threshold_from_pfa,
+    const ThresholdComputeInterface& threshold_compute,
     uint32_t max_sampled_ms)
-    : acq_parameters_(get_acq_conf(configuration, role, chip_rate, 0, ms_per_code, max_sampled_ms)),
-      num_codes_(acq_parameters_.sampled_ms / ms_per_code),
-      code_length_(static_cast<unsigned int>(round(acq_parameters_.fs_in / (chip_rate / code_length_chips)))),
-      vector_length_(code_length_ * num_codes_),
+    : acq_parameters_(get_acq_conf(configuration, role, chip_rate, code_length_chips, 0, ms_per_code, max_sampled_ms, threshold_compute)),
       gnss_synchro_(nullptr),
       channel_(0),
-      code_(vector_length_),
+      code_(acq_parameters_.vector_length),
       role_(role),
       is_type_gr_complex_(acq_parameters_.item_type == "gr_complex"),
       item_size_(is_type_gr_complex_ ? sizeof(gr_complex) : 0),
-      use_stream_to_vector_(use_stream_to_vector),
-      compute_threshold_from_pfa_(compute_threshold_from_pfa)
+      use_stream_to_vector_(use_stream_to_vector)
 {
     DLOG(INFO) << "role " << role_;
 
@@ -108,7 +167,7 @@ BasePcpsAcquisitionCustom::BasePcpsAcquisitionCustom(
         {
             if (use_stream_to_vector_)
                 {
-                    stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
+                    stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, acq_parameters_.vector_length);
                     DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
                 }
         }
@@ -220,56 +279,20 @@ void BasePcpsAcquisitionCustom::stop_acquisition()
 }
 
 
-void BasePcpsAcquisitionCustom::set_threshold(float threshold)
-{
-    if (is_type_gr_complex_)
-        {
-            if (compute_threshold_from_pfa_ && acq_parameters_.pfa != 0)
-                {
-                    threshold = calculate_threshold(acq_parameters_.pfa);
-                    DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold;
-                }
-
-            acquisition_cc_->set_threshold(threshold);
-        }
-}
-
-
 void BasePcpsAcquisitionCustom::set_local_code()
 {
     if (is_type_gr_complex())
         {
-            std::vector<std::complex<float>> code(code_length_);
+            const auto code_length = acq_parameters_.code_length;
+            std::vector<std::complex<float>> code(code_length);
             code_gen_complex_sampled(code, gnss_synchro_->PRN, acq_parameters_.fs_in);
 
-            own::span<gr_complex> code_span(code_.data(), vector_length_);
-            for (unsigned int i = 0; i < num_codes_; i++)
+            own::span<gr_complex> code_span(code_.data(), acq_parameters_.vector_length);
+            for (unsigned int i = 0; i < acq_parameters_.num_codes; i++)
                 {
-                    std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
+                    std::copy_n(code.data(), code_length, code_span.subspan(i * code_length, code_length).data());
                 }
 
             acquisition_cc_->set_local_code(code_.data());
         }
-}
-
-
-float BasePcpsAcquisitionCustom::calculate_threshold(float pfa) const
-{
-    // Calculate the threshold
-    unsigned int frequency_bins = 0;
-    for (int doppler = -acq_parameters_.doppler_max; doppler <= acq_parameters_.doppler_max; doppler += acq_parameters_.doppler_step)
-        {
-            frequency_bins++;
-        }
-
-    DLOG(INFO) << "Channel " << channel_ << "  Pfa = " << pfa;
-
-    const auto ncells = vector_length_ * frequency_bins;
-    const auto exponent = 1 / static_cast<double>(ncells);
-    const auto val = pow(1.0 - pfa, exponent);
-    const auto lambda = static_cast<double>(vector_length_);
-    boost::math::exponential_distribution<double> mydist(lambda);
-    const auto threshold = static_cast<float>(quantile(mydist, val));
-
-    return threshold;
 }

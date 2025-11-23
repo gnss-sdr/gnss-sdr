@@ -43,7 +43,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
           GPS_L1_CA_CODE_LENGTH_CHIPS,
           GPS_L1_CA_CODE_PERIOD_MS,
           false,
-          false)
+          ThresholdComputeBasic())
 {
     if (is_type_gr_complex())
         {

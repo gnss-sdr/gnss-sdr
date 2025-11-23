@@ -224,7 +224,7 @@ void GalileoE5bPcpsAcquisitionTest::init()
     config->set_property("Acquisition_7X.coherent_integration_time_ms", std::to_string(integration_time_ms));
     config->set_property("Acquisition_7X.dump", "false");
     config->set_property("Acquisition_7X.dump_filename", "./acquisition");
-    config->set_property("Acquisition_7X.threshold", "0.001");
+    config->set_property("Acquisition_7X.threshold", "0.0001");
     config->set_property("Acquisition_7X.doppler_max", "10000");
     config->set_property("Acquisition_7X.doppler_step", "250");
     config->set_property("Acquisition_7X.repeat_satellite", "false");
@@ -372,10 +372,6 @@ TEST_F(GalileoE5bPcpsAcquisitionTest, ValidationOfResults)
     ASSERT_NO_THROW({
         acquisition->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_threshold(0.0001);
-    }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);

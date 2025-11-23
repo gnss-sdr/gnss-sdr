@@ -699,13 +699,8 @@ bool HybridObservablesTestFpga::acquire_signal()
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     acquisition->set_channel_fsm(channel_fsm_);
     acquisition->set_channel(0);
-#if USE_GLOG_AND_GFLAGS
     acquisition->set_doppler_center(0);
-    acquisition->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
-#else
-    acquisition->set_doppler_center(0);
-    acquisition->set_threshold(config->property("Acquisition.threshold", absl::GetFlag(FLAGS_external_signal_acquisition_threshold)));
-#endif
+
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds;
     start = std::chrono::system_clock::now();
@@ -903,6 +898,12 @@ void HybridObservablesTestFpga::configure_receiver(
 
     gnss_synchro_master.Channel_ID = 0;
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
+
+#if USE_GLOG_AND_GFLAGS
+    config->set_property("Acquisition.threshold", std::to_string(FLAGS_external_signal_acquisition_threshold));
+#else
+    config->set_property("Acquisition.threshold", absl::GetFlag(FLAGS_external_signal_acquisition_threshold));
+#endif
 
     std::string System_and_Signal;
     if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_FPGA")

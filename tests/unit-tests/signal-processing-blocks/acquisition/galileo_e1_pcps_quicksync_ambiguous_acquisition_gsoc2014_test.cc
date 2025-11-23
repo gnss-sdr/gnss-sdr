@@ -477,7 +477,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::config_3()
         std::to_string(integration_time_ms));
     config->set_property("Acquisition_1B.max_dwells", "1");
     config->set_property("Acquisition_1B.bit_transition_flag", "false");
-    config->set_property("Acquisition_1B.threshold", "0.2");
+    config->set_property("Acquisition_1B.threshold", "5");
     config->set_property("Acquisition_1B.doppler_max", "10000");
     config->set_property("Acquisition_1B.doppler_step", "50");
     config->set_property("Acquisition_1B.folding_factor", "4");
@@ -639,10 +639,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_threshold(1);
-    }) << "Failure setting threshold.";
-
-    ASSERT_NO_THROW({
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
@@ -719,10 +715,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_threshold(5);
-    }) << "Failure setting threshold.";
-
-    ASSERT_NO_THROW({
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
@@ -794,10 +786,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
     ASSERT_NO_THROW({
         acquisition->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_threshold(config->property("Acquisition_1B.threshold", 0.0));
-    }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);

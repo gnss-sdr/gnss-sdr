@@ -335,7 +335,6 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
     acquisition->set_channel_fsm(channel_fsm_);
     acquisition->set_channel(1);
     acquisition->set_doppler_center(0);
-    acquisition->set_threshold(0.001);
 
     nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(BASEBAND_SAMPLING_FREQ) / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
 
@@ -394,7 +393,7 @@ void GpsL1CaPcpsAcquisitionTestFpga::init()
 {
     config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
     config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition_FPGA");
-    config->set_property("Acquisition.threshold", "0.00001");
+    config->set_property("Acquisition.threshold", "0.001");
     config->set_property("Acquisition.doppler_max", std::to_string(doppler_max));
     config->set_property("Acquisition.doppler_step", std::to_string(doppler_step));
     config->set_property("Acquisition.repeat_satellite", "false");

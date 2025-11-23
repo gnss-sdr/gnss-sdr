@@ -73,15 +73,6 @@ Channel::Channel(const ConfigurationInterface* configuration,
                 }
         }
 
-    // IMPORTANT: For future reference set_threshold needs to be called after doppler step is set (currently done at acquisition construction)
-    float threshold = configuration->property("Acquisition_" + signal_str + std::to_string(channel_) + ".threshold", static_cast<float>(0.0));
-    if (threshold == 0.0)
-        {
-            threshold = configuration->property("Acquisition_" + signal_str + ".threshold", static_cast<float>(0.0));
-        }
-
-    acq_->set_threshold(threshold);
-
     channel_fsm_->set_acquisition(acq_);
     channel_fsm_->set_tracking(trk_);
     channel_fsm_->set_telemetry(nav_);

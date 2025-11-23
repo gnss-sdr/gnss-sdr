@@ -272,7 +272,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
     config->set_property("Acquisition_5X.CAF_window_hz", std::to_string(CAF_window_hz));
     config->set_property("Acquisition_5X.Zero_padding", std::to_string(Zero_padding));
     config->set_property("Acquisition_5X.pfa", "0.003");
-    //    config->set_property("Acquisition_5X.threshold", "0.01");
+    config->set_property("Acquisition_5X.threshold", "0.0001");
     config->set_property("Acquisition_5X.doppler_max", "10000");
     config->set_property("Acquisition_5X.doppler_step", "250");
     config->set_property("Acquisition_5X.bit_transition_flag", "false");
@@ -584,10 +584,6 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
     ASSERT_NO_THROW({
         acquisition->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_threshold(config->property("Acquisition_5X.threshold", 0.0001));
-    }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);

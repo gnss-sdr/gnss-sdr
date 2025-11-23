@@ -42,8 +42,8 @@ GalileoE1PcpsCccwsrAmbiguousAcquisition::GalileoE1PcpsCccwsrAmbiguousAcquisition
           GALILEO_E1_B_CODE_LENGTH_CHIPS,
           GALILEO_E1_CODE_PERIOD_MS,
           true,
-          false),
-      code_pilot_(vector_length_),
+          ThresholdComputeBasic()),
+      code_pilot_(acq_parameters_.vector_length),
       cboc_(configuration->property(role + ".cboc", false))
 {
     if (is_type_gr_complex())

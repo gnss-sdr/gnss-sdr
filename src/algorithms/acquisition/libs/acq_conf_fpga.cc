@@ -81,6 +81,7 @@ void Acq_Conf_Fpga::SetFromConfiguration(const ConfigurationInterface *configura
     doppler_step = configuration->property(role + ".doppler_step", doppler_step);
     make_2_steps = configuration->property(role + ".make_two_steps", make_2_steps);
     max_num_acqs = configuration->property(role + ".max_num_acqs", 2);
+    threshold = configuration->property(role + ".threshold", threshold);
 
     // reference for the FPGA FFT-IFFT attenuation factor
     total_block_exp = configuration->property(role + ".total_block_exp", blk_exp);

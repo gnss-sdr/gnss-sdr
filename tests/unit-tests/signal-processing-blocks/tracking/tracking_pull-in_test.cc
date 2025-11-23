@@ -324,6 +324,12 @@ void TrackingPullInTest::configure_receiver(
     gnss_synchro.Channel_ID = 0;
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
 
+#if USE_GLOG_AND_GFLAGS
+    config->set_property("Acquisition.threshold", std::to_string(FLAGS_external_signal_acquisition_threshold));
+#else
+    config->set_property("Acquisition.threshold", absl::GetFlag(FLAGS_external_signal_acquisition_threshold));
+#endif
+
     std::string System_and_Signal;
     if (implementation == "GPS_L1_CA_DLL_PLL_Tracking")
         {
@@ -535,11 +541,6 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
 
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     acquisition->set_channel(0);
-#if USE_GLOG_AND_GFLAGS
-    acquisition->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
-#else
-    acquisition->set_threshold(config->property("Acquisition.threshold", absl::GetFlag(FLAGS_external_signal_acquisition_threshold)));
-#endif
     acquisition->set_local_code();
     acquisition->reset();
     acquisition->connect(top_block_acq);

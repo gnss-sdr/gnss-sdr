@@ -25,11 +25,7 @@
 #include "gps_utc_model.h"         // for Gps_Utc_Model
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
-<<<<<<< HEAD
 #include "tow_to_trk.h"
-#include <gnuradio/io_signature.h>
-=======
->>>>>>> f0e05659651f53ddbbbc8b21cc444fbd60a5eb56
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
 #include <bitset>           // for bitset

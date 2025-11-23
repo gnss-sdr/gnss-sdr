@@ -15,6 +15,7 @@
  *
  * -----------------------------------------------------------------------------
  */
+
 #include "beidou_b1i_telemetry_decoder_gs.h"
 #include "Beidou_B1I.h"
 #include "Beidou_DNAV.h"
@@ -53,7 +54,7 @@ beidou_b1i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_
 
 beidou_b1i_telemetry_decoder_gs::beidou_b1i_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    const Tlm_Conf &conf) : telemetry_impl_base("beidou_b1i_telemetry_decoder_gs",
+    const Tlm_Conf &conf) : telemetry_impl_interface("beidou_b1i_telemetry_decoder_gs",
                                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
                             d_dump_filename(conf.dump_filename),

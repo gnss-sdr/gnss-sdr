@@ -47,7 +47,7 @@ sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
 
 sbas_l1_telemetry_decoder_gs::sbas_l1_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    bool dump) : telemetry_impl_base("sbas_l1_telemetry_decoder_gs",
+    bool dump) : telemetry_impl_interface("sbas_l1_telemetry_decoder_gs",
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
                  d_dump(dump),

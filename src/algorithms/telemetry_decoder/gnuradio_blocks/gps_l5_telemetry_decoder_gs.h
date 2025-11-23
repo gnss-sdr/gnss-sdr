@@ -20,7 +20,7 @@
 #include "GPS_L5.h"                       // for GPS_L5I_NH_CODE_LENGTH
 #include "gps_cnav_navigation_message.h"  // for Gps_CNAV_Navigation_Message
 #include "nav_message_packet.h"
-#include "telemetry_impl_base.h"
+#include "telemetry_impl_interface.h"
 #include "tlm_conf.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
@@ -48,7 +48,7 @@ gps_l5_telemetry_decoder_gs_sptr gps_l5_make_telemetry_decoder_gs(
  * \brief This class implements a GPS L5 Telemetry decoder
  *
  */
-class gps_l5_telemetry_decoder_gs : public telemetry_impl_base
+class gps_l5_telemetry_decoder_gs : public telemetry_impl_interface
 {
 public:
     ~gps_l5_telemetry_decoder_gs() override;

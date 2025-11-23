@@ -22,7 +22,7 @@
 #include "gnss_time.h"  // for timetags produced by Tracking
 #include "gps_navigation_message.h"
 #include "nav_message_packet.h"
-#include "telemetry_impl_base.h"
+#include "telemetry_impl_interface.h"
 #include "tlm_conf.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
@@ -47,7 +47,7 @@ gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(
 /*!
  * \brief This class implements a block that decodes the NAV data defined in IS-GPS-200M
  */
-class gps_l1_ca_telemetry_decoder_gs : public telemetry_impl_base
+class gps_l1_ca_telemetry_decoder_gs : public telemetry_impl_interface
 {
 public:
     ~gps_l1_ca_telemetry_decoder_gs() override;

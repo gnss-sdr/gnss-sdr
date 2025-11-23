@@ -50,7 +50,7 @@ glonass_l2_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const T
 
 glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    const Tlm_Conf &conf) : telemetry_impl_base("glonass_l2_ca_telemetry_decoder_gs",
+    const Tlm_Conf &conf) : telemetry_impl_interface("glonass_l2_ca_telemetry_decoder_gs",
                                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
                             d_dump_filename(conf.dump_filename),

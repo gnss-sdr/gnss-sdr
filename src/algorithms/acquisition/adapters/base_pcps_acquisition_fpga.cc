@@ -157,15 +157,6 @@ void BasePcpsAcquisitionFpga::set_channel_fsm(std::weak_ptr<ChannelFsm> channel_
 }
 
 
-void BasePcpsAcquisitionFpga::set_threshold(float threshold)
-{
-    if (acquisition_fpga_)
-        {
-            acquisition_fpga_->set_threshold(threshold);
-        }
-}
-
-
 void BasePcpsAcquisitionFpga::set_doppler_center(int doppler_center)
 {
     if (acquisition_fpga_)

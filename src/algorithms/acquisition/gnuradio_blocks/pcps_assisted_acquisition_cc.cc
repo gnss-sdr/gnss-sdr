@@ -51,7 +51,6 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(const Acq_Conf &conf)
       d_acq_params(conf),
       d_gnss_synchro(nullptr),
       d_sample_counter(0ULL),
-      d_threshold(0),
       d_input_power(0.0),
       d_test_statistics(0),
       d_channel(0),
@@ -252,10 +251,10 @@ int32_t pcps_assisted_acquisition_cc::compute_and_accumulate_grid(gr_vector_cons
     const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  // Get the input samples pointer
 
     DLOG(INFO) << "Channel: " << d_channel
-               << " , doing acquisition of satellite: " << d_gnss_synchro->System << " "
-               << d_gnss_synchro->PRN
-               << " ,sample stamp: " << d_sample_counter << ", threshold: "
-               << d_threshold << ", doppler_max: " << d_doppler_max
+               << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
+               << " , sample stamp: " << d_sample_counter
+               << ", threshold: " << d_acq_params.threshold
+               << ", doppler_max: " << d_doppler_max
                << ", doppler_step: " << d_acq_params.doppler_step;
 
     // 2- Doppler frequency search loop
@@ -341,7 +340,7 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
         case 3:  // Compute test statistics and decide
             d_input_power = estimate_input_power(input_items);
             d_test_statistics = search_maximum();
-            if (d_test_statistics > d_threshold)
+            if (d_test_statistics > d_acq_params.threshold)
                 {
                     d_state = 5;
                 }
@@ -373,7 +372,7 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
             DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
             DLOG(INFO) << "sample_stamp " << d_sample_counter;
             DLOG(INFO) << "test statistics value " << d_test_statistics;
-            DLOG(INFO) << "test statistics threshold " << d_threshold;
+            DLOG(INFO) << "test statistics threshold " << d_acq_params.threshold;
             DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
             DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
             DLOG(INFO) << "input signal power " << d_input_power;
@@ -399,7 +398,7 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
             DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
             DLOG(INFO) << "sample_stamp " << d_sample_counter;
             DLOG(INFO) << "test statistics value " << d_test_statistics;
-            DLOG(INFO) << "test statistics threshold " << d_threshold;
+            DLOG(INFO) << "test statistics threshold " << d_acq_params.threshold;
             DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
             DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
             DLOG(INFO) << "input signal power " << d_input_power;

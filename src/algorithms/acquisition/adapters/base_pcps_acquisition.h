@@ -94,15 +94,9 @@ public:
     }
 
     /*!
-     * \brief Set statistics threshold of PCPS algorithm
-     */
-    void set_threshold(float threshold) override;
-
-    /*!
      * \brief Set Doppler center for the grid search
      */
     void set_doppler_center(int doppler_center) override;
-
 
     /*!
      * \brief Returns the maximum peak of grid search

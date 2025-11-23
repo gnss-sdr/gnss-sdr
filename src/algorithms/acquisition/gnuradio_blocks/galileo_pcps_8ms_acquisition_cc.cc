@@ -44,7 +44,6 @@ galileo_pcps_8ms_acquisition_cc::galileo_pcps_8ms_acquisition_cc(const Acq_Conf 
       d_acq_params(conf),
       d_gnss_synchro(nullptr),
       d_sample_counter(0ULL),
-      d_threshold(0),
       d_mag(0),
       d_input_power(0.0),
       d_test_statistics(0),
@@ -181,8 +180,9 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
 
                 DLOG(INFO) << "Channel: " << d_channel
                            << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-                           << " ,sample stamp: " << d_sample_counter << ", threshold: "
-                           << d_threshold << ", doppler_max: " << d_acq_params.doppler_max
+                           << " , sample stamp: " << d_sample_counter
+                           << ", threshold: " << d_acq_params.threshold
+                           << ", doppler_max: " << d_acq_params.doppler_max
                            << ", doppler_step: " << d_acq_params.doppler_step;
 
                 // 1- Compute the input signal power estimation
@@ -276,7 +276,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                 // d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
                 d_test_statistics = d_mag / d_input_power;
 
-                if (d_test_statistics > d_threshold)
+                if (d_test_statistics > d_acq_params.threshold)
                     {
                         d_state = 2;  // Positive acquisition
                     }
@@ -297,7 +297,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                 DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
                 DLOG(INFO) << "sample_stamp " << d_sample_counter;
                 DLOG(INFO) << "test statistics value " << d_test_statistics;
-                DLOG(INFO) << "test statistics threshold " << d_threshold;
+                DLOG(INFO) << "test statistics threshold " << d_acq_params.threshold;
                 DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
                 DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
                 DLOG(INFO) << "magnitude " << d_mag;
@@ -332,7 +332,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                 DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
                 DLOG(INFO) << "sample_stamp " << d_sample_counter;
                 DLOG(INFO) << "test statistics value " << d_test_statistics;
-                DLOG(INFO) << "test statistics threshold " << d_threshold;
+                DLOG(INFO) << "test statistics threshold " << d_acq_params.threshold;
                 DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
                 DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
                 DLOG(INFO) << "magnitude " << d_mag;

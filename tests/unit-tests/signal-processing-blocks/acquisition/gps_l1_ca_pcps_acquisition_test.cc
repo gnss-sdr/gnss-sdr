@@ -170,7 +170,7 @@ void GpsL1CaPcpsAcquisitionTest::init()
         }
     config->set_property("Acquisition_1C.dump_filename", "./tmp-acq-gps1/acquisition");
     config->set_property("Acquisition_1C.dump_channel", "1");
-    config->set_property("Acquisition_1C.threshold", "0.00001");
+    config->set_property("Acquisition_1C.threshold", "0.001");
     config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
     config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
     config->set_property("Acquisition_1C.repeat_satellite", "false");
@@ -328,10 +328,6 @@ TEST_F(GpsL1CaPcpsAcquisitionTest /*unused*/, ValidationOfResults /*unused*/)
     ASSERT_NO_THROW({
         acquisition->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_threshold(0.001);
-    }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);

@@ -151,17 +151,6 @@ public:
     }
 
     /*!
-     * \brief Set statistics threshold of PCPS algorithm.
-     * \param threshold - Threshold for signal detection (check \ref Navitec2012,
-     * Algorithm 1, for a definition of this threshold).
-     */
-    inline void set_threshold(float threshold) override
-    {
-        gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
-        d_threshold = threshold;
-    }
-
-    /*!
      * \brief Set Doppler center frequency for the grid search. It will refresh the Doppler grid.
      * \param doppler_center - Frequency center of the search grid [Hz].
      */
@@ -181,16 +170,16 @@ private:
     void update_local_carrier(own::span<gr_complex> carrier_vector, float freq) const;
     void update_grid_doppler_wipeoffs();
     void update_grid_doppler_wipeoffs_step2();
-    void doppler_grid(const gr_complex* in, int32_t effective_fft_size);
+    void doppler_grid(const gr_complex* in);
     float get_test_statistics(uint32_t& indext, int32_t& doppler);
     void update_synchro(uint32_t indext, int32_t doppler, uint64_t samp_count);
     void acquisition_core(uint64_t samp_count);
     void send_negative_acquisition(float test_statistics);
     void send_positive_acquisition(float test_statistics);
-    void dump_results(int32_t effective_fft_size, float test_statistics);
+    void dump_results(float test_statistics);
     bool is_fdma();
     bool start() override;
-    void calculate_threshold();
+    float get_threshold() const;
     float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
     float max_to_input_power_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
 
@@ -205,7 +194,6 @@ private:
     int64_t d_dump_number;
     uint64_t d_sample_counter;
 
-    float d_threshold;
     float d_mag;
     float d_input_power;
     float d_doppler_center_step_two;
@@ -221,11 +209,15 @@ private:
     uint32_t d_num_noncoherent_integrations_counter;
     const uint32_t d_consumed_samples;
     const uint32_t d_fft_size;
+    const uint32_t d_effective_fft_size;
     const uint32_t d_num_doppler_bins;
     const uint32_t d_num_doppler_bins_step2;
     const uint32_t d_dump_channel;
     uint32_t d_buffer_count;
     uint32_t d_resampler_latency_samples;
+
+    const float d_threshold;
+    const float d_threshold_step_two;
 
     bool d_active;
     bool d_worker_active;

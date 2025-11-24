@@ -1,3 +1,21 @@
+/*!
+ * \file matlab_writter_helper.h
+ * \brief Utility functions for logging to a matlab file
+ * \authors <ul>
+ *          <li> Mathieu Favreau, 2025. favreau.mathieu(at)hotmail.com
+ *          </ul>
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * This file is part of GNSS-SDR.
+ *
+ * Copyright (C) 2010-2025  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * -----------------------------------------------------------------------------
+ */
+
 #ifndef GNSS_SDR_MATLAB_WRITTER_HELPER_H
 #define GNSS_SDR_MATLAB_WRITTER_HELPER_H
 

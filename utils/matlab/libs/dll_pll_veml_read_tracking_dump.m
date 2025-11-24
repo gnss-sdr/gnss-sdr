@@ -20,23 +20,23 @@ m = nargchk (1,2,nargin);
 num_float_vars = 19;
 num_unsigned_long_int_vars = 1;
 num_double_vars = 1;
-num_unsigned_int_vars = 1;
+num_unsigned_int_vars = 2;
+num_unsigned_int64_vars = 1;
+
+double_size_bytes = 8;
+float_size_bytes = 4;
+unsigned_int_size_bytes = 4;
+unsigned_int64_size_bytes = 8;
 
 if(~isempty(strfind(computer('arch'), '64')))
     % 64-bit computer
-    double_size_bytes = 8;
     unsigned_long_int_size_bytes = 8;
-    float_size_bytes = 4;
-    unsigned_int_size_bytes = 4;
 else
-    double_size_bytes = 8;
     unsigned_long_int_size_bytes = 4;
-    float_size_bytes = 4;
-    unsigned_int_size_bytes = 4;
 end
 
 skip_bytes_each_read = float_size_bytes * num_float_vars + unsigned_long_int_size_bytes * num_unsigned_long_int_vars + ...
-    double_size_bytes * num_double_vars + num_unsigned_int_vars*unsigned_int_size_bytes;
+    double_size_bytes * num_double_vars + num_unsigned_int_vars*unsigned_int_size_bytes + num_unsigned_int64_vars*unsigned_int64_size_bytes;
 
 bytes_shift = 0;
 
@@ -119,6 +119,12 @@ else
     bytes_shift = bytes_shift + double_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next unsigned int
     v22 = fread (f, count, 'uint', skip_bytes_each_read - unsigned_int_size_bytes);
+    bytes_shift = bytes_shift + unsigned_int_size_bytes;
+    fseek(f,bytes_shift,'bof');
+    v23 = fread (f, count, 'uint64', skip_bytes_each_read - unsigned_int64_size_bytes);
+    bytes_shift = bytes_shift + unsigned_int64_size_bytes;
+    fseek(f,bytes_shift,'bof');
+    v24 = fread (f, count, 'uint32', skip_bytes_each_read - unsigned_int_size_bytes);
     fclose (f);
 
     GNSS_tracking.VE = v1;
@@ -143,4 +149,6 @@ else
     GNSS_tracking.var1 = v20;
     GNSS_tracking.var2 = v21;
     GNSS_tracking.PRN = v22;
+    GNSS_tracking.TOW_ms = v23;
+    GNSS_tracking.WN = v24;
 end

@@ -67,6 +67,8 @@ for N=1:1:channels
     trackResults(N).PRN = GNSS_tracking(N).PRN(start_sample:end).';
     trackResults(N).CNo = GNSS_tracking(N).CN0_SNV_dB_Hz(start_sample:end).';
     trackResults(N).prn_start_time_s = GNSS_tracking(N).PRN_start_sample(start_sample:end)/samplingFreq;
+    trackResults(N).TOW_ms = GNSS_tracking(N).TOW_ms;
+    trackResults(N).WN = GNSS_tracking(N).WN;
     % Use original MATLAB tracking plot function
     settings.numberOfChannels = channels;
     plotVEMLTracking(N, trackResults, settings)

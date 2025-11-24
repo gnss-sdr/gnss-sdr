@@ -63,6 +63,10 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Fixed tracking the same PRN in multiple channels. Previously, this could
   happen when the number of acquisition channels was close to the number of
   available PRNs for a given signal.
+- Added a new global configuration parameter, `GNSS-SDR.tow_to_trk`. When set to
+  `true`, Telemetry blocks send asynchronous messages back to the Tracking
+  blocks containing the information required to compute the TOW and week number
+  at the tracking stage. The default value is `false`.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

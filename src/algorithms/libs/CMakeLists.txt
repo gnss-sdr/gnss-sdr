@@ -65,6 +65,7 @@ set(GNSS_SPLIBS_HEADERS
     short_x2_to_cshort.h
     gnss_sdr_string_literals.h
     gnss_time.h
+    matlab_writter_helper.h
 )
 
 set(GNSS_SPLIBS_HEADERS ${GNSS_SPLIBS_HEADERS}

@@ -119,7 +119,7 @@ public:
      */
     inline uint32_t mag() const override
     {
-        return d_mag;
+        return 0;  // Not implemented
     }
 
     /*!
@@ -173,10 +173,13 @@ private:
     void doppler_grid(const gr_complex* in);
     float get_test_statistics(uint32_t& indext, int32_t& doppler);
     void update_synchro(uint32_t indext, int32_t doppler, uint64_t samp_count);
+    bool handle_threshold_reached(float test_statistics);
+    void handle_integration_done(float test_statistics);
     void acquisition_core(uint64_t samp_count);
+    void log_acquisition(bool positive, float test_statistics) const;
     void send_negative_acquisition(float test_statistics);
     void send_positive_acquisition(float test_statistics);
-    void dump_results(float test_statistics);
+    void dump_results(float test_statistics, bool positive_acq);
     bool is_fdma();
     bool start() override;
     float get_threshold() const;
@@ -184,47 +187,41 @@ private:
     float max_to_input_power_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
 
     const Acq_Conf d_acq_parameters;
-    Gnss_Synchro* d_gnss_synchro;
-    arma::fmat d_grid;
-    arma::fmat d_narrow_grid;
-
-    std::queue<Gnss_Synchro> d_monitor_queue;
-    std::string d_dump_filename;
-
-    int64_t d_dump_number;
-    uint64_t d_sample_counter;
-
-    float d_mag;
-    float d_input_power;
-    float d_doppler_center_step_two;
+    const std::string d_dump_filename;
     const float d_doppler_max;
-
-    int32_t d_state;
-    int32_t d_positive_acq;
-    int32_t d_doppler_center;
-    int32_t d_doppler_bias;
-    uint32_t d_channel;
     const uint32_t d_samplesPerChip;
     const uint32_t d_doppler_step;
-    uint32_t d_num_noncoherent_integrations_counter;
     const uint32_t d_consumed_samples;
     const uint32_t d_fft_size;
     const uint32_t d_effective_fft_size;
     const uint32_t d_num_doppler_bins;
     const uint32_t d_num_doppler_bins_step2;
     const uint32_t d_dump_channel;
-    uint32_t d_buffer_count;
-    uint32_t d_resampler_latency_samples;
-
     const float d_threshold;
     const float d_threshold_step_two;
+    const bool d_cshort;
+    const bool d_use_CFAR_algorithm_flag;
+    const bool d_dump;
 
+    Gnss_Synchro* d_gnss_synchro;
+    arma::fmat d_grid;
+    arma::fmat d_narrow_grid;
+    std::queue<Gnss_Synchro> d_monitor_queue;
+
+    float d_input_power;
+    float d_doppler_center_step_two;
+    int32_t d_state;
+    int32_t d_doppler_center;
+    int32_t d_doppler_bias;
+    int64_t d_dump_number;
+    uint32_t d_channel;
+    uint32_t d_num_noncoherent_integrations_counter;
+    uint32_t d_buffer_count;
+    uint32_t d_resampler_latency_samples;
+    uint64_t d_sample_counter;
     bool d_active;
     bool d_worker_active;
-    const bool d_cshort;
     bool d_step_two;
-    const bool d_use_CFAR_algorithm_flag;
-    bool d_dump;
 
     volk_gnsssdr::vector<volk_gnsssdr::vector<float>> d_magnitude_grid;
     volk_gnsssdr::vector<float> d_tmp_buffer;

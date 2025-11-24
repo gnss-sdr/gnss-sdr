@@ -23,6 +23,7 @@
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
+#include "tow_to_trk.h"
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
 #include <cmath>            // for floor, round
@@ -67,7 +68,8 @@ glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(
                             d_dump_mat(conf.dump_mat),
                             d_remove_dat(conf.remove_dat),
                             d_enable_navdata_monitor(conf.enable_navdata_monitor),
-                            d_dump_crc_stats(conf.dump_crc_stats)
+                            d_dump_crc_stats(conf.dump_crc_stats),
+                            d_tow_to_trk(conf.tow_to_trk)
 {
     configure_basic_outputs();
 
@@ -494,6 +496,17 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                             this->message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
                             d_nav_msg_packet.nav_message = "";
                         }
+                }
+            // SEND TOW TO THE TRACKING BLOCK
+            if (d_tow_to_trk)
+                {
+                    const std::shared_ptr<TOW_to_trk> tmp_tow_obj = std::make_shared<TOW_to_trk>(TOW_to_trk(
+                        std::string(current_symbol.Signal),
+                        d_channel,
+                        current_symbol.TOW_at_current_symbol_ms,
+                        current_symbol.Tracking_sample_counter,
+                        d_nav.get_ephemeris().d_WN, d_satellite.get_PRN()));
+                    this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(tmp_tow_obj));
                 }
         }
     else

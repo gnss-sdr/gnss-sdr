@@ -15,7 +15,7 @@ jobs:
   build-ubuntu:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: install dependencies
         run: |
           sudo apt update
@@ -41,7 +41,7 @@ jobs:
   build-macos:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: '3.13'      
@@ -75,7 +75,7 @@ jobs:
   build-macos-xcode:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
@@ -121,7 +121,7 @@ jobs:
           - 'utils'
           - 'docs'
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: run clang-format
         uses: jidicula/clang-format-action@v4.16.0
         with:
@@ -134,7 +134,7 @@ jobs:
     env:
       CLANG_VERSION: 20
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Install dependencies
         run: |
           sudo apt update
@@ -168,7 +168,7 @@ jobs:
   cpplint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: install dependencies
         run: sudo apt install python3-pip && sudo pip3 install cpplint
       - name: run checks
@@ -189,7 +189,7 @@ jobs:
   prettier-markdown:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up latest Node.js
         uses: actions/setup-node@v6
         with:
@@ -204,7 +204,7 @@ jobs:
   cmakelint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: install dependencies
         run: |
           sudo pip install cmakelint
@@ -214,7 +214,7 @@ jobs:
   volk-gnsssdr-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
@@ -238,7 +238,7 @@ jobs:
   volk-gnsssdr-ubuntu:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: install dependencies
         run: sudo apt install python3-mako liborc-dev
       - name: configure
@@ -253,7 +253,7 @@ jobs:
   volk-gnsssdr-macos:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
@@ -271,7 +271,7 @@ jobs:
   volk-gnsssdr-macos-xcode:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
@@ -291,7 +291,7 @@ jobs:
   shellcheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: install dependencies
         run: sudo apt install shellcheck
       - name: check scripts
@@ -300,7 +300,7 @@ jobs:
   REUSE-compliance:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Check REUSE compliance
         uses: docker://fsfe/reuse
         with:
@@ -309,7 +309,7 @@ jobs:
   long-line-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Find lines longer than 512 characters
         run: |
           set -uo pipefail

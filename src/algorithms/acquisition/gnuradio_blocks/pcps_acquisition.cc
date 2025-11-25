@@ -118,29 +118,29 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_cshort(conf_.it_size != sizeof(gr_complex)),
       d_use_CFAR_algorithm_flag(conf_.use_CFAR_algorithm_flag),
       d_dump(!d_dump_filename.empty()),
+      d_worker(nullptr),
       d_gnss_synchro(nullptr),
-      d_input_power(0.0),
-      d_doppler_center_step_two(0.0),
       d_state(0),
-      d_doppler_center(0U),
+      d_doppler_center(0),
       d_doppler_bias(0),
-      d_dump_number(0LL),
-      d_channel(0U),
-      d_num_noncoherent_integrations_counter(0U),
-      d_buffer_count(0U),
+      d_buffer_count(0),
+      d_channel(0),
       d_resampler_latency_samples(conf_.resampler_latency_samples),
-      d_sample_counter(0ULL),
+      d_sample_count(0),
+      d_step_two(false),
       d_active(false),
       d_worker_active(false),
-      d_step_two(false),
+      d_num_noncoherent_integrations_counter(0),
+      d_dump_number(0),
+      d_doppler_center_step_two(0),
       d_magnitude_grid(d_num_doppler_bins, volk_gnsssdr::vector<float>(d_fft_size)),
       d_tmp_buffer(d_fft_size),
       d_input_signal(d_fft_size),
+      d_ifft(gnss_fft_rev_make_unique(d_fft_size)),
       d_grid_doppler_wipeoffs(d_num_doppler_bins, volk_gnsssdr::vector<std::complex<float>>(d_fft_size)),
       d_fft_codes(d_fft_size),
       d_data_buffer(d_consumed_samples),
-      d_fft_if(gnss_fft_fwd_make_unique(d_fft_size)),
-      d_ifft(gnss_fft_rev_make_unique(d_fft_size))
+      d_fft_if(gnss_fft_fwd_make_unique(d_fft_size))
 {
     this->message_port_register_out(pmt::mp("events"));
 
@@ -183,6 +183,26 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
         {
             d_grid = arma::fmat(d_effective_fft_size, d_num_doppler_bins, arma::fill::zeros);
             d_narrow_grid = arma::fmat(d_effective_fft_size, d_num_doppler_bins_step2, arma::fill::zeros);
+        }
+}
+
+
+pcps_acquisition::~pcps_acquisition()
+{
+    wait_if_active();
+}
+
+
+void pcps_acquisition::set_active(bool active)
+{
+    {
+        gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
+        d_active = active;
+    }
+
+    if (!active)
+        {
+            wait_if_active();
         }
 }
 
@@ -280,23 +300,23 @@ void pcps_acquisition::update_grid_doppler_wipeoffs_step2()
 }
 
 
-void pcps_acquisition::log_acquisition(bool positive, float test_statistics) const
+void pcps_acquisition::log_acquisition(const AcquisitionResult& result) const
 {
-    DLOG(INFO) << (positive ? "positive" : "negative") << " acquisition"
+    DLOG(INFO) << (result.positive_acq ? "positive" : "negative") << " acquisition"
                << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-               << ", sample_stamp " << d_sample_counter
-               << ", test statistics value " << test_statistics
+               << ", sample_stamp " << result.sample_count
+               << ", test statistics value " << result.test_statistics
                << ", test statistics threshold " << get_threshold()
                << ", code phase " << d_gnss_synchro->Acq_delay_samples
-               << ", doppler " << d_gnss_synchro->Acq_doppler_hz
-               << ", input signal power " << d_input_power
+               << ", doppler " << static_cast<double>(result.doppler)
+               << ", input signal power " << result.input_power
                << ", Assist doppler_center " << d_doppler_center;
 }
 
 
-void pcps_acquisition::send_positive_acquisition(float test_statistics)
+void pcps_acquisition::send_positive_acquisition(const AcquisitionResult& result)
 {
-    log_acquisition(true, test_statistics);
+    log_acquisition(result);
 
     if (!d_channel_fsm.expired())
         {
@@ -318,9 +338,9 @@ void pcps_acquisition::send_positive_acquisition(float test_statistics)
 }
 
 
-void pcps_acquisition::send_negative_acquisition(float test_statistics)
+void pcps_acquisition::send_negative_acquisition(const AcquisitionResult& result)
 {
-    log_acquisition(false, test_statistics);
+    log_acquisition(result);
 
     // Declare negative acquisition using a message port
     // 0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
@@ -328,7 +348,7 @@ void pcps_acquisition::send_negative_acquisition(float test_statistics)
 }
 
 
-void pcps_acquisition::dump_results(float test_statistics, bool positive_acq)
+void pcps_acquisition::dump_results(const AcquisitionResult& result)
 {
     d_dump_number++;
     std::string filename = d_dump_filename;
@@ -358,13 +378,13 @@ void pcps_acquisition::dump_results(float test_statistics, bool positive_acq)
             write_matlab_var<2>("acq_grid", d_grid.memptr(), matfp, dims_2d);
             write_matlab_var<1>("doppler_max", static_cast<int32_t>(d_doppler_max), matfp, dims_1d);
             write_matlab_var<1>("doppler_step", static_cast<int32_t>(d_doppler_step), matfp, dims_1d);
-            write_matlab_var<1>("positive_acq", static_cast<int32_t>(positive_acq ? 1 : 0), matfp, dims_1d);
+            write_matlab_var<1>("positive_acq", static_cast<int32_t>(result.positive_acq ? 1 : 0), matfp, dims_1d);
             write_matlab_var<1>("acq_doppler_hz", static_cast<float>(d_gnss_synchro->Acq_doppler_hz), matfp, dims_1d);
             write_matlab_var<1>("acq_delay_samples", static_cast<float>(d_gnss_synchro->Acq_delay_samples), matfp, dims_1d);
-            write_matlab_var<1>("test_statistic", test_statistics, matfp, dims_1d);
+            write_matlab_var<1>("test_statistic", result.test_statistics, matfp, dims_1d);
             write_matlab_var<1>("threshold", get_threshold(), matfp, dims_1d);
-            write_matlab_var<1>("input_power", d_input_power, matfp, dims_1d);
-            write_matlab_var<1>("sample_counter", d_sample_counter, matfp, dims_1d);
+            write_matlab_var<1>("input_power", result.input_power, matfp, dims_1d);
+            write_matlab_var<1>("sample_counter", result.sample_count, matfp, dims_1d);
             write_matlab_var<1>("PRN", d_gnss_synchro->PRN, matfp, dims_1d);
             write_matlab_var<1>("num_dwells", static_cast<int32_t>(d_num_noncoherent_integrations_counter), matfp, dims_1d);
 
@@ -383,12 +403,12 @@ void pcps_acquisition::dump_results(float test_statistics, bool positive_acq)
 }
 
 
-float pcps_acquisition::max_to_input_power_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step)
+pcps_acquisition::AcquisitionResult pcps_acquisition::max_to_input_power_statistic(uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step)
 {
+    AcquisitionResult result;
     float grid_maximum = 0.0;
     uint32_t index_doppler = 0U;
     uint32_t tmp_intex_t = 0U;
-    uint32_t index_time = 0U;
 
     // Find the correlation peak and the carrier frequency
     for (uint32_t i = 0; i < num_doppler_bins; i++)
@@ -398,38 +418,44 @@ float pcps_acquisition::max_to_input_power_statistic(uint32_t& indext, int32_t& 
                 {
                     grid_maximum = d_magnitude_grid[i][tmp_intex_t];
                     index_doppler = i;
-                    index_time = tmp_intex_t;
+                    result.index_time = tmp_intex_t;
                 }
         }
-    indext = index_time;
+
     if (!d_step_two)
         {
             const auto index_opp = (index_doppler + d_num_doppler_bins / 2) % d_num_doppler_bins;
-            d_input_power = static_cast<float>(std::accumulate(d_magnitude_grid[index_opp].data(), d_magnitude_grid[index_opp].data() + d_effective_fft_size, static_cast<float>(0.0)) / d_effective_fft_size / 2.0 / d_num_noncoherent_integrations_counter);
-            doppler = -static_cast<int32_t>(doppler_max) + d_doppler_center + doppler_step * static_cast<int32_t>(index_doppler);
+            result.input_power = static_cast<float>(std::accumulate(d_magnitude_grid[index_opp].data(), d_magnitude_grid[index_opp].data() + d_effective_fft_size, static_cast<float>(0.0)) / d_effective_fft_size / 2.0 / d_num_noncoherent_integrations_counter);
+            result.doppler = -static_cast<int32_t>(doppler_max) + d_doppler_center + doppler_step * static_cast<int32_t>(index_doppler);
         }
     else
         {
-            doppler = static_cast<int32_t>(d_doppler_center_step_two + (static_cast<float>(index_doppler) - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0))) * d_acq_parameters.doppler_step2);
+            result.doppler = static_cast<int32_t>(d_doppler_center_step_two + (static_cast<float>(index_doppler) - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0))) * d_acq_parameters.doppler_step2);
         }
-    if (d_input_power < std::numeric_limits<float>::epsilon())
+
+    if (result.input_power < std::numeric_limits<float>::epsilon())
         {
-            return 0.0;
+            result.test_statistics = 0;
         }
-    return grid_maximum / d_input_power;
+    else
+        {
+            result.test_statistics = grid_maximum / result.input_power;
+        }
+
+    return result;
 }
 
 
-float pcps_acquisition::first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step)
+pcps_acquisition::AcquisitionResult pcps_acquisition::first_vs_second_peak_statistic(uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step)
 {
     // Look for correlation peaks in the results
     // Find the highest peak and compare it to the second highest peak
     // The second peak is chosen not closer than 1 chip to the highest peak
 
+    AcquisitionResult result;
     float firstPeak = 0.0;
     uint32_t index_doppler = 0U;
     uint32_t tmp_intex_t = 0U;
-    uint32_t index_time = 0U;
 
     // Find the correlation peak and the carrier frequency
     for (uint32_t i = 0; i < num_doppler_bins; i++)
@@ -439,23 +465,22 @@ float pcps_acquisition::first_vs_second_peak_statistic(uint32_t& indext, int32_t
                 {
                     firstPeak = d_magnitude_grid[i][tmp_intex_t];
                     index_doppler = i;
-                    index_time = tmp_intex_t;
+                    result.index_time = tmp_intex_t;
                 }
         }
-    indext = index_time;
 
     if (!d_step_two)
         {
-            doppler = -static_cast<int32_t>(doppler_max) + d_doppler_center + doppler_step * static_cast<int32_t>(index_doppler);
+            result.doppler = -static_cast<int32_t>(doppler_max) + d_doppler_center + doppler_step * static_cast<int32_t>(index_doppler);
         }
     else
         {
-            doppler = static_cast<int32_t>(d_doppler_center_step_two + (static_cast<float>(index_doppler) - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0))) * d_acq_parameters.doppler_step2);
+            result.doppler = static_cast<int32_t>(d_doppler_center_step_two + (static_cast<float>(index_doppler) - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0))) * d_acq_parameters.doppler_step2);
         }
 
     // Find 1 chip wide code phase exclude range around the peak
-    int32_t excludeRangeIndex1 = index_time - d_samplesPerChip;
-    int32_t excludeRangeIndex2 = index_time + d_samplesPerChip;
+    int32_t excludeRangeIndex1 = result.index_time - d_samplesPerChip;
+    int32_t excludeRangeIndex2 = result.index_time + d_samplesPerChip;
 
     // Correct code phase exclude range if the range includes array boundaries
     if (excludeRangeIndex1 < 0)
@@ -485,7 +510,9 @@ float pcps_acquisition::first_vs_second_peak_statistic(uint32_t& indext, int32_t
     const float secondPeak = d_tmp_buffer[tmp_intex_t];
 
     // Compute the test statistics and compare to the threshold
-    return firstPeak / secondPeak;
+    result.test_statistics = firstPeak / secondPeak;
+
+    return result;
 }
 
 
@@ -530,7 +557,7 @@ void pcps_acquisition::doppler_grid(const gr_complex* in)
 }
 
 
-float pcps_acquisition::get_test_statistics(uint32_t& indext, int32_t& doppler)
+pcps_acquisition::AcquisitionResult pcps_acquisition::compute_statistics()
 {
     const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins;
     const auto doppler_step = d_step_two ? d_acq_parameters.doppler_step2 : d_doppler_step;
@@ -538,31 +565,30 @@ float pcps_acquisition::get_test_statistics(uint32_t& indext, int32_t& doppler)
 
     if (d_use_CFAR_algorithm_flag)
         {
-            return max_to_input_power_statistic(indext, doppler, bin_count, doppler_max, doppler_step);
+            return max_to_input_power_statistic(bin_count, doppler_max, doppler_step);
         }
     else
         {
-            return first_vs_second_peak_statistic(indext, doppler, bin_count, doppler_max, doppler_step);
+            return first_vs_second_peak_statistic(bin_count, doppler_max, doppler_step);
         }
 }
 
 
-void pcps_acquisition::update_synchro(uint32_t indext, int32_t doppler, uint64_t samp_count)
+void pcps_acquisition::update_synchro(const AcquisitionResult& result)
 {
+    d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(result.index_time), d_acq_parameters.samples_per_code));
+    d_gnss_synchro->Acq_doppler_hz = static_cast<double>(result.doppler);
+
     if (d_acq_parameters.use_automatic_resampler)
         {
             // take into account the acquisition resampler ratio
-            d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(indext), d_acq_parameters.samples_per_code)) * d_acq_parameters.resampler_ratio;
-            d_gnss_synchro->Acq_delay_samples -= static_cast<double>(d_resampler_latency_samples);  // account the resampler filter latency
-            d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
-            d_gnss_synchro->Acq_samplestamp_samples = rint(static_cast<double>(samp_count) * d_acq_parameters.resampler_ratio);
+            d_gnss_synchro->Acq_delay_samples = (d_gnss_synchro->Acq_delay_samples * d_acq_parameters.resampler_ratio) - static_cast<double>(d_resampler_latency_samples);
+            d_gnss_synchro->Acq_samplestamp_samples = rint(static_cast<double>(result.sample_count) * d_acq_parameters.resampler_ratio);
             d_gnss_synchro->fs = d_acq_parameters.resampled_fs;
         }
     else
         {
-            d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(indext), d_acq_parameters.samples_per_code));
-            d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
-            d_gnss_synchro->Acq_samplestamp_samples = samp_count;
+            d_gnss_synchro->Acq_samplestamp_samples = result.sample_count;
             d_gnss_synchro->fs = d_acq_parameters.fs_in;
         }
 
@@ -573,23 +599,21 @@ void pcps_acquisition::update_synchro(uint32_t indext, int32_t doppler, uint64_t
 }
 
 
-bool pcps_acquisition::handle_threshold_reached(float test_statistics)
+void pcps_acquisition::handle_threshold_reached(AcquisitionResult& result)
 {
     d_active = false;
     d_state = 0;
-
-    bool positive_acq = false;
 
     if (d_acq_parameters.make_2_steps)
         {
             if (d_step_two)
                 {
-                    send_positive_acquisition(test_statistics);
-                    positive_acq = true;
+                    send_positive_acquisition(result);
+                    result.positive_acq = true;
                 }
             else
                 {
-                    d_doppler_center_step_two = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
+                    d_doppler_center_step_two = static_cast<float>(result.doppler);
                     update_grid_doppler_wipeoffs_step2();
                     d_num_noncoherent_integrations_counter = 0;
                 }
@@ -598,19 +622,17 @@ bool pcps_acquisition::handle_threshold_reached(float test_statistics)
         }
     else
         {
-            send_positive_acquisition(test_statistics);
-            positive_acq = true;
+            send_positive_acquisition(result);
+            result.positive_acq = true;
         }
-
-    return positive_acq;
 }
 
 
-void pcps_acquisition::handle_integration_done(float test_statistics)
+void pcps_acquisition::handle_integration_done(const AcquisitionResult& result)
 {
     if (d_state != 0)
         {
-            send_negative_acquisition(test_statistics);
+            send_negative_acquisition(result);
         }
 
     d_active = false;
@@ -619,7 +641,7 @@ void pcps_acquisition::handle_integration_done(float test_statistics)
 }
 
 
-void pcps_acquisition::acquisition_core(uint64_t samp_count)
+void pcps_acquisition::acquisition_core(uint64_t sample_count)
 {
     gr::thread::scoped_lock lk(d_setlock);
 
@@ -642,36 +664,28 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
 
     DLOG(INFO) << "Channel: " << d_channel
                << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-               << " , sample stamp: " << samp_count
+               << " , sample stamp: " << sample_count
                << ", threshold: " << get_threshold()
                << ", doppler_max: " << d_doppler_max
                << ", doppler_step: " << d_doppler_step
                << ", use_CFAR_algorithm_flag: " << (d_use_CFAR_algorithm_flag ? "true" : "false");
 
-    if (d_acq_parameters.blocking)
-        {
-            lk.unlock();
-        }
+    lk.unlock();
 
-    // Doppler frequency grid loop
-    int32_t doppler = 0;
-    uint32_t indext = 0U;
+    // Doppler frequency grid loop, only access variables that doesn't need a lock
     doppler_grid(in);
-    const auto test_statistics = get_test_statistics(indext, doppler);
-    update_synchro(indext, doppler, samp_count);
+    auto result = compute_statistics();
+    result.sample_count = sample_count;
 
-    if (d_acq_parameters.blocking)
-        {
-            lk.lock();
-        }
+    lk.lock();
 
-    bool positive_acq = false;
+    update_synchro(result);
 
     if (!d_acq_parameters.bit_transition_flag)
         {
-            if (test_statistics > get_threshold())
+            if (result.test_statistics > get_threshold())
                 {
-                    positive_acq = handle_threshold_reached(test_statistics);
+                    handle_threshold_reached(result);
                 }
             else
                 {
@@ -681,41 +695,32 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
 
             if (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)
                 {
-                    handle_integration_done(test_statistics);
+                    handle_integration_done(result);
                 }
         }
     else
         {
-            if (test_statistics > d_threshold)
+            if (result.test_statistics > d_threshold)
                 {
-                    positive_acq = handle_threshold_reached(test_statistics);
+                    handle_threshold_reached(result);
                 }
             else
                 {
-                    handle_integration_done(test_statistics);
+                    handle_integration_done(result);
                 }
         }
 
-    d_worker_active = false;
-
-    if ((d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells) or (positive_acq) or (d_acq_parameters.bit_transition_flag))
+    if ((d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells) or (result.positive_acq) or (d_acq_parameters.bit_transition_flag))
         {
             // Record results to file if required
             if (d_dump and d_channel == d_dump_channel)
                 {
-                    pcps_acquisition::dump_results(test_statistics, positive_acq);
+                    pcps_acquisition::dump_results(result);
                 }
             d_num_noncoherent_integrations_counter = 0U;
         }
-}
 
-
-// Called by gnuradio to enable drivers, etc for i/o devices.
-bool pcps_acquisition::start()
-{
-    gr::thread::scoped_lock lk(d_setlock);
-    d_sample_counter = 0ULL;
-    return true;
+    d_worker_active = false;
 }
 
 
@@ -759,7 +764,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
             bool consume_samples = ((!d_active) || (d_worker_active && (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)));
             if ((!d_acq_parameters.blocking_on_standby) && consume_samples)
                 {
-                    d_sample_counter += static_cast<uint64_t>(ninput_items[0]);
+                    d_sample_count += static_cast<uint64_t>(ninput_items[0]);
                     consume_each(ninput_items[0]);
                 }
             if (d_step_two)
@@ -805,7 +810,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                         d_state = 2;
                     }
                 d_buffer_count += buff_increment;
-                d_sample_counter += static_cast<uint64_t>(buff_increment);
+                d_sample_count += static_cast<uint64_t>(buff_increment);
                 consume_each(buff_increment);
                 break;
             }
@@ -815,11 +820,14 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 if (d_acq_parameters.blocking)
                     {
                         lk.unlock();
-                        acquisition_core(d_sample_counter);
+                        acquisition_core(d_sample_count);
                     }
                 else
                     {
-                        gr::thread::thread d_worker(&pcps_acquisition::acquisition_core, this, d_sample_counter);
+                        lk.unlock();
+                        wait_if_active();
+                        lk.lock();
+                        d_worker = std::make_unique<gr::thread::thread>(&pcps_acquisition::acquisition_core, this, d_sample_count);
                         d_worker_active = true;
                     }
                 consume_each(0);
@@ -843,4 +851,23 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
         }
 
     return 0;
+}
+
+void pcps_acquisition::wait_if_active()
+{
+    std::unique_ptr<gr::thread::thread> worker;
+
+    {
+        gr::thread::scoped_lock lk(d_setlock);
+        worker = std::move(d_worker);
+        d_worker = nullptr;
+    }
+
+    if (worker != nullptr)
+        {
+            if (worker->joinable())
+                {
+                    worker->join();
+                }
+        }
 }

@@ -93,7 +93,7 @@ pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_);
 class pcps_acquisition : public acquisition_impl_interface
 {
 public:
-    ~pcps_acquisition() override = default;
+    ~pcps_acquisition() override;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
@@ -127,11 +127,7 @@ public:
      * active mode
      * \param active - bool that activates/deactivates the block.
      */
-    inline void set_active(bool active) override
-    {
-        gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
-        d_active = active;
-    }
+    void set_active(bool active) override;
 
     /*!
      * \brief Set acquisition channel unique ID
@@ -167,24 +163,34 @@ private:
     friend pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_);
     explicit pcps_acquisition(const Acq_Conf& conf_);
 
+    struct AcquisitionResult
+    {
+        int32_t doppler{0};
+        uint32_t index_time{0};
+        uint64_t sample_count{0};
+        float input_power{0};
+        float test_statistics{0};
+        bool positive_acq{false};
+    };
+
     void update_local_carrier(own::span<gr_complex> carrier_vector, float freq) const;
     void update_grid_doppler_wipeoffs();
     void update_grid_doppler_wipeoffs_step2();
     void doppler_grid(const gr_complex* in);
-    float get_test_statistics(uint32_t& indext, int32_t& doppler);
-    void update_synchro(uint32_t indext, int32_t doppler, uint64_t samp_count);
-    bool handle_threshold_reached(float test_statistics);
-    void handle_integration_done(float test_statistics);
-    void acquisition_core(uint64_t samp_count);
-    void log_acquisition(bool positive, float test_statistics) const;
-    void send_negative_acquisition(float test_statistics);
-    void send_positive_acquisition(float test_statistics);
-    void dump_results(float test_statistics, bool positive_acq);
+    AcquisitionResult compute_statistics();
+    void update_synchro(const AcquisitionResult& result);
+    void handle_threshold_reached(AcquisitionResult& result);
+    void handle_integration_done(const AcquisitionResult& result);
+    void acquisition_core(uint64_t sample_count);
+    void log_acquisition(const AcquisitionResult& result) const;
+    void send_negative_acquisition(const AcquisitionResult& result);
+    void send_positive_acquisition(const AcquisitionResult& result);
+    void dump_results(const AcquisitionResult& result);
     bool is_fdma();
-    bool start() override;
     float get_threshold() const;
-    float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
-    float max_to_input_power_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
+    AcquisitionResult first_vs_second_peak_statistic(uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
+    AcquisitionResult max_to_input_power_statistic(uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
+    void wait_if_active();
 
     const Acq_Conf d_acq_parameters;
     const std::string d_dump_filename;
@@ -203,38 +209,40 @@ private:
     const bool d_use_CFAR_algorithm_flag;
     const bool d_dump;
 
+    // Need lock to access these
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
+    std::unique_ptr<gr::thread::thread> d_worker;
     Gnss_Synchro* d_gnss_synchro;
-    arma::fmat d_grid;
-    arma::fmat d_narrow_grid;
     std::queue<Gnss_Synchro> d_monitor_queue;
-
-    float d_input_power;
-    float d_doppler_center_step_two;
     int32_t d_state;
     int32_t d_doppler_center;
     int32_t d_doppler_bias;
-    int64_t d_dump_number;
-    uint32_t d_channel;
-    uint32_t d_num_noncoherent_integrations_counter;
     uint32_t d_buffer_count;
+    uint32_t d_channel;
     uint32_t d_resampler_latency_samples;
-    uint64_t d_sample_counter;
+    uint64_t d_sample_count;
+    bool d_step_two;
     bool d_active;
     bool d_worker_active;
-    bool d_step_two;
 
+    // Only access these in acquisition_core and functions strictly called from acquisition_core
+    uint32_t d_num_noncoherent_integrations_counter;
+    int64_t d_dump_number;
+    float d_doppler_center_step_two;
     volk_gnsssdr::vector<volk_gnsssdr::vector<float>> d_magnitude_grid;
     volk_gnsssdr::vector<float> d_tmp_buffer;
     volk_gnsssdr::vector<std::complex<float>> d_input_signal;
-    volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
     volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_grid_doppler_wipeoffs_step_two;
+    std::unique_ptr<gnss_fft_complex_rev> d_ifft;
+    arma::fmat d_grid;
+    arma::fmat d_narrow_grid;
+
+    // These are never accessed outside acquisition_core while acquisition is active
+    volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
     volk_gnsssdr::vector<std::complex<float>> d_fft_codes;
     volk_gnsssdr::vector<std::complex<float>> d_data_buffer;
     volk_gnsssdr::vector<lv_16sc_t> d_data_buffer_sc;
-
     std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
-    std::unique_ptr<gnss_fft_complex_rev> d_ifft;
-    std::weak_ptr<ChannelFsm> d_channel_fsm;
 };
 
 

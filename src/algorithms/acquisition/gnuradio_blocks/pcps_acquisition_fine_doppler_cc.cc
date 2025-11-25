@@ -21,6 +21,7 @@
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_filesystem.h"
 #include "gps_sdr_signal_replica.h"
+#include "matlab_writter_helper.h"
 #include <gnuradio/io_signature.h>
 #include <matio.h>
 #include <volk/volk.h>
@@ -581,56 +582,37 @@ void pcps_acquisition_fine_doppler_cc::dump_results(int effective_fft_size)
     else
         {
             std::array<size_t, 2> dims{static_cast<size_t>(effective_fft_size), static_cast<size_t>(d_num_doppler_points)};
-            matvar_t *matvar = Mat_VarCreate("acq_grid", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims.data(), grid_.memptr(), 0);
-            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-            Mat_VarFree(matvar);
+            write_matlab_var<2, float>("acq_grid", grid_.memptr(), matfp, dims);
 
             dims[0] = static_cast<size_t>(1);
             dims[1] = static_cast<size_t>(1);
-            auto doppler_max = d_acq_params.doppler_max;
-            matvar = Mat_VarCreate("doppler_max", MAT_C_INT32, MAT_T_INT32, 1, dims.data(), &doppler_max, 0);
-            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-            Mat_VarFree(matvar);
+            const auto doppler_max = static_cast<int32_t>(d_acq_params.doppler_max);
+            write_matlab_var<1, int32_t>("doppler_max", doppler_max, matfp, dims);
 
-            auto doppler_step = d_acq_params.doppler_step;
-            matvar = Mat_VarCreate("doppler_step", MAT_C_INT32, MAT_T_INT32, 1, dims.data(), &doppler_step, 0);
-            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-            Mat_VarFree(matvar);
+            const auto doppler_step = static_cast<int32_t>(d_acq_params.doppler_step);
+            write_matlab_var<1, int32_t>("doppler_step", doppler_step, matfp, dims);
 
-            matvar = Mat_VarCreate("d_positive_acq", MAT_C_INT32, MAT_T_INT32, 1, dims.data(), &d_positive_acq, 0);
-            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-            Mat_VarFree(matvar);
+            const auto positive_acq = static_cast<int32_t>(d_positive_acq);
+            write_matlab_var<1, int32_t>("d_positive_acq", positive_acq, matfp, dims);
 
             auto aux = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
-            matvar = Mat_VarCreate("acq_doppler_hz", MAT_C_SINGLE, MAT_T_SINGLE, 1, dims.data(), &aux, 0);
-            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-            Mat_VarFree(matvar);
+            write_matlab_var<1, float>("acq_doppler_hz", aux, matfp, dims);
 
             aux = static_cast<float>(d_gnss_synchro->Acq_delay_samples);
-            matvar = Mat_VarCreate("acq_delay_samples", MAT_C_SINGLE, MAT_T_SINGLE, 1, dims.data(), &aux, 0);
-            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-            Mat_VarFree(matvar);
+            write_matlab_var<1, float>("acq_delay_samples", aux, matfp, dims);
 
-            matvar = Mat_VarCreate("test_statistic", MAT_C_SINGLE, MAT_T_SINGLE, 1, dims.data(), &d_test_statistics, 0);
-            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-            Mat_VarFree(matvar);
+            const auto test_statistic = static_cast<float>(d_test_statistics);
+            write_matlab_var<1, float>("test_statistic", test_statistic, matfp, dims);
 
-            auto threshold = d_acq_params.threshold;
-            matvar = Mat_VarCreate("threshold", MAT_C_SINGLE, MAT_T_SINGLE, 1, dims.data(), &threshold, 0);
-            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-            Mat_VarFree(matvar);
-            aux = 0.0;
-            matvar = Mat_VarCreate("input_power", MAT_C_SINGLE, MAT_T_SINGLE, 1, dims.data(), &aux, 0);
-            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-            Mat_VarFree(matvar);
+            const auto threshold = static_cast<float>(d_acq_params.threshold);
+            write_matlab_var<1, float>("threshold", threshold, matfp, dims);
 
-            matvar = Mat_VarCreate("sample_counter", MAT_C_UINT64, MAT_T_UINT64, 1, dims.data(), &d_sample_counter, 0);
-            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-            Mat_VarFree(matvar);
+            aux = 0.0F;
+            write_matlab_var<1, float>("input_power", aux, matfp, dims);
 
-            matvar = Mat_VarCreate("PRN", MAT_C_UINT32, MAT_T_UINT32, 1, dims.data(), &d_gnss_synchro->PRN, 0);
-            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-            Mat_VarFree(matvar);
+            write_matlab_var<1, uint64_t>("sample_counter", d_sample_counter, matfp, dims);
+
+            write_matlab_var<1, uint32_t>("PRN", d_gnss_synchro->PRN, matfp, dims);
 
             Mat_Close(matfp);
         }

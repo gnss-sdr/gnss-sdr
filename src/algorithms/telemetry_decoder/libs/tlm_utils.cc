@@ -16,7 +16,7 @@
 
 #include "tlm_utils.h"
 #include "gnss_sdr_filesystem.h"
-#include <matio.h>
+#include "matlab_writter_helper.h"
 #include <array>
 #include <cstdint>
 #include <fstream>
@@ -91,7 +91,6 @@ int save_tlm_matfile(const std::string &dumpfile)
 
     // WRITE MAT FILE
     mat_t *matfp;
-    matvar_t *matvar;
     std::string filename = dump_filename_;
     filename.erase(filename.length() - 4, 4);
     filename.append(".mat");
@@ -101,25 +100,11 @@ int save_tlm_matfile(const std::string &dumpfile)
             if (reinterpret_cast<int64_t *>(matfp) != nullptr)
                 {
                     std::array<size_t, 2> dims{1, static_cast<size_t>(num_epoch)};
-                    matvar = Mat_VarCreate("TOW_at_current_symbol_ms", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), TOW_at_current_symbol_ms.data(), 0);
-                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-                    Mat_VarFree(matvar);
-
-                    matvar = Mat_VarCreate("tracking_sample_counter", MAT_C_UINT64, MAT_T_UINT64, 2, dims.data(), tracking_sample_counter.data(), 0);
-                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-                    Mat_VarFree(matvar);
-
-                    matvar = Mat_VarCreate("TOW_at_Preamble_ms", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), TOW_at_Preamble_ms.data(), 0);
-                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-                    Mat_VarFree(matvar);
-
-                    matvar = Mat_VarCreate("nav_symbol", MAT_C_INT32, MAT_T_INT32, 2, dims.data(), nav_symbol.data(), 0);
-                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-                    Mat_VarFree(matvar);
-
-                    matvar = Mat_VarCreate("PRN", MAT_C_INT32, MAT_T_INT32, 2, dims.data(), prn.data(), 0);
-                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-                    Mat_VarFree(matvar);
+                    write_matlab_var<2, double>("TOW_at_current_symbol_ms", TOW_at_current_symbol_ms.data(), matfp, dims);
+                    write_matlab_var<2, uint64_t>("tracking_sample_counter", tracking_sample_counter.data(), matfp, dims);
+                    write_matlab_var<2, double>("TOW_at_Preamble_ms", TOW_at_Preamble_ms.data(), matfp, dims);
+                    write_matlab_var<2, int32_t>("nav_symbol", nav_symbol.data(), matfp, dims);
+                    write_matlab_var<2, int32_t>("PRN", prn.data(), matfp, dims);
                 }
             Mat_Close(matfp);
         }

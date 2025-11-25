@@ -40,6 +40,13 @@ struct matlab_type_traits<uint32_t>
 };
 
 template <>
+struct matlab_type_traits<uint8_t>
+{
+    static constexpr matio_classes class_type = MAT_C_UINT8;
+    static constexpr matio_types data_type = MAT_T_UINT8;
+};
+
+template <>
 struct matlab_type_traits<int64_t>
 {
     static constexpr matio_classes class_type = MAT_C_INT64;

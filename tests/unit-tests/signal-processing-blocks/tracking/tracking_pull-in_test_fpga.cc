@@ -538,7 +538,7 @@ void TrackingPullInTestFpga::configure_receiver(
 #if USE_GLOG_AND_GFLAGS
     config->set_property("Acquisition.threshold", std::to_string(FLAGS_external_signal_acquisition_threshold));
 #else
-    config->set_property("Acquisition.threshold", absl::GetFlag(FLAGS_external_signal_acquisition_threshold));
+    config->set_property("Acquisition.threshold", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_threshold)));
 #endif
 
     std::string System_and_Signal;

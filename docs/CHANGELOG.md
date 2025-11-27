@@ -33,7 +33,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   implementations, greatly improving maintainability, simplifying the addition
   of new signals, and eliminating a lot of duplicated code. Awesome contribution
   by @MathieuFavreau.
-- Added a base class for the main acquisition adapters, improving
+- Major refactoring of the acquisition adapters and GNU Radio blocks, improving
   maintainability and extensibility. Another excellent contribution by
   @MathieuFavreau.
 - Refactored the internal handling of multi-signal configurations in the PVT
@@ -67,6 +67,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   `true`, Telemetry blocks send asynchronous messages back to the Tracking
   blocks containing the information required to compute the TOW and week number
   at the tracking stage. The default value is `false`.
+- Fixed a long-standing issue in which acquisition blocks still blocked
+  execution even when `blocking=false` was specified in the configuration.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

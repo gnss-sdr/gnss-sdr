@@ -233,7 +233,7 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
             d_OMEGA0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA0_ALMANAC));
             d_OMEGA0_ALMANAC = d_OMEGA0_ALMANAC * D1_OMEGA0_ALMANAC_LSB;
 
-            d_E_ALMANAC = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_E));
+            d_E_ALMANAC = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_E_ALMANAC));
             d_E_ALMANAC = d_E_ALMANAC * D1_E_ALMANAC_LSB;
 
             d_DELTA_I = static_cast<double>(read_navigation_signed(subframe_bits, D1_DELTA_I));
@@ -248,7 +248,7 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
             d_OMEGA_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA_ALMANAC));
             d_OMEGA_ALMANAC = d_OMEGA_ALMANAC * D1_OMEGA_ALMANAC_LSB;
 
-            d_M0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_M0));
+            d_M0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_M0_ALMANAC));
             d_M0_ALMANAC = d_M0_ALMANAC * D1_M0_ALMANAC_LSB;
 
             // Set system flags for message reception
@@ -278,7 +278,7 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
                     d_OMEGA0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA0_ALMANAC));
                     d_OMEGA0_ALMANAC = d_OMEGA0_ALMANAC * D1_OMEGA0_ALMANAC_LSB;
 
-                    d_E_ALMANAC = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_E));
+                    d_E_ALMANAC = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_E_ALMANAC));
                     d_E_ALMANAC = d_E_ALMANAC * D1_E_ALMANAC_LSB;
 
                     d_DELTA_I = static_cast<double>(read_navigation_signed(subframe_bits, D1_DELTA_I));
@@ -293,7 +293,7 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
                     d_OMEGA_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA_ALMANAC));
                     d_OMEGA_ALMANAC = d_OMEGA_ALMANAC * D1_OMEGA_ALMANAC_LSB;
 
-                    d_M0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_M0));
+                    d_M0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_M0_ALMANAC));
                     d_M0_ALMANAC = d_M0_ALMANAC * D1_M0_ALMANAC_LSB;
                 }
 

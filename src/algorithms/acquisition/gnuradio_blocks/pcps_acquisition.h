@@ -168,7 +168,6 @@ private:
         int32_t doppler{0};
         uint32_t index_time{0};
         uint64_t sample_count{0};
-        float input_power{0};
         float test_statistics{0};
         bool positive_acq{false};
     };
@@ -228,6 +227,7 @@ private:
     // Only access these in acquisition_core and functions strictly called from acquisition_core
     uint32_t d_num_noncoherent_integrations_counter;
     int64_t d_dump_number;
+    float d_input_power;
     float d_doppler_center_step_two;
     volk_gnsssdr::vector<volk_gnsssdr::vector<float>> d_magnitude_grid;
     volk_gnsssdr::vector<float> d_tmp_buffer;

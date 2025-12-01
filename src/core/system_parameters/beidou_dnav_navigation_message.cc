@@ -237,13 +237,13 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
             d_E_ALMANAC = d_E_ALMANAC * D1_E_ALMANAC_LSB;
 
             d_DELTA_I = static_cast<double>(read_navigation_signed(subframe_bits, D1_DELTA_I));
-            d_DELTA_I = D1_DELTA_I_LSB;
+            d_DELTA_I = d_DELTA_I * D1_DELTA_I_LSB;
 
             d_TOA = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_TOA));
             d_TOA = d_TOA * D1_TOA_LSB;
 
             d_OMEGA_DOT_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA_DOT_ALMANAC));
-            d_OMEGA_DOT_ALMANAC = D1_OMEGA_DOT_ALMANAC_LSB;
+            d_OMEGA_DOT_ALMANAC = d_OMEGA_DOT_ALMANAC * D1_OMEGA_DOT_ALMANAC_LSB;
 
             d_OMEGA_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA_ALMANAC));
             d_OMEGA_ALMANAC = d_OMEGA_ALMANAC * D1_OMEGA_ALMANAC_LSB;
@@ -282,13 +282,13 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
                     d_E_ALMANAC = d_E_ALMANAC * D1_E_ALMANAC_LSB;
 
                     d_DELTA_I = static_cast<double>(read_navigation_signed(subframe_bits, D1_DELTA_I));
-                    d_DELTA_I = D1_DELTA_I_LSB;
+                    d_DELTA_I = d_DELTA_I * D1_DELTA_I_LSB;
 
                     d_TOA = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_TOA));
                     d_TOA = d_TOA * D1_TOA_LSB;
 
                     d_OMEGA_DOT_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA_DOT_ALMANAC));
-                    d_OMEGA_DOT_ALMANAC = D1_OMEGA_DOT_ALMANAC_LSB;
+                    d_OMEGA_DOT_ALMANAC = d_OMEGA_DOT_ALMANAC * D1_OMEGA_DOT_ALMANAC_LSB;
 
                     d_OMEGA_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA_ALMANAC));
                     d_OMEGA_ALMANAC = d_OMEGA_ALMANAC * D1_OMEGA_ALMANAC_LSB;

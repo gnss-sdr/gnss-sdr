@@ -602,7 +602,6 @@ void pcps_acquisition::update_synchro(const AcquisitionResult& result)
 
 void pcps_acquisition::handle_threshold_reached(AcquisitionResult& result)
 {
-    d_active = false;
     d_state = 0;
 
     if (d_acq_parameters.make_2_steps)
@@ -611,6 +610,7 @@ void pcps_acquisition::handle_threshold_reached(AcquisitionResult& result)
                 {
                     send_positive_acquisition(result);
                     result.positive_acq = true;
+                    d_active = false;
                 }
             else
                 {
@@ -625,6 +625,7 @@ void pcps_acquisition::handle_threshold_reached(AcquisitionResult& result)
         {
             send_positive_acquisition(result);
             result.positive_acq = true;
+            d_active = false;
         }
 }
 
@@ -762,16 +763,11 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
     if (!d_active or d_worker_active)
         {
             // do not consume samples while performing a non-coherent integration
-            bool consume_samples = ((!d_active) || (d_worker_active && (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)));
+            const bool consume_samples = ((!d_active) || (d_worker_active && (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)));
             if ((!d_acq_parameters.blocking_on_standby) && consume_samples)
                 {
                     d_sample_count += static_cast<uint64_t>(ninput_items[0]);
                     consume_each(ninput_items[0]);
-                }
-            if (d_step_two)
-                {
-                    d_state = 0;
-                    d_active = true;
                 }
             return 0;
         }

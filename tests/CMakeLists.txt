@@ -538,7 +538,6 @@ endif()
 
 if(NOT (ENABLE_PACKAGING OR ENABLE_UNIT_TESTING_MINIMAL))
     message(STATUS "Downloading some data files for testing ...")
-    file(MAKE_DIRECTORY ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples)
     download_test_file(
         https://sourceforge.net/projects/gnss-sdr/files/data/Galileo_E1_ID_1_Fs_4Msps_8ms.dat
         ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat
@@ -565,7 +564,6 @@ endif()
 if(ENABLE_UNIT_TESTING_EXTRA)
     add_definitions(-DEXTRA_TESTS)
     message(STATUS "Downloading some extra data files for testing ...")
-    file(MAKE_DIRECTORY ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples)
     download_test_file(
         https://sourceforge.net/projects/gnss-sdr/files/data/gps_l2c_m_prn7_5msps.dat
         ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat
@@ -586,7 +584,6 @@ if(ENABLE_UNIT_TESTING_EXTRA)
         ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/BdsB3IStr01_fs50e6_if0_4ms.dat
         MD5=066d0d8434a8bc81e161778b7c34cc07
     )
-    file(MAKE_DIRECTORY ${GNSSSDR_BINARY_DIR}/thirdparty/osnma_tests)
     download_test_file(
         https://www.gsc-europa.eu/sites/default/files/sites/all/files/Test_vectors.zip
         ${GNSSSDR_BINARY_DIR}/thirdparty/osnma_tests/Test_vectors.zip

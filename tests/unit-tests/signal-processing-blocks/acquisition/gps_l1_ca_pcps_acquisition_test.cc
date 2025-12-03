@@ -372,3 +372,79 @@ TEST_F(GpsL1CaPcpsAcquisitionTest /*unused*/, ValidationOfResults /*unused*/)
             plot_grid();
         }
 }
+
+
+TEST_F(GpsL1CaPcpsAcquisitionTest /*unused*/, ValidationOfResultsMakeTwoStep /*unused*/)
+{
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
+    std::chrono::duration<double> elapsed_seconds(0.0);
+    top_block = gr::make_top_block("Acquisition test");
+
+    init();
+
+    config->set_property("Acquisition_1C.make_two_steps", "true");
+    config->set_property("Acquisition_1C.second_nbins", "5");
+    config->set_property("Acquisition_1C.second_doppler_step", "20");
+
+#if USE_GLOG_AND_GFLAGS
+    if (FLAGS_plot_acq_grid == true)
+#else
+    if (absl::GetFlag(FLAGS_plot_acq_grid) == true)
+#endif
+        {
+            std::string data_str = "./tmp-acq-gps1";
+            if (fs::exists(data_str))
+                {
+                    fs::remove_all(data_str);
+                }
+            fs::create_directory(data_str);
+        }
+
+    auto acquisition = gnss_make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 0);
+    auto msg_rx = GpsL1CaPcpsAcquisitionTest_msg_rx_make();
+
+    ASSERT_NO_THROW({
+        acquisition->set_channel(1);
+    }) << "Failure setting channel.";
+
+    ASSERT_NO_THROW({
+        acquisition->set_gnss_synchro(&gnss_synchro);
+    }) << "Failure setting gnss_synchro.";
+
+    ASSERT_NO_THROW({
+        acquisition->connect(top_block);
+    }) << "Failure connecting acquisition to the top_block.";
+
+    ASSERT_NO_THROW({
+        std::string path = std::string(TEST_PATH);
+        std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
+        const char *file_name = file.c_str();
+        gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
+        top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
+        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+    }) << "Failure connecting the blocks of acquisition test.";
+
+    acquisition->set_local_code();
+    acquisition->reset();
+
+    EXPECT_NO_THROW({
+        start = std::chrono::system_clock::now();
+        top_block->run();  // Start threads and wait
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
+    }) << "Failure running the top_block.";
+
+    uint64_t nsamples = gnss_synchro.Acq_samplestamp_samples;
+    std::cout << "Acquired " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
+    ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
+
+#if USE_GLOG_AND_GFLAGS
+    if (FLAGS_plot_acq_grid == true)
+#else
+    if (absl::GetFlag(FLAGS_plot_acq_grid) == true)
+#endif
+        {
+            plot_grid();
+        }
+}

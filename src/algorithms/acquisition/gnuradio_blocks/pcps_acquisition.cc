@@ -132,6 +132,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_worker_active(false),
       d_num_noncoherent_integrations_counter(0),
       d_dump_number(0),
+      d_input_power(0),
       d_doppler_center_step_two(0),
       d_magnitude_grid(d_num_doppler_bins, volk_gnsssdr::vector<float>(d_fft_size)),
       d_tmp_buffer(d_fft_size),
@@ -309,7 +310,7 @@ void pcps_acquisition::log_acquisition(const AcquisitionResult& result) const
                << ", test statistics threshold " << get_threshold()
                << ", code phase " << d_gnss_synchro->Acq_delay_samples
                << ", doppler " << static_cast<double>(result.doppler)
-               << ", input signal power " << result.input_power
+               << ", input signal power " << d_input_power
                << ", Assist doppler_center " << d_doppler_center;
 }
 
@@ -383,7 +384,7 @@ void pcps_acquisition::dump_results(const AcquisitionResult& result)
             write_matlab_var<1>("acq_delay_samples", static_cast<float>(d_gnss_synchro->Acq_delay_samples), matfp, dims_1d);
             write_matlab_var<1>("test_statistic", result.test_statistics, matfp, dims_1d);
             write_matlab_var<1>("threshold", get_threshold(), matfp, dims_1d);
-            write_matlab_var<1>("input_power", result.input_power, matfp, dims_1d);
+            write_matlab_var<1>("input_power", d_input_power, matfp, dims_1d);
             write_matlab_var<1>("sample_counter", result.sample_count, matfp, dims_1d);
             write_matlab_var<1>("PRN", d_gnss_synchro->PRN, matfp, dims_1d);
             write_matlab_var<1>("num_dwells", static_cast<int32_t>(d_num_noncoherent_integrations_counter), matfp, dims_1d);
@@ -425,7 +426,7 @@ pcps_acquisition::AcquisitionResult pcps_acquisition::max_to_input_power_statist
     if (!d_step_two)
         {
             const auto index_opp = (index_doppler + d_num_doppler_bins / 2) % d_num_doppler_bins;
-            result.input_power = static_cast<float>(std::accumulate(d_magnitude_grid[index_opp].data(), d_magnitude_grid[index_opp].data() + d_effective_fft_size, static_cast<float>(0.0)) / d_effective_fft_size / 2.0 / d_num_noncoherent_integrations_counter);
+            d_input_power = static_cast<float>(std::accumulate(d_magnitude_grid[index_opp].data(), d_magnitude_grid[index_opp].data() + d_effective_fft_size, static_cast<float>(0.0)) / d_effective_fft_size / 2.0 / d_num_noncoherent_integrations_counter);
             result.doppler = -static_cast<int32_t>(doppler_max) + d_doppler_center + doppler_step * static_cast<int32_t>(index_doppler);
         }
     else
@@ -433,13 +434,13 @@ pcps_acquisition::AcquisitionResult pcps_acquisition::max_to_input_power_statist
             result.doppler = static_cast<int32_t>(d_doppler_center_step_two + (static_cast<float>(index_doppler) - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0))) * d_acq_parameters.doppler_step2);
         }
 
-    if (result.input_power < std::numeric_limits<float>::epsilon())
+    if (d_input_power < std::numeric_limits<float>::epsilon())
         {
             result.test_statistics = 0;
         }
     else
         {
-            result.test_statistics = grid_maximum / result.input_power;
+            result.test_statistics = grid_maximum / d_input_power;
         }
 
     return result;
@@ -601,7 +602,6 @@ void pcps_acquisition::update_synchro(const AcquisitionResult& result)
 
 void pcps_acquisition::handle_threshold_reached(AcquisitionResult& result)
 {
-    d_active = false;
     d_state = 0;
 
     if (d_acq_parameters.make_2_steps)
@@ -610,6 +610,7 @@ void pcps_acquisition::handle_threshold_reached(AcquisitionResult& result)
                 {
                     send_positive_acquisition(result);
                     result.positive_acq = true;
+                    d_active = false;
                 }
             else
                 {
@@ -624,6 +625,7 @@ void pcps_acquisition::handle_threshold_reached(AcquisitionResult& result)
         {
             send_positive_acquisition(result);
             result.positive_acq = true;
+            d_active = false;
         }
 }
 
@@ -761,16 +763,11 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
     if (!d_active or d_worker_active)
         {
             // do not consume samples while performing a non-coherent integration
-            bool consume_samples = ((!d_active) || (d_worker_active && (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)));
+            const bool consume_samples = ((!d_active) || (d_worker_active && (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)));
             if ((!d_acq_parameters.blocking_on_standby) && consume_samples)
                 {
                     d_sample_count += static_cast<uint64_t>(ninput_items[0]);
                     consume_each(ninput_items[0]);
-                }
-            if (d_step_two)
-                {
-                    d_state = 0;
-                    d_active = true;
                 }
             return 0;
         }

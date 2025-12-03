@@ -11,14 +11,16 @@ include_directories("${GNSSSDR_SOURCE_DIR}/src/core/receiver")
 
 include(XcodeRemoveWarningDuplicates)
 
-include(CMakeParseArguments)
+if(CMAKE_VERSION VERSION_LESS "3.5")
+    include(CMakeParseArguments)
+endif()
 
 # Helper to fetch optional test data with integrity checking and optional uncompressing
 #
 # Arguments:
 #   url            - Remote file URL to download
 #   destination    - Absolute or relative path where the file will be stored
-#   expected_hash  - Hash in the format EXPECTED_HASH argument supports
+#   expected_hash  - Hash string for EXPECTED_HASH, e.g. "SHA256=abcdef..." or "MD5=..."
 #
 # Optional keyword arguments (parsed via cmake_parse_arguments):
 #   EXTRACT_DIR    - Directory where the downloaded archive will be uncompressed with
@@ -34,20 +36,20 @@ function(download_test_file url destination expected_hash)
     set(options)
     set(oneValueArgs EXTRACT_DIR)
     set(multiValueArgs)
-    # Parse optional arguments (such as EXTRACT_DIR) for this helper while keeping
-    # compatibility with legacy CMake versions.
     cmake_parse_arguments(DOWNLOAD_TEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     get_filename_component(_filename "${destination}" NAME)
     get_filename_component(_dest_dir "${destination}" DIRECTORY)
 
-    if(NOT EXISTS ${destination})
-        file(MAKE_DIRECTORY "${_dest_dir}")
+    if(NOT EXISTS "${destination}")
+        if(_dest_dir)
+            file(MAKE_DIRECTORY "${_dest_dir}")
+        endif()
         set(_download_args
-            ${url}
+            "${url}"
             "${destination}"
             STATUS status_download
-            EXPECTED_HASH ${expected_hash}
+            EXPECTED_HASH "${expected_hash}"
         )
         if(NOT CMAKE_VERSION VERSION_LESS "3.2")
             list(APPEND _download_args SHOW_PROGRESS)
@@ -55,9 +57,11 @@ function(download_test_file url destination expected_hash)
 
         message(STATUS "Downloading file: ${_filename}")
         file(DOWNLOAD ${_download_args})
+
         list(GET status_download 0 result_download)
-        if(${result_download} EQUAL 0)
+        if(result_download EQUAL 0)
             if(DOWNLOAD_TEST_EXTRACT_DIR)
+                file(MAKE_DIRECTORY "${DOWNLOAD_TEST_EXTRACT_DIR}")            
                 execute_process(
                     COMMAND ${CMAKE_COMMAND} -E tar xzf "${destination}"
                     WORKING_DIRECTORY "${DOWNLOAD_TEST_EXTRACT_DIR}"
@@ -65,9 +69,12 @@ function(download_test_file url destination expected_hash)
             endif()
         else()
             file(REMOVE "${destination}")
+            message(WARNING "Failed to download ${_filename}: ${status_download}")
         endif()
     endif()
 endfunction()
+
+
 
 ################################################################################
 # Google Test - https://github.com/google/googletest

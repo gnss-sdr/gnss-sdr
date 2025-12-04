@@ -29,7 +29,6 @@ endif()
 # Behavior:
 #   * Creates the destination directory if it does not exist.
 #   * Skips downloading when the destination file is already present.
-#   * Requests SHOW_PROGRESS on CMake >= 3.2 to keep legacy versions compatible.
 #   * Removes the file if the download fails or the hash does not match.
 #   * Optionally uncompresses the archive into EXTRACT_DIR on successful download.
 function(download_test_file url destination expected_hash)
@@ -61,7 +60,7 @@ function(download_test_file url destination expected_hash)
         list(GET status_download 0 result_download)
         if(result_download EQUAL 0)
             if(DOWNLOAD_TEST_EXTRACT_DIR)
-                file(MAKE_DIRECTORY "${DOWNLOAD_TEST_EXTRACT_DIR}")            
+                file(MAKE_DIRECTORY "${DOWNLOAD_TEST_EXTRACT_DIR}")
                 execute_process(
                     COMMAND ${CMAKE_COMMAND} -E tar xzf "${destination}"
                     WORKING_DIRECTORY "${DOWNLOAD_TEST_EXTRACT_DIR}"

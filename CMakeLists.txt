@@ -356,7 +356,7 @@ set(GNSSSDR_ABSEIL_MIN_VERSION "20240116")
 # Versions to download and build (but not to install system-wide) if not found
 ################################################################################
 set(GNSSSDR_ARMADILLO_LOCAL_VERSION "15.0.x")
-set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
+set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.3.0")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.7.1")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.29")
 set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "32.1")
@@ -388,6 +388,9 @@ if(CMAKE_VERSION VERSION_LESS "3.3")
     set(GNSSSDR_GLOG_LOCAL_VERSION "0.4.0")
 endif()
 
+if(CMAKE_VERSION VERSION_LESS "3.10")
+    set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
+endif()
 if(CMAKE_VERSION VERSION_LESS "3.0.2")
     set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")  # Fix for CentOS 7
     set(GNSSSDR_GLOG_LOCAL_VERSION "0.3.4")    # Fix for Ubuntu 14.04
@@ -1630,7 +1633,7 @@ if(NOT absl_FOUND)
             if((CMAKE_VERSION VERSION_GREATER 3.12.0) AND NOT (CMAKE_GENERATOR STREQUAL Xcode))
                 set(PARALLEL_BUILD "--parallel 2")
             endif()
-            if(CMAKE_VERSION VERSION_LESS 4.0)
+            if(CMAKE_VERSION VERSION_LESS 3.10)
                 ExternalProject_Add(gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
                     PREFIX ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
                     GIT_REPOSITORY https://github.com/gflags/gflags.git
@@ -1655,7 +1658,7 @@ if(NOT absl_FOUND)
                 ExternalProject_Add(gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
                 PREFIX ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
                 GIT_REPOSITORY https://github.com/gflags/gflags.git
-                GIT_TAG 52e94563eba1968783864942fedf6e87e3c611f4
+                GIT_TAG v${GNSSSDR_GFLAGS_LOCAL_VERSION}
                 SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/gflags/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
                 BINARY_DIR ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
                 CMAKE_ARGS -DBUILD_SHARED_LIBS=OFF

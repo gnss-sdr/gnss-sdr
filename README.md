@@ -298,9 +298,9 @@ $ sudo apt install libblas-dev liblapack-dev       # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel         # For Fedora/RHEL
 $ sudo zypper install lapack-devel blas-devel      # For OpenSUSE
 $ sudo pacman -S blas lapack                       # For Arch Linux
-$ wget https://sourceforge.net/projects/arma/files/armadillo-15.0.1.tar.xz
-$ tar xvfz armadillo-15.0.1.tar.xz
-$ cd armadillo-15.0.1
+$ wget https://sourceforge.net/projects/arma/files/armadillo-15.2.2.tar.xz
+$ tar xvfz armadillo-15.2.2.tar.xz
+$ cd armadillo-15.2.2
 $ cmake .
 $ make
 $ sudo make install
@@ -316,12 +316,12 @@ BLAS, LAPACK, and ATLAS).
 #### Install [Gflags](https://github.com/gflags/gflags "Gflags' Homepage"), a commandline flags processing module for C++
 
 ```
-$ wget https://github.com/gflags/gflags/archive/v2.2.2.tar.gz
-$ tar xvfz v2.2.2.tar.gz
-$ cd gflags-2.2.2
-$ cmake -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DBUILD_gflags_nothreads_LIB=OFF .
-$ make
-$ sudo make install
+$ wget https://github.com/gflags/gflags/archive/v2.3.0.tar.gz
+$ tar xvfz v2.3.0.tar.gz
+$ cd gflags-2.3.0
+$ cmake -S . -B building -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF
+$ cmake --build building
+$ sudo cmake --install building
 $ sudo ldconfig
 ```
 

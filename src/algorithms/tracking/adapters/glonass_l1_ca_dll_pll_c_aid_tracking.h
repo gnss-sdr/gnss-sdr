@@ -10,7 +10,7 @@
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
  * A Software-Defined GPS and Galileo Receiver. A Single-Frequency
- * Approach, Birkha user, 2007
+ * Approach, Birkhauser, 2007
  *
  * -----------------------------------------------------------------------------
  *
@@ -26,8 +26,8 @@
 #ifndef GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_H
 #define GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_H
 
-#include "glonass_l1_ca_dll_pll_c_aid_tracking_cc.h"
-#include "glonass_l1_ca_dll_pll_c_aid_tracking_sc.h"
+#include "glonass_ca_dll_pll_c_aid_tracking_cc.h"
+#include "glonass_ca_dll_pll_c_aid_tracking_sc.h"
 #include "tracking_interface.h"
 #include <string>
 

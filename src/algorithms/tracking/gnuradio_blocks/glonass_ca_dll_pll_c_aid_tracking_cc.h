@@ -1,5 +1,5 @@
 /*!
- * \file glonass_l1_ca_dll_pll_c_aid_tracking_sc.h
+ * \file glonass_ca_dll_pll_c_aid_tracking_cc.h
  * \brief  Implementation of a code DLL + carrier PLL tracking block
  * \author Gabriel Araujo, 2017. gabriel.araujo.5000(at)gmail.com
  * \author Luis Esteve, 2017. luis(at)epsilon-formacion.com
@@ -9,7 +9,7 @@
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
  * A Software-Defined GPS and Galileo Receiver. A Single-Frequency
- * Approach, Birkha user, 2007
+ * Approach, Birkhauser, 2007
  *
  * -----------------------------------------------------------------------------
  *
@@ -22,23 +22,29 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H
-#define GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H
+#ifndef GNSS_SDR_GLONASS_CA_DLL_PLL_C_AID_TRACKING_CC_H
+#define GNSS_SDR_GLONASS_CA_DLL_PLL_C_AID_TRACKING_CC_H
 
-#include "cpu_multicorrelator_16sc.h"
-#include "glonass_l1_signal_replica.h"
+#include "cpu_multicorrelator.h"
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"
 #include <gnuradio/block.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <pmt/pmt.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <deque>
 #include <fstream>
 #include <map>
 #include <string>
 
+#if HAS_STD_SPAN
+#include <span>
+namespace own = std;
+#else
+#include <gsl-lite/gsl-lite.hpp>
+namespace own = gsl_lite;
+#endif
 
 /** \addtogroup Tracking
  * \{ */
@@ -46,30 +52,51 @@
  * \{ */
 
 
-class glonass_l1_ca_dll_pll_c_aid_tracking_sc;
+// enum class GlonassBand_C_Aid
+// {
+//     L1,
+//     L2
+// };
 
-using glonass_l1_ca_dll_pll_c_aid_tracking_sc_sptr = gnss_shared_ptr<glonass_l1_ca_dll_pll_c_aid_tracking_sc>;
+class Glonass_Ca_Dll_Pll_C_Aid_Tracking_cc;
 
-glonass_l1_ca_dll_pll_c_aid_tracking_sc_sptr
-glonass_l1_ca_dll_pll_c_aid_make_tracking_sc(
-    int64_t fs_in, uint32_t vector_length,
-    bool dump,
-    const std::string& dump_filename,
-    float pll_bw_hz,
-    float dll_bw_hz,
-    float pll_bw_narrow_hz,
-    float dll_bw_narrow_hz,
-    int32_t extend_correlation_ms,
-    float early_late_space_chips);
+using glonass_ca_dll_pll_c_aid_tracking_cc_sptr = gnss_shared_ptr<Glonass_Ca_Dll_Pll_C_Aid_Tracking_cc>;
+using glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr = glonass_ca_dll_pll_c_aid_tracking_cc_sptr;
+using glonass_l2_ca_dll_pll_c_aid_tracking_cc_sptr = glonass_ca_dll_pll_c_aid_tracking_cc_sptr;
+
+glonass_ca_dll_pll_c_aid_tracking_cc_sptr
+glonass_ca_dll_pll_c_aid_make_tracking_cc(int64_t fs_in, uint32_t vector_length, bool dump,
+    const std::string& dump_filename, float pll_bw_hz, float dll_bw_hz, float pll_bw_narrow_hz,
+    float dll_bw_narrow_hz, int32_t extend_correlation_ms, float early_late_space_chips, int band);
+
+glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr
+glonass_l1_ca_dll_pll_c_aid_make_tracking_cc(int64_t fs_in, uint32_t vector_length, bool dump,
+    const std::string& dump_filename, float pll_bw_hz, float dll_bw_hz, float pll_bw_narrow_hz,
+    float dll_bw_narrow_hz, int32_t extend_correlation_ms, float early_late_space_chips);
+
+glonass_l2_ca_dll_pll_c_aid_tracking_cc_sptr
+glonass_l2_ca_dll_pll_c_aid_make_tracking_cc(int64_t fs_in, uint32_t vector_length, bool dump,
+    const std::string& dump_filename, float pll_bw_hz, float dll_bw_hz, float pll_bw_narrow_hz,
+    float dll_bw_narrow_hz, int32_t extend_correlation_ms, float early_late_space_chips);
 
 
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
  */
-class glonass_l1_ca_dll_pll_c_aid_tracking_sc : public gr::block
+class Glonass_Ca_Dll_Pll_C_Aid_Tracking_cc : public gr::block
 {
 public:
-    ~glonass_l1_ca_dll_pll_c_aid_tracking_sc();
+    struct GlonassSignalParams
+    {
+        double carrier_center_hz;
+        double code_rate_cps;
+        int32_t code_length_chips;
+        double code_period_s;
+        double freq_step_hz;
+        void (*code_generator)(own::span<gr_complex> ca_code, uint32_t delay_chips);
+    };
+
+    ~Glonass_Ca_Dll_Pll_C_Aid_Tracking_cc();
 
     void set_channel(uint32_t channel);
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
@@ -81,28 +108,14 @@ public:
     void forecast(int noutput_items, gr_vector_int& ninput_items_required);
 
 private:
-    friend glonass_l1_ca_dll_pll_c_aid_tracking_sc_sptr
-    glonass_l1_ca_dll_pll_c_aid_make_tracking_sc(
-        int64_t fs_in, uint32_t vector_length,
-        bool dump,
-        const std::string& dump_filename,
-        float pll_bw_hz,
-        float dll_bw_hz,
-        float pll_bw_narrow_hz,
-        float dll_bw_narrow_hz,
-        int32_t extend_correlation_ms,
-        float early_late_space_chips);
+    friend glonass_ca_dll_pll_c_aid_tracking_cc_sptr
+    glonass_ca_dll_pll_c_aid_make_tracking_cc(int64_t fs_in, uint32_t vector_length, bool dump,
+        const std::string& dump_filename, float pll_bw_hz, float dll_bw_hz, float pll_bw_narrow_hz,
+        float dll_bw_narrow_hz, int32_t extend_correlation_ms, float early_late_space_chips, int band);
 
-    glonass_l1_ca_dll_pll_c_aid_tracking_sc(
-        int64_t fs_in, uint32_t vector_length,
-        bool dump,
-        const std::string& dump_filename,
-        float pll_bw_hz,
-        float dll_bw_hz,
-        float pll_bw_narrow_hz,
-        float dll_bw_narrow_hz,
-        int32_t extend_correlation_ms,
-        float early_late_space_chips);
+    Glonass_Ca_Dll_Pll_C_Aid_Tracking_cc(int64_t fs_in, uint32_t vector_length, bool dump,
+        const std::string& dump_filename, float pll_bw_hz, float dll_bw_hz, float pll_bw_narrow_hz,
+        float dll_bw_narrow_hz, int32_t extend_correlation_ms, float early_late_space_chips, int band);
 
     void msg_handler_preamble_index(const pmt::pmt_t& msg);
 
@@ -111,23 +124,20 @@ private:
     int32_t save_matfile() const;
 
     volk_gnsssdr::vector<gr_complex> d_ca_code;
-    volk_gnsssdr::vector<lv_16sc_t> d_ca_code_16sc;
     volk_gnsssdr::vector<float> d_local_code_shift_chips;
-    volk_gnsssdr::vector<lv_16sc_t> d_correlator_outs_16sc;
+    volk_gnsssdr::vector<gr_complex> d_correlator_outs;
     volk_gnsssdr::vector<gr_complex> d_Prompt_buffer;
 
-    Cpu_Multicorrelator_16sc multicorrelator_cpu_16sc;
+    Cpu_Multicorrelator multicorrelator_cpu;
 
     // PLL and DLL filter library
     Tracking_2nd_DLL_filter d_code_loop_filter;
     Tracking_FLL_PLL_filter d_carrier_loop_filter;
 
     // symbol history to detect bit transition
-    std::deque<lv_16sc_t> d_E_history;
-    std::deque<lv_16sc_t> d_P_history;
-    std::deque<lv_16sc_t> d_L_history;
-
-    Gnss_Synchro* d_acquisition_gnss_synchro;
+    std::deque<gr_complex> d_E_history;
+    std::deque<gr_complex> d_P_history;
+    std::deque<gr_complex> d_L_history;
 
     // file dump
     std::string d_dump_filename;
@@ -136,9 +146,14 @@ private:
     std::map<std::string, std::string> systemName;
     std::string sys;
 
+    Gnss_Synchro* d_acquisition_gnss_synchro;
+
+    int d_band;
+    GlonassSignalParams d_params;
+
     // tracking configuration vars
     int64_t d_fs_in;
-    int64_t d_glonass_freq_ch;
+    double d_glonass_freq_ch;
     double d_early_late_spc_chips;
     uint32_t d_vector_length;
     uint32_t d_channel;
@@ -168,11 +183,12 @@ private:
     double d_acc_carrier_phase_cycles;
     double d_code_phase_samples;
     double d_pll_to_dll_assist_secs_Ti;
-    double d_carr_phase_error_secs_Ti;
     double d_code_error_chips_Ti;
-    double d_preamble_timestamp_samples;
     double d_code_error_filt_chips_s;
     double d_code_error_filt_chips_Ti;
+    double d_carr_phase_error_secs_Ti;
+
+    double d_preamble_timestamp_samples;
     int32_t d_extend_correlation_ms;
 
     // Integration period in samples
@@ -200,7 +216,4 @@ private:
     bool d_dump;
 };
 
-
-/** \} */
-/** \} */
-#endif  // GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H
+#endif  // GNSS_SDR_GLONASS_CA_DLL_PLL_C_AID_TRACKING_CC_H

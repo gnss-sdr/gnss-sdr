@@ -51,6 +51,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(
     acq_pilot_ = configuration->property(role + ".acquire_pilot", false);
     acq_iq_ = configuration->property(role + ".acquire_iq", false);
     generate_galileo_e5a_prn_codes();
+    init();
     DLOG(INFO) << "Initialized FPGA acquisition adapter for role " << role;
 }
 

@@ -50,6 +50,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
           out_streams)
 {
     generate_gps_l2c_m_prn_codes();
+    init();
     DLOG(INFO) << "Initialized FPGA acquisition adapter for role " << role;
 }
 

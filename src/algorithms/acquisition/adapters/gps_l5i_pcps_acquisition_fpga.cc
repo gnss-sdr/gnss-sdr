@@ -51,6 +51,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
           out_streams)
 {
     generate_gps_l5i_prn_codes();
+    init();
     DLOG(INFO) << "Initialized FPGA acquisition adapter for role " << role;
 }
 

@@ -401,10 +401,12 @@ int32_t Glonass_Ca_Dll_Pll_C_Aid_Tracking_cc::save_matfile() const
 {
     // READ DUMP FILE
     std::ifstream::pos_type size;
-    const int32_t number_of_double_vars = 11;
-    const int32_t number_of_float_vars = 5;
+    const int32_t number_of_double_vars = 1;
+    const int32_t number_of_float_vars = 19;
     const int32_t epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
-                                     sizeof(float) * number_of_float_vars + sizeof(uint32_t);
+                                     sizeof(float) * number_of_float_vars + sizeof(uint32_t) +
+                                     sizeof(uint64_t) + sizeof(int32_t);
+
     std::ifstream dump_file;
     dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
@@ -428,24 +430,28 @@ int32_t Glonass_Ca_Dll_Pll_C_Aid_Tracking_cc::save_matfile() const
         {
             return 1;
         }
+    auto abs_VE = std::vector<float>(num_epoch);
     auto abs_E = std::vector<float>(num_epoch);
     auto abs_P = std::vector<float>(num_epoch);
     auto abs_L = std::vector<float>(num_epoch);
+    auto abs_VL = std::vector<float>(num_epoch);
     auto Prompt_I = std::vector<float>(num_epoch);
     auto Prompt_Q = std::vector<float>(num_epoch);
     auto PRN_start_sample_count = std::vector<uint64_t>(num_epoch);
-    auto acc_carrier_phase_rad = std::vector<double>(num_epoch);
-    auto carrier_doppler_hz = std::vector<double>(num_epoch);
-    auto code_freq_chips = std::vector<double>(num_epoch);
-    auto carr_error_hz = std::vector<double>(num_epoch);
-    auto carr_error_filt_hz = std::vector<double>(num_epoch);
-    auto code_error_chips = std::vector<double>(num_epoch);
-    auto code_error_filt_chips = std::vector<double>(num_epoch);
-    auto CN0_SNV_dB_Hz = std::vector<double>(num_epoch);
-    auto carrier_lock_test = std::vector<double>(num_epoch);
-    auto aux1 = std::vector<double>(num_epoch);
+    auto acc_carrier_phase_rad = std::vector<float>(num_epoch);
+    auto carrier_doppler_hz = std::vector<float>(num_epoch);
+    auto code_freq_chips = std::vector<float>(num_epoch);
+    auto carr_error_hz = std::vector<float>(num_epoch);
+    auto carr_error_filt_hz = std::vector<float>(num_epoch);
+    auto code_error_chips = std::vector<float>(num_epoch);
+    auto code_error_filt_chips = std::vector<float>(num_epoch);
+    auto CN0_SNV_dB_Hz = std::vector<float>(num_epoch);
+    auto carrier_lock_test = std::vector<float>(num_epoch);
+    auto aux1 = std::vector<float>(num_epoch);
     auto aux2 = std::vector<double>(num_epoch);
     auto PRN = std::vector<uint32_t>(num_epoch);
+    auto TOW = std::vector<uint64_t>(num_epoch);
+    auto WN = std::vector<uint32_t>(num_epoch);
 
     try
         {
@@ -453,24 +459,28 @@ int32_t Glonass_Ca_Dll_Pll_C_Aid_Tracking_cc::save_matfile() const
                 {
                     for (int64_t i = 0; i < num_epoch; i++)
                         {
+                            dump_file.read(reinterpret_cast<char *>(&abs_VE[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&abs_E[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&abs_P[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&abs_L[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&abs_VL[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&Prompt_I[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&Prompt_Q[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&PRN_start_sample_count[i]), sizeof(uint64_t));
-                            dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&carrier_doppler_hz[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&code_freq_chips[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&carr_error_hz[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&carr_error_filt_hz[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&code_error_chips[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&code_error_filt_chips[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&CN0_SNV_dB_Hz[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&carrier_lock_test[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&aux1[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&carrier_doppler_hz[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&code_freq_chips[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&carr_error_hz[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&carr_error_filt_hz[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&code_error_chips[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&code_error_filt_chips[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&CN0_SNV_dB_Hz[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&carrier_lock_test[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&aux1[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&aux2[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&PRN[i]), sizeof(uint32_t));
+                            dump_file.read(reinterpret_cast<char *>(&TOW[i]), sizeof(uint64_t));
+                            dump_file.read(reinterpret_cast<char *>(&WN[i]), sizeof(uint32_t));
                         }
                 }
             dump_file.close();
@@ -496,18 +506,20 @@ int32_t Glonass_Ca_Dll_Pll_C_Aid_Tracking_cc::save_matfile() const
             write_matlab_var<2, float>("Prompt_I", Prompt_I.data(), matfp, dims);
             write_matlab_var<2, float>("Prompt_Q", Prompt_Q.data(), matfp, dims);
             write_matlab_var<2, uint64_t>("PRN_start_sample_count", PRN_start_sample_count.data(), matfp, dims);
-            write_matlab_var<2, double>("acc_carrier_phase_rad", acc_carrier_phase_rad.data(), matfp, dims);
-            write_matlab_var<2, double>("carrier_doppler_hz", carrier_doppler_hz.data(), matfp, dims);
-            write_matlab_var<2, double>("code_freq_chips", code_freq_chips.data(), matfp, dims);
-            write_matlab_var<2, double>("carr_error_hz", carr_error_hz.data(), matfp, dims);
-            write_matlab_var<2, double>("carr_error_filt_hz", carr_error_filt_hz.data(), matfp, dims);
-            write_matlab_var<2, double>("code_error_chips", code_error_chips.data(), matfp, dims);
-            write_matlab_var<2, double>("code_error_filt_chips", code_error_filt_chips.data(), matfp, dims);
-            write_matlab_var<2, double>("CN0_SNV_dB_Hz", CN0_SNV_dB_Hz.data(), matfp, dims);
-            write_matlab_var<2, double>("carrier_lock_test", carrier_lock_test.data(), matfp, dims);
-            write_matlab_var<2, double>("aux1", aux1.data(), matfp, dims);
+            write_matlab_var<2, float>("acc_carrier_phase_rad", acc_carrier_phase_rad.data(), matfp, dims);
+            write_matlab_var<2, float>("carrier_doppler_hz", carrier_doppler_hz.data(), matfp, dims);
+            write_matlab_var<2, float>("code_freq_chips", code_freq_chips.data(), matfp, dims);
+            write_matlab_var<2, float>("carr_error_hz", carr_error_hz.data(), matfp, dims);
+            write_matlab_var<2, float>("carr_error_filt_hz", carr_error_filt_hz.data(), matfp, dims);
+            write_matlab_var<2, float>("code_error_chips", code_error_chips.data(), matfp, dims);
+            write_matlab_var<2, float>("code_error_filt_chips", code_error_filt_chips.data(), matfp, dims);
+            write_matlab_var<2, float>("CN0_SNV_dB_Hz", CN0_SNV_dB_Hz.data(), matfp, dims);
+            write_matlab_var<2, float>("carrier_lock_test", carrier_lock_test.data(), matfp, dims);
+            write_matlab_var<2, float>("aux1", aux1.data(), matfp, dims);
             write_matlab_var<2, double>("aux2", aux2.data(), matfp, dims);
             write_matlab_var<2, uint32_t>("PRN", PRN.data(), matfp, dims);
+            write_matlab_var<2, uint64_t>("TOW", TOW.data(), matfp, dims);
+            write_matlab_var<2, uint32_t>("WN", WN.data(), matfp, dims);
         }
     Mat_Close(matfp);
     return 0;
@@ -911,6 +923,12 @@ int Glonass_Ca_Dll_Pll_C_Aid_Tracking_cc::general_work(int noutput_items __attri
                     // PRN
                     uint32_t prn_ = d_acquisition_gnss_synchro->PRN;
                     d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(uint32_t));
+                    // TOW
+                    uint64_t tow_ = 0;
+                    d_dump_file.write(reinterpret_cast<char *>(&tow_), sizeof(uint64_t));
+                    // Week Number
+                    uint32_t wn_ = 0;
+                    d_dump_file.write(reinterpret_cast<char *>(&wn_), sizeof(uint32_t));
                 }
             catch (const std::ofstream::failure &e)
                 {

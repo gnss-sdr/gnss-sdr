@@ -52,6 +52,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
       acquire_pilot_(configuration->property(role + ".acquire_pilot", false))
 {
     generate_galileo_e1_prn_codes();
+    init();
     DLOG(INFO) << "Initialized FPGA acquisition adapter for role " << role;
 }
 

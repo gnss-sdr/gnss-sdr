@@ -74,13 +74,17 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(Acq_Conf_Fpga *conf_,
         acq_buff_num,
         downsampling_filter_specs,
         max_FFT_size);
-    d_acquisition_fpga->init(d_acq_parameters->code_length, d_acq_parameters->fft_size,
-        d_acq_parameters->resampled_fs, d_acq_parameters->downsampling_filter_num, d_acq_parameters->excludelimit, d_acq_parameters->all_fft_codes);
 }
 
 void pcps_acquisition_fpga::set_local_code()
 {
     d_acquisition_fpga->set_local_code(d_gnss_synchro->PRN);
+}
+
+void pcps_acquisition_fpga::init()
+{
+    d_acquisition_fpga->init(d_acq_parameters->code_length, d_acq_parameters->fft_size,
+        d_acq_parameters->resampled_fs, d_acq_parameters->downsampling_filter_num, d_acq_parameters->excludelimit, d_acq_parameters->all_fft_codes);
 }
 
 

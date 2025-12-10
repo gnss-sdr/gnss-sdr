@@ -86,6 +86,9 @@ protected:
     static const uint32_t ACQ_BUFF_0 = 0;                     // FPGA Acquisition IP buffer containing L1/E1 frequency band samples by default.
     static const uint32_t ACQ_BUFF_1 = 1;                     // FPGA Acquisition IP buffer containing L2 or L5/E5 frequency band samples by default.
 
+    // parameter initialization
+    void init();
+
     // Members subclasses must set
     volk_gnsssdr::vector<uint32_t> d_all_fft_codes_;
     Acq_Conf_Fpga acq_parameters_;

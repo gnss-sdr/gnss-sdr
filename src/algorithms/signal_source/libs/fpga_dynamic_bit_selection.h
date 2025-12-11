@@ -69,7 +69,7 @@ private:
     static const uint32_t Power_Threshold_Low = 3000;
 
     void open_device(volatile unsigned **d_map_base, int &d_dev_descr, int freq_band);
-    void bit_selection_per_rf_band(volatile unsigned *d_map_base, uint32_t shift_out_bits);
+    void bit_selection_per_rf_band(volatile unsigned *d_map_base, uint32_t &shift_out_bits);
     void close_device(volatile unsigned *d_map_base, int &d_dev_descr);
 
     volatile unsigned *d_map_base_freq_band_1;

@@ -730,15 +730,15 @@ void dll_pll_veml_tracking::start_tracking()
     Signal_[2] = d_acquisition_gnss_synchro->Signal[2];
     d_extend_correlation_symbols = d_trk_parameters.extend_correlation_symbols;
 
-    if (d_systemName == "GPS" and d_signal_type == "1C")
+    if (d_systemName == "GPS" && d_signal_type == "1C")
         {
             gps_l1_ca_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
         }
-    else if (d_systemName == "GPS" and d_signal_type == "2S")
+    else if (d_systemName == "GPS" && d_signal_type == "2S")
         {
             gps_l2c_m_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
         }
-    else if (d_systemName == "GPS" and d_signal_type == "L5")
+    else if (d_systemName == "GPS" && d_signal_type == "L5")
         {
             if (d_trk_parameters.track_pilot)
                 {
@@ -752,7 +752,7 @@ void dll_pll_veml_tracking::start_tracking()
                     gps_l5i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
                 }
         }
-    else if (d_systemName == "Galileo" and d_signal_type == "1B")
+    else if (d_systemName == "Galileo" && d_signal_type == "1B")
         {
             if (d_trk_parameters.track_pilot)
                 {
@@ -767,7 +767,7 @@ void dll_pll_veml_tracking::start_tracking()
                     galileo_e1_code_gen_sinboc11_float(d_tracking_code, Signal_, d_acquisition_gnss_synchro->PRN);
                 }
         }
-    else if (d_systemName == "Galileo" and d_signal_type == "5X")
+    else if (d_systemName == "Galileo" && d_signal_type == "5X")
         {
             volk_gnsssdr::vector<gr_complex> aux_code(d_code_length_chips);
             const std::array<char, 3> signal_type_ = {{'5', 'X', '\0'}};
@@ -791,7 +791,7 @@ void dll_pll_veml_tracking::start_tracking()
                         }
                 }
         }
-    else if (d_systemName == "Galileo" and d_signal_type == "7X")
+    else if (d_systemName == "Galileo" && d_signal_type == "7X")
         {
             volk_gnsssdr::vector<gr_complex> aux_code(d_code_length_chips);
             const std::array<char, 3> signal_type_ = {{'7', 'X', '\0'}};
@@ -815,7 +815,7 @@ void dll_pll_veml_tracking::start_tracking()
                         }
                 }
         }
-    else if (d_systemName == "Galileo" and d_signal_type == "E6")
+    else if (d_systemName == "Galileo" && d_signal_type == "E6")
         {
             if (d_trk_parameters.track_pilot)
                 {
@@ -830,11 +830,11 @@ void dll_pll_veml_tracking::start_tracking()
                     galileo_e6_b_code_gen_float_primary(d_tracking_code, d_acquisition_gnss_synchro->PRN);
                 }
         }
-    else if (d_systemName == "Beidou" and d_signal_type == "B1")
+    else if (d_systemName == "Beidou" && d_signal_type == "B1")
         {
             beidou_b1i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
             // GEO Satellites use different secondary code
-            if ((d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6) or (d_acquisition_gnss_synchro->PRN > 58))
+            if ((d_acquisition_gnss_synchro->PRN > 0 && d_acquisition_gnss_synchro->PRN < 6) || (d_acquisition_gnss_synchro->PRN > 58))
                 {
                     d_symbols_per_bit = BEIDOU_B1I_GEO_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;
@@ -867,11 +867,11 @@ void dll_pll_veml_tracking::start_tracking()
                 }
         }
 
-    else if (d_systemName == "Beidou" and d_signal_type == "B3")
+    else if (d_systemName == "Beidou" && d_signal_type == "B3")
         {
             beidou_b3i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
             // Update secondary code settings for geo satellites
-            if ((d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6) or (d_acquisition_gnss_synchro->PRN > 58))
+            if ((d_acquisition_gnss_synchro->PRN > 0 && d_acquisition_gnss_synchro->PRN < 6) || (d_acquisition_gnss_synchro->PRN > 58))
                 {
                     d_symbols_per_bit = BEIDOU_B3I_GEO_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;
@@ -1112,7 +1112,7 @@ bool dll_pll_veml_tracking::cn0_and_tracking_lock_status(double coh_integration_
                         }
                 }
         }
-    if (d_carrier_lock_fail_counter > d_trk_parameters.max_carrier_lock_fail or d_code_lock_fail_counter > d_trk_parameters.max_code_lock_fail)
+    if (d_carrier_lock_fail_counter > d_trk_parameters.max_carrier_lock_fail || d_code_lock_fail_counter > d_trk_parameters.max_code_lock_fail)
         {
             std::cout << "Loss of lock in channel " << d_channel << "!\n";
             LOG(INFO) << "Loss of lock in channel " << d_channel
@@ -1175,7 +1175,7 @@ void dll_pll_veml_tracking::run_dll_pll()
             d_carr_phase_error_hz = pll_four_quadrant_atan(d_P_accu) / TWO_PI;
         }
 
-    if ((d_pull_in_transitory == true and d_trk_parameters.enable_fll_pull_in == true) or d_trk_parameters.enable_fll_steady_state)
+    if ((d_pull_in_transitory == true && d_trk_parameters.enable_fll_pull_in == true) || d_trk_parameters.enable_fll_steady_state)
         {
             // FLL discriminator
             // d_carr_freq_error_hz = fll_four_quadrant_atan(d_P_accu_old, d_P_accu, 0, d_current_correlation_time_s) / TWO_PI;
@@ -1184,7 +1184,7 @@ void dll_pll_veml_tracking::run_dll_pll()
             d_P_accu_old = d_P_accu;
             // std::cout << "d_carr_freq_error_hz: " << d_carr_freq_error_hz << '\n';
             // Carrier discriminator filter
-            if ((d_pull_in_transitory == true and d_trk_parameters.enable_fll_pull_in == true))
+            if ((d_pull_in_transitory == true && d_trk_parameters.enable_fll_pull_in == true))
                 {
                     // pure FLL, disable PLL
                     d_carr_error_filt_hz = d_carrier_loop_filter.get_carrier_error(static_cast<float>(d_carr_freq_error_hz), 0.0F, static_cast<float>(d_current_correlation_time_s));
@@ -1229,7 +1229,7 @@ void dll_pll_veml_tracking::run_dll_pll()
     // Experimental: detect Carrier Doppler vs. Code Doppler incoherence and correct the Carrier Doppler
     if (d_trk_parameters.enable_doppler_correction == true)
         {
-            if (d_pull_in_transitory == false and d_corrected_doppler == false)
+            if (d_pull_in_transitory == false && d_corrected_doppler == false)
                 {
                     d_dll_filt_history.push_back(static_cast<float>(d_code_error_filt_chips));
 

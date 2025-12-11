@@ -247,4 +247,3 @@ void Channel::start_acquisition()
         }
     DLOG(INFO) << "Channel start_acquisition()";
 }
-

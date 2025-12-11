@@ -76,6 +76,61 @@ void glonass_l2_ca_code_gen_complex(own::span<std::complex<float>> dest, uint32_
 }
 
 
+void glonass_l2_ca_code_gen_float(own::span<float> dest, uint32_t chip_shift)
+{
+    const uint32_t code_length = 511;
+    std::bitset<code_length> G1{};
+    auto G1_register = std::bitset<9>{}.set();  // All true
+    uint32_t lcv;
+    uint32_t lcv2;
+    bool feedback1;
+    bool aux;
+
+    /* Generate G1 Register */
+    for (lcv = 0; lcv < code_length; lcv++)
+        {
+            G1[lcv] = G1_register[2];
+
+            feedback1 = G1_register[4] ^ G1_register[0];
+
+            for (lcv2 = 0; lcv2 < 8; lcv2++)
+                {
+                    G1_register[lcv2] = G1_register[lcv2 + 1];
+                }
+
+            G1_register[8] = feedback1;
+        }
+
+    /* Generate PRN from G1 Register */
+    for (lcv = 0; lcv < code_length; lcv++)
+        {
+            aux = G1[lcv];
+            if (aux == true)
+                {
+                    dest[lcv] = 1.0;
+                }
+            else
+                {
+                    dest[lcv] = -1.0;
+                }
+        }
+
+    /* Generate PRN from G1 and G2 Registers */
+    for (lcv = 0; lcv < code_length; lcv++)
+        {
+            aux = G1[(lcv + chip_shift) % code_length];
+            if (aux == true)
+                {
+                    dest[lcv] = 1.0;
+                }
+            else
+                {
+                    dest[lcv] = -1.0;
+                }
+        }
+}
+
+
 /*
  *  Generates complex GLONASS L2 C/A code for the desired SV ID and sampled to specific sampling frequency
  */

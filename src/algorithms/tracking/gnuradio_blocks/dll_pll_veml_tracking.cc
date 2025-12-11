@@ -1,7 +1,8 @@
 /*!
  * \file dll_pll_veml_tracking.cc
  * \brief Implementation of a code DLL + carrier PLL tracking block.
- * \author Javier Arribas, 2018. jarribas(at)cttc.es
+ * \author Javier Arribas, 2018-2025. jarribas(at)cttc.es
+ * \author Carles Fernandez-Prades, 2018-2025 carles.fernandez(at)cttc.es
  * \author Antonio Ramos, 2018 antonio.ramosdet(at)gmail.com
  *
  * Code DLL + carrier PLL according to the algorithms described in:
@@ -14,7 +15,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2025  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -23,6 +24,7 @@
 #include "dll_pll_veml_tracking.h"
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
+#include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "GPS_L5.h"
@@ -30,7 +32,6 @@
 #include "Galileo_E5a.h"
 #include "Galileo_E5b.h"
 #include "Galileo_E6.h"
-#include "GLONASS_L1_L2_CA.h"
 #include "MATH_CONSTANTS.h"
 #include "beidou_b1i_signal_replica.h"
 #include "beidou_b3i_signal_replica.h"
@@ -38,6 +39,7 @@
 #include "galileo_e5_signal_replica.h"
 #include "galileo_e6_signal_replica.h"
 #include "glonass_l1_signal_replica.h"
+#include "glonass_l2_signal_replica.h"
 #include "gnss_satellite.h"
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_filesystem.h"
@@ -462,7 +464,6 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     d_code_period = GLONASS_L1_CA_CODE_PERIOD_S;
                     d_code_chip_rate = GLONASS_L1_CA_CODE_RATE_CPS;
                     d_code_length_chips = static_cast<int32_t>(GLONASS_L1_CA_CODE_LENGTH_CHIPS);
-                    d_signal_carrier_freq = BEIDOU_B1I_FREQ_HZ;
                     d_symbols_per_bit = GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT;
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
@@ -475,7 +476,26 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     d_secondary_code_string = GLONASS_GNAV_PREAMBLE_STR;
                     d_symbols_per_bit = GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT;
                 }
-                else {
+            else if (d_signal_type == "2G")
+                {
+                    d_signal_carrier_freq = GLONASS_L2_CA_FREQ_HZ;
+                    d_code_period = GLONASS_L2_CA_CODE_PERIOD_S;
+                    d_code_chip_rate = GLONASS_L2_CA_CODE_RATE_CPS;
+                    d_code_length_chips = static_cast<int32_t>(GLONASS_L2_CA_CODE_LENGTH_CHIPS);
+                    d_symbols_per_bit = GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT;
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_secondary = false;
+                    d_trk_parameters.track_pilot = false;
+                    d_trk_parameters.slope = 1.0;
+                    d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
+                    d_trk_parameters.y_intercept = 1.0;
+                    d_secondary_code_length = static_cast<uint32_t>(GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS);
+                    d_secondary_code_string = GLONASS_GNAV_PREAMBLE_STR;
+                    d_symbols_per_bit = GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT;
+                }
+            else
+                {
                     LOG(WARNING) << "Invalid Signal argument when instantiating tracking blocks";
                     std::cout << "Invalid Signal argument when instantiating tracking blocks\n";
                     d_correlation_length_ms = 1;
@@ -486,7 +506,6 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     d_code_samples_per_chip = 0U;
                     d_symbols_per_bit = 0;
                 }
-
         }
     else
         {
@@ -884,12 +903,20 @@ void dll_pll_veml_tracking::start_tracking()
                     d_Prompt_circular_buffer.set_capacity(d_secondary_code_length);
                 }
         }
-    else if (d_systemName == "Glonass" and d_signal_type == "1G")
+    else if (d_systemName == "Glonass")
         {
-            glonass_l1_ca_code_gen_float(d_tracking_code, 0);
-            d_cfo_frequency_hz = (DFRQ1_GLO * GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
-            d_carrier_phase_step_rad = TWO_PI * (d_cfo_frequency_hz+d_carrier_doppler_hz) / static_cast<double>(d_trk_parameters.fs_in);
-            d_symbols_per_bit = GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
+            if (d_signal_type == "1G")
+                {
+                    glonass_l1_ca_code_gen_float(d_tracking_code, 0);
+                    d_cfo_frequency_hz = (DFRQ1_GLO * GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
+                }
+            else  // 2G
+                {
+                    glonass_l2_ca_code_gen_float(d_tracking_code, 0);
+                    d_cfo_frequency_hz = (DFRQ2_GLO * GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
+                }
+            d_carrier_phase_step_rad = TWO_PI * (d_cfo_frequency_hz + d_carrier_doppler_hz) / static_cast<double>(d_trk_parameters.fs_in);
+            d_symbols_per_bit = GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT;
             d_correlation_length_ms = 1;
             d_code_samples_per_chip = 1;
             d_secondary = false;
@@ -903,7 +930,6 @@ void dll_pll_veml_tracking::start_tracking()
                 {
                     d_extend_correlation_symbols = GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT;
                 }
-
         }
     d_multicorrelator_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_tracking_code.data(), d_local_code_shift_chips.data());
     std::fill_n(d_correlator_outs.begin(), d_n_correlator_taps, gr_complex(0.0, 0.0));
@@ -1274,7 +1300,7 @@ void dll_pll_veml_tracking::update_tracking_vars()
 
     // ################### PLL COMMANDS #################################################
     // carrier phase step (NCO phase increment per sample) [rads/sample]
-    d_carrier_phase_step_rad = TWO_PI * (d_carrier_doppler_hz+d_cfo_frequency_hz) / d_trk_parameters.fs_in;
+    d_carrier_phase_step_rad = TWO_PI * (d_carrier_doppler_hz + d_cfo_frequency_hz) / d_trk_parameters.fs_in;
     // carrier phase rate step (NCO phase increment rate per sample) [rads/sample^2]
     if (d_trk_parameters.high_dyn)
         {
@@ -2032,7 +2058,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                         run_dll_pll();
                         update_tracking_vars();
                         check_carrier_phase_coherent_initialization();
-                        if ((d_current_data_symbol == 0) || (d_signal_type == "1G")) // Glonass telemetry decoder require symbols instead of bits
+                        if ((d_current_data_symbol == 0) || (d_signal_type == "1G") || (d_signal_type == "2G"))  // Glonass telemetry decoder require symbols instead of bits
                             {
                                 // enable write dump file this cycle (valid DLL/PLL cycle)
                                 log_data();
@@ -2071,7 +2097,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     }
             }
         }
-        
+
     current_synchro_data.TOW_at_current_symbol_ms = d_tow_from_telemetry_ms;
     // time tags
     std::vector<gr::tag_t> tags_vec;

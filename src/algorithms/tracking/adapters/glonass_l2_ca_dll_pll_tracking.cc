@@ -2,7 +2,11 @@
  * \file glonass_l2_ca_dll_pll_tracking.cc
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
  * for Glonass L2 C/A to a TrackingInterface
- * \author Damian Miralles, 2018, dmiralles2009(at)gmail.com *
+ * \author Gabriel Araujo, 2017. gabriel.araujo.5000(at)gmail.com
+ * \author Luis Esteve, 2017. luis(at)epsilon-formacion.com
+ * \author Javier Arribas, 2025 javier.arribas(at)cttc.es
+ * \author Carles Fernandez-Prades, 2025 carles.fernandez(at)cttc.es
+ *
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -14,17 +18,21 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2025  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
  */
 
+
 #include "glonass_l2_ca_dll_pll_tracking.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "configuration_interface.h"
-#include "gnss_sdr_flags.h"
-#include <utility>
+#include "display.h"
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <iostream>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -32,137 +40,81 @@
 #include <absl/log/log.h>
 #endif
 
-
 GlonassL2CaDllPllTracking::GlonassL2CaDllPllTracking(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams)
-    : role_(role),
-      item_size_(sizeof(gr_complex)),
-      channel_(0),
-      in_streams_(in_streams),
-      out_streams_(out_streams)
+    : BaseDllPllTracking(configuration, role, in_streams, out_streams)
 {
-    // ################# CONFIGURATION PARAMETERS ########################
-    const std::string default_item_type("gr_complex");
-    std::string item_type = configuration->property(role_ + ".item_type", default_item_type);
-    int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
-    int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    bool dump = configuration->property(role_ + ".dump", false);
-    float pll_bw_hz = configuration->property(role_ + ".pll_bw_hz", static_cast<float>(50.0));
-#if USE_GLOG_AND_GFLAGS
-    if (FLAGS_pll_bw_hz != 0.0)
-        {
-            pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
-        }
-#else
-    if (absl::GetFlag(FLAGS_pll_bw_hz) != 0.0)
-        {
-            pll_bw_hz = static_cast<float>(absl::GetFlag(FLAGS_pll_bw_hz));
-        }
-#endif
-    float dll_bw_hz = configuration->property(role_ + ".dll_bw_hz", static_cast<float>(2.0));
-#if USE_GLOG_AND_GFLAGS
-    if (FLAGS_dll_bw_hz != 0.0)
-        {
-            dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
-        }
-#else
-    if (absl::GetFlag(FLAGS_dll_bw_hz) != 0.0)
-        {
-            dll_bw_hz = static_cast<float>(absl::GetFlag(FLAGS_dll_bw_hz));
-        }
-#endif
-    float early_late_space_chips = configuration->property(role_ + ".early_late_space_chips", static_cast<float>(0.5));
-    const std::string default_dump_filename("./track_ch");
-    std::string dump_filename = configuration->property(role_ + ".dump_filename", default_dump_filename);
-    const auto vector_length = static_cast<int>(std::round(fs_in / (GLONASS_L2_CA_CODE_RATE_CPS / GLONASS_L2_CA_CODE_LENGTH_CHIPS)));
+    configure_tracking_parameters(configuration);
+    create_tracking_block();
+}
 
-    // ################# MAKE TRACKING GNURadio object ###################
-    DLOG(INFO) << "role " << role_;
-    if (item_type == "gr_complex")
+
+void GlonassL2CaDllPllTracking::configure_tracking_parameters(
+    const ConfigurationInterface* configuration __attribute__((unused)))
+{
+    // Set basic signal identifiers
+    config_params().system = 'R';
+    const std::array<char, 3> sig{'2', 'G', '\0'};
+    std::copy_n(sig.data(), 3, config_params().signal);
+
+    const auto vector_length = static_cast<int>(std::round(config_params().fs_in / (GLONASS_L2_CA_CODE_RATE_CPS / GLONASS_L2_CA_CODE_LENGTH_CHIPS)));
+    config_params().vector_length = vector_length;
+
+    // Sanity checks and warnings
+    if (config_params().extend_correlation_symbols < 1)
         {
-            tracking_sptr_ = glonass_l2_ca_dll_pll_make_tracking_cc(
-                fs_in,
-                vector_length,
-                dump,
-                dump_filename,
-                pll_bw_hz,
-                dll_bw_hz,
-                early_late_space_chips);
-            DLOG(INFO) << "tracking(" << tracking_sptr_->unique_id() << ")";
+            config_params().extend_correlation_symbols = 1;
+            std::cout << TEXT_RED
+                      << "WARNING: Glonass L2: extend_correlation_symbols must be > 0. "
+                      << "Coherent integration set to 1 ms."
+                      << TEXT_RESET << std::endl;
+        }
+    else if (config_params().extend_correlation_symbols > 10)
+        {
+            config_params().extend_correlation_symbols = 10;
+            std::cout << TEXT_RED
+                      << "WARNING: Glonass L2: extend_correlation_symbols limited to 10 (10 ms)."
+                      << TEXT_RESET << std::endl;
+        }
+
+    // Glonass L2 C/A does not have a pilot component
+    config_params().track_pilot = configuration->property(this->role() + ".track_pilot", false);
+    if (config_params().track_pilot)
+        {
+            config_params().track_pilot = false;
+            std::cout << TEXT_RED
+                      << "WARNING: Glonass L2 does not have pilot signal. "
+                      << "Data tracking enabled instead."
+                      << TEXT_RESET << std::endl;
+        }
+
+    // Ensure bandwidth sanity when narrow-band is enabled
+    if ((config_params().extend_correlation_symbols > 1) &&
+        (config_params().pll_bw_narrow_hz > config_params().pll_bw_hz ||
+            config_params().dll_bw_narrow_hz > config_params().dll_bw_hz))
+        {
+            std::cout << TEXT_RED
+                      << "WARNING: Glonass L2: Narrow tracking bandwidth is higher than wide bandwidth."
+                      << TEXT_RESET << std::endl;
+        }
+}
+
+
+void GlonassL2CaDllPllTracking::create_tracking_block()
+{
+    // Create GNU Radio block
+    if (config_params().item_type == "gr_complex")
+        {
+            tracking_sptr_ = dll_pll_veml_make_tracking(config_params());
+            DLOG(INFO) << "Tracking block (" << tracking_sptr_->unique_id() << ")";
         }
     else
         {
-            item_size_ = 0;
+            set_item_size(0);
             tracking_sptr_ = nullptr;
-            LOG(WARNING) << item_type << " unknown tracking item type.";
+            LOG(WARNING) << config_params().item_type << " unknown tracking item type.";
         }
-
-    if (in_streams_ > 1)
-        {
-            LOG(ERROR) << "This implementation only supports one input stream";
-        }
-    if (out_streams_ > 1)
-        {
-            LOG(ERROR) << "This implementation only supports one output stream";
-        }
-}
-
-
-void GlonassL2CaDllPllTracking::stop_tracking()
-{
-}
-
-
-void GlonassL2CaDllPllTracking::start_tracking()
-{
-    tracking_sptr_->start_tracking();
-}
-
-
-/*
- * Set tracking channel unique ID
- */
-void GlonassL2CaDllPllTracking::set_channel(unsigned int channel)
-{
-    channel_ = channel;
-    tracking_sptr_->set_channel(channel);
-}
-
-
-void GlonassL2CaDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
-{
-    tracking_sptr_->set_gnss_synchro(p_gnss_synchro);
-}
-
-
-void GlonassL2CaDllPllTracking::connect(gr::top_block_sptr top_block)
-{
-    if (top_block)
-        { /* top_block is not null */
-        };
-    // nothing to connect, now the tracking uses gr_sync_decimator
-}
-
-
-void GlonassL2CaDllPllTracking::disconnect(gr::top_block_sptr top_block)
-{
-    if (top_block)
-        { /* top_block is not null */
-        };
-    // nothing to disconnect, now the tracking uses gr_sync_decimator
-}
-
-
-gr::basic_block_sptr GlonassL2CaDllPllTracking::get_left_block()
-{
-    return tracking_sptr_;
-}
-
-
-gr::basic_block_sptr GlonassL2CaDllPllTracking::get_right_block()
-{
-    return tracking_sptr_;
 }

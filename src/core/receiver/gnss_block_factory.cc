@@ -62,11 +62,9 @@
 #include "galileo_e6_dll_pll_tracking.h"
 #include "galileo_e6_pcps_acquisition.h"
 #include "galileo_e6_telemetry_decoder.h"
-#include "glonass_l1_ca_dll_pll_c_aid_tracking.h"
 #include "glonass_l1_ca_dll_pll_tracking.h"
 #include "glonass_l1_ca_pcps_acquisition.h"
 #include "glonass_l1_ca_telemetry_decoder.h"
-#include "glonass_l2_ca_dll_pll_c_aid_tracking.h"
 #include "glonass_l2_ca_dll_pll_tracking.h"
 #include "glonass_l2_ca_pcps_acquisition.h"
 #include "glonass_l2_ca_telemetry_decoder.h"
@@ -608,17 +606,9 @@ std::unique_ptr<TrackingInterface> get_trk_block(
         {
             return std::make_unique<GlonassL1CaDllPllTracking>(configuration, role, in_streams, out_streams);
         }
-    else if (implementation == "GLONASS_L1_CA_DLL_PLL_C_Aid_Tracking")
-        {
-            return std::make_unique<GlonassL1CaDllPllCAidTracking>(configuration, role, in_streams, out_streams);
-        }
     else if (implementation == "GLONASS_L2_CA_DLL_PLL_Tracking")
         {
             return std::make_unique<GlonassL2CaDllPllTracking>(configuration, role, in_streams, out_streams);
-        }
-    else if (implementation == "GLONASS_L2_CA_DLL_PLL_C_Aid_Tracking")
-        {
-            return std::make_unique<GlonassL2CaDllPllCAidTracking>(configuration, role, in_streams, out_streams);
         }
     else if (implementation == "BEIDOU_B1I_DLL_PLL_Tracking")
         {

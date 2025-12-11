@@ -22,6 +22,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   able to read files grabbed from [NTLab](https://ntlab.lt/) RF front-ends.
 - Improved `Labsat_Signal_Source` by fixing multi-channel file reading from
   LabSat 3 recordings and adding initial support for LabSat 4.
+- Improvements in Glonass L1/L2 C/A signal tracking and decoding of the GNAV
+  message.
 
 ### Improvements in Maintainability:
 
@@ -39,6 +41,11 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Refactored the internal handling of multi-signal configurations in the PVT
   block for improved maintainability and extensibility. Another excellent
   contribution by @MathieuFavreau.
+- Integration of Glonass L1/l2 C/A signal tracking into the main tracking
+  engine. Removed `GLONASS_L1_CA_DLL_PLL_C_Aid_Tracking` and
+  `GLONASS_L1_CA_DLL_PLL_C_Aid_Tracking` Tracking block implementations,
+  replaced by `GLONASS_L1_CA_DLL_PLL_Tracking` and
+  `GLONASS_L1_CA_DLL_PLL_Tracking`.
 
 ### Improvements in Portability:
 

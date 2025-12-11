@@ -4,6 +4,8 @@
  * for Glonass L1 C/A to a TrackingInterface
  * \author Gabriel Araujo, 2017. gabriel.araujo.5000(at)gmail.com
  * \author Luis Esteve, 2017. luis(at)epsilon-formacion.com
+ * \author Javier Arribas, 2025 javier.arribas(at)cttc.es
+ * \author Carles Fernandez-Prades, 2025 carles.fernandez(at)cttc.es
  *
  *
  * Code DLL + carrier PLL according to the algorithms described in:
@@ -16,14 +18,13 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2025  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
  */
 
 
- 
 #include "glonass_l1_ca_dll_pll_tracking.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "configuration_interface.h"

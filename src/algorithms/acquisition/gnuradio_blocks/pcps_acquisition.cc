@@ -135,7 +135,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_input_power(0),
       d_doppler_center_step_two(0),
       d_magnitude_grid(d_num_doppler_bins, volk_gnsssdr::vector<float>(d_fft_size)),
-      d_tmp_buffer(d_fft_size),
+      d_tmp_buffer(d_effective_fft_size),
       d_input_signal(d_fft_size),
       d_ifft(gnss_fft_rev_make_unique(d_fft_size)),
       d_grid_doppler_wipeoffs(d_num_doppler_bins, volk_gnsssdr::vector<std::complex<float>>(d_fft_size)),

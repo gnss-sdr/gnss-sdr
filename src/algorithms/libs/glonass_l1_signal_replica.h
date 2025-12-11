@@ -38,6 +38,9 @@ namespace own = gsl_lite;
 //! Generates complex GLONASS L1 C/A code for the desired SV ID and code shift
 void glonass_l1_ca_code_gen_complex(own::span<std::complex<float>> dest, uint32_t chip_shift);
 
+//! Generates float GLONASS L1 C/A code for the desired SV ID and code shift
+void glonass_l1_ca_code_gen_float(own::span<float> dest, uint32_t chip_shift);
+
 //! Generates complex GLONASS L1 C/A code for the desired SV ID and code shift, and sampled to specific sampling frequency
 void glonass_l1_ca_code_gen_complex_sampled(own::span<std::complex<float>> dest, int32_t sampling_freq, uint32_t chip_shift);
 

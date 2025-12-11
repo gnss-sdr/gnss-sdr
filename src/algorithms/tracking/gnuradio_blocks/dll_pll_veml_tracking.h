@@ -128,6 +128,7 @@ private:
     double d_code_error_chips;
     double d_code_error_filt_chips;
     double d_code_freq_chips;
+    double d_cfo_frequency_hz;
     double d_carrier_doppler_hz;
     double d_acc_carrier_phase_rad;
     double d_rem_code_phase_chips;

@@ -2423,20 +2423,32 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                                     if (d_first_fix == true)
                                         {
+                                            std::ostringstream ss;
+                                            ss << "First position fix at ";
                                             if (d_show_local_time_zone)
                                                 {
                                                     const boost::posix_time::ptime time_first_solution = d_user_pvt_solver->get_position_UTC_time() + d_utc_diff_time;
-                                                    std::cout << "First position fix at " << time_first_solution << d_local_time_str;
+                                                    ss << time_first_solution << d_local_time_str;
                                                 }
                                             else
                                                 {
-                                                    std::cout << "First position fix at " << d_user_pvt_solver->get_position_UTC_time() << " UTC";
+                                                    ss << d_user_pvt_solver->get_position_UTC_time() << " UTC";
                                                 }
-                                            std::cout << " is Lat = " << d_user_pvt_solver->get_latitude() << " [deg], Long = " << d_user_pvt_solver->get_longitude()
-                                                      << " [deg], Height= " << d_user_pvt_solver->get_height() << " [m]\n";
+                                            ss << " is Lat = " << d_user_pvt_solver->get_latitude()
+                                               << " [deg], Long = " << d_user_pvt_solver->get_longitude()
+                                               << " [deg], Height = " << d_user_pvt_solver->get_height()
+                                               << " [m], with GDOP = " << d_user_pvt_solver->get_gdop();
+                                            std::cout << ss.str() << std::endl;
                                             d_end = std::chrono::system_clock::now();
                                             std::chrono::duration<double> elapsed_seconds = d_end - d_start;
                                             double ttff = elapsed_seconds.count();
+                                            ss << "\nTime to First Fix: " << ttff << " [s] (wall clock)\n";
+                                            if (d_nmea_output_file_enabled)
+                                                {
+                                                    ss << "\nFirst NMEA message: " << d_nmea_printer->get_GPGGA(d_user_pvt_solver.get());
+                                                }
+                                            LOG(INFO) << ss.str();
+
                                             send_ttff_msg(ttff);
                                             d_first_fix = false;
                                         }

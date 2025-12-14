@@ -337,7 +337,7 @@ endif()
 # Minimum required versions
 ################################################################################
 set(GNSSSDR_APPLECLANG_MIN_VERSION "500")
-set(GNSSSDR_ARMADILLO_MIN_VERSION "5.300.0")
+set(GNSSSDR_ARMADILLO_MIN_VERSION "9.900.0")
 set(GNSSSDR_BOOST_MIN_VERSION "1.53")
 set(GNSSSDR_CLANG_MIN_VERSION "3.4.0")
 set(GNSSSDR_GCC_MIN_VERSION "4.7.2")
@@ -374,6 +374,11 @@ if(CMAKE_VERSION VERSION_LESS "3.10")
     set(GNSSSDR_ARMADILLO_LOCAL_VERSION "14.6.x")
 endif()
 if(CMAKE_VERSION VERSION_LESS "3.5")
+    set(GNSSSDR_ARMADILLO_LOCAL_VERSION "12.8.x")
+endif()
+if(((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.1)) OR
+  ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.0)) OR
+  ((CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)))
     set(GNSSSDR_ARMADILLO_LOCAL_VERSION "12.8.x")
 endif()
 
@@ -2195,7 +2200,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 4.8.3)
         set(ARMADILLO_CXX_VERSION -DCMAKE_CXX_FLAGS=-std=c++11)
     endif()
-    if(CMAKE_VERSION VERSION_LESS 3.2)
+    if(${GNSSSDR_ARMADILLO_LOCAL_VERSION} MATCHES "12.8")
         ExternalProject_Add(armadillo-${armadillo_RELEASE}
             PREFIX ${GNSSSDR_BINARY_DIR}/armadillo-${armadillo_RELEASE}
             GIT_REPOSITORY https://gitlab.com/conradsnicta/armadillo-code.git
@@ -2277,26 +2282,28 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
         PURPOSE "Armadillo ${GNSSSDR_ARMADILLO_LOCAL_VERSION} will be downloaded, built, and statically linked when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
     )
     # Fix for macOS
-    find_library(ARPACK_LIBRARY
-        NAMES arpack
-        PATHS ${CMAKE_SYSTEM_LIBRARY_PATH} ${GNSSSDR_LIB_PATHS}
-    )
-    if(ARPACK_LIBRARY)
-        target_link_libraries(Armadillo::armadillo INTERFACE ${ARPACK_LIBRARY})
-    endif()
-    find_library(FLEXIBLAS_LIBRARY
-        NAMES flexiblas
-        PATHS ${CMAKE_SYSTEM_LIBRARY_PATH} ${GNSSSDR_LIB_PATHS}
-    )
-    if(FLEXIBLAS_LIBRARY)
-        target_link_libraries(Armadillo::armadillo INTERFACE ${FLEXIBLAS_LIBRARY})
-    endif()
-    find_library(SUPERLU_LIBRARY
-        NAMES superlu
-        PATHS ${CMAKE_SYSTEM_LIBRARY_PATH} ${GNSSSDR_LIB_PATHS}
-    )
-    if(SUPERLU_LIBRARY)
-        target_link_libraries(Armadillo::armadillo INTERFACE ${SUPERLU_LIBRARY})
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        find_library(ARPACK_LIBRARY
+            NAMES arpack
+            PATHS ${CMAKE_SYSTEM_LIBRARY_PATH} ${GNSSSDR_LIB_PATHS}
+        )
+        if(ARPACK_LIBRARY)
+            target_link_libraries(Armadillo::armadillo INTERFACE ${ARPACK_LIBRARY})
+        endif()
+        find_library(FLEXIBLAS_LIBRARY
+            NAMES flexiblas
+            PATHS ${CMAKE_SYSTEM_LIBRARY_PATH} ${GNSSSDR_LIB_PATHS}
+        )
+        if(FLEXIBLAS_LIBRARY)
+            target_link_libraries(Armadillo::armadillo INTERFACE ${FLEXIBLAS_LIBRARY})
+        endif()
+        find_library(SUPERLU_LIBRARY
+            NAMES superlu
+            PATHS ${CMAKE_SYSTEM_LIBRARY_PATH} ${GNSSSDR_LIB_PATHS}
+        )
+        if(SUPERLU_LIBRARY)
+            target_link_libraries(Armadillo::armadillo INTERFACE ${SUPERLU_LIBRARY})
+        endif()
     endif()
 endif()
 

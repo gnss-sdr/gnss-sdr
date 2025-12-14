@@ -657,21 +657,20 @@ void PositionSystemTest::check_results()
             double sigma_U_2_accuracy = arma::as_scalar(error_up_m * error_up_m.t());
             sigma_U_2_accuracy = sigma_U_2_accuracy / error_up_m.n_elem;
 
-            //            arma::mat error_enu_mat = arma::zeros(3, error_east_m.n_elem);
-            //            error_enu_mat.row(0) = error_east_m;
-            //            error_enu_mat.row(1) = error_north_m;
-            //            error_enu_mat.row(2) = error_up_m;
-            //
-            //            arma::vec error_2D_m = arma::zeros(error_enu_mat.n_cols, 1);
-            //            arma::vec error_3D_m = arma::zeros(error_enu_mat.n_cols, 1);
-            //            for (uint64_t n = 0; n < error_enu_mat.n_cols; n++)
-            //                {
-            //                    error_2D_m(n) = arma::norm(error_enu_mat.submat(0, n, 1, n));
-            //                    error_3D_m(n) = arma::norm(error_enu_mat.col(n));
-            //                }
-
             double static_2D_error_m = sqrt(pow(arma::mean(error_east_m), 2.0) + pow(arma::mean(error_north_m), 2.0));
             double static_3D_error_m = sqrt(pow(arma::mean(error_east_m), 2.0) + pow(arma::mean(error_north_m), 2.0) + pow(arma::mean(error_up_m), 2.0));
+
+            // Percentiles
+            arma::vec p = {0.25, 0.50, 0.67, 0.95, 0.99};
+            arma::mat R_centered_accuracy = R_eb_enu.each_col() - ref_r_enu;
+            arma::rowvec squared_sum_accuracy = arma::sum(arma::square(R_centered_accuracy), 0);
+            arma::vec errors_3d_accuracy = arma::sqrt(squared_sum_accuracy.t());
+            arma::vec percentiles_accuracy = arma::quantile(errors_3d_accuracy, p);
+
+            arma::mat R_centered_precision = R_eb_enu.each_col() - arma::mean(R_eb_enu, 1);
+            arma::rowvec squared_sum_precision = arma::sum(arma::square(R_centered_precision), 0);
+            arma::vec errors_3d_precision = arma::sqrt(squared_sum_precision.t());
+            arma::vec percentiles_precision = arma::quantile(errors_3d_precision, p);
 
             std::chrono::duration<double> elapsed_seconds = end - start;
 
@@ -700,6 +699,16 @@ void PositionSystemTest::check_results()
             stm << "Static Bias 3D = " << static_3D_error_m << " [m]\n";
             stm << '\n';
 
+            stm << "---- STATIC ACCURACY 3D PERCENTILES ----\n";
+            stm << "Minimum error = " << errors_3d_accuracy.min() << " [m]\n";
+            stm << "25th = " << percentiles_accuracy(0) << " [m]\n";
+            stm << "50th = " << percentiles_accuracy(1) << " [m]\n";
+            stm << "67th = " << percentiles_accuracy(2) << " [m]\n";
+            stm << "95th = " << percentiles_accuracy(3) << " [m]\n";
+            stm << "99th = " << percentiles_accuracy(4) << " [m]\n";
+            stm << "Maximum error = " << errors_3d_accuracy.max() << " [m]\n";
+            stm << '\n';
+
             stm << "---- STATIC PRECISION ----\n";
             stm << "2DRMS = " << 2 * sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]\n";
             stm << "DRMS = " << sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]\n";
@@ -708,6 +717,16 @@ void PositionSystemTest::check_results()
             stm << "90% SAS = " << 0.833 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]\n";
             stm << "MRSE = " << sqrt(sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]\n";
             stm << "SEP = " << 0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]\n";
+            stm << '\n';
+
+            stm << "---- STATIC PRECISION 3D PERCENTILES ----\n";
+            stm << "Minimum error = " << errors_3d_precision.min() << " [m]\n";
+            stm << "25th = " << percentiles_precision(0) << " [m]\n";
+            stm << "50th = " << percentiles_precision(1) << " [m]\n";
+            stm << "67th = " << percentiles_precision(2) << " [m]\n";
+            stm << "95th = " << percentiles_precision(3) << " [m]\n";
+            stm << "99th = " << percentiles_precision(4) << " [m]\n";
+            stm << "Maximum error = " << errors_3d_precision.max() << " [m]\n";
             stm << '\n';
 
             stm << "Receiver runtime: " << elapsed_seconds.count() << " [seconds]\n";
@@ -822,6 +841,12 @@ void PositionSystemTest::check_results()
             double max_error_V_eb_e = arma::max(error_module_V_eb_e);
             double min_error_V_eb_e = arma::min(error_module_V_eb_e);
 
+            // Percentiles
+            arma::vec p = {0.25, 0.50, 0.67, 0.95, 0.99};
+            arma::rowvec squared_sum_accuracy = arma::sum(arma::square(error_R_eb_e), 0);
+            arma::vec errors_3d_accuracy = arma::sqrt(squared_sum_accuracy.t());
+            arma::vec percentiles_accuracy = arma::quantile(errors_3d_accuracy, p);
+
             // report
             std::cout << "----- Position and Velocity 3D ECEF error statistics -----\n";
 #if USE_GLOG_AND_GFLAGS
@@ -848,6 +873,14 @@ void PositionSystemTest::check_results()
                       << " (max,min) = " << max_error_V_eb_e
                       << "," << min_error_V_eb_e
                       << " [m/s]\n";
+            std::cout << "---- Percentiles 3D position error:\n";
+            std::cout << "Minimum error = " << errors_3d_accuracy.min() << " [m]\n";
+            std::cout << "25th = " << percentiles_accuracy(0) << " [m]\n";
+            std::cout << "50th = " << percentiles_accuracy(1) << " [m]\n";
+            std::cout << "67th = " << percentiles_accuracy(2) << " [m]\n";
+            std::cout << "95th = " << percentiles_accuracy(3) << " [m]\n";
+            std::cout << "99th = " << percentiles_accuracy(4) << " [m]\n";
+            std::cout << "Maximum error = " << errors_3d_accuracy.max() << " [m]\n";
             std::cout.precision(ss);
 
 // plots

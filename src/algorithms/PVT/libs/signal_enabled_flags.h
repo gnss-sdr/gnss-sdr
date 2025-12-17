@@ -8,7 +8,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2025  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -33,7 +33,9 @@ enum signal_flag : uint32_t
     GLO_1G = 0x1 << 7,
     GLO_2G = 0x1 << 8,
     BDS_B1 = 0x1 << 9,
-    BDS_B3 = 0x1 << 10
+    BDS_B3 = 0x1 << 10,
+    QZS_L1 = 0x1 << 11,
+    QZS_L5 = 0x1 << 12
 };
 
 class Signal_Enabled_Flags

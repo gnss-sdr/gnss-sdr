@@ -8,7 +8,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2025  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -35,7 +35,10 @@ uint32_t flags_from_config(const ConfigurationInterface* configuration)
         {GLO_1G, "Channels_1G.count"},
         {GLO_2G, "Channels_2G.count"},
         {BDS_B1, "Channels_B1.count"},
-        {BDS_B3, "Channels_B3.count"}};
+        {BDS_B3, "Channels_B3.count"},
+        {QZS_L1, "Channels_Q1.count"},
+        {QZS_L5, "Channels_Q5.count"} 
+    };
 
     for (const auto& pair_aux : signal_flag_to_prop)
         {

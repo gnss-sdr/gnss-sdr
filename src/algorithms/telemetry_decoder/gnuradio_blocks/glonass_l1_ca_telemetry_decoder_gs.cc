@@ -149,7 +149,7 @@ void glonass_l1_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
     // Convert from bi-binary code to relative code
     for (int32_t i = 0; i < (GLONASS_GNAV_STRING_BITS); i++)
         {
-            if (frame_symbols[2 * i] >0 && frame_symbols[2 * i + 1] <=0)
+            if (frame_symbols[2 * i] > 0 && frame_symbols[2 * i + 1] <= 0)
                 {
                     relative_code.push_back('1');
                 }
@@ -278,7 +278,7 @@ int glonass_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
     const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
 
     Gnss_Synchro current_symbol{};  // structure to save the synchronization information and send the output object to the next block
-   
+
     // 1. Copy the current tracking output
     current_symbol = in[0][0];
     d_symbol_history.push_back(current_symbol);  // add new symbol to the symbol queue
@@ -301,8 +301,7 @@ int glonass_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                             corr_value += d_preambles_bits[i];
                         }
                 }
-               // std::cout<< "Preamble correlation value: " << corr_value << std::endl;
-                        
+            // std::cout<< "Preamble correlation value: " << corr_value << std::endl;
         }
 
     // ******* frame sync ******************
@@ -316,9 +315,8 @@ int glonass_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                     // Enter into frame pre-detection status
                     d_stat = 1;
                     d_preamble_time_samples = d_symbol_history[0].Tracking_sample_counter;  // record the preamble sample stamp
-                //std::cout<< "Preamble detection for GLONASS L1 C/A SAT " << this->d_satellite;
+                    // std::cout<< "Preamble detection for GLONASS L1 C/A SAT " << this->d_satellite;
                 }
-                
         }
     else if (d_stat == 1)  // possible preamble lock
         {
@@ -343,7 +341,7 @@ int glonass_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                                     d_stat = 0;  // start again
                                 }
                             DLOG(INFO) << "Failed string decoder for GLONASS L1 C/A SAT " << this->d_satellite;
-                            //std::cout<< "Failed string decoder for GLONASS L1 C/A SAT " << this->d_satellite<<". Preamble separation: " << preamble_diff << " samples.";
+                            // std::cout<< "Failed string decoder for GLONASS L1 C/A SAT " << this->d_satellite<<". Preamble separation: " << preamble_diff << " samples.";
                         }
                 }
         }

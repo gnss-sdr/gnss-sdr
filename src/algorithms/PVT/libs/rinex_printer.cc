@@ -4017,13 +4017,13 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Glo
                     line += std::string(1, ' ');
                     line += doub2for(eph.d_t_k, 18, 2);
                     line += std::string(1, ' ');
+                    lengthCheck(line);
+                    out << line << '\n';
                 }
             if (d_version == 3)
                 {
                     out << get_nav_sv_epoch_svclk_line(p_utc_time, sys_char, eph.PRN, -eph.d_tau_n, +eph.d_gamma_n, eph.d_t_k + p_utc_time.date().day_of_week() * 86400) << '\n';
                 }
-            lengthCheck(line);
-            out << line << '\n';
             line.clear();
 
             // -------- BROADCAST ORBIT - 1
@@ -4123,7 +4123,6 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Bei
 
 void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephemeris& eph, double d_TOW_first_observation, const std::string& glonass_bands)
 {
-    std::string line;
     std::map<int32_t, Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_ephemeris_iter;
 
     std::string constellation_legend;
@@ -4183,7 +4182,6 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
 
 void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& /*glonass_gnav_eph*/, double d_TOW_first_observation, const std::string& glonass_bands)
 {
-    std::string line;
     std::string marker_type_id;
 
     if (d_version == 2)
@@ -4239,7 +4237,6 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 
 void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& gps_cnav_eph, const Glonass_Gnav_Ephemeris& /*glonass_gnav_eph*/, double d_TOW_first_observation, const std::string& glonass_bands)
 {
-    std::string line;
     std::string marker_type_id;
 
     if (d_version == 2)

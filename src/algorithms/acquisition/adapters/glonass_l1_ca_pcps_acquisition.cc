@@ -34,7 +34,7 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
           GLONASS_L1_CA_CODE_RATE_CPS,
           100e6,
           GLONASS_L1_CA_CODE_LENGTH_CHIPS,
-          GLONASS_L1_CA_CODE_PEROD_MS)
+          GLONASS_L1_CA_CODE_PERIOD_MS)
 {
 }
 

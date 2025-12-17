@@ -1332,6 +1332,27 @@ void add_constellation_obs_sat_record_lines(const std::string& system, const std
         }
 }
 
+void add_constellation_obs_sat_record_lines(const std::string& system, const std::map<int32_t, Gnss_Synchro>& observables, std::fstream& out, bool log_system_and_prn = true)
+{
+    for (const auto& observable_iter : observables)
+        {
+            std::string line;
+
+            if (log_system_and_prn)
+                {
+                    line += satelliteSystem.at(system);
+                    if (static_cast<int32_t>(observable_iter.second.PRN) < 10)
+                        {
+                            line += std::string(1, '0');
+                        }
+                    line += std::to_string(static_cast<int32_t>(observable_iter.second.PRN));
+                }
+
+            add_obs_sat_record_line(observable_iter.second, line);
+            out << line << '\n';
+        }
+}
+
 std::string get_nav_sv_epoch_svclk_line(const boost::posix_time::ptime& p_utc_time, const std::string& sys_char, uint32_t prn, double value0, double value1, double value2)
 {
     std::string line;
@@ -4777,20 +4798,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
             lengthCheck(line);
             out << line << '\n';
 
-            for (const auto& observables_iter : observables)
-                {
-                    std::string lineObs;
-                    lineObs += satelliteSystem.at("GLONASS");
-                    if (static_cast<int32_t>(observables_iter.second.PRN) < 10)
-                        {
-                            lineObs += std::string(1, '0');
-                        }
-                    lineObs += std::to_string(static_cast<int32_t>(observables_iter.second.PRN));
-
-                    add_obs_sat_record_line(observables_iter.second, lineObs);
-
-                    out << lineObs << '\n';
-                }
+            add_constellation_obs_sat_record_lines("GLONASS", observables, out);
         }
 }
 
@@ -4971,36 +4979,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
     out << line << '\n';
 
     // -------- OBSERVATION record
-    std::string s;
-    std::string lineObs;
-    for (const auto& observables_iter : observablesG1C)
-        {
-            lineObs.clear();
-
-            s.assign(1, observables_iter.second.System);
-            if (d_version == 3)
-                {
-                    // Specify system only if in version 3
-                    if (s == "G")
-                        {
-                            line += satelliteSystem.at("GPS");
-                        }
-                    if (s == "R")
-                        {
-                            line += satelliteSystem.at("GLONASS");
-                        }
-                    if (static_cast<int32_t>(observables_iter.second.PRN) < 10)
-                        {
-                            lineObs += std::string(1, '0');
-                        }
-                    lineObs += std::to_string(static_cast<int32_t>(observables_iter.second.PRN));
-                }
-
-            add_obs_sat_record_line(observables_iter.second, lineObs);
-
-            out << lineObs << '\n';
-        }
-
+    add_constellation_obs_sat_record_lines("GPS", observablesG1C, out, d_version == 3);
     add_constellation_obs_sat_record_lines("GLONASS", available_glo_prns, total_glo_map, out, d_version == 3);
 }
 
@@ -5069,33 +5048,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& g
     out << line << '\n';
 
     // -------- OBSERVATION record
-    std::string s;
-    std::string lineObs;
-    for (const auto& observables_iter : observablesG2S)
-        {
-            lineObs.clear();
-
-            s.assign(1, observables_iter.second.System);
-            // Specify system only if in version 3
-            if (s == "G")
-                {
-                    line += satelliteSystem.at("GPS");
-                }
-            if (s == "R")
-                {
-                    line += satelliteSystem.at("GLONASS");
-                }
-            if (static_cast<int32_t>(observables_iter.second.PRN) < 10)
-                {
-                    lineObs += std::string(1, '0');
-                }
-            lineObs += std::to_string(static_cast<int32_t>(observables_iter.second.PRN));
-
-            add_obs_sat_record_line(observables_iter.second, lineObs);
-
-            out << lineObs << '\n';
-        }
-
+    add_constellation_obs_sat_record_lines("GPS", observablesG2S, out);
     add_constellation_obs_sat_record_lines("GLONASS", available_glo_prns, total_glo_map, out);
 }
 
@@ -5164,32 +5117,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ga
     lengthCheck(line);
     out << line << '\n';
 
-    std::string s;
-    std::string lineObs;
-    for (const auto& observables_iter : observablesE1B)
-        {
-            lineObs.clear();
-
-            s.assign(1, observables_iter.second.System);
-            if (s == "E")
-                {
-                    lineObs += satelliteSystem.at("Galileo");
-                }
-            if (s == "R")
-                {
-                    line += satelliteSystem.at("GLONASS");
-                }
-            if (static_cast<int32_t>(observables_iter.second.PRN) < 10)
-                {
-                    lineObs += std::string(1, '0');
-                }
-            lineObs += std::to_string(static_cast<int32_t>(observables_iter.second.PRN));
-
-            add_obs_sat_record_line(observables_iter.second, lineObs);
-
-            out << lineObs << '\n';
-        }
-
+    add_constellation_obs_sat_record_lines("Galileo", observablesE1B, out);
     add_constellation_obs_sat_record_lines("GLONASS", available_glo_prns, total_glo_map, out);
 }
 
@@ -5314,19 +5242,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, d
             lengthCheck(line);
             out << line << '\n';
 
-            for (const auto& observables_iter : observables)
-                {
-                    std::string lineObs;
-                    lineObs.clear();
-                    lineObs += satelliteSystem.at("GPS");
-                    if (static_cast<int32_t>(observables_iter.second.PRN) < 10)
-                        {
-                            lineObs += std::string(1, '0');
-                        }
-                    lineObs += std::to_string(static_cast<int32_t>(observables_iter.second.PRN));
-                    add_obs_sat_record_line(observables_iter.second, lineObs);
-                    out << lineObs << '\n';
-                }
+            add_constellation_obs_sat_record_lines("GPS", observables, out);
         }
 }
 
@@ -5347,19 +5263,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
     lengthCheck(line);
     out << line << '\n';
 
-    for (const auto& observables_iter : observables)
-        {
-            std::string lineObs;
-            lineObs.clear();
-            lineObs += satelliteSystem.at("GPS");
-            if (static_cast<int32_t>(observables_iter.second.PRN) < 10)
-                {
-                    lineObs += std::string(1, '0');
-                }
-            lineObs += std::to_string(static_cast<int32_t>(observables_iter.second.PRN));
-            add_obs_sat_record_line(observables_iter.second, lineObs);
-            out << lineObs << '\n';
-        }
+    add_constellation_obs_sat_record_lines("GPS", observables, out);
 }
 
 
@@ -5725,31 +5629,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
     lengthCheck(line);
     out << line << '\n';
 
-    std::string s;
-    std::string lineObs;
-
-    for (const auto& observables_iter : observablesG1C)
-        {
-            lineObs.clear();
-
-            s.assign(1, observables_iter.second.System);
-            if (s == "G")
-                {
-                    lineObs += satelliteSystem.at("GPS");
-                }
-            if (s == "E")
-                {
-                    lineObs += satelliteSystem.at("Galileo");
-                }
-            if (static_cast<int32_t>(observables_iter.second.PRN) < 10)
-                {
-                    lineObs += std::string(1, '0');
-                }
-            lineObs += std::to_string(static_cast<int32_t>(observables_iter.second.PRN));
-            add_obs_sat_record_line(observables_iter.second, lineObs);
-            out << lineObs << '\n';
-        }
-
+    add_constellation_obs_sat_record_lines("GPS", observablesG1C, out);
     add_constellation_obs_sat_record_lines("Galileo", available_gal_prns, total_gal_map, out);
 }
 

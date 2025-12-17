@@ -72,7 +72,7 @@ private:
 
     const std::array<int16_t, GLONASS_GNAV_PREAMBLE_LENGTH_BITS> d_preambles_bits{GLONASS_GNAV_PREAMBLE_SAMPLES};
 
-    void decode_string(const double *symbols, int32_t frame_length, double cn0);
+    void decode_string(const double *symbols, double cn0);
 
     // Storage for incoming data
     boost::circular_buffer<Gnss_Synchro> d_symbol_history;

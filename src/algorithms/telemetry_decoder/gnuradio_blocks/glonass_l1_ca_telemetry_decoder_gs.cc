@@ -139,7 +139,7 @@ glonass_l1_ca_telemetry_decoder_gs::~glonass_l1_ca_telemetry_decoder_gs()
 }
 
 
-void glonass_l1_ca_telemetry_decoder_gs::decode_string(const double *frame_symbols, int32_t frame_length, double cn0)
+void glonass_l1_ca_telemetry_decoder_gs::decode_string(const double *frame_symbols, double cn0)
 {
     // 1. Transform from symbols to bits
     std::string relative_code;
@@ -369,7 +369,7 @@ int glonass_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                         }
 
                     // call the decoder
-                    decode_string(string_symbols.data(), string_length, current_symbol.CN0_dB_hz);
+                    decode_string(string_symbols.data(), current_symbol.CN0_dB_hz);
                     bool crc_ok = d_nav.get_flag_CRC_test();
                     if (crc_ok == true)
                         {

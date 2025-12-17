@@ -48,7 +48,6 @@
 #include <set>
 #include <unistd.h>  // for getlogin_r()
 #include <utility>
-#include <vector>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -774,6 +773,7 @@ void add_generated_by_gnss_sdr(std::fstream& out, const std::string& constellati
     out << line << '\n';
 }
 
+
 void add_gnss_sdr_version(std::fstream& out)
 {
     std::string line;
@@ -935,6 +935,7 @@ void add_navigation_header_start(std::fstream& out, const std::string& type, con
     add_gnss_sdr_url(out);
 }
 
+
 void add_observation_header_start(std::fstream& out,
     const std::string& type,
     const std::string& constellation,
@@ -979,6 +980,7 @@ void add_observation_header_start(std::fstream& out,
 
     add_obs_antenna(out);
 }
+
 
 std::string get_iono_line(const std::string& identifier, double value0, double value1, double value2, double value3)
 {
@@ -1177,6 +1179,7 @@ std::string get_leap_second_line(const Gps_Utc_Model& utc_model)
     return get_leap_second_line(utc_model.DeltaT_LS, utc_model.DeltaT_LSF, utc_model.WN_LSF, utc_model.DN);
 }
 
+
 std::string get_leap_second_line(const Gps_Utc_Model& utc_model, int32_t version)
 {
     if (version == 2)
@@ -1203,6 +1206,7 @@ std::string get_leap_second_line(const Beidou_Dnav_Utc_Model& utc_model)
 {
     return get_leap_second_line(utc_model.DeltaT_LS, utc_model.DeltaT_LSF, utc_model.WN_LSF, utc_model.DN);
 }
+
 
 void add_svclk_to_line(const boost::posix_time::ptime& utc_time, bool log_seconds, std::string& line)
 {
@@ -1233,6 +1237,7 @@ void add_svclk_to_line(const boost::posix_time::ptime& utc_time, bool log_second
         }
 }
 
+
 std::string get_obs_epoch_record_lines(const boost::posix_time::ptime& utc_time, double seconds)
 {
     // -------- EPOCH record
@@ -1258,6 +1263,7 @@ std::string get_obs_epoch_record_lines(const boost::posix_time::ptime& utc_time,
 
     return line;
 }
+
 
 std::string get_nav_sv_epoch_svclk_line(const boost::posix_time::ptime& p_utc_time, const std::string& sys_char, uint32_t prn, double value0, double value1, double value2)
 {
@@ -5353,8 +5359,6 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ga
 {
     std::string line = get_obs_epoch_record_lines(Rinex_Printer::compute_Galileo_time(galileo_eph, galileo_obs_time), fmod(galileo_obs_time, 60));
 
-    // Number of satellites observed in current epoch
-
     // Get maps with observations
     std::map<int32_t, Gnss_Synchro> observablesE1B;
     std::map<int32_t, Gnss_Synchro> observablesR1C;
@@ -5873,8 +5877,6 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
     // RINEX observations timestamps are GPS timestamps.
     std::string line = get_obs_epoch_record_lines(Rinex_Printer::compute_GPS_time(eph, obs_time), fmod(obs_time, 60));
 
-    // Number of satellites observed in current epoch
-
     // Get maps with GPS L1 and L2 observations
     std::map<int32_t, Gnss_Synchro> observablesL1;
     std::map<int32_t, Gnss_Synchro> observablesL2;
@@ -6054,10 +6056,8 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string& galileo_bands) const
 {
     // RINEX observations timestamps are Galileo timestamps.
-    // See https://gage.upc.edu/sites/default/files/gLAB/HTML/Observation_Rinex_v3.01.html
+    // See https://server.gage.upc.edu/gLAB/HTML/Observation_Rinex_v3.01.html
     std::string line = get_obs_epoch_record_lines(Rinex_Printer::compute_Galileo_time(eph, obs_time), fmod(obs_time, 60));
-
-    // Number of satellites observed in current epoch
 
     // Get maps with Galileo observations
     std::map<int32_t, Gnss_Synchro> observablesE1B;
@@ -6246,8 +6246,6 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& /*galileo_eph*/, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const
 {
     std::string line = get_obs_epoch_record_lines(Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time), fmod(gps_obs_time, 60));
-
-    // Number of satellites observed in current epoch
 
     // Get maps with observations
     std::map<int32_t, Gnss_Synchro> observablesG1C;
@@ -6483,8 +6481,6 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& eph, const Galileo_Ephemeris& /*galileo_eph*/, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const
 {
     std::string line = get_obs_epoch_record_lines(Rinex_Printer::compute_GPS_time(eph, gps_obs_time), fmod(gps_obs_time, 60));
-
-    // Number of satellites observed in current epoch
 
     // Get maps with observations
     std::map<int32_t, Gnss_Synchro> observablesG2S;
@@ -6737,8 +6733,6 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& /*gps_cnav_eph*/, const Galileo_Ephemeris& /*galileo_eph*/, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables, bool triple_band) const
 {
     std::string line = get_obs_epoch_record_lines(Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time), fmod(gps_obs_time, 60));
-
-    // Number of satellites observed in current epoch
 
     // Get maps with observations
     std::map<int32_t, Gnss_Synchro> observablesG2S;
@@ -7019,12 +7013,9 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris
 {
     std::string line = get_obs_epoch_record_lines(Rinex_Printer::compute_BDS_time(eph, obs_time), fmod(obs_time, 60));
 
-    // Number of satellites observed in current epoch
-
     // Get maps with BeiDou observations
     std::map<int32_t, Gnss_Synchro> observablesB1I;
     std::map<int32_t, Gnss_Synchro> observablesB3I;
-
 
     for (const auto& observables_iter : observables)
         {
@@ -7303,6 +7294,7 @@ int32_t Rinex_Printer::signalStrength(double snr) const
     auto ss = static_cast<int32_t>(std::min(std::max(static_cast<int32_t>(floor(snr / 6)), 1), 9));
     return ss;
 }
+
 
 boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Gps_Navigation_Message& nav_msg) const
 {

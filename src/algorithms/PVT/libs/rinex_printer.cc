@@ -1233,6 +1233,17 @@ void add_svclk_to_line(const boost::posix_time::ptime& p_utc_time, bool log_seco
         }
 }
 
+void add_seconds_to_line(double seconds, std::string& line)
+{
+    // Add extra 0 if seconds are < 10
+    if (seconds < 10)
+        {
+            line += std::string(1, '0');
+        }
+    line += asString(seconds, 7);
+    line += std::string(2, ' ');
+}
+
 std::string get_nav_sv_epoch_svclk_line(const boost::posix_time::ptime& p_utc_time, const std::string& sys_char, uint32_t prn, double value0, double value1, double value2)
 {
     std::string line;
@@ -5124,15 +5135,8 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& g
     line += std::string(1, '>');
 
     add_svclk_to_line(Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time), false, line);
+    add_seconds_to_line(fmod(gps_obs_time, 60), line);
 
-    double seconds = fmod(gps_obs_time, 60);
-    // Add extra 0 if seconds are < 10
-    if (seconds < 10)
-        {
-            line += std::string(1, '0');
-        }
-    line += asString(seconds, 7);
-    line += std::string(2, ' ');
     // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
     line += std::string(1, '0');
 
@@ -5349,15 +5353,8 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ga
     line += std::string(1, '>');
 
     add_svclk_to_line(Rinex_Printer::compute_Galileo_time(galileo_eph, galileo_obs_time), false, line);
+    add_seconds_to_line(fmod(galileo_obs_time, 60), line);
 
-    const double seconds = fmod(galileo_obs_time, 60);
-    // Add extra 0 if seconds are < 10
-    if (seconds < 10)
-        {
-            line += std::string(1, '0');
-        }
-    line += asString(seconds, 7);
-    line += std::string(2, ' ');
     // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
     line += std::string(1, '0');
 
@@ -5805,15 +5802,8 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
     line += std::string(1, '>');
 
     add_svclk_to_line(Rinex_Printer::compute_GPS_time(eph, obs_time), false, line);
+    add_seconds_to_line(fmod(obs_time, 60), line);
 
-    const double seconds = fmod(obs_time, 60);
-    // Add extra 0 if seconds are < 10
-    if (seconds < 10)
-        {
-            line += std::string(1, '0');
-        }
-    line += asString(seconds, 7);
-    line += std::string(2, ' ');
     // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
     line += std::string(1, '0');
 
@@ -5904,15 +5894,8 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
     line += std::string(1, '>');
 
     add_svclk_to_line(Rinex_Printer::compute_GPS_time(eph, obs_time), false, line);
+    add_seconds_to_line(fmod(obs_time, 60), line);
 
-    const double seconds = fmod(obs_time, 60);
-    // Add extra 0 if seconds are < 10
-    if (seconds < 10)
-        {
-            line += std::string(1, '0');
-        }
-    line += asString(seconds, 7);
-    line += std::string(2, ' ');
     // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
     line += std::string(1, '0');
 
@@ -6105,15 +6088,8 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
     line += std::string(1, '>');
 
     add_svclk_to_line(Rinex_Printer::compute_Galileo_time(eph, obs_time), false, line);
+    add_seconds_to_line(fmod(obs_time, 60), line);
 
-    const double seconds = fmod(obs_time, 60);
-    // Add extra 0 if seconds are < 10
-    if (seconds < 10)
-        {
-            line += std::string(1, '0');
-        }
-    line += asString(seconds, 7);
-    line += std::string(2, ' ');
     // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
     line += std::string(1, '0');
 
@@ -6313,15 +6289,8 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
     line += std::string(1, '>');
 
     add_svclk_to_line(Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time), false, line);
+    add_seconds_to_line(fmod(gps_obs_time, 60), line);
 
-    const double seconds = fmod(gps_obs_time, 60);
-    // Add extra 0 if seconds are < 10
-    if (seconds < 10)
-        {
-            line += std::string(1, '0');
-        }
-    line += asString(seconds, 7);
-    line += std::string(2, ' ');
     // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
     line += std::string(1, '0');
 
@@ -6568,15 +6537,8 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
     line += std::string(1, '>');
 
     add_svclk_to_line(Rinex_Printer::compute_GPS_time(eph, gps_obs_time), false, line);
+    add_seconds_to_line(fmod(gps_obs_time, 60), line);
 
-    const double seconds = fmod(gps_obs_time, 60);
-    // Add extra 0 if seconds are < 10
-    if (seconds < 10)
-        {
-            line += std::string(1, '0');
-        }
-    line += asString(seconds, 7);
-    line += std::string(2, ' ');
     // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
     line += std::string(1, '0');
 
@@ -6840,15 +6802,8 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
     line += std::string(1, '>');
 
     add_svclk_to_line(Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time), false, line);
+    add_seconds_to_line(fmod(gps_obs_time, 60), line);
 
-    const double seconds = fmod(gps_obs_time, 60);
-    // Add extra 0 if seconds are < 10
-    if (seconds < 10)
-        {
-            line += std::string(1, '0');
-        }
-    line += asString(seconds, 7);
-    line += std::string(2, ' ');
     // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
     line += std::string(1, '0');
 
@@ -7139,15 +7094,8 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris
     line += std::string(1, '>');
 
     add_svclk_to_line(Rinex_Printer::compute_BDS_time(eph, obs_time), false, line);
+    add_seconds_to_line(fmod(obs_time, 60), line);
 
-    const double seconds = fmod(obs_time, 60);
-    // Add extra 0 if seconds are < 10
-    if (seconds < 10)
-        {
-            line += std::string(1, '0');
-        }
-    line += asString(seconds, 7);
-    line += std::string(2, ' ');
     // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
     line += std::string(1, '0');
 

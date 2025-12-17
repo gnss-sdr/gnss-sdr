@@ -4912,15 +4912,15 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
             const std::string sig_(observables_iter.second.Signal);
             if ((system_ == "R") && (sig_ == "1G"))
                 {
-                    observablesR1C.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesR1C.insert(observables_iter);
                 }
             if ((system_ == "R") && (sig_ == "2G"))
                 {
-                    observablesR2C.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesR2C.insert(observables_iter);
                 }
             if ((system_ == "G") && (sig_ == "1C"))
                 {
-                    observablesG1C.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesG1C.insert(observables_iter);
                 }
         }
 
@@ -5156,15 +5156,15 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& g
             const std::string sig_(observables_iter.second.Signal);
             if ((system_ == "R") && (sig_ == "1G"))
                 {
-                    observablesR1C.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesR1C.insert(observables_iter);
                 }
             if ((system_ == "R") && (sig_ == "2G"))
                 {
-                    observablesR2C.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesR2C.insert(observables_iter);
                 }
             if ((system_ == "G") && (sig_ == "2S"))
                 {
-                    observablesG2S.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesG2S.insert(observables_iter);
                 }
         }
 
@@ -5364,15 +5364,15 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ga
             const std::string sig_(observables_iter.second.Signal);
             if ((system_ == "R") && (sig_ == "1G"))
                 {
-                    observablesR1C.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesR1C.insert(observables_iter);
                 }
             if ((system_ == "R") && (sig_ == "2G"))
                 {
-                    observablesR2C.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesR2C.insert(observables_iter);
                 }
             if ((system_ == "E") && (sig_ == "1B"))
                 {
-                    observablesE1B.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesE1B.insert(observables_iter);
                 }
         }
 
@@ -5886,12 +5886,12 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
             const std::string sig_(observables_iter.second.Signal);
             if ((system_ == "G") && (sig_ == "1C"))
                 {
-                    observablesL1.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesL1.insert(observables_iter);
                     total_mmap.insert(std::pair<uint32_t, Gnss_Synchro>(observables_iter.second.PRN, observables_iter.second));
                 }
             if ((system_ == "G") && (sig_ == "2S"))
                 {
-                    observablesL2.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesL2.insert(observables_iter);
                     mmap_iter = total_mmap.find(observables_iter.second.PRN);
                     if (mmap_iter == total_mmap.end())
                         {
@@ -5903,7 +5903,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
 
             if ((system_ == "G") && (sig_ == "L5"))
                 {
-                    observablesL5.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesL5.insert(observables_iter);
                     mmap_iter = total_mmap.find(observables_iter.second.PRN);
                     if (mmap_iter == total_mmap.end())
                         {
@@ -6069,19 +6069,19 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
             const std::string sig_(observables_iter.second.Signal);
             if ((system_ == "E") && (sig_ == "1B"))
                 {
-                    observablesE1B.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesE1B.insert(observables_iter);
                 }
             if ((system_ == "E") && (sig_ == "5X"))
                 {
-                    observablesE5A.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesE5A.insert(observables_iter);
                 }
             if ((system_ == "E") && (sig_ == "7X"))
                 {
-                    observablesE5B.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesE5B.insert(observables_iter);
                 }
             if ((system_ == "E") && (sig_ == "E6"))
                 {
-                    observablesE6B.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesE6B.insert(observables_iter);
                 }
         }
     const std::size_t found_1B = galileo_bands.find("1B");
@@ -6260,23 +6260,23 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
             const std::string sig_(observables_iter.second.Signal);
             if ((system_ == "E") && (sig_ == "1B"))
                 {
-                    observablesE1B.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesE1B.insert(observables_iter);
                 }
             if ((system_ == "E") && (sig_ == "5X"))
                 {
-                    observablesE5A.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesE5A.insert(observables_iter);
                 }
             if ((system_ == "E") && (sig_ == "7X"))
                 {
-                    observablesE5B.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesE5B.insert(observables_iter);
                 }
             if ((system_ == "E") && (sig_ == "E6"))
                 {
-                    observablesE6B.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesE6B.insert(observables_iter);
                 }
             if ((system_ == "G") && (sig_ == "1C"))
                 {
-                    observablesG1C.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesG1C.insert(observables_iter);
                 }
         }
 
@@ -6498,27 +6498,27 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
             const std::string sig_(observables_iter.second.Signal);
             if ((system_ == "E") && (sig_ == "1B"))
                 {
-                    observablesE1B.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesE1B.insert(observables_iter);
                 }
             if ((system_ == "E") && (sig_ == "5X"))
                 {
-                    observablesE5A.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesE5A.insert(observables_iter);
                 }
             if ((system_ == "E") && (sig_ == "7X"))
                 {
-                    observablesE5B.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesE5B.insert(observables_iter);
                 }
             if ((system_ == "E") && (sig_ == "E6"))
                 {
-                    observablesE6B.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesE6B.insert(observables_iter);
                 }
             if ((system_ == "G") && (sig_ == "2S"))
                 {
-                    observablesG2S.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesG2S.insert(observables_iter);
                 }
             if ((system_ == "G") && (sig_ == "L5"))
                 {
-                    observablesGL5.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesGL5.insert(observables_iter);
                 }
         }
 
@@ -6753,31 +6753,31 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
             const std::string sig_(observables_iter.second.Signal);
             if ((system_ == "E") && (sig_ == "1B"))
                 {
-                    observablesE1B.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesE1B.insert(observables_iter);
                 }
             if ((system_ == "E") && (sig_ == "5X"))
                 {
-                    observablesE5A.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesE5A.insert(observables_iter);
                 }
             if ((system_ == "E") && (sig_ == "7X"))
                 {
-                    observablesE5B.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesE5B.insert(observables_iter);
                 }
             if ((system_ == "E") && (sig_ == "E6"))
                 {
-                    observablesE6B.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesE6B.insert(observables_iter);
                 }
             if ((system_ == "G") && (sig_ == "2S"))
                 {
-                    observablesG2S.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesG2S.insert(observables_iter);
                 }
             if ((system_ == "G") && (sig_ == "L5"))
                 {
-                    observablesGL5.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesGL5.insert(observables_iter);
                 }
             if ((system_ == "G") && (sig_ == "1C"))
                 {
-                    observablesG1C.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesG1C.insert(observables_iter);
                 }
         }
 
@@ -7030,11 +7030,11 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris
             const std::string sig_(observables_iter.second.Signal);
             if ((system_ == "C") && (sig_ == "B1"))
                 {
-                    observablesB1I.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesB1I.insert(observables_iter);
                 }
             if ((system_ == "C") && (sig_ == "B3"))
                 {
-                    observablesB3I.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter.first, observables_iter.second));
+                    observablesB3I.insert(observables_iter);
                 }
         }
     const std::size_t found_B1 = bds_bands.find("B1");

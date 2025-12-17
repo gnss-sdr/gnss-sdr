@@ -1204,9 +1204,9 @@ std::string get_leap_second_line(const Beidou_Dnav_Utc_Model& utc_model)
     return get_leap_second_line(utc_model.DeltaT_LS, utc_model.DeltaT_LSF, utc_model.WN_LSF, utc_model.DN);
 }
 
-void add_svclk_to_line(const boost::posix_time::ptime& p_utc_time, bool log_seconds, std::string& line)
+void add_svclk_to_line(const boost::posix_time::ptime& utc_time, bool log_seconds, std::string& line)
 {
-    const std::string timestring = boost::posix_time::to_iso_string(p_utc_time);
+    const std::string timestring = boost::posix_time::to_iso_string(utc_time);
     const std::string year(timestring, 0, 4);
     const std::string month(timestring, 4, 2);
     const std::string day(timestring, 6, 2);
@@ -1233,8 +1233,18 @@ void add_svclk_to_line(const boost::posix_time::ptime& p_utc_time, bool log_seco
         }
 }
 
-void add_seconds_to_line(double seconds, std::string& line)
+std::string get_obs_epoch_record_lines(const boost::posix_time::ptime& utc_time, double seconds)
 {
+    // -------- EPOCH record
+    std::string line = std::string(1, '>');
+
+    // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
+    // const double gps_t = eph.sv_clock_correction(obs_time);
+
+    line += std::string(1, '>');
+
+    add_svclk_to_line(utc_time, false, line);
+
     // Add extra 0 if seconds are < 10
     if (seconds < 10)
         {
@@ -1242,6 +1252,11 @@ void add_seconds_to_line(double seconds, std::string& line)
         }
     line += asString(seconds, 7);
     line += std::string(2, ' ');
+
+    // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
+    line += std::string(1, '0');
+
+    return line;
 }
 
 std::string get_nav_sv_epoch_svclk_line(const boost::posix_time::ptime& p_utc_time, const std::string& sys_char, uint32_t prn, double value0, double value1, double value2)
@@ -5126,19 +5141,8 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& /*glonass_gnav_eph*/, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const
 {
-    std::string line;
-
     // -------- EPOCH record
-
-    // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
-    // const double gps_t = eph.sv_clock_correction(obs_time);
-    line += std::string(1, '>');
-
-    add_svclk_to_line(Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time), false, line);
-    add_seconds_to_line(fmod(gps_obs_time, 60), line);
-
-    // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
-    line += std::string(1, '0');
+    std::string line = get_obs_epoch_record_lines(Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time), fmod(gps_obs_time, 60));
 
     // Number of satellites observed in current epoch
     // Get maps with observations
@@ -5345,18 +5349,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& g
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& galileo_eph, const Glonass_Gnav_Ephemeris& /*glonass_gnav_eph*/, double galileo_obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const
 {
-    std::string line;
-
-    // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
-    // const double gps_t = eph.sv_clock_correction(obs_time);
-
-    line += std::string(1, '>');
-
-    add_svclk_to_line(Rinex_Printer::compute_Galileo_time(galileo_eph, galileo_obs_time), false, line);
-    add_seconds_to_line(fmod(galileo_obs_time, 60), line);
-
-    // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
-    line += std::string(1, '0');
+    std::string line = get_obs_epoch_record_lines(Rinex_Printer::compute_Galileo_time(galileo_eph, galileo_obs_time), fmod(galileo_obs_time, 60));
 
     // Number of satellites observed in current epoch
 
@@ -5794,18 +5787,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, d
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const
 {
     // RINEX observations timestamps are GPS timestamps.
-    std::string line;
-
-    // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
-    // const double gps_t = eph.sv_clock_correction(obs_time);
-
-    line += std::string(1, '>');
-
-    add_svclk_to_line(Rinex_Printer::compute_GPS_time(eph, obs_time), false, line);
-    add_seconds_to_line(fmod(obs_time, 60), line);
-
-    // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
-    line += std::string(1, '0');
+    std::string line = get_obs_epoch_record_lines(Rinex_Printer::compute_GPS_time(eph, obs_time), fmod(obs_time, 60));
 
     // Number of satellites observed in current epoch
     const int32_t numSatellitesObserved = observables.size();
@@ -5887,17 +5869,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, const Gps_CNAV_Ephemeris& /*eph_cnav*/, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, bool triple_band) const
 {
     // RINEX observations timestamps are GPS timestamps.
-    std::string line;
-
-    // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
-    // const double gps_t = eph.sv_clock_correction(obs_time);
-    line += std::string(1, '>');
-
-    add_svclk_to_line(Rinex_Printer::compute_GPS_time(eph, obs_time), false, line);
-    add_seconds_to_line(fmod(obs_time, 60), line);
-
-    // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
-    line += std::string(1, '0');
+    std::string line = get_obs_epoch_record_lines(Rinex_Printer::compute_GPS_time(eph, obs_time), fmod(obs_time, 60));
 
     // Number of satellites observed in current epoch
 
@@ -6081,17 +6053,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
 {
     // RINEX observations timestamps are Galileo timestamps.
     // See https://gage.upc.edu/sites/default/files/gLAB/HTML/Observation_Rinex_v3.01.html
-    std::string line;
-
-    // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
-    // const double gps_t = eph.sv_clock_correction(obs_time);
-    line += std::string(1, '>');
-
-    add_svclk_to_line(Rinex_Printer::compute_Galileo_time(eph, obs_time), false, line);
-    add_seconds_to_line(fmod(obs_time, 60), line);
-
-    // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
-    line += std::string(1, '0');
+    std::string line = get_obs_epoch_record_lines(Rinex_Printer::compute_Galileo_time(eph, obs_time), fmod(obs_time, 60));
 
     // Number of satellites observed in current epoch
 
@@ -6281,18 +6243,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& /*galileo_eph*/, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const
 {
-    std::string line;
-
-    // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
-    // double gps_t = eph.sv_clock_correction(obs_time);
-
-    line += std::string(1, '>');
-
-    add_svclk_to_line(Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time), false, line);
-    add_seconds_to_line(fmod(gps_obs_time, 60), line);
-
-    // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
-    line += std::string(1, '0');
+    std::string line = get_obs_epoch_record_lines(Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time), fmod(gps_obs_time, 60));
 
     // Number of satellites observed in current epoch
 
@@ -6529,18 +6480,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& eph, const Galileo_Ephemeris& /*galileo_eph*/, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const
 {
-    std::string line;
-
-    // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
-    // double gps_t = eph.sv_clock_correction(obs_time);
-
-    line += std::string(1, '>');
-
-    add_svclk_to_line(Rinex_Printer::compute_GPS_time(eph, gps_obs_time), false, line);
-    add_seconds_to_line(fmod(gps_obs_time, 60), line);
-
-    // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
-    line += std::string(1, '0');
+    std::string line = get_obs_epoch_record_lines(Rinex_Printer::compute_GPS_time(eph, gps_obs_time), fmod(gps_obs_time, 60));
 
     // Number of satellites observed in current epoch
 
@@ -6794,18 +6734,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& /*gps_cnav_eph*/, const Galileo_Ephemeris& /*galileo_eph*/, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables, bool triple_band) const
 {
-    std::string line;
-
-    // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
-    // double gps_t = eph.sv_clock_correction(obs_time);
-
-    line += std::string(1, '>');
-
-    add_svclk_to_line(Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time), false, line);
-    add_seconds_to_line(fmod(gps_obs_time, 60), line);
-
-    // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
-    line += std::string(1, '0');
+    std::string line = get_obs_epoch_record_lines(Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time), fmod(gps_obs_time, 60));
 
     // Number of satellites observed in current epoch
 
@@ -7086,18 +7015,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string& bds_bands) const
 {
-    std::string line;
-
-    // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
-    // double gps_t = eph.sv_clock_correction(obs_time);
-
-    line += std::string(1, '>');
-
-    add_svclk_to_line(Rinex_Printer::compute_BDS_time(eph, obs_time), false, line);
-    add_seconds_to_line(fmod(obs_time, 60), line);
-
-    // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
-    line += std::string(1, '0');
+    std::string line = get_obs_epoch_record_lines(Rinex_Printer::compute_BDS_time(eph, obs_time), fmod(obs_time, 60));
 
     // Number of satellites observed in current epoch
 

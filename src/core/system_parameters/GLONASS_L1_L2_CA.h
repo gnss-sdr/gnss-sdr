@@ -78,6 +78,7 @@ constexpr double GLONASS_L1_CA_DFREQ_HZ = DFRQ1_GLO;        //!< Freq Bias for G
 constexpr double GLONASS_L1_CA_CODE_RATE_CPS = 0.511e6;     //!< GLONASS L1 C/A code rate [chips/s]
 constexpr double GLONASS_L1_CA_CODE_LENGTH_CHIPS = 511.0;   //!< GLONASS L1 C/A code length [chips]
 constexpr double GLONASS_L1_CA_CODE_PERIOD_S = 0.001;       //!< GLONASS L1 C/A code period [seconds]
+constexpr double GLONASS_L1_CA_SYMBOL_PERIOD_S = 0.01;       //!< GLONASS L1 C/A symbol period [seconds]
 constexpr double GLONASS_L1_CA_CHIP_PERIOD_S = 1.9569e-06;  //!< GLONASS L1 C/A chip period [seconds]
 constexpr double GLONASS_L1_CA_SYMBOL_RATE_BPS = 1000.0;
 
@@ -93,16 +94,22 @@ constexpr int32_t GLONASS_L1_CA_HISTORY_DEEP = 100;
     {                         \
         1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0}
 
+#define GLONASS_GNAV_PREAMBLE_SAMPLES \
+    {                         \
+        1, 1, 1, 1, 1, -1, -1, -1, 1, 1, -1, 1, 1, 1, -1, 1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, -1, 1, 1, -1}
+
 constexpr char GLONASS_GNAV_PREAMBLE_STR[301] = "111111111111111111111111111111111111111111111111110000000000000000000000000000001111111111111111111100000000001111111111111111111111111111110000000000111111111100000000001111111111000000000000000000000000000000000000000011111111110000000000000000000011111111110000000000111111111111111111110000000000";
 constexpr double GLONASS_GNAV_PREAMBLE_DURATION_S = 0.300;
 constexpr int32_t GLONASS_GNAV_PREAMBLE_LENGTH_BITS = 30;
 constexpr int32_t GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS = 300;
 constexpr int32_t GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS = 2000;
+constexpr int32_t GLONASS_GNAV_PREAMBLE_PERIOD_BITS = 200;
 constexpr int32_t GLONASS_GNAV_TELEMETRY_RATE_BITS_SECOND = 50;  //!< NAV message bit rate [bits/s]
 constexpr int32_t GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT = 10;
 constexpr int32_t GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_PREAMBLE_BIT = 10;
 constexpr int32_t GLONASS_GNAV_TELEMETRY_RATE_SYMBOLS_SECOND = GLONASS_GNAV_TELEMETRY_RATE_BITS_SECOND * GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT;  //!< NAV message bit rate [symbols/s]
-constexpr int32_t GLONASS_GNAV_STRING_SYMBOLS = 2000;                                                                                             //!< Number of bits per string in the GNAV message (85 data bits + 30 time mark bits) [bits]
+constexpr int32_t GLONASS_GNAV_STRING_SYMBOLS_WITH_PREABLE = 2000;    
+constexpr int32_t GLONASS_GNAV_STRING_BIBINARY_WITH_PREABLE = 200;                                                                                    //!< Number of bits per string in the GNAV message (85 data bits + 30 time mark bits) [bits]
 constexpr int32_t GLONASS_GNAV_STRING_BITS = 85;                                                                                                  //!< Number of bits per string in the GNAV message (85 data bits + 30 time mark bits) [bits]
 constexpr int32_t GLONASS_GNAV_HAMMING_CODE_BITS = 8;                                                                                             //!< Number of bits in hamming code sequence of GNAV message
 constexpr int32_t GLONASS_GNAV_DATA_SYMBOLS = 1700;                                                                                               // STRING DATA WITHOUT PREAMBLE

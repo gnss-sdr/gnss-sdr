@@ -104,7 +104,7 @@ glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(
                 }
         }
 
-    d_symbol_history.set_capacity(GLONASS_GNAV_STRING_SYMBOLS);
+    d_symbol_history.set_capacity(GLONASS_GNAV_STRING_SYMBOLS_WITH_PREABLE);
 
     if (d_dump_crc_stats)
         {
@@ -411,11 +411,11 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
     else if (d_stat == 2)
         {
             // FIXME: The preamble index marks the first symbol of the string count. Here I just wait for another full string to be received before processing
-            if (d_sample_counter == d_preamble_index + static_cast<uint64_t>(GLONASS_GNAV_STRING_SYMBOLS))
+            if (d_sample_counter == d_preamble_index + static_cast<uint64_t>(GLONASS_GNAV_STRING_SYMBOLS_WITH_PREABLE))
                 {
                     // NEW GLONASS string received
                     // 0. fetch the symbols into an array
-                    const int32_t string_length = GLONASS_GNAV_STRING_SYMBOLS - d_symbols_per_preamble;
+                    const int32_t string_length = GLONASS_GNAV_STRING_SYMBOLS_WITH_PREABLE - d_symbols_per_preamble;
                     std::array<double, GLONASS_GNAV_DATA_SYMBOLS> string_symbols{};
 
                     // ******* SYMBOL TO BIT *******

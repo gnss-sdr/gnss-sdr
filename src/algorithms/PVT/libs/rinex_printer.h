@@ -88,7 +88,8 @@ public:
      */
     explicit Rinex_Printer(int version = 0,
         const std::string& base_path = ".",
-        const std::string& base_name = "-");
+        const std::string& base_name = "-",
+        bool pre_2009_file = false);
 
     /*!
      * \brief Destructor. Removes created files if empty.
@@ -140,11 +141,6 @@ public:
         const std::map<int32_t, Beidou_Dnav_Ephemeris>& new_bds_eph);
 
     /*!
-     * \brief Set processing for signals older than 2009
-     */
-    void set_pre_2009_file(bool pre_2009_file);
-
-    /*!
      * \brief Returns true is the RINEX file headers are already written
      */
     inline bool is_rinex_header_written() const
@@ -173,7 +169,8 @@ private:
     // Not the best, but reorder params to select the correct constructor
     explicit Rinex_Printer(const std::string& base_name,
         const std::string& base_rinex_path,
-        int version);
+        int version,
+        bool pre_2009_file);
 
     /*
      * Generates the GPS Observation data header

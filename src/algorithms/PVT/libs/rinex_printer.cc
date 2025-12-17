@@ -1547,26 +1547,28 @@ void add_obs_glonass_code_phase_bias(std::fstream& out,
 
 Rinex_Printer::Rinex_Printer(int version,
     const std::string& base_path,
-    const std::string& base_name) : Rinex_Printer(base_name, getAndCreateBaseRinexPath(base_path), version)
+    const std::string& base_name,
+    bool pre_2009_file) : Rinex_Printer(base_name, getAndCreateBaseRinexPath(base_path), version, pre_2009_file)
 {
 }
 
 
 Rinex_Printer::Rinex_Printer(const std::string& base_name,
     const std::string& base_rinex_path,
-    int version) : observationType(getObservationTypes()),
-                   observationCode(getObservationCodes()),
-                   navfilename(getFilePath("RINEX_FILE_TYPE_GPS_NAV", base_name, base_rinex_path)),
-                   obsfilename(getFilePath("RINEX_FILE_TYPE_OBS", base_name, base_rinex_path)),
-                   sbsfilename(getFilePath("RINEX_FILE_TYPE_SBAS", base_name, base_rinex_path)),
-                   navGalfilename(getFilePath("RINEX_FILE_TYPE_GAL_NAV", base_name, base_rinex_path)),
-                   navGlofilename(getFilePath("RINEX_FILE_TYPE_GLO_NAV", base_name, base_rinex_path)),
-                   navBdsfilename(getFilePath("RINEX_FILE_TYPE_BDS_NAV", base_name, base_rinex_path)),
-                   navMixfilename(getFilePath("RINEX_FILE_TYPE_MIXED_NAV", base_name, base_rinex_path)),
-                   d_fake_cnav_iode(1),
-                   d_rinex_header_updated(false),
-                   d_rinex_header_written(false),
-                   d_pre_2009_file(false)
+    int version,
+    bool pre_2009_file) : observationType(getObservationTypes()),
+                          observationCode(getObservationCodes()),
+                          navfilename(getFilePath("RINEX_FILE_TYPE_GPS_NAV", base_name, base_rinex_path)),
+                          obsfilename(getFilePath("RINEX_FILE_TYPE_OBS", base_name, base_rinex_path)),
+                          sbsfilename(getFilePath("RINEX_FILE_TYPE_SBAS", base_name, base_rinex_path)),
+                          navGalfilename(getFilePath("RINEX_FILE_TYPE_GAL_NAV", base_name, base_rinex_path)),
+                          navGlofilename(getFilePath("RINEX_FILE_TYPE_GLO_NAV", base_name, base_rinex_path)),
+                          navBdsfilename(getFilePath("RINEX_FILE_TYPE_BDS_NAV", base_name, base_rinex_path)),
+                          navMixfilename(getFilePath("RINEX_FILE_TYPE_MIXED_NAV", base_name, base_rinex_path)),
+                          d_fake_cnav_iode(1),
+                          d_rinex_header_updated(false),
+                          d_rinex_header_written(false),
+                          d_pre_2009_file(pre_2009_file)
 
 {
     std::map<std::string, std::fstream&> fileMap = {
@@ -7514,12 +7516,6 @@ double Rinex_Printer::get_leap_second(const Glonass_Gnav_Ephemeris& eph, double 
         }
 
     return leap_second;
-}
-
-
-void Rinex_Printer::set_pre_2009_file(bool pre_2009_file)
-{
-    d_pre_2009_file = pre_2009_file;
 }
 
 

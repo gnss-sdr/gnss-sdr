@@ -135,7 +135,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_input_power(0),
       d_doppler_center_step_two(0),
       d_magnitude_grid(d_num_doppler_bins, volk_gnsssdr::vector<float>(d_fft_size)),
-      d_tmp_buffer(d_fft_size),
+      d_tmp_buffer(d_effective_fft_size),
       d_input_signal(d_fft_size),
       d_ifft(gnss_fft_rev_make_unique(d_fft_size)),
       d_grid_doppler_wipeoffs(d_num_doppler_bins, volk_gnsssdr::vector<std::complex<float>>(d_fft_size)),
@@ -461,7 +461,7 @@ pcps_acquisition::AcquisitionResult pcps_acquisition::first_vs_second_peak_stati
     // Find the correlation peak and the carrier frequency
     for (uint32_t i = 0; i < num_doppler_bins; i++)
         {
-            volk_gnsssdr_32f_index_max_32u(&tmp_intex_t, d_magnitude_grid[i].data(), d_fft_size);
+            volk_gnsssdr_32f_index_max_32u(&tmp_intex_t, d_magnitude_grid[i].data(), d_effective_fft_size);
             if (d_magnitude_grid[i][tmp_intex_t] > firstPeak)
                 {
                     firstPeak = d_magnitude_grid[i][tmp_intex_t];
@@ -486,20 +486,20 @@ pcps_acquisition::AcquisitionResult pcps_acquisition::first_vs_second_peak_stati
     // Correct code phase exclude range if the range includes array boundaries
     if (excludeRangeIndex1 < 0)
         {
-            excludeRangeIndex1 = d_fft_size + excludeRangeIndex1;
+            excludeRangeIndex1 = d_effective_fft_size + excludeRangeIndex1;
         }
-    else if (excludeRangeIndex2 >= static_cast<int32_t>(d_fft_size))
+    else if (excludeRangeIndex2 >= static_cast<int32_t>(d_effective_fft_size))
         {
-            excludeRangeIndex2 = excludeRangeIndex2 - d_fft_size;
+            excludeRangeIndex2 = excludeRangeIndex2 - d_effective_fft_size;
         }
 
     int32_t idx = excludeRangeIndex1;
-    std::copy(d_magnitude_grid[index_doppler].data(), d_magnitude_grid[index_doppler].data() + d_fft_size, d_tmp_buffer.data());
+    std::copy(d_magnitude_grid[index_doppler].data(), d_magnitude_grid[index_doppler].data() + d_effective_fft_size, d_tmp_buffer.data());
     do
         {
             d_tmp_buffer[idx] = 0.0;
             idx++;
-            if (idx == static_cast<int32_t>(d_fft_size))
+            if (idx == static_cast<int32_t>(d_effective_fft_size))
                 {
                     idx = 0;
                 }
@@ -507,7 +507,7 @@ pcps_acquisition::AcquisitionResult pcps_acquisition::first_vs_second_peak_stati
     while (idx != excludeRangeIndex2);
 
     // Find the second highest correlation peak in the same freq. bin ---
-    volk_gnsssdr_32f_index_max_32u(&tmp_intex_t, d_tmp_buffer.data(), d_fft_size);
+    volk_gnsssdr_32f_index_max_32u(&tmp_intex_t, d_tmp_buffer.data(), d_effective_fft_size);
     const float secondPeak = d_tmp_buffer[tmp_intex_t];
 
     // Compute the test statistics and compare to the threshold

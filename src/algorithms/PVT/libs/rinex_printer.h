@@ -39,15 +39,12 @@
 #define GNSS_SDR_RINEX_PRINTER_H
 
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <cstdint>        // for int32_t
-#include <cstdlib>        // for strtol, strtod
-#include <fstream>        // for fstream
-#include <iomanip>        // for setprecision
-#include <map>            // for map
-#include <sstream>        // for stringstream
-#include <string>         // for string
-#include <unordered_map>  // for unordered_map
-#include <vector>         // for vector
+#include <cstdint>  // for int32_t
+#include <cstdlib>  // for strtol, strtod
+#include <fstream>  // for fstream
+#include <map>      // for map
+#include <string>   // for string
+#include <vector>   // for vector
 
 
 /** \addtogroup PVT
@@ -88,7 +85,8 @@ public:
      */
     explicit Rinex_Printer(int version = 0,
         const std::string& base_path = ".",
-        const std::string& base_name = "-");
+        const std::string& base_name = "-",
+        bool pre_2009_file = false);
 
     /*!
      * \brief Destructor. Removes created files if empty.
@@ -140,11 +138,6 @@ public:
         const std::map<int32_t, Beidou_Dnav_Ephemeris>& new_bds_eph);
 
     /*!
-     * \brief Set processing for signals older than 2009
-     */
-    void set_pre_2009_file(bool pre_2009_file);
-
-    /*!
      * \brief Returns true is the RINEX file headers are already written
      */
     inline bool is_rinex_header_written() const
@@ -173,7 +166,8 @@ private:
     // Not the best, but reorder params to select the correct constructor
     explicit Rinex_Printer(const std::string& base_name,
         const std::string& base_rinex_path,
-        int version);
+        int version,
+        bool pre_2009_file);
 
     /*
      * Generates the GPS Observation data header
@@ -367,8 +361,7 @@ private:
     void log_rinex_obs(std::fstream& out,
         const Glonass_Gnav_Ephemeris& eph,
         double obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables,
-        const std::string& glonass_bands = "1C") const;
+        const std::map<int32_t, Gnss_Synchro>& observables) const;
 
     /*
      * Writes Mixed GPS L1 C/A - GLONASS observables into the RINEX file
@@ -460,8 +453,7 @@ private:
     void rinex_nav_header(std::fstream& out,
         const Galileo_Iono& galileo_iono,
         const Galileo_Utc_Model& galileo_utc_model,
-        const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model,
-        const Glonass_Gnav_Almanac& glonass_gnav_almanac) const;
+        const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model) const;
 
     /*
      * Generates the Mixed (GPS L1 C/A/GLONASS L1, L2) Navigation Data header
@@ -470,8 +462,7 @@ private:
         const Gps_Iono& gps_iono,
         const Gps_Utc_Model& gps_utc_model,
         const Gps_Ephemeris& eph,
-        const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model,
-        const Glonass_Gnav_Almanac& glonass_gnav_almanac);
+        const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model);
 
     /*
      * Generates the Mixed (GPS L2C C/A/GLONASS L1, L2) Navigation Data header
@@ -479,8 +470,7 @@ private:
     void rinex_nav_header(std::fstream& out,
         const Gps_CNAV_Iono& gps_iono,
         const Gps_CNAV_Utc_Model& gps_utc_model,
-        const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model,
-        const Glonass_Gnav_Almanac& glonass_gnav_almanac);
+        const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model);
 
     /*
      * Generates the BDS B1I or B3I Navigation Data header
@@ -678,27 +668,23 @@ private:
         const Galileo_Utc_Model& utc_model) const;
 
     void update_nav_header(std::fstream& out,
-        const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model,
-        const Glonass_Gnav_Almanac& glonass_gnav_almanac) const;
+        const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model) const;
 
     void update_nav_header(std::fstream& out,
         const Gps_Iono& gps_iono,
         const Gps_Utc_Model& gps_utc,
         const Gps_Ephemeris& eph,
-        const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model,
-        const Glonass_Gnav_Almanac& glonass_gnav_almanac) const;
+        const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model) const;
 
     void update_nav_header(std::fstream& out,
         const Gps_CNAV_Iono& gps_iono,
         const Gps_CNAV_Utc_Model& gps_utc_model,
-        const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model,
-        const Glonass_Gnav_Almanac& glonass_gnav_almanac) const;
+        const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model) const;
 
     void update_nav_header(std::fstream& out,
         const Galileo_Iono& galileo_iono,
         const Galileo_Utc_Model& galileo_utc_model,
-        const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model,
-        const Glonass_Gnav_Almanac& glonass_gnav_almanac) const;
+        const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model) const;
 
     void update_nav_header(std::fstream& out,
         const Beidou_Dnav_Utc_Model& utc_model,
@@ -742,7 +728,7 @@ private:
     int d_version;  // RINEX version (2 for 2.10/2.11 and 3 for 3.01)
     bool d_rinex_header_updated;
     bool d_rinex_header_written;
-    bool d_pre_2009_file;
+    const bool d_pre_2009_file;
 };
 
 

@@ -39,15 +39,12 @@
 #define GNSS_SDR_RINEX_PRINTER_H
 
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <cstdint>        // for int32_t
-#include <cstdlib>        // for strtol, strtod
-#include <fstream>        // for fstream
-#include <iomanip>        // for setprecision
-#include <map>            // for map
-#include <sstream>        // for stringstream
-#include <string>         // for string
-#include <unordered_map>  // for unordered_map
-#include <vector>         // for vector
+#include <cstdint>  // for int32_t
+#include <cstdlib>  // for strtol, strtod
+#include <fstream>  // for fstream
+#include <map>      // for map
+#include <string>   // for string
+#include <vector>   // for vector
 
 
 /** \addtogroup PVT
@@ -731,7 +728,7 @@ private:
     int d_version;  // RINEX version (2 for 2.10/2.11 and 3 for 3.01)
     bool d_rinex_header_updated;
     bool d_rinex_header_written;
-    bool d_pre_2009_file;
+    const bool d_pre_2009_file;
 };
 
 

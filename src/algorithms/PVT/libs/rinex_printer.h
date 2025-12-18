@@ -693,11 +693,6 @@ private:
     void update_obs_header(std::fstream& out, const std::string& leap_second_line) const;
 
     /*
-     * Generation of RINEX signal strength indicators
-     */
-    int signalStrength(double snr) const;
-
-    /*
      * Generates the data for the PGM / RUN BY / DATE line
      */
     std::string getLocalTime() const;

@@ -722,7 +722,9 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
                         {
                             std::cout << "LabSat sample quantization: " << d_ls3w_QUA << " bits for I + " << d_ls3w_QUA << " bits for Q.\n";
                         }
-                }else{
+                }
+            else
+                {
                     // Look for LS4 new QUAN_A _B _C fields
                     std::string ls3w_QUA_aux = ini_reader->Get("config", "QUAN_A", empty_string);
                     if (!ls3w_QUA_aux.empty())
@@ -740,11 +742,12 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
                                 {
                                     std::cout << "LabSat sample quantization: " << d_ls3w_QUA << " bits for I + " << d_ls3w_QUA << " bits for Q.\n";
                                 }
-                            }else{
-                                std::cerr << "LabSat sample quantization QUAN_A field not found.\n";
-                                return -1;
-                            }
-                
+                        }
+                    else
+                        {
+                            std::cerr << "LabSat sample quantization QUAN_A field not found.\n";
+                            return -1;
+                        }
                 }
 
             // Number of RF channels
@@ -870,13 +873,13 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
                     relative_buff_sizes.emplace_back(channel.buff_size * channel.bw_div);
                 }
 
-            //LS4 bandwidths may be different between channels!
-            //    if (!are_equal_ignore_nonpositive(bandwidths))
-            //    {
-            //        std::cerr << "\nConfiguration error: Bandwidth configuration is invalid.\n";
-            //        std::cerr << "Exiting the program.\n";
-            //        return -1;
-            //    }
+            // LS4 bandwidths may be different between channels!
+            //     if (!are_equal_ignore_nonpositive(bandwidths))
+            //     {
+            //         std::cerr << "\nConfiguration error: Bandwidth configuration is invalid.\n";
+            //         std::cerr << "Exiting the program.\n";
+            //         return -1;
+            //     }
             if (!are_equal_ignore_nonpositive(relative_buff_sizes))
                 {
                     std::cerr << "\nConfiguration error: Buffer size configuration is invalid.\n";

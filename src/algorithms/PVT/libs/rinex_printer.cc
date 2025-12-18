@@ -713,6 +713,16 @@ void lengthCheck(const std::string& line)
 }
 
 
+/*
+ * Generation of RINEX signal strength indicators
+ */
+int32_t signal_strength(double snr)
+{
+    auto ss = static_cast<int32_t>(std::min(std::max(static_cast<int32_t>(floor(snr / 6)), 1), 9));
+    return ss;
+}
+
+
 void override_stream_with_new_data(std::fstream& out, const std::string& filename, const std::vector<std::string>& data, int64_t seek_pos)
 {
     out.close();
@@ -1264,6 +1274,84 @@ std::string get_obs_epoch_record_lines(const boost::posix_time::ptime& utc_time,
     return line;
 }
 
+void add_obs_sat_record_line(const Gnss_Synchro& synchro, std::string& line, bool padding = true)
+{
+    const int32_t ssi = signal_strength(synchro.CN0_dB_hz);
+
+    // PSEUDORANGE
+    line += rightJustify(asString(synchro.Pseudorange_m, 3), 14);
+    line += std::string(1, ' ');                      // Loss of lock indicator (LLI)
+    line += rightJustify(asString<int32_t>(ssi), 1);  // Signal Strength Indicator (SSI)
+
+    // PHASE
+    line += rightJustify(asString(synchro.Carrier_phase_rads / TWO_PI, 3), 14);
+    line += std::string(1, ' ');                      // Loss of lock indicator (LLI)
+    line += rightJustify(asString<int32_t>(ssi), 1);  // Signal Strength Indicator (SSI)
+
+    // DOPPLER
+    line += rightJustify(asString(synchro.Carrier_Doppler_hz, 3), 14);
+    line += std::string(1, ' ');                      // Loss of lock indicator (LLI)
+    line += rightJustify(asString<int32_t>(ssi), 1);  // Signal Strength Indicator (SSI)
+
+    // SIGNAL STRENGTH
+    line += rightJustify(asString(synchro.CN0_dB_hz, 3), 14);
+
+    if (padding && line.size() < 80)
+        {
+            line += std::string(80 - line.size(), ' ');
+        }
+}
+
+void add_constellation_obs_sat_record_lines(const std::string& system, const std::set<uint32_t>& available_prns, const std::multimap<uint32_t, Gnss_Synchro>& prn_to_synchro, std::fstream& out, bool log_system_and_prn = true)
+{
+    for (const auto& prn : available_prns)
+        {
+            std::string line;
+
+            if (log_system_and_prn)
+                {
+                    line += satelliteSystem.at(system);
+                    if (static_cast<int32_t>(prn) < 10)
+                        {
+                            line += std::string(1, '0');
+                        }
+                    line += std::to_string(static_cast<int32_t>(prn));
+                }
+
+            const auto ret = prn_to_synchro.equal_range(prn);
+            for (auto iter = ret.first; iter != ret.second; ++iter)
+                {
+                    add_obs_sat_record_line(iter->second, line, false);
+                }
+
+            if (line.size() < 80)
+                {
+                    line += std::string(80 - line.size(), ' ');
+                }
+            out << line << '\n';
+        }
+}
+
+void add_constellation_obs_sat_record_lines(const std::string& system, const std::map<int32_t, Gnss_Synchro>& observables, std::fstream& out, bool log_system_and_prn = true)
+{
+    for (const auto& observable_iter : observables)
+        {
+            std::string line;
+
+            if (log_system_and_prn)
+                {
+                    line += satelliteSystem.at(system);
+                    if (static_cast<int32_t>(observable_iter.second.PRN) < 10)
+                        {
+                            line += std::string(1, '0');
+                        }
+                    line += std::to_string(static_cast<int32_t>(observable_iter.second.PRN));
+                }
+
+            add_obs_sat_record_line(observable_iter.second, line);
+            out << line << '\n';
+        }
+}
 
 std::string get_nav_sv_epoch_svclk_line(const boost::posix_time::ptime& p_utc_time, const std::string& sys_char, uint32_t prn, double value0, double value1, double value2)
 {
@@ -4668,54 +4756,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
             for (const auto& observables_iter : observables)
                 {
                     std::string lineObs;
-                    lineObs.clear();
-                    line.clear();
-                    // GLONASS L1 PSEUDORANGE
-                    line += std::string(2, ' ');
-                    lineObs += rightJustify(asString(observables_iter.second.Pseudorange_m, 3), 14);
-
-                    // Loss of lock indicator (LLI)
-                    int32_t lli = 0;  // Include in the observation!!
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-
-                    // Signal Strength Indicator (SSI)
-                    const int32_t ssi = Rinex_Printer::signalStrength(observables_iter.second.CN0_dB_hz);
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-                    // GLONASS L1 CA PHASE
-                    lineObs += rightJustify(asString(observables_iter.second.Carrier_phase_rads / TWO_PI, 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-                    // GLONASS L1 CA DOPPLER
-                    lineObs += rightJustify(asString(observables_iter.second.Carrier_Doppler_hz, 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-                    // GLONASS L1 SIGNAL STRENGTH
-                    lineObs += rightJustify(asString(observables_iter.second.CN0_dB_hz, 3), 14);
-                    if (lineObs.size() < 80)
-                        {
-                            lineObs += std::string(80 - lineObs.size(), ' ');
-                        }
+                    add_obs_sat_record_line(observables_iter.second, lineObs);
                     out << lineObs << '\n';
                 }
         }
@@ -4757,68 +4798,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
             lengthCheck(line);
             out << line << '\n';
 
-            for (const auto& observables_iter : observables)
-                {
-                    std::string lineObs;
-                    lineObs.clear();
-                    lineObs += satelliteSystem.at("GLONASS");
-                    if (static_cast<int32_t>(observables_iter.second.PRN) < 10)
-                        {
-                            lineObs += std::string(1, '0');
-                        }
-                    lineObs += std::to_string(static_cast<int32_t>(observables_iter.second.PRN));
-                    // lineObs += std::string(2, ' ');
-                    lineObs += rightJustify(asString(observables_iter.second.Pseudorange_m, 3), 14);
-
-                    // Loss of lock indicator (LLI)
-                    int32_t lli = 0;  // Include in the observation!!
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-
-                    // Signal Strength Indicator (SSI)
-                    const int32_t ssi = Rinex_Printer::signalStrength(observables_iter.second.CN0_dB_hz);
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // GLONASS L1 CA PHASE
-                    lineObs += rightJustify(asString(observables_iter.second.Carrier_phase_rads / TWO_PI, 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // GLONASS L1 CA DOPPLER
-                    lineObs += rightJustify(asString(observables_iter.second.Carrier_Doppler_hz, 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // GLONASS L1 SIGNAL STRENGTH
-                    lineObs += rightJustify(asString(observables_iter.second.CN0_dB_hz, 3), 14);
-
-                    if (lineObs.size() < 80)
-                        {
-                            lineObs += std::string(80 - lineObs.size(), ' ');
-                        }
-                    out << lineObs << '\n';
-                }
+            add_constellation_obs_sat_record_lines("GLONASS", observables, out);
         }
 }
 
@@ -4999,151 +4979,8 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
     out << line << '\n';
 
     // -------- OBSERVATION record
-    std::string s;
-    std::string lineObs;
-    for (const auto& observables_iter : observablesG1C)
-        {
-            lineObs.clear();
-
-            s.assign(1, observables_iter.second.System);
-            if (d_version == 3)
-                {
-                    // Specify system only if in version 3
-                    if (s == "G")
-                        {
-                            line += satelliteSystem.at("GPS");
-                        }
-                    if (s == "R")
-                        {
-                            line += satelliteSystem.at("GLONASS");
-                        }
-                    if (static_cast<int32_t>(observables_iter.second.PRN) < 10)
-                        {
-                            lineObs += std::string(1, '0');
-                        }
-                    lineObs += std::to_string(static_cast<int32_t>(observables_iter.second.PRN));
-                }
-
-            // Pseudorange Measurements
-            lineObs += rightJustify(asString(observables_iter.second.Pseudorange_m, 3), 14);
-
-            // Loss of lock indicator (LLI)
-            int32_t lli = 0;  // Include in the observation!!
-            if (lli == 0)
-                {
-                    lineObs += std::string(1, ' ');
-                }
-            // else
-            //    {
-            //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-            //    }
-
-            // Signal Strength Indicator (SSI)
-            const int32_t ssi = Rinex_Printer::signalStrength(observables_iter.second.CN0_dB_hz);
-            lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-            // PHASE
-            lineObs += rightJustify(asString(observables_iter.second.Carrier_phase_rads / TWO_PI, 3), 14);
-            if (lli == 0)
-                {
-                    lineObs += std::string(1, ' ');
-                }
-            // else
-            //    {
-            //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-            //    }
-            lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-            // DOPPLER
-            lineObs += rightJustify(asString(observables_iter.second.Carrier_Doppler_hz, 3), 14);
-            if (lli == 0)
-                {
-                    lineObs += std::string(1, ' ');
-                }
-            // else
-            //    {
-            //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-            //    }
-            lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-            // SIGNAL STRENGTH
-            lineObs += rightJustify(asString(observables_iter.second.CN0_dB_hz, 3), 14);
-
-            if (lineObs.size() < 80)
-                {
-                    lineObs += std::string(80 - lineObs.size(), ' ');
-                }
-            out << lineObs << '\n';
-        }
-
-    for (const auto& available_glo_prn : available_glo_prns)
-        {
-            lineObs.clear();
-            if (d_version == 3)
-                {
-                    lineObs += satelliteSystem.at("GLONASS");
-                    if (static_cast<int32_t>(available_glo_prn) < 10)
-                        {
-                            lineObs += std::string(1, '0');
-                        }
-                    lineObs += std::to_string(static_cast<int32_t>(available_glo_prn));
-                }
-            const auto ret = total_glo_map.equal_range(available_glo_prn);
-            for (auto iter = ret.first; iter != ret.second; ++iter)
-                {
-                    /// \todo Need to account for pseudorange correction for glonass
-                    // double leap_seconds = Rinex_Printer::get_leap_second(glonass_gnav_eph, gps_obs_time);
-                    lineObs += rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
-
-                    // Loss of lock indicator (LLI)
-                    int32_t lli = 0;  // Include in the observation!!
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-
-                    // Signal Strength Indicator (SSI)
-                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // GLONASS CARRIER PHASE
-                    lineObs += rightJustify(asString(iter->second.Carrier_phase_rads / (TWO_PI), 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // GLONASS  DOPPLER
-                    lineObs += rightJustify(asString(iter->second.Carrier_Doppler_hz, 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // GLONASS SIGNAL STRENGTH
-                    lineObs += rightJustify(asString(iter->second.CN0_dB_hz, 3), 14);
-                }
-
-            if (lineObs.size() < 80)
-                {
-                    lineObs += std::string(80 - lineObs.size(), ' ');
-                }
-            out << lineObs << '\n';
-        }
+    add_constellation_obs_sat_record_lines("GPS", observablesG1C, out, d_version == 3);
+    add_constellation_obs_sat_record_lines("GLONASS", available_glo_prns, total_glo_map, out, d_version == 3);
 }
 
 
@@ -5211,147 +5048,8 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& g
     out << line << '\n';
 
     // -------- OBSERVATION record
-    std::string s;
-    std::string lineObs;
-    for (const auto& observables_iter : observablesG2S)
-        {
-            lineObs.clear();
-
-            s.assign(1, observables_iter.second.System);
-            // Specify system only if in version 3
-            if (s == "G")
-                {
-                    line += satelliteSystem.at("GPS");
-                }
-            if (s == "R")
-                {
-                    line += satelliteSystem.at("GLONASS");
-                }
-            if (static_cast<int32_t>(observables_iter.second.PRN) < 10)
-                {
-                    lineObs += std::string(1, '0');
-                }
-            lineObs += std::to_string(static_cast<int32_t>(observables_iter.second.PRN));
-
-            // Pseudorange Measurements
-            lineObs += rightJustify(asString(observables_iter.second.Pseudorange_m, 3), 14);
-
-            // Loss of lock indicator (LLI)
-            int32_t lli = 0;  // Include in the observation!!
-            if (lli == 0)
-                {
-                    lineObs += std::string(1, ' ');
-                }
-            // else
-            //    {
-            //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-            //    }
-
-            // Signal Strength Indicator (SSI)
-            const int32_t ssi = Rinex_Printer::signalStrength(observables_iter.second.CN0_dB_hz);
-            lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-            // PHASE
-            lineObs += rightJustify(asString(observables_iter.second.Carrier_phase_rads / TWO_PI, 3), 14);
-            if (lli == 0)
-                {
-                    lineObs += std::string(1, ' ');
-                }
-            // else
-            //    {
-            //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-            //    }
-            lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-            // DOPPLER
-            lineObs += rightJustify(asString(observables_iter.second.Carrier_Doppler_hz, 3), 14);
-            if (lli == 0)
-                {
-                    lineObs += std::string(1, ' ');
-                }
-            // else
-            //    {
-            //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-            //    }
-            lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-            // SIGNAL STRENGTH
-            lineObs += rightJustify(asString(observables_iter.second.CN0_dB_hz, 3), 14);
-
-            if (lineObs.size() < 80)
-                {
-                    lineObs += std::string(80 - lineObs.size(), ' ');
-                }
-            out << lineObs << '\n';
-        }
-
-    std::pair<std::multimap<uint32_t, Gnss_Synchro>::iterator, std::multimap<uint32_t, Gnss_Synchro>::iterator> ret;
-    for (const auto& prn : available_glo_prns)
-        {
-            lineObs.clear();
-            lineObs += satelliteSystem.at("GLONASS");
-            if (static_cast<int32_t>(prn) < 10)
-                {
-                    lineObs += std::string(1, '0');
-                }
-            lineObs += std::to_string(static_cast<int32_t>(prn));
-
-            ret = total_glo_map.equal_range(prn);
-            for (auto iter = ret.first; iter != ret.second; ++iter)
-                {
-                    /// \todo Need to account for pseudorange correction for glonass
-                    // double leap_seconds = Rinex_Printer::get_leap_second(glonass_gnav_eph, gps_obs_time);
-                    lineObs += rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
-
-                    // Loss of lock indicator (LLI)
-                    int32_t lli = 0;  // Include in the observation!!
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-
-                    // Signal Strength Indicator (SSI)
-                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // GLONASS CARRIER PHASE
-                    lineObs += rightJustify(asString(iter->second.Carrier_phase_rads / (TWO_PI), 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // GLONASS  DOPPLER
-                    lineObs += rightJustify(asString(iter->second.Carrier_Doppler_hz, 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // GLONASS SIGNAL STRENGTH
-                    lineObs += rightJustify(asString(iter->second.CN0_dB_hz, 3), 14);
-                }
-
-            if (lineObs.size() < 80)
-                {
-                    lineObs += std::string(80 - lineObs.size(), ' ');
-                }
-            out << lineObs << '\n';
-        }
+    add_constellation_obs_sat_record_lines("GPS", observablesG2S, out);
+    add_constellation_obs_sat_record_lines("GLONASS", available_glo_prns, total_glo_map, out);
 }
 
 
@@ -5419,141 +5117,8 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ga
     lengthCheck(line);
     out << line << '\n';
 
-    std::string s;
-    std::string lineObs;
-    for (const auto& observables_iter : observablesE1B)
-        {
-            lineObs.clear();
-
-            s.assign(1, observables_iter.second.System);
-            if (s == "E")
-                {
-                    lineObs += satelliteSystem.at("Galileo");
-                }
-            if (s == "R")
-                {
-                    line += satelliteSystem.at("GLONASS");
-                }
-            if (static_cast<int32_t>(observables_iter.second.PRN) < 10)
-                {
-                    lineObs += std::string(1, '0');
-                }
-            lineObs += std::to_string(static_cast<int32_t>(observables_iter.second.PRN));
-            lineObs += rightJustify(asString(observables_iter.second.Pseudorange_m, 3), 14);
-
-            // Loss of lock indicator (LLI)
-            int32_t lli = 0;  // Include in the observation!!
-            if (lli == 0)
-                {
-                    lineObs += std::string(1, ' ');
-                }
-            // else
-            //    {
-            //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-            //    }
-
-            // Signal Strength Indicator (SSI)
-            const int32_t ssi = Rinex_Printer::signalStrength(observables_iter.second.CN0_dB_hz);
-            lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-            // PHASE
-            lineObs += rightJustify(asString(observables_iter.second.Carrier_phase_rads / TWO_PI, 3), 14);
-            if (lli == 0)
-                {
-                    lineObs += std::string(1, ' ');
-                }
-            // else
-            //    {
-            //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-            //    }
-            lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-            // DOPPLER
-            lineObs += rightJustify(asString(observables_iter.second.Carrier_Doppler_hz, 3), 14);
-            if (lli == 0)
-                {
-                    lineObs += std::string(1, ' ');
-                }
-            // else
-            //    {
-            //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-            //    }
-            lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-            // SIGNAL STRENGTH
-            lineObs += rightJustify(asString(observables_iter.second.CN0_dB_hz, 3), 14);
-
-            if (lineObs.size() < 80)
-                {
-                    lineObs += std::string(80 - lineObs.size(), ' ');
-                }
-            out << lineObs << '\n';
-        }
-
-    std::pair<std::multimap<uint32_t, Gnss_Synchro>::iterator, std::multimap<uint32_t, Gnss_Synchro>::iterator> ret;
-    for (const auto& prn : available_glo_prns)
-        {
-            lineObs.clear();
-            lineObs += satelliteSystem.at("Galileo");
-            if (static_cast<int32_t>(prn) < 10)
-                {
-                    lineObs += std::string(1, '0');
-                }
-            lineObs += std::to_string(static_cast<int32_t>(prn));
-            ret = total_glo_map.equal_range(prn);
-            for (auto iter = ret.first; iter != ret.second; ++iter)
-                {
-                    lineObs += rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
-
-                    // Loss of lock indicator (LLI)
-                    int32_t lli = 0;  // Include in the observation!!
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-
-                    // Signal Strength Indicator (SSI)
-                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // GLONASS CARRIER PHASE
-                    lineObs += rightJustify(asString(iter->second.Carrier_phase_rads / (TWO_PI), 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // GLONASS  DOPPLER
-                    lineObs += rightJustify(asString(iter->second.Carrier_Doppler_hz, 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //   }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // GLONASS SIGNAL STRENGTH
-                    lineObs += rightJustify(asString(iter->second.CN0_dB_hz, 3), 14);
-                }
-
-            if (lineObs.size() < 80)
-                {
-                    lineObs += std::string(80 - lineObs.size(), ' ');
-                }
-            out << lineObs << '\n';
-        }
+    add_constellation_obs_sat_record_lines("Galileo", observablesE1B, out);
+    add_constellation_obs_sat_record_lines("GLONASS", available_glo_prns, total_glo_map, out);
 }
 
 
@@ -5634,54 +5199,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, d
             for (const auto& observables_iter : observables)
                 {
                     std::string lineObs;
-                    lineObs.clear();
-                    line.clear();
-                    // GPS L1 PSEUDORANGE
-                    line += std::string(2, ' ');
-                    lineObs += rightJustify(asString(observables_iter.second.Pseudorange_m, 3), 14);
-
-                    // Loss of lock indicator (LLI)
-                    int32_t lli = 0;  // Include in the observation!!
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-
-                    // Signal Strength Indicator (SSI)
-                    const int32_t ssi = Rinex_Printer::signalStrength(observables_iter.second.CN0_dB_hz);
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-                    // GPS L1 CA PHASE
-                    lineObs += rightJustify(asString(observables_iter.second.Carrier_phase_rads / TWO_PI, 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-                    // GPS L1 CA DOPPLER
-                    lineObs += rightJustify(asString(observables_iter.second.Carrier_Doppler_hz, 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //       lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //   }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-                    // GPS L1 SIGNAL STRENGTH
-                    lineObs += rightJustify(asString(observables_iter.second.CN0_dB_hz, 3), 14);
-                    if (lineObs.size() < 80)
-                        {
-                            lineObs += std::string(80 - lineObs.size(), ' ');
-                        }
+                    add_obs_sat_record_line(observables_iter.second, lineObs);
                     out << lineObs << '\n';
                 }
         }
@@ -5724,68 +5242,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, d
             lengthCheck(line);
             out << line << '\n';
 
-            for (const auto& observables_iter : observables)
-                {
-                    std::string lineObs;
-                    lineObs.clear();
-                    lineObs += satelliteSystem.at("GPS");
-                    if (static_cast<int32_t>(observables_iter.second.PRN) < 10)
-                        {
-                            lineObs += std::string(1, '0');
-                        }
-                    lineObs += std::to_string(static_cast<int32_t>(observables_iter.second.PRN));
-                    // lineObs += std::string(2, ' ');
-                    lineObs += rightJustify(asString(observables_iter.second.Pseudorange_m, 3), 14);
-
-                    // Loss of lock indicator (LLI)
-                    int32_t lli = 0;  // Include in the observation!!
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-
-                    // Signal Strength Indicator (SSI)
-                    const int32_t ssi = Rinex_Printer::signalStrength(observables_iter.second.CN0_dB_hz);
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // GPS L1 CA PHASE
-                    lineObs += rightJustify(asString(observables_iter.second.Carrier_phase_rads / TWO_PI, 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // GPS L1 CA DOPPLER
-                    lineObs += rightJustify(asString(observables_iter.second.Carrier_Doppler_hz, 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // GPS L1 SIGNAL STRENGTH
-                    lineObs += rightJustify(asString(observables_iter.second.CN0_dB_hz, 3), 14);
-
-                    if (lineObs.size() < 80)
-                        {
-                            lineObs += std::string(80 - lineObs.size(), ' ');
-                        }
-                    out << lineObs << '\n';
-                }
+            add_constellation_obs_sat_record_lines("GPS", observables, out);
         }
 }
 
@@ -5806,69 +5263,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
     lengthCheck(line);
     out << line << '\n';
 
-    for (const auto& observables_iter : observables)
-        {
-            std::string lineObs;
-            lineObs.clear();
-            lineObs += satelliteSystem.at("GPS");
-            if (static_cast<int32_t>(observables_iter.second.PRN) < 10)
-                {
-                    lineObs += std::string(1, '0');
-                }
-            lineObs += std::to_string(static_cast<int32_t>(observables_iter.second.PRN));
-            // lineObs += std::string(2, ' ');
-            // GPS L2 PSEUDORANGE
-            lineObs += rightJustify(asString(observables_iter.second.Pseudorange_m, 3), 14);
-
-            // Loss of lock indicator (LLI)
-            int32_t lli = 0;  // Include in the observation!!
-            if (lli == 0)
-                {
-                    lineObs += std::string(1, ' ');
-                }
-            // else
-            //    {
-            //       lineObs += rightJustify(asString<int16_t>(lli), 1);
-            //   }
-
-            // Signal Strength Indicator (SSI)
-            const int32_t ssi = Rinex_Printer::signalStrength(observables_iter.second.CN0_dB_hz);
-            lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-            // GPS L2 PHASE
-            lineObs += rightJustify(asString(observables_iter.second.Carrier_phase_rads / TWO_PI, 3), 14);
-            if (lli == 0)
-                {
-                    lineObs += std::string(1, ' ');
-                }
-            // else
-            //    {
-            //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-            //    }
-            lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-            // GPS L2 DOPPLER
-            lineObs += rightJustify(asString(observables_iter.second.Carrier_Doppler_hz, 3), 14);
-            if (lli == 0)
-                {
-                    lineObs += std::string(1, ' ');
-                }
-            // else
-            //    {
-            //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-            //   }
-
-            lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-            // GPS L2 SIGNAL STRENGTH
-            lineObs += rightJustify(asString(observables_iter.second.CN0_dB_hz, 3), 14);
-
-            if (lineObs.size() < 80)
-                {
-                    lineObs += std::string(80 - lineObs.size(), ' ');
-                }
-            out << lineObs << '\n';
-        }
+    add_constellation_obs_sat_record_lines("GPS", observables, out);
 }
 
 
@@ -5999,49 +5394,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
                             lineObs += std::string(62, ' ');
                         }
 
-                    lineObs += rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
-
-                    // Loss of lock indicator (LLI)
-                    int32_t lli = 0;  // Include in the observation!!
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //   {
-                    //       lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //   }
-
-                    // Signal Strength Indicator (SSI)
-                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // GPS CARRIER PHASE
-                    lineObs += rightJustify(asString(iter->second.Carrier_phase_rads / (TWO_PI), 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // GPS  DOPPLER
-                    lineObs += rightJustify(asString(iter->second.Carrier_Doppler_hz, 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // GPS SIGNAL STRENGTH
-                    lineObs += rightJustify(asString(iter->second.CN0_dB_hz, 3), 14);
+                    add_obs_sat_record_line(iter->second, lineObs, false);
                 }
 
             if (lineObs.size() < 80)
@@ -6176,70 +5529,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
     lengthCheck(line);
     out << line << '\n';
 
-    std::string lineObs;
-    for (const auto& available_prn : available_prns)
-        {
-            lineObs.clear();
-            lineObs += satelliteSystem.at("Galileo");
-            if (static_cast<int32_t>(available_prn) < 10)
-                {
-                    lineObs += std::string(1, '0');
-                }
-            lineObs += std::to_string(static_cast<int32_t>(available_prn));
-            const auto ret = total_map.equal_range(available_prn);
-            for (auto iter = ret.first; iter != ret.second; ++iter)
-                {
-                    lineObs += rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
-
-                    // Loss of lock indicator (LLI)
-                    int32_t lli = 0;  // Include in the observation!!
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //   }
-
-                    // Signal Strength Indicator (SSI)
-                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // Galileo CARRIER PHASE
-                    lineObs += rightJustify(asString(iter->second.Carrier_phase_rads / (TWO_PI), 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // Galileo  DOPPLER
-                    lineObs += rightJustify(asString(iter->second.Carrier_Doppler_hz, 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //       lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // Galileo SIGNAL STRENGTH
-                    lineObs += rightJustify(asString(iter->second.CN0_dB_hz, 3), 14);
-                }
-
-            if (lineObs.size() < 80)
-                {
-                    lineObs += std::string(80 - lineObs.size(), ' ');
-                }
-            out << lineObs << '\n';
-        }
+    add_constellation_obs_sat_record_lines("Galileo", available_prns, total_map, out);
 }
 
 
@@ -6339,142 +5629,8 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
     lengthCheck(line);
     out << line << '\n';
 
-    std::string s;
-    std::string lineObs;
-
-    for (const auto& observables_iter : observablesG1C)
-        {
-            lineObs.clear();
-
-            s.assign(1, observables_iter.second.System);
-            if (s == "G")
-                {
-                    lineObs += satelliteSystem.at("GPS");
-                }
-            if (s == "E")
-                {
-                    lineObs += satelliteSystem.at("Galileo");
-                }
-            if (static_cast<int32_t>(observables_iter.second.PRN) < 10)
-                {
-                    lineObs += std::string(1, '0');
-                }
-            lineObs += std::to_string(static_cast<int32_t>(observables_iter.second.PRN));
-            lineObs += rightJustify(asString(observables_iter.second.Pseudorange_m, 3), 14);
-
-            // Loss of lock indicator (LLI)
-            int32_t lli = 0;  // Include in the observation!!
-            if (lli == 0)
-                {
-                    lineObs += std::string(1, ' ');
-                }
-            // else
-            //    {
-            //       lineObs += rightJustify(asString<int16_t>(lli), 1);
-            //    }
-
-            // Signal Strength Indicator (SSI)
-            const int32_t ssi = Rinex_Printer::signalStrength(observables_iter.second.CN0_dB_hz);
-            lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-            // PHASE
-            lineObs += rightJustify(asString(observables_iter.second.Carrier_phase_rads / TWO_PI, 3), 14);
-            if (lli == 0)
-                {
-                    lineObs += std::string(1, ' ');
-                }
-            // else
-            //    {
-            //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-            //   }
-            lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-            // DOPPLER
-            lineObs += rightJustify(asString(observables_iter.second.Carrier_Doppler_hz, 3), 14);
-            if (lli == 0)
-                {
-                    lineObs += std::string(1, ' ');
-                }
-            // else
-            //    {
-            //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-            //    }
-            lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-            // SIGNAL STRENGTH
-            lineObs += rightJustify(asString(observables_iter.second.CN0_dB_hz, 3), 14);
-
-            if (lineObs.size() < 80)
-                {
-                    lineObs += std::string(80 - lineObs.size(), ' ');
-                }
-            out << lineObs << '\n';
-        }
-
-    std::pair<std::multimap<uint32_t, Gnss_Synchro>::iterator, std::multimap<uint32_t, Gnss_Synchro>::iterator> ret;
-    for (const auto& prn : available_gal_prns)
-        {
-            lineObs.clear();
-            lineObs += satelliteSystem.at("Galileo");
-            if (static_cast<int32_t>(prn) < 10)
-                {
-                    lineObs += std::string(1, '0');
-                }
-            lineObs += std::to_string(static_cast<int32_t>(prn));
-            ret = total_gal_map.equal_range(prn);
-            for (auto iter = ret.first; iter != ret.second; ++iter)
-                {
-                    lineObs += rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
-
-                    // Loss of lock indicator (LLI)
-                    int32_t lli = 0;  // Include in the observation!!
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-
-                    // Signal Strength Indicator (SSI)
-                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // Galileo CARRIER PHASE
-                    lineObs += rightJustify(asString(iter->second.Carrier_phase_rads / (TWO_PI), 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // Galileo  DOPPLER
-                    lineObs += rightJustify(asString(iter->second.Carrier_Doppler_hz, 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // Galileo SIGNAL STRENGTH
-                    lineObs += rightJustify(asString(iter->second.CN0_dB_hz, 3), 14);
-                }
-
-            if (lineObs.size() < 80)
-                {
-                    lineObs += std::string(80 - lineObs.size(), ' ');
-                }
-            out << lineObs << '\n';
-        }
+    add_constellation_obs_sat_record_lines("GPS", observablesG1C, out);
+    add_constellation_obs_sat_record_lines("Galileo", available_gal_prns, total_gal_map, out);
 }
 
 
@@ -6603,130 +5759,8 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
     lengthCheck(line);
     out << line << '\n';
 
-    std::string s;
-    std::string lineObs;
-
-    std::pair<std::multimap<uint32_t, Gnss_Synchro>::iterator, std::multimap<uint32_t, Gnss_Synchro>::iterator> ret;
-    for (const auto& prn : available_gps_prns)
-        {
-            lineObs.clear();
-            lineObs += satelliteSystem.at("GPS");
-            if (static_cast<int32_t>(prn) < 10)
-                {
-                    lineObs += std::string(1, '0');
-                }
-            lineObs += std::to_string(static_cast<int32_t>(prn));
-            ret = total_gps_map.equal_range(prn);
-            for (auto iter = ret.first; iter != ret.second; ++iter)
-                {
-                    lineObs += rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
-
-                    // Loss of lock indicator (LLI)
-                    int32_t lli = 0;  // Include in the observation!!
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-
-                    // Signal Strength Indicator (SSI)
-                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // CARRIER PHASE
-                    lineObs += rightJustify(asString(iter->second.Carrier_phase_rads / (TWO_PI), 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    //  DOPPLER
-                    lineObs += rightJustify(asString(iter->second.Carrier_Doppler_hz, 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // SIGNAL STRENGTH
-                    lineObs += rightJustify(asString(iter->second.CN0_dB_hz, 3), 14);
-                }
-
-            out << lineObs << '\n';
-        }
-
-    for (const auto& prn : available_gal_prns)
-        {
-            lineObs.clear();
-            lineObs += satelliteSystem.at("Galileo");
-            if (static_cast<int32_t>(prn) < 10)
-                {
-                    lineObs += std::string(1, '0');
-                }
-            lineObs += std::to_string(static_cast<int32_t>(prn));
-            ret = total_gal_map.equal_range(prn);
-            for (auto iter = ret.first; iter != ret.second; ++iter)
-                {
-                    lineObs += rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
-
-                    // Loss of lock indicator (LLI)
-                    int32_t lli = 0;  // Include in the observation!!
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-
-                    // Signal Strength Indicator (SSI)
-                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // Galileo CARRIER PHASE
-                    lineObs += rightJustify(asString(iter->second.Carrier_phase_rads / (TWO_PI), 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // Galileo  DOPPLER
-                    lineObs += rightJustify(asString(iter->second.Carrier_Doppler_hz, 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // Galileo SIGNAL STRENGTH
-                    lineObs += rightJustify(asString(iter->second.CN0_dB_hz, 3), 14);
-                }
-
-            // if (lineObs.size() < 80) lineObs += std::string(80 - lineObs.size(), ' ');
-            out << lineObs << '\n';
-        }
+    add_constellation_obs_sat_record_lines("GPS", available_gps_prns, total_gps_map, out);
+    add_constellation_obs_sat_record_lines("Galileo", available_gal_prns, total_gal_map, out);
 }
 
 
@@ -6898,114 +5932,18 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
                             lineObs += std::string(62, ' ');
                         }
 
-                    lineObs += rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
+                    add_obs_sat_record_line(iter->second, lineObs, false);
+                }
 
-                    // Loss of lock indicator (LLI)
-                    int32_t lli = 0;  // Include in the observation!!
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-
-                    // Signal Strength Indicator (SSI)
-                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // CARRIER PHASE
-                    lineObs += rightJustify(asString(iter->second.Carrier_phase_rads / (TWO_PI), 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    //  DOPPLER
-                    lineObs += rightJustify(asString(iter->second.Carrier_Doppler_hz, 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // SIGNAL STRENGTH
-                    lineObs += rightJustify(asString(iter->second.CN0_dB_hz, 3), 14);
+            if (lineObs.size() < 80)
+                {
+                    lineObs += std::string(80 - lineObs.size(), ' ');
                 }
 
             out << lineObs << '\n';
         }
 
-    for (const auto& prn : available_gal_prns)
-        {
-            lineObs.clear();
-            lineObs += satelliteSystem.at("Galileo");
-            if (static_cast<int32_t>(prn) < 10)
-                {
-                    lineObs += std::string(1, '0');
-                }
-            lineObs += std::to_string(static_cast<int32_t>(prn));
-            ret = total_gal_map.equal_range(prn);
-            for (auto iter = ret.first; iter != ret.second; ++iter)
-                {
-                    lineObs += rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
-
-                    // Loss of lock indicator (LLI)
-                    int32_t lli = 0;  // Include in the observation!!
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-
-                    // Signal Strength Indicator (SSI)
-                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // Galileo CARRIER PHASE
-                    lineObs += rightJustify(asString(iter->second.Carrier_phase_rads / (TWO_PI), 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // Galileo  DOPPLER
-                    lineObs += rightJustify(asString(iter->second.Carrier_Doppler_hz, 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    // else
-                    //    {
-                    //        lineObs += rightJustify(asString<int16_t>(lli), 1);
-                    //    }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // Galileo SIGNAL STRENGTH
-                    lineObs += rightJustify(asString(iter->second.CN0_dB_hz, 3), 14);
-                }
-
-            // if (lineObs.size() < 80) lineObs += std::string(80 - lineObs.size(), ' ');
-            out << lineObs << '\n';
-        }
+    add_constellation_obs_sat_record_lines("Galileo", available_gal_prns, total_gal_map, out);
 }
 
 
@@ -7081,58 +6019,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris
     lengthCheck(line);
     out << line << '\n';
 
-    std::string lineObs;
-    for (const auto& available_prn : available_prns)
-        {
-            lineObs.clear();
-            lineObs += satelliteSystem.at("Beidou");
-            if (static_cast<int32_t>(available_prn) < 10)
-                {
-                    lineObs += std::string(1, '0');
-                }
-            lineObs += std::to_string(static_cast<int32_t>(available_prn));
-            const auto ret = total_map.equal_range(available_prn);
-            for (auto iter = ret.first; iter != ret.second; ++iter)
-                {
-                    lineObs += rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
-
-                    // Loss of lock indicator (LLI)
-                    int32_t lli = 0;  // Include in the observation!!
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-
-                    // Signal Strength Indicator (SSI)
-                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    // CARRIER PHASE
-                    lineObs += rightJustify(asString(iter->second.Carrier_phase_rads / (TWO_PI), 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    //  DOPPLER
-                    lineObs += rightJustify(asString(iter->second.Carrier_Doppler_hz, 3), 14);
-                    if (lli == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    lineObs += rightJustify(asString<int32_t>(ssi), 1);
-
-                    //  SIGNAL STRENGTH
-                    lineObs += rightJustify(asString(iter->second.CN0_dB_hz, 3), 14);
-                }
-
-            if (lineObs.size() < 80)
-                {
-                    lineObs += std::string(80 - lineObs.size(), ' ');
-                }
-            out << lineObs << '\n';
-        }
+    add_constellation_obs_sat_record_lines("Beidou", available_prns, total_map, out);
 }
 
 
@@ -7287,13 +6174,6 @@ void Rinex_Printer::to_date_time(int32_t gps_week, int32_t gps_tow, int& year, i
 //    lengthCheck(line3.str());
 //    out << line3.str() << '\n';
 // }
-
-
-int32_t Rinex_Printer::signalStrength(double snr) const
-{
-    auto ss = static_cast<int32_t>(std::min(std::max(static_cast<int32_t>(floor(snr / 6)), 1), 9));
-    return ss;
-}
 
 
 boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Gps_Navigation_Message& nav_msg) const

@@ -226,7 +226,7 @@ void glonass_l2_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
     if (d_nav.have_new_almanac() == true)
         {
             const uint32_t slot_nbr = d_nav.get_alm_satellite_slot_number();
-            const std::shared_ptr<Glonass_Gnav_Almanac> 
+            const std::shared_ptr<Glonass_Gnav_Almanac>
                 tmp_obj = std::make_shared<Glonass_Gnav_Almanac>(d_nav.get_almanac(slot_nbr));
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "GLONASS GNAV Almanac data have been received in channel" << d_channel << " in slot number " << slot_nbr;
@@ -421,14 +421,14 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
     if (d_flag_frame_sync == true && d_nav.is_flag_TOW_set() == true)
         {
             current_symbol.Flag_valid_word = true;
-                    if (d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
-                        {
-                            d_nav_msg_packet.prn = static_cast<int32_t>(current_symbol.PRN);
-                            d_nav_msg_packet.tow_at_current_symbol_ms = static_cast<int32_t>(current_symbol.TOW_at_current_symbol_ms);
-                            const std::shared_ptr<Nav_Message_Packet> tmp_obj = std::make_shared<Nav_Message_Packet>(d_nav_msg_packet);
-                            this->message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
-                            d_nav_msg_packet.nav_message = "";
-                        }
+            if (d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
+                {
+                    d_nav_msg_packet.prn = static_cast<int32_t>(current_symbol.PRN);
+                    d_nav_msg_packet.tow_at_current_symbol_ms = static_cast<int32_t>(current_symbol.TOW_at_current_symbol_ms);
+                    const std::shared_ptr<Nav_Message_Packet> tmp_obj = std::make_shared<Nav_Message_Packet>(d_nav_msg_packet);
+                    this->message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
+                    d_nav_msg_packet.nav_message = "";
+                }
 
             // SEND TOW TO THE TRACKING BLOCK
             if (d_tow_to_trk)

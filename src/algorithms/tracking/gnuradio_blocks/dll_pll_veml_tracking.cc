@@ -2058,7 +2058,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                         run_dll_pll();
                         update_tracking_vars();
                         check_carrier_phase_coherent_initialization();
-                        if ((d_current_data_symbol == 0) || (d_signal_type == "2G"))  // Glonass telemetry decoder require symbols instead of bits
+                        if (d_current_data_symbol == 0)
                             {
                                 // enable write dump file this cycle (valid DLL/PLL cycle)
                                 log_data();

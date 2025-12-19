@@ -70,6 +70,7 @@ constexpr double GLONASS_L2_CA_DFREQ_HZ = DFRQ2_GLO;        //!< Freq Bias for G
 constexpr double GLONASS_L2_CA_CODE_RATE_CPS = 0.511e6;     //!< GLONASS L1 C/A code rate [chips/s]
 constexpr double GLONASS_L2_CA_CODE_LENGTH_CHIPS = 511.0;   //!< GLONASS L1 C/A code length [chips]
 constexpr double GLONASS_L2_CA_CODE_PERIOD_S = 0.001;       //!< GLONASS L1 C/A code period [seconds]
+constexpr double GLONASS_L2_CA_SYMBOL_PERIOD_S = 0.01;      //!< GLONASS L1 C/A symbol period [seconds]
 constexpr double GLONASS_L2_CA_CHIP_PERIOD_S = 1.9569e-06;  //!< GLONASS L1 C/A chip period [seconds]
 constexpr double GLONASS_L2_CA_SYMBOL_RATE_BPS = 1000.0;
 

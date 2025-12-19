@@ -68,16 +68,11 @@ private:
 
     glonass_l2_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
 
-    const std::array<uint16_t, GLONASS_GNAV_PREAMBLE_LENGTH_BITS> d_preambles_bits{GLONASS_GNAV_PREAMBLE};
-
-    const int32_t d_symbols_per_preamble = GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS;
-
-    void decode_string(const double *symbols, int32_t frame_length, double cn0);
+    const std::array<int16_t, GLONASS_GNAV_PREAMBLE_LENGTH_BITS> d_preambles_bits{GLONASS_GNAV_PREAMBLE_SAMPLES};
+    void decode_string(const double *symbols, double cn0);
 
     // Storage for incoming data
     boost::circular_buffer<Gnss_Synchro> d_symbol_history;
-
-    std::array<int32_t, GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS> d_preambles_symbols{};
 
     // Navigation Message variable
     Glonass_Gnav_Navigation_Message d_nav;

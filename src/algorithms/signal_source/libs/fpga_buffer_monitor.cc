@@ -185,8 +185,8 @@ bool Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status()
             if ((buffer_overflow_status & overflow_freq_band_1_bit_pos) != 0)
                 {
                     LOG(ERROR) << "FPGA Buffer overflow in frequency band 1";
+                    buffer_overflow = true;
                 }
-            buffer_overflow = true;
         }
 
     // buffer monitor
@@ -245,8 +245,8 @@ bool Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status()
                 {
                     d_dump_file << std::endl;
                 }
-            return buffer_overflow;
         }
+    return buffer_overflow;
 }
 
 

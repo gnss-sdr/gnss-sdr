@@ -436,7 +436,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
 
     // 4. Push the new navigation data to the queues
     // extract OSNMA bits, reset container.
-    if (d_inav_nav.get_osnma_adkd_0_12_nav_bits().size() == 549)
+    if (d_inav_nav.get_osnma_adkd_0_12_nav_bits().size() == 549 && d_band == '1')
         {
             DLOG(INFO) << "Galileo OSNMA: new ADKD=0/12 navData from " << d_satellite << " at TOW_sf=" << d_inav_nav.get_TOW5() - 25;
             const auto tmp_obj_osnma = std::make_shared<std::tuple<uint32_t, std::string, uint32_t>>(  // < PRNd , navDataBits, TOW_Sosf>
@@ -446,7 +446,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             this->message_port_pub(pmt::mp("OSNMA_from_TLM"), pmt::make_any(tmp_obj_osnma));
             d_inav_nav.reset_osnma_nav_bits_adkd0_12();
         }
-    if (d_inav_nav.get_osnma_adkd_4_nav_bits().size() == 141)
+    if (d_inav_nav.get_osnma_adkd_4_nav_bits().size() == 141 && d_band == '1')
         {
             DLOG(INFO) << "Galileo OSNMA: new ADKD=4 navData from " << d_satellite << " at TOW_sf=" << d_inav_nav.get_TOW6() - 5;
             const auto tmp_obj = std::make_shared<std::tuple<uint32_t, std::string, uint32_t>>(  // < PRNd , navDataBits, TOW_Sosf> // TODO conversion from W6 to W_Start_of_subframe

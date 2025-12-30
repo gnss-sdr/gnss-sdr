@@ -57,6 +57,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   [gsl-lite release](https://github.com/gsl-lite/gsl-lite/releases/tag/v1.0.1).
 - Updated local `cpu_features` library to v0.10.1.
 - Allow linking against Boost 1.89.0.
+- Added implementations of several `volk_gnsssdr` kernels for the RISC‑V Vector
+  (RVV) instruction set. Awesome contribution by @BigTurtle8 (Marcus Alagar) as
+  part of Google Summer of Code 2025.
 
 ### Improvements in Usability:
 

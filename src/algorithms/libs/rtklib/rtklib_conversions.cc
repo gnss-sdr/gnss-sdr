@@ -43,6 +43,7 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
     rtklib_obs.D[band] = gnss_synchro.Carrier_Doppler_hz;
     rtklib_obs.P[band] = gnss_synchro.Pseudorange_m;
     rtklib_obs.L[band] = gnss_synchro.Carrier_phase_rads / TWO_PI;
+    rtklib_obs.LLI[band] = gnss_synchro.Flag_cycle_slip ? 1U : 0U;
 
     switch (band)
         {

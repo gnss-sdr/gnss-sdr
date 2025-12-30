@@ -24,6 +24,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   LabSat 3 recordings and adding initial support for LabSat 4.
 - Improvements in Glonass L1/L2 C/A signal tracking and decoding of the GNAV
   message.
+- Added a cycle-slip detector, with events reported in internal logging and
+  RINEX observation files. This introduces a new field in `Gnss_Synchro` and in
+  the corresponding `.proto` definition.
 
 ### Improvements in Maintainability:
 

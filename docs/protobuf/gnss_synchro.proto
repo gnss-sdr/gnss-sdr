@@ -37,6 +37,7 @@ message GnssSynchro {
   bool flag_valid_pseudorange = 24;         // Pseudorange computation status
   double interp_tow_ms = 25;                // Interpolated time of week, in ms
   bool flag_PLL_180_deg_phase_locked = 26;  // PLL lock at 180º
+  bool flag_cycle_slip = 27;                // Carrier cycle slip detection flag
 }
 
 /* Observables represents a collection of GnssSynchro annotations */

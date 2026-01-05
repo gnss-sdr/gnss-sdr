@@ -1882,7 +1882,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_rvv(lv_16sc_t* 
             // Initialize `out` to zero
             result[n_vec] = lv_cmake(0, 0);
 
-            // Treat complex number as struct containting
+            // Treat complex number as struct containing
             // two 16-bit integers
             inPtrBuf[n_vec] = (const short*)in_a[n_vec];
         }

@@ -103,7 +103,7 @@ public:
 protected:
     // Can be used by each derived class
     static const int32_t LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY = 0x0C000000;                    // flag that enables WE (Write Enable) of the local code FPGA
-    static const int32_t LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT = 0x20000000;                // flag that selects the writting of the pilot code in the FPGA (as opposed to the data code)
+    static const int32_t LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT = 0x20000000;                // flag that selects the writing of the pilot code in the FPGA (as opposed to the data code)
     const std::string default_device_name_GPS_L1 = "multicorrelator_resampler_S00_AXI";       // Default FPGA device name for GPS L1
     const std::string default_device_name_Galileo_E1 = "multicorrelator_resampler_5_1_AXI";   // Default FPGA device name for Galileo L1
     const std::string default_device_name_GPS_L5 = "multicorrelator_resampler_3_1_AXI";       // Default FPGA device name for GPS L5
@@ -116,7 +116,7 @@ protected:
     inline uint32_t get_channel() { return channel_; };
     inline uint32_t get_num_prev_assigned_ch() { return num_prev_assigned_ch_; };
 
-    // Can be overriden by derived classes
+    // Can be overridden by derived classes
     bool find_alternative_device(std::string& device_io_name [[maybe_unused]]) { return false; };
 
     // Must be set by each derived class

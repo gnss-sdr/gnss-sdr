@@ -358,9 +358,9 @@ $ sudo pacman -S openssl                  # For Arch Linux
 #### Install [Matio](https://github.com/tbeu/matio "Matio's Homepage"), MATLAB MAT file I/O library
 
 ```
-$ wget https://github.com/tbeu/matio/releases/download/v1.5.29/matio-1.5.29.tar.gz
-$ tar xvfz matio-1.5.29.tar.gz
-$ cd matio-1.5.29
+$ wget https://github.com/tbeu/matio/releases/download/v1.5.30/matio-1.5.30.tar.gz
+$ tar xvfz matio-1.5.30.tar.gz
+$ cd matio-1.5.30
 $ ./configure
 $ make
 $ sudo make install

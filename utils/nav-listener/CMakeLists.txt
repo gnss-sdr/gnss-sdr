@@ -73,6 +73,13 @@ target_include_directories(navmsg_lib
         ${NAVLISTENER_BINARY_DIR}
 )
 
+if(Boost_VERSION_STRING VERSION_GREATER 1.65.99)
+    target_compile_definitions(navmsg_lib
+        PUBLIC
+            -DUSE_BOOST_ASIO_IO_CONTEXT=1
+    )
+endif()
+
 add_executable(nav_msg_listener ${NAVLISTENER_SOURCE_DIR}/main.cc)
 
 target_link_libraries(nav_msg_listener PUBLIC navmsg_lib)

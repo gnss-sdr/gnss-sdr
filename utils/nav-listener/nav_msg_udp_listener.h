@@ -19,6 +19,12 @@
 #include "nav_message.pb.h"
 #include <boost/asio.hpp>
 
+#if USE_BOOST_ASIO_IO_CONTEXT
+using b_io_context = boost::asio::io_context;
+#else
+using b_io_context = boost::asio::io_service;
+#endif
+
 class Nav_Msg_Udp_Listener
 {
 public:
@@ -27,7 +33,7 @@ public:
     bool receive_and_parse_nav_message(gnss_sdr::navMsg &message);
 
 private:
-    boost::asio::io_service io_service;
+    b_io_context io_service;
     boost::asio::ip::udp::socket socket;
     boost::system::error_code error;
     boost::asio::ip::udp::endpoint endpoint;

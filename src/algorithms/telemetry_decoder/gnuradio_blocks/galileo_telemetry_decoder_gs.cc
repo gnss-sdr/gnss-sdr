@@ -1079,7 +1079,8 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                             if (!d_flag_frame_sync)
                                 {
                                     d_flag_frame_sync = true;
-                                    DLOG(INFO) << " Frame sync SAT " << this->d_satellite;
+                                    LOG(INFO) << "Successful frame synchronization in channel " << d_channel << " for satellite " << this->d_satellite
+                                              << " at sample_counter=" << d_received_sample_counter;
                                 }
                         }
                     else

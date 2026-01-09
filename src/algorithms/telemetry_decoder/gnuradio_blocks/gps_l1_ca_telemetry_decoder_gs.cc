@@ -475,7 +475,8 @@ void gps_l1_ca_telemetry_decoder_gs::frame_synchronization(const Gnss_Synchro &c
                                 if (!d_flag_frame_sync)
                                     {
                                         d_flag_frame_sync = true;
-                                        DLOG(INFO) << " Frame sync SAT " << this->d_satellite;
+                                        LOG(INFO) << "Successful frame synchronization in channel " << d_channel << " for satellite " << this->d_satellite
+                                                  << " at d_sample_counter=" << d_sample_counter;
                                     }
                                 d_stat = 1;  // preamble acquired
                             }
@@ -487,7 +488,7 @@ void gps_l1_ca_telemetry_decoder_gs::frame_synchronization(const Gnss_Synchro &c
             {
                 if (d_sample_counter >= d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
                     {
-                        DLOG(INFO) << "Preamble received for SAT " << this->d_satellite << "d_sample_counter=" << d_sample_counter << "\n";
+                        DLOG(INFO) << "Preamble received for SAT " << this->d_satellite << " d_sample_counter=" << d_sample_counter << "\n";
                         // call the decoder
                         // 0. fetch the symbols into an array
                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)

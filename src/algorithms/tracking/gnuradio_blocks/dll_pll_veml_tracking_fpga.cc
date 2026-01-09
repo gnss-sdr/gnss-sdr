@@ -655,8 +655,8 @@ bool dll_pll_veml_tracking_fpga::cn0_and_tracking_lock_status(double coh_integra
         }
     if (d_carrier_lock_fail_counter > d_trk_parameters.max_carrier_lock_fail or d_code_lock_fail_counter > d_trk_parameters.max_code_lock_fail)
         {
-            std::cout << "Loss of lock in channel " << d_channel << "!\n";
-            LOG(INFO) << "Loss of lock in channel " << d_channel
+            std::cout << "Loss of lock in channel " << d_channel << ", satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << " !\n";
+            LOG(INFO) << "Loss of lock in channel " << d_channel << ", satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN)
                       << " (carrier_lock_fail_counter:" << d_carrier_lock_fail_counter
                       << " code_lock_fail_counter : " << d_code_lock_fail_counter << ")";
             this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock

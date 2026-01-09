@@ -329,6 +329,8 @@ void pcps_acquisition::send_positive_acquisition(const AcquisitionResult& result
             // Declare positive acquisition using a message port
             // 0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
             this->message_port_pub(pmt::mp("events"), pmt::from_long(1));
+            LOG(INFO) << "Successful acquisition in channel " << d_channel
+                      << " for satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
         }
 
     // Copy and push current Gnss_Synchro to monitor queue

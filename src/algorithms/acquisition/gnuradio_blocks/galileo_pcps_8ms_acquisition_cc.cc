@@ -311,6 +311,8 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
 
                 acquisition_message = 1;
                 this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
+                LOG(INFO) << "Successful acquisition in channel " << d_channel
+                          << " for satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
 
                 // Copy and push current Gnss_Synchro to monitor queue
                 if (d_acq_params.enable_monitor_output)

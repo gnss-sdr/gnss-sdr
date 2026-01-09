@@ -671,6 +671,8 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                 this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
                 d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
+                LOG(INFO) << "Successful acquisition in channel " << d_channel
+                          << " for satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
 
                 // Copy and push current Gnss_Synchro to monitor queue
                 if (d_acq_params.enable_monitor_output)

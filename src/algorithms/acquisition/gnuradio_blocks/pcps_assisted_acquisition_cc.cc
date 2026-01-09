@@ -379,6 +379,8 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
             d_active = false;
             // Send message to channel port //0=STOP_CHANNEL 1=ACQ_SUCCESS 2=ACQ_FAIL
             this->message_port_pub(pmt::mp("events"), pmt::from_long(1));
+            LOG(INFO) << "Successful acquisition in channel " << d_channel
+                      << " for satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
             // consume samples to not block the GNU Radio flowgraph
             d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
             consume_each(ninput_items[0]);

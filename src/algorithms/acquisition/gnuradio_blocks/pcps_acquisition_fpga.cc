@@ -204,6 +204,8 @@ void pcps_acquisition_fpga::set_active(bool active)
                     d_active = false;
                     send_positive_acquisition();
                     d_state = 0;  // Positive acquisition
+                    LOG(INFO) << "Successful acquisition in channel " << d_channel
+                              << " for satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
                 }
             else
                 {

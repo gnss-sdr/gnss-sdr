@@ -707,6 +707,7 @@ void PositionSystemTest::check_results()
             stm << "95th = " << percentiles_accuracy(3) << " [m]\n";
             stm << "99th = " << percentiles_accuracy(4) << " [m]\n";
             stm << "Maximum error = " << errors_3d_accuracy.max() << " [m]\n";
+            stm << "At TTFF = " << errors_3d_accuracy[0] << " [m]\n";
             stm << '\n';
 
             stm << "---- STATIC PRECISION ----\n";
@@ -727,6 +728,7 @@ void PositionSystemTest::check_results()
             stm << "95th = " << percentiles_precision(3) << " [m]\n";
             stm << "99th = " << percentiles_precision(4) << " [m]\n";
             stm << "Maximum error = " << errors_3d_precision.max() << " [m]\n";
+            stm << "At TTFF = " << errors_3d_precision[0] << " [m]\n";
             stm << '\n';
 
             stm << "Receiver runtime: " << elapsed_seconds.count() << " [seconds]\n";

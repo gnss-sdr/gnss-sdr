@@ -2442,6 +2442,18 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             std::chrono::duration<double> elapsed_seconds = d_end - d_start;
                                             double ttff = elapsed_seconds.count();
                                             ss << "\nTime to First Fix: " << ttff << " [s] (wall clock)\n";
+                                            double ttff_processing = 0.0;
+                                            for (const auto& observables_entry : d_gnss_observables_map)
+                                                {
+                                                    const auto sample_counter = observables_entry.second.Tracking_sample_counter;
+                                                    const auto sampling_freq_sps = observables_entry.second.fs;
+                                                    if (sampling_freq_sps > 0.0)
+                                                        {
+                                                            const double rx_time = static_cast<double>(sample_counter) / static_cast<double>(sampling_freq_sps);
+                                                            ttff_processing = std::max(ttff_processing, rx_time);
+                                                        }
+                                                }
+                                            ss << "Time to First Fix: " << ttff_processing << " [s] (processing time)\n";
                                             if (d_nmea_output_file_enabled)
                                                 {
                                                     ss << "\nFirst NMEA message: " << d_nmea_printer->get_GPGGA(d_user_pvt_solver.get());

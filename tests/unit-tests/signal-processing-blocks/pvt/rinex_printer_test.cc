@@ -517,7 +517,7 @@ TEST_F(RinexPrinterTest, GlonassObsLog)
     gs3.System = *sys.c_str();
     gs4.System = *sys.c_str();
 
-    std::string sig = "1C";
+    std::string sig = "1G";
     std::memcpy(reinterpret_cast<void*>(gs1.Signal), sig.c_str(), 3);
     std::memcpy(reinterpret_cast<void*>(gs2.Signal), sig.c_str(), 3);
     std::memcpy(reinterpret_cast<void*>(gs3.Signal), sig.c_str(), 3);
@@ -768,7 +768,7 @@ TEST_F(RinexPrinterTest, MixedObsLog)
     eph_gal.PRN = 1;
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    const auto signal_enabled_flags = GPS_1C | GAL_1B;
+    const auto signal_enabled_flags = GPS_1C | GAL_1B | GAL_E5a;
     auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
     pvt_solution->gps_ephemeris_map[1] = std::move(eph_gps);
     pvt_solution->galileo_ephemeris_map[1] = std::move(eph_gal);
@@ -891,7 +891,7 @@ TEST_F(RinexPrinterTest, MixedObsLogGpsGlo)
     eph_glo.PRN = 1;
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    const auto signal_enabled_flags = GPS_1C | GLO_1G;
+    const auto signal_enabled_flags = GPS_1C | GLO_1G | GLO_2G;
     auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
     pvt_solution->gps_ephemeris_map[1] = std::move(eph_gps);
     pvt_solution->glonass_gnav_ephemeris_map[1] = std::move(eph_glo);
@@ -928,6 +928,8 @@ TEST_F(RinexPrinterTest, MixedObsLogGpsGlo)
     std::memcpy(reinterpret_cast<void*>(gs5.Signal), sig.c_str(), 3);
     std::memcpy(reinterpret_cast<void*>(gs6.Signal), sig.c_str(), 3);
     std::memcpy(reinterpret_cast<void*>(gs7.Signal), sig.c_str(), 3);
+
+    sig = "2G";
     std::memcpy(reinterpret_cast<void*>(gs8.Signal), sig.c_str(), 3);
 
     gs1.PRN = 3;

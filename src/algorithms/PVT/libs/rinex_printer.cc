@@ -1397,7 +1397,7 @@ void add_obs_sat_record_line(const Gnss_Synchro& synchro, std::string& line, boo
         }
 }
 
-void add_constellation_obs_sat_record_lines(const std::string& system, const Constellation_Observables_Map& observables, std::fstream& out, int version)
+void add_constellation_obs_sat_record_lines(std::fstream& out, const std::string& system, const Constellation_Observables_Map& observables, int version)
 {
     const auto system_char = satelliteSystem.at(system);
 
@@ -1427,6 +1427,14 @@ void add_constellation_obs_sat_record_lines(const std::string& system, const Con
                 }
 
             out << line << '\n';
+        }
+}
+
+void add_constellation_obs_sat_record_lines(std::fstream& out, const std::initializer_list<std::string>& systems, const Constellation_Observables_Map& observables, int version)
+{
+    for (const auto& system : systems)
+        {
+            add_constellation_obs_sat_record_lines(out, system, observables, version);
         }
 }
 
@@ -4800,90 +4808,84 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
     const boost::posix_time::ptime p_glonass_time = Rinex_Printer::compute_UTC_time(eph, obs_time);
     const double utc_sec = modf(obs_time, &int_sec) + p_glonass_time.time_of_day().seconds();
     add_obs_epoch_record(out, p_glonass_time, utc_sec, d_version, constel_observables);
-    add_constellation_obs_sat_record_lines("GLONASS", constel_observables, out, d_version);
+    add_constellation_obs_sat_record_lines(out, "GLONASS", constel_observables, d_version);
 }
 
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& /*glonass_gnav_eph*/, double gps_obs_time, const Constellation_Observables_Map& constel_observables) const
 {
     add_obs_epoch_record(out, Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time), fmod(gps_obs_time, 60), d_version, constel_observables);
-    add_constellation_obs_sat_record_lines("GPS", constel_observables, out, d_version);
-    add_constellation_obs_sat_record_lines("GLONASS", constel_observables, out, d_version);
+    add_constellation_obs_sat_record_lines(out, {"GPS", "GLONASS"}, constel_observables, d_version);
 }
 
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& /*glonass_gnav_eph*/, double gps_obs_time, const Constellation_Observables_Map& constel_observables) const
 {
     add_obs_epoch_record(out, Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time), fmod(gps_obs_time, 60), d_version, constel_observables);
-    add_constellation_obs_sat_record_lines("GPS", constel_observables, out, d_version);
-    add_constellation_obs_sat_record_lines("GLONASS", constel_observables, out, d_version);
+    add_constellation_obs_sat_record_lines(out, {"GPS", "GLONASS"}, constel_observables, d_version);
 }
 
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& galileo_eph, const Glonass_Gnav_Ephemeris& /*glonass_gnav_eph*/, double galileo_obs_time, const Constellation_Observables_Map& constel_observables) const
 {
     add_obs_epoch_record(out, Rinex_Printer::compute_Galileo_time(galileo_eph, galileo_obs_time), fmod(galileo_obs_time, 60), d_version, constel_observables);
-    add_constellation_obs_sat_record_lines("Galileo", constel_observables, out, d_version);
-    add_constellation_obs_sat_record_lines("GLONASS", constel_observables, out, d_version);
+    add_constellation_obs_sat_record_lines(out, {"Galileo", "GLONASS"}, constel_observables, d_version);
 }
 
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, double obs_time, const Constellation_Observables_Map& constel_observables) const
 {
     add_obs_epoch_record(out, Rinex_Printer::compute_GPS_time(eph, obs_time), fmod(obs_time, 60), d_version, constel_observables);
-    add_constellation_obs_sat_record_lines("GPS", constel_observables, out, d_version);
+    add_constellation_obs_sat_record_lines(out, "GPS", constel_observables, d_version);
 }
 
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& eph, double obs_time, const Constellation_Observables_Map& constel_observables) const
 {
     add_obs_epoch_record(out, Rinex_Printer::compute_GPS_time(eph, obs_time), fmod(obs_time, 60), d_version, constel_observables);
-    add_constellation_obs_sat_record_lines("GPS", constel_observables, out, d_version);
+    add_constellation_obs_sat_record_lines(out, "GPS", constel_observables, d_version);
 }
 
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, const Gps_CNAV_Ephemeris& /*eph_cnav*/, double obs_time, const Constellation_Observables_Map& constel_observables) const
 {
     add_obs_epoch_record(out, Rinex_Printer::compute_GPS_time(eph, obs_time), fmod(obs_time, 60), d_version, constel_observables);
-    add_constellation_obs_sat_record_lines("GPS", constel_observables, out, d_version);
+    add_constellation_obs_sat_record_lines(out, "GPS", constel_observables, d_version);
 }
 
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& eph, double obs_time, const Constellation_Observables_Map& constel_observables) const
 {
     add_obs_epoch_record(out, Rinex_Printer::compute_Galileo_time(eph, obs_time), fmod(obs_time, 60), d_version, constel_observables);
-    add_constellation_obs_sat_record_lines("Galileo", constel_observables, out, d_version);
+    add_constellation_obs_sat_record_lines(out, "Galileo", constel_observables, d_version);
 }
 
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& /*galileo_eph*/, double gps_obs_time, const Constellation_Observables_Map& constel_observables) const
 {
     add_obs_epoch_record(out, Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time), fmod(gps_obs_time, 60), d_version, constel_observables);
-    add_constellation_obs_sat_record_lines("GPS", constel_observables, out, d_version);
-    add_constellation_obs_sat_record_lines("Galileo", constel_observables, out, d_version);
+    add_constellation_obs_sat_record_lines(out, {"GPS", "Galileo"}, constel_observables, d_version);
 }
 
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& eph, const Galileo_Ephemeris& /*galileo_eph*/, double gps_obs_time, const Constellation_Observables_Map& constel_observables) const
 {
     add_obs_epoch_record(out, Rinex_Printer::compute_GPS_time(eph, gps_obs_time), fmod(gps_obs_time, 60), d_version, constel_observables);
-    add_constellation_obs_sat_record_lines("GPS", constel_observables, out, d_version);
-    add_constellation_obs_sat_record_lines("Galileo", constel_observables, out, d_version);
+    add_constellation_obs_sat_record_lines(out, {"GPS", "Galileo"}, constel_observables, d_version);
 }
 
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& /*gps_cnav_eph*/, const Galileo_Ephemeris& /*galileo_eph*/, double gps_obs_time, const Constellation_Observables_Map& constel_observables) const
 {
     add_obs_epoch_record(out, Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time), fmod(gps_obs_time, 60), d_version, constel_observables);
-    add_constellation_obs_sat_record_lines("GPS", constel_observables, out, d_version);
-    add_constellation_obs_sat_record_lines("Galileo", constel_observables, out, d_version);
+    add_constellation_obs_sat_record_lines(out, {"GPS", "Galileo"}, constel_observables, d_version);
 }
 
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris& eph, double obs_time, const Constellation_Observables_Map& constel_observables) const
 {
     add_obs_epoch_record(out, Rinex_Printer::compute_BDS_time(eph, obs_time), fmod(obs_time, 60), d_version, constel_observables);
-    add_constellation_obs_sat_record_lines("Beidou", constel_observables, out, d_version);
+    add_constellation_obs_sat_record_lines(out, "Beidou", constel_observables, d_version);
 }
 
 

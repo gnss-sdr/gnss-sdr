@@ -143,6 +143,35 @@ void RinexPrinterTest::conf()
 }
 
 
+void find_obs_record_lines(const std::string& obsfile, const std::string& sat, std::string& line_epoch, std::string& line_sat)
+{
+    std::fstream fstr(obsfile.c_str(), std::fstream::in);
+    fstr.seekg(0);
+
+    std::string line_str;
+    bool no_more_finds = false;
+
+    while (!fstr.eof())
+        {
+            std::getline(fstr, line_str);
+            if (!no_more_finds)
+                {
+                    if (line_str.find('>', 0) != std::string::npos)
+                        {
+                            line_epoch = line_str;
+                        }
+                    if (line_str.find(sat, 0) != std::string::npos)
+                        {
+                            no_more_finds = true;
+                            line_sat = line_str;
+                        }
+                }
+        }
+
+    fstr.close();
+}
+
+
 TEST_F(RinexPrinterTest, GalileoObsHeader)
 {
     Pvt_Conf conf;
@@ -415,9 +444,6 @@ TEST_F(RinexPrinterTest, MixedObsHeaderGpsGlo)
 
 TEST_F(RinexPrinterTest, GalileoObsLog)
 {
-    std::string line_aux;
-    std::string line_str;
-    bool no_more_finds = false;
     auto eph = Galileo_Ephemeris();
     eph.PRN = 1;
     Pvt_Conf conf;
@@ -467,26 +493,15 @@ TEST_F(RinexPrinterTest, GalileoObsLog)
 
     rp = nullptr;  // close the RINEX files so we can inspect them
 
-    std::fstream fstr(obsfile.c_str(), std::fstream::in);
+    std::string line_epoch;
+    std::string line_sat;
+    find_obs_record_lines(obsfile, "E22", line_epoch, line_sat);
 
-    fstr.seekg(0);
+    std::string expected_epoch = "> 1999 08 22 00 00 00.0000000  0  4                                             ";
+    std::string expected_sat("E22  22000000.000 7         3.724 7      1534.000 7        42.000               ");
+    EXPECT_EQ(0, expected_epoch.compare(line_epoch));
+    EXPECT_EQ(0, expected_sat.compare(line_sat));
 
-    while (!fstr.eof())
-        {
-            std::getline(fstr, line_str);
-            if (!no_more_finds)
-                {
-                    if (line_str.find("E22", 0) != std::string::npos)
-                        {
-                            no_more_finds = true;
-                            line_aux = std::string(line_str);
-                        }
-                }
-        }
-
-    std::string expected_str("E22  22000000.000 7         3.724 7      1534.000 7        42.000               ");
-    EXPECT_EQ(0, expected_str.compare(line_aux));
-    fstr.close();
     fs::remove(obsfile);
     fs::remove(navfile);
 }
@@ -494,9 +509,6 @@ TEST_F(RinexPrinterTest, GalileoObsLog)
 
 TEST_F(RinexPrinterTest, GlonassObsLog)
 {
-    std::string line_aux;
-    std::string line_str;
-    bool no_more_finds = false;
     auto eph = Glonass_Gnav_Ephemeris();
     eph.PRN = 22;
     Pvt_Conf conf;
@@ -546,26 +558,15 @@ TEST_F(RinexPrinterTest, GlonassObsLog)
 
     rp = nullptr;  // close the RINEX files so we can inspect them
 
-    std::fstream fstr(obsfile.c_str(), std::fstream::in);
+    std::string line_epoch;
+    std::string line_sat;
+    find_obs_record_lines(obsfile, "R22", line_epoch, line_sat);
 
-    fstr.seekg(0);
+    std::string expected_epoch = "> 1972 12 31 00 00 00.0000000  0  4                                             ";
+    std::string expected_sat("R22  22000000.000 7         3.724 7      1534.000 7        42.000               ");
+    EXPECT_EQ(0, expected_epoch.compare(line_epoch));
+    EXPECT_EQ(0, expected_sat.compare(line_sat));
 
-    while (!fstr.eof())
-        {
-            std::getline(fstr, line_str);
-            if (!no_more_finds)
-                {
-                    if (line_str.find("R22", 0) != std::string::npos)
-                        {
-                            no_more_finds = true;
-                            line_aux = std::string(line_str);
-                        }
-                }
-        }
-
-    std::string expected_str("R22  22000000.000 7         3.724 7      1534.000 7        42.000               ");
-    EXPECT_EQ(0, expected_str.compare(line_aux));
-    fstr.close();
     fs::remove(navfile);
     fs::remove(obsfile);
 }
@@ -573,9 +574,6 @@ TEST_F(RinexPrinterTest, GlonassObsLog)
 
 TEST_F(RinexPrinterTest, GpsObsLogDualBand)
 {
-    std::string line_aux;
-    std::string line_str;
-    bool no_more_finds = false;
     auto eph = Gps_Ephemeris();
     auto eph_cnav = Gps_CNAV_Ephemeris();
     eph.PRN = 1;
@@ -640,26 +638,15 @@ TEST_F(RinexPrinterTest, GpsObsLogDualBand)
 
     rp = nullptr;  // close the RINEX files so we can inspect them
 
-    std::fstream fstr(obsfile.c_str(), std::fstream::in);
+    std::string line_epoch;
+    std::string line_sat;
+    find_obs_record_lines(obsfile, "G08", line_epoch, line_sat);
 
-    fstr.seekg(0);
+    std::string expected_epoch = "> 2019 04 14 00 00 00.0000000  0  3                                             ";
+    std::string expected_sat("G08  22000002.100 6         7.226 6       321.000 6        39.000  22000000.000 7         3.724 7      1534.000 7        42.000");
+    EXPECT_EQ(0, expected_epoch.compare(line_epoch));
+    EXPECT_EQ(0, expected_sat.compare(line_sat));
 
-    while (!fstr.eof())
-        {
-            std::getline(fstr, line_str);
-            if (!no_more_finds)
-                {
-                    if (line_str.find("G08", 0) != std::string::npos)
-                        {
-                            no_more_finds = true;
-                            line_aux = std::string(line_str);
-                        }
-                }
-        }
-
-    std::string expected_str("G08  22000002.100 6         7.226 6       321.000 6        39.000  22000000.000 7         3.724 7      1534.000 7        42.000");
-    EXPECT_EQ(0, expected_str.compare(line_aux));
-    fstr.close();
     fs::remove(navfile);
     fs::remove(obsfile);
 }
@@ -729,29 +716,15 @@ TEST_F(RinexPrinterTest, GalileoObsLogDualBand)
 
     rp = nullptr;  // close the RINEX files so we can inspect them
 
-    std::fstream fstr(obsfile.c_str(), std::fstream::in);
+    std::string line_epoch;
+    std::string line_sat;
+    find_obs_record_lines(obsfile, "E08", line_epoch, line_sat);
 
-    fstr.seekg(0);
-    std::string line_aux;
-    std::string line_str;
-    bool no_more_finds = false;
+    std::string expected_epoch = "> 1999 08 22 00 00 00.0000000  0  2                                             ";
+    std::string expected_sat("E08  22000002.100 6         7.226 6       321.000 6        39.000  22000000.000 7         3.724 7      1534.000 7        42.000");
+    EXPECT_EQ(0, expected_epoch.compare(line_epoch));
+    EXPECT_EQ(0, expected_sat.compare(line_sat));
 
-    while (!fstr.eof())
-        {
-            std::getline(fstr, line_str);
-            if (!no_more_finds)
-                {
-                    if (line_str.find("E08", 0) != std::string::npos)
-                        {
-                            no_more_finds = true;
-                            line_aux = std::string(line_str);
-                        }
-                }
-        }
-
-    std::string expected_str("E08  22000002.100 6         7.226 6       321.000 6        39.000  22000000.000 7         3.724 7      1534.000 7        42.000");
-    EXPECT_EQ(0, expected_str.compare(line_aux));
-    fstr.close();
     fs::remove(navfile);
     fs::remove(obsfile);
 }
@@ -759,9 +732,6 @@ TEST_F(RinexPrinterTest, GalileoObsLogDualBand)
 
 TEST_F(RinexPrinterTest, MixedObsLog)
 {
-    std::string line_aux;
-    std::string line_str;
-    bool no_more_finds = false;
     auto eph_gps = Gps_Ephemeris();
     auto eph_gal = Galileo_Ephemeris();
     eph_gps.PRN = 1;
@@ -856,25 +826,15 @@ TEST_F(RinexPrinterTest, MixedObsLog)
 
     rp = nullptr;  // close the RINEX files so we can inspect them
 
-    std::fstream fstr(obsfile.c_str(), std::fstream::in);
+    std::string line_epoch;
+    std::string line_sat;
+    find_obs_record_lines(obsfile, "E16", line_epoch, line_sat);
 
-    fstr.seekg(0);
+    std::string expected_epoch = "> 2019 04 14 00 00 00.0000000  0  7                                             ";
+    std::string expected_sat("E16  22000000.000 7         0.127 7       -20.000 7        42.000  22000000.000 6         8.292 6      1534.000 6        41.000");
+    EXPECT_EQ(0, expected_epoch.compare(line_epoch));
+    EXPECT_EQ(0, expected_sat.compare(line_sat));
 
-    while (!fstr.eof())
-        {
-            std::getline(fstr, line_str);
-            if (!no_more_finds)
-                {
-                    if (line_str.find("E16", 0) != std::string::npos)
-                        {
-                            no_more_finds = true;
-                            line_aux = std::string(line_str);
-                        }
-                }
-        }
-    std::string expected_str("E16  22000000.000 7         0.127 7       -20.000 7        42.000  22000000.000 6         8.292 6      1534.000 6        41.000");
-    EXPECT_EQ(0, expected_str.compare(line_aux));
-    fstr.close();
     fs::remove(navfile);
     fs::remove(obsfile);
 }
@@ -882,9 +842,6 @@ TEST_F(RinexPrinterTest, MixedObsLog)
 
 TEST_F(RinexPrinterTest, MixedObsLogGpsGlo)
 {
-    std::string line_aux;
-    std::string line_str;
-    bool no_more_finds = false;
     auto eph_gps = Gps_Ephemeris();
     auto eph_glo = Glonass_Gnav_Ephemeris();
     eph_gps.PRN = 1;
@@ -979,26 +936,15 @@ TEST_F(RinexPrinterTest, MixedObsLogGpsGlo)
 
     rp = nullptr;  // close the RINEX files so we can inspect them
 
-    std::fstream fstr(obsfile.c_str(), std::fstream::in);
+    std::string line_epoch;
+    std::string line_sat;
+    find_obs_record_lines(obsfile, "R16", line_epoch, line_sat);
 
-    fstr.seekg(0);
+    std::string expected_epoch = "> 2019 04 14 00 00 00.0000000  0  7                                             ";
+    std::string expected_sat("R16  22000000.000 6         8.292 6      1534.000 6        41.000  22000000.000 7         0.127 7       -20.000 7        42.000");
+    EXPECT_EQ(0, expected_epoch.compare(line_epoch));
+    EXPECT_EQ(0, expected_sat.compare(line_sat));
 
-    while (!fstr.eof())
-        {
-            std::getline(fstr, line_str);
-            if (!no_more_finds)
-                {
-                    if (line_str.find("R16", 0) != std::string::npos)
-                        {
-                            no_more_finds = true;
-                            line_aux = std::string(line_str);
-                        }
-                }
-        }
-
-    std::string expected_str("R16  22000000.000 6         8.292 6      1534.000 6        41.000  22000000.000 7         0.127 7       -20.000 7        42.000");
-    EXPECT_EQ(0, expected_str.compare(line_aux));
-    fstr.close();
     fs::remove(navfile);
     fs::remove(obsfile);
 }

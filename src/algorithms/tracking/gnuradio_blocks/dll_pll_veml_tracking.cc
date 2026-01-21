@@ -1292,7 +1292,7 @@ void dll_pll_veml_tracking::clear_tracking_vars()
 
 void dll_pll_veml_tracking::configure_bit_synchronizer()
 {
-    d_use_histogram_bit_sync = (!d_secondary && d_symbols_per_bit > 1);
+    d_use_histogram_bit_sync = (!d_secondary && d_symbols_per_bit > 1) && (d_systemName != "Glonass");  // Glonass uses Manchester coding
     if (!d_use_histogram_bit_sync)
         {
             d_bit_sync.reset();
@@ -1946,14 +1946,15 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         if (d_use_histogram_bit_sync)
                                             {
                                                 next_state = d_bit_sync.update(d_P_accu, true);
+                                                if (next_state)
+                                                    {
+                                                        LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " histogram bit synchronization locked in channel " << d_channel
+                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
+                                                        std::cout << d_systemName << " " << d_signal_pretty_name << " histogram bit synchronization locked in channel " << d_channel
+                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                    }
                                             }
-                                        if (next_state)
-                                            {
-                                                LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " histogram bit synchronization locked in channel " << d_channel
-                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
-                                                std::cout << d_systemName << " " << d_signal_pretty_name << " histogram bit synchronization locked in channel " << d_channel
-                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
-                                            }
+
                                         if (!next_state)
                                             {
                                                 // ******* preamble correlation ********

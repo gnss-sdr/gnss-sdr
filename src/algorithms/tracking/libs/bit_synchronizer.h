@@ -17,7 +17,6 @@
 #ifndef GNSS_SDR_BIT_SYNCHRONIZER_H
 #define GNSS_SDR_BIT_SYNCHRONIZER_H
 
-#include <algorithm>
 #include <cmath>
 #include <complex>
 #include <cstdint>
@@ -65,107 +64,11 @@ public:
         hist_.assign(bins(), 0);
     }
 
-    void reset()
-    {
-        std::fill(hist_.begin(), hist_.end(), 0);
-        total_events_ = 0;
-        epoch_count_ = 0;
-        locked_ = false;
-        edge_phase_ = -1;
-
-        has_last_prompt_ = false;
-        last_prompt_ = std::complex<float>(0.0f, 0.0f);
-
-        has_last_sign_ = false;
-        last_sign_ = +1;
-
-        has_last_best_bin_ = false;
-        last_best_bin_ = 0;
-        stable_best_count_ = 0;
-    }
+    void reset();
 
     // Call once per epoch (e.g., per coherent integration output).
     // Returns true ONLY on the epoch when lock is first declared.
-    bool update(const std::complex<float>& prompt, bool tracking_quality_ok)
-    {
-        const int N = bins();
-        const int phase = (N > 0) ? static_cast<int>(epoch_count_ % N) : 0;
-
-        // Always advance epoch counter; even if gated out we keep phase consistent.
-        ++epoch_count_;
-
-        // Gate on tracking status and magnitude
-        if (!tracking_quality_ok || (std::abs(prompt) < cfg_.min_prompt_mag))
-            {
-                last_prompt_ = prompt;
-                has_last_prompt_ = true;
-                return false;
-            }
-
-        bool edge_event = false;
-
-        if (cfg_.use_phase_dot_detector)
-            {
-                if (has_last_prompt_)
-                    {
-                        // dot = Re( Pk * conj(Pk-1) ); negative suggests polarity inversion
-                        const double dot = static_cast<double>(std::real(prompt * std::conj(last_prompt_)));
-                        edge_event = (dot < 0.0);
-                    }
-                // update last prompt after using it
-                last_prompt_ = prompt;
-                has_last_prompt_ = true;
-            }
-        else
-            {
-                const int s = (std::real(prompt) >= 0.0f) ? +1 : -1;
-                if (has_last_sign_)
-                    {
-                        edge_event = (s != last_sign_);
-                    }
-                last_sign_ = s;
-                has_last_sign_ = true;
-            }
-
-        if (edge_event && N > 0)
-            {
-                ++hist_[phase];
-                ++total_events_;
-            }
-
-        // Evaluate lock condition
-        if (!locked_ && (total_events_ >= cfg_.min_events_for_lock))
-            {
-                int best_bin = 0;
-                int best_count = 0;
-                best_bin_and_count(best_bin, best_count);
-
-                const double ratio = (total_events_ > 0)
-                                         ? (static_cast<double>(best_count) / static_cast<double>(total_events_))
-                                         : 0.0;
-
-                if (!has_last_best_bin_ || (best_bin != last_best_bin_))
-                    {
-                        last_best_bin_ = best_bin;
-                        has_last_best_bin_ = true;
-                        stable_best_count_ = 1;
-                    }
-                else
-                    {
-                        ++stable_best_count_;
-                    }
-
-                if ((ratio >= cfg_.dominance_ratio) &&
-                    (stable_best_count_ >= cfg_.stable_best_required))
-                    {
-                        locked_ = true;
-                        edge_phase_ = best_bin;
-                        return true;  // lock event
-                    }
-            }
-
-        return false;
-    }
+    bool update(const std::complex<float>& prompt, bool tracking_quality_ok);
 
     bool locked() const { return locked_; }
 
@@ -173,38 +76,16 @@ public:
     int edge_phase() const { return edge_phase_; }
 
     // For a given epoch index k (0-based), tells you if it's the predicted edge epoch.
-    bool is_edge_epoch(std::int64_t k) const
-    {
-        if (!locked_ || edge_phase_ < 0) return false;
-        const int N = bins();
-        if (N <= 0) return false;
-        return (static_cast<int>(k % N) == edge_phase_);
-    }
+    bool is_edge_epoch(std::int64_t k) const;
 
-    int bins() const
-    {
-        const int N = (cfg_.epoch_ms > 0) ? (cfg_.bit_period_ms / cfg_.epoch_ms) : 0;
-        return (N > 0) ? N : 0;
-    }
+    int bins() const;
 
     const std::vector<int>& histogram() const { return hist_; }
     std::int64_t total_events() const { return total_events_; }
     std::int64_t epoch_count() const { return epoch_count_; }
 
 private:
-    void best_bin_and_count(int& best_bin, int& best_count) const
-    {
-        best_bin = 0;
-        best_count = (hist_.empty() ? 0 : hist_[0]);
-        for (int i = 1; i < static_cast<int>(hist_.size()); ++i)
-            {
-                if (hist_[i] > best_count)
-                    {
-                        best_count = hist_[i];
-                        best_bin = i;
-                    }
-            }
-    }
+    void best_bin_and_count(int& best_bin, int& best_count) const;
 
     Config cfg_;
     std::vector<int> hist_;

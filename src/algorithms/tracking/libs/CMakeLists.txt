@@ -20,6 +20,7 @@ set(TRACKING_LIB_SOURCES
     kf_conf.cc
     bayesian_estimation.cc
     exponential_smoother.cc
+    bit_synchronizer.cc
 )
 
 set(TRACKING_LIB_HEADERS

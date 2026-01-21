@@ -19,6 +19,7 @@
 #ifndef GNSS_SDR_DLL_PLL_VEML_TRACKING_H
 #define GNSS_SDR_DLL_PLL_VEML_TRACKING_H
 
+#include "bit_synchronizer.h"
 #include "cpu_multicorrelator_real_codes.h"
 #include "dll_pll_conf.h"
 #include "exponential_smoother.h"
@@ -84,6 +85,7 @@ private:
     void clear_tracking_vars();
     void save_correlation_results();
     void log_data();
+    void configure_bit_synchronizer();
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
     int64_t uint64diff(uint64_t first, uint64_t second);
@@ -99,6 +101,8 @@ private:
 
     Tracking_loop_filter d_code_loop_filter;
     Tracking_FLL_PLL_filter d_carrier_loop_filter;
+
+    HistogramBitSynchronizer d_bit_sync;
 
     Gnss_Synchro *d_acquisition_gnss_synchro;
 
@@ -212,6 +216,7 @@ private:
     bool d_acc_carrier_phase_initialized;
     bool d_enable_extended_integration;
     bool d_Flag_PLL_180_deg_phase_locked;
+    bool d_use_histogram_bit_sync;
 };
 
 

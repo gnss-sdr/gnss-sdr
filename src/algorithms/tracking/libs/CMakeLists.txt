@@ -38,6 +38,7 @@ set(TRACKING_LIB_HEADERS
     kf_conf.h
     bayesian_estimation.h
     exponential_smoother.h
+    bit_synchronizer.h
 )
 
 if(ENABLE_CUDA)

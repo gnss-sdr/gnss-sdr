@@ -109,7 +109,7 @@ public:
     double satvel_Z{};  //!< Earth-fixed velocity coordinate z of the satellite [m]
 
 protected:
-    char System{};  //!< Character ID of the GNSS system. 'G': GPS.  'E': Galileo.  'B': BeiDou
+    char System{};  //!< Character ID of the GNSS system. 'G': GPS.  'E': Galileo.  'C': BeiDou
 
 private:
     void satellitePosVelComputation(double transmitTime, std::array<double, 7>& pos_vel_dtr) const;

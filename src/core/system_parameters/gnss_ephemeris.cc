@@ -126,7 +126,7 @@ double Gnss_Ephemeris::predicted_doppler(double rx_time_s,
                     predicted_doppler = 0.0;
                 }
         }
-    else if (this->System == 'B')  // Beidou
+    else if (this->System == 'C')  // Beidou
         {
             if (band == 1)
                 {
@@ -178,7 +178,7 @@ void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<
         {
             n0 = sqrt(GALILEO_GM / (a * a * a));
         }
-    else if (this->System == 'B')
+    else if (this->System == 'C')
         {
             n0 = sqrt(BEIDOU_GM / (a * a * a));
         }
@@ -252,7 +252,7 @@ void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<
     // Compute the angle between the ascending node and the Greenwich meridian
     double Omega;
     double Omega_dot;
-    if (this->System == 'B')
+    if (this->System == 'C')
         {
             Omega_dot = this->OMEGAdot - BEIDOU_OMEGA_EARTH_DOT;
             Omega = this->OMEGA_0 + Omega_dot * tk - BEIDOU_OMEGA_EARTH_DOT * static_cast<double>(this->toe);
@@ -292,7 +292,7 @@ void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<
         {
             pos_vel_dtr[6] -= 2.0 * sqrt(GALILEO_GM * a) * this->ecc * sek / (SPEED_OF_LIGHT_M_S * SPEED_OF_LIGHT_M_S);
         }
-    else if (this->System == 'B')
+    else if (this->System == 'C')
         {
             pos_vel_dtr[6] -= 2.0 * sqrt(BEIDOU_GM * a) * this->ecc * sek / (SPEED_OF_LIGHT_M_S * SPEED_OF_LIGHT_M_S);
         }
@@ -333,7 +333,7 @@ double Gnss_Ephemeris::sv_clock_relativistic_term(double transmitTime) const
         {
             n0 = sqrt(GALILEO_GM / (a * a * a));
         }
-    else if (this->System == 'B')
+    else if (this->System == 'C')
         {
             n0 = sqrt(BEIDOU_GM / (a * a * a));
         }
@@ -371,7 +371,7 @@ double Gnss_Ephemeris::sv_clock_relativistic_term(double transmitTime) const
         {
             dtr_ = GALILEO_F * this->ecc * this->sqrtA * sek;
         }
-    else if (this->System == 'B')
+    else if (this->System == 'C')
         {
             dtr_ = BEIDOU_F * this->ecc * this->sqrtA * sek;
         }

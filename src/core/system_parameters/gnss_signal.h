@@ -32,7 +32,8 @@
 /*!
  * \brief This class represents a GNSS signal.
  *
- * It contains information about the space vehicle and the specific signal.
+ * Encapsulates a specific GNSS signal (e.g., GPS L1 C/A, Galileo E1B) and its
+ * associated satellite.
  */
 class Gnss_Signal
 {
@@ -41,7 +42,17 @@ public:
     explicit Gnss_Signal(const std::string& signal_);
     Gnss_Signal(const Gnss_Satellite& satellite_, const std::string& signal_);
     ~Gnss_Signal() = default;
-    std::string get_signal_str() const;    //!< Get the satellite signal {"1C" for GPS L1 C/A, "2S" for GPS L2C (M), "L5" for GPS L5, "1G" for GLONASS L1 C/A, "1B" for Galileo E1B, "5X" for Galileo E5a.
+
+     /*!
+     * \brief Return the signal identifier string.
+     *
+     *  - GPS: "1C" (L1 C/A), "2S" (L2C), "L5"
+     *  - GLONASS: "1G" (L1 C/A), "2G" (L2 C/A)
+     *  - Galileo: "1B" (E1B), "5X" (E5a), "7X" (E5b), "6C" (E6C)
+     *  - BeiDou: "B1" (B1I), "B3" (B3I)
+     */
+    std::string get_signal_str() const;
+
     Gnss_Satellite get_satellite() const;  //!< Get the Gnss_Satellite associated to the signal
 
     friend bool operator==(const Gnss_Signal& /*sig1*/, const Gnss_Signal& /*sig2*/);    //!< operator== for comparison

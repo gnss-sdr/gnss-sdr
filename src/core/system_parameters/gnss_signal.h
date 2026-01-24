@@ -43,7 +43,7 @@ public:
     Gnss_Signal(const Gnss_Satellite& satellite_, const std::string& signal_);
     ~Gnss_Signal() = default;
 
-     /*!
+    /*!
      * \brief Return the signal identifier string.
      *
      *  - GPS: "1C" (L1 C/A), "2S" (L2C), "L5"

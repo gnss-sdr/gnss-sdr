@@ -92,7 +92,7 @@ public:
     double af1{};       //!< Coefficient 1 of code phase offset model [s/s]
 
 protected:
-    char System{};  //!< Character ID of the GNSS system. 'G': GPS. 'E': Galileo. 'B': BeiDou
+    char System{};  //!< Character ID of the GNSS system. 'G': GPS. 'E': Galileo. 'C': BeiDou
 private:
     double check_t(double time) const;
 };

@@ -38,6 +38,7 @@
 #ifndef GNSS_SDR_RINEX_PRINTER_H
 #define GNSS_SDR_RINEX_PRINTER_H
 
+#include "signal_enabled_flags.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <cstdint>  // for int32_t
 #include <cstdlib>  // for strtol, strtod
@@ -71,6 +72,8 @@ class Gps_Iono;
 class Gps_Navigation_Message;
 class Gps_Utc_Model;
 class Rtklib_Solver;
+
+using Constellation_Observables_Map = std::map<char, std::map<uint32_t, std::map<signal_flag, Gnss_Synchro>>>;
 
 
 /*!
@@ -295,7 +298,7 @@ private:
     void log_rinex_obs(std::fstream& out,
         const Gps_Ephemeris& eph,
         double obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes GPS L2 observables into the RINEX file
@@ -303,7 +306,7 @@ private:
     void log_rinex_obs(std::fstream& out,
         const Gps_CNAV_Ephemeris& eph,
         double obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes dual frequency GPS L1 and L2 observables into the RINEX file
@@ -312,8 +315,7 @@ private:
         const Gps_Ephemeris& eph,
         const Gps_CNAV_Ephemeris& eph_cnav,
         double obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables,
-        bool triple_band = false) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes Galileo observables into the RINEX file.
@@ -322,8 +324,7 @@ private:
     void log_rinex_obs(std::fstream& out,
         const Galileo_Ephemeris& eph,
         double obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables,
-        const std::string& galileo_bands = "1B") const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes Mixed GPS / Galileo observables into the RINEX file
@@ -332,7 +333,7 @@ private:
         const Gps_Ephemeris& gps_eph,
         const Galileo_Ephemeris& galileo_eph,
         double gps_obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes Mixed GPS / Galileo observables into the RINEX file
@@ -341,7 +342,7 @@ private:
         const Gps_CNAV_Ephemeris& eph,
         const Galileo_Ephemeris& galileo_eph,
         double gps_obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes Mixed GPS / Galileo observables into the RINEX file
@@ -351,8 +352,7 @@ private:
         const Gps_CNAV_Ephemeris& gps_cnav_eph,
         const Galileo_Ephemeris& galileo_eph,
         double gps_obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables,
-        bool triple_band = false) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes GLONASS GNAV observables into the RINEX file.
@@ -361,7 +361,7 @@ private:
     void log_rinex_obs(std::fstream& out,
         const Glonass_Gnav_Ephemeris& eph,
         double obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes Mixed GPS L1 C/A - GLONASS observables into the RINEX file
@@ -370,7 +370,7 @@ private:
         const Gps_Ephemeris& gps_eph,
         const Glonass_Gnav_Ephemeris& glonass_gnav_eph,
         double gps_obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes Mixed GPS L2C - GLONASS observables into the RINEX file
@@ -379,7 +379,7 @@ private:
         const Gps_CNAV_Ephemeris& gps_eph,
         const Glonass_Gnav_Ephemeris& glonass_gnav_eph,
         double gps_obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes Mixed Galileo/GLONASS observables into the RINEX file
@@ -388,7 +388,7 @@ private:
         const Galileo_Ephemeris& galileo_eph,
         const Glonass_Gnav_Ephemeris& glonass_gnav_eph,
         double galileo_obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes BDS B1I observables into the RINEX file
@@ -396,8 +396,7 @@ private:
     void log_rinex_obs(std::fstream& out,
         const Beidou_Dnav_Ephemeris& eph,
         double obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables,
-        const std::string& bds_bands) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Generates the GPS L1 C/A Navigation Data header

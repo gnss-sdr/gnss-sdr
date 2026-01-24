@@ -130,7 +130,7 @@ double Gnss_Almanac::predicted_doppler(double rx_time_s,
                     predicted_doppler = 0.0;
                 }
         }
-    else if (this->System == 'B')  // Beidou
+    else if (this->System == 'C')  // Beidou
         {
             if (band == 1)
                 {
@@ -168,7 +168,7 @@ void Gnss_Almanac::satellitePosVelComputation(double transmitTime, std::array<do
         {
             n = sqrt(GALILEO_GM / (a * a * a));
         }
-    else if (this->System == 'B')
+    else if (this->System == 'C')
         {
             n = sqrt(BEIDOU_GM / (a * a * a));
         }
@@ -242,7 +242,7 @@ void Gnss_Almanac::satellitePosVelComputation(double transmitTime, std::array<do
     // Compute the angle between the ascending node and the Greenwich meridian
     double Omega;
     double Omega_dot;
-    if (this->System == 'B')
+    if (this->System == 'C')
         {
             Omega_dot = this->OMEGAdot * GNSS_PI - BEIDOU_OMEGA_EARTH_DOT;
             Omega = this->OMEGA_0 * GNSS_PI + Omega_dot * tk - BEIDOU_OMEGA_EARTH_DOT * static_cast<double>(this->toa);

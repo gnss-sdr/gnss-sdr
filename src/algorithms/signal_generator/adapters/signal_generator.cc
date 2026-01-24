@@ -122,7 +122,7 @@ SignalGenerator::SignalGenerator(const ConfigurationInterface* configuration,
                 }
         }
 
-    else if (std::find(system.begin(), system.end(), "B") != system.end())
+    else if (std::find(system.begin(), system.end(), "C") != system.end())
         {
             vector_length = static_cast<unsigned int>(round(static_cast<float>(fs_in) / (BEIDOU_B1I_CODE_RATE_CPS / BEIDOU_B1I_CODE_LENGTH_CHIPS)));
         }

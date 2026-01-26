@@ -4748,8 +4748,8 @@ boost::posix_time::ptime Rinex_Printer::compute_GPS_time(const Gps_CNAV_Ephemeri
     // (see Section 3 in ftp://igs.org/pub/data/format/rinex211.txt)
     // (see Pag. 17 in ftp://igs.org/pub/data/format/rinex300.pdf)
     // --??? No time correction here, since it will be done in the RINEX processor
-    const boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((obs_time + 604800 * static_cast<double>(eph.WN % 1024)) * 1000));
-    boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+    const boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((obs_time + 604800 * static_cast<double>(eph.WN % 8192)) * 1000));
+    boost::posix_time::ptime p_time(boost::gregorian::date(1980, 1, 5), t);
     return p_time;
 }
 

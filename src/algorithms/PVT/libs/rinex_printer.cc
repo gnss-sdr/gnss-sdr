@@ -1765,7 +1765,6 @@ struct NavHeaderInfo
 
 void update_nav_header_from_info(std::fstream& out, const std::string& filename, const std::vector<NavHeaderInfo>& infos)
 {
-    // There is not time system correction between Galileo and GLONASS
     std::vector<std::string> data;
 
     const int64_t pos = out.tellp();
@@ -3407,6 +3406,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_CNAV_Iono& gp
 
 void Rinex_Printer::update_nav_header(std::fstream& out, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model) const
 {
+    // There is not time system correction between Galileo and GLONASS
     const std::vector<NavHeaderInfo> nav_header_info = {
         {"GAL", "IONOSPHERIC CORR", get_galileo_iono_alpha_line(galileo_iono)},
         {"GAUT", "TIME SYSTEM CORR", get_galileo_time_corr_line(galileo_utc_model)},

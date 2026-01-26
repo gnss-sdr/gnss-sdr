@@ -55,7 +55,6 @@ public:
     }
 
 private:
-    bool find_alternative_device(std::string& device_io_name);
     int32_t* ca_codes_ptr_;
 };
 

@@ -2988,7 +2988,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
 
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Beidou_Dnav_Iono& iono, const Beidou_Dnav_Utc_Model& utc_model) const
 {
-    add_navigation_header_start(out, "F: BDS", "BDS", Rinex_Printer::getLocalTime(), d_stringVersion);  // TODO version handling
+    add_navigation_header_start(out, "C: BDS", "BDS", Rinex_Printer::getLocalTime(), d_stringVersion);  // TODO version handling
 
     // -------- Line ionospheric info 1, only version 3 supported
     out << get_beidou_iono_alpha_line(iono) << '\n';

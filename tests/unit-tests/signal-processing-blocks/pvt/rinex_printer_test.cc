@@ -187,9 +187,9 @@ TEST_F(RinexPrinterTest, GalileoObsHeader)
     gs.PRN = 1;
     gnss_observables_map[1] = std::move(gs);
 
-    auto rp = std::make_shared<Rinex_Printer>();
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
 
-    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];
@@ -221,9 +221,9 @@ TEST_F(RinexPrinterTest, GalileoObsHeader)
     fs::remove(obsfile);
     fs::remove(navfile);
 
-    auto rp2 = std::make_shared<Rinex_Printer>();
+    auto rp2 = std::make_shared<Rinex_Printer>(GAL_1B | GAL_E5b);
 
-    rp2->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, GAL_1B | GAL_E5b, true);
+    rp2->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
     obsfile = rp2->get_obsfilename();
     navfile = rp2->get_navfilename()[0];
 
@@ -268,9 +268,9 @@ TEST_F(RinexPrinterTest, GlonassObsHeader)
     gs.PRN = 1;
     gnss_observables_map[1] = std::move(gs);
 
-    auto rp = std::make_shared<Rinex_Printer>(3);
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
 
-    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];
@@ -328,9 +328,9 @@ TEST_F(RinexPrinterTest, MixedObsHeader)
     gnss_observables_map[1] = gs;
     gnss_observables_map[2] = std::move(gs);
 
-    auto rp = std::make_shared<Rinex_Printer>();
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
 
-    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];
@@ -397,9 +397,9 @@ TEST_F(RinexPrinterTest, MixedObsHeaderGpsGlo)
     gnss_observables_map[1] = gs;
     gnss_observables_map[2] = std::move(gs);
 
-    auto rp = std::make_shared<Rinex_Printer>();
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
 
-    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];
@@ -485,8 +485,8 @@ TEST_F(RinexPrinterTest, GalileoObsLog)
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
 
-    auto rp = std::make_shared<Rinex_Printer>();
-    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];
@@ -550,8 +550,8 @@ TEST_F(RinexPrinterTest, GlonassObsLog)
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
 
-    auto rp = std::make_shared<Rinex_Printer>();
-    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];
@@ -630,8 +630,8 @@ TEST_F(RinexPrinterTest, GpsObsLogDualBand)
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
 
-    auto rp = std::make_shared<Rinex_Printer>();
-    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];
@@ -707,9 +707,9 @@ TEST_F(RinexPrinterTest, GalileoObsLogDualBand)
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
 
-    auto rp = std::make_shared<Rinex_Printer>();
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
 
-    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];
@@ -817,9 +817,9 @@ TEST_F(RinexPrinterTest, MixedObsLog)
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(7, gs7));
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(8, gs8));
 
-    auto rp = std::make_shared<Rinex_Printer>();
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
 
-    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];
@@ -835,7 +835,7 @@ TEST_F(RinexPrinterTest, MixedObsLog)
     EXPECT_EQ(0, expected_epoch.compare(line_epoch));
     EXPECT_EQ(0, expected_sat.compare(line_sat));
 
-    fs::remove(navfile);
+    // fs::remove(navfile);
     fs::remove(obsfile);
 }
 
@@ -927,9 +927,9 @@ TEST_F(RinexPrinterTest, MixedObsLogGpsGlo)
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(7, gs7));
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(8, gs8));
 
-    auto rp = std::make_shared<Rinex_Printer>();
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
 
-    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, signal_enabled_flags, true);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
     std::string obsfile = rp->get_obsfilename();
     std::string navfile = rp->get_navfilename()[0];

@@ -1756,6 +1756,62 @@ void add_obs_epoch_record(std::fstream& out, const boost::posix_time::ptime& utc
     out << line << '\n';
 }
 
+struct NavHeaderInfo
+{
+    std::string prefix;
+    std::string suffix;
+    std::string new_line;
+};
+
+void update_nav_header_from_info(std::fstream& out, const std::string& filename, const std::vector<NavHeaderInfo>& infos)
+{
+    std::vector<std::string> data;
+
+    const int64_t pos = out.tellp();
+    out.seekp(0);
+    data.clear();
+
+    bool no_more_finds = false;
+    std::string line_str;
+
+    while (!out.eof())
+        {
+            std::getline(out, line_str);
+
+            if (!no_more_finds)
+                {
+                    bool updated = false;
+
+                    for (const auto& info : infos)
+                        {
+                            if ((info.prefix.empty() || line_str.find(info.prefix, 0) != std::string::npos) &&
+                                (info.suffix.empty() || line_str.find(info.suffix, 59) != std::string::npos))
+                                {
+                                    data.push_back(info.new_line);
+                                    updated = true;
+                                    break;
+                                }
+                        }
+
+                    if (!updated)
+                        {
+                            data.push_back(line_str);
+
+                            if (line_str.find("END OF HEADER", 59) != std::string::npos)
+                                {
+                                    no_more_finds = true;
+                                }
+                        }
+                }
+            else
+                {
+                    data.push_back(line_str);
+                }
+        }
+
+    override_stream_with_new_data(out, filename, data, pos);
+}
+
 }  // namespace
 
 
@@ -2932,7 +2988,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
 
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Beidou_Dnav_Iono& iono, const Beidou_Dnav_Utc_Model& utc_model) const
 {
-    add_navigation_header_start(out, "F: BDS", "BDS", Rinex_Printer::getLocalTime(), d_stringVersion);  // TODO version handling
+    add_navigation_header_start(out, "C: BDS", "BDS", Rinex_Printer::getLocalTime(), d_stringVersion);  // TODO version handling
 
     // -------- Line ionospheric info 1, only version 3 supported
     out << get_beidou_iono_alpha_line(iono) << '\n';
@@ -3172,528 +3228,178 @@ void Rinex_Printer::rinex_sbs_header(std::fstream& out) const
 
 void Rinex_Printer::update_nav_header(std::fstream& out, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model) const
 {
-    std::vector<std::string> data;
+    const std::vector<NavHeaderInfo> nav_header_info = {
+        {"GLUT", "TIME SYSTEM CORR", get_glonass_time_corr_line(glonass_gnav_utc_model)},
+        {"GLGP", "TIME SYSTEM CORR", get_glonass_to_gps_time_corr_line(glonass_gnav_utc_model)},
+    };
 
-    const int64_t pos = out.tellp();
-    out.seekp(0);
-    data.clear();
-
-    bool no_more_finds = false;
-    std::string line_str;
-
-    while (!out.eof())
-        {
-            std::getline(out, line_str);
-
-            if (!no_more_finds)
-                {
-                    if ((line_str.find("GLUT", 0) != std::string::npos) && (line_str.find("TIME SYSTEM CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_glonass_time_corr_line(glonass_gnav_utc_model));
-                        }
-                    else if ((line_str.find("GLGP", 0) != std::string::npos) && (line_str.find("TIME SYSTEM CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_glonass_to_gps_time_corr_line(glonass_gnav_utc_model));
-                        }
-                    else if (line_str.find("END OF HEADER", 59) != std::string::npos)
-                        {
-                            data.push_back(line_str);
-                            no_more_finds = true;
-                        }
-                    else
-                        {
-                            data.push_back(line_str);
-                        }
-                }
-            else
-                {
-                    data.push_back(line_str);
-                }
-        }
-
-    override_stream_with_new_data(out, navGlofilename, data, pos);
+    update_nav_header_from_info(out, navGlofilename, nav_header_info);
     std::cout << "The RINEX Navigation file header has been updated with UTC info.\n";
 }
 
 
 void Rinex_Printer::update_nav_header(std::fstream& out, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& utc_model) const
 {
-    std::vector<std::string> data;
+    const std::vector<NavHeaderInfo> nav_header_info = {
+        {"GAL", "IONOSPHERIC CORR", get_galileo_iono_alpha_line(galileo_iono)},
+        {"GAUT", "TIME SYSTEM CORR", get_galileo_time_corr_line(utc_model)},
+        {"GPGA", "TIME SYSTEM CORR", get_gps_to_galileo_time_corr_line(utc_model)},
+        {"", "LEAP SECONDS", get_leap_second_line(utc_model)},
+    };
 
-    const int64_t pos = out.tellp();
-    out.seekp(0);
-    data.clear();
-
-    bool no_more_finds = false;
-    std::string line_str;
-
-    while (!out.eof())
-        {
-            std::getline(out, line_str);
-
-            if (!no_more_finds)
-                {
-                    if ((line_str.find("GAL", 0) != std::string::npos) && (line_str.find("IONOSPHERIC CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_galileo_iono_alpha_line(galileo_iono));
-                        }
-                    else if ((line_str.find("GAUT", 0) != std::string::npos) && (line_str.find("TIME SYSTEM CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_galileo_time_corr_line(utc_model));
-                        }
-                    else if ((line_str.find("GPGA", 0) != std::string::npos) && (line_str.find("TIME SYSTEM CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_gps_to_galileo_time_corr_line(utc_model));
-                        }
-                    else if (line_str.find("LEAP SECONDS", 59) != std::string::npos)
-                        {
-                            data.push_back(get_leap_second_line(utc_model));
-                        }
-                    else if (line_str.find("END OF HEADER", 59) != std::string::npos)
-                        {
-                            data.push_back(line_str);
-                            no_more_finds = true;
-                        }
-                    else
-                        {
-                            data.push_back(line_str);
-                        }
-                }
-            else
-                {
-                    data.push_back(line_str);
-                }
-        }
-
-    override_stream_with_new_data(out, navGalfilename, data, pos);
+    update_nav_header_from_info(out, navGalfilename, nav_header_info);
     std::cout << "The RINEX Navigation file header has been updated with UTC and IONO info.\n";
 }
 
 
 void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Utc_Model& utc_model, const Gps_Iono& iono, const Gps_Ephemeris& eph) const
 {
-    std::vector<std::string> data;
-    std::string line_aux;
+    std::vector<NavHeaderInfo> nav_header_info = {};
 
-    int64_t pos = out.tellp();
-    out.seekp(0);
-    data.clear();
-
-    bool no_more_finds = false;
-    std::string line_str;
-
-    while (!out.eof())
+    if (d_version == 3)
         {
-            std::getline(out, line_str);
+            nav_header_info = {
+                {"GPSA", "IONOSPHERIC CORR", get_gps_iono_alpha_line(iono)},
+                {"GPSB", "IONOSPHERIC CORR", get_gps_iono_beta_line(iono)},
+                {"GPUT", "TIME SYSTEM CORR", get_gps_time_corr_line(utc_model, eph, d_pre_2009_file)},
+                {"", "LEAP SECONDS", get_leap_second_line(utc_model)},
+            };
+        }
+    else if (d_version == 2)
+        {
+            std::string alpha_line;
+            alpha_line += std::string(2, ' ');
+            alpha_line += rightJustify(doub2for(iono.alpha0, 10, 2), 12);
+            alpha_line += rightJustify(doub2for(iono.alpha1, 10, 2), 12);
+            alpha_line += rightJustify(doub2for(iono.alpha2, 10, 2), 12);
+            alpha_line += rightJustify(doub2for(iono.alpha3, 10, 2), 12);
+            alpha_line += std::string(10, ' ');
+            alpha_line += leftJustify("ION ALPHA", 20);
 
-            if (!no_more_finds)
+            std::string beta_line;
+            beta_line += std::string(2, ' ');
+            beta_line += rightJustify(doub2for(iono.beta0, 10, 2), 12);
+            beta_line += rightJustify(doub2for(iono.beta1, 10, 2), 12);
+            beta_line += rightJustify(doub2for(iono.beta2, 10, 2), 12);
+            beta_line += rightJustify(doub2for(iono.beta3, 10, 2), 12);
+            beta_line += std::string(10, ' ');
+            beta_line += leftJustify("ION BETA", 20);
+
+            std::string delta_utc_line;
+            delta_utc_line += std::string(3, ' ');
+            delta_utc_line += rightJustify(doub2for(utc_model.A0, 18, 2), 19);
+            delta_utc_line += rightJustify(doub2for(utc_model.A1, 18, 2), 19);
+            delta_utc_line += rightJustify(std::to_string(utc_model.tot), 9);
+            if (d_pre_2009_file == false)
                 {
-                    line_aux.clear();
-
-                    if (d_version == 2)
+                    if (eph.WN < 512)
                         {
-                            if (line_str.find("ION ALPHA", 59) != std::string::npos)
-                                {
-                                    line_aux += std::string(2, ' ');
-                                    line_aux += rightJustify(doub2for(iono.alpha0, 10, 2), 12);
-                                    line_aux += rightJustify(doub2for(iono.alpha1, 10, 2), 12);
-                                    line_aux += rightJustify(doub2for(iono.alpha2, 10, 2), 12);
-                                    line_aux += rightJustify(doub2for(iono.alpha3, 10, 2), 12);
-                                    line_aux += std::string(10, ' ');
-                                    line_aux += leftJustify("ION ALPHA", 20);
-                                    data.push_back(line_aux);
-                                }
-                            else if (line_str.find("ION BETA", 59) != std::string::npos)
-                                {
-                                    line_aux += std::string(2, ' ');
-                                    line_aux += rightJustify(doub2for(iono.beta0, 10, 2), 12);
-                                    line_aux += rightJustify(doub2for(iono.beta1, 10, 2), 12);
-                                    line_aux += rightJustify(doub2for(iono.beta2, 10, 2), 12);
-                                    line_aux += rightJustify(doub2for(iono.beta3, 10, 2), 12);
-                                    line_aux += std::string(10, ' ');
-                                    line_aux += leftJustify("ION BETA", 20);
-                                    data.push_back(line_aux);
-                                }
-                            else if (line_str.find("DELTA-UTC", 59) != std::string::npos)
-                                {
-                                    line_aux += std::string(3, ' ');
-                                    line_aux += rightJustify(doub2for(utc_model.A0, 18, 2), 19);
-                                    line_aux += rightJustify(doub2for(utc_model.A1, 18, 2), 19);
-                                    line_aux += rightJustify(std::to_string(utc_model.tot), 9);
-                                    if (d_pre_2009_file == false)
-                                        {
-                                            if (eph.WN < 512)
-                                                {
-                                                    line_aux += rightJustify(std::to_string(utc_model.WN_T + (eph.WN / 256) * 256 + 2048), 9);  // valid from 2019 to 2029
-                                                }
-                                            else
-                                                {
-                                                    line_aux += rightJustify(std::to_string(utc_model.WN_T + (eph.WN / 256) * 256 + 1024), 9);  // valid from 2009 to 2019
-                                                }
-                                        }
-                                    else
-                                        {
-                                            line_aux += rightJustify(std::to_string(utc_model.WN_T + (eph.WN / 256) * 256), 9);
-                                        }
-                                    line_aux += std::string(1, ' ');
-                                    line_aux += leftJustify("DELTA-UTC: A0,A1,T,W", 20);
-                                    data.push_back(line_aux);
-                                }
-                            else if (line_str.find("LEAP SECONDS", 59) != std::string::npos)
-                                {
-                                    line_aux += rightJustify(std::to_string(utc_model.DeltaT_LS), 6);
-                                    line_aux += std::string(54, ' ');
-                                    line_aux += leftJustify("LEAP SECONDS", 20);
-                                    data.push_back(line_aux);
-                                }
-                            else if (line_str.find("END OF HEADER", 59) != std::string::npos)
-                                {
-                                    data.push_back(line_str);
-                                    no_more_finds = true;
-                                }
-                            else
-                                {
-                                    data.push_back(line_str);
-                                }
+                            delta_utc_line += rightJustify(std::to_string(utc_model.WN_T + (eph.WN / 256) * 256 + 2048), 9);  // valid from 2019 to 2029
                         }
-
-                    if (d_version == 3)
+                    else
                         {
-                            if (line_str.find("GPSA", 0) != std::string::npos)
-                                {
-                                    data.push_back(get_gps_iono_alpha_line(iono));
-                                }
-                            else if (line_str.find("GPSB", 0) != std::string::npos)
-                                {
-                                    data.push_back(get_gps_iono_beta_line(iono));
-                                }
-                            else if (line_str.find("GPUT", 0) != std::string::npos)
-                                {
-                                    data.push_back(get_gps_time_corr_line(utc_model, eph, d_pre_2009_file));
-                                }
-                            else if (line_str.find("LEAP SECONDS", 59) != std::string::npos)
-                                {
-                                    data.push_back(get_leap_second_line(utc_model));
-                                }
-                            else if (line_str.find("END OF HEADER", 59) != std::string::npos)
-                                {
-                                    data.push_back(line_str);
-                                    no_more_finds = true;
-                                }
-                            else
-                                {
-                                    data.push_back(line_str);
-                                }
+                            delta_utc_line += rightJustify(std::to_string(utc_model.WN_T + (eph.WN / 256) * 256 + 1024), 9);  // valid from 2009 to 2019
                         }
                 }
             else
                 {
-                    data.push_back(line_str);
+                    delta_utc_line += rightJustify(std::to_string(utc_model.WN_T + (eph.WN / 256) * 256), 9);
                 }
+            delta_utc_line += std::string(1, ' ');
+            delta_utc_line += leftJustify("DELTA-UTC: A0,A1,T,W", 20);
+
+            std::string leap_sec_line;
+            leap_sec_line += rightJustify(std::to_string(utc_model.DeltaT_LS), 6);
+            leap_sec_line += std::string(54, ' ');
+            leap_sec_line += leftJustify("LEAP SECONDS", 20);
+
+            nav_header_info = {
+                {"", "ION ALPHA", alpha_line},
+                {"", "ION BETA", beta_line},
+                {"", "DELTA-UTC", delta_utc_line},
+                {"", "LEAP SECONDS", leap_sec_line},
+            };
         }
 
-    override_stream_with_new_data(out, navfilename, data, pos);
+    update_nav_header_from_info(out, navGalfilename, nav_header_info);
     std::cout << "The RINEX Navigation file header has been updated with UTC and IONO info.\n";
 }
 
 
 void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_CNAV_Utc_Model& utc_model, const Gps_CNAV_Iono& iono) const
 {
-    std::vector<std::string> data;
+    const std::vector<NavHeaderInfo> nav_header_info = {
+        {"GPSA", "IONOSPHERIC CORR", get_gps_iono_alpha_line(iono)},
+        {"GPSB", "IONOSPHERIC CORR", get_gps_iono_beta_line(iono)},
+        {"GPUT", "TIME SYSTEM CORR", get_gps_time_corr_line(utc_model)},
+        {"", "LEAP SECONDS", get_leap_second_line(utc_model)},
+    };
 
-    const int64_t pos = out.tellp();
-    out.seekp(0);
-    data.clear();
-
-    bool no_more_finds = false;
-    std::string line_str;
-
-    while (!out.eof())
-        {
-            std::getline(out, line_str);
-
-            if (!no_more_finds)
-                {
-                    if (line_str.find("GPSA", 0) != std::string::npos)
-                        {
-                            data.push_back(get_gps_iono_alpha_line(iono));
-                        }
-                    else if (line_str.find("GPSB", 0) != std::string::npos)
-                        {
-                            data.push_back(get_gps_iono_beta_line(iono));
-                        }
-                    else if (line_str.find("GPUT", 0) != std::string::npos)
-                        {
-                            data.push_back(get_gps_time_corr_line(utc_model));
-                        }
-                    else if (line_str.find("LEAP SECONDS", 59) != std::string::npos)
-                        {
-                            data.push_back(get_leap_second_line(utc_model));
-                        }
-                    else if (line_str.find("END OF HEADER", 59) != std::string::npos)
-                        {
-                            data.push_back(line_str);
-                            no_more_finds = true;
-                        }
-                    else
-                        {
-                            data.push_back(line_str);
-                        }
-                }
-            else
-                {
-                    data.push_back(line_str);
-                }
-        }
-
-    override_stream_with_new_data(out, navfilename, data, pos);
+    update_nav_header_from_info(out, navfilename, nav_header_info);
     std::cout << "The RINEX Navigation file header has been updated with UTC and IONO info.\n";
 }
 
 
 void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_CNAV_Utc_Model& utc_model, const Gps_CNAV_Iono& iono, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model) const
 {
-    std::vector<std::string> data;
+    const std::vector<NavHeaderInfo> nav_header_info = {
+        {"GAL", "IONOSPHERIC CORR", get_galileo_iono_alpha_line(galileo_iono)},
+        {"GPSA", "IONOSPHERIC CORR", get_gps_iono_alpha_line(iono)},
+        {"GPSB", "IONOSPHERIC CORR", get_gps_iono_beta_line(iono)},
+        {"GAUT", "TIME SYSTEM CORR", get_galileo_time_corr_line(galileo_utc_model)},
+        {"GPGA", "TIME SYSTEM CORR", get_gps_to_galileo_time_corr_line(galileo_utc_model)},
+        {"GPUT", "TIME SYSTEM CORR", get_gps_time_corr_line(utc_model)},
+        {"", "LEAP SECONDS", get_leap_second_line(utc_model)},
+    };
 
-    const int64_t pos = out.tellp();
-    out.seekp(0);
-    data.clear();
-
-    bool no_more_finds = false;
-    std::string line_str;
-
-    while (!out.eof())
-        {
-            std::getline(out, line_str);
-
-            if (!no_more_finds)
-                {
-                    if ((line_str.find("GAL", 0) != std::string::npos) && (line_str.find("IONOSPHERIC CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_galileo_iono_alpha_line(galileo_iono));
-                        }
-                    else if ((line_str.find("GPSA", 0) != std::string::npos) && (line_str.find("IONOSPHERIC CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_gps_iono_alpha_line(iono));
-                        }
-                    else if ((line_str.find("GPSB", 0) != std::string::npos) && (line_str.find("IONOSPHERIC CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_gps_iono_beta_line(iono));
-                        }
-                    else if ((line_str.find("GAUT", 0) != std::string::npos) && (line_str.find("TIME SYSTEM CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_galileo_time_corr_line(galileo_utc_model));
-                        }
-                    else if ((line_str.find("GPGA", 0) != std::string::npos) && (line_str.find("TIME SYSTEM CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_gps_to_galileo_time_corr_line(galileo_utc_model));
-                        }
-                    else if (line_str.find("GPUT", 0) != std::string::npos)
-                        {
-                            data.push_back(get_gps_time_corr_line(utc_model));
-                        }
-                    else if (line_str.find("LEAP SECONDS", 59) != std::string::npos)
-                        {
-                            data.push_back(get_leap_second_line(utc_model));
-                        }
-                    else if (line_str.find("END OF HEADER", 59) != std::string::npos)
-                        {
-                            data.push_back(line_str);
-                            no_more_finds = true;
-                        }
-                    else
-                        {
-                            data.push_back(line_str);
-                        }
-                }
-            else
-                {
-                    data.push_back(line_str);
-                }
-        }
-    override_stream_with_new_data(out, navfilename, data, pos);
+    update_nav_header_from_info(out, navfilename, nav_header_info);
     std::cout << "The RINEX Navigation file header has been updated with UTC and IONO info.\n";
 }
 
 
 void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Gps_Ephemeris& eph, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model) const
 {
-    std::vector<std::string> data;
+    const std::vector<NavHeaderInfo> nav_header_info = {
+        {"GAL", "IONOSPHERIC CORR", get_galileo_iono_alpha_line(galileo_iono)},
+        {"GPSA", "IONOSPHERIC CORR", get_gps_iono_alpha_line(gps_iono)},
+        {"GPSB", "IONOSPHERIC CORR", get_gps_iono_beta_line(gps_iono)},
+        {"GAUT", "TIME SYSTEM CORR", get_galileo_time_corr_line(galileo_utc_model)},
+        {"GPGA", "TIME SYSTEM CORR", get_gps_to_galileo_time_corr_line(galileo_utc_model)},
+        {"GPUT", "TIME SYSTEM CORR", get_gps_time_corr_line(gps_utc_model, eph, d_pre_2009_file)},
+        {"", "LEAP SECONDS", get_leap_second_line(galileo_utc_model)},
+    };
 
-    const int64_t pos = out.tellp();
-    out.seekp(0);
-    data.clear();
-
-    bool no_more_finds = false;
-    std::string line_str;
-
-    while (!out.eof())
-        {
-            std::getline(out, line_str);
-
-            if (!no_more_finds)
-                {
-                    if (line_str.find("GPSA", 0) != std::string::npos)
-                        {
-                            data.push_back(get_gps_iono_alpha_line(gps_iono));
-                        }
-                    else if ((line_str.find("GAL", 0) != std::string::npos) && (line_str.find("IONOSPHERIC CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_galileo_iono_alpha_line(galileo_iono));
-                        }
-                    else if ((line_str.find("GPSB", 0) != std::string::npos) && (line_str.find("IONOSPHERIC CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_gps_iono_beta_line(gps_iono));
-                        }
-                    else if ((line_str.find("GPUT", 0) != std::string::npos) && (line_str.find("TIME SYSTEM CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_gps_time_corr_line(gps_utc_model, eph, d_pre_2009_file));
-                        }
-                    else if ((line_str.find("GAUT", 0) != std::string::npos) && (line_str.find("TIME SYSTEM CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_galileo_time_corr_line(galileo_utc_model));
-                        }
-                    else if ((line_str.find("GPGA", 0) != std::string::npos) && (line_str.find("TIME SYSTEM CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_gps_to_galileo_time_corr_line(galileo_utc_model));
-                        }
-                    else if (line_str.find("LEAP SECONDS", 59) != std::string::npos)
-                        {
-                            data.push_back(get_leap_second_line(galileo_utc_model));
-                        }
-                    else if (line_str.find("END OF HEADER", 59) != std::string::npos)
-                        {
-                            data.push_back(line_str);
-                            no_more_finds = true;
-                        }
-                    else
-                        {
-                            data.push_back(line_str);
-                        }
-                }
-            else
-                {
-                    data.push_back(line_str);
-                }
-        }
-
-    override_stream_with_new_data(out, navMixfilename, data, pos);
+    update_nav_header_from_info(out, navMixfilename, nav_header_info);
     std::cout << "The RINEX Navigation file header has been updated with UTC and IONO info.\n";
 }
 
 
 void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Gps_Ephemeris& eph, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model) const
 {
-    std::vector<std::string> data;
+    const std::vector<NavHeaderInfo> nav_header_info = {
+        {"GPSA", "IONOSPHERIC CORR", get_gps_iono_alpha_line(gps_iono)},
+        {"GPUT", "TIME SYSTEM CORR", get_gps_time_corr_line(gps_utc_model, eph, d_pre_2009_file)},
+        {"GLUT", "TIME SYSTEM CORR", get_glonass_time_corr_line(glonass_gnav_utc_model)},
+        {"GLGP", "TIME SYSTEM CORR", get_glonass_to_gps_time_corr_line(glonass_gnav_utc_model)},
+        {"", "LEAP SECONDS", get_leap_second_line(gps_utc_model)},
+    };
 
-    const int64_t pos = out.tellp();
-    out.seekp(0);
-    data.clear();
-
-    bool no_more_finds = false;
-    std::string line_str;
-
-    while (!out.eof())
-        {
-            std::getline(out, line_str);
-
-            if (!no_more_finds)
-                {
-                    if (line_str.find("GPSA", 0) != std::string::npos)
-                        {
-                            data.push_back(get_gps_iono_alpha_line(gps_iono));
-                        }
-                    else if ((line_str.find("GPUT", 0) != std::string::npos) && (line_str.find("TIME SYSTEM CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_gps_time_corr_line(gps_utc_model, eph, d_pre_2009_file));
-                        }
-                    else if ((line_str.find("GLUT", 0) != std::string::npos) && (line_str.find("TIME SYSTEM CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_glonass_time_corr_line(glonass_gnav_utc_model));
-                        }
-                    else if ((line_str.find("GLGP", 0) != std::string::npos) && (line_str.find("TIME SYSTEM CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_glonass_to_gps_time_corr_line(glonass_gnav_utc_model));
-                        }
-                    else if (line_str.find("LEAP SECONDS", 59) != std::string::npos)
-                        {
-                            data.push_back(get_leap_second_line(gps_utc_model));
-                        }
-                    else if (line_str.find("END OF HEADER", 59) != std::string::npos)
-                        {
-                            data.push_back(line_str);
-                            no_more_finds = true;
-                        }
-                    else
-                        {
-                            data.push_back(line_str);
-                        }
-                }
-            else
-                {
-                    data.push_back(line_str);
-                }
-        }
-
-    override_stream_with_new_data(out, navMixfilename, data, pos);
+    update_nav_header_from_info(out, navMixfilename, nav_header_info);
     std::cout << "The RINEX Navigation file header has been updated with UTC and IONO info.\n";
 }
 
 
 void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_CNAV_Iono& gps_iono, const Gps_CNAV_Utc_Model& gps_utc_model, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model) const
 {
-    std::vector<std::string> data;
+    const std::vector<NavHeaderInfo> nav_header_info = {
+        {"GPSA", "IONOSPHERIC CORR", get_gps_iono_alpha_line(gps_iono)},
+        {"GPUT", "TIME SYSTEM CORR", get_gps_time_corr_line(gps_utc_model)},
+        {"GLUT", "TIME SYSTEM CORR", get_glonass_time_corr_line(glonass_gnav_utc_model)},
+        {"GLGP", "TIME SYSTEM CORR", get_glonass_to_gps_time_corr_line(glonass_gnav_utc_model)},
+        {"", "LEAP SECONDS", get_leap_second_line(gps_utc_model)},
+    };
 
-    const int64_t pos = out.tellp();
-    out.seekp(0);
-    data.clear();
-
-    bool no_more_finds = false;
-    std::string line_str;
-
-    while (!out.eof())
-        {
-            std::getline(out, line_str);
-
-            if (!no_more_finds)
-                {
-                    if (line_str.find("GPSA", 0) != std::string::npos)
-                        {
-                            data.push_back(get_gps_iono_alpha_line(gps_iono));
-                        }
-                    else if ((line_str.find("GPUT", 0) != std::string::npos) && (line_str.find("TIME SYSTEM CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_gps_time_corr_line(gps_utc_model));
-                        }
-                    else if ((line_str.find("GLUT", 0) != std::string::npos) && (line_str.find("TIME SYSTEM CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_glonass_time_corr_line(glonass_gnav_utc_model));
-                        }
-                    else if ((line_str.find("GLGP", 0) != std::string::npos) && (line_str.find("TIME SYSTEM CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_glonass_to_gps_time_corr_line(glonass_gnav_utc_model));
-                        }
-                    else if (line_str.find("LEAP SECONDS", 59) != std::string::npos)
-                        {
-                            data.push_back(get_leap_second_line(gps_utc_model));
-                        }
-                    else if (line_str.find("END OF HEADER", 59) != std::string::npos)
-                        {
-                            data.push_back(line_str);
-                            no_more_finds = true;
-                        }
-                    else
-                        {
-                            data.push_back(line_str);
-                        }
-                }
-            else
-                {
-                    data.push_back(line_str);
-                }
-        }
-
-    override_stream_with_new_data(out, navMixfilename, data, pos);
+    update_nav_header_from_info(out, navMixfilename, nav_header_info);
     std::cout << "The RINEX Navigation file header has been updated with UTC and IONO info.\n";
 }
 
@@ -3701,108 +3407,28 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_CNAV_Iono& gp
 void Rinex_Printer::update_nav_header(std::fstream& out, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model) const
 {
     // There is not time system correction between Galileo and GLONASS
-    std::vector<std::string> data;
+    const std::vector<NavHeaderInfo> nav_header_info = {
+        {"GAL", "IONOSPHERIC CORR", get_galileo_iono_alpha_line(galileo_iono)},
+        {"GAUT", "TIME SYSTEM CORR", get_galileo_time_corr_line(galileo_utc_model)},
+        {"GLUT", "TIME SYSTEM CORR", get_glonass_time_corr_line(glonass_gnav_utc_model)},
+        {"", "LEAP SECONDS", get_leap_second_line(galileo_utc_model)},
+    };
 
-    const int64_t pos = out.tellp();
-    out.seekp(0);
-    data.clear();
-
-    bool no_more_finds = false;
-    std::string line_str;
-
-    while (!out.eof())
-        {
-            std::getline(out, line_str);
-
-            if (!no_more_finds)
-                {
-                    if ((line_str.find("GAL", 0) != std::string::npos) && (line_str.find("IONOSPHERIC CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_galileo_iono_alpha_line(galileo_iono));
-                        }
-                    else if ((line_str.find("GAUT", 0) != std::string::npos) && (line_str.find("TIME SYSTEM CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_galileo_time_corr_line(galileo_utc_model));
-                        }
-                    else if ((line_str.find("GLUT", 0) != std::string::npos) && (line_str.find("TIME SYSTEM CORR", 59) != std::string::npos))
-                        {
-                            data.push_back(get_glonass_time_corr_line(glonass_gnav_utc_model));
-                        }
-                    else if (line_str.find("LEAP SECONDS", 59) != std::string::npos)
-                        {
-                            data.push_back(get_leap_second_line(galileo_utc_model));
-                        }
-                    else if (line_str.find("END OF HEADER", 59) != std::string::npos)
-                        {
-                            data.push_back(line_str);
-                            no_more_finds = true;
-                        }
-                    else
-                        {
-                            data.push_back(line_str);
-                        }
-                }
-            else
-                {
-                    data.push_back(line_str);
-                }
-        }
-
-    override_stream_with_new_data(out, navMixfilename, data, pos);
+    update_nav_header_from_info(out, navMixfilename, nav_header_info);
     std::cout << "The RINEX Navigation file header has been updated with UTC and IONO info.\n";
 }
 
 
 void Rinex_Printer::update_nav_header(std::fstream& out, const Beidou_Dnav_Utc_Model& utc_model, const Beidou_Dnav_Iono& iono) const
 {
-    std::vector<std::string> data;
+    const std::vector<NavHeaderInfo> nav_header_info = {
+        {"BDSA", "IONOSPHERIC CORR", get_beidou_iono_alpha_line(iono)},
+        {"BDSB", "IONOSPHERIC CORR", get_beidou_iono_beta_line(iono)},
+        {"BDUT", "TIME SYSTEM CORR", get_beidou_time_corr_line(utc_model)},
+        {"", "LEAP SECONDS", get_leap_second_line(utc_model)},
+    };
 
-    const int64_t pos = out.tellp();
-    out.seekp(0);
-    data.clear();
-
-    bool no_more_finds = false;
-    std::string line_str;
-
-    while (!out.eof())
-        {
-            std::getline(out, line_str);
-
-            if (!no_more_finds)
-                {
-                    if (line_str.find("BDSA", 0) != std::string::npos)
-                        {
-                            data.push_back(get_beidou_iono_alpha_line(iono));
-                        }
-                    else if (line_str.find("BDSB", 0) != std::string::npos)
-                        {
-                            data.push_back(get_beidou_iono_beta_line(iono));
-                        }
-                    else if (line_str.find("BDUT", 0) != std::string::npos)
-                        {
-                            data.push_back(get_beidou_time_corr_line(utc_model));
-                        }
-                    else if (line_str.find("LEAP SECONDS", 59) != std::string::npos)
-                        {
-                            data.push_back(get_leap_second_line(utc_model));
-                        }
-                    else if (line_str.find("END OF HEADER", 59) != std::string::npos)
-                        {
-                            data.push_back(line_str);
-                            no_more_finds = true;
-                        }
-                    else
-                        {
-                            data.push_back(line_str);
-                        }
-                }
-            else
-                {
-                    data.push_back(line_str);
-                }
-        }
-
-    override_stream_with_new_data(out, navfilename, data, pos);
+    update_nav_header_from_info(out, navfilename, nav_header_info);
     std::cout << "The RINEX Navigation file header has been updated with UTC and IONO info.\n";
 }
 
@@ -5122,8 +4748,8 @@ boost::posix_time::ptime Rinex_Printer::compute_GPS_time(const Gps_CNAV_Ephemeri
     // (see Section 3 in ftp://igs.org/pub/data/format/rinex211.txt)
     // (see Pag. 17 in ftp://igs.org/pub/data/format/rinex300.pdf)
     // --??? No time correction here, since it will be done in the RINEX processor
-    const boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((obs_time + 604800 * static_cast<double>(eph.WN % 1024)) * 1000));
-    boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+    const boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((obs_time + 604800 * static_cast<double>(eph.WN % 8192)) * 1000));
+    boost::posix_time::ptime p_time(boost::gregorian::date(1980, 1, 5), t);
     return p_time;
 }
 

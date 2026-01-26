@@ -835,7 +835,7 @@ TEST_F(RinexPrinterTest, MixedObsLog)
     EXPECT_EQ(0, expected_epoch.compare(line_epoch));
     EXPECT_EQ(0, expected_sat.compare(line_sat));
 
-    // fs::remove(navfile);
+    fs::remove(navfile);
     fs::remove(obsfile);
 }
 

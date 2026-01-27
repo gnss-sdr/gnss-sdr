@@ -3203,10 +3203,10 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Utc_Model& ut
             leap_sec_line += leftJustify("LEAP SECONDS", 20);
 
             nav_header_info = {
-                {"", "ION ALPHA", alpha_line},
-                {"", "ION BETA", beta_line},
-                {"", "DELTA-UTC", delta_utc_line},
-                {"", "LEAP SECONDS", leap_sec_line},
+                {"", "ION ALPHA", std::move(alpha_line)},
+                {"", "ION BETA", std::move(beta_line)},
+                {"", "DELTA-UTC", std::move(delta_utc_line)},
+                {"", "LEAP SECONDS", std::move(leap_sec_line)},
             };
         }
 

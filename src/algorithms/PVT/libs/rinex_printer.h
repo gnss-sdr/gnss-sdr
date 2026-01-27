@@ -38,6 +38,7 @@
 #ifndef GNSS_SDR_RINEX_PRINTER_H
 #define GNSS_SDR_RINEX_PRINTER_H
 
+#include "signal_enabled_flags.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <cstdint>  // for int32_t
 #include <cstdlib>  // for strtol, strtod
@@ -72,6 +73,8 @@ class Gps_Navigation_Message;
 class Gps_Utc_Model;
 class Rtklib_Solver;
 
+using Constellation_Observables_Map = std::map<char, std::map<uint32_t, std::map<signal_flag, Gnss_Synchro>>>;
+
 
 /*!
  * \brief Class that handles the generation of Receiver
@@ -83,7 +86,8 @@ public:
     /*!
      * \brief Constructor. Creates GNSS Navigation and Observables RINEX files.
      */
-    explicit Rinex_Printer(int version = 0,
+    explicit Rinex_Printer(uint32_t signal_enabled_flags,
+        int version = 3,
         const std::string& base_path = ".",
         const std::string& base_name = "-",
         bool pre_2009_file = false);
@@ -104,38 +108,32 @@ public:
     void print_rinex_annotation(const Rtklib_Solver* pvt_solver,
         const std::map<int, Gnss_Synchro>& gnss_observables_map,
         double rx_time,
-        uint32_t signal_enabled_flags,
         bool flag_write_RINEX_obs_output);
 
     /*!
      * \brief Print RINEX annotation for GPS NAV message
      */
-    void log_rinex_nav_gps_nav(uint32_t signal_enabled_flags,
-        const std::map<int32_t, Gps_Ephemeris>& new_eph);
+    void log_rinex_nav_gps_nav(const std::map<int32_t, Gps_Ephemeris>& new_eph);
 
     /*!
      * \brief Print RINEX annotation for GPS CNAV message
      */
-    void log_rinex_nav_gps_cnav(uint32_t signal_enabled_flags,
-        const std::map<int32_t, Gps_CNAV_Ephemeris>& new_cnav_eph);
+    void log_rinex_nav_gps_cnav(const std::map<int32_t, Gps_CNAV_Ephemeris>& new_cnav_eph);
 
     /*!
      * \brief Print RINEX annotation for Galileo NAV message
      */
-    void log_rinex_nav_gal_nav(uint32_t signal_enabled_flags,
-        const std::map<int32_t, Galileo_Ephemeris>& new_gal_eph);
+    void log_rinex_nav_gal_nav(const std::map<int32_t, Galileo_Ephemeris>& new_gal_eph);
 
     /*!
      * \brief Print RINEX annotation for Glonass GNAV message
      */
-    void log_rinex_nav_glo_gnav(uint32_t signal_enabled_flags,
-        const std::map<int32_t, Glonass_Gnav_Ephemeris>& new_glo_eph);
+    void log_rinex_nav_glo_gnav(const std::map<int32_t, Glonass_Gnav_Ephemeris>& new_glo_eph);
 
     /*!
      * \brief Print RINEX annotation for BeiDou DNAV message
      */
-    void log_rinex_nav_bds_dnav(uint32_t signal_enabled_flags,
-        const std::map<int32_t, Beidou_Dnav_Ephemeris>& new_bds_eph);
+    void log_rinex_nav_bds_dnav(const std::map<int32_t, Beidou_Dnav_Ephemeris>& new_bds_eph);
 
     /*!
      * \brief Returns true is the RINEX file headers are already written
@@ -164,7 +162,8 @@ public:
 
 private:
     // Not the best, but reorder params to select the correct constructor
-    explicit Rinex_Printer(const std::string& base_name,
+    explicit Rinex_Printer(uint32_t signal_enabled_flags,
+        const std::string& base_name,
         const std::string& base_rinex_path,
         int version,
         bool pre_2009_file);
@@ -295,7 +294,7 @@ private:
     void log_rinex_obs(std::fstream& out,
         const Gps_Ephemeris& eph,
         double obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes GPS L2 observables into the RINEX file
@@ -303,7 +302,7 @@ private:
     void log_rinex_obs(std::fstream& out,
         const Gps_CNAV_Ephemeris& eph,
         double obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes dual frequency GPS L1 and L2 observables into the RINEX file
@@ -312,8 +311,7 @@ private:
         const Gps_Ephemeris& eph,
         const Gps_CNAV_Ephemeris& eph_cnav,
         double obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables,
-        bool triple_band = false) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes Galileo observables into the RINEX file.
@@ -322,8 +320,7 @@ private:
     void log_rinex_obs(std::fstream& out,
         const Galileo_Ephemeris& eph,
         double obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables,
-        const std::string& galileo_bands = "1B") const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes Mixed GPS / Galileo observables into the RINEX file
@@ -332,7 +329,7 @@ private:
         const Gps_Ephemeris& gps_eph,
         const Galileo_Ephemeris& galileo_eph,
         double gps_obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes Mixed GPS / Galileo observables into the RINEX file
@@ -341,7 +338,7 @@ private:
         const Gps_CNAV_Ephemeris& eph,
         const Galileo_Ephemeris& galileo_eph,
         double gps_obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes Mixed GPS / Galileo observables into the RINEX file
@@ -351,8 +348,7 @@ private:
         const Gps_CNAV_Ephemeris& gps_cnav_eph,
         const Galileo_Ephemeris& galileo_eph,
         double gps_obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables,
-        bool triple_band = false) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes GLONASS GNAV observables into the RINEX file.
@@ -361,7 +357,7 @@ private:
     void log_rinex_obs(std::fstream& out,
         const Glonass_Gnav_Ephemeris& eph,
         double obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes Mixed GPS L1 C/A - GLONASS observables into the RINEX file
@@ -370,7 +366,7 @@ private:
         const Gps_Ephemeris& gps_eph,
         const Glonass_Gnav_Ephemeris& glonass_gnav_eph,
         double gps_obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes Mixed GPS L2C - GLONASS observables into the RINEX file
@@ -379,7 +375,7 @@ private:
         const Gps_CNAV_Ephemeris& gps_eph,
         const Glonass_Gnav_Ephemeris& glonass_gnav_eph,
         double gps_obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes Mixed Galileo/GLONASS observables into the RINEX file
@@ -388,7 +384,7 @@ private:
         const Galileo_Ephemeris& galileo_eph,
         const Glonass_Gnav_Ephemeris& glonass_gnav_eph,
         double galileo_obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Writes BDS B1I observables into the RINEX file
@@ -396,8 +392,7 @@ private:
     void log_rinex_obs(std::fstream& out,
         const Beidou_Dnav_Ephemeris& eph,
         double obs_time,
-        const std::map<int32_t, Gnss_Synchro>& observables,
-        const std::string& bds_bands) const;
+        const Constellation_Observables_Map& constel_observables) const;
 
     /*
      * Generates the GPS L1 C/A Navigation Data header
@@ -700,30 +695,23 @@ private:
     const std::map<std::string, std::string> observationType;  // PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH
     const std::map<std::string, std::string> observationCode;  // GNSS observation descriptors
 
-    std::fstream obsFile;     // Output file stream for RINEX observation file
-    std::fstream navFile;     // Output file stream for RINEX navigation data file
-    std::fstream sbsFile;     // Output file stream for RINEX SBAS raw data file
-    std::fstream navGalFile;  // Output file stream for RINEX Galileo navigation data file
-    std::fstream navGloFile;  // Output file stream for RINEX GLONASS navigation data file
-    std::fstream navBdsFile;  // Output file stream for RINEX Beidou navigation data file
-    std::fstream navMixFile;  // Output file stream for RINEX Mixed navigation data file
-
-    const std::string navfilename;                // Name of RINEX navigation file for GPS L1
-    const std::string obsfilename;                // Name of RINEX observation file
-    const std::string sbsfilename;                // Name of RINEX SBAS file
-    const std::string navGalfilename;             // Name of RINEX navigation file for Galileo
-    const std::string navGlofilename;             // Name of RINEX navigation file for Glonass
-    const std::string navBdsfilename;             // Name of RINEX navigation file for BeiDou
-    const std::string navMixfilename;             // Name of RINEX navigation file for fixed signals
-    std::vector<std::string> output_navfilename;  // Name of output RINEX navigation file(s)
-
-    std::string d_stringVersion;  // RINEX version (2.10/2.11 or 3.01/3.02)
+    const int d_version;                // RINEX version (2 for 2.10/2.11 and 3 for 3.01)
+    const std::string d_stringVersion;  // RINEX version (2.10/2.11 or 3.01/3.02)
 
     double d_fake_cnav_iode;
-    int d_version;  // RINEX version (2 for 2.10/2.11 and 3 for 3.01)
     bool d_rinex_header_updated;
     bool d_rinex_header_written;
     const bool d_pre_2009_file;
+    const uint32_t d_signal_enabled_flags;
+
+    const std::string navfilename;                // Name of RINEX navigation file
+    const std::string obsfilename;                // Name of RINEX observation file
+    const std::string navGlofilename;             // Name of RINEX navigation file for Glonass
+    std::vector<std::string> output_navfilename;  // Name of output RINEX navigation file(s)
+
+    std::fstream obsFile;     // Output file stream for RINEX observation file
+    std::fstream navFile;     // Output file stream for RINEX navigation data file
+    std::fstream navGloFile;  // Output file stream for RINEX GLONASS navigation data file
 };
 
 

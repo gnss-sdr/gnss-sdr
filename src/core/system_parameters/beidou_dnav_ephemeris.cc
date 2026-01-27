@@ -26,5 +26,5 @@ Beidou_Dnav_Ephemeris::Beidou_Dnav_Ephemeris()
         {
             satelliteBlock[i] = gnss_sat.what_block(_system, i);
         }
-    this->System = 'B';
+    this->System = 'C';
 }

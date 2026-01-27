@@ -45,6 +45,9 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
 {
     const uint32_t NUM_PRNs = 32;
     const int32_t GPS_CA_BIT_DURATION_MS = 20;
+    // -------------------------------------------------------------------------
+    // Adjust configuration parameters
+    // -------------------------------------------------------------------------
     const auto vector_length = static_cast<int32_t>(
         std::round(config_params_fpga().fs_in / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
     config_params_fpga().vector_length = vector_length;
@@ -70,7 +73,10 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     const std::array<char, 3> sig{'1', 'C', '\0'};
     std::copy_n(sig.data(), 3, config_params_fpga().signal);
 
-    device_name_ = configuration->property(role + ".devicename", default_device_name_GPS_L1);
+    // -------------------------------------------------------------------------
+    // Configure FPGA tracking channel mapping to hardware accelerator devices
+    // -------------------------------------------------------------------------
+    configure_fpga_tracking_channel_mapping("1C");
 
     // Precompute CA codes
     ca_codes_ptr_ = static_cast<int32_t*>(
@@ -118,25 +124,4 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
 GpsL1CaDllPllTrackingFpga::~GpsL1CaDllPllTrackingFpga()
 {
     volk_gnsssdr_free(ca_codes_ptr_);
-}
-
-
-bool GpsL1CaDllPllTrackingFpga::find_alternative_device(std::string& device_io_name)
-{
-    // Only try Galileo fallback if using the default GPS device
-    if (device_name_ == default_device_name_GPS_L1)
-        {
-            if (find_uio_dev_file_name(device_io_name, default_device_name_Galileo_E1,
-                    get_channel() - get_num_prev_assigned_ch()) >= 0)
-                {
-                    return true;  // alternative found
-                }
-            std::cout << "Cannot find FPGA UIO device file for "
-                      << device_name_ << " or " << default_device_name_Galileo_E1 << std::endl;
-        }
-    else
-        {
-            std::cout << "Cannot find FPGA UIO device file for " << device_name_ << std::endl;
-        }
-    return false;
 }

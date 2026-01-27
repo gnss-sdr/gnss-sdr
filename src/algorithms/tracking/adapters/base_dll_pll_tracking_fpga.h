@@ -23,6 +23,8 @@
 #include "tracking_interface.h"
 #include <cstddef>
 #include <cstdint>
+#include <map>
+#include <mutex>
 #include <string>
 
 // /** \addtogroup Tracking
@@ -90,6 +92,16 @@ public:
     void stop_tracking() override;
 
     /*!
+     * \brief configure FPGA tracking channel mapping
+     */
+    void configure_fpga_tracking_channel_mapping(std::string signal);
+
+    /*!
+     * \brief Set the base GNSS channel index for a given signal type
+     */
+    // void set_signal_channel_base_index(std::string signal_type);
+
+    /*!
      * \brief Set tracking channel unique ID
      */
     void set_channel(unsigned int channel) override;
@@ -102,32 +114,46 @@ public:
 
 protected:
     // Can be used by each derived class
-    static const int32_t LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY = 0x0C000000;                    // flag that enables WE (Write Enable) of the local code FPGA
-    static const int32_t LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT = 0x20000000;                // flag that selects the writing of the pilot code in the FPGA (as opposed to the data code)
-    const std::string default_device_name_GPS_L1 = "multicorrelator_resampler_S00_AXI";       // Default FPGA device name for GPS L1
-    const std::string default_device_name_Galileo_E1 = "multicorrelator_resampler_5_1_AXI";   // Default FPGA device name for Galileo L1
-    const std::string default_device_name_GPS_L5 = "multicorrelator_resampler_3_1_AXI";       // Default FPGA device name for GPS L5
-    const std::string default_device_name_GPS_L2 = "multicorrelator_resampler_S00_AXI";       // Default FPGA device name for GPS L2
-    const std::string default_device_name_Galileo_E5a = "multicorrelator_resampler_3_1_AXI";  // Default FPGA device name for Galieo E5a
+    static const int32_t LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY = 0x0C000000;      // flag that enables WE (Write Enable) of the local code FPGA
+    static const int32_t LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT = 0x20000000;  // flag that selects the writing of the pilot code in the FPGA (as opposed to the data code)
 
     inline Dll_Pll_Conf_Fpga& config_params_fpga() { return trk_params_; }
     inline const Dll_Pll_Conf_Fpga& config_params_fpga() const { return trk_params_; }
-    inline void set_num_prev_assigned_ch(uint32_t num_prev_assigned_ch) { num_prev_assigned_ch_ = num_prev_assigned_ch; };
-    inline uint32_t get_channel() { return channel_; };
-    inline uint32_t get_num_prev_assigned_ch() { return num_prev_assigned_ch_; };
-
-    // Can be overridden by derived classes
-    bool find_alternative_device(std::string& device_io_name [[maybe_unused]]) { return false; };
 
     // Must be set by each derived class
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc_sptr_;
-    std::string device_name_;
 
 private:
+    // Mapping of GNSS signals to FPGA hardware multicorrelator names
+    inline static const std::map<std::string, std::string> signal_to_device_ = {
+        {"1C", "multicorrelator_resampler_S00_AXI"},
+        {"2S", "multicorrelator_resampler_S00_AXI"},
+        {"L5", "multicorrelator_resampler_3_1_AXI"},
+        {"1B", "multicorrelator_resampler_5_1_AXI"},
+        {"5X", "multicorrelator_resampler_3_1_AXI"},
+    };
+    // Mapping of GNSS signals to alternative FPGA multicorrelator tracking names
+    inline static const std::map<std::string, std::string> signal_to_alternative_device_ = {
+        {"1C", "multicorrelator_resampler_5_1_AXI"}};
+
+    // Number of channels per signal supported by the FPGA
+    inline static std::map<std::string, int> channel_counts_ = {
+        {"1C", 0}, {"2S", 0}, {"L5", 0}, {"1B", 0}, {"5X", 0}};
+
+    void set_signal(std::string signal);                   // set signal
+    void set_device_name();                                // set FPGA device name
+    void set_signal_channel_base_index();                  // Compute the base channel index for signal_ based on the channel initialization order in the receiver and the number of channels assigned to each signal
+    uint32_t get_num_alternative_devices_locked_() const;  // Return the number of FPGA tracking multicorrelator devices mapped to signal_ that are also assigned as alternative for other signals. Requires: channel_counts_mtx_ is held by the caller.
+
     Dll_Pll_Conf_Fpga trk_params_;
     const std::string role_;
+    std::string signal_;       // GNSS signal type (1C, 2S, L5, 1B, 5X ...)
+    std::string device_name_;  // FPGA multicorrelator name
+
+    inline static std::mutex channel_counts_mtx_;  // Protects access to channel_counts_
+
     uint32_t channel_;
-    uint32_t num_prev_assigned_ch_;
+    uint32_t signal_base_channel_index_;  // Channel index within the signal type (GPS L1 C/A, GPS L2, GPS L5, Galileo E1, Galileo E5a ...)
 };
 
 /** \} */

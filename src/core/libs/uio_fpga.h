@@ -38,6 +38,10 @@ int32_t find_uio_dev_file_name(std::string &device_file_name,
     const std::string &device_name,
     uint32_t device_num);
 
+/*!
+ * \brief Returns the number of devices (tracking multicorrelators) of type device_name available in the FPGA
+ */
+uint32_t get_num_devices(const std::string &device_name);
 
 /** \} */
 /** \} */

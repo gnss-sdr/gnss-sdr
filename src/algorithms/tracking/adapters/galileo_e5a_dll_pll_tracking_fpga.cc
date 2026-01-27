@@ -80,19 +80,9 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     std::copy_n(sig.data(), 3, config_params_fpga().signal);
 
     // -------------------------------------------------------------------------
-    // Configure FPGA device name
+    // Configure FPGA tracking channel mapping to hardware accelerator devices
     // -------------------------------------------------------------------------
-    device_name_ = configuration->property(role + ".devicename", default_device_name_Galileo_E5a);
-
-    // Compute number of previously assigned channels (L1 + L2 + L5)
-    const uint32_t num_prev_assigned_ch_1C = configuration->property("Channels_1C.count", 0);
-    uint32_t num_prev_assigned_ch_2S = 0;
-    if (configuration->property("Tracking_2S.devicename", std::string("")) != device_name_)
-        {
-            num_prev_assigned_ch_2S = configuration->property("Channels_2S.count", 0);
-        }
-    const uint32_t num_prev_assigned_ch_1B = configuration->property("Channels_1B.count", 0);
-    set_num_prev_assigned_ch(num_prev_assigned_ch_1C + num_prev_assigned_ch_2S + num_prev_assigned_ch_1B);
+    configure_fpga_tracking_channel_mapping("5X");
 
     // -------------------------------------------------------------------------
     // Precompute local PRN codes

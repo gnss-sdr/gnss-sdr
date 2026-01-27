@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2011-2025 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+SPDX-FileCopyrightText: 2011-2026 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
 <!-- prettier-ignore-end -->
 
@@ -44,6 +44,12 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Refactored the internal handling of multi-signal configurations in the PVT
   block for improved maintainability and extensibility. Another excellent
   contribution by @MathieuFavreau.
+- Major refactoring of the RINEX printer, significantly improving
+  maintainability and correcting several bugs. The printer now consistently
+  populates all observable fields when multiple signals exist for the same
+  constellation, writing zeros for missing observables as needed to strictly
+  match the observables header format. Another excellent contribution by
+  @MathieuFavreau.
 - Integration of Glonass L1/l2 C/A signal tracking into the main tracking
   engine. Removed `GLONASS_L1_CA_DLL_PLL_C_Aid_Tracking` and
   `GLONASS_L1_CA_DLL_PLL_C_Aid_Tracking` Tracking block implementations,

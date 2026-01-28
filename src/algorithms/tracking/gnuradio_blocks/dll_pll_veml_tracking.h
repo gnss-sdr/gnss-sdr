@@ -217,6 +217,12 @@ private:
     bool d_enable_extended_integration;
     bool d_Flag_PLL_180_deg_phase_locked;
     bool d_use_histogram_bit_sync;
+
+
+
+    bool d_wait_for_bit_edge{false};
+    int64_t d_bit_sync_lock_epoch{0};
+    int64_t d_bit_sync_target_epoch{0};
 };
 
 

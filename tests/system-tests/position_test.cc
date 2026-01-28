@@ -415,7 +415,7 @@ int PositionSystemTest::configure_receiver()
             config->set_property("PVT.flag_rtcm_tty_port", "false");
             config->set_property("PVT.rtcm_dump_devname", "/dev/pts/1");
             config->set_property("PVT.dump", "true");
-            config->set_property("PVT.rinex_version", std::to_string(2));
+            config->set_property("PVT.rinex_version", std::to_string(3));
             config->set_property("PVT.iono_model", "OFF");
             config->set_property("PVT.trop_model", "OFF");
             config->set_property("PVT.AR_GPS", "PPP-AR");

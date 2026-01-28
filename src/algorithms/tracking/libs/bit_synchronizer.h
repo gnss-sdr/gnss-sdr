@@ -128,7 +128,7 @@ public:
         Config()
             : bit_period_ms(20),
               epoch_ms(1),
-              min_events_for_lock(20),
+              min_events_for_lock(5),
               dominance_ratio(0.6),
               stable_best_required(5),
               min_prompt_mag(0.0f),

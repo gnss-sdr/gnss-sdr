@@ -97,11 +97,6 @@ public:
     void configure_fpga_tracking_channel_mapping(std::string signal);
 
     /*!
-     * \brief Set the base GNSS channel index for a given signal type
-     */
-    // void set_signal_channel_base_index(std::string signal_type);
-
-    /*!
      * \brief Set tracking channel unique ID
      */
     void set_channel(unsigned int channel) override;

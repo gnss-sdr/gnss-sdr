@@ -1942,10 +1942,14 @@ Rinex_Printer::Rinex_Printer(uint32_t signal_enabled_flags,
                           navGlofilename(getFilePath("RINEX_FILE_TYPE_GLO_NAV", base_name, base_rinex_path)),
                           output_navfilename({navfilename})
 {
-    const std::map<std::string, std::fstream&> fileMap = {
+    std::map<std::string, std::fstream&> fileMap = {
         {navfilename, navFile},
-        {obsfilename, obsFile},
-        {navGlofilename, navGloFile}};
+        {obsfilename, obsFile}};
+
+    if (d_version == 2 && navfilename != navGlofilename)
+        {
+            fileMap.emplace(navGlofilename, navGloFile);
+        }
 
     bool all_open = true;
 
@@ -1966,10 +1970,14 @@ Rinex_Printer::~Rinex_Printer()
 {
     DLOG(INFO) << "RINEX printer destructor called.";
 
-    const std::map<std::string, std::fstream&> fileMap = {
+    std::map<std::string, std::fstream&> fileMap = {
         {navfilename, navFile},
-        {obsfilename, obsFile},
-        {navGlofilename, navGloFile}};
+        {obsfilename, obsFile}};
+
+    if (d_version == 2 && navfilename != navGlofilename)
+        {
+            fileMap.emplace(navGlofilename, navGloFile);
+        }
 
     std::map<std::string, decltype(navFile.tellp())> filePosMap;
 
@@ -2162,7 +2170,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                         }
                     if (has_glonass_eph)
                         {
-                            if (d_version == 2 && output_navfilename.size() == 2)
+                            if (d_version == 2 && navfilename != navGlofilename)
                                 {
                                     log_rinex_nav(navGloFile, pvt_solver->glonass_gnav_ephemeris_map);
                                 }
@@ -2472,7 +2480,7 @@ void Rinex_Printer::log_rinex_nav_gal_nav(const std::map<int32_t, Galileo_Epheme
 
 void Rinex_Printer::log_rinex_nav_glo_gnav(const std::map<int32_t, Glonass_Gnav_Ephemeris>& new_glo_eph)
 {
-    if (d_version == 2 && output_navfilename.size() == 2)
+    if (d_version == 2 && navfilename != navGlofilename)
         {
             log_rinex_nav(navGloFile, new_glo_eph);
         }

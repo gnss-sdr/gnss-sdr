@@ -137,12 +137,9 @@ private:
         {"1C", "multicorrelator_resampler_5_1_AXI"}};
 
     // Number of channels per signal supported by the FPGA
-    inline static std::map<std::string, int> channel_counts_ = {
-        {"1C", 0}, {"2S", 0}, {"L5", 0}, {"1B", 0}, {"5X", 0}};
+    inline static std::map<std::string, int> channel_counts_;
 
-    void set_signal(std::string signal);                   // set signal
-    void set_device_name();                                // set FPGA device name
-    void set_signal_channel_base_index();                  // Compute the base channel index for signal_ based on the channel initialization order in the receiver and the number of channels assigned to each signal
+    void set_signal_channel_base_index_locked_();          // Compute the base channel index for signal_ based on the channel initialization order in the receiver and the number of channels assigned to each signal. Requires: channel_counts_mtx_ is held by the caller.
     uint32_t get_num_alternative_devices_locked_() const;  // Return the number of FPGA tracking multicorrelator devices mapped to signal_ that are also assigned as alternative for other signals. Requires: channel_counts_mtx_ is held by the caller.
 
     Dll_Pll_Conf_Fpga trk_params_;

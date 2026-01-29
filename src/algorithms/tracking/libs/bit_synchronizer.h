@@ -163,8 +163,6 @@ public:
         hist_.assign(bins(), 0);
     }
 
-    int epochs_until_next_edge() const;
-
     /**
      * @brief Reset the synchronizer state.
      *
@@ -265,6 +263,7 @@ public:
      */
     std::int64_t get_epoch_count() const { return epoch_count_; }
 
+    int epochs_until_next_edge() const;
 private:
     void best_bin_and_count(int& best_bin, int& best_count) const;
 

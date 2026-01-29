@@ -1948,14 +1948,26 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         if (d_use_histogram_bit_sync)
                                             {
                                                 const bool lock_event = d_bit_sync.update(d_P_accu, true);
+                                                if (d_channel == 1)
+                                                    {
+                                                        for (auto b : d_bit_sync.get_histogram())
+                                                            {
+                                                                std::cout << b << " ";
+                                                            }
+                                                        std::cout << "\n";
+                                                    }
                                                 if (lock_event)
                                                     {
                                                         d_wait_for_bit_edge = true;
                                                         const std::int64_t k_now = d_bit_sync.get_epoch_count() - 1;
                                                         const int wait = d_bit_sync.epochs_until_next_edge();
+
+                                                        if (d_channel == 1)
+                                                            {
+                                                                std::cout << "wait" << wait << "\n";
+                                                            }
                                                         d_bit_sync_target_epoch = k_now + wait;
                                                     }
-
                                                 if (d_wait_for_bit_edge)
                                                     {
                                                         const std::int64_t k_now = d_bit_sync.get_epoch_count() - 1;

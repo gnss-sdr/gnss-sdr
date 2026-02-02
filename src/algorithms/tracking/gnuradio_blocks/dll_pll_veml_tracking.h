@@ -184,6 +184,7 @@ private:
     float d_rem_carr_phase_rad;
 
     uint64_t d_tow_from_telemetry_ms{};
+    int64_t d_bit_sync_target_epoch{};
     int32_t d_wn_from_telemetry{};
 
     int32_t d_symbols_per_bit;
@@ -217,6 +218,7 @@ private:
     bool d_enable_extended_integration;
     bool d_Flag_PLL_180_deg_phase_locked;
     bool d_use_histogram_bit_sync;
+    bool d_wait_for_bit_edge{false};
 };
 
 

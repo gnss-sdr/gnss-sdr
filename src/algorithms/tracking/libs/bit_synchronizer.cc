@@ -148,3 +148,30 @@ void HistogramBitSynchronizer::best_bin_and_count(int& best_bin, int& best_count
                 }
         }
 }
+
+
+int HistogramBitSynchronizer::epochs_until_next_edge() const
+{
+if (!locked_ || edge_phase_ < 0)
+return -1;
+
+
+const int B = bins();
+if (B <= 0)
+return -1;
+
+
+// Current epoch index (last processed)
+const std::int64_t k_now = epoch_count_ - 1;
+
+
+// Phase of the current epoch
+const int cur_phase = static_cast<int>(k_now % B);
+
+
+// Forward distance (modulo B) to the next epoch whose phase equals edge_phase_
+// This returns:
+// 0 -> the current epoch IS the first epoch of a new bit
+// 1+ -> number of epochs to wait until the next bit boundary
+return (edge_phase_ - cur_phase + B) % B;
+}

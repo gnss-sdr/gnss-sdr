@@ -1302,6 +1302,8 @@ void dll_pll_veml_tracking::configure_bit_synchronizer()
     HistogramBitSynchronizer::Config cfg;
     cfg.bit_period_ms = d_symbols_per_bit * d_correlation_length_ms;
     cfg.epoch_ms = d_correlation_length_ms;
+    cfg.min_events_for_lock = 5;
+    cfg.stable_best_required = 3;
     d_bit_sync = HistogramBitSynchronizer(cfg);
 }
 
@@ -1945,13 +1947,39 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                     {
                                         if (d_use_histogram_bit_sync)
                                             {
-                                                next_state = d_bit_sync.update(d_P_accu, true);
-                                                if (next_state)
+                                                const bool lock_event = d_bit_sync.update(d_P_accu, true);
+                                                if (d_channel == 1)
                                                     {
-                                                        LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " histogram bit synchronization locked in channel " << d_channel
-                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
-                                                        std::cout << d_systemName << " " << d_signal_pretty_name << " histogram bit synchronization locked in channel " << d_channel
-                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                        for (auto b : d_bit_sync.get_histogram())
+                                                            {
+                                                                std::cout << b << " ";
+                                                            }
+                                                        std::cout << "\n";
+                                                    }
+                                                if (lock_event)
+                                                    {
+                                                        d_wait_for_bit_edge = true;
+                                                        const std::int64_t k_now = d_bit_sync.get_epoch_count() - 1;
+                                                        const int wait = d_bit_sync.epochs_until_next_edge();
+
+                                                        if (d_channel == 1)
+                                                            {
+                                                                std::cout << "wait" << wait << "\n";
+                                                            }
+                                                        d_bit_sync_target_epoch = k_now + wait;
+                                                    }
+                                                if (d_wait_for_bit_edge)
+                                                    {
+                                                        const std::int64_t k_now = d_bit_sync.get_epoch_count() - 1;
+                                                        if (k_now == d_bit_sync_target_epoch)
+                                                            {
+                                                                next_state = true;
+                                                                d_wait_for_bit_edge = false;
+                                                                LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " histogram bit synchronization locked in channel " << d_channel
+                                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
+                                                                std::cout << d_systemName << " " << d_signal_pretty_name << " histogram bit synchronization locked in channel " << d_channel
+                                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                            }
                                                     }
                                             }
 

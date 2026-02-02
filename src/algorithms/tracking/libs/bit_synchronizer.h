@@ -128,7 +128,7 @@ public:
         Config()
             : bit_period_ms(20),
               epoch_ms(1),
-              min_events_for_lock(30),
+              min_events_for_lock(5),
               dominance_ratio(0.6),
               stable_best_required(5),
               min_prompt_mag(0.0f),
@@ -263,6 +263,7 @@ public:
      */
     std::int64_t get_epoch_count() const { return epoch_count_; }
 
+    int epochs_until_next_edge() const;
 private:
     void best_bin_and_count(int& best_bin, int& best_count) const;
 
@@ -278,7 +279,6 @@ private:
     int last_sign_;          // Sign history (for simple detector)
     int last_best_bin_;      // Stability tracking for best bin
     int stable_best_count_;  // Stability tracking for best bin
-
 
     bool locked_;
     bool has_last_prompt_;    // Prompt history (for dot detector)

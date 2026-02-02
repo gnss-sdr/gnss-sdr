@@ -81,12 +81,9 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     std::copy_n(sig.data(), 3, config_params_fpga().signal);
 
     // -------------------------------------------------------------------------
-    // Configure FPGA device name
+    // Configure FPGA tracking channel mapping to hardware accelerator devices
     // -------------------------------------------------------------------------
-    device_name_ = configuration->property(role + ".devicename", default_device_name_GPS_L2);
-
-    // Compute number of previously assigned channels (L1)
-    set_num_prev_assigned_ch(configuration->property("Channels_1C.count", 0));
+    configure_fpga_tracking_channel_mapping("2S");
 
     // -------------------------------------------------------------------------
     // Precompute local PRN codes

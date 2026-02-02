@@ -32,7 +32,7 @@ BaseDllPllTrackingFpga::BaseDllPllTrackingFpga(
     unsigned int out_streams)
     : role_(role),
       channel_(0),
-      num_prev_assigned_ch_(0)
+      signal_base_channel_index_(0)
 {
     trk_params_.SetFromConfiguration(configuration, role_);
     if (in_streams > 1)
@@ -86,22 +86,117 @@ void BaseDllPllTrackingFpga::stop_tracking()
     tracking_fpga_sc_sptr_->stop_tracking();
 }
 
+void BaseDllPllTrackingFpga::configure_fpga_tracking_channel_mapping(std::string signal)
+{
+    // set signal type
+    signal_ = signal;
+
+    // set device name
+    device_name_ = signal_to_device_.at(signal_);
+
+    std::lock_guard<std::mutex> lock(channel_counts_mtx_);
+
+    // update channel mapping count
+    auto it = channel_counts_.find(signal_);
+    if (it != channel_counts_.end())
+        {
+            it->second++;
+        }
+    else
+        {
+            channel_counts_[signal_] = 1;
+        }
+
+    // compute signal channel base index
+    set_signal_channel_base_index_locked_();
+}
+
+void BaseDllPllTrackingFpga::set_signal_channel_base_index_locked_()
+{
+    // compute signal_base_channel_index
+    uint32_t signal_base_channel_index = 0;
+    for (const auto& [label, num_correlators] : channel_counts_)
+        {
+            if (label != signal_)
+                {
+                    // Check whether any preceding signal in the initialization order uses the same FPGA tracking multicorrelator device type as signal_
+                    const auto it = signal_to_device_.find(label);
+                    if (it != signal_to_device_.end() && it->second != device_name_)
+                        {
+                            signal_base_channel_index += num_correlators;
+                        }
+                }
+        }
+
+    // Check for tracking multicorrelators assigned as an alternative
+    uint32_t num_alternative_devices = get_num_alternative_devices_locked_();
+    signal_base_channel_index -= num_alternative_devices;
+
+    // Update signal_base_channel_index_
+    signal_base_channel_index_ = signal_base_channel_index;
+}
+
+uint32_t BaseDllPllTrackingFpga::get_num_alternative_devices_locked_() const
+{
+    uint32_t num_alternative_devices = 0;
+
+    // Check if FPGA hardware correlator device_name_ is assigned as an alternative to another signal
+    for (const auto& [signal_type, alternative_device_name] : signal_to_alternative_device_)
+        {
+            // For each device used by other signals, sum their channel counts
+            if (alternative_device_name == device_name_)
+                {
+                    // Get the number of channels for the signal that uses this FPGA hardware correlator name as an alternative
+                    uint32_t num_channels = 0;
+                    auto it = channel_counts_.find(signal_type);
+                    if (it != channel_counts_.end())
+                        {
+                            num_channels = it->second;
+
+                            // Get the default FPGA device name for the signal that uses this hardware correlator name as an alternative
+                            std::string device_name = signal_to_device_.at(signal_type);
+
+                            // Get the number of devices available by default for the signal that uses this hardware correlator name as an alternative
+                            uint32_t num_devices_available = get_num_devices(device_name);
+
+                            // get the number of FPGA tracking multicorrelator devices used as an alternative
+                            if (num_devices_available < num_channels)
+                                {
+                                    num_alternative_devices += num_channels - num_devices_available;
+                                }
+                        }
+                }
+        }
+
+    return num_alternative_devices;
+}
 
 void BaseDllPllTrackingFpga::set_channel(unsigned int channel)
 {
     channel_ = channel;
     std::string device_io_name;
 
-    if (find_uio_dev_file_name(device_io_name, device_name_, channel - num_prev_assigned_ch_) < 0)
+    // Try default tracking device
+    if (find_uio_dev_file_name(device_io_name, device_name_, channel_ - signal_base_channel_index_) >= 0)
         {
-            if (!find_alternative_device(device_io_name))
+            tracking_fpga_sc_sptr_->set_channel(channel_, device_io_name);
+            return;
+        }
+    // Try alternative device
+    auto it = signal_to_alternative_device_.find(signal_);
+    if (it != signal_to_alternative_device_.end())
+        {
+            uint32_t alternate_device_channel_index = channel_ - signal_base_channel_index_ - get_num_devices(it->second);  // Channel number in the alternative tracking multicorrelator devices
+            if (find_uio_dev_file_name(device_io_name, it->second, alternate_device_channel_index) >= 0)
                 {
-                    std::cout << "Cannot find FPGA UIO device file for " << device_name_ << std::endl;
-                    throw std::runtime_error("UIO device not found");
+                    tracking_fpga_sc_sptr_->set_channel(channel_, device_io_name);
+                    return;
                 }
         }
-
-    tracking_fpga_sc_sptr_->set_channel(channel_, device_io_name);
+    // If a channel cannot be mapped to a tracking multicorrelatoor device, log an error and exit the program
+    std::cerr << "Cannot map an FPGA tracking multicorrelator device to channel " << channel_ << std::endl;
+    std::cerr << "Exiting the program.\n";
+    exit(0);
 }
 
 

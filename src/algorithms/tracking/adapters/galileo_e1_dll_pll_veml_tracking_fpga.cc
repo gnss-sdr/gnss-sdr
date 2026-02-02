@@ -82,7 +82,10 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
                    (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
     config_params_fpga().vector_length = vector_length;
 
-    device_name_ = configuration->property(role + ".devicename", default_device_name_Galileo_E1);
+    // -------------------------------------------------------------------------
+    // Configure FPGA tracking channel mapping to hardware accelerator devices
+    // -------------------------------------------------------------------------
+    configure_fpga_tracking_channel_mapping("1B");
 
     // -------------------------------------------------------------------------
     // Precompute all local codes (pilot and/or data)
@@ -152,7 +155,6 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     tracking_fpga_sc_sptr_ = dll_pll_veml_make_tracking_fpga(config_params_fpga());
     DLOG(INFO) << "tracking(" << tracking_fpga_sc_sptr_->unique_id() << ")";
 }
-
 
 GalileoE1DllPllVemlTrackingFpga::~GalileoE1DllPllVemlTrackingFpga()
 {

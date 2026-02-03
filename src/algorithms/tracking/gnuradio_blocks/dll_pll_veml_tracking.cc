@@ -152,7 +152,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
     this->set_msg_handler(
         pmt::mp("telemetry_to_trk"),
 #if HAS_GENERIC_LAMBDA
-        [this](auto &&PH1) { msg_handler_telemetry_to_trk(PH1); });
+        [this](auto &&PH1)
+            { msg_handler_telemetry_to_trk(PH1); });
 #else
 #if USE_BOOST_BIND_PLACEHOLDERS
         boost::bind(&dll_pll_veml_tracking::msg_handler_telemetry_to_trk, this, boost::placeholders::_1));
@@ -212,7 +213,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     // GPS L2C has 1 trk symbol (20 ms) per tlm bit, no symbol integration required
                     d_symbols_per_bit = GPS_L2_SAMPLES_PER_SYMBOL;
                     d_correlation_length_ms = 20;
-                    d_code_samples_per_chip = 1;
+                    d_code_samples_per_chip = 2;  // for CM code with CL slots zeroed
                     // GPS L2 does not have pilot component nor secondary code
                     d_secondary = false;
                     d_trk_parameters.track_pilot = false;
@@ -736,7 +737,7 @@ void dll_pll_veml_tracking::start_tracking()
         }
     else if (d_systemName == "GPS" && d_signal_type == "2S")
         {
-            gps_l2c_m_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
+            gps_l2c_m_code_gen_float_cl_zeroed(d_tracking_code, d_acquisition_gnss_synchro->PRN);
         }
     else if (d_systemName == "GPS" && d_signal_type == "L5")
         {

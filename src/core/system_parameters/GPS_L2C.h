@@ -32,15 +32,17 @@
 
 
 // carrier and code frequencies
-constexpr double GPS_L2_FREQ_HZ = FREQ2;                //!< L2 [Hz]
-constexpr double GPS_L2_L_PERIOD_S = 1.5;               //!< GPS L2 L code period [seconds]
-constexpr double GPS_L2_M_CODE_RATE_CPS = 0.5115e6;     //!< GPS L2 M code rate [chips/s]
-constexpr double GPS_L2_M_PERIOD_S = 0.02;              //!< GPS L2 M code period [seconds]
-constexpr double GPS_L2_L_CODE_RATE_CPS = 0.5115e6;     //!< GPS L2 L code rate [chips/s]
-constexpr uint32_t GPS_L2_M_CODE_PERIOD_MS = 20;        //!<  GPS L2 L code period [ms]
-constexpr int32_t GPS_L2_M_CODE_LENGTH_CHIPS = 10230;   //!< GPS L2 M code length [chips]
-constexpr int32_t GPS_L2_L_CODE_LENGTH_CHIPS = 767250;  //!< GPS L2 L code length [chips]
-constexpr int32_t GPS_L2_CNAV_DATA_PAGE_BITS = 300;     //!< GPS L2 CNAV page length, including preamble and CRC [bits]
+constexpr double GPS_L2_FREQ_HZ = FREQ2;                                                 //!< L2 [Hz]
+constexpr double GPS_L2_L_PERIOD_S = 1.5;                                                //!< GPS L2 L code period [seconds]
+constexpr double GPS_L2_M_CODE_RATE_CPS = 0.5115e6;                                      //!< GPS L2 M code rate [chips/s]
+constexpr double GPS_L2_M_CODE_RATE_L_ZEROED_CPS = 1.023e6;                              //!< GPS L2 M code rate with L2 M Zeroed [chips/s]
+constexpr double GPS_L2_M_PERIOD_S = 0.02;                                               //!< GPS L2 M code period [seconds]
+constexpr double GPS_L2_L_CODE_RATE_CPS = 0.5115e6;                                      //!< GPS L2 L code rate [chips/s]
+constexpr uint32_t GPS_L2_M_CODE_PERIOD_MS = 20;                                         //!<  GPS L2 L code period [ms]
+constexpr int32_t GPS_L2_M_CODE_LENGTH_CHIPS = 10230;                                    //!< GPS L2 M code length [chips]
+constexpr int32_t GPS_L2_M_CODE_LENGTH_CHIPS_L_ZEROED = 2 * GPS_L2_M_CODE_LENGTH_CHIPS;  //!< GPS L2 M code length with L2 CL zeroed [chips]
+constexpr int32_t GPS_L2_L_CODE_LENGTH_CHIPS = 767250;                                   //!< GPS L2 L code length [chips]
+constexpr int32_t GPS_L2_CNAV_DATA_PAGE_BITS = 300;                                      //!< GPS L2 CNAV page length, including preamble and CRC [bits]
 constexpr int32_t GPS_L2_SYMBOLS_PER_BIT = 2;
 constexpr int32_t GPS_L2_SAMPLES_PER_SYMBOL = 1;
 constexpr int32_t GPS_L2_CNAV_DATA_PAGE_SYMBOLS = 600;

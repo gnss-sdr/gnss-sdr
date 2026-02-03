@@ -1292,7 +1292,7 @@ void dll_pll_veml_tracking::clear_tracking_vars()
 
 void dll_pll_veml_tracking::configure_bit_synchronizer()
 {
-    d_use_histogram_bit_sync = (!d_secondary && d_symbols_per_bit > 1) && (d_systemName != "Glonass");  // Glonass uses Manchester coding
+    d_use_histogram_bit_sync = (!d_secondary && d_symbols_per_bit > 1) && (d_systemName != "Glonass") && (d_systemName != "Beidou");  // Glonass uses Manchester coding
     if (!d_use_histogram_bit_sync)
         {
             d_bit_sync.reset();

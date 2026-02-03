@@ -457,33 +457,23 @@ std::string getFilePath(const std::string& type, const std::string& base_name, c
 }
 
 
-std::string getNavFilePath(uint32_t signal_enabled_flags, int version, const std::string& base_name, const std::string& base_rinex_path)
+std::string getNavFilePath(const Signal_Enabled_Flags& flags, int version, const std::string& base_name, const std::string& base_rinex_path)
 {
     std::string type;
-    const Signal_Enabled_Flags flags(signal_enabled_flags);
 
-    const auto has_gps = flags.check_any_enabled(GPS_1C, GPS_2S, GPS_L5);
-    const auto has_galileo = flags.check_any_enabled(GAL_1B, GAL_E5a, GAL_E5b, GAL_E6);
-    const auto has_glonass = flags.check_any_enabled(GLO_1G, GLO_2G);
-    const auto has_beidou = flags.check_any_enabled(BDS_B1, BDS_B3);
-    const auto only_gps = has_gps && !(has_galileo || has_glonass || has_beidou);
-    const auto only_galileo = has_galileo && !(has_gps || has_glonass || has_beidou);
-    const auto only_glonass = has_glonass && !(has_gps || has_galileo || has_beidou);
-    const auto only_beidou = has_beidou && !(has_gps || has_galileo || has_glonass);
-
-    if (only_gps)
+    if (flags.only_gps)
         {
             type = "RINEX_FILE_TYPE_GPS_NAV";
         }
-    else if (only_galileo)
+    else if (flags.only_galileo)
         {
             type = "RINEX_FILE_TYPE_GAL_NAV";
         }
-    else if (only_glonass)
+    else if (flags.only_glonass)
         {
             type = "RINEX_FILE_TYPE_GLO_NAV";
         }
-    else if (only_beidou)
+    else if (flags.only_beidou)
         {
             type = "RINEX_FILE_TYPE_BDS_NAV";
         }
@@ -1412,6 +1402,7 @@ std::string get_obs_epoch_record_lines(const boost::posix_time::ptime& system_ti
     return line;
 }
 
+
 void add_obs_sat_record_line(const Gnss_Synchro& synchro, std::string& line, bool padding = true)
 {
     const int32_t ssi = signal_strength(synchro.CN0_dB_hz);
@@ -1440,6 +1431,7 @@ void add_obs_sat_record_line(const Gnss_Synchro& synchro, std::string& line, boo
             line += std::string(80 - line.size(), ' ');
         }
 }
+
 
 void add_constellation_obs_sat_record_lines(std::fstream& out, const std::string& system, const Constellation_Observables_Map& observables, int version)
 {
@@ -1474,6 +1466,7 @@ void add_constellation_obs_sat_record_lines(std::fstream& out, const std::string
         }
 }
 
+
 void add_constellation_obs_sat_record_lines(std::fstream& out, const std::vector<std::string>& systems, const Constellation_Observables_Map& observables, int version)
 {
     for (const auto& system : systems)
@@ -1481,6 +1474,7 @@ void add_constellation_obs_sat_record_lines(std::fstream& out, const std::vector
             add_constellation_obs_sat_record_lines(out, system, observables, version);
         }
 }
+
 
 std::string get_nav_sv_epoch_svclk_line(const boost::posix_time::ptime& p_utc_time, char sys_char, uint32_t prn, double value0, double value1, double value2)
 {
@@ -1798,6 +1792,7 @@ void add_obs_glonass_code_phase_bias(std::fstream& out,
     out << line << '\n';
 }
 
+
 void add_obs_epoch_record(std::fstream& out, const boost::posix_time::ptime& system_time, double seconds, int version, const Constellation_Observables_Map& constel_observables)
 {
     std::string line = get_obs_epoch_record_lines(system_time, seconds, version);
@@ -1835,12 +1830,14 @@ void add_obs_epoch_record(std::fstream& out, const boost::posix_time::ptime& sys
     out << line << '\n';
 }
 
+
 struct NavHeaderInfo
 {
     std::string prefix;
     std::string suffix;
     std::string new_line;
 };
+
 
 void update_nav_header_from_info(std::fstream& out, const std::string& filename, const std::vector<NavHeaderInfo>& infos)
 {
@@ -1892,12 +1889,10 @@ void update_nav_header_from_info(std::fstream& out, const std::string& filename,
 }
 
 
-int get_version(uint32_t signal_enabled_flags, int version)
+int get_version(const Signal_Enabled_Flags& flags, int version)
 {
     if (version == 2)
         {
-            const Signal_Enabled_Flags flags(signal_enabled_flags);
-
             if (flags.check_only_enabled(GPS_1C) ||
                 flags.check_only_enabled(GLO_1G) ||
                 flags.check_only_enabled(GPS_1C, GLO_1G))
@@ -1930,13 +1925,13 @@ Rinex_Printer::Rinex_Printer(uint32_t signal_enabled_flags,
     bool pre_2009_file) : observationType(getObservationTypes()),
                           observationCode(getObservationCodes()),
                           d_flags(signal_enabled_flags),
-                          d_version(get_version(signal_enabled_flags, version)),
+                          d_version(get_version(d_flags, version)),
                           d_stringVersion(d_version == 2 ? "2.11" : "3.02"),  // Only version 2.11 and 3.02
                           d_fake_cnav_iode(1),
                           d_rinex_header_updated(false),
                           d_rinex_header_written(false),
                           d_pre_2009_file(pre_2009_file),
-                          navfilename(getNavFilePath(signal_enabled_flags, d_version, base_name, base_rinex_path)),
+                          navfilename(getNavFilePath(d_flags, d_version, base_name, base_rinex_path)),
                           obsfilename(getFilePath("RINEX_FILE_TYPE_OBS", base_name, base_rinex_path)),
                           navGlofilename(getFilePath("RINEX_FILE_TYPE_GLO_NAV", base_name, base_rinex_path)),
                           output_navfilename({navfilename})

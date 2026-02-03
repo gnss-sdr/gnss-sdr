@@ -263,7 +263,29 @@ public:
      */
     std::int64_t get_epoch_count() const { return epoch_count_; }
 
+    /**
+     * @brief Return the number of epochs until the next predicted navigation bit edge.
+     *
+     * When the synchronizer is locked, this function computes the forward distance
+     * (in epochs) from the most recently processed epoch to the next epoch that is
+     * aligned with the estimated bit-edge phase.
+     *
+     * The result is expressed modulo the bit period and has the following meaning:
+     *   - 0  : the current epoch corresponds to the predicted start of a new navigation bit
+     *   - >0 : number of epochs remaining until the next bit boundary
+     *
+     * The computation is based on the internal epoch counter advanced by update(),
+     * assuming that update() is called once per epoch with a constant cadence
+     * equal to Config::epoch_ms.
+     *
+     * If the synchronizer is not locked, or if the configuration yields an invalid
+     * number of bins, this function returns -1.
+     *
+     * @return Number of epochs until the next predicted bit edge, or -1 if not locked
+     *         or if the bit period configuration is invalid.
+     */
     int epochs_until_next_edge() const;
+
 private:
     void best_bin_and_count(int& best_bin, int& best_count) const;
 

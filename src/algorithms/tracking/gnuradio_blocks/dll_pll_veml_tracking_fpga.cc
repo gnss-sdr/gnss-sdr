@@ -77,6 +77,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     : gr::block("dll_pll_veml_tracking_fpga", gr::io_signature::make(0, 0, sizeof(lv_16sc_t)),
           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
       d_trk_parameters(conf_),
+      d_bit_sync(HistogramBitSynchronizer::Config()),
       d_acquisition_gnss_synchro(nullptr),
       d_code_chip_rate(0.0),
       d_code_phase_step_chips(0.0),
@@ -129,7 +130,8 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
       d_current_extended_correlation_in_fpga(false),
       d_stop_tracking(false),
       d_sc_demodulate_enabled(false),
-      d_Flag_PLL_180_deg_phase_locked(false)
+      d_Flag_PLL_180_deg_phase_locked(false),
+      d_use_histogram_bit_sync(false)
 {
 #if GNURADIO_GREATER_THAN_38
     this->set_relative_rate(1, static_cast<uint64_t>(d_trk_parameters.vector_length));
@@ -521,6 +523,8 @@ void dll_pll_veml_tracking_fpga::start_tracking()
     d_corrected_doppler = false;
     d_acc_carrier_phase_initialized = false;
 
+    configure_bit_synchronizer();
+
     boost::mutex::scoped_lock lock(d_mutex);
     d_worker_is_done = true;
     d_m_condition.notify_one();
@@ -810,6 +814,23 @@ void dll_pll_veml_tracking_fpga::clear_tracking_vars()
     d_code_phase_rate_step_chips = 0.0;
     d_carr_ph_history.clear();
     d_code_ph_history.clear();
+    d_bit_sync.reset();
+}
+
+
+void dll_pll_veml_tracking_fpga::configure_bit_synchronizer()
+{
+    d_use_histogram_bit_sync = (!d_secondary && d_symbols_per_bit > 1);
+    if (!d_use_histogram_bit_sync)
+        {
+            d_bit_sync.reset();
+            return;
+        }
+
+    HistogramBitSynchronizer::Config cfg;
+    cfg.bit_period_ms = d_symbols_per_bit * d_correlation_length_ms;
+    cfg.epoch_ms = d_correlation_length_ms;
+    d_bit_sync = HistogramBitSynchronizer(cfg);
 }
 
 
@@ -1611,17 +1632,44 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                             }
                                         else if (d_symbols_per_bit > 1)  // Signal does not have secondary code. Search a bit transition by sign change
                                             {
-                                                // ******* preamble correlation ********
-                                                d_Prompt_circular_buffer.push_back(*d_Prompt);
-                                                if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
+                                                if (d_use_histogram_bit_sync)
                                                     {
-                                                        next_state = acquire_secondary();
-                                                        if (next_state)
+                                                        const bool lock_event = d_bit_sync.update(d_P_accu, true);
+                                                        if (lock_event)
                                                             {
-                                                                LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
-                                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
-                                                                std::cout << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
-                                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                                d_wait_for_bit_edge = true;
+                                                                const std::int64_t k_now = d_bit_sync.get_epoch_count() - 1;
+                                                                const int wait = d_bit_sync.epochs_until_next_edge();
+                                                                d_bit_sync_target_epoch = k_now + wait;
+                                                            }
+                                                        if (d_wait_for_bit_edge)
+                                                            {
+                                                                const std::int64_t k_now = d_bit_sync.get_epoch_count() - 1;
+                                                                if (k_now == d_bit_sync_target_epoch)
+                                                                    {
+                                                                        next_state = true;
+                                                                        d_wait_for_bit_edge = false;
+                                                                        LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " histogram bit synchronization locked in channel " << d_channel
+                                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
+                                                                        std::cout << d_systemName << " " << d_signal_pretty_name << " histogram bit synchronization locked in channel " << d_channel
+                                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                                    }
+                                                            }
+                                                    }
+                                                if (!next_state)
+                                                    {
+                                                        // ******* preamble correlation ********
+                                                        d_Prompt_circular_buffer.push_back(*d_Prompt);
+                                                        if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
+                                                            {
+                                                                next_state = acquire_secondary();
+                                                                if (next_state)
+                                                                    {
+                                                                        LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
+                                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
+                                                                        std::cout << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
+                                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                                    }
                                                             }
                                                     }
                                             }

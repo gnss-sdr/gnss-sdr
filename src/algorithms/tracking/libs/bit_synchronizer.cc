@@ -26,7 +26,7 @@ void HistogramBitSynchronizer::reset()
     edge_phase_ = -1;
 
     has_last_prompt_ = false;
-    last_prompt_ = std::complex<float>(0.0f, 0.0f);
+    last_prompt_ = std::complex<float>(0.0F, 0.0F);
 
     has_last_sign_ = false;
     last_sign_ = +1;
@@ -69,7 +69,7 @@ bool HistogramBitSynchronizer::update(const std::complex<float>& prompt, bool tr
         }
     else
         {
-            const int s = (std::real(prompt) >= 0.0f) ? +1 : -1;
+            const int s = (std::real(prompt) >= 0.0F) ? +1 : -1;
             if (has_last_sign_)
                 {
                     edge_event = (s != last_sign_);
@@ -121,9 +121,15 @@ bool HistogramBitSynchronizer::update(const std::complex<float>& prompt, bool tr
 
 bool HistogramBitSynchronizer::is_edge_epoch(std::int64_t k) const
 {
-    if (!locked_ || edge_phase_ < 0) return false;
+    if (!locked_ || edge_phase_ < 0)
+        {
+            return false;
+        }
     const int N = bins();
-    if (N <= 0) return false;
+    if (N <= 0)
+        {
+            return false;
+        }
     return (static_cast<int>(k % N) == edge_phase_);
 }
 

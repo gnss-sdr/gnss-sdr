@@ -1302,8 +1302,11 @@ void dll_pll_veml_tracking::configure_bit_synchronizer()
     HistogramBitSynchronizer::Config cfg;
     cfg.bit_period_ms = d_symbols_per_bit * d_correlation_length_ms;
     cfg.epoch_ms = d_correlation_length_ms;
-    cfg.min_events_for_lock = 5;
-    cfg.stable_best_required = 3;
+    cfg.min_events_for_lock = d_trk_parameters.bs_min_events_for_lock;
+    cfg.stable_best_required = d_trk_parameters.bs_stable_best_required;
+    cfg.dominance_ratio = d_trk_parameters.bs_dominance_ratio;
+    cfg.min_prompt_mag = d_trk_parameters.bs_min_prompt_mag;
+    cfg.use_phase_dot_detector = d_trk_parameters.bs_use_phase_dot_detector;
     d_bit_sync = HistogramBitSynchronizer(cfg);
 }
 

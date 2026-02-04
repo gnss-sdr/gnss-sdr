@@ -136,7 +136,7 @@ void gps_l2c_m_code_gen_complex_sampled(
 
     for (int32_t i = 0; i < nSamples; i++)
         {
-            int32_t slotIndex =
+            auto slotIndex =
                 static_cast<int32_t>(std::floor(ts * static_cast<float>(i) / tc_used));
 
             // Avoid rounding overflow at last sample

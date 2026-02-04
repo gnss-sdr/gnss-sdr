@@ -896,17 +896,6 @@ void add_gnss_sdr_url(std::fstream& out)
 }
 
 
-void add_marker_type(std::fstream& out, const std::string& marker_type, const std::string& marker_type_id)
-{
-    // -------- Line MARKER TYPE
-    std::string line;
-    line += leftJustify(marker_type, 60);  // put a flag or a property
-    line += leftJustify("MARKER " + marker_type_id, 20);
-    lengthCheck(line);
-    out << line << '\n';
-}
-
-
 void add_marker_name(std::fstream& out)
 {
     std::string line;
@@ -1041,9 +1030,7 @@ void add_observation_header_start(std::fstream& out,
     const std::string& constellation,
     const std::string& local_time,
     const std::string& version,
-    const std::string& constellation_legend,
-    const std::string& marker_type,
-    const std::string& marker_type_id)
+    const std::string& constellation_legend)
 {
     // -------- Line 1
     add_obs_rinex_version_and_type(out, type, version);
@@ -1065,12 +1052,6 @@ void add_observation_header_start(std::fstream& out,
 
     // -------- Line MARKER NAME
     add_marker_name(out);
-
-    // -------- Line MARKER TYPE
-    if (!marker_type.empty())
-        {
-            add_marker_type(out, marker_type, marker_type_id);
-        }
 
     // -------- Line OBSERVER / AGENCY
     add_obs_observer_agency(out);
@@ -2069,12 +2050,9 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
     if (!d_rinex_header_written)  // & we have utc data in nav message!
         {
             bool rinex_header_written = true;
-            std::string marker_type = "";
-            std::string marker_type_id = "TYPE";
 
             if (d_flags.check_only_enabled(GPS_1C) && has_gps_lnav_eph)
                 {
-                    marker_type = "NON_GEODETIC";
                     rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
                 }
             else if ((d_flags.check_only_enabled(GPS_2S) || d_flags.check_only_enabled(GPS_L5)) && has_gps_cnav_eph)
@@ -2087,8 +2065,6 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                 }
             else if (d_flags.only_glonass && has_glonass_eph)
                 {
-                    marker_type = "GROUND_CRAFT";
-                    marker_type_id = d_version == 2 ? "NUMBER" : "TYPE";
                     rinex_nav_header(navFile, pvt_solver->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
                 }
             else if (d_flags.only_beidou && has_beidou_dnav_eph)
@@ -2109,9 +2085,6 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                 }
             else if ((d_flags.check_only_enabled(GPS_1C, GLO_1G) || d_flags.check_only_enabled(GPS_1C, GLO_2G) || d_flags.check_only_enabled(GPS_1C, GLO_1G, GLO_2G)) && has_gps_lnav_eph && has_glonass_eph)
                 {
-                    marker_type = "GROUND_CRAFT";
-                    marker_type_id = d_version == 2 ? "NUMBER" : "TYPE";
-
                     if (d_version == 3)
                         {
                             rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->glonass_gnav_utc_model);
@@ -2125,13 +2098,10 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                 }
             else if ((d_flags.check_only_enabled(GLO_1G, GPS_2S) || d_flags.check_only_enabled(GLO_2G, GPS_2S)) && has_gps_cnav_eph && has_glonass_eph)
                 {
-                    marker_type = "GROUND_CRAFT";
-                    marker_type_id = d_version == 2 ? "NUMBER" : "TYPE";
                     rinex_nav_header(navFile, pvt_solver->gps_cnav_iono, pvt_solver->gps_cnav_utc_model, pvt_solver->glonass_gnav_utc_model);
                 }
             else if ((d_flags.check_only_enabled(GAL_1B, GLO_1G) || d_flags.check_only_enabled(GAL_1B, GLO_2G)) && has_galileo_eph && has_glonass_eph)
                 {
-                    marker_type = "NON_GEODETIC";
                     rinex_nav_header(navFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model, pvt_solver->glonass_gnav_utc_model);
                 }
             else if ((d_flags.check_only_enabled(GPS_1C, GAL_1B, GPS_L5, GAL_E5a) ||
@@ -2155,7 +2125,6 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                     else
                         {
                             // we do not have galileo ephemeris, print only GPS data
-                            marker_type = "NON_GEODETIC";
                             rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
                         }
                 }
@@ -2170,7 +2139,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
 
             if (rinex_header_written)
                 {
-                    rinex_obs_header(obsFile, system_time_str, system_time, seconds, marker_type, marker_type_id);
+                    rinex_obs_header(obsFile, system_time_str, system_time, seconds);
 
                     if (has_gps_lnav_eph && !d_flags.check_any_enabled(GPS_L5))  // That's how it used to be, not sure why
                         {
@@ -3717,9 +3686,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Bei
 void Rinex_Printer::rinex_obs_header(std::fstream& out,
     const std::string& time_constellation,
     const boost::posix_time::ptime& system_time,
-    double seconds,
-    const std::string& marker_type,
-    const std::string& marker_type_id)
+    double seconds)
 {
     std::string constellation_legend;
 
@@ -3794,7 +3761,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out,
             header_constellation += ")";
         }
 
-    add_observation_header_start(out, type, header_constellation, Rinex_Printer::getLocalTime(), d_stringVersion, constellation_legend, marker_type, marker_type_id);
+    add_observation_header_start(out, type, header_constellation, Rinex_Printer::getLocalTime(), d_stringVersion, constellation_legend);
 
     if (d_version == 2)
         {

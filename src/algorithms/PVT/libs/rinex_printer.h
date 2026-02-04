@@ -172,9 +172,7 @@ private:
     void rinex_obs_header(std::fstream& out,
         const std::string& time_constellation,
         const boost::posix_time::ptime& system_time,
-        double seconds,
-        const std::string& marker_type,
-        const std::string& marker_type_id);
+        double seconds);
 
     /*
      * Generates the SBAS raw data header

@@ -342,7 +342,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     const std::string rtcm_dump_filename = d_dump_filename;
     if (conf_.flag_rtcm_server || conf_.flag_rtcm_tty_port || conf_.rtcm_output_file_enabled)
         {
-            d_rtcm_printer = std::make_unique<Rtcm_Printer>(rtcm_dump_filename, conf_.rtcm_output_file_enabled, conf_.flag_rtcm_server, conf_.flag_rtcm_tty_port, conf_.rtcm_tcp_port, conf_.rtcm_station_id, conf_.rtcm_dump_devname, true, conf_.rtcm_output_file_path);
+            d_rtcm_printer = std::make_unique<Rtcm_Printer>(rtcm_dump_filename, conf_.rtcm_output_file_enabled, conf_.flag_rtcm_server, conf_.flag_rtcm_tty_port, conf_.rtcm_tcp_port, conf_.rtcm_station_id, conf_.rtcm_dump_devname, d_signal_enabled_flags, true, conf_.rtcm_output_file_path);
             std::map<int, int> rtcm_msg_rate_ms = conf_.rtcm_msg_rate_ms;
             if (rtcm_msg_rate_ms.find(1019) != rtcm_msg_rate_ms.end())
                 {
@@ -2431,7 +2431,6 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             d_rtcm_printer->Print_Rtcm_Messages(d_user_pvt_solver.get(),
                                                 d_gnss_observables_map,
                                                 d_rx_time,
-                                                d_signal_enabled_flags,
                                                 rtcm_MSM_enabled,
                                                 rtcm_MT1019_enabled,
                                                 rtcm_MT1020_enabled,

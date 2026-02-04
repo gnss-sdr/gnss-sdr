@@ -119,32 +119,6 @@ signal_flag string_to_signal_flag(const std::string& signal_str)
 }
 
 
-std::string enabled_signal_flags_to_string(const Signal_Enabled_Flags& flags)
-{
-    std::vector<std::string> signal_str_vector;
-
-    for (const auto flag : {GPS_1C, GPS_2S, GPS_L5, GAL_1B, GAL_E5a, GAL_E5b, GAL_E6, GLO_1G, GLO_2G, BDS_B1, BDS_B3})
-        {
-            if (flags.check_any_enabled(flag))
-                {
-                    signal_str_vector.emplace_back(signal_flag_to_string(flag));
-                }
-        }
-
-    std::ostringstream oss;
-
-    for (size_t i = 0; i < signal_str_vector.size(); ++i)
-        {
-            oss << signal_str_vector[i];
-            if (i != signal_str_vector.size() - 1)
-                {
-                    oss << ' ';
-                }
-        }
-
-    return oss.str();
-}
-
 std::map<char, std::set<signal_flag>> get_constel_signal_flags(const Signal_Enabled_Flags& flags)
 {
     std::map<char, std::set<signal_flag>> constel_signal_flags;
@@ -1068,8 +1042,8 @@ void add_observation_header_start(std::fstream& out,
     const std::string& local_time,
     const std::string& version,
     const std::string& constellation_legend,
-    const std::string& marker_type = "",
-    const std::string& marker_type_id = "")
+    const std::string& marker_type,
+    const std::string& marker_type_id)
 {
     // -------- Line 1
     add_obs_rinex_version_and_type(out, type, version);
@@ -1538,7 +1512,7 @@ void add_obs_signal_strength(std::fstream& out)
 }
 
 
-void add_obs_time_first_obs(std::fstream& out, const std::string& constellation, const boost::posix_time::ptime& p_gps_time, double tow)
+void add_obs_time_first_obs(std::fstream& out, const std::string& constellation, const boost::posix_time::ptime& p_gps_time, double seconds)
 {
     const std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
     const std::string year(timestring, 0, 4);
@@ -1546,7 +1520,6 @@ void add_obs_time_first_obs(std::fstream& out, const std::string& constellation,
     const std::string day(timestring, 6, 2);
     const std::string hour(timestring, 9, 2);
     const std::string minutes(timestring, 11, 2);
-    const double seconds = fmod(tow, 60);
     std::string line;
     line += rightJustify(year, 6);
     line += rightJustify(month, 6);
@@ -1634,19 +1607,32 @@ void add_obs_sys_obs_type(std::fstream& out,
 }
 
 
+void add_wavelength(std::fstream& out)
+{
+    // put here real data!
+    std::string line;
+    line += rightJustify("1", 6);
+    line += rightJustify("1", 6);
+    line += std::string(48, ' ');
+    line += leftJustify("WAVELENGTH FACT L1/2", 20);
+    lengthCheck(line);
+    out << line << '\n';
+}
+
+
 void add_obs_sys_obs_type(std::fstream& out,
     const std::string& constellation,
-    const std::string& bands,
+    const Signal_Enabled_Flags& flags,
     const std::map<std::string, std::string>& observationType,
     const std::map<std::string, std::string>& observationCode,
-    const std::map<std::string, std::string>& band_to_code_map)
+    const std::map<uint32_t, std::string>& signal_to_code_map)
 {
     std::vector<std::string> obsCodes;
     uint32_t number_of_observations = 0;
 
-    for (const auto& it : band_to_code_map)
+    for (const auto& it : signal_to_code_map)
         {
-            if (bands.find(it.first) != std::string::npos)
+            if (flags.check_any_enabled(it.first))
                 {
                     obsCodes.emplace_back(observationCode.at(it.second));
                     number_of_observations += 4;
@@ -1659,61 +1645,61 @@ void add_obs_sys_obs_type(std::fstream& out,
 
 
 void add_obs_sys_obs_type_gps(std::fstream& out,
-    const std::string& bands,
+    const Signal_Enabled_Flags& flags,
     const std::map<std::string, std::string>& observationType,
     const std::map<std::string, std::string>& observationCode)
 {
-    const std::map<std::string, std::string> band_to_code_map = {
-        {"1C", "GPS_L1_CA"},
-        {"2S", "GPS_L2_L2CM"},
-        {"L5", "GPS_L5_Q"},
+    const std::map<uint32_t, std::string> signal_to_code_map = {
+        {GPS_1C, "GPS_L1_CA"},
+        {GPS_2S, "GPS_L2_L2CM"},
+        {GPS_L5, "GPS_L5_Q"},
     };
 
-    add_obs_sys_obs_type(out, "GPS", bands, observationType, observationCode, band_to_code_map);
+    add_obs_sys_obs_type(out, "GPS", flags, observationType, observationCode, signal_to_code_map);
 }
 
 
 void add_obs_sys_obs_type_galileo(std::fstream& out,
-    const std::string& bands,
+    const Signal_Enabled_Flags& flags,
     const std::map<std::string, std::string>& observationType,
     const std::map<std::string, std::string>& observationCode)
 {
-    const std::map<std::string, std::string> band_to_code_map = {
-        {"1B", "GALILEO_E1_B"},
-        {"5X", "GALILEO_E5a_IQ"},
-        {"7X", "GALILEO_E5b_IQ"},
-        {"E6", "GALILEO_E56_B"},
+    const std::map<uint32_t, std::string> signal_to_code_map = {
+        {GAL_1B, "GALILEO_E1_B"},
+        {GAL_E5a, "GALILEO_E5a_IQ"},
+        {GAL_E5b, "GALILEO_E5b_IQ"},
+        {GAL_E6, "GALILEO_E56_B"},
     };
 
-    add_obs_sys_obs_type(out, "Galileo", bands, observationType, observationCode, band_to_code_map);
+    add_obs_sys_obs_type(out, "Galileo", flags, observationType, observationCode, signal_to_code_map);
 }
 
 
 void add_obs_sys_obs_type_glonass(std::fstream& out,
-    const std::string& bands,
+    const Signal_Enabled_Flags& flags,
     const std::map<std::string, std::string>& observationType,
     const std::map<std::string, std::string>& observationCode)
 {
-    const std::map<std::string, std::string> band_to_code_map = {
-        {"1G", "GLONASS_G1_CA"},
-        {"2G", "GLONASS_G2_CA"},
+    const std::map<uint32_t, std::string> signal_to_code_map = {
+        {GLO_1G, "GLONASS_G1_CA"},
+        {GLO_2G, "GLONASS_G2_CA"},
     };
 
-    add_obs_sys_obs_type(out, "GLONASS", bands, observationType, observationCode, band_to_code_map);
+    add_obs_sys_obs_type(out, "GLONASS", flags, observationType, observationCode, signal_to_code_map);
 }
 
 
 void add_obs_sys_obs_type_beidou(std::fstream& out,
-    const std::string& bands,
+    const Signal_Enabled_Flags& flags,
     const std::map<std::string, std::string>& observationType,
     const std::map<std::string, std::string>& observationCode)
 {
-    const std::map<std::string, std::string> band_to_code_map = {
-        {"B1", "BEIDOU_B1_I"},
-        {"B3", "BEIDOU_B3_I"},
+    const std::map<uint32_t, std::string> signal_to_code_map = {
+        {BDS_B1, "BEIDOU_B1_I"},
+        {BDS_B3, "BEIDOU_B3_I"},
     };
 
-    add_obs_sys_obs_type(out, "Beidou", bands, observationType, observationCode, band_to_code_map);
+    add_obs_sys_obs_type(out, "Beidou", flags, observationType, observationCode, signal_to_code_map);
 }
 
 
@@ -2017,66 +2003,115 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
     const auto glonass_gnav_ephemeris_iter = pvt_solver->glonass_gnav_ephemeris_map.cbegin();
     const auto beidou_dnav_ephemeris_iter = pvt_solver->beidou_dnav_ephemeris_map.cbegin();
 
-    const auto signal = enabled_signal_flags_to_string(d_flags);
     const bool has_gps_lnav_eph = !pvt_solver->gps_ephemeris_map.empty();
     const bool has_gps_cnav_eph = !pvt_solver->gps_cnav_ephemeris_map.empty();
     const bool has_galileo_eph = !pvt_solver->galileo_ephemeris_map.empty();
     const bool has_glonass_eph = !pvt_solver->glonass_gnav_ephemeris_map.empty();
     const bool has_beidou_dnav_eph = !pvt_solver->beidou_dnav_ephemeris_map.empty();
 
+    double seconds;
+    boost::posix_time::ptime system_time;
+    std::string system_time_str;
+
+    // Order is important, it defines which time is used with multiple constellations
+    if (d_flags.check_any_enabled(GPS_1C))
+        {
+            if (has_gps_lnav_eph)
+                {
+                    system_time = Rinex_Printer::compute_GPS_time(gps_ephemeris_iter->second, rx_time);
+                    seconds = fmod(rx_time, 60);
+                    system_time_str = "GPS";
+                }
+        }
+    else if (d_flags.has_gps)
+        {
+            if (has_gps_cnav_eph)
+                {
+                    system_time = Rinex_Printer::compute_GPS_time(gps_cnav_ephemeris_iter->second, rx_time);
+                    seconds = fmod(rx_time, 60);
+                    system_time_str = "GPS";
+                }
+        }
+    else if (d_flags.has_galileo)
+        {
+            if (has_galileo_eph)
+                {
+                    system_time = Rinex_Printer::compute_Galileo_time(galileo_ephemeris_iter->second, rx_time);
+                    seconds = fmod(rx_time, 60);
+                    system_time_str = "GAL";
+                }
+        }
+    else if (d_flags.has_glonass)
+        {
+            if (has_glonass_eph)
+                {
+                    double int_sec = 0;
+                    system_time = Rinex_Printer::compute_UTC_time(glonass_gnav_ephemeris_iter->second, rx_time);
+                    seconds = modf(rx_time, &int_sec) + system_time.time_of_day().seconds();
+                    system_time_str = "GLO";
+                }
+        }
+    else if (d_flags.has_beidou)
+        {
+            if (has_beidou_dnav_eph)
+                {
+                    system_time = Rinex_Printer::compute_BDS_time(beidou_dnav_ephemeris_iter->second, rx_time);
+                    seconds = fmod(rx_time, 60);
+                    system_time_str = "BDS";
+                }
+        }
+
+    if (system_time.is_not_a_date_time())
+        {
+            return;
+        }
+
     if (!d_rinex_header_written)  // & we have utc data in nav message!
         {
             bool rinex_header_written = true;
+            std::string marker_type = "";
+            std::string marker_type_id = "TYPE";
 
             if (d_flags.check_only_enabled(GPS_1C) && has_gps_lnav_eph)
                 {
-                    rinex_obs_header(obsFile, gps_ephemeris_iter->second, rx_time);
+                    marker_type = "NON_GEODETIC";
                     rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
                 }
             else if ((d_flags.check_only_enabled(GPS_2S) || d_flags.check_only_enabled(GPS_L5)) && has_gps_cnav_eph)
                 {
-                    rinex_obs_header(obsFile, gps_cnav_ephemeris_iter->second, rx_time, signal);
                     rinex_nav_header(navFile, pvt_solver->gps_cnav_iono, pvt_solver->gps_cnav_utc_model);
                 }
             else if (d_flags.only_galileo && has_galileo_eph)
                 {
-                    rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time, signal);
                     rinex_nav_header(navFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
                 }
             else if (d_flags.only_glonass && has_glonass_eph)
                 {
-                    rinex_obs_header(obsFile, glonass_gnav_ephemeris_iter->second, rx_time, signal);
+                    marker_type = "GROUND_CRAFT";
+                    marker_type_id = d_version == 2 ? "NUMBER" : "TYPE";
                     rinex_nav_header(navFile, pvt_solver->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
                 }
             else if (d_flags.only_beidou && has_beidou_dnav_eph)
                 {
-                    rinex_obs_header(obsFile, beidou_dnav_ephemeris_iter->second, rx_time, signal);
                     rinex_nav_header(navFile, pvt_solver->beidou_dnav_iono, pvt_solver->beidou_dnav_utc_model);
                 }
-            else if ((d_flags.check_only_enabled(GPS_1C, GPS_2S) ||
-                         d_flags.check_only_enabled(GPS_1C, GPS_L5) ||
-                         d_flags.check_only_enabled(GPS_1C, GPS_2S, GPS_L5)) &&
-                     has_gps_lnav_eph && has_gps_cnav_eph)
+            else if ((d_flags.check_only_enabled(GPS_1C, GPS_2S) || d_flags.check_only_enabled(GPS_1C, GPS_L5) || d_flags.check_only_enabled(GPS_1C, GPS_2S, GPS_L5)) && has_gps_lnav_eph && has_gps_cnav_eph)
                 {
-                    rinex_obs_header(obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, rx_time, signal);
                     rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
                 }
-            else if ((d_flags.check_only_enabled(GPS_1C, GAL_1B) || d_flags.check_only_enabled(GPS_1C, GAL_E5a) || d_flags.check_only_enabled(GPS_1C, GAL_E5b)) &&
-                     has_gps_lnav_eph && has_galileo_eph)
+            else if ((d_flags.check_only_enabled(GPS_1C, GAL_1B) || d_flags.check_only_enabled(GPS_1C, GAL_E5a) || d_flags.check_only_enabled(GPS_1C, GAL_E5b)) && has_gps_lnav_eph && has_galileo_eph)
                 {
-                    rinex_obs_header(obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, signal);
                     rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
                 }
-            else if (d_flags.check_only_enabled(GPS_L5, GAL_E5a) &&
-                     has_gps_cnav_eph && has_galileo_eph)
+            else if (d_flags.check_only_enabled(GPS_L5, GAL_E5a) && has_gps_cnav_eph && has_galileo_eph)
                 {
-                    rinex_obs_header(obsFile, gps_cnav_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, signal, signal);
                     rinex_nav_header(navFile, pvt_solver->gps_cnav_iono, pvt_solver->gps_cnav_utc_model, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
                 }
-            else if ((d_flags.check_only_enabled(GPS_1C, GLO_1G) || d_flags.check_only_enabled(GPS_1C, GLO_2G) || d_flags.check_only_enabled(GPS_1C, GLO_1G, GLO_2G)) &&
-                     has_gps_lnav_eph && has_glonass_eph)
+            else if ((d_flags.check_only_enabled(GPS_1C, GLO_1G) || d_flags.check_only_enabled(GPS_1C, GLO_2G) || d_flags.check_only_enabled(GPS_1C, GLO_1G, GLO_2G)) && has_gps_lnav_eph && has_glonass_eph)
                 {
-                    rinex_obs_header(obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, rx_time, signal);
+                    marker_type = "GROUND_CRAFT";
+                    marker_type_id = d_version == 2 ? "NUMBER" : "TYPE";
+
                     if (d_version == 3)
                         {
                             rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->glonass_gnav_utc_model);
@@ -2088,16 +2123,15 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                             output_navfilename.push_back(navGlofilename);
                         }
                 }
-            else if ((d_flags.check_only_enabled(GLO_1G, GPS_2S) || d_flags.check_only_enabled(GLO_2G, GPS_2S)) &&
-                     has_gps_cnav_eph && has_glonass_eph)
+            else if ((d_flags.check_only_enabled(GLO_1G, GPS_2S) || d_flags.check_only_enabled(GLO_2G, GPS_2S)) && has_gps_cnav_eph && has_glonass_eph)
                 {
-                    rinex_obs_header(obsFile, gps_cnav_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, rx_time, signal);
+                    marker_type = "GROUND_CRAFT";
+                    marker_type_id = d_version == 2 ? "NUMBER" : "TYPE";
                     rinex_nav_header(navFile, pvt_solver->gps_cnav_iono, pvt_solver->gps_cnav_utc_model, pvt_solver->glonass_gnav_utc_model);
                 }
-            else if ((d_flags.check_only_enabled(GAL_1B, GLO_1G) || d_flags.check_only_enabled(GAL_1B, GLO_2G)) &&
-                     has_galileo_eph && has_glonass_eph)
+            else if ((d_flags.check_only_enabled(GAL_1B, GLO_1G) || d_flags.check_only_enabled(GAL_1B, GLO_2G)) && has_galileo_eph && has_glonass_eph)
                 {
-                    rinex_obs_header(obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, rx_time, signal, signal);
+                    marker_type = "NON_GEODETIC";
                     rinex_nav_header(navFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model, pvt_solver->glonass_gnav_utc_model);
                 }
             else if ((d_flags.check_only_enabled(GPS_1C, GAL_1B, GPS_L5, GAL_E5a) ||
@@ -2105,12 +2139,10 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                          d_flags.check_only_enabled(GPS_1C, GAL_1B, GPS_2S, GPS_L5, GAL_E5a)) &&
                      has_gps_lnav_eph && has_gps_cnav_eph && has_galileo_eph)
                 {
-                    rinex_obs_header(obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, signal, signal);
                     rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
                 }
             else if ((d_flags.check_only_enabled(GPS_1C, GAL_1B, GAL_E5a) || d_flags.check_only_enabled(GPS_1C, GAL_1B, GAL_E5b)) && has_gps_lnav_eph && has_galileo_eph)
                 {
-                    rinex_obs_header(obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, signal);
                     rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
                 }
             else if (d_flags.check_only_enabled(GPS_1C, GAL_E6) && has_gps_lnav_eph)
@@ -2118,20 +2150,18 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                     if (has_galileo_eph)
                         {
                             // we have Galileo ephemeris, maybe from assistance
-                            rinex_obs_header(obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, signal);
                             rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
                         }
                     else
                         {
                             // we do not have galileo ephemeris, print only GPS data
-                            rinex_obs_header(obsFile, gps_ephemeris_iter->second, rx_time);
+                            marker_type = "NON_GEODETIC";
                             rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
                         }
                 }
             else if (d_flags.has_beidou && has_beidou_dnav_eph)
                 {
-                    rinex_obs_header(obsFile, beidou_dnav_ephemeris_iter->second, rx_time, signal);
-                    // Not implemented for beidou
+                    // Not implemented for beidou (don't remove for rinex_header_written)
                 }
             else
                 {
@@ -2140,6 +2170,8 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
 
             if (rinex_header_written)
                 {
+                    rinex_obs_header(obsFile, system_time_str, system_time, seconds, marker_type, marker_type_id);
+
                     if (has_gps_lnav_eph && !d_flags.check_any_enabled(GPS_L5))  // That's how it used to be, not sure why
                         {
                             log_rinex_nav(navFile, pvt_solver->gps_ephemeris_map);
@@ -2178,56 +2210,6 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
             const auto constel_signal_flags = get_constel_signal_flags(d_flags);
             const auto constel_observables = get_constellation_observables_map(constel_signal_flags, gnss_observables_map);
 
-            double seconds;
-            boost::posix_time::ptime system_time;
-
-            // Order is important
-            if (d_flags.check_any_enabled(GPS_1C))
-                {
-                    if (has_gps_lnav_eph)
-                        {
-                            system_time = Rinex_Printer::compute_GPS_time(gps_ephemeris_iter->second, rx_time);
-                            seconds = fmod(rx_time, 60);
-                        }
-                }
-            else if (d_flags.has_gps)
-                {
-                    if (has_gps_cnav_eph)
-                        {
-                            system_time = Rinex_Printer::compute_GPS_time(gps_cnav_ephemeris_iter->second, rx_time);
-                            seconds = fmod(rx_time, 60);
-                        }
-                }
-            else if (d_flags.has_galileo)
-                {
-                    if (has_galileo_eph)
-                        {
-                            system_time = Rinex_Printer::compute_Galileo_time(galileo_ephemeris_iter->second, rx_time);
-                            seconds = fmod(rx_time, 60);
-                        }
-                }
-            else if (d_flags.has_glonass)
-                {
-                    if (has_glonass_eph)
-                        {
-                            double int_sec = 0;
-                            system_time = Rinex_Printer::compute_UTC_time(glonass_gnav_ephemeris_iter->second, rx_time);
-                            seconds = modf(rx_time, &int_sec) + system_time.time_of_day().seconds();
-                        }
-                }
-            else if (d_flags.has_beidou)
-                {
-                    if (has_beidou_dnav_eph)
-                        {
-                            system_time = Rinex_Printer::compute_BDS_time(beidou_dnav_ephemeris_iter->second, rx_time);
-                            seconds = fmod(rx_time, 60);
-                        }
-                }
-
-            if (system_time.is_not_a_date_time())
-                {
-                    return;
-                }
 
             std::vector<std::string> constellations;
 
@@ -3732,394 +3714,140 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Bei
 }
 
 
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephemeris& eph, double d_TOW_first_observation, const std::string& glonass_bands)
+void Rinex_Printer::rinex_obs_header(std::fstream& out,
+    const std::string& time_constellation,
+    const boost::posix_time::ptime& system_time,
+    double seconds,
+    const std::string& marker_type,
+    const std::string& marker_type_id)
 {
-    std::map<int32_t, Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_ephemeris_iter;
-
-    std::string constellation_legend;
-    std::string marker_type_id;
-
-    if (d_version == 2)
-        {
-            constellation_legend = "BLANK OR G = GPS,  R = GLONASS,  E = GALILEO,  M = MIXED";
-            marker_type_id = "NUMBER";
-        }
-    if (d_version == 3)
-        {
-            constellation_legend = "G = GPS  R = GLONASS  E = GALILEO  S = GEO  M = MIXED";
-            marker_type_id = "TYPE";
-        }
-
-    add_observation_header_start(out, "GLONASS", "GLONASS", Rinex_Printer::getLocalTime(), d_stringVersion, constellation_legend, "GROUND_CRAFT", marker_type_id);
-
-    // -------- SYS / OBS TYPES
-    if (d_version == 3)
-        {
-            // -------- SYS / OBS TYPES
-            add_obs_sys_obs_type_glonass(out, glonass_bands, observationType, observationCode);
-        }
-    if (d_version == 2)
-        {
-            // -------- SYS / OBS TYPES
-            add_obs_sys_obs_type_v2(out, "GLONASS_G1_CA_v2", observationType, observationCode);
-        }
-
-    // -------- Signal Strength units (Only version 3)
-    if (d_version == 3)
-        {
-            add_obs_signal_strength(out);
-        }
-
-    // -------- TIME OF FIRST OBS
-    double intpart = 0;
-    const boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_UTC_time(eph, d_TOW_first_observation);
-    const double seconds = p_utc_time.time_of_day().seconds() + modf(d_TOW_first_observation, &intpart);
-    add_obs_time_first_obs(out, "GLO", p_utc_time, seconds);
-
-    // -------- GLONASS SLOT / FRQ # (On;y d_version 3)
-    if (d_version == 3)
-        {
-            // -------- GLONASS SLOT / FRQ #
-            add_obs_glonass_slot_freq(out);
-
-            // -------- GLONASS CODE/PHS/BIS
-            add_obs_glonass_code_phase_bias(out, observationType, observationCode);
-        }
-
-    // -------- END OF HEADER
-    out << get_end_of_header_line() << '\n';
-}
-
-
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& /*glonass_gnav_eph*/, double d_TOW_first_observation, const std::string& glonass_bands)
-{
-    std::string marker_type_id;
-
-    if (d_version == 2)
-        {
-            marker_type_id = "NUMBER";
-        }
-    else if (d_version == 3)
-        {
-            marker_type_id = "TYPE";
-        }
-
-    const std::string constellation_legend = "G = GPS  R = GLONASS  E = GALILEO  S = GEO  M = MIXED";
-    add_observation_header_start(out, "Mixed", "MIXED (GPS/GLO)", Rinex_Printer::getLocalTime(), d_stringVersion, constellation_legend, "GROUND_CRAFT", marker_type_id);
-
-    // -------- SYS / OBS TYPES
-    if (d_version == 3)
-        {
-            // GPS line
-            add_obs_sys_obs_type_gps(out, "1C", observationType, observationCode);
-
-            // Glonass line
-            add_obs_sys_obs_type_glonass(out, glonass_bands, observationType, observationCode);
-        }
-    if (d_version == 2)
-        {
-            // -------- SYS / OBS TYPES
-            add_obs_sys_obs_type_v2(out, "GLONASS_G1_CA_v2", observationType, observationCode);
-        }
-
-    // -------- Signal Strength units (only version 3)
-    if (d_version == 3)
-        {
-            add_obs_signal_strength(out);
-        }
-
-    // -------- TIME OF FIRST OBS
-    add_obs_time_first_obs(out, "GPS", Rinex_Printer::compute_GPS_time(gps_eph, d_TOW_first_observation), d_TOW_first_observation);
-
-    // -------- GLONASS SLOT / FRQ # (On;y version 3)
-    if (d_version == 3)
-        {
-            // -------- GLONASS SLOT / FRQ #
-            add_obs_glonass_slot_freq(out);
-
-            // -------- GLONASS CODE/PHS/BIS
-            add_obs_glonass_code_phase_bias(out, observationType, observationCode);
-        }
-
-    // -------- end of header
-    out << get_end_of_header_line() << '\n';
-}
-
-
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& gps_cnav_eph, const Glonass_Gnav_Ephemeris& /*glonass_gnav_eph*/, double d_TOW_first_observation, const std::string& glonass_bands)
-{
-    std::string marker_type_id;
-
-    if (d_version == 2)
-        {
-            marker_type_id = "NUMBER";
-        }
-    else if (d_version == 3)
-        {
-            marker_type_id = "TYPE";
-        }
-
-    const std::string constellation_legend = "G = GPS  R = GLONASS  E = GALILEO  S = GEO  M = MIXED";
-    add_observation_header_start(out, "Mixed", "MIXED (GPS/GLO)", Rinex_Printer::getLocalTime(), d_stringVersion, constellation_legend, "GROUND_CRAFT", marker_type_id);
-
-    // -------- SYS / OBS TYPES
-
-    // GPS line
-    add_obs_sys_obs_type_gps(out, "2S", observationType, observationCode);
-
-    // Glonass line
-    add_obs_sys_obs_type_glonass(out, glonass_bands, observationType, observationCode);
-
-    // -------- Signal Strength units (only version 3)
-    add_obs_signal_strength(out);
-
-    // -------- TIME OF FIRST OBS
-    add_obs_time_first_obs(out, "GPS", Rinex_Printer::compute_GPS_time(gps_cnav_eph, d_TOW_first_observation), d_TOW_first_observation);
-
-    // -------- GLONASS SLOT / FRQ #
-    add_obs_glonass_slot_freq(out);
-
-    // -------- GLONASS CODE/PHS/BIS
-    add_obs_glonass_code_phase_bias(out, observationType, observationCode);
-
-    // -------- end of header
-    out << get_end_of_header_line() << '\n';
-}
-
-
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris& galileo_eph, const Glonass_Gnav_Ephemeris& /*glonass_gnav_eph*/, double d_TOW_first_observation, const std::string& galileo_bands, const std::string& glonass_bands)
-{
-    const std::string constellation_legend = "G = GPS  R = GLONASS  E = GALILEO  S = GEO  M = MIXED";
-    add_observation_header_start(out, "Mixed", "MIXED (GALILEO/GLONASS)", Rinex_Printer::getLocalTime(), "3.02", constellation_legend, "NON_GEODETIC", "TYPE");
-
-    // -------- SYS / OBS TYPES
-
-    // Galileo line
-    add_obs_sys_obs_type_galileo(out, galileo_bands, observationType, observationCode);
-
-    // Glonass line
-    add_obs_sys_obs_type_glonass(out, glonass_bands, observationType, observationCode);
-
-    // -------- Signal Strength units
-    add_obs_signal_strength(out);
-
-    // -------- TIME OF FIRST OBS
-    add_obs_time_first_obs(out, "Galileo", Rinex_Printer::compute_Galileo_time(galileo_eph, d_TOW_first_observation), d_TOW_first_observation);
-
-    // -------- end of header
-    out << get_end_of_header_line() << '\n';
-}
-
-
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph, double d_TOW_first_observation)
-{
-    std::string line;
     std::string constellation_legend;
 
     if (d_version == 2)
         {
             constellation_legend = "BLANK OR G = GPS,  R = GLONASS,  E = GALILEO,  M = MIXED";
         }
-    if (d_version == 3)
+    else
         {
-            constellation_legend = "G = GPS  R = GLONASS  E = GALILEO  S = GEO  M = MIXED";
+            constellation_legend = "G = GPS  R = GLONASS  E = GALILEO  C = BEIDOU  M = MIXED";
         }
 
-    add_observation_header_start(out, "GPS", "GPS", Rinex_Printer::getLocalTime(), "3.02", constellation_legend, "NON_GEODETIC", "TYPE");
+    std::string type;
+    std::string header_constellation;
+
+    if (d_flags.only_gps)
+        {
+            type = "GPS";
+            header_constellation = "GPS";
+        }
+    else if (d_flags.only_galileo)
+        {
+            type = "Galileo";
+            header_constellation = "GALILEO";
+        }
+    else if (d_flags.only_glonass)
+        {
+            type = "GLONASS";
+            header_constellation = "GLONASS";
+        }
+    else if (d_flags.only_beidou)
+        {
+            type = "Beidou";
+            header_constellation = "BEIDOU";
+        }
+    else
+        {
+            type = "Mixed";
+            header_constellation = "MIXED";
+
+            std::vector<std::string> constellations;
+
+            if (d_flags.has_gps)
+                {
+                    constellations.emplace_back("GPS");
+                }
+            if (d_flags.has_galileo)
+                {
+                    constellations.emplace_back("GAL");
+                }
+            if (d_flags.has_glonass)
+                {
+                    constellations.emplace_back("GLO");
+                }
+            if (d_flags.has_beidou)
+                {
+                    constellations.emplace_back("BDS");
+                }
+
+            header_constellation += " (";
+
+            for (size_t i = 0; i < constellations.size(); ++i)
+                {
+                    if (i > 0)
+                        {
+                            header_constellation += "/";
+                        }
+
+                    header_constellation += constellations[i];
+                }
+
+            header_constellation += ")";
+        }
+
+    add_observation_header_start(out, type, header_constellation, Rinex_Printer::getLocalTime(), d_stringVersion, constellation_legend, marker_type, marker_type_id);
 
     if (d_version == 2)
         {
             // --------- WAVELENGTH FACTOR
-            // put here real data!
-            line.clear();
-            line += rightJustify("1", 6);
-            line += rightJustify("1", 6);
-            line += std::string(48, ' ');
-            line += leftJustify("WAVELENGTH FACT L1/2", 20);
-            lengthCheck(line);
-            out << line << '\n';
-        }
+            add_wavelength(out);
 
-    if (d_version == 3)
+            // -------- SYS / OBS TYPES
+            if (d_flags.has_gps)
+                {
+                    add_obs_sys_obs_type_v2(out, "GPS_L1_CA_v2", observationType, observationCode);
+                }
+            if (d_flags.has_glonass)
+                {
+                    add_obs_sys_obs_type_v2(out, "GLONASS_G1_CA_v2", observationType, observationCode);
+                }
+        }
+    else
         {
             // -------- SYS / OBS TYPES
-            add_obs_sys_obs_type_gps(out, "1C", observationType, observationCode);
-        }
+            if (d_flags.has_gps)
+                {
+                    add_obs_sys_obs_type_gps(out, d_flags, observationType, observationCode);
+                }
+            if (d_flags.has_galileo)
+                {
+                    add_obs_sys_obs_type_galileo(out, d_flags, observationType, observationCode);
+                }
+            if (d_flags.has_glonass)
+                {
+                    add_obs_sys_obs_type_glonass(out, d_flags, observationType, observationCode);
+                }
+            if (d_flags.has_beidou)
+                {
+                    add_obs_sys_obs_type_beidou(out, d_flags, observationType, observationCode);
+                }
 
-    if (d_version == 2)
-        {
-            // -------- SYS / OBS TYPES
-            add_obs_sys_obs_type_v2(out, "GPS_L1_CA_v2", observationType, observationCode);
-        }
-
-    if (d_version == 3)
-        {
             // -------- Signal Strength units
             add_obs_signal_strength(out);
         }
 
     // -------- TIME OF FIRST OBS
-    add_obs_time_first_obs(out, "GPS", Rinex_Printer::compute_GPS_time(eph, d_TOW_first_observation), d_TOW_first_observation);
+    add_obs_time_first_obs(out, time_constellation, system_time, seconds);
 
     // -------- SYS /PHASE SHIFTS
 
-    // -------- end of header
-    out << get_end_of_header_line() << '\n';
-}
+    if (d_version == 3 && d_flags.has_glonass)
+        {
+            // -------- GLONASS SLOT / FRQ #
+            add_obs_glonass_slot_freq(out);
 
-
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& eph, double d_TOW_first_observation, const std::string& gps_bands)
-{
-    const std::string constellation_legend = "G = GPS  R = GLONASS  E = GALILEO  S = GEO  M = MIXED";
-    add_observation_header_start(out, "GPS", "GPS", Rinex_Printer::getLocalTime(), d_stringVersion, constellation_legend);
-
-    // -------- SYS / OBS TYPES
-    add_obs_sys_obs_type_gps(out, gps_bands, observationType, observationCode);
-
-    // -------- Signal Strength units
-    add_obs_signal_strength(out);
-
-    // -------- TIME OF FIRST OBS
-    add_obs_time_first_obs(out, "GPS", Rinex_Printer::compute_GPS_time(eph, d_TOW_first_observation), d_TOW_first_observation);
-
-    // -------- SYS /PHASE SHIFTS
-
-    // -------- end of header
-    out << get_end_of_header_line() << '\n';
-}
-
-
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph, const Gps_CNAV_Ephemeris& /*eph_cnav*/, double d_TOW_first_observation, const std::string& gps_bands)
-{
-    const std::string constellation_legend = "G = GPS  R = GLONASS  E = GALILEO  S = GEO  M = MIXED";
-    add_observation_header_start(out, "GPS", "GPS", Rinex_Printer::getLocalTime(), d_stringVersion, constellation_legend);
-
-    // -------- SYS / OBS TYPES
-    add_obs_sys_obs_type_gps(out, gps_bands, observationType, observationCode);
-
-    // -------- Signal Strength units
-    add_obs_signal_strength(out);
-
-    // -------- TIME OF FIRST OBS
-    add_obs_time_first_obs(out, "GPS", Rinex_Printer::compute_GPS_time(eph, d_TOW_first_observation), d_TOW_first_observation);
-
-    // -------- SYS /PHASE SHIFTS
-
-    // -------- end of header
-    out << get_end_of_header_line() << '\n';
-}
-
-
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& /*eph_cnav*/, const Galileo_Ephemeris& /*galileo_eph*/, double d_TOW_first_observation, const std::string& gps_bands, const std::string& galileo_bands)
-{
-    const std::string constellation_legend = "G = GPS  R = GLONASS  E = GALILEO  S = GEO  M = MIXED";
-    add_observation_header_start(out, "Mixed", "MIXED (GPS/GALILEO)", Rinex_Printer::getLocalTime(), "3.02", constellation_legend);
-
-    // -------- SYS / OBS TYPES
-
-    // GPS line
-    add_obs_sys_obs_type_gps(out, gps_bands, observationType, observationCode);
-
-    // Galileo line
-    add_obs_sys_obs_type_galileo(out, galileo_bands, observationType, observationCode);
-
-    // -------- Signal Strength units
-    add_obs_signal_strength(out);
-
-    // -------- TIME OF FIRST OBS
-    add_obs_time_first_obs(out, "GPS", Rinex_Printer::compute_GPS_time(gps_eph, d_TOW_first_observation), d_TOW_first_observation);
-
-    // -------- end of header
-    out << get_end_of_header_line() << '\n';
-}
-
-
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& eph_cnav, const Galileo_Ephemeris& /*galileo_eph*/, double d_TOW_first_observation, const std::string& gps_bands, const std::string& galileo_bands)
-{
-    const std::string constellation_legend = "G = GPS  R = GLONASS  E = GALILEO  S = GEO  M = MIXED";
-    add_observation_header_start(out, "Mixed", "MIXED (GPS/GALILEO)", Rinex_Printer::getLocalTime(), "3.02", constellation_legend);
-
-    // -------- SYS / OBS TYPES
-
-    // GPS line
-    add_obs_sys_obs_type_gps(out, gps_bands, observationType, observationCode);
-
-    // Galileo line
-    add_obs_sys_obs_type_galileo(out, galileo_bands, observationType, observationCode);
-
-    // -------- Signal Strength units
-    add_obs_signal_strength(out);
-
-    // -------- TIME OF FIRST OBS
-    add_obs_time_first_obs(out, "GPS", Rinex_Printer::compute_GPS_time(eph_cnav, d_TOW_first_observation), d_TOW_first_observation);
-
-    // -------- end of header
-    out << get_end_of_header_line() << '\n';
-}
-
-
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris& eph, double d_TOW_first_observation, const std::string& bands)
-{
-    const std::string version = bands.find("E6") != std::string::npos ? "3.05" : "3.02";
-    const std::string constellation_legend = "G = GPS  R = GLONASS  E = GALILEO  S = GEO  M = MIXED";
-    add_observation_header_start(out, "Galileo", "GALILEO", Rinex_Printer::getLocalTime(), version, constellation_legend);
-
-    // -------- SYS / OBS TYPES
-
-    add_obs_sys_obs_type_galileo(out, bands, observationType, observationCode);
-
-    // -------- Signal Strength units
-    add_obs_signal_strength(out);
-
-    // -------- TIME OF FIRST OBS
-    add_obs_time_first_obs(out, "GAL", Rinex_Printer::compute_Galileo_time(eph, d_TOW_first_observation), d_TOW_first_observation);
-
-    // -------- SYS /PHASE SHIFTS
-
-    // -------- end of header
-    out << get_end_of_header_line() << '\n';
-}
-
-
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& /*galileo_eph*/, double d_TOW_first_observation, const std::string& galileo_bands)
-{
-    const std::string constellation_legend = "G = GPS  R = GLONASS  E = GALILEO  S = GEO  M = MIXED";
-    add_observation_header_start(out, "Mixed", "MIXED (GPS/GALILEO)", Rinex_Printer::getLocalTime(), "3.02", constellation_legend);
-
-    // -------- SYS / OBS TYPES
-
-    // GPS line
-    add_obs_sys_obs_type_gps(out, "1C", observationType, observationCode);
-
-    // Galileo line
-    add_obs_sys_obs_type_galileo(out, galileo_bands, observationType, observationCode);
-
-    // -------- Signal Strength units
-    add_obs_signal_strength(out);
-
-    // -------- TIME OF FIRST OBS
-    add_obs_time_first_obs(out, "GPS", Rinex_Printer::compute_GPS_time(gps_eph, d_TOW_first_observation), d_TOW_first_observation);
-
-    // -------- end of header
-    out << get_end_of_header_line() << '\n';
-}
-
-
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Beidou_Dnav_Ephemeris& eph, double d_TOW_first_observation, const std::string& bands)
-{
-    const std::string constellation_legend = "G = GPS  R = GLONASS  E = GALILEO  C = BEIDOU  M = MIXED";
-    add_observation_header_start(out, "Beidou", "BEIDOU", Rinex_Printer::getLocalTime(), "3.02", constellation_legend);
-
-    // -------- SYS / OBS TYPES
-    add_obs_sys_obs_type_beidou(out, bands, observationType, observationCode);
-
-    // -------- Signal Strength units
-    add_obs_signal_strength(out);
-
-    // -------- TIME OF FIRST OBS
-    add_obs_time_first_obs(out, "BDT", Rinex_Printer::compute_BDS_time(eph, d_TOW_first_observation), d_TOW_first_observation);
-
-    // -------- SYS /PHASE SHIFTS
+            // -------- GLONASS CODE/PHS/BIS
+            add_obs_glonass_code_phase_bias(out, observationType, observationCode);
+        }
 
     // -------- end of header
     out << get_end_of_header_line() << '\n';

@@ -84,7 +84,7 @@ public:
     int32_t carrier_lock_test_smoother_samples{25};
     // int32_t max_lock_fail;
     int32_t bs_stable_best_required{3};
-    int32_t bs_min_events_for_lock{5};
+    int32_t bs_min_events_for_lock{10};
 
     int32_t* ca_codes{nullptr};
     int32_t* data_codes{nullptr};

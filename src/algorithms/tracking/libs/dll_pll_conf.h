@@ -73,7 +73,7 @@ public:
     int32_t max_code_lock_fail{0};
     int32_t max_carrier_lock_fail{0};
     int32_t bs_stable_best_required{3};
-    int32_t bs_min_events_for_lock{5};
+    int32_t bs_min_events_for_lock{10};
     char signal[3]{};
     char system{'G'};
     bool enable_fll_pull_in{false};

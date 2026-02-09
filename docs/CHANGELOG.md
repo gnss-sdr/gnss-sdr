@@ -14,6 +14,21 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Availability:
+
+- Introduced a histogram-based navigation data bit synchronizer used by tracking
+  loops to robustly detect navigation-bit transitions in signals without
+  secondary code. Lock is declared when the histogram exhibits a clearly
+  dominant phase bin, verified using a configurable dominance ratio and
+  stability criterion. Once synchronized, the tracking loop can safely switch to
+  extended coherent integration, improving tracking sensitivity. New
+  configuration parameters are `Tracking_1C.bs_dominance_ratio` (ratio between
+  the count of the dominant histogram bin and the total number of detected
+  transition events, default: 0.6), `Tracking_1C.bs_stable_best_required`
+  (required number of consecutive evaluations with the same dominant histogram
+  bin, default: 3), and `Tracking_1C.bs_min_events_for_lock` (minimum number of
+  detected transition events before lock evaluation, default: 10).
+
 ### Improvements in Interoperability:
 
 - Enabled multi-band processing off-loading to the FPGA when using the MAX2771

@@ -836,6 +836,7 @@ void dll_pll_veml_tracking_fpga::configure_bit_synchronizer()
     cfg.min_prompt_mag = d_trk_parameters.bs_min_prompt_mag;
     cfg.use_phase_dot_detector = d_trk_parameters.bs_use_phase_dot_detector;
     d_bit_sync = HistogramBitSynchronizer(cfg);
+    d_bit_sync.reset();
 }
 
 
@@ -1644,7 +1645,11 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                                             {
                                                                 d_wait_for_bit_edge = true;
                                                                 const std::int64_t k_now = d_bit_sync.get_epoch_count() - 1;
-                                                                const int wait = d_bit_sync.epochs_until_next_edge();
+                                                                int wait = d_bit_sync.epochs_until_next_edge() - 1;
+                                                                if (wait < 0)
+                                                                    {
+                                                                        wait = wait + d_bit_sync.bins();
+                                                                    }
                                                                 d_bit_sync_target_epoch = k_now + wait;
                                                             }
                                                         if (d_wait_for_bit_edge)
@@ -1654,6 +1659,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                                                     {
                                                                         next_state = true;
                                                                         d_wait_for_bit_edge = false;
+                                                                        d_use_histogram_bit_sync = false;
                                                                         LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " histogram bit synchronization locked in channel " << d_channel
                                                                                   << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
                                                                         std::cout << d_systemName << " " << d_signal_pretty_name << " histogram bit synchronization locked in channel " << d_channel

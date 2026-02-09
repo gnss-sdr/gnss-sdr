@@ -27,6 +27,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Added a cycle-slip detector, with events reported in internal logging and
   RINEX observation files. This introduces a new field in `Gnss_Synchro` and in
   the corresponding `.proto` definition.
+- Improved tracking of GPS L2C(M) signals.
 
 ### Improvements in Maintainability:
 

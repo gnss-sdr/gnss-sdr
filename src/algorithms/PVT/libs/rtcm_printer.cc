@@ -29,7 +29,6 @@
 #include "gps_ephemeris.h"
 #include "rtcm.h"
 #include "rtklib_solver.h"
-#include "signal_enabled_flags.h"
 #include <boost/exception/diagnostic_information.hpp>
 #include <ctime>      // for tm
 #include <exception>  // for exception
@@ -52,13 +51,15 @@ Rtcm_Printer::Rtcm_Printer(const std::string& filename,
     uint16_t rtcm_tcp_port,
     uint16_t rtcm_station_id,
     const std::string& rtcm_dump_devname,
+    uint32_t signal_enabled_flags,
     bool time_tag_name,
     const std::string& base_path) : rtcm_base_path(base_path),
                                     rtcm_devname(rtcm_dump_devname),
                                     port(rtcm_tcp_port),
                                     station_id(rtcm_station_id),
                                     d_rtcm_has_written_once(false),
-                                    d_rtcm_file_dump(flag_rtcm_file_dump)
+                                    d_rtcm_file_dump(flag_rtcm_file_dump),
+                                    d_flags(signal_enabled_flags)
 {
     const boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
     const tm timeinfo = boost::posix_time::to_tm(pt);
@@ -226,7 +227,6 @@ Rtcm_Printer::~Rtcm_Printer()
 void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
     const std::map<int, Gnss_Synchro>& gnss_observables_map,
     double rx_time,
-    uint32_t signal_enabled_flags,
     bool rtcm_MSM_enabled,
     bool rtcm_MT1019_enabled,
     bool rtcm_MT1020_enabled,
@@ -242,33 +242,26 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
 {
     try
         {
-            const Signal_Enabled_Flags flags(signal_enabled_flags);
-            const auto has_gps = flags.check_any_enabled(GPS_1C, GPS_2S, GPS_L5);
-            const auto has_galileo = flags.check_any_enabled(GAL_1B, GAL_E5a, GAL_E5b, GAL_E6);
-            const auto has_glonass = flags.check_any_enabled(GLO_1G, GLO_2G);
-            const auto has_beidou = flags.check_any_enabled(BDS_B1, BDS_B3);
-            const auto only_galileo = has_galileo && !(has_gps || has_glonass || has_beidou);
-            const auto only_glonass = has_glonass && !(has_gps || has_galileo || has_beidou);
             const auto print_MT1019 = (!d_rtcm_has_written_once && rtcm_MT1019_enabled) || flag_write_RTCM_1019_output;
             const auto print_MT1020 = (!d_rtcm_has_written_once && rtcm_MT1020_enabled) || flag_write_RTCM_1020_output;
             const auto print_MT1045 = (!d_rtcm_has_written_once && rtcm_MT1045_enabled) || flag_write_RTCM_1045_output;
             const auto print_MSM = (!d_rtcm_has_written_once && rtcm_MSM_enabled) || flag_write_RTCM_MSM_output;
 
-            if (print_MT1019 && flags.check_any_enabled(GPS_1C))
+            if (print_MT1019 && d_flags.check_any_enabled(GPS_1C))
                 {
                     for (const auto& gps_eph_iter : pvt_solver->gps_ephemeris_map)
                         {
                             Print_Rtcm_MT1019(gps_eph_iter.second);
                         }
                 }
-            if (print_MT1020 && has_glonass)
+            if (print_MT1020 && d_flags.has_glonass)
                 {
                     for (const auto& glonass_gnav_eph_iter : pvt_solver->glonass_gnav_ephemeris_map)
                         {
                             Print_Rtcm_MT1020(glonass_gnav_eph_iter.second, pvt_solver->glonass_gnav_utc_model);
                         }
                 }
-            if (print_MT1045 && has_galileo)
+            if (print_MT1045 && d_flags.has_galileo)
                 {
                     for (const auto& gal_eph_iter : pvt_solver->galileo_ephemeris_map)
                         {
@@ -277,7 +270,7 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
                 }
             if (print_MSM)
                 {
-                    if (rtcm_MT1077_enabled && (flags.check_only_enabled(GPS_1C) || flags.check_only_enabled(GPS_1C, GAL_E6)))
+                    if (rtcm_MT1077_enabled && (d_flags.check_only_enabled(GPS_1C) || d_flags.check_only_enabled(GPS_1C, GAL_E6)))
                         {
                             const auto gps_eph_iter = pvt_solver->gps_ephemeris_map.cbegin();
                             if (gps_eph_iter != pvt_solver->gps_ephemeris_map.cend())
@@ -285,7 +278,7 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
                                     Print_Rtcm_MSM(7, gps_eph_iter->second, {}, {}, {}, rx_time, gnss_observables_map, enable_rx_clock_correction, 0, 0, false, false);
                                 }
                         }
-                    else if (rtcm_MT1077_enabled && (flags.check_only_enabled(GPS_1C, GPS_2S) || flags.check_only_enabled(GPS_1C, GPS_L5)))
+                    else if (rtcm_MT1077_enabled && (d_flags.check_only_enabled(GPS_1C, GPS_2S) || d_flags.check_only_enabled(GPS_1C, GPS_L5)))
                         {
                             const auto gps_eph_iter = pvt_solver->gps_ephemeris_map.cbegin();
                             const auto gps_cnav_eph_iter = pvt_solver->gps_cnav_ephemeris_map.cbegin();
@@ -294,7 +287,7 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
                                     Print_Rtcm_MSM(7, gps_eph_iter->second, gps_cnav_eph_iter->second, {}, {}, rx_time, gnss_observables_map, enable_rx_clock_correction, 0, 0, false, false);
                                 }
                         }
-                    else if (rtcm_MT1097_enabled && only_galileo)
+                    else if (rtcm_MT1097_enabled && d_flags.only_galileo)
                         {
                             const auto gal_eph_iter = pvt_solver->galileo_ephemeris_map.cbegin();
                             if (gal_eph_iter != pvt_solver->galileo_ephemeris_map.cend())
@@ -302,7 +295,7 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
                                     Print_Rtcm_MSM(7, {}, {}, gal_eph_iter->second, {}, rx_time, gnss_observables_map, enable_rx_clock_correction, 0, 0, false, false);
                                 }
                         }
-                    else if (rtcm_MT1087_enabled && only_glonass)
+                    else if (rtcm_MT1087_enabled && d_flags.only_glonass)
                         {
                             const auto glo_gnav_ephemeris_iter = pvt_solver->glonass_gnav_ephemeris_map.cbegin();
                             if (glo_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend())
@@ -317,10 +310,10 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
                             auto gal_eph_iter = pvt_solver->galileo_ephemeris_map.cend();
                             auto glonass_gnav_eph_iter = pvt_solver->glonass_gnav_ephemeris_map.cend();
 
-                            bool search_gps_nav = flags.check_any_enabled(GPS_1C);
-                            bool search_gps_cnav = !search_gps_nav && flags.check_any_enabled(GPS_2S, GPS_L5);
-                            bool search_gal = has_galileo;
-                            bool search_glo = has_glonass;
+                            bool search_gps_nav = d_flags.check_any_enabled(GPS_1C);
+                            bool search_gps_cnav = !search_gps_nav && d_flags.check_any_enabled(GPS_2S, GPS_L5);
+                            bool search_gal = d_flags.has_galileo;
+                            bool search_glo = d_flags.has_glonass;
 
                             for (const auto& gnss_observables_iter : gnss_observables_map)
                                 {

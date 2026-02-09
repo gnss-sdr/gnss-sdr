@@ -67,6 +67,16 @@ public:
     }
 
     const uint32_t flags;
+
+    const bool has_gps;
+    const bool has_galileo;
+    const bool has_glonass;
+    const bool has_beidou;
+
+    const bool only_gps;
+    const bool only_galileo;
+    const bool only_glonass;
+    const bool only_beidou;
 };
 
 #endif  // GNSS_SDR_SIGNAL_ENABLED_FLAGS_H

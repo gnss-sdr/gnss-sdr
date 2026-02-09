@@ -38,6 +38,7 @@
 #ifndef GNSS_SDR_RINEX_PRINTER_H
 #define GNSS_SDR_RINEX_PRINTER_H
 
+#include "signal_enabled_flags.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <cstdint>  // for int32_t
 #include <cstdlib>  // for strtol, strtod
@@ -544,6 +545,8 @@ private:
     const std::map<std::string, std::string> observationType;  // PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH
     const std::map<std::string, std::string> observationCode;  // GNSS observation descriptors
 
+    const Signal_Enabled_Flags d_flags;
+
     const int d_version;                // RINEX version (2 for 2.10/2.11 and 3 for 3.01)
     const std::string d_stringVersion;  // RINEX version (2.10/2.11 or 3.01/3.02)
 
@@ -551,7 +554,6 @@ private:
     bool d_rinex_header_updated;
     bool d_rinex_header_written;
     const bool d_pre_2009_file;
-    const uint32_t d_signal_enabled_flags;
 
     const std::string navfilename;                // Name of RINEX navigation file
     const std::string obsfilename;                // Name of RINEX observation file

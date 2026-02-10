@@ -40,6 +40,7 @@ public:
     std::string dump_filename{"./dll_pll_dump.dat"};
     double fs_in{2000000.0};
     double carrier_lock_th{0.0};
+    double bs_dominance_ratio{0.6};
     float pll_pull_in_bw_hz{50.0};
     float dll_pull_in_bw_hz{3.0};
     float fll_bw_hz{35.0};
@@ -56,6 +57,7 @@ public:
     float y_intercept{1.0};
     float cn0_smoother_alpha{0.002};
     float carrier_lock_test_smoother_alpha{0.002};
+    float bs_min_prompt_mag{0.0};
     uint32_t pull_in_time_s{10U};
     uint32_t bit_synchronization_time_limit_s{20U};
     uint32_t vector_length{0U};
@@ -70,6 +72,8 @@ public:
     int32_t cn0_min{0};
     int32_t max_code_lock_fail{0};
     int32_t max_carrier_lock_fail{0};
+    int32_t bs_stable_best_required{3};
+    int32_t bs_min_events_for_lock{10};
     char signal[3]{};
     char system{'G'};
     bool enable_fll_pull_in{false};
@@ -81,6 +85,7 @@ public:
     bool dump{false};
     bool dump_mat{true};
     bool tow_to_trk{false};
+    bool bs_use_phase_dot_detector{true};
 };
 
 

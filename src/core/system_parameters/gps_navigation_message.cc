@@ -3,7 +3,7 @@
  * \brief  Implementation of a GPS NAV Data message decoder as described in IS-GPS-200M
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
- * See https://www.gps.gov/technical/icwg/IS-GPS-200M.pdf Appendix II
+ * See https://www.gps.gov/sites/default/files/2025-07/IS-GPS-200M.pdf Appendix II
  *
  *
  * -----------------------------------------------------------------------------
@@ -101,7 +101,7 @@ int32_t Gps_Navigation_Message::subframe_decoder(const char* subframe)
     switch (subframe_ID)
         {
         // --- Decode the sub-frame id -----------------------------------------
-        // ICD (IS-GPS-200M Appendix II). https://www.gps.gov/technical/icwg/IS-GPS-200M.pdf
+        // ICD (IS-GPS-200M Appendix II). https://www.gps.gov/sites/default/files/2025-07/IS-GPS-200M.pdf
         case 1:
             // --- It is subframe 1 -------------------------------------
             // Compute the time of week (TOW) of the first sub-frames in the array ====

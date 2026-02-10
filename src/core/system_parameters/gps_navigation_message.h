@@ -41,7 +41,7 @@
 /*!
  * \brief This class decodes a GPS NAV Data message as described in IS-GPS-200M
  *
- * See https://www.gps.gov/technical/icwg/IS-GPS-200M.pdf Appendix II
+ * See https://www.gps.gov/sites/default/files/2025-07/IS-GPS-200M.pdf Appendix II
  */
 class Gps_Navigation_Message
 {

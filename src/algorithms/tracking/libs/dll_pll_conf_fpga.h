@@ -63,7 +63,7 @@ public:
     float carrier_lock_test_smoother_alpha{0.002};
     float bs_min_prompt_mag{0.0};
 
-    uint32_t pull_in_time_s{10U};  // signed integer, when pull in time is not yet reached it has to be compared against a negative number
+    uint32_t pull_in_time_s{5U};  // signed integer, when pull in time is not yet reached it has to be compared against a negative number
     uint32_t bit_synchronization_time_limit_s{70U};
     uint32_t vector_length{0U};
     uint32_t smoother_length{10U};

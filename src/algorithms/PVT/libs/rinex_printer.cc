@@ -2,14 +2,15 @@
  * \file rinex_printer.cc
  * \brief Implementation of a RINEX 2.11 / 3.02 printer
  * See ftp://igs.org/pub/data/format/rinex302.pdf
- * \author Carles Fernandez Prades, 2011. cfernandez(at)cttc.es
+ * \author Carles Fernandez Prades, 2011-2026. cfernandez(at)cttc.es
+ * \author Mathieu Favreau, 2025-2026. favreau.mathieu(at)hotmail.com
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -137,6 +138,7 @@ std::map<char, std::set<signal_flag>> get_constel_signal_flags(const Signal_Enab
     return constel_signal_flags;
 }
 
+
 Constellation_Observables_Map get_constellation_observables_map(
     const std::map<char, std::set<signal_flag>>& constel_signal_flags,
     const std::map<int32_t, Gnss_Synchro>& observables)
@@ -186,6 +188,7 @@ Constellation_Observables_Map get_constellation_observables_map(
 
     return constel_observables;
 }
+
 
 std::map<std::string, std::string> getObservationCodes()
 {
@@ -1990,7 +1993,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
     const bool has_glonass_eph = !pvt_solver->glonass_gnav_ephemeris_map.empty();
     const bool has_beidou_dnav_eph = !pvt_solver->beidou_dnav_ephemeris_map.empty();
 
-    double seconds;
+    double seconds{};
     boost::posix_time::ptime system_time;
     std::string system_time_str;
 

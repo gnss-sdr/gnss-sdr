@@ -21,15 +21,16 @@
  * 3) The observation time being the reading of the receiver clock at the
  * instant of validity of the carrier-phase and/or the code measurements.
  * Note: A collection of the formats currently used by the IGS can be found
- * here: https://kb.igs.org/hc/en-us/articles/201096516-IGS-Formats
- * \author Carles Fernandez Prades, 2011. cfernandez(at)cttc.es
+ * here: https://igs.org/formats-and-standards/
+ * \author Carles Fernandez Prades, 2011-2026. cfernandez(at)cttc.es
+ * \author Mathieu Favreau, 2025-2026. favreau.mathieu(at)hotmail.com
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------

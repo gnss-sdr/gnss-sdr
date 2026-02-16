@@ -995,24 +995,129 @@ void add_obs_antenna(std::fstream& out)
 }
 
 
-void add_navigation_header_start(std::fstream& out, const std::string& type, const std::string& constellation, const std::string& local_time, const std::string& version)
+std::string get_local_time(int version)
+{
+    std::string line;
+    line += std::string("GNSS-SDR");
+    line += std::string(12, ' ');
+    std::string username;
+#if ANDROID
+    username = "ANDROID USER";
+#else
+    std::array<char, 20> c_username{};
+    const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
+    if (nGet == 0)
+        {
+            username = c_username.data();
+        }
+    else
+        {
+            username = "UNKNOWN USER";
+        }
+#endif
+
+    line += leftJustify(username, 20);
+    const boost::gregorian::date today = boost::gregorian::day_clock::local_day();
+
+    const boost::local_time::time_zone_ptr zone(new boost::local_time::posix_time_zone("UTC"));
+    const boost::local_time::local_date_time pt = boost::local_time::local_sec_clock::local_time(zone);
+    const tm pt_tm = boost::local_time::to_tm(pt);
+
+    std::stringstream strmHour;
+    const int32_t utc_hour = pt_tm.tm_hour;
+    if (utc_hour < 10)
+        {
+            strmHour << "0";  //  two digits for hours
+        }
+    strmHour << utc_hour;
+
+    std::stringstream strmMin;
+    const int32_t utc_minute = pt_tm.tm_min;
+    if (utc_minute < 10)
+        {
+            strmMin << "0";  //  two digits for minutes
+        }
+    strmMin << utc_minute;
+
+    if (version == 2)
+        {
+            const int32_t day = pt_tm.tm_mday;
+            line += rightJustify(std::to_string(day), 2);
+            line += std::string("-");
+
+            const std::map<int32_t, std::string> months = {
+                {0, "JAN"}, {1, "FEB"}, {2, "MAR"}, {3, "APR"}, {4, "MAY"}, {5, "JUN"},
+                {6, "JUL"}, {7, "AUG"}, {8, "SEP"}, {9, "OCT"}, {10, "NOV"}, {11, "DEC"}};
+
+            line += months.at(pt_tm.tm_mon);
+            line += std::string("-");
+            line += std::to_string(pt_tm.tm_year - 100);
+            line += std::string(1, ' ');
+            line += strmHour.str();
+            line += std::string(":");
+            line += strmMin.str();
+            line += std::string(5, ' ');
+        }
+
+    if (version == 3)
+        {
+            line += boost::gregorian::to_iso_string(today);
+            line += std::string(1, ' ');
+            line += strmHour.str();
+            line += strmMin.str();
+
+            std::stringstream strm2;
+            const int32_t utc_seconds = pt_tm.tm_sec;
+            if (utc_seconds < 10)
+                {
+                    strm2 << "0";  //  two digits for seconds
+                }
+            strm2 << utc_seconds;
+            line += strm2.str();
+            line += std::string(1, ' ');
+            line += std::string("UTC");
+            line += std::string(1, ' ');
+        }
+    return line;
+}
+
+
+void add_navigation_header_start(std::fstream& out, const std::string& type, const std::string& constellation, int version, const std::string& version_str)
 {
     std::string line;
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += version;
+    line += version_str;
     line += std::string(11, ' ');
-    line += std::string("N: GNSS NAV DATA");
-    line += std::string(4, ' ');
-    line += type;
-    line += std::string(20 - type.size(), ' ');
+
+    if (version == 2)
+        {
+            if (constellation == "GPS")
+                {
+                    line += std::string("N: GPS NAV DATA");
+                    line += std::string(25, ' ');
+                }
+            else
+                {
+                    line += std::string("G: GLONASS NAV DATA");
+                    line += std::string(21, ' ');
+                }
+        }
+    else
+        {
+            line += std::string("N: GNSS NAV DATA");
+            line += std::string(4, ' ');
+            line += type;
+            line += std::string(20 - type.size(), ' ');
+        }
+
     line += std::string("RINEX VERSION / TYPE");
     lengthCheck(line);
     out << line << '\n';
 
     // -------- Line 2
-    add_run_by_line(out, local_time);
+    add_run_by_line(out, get_local_time(version));
 
     // -------- Line COMMENT
     add_generated_by_gnss_sdr(out, constellation, "NAVIGATION MESSAGE");
@@ -1075,6 +1180,63 @@ std::string get_iono_line(const std::string& identifier, double value0, double v
     line += rightJustify(doub2for(value3, 10, 2), 12);
     line += std::string(7, ' ');
     line += leftJustify("IONOSPHERIC CORR", 20);
+    lengthCheck(line);
+
+    return line;
+}
+
+
+std::string get_iono_line_v2(const std::string& identifier, double value0, double value1, double value2, double value3)
+{
+    std::string line;
+
+    line += std::string(2, ' ');
+    line += rightJustify(doub2for(value0, 10, 2), 12);
+    line += rightJustify(doub2for(value1, 10, 2), 12);
+    line += rightJustify(doub2for(value2, 10, 2), 12);
+    line += rightJustify(doub2for(value3, 10, 2), 12);
+    line += std::string(10, ' ');
+    line += leftJustify(identifier, 20);
+    lengthCheck(line);
+
+    return line;
+}
+
+
+std::string get_delta_utc_line_v2(const Gps_Utc_Model& utc_model, const Gps_Ephemeris& eph, bool pre_2009_file)
+{
+    std::string line;
+
+    line += std::string(3, ' ');
+    line += rightJustify(doub2for(utc_model.A0, 18, 2), 19);
+    line += rightJustify(doub2for(utc_model.A1, 18, 2), 19);
+    line += rightJustify(std::to_string(utc_model.tot), 9);
+
+    if (pre_2009_file == false && eph.WN < 512)
+        {
+            if (utc_model.WN_T == 0)
+                {
+                    line += rightJustify(std::to_string(eph.WN + 2048), 9);  // valid from 2019 to 2029
+                }
+            else
+                {
+                    line += rightJustify(std::to_string(utc_model.WN_T + (eph.WN / 256) * 256 + 1024), 9);  // valid from 2019 to 2029
+                }
+        }
+    else
+        {
+            if (utc_model.WN_T == 0)
+                {
+                    line += rightJustify(std::to_string(eph.WN + 1024), 9);  // valid from 2019 to 2029
+                }
+            else
+                {
+                    line += rightJustify(std::to_string(utc_model.WN_T + (eph.WN / 256) * 256 + 1024), 9);  // valid from 2009 to 2019
+                }
+        }
+
+    line += std::string(1, ' ');
+    line += leftJustify("DELTA-UTC: A0,A1,T,W", 20);
     lengthCheck(line);
 
     return line;
@@ -1245,12 +1407,36 @@ std::string get_glonass_to_gps_time_corr_line(const Glonass_Gnav_Utc_Model& utc_
 }
 
 
+std::string get_glonass_time_corr_line_v2(const Glonass_Gnav_Utc_Model& utc_model, const Glonass_Gnav_Ephemeris& eph)
+{
+    // Set reference time and its clock corrections
+    const boost::posix_time::ptime p_utc_ref_time = eph.glot_to_utc(eph.d_t_b, 0.0);
+    const std::string timestring = boost::posix_time::to_iso_string(p_utc_ref_time);
+    const std::string year(timestring, 0, 4);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+
+    std::string line;
+    line += rightJustify(year, 6);
+    line += rightJustify(month, 6);
+    line += rightJustify(day, 6);
+    line += std::string(3, ' ');
+    line += rightJustify(doub2for(utc_model.d_tau_c, 19, 2), 19);
+    line += std::string(20, ' ');
+    line += leftJustify("CORR TO SYSTEM TIME", 20);
+    lengthCheck(line);
+
+    return line;
+}
+
+
 std::string get_leap_second_line_v2(const Gps_Utc_Model& utc_model)
 {
     std::string line;
     line += rightJustify(std::to_string(utc_model.DeltaT_LS), 6);
     line += std::string(54, ' ');
     line += leftJustify("LEAP SECONDS", 20);
+    lengthCheck(line);
     return line;
 }
 
@@ -2433,687 +2619,208 @@ void Rinex_Printer::log_rinex_nav_bds_dnav(const std::map<int32_t, Beidou_Dnav_E
 }
 
 
-std::string Rinex_Printer::getLocalTime() const
+void Rinex_Printer::rinex_nav_header(std::fstream& out,
+    const std::vector<std::string>& iono_lines,
+    const std::vector<std::string>& time_corr_lines,
+    const std::string& leap_second_line) const
 {
-    std::string line;
-    line += std::string("GNSS-SDR");
-    line += std::string(12, ' ');
-    std::string username;
-#if ANDROID
-    username = "ANDROID USER";
-#else
-    std::array<char, 20> c_username{};
-    const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
-    if (nGet == 0)
+    std::string type;
+    std::string constellation;
+
+    if (d_flags.only_gps)
         {
-            username = c_username.data();
+            type = "G: GPS";
+            constellation = "GPS";
+        }
+    else if (d_flags.only_galileo)
+        {
+            type = "E: GALILEO";
+            constellation = "GALILEO";
+        }
+    else if (d_flags.only_glonass)
+        {
+            type = "R: GLONASS";
+            constellation = "GLONASS";
+        }
+    else if (d_flags.only_beidou)
+        {
+            type = "C: BEIDOU";
+            constellation = "BEIDOU";
         }
     else
         {
-            username = "UNKNOWN USER";
+            type = "M: MIXED";
+            constellation = "GNSS";
         }
-#endif
 
-    line += leftJustify(username, 20);
-    const boost::gregorian::date today = boost::gregorian::day_clock::local_day();
+    add_navigation_header_start(out, type, constellation, d_version, d_stringVersion);
 
-    const boost::local_time::time_zone_ptr zone(new boost::local_time::posix_time_zone("UTC"));
-    const boost::local_time::local_date_time pt = boost::local_time::local_sec_clock::local_time(zone);
-    const tm pt_tm = boost::local_time::to_tm(pt);
-
-    std::stringstream strmHour;
-    const int32_t utc_hour = pt_tm.tm_hour;
-    if (utc_hour < 10)
+    for (const auto& iono_line : iono_lines)
         {
-            strmHour << "0";  //  two digits for hours
+            out << iono_line << '\n';
         }
-    strmHour << utc_hour;
 
-    std::stringstream strmMin;
-    const int32_t utc_minute = pt_tm.tm_min;
-    if (utc_minute < 10)
+    for (const auto& time_corr_line : time_corr_lines)
         {
-            strmMin << "0";  //  two digits for minutes
+            out << time_corr_line << '\n';
         }
-    strmMin << utc_minute;
 
-    if (d_version == 2)
+    if (!leap_second_line.empty())
         {
-            const int32_t day = pt_tm.tm_mday;
-            line += rightJustify(std::to_string(day), 2);
-            line += std::string("-");
-
-            std::map<int32_t, std::string> months;
-            months[0] = "JAN";
-            months[1] = "FEB";
-            months[2] = "MAR";
-            months[3] = "APR";
-            months[4] = "MAY";
-            months[5] = "JUN";
-            months[6] = "JUL";
-            months[7] = "AUG";
-            months[8] = "SEP";
-            months[9] = "OCT";
-            months[10] = "NOV";
-            months[11] = "DEC";
-
-            line += months[pt_tm.tm_mon];
-            line += std::string("-");
-            line += std::to_string(pt_tm.tm_year - 100);
-            line += std::string(1, ' ');
-            line += strmHour.str();
-            line += std::string(":");
-            line += strmMin.str();
-            line += std::string(5, ' ');
+            out << leap_second_line << '\n';
         }
 
-    if (d_version == 3)
-        {
-            line += boost::gregorian::to_iso_string(today);
-            line += std::string(1, ' ');
-            line += strmHour.str();
-            line += strmMin.str();
-
-            std::stringstream strm2;
-            const int32_t utc_seconds = pt_tm.tm_sec;
-            if (utc_seconds < 10)
-                {
-                    strm2 << "0";  //  two digits for seconds
-                }
-            strm2 << utc_seconds;
-            line += strm2.str();
-            line += std::string(1, ' ');
-            line += std::string("UTC");
-            line += std::string(1, ' ');
-        }
-    return line;
+    out << get_end_of_header_line() << '\n';
 }
 
 
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model, const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    add_navigation_header_start(out, "R: GLONASS", "GLONASS", Rinex_Printer::getLocalTime(), d_stringVersion);
+    std::vector<std::string> time_corr_lines;
 
-    std::string line;
-
-    // -------- Line system time correction
-    if (d_version == 3)
-        {
-            out << get_glonass_time_corr_line(glonass_gnav_utc_model) << '\n';
-
-            // -------- Line system time correction 2
-            out << get_glonass_to_gps_time_corr_line(glonass_gnav_utc_model) << '\n';
-        }
     if (d_version == 2)
         {
-            // Set reference time and its clock corrections
-            const boost::posix_time::ptime p_utc_ref_time = glonass_gnav_eph.glot_to_utc(glonass_gnav_eph.d_t_b, 0.0);
-            const std::string timestring = boost::posix_time::to_iso_string(p_utc_ref_time);
-            const std::string year(timestring, 0, 4);
-            const std::string month(timestring, 4, 2);
-            const std::string day(timestring, 6, 2);
-
-            line.clear();
-            line += rightJustify(year, 6);
-            line += rightJustify(month, 6);
-            line += rightJustify(day, 6);
-            line += std::string(3, ' ');
-            line += rightJustify(doub2for(glonass_gnav_utc_model.d_tau_c, 19, 2), 19);
-            line += std::string(20, ' ');
-            line += leftJustify("CORR TO SYSTEM TIME", 20);
-            lengthCheck(line);
-            out << line << '\n';
+            time_corr_lines = {get_glonass_time_corr_line_v2(glonass_gnav_utc_model, glonass_gnav_eph)};
+        }
+    else
+        {
+            time_corr_lines = {get_glonass_time_corr_line(glonass_gnav_utc_model), get_glonass_to_gps_time_corr_line(glonass_gnav_utc_model)};
         }
 
-    // -------- End of Header
-    out << get_end_of_header_line() << '\n';
+    rinex_nav_header(out, {}, time_corr_lines, {});
 }
 
 
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Gps_Ephemeris& eph, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
 {
-    add_navigation_header_start(out, "M: MIXED", "GNSS", Rinex_Printer::getLocalTime(), d_stringVersion);
-
-    // -------- Line ionospheric info 1
-    out << get_gps_iono_alpha_line(gps_iono) << '\n';
-
-    // -------- Line system time correction 1
-    out << get_glonass_time_corr_line(glonass_gnav_utc_model) << '\n';
-
-    // -------- Line system time correction 2
-    out << get_glonass_to_gps_time_corr_line(glonass_gnav_utc_model) << '\n';
-
-    // -------- Line system time correction 3
-    out << get_gps_time_corr_line(gps_utc_model, eph, d_pre_2009_file) << '\n';
-
-    // -------- Line 6 leap seconds
-    out << get_leap_second_line(gps_utc_model) << '\n';
-
-    // -------- End of Header
-    out << get_end_of_header_line() << '\n';
+    const std::vector<std::string> iono_lines = {get_gps_iono_alpha_line(gps_iono), get_gps_iono_beta_line(gps_iono)};
+    const std::vector<std::string> time_corr_lines = {get_glonass_time_corr_line(glonass_gnav_utc_model), get_glonass_to_gps_time_corr_line(glonass_gnav_utc_model), get_gps_time_corr_line(gps_utc_model, eph, d_pre_2009_file)};
+    const auto leap_second_line = get_leap_second_line(gps_utc_model);
+    rinex_nav_header(out, iono_lines, time_corr_lines, leap_second_line);
 }
 
 
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& gps_iono, const Gps_CNAV_Utc_Model& gps_utc_model, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
 {
-    add_navigation_header_start(out, "M: MIXED", "GNSS", Rinex_Printer::getLocalTime(), d_stringVersion);
-
-    // -------- Line ionospheric info 1
-    out << get_gps_iono_alpha_line(gps_iono) << '\n';
-
-    // -------- Line system time correction 1
-    out << get_glonass_time_corr_line(glonass_gnav_utc_model) << '\n';
-
-    // -------- Line system time correction 2
-    out << get_glonass_to_gps_time_corr_line(glonass_gnav_utc_model) << '\n';
-
-    // -------- Line system time correction 3
-    out << get_gps_time_corr_line(gps_utc_model) << '\n';
-
-    // -------- Line 6 leap seconds
-    out << get_leap_second_line(gps_utc_model) << '\n';
-
-    // -------- End of Header
-    out << get_end_of_header_line() << '\n';
+    const std::vector<std::string> iono_lines = {get_gps_iono_alpha_line(gps_iono), get_gps_iono_beta_line(gps_iono)};
+    const std::vector<std::string> time_corr_lines = {get_glonass_time_corr_line(glonass_gnav_utc_model), get_glonass_to_gps_time_corr_line(glonass_gnav_utc_model), get_gps_time_corr_line(gps_utc_model)};
+    const auto leap_second_line = get_leap_second_line(gps_utc_model);
+    rinex_nav_header(out, iono_lines, time_corr_lines, leap_second_line);
 }
 
 
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model) const
 {
-    add_navigation_header_start(out, "M: MIXED", "GNSS", Rinex_Printer::getLocalTime(), d_stringVersion);
-
-    // -------- Line ionospheric info 1
-    out << get_galileo_iono_alpha_line(galileo_iono) << '\n';
-
-    // -------- Line system time correction
-    out << get_galileo_time_corr_line(galileo_utc_model) << '\n';
-
-    // -------- Line system time correction 1
-    out << get_glonass_time_corr_line(glonass_gnav_utc_model) << '\n';
-
-    // -------- Line 6 leap seconds
-    out << get_leap_second_line(galileo_utc_model) << '\n';
-
-    // -------- End of Header
-    out << get_end_of_header_line() << '\n';
+    const std::vector<std::string> iono_lines = {get_galileo_iono_alpha_line(galileo_iono)};
+    const std::vector<std::string> time_corr_lines = {get_galileo_time_corr_line(galileo_utc_model), get_glonass_time_corr_line(glonass_gnav_utc_model)};
+    const auto leap_second_line = get_leap_second_line(galileo_utc_model);
+    rinex_nav_header(out, iono_lines, time_corr_lines, leap_second_line);
 }
 
 
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& iono, const Galileo_Utc_Model& utc_model) const
 {
-    add_navigation_header_start(out, "E: GALILEO", "GALILEO", Rinex_Printer::getLocalTime(), d_stringVersion);
-
-    // -------- Line ionospheric info 1
-    out << get_galileo_iono_alpha_line(iono) << '\n';
-
-    // -------- Line system time correction
-    out << get_galileo_time_corr_line(utc_model) << '\n';
-
-    // -------- Line system time correction 2
-    out << get_gps_to_galileo_time_corr_line(utc_model) << '\n';
-
-    // -------- Line 6 leap seconds
-    out << get_leap_second_line(utc_model) << '\n';
-
-    // -------- End of Header
-    out << get_end_of_header_line() << '\n';
+    const std::vector<std::string> iono_lines = {get_galileo_iono_alpha_line(iono)};
+    const std::vector<std::string> time_corr_lines = {get_galileo_time_corr_line(utc_model), get_gps_to_galileo_time_corr_line(utc_model)};
+    const auto leap_second_line = get_leap_second_line(utc_model);
+    rinex_nav_header(out, iono_lines, time_corr_lines, leap_second_line);
 }
 
 
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& iono, const Gps_CNAV_Utc_Model& utc_model) const
 {
-    add_navigation_header_start(out, "G: GPS", "GPS", Rinex_Printer::getLocalTime(), d_stringVersion);
-
-    // -------- Line ionospheric info 1
-    out << get_gps_iono_alpha_line(iono) << '\n';
-
-    // -------- Line ionospheric info 2
-    out << get_gps_iono_beta_line(iono) << '\n';
-
-    // -------- Line 5 system time correction
-    out << get_gps_time_corr_line(utc_model) << '\n';
-
-    // -------- Line 6 leap seconds
-    out << get_leap_second_line(utc_model) << '\n';
-
-    // -------- End of Header
-    out << get_end_of_header_line() << '\n';
+    const std::vector<std::string> iono_lines = {get_gps_iono_alpha_line(iono), get_gps_iono_beta_line(iono)};
+    const std::vector<std::string> time_corr_lines = {get_gps_time_corr_line(utc_model)};
+    const auto leap_second_line = get_leap_second_line(utc_model);
+    rinex_nav_header(out, iono_lines, time_corr_lines, leap_second_line);
 }
 
 
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& iono, const Gps_CNAV_Utc_Model& utc_model, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model) const
 {
-    add_navigation_header_start(out, "M: MIXED", "GNSS", Rinex_Printer::getLocalTime(), d_stringVersion);
-
-    // -------- Line ionospheric info 1
-    out << get_galileo_iono_alpha_line(galileo_iono) << '\n';
-
-    // -------- Line ionospheric info 2
-    out << get_gps_iono_alpha_line(iono) << '\n';
-
-    // -------- Line ionospheric info 3
-    out << get_gps_iono_beta_line(iono) << '\n';
-
-    // -------- Line system time correction
-    out << get_galileo_time_corr_line(galileo_utc_model) << '\n';
-
-    // -------- Line system time correction 2
-    out << get_gps_time_corr_line(utc_model) << '\n';
-
-    // -------- Line 6 leap seconds
-    out << get_leap_second_line(utc_model) << '\n';
-
-    // -------- End of Header
-    out << get_end_of_header_line() << '\n';
+    const std::vector<std::string> iono_lines = {get_galileo_iono_alpha_line(galileo_iono), get_gps_iono_alpha_line(iono), get_gps_iono_beta_line(iono)};
+    const std::vector<std::string> time_corr_lines = {get_galileo_time_corr_line(galileo_utc_model), get_gps_time_corr_line(utc_model)};
+    const auto leap_second_line = get_leap_second_line(utc_model);
+    rinex_nav_header(out, iono_lines, time_corr_lines, leap_second_line);
 }
 
 
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, const Gps_Utc_Model& utc_model, const Gps_Ephemeris& eph) const
 {
-    std::string line;
-
-    // -------- Line 1
-    line = std::string(5, ' ');
-    line += d_stringVersion;
-    line += std::string(11, ' ');
+    std::vector<std::string> iono_lines;
+    std::vector<std::string> time_corr_lines;
+    std::string leap_second_line;
 
     if (d_version == 2)
         {
-            line += std::string("N: GPS NAV DATA");
-            line += std::string(25, ' ');
+            iono_lines = {
+                get_iono_line_v2("ION ALPHA", iono.alpha0, iono.alpha1, iono.alpha2, iono.alpha3),
+                get_iono_line_v2("ION BETA", iono.beta0, iono.beta1, iono.beta2, iono.beta3)};
+            time_corr_lines = {get_delta_utc_line_v2(utc_model, eph, d_pre_2009_file)};
+            leap_second_line = get_leap_second_line_v2(utc_model);
         }
-
-    if (d_version == 3)
+    else
         {
-            line += std::string("N: GNSS NAV DATA");
-            line += std::string(4, ' ');
-            // todo Add here other systems...
-            line += std::string("G: GPS");
-            line += std::string(14, ' ');
-            // ...
+            iono_lines = {get_gps_iono_alpha_line(iono), get_gps_iono_beta_line(iono)};
+            time_corr_lines = {get_gps_time_corr_line(utc_model, eph, d_pre_2009_file)};
+            leap_second_line = get_leap_second_line(utc_model);
         }
 
-    line += std::string("RINEX VERSION / TYPE");
-    lengthCheck(line);
-    out << line << '\n';
-
-    // -------- Line 2
-    add_run_by_line(out, Rinex_Printer::getLocalTime());
-
-    // -------- Line 3
-    add_generated_by_gnss_sdr(out, "GPS", "NAVIGATION MESSAGE");
-
-    // -------- Line COMMENT
-    add_gnss_sdr_version(out);
-
-    // -------- Line COMMENT
-    add_gnss_sdr_url(out);
-
-    // -------- Line ionospheric info 1
-    line.clear();
-    if (d_version == 2)
-        {
-            line += std::string(2, ' ');
-            line += rightJustify(doub2for(iono.alpha0, 10, 2), 12);
-            line += rightJustify(doub2for(iono.alpha1, 10, 2), 12);
-            line += rightJustify(doub2for(iono.alpha2, 10, 2), 12);
-            line += rightJustify(doub2for(iono.alpha3, 10, 2), 12);
-            line += std::string(10, ' ');
-            line += leftJustify("ION ALPHA", 20);
-            lengthCheck(line);
-            out << line << '\n';
-        }
-    if (d_version == 3)
-        {
-            out << get_gps_iono_alpha_line(iono) << '\n';
-        }
-
-    // -------- Line ionospheric info 2
-    line.clear();
-    if (d_version == 2)
-        {
-            line += std::string(2, ' ');
-            line += rightJustify(doub2for(iono.beta0, 10, 2), 12);
-            line += rightJustify(doub2for(iono.beta1, 10, 2), 12);
-            line += rightJustify(doub2for(iono.beta2, 10, 2), 12);
-            line += rightJustify(doub2for(iono.beta3, 10, 2), 12);
-            line += std::string(10, ' ');
-            line += leftJustify("ION BETA", 20);
-            lengthCheck(line);
-            out << line << '\n';
-        }
-
-    if (d_version == 3)
-        {
-            out << get_gps_iono_beta_line(iono) << '\n';
-        }
-
-    // -------- Line 5 system time correction
-    line.clear();
-    if (d_version == 2)
-        {
-            line += std::string(3, ' ');
-            line += rightJustify(doub2for(utc_model.A0, 18, 2), 19);
-            line += rightJustify(doub2for(utc_model.A1, 18, 2), 19);
-            line += rightJustify(std::to_string(utc_model.tot), 9);
-            if (d_pre_2009_file == false && eph.WN < 512)
-                {
-                    if (utc_model.WN_T == 0)
-                        {
-                            line += rightJustify(std::to_string(eph.WN + 2048), 9);  // valid from 2019 to 2029
-                        }
-                    else
-                        {
-                            line += rightJustify(std::to_string(utc_model.WN_T + (eph.WN / 256) * 256 + 1024), 9);  // valid from 2019 to 2029
-                        }
-                }
-            else
-                {
-                    if (utc_model.WN_T == 0)
-                        {
-                            line += rightJustify(std::to_string(eph.WN + 1024), 9);  // valid from 2019 to 2029
-                        }
-                    else
-                        {
-                            line += rightJustify(std::to_string(utc_model.WN_T + (eph.WN / 256) * 256 + 1024), 9);  // valid from 2009 to 2019
-                        }
-                }
-            line += std::string(1, ' ');
-            line += leftJustify("DELTA-UTC: A0,A1,T,W", 20);
-            lengthCheck(line);
-            out << line << '\n';
-        }
-
-    if (d_version == 3)
-        {
-            out << get_gps_time_corr_line(utc_model, eph, d_pre_2009_file) << '\n';
-        }
-
-    // -------- Line 6 leap seconds
-    // For leap second information, see https://endruntechnologies.com/support/leap-seconds
-    line.clear();
-    line += rightJustify(std::to_string(utc_model.DeltaT_LS), 6);
-    if (d_version == 2)
-        {
-            line += std::string(54, ' ');
-        }
-    if (d_version == 3)
-        {
-            line += rightJustify(std::to_string(utc_model.DeltaT_LSF), 6);
-            line += rightJustify(std::to_string(utc_model.WN_LSF), 6);
-            line += rightJustify(std::to_string(utc_model.DN), 6);
-            line += std::string(36, ' ');
-        }
-    line += leftJustify("LEAP SECONDS", 20);
-    lengthCheck(line);
-    out << line << '\n';
-
-    // -------- End of Header
-    out << get_end_of_header_line() << '\n';
+    rinex_nav_header(out, iono_lines, time_corr_lines, leap_second_line);
 }
 
 
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Gps_Ephemeris& eph, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model) const
 {
-    add_navigation_header_start(out, "M: MIXED", "GNSS", Rinex_Printer::getLocalTime(), d_stringVersion);
-
-    // -------- Line ionospheric info 1
-    out << get_galileo_iono_alpha_line(galileo_iono) << '\n';
-
-    // -------- Line ionospheric info 2
-    out << get_gps_iono_alpha_line(gps_iono) << '\n';
-
-    // -------- Line system time correction
-    out << get_galileo_time_corr_line(galileo_utc_model) << '\n';
-
-    // -------- Line system time correction 2
-    out << get_gps_to_galileo_time_corr_line(galileo_utc_model) << '\n';
-
-    // -------- Line system time correction 3
-    out << get_gps_time_corr_line(gps_utc_model, eph, d_pre_2009_file) << '\n';
-
-    // -------- Line 6 leap seconds
-    out << get_leap_second_line(gps_utc_model) << '\n';
-
-    // -------- End of Header
-    out << get_end_of_header_line() << '\n';
+    const std::vector<std::string> iono_lines = {get_galileo_iono_alpha_line(galileo_iono), get_gps_iono_alpha_line(gps_iono), get_gps_iono_beta_line(gps_iono)};
+    const std::vector<std::string> time_corr_lines = {get_galileo_time_corr_line(galileo_utc_model), get_gps_to_galileo_time_corr_line(galileo_utc_model), get_gps_time_corr_line(gps_utc_model, eph, d_pre_2009_file)};
+    const auto leap_second_line = get_leap_second_line(gps_utc_model);
+    rinex_nav_header(out, iono_lines, time_corr_lines, leap_second_line);
 }
 
 
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Beidou_Dnav_Iono& iono, const Beidou_Dnav_Utc_Model& utc_model) const
 {
-    add_navigation_header_start(out, "C: BDS", "BDS", Rinex_Printer::getLocalTime(), d_stringVersion);  // TODO version handling
-
-    // -------- Line ionospheric info 1, only version 3 supported
-    out << get_beidou_iono_alpha_line(iono) << '\n';
-
-    // -------- Line ionospheric info 2
-    out << get_beidou_iono_beta_line(iono) << '\n';
-
-    // -------- Line 5 system time correction
-    out << get_beidou_time_corr_line(utc_model) << '\n';
-
-    // -------- Line 6 leap seconds
-    out << get_leap_second_line(utc_model) << '\n';
-
-    // -------- End of Header
-    out << get_end_of_header_line() << '\n';
+    const std::vector<std::string> iono_lines = {get_beidou_iono_alpha_line(iono), get_beidou_iono_beta_line(iono)};
+    const std::vector<std::string> time_corr_lines = {get_beidou_time_corr_line(utc_model)};
+    const auto leap_second_line = get_leap_second_line(utc_model);
+    rinex_nav_header(out, iono_lines, time_corr_lines, leap_second_line);
 }
 
 
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Gps_Ephemeris& gps_eph, const Beidou_Dnav_Iono& bds_dnav_iono, const Beidou_Dnav_Utc_Model& bds_dnav_utc_model) const
 {
-    add_navigation_header_start(out, "M: MIXED", "GNSS", Rinex_Printer::getLocalTime(), d_stringVersion);
-
-    // -------- Line ionospheric info 1, only version 3 supported
-    out << get_beidou_iono_alpha_line(bds_dnav_iono) << '\n';
-
-    // -------- Line ionospheric info 2
-    out << get_beidou_iono_beta_line(bds_dnav_iono) << '\n';
-
-    // -------- Line ionospheric info 2
-    out << get_gps_iono_alpha_line(gps_iono) << '\n';
-
-    // -------- Line 5 system time correction
-    out << get_beidou_time_corr_line(bds_dnav_utc_model) << '\n';
-
-    // -------- Line system time correction 3
-    out << get_gps_time_corr_line(gps_utc_model, gps_eph, d_pre_2009_file) << '\n';
-
-    // -------- Line 6 leap seconds
-    out << get_leap_second_line(gps_utc_model) << '\n';
-
-    // -------- End of Header
-    out << get_end_of_header_line() << '\n';
+    const std::vector<std::string> iono_lines = {get_beidou_iono_alpha_line(bds_dnav_iono), get_beidou_iono_beta_line(bds_dnav_iono), get_gps_iono_alpha_line(gps_iono), get_gps_iono_beta_line(gps_iono)};
+    const std::vector<std::string> time_corr_lines = {get_beidou_time_corr_line(bds_dnav_utc_model), get_gps_time_corr_line(gps_utc_model, gps_eph, d_pre_2009_file)};
+    const auto leap_second_line = get_leap_second_line(gps_utc_model);
+    rinex_nav_header(out, iono_lines, time_corr_lines, leap_second_line);
 }
 
 
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& gps_cnav_iono, const Gps_CNAV_Utc_Model& gps_cnav_utc_model, const Beidou_Dnav_Iono& bds_dnav_iono, const Beidou_Dnav_Utc_Model& bds_dnav_utc_model)
 {
-    add_navigation_header_start(out, "M: MIXED", "GNSS", Rinex_Printer::getLocalTime(), d_stringVersion);
-
-    // -------- Line ionospheric info 1, only version 3 supported
-    out << get_beidou_iono_alpha_line(bds_dnav_iono) << '\n';
-
-    // -------- Line ionospheric info 2
-    out << get_beidou_iono_beta_line(bds_dnav_iono) << '\n';
-
-    // -------- Line ionospheric info 1
-    out << get_gps_iono_alpha_line(gps_cnav_iono) << '\n';
-
-    // -------- Line 5 system time correction
-    out << get_beidou_time_corr_line(bds_dnav_utc_model) << '\n';
-
-    // -------- Line system time correction 3
-    out << get_gps_time_corr_line(gps_cnav_utc_model) << '\n';
-
-    // -------- Line 6 leap seconds
-    out << get_leap_second_line(gps_cnav_utc_model) << '\n';
-
-    // -------- End of Header
-    out << get_end_of_header_line() << '\n';
+    const std::vector<std::string> iono_lines = {get_beidou_iono_alpha_line(bds_dnav_iono), get_beidou_iono_beta_line(bds_dnav_iono), get_gps_iono_alpha_line(gps_cnav_iono), get_gps_iono_beta_line(gps_cnav_iono)};
+    const std::vector<std::string> time_corr_lines = {get_beidou_time_corr_line(bds_dnav_utc_model), get_gps_time_corr_line(gps_cnav_utc_model)};
+    const auto leap_second_line = get_leap_second_line(gps_cnav_utc_model);
+    rinex_nav_header(out, iono_lines, time_corr_lines, leap_second_line);
 }
 
 
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Glonass_Gnav_Utc_Model& glo_gnav_utc_model, const Beidou_Dnav_Iono& bds_dnav_iono, const Beidou_Dnav_Utc_Model& bds_dnav_utc_model) const
 {
-    add_navigation_header_start(out, "M: MIXED", "GNSS", Rinex_Printer::getLocalTime(), d_stringVersion);
-
-    // -------- Line ionospheric info 1, only version 3 supported
-    out << get_beidou_iono_alpha_line(bds_dnav_iono) << '\n';
-
-    // -------- Line ionospheric info 2
-    out << get_beidou_iono_beta_line(bds_dnav_iono) << '\n';
-
-    // -------- Line 5 system time correction
-    out << get_beidou_time_corr_line(bds_dnav_utc_model) << '\n';
-
-    // -------- Line system time correction 1
-    out << get_glonass_time_corr_line(glo_gnav_utc_model) << '\n';
-
-    // -------- Line 6 leap seconds
-    out << get_leap_second_line(bds_dnav_utc_model) << '\n';
-
-    // -------- End of Header
-    out << get_end_of_header_line() << '\n';
+    const std::vector<std::string> iono_lines = {get_beidou_iono_alpha_line(bds_dnav_iono), get_beidou_iono_beta_line(bds_dnav_iono)};
+    const std::vector<std::string> time_corr_lines = {get_beidou_time_corr_line(bds_dnav_utc_model), get_glonass_time_corr_line(glo_gnav_utc_model)};
+    const auto leap_second_line = get_leap_second_line(bds_dnav_utc_model);
+    rinex_nav_header(out, iono_lines, time_corr_lines, leap_second_line);
 }
 
 
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Beidou_Dnav_Iono& bds_dnav_iono, const Beidou_Dnav_Utc_Model& bds_dnav_utc_model) const
 {
-    add_navigation_header_start(out, "M: MIXED", "GNSS", Rinex_Printer::getLocalTime(), d_stringVersion);
-
-    // -------- Line ionospheric info 1
-    out << get_galileo_iono_alpha_line(galileo_iono) << '\n';
-
-    // -------- Line ionospheric info 1, only version 3 supported
-    out << get_beidou_iono_alpha_line(bds_dnav_iono) << '\n';
-
-    // -------- Line ionospheric info 2
-    out << get_beidou_iono_beta_line(bds_dnav_iono) << '\n';
-
-    // -------- Line system time correction
-    out << get_galileo_time_corr_line(galileo_utc_model) << '\n';
-
-    // -------- Line system time correction 1
-    // -------- Line 5 system time correction
-    out << get_beidou_time_corr_line(bds_dnav_utc_model) << '\n';
-
-    // -------- Line 6 leap seconds
-    out << get_leap_second_line(galileo_utc_model) << '\n';
-
-    // -------- End of Header
-    out << get_end_of_header_line() << '\n';
-}
-
-
-void Rinex_Printer::rinex_sbs_header(std::fstream& out) const
-{
-    std::string line;
-
-    // -------- Line 1
-    line.clear();
-    line = std::string(5, ' ');
-    line += std::string("2.10");
-    line += std::string(11, ' ');
-    line += leftJustify("B SBAS DATA", 20);
-    line += std::string(20, ' ');
-    line += std::string("RINEX VERSION / TYPE");
-
-    lengthCheck(line);
-    out << line << '\n';
-
-    // -------- Line 2
-    line.clear();
-    line += leftJustify("GNSS-SDR", 20);
-    std::string username;
-#if ANDROID
-    username = "ANDROID USER";
-#else
-    std::array<char, 20> c_username{};
-    const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
-    if (nGet == 0)
-        {
-            username = c_username.data();
-        }
-    else
-        {
-            username = "UNKNOWN USER";
-        }
-#endif
-    line += leftJustify(username, 20);
-    // Date of file creation (dd-mmm-yy hhmm)
-    const boost::local_time::time_zone_ptr zone(new boost::local_time::posix_time_zone("UTC"));
-    const boost::local_time::local_date_time pt = boost::local_time::local_sec_clock::local_time(zone);
-    const tm pt_tm = boost::local_time::to_tm(pt);
-    std::stringstream strYear;
-    int32_t utc_year = pt.date().year();
-    utc_year -= 2000;  //  two digits for year
-    strYear << utc_year;
-    std::stringstream strMonth;
-    int32_t utc_month = pt.date().month().as_number();
-    if (utc_month < 10)
-        {
-            strMonth << "0";  //  two digits for months
-        }
-    strMonth << utc_month;
-    std::stringstream strmDay;
-    int32_t utc_day = pt.date().day().as_number();
-    if (utc_day < 10)
-        {
-            strmDay << "0";  //  two digits for days
-        }
-    strmDay << utc_day;
-    std::stringstream strmHour;
-    int32_t utc_hour = pt_tm.tm_hour;
-    if (utc_hour < 10)
-        {
-            strmHour << "0";  //  two digits for hours
-        }
-    strmHour << utc_hour;
-    std::stringstream strmMin;
-    int32_t utc_minute = pt_tm.tm_min;
-    if (utc_minute < 10)
-        {
-            strmMin << "0";  //  two digits for minutes
-        }
-    strmMin << utc_minute;
-    std::string time_str;
-    time_str += strmDay.str();
-    time_str += "-";
-    time_str += strMonth.str();
-    time_str += "-";
-    time_str += strYear.str();
-    time_str += " ";
-    time_str += strmHour.str();
-    time_str += strmMin.str();
-    line += leftJustify(time_str, 20);
-    line += leftJustify("PGM / RUN BY / DATE", 20);
-    lengthCheck(line);
-    out << line << '\n';
-
-    // -------- Line 3
-    line.clear();
-    line += std::string(60, ' ');
-    line += leftJustify("REC INDEX/TYPE/VERS", 20);
-    lengthCheck(line);
-    out << line << '\n';
-
-    // -------- Line COMMENT 1
-    line.clear();
-    line += leftJustify("BROADCAST DATA FILE FOR GEO SV, GENERATED BY GNSS-SDR", 60);
-    line += leftJustify("COMMENT", 20);
-    lengthCheck(line);
-    out << line << '\n';
-
-    // -------- Line COMMENT
-    add_gnss_sdr_version(out);
-
-    // -------- Line COMMENT 2
-    add_gnss_sdr_url(out);
-
-    // -------- End of Header
-    out << get_end_of_header_line() << '\n';
+    const std::vector<std::string> iono_lines = {get_galileo_iono_alpha_line(galileo_iono), get_beidou_iono_alpha_line(bds_dnav_iono), get_beidou_iono_beta_line(bds_dnav_iono)};
+    const std::vector<std::string> time_corr_lines = {get_galileo_time_corr_line(galileo_utc_model), get_beidou_time_corr_line(bds_dnav_utc_model)};
+    const auto leap_second_line = get_leap_second_line(galileo_utc_model);
+    rinex_nav_header(out, iono_lines, time_corr_lines, leap_second_line);
 }
 
 
@@ -3158,46 +2865,9 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Utc_Model& ut
         }
     else if (d_version == 2)
         {
-            std::string alpha_line;
-            alpha_line += std::string(2, ' ');
-            alpha_line += rightJustify(doub2for(iono.alpha0, 10, 2), 12);
-            alpha_line += rightJustify(doub2for(iono.alpha1, 10, 2), 12);
-            alpha_line += rightJustify(doub2for(iono.alpha2, 10, 2), 12);
-            alpha_line += rightJustify(doub2for(iono.alpha3, 10, 2), 12);
-            alpha_line += std::string(10, ' ');
-            alpha_line += leftJustify("ION ALPHA", 20);
-
-            std::string beta_line;
-            beta_line += std::string(2, ' ');
-            beta_line += rightJustify(doub2for(iono.beta0, 10, 2), 12);
-            beta_line += rightJustify(doub2for(iono.beta1, 10, 2), 12);
-            beta_line += rightJustify(doub2for(iono.beta2, 10, 2), 12);
-            beta_line += rightJustify(doub2for(iono.beta3, 10, 2), 12);
-            beta_line += std::string(10, ' ');
-            beta_line += leftJustify("ION BETA", 20);
-
-            std::string delta_utc_line;
-            delta_utc_line += std::string(3, ' ');
-            delta_utc_line += rightJustify(doub2for(utc_model.A0, 18, 2), 19);
-            delta_utc_line += rightJustify(doub2for(utc_model.A1, 18, 2), 19);
-            delta_utc_line += rightJustify(std::to_string(utc_model.tot), 9);
-            if (d_pre_2009_file == false)
-                {
-                    if (eph.WN < 512)
-                        {
-                            delta_utc_line += rightJustify(std::to_string(utc_model.WN_T + (eph.WN / 256) * 256 + 2048), 9);  // valid from 2019 to 2029
-                        }
-                    else
-                        {
-                            delta_utc_line += rightJustify(std::to_string(utc_model.WN_T + (eph.WN / 256) * 256 + 1024), 9);  // valid from 2009 to 2019
-                        }
-                }
-            else
-                {
-                    delta_utc_line += rightJustify(std::to_string(utc_model.WN_T + (eph.WN / 256) * 256), 9);
-                }
-            delta_utc_line += std::string(1, ' ');
-            delta_utc_line += leftJustify("DELTA-UTC: A0,A1,T,W", 20);
+            std::string alpha_line = get_iono_line_v2("ION ALPHA", iono.alpha0, iono.alpha1, iono.alpha2, iono.alpha3);
+            std::string beta_line = get_iono_line_v2("ION BETA", iono.beta0, iono.beta1, iono.beta2, iono.beta3);
+            std::string delta_utc_line = get_delta_utc_line_v2(utc_model, eph, d_pre_2009_file);
 
             std::string leap_sec_line;
             leap_sec_line += rightJustify(std::to_string(utc_model.DeltaT_LS), 6);
@@ -3761,7 +3431,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out,
             header_constellation += ")";
         }
 
-    add_observation_header_start(out, type, header_constellation, Rinex_Printer::getLocalTime(), d_stringVersion, constellation_legend);
+    add_observation_header_start(out, type, header_constellation, get_local_time(d_version), d_stringVersion, constellation_legend);
 
     if (d_version == 2)
         {
@@ -3919,89 +3589,6 @@ void Rinex_Printer::to_date_time(int32_t gps_week, int32_t gps_tow, int& year, i
     minute = remaining_secs / 60;
     second = remaining_secs % 60;
 }
-
-
-// void Rinex_Printer::log_rinex_sbs(std::fstream& out, const Sbas_Raw_Msg& sbs_message)
-// {
-//    // line 1: PRN / EPOCH / RCVR
-//    std::stringstream line1;
-//
-//    // SBAS PRN
-//    line1 << sbs_message.get_prn();
-//    line1 << " ";
-//
-//    // gps time of reception
-//    int32_t gps_week;
-//    double gps_sec;
-//    if(sbs_message.get_rx_time_obj().get_gps_time(gps_week, gps_sec))
-//        {
-//            int32_t year;
-//            int32_t month;
-//            int32_t day;
-//            int32_t hour;
-//            int32_t minute;
-//            int32_t second;
-//
-//            double gps_sec_one_digit_precicion = round(gps_sec *10)/10; // to prevent rounding towards 60.0sec in the stream output
-//            int32_t gps_tow = trunc(gps_sec_one_digit_precicion);
-//            double sub_sec = gps_sec_one_digit_precicion - double(gps_tow);
-//
-//            to_date_time(gps_week, gps_tow, year, month, day, hour, minute, second);
-//            line1 << asFixWidthString(year, 2, '0') <<  " " << asFixWidthString(month, 2, '0') <<  " " << asFixWidthString(day, 2, '0') <<  " " << asFixWidthString(hour, 2, '0') <<  " " << asFixWidthString(minute, 2, '0') <<  " " << rightJustify(asString(double(second)+sub_sec,1),4,' ');
-//        }
-//    else
-//        {
-//            line1 << std::string(19, ' ');
-//        }
-//    line1 << "  ";
-//
-//    // band
-//    line1 << "L1";
-//    line1 << "   ";
-//
-//    // Length of data message (bytes)
-//    line1 <<  asFixWidthString(sbs_message.get_msg().size(), 3, ' ');
-//    line1 << "   ";
-//    // File-internal receiver index
-//    line1 << "  0";
-//    line1 << "   ";
-//    // Transmission System Identifier
-//    line1 << "SBA";
-//    line1 << std::string(35, ' ');
-//    lengthCheck(line1.str());
-//    out << line1.str() << '\n';
-//
-//    // DATA RECORD - 1
-//    std::stringstream line2;
-//    line2 << " ";
-//    // Message frame identifier
-//    if (sbs_message.get_msg_type() < 10) line2 << " ";
-//    line2 << sbs_message.get_msg_type();
-//    line2 << std::string(4, ' ');
-//    // First 18 bytes of message (hex)
-//    std::vector<unsigned char> msg = sbs_message.get_msg();
-//    for (size_t i = 0; i < 18 && i <  msg.size(); ++i)
-//        {
-//            line2 << std::hex << std::setfill('0') << std::setw(2);
-//            line2 << int(msg[i]) << " ";
-//        }
-//    line2 << std::string(19, ' ');
-//    lengthCheck(line2.str());
-//    out << line2.str() << '\n';
-//
-//    // DATA RECORD - 2
-//    std::stringstream line3;
-//    line3 << std::string(7, ' ');
-//    // Remaining bytes of message (hex)
-//    for (size_t i = 18; i < 36 && i <  msg.size(); ++i)
-//        {
-//            line3 << std::hex << std::setfill('0') << std::setw(2);
-//            line3 << int(msg[i]) << " ";
-//        }
-//    line3 << std::string(31, ' ');
-//    lengthCheck(line3.str());
-//    out << line3.str() << '\n';
-// }
 
 
 boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Gps_Navigation_Message& nav_msg) const

@@ -175,9 +175,12 @@ private:
         double seconds);
 
     /*
-     * Generates the SBAS raw data header
+     * Generates the Navigation Data header
      */
-    void rinex_sbs_header(std::fstream& out) const;
+    void rinex_nav_header(std::fstream& out,
+        const std::vector<std::string>& iono_lines,
+        const std::vector<std::string>& time_corr_lines,
+        const std::string& leap_second_line) const;
 
     /*
      * Generates the GPS L1 C/A Navigation Data header
@@ -375,11 +378,6 @@ private:
         int& minute,
         int& second) const;
 
-    /*
-     * Writes raw SBAS messages into the RINEX file
-     */
-    // void log_rinex_sbs(std::fstream & out, const Sbas_Raw_Msg & sbs_message);
-
     void update_nav_header(std::fstream& out,
         const Gps_Utc_Model& utc_model,
         const Gps_Iono& gps_iono, const Gps_Ephemeris& eph) const;
@@ -429,11 +427,6 @@ private:
         const Beidou_Dnav_Iono& beidou_dnav_iono) const;
 
     void update_obs_header(std::fstream& out, const std::string& leap_second_line) const;
-
-    /*
-     * Generates the data for the PGM / RUN BY / DATE line
-     */
-    std::string getLocalTime() const;
 
     const std::map<std::string, std::string> observationType;  // PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH
     const std::map<std::string, std::string> observationCode;  // GNSS observation descriptors

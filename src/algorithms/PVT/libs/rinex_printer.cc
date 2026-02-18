@@ -2302,7 +2302,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                     time_corr_lines.emplace_back(get_galileo_time_corr_line(pvt_solver->galileo_utc_model));
                     time_corr_lines.emplace_back(get_gps_to_galileo_time_corr_line(pvt_solver->galileo_utc_model));
 
-                    if (leap_second_line.empty())
+                    if (system_time_str == "GAL")
                         {
                             leap_second_line = get_leap_second_line(pvt_solver->galileo_utc_model);
                         }
@@ -2335,7 +2335,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                     iono_lines.emplace_back(get_beidou_iono_beta_line(pvt_solver->beidou_dnav_iono));
                     time_corr_lines.emplace_back(get_beidou_time_corr_line(pvt_solver->beidou_dnav_utc_model));
 
-                    if (leap_second_line.empty())
+                    if (system_time_str == "BDS")
                         {
                             leap_second_line = get_leap_second_line(pvt_solver->beidou_dnav_utc_model);
                         }
@@ -2417,7 +2417,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                             nav_header_info.emplace_back("GPGA", "TIME SYSTEM CORR", get_gps_to_galileo_time_corr_line(pvt_solver->galileo_utc_model));
                             d_rinex_header_galileo_updated = true;
 
-                            if (!leap_second_line.empty())
+                            if (system_time_str == "GAL")
                                 {
                                     leap_second_line = get_leap_second_line(pvt_solver->galileo_utc_model);
                                 }
@@ -2438,7 +2438,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                             nav_header_info.emplace_back("BDUT", "TIME SYSTEM CORR", get_beidou_time_corr_line(pvt_solver->beidou_dnav_utc_model));
                             d_rinex_header_beidou_updated = true;
 
-                            if (!leap_second_line.empty())
+                            if (system_time_str == "BDS")
                                 {
                                     leap_second_line = get_leap_second_line(pvt_solver->beidou_dnav_utc_model);
                                 }

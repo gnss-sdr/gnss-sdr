@@ -2006,6 +2006,13 @@ struct NavHeaderInfo
     std::string prefix;
     std::string suffix;
     std::string new_line;
+
+    NavHeaderInfo() = default;
+
+    NavHeaderInfo(std::string p, std::string s, std::string nl)
+        : prefix(std::move(p)), suffix(std::move(s)), new_line(std::move(nl))
+    {
+    }
 };
 
 

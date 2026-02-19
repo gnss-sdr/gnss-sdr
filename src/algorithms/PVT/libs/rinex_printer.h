@@ -184,36 +184,6 @@ private:
         const std::string& leap_second_line) const;
 
     /*
-     * Writes data from the GPS L1 C/A navigation message into the RINEX file
-     */
-    void log_rinex_nav(std::fstream& out,
-        const std::map<int32_t, Gps_Ephemeris>& eph_map) const;
-
-    /*
-     * Writes data from the GPS L2 navigation message into the RINEX file
-     */
-    void log_rinex_nav(std::fstream& out,
-        const std::map<int32_t, Gps_CNAV_Ephemeris>& eph_map);
-
-    /*
-     * Writes data from the Galileo navigation message into the RINEX file
-     */
-    void log_rinex_nav(std::fstream& out,
-        const std::map<int32_t, Galileo_Ephemeris>& eph_map) const;
-
-    /*
-     * Writes data from the GLONASS GNAV navigation message into the RINEX file
-     */
-    void log_rinex_nav(std::fstream& out,
-        const std::map<int32_t, Glonass_Gnav_Ephemeris>& eph_map) const;
-
-    /*
-     * Writes data from the Beidou B1I navigation message into the RINEX file
-     */
-    void log_rinex_nav(std::fstream& out,
-        const std::map<int32_t, Beidou_Dnav_Ephemeris>& eph_map) const;
-
-    /*
      * Computes the BDS Time and returns a boost::posix_time::ptime object
      *  \details Function used to convert the observation time into BDT time which is used
      *  as the default time for RINEX files
@@ -263,54 +233,6 @@ private:
         int& minute,
         int& second) const;
 
-    void update_nav_header(std::fstream& out,
-        const Gps_Utc_Model& utc_model,
-        const Gps_Iono& gps_iono, const Gps_Ephemeris& eph) const;
-
-    void update_nav_header(std::fstream& out,
-        const Gps_CNAV_Utc_Model& utc_model,
-        const Gps_CNAV_Iono& iono) const;
-
-    void update_nav_header(std::fstream& out,
-        const Gps_Iono& gps_iono,
-        const Gps_Utc_Model& gps_utc_model,
-        const Gps_Ephemeris& eph,
-        const Galileo_Iono& galileo_iono,
-        const Galileo_Utc_Model& galileo_utc_model) const;
-
-    void update_nav_header(std::fstream& out,
-        const Gps_CNAV_Utc_Model& utc_model,
-        const Gps_CNAV_Iono& iono,
-        const Galileo_Iono& galileo_iono,
-        const Galileo_Utc_Model& galileo_utc_model) const;
-
-    void update_nav_header(std::fstream& out,
-        const Galileo_Iono& galileo_iono,
-        const Galileo_Utc_Model& utc_model) const;
-
-    void update_nav_header(std::fstream& out,
-        const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model) const;
-
-    void update_nav_header(std::fstream& out,
-        const Gps_Iono& gps_iono,
-        const Gps_Utc_Model& gps_utc,
-        const Gps_Ephemeris& eph,
-        const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model) const;
-
-    void update_nav_header(std::fstream& out,
-        const Gps_CNAV_Iono& gps_iono,
-        const Gps_CNAV_Utc_Model& gps_utc_model,
-        const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model) const;
-
-    void update_nav_header(std::fstream& out,
-        const Galileo_Iono& galileo_iono,
-        const Galileo_Utc_Model& galileo_utc_model,
-        const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model) const;
-
-    void update_nav_header(std::fstream& out,
-        const Beidou_Dnav_Utc_Model& utc_model,
-        const Beidou_Dnav_Iono& beidou_dnav_iono) const;
-
     void update_obs_header(std::fstream& out, const std::string& leap_second_line) const;
 
     const std::map<std::string, std::string> observationType;  // PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH
@@ -323,6 +245,10 @@ private:
 
     double d_fake_cnav_iode;
     bool d_rinex_header_updated;
+    bool d_rinex_header_gps_updated;
+    bool d_rinex_header_galileo_updated;
+    bool d_rinex_header_glonass_updated;
+    bool d_rinex_header_beidou_updated;
     bool d_rinex_header_written;
     const bool d_pre_2009_file;
 

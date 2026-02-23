@@ -18,6 +18,7 @@
 #ifndef GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
 #define GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
 
+#include "bit_synchronizer.h"
 #include "dll_pll_conf_fpga.h"
 #include "exponential_smoother.h"
 #include "gnss_block_interface.h"
@@ -113,10 +114,11 @@ private:
     void clear_tracking_vars();
     void save_correlation_results();
     void log_data();
+    void configure_bit_synchronizer();
     int32_t save_matfile() const;
 
     Dll_Pll_Conf_Fpga d_trk_parameters;
-
+    HistogramBitSynchronizer d_bit_sync;
     Exponential_Smoother d_cn0_smoother;
     Exponential_Smoother d_carrier_lock_test_smoother;
 
@@ -199,6 +201,7 @@ private:
     uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
     uint64_t d_sample_counter_next;
+    int64_t d_bit_sync_target_epoch{};
 
     float *d_prompt_data_shift;
     float d_rem_carr_phase_rad;
@@ -241,6 +244,8 @@ private:
     bool d_stop_tracking;
     bool d_sc_demodulate_enabled;
     bool d_Flag_PLL_180_deg_phase_locked;
+    bool d_use_histogram_bit_sync;
+    bool d_wait_for_bit_edge{false};
 };
 
 

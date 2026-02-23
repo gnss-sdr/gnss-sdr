@@ -379,8 +379,8 @@ int glonass_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                             if (!d_flag_frame_sync)
                                 {
                                     d_flag_frame_sync = true;
-                                    DLOG(INFO) << " Frame sync SAT " << this->d_satellite << " with preamble start at "
-                                               << d_symbol_history[0].Tracking_sample_counter << " [samples]";
+                                    LOG(INFO) << "Successful frame synchronization in channel " << d_channel << " for satellite " << this->d_satellite
+                                              << " at sample_counter=" << d_symbol_history[0].Tracking_sample_counter;
                                 }
                         }
                     else

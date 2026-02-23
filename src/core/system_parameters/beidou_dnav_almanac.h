@@ -38,7 +38,7 @@ public:
      */
     Beidou_Dnav_Almanac()
     {
-        this->System = 'B';
+        this->System = 'C';
     };
 
     int SV_health{};  //!< SV Health

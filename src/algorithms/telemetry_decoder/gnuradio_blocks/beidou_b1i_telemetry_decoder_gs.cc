@@ -529,7 +529,8 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                                     if (!d_flag_frame_sync)
                                         {
                                             d_flag_frame_sync = true;
-                                            DLOG(INFO) << "BeiDou DNAV frame sync found for SAT " << this->d_satellite;
+                                            LOG(INFO) << "Successful frame synchronization in channel " << d_channel << " for satellite " << this->d_satellite
+                                                      << " at sample_counter=" << d_sample_counter;
                                         }
                                 }
                             else

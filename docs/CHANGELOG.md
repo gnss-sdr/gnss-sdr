@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2011-2025 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+SPDX-FileCopyrightText: 2011-2026 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
 <!-- prettier-ignore-end -->
 
@@ -13,6 +13,21 @@ SPDX-FileCopyrightText: 2011-2025 Carles Fernandez-Prades <carles.fernandez@cttc
 All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+
+### Improvements in Availability:
+
+- Introduced a histogram-based navigation data bit synchronizer used by tracking
+  loops to robustly detect navigation-bit transitions in signals without
+  secondary code. Lock is declared when the histogram exhibits a clearly
+  dominant phase bin, verified using a configurable dominance ratio and
+  stability criterion. Once synchronized, the tracking loop can safely switch to
+  extended coherent integration, improving tracking sensitivity. New
+  configuration parameters are `Tracking_1C.bs_dominance_ratio` (ratio between
+  the count of the dominant histogram bin and the total number of detected
+  transition events, default: 0.6), `Tracking_1C.bs_stable_best_required`
+  (required number of consecutive evaluations with the same dominant histogram
+  bin, default: 3), and `Tracking_1C.bs_min_events_for_lock` (minimum number of
+  detected transition events before lock evaluation, default: 10).
 
 ### Improvements in Interoperability:
 
@@ -24,6 +39,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   LabSat 3 recordings and adding initial support for LabSat 4.
 - Improvements in Glonass L1/L2 C/A signal tracking and decoding of the GNAV
   message.
+- Added a cycle-slip detector, with events reported in internal logging and
+  RINEX observation files. This introduces a new field in `Gnss_Synchro` and in
+  the corresponding `.proto` definition.
+- Improved tracking of GPS L2C(M) signals.
 
 ### Improvements in Maintainability:
 
@@ -41,6 +60,12 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Refactored the internal handling of multi-signal configurations in the PVT
   block for improved maintainability and extensibility. Another excellent
   contribution by @MathieuFavreau.
+- Major refactoring of the RINEX printer, significantly improving
+  maintainability and correcting several bugs. The printer now consistently
+  populates all observable fields when multiple signals exist for the same
+  constellation, writing zeros for missing observables as needed to strictly
+  match the observables header format. Another excellent contribution by
+  @MathieuFavreau.
 - Integration of Glonass L1/l2 C/A signal tracking into the main tracking
   engine. Removed `GLONASS_L1_CA_DLL_PLL_C_Aid_Tracking` and
   `GLONASS_L1_CA_DLL_PLL_C_Aid_Tracking` Tracking block implementations,
@@ -54,6 +79,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   [gsl-lite release](https://github.com/gsl-lite/gsl-lite/releases/tag/v1.0.1).
 - Updated local `cpu_features` library to v0.10.1.
 - Allow linking against Boost 1.89.0.
+- Added implementations of several `volk_gnsssdr` kernels for the RISC‑V Vector
+  (RVV) instruction set. Awesome contribution by @BigTurtle8 (Marcus Alagar) as
+  part of Google Summer of Code 2025.
 
 ### Improvements in Usability:
 

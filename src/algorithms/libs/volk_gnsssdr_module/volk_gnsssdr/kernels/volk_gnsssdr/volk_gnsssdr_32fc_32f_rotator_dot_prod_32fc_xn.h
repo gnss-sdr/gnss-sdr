@@ -505,7 +505,7 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_rvv(lv_32fc_t*
             // Initialize `out` to zero
             result[n_vec] = lv_cmake(0.0f, 0.0f);
 
-            // Treat complex number as struct containting
+            // Treat complex number as struct containing
             // two 16-bit integers
             inPtrBuf[n_vec] = in_a[n_vec];
         }

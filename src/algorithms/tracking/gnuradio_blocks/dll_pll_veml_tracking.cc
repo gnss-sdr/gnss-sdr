@@ -93,6 +93,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
     : gr::block("dll_pll_veml_tracking", gr::io_signature::make(1, 1, sizeof(gr_complex)),
           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
       d_trk_parameters(conf_),
+      d_bit_sync(HistogramBitSynchronizer::Config()),
       d_acquisition_gnss_synchro(nullptr),
       d_code_chip_rate(0.0),
       d_acq_code_phase_samples(0.0),
@@ -134,7 +135,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
       d_dump(d_trk_parameters.dump),
       d_dump_mat(d_trk_parameters.dump_mat && d_dump),
       d_acc_carrier_phase_initialized(false),
-      d_Flag_PLL_180_deg_phase_locked(false)
+      d_Flag_PLL_180_deg_phase_locked(false),
+      d_use_histogram_bit_sync(false)
 {
 #if GNURADIO_GREATER_THAN_38
     this->set_relative_rate(1, static_cast<uint64_t>(d_trk_parameters.vector_length));
@@ -212,7 +214,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     // GPS L2C has 1 trk symbol (20 ms) per tlm bit, no symbol integration required
                     d_symbols_per_bit = GPS_L2_SAMPLES_PER_SYMBOL;
                     d_correlation_length_ms = 20;
-                    d_code_samples_per_chip = 1;
+                    d_code_samples_per_chip = 2;  // for CM code with CL slots zeroed
                     // GPS L2 does not have pilot component nor secondary code
                     d_secondary = false;
                     d_trk_parameters.track_pilot = false;
@@ -736,7 +738,7 @@ void dll_pll_veml_tracking::start_tracking()
         }
     else if (d_systemName == "GPS" && d_signal_type == "2S")
         {
-            gps_l2c_m_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
+            gps_l2c_m_code_gen_float_cl_zeroed(d_tracking_code, d_acquisition_gnss_synchro->PRN);
         }
     else if (d_systemName == "GPS" && d_signal_type == "L5")
         {
@@ -978,6 +980,7 @@ void dll_pll_veml_tracking::start_tracking()
     d_Prompt_circular_buffer.clear();
     d_corrected_doppler = false;
     d_acc_carrier_phase_initialized = false;
+    configure_bit_synchronizer();
 }
 
 
@@ -1114,8 +1117,8 @@ bool dll_pll_veml_tracking::cn0_and_tracking_lock_status(double coh_integration_
         }
     if (d_carrier_lock_fail_counter > d_trk_parameters.max_carrier_lock_fail || d_code_lock_fail_counter > d_trk_parameters.max_code_lock_fail)
         {
-            std::cout << "Loss of lock in channel " << d_channel << "!\n";
-            LOG(INFO) << "Loss of lock in channel " << d_channel
+            std::cout << "Loss of lock in channel " << d_channel << ", satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << " !\n";
+            LOG(INFO) << "Loss of lock in channel " << d_channel << ", satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN)
                       << " (carrier_lock_fail_counter:" << d_carrier_lock_fail_counter
                       << " code_lock_fail_counter : " << d_code_lock_fail_counter << ")";
             this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
@@ -1283,6 +1286,29 @@ void dll_pll_veml_tracking::clear_tracking_vars()
     d_wn_from_telemetry = 0;
     d_carr_ph_history.clear();
     d_code_ph_history.clear();
+    d_bit_sync.reset();
+}
+
+
+void dll_pll_veml_tracking::configure_bit_synchronizer()
+{
+    d_use_histogram_bit_sync = (!d_secondary && d_symbols_per_bit > 1) && (d_systemName != "Glonass");  // Glonass uses Manchester coding
+    if (!d_use_histogram_bit_sync)
+        {
+            d_bit_sync.reset();
+            return;
+        }
+
+    HistogramBitSynchronizer::Config cfg;
+    cfg.bit_period_ms = d_symbols_per_bit * d_correlation_length_ms;
+    cfg.epoch_ms = d_correlation_length_ms;
+    cfg.min_events_for_lock = d_trk_parameters.bs_min_events_for_lock;
+    cfg.stable_best_required = d_trk_parameters.bs_stable_best_required;
+    cfg.dominance_ratio = d_trk_parameters.bs_dominance_ratio;
+    cfg.min_prompt_mag = d_trk_parameters.bs_min_prompt_mag;
+    cfg.use_phase_dot_detector = d_trk_parameters.bs_use_phase_dot_detector;
+    d_bit_sync = HistogramBitSynchronizer(cfg);
+    d_bit_sync.reset();
 }
 
 
@@ -1850,7 +1876,8 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 d_cn0_smoother.reset();
                 d_carrier_lock_test_smoother.reset();
 
-                LOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples << " ( " << acq_trk_diff_seconds << " s)";
+                LOG(INFO) << "Pull-in: Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples << " ( " << acq_trk_diff_seconds << " s)"
+                          << "for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << " in channel " << d_channel;
                 DLOG(INFO) << "PULL-IN Doppler [Hz] = " << d_carrier_doppler_hz
                            << ". PULL-IN Code Phase [samples] = " << d_acq_code_phase_samples;
 
@@ -1922,17 +1949,50 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                     }
                                 else if (d_symbols_per_bit > 1)  // Signal does not have secondary code. Search a bit transition by sign change
                                     {
-                                        // ******* preamble correlation ********
-                                        d_Prompt_circular_buffer.push_back(*d_Prompt);
-                                        if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
+                                        if (d_use_histogram_bit_sync)
                                             {
-                                                next_state = acquire_secondary();
-                                                if (next_state)
+                                                const bool lock_event = d_bit_sync.update(d_P_accu, true);
+                                                if (lock_event)
                                                     {
-                                                        LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
-                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
-                                                        std::cout << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
-                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                        d_wait_for_bit_edge = true;
+                                                        const std::int64_t k_now = d_bit_sync.get_epoch_count() - 1;
+                                                        int wait = d_bit_sync.epochs_until_next_edge() - 1;
+                                                        if (wait < 0)
+                                                            {
+                                                                wait = wait + d_bit_sync.bins();
+                                                            }
+                                                        d_bit_sync_target_epoch = k_now + wait;
+                                                    }
+                                                if (d_wait_for_bit_edge)
+                                                    {
+                                                        const std::int64_t k_now = d_bit_sync.get_epoch_count() - 1;
+                                                        if (k_now == d_bit_sync_target_epoch)
+                                                            {
+                                                                next_state = true;
+                                                                d_wait_for_bit_edge = false;
+                                                                d_use_histogram_bit_sync = false;  // disable histogram bit sync after first lock to avoid false lock events
+                                                                LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " histogram bit synchronization locked in channel " << d_channel
+                                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
+                                                                std::cout << d_systemName << " " << d_signal_pretty_name << " histogram bit synchronization locked in channel " << d_channel
+                                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                            }
+                                                    }
+                                            }
+
+                                        if (!next_state)
+                                            {
+                                                // ******* preamble correlation ********
+                                                d_Prompt_circular_buffer.push_back(*d_Prompt);
+                                                if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
+                                                    {
+                                                        next_state = acquire_secondary();
+                                                        if (next_state)
+                                                            {
+                                                                LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
+                                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
+                                                                std::cout << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
+                                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                            }
                                                     }
                                             }
                                     }
@@ -2058,7 +2118,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                         run_dll_pll();
                         update_tracking_vars();
                         check_carrier_phase_coherent_initialization();
-                        if ((d_current_data_symbol == 0) || (d_signal_type == "2G"))  // Glonass telemetry decoder require symbols instead of bits
+                        if (d_current_data_symbol == 0)
                             {
                                 // enable write dump file this cycle (valid DLL/PLL cycle)
                                 log_data();

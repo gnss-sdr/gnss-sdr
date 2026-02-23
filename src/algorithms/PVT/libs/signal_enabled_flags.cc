@@ -57,11 +57,19 @@ uint32_t flags_from_config(const ConfigurationInterface* configuration)
 }  // namespace
 
 
-Signal_Enabled_Flags::Signal_Enabled_Flags(const ConfigurationInterface* configuration) : flags(flags_from_config(configuration))
+Signal_Enabled_Flags::Signal_Enabled_Flags(const ConfigurationInterface* configuration) : Signal_Enabled_Flags(flags_from_config(configuration))
 {
 }
 
 
-Signal_Enabled_Flags::Signal_Enabled_Flags(uint32_t flags_) : flags(flags_)
+Signal_Enabled_Flags::Signal_Enabled_Flags(uint32_t flags_) : flags(flags_),
+                                                              has_gps(check_any_enabled(GPS_1C, GPS_2S, GPS_L5)),
+                                                              has_galileo(check_any_enabled(GAL_1B, GAL_E5a, GAL_E5b, GAL_E6)),
+                                                              has_glonass(check_any_enabled(GLO_1G, GLO_2G)),
+                                                              has_beidou(check_any_enabled(BDS_B1, BDS_B3)),
+                                                              only_gps(has_gps && !(has_galileo || has_glonass || has_beidou)),
+                                                              only_galileo(has_galileo && !(has_gps || has_glonass || has_beidou)),
+                                                              only_glonass(has_glonass && !(has_gps || has_galileo || has_beidou)),
+                                                              only_beidou(has_beidou && !(has_gps || has_galileo || has_glonass))
 {
 }

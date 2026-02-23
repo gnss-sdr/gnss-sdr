@@ -16,6 +16,7 @@
  */
 
 #include "hybrid_observables_gs.h"
+#include "GLONASS_L1_L2_CA.h"
 #include "MATH_CONSTANTS.h"  // for SPEED_OF_LIGHT_M_S, TWO_PI
 #include "gnss_circular_deque.h"
 #include "gnss_frequencies.h"
@@ -105,6 +106,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
     d_channel_last_pll_lock = std::vector<bool>(d_nchannels_out, false);
     d_channel_last_pseudorange_smooth = std::vector<double>(d_nchannels_out, 0.0);
     d_channel_last_carrier_phase_rads = std::vector<double>(d_nchannels_out, 0.0);
+    d_channel_last_rx_time_valid = std::vector<bool>(d_nchannels_out, false);
 
     d_SourceTagTimestamps = std::vector<std::queue<GnssTime>>(d_nchannels_out);
 
@@ -216,6 +218,7 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
                         {
                             d_gnss_synchro_history->clear(n);
                         }
+                    std::fill(d_channel_last_rx_time_valid.begin(), d_channel_last_rx_time_valid.end(), false);
 
                     LOG(INFO) << "Corrected new RX Time offset: " << static_cast<int>(round(new_rx_clock_offset_s * 1000.0)) << "[ms]";
                 }
@@ -232,6 +235,7 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
                                 {
                                     d_gnss_synchro_history->clear(n);
                                 }
+                            std::fill(d_channel_last_rx_time_valid.begin(), d_channel_last_rx_time_valid.end(), false);
                             LOG(INFO) << "Received reset observables TOW command from PVT";
                             break;
                         default:
@@ -587,6 +591,97 @@ void hybrid_observables_gs::smooth_pseudoranges(std::vector<Gnss_Synchro> &data)
 }
 
 
+void hybrid_observables_gs::detect_cycle_slips(std::vector<Gnss_Synchro> &data, uint64_t rx_clock)
+{
+    constexpr double kCycleSlipThresholdCycles = 0.5;
+
+    std::vector<double> residuals;
+    std::vector<uint32_t> channels;
+    residuals.reserve(data.size());
+    channels.reserve(data.size());
+
+    for (auto &obs : data)
+        {
+            obs.Flag_cycle_slip = false;
+        }
+
+    for (uint32_t n = 0; n < d_nchannels_out; n++)
+        {
+            auto &obs = data[n];
+            if (!obs.Flag_valid_pseudorange || obs.fs == 0LL)
+                {
+                    continue;
+                }
+
+            const auto step_samples = static_cast<uint64_t>(llround(d_T_rx_step_s * static_cast<double>(obs.fs)));
+            if (step_samples == 0 || rx_clock <= step_samples)
+                {
+                    continue;
+                }
+
+            Gnss_Synchro prev_obs{};
+            if (!interp_trk_obs(prev_obs, n, rx_clock - step_samples))
+                {
+                    continue;
+                }
+
+            const double current_phase_cycles = obs.Carrier_phase_rads / TWO_PI;
+            const double previous_phase_cycles = prev_obs.Carrier_phase_rads / TWO_PI;
+            const double delta_phase_cycles = current_phase_cycles - previous_phase_cycles;
+
+            double doppler_hz = obs.Carrier_Doppler_hz;
+            if (obs.System == 'R')
+                {
+                    const std::string signal(obs.Signal, 2);
+                    const auto it_prn = GLONASS_PRN.find(obs.PRN);
+                    if (it_prn != GLONASS_PRN.cend())
+                        {
+                            if (signal == "1G")
+                                {
+                                    doppler_hz += DFRQ1_GLO * it_prn->second;
+                                }
+                            else if (signal == "2G")
+                                {
+                                    doppler_hz += DFRQ2_GLO * it_prn->second;
+                                }
+                        }
+                }
+
+            const double residual = delta_phase_cycles + doppler_hz * d_T_rx_step_s;
+            residuals.push_back(residual);
+            channels.push_back(n);
+        }
+
+    if (residuals.empty())
+        {
+            return;
+        }
+
+    std::vector<double> sorted_residuals = residuals;
+    std::sort(sorted_residuals.begin(), sorted_residuals.end());
+    const size_t mid = sorted_residuals.size() / 2;
+    const double offset = (sorted_residuals.size() % 2 == 0)
+                              ? 0.5 * (sorted_residuals[mid - 1] + sorted_residuals[mid])
+                              : sorted_residuals[mid];
+
+    for (size_t i = 0; i < residuals.size(); i++)
+        {
+            if (std::abs(residuals[i] - offset) > kCycleSlipThresholdCycles)
+                {
+                    data[channels[i]].Flag_cycle_slip = true;
+                    if (data[channels[i]].Flag_valid_pseudorange)
+                        {
+                            LOG(INFO) << "Cycle slip detected on channel " << channels[i]
+                                      << " at RX time " << data[channels[i]].RX_time
+                                      << " s, for satellite " << data[channels[i]].System
+                                      << data[channels[i]].PRN
+                                      << ", signal " << std::string(data[channels[i]].Signal, 2);
+                        }
+                }
+        }
+}
+
+
 void hybrid_observables_gs::set_tag_timestamp_in_sdr_timeframe(const std::vector<Gnss_Synchro> &data, uint64_t rx_clock)
 {
     // it transforms the HW sample tag timestamp from a relative samplestamp (from receiver start)
@@ -773,6 +868,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                                     if (d_gnss_synchro_history->front(n).PRN != in[n][m].PRN)
                                         {
                                             d_gnss_synchro_history->clear(n);
+                                            d_channel_last_rx_time_valid[n] = false;
                                             // LOG(INFO) << "Channel " << d_gnss_synchro_history->front(n).Channel_ID << " changed satellite to PRN " << in[n][m].PRN;
                                         }
                                 }
@@ -829,6 +925,11 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
             if (d_conf.enable_carrier_smoothing == true)
                 {
                     smooth_pseudoranges(epoch_data);
+                }
+
+            if (n_valid > 0)
+                {
+                    detect_cycle_slips(epoch_data, d_Rx_clock_buffer.front());
                 }
 
             // output the observables set to the PVT block

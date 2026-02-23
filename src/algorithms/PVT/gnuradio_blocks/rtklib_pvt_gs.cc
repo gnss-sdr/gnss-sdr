@@ -342,7 +342,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     const std::string rtcm_dump_filename = d_dump_filename;
     if (conf_.flag_rtcm_server || conf_.flag_rtcm_tty_port || conf_.rtcm_output_file_enabled)
         {
-            d_rtcm_printer = std::make_unique<Rtcm_Printer>(rtcm_dump_filename, conf_.rtcm_output_file_enabled, conf_.flag_rtcm_server, conf_.flag_rtcm_tty_port, conf_.rtcm_tcp_port, conf_.rtcm_station_id, conf_.rtcm_dump_devname, true, conf_.rtcm_output_file_path);
+            d_rtcm_printer = std::make_unique<Rtcm_Printer>(rtcm_dump_filename, conf_.rtcm_output_file_enabled, conf_.flag_rtcm_server, conf_.flag_rtcm_tty_port, conf_.rtcm_tcp_port, conf_.rtcm_station_id, conf_.rtcm_dump_devname, d_signal_enabled_flags, true, conf_.rtcm_output_file_path);
             std::map<int, int> rtcm_msg_rate_ms = conf_.rtcm_msg_rate_ms;
             if (rtcm_msg_rate_ms.find(1019) != rtcm_msg_rate_ms.end())
                 {
@@ -412,7 +412,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     // initialize RINEX printer
     if (d_rinex_output_enabled)
         {
-            d_rp = std::make_unique<Rinex_Printer>(d_rinex_version, conf_.rinex_output_path, conf_.rinex_name, conf_.pre_2009_file);
+            d_rp = std::make_unique<Rinex_Printer>(d_signal_enabled_flags, d_rinex_version, conf_.rinex_output_path, conf_.rinex_name, conf_.pre_2009_file);
         }
     else
         {
@@ -1217,24 +1217,11 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                     // update/insert new ephemeris record to the global ephemeris map
                     if (d_rinex_output_enabled && d_rp->is_rinex_header_written())  // The header is already written, we can now log the navigation message data
                         {
-                            bool new_annotation = false;
-                            if (d_internal_pvt_solver->gps_ephemeris_map.find(gps_eph->PRN) == d_internal_pvt_solver->gps_ephemeris_map.cend())
+                            const auto eph_it = d_internal_pvt_solver->gps_ephemeris_map.find(gps_eph->PRN);
+
+                            if (eph_it == d_internal_pvt_solver->gps_ephemeris_map.cend() || eph_it->second.toe != gps_eph->toe)
                                 {
-                                    new_annotation = true;
-                                }
-                            else
-                                {
-                                    if (d_internal_pvt_solver->gps_ephemeris_map[gps_eph->PRN].toe != gps_eph->toe)
-                                        {
-                                            new_annotation = true;
-                                        }
-                                }
-                            if (new_annotation == true)
-                                {
-                                    // New record!
-                                    std::map<int32_t, Gps_Ephemeris> new_eph;
-                                    new_eph[gps_eph->PRN] = *gps_eph;
-                                    d_rp->log_rinex_nav_gps_nav(d_signal_enabled_flags, new_eph);
+                                    d_rp->log_rinex_nav_gps_nav({{gps_eph->PRN, *gps_eph}});  // New record!
                                 }
                         }
                     d_internal_pvt_solver->gps_ephemeris_map[gps_eph->PRN] = *gps_eph;
@@ -1285,24 +1272,11 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                     // update/insert new ephemeris record to the global ephemeris map
                     if (d_rinex_output_enabled && d_rp->is_rinex_header_written())  // The header is already written, we can now log the navigation message data
                         {
-                            bool new_annotation = false;
-                            if (d_internal_pvt_solver->gps_cnav_ephemeris_map.find(gps_cnav_ephemeris->PRN) == d_internal_pvt_solver->gps_cnav_ephemeris_map.cend())
+                            const auto eph_it = d_internal_pvt_solver->gps_cnav_ephemeris_map.find(gps_cnav_ephemeris->PRN);
+
+                            if (eph_it == d_internal_pvt_solver->gps_cnav_ephemeris_map.cend() || eph_it->second.toe1 != gps_cnav_ephemeris->toe1)
                                 {
-                                    new_annotation = true;
-                                }
-                            else
-                                {
-                                    if (d_internal_pvt_solver->gps_cnav_ephemeris_map[gps_cnav_ephemeris->PRN].toe1 != gps_cnav_ephemeris->toe1)
-                                        {
-                                            new_annotation = true;
-                                        }
-                                }
-                            if (new_annotation == true)
-                                {
-                                    // New record!
-                                    std::map<int32_t, Gps_CNAV_Ephemeris> new_cnav_eph;
-                                    new_cnav_eph[gps_cnav_ephemeris->PRN] = *gps_cnav_ephemeris;
-                                    d_rp->log_rinex_nav_gps_cnav(d_signal_enabled_flags, new_cnav_eph);
+                                    d_rp->log_rinex_nav_gps_cnav({{gps_cnav_ephemeris->PRN, *gps_cnav_ephemeris}});  // New record!
                                 }
                         }
                     d_internal_pvt_solver->gps_cnav_ephemeris_map[gps_cnav_ephemeris->PRN] = *gps_cnav_ephemeris;
@@ -1377,28 +1351,11 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                     // update/insert new ephemeris record to the global ephemeris map
                     if (d_rinex_output_enabled && d_rp->is_rinex_header_written())  // The header is already written, we can now log the navigation message data
                         {
-                            bool new_annotation = false;
-                            if (d_internal_pvt_solver->galileo_ephemeris_map.find(galileo_eph->PRN) == d_internal_pvt_solver->galileo_ephemeris_map.cend())
+                            const auto eph_it = d_internal_pvt_solver->galileo_ephemeris_map.find(galileo_eph->PRN);
+
+                            if ((eph_it == d_internal_pvt_solver->galileo_ephemeris_map.cend() || eph_it->second.toe != galileo_eph->toe) && galileo_eph->WN != 0 && galileo_eph->PRN <= 36)
                                 {
-                                    new_annotation = true;
-                                }
-                            else
-                                {
-                                    if (d_internal_pvt_solver->galileo_ephemeris_map[galileo_eph->PRN].toe != galileo_eph->toe)
-                                        {
-                                            new_annotation = true;
-                                        }
-                                }
-                            if (galileo_eph->WN == 0 || galileo_eph->PRN > 36)
-                                {
-                                    new_annotation = false;
-                                }
-                            if (new_annotation == true)
-                                {
-                                    // New record!
-                                    std::map<int32_t, Galileo_Ephemeris> new_gal_eph;
-                                    new_gal_eph[galileo_eph->PRN] = *galileo_eph;
-                                    d_rp->log_rinex_nav_gal_nav(d_signal_enabled_flags, new_gal_eph);
+                                    d_rp->log_rinex_nav_gal_nav({{galileo_eph->PRN, *galileo_eph}});  // New record!
                                 }
                         }
                     d_internal_pvt_solver->galileo_ephemeris_map[galileo_eph->PRN] = *galileo_eph;
@@ -1504,24 +1461,11 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                     // update/insert new ephemeris record to the global ephemeris map
                     if (d_rinex_output_enabled && d_rp->is_rinex_header_written())  // The header is already written, we can now log the navigation message data
                         {
-                            bool new_annotation = false;
-                            if (d_internal_pvt_solver->glonass_gnav_ephemeris_map.find(glonass_gnav_eph->PRN) == d_internal_pvt_solver->glonass_gnav_ephemeris_map.cend())
+                            const auto eph_it = d_internal_pvt_solver->glonass_gnav_ephemeris_map.find(glonass_gnav_eph->PRN);
+
+                            if (eph_it == d_internal_pvt_solver->glonass_gnav_ephemeris_map.cend() || eph_it->second.d_t_b != glonass_gnav_eph->d_t_b)
                                 {
-                                    new_annotation = true;
-                                }
-                            else
-                                {
-                                    if (d_internal_pvt_solver->glonass_gnav_ephemeris_map[glonass_gnav_eph->PRN].d_t_b != glonass_gnav_eph->d_t_b)
-                                        {
-                                            new_annotation = true;
-                                        }
-                                }
-                            if (new_annotation == true)
-                                {
-                                    // New record!
-                                    std::map<int32_t, Glonass_Gnav_Ephemeris> new_glo_eph;
-                                    new_glo_eph[glonass_gnav_eph->PRN] = *glonass_gnav_eph;
-                                    d_rp->log_rinex_nav_glo_gnav(d_signal_enabled_flags, new_glo_eph);
+                                    d_rp->log_rinex_nav_glo_gnav({{glonass_gnav_eph->PRN, *glonass_gnav_eph}});  // New record!
                                 }
                         }
                     d_internal_pvt_solver->glonass_gnav_ephemeris_map[glonass_gnav_eph->PRN] = *glonass_gnav_eph;
@@ -1567,24 +1511,11 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                     // update/insert new ephemeris record to the global ephemeris map
                     if (d_rinex_output_enabled && d_rp->is_rinex_header_written())  // The header is already written, we can now log the navigation message data
                         {
-                            bool new_annotation = false;
-                            if (d_internal_pvt_solver->beidou_dnav_ephemeris_map.find(bds_dnav_eph->PRN) == d_internal_pvt_solver->beidou_dnav_ephemeris_map.cend())
+                            const auto eph_it = d_internal_pvt_solver->beidou_dnav_ephemeris_map.find(bds_dnav_eph->PRN);
+
+                            if (eph_it == d_internal_pvt_solver->beidou_dnav_ephemeris_map.cend() || eph_it->second.toc != bds_dnav_eph->toc)
                                 {
-                                    new_annotation = true;
-                                }
-                            else
-                                {
-                                    if (d_internal_pvt_solver->beidou_dnav_ephemeris_map[bds_dnav_eph->PRN].toc != bds_dnav_eph->toc)
-                                        {
-                                            new_annotation = true;
-                                        }
-                                }
-                            if (new_annotation == true)
-                                {
-                                    // New record!
-                                    std::map<int32_t, Beidou_Dnav_Ephemeris> new_bds_eph;
-                                    new_bds_eph[bds_dnav_eph->PRN] = *bds_dnav_eph;
-                                    d_rp->log_rinex_nav_bds_dnav(d_signal_enabled_flags, new_bds_eph);
+                                    d_rp->log_rinex_nav_bds_dnav({{bds_dnav_eph->PRN, *bds_dnav_eph}});  // New record!
                                 }
                         }
                     d_internal_pvt_solver->beidou_dnav_ephemeris_map[bds_dnav_eph->PRN] = *bds_dnav_eph;
@@ -2442,6 +2373,18 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             std::chrono::duration<double> elapsed_seconds = d_end - d_start;
                                             double ttff = elapsed_seconds.count();
                                             ss << "\nTime to First Fix: " << ttff << " [s] (wall clock)\n";
+                                            double ttff_processing = 0.0;
+                                            for (const auto& observables_entry : d_gnss_observables_map)
+                                                {
+                                                    const auto sample_counter = observables_entry.second.Tracking_sample_counter;
+                                                    const auto sampling_freq_sps = observables_entry.second.fs;
+                                                    if (sampling_freq_sps > 0.0)
+                                                        {
+                                                            const double rx_time = static_cast<double>(sample_counter) / static_cast<double>(sampling_freq_sps);
+                                                            ttff_processing = std::max(ttff_processing, rx_time);
+                                                        }
+                                                }
+                                            ss << "Time to First Fix: " << ttff_processing << " [s] (processing time)\n";
                                             if (d_nmea_output_file_enabled)
                                                 {
                                                     ss << "\nFirst NMEA message: " << d_nmea_printer->get_GPGGA(d_user_pvt_solver.get());
@@ -2481,14 +2424,13 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         }
                                     if (d_rinex_output_enabled)
                                         {
-                                            d_rp->print_rinex_annotation(d_user_pvt_solver.get(), d_gnss_observables_map, d_rx_time, d_signal_enabled_flags, flag_write_RINEX_obs_output);
+                                            d_rp->print_rinex_annotation(d_user_pvt_solver.get(), d_gnss_observables_map, d_rx_time, flag_write_RINEX_obs_output);
                                         }
                                     if (d_rtcm_enabled)
                                         {
                                             d_rtcm_printer->Print_Rtcm_Messages(d_user_pvt_solver.get(),
                                                 d_gnss_observables_map,
                                                 d_rx_time,
-                                                d_signal_enabled_flags,
                                                 rtcm_MSM_enabled,
                                                 rtcm_MT1019_enabled,
                                                 rtcm_MT1020_enabled,

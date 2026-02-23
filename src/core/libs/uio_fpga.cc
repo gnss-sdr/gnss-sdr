@@ -208,3 +208,34 @@ int32_t find_uio_dev_file_name(std::string &device_file_name, const std::string 
 
     return -1;
 }
+
+uint32_t get_num_devices(const std::string &device_name)
+{
+    int32_t uio_num;
+    uint32_t uio_count = 0;
+
+    // search for the requested device driver
+    fs::path path(uio_dir);
+    std::vector<fs::directory_entry> dirs;
+    for (const auto &p : fs::directory_iterator(path))
+        {
+            dirs.push_back(p);
+        }
+    std::sort(dirs.begin(), dirs.end(), sort_directories);
+
+    for (auto &p : dirs)
+        {
+            // get the uio number corresponding to directory entry n
+            uio_num = get_uio_num(p.path().string());
+            if (uio_num >= 0)  // valid uio number
+                {
+                    std::string nametemp;
+                    get_uio_name(uio_num, nametemp);
+                    if (device_name == nametemp)
+                        {
+                            uio_count++;
+                        }
+                }
+        }
+    return uio_count;  // uio number not found
+}

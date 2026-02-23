@@ -20,6 +20,7 @@
 #ifndef GNSS_SDR_RTCM_PRINTER_H
 #define GNSS_SDR_RTCM_PRINTER_H
 
+#include "signal_enabled_flags.h"
 #include <cstdint>  // for int32_t
 #include <fstream>  // for std::ofstream
 #include <map>      // for std::map
@@ -58,6 +59,7 @@ public:
         uint16_t rtcm_tcp_port,
         uint16_t rtcm_station_id,
         const std::string& rtcm_dump_devname,
+        uint32_t signal_enabled_flags,
         bool time_tag_name = true,
         const std::string& base_path = ".");
 
@@ -72,7 +74,6 @@ public:
     void Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
         const std::map<int, Gnss_Synchro>& gnss_observables_map,
         double rx_time,
-        uint32_t signal_enabled_flags,
         bool rtcm_MSM_enabled,
         bool rtcm_MT1019_enabled,
         bool rtcm_MT1020_enabled,
@@ -201,6 +202,7 @@ private:
     uint16_t station_id;
     bool d_rtcm_has_written_once;
     bool d_rtcm_file_dump;
+    const Signal_Enabled_Flags d_flags;
 };
 
 

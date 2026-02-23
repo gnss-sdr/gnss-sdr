@@ -299,6 +299,8 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
                 {
                     d_last_valid_preamble = d_sample_counter;
                     d_flag_valid_word = true;
+                    LOG(INFO) << "Successful frame synchronization in channel " << d_channel << " for satellite " << this->d_satellite
+                              << " at sample_counter=" << d_sample_counter;
                 }
 
             if (d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())

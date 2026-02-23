@@ -415,7 +415,7 @@ int PositionSystemTest::configure_receiver()
             config->set_property("PVT.flag_rtcm_tty_port", "false");
             config->set_property("PVT.rtcm_dump_devname", "/dev/pts/1");
             config->set_property("PVT.dump", "true");
-            config->set_property("PVT.rinex_version", std::to_string(2));
+            config->set_property("PVT.rinex_version", std::to_string(3));
             config->set_property("PVT.iono_model", "OFF");
             config->set_property("PVT.trop_model", "OFF");
             config->set_property("PVT.AR_GPS", "PPP-AR");
@@ -707,6 +707,7 @@ void PositionSystemTest::check_results()
             stm << "95th = " << percentiles_accuracy(3) << " [m]\n";
             stm << "99th = " << percentiles_accuracy(4) << " [m]\n";
             stm << "Maximum error = " << errors_3d_accuracy.max() << " [m]\n";
+            stm << "At TTFF = " << errors_3d_accuracy[0] << " [m]\n";
             stm << '\n';
 
             stm << "---- STATIC PRECISION ----\n";
@@ -727,6 +728,7 @@ void PositionSystemTest::check_results()
             stm << "95th = " << percentiles_precision(3) << " [m]\n";
             stm << "99th = " << percentiles_precision(4) << " [m]\n";
             stm << "Maximum error = " << errors_3d_precision.max() << " [m]\n";
+            stm << "At TTFF = " << errors_3d_precision[0] << " [m]\n";
             stm << '\n';
 
             stm << "Receiver runtime: " << elapsed_seconds.count() << " [seconds]\n";

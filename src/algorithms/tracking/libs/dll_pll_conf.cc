@@ -149,4 +149,10 @@ void Dll_Pll_Conf::SetFromConfiguration(const ConfigurationInterface *configurat
     carrier_lock_test_smoother_samples = configuration->property(role + ".carrier_lock_test_smoother_samples", carrier_lock_test_smoother_samples);
     carrier_lock_test_smoother_alpha = configuration->property(role + ".carrier_lock_test_smoother_alpha", carrier_lock_test_smoother_alpha);
     tow_to_trk = configuration->property("GNSS-SDR.tow_to_trk", false);
+
+    bs_dominance_ratio = configuration->property(role + ".bs_dominance_ratio", bs_dominance_ratio);
+    bs_min_prompt_mag = configuration->property(role + ".bs_min_prompt_mag", bs_min_prompt_mag);
+    bs_stable_best_required = configuration->property(role + ".bs_stable_best_required", bs_stable_best_required);
+    bs_min_events_for_lock = configuration->property(role + ".bs_min_events_for_lock", bs_min_events_for_lock);
+    bs_use_phase_dot_detector = configuration->property(role + ".bs_use_phase_dot_detector", bs_use_phase_dot_detector);
 }

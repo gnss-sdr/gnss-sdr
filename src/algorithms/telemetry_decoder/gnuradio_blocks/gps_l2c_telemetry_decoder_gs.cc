@@ -287,6 +287,8 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             d_TOW_at_current_symbol = static_cast<double>(msg.tow) * 6.0 + static_cast<double>(delay) * GPS_L2_M_PERIOD_S + 12 * GPS_L2_M_PERIOD_S;
             // d_TOW_at_current_symbol = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
             d_flag_valid_word = true;
+            LOG(INFO) << "Successful frame synchronization in channel " << d_channel << " for satellite " << this->d_satellite
+                      << " at sample_counter=" << d_sample_counter;
 
             if (d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
                 {

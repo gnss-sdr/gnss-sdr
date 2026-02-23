@@ -372,7 +372,7 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_rvv(lv_16sc_t* result, con
 
             // In looping, decrement the number of
             // elements left and increment the pointers
-            // by the numebr of elements processed,
+            // by the number of elements processed,
             // taking into account how the `vl` complex
             // numbers are each stored as 2 `short`s
         }

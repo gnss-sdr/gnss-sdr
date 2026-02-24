@@ -148,13 +148,13 @@ void qzss_l1_code_gen_float(own::span<float> dest, uint32_t prn)
         {
             const uint8_t g1_out = g1[9];
             const uint8_t g2_out = g2[9];
-            const uint8_t prn_bit = static_cast<uint8_t>(g1_out ^ g2_out);
+            const auto prn_bit = static_cast<uint8_t>(g1_out ^ g2_out);
 
             // Map 0 -> -1, 1 -> +1
             dest[i] = prn_bit ? 1.0F : -1.0F;
 
             // Step G1
-            const uint8_t g1_fb = static_cast<uint8_t>(g1[2] ^ g1[9]);
+            const auto g1_fb = static_cast<uint8_t>(g1[2] ^ g1[9]);
             for (int k = 9; k > 0; --k)
                 {
                     g1[k] = g1[k - 1];
@@ -162,7 +162,7 @@ void qzss_l1_code_gen_float(own::span<float> dest, uint32_t prn)
             g1[0] = g1_fb;
 
             // Step G2
-            const uint8_t g2_fb = static_cast<uint8_t>(
+            const auto g2_fb = static_cast<uint8_t>(
                 g2[1] ^ g2[2] ^ g2[5] ^ g2[7] ^ g2[8] ^ g2[9]);
             for (int k = 9; k > 0; --k)
                 {
@@ -190,11 +190,11 @@ void qzss_l1_code_gen_complex_sampled(
     const double phase_step = QZSS_L1_CHIP_RATE / static_cast<double>(sampling_freq);
     double code_phase = 0.0;
 
-    for (size_t i = 0; i < dest.size(); ++i)
+    for (auto & d : dest)
         {
             int chip = static_cast<int>(code_phase);
             chip %= QZSS_L1_CODE_LENGTH;
-            dest[i] = {code[static_cast<size_t>(chip)], 0.0F};
+            d = {code[static_cast<size_t>(chip)], 0.0F};
 
             code_phase += phase_step;
             if (code_phase >= QZSS_L1_CODE_LENGTH)
@@ -211,11 +211,11 @@ void qzss_l1_code_gen_complex_sampled(
 
 static uint8_t xa_step(uint16_t& state)
 {
-    const uint8_t out = static_cast<uint8_t>(state & 0x1);
-    const uint8_t fb = static_cast<uint8_t>(
+    const auto out = static_cast<uint8_t>(state & 0x1);
+    const auto fb = static_cast<uint8_t>(
         ((state >> 4) ^ (state >> 3) ^ (state >> 1) ^ (state >> 0)) & 0x1);
 
-    uint16_t next = static_cast<uint16_t>((state >> 1) | (static_cast<uint16_t>(fb) << 12));
+    auto next = static_cast<uint16_t>((state >> 1) | (static_cast<uint16_t>(fb) << 12));
 
     if (state == XA_SHORT_DECODE)
         {
@@ -229,8 +229,8 @@ static uint8_t xa_step(uint16_t& state)
 
 static uint8_t xb_step(uint16_t& state)
 {
-    const uint8_t out = static_cast<uint8_t>(state & 0x1);
-    const uint8_t fb = static_cast<uint8_t>(
+    const auto out = static_cast<uint8_t>(state & 0x1);
+    const auto fb = static_cast<uint8_t>(
         ((state >> 12) ^ (state >> 10) ^ (state >> 9) ^ (state >> 7) ^
             (state >> 6) ^ (state >> 5) ^ (state >> 1) ^ (state >> 0)) &
         0x1);
@@ -256,7 +256,7 @@ void qzss_l5i_code_gen_float(own::span<float> dest, uint32_t prn)
         {
             const uint8_t xa = xa_step(xa_state);
             const uint8_t xb = xb_step(xb_state);
-            const uint8_t bit = static_cast<uint8_t>(xa ^ xb);
+            const auto bit = static_cast<uint8_t>(xa ^ xb);
 
             dest[i] = bit ? 1.0F : -1.0F;
         }
@@ -279,7 +279,7 @@ void qzss_l5q_code_gen_float(own::span<float> dest, uint32_t prn)
         {
             const uint8_t xa = xa_step(xa_state);
             const uint8_t xb = xb_step(xb_state);
-            const uint8_t bit = static_cast<uint8_t>(xa ^ xb);
+            const auto bit = static_cast<uint8_t>(xa ^ xb);
 
             dest[i] = bit ? 1.0F : -1.0F;
         }
@@ -303,12 +303,12 @@ void qzss_l5i_code_gen_complex_sampled(
     const double phase_step = QZSS_L5_CHIP_RATE / static_cast<double>(sampling_freq);
     double code_phase = 0.0;
 
-    for (size_t i = 0; i < dest.size(); ++i)
+    for (auto & d : dest)
         {
             int chip = static_cast<int>(code_phase);
             chip %= QZSS_L5_CODE_LENGTH;
 
-            dest[i] = {code[static_cast<size_t>(chip)], 0.0F};
+            d = {code[static_cast<size_t>(chip)], 0.0F};
 
             code_phase += phase_step;
             if (code_phase >= QZSS_L5_CODE_LENGTH)
@@ -336,12 +336,12 @@ void qzss_l5q_code_gen_complex_sampled(
     const double phase_step = QZSS_L5_CHIP_RATE / static_cast<double>(sampling_freq);
     double code_phase = 0.0;
 
-    for (size_t i = 0; i < dest.size(); ++i)
+    for (auto & d : dest)
         {
             int chip = static_cast<int>(code_phase);
             chip %= QZSS_L5_CODE_LENGTH;
 
-            dest[i] = {0.0F, code[static_cast<size_t>(chip)]};
+            d = {0.0F, code[static_cast<size_t>(chip)]};
 
             code_phase += phase_step;
             if (code_phase >= QZSS_L5_CODE_LENGTH)

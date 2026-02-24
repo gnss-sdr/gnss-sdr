@@ -49,6 +49,29 @@ TEST(QzssL1Code, GoldenFirst32Chips)
         {
             EXPECT_FLOAT_EQ(code[i], golden[i]);
         }
+    constexpr uint32_t prn2 = 195;
+    qzss_l1_code_gen_float(code, prn2);
+    const float golden2[32] = {
+        -1, -1, -1, -1, -1, 1, 1, -1,
+        -1, -1, -1, 1, -1, 1, -1, 1,
+        1, 1, 1, 1, -1, -1, 1, 1,
+        -1, -1, 1, -1, 1, 1, -1, -1};
+    for (int i = 0; i < 32; ++i)
+        {
+            EXPECT_FLOAT_EQ(code[i], golden2[i]);
+        }
+
+    constexpr uint32_t prn3 = 199;
+    qzss_l1_code_gen_float(code, prn3);
+    const float golden3[32] = {
+        1, -1, -1, -1, 1, -1, 1, -1,
+        -1, -1, -1, -1, 1, -1, -1, -1,
+        -1, 1, -1, -1, 1, -1, -1, -1,
+        -1, 1, 1, 1, -1, 1, -1, -1};
+    for (int i = 0; i < 32; ++i)
+        {
+            EXPECT_FLOAT_EQ(code[i], golden3[i]);
+        }
 }
 
 
@@ -67,6 +90,19 @@ TEST(QzssL5Code, L5IGoldenFirst32Chips)
         {
             EXPECT_FLOAT_EQ(code[i], golden[i]);
         }
+
+    qzss_l5i_code_gen_float(code, 199);
+
+    const float golden2[32] = {
+        1, 1, -1, 1, 1, -1, 1, -1,
+        -1, 1, -1, 1, -1, -1, -1, -1,
+        1, 1, -1, 1, -1, -1, -1, 1,
+        -1, 1, 1, 1, 1, -1, 1, -1};
+
+    for (int i = 0; i < 32; ++i)
+        {
+            EXPECT_FLOAT_EQ(code[i], golden2[i]);
+        }
 }
 
 
@@ -84,5 +120,18 @@ TEST(QzssL5Code, L5QGoldenFirst32Chips)
     for (int i = 0; i < 32; ++i)
         {
             EXPECT_FLOAT_EQ(code[i], golden[i]);
+        }
+
+    qzss_l5q_code_gen_float(code, 199);
+
+    const float golden2[32] = {
+        -1, 1, 1, 1, -1, -1, -1, 1,
+        1, -1, -1, 1, 1, 1, 1, -1,
+        -1, -1, -1, -1, -1, 1, 1, 1,
+        -1, 1, 1, -1, 1, -1, -1, 1};
+
+    for (int i = 0; i < 32; ++i)
+        {
+            EXPECT_FLOAT_EQ(code[i], golden2[i]);
         }
 }

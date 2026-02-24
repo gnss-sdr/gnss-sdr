@@ -17,7 +17,7 @@
 
 
 #include "qzss_l5_telemetry_decoder.h"
-//#include "qzss_l5_telemetry_decoder_gs.h"
+// #include "qzss_l5_telemetry_decoder_gs.h"
 
 
 QzssL5TelemetryDecoder::QzssL5TelemetryDecoder(

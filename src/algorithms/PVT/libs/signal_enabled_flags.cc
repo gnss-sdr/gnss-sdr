@@ -61,16 +61,17 @@ Signal_Enabled_Flags::Signal_Enabled_Flags(const ConfigurationInterface* configu
 }
 
 
-Signal_Enabled_Flags::Signal_Enabled_Flags(uint32_t flags_) : flags(flags_),
-                                                              has_gps(check_any_enabled(GPS_1C, GPS_2S, GPS_L5)),
-                                                              has_galileo(check_any_enabled(GAL_1B, GAL_E5a, GAL_E5b, GAL_E6)),
-                                                              has_glonass(check_any_enabled(GLO_1G, GLO_2G)),
-                                                              has_beidou(check_any_enabled(BDS_B1, BDS_B3)),
-                                                              has_qzss(check_any_enabled(QZS_J1, QZS_J5)),
-                                                              only_gps(has_gps && !(has_galileo || has_glonass || has_beidou || has_qzss)),
-                                                              only_galileo(has_galileo && !(has_gps || has_glonass || has_beidou || has_qzss)),
-                                                              only_glonass(has_glonass && !(has_gps || has_galileo || has_beidou || has_qzss)),
-                                                              only_beidou(has_beidou && !(has_gps || has_galileo || has_glonass || has_qzss)),
-                                                              only_qzss(has_qzss && !(has_gps || has_galileo || has_glonass || has_beidou))
+Signal_Enabled_Flags::Signal_Enabled_Flags(uint32_t flags_)
+    : flags(flags_),
+      has_gps(check_any_enabled(GPS_1C, GPS_2S, GPS_L5)),
+      has_galileo(check_any_enabled(GAL_1B, GAL_E5a, GAL_E5b, GAL_E6)),
+      has_glonass(check_any_enabled(GLO_1G, GLO_2G)),
+      has_beidou(check_any_enabled(BDS_B1, BDS_B3)),
+      has_qzss(check_any_enabled(QZS_J1, QZS_J5)),
+      only_gps(has_gps && !(has_galileo || has_glonass || has_beidou || has_qzss)),
+      only_galileo(has_galileo && !(has_gps || has_glonass || has_beidou || has_qzss)),
+      only_glonass(has_glonass && !(has_gps || has_galileo || has_beidou || has_qzss)),
+      only_beidou(has_beidou && !(has_gps || has_galileo || has_glonass || has_qzss)),
+      only_qzss(has_qzss && !(has_gps || has_galileo || has_glonass || has_beidou))
 {
 }

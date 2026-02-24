@@ -37,8 +37,7 @@ uint32_t flags_from_config(const ConfigurationInterface* configuration)
         {BDS_B1, "Channels_B1.count"},
         {BDS_B3, "Channels_B3.count"},
         {QZS_J1, "Channels_J1.count"},
-        {QZS_J5, "Channels_J5.count"} 
-    };
+        {QZS_J5, "Channels_J5.count"}};
 
     for (const auto& pair_aux : signal_flag_to_prop)
         {

@@ -158,7 +158,7 @@ Gnss_Satellite& Gnss_Satellite::operator=(Gnss_Satellite&& other) noexcept
 
 void Gnss_Satellite::set_system(const std::string& system_)
 {
-    // Set the satellite system {"GPS", "Glonass", "SBAS", "Galileo", "Compass"}
+    // Set the satellite system {"GPS", "Glonass", "SBAS", "Galileo", "Beidou", "QZSS"}
     auto it = system_set.find(system_);
 
     if (it != system_set.cend())
@@ -167,7 +167,7 @@ void Gnss_Satellite::set_system(const std::string& system_)
         }
     else
         {
-            DLOG(INFO) << "System " << system_ << " is not defined {GPS, Glonass, SBAS, Galileo, Beidou}. Initialization?";
+            DLOG(INFO) << "System " << system_ << " is not defined {GPS, Glonass, SBAS, Galileo, Beidou, QZSS}. Initialization?";
             system = std::string("");
         }
 }
@@ -269,7 +269,18 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
                     PRN = PRN_;
                 }
         }
-
+    else if (system == "QZSS")
+        {
+            if (PRN_ < 193 or PRN_ > 201)
+                {
+                    DLOG(INFO) << "This PRN is not defined";
+                    PRN = 0;
+                }
+            else
+                {
+                    PRN = PRN_;
+                }
+        }
     else
         {
             DLOG(INFO) << "System " << system << " is not defined";
@@ -303,7 +314,7 @@ uint32_t Gnss_Satellite::get_PRN() const
 
 std::string Gnss_Satellite::get_system() const
 {
-    // Get the satellite system {"GPS", "Glonass", "SBAS", "Galileo", "Beidou"}
+    // Get the satellite system {"GPS", "Glonass", "SBAS", "Galileo", "Beidou", "QZSS"}
     std::string system_ = system;
     return system_;
 }
@@ -311,7 +322,7 @@ std::string Gnss_Satellite::get_system() const
 
 std::string Gnss_Satellite::get_system_short() const
 {
-    // Get the satellite system {"G", "R", "S", "E", "C"}
+    // Get the satellite system {"G", "R", "S", "E", "C", "Q"}
     return satelliteSystem.at(system);
 }
 
@@ -812,6 +823,29 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                     break;
                 case 61:
                     block_ = std::string("BeiDou-3 GEOG3");  // launched 2020/06/2023
+                    break;
+                default:
+                    block_ = std::string("Unknown");
+                }
+        }
+    if (system_ == "QZSS")
+        {
+            switch (PRN_)
+                {
+                case 193:
+                    block_ = std::string("QZSS Block I");  // QZSS-1 (Michibiki-1), launched on September 11, 2010.
+                    break;
+                case 194:
+                    block_ = std::string("QZSS Block II");  // QZSS-2 (Michibiki-2)
+                    break;
+                case 195:
+                    block_ = std::string("QZSS Block II");  // QZSS-3 (Michibiki-3)
+                    break;
+                case 196:
+                    block_ = std::string("QZSS Block II");  // QZSS-4 (Michibiki-4)
+                    break;
+                case 197:
+                    block_ = std::string("QZSS Block III");  // QZSS-1R (Michibiki-1R)
                     break;
                 default:
                     block_ = std::string("Unknown");

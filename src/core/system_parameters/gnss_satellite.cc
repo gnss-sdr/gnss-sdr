@@ -833,19 +833,40 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
             switch (PRN_)
                 {
                 case 193:
-                    block_ = std::string("QZSS Block I");  // QZSS-1 (Michibiki-1), launched on September 11, 2010.
+                    block_ = std::string("I");  // QZSS-1 (Michibiki-1), launched on September 11, 2010.
                     break;
                 case 194:
-                    block_ = std::string("QZSS Block II");  // QZSS-2 (Michibiki-2)
+                    block_ = std::string("II-Q");  // QZSS-2 (Michibiki-2)
                     break;
                 case 195:
-                    block_ = std::string("QZSS Block II");  // QZSS-3 (Michibiki-3)
+                    block_ = std::string("II-Q");  // QZSS-3 (Michibiki-3)
                     break;
                 case 196:
-                    block_ = std::string("QZSS Block II");  // QZSS-4 (Michibiki-4)
+                    block_ = std::string("IIA-Q");  // QZSS-4 (Michibiki-4)
                     break;
                 case 197:
-                    block_ = std::string("QZSS Block III");  // QZSS-1R (Michibiki-1R)
+                    block_ = std::string("III-Q");  // QZSS-1R (Michibiki-1R)
+                    break;
+                case 199:
+                    block_ = std::string("II-G");
+                    break;
+                case 200:
+                    block_ = std::string("III-G");
+                    break;
+                case 201:
+                    block_ = std::string("III-G");
+                    break;
+                case 203:
+                    block_ = std::string("IIA-Q");
+                    break;
+                case 204:
+                    block_ = std::string("III-Q");
+                    break;
+                case 205:
+                    block_ = std::string("III-G");
+                    break;
+                case 206:
+                    block_ = std::string("III-G");
                     break;
                 default:
                     block_ = std::string("Unknown");

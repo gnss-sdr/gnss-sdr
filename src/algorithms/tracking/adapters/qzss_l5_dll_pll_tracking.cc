@@ -21,9 +21,9 @@
  */
 
 #include "qzss_l5_dll_pll_tracking.h"
-#include "qzss.h"
 #include "configuration_interface.h"
 #include "display.h"
+#include "qzss.h"
 #include <algorithm>
 #include <array>
 

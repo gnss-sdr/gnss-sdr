@@ -103,6 +103,10 @@
 #include "ntlab_file_signal_source.h"
 #include "pass_through.h"
 #include "pulse_blanking_filter.h"
+#include "qzss_l1_dll_pll_tracking.h"
+#include "qzss_l1_pcps_acquisition.h"
+#include "qzss_l5_dll_pll_tracking.h"
+#include "qzss_l5i_pcps_acquisition.h"
 #include "rtklib_pvt.h"
 #include "rtl_tcp_signal_source.h"
 #include "sbas_l1_telemetry_decoder.h"
@@ -238,6 +242,8 @@ const auto signal_mapping = std::vector<std::pair<std::string, std::string>>{
     {"B1", "BEIDOU B1I"},
     {"B3", "BEIDOU B3I"},
     {"7X", "GALILEO E5b I (I/NAV OS)"},
+    {"J1", "QZSS L1 C/A"},
+    {"J5", "QZSS L5"},
 };
 
 unsigned int get_channel_count(const ConfigurationInterface* configuration)
@@ -514,6 +520,14 @@ std::unique_ptr<AcquisitionInterface> get_acq_block(
         {
             return std::make_unique<BeidouB3iPcpsAcquisition>(configuration, role, in_streams, out_streams);
         }
+    else if (implementation == "QZSS_L1_PCPS_Acquisition")
+        {
+            return std::make_unique<QzssL1PcpsAcquisition>(configuration, role, in_streams, out_streams);
+        }
+    else if (implementation == "QZSS_L5i_PCPS_Acquisition")
+        {
+            return std::make_unique<QzssL5iPcpsAcquisition>(configuration, role, in_streams, out_streams);
+        }
 #if OPENCL_BLOCKS
     else if (implementation == "GPS_L1_CA_PCPS_OpenCl_Acquisition")
         {
@@ -617,6 +631,14 @@ std::unique_ptr<TrackingInterface> get_trk_block(
     else if (implementation == "BEIDOU_B3I_DLL_PLL_Tracking")
         {
             return std::make_unique<BeidouB3iDllPllTracking>(configuration, role, in_streams, out_streams);
+        }
+    else if (implementation == "QZSS_L1_DLL_PLL_Tracking")
+        {
+            return std::make_unique<QzssL1DllPllTracking>(configuration, role, in_streams, out_streams);
+        }
+    else if (implementation == "QZSS_L5_DLL_PLL_Tracking")
+        {
+            return std::make_unique<QzssL5DllPllTracking>(configuration, role, in_streams, out_streams);
         }
 #if CUDA_GPU_ACCEL
     else if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_GPU")

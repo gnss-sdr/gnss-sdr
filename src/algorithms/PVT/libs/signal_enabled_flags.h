@@ -34,8 +34,8 @@ enum signal_flag : uint32_t
     GLO_2G = 0x1 << 8,
     BDS_B1 = 0x1 << 9,
     BDS_B3 = 0x1 << 10,
-    QZS_L1 = 0x1 << 11,
-    QZS_L5 = 0x1 << 12
+    QZS_J1 = 0x1 << 11,
+    QZS_J5 = 0x1 << 12
 };
 
 class Signal_Enabled_Flags
@@ -74,11 +74,13 @@ public:
     const bool has_galileo;
     const bool has_glonass;
     const bool has_beidou;
+    const bool has_qzss;
 
     const bool only_gps;
     const bool only_galileo;
     const bool only_glonass;
     const bool only_beidou;
+    const bool only_qzss;
 };
 
 #endif  // GNSS_SDR_SIGNAL_ENABLED_FLAGS_H

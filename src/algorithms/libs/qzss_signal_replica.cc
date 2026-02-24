@@ -190,7 +190,7 @@ void qzss_l1_code_gen_complex_sampled(
     const double phase_step = QZSS_L1_CHIP_RATE / static_cast<double>(sampling_freq);
     double code_phase = 0.0;
 
-    for (auto & d : dest)
+    for (auto& d : dest)
         {
             int chip = static_cast<int>(code_phase);
             chip %= QZSS_L1_CODE_LENGTH;
@@ -303,7 +303,7 @@ void qzss_l5i_code_gen_complex_sampled(
     const double phase_step = QZSS_L5_CHIP_RATE / static_cast<double>(sampling_freq);
     double code_phase = 0.0;
 
-    for (auto & d : dest)
+    for (auto& d : dest)
         {
             int chip = static_cast<int>(code_phase);
             chip %= QZSS_L5_CODE_LENGTH;
@@ -336,7 +336,7 @@ void qzss_l5q_code_gen_complex_sampled(
     const double phase_step = QZSS_L5_CHIP_RATE / static_cast<double>(sampling_freq);
     double code_phase = 0.0;
 
-    for (auto & d : dest)
+    for (auto& d : dest)
         {
             int chip = static_cast<int>(code_phase);
             chip %= QZSS_L5_CODE_LENGTH;

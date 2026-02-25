@@ -35,6 +35,11 @@
  * GNU Radio blocks for the demodulation of GNSS navigation messages.
  * \{ */
 
+ enum class L1LnavSystem
+{
+    GPS,
+    QZSS
+};
 
 class gps_l1_ca_telemetry_decoder_gs;
 
@@ -42,7 +47,8 @@ using gps_l1_ca_telemetry_decoder_gs_sptr = gnss_shared_ptr<gps_l1_ca_telemetry_
 
 gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    const Tlm_Conf &conf);
+    const Tlm_Conf &conf,
+    L1LnavSystem system = L1LnavSystem::GPS);
 
 /*!
  * \brief This class implements a block that decodes the NAV data defined in IS-GPS-200M
@@ -64,9 +70,10 @@ public:
 private:
     friend gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(
         const Gnss_Satellite &satellite,
-        const Tlm_Conf &conf);
+        const Tlm_Conf &conf,
+        L1LnavSystem system);
 
-    gps_l1_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
+    gps_l1_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf, L1LnavSystem system);
 
     void check_tlm_separation();
     void frame_synchronization(const Gnss_Synchro &current_gs);
@@ -74,7 +81,8 @@ private:
     bool gps_word_parityCheck(uint32_t gpsword);
     bool decode_subframe(double cn0, bool flag_invert);
 
-    Gps_Navigation_Message d_nav;
+    L1LnavSystem d_system; 
+    std::unique_ptr<Gps_Navigation_Message> d_nav;
     Gnss_Satellite d_satellite;
     Nav_Message_Packet d_nav_msg_packet;
     std::unique_ptr<Tlm_CRC_Stats> d_Tlm_CRC_Stats;

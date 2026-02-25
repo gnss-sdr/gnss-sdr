@@ -25,13 +25,19 @@
 #include <limits>    // for std::numeric_limits
 
 
-Gps_Navigation_Message::Gps_Navigation_Message()
+Gps_Navigation_Message::Gps_Navigation_Message(LnavSystem system)
+    : d_system(system)
 {
     auto gnss_sat = Gnss_Satellite();
-    const std::string _system("GPS");
-    for (uint32_t i = 1; i < 33; i++)
+
+    const std::string sys_str = (d_system == LnavSystem::GPS) ? "GPS" : "QZSS";
+
+    uint32_t prn_min = (d_system == LnavSystem::GPS) ? 1 : 193;
+    uint32_t prn_max = (d_system == LnavSystem::GPS) ? 32 : 202;
+
+    for (uint32_t i = prn_min; i <= prn_max; ++i)
         {
-            satelliteBlock[i] = gnss_sat.what_block(_system, i);
+            satelliteBlock[i] = gnss_sat.what_block(sys_str, i);
             almanacHealth[i] = 0;
         }
 }

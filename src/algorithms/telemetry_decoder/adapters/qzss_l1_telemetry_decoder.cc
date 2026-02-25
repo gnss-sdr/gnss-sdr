@@ -17,7 +17,7 @@
 
 
 #include "qzss_l1_telemetry_decoder.h"
-// #include "qzss_l1_telemetry_decoder_gs.h"
+#include "gps_l1_ca_telemetry_decoder_gs.h"
 
 
 QzssL1TelemetryDecoder::QzssL1TelemetryDecoder(
@@ -30,5 +30,5 @@ QzssL1TelemetryDecoder::QzssL1TelemetryDecoder(
           in_streams,
           out_streams)
 {
-    // TODO: InitializeDecoder(qzss_l1_make_telemetry_decoder_gs(satellite(), tlm_parameters_));
+    InitializeDecoder(gps_l1_ca_make_telemetry_decoder_gs(satellite(), tlm_parameters_, L1LnavSystem::QZSS));
 }

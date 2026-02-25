@@ -513,7 +513,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     d_symbols_per_bit = 0;
                 }
         }
-    else if (d_trk_parameters.system == 'Q')
+    else if (d_trk_parameters.system == 'J')
         {
             d_systemName = "QZSS";
             if (d_signal_type == "J1")

@@ -51,7 +51,7 @@ void QzssL1DllPllTracking::configure_tracking_parameters(
     const ConfigurationInterface* configuration __attribute__((unused)))
 {
     // Set basic signal identifiers
-    config_params().system = 'Q';
+    config_params().system = 'J';
     const std::array<char, 3> sig{'J', '1', '\0'};
     std::copy_n(sig.data(), 3, config_params().signal);
 

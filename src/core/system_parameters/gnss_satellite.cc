@@ -322,7 +322,7 @@ std::string Gnss_Satellite::get_system() const
 
 std::string Gnss_Satellite::get_system_short() const
 {
-    // Get the satellite system {"G", "R", "S", "E", "C", "Q"}
+    // Get the satellite system {"G", "R", "S", "E", "C", "J"}
     return satelliteSystem.at(system);
 }
 

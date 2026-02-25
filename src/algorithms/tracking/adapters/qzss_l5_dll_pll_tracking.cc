@@ -64,7 +64,7 @@ void QzssL5DllPllTracking::configure_tracking_parameters(
         {
             std::cout << TEXT_RED << "WARNING: QZSS L5. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << '\n';
         }
-    config_params().system = 'Q';
+    config_params().system = 'J';
     const std::array<char, 3> sig{'J', '5', '\0'};
     std::copy_n(sig.data(), 3, config_params().signal);
 }

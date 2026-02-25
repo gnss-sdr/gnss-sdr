@@ -1231,7 +1231,8 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     if (gps_eph->SV_health != 0)
                         {
-                            std::cout << TEXT_RED << "Satellite " << Gnss_Satellite(std::string("GPS"), gps_eph->PRN)
+                            const std::string sat_sys = (MINPRNQZS <= gps_eph->PRN && gps_eph->PRN <= MAXPRNQZS) ? "QZSS" : "GPS";
+                            std::cout << TEXT_RED << "Satellite " << Gnss_Satellite(sat_sys, gps_eph->PRN)
                                       << " reports an unhealthy status,";
                             if (d_use_unhealthy_sats)
                                 {
@@ -1286,7 +1287,8 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     if (gps_cnav_ephemeris->signal_health != 0)
                         {
-                            std::cout << "Satellite " << Gnss_Satellite(std::string("GPS"), gps_cnav_ephemeris->PRN)
+                            const std::string sat_sys = (MINPRNQZS <= gps_cnav_ephemeris->PRN && gps_cnav_ephemeris->PRN <= MAXPRNQZS) ? "QZSS" : "GPS";
+                            std::cout << "Satellite " << Gnss_Satellite(sat_sys, gps_cnav_ephemeris->PRN)
                                       << " reports an unhealthy status in the CNAV message,";
                             if (d_use_unhealthy_sats)
                                 {

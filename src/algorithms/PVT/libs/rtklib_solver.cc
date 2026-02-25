@@ -76,6 +76,8 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     d_rtklib_band_index["5X"] = 2;
     d_rtklib_band_index["L5"] = 2;
     d_rtklib_band_index["E6"] = 0;
+    d_rtklib_band_index["J1"] = 0;
+    d_rtklib_band_index["J5"] = 2;
 
     const Signal_Enabled_Flags flags(d_signal_enabled_flags);
 
@@ -846,9 +848,10 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
             switch (gnss_observables_iter->second.System)
                 {
                 case 'G':
+                case 'J':
                     {
                         const std::string sig_(gnss_observables_iter->second.Signal, 2);
-                        if (sig_ == "1C")
+                        if ((sig_ == "1C") || (sig_ == "J1"))
                             {
                                 band1 = true;
                             }
@@ -1038,20 +1041,28 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         break;
                     }
                 case 'G':
+                case 'J':
                     {
-                        // GPS L1
-                        // 1 GPS - find the ephemeris for the current GPS SV observation. The SV PRN ID is the map key
-                        const std::string gps_str("GPS");
+                        const bool is_qzss = (gnss_observables_iter->second.System == 'J');
+                        // GPS/QZSS L1
+                        // find the ephemeris for the current SV observation. The SV PRN ID is the map key
+                        const std::string gnss_str = is_qzss ? "QZSS" : "GPS";
+                        const int sat_sys = is_qzss ? SYS_QZS : SYS_GPS;
+                        const int sat = satno(sat_sys, gnss_observables_iter->second.PRN);
                         const std::string sig_(gnss_observables_iter->second.Signal, 2);
-                        if (sig_ == "1C")
+                        const bool is_l1_ca = (sig_ == "1C") || (sig_ == "J1");
+                        const bool is_l2 = (sig_ == "2S");
+                        const bool is_l5 = (sig_ == "L5") || (sig_ == "J5");
+                        const std::string rtklib_sig = is_qzss ? (is_l1_ca ? "J1" : (is_l5 ? "J5" : sig_)) : sig_;
+                        if (is_l1_ca)
                             {
                                 gps_ephemeris_iter = gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (gps_ephemeris_iter != gps_ephemeris_map.cend())
                                     {
                                         // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                         eph_data[valid_obs] = eph_to_rtklib(gps_ephemeris_iter->second,
-                                            this->d_has_orbit_corrections_store_map[gps_str],
-                                            this->d_has_clock_corrections_store_map[gps_str],
+                                            this->d_has_orbit_corrections_store_map[gnss_str],
+                                            this->d_has_clock_corrections_store_map[gnss_str],
                                             this->is_pre_2009());
                                         // convert observation from GNSS-SDR class to RTKLIB structure
                                         obsd_t newobs{};
@@ -1059,7 +1070,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             gnss_observables_iter->second,
                                             d_has_obs_corr_map,
                                             gps_ephemeris_iter->second.WN,
-                                            d_rtklib_band_index[sig_],
+                                            d_rtklib_band_index[rtklib_sig],
                                             this->is_pre_2009());
                                         valid_obs++;
                                     }
@@ -1069,7 +1080,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     }
                             }
                         // GPS L2 (todo: solve NAV/CNAV clash)
-                        if ((sig_ == "2S") and (gps_dual_band == false))
+                        if (is_l2 && (gps_dual_band == false))
                             {
                                 gps_cnav_ephemeris_iter = gps_cnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (gps_cnav_ephemeris_iter != gps_cnav_ephemeris_map.cend())
@@ -1108,7 +1119,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     gps_cnav_ephemeris_iter->second.WN,
-                                                    d_rtklib_band_index[sig_]);
+                                                    d_rtklib_band_index[rtklib_sig]);
                                                 valid_obs++;
                                             }
                                     }
@@ -1117,8 +1128,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
                                     }
                             }
-                        // GPS L5
-                        if (sig_ == "L5")
+                        // GPS/QZSS L5
+                        if (is_l5)
                             {
                                 gps_cnav_ephemeris_iter = gps_cnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (gps_cnav_ephemeris_iter != gps_cnav_ephemeris_map.cend())
@@ -1131,13 +1142,13 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 // (more precise!), and attach the L5 observation to the L1 observation in RTKLIB structure
                                                 for (int i = 0; i < valid_obs; i++)
                                                     {
-                                                        if (eph_data[i].sat == static_cast<int>(gnss_observables_iter->second.PRN))
+                                                        if (eph_data[i].sat == sat)
                                                             {
                                                                 eph_data[i] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
                                                                 d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i],
                                                                     gnss_observables_iter->second,
                                                                     gps_cnav_ephemeris_iter->second.WN,
-                                                                    d_rtklib_band_index[sig_]);
+                                                                    d_rtklib_band_index[rtklib_sig]);
                                                                 break;
                                                             }
                                                     }
@@ -1156,7 +1167,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                     gnss_observables_iter->second,
                                                     d_has_obs_corr_map,
                                                     gps_cnav_ephemeris_iter->second.WN,
-                                                    d_rtklib_band_index[sig_]);
+                                                    d_rtklib_band_index[rtklib_sig]);
                                                 valid_obs++;
                                             }
                                     }

@@ -22,12 +22,18 @@
 #include <limits>  // for std::numeric_limits
 
 
-Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message()
+Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message(CnavSystem system)
+    : d_system(system)
 {
-    Gnss_Satellite gnss_satellite_ = Gnss_Satellite();
-    for (uint32_t prn_ = 1; prn_ < 33; prn_++)
+    auto gnss_satellite = Gnss_Satellite();
+
+    const std::string sys_str = (d_system == CnavSystem::GPS) ? "GPS" : "QZSS";
+    const uint32_t prn_min = (d_system == CnavSystem::GPS) ? 1 : 193;
+    const uint32_t prn_max = (d_system == CnavSystem::GPS) ? 32 : 202;
+
+    for (uint32_t prn_ = prn_min; prn_ <= prn_max; ++prn_)
         {
-            satelliteBlock[prn_] = gnss_satellite_.what_block("GPS", prn_);
+            satelliteBlock[prn_] = gnss_satellite.what_block(sys_str, prn_);
         }
     b_flag_iono_valid = false;
     b_flag_utc_valid = false;

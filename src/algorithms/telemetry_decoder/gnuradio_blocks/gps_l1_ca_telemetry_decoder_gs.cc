@@ -3,10 +3,11 @@
  * \brief Implementation of a NAV message demodulator block based on
  * Kay Borre book MATLAB-based GPS receiver
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ * \author Carles Fernandez Prades, 2011-2026. cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver

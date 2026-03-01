@@ -2,12 +2,13 @@
  * \file gps_l5_telemetry_decoder_gs.h
  * \brief Interface of a CNAV message demodulator block
  * \author Antonio Ramos, 2017. antonio.ramos(at)cttc.es
+ * \author Carles Fernandez Prades, 2017-2026. cfernandez(at)cttc.es
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -42,7 +43,8 @@ using gps_l5_telemetry_decoder_gs_sptr = gnss_shared_ptr<gps_l5_telemetry_decode
 
 gps_l5_telemetry_decoder_gs_sptr gps_l5_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    const Tlm_Conf &conf);
+    const Tlm_Conf &conf,
+    CnavSystem system = CnavSystem::GPS);
 
 /*!
  * \brief This class implements a GPS L5 Telemetry decoder
@@ -61,15 +63,17 @@ public:
 private:
     friend gps_l5_telemetry_decoder_gs_sptr gps_l5_make_telemetry_decoder_gs(
         const Gnss_Satellite &satellite,
-        const Tlm_Conf &conf);
+        const Tlm_Conf &conf,
+        CnavSystem system);
 
-    gps_l5_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
+    gps_l5_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf, CnavSystem system);
 
     cnav_msg_decoder_t d_cnav_decoder{};
 
     Gnss_Satellite d_satellite;
+    CnavSystem d_system;
 
-    Gps_CNAV_Navigation_Message d_CNAV_Message;
+    std::unique_ptr<Gps_CNAV_Navigation_Message> d_CNAV_Message;
 
     Nav_Message_Packet d_nav_msg_packet;
     std::unique_ptr<Tlm_CRC_Stats> d_Tlm_CRC_Stats;

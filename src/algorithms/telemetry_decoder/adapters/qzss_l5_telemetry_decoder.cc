@@ -17,7 +17,7 @@
 
 
 #include "qzss_l5_telemetry_decoder.h"
-// #include "qzss_l5_telemetry_decoder_gs.h"
+#include "gps_l5_telemetry_decoder_gs.h"
 
 
 QzssL5TelemetryDecoder::QzssL5TelemetryDecoder(
@@ -30,5 +30,5 @@ QzssL5TelemetryDecoder::QzssL5TelemetryDecoder(
           in_streams,
           out_streams)
 {
-    // TODO: InitializeDecoder(qzss_l5_make_telemetry_decoder_gs(satellite(), tlm_parameters_));
+    InitializeDecoder(gps_l5_make_telemetry_decoder_gs(satellite(), tlm_parameters_, CnavSystem::QZSS));
 }

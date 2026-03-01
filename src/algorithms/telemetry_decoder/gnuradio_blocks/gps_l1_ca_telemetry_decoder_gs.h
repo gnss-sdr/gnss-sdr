@@ -3,12 +3,14 @@
  * \brief Interface of a NAV message demodulator block based on
  * Kay Borre book MATLAB-based GPS receiver
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ * \author Carles Fernandez Prades, 2011-2026. cfernandez(at)cttc.es
+ *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -35,7 +37,7 @@
  * GNU Radio blocks for the demodulation of GNSS navigation messages.
  * \{ */
 
- enum class L1LnavSystem
+enum class L1LnavSystem
 {
     GPS,
     QZSS
@@ -81,7 +83,7 @@ private:
     bool gps_word_parityCheck(uint32_t gpsword);
     bool decode_subframe(double cn0, bool flag_invert);
 
-    L1LnavSystem d_system; 
+    L1LnavSystem d_system;
     std::unique_ptr<Gps_Navigation_Message> d_nav;
     Gnss_Satellite d_satellite;
     Nav_Message_Packet d_nav_msg_packet;

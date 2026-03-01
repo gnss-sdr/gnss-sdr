@@ -157,7 +157,7 @@ private:
     std::map<int32_t, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs https://www.navcen.uscg.gov/?Do=constellationStatus
 
     LnavSystem d_system;
-    
+
     // broadcast orbit 1
     int32_t d_TOW{};      // Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
     int32_t d_TOW_SF1{};  // Time of GPS Week from HOW word of Subframe 1 [s]

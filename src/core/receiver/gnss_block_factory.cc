@@ -105,7 +105,9 @@
 #include "pulse_blanking_filter.h"
 #include "qzss_l1_dll_pll_tracking.h"
 #include "qzss_l1_pcps_acquisition.h"
+#include "qzss_l1_telemetry_decoder.h"
 #include "qzss_l5_dll_pll_tracking.h"
+#include "qzss_l5_telemetry_decoder.h"
 #include "qzss_l5i_pcps_acquisition.h"
 #include "rtklib_pvt.h"
 #include "rtl_tcp_signal_source.h"
@@ -727,6 +729,14 @@ std::unique_ptr<TelemetryDecoderInterface> get_tlm_block(
     else if (implementation == "BEIDOU_B3I_Telemetry_Decoder")
         {
             return std::make_unique<BeidouB3iTelemetryDecoder>(configuration, role, in_streams, out_streams);
+        }
+    else if (implementation == "QZSS_L1_Telemetry_Decoder")
+        {
+            return std::make_unique<QzssL1TelemetryDecoder>(configuration, role, in_streams, out_streams);
+        }
+    else if (implementation == "QZSS_L5_Telemetry_Decoder")
+        {
+            return std::make_unique<QzssL5TelemetryDecoder>(configuration, role, in_streams, out_streams);
         }
 
     return nullptr;

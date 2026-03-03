@@ -125,9 +125,9 @@ static QzssL5Entry qzss_l5_table(uint32_t prn)
 // Generates real QZSS L1 C/A code (1023 chips, +/-1)
 void qzss_l1_code_gen_float(own::span<float> dest, uint32_t prn)
 {
-    if (dest.size() != QZSS_L1_CODE_LENGTH)
+    if (dest.size() < QZSS_L1_CODE_LENGTH)
         {
-            LOG(WARNING) << "QZSS L1 code must be 1023 chips";
+            LOG(WARNING) << "QZSS L1 code must be >= 1023 chips";
             return;
         }
 
@@ -242,9 +242,9 @@ static uint8_t xb_step(uint16_t& state)
 
 void qzss_l5i_code_gen_float(own::span<float> dest, uint32_t prn)
 {
-    if (dest.size() != QZSS_L5_CODE_LENGTH)
+    if (dest.size() < QZSS_L5_CODE_LENGTH)
         {
-            LOG(WARNING) << "L5I code must be 10230 chips";
+            LOG(WARNING) << "L5I code must be >= 10230 chips";
             return;
         }
 
@@ -265,9 +265,9 @@ void qzss_l5i_code_gen_float(own::span<float> dest, uint32_t prn)
 
 void qzss_l5q_code_gen_float(own::span<float> dest, uint32_t prn)
 {
-    if (dest.size() != QZSS_L5_CODE_LENGTH)
+    if (dest.size() < QZSS_L5_CODE_LENGTH)
         {
-            LOG(WARNING) << "L5Q code must be 10230 chips";
+            LOG(WARNING) << "L5Q code must be >= 10230 chips";
             return;
         }
 

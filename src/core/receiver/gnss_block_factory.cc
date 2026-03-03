@@ -634,7 +634,7 @@ std::unique_ptr<TrackingInterface> get_trk_block(
         {
             return std::make_unique<BeidouB3iDllPllTracking>(configuration, role, in_streams, out_streams);
         }
-    else if (implementation == "QZSS_L1_DLL_PLL_Tracking")
+    else if (implementation == "QZSS_L1_CA_DLL_PLL_Tracking")
         {
             return std::make_unique<QzssL1DllPllTracking>(configuration, role, in_streams, out_streams);
         }

@@ -481,7 +481,14 @@ Gps_Ephemeris Gps_Navigation_Message::get_ephemeris() const
     ephemeris.integrity_status_flag = b_integrity_status_flag;
     ephemeris.alert_flag = b_alert_flag;
     ephemeris.antispoofing_flag = b_antispoofing_flag;
-
+    if (d_system == LnavSystem::QZSS)
+        {
+            auto gnss_sat = Gnss_Satellite();
+            for (uint32_t i = 193; i < 203; i++)
+                {
+                    ephemeris.satelliteBlock[i] = gnss_sat.what_block("QZSS", i);
+                }
+        }
     return ephemeris;
 }
 

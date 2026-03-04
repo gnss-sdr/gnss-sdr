@@ -696,6 +696,10 @@ set_package_properties(GNURADIO PROPERTIES
     TYPE REQUIRED
 )
 
+if(NOT GNURADIO_FOUND)
+    message(FATAL_ERROR "GNU Radio is required but not found")
+endif()
+
 if(NOT (GNURADIO_VERSION VERSION_LESS "3.8"))
     set(GNURADIO_IS_38_OR_GREATER ON)
 endif()
@@ -787,7 +791,7 @@ set(Boost_ADDITIONAL_VERSIONS
     "1.70.0" "1.70" "1.71.0" "1.71"
 )
 set(Boost_USE_MULTITHREAD ON)
-set(BOOST_COMPONENTS atomic chrono date_time serialization system thread)
+set(BOOST_COMPONENTS atomic chrono date_time serialization thread)
 if(NOT ${FILESYSTEM_FOUND})
     set(BOOST_COMPONENTS ${BOOST_COMPONENTS} filesystem)
 endif()
@@ -808,6 +812,14 @@ else()
 endif()
 if(NOT Boost_FOUND)
     message(FATAL_ERROR "Fatal error: Boost (version >=${GNSSSDR_BOOST_MIN_VERSION}) required.")
+else()
+    if(Boost_VERSION VERSION_LESS 1.89)
+        find_package(Boost ${GNSSSDR_BOOST_MIN_VERSION} REQUIRED COMPONENTS system)
+    else()
+        if(NOT TARGET Boost::system)
+            add_library(Boost::system ALIAS Boost::headers)
+        endif()
+    endif()
 endif()
 
 set_package_properties(Boost PROPERTIES

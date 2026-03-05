@@ -18,9 +18,8 @@
 
 #include "gps_cnav_navigation_message.h"
 #include "gnss_satellite.h"
-#include <cmath>   // for std::sqrt
-#include <limits>  // for std::numeric_limits
-
+#include <cmath>     // for std::sqrt
+#include <limits>    // for std::numeric_limits
 
 Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message(CnavSystem system)
     : d_system(system)
@@ -81,7 +80,11 @@ void Gps_CNAV_Navigation_Message::decode_page(const std::bitset<GPS_CNAV_DATA_PA
     bool alert_flag;
 
     // common to all messages
-    const auto PRN = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_PRN));
+    auto PRN = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_PRN));
+    if (d_system == CnavSystem::QZSS)
+        {
+            PRN += 192;
+        }
     ephemeris_record.PRN = PRN;
 
     d_TOW = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_TOW));
@@ -92,7 +95,6 @@ void Gps_CNAV_Navigation_Message::decode_page(const std::bitset<GPS_CNAV_DATA_PA
     ephemeris_record.alert_flag = alert_flag;
 
     page_type = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_MSG_TYPE));
-
 
     switch (page_type)
         {

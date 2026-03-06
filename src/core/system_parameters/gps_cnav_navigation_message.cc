@@ -18,8 +18,8 @@
 
 #include "gps_cnav_navigation_message.h"
 #include "gnss_satellite.h"
-#include <cmath>     // for std::sqrt
-#include <limits>    // for std::numeric_limits
+#include <cmath>   // for std::sqrt
+#include <limits>  // for std::numeric_limits
 
 Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message(CnavSystem system)
     : d_system(system)
@@ -110,7 +110,15 @@ void Gps_CNAV_Navigation_Message::decode_page(const std::bitset<GPS_CNAV_DATA_PA
             ephemeris_record.delta_A *= CNAV_DELTA_A_LSB;
             ephemeris_record.Adot = static_cast<double>(read_navigation_signed(data_bits, CNAV_A_DOT));
             ephemeris_record.Adot *= CNAV_A_DOT_LSB;
-            ephemeris_record.sqrtA = std::sqrt(CNAV_A_REF + ephemeris_record.delta_A);
+            if (d_system == CnavSystem::GPS)
+                {
+                    ephemeris_record.sqrtA = std::sqrt(CNAV_A_REF + ephemeris_record.delta_A);
+                }
+            else
+                {
+                    ephemeris_record.sqrtA = std::sqrt(CNAV_QZSS_A_REF + ephemeris_record.delta_A);
+                }
+
             ephemeris_record.delta_n = static_cast<double>(read_navigation_signed(data_bits, CNAV_DELTA_N0));
             ephemeris_record.delta_n *= CNAV_DELTA_N0_LSB;
             ephemeris_record.delta_ndot = static_cast<double>(read_navigation_signed(data_bits, CNAV_DELTA_N0_DOT));

@@ -2251,11 +2251,11 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
     //       but we already have code to update the headers later, so this should not be needed,
     //       we should instead write blank statements in the header and update them when we receive
     //       the ephemeris of the different constellations
-    if (d_flags.check_any_enabled(GPS_1C) && !has_gps_lnav_eph)
+    if (d_flags.check_any_enabled(GPS_1C, QZS_J1) && !has_gps_lnav_eph)
         {
             return;
         }
-    if (d_flags.check_any_enabled(GPS_2S, GPS_L5) && !has_gps_cnav_eph)
+    if (d_flags.check_any_enabled(GPS_2S, GPS_L5, QZS_J5) && !has_gps_cnav_eph)
         {
             return;
         }
@@ -2268,10 +2268,6 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
             return;
         }
     if (d_flags.has_beidou && !has_beidou_dnav_eph)
-        {
-            return;
-        }
-    if (d_flags.has_qzss && !has_gps_lnav_eph)
         {
             return;
         }
@@ -2314,7 +2310,14 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
         }
     else if (d_flags.has_qzss)
         {
-            system_time = Rinex_Printer::compute_GPS_time(gps_ephemeris_iter->second, rx_time);
+            if (d_flags.check_any_enabled(QZS_J1))
+                {
+                    system_time = Rinex_Printer::compute_GPS_time(gps_ephemeris_iter->second, rx_time);
+                }
+            else if (d_flags.check_any_enabled(QZS_J5))
+                {
+                    system_time = Rinex_Printer::compute_GPS_time(gps_cnav_ephemeris_iter->second, rx_time);
+                }
             seconds = fmod(rx_time, 60);
             system_time_str = "QZS";
         }
@@ -2526,7 +2529,6 @@ void Rinex_Printer::log_rinex_nav_gps_nav(const std::map<int32_t, Gps_Ephemeris>
 {
     std::string line;
     auto& out = navFile;
-    const auto& sys_char = satelliteSystem.at("GPS");
 
     for (const auto& gps_ephemeris_iter : new_eph)
         {
@@ -2557,7 +2559,7 @@ void Rinex_Printer::log_rinex_nav_gps_nav(const std::map<int32_t, Gps_Ephemeris>
                 }
             if (d_version == 3)
                 {
-                    const auto sat_system_char = is_qzss_prn(eph.PRN) ? satelliteSystem.at("QZSS") : sys_char;
+                    const auto sat_system_char = is_qzss_prn(eph.PRN) ? satelliteSystem.at("QZSS") : satelliteSystem.at("GPS");
                     const auto rinex_prn = is_qzss_prn(eph.PRN) ? to_rinex_qzss_prn(eph.PRN) : eph.PRN;
                     out << get_nav_sv_epoch_svclk_line(p_utc_time, sat_system_char, rinex_prn, eph.af0, eph.af1, eph.af2) << '\n';
                 }
@@ -2689,7 +2691,6 @@ void Rinex_Printer::log_rinex_nav_gps_nav(const std::map<int32_t, Gps_Ephemeris>
 void Rinex_Printer::log_rinex_nav_gps_cnav(const std::map<int32_t, Gps_CNAV_Ephemeris>& new_cnav_eph)
 {
     auto& out = navFile;
-    const auto& sys_char = satelliteSystem.at("GPS");
 
     for (const auto& gps_ephemeris_iter : new_cnav_eph)
         {
@@ -2697,7 +2698,9 @@ void Rinex_Printer::log_rinex_nav_gps_cnav(const std::map<int32_t, Gps_CNAV_Ephe
 
             // -------- SV / EPOCH / SV CLK
             const boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_GPS_time(eph, eph.toc);
-            out << get_nav_sv_epoch_svclk_line(p_utc_time, sys_char, eph.PRN, eph.af0, eph.af1, eph.af2) << '\n';
+            const auto sat_system_char = is_qzss_prn(eph.PRN) ? satelliteSystem.at("QZSS") : satelliteSystem.at("GPS");
+            const auto rinex_prn = is_qzss_prn(eph.PRN) ? to_rinex_qzss_prn(eph.PRN) : eph.PRN;
+            out << get_nav_sv_epoch_svclk_line(p_utc_time, sat_system_char, rinex_prn, eph.af0, eph.af1, eph.af2) << '\n';
 
             // -------- BROADCAST ORBIT - 1
 

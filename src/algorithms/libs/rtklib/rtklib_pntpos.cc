@@ -154,11 +154,11 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         }
 
     /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS/BDS */
-    if (sys == SYS_GAL or sys == SYS_SBS or sys == SYS_BDS)
+    if (sys == SYS_GAL || sys == SYS_SBS || sys == SYS_BDS || sys == SYS_QZS)
         {
             j = 2;
         }
-    else if (sys == SYS_GPS or sys == SYS_GLO)
+    else if (sys == SYS_GPS || sys == SYS_GLO || sys == SYS_QZS)
         {
             if (obs->code[1] != CODE_NONE)
                 {
@@ -170,7 +170,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                 }
         }
 
-    if (lam[i] == 0.0 or lam[j] == 0.0)
+    if (lam[i] == 0.0 || lam[j] == 0.0)
         {
             trace(4, "prange: NFREQ<2||lam[i]==0.0||lam[j]==0.0\n");
             printf("i: %d j:%d, lam[i]: %f lam[j] %f\n", i, j, lam[i], lam[j]);
@@ -196,7 +196,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                 }
         }
     /* fL1^2 / fL2(orL5)^2 . See IS-GPS-200, p. 103 and Galileo ICD p. 48 */
-    if (sys == SYS_GPS or sys == SYS_GAL or sys == SYS_GLO or sys == SYS_BDS)
+    if (sys == SYS_GPS || sys == SYS_GAL || sys == SYS_GLO || sys == SYS_BDS || sys == SYS_QZS)
         {
             gamma_ = std::pow(lam[j], 2.0) / std::pow(lam[i], 2.0);
         }
@@ -255,7 +255,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                 }
             else if (obs->code[i] == CODE_NONE and obs->code[j] != CODE_NONE)
                 {
-                    if (sys == SYS_GPS)
+                    if (sys == SYS_GPS || sys == SYS_QZS)
                         {
                             P2 += P2_C2; /* C2->P2 */
                             // PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
@@ -273,14 +273,14 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                             P2 += P2_C2; /* C2->P2 */
                             PC = P2;     // no tgd corrections for B3I
                         }
-                    else if (sys == SYS_GAL or sys == SYS_GLO or sys == SYS_BDS)  // Gal. E5a single freq.
+                    else if (sys == SYS_GAL || sys == SYS_GLO || sys == SYS_BDS)  // Gal. E5a single freq.
                         {
                             P2 += P2_C2; /* C2->P2 */
                             PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
                         }
                 }
             /* dual-frequency */
-            else if (sys == SYS_GPS)
+            else if (sys == SYS_GPS || sys == SYS_QZS) /* L1 + L2 */
                 {
                     if (obs->code[j] == CODE_L2S) /* L1 + L2 */
                         {
@@ -297,7 +297,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                             PC = P1 + P1_P2;
                         }
                 }
-            else if (sys == SYS_GAL or sys == SYS_GLO or sys == SYS_BDS) /* E1 + E5a */
+            else if (sys == SYS_GAL || sys == SYS_GLO || sys == SYS_BDS) /* E1 + E5a */
                 {
                     P1 += P1_C1;
                     P2 += P2_C2;

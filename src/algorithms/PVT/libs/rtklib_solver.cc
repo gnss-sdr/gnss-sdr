@@ -1145,7 +1145,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                         if (eph_data[i].sat == sat)
                                                             {
                                                                 eph_data[i] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
-                                                                d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i],
+                                                                d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
                                                                     gnss_observables_iter->second,
                                                                     gps_cnav_ephemeris_iter->second.WN,
                                                                     d_rtklib_band_index[rtklib_sig]);

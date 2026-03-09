@@ -43,6 +43,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   RINEX observation files. This introduces a new field in `Gnss_Synchro` and in
   the corresponding `.proto` definition.
 - Improved tracking of GPS L2C(M) signals.
+- Added processing chains for the Quasi-Zenith Satellite System (QZSS), Japan’s
+  regional navigation satellite system, supporting L1 C/A and L5 signals.
 
 ### Improvements in Maintainability:
 

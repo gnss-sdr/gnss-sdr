@@ -235,8 +235,8 @@ void GNSSFlowgraph::init()
     mapStringValues_["2G"] = evGLO_2G;
     mapStringValues_["B1"] = evBDS_B1;
     mapStringValues_["B3"] = evBDS_B3;
-    mapStringValues_["J1"] = evQZSS_J1;
-    mapStringValues_["J5"] = evQZSS_J5;
+    mapStringValues_["J1"] = evQZS_J1;
+    mapStringValues_["J5"] = evQZS_J5;
 
     // fill the signals queue with the satellites ID's to be searched by the acquisition
     set_signals_list();
@@ -1152,10 +1152,10 @@ int GNSSFlowgraph::connect_signal_conditioners_to_channels()
                                 case evBDS_B3:
                                     acq_fs = fs;
                                     break;
-                                case evQZSS_J1:
+                                case evQZS_J1:
                                     acq_fs = QZSS_L1_OPT_ACQ_FS_SPS;
                                     break;
-                                case evQZSS_J5:
+                                case evQZS_J5:
                                     acq_fs = QZSS_L5_OPT_ACQ_FS_SPS;
                                     break;
                                 default:
@@ -1686,7 +1686,7 @@ double GNSSFlowgraph::project_doppler(const std::string& searched_signal, double
         case evGAL_E6:
             return (primary_freq_doppler_hz / FREQ1) * FREQ6;
             break;
-        case evQZSS_J5:
+        case evQZS_J5:
             return (primary_freq_doppler_hz / FREQ1) * FREQ5;
             break;
         default:
@@ -2243,11 +2243,11 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
         case evGAL_1B:
         case evGLO_1G:
         case evBDS_B1:
-        case evQZSS_J1:
+        case evQZS_J1:
             is_primary_frequency = true;
             break;
 
-        case evQZSS_J5:
+        case evQZS_J5:
             assist_signal = "J1";
             break;
 

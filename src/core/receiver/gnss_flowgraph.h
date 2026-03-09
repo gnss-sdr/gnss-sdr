@@ -262,8 +262,8 @@ private:
         evGLO_2G,
         evBDS_B1,
         evBDS_B3,
-        evQZSS_J1,
-        evQZSS_J5
+        evQZS_J1,
+        evQZS_J5
     };
     std::map<std::string, StringValue> mapStringValues_;
 

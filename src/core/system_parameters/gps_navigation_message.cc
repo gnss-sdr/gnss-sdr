@@ -123,7 +123,14 @@ int32_t Gps_Navigation_Message::subframe_decoder(const char* subframe)
             b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
             i_GPS_week = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, GPS_WEEK));
             i_SV_accuracy = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, SV_ACCURACY));  // (20.3.3.3.1.3)
-            i_SV_health = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, SV_HEALTH));
+            if (d_system == LnavSystem::GPS)
+                {
+                    i_SV_health = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, SV_HEALTH));
+                }
+            else
+                {
+                    i_SV_health = (static_cast<int32_t>(read_navigation_unsigned(subframe_bits, SV_HEALTH)) >> 5) & 1;
+                }
             b_L2_P_data_flag = read_navigation_bool(subframe_bits, L2_P_DATA_FLAG);  //
             i_code_on_L2 = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, CA_OR_P_ON_L2));
             d_TGD = static_cast<double>(read_navigation_signed(subframe_bits, T_GD));

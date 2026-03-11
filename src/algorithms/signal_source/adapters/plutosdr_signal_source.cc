@@ -36,7 +36,7 @@ PlutosdrSignalSource::PlutosdrSignalSource(const ConfigurationInterface* configu
     Concurrent_Queue<pmt::pmt_t>* queue)
     : SignalSourceBase(configuration, role, "Plutosdr_Signal_Source"s),
       dump_filename_(configuration->property(role + ".dump_filename", std::string("./data/signal_source.dat"))),
-      uri_(configuration->property(role + ".device_address", std::string("192.168.2.1"))),
+      uri_(configuration->property(role + ".device_address", std::string("ip:192.168.2.1"))),
       gain_mode_(configuration->property(role + ".gain_mode", default_gain_mode)),
       filter_file_(configuration->property(role + ".filter_file", std::string(""))),
       filter_filename_(configuration->property(role + ".filter_filename", filter_file_)),
@@ -128,7 +128,7 @@ PlutosdrSignalSource::PlutosdrSignalSource(const ConfigurationInterface* configu
 
 #if GNURADIO_API_IIO
 #if GR_IIO_TEMPLATIZED_API
-    plutosdr_source_ = gr::iio::fmcomms2_source<gr_complex>::make(uri_, {true}, buffer_size_);
+    plutosdr_source_ = gr::iio::fmcomms2_source<gr_complex>::make(uri_, {true, true}, buffer_size_);
     plutosdr_source_->set_gain_mode(0, gain_mode_);
     plutosdr_source_->set_gain(0, rf_gain_);
 #else
@@ -147,6 +147,7 @@ PlutosdrSignalSource::PlutosdrSignalSource(const ConfigurationInterface* configu
         bandwidth_, buffer_size_, quadrature_, rf_dc_, bb_dc_,
         gain_mode_.c_str(), rf_gain_, filter_file_.c_str(), filter_auto_);
 #endif
+
     if (samples_ != 0)
         {
             DLOG(INFO) << "Send STOP signal after " << samples_ << " samples";
@@ -160,6 +161,7 @@ PlutosdrSignalSource::PlutosdrSignalSource(const ConfigurationInterface* configu
             file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
+
     if (in_stream_ > 0)
         {
             LOG(ERROR) << "A signal source does not have an input stream";
@@ -169,7 +171,6 @@ PlutosdrSignalSource::PlutosdrSignalSource(const ConfigurationInterface* configu
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
 
 void PlutosdrSignalSource::connect(gr::top_block_sptr top_block)
 {
@@ -193,7 +194,6 @@ void PlutosdrSignalSource::connect(gr::top_block_sptr top_block)
         }
 }
 
-
 void PlutosdrSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     if (samples_ != 0)
@@ -213,13 +213,11 @@ void PlutosdrSignalSource::disconnect(gr::top_block_sptr top_block)
         }
 }
 
-
 gr::basic_block_sptr PlutosdrSignalSource::get_left_block()
 {
     LOG(WARNING) << "Trying to get signal source left block.";
     return {};
 }
-
 
 gr::basic_block_sptr PlutosdrSignalSource::get_right_block()
 {

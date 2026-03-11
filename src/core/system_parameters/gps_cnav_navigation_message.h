@@ -2,13 +2,14 @@
  * \file gps_cnav_navigation_message.h
  * \brief  Interface of a GPS CNAV Data message decoder
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
+ * \author Carles Fernandez Prades, 2015-2026. cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -35,6 +36,11 @@
 /** \addtogroup System_Parameters
  * \{ */
 
+enum class CnavSystem
+{
+    GPS,
+    QZSS
+};
 
 /*!
  * \brief This class decodes a GPS CNAV Data message as described in IS-GPS-200M
@@ -47,7 +53,7 @@ public:
     /*!
      * Default constructor
      */
-    Gps_CNAV_Navigation_Message();
+    explicit Gps_CNAV_Navigation_Message(CnavSystem system = CnavSystem::GPS);
 
     void decode_page(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& data_bits);
 
@@ -92,6 +98,7 @@ private:
 
     std::map<int32_t, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs https://www.navcen.uscg.gov/?Do=constellationStatus
 
+    CnavSystem d_system;
     int32_t d_TOW{};
 
     bool b_flag_ephemeris_1{};

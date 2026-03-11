@@ -27,6 +27,8 @@ In the L1 band:
 - &#128752; GPS L1 C/A (centered at 1575.420 MHz) :white_check_mark:
 - &#128752; Galileo E1b/c (centered at 1575.420 MHz) :white_check_mark:
 - &#128752; BeiDou B1I (centered at 1561.098 MHz) :white_check_mark:
+- &#128752; QZSS L1 C/A, where available (centered at 1575.420 MHz)
+  :white_check_mark:
 
 In the E6 band:
 
@@ -43,6 +45,8 @@ In the L5 band:
 - &#128752; Galileo E5b (centered at 1207.140 MHz) :white_check_mark:
 - &#128752; Galileo E5a (centered at 1176.450 MHz) :white_check_mark:
 - &#128752; GPS L5 (centered at 1176.450 MHz) :white_check_mark:
+- &#128752; QZSS L5, where available (centered at 1176.450 MHz)
+  :white_check_mark:
 
 GNSS-SDR provides interfaces for a wide range of radio frequency front-ends and
 raw sample file formats, generates processing outputs in standard formats,
@@ -1539,12 +1543,14 @@ identifiers:
 | Galileo E1b/c  |       1B       |
 | Glonass L1 C/A |       1G       |
 | Beidou B1I     |       B1       |
+| QZSS L1 C/A    |       J1       |
 | Galileo E6B    |       E6       |
 | Beidou B3I     |       B3       |
 | GPS L2 L2C(M)  |       2S       |
 | Glonass L2 C/A |       2G       |
 | GPS L5         |       L5       |
 | Galileo E5a    |       5X       |
+| QZSS L5        |       J5       |
 | Galileo E5b    |       7X       |
 
 Example: Eight GPS L1 C/A channels.

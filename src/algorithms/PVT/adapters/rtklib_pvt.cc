@@ -232,7 +232,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     int num_bands = 0;
 
-    if (signal_enabled_flags.check_any_enabled(GPS_1C, GAL_1B, GLO_1G, BDS_B1))
+    if (signal_enabled_flags.check_any_enabled(GPS_1C, GAL_1B, GLO_1G, BDS_B1, QZS_J1))
         {
             num_bands += 1;
         }
@@ -244,7 +244,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {
             num_bands += 1;
         }
-    if (signal_enabled_flags.check_any_enabled(GAL_E5a, GPS_L5))
+    if (signal_enabled_flags.check_any_enabled(GAL_E5a, GPS_L5, QZS_J5))
         {
             num_bands += 1;
         }
@@ -387,6 +387,10 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     if (signal_enabled_flags.check_any_enabled(BDS_B1, BDS_B3))
         {
             nsys += SYS_BDS;
+        }
+    if (signal_enabled_flags.check_any_enabled(QZS_J1, QZS_J5))
+        {
+            nsys += SYS_QZS;
         }
 
     int navigation_system = configuration->property(role + ".navigation_system", nsys); /* (SYS_XXX) see src/algorithms/libs/rtklib/rtklib.h */

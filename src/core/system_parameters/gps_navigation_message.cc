@@ -25,13 +25,19 @@
 #include <limits>    // for std::numeric_limits
 
 
-Gps_Navigation_Message::Gps_Navigation_Message()
+Gps_Navigation_Message::Gps_Navigation_Message(LnavSystem system)
+    : d_system(system)
 {
     auto gnss_sat = Gnss_Satellite();
-    const std::string _system("GPS");
-    for (uint32_t i = 1; i < 33; i++)
+
+    const std::string sys_str = (d_system == LnavSystem::GPS) ? "GPS" : "QZSS";
+
+    uint32_t prn_min = (d_system == LnavSystem::GPS) ? 1 : 193;
+    uint32_t prn_max = (d_system == LnavSystem::GPS) ? 32 : 202;
+
+    for (uint32_t i = prn_min; i <= prn_max; ++i)
         {
-            satelliteBlock[i] = gnss_sat.what_block(_system, i);
+            satelliteBlock[i] = gnss_sat.what_block(sys_str, i);
             almanacHealth[i] = 0;
         }
 }
@@ -117,7 +123,14 @@ int32_t Gps_Navigation_Message::subframe_decoder(const char* subframe)
             b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
             i_GPS_week = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, GPS_WEEK));
             i_SV_accuracy = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, SV_ACCURACY));  // (20.3.3.3.1.3)
-            i_SV_health = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, SV_HEALTH));
+            if (d_system == LnavSystem::GPS)
+                {
+                    i_SV_health = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, SV_HEALTH));
+                }
+            else
+                {
+                    i_SV_health = (static_cast<int32_t>(read_navigation_unsigned(subframe_bits, SV_HEALTH)) >> 5) & 1;
+                }
             b_L2_P_data_flag = read_navigation_bool(subframe_bits, L2_P_DATA_FLAG);  //
             i_code_on_L2 = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, CA_OR_P_ON_L2));
             d_TGD = static_cast<double>(read_navigation_signed(subframe_bits, T_GD));
@@ -475,7 +488,14 @@ Gps_Ephemeris Gps_Navigation_Message::get_ephemeris() const
     ephemeris.integrity_status_flag = b_integrity_status_flag;
     ephemeris.alert_flag = b_alert_flag;
     ephemeris.antispoofing_flag = b_antispoofing_flag;
-
+    if (d_system == LnavSystem::QZSS)
+        {
+            auto gnss_sat = Gnss_Satellite();
+            for (uint32_t i = 193; i < 203; i++)
+                {
+                    ephemeris.satelliteBlock[i] = gnss_sat.what_block("QZSS", i);
+                }
+        }
     return ephemeris;
 }
 

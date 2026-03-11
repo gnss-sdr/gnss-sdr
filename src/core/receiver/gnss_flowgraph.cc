@@ -38,6 +38,7 @@
 #include "gnss_sdr_make_unique.h"
 #include "gnss_synchro_monitor.h"
 #include "nav_message_monitor.h"
+#include "qzss.h"
 #include "signal_source_interface.h"
 #include <boost/lexical_cast.hpp>    // for boost::lexical_cast
 #include <boost/tokenizer.hpp>       // for boost::tokenizer
@@ -90,6 +91,8 @@ const auto signal_mapping = std::unordered_map<std::string, std::pair<std::strin
     {"B3", {"Beidou", "B3"}},
     {"1G", {"Glonass", "L1"}},
     {"2G", {"Glonass", "L2"}},
+    {"J1", {"QZSS", "L1"}},
+    {"J5", {"QZSS", "L5"}},
 };
 
 }  // namespace
@@ -232,6 +235,8 @@ void GNSSFlowgraph::init()
     mapStringValues_["2G"] = evGLO_2G;
     mapStringValues_["B1"] = evBDS_B1;
     mapStringValues_["B3"] = evBDS_B3;
+    mapStringValues_["J1"] = evQZS_J1;
+    mapStringValues_["J5"] = evQZS_J5;
 
     // fill the signals queue with the satellites ID's to be searched by the acquisition
     set_signals_list();
@@ -1147,6 +1152,12 @@ int GNSSFlowgraph::connect_signal_conditioners_to_channels()
                                 case evBDS_B3:
                                     acq_fs = fs;
                                     break;
+                                case evQZS_J1:
+                                    acq_fs = QZSS_L1_OPT_ACQ_FS_SPS;
+                                    break;
+                                case evQZS_J5:
+                                    acq_fs = QZSS_L5_OPT_ACQ_FS_SPS;
+                                    break;
                                 default:
                                     break;
                                 }
@@ -1675,6 +1686,9 @@ double GNSSFlowgraph::project_doppler(const std::string& searched_signal, double
         case evGAL_E6:
             return (primary_freq_doppler_hz / FREQ1) * FREQ6;
             break;
+        case evQZS_J5:
+            return (primary_freq_doppler_hz / FREQ1) * FREQ5;
+            break;
         default:
             return primary_freq_doppler_hz;
         }
@@ -1912,7 +1926,10 @@ void GNSSFlowgraph::priorize_satellites(const std::vector<std::pair<int, Gnss_Sa
                 {
                     signal_str_vector = {"1B", "5X", "7X", "E6"};
                 }
-
+            else if (visible_satellite.second.get_system() == "QZSS")
+                {
+                    signal_str_vector = {"J1", "J5"};
+                }
             for (const auto& signal_str : signal_str_vector)
                 {
                     auto& available_signals = available_signals_map_.at(signal_str);
@@ -2017,6 +2034,7 @@ void GNSSFlowgraph::set_signals_list()
                        21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37,
                        38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54,
                        55, 56, 57, 58, 59, 60, 61, 62, 63}},
+        {"QZSS", {193, 194, 195, 196, 197, 199, 200, 201}},
     };
 #if CXX_LESS_THAN_17
     for (auto& entry : available_prn_map)
@@ -2175,6 +2193,14 @@ bool GNSSFlowgraph::is_multiband() const
                     multiband = true;
                 }
         }
+    if (configuration_->property("Channels_J1.count", 0) > 0)
+        {
+            if (configuration_->property("Channels_J5.count", 0) > 0)
+                {
+                    multiband = true;
+                }
+        }
+
     return multiband;
 }
 
@@ -2217,7 +2243,12 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
         case evGAL_1B:
         case evGLO_1G:
         case evBDS_B1:
+        case evQZS_J1:
             is_primary_frequency = true;
+            break;
+
+        case evQZS_J5:
+            assist_signal = "J1";
             break;
 
         default:

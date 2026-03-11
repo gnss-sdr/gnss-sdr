@@ -161,6 +161,7 @@ constexpr int32_t CNAV_DELTA_TLSF_LSB = 1;
 
 constexpr double CNAV_A_REF = 26559710.0;       // [m] See IS-GPS-200M, Table 30-I.
 constexpr double CNAV_OMEGA_DOT_REF = -2.6e-9;  // [semicircles / s], see IS-GPS-200M, Table 30-I.
+constexpr double CNAV_QZSS_A_REF = 42164200.0;
 
 // TODO: Add more frames (Almanac, etc...)
 

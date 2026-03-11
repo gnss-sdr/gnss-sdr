@@ -1231,7 +1231,8 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     if (gps_eph->SV_health != 0)
                         {
-                            std::cout << TEXT_RED << "Satellite " << Gnss_Satellite(std::string("GPS"), gps_eph->PRN)
+                            const std::string sat_sys = (MINPRNQZS <= gps_eph->PRN && gps_eph->PRN <= MAXPRNQZS) ? "QZSS" : "GPS";
+                            std::cout << TEXT_RED << "Satellite " << Gnss_Satellite(sat_sys, gps_eph->PRN)
                                       << " reports an unhealthy status,";
                             if (d_use_unhealthy_sats)
                                 {
@@ -1286,7 +1287,8 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     if (gps_cnav_ephemeris->signal_health != 0)
                         {
-                            std::cout << "Satellite " << Gnss_Satellite(std::string("GPS"), gps_cnav_ephemeris->PRN)
+                            const std::string sat_sys = (MINPRNQZS <= gps_cnav_ephemeris->PRN && gps_cnav_ephemeris->PRN <= MAXPRNQZS) ? "QZSS" : "GPS";
+                            std::cout << "Satellite " << Gnss_Satellite(sat_sys, gps_cnav_ephemeris->PRN)
                                       << " reports an unhealthy status in the CNAV message,";
                             if (d_use_unhealthy_sats)
                                 {
@@ -2000,7 +2002,9 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             if (!d_osnma_strict && tmp_eph_iter_gps != d_internal_pvt_solver->gps_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_gps->second.PRN;
-                                    if ((prn_aux == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal, 2) == std::string("1C")) && (d_use_unhealthy_sats || (tmp_eph_iter_gps->second.SV_health == 0)))
+                                    if ((prn_aux == in[i][epoch].PRN) &&
+                                        ((std::string(in[i][epoch].Signal, 2) == std::string("1C")) || (std::string(in[i][epoch].Signal, 2) == std::string("J1"))) &&
+                                        (d_use_unhealthy_sats || (tmp_eph_iter_gps->second.SV_health == 0)))
                                         {
                                             store_valid_observable = true;
                                         }
@@ -2034,7 +2038,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             if (!d_osnma_strict && tmp_eph_iter_cnav != d_internal_pvt_solver->gps_cnav_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_cnav->second.PRN;
-                                    if ((prn_aux == in[i][epoch].PRN) && (((std::string(in[i][epoch].Signal, 2) == std::string("2S")) || (std::string(in[i][epoch].Signal, 2) == std::string("L5")))))
+                                    if ((prn_aux == in[i][epoch].PRN) && (((std::string(in[i][epoch].Signal, 2) == std::string("2S")) || (std::string(in[i][epoch].Signal, 2) == std::string("L5")) || (std::string(in[i][epoch].Signal, 2) == std::string("J5")))))
                                         {
                                             store_valid_observable = true;
                                         }

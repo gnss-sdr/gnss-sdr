@@ -35,6 +35,7 @@
 #include "gps_iono.h"
 #include "gps_navigation_message.h"
 #include "gps_utc_model.h"
+#include "rtklib.h"
 #include "rtklib_solver.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
@@ -65,6 +66,7 @@ const std::unordered_map<std::string, char> satelliteSystem = {
     {"SBAS payload", 'S'},
     {"Galileo", 'E'},
     {"Beidou", 'C'},
+    {"QZSS", 'J'},
     {"Mixed", 'M'}};  // RINEX v3.02 codes
 
 
@@ -94,6 +96,10 @@ std::string signal_flag_to_string(signal_flag flag)
             return "B1";
         case BDS_B3:
             return "B3";
+        case QZS_J1:
+            return "J1";
+        case QZS_J5:
+            return "J5";
         }
 
     throw std::runtime_error("Invalid signal");
@@ -104,7 +110,7 @@ std::map<std::string, signal_flag> string_to_signal_flag_map()
 {
     std::map<std::string, signal_flag> convertion_map;
 
-    for (const auto flag : {GPS_1C, GPS_2S, GPS_L5, GAL_1B, GAL_E5a, GAL_E5b, GAL_E6, GLO_1G, GLO_2G, BDS_B1, BDS_B3})
+    for (const auto flag : {GPS_1C, GPS_2S, GPS_L5, GAL_1B, GAL_E5a, GAL_E5b, GAL_E6, GLO_1G, GLO_2G, BDS_B1, BDS_B3, QZS_J1, QZS_J5})
         {
             convertion_map[signal_flag_to_string(flag)] = flag;
         }
@@ -124,7 +130,7 @@ std::map<char, std::set<signal_flag>> get_constel_signal_flags(const Signal_Enab
 {
     std::map<char, std::set<signal_flag>> constel_signal_flags;
 
-    for (const auto& it : std::map<char, std::set<signal_flag>>{{'G', {GPS_1C, GPS_2S, GPS_L5}}, {'E', {GAL_1B, GAL_E5a, GAL_E5b, GAL_E6}}, {'R', {GLO_1G, GLO_2G}}, {'C', {BDS_B1, BDS_B3}}})
+    for (const auto& it : std::map<char, std::set<signal_flag>>{{'G', {GPS_1C, GPS_2S, GPS_L5}}, {'E', {GAL_1B, GAL_E5a, GAL_E5b, GAL_E6}}, {'R', {GLO_1G, GLO_2G}}, {'C', {BDS_B1, BDS_B3}}, {'J', {QZS_J1, QZS_J5}}})
         {
             for (const auto flag : it.second)
                 {
@@ -136,6 +142,18 @@ std::map<char, std::set<signal_flag>> get_constel_signal_flags(const Signal_Enab
         }
 
     return constel_signal_flags;
+}
+
+
+bool is_qzss_prn(uint32_t prn)
+{
+    return prn >= MINPRNQZS && prn <= MAXPRNQZS;
+}
+
+
+uint32_t to_rinex_qzss_prn(uint32_t prn)
+{
+    return prn - MINPRNQZS + 1;
 }
 
 
@@ -254,6 +272,8 @@ std::map<std::string, std::string> getObservationCodes()
         {"BEIDOU_B3_I", "6I"},
         {"BEIDOU_B3_Q", "6Q"},
         {"BEIDOU_B3_IQ", "6X"},
+        {"QZSS_L1_CA", "1C"},
+        {"QZSS_L5_I", "5I"},
         {"PULSAR_X1", "X1"},
         {"PULSAR_X5", "X5"},
 
@@ -1589,7 +1609,11 @@ void add_constellation_obs_sat_record_lines(std::fstream& out, const std::string
 
             if (version == 3)
                 {
-                    const auto prn = it.first;
+                    auto prn = it.first;
+                    if (system_char == satelliteSystem.at("QZSS"))
+                        {
+                            prn = to_rinex_qzss_prn(prn);
+                        }
                     line += system_char;
                     if (static_cast<int32_t>(prn) < 10)
                         {
@@ -1630,6 +1654,10 @@ void add_constellation_obs_sat_record_lines(std::fstream& out, const Signal_Enab
     if (flags.has_beidou)
         {
             add_constellation_obs_sat_record_lines(out, "Beidou", observables, version);
+        }
+    if (flags.has_qzss)
+        {
+            add_constellation_obs_sat_record_lines(out, "QZSS", observables, version);
         }
 }
 
@@ -1884,6 +1912,20 @@ void add_obs_sys_obs_type_beidou(std::fstream& out,
     };
 
     add_obs_sys_obs_type(out, "Beidou", flags, observationType, observationCode, signal_to_code_map);
+}
+
+
+void add_obs_sys_obs_type_qzss(std::fstream& out,
+    const Signal_Enabled_Flags& flags,
+    const std::map<std::string, std::string>& observationType,
+    const std::map<std::string, std::string>& observationCode)
+{
+    const std::map<uint32_t, std::string> signal_to_code_map = {
+        {QZS_J1, "QZSS_L1_CA"},
+        {QZS_J5, "QZSS_L5_I"},
+    };
+
+    add_obs_sys_obs_type(out, "QZSS", flags, observationType, observationCode, signal_to_code_map);
 }
 
 
@@ -2209,11 +2251,11 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
     //       but we already have code to update the headers later, so this should not be needed,
     //       we should instead write blank statements in the header and update them when we receive
     //       the ephemeris of the different constellations
-    if (d_flags.check_any_enabled(GPS_1C) && !has_gps_lnav_eph)
+    if (d_flags.check_any_enabled(GPS_1C, QZS_J1) && !has_gps_lnav_eph)
         {
             return;
         }
-    if (d_flags.check_any_enabled(GPS_2S, GPS_L5) && !has_gps_cnav_eph)
+    if (d_flags.check_any_enabled(GPS_2S, GPS_L5, QZS_J5) && !has_gps_cnav_eph)
         {
             return;
         }
@@ -2265,6 +2307,19 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
             system_time = Rinex_Printer::compute_BDS_time(beidou_dnav_ephemeris_iter->second, rx_time);
             seconds = fmod(rx_time, 60);
             system_time_str = "BDS";
+        }
+    else if (d_flags.has_qzss)
+        {
+            if (d_flags.check_any_enabled(QZS_J1))
+                {
+                    system_time = Rinex_Printer::compute_GPS_time(gps_ephemeris_iter->second, rx_time);
+                }
+            else if (d_flags.check_any_enabled(QZS_J5))
+                {
+                    system_time = Rinex_Printer::compute_GPS_time(gps_cnav_ephemeris_iter->second, rx_time);
+                }
+            seconds = fmod(rx_time, 60);
+            system_time_str = "QZS";
         }
 
     if (system_time.is_not_a_date_time())
@@ -2474,7 +2529,6 @@ void Rinex_Printer::log_rinex_nav_gps_nav(const std::map<int32_t, Gps_Ephemeris>
 {
     std::string line;
     auto& out = navFile;
-    const auto& sys_char = satelliteSystem.at("GPS");
 
     for (const auto& gps_ephemeris_iter : new_eph)
         {
@@ -2485,6 +2539,10 @@ void Rinex_Printer::log_rinex_nav_gps_nav(const std::map<int32_t, Gps_Ephemeris>
 
             if (d_version == 2)
                 {
+                    if (is_qzss_prn(eph.PRN))
+                        {
+                            continue;
+                        }
                     line += rightJustify(std::to_string(eph.PRN), 2);
                     line += std::string(1, ' ');
                     line += get_datetime_v2(p_utc_time);
@@ -2501,7 +2559,9 @@ void Rinex_Printer::log_rinex_nav_gps_nav(const std::map<int32_t, Gps_Ephemeris>
                 }
             if (d_version == 3)
                 {
-                    out << get_nav_sv_epoch_svclk_line(p_utc_time, sys_char, eph.PRN, eph.af0, eph.af1, eph.af2) << '\n';
+                    const auto sat_system_char = is_qzss_prn(eph.PRN) ? satelliteSystem.at("QZSS") : satelliteSystem.at("GPS");
+                    const auto rinex_prn = is_qzss_prn(eph.PRN) ? to_rinex_qzss_prn(eph.PRN) : eph.PRN;
+                    out << get_nav_sv_epoch_svclk_line(p_utc_time, sat_system_char, rinex_prn, eph.af0, eph.af1, eph.af2) << '\n';
                 }
 
             // -------- BROADCAST ORBIT - 1
@@ -2631,7 +2691,6 @@ void Rinex_Printer::log_rinex_nav_gps_nav(const std::map<int32_t, Gps_Ephemeris>
 void Rinex_Printer::log_rinex_nav_gps_cnav(const std::map<int32_t, Gps_CNAV_Ephemeris>& new_cnav_eph)
 {
     auto& out = navFile;
-    const auto& sys_char = satelliteSystem.at("GPS");
 
     for (const auto& gps_ephemeris_iter : new_cnav_eph)
         {
@@ -2639,7 +2698,9 @@ void Rinex_Printer::log_rinex_nav_gps_cnav(const std::map<int32_t, Gps_CNAV_Ephe
 
             // -------- SV / EPOCH / SV CLK
             const boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_GPS_time(eph, eph.toc);
-            out << get_nav_sv_epoch_svclk_line(p_utc_time, sys_char, eph.PRN, eph.af0, eph.af1, eph.af2) << '\n';
+            const auto sat_system_char = is_qzss_prn(eph.PRN) ? satelliteSystem.at("QZSS") : satelliteSystem.at("GPS");
+            const auto rinex_prn = is_qzss_prn(eph.PRN) ? to_rinex_qzss_prn(eph.PRN) : eph.PRN;
+            out << get_nav_sv_epoch_svclk_line(p_utc_time, sat_system_char, rinex_prn, eph.af0, eph.af1, eph.af2) << '\n';
 
             // -------- BROADCAST ORBIT - 1
 
@@ -2862,6 +2923,11 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out,
             type = "C: BEIDOU";
             constellation = "BEIDOU";
         }
+    else if (d_flags.only_qzss)
+        {
+            type = "J: QZSS";
+            constellation = "QZSS";
+        }
     else
         {
             type = "M: MIXED";
@@ -2928,6 +2994,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out,
             type = "Beidou";
             header_constellation = "BEIDOU";
         }
+    else if (d_flags.only_qzss)
+        {
+            type = "QZSS";
+            header_constellation = "QZSS";
+        }
     else
         {
             type = "Mixed";
@@ -2950,6 +3021,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out,
             if (d_flags.has_beidou)
                 {
                     constellations.emplace_back("BDS");
+                }
+            if (d_flags.has_qzss)
+                {
+                    constellations.emplace_back("QZS");
                 }
 
             header_constellation += " (";
@@ -3003,6 +3078,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out,
             if (d_flags.has_beidou)
                 {
                     add_obs_sys_obs_type_beidou(out, d_flags, observationType, observationCode);
+                }
+            if (d_flags.has_qzss)
+                {
+                    add_obs_sys_obs_type_qzss(out, d_flags, observationType, observationCode);
                 }
 
             // -------- Signal Strength units

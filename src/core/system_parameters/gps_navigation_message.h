@@ -37,6 +37,11 @@
 /** \addtogroup System_Parameters
  * \{ */
 
+enum class LnavSystem
+{
+    GPS,
+    QZSS
+};
 
 /*!
  * \brief This class decodes a GPS NAV Data message as described in IS-GPS-200M
@@ -49,7 +54,7 @@ public:
     /*!
      * Default constructor
      */
-    Gps_Navigation_Message();
+    explicit Gps_Navigation_Message(LnavSystem system = LnavSystem::GPS);
 
     /*!
      * \brief Obtain a GPS SV Ephemeris class filled with current SV data
@@ -150,6 +155,8 @@ private:
     std::map<int32_t, int32_t> almanacHealth;  //!< Map that stores the health information stored in the almanac
 
     std::map<int32_t, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs https://www.navcen.uscg.gov/?Do=constellationStatus
+
+    LnavSystem d_system;
 
     // broadcast orbit 1
     int32_t d_TOW{};      // Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]

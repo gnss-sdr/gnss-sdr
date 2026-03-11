@@ -21,13 +21,18 @@
 #include <cmath>   // for std::sqrt
 #include <limits>  // for std::numeric_limits
 
-
-Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message()
+Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message(CnavSystem system)
+    : d_system(system)
 {
-    Gnss_Satellite gnss_satellite_ = Gnss_Satellite();
-    for (uint32_t prn_ = 1; prn_ < 33; prn_++)
+    auto gnss_satellite = Gnss_Satellite();
+
+    const std::string sys_str = (d_system == CnavSystem::GPS) ? "GPS" : "QZSS";
+    const uint32_t prn_min = (d_system == CnavSystem::GPS) ? 1 : 193;
+    const uint32_t prn_max = (d_system == CnavSystem::GPS) ? 32 : 202;
+
+    for (uint32_t prn_ = prn_min; prn_ <= prn_max; ++prn_)
         {
-            satelliteBlock[prn_] = gnss_satellite_.what_block("GPS", prn_);
+            satelliteBlock[prn_] = gnss_satellite.what_block(sys_str, prn_);
         }
     b_flag_iono_valid = false;
     b_flag_utc_valid = false;
@@ -75,7 +80,11 @@ void Gps_CNAV_Navigation_Message::decode_page(const std::bitset<GPS_CNAV_DATA_PA
     bool alert_flag;
 
     // common to all messages
-    const auto PRN = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_PRN));
+    auto PRN = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_PRN));
+    if (d_system == CnavSystem::QZSS)
+        {
+            PRN += 192;
+        }
     ephemeris_record.PRN = PRN;
 
     d_TOW = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_TOW));
@@ -86,7 +95,6 @@ void Gps_CNAV_Navigation_Message::decode_page(const std::bitset<GPS_CNAV_DATA_PA
     ephemeris_record.alert_flag = alert_flag;
 
     page_type = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_MSG_TYPE));
-
 
     switch (page_type)
         {
@@ -102,7 +110,15 @@ void Gps_CNAV_Navigation_Message::decode_page(const std::bitset<GPS_CNAV_DATA_PA
             ephemeris_record.delta_A *= CNAV_DELTA_A_LSB;
             ephemeris_record.Adot = static_cast<double>(read_navigation_signed(data_bits, CNAV_A_DOT));
             ephemeris_record.Adot *= CNAV_A_DOT_LSB;
-            ephemeris_record.sqrtA = std::sqrt(CNAV_A_REF + ephemeris_record.delta_A);
+            if (d_system == CnavSystem::GPS)
+                {
+                    ephemeris_record.sqrtA = std::sqrt(CNAV_A_REF + ephemeris_record.delta_A);
+                }
+            else
+                {
+                    ephemeris_record.sqrtA = std::sqrt(CNAV_QZSS_A_REF + ephemeris_record.delta_A);
+                }
+
             ephemeris_record.delta_n = static_cast<double>(read_navigation_signed(data_bits, CNAV_DELTA_N0));
             ephemeris_record.delta_n *= CNAV_DELTA_N0_LSB;
             ephemeris_record.delta_ndot = static_cast<double>(read_navigation_signed(data_bits, CNAV_DELTA_N0_DOT));

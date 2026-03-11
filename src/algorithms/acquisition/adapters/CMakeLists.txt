@@ -28,6 +28,8 @@ set(ACQ_ADAPTER_SOURCES
     glonass_l2_ca_pcps_acquisition.cc
     beidou_b1i_pcps_acquisition.cc
     beidou_b3i_pcps_acquisition.cc
+    qzss_l1_pcps_acquisition.cc
+    qzss_l5i_pcps_acquisition.cc
 )
 
 set(ACQ_ADAPTER_HEADERS
@@ -53,6 +55,8 @@ set(ACQ_ADAPTER_HEADERS
     glonass_l2_ca_pcps_acquisition.h
     beidou_b1i_pcps_acquisition.h
     beidou_b3i_pcps_acquisition.h
+    qzss_l1_pcps_acquisition.h
+    qzss_l5i_pcps_acquisition.h
 )
 
 if(ENABLE_FPGA)

@@ -49,6 +49,8 @@
 #include "gps_sdr_signal_replica.h"
 #include "lock_detectors.h"
 #include "matlab_writter_helper.h"
+#include "qzss.h"
+#include "qzss_signal_replica.h"
 #include "tracking_discriminators.h"
 #include <gnuradio/io_signature.h>   // for io_signature
 #include <gnuradio/thread/thread.h>  // for scoped_lock
@@ -179,6 +181,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
     map_signal_pretty_name["B1"] = "B1I";
     map_signal_pretty_name["B3"] = "B3I";
     map_signal_pretty_name["E6"] = "E6";
+    map_signal_pretty_name["J1"] = "L1 C/A";
+    map_signal_pretty_name["J5"] = "L5";
 
     d_signal_pretty_name = map_signal_pretty_name[d_signal_type];
 
@@ -500,6 +504,77 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                 {
                     LOG(WARNING) << "Invalid Signal argument when instantiating tracking blocks";
                     std::cout << "Invalid Signal argument when instantiating tracking blocks\n";
+                    d_correlation_length_ms = 1;
+                    d_secondary = false;
+                    d_signal_carrier_freq = 0.0;
+                    d_code_period = 0.0;
+                    d_code_length_chips = 0;
+                    d_code_samples_per_chip = 0U;
+                    d_symbols_per_bit = 0;
+                }
+        }
+    else if (d_trk_parameters.system == 'J')
+        {
+            d_systemName = "QZSS";
+            if (d_signal_type == "J1")
+                {
+                    d_signal_carrier_freq = QZSS_L1_FREQ_HZ;
+                    d_code_period = QZSS_L1_CA_CODE_PERIOD_S;
+                    d_code_chip_rate = QZSS_L1_CHIP_RATE;
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_code_length_chips = static_cast<int32_t>(QZSS_L1_CODE_LENGTH);
+                    // QZSS L1 C/A does not have pilot component nor secondary code
+                    d_secondary = false;
+                    d_trk_parameters.track_pilot = false;
+                    d_trk_parameters.slope = 1.0;
+                    d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
+                    d_trk_parameters.y_intercept = 1.0;
+                    // symbol integration: 20 trk symbols (20 ms) = 1 tlm bit
+                    // set the bit transition pattern in secondary code to obtain bit synchronization
+                    d_secondary_code_length = static_cast<uint32_t>(QZSS_CA_PREAMBLE_LENGTH_SYMBOLS);
+                    d_secondary_code_string = QZSS_CA_PREAMBLE_SYMBOLS_STR;
+                    d_symbols_per_bit = QZSS_CA_TELEMETRY_SYMBOLS_PER_BIT;
+                }
+            else if (d_signal_type == "J5")
+                {
+                    d_signal_carrier_freq = QZSS_L5_FREQ_HZ;
+                    d_code_period = QZSS_L5I_CODE_PERIOD_S;
+                    d_code_chip_rate = QZSS_L5_CHIP_RATE;
+                    // symbol integration: 10 trk symbols (10 ms) = 1 tlm bit
+                    d_symbols_per_bit = QZSS_L5_SAMPLES_PER_SYMBOL;
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_code_length_chips = static_cast<int32_t>(QZSS_L5_CODE_LENGTH);
+                    d_secondary = true;
+                    d_trk_parameters.slope = 1.0;
+                    d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
+                    d_trk_parameters.y_intercept = 1.0;
+                    if (d_trk_parameters.track_pilot)
+                        {
+                            // synchronize pilot secondary code
+                            d_secondary_code_length = static_cast<uint32_t>(QZSS_L5Q_NH_CODE_LENGTH);
+                            d_secondary_code_string = QZSS_L5Q_NH_CODE_STR;
+                            // remove data secondary code
+                            // remove Neuman-Hofman Code
+                            d_data_secondary_code_length = static_cast<uint32_t>(QZSS_L5I_NH_CODE_LENGTH);
+                            d_data_secondary_code_string = QZSS_L5I_NH_CODE_STR;
+                            d_signal_pretty_name = d_signal_pretty_name + "Q";
+                        }
+                    else
+                        {
+                            // synchronize and remove data secondary code
+                            // remove Neuman-Hofman Code
+                            d_secondary_code_length = static_cast<uint32_t>(QZSS_L5I_NH_CODE_LENGTH);
+                            d_secondary_code_string = QZSS_L5I_NH_CODE_STR;
+                            d_signal_pretty_name = d_signal_pretty_name + "I";
+                            d_interchange_iq = true;
+                        }
+                }
+            else
+                {
+                    LOG(WARNING) << "Invalid Signal argument when instantiating tracking blocks";
+                    std::cerr << "Invalid Signal argument when instantiating tracking blocks\n";
                     d_correlation_length_ms = 1;
                     d_secondary = false;
                     d_signal_carrier_freq = 0.0;
@@ -933,6 +1008,25 @@ void dll_pll_veml_tracking::start_tracking()
                     d_extend_correlation_symbols = GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT;
                 }
         }
+    else if (d_systemName == "QZSS" && d_signal_type == "J1")
+        {
+            qzss_l1_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
+        }
+    else if (d_systemName == "QZSS" && d_signal_type == "J5")
+        {
+            if (d_trk_parameters.track_pilot)
+                {
+                    qzss_l5q_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
+                    qzss_l5i_code_gen_float(d_data_code, d_acquisition_gnss_synchro->PRN);
+                    d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+                    d_correlator_data_cpu.set_local_code_and_taps(d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
+                }
+            else
+                {
+                    qzss_l5i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
+                }
+        }
+
     d_multicorrelator_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_tracking_code.data(), d_local_code_shift_chips.data());
     std::fill_n(d_correlator_outs.begin(), d_n_correlator_taps, gr_complex(0.0, 0.0));
 

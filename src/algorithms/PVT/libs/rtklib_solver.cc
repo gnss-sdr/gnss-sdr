@@ -1043,7 +1043,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 case 'G':
                 case 'J':
                     {
-                        const bool is_qzss = (gnss_observables_iter->second.System == 'J');
+                        const bool is_qzss = (gnss_observables_iter->second.PRN >= 193 && gnss_observables_iter->second.PRN <= 203);
                         // GPS/QZSS L1
                         // find the ephemeris for the current SV observation. The SV PRN ID is the map key
                         const std::string gnss_str = is_qzss ? "QZSS" : "GPS";
@@ -1134,26 +1134,23 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 gps_cnav_ephemeris_iter = gps_cnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (gps_cnav_ephemeris_iter != gps_cnav_ephemeris_map.cend())
                                     {
-                                        // 1. Find the same satellite in GPS L1 band
-                                        gps_ephemeris_iter = gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                                        if (gps_ephemeris_iter != gps_ephemeris_map.cend())
+                                        // 1. Find the same satellite in current GPS/QZSS observations (typically L1)
+                                        bool found_existing_obs = false;
+                                        for (int i = 0; i < valid_obs; i++)
                                             {
-                                                // 2. If found, replace the existing GPS L1 ephemeris with the GPS L5 ephemeris
-                                                // (more precise!), and attach the L5 observation to the L1 observation in RTKLIB structure
-                                                for (int i = 0; i < valid_obs; i++)
+                                                if (eph_data[i].sat == sat)
                                                     {
-                                                        if (eph_data[i].sat == sat)
-                                                            {
-                                                                eph_data[i] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
-                                                                d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
-                                                                    gnss_observables_iter->second,
-                                                                    gps_cnav_ephemeris_iter->second.WN,
-                                                                    d_rtklib_band_index[rtklib_sig]);
-                                                                break;
-                                                            }
+                                                        // 2. If found, attach the L5 observation to the existing observation in RTKLIB structure
+                                                        d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
+                                                            gnss_observables_iter->second,
+                                                            d_has_obs_corr_map,
+                                                            gps_cnav_ephemeris_iter->second.WN,
+                                                            d_rtklib_band_index[rtklib_sig]);
+                                                        found_existing_obs = true;
+                                                        break;
                                                     }
                                             }
-                                        else
+                                        if (!found_existing_obs)
                                             {
                                                 // 3. If not found, insert the GPS L5 ephemeris and the observation
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure

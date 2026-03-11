@@ -154,7 +154,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         }
 
     /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS/BDS */
-    if (sys == SYS_GAL || sys == SYS_SBS || sys == SYS_BDS || sys == SYS_QZS)
+    if (sys == SYS_GAL || sys == SYS_SBS || sys == SYS_BDS)
         {
             j = 2;
         }
@@ -212,7 +212,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
             P1_P2 = gettgd(obs->sat, nav);
         }
 
-    if (sys == SYS_GPS)
+    if (sys == SYS_GPS || sys == SYS_QZS)
         {
             // ISCl1 = getiscl1(obs->sat, nav);
             ISCl2 = getiscl2(obs->sat, nav);
@@ -243,17 +243,17 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     ////////////////////////////////////////////
     else
         { /* single-frequency */
-            if (obs->code[i] == CODE_NONE and obs->code[j] == CODE_NONE)
+            if (obs->code[i] == CODE_NONE && obs->code[j] == CODE_NONE)
                 {
                     return 0.0;
                 }
 
-            if (obs->code[i] != CODE_NONE and obs->code[j] == CODE_NONE)
+            if (obs->code[i] != CODE_NONE && obs->code[j] == CODE_NONE)
                 {
                     P1 += P1_C1; /* C1->P1 */
                     PC = P1 - P1_P2;
                 }
-            else if (obs->code[i] == CODE_NONE and obs->code[j] != CODE_NONE)
+            else if (obs->code[i] == CODE_NONE && obs->code[j] != CODE_NONE)
                 {
                     if (sys == SYS_GPS || sys == SYS_QZS)
                         {

@@ -58,6 +58,11 @@ PlutosdrSignalSource::PlutosdrSignalSource(const ConfigurationInterface* configu
       filter_auto_(configuration->property(role + ".filter_auto", false)),
       dump_(configuration->property(role + ".dump", false))
 {
+    const int channels = configuration->property(role + ".channels", 0);
+    if (channels < 1)
+        {
+            LOG(FATAL) << "Configuration error: SignalSource.channels missing or invalid!";
+        }
     if (filter_auto_)
         {
             filter_source_ = configuration->property(role + ".filter_source", std::string("Auto"));

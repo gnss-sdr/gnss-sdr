@@ -137,7 +137,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     double P1_C1 = 0.0;
     double P2_C2 = 0.0;
     // Intersignal corrections (m). See GPS IS-200 CNAV message
-    // double ISCl1 = 0.0;
+    double ISCl1 = 0.0;
     double ISCl2 = 0.0;
     double ISCl5i = 0.0;
     // double ISCl5q = 0.0;
@@ -214,7 +214,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
 
     if (sys == SYS_GPS || sys == SYS_QZS)
         {
-            // ISCl1 = getiscl1(obs->sat, nav);
+            ISCl1 = getiscl1(obs->sat, nav);
             ISCl2 = getiscl2(obs->sat, nav);
             ISCl5i = getiscl5i(obs->sat, nav);
             // ISCl5q = getiscl5q(obs->sat, nav);
@@ -284,17 +284,15 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                 {
                     if (obs->code[j] == CODE_L2S) /* L1 + L2 */
                         {
-                            // By the moment, GPS L2 pseudoranges are not used
-                            // PC = (P2 + ISCl2 - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2;
                             P1 += P1_C1; /* C1->P1 */
-                            PC = P1 + P1_P2;
+                            // PC = P1 + P1_P2;
+                            PC = (P2 + ISCl2 - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2;
                         }
                     else if (obs->code[j] == CODE_L5X) /* L1 + L5 */
                         {
-                            // By the moment, GPS L5 pseudoranges are not used
-                            // PC = (P2 + ISCl5i - gamma_ * (P1 + ISCl5i)) / (1.0 - gamma_) - P1_P2;
                             P1 += P1_C1; /* C1->P1 */
-                            PC = P1 + P1_P2;
+                            // PC = P1 + P1_P2;
+                            PC = (P2 + ISCl5i - gamma_ * (P1 + ISCl5i)) / (1.0 - gamma_) - P1_P2;
                         }
                 }
             else if (sys == SYS_GAL || sys == SYS_GLO || sys == SYS_BDS) /* E1 + E5a */

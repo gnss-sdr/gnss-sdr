@@ -191,7 +191,7 @@ const int MINPRNQZS = 193;  //!<   min satellite PRN number of QZSS
 #define ENAQZS
 #ifdef ENAQZS
 const int MINPRNQZS_S = 183;                      //!<   min satellite PRN number of QZSS SAIF
-const int MAXPRNQZS_S = 189;                      //!<   max satellite PRN number of QZSS SAIF
+const int MAXPRNQZS_S = 191;                      //!<   max satellite PRN number of QZSS SAIF
 const int NSATQZS = (MAXPRNQZS - MINPRNQZS + 1);  //!<   number of QZSS satellites
 const int NSYSQZS = 1;
 #else

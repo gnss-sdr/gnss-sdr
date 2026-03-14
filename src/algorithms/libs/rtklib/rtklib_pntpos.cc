@@ -284,17 +284,15 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                 {
                     if (obs->code[j] == CODE_L2S) /* L1 + L2 */
                         {
-                            // By the moment, GPS L2 pseudoranges are not used
-                            // PC = (P2 + ISCl2 - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2;
                             P1 += P1_C1; /* C1->P1 */
                             PC = P1 + P1_P2;
+                            // PC = (P2 + ISCl2 - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2;
                         }
                     else if (obs->code[j] == CODE_L5X) /* L1 + L5 */
                         {
-                            // By the moment, GPS L5 pseudoranges are not used
-                            // PC = (P2 + ISCl5i - gamma_ * (P1 + ISCl5i)) / (1.0 - gamma_) - P1_P2;
                             P1 += P1_C1; /* C1->P1 */
-                            PC = P1 + P1_P2;
+                            // PC = P1 + P1_P2;
+                            PC = (P2 + ISCl5i - gamma_ * (P1 + ISCl5i)) / (1.0 - gamma_) - P1_P2;
                         }
                 }
             else if (sys == SYS_GAL || sys == SYS_GLO || sys == SYS_BDS) /* E1 + E5a */

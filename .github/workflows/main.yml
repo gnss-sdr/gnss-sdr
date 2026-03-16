@@ -123,7 +123,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: run clang-format
-        uses: jidicula/clang-format-action@v4.16.0
+        uses: jidicula/clang-format-action@v4.17.0
         with:
           clang-format-version: "19"
           check-path: ${{ matrix.path }}

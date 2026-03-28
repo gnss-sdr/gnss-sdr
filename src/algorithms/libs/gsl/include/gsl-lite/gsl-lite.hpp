@@ -3461,6 +3461,15 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
     struct has_trivial_move : std::bool_constant<has_trivial_move_v<T>>
     {
     };
+#elif defined(__GNUC__) && !defined(__clang__) && (__GNUC__ < 5)
+    template <class T>
+    struct has_trivial_move : std11::false_type
+    {
+    };
+    template <class T>
+    struct has_trivial_move<T *> : std11::true_type
+    {
+    };
 #elif gsl_HAVE(TYPE_TRAITS)
     template <class T>
     struct has_trivial_move : std17::conjunction<std::is_trivially_move_constructible<T>, std::is_trivially_move_assignable<T>>

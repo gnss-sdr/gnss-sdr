@@ -17,6 +17,7 @@
 #include "rtklib_conversions.h"
 #include "MATH_CONSTANTS.h"          // for GNSS_PI, TWO_PI
 #include "beidou_dnav_ephemeris.h"   // for Beidou_Dnav_Ephemeris
+#include "navic_lnav_ephemeris.h"    // for Navic_Lnav_Ephemeris
 #include "galileo_almanac.h"         // for Galileo_Almanac
 #include "galileo_ephemeris.h"       // for Galileo_Ephemeris
 #include "glonass_gnav_ephemeris.h"  // for Glonass_Gnav_Ephemeris
@@ -99,6 +100,14 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
                     rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L6I);
                 }
 
+            break;
+
+        case 'I':
+            rtklib_obs.sat = gnss_synchro.PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS + NSATBDS;
+            if (sig_ == "I5")
+                {
+                    rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L5A);
+                }
             break;
 
         default:
@@ -684,6 +693,96 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
     rtklib_sat.toe = bdt2gpst(bdt2time(rtklib_sat.week, bei_eph.toe));
     rtklib_sat.toc = bdt2gpst(bdt2time(rtklib_sat.week, bei_eph.toc));
     rtklib_sat.ttr = bdt2gpst(bdt2time(rtklib_sat.week, bei_eph.tow));
+    /* adjustment for week handover */
+    double tow;
+    double toc;
+    double toe;
+    tow = time2gpst(rtklib_sat.ttr, &rtklib_sat.week);
+    toc = time2gpst(rtklib_sat.toc, nullptr);
+    toe = time2gpst(rtklib_sat.toe, nullptr);
+
+    if (rtklib_sat.toes < tow - 302400.0)
+        {
+            rtklib_sat.week++;
+            tow -= 604800.0;
+        }
+    else if (rtklib_sat.toes > tow + 302400.0)
+        {
+            rtklib_sat.week--;
+            tow += 604800.0;
+        }
+    rtklib_sat.toe = gpst2time(rtklib_sat.week, toe);
+    rtklib_sat.toc = gpst2time(rtklib_sat.week, toc);
+    rtklib_sat.ttr = gpst2time(rtklib_sat.week, tow);
+
+    rtklib_sat.has_orbit_radial_correction_m = 0.0;
+    rtklib_sat.has_orbit_in_track_correction_m = 0.0;
+    rtklib_sat.has_orbit_cross_track_correction_m = 0.0;
+    rtklib_sat.has_clock_correction_m = 0.0;
+    rtklib_sat.apply_has_corrections = false;
+
+    return rtklib_sat;
+}
+
+
+eph_t eph_to_rtklib(const Navic_Lnav_Ephemeris& navic_eph)
+{
+    eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false};
+    rtklib_sat.sat = satno(SYS_IRN, static_cast<int>(navic_eph.PRN));
+    rtklib_sat.A = navic_eph.sqrtA * navic_eph.sqrtA;
+    rtklib_sat.M0 = navic_eph.M_0;
+    rtklib_sat.deln = navic_eph.delta_n;
+    rtklib_sat.OMG0 = navic_eph.OMEGA_0;
+    rtklib_sat.OMGd = navic_eph.OMEGAdot;
+    rtklib_sat.omg = navic_eph.omega;
+    rtklib_sat.i0 = navic_eph.i_0;
+    rtklib_sat.idot = navic_eph.idot;
+    rtklib_sat.e = navic_eph.ecc;
+    rtklib_sat.Adot = 0;  // not available in LNAV
+    rtklib_sat.ndot = 0;  // not available in LNAV
+
+    rtklib_sat.svh = (navic_eph.L5_flag << 1) | navic_eph.S_flag;
+    rtklib_sat.sva = navic_eph.URA;
+
+    rtklib_sat.code = 0;
+    rtklib_sat.flag = 0;
+    rtklib_sat.iode = navic_eph.IODEC;
+    rtklib_sat.iodc = navic_eph.IODEC;
+
+    // IRNSS time epoch is August 22, 1999 = GPS week 1024.
+    // NavIC WN is 10-bit (0-1023), rolling over every ~19.6 years.
+    // First rollover: GPS week 2048 (circa Aug 2019).
+    // Use system UTC time to determine the correct rollover count.
+    {
+        gtime_t utc_now = utc2gpst(timeget());
+        int32_t current_gps_week;
+        time2gpst(utc_now, &current_gps_week);
+        // NavIC absolute week = 1024 + N*1024 + WN, where N is the rollover count
+        int32_t navic_week_abs = 1024 + navic_eph.WN;
+        while (navic_week_abs + 1024 <= current_gps_week)
+            {
+                navic_week_abs += 1024;
+            }
+        rtklib_sat.week = navic_week_abs;
+    }
+    rtklib_sat.cic = navic_eph.Cic;
+    rtklib_sat.cis = navic_eph.Cis;
+    rtklib_sat.cuc = navic_eph.Cuc;
+    rtklib_sat.cus = navic_eph.Cus;
+    rtklib_sat.crc = navic_eph.Crc;
+    rtklib_sat.crs = navic_eph.Crs;
+    rtklib_sat.f0 = navic_eph.af0;
+    rtklib_sat.f1 = navic_eph.af1;
+    rtklib_sat.f2 = navic_eph.af2;
+    rtklib_sat.tgd[0] = navic_eph.TGD;
+    rtklib_sat.tgd[1] = 0.0;
+    rtklib_sat.tgd[2] = 0.0;
+    rtklib_sat.tgd[3] = 0.0;
+    rtklib_sat.toes = navic_eph.toe;
+    rtklib_sat.toe = gpst2time(rtklib_sat.week, navic_eph.toe);
+    rtklib_sat.toc = gpst2time(rtklib_sat.week, navic_eph.toc);
+    rtklib_sat.ttr = gpst2time(rtklib_sat.week, navic_eph.tow);
     /* adjustment for week handover */
     double tow;
     double toc;

@@ -29,6 +29,8 @@ set(SYSTEM_PARAMETERS_SOURCES
     glonass_gnav_utc_model.cc
     glonass_gnav_navigation_message.cc
     reed_solomon.cc
+    navic_lnav_ephemeris.cc
+    navic_lnav_navigation_message.cc
     osnma_data.cc
     osnma_dsm_reader.cc
 )
@@ -91,6 +93,13 @@ set(SYSTEM_PARAMETERS_HEADERS
     Beidou_B3I.h
     Beidou_DNAV.h
     MATH_CONSTANTS.h
+    NAVIC_L5.h
+    NAVIC_LNAV.h
+    navic_lnav_almanac.h
+    navic_lnav_ephemeris.h
+    navic_lnav_iono.h
+    navic_lnav_navigation_message.h
+    navic_lnav_utc_model.h
     reed_solomon.h
     galileo_has_page.h
     Galileo_OSNMA.h

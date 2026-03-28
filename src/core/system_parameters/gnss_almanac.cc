@@ -231,6 +231,12 @@ void Gnss_Almanac::satellitePosVelComputation(double transmitTime, std::array<do
         {
             i = ((56.0 / 180.0) + this->delta_i) * GNSS_PI;
         }
+    else if (this->System == 'I')
+        {
+            // IRNSS/NavIC almanac provides absolute inclination (not delta)
+            // delta_i stores the raw i_0 value in semi-circles
+            i = this->delta_i * GNSS_PI;
+        }
     else
         {
             i = (0.3 + this->delta_i) * GNSS_PI;

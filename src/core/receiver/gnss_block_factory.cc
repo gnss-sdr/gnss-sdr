@@ -99,6 +99,9 @@
 #include "labsat_signal_source.h"
 #include "mmse_resampler_conditioner.h"
 #include "multichannel_file_signal_source.h"
+#include "navic_l5_dll_pll_tracking.h"
+#include "navic_l5_pcps_acquisition.h"
+#include "navic_l5_telemetry_decoder.h"
 #include "notch_filter.h"
 #include "notch_filter_lite.h"
 #include "nsr_file_signal_source.h"
@@ -355,17 +358,20 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(const Confi
     Glonass_channels += configuration->property("Channels_2G.count", 0);
     unsigned int Beidou_channels = configuration->property("Channels_B1.count", 0);
     Beidou_channels += configuration->property("Channels_B3.count", 0);
+    unsigned int Navic_channels = configuration->property("Channels_I5.count", 0);
     unsigned int extra_channels = 1;  // For monitor channel sample counter
     return GetBlock(configuration, "Observables",
         Galileo_channels +
             GPS_channels +
             Glonass_channels +
             Beidou_channels +
+            Navic_channels +
             extra_channels,
         Galileo_channels +
             GPS_channels +
             Glonass_channels +
-            Beidou_channels);
+            Beidou_channels +
+            Navic_channels);
 }
 
 
@@ -390,8 +396,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(const Configuration
     Glonass_channels += configuration->property("Channels_2G.count", 0);
     unsigned int Beidou_channels = configuration->property("Channels_B1.count", 0);
     Beidou_channels += configuration->property("Channels_B3.count", 0);
+    unsigned int Navic_channels = configuration->property("Channels_I5.count", 0);
     return GetBlock(configuration, "PVT",
-        Galileo_channels + GPS_channels + Glonass_channels + Beidou_channels, 0);
+        Galileo_channels + GPS_channels + Glonass_channels + Beidou_channels + Navic_channels, 0);
 }
 
 
@@ -484,6 +491,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
     const unsigned int Channels_B3_count = configuration->property("Channels_B3.count", 0);
     const unsigned int Channels_7X_count = configuration->property("Channels_7X.count", 0);
     const unsigned int Channels_E6_count = configuration->property("Channels_E6.count", 0);
+    const unsigned int Channels_I5_count = configuration->property("Channels_I5.count", 0);
 
     const unsigned int total_channels = Channels_1C_count +
                                         Channels_1B_count +
@@ -495,7 +503,8 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                                         Channels_B1_count +
                                         Channels_B3_count +
                                         Channels_7X_count +
-                                        Channels_E6_count;
+                                        Channels_E6_count +
+                                        Channels_I5_count;
 
     auto channels = std::make_unique<std::vector<std::unique_ptr<GNSSBlockInterface>>>(total_channels);
     try
@@ -638,6 +647,19 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                     // Store the channel into the vector of channels
                     channels->at(channel_absolute_id) = GetChannel(configuration,
                         std::string("7X"),
+                        channel_absolute_id,
+                        queue);
+                    channel_absolute_id++;
+                }
+
+            // **************** NAVIC L5 CHANNELS ********************************
+            LOG(INFO) << "Getting " << Channels_I5_count << " NAVIC L5 channels";
+
+            for (unsigned int i = 0; i < Channels_I5_count; i++)
+                {
+                    // Store the channel into the vector of channels
+                    channels->at(channel_absolute_id) = GetChannel(configuration,
+                        std::string("I5"),
                         channel_absolute_id,
                         queue);
                     channel_absolute_id++;
@@ -1101,6 +1123,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                         out_streams);
                     block = std::move(block_);
                 }
+            else if (implementation == "NAVIC_L5_PCPS_Acquisition")
+                {
+                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<NavicL5PcpsAcquisition>(configuration, role, in_streams,
+                        out_streams);
+                    block = std::move(block_);
+                }
 #if OPENCL_BLOCKS
             else if (implementation == "GPS_L1_CA_PCPS_OpenCl_Acquisition")
                 {
@@ -1251,6 +1279,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                         out_streams);
                     block = std::move(block_);
                 }
+            else if (implementation == "NAVIC_L5_DLL_PLL_Tracking")
+                {
+                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<NavicL5DllPllTracking>(configuration, role, in_streams,
+                        out_streams);
+                    block = std::move(block_);
+                }
 #if CUDA_GPU_ACCEL
             else if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_GPU")
                 {
@@ -1362,6 +1396,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             else if (implementation == "BEIDOU_B3I_Telemetry_Decoder")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<BeidouB3iTelemetryDecoder>(configuration, role, in_streams,
+                        out_streams);
+                    block = std::move(block_);
+                }
+            else if (implementation == "NAVIC_L5_Telemetry_Decoder")
+                {
+                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<NavicL5TelemetryDecoder>(configuration, role, in_streams,
                         out_streams);
                     block = std::move(block_);
                 }
@@ -1539,6 +1579,12 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
                 out_streams);
             block = std::move(block_);
         }
+    else if (implementation == "NAVIC_L5_PCPS_Acquisition")
+        {
+            std::unique_ptr<AcquisitionInterface> block_ = std::make_unique<NavicL5PcpsAcquisition>(configuration, role, in_streams,
+                out_streams);
+            block = std::move(block_);
+        }
 #if OPENCL_BLOCKS
     else if (implementation == "GPS_L1_CA_PCPS_OpenCl_Acquisition")
         {
@@ -1707,6 +1753,12 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
                 out_streams);
             block = std::move(block_);
         }
+    else if (implementation == "NAVIC_L5_DLL_PLL_Tracking")
+        {
+            std::unique_ptr<TrackingInterface> block_ = std::make_unique<NavicL5DllPllTracking>(configuration, role, in_streams,
+                out_streams);
+            block = std::move(block_);
+        }
 #if CUDA_GPU_ACCEL
     else if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_GPU")
         {
@@ -1835,6 +1887,12 @@ std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
     else if (implementation == "BEIDOU_B3I_Telemetry_Decoder")
         {
             std::unique_ptr<TelemetryDecoderInterface> block_ = std::make_unique<BeidouB3iTelemetryDecoder>(configuration, role, in_streams,
+                out_streams);
+            block = std::move(block_);
+        }
+    else if (implementation == "NAVIC_L5_Telemetry_Decoder")
+        {
+            std::unique_ptr<TelemetryDecoderInterface> block_ = std::make_unique<NavicL5TelemetryDecoder>(configuration, role, in_streams,
                 out_streams);
             block = std::move(block_);
         }

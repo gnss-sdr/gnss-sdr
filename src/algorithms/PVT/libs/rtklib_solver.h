@@ -48,6 +48,10 @@
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
 #include "gnss_synchro.h"
+#include "navic_lnav_almanac.h"
+#include "navic_lnav_ephemeris.h"
+#include "navic_lnav_iono.h"
+#include "navic_lnav_utc_model.h"
 #include "gps_almanac.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
@@ -126,6 +130,11 @@ public:
     Beidou_Dnav_Utc_Model beidou_dnav_utc_model;
     Beidou_Dnav_Iono beidou_dnav_iono;
     std::map<int, Beidou_Dnav_Almanac> beidou_dnav_almanac_map;
+
+    std::map<int, Navic_Lnav_Ephemeris> navic_lnav_ephemeris_map;    //!< Map storing new NavIC LNAV Ephemeris
+    Navic_Lnav_Utc_Model navic_lnav_utc_model;
+    Navic_Lnav_Iono navic_lnav_iono;
+    std::map<int, Navic_Lnav_Almanac> navic_lnav_almanac_map;
 
 private:
     bool save_matfile() const;

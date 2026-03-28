@@ -45,6 +45,10 @@
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
 #include "gps_utc_model.h"
+#include "navic_lnav_almanac.h"
+#include "navic_lnav_ephemeris.h"
+#include "navic_lnav_iono.h"
+#include "navic_lnav_utc_model.h"
 #include "gpx_printer.h"
 #include "has_simple_printer.h"
 #include "kml_printer.h"
@@ -150,6 +154,10 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_beidou_dnav_iono_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Dnav_Iono>).hash_code()),
       d_beidou_dnav_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Dnav_Utc_Model>).hash_code()),
       d_beidou_dnav_almanac_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Dnav_Almanac>).hash_code()),
+      d_navic_lnav_ephemeris_sptr_type_hash_code(typeid(std::shared_ptr<Navic_Lnav_Ephemeris>).hash_code()),
+      d_navic_lnav_iono_sptr_type_hash_code(typeid(std::shared_ptr<Navic_Lnav_Iono>).hash_code()),
+      d_navic_lnav_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Navic_Lnav_Utc_Model>).hash_code()),
+      d_navic_lnav_almanac_sptr_type_hash_code(typeid(std::shared_ptr<Navic_Lnav_Almanac>).hash_code()),
       d_galileo_has_data_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_HAS_data>).hash_code()),
       d_rinex_version(conf_.rinex_version),
       d_rx_time(0.0),
@@ -1620,6 +1628,68 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     DLOG(INFO) << "New BeiDou DNAV almanac record has arrived";
                 }
+
+            // *********************** NavIC (IRNSS) telemetry ************************
+            else if (msg_type_hash_code == d_navic_lnav_ephemeris_sptr_type_hash_code)
+                {
+                    // ### NavIC EPHEMERIS ###
+                    const auto navic_lnav_eph = wht::any_cast<std::shared_ptr<Navic_Lnav_Ephemeris>>(pmt::any_ref(msg));
+                    DLOG(INFO) << "NavIC LNAV Ephemeris record has arrived from SAT ID "
+                               << navic_lnav_eph->PRN
+                               << " inserted with Toe=" << navic_lnav_eph->toe << " and WN="
+                               << navic_lnav_eph->WN;
+                    d_internal_pvt_solver->navic_lnav_ephemeris_map[navic_lnav_eph->PRN] = *navic_lnav_eph;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->navic_lnav_ephemeris_map[navic_lnav_eph->PRN] = *navic_lnav_eph;
+                        }
+                    if (navic_lnav_eph->L5_flag != 0)
+                        {
+                            std::cout << TEXT_RED << "Satellite " << Gnss_Satellite(std::string("IRNSS"), navic_lnav_eph->PRN)
+                                      << " reports an unhealthy status,";
+                            if (d_use_unhealthy_sats)
+                                {
+                                    std::cout << " use PVT solutions at your own risk" << TEXT_RESET << '\n';
+                                }
+                            else
+                                {
+                                    std::cout << " not used for navigation" << TEXT_RESET << '\n';
+                                }
+                        }
+                }
+            else if (msg_type_hash_code == d_navic_lnav_iono_sptr_type_hash_code)
+                {
+                    // ### NavIC IONO ###
+                    const auto navic_lnav_iono = wht::any_cast<std::shared_ptr<Navic_Lnav_Iono>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->navic_lnav_iono = *navic_lnav_iono;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->navic_lnav_iono = *navic_lnav_iono;
+                        }
+                    DLOG(INFO) << "New NavIC LNAV IONO record has arrived";
+                }
+            else if (msg_type_hash_code == d_navic_lnav_utc_model_sptr_type_hash_code)
+                {
+                    // ### NavIC UTC MODEL ###
+                    const auto navic_lnav_utc_model = wht::any_cast<std::shared_ptr<Navic_Lnav_Utc_Model>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->navic_lnav_utc_model = *navic_lnav_utc_model;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->navic_lnav_utc_model = *navic_lnav_utc_model;
+                        }
+                    DLOG(INFO) << "New NavIC LNAV UTC record has arrived";
+                }
+            else if (msg_type_hash_code == d_navic_lnav_almanac_sptr_type_hash_code)
+                {
+                    // ### NavIC ALMANAC ###
+                    const auto navic_lnav_almanac = wht::any_cast<std::shared_ptr<Navic_Lnav_Almanac>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->navic_lnav_almanac_map[navic_lnav_almanac->PRN] = *navic_lnav_almanac;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->navic_lnav_almanac_map[navic_lnav_almanac->PRN] = *navic_lnav_almanac;
+                        }
+                    DLOG(INFO) << "New NavIC LNAV almanac record has arrived";
+                }
             else
                 {
                     LOG(WARNING) << "msg_handler_telemetry unknown object type!";
@@ -1731,6 +1801,8 @@ void rtklib_pvt_gs::clear_ephemeris()
     d_internal_pvt_solver->galileo_almanac_map.clear();
     d_internal_pvt_solver->beidou_dnav_ephemeris_map.clear();
     d_internal_pvt_solver->beidou_dnav_almanac_map.clear();
+    d_internal_pvt_solver->navic_lnav_ephemeris_map.clear();
+    d_internal_pvt_solver->navic_lnav_almanac_map.clear();
     if (d_enable_rx_clock_correction == true)
         {
             d_user_pvt_solver->gps_ephemeris_map.clear();
@@ -1739,6 +1811,8 @@ void rtklib_pvt_gs::clear_ephemeris()
             d_user_pvt_solver->galileo_almanac_map.clear();
             d_user_pvt_solver->beidou_dnav_ephemeris_map.clear();
             d_user_pvt_solver->beidou_dnav_almanac_map.clear();
+            d_user_pvt_solver->navic_lnav_ephemeris_map.clear();
+            d_user_pvt_solver->navic_lnav_almanac_map.clear();
         }
 }
 
@@ -2040,6 +2114,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             const auto tmp_eph_iter_cnav = d_internal_pvt_solver->gps_cnav_ephemeris_map.find(in[i][epoch].PRN);
                             const auto tmp_eph_iter_glo_gnav = d_internal_pvt_solver->glonass_gnav_ephemeris_map.find(in[i][epoch].PRN);
                             const auto tmp_eph_iter_bds_dnav = d_internal_pvt_solver->beidou_dnav_ephemeris_map.find(in[i][epoch].PRN);
+                            const auto tmp_eph_iter_navic_lnav = d_internal_pvt_solver->navic_lnav_ephemeris_map.find(in[i][epoch].PRN);
 
                             bool store_valid_observable = false;
 
@@ -2097,6 +2172,14 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_bds_dnav->second.PRN;
                                     if ((prn_aux == in[i][epoch].PRN) && (((std::string(in[i][epoch].Signal, 2) == std::string("B1")) || (std::string(in[i][epoch].Signal, 2) == std::string("B3"))) && (d_use_unhealthy_sats || (tmp_eph_iter_bds_dnav->second.SV_health == 0))))
+                                        {
+                                            store_valid_observable = true;
+                                        }
+                                }
+                            if (!d_osnma_strict && tmp_eph_iter_navic_lnav != d_internal_pvt_solver->navic_lnav_ephemeris_map.cend())
+                                {
+                                    const uint32_t prn_aux = tmp_eph_iter_navic_lnav->second.PRN;
+                                    if ((prn_aux == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal, 2) == std::string("I5")) && (d_use_unhealthy_sats || (tmp_eph_iter_navic_lnav->second.L5_flag == 0)))
                                         {
                                             store_valid_observable = true;
                                         }

@@ -60,8 +60,8 @@ public:
     std::string what_block(const std::string& system_, uint32_t PRN_);  //!< Gets the block of a given satellite
 
 private:
-    const std::set<std::string> system_set = {"GPS", "Glonass", "SBAS", "Galileo", "Beidou"};
-    const std::map<std::string, std::string> satelliteSystem = {{"GPS", "G"}, {"Glonass", "R"}, {"SBAS", "S"}, {"Galileo", "E"}, {"Beidou", "C"}};
+    const std::set<std::string> system_set = {"GPS", "Glonass", "SBAS", "Galileo", "Beidou", "IRNSS"};
+    const std::map<std::string, std::string> satelliteSystem = {{"GPS", "G"}, {"Glonass", "R"}, {"SBAS", "S"}, {"Galileo", "E"}, {"Beidou", "C"}, {"IRNSS", "I"}};
     void set_system(const std::string& system);  // Sets the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Beidou"}.
     void set_PRN(uint32_t PRN);                  // Sets satellite's PRN
     void set_block(const std::string& system_, uint32_t PRN_);

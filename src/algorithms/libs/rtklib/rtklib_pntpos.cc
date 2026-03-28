@@ -153,8 +153,8 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
             return 0.0;
         }
 
-    /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS/BDS */
-    if (sys == SYS_GAL or sys == SYS_SBS or sys == SYS_BDS)
+    /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS/BDS/IRN */
+    if (sys == SYS_GAL or sys == SYS_SBS or sys == SYS_BDS or sys == SYS_IRN)
         {
             j = 2;
         }
@@ -168,6 +168,13 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                 {
                     j = 2;
                 }
+        }
+
+    /* For single-frequency observations, use P1 directly (no iono-free combination) */
+    if (lam[j] == 0.0 && obs->P[i] != 0.0)
+        {
+            *var = ERR_CBIAS * ERR_CBIAS;
+            return obs->P[i] - (sys == SYS_GPS || sys == SYS_QZS ? nav->cbias[obs->sat - 1][1] : 0.0);
         }
 
     if (lam[i] == 0.0 or lam[j] == 0.0)
@@ -460,19 +467,16 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
             /* geometric distance/azimuth/elevation angle */
             if ((r = geodist(rs + i * 6, rr, e)) <= 0.0)
                 {
-                    trace(4, "geodist error\n");
                     continue;
                 }
             double elaux = satazel(pos, e, azel + i * 2);
             if (elaux < opt->elmin)
                 {
-                    trace(4, "satazel error. el = %lf , elmin = %lf\n", elaux, opt->elmin);
                     continue;
                 }
             /* psudorange with code bias correction */
             if ((P = prange(obs + i, nav, azel + i * 2, iter, opt, &vmeas)) == 0.0)
                 {
-                    trace(4, "prange error\n");
                     continue;
                 }
 
@@ -739,6 +743,7 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
             x[0] = pos(0);
             x[1] = pos(1);
             x[2] = pos(2);
+            // (no fallback needed — Bancroft handles relative pseudoranges)
         }
 
     for (i = 0; i < MAXITR; i++)

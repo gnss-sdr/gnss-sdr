@@ -32,6 +32,7 @@
 
 #include "rtklib_solver.h"
 #include "Beidou_DNAV.h"
+#include "NAVIC_LNAV.h"
 #include "gnss_sdr_filesystem.h"
 #include "rtklib_rtkpos.h"
 #include "rtklib_solution.h"
@@ -76,6 +77,7 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     d_rtklib_band_index["7X"] = 2;
     d_rtklib_band_index["5X"] = 2;
     d_rtklib_band_index["L5"] = 2;
+    d_rtklib_band_index["I5"] = 0;
     d_rtklib_band_index["E6"] = 0;
 
     switch (d_type_of_rx)
@@ -914,6 +916,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_ephemeris_iter;
     std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_ephemeris_iter;
     std::map<int, Beidou_Dnav_Ephemeris>::const_iterator beidou_ephemeris_iter;
+    std::map<int, Navic_Lnav_Ephemeris>::const_iterator navic_ephemeris_iter;
 
     const Glonass_Gnav_Utc_Model &gnav_utc = this->glonass_gnav_utc_model;
 
@@ -1394,6 +1397,33 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             }
                         break;
                     }
+                case 'I':
+                    {
+                        // NavIC (IRNSS) L5
+                        const std::string sig_(gnss_observables_iter->second.Signal);
+                        if (sig_ == "I5")
+                            {
+                                navic_ephemeris_iter = navic_lnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                                if (navic_ephemeris_iter != navic_lnav_ephemeris_map.cend())
+                                    {
+                                        // convert ephemeris from GNSS-SDR class to RTKLIB structure
+                                        eph_data[valid_obs] = eph_to_rtklib(navic_ephemeris_iter->second);
+                                        // convert observation from GNSS-SDR class to RTKLIB structure
+                                        obsd_t newobs{};
+                                        // Use the corrected GPS week from the ephemeris (already accounts for rollover)
+                                        d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                            gnss_observables_iter->second,
+                                            eph_data[valid_obs].week,
+                                            d_rtklib_band_index[sig_]);
+                                        valid_obs++;
+                                    }
+                                else  // the ephemeris are not available for this SV
+                                    {
+                                        DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->first;
+                                    }
+                            }
+                        break;
+                    }
 
                 default:
                     DLOG(INFO) << "Hybrid observables: Unknown GNSS";
@@ -1493,6 +1523,25 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_nav_data.utc_cmp[3] = 0.0;  // ??
                     d_nav_data.leaps = beidou_dnav_utc_model.DeltaT_LS;
                 }
+            if (navic_lnav_iono.valid)
+                {
+                    d_nav_data.ion_irn[0] = navic_lnav_iono.alpha0;
+                    d_nav_data.ion_irn[1] = navic_lnav_iono.alpha1;
+                    d_nav_data.ion_irn[2] = navic_lnav_iono.alpha2;
+                    d_nav_data.ion_irn[3] = navic_lnav_iono.alpha3;
+                    d_nav_data.ion_irn[4] = navic_lnav_iono.beta0;
+                    d_nav_data.ion_irn[5] = navic_lnav_iono.beta1;
+                    d_nav_data.ion_irn[6] = navic_lnav_iono.beta2;
+                    d_nav_data.ion_irn[7] = navic_lnav_iono.beta3;
+                }
+            if (navic_lnav_utc_model.valid)
+                {
+                    d_nav_data.utc_irn[0] = navic_lnav_utc_model.A0_UTC;
+                    d_nav_data.utc_irn[1] = navic_lnav_utc_model.A1_UTC;
+                    d_nav_data.utc_irn[2] = navic_lnav_utc_model.t_OT_UTC;
+                    d_nav_data.utc_irn[3] = navic_lnav_utc_model.WN_OT_UTC;
+                    d_nav_data.leaps = navic_lnav_utc_model.DeltaT_LS;
+                }
 
             /* update carrier wave length using native function call in RTKlib */
             for (int i = 0; i < MAXSAT; i++)
@@ -1547,6 +1596,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         {
                             dops(index_aux, azel.data(), 0.0, d_dop.data());
                         }
+
                     this->set_valid_position(true);
                     std::array<double, 4> rx_position_and_time{};
 

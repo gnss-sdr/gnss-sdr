@@ -269,6 +269,18 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
                     PRN = PRN_;
                 }
         }
+    else if (system == "IRNSS")
+        {
+            if (PRN_ < 1 or PRN_ > 14)
+                {
+                    DLOG(INFO) << "This PRN is not defined";
+                    PRN = 0;
+                }
+            else
+                {
+                    PRN = PRN_;
+                }
+        }
 
     else
         {
@@ -806,6 +818,58 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                     break;
                 case 61:
                     block_ = std::string("BeiDou-3 GEOG3");  // launched 2020/06/2023
+                    break;
+                default:
+                    block_ = std::string("Unknown");
+                }
+        }
+    else if (system_ == "IRNSS")
+        {
+            // NavIC/IRNSS constellation - GEO and IGSO satellites
+            // https://www.isro.gov.in/IRNSS_Programme.html
+            switch (PRN_)
+                {
+                case 1:
+                    block_ = std::string("IRNSS-1A");  // IGSO, launched 2013/07/01
+                    break;
+                case 2:
+                    block_ = std::string("IRNSS-1B");  // IGSO, launched 2014/04/04
+                    break;
+                case 3:
+                    block_ = std::string("IRNSS-1C");  // GEO, launched 2014/10/16
+                    break;
+                case 4:
+                    block_ = std::string("IRNSS-1D");  // IGSO, launched 2015/03/28
+                    break;
+                case 5:
+                    block_ = std::string("IRNSS-1E");  // IGSO, launched 2016/01/20
+                    break;
+                case 6:
+                    block_ = std::string("IRNSS-1F");  // GEO, launched 2016/03/10
+                    break;
+                case 7:
+                    block_ = std::string("IRNSS-1G");  // GEO, launched 2016/04/28
+                    break;
+                case 8:
+                    block_ = std::string("IRNSS-1H");  // spare
+                    break;
+                case 9:
+                    block_ = std::string("IRNSS-1I");  // IGSO, launched 2018/04/12 (replacement for 1A)
+                    break;
+                case 10:
+                    block_ = std::string("NavIC-NVS-01");  // L1+L5+S, launched 2023/05/29
+                    break;
+                case 11:
+                    block_ = std::string("NavIC-NVS-02");  // L1+L5+S, launched 2024/03/14
+                    break;
+                case 12:
+                    block_ = std::string("NavIC-NVS-03");  // L1+L5+S, launched 2024/xx
+                    break;
+                case 13:
+                    block_ = std::string("NavIC-NVS-04");
+                    break;
+                case 14:
+                    block_ = std::string("NavIC-NVS-05");
                     break;
                 default:
                     block_ = std::string("Unknown");

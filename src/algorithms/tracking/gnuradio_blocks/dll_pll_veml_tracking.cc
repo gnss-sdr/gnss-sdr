@@ -31,6 +31,7 @@
 #include "Galileo_E5b.h"
 #include "Galileo_E6.h"
 #include "MATH_CONSTANTS.h"
+#include "NAVIC_L5.h"
 #include "beidou_b1i_signal_replica.h"
 #include "beidou_b3i_signal_replica.h"
 #include "galileo_e1_signal_replica.h"
@@ -41,6 +42,7 @@
 #include "gnss_sdr_filesystem.h"
 #include "gnss_synchro.h"
 #include "gps_l2c_signal_replica.h"
+#include "navic_l5_signal_replica.h"
 #include "gps_l5_signal_replica.h"
 #include "gps_sdr_signal_replica.h"
 #include "lock_detectors.h"
@@ -450,6 +452,53 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     d_symbols_per_bit = 0;
                 }
         }
+    else if (d_trk_parameters.system == 'I')
+        {
+            d_systemName = "IRNSS";
+            if (d_signal_type == "I5")
+                {
+                    d_signal_carrier_freq = NAVIC_L5_FREQ_HZ;
+                    d_code_period = NAVIC_L5_CODE_PERIOD_S;
+                    d_code_chip_rate = NAVIC_L5_CODE_RATE_CPS;
+                    d_code_length_chips = static_cast<int32_t>(NAVIC_L5_CODE_LENGTH_CHIPS);
+                    // NavIC L5 SPS: 50 sps (20 code periods per symbol).
+                    // Use preamble-based bit sync in the tracker (same as GPS L1 CA).
+                    // NOTE: The 160-symbol preamble pattern has autocorrelation sidelobes
+                    // at ±1..±K code period offsets, which can cause false bit sync lock
+                    // for some channels. The telemetry decoder handles this by verifying
+                    // subframe timing via CRC and adjusting if needed.
+                    d_symbols_per_bit = NAVIC_L5_SYMBOLS_PER_BIT;  // 20
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_secondary = false;
+                    d_trk_parameters.track_pilot = false;
+                    d_trk_parameters.slope = 1.0;
+                    d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
+                    d_trk_parameters.y_intercept = 1.0;
+                    // Set preamble pattern for bit sync (same as GPS L1 C/A, line 199)
+                    d_secondary_code_length = static_cast<uint32_t>(NAVIC_L5_PREAMBLE_LENGTH_SYMBOLS_TRK);
+                    d_secondary_code_string = std::string(NAVIC_L5_PREAMBLE_SYMBOLS_STR);
+                    if (d_trk_parameters.extend_correlation_symbols > 1)
+                        {
+                            // Use full 16-bit preamble (320 symbols) instead of 8-bit (160)
+                            // to reduce false bit sync at ±K code period offsets.
+                            d_secondary_code_length = static_cast<uint32_t>(NAVIC_L5_PREAMBLE_LENGTH_SYMBOLS_TRK_FULL);
+                            d_secondary_code_string = std::string(NAVIC_L5_PREAMBLE_SYMBOLS_STR_FULL);
+                        }
+                }
+            else
+                {
+                    LOG(WARNING) << "Invalid Signal argument when instantiating tracking blocks";
+                    std::cout << "Invalid Signal argument when instantiating tracking blocks\n";
+                    d_correlation_length_ms = 1;
+                    d_secondary = false;
+                    d_signal_carrier_freq = 0.0;
+                    d_code_period = 0.0;
+                    d_code_length_chips = 0;
+                    d_code_samples_per_chip = 0;
+                    d_symbols_per_bit = 0;
+                }
+        }
     else
         {
             LOG(WARNING) << "Invalid System argument when instantiating tracking blocks";
@@ -838,6 +887,11 @@ void dll_pll_veml_tracking::start_tracking()
                 }
         }
 
+    else if (d_systemName == "IRNSS" and d_signal_type == "I5")
+        {
+            navic_l5_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
+        }
+
     d_multicorrelator_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_tracking_code.data(), d_local_code_shift_chips.data());
     std::fill_n(d_correlator_outs.begin(), d_n_correlator_taps, gr_complex(0.0, 0.0));
 
@@ -882,6 +936,7 @@ void dll_pll_veml_tracking::start_tracking()
     d_state = 1;
     d_cloop = true;
     d_pull_in_transitory = true;
+    d_half_cycle_corrected = false;
     d_Prompt_circular_buffer.clear();
     d_corrected_doppler = false;
     d_acc_carrier_phase_initialized = false;
@@ -1864,6 +1919,41 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
                                             {
                                                 next_state = acquire_secondary();
+                                                if (!next_state)
+                                                    {
+                                                        // Detect Costas PLL half-cycle (500 Hz) false lock.
+                                                        // With 1ms coherent integration, the Costas PLL has
+                                                        // ambiguity at multiples of 1/(2*T_coh) = 500 Hz.
+                                                        // If prompts alternate sign every ms, the PLL is
+                                                        // locked 500 Hz off the true carrier. Fix: shift the
+                                                        // carrier NCO by +500 Hz and re-initialize the loop
+                                                        // filter so it doesn't pull back to the false lock.
+                                                        int32_t sign_flips = 0;
+                                                        for (uint32_t i = 1; i < d_secondary_code_length; i++)
+                                                            {
+                                                                if ((d_Prompt_circular_buffer[i].real() > 0) != (d_Prompt_circular_buffer[i - 1].real() > 0))
+                                                                    {
+                                                                        sign_flips++;
+                                                                    }
+                                                            }
+                                                        const double flip_ratio = static_cast<double>(sign_flips) / static_cast<double>(d_secondary_code_length - 1);
+                                                        if (flip_ratio > 0.85 && !d_half_cycle_corrected)
+                                                            {
+                                                                const double code_period_s = static_cast<double>(d_code_length_chips) / d_code_freq_chips;
+                                                                const double half_cycle_hz = 0.5 / code_period_s;
+                                                                d_carrier_doppler_hz += half_cycle_hz;
+                                                                d_carrier_loop_filter.initialize(static_cast<float>(d_carrier_doppler_hz));
+                                                                d_half_cycle_corrected = true;
+                                                                d_Prompt_circular_buffer.clear();
+                                                                LOG(INFO) << d_systemName << " " << d_signal_pretty_name
+                                                                          << " half-cycle false lock corrected in channel " << d_channel
+                                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN)
+                                                                          << " (+" << half_cycle_hz << " Hz)";
+                                                                std::cout << d_systemName << " " << d_signal_pretty_name
+                                                                          << " half-cycle false lock corrected in channel " << d_channel
+                                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                            }
+                                                    }
                                                 if (next_state)
                                                     {
                                                         LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel

@@ -229,6 +229,10 @@ private:
     size_t d_beidou_dnav_iono_sptr_type_hash_code;
     size_t d_beidou_dnav_utc_model_sptr_type_hash_code;
     size_t d_beidou_dnav_almanac_sptr_type_hash_code;
+    size_t d_navic_lnav_ephemeris_sptr_type_hash_code;
+    size_t d_navic_lnav_iono_sptr_type_hash_code;
+    size_t d_navic_lnav_utc_model_sptr_type_hash_code;
+    size_t d_navic_lnav_almanac_sptr_type_hash_code;
     size_t d_galileo_has_data_sptr_type_hash_code;
 
     double d_rinex_version;

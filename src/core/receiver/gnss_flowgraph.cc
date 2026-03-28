@@ -214,6 +214,7 @@ void GNSSFlowgraph::init()
     mapStringValues_["2G"] = evGLO_2G;
     mapStringValues_["B1"] = evBDS_B1;
     mapStringValues_["B3"] = evBDS_B3;
+    mapStringValues_["I5"] = evIRN_L5;
 
     // fill the signals queue with the satellites ID's to be searched by the acquisition
     set_signals_list();
@@ -1127,6 +1128,7 @@ int GNSSFlowgraph::connect_signal_conditioners_to_channels()
                                 case evGLO_2G:
                                 case evBDS_B1:
                                 case evBDS_B3:
+                                case evIRN_L5:
                                     acq_fs = fs;
                                     break;
                                 default:
@@ -1604,6 +1606,14 @@ int GNSSFlowgraph::assign_channels()
             top_block_->disconnect_all();
             return 1;
         }
+    if (configuration_->property("Channels_I5.count", uint64_t(0ULL)) > available_IRNSS_L5_signals_.size() - 1)
+        {
+            help_hint_ += " * The number of NavIC L5 channels is set to Channels_I5.count=" + std::to_string(configuration_->property("Channels_I5.count", 0));
+            help_hint_ += " but the maximum number of available NavIC satellites is " + std::to_string(available_IRNSS_L5_signals_.size()) + ".\n";
+            help_hint_ += " Please set Channels_I5.count=" + std::to_string(available_IRNSS_L5_signals_.size() - 1) + " or lower in your configuration file.\n";
+            top_block_->disconnect_all();
+            return 1;
+        }
 
     // Assign satellites to channels in the initialization
     for (unsigned int& i : vector_of_channels)
@@ -1696,6 +1706,12 @@ int GNSSFlowgraph::assign_channels()
                             gnss_system_str = "Beidou";
                             gnss_signal = Gnss_Signal(Gnss_Satellite(gnss_system_str, sat), gnss_signal_str);
                             available_BDS_B3_signals_.remove(gnss_signal);
+                            break;
+
+                        case evIRN_L5:
+                            gnss_system_str = "IRNSS";
+                            gnss_signal = Gnss_Signal(Gnss_Satellite(gnss_system_str, sat), gnss_signal_str);
+                            available_IRNSS_L5_signals_.remove(gnss_signal);
                             break;
 
                         default:
@@ -1810,6 +1826,11 @@ void GNSSFlowgraph::push_back_signal(const Gnss_Signal& gs)
             available_BDS_B3_signals_.push_back(gs);
             break;
 
+        case evIRN_L5:
+            available_IRNSS_L5_signals_.remove(gs);
+            available_IRNSS_L5_signals_.push_back(gs);
+            break;
+
         default:
             LOG(ERROR) << "This should not happen :-(";
             break;
@@ -1863,6 +1884,10 @@ void GNSSFlowgraph::remove_signal(const Gnss_Signal& gs)
 
         case evBDS_B3:
             available_BDS_B3_signals_.remove(gs);
+            break;
+
+        case evIRN_L5:
+            available_IRNSS_L5_signals_.remove(gs);
             break;
 
         default:
@@ -2177,6 +2202,16 @@ void GNSSFlowgraph::priorize_satellites(const std::vector<std::pair<int, Gnss_Sa
                             available_GAL_E6_signals_.push_front(gs);
                         }
                 }
+            else if (visible_satellite.second.get_system() == "IRNSS")
+                {
+                    gs = Gnss_Signal(visible_satellite.second, "I5");
+                    old_size = available_IRNSS_L5_signals_.size();
+                    available_IRNSS_L5_signals_.remove(gs);
+                    if (old_size > available_IRNSS_L5_signals_.size())
+                        {
+                            available_IRNSS_L5_signals_.push_front(gs);
+                        }
+                }
         }
 }
 
@@ -2280,6 +2315,9 @@ void GNSSFlowgraph::set_signals_list()
         11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
         30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
         50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63};
+
+    std::set<unsigned int> available_irnss_prn = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+        11, 12, 13, 14};
 
     std::string sv_list = configuration_->property("Galileo.prns", std::string(""));
 
@@ -2481,6 +2519,46 @@ void GNSSFlowgraph::set_signals_list()
                 }
         }
 
+    sv_list = configuration_->property("IRNSS.prns", std::string(""));
+
+    if (!sv_list.empty())
+        {
+            // Reset the available prns:
+            std::set<unsigned int> tmp_set;
+            boost::tokenizer<> tok(sv_list);
+            std::transform(tok.begin(), tok.end(), std::inserter(tmp_set, tmp_set.begin()),
+                boost::lexical_cast<unsigned int, std::string>);
+
+            if (!tmp_set.empty())
+                {
+                    available_irnss_prn = std::move(tmp_set);
+                }
+        }
+
+    sv_banned = configuration_->property("GNSS-SDR.IRNSS_banned_prns", std::string(""));
+    if (!sv_banned.empty())
+        {
+            std::stringstream ss(sv_banned);
+            while (ss.good())
+                {
+                    std::string substr;
+                    std::getline(ss, substr, ',');
+                    try
+                        {
+                            auto banned = static_cast<unsigned int>(std::stoi(substr));
+                            available_irnss_prn.erase(banned);
+                        }
+                    catch (const std::invalid_argument& ia)
+                        {
+                            std::cerr << "Invalid argument at GNSS-SDR.IRNSS_banned_prns configuration parameter: " << ia.what() << '\n';
+                        }
+                    catch (const std::out_of_range& oor)
+                        {
+                            std::cerr << "Out of range at GNSS-SDR.IRNSS_banned_prns configuration parameter: " << oor.what() << '\n';
+                        }
+                }
+        }
+
     if (configuration_->property("Channels_1C.count", 0) > 0)
         {
             // Loop to create GPS L1 C/A signals
@@ -2634,6 +2712,19 @@ void GNSSFlowgraph::set_signals_list()
                     available_BDS_B3_signals_.emplace_back(
                         Gnss_Satellite(std::string("Beidou"), *available_gnss_prn_iter),
                         std::string("B3"));
+                }
+        }
+
+    if (configuration_->property("Channels_I5.count", 0) > 0)
+        {
+            // Loop to create the list of NavIC L5 signals
+            for (available_gnss_prn_iter = available_irnss_prn.cbegin();
+                available_gnss_prn_iter != available_irnss_prn.cend();
+                available_gnss_prn_iter++)
+                {
+                    available_IRNSS_L5_signals_.emplace_back(
+                        Gnss_Satellite(std::string("IRNSS"), *available_gnss_prn_iter),
+                        std::string("I5"));
                 }
         }
 }
@@ -2953,6 +3044,13 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
             result = available_BDS_B3_signals_.front();
             available_BDS_B3_signals_.pop_front();
             available_BDS_B3_signals_.push_back(result);
+            break;
+
+        case evIRN_L5:
+            result = available_IRNSS_L5_signals_.front();
+            available_IRNSS_L5_signals_.pop_front();
+            available_IRNSS_L5_signals_.push_back(result);
+            is_primary_frequency = true;
             break;
 
         default:

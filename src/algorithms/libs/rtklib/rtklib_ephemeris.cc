@@ -753,7 +753,7 @@ int ephclk(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
 
     sys = satsys(sat, nullptr);
 
-    if (sys == SYS_GPS || sys == SYS_GAL || sys == SYS_QZS || sys == SYS_BDS)
+    if (sys == SYS_GPS || sys == SYS_GAL || sys == SYS_QZS || sys == SYS_BDS || sys == SYS_IRN)
         {
             if (!(eph = seleph(teph, sat, -1, nav)))
                 {
@@ -805,7 +805,7 @@ int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
 
     *svh = -1;
 
-    if (sys == SYS_GPS || sys == SYS_GAL || sys == SYS_QZS || sys == SYS_BDS)
+    if (sys == SYS_GPS || sys == SYS_GAL || sys == SYS_QZS || sys == SYS_BDS || sys == SYS_IRN)
         {
             if (!(eph = seleph(teph, sat, iode, nav)))
                 {
@@ -984,9 +984,9 @@ int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
             return 0;
         }
 
-    /* satellite clock for gps, galileo and qzss */
+    /* satellite clock for gps, galileo, qzss, bds, and irnss */
     sys = satsys(sat, nullptr);
-    if (sys == SYS_GPS || sys == SYS_GAL || sys == SYS_QZS || sys == SYS_BDS)
+    if (sys == SYS_GPS || sys == SYS_GAL || sys == SYS_QZS || sys == SYS_BDS || sys == SYS_IRN)
         {
             if (!(eph = seleph(teph, sat, ssr->iode, nav)))
                 {

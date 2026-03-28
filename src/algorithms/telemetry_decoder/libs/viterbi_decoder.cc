@@ -58,7 +58,7 @@ void Viterbi_Decoder::decode(std::vector<int32_t>& output_u_int, const std::vect
     // go through trellis
     for (t = 0; t < d_LL + d_mm; t++)
         {
-            std::copy(input_c.begin() + d_nn * t, input_c.begin() + d_nn * t + (d_nn - 1), d_rec_array.begin());
+            std::copy(input_c.begin() + d_nn * t, input_c.begin() + d_nn * (t + 1), d_rec_array.begin());
 
             // precompute all possible branch metrics
             for (i = 0; i < d_number_symbols; i++)

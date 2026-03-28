@@ -204,6 +204,7 @@ private:
     bool d_acc_carrier_phase_initialized;
     bool d_enable_extended_integration;
     bool d_Flag_PLL_180_deg_phase_locked;
+    bool d_half_cycle_corrected;
 };
 
 

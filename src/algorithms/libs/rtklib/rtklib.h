@@ -212,8 +212,9 @@ const int NSATBDS = 0;
 const int NSYSBDS = 0;
 #endif
 
-const int MINPRNIRN = 1;  //!<   min satellite sat number of IRNSS
-const int MAXPRNIRN = 7;  //!<   max satellite sat number of IRNSS
+const int MINPRNIRN = 1;   //!<   min satellite sat number of IRNSS
+const int MAXPRNIRN = 14;  //!<   max satellite sat number of IRNSS (full NavIC constellation)
+#define ENAIRN
 #ifdef ENAIRN
 const int NSATIRN = (MAXPRNIRN - MINPRNIRN + 1);  //!<   number of IRNSS satellites
 const int NSYSIRN = 1;

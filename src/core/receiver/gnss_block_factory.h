@@ -15,7 +15,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -53,16 +53,16 @@ public:
     ~GNSSBlockFactory() = default;
 
     std::unique_ptr<SignalSourceInterface> GetSignalSource(const ConfigurationInterface* configuration,
-        Concurrent_Queue<pmt::pmt_t>* queue, int ID = -1);
+        Concurrent_Queue<pmt::pmt_t>* queue, int ID = -1) const;
 
-    std::unique_ptr<GNSSBlockInterface> GetSignalConditioner(const ConfigurationInterface* configuration, int ID = -1);
+    std::unique_ptr<GNSSBlockInterface> GetSignalConditioner(const ConfigurationInterface* configuration, int ID = -1) const;
 
     std::vector<std::unique_ptr<GNSSBlockInterface>> GetChannels(const ConfigurationInterface* configuration,
-        Concurrent_Queue<pmt::pmt_t>* queue);
+        Concurrent_Queue<pmt::pmt_t>* queue) const;
 
-    std::unique_ptr<GNSSBlockInterface> GetObservables(const ConfigurationInterface* configuration);
+    std::unique_ptr<GNSSBlockInterface> GetObservables(const ConfigurationInterface* configuration) const;
 
-    std::unique_ptr<GNSSBlockInterface> GetPVT(const ConfigurationInterface* configuration);
+    std::unique_ptr<GNSSBlockInterface> GetPVT(const ConfigurationInterface* configuration) const;
 
     /*!
      * \brief Returns the block with the required role implementation and its configuration parameters
@@ -71,32 +71,32 @@ public:
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams,
-        Concurrent_Queue<pmt::pmt_t>* queue = nullptr);
+        Concurrent_Queue<pmt::pmt_t>* queue = nullptr) const;
 
 private:
     std::unique_ptr<GNSSBlockInterface> GetChannel(
         const ConfigurationInterface* configuration,
         const std::string& signal,
         int channel,
-        Concurrent_Queue<pmt::pmt_t>* queue);
+        Concurrent_Queue<pmt::pmt_t>* queue) const;
 
     std::unique_ptr<AcquisitionInterface> GetAcqBlock(
         const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
-        unsigned int out_streams);
+        unsigned int out_streams) const;
 
     std::unique_ptr<TrackingInterface> GetTrkBlock(
         const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
-        unsigned int out_streams);
+        unsigned int out_streams) const;
 
     std::unique_ptr<TelemetryDecoderInterface> GetTlmBlock(
         const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
-        unsigned int out_streams);
+        unsigned int out_streams) const;
 };
 
 

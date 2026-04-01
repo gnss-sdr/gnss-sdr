@@ -232,6 +232,18 @@ auto findRole(ConfigurationInterface const* configuration, std::string const& ba
     return role;
 };
 
+std::string get_role_name(const ConfigurationInterface* configuration, const std::string& prop_prefix, const std::string& signal, int channel)
+{
+    const auto prop_name = prop_prefix + signal + std::to_string(channel);
+
+    if (configuration->is_present(prop_name + impl_prop))
+        {
+            return prop_name;
+        }
+
+    return prop_prefix + signal;
+}
+
 const auto signal_mapping = std::vector<std::pair<std::string, std::string>>{
     {"1C", "GPS L1 C/A"},
     {"2S", "GPS L2C (M)"},
@@ -742,230 +754,6 @@ std::unique_ptr<TelemetryDecoderInterface> get_tlm_block(
     return nullptr;
 }
 
-}  // namespace
-
-
-std::unique_ptr<SignalSourceInterface> GNSSBlockFactory::GetSignalSource(
-    const ConfigurationInterface* configuration, Concurrent_Queue<pmt::pmt_t>* queue, int ID)
-{
-    auto role = findRole(configuration, "SignalSource"s, ID);
-    auto implementation = configuration->property(role + impl_prop, ""s);
-    LOG(INFO) << "Getting SignalSource " << role << " with implementation " << implementation;
-    return get_signal_source_block(implementation, configuration, role, 0, 1, queue);
-}
-
-
-std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
-    const ConfigurationInterface* configuration, int ID)
-{
-    const std::string empty_implementation;
-
-    auto role_conditioner = findRole(configuration, "SignalConditioner"s, ID);
-    auto role_datatypeadapter = findRole(configuration, "DataTypeAdapter"s, ID);
-    auto role_inputfilter = findRole(configuration, "InputFilter"s, ID);
-    auto role_resampler = findRole(configuration, "Resampler"s, ID);
-
-    DLOG(INFO) << "role: " << role_conditioner << " (ID=" << ID << ")";
-
-    const std::string signal_conditioner = configuration->property(role_conditioner + impl_prop, ""s);
-    const std::string data_type_adapter = configuration->property(role_datatypeadapter + impl_prop, ""s);
-    const std::string input_filter = configuration->property(role_inputfilter + impl_prop, ""s);
-    const std::string resampler = configuration->property(role_resampler + impl_prop, ""s);
-
-    if (signal_conditioner == "Pass_Through")
-        {
-            if (!data_type_adapter.empty() and (data_type_adapter != "Pass_Through"))
-                {
-                    LOG(WARNING) << "Configuration warning: if " << role_conditioner << impl_prop << "\n"
-                                 << "is set to Pass_Through, then the " << role_datatypeadapter << impl_prop << "\n"
-                                 << "parameter should be either not set or set to Pass_Through.\n"
-                                 << role_datatypeadapter << " configuration parameters will be ignored.";
-                }
-            if (!input_filter.empty() and (input_filter != "Pass_Through"))
-                {
-                    LOG(WARNING) << "Configuration warning: if " << role_conditioner << impl_prop << "\n"
-                                 << "is set to Pass_Through, then the " << role_inputfilter << impl_prop << "\n"
-                                 << "parameter should be either not set or set to Pass_Through.\n"
-                                 << role_inputfilter << " configuration parameters will be ignored.";
-                }
-            if (!resampler.empty() and (resampler != "Pass_Through"))
-                {
-                    LOG(WARNING) << "Configuration warning: if " << role_conditioner << impl_prop << "\n"
-                                 << "is set to Pass_Through, then the " << role_resampler << impl_prop << "\n"
-                                 << "parameter should be either not set or set to Pass_Through.\n"
-                                 << role_resampler << " configuration parameters will be ignored.";
-                }
-            LOG(INFO) << "Getting " << role_conditioner << " with Pass_Through implementation";
-
-            return std::make_unique<Pass_Through>(configuration, role_conditioner, 1, 1);
-        }
-
-    LOG(INFO) << "Getting " << role_conditioner << " with " << role_datatypeadapter << " implementation: "
-              << data_type_adapter << ", " << role_inputfilter << " implementation: "
-              << input_filter << ", and " << role_resampler << " implementation: "
-              << resampler;
-
-    if (signal_conditioner == "Array_Signal_Conditioner")
-        {
-            // instantiate the array version
-            return std::make_unique<ArraySignalConditioner>(
-                GetBlock(configuration, role_datatypeadapter, 1, 1),
-                GetBlock(configuration, role_inputfilter, 1, 1),
-                GetBlock(configuration, role_resampler, 1, 1),
-                role_conditioner);
-        }
-
-    if (signal_conditioner != "Signal_Conditioner")
-        {
-            std::cerr << "Error in configuration file: SignalConditioner.implementation=" << signal_conditioner << " is not a valid value.\n";
-            return nullptr;
-        }
-
-    // single-antenna version
-    return std::make_unique<SignalConditioner>(
-        GetBlock(configuration, role_datatypeadapter, 1, 1),
-        GetBlock(configuration, role_inputfilter, 1, 1),
-        GetBlock(configuration, role_resampler, 1, 1),
-        role_conditioner);
-}
-
-
-std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(const ConfigurationInterface* configuration)
-{
-    const std::string empty_implementation;
-    std::string implementation = configuration->property("Observables.implementation", empty_implementation);
-    LOG(INFO) << "Getting Observables with implementation " << implementation;
-    if (implementation.find("_Observables") == std::string::npos)
-        {
-            std::cerr << "Error in configuration file: please set Observables.implementation=Hybrid_Observables\n";
-            return nullptr;
-        }
-
-    const auto channel_count = get_channel_count(configuration);
-    return GetBlock(configuration, "Observables", channel_count + 1, channel_count);  // 1 for monitor channel sample counter
-}
-
-
-std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(const ConfigurationInterface* configuration)
-{
-    const std::string empty_implementation;
-    std::string implementation = configuration->property("PVT.implementation", empty_implementation);
-    LOG(INFO) << "Getting PVT with implementation " << implementation;
-    if (implementation.find("_PVT") == std::string::npos)
-        {
-            std::cerr << "Error in configuration file: please set PVT.implementation=RTKLIB_PVT\n";
-            return nullptr;
-        }
-
-    const auto channel_count = get_channel_count(configuration);
-    return GetBlock(configuration, "PVT", channel_count, 0);
-}
-
-
-// ************************** GNSS CHANNEL *************************************
-std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel(
-    const ConfigurationInterface* configuration,
-    const std::string& signal,
-    int channel,
-    Concurrent_Queue<pmt::pmt_t>* queue)
-{
-    // "appendix" is added to the "role" with the aim of Acquisition, Tracking and Telemetry Decoder adapters
-    // can find their specific configurations for channels
-    std::string aux = configuration->property("Acquisition_" + signal + std::to_string(channel) + impl_prop, std::string("W"));
-    std::string appendix1;
-    if (aux != "W")
-        {
-            appendix1 = std::to_string(channel);
-        }
-
-    aux = configuration->property("Tracking_" + signal + std::to_string(channel) + impl_prop, std::string("W"));
-    std::string appendix2;
-    if (aux != "W")
-        {
-            appendix2 = std::to_string(channel);
-        }
-
-    aux = configuration->property("TelemetryDecoder_" + signal + std::to_string(channel) + impl_prop, std::string("W"));
-    std::string appendix3;
-    if (aux != "W")
-        {
-            appendix3 = std::to_string(channel);
-        }
-
-    // Automatically detect input data type
-    const std::string default_item_type("gr_complex");
-    std::string acq_item_type = configuration->property("Acquisition_" + signal + appendix1 + item_prop, default_item_type);
-    std::string trk_item_type = configuration->property("Tracking_" + signal + appendix2 + item_prop, default_item_type);
-    if (acq_item_type != trk_item_type)
-        {
-            std::cerr << "Configuration error: Acquisition and Tracking blocks must have the same input data type!\n";
-            return nullptr;
-        }
-
-    LOG(INFO) << "Instantiating Channel " << channel
-              << " with Acquisition Implementation: "
-              << configuration->property("Acquisition_" + signal + appendix1 + impl_prop, std::string("W"))
-              << ", Tracking Implementation: "
-              << configuration->property("Tracking_" + signal + appendix2 + impl_prop, std::string("W"))
-              << ", Telemetry Decoder implementation: "
-              << configuration->property("TelemetryDecoder_" + signal + appendix3 + impl_prop, std::string("W"));
-
-    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_" + signal + appendix1, 1, 0);
-    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_" + signal + appendix2, 1, 1);
-    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_" + signal + appendix3, 1, 1);
-
-    if (acq_ == nullptr or trk_ == nullptr or tlm_ == nullptr)
-        {
-            return nullptr;
-        }
-    if (trk_->item_size() == 0)
-        {
-            std::cerr << "Configuration error: " << trk_->role() << item_prop << "=" << acq_item_type << " is not defined for implementation " << trk_->implementation() << '\n';
-            return nullptr;
-        }
-
-    std::unique_ptr<GNSSBlockInterface> channel_ = std::make_unique<Channel>(configuration, channel,
-        std::move(acq_),
-        std::move(trk_),
-        std::move(tlm_),
-        "Channel", signal, queue);
-
-    return channel_;
-}
-
-
-std::vector<std::unique_ptr<GNSSBlockInterface>> GNSSBlockFactory::GetChannels(
-    const ConfigurationInterface* configuration,
-    Concurrent_Queue<pmt::pmt_t>* queue)
-{
-    int channel_absolute_id = 0;
-    std::vector<std::unique_ptr<GNSSBlockInterface>> channels(get_channel_count(configuration));
-
-    try
-        {
-            for (const auto& entry : signal_mapping)
-                {
-                    const auto& signal_str = entry.first;
-                    const auto& signal_pretty_str = entry.second;
-                    const auto channel_count = static_cast<unsigned int>(configuration->property("Channels_" + signal_str + ".count", 0));
-                    LOG(INFO) << "Getting " << channel_count << " " << signal_pretty_str << " channels";
-
-                    for (unsigned int i = 0; i < channel_count; i++)
-                        {
-                            // Store the channel into the vector of channels
-                            channels.at(channel_absolute_id) = GetChannel(configuration, signal_str, channel_absolute_id, queue);
-                            ++channel_absolute_id;
-                        }
-                }
-        }
-    catch (const std::exception& e)
-        {
-            LOG(WARNING) << e.what();
-        }
-
-    return channels;
-}
-
 
 /*
  * Returns the block with the required configuration and implementation
@@ -973,15 +761,13 @@ std::vector<std::unique_ptr<GNSSBlockInterface>> GNSSBlockFactory::GetChannels(
  * PLEASE ADD YOUR NEW BLOCK HERE!!
  *
  * IMPORTANT NOTE: Acquisition, Tracking and telemetry blocks are only included here for testing purposes.
- * To be included in a channel they must be also be included in GetAcqBlock(), GetTrkBlock() and GetTlmBlock()
- * (see below)
  */
-std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
+std::unique_ptr<GNSSBlockInterface> get_block(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams,
-    Concurrent_Queue<pmt::pmt_t>* queue)
+    Concurrent_Queue<pmt::pmt_t>* queue = nullptr)
 {
     std::unique_ptr<GNSSBlockInterface> block;
     const std::string implementation = configuration->property(role + impl_prop, "Pass_Through"s);
@@ -1110,11 +896,214 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 }
 
 
+std::unique_ptr<GNSSBlockInterface> get_block_force_impl(
+    const ConfigurationInterface* configuration, const std::string& role, const std::string& forced_impl, unsigned int in_streams, unsigned int out_streams)
+{
+    const std::string implementation = configuration->property(role + impl_prop, ""s);
+    LOG(INFO) << "Getting " << role << " with implementation " << implementation;
+
+    if (implementation.find(forced_impl) == std::string::npos)
+        {
+            std::cerr << "Error in configuration file: please set " << role << impl_prop << "=" << forced_impl << "\n";
+            return nullptr;
+        }
+
+    return get_block(configuration, role, in_streams, out_streams);
+}
+
+}  // namespace
+
+
+std::unique_ptr<SignalSourceInterface> GNSSBlockFactory::GetSignalSource(
+    const ConfigurationInterface* configuration, Concurrent_Queue<pmt::pmt_t>* queue, int ID) const
+{
+    const auto role = findRole(configuration, "SignalSource"s, ID);
+    const auto implementation = configuration->property(role + impl_prop, ""s);
+    LOG(INFO) << "Getting SignalSource " << role << " with implementation " << implementation;
+    return get_signal_source_block(implementation, configuration, role, 0, 1, queue);
+}
+
+
+std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
+    const ConfigurationInterface* configuration, int ID) const
+{
+    const auto role_conditioner = findRole(configuration, "SignalConditioner"s, ID);
+    const auto role_datatypeadapter = findRole(configuration, "DataTypeAdapter"s, ID);
+    const auto role_inputfilter = findRole(configuration, "InputFilter"s, ID);
+    const auto role_resampler = findRole(configuration, "Resampler"s, ID);
+
+    DLOG(INFO) << "role: " << role_conditioner << " (ID=" << ID << ")";
+
+    const std::string signal_conditioner = configuration->property(role_conditioner + impl_prop, ""s);
+    const std::string data_type_adapter = configuration->property(role_datatypeadapter + impl_prop, ""s);
+    const std::string input_filter = configuration->property(role_inputfilter + impl_prop, ""s);
+    const std::string resampler = configuration->property(role_resampler + impl_prop, ""s);
+
+    if (signal_conditioner == "Pass_Through")
+        {
+            if (!data_type_adapter.empty() and (data_type_adapter != "Pass_Through"))
+                {
+                    LOG(WARNING) << "Configuration warning: if " << role_conditioner << impl_prop << "\n"
+                                 << "is set to Pass_Through, then the " << role_datatypeadapter << impl_prop << "\n"
+                                 << "parameter should be either not set or set to Pass_Through.\n"
+                                 << role_datatypeadapter << " configuration parameters will be ignored.";
+                }
+            if (!input_filter.empty() and (input_filter != "Pass_Through"))
+                {
+                    LOG(WARNING) << "Configuration warning: if " << role_conditioner << impl_prop << "\n"
+                                 << "is set to Pass_Through, then the " << role_inputfilter << impl_prop << "\n"
+                                 << "parameter should be either not set or set to Pass_Through.\n"
+                                 << role_inputfilter << " configuration parameters will be ignored.";
+                }
+            if (!resampler.empty() and (resampler != "Pass_Through"))
+                {
+                    LOG(WARNING) << "Configuration warning: if " << role_conditioner << impl_prop << "\n"
+                                 << "is set to Pass_Through, then the " << role_resampler << impl_prop << "\n"
+                                 << "parameter should be either not set or set to Pass_Through.\n"
+                                 << role_resampler << " configuration parameters will be ignored.";
+                }
+            LOG(INFO) << "Getting " << role_conditioner << " with Pass_Through implementation";
+
+            return std::make_unique<Pass_Through>(configuration, role_conditioner, 1, 1);
+        }
+
+    LOG(INFO) << "Getting " << role_conditioner << " with " << role_datatypeadapter << " implementation: "
+              << data_type_adapter << ", " << role_inputfilter << " implementation: "
+              << input_filter << ", and " << role_resampler << " implementation: "
+              << resampler;
+
+    if (signal_conditioner == "Array_Signal_Conditioner")
+        {
+            // instantiate the array version
+            return std::make_unique<ArraySignalConditioner>(
+                GetBlock(configuration, role_datatypeadapter, 1, 1),
+                GetBlock(configuration, role_inputfilter, 1, 1),
+                GetBlock(configuration, role_resampler, 1, 1),
+                role_conditioner);
+        }
+
+    if (signal_conditioner != "Signal_Conditioner")
+        {
+            std::cerr << "Error in configuration file: SignalConditioner.implementation=" << signal_conditioner << " is not a valid value.\n";
+            return nullptr;
+        }
+
+    // single-antenna version
+    return std::make_unique<SignalConditioner>(
+        GetBlock(configuration, role_datatypeadapter, 1, 1),
+        GetBlock(configuration, role_inputfilter, 1, 1),
+        GetBlock(configuration, role_resampler, 1, 1),
+        role_conditioner);
+}
+
+
+std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(const ConfigurationInterface* configuration) const
+{
+    const auto channel_count = get_channel_count(configuration);
+    return get_block_force_impl(configuration, "Observables", "Hybrid_Observables", channel_count + 1, channel_count);  // 1 for monitor channel sample counter
+}
+
+
+std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(const ConfigurationInterface* configuration) const
+{
+    return get_block_force_impl(configuration, "PVT", "RTKLIB_PVT", get_channel_count(configuration), 0);
+}
+
+
+// ************************** GNSS CHANNEL *************************************
+std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel(
+    const ConfigurationInterface* configuration,
+    const std::string& signal,
+    int channel,
+    Concurrent_Queue<pmt::pmt_t>* queue) const
+{
+    const auto acq_role_name = get_role_name(configuration, "Acquisition_", signal, channel);
+    const auto trk_role_name = get_role_name(configuration, "Tracking_", signal, channel);
+    const auto tlm_role_name = get_role_name(configuration, "TelemetryDecoder_", signal, channel);
+
+    // Automatically detect input data type
+    const std::string default_item_type("gr_complex");
+    const std::string acq_item_type = configuration->property(acq_role_name + item_prop, default_item_type);
+    const std::string trk_item_type = configuration->property(trk_role_name + item_prop, default_item_type);
+
+    if (acq_item_type != trk_item_type)
+        {
+            std::cerr << "Configuration error: Acquisition and Tracking blocks must have the same input data type!\n";
+            return nullptr;
+        }
+
+    LOG(INFO) << "Instantiating Channel " << channel
+              << " with Acquisition Implementation: " << configuration->property(acq_role_name + impl_prop, "Invalid"s)
+              << ", Tracking Implementation: " << configuration->property(trk_role_name + impl_prop, "Invalid"s)
+              << ", Telemetry Decoder implementation: " << configuration->property(tlm_role_name + impl_prop, "Invalid"s);
+
+    auto acq_ = GetAcqBlock(configuration, acq_role_name, 1, 0);
+    auto trk_ = GetTrkBlock(configuration, trk_role_name, 1, 1);
+    auto tlm_ = GetTlmBlock(configuration, tlm_role_name, 1, 1);
+
+    if (acq_ == nullptr or trk_ == nullptr or tlm_ == nullptr)
+        {
+            return nullptr;
+        }
+    if (trk_->item_size() == 0)
+        {
+            std::cerr << "Configuration error: " << trk_->role() << item_prop << "=" << acq_item_type << " is not defined for implementation " << trk_->implementation() << '\n';
+            return nullptr;
+        }
+
+    return std::make_unique<Channel>(configuration, channel, std::move(acq_), std::move(trk_), std::move(tlm_), "Channel", signal, queue);
+}
+
+
+std::vector<std::unique_ptr<GNSSBlockInterface>> GNSSBlockFactory::GetChannels(
+    const ConfigurationInterface* configuration,
+    Concurrent_Queue<pmt::pmt_t>* queue) const
+{
+    int channel_absolute_id = 0;
+    std::vector<std::unique_ptr<GNSSBlockInterface>> channels(get_channel_count(configuration));
+
+    try
+        {
+            for (const auto& entry : signal_mapping)
+                {
+                    const auto& signal_str = entry.first;
+                    const auto& signal_pretty_str = entry.second;
+                    const auto channel_count = static_cast<unsigned int>(configuration->property("Channels_" + signal_str + ".count", 0));
+                    LOG(INFO) << "Getting " << channel_count << " " << signal_pretty_str << " channels";
+
+                    for (unsigned int i = 0; i < channel_count; i++)
+                        {
+                            // Store the channel into the vector of channels
+                            channels.at(channel_absolute_id) = GetChannel(configuration, signal_str, channel_absolute_id, queue);
+                            ++channel_absolute_id;
+                        }
+                }
+        }
+    catch (const std::exception& e)
+        {
+            LOG(WARNING) << e.what();
+        }
+
+    return channels;
+}
+
+
+std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
+    const ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams,
+    Concurrent_Queue<pmt::pmt_t>* queue) const
+{
+    return get_block(configuration, role, in_streams, out_streams, queue);
+}
+
+
 std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams)
+    unsigned int out_streams) const
 {
     return get_block(configuration, role, in_streams, out_streams, get_acq_block);
 }
@@ -1124,7 +1113,7 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams)
+    unsigned int out_streams) const
 {
     return get_block(configuration, role, in_streams, out_streams, get_trk_block);
 }
@@ -1134,7 +1123,7 @@ std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams)
+    unsigned int out_streams) const
 {
     return get_block(configuration, role, in_streams, out_streams, get_tlm_block);
 }

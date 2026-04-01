@@ -218,30 +218,30 @@ namespace
 auto const impl_prop = ".implementation"s;  // "implementation" property; used nearly universally
 auto const item_prop = ".item_type"s;       // "item_type" property
 
-auto findRole(ConfigurationInterface const* configuration, std::string const& base, int ID) -> std::string
+auto findRole(const ConfigurationInterface* configuration, const std::string& base, int ID)
 {
-    auto role = base + std::to_string(ID);
+    const auto role = base + std::to_string(ID);
 
     // Legacy behavior: pass -1 for unadorned property.
     // Current behavior: if there is no "Tag0" use "Tag" instead
-    if (ID < 1)
+    if (ID < 1 && !configuration->is_present(role + impl_prop))
         {
-            auto stub = configuration->property(role + impl_prop, ""s);
-            if (stub.empty()) role = base;  // NOLINT  -- legacy format
+            return base;  //  legacy format
         }
+
     return role;
 };
 
-std::string get_role_name(const ConfigurationInterface* configuration, const std::string& prop_prefix, const std::string& signal, int channel)
+std::string get_role_name(const ConfigurationInterface* configuration, const std::string& role_prefix, const std::string& signal, int channel)
 {
-    const auto prop_name = prop_prefix + signal + std::to_string(channel);
+    const auto role_name = role_prefix + signal + std::to_string(channel);
 
-    if (configuration->is_present(prop_name + impl_prop))
+    if (configuration->is_present(role_name + impl_prop))
         {
-            return prop_name;
+            return role_name;
         }
 
-    return prop_prefix + signal;
+    return role_prefix + signal;
 }
 
 const auto signal_mapping = std::vector<std::pair<std::string, std::string>>{

@@ -164,16 +164,31 @@ packages.
 
 #### Debian / Ubuntu
 
-If you are using Debian 9, Ubuntu 14.10 or above, this can be done by copying
-and pasting the following line in a terminal:
+On Debian 14 (Forky) / Ubuntu 26.04 (Resolute) or newer, install the required
+dependencies with:
 
 ```
-$ sudo apt install build-essential cmake git pkgconf libboost-dev libboost-date-time-dev \
-       libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev \
-       libboost-serialization-dev liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr \
-       libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev \
-       libssl-dev libpcap-dev libmatio-dev libpugixml-dev libgtest-dev \
-       libprotobuf-dev libcpu-features-dev protobuf-compiler python3-mako
+$ sudo apt install build-essential cmake git gnuradio-dev gr-limesdr gr-osmosdr \
+       libabsl-dev libad9361-dev libarmadillo-dev libblas-dev \
+       libboost-chrono-dev libboost-date-time-dev libboost-dev \
+       libboost-filesystem-dev libboost-serialization-dev libboost-thread-dev \
+       libcpu-features-dev libgtest-dev libiio-dev liblapack-dev libmatio-dev \
+       libpcap-dev libprotobuf-dev libpugixml-dev libssl-dev libuhd-dev \
+       pkgconf protobuf-compiler python3-mako
+```
+
+On older versions:
+
+```
+$ sudo apt install build-essential cmake git gnuradio-dev gr-limesdr gr-osmosdr \
+       libad9361-dev libarmadillo-dev libblas-dev \
+       libboost-chrono-dev libboost-date-time-dev libboost-dev \
+       libboost-filesystem-dev libboost-serialization-dev libboost-system-dev \
+       libboost-thread-dev \
+       libcpu-features-dev libgflags-dev libgoogle-glog-dev libgtest-dev libiio-dev \
+       liblapack-dev liblog4cpp5-dev libmatio-dev libpcap-dev libprotobuf-dev \
+       libpugixml-dev libssl-dev libuhd-dev \
+       pkg-config protobuf-compiler python3-mako
 ```
 
 Please note that the required files from `libgtest-dev` were named `googletest`
@@ -205,12 +220,11 @@ If you are using AlmaLinux:
 # dnf install -y 'dnf-command(config-manager)'
 # dnf config-manager --set-enabled powertools
 # dnf install -y epel-release
-# dnf install -y make gcc gcc-c++ kernel-devel cmake git boost-devel \
-      boost-date-time boost-system boost-thread boost-chrono \
-      boost-serialization log4cpp-devel gmp-devel uhd-devel gnuradio-devel \
-      pugixml-devel matio-devel protobuf-devel glog-devel libpcap-devel \
-      blas-devel lapack-devel armadillo-devel openssl-devel python3-mako \
-      libarchive
+# dnf install -y armadillo-devel blas-devel boost-chrono \
+      boost-date-time boost-devel boost-serialization boost-system boost-thread \
+      cmake gcc gcc-c++ git glog-devel gnuradio-devel gmp-devel kernel-devel \
+      lapack-devel libarchive libpcap-devel log4cpp-devel matio-devel \
+      openssl-devel protobuf-devel pugixml-devel python3-mako uhd-devel make
 ```
 
 Once you have installed these packages, you can jump directly to
@@ -221,9 +235,9 @@ Once you have installed these packages, you can jump directly to
 If you are using Arch Linux:
 
 ```
-$ pacman -S gcc make cmake pkgconf git boost boost-libs libvolk gnuradio \
-       blas lapack hdf5 openssl pugixml libmatio protobuf libpcap gtest \
-       python-mako
+$ pacman -S blas boost boost-libs cmake gcc git gnuradio gtest \
+       hdf5 lapack libmatio libpcap libvolk make openssl pkgconf \
+       protobuf pugixml python-mako
 ```
 
 Once you have installed these packages, you can jump directly to
@@ -235,12 +249,12 @@ If you are using Fedora 26 or above, the required software dependencies can be
 installed by doing:
 
 ```
-$ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel \
-       boost-date-time boost-system boost-filesystem boost-thread boost-chrono \
-       boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel \
-       blas-devel lapack-devel matio-devel armadillo-devel gflags-devel \
-       glog-devel openssl-devel libpcap-devel pugixml-devel python3-mako \
-       protobuf-devel protobuf-compiler
+$ sudo yum install armadillo-devel automake blas-devel boost-chrono \
+       boost-date-time boost-devel boost-filesystem boost-serialization \
+       boost-system boost-thread cmake gcc gcc-c++ git gflags-devel \
+       glog-devel gnuradio-devel gr-osmosdr-devel kernel-devel lapack-devel \
+       libpcap-devel log4cpp-devel matio-devel openssl-devel protobuf-compiler \
+       protobuf-devel pugixml-devel python3-mako make
 ```
 
 In Fedora 33 and above, you will need to add `gmp-devel` to the package list.
@@ -254,22 +268,21 @@ required.
 If you are using openSUSE Leap:
 
 ```
-$ zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
-       libboost_system-devel libboost_filesystem-devel libboost_chrono-devel \
-       libboost_thread-devel libboost_serialization-devel log4cpp-devel \
-       gnuradio-devel pugixml-devel libpcap-devel armadillo-devel libtool \
-       automake hdf5-devel openssl-devel python3-Mako libmatio-devel
+$ zypper install armadillo-devel automake boost-devel cmake gcc-c++ git \
+       gnuradio-devel hdf5-devel libboost_atomic-devel libboost_chrono-devel \
+       libboost_filesystem-devel libboost_serialization-devel libboost_system-devel \
+       libboost_thread-devel libmatio-devel libpcap-devel libtool log4cpp-devel \
+       openssl-devel pugixml-devel python3-Mako
 ```
 
 If you are using openSUSE Tumbleweed:
 
 ```
-$ zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
-       libboost_system-devel libboost_filesystem-devel libboost_date_time-devel \
-       libboost_thread-devel libboost_chrono-devel libboost_serialization-devel \
-       spdlog-devel fmt-devel gtest gnuradio-devel pugixml-devel libpcap-devel \
-       armadillo-devel libtool automake hdf5-devel libopenssl-devel \
-       python3-Mako protobuf-devel
+$ zypper install armadillo-devel automake boost-devel cmake fmt-devel gcc-c++ git \
+       gnuradio-devel gtest hdf5-devel libboost_atomic-devel libboost_chrono-devel \
+       libboost_date_time-devel libboost_filesystem-devel libboost_serialization-devel \
+       libboost_system-devel libboost_thread-devel libopenssl-devel libpcap-devel \
+       libtool protobuf-devel pugixml-devel python3-Mako spdlog-devel
 ```
 
 Once you have installed these packages, you can jump directly to
@@ -283,11 +296,11 @@ If you are using Rocky Linux 9 or newer:
 $ dnf update -y
 $ dnf install -y epel-release
 $ dnf config-manager --set-enabled crb
-$ dnf install -y make gcc gcc-c++ kernel-devel cmake git boost-devel \
-       boost-date-time boost-system boost-thread boost-chrono boost-serialization \
-       spdlog-devel gmp-devel uhd-devel gnuradio-devel pugixml-devel matio-devel \
-       protobuf-devel glog-devel libpcap-devel blas-devel lapack-devel \
-       armadillo-devel openssl-devel python3-mako libarchive
+$ dnf install -y armadillo-devel blas-devel boost-chrono boost-date-time boost-devel \
+       boost-serialization boost-system boost-thread cmake gcc gcc-c++ git \
+       glog-devel gnuradio-devel gmp-devel kernel-devel lapack-devel libarchive \
+       libpcap-devel make matio-devel openssl-devel protobuf-devel pugixml-devel \
+       python3-mako spdlog-devel uhd-devel
 ```
 
 Once you have installed these packages, you can jump directly to
@@ -706,10 +719,9 @@ In a terminal, type:
 ```
 $ sudo port selfupdate
 $ sudo port upgrade outdated
-$ sudo port install armadillo cmake pkgconfig protobuf3-cpp pugixml openssl3
+$ sudo port install abseil armadillo boost cmake libad9361-iio libiio matio \
+       openssl3 pkgconfig protobuf3-cpp pugixml py314-mako
 $ sudo port install gnuradio +uhd +grc +zeromq
-$ sudo port install boost matio libad9361-iio libiio abseil
-$ sudo port install py313-mako
 $ sudo port install doxygen +docs
 ```
 
@@ -729,7 +741,7 @@ $ port select --list python
 and you can activate a certain version by typing:
 
 ```
-$ sudo port select --set python python313
+$ sudo port select --set python python314
 ```
 
 ### Homebrew
@@ -747,10 +759,11 @@ Install the required dependencies:
 
 ```
 $ brew update && brew upgrade
-$ brew install armadillo cmake hdf5 gnuradio libmatio openssl pkg-config protobuf pugixml boost
+$ brew install armadillo boost cmake gnuradio hdf5 libmatio openssl \
+       pkg-config protobuf pugixml
+¢ pip3 install mako
 $ brew install --cask mactex  # when completed, restart Terminal
 $ brew install graphviz doxygen
-¢ pip3 install mako
 ```
 
 For macOS versions older than Sonoma, you will also need LAPACK:

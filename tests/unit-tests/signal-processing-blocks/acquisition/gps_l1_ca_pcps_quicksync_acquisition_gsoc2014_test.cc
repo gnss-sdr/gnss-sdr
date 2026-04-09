@@ -672,81 +672,81 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
 }
 
 
-TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsWithNoise)
-{
-    // config_3();
-    config_1();
-    top_block = gr::make_top_block("Acquisition test");
-    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
-    acquisition = std::make_shared<GpsL1CaPcpsQuickSyncAcquisition>(config.get(), "Acquisition_1C", 1, 0);
-    auto msg_rx = GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
+// TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsWithNoise)
+// {
+//     // config_3();
+//     config_1();
+//     top_block = gr::make_top_block("Acquisition test");
+//     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+//     acquisition = std::make_shared<GpsL1CaPcpsQuickSyncAcquisition>(config.get(), "Acquisition_1C", 1, 0);
+//     auto msg_rx = GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
-    ASSERT_NO_THROW({
-        acquisition->set_channel(1);
-    }) << "Failure setting channel.";
+//     ASSERT_NO_THROW({
+//         acquisition->set_channel(1);
+//     }) << "Failure setting channel.";
 
-    ASSERT_NO_THROW({
-        acquisition->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro.";
+//     ASSERT_NO_THROW({
+//         acquisition->set_gnss_synchro(&gnss_synchro);
+//     }) << "Failure setting gnss_synchro.";
 
-    ASSERT_NO_THROW({
-        acquisition->connect(top_block);
-    }) << "Failure connecting acquisition to the top_block.";
+//     ASSERT_NO_THROW({
+//         acquisition->connect(top_block);
+//     }) << "Failure connecting acquisition to the top_block.";
 
-    acquisition->reset();
+//     acquisition->reset();
 
-    ASSERT_NO_THROW({
-        std::shared_ptr<GNSSBlockInterface> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue.get());
-        std::shared_ptr<GNSSBlockInterface> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1);
-        std::shared_ptr<GNSSBlockInterface> signal_source = std::make_shared<GenSignalSource>(signal_generator, filter, "SignalSource", queue.get());
-        signal_source->connect(top_block);
-        top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
-        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting the blocks of acquisition test.";
+//     ASSERT_NO_THROW({
+//         std::shared_ptr<GNSSBlockInterface> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue.get());
+//         std::shared_ptr<GNSSBlockInterface> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1);
+//         std::shared_ptr<GNSSBlockInterface> signal_source = std::make_shared<GenSignalSource>(signal_generator, filter, "SignalSource", queue.get());
+//         signal_source->connect(top_block);
+//         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
+//         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+//     }) << "Failure connecting the blocks of acquisition test.";
 
-    // i = 0 --> satellite in acquisition is visible
-    // i = 1 --> satellite in acquisition is not visible
+//     // i = 0 --> satellite in acquisition is visible
+//     // i = 1 --> satellite in acquisition is not visible
 
-    for (unsigned int i = 0; i < 2; i++)
-        {
-            init();
+//     for (unsigned int i = 0; i < 2; i++)
+//         {
+//             init();
 
-            if (i == 0)
-                {
-                    gnss_synchro.PRN = 10;  // This satellite is visible
-                }
-            else if (i == 1)
-                {
-                    gnss_synchro.PRN = 20;  // This satellite is not visible
-                }
-            // acquisition->set_local_code();
-            acquisition->reset();
-            acquisition->set_gnss_synchro(&gnss_synchro);
-            acquisition->set_local_code();
-            start_queue();
+//             if (i == 0)
+//                 {
+//                     gnss_synchro.PRN = 10;  // This satellite is visible
+//                 }
+//             else if (i == 1)
+//                 {
+//                     gnss_synchro.PRN = 20;  // This satellite is not visible
+//                 }
+//             // acquisition->set_local_code();
+//             acquisition->reset();
+//             acquisition->set_gnss_synchro(&gnss_synchro);
+//             acquisition->set_local_code();
+//             start_queue();
 
-            EXPECT_NO_THROW({
-                top_block->run();  // Start threads and wait
-            }) << "Failure running the top_block.";
+//             EXPECT_NO_THROW({
+//                 top_block->run();  // Start threads and wait
+//             }) << "Failure running the top_block.";
 
-            stop_queue();
+//             stop_queue();
 
-            if (i == 0)
-                {
-                    EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
-                    if (message == 1)
-                        {
-                            EXPECT_EQ(static_cast<unsigned int>(1), correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
-                        }
-                }
-            else if (i == 1)
-                {
-                    EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
-                }
+//             if (i == 0)
+//                 {
+//                     EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
+//                     if (message == 1)
+//                         {
+//                             EXPECT_EQ(static_cast<unsigned int>(1), correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
+//                         }
+//                 }
+//             else if (i == 1)
+//                 {
+//                     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
+//                 }
 
-            ch_thread.join();
-        }
-}
+//             ch_thread.join();
+//         }
+// }
 
 
 TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabilities)

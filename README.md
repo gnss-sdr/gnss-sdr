@@ -23,30 +23,28 @@ position fixes) the following Global Navigation Satellite System's signals:
 
 In the L1 band:
 
-- &#128752; GLONASS L1 C/A (centered at 1602.000 MHz) :white_check_mark:
-- &#128752; GPS L1 C/A (centered at 1575.420 MHz) :white_check_mark:
-- &#128752; Galileo E1b/c (centered at 1575.420 MHz) :white_check_mark:
-- &#128752; BeiDou B1I (centered at 1561.098 MHz) :white_check_mark:
-- &#128752; QZSS L1 C/A, where available (centered at 1575.420 MHz)
-  :white_check_mark:
+- &#128752; GLONASS L1 C/A (centered at 1602.000 MHz) ✅
+- &#128752; GPS L1 C/A (centered at 1575.420 MHz) ✅
+- &#128752; Galileo E1b/c (centered at 1575.420 MHz) ✅
+- &#128752; BeiDou B1I (centered at 1561.098 MHz) ✅
+- &#128752; QZSS L1 C/A, where available (centered at 1575.420 MHz) ✅
 
 In the E6 band:
 
-- &#128752; Galileo E6B (centered at 1278.750 MHz) :white_check_mark:
+- &#128752; Galileo E6B (centered at 1278.750 MHz) ✅
 
 In the L2 band:
 
-- &#128752; BeiDou B3I (centered at 1268.520 MHz) :white_check_mark:
-- &#128752; GLONASS L2 C/A (centered at 1246.000 MHz) :white_check_mark:
-- &#128752; GPS L2C (centered at 1227.600 MHz) :white_check_mark:
+- &#128752; BeiDou B3I (centered at 1268.520 MHz) ✅
+- &#128752; GLONASS L2 C/A (centered at 1246.000 MHz) ✅
+- &#128752; GPS L2C (centered at 1227.600 MHz) ✅
 
 In the L5 band:
 
-- &#128752; Galileo E5b (centered at 1207.140 MHz) :white_check_mark:
-- &#128752; Galileo E5a (centered at 1176.450 MHz) :white_check_mark:
-- &#128752; GPS L5 (centered at 1176.450 MHz) :white_check_mark:
-- &#128752; QZSS L5, where available (centered at 1176.450 MHz)
-  :white_check_mark:
+- &#128752; Galileo E5b (centered at 1207.140 MHz) ✅
+- &#128752; Galileo E5a (centered at 1176.450 MHz) ✅
+- &#128752; GPS L5 (centered at 1176.450 MHz) ✅
+- &#128752; QZSS L5, where available (centered at 1176.450 MHz) ✅
 
 GNSS-SDR provides interfaces for a wide range of radio frequency front-ends and
 raw sample file formats, generates processing outputs in standard formats,

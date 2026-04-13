@@ -369,7 +369,7 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
             const int32_t subframe_ID = d_nav->subframe_decoder(subframe.data());  // decode the subframe
             if (subframe_ID > 0 && subframe_ID < 6)
                 {
-                    const uint32_t decoded_tow_s = static_cast<uint32_t>(d_nav->get_TOW());
+                    const auto decoded_tow_s = static_cast<uint32_t>(d_nav->get_TOW());
                     const bool is_tow_consistent_result = is_tow_consistent(decoded_tow_s);
                     bool received_subframe_ok = false;
                     if (!is_tow_consistent_result)
@@ -472,7 +472,7 @@ bool gps_l1_ca_telemetry_decoder_gs::is_tow_consistent(uint32_t decoded_tow_s)
         }
 
     const uint64_t elapsed_samples = d_sample_counter - d_last_decoded_tow_sample_counter;
-    const uint32_t elapsed_time_s = static_cast<uint32_t>(std::llround(static_cast<double>(elapsed_samples) / static_cast<double>(GPS_L1_CA_SYMBOL_RATE_HZ)));
+    const auto elapsed_time_s = static_cast<uint32_t>(std::llround(static_cast<double>(elapsed_samples) / static_cast<double>(GPS_L1_CA_SYMBOL_RATE_HZ)));
     const uint32_t expected_tow_s = (d_last_decoded_tow_s + elapsed_time_s) % GPS_WEEK_SECONDS;
     const uint32_t forward_error_s = (decoded_tow_s + GPS_WEEK_SECONDS - expected_tow_s) % GPS_WEEK_SECONDS;
     const uint32_t reverse_error_s = (expected_tow_s + GPS_WEEK_SECONDS - decoded_tow_s) % GPS_WEEK_SECONDS;

@@ -29,6 +29,7 @@
 #include "tow_to_trk.h"
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
+#include <algorithm>        // for min
 #include <bitset>           // for bitset
 #include <cmath>            // for round
 #include <cstddef>          // for size_t
@@ -66,6 +67,7 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
+
 gps_l1_ca_telemetry_decoder_gs_sptr
 gps_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf, L1LnavSystem system)
 {
@@ -94,6 +96,8 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
                            d_stat(0),
                            d_TOW_at_Preamble_ms(0),
                            d_TOW_at_current_symbol_ms(0),
+                           d_last_decoded_tow_s(0),
+                           d_last_decoded_tow_sample_counter(0),
                            d_flag_frame_sync(false),
                            d_flag_preamble(false),
                            d_sent_tlm_failed_msg(false),
@@ -104,7 +108,8 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
                            d_remove_dat(conf.remove_dat),
                            d_enable_navdata_monitor(conf.enable_navdata_monitor),
                            d_dump_crc_stats(conf.dump_crc_stats),
-                           d_tow_to_trk(conf.tow_to_trk)
+                           d_tow_to_trk(conf.tow_to_trk),
+                           d_have_last_decoded_tow(false)
 {
     configure_basic_outputs();
 
@@ -358,6 +363,17 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
             const int32_t subframe_ID = d_nav->subframe_decoder(subframe.data());  // decode the subframe
             if (subframe_ID > 0 && subframe_ID < 6)
                 {
+                    const auto decoded_tow_s = static_cast<uint32_t>(d_nav->get_TOW());
+                    const bool is_tow_consistent_result = is_tow_consistent(decoded_tow_s);
+                    bool received_subframe_ok = false;
+                    if (!is_tow_consistent_result)
+                        {
+                            LOG(INFO) << "Rejected " << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS")
+                                      << " L1 NAV subframe in channel " << d_channel
+                                      << " due to inconsistent TOW. Decoded TOW=" << decoded_tow_s
+                                      << " s at d_sample_counter=" << d_sample_counter;
+                            return false;
+                        }
                     switch (subframe_ID)
                         {
                         case 1:
@@ -366,8 +382,8 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                     // get ephemeris object for this SV (mandatory)
                                     const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(d_nav->get_ephemeris());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                    received_subframe_ok = true;
                                 }
-
                             break;
                         case 2:
                             if (d_nav->satellite_validation() == true)
@@ -375,8 +391,8 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                     // get ephemeris object for this SV (mandatory)
                                     const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(d_nav->get_ephemeris());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                    received_subframe_ok = true;
                                 }
-
                             break;
                         case 3:  // we have a new set of ephemeris data for the current SV
                             if (d_nav->satellite_validation() == true)
@@ -384,6 +400,7 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                     // get ephemeris object for this SV (mandatory)
                                     const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(d_nav->get_ephemeris());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                    received_subframe_ok = true;
                                 }
                             break;
                         case 4:  // Possible IONOSPHERE and UTC model update (page 18)
@@ -391,16 +408,19 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                 {
                                     const std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(d_nav->get_iono());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                    received_subframe_ok = true;
                                 }
                             if (d_nav->get_flag_utc_model_valid() == true)
                                 {
                                     const std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(d_nav->get_utc_model());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                    received_subframe_ok = true;
                                 }
                             if (d_nav->almanac_validation() == true)
                                 {
                                     const std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(d_nav->get_almanac());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                    received_subframe_ok = true;
                                 }
                             break;
                         case 5:
@@ -408,26 +428,62 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                 {
                                     const std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(d_nav->get_almanac());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                    received_subframe_ok = true;
                                 }
                             break;
                         default:
                             break;
                         }
+                    if (received_subframe_ok)
+                        {
 #if __cplusplus == 201103L
-                    const int default_precision = std::cout.precision();
+                            const int default_precision = std::cout.precision();
 #else
-                    const auto default_precision{std::cout.precision()};
+                            const auto default_precision{std::cout.precision()};
 #endif
-                    std::cout << "New " << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS") << " NAV message received in channel " << this->d_channel << ": "
-                              << "subframe "
-                              << subframe_ID << " from satellite "
-                              << Gnss_Satellite(std::string((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS"), d_nav->get_satellite_PRN())
-                              << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
-                              << " dB-Hz" << std::endl;
-                    return true;
+                            std::cout << "New " << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS") << " NAV message received in channel " << this->d_channel << ": "
+                                      << "subframe "
+                                      << subframe_ID << " from satellite "
+                                      << Gnss_Satellite(std::string((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS"), d_nav->get_satellite_PRN())
+                                      << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
+                                      << " dB-Hz" << std::endl;
+                            return true;
+                        }
                 }
         }
     return false;
+}
+
+
+bool gps_l1_ca_telemetry_decoder_gs::is_tow_consistent(uint32_t decoded_tow_s)
+{
+    const uint32_t GPS_WEEK_SECONDS = 604800U;
+    const uint32_t GPS_L1_CA_SYMBOL_RATE_HZ = 50U;
+    const uint32_t TOW_CONTINUITY_TOLERANCE_S = 2U;
+    if (!d_have_last_decoded_tow)
+        {
+            d_last_decoded_tow_s = decoded_tow_s;
+            d_last_decoded_tow_sample_counter = d_sample_counter;
+            d_have_last_decoded_tow = true;
+            return true;
+        }
+
+    const uint64_t elapsed_samples = d_sample_counter - d_last_decoded_tow_sample_counter;
+    const auto elapsed_time_s = static_cast<uint32_t>(std::llround(static_cast<double>(elapsed_samples) / static_cast<double>(GPS_L1_CA_SYMBOL_RATE_HZ)));
+    const uint32_t expected_tow_s = (d_last_decoded_tow_s + elapsed_time_s) % GPS_WEEK_SECONDS;
+    const uint32_t forward_error_s = (decoded_tow_s + GPS_WEEK_SECONDS - expected_tow_s) % GPS_WEEK_SECONDS;
+    const uint32_t reverse_error_s = (expected_tow_s + GPS_WEEK_SECONDS - decoded_tow_s) % GPS_WEEK_SECONDS;
+    const uint32_t tow_error_s = std::min(forward_error_s, reverse_error_s);
+
+    if (tow_error_s > TOW_CONTINUITY_TOLERANCE_S)
+        {
+            d_have_last_decoded_tow = false;
+            return false;
+        }
+
+    d_last_decoded_tow_s = decoded_tow_s;
+    d_last_decoded_tow_sample_counter = d_sample_counter;
+    return true;
 }
 
 
@@ -437,6 +493,9 @@ void gps_l1_ca_telemetry_decoder_gs::reset()
     d_last_valid_preamble = d_sample_counter;
     d_sent_tlm_failed_msg = false;
     d_flag_TOW_set = false;
+    d_have_last_decoded_tow = false;
+    d_last_decoded_tow_s = 0;
+    d_last_decoded_tow_sample_counter = 0;
     d_symbol_history.clear();
     d_stat = 0;
     DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;

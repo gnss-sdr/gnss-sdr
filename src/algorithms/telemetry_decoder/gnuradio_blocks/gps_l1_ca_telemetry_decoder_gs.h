@@ -82,6 +82,7 @@ private:
     bool is_PLL_180_deg_phase_locked();
     bool gps_word_parityCheck(uint32_t gpsword);
     bool decode_subframe(double cn0, bool flag_invert);
+    bool is_tow_consistent(uint32_t decoded_tow_s);
 
     L1LnavSystem d_system;
     std::unique_ptr<Gps_Navigation_Message> d_nav;
@@ -112,6 +113,8 @@ private:
     uint32_t d_stat;
     uint32_t d_TOW_at_Preamble_ms;
     uint32_t d_TOW_at_current_symbol_ms;
+    uint32_t d_last_decoded_tow_s;
+    uint64_t d_last_decoded_tow_sample_counter;
 
     bool d_flag_frame_sync;
     bool d_flag_preamble;
@@ -124,6 +127,7 @@ private:
     bool d_enable_navdata_monitor;
     bool d_dump_crc_stats;
     bool d_tow_to_trk;
+    bool d_have_last_decoded_tow;
 };
 
 

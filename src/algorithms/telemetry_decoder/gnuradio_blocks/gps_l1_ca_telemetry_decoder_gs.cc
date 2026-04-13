@@ -67,12 +67,6 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
-namespace
-{
-constexpr uint32_t GPS_WEEK_SECONDS = 604800U;
-constexpr uint32_t GPS_L1_CA_SYMBOL_RATE_HZ = 50U;  // 1 symbol every 20 ms
-constexpr uint32_t TOW_CONTINUITY_TOLERANCE_S = 2U;
-}  // namespace
 
 gps_l1_ca_telemetry_decoder_gs_sptr
 gps_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf, L1LnavSystem system)
@@ -463,6 +457,9 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
 
 bool gps_l1_ca_telemetry_decoder_gs::is_tow_consistent(uint32_t decoded_tow_s)
 {
+    const uint32_t GPS_WEEK_SECONDS = 604800U;
+    const uint32_t GPS_L1_CA_SYMBOL_RATE_HZ = 50U;
+    const uint32_t TOW_CONTINUITY_TOLERANCE_S = 2U;
     if (!d_have_last_decoded_tow)
         {
             d_last_decoded_tow_s = decoded_tow_s;

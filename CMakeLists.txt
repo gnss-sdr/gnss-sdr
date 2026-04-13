@@ -711,6 +711,13 @@ set_package_properties(GNURADIO PROPERTIES
     PURPOSE "Implements flowgraph scheduler, provides some processing blocks and classes to create new ones."
     TYPE REQUIRED
 )
+if(NOT GNURADIO_FOUND)
+    message(FATAL_ERROR
+        "GNU Radio is required but not found. Please install GNU Radio "
+        "v${GNSSSDR_GNURADIO_MIN_VERSION} or more recent, or set "
+        "GNURADIO_INSTALL_PREFIX to the GNU Radio installation folder."
+    )
+endif()
 
 if(NOT (GNURADIO_VERSION VERSION_LESS "3.8"))
     set(GNURADIO_IS_38_OR_GREATER ON)

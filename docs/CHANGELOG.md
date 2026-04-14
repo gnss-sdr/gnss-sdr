@@ -12,7 +12,7 @@ SPDX-FileCopyrightText: 2011-2026 Carles Fernandez-Prades <carles.fernandez@cttc
 
 All notable changes to GNSS-SDR will be documented in this file.
 
-## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+## [GNSS-SDR v0.0.21](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.21) - 2026-04-14
 
 ### Improvements in Availability:
 
@@ -21,7 +21,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   secondary code. Lock is declared when the histogram exhibits a clearly
   dominant phase bin, verified using a configurable dominance ratio and
   stability criterion. Once synchronized, the tracking loop can safely switch to
-  extended coherent integration, improving tracking sensitivity. New
+  extended coherent integration, improving tracking sensitivity and TTFF. New
   configuration parameters are `Tracking_1C.bs_dominance_ratio` (ratio between
   the count of the dominant histogram bin and the total number of detected
   transition events, default: 0.6), `Tracking_1C.bs_stable_best_required`
@@ -43,6 +43,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   RINEX observation files. This introduces a new field in `Gnss_Synchro` and in
   the corresponding `.proto` definition.
 - Improved tracking of GPS L2C(M) signals.
+- Fixed GPS L1 decoding failure when `pull_in_time_s` is too short.
+- Improved processing chain for BeiDou B1I and B3I signals.
 - Added processing chains for the Quasi-Zenith Satellite System (QZSS), Japan’s
   regional navigation satellite system, supporting L1 C/A and L5 signals.
 
@@ -59,6 +61,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Major refactoring of the acquisition adapters and GNU Radio blocks, improving
   maintainability and extensibility. Another excellent contribution by
   @MathieuFavreau.
+- Refactoring of Telemetry Decoder adapters for better maintainability.
 - Refactored the internal handling of multi-signal configurations in the PVT
   block for improved maintainability and extensibility. Another excellent
   contribution by @MathieuFavreau.
@@ -68,7 +71,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   constellation, writing zeros for missing observables as needed to strictly
   match the observables header format. Another excellent contribution by
   @MathieuFavreau.
-- Integration of Glonass L1/l2 C/A signal tracking into the main tracking
+- Integration of Glonass L1/L2 C/A signal tracking into the main tracking
   engine. Removed `GLONASS_L1_CA_DLL_PLL_C_Aid_Tracking` and
   `GLONASS_L1_CA_DLL_PLL_C_Aid_Tracking` Tracking block implementations,
   replaced by `GLONASS_L1_CA_DLL_PLL_Tracking` and

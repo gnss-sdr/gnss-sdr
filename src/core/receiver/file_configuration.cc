@@ -188,5 +188,10 @@ void FileConfiguration::set_property(std::string property_name, std::string valu
 
 bool FileConfiguration::is_present(const std::string& property_name) const
 {
-    return (overrided_->is_present(property_name));
+    if (overrided_->is_present(property_name))
+        {
+            return true;
+        }
+
+    return ini_reader_->HasValue("GNSS-SDR", property_name);
 }

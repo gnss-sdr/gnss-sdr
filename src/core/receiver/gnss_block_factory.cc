@@ -226,11 +226,7 @@ auto findRole(const ConfigurationInterface* configuration, const std::string& ba
     // Current behavior: if there is no "Tag0" use "Tag" instead
     if (ID < 1 && !configuration->is_present(role + impl_prop))
         {
-            const auto stub = configuration->property(role + impl_prop, ""s);
-            if (stub.empty())
-                {
-                    return base;
-                }
+            return base;  //  legacy format
         }
 
     return role;

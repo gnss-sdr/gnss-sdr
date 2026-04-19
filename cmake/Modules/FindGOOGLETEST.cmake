@@ -23,7 +23,7 @@ if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
 endif()
 
-if(NOT GNSSSDR_LIB_PATHS)
+if(NOT DEFINED GNSSSDR_LIB_PATHS)
     include(GnsssdrFindPaths)
 endif()
 

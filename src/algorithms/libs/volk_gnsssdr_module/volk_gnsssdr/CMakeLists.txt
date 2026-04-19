@@ -530,7 +530,7 @@ install(
 )
 
 install(EXPORT VOLK_GNSSSDR-export FILE VolkGnsssdrTargets.cmake
-    NAMESPACE VolkGnsssdr:: DESTINATION ${CMAKE_MODULES_DIR}/volk_gnsssdr
+    NAMESPACE Volkgnsssdr:: DESTINATION ${CMAKE_MODULES_DIR}/volk_gnsssdr
 )
 
 ########################################################################

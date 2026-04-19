@@ -6,7 +6,7 @@
 
 get_filename_component(VOLK_GNSSSDR_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 
-if(NOT TARGET VolkGnsssdr::volkgnsssdr)
+if(NOT TARGET Volkgnsssdr::volkgnsssdr)
   include("${VOLK_GNSSSDR_CMAKE_DIR}/VolkGnsssdrTargets.cmake")
 endif()
 
@@ -19,19 +19,14 @@ else()
   set(VOLKGNSSSDR_FOUND TRUE)
 endif()
 
-# cache whether a compatible VolkGnsssdr was found for
-# use anywhere in the calling project
-set(VOLKGNSSSDR_FOUND ${VOLKGNSSSDR_FOUND} CACHE BOOL "Whether a compatible Volk GNSS-SDR was found" FORCE)
-
 if(VOLKGNSSSDR_FOUND)
   # use the new target library, regardless of whether new or old style
   # we still need to set a variable with the library name so that there
   # is a variable to reference in the using-project's cmake scripts!
-  set(VOLK_GNSSSDR_LIBRARIES Volkgnsssdr::volkgnsssdr CACHE STRING "Volk GNSS-SDR Library" FORCE)
+  set(VOLK_GNSSSDR_LIBRARIES Volkgnsssdr::volkgnsssdr)
 
   # INTERFACE_INCLUDE_DIRECTORIES should always be set
   get_target_property(VOLK_GNSSSDR_INCLUDE_DIRS Volkgnsssdr::volkgnsssdr INTERFACE_INCLUDE_DIRECTORIES)
-  set(VOLK_GNSSSDR_INCLUDE_DIRS ${VOLK_GNSSSDR_INCLUDE_DIRS} CACHE STRING "Volk GNSS-SDR Include Directories" FORCE)
 
   # for backward compatibility with old-CMake non-target project finding
   include(FindPackageHandleStandardArgs)

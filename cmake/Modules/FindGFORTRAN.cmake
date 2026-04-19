@@ -1,36 +1,37 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2011-2025 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2011-2026 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
-if(NOT GNSSSDR_LIB_PATHS)
+if(NOT DEFINED GNSSSDR_LIB_PATHS)
     include(GnsssdrFindPaths)
 endif()
 
-if(NOT GFORTRAN_ROOT)
-    set(GFORTRAN_ROOT_USER_DEFINED /usr/lib)
+set(GFORTRAN_ROOT_USER_DEFINED "")
+if(DEFINED GFORTRAN_ROOT AND NOT "${GFORTRAN_ROOT}" STREQUAL "")
+    list(APPEND GFORTRAN_ROOT_USER_DEFINED "${GFORTRAN_ROOT}")
 else()
-    set(GFORTRAN_ROOT_USER_DEFINED ${GFORTRAN_ROOT})
+    list(APPEND GFORTRAN_ROOT_USER_DEFINED "/usr/lib")
 endif()
+
 if(DEFINED ENV{GFORTRAN_ROOT})
-    set(GFORTRAN_ROOT_USER_DEFINED
-        $ENV{GFORTRAN_ROOT}
-        ${GFORTRAN_ROOT_USER_DEFINED}
-    )
+    list(APPEND GFORTRAN_ROOT_USER_DEFINED "$ENV{GFORTRAN_ROOT}")
 endif()
 
 set(GCC_MAJOR_SERIES 16 15 14 13 12 11 10 9 8 7 6 5)
-set(GCC4_SERIES 4.9.1 4.9 4.8.3 4.8.1 4.7.2 4.7 4.8.2 4.8 4.7 4.6 4.5 4.4.4 4.4)
+set(GCC4_SERIES 4.9.1 4.9 4.8.3 4.8.2 4.8.1 4.8 4.7.2 4.7 4.6 4.5 4.4.4 4.4)
 set(GCC_SERIES ${GCC_MAJOR_SERIES} ${GCC4_SERIES})
 
-find_library(GFORTRAN NAMES gfortran
-    PATHS ${GFORTRAN_ROOT_USER_DEFINED}
-        /usr/lib/gcc/x86_64-linux-gnu  # Debian
+find_library(GFORTRAN
+    NAMES gfortran
+    PATHS
+        ${GFORTRAN_ROOT_USER_DEFINED}
+        /usr/lib/gcc/x86_64-linux-gnu
         /usr/lib/gcc/i386-linux-gnu
         /usr/lib/gcc/i486-linux-gnu
         /usr/lib/gcc/i586-linux-gnu
@@ -56,14 +57,14 @@ find_library(GFORTRAN NAMES gfortran
         /usr/lib/gcc/sparc64-linux-gnu
         /usr/lib/gcc/x86_64-linux-gnux32
         /usr/lib/gcc/sh4-linux-gnu
-        /usr/lib/gcc/i686-redhat-linux  # Fedora
+        /usr/lib/gcc/i686-redhat-linux
         /usr/lib64/gcc/x86_64-redhat-linux
         /usr/lib/gcc/x86_64-redhat-linux
         /usr/lib/gcc/armv7hl-redhat-linux-gnueabi
         /usr/lib/gcc/aarch64-redhat-linux
         /usr/lib/gcc/ppc64le-redhat-linux
         /usr/lib/gcc/s390x-redhat-linux
-        /usr/lib64/gcc/x86_64-suse-linux  # openSUSE
+        /usr/lib64/gcc/x86_64-suse-linux
         /usr/lib/gcc/i586-suse-linux
         /usr/lib/gcc/x86_64-suse-linux
         /usr/lib/gcc/armv6hl-suse-linux-gnueabi
@@ -86,3 +87,5 @@ set_package_properties(GFORTRAN PROPERTIES
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GFORTRAN DEFAULT_MSG GFORTRAN)
+
+mark_as_advanced(GFORTRAN)

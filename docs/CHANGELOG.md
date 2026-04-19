@@ -12,6 +12,19 @@ SPDX-FileCopyrightText: 2011-2026 Carles Fernandez-Prades <carles.fernandez@cttc
 
 All notable changes to GNSS-SDR will be documented in this file.
 
+## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+
+### Improvements in Portability:
+
+- Refactored Python interpreter detection and improved CMake portability and
+  robustness across dependency discovery, distro detection, and
+  cross-compilation handling.
+
+See the definitions of concepts and metrics at
+https://gnss-sdr.org/design-forces/
+
+&nbsp;
+
 ## [GNSS-SDR v0.0.21](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.21) - 2026-04-14
 
 ### Improvements in Availability:

@@ -7,7 +7,7 @@
 # Avoid using the BLAS and LAPACK implementations that comes with the Accelerate
 # framework, which causes a bug when the BeiDou constellation is enabled
 
-if(NOT GNSSSDR_LIB_PATHS)
+if(NOT DEFINED GNSSSDR_LIB_PATHS)
     include(GnsssdrFindPaths)
 endif()
 

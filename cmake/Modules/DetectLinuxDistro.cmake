@@ -15,68 +15,78 @@ else()
 endif()
 
 if(EXISTS "/etc/lsb-release")
-    execute_process(COMMAND cat /etc/lsb-release
-        COMMAND grep DISTRIB_ID
-        COMMAND awk -F= "{ print $2 }"
-        COMMAND tr "\n" " "
-        COMMAND sed "s/ //"
-        OUTPUT_VARIABLE LINUX_DISTRIBUTION
-        RESULT_VARIABLE LINUX_ID_RESULT
+    file(STRINGS "/etc/lsb-release" _lsb_distrib_id_line
+        REGEX "^DISTRIB_ID="
+        LIMIT_COUNT 1
     )
-    execute_process(COMMAND cat /etc/lsb-release
-        COMMAND grep DISTRIB_RELEASE
-        COMMAND awk -F= "{ print $2 }"
-        COMMAND tr "\n" " "
-        COMMAND sed "s/ //"
-        OUTPUT_VARIABLE LINUX_VER
-        RESULT_VARIABLE LINUX_VER_RESULT
+    file(STRINGS "/etc/lsb-release" _lsb_distrib_release_line
+        REGEX "^DISTRIB_RELEASE="
+        LIMIT_COUNT 1
     )
+    if(_lsb_distrib_id_line)
+        string(REGEX REPLACE "^DISTRIB_ID=" "" LINUX_DISTRIBUTION "${_lsb_distrib_id_line}")
+        string(REPLACE "\"" "" LINUX_DISTRIBUTION "${LINUX_DISTRIBUTION}")
+        string(STRIP "${LINUX_DISTRIBUTION}" LINUX_DISTRIBUTION)
+        set(LINUX_ID_RESULT 0)
+    else()
+        set(LINUX_ID_RESULT 1)
+    endif()
+    if(_lsb_distrib_release_line)
+        string(REGEX REPLACE "^DISTRIB_RELEASE=" "" LINUX_VER "${_lsb_distrib_release_line}")
+        string(REPLACE "\"" "" LINUX_VER "${LINUX_VER}")
+        string(STRIP "${LINUX_VER}" LINUX_VER)
+        set(LINUX_VER_RESULT 0)
+    else()
+        set(LINUX_VER_RESULT 1)
+    endif()
+    unset(_lsb_distrib_id_line)
+    unset(_lsb_distrib_release_line)
 endif()
+
 
 if(NOT LINUX_DISTRIBUTION)
     if(EXISTS "/etc/linuxmint/info")
         set(LINUX_DISTRIBUTION "LinuxMint")
-        execute_process(COMMAND cat /etc/linuxmint/info
-            COMMAND grep -m1 RELEASE
-            COMMAND awk -F= "{ print $2 }"
-            COMMAND tr "\n" " "
-            COMMAND sed "s/ //"
-            OUTPUT_VARIABLE LINUX_VER
-            RESULT_VARIABLE LINUX_VER_RESULT
+        file(STRINGS "/etc/linuxmint/info" _linuxmint_release_line
+            REGEX "^RELEASE="
+            LIMIT_COUNT 1
         )
+        if(_linuxmint_release_line)
+            string(REGEX REPLACE "^RELEASE=" "" LINUX_VER "${_linuxmint_release_line}")
+            string(REPLACE "\"" "" LINUX_VER "${LINUX_VER}")
+            string(STRIP "${LINUX_VER}" LINUX_VER)
+            set(LINUX_VER_RESULT 0)
+        else()
+            set(LINUX_VER_RESULT 1)
+        endif()
+        unset(_linuxmint_release_line)
     endif()
 endif()
 
 if(NOT LINUX_DISTRIBUTION)
     if(EXISTS "/etc/os-release")
-        execute_process(COMMAND cat /etc/os-release
-            COMMAND grep -m1 NAME
-            COMMAND awk -F= "{ print $2 }"
-            COMMAND tr "\n" " "
-            COMMAND sed "s/ //"
-            OUTPUT_VARIABLE LINUX_DISTRIBUTION_
-            RESULT_VARIABLE LINUX_ID_RESULT
-        )
-        execute_process(COMMAND cat /etc/os-release
-            COMMAND grep VERSION_ID
-            COMMAND awk -F= "{ print $2 }"
-            COMMAND tr "\n" " "
-            COMMAND sed "s/ //"
-            OUTPUT_VARIABLE LINUX_VER_
-            RESULT_VARIABLE LINUX_VER_RESULT
-        )
-        if(LINUX_DISTRIBUTION_)
-            string(REPLACE "\"" "" LINUX_DISTRIBUTION__ ${LINUX_DISTRIBUTION_})
-            string(STRIP ${LINUX_DISTRIBUTION__} LINUX_DISTRIBUTION)
+        file(STRINGS "/etc/os-release" _os_release_name_line REGEX "^NAME=" LIMIT_COUNT 1)
+        file(STRINGS "/etc/os-release" _os_release_version_line REGEX "^VERSION_ID=" LIMIT_COUNT 1)
+
+        if(_os_release_name_line)
+            string(REGEX REPLACE "^NAME=" "" LINUX_DISTRIBUTION "${_os_release_name_line}")
+            string(REPLACE "\"" "" LINUX_DISTRIBUTION "${LINUX_DISTRIBUTION}")
+            string(STRIP "${LINUX_DISTRIBUTION}" LINUX_DISTRIBUTION)
         endif()
-        if(LINUX_VER_)
-            string(REPLACE "\"" "" LINUX_VER ${LINUX_VER_})
+
+        if(_os_release_version_line)
+            string(REGEX REPLACE "^VERSION_ID=" "" LINUX_VER "${_os_release_version_line}")
+            string(REPLACE "\"" "" LINUX_VER "${LINUX_VER}")
+            string(STRIP "${LINUX_VER}" LINUX_VER)
         endif()
-        if(${LINUX_DISTRIBUTION} MATCHES "Debian")
-            set(LINUX_DISTRIBUTION "Debian")
-            file(READ /etc/debian_version LINUX_VER_)
-            string(REPLACE "\n" "" LINUX_VER ${LINUX_VER_})
+
+        if("${LINUX_DISTRIBUTION}" STREQUAL "Debian" AND EXISTS "/etc/debian_version")
+            file(READ "/etc/debian_version" LINUX_VER_)
+            string(STRIP "${LINUX_VER_}" LINUX_VER)
         endif()
+
+        unset(_os_release_name_line)
+        unset(_os_release_version_line)
     endif()
 endif()
 
@@ -84,7 +94,7 @@ if(NOT LINUX_DISTRIBUTION)
     if(EXISTS "/etc/redhat-release")
         set(LINUX_DISTRIBUTION "Red Hat")
         file(READ /etc/redhat-release LINUX_VER_)
-        string(REPLACE "\n" "" LINUX_VER ${LINUX_VER_})
+        string(REPLACE "\n" "" LINUX_VER "${LINUX_VER_}")
     endif()
 endif()
 
@@ -92,7 +102,7 @@ if(NOT LINUX_DISTRIBUTION)
     if(EXISTS "/etc/debian_version")
         set(LINUX_DISTRIBUTION "Debian")
         file(READ /etc/debian_version LINUX_VER_)
-        string(REPLACE "\n" "" LINUX_VER ${LINUX_VER_})
+        string(REPLACE "\n" "" LINUX_VER "${LINUX_VER_}")
     endif()
 endif()
 

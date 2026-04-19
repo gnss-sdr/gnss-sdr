@@ -13,7 +13,7 @@ if(NOT PKG_CONFIG_FOUND)
 endif()
 pkg_check_modules(PC_GMP "gmp")
 
-if(NOT GNSSSDR_LIB_PATHS)
+if(NOT DEFINED GNSSSDR_LIB_PATHS)
     include(GnsssdrFindPaths)
 endif()
 

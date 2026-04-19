@@ -33,7 +33,7 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
-if(NOT GNSSSDR_LIB_PATHS)
+if(NOT DEFINED GNSSSDR_LIB_PATHS)
     include(GnsssdrFindPaths)
 endif()
 

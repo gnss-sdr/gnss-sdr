@@ -1,8 +1,12 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2011-2025 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2011-2026 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
+
+########################################################################
+# Find ORC (Optimized Inner Loops Runtime Compiler)
+########################################################################
 
 if(DEFINED __INCLUDED_GNSSSDR_CMAKE_FIND_ORC)
     return()
@@ -17,92 +21,142 @@ if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
 endif()
 
-if(NOT GNSSSDR_LIB_PATHS)
+if(NOT DEFINED GNSSSDR_LIB_PATHS)
     include(GnsssdrFindPaths)
 endif()
 
-pkg_check_modules(PC_ORC "orc-0.4 > 0.4.22")
+pkg_check_modules(PC_ORC QUIET "orc-0.4 > 0.4.22")
 
-if(NOT ORC_ROOT)
-    set(ORC_ROOT_USER_PROVIDED /usr/local)
-else()
-    set(ORC_ROOT_USER_PROVIDED ${ORC_ROOT})
+
+########################################################################
+# Build candidate root list
+########################################################################
+set(_ORC_ROOT_HINTS)
+
+if(ORC_ROOT)
+    list(APPEND _ORC_ROOT_HINTS "${ORC_ROOT}")
 endif()
-if(DEFINED ENV{ORC_ROOT})
-    set(ORC_ROOT_USER_PROVIDED
-        ${ORC_ROOT_USER_PROVIDED}
-        $ENV{ORC_ROOT}
-    )
+
+if(DEFINED ENV{ORC_ROOT} AND NOT "$ENV{ORC_ROOT}" STREQUAL "")
+    list(APPEND _ORC_ROOT_HINTS "$ENV{ORC_ROOT}")
 endif()
-set(ORC_ROOT_USER_PROVIDED
-    ${ORC_ROOT_USER_PROVIDED}
-    ${CMAKE_INSTALL_PREFIX}
-)
+
+if(CMAKE_INSTALL_PREFIX)
+    list(APPEND _ORC_ROOT_HINTS "${CMAKE_INSTALL_PREFIX}")
+endif()
+
+if(DEFINED _ORC_ROOT_HINTS)
+    list(REMOVE_DUPLICATES _ORC_ROOT_HINTS)
+endif()
+
+
+########################################################################
+# Search paths for binaries, headers, and libraries
+########################################################################
+set(_ORC_BIN_HINTS)
+set(_ORC_INCLUDE_HINTS)
+set(_ORC_LIBRARY_HINTS)
+
+if(PC_ORC_PREFIX)
+    list(APPEND _ORC_BIN_HINTS "${PC_ORC_PREFIX}/bin")
+endif()
+
 if(PC_ORC_TOOLSDIR)
-    set(ORC_ROOT_USER_PROVIDED
-        ${ORC_ROOT_USER_PROVIDED}
-        ${PC_ORC_TOOLSDIR}
-    )
+    list(APPEND _ORC_BIN_HINTS "${PC_ORC_TOOLSDIR}")
 endif()
 
-find_program(ORCC_EXECUTABLE orcc
-    HINTS ${ORC_ROOT_USER_PROVIDED}/bin
-    PATHS ${CMAKE_SYSTEM_PREFIX_PATH}/bin
+if(PC_ORC_INCLUDEDIR)
+    list(APPEND _ORC_INCLUDE_HINTS "${PC_ORC_INCLUDEDIR}")
+endif()
+
+if(PC_ORC_LIBDIR)
+    list(APPEND _ORC_LIBRARY_HINTS "${PC_ORC_LIBDIR}")
+endif()
+
+foreach(_orc_prefix ${_ORC_ROOT_HINTS})
+    list(APPEND _ORC_BIN_HINTS "${_orc_prefix}/bin")
+    list(APPEND _ORC_INCLUDE_HINTS "${_orc_prefix}/include")
+    list(APPEND _ORC_LIBRARY_HINTS
+        "${_orc_prefix}/lib"
+        "${_orc_prefix}/lib64"
+    )
+endforeach()
+
+foreach(_orc_system_prefix ${CMAKE_SYSTEM_PREFIX_PATH})
+    list(APPEND _ORC_BIN_HINTS "${_orc_system_prefix}/bin")
+endforeach()
+list(APPEND _ORC_INCLUDE_HINTS ${GNSSSDR_INCLUDE_PATHS})
+list(APPEND _ORC_LIBRARY_HINTS ${GNSSSDR_LIB_PATHS})
+
+list(REMOVE_DUPLICATES _ORC_BIN_HINTS)
+list(REMOVE_DUPLICATES _ORC_INCLUDE_HINTS)
+list(REMOVE_DUPLICATES _ORC_LIBRARY_HINTS)
+
+
+########################################################################
+# Find executable, headers, and libraries
+########################################################################
+find_program(ORCC_EXECUTABLE
+    NAMES orcc
+    PATHS ${_ORC_BIN_HINTS}
 )
 
 find_path(ORC_INCLUDE_DIR
     NAMES orc/orc.h
     HINTS ${PC_ORC_INCLUDEDIR}
-    PATHS ${ORC_ROOT_USER_PROVIDED}/include
-          ${GNSSSDR_INCLUDE_PATHS}
+    PATHS ${_ORC_INCLUDE_HINTS}
     PATH_SUFFIXES orc-0.4
 )
 
-find_path(ORC_LIBRARY_DIR
-    NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}orc-0.4${CMAKE_SHARED_LIBRARY_SUFFIX}
-    HINTS ${PC_ORC_LIBDIR}
-    PATHS ${ORC_ROOT_USER_PROVIDED}/lib
-          ${ORC_ROOT_USER_PROVIDED}/lib64
-          ${GNSSSDR_LIB_PATHS}
+find_library(ORC_LIBRARY
+    NAMES orc-0.4
+    HINTS ${PC_ORC_LIBDIR} ${PC_ORC_LIBRARY_DIRS}
+    PATHS ${_ORC_LIBRARY_HINTS}
 )
 
-find_library(ORC_LIB orc-0.4
-    HINTS ${PC_ORC_LIBRARY_DIRS}
-    PATHS ${ORC_ROOT_USER_PROVIDED}/lib
-          ${ORC_ROOT_USER_PROVIDED}/lib64
-          ${GNSSSDR_LIB_PATHS}
+find_library(ORC_LIBRARY_STATIC
+    NAMES
+        ${CMAKE_STATIC_LIBRARY_PREFIX}orc-0.4${CMAKE_STATIC_LIBRARY_SUFFIX}
+    HINTS ${PC_ORC_LIBDIR} ${PC_ORC_LIBRARY_DIRS}
+    PATHS ${_ORC_LIBRARY_HINTS}
 )
 
-find_library(ORC_LIBRARY_STATIC ${CMAKE_STATIC_LIBRARY_PREFIX}orc-0.4${CMAKE_STATIC_LIBRARY_SUFFIX}
-    HINTS ${PC_ORC_LIBRARY_DIRS}
-    PATHS ${ORC_ROOT}/lib
-          ${ORC_ROOT}/lib64
-          ${ORC_ROOT_USER_PROVIDED}/lib
-          ${ORC_ROOT_USER_PROVIDED}/lib64
-          ${GNSSSDR_LIB_PATHS}
-)
 
-if(PC_ORC_VERSION)
-    set(ORC_VERSION ${PC_ORC_VERSION})
+########################################################################
+# Derive library directory and version
+########################################################################
+if(ORC_LIBRARY)
+    get_filename_component(ORC_LIBRARY_DIR "${ORC_LIBRARY}" DIRECTORY)
 endif()
 
-list(APPEND ORC_LIBRARY ${ORC_LIB})
+if(PC_ORC_VERSION)
+    set(ORC_VERSION "${PC_ORC_VERSION}")
+endif()
 
-set(ORC_INCLUDE_DIRS ${ORC_INCLUDE_DIR})
-set(ORC_LIBRARIES ${ORC_LIBRARY})
-set(ORC_LIBRARY_DIRS ${ORC_LIBRARY_DIR})
-set(ORC_LIBRARIES_STATIC ${ORC_LIBRARY_STATIC})
 
+########################################################################
+# Standard result handling
+########################################################################
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(ORC "orc files" ORC_LIBRARY ORC_INCLUDE_DIR ORCC_EXECUTABLE)
+find_package_handle_standard_args(ORC
+    "orc files"
+    ORC_LIBRARY
+    ORC_INCLUDE_DIR
+    ORCC_EXECUTABLE
+)
 
+
+########################################################################
+# Package metadata
+########################################################################
 set_package_properties(ORC PROPERTIES
     URL "https://gstreamer.freedesktop.org/modules/orc.html"
 )
 
 if(ORC_FOUND AND ORC_VERSION)
     set_package_properties(ORC PROPERTIES
-        DESCRIPTION "The Optimized Inner Loops Runtime Compiler (found: v${ORC_VERSION})"
+        DESCRIPTION
+        "The Optimized Inner Loops Runtime Compiler (found: v${ORC_VERSION})"
     )
 else()
     set_package_properties(ORC PROPERTIES
@@ -110,4 +164,43 @@ else()
     )
 endif()
 
-mark_as_advanced(ORC_INCLUDE_DIR ORC_LIBRARY ORCC_EXECUTABLE)
+
+########################################################################
+# Compatibility variables
+########################################################################
+set(ORC_INCLUDE_DIRS "${ORC_INCLUDE_DIR}")
+set(ORC_LIBRARIES "${ORC_LIBRARY}")
+set(ORC_LIBRARY_DIRS "${ORC_LIBRARY_DIR}")
+set(ORC_LIBRARIES_STATIC "${ORC_LIBRARY_STATIC}")
+
+if(ORC_FOUND AND NOT TARGET ORC::orc)
+    add_library(ORC::orc UNKNOWN IMPORTED)
+    set_target_properties(ORC::orc PROPERTIES
+        IMPORTED_LOCATION "${ORC_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${ORC_INCLUDE_DIR}"
+    )
+endif()
+
+mark_as_advanced(
+    ORCC_EXECUTABLE
+    ORC_INCLUDE_DIR
+    ORC_INCLUDE_DIRS
+    ORC_LIBRARY
+    ORC_LIBRARIES
+    ORC_LIBRARY_DIR
+    ORC_LIBRARY_DIRS
+    ORC_LIBRARY_STATIC
+    ORC_LIBRARIES_STATIC
+    ORC_VERSION
+)
+
+
+########################################################################
+# Cleanup internal variables
+########################################################################
+unset(_ORC_ROOT_HINTS)
+unset(_ORC_BIN_HINTS)
+unset(_ORC_INCLUDE_HINTS)
+unset(_ORC_LIBRARY_HINTS)
+unset(_orc_prefix)
+unset(_orc_system_prefix)

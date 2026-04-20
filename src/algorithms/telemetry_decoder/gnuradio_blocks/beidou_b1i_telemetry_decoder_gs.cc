@@ -82,7 +82,6 @@ beidou_b1i_telemetry_decoder_gs::beidou_b1i_telemetry_decoder_gs(
                             d_enable_navdata_monitor(conf.enable_navdata_monitor),
                             d_dump_crc_stats(conf.dump_crc_stats),
                             d_tow_to_trk(conf.tow_to_trk)
-
 {
     configure_basic_outputs();
 

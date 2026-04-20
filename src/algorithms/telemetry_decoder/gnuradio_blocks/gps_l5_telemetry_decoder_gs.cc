@@ -63,7 +63,7 @@ gps_l5_telemetry_decoder_gs::gps_l5_telemetry_decoder_gs(
                          d_channel(0),
                          d_TOW_at_current_symbol_ms(0U),
                          d_TOW_at_Preamble_ms(0U),
-                         d_max_symbols_without_valid_frame(GPS_L5_CNAV_DATA_PAGE_BITS * GPS_L5_SYMBOLS_PER_BIT * 10),
+                         d_max_symbols_without_valid_frame(GPS_L5_CNAV_DATA_PAGE_BITS * GPS_L5_SYMBOLS_PER_BIT * 10),  // rise alarm if 20 consecutive subframes have no valid CRC
                          d_flag_PLL_180_deg_phase_locked(false),
                          d_flag_valid_word(false),
                          d_sent_tlm_failed_msg(false),
@@ -72,7 +72,7 @@ gps_l5_telemetry_decoder_gs::gps_l5_telemetry_decoder_gs(
                          d_remove_dat(conf.remove_dat),
                          d_enable_navdata_monitor(conf.enable_navdata_monitor),
                          d_dump_crc_stats(conf.dump_crc_stats),
-                         d_tow_to_trk(conf.tow_to_trk)  // rise alarm if 20 consecutive subframes have no valid CRC
+                         d_tow_to_trk(conf.tow_to_trk)
 {
     configure_basic_outputs();
 
@@ -125,6 +125,7 @@ void gps_l5_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite)
     DLOG(INFO) << ((d_system == CnavSystem::GPS) ? "GPS" : "QZSS")
                << " L5 CNAV telemetry decoder in channel "
                << this->d_channel << " set to satellite " << d_satellite;
+    d_CNAV_Message = std::make_unique<Gps_CNAV_Navigation_Message>(d_system);
 }
 
 
@@ -136,6 +137,7 @@ void gps_l5_telemetry_decoder_gs::set_channel(int32_t channel)
 
     configure_dump_file(d_channel, d_dump, d_dump_filename, d_dump_file);
     configure_crc_stats_channel(d_channel, d_dump_crc_stats, d_Tlm_CRC_Stats);
+    d_CNAV_Message = std::make_unique<Gps_CNAV_Navigation_Message>(d_system);
 }
 
 

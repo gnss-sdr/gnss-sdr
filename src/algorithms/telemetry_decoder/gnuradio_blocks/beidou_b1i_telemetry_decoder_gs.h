@@ -23,10 +23,7 @@
 #include "beidou_dnav_navigation_message.h"
 #include "nav_message_packet.h"
 #include "telemetry_impl_interface.h"
-#include "tlm_conf.h"
 #include <boost/circular_buffer.hpp>
-#include <gnuradio/types.h>  // for gr_vector_const_void_star
-#include <array>
 
 
 /** \addtogroup Telemetry_Decoder
@@ -115,12 +112,12 @@ private:
 
     bool d_flag_valid_word;
     bool d_sent_tlm_failed_msg;
-    bool d_dump;
-    bool d_dump_mat;
-    bool d_remove_dat;
-    bool d_enable_navdata_monitor;
+    const bool d_dump;
+    const bool d_dump_mat;
+    const bool d_remove_dat;
+    const bool d_enable_navdata_monitor;
     bool d_dump_crc_stats;
-    bool d_tow_to_trk;
+    const bool d_tow_to_trk;
 };
 
 

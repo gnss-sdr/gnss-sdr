@@ -18,13 +18,10 @@
 #define GNSS_SDR_GPS_L5_TELEMETRY_DECODER_GS_H
 
 
-#include "GPS_L5.h"                       // for GPS_L5I_NH_CODE_LENGTH
 #include "gps_cnav_navigation_message.h"  // for Gps_CNAV_Navigation_Message
 #include "nav_message_packet.h"
 #include "telemetry_impl_interface.h"
-#include "tlm_conf.h"
 #include <boost/circular_buffer.hpp>
-#include <gnuradio/types.h>  // for gr_vector_const_void_star
 
 extern "C"
 {
@@ -71,7 +68,7 @@ private:
     cnav_msg_decoder_t d_cnav_decoder{};
 
     Gnss_Satellite d_satellite;
-    CnavSystem d_system;
+    const CnavSystem d_system;
 
     std::unique_ptr<Gps_CNAV_Navigation_Message> d_CNAV_Message;
 
@@ -88,17 +85,17 @@ private:
 
     uint32_t d_TOW_at_current_symbol_ms;
     uint32_t d_TOW_at_Preamble_ms;
-    uint32_t d_max_symbols_without_valid_frame;
+    const uint32_t d_max_symbols_without_valid_frame;
 
     bool d_flag_PLL_180_deg_phase_locked;
     bool d_flag_valid_word;
     bool d_sent_tlm_failed_msg;
-    bool d_dump;
-    bool d_dump_mat;
-    bool d_remove_dat;
-    bool d_enable_navdata_monitor;
+    const bool d_dump;
+    const bool d_dump_mat;
+    const bool d_remove_dat;
+    const bool d_enable_navdata_monitor;
     bool d_dump_crc_stats;
-    bool d_tow_to_trk;
+    const bool d_tow_to_trk;
 };
 
 

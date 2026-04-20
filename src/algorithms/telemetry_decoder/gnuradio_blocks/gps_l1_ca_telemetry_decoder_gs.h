@@ -19,16 +19,10 @@
 #ifndef GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_GS_H
 #define GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_GS_H
 
-#include "GPS_L1_CA.h"
-#include "gnss_synchro.h"
-#include "gnss_time.h"  // for timetags produced by Tracking
 #include "gps_navigation_message.h"
 #include "nav_message_packet.h"
 #include "telemetry_impl_interface.h"
-#include "tlm_conf.h"
 #include <boost/circular_buffer.hpp>
-#include <gnuradio/types.h>  // for gr_vector_const_void_star
-#include <array>             // for array
 
 
 /** \addtogroup Telemetry_Decoder
@@ -43,6 +37,7 @@ enum class L1LnavSystem
     QZSS
 };
 
+class Gnss_Synchro;
 class gps_l1_ca_telemetry_decoder_gs;
 
 using gps_l1_ca_telemetry_decoder_gs_sptr = gnss_shared_ptr<gps_l1_ca_telemetry_decoder_gs>;
@@ -84,7 +79,7 @@ private:
     bool decode_subframe(double cn0, bool flag_invert);
     bool is_tow_consistent(uint32_t decoded_tow_s);
 
-    L1LnavSystem d_system;
+    const L1LnavSystem d_system;
     std::unique_ptr<Gps_Navigation_Message> d_nav;
     Gnss_Satellite d_satellite;
     Nav_Message_Packet d_nav_msg_packet;
@@ -101,15 +96,15 @@ private:
     uint64_t d_preamble_index;
     uint64_t d_last_valid_preamble;
 
-    int32_t d_bits_per_preamble;
-    int32_t d_samples_per_preamble;
-    int32_t d_preamble_period_symbols;
+    const int32_t d_bits_per_preamble;
+    const int32_t d_samples_per_preamble;
+    const int32_t d_preamble_period_symbols;
     int32_t d_CRC_error_counter;
     int32_t d_channel;
 
-    uint32_t d_required_symbols;
+    const uint32_t d_required_symbols;
     uint32_t d_prev_GPS_frame_4bytes;
-    uint32_t d_max_symbols_without_valid_frame;
+    const uint32_t d_max_symbols_without_valid_frame;
     uint32_t d_stat;
     uint32_t d_TOW_at_Preamble_ms;
     uint32_t d_TOW_at_current_symbol_ms;
@@ -121,12 +116,12 @@ private:
     bool d_sent_tlm_failed_msg;
     bool d_flag_PLL_180_deg_phase_locked;
     bool d_flag_TOW_set;
-    bool d_dump;
-    bool d_dump_mat;
-    bool d_remove_dat;
-    bool d_enable_navdata_monitor;
+    const bool d_dump;
+    const bool d_dump_mat;
+    const bool d_remove_dat;
+    const bool d_enable_navdata_monitor;
     bool d_dump_crc_stats;
-    bool d_tow_to_trk;
+    const bool d_tow_to_trk;
     bool d_have_last_decoded_tow;
 };
 

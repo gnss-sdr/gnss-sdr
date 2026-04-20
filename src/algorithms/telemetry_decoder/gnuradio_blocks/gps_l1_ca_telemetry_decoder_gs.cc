@@ -20,10 +20,14 @@
  */
 
 #include "gps_l1_ca_telemetry_decoder_gs.h"
+#include "dump_logger_helper.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
-#include "gps_ephemeris.h"         // for Gps_Ephemeris
-#include "gps_iono.h"              // for Gps_Iono
-#include "gps_utc_model.h"         // for Gps_Utc_Model
+#include "gnss_synchro.h"
+#include "gnss_time.h"      // for timetags produced by Tracking
+#include "gps_ephemeris.h"  // for Gps_Ephemeris
+#include "gps_iono.h"       // for Gps_Iono
+#include "gps_utc_model.h"  // for Gps_Utc_Model
+#include "tlm_conf.h"
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
 #include "tow_to_trk.h"
@@ -32,9 +36,7 @@
 #include <algorithm>        // for min
 #include <bitset>           // for bitset
 #include <cmath>            // for round
-#include <cstddef>          // for size_t
 #include <cstring>          // for memcpy
-#include <exception>        // for exception
 #include <iomanip>          // for setprecision
 #include <iostream>         // for cout
 #include <vector>
@@ -93,6 +95,7 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
                            d_channel(0),
                            d_required_symbols(GPS_SUBFRAME_BITS),
                            d_prev_GPS_frame_4bytes(0),
+                           d_max_symbols_without_valid_frame(d_required_symbols * 20),
                            d_stat(0),
                            d_TOW_at_Preamble_ms(0),
                            d_TOW_at_current_symbol_ms(0),
@@ -109,7 +112,8 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
                            d_enable_navdata_monitor(conf.enable_navdata_monitor),
                            d_dump_crc_stats(conf.dump_crc_stats),
                            d_tow_to_trk(conf.tow_to_trk),
-                           d_have_last_decoded_tow(false)
+                           d_have_last_decoded_tow(false)  // rise alarm 120 segs without valid tlm
+
 {
     configure_basic_outputs();
 
@@ -142,7 +146,6 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
 
     // set the preamble
     // preamble bits to sampled symbols
-    d_max_symbols_without_valid_frame = d_required_symbols * 20;  // rise alarm 120 segs without valid tlm
     int32_t n = 0;
     for (int32_t i = 0; i < d_bits_per_preamble; i++)
         {
@@ -179,37 +182,7 @@ gps_l1_ca_telemetry_decoder_gs::~gps_l1_ca_telemetry_decoder_gs()
     DLOG(INFO) << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS")
                << " L1 C/A Telemetry decoder block (channel "
                << d_channel << ") destructor called.";
-    size_t pos = 0;
-    if (d_dump_file.is_open() == true)
-        {
-            pos = d_dump_file.tellp();
-            try
-                {
-                    d_dump_file.close();
-                }
-            catch (const std::exception &ex)
-                {
-                    LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
-                }
-            if (pos == 0)
-                {
-                    if (!tlm_remove_file(d_dump_filename))
-                        {
-                            LOG(WARNING) << "Error deleting temporary file";
-                        }
-                }
-        }
-    if (d_dump && (pos != 0) && d_dump_mat)
-        {
-            save_tlm_matfile(d_dump_filename);
-            if (d_remove_dat)
-                {
-                    if (!tlm_remove_file(d_dump_filename))
-                        {
-                            LOG(WARNING) << "Error deleting temporary file";
-                        }
-                }
-        }
+    tlm_cleanup_and_save_files(d_dump_file, d_dump_filename, d_dump, d_dump_mat, d_remove_dat);
 }
 
 
@@ -436,11 +409,7 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                         }
                     if (received_subframe_ok)
                         {
-#if __cplusplus == 201103L
-                            const int default_precision = std::cout.precision();
-#else
-                            const auto default_precision{std::cout.precision()};
-#endif
+                            const auto default_precision = std::cout.precision();
                             std::cout << "New " << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS") << " NAV message received in channel " << this->d_channel << ": "
                                       << "subframe "
                                       << subframe_ID << " from satellite "
@@ -742,19 +711,11 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                     // MULTIPLEXED FILE RECORDING - Record results to file
                     try
                         {
-                            double tmp_double;
-                            uint64_t tmp_ulong_int;
-                            int32_t tmp_int;
-                            tmp_double = static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0;
-                            d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                            tmp_ulong_int = current_symbol.Tracking_sample_counter;
-                            d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(uint64_t));
-                            tmp_double = static_cast<double>(d_TOW_at_Preamble_ms) / 1000.0;
-                            d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                            tmp_int = (current_symbol.Prompt_I > 0.0 ? 1 : -1);
-                            d_dump_file.write(reinterpret_cast<char *>(&tmp_int), sizeof(int32_t));
-                            tmp_int = static_cast<int32_t>(current_symbol.PRN);
-                            d_dump_file.write(reinterpret_cast<char *>(&tmp_int), sizeof(int32_t));
+                            write_value(d_dump_file, static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0);
+                            write_value(d_dump_file, current_symbol.Tracking_sample_counter);
+                            write_value(d_dump_file, static_cast<double>(d_TOW_at_Preamble_ms) / 1000.0);
+                            write_value(d_dump_file, current_symbol.Prompt_I > 0.0 ? 1 : -1);
+                            write_value(d_dump_file, static_cast<int32_t>(current_symbol.PRN));
                         }
                     catch (const std::ofstream::failure &e)
                         {
@@ -765,12 +726,12 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
             // SEND TOW TO THE TRACKING BLOCK
             if (d_tow_to_trk)
                 {
-                    const std::shared_ptr<TOW_to_trk> tmp_tow_obj = std::make_shared<TOW_to_trk>(TOW_to_trk(
+                    const std::shared_ptr<TOW_to_trk> tmp_tow_obj = std::make_shared<TOW_to_trk>(
                         ((d_system == L1LnavSystem::GPS) ? std::string("1C") : std::string("J1")),
                         d_channel,
                         d_TOW_at_current_symbol_ms,
                         current_symbol.Tracking_sample_counter,
-                        d_nav->get_GPS_week(), d_nav->get_satellite_PRN()));
+                        d_nav->get_GPS_week(), d_nav->get_satellite_PRN());
                     this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(tmp_tow_obj));
                 }
 

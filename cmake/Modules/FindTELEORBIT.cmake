@@ -21,7 +21,7 @@ if(NOT DEFINED GNSSSDR_LIB_PATHS)
     include(GnsssdrFindPaths)
 endif()
 
-pkg_check_modules(PC_TELEORBIT teleorbit QUIET)
+pkg_check_modules(PC_TELEORBIT QUIET teleorbit)
 
 if(NOT TELEORBIT_ROOT)
     set(TELEORBIT_ROOT_USER_DEFINED /usr/local)

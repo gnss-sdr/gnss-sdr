@@ -11,7 +11,7 @@ endif()
 if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
 endif()
-pkg_check_modules(PC_GMP "gmp")
+pkg_check_modules(PC_GMP QUIET gmp)
 
 if(NOT DEFINED GNSSSDR_LIB_PATHS)
     include(GnsssdrFindPaths)

@@ -28,7 +28,7 @@ if(NOT DEFINED GNSSSDR_LIB_PATHS)
     include(GnsssdrFindPaths)
 endif()
 
-pkg_check_modules(PC_PUGIXML pugixml QUIET)
+pkg_check_modules(PC_PUGIXML QUIET pugixml)
 
 set(PUGIXML_ROOT_USER_DEFINED "")
 if(DEFINED PUGIXML_ROOT AND NOT "${PUGIXML_ROOT}" STREQUAL "")

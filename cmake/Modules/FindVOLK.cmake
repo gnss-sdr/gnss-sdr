@@ -24,7 +24,7 @@ if(NOT DEFINED GNSSSDR_LIB_PATHS)
     include(GnsssdrFindPaths)
 endif()
 
-pkg_check_modules(PC_VOLK volk QUIET)
+pkg_check_modules(PC_VOLK QUIET volk)
 
 
 ########################################################################

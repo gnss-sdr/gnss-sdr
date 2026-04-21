@@ -18,7 +18,7 @@
 
 
 #include "concurrent_queue.h"
-#include "glonass_l1_ca_dll_pll_tracking.h"
+#include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
@@ -157,9 +157,12 @@ TEST_F(GlonassL1CaDllPllTrackingTest, ValidationOfResults)
     int nsamples = fs_in * 4e-3 * 2;
 
     init();
+
+    GNSSBlockFactory factory;
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Tracking test");
-    std::shared_ptr<TrackingInterface> tracking = std::make_shared<GlonassL1CaDllPllTracking>(config.get(), "Tracking_1G", 1, 1);
+    std::shared_ptr<GNSSBlockInterface> trk = factory.GetBlock(config.get(), "Tracking_1G", 1, 1);
+    std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk);
     auto msg_rx = GlonassL1CaDllPllTrackingTest_msg_rx_make();
 
     gnss_synchro.Acq_delay_samples = 1343;

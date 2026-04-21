@@ -37,46 +37,20 @@ if(ENABLE_FPGA)
 endif()
 
 set(TRACKING_ADAPTER_SOURCES
-    base_dll_pll_tracking.cc
-    beidou_b1i_dll_pll_tracking.cc
-    beidou_b3i_dll_pll_tracking.cc
-    galileo_e1_dll_pll_veml_tracking.cc
-    galileo_e5a_dll_pll_tracking.cc
-    galileo_e5b_dll_pll_tracking.cc
-    galileo_e6_dll_pll_tracking.cc
-    glonass_l1_ca_dll_pll_tracking.cc
-    glonass_l2_ca_dll_pll_tracking.cc
-    gps_l1_ca_dll_pll_tracking.cc
-    gps_l2_m_dll_pll_tracking.cc
-    gps_l5_dll_pll_tracking.cc
+    dll_pll_tracking_adapter.cc
     galileo_e1_tcp_connector_tracking.cc
     gps_l1_ca_tcp_connector_tracking.cc
     gps_l1_ca_gaussian_tracking.cc
     gps_l1_ca_kf_tracking.cc
-    qzss_l1_dll_pll_tracking.cc
-    qzss_l5_dll_pll_tracking.cc
     ${OPT_TRACKING_ADAPTERS_SOURCES}
 )
 
 set(TRACKING_ADAPTER_HEADERS
-    base_dll_pll_tracking.h
-    beidou_b1i_dll_pll_tracking.h
-    beidou_b3i_dll_pll_tracking.h
-    galileo_e1_dll_pll_veml_tracking.h
-    galileo_e5a_dll_pll_tracking.h
-    galileo_e5b_dll_pll_tracking.h
-    galileo_e6_dll_pll_tracking.h
-    glonass_l1_ca_dll_pll_tracking.h
-    glonass_l2_ca_dll_pll_tracking.h
-    gps_l1_ca_dll_pll_tracking.h
-    gps_l2_m_dll_pll_tracking.h
-    gps_l5_dll_pll_tracking.h
+    dll_pll_tracking_adapter.h
     galileo_e1_tcp_connector_tracking.h
     gps_l1_ca_tcp_connector_tracking.h
     gps_l1_ca_gaussian_tracking.h
     gps_l1_ca_kf_tracking.h
-    qzss_l1_dll_pll_tracking.h
-    qzss_l5_dll_pll_tracking.h
     ${OPT_TRACKING_ADAPTERS_HEADERS}
 )
 

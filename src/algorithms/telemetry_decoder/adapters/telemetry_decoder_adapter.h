@@ -1,5 +1,5 @@
 /*!
- * \file telemetry_decoder_adapter_base.h
+ * \file telemetry_decoder_adapter.h
  * \brief Common functionality for telemetry decoder adapters
  * \author Carles Fernandez-Prades, 2025 cfernandez@cttc.es
  *
@@ -17,15 +17,8 @@
 #ifndef GNSS_SDR_TELEMETRY_DECODER_ADAPTER_BASE_H
 #define GNSS_SDR_TELEMETRY_DECODER_ADAPTER_BASE_H
 
-#include "configuration_interface.h"
-#include "gnss_satellite.h"
-#include "gnss_synchro.h"
 #include "telemetry_decoder_interface.h"
 #include "telemetry_impl_interface.h"
-#include "tlm_conf.h"
-#include <gnuradio/runtime_types.h>
-#include <cstddef>
-#include <string>
 
 class ConfigurationInterface;
 
@@ -36,32 +29,20 @@ class ConfigurationInterface;
  * \{
  */
 
-inline Tlm_Conf get_tlm_conf(const ConfigurationInterface* configuration, const std::string& role)
-{
-    Tlm_Conf conf;
-
-    if (configuration != nullptr)
-        {
-            conf.SetFromConfiguration(configuration, role);
-        }
-
-    return conf;
-}
-
 /*!
  * \brief Base class for Telemetry Decoder adapters
  */
-class TelemetryDecoderAdapterBase : public TelemetryDecoderInterface
+class TelemetryDecoderAdapter : public TelemetryDecoderInterface
 {
 public:
-    TelemetryDecoderAdapterBase(
+    TelemetryDecoderAdapter(
         const std::string& role,
         const std::string& implementation,
         unsigned int in_streams,
         unsigned int out_streams,
         telemetry_impl_interface_sptr decoder);
 
-    ~TelemetryDecoderAdapterBase() override = default;
+    ~TelemetryDecoderAdapter() override = default;
 
     void connect(gr::top_block_sptr top_block) override;
 

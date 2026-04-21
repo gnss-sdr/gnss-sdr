@@ -1,5 +1,5 @@
 /*!
- * \file telemetry_decoder_adapter_base.cc
+ * \file telemetry_decoder_adapter.cc
  * \brief Common functionality for telemetry decoder adapters
  * \author Carles Fernandez-Prades, 2025 cfernandez@cttc.es
  *
@@ -15,7 +15,8 @@
  */
 
 
-#include "telemetry_decoder_adapter_base.h"
+#include "telemetry_decoder_adapter.h"
+#include "gnss_synchro.h"
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -24,7 +25,7 @@
 #endif
 
 
-TelemetryDecoderAdapterBase::TelemetryDecoderAdapterBase(
+TelemetryDecoderAdapter::TelemetryDecoderAdapter(
     const std::string& role,
     const std::string& implementation,
     unsigned int in_streams,
@@ -49,7 +50,7 @@ TelemetryDecoderAdapterBase::TelemetryDecoderAdapterBase(
 }
 
 
-void TelemetryDecoderAdapterBase::connect(gr::top_block_sptr top_block)
+void TelemetryDecoderAdapter::connect(gr::top_block_sptr top_block)
 {
     if (top_block)
         {
@@ -59,7 +60,7 @@ void TelemetryDecoderAdapterBase::connect(gr::top_block_sptr top_block)
 }
 
 
-void TelemetryDecoderAdapterBase::disconnect(gr::top_block_sptr top_block)
+void TelemetryDecoderAdapter::disconnect(gr::top_block_sptr top_block)
 {
     if (top_block)
         {
@@ -68,19 +69,19 @@ void TelemetryDecoderAdapterBase::disconnect(gr::top_block_sptr top_block)
 }
 
 
-gr::basic_block_sptr TelemetryDecoderAdapterBase::get_left_block()
+gr::basic_block_sptr TelemetryDecoderAdapter::get_left_block()
 {
     return telemetry_decoder_;
 }
 
 
-gr::basic_block_sptr TelemetryDecoderAdapterBase::get_right_block()
+gr::basic_block_sptr TelemetryDecoderAdapter::get_right_block()
 {
     return telemetry_decoder_;
 }
 
 
-void TelemetryDecoderAdapterBase::set_satellite(const Gnss_Satellite& satellite)
+void TelemetryDecoderAdapter::set_satellite(const Gnss_Satellite& satellite)
 {
     if (telemetry_decoder_)
         {
@@ -91,17 +92,17 @@ void TelemetryDecoderAdapterBase::set_satellite(const Gnss_Satellite& satellite)
 }
 
 
-std::string TelemetryDecoderAdapterBase::role()
+std::string TelemetryDecoderAdapter::role()
 {
     return role_;
 }
 
-std::string TelemetryDecoderAdapterBase::implementation()
+std::string TelemetryDecoderAdapter::implementation()
 {
     return implementation_;
 }
 
-void TelemetryDecoderAdapterBase::set_channel(int channel)
+void TelemetryDecoderAdapter::set_channel(int channel)
 {
     if (telemetry_decoder_)
         {
@@ -110,7 +111,7 @@ void TelemetryDecoderAdapterBase::set_channel(int channel)
 }
 
 
-void TelemetryDecoderAdapterBase::reset()
+void TelemetryDecoderAdapter::reset()
 {
     if (telemetry_decoder_)
         {
@@ -119,7 +120,7 @@ void TelemetryDecoderAdapterBase::reset()
 }
 
 
-size_t TelemetryDecoderAdapterBase::item_size()
+size_t TelemetryDecoderAdapter::item_size()
 {
     return sizeof(Gnss_Synchro);
 }

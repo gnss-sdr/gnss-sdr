@@ -81,7 +81,7 @@ signal_info get_signal_info(signal_flag sig_flag)
         case QZS_J5:
             return {'J', {'J', '5', '\0'}, "QZSS L5", QZSS_L5_CHIP_RATE, QZSS_L5_CODE_LENGTH, QZSS_L5I_NH_CODE_LENGTH, true, false};
         default:
-            LOG(ERROR) << "Invalid signal in DLL PLL Tracking Adapter.";
+            break;
         }
 
     return {};
@@ -167,22 +167,24 @@ DllPllTrackingAdapter::DllPllTrackingAdapter(
     if (!sig_info.sig_name.empty())
         {
             check_and_configure_trk_params(configuration, role_, sig_info, trk_params_);
+
+            if (trk_params_.item_type == "gr_complex")
+                {
+                    tracking_sptr_ = dll_pll_veml_make_tracking(trk_params_);
+                    DLOG(INFO) << "Tracking block (" << tracking_sptr_->unique_id() << ")";
+                }
+            else
+                {
+                    item_size_ = 0;
+                    LOG(WARNING) << trk_params_.item_type << " unknown tracking item type.";
+                }
         }
     else
         {
             item_size_ = 0;
+            LOG(ERROR) << "Invalid signal in DLL PLL Tracking Adapter.";
         }
 
-    if (trk_params_.item_type == "gr_complex")
-        {
-            tracking_sptr_ = dll_pll_veml_make_tracking(trk_params_);
-            DLOG(INFO) << "Tracking block (" << tracking_sptr_->unique_id() << ")";
-        }
-    else
-        {
-            item_size_ = 0;
-            LOG(WARNING) << trk_params_.item_type << " unknown tracking item type.";
-        }
 
     if (in_streams > 1)
         {

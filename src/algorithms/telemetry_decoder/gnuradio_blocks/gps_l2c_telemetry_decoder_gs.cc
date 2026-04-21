@@ -18,11 +18,13 @@
 #include "gps_l2c_telemetry_decoder_gs.h"
 #include "GPS_L2C.h"  // for GPS_L2_CNAV_DATA_PAGE_BITS, GPS_L...
 #include "display.h"
+#include "dump_logger_helper.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include "gnss_synchro.h"
 #include "gps_cnav_ephemeris.h"  // for Gps_CNAV_Ephemeris
 #include "gps_cnav_iono.h"       // for Gps_CNAV_Iono
 #include "gps_cnav_utc_model.h"  // for Gps_CNAV_Utc_Model
+#include "tlm_conf.h"
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
 #include "tow_to_trk.h"
@@ -31,8 +33,6 @@
 #include <pmt/pmt_sugar.h>  // for mp
 #include <bitset>           // for bitset
 #include <cmath>            // for round
-#include <cstddef>          // for size_t
-#include <exception>        // for exception
 #include <iomanip>          // for setprecision
 #include <iostream>         // for cout
 
@@ -60,6 +60,7 @@ gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(
                             d_sample_counter(0),
                             d_last_valid_preamble(0),
                             d_channel(0),
+                            d_max_symbols_without_valid_frame(GPS_L2_CNAV_DATA_PAGE_BITS * GPS_L2_SYMBOLS_PER_BIT * 5),
                             d_dump(conf.dump),
                             d_sent_tlm_failed_msg(false),
                             d_flag_PLL_180_deg_phase_locked(false),
@@ -68,7 +69,8 @@ gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(
                             d_remove_dat(conf.remove_dat),
                             d_enable_navdata_monitor(conf.enable_navdata_monitor),
                             d_dump_crc_stats(conf.dump_crc_stats),
-                            d_tow_to_trk(conf.tow_to_trk)
+                            d_tow_to_trk(conf.tow_to_trk)  // rise alarm if 5 consecutive subframes have no valid CRC
+
 {
     configure_basic_outputs();
 
@@ -79,8 +81,6 @@ gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(
             d_nav_msg_packet.system = std::string("G");
             d_nav_msg_packet.signal = std::string("2S");
         }
-
-    d_max_symbols_without_valid_frame = GPS_L2_CNAV_DATA_PAGE_BITS * GPS_L2_SYMBOLS_PER_BIT * 5;  // rise alarm if 5 consecutive subframes have no valid CRC
 
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "GPS L2C M TELEMETRY PROCESSING: satellite " << d_satellite;
@@ -104,37 +104,7 @@ gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(
 gps_l2c_telemetry_decoder_gs::~gps_l2c_telemetry_decoder_gs()
 {
     DLOG(INFO) << "GPS L2C Telemetry decoder block (channel " << d_channel << ") destructor called.";
-    size_t pos = 0;
-    if (d_dump_file.is_open() == true)
-        {
-            pos = d_dump_file.tellp();
-            try
-                {
-                    d_dump_file.close();
-                }
-            catch (const std::exception &ex)
-                {
-                    LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
-                }
-            if (pos == 0)
-                {
-                    if (!tlm_remove_file(d_dump_filename))
-                        {
-                            LOG(WARNING) << "Error deleting temporary file";
-                        }
-                }
-        }
-    if (d_dump && (pos != 0) && d_dump_mat)
-        {
-            save_tlm_matfile(d_dump_filename);
-            if (d_remove_dat)
-                {
-                    if (!tlm_remove_file(d_dump_filename))
-                        {
-                            LOG(WARNING) << "Error deleting temporary file";
-                        }
-                }
-        }
+    tlm_cleanup_and_save_files(d_dump_file, d_dump_filename, d_dump, d_dump_mat, d_remove_dat);
 }
 
 
@@ -237,11 +207,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     // get ephemeris object for this SV
                     const std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(d_CNAV_Message.get_ephemeris());
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-#if __cplusplus == 201103L
-                    const int default_precision = std::cout.precision();
-#else
-                    const auto default_precision{std::cout.precision()};
-#endif
+                    const auto default_precision = std::cout.precision();
                     std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel
                               << ": ephemeris from satellite " << d_satellite
                               << " with CN0=" << std::setprecision(2) << current_synchro_data.CN0_dB_hz << std::setprecision(default_precision)
@@ -251,11 +217,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 {
                     const std::shared_ptr<Gps_CNAV_Iono> tmp_obj = std::make_shared<Gps_CNAV_Iono>(d_CNAV_Message.get_iono());
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-#if __cplusplus == 201103L
-                    const int default_precision = std::cout.precision();
-#else
-                    const auto default_precision{std::cout.precision()};
-#endif
+                    const auto default_precision = std::cout.precision();
                     std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel
                               << ": iono model parameters from satellite " << d_satellite
                               << " with CN0=" << std::setprecision(2) << current_synchro_data.CN0_dB_hz << std::setprecision(default_precision)
@@ -266,11 +228,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 {
                     const std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(d_CNAV_Message.get_utc_model());
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-#if __cplusplus == 201103L
-                    const int default_precision = std::cout.precision();
-#else
-                    const auto default_precision{std::cout.precision()};
-#endif
+                    const auto default_precision = std::cout.precision();
                     std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel
                               << ": UTC model parameters from satellite " << d_satellite
                               << " with CN0=" << std::setprecision(2) << current_synchro_data.CN0_dB_hz << std::setprecision(default_precision)
@@ -327,19 +285,11 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             // MULTIPLEXED FILE RECORDING - Record results to file
             try
                 {
-                    double tmp_double;
-                    uint64_t tmp_ulong_int;
-                    int32_t tmp_int;
-                    tmp_double = d_TOW_at_current_symbol;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                    tmp_ulong_int = current_synchro_data.Tracking_sample_counter;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(uint64_t));
-                    tmp_double = d_TOW_at_Preamble;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                    tmp_int = (current_synchro_data.Prompt_I > 0.0 ? 1 : -1);
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_int), sizeof(int32_t));
-                    tmp_int = static_cast<int32_t>(current_synchro_data.PRN);
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_int), sizeof(int32_t));
+                    write_value(d_dump_file, static_cast<double>(d_TOW_at_current_symbol));
+                    write_value(d_dump_file, current_synchro_data.Tracking_sample_counter);
+                    write_value(d_dump_file, d_TOW_at_Preamble);
+                    write_value(d_dump_file, current_synchro_data.Prompt_I > 0.0 ? 1 : -1);
+                    write_value(d_dump_file, static_cast<int32_t>(current_synchro_data.PRN));
                 }
             catch (const std::ofstream::failure &e)
                 {
@@ -349,12 +299,12 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
 
     if (d_tow_to_trk)
         {
-            const std::shared_ptr<TOW_to_trk> tmp_tow_obj = std::make_shared<TOW_to_trk>(TOW_to_trk(
+            const std::shared_ptr<TOW_to_trk> tmp_tow_obj = std::make_shared<TOW_to_trk>(
                 std::string("L2"),
                 d_channel,
                 current_synchro_data.TOW_at_current_symbol_ms,
                 current_synchro_data.Tracking_sample_counter,
-                d_CNAV_Message.get_ephemeris().WN, d_satellite.get_PRN()));
+                d_CNAV_Message.get_ephemeris().WN, d_satellite.get_PRN());
             this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(tmp_tow_obj));
         }
 

@@ -17,21 +17,20 @@
 #include "beidou_b3i_telemetry_decoder_gs.h"
 #include "Beidou_B3I.h"
 #include "Beidou_DNAV.h"
-#include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
 #include "beidou_dnav_iono.h"
 #include "beidou_dnav_utc_model.h"
 #include "display.h"
+#include "dump_logger_helper.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include "gnss_synchro.h"
+#include "tlm_conf.h"
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
 #include "tow_to_trk.h"
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
-#include <cstddef>          // for size_t
 #include <cstdlib>          // for abs
-#include <exception>        // for exception
 #include <iomanip>          // for setprecision
 #include <iostream>         // for cout
 
@@ -126,37 +125,7 @@ beidou_b3i_telemetry_decoder_gs::beidou_b3i_telemetry_decoder_gs(
 beidou_b3i_telemetry_decoder_gs::~beidou_b3i_telemetry_decoder_gs()
 {
     DLOG(INFO) << "BeiDou B3I Telemetry decoder block (channel " << d_channel << ") destructor called.";
-    size_t pos = 0;
-    if (d_dump_file.is_open() == true)
-        {
-            pos = d_dump_file.tellp();
-            try
-                {
-                    d_dump_file.close();
-                }
-            catch (const std::exception &ex)
-                {
-                    LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
-                }
-            if (pos == 0)
-                {
-                    if (!tlm_remove_file(d_dump_filename))
-                        {
-                            LOG(WARNING) << "Error deleting temporary file";
-                        }
-                }
-        }
-    if (d_dump && (pos != 0) && d_dump_mat)
-        {
-            save_tlm_matfile(d_dump_filename);
-            if (d_remove_dat)
-                {
-                    if (!tlm_remove_file(d_dump_filename))
-                        {
-                            LOG(WARNING) << "Error deleting temporary file";
-                        }
-                }
-        }
+    tlm_cleanup_and_save_files(d_dump_file, d_dump_filename, d_dump, d_dump_mat, d_remove_dat);
 }
 
 
@@ -301,11 +270,7 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols, doub
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV Ephemeris have been received in channel"
                       << d_channel << " from satellite " << d_satellite << " with CN0=" << cn0 << " dB-Hz";
-#if __cplusplus == 201103L
-            const int default_precision = std::cout.precision();
-#else
-            const auto default_precision{std::cout.precision()};
-#endif
+            const auto default_precision = std::cout.precision();
             std::cout << TEXT_YELLOW << "New BEIDOU B3I DNAV message received in channel " << d_channel
                       << ": ephemeris from satellite " << d_satellite
                       << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
@@ -319,11 +284,7 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols, doub
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV UTC Model data have been received in channel"
                       << d_channel << " from satellite " << d_satellite;
-#if __cplusplus == 201103L
-            const int default_precision = std::cout.precision();
-#else
-            const auto default_precision{std::cout.precision()};
-#endif
+            const auto default_precision = std::cout.precision();
             std::cout << TEXT_YELLOW << "New BEIDOU B3I DNAV utc model message received in channel "
                       << d_channel << ": UTC model parameters from satellite "
                       << d_satellite
@@ -338,11 +299,7 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols, doub
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV Iono data have been received in channel" << d_channel
                       << " from satellite " << d_satellite << " with CN0=" << cn0 << " dB-Hz";
-#if __cplusplus == 201103L
-            const int default_precision = std::cout.precision();
-#else
-            const auto default_precision{std::cout.precision()};
-#endif
+            const auto default_precision = std::cout.precision();
             std::cout << TEXT_YELLOW << "New BEIDOU B3I DNAV Iono message received in channel "
                       << d_channel << ": Iono model parameters from satellite "
                       << d_satellite << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
@@ -357,11 +314,7 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols, doub
             //            pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV Almanac data have been received in channel"
                       << d_channel << " from satellite " << d_satellite << " with CN0=" << cn0 << " dB-Hz";
-#if __cplusplus == 201103L
-            const int default_precision = std::cout.precision();
-#else
-            const auto default_precision{std::cout.precision()};
-#endif
+            const auto default_precision = std::cout.precision();
             std::cout << TEXT_YELLOW << "New BEIDOU B3I DNAV almanac received in channel " << d_channel
                       << " from satellite " << d_satellite
                       << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
@@ -681,19 +634,11 @@ int beidou_b3i_telemetry_decoder_gs::general_work(
                     // MULTIPLEXED FILE RECORDING - Record results to file
                     try
                         {
-                            double tmp_double;
-                            uint64_t tmp_ulong_int;
-                            int32_t tmp_int;
-                            tmp_double = static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0;
-                            d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                            tmp_ulong_int = current_symbol.Tracking_sample_counter;
-                            d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(uint64_t));
-                            tmp_double = static_cast<double>(d_TOW_at_Preamble_ms) / 1000.0;
-                            d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                            tmp_int = (current_symbol.Prompt_I > 0.0 ? 1 : -1);
-                            d_dump_file.write(reinterpret_cast<char *>(&tmp_int), sizeof(int32_t));
-                            tmp_int = static_cast<int32_t>(current_symbol.PRN);
-                            d_dump_file.write(reinterpret_cast<char *>(&tmp_int), sizeof(int32_t));
+                            write_value(d_dump_file, static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0);
+                            write_value(d_dump_file, current_symbol.Tracking_sample_counter);
+                            write_value(d_dump_file, static_cast<double>(d_TOW_at_Preamble_ms) / 1000.0);
+                            write_value(d_dump_file, current_symbol.Prompt_I > 0.0 ? 1 : -1);
+                            write_value(d_dump_file, static_cast<int32_t>(current_symbol.PRN));
                         }
                     catch (const std::ofstream::failure &e)
                         {
@@ -704,12 +649,12 @@ int beidou_b3i_telemetry_decoder_gs::general_work(
             // SEND TOW TO THE TRACKING BLOCK
             if (d_tow_to_trk)
                 {
-                    const std::shared_ptr<TOW_to_trk> tmp_tow_obj = std::make_shared<TOW_to_trk>(TOW_to_trk(
+                    const std::shared_ptr<TOW_to_trk> tmp_tow_obj = std::make_shared<TOW_to_trk>(
                         std::string(current_symbol.Signal),
                         d_channel,
                         d_TOW_at_current_symbol_ms,
                         current_symbol.Tracking_sample_counter,
-                        d_nav.get_ephemeris().WN, d_satellite.get_PRN()));
+                        d_nav.get_ephemeris().WN, d_satellite.get_PRN());
                     this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(tmp_tow_obj));
                 }
 

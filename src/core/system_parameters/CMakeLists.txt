@@ -98,6 +98,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     osnma_dsm_reader.h
     tow_to_trk.h
     qzss.h
+    signal_flag.h
 )
 
 list(SORT SYSTEM_PARAMETERS_HEADERS)

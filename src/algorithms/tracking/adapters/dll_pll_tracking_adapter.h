@@ -1,5 +1,5 @@
 /*!
- * \file base_dll_pll_tracking.h
+ * \file dll_pll_tracking_adapter.h
  * \brief Base class providing shared logic for DLL+PLL VEML tracking adapters.
  * \authors Carles Fernandez, 2025. carles.fernandez(at)cttc.cat
  *
@@ -14,11 +14,12 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_BASE_DLL_PLL_TRACKING_H
-#define GNSS_SDR_BASE_DLL_PLL_TRACKING_H
+#ifndef GNSS_SDR_DLL_PLL_TRACKING_ADAPTER_H
+#define GNSS_SDR_DLL_PLL_TRACKING_ADAPTER_H
 
 #include "dll_pll_conf.h"
 #include "dll_pll_veml_tracking.h"
+#include "signal_flag.h"
 #include "tracking_interface.h"
 #include <cstddef>
 #include <string>
@@ -36,91 +37,91 @@ class ConfigurationInterface;
  * \brief Base class providing shared logic for DLL+PLL tracking loop adapters
  * for GNSS signals.
  */
-class BaseDllPllTracking : public TrackingInterface
+class DllPllTrackingAdapter : public TrackingInterface
 {
 public:
     /*!
      * \brief Base constructor of a Tracking block adapter
      */
-    explicit BaseDllPllTracking(const ConfigurationInterface* configuration,
+    explicit DllPllTrackingAdapter(const ConfigurationInterface* configuration,
         std::string role,
+        std::string implementation,
         unsigned int in_streams,
-        unsigned int out_streams);
+        unsigned int out_streams,
+        signal_flag sig_flag);
 
     /*!
      * \brief Default destructor of the Tracking block adapter
      */
-    ~BaseDllPllTracking() override = default;
+    ~DllPllTrackingAdapter() override = default;
 
     /*!
      * \brief Get role from the Tracking block adapter
      */
-    inline std::string role() override final { return role_; }
+    inline std::string role() override { return role_; }
+
+    /*!
+     * \brief Get implementation from the Tracking block adapter
+     */
+    inline std::string implementation() override { return implementation_; }
 
     /*!
      * \brief Get item_size from the Tracking block adapter
      */
-    inline size_t item_size() override final { return item_size_; }
+    inline size_t item_size() override
+    {
+        return item_size_;
+    }
 
     /*!
      * \brief Connect the Tracking block adapter
      */
-    void connect(gr::top_block_sptr top_block) override final;
+    void connect(gr::top_block_sptr top_block) override;
 
     /*!
      * \brief Disconnect the sTracking block adapter
      */
-    void disconnect(gr::top_block_sptr top_block) override final;
+    void disconnect(gr::top_block_sptr top_block) override;
 
     /*!
      * \brief Get left block from the Tracking block adapter
      */
-    gr::basic_block_sptr get_left_block() override final;
+    gr::basic_block_sptr get_left_block() override;
 
     /*!
      * \brief Get right block from the Tracking block adapter
      */
-    gr::basic_block_sptr get_right_block() override final;
+    gr::basic_block_sptr get_right_block() override;
 
     /*!
      * \brief Set tracking channel unique ID
      */
-    void set_channel(unsigned int channel) override final;
+    void set_channel(unsigned int channel) override;
 
     /*!
      * \brief Set acquisition Gnss_Synchro object pointer
      * to exchange synchronization data between acquisition and tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override final;
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
     /*!
      * \brief Start the Tracking block
      */
-    void start_tracking() override final;
+    void start_tracking() override;
 
     /*!
      * \brief Stop the Tracking block
      */
-    void stop_tracking() override final;
-
-protected:
-    // Can be used by each derived class
-    inline Dll_Pll_Conf& config_params() { return trk_params_; }
-    inline const Dll_Pll_Conf& config_params() const { return trk_params_; }
-    inline void set_item_size(size_t item_size) { item_size_ = item_size; }
-
-    // Must be implemented / filled by each derived class
-    virtual void configure_tracking_parameters(const ConfigurationInterface* configuration) = 0;
-    virtual void create_tracking_block() = 0;
-    dll_pll_veml_tracking_sptr tracking_sptr_;
+    void stop_tracking() override;
 
 private:
-    // Managed by the base class
+    dll_pll_veml_tracking_sptr tracking_sptr_;
     Dll_Pll_Conf trk_params_;
     const std::string role_;
+    const std::string implementation_;
     size_t item_size_;
 };
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_BASE_DLL_PLL_TRACKING_H
+#endif  // GNSS_SDR_DLL_PLL_TRACKING_ADAPTER_H

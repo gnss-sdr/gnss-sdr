@@ -27,6 +27,7 @@
 #include <string>
 #include <utility>
 
+class Tlm_Conf;
 class Tlm_CRC_Stats;
 
 /** \addtogroup Telemetry_Decoder

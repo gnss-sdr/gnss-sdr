@@ -21,17 +21,14 @@
 #ifndef GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H
 #define GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H
 
-#include "galileo_cnav_message.h"      // for Galileo_Cnav_Message
-#include "galileo_fnav_message.h"      // for Galileo_Fnav_Message
-#include "galileo_inav_message.h"      // for Galileo_Inav_Message
-#include "gnss_time.h"                 // for GnssTime
-#include "nav_message_packet.h"        // for Nav_Message_Packet
+#include "galileo_cnav_message.h"  // for Galileo_Cnav_Message
+#include "galileo_fnav_message.h"  // for Galileo_Fnav_Message
+#include "galileo_inav_message.h"  // for Galileo_Inav_Message
+#include "gnss_time.h"
+#include "nav_message_packet.h"
 #include "telemetry_impl_interface.h"  // for telemetry_impl_interface
-#include "tlm_conf.h"                  // for Tlm_Conf
 #include <boost/circular_buffer.hpp>   // for boost::circular_buffer
-#include <gnuradio/types.h>            // for gr_vector_const_void_star
-#include <pmt/pmt.h>                   // for pmt::pmt_t
-#include <vector>                      // for std::vector
+
 
 /** \addtogroup Telemetry_Decoder
  * \{ */
@@ -111,7 +108,7 @@ private:
     int32_t d_mm;
     int32_t d_codelength;
     int32_t d_datalength;
-    int32_t d_frame_type;
+    const int32_t d_frame_type;
     int32_t d_bits_per_preamble;
     int32_t d_samples_per_preamble;
     int32_t d_preamble_period_symbols;
@@ -134,21 +131,21 @@ private:
     bool d_flag_frame_sync;
     bool d_flag_PLL_180_deg_phase_locked;
     bool d_flag_preamble;
-    bool d_dump;
-    bool d_dump_mat;
-    bool d_remove_dat;
+    const bool d_dump;
+    const bool d_dump_mat;
+    const bool d_remove_dat;
     bool d_first_eph_sent;
     bool d_cnav_dummy_page;
     bool d_print_cnav_page;
-    bool d_enable_navdata_monitor;
+    const bool d_enable_navdata_monitor;
     bool d_dump_crc_stats;
     bool d_enable_reed_solomon_inav;
     bool d_valid_timetag;
     bool d_E6_TOW_set;
-    bool d_there_are_e1_channels;
-    bool d_there_are_e6_channels;
-    bool d_use_ced;
-    bool d_tow_to_trk;
+    const bool d_there_are_e1_channels;
+    const bool d_there_are_e6_channels;
+    const bool d_use_ced;
+    const bool d_tow_to_trk;
 };
 
 

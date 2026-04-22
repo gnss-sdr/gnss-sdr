@@ -6,6 +6,7 @@
  *         Javier Arribas, 2011. jarribas(at)cttc.es
  *         Marc Majoral, 2018. mmajoral(at)cttc.es
  *         Carles Fernandez-Prades, 2014-2020. cfernandez(at)cttc.es
+ *         Mathieu Favreau, 2025-2026. favreau.mathieu(at)hotmail.com
  *
  * This class encapsulates the complexity behind the instantiation
  * of GNSS blocks.
@@ -16,7 +17,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2022  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -27,10 +28,8 @@
 #include "acquisition_interface.h"
 #include "array_signal_conditioner.h"
 #include "beamformer_filter.h"
-#include "beidou_b1i_dll_pll_tracking.h"
 #include "beidou_b1i_pcps_acquisition.h"
 #include "beidou_b1i_telemetry_decoder.h"
-#include "beidou_b3i_dll_pll_tracking.h"
 #include "beidou_b3i_pcps_acquisition.h"
 #include "beidou_b3i_telemetry_decoder.h"
 #include "byte_to_short.h"
@@ -38,13 +37,13 @@
 #include "configuration_interface.h"
 #include "cshort_to_grcomplex.h"
 #include "direct_resampler_conditioner.h"
+#include "dll_pll_tracking_adapter.h"
 #include "fifo_signal_source.h"
 #include "file_signal_source.h"
 #include "file_timestamp_signal_source.h"
 #include "fir_filter.h"
 #include "four_bit_cpx_file_signal_source.h"
 #include "freq_xlating_fir_filter.h"
-#include "galileo_e1_dll_pll_veml_tracking.h"
 #include "galileo_e1_pcps_8ms_ambiguous_acquisition.h"
 #include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "galileo_e1_pcps_cccwsr_ambiguous_acquisition.h"
@@ -52,26 +51,20 @@
 #include "galileo_e1_pcps_tong_ambiguous_acquisition.h"
 #include "galileo_e1_tcp_connector_tracking.h"
 #include "galileo_e1b_telemetry_decoder.h"
-#include "galileo_e5a_dll_pll_tracking.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
 #include "galileo_e5a_pcps_acquisition.h"
 #include "galileo_e5a_telemetry_decoder.h"
-#include "galileo_e5b_dll_pll_tracking.h"
 #include "galileo_e5b_pcps_acquisition.h"
 #include "galileo_e5b_telemetry_decoder.h"
-#include "galileo_e6_dll_pll_tracking.h"
 #include "galileo_e6_pcps_acquisition.h"
 #include "galileo_e6_telemetry_decoder.h"
-#include "glonass_l1_ca_dll_pll_tracking.h"
 #include "glonass_l1_ca_pcps_acquisition.h"
 #include "glonass_l1_ca_telemetry_decoder.h"
-#include "glonass_l2_ca_dll_pll_tracking.h"
 #include "glonass_l2_ca_pcps_acquisition.h"
 #include "glonass_l2_ca_telemetry_decoder.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_sdr_string_literals.h"
-#include "gps_l1_ca_dll_pll_tracking.h"
 #include "gps_l1_ca_gaussian_tracking.h"
 #include "gps_l1_ca_kf_tracking.h"
 #include "gps_l1_ca_pcps_acquisition.h"
@@ -81,10 +74,8 @@
 #include "gps_l1_ca_pcps_tong_acquisition.h"
 #include "gps_l1_ca_tcp_connector_tracking.h"
 #include "gps_l1_ca_telemetry_decoder.h"
-#include "gps_l2_m_dll_pll_tracking.h"
 #include "gps_l2_m_pcps_acquisition.h"
 #include "gps_l2c_telemetry_decoder.h"
-#include "gps_l5_dll_pll_tracking.h"
 #include "gps_l5_telemetry_decoder.h"
 #include "gps_l5i_pcps_acquisition.h"
 #include "hybrid_observables.h"
@@ -103,16 +94,15 @@
 #include "ntlab_file_signal_source.h"
 #include "pass_through.h"
 #include "pulse_blanking_filter.h"
-#include "qzss_l1_dll_pll_tracking.h"
 #include "qzss_l1_pcps_acquisition.h"
 #include "qzss_l1_telemetry_decoder.h"
-#include "qzss_l5_dll_pll_tracking.h"
 #include "qzss_l5_telemetry_decoder.h"
 #include "qzss_l5i_pcps_acquisition.h"
 #include "rtklib_pvt.h"
 #include "rtl_tcp_signal_source.h"
 #include "sbas_l1_telemetry_decoder.h"
 #include "signal_conditioner.h"
+#include "signal_flag.h"
 #include "spir_file_signal_source.h"
 #include "spir_gss6450_file_signal_source.h"
 #include "telemetry_decoder_interface.h"
@@ -588,7 +578,7 @@ std::unique_ptr<TrackingInterface> get_trk_block(
 {
     if (implementation == "GPS_L1_CA_DLL_PLL_Tracking")
         {
-            return std::make_unique<GpsL1CaDllPllTracking>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, GPS_1C);
         }
     else if (implementation == "GPS_L1_CA_Gaussian_Tracking")
         {
@@ -604,7 +594,7 @@ std::unique_ptr<TrackingInterface> get_trk_block(
         }
     else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking")
         {
-            return std::make_unique<GalileoE1DllPllVemlTracking>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, GAL_1B);
         }
     else if (implementation == "Galileo_E1_TCP_CONNECTOR_Tracking")
         {
@@ -612,47 +602,47 @@ std::unique_ptr<TrackingInterface> get_trk_block(
         }
     else if (implementation == "Galileo_E5a_DLL_PLL_Tracking")
         {
-            return std::make_unique<GalileoE5aDllPllTracking>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, GAL_E5a);
         }
     else if (implementation == "Galileo_E5b_DLL_PLL_Tracking")
         {
-            return std::make_unique<GalileoE5bDllPllTracking>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, GAL_E5b);
         }
     else if (implementation == "Galileo_E6_DLL_PLL_Tracking")
         {
-            return std::make_unique<GalileoE6DllPllTracking>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, GAL_E6);
         }
     else if (implementation == "GPS_L2_M_DLL_PLL_Tracking")
         {
-            return std::make_unique<GpsL2MDllPllTracking>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, GPS_2S);
         }
     else if ((implementation == "GPS_L5i_DLL_PLL_Tracking") or (implementation == "GPS_L5_DLL_PLL_Tracking"))
         {
-            return std::make_unique<GpsL5DllPllTracking>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, GPS_L5);
         }
     else if (implementation == "GLONASS_L1_CA_DLL_PLL_Tracking")
         {
-            return std::make_unique<GlonassL1CaDllPllTracking>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, GLO_1G);
         }
     else if (implementation == "GLONASS_L2_CA_DLL_PLL_Tracking")
         {
-            return std::make_unique<GlonassL2CaDllPllTracking>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, GLO_2G);
         }
     else if (implementation == "BEIDOU_B1I_DLL_PLL_Tracking")
         {
-            return std::make_unique<BeidouB1iDllPllTracking>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, BDS_B1);
         }
     else if (implementation == "BEIDOU_B3I_DLL_PLL_Tracking")
         {
-            return std::make_unique<BeidouB3iDllPllTracking>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, BDS_B3);
         }
     else if (implementation == "QZSS_L1_CA_DLL_PLL_Tracking")
         {
-            return std::make_unique<QzssL1DllPllTracking>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, QZS_J1);
         }
     else if (implementation == "QZSS_L5_DLL_PLL_Tracking")
         {
-            return std::make_unique<QzssL5DllPllTracking>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, QZS_J5);
         }
 #if CUDA_GPU_ACCEL
     else if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_GPU")

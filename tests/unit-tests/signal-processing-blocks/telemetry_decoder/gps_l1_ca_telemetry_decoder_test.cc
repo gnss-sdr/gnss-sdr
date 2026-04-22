@@ -32,9 +32,9 @@
 #include <gnuradio/analog/sig_source_c.h>
 #endif
 #include "GPS_L1_CA.h"
+#include "dll_pll_tracking_adapter.h"
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
-#include "gps_l1_ca_dll_pll_tracking.h"
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "in_memory_configuration.h"
 #include "signal_generator_flags.h"
@@ -400,7 +400,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     }) << "Failure opening true observables file";
 
     top_block = gr::make_top_block("Telemetry_Decoder test");
-    std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllTracking>(config.get(), "Tracking_1C", 1, 1);
+    std::shared_ptr<TrackingInterface> tracking = std::make_shared<DllPllTrackingAdapter>(config.get(), "Tracking_1C", "GPS_L1_CA_DLL_PLL_Tracking", 1, 1, GPS_1C);
     // std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
 
     auto msg_rx = GpsL1CADllPllTelemetryDecoderTest_msg_rx_make();

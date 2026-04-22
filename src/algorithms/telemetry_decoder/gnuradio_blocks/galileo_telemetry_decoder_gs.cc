@@ -70,52 +70,50 @@ namespace wht = std;
 #define CRC_ERROR_LIMIT 6
 
 galileo_telemetry_decoder_gs_sptr
-galileo_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf, int frame_type)
+galileo_make_telemetry_decoder_gs(const Tlm_Conf &conf, int frame_type)
 {
-    return galileo_telemetry_decoder_gs_sptr(new galileo_telemetry_decoder_gs(satellite, conf, frame_type));
+    return galileo_telemetry_decoder_gs_sptr(new galileo_telemetry_decoder_gs(conf, frame_type));
 }
 
 
-galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
-    const Gnss_Satellite &satellite,
-    const Tlm_Conf &conf,
-    int frame_type) : telemetry_impl_interface("galileo_telemetry_decoder_gs",
-                          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
-                      d_dump_filename(conf.dump_filename),
-                      d_delta_t(0),
-                      d_symbol_counter(0ULL),
-                      d_preamble_index(0ULL),
-                      d_last_valid_preamble(0ULL),
-                      d_received_sample_counter(0),
-                      d_frame_type(frame_type),
-                      d_CRC_error_counter(0),
-                      d_channel(0),
-                      d_flag_even_word_arrived(0),
-                      d_stat(0),
-                      d_TOW_at_Preamble_ms(0),
-                      d_TOW_at_current_symbol_ms(0),
-                      d_received_tow_ms(std::numeric_limits<uint32_t>::max()),
-                      d_band('1'),
-                      d_sent_tlm_failed_msg(false),
-                      d_flag_frame_sync(false),
-                      d_flag_PLL_180_deg_phase_locked(false),
-                      d_flag_preamble(false),
-                      d_dump(conf.dump),
-                      d_dump_mat(conf.dump_mat),
-                      d_remove_dat(conf.remove_dat),
-                      d_first_eph_sent(false),
-                      d_cnav_dummy_page(false),
-                      d_print_cnav_page(true),
-                      d_enable_navdata_monitor(conf.enable_navdata_monitor),
-                      d_dump_crc_stats(conf.dump_crc_stats),
-                      d_enable_reed_solomon_inav(false),
-                      d_valid_timetag(false),
-                      d_E6_TOW_set(false),
-                      d_there_are_e1_channels(conf.there_are_e1_channels),
-                      d_there_are_e6_channels(conf.there_are_e6_channels),
-                      d_use_ced(conf.use_ced),
-                      d_tow_to_trk(conf.tow_to_trk)
+galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(const Tlm_Conf &conf, int frame_type)
+    : telemetry_impl_interface("galileo_telemetry_decoder_gs",
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+      d_dump_filename(conf.dump_filename),
+      d_delta_t(0),
+      d_symbol_counter(0ULL),
+      d_preamble_index(0ULL),
+      d_last_valid_preamble(0ULL),
+      d_received_sample_counter(0),
+      d_frame_type(frame_type),
+      d_CRC_error_counter(0),
+      d_channel(0),
+      d_flag_even_word_arrived(0),
+      d_stat(0),
+      d_TOW_at_Preamble_ms(0),
+      d_TOW_at_current_symbol_ms(0),
+      d_received_tow_ms(std::numeric_limits<uint32_t>::max()),
+      d_band('1'),
+      d_sent_tlm_failed_msg(false),
+      d_flag_frame_sync(false),
+      d_flag_PLL_180_deg_phase_locked(false),
+      d_flag_preamble(false),
+      d_dump(conf.dump),
+      d_dump_mat(conf.dump_mat),
+      d_remove_dat(conf.remove_dat),
+      d_first_eph_sent(false),
+      d_cnav_dummy_page(false),
+      d_print_cnav_page(true),
+      d_enable_navdata_monitor(conf.enable_navdata_monitor),
+      d_dump_crc_stats(conf.dump_crc_stats),
+      d_enable_reed_solomon_inav(false),
+      d_valid_timetag(false),
+      d_E6_TOW_set(false),
+      d_there_are_e1_channels(conf.there_are_e1_channels),
+      d_there_are_e6_channels(conf.there_are_e6_channels),
+      d_use_ced(conf.use_ced),
+      d_tow_to_trk(conf.tow_to_trk)
 {
     configure_basic_outputs();
 
@@ -152,8 +150,6 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
             // register nav message monitor out
             this->message_port_register_out(pmt::mp("Nav_msg_from_TLM"));
         }
-
-    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
 
     // Viterbi decoder vars
     const int32_t nn = 2;                               // Coding rate 1/n

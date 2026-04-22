@@ -43,34 +43,32 @@
 #define CRC_ERROR_LIMIT 6
 
 
-glonass_l1_ca_telemetry_decoder_gs_sptr
-glonass_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf)
+glonass_l1_ca_telemetry_decoder_gs_sptr glonass_l1_ca_make_telemetry_decoder_gs(const Tlm_Conf &conf)
 {
-    return glonass_l1_ca_telemetry_decoder_gs_sptr(new glonass_l1_ca_telemetry_decoder_gs(satellite, conf));
+    return glonass_l1_ca_telemetry_decoder_gs_sptr(new glonass_l1_ca_telemetry_decoder_gs(conf));
 }
 
 
-glonass_l1_ca_telemetry_decoder_gs::glonass_l1_ca_telemetry_decoder_gs(
-    const Gnss_Satellite &satellite,
-    const Tlm_Conf &conf) : telemetry_impl_interface("glonass_l1_ca_telemetry_decoder_gs",
-                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
-                            d_dump_filename(conf.dump_filename),
-                            d_preamble_time_samples(0),
-                            d_TOW_at_current_symbol(0),
-                            d_sample_counter(0ULL),
-                            d_preamble_index(0ULL),
-                            d_stat(0),
-                            d_CRC_error_counter(0),
-                            d_channel(0),
-                            d_flag_frame_sync(false),
-                            d_flag_preamble(false),
-                            d_dump(conf.dump),
-                            d_dump_mat(conf.dump_mat),
-                            d_remove_dat(conf.remove_dat),
-                            d_enable_navdata_monitor(conf.enable_navdata_monitor),
-                            d_dump_crc_stats(conf.dump_crc_stats),
-                            d_tow_to_trk(conf.tow_to_trk)
+glonass_l1_ca_telemetry_decoder_gs::glonass_l1_ca_telemetry_decoder_gs(const Tlm_Conf &conf)
+    : telemetry_impl_interface("glonass_l1_ca_telemetry_decoder_gs",
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+      d_dump_filename(conf.dump_filename),
+      d_preamble_time_samples(0),
+      d_TOW_at_current_symbol(0),
+      d_sample_counter(0ULL),
+      d_preamble_index(0ULL),
+      d_stat(0),
+      d_CRC_error_counter(0),
+      d_channel(0),
+      d_flag_frame_sync(false),
+      d_flag_preamble(false),
+      d_dump(conf.dump),
+      d_dump_mat(conf.dump_mat),
+      d_remove_dat(conf.remove_dat),
+      d_enable_navdata_monitor(conf.enable_navdata_monitor),
+      d_dump_crc_stats(conf.dump_crc_stats),
+      d_tow_to_trk(conf.tow_to_trk)
 {
     configure_basic_outputs();
 
@@ -84,7 +82,6 @@ glonass_l1_ca_telemetry_decoder_gs::glonass_l1_ca_telemetry_decoder_gs(
             d_nav_msg_packet.signal = std::string("1G");
         }
 
-    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "Initializing GLONASS L1 CA TELEMETRY DECODING";
 
     d_symbol_history.set_capacity(GLONASS_GNAV_STRING_BIBINARY_WITH_PREABLE);

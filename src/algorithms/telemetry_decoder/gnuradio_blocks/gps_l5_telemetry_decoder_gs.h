@@ -39,7 +39,6 @@ class gps_l5_telemetry_decoder_gs;
 using gps_l5_telemetry_decoder_gs_sptr = gnss_shared_ptr<gps_l5_telemetry_decoder_gs>;
 
 gps_l5_telemetry_decoder_gs_sptr gps_l5_make_telemetry_decoder_gs(
-    const Gnss_Satellite &satellite,
     const Tlm_Conf &conf,
     CnavSystem system = CnavSystem::GPS);
 
@@ -59,11 +58,10 @@ public:
 
 private:
     friend gps_l5_telemetry_decoder_gs_sptr gps_l5_make_telemetry_decoder_gs(
-        const Gnss_Satellite &satellite,
         const Tlm_Conf &conf,
         CnavSystem system);
 
-    gps_l5_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf, CnavSystem system);
+    gps_l5_telemetry_decoder_gs(const Tlm_Conf &conf, CnavSystem system);
 
     cnav_msg_decoder_t d_cnav_decoder{};
 

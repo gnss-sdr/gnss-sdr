@@ -44,35 +44,34 @@
 #endif
 
 gps_l5_telemetry_decoder_gs_sptr
-gps_l5_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf, CnavSystem system)
+gps_l5_make_telemetry_decoder_gs(const Tlm_Conf &conf, CnavSystem system)
 {
-    return gps_l5_telemetry_decoder_gs_sptr(new gps_l5_telemetry_decoder_gs(satellite, conf, system));
+    return gps_l5_telemetry_decoder_gs_sptr(new gps_l5_telemetry_decoder_gs(conf, system));
 }
 
 
-gps_l5_telemetry_decoder_gs::gps_l5_telemetry_decoder_gs(
-    const Gnss_Satellite &satellite,
-    const Tlm_Conf &conf,
-    CnavSystem system) : telemetry_impl_interface("gps_l5_telemetry_decoder_gs",
-                             gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                             gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
-                         d_system(system),
-                         d_dump_filename(conf.dump_filename),
-                         d_sample_counter(0),
-                         d_last_valid_preamble(0),
-                         d_channel(0),
-                         d_TOW_at_current_symbol_ms(0U),
-                         d_TOW_at_Preamble_ms(0U),
-                         d_max_symbols_without_valid_frame(GPS_L5_CNAV_DATA_PAGE_BITS * GPS_L5_SYMBOLS_PER_BIT * 10),  // rise alarm if 20 consecutive subframes have no valid CRC
-                         d_flag_PLL_180_deg_phase_locked(false),
-                         d_flag_valid_word(false),
-                         d_sent_tlm_failed_msg(false),
-                         d_dump(conf.dump),
-                         d_dump_mat(conf.dump_mat),
-                         d_remove_dat(conf.remove_dat),
-                         d_enable_navdata_monitor(conf.enable_navdata_monitor),
-                         d_dump_crc_stats(conf.dump_crc_stats),
-                         d_tow_to_trk(conf.tow_to_trk)
+gps_l5_telemetry_decoder_gs::gps_l5_telemetry_decoder_gs(const Tlm_Conf &conf,
+    CnavSystem system)
+    : telemetry_impl_interface("gps_l5_telemetry_decoder_gs",
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+      d_system(system),
+      d_dump_filename(conf.dump_filename),
+      d_sample_counter(0),
+      d_last_valid_preamble(0),
+      d_channel(0),
+      d_TOW_at_current_symbol_ms(0U),
+      d_TOW_at_Preamble_ms(0U),
+      d_max_symbols_without_valid_frame(GPS_L5_CNAV_DATA_PAGE_BITS * GPS_L5_SYMBOLS_PER_BIT * 10),  // rise alarm if 20 consecutive subframes have no valid CRC
+      d_flag_PLL_180_deg_phase_locked(false),
+      d_flag_valid_word(false),
+      d_sent_tlm_failed_msg(false),
+      d_dump(conf.dump),
+      d_dump_mat(conf.dump_mat),
+      d_remove_dat(conf.remove_dat),
+      d_enable_navdata_monitor(conf.enable_navdata_monitor),
+      d_dump_crc_stats(conf.dump_crc_stats),
+      d_tow_to_trk(conf.tow_to_trk)
 {
     configure_basic_outputs();
 
@@ -93,7 +92,6 @@ gps_l5_telemetry_decoder_gs::gps_l5_telemetry_decoder_gs(
         }
 
     d_CNAV_Message = std::make_unique<Gps_CNAV_Navigation_Message>(d_system);
-    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << ((d_system == CnavSystem::GPS) ? "GPS" : "QZSS") << " L5 TELEMETRY PROCESSING: satellite " << d_satellite;
 
     // initialize the CNAV frame decoder (libswiftcnav)

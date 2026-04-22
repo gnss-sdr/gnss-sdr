@@ -1778,12 +1778,12 @@ is managed by a finite state machine.
 
 The common interface is
 [TelemetryDecoderInterface](./src/core/interfaces/telemetry_decoder_interface.h).
-Check
-[GpsL1CaTelemetryDecoder](./src/algorithms/telemetry_decoder/adapters/gps_l1_ca_telemetry_decoder.h)
-for an example of the GPS L1 NAV message decoding adapter, and
-[gps_l1_ca_telemetry_decoder_cc](./src/algorithms/telemetry_decoder/gnuradio_blocks/gps_l1_ca_telemetry_decoder_cc.h)
-for an actual implementation of a signal processing block. Configuration
-example:
+Telemetry decoder adapters are provided through
+[TelemetryDecoderAdapter](./src/algorithms/telemetry_decoder/adapters/telemetry_decoder_adapter.h),
+which wraps the corresponding GNU Radio telemetry decoder block. Check
+[gps_l1_ca_telemetry_decoder_gs](./src/algorithms/telemetry_decoder/gnuradio_blocks/gps_l1_ca_telemetry_decoder_gs.h)
+for an actual implementation of a GPS L1 NAV message decoding block.
+Configuration example:
 
 ```
 ;######### TELEMETRY DECODER CONFIG ############

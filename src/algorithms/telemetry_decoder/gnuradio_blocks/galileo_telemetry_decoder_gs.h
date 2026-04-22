@@ -40,10 +40,7 @@ class galileo_telemetry_decoder_gs;  // forward declaration
 
 using galileo_telemetry_decoder_gs_sptr = gnss_shared_ptr<galileo_telemetry_decoder_gs>;
 
-galileo_telemetry_decoder_gs_sptr galileo_make_telemetry_decoder_gs(
-    const Gnss_Satellite &satellite,
-    const Tlm_Conf &conf,
-    int frame_type);
+galileo_telemetry_decoder_gs_sptr galileo_make_telemetry_decoder_gs(const Tlm_Conf &conf, int frame_type);
 
 /*!
  * \brief This class implements a block that decodes the INAV and FNAV data defined in Galileo ICD
@@ -63,12 +60,9 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 
 private:
-    friend galileo_telemetry_decoder_gs_sptr galileo_make_telemetry_decoder_gs(
-        const Gnss_Satellite &satellite,
-        const Tlm_Conf &conf,
-        int frame_type);
+    friend galileo_telemetry_decoder_gs_sptr galileo_make_telemetry_decoder_gs(const Tlm_Conf &conf, int frame_type);
 
-    galileo_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf, int frame_type);
+    galileo_telemetry_decoder_gs(const Tlm_Conf &conf, int frame_type);
 
     void check_tlm_separation();
     void msg_handler_read_galileo_tow_map(const pmt::pmt_t &msg);

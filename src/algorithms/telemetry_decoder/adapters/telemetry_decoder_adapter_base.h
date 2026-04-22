@@ -36,16 +36,30 @@ class ConfigurationInterface;
  * \{
  */
 
+inline Tlm_Conf get_tlm_conf(const ConfigurationInterface* configuration, const std::string& role)
+{
+    Tlm_Conf conf;
+
+    if (configuration != nullptr)
+        {
+            conf.SetFromConfiguration(configuration, role);
+        }
+
+    return conf;
+}
+
 /*!
  * \brief Base class for Telemetry Decoder adapters
  */
 class TelemetryDecoderAdapterBase : public TelemetryDecoderInterface
 {
 public:
-    TelemetryDecoderAdapterBase(const ConfigurationInterface* configuration,
+    TelemetryDecoderAdapterBase(
         const std::string& role,
+        const std::string& implementation,
         unsigned int in_streams,
-        unsigned int out_streams);
+        unsigned int out_streams,
+        telemetry_impl_interface_sptr decoder);
 
     ~TelemetryDecoderAdapterBase() override = default;
 
@@ -61,25 +75,18 @@ public:
 
     std::string role() override;
 
+    std::string implementation() override;
+
     void set_channel(int channel) override;
 
     void reset() override;
 
     size_t item_size() override;
 
-protected:
-    void InitializeDecoder(telemetry_impl_interface_sptr decoder);
-
-    const Gnss_Satellite& satellite() const;
-
-    Tlm_Conf tlm_parameters_;
-
 private:
     telemetry_impl_interface_sptr telemetry_decoder_;
-    Gnss_Satellite satellite_;
-    std::string role_;
-    unsigned int in_streams_ = 0;
-    unsigned int out_streams_ = 0;
+    const std::string role_;
+    const std::string implementation_;
 };
 
 /** \} */

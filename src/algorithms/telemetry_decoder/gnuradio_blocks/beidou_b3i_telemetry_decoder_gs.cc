@@ -43,15 +43,13 @@
 #define CRC_ERROR_LIMIT 8
 
 beidou_b3i_telemetry_decoder_gs_sptr
-beidou_b3i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite,
-    const Tlm_Conf &conf)
+beidou_b3i_make_telemetry_decoder_gs(const Tlm_Conf &conf)
 {
-    return beidou_b3i_telemetry_decoder_gs_sptr(new beidou_b3i_telemetry_decoder_gs(satellite, conf));
+    return beidou_b3i_telemetry_decoder_gs_sptr(new beidou_b3i_telemetry_decoder_gs(conf));
 }
 
 
-beidou_b3i_telemetry_decoder_gs::beidou_b3i_telemetry_decoder_gs(
-    const Gnss_Satellite &satellite, const Tlm_Conf &conf)
+beidou_b3i_telemetry_decoder_gs::beidou_b3i_telemetry_decoder_gs(const Tlm_Conf &conf)
     : telemetry_impl_interface("beidou_b3i_telemetry_decoder_gs",
           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
@@ -90,9 +88,6 @@ beidou_b3i_telemetry_decoder_gs::beidou_b3i_telemetry_decoder_gs(
             d_nav_msg_packet.system = std::string("C");
             d_nav_msg_packet.signal = std::string("B3");
         }
-
-    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    LOG(INFO) << "Initializing BeiDou B3I Telemetry Decoding for satellite " << this->d_satellite;
 
     // Setting samples of preamble code
     for (int32_t i = 0; i < d_symbols_per_preamble; i++)

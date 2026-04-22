@@ -19,20 +19,33 @@
 #include "galileo_e1b_telemetry_decoder.h"
 #include "galileo_telemetry_decoder_gs.h"
 
+namespace
+{
+Tlm_Conf get_e1_tlm_conf(const ConfigurationInterface* configuration, const std::string& role)
+{
+    auto tlm_parameters = get_tlm_conf(configuration, role);
+
+    if (configuration != nullptr)
+        {
+            tlm_parameters.enable_reed_solomon = configuration->property(role + ".enable_reed_solomon", false);
+            tlm_parameters.use_ced = configuration->property(role + ".use_reduced_ced", false);
+        }
+
+    return tlm_parameters;
+}
+
+}  // namespace
+
 GalileoE1BTelemetryDecoder::GalileoE1BTelemetryDecoder(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams)
-    : TelemetryDecoderAdapterBase(configuration,
+    : TelemetryDecoderAdapterBase(
           role,
+          "Galileo_E1B_Telemetry_Decoder",
           in_streams,
-          out_streams)
+          out_streams,
+          galileo_make_telemetry_decoder_gs(get_e1_tlm_conf(configuration, role), 1))
 {
-    if (configuration != nullptr)
-        {
-            tlm_parameters_.enable_reed_solomon = configuration->property(role + ".enable_reed_solomon", false);
-            tlm_parameters_.use_ced = configuration->property(role + ".use_reduced_ced", false);
-        }
-    InitializeDecoder(galileo_make_telemetry_decoder_gs(satellite(), tlm_parameters_, 1));
 }

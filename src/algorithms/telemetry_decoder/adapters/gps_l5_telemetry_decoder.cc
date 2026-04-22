@@ -24,10 +24,11 @@ GpsL5TelemetryDecoder::GpsL5TelemetryDecoder(
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams)
-    : TelemetryDecoderAdapterBase(configuration,
+    : TelemetryDecoderAdapterBase(
           role,
+          "GPS_L5_Telemetry_Decoder",
           in_streams,
-          out_streams)
+          out_streams,
+          gps_l5_make_telemetry_decoder_gs(get_tlm_conf(configuration, role)))
 {
-    InitializeDecoder(gps_l5_make_telemetry_decoder_gs(satellite(), tlm_parameters_));
 }

@@ -70,49 +70,47 @@ namespace wht = std;
 #endif
 
 
-gps_l1_ca_telemetry_decoder_gs_sptr
-gps_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf, L1LnavSystem system)
+gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(const Tlm_Conf &conf, L1LnavSystem system)
 {
-    return gps_l1_ca_telemetry_decoder_gs_sptr(new gps_l1_ca_telemetry_decoder_gs(satellite, conf, system));
+    return gps_l1_ca_telemetry_decoder_gs_sptr(new gps_l1_ca_telemetry_decoder_gs(conf, system));
 }
 
 
-gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
-    const Gnss_Satellite &satellite,
-    const Tlm_Conf &conf,
-    L1LnavSystem system) : telemetry_impl_interface("gps_navigation_gs",
-                               gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                               gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
-                           d_system(system),
-                           d_dump_filename(conf.dump_filename),
-                           d_sample_counter(0ULL),
-                           d_preamble_index(0ULL),
-                           d_last_valid_preamble(0),
-                           d_bits_per_preamble(GPS_CA_PREAMBLE_LENGTH_BITS),
-                           d_samples_per_preamble(GPS_CA_PREAMBLE_LENGTH_BITS),
-                           d_preamble_period_symbols(GPS_SUBFRAME_BITS),
-                           d_CRC_error_counter(0),
-                           d_channel(0),
-                           d_required_symbols(GPS_SUBFRAME_BITS),
-                           d_prev_GPS_frame_4bytes(0),
-                           d_max_symbols_without_valid_frame(d_required_symbols * 20),
-                           d_stat(0),
-                           d_TOW_at_Preamble_ms(0),
-                           d_TOW_at_current_symbol_ms(0),
-                           d_last_decoded_tow_s(0),
-                           d_last_decoded_tow_sample_counter(0),
-                           d_flag_frame_sync(false),
-                           d_flag_preamble(false),
-                           d_sent_tlm_failed_msg(false),
-                           d_flag_PLL_180_deg_phase_locked(false),
-                           d_flag_TOW_set(false),
-                           d_dump(conf.dump),
-                           d_dump_mat(conf.dump_mat),
-                           d_remove_dat(conf.remove_dat),
-                           d_enable_navdata_monitor(conf.enable_navdata_monitor),
-                           d_dump_crc_stats(conf.dump_crc_stats),
-                           d_tow_to_trk(conf.tow_to_trk),
-                           d_have_last_decoded_tow(false)  // rise alarm 120 segs without valid tlm
+gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(const Tlm_Conf &conf,
+    L1LnavSystem system)
+    : telemetry_impl_interface("gps_navigation_gs",
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+      d_system(system),
+      d_dump_filename(conf.dump_filename),
+      d_sample_counter(0ULL),
+      d_preamble_index(0ULL),
+      d_last_valid_preamble(0),
+      d_bits_per_preamble(GPS_CA_PREAMBLE_LENGTH_BITS),
+      d_samples_per_preamble(GPS_CA_PREAMBLE_LENGTH_BITS),
+      d_preamble_period_symbols(GPS_SUBFRAME_BITS),
+      d_CRC_error_counter(0),
+      d_channel(0),
+      d_required_symbols(GPS_SUBFRAME_BITS),
+      d_prev_GPS_frame_4bytes(0),
+      d_max_symbols_without_valid_frame(d_required_symbols * 20),
+      d_stat(0),
+      d_TOW_at_Preamble_ms(0),
+      d_TOW_at_current_symbol_ms(0),
+      d_last_decoded_tow_s(0),
+      d_last_decoded_tow_sample_counter(0),
+      d_flag_frame_sync(false),
+      d_flag_preamble(false),
+      d_sent_tlm_failed_msg(false),
+      d_flag_PLL_180_deg_phase_locked(false),
+      d_flag_TOW_set(false),
+      d_dump(conf.dump),
+      d_dump_mat(conf.dump_mat),
+      d_remove_dat(conf.remove_dat),
+      d_enable_navdata_monitor(conf.enable_navdata_monitor),
+      d_dump_crc_stats(conf.dump_crc_stats),
+      d_tow_to_trk(conf.tow_to_trk),
+      d_have_last_decoded_tow(false)  // rise alarm 120 segs without valid tlm
 
 {
     configure_basic_outputs();
@@ -141,7 +139,6 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
                     d_nav_msg_packet.signal = std::string("J1");
                 }
         }
-    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "Initializing " << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS") << " L1 TELEMETRY DECODER";
 
     // set the preamble

@@ -41,14 +41,6 @@ public:
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
-
-    /*!
-     * \brief Returns "Galileo_E1B_Telemetry_Decoder"
-     */
-    inline std::string implementation() override
-    {
-        return "Galileo_E1B_Telemetry_Decoder";
-    }
 };
 
 

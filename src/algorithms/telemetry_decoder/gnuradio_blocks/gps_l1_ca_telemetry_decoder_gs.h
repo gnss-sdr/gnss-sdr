@@ -43,7 +43,6 @@ class gps_l1_ca_telemetry_decoder_gs;
 using gps_l1_ca_telemetry_decoder_gs_sptr = gnss_shared_ptr<gps_l1_ca_telemetry_decoder_gs>;
 
 gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(
-    const Gnss_Satellite &satellite,
     const Tlm_Conf &conf,
     L1LnavSystem system = L1LnavSystem::GPS);
 
@@ -66,11 +65,10 @@ public:
 
 private:
     friend gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(
-        const Gnss_Satellite &satellite,
         const Tlm_Conf &conf,
         L1LnavSystem system);
 
-    gps_l1_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf, L1LnavSystem system);
+    gps_l1_ca_telemetry_decoder_gs(const Tlm_Conf &conf, L1LnavSystem system);
 
     void check_tlm_separation();
     void frame_synchronization(const Gnss_Synchro &current_gs);

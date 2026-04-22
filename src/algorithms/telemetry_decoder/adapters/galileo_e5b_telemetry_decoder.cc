@@ -25,10 +25,11 @@ GalileoE5bTelemetryDecoder::GalileoE5bTelemetryDecoder(
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams)
-    : TelemetryDecoderAdapterBase(configuration,
+    : TelemetryDecoderAdapterBase(
           role,
+          "Galileo_E5b_Telemetry_Decoder",
           in_streams,
-          out_streams)
+          out_streams,
+          galileo_make_telemetry_decoder_gs(get_tlm_conf(configuration, role), 1))
 {
-    InitializeDecoder(galileo_make_telemetry_decoder_gs(satellite(), tlm_parameters_, 1));
 }

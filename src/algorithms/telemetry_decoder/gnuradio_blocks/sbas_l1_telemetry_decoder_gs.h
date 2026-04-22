@@ -36,9 +36,7 @@ class sbas_l1_telemetry_decoder_gs;
 
 using sbas_l1_telemetry_decoder_gs_sptr = gnss_shared_ptr<sbas_l1_telemetry_decoder_gs>;
 
-sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
-    const Gnss_Satellite &satellite,
-    bool dump);
+sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(bool dump);
 
 /*!
  * \brief This class implements a block that decodes the SBAS integrity and
@@ -59,11 +57,9 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 
 private:
-    friend sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
-        const Gnss_Satellite &satellite,
-        bool dump);
+    friend sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(bool dump);
 
-    sbas_l1_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    explicit sbas_l1_telemetry_decoder_gs(bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits);
     void align_samples();

@@ -16,7 +16,6 @@
 
 
 #include "telemetry_decoder_adapter_base.h"
-#include <utility>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -25,35 +24,28 @@
 #endif
 
 
-TelemetryDecoderAdapterBase::TelemetryDecoderAdapterBase(const ConfigurationInterface* configuration,
+TelemetryDecoderAdapterBase::TelemetryDecoderAdapterBase(
     const std::string& role,
+    const std::string& implementation,
     unsigned int in_streams,
-    unsigned int out_streams) : role_(role),
-                                in_streams_(in_streams),
-                                out_streams_(out_streams)
+    unsigned int out_streams,
+    telemetry_impl_interface_sptr decoder) : telemetry_decoder_(std::move(decoder)),
+                                             role_(role),
+                                             implementation_(implementation)
 {
     DLOG(INFO) << "role " << role_;
-    if (configuration != nullptr)
-        {
-            tlm_parameters_.SetFromConfiguration(configuration, role_);
-        }
-    if (in_streams_ > 1)
+    DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
+
+    if (in_streams > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream ("
-                       << in_streams_ << " provided)";
+                       << in_streams << " provided)";
         }
-    if (out_streams_ > 1)
+    if (out_streams > 1)
         {
             LOG(ERROR) << "This implementation only supports one output stream ("
-                       << out_streams_ << " provided)";
+                       << out_streams << " provided)";
         }
-}
-
-
-void TelemetryDecoderAdapterBase::InitializeDecoder(telemetry_impl_interface_sptr decoder)
-{
-    telemetry_decoder_ = std::move(decoder);
-    DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
 }
 
 
@@ -90,11 +82,11 @@ gr::basic_block_sptr TelemetryDecoderAdapterBase::get_right_block()
 
 void TelemetryDecoderAdapterBase::set_satellite(const Gnss_Satellite& satellite)
 {
-    satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     if (telemetry_decoder_)
         {
-            telemetry_decoder_->set_satellite(satellite_);
-            DLOG(INFO) << "TELEMETRY DECODER: satellite set to " << satellite_;
+            const auto sat = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());  // Why is this required
+            telemetry_decoder_->set_satellite(sat);
+            DLOG(INFO) << "TELEMETRY DECODER: satellite set to " << sat;
         }
 }
 
@@ -104,6 +96,10 @@ std::string TelemetryDecoderAdapterBase::role()
     return role_;
 }
 
+std::string TelemetryDecoderAdapterBase::implementation()
+{
+    return implementation_;
+}
 
 void TelemetryDecoderAdapterBase::set_channel(int channel)
 {
@@ -126,10 +122,4 @@ void TelemetryDecoderAdapterBase::reset()
 size_t TelemetryDecoderAdapterBase::item_size()
 {
     return sizeof(Gnss_Synchro);
-}
-
-
-const Gnss_Satellite& TelemetryDecoderAdapterBase::satellite() const
-{
-    return satellite_;
 }

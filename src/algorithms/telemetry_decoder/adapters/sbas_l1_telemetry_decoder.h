@@ -41,17 +41,8 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    /*!
-     * \brief Returns "SBAS_L1_Telemetry_Decoder"
-     */
-    inline std::string implementation() override
-    {
-        return "SBAS_L1_Telemetry_Decoder";
-    }
-
 private:
     std::string dump_filename_;
-    bool dump_;
 };
 
 

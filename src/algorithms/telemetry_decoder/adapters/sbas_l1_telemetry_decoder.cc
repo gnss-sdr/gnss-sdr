@@ -22,12 +22,11 @@ SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : TelemetryDecoderAdapterBase(configuration,
-                                    role,
+    unsigned int out_streams) : TelemetryDecoderAdapterBase(role,
+                                    "SBAS_L1_Telemetry_Decoder",
                                     in_streams,
-                                    out_streams),
-                                dump_filename_(configuration != nullptr ? configuration->property(role + ".dump_filename", std::string("./navigation.dat")) : std::string("./navigation.dat")),
-                                dump_(configuration != nullptr ? configuration->property(role + ".dump", false) : false)
+                                    out_streams,
+                                    sbas_l1_make_telemetry_decoder_gs(configuration != nullptr ? configuration->property(role + ".dump", false) : false)),
+                                dump_filename_(configuration != nullptr ? configuration->property(role + ".dump_filename", std::string("./navigation.dat")) : std::string("./navigation.dat"))
 {
-    InitializeDecoder(sbas_l1_make_telemetry_decoder_gs(satellite(), dump_));
 }

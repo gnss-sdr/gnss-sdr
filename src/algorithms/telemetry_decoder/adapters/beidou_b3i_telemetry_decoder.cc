@@ -23,10 +23,11 @@ BeidouB3iTelemetryDecoder::BeidouB3iTelemetryDecoder(
     const std::string &role,
     unsigned int in_streams,
     unsigned int out_streams)
-    : TelemetryDecoderAdapterBase(configuration,
+    : TelemetryDecoderAdapterBase(
           role,
+          "BEIDOU_B3I_Telemetry_Decoder",
           in_streams,
-          out_streams)
+          out_streams,
+          beidou_b3i_make_telemetry_decoder_gs(get_tlm_conf(configuration, role)))
 {
-    InitializeDecoder(beidou_b3i_make_telemetry_decoder_gs(satellite(), tlm_parameters_));
 }

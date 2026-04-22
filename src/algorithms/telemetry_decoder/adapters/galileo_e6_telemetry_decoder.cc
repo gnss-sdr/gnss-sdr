@@ -24,10 +24,11 @@ GalileoE6TelemetryDecoder::GalileoE6TelemetryDecoder(
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams)
-    : TelemetryDecoderAdapterBase(configuration,
+    : TelemetryDecoderAdapterBase(
           role,
+          "Galileo_E6_Telemetry_Decoder",
           in_streams,
-          out_streams)
+          out_streams,
+          galileo_make_telemetry_decoder_gs(get_tlm_conf(configuration, role), 3))
 {
-    InitializeDecoder(galileo_make_telemetry_decoder_gs(satellite(), tlm_parameters_, 3));
 }

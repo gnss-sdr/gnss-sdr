@@ -42,12 +42,6 @@ public:
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
-
-    //! Returns "QZSS_L1_Telemetry_Decoder"
-    inline std::string implementation() override
-    {
-        return "QZSS_L1_Telemetry_Decoder";
-    }
 };
 
 

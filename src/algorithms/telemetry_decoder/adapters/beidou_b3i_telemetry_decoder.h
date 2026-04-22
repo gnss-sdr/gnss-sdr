@@ -39,12 +39,6 @@ public:
         const ConfigurationInterface *configuration,
         const std::string &role, unsigned int in_streams,
         unsigned int out_streams);
-
-    //! Returns "BEIDOU_B3I_Telemetry_Decoder"
-    inline std::string implementation() override
-    {
-        return "BEIDOU_B3I_Telemetry_Decoder";
-    }
 };
 
 /** \} */

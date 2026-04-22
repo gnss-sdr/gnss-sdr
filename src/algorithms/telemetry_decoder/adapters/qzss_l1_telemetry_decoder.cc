@@ -25,10 +25,11 @@ QzssL1TelemetryDecoder::QzssL1TelemetryDecoder(
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams)
-    : TelemetryDecoderAdapterBase(configuration,
+    : TelemetryDecoderAdapterBase(
           role,
+          "QZSS_L1_Telemetry_Decoder",
           in_streams,
-          out_streams)
+          out_streams,
+          gps_l1_ca_make_telemetry_decoder_gs(get_tlm_conf(configuration, role), L1LnavSystem::QZSS))
 {
-    InitializeDecoder(gps_l1_ca_make_telemetry_decoder_gs(satellite(), tlm_parameters_, L1LnavSystem::QZSS));
 }

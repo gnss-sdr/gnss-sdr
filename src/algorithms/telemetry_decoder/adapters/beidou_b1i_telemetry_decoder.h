@@ -41,12 +41,6 @@ public:
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
-
-    //! Returns "BEIDOU_B1I_Telemetry_Decoder"
-    inline std::string implementation() override
-    {
-        return "BEIDOU_B1I_Telemetry_Decoder";
-    }
 };
 
 

@@ -39,12 +39,6 @@ public:
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
-
-    //! Returns "GPS_L5_Telemetry_Decoder"
-    inline std::string implementation() override
-    {
-        return "GPS_L5_Telemetry_Decoder";
-    }
 };
 
 

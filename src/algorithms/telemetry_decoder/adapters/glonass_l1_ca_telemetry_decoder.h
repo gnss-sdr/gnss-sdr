@@ -40,12 +40,6 @@ public:
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
-
-    //! Returns "GLONASS_L1_CA_Telemetry_Decoder"
-    inline std::string implementation() override
-    {
-        return "GLONASS_L1_CA_Telemetry_Decoder";
-    }
 };
 
 

@@ -24,10 +24,11 @@ GlonassL1CaTelemetryDecoder::GlonassL1CaTelemetryDecoder(
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams)
-    : TelemetryDecoderAdapterBase(configuration,
+    : TelemetryDecoderAdapterBase(
           role,
+          "GLONASS_L1_CA_Telemetry_Decoder",
           in_streams,
-          out_streams)
+          out_streams,
+          glonass_l1_ca_make_telemetry_decoder_gs(get_tlm_conf(configuration, role)))
 {
-    InitializeDecoder(glonass_l1_ca_make_telemetry_decoder_gs(satellite(), tlm_parameters_));
 }

@@ -19,30 +19,40 @@
 
 #include "concurrent_queue.h"
 #include "fir_filter.h"
-#include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "gen_signal_source.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
 #include "in_memory_configuration.h"
+#include "pcps_acquisition_adapter.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/top_block.h>
+#include <gtest/gtest.h>
 #include <chrono>
 #include <utility>
+
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind/bind.hpp>
 #endif
+
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
+
 #if PMT_USES_BOOST_ANY
 namespace wht = boost;
 #else
@@ -61,7 +71,7 @@ class GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx : public gr::block
 {
 private:
     friend GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx_sptr GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx_make(Concurrent_Queue<int>& queue);
-    void msg_handler_channel_events(const pmt::pmt_t msg);
+    void msg_handler_channel_events(pmt::pmt_t msg);
     explicit GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx(Concurrent_Queue<int>& queue);
     Concurrent_Queue<int>& channel_internal_queue;
 
@@ -77,7 +87,7 @@ GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx_sptr GalileoE1PcpsAmbiguous
 }
 
 
-void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx::msg_handler_channel_events(const pmt::pmt_t msg)
+void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx::msg_handler_channel_events(pmt::pmt_t msg)
 {
     try
         {
@@ -93,7 +103,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx::msg_handler_channel_e
 }
 
 
-GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx::GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx(Concurrent_Queue<int>& queue) : gr::block("GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
+GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx::GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx(Concurrent_Queue<int>& queue) : gr::block("GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue), rx_message(0)
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
@@ -106,7 +116,6 @@ GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx::GalileoE1PcpsAmbiguousAcqu
         boost::bind(&GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx::msg_handler_channel_events, this, _1));
 #endif
 #endif
-    rx_message = 0;
 }
 
 GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx::~GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx() = default;
@@ -118,13 +127,9 @@ GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx::~GalileoE1PcpsAmbiguousAcq
 class GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test : public ::testing::Test
 {
 protected:
-    GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test()
+    GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test() : item_size(sizeof(gr_complex)), stop(false), message(0)
     {
         factory = std::make_shared<GNSSBlockFactory>();
-        item_size = sizeof(gr_complex);
-        stop = false;
-        message = 0;
-        gnss_synchro = Gnss_Synchro();
     }
 
     ~GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test() = default;
@@ -140,7 +145,7 @@ protected:
     Concurrent_Queue<int> channel_internal_queue;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
-    std::shared_ptr<GalileoE1PcpsAmbiguousAcquisition> acquisition;
+    std::shared_ptr<AcquisitionInterface> acquisition;
     std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
@@ -430,7 +435,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, Instantiate)
 {
     config_1();
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
-    acquisition = std::dynamic_pointer_cast<GalileoE1PcpsAmbiguousAcquisition>(acq_);
+    acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
 }
 
 
@@ -444,7 +449,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
     config_1();
 
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
-    acquisition = std::dynamic_pointer_cast<GalileoE1PcpsAmbiguousAcquisition>(acq_);
+    acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
     auto msg_rx = GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -473,7 +478,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
     top_block = gr::make_top_block("Acquisition test");
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
-    acquisition = std::dynamic_pointer_cast<GalileoE1PcpsAmbiguousAcquisition>(acq_);
+    acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
     auto msg_rx = GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -543,7 +548,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProbabi
     top_block = gr::make_top_block("Acquisition test");
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
-    acquisition = std::dynamic_pointer_cast<GalileoE1PcpsAmbiguousAcquisition>(acq_);
+    acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
     auto msg_rx = GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({

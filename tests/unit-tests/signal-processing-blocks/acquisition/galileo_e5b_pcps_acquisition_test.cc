@@ -19,12 +19,12 @@
 
 #include "concurrent_queue.h"
 #include "fir_filter.h"
-#include "galileo_e5b_pcps_acquisition.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
 #include "in_memory_configuration.h"
 #include "pass_through.h"
+#include "pcps_acquisition_adapter.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -66,7 +66,7 @@ class GalileoE5bPcpsAcquisitionTest_msg_rx : public gr::block
 {
 private:
     friend GalileoE5bPcpsAcquisitionTest_msg_rx_sptr GalileoE5bPcpsAcquisitionTest_msg_rx_make(Concurrent_Queue<int>& queue);
-    void msg_handler_channel_events(const pmt::pmt_t msg);
+    void msg_handler_channel_events(pmt::pmt_t msg);
     explicit GalileoE5bPcpsAcquisitionTest_msg_rx(Concurrent_Queue<int>& queue);
     Concurrent_Queue<int>& channel_internal_queue;
 
@@ -82,7 +82,7 @@ GalileoE5bPcpsAcquisitionTest_msg_rx_sptr GalileoE5bPcpsAcquisitionTest_msg_rx_m
 }
 
 
-void GalileoE5bPcpsAcquisitionTest_msg_rx::msg_handler_channel_events(const pmt::pmt_t msg)
+void GalileoE5bPcpsAcquisitionTest_msg_rx::msg_handler_channel_events(pmt::pmt_t msg)
 {
     try
         {
@@ -98,7 +98,7 @@ void GalileoE5bPcpsAcquisitionTest_msg_rx::msg_handler_channel_events(const pmt:
 }
 
 
-GalileoE5bPcpsAcquisitionTest_msg_rx::GalileoE5bPcpsAcquisitionTest_msg_rx(Concurrent_Queue<int>& queue) : gr::block("GalileoE5bPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
+GalileoE5bPcpsAcquisitionTest_msg_rx::GalileoE5bPcpsAcquisitionTest_msg_rx(Concurrent_Queue<int>& queue) : gr::block("GalileoE5bPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue), rx_message(0)
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
@@ -111,7 +111,6 @@ GalileoE5bPcpsAcquisitionTest_msg_rx::GalileoE5bPcpsAcquisitionTest_msg_rx(Concu
         boost::bind(&GalileoE5bPcpsAcquisitionTest_msg_rx::msg_handler_channel_events, this, _1));
 #endif
 #endif
-    rx_message = 0;
 }
 
 
@@ -123,13 +122,9 @@ GalileoE5bPcpsAcquisitionTest_msg_rx::~GalileoE5bPcpsAcquisitionTest_msg_rx() = 
 class GalileoE5bPcpsAcquisitionTest : public ::testing::Test
 {
 protected:
-    GalileoE5bPcpsAcquisitionTest()
+    GalileoE5bPcpsAcquisitionTest() : item_size(sizeof(gr_complex)), stop(false), message(0)
     {
         config = std::make_shared<InMemoryConfiguration>();
-        item_size = sizeof(gr_complex);
-        gnss_synchro = Gnss_Synchro();
-        stop = false;
-        message = 0;
     }
 
     ~GalileoE5bPcpsAcquisitionTest() = default;
@@ -142,7 +137,7 @@ protected:
 
     Concurrent_Queue<int> channel_internal_queue;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
-    gnss_shared_ptr<GalileoE5bPcpsAcquisition> acquisition;
+    gnss_shared_ptr<AcquisitionInterface> acquisition;
     gr::top_block_sptr top_block;
     std::shared_ptr<InMemoryConfiguration> config;
     std::thread ch_thread;
@@ -314,7 +309,7 @@ void GalileoE5bPcpsAcquisitionTest::stop_queue()
 TEST_F(GalileoE5bPcpsAcquisitionTest, Instantiate)
 {
     init();
-    acquisition = gnss_make_shared<GalileoE5bPcpsAcquisition>(config.get(), "Acquisition_7X", 1, 0);
+    acquisition = gnss_make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_7X", "Galileo_E5b_Pcps_Acquisition", 1, 0, GAL_E5b);
 }
 
 
@@ -329,7 +324,7 @@ TEST_F(GalileoE5bPcpsAcquisitionTest, ConnectAndRun)
 
     init();
 
-    acquisition = gnss_make_shared<GalileoE5bPcpsAcquisition>(config.get(), "Acquisition_7X", 1, 0);
+    acquisition = gnss_make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_7X", "Galileo_E5b_Pcps_Acquisition", 1, 0, GAL_E5b);
 
     auto msg_rx = GalileoE5bPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
 
@@ -359,7 +354,7 @@ TEST_F(GalileoE5bPcpsAcquisitionTest, ValidationOfResults)
 
     init();
 
-    acquisition = gnss_make_shared<GalileoE5bPcpsAcquisition>(config.get(), "Acquisition_7X", 1, 0);
+    acquisition = gnss_make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_7X", "Galileo_E5b_Pcps_Acquisition", 1, 0, GAL_E5b);
 
     std::shared_ptr<FirFilter> input_filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1);
     auto msg_rx = GalileoE5bPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);

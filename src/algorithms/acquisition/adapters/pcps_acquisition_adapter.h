@@ -1,5 +1,5 @@
 /*!
- * \file base_ca_pcps_acquisition.h
+ * \file pcps_acquisition_adapter.h
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface
  * \authors <ul>
  *          <li> Mathieu Favreau, 2025. favreau.mathieu(at)hotmail.com
@@ -16,14 +16,15 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_BASE_PCPS_ACQUISITION_H
-#define GNSS_SDR_BASE_PCPS_ACQUISITION_H
+#ifndef GNSS_SDR_PCPS_ACQUISITION_ADAPTER_H
+#define GNSS_SDR_PCPS_ACQUISITION_ADAPTER_H
 
 #include "acq_conf.h"
 #include "channel_fsm.h"
 #include "complex_byte_to_float_x2.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
+#include "signal_flag.h"
 #include <gnuradio/blocks/float_to_complex.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 
@@ -40,24 +41,27 @@ class ConfigurationInterface;
 /*!
  * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
  */
-class BasePcpsAcquisition : public AcquisitionInterface
+class PcpsAcquisitionAdapter : public AcquisitionInterface
 {
 public:
-    BasePcpsAcquisition(
+    PcpsAcquisitionAdapter(
         const ConfigurationInterface* configuration,
         const std::string& role,
+        const std::string& implementation,
         unsigned int in_streams,
         unsigned int out_streams,
-        double chip_rate,
-        double opt_freq,
-        double code_length_chips,
-        uint32_t ms_per_code);
+        signal_flag sig_flag);
 
-    ~BasePcpsAcquisition() = default;
+    ~PcpsAcquisitionAdapter() = default;
 
     inline std::string role() override
     {
         return role_;
+    }
+
+    inline std::string implementation() override
+    {
+        return implementation_;
     }
 
     inline size_t item_size() override
@@ -124,18 +128,13 @@ public:
     void set_local_code() override;
 
 private:
-    /*!
-     * \brief Generate code
-     */
-    virtual void code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int32_t sampling_freq) = 0;
-
     const Acq_Conf acq_parameters_;
+    const signal_flag sig_flag_;
+    const std::string role_;
+    const std::string implementation_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
     Gnss_Synchro* gnss_synchro_;
-    const std::string role_;
-    const unsigned int vector_length_;
-    const unsigned int code_length_;
     volk_gnsssdr::vector<std::complex<float>> code_;
     pcps_acquisition_sptr acquisition_;
 };
@@ -143,4 +142,4 @@ private:
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_BASE_PCPS_ACQUISITION_H
+#endif  // GNSS_SDR_PCPS_ACQUISITION_ADAPTER_H

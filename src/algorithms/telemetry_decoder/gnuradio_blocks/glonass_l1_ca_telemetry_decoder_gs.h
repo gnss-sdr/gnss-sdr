@@ -60,7 +60,7 @@ public:
 private:
     friend glonass_l1_ca_telemetry_decoder_gs_sptr glonass_l1_ca_make_telemetry_decoder_gs(const Tlm_Conf &conf);
 
-    glonass_l1_ca_telemetry_decoder_gs(const Tlm_Conf &conf);
+    explicit glonass_l1_ca_telemetry_decoder_gs(const Tlm_Conf &conf);
 
     const std::array<int16_t, GLONASS_GNAV_PREAMBLE_LENGTH_BITS> d_preambles_bits{GLONASS_GNAV_PREAMBLE_SAMPLES};
 

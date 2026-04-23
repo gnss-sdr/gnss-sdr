@@ -37,9 +37,7 @@ class gps_l2c_telemetry_decoder_gs;
 
 using gps_l2c_telemetry_decoder_gs_sptr = gnss_shared_ptr<gps_l2c_telemetry_decoder_gs>;
 
-gps_l2c_telemetry_decoder_gs_sptr gps_l2c_make_telemetry_decoder_gs(
-    const Gnss_Satellite &satellite,
-    const Tlm_Conf &conf);
+gps_l2c_telemetry_decoder_gs_sptr gps_l2c_make_telemetry_decoder_gs(const Tlm_Conf &conf);
 
 /*!
  * \brief This class implements a block that decodes CNAV data defined in IS-GPS-200M
@@ -59,11 +57,9 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 
 private:
-    friend gps_l2c_telemetry_decoder_gs_sptr gps_l2c_make_telemetry_decoder_gs(
-        const Gnss_Satellite &satellite,
-        const Tlm_Conf &conf);
+    friend gps_l2c_telemetry_decoder_gs_sptr gps_l2c_make_telemetry_decoder_gs(const Tlm_Conf &conf);
 
-    gps_l2c_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
+    explicit gps_l2c_telemetry_decoder_gs(const Tlm_Conf &conf);
 
     Gnss_Satellite d_satellite;
 

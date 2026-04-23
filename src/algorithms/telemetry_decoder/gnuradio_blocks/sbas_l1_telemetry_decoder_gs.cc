@@ -37,27 +37,23 @@
 #define LMORE 5      //
 
 
-sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
-    const Gnss_Satellite &satellite,
-    bool dump)
+sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(bool dump)
 {
-    return sbas_l1_telemetry_decoder_gs_sptr(new sbas_l1_telemetry_decoder_gs(satellite, dump));
+    return sbas_l1_telemetry_decoder_gs_sptr(new sbas_l1_telemetry_decoder_gs(dump));
 }
 
 
-sbas_l1_telemetry_decoder_gs::sbas_l1_telemetry_decoder_gs(
-    const Gnss_Satellite &satellite,
-    bool dump) : telemetry_impl_interface("sbas_l1_telemetry_decoder_gs",
-                     gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                     gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
-                 d_dump(dump),
-                 d_channel(0),
-                 d_block_size(D_SAMPLES_PER_SYMBOL * D_SYMBOLS_PER_BIT * D_BLOCK_SIZE_IN_BITS)
+sbas_l1_telemetry_decoder_gs::sbas_l1_telemetry_decoder_gs(bool dump)
+    : telemetry_impl_interface("sbas_l1_telemetry_decoder_gs",
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+      d_dump(dump),
+      d_channel(0),
+      d_block_size(D_SAMPLES_PER_SYMBOL * D_SYMBOLS_PER_BIT * D_BLOCK_SIZE_IN_BITS)
 {
     configure_basic_outputs();
 
     // initialize internal vars
-    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "SBAS L1 TELEMETRY PROCESSING: satellite " << d_satellite;
     set_output_multiple(1);
 }

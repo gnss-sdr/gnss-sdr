@@ -2,6 +2,7 @@
  * \file dll_pll_tracking_adapter.h
  * \brief Base class providing shared logic for DLL+PLL VEML tracking adapters.
  * \authors Carles Fernandez, 2025. carles.fernandez(at)cttc.cat
+ *          Mathieu Favreau, 2026. favreau.mathieu(at)hotmail.com
  *
  * -----------------------------------------------------------------------------
  *

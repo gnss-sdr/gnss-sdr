@@ -21,8 +21,6 @@
 #include "gps_cnav_navigation_message.h"
 #include "nav_message_packet.h"
 #include "telemetry_impl_interface.h"
-#include "tlm_conf.h"
-#include <gnuradio/types.h>  // for gr_vector_const_void_star
 
 extern "C"
 {
@@ -39,9 +37,7 @@ class gps_l2c_telemetry_decoder_gs;
 
 using gps_l2c_telemetry_decoder_gs_sptr = gnss_shared_ptr<gps_l2c_telemetry_decoder_gs>;
 
-gps_l2c_telemetry_decoder_gs_sptr gps_l2c_make_telemetry_decoder_gs(
-    const Gnss_Satellite &satellite,
-    const Tlm_Conf &conf);
+gps_l2c_telemetry_decoder_gs_sptr gps_l2c_make_telemetry_decoder_gs(const Tlm_Conf &conf);
 
 /*!
  * \brief This class implements a block that decodes CNAV data defined in IS-GPS-200M
@@ -61,11 +57,9 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 
 private:
-    friend gps_l2c_telemetry_decoder_gs_sptr gps_l2c_make_telemetry_decoder_gs(
-        const Gnss_Satellite &satellite,
-        const Tlm_Conf &conf);
+    friend gps_l2c_telemetry_decoder_gs_sptr gps_l2c_make_telemetry_decoder_gs(const Tlm_Conf &conf);
 
-    gps_l2c_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
+    explicit gps_l2c_telemetry_decoder_gs(const Tlm_Conf &conf);
 
     Gnss_Satellite d_satellite;
 
@@ -87,17 +81,17 @@ private:
 
     int32_t d_channel;
 
-    uint32_t d_max_symbols_without_valid_frame;
+    const uint32_t d_max_symbols_without_valid_frame;
 
-    bool d_dump;
+    const bool d_dump;
     bool d_sent_tlm_failed_msg;
     bool d_flag_PLL_180_deg_phase_locked;
     bool d_flag_valid_word;
-    bool d_dump_mat;
-    bool d_remove_dat;
-    bool d_enable_navdata_monitor;
+    const bool d_dump_mat;
+    const bool d_remove_dat;
+    const bool d_enable_navdata_monitor;
     bool d_dump_crc_stats;
-    bool d_tow_to_trk;
+    const bool d_tow_to_trk;
 };
 
 

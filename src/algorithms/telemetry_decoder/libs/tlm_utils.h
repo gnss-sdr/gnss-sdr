@@ -28,6 +28,8 @@ int save_tlm_matfile(const std::string &dumpfile);
 
 bool tlm_remove_file(const std::string &file_to_remove);
 
+void tlm_cleanup_and_save_files(std::ofstream &dump_file, const std::string &dump_filename, bool dump, bool dump_mat, bool remove_dat);
+
 /** \} */
 /** \} */
 #endif  // GNSS_SDR_TLM_UTILS_H

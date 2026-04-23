@@ -17,10 +17,12 @@
 
 #include "glonass_l2_ca_telemetry_decoder_gs.h"
 #include "display.h"
+#include "dump_logger_helper.h"
 #include "glonass_gnav_almanac.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
+#include "tlm_conf.h"
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
 #include "tow_to_trk.h"
@@ -28,9 +30,7 @@
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
 #include <cmath>            // for floor, round
-#include <cstddef>          // for size_t
 #include <cstdlib>          // for abs
-#include <exception>        // for exception
 #include <iomanip>          // for std::setprecision
 #include <iostream>         // for cout
 
@@ -43,34 +43,32 @@
 #define CRC_ERROR_LIMIT 6
 
 
-glonass_l2_ca_telemetry_decoder_gs_sptr
-glonass_l2_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf)
+glonass_l2_ca_telemetry_decoder_gs_sptr glonass_l2_ca_make_telemetry_decoder_gs(const Tlm_Conf &conf)
 {
-    return glonass_l2_ca_telemetry_decoder_gs_sptr(new glonass_l2_ca_telemetry_decoder_gs(satellite, conf));
+    return glonass_l2_ca_telemetry_decoder_gs_sptr(new glonass_l2_ca_telemetry_decoder_gs(conf));
 }
 
 
-glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(
-    const Gnss_Satellite &satellite,
-    const Tlm_Conf &conf) : telemetry_impl_interface("glonass_l2_ca_telemetry_decoder_gs",
-                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
-                            d_dump_filename(conf.dump_filename),
-                            d_preamble_time_samples(0),
-                            d_TOW_at_current_symbol(0),
-                            d_sample_counter(0ULL),
-                            d_preamble_index(0ULL),
-                            d_stat(0),
-                            d_CRC_error_counter(0),
-                            d_channel(0),
-                            d_flag_frame_sync(false),
-                            d_flag_preamble(false),
-                            d_dump(conf.dump),
-                            d_dump_mat(conf.dump_mat),
-                            d_remove_dat(conf.remove_dat),
-                            d_enable_navdata_monitor(conf.enable_navdata_monitor),
-                            d_dump_crc_stats(conf.dump_crc_stats),
-                            d_tow_to_trk(conf.tow_to_trk)
+glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(const Tlm_Conf &conf)
+    : telemetry_impl_interface("glonass_l2_ca_telemetry_decoder_gs",
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+      d_dump_filename(conf.dump_filename),
+      d_preamble_time_samples(0),
+      d_TOW_at_current_symbol(0),
+      d_sample_counter(0ULL),
+      d_preamble_index(0ULL),
+      d_stat(0),
+      d_CRC_error_counter(0),
+      d_channel(0),
+      d_flag_frame_sync(false),
+      d_flag_preamble(false),
+      d_dump(conf.dump),
+      d_dump_mat(conf.dump_mat),
+      d_remove_dat(conf.remove_dat),
+      d_enable_navdata_monitor(conf.enable_navdata_monitor),
+      d_dump_crc_stats(conf.dump_crc_stats),
+      d_tow_to_trk(conf.tow_to_trk)
 {
     configure_basic_outputs();
 
@@ -84,7 +82,6 @@ glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(
             d_nav_msg_packet.signal = std::string("2G");
         }
 
-    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "Initializing GLONASS L2 CA TELEMETRY DECODING";
 
     d_symbol_history.set_capacity(GLONASS_GNAV_STRING_BIBINARY_WITH_PREABLE);
@@ -105,37 +102,7 @@ glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(
 glonass_l2_ca_telemetry_decoder_gs::~glonass_l2_ca_telemetry_decoder_gs()
 {
     DLOG(INFO) << "Glonass L2 Telemetry decoder block (channel " << d_channel << ") destructor called.";
-    size_t pos = 0;
-    if (d_dump_file.is_open() == true)
-        {
-            pos = d_dump_file.tellp();
-            try
-                {
-                    d_dump_file.close();
-                }
-            catch (const std::exception &ex)
-                {
-                    LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
-                }
-            if (pos == 0)
-                {
-                    if (!tlm_remove_file(d_dump_filename))
-                        {
-                            LOG(WARNING) << "Error deleting temporary file";
-                        }
-                }
-        }
-    if (d_dump && (pos != 0) && d_dump_mat)
-        {
-            save_tlm_matfile(d_dump_filename);
-            if (d_remove_dat)
-                {
-                    if (!tlm_remove_file(d_dump_filename))
-                        {
-                            LOG(WARNING) << "Error deleting temporary file";
-                        }
-                }
-        }
+    tlm_cleanup_and_save_files(d_dump_file, d_dump_filename, d_dump, d_dump_mat, d_remove_dat);
 }
 
 
@@ -197,11 +164,7 @@ void glonass_l2_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
             const std::shared_ptr<Glonass_Gnav_Ephemeris> tmp_obj = std::make_shared<Glonass_Gnav_Ephemeris>(d_nav.get_ephemeris());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "GLONASS GNAV Ephemeris have been received in channel" << d_channel << " from satellite " << d_satellite;
-#if __cplusplus == 201103L
-            const int default_precision = std::cout.precision();
-#else
-            const auto default_precision{std::cout.precision()};
-#endif
+            const auto default_precision = std::cout.precision();
             std::cout << TEXT_CYAN << "New GLONASS L2 GNAV message received in channel " << d_channel
                       << ": ephemeris from satellite " << d_satellite
                       << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
@@ -213,11 +176,7 @@ void glonass_l2_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
             const std::shared_ptr<Glonass_Gnav_Utc_Model> tmp_obj = std::make_shared<Glonass_Gnav_Utc_Model>(d_nav.get_utc_model());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "GLONASS GNAV UTC Model data have been received in channel" << d_channel << " from satellite " << d_satellite;
-#if __cplusplus == 201103L
-            const int default_precision = std::cout.precision();
-#else
-            const auto default_precision{std::cout.precision()};
-#endif
+            const auto default_precision = std::cout.precision();
             std::cout << TEXT_CYAN << "New GLONASS L2 GNAV message received in channel " << d_channel
                       << ": UTC model parameters from satellite " << d_satellite
                       << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
@@ -230,11 +189,7 @@ void glonass_l2_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
                 tmp_obj = std::make_shared<Glonass_Gnav_Almanac>(d_nav.get_almanac(slot_nbr));
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "GLONASS GNAV Almanac data have been received in channel" << d_channel << " in slot number " << slot_nbr;
-#if __cplusplus == 201103L
-            const int default_precision = std::cout.precision();
-#else
-            const auto default_precision{std::cout.precision()};
-#endif
+            const auto default_precision = std::cout.precision();
             std::cout << TEXT_CYAN << "New GLONASS L2 GNAV almanac received in channel " << d_channel
                       << " from satellite " << d_satellite
                       << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
@@ -433,12 +388,12 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
             // SEND TOW TO THE TRACKING BLOCK
             if (d_tow_to_trk)
                 {
-                    const std::shared_ptr<TOW_to_trk> tmp_tow_obj = std::make_shared<TOW_to_trk>(TOW_to_trk(
+                    const std::shared_ptr<TOW_to_trk> tmp_tow_obj = std::make_shared<TOW_to_trk>(
                         std::string(current_symbol.Signal),
                         d_channel,
                         current_symbol.TOW_at_current_symbol_ms,
                         current_symbol.Tracking_sample_counter,
-                        d_nav.get_ephemeris().d_WN, d_satellite.get_PRN()));
+                        d_nav.get_ephemeris().d_WN, d_satellite.get_PRN());
                     this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(tmp_tow_obj));
                 }
         }
@@ -455,19 +410,11 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
             // MULTIPLEXED FILE RECORDING - Record results to file
             try
                 {
-                    double tmp_double;
-                    uint64_t tmp_ulong_int;
-                    int32_t tmp_int;
-                    tmp_double = d_TOW_at_current_symbol;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                    tmp_ulong_int = current_symbol.Tracking_sample_counter;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(uint64_t));
-                    tmp_double = 0;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                    tmp_int = (current_symbol.Prompt_I > 0.0 ? 1 : -1);
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_int), sizeof(int32_t));
-                    tmp_int = static_cast<int32_t>(current_symbol.PRN);
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_int), sizeof(int32_t));
+                    write_value(d_dump_file, d_TOW_at_current_symbol);
+                    write_value(d_dump_file, current_symbol.Tracking_sample_counter);
+                    write_value(d_dump_file, 0);
+                    write_value(d_dump_file, current_symbol.Prompt_I > 0.0 ? 1 : -1);
+                    write_value(d_dump_file, static_cast<int32_t>(current_symbol.PRN));
                 }
             catch (const std::ofstream::failure &e)
                 {

@@ -20,10 +20,7 @@
 #include "beidou_dnav_navigation_message.h"
 #include "nav_message_packet.h"
 #include "telemetry_impl_interface.h"
-#include "tlm_conf.h"
 #include <boost/circular_buffer.hpp>
-#include <gnuradio/types.h>  // for gr_vector_const_void_star
-#include <array>
 
 
 /** \addtogroup Telemetry_Decoder
@@ -34,12 +31,9 @@
 
 class beidou_b3i_telemetry_decoder_gs;
 
-using beidou_b3i_telemetry_decoder_gs_sptr =
-    gnss_shared_ptr<beidou_b3i_telemetry_decoder_gs>;
+using beidou_b3i_telemetry_decoder_gs_sptr = gnss_shared_ptr<beidou_b3i_telemetry_decoder_gs>;
 
-beidou_b3i_telemetry_decoder_gs_sptr beidou_b3i_make_telemetry_decoder_gs(
-    const Gnss_Satellite &satellite,
-    const Tlm_Conf &conf);
+beidou_b3i_telemetry_decoder_gs_sptr beidou_b3i_make_telemetry_decoder_gs(const Tlm_Conf &conf);
 
 /*!
  * \brief This class implements a block that decodes the BeiDou DNAV data.
@@ -60,11 +54,9 @@ public:
         gr_vector_void_star &output_items) override;
 
 private:
-    friend beidou_b3i_telemetry_decoder_gs_sptr beidou_b3i_make_telemetry_decoder_gs(
-        const Gnss_Satellite &satellite,
-        const Tlm_Conf &conf);
+    friend beidou_b3i_telemetry_decoder_gs_sptr beidou_b3i_make_telemetry_decoder_gs(const Tlm_Conf &conf);
 
-    beidou_b3i_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
+    explicit beidou_b3i_telemetry_decoder_gs(const Tlm_Conf &conf);
 
     void decode_subframe(float *symbols, double cn0);
     void decode_word(int32_t word_counter, const float *enc_word_symbols,
@@ -110,12 +102,12 @@ private:
     bool d_flag_preamble;    // Flag indicating when preamble was found
     bool d_flag_valid_word;
     bool d_sent_tlm_failed_msg;
-    bool d_dump;
-    bool d_dump_mat;
-    bool d_remove_dat;
-    bool d_enable_navdata_monitor;
+    const bool d_dump;
+    const bool d_dump_mat;
+    const bool d_remove_dat;
+    const bool d_enable_navdata_monitor;
     bool d_dump_crc_stats;
-    bool d_tow_to_trk;
+    const bool d_tow_to_trk;
 };
 
 

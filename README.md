@@ -1661,14 +1661,14 @@ receiver channel, as well as their parameters, in the configuration file. For a
 GPS L1 C/A receiver:
 
 ```
-;######### ACQUISITION GLOBAL CONFIG ############
+;######### ACQUISITION GPS L1 CONFIG ############
 Acquisition_1C.implementation=GPS_L1_CA_PCPS_Acquisition ; Acquisition algorithm selection for this channel
 Acquisition_1C.item_type=gr_complex
 Acquisition_1C.coherent_integration_time_ms=1 ; Signal block duration for the acquisition signal detection [ms]
 Acquisition_1C.threshold=2.5 ; Acquisition threshold
-Acquisition_1C.pfa=0.01 ; Acquisition false alarm probability. This option overrides the threshold option.
-Acquisition_1C.doppler_max=10000 ; Maximum expected Doppler shift [Hz]
-Acquisition_1C.doppler_step=500 ; Doppler step in the grid search [Hz]
+Acquisition_1C.pfa=0.001 ; Acquisition false alarm probability. This option overrides the threshold option.
+Acquisition_1C.doppler_max=5000 ; Maximum expected Doppler shift [Hz]
+Acquisition_1C.doppler_step=250 ; Doppler step in the grid search [Hz]
 Acquisition_1C.dump=false ; Enables internal data file logging [true] or [false]
 Acquisition_1C.dump_filename=./acq_dump.dat ; Log path and filename
 ```
@@ -1676,12 +1676,12 @@ Acquisition_1C.dump_filename=./acq_dump.dat ; Log path and filename
 and, for Galileo E1B channels:
 
 ```
-;######### GALILEO ACQUISITION CONFIG ############
+;######### ACQUISITION GALILEO E1 CONFIG ############
 Acquisition_1B.implementation=Galileo_E1_PCPS_Ambiguous_Acquisition
 Acquisition_1B.item_type=gr_complex
 Acquisition_1B.coherent_integration_time_ms=4
 Acquisition_1B.pfa=0.008
-Acquisition_1B.doppler_max=15000
+Acquisition_1B.doppler_max=5000
 Acquisition_1B.doppler_step=125
 Acquisition_1B.dump=false
 Acquisition_1B.dump_filename=./acq_dump.dat
@@ -1702,11 +1702,9 @@ Again, a class hierarchy consisting of a
 [TrackingInterface](./src/core/interfaces/tracking_interface.h) class and
 subclasses implementing algorithms provides a way of testing different
 approaches, with full access to their parameters. Check
-[GpsL1CaDllPllTracking](./src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_tracking.h)
-or
-[GalileoE1DllPllVemlTracking](./src/algorithms/tracking/adapters/galileo_e1_dll_pll_veml_tracking.h)
-for examples of adapters, and
-[Gps_L1_Ca_Dll_Pll_Tracking_cc](./src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_cc.h)
+[DllPllTrackingAdapter](./src/algorithms/tracking/adapters/dll_pll_tracking_adapter.h)
+for an example of adapter, and
+[dll_pll_veml_tracking](./src/algorithms/tracking/gnuradio_blocks/dll_pll_veml_tracking.h)
 for an example of a signal processing block implementation. There are also
 available some useful classes and functions for signal tracking; take a look at
 [cpu_multicorrelator.h](./src/algorithms/tracking/libs/cpu_multicorrelator.h),
@@ -1780,12 +1778,12 @@ is managed by a finite state machine.
 
 The common interface is
 [TelemetryDecoderInterface](./src/core/interfaces/telemetry_decoder_interface.h).
-Check
-[GpsL1CaTelemetryDecoder](./src/algorithms/telemetry_decoder/adapters/gps_l1_ca_telemetry_decoder.h)
-for an example of the GPS L1 NAV message decoding adapter, and
-[gps_l1_ca_telemetry_decoder_cc](./src/algorithms/telemetry_decoder/gnuradio_blocks/gps_l1_ca_telemetry_decoder_cc.h)
-for an actual implementation of a signal processing block. Configuration
-example:
+Telemetry decoder adapters are provided through
+[TelemetryDecoderAdapter](./src/algorithms/telemetry_decoder/adapters/telemetry_decoder_adapter.h),
+which wraps the corresponding GNU Radio telemetry decoder block. Check
+[gps_l1_ca_telemetry_decoder_gs](./src/algorithms/telemetry_decoder/gnuradio_blocks/gps_l1_ca_telemetry_decoder_gs.h)
+for an actual implementation of a GPS L1 NAV message decoding block.
+Configuration example:
 
 ```
 ;######### TELEMETRY DECODER CONFIG ############

@@ -32,13 +32,15 @@
 #include <gnuradio/analog/sig_source_c.h>
 #endif
 #include "GPS_L1_CA.h"
+#include "dll_pll_tracking_adapter.h"
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
-#include "gps_l1_ca_dll_pll_tracking.h"
-#include "gps_l1_ca_telemetry_decoder.h"
+#include "gps_l1_ca_telemetry_decoder_gs.h"
 #include "in_memory_configuration.h"
 #include "signal_generator_flags.h"
+#include "telemetry_decoder_adapter.h"
 #include "telemetry_decoder_interface.h"
+#include "tlm_conf.h"
 #include "tlm_dump_reader.h"
 #include "tracking_dump_reader.h"
 #include "tracking_interface.h"
@@ -400,7 +402,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     }) << "Failure opening true observables file";
 
     top_block = gr::make_top_block("Telemetry_Decoder test");
-    std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllTracking>(config.get(), "Tracking_1C", 1, 1);
+    std::shared_ptr<TrackingInterface> tracking = std::make_shared<DllPllTrackingAdapter>(config.get(), "Tracking_1C", "GPS_L1_CA_DLL_PLL_Tracking", 1, 1, GPS_1C);
     // std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
 
     auto msg_rx = GpsL1CADllPllTelemetryDecoderTest_msg_rx_make();
@@ -421,7 +423,10 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     gnss_synchro.Acq_doppler_hz = true_obs_data.doppler_l1_hz;
     gnss_synchro.Acq_samplestamp_samples = 0;
 
-    std::shared_ptr<TelemetryDecoderInterface> tlm = std::make_shared<GpsL1CaTelemetryDecoder>(config.get(), "TelemetryDecoder_1C", 1, 1);
+    Tlm_Conf tlm_conf;
+    tlm_conf.SetFromConfiguration(config.get(), "TelemetryDecoder_1C");
+    auto telemetry_decoder = gps_l1_ca_make_telemetry_decoder_gs(tlm_conf);
+    std::shared_ptr<TelemetryDecoderInterface> tlm = std::make_shared<TelemetryDecoderAdapter>("TelemetryDecoder_1C", "GPS_L1_CA_Telemetry_Decoder", 1, 1, std::move(telemetry_decoder));
     tlm->set_channel(0);
 
     std::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx> tlm_msg_rx = GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_make();

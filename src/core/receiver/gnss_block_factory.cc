@@ -28,8 +28,8 @@
 #include "acquisition_interface.h"
 #include "array_signal_conditioner.h"
 #include "beamformer_filter.h"
-#include "beidou_b1i_telemetry_decoder.h"
-#include "beidou_b3i_telemetry_decoder.h"
+#include "beidou_b1i_telemetry_decoder_gs.h"
+#include "beidou_b3i_telemetry_decoder_gs.h"
 #include "byte_to_short.h"
 #include "channel.h"
 #include "configuration_interface.h"
@@ -47,13 +47,10 @@
 #include "galileo_e1_pcps_quicksync_ambiguous_acquisition.h"
 #include "galileo_e1_pcps_tong_ambiguous_acquisition.h"
 #include "galileo_e1_tcp_connector_tracking.h"
-#include "galileo_e1b_telemetry_decoder.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
-#include "galileo_e5a_telemetry_decoder.h"
-#include "galileo_e5b_telemetry_decoder.h"
-#include "galileo_e6_telemetry_decoder.h"
-#include "glonass_l1_ca_telemetry_decoder.h"
-#include "glonass_l2_ca_telemetry_decoder.h"
+#include "galileo_telemetry_decoder_gs.h"
+#include "glonass_l1_ca_telemetry_decoder_gs.h"
+#include "glonass_l2_ca_telemetry_decoder_gs.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_sdr_string_literals.h"
@@ -64,14 +61,13 @@
 #include "gps_l1_ca_pcps_quicksync_acquisition.h"
 #include "gps_l1_ca_pcps_tong_acquisition.h"
 #include "gps_l1_ca_tcp_connector_tracking.h"
-#include "gps_l1_ca_telemetry_decoder.h"
-#include "gps_l2c_telemetry_decoder.h"
-#include "gps_l5_telemetry_decoder.h"
+#include "gps_l1_ca_telemetry_decoder_gs.h"
+#include "gps_l2c_telemetry_decoder_gs.h"
+#include "gps_l5_telemetry_decoder_gs.h"
 #include "hybrid_observables.h"
 #include "ibyte_to_cbyte.h"
 #include "ibyte_to_complex.h"
 #include "ibyte_to_cshort.h"
-#include "in_memory_configuration.h"
 #include "ishort_to_complex.h"
 #include "ishort_to_cshort.h"
 #include "labsat_signal_source.h"
@@ -84,16 +80,16 @@
 #include "pass_through.h"
 #include "pcps_acquisition_adapter.h"
 #include "pulse_blanking_filter.h"
-#include "qzss_l1_telemetry_decoder.h"
-#include "qzss_l5_telemetry_decoder.h"
 #include "rtklib_pvt.h"
 #include "rtl_tcp_signal_source.h"
-#include "sbas_l1_telemetry_decoder.h"
+#include "sbas_l1_telemetry_decoder_gs.h"
 #include "signal_conditioner.h"
 #include "signal_flag.h"
 #include "spir_file_signal_source.h"
 #include "spir_gss6450_file_signal_source.h"
+#include "telemetry_decoder_adapter.h"
 #include "telemetry_decoder_interface.h"
+#include "tlm_conf.h"
 #include "tracking_interface.h"
 #include "two_bit_cpx_file_signal_source.h"
 #include "two_bit_packed_file_signal_source.h"
@@ -665,6 +661,33 @@ std::unique_ptr<TrackingInterface> get_trk_block(
 }
 
 
+Tlm_Conf get_tlm_conf(const ConfigurationInterface* configuration, const std::string& role)
+{
+    Tlm_Conf conf;
+
+    if (configuration != nullptr)
+        {
+            conf.SetFromConfiguration(configuration, role);
+        }
+
+    return conf;
+}
+
+
+Tlm_Conf get_e1_tlm_conf(const ConfigurationInterface* configuration, const std::string& role)
+{
+    auto tlm_parameters = get_tlm_conf(configuration, role);
+
+    if (configuration != nullptr)
+        {
+            tlm_parameters.enable_reed_solomon = configuration->property(role + ".enable_reed_solomon", false);
+            tlm_parameters.use_ced = configuration->property(role + ".use_reduced_ced", false);
+        }
+
+    return tlm_parameters;
+}
+
+
 std::unique_ptr<TelemetryDecoderInterface> get_tlm_block(
     const std::string& implementation,
     const ConfigurationInterface* configuration,
@@ -672,61 +695,68 @@ std::unique_ptr<TelemetryDecoderInterface> get_tlm_block(
     unsigned int in_streams,
     unsigned int out_streams)
 {
+    telemetry_impl_interface_sptr telemetry;
+
     if (implementation == "GPS_L1_CA_Telemetry_Decoder")
         {
-            return std::make_unique<GpsL1CaTelemetryDecoder>(configuration, role, in_streams, out_streams);
+            telemetry = gps_l1_ca_make_telemetry_decoder_gs(get_tlm_conf(configuration, role));
         }
     else if (implementation == "Galileo_E1B_Telemetry_Decoder")
         {
-            return std::make_unique<GalileoE1BTelemetryDecoder>(configuration, role, in_streams, out_streams);
+            telemetry = galileo_make_telemetry_decoder_gs(get_e1_tlm_conf(configuration, role), 1);
         }
     else if (implementation == "SBAS_L1_Telemetry_Decoder")
         {
-            return std::make_unique<SbasL1TelemetryDecoder>(configuration, role, in_streams, out_streams);
+            telemetry = sbas_l1_make_telemetry_decoder_gs(configuration != nullptr ? configuration->property(role + ".dump", false) : false);
         }
     else if (implementation == "Galileo_E5a_Telemetry_Decoder")
         {
-            return std::make_unique<GalileoE5aTelemetryDecoder>(configuration, role, in_streams, out_streams);
+            telemetry = galileo_make_telemetry_decoder_gs(get_tlm_conf(configuration, role), 2);
         }
     else if (implementation == "Galileo_E5b_Telemetry_Decoder")
         {
-            return std::make_unique<GalileoE5bTelemetryDecoder>(configuration, role, in_streams, out_streams);
+            telemetry = galileo_make_telemetry_decoder_gs(get_tlm_conf(configuration, role), 1);
         }
     else if (implementation == "Galileo_E6_Telemetry_Decoder")
         {
-            return std::make_unique<GalileoE6TelemetryDecoder>(configuration, role, in_streams, out_streams);
+            telemetry = galileo_make_telemetry_decoder_gs(get_tlm_conf(configuration, role), 3);
         }
     else if (implementation == "GPS_L2C_Telemetry_Decoder")
         {
-            return std::make_unique<GpsL2CTelemetryDecoder>(configuration, role, in_streams, out_streams);
+            telemetry = gps_l2c_make_telemetry_decoder_gs(get_tlm_conf(configuration, role));
         }
     else if (implementation == "GLONASS_L1_CA_Telemetry_Decoder")
         {
-            return std::make_unique<GlonassL1CaTelemetryDecoder>(configuration, role, in_streams, out_streams);
+            telemetry = glonass_l1_ca_make_telemetry_decoder_gs(get_tlm_conf(configuration, role));
         }
     else if (implementation == "GLONASS_L2_CA_Telemetry_Decoder")
         {
-            return std::make_unique<GlonassL2CaTelemetryDecoder>(configuration, role, in_streams, out_streams);
+            telemetry = glonass_l2_ca_make_telemetry_decoder_gs(get_tlm_conf(configuration, role));
         }
     else if (implementation == "GPS_L5_Telemetry_Decoder")
         {
-            return std::make_unique<GpsL5TelemetryDecoder>(configuration, role, in_streams, out_streams);
+            telemetry = gps_l5_make_telemetry_decoder_gs(get_tlm_conf(configuration, role));
         }
     else if (implementation == "BEIDOU_B1I_Telemetry_Decoder")
         {
-            return std::make_unique<BeidouB1iTelemetryDecoder>(configuration, role, in_streams, out_streams);
+            telemetry = beidou_b1i_make_telemetry_decoder_gs(get_tlm_conf(configuration, role));
         }
     else if (implementation == "BEIDOU_B3I_Telemetry_Decoder")
         {
-            return std::make_unique<BeidouB3iTelemetryDecoder>(configuration, role, in_streams, out_streams);
+            telemetry = beidou_b3i_make_telemetry_decoder_gs(get_tlm_conf(configuration, role));
         }
     else if (implementation == "QZSS_L1_Telemetry_Decoder")
         {
-            return std::make_unique<QzssL1TelemetryDecoder>(configuration, role, in_streams, out_streams);
+            telemetry = gps_l1_ca_make_telemetry_decoder_gs(get_tlm_conf(configuration, role), L1LnavSystem::QZSS);
         }
     else if (implementation == "QZSS_L5_Telemetry_Decoder")
         {
-            return std::make_unique<QzssL5TelemetryDecoder>(configuration, role, in_streams, out_streams);
+            telemetry = gps_l5_make_telemetry_decoder_gs(get_tlm_conf(configuration, role), CnavSystem::QZSS);
+        }
+
+    if (telemetry)
+        {
+            return std::make_unique<TelemetryDecoderAdapter>(role, implementation, in_streams, out_streams, std::move(telemetry));
         }
 
     return nullptr;

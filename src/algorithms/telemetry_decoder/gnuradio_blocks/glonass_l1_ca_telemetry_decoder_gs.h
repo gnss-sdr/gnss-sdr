@@ -24,24 +24,18 @@
 #include "gnss_synchro.h"
 #include "nav_message_packet.h"
 #include "telemetry_impl_interface.h"
-#include "tlm_conf.h"
 #include <boost/circular_buffer.hpp>
-#include <gnuradio/types.h>  // for gr_vector_const_void_star
-#include <array>
 
 /** \addtogroup Telemetry_Decoder
  * \{ */
 /** \addtogroup Telemetry_Decoder_gnuradio_blocks
  * \{ */
 
-
 class glonass_l1_ca_telemetry_decoder_gs;
 
 using glonass_l1_ca_telemetry_decoder_gs_sptr = gnss_shared_ptr<glonass_l1_ca_telemetry_decoder_gs>;
 
-glonass_l1_ca_telemetry_decoder_gs_sptr glonass_l1_ca_make_telemetry_decoder_gs(
-    const Gnss_Satellite &satellite,
-    const Tlm_Conf &conf);
+glonass_l1_ca_telemetry_decoder_gs_sptr glonass_l1_ca_make_telemetry_decoder_gs(const Tlm_Conf &conf);
 
 /*!
  * \brief This class implements a block that decodes the GNAV data defined in GLONASS ICD v5.1
@@ -64,11 +58,9 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 
 private:
-    friend glonass_l1_ca_telemetry_decoder_gs_sptr glonass_l1_ca_make_telemetry_decoder_gs(
-        const Gnss_Satellite &satellite,
-        const Tlm_Conf &conf);
+    friend glonass_l1_ca_telemetry_decoder_gs_sptr glonass_l1_ca_make_telemetry_decoder_gs(const Tlm_Conf &conf);
 
-    glonass_l1_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
+    explicit glonass_l1_ca_telemetry_decoder_gs(const Tlm_Conf &conf);
 
     const std::array<int16_t, GLONASS_GNAV_PREAMBLE_LENGTH_BITS> d_preambles_bits{GLONASS_GNAV_PREAMBLE_SAMPLES};
 
@@ -101,12 +93,12 @@ private:
 
     bool d_flag_frame_sync;  // Indicate when a frame sync is achieved
     bool d_flag_preamble;    // Flag indicating when preamble was found
-    bool d_dump;
-    bool d_dump_mat;
-    bool d_remove_dat;
-    bool d_enable_navdata_monitor;
+    const bool d_dump;
+    const bool d_dump_mat;
+    const bool d_remove_dat;
+    const bool d_enable_navdata_monitor;
     bool d_dump_crc_stats;
-    bool d_tow_to_trk;
+    const bool d_tow_to_trk;
 };
 
 

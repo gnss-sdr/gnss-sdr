@@ -2,6 +2,7 @@
  * \file telemetry_decoder_adapter.cc
  * \brief Common functionality for telemetry decoder adapters
  * \author Carles Fernandez-Prades, 2025 cfernandez@cttc.es
+ *         Mathieu Favreau, 2026 favreau.mathieu(at)hotmail.com
  *
  * -----------------------------------------------------------------------------
  *

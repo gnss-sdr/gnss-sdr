@@ -1638,12 +1638,10 @@ can be continuously improved without having any impact neither on the algorithm
 interface nor the general acquisition interface.
 
 Check
-[GpsL1CaPcpsAcquisition](./src/algorithms/acquisition/adapters/gps_l1_ca_pcps_acquisition.h)
-and
-[GalileoE1PcpsAmbiguousAcquisition](./src/algorithms/acquisition/adapters/galileo_e1_pcps_ambiguous_acquisition.h)
-for examples of adapters from a Parallel Code Phase Search (PCPS) acquisition
-block, and
-[pcps_acquisition_cc](./src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_cc.h)
+[PcpsAcquisitionAdapter](./src/algorithms/acquisition/adapters/pcps_acquisition_adapter.h)
+for an example of an adapter from a Parallel Code Phase Search (PCPS)
+acquisition block to AcquisitionInterface, and
+[pcps_acquisition](./src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition.h)
 for an example of a block implementation. The source code of all the available
 acquisition algorithms is located at:
 

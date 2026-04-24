@@ -379,8 +379,8 @@ derived from <tt>gr::block</tt>, and ensures that newly developed implementation
 Moreover, it adds still another layer of abstraction, since each given acquisition algorithm can have different implementations (for instance using
 different numerical libraries). In such a way, implementations can be continuously improved without having any impact neither on the algorithm interface nor the general acquisition interface.
 
-Check GpsL1CaPcpsAcquisition and GalileoE1PcpsAmbiguousAcquisition for examples of adapters from a Parallel Code Phase Search (PCPS) acquisition block, and
-pcps_acquisition_cc for an example of a block implementation. The source code of all the available acquisition algorithms is located at:
+Check PcpsAcquisitionAdapter for an example of an adapter from a Parallel Code Phase Search (PCPS) acquisition block to AcquisitionInterface, and
+pcps_acquisition for an example of a block implementation. The source code of all the available acquisition algorithms is located at:
 
 \verbatim
   |-gnss-sdr
@@ -422,7 +422,7 @@ second stage of the signal processing unit, aiming to perform a local search for
 variations.
 
 Again, a class hierarchy consisting of a TrackingInterface class and subclasses implementing algorithms provides a way of testing different approaches,
-with full access to their parameters. Check GpsL1CaDllPllTracking or GalileoE1DllPllVemlTracking for examples of adapters, and Gps_L1_Ca_Dll_Pll_Tracking_cc for an example
+with full access to their parameters. Check DllPllTrackingAdapter for an example of an adapter from a DLL/PLL tracking block to TrackingInterface, and dll_pll_veml_tracking for an example
 of a signal processing block implementation. There are also available some useful classes and functions for signal tracking; take a look at Correlator, lock_detectors.h, tracking_discriminators.h or
 tracking_2nd_DLL_filter.h.
 
@@ -476,7 +476,7 @@ spread over different words, and values extracted from different frames are requ
 error control an others contain actual information. There are also error control mechanisms, from parity checks to forward error correction (FEC) encoding and
 interleaving, depending on the system.
 
-The common interface is TelemetryDecoderInterface. Check GpsL1CaTelemetryDecoder for an example of the GPS L1 NAV message decoding adapter, and gps_l1_ca_telemetry_decoder_cc
+The common interface is TelemetryDecoderInterface. Check TelemetryDecoderAdapter for an example of an adapter from a telemetry decoder block to TelemetryDecoderInterface, and gps_l1_ca_telemetry_decoder_gs
 for an actual implementation of a signal processing block. Configuration example:
 
 \verbatim

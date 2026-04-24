@@ -1,7 +1,7 @@
 /*!
- * \file gps_l1_ca_dll_pll_tracking_test.cc
- * \brief  This class implements a telemetry decoder test for GPS_L1_CA_Telemetry_Decoder
- *  implementation based on some input parameters.
+ * \file gps_l1_ca_telemetry_decoder_test.cc
+ * \brief  This class implements a telemetry decoder test for TelemetryDecoderAdapter
+ *  configured for GPS L1 C/A based on some input parameters.
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
  *
  *
@@ -64,30 +64,30 @@ namespace wht = std;
 #endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEIVER FOR TRACKING MESSAGES #########
-class GpsL1CADllPllTelemetryDecoderTest_msg_rx;
+class TelemetryDecoderAdapterGpsL1CaTest_msg_rx;
 
-using GpsL1CADllPllTelemetryDecoderTest_msg_rx_sptr = gnss_shared_ptr<GpsL1CADllPllTelemetryDecoderTest_msg_rx>;
+using TelemetryDecoderAdapterGpsL1CaTest_msg_rx_sptr = gnss_shared_ptr<TelemetryDecoderAdapterGpsL1CaTest_msg_rx>;
 
-GpsL1CADllPllTelemetryDecoderTest_msg_rx_sptr GpsL1CADllPllTelemetryDecoderTest_msg_rx_make();
+TelemetryDecoderAdapterGpsL1CaTest_msg_rx_sptr TelemetryDecoderAdapterGpsL1CaTest_msg_rx_make();
 
-class GpsL1CADllPllTelemetryDecoderTest_msg_rx : public gr::block
+class TelemetryDecoderAdapterGpsL1CaTest_msg_rx : public gr::block
 {
 private:
-    friend GpsL1CADllPllTelemetryDecoderTest_msg_rx_sptr GpsL1CADllPllTelemetryDecoderTest_msg_rx_make();
+    friend TelemetryDecoderAdapterGpsL1CaTest_msg_rx_sptr TelemetryDecoderAdapterGpsL1CaTest_msg_rx_make();
     void msg_handler_channel_events(const pmt::pmt_t msg);
-    GpsL1CADllPllTelemetryDecoderTest_msg_rx();
+    TelemetryDecoderAdapterGpsL1CaTest_msg_rx();
 
 public:
     int rx_message;
-    ~GpsL1CADllPllTelemetryDecoderTest_msg_rx();  //!< Default destructor
+    ~TelemetryDecoderAdapterGpsL1CaTest_msg_rx();  //!< Default destructor
 };
 
-GpsL1CADllPllTelemetryDecoderTest_msg_rx_sptr GpsL1CADllPllTelemetryDecoderTest_msg_rx_make()
+TelemetryDecoderAdapterGpsL1CaTest_msg_rx_sptr TelemetryDecoderAdapterGpsL1CaTest_msg_rx_make()
 {
-    return GpsL1CADllPllTelemetryDecoderTest_msg_rx_sptr(new GpsL1CADllPllTelemetryDecoderTest_msg_rx());
+    return TelemetryDecoderAdapterGpsL1CaTest_msg_rx_sptr(new TelemetryDecoderAdapterGpsL1CaTest_msg_rx());
 }
 
-void GpsL1CADllPllTelemetryDecoderTest_msg_rx::msg_handler_channel_events(const pmt::pmt_t msg)
+void TelemetryDecoderAdapterGpsL1CaTest_msg_rx::msg_handler_channel_events(const pmt::pmt_t msg)
 {
     try
         {
@@ -101,7 +101,7 @@ void GpsL1CADllPllTelemetryDecoderTest_msg_rx::msg_handler_channel_events(const 
         }
 }
 
-GpsL1CADllPllTelemetryDecoderTest_msg_rx::GpsL1CADllPllTelemetryDecoderTest_msg_rx() : gr::block("GpsL1CADllPllTelemetryDecoderTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+TelemetryDecoderAdapterGpsL1CaTest_msg_rx::TelemetryDecoderAdapterGpsL1CaTest_msg_rx() : gr::block("TelemetryDecoderAdapterGpsL1CaTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
@@ -109,45 +109,45 @@ GpsL1CADllPllTelemetryDecoderTest_msg_rx::GpsL1CADllPllTelemetryDecoderTest_msg_
         [this](auto&& PH1) { msg_handler_channel_events(std::forward<decltype(PH1)>(PH1)); });
 #else
 #if USE_BOOST_BIND_PLACEHOLDERS
-        boost::bind(&GpsL1CADllPllTelemetryDecoderTest_msg_rx::msg_handler_channel_events, this, boost::placeholders::_1));
+        boost::bind(&TelemetryDecoderAdapterGpsL1CaTest_msg_rx::msg_handler_channel_events, this, boost::placeholders::_1));
 #else
-        boost::bind(&GpsL1CADllPllTelemetryDecoderTest_msg_rx::msg_handler_channel_events, this, _1));
+        boost::bind(&TelemetryDecoderAdapterGpsL1CaTest_msg_rx::msg_handler_channel_events, this, _1));
 #endif
 #endif
     rx_message = 0;
 }
 
-GpsL1CADllPllTelemetryDecoderTest_msg_rx::~GpsL1CADllPllTelemetryDecoderTest_msg_rx() = default;
+TelemetryDecoderAdapterGpsL1CaTest_msg_rx::~TelemetryDecoderAdapterGpsL1CaTest_msg_rx() = default;
 
 
 // ###########################################################
 
 
 // ######## GNURADIO BLOCK MESSAGE RECEIVER FOR TLM MESSAGES #########
-class GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx;
+class TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx;
 
-using GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_sptr = std::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx>;
+using TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx_sptr = std::shared_ptr<TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx>;
 
-GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_sptr GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_make();
+TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx_sptr TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx_make();
 
-class GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx : public gr::block
+class TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx : public gr::block
 {
 private:
-    friend GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_sptr GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_make();
+    friend TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx_sptr TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx_make();
     void msg_handler_channel_events(const pmt::pmt_t msg);
-    GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx();
+    TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx();
 
 public:
     int rx_message;
-    ~GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx();  //!< Default destructor
+    ~TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx();  //!< Default destructor
 };
 
-GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_sptr GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_make()
+TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx_sptr TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx_make()
 {
-    return GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_sptr(new GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx());
+    return TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx_sptr(new TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx());
 }
 
-void GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx::msg_handler_channel_events(const pmt::pmt_t msg)
+void TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx::msg_handler_channel_events(const pmt::pmt_t msg)
 {
     try
         {
@@ -161,25 +161,25 @@ void GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx::msg_handler_channel_events(co
         }
 }
 
-GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx::GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx() : gr::block("GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx::TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx() : gr::block("TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
 #if HAS_GENERIC_LAMBDA
         [this](auto&& PH1) { msg_handler_channel_events(std::forward<decltype(PH1)>(PH1)); });
 #else
-        boost::bind(&GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx::msg_handler_channel_events, this, boost::placeholders::_1));
+        boost::bind(&TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx::msg_handler_channel_events, this, boost::placeholders::_1));
 #endif
     rx_message = 0;
 }
 
-GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx::~GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx() = default;
+TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx::~TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx() = default;
 
 
 // ###########################################################
 
 
-class GpsL1CATelemetryDecoderTest : public ::testing::Test
+class TelemetryDecoderAdapterGpsL1CaTest : public ::testing::Test
 {
 public:
     std::string generator_binary;
@@ -205,14 +205,14 @@ public:
         arma::vec& meas_time_s,
         arma::vec& meas_value);
 
-    GpsL1CATelemetryDecoderTest()
+    TelemetryDecoderAdapterGpsL1CaTest()
     {
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GpsL1CATelemetryDecoderTest() = default;
+    ~TelemetryDecoderAdapterGpsL1CaTest() = default;
 
     void configure_receiver();
 
@@ -223,7 +223,7 @@ public:
 };
 
 
-int GpsL1CATelemetryDecoderTest::configure_generator()
+int TelemetryDecoderAdapterGpsL1CaTest::configure_generator()
 {
 #if USE_GLOG_AND_GFLAGS
     // Configure signal generator
@@ -263,7 +263,7 @@ int GpsL1CATelemetryDecoderTest::configure_generator()
 }
 
 
-int GpsL1CATelemetryDecoderTest::generate_signal()
+int TelemetryDecoderAdapterGpsL1CaTest::generate_signal()
 {
     int child_status;
 
@@ -288,7 +288,7 @@ int GpsL1CATelemetryDecoderTest::generate_signal()
 }
 
 
-void GpsL1CATelemetryDecoderTest::configure_receiver()
+void TelemetryDecoderAdapterGpsL1CaTest::configure_receiver()
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'G';
@@ -313,7 +313,7 @@ void GpsL1CATelemetryDecoderTest::configure_receiver()
 }
 
 
-void GpsL1CATelemetryDecoderTest::check_results(arma::vec& true_time_s,
+void TelemetryDecoderAdapterGpsL1CaTest::check_results(arma::vec& true_time_s,
     arma::vec& true_value,
     arma::vec& meas_time_s,
     arma::vec& meas_value)
@@ -363,7 +363,7 @@ void GpsL1CATelemetryDecoderTest::check_results(arma::vec& true_time_s,
 }
 
 
-TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
+TEST_F(TelemetryDecoderAdapterGpsL1CaTest, ValidationOfResults)
 {
     // Configure the signal generator
     configure_generator();
@@ -405,7 +405,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     std::shared_ptr<TrackingInterface> tracking = std::make_shared<DllPllTrackingAdapter>(config.get(), "Tracking_1C", "GPS_L1_CA_DLL_PLL_Tracking", 1, 1, GPS_1C);
     // std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
 
-    auto msg_rx = GpsL1CADllPllTelemetryDecoderTest_msg_rx_make();
+    auto msg_rx = TelemetryDecoderAdapterGpsL1CaTest_msg_rx_make();
 
     // load acquisition data based on the first epoch of the true observations
     ASSERT_NO_THROW({
@@ -429,7 +429,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     std::shared_ptr<TelemetryDecoderInterface> tlm = std::make_shared<TelemetryDecoderAdapter>("TelemetryDecoder_1C", "GPS_L1_CA_Telemetry_Decoder", 1, 1, std::move(telemetry_decoder));
     tlm->set_channel(0);
 
-    std::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx> tlm_msg_rx = GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_make();
+    std::shared_ptr<TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx> tlm_msg_rx = TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx_make();
 
     ASSERT_NO_THROW({
         tracking->set_channel(gnss_synchro.Channel_ID);

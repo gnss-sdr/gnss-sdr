@@ -306,7 +306,7 @@ TEST(GNSSBlockFactoryTest, InstantiateWrongAcquisition)
 }
 
 
-TEST(GNSSBlockFactoryTest, InstantiateGpsL1CaDllPllTracking)
+TEST(GNSSBlockFactoryTest, InstantiateDllPllTrackingAdapterGpsL1Ca)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("Tracking.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
@@ -330,7 +330,7 @@ TEST(GNSSBlockFactoryTest, InstantiateGpsL1CaTcpConnectorTracking)
 }
 
 
-TEST(GNSSBlockFactoryTest, InstantiateGalileoE1DllPllVemlTracking)
+TEST(GNSSBlockFactoryTest, InstantiateDllPllTrackingAdapterGalileoE1)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("Tracking.implementation", "Galileo_E1_DLL_PLL_VEML_Tracking");
@@ -352,7 +352,7 @@ TEST(GNSSBlockFactoryTest, InstantiateWrongTracking)
 }
 
 
-TEST(GNSSBlockFactoryTest, InstantiateGpsL1CaTelemetryDecoder)
+TEST(GNSSBlockFactoryTest, InstantiateTelemetryDecoderAdapterGpsL1Ca)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("TelemetryDecoder.implementation", "GPS_L1_CA_Telemetry_Decoder");

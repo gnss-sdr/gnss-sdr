@@ -18,11 +18,11 @@
 
 #include "concurrent_queue.h"
 #include "freq_xlating_fir_filter.h"
-#include "glonass_l1_ca_pcps_acquisition.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
 #include "in_memory_configuration.h"
+#include "pcps_acquisition_adapter.h"
 #include <boost/make_shared.hpp>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
@@ -163,7 +163,7 @@ void GlonassL1CaPcpsAcquisitionTest::init()
     config->set_property("Acquisition_1G.coherent_integration_time_ms", "1");
     config->set_property("Acquisition_1G.dump", "true");
     config->set_property("Acquisition_1G.dump_filename", "./acquisition");
-    config->set_property("Acquisition_1G.implementation", "Glonass_L1_CA_PCPS_Acquisition");
+    config->set_property("Acquisition_1G.implementation", "GLONASS_L1_CA_PCPS_Acquisition");
     config->set_property("Acquisition_1G.threshold", "0.005");
     config->set_property("Acquisition_1G.doppler_max", "5000");
     config->set_property("Acquisition_1G.doppler_step", "500");
@@ -175,7 +175,7 @@ void GlonassL1CaPcpsAcquisitionTest::init()
 TEST_F(GlonassL1CaPcpsAcquisitionTest, Instantiate)
 {
     init();
-    auto acquisition = gnss_make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 0);
+    auto acquisition = gnss_make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_1G", "GLONASS_L1_CA_PCPS_Acquisition", 1, 0, GLO_1G);
 }
 
 
@@ -189,7 +189,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ConnectAndRun)
 
     top_block = gr::make_top_block("Acquisition test");
     init();
-    auto acquisition = gnss_make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 0);
+    auto acquisition = gnss_make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_1G", "GLONASS_L1_CA_PCPS_Acquisition", 1, 0, GLO_1G);
 
     auto msg_rx = GlonassL1CaPcpsAcquisitionTest_msg_rx_make();
 
@@ -222,7 +222,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     double expected_delay_samples = 31874;
     double expected_doppler_hz = -9500;
     init();
-    std::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = std::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 0);
+    std::shared_ptr<PcpsAcquisitionAdapter> acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_1G", "GLONASS_L1_CA_PCPS_Acquisition", 1, 0, GLO_1G);
     std::shared_ptr<FreqXlatingFirFilter> input_filter = std::make_shared<FreqXlatingFirFilter>(config.get(), "InputFilter", 1, 1);
     auto msg_rx = GlonassL1CaPcpsAcquisitionTest_msg_rx_make();
 

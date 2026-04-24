@@ -99,7 +99,18 @@ bool Acquisition_Dump_Reader::read_binary_acq()
     sample_counter = *static_cast<uint64_t*>(var2_->data);
     Mat_VarFree(var2_);
 
-    var2_ = Mat_VarRead(matfile, "d_positive_acq");
+    var2_ = Mat_VarRead(matfile, "positive_acq");
+    if (var2_ == nullptr)
+        {
+            var2_ = Mat_VarRead(matfile, "d_positive_acq");
+        }
+    if (var2_ == nullptr)
+        {
+            std::cout << "Unreachable positive acquisition variable in Acquisition dump file.\n";
+            Mat_VarFree(var_);
+            Mat_Close(matfile);
+            return false;
+        }
     positive_acq = *static_cast<int*>(var2_->data);
     Mat_VarFree(var2_);
 

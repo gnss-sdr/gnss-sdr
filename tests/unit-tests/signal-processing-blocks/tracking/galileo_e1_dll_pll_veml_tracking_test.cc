@@ -1,7 +1,7 @@
 /*!
  * \file galileo_e1_dll_pll_veml_tracking_test.cc
- * \brief  This class implements a tracking test for GalileoE1DllPllVemlTracking
- *  class based on some input parameters.
+ * \brief  This class implements a tracking test for DllPllTrackingAdapter
+ *  configured for Galileo E1 based on some input parameters.
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  *
@@ -37,10 +37,10 @@
 #include <gnuradio/analog/sig_source_c.h>
 #endif
 
-class GalileoE1DllPllVemlTrackingInternalTest : public ::testing::Test
+class DllPllTrackingAdapterGalileoE1Test : public ::testing::Test
 {
 protected:
-    GalileoE1DllPllVemlTrackingInternalTest()
+    DllPllTrackingAdapterGalileoE1Test()
         : item_size(sizeof(gr_complex))
     {
         factory = std::make_shared<GNSSBlockFactory>();
@@ -60,7 +60,7 @@ protected:
 };
 
 
-void GalileoE1DllPllVemlTrackingInternalTest::init()
+void DllPllTrackingAdapterGalileoE1Test::init()
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'E';
@@ -80,7 +80,7 @@ void GalileoE1DllPllVemlTrackingInternalTest::init()
 }
 
 
-TEST_F(GalileoE1DllPllVemlTrackingInternalTest, Instantiate)
+TEST_F(DllPllTrackingAdapterGalileoE1Test, Instantiate)
 {
     init();
     auto tracking = factory->GetBlock(config.get(), "Tracking_1B", 1, 1);
@@ -88,7 +88,7 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, Instantiate)
 }
 
 
-TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ConnectAndRun)
+TEST_F(DllPllTrackingAdapterGalileoE1Test, ConnectAndRun)
 {
     int fs_in = 8000000;
     int nsamples = 40000000;
@@ -134,7 +134,7 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ConnectAndRun)
 }
 
 
-TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ValidationOfResults)
+TEST_F(DllPllTrackingAdapterGalileoE1Test, ValidationOfResults)
 {
     std::chrono::time_point<std::chrono::system_clock> start;
     std::chrono::time_point<std::chrono::system_clock> end;

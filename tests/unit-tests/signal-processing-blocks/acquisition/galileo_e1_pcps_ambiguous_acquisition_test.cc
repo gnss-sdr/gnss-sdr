@@ -19,8 +19,8 @@
 
 #include "Galileo_E1.h"
 #include "acquisition_dump_reader.h"
+#include "acquisition_interface.h"
 #include "concurrent_queue.h"
-#include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_filesystem.h"
@@ -51,6 +51,13 @@
 #include <gnuradio/analog/sig_source_c.h>
 #endif
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
+
+
 #if PMT_USES_BOOST_ANY
 namespace wht = boost;
 #else
@@ -69,7 +76,7 @@ class GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx : public gr::block
 {
 private:
     friend GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx_sptr GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx_make();
-    void msg_handler_channel_events(const pmt::pmt_t msg);
+    void msg_handler_channel_events(pmt::pmt_t msg);
     GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx();
 
 public:
@@ -84,7 +91,7 @@ GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx_sptr GalileoE1PcpsAmbiguousAcquisit
 }
 
 
-void GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::msg_handler_channel_events(const pmt::pmt_t msg)
+void GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::msg_handler_channel_events(pmt::pmt_t msg)
 {
     try
         {
@@ -112,7 +119,6 @@ GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::GalileoE1PcpsAmbiguousAcquisitionT
         boost::bind(&GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::msg_handler_channel_events, this, _1));
 #endif
 #endif
-    rx_message = 0;
 }
 
 
@@ -124,14 +130,10 @@ GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::~GalileoE1PcpsAmbiguousAcquisition
 class GalileoE1PcpsAmbiguousAcquisitionTest : public ::testing::Test
 {
 protected:
-    GalileoE1PcpsAmbiguousAcquisitionTest()
+    GalileoE1PcpsAmbiguousAcquisitionTest() : item_size(sizeof(gr_complex)), doppler_max(10000), doppler_step(250)
     {
         factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
-        item_size = sizeof(gr_complex);
-        gnss_synchro = Gnss_Synchro();
-        doppler_max = 10000;
-        doppler_step = 250;
     }
 
     ~GalileoE1PcpsAmbiguousAcquisitionTest() = default;
@@ -321,7 +323,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     init();
     top_block = gr::make_top_block("Acquisition test");
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
-    std::shared_ptr<GalileoE1PcpsAmbiguousAcquisition> acquisition = std::dynamic_pointer_cast<GalileoE1PcpsAmbiguousAcquisition>(acq_);
+    std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
     auto msg_rx = GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW({

@@ -20,12 +20,12 @@
 #include "configuration_interface.h"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
-#include "glonass_l2_ca_pcps_acquisition.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
 #include "in_memory_configuration.h"
 #include "pass_through.h"
+#include "pcps_acquisition_adapter.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
 #include "boost/shared_ptr.hpp"
@@ -58,16 +58,16 @@ class GlonassL2CaPcpsAcquisitionTest_msg_rx;
 
 using GlonassL2CaPcpsAcquisitionTest_msg_rx_sptr = gnss_shared_ptr<GlonassL2CaPcpsAcquisitionTest_msg_rx>;
 
-GlonassL2CaPcpsAcquisitionTest_msg_rx_sptr GlonassL2CaPcpsAcquisitionTest_msg_rx_make(concurrent_queue<int>& queue);
+GlonassL2CaPcpsAcquisitionTest_msg_rx_sptr GlonassL2CaPcpsAcquisitionTest_msg_rx_make(Concurrent_Queue<int>& queue);
 
 
 class GlonassL2CaPcpsAcquisitionTest_msg_rx : public gr::block
 {
 private:
-    friend GlonassL2CaPcpsAcquisitionTest_msg_rx_sptr GlonassL2CaPcpsAcquisitionTest_msg_rx_make(concurrent_queue<int>& queue);
+    friend GlonassL2CaPcpsAcquisitionTest_msg_rx_sptr GlonassL2CaPcpsAcquisitionTest_msg_rx_make(Concurrent_Queue<int>& queue);
     void msg_handler_channel_events(const pmt::pmt_t msg);
-    explicit GlonassL2CaPcpsAcquisitionTest_msg_rx(concurrent_queue<int>& queue);
-    concurrent_queue<int>& channel_internal_queue;
+    explicit GlonassL2CaPcpsAcquisitionTest_msg_rx(Concurrent_Queue<int>& queue);
+    Concurrent_Queue<int>& channel_internal_queue;
 
 public:
     int rx_message;
@@ -75,7 +75,7 @@ public:
 };
 
 
-GlonassL2CaPcpsAcquisitionTest_msg_rx_sptr GlonassL2CaPcpsAcquisitionTest_msg_rx_make(concurrent_queue<int>& queue)
+GlonassL2CaPcpsAcquisitionTest_msg_rx_sptr GlonassL2CaPcpsAcquisitionTest_msg_rx_make(Concurrent_Queue<int>& queue)
 {
     return GlonassL2CaPcpsAcquisitionTest_msg_rx_sptr(new GlonassL2CaPcpsAcquisitionTest_msg_rx(queue));
 }
@@ -97,7 +97,7 @@ void GlonassL2CaPcpsAcquisitionTest_msg_rx::msg_handler_channel_events(const pmt
 }
 
 
-GlonassL2CaPcpsAcquisitionTest_msg_rx::GlonassL2CaPcpsAcquisitionTest_msg_rx(concurrent_queue<int>& queue) : gr::block("GlonassL2CaPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
+GlonassL2CaPcpsAcquisitionTest_msg_rx::GlonassL2CaPcpsAcquisitionTest_msg_rx(Concurrent_Queue<int>& queue) : gr::block("GlonassL2CaPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
@@ -150,7 +150,7 @@ protected:
 
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t> > queue;
     gr::top_block_sptr top_block;
-    std::shared_ptr<GlonassL2CaPcpsAcquisition> acquisition;
+    std::shared_ptr<PcpsAcquisitionAdapter> acquisition;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
@@ -436,7 +436,7 @@ void GlonassL2CaPcpsAcquisitionTest::stop_queue()
 TEST_F(GlonassL2CaPcpsAcquisitionTest, Instantiate)
 {
     config_1();
-    acquisition = std::make_shared<GlonassL2CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
+    acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_2G", "GLONASS_L2_CA_PCPS_Acquisition", 1, 0, GLO_2G);
 }
 
 
@@ -449,7 +449,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ConnectAndRun)
     top_block = gr::make_top_block("Acquisition test");
 
     config_1();
-    acquisition = std::make_shared<GlonassL2CaPcpsAcquisition>(config.get(), "Acquisition_2G", 1, 0);
+    acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_2G", "GLONASS_L2_CA_PCPS_Acquisition", 1, 0, GLO_2G);
     auto msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -478,7 +478,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResults)
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t> >();
     top_block = gr::make_top_block("Acquisition test");
 
-    acquisition = std::make_shared<GlonassL2CaPcpsAcquisition>(config.get(), "Acquisition_2G", 1, 0);
+    acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_2G", "GLONASS_L2_CA_PCPS_Acquisition", 1, 0, GLO_2G);
     auto msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -550,7 +550,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResultsProbabilities)
     config_2();
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t> >();
     top_block = gr::make_top_block("Acquisition test");
-    acquisition = std::make_shared<GlonassL2CaPcpsAcquisition>(config.get(), "Acquisition_2G", 1, 0);
+    acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_2G", "GLONASS_L2_CA_PCPS_Acquisition", 1, 0, GLO_2G);
     auto msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({

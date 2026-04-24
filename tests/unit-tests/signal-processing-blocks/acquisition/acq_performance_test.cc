@@ -17,21 +17,16 @@
 
 #include "GPS_L1_CA.h"
 #include "acquisition_dump_reader.h"
+#include "acquisition_interface.h"
 #include "display.h"
 #include "file_configuration.h"
-#include "galileo_e1_pcps_ambiguous_acquisition.h"
-#include "galileo_e5a_pcps_acquisition.h"
-#include "glonass_l1_ca_pcps_acquisition.h"
-#include "glonass_l2_ca_pcps_acquisition.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_valve.h"
 #include "gnuplot_i.h"
-#include "gps_l1_ca_pcps_acquisition.h"
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
-#include "gps_l2_m_pcps_acquisition.h"
-#include "gps_l5i_pcps_acquisition.h"
 #include "in_memory_configuration.h"
+#include "pcps_acquisition_adapter.h"
 #include "signal_generator_flags.h"
 #include "test_flags.h"
 #include "tracking_true_obs_reader.h"
@@ -815,7 +810,7 @@ int AcquisitionPerformanceTest::run_receiver()
     auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue.get());
     if (implementation == "GPS_L1_CA_PCPS_Acquisition")
         {
-            acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition", implementation, 1, 0, GPS_1C);
         }
     else if (implementation == "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler")
         {
@@ -823,27 +818,27 @@ int AcquisitionPerformanceTest::run_receiver()
         }
     else if (implementation == "Galileo_E1_PCPS_Ambiguous_Acquisition")
         {
-            acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisition>(config.get(), "Acquisition", 1, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition", implementation, 1, 0, GAL_1B);
         }
     else if (implementation == "GLONASS_L1_CA_PCPS_Acquisition")
         {
-            acquisition = std::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition", implementation, 1, 0, GLO_1G);
         }
     else if (implementation == "GLONASS_L2_CA_PCPS_Acquisition")
         {
-            acquisition = std::make_shared<GlonassL2CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition", implementation, 1, 0, GLO_2G);
         }
     else if (implementation == "GPS_L2_M_PCPS_Acquisition")
         {
-            acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition", implementation, 1, 0, GPS_2S);
         }
     else if (implementation == "Galileo_E5a_Pcps_Acquisition")
         {
-            acquisition = std::make_shared<GalileoE5aPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition", implementation, 1, 0, GAL_E5a);
         }
     else if (implementation == "GPS_L5i_PCPS_Acquisition")
         {
-            acquisition = std::make_shared<GpsL5iPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition", implementation, 1, 0, GPS_L5);
         }
     else
         {

@@ -110,16 +110,11 @@
 
 #if ENABLE_FPGA
 #include "galileo_e1_dll_pll_veml_tracking_fpga.h"
-#include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
 #include "galileo_e5a_dll_pll_tracking_fpga.h"
-#include "galileo_e5a_pcps_acquisition_fpga.h"
-#include "galileo_e5b_pcps_acquisition_fpga.h"
 #include "gps_l1_ca_dll_pll_tracking_fpga.h"
-#include "gps_l1_ca_pcps_acquisition_fpga.h"
 #include "gps_l2_m_dll_pll_tracking_fpga.h"
-#include "gps_l2_m_pcps_acquisition_fpga.h"
 #include "gps_l5_dll_pll_tracking_fpga.h"
-#include "gps_l5i_pcps_acquisition_fpga.h"
+#include "pcps_acquisition_adapter_fpga.h"
 #endif
 
 #if OPENCL_BLOCKS
@@ -525,27 +520,27 @@ std::unique_ptr<AcquisitionInterface> get_acq_block(
 #if ENABLE_FPGA
     else if (implementation == "GPS_L1_CA_PCPS_Acquisition_FPGA")
         {
-            return std::make_unique<GpsL1CaPcpsAcquisitionFpga>(configuration, role, in_streams, out_streams);
+            return std::make_unique<PcpsAcquisitionAdapterFpga>(configuration, role, implementation, in_streams, out_streams, GPS_1C);
         }
     else if (implementation == "Galileo_E1_PCPS_Ambiguous_Acquisition_FPGA")
         {
-            return std::make_unique<GalileoE1PcpsAmbiguousAcquisitionFpga>(configuration, role, in_streams, out_streams);
+            return std::make_unique<PcpsAcquisitionAdapterFpga>(configuration, role, implementation, in_streams, out_streams, GAL_1B);
         }
     else if (implementation == "GPS_L2_M_PCPS_Acquisition_FPGA")
         {
-            return std::make_unique<GpsL2MPcpsAcquisitionFpga>(configuration, role, in_streams, out_streams);
+            return std::make_unique<PcpsAcquisitionAdapterFpga>(configuration, role, implementation, in_streams, out_streams, GPS_2S);
         }
     else if (implementation == "GPS_L5i_PCPS_Acquisition_FPGA")
         {
-            return std::make_unique<GpsL5iPcpsAcquisitionFpga>(configuration, role, in_streams, out_streams);
+            return std::make_unique<PcpsAcquisitionAdapterFpga>(configuration, role, implementation, in_streams, out_streams, GPS_L5);
         }
     else if (implementation == "Galileo_E5a_Pcps_Acquisition_FPGA")
         {
-            return std::make_unique<GalileoE5aPcpsAcquisitionFpga>(configuration, role, in_streams, out_streams);
+            return std::make_unique<PcpsAcquisitionAdapterFpga>(configuration, role, implementation, in_streams, out_streams, GAL_E5a);
         }
     else if (implementation == "Galileo_E5b_PCPS_Acquisition_FPGA")
         {
-            return std::make_unique<GalileoE5bPcpsAcquisitionFpga>(configuration, role, in_streams, out_streams);
+            return std::make_unique<PcpsAcquisitionAdapterFpga>(configuration, role, implementation, in_streams, out_streams, GAL_E5b);
         }
 #endif
 

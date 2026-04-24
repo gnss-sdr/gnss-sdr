@@ -18,9 +18,9 @@
  */
 
 #include "GPS_L1_CA.h"
+#include "dll_pll_tracking_adapter_fpga.h"
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
-#include "dll_pll_tracking_adapter_fpga.h"
 #include "in_memory_configuration.h"
 #include "interleaved_byte_to_complex_short.h"
 #include "signal_generator_flags.h"

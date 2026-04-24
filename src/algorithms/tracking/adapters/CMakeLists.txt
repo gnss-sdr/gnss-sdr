@@ -18,21 +18,11 @@ endif()
 if(ENABLE_FPGA)
     set(OPT_TRACKING_ADAPTERS_SOURCES
         ${OPT_TRACKING_ADAPTERS_SOURCES}
-        base_dll_pll_tracking_fpga.cc
-        gps_l1_ca_dll_pll_tracking_fpga.cc
-        gps_l2_m_dll_pll_tracking_fpga.cc
-        galileo_e1_dll_pll_veml_tracking_fpga.cc
-        galileo_e5a_dll_pll_tracking_fpga.cc
-        gps_l5_dll_pll_tracking_fpga.cc
+        dll_pll_tracking_adapter_fpga.cc
     )
     set(OPT_TRACKING_ADAPTERS_HEADERS
         ${OPT_TRACKING_ADAPTERS_HEADERS}
-        base_dll_pll_tracking_fpga.h
-        gps_l1_ca_dll_pll_tracking_fpga.h
-        gps_l2_m_dll_pll_tracking_fpga.h
-        galileo_e1_dll_pll_veml_tracking_fpga.h
-        galileo_e5a_dll_pll_tracking_fpga.h
-        gps_l5_dll_pll_tracking_fpga.h
+        dll_pll_tracking_adapter_fpga.h
     )
 endif()
 

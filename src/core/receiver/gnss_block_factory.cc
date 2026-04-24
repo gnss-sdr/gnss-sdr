@@ -109,11 +109,7 @@
 #endif
 
 #if ENABLE_FPGA
-#include "galileo_e1_dll_pll_veml_tracking_fpga.h"
-#include "galileo_e5a_dll_pll_tracking_fpga.h"
-#include "gps_l1_ca_dll_pll_tracking_fpga.h"
-#include "gps_l2_m_dll_pll_tracking_fpga.h"
-#include "gps_l5_dll_pll_tracking_fpga.h"
+#include "dll_pll_tracking_adapter_fpga.h"
 #include "pcps_acquisition_adapter_fpga.h"
 #endif
 
@@ -632,23 +628,23 @@ std::unique_ptr<TrackingInterface> get_trk_block(
 #if ENABLE_FPGA
     else if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_FPGA")
         {
-            return std::make_unique<GpsL1CaDllPllTrackingFpga>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapterFpga>(configuration, role, implementation, in_streams, out_streams, GPS_1C);
         }
     else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking_FPGA")
         {
-            return std::make_unique<GalileoE1DllPllVemlTrackingFpga>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapterFpga>(configuration, role, implementation, in_streams, out_streams, GAL_1B);
         }
     else if (implementation == "GPS_L2_M_DLL_PLL_Tracking_FPGA")
         {
-            return std::make_unique<GpsL2MDllPllTrackingFpga>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapterFpga>(configuration, role, implementation, in_streams, out_streams, GPS_2S);
         }
     else if ((implementation == "GPS_L5i_DLL_PLL_Tracking_FPGA") or (implementation == "GPS_L5_DLL_PLL_Tracking_FPGA"))
         {
-            return std::make_unique<GpsL5DllPllTrackingFpga>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapterFpga>(configuration, role, implementation, in_streams, out_streams, GPS_L5);
         }
     else if (implementation == "Galileo_E5a_DLL_PLL_Tracking_FPGA")
         {
-            return std::make_unique<GalileoE5aDllPllTrackingFpga>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapterFpga>(configuration, role, implementation, in_streams, out_streams, GAL_E5a);
         }
 #endif
 

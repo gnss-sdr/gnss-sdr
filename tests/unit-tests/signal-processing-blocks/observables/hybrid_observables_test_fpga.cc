@@ -31,7 +31,6 @@
 #include "gnss_sdr_fpga_sample_counter.h"
 #include "gnss_synchro.h"
 #include "gnuplot_i.h"
-#include "gps_l1_ca_dll_pll_tracking_fpga.h"
 #include "hybrid_observables.h"
 #include "in_memory_configuration.h"
 #include "observable_tests_flags.h"

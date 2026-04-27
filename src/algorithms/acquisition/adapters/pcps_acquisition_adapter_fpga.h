@@ -17,8 +17,8 @@
 #ifndef GNSS_SDR_PCPS_ACQUISITION_ADAPTER_FPGA_H
 #define GNSS_SDR_PCPS_ACQUISITION_ADAPTER_FPGA_H
 
-#include "acquisition_interface.h"
 #include "acq_conf_fpga.h"
+#include "acquisition_interface.h"
 #include "channel_fsm.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"

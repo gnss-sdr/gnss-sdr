@@ -120,7 +120,10 @@ public:
         monitor_.set_galhas_status(monitor->galhas_status);
         monitor_.set_geohash(monitor->geohash);
 
-        monitor_.SerializeToString(&data);
+        if (!monitor_.SerializeToString(&data))
+            {
+                return {};
+            }
         return data;
     }
 

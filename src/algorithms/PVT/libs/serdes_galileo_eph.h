@@ -115,7 +115,10 @@ public:
         monitor_.set_bgd_e1e5a(monitor->BGD_E1E5a);
         monitor_.set_bgd_e1e5b(monitor->BGD_E1E5b);
 
-        monitor_.SerializeToString(&data);
+        if (!monitor_.SerializeToString(&data))
+            {
+                return {};
+            }
         return data;
     }
 

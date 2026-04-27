@@ -117,7 +117,10 @@ public:
         monitor_.set_alert_flag(monitor->alert_flag);
         monitor_.set_antispoofing_flag(monitor->antispoofing_flag);
 
-        monitor_.SerializeToString(&data);
+        if (!monitor_.SerializeToString(&data))
+            {
+                return {};
+            }
         return data;
     }
 

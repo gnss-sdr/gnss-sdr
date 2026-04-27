@@ -90,7 +90,10 @@ public:
         navmsg_.set_tow_at_current_symbol_ms(nav_msg_packet->tow_at_current_symbol_ms);
         navmsg_.set_nav_message(nav_msg_packet->nav_message);
 
-        navmsg_.SerializeToString(&data);
+        if (!navmsg_.SerializeToString(&data))
+            {
+                return {};
+            }
 
         return data;
     }

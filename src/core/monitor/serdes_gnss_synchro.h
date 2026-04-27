@@ -116,7 +116,10 @@ public:
                 obs->set_flag_cycle_slip(gs.Flag_cycle_slip);
                 obs->set_interp_tow_ms(gs.interp_TOW_ms);
             }
-        observables.SerializeToString(&data);
+        if (!observables.SerializeToString(&data))
+            {
+                return {};
+            }
         return data;
     }
 

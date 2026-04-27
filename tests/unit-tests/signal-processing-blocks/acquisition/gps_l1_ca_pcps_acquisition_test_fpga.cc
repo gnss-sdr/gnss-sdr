@@ -1,7 +1,7 @@
 /*!
  * \file gps_l1_ca_pcps_acquisition_test_fpga.cc
  * \brief  This class implements an acquisition test for
- * GpsL1CaPcpsAcquisitionFpga class based on some input parameters.
+ * PcpsAcquisitionAdapterFpga class based on some input parameters.
  * \authors <ul>
  *          <li> Marc Majoral, 2019. mmajoral(at)cttc.cat
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
@@ -25,8 +25,8 @@
 #include "gnss_block_interface.h"
 #include "gnss_sdr_filesystem.h"
 #include "gnss_synchro.h"
-#include "gps_l1_ca_pcps_acquisition_fpga.h"
 #include "in_memory_configuration.h"
+#include "pcps_acquisition_adapter_fpga.h"
 #include "test_flags.h"
 #include <boost/make_shared.hpp>
 #include <gtest/gtest.h>
@@ -329,7 +329,7 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
     const char* str = signal.c_str();                                  // get a C style null terminated string
     std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
     tmp_gnss_synchro.PRN = SV_ID;
-    acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+    acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", "GPS_L1_CA_PCPS_Acquisition_FPGA", 0, 0, GPS_1C);
 
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     acquisition->set_channel_fsm(channel_fsm_);

@@ -18,9 +18,9 @@
  */
 
 #include "GPS_L1_CA.h"
+#include "dll_pll_tracking_adapter_fpga.h"
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
-#include "gps_l1_ca_dll_pll_tracking_fpga.h"
 #include "in_memory_configuration.h"
 #include "interleaved_byte_to_complex_short.h"
 #include "signal_generator_flags.h"
@@ -516,7 +516,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
 
     top_block = gr::make_top_block("Tracking test");
     // std::shared_ptr<GpsL1CaDllPllCAidTrackingFpga> tracking = std::make_shared<GpsL1CaDllPllCAidTrackingFpga> (config.get(), "Tracking_1C", 1, 1);
-    std::shared_ptr<GpsL1CaDllPllTrackingFpga> tracking = std::make_shared<GpsL1CaDllPllTrackingFpga>(config.get(), "Tracking_1C", 1, 1);
+    std::shared_ptr<TrackingInterface> tracking = std::make_shared<DllPllTrackingAdapterFpga>(config.get(), "Tracking_1C", "GPS_L1_CA_DLL_PLL_Tracking_FPGA", 1, 1, GPS_1C);
 
     auto msg_rx = GpsL1CADllPllTrackingTestFpga_msg_rx_make();
 

@@ -21,12 +21,12 @@
 #include "acquisition_dump_reader.h"
 #include "concurrent_queue.h"
 #include "fpga_switch.h"
-#include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_filesystem.h"
 #include "gnss_signal.h"
 #include "gnss_synchro.h"
 #include "in_memory_configuration.h"
+#include "pcps_acquisition_adapter_fpga.h"
 #include "test_flags.h"
 #include <boost/make_shared.hpp>
 #include <gtest/gtest.h>
@@ -330,7 +330,7 @@ bool GalileoE1PcpsAmbiguousAcquisitionTestFpga::acquire_signal()
     const char* str = signal.c_str();                                  // get a C style null terminated string
     std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 2);  // copy string into synchro char array: 2 char + null
     tmp_gnss_synchro.PRN = SV_ID;
-    acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+    acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition_FPGA", 0, 0, GAL_1B);
 
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     acquisition->set_channel_fsm(channel_fsm_);

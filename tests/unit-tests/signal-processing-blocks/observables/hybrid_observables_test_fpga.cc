@@ -25,21 +25,17 @@
 #include "Galileo_E5a.h"
 #include "acquisition_msg_rx.h"
 #include "fpga_switch.h"
-#include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
-#include "galileo_e5a_pcps_acquisition_fpga.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
 #include "gnss_sdr_fpga_sample_counter.h"
 #include "gnss_synchro.h"
 #include "gnuplot_i.h"
-#include "gps_l1_ca_dll_pll_tracking_fpga.h"
-#include "gps_l1_ca_pcps_acquisition_fpga.h"
-#include "gps_l5i_pcps_acquisition_fpga.h"
 #include "hybrid_observables.h"
 #include "in_memory_configuration.h"
 #include "observable_tests_flags.h"
 #include "observables_dump_reader.h"
+#include "pcps_acquisition_adapter_fpga.h"
 #include "signal_generator_flags.h"
 #include "telemetry_decoder_interface.h"
 #include "test_flags.h"
@@ -650,7 +646,7 @@ bool HybridObservablesTestFpga::acquire_signal()
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "GPS L1 CA";
-            acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", "GPS_L1_CA_PCPS_Acquisition_FPGA", 0, 0, GPS_1C);
 
             args.freq_band = 0;  // frequency band on which the DMA has to transfer the samples
         }
@@ -662,7 +658,7 @@ bool HybridObservablesTestFpga::acquire_signal()
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "Galileo E1B";
-            acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition_FPGA", 0, 0, GAL_1B);
 
             args.freq_band = 0;  // frequency band on which the DMA has to transfer the samples
         }
@@ -674,7 +670,7 @@ bool HybridObservablesTestFpga::acquire_signal()
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "Galileo E5a";
-            acquisition = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", "Galileo_E5a_Pcps_Acquisition_FPGA", 0, 0, GAL_E5a);
 
             args.freq_band = 1;  // frequency band on which the DMA has to transfer the samples
         }
@@ -686,7 +682,7 @@ bool HybridObservablesTestFpga::acquire_signal()
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "GPS L5I";
-            acquisition = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", "GPS_L5i_PCPS_Acquisition_FPGA", 0, 0, GPS_L5);
 
             args.freq_band = 1;  // frequency band on which the DMA has to transfer the samples
         }
@@ -2029,22 +2025,22 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     // reset the HW to clear the sample counters: the acquisition constructor generates a reset
     if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_FPGA")
         {
-            acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", "GPS_L1_CA_PCPS_Acquisition_FPGA", 0, 0, GPS_1C);
             args.freq_band = 0;
         }
     else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking_FPGA")
         {
-            acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition_FPGA", 0, 0, GAL_1B);
             args.freq_band = 0;
         }
     else if (implementation == "Galileo_E5a_DLL_PLL_Tracking_FPGA")
         {
-            acquisition = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", "Galileo_E5a_Pcps_Acquisition_FPGA", 0, 0, GAL_E5a);
             args.freq_band = 1;
         }
     else if (implementation == "GPS_L5_DLL_PLL_Tracking_FPGA")
         {
-            acquisition = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", "GPS_L5i_PCPS_Acquisition_FPGA", 0, 0, GPS_L5);
             args.freq_band = 1;
         }
     else

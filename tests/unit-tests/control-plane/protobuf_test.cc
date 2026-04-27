@@ -72,7 +72,7 @@ TEST(Protobuf, Works)
 
     // Recover data from serialization
     gnss_sdr::Observables obs;
-    obs.ParseFromString(serialized_data);
+    ASSERT_TRUE(obs.ParseFromString(serialized_data));
 
     // Check that recovered data is ok
 

@@ -14,6 +14,13 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Maintainability:
+
+- Refactored main Acquisition, Tracking, and Telemetry Decoder adapters,
+  simplifying interfaces and improving consistency across processing chains.
+  This reduces code duplication, enhances maintainability, and eases the
+  integration of new GNSS signals.
+
 ### Improvements in Portability:
 
 - Refactored Python interpreter detection and improved CMake portability and

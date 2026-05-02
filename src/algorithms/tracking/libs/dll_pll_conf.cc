@@ -58,6 +58,7 @@ void Dll_Pll_Conf::SetFromConfiguration(const ConfigurationInterface *configurat
     double fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", fs_in);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     high_dyn = configuration->property(role + ".high_dyn", high_dyn);
+    enable_doppler_correction = configuration->property(role + ".enable_doppler_correction", enable_doppler_correction);
     dump = configuration->property(role + ".dump", dump);
     dump_filename = configuration->property(role + ".dump_filename", dump_filename);
     dump_mat = configuration->property(role + ".dump_mat", dump_mat);

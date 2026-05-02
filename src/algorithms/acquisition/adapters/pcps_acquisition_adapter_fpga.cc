@@ -339,11 +339,11 @@ void PcpsAcquisitionAdapterFpga::set_channel_fsm(std::weak_ptr<ChannelFsm> chann
 }
 
 
-void PcpsAcquisitionAdapterFpga::set_doppler_center(int doppler_center)
+void PcpsAcquisitionAdapterFpga::set_assistance(int doppler_center)
 {
     if (acquisition_fpga_)
         {
-            acquisition_fpga_->set_doppler_center(doppler_center);
+            acquisition_fpga_->set_assistance(doppler_center);
         }
 }
 

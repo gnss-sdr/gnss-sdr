@@ -334,7 +334,7 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     acquisition->set_channel_fsm(channel_fsm_);
     acquisition->set_channel(1);
-    acquisition->set_doppler_center(0);
+    acquisition->set_assistance(0);
 
     nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(BASEBAND_SAMPLING_FREQ) / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
 

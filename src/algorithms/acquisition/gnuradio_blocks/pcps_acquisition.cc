@@ -122,18 +122,27 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
           gr::io_signature::make(0, 1, sizeof(Gnss_Synchro))),
       d_acq_parameters(conf_),
       d_dump_filename(conf_.dump ? get_dump_filename(conf_.dump_filename) : std::string{}),
-      d_doppler_max(conf_.doppler_max),
+      d_doppler_max({static_cast<float>(conf_.wide_doppler_max),
+          static_cast<float>(conf_.doppler_max),
+          static_cast<float>(conf_.narrow_doppler_max)}),
       d_samplesPerChip(conf_.samples_per_chip),
-      d_doppler_step(conf_.doppler_step),
+      d_doppler_step({uint32_t(conf_.wide_doppler_step),
+          uint32_t(conf_.doppler_step),
+          uint32_t(conf_.narrow_doppler_step)}),
+      d_assist_level(1),
       d_consumed_samples(conf_.sampled_ms * conf_.samples_per_ms * (conf_.bit_transition_flag ? 2.0 : 1.0)),
       d_fft_size(conf_.sampled_ms == conf_.ms_per_code ? d_consumed_samples : d_consumed_samples * 2),
       d_effective_fft_size(conf_.bit_transition_flag ? (d_fft_size / 2) : d_fft_size),
       d_magnitude_grid_stride(aligned_row_stride<float>(d_effective_fft_size)),
       d_doppler_wipeoffs_stride(aligned_row_stride<gr_complex>(d_fft_size)),
-      d_num_doppler_bins(static_cast<uint32_t>(std::ceil(static_cast<double>(2 * d_doppler_max) / static_cast<double>(d_doppler_step)))),
+      d_num_doppler_bins({
+          static_cast<uint32_t>(std::ceil(static_cast<double>(2 * d_doppler_max[0]) / static_cast<double>(d_doppler_step[0]))),
+          static_cast<uint32_t>(std::ceil(static_cast<double>(2 * d_doppler_max[1]) / static_cast<double>(d_doppler_step[1]))),
+          static_cast<uint32_t>(std::ceil(static_cast<double>(2 * d_doppler_max[2]) / static_cast<double>(d_doppler_step[2]))),
+      }),
       d_num_doppler_bins_step2(conf_.num_doppler_bins_step2),
       d_dump_channel(conf_.dump_channel),
-      d_threshold(conf_.pfa > 0.0 ? compute_threshold(conf_.pfa, d_effective_fft_size, d_num_doppler_bins, conf_.bit_transition_flag ? 1 : conf_.max_dwells) : conf_.threshold),
+      d_threshold(conf_.pfa > 0.0 ? compute_threshold(conf_.pfa, d_effective_fft_size, d_num_doppler_bins[1], conf_.bit_transition_flag ? 1 : conf_.max_dwells) : conf_.threshold),
       d_threshold_step_two(conf_.pfa2 > 0.0 ? compute_threshold(conf_.pfa2, d_effective_fft_size, d_num_doppler_bins_step2, conf_.bit_transition_flag ? 1 : conf_.max_dwells) : conf_.threshold),
       d_cshort(conf_.it_size != sizeof(gr_complex)),
       d_use_CFAR_algorithm_flag(conf_.use_CFAR_algorithm_flag),
@@ -154,12 +163,12 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_dump_number(0),
       d_input_power(0),
       d_doppler_center_step_two(0),
-      d_magnitude_grid(std::max(d_num_doppler_bins, d_num_doppler_bins_step2) * d_magnitude_grid_stride),
+      d_magnitude_grid(std::max(*std::max_element(d_num_doppler_bins.begin(), d_num_doppler_bins.end()), d_num_doppler_bins_step2) * d_magnitude_grid_stride),
       d_tmp_buffer(d_effective_fft_size),
       d_input_signal(d_fft_size),
       d_grid_doppler_wipeoffs_step_two(d_acq_parameters.make_2_steps ? d_num_doppler_bins_step2 * d_doppler_wipeoffs_stride : 0),
       d_ifft(gnss_fft_rev_make_unique(d_fft_size)),
-      d_grid_doppler_wipeoffs(d_num_doppler_bins * d_doppler_wipeoffs_stride),
+      d_grid_doppler_wipeoffs(*std::max_element(d_num_doppler_bins.begin(), d_num_doppler_bins.end()) * d_doppler_wipeoffs_stride),
       d_fft_codes(d_fft_size),
       d_data_buffer(d_consumed_samples),
       d_fft_if(gnss_fft_fwd_make_unique(d_fft_size))
@@ -301,9 +310,9 @@ void pcps_acquisition::update_local_carrier(own::span<gr_complex> carrier_vector
 
 void pcps_acquisition::update_grid_doppler_wipeoffs()
 {
-    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins[d_assist_level]; doppler_index++)
         {
-            const int32_t doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_center + d_doppler_step * doppler_index;
+            const int32_t doppler = -static_cast<int32_t>(d_doppler_max[d_assist_level]) + d_doppler_center + d_doppler_step[d_assist_level] * doppler_index;
             update_local_carrier(own::span<gr_complex>(doppler_wipeoff_data(doppler_index), d_fft_size), static_cast<float>(d_doppler_bias + doppler));
         }
 }
@@ -398,11 +407,11 @@ void pcps_acquisition::dump_results(const AcquisitionResult& result)
     else
         {
             std::array<size_t, 2> dims_1d{1, 1};
-            std::array<size_t, 2> dims_2d{d_effective_fft_size, d_num_doppler_bins};
+            std::array<size_t, 2> dims_2d{d_effective_fft_size, d_num_doppler_bins[d_assist_level]};
 
             write_matlab_var<2>("acq_grid", d_grid.memptr(), matfp, dims_2d);
-            write_matlab_var<1>("doppler_max", static_cast<int32_t>(d_doppler_max), matfp, dims_1d);
-            write_matlab_var<1>("doppler_step", static_cast<int32_t>(d_doppler_step), matfp, dims_1d);
+            write_matlab_var<1>("doppler_max", static_cast<int32_t>(d_doppler_max[d_assist_level]), matfp, dims_1d);
+            write_matlab_var<1>("doppler_step", static_cast<int32_t>(d_doppler_step[d_assist_level]), matfp, dims_1d);
             write_matlab_var<1>("positive_acq", static_cast<int32_t>(result.positive_acq ? 1 : 0), matfp, dims_1d);
             write_matlab_var<1>("acq_doppler_hz", static_cast<float>(d_gnss_synchro->Acq_doppler_hz), matfp, dims_1d);
             write_matlab_var<1>("acq_delay_samples", static_cast<float>(d_gnss_synchro->Acq_delay_samples), matfp, dims_1d);
@@ -430,9 +439,9 @@ void pcps_acquisition::dump_results(const AcquisitionResult& result)
 
 void pcps_acquisition::ensure_dump_grid_allocated()
 {
-    if ((d_grid.n_rows != d_effective_fft_size) || (d_grid.n_cols != d_num_doppler_bins))
+    if ((d_grid.n_rows != d_effective_fft_size) || (d_grid.n_cols != d_num_doppler_bins[d_assist_level]))
         {
-            d_grid.zeros(d_effective_fft_size, d_num_doppler_bins);
+            d_grid.zeros(d_effective_fft_size, d_num_doppler_bins[d_assist_level]);
         }
 
     if (d_acq_parameters.make_2_steps &&
@@ -447,7 +456,7 @@ void pcps_acquisition::copy_magnitude_grid_to_dump_grid()
 {
     ensure_dump_grid_allocated();
 
-    const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins;
+    const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins[d_assist_level];
     auto& grid = d_step_two ? d_narrow_grid : d_grid;
 
     for (uint32_t doppler_index = 0; doppler_index < bin_count; doppler_index++)
@@ -510,7 +519,7 @@ pcps_acquisition::AcquisitionResult pcps_acquisition::max_to_input_power_statist
 
     if (!d_step_two)
         {
-            const auto index_opp = (index_doppler + d_num_doppler_bins / 2) % d_num_doppler_bins;
+            const auto index_opp = (index_doppler + d_num_doppler_bins[d_assist_level] / 2) % d_num_doppler_bins[d_assist_level];
             const auto* magnitude_grid = magnitude_grid_data(index_opp);
             d_input_power = static_cast<float>(std::accumulate(magnitude_grid, magnitude_grid + d_effective_fft_size, static_cast<float>(0.0)) / d_effective_fft_size / 2.0 / d_num_noncoherent_integrations_counter);
             result.doppler = -static_cast<int32_t>(doppler_max) + d_doppler_center + doppler_step * static_cast<int32_t>(index_doppler);
@@ -607,7 +616,7 @@ pcps_acquisition::AcquisitionResult pcps_acquisition::first_vs_second_peak_stati
 
 void pcps_acquisition::doppler_grid(const gr_complex* in)
 {
-    const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins;
+    const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins[d_assist_level];
     const auto* grid_doppler_wipeoffs = d_step_two ? d_grid_doppler_wipeoffs_step_two.data() : d_grid_doppler_wipeoffs.data();
 
     for (uint32_t doppler_index = 0; doppler_index < bin_count; doppler_index++)
@@ -645,9 +654,9 @@ void pcps_acquisition::doppler_grid(const gr_complex* in)
 
 pcps_acquisition::AcquisitionResult pcps_acquisition::compute_statistics()
 {
-    const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins;
-    const auto doppler_step = d_step_two ? d_acq_parameters.doppler_step2 : d_doppler_step;
-    const auto doppler_max = d_step_two ? static_cast<int32_t>(d_doppler_center_step_two - (static_cast<float>(bin_count) / 2.0) * doppler_step) : d_doppler_max;
+    const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins[d_assist_level];
+    const auto doppler_step = d_step_two ? d_acq_parameters.doppler_step2 : d_doppler_step[d_assist_level];
+    const auto doppler_max = d_step_two ? static_cast<int32_t>(d_doppler_center_step_two - (static_cast<float>(bin_count) / 2.0) * doppler_step) : d_doppler_max[d_assist_level];
 
     if (d_use_CFAR_algorithm_flag)
         {
@@ -760,8 +769,8 @@ void pcps_acquisition::acquisition_core(uint64_t sample_count)
                << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
                << " , sample stamp: " << sample_count
                << ", threshold: " << get_threshold()
-               << ", doppler_max: " << d_doppler_max
-               << ", doppler_step: " << d_doppler_step
+               << ", doppler_max: " << d_doppler_max[d_assist_level]
+               << ", doppler_step: " << d_doppler_step[d_assist_level]
                << ", use_CFAR_algorithm_flag: " << (d_use_CFAR_algorithm_flag ? "true" : "false");
 
     lk.unlock();
@@ -828,13 +837,25 @@ float pcps_acquisition::get_threshold() const
 }
 
 
-void pcps_acquisition::set_doppler_center(int32_t doppler_center)
+void pcps_acquisition::set_assistance(int32_t doppler_center, int32_t assist_level)
 {
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
+    bool flag_update_grid = false;
+    if (assist_level != d_assist_level)
+        {
+            d_assist_level = assist_level;
+            flag_update_grid = true;
+            d_threshold = d_acq_parameters.pfa > 0.0 ? compute_threshold(d_acq_parameters.pfa, d_effective_fft_size, d_num_doppler_bins[d_assist_level], d_acq_parameters.bit_transition_flag ? 1 : d_acq_parameters.max_dwells) : d_acq_parameters.threshold;
+        }
     if (doppler_center != d_doppler_center)
         {
-            DLOG(INFO) << " Doppler assistance for Channel: " << d_channel << " => Doppler: " << doppler_center << "[Hz]";
             d_doppler_center = doppler_center;
+            flag_update_grid = true;
+        }
+    if (flag_update_grid)
+        {
+            DLOG(INFO) << " Doppler assistance for Channel: " << d_channel << " => Doppler: " << doppler_center << "[Hz]";
+            std::fill(d_magnitude_grid.begin(), d_magnitude_grid.end(), 0.0F);
             update_grid_doppler_wipeoffs();
         }
 }

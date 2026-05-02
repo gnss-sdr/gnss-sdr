@@ -120,6 +120,11 @@ public:
     std::map<int, Beidou_Dnav_Almanac> get_beidou_dnav_almanac_map() const;
 
     /*!
+     * \brief Get clock drift from PVT block
+     */
+    double get_clock_drift_ppm() const;
+
+    /*!
      * \brief Clear all ephemeris information and the almanacs for GPS and Galileo
      */
     void clear_ephemeris();

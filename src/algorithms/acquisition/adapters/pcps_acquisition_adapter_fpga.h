@@ -58,7 +58,7 @@ public:
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
     void set_channel(unsigned int channel) override;
     void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override;
-    void set_doppler_center(int doppler_center) override;
+    void set_assistance(int doppler_center) override;
     void reset() override;
     void stop_acquisition() override;
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override {}

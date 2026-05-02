@@ -39,7 +39,9 @@ void Acq_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
 
     const int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", fs_in);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    doppler_max = configuration->property(role + ".doppler_max", doppler_max);
+    wide_doppler_max = doppler_max = configuration->property(role + ".doppler_max", doppler_max);
+    wide_doppler_max = configuration->property(role + ".wide_doppler_max", wide_doppler_max);
+    narrow_doppler_max = configuration->property(role + ".narrow_doppler_max", narrow_doppler_max);
     sampled_ms = configuration->property(role + ".coherent_integration_time_ms", sampled_ms);
     bit_transition_flag = configuration->property(role + ".bit_transition_flag", bit_transition_flag);
     max_dwells = configuration->property(role + ".max_dwells", max_dwells);
@@ -67,7 +69,9 @@ void Acq_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     it_size = item_type_size(item_type);
     num_doppler_bins_step2 = configuration->property(role + ".second_nbins", num_doppler_bins_step2);
     doppler_step2 = configuration->property(role + ".second_doppler_step", doppler_step2);
-    doppler_step = configuration->property(role + ".doppler_step", doppler_step);
+    wide_doppler_step = doppler_step = configuration->property(role + ".doppler_step", doppler_step);
+    wide_doppler_step = configuration->property(role + ".wide_doppler_step", wide_doppler_step);
+    narrow_doppler_step = configuration->property(role + ".narrow_doppler_step", narrow_doppler_step);
     threshold = configuration->property(role + ".threshold", threshold);
     pfa = configuration->property(role + ".pfa", pfa);
     if ((pfa < 0.0) || (pfa > 1.0))

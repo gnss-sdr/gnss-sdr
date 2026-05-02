@@ -119,7 +119,7 @@ public:
      * \brief Set Doppler center frequency for the grid search. It will refresh the Doppler grid.
      * \param doppler_center - Frequency center of the search grid [Hz].
      */
-    void set_doppler_center(int32_t doppler_center);
+    void set_assistance(int32_t doppler_center);
 
     /*!
      * \brief This function triggers a HW reset of the FPGA PL.

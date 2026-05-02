@@ -297,9 +297,9 @@ void PcpsAcquisitionAdapter::stop_acquisition()
 }
 
 
-void PcpsAcquisitionAdapter::set_doppler_center(int doppler_center)
+void PcpsAcquisitionAdapter::set_assistance(int doppler_center, int32_t assist_level)
 {
-    acquisition_->set_doppler_center(doppler_center);
+    acquisition_->set_assistance(doppler_center, assist_level);
 }
 
 

@@ -335,7 +335,7 @@ bool GalileoE1PcpsAmbiguousAcquisitionTestFpga::acquire_signal()
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     acquisition->set_channel_fsm(channel_fsm_);
     acquisition->set_channel(1);
-    acquisition->set_doppler_center(0);
+    acquisition->set_assistance(0);
 
     nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(BASEBAND_SAMPLING_FREQ) / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
 

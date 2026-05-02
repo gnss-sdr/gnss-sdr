@@ -255,7 +255,7 @@ void pcps_acquisition_fpga::set_active(bool active)
 }
 
 
-void pcps_acquisition_fpga::set_doppler_center(int32_t doppler_center)
+void pcps_acquisition_fpga::set_assistance(int32_t doppler_center)
 {
     if (doppler_center != d_doppler_center)
         {

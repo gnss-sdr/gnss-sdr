@@ -62,9 +62,13 @@ public:
     uint32_t num_doppler_bins_step2{4U};
     uint32_t resampler_latency_samples{0U};
     uint32_t dump_channel{0U};
+    int32_t wide_doppler_max{20000};
     int32_t doppler_max{5000};
+    int32_t narrow_doppler_max{50};
     int32_t doppler_min{-5000};
+    int32_t wide_doppler_step{500};
     int32_t doppler_step{500};
+    int32_t narrow_doppler_step{50};
 
     bool bit_transition_flag{false};
     bool use_CFAR_algorithm_flag{true};

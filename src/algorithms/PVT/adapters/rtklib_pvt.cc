@@ -925,6 +925,11 @@ std::map<int, Beidou_Dnav_Almanac> Rtklib_Pvt::get_beidou_dnav_almanac() const
     return pvt_->get_beidou_dnav_almanac_map();
 }
 
+double Rtklib_Pvt::get_clock_drift_ppm() const
+{
+    return pvt_->get_clock_drift_ppm();
+}
+
 
 void Rtklib_Pvt::connect(gr::top_block_sptr top_block)
 {

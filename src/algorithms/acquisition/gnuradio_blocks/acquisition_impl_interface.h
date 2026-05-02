@@ -35,6 +35,17 @@
  * GNSS block interfaces.
  * \{ */
 
+
+//! Acquisition assistance levels
+enum
+{
+    ASSIST_UNASSISTED = 0,
+    ASSIST_COMPENSATEED_DRIFT = 1,
+    ASSIST_ESTIMATED_DOPPLER = 2,
+    ASSIST_SKIP_ACQUISITION = 3,
+    ASSIST_COUNT = 3  // We don't need to store step/max for "SKIP_ACQUISITION" level
+};
+
 class ChannelFsm;
 class acquisition_impl_interface;
 
@@ -57,6 +68,7 @@ public:
     virtual void set_gnss_synchro(Gnss_Synchro* gnss_synchro) = 0;
     virtual void set_channel(uint32_t channel_id) = 0;
     virtual void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) = 0;
+    virtual void set_assistance(int /*doppler_center*/, int32_t /*assist level*/) {}
     virtual void set_local_code(std::complex<float>* /*code*/) {};
     virtual void set_local_code(std::complex<float>* /*code_data*/, std::complex<float>* /*code_pilot*/) {};
     virtual uint32_t mag() const = 0;

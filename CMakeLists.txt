@@ -2482,11 +2482,78 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
                 add_library(protobuf::libprotobuf STATIC IMPORTED)
                 add_dependencies(protobuf::libprotobuf protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION})
             endif()
+
+            # Fix missing libatomic when linking static protobuf on platforms where
+            # 64-bit atomic builtins are not provided directly by the compiler runtime.
+            set(GNSSSDR_PROTOBUF_LIBATOMIC "")
+            if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
+                (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+                include(CheckCXXSourceCompiles)
+                set(GNSSSDR_ATOMIC_TEST_SOURCE
+"#include <stdint.h>
+
+int main()
+{
+    uint64_t value = 0;
+    __atomic_fetch_add(&value, 1, __ATOMIC_SEQ_CST);
+    return (int)value;
+}
+")
+                set(_GNSSSDR_CMAKE_REQUIRED_LIBRARIES_SAVED
+                    "${CMAKE_REQUIRED_LIBRARIES}"
+                )
+                set(CMAKE_REQUIRED_LIBRARIES "")
+                check_cxx_source_compiles(
+                    "${GNSSSDR_ATOMIC_TEST_SOURCE}"
+                    GNSSSDR_64BIT_ATOMICS_WITHOUT_LIBATOMIC
+                )
+                if(NOT GNSSSDR_64BIT_ATOMICS_WITHOUT_LIBATOMIC)
+                    set(CMAKE_REQUIRED_LIBRARIES atomic)
+                    check_cxx_source_compiles(
+                        "${GNSSSDR_ATOMIC_TEST_SOURCE}"
+                        GNSSSDR_64BIT_ATOMICS_WITH_LIBATOMIC
+                    )
+                    if(GNSSSDR_64BIT_ATOMICS_WITH_LIBATOMIC)
+                        set(GNSSSDR_PROTOBUF_LIBATOMIC atomic)
+                    else()
+                        set(CMAKE_REQUIRED_LIBRARIES
+                            "${_GNSSSDR_CMAKE_REQUIRED_LIBRARIES_SAVED}"
+                        )
+                        unset(_GNSSSDR_CMAKE_REQUIRED_LIBRARIES_SAVED)
+                        unset(GNSSSDR_ATOMIC_TEST_SOURCE)
+                        message(FATAL_ERROR
+                            "64-bit atomic operations require libatomic, "
+                            "but linking with -latomic failed."
+                        )
+                    endif()
+                endif()
+                set(CMAKE_REQUIRED_LIBRARIES
+                    "${_GNSSSDR_CMAKE_REQUIRED_LIBRARIES_SAVED}"
+                )
+                unset(_GNSSSDR_CMAKE_REQUIRED_LIBRARIES_SAVED)
+                unset(GNSSSDR_ATOMIC_TEST_SOURCE)
+            endif()
+            set(GNSSSDR_PROTOBUF_STATIC_LIBRARY
+                "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}"
+            )
+            set(GNSSSDR_PROTOBUF_INTERFACE_LINK_LIBRARIES
+                "${GNSSSDR_PROTOBUF_STATIC_LIBRARY}"
+            )
+            if(GNSSSDR_PROTOBUF_LIBATOMIC)
+                message(STATUS
+                    "Linking bundled static Protocol Buffers with libatomic"
+                )
+                list(APPEND GNSSSDR_PROTOBUF_INTERFACE_LINK_LIBRARIES
+                    "${GNSSSDR_PROTOBUF_LIBATOMIC}"
+                )
+            endif()
             set_target_properties(protobuf::libprotobuf PROPERTIES
                 IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-                IMPORTED_LOCATION "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}"
-                INTERFACE_INCLUDE_DIRECTORIES "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/include"
-                INTERFACE_LINK_LIBRARIES "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}"
+                IMPORTED_LOCATION "${GNSSSDR_PROTOBUF_STATIC_LIBRARY}"
+                INTERFACE_INCLUDE_DIRECTORIES
+                    "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/include"
+                INTERFACE_LINK_LIBRARIES
+                    "${GNSSSDR_PROTOBUF_INTERFACE_LINK_LIBRARIES}"
             )
             if(CMAKE_VERSION VERSION_LESS "3.10")
                 set(Protobuf_PROTOC_EXECUTABLE ${PROTOBUF_PROTOC_EXECUTABLE})

@@ -335,7 +335,6 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                 {
                     const auto decoded_tow_s = static_cast<uint32_t>(d_nav->get_TOW());
                     const bool is_tow_consistent_result = is_tow_consistent(decoded_tow_s);
-                    bool received_subframe_ok = false;
                     if (!is_tow_consistent_result)
                         {
                             LOG(INFO) << "Rejected " << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS")
@@ -352,7 +351,6 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                     // get ephemeris object for this SV (mandatory)
                                     const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(d_nav->get_ephemeris());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                                    received_subframe_ok = true;
                                 }
                             break;
                         case 2:
@@ -361,7 +359,6 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                     // get ephemeris object for this SV (mandatory)
                                     const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(d_nav->get_ephemeris());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                                    received_subframe_ok = true;
                                 }
                             break;
                         case 3:  // we have a new set of ephemeris data for the current SV
@@ -370,7 +367,6 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                     // get ephemeris object for this SV (mandatory)
                                     const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(d_nav->get_ephemeris());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                                    received_subframe_ok = true;
                                 }
                             break;
                         case 4:  // Possible IONOSPHERE and UTC model update (page 18)
@@ -378,19 +374,16 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                 {
                                     const std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(d_nav->get_iono());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                                    received_subframe_ok = true;
                                 }
                             if (d_nav->get_flag_utc_model_valid() == true)
                                 {
                                     const std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(d_nav->get_utc_model());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                                    received_subframe_ok = true;
                                 }
                             if (d_nav->almanac_validation() == true)
                                 {
                                     const std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(d_nav->get_almanac());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                                    received_subframe_ok = true;
                                 }
                             break;
                         case 5:
@@ -398,23 +391,19 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                 {
                                     const std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(d_nav->get_almanac());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                                    received_subframe_ok = true;
                                 }
                             break;
                         default:
                             break;
                         }
-                    if (received_subframe_ok)
-                        {
-                            const auto default_precision = std::cout.precision();
-                            std::cout << "New " << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS") << " NAV message received in channel " << this->d_channel << ": "
-                                      << "subframe "
-                                      << subframe_ID << " from satellite "
-                                      << Gnss_Satellite(std::string((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS"), d_nav->get_satellite_PRN())
-                                      << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
-                                      << " dB-Hz" << std::endl;
-                            return true;
-                        }
+                    const auto default_precision = std::cout.precision();
+                    std::cout << "New " << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS") << " NAV message received in channel " << this->d_channel << ": "
+                              << "subframe "
+                              << subframe_ID << " from satellite "
+                              << Gnss_Satellite(std::string((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS"), d_nav->get_satellite_PRN())
+                              << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
+                              << " dB-Hz" << std::endl;
+                    return true;
                 }
         }
     return false;

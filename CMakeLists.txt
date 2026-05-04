@@ -7,21 +7,47 @@
 ################################################################################
 # Project setup
 ################################################################################
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-    message(FATAL_ERROR "Prevented in-tree build, it is bad practice.\nTry 'cd build && cmake ..' instead.")
-endif()
-
-# Select the release build type by default to get optimization flags.
-# This has to come before project() which otherwise initializes it.
-# Build type can still be overridden by setting -DCMAKE_BUILD_TYPE=
-set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
-
 cmake_minimum_required(VERSION 2.8.12...4.3)
 project(gnss-sdr CXX C)
+
+# In-tree build guard
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+    message(FATAL_ERROR "Prevented in-tree build. Try 'cmake -S . -B build' instead.")
+endif()
 
 set(GNSSSDR_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}) # Allows to be a sub-project
 set(GNSSSDR_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 list(APPEND CMAKE_MODULE_PATH ${GNSSSDR_SOURCE_DIR}/cmake/Modules)
+
+# Define extra build types
+include(GnsssdrBuildTypes)
+# Available options:
+#  - None: nothing set
+#  - Debug: -O2 -g
+#  - Release: -O3
+#  - RelWithDebInfo: -O3 -g
+#  - MinSizeRel: -Os
+#  - Coverage: -Wall -pedantic -pthread -g -O0 -fprofile-arcs -ftest-coverage
+#  - NoOptWithASM: -O0 -g -save-temps
+#  - O2WithASM: -O2 -g -save-temps
+#  - O3WithASM: -O3 -g -save-temps
+#  - ASAN: -Wall -Wextra -g -O2 -fsanitize=address -fno-omit-frame-pointer
+
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)
+endif()
+gnsssdr_check_build_type(${CMAKE_BUILD_TYPE})
+
+if(WIN32)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+        "None" "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
+else()
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+        "None" "Debug" "Release" "RelWithDebInfo" "MinSizeRel"
+        "Coverage" "NoOptWithASM" "O2WithASM" "O3WithASM" "ASAN")
+endif()
+
+
 
 ################################################################################
 # Determine optional blocks/libraries to be built (default: not built)
@@ -241,21 +267,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     include(DetectMacOSVersion)
     message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on ${MACOS_DISTRIBUTION}")
 endif()
-
-# Define extra build types and select Release by default to get optimization flags
-include(GnsssdrBuildTypes)
-# Available options:
-#  - None: nothing set
-#  - Debug: -O2 -g
-#  - Release: -O3
-#  - RelWithDebInfo: -O3 -g
-#  - MinSizeRel: -Os
-#  - Coverage: -Wall -pedantic -pthread -g -O0 -fprofile-arcs -ftest-coverage
-#  - NoOptWithASM: -O0 -g -save-temps
-#  - O2WithASM: -O2 -g -save-temps
-#  - O3WithASM: -O3 -g -save-temps
-#  - ASAN: -Wall -Wextra -g -O2 -fsanitize=address -fno-omit-frame-pointer
-gnsssdr_check_build_type(${CMAKE_BUILD_TYPE})
 message(STATUS "Build type set to ${CMAKE_BUILD_TYPE}.")
 
 if(NOT (${CMAKE_BUILD_TYPE} STREQUAL "Release"))

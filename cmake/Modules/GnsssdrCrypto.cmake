@@ -4,6 +4,34 @@
 # SPDX-FileCopyrightText: 2024-2026 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
+# Finds and configures a TLS/crypto backend for gnss-sdr (OpenSSL or GnuTLS).
+#
+# OpenSSL is preferred. GnuTLS with OpenSSL compatibility is used as a
+# fallback when OpenSSL is not found or when ENABLE_GNUTLS is set.
+# If neither library is available, a fatal error is raised.
+#
+# Input variables:
+#   ENABLE_GNUTLS            - If set, skip OpenSSL and search for GnuTLS only
+#   OPENSSL_ROOT_DIR         - Optional hint for the OpenSSL installation root
+#   GNUTLS_ROOT_DIR          - Optional hint for the GnuTLS installation root
+#
+# Output variables:
+#   GNSSSDR_OPENSSL_FOUND         - TRUE if a usable OpenSSL installation was found
+#   GNSSSDR_OPENSSL_VERSION       - OpenSSL version string (e.g. "3.2.1")
+#   GNSSSDR_GNUTLS_FOUND          - TRUE if a usable GnuTLS installation was found
+#   GNSSSDR_GNUTLS_VERSION        - GnuTLS version string
+#   GNSSSDR_GNUTLS_INCLUDE_DIR    - Path to the GnuTLS include directory
+#
+# Provided function:
+#   link_to_crypto_dependencies(<target>)
+#     Links <target> against the selected crypto backend and sets the
+#     appropriate compile definitions:
+#       USE_OPENSSL_3=1            (OpenSSL >= 3.0.0)
+#       USE_OPENSSL_111=1          (OpenSSL >= 1.1.1, < 3.0.0)
+#       USE_GNUTLS_FALLBACK=1      (GnuTLS backend)
+#     When using GnuTLS, additional HAVE_GNUTLS_* definitions are set
+#     based on the features detected in the installed headers.
+
 if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
@@ -102,6 +130,7 @@ if(NOT ENABLE_GNUTLS)
         )
     endif()
 endif()
+
 
 ################################################################################
 # GnuTLS https://www.gnutls.org/
@@ -271,7 +300,9 @@ if(NOT GNSSSDR_OPENSSL_FOUND)
     endif()
 endif()
 
+
 ################################################################################
+
 
 function(link_to_crypto_dependencies target)
     if("${target}" STREQUAL "")

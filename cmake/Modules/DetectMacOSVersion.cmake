@@ -4,6 +4,20 @@
 # SPDX-FileCopyrightText: 2011-2026 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
+# Output variables:
+#   MACOS_DISTRIBUTION       - Human-readable platform string
+#                              (e.g. "macOS Sequoia 15.4 (arm64)")
+#   MACOS_PACKAGES_PREFIX    - Base install prefix of the detected package
+#                              manager, or empty string if none found
+#   MACPORTS_EXECUTABLE      - Full path to the MacPorts 'port' binary,
+#                              if MacPorts is present
+#   MACPORTS_PREFIX          - MacPorts installation root
+#   MACPORTS_VERSION         - MacPorts version string (e.g. "2.9.3")
+#   HOMEBREW_EXECUTABLE      - Full path to the Homebrew 'brew' binary,
+#                              if Homebrew is present
+#   HOMEBREW_PREFIX          - Homebrew installation root
+#   HOMEBREW_VERSION         - Homebrew version string (e.g. "4.3.0")
+
 execute_process(
     COMMAND uname -r
     OUTPUT_VARIABLE DARWIN_VERSION

@@ -4,6 +4,12 @@
 # SPDX-FileCopyrightText: 2011-2026 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
+# Output variables:
+#   GNSSSDR_LIB_PATHS      - List of candidate library search paths for the
+#                            current platform and architecture
+#   GNSSSDR_INCLUDE_PATHS  - List of candidate header search paths
+#   GNSSSDR_BIN_PATHS      - List of candidate binary/executable search paths
+
 if(GNSSSDR_LIB_PATHS)
     return()
 endif()

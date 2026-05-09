@@ -258,9 +258,20 @@ if(NOT GNSSSDR_OPENSSL_FOUND)
             set(GNUTLS_DIG_SHA3_256 TRUE)
         endif()
 
+        set(_gnsssdr_gnutls_hmac_old FALSE)
         if("${gnutls_gnutls_file_contents}" MATCHES "#define GNUTLS_VERSION_MAJOR 2")
+            set(_gnsssdr_gnutls_hmac_old TRUE)
+        elseif("${gnutls_gnutls_file_contents}" MATCHES "#define GNUTLS_VERSION_MAJOR 3")
+            if("${gnutls_gnutls_file_contents}" MATCHES "#define GNUTLS_VERSION_MINOR 0")
+                if(NOT "${gnutls_gnutls_file_contents}" MATCHES "#define GNUTLS_VERSION_MINOR 0[0-9]")
+                    set(_gnsssdr_gnutls_hmac_old TRUE)
+                endif()
+            endif()
+        endif()
+        if(_gnsssdr_gnutls_hmac_old)
             set(GNUTLS_HMAC_INIT_WITH_DIGEST TRUE)
         endif()
+        unset(_gnsssdr_gnutls_hmac_old)
 
         if("${gnutls_gnutls_file_contents}" MATCHES "GNUTLS_MAC_AES_CMAC_128")
             set(GNUTLS_MAC_AES_CMAC_128 TRUE)
@@ -403,13 +414,6 @@ function(link_to_crypto_dependencies target)
             endif()
         endif()
 
-        if(COMMAND target_compile_options AND GNUTLS_DEFINITIONS)
-            target_compile_options(${target}
-                PUBLIC
-                    ${GNUTLS_DEFINITIONS}
-            )
-        endif()
-
         if(TARGET Gmp::gmp)
             target_link_libraries(${target}
                 PRIVATE
@@ -434,6 +438,13 @@ function(link_to_crypto_dependencies target)
                         ${GMP_INCLUDE_DIRS}
                 )
             endif()
+        endif()
+
+        if(GNUTLS_DEFINITIONS)
+            target_compile_options(${target}
+                PUBLIC
+                    ${GNUTLS_DEFINITIONS}
+            )
         endif()
 
         target_compile_definitions(${target}

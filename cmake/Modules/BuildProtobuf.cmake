@@ -175,6 +175,24 @@ ExternalProject_Add(protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
     INSTALL_COMMAND ""
 )
 
+if("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
+    find_program(CODESIGN_EXECUTABLE codesign)
+
+    if(CODESIGN_EXECUTABLE)
+        ExternalProject_Add_Step(
+            protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+            codesign_protoc
+            COMMAND ${CODESIGN_EXECUTABLE}
+                --force
+                --sign -
+                ${PROTOBUF_PROTOC_EXECUTABLE_}
+            DEPENDEES build
+            COMMENT "Ad-hoc signing bundled protoc executable"
+            VERBATIM
+        )
+    endif()
+endif()
+
 file(MAKE_DIRECTORY ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/include)
 file(MAKE_DIRECTORY ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/${CMAKE_INSTALL_LIBDIR})
 

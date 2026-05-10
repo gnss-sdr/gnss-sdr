@@ -137,6 +137,11 @@ if(ENABLE_PACKAGING)
     set(ENABLE_STRIP OFF)
 endif()
 
+option(ENABLE_GNSSSDR_ADHOC_CODESIGN
+    "Ad-hoc sign local Darwin build-tree executables that must run after the build."
+    ON
+)
+
 # Testing
 option(ENABLE_UNIT_TESTING "Build unit tests" ON)
 
@@ -274,6 +279,12 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 if(NOT ("${CMAKE_BUILD_TYPE}" STREQUAL "Release"))
     set(ENABLE_STRIP OFF)
+endif()
+if("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
+    find_program(CODESIGN_EXECUTABLE codesign)
+endif()
+if(NOT CODESIGN_EXECUTABLE)
+    set(ENABLE_GNSSSDR_ADHOC_CODESIGN OFF)
 endif()
 
 # Enable optimization options in GCC for Release and RelWithDebInfo build types
@@ -3417,6 +3428,7 @@ add_feature_info(ENABLE_INSTALL_TESTS ENABLE_INSTALL_TESTS "Install test binarie
 add_feature_info(ENABLE_BENCHMARKS ENABLE_BENCHMARKS "Enables building of code snippet benchmarks.")
 add_feature_info(ENABLE_EXTERNAL_MATHJAX ENABLE_EXTERNAL_MATHJAX "Use MathJax from an external CDN in HTML docs when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'.")
 add_feature_info(ENABLE_CPUFEATURES ENABLE_CPUFEATURES "Make use of the cpu_features library.")
+add_feature_info(ENABLE_GNSSSDR_ADHOC_CODESIGN ENABLE_GNSSSDR_ADHOC_CODESIGN "Ad-hoc sign local Darwin build-tree executables that must run after the build.")
 add_feature_info(Boost_USE_STATIC_LIBS Boost_USE_STATIC_LIBS "Use Boost static libraries.")
 
 message(STATUS "")

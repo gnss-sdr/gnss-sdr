@@ -15,6 +15,43 @@ if(CMAKE_VERSION VERSION_LESS "3.5")
     include(CMakeParseArguments)
 endif()
 
+function(gnsssdr_copy_target_to_local_install target)
+    if(NOT TARGET ${target})
+        message(FATAL_ERROR
+            "gnsssdr_copy_target_to_local_install called for unknown target: ${target}"
+        )
+    endif()
+
+    if(ENABLE_GNSSSDR_ADHOC_CODESIGN)
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory
+                ${LOCAL_INSTALL_BASE_DIR}/install
+            COMMAND ${CMAKE_COMMAND} -E copy
+                "$<TARGET_FILE:${target}>"
+                "${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:${target}>.tmp"
+            COMMAND ${CODESIGN_EXECUTABLE}
+                --force
+                --sign -
+                "${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:${target}>.tmp"
+            COMMAND ${CMAKE_COMMAND} -E remove -f
+                "${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:${target}>"
+            COMMAND ${CMAKE_COMMAND} -E rename
+                "${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:${target}>.tmp"
+                "${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:${target}>"
+            VERBATIM
+        )
+    else()
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory
+                ${LOCAL_INSTALL_BASE_DIR}/install
+            COMMAND ${CMAKE_COMMAND} -E copy
+                "$<TARGET_FILE:${target}>"
+                "${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:${target}>"
+            VERBATIM
+        )
+    endif()
+endfunction()
+
 # Helper to fetch optional test data with integrity checking and optional uncompressing
 #
 # Arguments:
@@ -711,10 +748,7 @@ if(ENABLE_UNIT_TESTING)
         endif()
         install(TARGETS run_tests RUNTIME DESTINATION bin COMPONENT "run_tests")
     else()
-        add_custom_command(TARGET run_tests POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:run_tests>
-            ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:run_tests>
-        )
+        gnsssdr_copy_target_to_local_install(run_tests)
     endif()
     if(ENABLE_GPERFTOOLS)
         if(GPERFTOOLS_FOUND)
@@ -882,12 +916,12 @@ function(add_system_test executable)
         if(EXISTS ${LOCAL_INSTALL_BASE_DIR}/install/${executable})
             file(REMOVE ${LOCAL_INSTALL_BASE_DIR}/install/${executable})
         endif()
-        install(TARGETS ${executable} RUNTIME DESTINATION bin COMPONENT "${executable}_test")
-    else()
-        add_custom_command(TARGET ${executable} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${executable}>
-            ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:${executable}>
+        install(TARGETS ${executable}
+            RUNTIME DESTINATION bin
+            COMPONENT "${executable}_test"
         )
+    else()
+        gnsssdr_copy_target_to_local_install(${executable})
     endif()
 
     xcode_remove_warning_duplicates(${executable})

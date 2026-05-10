@@ -88,10 +88,34 @@ if(ENABLE_CLANG_TIDY)
     endif()
 endif()
 
-add_custom_command(TARGET gnss-sdr
-    POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:gnss-sdr>
-        ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>
-)
+if(ENABLE_GNSSSDR_ADHOC_CODESIGN)
+    add_custom_command(TARGET gnss-sdr POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            ${LOCAL_INSTALL_BASE_DIR}/install
+        COMMAND ${CMAKE_COMMAND} -E copy
+            $<TARGET_FILE:gnss-sdr>
+            ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>.tmp
+        COMMAND ${CODESIGN_EXECUTABLE}
+            --force
+            --sign -
+            ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>.tmp
+        COMMAND ${CMAKE_COMMAND} -E remove -f
+            ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>
+        COMMAND ${CMAKE_COMMAND} -E rename
+            ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>.tmp
+            ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>
+        VERBATIM
+    )
+else()
+    add_custom_command(TARGET gnss-sdr POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            ${LOCAL_INSTALL_BASE_DIR}/install
+        COMMAND ${CMAKE_COMMAND} -E copy
+            $<TARGET_FILE:gnss-sdr>
+            ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>
+        VERBATIM
+    )
+endif()
 
 install(TARGETS gnss-sdr
     RUNTIME DESTINATION bin

@@ -170,7 +170,6 @@ private:
         uint64_t sample_count{0};
         float test_statistics{0};
         float threshold{0};
-        bool positive_acq{false};
     };
 
     void update_local_carrier(own::span<gr_complex> carrier_vector, float freq) const;
@@ -179,15 +178,14 @@ private:
     void doppler_grid(const gr_complex* in, bool step_two);
     AcquisitionResult compute_statistics(uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step, bool step_two);
     void update_synchro(const AcquisitionResult& result, float doppler_step);
-    bool check_result(const AcquisitionResult& result, bool step_two);
+    void check_result(const AcquisitionResult& result, bool step_two);
     bool acquisition_core(uint64_t sample_count, bool step_two);
     void acquisition(uint64_t sample_count);
-    void log_acquisition(const AcquisitionResult& result) const;
+    void log_acquisition(const AcquisitionResult& result, bool positive_acq);
     void send_positive_acquisition(const AcquisitionResult& result);
     void send_negative_acquisition(const AcquisitionResult& result);
-    void dump_results(const AcquisitionResult& result);
+    void dump_results(const AcquisitionResult& result, bool positive_acq);
     bool is_fdma();
-    float get_threshold(bool step_two) const;
     AcquisitionResult first_vs_second_peak_statistic(uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step, bool step_two);
     AcquisitionResult max_to_input_power_statistic(uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step, bool step_two);
     void wait_if_active();

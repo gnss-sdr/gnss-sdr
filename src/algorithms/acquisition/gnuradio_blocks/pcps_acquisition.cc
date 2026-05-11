@@ -300,9 +300,9 @@ void pcps_acquisition::update_grid_doppler_wipeoffs_step2()
 }
 
 
-void pcps_acquisition::log_acquisition(const AcquisitionResult& result) const
+void pcps_acquisition::log_acquisition(const AcquisitionResult& result, bool positive_acq)
 {
-    DLOG(INFO) << (result.positive_acq ? "positive" : "negative") << " acquisition"
+    DLOG(INFO) << (positive_acq ? "positive" : "negative") << " acquisition"
                << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
                << ", sample_stamp " << result.sample_count
                << ", test statistics value " << result.test_statistics
@@ -311,12 +311,17 @@ void pcps_acquisition::log_acquisition(const AcquisitionResult& result) const
                << ", doppler " << static_cast<double>(result.doppler)
                << ", input signal power " << d_input_power
                << ", Assist doppler_center " << d_doppler_center;
+
+    if (d_dump && d_channel == d_dump_channel)
+        {
+            dump_results(result, positive_acq);
+        }
 }
 
 
 void pcps_acquisition::send_positive_acquisition(const AcquisitionResult& result)
 {
-    log_acquisition(result);
+    log_acquisition(result, true);
 
     if (!d_channel_fsm.expired())
         {
@@ -342,7 +347,7 @@ void pcps_acquisition::send_positive_acquisition(const AcquisitionResult& result
 
 void pcps_acquisition::send_negative_acquisition(const AcquisitionResult& result)
 {
-    log_acquisition(result);
+    log_acquisition(result, false);
 
     // Declare negative acquisition using a message port
     // 0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
@@ -350,7 +355,7 @@ void pcps_acquisition::send_negative_acquisition(const AcquisitionResult& result
 }
 
 
-void pcps_acquisition::dump_results(const AcquisitionResult& result)
+void pcps_acquisition::dump_results(const AcquisitionResult& result, bool positive_acq)
 {
     d_dump_number++;
     std::string filename = d_dump_filename;
@@ -380,7 +385,7 @@ void pcps_acquisition::dump_results(const AcquisitionResult& result)
             write_matlab_var<2>("acq_grid", d_grid.memptr(), matfp, dims_2d);
             write_matlab_var<1>("doppler_max", static_cast<int32_t>(d_doppler_max), matfp, dims_1d);
             write_matlab_var<1>("doppler_step", static_cast<int32_t>(d_doppler_step), matfp, dims_1d);
-            write_matlab_var<1>("positive_acq", static_cast<int32_t>(result.positive_acq ? 1 : 0), matfp, dims_1d);
+            write_matlab_var<1>("positive_acq", static_cast<int32_t>(positive_acq ? 1 : 0), matfp, dims_1d);
             write_matlab_var<1>("acq_doppler_hz", static_cast<float>(d_gnss_synchro->Acq_doppler_hz), matfp, dims_1d);
             write_matlab_var<1>("acq_delay_samples", static_cast<float>(d_gnss_synchro->Acq_delay_samples), matfp, dims_1d);
             write_matlab_var<1>("test_statistic", result.test_statistics, matfp, dims_1d);
@@ -593,23 +598,22 @@ void pcps_acquisition::update_synchro(const AcquisitionResult& result, float dop
 }
 
 
-bool pcps_acquisition::check_result(const AcquisitionResult& result, bool step_two)
+void pcps_acquisition::check_result(const AcquisitionResult& result, bool step_two)
 {
     if (result.test_statistics > result.threshold)
         {
             d_state = 0;
+            d_num_noncoherent_integrations_counter = 0;
 
             if (!d_acq_parameters.make_2_steps || step_two)  // Last step
                 {
                     send_positive_acquisition(result);
                     d_active = false;
-                    return true;
                 }
             else  // First out of two step
                 {
                     d_doppler_center_step_two = static_cast<float>(result.doppler);
                     update_grid_doppler_wipeoffs_step2();
-                    d_num_noncoherent_integrations_counter = 0;
                 }
         }
     else if (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)
@@ -617,14 +621,13 @@ bool pcps_acquisition::check_result(const AcquisitionResult& result, bool step_t
             send_negative_acquisition(result);
             d_active = false;
             d_state = 0;
+            d_num_noncoherent_integrations_counter = 0;
         }
     else
         {
             d_buffer_count = 0;
             d_state = 1;
         }
-
-    return false;
 }
 
 
@@ -635,7 +638,7 @@ bool pcps_acquisition::acquisition_core(uint64_t sample_count, bool step_two)
     ++d_num_noncoherent_integrations_counter;
 
     const gr_complex* in = d_input_signal.data();  // Get the input samples pointer
-    const auto threshold = get_threshold(step_two);
+    const auto threshold = step_two ? d_threshold_step_two : d_threshold;
     const auto num_doppler_bins = step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins;
     const auto doppler_step = step_two ? d_acq_parameters.doppler_step2 : d_doppler_step;
     const auto doppler_max = step_two ? static_cast<int32_t>(d_doppler_center_step_two - (static_cast<float>(d_num_doppler_bins_step2) / 2.0) * doppler_step) : d_doppler_max;
@@ -659,18 +662,9 @@ bool pcps_acquisition::acquisition_core(uint64_t sample_count, bool step_two)
     lk.lock();
 
     update_synchro(result, doppler_step);
-    result.positive_acq = check_result(result, step_two);
+    check_result(result, step_two);
 
-    if (!d_active)  // Done with acquisition step
-        {
-            if (d_dump && d_channel == d_dump_channel)
-                {
-                    dump_results(result);
-                }
-            d_num_noncoherent_integrations_counter = 0U;
-        }
-
-    return d_active && d_num_noncoherent_integrations_counter == 0;  // Need second step
+    return d_active && d_state == 0;  // Need second step
 }
 
 
@@ -702,12 +696,6 @@ void pcps_acquisition::acquisition(uint64_t sample_count)
         }
 
     d_worker_active = false;
-}
-
-
-float pcps_acquisition::get_threshold(bool step_two) const
-{
-    return step_two ? d_threshold_step_two : d_threshold;
 }
 
 

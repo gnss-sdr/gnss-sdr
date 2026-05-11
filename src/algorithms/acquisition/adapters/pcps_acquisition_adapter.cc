@@ -195,6 +195,11 @@ Acq_Conf get_acq_conf(const ConfigurationInterface* configuration, const std::st
     acq_parameters.sampled_ms = sig_info.ms_per_code;  // Set as default value
     acq_parameters.SetFromConfiguration(configuration, role, sig_info.chip_rate, sig_info.opt_freq);
 
+    if (acq_parameters.bit_transition_flag)
+        {
+            acq_parameters.max_dwells = 1;  // Max one dwell with bit_transition_flag
+        }
+
     if (sig_flag == GAL_1B)
         {
             acq_parameters.acquire_pilot = configuration->property(role + ".acquire_pilot", acq_parameters.acquire_pilot);

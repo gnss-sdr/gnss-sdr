@@ -671,8 +671,6 @@ bool pcps_acquisition::acquisition_core(uint64_t sample_count, bool step_two)
             d_num_noncoherent_integrations_counter = 0U;
         }
 
-    d_worker_active = d_active;
-
     return d_active && d_num_noncoherent_integrations_counter == 0;  // Need second step
 }
 
@@ -703,6 +701,8 @@ void pcps_acquisition::acquisition(uint64_t sample_count)
         {
             acquisition_core(sample_count, true);
         }
+
+    d_worker_active = false;
 }
 
 

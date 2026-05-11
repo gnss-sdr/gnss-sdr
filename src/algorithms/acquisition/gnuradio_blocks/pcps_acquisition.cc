@@ -559,19 +559,15 @@ void pcps_acquisition::doppler_grid(const gr_complex* in, bool step_two)
 }
 
 
-pcps_acquisition::AcquisitionResult pcps_acquisition::compute_statistics(bool step_two)
+pcps_acquisition::AcquisitionResult pcps_acquisition::compute_statistics(uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step, bool step_two)
 {
-    const auto bin_count = step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins;
-    const auto doppler_step = step_two ? d_acq_parameters.doppler_step2 : d_doppler_step;
-    const auto doppler_max = step_two ? static_cast<int32_t>(d_doppler_center_step_two - (static_cast<float>(bin_count) / 2.0) * doppler_step) : d_doppler_max;
-
     if (d_use_CFAR_algorithm_flag)
         {
-            return max_to_input_power_statistic(bin_count, doppler_max, doppler_step, step_two);
+            return max_to_input_power_statistic(num_doppler_bins, doppler_max, doppler_step, step_two);
         }
     else
         {
-            return first_vs_second_peak_statistic(bin_count, doppler_max, doppler_step, step_two);
+            return first_vs_second_peak_statistic(num_doppler_bins, doppler_max, doppler_step, step_two);
         }
 }
 
@@ -598,7 +594,7 @@ void pcps_acquisition::update_synchro(const AcquisitionResult& result, bool step
 }
 
 
-bool pcps_acquisition::handle_result(const AcquisitionResult& result, bool step_two)
+bool pcps_acquisition::check_result(const AcquisitionResult& result, bool step_two)
 {
     if (result.test_statistics > result.threshold)
         {
@@ -637,30 +633,34 @@ bool pcps_acquisition::acquisition_core(uint64_t sample_count, bool step_two)
 {
     gr::thread::scoped_lock lk(d_setlock);
 
-    const gr_complex* in = d_input_signal.data();  // Get the input samples pointer
-    const auto threshold = get_threshold(step_two);
     ++d_num_noncoherent_integrations_counter;
 
+    const gr_complex* in = d_input_signal.data();  // Get the input samples pointer
+    const auto threshold = get_threshold(step_two);
+    const auto num_doppler_bins = step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins;
+    const auto doppler_step = step_two ? d_acq_parameters.doppler_step2 : d_doppler_step;
+    const auto doppler_max = step_two ? static_cast<int32_t>(d_doppler_center_step_two - (static_cast<float>(d_num_doppler_bins_step2) / 2.0) * doppler_step) : d_doppler_max;
+
     DLOG(INFO) << "Channel: " << d_channel
-               << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-               << " , sample stamp: " << sample_count
+               << ", doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
+               << ", sample stamp: " << sample_count
                << ", threshold: " << threshold
-               << ", doppler_max: " << d_doppler_max
-               << ", doppler_step: " << d_doppler_step
+               << ", doppler_max: " << doppler_max
+               << ", doppler_step: " << doppler_step
                << ", use_CFAR_algorithm_flag: " << (d_use_CFAR_algorithm_flag ? "true" : "false");
 
     lk.unlock();
 
     // Doppler frequency grid loop, only access variables that doesn't need a lock
     doppler_grid(in, step_two);
-    auto result = compute_statistics(step_two);
+    auto result = compute_statistics(num_doppler_bins, doppler_max, doppler_step, step_two);
     result.sample_count = sample_count;
     result.threshold = threshold;
 
     lk.lock();
 
     update_synchro(result, step_two);
-    result.positive_acq = handle_result(result, step_two);
+    result.positive_acq = check_result(result, step_two);
 
     if (!d_active)  // Done with acquisition step
         {

@@ -177,9 +177,9 @@ private:
     void update_grid_doppler_wipeoffs();
     void update_grid_doppler_wipeoffs_step2();
     void doppler_grid(const gr_complex* in, bool step_two);
-    AcquisitionResult compute_statistics(bool step_two);
+    AcquisitionResult compute_statistics(uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step, bool step_two);
     void update_synchro(const AcquisitionResult& result, bool step_two);
-    bool handle_result(const AcquisitionResult& result, bool step_two);
+    bool check_result(const AcquisitionResult& result, bool step_two);
     bool acquisition_core(uint64_t sample_count, bool step_two);
     void acquisition(uint64_t sample_count);
     void log_acquisition(const AcquisitionResult& result) const;

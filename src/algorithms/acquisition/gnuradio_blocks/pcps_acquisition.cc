@@ -311,11 +311,6 @@ void pcps_acquisition::log_acquisition(const AcquisitionResult& result, bool pos
                << ", doppler " << static_cast<double>(result.doppler)
                << ", input signal power " << d_input_power
                << ", Assist doppler_center " << d_doppler_center;
-
-    if (d_dump && d_channel == d_dump_channel)
-        {
-            dump_results(result, positive_acq);
-        }
 }
 
 
@@ -342,6 +337,11 @@ void pcps_acquisition::send_positive_acquisition(const AcquisitionResult& result
         {
             d_monitor_queue.push(*d_gnss_synchro);
         }
+
+    if (d_dump && d_channel == d_dump_channel)
+        {
+            dump_results(result, true);
+        }
 }
 
 
@@ -352,6 +352,11 @@ void pcps_acquisition::send_negative_acquisition(const AcquisitionResult& result
     // Declare negative acquisition using a message port
     // 0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
     this->message_port_pub(pmt::mp("events"), pmt::from_long(2));
+
+    if (d_dump && d_channel == d_dump_channel)
+        {
+            dump_results(result, false);
+        }
 }
 
 

@@ -572,10 +572,11 @@ pcps_acquisition::AcquisitionResult pcps_acquisition::compute_statistics(uint32_
 }
 
 
-void pcps_acquisition::update_synchro(const AcquisitionResult& result, bool step_two)
+void pcps_acquisition::update_synchro(const AcquisitionResult& result, float doppler_step)
 {
     d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(result.index_time), d_acq_parameters.samples_per_code));
     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(result.doppler);
+    d_gnss_synchro->Acq_doppler_step = static_cast<uint32_t>(doppler_step);
 
     if (d_acq_parameters.use_automatic_resampler)
         {
@@ -589,8 +590,6 @@ void pcps_acquisition::update_synchro(const AcquisitionResult& result, bool step
             d_gnss_synchro->Acq_samplestamp_samples = result.sample_count;
             d_gnss_synchro->fs = d_acq_parameters.fs_in;
         }
-
-    d_gnss_synchro->Acq_doppler_step = step_two ? d_acq_parameters.doppler_step2 : d_acq_parameters.doppler_step;
 }
 
 
@@ -659,7 +658,7 @@ bool pcps_acquisition::acquisition_core(uint64_t sample_count, bool step_two)
 
     lk.lock();
 
-    update_synchro(result, step_two);
+    update_synchro(result, doppler_step);
     result.positive_acq = check_result(result, step_two);
 
     if (!d_active)  // Done with acquisition step

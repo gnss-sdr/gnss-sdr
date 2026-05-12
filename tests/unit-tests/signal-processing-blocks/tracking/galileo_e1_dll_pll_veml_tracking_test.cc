@@ -43,7 +43,6 @@ protected:
     DllPllTrackingAdapterGalileoE1Test()
         : item_size(sizeof(gr_complex))
     {
-        factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
     }
 
@@ -51,7 +50,6 @@ protected:
 
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
-    std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
@@ -83,7 +81,7 @@ void DllPllTrackingAdapterGalileoE1Test::init()
 TEST_F(DllPllTrackingAdapterGalileoE1Test, Instantiate)
 {
     init();
-    auto tracking = factory->GetBlock(config.get(), "Tracking_1B", 1, 1);
+    auto tracking = block_factory::GetBlock(config.get(), "Tracking_1B", 1, 1);
     EXPECT_STREQ("Galileo_E1_DLL_PLL_VEML_Tracking", tracking->implementation().c_str());
 }
 
@@ -100,7 +98,7 @@ TEST_F(DllPllTrackingAdapterGalileoE1Test, ConnectAndRun)
     top_block = gr::make_top_block("Tracking test");
 
     // Example using smart pointers and the block factory
-    std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config.get(), "Tracking_1B", 1, 1);
+    std::shared_ptr<GNSSBlockInterface> trk_ = block_factory::GetBlock(config.get(), "Tracking_1B", 1, 1);
     std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
 
     ASSERT_NO_THROW({
@@ -148,7 +146,7 @@ TEST_F(DllPllTrackingAdapterGalileoE1Test, ValidationOfResults)
     top_block = gr::make_top_block("Tracking test");
 
     // Example using smart pointers and the block factory
-    std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config.get(), "Tracking_1B", 1, 1);
+    std::shared_ptr<GNSSBlockInterface> trk_ = block_factory::GetBlock(config.get(), "Tracking_1B", 1, 1);
     std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
 
     // gnss_synchro.Acq_delay_samples = 1753; // 4 Msps

@@ -17,11 +17,12 @@
  */
 
 
+#include "acquisition_interface.h"
 #include "concurrent_queue.h"
+#include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
-#include "gps_l1_ca_pcps_quicksync_acquisition.h"
 #include "in_memory_configuration.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
@@ -155,7 +156,7 @@ protected:
     Concurrent_Queue<int> channel_internal_queue;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
-    std::shared_ptr<GpsL1CaPcpsQuickSyncAcquisition> acquisition;
+    std::unique_ptr<AcquisitionInterface> acquisition;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
@@ -558,7 +559,7 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::stop_queue()
 TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, Instantiate)
 {
     config_1();
-    acquisition = std::make_shared<GpsL1CaPcpsQuickSyncAcquisition>(config.get(), "Acquisition_1C", 1, 0);
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_1C", 1, 0);
 }
 
 
@@ -572,7 +573,7 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ConnectAndRun)
     auto msg_rx = GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     config_1();
-    acquisition = std::make_shared<GpsL1CaPcpsQuickSyncAcquisition>(config.get(), "Acquisition_1C", 1, 0);
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_1C", 1, 0);
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
@@ -599,7 +600,7 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
     config_1();
     top_block = gr::make_top_block("Acquisition test");
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
-    acquisition = std::make_shared<GpsL1CaPcpsQuickSyncAcquisition>(config.get(), "Acquisition_1C", 1, 0);
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_1C", 1, 0);
     auto msg_rx = GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -754,7 +755,7 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
     config_2();
     top_block = gr::make_top_block("Acquisition test");
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
-    acquisition = std::make_shared<GpsL1CaPcpsQuickSyncAcquisition>(config.get(), "Acquisition_1C", 1, 0);
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_1C", 1, 0);
     auto msg_rx = GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({

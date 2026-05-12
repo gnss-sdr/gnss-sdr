@@ -17,10 +17,12 @@
  */
 
 
+#include "acquisition_interface.h"
 #include "concurrent_queue.h"
 #include "configuration_interface.h"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
+#include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
@@ -32,20 +34,30 @@
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/top_block.h>
+#include <gtest/gtest.h>
 #include <pmt/pmt.h>
 #include <chrono>
 #include <memory>
 #include <thread>
 #include <utility>
+
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind/bind.hpp>
 #endif
+
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
+
 #if PMT_USES_BOOST_ANY
 namespace wht = boost;
 #else
@@ -148,7 +160,7 @@ protected:
     Concurrent_Queue<int> channel_internal_queue;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
-    std::shared_ptr<GpsL1CaPcpsOpenClAcquisition> acquisition;
+    std::unique_ptr<AcquisitionInterface> acquisition;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
@@ -433,7 +445,7 @@ void GpsL1CaPcpsOpenClAcquisitionGSoC2013Test::stop_queue()
 TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, Instantiate)
 {
     config_1();
-    acquisition = std::make_shared<GpsL1CaPcpsOpenClAcquisition>(config.get(), "Acquisition_1C", 1, 0);
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_1C", 1, 0);
 }
 
 
@@ -444,7 +456,7 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ConnectAndRun)
     std::chrono::duration<double> elapsed_seconds(0);
 
     config_1();
-    acquisition = std::make_shared<GpsL1CaPcpsOpenClAcquisition>(config.get(), "Acquisition_1C", 1, 0);
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_1C", 1, 0);
     auto msg_rx = GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -471,7 +483,7 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResults)
 {
     config_1();
 
-    acquisition = std::make_shared<GpsL1CaPcpsOpenClAcquisition>(config.get(), "Acquisition", 1, 0);
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_1C", 1, 0);
     auto msg_rx = GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -545,7 +557,7 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResultsProbabilitie
 {
     config_2();
 
-    acquisition = std::make_shared<GpsL1CaPcpsOpenClAcquisition>(config.get(), "Acquisition_1C", 1, 0);
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_1C", 1, 0);
     auto msg_rx = GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({

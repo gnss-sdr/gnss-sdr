@@ -277,7 +277,6 @@ public:
 
     HybridObservablesTestFpga()
     {
-        factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
     }
@@ -297,7 +296,6 @@ public:
         bool high_dyn);
 
     gr::top_block_sptr top_block;
-    std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro_master;
     std::vector<Gnss_Synchro> gnss_synchro_vec;
@@ -2061,9 +2059,9 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
             gnss_synchro_vec.at(n).Channel_ID = n;
 
             // create the tracking channels and create the telemetry decoders
-            std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config.get(), "Tracking", 1, 1);
+            std::shared_ptr<GNSSBlockInterface> trk_ = block_factory::GetBlock(config.get(), "Tracking", 1, 1);
             tracking_ch_vec.push_back(std::dynamic_pointer_cast<TrackingInterface>(trk_));
-            std::shared_ptr<GNSSBlockInterface> tlm_ = factory->GetBlock(config.get(), "TelemetryDecoder", 1, 1);
+            std::shared_ptr<GNSSBlockInterface> tlm_ = block_factory::GetBlock(config.get(), "TelemetryDecoder", 1, 1);
             tlm_ch_vec.push_back(std::dynamic_pointer_cast<TelemetryDecoderInterface>(tlm_));
 
             // create null sinks for observables output

@@ -63,17 +63,10 @@ private:
     void configure_signal_parameters(const ConfigurationInterface* configuration);
     void generate_prn_codes();
 
-    inline static const std::map<std::string, std::string> signal_to_device_ = {
-        {"1C", "multicorrelator_resampler_S00_AXI"},
-        {"2S", "multicorrelator_resampler_S00_AXI"},
-        {"L5", "multicorrelator_resampler_3_1_AXI"},
-        {"1B", "multicorrelator_resampler_5_1_AXI"},
-        {"5X", "multicorrelator_resampler_3_1_AXI"},
-    };
-    inline static const std::map<std::string, std::string> signal_to_alternative_device_ = {
-        {"1C", "multicorrelator_resampler_5_1_AXI"}};
-    inline static std::map<std::string, int> channel_counts_;
-    inline static std::mutex channel_counts_mtx_;
+    static const std::map<std::string, std::string> signal_to_device_;
+    static const std::map<std::string, std::string> signal_to_alternative_device_;
+    static std::map<std::string, int> channel_counts_;
+    static std::mutex channel_counts_mtx_;
 
     Dll_Pll_Conf_Fpga trk_params_;
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc_sptr_;

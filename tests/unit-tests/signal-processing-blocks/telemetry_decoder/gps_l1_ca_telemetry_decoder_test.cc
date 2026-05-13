@@ -168,7 +168,11 @@ TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx::TelemetryDecoderAdapterGpsL1CaTes
 #if HAS_GENERIC_LAMBDA
         [this](auto&& PH1) { msg_handler_channel_events(std::forward<decltype(PH1)>(PH1)); });
 #else
+#if USE_BOOST_BIND_PLACEHOLDERS
         boost::bind(&TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx::msg_handler_channel_events, this, boost::placeholders::_1));
+#else
+        boost::bind(&TelemetryDecoderAdapterGpsL1CaTest_tlm_msg_rx::msg_handler_channel_events, this, _1));
+#endif
 #endif
     rx_message = 0;
 }

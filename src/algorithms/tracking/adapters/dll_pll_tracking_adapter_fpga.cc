@@ -106,6 +106,21 @@ void warn_narrow_bw(const std::string& signal_name, const Dll_Pll_Conf_Fpga& con
 }  // namespace
 
 
+const std::map<std::string, std::string> DllPllTrackingAdapterFpga::signal_to_device_ = {
+    {"1C", "multicorrelator_resampler_S00_AXI"},
+    {"2S", "multicorrelator_resampler_S00_AXI"},
+    {"L5", "multicorrelator_resampler_3_1_AXI"},
+    {"1B", "multicorrelator_resampler_5_1_AXI"},
+    {"5X", "multicorrelator_resampler_3_1_AXI"},
+};
+
+const std::map<std::string, std::string> DllPllTrackingAdapterFpga::signal_to_alternative_device_ = {
+    {"1C", "multicorrelator_resampler_5_1_AXI"}};
+
+std::map<std::string, int> DllPllTrackingAdapterFpga::channel_counts_;
+std::mutex DllPllTrackingAdapterFpga::channel_counts_mtx_;
+
+
 DllPllTrackingAdapterFpga::DllPllTrackingAdapterFpga(const ConfigurationInterface* configuration,
     const std::string& role,
     const std::string& implementation,
@@ -514,8 +529,10 @@ void DllPllTrackingAdapterFpga::configure_fpga_tracking_channel_mapping(const st
 void DllPllTrackingAdapterFpga::set_signal_channel_base_index_locked()
 {
     uint32_t signal_base_channel_index = 0;
-    for (const auto& [label, num_correlators] : channel_counts_)
+    for (const auto& channel_count : channel_counts_)
         {
+            const auto& label = channel_count.first;
+            const auto& num_correlators = channel_count.second;
             if (label != signal_)
                 {
                     const auto it = signal_to_device_.find(label);
@@ -534,8 +551,10 @@ void DllPllTrackingAdapterFpga::set_signal_channel_base_index_locked()
 uint32_t DllPllTrackingAdapterFpga::get_num_alternative_devices_locked() const
 {
     uint32_t num_alternative_devices = 0;
-    for (const auto& [signal_type, alternative_device_name] : signal_to_alternative_device_)
+    for (const auto& signal_to_alternative_device : signal_to_alternative_device_)
         {
+            const auto& signal_type = signal_to_alternative_device.first;
+            const auto& alternative_device_name = signal_to_alternative_device.second;
             if (alternative_device_name == device_name_)
                 {
                     uint32_t num_channels = 0;

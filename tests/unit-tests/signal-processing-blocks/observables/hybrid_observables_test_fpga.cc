@@ -203,7 +203,16 @@ void HybridObservablesTest_tlm_msg_rx_Fpga::msg_handler_channel_events(const pmt
 HybridObservablesTest_tlm_msg_rx_Fpga::HybridObservablesTest_tlm_msg_rx_Fpga() : gr::block("HybridObservablesTest_tlm_msg_rx_Fpga", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
-    this->set_msg_handler(pmt::mp("events"), boost::bind(&HybridObservablesTest_tlm_msg_rx_Fpga::msg_handler_channel_events, this, boost::placeholders::_1));
+    this->set_msg_handler(pmt::mp("events"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto&& PH1) { msg_handler_channel_events(std::forward<decltype(PH1)>(PH1)); });
+#else
+#if USE_BOOST_BIND_PLACEHOLDERS
+        boost::bind(&HybridObservablesTest_tlm_msg_rx_Fpga::msg_handler_channel_events, this, boost::placeholders::_1));
+#else
+        boost::bind(&HybridObservablesTest_tlm_msg_rx_Fpga::msg_handler_channel_events, this, _1));
+#endif
+#endif
     rx_message = 0;
 }
 

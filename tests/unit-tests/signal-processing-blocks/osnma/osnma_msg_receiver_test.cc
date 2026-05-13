@@ -2170,7 +2170,7 @@ TEST_F(OsnmaMsgReceiverTest, KrootWithMismatchedActivePkidIsRejected)
     osnma->d_osnma_data.d_dsm_kroot_message.pkid = 2;
     osnma->d_osnma_data.d_dsm_kroot_message.verified = true;
     osnma->d_tesla_key_verified = true;
-    osnma->d_tesla_keys.emplace(helper.compute_gst(1258, 1030), std::vector<uint8_t>{0x11, 0x22});
+    osnma->d_tesla_keys[helper.compute_gst(1258, 1030)] = {0x11, 0x22};
     osnma->d_osnma_data.d_dsm_header.dsm_id = 4;
     osnma->d_crypto->set_public_key_type("ECDSA P-256");
     osnma->d_count_failed_Kroot = 0;
@@ -2227,7 +2227,7 @@ TEST_F(OsnmaMsgReceiverTest, FailedKrootWithMatchingPkidKeepsActivePublicKey)
     osnma->d_kroot_verified = true;
     osnma->d_last_verified_kroot_GST = helper.compute_gst(1258, 1000);
     osnma->d_tesla_key_verified = true;
-    osnma->d_tesla_keys.emplace(helper.compute_gst(1258, 1030), std::vector<uint8_t>{0x11, 0x22});
+    osnma->d_tesla_keys[helper.compute_gst(1258, 1030)] = {0x11, 0x22};
     osnma->d_osnma_data.d_dsm_header.dsm_id = 4;
     osnma->d_crypto->set_public_key_type("ECDSA P-256");
     osnma->d_count_failed_Kroot = 0;
@@ -2270,7 +2270,7 @@ TEST_F(OsnmaMsgReceiverTest, DsmKrootPdkUsesSha256WhenHfSha3)
     osnma->d_kroot_verified = true;
     osnma->d_last_verified_kroot_GST = helper.compute_gst(1258, 1000);
     osnma->d_tesla_key_verified = true;
-    osnma->d_tesla_keys.emplace(helper.compute_gst(1258, 1030), std::vector<uint8_t>{0x11, 0x22});
+    osnma->d_tesla_keys[helper.compute_gst(1258, 1030)] = {0x11, 0x22};
     osnma->d_osnma_data.d_dsm_header.dsm_id = 4;
     osnma->d_crypto->set_public_key_type("ECDSA P-256");
     osnma->d_count_failed_Kroot = 0;
@@ -3024,7 +3024,8 @@ TEST_F(OsnmaMsgReceiverTest, TeslaKeyVerification)
     osnma->d_GST_0 = ((1248 & 0x00000FFF) << 20 | (345600 & 0x000FFFFF));                          // applicable time (GST_Kroot + 30)
     osnma->d_GST_Sf = osnma->d_GST_0 + 30 * std::floor((osnma->d_GST_SIS - osnma->d_GST_0) / 30);  // Eq. 3 R.G.
 
-    osnma->d_tesla_keys.insert((std::pair<uint32_t, std::vector<uint8_t>>(helper.compute_gst(1248, 345600), {0xEF, 0xF9, 0x99, 0x04, 0x0E, 0x19, 0xB5, 0x70, 0x83, 0x50, 0x60, 0xBE, 0xBD, 0x23, 0xED, 0x92})));  // K1, not needed, just for reference.
+    osnma->d_tesla_keys[helper.compute_gst(1248, 345600)] =
+        {0xEF, 0xF9, 0x99, 0x04, 0x0E, 0x19, 0xB5, 0x70, 0x83, 0x50, 0x60, 0xBE, 0xBD, 0x23, 0xED, 0x92};  // K1, not needed, just for reference.
     std::vector<uint8_t> key = {0x2D, 0xC3, 0xA3, 0xCD, 0xB1, 0x17, 0xFA, 0xAD, 0xB8, 0x3B, 0x5F, 0x0B, 0x6F, 0xEA, 0x88, 0xEB};                                                                                  // K2
     uint32_t TOW = 345630;
 

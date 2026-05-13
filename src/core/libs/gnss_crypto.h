@@ -19,6 +19,7 @@
 #ifndef GNSS_SDR_GNSS_CRYPTO_H
 #define GNSS_SDR_GNSS_CRYPTO_H
 
+#include "osnma_crypto_material.h"
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -52,6 +53,7 @@ public:
     ~Gnss_Crypto();  //!< Default destructor
 
     bool have_public_key() const;  //!< Returns true if the ECDSA Public Key is already loaded
+    void clear_public_key();       //!< Clears the loaded ECDSA Public Key
 
     /*!
      * Stores the ECDSA Public Key in a .pem file, which is read in a following run if the .crt file is not found
@@ -66,19 +68,21 @@ public:
     std::vector<uint8_t> compute_HMAC_SHA_256(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input) const;  //!< Computes HMAC-SHA-256 message authentication code
     std::vector<uint8_t> compute_CMAC_AES(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input) const;      //!< Computes CMAC-AES message authentication code
 
-    std::vector<uint8_t> get_merkle_root() const;  //!< Gets the Merkle Tree root node (\f$ x_{4,0} \f$)
-    std::string get_public_key_type() const;       //!< Gets the ECDSA Public Key type (ECDSA P-256 / ECDSA P-521 / Unknown)
+    std::vector<uint8_t> get_merkle_root() const;            //!< Gets the Merkle Tree root node (\f$ x_{4,0} \f$)
+    std::string get_public_key_type() const;                 //!< Gets the ECDSA Public Key type (ECDSA P-256 / ECDSA P-521 / Unknown)
+    std::vector<uint8_t> get_public_key_compressed() const;  //!< Gets the ECDSA Public Key in compressed format
+    std::string get_merkle_tree_hash_function() const;
 
     void set_public_key(const std::vector<uint8_t>& publickey);    //!< Sets the ECDSA Public Key (publickey compressed format)
     void set_public_key_type(const std::string& public_key_type);  //!< Sets the ECDSA Public Key type (ECDSA P-256 / ECDSA P-521)
     void set_merkle_root(const std::vector<uint8_t>& v);           //!< Sets the Merkle Tree root node x(\f$ x_{4,0} \f$)
-    void read_merkle_xml(const std::string& merkleFilePath);       //!> Reads the XML file provided from the GSC OSNMA server
+    void set_merkle_tree_hash_function(const std::string& hash_function);
+    Osnma_Merkle_Tree_Material read_merkle_xml(const std::string& merkleFilePath);  //!> Reads the XML file provided from the GSC OSNMA server
 
 private:
     void readPublicKeyFromPEM(const std::string& pemFilePath);
     bool readPublicKeyFromCRT(const std::string& crtFilePath);
     bool convert_raw_to_der_ecdsa(const std::vector<uint8_t>& raw_signature, std::vector<uint8_t>& der_signature) const;
-    std::vector<uint8_t> convert_from_hex_str(const std::string& input) const;  // TODO - deprecate if OSNMA helper is to do this operation
 #if USE_GNUTLS_FALLBACK
     void decompress_public_key_secp256r1(const std::vector<uint8_t>& compressed_key, std::vector<uint8_t>& x, std::vector<uint8_t>& y) const;
     void decompress_public_key_secp521r1(const std::vector<uint8_t>& compressed_key, std::vector<uint8_t>& x, std::vector<uint8_t>& y) const;
@@ -95,6 +99,7 @@ private:
 #endif
     std::vector<uint8_t> d_x_4_0;
     std::string d_PublicKeyType;
+    std::string d_merkle_tree_hash_function{"SHA-256"};
 };
 
 /** \} */

@@ -46,6 +46,9 @@ constexpr int32_t GALILEO_PAGE_TYPE_BITS = 6;
 constexpr int32_t GALILEO_DATA_JK_BITS = 128;
 constexpr int32_t GALILEO_DATA_FRAME_BITS = 196;
 constexpr int32_t GALILEO_DATA_FRAME_BYTES = 25;
+constexpr size_t GALILEO_INAV_EVEN_PAGE_TYPE_BIT = 1;
+constexpr size_t GALILEO_INAV_ODD_PAGE_TYPE_BIT = 115;
+constexpr int32_t GALILEO_INAV_DUMMY_WORD_TYPE = 63;
 constexpr char GALILEO_INAV_PREAMBLE[11] = "0101100000";
 
 const std::vector<std::pair<int32_t, int32_t>> TYPE({{1, 6}});

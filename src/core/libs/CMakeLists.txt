@@ -21,6 +21,7 @@ set(CORE_LIBS_SOURCES
     INIReader.cc
     nav_message_monitor.cc
     nav_message_udp_sink.cc
+    osnma_crypto_material.cc
     osnma_helper.cc
     osnma_msg_receiver.cc
     osnma_nav_data_manager.cc
@@ -40,6 +41,7 @@ set(CORE_LIBS_HEADERS
     nav_message_monitor.h
     nav_message_packet.h
     nav_message_udp_sink.h
+    osnma_crypto_material.h
     osnma_helper.h
     osnma_msg_receiver.h
     osnma_nav_data_manager.h

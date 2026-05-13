@@ -27,6 +27,18 @@ All notable changes to GNSS-SDR will be documented in this file.
   robustness across dependency discovery, distro detection, and
   cross-compilation handling.
 
+### Improvements in Reliability
+
+- Hardened the Galileo OSNMA protocol implementation, adding support for Chain
+  Renewal, Chain Revocation, Public Key Renewal, Public Key Revocation, Merkle
+  Tree Renewal, and OSNMA Alert Message events. Improved the management of OSNMA
+  cryptographic material and added unit tests to ensure compliance with the
+  OSNMA Receiver Guidelines v1.3, including edge-case handling. Added the new
+  configuration value `GNSS-SDR.osnma_mode=replay`, which disables the receiver
+  wall-clock GST alignment check for OSNMA tag processing, enabling replay of
+  previously captured Galileo signals while keeping all other OSNMA verification
+  steps active.
+
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/
 

@@ -15,6 +15,72 @@
  */
 
 #include "osnma_data.h"
+namespace osnma
+{
+
+uint64_t galileo_gst_seconds(uint32_t WN, uint32_t TOW)
+{
+    return static_cast<uint64_t>(WN) * GALILEO_SECONDS_PER_WEEK + TOW;
+}
+
+
+std::pair<uint32_t, uint32_t> galileo_week_tow_with_offset(uint32_t WN, uint32_t TOW, int32_t offset_seconds)
+{
+    const auto seconds_per_week = static_cast<int64_t>(GALILEO_SECONDS_PER_WEEK);
+    const int64_t absolute_seconds = static_cast<int64_t>(WN) * seconds_per_week + static_cast<int64_t>(TOW) + offset_seconds;
+    if (absolute_seconds <= 0)
+        {
+            return std::make_pair(0U, 0U);
+        }
+
+    return std::make_pair(
+        static_cast<uint32_t>(absolute_seconds / seconds_per_week),
+        static_cast<uint32_t>(absolute_seconds % seconds_per_week));
+}
+
+
+uint32_t galileo_week_to_uint(int32_t WN)
+{
+    if (WN <= 0)
+        {
+            return 0;
+        }
+    return static_cast<uint32_t>(WN);
+}
+
+
+uint32_t galileo_tow_to_uint(int32_t TOW)
+{
+    if (TOW <= 0)
+        {
+            return 0;
+        }
+    if (static_cast<uint32_t>(TOW) >= GALILEO_SECONDS_PER_WEEK)
+        {
+            return static_cast<uint32_t>(GALILEO_SECONDS_PER_WEEK - 1);
+        }
+    return static_cast<uint32_t>(TOW);
+}
+
+
+bool auth_gst_matches_nav_data(uint64_t auth_gst, uint64_t nav_data_gst)
+{
+    if (nav_data_gst < auth_gst)
+        {
+            return (auth_gst - nav_data_gst) <=
+                   OSNMA_AUTH_IOD_FUTURE_TOLERANCE_SECONDS;
+        }
+    return (nav_data_gst - auth_gst) <= OSNMA_AUTH_IOD_MAX_AGE_SECONDS;
+}
+
+
+bool auth_gst_is_stale(uint64_t auth_gst, uint64_t nav_data_gst)
+{
+    return nav_data_gst > auth_gst &&
+           (nav_data_gst - auth_gst) > OSNMA_AUTH_IOD_MAX_AGE_SECONDS;
+}
+}  // namespace osnma
+
 
 uint32_t Tag::id_counter = 0;
 uint32_t OSNMA_NavData::id_counter = 0;
@@ -25,7 +91,7 @@ bool OSNMA_NavData::add_nav_data(const std::string& nav_data)
         {
             d_ephemeris_iono = nav_data;
             std::bitset<10> bits(nav_data.substr(0, 10));
-            IOD_nav = static_cast<uint8_t>(bits.to_ulong());
+            IOD_nav = static_cast<uint32_t>(bits.to_ulong());
             return true;
         }
     else if (nav_data.size() == 141)
@@ -35,10 +101,14 @@ bool OSNMA_NavData::add_nav_data(const std::string& nav_data)
         }
     return false;
 }
+
+
 std::string OSNMA_NavData::get_utc_data() const
 {
     return d_utc;
 }
+
+
 std::string OSNMA_NavData::get_ephemeris_data() const
 {
     return d_ephemeris_iono;

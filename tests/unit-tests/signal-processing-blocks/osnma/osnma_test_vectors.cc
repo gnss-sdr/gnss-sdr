@@ -1,7 +1,7 @@
 /*!
  * \file osmna_test_vectors.cc
  * \brief Tests for the osnma_msg_receiver class.
- * \author Carles Fernandez, 2023-2024. cfernandez(at)cttc.es
+ * \author Carles Fernandez, 2023-2026. cfernandez(at)cttc.es
  *   Cesare Ghionoiu Martinez, 2023-2024. c.ghionoiu-martinez@tu-braunschweig.de
  *
  *
@@ -10,18 +10,23 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
  */
 
 #include "gnss_crypto.h"
+#include "gnss_sdr_filesystem.h"
 #include "osnma_msg_receiver.h"
 #include <gtest/gtest.h>
 #include <bitset>
+#include <cerrno>
 #include <chrono>
 #include <fstream>
+#include <iterator>
+#include <string>
+#include <tuple>
 #include <vector>
 
 #if USE_GLOG_AND_GFLAGS
@@ -29,6 +34,21 @@
 #else
 #include <absl/log/log.h>
 #endif
+
+#if defined(GTEST_SKIP)
+#define GNSSSDR_OSNMA_SKIP_OR_FAIL() GTEST_SKIP()
+#else
+#define GNSSSDR_OSNMA_SKIP_OR_FAIL() FAIL()
+#endif
+
+namespace
+{
+bool is_missing_file_error(const errorlib::error_code& ec)
+{
+    return ec.value() == ENOENT || ec.value() == ENOTDIR;
+}
+}  // namespace
+
 
 struct TestVector
 {
@@ -49,6 +69,25 @@ protected:
     void set_time(std::tm& input);
     void SetUp() override
     {
+        if (!save_default_file(KROOTFILE_DEFAULT, d_had_kroot_file, d_saved_kroot_file) ||
+            !save_default_file(KROOTFILE_DEFAULT + ".meta", d_had_kroot_metadata_file, d_saved_kroot_metadata_file) ||
+            !save_default_file(PEMFILE_DEFAULT, d_had_pem_file, d_saved_pem_file) ||
+            !save_default_file(PEMFILE_DEFAULT + ".meta", d_had_pem_metadata_file, d_saved_pem_metadata_file) ||
+            !remove_default_file(KROOTFILE_DEFAULT) ||
+            !remove_default_file(KROOTFILE_DEFAULT + ".meta") ||
+            !remove_default_file(PEMFILE_DEFAULT) ||
+            !remove_default_file(PEMFILE_DEFAULT + ".meta"))
+            {
+                GNSSSDR_OSNMA_SKIP_OR_FAIL() << "Unable to preserve existing OSNMA hot-start files";
+            }
+    }
+
+    void TearDown() override
+    {
+        restore_default_file(KROOTFILE_DEFAULT, d_had_kroot_file, d_saved_kroot_file);
+        restore_default_file(KROOTFILE_DEFAULT + ".meta", d_had_kroot_metadata_file, d_saved_kroot_metadata_file);
+        restore_default_file(PEMFILE_DEFAULT, d_had_pem_file, d_saved_pem_file);
+        restore_default_file(PEMFILE_DEFAULT + ".meta", d_had_pem_metadata_file, d_saved_pem_metadata_file);
     }
 
     uint32_t d_GST_SIS{};
@@ -61,6 +100,85 @@ protected:
     const int DURATION_SUBFRAME{30};     // duration of a subframe, in seconds// 13 + 5;
 
     bool d_flag_NPK{false};  // flag for NPK, new MT will be set when the new Kroot is received.
+
+private:
+    bool save_default_file(const std::string& path, bool& existed, std::vector<char>& contents)
+    {
+        contents.clear();
+        errorlib::error_code ec;
+        existed = fs::exists(fs::path(path), ec);
+        if (ec)
+            {
+                if (is_missing_file_error(ec))
+                    {
+                        existed = false;
+                        return true;
+                    }
+                ADD_FAILURE() << "Unable to check " << path << ": " << ec.message();
+                return false;
+            }
+        if (!existed)
+            {
+                return true;
+            }
+
+        std::ifstream file(path, std::ios::binary);
+        if (!file)
+            {
+                ADD_FAILURE() << "Unable to read existing " << path;
+                return false;
+            }
+        contents.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+        return true;
+    }
+
+    bool remove_default_file(const std::string& path)
+    {
+        errorlib::error_code ec;
+        fs::remove(fs::path(path), ec);
+        if (ec)
+            {
+                if (is_missing_file_error(ec))
+                    {
+                        return true;
+                    }
+                ADD_FAILURE() << "Unable to remove " << path << ": " << ec.message();
+                return false;
+            }
+        return true;
+    }
+
+    void restore_default_file(const std::string& path, bool existed, const std::vector<char>& contents)
+    {
+        if (!remove_default_file(path))
+            {
+                return;
+            }
+        if (!existed)
+            {
+                return;
+            }
+
+        std::ofstream file(path, std::ios::binary | std::ios::trunc);
+        if (!file)
+            {
+                ADD_FAILURE() << "Unable to restore " << path;
+                return;
+            }
+        if (!contents.empty())
+            {
+                file.write(contents.data(), contents.size());
+            }
+    }
+
+    bool d_had_kroot_file{false};
+    bool d_had_kroot_metadata_file{false};
+    bool d_had_pem_file{false};
+    bool d_had_pem_metadata_file{false};
+    std::vector<char> d_saved_kroot_file;
+    std::vector<char> d_saved_kroot_metadata_file;
+    std::vector<char> d_saved_pem_file;
+    std::vector<char> d_saved_pem_metadata_file;
 };
 
 TEST_F(OsnmaTestVectors, NominalTestConf1)
@@ -474,9 +592,10 @@ bool OsnmaTestVectors::feedOsnmaWithTestVectors(osnma_msg_receiver_sptr osnma_ob
                                         {
                                             std::cout << "Galileo OSNMA: sending ADKD=0/12 navData, PRN_d (" << tv.svId << ") "
                                                       << "TOW_sf=" << osnmaMsg_sptr->TOW_sf0 << std::endl;
-                                            const auto tmp_obj_osnma = std::make_shared<std::tuple<uint32_t, std::string, uint32_t>>(  // < PRNd , navDataBits, TOW_Sosf>
+                                            const auto tmp_obj_osnma = std::make_shared<std::tuple<uint32_t, std::string, uint32_t, uint32_t>>(  // < PRNd , navDataBits, WN, TOW_Sosf>
                                                 tv.svId,
                                                 nav_data_ADKD_0_12,
+                                                osnmaMsg_sptr->WN_sf0,
                                                 osnmaMsg_sptr->TOW_sf0);
                                             // LOG(INFO) << "|---> Galileo OSNMA :: Telemetry Decoder NavData (PRN_d=" << static_cast<int>(tv.svId) << ", TOW=" << static_cast<int>(osnmaMsg_sptr->TOW_sf0) << "): 0b" << nav_data_ADKD_0_12;
                                             osnma_object->msg_handler_osnma(pmt::make_any(tmp_obj_osnma));
@@ -511,9 +630,10 @@ bool OsnmaTestVectors::feedOsnmaWithTestVectors(osnma_msg_receiver_sptr osnma_ob
                                         {
                                             std::cout << "Galileo OSNMA: sending ADKD=04 navData, PRN_d (" << tv.svId << ") "
                                                       << "TOW_sf=" << osnmaMsg_sptr->TOW_sf0 << std::endl;
-                                            const auto tmp_obj_osnma = std::make_shared<std::tuple<uint32_t, std::string, uint32_t>>(  // < PRNd , navDataBits, TOW_Sosf>
+                                            const auto tmp_obj_osnma = std::make_shared<std::tuple<uint32_t, std::string, uint32_t, uint32_t>>(  // < PRNd , navDataBits, WN, TOW_Sosf>
                                                 tv.svId,
                                                 nav_data_ADKD_4,
+                                                osnmaMsg_sptr->WN_sf0,
                                                 osnmaMsg_sptr->TOW_sf0);
                                             // LOG(INFO) << "|---> Galileo OSNMA :: Telemetry Decoder NavData (PRN_d=" << static_cast<int>(tv.svId) << ", TOW=" << static_cast<int>(osnmaMsg_sptr->TOW_sf0) << "): 0b" << nav_data_ADKD_4;
                                             osnma_object->msg_handler_osnma(pmt::make_any(tmp_obj_osnma));
@@ -523,6 +643,13 @@ bool OsnmaTestVectors::feedOsnmaWithTestVectors(osnma_msg_receiver_sptr osnma_ob
                             // Call the handler, as if it came from telemetry decoder block
                             auto temp_obj = pmt::make_any(osnmaMsg_sptr);
 
+                            osnma_object->d_receiver_time_override = true;
+                            const uint32_t gst_sis_tow = d_GST_SIS & 0x000FFFFF;
+                            const uint32_t gst_sis_wn = (d_GST_SIS & 0xFFF00000) >> 20;
+                            const uint32_t receiver_time_tow = gst_sis_tow + DURATION_SUBFRAME;
+                            const uint32_t receiver_time_wn = gst_sis_wn + receiver_time_tow / static_cast<uint32_t>(osnma::GALILEO_SECONDS_PER_WEEK);
+                            osnma_object->d_GST_Rx = (receiver_time_wn & 0x00000FFF) << 20 |
+                                                     ((receiver_time_tow % static_cast<uint32_t>(osnma::GALILEO_SECONDS_PER_WEEK)) & 0x000FFFFF);
                             osnma_object->msg_handler_osnma(temp_obj);  // osnma entry point
                         }
                     if (!end_of_hex_stream)

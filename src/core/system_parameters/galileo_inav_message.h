@@ -49,6 +49,8 @@ public:
     OSNMA_msg() = default;
     std::array<uint32_t, 15> mack{};
     std::array<uint8_t, 15> hkroot{};
+    std::array<uint8_t, 15> page_valid{};
+    bool page_validity_available{false};
     uint32_t PRN{};      // PRN_a authentication data PRN
     uint32_t WN_sf0{};   // Week number at the start of OSNMA subframe
     uint32_t TOW_sf0{};  // TOW at the start of OSNMA subframe
@@ -260,6 +262,8 @@ public:
         nma_msg.PRN = prn;
         nma_msg.mack = std::array<uint32_t, 15>{};
         nma_msg.hkroot = std::array<uint8_t, 15>{};
+        nma_msg.page_valid = std::array<uint8_t, 15>{};
+        nma_msg.page_validity_available = false;
         page_position_in_inav_subframe = 255;
         nma_position_filled = std::array<int8_t, 15>{};
     }

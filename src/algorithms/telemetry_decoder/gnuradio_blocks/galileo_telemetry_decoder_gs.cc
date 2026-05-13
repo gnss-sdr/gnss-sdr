@@ -31,6 +31,7 @@
 #include "galileo_utc_model.h"       // for Galileo_Utc_Model
 #include "gnss_sdr_make_unique.h"    // for std::make_unique in C++11
 #include "gnss_synchro.h"            // for Gnss_Synchro
+#include "osnma_data.h"              // for osnma::galileo_week_tow_with_offset
 #include "tlm_conf.h"
 #include "tlm_crc_stats.h"    // for Tlm_CRC_Stats
 #include "tlm_utils.h"        // for save_tlm_matfile, tlm_remove_file
@@ -404,21 +405,25 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
     // extract OSNMA bits, reset container.
     if (d_inav_nav.get_osnma_adkd_0_12_nav_bits().size() == 549 && d_band == '1')
         {
-            DLOG(INFO) << "Galileo OSNMA: new ADKD=0/12 navData from " << d_satellite << " at TOW_sf=" << d_inav_nav.get_TOW5() - 25;
-            const auto tmp_obj_osnma = std::make_shared<std::tuple<uint32_t, std::string, uint32_t>>(  // < PRNd , navDataBits, TOW_Sosf>
+            const auto osnma_nav_time = osnma::galileo_week_tow_with_offset(d_inav_nav.get_Galileo_week(), d_inav_nav.get_TOW5(), -25);
+            DLOG(INFO) << "Galileo OSNMA: new ADKD=0/12 navData from " << d_satellite << " at WN=" << osnma_nav_time.first << ", TOW_sf=" << osnma_nav_time.second;
+            const auto tmp_obj_osnma = std::make_shared<std::tuple<uint32_t, std::string, uint32_t, uint32_t>>(  // < PRNd , navDataBits, WN, TOW_Sosf>
                 d_satellite.get_PRN(),
                 d_inav_nav.get_osnma_adkd_0_12_nav_bits(),
-                d_inav_nav.get_TOW5() - 25);
+                osnma_nav_time.first,
+                osnma_nav_time.second);
             this->message_port_pub(pmt::mp("OSNMA_from_TLM"), pmt::make_any(tmp_obj_osnma));
             d_inav_nav.reset_osnma_nav_bits_adkd0_12();
         }
     if (d_inav_nav.get_osnma_adkd_4_nav_bits().size() == 141 && d_band == '1')
         {
-            DLOG(INFO) << "Galileo OSNMA: new ADKD=4 navData from " << d_satellite << " at TOW_sf=" << d_inav_nav.get_TOW6() - 5;
-            const auto tmp_obj = std::make_shared<std::tuple<uint32_t, std::string, uint32_t>>(  // < PRNd , navDataBits, TOW_Sosf> // TODO conversion from W6 to W_Start_of_subframe
+            const auto osnma_nav_time = osnma::galileo_week_tow_with_offset(d_inav_nav.get_Galileo_week(), d_inav_nav.get_TOW6(), -5);
+            DLOG(INFO) << "Galileo OSNMA: new ADKD=4 navData from " << d_satellite << " at WN=" << osnma_nav_time.first << ", TOW_sf=" << osnma_nav_time.second;
+            const auto tmp_obj = std::make_shared<std::tuple<uint32_t, std::string, uint32_t, uint32_t>>(  // < PRNd , navDataBits, WN, TOW_Sosf> // TODO conversion from W6 to W_Start_of_subframe
                 d_satellite.get_PRN(),
                 d_inav_nav.get_osnma_adkd_4_nav_bits(),
-                d_inav_nav.get_TOW6() - 5);
+                osnma_nav_time.first,
+                osnma_nav_time.second);
             this->message_port_pub(pmt::mp("OSNMA_from_TLM"), pmt::make_any(tmp_obj));
             d_inav_nav.reset_osnma_nav_bits_adkd4();
         }

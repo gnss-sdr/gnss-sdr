@@ -179,7 +179,16 @@ void Galileo_Inav_Message::split_page(std::string page_string, int32_t flag_even
                             flag_CRC_test = true;
                             // CRC correct: Decode word
                             const std::string Data_jk_ephemeris = Data_k + Data_j;
-                            page_jk_decoder(Data_jk_ephemeris.c_str());
+                            const int32_t word_type = page_jk_decoder(Data_jk_ephemeris.c_str());
+
+                            const std::bitset<8> hkroot_bs(osnma_sis.substr(0, 8));
+                            const std::bitset<32> mack_bs(osnma_sis.substr(8, 32));
+                            const bool osnma_sis_available = hkroot_bs.any() || mack_bs.any();
+                            const bool nominal_inav_page = page_INAV[GALILEO_INAV_EVEN_PAGE_TYPE_BIT] == '0' &&
+                                                           page_INAV[GALILEO_INAV_ODD_PAGE_TYPE_BIT] == '0';
+                            const bool admit_osnma_page = nominal_inav_page &&
+                                                          word_type != GALILEO_INAV_DUMMY_WORD_TYPE &&
+                                                          osnma_sis_available;
 
                             // Fill OSNMA data
                             if (page_position_in_inav_subframe != 255)
@@ -189,16 +198,17 @@ void Galileo_Inav_Message::split_page(std::string page_string, int32_t flag_even
                                             nma_position_filled = std::array<int8_t, 15>{};
                                             nma_msg.mack = std::array<uint32_t, 15>{};
                                             nma_msg.hkroot = std::array<uint8_t, 15>{};
+                                            nma_msg.page_valid = std::array<uint8_t, 15>{};
+                                            nma_msg.page_validity_available = true;
                                         }
-                                    std::bitset<8> hkroot_bs(osnma_sis.substr(0, 8));
-                                    std::bitset<32> mack_bs(osnma_sis.substr(8, 32));
-                                    if (hkroot_bs.count() != 0 && mack_bs.count() != 0)
+                                    if (admit_osnma_page)
                                         {
+                                            nma_msg.page_valid[page_position_in_inav_subframe] = 1;
+                                            nma_position_filled[page_position_in_inav_subframe] = 1;
                                             hkroot_sis = static_cast<uint8_t>(hkroot_bs.to_ulong());
                                             mack_sis = static_cast<uint32_t>(mack_bs.to_ulong());
                                             nma_msg.mack[page_position_in_inav_subframe] = mack_sis;
                                             nma_msg.hkroot[page_position_in_inav_subframe] = hkroot_sis;
-                                            nma_position_filled[page_position_in_inav_subframe] = 1;
                                         }
                                 }
                         }
@@ -1450,6 +1460,8 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             nma_position_filled = std::array<int8_t, 15>{};
             nma_msg.mack = std::array<uint32_t, 15>{};
             nma_msg.hkroot = std::array<uint8_t, 15>{};
+            nma_msg.page_valid = std::array<uint8_t, 15>{};
+            nma_msg.page_validity_available = false;
             reset_osnma_nav_bits_adkd4();
             reset_osnma_nav_bits_adkd0_12();
         }
@@ -1474,29 +1486,33 @@ Galileo_ISM Galileo_Inav_Message::get_galileo_ism() const
  */
 OSNMA_msg Galileo_Inav_Message::get_osnma_msg()
 {
+    auto msg = nma_msg;
     nma_position_filled = std::array<int8_t, 15>{};
+    nma_msg.mack = std::array<uint32_t, 15>{};
+    nma_msg.hkroot = std::array<uint8_t, 15>{};
+    nma_msg.page_valid = std::array<uint8_t, 15>{};
+    nma_msg.page_validity_available = false;
     // Fill TOW and WN
-    nma_msg.WN_sf0 = WN_0;
+    auto WN_sf0 = static_cast<uint32_t>(WN_0);
     int32_t TOW_sf0 = TOW_5 - 25;
     if (TOW_sf0 < 0)
         {
             TOW_sf0 += 604800;
+            if (WN_sf0 > 0)
+                {
+                    WN_sf0--;
+                }
         }
-    nma_msg.TOW_sf0 = static_cast<uint32_t>(TOW_sf0);
-    return nma_msg;
+    msg.WN_sf0 = WN_sf0;
+    msg.TOW_sf0 = static_cast<uint32_t>(TOW_sf0);
+    return msg;
 }
 
 
 bool Galileo_Inav_Message::have_new_nma()
 {
-    if (std::all_of(nma_position_filled.begin(), nma_position_filled.end(), [](int8_t element) { return element == 1; }))
-        {
-            return true;
-        }
-    else
-        {
-            return false;
-        }
+    return page_position_in_inav_subframe == 14 &&
+           std::any_of(nma_position_filled.begin(), nma_position_filled.end(), [](int8_t element) { return element == 1; });
 }
 
 

@@ -35,7 +35,7 @@ public:
     ~Osnma_Helper() = default;
     uint32_t compute_gst(uint32_t WN, uint32_t TOW) const;
     uint32_t compute_gst(std::tm& input);
-    uint32_t compute_gst_now();
+    uint32_t compute_gst_now() const;
     uint32_t get_WN(uint32_t GST) const;
     uint32_t get_TOW(uint32_t GST) const;
     std::vector<uint8_t> gst_to_uint8(uint32_t GST) const;

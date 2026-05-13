@@ -21,22 +21,107 @@
 #include <absl/log/log.h>
 #endif
 
+namespace
+{
+constexpr int64_t seconds_per_week = 604800;
+constexpr int64_t nav_data_retention_s = 4 * 3600 + 600;
+
+
+uint64_t gst_seconds(uint32_t WN, uint32_t TOW)
+{
+    return static_cast<uint64_t>(static_cast<int64_t>(WN) * seconds_per_week + static_cast<int64_t>(TOW));
+}
+
+
+uint64_t gst_seconds_with_offset(uint32_t WN, uint32_t TOW, int32_t offset_seconds)
+{
+    int64_t absolute_seconds = static_cast<int64_t>(WN) * seconds_per_week + static_cast<int64_t>(TOW) + offset_seconds;
+    if (absolute_seconds < 0)
+        {
+            absolute_seconds = 0;
+        }
+    return static_cast<uint64_t>(absolute_seconds);
+}
+
+
+int64_t tag_seconds_minus_cop(const Tag& tag)
+{
+    return static_cast<int64_t>(gst_seconds(tag.WN, tag.TOW)) - static_cast<int64_t>(30) * tag.cop;
+}
+
+
+bool nav_data_is_before_tag(uint64_t nav_gst, const Tag& tag)
+{
+    return static_cast<int64_t>(nav_gst) < static_cast<int64_t>(gst_seconds(tag.WN, tag.TOW));
+}
+
+
+bool nav_data_is_in_cop_window(const OSNMA_NavData& nav_data, uint64_t nav_gst, const Tag& tag)
+{
+    const int64_t oldest_gst = tag_seconds_minus_cop(tag);
+    const auto last_received_gst = static_cast<int64_t>(gst_seconds(nav_data.get_last_received_WN(), nav_data.get_last_received_TOW()));
+    return (oldest_gst <= static_cast<int64_t>(nav_gst) || oldest_gst <= last_received_gst) &&
+           nav_data_is_before_tag(nav_gst, tag);
+}
+
+
+std::string nav_data_for_tag(const OSNMA_NavData& nav_data, const Tag& tag)
+{
+    if (tag.ADKD == 0 || tag.ADKD == 12)
+        {
+            return nav_data.get_ephemeris_data();
+        }
+    if (tag.ADKD == 4)
+        {
+            return nav_data.get_utc_data();
+        }
+    return "";
+}
+
+
+bool tag_gst_is_coherent_with_accumulation(const OSNMA_NavData& nav_data, const Tag& tag)
+{
+    if (!nav_data.has_tag_accumulation())
+        {
+            return true;
+        }
+    const uint64_t tag_gst = gst_seconds(tag.WN, tag.TOW);
+    const uint64_t first_tag_gst = nav_data.get_first_accumulated_tag_gst();
+    const uint64_t last_tag_gst = nav_data.get_last_accumulated_tag_gst();
+    if (tag_gst < last_tag_gst)
+        {
+            return false;
+        }
+    if (((tag_gst - last_tag_gst) % 30) != 0)
+        {
+            return false;
+        }
+    return tag_seconds_minus_cop(tag) <= static_cast<int64_t>(first_tag_gst);
+}
+}  // namespace
+
 /**
  * @brief Adds the navigation data bits to the container holding OSNMA_NavData objects.
  *
  * @param nav_bits The navigation bits.
  * @param PRNd The satellite ID.
- * @param TOW The TOW of the received data.
+ * @param WN The GST week number of the received data.
+ * @param TOW The GST time-of-week of the received data.
  */
-void OSNMA_NavDataManager::add_navigation_data(const std::string& nav_bits, uint32_t PRNd, uint32_t TOW)
+void OSNMA_NavDataManager::add_navigation_data(const std::string& nav_bits, uint32_t PRNd, uint32_t WN, uint32_t TOW)
 {
-    if (not have_nav_data(nav_bits, PRNd, TOW))
+    if (not have_nav_data(nav_bits, PRNd, WN, TOW))
         {
-            d_satellite_nav_data[PRNd][TOW].add_nav_data(nav_bits);
-            d_satellite_nav_data[PRNd][TOW].set_prn_d(PRNd);
-            d_satellite_nav_data[PRNd][TOW].set_tow_sf0(TOW);
-            d_satellite_nav_data[PRNd][TOW].set_last_received_TOW(TOW);
+            const uint64_t nav_gst = gst_seconds(WN, TOW);
+            auto& nav_data = d_satellite_nav_data[PRNd][nav_gst];
+            nav_data.add_nav_data(nav_bits);
+            nav_data.set_prn_d(PRNd);
+            nav_data.set_wn_sf0(WN);
+            nav_data.set_tow_sf0(TOW);
+            nav_data.set_last_received_WN(WN);
+            nav_data.set_last_received_TOW(TOW);
         }
+    prune_old_navigation_data(WN, TOW);
 }
 
 
@@ -45,39 +130,116 @@ void OSNMA_NavDataManager::add_navigation_data(const std::string& nav_bits, uint
  */
 void OSNMA_NavDataManager::update_nav_data(const std::multimap<uint32_t, Tag>& tags_verified, uint8_t tag_size)
 {
-    if (d_satellite_nav_data.empty())
+    if (d_satellite_nav_data.empty() || tag_size == 0)
         {
             return;
         }
     // loop through all tags
-    for (const auto& tag : tags_verified)
+    for (const auto& tag_entry : tags_verified)
         {
-            // if tag status is verified, look for corresponding OSNMA_NavData and add increase verified tag bits.
-            if (tag.second.status == Tag::e_verification_status::SUCCESS)
+            const auto& tag = tag_entry.second;
+            if (tag.cop == 0 ||
+                (tag.status != Tag::e_verification_status::SUCCESS && tag.status != Tag::e_verification_status::FAIL))
                 {
-                    auto sat_it = d_satellite_nav_data.find(tag.second.PRN_d);
-                    if (sat_it == d_satellite_nav_data.end())
+                    continue;
+                }
+
+            auto sat_it = d_satellite_nav_data.find(tag.PRN_d);
+            if (sat_it == d_satellite_nav_data.end())
+                {
+                    continue;
+                }
+
+            auto& tow_map = sat_it->second;
+            for (auto& tow_it : tow_map)  // note: starts with smallest (i.e. oldest) navigation dataset
+                {
+                    const std::string nav_data = nav_data_for_tag(tow_it.second, tag);
+                    if (nav_data.empty() ||
+                        tag.nav_data != nav_data ||
+                        !nav_data_is_in_cop_window(tow_it.second, tow_it.first, tag))
                         {
                             continue;
                         }
-                    auto& tow_map = sat_it->second;
-                    for (auto& tow_it : tow_map)  // note: starts with smallest (i.e. oldest) navigation dataset
+
+                    if (tag.status == Tag::e_verification_status::FAIL)
                         {
-                            std::string nav_data;
-                            if (tag.second.ADKD == 0 || tag.second.ADKD == 12)
+                            if (tag_size < L_t_min &&
+                                tow_it.second.has_tag_accumulation() &&
+                                tow_it.second.get_accumulated_tag_adkd() == tag.ADKD &&
+                                !tow_it.second.get_verified_status())
                                 {
-                                    nav_data = tow_it.second.get_ephemeris_data();
+                                    tow_it.second.reset_tag_accumulation();
                                 }
-                            else if (tag.second.ADKD == 4)
-                                {
-                                    nav_data = tow_it.second.get_utc_data();
-                                }
-                            // find associated OSNMA_NavData
-                            if (tag.second.nav_data == nav_data)
-                                {
-                                    d_satellite_nav_data[tag.second.PRN_d][tow_it.first].set_update_verified_bits(tag_size);
-                                }
+                            continue;
                         }
+
+                    if (tag_size >= L_t_min)
+                        {
+                            tow_it.second.set_update_verified_bits(tag_size);
+                            continue;
+                        }
+
+                    const uint64_t tag_gst = gst_seconds(tag.WN, tag.TOW);
+                    if (!tow_it.second.has_tag_accumulation() ||
+                        tow_it.second.get_accumulated_tag_adkd() != tag.ADKD ||
+                        !tag_gst_is_coherent_with_accumulation(tow_it.second, tag))
+                        {
+                            tow_it.second.start_tag_accumulation(tag_size, tag.ADKD, tag_gst);
+                        }
+                    else
+                        {
+                            tow_it.second.continue_tag_accumulation(tag_size, tag_gst);
+                        }
+                }
+        }
+}
+
+
+void OSNMA_NavDataManager::reset_tag_accumulations()
+{
+    for (auto& satellite : d_satellite_nav_data)
+        {
+            for (auto& tow_navdata : satellite.second)
+                {
+                    if (tow_navdata.second.get_verified_status())
+                        {
+                            tow_navdata.second.clear_tag_accumulation_metadata();
+                        }
+                    else
+                        {
+                            tow_navdata.second.reset_tag_accumulation();
+                        }
+                }
+        }
+}
+
+
+void OSNMA_NavDataManager::prune_old_navigation_data(uint32_t WN, uint32_t TOW)
+{
+    const auto current_gst = static_cast<int64_t>(gst_seconds(WN, TOW));
+    for (auto sat_it = d_satellite_nav_data.begin(); sat_it != d_satellite_nav_data.end();)
+        {
+            auto& tow_map = sat_it->second;
+            for (auto nav_it = tow_map.begin(); nav_it != tow_map.end();)
+                {
+                    const auto last_received_gst = static_cast<int64_t>(gst_seconds(nav_it->second.get_last_received_WN(), nav_it->second.get_last_received_TOW()));
+                    if (current_gst > last_received_gst &&
+                        current_gst - last_received_gst > nav_data_retention_s)
+                        {
+                            nav_it = tow_map.erase(nav_it);
+                        }
+                    else
+                        {
+                            ++nav_it;
+                        }
+                }
+            if (tow_map.empty())
+                {
+                    sat_it = d_satellite_nav_data.erase(sat_it);
+                }
+            else
+                {
+                    ++sat_it;
                 }
         }
 }
@@ -90,7 +252,7 @@ std::vector<OSNMA_NavData> OSNMA_NavDataManager::get_verified_data()
         {
             for (const auto& tow_navdata : prna.second)
                 {
-                    if (tow_navdata.second.get_verified_bits() >= L_t_min)
+                    if (tow_navdata.second.get_verified_bits() >= L_t_min && !tow_navdata.second.get_verified_status())
                         {
                             result.push_back(tow_navdata.second);
                             d_satellite_nav_data[prna.first][tow_navdata.first].set_verified_status(true);
@@ -98,33 +260,6 @@ std::vector<OSNMA_NavData> OSNMA_NavDataManager::get_verified_data()
                 }
         }
     return result;
-}
-
-
-bool OSNMA_NavDataManager::have_nav_data(uint32_t PRNd, uint32_t TOW, uint8_t ADKD) const
-{
-    const auto sat_it = d_satellite_nav_data.find(PRNd);
-    if (sat_it == d_satellite_nav_data.cend())
-        {
-            return false;
-        }
-
-    const auto tow_it = sat_it->second.find(TOW);
-    if (tow_it == sat_it->second.cend())
-        {
-            return false;
-        }
-
-    switch (ADKD)
-        {
-        case 0:
-        case 12:
-            return !tow_it->second.get_ephemeris_data().empty();
-        case 4:
-            return !tow_it->second.get_utc_data().empty();
-        default:
-            return false;
-        }
 }
 
 
@@ -148,7 +283,7 @@ std::string OSNMA_NavDataManager::get_navigation_data(const Tag& tag) const
             return "";
         }
     // satellite was found, check if TOW exists in inner map
-    auto nav_data = prn_it->second.find(tag.TOW - 30);
+    auto nav_data = prn_it->second.find(gst_seconds_with_offset(tag.WN, tag.TOW, -30));
     if (nav_data != prn_it->second.end())
         {
             if (tag.ADKD == 0 || tag.ADKD == 12)
@@ -166,27 +301,24 @@ std::string OSNMA_NavDataManager::get_navigation_data(const Tag& tag) const
                         }
                 }
         }
-    else
+    for (auto rev_it = prn_it->second.rbegin(); rev_it != prn_it->second.rend(); ++rev_it)  // NOLINT(modernize-loop-convert)
         {
-            for (auto rev_it = prn_it->second.rbegin(); rev_it != prn_it->second.rend(); ++rev_it)  // NOLINT(modernize-loop-convert)
+            // note: starts with largest (i.e. newest) navigation dataset
+            // Check if current key (TOW) fulfills condition
+            if (nav_data_is_in_cop_window(rev_it->second, rev_it->first, tag))
                 {
-                    // note: starts with largest (i.e. newest) navigation dataset
-                    // Check if current key (TOW) fulfills condition
-                    if ((tag.TOW - 30 * tag.cop <= rev_it->first || tag.TOW - 30 * tag.cop <= rev_it->second.get_last_received_TOW()) && rev_it->first < tag.TOW)
+                    if (tag.ADKD == 0 || tag.ADKD == 12)
                         {
-                            if (tag.ADKD == 0 || tag.ADKD == 12)
+                            if (!rev_it->second.get_ephemeris_data().empty())
                                 {
-                                    if (!rev_it->second.get_ephemeris_data().empty())
-                                        {
-                                            return rev_it->second.get_ephemeris_data();
-                                        }
+                                    return rev_it->second.get_ephemeris_data();
                                 }
-                            else if (tag.ADKD == 4)
+                        }
+                    else if (tag.ADKD == 4)
+                        {
+                            if (!rev_it->second.get_utc_data().empty())
                                 {
-                                    if (!rev_it->second.get_utc_data().empty())
-                                        {
-                                            return rev_it->second.get_utc_data();
-                                        }
+                                    return rev_it->second.get_utc_data();
                                 }
                         }
                 }
@@ -200,18 +332,27 @@ std::string OSNMA_NavDataManager::get_navigation_data(const Tag& tag) const
  * @remarks e.g.: a SV may repeat the bits over several subframes. In that case, need to save them only once.
  * @param nav_bits
  * @param PRNd
+ * @param WN
+ * @param TOW
  * @return
  */
-bool OSNMA_NavDataManager::have_nav_data(const std::string& nav_bits, uint32_t PRNd, uint32_t TOW)
+bool OSNMA_NavDataManager::have_nav_data(const std::string& nav_bits, uint32_t PRNd, uint32_t WN, uint32_t TOW)
 {
     if (d_satellite_nav_data.find(PRNd) != d_satellite_nav_data.end())
         {
+            const uint64_t nav_gst = gst_seconds(WN, TOW);
             for (auto& data_timestamp : d_satellite_nav_data[PRNd])
                 {
+                    if (nav_gst >= data_timestamp.first + seconds_per_week ||
+                        data_timestamp.first >= nav_gst + seconds_per_week)
+                        {
+                            continue;
+                        }
                     if (nav_bits.size() == EPH_SIZE)
                         {
                             if (data_timestamp.second.get_ephemeris_data() == nav_bits)
                                 {
+                                    data_timestamp.second.set_last_received_WN(WN);
                                     data_timestamp.second.set_last_received_TOW(TOW);
                                     return true;
                                 }
@@ -220,6 +361,7 @@ bool OSNMA_NavDataManager::have_nav_data(const std::string& nav_bits, uint32_t P
                         {
                             if (data_timestamp.second.get_utc_data() == nav_bits)
                                 {
+                                    data_timestamp.second.set_last_received_WN(WN);
                                     data_timestamp.second.set_last_received_TOW(TOW);
                                     return true;
                                 }
@@ -248,7 +390,7 @@ bool OSNMA_NavDataManager::have_nav_data(const Tag& t) const
         }
     // satellite was found, check if TOW exists in inner map
     // try find target TOW directly first
-    auto nav_data = prn_it->second.find(t.TOW - 30);
+    auto nav_data = prn_it->second.find(gst_seconds_with_offset(t.WN, t.TOW, -30));
     if (nav_data != prn_it->second.end())
         {
             if (t.ADKD == 0 || t.ADKD == 12)
@@ -266,29 +408,25 @@ bool OSNMA_NavDataManager::have_nav_data(const Tag& t) const
                         }
                 }
         }
-    else
+    // iterate in reverse order to find matching TOW with Tag's COP value
+    for (auto rev_it = prn_it->second.rbegin(); rev_it != prn_it->second.rend(); ++rev_it)  // NOLINT(modernize-loop-convert)
         {
-            // iterate in reverse order to find matching TOW with Tag's COP value
-            std::map<uint32_t, OSNMA_NavData> tow_map = prn_it->second;
-            for (auto rev_it = tow_map.rbegin(); rev_it != tow_map.rend(); ++rev_it)  // NOLINT(modernize-loop-convert)
+            // note: starts with largest (i.e. newest) navigation dataset
+            // Check if current key (TOW) fulfills cut-off point  and is not received after the tag
+            if (nav_data_is_in_cop_window(rev_it->second, rev_it->first, t))
                 {
-                    // note: starts with largest (i.e. newest) navigation dataset
-                    // Check if current key (TOW) fulfills cut-off point  and is not received after the tag
-                    if ((t.TOW - 30 * t.cop <= rev_it->first || t.TOW - 30 * t.cop <= rev_it->second.get_last_received_TOW()) && rev_it->first < t.TOW)
+                    if (t.ADKD == 0 || t.ADKD == 12)
                         {
-                            if (t.ADKD == 0 || t.ADKD == 12)
+                            if (!rev_it->second.get_ephemeris_data().empty())
                                 {
-                                    if (!rev_it->second.get_ephemeris_data().empty())
-                                        {
-                                            return true;
-                                        }
+                                    return true;
                                 }
-                            else if (t.ADKD == 4)
+                        }
+                    else if (t.ADKD == 4)
+                        {
+                            if (!rev_it->second.get_utc_data().empty())
                                 {
-                                    if (!rev_it->second.get_utc_data().empty())
-                                        {
-                                            return true;
-                                        }
+                                    return true;
                                 }
                         }
                 }
@@ -309,8 +447,12 @@ void OSNMA_NavDataManager::log_status() const
                               << std::bitset<10>(nav_data.second.get_IOD_nav())
                               << ", TOW_start="
                               << nav_data.second.get_tow_sf0()
+                              << ", WN_start="
+                              << nav_data.second.get_wn_sf0()
                               << ", TOW_last="
                               << nav_data.second.get_last_received_TOW()
+                              << ", WN_last="
+                              << nav_data.second.get_last_received_WN()
                               << ", l_t="
                               << nav_data.second.get_verified_bits()
                               << ", PRNd="

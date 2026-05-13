@@ -52,6 +52,7 @@
 #include <cstddef>                   // for size_t
 #include <cstdlib>                   // for exit
 #include <exception>                 // for exception
+#include <fstream>                   // for std::ifstream
 #include <iostream>                  // for operator<<
 #include <iterator>                  // for insert_iterator, inserter
 #include <memory>                    // for std::shared_ptr
@@ -147,14 +148,23 @@ void GNSSFlowgraph::init()
         {
             enable_osnma_rx_ = true;
             const auto certFilePath = configuration_->property("GNSS-SDR.osnma_public_key", CRTFILE_DEFAULT);
-            const auto merKleTreePath = configuration_->property("GNSS-SDR.osnma_merkletree", MERKLEFILE_DEFAULT);
-            std::string osnma_mode = configuration_->property("GNSS-SDR.osnma_mode", std::string(""));
-            bool strict_mode = false;
-            if (osnma_mode == "strict")
+            auto merKleTreePath = configuration_->property("GNSS-SDR.osnma_merkletree", MERKLEFILE_DEFAULT);
+            if (!configuration_->is_present("GNSS-SDR.osnma_merkletree"))
                 {
-                    strict_mode = true;
+                    std::ifstream default_merkle_tree(MERKLEFILE_DEFAULT);
+                    if (!default_merkle_tree.good())
+                        {
+                            merKleTreePath.clear();
+                        }
                 }
-            osnma_rx_ = osnma_msg_receiver_make(certFilePath, merKleTreePath, strict_mode);
+            std::string osnma_mode = configuration_->property("GNSS-SDR.osnma_mode", std::string(""));
+            const bool strict_mode = osnma_mode == "strict";
+            const bool replay_mode = osnma_mode == "replay";
+            if (!osnma_mode.empty() && !strict_mode && !replay_mode)
+                {
+                    LOG(WARNING) << "Unknown GNSS-SDR.osnma_mode=" << osnma_mode << ". Falling back to default mode.";
+                }
+            osnma_rx_ = osnma_msg_receiver_make(certFilePath, merKleTreePath, strict_mode, replay_mode);
         }
     else
         {

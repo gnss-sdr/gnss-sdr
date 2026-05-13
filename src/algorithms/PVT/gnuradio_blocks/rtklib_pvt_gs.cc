@@ -1629,7 +1629,18 @@ void rtklib_pvt_gs::msg_handler_osnma(const pmt::pmt_t& msg)
             if (msg_type_hash_code == typeid(std::shared_ptr<OSNMA_NavData>).hash_code())
                 {
                     const auto osnma_data = wht::any_cast<std::shared_ptr<OSNMA_NavData>>(pmt::any_ref(msg));
-                    d_auth_nav_data_map[osnma_data->get_prn_d()].insert(osnma_data->get_IOD_nav());
+                    if (!osnma_data->get_ephemeris_data().empty())
+                        {
+                            auto auth_wn = osnma_data->get_wn_sf0();
+                            auto auth_tow = osnma_data->get_tow_sf0();
+                            if (auth_wn == 0 && auth_tow == 0 &&
+                                (osnma_data->get_last_received_WN() != 0 || osnma_data->get_last_received_TOW() != 0))
+                                {
+                                    auth_wn = osnma_data->get_last_received_WN();
+                                    auth_tow = osnma_data->get_last_received_TOW();
+                                }
+                            d_auth_nav_data_map[osnma_data->get_prn_d()][osnma_data->get_IOD_nav()] = osnma::galileo_gst_seconds(auth_wn, auth_tow);
+                        }
                 }
         }
     catch (const wht::bad_any_cast& e)
@@ -2017,15 +2028,37 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             ((std::string(in[i][epoch].Signal, 2) == std::string("5X")) && (d_use_unhealthy_sats || ((tmp_eph_iter_gal->second.E5a_DVS == false) && (tmp_eph_iter_gal->second.E5a_HS == 0)))) ||
                                             ((std::string(in[i][epoch].Signal, 2) == std::string("7X")) && (d_use_unhealthy_sats || ((tmp_eph_iter_gal->second.E5b_DVS == false) && (tmp_eph_iter_gal->second.E5b_HS == 0))))))
                                         {
-                                            if (d_osnma_strict && ((std::string(in[i][epoch].Signal, 2) == std::string("1B")) || ((std::string(in[i][epoch].Signal, 2) == std::string("7X")))))
+                                            if (d_osnma_strict)
                                                 {
-                                                    // Pick up only authenticated satellites
+                                                    // Pick up only recently authenticated nav data. IOD_nav is 10 bits and can be reused.
+                                                    const auto eph_gst = osnma::galileo_gst_seconds(osnma::galileo_week_to_uint(tmp_eph_iter_gal->second.WN),
+                                                        osnma::galileo_tow_to_uint(tmp_eph_iter_gal->second.tow));
                                                     auto IOD_nav_list = d_auth_nav_data_map.find(tmp_eph_iter_gal->second.PRN);
                                                     if (IOD_nav_list != d_auth_nav_data_map.cend())
                                                         {
-                                                            if (IOD_nav_list->second.find(tmp_eph_iter_gal->second.IOD_nav) != IOD_nav_list->second.cend())
+                                                            for (auto auth_it = IOD_nav_list->second.begin(); auth_it != IOD_nav_list->second.end();)
+                                                                {
+                                                                    if (osnma::auth_gst_is_stale(auth_it->second, eph_gst))
+                                                                        {
+                                                                            auth_it = IOD_nav_list->second.erase(auth_it);
+                                                                        }
+                                                                    else
+                                                                        {
+                                                                            ++auth_it;
+                                                                        }
+                                                                }
+
+                                                            const auto IOD_nav = static_cast<uint32_t>(tmp_eph_iter_gal->second.IOD_nav);
+                                                            const auto auth_it = IOD_nav_list->second.find(IOD_nav);
+                                                            if (auth_it != IOD_nav_list->second.cend() &&
+                                                                osnma::auth_gst_matches_nav_data(auth_it->second, eph_gst))
                                                                 {
                                                                     store_valid_observable = true;
+                                                                }
+
+                                                            if (IOD_nav_list->second.empty())
+                                                                {
+                                                                    d_auth_nav_data_map.erase(IOD_nav_list);
                                                                 }
                                                         }
                                                 }

@@ -17,7 +17,6 @@
 
 #include "concurrent_queue.h"
 #include "fir_filter.h"
-#include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
 #include "gen_signal_source.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
@@ -31,18 +30,28 @@
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/top_block.h>
+#include <gtest/gtest.h>
 #include <pmt/pmt.h>
 #include <chrono>
 #include <utility>
+
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind/bind.hpp>
 #endif
+
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
+
 #if PMT_USES_BOOST_ANY
 namespace wht = boost;
 #else
@@ -139,7 +148,7 @@ protected:
     Concurrent_Queue<int> channel_internal_queue;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
-    std::shared_ptr<GalileoE5aNoncoherentIQAcquisitionCaf> acquisition;
+    std::unique_ptr<AcquisitionInterface> acquisition;
 
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
@@ -533,7 +542,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::stop_queue()
 TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, Instantiate)
 {
     config_1();
-    acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition_5X", 1, 0);
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_5X", 1, 0);
 }
 
 
@@ -544,7 +553,7 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ConnectAndRun)
     int nsamples = 21000 * 3;
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
-    acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition_5X", 1, 0);
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_5X", 1, 0);
     auto msg_rx = GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(channel_internal_queue);
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Acquisition test");
@@ -574,7 +583,7 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
     config_1();
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Acquisition test");
-    acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition_5X", 1, 0);
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_5X", 1, 0);
     auto msg_rx = GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({

@@ -912,9 +912,11 @@ std::unique_ptr<GNSSBlockInterface> get_block_force_impl(
 
 }  // namespace
 
+namespace block_factory
+{
 
-std::unique_ptr<SignalSourceInterface> GNSSBlockFactory::GetSignalSource(
-    const ConfigurationInterface* configuration, Concurrent_Queue<pmt::pmt_t>* queue, int ID) const
+std::unique_ptr<SignalSourceInterface> GetSignalSource(
+    const ConfigurationInterface* configuration, Concurrent_Queue<pmt::pmt_t>* queue, int ID)
 {
     const auto role = findRole(configuration, "SignalSource"s, ID);
     const auto implementation = configuration->property(role + impl_prop, ""s);
@@ -923,8 +925,8 @@ std::unique_ptr<SignalSourceInterface> GNSSBlockFactory::GetSignalSource(
 }
 
 
-std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
-    const ConfigurationInterface* configuration, int ID) const
+std::unique_ptr<GNSSBlockInterface> GetSignalConditioner(
+    const ConfigurationInterface* configuration, int ID)
 {
     const auto role_conditioner = findRole(configuration, "SignalConditioner"s, ID);
     const auto role_datatypeadapter = findRole(configuration, "DataTypeAdapter"s, ID);
@@ -996,25 +998,25 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
 }
 
 
-std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(const ConfigurationInterface* configuration) const
+std::unique_ptr<GNSSBlockInterface> GetObservables(const ConfigurationInterface* configuration)
 {
     const auto channel_count = get_channel_count(configuration);
     return get_block_force_impl(configuration, "Observables", "Hybrid_Observables", channel_count + 1, channel_count);  // 1 for monitor channel sample counter
 }
 
 
-std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(const ConfigurationInterface* configuration) const
+std::unique_ptr<GNSSBlockInterface> GetPVT(const ConfigurationInterface* configuration)
 {
     return get_block_force_impl(configuration, "PVT", "RTKLIB_PVT", get_channel_count(configuration), 0);
 }
 
 
 // ************************** GNSS CHANNEL *************************************
-std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel(
+std::unique_ptr<GNSSBlockInterface> GetChannel(
     const ConfigurationInterface* configuration,
     const std::string& signal,
     int channel,
-    Concurrent_Queue<pmt::pmt_t>* queue) const
+    Concurrent_Queue<pmt::pmt_t>* queue)
 {
     const auto acq_role_name = get_role_name(configuration, "Acquisition_", signal, channel);
     const auto trk_role_name = get_role_name(configuration, "Tracking_", signal, channel);
@@ -1054,9 +1056,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel(
 }
 
 
-std::vector<std::unique_ptr<GNSSBlockInterface>> GNSSBlockFactory::GetChannels(
+std::vector<std::unique_ptr<GNSSBlockInterface>> GetChannels(
     const ConfigurationInterface* configuration,
-    Concurrent_Queue<pmt::pmt_t>* queue) const
+    Concurrent_Queue<pmt::pmt_t>* queue)
 {
     int channel_absolute_id = 0;
     std::vector<std::unique_ptr<GNSSBlockInterface>> channels(get_channel_count(configuration));
@@ -1087,42 +1089,44 @@ std::vector<std::unique_ptr<GNSSBlockInterface>> GNSSBlockFactory::GetChannels(
 }
 
 
-std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
+std::unique_ptr<GNSSBlockInterface> GetBlock(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams,
-    Concurrent_Queue<pmt::pmt_t>* queue) const
+    Concurrent_Queue<pmt::pmt_t>* queue)
 {
     return get_block(configuration, role, in_streams, out_streams, queue);
 }
 
 
-std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
+std::unique_ptr<AcquisitionInterface> GetAcqBlock(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) const
+    unsigned int out_streams)
 {
     return get_block(configuration, role, in_streams, out_streams, get_acq_block);
 }
 
 
-std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
+std::unique_ptr<TrackingInterface> GetTrkBlock(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) const
+    unsigned int out_streams)
 {
     return get_block(configuration, role, in_streams, out_streams, get_trk_block);
 }
 
 
-std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
+std::unique_ptr<TelemetryDecoderInterface> GetTlmBlock(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) const
+    unsigned int out_streams)
 {
     return get_block(configuration, role, in_streams, out_streams, get_tlm_block);
 }
+
+};  // namespace block_factory

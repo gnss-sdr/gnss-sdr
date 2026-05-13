@@ -368,7 +368,6 @@ public:
 
     TrackingPullInTestFpga()
     {
-        factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
         gnss_synchro = Gnss_Synchro();
@@ -384,7 +383,6 @@ public:
 
     bool acquire_signal(int SV_ID);
     gr::top_block_sptr top_block;
-    std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
@@ -1101,7 +1099,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 
                             // create flowgraph
                             top_block = gr::make_top_block("Tracking test");
-                            std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config.get(), "Tracking", 1, 1);
+                            std::shared_ptr<GNSSBlockInterface> trk_ = block_factory::GetBlock(config.get(), "Tracking", 1, 1);
                             std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
                             auto msg_rx = TrackingPullInTest_msg_rx_Fpga_make();
 

@@ -330,7 +330,6 @@ public:
         uint32_t smoother_length,
         bool high_dyn);
 
-    std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro_master;
     std::vector<Gnss_Synchro> gnss_synchro_vec;

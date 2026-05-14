@@ -128,8 +128,6 @@ void GNSSFlowgraph::init()
     /*
      * Instantiates the receiver blocks
      */
-    auto block_factory = std::make_unique<GNSSBlockFactory>();
-
     channels_status_ = channel_status_msg_receiver_make();
 
     if (configuration_->property("Channels_E6.count", 0) > 0)
@@ -188,7 +186,7 @@ void GNSSFlowgraph::init()
     for (int i = 0; i < sources_count_; i++)
         {
             DLOG(INFO) << "Creating source " << i;
-            auto check_not_nullptr = block_factory->GetSignalSource(configuration_.get(), queue_.get(), i);
+            auto check_not_nullptr = block_factory::GetSignalSource(configuration_.get(), queue_.get(), i);
             if (!check_not_nullptr)
                 {
                     std::cout << "GNSS-SDR program ended.\n";
@@ -205,7 +203,7 @@ void GNSSFlowgraph::init()
                         }
                     for (auto j = 0U; j < RF_Channels; ++j)
                         {
-                            sig_conditioner_.push_back(block_factory->GetSignalConditioner(configuration_.get(), signal_conditioner_ID));
+                            sig_conditioner_.push_back(block_factory::GetSignalConditioner(configuration_.get(), signal_conditioner_ID));
                             signal_conditioner_ID++;
                         }
                 }
@@ -219,11 +217,11 @@ void GNSSFlowgraph::init()
             signal_conditioner_connected_ = std::vector<bool>(sig_conditioner_.size(), false);
         }
 
-    observables_ = block_factory->GetObservables(configuration_.get());
+    observables_ = block_factory::GetObservables(configuration_.get());
 
-    pvt_ = block_factory->GetPVT(configuration_.get());
+    pvt_ = block_factory::GetPVT(configuration_.get());
 
-    auto channels = block_factory->GetChannels(configuration_.get(), queue_.get());
+    auto channels = block_factory::GetChannels(configuration_.get(), queue_.get());
 
     channels_count_ = static_cast<int>(channels.size());
     for (int i = 0; i < channels_count_; i++)

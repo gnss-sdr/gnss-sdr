@@ -132,7 +132,6 @@ class GalileoE1PcpsAmbiguousAcquisitionTest : public ::testing::Test
 protected:
     GalileoE1PcpsAmbiguousAcquisitionTest() : item_size(sizeof(gr_complex)), doppler_max(10000), doppler_step(250)
     {
-        factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
     }
 
@@ -142,7 +141,6 @@ protected:
     void plot_grid();
 
     gr::top_block_sptr top_block;
-    std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
@@ -262,8 +260,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, Instantiate)
 {
     init();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
-    std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
+    auto acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_1B", 1, 0);
 }
 
 
@@ -276,8 +273,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ConnectAndRun)
     top_block = gr::make_top_block("Acquisition test");
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     init();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
-    std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
+    auto acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_1B", 1, 0);
     auto msg_rx = GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW({
@@ -322,8 +318,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     double expected_doppler_hz = -632;
     init();
     top_block = gr::make_top_block("Acquisition test");
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
-    std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
+    auto acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_1B", 1, 0);
     auto msg_rx = GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW({

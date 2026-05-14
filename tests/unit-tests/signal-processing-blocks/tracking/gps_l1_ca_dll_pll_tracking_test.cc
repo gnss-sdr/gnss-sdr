@@ -175,7 +175,6 @@ public:
     bool save_mat_xy(std::vector<double>& x, std::vector<double>& y, std::string filename);
     DllPllTrackingAdapterGpsL1CaTest() : item_size(sizeof(gr_complex))
     {
-        factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         gnss_synchro = Gnss_Synchro();
     }
@@ -189,7 +188,6 @@ public:
         int extend_correlation_symbols);
 
     gr::top_block_sptr top_block;
-    std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
@@ -690,7 +688,7 @@ TEST_F(DllPllTrackingAdapterGpsL1CaTest, ValidationOfResults)
 
                     top_block = gr::make_top_block("Tracking test");
 
-                    std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config.get(), "Tracking_1C", 1, 1);
+                    std::shared_ptr<GNSSBlockInterface> trk_ = block_factory::GetBlock(config.get(), "Tracking_1C", 1, 1);
                     std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
 
                     auto msg_rx = DllPllTrackingAdapterGpsL1CaTest_msg_rx_make();

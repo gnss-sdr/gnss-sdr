@@ -234,7 +234,6 @@ bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configurat
     std::string trace_step;
 
     gr::top_block_sptr top_block;
-    GNSSBlockFactory block_factory;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
 
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
@@ -249,10 +248,10 @@ bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configurat
             std::shared_ptr<GNSSBlockInterface> conditioner;
 
             trace_step = "creating source";
-            source = block_factory.GetSignalSource(configuration.get(), queue.get());
+            source = block_factory::GetSignalSource(configuration.get(), queue.get());
 
             trace_step = "creating signal conditioner";
-            conditioner = block_factory.GetSignalConditioner(configuration.get());
+            conditioner = block_factory::GetSignalConditioner(configuration.get());
 
             trace_step = "unexpected in setup code";
 

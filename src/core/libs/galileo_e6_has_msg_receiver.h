@@ -66,15 +66,19 @@ private:
 
     void msg_handler_galileo_e6_has(const pmt::pmt_t& msg);
     void process_HAS_page(const Galileo_HAS_page& has_page);
+    void clear_HAS_state();
+    void clear_mask_data(uint8_t mask_id);
     void read_MT1_header(const std::string& message_header);
-    void read_MT1_body(const std::string& message_body);
     void delete_outdated_data(const Galileo_HAS_page& has_page);
-
-    int decode_message_type1(uint8_t message_id, uint8_t message_size);
+    bool read_MT1_body(const std::string& message_body, uint64_t time_stamp);
+    int decode_message_type1(uint8_t message_id, uint8_t message_size, uint64_t time_stamp);
 
     uint16_t read_has_message_header_parameter_uint16(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
     uint8_t read_has_message_header_parameter_uint8(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
     bool read_has_message_header_parameter_bool(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
+    bool is_cache_timestamp_valid(uint64_t cache_timestamp, uint64_t current_timestamp) const;
+    bool is_supported_gnss_id(uint8_t gnss_id) const;
+    bool is_validity_interval_index_valid(uint8_t validity_interval_index) const;
 
     uint64_t read_has_message_body_uint64(const std::string& bits) const;
     uint16_t read_has_message_body_uint16(const std::string& bits) const;
@@ -108,8 +112,10 @@ private:
     std::vector<std::vector<std::vector<std::vector<bool>>>> d_cell_mask;
     std::vector<uint8_t> d_nsys_in_mask;
     std::vector<std::vector<uint8_t>> d_nav_message_mask;
+    std::vector<uint64_t> d_mask_timestamps;
 
     std::map<std::pair<uint8_t, uint8_t>, std::vector<uint16_t>> d_iod_ref_map;
+    std::map<std::pair<uint8_t, uint8_t>, uint64_t> d_iod_ref_timestamps;
 
     uint8_t d_current_has_status{};
     uint8_t d_current_message_id{};

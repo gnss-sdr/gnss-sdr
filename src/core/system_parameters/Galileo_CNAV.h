@@ -54,7 +54,8 @@ constexpr size_t HAS_MSG_CODE_BIAS_LENGTH = 11;                      // HAS SIS 
 constexpr size_t HAS_MSG_PHASE_BIAS_LENGTH = 11;                     // HAS SIS ICD 1.0 Table 40
 constexpr size_t HAS_MSG_PHASE_DISCONTINUITY_INDICATOR_LENGTH = 2;   // HAS SIS ICD 1.0 Table 40
 
-constexpr uint64_t MAX_SECONDS_REMEMBERING_MID = 150;  // HAS SIS ICD 1.0 Section 6.4.1 HAS Message Completion Time-out
+constexpr uint64_t MAX_SECONDS_REMEMBERING_MID = 150;        // HAS SIS ICD 1.0 Section 6.4.1 HAS Message Completion Time-out
+constexpr uint64_t MAX_SECONDS_REMEMBERING_MASK_IOD = 1800;  // HAS SIS ICD 1.0 Section 7.6.1
 
 // Galileo CNAV message structure
 constexpr int32_t GALILEO_CNAV_SYMBOLS_PER_PAGE = 1000;  // Total number of symbols per HAS page including the sync pattern

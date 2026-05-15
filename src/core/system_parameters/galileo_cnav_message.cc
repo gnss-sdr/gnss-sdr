@@ -73,6 +73,7 @@ void Galileo_Cnav_Message::read_HAS_page(const std::string& page_string)
             // CRC correct: Read 24 bits of HAS page header
             read_HAS_page_header(page_string.substr(GALILEO_CNAV_PAGE_RESERVED_BITS, GALILEO_CNAV_PAGE_HEADER_BITS));
             bool use_has = false;
+            bool do_not_use_has = false;
             d_test_mode = false;
             // HAS status as defined in HAS SIS ICD v1.0 Table 9 - HASS values and corresponding semantic
             if (!d_page_dummy)
@@ -87,12 +88,15 @@ void Galileo_Cnav_Message::read_HAS_page(const std::string& page_string)
                             use_has = true;
                             break;
                         case 2:  // HAS is in "reserved" status
+                            break;
                         case 3:  // Do not use HAS
+                            do_not_use_has = true;
+                            break;
                         default:
                             break;
                         }
                 }
-            if (use_has or d_page_dummy)
+            if (use_has or do_not_use_has or d_page_dummy)
                 {
                     // Store the 424 bits of encoded data (CNAV page) and the page header
                     has_page.has_message_string = page_string.substr(GALILEO_CNAV_PAGE_RESERVED_BITS + GALILEO_CNAV_PAGE_HEADER_BITS, GALILEO_CNAV_MESSAGE_BITS_PER_PAGE);

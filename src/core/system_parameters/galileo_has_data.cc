@@ -18,11 +18,76 @@
 #include "Galileo_CNAV.h"
 #include <algorithm>
 #include <bitset>
+#include <cmath>
 #include <iterator>
 #include <numeric>
 #include <sstream>
 #include <stdexcept>
 #include <utility>
+
+namespace
+{
+constexpr float HAS_DEFAULT_TOLERANCE = 0.001F;
+constexpr float HAS_CODE_BIAS_TOLERANCE = 0.01F;
+constexpr uint32_t HAS_SECONDS_PER_HOUR = 3600U;
+constexpr uint32_t HAS_SECONDS_PER_WEEK = 604800U;
+constexpr uint32_t HAS_HALF_WEEK_SECONDS = HAS_SECONDS_PER_WEEK / 2U;
+
+bool is_near(float value, float sentinel, float tolerance = HAS_DEFAULT_TOLERANCE)
+{
+    return std::fabs(value - sentinel) < tolerance;
+}
+
+
+bool is_gps_has_signal(const std::string& signal)
+{
+    return (signal == "L1 C/A") ||
+           (signal == "L1C(D)") ||
+           (signal == "L1C(P)") ||
+           (signal == "L1C(D+P)") ||
+           (signal == "L2 CM") ||
+           (signal == "L2 CL") ||
+           (signal == "L2 CM+CL") ||
+           (signal == "L2 P") ||
+           (signal == "L5 I") ||
+           (signal == "L5 Q") ||
+           (signal == "L5 I + L5 Q");
+}
+
+
+bool is_galileo_has_signal(const std::string& signal)
+{
+    return (signal == "E1-B I/NAV OS") ||
+           (signal == "E1-C") ||
+           (signal == "E1-B + E1-C") ||
+           (signal == "E5a-I F/NAV OS") ||
+           (signal == "E5a-Q") ||
+           (signal == "E5a-I+E5a-Q") ||
+           (signal == "E5b-I I/NAV OS") ||
+           (signal == "E5b-Q") ||
+           (signal == "E5b-I+E5b-Q") ||
+           (signal == "E5-I") ||
+           (signal == "E5-Q") ||
+           (signal == "E5-I + E5-Q") ||
+           (signal == "E6-B C/NAV HAS") ||
+           (signal == "E6-C") ||
+           (signal == "E6-B + E6-C");
+}
+
+
+std::string target_system_for_has_signal(const std::string& signal)
+{
+    if (is_gps_has_signal(signal))
+        {
+            return std::string("GPS");
+        }
+    if (is_galileo_has_signal(signal))
+        {
+            return std::string("Galileo");
+        }
+    return {};
+}
+}  // namespace
 
 
 std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) const
@@ -392,29 +457,11 @@ std::vector<float> Galileo_HAS_data::get_delta_clock_subset_correction_m(uint8_t
         }
 
     auto subset_corr_matrix = this->get_delta_clock_subset_correction_m();
-    const std::vector<float>& delta_clock_subset_correction_m_v = subset_corr_matrix[nsys_sub_index];
-    std::vector<float> delta_clock_subset_correction_m_aux;
-    std::vector<uint8_t> num_satellites_subset = this->get_num_subset_satellites();
-    uint8_t num_sats_in_this_system_subset = num_satellites_subset[nsys_sub_index];
-    delta_clock_subset_correction_m_aux.reserve(num_sats_in_this_system_subset);
-    size_t index = 0;
-    for (uint8_t sys = 0; sys <= nsys; sys++)
+    if (nsys_sub_index >= subset_corr_matrix.size())
         {
-            uint8_t num_sats_in_subset = num_satellites_subset[sys];
-            if (sys != nsys)
-                {
-                    index += num_sats_in_subset;
-                }
-            else
-                {
-                    for (uint8_t sat = 0; sat < num_sats_in_subset; sat++)
-                        {
-                            delta_clock_subset_correction_m_aux.push_back(delta_clock_subset_correction_m_v[index]);
-                            index++;
-                        }
-                }
+            return {};
         }
-    return delta_clock_subset_correction_m_aux;
+    return subset_corr_matrix[nsys_sub_index];
 }
 
 
@@ -477,15 +524,14 @@ std::vector<int> Galileo_HAS_data::get_PRNs_in_submask(uint8_t nsys) const
 
     std::vector<int> prn_in_submask;
     auto sat_submask = this->satellite_submask[nsys_sub_index];
-    int count = 0;
-    while (sat_submask)
+    std::bitset<HAS_MSG_SATELLITE_MASK_LENGTH> bits(sat_submask);
+    for (size_t i = 0; i < mask_prns.size(); i++)
         {
-            if (sat_submask & 1)
+            const size_t bit_index = mask_prns.size() - i - 1;
+            if (bits[bit_index])
                 {
-                    prn_in_submask.push_back(mask_prns[count]);
-                    count++;
+                    prn_in_submask.push_back(mask_prns[i]);
                 }
-            sat_submask >>= 1;
         }
 
     return prn_in_submask;
@@ -587,17 +633,7 @@ float Galileo_HAS_data::get_code_bias_m(const std::string& signal, int PRN) cons
             return code_bias_correction_m;
         }
 
-    std::string targeted_system;
-    if ((signal == "L1 C/A") || (signal == "L1C(D)") || (signal == "L1C(P)" || (signal == "L1C(D+P)") || (signal == "L2 CM") || (signal == "L2 CL") || (signal == "L2 CM+CL") || (signal == "L2 P") || (signal == "L5 I")) ||
-        (signal == "L5 Q") || (signal == "L5 I + L5 Q"))
-        {
-            targeted_system = std::string("GPS");
-        }
-    if ((signal == "E1-B I/NAV OS") || (signal == "E1-C") || (signal == "E1-B + E1-C") || (signal == "E5a-I F/NAV OS") || (signal == "E5a-Q") || (signal == "E5a-I+E5a-Q") || (signal == "E5b-I I/NAV OS") ||
-        (signal == "E5b-Q") || (signal == "E5b-I+E5b-Q") || (signal == "E5-I") || (signal == "E5-Q") || (signal == "E5-I + E5-Q") || (signal == "E6-B C/NAV HAS") || (signal == "E6-C") || (signal == "E6-B + E6-C"))
-        {
-            targeted_system = std::string("Galileo");
-        }
+    std::string targeted_system = target_system_for_has_signal(signal);
 
     if (!code_bias.empty() && !targeted_system.empty())
         {
@@ -663,17 +699,7 @@ float Galileo_HAS_data::get_phase_bias_cycle(const std::string& signal, int PRN)
             return phase_bias_correction_cycles;
         }
 
-    std::string targeted_system;
-    if ((signal == "L1 C/A") || (signal == "L1C(D)") || (signal == "L1C(P)" || (signal == "L1C(D+P)") || (signal == "L2 CM") || (signal == "L2 CL") || (signal == "L2 CM+CL") || (signal == "L2 P") || (signal == "L5 I")) ||
-        (signal == "L5 Q") || (signal == "L5 I + L5 Q"))
-        {
-            targeted_system = std::string("GPS");
-        }
-    if ((signal == "E1-B I/NAV OS") || (signal == "E1-C") || (signal == "E1-B + E1-C") || (signal == "E5a-I F/NAV OS") || (signal == "E5a-Q") || (signal == "E5a-I+E5a-Q") || (signal == "E5b-I I/NAV OS") ||
-        (signal == "E5b-Q") || (signal == "E5b-I+E5b-Q") || (signal == "E5-I") || (signal == "E5-Q") || (signal == "E5-I + E5-Q") || (signal == "E6-B C/NAV HAS") || (signal == "E6-C") || (signal == "E6-B + E6-C"))
-        {
-            targeted_system = std::string("Galileo");
-        }
+    std::string targeted_system = target_system_for_has_signal(signal);
 
     if (!phase_bias.empty() && !targeted_system.empty())
         {
@@ -722,6 +748,69 @@ float Galileo_HAS_data::get_phase_bias_cycle(const std::string& signal, int PRN)
         }
 
     return phase_bias_correction_cycles;
+}
+
+
+uint8_t Galileo_HAS_data::get_phase_discontinuity_indicator(const std::string& signal, int PRN) const
+{
+    uint8_t pdi = 0;
+    if (this->phase_discontinuity_indicator.empty() || this->phase_discontinuity_indicator[0].empty())
+        {
+            return pdi;
+        }
+
+    std::string targeted_system = target_system_for_has_signal(signal);
+    if (targeted_system.empty())
+        {
+            return pdi;
+        }
+
+    std::vector<std::string> systems = this->get_systems_string();
+    auto Nsys_ = systems.size();
+    auto nsys_index = std::distance(systems.cbegin(), std::find(systems.cbegin(), systems.cend(), targeted_system));
+
+    if (static_cast<size_t>(nsys_index) < Nsys_)
+        {
+            std::vector<std::string> signals = get_signals_in_mask(static_cast<uint8_t>(nsys_index));
+            auto sig_index = std::distance(signals.cbegin(), std::find(signals.cbegin(), signals.cend(), signal));
+
+            if (static_cast<size_t>(sig_index) < signals.size())
+                {
+                    int sat_index = 0;
+                    bool index_found = false;
+                    for (int s = 0; s < static_cast<int>(Nsys); s++)
+                        {
+                            std::vector<int> PRNs_in_mask = get_PRNs_in_mask(s);
+                            if (s == nsys_index)
+                                {
+                                    if (index_found == false)
+                                        {
+                                            auto sati = std::distance(PRNs_in_mask.cbegin(), std::find(PRNs_in_mask.cbegin(), PRNs_in_mask.cend(), PRN));
+                                            if (static_cast<size_t>(sati) < PRNs_in_mask.size())
+                                                {
+                                                    sat_index += sati;
+                                                    index_found = true;
+                                                }
+                                        }
+                                }
+                            else
+                                {
+                                    if (index_found == false)
+                                        {
+                                            sat_index += PRNs_in_mask.size();
+                                        }
+                                }
+                        }
+                    if ((index_found == true) &&
+                        (static_cast<size_t>(sat_index) < this->phase_discontinuity_indicator.size()) &&
+                        (static_cast<size_t>(sig_index) < this->phase_discontinuity_indicator[sat_index].size()))
+                        {
+                            pdi = this->phase_discontinuity_indicator[sat_index][sig_index];
+                        }
+                }
+        }
+
+    return pdi;
 }
 
 
@@ -855,7 +944,18 @@ float Galileo_HAS_data::get_clock_subset_correction_mult_m(const std::string& sy
 
     auto index_subset = std::distance(prns_subset.begin(), it);
     auto clock_correction_m_v = this->get_delta_clock_subset_correction_m(system_index);
-    auto dcm = static_cast<float>(this->delta_clock_multiplier_clock_subset[system_index]);
+    const auto gnss_id_in_mask = this->gnss_id_mask[system_index];
+    const auto subset_sys_it = std::find(gnss_id_clock_subset.begin(), gnss_id_clock_subset.end(), gnss_id_in_mask);
+    if (subset_sys_it == gnss_id_clock_subset.end())
+        {
+            return 0.0;
+        }
+    const auto nsys_sub_index = std::distance(gnss_id_clock_subset.begin(), subset_sys_it);
+    if (static_cast<size_t>(nsys_sub_index) >= this->delta_clock_multiplier_clock_subset.size())
+        {
+            return 0.0;
+        }
+    auto dcm = static_cast<float>(this->delta_clock_multiplier_clock_subset[nsys_sub_index]);
     if (!clock_correction_m_v.empty())
         {
             return clock_correction_m_v[index_subset] * dcm;
@@ -890,6 +990,91 @@ uint16_t Galileo_HAS_data::get_validity_interval_s(uint8_t validity_interval_ind
             return 0;
         }
     return it->second;
+}
+
+
+uint32_t Galileo_HAS_data::get_time_of_message_s() const
+{
+    const uint32_t hour = this->tow / HAS_SECONDS_PER_HOUR;
+    const uint32_t seconds_of_hour = static_cast<uint32_t>(this->header.toh);
+    const uint32_t candidate_tmt = hour * HAS_SECONDS_PER_HOUR + seconds_of_hour;
+
+    if (candidate_tmt <= this->tow)
+        {
+            return candidate_tmt;
+        }
+    if (hour == 0U)
+        {
+            return HAS_SECONDS_PER_WEEK - HAS_SECONDS_PER_HOUR + seconds_of_hour;
+        }
+    return (hour - 1U) * HAS_SECONDS_PER_HOUR + seconds_of_hour;
+}
+
+
+bool Galileo_HAS_data::has_validity_interval_at_tow(uint32_t valid_until, uint32_t tow)
+{
+    if (valid_until > HAS_SECONDS_PER_WEEK)
+        {
+            const uint32_t wrapped_valid_until = valid_until - HAS_SECONDS_PER_WEEK;
+            return (tow < wrapped_valid_until) || (tow > HAS_HALF_WEEK_SECONDS);
+        }
+    if ((valid_until > HAS_HALF_WEEK_SECONDS) && (tow < HAS_HALF_WEEK_SECONDS))
+        {
+            return false;
+        }
+    return valid_until > tow;
+}
+
+
+bool Galileo_HAS_data::is_orbit_radial_unavailable(float value)
+{
+    return is_near(value, -10.24F);
+}
+
+
+bool Galileo_HAS_data::is_orbit_along_cross_unavailable(float value)
+{
+    return is_near(value, -16.384F);
+}
+
+
+bool Galileo_HAS_data::is_clock_unavailable(float value)
+{
+    const float unavailable_values[] = {-10.24F, -20.48F, -30.72F, -40.96F};
+    for (const auto unavailable_value : unavailable_values)
+        {
+            if (is_near(value, unavailable_value))
+                {
+                    return true;
+                }
+        }
+    return false;
+}
+
+
+bool Galileo_HAS_data::is_clock_do_not_use(float value)
+{
+    const float do_not_use_values[] = {10.2375F, 20.475F, 30.7125F, 40.95F};
+    for (const auto do_not_use_value : do_not_use_values)
+        {
+            if (is_near(value, do_not_use_value))
+                {
+                    return true;
+                }
+        }
+    return false;
+}
+
+
+bool Galileo_HAS_data::is_code_bias_unavailable(float value)
+{
+    return is_near(value, -20.48F, HAS_CODE_BIAS_TOLERANCE);
+}
+
+
+bool Galileo_HAS_data::is_phase_bias_unavailable(float value)
+{
+    return is_near(value, -10.24F);
 }
 
 

@@ -63,6 +63,8 @@ public:
     HAS_obs_corrections() = default;
     float code_bias_m{};
     float phase_bias_cycle{};
+    uint8_t phase_discontinuity_indicator{};
+    bool phase_bias_discontinuity{};
 };
 
 
@@ -81,6 +83,11 @@ eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph,
     bool pre_2009_file = false);
 
 eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph);
+
+eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph,
+    const std::map<int, HAS_orbit_corrections>& orbit_correction_map,
+    const std::map<int, HAS_clock_corrections>& clock_correction_map);
+
 eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph);
 
 alm_t alm_to_rtklib(const Gps_Almanac& gps_alm);

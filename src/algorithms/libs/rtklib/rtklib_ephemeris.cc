@@ -379,7 +379,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
                         {
                             for (int col = 0; col < 3; col++)
                                 {
-                                    rotated_corrections[row] = R[row][col] * corrections[col];
+                                    rotated_corrections[row] += R[row][col] * corrections[col];
                                 }
                         }
 

@@ -134,6 +134,8 @@ private:
     void check_has_orbit_clock_validity(const std::map<int, Gnss_Synchro>& obs_map);
     void get_has_biases(const std::map<int, Gnss_Synchro>& obs_map);
     void get_current_has_obs_correction(const std::string& signal, uint32_t tow_obs, int prn);
+    bool has_active_has_do_not_use(const std::string& system, int prn, uint32_t tow_obs) const;
+    bool has_active_has_orbit_clock(const std::string& system, int prn, uint32_t tow_obs) const;
 
     std::array<obsd_t, MAXOBS> d_obs_data{};
     std::array<double, 4> d_dop{};
@@ -142,9 +144,12 @@ private:
 
     std::map<std::string, std::map<int, HAS_orbit_corrections>> d_has_orbit_corrections_store_map;  // first key is system, second key is PRN
     std::map<std::string, std::map<int, HAS_clock_corrections>> d_has_clock_corrections_store_map;  // first key is system, second key is PRN
+    std::map<std::string, std::map<int, uint32_t>> d_has_satellite_do_not_use_until;                // first key is system, second key is PRN
 
     std::map<std::string, std::map<int, std::pair<float, uint32_t>>> d_has_code_bias_store_map;   // first key is signal, second key is PRN
     std::map<std::string, std::map<int, std::pair<float, uint32_t>>> d_has_phase_bias_store_map;  // first key is signal, second key is PRN
+    std::map<std::string, std::map<int, uint8_t>> d_has_phase_discontinuity_indicator_store_map;  // first key is signal, second key is PRN
+    std::map<std::string, std::map<int, bool>> d_has_phase_bias_discontinuity_map;                // first key is signal, second key is PRN
 
     std::map<std::string, std::map<int, HAS_obs_corrections>> d_has_obs_corr_map;  // first key is signal, second key is PRN
 

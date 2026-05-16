@@ -228,6 +228,12 @@ void galileo_e6_has_msg_receiver::process_HAS_page(const Galileo_HAS_page& has_p
     if (has_page.has_status == 0 || has_page.has_status == 1)
         {
             std::string page_string(has_page.has_message_string);
+            if (page_string.size() != GALILEO_CNAV_MESSAGE_BITS_PER_PAGE)
+                {
+                    LOG(WARNING) << "Ignoring Galileo HAS page with invalid encoded page length "
+                                 << page_string.size() << " bits";
+                    return;
+                }
             if (has_page.message_page_id != 0)  // PID=0 is reserved, ignore it
                 {
                     if (has_page.message_type == 1)  // contains satellite corrections
@@ -614,6 +620,26 @@ bool galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body,
         message.erase(0, bits);
         return true;
     };
+    const auto signal_mask_has_reserved_bits = [](uint8_t gnss_id, uint16_t signal_mask) -> bool {
+        for (uint8_t signal_index = 0; signal_index < HAS_MSG_NUMBER_SIGNAL_MASKS; signal_index++)
+            {
+                const bool signal_is_present = (signal_mask & (1U << (HAS_MSG_NUMBER_SIGNAL_MASKS - signal_index - 1))) != 0;
+                bool reserved_signal = false;
+                if (gnss_id == HAS_MSG_GPS_SYSTEM)
+                    {
+                        reserved_signal = signal_index == 1 || signal_index == 2 || signal_index == 10 || signal_index == 14 || signal_index == 15;
+                    }
+                else if (gnss_id == HAS_MSG_GALILEO_SYSTEM)
+                    {
+                        reserved_signal = signal_index == 15;
+                    }
+                if (signal_is_present && reserved_signal)
+                    {
+                        return true;
+                    }
+            }
+        return false;
+    };
     int Nsat = 0;
     bool have_mask = false;
     std::string bits;
@@ -641,6 +667,7 @@ bool galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body,
                     d_HAS_data.nav_message = std::vector<uint8_t>(d_HAS_data.Nsys);
                     d_HAS_data.satellite_mask = std::vector<uint64_t>(d_HAS_data.Nsys);
                     d_HAS_data.signal_mask = std::vector<uint16_t>(d_HAS_data.Nsys);
+                    std::vector<bool> gnss_id_present(HAS_MSG_NUMBER_GNSS_IDS);
 
                     for (uint8_t i = 0; i < d_HAS_data.Nsys; i++)
                         {
@@ -655,6 +682,13 @@ bool galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body,
                                     clear_mask_data(d_HAS_data.header.mask_id);
                                     return false;
                                 }
+                            if (gnss_id_present[d_HAS_data.gnss_id_mask[i]])
+                                {
+                                    LOG(WARNING) << "HAS MT1 Mask block contains duplicate GNSS ID " << std::to_string(d_HAS_data.gnss_id_mask[i]);
+                                    clear_mask_data(d_HAS_data.header.mask_id);
+                                    return false;
+                                }
+                            gnss_id_present[d_HAS_data.gnss_id_mask[i]] = true;
                             d_gnss_id_in_mask[d_HAS_data.header.mask_id][i] = d_HAS_data.gnss_id_mask[i];
 
                             std::string msg;
@@ -672,6 +706,12 @@ bool galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body,
                                     return false;
                                 }
                             d_HAS_data.signal_mask[i] = read_has_message_body_uint16(msg);
+                            if (signal_mask_has_reserved_bits(d_HAS_data.gnss_id_mask[i], d_HAS_data.signal_mask[i]))
+                                {
+                                    LOG(WARNING) << "HAS MT1 Mask block contains reserved Signal Mask bits for GNSS ID " << std::to_string(d_HAS_data.gnss_id_mask[i]);
+                                    clear_mask_data(d_HAS_data.header.mask_id);
+                                    return false;
+                                }
                             d_signal_mask[d_HAS_data.header.mask_id][i] = d_HAS_data.signal_mask[i];
                             int ones_in_signal_mask = std::count(msg.begin(), msg.end(), '1');
 
@@ -714,6 +754,12 @@ bool galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body,
                                     return false;
                                 }
                             d_HAS_data.nav_message[i] = read_has_message_body_uint8(bits);
+                            if (d_HAS_data.nav_message[i] != 0)
+                                {
+                                    LOG(WARNING) << "HAS MT1 Mask block contains reserved Navigation Message Index " << std::to_string(d_HAS_data.nav_message[i]);
+                                    clear_mask_data(d_HAS_data.header.mask_id);
+                                    return false;
+                                }
                             d_nav_message_mask[d_HAS_data.header.mask_id][i] = d_HAS_data.nav_message[i];
                         }
                     d_nsat_in_mask_id[d_HAS_data.header.mask_id] = Nsat;

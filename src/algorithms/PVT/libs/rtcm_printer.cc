@@ -393,17 +393,25 @@ void Rtcm_Printer::Print_IGM_Messages(const Galileo_HAS_data& has_data)
 {
     try
         {
-            if (has_data.header.orbit_correction_flag && has_data.header.clock_fullset_flag)
+            const bool has_orbit_corrections = has_data.header.orbit_correction_flag;
+            const bool has_clock_fullset_corrections = has_data.header.clock_fullset_flag;
+            const bool has_clock_subset_corrections = has_data.header.clock_subset_flag;
+
+            if (has_orbit_corrections && has_clock_fullset_corrections)
                 {
                     Print_IGM03(has_data);
                 }
-            if (has_data.header.orbit_correction_flag && !has_data.header.clock_fullset_flag)
+            if (has_orbit_corrections && !has_clock_fullset_corrections)
                 {
                     Print_IGM01(has_data);
                 }
-            if (!has_data.header.orbit_correction_flag && has_data.header.clock_fullset_flag)
+            if (!has_orbit_corrections && has_clock_fullset_corrections)
                 {
                     Print_IGM02(has_data);
+                }
+            if (has_clock_subset_corrections)
+                {
+                    Print_IGM02(has_data, true);
                 }
             if (has_data.header.code_bias_flag)
                 {
@@ -577,9 +585,9 @@ bool Rtcm_Printer::Print_IGM01(const Galileo_HAS_data& has_data)
 }
 
 
-bool Rtcm_Printer::Print_IGM02(const Galileo_HAS_data& has_data)
+bool Rtcm_Printer::Print_IGM02(const Galileo_HAS_data& has_data, bool use_clock_subset)
 {
-    const std::vector<std::string> msgs = rtcm->print_IGM02(has_data);
+    const std::vector<std::string> msgs = rtcm->print_IGM02(has_data, use_clock_subset);
     if (msgs.empty())
         {
             return false;

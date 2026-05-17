@@ -183,10 +183,10 @@ private:
         bool divergence_free,
         bool more_messages);
 
-    bool Print_IGM01(const Galileo_HAS_data& has_data);  // SSR Orbit Corrections
-    bool Print_IGM02(const Galileo_HAS_data& has_data);  // SSR Clock Corrections
-    bool Print_IGM03(const Galileo_HAS_data& has_data);  // SSR Combined Orbit & Clock Corrections
-    bool Print_IGM05(const Galileo_HAS_data& has_data);  // SSR Bias Corrections
+    bool Print_IGM01(const Galileo_HAS_data& has_data);                                 // SSR Orbit Corrections
+    bool Print_IGM02(const Galileo_HAS_data& has_data, bool use_clock_subset = false);  // SSR Clock Corrections
+    bool Print_IGM03(const Galileo_HAS_data& has_data);                                 // SSR Combined Orbit & Clock Corrections
+    bool Print_IGM05(const Galileo_HAS_data& has_data);                                 // SSR Bias Corrections
 
     int32_t init_serial(const std::string& serial_device);  // serial port control
     void close_serial() const;

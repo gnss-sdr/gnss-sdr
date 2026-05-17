@@ -33,6 +33,144 @@
 #include <cstdlib>    // for strtol
 #include <iostream>   // for std::cout
 
+namespace
+{
+bool get_IGM05_tracking_mode_id(uint8_t gnss_id, const std::string& signal, uint8_t& tracking_mode_id)
+{
+    if (gnss_id == 0)  // GPS
+        {
+            if (signal == "L1 C/A")
+                {
+                    tracking_mode_id = 0;
+                    return true;
+                }
+            if (signal == "L1C(D)")
+                {
+                    tracking_mode_id = 3;
+                    return true;
+                }
+            if (signal == "L1C(P)")
+                {
+                    tracking_mode_id = 4;
+                    return true;
+                }
+            if (signal == "L2 CM")
+                {
+                    tracking_mode_id = 7;
+                    return true;
+                }
+            if (signal == "L2 CL")
+                {
+                    tracking_mode_id = 8;
+                    return true;
+                }
+            if (signal == "L5 I")
+                {
+                    tracking_mode_id = 14;
+                    return true;
+                }
+            if (signal == "L5 Q")
+                {
+                    tracking_mode_id = 15;
+                    return true;
+                }
+        }
+    else if (gnss_id == 2)  // Galileo
+        {
+            if (signal == "E1-B I/NAV OS")
+                {
+                    tracking_mode_id = 1;
+                    return true;
+                }
+            if (signal == "E1-C")
+                {
+                    tracking_mode_id = 2;
+                    return true;
+                }
+            if (signal == "E5a-I F/NAV OS")
+                {
+                    tracking_mode_id = 5;
+                    return true;
+                }
+            if (signal == "E5a-Q")
+                {
+                    tracking_mode_id = 6;
+                    return true;
+                }
+            if (signal == "E5b-I I/NAV OS")
+                {
+                    tracking_mode_id = 8;
+                    return true;
+                }
+            if (signal == "E5b-Q")
+                {
+                    tracking_mode_id = 9;
+                    return true;
+                }
+            if (signal == "E6-B C/NAV HAS")
+                {
+                    tracking_mode_id = 15;
+                    return true;
+                }
+            if (signal == "E6-C")
+                {
+                    tracking_mode_id = 16;
+                    return true;
+                }
+        }
+    return false;
+}
+
+
+uint8_t get_IGM02_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys, bool use_clock_subset)
+{
+    const auto prns = use_clock_subset ? has_data.get_PRNs_in_submask(nsys) : has_data.get_PRNs_in_mask(nsys);
+    const auto delta_clock_c0 = use_clock_subset ? has_data.get_delta_clock_subset_correction_m(nsys) : has_data.get_delta_clock_correction_m(nsys);
+    return static_cast<uint8_t>(std::min(prns.size(), delta_clock_c0.size()));
+}
+
+
+uint8_t get_IGM05_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys)
+{
+    const auto code_bias_m = has_data.get_code_bias_m();
+    const auto prns = has_data.get_PRNs_in_mask(nsys);
+    const auto signals = has_data.get_signals_in_mask(nsys);
+    uint8_t count = 0;
+
+    uint8_t num_sats_in_previous_systems = 0;
+    for (uint8_t sys = 0; sys < nsys; sys++)
+        {
+            num_sats_in_previous_systems += has_data.get_num_satellites()[sys];
+        }
+
+    for (size_t sat = 0; sat < prns.size(); sat++)
+        {
+            const size_t sat_index = num_sats_in_previous_systems + sat;
+            if (sat_index >= code_bias_m.size())
+                {
+                    continue;
+                }
+
+            bool has_valid_bias = false;
+            for (size_t code = 0; code < signals.size() && code < code_bias_m[sat_index].size(); code++)
+                {
+                    uint8_t tracking_mode_id = 0;
+                    if (get_IGM05_tracking_mode_id(has_data.gnss_id_mask[nsys], signals[code], tracking_mode_id) &&
+                        !Galileo_HAS_data::is_code_bias_unavailable(code_bias_m[sat_index][code]))
+                        {
+                            has_valid_bias = true;
+                            break;
+                        }
+                }
+            if (has_valid_bias)
+                {
+                    count++;
+                }
+        }
+    return count;
+}
+}  // namespace
+
 
 Rtcm::Rtcm(uint16_t port) : RTCM_port(port), server_is_running(false)
 {
@@ -3351,19 +3489,25 @@ std::vector<std::string> Rtcm::print_IGM01(const Galileo_HAS_data& has_data)
 }
 
 
-std::vector<std::string> Rtcm::print_IGM02(const Galileo_HAS_data& has_data)
+std::vector<std::string> Rtcm::print_IGM02(const Galileo_HAS_data& has_data, bool use_clock_subset)
 {
     std::vector<std::string> msgs;
     const uint8_t nsys = has_data.Nsys;
-    bool ssr_multiple_msg_indicator = true;
+    std::vector<uint8_t> systems_to_print;
     for (uint8_t sys = 0; sys < nsys; sys++)
         {
-            if (sys == nsys - 1)
+            if (get_IGM02_satellite_count(has_data, sys, use_clock_subset) > 0)
                 {
-                    ssr_multiple_msg_indicator = false;  // last message of a sequence
+                    systems_to_print.push_back(sys);
                 }
-            const std::string header = Rtcm::get_IGM02_header(has_data, sys, ssr_multiple_msg_indicator);
-            const std::string sat_data = Rtcm::get_IGM02_content_sat(has_data, sys);
+        }
+
+    for (size_t i = 0; i < systems_to_print.size(); i++)
+        {
+            const uint8_t sys = systems_to_print[i];
+            const bool ssr_multiple_msg_indicator = (i + 1 != systems_to_print.size());
+            const std::string header = Rtcm::get_IGM02_header(has_data, sys, ssr_multiple_msg_indicator, use_clock_subset);
+            const std::string sat_data = Rtcm::get_IGM02_content_sat(has_data, sys, use_clock_subset);
             std::string message = build_message(header + sat_data);
             if (server_is_running)
                 {
@@ -3403,13 +3547,19 @@ std::vector<std::string> Rtcm::print_IGM05(const Galileo_HAS_data& has_data)
 {
     std::vector<std::string> msgs;
     const uint8_t nsys = has_data.Nsys;
-    bool ssr_multiple_msg_indicator = true;
+    std::vector<uint8_t> systems_to_print;
     for (uint8_t sys = 0; sys < nsys; sys++)
         {
-            if (sys == nsys - 1)
+            if (get_IGM05_satellite_count(has_data, sys) > 0)
                 {
-                    ssr_multiple_msg_indicator = false;  // last message of a sequence
+                    systems_to_print.push_back(sys);
                 }
+        }
+
+    for (size_t i = 0; i < systems_to_print.size(); i++)
+        {
+            const uint8_t sys = systems_to_print[i];
+            const bool ssr_multiple_msg_indicator = (i + 1 != systems_to_print.size());
             const std::string header = Rtcm::get_IGM05_header(has_data, sys, ssr_multiple_msg_indicator);
             const std::string sat_data = Rtcm::get_IGM05_content_sat(has_data, sys);
             if (!sat_data.empty())
@@ -3503,7 +3653,7 @@ std::string Rtcm::get_IGM01_content_sat(const Galileo_HAS_data& has_data, uint8_
 }
 
 
-std::string Rtcm::get_IGM02_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator)
+std::string Rtcm::get_IGM02_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator, bool use_clock_subset)
 {
     std::string header;
 
@@ -3523,10 +3673,10 @@ std::string Rtcm::get_IGM02_header(const Galileo_HAS_data& has_data, uint8_t nsy
             subtype_msg_number = 62;
         }
 
-    uint8_t validity_index = has_data.validity_interval_index_orbit_corrections;
+    uint8_t validity_index = use_clock_subset ? has_data.validity_interval_index_clock_subset_corrections : has_data.validity_interval_index_clock_fullset_corrections;
     uint16_t validity_seconds = has_data.get_validity_interval_s(validity_index);
     uint8_t ssr_update_interval_ = ssr_update_interval(validity_seconds);
-    uint8_t Nsat = has_data.get_num_satellites()[nsys];
+    uint8_t Nsat = get_IGM02_satellite_count(has_data, nsys, use_clock_subset);
 
     Rtcm::set_DF002(4076);  // Always “4076” for IGS Proprietary Messages
     Rtcm::set_IDF001(igm_version);
@@ -3547,15 +3697,13 @@ std::string Rtcm::get_IGM02_header(const Galileo_HAS_data& has_data, uint8_t nsy
 }
 
 
-std::string Rtcm::get_IGM02_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index)
+std::string Rtcm::get_IGM02_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index, bool use_clock_subset)
 {
     std::string content;
 
-    const uint8_t num_sats_in_this_system = has_data.get_num_satellites()[nsys_index];
-
-    std::vector<int> prn = has_data.get_PRNs_in_mask(nsys_index);
-
-    std::vector<float> delta_clock_c0 = has_data.get_delta_clock_correction_m(nsys_index);
+    std::vector<int> prn = use_clock_subset ? has_data.get_PRNs_in_submask(nsys_index) : has_data.get_PRNs_in_mask(nsys_index);
+    std::vector<float> delta_clock_c0 = use_clock_subset ? has_data.get_delta_clock_subset_correction_m(nsys_index) : has_data.get_delta_clock_correction_m(nsys_index);
+    const uint8_t num_sats_in_this_system = get_IGM02_satellite_count(has_data, nsys_index, use_clock_subset);
     std::vector<float> delta_clock_c1(num_sats_in_this_system);
     std::vector<float> delta_clock_c2(num_sats_in_this_system);
 
@@ -3651,7 +3799,7 @@ std::string Rtcm::get_IGM03_content_sat(const Galileo_HAS_data& has_data, uint8_
 
             content += IDF011.to_string() + IDF012.to_string() + IDF013.to_string() +
                        IDF014.to_string() + IDF015.to_string() + IDF016.to_string() +
-                       IDF017.to_string() + IDF018.to_string() + DF019.to_string() +
+                       IDF017.to_string() + IDF018.to_string() + IDF019.to_string() +
                        IDF020.to_string() + IDF021.to_string();
         }
 
@@ -3679,10 +3827,10 @@ std::string Rtcm::get_IGM05_header(const Galileo_HAS_data& has_data, uint8_t nsy
             subtype_msg_number = 65;
         }
 
-    uint8_t validity_index = has_data.validity_interval_index_orbit_corrections;
+    uint8_t validity_index = has_data.validity_interval_index_code_bias_corrections;
     uint16_t validity_seconds = has_data.get_validity_interval_s(validity_index);
     uint8_t ssr_update_interval_ = ssr_update_interval(validity_seconds);
-    uint8_t Nsat = has_data.get_num_satellites()[nsys];
+    uint8_t Nsat = get_IGM05_satellite_count(has_data, nsys);
 
     Rtcm::set_DF002(4076);  // Always “4076” for IGS Proprietary Messages
     Rtcm::set_IDF001(igm_version);
@@ -3710,123 +3858,32 @@ std::string Rtcm::get_IGM05_content_sat(const Galileo_HAS_data& has_data, uint8_
     const uint8_t num_sats_in_this_system = has_data.get_num_satellites()[nsys_index];
     std::vector<int> prn = has_data.get_PRNs_in_mask(nsys_index);
     std::vector<std::vector<float>> code_bias_m = has_data.get_code_bias_m();
+    std::vector<std::string> signals = has_data.get_signals_in_mask(nsys_index);
 
     for (uint8_t sat = 0; sat < num_sats_in_this_system; sat++)
         {
-            uint8_t num_bias_processed = has_data.get_signals_in_mask(nsys_index).size();
-
             uint8_t valid_num_bias_processed = 0;
             std::vector<uint8_t> gnss_signal_tracking_mode_id_v;
             std::vector<bool> valid_bias_v;
 
-            for (uint8_t code = 0; code < num_bias_processed; code++)
+            size_t num_sats_in_previous_systems = 0;
+            for (uint8_t nsys = 0; nsys < nsys_index; nsys++)
                 {
-                    std::string code_string = has_data.get_signals_in_mask(nsys_index)[code];
-                    if (has_data.gnss_id_mask[nsys_index] == 0)  // GPS
+                    num_sats_in_previous_systems += has_data.get_num_satellites()[nsys];
+                }
+            const size_t sat_index = sat + num_sats_in_previous_systems;
+
+            for (size_t code = 0; code < signals.size(); code++)
+                {
+                    uint8_t tracking_mode_id = 0;
+                    const bool available_bias = (sat_index < code_bias_m.size()) &&
+                                                (code < code_bias_m[sat_index].size()) &&
+                                                !Galileo_HAS_data::is_code_bias_unavailable(code_bias_m[sat_index][code]);
+                    if (get_IGM05_tracking_mode_id(has_data.gnss_id_mask[nsys_index], signals[code], tracking_mode_id) && available_bias)
                         {
-                            if (code_string == "L1 C/A")
-                                {
-                                    gnss_signal_tracking_mode_id_v.push_back(0);
-                                    valid_bias_v.push_back(true);
-                                    valid_num_bias_processed++;
-                                }
-                            else if (code_string == "L1C(D)")
-                                {
-                                    gnss_signal_tracking_mode_id_v.push_back(3);
-                                    valid_bias_v.push_back(true);
-                                    valid_num_bias_processed++;
-                                }
-                            else if (code_string == "L1C(P)")
-                                {
-                                    gnss_signal_tracking_mode_id_v.push_back(4);
-                                    valid_bias_v.push_back(true);
-                                    valid_num_bias_processed++;
-                                }
-                            else if (code_string == "L2 CM")
-                                {
-                                    gnss_signal_tracking_mode_id_v.push_back(7);
-                                    valid_bias_v.push_back(true);
-                                    valid_num_bias_processed++;
-                                }
-                            else if (code_string == "L2 CL")
-                                {
-                                    gnss_signal_tracking_mode_id_v.push_back(8);
-                                    valid_bias_v.push_back(true);
-                                    valid_num_bias_processed++;
-                                }
-                            else if (code_string == "L5 I")
-                                {
-                                    gnss_signal_tracking_mode_id_v.push_back(14);
-                                    valid_bias_v.push_back(true);
-                                    valid_num_bias_processed++;
-                                }
-                            else if (code_string == "L5 Q")
-                                {
-                                    gnss_signal_tracking_mode_id_v.push_back(15);
-                                    valid_bias_v.push_back(true);
-                                    valid_num_bias_processed++;
-                                }
-                            else
-                                {
-                                    gnss_signal_tracking_mode_id_v.push_back(0);
-                                    valid_bias_v.push_back(false);
-                                }
-                        }
-                    else if (has_data.gnss_id_mask[nsys_index] == 2)  // Galileo
-                        {
-                            if (code_string == "E1-B I/NAV OS")
-                                {
-                                    gnss_signal_tracking_mode_id_v.push_back(1);
-                                    valid_bias_v.push_back(true);
-                                    valid_num_bias_processed++;
-                                }
-                            else if (code_string == "E1-C")
-                                {
-                                    gnss_signal_tracking_mode_id_v.push_back(2);
-                                    valid_bias_v.push_back(true);
-                                    valid_num_bias_processed++;
-                                }
-                            else if (code_string == "E5a-I F/NAV OS")
-                                {
-                                    gnss_signal_tracking_mode_id_v.push_back(5);
-                                    valid_bias_v.push_back(true);
-                                    valid_num_bias_processed++;
-                                }
-                            else if (code_string == "E5a-Q")
-                                {
-                                    gnss_signal_tracking_mode_id_v.push_back(6);
-                                    valid_bias_v.push_back(true);
-                                    valid_num_bias_processed++;
-                                }
-                            else if (code_string == "E5b-I I/NAV OS")
-                                {
-                                    gnss_signal_tracking_mode_id_v.push_back(8);
-                                    valid_bias_v.push_back(true);
-                                    valid_num_bias_processed++;
-                                }
-                            else if (code_string == "E5b-Q")
-                                {
-                                    gnss_signal_tracking_mode_id_v.push_back(9);
-                                    valid_bias_v.push_back(true);
-                                    valid_num_bias_processed++;
-                                }
-                            else if (code_string == "E6-B C/NAV HAS")
-                                {
-                                    gnss_signal_tracking_mode_id_v.push_back(15);
-                                    valid_bias_v.push_back(true);
-                                    valid_num_bias_processed++;
-                                }
-                            else if (code_string == "E6-C")
-                                {
-                                    gnss_signal_tracking_mode_id_v.push_back(16);
-                                    valid_bias_v.push_back(true);
-                                    valid_num_bias_processed++;
-                                }
-                            else
-                                {
-                                    gnss_signal_tracking_mode_id_v.push_back(0);
-                                    valid_bias_v.push_back(false);
-                                }
+                            gnss_signal_tracking_mode_id_v.push_back(tracking_mode_id);
+                            valid_bias_v.push_back(true);
+                            valid_num_bias_processed++;
                         }
                     else
                         {
@@ -3842,20 +3899,13 @@ std::string Rtcm::get_IGM05_content_sat(const Galileo_HAS_data& has_data, uint8_
 
                     content += IDF011.to_string() + IDF023.to_string();
 
-                    uint8_t num_sats_in_previous_systems = 0;
-                    for (uint8_t nsys = 0; nsys < nsys_index; nsys++)
-                        {
-                            num_sats_in_previous_systems += has_data.get_num_satellites()[nsys];
-                        }
-                    uint8_t sat_index = sat + num_sats_in_previous_systems;
-
-                    for (uint8_t code = 0; code < num_bias_processed; code++)
+                    for (size_t code = 0; code < signals.size(); code++)
                         {
                             if (valid_bias_v[code] == true)
                                 {
                                     Rtcm::set_IDF024(gnss_signal_tracking_mode_id_v[code]);
                                     Rtcm::set_IDF025(code_bias_m[sat_index][code]);
-                                    content += DF024.to_string() + IDF025.to_string();
+                                    content += IDF024.to_string() + IDF025.to_string();
                                 }
                         }
                 }

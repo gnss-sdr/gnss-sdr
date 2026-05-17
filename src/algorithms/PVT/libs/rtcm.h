@@ -351,7 +351,7 @@ public:
     /*!
      * \brief Prints messages of type IGM02 (SSR Clock Correction)
      */
-    std::vector<std::string> print_IGM02(const Galileo_HAS_data& has_data);
+    std::vector<std::string> print_IGM02(const Galileo_HAS_data& has_data, bool use_clock_subset = false);
 
     /*!
      * \brief Prints messages of type IGM03 (SSR Combined Orbit and Clock Correction)
@@ -505,8 +505,8 @@ private:
 
     std::string get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
     std::string get_IGM01_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
-    std::string get_IGM02_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
-    std::string get_IGM02_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
+    std::string get_IGM02_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator, bool use_clock_subset = false);
+    std::string get_IGM02_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index, bool use_clock_subset = false);
     std::string get_IGM03_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
     std::string get_IGM03_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
     std::string get_IGM05_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);

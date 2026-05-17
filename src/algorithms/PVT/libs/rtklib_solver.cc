@@ -376,6 +376,19 @@ Monitor_Pvt Rtklib_Solver::get_monitor_pvt() const
 }
 
 
+void Rtklib_Solver::clear_has_corrections()
+{
+    d_has_orbit_corrections_store_map.clear();
+    d_has_clock_corrections_store_map.clear();
+    d_has_satellite_do_not_use_until.clear();
+    d_has_code_bias_store_map.clear();
+    d_has_phase_bias_store_map.clear();
+    d_has_phase_discontinuity_indicator_store_map.clear();
+    d_has_phase_bias_discontinuity_map.clear();
+    d_has_obs_corr_map.clear();
+}
+
+
 void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
 {
     //  Compute time of application HAS SIS ICD, Issue 1.0, Section 7.7
@@ -405,13 +418,15 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                                     d_has_clock_corrections_store_map[gps_str].erase(prn);
                                     continue;
                                 }
-                            d_has_orbit_corrections_store_map[gps_str][prn].radial_m = radial_m;
-                            d_has_orbit_corrections_store_map[gps_str][prn].in_track_m = in_track_m;
-                            d_has_orbit_corrections_store_map[gps_str][prn].cross_track_m = cross_track_m;
-                            d_has_orbit_corrections_store_map[gps_str][prn].valid_until = tmt +
-                                                                                          new_has_data.get_validity_interval_s(new_has_data.validity_interval_index_orbit_corrections);
-                            d_has_orbit_corrections_store_map[gps_str][prn].iod = gnss_iod;
-                            // TODO: check for end of week
+                            auto &orbit_correction = d_has_orbit_corrections_store_map[gps_str][prn];
+                            orbit_correction.radial_m = radial_m;
+                            orbit_correction.in_track_m = in_track_m;
+                            orbit_correction.cross_track_m = cross_track_m;
+                            orbit_correction.valid_until = tmt +
+                                                           new_has_data.get_validity_interval_s(new_has_data.validity_interval_index_orbit_corrections);
+                            orbit_correction.iod = gnss_iod;
+                            orbit_correction.mask_id = new_has_data.header.mask_id;
+                            orbit_correction.iod_set_id = new_has_data.header.iod_set_id;
                         }
                 }
 
@@ -434,13 +449,15 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                                     d_has_clock_corrections_store_map[gal_str].erase(prn);
                                     continue;
                                 }
-                            d_has_orbit_corrections_store_map[gal_str][prn].radial_m = radial_m;
-                            d_has_orbit_corrections_store_map[gal_str][prn].in_track_m = in_track_m;
-                            d_has_orbit_corrections_store_map[gal_str][prn].cross_track_m = cross_track_m;
-                            d_has_orbit_corrections_store_map[gal_str][prn].valid_until = tmt +
-                                                                                          new_has_data.get_validity_interval_s(new_has_data.validity_interval_index_orbit_corrections);
-                            d_has_orbit_corrections_store_map[gal_str][prn].iod = gnss_iod;
-                            // TODO: check for end of week
+                            auto &orbit_correction = d_has_orbit_corrections_store_map[gal_str][prn];
+                            orbit_correction.radial_m = radial_m;
+                            orbit_correction.in_track_m = in_track_m;
+                            orbit_correction.cross_track_m = cross_track_m;
+                            orbit_correction.valid_until = tmt +
+                                                           new_has_data.get_validity_interval_s(new_has_data.validity_interval_index_orbit_corrections);
+                            orbit_correction.iod = gnss_iod;
+                            orbit_correction.mask_id = new_has_data.header.mask_id;
+                            orbit_correction.iod_set_id = new_has_data.header.iod_set_id;
                         }
                 }
         }
@@ -461,8 +478,11 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                     auto it = d_has_orbit_corrections_store_map[gps_str].find(prn);
                     if (it != d_has_orbit_corrections_store_map[gps_str].end())
                         {
-                            uint16_t gnss_iod = it->second.iod;
-                            if (static_cast<int32_t>(gnss_iod) == sis_iod)
+                            const uint16_t gnss_iod = new_has_data.get_gnss_iod(gps_str, prn);
+                            if ((static_cast<int32_t>(gnss_iod) == sis_iod) &&
+                                (it->second.iod == gnss_iod) &&
+                                (it->second.mask_id == new_has_data.header.mask_id) &&
+                                (it->second.iod_set_id == new_has_data.header.iod_set_id))
                                 {
                                     float clock_correction_mult_m = new_has_data.get_clock_correction_mult_m(gps_str, prn);
                                     if (Galileo_HAS_data::is_clock_do_not_use(clock_correction_mult_m))
@@ -477,9 +497,12 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                                             continue;
                                         }
                                     d_has_satellite_do_not_use_until[gps_str].erase(prn);
-                                    d_has_clock_corrections_store_map[gps_str][prn].clock_correction_m = clock_correction_mult_m;
-                                    d_has_clock_corrections_store_map[gps_str][prn].valid_until = valid_until;
-                                    // TODO: check for end of week
+                                    auto &clock_correction = d_has_clock_corrections_store_map[gps_str][prn];
+                                    clock_correction.clock_correction_m = clock_correction_mult_m;
+                                    clock_correction.valid_until = valid_until;
+                                    clock_correction.iod = gnss_iod;
+                                    clock_correction.mask_id = new_has_data.header.mask_id;
+                                    clock_correction.iod_set_id = new_has_data.header.iod_set_id;
                                 }
                         }
                 }
@@ -497,8 +520,11 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                     auto it = d_has_orbit_corrections_store_map[gal_str].find(prn);
                     if (it != d_has_orbit_corrections_store_map[gal_str].end())
                         {
-                            uint16_t gnss_iod = it->second.iod;
-                            if (static_cast<int32_t>(gnss_iod) == iod_sis)
+                            const uint16_t gnss_iod = new_has_data.get_gnss_iod(gal_str, prn);
+                            if ((static_cast<int32_t>(gnss_iod) == iod_sis) &&
+                                (it->second.iod == gnss_iod) &&
+                                (it->second.mask_id == new_has_data.header.mask_id) &&
+                                (it->second.iod_set_id == new_has_data.header.iod_set_id))
                                 {
                                     float clock_correction_mult_m = new_has_data.get_clock_correction_mult_m(gal_str, prn);
                                     // std::cout << "Galileo Satellite " << prn
@@ -516,9 +542,12 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                                             continue;
                                         }
                                     d_has_satellite_do_not_use_until[gal_str].erase(prn);
-                                    d_has_clock_corrections_store_map[gal_str][prn].clock_correction_m = clock_correction_mult_m;
-                                    d_has_clock_corrections_store_map[gal_str][prn].valid_until = valid_until;
-                                    // TODO: check for end of week
+                                    auto &clock_correction = d_has_clock_corrections_store_map[gal_str][prn];
+                                    clock_correction.clock_correction_m = clock_correction_mult_m;
+                                    clock_correction.valid_until = valid_until;
+                                    clock_correction.iod = gnss_iod;
+                                    clock_correction.mask_id = new_has_data.header.mask_id;
+                                    clock_correction.iod_set_id = new_has_data.header.iod_set_id;
                                 }
                         }
                 }
@@ -546,8 +575,11 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                             auto it = d_has_orbit_corrections_store_map[gps_str].find(prn);
                             if (it != d_has_orbit_corrections_store_map[gps_str].end())
                                 {
-                                    uint16_t gnss_iod = it->second.iod;
-                                    if (static_cast<int32_t>(gnss_iod) == sis_iod)
+                                    const uint16_t gnss_iod = new_has_data.get_gnss_iod(gps_str, prn);
+                                    if ((static_cast<int32_t>(gnss_iod) == sis_iod) &&
+                                        (it->second.iod == gnss_iod) &&
+                                        (it->second.mask_id == new_has_data.header.mask_id) &&
+                                        (it->second.iod_set_id == new_has_data.header.iod_set_id))
                                         {
                                             float clock_correction_mult_m = new_has_data.get_clock_subset_correction_mult_m(gps_str, prn);
                                             if (Galileo_HAS_data::is_clock_do_not_use(clock_correction_mult_m))
@@ -562,9 +594,12 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                                                     continue;
                                                 }
                                             d_has_satellite_do_not_use_until[gps_str].erase(prn);
-                                            d_has_clock_corrections_store_map[gps_str][prn].clock_correction_m = clock_correction_mult_m;
-                                            d_has_clock_corrections_store_map[gps_str][prn].valid_until = valid_until;
-                                            // TODO: check for end of week
+                                            auto &clock_correction = d_has_clock_corrections_store_map[gps_str][prn];
+                                            clock_correction.clock_correction_m = clock_correction_mult_m;
+                                            clock_correction.valid_until = valid_until;
+                                            clock_correction.iod = gnss_iod;
+                                            clock_correction.mask_id = new_has_data.header.mask_id;
+                                            clock_correction.iod_set_id = new_has_data.header.iod_set_id;
                                         }
                                 }
                         }
@@ -586,8 +621,11 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                             auto it = d_has_orbit_corrections_store_map[gal_str].find(prn);
                             if (it != d_has_orbit_corrections_store_map[gal_str].end())
                                 {
-                                    uint16_t gnss_iod = it->second.iod;
-                                    if (static_cast<int32_t>(gnss_iod) == iod_sis)
+                                    const uint16_t gnss_iod = new_has_data.get_gnss_iod(gal_str, prn);
+                                    if ((static_cast<int32_t>(gnss_iod) == iod_sis) &&
+                                        (it->second.iod == gnss_iod) &&
+                                        (it->second.mask_id == new_has_data.header.mask_id) &&
+                                        (it->second.iod_set_id == new_has_data.header.iod_set_id))
                                         {
                                             float clock_correction_mult_m = new_has_data.get_clock_subset_correction_mult_m(gal_str, prn);
                                             if (Galileo_HAS_data::is_clock_do_not_use(clock_correction_mult_m))
@@ -602,9 +640,12 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                                                     continue;
                                                 }
                                             d_has_satellite_do_not_use_until[gal_str].erase(prn);
-                                            d_has_clock_corrections_store_map[gal_str][prn].clock_correction_m = clock_correction_mult_m;
-                                            d_has_clock_corrections_store_map[gal_str][prn].valid_until = valid_until;
-                                            // TODO: check for end of week
+                                            auto &clock_correction = d_has_clock_corrections_store_map[gal_str][prn];
+                                            clock_correction.clock_correction_m = clock_correction_mult_m;
+                                            clock_correction.valid_until = valid_until;
+                                            clock_correction.iod = gnss_iod;
+                                            clock_correction.mask_id = new_has_data.header.mask_id;
+                                            clock_correction.iod_set_id = new_has_data.header.iod_set_id;
                                         }
                                 }
                         }
@@ -627,7 +668,11 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                                     d_has_code_bias_store_map[it].erase(prn);
                                     continue;
                                 }
-                            d_has_code_bias_store_map[it][prn] = {code_bias_m, valid_until};
+                            auto &code_bias_correction = d_has_code_bias_store_map[it][prn];
+                            code_bias_correction.bias = code_bias_m;
+                            code_bias_correction.valid_until = valid_until;
+                            code_bias_correction.mask_id = new_has_data.header.mask_id;
+                            code_bias_correction.iod_set_id = new_has_data.header.iod_set_id;
                         }
                 }
             auto signals_gps = new_has_data.get_signals_in_mask(gps_str);
@@ -642,7 +687,11 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                                     d_has_code_bias_store_map[it].erase(prn);
                                     continue;
                                 }
-                            d_has_code_bias_store_map[it][prn] = {code_bias_m, valid_until};
+                            auto &code_bias_correction = d_has_code_bias_store_map[it][prn];
+                            code_bias_correction.bias = code_bias_m;
+                            code_bias_correction.valid_until = valid_until;
+                            code_bias_correction.mask_id = new_has_data.header.mask_id;
+                            code_bias_correction.iod_set_id = new_has_data.header.iod_set_id;
                         }
                 }
         }
@@ -666,7 +715,11 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                                     d_has_phase_bias_discontinuity_map[it].erase(prn);
                                     continue;
                                 }
-                            d_has_phase_bias_store_map[it][prn] = {phase_bias_correction_cycles, valid_until};
+                            auto &phase_bias_correction = d_has_phase_bias_store_map[it][prn];
+                            phase_bias_correction.bias = phase_bias_correction_cycles;
+                            phase_bias_correction.valid_until = valid_until;
+                            phase_bias_correction.mask_id = new_has_data.header.mask_id;
+                            phase_bias_correction.iod_set_id = new_has_data.header.iod_set_id;
                             uint8_t phase_discontinuity_indicator = new_has_data.get_phase_discontinuity_indicator(it, prn);
                             auto stored_pdi_it = d_has_phase_discontinuity_indicator_store_map[it].find(prn);
                             if ((stored_pdi_it != d_has_phase_discontinuity_indicator_store_map[it].end()) &&
@@ -695,7 +748,11 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                                     d_has_phase_bias_discontinuity_map[it].erase(prn);
                                     continue;
                                 }
-                            d_has_phase_bias_store_map[it][prn] = {phase_bias_correction_cycles, valid_until};
+                            auto &phase_bias_correction = d_has_phase_bias_store_map[it][prn];
+                            phase_bias_correction.bias = phase_bias_correction_cycles;
+                            phase_bias_correction.valid_until = valid_until;
+                            phase_bias_correction.mask_id = new_has_data.header.mask_id;
+                            phase_bias_correction.iod_set_id = new_has_data.header.iod_set_id;
                             uint8_t phase_discontinuity_indicator = new_has_data.get_phase_discontinuity_indicator(it, prn);
                             auto stored_pdi_it = d_has_phase_discontinuity_indicator_store_map[it].find(prn);
                             if ((stored_pdi_it != d_has_phase_discontinuity_indicator_store_map[it].end()) &&
@@ -737,7 +794,7 @@ bool Rtklib_Solver::has_active_has_do_not_use(const std::string &system, int prn
 }
 
 
-bool Rtklib_Solver::has_active_has_orbit_clock(const std::string &system, int prn, uint32_t tow_obs) const
+bool Rtklib_Solver::get_active_has_context(const std::string &system, int prn, uint16_t sis_iod, uint32_t tow_obs, uint8_t &mask_id, uint8_t &iod_set_id) const
 {
     const auto orbit_sys_it = d_has_orbit_corrections_store_map.find(system);
     if (orbit_sys_it == d_has_orbit_corrections_store_map.cend())
@@ -753,6 +810,10 @@ bool Rtklib_Solver::has_active_has_orbit_clock(const std::string &system, int pr
         {
             return false;
         }
+    if (orbit_prn_it->second.iod != sis_iod)
+        {
+            return false;
+        }
 
     const auto clock_sys_it = d_has_clock_corrections_store_map.find(system);
     if (clock_sys_it == d_has_clock_corrections_store_map.cend())
@@ -764,7 +825,31 @@ bool Rtklib_Solver::has_active_has_orbit_clock(const std::string &system, int pr
         {
             return false;
         }
-    return Galileo_HAS_data::has_validity_interval_at_tow(clock_prn_it->second.valid_until, tow_obs);
+    if (!Galileo_HAS_data::has_validity_interval_at_tow(clock_prn_it->second.valid_until, tow_obs))
+        {
+            return false;
+        }
+    if (clock_prn_it->second.iod != sis_iod)
+        {
+            return false;
+        }
+    if ((orbit_prn_it->second.mask_id != clock_prn_it->second.mask_id) ||
+        (orbit_prn_it->second.iod_set_id != clock_prn_it->second.iod_set_id))
+        {
+            return false;
+        }
+
+    mask_id = orbit_prn_it->second.mask_id;
+    iod_set_id = orbit_prn_it->second.iod_set_id;
+    return true;
+}
+
+
+bool Rtklib_Solver::has_active_has_orbit_clock(const std::string &system, int prn, uint16_t sis_iod, uint32_t tow_obs) const
+{
+    uint8_t mask_id = 0;
+    uint8_t iod_set_id = 0;
+    return get_active_has_context(system, prn, sis_iod, tow_obs, mask_id, iod_set_id);
 }
 
 
@@ -774,92 +859,100 @@ void Rtklib_Solver::check_has_orbit_clock_validity(const std::map<int, Gnss_Sync
         {
             uint32_t obs_tow = it.second.interp_TOW_ms / 1000.0;
             auto prn = static_cast<int>(it.second.PRN);
+            std::string system;
+            bool have_sis_iod = false;
+            uint16_t sis_iod = 0;
 
             if (it.second.System == 'G')
                 {
-                    auto it_sys = d_has_orbit_corrections_store_map.find("GPS");
-                    if (it_sys != d_has_orbit_corrections_store_map.end())
+                    system = "GPS";
+                    auto eph_it = gps_ephemeris_map.find(it.second.PRN);
+                    if (eph_it != gps_ephemeris_map.end())
                         {
-                            auto it_map_corr = it_sys->second.find(prn);
-                            if (it_map_corr != it_sys->second.end())
-                                {
-                                    auto has_data_valid_until = it_map_corr->second.valid_until;
-                                    if (!Galileo_HAS_data::has_validity_interval_at_tow(has_data_valid_until, obs_tow))
-                                        {
-                                            // Delete outdated data
-                                            it_sys->second.erase(prn);
-                                        }
-                                }
+                            sis_iod = static_cast<uint16_t>(eph_it->second.IODE_SF3);
+                            have_sis_iod = true;
                         }
-                    auto it_sys_clock = d_has_clock_corrections_store_map.find("GPS");
-                    if (it_sys_clock != d_has_clock_corrections_store_map.end())
+                }
+            else if (it.second.System == 'E')
+                {
+                    system = "Galileo";
+                    auto eph_it = galileo_ephemeris_map.find(it.second.PRN);
+                    if (eph_it != galileo_ephemeris_map.end())
                         {
-                            auto it_map_corr = it_sys_clock->second.find(prn);
-                            if (it_map_corr != it_sys_clock->second.end())
-                                {
-                                    auto has_data_valid_until = it_map_corr->second.valid_until;
-                                    if (!Galileo_HAS_data::has_validity_interval_at_tow(has_data_valid_until, obs_tow))
-                                        {
-                                            // Delete outdated data
-                                            it_sys_clock->second.erase(prn);
-                                        }
-                                }
+                            sis_iod = static_cast<uint16_t>(eph_it->second.IOD_ephemeris);
+                            have_sis_iod = true;
                         }
-                    auto it_sys_do_not_use = d_has_satellite_do_not_use_until.find("GPS");
-                    if (it_sys_do_not_use != d_has_satellite_do_not_use_until.end())
+                }
+            else
+                {
+                    continue;
+                }
+
+            auto orbit_sys_it = d_has_orbit_corrections_store_map.find(system);
+            auto clock_sys_it = d_has_clock_corrections_store_map.find(system);
+            bool erase_orbit = false;
+            bool erase_clock = false;
+
+            if (orbit_sys_it != d_has_orbit_corrections_store_map.end())
+                {
+                    auto orbit_it = orbit_sys_it->second.find(prn);
+                    if (orbit_it != orbit_sys_it->second.end())
                         {
-                            auto it_map_corr = it_sys_do_not_use->second.find(prn);
-                            if (it_map_corr != it_sys_do_not_use->second.end())
+                            if (!Galileo_HAS_data::has_validity_interval_at_tow(orbit_it->second.valid_until, obs_tow) ||
+                                (have_sis_iod && orbit_it->second.iod != sis_iod))
                                 {
-                                    auto has_data_valid_until = it_map_corr->second;
-                                    if (!Galileo_HAS_data::has_validity_interval_at_tow(has_data_valid_until, obs_tow))
-                                        {
-                                            it_sys_do_not_use->second.erase(prn);
-                                        }
+                                    erase_orbit = true;
                                 }
                         }
                 }
-            if (it.second.System == 'E')
+
+            if (clock_sys_it != d_has_clock_corrections_store_map.end())
                 {
-                    auto it_sys = d_has_orbit_corrections_store_map.find("Galileo");
-                    if (it_sys != d_has_orbit_corrections_store_map.end())
+                    auto clock_it = clock_sys_it->second.find(prn);
+                    if (clock_it != clock_sys_it->second.end())
                         {
-                            auto it_map_corr = it_sys->second.find(prn);
-                            if (it_map_corr != it_sys->second.end())
+                            if (!Galileo_HAS_data::has_validity_interval_at_tow(clock_it->second.valid_until, obs_tow) ||
+                                (have_sis_iod && clock_it->second.iod != sis_iod))
                                 {
-                                    auto has_data_valid_until = it_map_corr->second.valid_until;
-                                    if (!Galileo_HAS_data::has_validity_interval_at_tow(has_data_valid_until, obs_tow))
-                                        {
-                                            // Delete outdated data
-                                            it_sys->second.erase(prn);
-                                        }
+                                    erase_clock = true;
                                 }
                         }
-                    auto it_sys_clock = d_has_clock_corrections_store_map.find("Galileo");
-                    if (it_sys_clock != d_has_clock_corrections_store_map.end())
+                }
+
+            if (have_sis_iod && !erase_orbit && !erase_clock &&
+                orbit_sys_it != d_has_orbit_corrections_store_map.end() &&
+                clock_sys_it != d_has_clock_corrections_store_map.end())
+                {
+                    auto orbit_it = orbit_sys_it->second.find(prn);
+                    auto clock_it = clock_sys_it->second.find(prn);
+                    if (orbit_it != orbit_sys_it->second.end() &&
+                        clock_it != clock_sys_it->second.end() &&
+                        ((orbit_it->second.mask_id != clock_it->second.mask_id) ||
+                            (orbit_it->second.iod_set_id != clock_it->second.iod_set_id)))
                         {
-                            auto it_map_corr = it_sys_clock->second.find(prn);
-                            if (it_map_corr != it_sys_clock->second.end())
-                                {
-                                    auto has_data_valid_until = it_map_corr->second.valid_until;
-                                    if (!Galileo_HAS_data::has_validity_interval_at_tow(has_data_valid_until, obs_tow))
-                                        {
-                                            // Delete outdated data
-                                            it_sys_clock->second.erase(prn);
-                                        }
-                                }
+                            erase_clock = true;
                         }
-                    auto it_sys_do_not_use = d_has_satellite_do_not_use_until.find("Galileo");
-                    if (it_sys_do_not_use != d_has_satellite_do_not_use_until.end())
+                }
+
+            if (erase_orbit && orbit_sys_it != d_has_orbit_corrections_store_map.end())
+                {
+                    orbit_sys_it->second.erase(prn);
+                    erase_clock = true;
+                }
+            if (erase_clock && clock_sys_it != d_has_clock_corrections_store_map.end())
+                {
+                    clock_sys_it->second.erase(prn);
+                }
+
+            auto dnu_sys_it = d_has_satellite_do_not_use_until.find(system);
+            if (dnu_sys_it != d_has_satellite_do_not_use_until.end())
+                {
+                    auto dnu_it = dnu_sys_it->second.find(prn);
+                    if (dnu_it != dnu_sys_it->second.end())
                         {
-                            auto it_map_corr = it_sys_do_not_use->second.find(prn);
-                            if (it_map_corr != it_sys_do_not_use->second.end())
+                            if (!Galileo_HAS_data::has_validity_interval_at_tow(dnu_it->second, obs_tow))
                                 {
-                                    auto has_data_valid_until = it_map_corr->second;
-                                    if (!Galileo_HAS_data::has_validity_interval_at_tow(has_data_valid_until, obs_tow))
-                                        {
-                                            it_sys_do_not_use->second.erase(prn);
-                                        }
+                                    dnu_sys_it->second.erase(prn);
                                 }
                         }
                 }
@@ -887,61 +980,69 @@ void Rtklib_Solver::get_has_biases(const std::map<int, Gnss_Synchro> &obs_map)
                     std::string sig(it.second.Signal, 2);
                     if (it.second.System == 'E')
                         {
-                            if (has_active_has_orbit_clock("Galileo", prn, obs_tow))
+                            auto eph_it = galileo_ephemeris_map.find(it.second.PRN);
+                            uint8_t mask_id = 0;
+                            uint8_t iod_set_id = 0;
+                            if (eph_it != galileo_ephemeris_map.end() &&
+                                get_active_has_context("Galileo", prn, static_cast<uint16_t>(eph_it->second.IOD_ephemeris), obs_tow, mask_id, iod_set_id))
                                 {
                                     if (sig == "1B")
                                         {
                                             for (const auto &has_signal : e1b_signals)
                                                 {
-                                                    this->get_current_has_obs_correction(has_signal, obs_tow, prn);
+                                                    this->get_current_has_obs_correction(has_signal, obs_tow, prn, mask_id, iod_set_id);
                                                 }
                                         }
                                     else if (sig == "E6")
                                         {
                                             for (const auto &has_signal : e6_signals)
                                                 {
-                                                    this->get_current_has_obs_correction(has_signal, obs_tow, prn);
+                                                    this->get_current_has_obs_correction(has_signal, obs_tow, prn, mask_id, iod_set_id);
                                                 }
                                         }
                                     else if (sig == "5X")
                                         {
                                             for (const auto &has_signal : e5_signals)
                                                 {
-                                                    this->get_current_has_obs_correction(has_signal, obs_tow, prn);
+                                                    this->get_current_has_obs_correction(has_signal, obs_tow, prn, mask_id, iod_set_id);
                                                 }
                                         }
                                     else if (sig == "7X")
                                         {
                                             for (const auto &has_signal : e7_signals)
                                                 {
-                                                    this->get_current_has_obs_correction(has_signal, obs_tow, prn);
+                                                    this->get_current_has_obs_correction(has_signal, obs_tow, prn, mask_id, iod_set_id);
                                                 }
                                         }
                                 }
                         }
                     if (it.second.System == 'G')
                         {
-                            if (has_active_has_orbit_clock("GPS", prn, obs_tow))
+                            auto eph_it = gps_ephemeris_map.find(it.second.PRN);
+                            uint8_t mask_id = 0;
+                            uint8_t iod_set_id = 0;
+                            if (eph_it != gps_ephemeris_map.end() &&
+                                get_active_has_context("GPS", prn, static_cast<uint16_t>(eph_it->second.IODE_SF3), obs_tow, mask_id, iod_set_id))
                                 {
                                     if (sig == "1C")
                                         {
                                             for (const auto &has_signal : g1c_signals)
                                                 {
-                                                    this->get_current_has_obs_correction(has_signal, obs_tow, prn);
+                                                    this->get_current_has_obs_correction(has_signal, obs_tow, prn, mask_id, iod_set_id);
                                                 }
                                         }
                                     else if (sig == "2S")
                                         {
                                             for (const auto &has_signal : g2s_signals)
                                                 {
-                                                    this->get_current_has_obs_correction(has_signal, obs_tow, prn);
+                                                    this->get_current_has_obs_correction(has_signal, obs_tow, prn, mask_id, iod_set_id);
                                                 }
                                         }
                                     else if (sig == "L5")
                                         {
                                             for (const auto &has_signal : g5_signals)
                                                 {
-                                                    this->get_current_has_obs_correction(has_signal, obs_tow, prn);
+                                                    this->get_current_has_obs_correction(has_signal, obs_tow, prn, mask_id, iod_set_id);
                                                 }
                                         }
                                 }
@@ -951,7 +1052,7 @@ void Rtklib_Solver::get_has_biases(const std::map<int, Gnss_Synchro> &obs_map)
 }
 
 
-void Rtklib_Solver::get_current_has_obs_correction(const std::string &signal, uint32_t tow_obs, int prn)
+void Rtklib_Solver::get_current_has_obs_correction(const std::string &signal, uint32_t tow_obs, int prn, uint8_t mask_id, uint8_t iod_set_id)
 {
     auto code_bias_signal_it = this->d_has_code_bias_store_map.find(signal);
     if (code_bias_signal_it != this->d_has_code_bias_store_map.end())
@@ -959,10 +1060,14 @@ void Rtklib_Solver::get_current_has_obs_correction(const std::string &signal, ui
             auto code_bias_pair_it = code_bias_signal_it->second.find(prn);
             if (code_bias_pair_it != code_bias_signal_it->second.end())
                 {
-                    uint32_t valid_until = code_bias_pair_it->second.second;
-                    if (Galileo_HAS_data::has_validity_interval_at_tow(valid_until, tow_obs))
+                    const auto &code_bias_correction = code_bias_pair_it->second;
+                    if (Galileo_HAS_data::has_validity_interval_at_tow(code_bias_correction.valid_until, tow_obs) &&
+                        (code_bias_correction.mask_id == mask_id) &&
+                        (code_bias_correction.iod_set_id == iod_set_id))
                         {
-                            this->d_has_obs_corr_map[signal][prn].code_bias_m = code_bias_pair_it->second.first;
+                            auto &has_obs_correction = this->d_has_obs_corr_map[signal][prn];
+                            has_obs_correction.signal = signal;
+                            has_obs_correction.code_bias_m = code_bias_correction.bias;
                         }
                 }
         }
@@ -972,10 +1077,14 @@ void Rtklib_Solver::get_current_has_obs_correction(const std::string &signal, ui
             auto phase_bias_pair_it = phase_bias_signal_it->second.find(prn);
             if (phase_bias_pair_it != phase_bias_signal_it->second.end())
                 {
-                    uint32_t valid_until = phase_bias_pair_it->second.second;
-                    if (Galileo_HAS_data::has_validity_interval_at_tow(valid_until, tow_obs))
+                    const auto &phase_bias_correction = phase_bias_pair_it->second;
+                    if (Galileo_HAS_data::has_validity_interval_at_tow(phase_bias_correction.valid_until, tow_obs) &&
+                        (phase_bias_correction.mask_id == mask_id) &&
+                        (phase_bias_correction.iod_set_id == iod_set_id))
                         {
-                            this->d_has_obs_corr_map[signal][prn].phase_bias_cycle = phase_bias_pair_it->second.first;
+                            auto &has_obs_correction = this->d_has_obs_corr_map[signal][prn];
+                            has_obs_correction.signal = signal;
+                            has_obs_correction.phase_bias_cycle = phase_bias_correction.bias;
 
                             const auto pdi_signal_it = this->d_has_phase_discontinuity_indicator_store_map.find(signal);
                             if (pdi_signal_it != this->d_has_phase_discontinuity_indicator_store_map.end())
@@ -983,7 +1092,7 @@ void Rtklib_Solver::get_current_has_obs_correction(const std::string &signal, ui
                                     const auto pdi_it = pdi_signal_it->second.find(prn);
                                     if (pdi_it != pdi_signal_it->second.end())
                                         {
-                                            this->d_has_obs_corr_map[signal][prn].phase_discontinuity_indicator = pdi_it->second;
+                                            has_obs_correction.phase_discontinuity_indicator = pdi_it->second;
                                         }
                                 }
 
@@ -993,12 +1102,32 @@ void Rtklib_Solver::get_current_has_obs_correction(const std::string &signal, ui
                                     auto discontinuity_it = discontinuity_signal_it->second.find(prn);
                                     if (discontinuity_it != discontinuity_signal_it->second.end())
                                         {
-                                            this->d_has_obs_corr_map[signal][prn].phase_bias_discontinuity = discontinuity_it->second;
-                                            discontinuity_it->second = false;
+                                            has_obs_correction.phase_bias_discontinuity = discontinuity_it->second;
                                         }
                                 }
                         }
                 }
+        }
+}
+
+
+void Rtklib_Solver::clear_applied_has_phase_bias_discontinuity(const HAS_obs_corrections *has_correction, int prn)
+{
+    if (has_correction == nullptr || !has_correction->phase_bias_discontinuity || has_correction->signal.empty())
+        {
+            return;
+        }
+
+    auto discontinuity_signal_it = this->d_has_phase_bias_discontinuity_map.find(has_correction->signal);
+    if (discontinuity_signal_it == this->d_has_phase_bias_discontinuity_map.end())
+        {
+            return;
+        }
+
+    auto discontinuity_it = discontinuity_signal_it->second.find(prn);
+    if (discontinuity_it != discontinuity_signal_it->second.end())
+        {
+            discontinuity_it->second = false;
         }
 }
 
@@ -1035,7 +1164,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         const std::string gal_str("Galileo");
                         const std::string sig_(gnss_observables_iter->second.Signal, 2);
                         const uint32_t obs_tow = gnss_observables_iter->second.interp_TOW_ms / 1000.0;
-                        if (has_active_has_do_not_use(gal_str, static_cast<int>(gnss_observables_iter->second.PRN), obs_tow))
+                        const int prn = static_cast<int>(gnss_observables_iter->second.PRN);
+                        if (has_active_has_do_not_use(gal_str, prn, obs_tow))
                             {
                                 break;
                             }
@@ -1052,11 +1182,15 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             this->d_has_clock_corrections_store_map[gal_str]);
                                         // convert observation from GNSS-SDR class to RTKLIB structure
                                         obsd_t newobs{};
+                                        const HAS_obs_corrections *applied_has_correction = nullptr;
                                         d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
                                             d_has_obs_corr_map,
                                             galileo_ephemeris_iter->second.WN,
-                                            d_rtklib_band_index[sig_]);
+                                            d_rtklib_band_index[sig_],
+                                            &applied_has_correction,
+                                            false);
+                                        clear_applied_has_phase_bias_discontinuity(applied_has_correction, prn);
                                         valid_obs++;
                                     }
                                 else  // the ephemeris are not available for this SV
@@ -1077,11 +1211,15 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             {
                                                 if (eph_data[i].sat == (static_cast<int>(gnss_observables_iter->second.PRN + NSATGPS + NSATGLO)))
                                                     {
+                                                        const HAS_obs_corrections *applied_has_correction = nullptr;
                                                         d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
                                                             gnss_observables_iter->second,
                                                             d_has_obs_corr_map,
                                                             galileo_ephemeris_iter->second.WN,
-                                                            d_rtklib_band_index[sig_]);
+                                                            d_rtklib_band_index[sig_],
+                                                            &applied_has_correction,
+                                                            false);
+                                                        clear_applied_has_phase_bias_discontinuity(applied_has_correction, prn);
                                                         found_E1_obs = true;
                                                         break;
                                                     }
@@ -1098,11 +1236,15 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
                                                     {}, {0.0, 0.0, 0.0}, {}};
+                                                const HAS_obs_corrections *applied_has_correction = nullptr;
                                                 d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     d_has_obs_corr_map,
                                                     galileo_ephemeris_iter->second.WN,
-                                                    d_rtklib_band_index[sig_]);
+                                                    d_rtklib_band_index[sig_],
+                                                    &applied_has_correction,
+                                                    false);
+                                                clear_applied_has_phase_bias_discontinuity(applied_has_correction, prn);
                                                 valid_obs++;
                                             }
                                     }
@@ -1121,11 +1263,15 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             {
                                                 if (eph_data[i].sat == (static_cast<int>(gnss_observables_iter->second.PRN + NSATGPS + NSATGLO)))
                                                     {
+                                                        const HAS_obs_corrections *applied_has_correction = nullptr;
                                                         d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
                                                             gnss_observables_iter->second,
                                                             d_has_obs_corr_map,
                                                             galileo_ephemeris_iter->second.WN,
-                                                            d_rtklib_band_index[sig_]);
+                                                            d_rtklib_band_index[sig_],
+                                                            &applied_has_correction,
+                                                            false);
+                                                        clear_applied_has_phase_bias_discontinuity(applied_has_correction, prn);
                                                         found_E1_obs = true;
                                                         break;
                                                     }
@@ -1142,11 +1288,15 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
                                                     {}, {0.0, 0.0, 0.0}, {}};
+                                                const HAS_obs_corrections *applied_has_correction = nullptr;
                                                 d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     d_has_obs_corr_map,
                                                     galileo_ephemeris_iter->second.WN,
-                                                    d_rtklib_band_index[sig_]);
+                                                    d_rtklib_band_index[sig_],
+                                                    &applied_has_correction,
+                                                    false);
+                                                clear_applied_has_phase_bias_discontinuity(applied_has_correction, prn);
                                                 valid_obs++;
                                             }
                                     }
@@ -1207,9 +1357,10 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         const std::string gnss_str = is_qzss ? "QZSS" : "GPS";
                         const int sat_sys = is_qzss ? SYS_QZS : SYS_GPS;
                         const int sat = satno(sat_sys, gnss_observables_iter->second.PRN);
+                        const int prn = static_cast<int>(gnss_observables_iter->second.PRN);
                         const std::string sig_(gnss_observables_iter->second.Signal, 2);
                         const uint32_t obs_tow = gnss_observables_iter->second.interp_TOW_ms / 1000.0;
-                        if (!is_qzss && has_active_has_do_not_use(gnss_str, static_cast<int>(gnss_observables_iter->second.PRN), obs_tow))
+                        if (!is_qzss && has_active_has_do_not_use(gnss_str, prn, obs_tow))
                             {
                                 break;
                             }
@@ -1229,12 +1380,15 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             this->is_pre_2009());
                                         // convert observation from GNSS-SDR class to RTKLIB structure
                                         obsd_t newobs{};
+                                        const HAS_obs_corrections *applied_has_correction = nullptr;
                                         d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
                                             d_has_obs_corr_map,
                                             gps_ephemeris_iter->second.WN,
                                             d_rtklib_band_index[rtklib_sig],
+                                            &applied_has_correction,
                                             this->is_pre_2009());
+                                        clear_applied_has_phase_bias_discontinuity(applied_has_correction, prn);
                                         valid_obs++;
                                     }
                                 else  // the ephemeris are not available for this SV
@@ -1254,11 +1408,25 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 if (eph_data[i].sat == sat)
                                                     {
                                                         // 2. If found, attach the L2/L5 observation to the existing observation in RTKLIB structure
-                                                        d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
-                                                            gnss_observables_iter->second,
-                                                            d_has_obs_corr_map,
-                                                            gps_cnav_ephemeris_iter->second.WN,
-                                                            d_rtklib_band_index[rtklib_sig]);
+                                                        if (eph_data[i].apply_has_corrections)
+                                                            {
+                                                                const HAS_obs_corrections *applied_has_correction = nullptr;
+                                                                d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
+                                                                    gnss_observables_iter->second,
+                                                                    d_has_obs_corr_map,
+                                                                    gps_cnav_ephemeris_iter->second.WN,
+                                                                    d_rtklib_band_index[rtklib_sig],
+                                                                    &applied_has_correction,
+                                                                    false);
+                                                                clear_applied_has_phase_bias_discontinuity(applied_has_correction, prn);
+                                                            }
+                                                        else
+                                                            {
+                                                                d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
+                                                                    gnss_observables_iter->second,
+                                                                    gps_cnav_ephemeris_iter->second.WN,
+                                                                    d_rtklib_band_index[rtklib_sig]);
+                                                            }
                                                         found_existing_obs = true;
                                                         break;
                                                     }
@@ -1267,9 +1435,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             {
                                                 // 3. If not found, insert the L2/L5 ephemeris and the observation
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                                eph_data[valid_obs] = eph_to_rtklib(gps_cnav_ephemeris_iter->second,
-                                                    this->d_has_orbit_corrections_store_map[gnss_str],
-                                                    this->d_has_clock_corrections_store_map[gnss_str]);
+                                                eph_data[valid_obs] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
                                                 const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
@@ -1277,7 +1443,6 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                     {}, {0.0, 0.0, 0.0}, {}};
                                                 d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
-                                                    d_has_obs_corr_map,
                                                     gps_cnav_ephemeris_iter->second.WN,
                                                     d_rtklib_band_index[rtklib_sig]);
                                                 valid_obs++;

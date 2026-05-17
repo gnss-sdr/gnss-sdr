@@ -52,6 +52,9 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
+constexpr int16_t HAS_CODE_BIAS_UNAVAILABLE_RAW = -1024;
+constexpr int16_t HAS_PHASE_BIAS_UNAVAILABLE_RAW = -1024;
+
 galileo_e6_has_msg_receiver_sptr galileo_e6_has_msg_receiver_make()
 {
     return galileo_e6_has_msg_receiver_sptr(new galileo_e6_has_msg_receiver());
@@ -217,6 +220,10 @@ void galileo_e6_has_msg_receiver::process_HAS_page(const Galileo_HAS_page& has_p
     if (has_page.has_status == 3)  // Do not use HAS
         {
             clear_HAS_state();
+            d_HAS_data.has_status = has_page.has_status;
+            d_HAS_data.message_id = has_page.message_id;
+            d_HAS_data.tow = has_page.tow;
+            d_new_message = true;
             return;
         }
 
@@ -1134,7 +1141,7 @@ bool galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body,
                     number_codes[sys] = number_signals_this_gnss_id;
                 }
 
-            d_HAS_data.code_bias = std::vector<std::vector<int16_t>>(Nsat, std::vector<int16_t>(max_signals));
+            d_HAS_data.code_bias = std::vector<std::vector<int16_t>>(Nsat, std::vector<int16_t>(max_signals, HAS_CODE_BIAS_UNAVAILABLE_RAW));
 
             int sat = 0;
             for (int sys = 0; sys < d_HAS_data.Nsys; sys++)
@@ -1220,7 +1227,7 @@ bool galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body,
                     number_phases[sys] = number_signals_this_gnss_id;
                 }
 
-            d_HAS_data.phase_bias = std::vector<std::vector<int16_t>>(Nsat, std::vector<int16_t>(max_signals));
+            d_HAS_data.phase_bias = std::vector<std::vector<int16_t>>(Nsat, std::vector<int16_t>(max_signals, HAS_PHASE_BIAS_UNAVAILABLE_RAW));
             d_HAS_data.phase_discontinuity_indicator = std::vector<std::vector<uint8_t>>(Nsat, std::vector<uint8_t>(max_signals));
 
             int sat = 0;

@@ -1592,7 +1592,15 @@ void rtklib_pvt_gs::msg_handler_has_data(const pmt::pmt_t& msg)
             if (msg_type_hash_code == d_galileo_has_data_sptr_type_hash_code)
                 {
                     const auto has_data = wht::any_cast<std::shared_ptr<Galileo_HAS_data>>(pmt::any_ref(msg));
-                    if (d_use_has_corrections && (has_data->has_status == 1))  // operational mode
+                    if (d_use_has_corrections && (has_data->has_status == 3))  // do not use HAS
+                        {
+                            d_internal_pvt_solver->clear_has_corrections();
+                            if (d_enable_rx_clock_correction == true)
+                                {
+                                    d_user_pvt_solver->clear_has_corrections();
+                                }
+                        }
+                    else if (d_use_has_corrections && (has_data->has_status == 1))  // operational mode
                         {
                             d_internal_pvt_solver->store_has_data(*has_data);
                             if (d_enable_rx_clock_correction == true)

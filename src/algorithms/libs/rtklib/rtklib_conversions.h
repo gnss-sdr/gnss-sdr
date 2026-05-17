@@ -44,6 +44,9 @@ public:
     HAS_clock_corrections() = default;
     float clock_correction_m{};
     uint32_t valid_until{};
+    uint16_t iod{};
+    uint8_t mask_id{};
+    uint8_t iod_set_id{};
 };
 
 class HAS_orbit_corrections
@@ -55,12 +58,25 @@ public:
     float cross_track_m{};
     uint32_t valid_until{};
     uint16_t iod{};
+    uint8_t mask_id{};
+    uint8_t iod_set_id{};
+};
+
+class HAS_bias_corrections
+{
+public:
+    HAS_bias_corrections() = default;
+    float bias{};
+    uint32_t valid_until{};
+    uint8_t mask_id{};
+    uint8_t iod_set_id{};
 };
 
 class HAS_obs_corrections
 {
 public:
     HAS_obs_corrections() = default;
+    std::string signal;
     float code_bias_m{};
     float phase_bias_cycle{};
     uint8_t phase_discontinuity_indicator{};
@@ -84,10 +100,6 @@ eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph,
 
 eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph);
 
-eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph,
-    const std::map<int, HAS_orbit_corrections>& orbit_correction_map,
-    const std::map<int, HAS_clock_corrections>& clock_correction_map);
-
 eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph);
 
 alm_t alm_to_rtklib(const Gps_Almanac& gps_alm);
@@ -99,6 +111,14 @@ alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm);
  * \return Ephemeris structure for RTKLIB parsing
  */
 geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glonass_Gnav_Utc_Model& gnav_clock_model);
+
+obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
+    const Gnss_Synchro& gnss_synchro,
+    const std::map<std::string, std::map<int, HAS_obs_corrections>>& has_obs_corr,
+    int week,
+    int band,
+    const HAS_obs_corrections** applied_has_correction,
+    bool pre_2009_file);
 
 obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
     const Gnss_Synchro& gnss_synchro,

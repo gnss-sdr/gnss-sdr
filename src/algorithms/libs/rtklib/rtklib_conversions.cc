@@ -60,8 +60,14 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
     const std::map<std::string, std::map<int, HAS_obs_corrections>>& has_obs_corr,
     int week,
     int band,
+    const HAS_obs_corrections** applied_has_correction,
     bool pre_2009_file)
 {
+    if (applied_has_correction != nullptr)
+        {
+            *applied_has_correction = nullptr;
+        }
+
     // Get signal type info to adjust code type based on constellation
     const std::string sig_(gnss_synchro.Signal, 2);
 
@@ -223,9 +229,30 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
                         {
                             rtklib_obs.LLI[band] |= 1U;
                         }
+                    if (applied_has_correction != nullptr)
+                        {
+                            *applied_has_correction = has_correction;
+                        }
                 }
         }
     return rtklib_obs;
+}
+
+
+obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
+    const Gnss_Synchro& gnss_synchro,
+    const std::map<std::string, std::map<int, HAS_obs_corrections>>& has_obs_corr,
+    int week,
+    int band,
+    bool pre_2009_file)
+{
+    return insert_obs_to_rtklib(rtklib_obs,
+        gnss_synchro,
+        has_obs_corr,
+        week,
+        band,
+        static_cast<const HAS_obs_corrections**>(nullptr),
+        pre_2009_file);
 }
 
 
@@ -354,16 +381,24 @@ eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph,
         {
             int count_has_corrections = 0;
             const auto it_orbit = orbit_correction_map.find(static_cast<int>(gal_eph.PRN));
-            if (it_orbit != orbit_correction_map.cend())
+            const auto sis_iod = static_cast<uint16_t>(gal_eph.IOD_ephemeris);
+            bool orbit_correction_applied = false;
+            if (it_orbit != orbit_correction_map.cend() &&
+                it_orbit->second.iod == sis_iod)
                 {
                     rtklib_sat.has_orbit_radial_correction_m = it_orbit->second.radial_m;
                     rtklib_sat.has_orbit_in_track_correction_m = it_orbit->second.in_track_m;
                     rtklib_sat.has_orbit_cross_track_correction_m = it_orbit->second.cross_track_m;
+                    orbit_correction_applied = true;
                     count_has_corrections++;
                 }
 
             const auto it_clock = clock_correction_map.find(static_cast<int>(gal_eph.PRN));
-            if (it_clock != clock_correction_map.cend())
+            if (it_clock != clock_correction_map.cend() &&
+                it_clock->second.iod == sis_iod &&
+                orbit_correction_applied &&
+                it_clock->second.mask_id == it_orbit->second.mask_id &&
+                it_clock->second.iod_set_id == it_orbit->second.iod_set_id)
                 {
                     rtklib_sat.has_clock_correction_m = it_clock->second.clock_correction_m;
                     count_has_corrections++;
@@ -453,16 +488,24 @@ eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph,
         {
             int count_has_corrections = 0;
             const auto it_orbit = orbit_correction_map.find(static_cast<int>(gps_eph.PRN));
-            if (it_orbit != orbit_correction_map.cend())
+            const auto sis_iod = static_cast<uint16_t>(gps_eph.IODE_SF3);
+            bool orbit_correction_applied = false;
+            if (it_orbit != orbit_correction_map.cend() &&
+                it_orbit->second.iod == sis_iod)
                 {
                     rtklib_sat.has_orbit_radial_correction_m = it_orbit->second.radial_m;
                     rtklib_sat.has_orbit_in_track_correction_m = it_orbit->second.in_track_m;
                     rtklib_sat.has_orbit_cross_track_correction_m = it_orbit->second.cross_track_m;
+                    orbit_correction_applied = true;
                     count_has_corrections++;
                 }
 
             const auto it_clock = clock_correction_map.find(static_cast<int>(gps_eph.PRN));
-            if (it_clock != clock_correction_map.cend())
+            if (it_clock != clock_correction_map.cend() &&
+                it_clock->second.iod == sis_iod &&
+                orbit_correction_applied &&
+                it_clock->second.mask_id == it_orbit->second.mask_id &&
+                it_clock->second.iod_set_id == it_orbit->second.iod_set_id)
                 {
                     rtklib_sat.has_clock_correction_m = it_clock->second.clock_correction_m;
                     count_has_corrections++;
@@ -564,16 +607,6 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
 
 eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph)
 {
-    std::map<int, HAS_orbit_corrections> empty_orbit_map;
-    std::map<int, HAS_clock_corrections> empty_clock_map;
-    return eph_to_rtklib(gps_cnav_eph, empty_orbit_map, empty_clock_map);
-}
-
-
-eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph,
-    const std::map<int, HAS_orbit_corrections>& orbit_correction_map,
-    const std::map<int, HAS_clock_corrections>& clock_correction_map)
-{
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false};
     const int gps_sys = (MINPRNQZS <= gps_cnav_eph.PRN && gps_cnav_eph.PRN <= MAXPRNQZS) ? SYS_QZS : SYS_GPS;
@@ -631,45 +664,11 @@ eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph,
     rtklib_sat.toc = gpst2time(rtklib_sat.week, toc);
     rtklib_sat.ttr = gpst2time(rtklib_sat.week, tow);
 
-    if (!orbit_correction_map.empty() && !clock_correction_map.empty())
-        {
-            int count_has_corrections = 0;
-            const auto it_orbit = orbit_correction_map.find(static_cast<int>(gps_cnav_eph.PRN));
-            if (it_orbit != orbit_correction_map.cend())
-                {
-                    rtklib_sat.has_orbit_radial_correction_m = it_orbit->second.radial_m;
-                    rtklib_sat.has_orbit_in_track_correction_m = it_orbit->second.in_track_m;
-                    rtklib_sat.has_orbit_cross_track_correction_m = it_orbit->second.cross_track_m;
-                    count_has_corrections++;
-                }
-
-            const auto it_clock = clock_correction_map.find(static_cast<int>(gps_cnav_eph.PRN));
-            if (it_clock != clock_correction_map.cend())
-                {
-                    rtklib_sat.has_clock_correction_m = it_clock->second.clock_correction_m;
-                    count_has_corrections++;
-                }
-            rtklib_sat.apply_has_corrections = (count_has_corrections == 2) ? true : false;
-            if (rtklib_sat.apply_has_corrections)
-                {
-                    rtklib_sat.tgd[0] = 0.0;
-                    rtklib_sat.tgd[1] = 0.0;
-                    rtklib_sat.tgd[2] = 0.0;
-                    rtklib_sat.tgd[3] = 0.0;
-                    rtklib_sat.isc[0] = 0.0;
-                    rtklib_sat.isc[1] = 0.0;
-                    rtklib_sat.isc[2] = 0.0;
-                    rtklib_sat.isc[3] = 0.0;
-                }
-        }
-    else
-        {
-            rtklib_sat.has_orbit_radial_correction_m = 0.0;
-            rtklib_sat.has_orbit_in_track_correction_m = 0.0;
-            rtklib_sat.has_orbit_cross_track_correction_m = 0.0;
-            rtklib_sat.has_clock_correction_m = 0.0;
-            rtklib_sat.apply_has_corrections = false;
-        }
+    rtklib_sat.has_orbit_radial_correction_m = 0.0;
+    rtklib_sat.has_orbit_in_track_correction_m = 0.0;
+    rtklib_sat.has_orbit_cross_track_correction_m = 0.0;
+    rtklib_sat.has_clock_correction_m = 0.0;
+    rtklib_sat.apply_has_corrections = false;
 
     return rtklib_sat;
 }

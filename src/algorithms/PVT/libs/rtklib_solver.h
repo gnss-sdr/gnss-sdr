@@ -99,6 +99,7 @@ public:
     double get_gdop() const override;
     Monitor_Pvt get_monitor_pvt() const;
     void store_has_data(const Galileo_HAS_data& new_has_data);
+    void clear_has_corrections();
     void update_has_corrections(const std::map<int, Gnss_Synchro>& obs_map);
 
     sol_t pvt_sol{};
@@ -133,9 +134,11 @@ private:
 
     void check_has_orbit_clock_validity(const std::map<int, Gnss_Synchro>& obs_map);
     void get_has_biases(const std::map<int, Gnss_Synchro>& obs_map);
-    void get_current_has_obs_correction(const std::string& signal, uint32_t tow_obs, int prn);
+    void get_current_has_obs_correction(const std::string& signal, uint32_t tow_obs, int prn, uint8_t mask_id, uint8_t iod_set_id);
+    void clear_applied_has_phase_bias_discontinuity(const HAS_obs_corrections* has_correction, int prn);
     bool has_active_has_do_not_use(const std::string& system, int prn, uint32_t tow_obs) const;
-    bool has_active_has_orbit_clock(const std::string& system, int prn, uint32_t tow_obs) const;
+    bool has_active_has_orbit_clock(const std::string& system, int prn, uint16_t sis_iod, uint32_t tow_obs) const;
+    bool get_active_has_context(const std::string& system, int prn, uint16_t sis_iod, uint32_t tow_obs, uint8_t& mask_id, uint8_t& iod_set_id) const;
 
     std::array<obsd_t, MAXOBS> d_obs_data{};
     std::array<double, 4> d_dop{};
@@ -146,8 +149,8 @@ private:
     std::map<std::string, std::map<int, HAS_clock_corrections>> d_has_clock_corrections_store_map;  // first key is system, second key is PRN
     std::map<std::string, std::map<int, uint32_t>> d_has_satellite_do_not_use_until;                // first key is system, second key is PRN
 
-    std::map<std::string, std::map<int, std::pair<float, uint32_t>>> d_has_code_bias_store_map;   // first key is signal, second key is PRN
-    std::map<std::string, std::map<int, std::pair<float, uint32_t>>> d_has_phase_bias_store_map;  // first key is signal, second key is PRN
+    std::map<std::string, std::map<int, HAS_bias_corrections>> d_has_code_bias_store_map;         // first key is signal, second key is PRN
+    std::map<std::string, std::map<int, HAS_bias_corrections>> d_has_phase_bias_store_map;        // first key is signal, second key is PRN
     std::map<std::string, std::map<int, uint8_t>> d_has_phase_discontinuity_indicator_store_map;  // first key is signal, second key is PRN
     std::map<std::string, std::map<int, bool>> d_has_phase_bias_discontinuity_map;                // first key is signal, second key is PRN
 

@@ -996,7 +996,7 @@ uint16_t Galileo_HAS_data::get_validity_interval_s(uint8_t validity_interval_ind
 uint32_t Galileo_HAS_data::get_time_of_message_s() const
 {
     const uint32_t hour = this->tow / HAS_SECONDS_PER_HOUR;
-    const uint32_t seconds_of_hour = static_cast<uint32_t>(this->header.toh);
+    const auto seconds_of_hour = static_cast<uint32_t>(this->header.toh);
     const uint32_t candidate_tmt = hour * HAS_SECONDS_PER_HOUR + seconds_of_hour;
 
     if (candidate_tmt <= this->tow)

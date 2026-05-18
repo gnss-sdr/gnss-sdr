@@ -18,6 +18,7 @@
 
 #include "Galileo_INAV.h"
 #include "rtcm.h"
+#include <cstring>
 #include <memory>
 #include <thread>
 
@@ -447,7 +448,7 @@ TEST(RtcmTest, MSMCell)
         divergence_free,
         more_messages);
     std::string MSM1_bin_2 = rtcm->binary_data_to_bin(MSM1_2);
-    EXPECT_EQ(0, MSM1_bin_2.substr(size_header + size_msg_length + 169, Nsat * Nsig).compare("001010001100"));  // check cell mask
+    EXPECT_EQ(0, MSM1_bin_2.substr(size_header + size_msg_length + 169, Nsat * Nsig).compare("001010101100"));  // check cell mask
 
     Gnss_Synchro gnss_synchro7;
     gnss_synchro7.PRN = 10;
@@ -522,10 +523,10 @@ TEST(RtcmTest, MSM1)
     pseudoranges.insert(std::pair<int, Gnss_Synchro>(4, gnss_synchro4));
 
     unsigned short ref_id = 1234;
-    unsigned int clock_steering_indicator = 0;
-    unsigned int external_clock_indicator = 0;
+    unsigned int clock_steering_indicator = 2;
+    unsigned int external_clock_indicator = 1;
     int smooth_int = 0;
-    bool divergence_free = false;
+    bool divergence_free = true;
     bool more_messages = false;
     double obs_time = 25.0;
 
@@ -555,6 +556,7 @@ TEST(RtcmTest, MSM1)
     EXPECT_EQ(expected_true, upper_bound >= data_size);
     EXPECT_EQ(0, MSM1_bin.substr(0, size_header).compare("11010011000000"));
     EXPECT_EQ(ref_id, rtcm->bin_to_uint(MSM1_bin.substr(size_header + size_msg_length + 12, 12)));
+    EXPECT_EQ(std::string("10011000"), MSM1_bin.substr(size_header + size_msg_length + 65, 8));         // check MSM common header DF411, DF412, DF417, DF418 order
     EXPECT_EQ(0, MSM1_bin.substr(size_header + size_msg_length + 169, Nsat * Nsig).compare("101101"));  // check cell mask
 
     double meters_to_miliseconds = SPEED_OF_LIGHT_M_S * 0.001;
@@ -591,6 +593,47 @@ TEST(RtcmTest, MSM1)
     std::string MSM1_bin2 = rtcm->binary_data_to_bin(MSM1_2);
     int read_psrng4_s_2 = rtcm->bin_to_int(MSM1_bin2.substr(size_header + size_msg_length + 169 + (Nsat * Nsig) + 30 + 15 * 3, 15));
     EXPECT_EQ(psrng4_s, read_psrng4_s_2);
+}
+
+
+TEST(RtcmTest, MSMSizeLimits)
+{
+    auto rtcm = std::make_shared<Rtcm>();
+    Galileo_Ephemeris gal_eph = Galileo_Ephemeris();
+    gal_eph.PRN = 1;
+
+    const auto make_galileo_observables = [](uint32_t nsats) -> std::map<int, Gnss_Synchro> {
+        std::map<int, Gnss_Synchro> observables;
+        const std::string signals[3] = {"1B", "5X", "7X"};
+        int key = 1;
+        for (uint32_t prn = 1; prn <= nsats; prn++)
+            {
+                for (uint32_t signal_index = 0; signal_index < 3; signal_index++)
+                    {
+                        Gnss_Synchro gnss_synchro;
+                        gnss_synchro.PRN = prn;
+                        gnss_synchro.System = 'E';
+                        std::memcpy(static_cast<void*>(gnss_synchro.Signal), signals[signal_index].c_str(), 3);
+                        gnss_synchro.Pseudorange_m = 20000000.0 + 1000.0 * static_cast<double>(prn) + 10.0 * signal_index;
+                        gnss_synchro.Carrier_phase_rads = 1000.0 + static_cast<double>(prn);
+                        gnss_synchro.Carrier_Doppler_hz = -500.0;
+                        gnss_synchro.CN0_dB_hz = 45.0;
+                        gnss_synchro.Tracking_sample_counter = 100000;
+                        observables.insert(std::pair<int, Gnss_Synchro>(key, gnss_synchro));
+                        key++;
+                    }
+            }
+        return observables;
+    };
+
+    const std::map<int, Gnss_Synchro> within_limit = make_galileo_observables(21);  // 21 satellites * 3 signals = 63 cell-mask bits
+    const std::string within_limit_msg = rtcm->print_MSM_7({}, {}, gal_eph, {}, 25.0, within_limit, 1234, 0, 0, 0, false, false);
+    EXPECT_FALSE(within_limit_msg.empty());
+    EXPECT_TRUE(rtcm->check_CRC(within_limit_msg));
+
+    const std::map<int, Gnss_Synchro> over_limit = make_galileo_observables(22);  // 22 satellites * 3 signals = 66 cell-mask bits
+    const std::string over_limit_msg = rtcm->print_MSM_7({}, {}, gal_eph, {}, 25.0, over_limit, 1234, 0, 0, 0, false, false);
+    EXPECT_TRUE(over_limit_msg.empty());
 }
 
 

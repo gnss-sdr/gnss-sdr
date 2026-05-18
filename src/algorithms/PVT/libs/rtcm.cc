@@ -169,6 +169,64 @@ uint8_t get_IGM05_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys
         }
     return count;
 }
+
+
+uint8_t get_iod_ssr(uint8_t has_iod_set_id)
+{
+    return static_cast<uint8_t>(has_iod_set_id & 0x0F);
+}
+
+
+uint8_t get_gnss_iod_lsb(uint16_t gnss_iod)
+{
+    return static_cast<uint8_t>(gnss_iod & 0x00FF);
+}
+
+
+constexpr uint32_t rtcm_msm_max_cell_mask_bits = 64;
+constexpr uint32_t rtcm_max_payload_bytes = 1023;
+
+
+uint32_t get_MSM_satellite_data_bits(uint32_t msm_type)
+{
+    if ((msm_type == 1) || (msm_type == 2) || (msm_type == 3))
+        {
+            return 10;
+        }
+    if ((msm_type == 4) || (msm_type == 6))
+        {
+            return 18;
+        }
+    if ((msm_type == 5) || (msm_type == 7))
+        {
+            return 36;
+        }
+    return 0;
+}
+
+
+uint32_t get_MSM_signal_data_bits(uint32_t msm_type)
+{
+    switch (msm_type)
+        {
+        case 1:
+            return 15;
+        case 2:
+            return 27;
+        case 3:
+            return 42;
+        case 4:
+            return 48;
+        case 5:
+            return 63;
+        case 6:
+            return 65;
+        case 7:
+            return 80;
+        default:
+            return 0;
+        }
+}
 }  // namespace
 
 
@@ -2389,6 +2447,63 @@ int32_t Rtcm::read_MT1045(const std::string& message, Galileo_Ephemeris& gal_eph
 //
 // **********************************************************************************************
 
+bool Rtcm::check_MSM_size_limits(uint32_t msg_number, const std::map<int32_t, Gnss_Synchro>& observables)
+{
+    if (observables.empty())
+        {
+            LOG(WARNING) << "RTCM MSM" << msg_number << " has no observations to encode";
+            return false;
+        }
+
+    for (const auto& observable : observables)
+        {
+            if ((observable.second.PRN < 1) || (observable.second.PRN > 64))
+                {
+                    LOG(WARNING) << "RTCM MSM" << msg_number << " satellite ID " << observable.second.PRN << " is outside DF394 range 1..64";
+                    return false;
+                }
+        }
+
+    Rtcm::set_DF394(observables);
+    Rtcm::set_DF395(observables);
+    const std::string cell_mask = Rtcm::set_DF396(observables);
+    const auto cell_mask_bits = static_cast<uint32_t>(cell_mask.size());
+    if (cell_mask_bits == 0)
+        {
+            LOG(WARNING) << "RTCM MSM" << msg_number << " has an empty satellite/signal cell mask";
+            return false;
+        }
+    if (cell_mask_bits > rtcm_msm_max_cell_mask_bits)
+        {
+            LOG(WARNING) << "RTCM MSM" << msg_number << " cell mask has " << cell_mask_bits
+                         << " bits; RTCM 3.2 limits DF396 to " << rtcm_msm_max_cell_mask_bits << " bits";
+            return false;
+        }
+
+    const auto msm_type = msg_number % 10;
+    const auto satellite_data_bits = get_MSM_satellite_data_bits(msm_type);
+    const auto signal_data_bits = get_MSM_signal_data_bits(msm_type);
+    if ((satellite_data_bits == 0) || (signal_data_bits == 0))
+        {
+            LOG(WARNING) << "Unsupported RTCM MSM message number " << msg_number;
+            return false;
+        }
+
+    const auto num_satellites = static_cast<uint32_t>(DF394.count());
+    const auto num_cells = static_cast<uint32_t>(std::count(cell_mask.cbegin(), cell_mask.cend(), '1'));
+    const auto payload_bits = 169U + cell_mask_bits + num_satellites * satellite_data_bits + num_cells * signal_data_bits;
+    const auto payload_bytes = (payload_bits + 7U) / 8U;
+    if (payload_bytes > rtcm_max_payload_bytes)
+        {
+            LOG(WARNING) << "RTCM MSM" << msg_number << " payload has " << payload_bytes
+                         << " bytes; RTCM 3 transport payload is limited to " << rtcm_max_payload_bytes << " bytes";
+            return false;
+        }
+
+    return true;
+}
+
+
 std::string Rtcm::print_MSM_1(const Gps_Ephemeris& gps_eph,
     const Gps_CNAV_Ephemeris& gps_cnav_eph,
     const Galileo_Ephemeris& gal_eph,
@@ -2427,6 +2542,10 @@ std::string Rtcm::print_MSM_1(const Gps_Ephemeris& gps_eph,
         {
             LOG(WARNING) << "Invalid ephemeris provided";
             msg_number = 1071;
+        }
+    if (!Rtcm::check_MSM_size_limits(msg_number, observables))
+        {
+            return {};
         }
 
     const std::string header = Rtcm::get_MSM_header(msg_number,
@@ -2486,12 +2605,19 @@ std::string Rtcm::get_MSM_header(uint32_t msg_number,
     if ((sys == "R"))
         {
             // GLONASS Epoch Time
+            Rtcm::set_DF416(obs_time);
             Rtcm::set_DF034(obs_time);
-            header += DF034.to_string();
+            header += DF416.to_string() + DF034.to_string();
+        }
+    else if (sys == "E")
+        {
+            // Galileo Epoch Time
+            Rtcm::set_DF248(obs_time);
+            header += DF248.to_string();
         }
     else
         {
-            // GPS, Galileo Epoch Time
+            // GPS Epoch Time
             Rtcm::set_DF004(obs_time);
             header += DF004.to_string();
         }
@@ -2500,8 +2626,8 @@ std::string Rtcm::get_MSM_header(uint32_t msg_number,
              DF409.to_string() +
              DF001_.to_string() +
              DF411.to_string() +
-             DF417.to_string() +
              DF412.to_string() +
+             DF417.to_string() +
              DF418.to_string() +
              DF394.to_string() +
              DF395.to_string() +
@@ -2626,6 +2752,10 @@ std::string Rtcm::print_MSM_2(const Gps_Ephemeris& gps_eph,
             LOG(WARNING) << "Invalid ephemeris provided";
             msg_number = 1072;
         }
+    if (!Rtcm::check_MSM_size_limits(msg_number, observables))
+        {
+            return {};
+        }
 
     const std::string header = Rtcm::get_MSM_header(msg_number,
         obs_time,
@@ -2739,6 +2869,10 @@ std::string Rtcm::print_MSM_3(const Gps_Ephemeris& gps_eph,
         {
             LOG(WARNING) << "Invalid ephemeris provided";
             msg_number = 1073;
+        }
+    if (!Rtcm::check_MSM_size_limits(msg_number, observables))
+        {
+            return {};
         }
 
     const std::string header = Rtcm::get_MSM_header(msg_number,
@@ -2856,6 +2990,10 @@ std::string Rtcm::print_MSM_4(const Gps_Ephemeris& gps_eph,
         {
             LOG(WARNING) << "Invalid ephemeris provided";
             msg_number = 1074;
+        }
+    if (!Rtcm::check_MSM_size_limits(msg_number, observables))
+        {
+            return {};
         }
 
     const std::string header = Rtcm::get_MSM_header(msg_number,
@@ -3019,6 +3157,10 @@ std::string Rtcm::print_MSM_5(const Gps_Ephemeris& gps_eph,
         {
             LOG(WARNING) << "Invalid ephemeris provided";
             msg_number = 1075;
+        }
+    if (!Rtcm::check_MSM_size_limits(msg_number, observables))
+        {
+            return {};
         }
 
     const std::string header = Rtcm::get_MSM_header(msg_number,
@@ -3192,6 +3334,10 @@ std::string Rtcm::print_MSM_6(const Gps_Ephemeris& gps_eph,
             LOG(WARNING) << "Invalid ephemeris provided";
             msg_number = 1076;
         }
+    if (!Rtcm::check_MSM_size_limits(msg_number, observables))
+        {
+            return {};
+        }
 
     const std::string header = Rtcm::get_MSM_header(msg_number,
         obs_time,
@@ -3311,6 +3457,10 @@ std::string Rtcm::print_MSM_7(const Gps_Ephemeris& gps_eph,
         {
             LOG(WARNING) << "Invalid ephemeris provided";
             msg_number = 1076;
+        }
+    if (!Rtcm::check_MSM_size_limits(msg_number, observables))
+        {
+            return {};
         }
 
     const std::string header = Rtcm::get_MSM_header(msg_number,
@@ -3581,11 +3731,11 @@ std::string Rtcm::get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsy
     std::string header;
 
     uint32_t tow = has_data.tow;
-    uint16_t ssr_provider_id = 0;                    // ?
-    uint8_t igm_version = 0;                         // ?
-    uint8_t ssr_solution_id = 0;                     // ?
-    auto iod_ssr = has_data.header.iod_set_id % 15;  // ?? HAS IOD is 0-31
-    bool regional_indicator = false;                 // ?
+    uint16_t ssr_provider_id = 0;  // ?
+    uint8_t igm_version = 0;       // ?
+    uint8_t ssr_solution_id = 0;   // ?
+    uint8_t iod_ssr = get_iod_ssr(has_data.header.iod_set_id);
+    bool regional_indicator = false;  // ?
 
     uint8_t subtype_msg_number = 0;
     if (has_data.gnss_id_mask[nsys] == 0)  // GPS
@@ -3636,7 +3786,7 @@ std::string Rtcm::get_IGM01_content_sat(const Galileo_HAS_data& has_data, uint8_
     for (uint8_t sat = 0; sat < num_sats_in_this_system; sat++)
         {
             Rtcm::set_IDF011(static_cast<uint8_t>(prn[sat]));
-            Rtcm::set_IDF012(static_cast<uint8_t>(gnss_iod[sat] % 255));  // 8 LSBs
+            Rtcm::set_IDF012(get_gnss_iod_lsb(gnss_iod[sat]));
             Rtcm::set_IDF013(delta_orbit_radial_m[sat]);
             Rtcm::set_IDF014(delta_orbit_in_track_m[sat]);
             Rtcm::set_IDF016(0.0);  //  dot_orbit_delta_track_m_s
@@ -3658,10 +3808,10 @@ std::string Rtcm::get_IGM02_header(const Galileo_HAS_data& has_data, uint8_t nsy
     std::string header;
 
     uint32_t tow = has_data.tow;
-    uint16_t ssr_provider_id = 0;                    // ?
-    uint8_t igm_version = 0;                         // ?
-    uint8_t ssr_solution_id = 0;                     // ?
-    auto iod_ssr = has_data.header.iod_set_id % 15;  // ?? HAS IOD is 0-31
+    uint16_t ssr_provider_id = 0;  // ?
+    uint8_t igm_version = 0;       // ?
+    uint8_t ssr_solution_id = 0;   // ?
+    uint8_t iod_ssr = get_iod_ssr(has_data.header.iod_set_id);
 
     uint8_t subtype_msg_number = 0;
     if (has_data.gnss_id_mask[nsys] == 0)  // GPS
@@ -3727,11 +3877,11 @@ std::string Rtcm::get_IGM03_header(const Galileo_HAS_data& has_data, uint8_t nsy
     std::string header;
 
     uint32_t tow = has_data.tow;
-    uint16_t ssr_provider_id = 0;                    // ?
-    uint8_t igm_version = 0;                         // ?
-    uint8_t ssr_solution_id = 0;                     // ?
-    auto iod_ssr = has_data.header.iod_set_id % 15;  // ?? HAS IOD is 0-31
-    bool regional_indicator = false;                 // ?
+    uint16_t ssr_provider_id = 0;  // ?
+    uint8_t igm_version = 0;       // ?
+    uint8_t ssr_solution_id = 0;   // ?
+    uint8_t iod_ssr = get_iod_ssr(has_data.header.iod_set_id);
+    bool regional_indicator = false;  // ?
 
     uint8_t subtype_msg_number = 0;
     if (has_data.gnss_id_mask[nsys] == 0)  // GPS
@@ -3786,7 +3936,7 @@ std::string Rtcm::get_IGM03_content_sat(const Galileo_HAS_data& has_data, uint8_
     for (uint8_t sat = 0; sat < num_sats_in_this_system; sat++)
         {
             Rtcm::set_IDF011(static_cast<uint8_t>(prn[sat]));
-            Rtcm::set_IDF012(static_cast<uint8_t>(gnss_iod[sat] % 255));  // 8 LSBs
+            Rtcm::set_IDF012(get_gnss_iod_lsb(gnss_iod[sat]));
             Rtcm::set_IDF013(delta_orbit_radial_m[sat]);
             Rtcm::set_IDF014(delta_orbit_in_track_m[sat]);
             Rtcm::set_IDF015(delta_orbit_cross_track_m[sat]);
@@ -3812,10 +3962,10 @@ std::string Rtcm::get_IGM05_header(const Galileo_HAS_data& has_data, uint8_t nsy
     std::string header;
 
     uint32_t tow = has_data.tow;
-    uint16_t ssr_provider_id = 0;                    // ?
-    uint8_t igm_version = 0;                         // ?
-    uint8_t ssr_solution_id = 0;                     // ?
-    auto iod_ssr = has_data.header.iod_set_id % 15;  // ?? HAS IOD is 0-31
+    uint16_t ssr_provider_id = 0;  // ?
+    uint8_t igm_version = 0;       // ?
+    uint8_t ssr_solution_id = 0;   // ?
+    uint8_t iod_ssr = get_iod_ssr(has_data.header.iod_set_id);
 
     uint8_t subtype_msg_number = 0;
     if (has_data.gnss_id_mask[nsys] == 0)  // GPS
@@ -4642,10 +4792,15 @@ int32_t Rtcm::set_DF031(uint32_t antenna_setup_id)
 int32_t Rtcm::set_DF034(double obs_time)
 {
     // TOW in milliseconds from the beginning of the GLONASS day, measured in GLONASS time
-    auto tk = static_cast<uint64_t>(std::round(obs_time * 1000));
+    double tk_s = std::fmod(obs_time, 86400.0);
+    if (tk_s < 0.0)
+        {
+            tk_s += 86400.0;
+        }
+    auto tk = static_cast<uint64_t>(std::round(tk_s * 1000.0));
     if (tk > 86400999)
         {
-            LOG(WARNING) << "To large GLONASS Epoch Time (tk)! Set to the last millisecond of the day";
+            LOG(WARNING) << "Too large GLONASS Epoch Time (tk)! Set to the last millisecond of the day";
             tk = 86400999;
         }
     DF034 = std::bitset<27>(tk);
@@ -5861,6 +6016,14 @@ std::string Rtcm::set_DF396(const std::map<int32_t, Gnss_Synchro>& observables)
                 {
                     list_of_signals.push_back(32 - 16);
                 }
+            if ((sig == "1C") && (sys == "R"))
+                {
+                    list_of_signals.push_back(32 - 2);
+                }
+            if ((sig == "2C") && (sys == "R"))
+                {
+                    list_of_signals.push_back(32 - 8);
+                }
         }
 
     std::sort(list_of_sats.begin(), list_of_sats.end());
@@ -5912,6 +6075,16 @@ std::string Rtcm::set_DF396(const std::map<int32_t, Gnss_Synchro>& observables)
                                 }
 
                             if ((sig == "7X") && (sys == "E") && (list_of_signals.at(row) == 32 - 16) && (observables_iter->second.PRN == list_of_sats.at(sat)))
+                                {
+                                    value = true;
+                                }
+
+                            if ((sig == "1C") && (sys == "R") && (list_of_signals.at(row) == 32 - 2) && (observables_iter->second.PRN == list_of_sats.at(sat)))
+                                {
+                                    value = true;
+                                }
+
+                            if ((sig == "2C") && (sys == "R") && (list_of_signals.at(row) == 32 - 8) && (observables_iter->second.PRN == list_of_sats.at(sat)))
                                 {
                                     value = true;
                                 }
@@ -6353,6 +6526,19 @@ int32_t Rtcm::set_DF411(uint32_t clock_steering_indicator)
 int32_t Rtcm::set_DF412(uint32_t external_clock_indicator)
 {
     DF412 = std::bitset<2>(external_clock_indicator);
+    return 0;
+}
+
+
+int32_t Rtcm::set_DF416(double obs_time)
+{
+    double tow_s = std::fmod(obs_time, 604800.0);
+    if (tow_s < 0.0)
+        {
+            tow_s += 604800.0;
+        }
+    const auto day_of_week = static_cast<uint32_t>(std::floor(tow_s / 86400.0));
+    DF416 = std::bitset<3>(day_of_week);
     return 0;
 }
 

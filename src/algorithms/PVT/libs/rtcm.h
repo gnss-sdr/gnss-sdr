@@ -502,6 +502,7 @@ private:
     std::string get_MSM_5_content_signal_data(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& ephCNAV, const Galileo_Ephemeris& ephFNAV, const Glonass_Gnav_Ephemeris& ephGNAV, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
     std::string get_MSM_6_content_signal_data(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& ephCNAV, const Galileo_Ephemeris& ephFNAV, const Glonass_Gnav_Ephemeris& ephGNAV, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
     std::string get_MSM_7_content_signal_data(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& ephCNAV, const Galileo_Ephemeris& ephFNAV, const Glonass_Gnav_Ephemeris& ephGNAV, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
+    bool check_MSM_size_limits(uint32_t msg_number, const std::map<int32_t, Gnss_Synchro>& observables);
 
     std::string get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
     std::string get_IGM01_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
@@ -1535,6 +1536,9 @@ private:
 
     std::bitset<2> DF412;
     int32_t set_DF412(uint32_t external_clock_indicator);
+
+    std::bitset<3> DF416;
+    int32_t set_DF416(double obs_time);
 
     std::bitset<1> DF417;
     int32_t set_DF417(bool using_divergence_free_smoothing);

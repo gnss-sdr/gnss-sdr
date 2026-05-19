@@ -316,24 +316,6 @@ uint32_t get_MSM_signal_data_bits(uint32_t msm_type)
 }
 
 
-bool is_gps_l5_signal(const std::string& signal)
-{
-    return signal == "L5";
-}
-
-
-bool is_glonass_l1_ca_signal(const std::string& signal)
-{
-    return signal == "1G";
-}
-
-
-bool is_glonass_l2_ca_signal(const std::string& signal)
-{
-    return signal == "2G";
-}
-
-
 const MsmSignalSpec* get_msm_signal_spec(const Gnss_Synchro& gnss_synchro)
 {
     const std::string signal_(gnss_synchro.Signal);
@@ -543,21 +525,6 @@ uint32_t get_msm_message_number_from_inputs(uint32_t msm_type,
 }
 
 
-uint32_t clamp_rounded_uint(double value, uint32_t max_value)
-{
-    if (!std::isfinite(value) || (value <= 0.0))
-        {
-            return 0;
-        }
-
-    const double rounded_value = std::round(value);
-    if (rounded_value >= static_cast<double>(max_value))
-        {
-            return max_value;
-        }
-
-    return static_cast<uint32_t>(rounded_value);
-}
 }  // namespace
 
 
@@ -855,6 +822,24 @@ int32_t Rtcm::bin_to_sint(const std::string& s) const
         }
     return sign * reading;
 }
+
+
+uint32_t Rtcm::clamp_rounded_uint(double value, uint32_t max_value)
+{
+    if (!std::isfinite(value) || (value <= 0.0))
+        {
+            return 0;
+        }
+
+    const double rounded_value = std::round(value);
+    if (rounded_value >= static_cast<double>(max_value))
+        {
+            return max_value;
+        }
+
+    return static_cast<uint32_t>(rounded_value);
+}
+
 
 // Find the sign for glonass data fields (neg = 1, pos = 0)
 static inline uint64_t glo_sgn(double val)
@@ -1708,7 +1693,7 @@ std::string Rtcm::print_MT1009(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, d
             const std::string system_(&observables_iter->second.System, 1);
             const std::string sig_(observables_iter->second.Signal);
             const std::string sig = sig_.substr(0, 2);
-            if ((system_ == "R") && is_glonass_l1_ca_signal(sig))
+            if ((system_ == "R") && (sig == "1G"))
                 {
                     observablesL1.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
@@ -1758,7 +1743,7 @@ std::string Rtcm::print_MT1010(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, d
             const std::string system_(&observables_iter->second.System, 1);
             const std::string sig_(observables_iter->second.Signal);
             const std::string sig = sig_.substr(0, 2);
-            if ((system_ == "R") && is_glonass_l1_ca_signal(sig))
+            if ((system_ == "R") && (sig == "1G"))
                 {
                     observablesL1.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
@@ -1836,11 +1821,11 @@ std::string Rtcm::print_MT1011(const Glonass_Gnav_Ephemeris& ephL1, const Glonas
             const std::string system_(&observables_iter->second.System, 1);
             const std::string sig_(observables_iter->second.Signal);
             const std::string sig = sig_.substr(0, 2);
-            if ((system_ == "R") && is_glonass_l1_ca_signal(sig))
+            if ((system_ == "R") && (sig == "1G"))
                 {
                     observablesL1.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
-            if ((system_ == "R") && is_glonass_l2_ca_signal(sig))
+            if ((system_ == "R") && (sig == "2G"))
                 {
                     observablesL2.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
@@ -1948,11 +1933,11 @@ std::string Rtcm::print_MT1012(const Glonass_Gnav_Ephemeris& ephL1, const Glonas
             const std::string system_(&observables_iter->second.System, 1);
             const std::string sig_(observables_iter->second.Signal);
             const std::string sig = sig_.substr(0, 2);
-            if ((system_ == "R") && is_glonass_l1_ca_signal(sig))
+            if ((system_ == "R") && (sig == "1G"))
                 {
                     observablesL1.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
-            if ((system_ == "R") && is_glonass_l2_ca_signal(sig))
+            if ((system_ == "R") && (sig == "2G"))
                 {
                     observablesL2.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
@@ -4423,33 +4408,33 @@ uint32_t Rtcm::lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time, con
     boost::posix_time::ptime last_lock_time;
     const std::string sig_(gnss_synchro.Signal);
     const std::string sig = sig_.substr(0, 2);
-    if (is_glonass_l1_ca_signal(sig))
+    if (sig == "1G")
         {
             last_lock_time = Rtcm::glo_L1_last_lock_time[65 - gnss_synchro.PRN];
         }
-    if (is_glonass_l2_ca_signal(sig))
+    if (sig == "2G")
         {
             last_lock_time = Rtcm::glo_L2_last_lock_time[65 - gnss_synchro.PRN];
         }
 
     if (last_lock_time.is_not_a_date_time())  // || CHECK LLI!!......)
         {
-            if (is_glonass_l1_ca_signal(sig))
+            if (sig == "1G")
                 {
                     Rtcm::glo_L1_last_lock_time[65 - gnss_synchro.PRN] = current_time;
                 }
-            if (is_glonass_l2_ca_signal(sig))
+            if (sig == "2G")
                 {
                     Rtcm::glo_L2_last_lock_time[65 - gnss_synchro.PRN] = current_time;
                 }
         }
 
     boost::posix_time::time_duration lock_duration = current_time - current_time;
-    if (is_glonass_l1_ca_signal(sig))
+    if (sig == "1G")
         {
             lock_duration = current_time - Rtcm::glo_L1_last_lock_time[65 - gnss_synchro.PRN];
         }
-    if (is_glonass_l2_ca_signal(sig))
+    if (sig == "2G")
         {
             lock_duration = current_time - Rtcm::glo_L2_last_lock_time[65 - gnss_synchro.PRN];
         }
@@ -6224,7 +6209,7 @@ int32_t Rtcm::set_DF402(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& e
             lock_time_period_s = Rtcm::lock_time(ephNAV, obs_time, gnss_synchro);
         }
     const std::string sig = sig_.substr(0, 2);
-    if (((sig == "2S") || is_gps_l5_signal(sig)) && (sys == "G"))
+    if (((sig == "2S") || (sig == "L5")) && (sys == "G"))
         {
             lock_time_period_s = Rtcm::lock_time(ephCNAV, obs_time, gnss_synchro);
         }
@@ -6232,7 +6217,7 @@ int32_t Rtcm::set_DF402(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& e
         {
             lock_time_period_s = Rtcm::lock_time(ephFNAV, obs_time, gnss_synchro);
         }
-    if ((is_glonass_l1_ca_signal(sig) || is_glonass_l2_ca_signal(sig)) && (sys == "R"))
+    if (((sig == "1G") || (sig == "2G")) && (sys == "R"))
         {
             lock_time_period_s = Rtcm::lock_time(ephGNAV, obs_time, gnss_synchro);
         }
@@ -6244,7 +6229,7 @@ int32_t Rtcm::set_DF402(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& e
 
 int32_t Rtcm::set_DF403(const Gnss_Synchro& gnss_synchro)
 {
-    const auto cnr_dB_Hz = clamp_rounded_uint(gnss_synchro.CN0_dB_hz, 63U);
+    const auto cnr_dB_Hz = Rtcm::clamp_rounded_uint(gnss_synchro.CN0_dB_hz, 63U);
     DF403 = std::bitset<6>(cnr_dB_Hz);
     return 0;
 }
@@ -6340,7 +6325,7 @@ int32_t Rtcm::set_DF407(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& e
             lock_time_period_s = Rtcm::lock_time(ephNAV, obs_time, gnss_synchro);
         }
     const std::string sig = sig_.substr(0, 2);
-    if (((sig == "2S") || is_gps_l5_signal(sig)) && (sys_ == "G"))
+    if (((sig == "2S") || (sig == "L5")) && (sys_ == "G"))
         {
             lock_time_period_s = Rtcm::lock_time(ephCNAV, obs_time, gnss_synchro);
         }
@@ -6348,11 +6333,11 @@ int32_t Rtcm::set_DF407(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& e
         {
             lock_time_period_s = Rtcm::lock_time(ephFNAV, obs_time, gnss_synchro);
         }
-    if (is_glonass_l1_ca_signal(sig) && (sys_ == "R"))
+    if ((sig == "1G") && (sys_ == "R"))
         {
             lock_time_period_s = Rtcm::lock_time(ephGNAV, obs_time, gnss_synchro);
         }
-    if (is_glonass_l2_ca_signal(sig) && (sys_ == "R"))
+    if ((sig == "2G") && (sys_ == "R"))
         {
             lock_time_period_s = Rtcm::lock_time(ephGNAV, obs_time, gnss_synchro);
         }
@@ -6364,7 +6349,7 @@ int32_t Rtcm::set_DF407(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& e
 
 int32_t Rtcm::set_DF408(const Gnss_Synchro& gnss_synchro)
 {
-    const auto cnr_dB_Hz = clamp_rounded_uint(gnss_synchro.CN0_dB_hz / 0.0625, 1023U);
+    const auto cnr_dB_Hz = Rtcm::clamp_rounded_uint(gnss_synchro.CN0_dB_hz / 0.0625, 1023U);
     DF408 = std::bitset<10>(cnr_dB_Hz);
     return 0;
 }

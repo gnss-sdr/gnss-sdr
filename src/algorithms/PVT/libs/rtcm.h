@@ -533,6 +533,7 @@ private:
     uint32_t lock_time_indicator(uint32_t lock_time_period_s);
     uint32_t msm_lock_time_indicator(uint32_t lock_time_period_s);
     uint32_t msm_extended_lock_time_indicator(uint32_t lock_time_period_s);
+    static uint32_t clamp_rounded_uint(double value, uint32_t max_value);
     // SSR utilities
     uint8_t ssr_update_interval(uint16_t validity_seconds) const;
 

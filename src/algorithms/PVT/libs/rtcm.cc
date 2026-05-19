@@ -417,6 +417,41 @@ double get_reconstructed_glonass_l1_pseudorange_m(const Gnss_Synchro& gnss_synch
 }
 
 
+bool get_msm_glonass_frequency_channel_number(const Gnss_Synchro& gnss_synchro, uint32_t& frequency_channel_number)
+{
+    const auto glonass_frequency_channel = GLONASS_PRN.find(gnss_synchro.PRN);
+    if (glonass_frequency_channel == GLONASS_PRN.cend())
+        {
+            return false;
+        }
+    if ((glonass_frequency_channel->second < -7) || (glonass_frequency_channel->second > 6))
+        {
+            return false;
+        }
+    frequency_channel_number = static_cast<uint32_t>(glonass_frequency_channel->second + 7);
+    return true;
+}
+
+
+std::bitset<4> get_msm_extended_satellite_info(const Gnss_Synchro& gnss_synchro)
+{
+    if (gnss_synchro.System != 'R')
+        {
+            return std::bitset<4>(0);
+        }
+
+    uint32_t frequency_channel_number = 0;
+    if (!get_msm_glonass_frequency_channel_number(gnss_synchro, frequency_channel_number))
+        {
+            LOG(WARNING) << "RTCM GLONASS MSM5/MSM7 cannot encode DF419 frequency channel for satellite ID "
+                         << gnss_synchro.PRN;
+            return std::bitset<4>(15);
+        }
+
+    return std::bitset<4>(frequency_channel_number);
+}
+
+
 char get_msm_message_system(uint32_t msg_number)
 {
     const MsmFamilySpec* family = get_msm_family_spec(msg_number);
@@ -2793,6 +2828,16 @@ bool Rtcm::check_MSM_size_limits(uint32_t msg_number, const std::map<int32_t, Gn
                                  << " from system " << observable.second.System;
                     return false;
                 }
+            if ((expected_system == 'R') && ((msm_type == 5U) || (msm_type == 7U)))
+                {
+                    uint32_t frequency_channel_number = 0;
+                    if (!get_msm_glonass_frequency_channel_number(observable.second, frequency_channel_number))
+                        {
+                            LOG(WARNING) << "RTCM MSM" << msg_number << " cannot encode GLONASS DF419 frequency channel for satellite ID "
+                                         << observable.second.PRN;
+                            return false;
+                        }
+                }
         }
 
     Rtcm::set_DF394(observables);
@@ -3372,9 +3417,9 @@ std::string Rtcm::get_MSM_5_content_sat_data(const std::map<int32_t, Gnss_Synchr
             Rtcm::set_DF397(ordered_by_PRN_pos.at(nsat).second);
             Rtcm::set_DF398(ordered_by_PRN_pos.at(nsat).second);
             Rtcm::set_DF399(ordered_by_PRN_pos.at(nsat).second);
-            auto reserved = std::bitset<4>("0000");
+            const std::bitset<4> extended_satellite_info = get_msm_extended_satellite_info(ordered_by_PRN_pos.at(nsat).second);
             first_data_type += DF397.to_string();
-            second_data_type += reserved.to_string();
+            second_data_type += extended_satellite_info.to_string();
             third_data_type += DF398.to_string();
             fourth_data_type += DF399.to_string();
         }

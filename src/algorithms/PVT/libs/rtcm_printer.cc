@@ -52,26 +52,85 @@ namespace
 constexpr uint32_t rtcm_msm_max_cell_mask_bits = 64;
 
 
-uint32_t msm_cell_mask_bits(const std::map<int32_t, Gnss_Synchro>& observables)
+struct MsmSignalSpec
+{
+    char system;
+    const char* receiver_signal;
+    uint32_t signal_flag;
+    uint32_t rtcm_signal_id;
+};
+
+
+const MsmSignalSpec msm_signal_specs[] = {
+    {'G', "1C", GPS_1C, 2},
+    {'G', "2S", GPS_2S, 15},
+    {'G', "L5", GPS_L5, 24},
+    {'E', "1B", GAL_1B, 4},
+    {'E', "7X", GAL_E5b, 16},
+    {'E', "5X", GAL_E5a, 24},
+    {'R', "1G", GLO_1G, 2},
+    {'R', "2G", GLO_2G, 8},
+};
+
+
+const MsmSignalSpec* msm_signal_spec(const Gnss_Synchro& observable)
+{
+    const std::string signal_(observable.Signal);
+    const std::string signal = signal_.substr(0, 2);
+    for (const auto& signal_spec : msm_signal_specs)
+        {
+            if ((signal_spec.system == observable.System) && (signal == signal_spec.receiver_signal))
+                {
+                    return &signal_spec;
+                }
+        }
+    return nullptr;
+}
+
+
+std::string msm_signal_key(const Signal_Enabled_Flags& flags, const Gnss_Synchro& observable)
+{
+    const MsmSignalSpec* signal_spec = msm_signal_spec(observable);
+    if ((signal_spec == nullptr) || !flags.check_any_enabled(signal_spec->signal_flag))
+        {
+            return {};
+        }
+    return std::string(1, signal_spec->system) + std::to_string(signal_spec->rtcm_signal_id);
+}
+
+
+bool is_supported_msm_observable(const Signal_Enabled_Flags& flags, const Gnss_Synchro& observable)
+{
+    return !msm_signal_key(flags, observable).empty();
+}
+
+
+uint32_t msm_cell_mask_bits(const Signal_Enabled_Flags& flags, const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::set<uint32_t> satellites;
     std::set<std::string> signals;
     for (const auto& observable : observables)
         {
-            satellites.insert(observable.second.PRN);
-            const std::string signal_(observable.second.Signal);
-            signals.insert(std::string(1, observable.second.System) + signal_.substr(0, 2));
+            const std::string signal_key = msm_signal_key(flags, observable.second);
+            if (!signal_key.empty())
+                {
+                    satellites.insert(observable.second.PRN);
+                    signals.insert(signal_key);
+                }
         }
     return static_cast<uint32_t>(satellites.size() * signals.size());
 }
 
 
-std::vector<std::map<int32_t, Gnss_Synchro>> split_MSM_observables(const std::map<int32_t, Gnss_Synchro>& observables)
+std::vector<std::map<int32_t, Gnss_Synchro>> split_MSM_observables(const Signal_Enabled_Flags& flags, const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::map<uint32_t, std::map<int32_t, Gnss_Synchro>> observables_by_satellite;
     for (const auto& observable : observables)
         {
-            observables_by_satellite[observable.second.PRN].insert(observable);
+            if (is_supported_msm_observable(flags, observable.second))
+                {
+                    observables_by_satellite[observable.second.PRN].insert(observable);
+                }
         }
 
     std::vector<std::map<int32_t, Gnss_Synchro>> blocks;
@@ -80,14 +139,14 @@ std::vector<std::map<int32_t, Gnss_Synchro>> split_MSM_observables(const std::ma
         {
             std::map<int32_t, Gnss_Synchro> candidate_block(current_block);
             candidate_block.insert(satellite_observables.second.cbegin(), satellite_observables.second.cend());
-            if (!current_block.empty() && (msm_cell_mask_bits(candidate_block) > rtcm_msm_max_cell_mask_bits))
+            if (!current_block.empty() && (msm_cell_mask_bits(flags, candidate_block) > rtcm_msm_max_cell_mask_bits))
                 {
                     blocks.push_back(current_block);
                     current_block.clear();
                     candidate_block = satellite_observables.second;
                 }
 
-            if (msm_cell_mask_bits(candidate_block) <= rtcm_msm_max_cell_mask_bits)
+            if (msm_cell_mask_bits(flags, candidate_block) <= rtcm_msm_max_cell_mask_bits)
                 {
                     current_block.insert(satellite_observables.second.cbegin(), satellite_observables.second.cend());
                     continue;
@@ -97,7 +156,7 @@ std::vector<std::map<int32_t, Gnss_Synchro>> split_MSM_observables(const std::ma
                 {
                     std::map<int32_t, Gnss_Synchro> signal_candidate(current_block);
                     signal_candidate.insert(observable);
-                    if (!current_block.empty() && (msm_cell_mask_bits(signal_candidate) > rtcm_msm_max_cell_mask_bits))
+                    if (!current_block.empty() && (msm_cell_mask_bits(flags, signal_candidate) > rtcm_msm_max_cell_mask_bits))
                         {
                             blocks.push_back(current_block);
                             current_block.clear();
@@ -347,27 +406,20 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
 
                     for (const auto& gnss_observables_iter : gnss_observables_map)
                         {
-                            const std::string signal_(gnss_observables_iter.second.Signal);
-                            const std::string signal = signal_.substr(0, 2);
+                            if (!is_supported_msm_observable(d_flags, gnss_observables_iter.second))
+                                {
+                                    continue;
+                                }
                             switch (gnss_observables_iter.second.System)
                                 {
                                 case 'G':
-                                    if ((signal == "1C") || (signal == "2S") || (signal == "5X"))
-                                        {
-                                            gps_observables.insert(std::make_pair(static_cast<int32_t>(gnss_observables_iter.first), gnss_observables_iter.second));
-                                        }
+                                    gps_observables.insert(std::make_pair(static_cast<int32_t>(gnss_observables_iter.first), gnss_observables_iter.second));
                                     break;
                                 case 'E':
-                                    if ((signal == "1B") || (signal == "5X") || (signal == "7X"))
-                                        {
-                                            galileo_observables.insert(std::make_pair(static_cast<int32_t>(gnss_observables_iter.first), gnss_observables_iter.second));
-                                        }
+                                    galileo_observables.insert(std::make_pair(static_cast<int32_t>(gnss_observables_iter.first), gnss_observables_iter.second));
                                     break;
                                 case 'R':
-                                    if ((signal == "1C") || (signal == "2C"))
-                                        {
-                                            glonass_observables.insert(std::make_pair(static_cast<int32_t>(gnss_observables_iter.first), gnss_observables_iter.second));
-                                        }
+                                    glonass_observables.insert(std::make_pair(static_cast<int32_t>(gnss_observables_iter.first), gnss_observables_iter.second));
                                     break;
                                 default:
                                     break;
@@ -619,7 +671,7 @@ bool Rtcm_Printer::Print_Rtcm_MSM(uint32_t msm_number, const Gps_Ephemeris& gps_
     bool divergence_free,
     bool more_messages)
 {
-    const std::vector<std::map<int32_t, Gnss_Synchro>> observable_blocks = split_MSM_observables(observables);
+    const std::vector<std::map<int32_t, Gnss_Synchro>> observable_blocks = split_MSM_observables(d_flags, observables);
     bool printed_any_message = false;
     bool failed_to_print = false;
 

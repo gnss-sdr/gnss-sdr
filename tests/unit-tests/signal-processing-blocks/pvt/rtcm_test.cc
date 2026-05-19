@@ -312,6 +312,9 @@ TEST(RtcmTest, MT1029)
     std::string characters_to_follow = m1029.substr(22, 2);
     std::string expected_characters_to_follow("1E");
     EXPECT_EQ(0, expected_characters_to_follow.compare(characters_to_follow));
+
+    std::string oversized_text(1100, 'A');
+    EXPECT_TRUE(rtcm->print_MT1029(ref_id, gps_eph, obs_time, oversized_text).empty());
 }
 
 
@@ -359,27 +362,25 @@ TEST(RtcmTest, MSMCell)
     gnss_synchro5.PRN = 10;
     gnss_synchro6.PRN = 10;
 
-    std::string gps = "G";
     std::string gal = "E";
-    std::string glo = "R";
 
-    std::string c1 = "1C";
-    std::string s2 = "2S";
-    std::string x5 = "5X";
+    std::string e1 = "1B";
+    std::string e5b = "7X";
+    std::string e5a = "5X";
 
     gnss_synchro.System = *gal.c_str();
-    gnss_synchro2.System = *gps.c_str();
-    gnss_synchro3.System = *gps.c_str();
+    gnss_synchro2.System = *gal.c_str();
+    gnss_synchro3.System = *gal.c_str();
     gnss_synchro4.System = *gal.c_str();
-    gnss_synchro5.System = *gps.c_str();
-    gnss_synchro6.System = *glo.c_str();
+    gnss_synchro5.System = *gal.c_str();
+    gnss_synchro6.System = *gal.c_str();
 
-    std::memcpy(reinterpret_cast<void*>(gnss_synchro.Signal), x5.c_str(), 3);
-    std::memcpy(reinterpret_cast<void*>(gnss_synchro2.Signal), s2.c_str(), 3);
-    std::memcpy(reinterpret_cast<void*>(gnss_synchro3.Signal), c1.c_str(), 3);
-    std::memcpy(reinterpret_cast<void*>(gnss_synchro4.Signal), x5.c_str(), 3);
-    std::memcpy(reinterpret_cast<void*>(gnss_synchro5.Signal), c1.c_str(), 3);
-    std::memcpy(reinterpret_cast<void*>(gnss_synchro6.Signal), c1.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gnss_synchro.Signal), e5a.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gnss_synchro2.Signal), e5b.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gnss_synchro3.Signal), e1.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gnss_synchro4.Signal), e5a.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gnss_synchro5.Signal), e1.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gnss_synchro6.Signal), e1.c_str(), 3);
 
     gnss_synchro.Pseudorange_m = 20000000.0;
     gnss_synchro2.Pseudorange_m = 20001010.0;
@@ -403,7 +404,6 @@ TEST(RtcmTest, MSMCell)
     bool more_messages = false;
     double obs_time = 25.0;
 
-    gps_eph.PRN = gnss_synchro2.PRN;
     gal_eph.PRN = gnss_synchro.PRN;
     // glo_gnav_eph.PRN = gnss_synchro.PRN;
 
@@ -452,8 +452,8 @@ TEST(RtcmTest, MSMCell)
 
     Gnss_Synchro gnss_synchro7;
     gnss_synchro7.PRN = 10;
-    gnss_synchro7.System = *gps.c_str();
-    std::memcpy(reinterpret_cast<void*>(gnss_synchro7.Signal), s2.c_str(), 3);
+    gnss_synchro7.System = *gal.c_str();
+    std::memcpy(reinterpret_cast<void*>(gnss_synchro7.Signal), e5b.c_str(), 3);
     gnss_synchro7.Pseudorange_m = 24000000.0;
 
     std::map<int, Gnss_Synchro> pseudoranges3;

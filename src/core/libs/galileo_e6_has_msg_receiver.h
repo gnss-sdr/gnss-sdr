@@ -70,12 +70,14 @@ private:
     void clear_mask_data(uint8_t mask_id);
     void read_MT1_header(const std::string& message_header);
     void delete_outdated_data(const Galileo_HAS_page& has_page);
+    void update_TOW_cache(const Galileo_HAS_page& has_page);
     bool read_MT1_body(const std::string& message_body, uint64_t time_stamp);
     int decode_message_type1(uint8_t message_id, uint8_t message_size, uint64_t time_stamp);
 
     uint16_t read_has_message_header_parameter_uint16(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
     uint8_t read_has_message_header_parameter_uint8(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
     bool read_has_message_header_parameter_bool(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
+    uint32_t get_TOW_for_page(const Galileo_HAS_page& has_page) const;
     bool is_cache_timestamp_valid(uint64_t cache_timestamp, uint64_t current_timestamp) const;
     bool is_supported_gnss_id(uint8_t gnss_id) const;
     bool is_validity_interval_index_valid(uint8_t validity_interval_index) const;
@@ -119,6 +121,8 @@ private:
 
     uint8_t d_current_has_status{};
     uint8_t d_current_message_id{};
+    uint64_t d_last_valid_tow_timestamp;
+    uint32_t d_last_valid_tow;
     bool d_new_message{};
     bool d_enable_navdata_monitor{};
 };

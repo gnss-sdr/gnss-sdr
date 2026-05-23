@@ -54,6 +54,7 @@ namespace wht = std;
 
 constexpr int16_t HAS_CODE_BIAS_UNAVAILABLE_RAW = -1024;
 constexpr int16_t HAS_PHASE_BIAS_UNAVAILABLE_RAW = -1024;
+constexpr uint32_t GALILEO_HAS_SECONDS_PER_WEEK = 604800U;
 
 galileo_e6_has_msg_receiver_sptr galileo_e6_has_msg_receiver_make()
 {
@@ -108,6 +109,8 @@ galileo_e6_has_msg_receiver::galileo_e6_has_msg_receiver() : gr::block("galileo_
     d_nav_msg_packet.signal = std::string("E6");
     d_nav_msg_packet.prn = 0;
     d_nav_msg_packet.tow_at_current_symbol_ms = 0;
+    d_last_valid_tow_timestamp = std::numeric_limits<uint64_t>::max();
+    d_last_valid_tow = std::numeric_limits<uint32_t>::max();
 }
 
 
@@ -119,7 +122,7 @@ void galileo_e6_has_msg_receiver::set_enable_navdata_monitor(bool enable)
 
 std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::process_test_page(const pmt::pmt_t& msg)
 {
-    int64_t timestamp = std::numeric_limits<uint64_t>::max();
+    uint64_t timestamp = std::numeric_limits<uint64_t>::max();
     uint32_t tow = std::numeric_limits<uint32_t>::max();
     try
         {
@@ -136,7 +139,8 @@ std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::process_test_page
                     d_current_has_status = HAS_data_page->has_status;
                     d_current_message_id = HAS_data_page->message_id;
                     timestamp = HAS_data_page->time_stamp;
-                    tow = HAS_data_page->tow;
+                    update_TOW_cache(*HAS_data_page);
+                    tow = get_TOW_for_page(*HAS_data_page);
                     process_HAS_page(*HAS_data_page.get());
                 }
             else
@@ -168,7 +172,7 @@ std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::process_test_page
 void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& msg)
 {
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_galileo_e6_has function called by the scheduler
-    int64_t timestamp = std::numeric_limits<uint64_t>::max();
+    uint64_t timestamp = std::numeric_limits<uint64_t>::max();
     uint32_t tow = std::numeric_limits<uint32_t>::max();
     try
         {
@@ -185,7 +189,8 @@ void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& m
                     d_current_has_status = HAS_data_page->has_status;
                     d_current_message_id = HAS_data_page->message_id;
                     timestamp = HAS_data_page->time_stamp;
-                    tow = HAS_data_page->tow;
+                    update_TOW_cache(*HAS_data_page);
+                    tow = get_TOW_for_page(*HAS_data_page);
                     process_HAS_page(*HAS_data_page.get());
                 }
             else
@@ -222,7 +227,7 @@ void galileo_e6_has_msg_receiver::process_HAS_page(const Galileo_HAS_page& has_p
             clear_HAS_state();
             d_HAS_data.has_status = has_page.has_status;
             d_HAS_data.message_id = has_page.message_id;
-            d_HAS_data.tow = has_page.tow;
+            d_HAS_data.tow = get_TOW_for_page(has_page);
             d_new_message = true;
             return;
         }
@@ -371,6 +376,53 @@ bool galileo_e6_has_msg_receiver::is_cache_timestamp_valid(uint64_t cache_timest
             return false;
         }
     return (current_timestamp - cache_timestamp) <= MAX_SECONDS_REMEMBERING_MASK_IOD;
+}
+
+
+void galileo_e6_has_msg_receiver::update_TOW_cache(const Galileo_HAS_page& has_page)
+{
+    if ((has_page.tow < GALILEO_HAS_SECONDS_PER_WEEK) &&
+        (has_page.time_stamp != std::numeric_limits<uint64_t>::max()))
+        {
+            d_last_valid_tow = has_page.tow;
+            d_last_valid_tow_timestamp = has_page.time_stamp;
+        }
+}
+
+
+uint32_t galileo_e6_has_msg_receiver::get_TOW_for_page(const Galileo_HAS_page& has_page) const
+{
+    if (has_page.tow < GALILEO_HAS_SECONDS_PER_WEEK)
+        {
+            return has_page.tow;
+        }
+
+    if ((d_last_valid_tow >= GALILEO_HAS_SECONDS_PER_WEEK) ||
+        (has_page.time_stamp == std::numeric_limits<uint64_t>::max()) ||
+        (d_last_valid_tow_timestamp == std::numeric_limits<uint64_t>::max()))
+        {
+            return std::numeric_limits<uint32_t>::max();
+        }
+
+    const bool current_after_reference = has_page.time_stamp >= d_last_valid_tow_timestamp;
+    const uint64_t elapsed_s = current_after_reference ? has_page.time_stamp - d_last_valid_tow_timestamp : d_last_valid_tow_timestamp - has_page.time_stamp;
+    if (elapsed_s > MAX_SECONDS_REMEMBERING_MID)
+        {
+            return std::numeric_limits<uint32_t>::max();
+        }
+
+    const uint32_t elapsed_week_s = static_cast<uint32_t>(elapsed_s % GALILEO_HAS_SECONDS_PER_WEEK);
+    if (current_after_reference)
+        {
+            return (d_last_valid_tow + elapsed_week_s) % GALILEO_HAS_SECONDS_PER_WEEK;
+        }
+
+    if (elapsed_week_s <= d_last_valid_tow)
+        {
+            return d_last_valid_tow - elapsed_week_s;
+        }
+
+    return GALILEO_HAS_SECONDS_PER_WEEK - (elapsed_week_s - d_last_valid_tow);
 }
 
 

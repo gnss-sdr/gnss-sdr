@@ -62,7 +62,12 @@ galileo_e6_has_msg_receiver_sptr galileo_e6_has_msg_receiver_make()
 }
 
 
-galileo_e6_has_msg_receiver::galileo_e6_has_msg_receiver() : gr::block("galileo_e6_has_msg_receiver", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+galileo_e6_has_msg_receiver::galileo_e6_has_msg_receiver()
+    : gr::block("galileo_e6_has_msg_receiver",
+          gr::io_signature::make(0, 0, 0),
+          gr::io_signature::make(0, 0, 0)),
+      d_last_valid_tow_timestamp(std::numeric_limits<uint64_t>::max()),
+      d_last_valid_tow(std::numeric_limits<uint32_t>::max())
 {
     // register Gal E6 HAS input message port from telemetry blocks
     this->message_port_register_in(pmt::mp("E6_HAS_from_TLM"));
@@ -109,8 +114,6 @@ galileo_e6_has_msg_receiver::galileo_e6_has_msg_receiver() : gr::block("galileo_
     d_nav_msg_packet.signal = std::string("E6");
     d_nav_msg_packet.prn = 0;
     d_nav_msg_packet.tow_at_current_symbol_ms = 0;
-    d_last_valid_tow_timestamp = std::numeric_limits<uint64_t>::max();
-    d_last_valid_tow = std::numeric_limits<uint32_t>::max();
 }
 
 
@@ -411,7 +414,7 @@ uint32_t galileo_e6_has_msg_receiver::get_TOW_for_page(const Galileo_HAS_page& h
             return std::numeric_limits<uint32_t>::max();
         }
 
-    const uint32_t elapsed_week_s = static_cast<uint32_t>(elapsed_s % GALILEO_HAS_SECONDS_PER_WEEK);
+    const auto elapsed_week_s = static_cast<uint32_t>(elapsed_s % GALILEO_HAS_SECONDS_PER_WEEK);
     if (current_after_reference)
         {
             return (d_last_valid_tow + elapsed_week_s) % GALILEO_HAS_SECONDS_PER_WEEK;

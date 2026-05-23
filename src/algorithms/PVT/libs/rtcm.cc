@@ -4020,7 +4020,7 @@ std::bitset<4> Rtcm::get_msm_extended_satellite_info(const Gnss_Synchro& gnss_sy
 {
     if (gnss_synchro.System != 'R')
         {
-            return std::bitset<4>(0);
+            return {0};
         }
 
     uint32_t frequency_channel_number = 0;
@@ -4028,7 +4028,7 @@ std::bitset<4> Rtcm::get_msm_extended_satellite_info(const Gnss_Synchro& gnss_sy
         {
             LOG(WARNING) << "RTCM GLONASS MSM5/MSM7 cannot encode DF419 frequency channel for satellite ID "
                          << gnss_synchro.PRN;
-            return std::bitset<4>(15);
+            return {15};
         }
 
     return std::bitset<4>(frequency_channel_number);

@@ -36,154 +36,6 @@
 
 namespace
 {
-bool get_IGM05_tracking_mode_id(uint8_t gnss_id, const std::string& signal, uint8_t& tracking_mode_id)
-{
-    if (gnss_id == 0)  // GPS
-        {
-            if (signal == "L1 C/A")
-                {
-                    tracking_mode_id = 0;
-                    return true;
-                }
-            if (signal == "L1C(D)")
-                {
-                    tracking_mode_id = 3;
-                    return true;
-                }
-            if (signal == "L1C(P)")
-                {
-                    tracking_mode_id = 4;
-                    return true;
-                }
-            if (signal == "L2 CM")
-                {
-                    tracking_mode_id = 7;
-                    return true;
-                }
-            if (signal == "L2 CL")
-                {
-                    tracking_mode_id = 8;
-                    return true;
-                }
-            if (signal == "L5 I")
-                {
-                    tracking_mode_id = 14;
-                    return true;
-                }
-            if (signal == "L5 Q")
-                {
-                    tracking_mode_id = 15;
-                    return true;
-                }
-        }
-    else if (gnss_id == 2)  // Galileo
-        {
-            if (signal == "E1-B I/NAV OS")
-                {
-                    tracking_mode_id = 1;
-                    return true;
-                }
-            if (signal == "E1-C")
-                {
-                    tracking_mode_id = 2;
-                    return true;
-                }
-            if (signal == "E5a-I F/NAV OS")
-                {
-                    tracking_mode_id = 5;
-                    return true;
-                }
-            if (signal == "E5a-Q")
-                {
-                    tracking_mode_id = 6;
-                    return true;
-                }
-            if (signal == "E5b-I I/NAV OS")
-                {
-                    tracking_mode_id = 8;
-                    return true;
-                }
-            if (signal == "E5b-Q")
-                {
-                    tracking_mode_id = 9;
-                    return true;
-                }
-            if (signal == "E6-B C/NAV HAS")
-                {
-                    tracking_mode_id = 15;
-                    return true;
-                }
-            if (signal == "E6-C")
-                {
-                    tracking_mode_id = 16;
-                    return true;
-                }
-        }
-    return false;
-}
-
-
-uint8_t get_IGM02_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys, bool use_clock_subset)
-{
-    const auto prns = use_clock_subset ? has_data.get_PRNs_in_submask(nsys) : has_data.get_PRNs_in_mask(nsys);
-    const auto delta_clock_c0 = use_clock_subset ? has_data.get_delta_clock_subset_correction_m(nsys) : has_data.get_delta_clock_correction_m(nsys);
-    return static_cast<uint8_t>(std::min(prns.size(), delta_clock_c0.size()));
-}
-
-
-uint8_t get_IGM05_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys)
-{
-    const auto code_bias_m = has_data.get_code_bias_m();
-    const auto prns = has_data.get_PRNs_in_mask(nsys);
-    const auto signals = has_data.get_signals_in_mask(nsys);
-    uint8_t count = 0;
-
-    uint8_t num_sats_in_previous_systems = 0;
-    for (uint8_t sys = 0; sys < nsys; sys++)
-        {
-            num_sats_in_previous_systems += has_data.get_num_satellites()[sys];
-        }
-
-    for (size_t sat = 0; sat < prns.size(); sat++)
-        {
-            const size_t sat_index = num_sats_in_previous_systems + sat;
-            if (sat_index >= code_bias_m.size())
-                {
-                    continue;
-                }
-
-            bool has_valid_bias = false;
-            for (size_t code = 0; code < signals.size() && code < code_bias_m[sat_index].size(); code++)
-                {
-                    uint8_t tracking_mode_id = 0;
-                    if (get_IGM05_tracking_mode_id(has_data.gnss_id_mask[nsys], signals[code], tracking_mode_id) &&
-                        !Galileo_HAS_data::is_code_bias_unavailable(code_bias_m[sat_index][code]))
-                        {
-                            has_valid_bias = true;
-                            break;
-                        }
-                }
-            if (has_valid_bias)
-                {
-                    count++;
-                }
-        }
-    return count;
-}
-
-
-uint8_t get_iod_ssr(uint8_t has_iod_set_id)
-{
-    return static_cast<uint8_t>(has_iod_set_id & 0x0F);
-}
-
-
-uint8_t get_gnss_iod_lsb(uint16_t gnss_iod)
-{
-    return static_cast<uint8_t>(gnss_iod & 0x00FF);
-}
-
-
 constexpr uint32_t rtcm_msm_max_cell_mask_bits = 64;
 constexpr uint32_t rtcm_max_payload_bytes = 1023;
 constexpr double glonass_l1_pseudorange_modulus_m = 599584.916;
@@ -226,305 +78,6 @@ const MsmSignalSpec msm_signal_specs[] = {
     {'R', "1G", 2, GLONASS_L1_CA_FREQ_HZ, GLONASS_L1_CA_DFREQ_HZ},
     {'R', "2G", 8, GLONASS_L2_CA_FREQ_HZ, GLONASS_L2_CA_DFREQ_HZ},
 };
-
-
-const MsmFamilySpec* get_msm_family_spec(char system)
-{
-    for (const auto& family : msm_family_specs)
-        {
-            if (family.system == system)
-                {
-                    return &family;
-                }
-        }
-    return nullptr;
-}
-
-
-const MsmFamilySpec* get_msm_family_spec(uint32_t msg_number)
-{
-    const uint32_t msm_type = msg_number % 10U;
-    if ((msm_type < 1U) || (msm_type > 7U))
-        {
-            return nullptr;
-        }
-    for (const auto& family : msm_family_specs)
-        {
-            if ((msg_number > family.message_base) && (msg_number <= family.message_base + 7U))
-                {
-                    return &family;
-                }
-        }
-    return nullptr;
-}
-
-
-uint32_t get_msm_message_number(char system, uint32_t msm_type)
-{
-    if ((msm_type < 1U) || (msm_type > 7U))
-        {
-            return 0;
-        }
-    const MsmFamilySpec* family = get_msm_family_spec(system);
-    if (family == nullptr)
-        {
-            return 0;
-        }
-    return family->message_base + msm_type;
-}
-
-
-uint32_t get_MSM_satellite_data_bits(uint32_t msm_type)
-{
-    if ((msm_type == 1) || (msm_type == 2) || (msm_type == 3))
-        {
-            return 10;
-        }
-    if ((msm_type == 4) || (msm_type == 6))
-        {
-            return 18;
-        }
-    if ((msm_type == 5) || (msm_type == 7))
-        {
-            return 36;
-        }
-    return 0;
-}
-
-
-uint32_t get_MSM_signal_data_bits(uint32_t msm_type)
-{
-    switch (msm_type)
-        {
-        case 1:
-            return 15;
-        case 2:
-            return 27;
-        case 3:
-            return 42;
-        case 4:
-            return 48;
-        case 5:
-            return 63;
-        case 6:
-            return 65;
-        case 7:
-            return 80;
-        default:
-            return 0;
-        }
-}
-
-
-const MsmSignalSpec* get_msm_signal_spec(const Gnss_Synchro& gnss_synchro)
-{
-    const std::string signal_(gnss_synchro.Signal);
-    const std::string signal = signal_.substr(0, 2);
-    for (const auto& signal_spec : msm_signal_specs)
-        {
-            if ((signal_spec.system == gnss_synchro.System) && (signal == signal_spec.receiver_signal))
-                {
-                    return &signal_spec;
-                }
-        }
-    return nullptr;
-}
-
-
-uint32_t get_msm_signal_id(const Gnss_Synchro& gnss_synchro)
-{
-    const MsmSignalSpec* signal_spec = get_msm_signal_spec(gnss_synchro);
-    return signal_spec == nullptr ? 0 : signal_spec->rtcm_signal_id;
-}
-
-
-std::vector<std::pair<int32_t, Gnss_Synchro>> get_ordered_msm_signal_cells(const std::map<int32_t, Gnss_Synchro>& observables)
-{
-    std::map<std::pair<uint32_t, uint32_t>, std::pair<int32_t, Gnss_Synchro>> unique_cells;
-    for (const auto& observable : observables)
-        {
-            const uint32_t signal_id = get_msm_signal_id(observable.second);
-            if (signal_id == 0)
-                {
-                    continue;
-                }
-
-            const auto cell_id = std::make_pair(observable.second.PRN, signal_id);
-            if (unique_cells.find(cell_id) == unique_cells.cend())
-                {
-                    unique_cells.insert(std::make_pair(cell_id, observable));
-                }
-        }
-
-    std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_cells;
-    ordered_cells.reserve(unique_cells.size());
-    for (const auto& cell : unique_cells)
-        {
-            ordered_cells.push_back(cell.second);
-        }
-
-    return ordered_cells;
-}
-
-
-bool get_msm_signal_wavelength(const Gnss_Synchro& gnss_synchro, double& lambda)
-{
-    lambda = 0.0;
-    const MsmSignalSpec* signal_spec = get_msm_signal_spec(gnss_synchro);
-    if (signal_spec == nullptr)
-        {
-            return false;
-        }
-
-    double frequency_hz = signal_spec->frequency_hz;
-    if (signal_spec->glonass_frequency_step_hz != 0.0)
-        {
-            const auto glonass_frequency_channel = GLONASS_PRN.find(gnss_synchro.PRN);
-            if (glonass_frequency_channel == GLONASS_PRN.cend())
-                {
-                    return false;
-                }
-            frequency_hz += signal_spec->glonass_frequency_step_hz * glonass_frequency_channel->second;
-        }
-    lambda = SPEED_OF_LIGHT_M_S / frequency_hz;
-    return true;
-}
-
-
-double get_reconstructed_glonass_l1_pseudorange_m(const Gnss_Synchro& gnss_synchro)
-{
-    const double ambiguity = std::floor(gnss_synchro.Pseudorange_m / glonass_l1_pseudorange_modulus_m);
-    const double glonass_L1_pseudorange = std::round((gnss_synchro.Pseudorange_m - ambiguity * glonass_l1_pseudorange_modulus_m) / 0.02);
-    return glonass_L1_pseudorange * 0.02 + ambiguity * glonass_l1_pseudorange_modulus_m;
-}
-
-
-bool get_msm_glonass_frequency_channel_number(const Gnss_Synchro& gnss_synchro, uint32_t& frequency_channel_number)
-{
-    const auto glonass_frequency_channel = GLONASS_PRN.find(gnss_synchro.PRN);
-    if (glonass_frequency_channel == GLONASS_PRN.cend())
-        {
-            return false;
-        }
-    if ((glonass_frequency_channel->second < -7) || (glonass_frequency_channel->second > 6))
-        {
-            return false;
-        }
-    frequency_channel_number = static_cast<uint32_t>(glonass_frequency_channel->second + 7);
-    return true;
-}
-
-
-std::bitset<4> get_msm_extended_satellite_info(const Gnss_Synchro& gnss_synchro)
-{
-    if (gnss_synchro.System != 'R')
-        {
-            return std::bitset<4>(0);
-        }
-
-    uint32_t frequency_channel_number = 0;
-    if (!get_msm_glonass_frequency_channel_number(gnss_synchro, frequency_channel_number))
-        {
-            LOG(WARNING) << "RTCM GLONASS MSM5/MSM7 cannot encode DF419 frequency channel for satellite ID "
-                         << gnss_synchro.PRN;
-            return std::bitset<4>(15);
-        }
-
-    return std::bitset<4>(frequency_channel_number);
-}
-
-
-char get_msm_message_system(uint32_t msg_number)
-{
-    const MsmFamilySpec* family = get_msm_family_spec(msg_number);
-    return family == nullptr ? '\0' : family->system;
-}
-
-
-char get_msm_observable_system(const std::map<int32_t, Gnss_Synchro>& observables)
-{
-    char system = '\0';
-    for (const auto& observable : observables)
-        {
-            if (system == '\0')
-                {
-                    system = observable.second.System;
-                    continue;
-                }
-            if (observable.second.System != system)
-                {
-                    return '\0';
-                }
-        }
-    return system;
-}
-
-
-char get_msm_ephemeris_system(const Gps_Ephemeris& gps_eph,
-    const Gps_CNAV_Ephemeris& gps_cnav_eph,
-    const Galileo_Ephemeris& gal_eph,
-    const Glonass_Gnav_Ephemeris& glo_gnav_eph)
-{
-    const bool has_gps_eph = (gps_eph.PRN != 0) || (gps_cnav_eph.PRN != 0);
-    const bool has_galileo_eph = gal_eph.PRN != 0;
-    const bool has_glonass_eph = glo_gnav_eph.PRN != 0;
-    const uint32_t num_systems = static_cast<uint32_t>(has_gps_eph) +
-                                 static_cast<uint32_t>(has_galileo_eph) +
-                                 static_cast<uint32_t>(has_glonass_eph);
-
-    if (num_systems > 1U)
-        {
-            LOG(WARNING) << "MSM messages for observables from different systems are not defined";
-            return '\0';
-        }
-    if (has_gps_eph)
-        {
-            return 'G';
-        }
-    if (has_galileo_eph)
-        {
-            return 'E';
-        }
-    if (has_glonass_eph)
-        {
-            return 'R';
-        }
-    return '\0';
-}
-
-
-uint32_t get_msm_message_number_from_inputs(uint32_t msm_type,
-    const Gps_Ephemeris& gps_eph,
-    const Gps_CNAV_Ephemeris& gps_cnav_eph,
-    const Galileo_Ephemeris& gal_eph,
-    const Glonass_Gnav_Ephemeris& glo_gnav_eph,
-    const std::map<int32_t, Gnss_Synchro>& observables)
-{
-    const char observable_system = get_msm_observable_system(observables);
-    if ((observable_system == '\0') && !observables.empty())
-        {
-            LOG(WARNING) << "MSM observations must be split by constellation";
-            return 0;
-        }
-
-    const char ephemeris_system = get_msm_ephemeris_system(gps_eph, gps_cnav_eph, gal_eph, glo_gnav_eph);
-    if ((observable_system != '\0') && (ephemeris_system != '\0') && (observable_system != ephemeris_system))
-        {
-            LOG(WARNING) << "MSM observation system " << observable_system
-                         << " does not match provided ephemeris system " << ephemeris_system;
-            return 0;
-        }
-
-    const char system = observable_system != '\0' ? observable_system : ephemeris_system;
-    const uint32_t msg_number = get_msm_message_number(system, msm_type);
-    if (msg_number == 0)
-        {
-            LOG(WARNING) << "Unsupported RTCM MSM system " << system << " or MSM type " << msm_type;
-        }
-    return msg_number;
-}
-
-
 }  // namespace
 
 
@@ -3819,7 +3372,7 @@ std::string Rtcm::get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsy
     uint16_t ssr_provider_id = 0;  // ?
     uint8_t igm_version = 0;       // ?
     uint8_t ssr_solution_id = 0;   // ?
-    uint8_t iod_ssr = get_iod_ssr(has_data.header.iod_set_id);
+    uint8_t iod_ssr = Rtcm::get_iod_ssr(has_data.header.iod_set_id);
     bool regional_indicator = false;  // ?
 
     uint8_t subtype_msg_number = 0;
@@ -3871,7 +3424,7 @@ std::string Rtcm::get_IGM01_content_sat(const Galileo_HAS_data& has_data, uint8_
     for (uint8_t sat = 0; sat < num_sats_in_this_system; sat++)
         {
             Rtcm::set_IDF011(static_cast<uint8_t>(prn[sat]));
-            Rtcm::set_IDF012(get_gnss_iod_lsb(gnss_iod[sat]));
+            Rtcm::set_IDF012(Rtcm::get_gnss_iod_lsb(gnss_iod[sat]));
             Rtcm::set_IDF013(delta_orbit_radial_m[sat]);
             Rtcm::set_IDF014(delta_orbit_in_track_m[sat]);
             Rtcm::set_IDF016(0.0);  //  dot_orbit_delta_track_m_s
@@ -3896,7 +3449,7 @@ std::string Rtcm::get_IGM02_header(const Galileo_HAS_data& has_data, uint8_t nsy
     uint16_t ssr_provider_id = 0;  // ?
     uint8_t igm_version = 0;       // ?
     uint8_t ssr_solution_id = 0;   // ?
-    uint8_t iod_ssr = get_iod_ssr(has_data.header.iod_set_id);
+    uint8_t iod_ssr = Rtcm::get_iod_ssr(has_data.header.iod_set_id);
 
     uint8_t subtype_msg_number = 0;
     if (has_data.gnss_id_mask[nsys] == 0)  // GPS
@@ -3965,7 +3518,7 @@ std::string Rtcm::get_IGM03_header(const Galileo_HAS_data& has_data, uint8_t nsy
     uint16_t ssr_provider_id = 0;  // ?
     uint8_t igm_version = 0;       // ?
     uint8_t ssr_solution_id = 0;   // ?
-    uint8_t iod_ssr = get_iod_ssr(has_data.header.iod_set_id);
+    uint8_t iod_ssr = Rtcm::get_iod_ssr(has_data.header.iod_set_id);
     bool regional_indicator = false;  // ?
 
     uint8_t subtype_msg_number = 0;
@@ -4021,7 +3574,7 @@ std::string Rtcm::get_IGM03_content_sat(const Galileo_HAS_data& has_data, uint8_
     for (uint8_t sat = 0; sat < num_sats_in_this_system; sat++)
         {
             Rtcm::set_IDF011(static_cast<uint8_t>(prn[sat]));
-            Rtcm::set_IDF012(get_gnss_iod_lsb(gnss_iod[sat]));
+            Rtcm::set_IDF012(Rtcm::get_gnss_iod_lsb(gnss_iod[sat]));
             Rtcm::set_IDF013(delta_orbit_radial_m[sat]);
             Rtcm::set_IDF014(delta_orbit_in_track_m[sat]);
             Rtcm::set_IDF015(delta_orbit_cross_track_m[sat]);
@@ -4050,7 +3603,7 @@ std::string Rtcm::get_IGM05_header(const Galileo_HAS_data& has_data, uint8_t nsy
     uint16_t ssr_provider_id = 0;  // ?
     uint8_t igm_version = 0;       // ?
     uint8_t ssr_solution_id = 0;   // ?
-    uint8_t iod_ssr = get_iod_ssr(has_data.header.iod_set_id);
+    uint8_t iod_ssr = Rtcm::get_iod_ssr(has_data.header.iod_set_id);
 
     uint8_t subtype_msg_number = 0;
     if (has_data.gnss_id_mask[nsys] == 0)  // GPS
@@ -4153,6 +3706,436 @@ std::string Rtcm::get_IGM05_content_sat(const Galileo_HAS_data& has_data, uint8_
 // *****************************************************************************************************
 // Some utilities
 // *****************************************************************************************************
+
+bool Rtcm::get_IGM05_tracking_mode_id(uint8_t gnss_id, const std::string& signal, uint8_t& tracking_mode_id)
+{
+    if (gnss_id == 0)  // GPS
+        {
+            if (signal == "L1 C/A")
+                {
+                    tracking_mode_id = 0;
+                    return true;
+                }
+            if (signal == "L1C(D)")
+                {
+                    tracking_mode_id = 3;
+                    return true;
+                }
+            if (signal == "L1C(P)")
+                {
+                    tracking_mode_id = 4;
+                    return true;
+                }
+            if (signal == "L2 CM")
+                {
+                    tracking_mode_id = 7;
+                    return true;
+                }
+            if (signal == "L2 CL")
+                {
+                    tracking_mode_id = 8;
+                    return true;
+                }
+            if (signal == "L5 I")
+                {
+                    tracking_mode_id = 14;
+                    return true;
+                }
+            if (signal == "L5 Q")
+                {
+                    tracking_mode_id = 15;
+                    return true;
+                }
+        }
+    else if (gnss_id == 2)  // Galileo
+        {
+            if (signal == "E1-B I/NAV OS")
+                {
+                    tracking_mode_id = 1;
+                    return true;
+                }
+            if (signal == "E1-C")
+                {
+                    tracking_mode_id = 2;
+                    return true;
+                }
+            if (signal == "E5a-I F/NAV OS")
+                {
+                    tracking_mode_id = 5;
+                    return true;
+                }
+            if (signal == "E5a-Q")
+                {
+                    tracking_mode_id = 6;
+                    return true;
+                }
+            if (signal == "E5b-I I/NAV OS")
+                {
+                    tracking_mode_id = 8;
+                    return true;
+                }
+            if (signal == "E5b-Q")
+                {
+                    tracking_mode_id = 9;
+                    return true;
+                }
+            if (signal == "E6-B C/NAV HAS")
+                {
+                    tracking_mode_id = 15;
+                    return true;
+                }
+            if (signal == "E6-C")
+                {
+                    tracking_mode_id = 16;
+                    return true;
+                }
+        }
+    return false;
+}
+
+
+uint8_t Rtcm::get_IGM02_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys, bool use_clock_subset)
+{
+    const auto prns = use_clock_subset ? has_data.get_PRNs_in_submask(nsys) : has_data.get_PRNs_in_mask(nsys);
+    const auto delta_clock_c0 = use_clock_subset ? has_data.get_delta_clock_subset_correction_m(nsys) : has_data.get_delta_clock_correction_m(nsys);
+    return static_cast<uint8_t>(std::min(prns.size(), delta_clock_c0.size()));
+}
+
+
+uint8_t Rtcm::get_IGM05_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys)
+{
+    const auto code_bias_m = has_data.get_code_bias_m();
+    const auto prns = has_data.get_PRNs_in_mask(nsys);
+    const auto signals = has_data.get_signals_in_mask(nsys);
+    uint8_t count = 0;
+
+    uint8_t num_sats_in_previous_systems = 0;
+    for (uint8_t sys = 0; sys < nsys; sys++)
+        {
+            num_sats_in_previous_systems += has_data.get_num_satellites()[sys];
+        }
+
+    for (size_t sat = 0; sat < prns.size(); sat++)
+        {
+            const size_t sat_index = num_sats_in_previous_systems + sat;
+            if (sat_index >= code_bias_m.size())
+                {
+                    continue;
+                }
+
+            bool has_valid_bias = false;
+            for (size_t code = 0; code < signals.size() && code < code_bias_m[sat_index].size(); code++)
+                {
+                    uint8_t tracking_mode_id = 0;
+                    if (Rtcm::get_IGM05_tracking_mode_id(has_data.gnss_id_mask[nsys], signals[code], tracking_mode_id) &&
+                        !Galileo_HAS_data::is_code_bias_unavailable(code_bias_m[sat_index][code]))
+                        {
+                            has_valid_bias = true;
+                            break;
+                        }
+                }
+            if (has_valid_bias)
+                {
+                    count++;
+                }
+        }
+    return count;
+}
+
+
+uint8_t Rtcm::get_iod_ssr(uint8_t has_iod_set_id)
+{
+    return static_cast<uint8_t>(has_iod_set_id & 0x0F);
+}
+
+
+uint8_t Rtcm::get_gnss_iod_lsb(uint16_t gnss_iod)
+{
+    return static_cast<uint8_t>(gnss_iod & 0x00FF);
+}
+
+
+uint32_t Rtcm::get_msm_message_number(char system, uint32_t msm_type)
+{
+    if ((msm_type < 1U) || (msm_type > 7U))
+        {
+            return 0;
+        }
+    for (const auto& family : msm_family_specs)
+        {
+            if (family.system == system)
+                {
+                    return family.message_base + msm_type;
+                }
+        }
+    return 0;
+}
+
+
+uint32_t Rtcm::get_MSM_satellite_data_bits(uint32_t msm_type)
+{
+    if ((msm_type == 1) || (msm_type == 2) || (msm_type == 3))
+        {
+            return 10;
+        }
+    if ((msm_type == 4) || (msm_type == 6))
+        {
+            return 18;
+        }
+    if ((msm_type == 5) || (msm_type == 7))
+        {
+            return 36;
+        }
+    return 0;
+}
+
+
+uint32_t Rtcm::get_MSM_signal_data_bits(uint32_t msm_type)
+{
+    switch (msm_type)
+        {
+        case 1:
+            return 15;
+        case 2:
+            return 27;
+        case 3:
+            return 42;
+        case 4:
+            return 48;
+        case 5:
+            return 63;
+        case 6:
+            return 65;
+        case 7:
+            return 80;
+        default:
+            return 0;
+        }
+}
+
+
+uint32_t Rtcm::get_msm_signal_id(const Gnss_Synchro& gnss_synchro)
+{
+    const std::string signal_(gnss_synchro.Signal);
+    const std::string signal = signal_.substr(0, 2);
+    for (const auto& signal_spec : msm_signal_specs)
+        {
+            if ((signal_spec.system == gnss_synchro.System) && (signal == signal_spec.receiver_signal))
+                {
+                    return signal_spec.rtcm_signal_id;
+                }
+        }
+    return 0;
+}
+
+
+std::vector<std::pair<int32_t, Gnss_Synchro>> Rtcm::get_ordered_msm_signal_cells(const std::map<int32_t, Gnss_Synchro>& observables)
+{
+    std::map<std::pair<uint32_t, uint32_t>, std::pair<int32_t, Gnss_Synchro>> unique_cells;
+    for (const auto& observable : observables)
+        {
+            const uint32_t signal_id = Rtcm::get_msm_signal_id(observable.second);
+            if (signal_id == 0)
+                {
+                    continue;
+                }
+
+            const auto cell_id = std::make_pair(observable.second.PRN, signal_id);
+            if (unique_cells.find(cell_id) == unique_cells.cend())
+                {
+                    unique_cells.insert(std::make_pair(cell_id, observable));
+                }
+        }
+
+    std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_cells;
+    ordered_cells.reserve(unique_cells.size());
+    for (const auto& cell : unique_cells)
+        {
+            ordered_cells.push_back(cell.second);
+        }
+
+    return ordered_cells;
+}
+
+
+bool Rtcm::get_msm_signal_wavelength(const Gnss_Synchro& gnss_synchro, double& lambda)
+{
+    lambda = 0.0;
+    const MsmSignalSpec* selected_signal_spec = nullptr;
+    const std::string signal_(gnss_synchro.Signal);
+    const std::string signal = signal_.substr(0, 2);
+    for (const auto& signal_spec : msm_signal_specs)
+        {
+            if ((signal_spec.system == gnss_synchro.System) && (signal == signal_spec.receiver_signal))
+                {
+                    selected_signal_spec = &signal_spec;
+                    break;
+                }
+        }
+    if (selected_signal_spec == nullptr)
+        {
+            return false;
+        }
+
+    double frequency_hz = selected_signal_spec->frequency_hz;
+    if (selected_signal_spec->glonass_frequency_step_hz != 0.0)
+        {
+            const auto glonass_frequency_channel = GLONASS_PRN.find(gnss_synchro.PRN);
+            if (glonass_frequency_channel == GLONASS_PRN.cend())
+                {
+                    return false;
+                }
+            frequency_hz += selected_signal_spec->glonass_frequency_step_hz * glonass_frequency_channel->second;
+        }
+    lambda = SPEED_OF_LIGHT_M_S / frequency_hz;
+    return true;
+}
+
+
+double Rtcm::get_reconstructed_glonass_l1_pseudorange_m(const Gnss_Synchro& gnss_synchro)
+{
+    const double ambiguity = std::floor(gnss_synchro.Pseudorange_m / glonass_l1_pseudorange_modulus_m);
+    const double glonass_L1_pseudorange = std::round((gnss_synchro.Pseudorange_m - ambiguity * glonass_l1_pseudorange_modulus_m) / 0.02);
+    return glonass_L1_pseudorange * 0.02 + ambiguity * glonass_l1_pseudorange_modulus_m;
+}
+
+
+bool Rtcm::get_msm_glonass_frequency_channel_number(const Gnss_Synchro& gnss_synchro, uint32_t& frequency_channel_number)
+{
+    const auto glonass_frequency_channel = GLONASS_PRN.find(gnss_synchro.PRN);
+    if (glonass_frequency_channel == GLONASS_PRN.cend())
+        {
+            return false;
+        }
+    if ((glonass_frequency_channel->second < -7) || (glonass_frequency_channel->second > 6))
+        {
+            return false;
+        }
+    frequency_channel_number = static_cast<uint32_t>(glonass_frequency_channel->second + 7);
+    return true;
+}
+
+
+std::bitset<4> Rtcm::get_msm_extended_satellite_info(const Gnss_Synchro& gnss_synchro)
+{
+    if (gnss_synchro.System != 'R')
+        {
+            return std::bitset<4>(0);
+        }
+
+    uint32_t frequency_channel_number = 0;
+    if (!Rtcm::get_msm_glonass_frequency_channel_number(gnss_synchro, frequency_channel_number))
+        {
+            LOG(WARNING) << "RTCM GLONASS MSM5/MSM7 cannot encode DF419 frequency channel for satellite ID "
+                         << gnss_synchro.PRN;
+            return std::bitset<4>(15);
+        }
+
+    return std::bitset<4>(frequency_channel_number);
+}
+
+
+char Rtcm::get_msm_message_system(uint32_t msg_number)
+{
+    const uint32_t msm_type = msg_number % 10U;
+    if ((msm_type < 1U) || (msm_type > 7U))
+        {
+            return '\0';
+        }
+    for (const auto& family : msm_family_specs)
+        {
+            if ((msg_number > family.message_base) && (msg_number <= family.message_base + 7U))
+                {
+                    return family.system;
+                }
+        }
+    return '\0';
+}
+
+
+char Rtcm::get_msm_observable_system(const std::map<int32_t, Gnss_Synchro>& observables)
+{
+    char system = '\0';
+    for (const auto& observable : observables)
+        {
+            if (system == '\0')
+                {
+                    system = observable.second.System;
+                    continue;
+                }
+            if (observable.second.System != system)
+                {
+                    return '\0';
+                }
+        }
+    return system;
+}
+
+
+char Rtcm::get_msm_ephemeris_system(const Gps_Ephemeris& gps_eph,
+    const Gps_CNAV_Ephemeris& gps_cnav_eph,
+    const Galileo_Ephemeris& gal_eph,
+    const Glonass_Gnav_Ephemeris& glo_gnav_eph)
+{
+    const bool has_gps_eph = (gps_eph.PRN != 0) || (gps_cnav_eph.PRN != 0);
+    const bool has_galileo_eph = gal_eph.PRN != 0;
+    const bool has_glonass_eph = glo_gnav_eph.PRN != 0;
+    const uint32_t num_systems = static_cast<uint32_t>(has_gps_eph) +
+                                 static_cast<uint32_t>(has_galileo_eph) +
+                                 static_cast<uint32_t>(has_glonass_eph);
+
+    if (num_systems > 1U)
+        {
+            LOG(WARNING) << "MSM messages for observables from different systems are not defined";
+            return '\0';
+        }
+    if (has_gps_eph)
+        {
+            return 'G';
+        }
+    if (has_galileo_eph)
+        {
+            return 'E';
+        }
+    if (has_glonass_eph)
+        {
+            return 'R';
+        }
+    return '\0';
+}
+
+
+uint32_t Rtcm::get_msm_message_number_from_inputs(uint32_t msm_type,
+    const Gps_Ephemeris& gps_eph,
+    const Gps_CNAV_Ephemeris& gps_cnav_eph,
+    const Galileo_Ephemeris& gal_eph,
+    const Glonass_Gnav_Ephemeris& glo_gnav_eph,
+    const std::map<int32_t, Gnss_Synchro>& observables)
+{
+    const char observable_system = Rtcm::get_msm_observable_system(observables);
+    if ((observable_system == '\0') && !observables.empty())
+        {
+            LOG(WARNING) << "MSM observations must be split by constellation";
+            return 0;
+        }
+
+    const char ephemeris_system = Rtcm::get_msm_ephemeris_system(gps_eph, gps_cnav_eph, gal_eph, glo_gnav_eph);
+    if ((observable_system != '\0') && (ephemeris_system != '\0') && (observable_system != ephemeris_system))
+        {
+            LOG(WARNING) << "MSM observation system " << observable_system
+                         << " does not match provided ephemeris system " << ephemeris_system;
+            return 0;
+        }
+
+    const char system = observable_system != '\0' ? observable_system : ephemeris_system;
+    const uint32_t msg_number = Rtcm::get_msm_message_number(system, msm_type);
+    if (msg_number == 0)
+        {
+            LOG(WARNING) << "Unsupported RTCM MSM system " << system << " or MSM type " << msm_type;
+        }
+    return msg_number;
+}
+
 
 std::vector<std::pair<int32_t, Gnss_Synchro>> Rtcm::sort_by_PRN_mask(const std::vector<std::pair<int32_t, Gnss_Synchro>>& synchro_map) const
 {

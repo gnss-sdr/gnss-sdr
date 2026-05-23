@@ -516,6 +516,32 @@ private:
     //
     // Utilities
     //
+    static bool get_IGM05_tracking_mode_id(uint8_t gnss_id, const std::string& signal, uint8_t& tracking_mode_id);
+    static uint8_t get_IGM02_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys, bool use_clock_subset);
+    static uint8_t get_IGM05_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys);
+    static uint8_t get_iod_ssr(uint8_t has_iod_set_id);
+    static uint8_t get_gnss_iod_lsb(uint16_t gnss_iod);
+    static uint32_t get_msm_message_number(char system, uint32_t msm_type);
+    static uint32_t get_MSM_satellite_data_bits(uint32_t msm_type);
+    static uint32_t get_MSM_signal_data_bits(uint32_t msm_type);
+    static uint32_t get_msm_signal_id(const Gnss_Synchro& gnss_synchro);
+    static std::vector<std::pair<int32_t, Gnss_Synchro>> get_ordered_msm_signal_cells(const std::map<int32_t, Gnss_Synchro>& observables);
+    static bool get_msm_signal_wavelength(const Gnss_Synchro& gnss_synchro, double& lambda);
+    static double get_reconstructed_glonass_l1_pseudorange_m(const Gnss_Synchro& gnss_synchro);
+    static bool get_msm_glonass_frequency_channel_number(const Gnss_Synchro& gnss_synchro, uint32_t& frequency_channel_number);
+    static std::bitset<4> get_msm_extended_satellite_info(const Gnss_Synchro& gnss_synchro);
+    static char get_msm_message_system(uint32_t msg_number);
+    static char get_msm_observable_system(const std::map<int32_t, Gnss_Synchro>& observables);
+    static char get_msm_ephemeris_system(const Gps_Ephemeris& gps_eph,
+        const Gps_CNAV_Ephemeris& gps_cnav_eph,
+        const Galileo_Ephemeris& gal_eph,
+        const Glonass_Gnav_Ephemeris& glo_gnav_eph);
+    static uint32_t get_msm_message_number_from_inputs(uint32_t msm_type,
+        const Gps_Ephemeris& gps_eph,
+        const Gps_CNAV_Ephemeris& gps_cnav_eph,
+        const Galileo_Ephemeris& gal_eph,
+        const Glonass_Gnav_Ephemeris& glo_gnav_eph,
+        const std::map<int32_t, Gnss_Synchro>& observables);
     static std::map<std::string, int> galileo_signal_map;
     static std::map<std::string, int> gps_signal_map;
     std::vector<std::pair<int32_t, Gnss_Synchro>> sort_by_signal(const std::vector<std::pair<int32_t, Gnss_Synchro>>& synchro_map) const;
@@ -534,7 +560,6 @@ private:
     uint32_t msm_lock_time_indicator(uint32_t lock_time_period_s);
     uint32_t msm_extended_lock_time_indicator(uint32_t lock_time_period_s);
     static uint32_t clamp_rounded_uint(double value, uint32_t max_value);
-    // SSR utilities
     uint8_t ssr_update_interval(uint16_t validity_seconds) const;
 
     //

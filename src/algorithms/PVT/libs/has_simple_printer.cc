@@ -151,7 +151,11 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
 {
     std::lock_guard<std::mutex> guard(d_mutex);
 
-    d_data_printed = true;
+    if (has_data == nullptr)
+        {
+            return false;
+        }
+
     std::string indent = "    ";
 
     if (d_has_file.is_open())
@@ -279,17 +283,25 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     int Nsat_sub = 0;
                     for (uint8_t k = 0; k < has_data->Nsys_sub; k++)
                         {
+                            if (k >= has_data->gnss_id_clock_subset.size())
+                                {
+                                    continue;
+                                }
                             auto it = std::find(has_data->gnss_id_mask.begin(), has_data->gnss_id_mask.end(), has_data->gnss_id_clock_subset[k]);
                             if (it != has_data->gnss_id_mask.end())
                                 {
-                                    int index = it - has_data->gnss_id_mask.begin();
-                                    std::string sat_mask = print_vector_binary(std::vector<uint64_t>(1, has_data->satellite_mask[index]), HAS_MSG_SATELLITE_MASK_LENGTH);
-                                    int number_sats_satellite_mask = std::count(sat_mask.begin(), sat_mask.end(), '1');
-                                    uint64_t mask_value = has_data->satellite_submask[index];
+                                    const auto index = static_cast<size_t>(it - has_data->gnss_id_mask.begin());
+                                    if ((index >= has_data->satellite_mask.size()) || (k >= has_data->satellite_submask.size()))
+                                        {
+                                            continue;
+                                        }
+                                    const std::bitset<HAS_MSG_SATELLITE_MASK_LENGTH> satellite_mask_bits(has_data->satellite_mask[index]);
+                                    const auto number_sats_satellite_mask = static_cast<size_t>(satellite_mask_bits.count());
+                                    uint64_t mask_value = has_data->satellite_submask[k];
                                     // convert value into string
                                     std::string binary("");
                                     uint64_t mask = 1;
-                                    for (int i = 0; i < number_sats_satellite_mask - 1; i++)
+                                    for (size_t i = 0; i < number_sats_satellite_mask; i++)
                                         {
                                             if ((mask & mask_value) >= 1)
                                                 {
@@ -336,7 +348,9 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                 }
 
             d_has_file << "\n\n";
-            return true;
+            const bool message_printed = d_has_file.good();
+            d_data_printed = d_data_printed || message_printed;
+            return message_printed;
         }
     return false;
 }
@@ -405,7 +419,7 @@ std::string Has_Simple_Printer::print_matrix(const std::vector<std::vector<T>>& 
                         {
                             ss << filler;
                         }
-                    for (size_t col = 0; col < mat[0].size(); col++)
+                    for (size_t col = 0; col < mat[row].size(); col++)
                         {
                             if (scale_factor == 1)
                                 {

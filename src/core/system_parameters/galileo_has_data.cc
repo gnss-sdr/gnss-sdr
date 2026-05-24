@@ -79,11 +79,11 @@ std::string target_system_for_has_signal(const std::string& signal)
 {
     if (is_gps_has_signal(signal))
         {
-            return std::string("GPS");
+            return {"GPS"};
         }
     if (is_galileo_has_signal(signal))
         {
-            return std::string("Galileo");
+            return {"Galileo"};
         }
     return {};
 }

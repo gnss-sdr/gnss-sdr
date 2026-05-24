@@ -42,7 +42,7 @@ std::string trim_copy(const std::string& input)
         {
             return {};
         }
-    return std::string(first, last);
+    return {first, last};
 }
 
 

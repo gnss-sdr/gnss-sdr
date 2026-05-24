@@ -150,7 +150,7 @@ std::string trim_copy(const std::string& input)
         {
             return {};
         }
-    return std::string(first, last);
+    return {first, last};
 }
 
 
@@ -1448,7 +1448,7 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
                     return;
                 }
             // Block 0 anchors the DSM identity; keep only earlier blocks that match it.
-            for (uint8_t block_id = 1; block_id < d_dsm_id_received[dsm_id].size(); ++block_id)
+            for (size_t block_id = 1; block_id < d_dsm_id_received[dsm_id].size(); ++block_id)
                 {
                     if (d_dsm_id_received[dsm_id][block_id] != 0 &&
                         (block_id >= number_of_blocks ||

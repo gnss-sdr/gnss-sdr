@@ -4031,7 +4031,7 @@ std::bitset<4> Rtcm::get_msm_extended_satellite_info(const Gnss_Synchro& gnss_sy
             return {15};
         }
 
-    return std::bitset<4>(frequency_channel_number);
+    return {frequency_channel_number};
 }
 
 

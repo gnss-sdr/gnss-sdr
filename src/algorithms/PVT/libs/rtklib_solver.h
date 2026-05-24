@@ -89,7 +89,7 @@ public:
         bool flag_dump_to_file,
         bool flag_dump_to_mat);
 
-    ~Rtklib_Solver();
+    ~Rtklib_Solver() noexcept override;
 
     bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, double kf_update_interval_s, const SensorDataAggregator& sensor_data_aggregator);
 

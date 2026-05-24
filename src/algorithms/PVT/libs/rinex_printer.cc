@@ -2183,48 +2183,54 @@ Rinex_Printer::Rinex_Printer(uint32_t signal_enabled_flags,
 }
 
 
-Rinex_Printer::~Rinex_Printer()
+Rinex_Printer::~Rinex_Printer() noexcept
 {
     DLOG(INFO) << "RINEX printer destructor called.";
 
-    std::map<std::string, std::fstream&> fileMap = {
-        {navfilename, navFile},
-        {obsfilename, obsFile}};
+    const auto close_and_remove_if_empty = [](const std::string& filename, std::fstream& file) noexcept {
+        std::fstream::pos_type pos = -1;
+        try
+            {
+                pos = file.tellp();
+                file.close();
+            }
+        catch (const std::exception& e)
+            {
+                std::cerr << e.what() << '\n';
+            }
+        catch (...)
+            {
+                LOG(INFO) << "Unknown exception closing temporary RINEX file";
+            }
 
+        if (pos != 0)
+            {
+                return;
+            }
+
+        try
+            {
+                errorlib::error_code ec;
+                if (!fs::remove(fs::path(filename), ec))
+                    {
+                        LOG(INFO) << "Error deleting temporary file";
+                    }
+            }
+        catch (const std::exception& e)
+            {
+                LOG(INFO) << "Exception deleting temporary RINEX file: " << e.what();
+            }
+        catch (...)
+            {
+                LOG(INFO) << "Unknown exception deleting temporary RINEX file";
+            }
+    };
+
+    close_and_remove_if_empty(navfilename, navFile);
+    close_and_remove_if_empty(obsfilename, obsFile);
     if (d_version == 2 && navfilename != navGlofilename)
         {
-            fileMap.emplace(navGlofilename, navGloFile);
-        }
-
-    std::map<std::string, decltype(navFile.tellp())> filePosMap;
-
-    for (const auto& it : fileMap)
-        {
-            filePosMap[it.first] = it.second.tellp();
-        }
-
-    try
-        {
-            for (const auto& it : fileMap)
-                {
-                    it.second.close();
-                }
-        }
-    catch (const std::exception& e)
-        {
-            std::cerr << e.what() << '\n';
-        }
-
-    for (const auto& it : filePosMap)
-        {
-            if (it.second == 0)
-                {
-                    errorlib::error_code ec;
-                    if (!fs::remove(fs::path(it.first), ec))
-                        {
-                            LOG(INFO) << "Error deleting temporary file";
-                        }
-                }
+            close_and_remove_if_empty(navGlofilename, navGloFile);
         }
 }
 

@@ -28,7 +28,7 @@
 #include <boost/crc.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/dynamic_bitset.hpp>
-#include <boost/exception/diagnostic_information.hpp>
+#include <boost/exception/exception.hpp>
 #include <algorithm>  // for std::reverse
 #include <cmath>      // for std::fmod, std::lround
 #include <cstdlib>    // for strtol
@@ -91,7 +91,7 @@ Rtcm::Rtcm(uint16_t port) : RTCM_port(port), server_is_running(false)
 }
 
 
-Rtcm::~Rtcm()
+Rtcm::~Rtcm() noexcept
 {
     DLOG(INFO) << "RTCM object destructor called.";
     if (server_is_running)
@@ -100,13 +100,17 @@ Rtcm::~Rtcm()
                 {
                     stop_server();
                 }
-            catch (const boost::exception& e)
+            catch (const boost::exception&)
                 {
-                    LOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
+                    LOG(WARNING) << "Boost exception while stopping RTCM server.";
                 }
             catch (const std::exception& ex)
                 {
                     LOG(WARNING) << "STD exception: " << ex.what();
+                }
+            catch (...)
+                {
+                    LOG(WARNING) << "Unknown exception while stopping RTCM server.";
                 }
         }
 }

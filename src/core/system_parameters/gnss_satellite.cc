@@ -15,6 +15,7 @@
  */
 
 #include "gnss_satellite.h"
+#include <stdexcept>
 #include <utility>
 
 #if USE_GLOG_AND_GFLAGS
@@ -22,6 +23,50 @@
 #else
 #include <absl/log/log.h>
 #endif
+
+
+static bool is_known_system(const std::string& system)
+{
+    static constexpr const char* valid_systems[] = {"GPS", "Glonass", "SBAS", "Galileo", "Beidou", "QZSS"};
+    for (const auto* valid_system : valid_systems)
+        {
+            if (system == valid_system)
+                {
+                    return true;
+                }
+        }
+    return false;
+}
+
+
+static const char* satellite_system_short_name(const std::string& system)
+{
+    if (system == "GPS")
+        {
+            return "G";
+        }
+    if (system == "Glonass")
+        {
+            return "R";
+        }
+    if (system == "SBAS")
+        {
+            return "S";
+        }
+    if (system == "Galileo")
+        {
+            return "E";
+        }
+    if (system == "Beidou")
+        {
+            return "C";
+        }
+    if (system == "QZSS")
+        {
+            return "J";
+        }
+    throw std::out_of_range("Satellite system is not defined");
+}
 
 
 Gnss_Satellite::Gnss_Satellite(const std::string& system_, uint32_t PRN_)
@@ -159,9 +204,7 @@ Gnss_Satellite& Gnss_Satellite::operator=(Gnss_Satellite&& other) noexcept
 void Gnss_Satellite::set_system(const std::string& system_)
 {
     // Set the satellite system {"GPS", "Glonass", "SBAS", "Galileo", "Beidou", "QZSS"}
-    auto it = system_set.find(system_);
-
-    if (it != system_set.cend())
+    if (is_known_system(system_))
         {
             system = system_;
         }
@@ -323,7 +366,7 @@ std::string Gnss_Satellite::get_system() const
 std::string Gnss_Satellite::get_system_short() const
 {
     // Get the satellite system {"G", "R", "S", "E", "C", "J"}
-    return satelliteSystem.at(system);
+    return satellite_system_short_name(system);
 }
 
 

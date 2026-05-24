@@ -50,7 +50,7 @@ public:
      * Files can be downloaded by registering at https://www.gsc-europa.eu/
      */
     Gnss_Crypto(const std::string& certFilePath, const std::string& merkleTreePath);
-    ~Gnss_Crypto();  //!< Default destructor
+    ~Gnss_Crypto() noexcept;  //!< Default destructor
 
     bool have_public_key() const;  //!< Returns true if the ECDSA Public Key is already loaded
     void clear_public_key();       //!< Clears the loaded ECDSA Public Key
@@ -80,6 +80,7 @@ public:
     Osnma_Merkle_Tree_Material read_merkle_xml(const std::string& merkleFilePath);  //!> Reads the XML file provided from the GSC OSNMA server
 
 private:
+    void release_public_key() noexcept;
     void readPublicKeyFromPEM(const std::string& pemFilePath);
     bool readPublicKeyFromCRT(const std::string& crtFilePath);
     bool convert_raw_to_der_ecdsa(const std::vector<uint8_t>& raw_signature, std::vector<uint8_t>& der_signature) const;

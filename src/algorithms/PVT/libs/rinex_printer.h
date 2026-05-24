@@ -94,7 +94,7 @@ public:
     /*!
      * \brief Destructor. Removes created files if empty.
      */
-    ~Rinex_Printer();
+    ~Rinex_Printer() noexcept;
 
     /*!
      * \brief Print RINEX annotation. If it is the first annotation, it also

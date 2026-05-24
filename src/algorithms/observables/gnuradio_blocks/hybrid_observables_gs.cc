@@ -159,12 +159,24 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
 }
 
 
-hybrid_observables_gs::~hybrid_observables_gs()
+hybrid_observables_gs::~hybrid_observables_gs() noexcept
 {
     DLOG(INFO) << "Observables block destructor called.";
     if (d_dump_file.is_open())
         {
-            const auto pos = d_dump_file.tellp();
+            std::ofstream::pos_type pos = -1;
+            try
+                {
+                    pos = d_dump_file.tellp();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Exception in destructor reading the dump file position " << ex.what();
+                }
+            catch (...)
+                {
+                    LOG(WARNING) << "Unknown exception in destructor reading the dump file position";
+                }
             try
                 {
                     d_dump_file.close();
@@ -173,12 +185,27 @@ hybrid_observables_gs::~hybrid_observables_gs()
                 {
                     LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
                 }
+            catch (...)
+                {
+                    LOG(WARNING) << "Unknown exception in destructor closing the dump file";
+                }
             if (pos == 0)
                 {
-                    errorlib::error_code ec;
-                    if (!fs::remove(fs::path(d_dump_filename), ec))
+                    try
                         {
-                            std::cerr << "Problem removing temporary file " << d_dump_filename << '\n';
+                            errorlib::error_code ec;
+                            if (!fs::remove(fs::path(d_dump_filename), ec))
+                                {
+                                    std::cerr << "Problem removing temporary file " << d_dump_filename << '\n';
+                                }
+                        }
+                    catch (const std::exception &ex)
+                        {
+                            LOG(WARNING) << "Exception in destructor removing the temporary dump file " << ex.what();
+                        }
+                    catch (...)
+                        {
+                            LOG(WARNING) << "Unknown exception in destructor removing the temporary dump file";
                         }
                     d_dump_mat = false;
                 }
@@ -192,6 +219,10 @@ hybrid_observables_gs::~hybrid_observables_gs()
             catch (const std::exception &ex)
                 {
                     LOG(WARNING) << "Error saving the .mat file: " << ex.what();
+                }
+            catch (...)
+                {
+                    LOG(WARNING) << "Unknown error saving the .mat file";
                 }
         }
 }

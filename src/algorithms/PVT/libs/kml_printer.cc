@@ -308,7 +308,7 @@ bool Kml_Printer::close_file()
 }
 
 
-Kml_Printer::~Kml_Printer()
+Kml_Printer::~Kml_Printer() noexcept
 {
     DLOG(INFO) << "KML printer destructor called.";
     try
@@ -319,16 +319,31 @@ Kml_Printer::~Kml_Printer()
         {
             std::cerr << e.what() << '\n';
         }
-    errorlib::error_code ec;
-    if (!fs::remove(fs::path(tmp_file_str), ec))
+    catch (...)
         {
-            LOG(INFO) << "Error deleting temporary file";
+            LOG(INFO) << "Unknown exception closing temporary KML file.";
         }
-    if (!positions_printed)
+    try
         {
-            if (!fs::remove(fs::path(kml_filename), ec))
+            errorlib::error_code ec;
+            if (!fs::remove(fs::path(tmp_file_str), ec))
                 {
-                    LOG(INFO) << "Error deleting temporary KML file";
+                    LOG(INFO) << "Error deleting temporary file";
                 }
+            if (!positions_printed)
+                {
+                    if (!fs::remove(fs::path(kml_filename), ec))
+                        {
+                            LOG(INFO) << "Error deleting temporary KML file";
+                        }
+                }
+        }
+    catch (const std::exception& e)
+        {
+            LOG(INFO) << "Exception deleting temporary KML file: " << e.what();
+        }
+    catch (...)
+        {
+            LOG(INFO) << "Unknown exception deleting temporary KML file.";
         }
 }

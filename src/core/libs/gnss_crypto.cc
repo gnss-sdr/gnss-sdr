@@ -106,9 +106,9 @@ Gnss_Crypto::Gnss_Crypto(const std::string& certFilePath, const std::string& mer
 }
 
 
-Gnss_Crypto::~Gnss_Crypto()
+Gnss_Crypto::~Gnss_Crypto() noexcept
 {
-    clear_public_key();
+    release_public_key();
 #if USE_GNUTLS_FALLBACK
     gnutls_global_deinit();
 #endif
@@ -125,7 +125,7 @@ bool Gnss_Crypto::have_public_key() const
 }
 
 
-void Gnss_Crypto::clear_public_key()
+void Gnss_Crypto::release_public_key() noexcept
 {
 #if USE_GNUTLS_FALLBACK
     if (d_PublicKey != nullptr)
@@ -148,6 +148,12 @@ void Gnss_Crypto::clear_public_key()
         }
 #endif
 #endif
+}
+
+
+void Gnss_Crypto::clear_public_key()
+{
+    release_public_key();
     d_PublicKeyType = std::string("Unknown");
 }
 

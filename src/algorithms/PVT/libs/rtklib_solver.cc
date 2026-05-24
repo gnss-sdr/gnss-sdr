@@ -155,14 +155,15 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
 }
 
 
-Rtklib_Solver::~Rtklib_Solver()
+Rtklib_Solver::~Rtklib_Solver() noexcept
 {
     DLOG(INFO) << "Rtklib_Solver destructor called.";
     if (d_dump_file.is_open() == true)
         {
-            const auto pos = d_dump_file.tellp();
+            std::ofstream::pos_type pos = -1;
             try
                 {
+                    pos = d_dump_file.tellp();
                     d_dump_file.close();
                 }
             catch (const std::exception &ex)
@@ -171,12 +172,19 @@ Rtklib_Solver::~Rtklib_Solver()
                 }
             if (pos == 0)
                 {
-                    errorlib::error_code ec;
-                    if (!fs::remove(fs::path(d_dump_filename), ec))
+                    try
                         {
-                            std::cerr << "Problem removing temporary file " << d_dump_filename << '\n';
+                            errorlib::error_code ec;
+                            if (!fs::remove(fs::path(d_dump_filename), ec))
+                                {
+                                    std::cerr << "Problem removing temporary file " << d_dump_filename << '\n';
+                                }
+                            d_flag_dump_mat_enabled = false;
                         }
-                    d_flag_dump_mat_enabled = false;
+                    catch (const std::exception &ex)
+                        {
+                            LOG(WARNING) << "Exception in destructor removing the RTKLIB dump file " << ex.what();
+                        }
                 }
         }
     if (d_flag_dump_mat_enabled)

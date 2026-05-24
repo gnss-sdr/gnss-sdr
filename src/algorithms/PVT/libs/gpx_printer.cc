@@ -195,7 +195,7 @@ bool Gpx_Printer::close_file()
 }
 
 
-Gpx_Printer::~Gpx_Printer()
+Gpx_Printer::~Gpx_Printer() noexcept
 {
     DLOG(INFO) << "GPX printer destructor called.";
     try
@@ -206,12 +206,27 @@ Gpx_Printer::~Gpx_Printer()
         {
             std::cerr << e.what() << '\n';
         }
+    catch (...)
+        {
+            LOG(INFO) << "Unknown exception closing temporary GPX file.";
+        }
     if (!positions_printed)
         {
-            errorlib::error_code ec;
-            if (!fs::remove(fs::path(gpx_filename), ec))
+            try
                 {
-                    LOG(INFO) << "Error deleting temporary GPX file";
+                    errorlib::error_code ec;
+                    if (!fs::remove(fs::path(gpx_filename), ec))
+                        {
+                            LOG(INFO) << "Error deleting temporary GPX file";
+                        }
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(INFO) << "Exception deleting temporary GPX file: " << e.what();
+                }
+            catch (...)
+                {
+                    LOG(INFO) << "Unknown exception deleting temporary GPX file.";
                 }
         }
 }

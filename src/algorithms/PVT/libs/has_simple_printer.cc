@@ -125,7 +125,7 @@ Has_Simple_Printer::Has_Simple_Printer(const std::string& base_path,
 }
 
 
-Has_Simple_Printer::~Has_Simple_Printer()
+Has_Simple_Printer::~Has_Simple_Printer() noexcept
 {
     DLOG(INFO) << "HAS Message printer destructor called.";
     try
@@ -136,12 +136,27 @@ Has_Simple_Printer::~Has_Simple_Printer()
         {
             std::cerr << e.what() << '\n';
         }
+    catch (...)
+        {
+            LOG(INFO) << "Unknown exception closing HAS Message file.";
+        }
     if (!d_data_printed)
         {
-            errorlib::error_code ec;
-            if (!fs::remove(fs::path(d_has_filename), ec))
+            try
                 {
-                    LOG(INFO) << "Error deleting temporary HAS Message file.";
+                    errorlib::error_code ec;
+                    if (!fs::remove(fs::path(d_has_filename), ec))
+                        {
+                            LOG(INFO) << "Error deleting temporary HAS Message file.";
+                        }
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(INFO) << "Exception deleting temporary HAS Message file: " << e.what();
+                }
+            catch (...)
+                {
+                    LOG(INFO) << "Unknown exception deleting temporary HAS Message file.";
                 }
         }
 }

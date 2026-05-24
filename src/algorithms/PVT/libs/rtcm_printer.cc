@@ -305,7 +305,7 @@ Rtcm_Printer::Rtcm_Printer(const std::string& filename,
 }
 
 
-Rtcm_Printer::~Rtcm_Printer()
+Rtcm_Printer::~Rtcm_Printer() noexcept
 {
     DLOG(INFO) << "RTCM printer destructor called.";
     if (rtcm->is_server_running())
@@ -314,32 +314,52 @@ Rtcm_Printer::~Rtcm_Printer()
                 {
                     rtcm->stop_server();
                 }
-            catch (const boost::exception& e)
+            catch (const boost::exception&)
                 {
-                    LOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
+                    LOG(WARNING) << "Boost exception while stopping RTCM server.";
                 }
             catch (const std::exception& ex)
                 {
                     LOG(WARNING) << "STD exception: " << ex.what();
                 }
+            catch (...)
+                {
+                    LOG(WARNING) << "Unknown exception while stopping RTCM server.";
+                }
         }
     if (rtcm_file_descriptor.is_open())
         {
-            const auto pos = rtcm_file_descriptor.tellp();
+            std::ofstream::pos_type pos = -1;
             try
                 {
+                    pos = rtcm_file_descriptor.tellp();
                     rtcm_file_descriptor.close();
                 }
             catch (const std::exception& e)
                 {
                     std::cerr << e.what() << '\n';
                 }
+            catch (...)
+                {
+                    LOG(INFO) << "Unknown exception closing temporary RTCM file.";
+                }
             if (pos == 0)
                 {
-                    errorlib::error_code ec;
-                    if (!fs::remove(fs::path(rtcm_filename), ec))
+                    try
                         {
-                            LOG(INFO) << "Error deleting temporary RTCM file";
+                            errorlib::error_code ec;
+                            if (!fs::remove(fs::path(rtcm_filename), ec))
+                                {
+                                    LOG(INFO) << "Error deleting temporary RTCM file";
+                                }
+                        }
+                    catch (const std::exception& e)
+                        {
+                            LOG(INFO) << "Exception deleting temporary RTCM file: " << e.what();
+                        }
+                    catch (...)
+                        {
+                            LOG(INFO) << "Unknown exception deleting temporary RTCM file.";
                         }
                 }
         }
@@ -350,6 +370,10 @@ Rtcm_Printer::~Rtcm_Printer()
     catch (const std::exception& e)
         {
             std::cerr << e.what() << '\n';
+        }
+    catch (...)
+        {
+            LOG(INFO) << "Unknown exception while closing RTCM serial port.";
         }
 }
 

@@ -98,7 +98,7 @@ class Rtcm
 {
 public:
     explicit Rtcm(uint16_t port = 2101);  //!< Default constructor that sets TCP port of the RTCM message server and RTCM Station ID. 2101 is the standard RTCM port according to the Internet Assigned Numbers Authority (IANA). See https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml
-    ~Rtcm();
+    ~Rtcm() noexcept;
 
     /*!
      * \brief Prints message type 1001 (L1-Only GPS RTK Observables)

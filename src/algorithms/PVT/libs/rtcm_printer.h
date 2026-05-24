@@ -66,7 +66,7 @@ public:
     /*!
      * \brief Default destructor.
      */
-    ~Rtcm_Printer();
+    ~Rtcm_Printer() noexcept;
 
     /*!
      * \brief Print RTCM messages.

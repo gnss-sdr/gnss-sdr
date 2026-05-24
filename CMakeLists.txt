@@ -506,6 +506,9 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     else()
         message(WARNING "\nCannot determine the version of the compiler selected to build GNSS-SDR (${APPLE_STR}Clang : ${CMAKE_CXX_COMPILER}). This build may or not work. We highly recommend using Apple Clang version ${GNSSSDR_APPLECLANG_MIN_VERSION} or more recent, or Clang version ${GNSSSDR_CLANG_MIN_VERSION} or more recent.")
     endif()
+    if(NOT CMAKE_VERSION VERSION_LESS 3.28)
+        set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
+    endif()
 endif()
 
 # Determine if we use lambdas

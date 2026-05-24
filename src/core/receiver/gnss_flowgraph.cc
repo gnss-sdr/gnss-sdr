@@ -2318,8 +2318,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                 {
                                     std::list<Gnss_Signal>::iterator it2;
                                     it2 = std::find_if(std::begin(available_signals), std::end(available_signals),
-                                        [&](Gnss_Signal const& sig)
-                                            { return sig.get_satellite().get_PRN() == current_status.second->PRN; });
+                                        [&](Gnss_Signal const& sig) { return sig.get_satellite().get_PRN() == current_status.second->PRN; });
 
                                     if (it2 != available_signals.end())
                                         {

@@ -39,6 +39,7 @@
 #include <map>                          // for map
 #include <memory>                       // for for shared_ptr, dynamic_pointer_cast
 #include <mutex>                        // for mutex
+#include <set>                          // for set
 #include <string>                       // for string
 #include <unordered_map>                // for unordered_map
 #include <utility>                      // for pair
@@ -197,6 +198,8 @@ private:
     void check_signal_conditioners();
 
     void set_signals_list();
+    void keep_one_glonass_slot_per_frequency(std::set<unsigned int>& available_prns);
+
     void set_channels_state();  // Initializes the channels state (start acquisition or keep standby)
                                 // using the configuration parameters (number of channels and max channels in acquisition)
     Gnss_Signal search_next_signal(const std::string& searched_signal,

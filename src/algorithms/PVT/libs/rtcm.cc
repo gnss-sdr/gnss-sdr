@@ -60,23 +60,23 @@ const MsmFamilySpec msm_family_specs[] = {
 
 struct MsmSignalSpec
 {
-    char system;
     const char* receiver_signal;
-    uint32_t rtcm_signal_id;
     double frequency_hz;
     double glonass_frequency_step_hz;
+    uint32_t rtcm_signal_id;
+    char system;
 };
 
 
 const MsmSignalSpec msm_signal_specs[] = {
-    {'G', "1C", 2, GPS_L1_FREQ_HZ, 0.0},
-    {'G', "2S", 15, GPS_L2_FREQ_HZ, 0.0},
-    {'G', "L5", 24, GPS_L5_FREQ_HZ, 0.0},
-    {'E', "1B", 4, GALILEO_E1_FREQ_HZ, 0.0},
-    {'E', "7X", 16, GALILEO_E5B_FREQ_HZ, 0.0},
-    {'E', "5X", 24, GALILEO_E5A_FREQ_HZ, 0.0},
-    {'R', "1G", 2, GLONASS_L1_CA_FREQ_HZ, GLONASS_L1_CA_DFREQ_HZ},
-    {'R', "2G", 8, GLONASS_L2_CA_FREQ_HZ, GLONASS_L2_CA_DFREQ_HZ},
+    {"1C", GPS_L1_FREQ_HZ, 0.0, 2, 'G'},
+    {"2S", GPS_L2_FREQ_HZ, 0.0, 15, 'G'},
+    {"L5", GPS_L5_FREQ_HZ, 0.0, 24, 'G'},
+    {"1B", GALILEO_E1_FREQ_HZ, 0.0, 4, 'E'},
+    {"7X", GALILEO_E5B_FREQ_HZ, 0.0, 16, 'E'},
+    {"5X", GALILEO_E5A_FREQ_HZ, 0.0, 24, 'E'},
+    {"1G", GLONASS_L1_CA_FREQ_HZ, GLONASS_L1_CA_DFREQ_HZ, 2, 'R'},
+    {"2G", GLONASS_L2_CA_FREQ_HZ, GLONASS_L2_CA_DFREQ_HZ, 8, 'R'},
 };
 }  // namespace
 

@@ -141,7 +141,8 @@ constexpr double GLONASS_LEAP_SECONDS[19][7] = {
     {1981, 7, 1, 0, 0, 0, -1},
     {}};
 
-//!< GLONASS SV's orbital slots PRN = (orbital_slot - 1)
+// GLONASS RINEX satellite numbers are slot numbers. This table maps Rnn slot
+// numbers to the corresponding FDMA frequency channel.
 const std::map<uint32_t, int32_t> GLONASS_PRN = {
     {
         0,
@@ -225,7 +226,7 @@ const std::map<uint32_t, int32_t> GLONASS_PRN = {
     },  // Plane 3
     {
         20,
-        -5,
+        2,
     },  // Plane 3
     {
         21,
@@ -238,8 +239,23 @@ const std::map<uint32_t, int32_t> GLONASS_PRN = {
     {
         23,
         3,
-    },         // Plane 3
-    {24, 2}};  // Plane 3
+    },  // Plane 3
+    {
+        24,
+        2,
+    },  // Plane 3
+    {
+        26,
+        -6,
+    },
+    {
+        27,
+        -5,
+    },
+    {
+        28,
+        7,
+    }};
 
 const std::vector<int32_t> GLONASS_GNAV_CRC_I_INDEX{9, 10, 12, 13, 15, 17, 19, 20, 22, 24, 26, 28, 30, 32, 34, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84};
 const std::vector<int32_t> GLONASS_GNAV_CRC_J_INDEX{9, 11, 12, 14, 15, 18, 19, 21, 22, 25, 26, 29, 30, 33, 34, 36, 37, 40, 41, 44, 45, 48, 49, 52, 53, 56, 57, 60, 61, 64, 65, 67, 68, 71, 72, 75, 76, 79, 80, 83, 84};

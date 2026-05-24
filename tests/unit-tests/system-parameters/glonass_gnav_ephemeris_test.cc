@@ -18,7 +18,28 @@
 
 
 #include "glonass_gnav_ephemeris.h"
+#include "GLONASS_L1_L2_CA.h"
 #include "gnss_signal_replica.h"
+#include "gnss_satellite.h"
+
+
+TEST(GlonassGnavEphemerisTest, SatelliteRfLinkMatchesFrequencyChannelTable)
+{
+    EXPECT_EQ(2, Gnss_Satellite("Glonass", 20).get_rf_link());
+    EXPECT_EQ(-5, Gnss_Satellite("Glonass", 27).get_rf_link());
+    EXPECT_EQ(7, Gnss_Satellite("Glonass", 28).get_rf_link());
+
+    for (const auto& prn_freq : GLONASS_PRN)
+        {
+            if (prn_freq.first == 0)
+                {
+                    continue;
+                }
+
+            const Gnss_Satellite satellite("Glonass", prn_freq.first);
+            EXPECT_EQ(prn_freq.second, satellite.get_rf_link()) << "PRN " << prn_freq.first;
+        }
+}
 
 
 TEST(GlonassGnavEphemerisTest, ComputeGlonassTime)

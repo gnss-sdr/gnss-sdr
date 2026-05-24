@@ -20,6 +20,7 @@
  */
 
 #include "gnss_flowgraph.h"
+#include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "GPS_L5.h"
@@ -2029,15 +2030,51 @@ std::vector<std::string> GNSSFlowgraph::split_string(const std::string& s, char 
 }
 
 
+void GNSSFlowgraph::keep_one_glonass_slot_per_frequency(std::set<unsigned int>& available_prns)
+{
+    std::set<int32_t> selected_frequency_channels;
+    std::set<unsigned int> unique_frequency_prns;
+
+    for (const auto prn : available_prns)
+        {
+            if (prn == 0)
+                {
+                    LOG(WARNING) << "Ignoring invalid GLONASS slot " << prn << " in Glonass.prns";
+                    continue;
+                }
+
+            const auto freq_channel = GLONASS_PRN.find(prn);
+            if (freq_channel == GLONASS_PRN.cend())
+                {
+                    LOG(WARNING) << "Ignoring GLONASS slot " << prn << " without a configured GLONASS frequency channel";
+                    continue;
+                }
+
+            if (selected_frequency_channels.insert(freq_channel->second).second)
+                {
+                    unique_frequency_prns.insert(prn);
+                }
+            else
+                {
+                    LOG(WARNING) << "Ignoring GLONASS slot " << prn
+                                 << " because another configured orbital slot already uses frequency channel "
+                                 << freq_channel->second;
+                }
+        }
+
+    available_prns = std::move(unique_frequency_prns);
+}
+
+
 void GNSSFlowgraph::set_signals_list()
 {
-    // Glonass removing satellites sharing same frequency number(1 and 5, 2 and 6, 3 and 7, 4 and 6, 11 and 15, 12 and 16, 14 and 18, 17 and 21
+    // GLONASS uses FDMA, so only one orbital slot per frequency channel is queued for acquisition.
     std::unordered_map<std::string, std::set<unsigned int>> available_prn_map = {
         {"GPS", {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32}},
         {"SBAS", {123, 131, 135, 136, 138}},
         {"Galileo", {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
                         21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36}},
-        {"Glonass", {1, 2, 3, 4, 9, 10, 11, 12, 18, 19, 20, 21, 24}},
+        {"Glonass", {1, 2, 3, 4, 9, 10, 11, 12, 18, 19, 20, 21, 26, 27, 28}},
         {"Beidou", {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
                        21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37,
                        38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54,
@@ -2091,6 +2128,11 @@ void GNSSFlowgraph::set_signals_list()
                                     std::cerr << "Out of range at GNSS-SDR." << gnss_system_str << "_banned_prns configuration parameter: " << oor.what() << '\n';
                                 }
                         }
+                }
+
+            if (gnss_system_str == "Glonass")
+                {
+                    keep_one_glonass_slot_per_frequency(available_prns);
                 }
         }
 #if CXX_LESS_THAN_17
@@ -2276,7 +2318,8 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                 {
                                     std::list<Gnss_Signal>::iterator it2;
                                     it2 = std::find_if(std::begin(available_signals), std::end(available_signals),
-                                        [&](Gnss_Signal const& sig) { return sig.get_satellite().get_PRN() == current_status.second->PRN; });
+                                        [&](Gnss_Signal const& sig)
+                                            { return sig.get_satellite().get_PRN() == current_status.second->PRN; });
 
                                     if (it2 != available_signals.end())
                                         {

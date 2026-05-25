@@ -34,8 +34,9 @@
 #include "gps_almanac.h"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
-#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
 #include "gps_utc_model.h"
+#include "pcps_acquisition_adapter_custom.h"
+#include "signal_flag.h"
 #include "signal_source_interface.h"  // for SignalSourceInterface
 #include <boost/any.hpp>              // for bad_any_cast
 #include <boost/exception/exception.hpp>
@@ -475,7 +476,7 @@ int main(int argc, char** argv)
             configuration->set_property("Acquisition.doppler_max", "10000");
             configuration->set_property("Acquisition.threshold", "2.0");
 
-            auto acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFineDoppler>(configuration.get(), "Acquisition", 1, 1);
+            auto acquisition = std::make_shared<PcpsAcquisitionAdapterCustom>(configuration.get(), "Acquisition", "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler", 1, 1, GPS_1C);
 
             acquisition->set_channel(1);
             acquisition->set_gnss_synchro(&gnss_synchro);

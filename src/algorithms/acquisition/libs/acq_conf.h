@@ -75,10 +75,12 @@ public:
     bool use_automatic_resampler{false};
     bool enable_monitor_output{false};
 
-    // Galileo only
+    // Specific to some implementations
     bool acquire_pilot{false};
     bool acquire_iq{false};
     bool cboc{false};
+    int zero_padding{0};
+    uint32_t folding_factor{0};
 
     // Not part of the configuration interface
     uint32_t num_codes{0};

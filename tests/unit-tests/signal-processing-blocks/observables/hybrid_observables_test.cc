@@ -24,7 +24,6 @@
 #include "acquisition_interface.h"
 #include "acquisition_msg_rx.h"
 #include "dll_pll_tracking_adapter.h"
-#include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
@@ -35,7 +34,6 @@
 #include "in_memory_configuration.h"
 #include "observable_tests_flags.h"
 #include "observables_dump_reader.h"
-#include "pcps_acquisition_adapter.h"
 #include "signal_generator_flags.h"
 #include "telemetry_decoder_interface.h"
 #include "test_flags.h"
@@ -59,6 +57,7 @@
 #include <cmath>
 #include <exception>
 #include <iomanip>
+#include <memory>
 #include <unistd.h>
 #include <utility>
 #if GNSSTK_USES_GPSTK_NAMESPACE
@@ -427,7 +426,8 @@ bool HybridObservablesTest::acquire_signal()
     config->set_property("Acquisition.dump", "false");
     config->set_property("Acquisition.dump_filename", "./data/acquisition.dat");
 
-    std::shared_ptr<AcquisitionInterface> acquisition;
+    std::unique_ptr<AcquisitionInterface> acquisition;
+    std::string acquisition_implementation;
 
     std::string System_and_Signal;
     std::string signal;
@@ -445,7 +445,7 @@ bool HybridObservablesTest::acquire_signal()
 #else
             config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
 #endif
-            acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition", "GPS_L1_CA_PCPS_Acquisition", 1, 0, GPS_1C);
+            acquisition_implementation = "GPS_L1_CA_PCPS_Acquisition";
         }
     else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking")
         {
@@ -460,7 +460,7 @@ bool HybridObservablesTest::acquire_signal()
 #else
             config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
 #endif
-            acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 0, GAL_1B);
+            acquisition_implementation = "Galileo_E1_PCPS_Ambiguous_Acquisition";
         }
     else if (implementation == "GPS_L2_M_DLL_PLL_Tracking")
         {
@@ -475,7 +475,7 @@ bool HybridObservablesTest::acquire_signal()
 #else
             config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
 #endif
-            acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition", "GPS_L2_M_PCPS_Acquisition", 1, 0, GPS_2S);
+            acquisition_implementation = "GPS_L2_M_PCPS_Acquisition";
         }
     else if (implementation == "Galileo_E5a_DLL_PLL_Tracking_b")
         {
@@ -494,7 +494,7 @@ bool HybridObservablesTest::acquire_signal()
             config->set_property("Acquisition.CAF_window_hz", "0");  // **Only for E5a** Resolves doppler ambiguity averaging the specified BW in the winner code delay. If set to 0 CAF filter is deactivated. Recommended value 3000 Hz
             config->set_property("Acquisition.Zero_padding", "0");   // **Only for E5a** Avoids power loss and doppler ambiguity in bit transitions by correlating one code with twice the input data length, ensuring that at least one full code is present without transitions. If set to 1 it is ON, if set to 0 it is OFF.
             config->set_property("Acquisition.bit_transition_flag", "false");
-            acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition", 1, 0);
+            acquisition_implementation = "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF";
         }
 
     else if (implementation == "Galileo_E5a_DLL_PLL_Tracking")
@@ -510,7 +510,7 @@ bool HybridObservablesTest::acquire_signal()
 #else
             config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
 #endif
-            acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition", "Galileo_E5a_Pcps_Acquisition", 1, 0, GAL_E5a);
+            acquisition_implementation = "Galileo_E5a_Pcps_Acquisition";
         }
     else if (implementation == "GPS_L5_DLL_PLL_Tracking")
         {
@@ -525,7 +525,7 @@ bool HybridObservablesTest::acquire_signal()
 #else
             config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
 #endif
-            acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition", "GPS_L5i_PCPS_Acquisition", 1, 0, GPS_L5);
+            acquisition_implementation = "GPS_L5i_PCPS_Acquisition";
         }
     else
         {
@@ -538,6 +538,14 @@ bool HybridObservablesTest::acquire_signal()
 #else
     config->set_property("Acquisition.threshold", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_threshold)));
 #endif
+
+    config->set_property("Acquisition.implementation", acquisition_implementation);
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition", 1, 0);
+    if (!acquisition)
+        {
+            std::cout << "The test can not instantiate " << acquisition_implementation << "\n";
+            throw(std::exception());
+        }
 
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     acquisition->set_channel(0);

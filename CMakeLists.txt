@@ -139,7 +139,7 @@ endif()
 
 option(ENABLE_GNSSSDR_ADHOC_CODESIGN
     "Ad-hoc sign local Darwin build-tree executables that must run after the build."
-    ON
+    OFF
 )
 
 # Testing
@@ -282,9 +282,13 @@ if(NOT ("${CMAKE_BUILD_TYPE}" STREQUAL "Release"))
 endif()
 if("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
     find_program(CODESIGN_EXECUTABLE codesign)
-endif()
-if(NOT CODESIGN_EXECUTABLE)
-    set(ENABLE_GNSSSDR_ADHOC_CODESIGN OFF)
+    if(NOT CODESIGN_EXECUTABLE)
+        set(ENABLE_GNSSSDR_ADHOC_CODESIGN OFF)
+    else()
+        if(CMAKE_GENERATOR STREQUAL Xcode)
+            set(ENABLE_GNSSSDR_ADHOC_CODESIGN ON)
+        endif()
+    endif()
 endif()
 
 # Enable optimization options in GCC for Release and RelWithDebInfo build types

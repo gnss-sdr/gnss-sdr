@@ -34,8 +34,9 @@
 #include "gps_almanac.h"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
-#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
 #include "gps_utc_model.h"
+#include "pcps_acquisition_adapter_custom.h"
+#include "signal_flag.h"
 #include "signal_source_interface.h"  // for SignalSourceInterface
 #include <boost/any.hpp>              // for bad_any_cast
 #include <boost/exception/exception.hpp>
@@ -240,7 +241,8 @@ FrontEndCal_msg_rx::FrontEndCal_msg_rx()
     this->message_port_register_in(pmt::mp("events"));
 
 #if HAS_GENERIC_LAMBDA
-    this->set_msg_handler(pmt::mp("events"), [this](auto&& PH1) { msg_handler_channel_events(std::forward<decltype(PH1)>(PH1)); });
+    this->set_msg_handler(pmt::mp("events"), [this](auto&& PH1)
+            { msg_handler_channel_events(std::forward<decltype(PH1)>(PH1)); });
 #else
 #if USE_BOOST_BIND_PLACEHOLDERS
     this->set_msg_handler(
@@ -533,7 +535,7 @@ try
                 configuration->set_property("Acquisition.doppler_max", "10000");
                 configuration->set_property("Acquisition.threshold", "2.0");
 
-                auto acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFineDoppler>(configuration.get(), "Acquisition", 1, 1);
+                auto acquisition = std::make_shared<PcpsAcquisitionAdapterCustom>(configuration.get(), "Acquisition", "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler", 1, 1, GPS_1C);
 
                 acquisition->set_channel(1);
                 acquisition->set_gnss_synchro(&gnss_synchro);

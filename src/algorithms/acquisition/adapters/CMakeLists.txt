@@ -7,30 +7,12 @@
 
 set(ACQ_ADAPTER_SOURCES
     pcps_acquisition_adapter.cc
-    base_pcps_acquisition_custom.cc
-    gps_l1_ca_pcps_assisted_acquisition.cc
-    gps_l1_ca_pcps_acquisition_fine_doppler.cc
-    gps_l1_ca_pcps_tong_acquisition.cc
-    gps_l1_ca_pcps_quicksync_acquisition.cc
-    galileo_e1_pcps_cccwsr_ambiguous_acquisition.cc
-    galileo_e1_pcps_quicksync_ambiguous_acquisition.cc
-    galileo_e1_pcps_tong_ambiguous_acquisition.cc
-    galileo_e1_pcps_8ms_ambiguous_acquisition.cc
-    galileo_e5a_noncoherent_iq_acquisition_caf.cc
+    pcps_acquisition_adapter_custom.cc
 )
 
 set(ACQ_ADAPTER_HEADERS
     pcps_acquisition_adapter.h
-    base_pcps_acquisition_custom.h
-    gps_l1_ca_pcps_assisted_acquisition.h
-    gps_l1_ca_pcps_acquisition_fine_doppler.h
-    gps_l1_ca_pcps_tong_acquisition.h
-    gps_l1_ca_pcps_quicksync_acquisition.h
-    galileo_e1_pcps_cccwsr_ambiguous_acquisition.h
-    galileo_e1_pcps_quicksync_ambiguous_acquisition.h
-    galileo_e1_pcps_tong_ambiguous_acquisition.h
-    galileo_e1_pcps_8ms_ambiguous_acquisition.h
-    galileo_e5a_noncoherent_iq_acquisition_caf.h
+    pcps_acquisition_adapter_custom.h
 )
 
 if(ENABLE_FPGA)
@@ -39,16 +21,6 @@ if(ENABLE_FPGA)
     )
     set(ACQ_ADAPTER_HEADERS ${ACQ_ADAPTER_HEADERS}
         pcps_acquisition_adapter_fpga.h
-    )
-endif()
-
-if(ENABLE_OPENCL)
-    set(ACQ_ADAPTER_SOURCES
-        ${ACQ_ADAPTER_SOURCES}
-        gps_l1_ca_pcps_opencl_acquisition.cc
-    )
-    set(ACQ_ADAPTER_HEADERS ${ACQ_ADAPTER_HEADERS}
-        gps_l1_ca_pcps_opencl_acquisition.h
     )
 endif()
 

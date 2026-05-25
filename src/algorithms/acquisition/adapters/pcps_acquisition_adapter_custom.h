@@ -16,16 +16,16 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_BASE_PCPS_ACQUISITION_CUSTOM_H
-#define GNSS_SDR_BASE_PCPS_ACQUISITION_CUSTOM_H
+#ifndef GNSS_SDR_PCPS_ACQUISITION_ADAPTER_CUSTOM_H
+#define GNSS_SDR_PCPS_ACQUISITION_ADAPTER_CUSTOM_H
 
 #include "acquisition_impl_interface.h"
 #include "channel_fsm.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
+#include "signal_flag.h"
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>
-#include <limits>
 
 /** \addtogroup Acquisition
  * Classes for GNSS signal acquisition
@@ -37,55 +37,24 @@
 
 class ConfigurationInterface;
 
-class ThresholdComputeInterface
-{
-public:
-    virtual float calculate_threshold(const Acq_Conf& acq_parameters) const = 0;
-};
-
-class ThresholdComputeBasic : public ThresholdComputeInterface
-{
-public:
-    float calculate_threshold(const Acq_Conf& acq_parameters) const override;
-};
-
-class ThresholdComputeDoppler : public ThresholdComputeInterface
-{
-public:
-    float calculate_threshold(const Acq_Conf& acq_parameters) const override;
-};
-
-class ThresholdComputeQuickSync : public ThresholdComputeInterface
-{
-public:
-    explicit ThresholdComputeQuickSync(uint32_t folding_factor);
-
-    float calculate_threshold(const Acq_Conf& acq_parameters) const override;
-
-private:
-    const uint32_t folding_factor_;
-};
-
 /*!
  * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
  */
-class BasePcpsAcquisitionCustom : public AcquisitionInterface
+class PcpsAcquisitionAdapterCustom : public AcquisitionInterface
 {
 public:
-    BasePcpsAcquisitionCustom(const ConfigurationInterface* configuration,
+    PcpsAcquisitionAdapterCustom(const ConfigurationInterface* configuration,
         const std::string& role,
+        const std::string& implementation,
         unsigned int in_streams,
         unsigned int out_streams,
-        double chip_rate,
-        double code_length_chips,
-        unsigned int ms_per_code,
-        bool use_stream_to_vector,
-        const ThresholdComputeInterface& threshold_compute,
-        uint32_t max_sampled_ms = std::numeric_limits<uint32_t>::max());
+        signal_flag sig_flag);
 
-    ~BasePcpsAcquisitionCustom() = default;
+    ~PcpsAcquisitionAdapterCustom() = default;
 
     inline std::string role() override { return role_; }
+
+    inline std::string implementation() override { return implementation_; }
 
     inline size_t item_size() override { return item_size_; }
 
@@ -134,23 +103,21 @@ public:
     void set_local_code() override;
 
 
-protected:
-    bool is_type_gr_complex() const { return is_type_gr_complex_; }
+private:
+    /*!
+     * \brief Generate code
+     */
+    void code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int32_t sampling_freq);
 
     const Acq_Conf acq_parameters_;
     acquisition_impl_interface_sptr acquisition_cc_;
     Gnss_Synchro* gnss_synchro_;
     unsigned int channel_;
     volk_gnsssdr::vector<std::complex<float>> code_;
-
-private:
-    /*!
-     * \brief Generate code
-     */
-    virtual void code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int32_t sampling_freq) = 0;
-
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
+    const signal_flag sig_flag_;
     const std::string role_;
+    const std::string implementation_;
     const bool is_type_gr_complex_;
     const size_t item_size_;
     const bool use_stream_to_vector_;
@@ -159,4 +126,4 @@ private:
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_BASE_PCPS_ACQUISITION_H
+#endif  // GNSS_SDR_PCPS_ACQUISITION_ADAPTER_CUSTOM_H

@@ -14,6 +14,15 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Interoperability:
+
+- Improved Galileo HAS robustness and ICD compliance, including stricter MT1
+  validation, correct cache/Do-Not-Use handling, TOW fallback for E6 HAS pages,
+  preserved mask/IOD correction context, and corrected HAS application in
+  RTKLIB/PVT.
+- Fixed bugs in the generation of RTCM MSM messages.
+- Fixed identification of GLONASS satellites.
+
 ### Improvements in Maintainability:
 
 - Refactored main Acquisition, Tracking, and Telemetry Decoder adapters,

@@ -54,6 +54,7 @@ namespace
 class ThresholdComputeInterface
 {
 public:
+    virtual ~ThresholdComputeInterface() = default;
     virtual float calculate_threshold(const Acq_Conf& acq_parameters) const = 0;
 };
 

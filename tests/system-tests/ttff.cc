@@ -33,7 +33,10 @@
 #include <chrono>
 #include <cmath>
 #include <cstdint>
+#include <exception>
+#include <iostream>
 #include <limits>
+#include <memory>
 #include <numeric>
 #include <random>
 #include <string>
@@ -77,6 +80,8 @@ Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 std::vector<double> TTFF_v;
+
+const char *const ttff_message_queue_name = "gnss_sdr_ttff_message_queue";
 
 class TtffTest : public ::testing::Test
 {
@@ -298,7 +303,6 @@ void receive_msg()
     while (!leave)
         {
             // wait for the queues to be created
-            const std::string queue_name = "gnss_sdr_ttff_message_queue";
             std::unique_ptr<boost::interprocess::message_queue> d_mq;
             bool queue_found = false;
             while (!queue_found)
@@ -306,7 +310,7 @@ void receive_msg()
                     try
                         {
                             // Attempt to open the message queue
-                            d_mq = std::make_unique<boost::interprocess::message_queue>(boost::interprocess::open_only, queue_name.c_str());
+                            d_mq = std::make_unique<boost::interprocess::message_queue>(boost::interprocess::open_only, ttff_message_queue_name);
                             queue_found = true;  // Queue found
                         }
                     catch (const boost::interprocess::interprocess_exception &)
@@ -360,6 +364,65 @@ void receive_msg()
                 }
         }
 }
+
+
+void stop_receive_msg_thread() noexcept
+{
+    try
+        {
+            boost::interprocess::message_queue::remove(ttff_message_queue_name);
+            boost::interprocess::message_queue mq(
+                boost::interprocess::create_only,  // Create a new queue
+                ttff_message_queue_name,           // Queue name
+                10,                                // Maximum number of messages
+                sizeof(double)                     // Maximum message size
+            );
+            const double finish = -1.0;
+            mq.send(&finish, sizeof(finish), 0);
+        }
+    catch (...)
+        {
+        }
+}
+
+
+class ReceiveMsgThreadGuard
+{
+public:
+    ReceiveMsgThreadGuard() = default;
+    ReceiveMsgThreadGuard(const ReceiveMsgThreadGuard &) = delete;
+    ReceiveMsgThreadGuard &operator=(const ReceiveMsgThreadGuard &) = delete;
+    ReceiveMsgThreadGuard(ReceiveMsgThreadGuard &&) = delete;
+    ReceiveMsgThreadGuard &operator=(ReceiveMsgThreadGuard &&) = delete;
+    ~ReceiveMsgThreadGuard() noexcept
+    {
+        Stop();
+    }
+
+    void Start()
+    {
+        receive_msg_thread = std::thread(receive_msg);
+    }
+
+    void Stop() noexcept
+    {
+        if (receive_msg_thread.joinable())
+            {
+                stop_receive_msg_thread();
+                try
+                    {
+                        receive_msg_thread.join();
+                    }
+                catch (...)
+                    {
+                    }
+                boost::interprocess::message_queue::remove(ttff_message_queue_name);
+            }
+    }
+
+private:
+    std::thread receive_msg_thread;
+};
 
 
 void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, const std::shared_ptr<ConfigurationInterface> &config_)
@@ -701,58 +764,63 @@ TEST_F(TtffTest /*unused*/, HotStart /*unused*/)
 
 int main(int argc, char **argv)
 {
-    std::cout << "Running Time-To-First-Fix test...\n";
     int res = 0;
-    TTFF_v.clear();
+#if USE_GLOG_AND_GFLAGS
+    bool command_line_flags_initialized = false;
+#endif
     try
         {
-            testing::InitGoogleTest(&argc, argv);
-        }
-    catch (...)
-        {
-        }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
+            std::cout << "Running Time-To-First-Fix test...\n";
+            TTFF_v.clear();
+            try
+                {
+                    testing::InitGoogleTest(&argc, argv);
+                }
+            catch (...)
+                {
+                }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
 
 #if USE_GLOG_AND_GFLAGS
-    gflags::ParseCommandLineFlags(&argc, &argv, true);
-    google::InitGoogleLogging(argv[0]);
+            gflags::ParseCommandLineFlags(&argc, &argv, true);
+            command_line_flags_initialized = true;
+            google::InitGoogleLogging(argv[0]);
 #else
-    absl::ParseCommandLine(argc, argv);
+            absl::ParseCommandLine(argc, argv);
 #endif
 
-    // Start queue thread
-    std::thread receive_msg_thread(receive_msg);
+            // Start queue thread
+            ReceiveMsgThreadGuard receive_msg_thread;
+            receive_msg_thread.Start();
 
-    // Run the Tests
-    try
+            // Run the Tests
+            try
+                {
+                    res = RUN_ALL_TESTS();
+                }
+            catch (...)
+                {
+                    LOG(WARNING) << "Unexpected catch";
+                }
+
+            // Terminate the queue thread
+            receive_msg_thread.Stop();
+        }
+    catch (const std::exception &e)
         {
-            res = RUN_ALL_TESTS();
+            std::cerr << e.what() << '\n';
+            res = 1;
         }
     catch (...)
         {
-            LOG(WARNING) << "Unexpected catch";
+            std::cerr << "Unexpected error\n";
+            res = 1;
         }
-
-    // Terminate the queue thread
-    const std::string queue_name = "gnss_sdr_ttff_message_queue";
-    boost::interprocess::message_queue::remove(queue_name.c_str());
-
-    // Create a new message queue
-    auto mq = std::make_unique<boost::interprocess::message_queue>(
-        boost::interprocess::create_only,  // Create a new queue
-        queue_name.c_str(),                // Queue name
-        10,                                // Maximum number of messages
-        sizeof(double)                     // Maximum message size
-    );
-    double finish = -1.0;
-    if (mq)
-        {
-            mq->send(&finish, sizeof(finish), 0);
-        }
-    receive_msg_thread.join();
-    boost::interprocess::message_queue::remove(queue_name.c_str());
 
 #if USE_GLOG_AND_GFLAGS
-    gflags::ShutDownCommandLineFlags();
+    if (command_line_flags_initialized)
+        {
+            gflags::ShutDownCommandLineFlags();
+        }
 #endif
     return res;
 }

@@ -85,6 +85,7 @@ if(TARGET Boost::iostreams AND TARGET Boost::serialization)
             ${GNSSTK_LIBRARY}
             Threads::Threads
             core_system_parameters
+            algorithms_libs
     )
 
     if(ENABLE_GLOG_AND_GFLAGS)

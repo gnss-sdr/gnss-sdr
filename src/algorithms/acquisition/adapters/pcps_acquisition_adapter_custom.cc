@@ -26,6 +26,7 @@
 #include "galileo_e5a_noncoherent_iq_acquisition_caf_cc.h"
 #include "galileo_pcps_8ms_acquisition_cc.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include "gps_sdr_signal_replica.h"
 #include "pcps_acquisition_fine_doppler_cc.h"
 #include "pcps_assisted_acquisition_cc.h"
@@ -34,6 +35,7 @@
 #include "pcps_tong_acquisition_cc.h"
 #include "signal_flag.h"
 #include <boost/math/distributions/exponential.hpp>
+#include <boost/optional.hpp>
 #include <memory>
 #include <stdexcept>
 
@@ -165,7 +167,7 @@ Acq_Conf get_acq_conf(
         }
 
     std::unique_ptr<ThresholdComputeInterface> threshold_compute;
-    std::optional<uint32_t> default_folding_factor;
+    boost::optional<uint32_t> default_folding_factor;
     uint32_t max_sampled_ms = std::numeric_limits<uint32_t>::max();
 
     if (implementation == "GPS_L1_CA_PCPS_QuickSync_Acquisition")
@@ -193,9 +195,9 @@ Acq_Conf get_acq_conf(
             max_sampled_ms = 3;
         }
 
-    if (default_folding_factor.has_value())
+    if (default_folding_factor)
         {
-            acq_parameters.folding_factor = configuration->property(role + ".folding_factor", default_folding_factor.value());
+            acq_parameters.folding_factor = configuration->property(role + ".folding_factor", *default_folding_factor);
             ms_per_code *= acq_parameters.folding_factor;
             threshold_compute = std::make_unique<ThresholdComputeQuickSync>();
         }

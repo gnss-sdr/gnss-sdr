@@ -581,6 +581,52 @@ void Rtcm_Printer::Print_IGM_Messages(const Galileo_HAS_data& has_data)
                 {
                     Print_IGM05(has_data);
                 }
+            Print_SSR_Messages(has_data);
+        }
+    catch (const boost::exception& ex)
+        {
+            std::cout << "RTCM boost exception: " << boost::diagnostic_information(ex) << '\n';
+            LOG(ERROR) << "RTCM boost exception: " << boost::diagnostic_information(ex);
+        }
+    catch (const std::exception& ex)
+        {
+            std::cout << "RTCM std exception: " << ex.what() << '\n';
+            LOG(ERROR) << "RTCM std exception: " << ex.what();
+        }
+}
+
+
+void Rtcm_Printer::Print_SSR_Messages(const Galileo_HAS_data& has_data)
+{
+    try
+        {
+            const bool has_orbit_corrections = has_data.header.orbit_correction_flag;
+            const bool has_clock_fullset_corrections = has_data.header.clock_fullset_flag;
+            const bool has_clock_subset_corrections = has_data.header.clock_subset_flag;
+
+            bool print_orbit_corrections = has_orbit_corrections;
+            bool print_clock_fullset_corrections = has_clock_fullset_corrections;
+            if (has_orbit_corrections && has_clock_fullset_corrections && Print_Rtcm_MT1060(has_data))
+                {
+                    print_orbit_corrections = false;
+                    print_clock_fullset_corrections = false;
+                }
+            if (print_orbit_corrections)
+                {
+                    Print_Rtcm_MT1057(has_data);
+                }
+            if (print_clock_fullset_corrections)
+                {
+                    Print_Rtcm_MT1058(has_data);
+                }
+            if (has_clock_subset_corrections)
+                {
+                    Print_Rtcm_MT1058(has_data, true);
+                }
+            if (has_data.header.code_bias_flag)
+                {
+                    Print_Rtcm_MT1059(has_data);
+                }
         }
     catch (const boost::exception& ex)
         {
@@ -746,6 +792,54 @@ bool Rtcm_Printer::Print_Rtcm_MSM(uint32_t msm_number, const Gps_Ephemeris& gps_
         }
 
     return printed_any_message && !failed_to_print;
+}
+
+
+bool Rtcm_Printer::Print_Rtcm_MT1057(const Galileo_HAS_data& has_data, bool ssr_multiple_msg_indicator)
+{
+    const std::string m1057 = rtcm->print_MT1057(has_data, ssr_multiple_msg_indicator);
+    if (m1057.empty())
+        {
+            return false;
+        }
+    Rtcm_Printer::Print_Message(m1057);
+    return true;
+}
+
+
+bool Rtcm_Printer::Print_Rtcm_MT1058(const Galileo_HAS_data& has_data, bool use_clock_subset, bool ssr_multiple_msg_indicator)
+{
+    const std::string m1058 = rtcm->print_MT1058(has_data, use_clock_subset, ssr_multiple_msg_indicator);
+    if (m1058.empty())
+        {
+            return false;
+        }
+    Rtcm_Printer::Print_Message(m1058);
+    return true;
+}
+
+
+bool Rtcm_Printer::Print_Rtcm_MT1059(const Galileo_HAS_data& has_data, bool ssr_multiple_msg_indicator)
+{
+    const std::string m1059 = rtcm->print_MT1059(has_data, ssr_multiple_msg_indicator);
+    if (m1059.empty())
+        {
+            return false;
+        }
+    Rtcm_Printer::Print_Message(m1059);
+    return true;
+}
+
+
+bool Rtcm_Printer::Print_Rtcm_MT1060(const Galileo_HAS_data& has_data, bool ssr_multiple_msg_indicator)
+{
+    const std::string m1060 = rtcm->print_MT1060(has_data, ssr_multiple_msg_indicator);
+    if (m1060.empty())
+        {
+            return false;
+        }
+    Rtcm_Printer::Print_Message(m1060);
+    return true;
 }
 
 

@@ -70,7 +70,8 @@ using b_io_context = boost::asio::io_service;
  * defined in the RTCM 3.2 Standard, plus some utilities to handle messages.
  *
  * Generation of the following Message Types:
- *   1001, 1002, 1003, 1004, 1005, 1006, 1008, 1019, 1020, 1029, 1045
+ *   1001, 1002, 1003, 1004, 1005, 1006, 1008, 1019, 1020, 1029, 1045,
+ *   1057, 1058, 1059, 1060
  *
  * Decoding of the following Message Types:
  *   1019, 1045
@@ -344,6 +345,26 @@ public:
         bool more_messages);
 
     /*!
+     * \brief Prints message type 1057 (SSR GPS Orbit Correction)
+     */
+    std::string print_MT1057(const Galileo_HAS_data& has_data, bool ssr_multiple_msg_indicator = false);
+
+    /*!
+     * \brief Prints message type 1058 (SSR GPS Clock Correction)
+     */
+    std::string print_MT1058(const Galileo_HAS_data& has_data, bool use_clock_subset = false, bool ssr_multiple_msg_indicator = false);
+
+    /*!
+     * \brief Prints message type 1059 (SSR GPS Satellite Code Bias)
+     */
+    std::string print_MT1059(const Galileo_HAS_data& has_data, bool ssr_multiple_msg_indicator = false);
+
+    /*!
+     * \brief Prints message type 1060 (SSR GPS Combined Orbit and Clock Correction)
+     */
+    std::string print_MT1060(const Galileo_HAS_data& has_data, bool ssr_multiple_msg_indicator = false);
+
+    /*!
      * \brief Prints messages of type IGM01 (SSR Orbit Correction)
      */
     std::vector<std::string> print_IGM01(const Galileo_HAS_data& has_data);
@@ -504,6 +525,15 @@ private:
     std::string get_MSM_7_content_signal_data(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& ephCNAV, const Galileo_Ephemeris& ephFNAV, const Glonass_Gnav_Ephemeris& ephGNAV, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
     bool check_MSM_size_limits(uint32_t msg_number, const std::map<int32_t, Gnss_Synchro>& observables);
 
+    std::string get_MT1057_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
+    std::string get_MT1057_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
+    std::string get_MT1058_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator, bool use_clock_subset = false);
+    std::string get_MT1058_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index, bool use_clock_subset = false);
+    std::string get_MT1059_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
+    std::string get_MT1059_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
+    std::string get_MT1060_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
+    std::string get_MT1060_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
+
     std::string get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
     std::string get_IGM01_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
     std::string get_IGM02_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator, bool use_clock_subset = false);
@@ -516,6 +546,11 @@ private:
     //
     // Utilities
     //
+    static bool get_has_data_gps_index(const Galileo_HAS_data& has_data, uint8_t& nsys);
+    static uint8_t get_MT1057_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys);
+    static uint8_t get_MT1059_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys);
+    static bool get_MT1059_tracking_mode_id(const std::string& signal, uint8_t& tracking_mode_id);
+    static uint8_t get_MT1060_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys);
     static bool get_IGM05_tracking_mode_id(uint8_t gnss_id, const std::string& signal, uint8_t& tracking_mode_id);
     static uint8_t get_IGM02_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys, bool use_clock_subset);
     static uint8_t get_IGM05_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys);

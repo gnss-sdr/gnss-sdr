@@ -102,6 +102,7 @@ public:
     uint32_t lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);
 
     void Print_IGM_Messages(const Galileo_HAS_data& has_data);
+    void Print_SSR_Messages(const Galileo_HAS_data& has_data);
 
     std::string print_MT1005_test();  //!<  For testing purposes
 
@@ -182,6 +183,11 @@ private:
         int32_t smooth_int,
         bool divergence_free,
         bool more_messages);
+
+    bool Print_Rtcm_MT1057(const Galileo_HAS_data& has_data, bool ssr_multiple_msg_indicator = false);                                 // SSR GPS Orbit Corrections
+    bool Print_Rtcm_MT1058(const Galileo_HAS_data& has_data, bool use_clock_subset = false, bool ssr_multiple_msg_indicator = false);  // SSR GPS Clock Corrections
+    bool Print_Rtcm_MT1059(const Galileo_HAS_data& has_data, bool ssr_multiple_msg_indicator = false);                                 // SSR GPS Code Bias Corrections
+    bool Print_Rtcm_MT1060(const Galileo_HAS_data& has_data, bool ssr_multiple_msg_indicator = false);                                 // SSR GPS Combined Orbit & Clock Corrections
 
     bool Print_IGM01(const Galileo_HAS_data& has_data);                                 // SSR Orbit Corrections
     bool Print_IGM02(const Galileo_HAS_data& has_data, bool use_clock_subset = false);  // SSR Clock Corrections

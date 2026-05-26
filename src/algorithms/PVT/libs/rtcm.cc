@@ -3257,6 +3257,383 @@ uint8_t Rtcm::ssr_update_interval(uint16_t validity_seconds) const
 }
 
 
+std::string Rtcm::print_MT1057(const Galileo_HAS_data& has_data, bool ssr_multiple_msg_indicator)
+{
+    uint8_t gps_index = 0;
+    if (!has_data.header.orbit_correction_flag || !Rtcm::get_has_data_gps_index(has_data, gps_index) || Rtcm::get_MT1057_satellite_count(has_data, gps_index) == 0)
+        {
+            return {};
+        }
+
+    const std::string header = Rtcm::get_MT1057_header(has_data, gps_index, ssr_multiple_msg_indicator);
+    const std::string sat_data = Rtcm::get_MT1057_content_sat(has_data, gps_index);
+    std::string message = build_message(header + sat_data);
+    if (server_is_running && !message.empty())
+        {
+            rtcm_message_queue->push(message);
+        }
+    return message;
+}
+
+
+std::string Rtcm::print_MT1058(const Galileo_HAS_data& has_data, bool use_clock_subset, bool ssr_multiple_msg_indicator)
+{
+    uint8_t gps_index = 0;
+    const bool has_clock_corrections = use_clock_subset ? has_data.header.clock_subset_flag : has_data.header.clock_fullset_flag;
+    if (!has_clock_corrections || !Rtcm::get_has_data_gps_index(has_data, gps_index) || Rtcm::get_IGM02_satellite_count(has_data, gps_index, use_clock_subset) == 0)
+        {
+            return {};
+        }
+
+    const std::string header = Rtcm::get_MT1058_header(has_data, gps_index, ssr_multiple_msg_indicator, use_clock_subset);
+    const std::string sat_data = Rtcm::get_MT1058_content_sat(has_data, gps_index, use_clock_subset);
+    std::string message = build_message(header + sat_data);
+    if (server_is_running && !message.empty())
+        {
+            rtcm_message_queue->push(message);
+        }
+    return message;
+}
+
+
+std::string Rtcm::print_MT1059(const Galileo_HAS_data& has_data, bool ssr_multiple_msg_indicator)
+{
+    uint8_t gps_index = 0;
+    if (!has_data.header.code_bias_flag || !Rtcm::get_has_data_gps_index(has_data, gps_index) || Rtcm::get_MT1059_satellite_count(has_data, gps_index) == 0)
+        {
+            return {};
+        }
+
+    const std::string header = Rtcm::get_MT1059_header(has_data, gps_index, ssr_multiple_msg_indicator);
+    const std::string sat_data = Rtcm::get_MT1059_content_sat(has_data, gps_index);
+    if (sat_data.empty())
+        {
+            return {};
+        }
+    std::string message = build_message(header + sat_data);
+    if (server_is_running && !message.empty())
+        {
+            rtcm_message_queue->push(message);
+        }
+    return message;
+}
+
+
+std::string Rtcm::print_MT1060(const Galileo_HAS_data& has_data, bool ssr_multiple_msg_indicator)
+{
+    uint8_t gps_index = 0;
+    if (!has_data.header.orbit_correction_flag || !has_data.header.clock_fullset_flag || !Rtcm::get_has_data_gps_index(has_data, gps_index) || Rtcm::get_MT1060_satellite_count(has_data, gps_index) == 0)
+        {
+            return {};
+        }
+
+    const uint16_t orbit_validity_seconds = has_data.get_validity_interval_s(has_data.validity_interval_index_orbit_corrections);
+    const uint16_t clock_validity_seconds = has_data.get_validity_interval_s(has_data.validity_interval_index_clock_fullset_corrections);
+    if (ssr_update_interval(orbit_validity_seconds) != ssr_update_interval(clock_validity_seconds))
+        {
+            return {};
+        }
+
+    const std::string header = Rtcm::get_MT1060_header(has_data, gps_index, ssr_multiple_msg_indicator);
+    const std::string sat_data = Rtcm::get_MT1060_content_sat(has_data, gps_index);
+    std::string message = build_message(header + sat_data);
+    if (server_is_running && !message.empty())
+        {
+            rtcm_message_queue->push(message);
+        }
+    return message;
+}
+
+
+std::string Rtcm::get_MT1057_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator)
+{
+    std::string header;
+
+    const uint32_t tow = has_data.tow;
+    const uint16_t ssr_provider_id = 0;
+    const uint8_t ssr_solution_id = 0;
+    const uint8_t iod_ssr = Rtcm::get_iod_ssr(has_data.header.iod_set_id);
+    const bool satellite_reference_datum = false;
+
+    const uint8_t validity_index = has_data.validity_interval_index_orbit_corrections;
+    const uint16_t validity_seconds = has_data.get_validity_interval_s(validity_index);
+    const uint8_t ssr_update_interval_ = ssr_update_interval(validity_seconds);
+    const uint8_t Nsat = Rtcm::get_MT1057_satellite_count(has_data, nsys);
+
+    Rtcm::set_DF002(1057);
+    Rtcm::set_IDF003(tow);
+    Rtcm::set_IDF004(ssr_update_interval_);
+    Rtcm::set_IDF005(ssr_multiple_msg_indicator);
+    Rtcm::set_IDF006(satellite_reference_datum);
+    Rtcm::set_IDF007(iod_ssr);
+    Rtcm::set_IDF008(ssr_provider_id);
+    Rtcm::set_IDF009(ssr_solution_id);
+    Rtcm::set_IDF010(Nsat);
+
+    header += DF002.to_string() + IDF003.to_string() + IDF004.to_string() +
+              IDF005.to_string() + IDF006.to_string() + IDF007.to_string() +
+              IDF008.to_string() + IDF009.to_string() + IDF010.to_string();
+    return header;
+}
+
+
+std::string Rtcm::get_MT1057_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index)
+{
+    std::string content;
+
+    const std::vector<int> prn = has_data.get_PRNs_in_mask(nsys_index);
+    const std::vector<uint16_t> gnss_iod = has_data.get_gnss_iod(nsys_index);
+    const std::vector<float> delta_orbit_radial_m = has_data.get_delta_radial_m(nsys_index);
+    const std::vector<float> delta_orbit_in_track_m = has_data.get_delta_in_track_m(nsys_index);
+    const std::vector<float> delta_orbit_cross_track_m = has_data.get_delta_cross_track_m(nsys_index);
+
+    const uint8_t num_sats_in_this_system = Rtcm::get_MT1057_satellite_count(has_data, nsys_index);
+    for (uint8_t sat = 0; sat < num_sats_in_this_system; sat++)
+        {
+            Rtcm::set_IDF011(static_cast<uint8_t>(prn[sat]));
+            Rtcm::set_IDF012(Rtcm::get_gnss_iod_lsb(gnss_iod[sat]));
+            Rtcm::set_IDF013(delta_orbit_radial_m[sat]);
+            Rtcm::set_IDF014(delta_orbit_in_track_m[sat]);
+            Rtcm::set_IDF015(delta_orbit_cross_track_m[sat]);
+            Rtcm::set_IDF016(0.0);  // dot_orbit_delta_radial_m_s
+            Rtcm::set_IDF017(0.0);  // dot_orbit_delta_in_track_m_s
+            Rtcm::set_IDF018(0.0);  // dot_orbit_delta_cross_track_m_s
+
+            content += IDF011.to_string() + IDF012.to_string() + IDF013.to_string() +
+                       IDF014.to_string() + IDF015.to_string() + IDF016.to_string() +
+                       IDF017.to_string() + IDF018.to_string();
+        }
+
+    return content;
+}
+
+
+std::string Rtcm::get_MT1058_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator, bool use_clock_subset)
+{
+    std::string header;
+
+    const uint32_t tow = has_data.tow;
+    const uint16_t ssr_provider_id = 0;
+    const uint8_t ssr_solution_id = 0;
+    const uint8_t iod_ssr = Rtcm::get_iod_ssr(has_data.header.iod_set_id);
+
+    const uint8_t validity_index = use_clock_subset ? has_data.validity_interval_index_clock_subset_corrections : has_data.validity_interval_index_clock_fullset_corrections;
+    const uint16_t validity_seconds = has_data.get_validity_interval_s(validity_index);
+    const uint8_t ssr_update_interval_ = ssr_update_interval(validity_seconds);
+    const uint8_t Nsat = Rtcm::get_IGM02_satellite_count(has_data, nsys, use_clock_subset);
+
+    Rtcm::set_DF002(1058);
+    Rtcm::set_IDF003(tow);
+    Rtcm::set_IDF004(ssr_update_interval_);
+    Rtcm::set_IDF005(ssr_multiple_msg_indicator);
+    Rtcm::set_IDF007(iod_ssr);
+    Rtcm::set_IDF008(ssr_provider_id);
+    Rtcm::set_IDF009(ssr_solution_id);
+    Rtcm::set_IDF010(Nsat);
+
+    header += DF002.to_string() + IDF003.to_string() + IDF004.to_string() +
+              IDF005.to_string() + IDF007.to_string() + IDF008.to_string() +
+              IDF009.to_string() + IDF010.to_string();
+    return header;
+}
+
+
+std::string Rtcm::get_MT1058_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index, bool use_clock_subset)
+{
+    std::string content;
+
+    const std::vector<int> prn = use_clock_subset ? has_data.get_PRNs_in_submask(nsys_index) : has_data.get_PRNs_in_mask(nsys_index);
+    const std::vector<float> delta_clock_c0 = use_clock_subset ? has_data.get_delta_clock_subset_correction_m(nsys_index) : has_data.get_delta_clock_correction_m(nsys_index);
+    const uint8_t num_sats_in_this_system = Rtcm::get_IGM02_satellite_count(has_data, nsys_index, use_clock_subset);
+    const std::vector<float> delta_clock_c1(num_sats_in_this_system);
+    const std::vector<float> delta_clock_c2(num_sats_in_this_system);
+
+    for (uint8_t sat = 0; sat < num_sats_in_this_system; sat++)
+        {
+            Rtcm::set_IDF011(static_cast<uint8_t>(prn[sat]));
+            Rtcm::set_IDF019(delta_clock_c0[sat]);
+            Rtcm::set_IDF020(delta_clock_c1[sat]);
+            Rtcm::set_IDF021(delta_clock_c2[sat]);
+
+            content += IDF011.to_string() + IDF019.to_string() + IDF020.to_string() +
+                       IDF021.to_string();
+        }
+
+    return content;
+}
+
+
+std::string Rtcm::get_MT1059_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator)
+{
+    std::string header;
+
+    const uint32_t tow = has_data.tow;
+    const uint16_t ssr_provider_id = 0;
+    const uint8_t ssr_solution_id = 0;
+    const uint8_t iod_ssr = Rtcm::get_iod_ssr(has_data.header.iod_set_id);
+
+    const uint8_t validity_index = has_data.validity_interval_index_code_bias_corrections;
+    const uint16_t validity_seconds = has_data.get_validity_interval_s(validity_index);
+    const uint8_t ssr_update_interval_ = ssr_update_interval(validity_seconds);
+    const uint8_t Nsat = Rtcm::get_MT1059_satellite_count(has_data, nsys);
+
+    Rtcm::set_DF002(1059);
+    Rtcm::set_IDF003(tow);
+    Rtcm::set_IDF004(ssr_update_interval_);
+    Rtcm::set_IDF005(ssr_multiple_msg_indicator);
+    Rtcm::set_IDF007(iod_ssr);
+    Rtcm::set_IDF008(ssr_provider_id);
+    Rtcm::set_IDF009(ssr_solution_id);
+    Rtcm::set_IDF010(Nsat);
+
+    header += DF002.to_string() + IDF003.to_string() + IDF004.to_string() +
+              IDF005.to_string() + IDF007.to_string() + IDF008.to_string() +
+              IDF009.to_string() + IDF010.to_string();
+    return header;
+}
+
+
+std::string Rtcm::get_MT1059_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index)
+{
+    std::string content;
+
+    const std::vector<uint8_t> num_satellites = has_data.get_num_satellites();
+    if (nsys_index >= num_satellites.size())
+        {
+            return content;
+        }
+
+    const uint8_t num_sats_in_this_system = num_satellites[nsys_index];
+    const std::vector<int> prn = has_data.get_PRNs_in_mask(nsys_index);
+    const std::vector<std::vector<float>> code_bias_m = has_data.get_code_bias_m();
+    const std::vector<std::string> signals = has_data.get_signals_in_mask(nsys_index);
+
+    for (uint8_t sat = 0; sat < num_sats_in_this_system && sat < prn.size(); sat++)
+        {
+            uint8_t valid_num_bias_processed = 0;
+            std::vector<uint8_t> gnss_signal_tracking_mode_id_v;
+            std::vector<bool> valid_bias_v;
+
+            size_t num_sats_in_previous_systems = 0;
+            for (uint8_t nsys = 0; nsys < nsys_index; nsys++)
+                {
+                    num_sats_in_previous_systems += num_satellites[nsys];
+                }
+            const size_t sat_index = sat + num_sats_in_previous_systems;
+
+            for (size_t code = 0; code < signals.size(); code++)
+                {
+                    uint8_t tracking_mode_id = 0;
+                    const bool available_bias = (sat_index < code_bias_m.size()) &&
+                                                (code < code_bias_m[sat_index].size()) &&
+                                                !Galileo_HAS_data::is_code_bias_unavailable(code_bias_m[sat_index][code]);
+                    if (Rtcm::get_MT1059_tracking_mode_id(signals[code], tracking_mode_id) && available_bias)
+                        {
+                            gnss_signal_tracking_mode_id_v.push_back(tracking_mode_id);
+                            valid_bias_v.push_back(true);
+                            valid_num_bias_processed++;
+                        }
+                    else
+                        {
+                            gnss_signal_tracking_mode_id_v.push_back(0);
+                            valid_bias_v.push_back(false);
+                        }
+                }
+
+            if (valid_num_bias_processed > 0)
+                {
+                    Rtcm::set_IDF011(static_cast<uint8_t>(prn[sat]));
+                    Rtcm::set_IDF023(valid_num_bias_processed);
+
+                    content += IDF011.to_string() + IDF023.to_string();
+
+                    for (size_t code = 0; code < signals.size(); code++)
+                        {
+                            if (valid_bias_v[code] == true)
+                                {
+                                    Rtcm::set_IDF024(gnss_signal_tracking_mode_id_v[code]);
+                                    Rtcm::set_IDF025(code_bias_m[sat_index][code]);
+                                    content += IDF024.to_string() + IDF025.to_string();
+                                }
+                        }
+                }
+        }
+
+    return content;
+}
+
+
+std::string Rtcm::get_MT1060_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator)
+{
+    std::string header;
+
+    const uint32_t tow = has_data.tow;
+    const uint16_t ssr_provider_id = 0;
+    const uint8_t ssr_solution_id = 0;
+    const uint8_t iod_ssr = Rtcm::get_iod_ssr(has_data.header.iod_set_id);
+    const bool satellite_reference_datum = false;
+
+    const uint8_t validity_index = has_data.validity_interval_index_orbit_corrections;
+    const uint16_t validity_seconds = has_data.get_validity_interval_s(validity_index);
+    const uint8_t ssr_update_interval_ = ssr_update_interval(validity_seconds);
+    const uint8_t Nsat = Rtcm::get_MT1060_satellite_count(has_data, nsys);
+
+    Rtcm::set_DF002(1060);
+    Rtcm::set_IDF003(tow);
+    Rtcm::set_IDF004(ssr_update_interval_);
+    Rtcm::set_IDF005(ssr_multiple_msg_indicator);
+    Rtcm::set_IDF006(satellite_reference_datum);
+    Rtcm::set_IDF007(iod_ssr);
+    Rtcm::set_IDF008(ssr_provider_id);
+    Rtcm::set_IDF009(ssr_solution_id);
+    Rtcm::set_IDF010(Nsat);
+
+    header += DF002.to_string() + IDF003.to_string() + IDF004.to_string() +
+              IDF005.to_string() + IDF006.to_string() + IDF007.to_string() +
+              IDF008.to_string() + IDF009.to_string() + IDF010.to_string();
+    return header;
+}
+
+
+std::string Rtcm::get_MT1060_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index)
+{
+    std::string content;
+
+    const std::vector<int> prn = has_data.get_PRNs_in_mask(nsys_index);
+    const std::vector<uint16_t> gnss_iod = has_data.get_gnss_iod(nsys_index);
+    const std::vector<float> delta_orbit_radial_m = has_data.get_delta_radial_m(nsys_index);
+    const std::vector<float> delta_orbit_in_track_m = has_data.get_delta_in_track_m(nsys_index);
+    const std::vector<float> delta_orbit_cross_track_m = has_data.get_delta_cross_track_m(nsys_index);
+    const std::vector<float> delta_clock_c0 = has_data.get_delta_clock_correction_m(nsys_index);
+
+    const uint8_t num_sats_in_this_system = Rtcm::get_MT1060_satellite_count(has_data, nsys_index);
+    const std::vector<float> delta_clock_c1(num_sats_in_this_system);
+    const std::vector<float> delta_clock_c2(num_sats_in_this_system);
+
+    for (uint8_t sat = 0; sat < num_sats_in_this_system; sat++)
+        {
+            Rtcm::set_IDF011(static_cast<uint8_t>(prn[sat]));
+            Rtcm::set_IDF012(Rtcm::get_gnss_iod_lsb(gnss_iod[sat]));
+            Rtcm::set_IDF013(delta_orbit_radial_m[sat]);
+            Rtcm::set_IDF014(delta_orbit_in_track_m[sat]);
+            Rtcm::set_IDF015(delta_orbit_cross_track_m[sat]);
+            Rtcm::set_IDF016(0.0);  // dot_orbit_delta_radial_m_s
+            Rtcm::set_IDF017(0.0);  // dot_orbit_delta_in_track_m_s
+            Rtcm::set_IDF018(0.0);  // dot_orbit_delta_cross_track_m_s
+            Rtcm::set_IDF019(delta_clock_c0[sat]);
+            Rtcm::set_IDF020(delta_clock_c1[sat]);
+            Rtcm::set_IDF021(delta_clock_c2[sat]);
+
+            content += IDF011.to_string() + IDF012.to_string() + IDF013.to_string() +
+                       IDF014.to_string() + IDF015.to_string() + IDF016.to_string() +
+                       IDF017.to_string() + IDF018.to_string() + IDF019.to_string() +
+                       IDF020.to_string() + IDF021.to_string();
+        }
+
+    return content;
+}
+
+
 std::vector<std::string> Rtcm::print_IGM01(const Galileo_HAS_data& has_data)
 {
     std::vector<std::string> msgs;
@@ -3710,6 +4087,136 @@ std::string Rtcm::get_IGM05_content_sat(const Galileo_HAS_data& has_data, uint8_
 // *****************************************************************************************************
 // Some utilities
 // *****************************************************************************************************
+
+bool Rtcm::get_has_data_gps_index(const Galileo_HAS_data& has_data, uint8_t& nsys)
+{
+    for (uint8_t sys = 0; sys < has_data.Nsys && sys < has_data.gnss_id_mask.size(); sys++)
+        {
+            if (has_data.gnss_id_mask[sys] == 0)  // GPS
+                {
+                    nsys = sys;
+                    return true;
+                }
+        }
+    return false;
+}
+
+
+uint8_t Rtcm::get_MT1057_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys)
+{
+    const std::vector<int> prns = has_data.get_PRNs_in_mask(nsys);
+    const std::vector<uint16_t> gnss_iod = has_data.get_gnss_iod(nsys);
+    const std::vector<float> delta_orbit_radial_m = has_data.get_delta_radial_m(nsys);
+    const std::vector<float> delta_orbit_in_track_m = has_data.get_delta_in_track_m(nsys);
+    const std::vector<float> delta_orbit_cross_track_m = has_data.get_delta_cross_track_m(nsys);
+
+    size_t count = prns.size();
+    count = std::min(count, gnss_iod.size());
+    count = std::min(count, delta_orbit_radial_m.size());
+    count = std::min(count, delta_orbit_in_track_m.size());
+    count = std::min(count, delta_orbit_cross_track_m.size());
+    count = std::min(count, static_cast<size_t>(63));
+    return static_cast<uint8_t>(count);
+}
+
+
+uint8_t Rtcm::get_MT1059_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys)
+{
+    const std::vector<uint8_t> num_satellites = has_data.get_num_satellites();
+    if (nsys >= num_satellites.size())
+        {
+            return 0;
+        }
+
+    const std::vector<std::vector<float>> code_bias_m = has_data.get_code_bias_m();
+    const std::vector<int> prns = has_data.get_PRNs_in_mask(nsys);
+    const std::vector<std::string> signals = has_data.get_signals_in_mask(nsys);
+    uint8_t count = 0;
+
+    size_t num_sats_in_previous_systems = 0;
+    for (uint8_t sys = 0; sys < nsys; sys++)
+        {
+            num_sats_in_previous_systems += num_satellites[sys];
+        }
+
+    const size_t num_sats = std::min(prns.size(), static_cast<size_t>(num_satellites[nsys]));
+    for (size_t sat = 0; sat < num_sats; sat++)
+        {
+            const size_t sat_index = num_sats_in_previous_systems + sat;
+            if (sat_index >= code_bias_m.size())
+                {
+                    continue;
+                }
+
+            bool has_valid_bias = false;
+            for (size_t code = 0; code < signals.size() && code < code_bias_m[sat_index].size(); code++)
+                {
+                    uint8_t tracking_mode_id = 0;
+                    if (Rtcm::get_MT1059_tracking_mode_id(signals[code], tracking_mode_id) &&
+                        !Galileo_HAS_data::is_code_bias_unavailable(code_bias_m[sat_index][code]))
+                        {
+                            has_valid_bias = true;
+                            break;
+                        }
+                }
+            if (has_valid_bias)
+                {
+                    count++;
+                }
+        }
+    return count;
+}
+
+
+bool Rtcm::get_MT1059_tracking_mode_id(const std::string& signal, uint8_t& tracking_mode_id)
+{
+    if (signal == "L1 C/A")
+        {
+            tracking_mode_id = 0;
+            return true;
+        }
+    if (signal == "L2 CM")
+        {
+            tracking_mode_id = 7;
+            return true;
+        }
+    if (signal == "L2 CL")
+        {
+            tracking_mode_id = 8;
+            return true;
+        }
+    if (signal == "L2 CM+CL")
+        {
+            tracking_mode_id = 9;
+            return true;
+        }
+    if (signal == "L2 P")
+        {
+            tracking_mode_id = 10;
+            return true;
+        }
+    if (signal == "L5 I")
+        {
+            tracking_mode_id = 14;
+            return true;
+        }
+    if (signal == "L5 Q")
+        {
+            tracking_mode_id = 15;
+            return true;
+        }
+    return false;
+}
+
+
+uint8_t Rtcm::get_MT1060_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys)
+{
+    const std::vector<float> delta_clock_c0 = has_data.get_delta_clock_correction_m(nsys);
+    size_t count = Rtcm::get_MT1057_satellite_count(has_data, nsys);
+    count = std::min(count, delta_clock_c0.size());
+    return static_cast<uint8_t>(count);
+}
+
 
 bool Rtcm::get_IGM05_tracking_mode_id(uint8_t gnss_id, const std::string& signal, uint8_t& tracking_mode_id)
 {

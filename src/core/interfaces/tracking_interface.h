@@ -47,9 +47,26 @@ class Concurrent_Queue;
 class TrackingInterface : public GNSSBlockInterface
 {
 public:
+    /*!
+     * \brief Starts the tracking process.
+     */
     virtual void start_tracking() = 0;
+
+    /*!
+     * \brief Stops the tracking process.
+     */
     virtual void stop_tracking() = 0;
+
+    /*!
+     * \brief Sets the GNSS synchronization data structure.
+     * \param[in] gnss_synchro Pointer to the Gnss_Synchro object for this channel.
+     */
     virtual void set_gnss_synchro(Gnss_Synchro* gnss_synchro) = 0;
+
+    /*!
+     * \brief Sets the channel identifier.
+     * \param[in] channel The channel identifier.
+     */
     virtual void set_channel(unsigned int channel) = 0;
 };
 

@@ -50,14 +50,55 @@ class ChannelFsm;
 class AcquisitionInterface : public GNSSBlockInterface
 {
 public:
+    /*!
+     * \brief Sets the GNSS synchronization data structure.
+     * \param[in] gnss_synchro Pointer to the Gnss_Synchro object for this channel.
+     */
     virtual void set_gnss_synchro(Gnss_Synchro* gnss_synchro) = 0;
+
+    /*!
+     * \brief Sets the channel identifier.
+     * \param[in] channel_id The channel identifier.
+     */
     virtual void set_channel(unsigned int channel_id) = 0;
+
+    /*!
+     * \brief Sets the channel finite state machine.
+     * \param[in] channel_fsm Weak pointer to the ChannelFsm object.
+     */
     virtual void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) = 0;
-    virtual void set_doppler_center(int /*doppler_center*/) {}
+
+    /*!
+     * \brief Sets the Doppler center value for assisted acquisition.
+     * \param[in] doppler_center Doppler center frequency in Hz.
+     */
+    virtual void set_doppler_center(int doppler_center) {}
+
+    /*!
+     * \brief Generates and sets the local replica code.
+     */
     virtual void set_local_code() = 0;
+
+    /*!
+     * \brief Returns the acquisition detection magnitude.
+     * \return Acquisition detection magnitude.
+     */
     virtual signed int mag() = 0;
+
+    /*!
+     * \brief Resets the acquisition state machine.
+     */
     virtual void reset() = 0;
+
+    /*!
+     * \brief Stops the acquisition process.
+     */
     virtual void stop_acquisition() = 0;
+
+    /*!
+     * \brief Sets the resampler latency in samples.
+     * \param[in] latency_samples Resampler latency in sample count.
+     */
     virtual void set_resampler_latency(uint32_t latency_samples) = 0;
 };
 

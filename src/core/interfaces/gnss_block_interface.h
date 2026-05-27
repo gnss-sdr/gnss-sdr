@@ -69,30 +69,75 @@ class GNSSBlockInterface
 {
 public:
     virtual ~GNSSBlockInterface() = default;
+
+    /*!
+     * \brief Returns the role of the block in the flowgraph.
+     * \return A string identifying the block's role (e.g. "Acquisition", "Tracking").
+     */
     virtual std::string role() = 0;
+
+    /*!
+     * \brief Returns the concrete implementation identifier.
+     * \return A string identifying the implementation (e.g. "GPS_L1_CA_PCPS_Acquisition").
+     */
     virtual std::string implementation() = 0;
+
+    /*!
+     * \brief Returns the size of each input/output item in bytes.
+     * \return Item size in bytes.
+     */
     virtual size_t item_size() = 0;
+
+    /*!
+     * \brief Connects the block to the GNU Radio flowgraph.
+     * \param[in] top_block Shared pointer to the GNU Radio top block.
+     */
     virtual void connect(gr::top_block_sptr top_block) = 0;
+
+    /*!
+     * \brief Disconnects the block from the GNU Radio flowgraph.
+     * \param[in] top_block Shared pointer to the GNU Radio top block.
+     */
     virtual void disconnect(gr::top_block_sptr top_block) = 0;
 
+    /*!
+     * \brief Returns the leftmost GNU Radio block of this processing block.
+     * \return Shared pointer to the leftmost basic block.
+     */
     virtual gr::basic_block_sptr get_left_block() = 0;
+
+    /*!
+     * \brief Returns the rightmost GNU Radio block of this processing block.
+     * \return Shared pointer to the rightmost basic block.
+     */
     virtual gr::basic_block_sptr get_right_block() = 0;
 
+    /*!
+     * \brief Returns the leftmost GNU Radio block for a given RF channel.
+     * \param[in] RF_channel RF channel index.
+     * \return Shared pointer to the leftmost basic block, or nullptr if not implemented.
+     */
     virtual gr::basic_block_sptr get_left_block(int RF_channel)
     {
         assert(RF_channel >= 0);
         if (RF_channel == 0)
             {
-            };  // avoid unused param warning
-        return nullptr;  // added to support raw array access (non pure virtual to allow left unimplemented)= 0;
+            };
+        return nullptr;
     }
+
+    /*!
+     * \brief Returns the rightmost GNU Radio block for a given RF channel.
+     * \param[in] RF_channel RF channel index.
+     * \return Shared pointer to the rightmost basic block, or nullptr if not implemented.
+     */
     virtual gr::basic_block_sptr get_right_block(int RF_channel)
     {
         assert(RF_channel >= 0);
         if (RF_channel == 0)
             {
-            };  // avoid unused param warning
-        return nullptr;  // added to support raw array access (non pure virtual to allow left unimplemented)= 0;
+            };
+        return nullptr;
     }
 
     /*!

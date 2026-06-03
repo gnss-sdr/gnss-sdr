@@ -390,7 +390,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                         d_ifft->execute();
                                         volk_32fc_magnitude_squared_32f(d_magnitudeQB.data(), d_ifft->get_outbuf(), d_fft_size);
                                         volk_gnsssdr_32f_index_max_32u(&indext_QB, d_magnitudeQB.data(), d_fft_size);
-                                        magt_QB = d_magnitudeIB[indext_QB] / (fft_normalization_factor * fft_normalization_factor);
+                                        magt_QB = d_magnitudeQB[indext_QB] / (fft_normalization_factor * fft_normalization_factor);
                                     }
                             }
 

@@ -191,8 +191,10 @@ Acq_Conf get_acq_conf(
                     std::cout << "Zero padding activated. Changing to 1ms code + 1ms zero padding\n";
                     max_sampled_ms = 2;
                 }
-
-            max_sampled_ms = 3;
+            else
+                {
+                    max_sampled_ms = 3;
+                }
         }
 
     if (default_folding_factor)

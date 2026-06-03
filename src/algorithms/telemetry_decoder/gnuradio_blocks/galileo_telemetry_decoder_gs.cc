@@ -732,6 +732,7 @@ void galileo_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite
     d_E6_TOW_set = false;
     d_valid_timetag = false;
     d_inav_nav.init_PRN(d_satellite.get_PRN());
+    d_symbol_history.clear();
     if (d_there_are_e6_channels)
         {
             const std::pair<uint32_t, uint64_t> tow_and_sample{d_received_tow_ms, 0ULL};
@@ -760,6 +761,7 @@ void galileo_telemetry_decoder_gs::reset()
     d_received_tow_ms = std::numeric_limits<uint32_t>::max();
     d_viterbi->reset();
     d_valid_timetag = false;
+    d_symbol_history.clear();
     if (d_there_are_e6_channels)
         {
             const std::pair<uint32_t, uint64_t> tow_and_sample{d_received_tow_ms, 0ULL};

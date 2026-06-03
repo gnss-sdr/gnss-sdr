@@ -29,8 +29,8 @@ Viterbi_Decoder::Viterbi_Decoder(int32_t KK,
                                        d_states(1 << d_mm),       //  2^d_mm
                                        d_number_symbols(1 << nn)  //  2^d_nn
 {
-    d_prev_section = std::vector<float>(d_states, -d_MAXLOG);
-    d_next_section = std::vector<float>(d_states, -d_MAXLOG);
+    d_prev_section = std::vector<float>(d_states, neg_inf());
+    d_next_section = std::vector<float>(d_states, neg_inf());
     d_rec_array = std::vector<float>(d_nn);
     d_metric_c = std::vector<float>(d_number_symbols);
     d_prev_bit = std::vector<int32_t>(d_states * (d_LL + d_mm));
@@ -53,6 +53,8 @@ void Viterbi_Decoder::decode(std::vector<int32_t>& output_u_int, const std::vect
     float metric;
     float max_val;
 
+    std::fill(d_prev_section.begin(), d_prev_section.end(), neg_inf());
+    std::fill(d_next_section.begin(), d_next_section.end(), neg_inf());
     d_prev_section[0] = 0.0;  //  start in all-zeros state
 
     // go through trellis
@@ -69,6 +71,11 @@ void Viterbi_Decoder::decode(std::vector<int32_t>& output_u_int, const std::vect
             // step through all states
             for (state = 0; state < d_states; state++)
                 {
+                    if (d_prev_section[state] == neg_inf())
+                        {
+                            continue;
+                        }
+
                     // hypothesis: info bit is a zero
                     metric = d_prev_section[state] + d_metric_c[d_out0[state]];
 
@@ -95,11 +102,15 @@ void Viterbi_Decoder::decode(std::vector<int32_t>& output_u_int, const std::vect
             // normalize
             volk_gnsssdr_32f_index_max_32u(&max_index, d_next_section.data(), d_states);
             max_val = d_next_section[max_index];
+            if (max_val == neg_inf())
+                {
+                    return;
+                }
 
             for (state = 0; state < d_states; state++)
                 {
                     d_prev_section[state] = d_next_section[state] - max_val;
-                    d_next_section[state] = -d_MAXLOG;
+                    d_next_section[state] = neg_inf();
                 }
         }
 

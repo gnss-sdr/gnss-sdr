@@ -374,3 +374,35 @@ TEST_F(Galileo_FNAV_INAV_test, ValidationOfResults)
     elapsed_seconds = end - start;
     std::cout << "Galileo INAV/FNAV CRC and Viterbi decoder test completed in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }
+
+
+TEST(ViterbiDecoderTest, IndependentBlocksDoNotReusePathMetrics)
+{
+    constexpr int32_t nn = 2;
+    constexpr int32_t KK = 7;
+    constexpr int32_t mm = KK - 1;
+    constexpr int32_t LL = 6;
+    const std::array<int32_t, 2> g_encoder{{121, 91}};
+    const std::vector<float> neutral_symbols((LL + mm) * nn, 0.0F);
+    const std::vector<float> soft_symbols{
+        -0.166760F, -0.979662F, 0.650413F, -0.402720F,
+        -0.263177F, -0.612677F, 0.132016F, -0.676624F,
+        -0.751466F, -0.134127F, 0.124157F, -0.651313F,
+        0.106442F, -0.290197F, 0.916130F, -0.817412F,
+        0.957280F, -0.175761F, 0.007871F, -0.703708F,
+        0.437934F, -0.620057F, -0.316879F, -0.952958F};
+    const std::vector<int32_t> expected_bits{0, 1, 1, 1, 0, 0};
+
+    Viterbi_Decoder reused_decoder(KK, nn, LL, g_encoder);
+    Viterbi_Decoder fresh_decoder(KK, nn, LL, g_encoder);
+    std::vector<int32_t> neutral_bits(LL);
+    std::vector<int32_t> reused_bits(LL);
+    std::vector<int32_t> fresh_bits(LL);
+
+    reused_decoder.decode(neutral_bits, neutral_symbols);
+    reused_decoder.decode(reused_bits, soft_symbols);
+    fresh_decoder.decode(fresh_bits, soft_symbols);
+
+    EXPECT_EQ(fresh_bits, expected_bits);
+    EXPECT_EQ(reused_bits, fresh_bits);
+}

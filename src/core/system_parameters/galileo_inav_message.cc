@@ -326,6 +326,11 @@ bool Galileo_Inav_Message::have_new_ephemeris()  // Check if we have a new ephem
                                 {
                                     std::bitset<GALILEO_DATA_JK_BITS> missing_bits = regenerate_page_1(rs_buffer);
                                     read_page_1(missing_bits);
+                                    if (!current_IODnav_valid)
+                                        {
+                                            current_IODnav = IOD_nav_1;
+                                            current_IODnav_valid = true;
+                                        }
                                 }
                             if (inav_rs_pages[1] == 0)
                                 {
@@ -864,9 +869,10 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                 read_page_1(data_jk_bits);
                 if (enable_rs)
                     {
-                        if (current_IODnav == 0)
+                        if (!current_IODnav_valid)
                             {
                                 current_IODnav = IOD_nav_1;
+                                current_IODnav_valid = true;
                             }
                         if (current_IODnav != IOD_nav_1)
                             {
@@ -908,9 +914,10 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                 read_page_2(data_jk_bits);
                 if (enable_rs)
                     {
-                        if (current_IODnav == 0)
+                        if (!current_IODnav_valid)
                             {
                                 current_IODnav = IOD_nav_2;
+                                current_IODnav_valid = true;
                             }
                         if (current_IODnav != IOD_nav_2)
                             {
@@ -940,9 +947,10 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                 read_page_3(data_jk_bits);
                 if (enable_rs)
                     {
-                        if (current_IODnav == 0)
+                        if (!current_IODnav_valid)
                             {
                                 current_IODnav = IOD_nav_3;
+                                current_IODnav_valid = true;
                             }
                         if (current_IODnav != IOD_nav_3)
                             {
@@ -973,9 +981,10 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                 read_page_4(data_jk_bits);
                 if (enable_rs)
                     {
-                        if (current_IODnav == 0)
+                        if (!current_IODnav_valid)
                             {
                                 current_IODnav = IOD_nav_4;
+                                current_IODnav_valid = true;
                             }
                         if (current_IODnav != IOD_nav_4)
                             {
@@ -1275,7 +1284,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                     {
                         IODnav_LSB17 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
                         DLOG(INFO) << "IODnav 2 LSBs in Word type 17: " << static_cast<float>(IODnav_LSB17);
-                        if (IODnav_LSB17 != static_cast<uint8_t>((current_IODnav % 4)))
+                        if (current_IODnav_valid && IODnav_LSB17 != static_cast<uint8_t>((current_IODnav % 4)))
                             {
                                 // IODnav changed, information vector is invalid
                                 inav_rs_pages[0] = 0;
@@ -1305,7 +1314,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                     {
                         IODnav_LSB18 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
                         DLOG(INFO) << "IODnav 2 LSBs in Word type 18: " << static_cast<float>(IODnav_LSB18);
-                        if (IODnav_LSB18 != static_cast<uint8_t>((current_IODnav % 4)))
+                        if (current_IODnav_valid && IODnav_LSB18 != static_cast<uint8_t>((current_IODnav % 4)))
                             {
                                 // IODnav changed, information vector is invalid
                                 inav_rs_pages[0] = 0;
@@ -1335,7 +1344,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                     {
                         IODnav_LSB19 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
                         DLOG(INFO) << "IODnav 2 LSBs in Word type 19: " << static_cast<float>(IODnav_LSB19);
-                        if (IODnav_LSB19 != static_cast<uint8_t>((current_IODnav % 4)))
+                        if (current_IODnav_valid && IODnav_LSB19 != static_cast<uint8_t>((current_IODnav % 4)))
                             {
                                 // IODnav changed, information vector is invalid
                                 inav_rs_pages[0] = 0;
@@ -1365,7 +1374,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                     {
                         IODnav_LSB20 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
                         DLOG(INFO) << "IODnav 2 LSBs in Word type 20: " << static_cast<float>(IODnav_LSB20);
-                        if (IODnav_LSB20 != static_cast<uint8_t>((current_IODnav % 4)))
+                        if (current_IODnav_valid && IODnav_LSB20 != static_cast<uint8_t>((current_IODnav % 4)))
                             {
                                 // IODnav changed, information vector is invalid
                                 inav_rs_pages[0] = 0;

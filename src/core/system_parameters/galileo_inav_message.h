@@ -503,6 +503,7 @@ private:
     bool flag_CED{};
     bool enable_rs{};
     bool have_ISM{};
+    bool current_IODnav_valid{};  // IOD_nav can be zero, so track initialization separately.
 };
 
 

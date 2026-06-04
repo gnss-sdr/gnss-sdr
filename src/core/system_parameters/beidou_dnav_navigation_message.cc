@@ -18,6 +18,7 @@
 
 #include "beidou_dnav_navigation_message.h"
 #include "gnss_satellite.h"
+#include <array>     // for array
 #include <cmath>     // for cos, sin, fmod, sqrt, atan2, fabs, floor
 #include <iostream>  // for string, operator<<, cout, ostream
 #include <limits>    // for std::numeric_limits
@@ -38,6 +39,81 @@ Beidou_Dnav_Navigation_Message::Beidou_Dnav_Navigation_Message()
 void Beidou_Dnav_Navigation_Message::print_beidou_word_bytes(uint32_t BEIDOU_word) const
 {
     std::cout << " Word =" << std::bitset<32>(BEIDOU_word) << '\n';
+}
+
+
+uint32_t Beidou_Dnav_Navigation_Message::bch15_11_syndrome(const std::string& code_bits) const
+{
+    std::array<int32_t, BEIDOU_DNAV_BCH_PARITY_BITS> reg{{-1, -1, -1, -1}};
+
+    for (std::size_t i = 0; i < BEIDOU_DNAV_BCH_CODE_BITS; ++i)
+        {
+            const int32_t bit = reg[3];
+            const int32_t input = (code_bits[i] == '1') ? 1 : -1;
+            reg[3] = reg[2];
+            reg[2] = reg[1];
+            reg[1] = reg[0];
+            reg[0] = input * bit;
+            reg[1] *= bit;
+        }
+
+    uint32_t syndrome = 0U;
+    for (std::size_t i = 0; i < BEIDOU_DNAV_BCH_PARITY_BITS; ++i)
+        {
+            syndrome |= static_cast<uint32_t>((reg[i] + 1) / 2) << i;
+        }
+    return syndrome;
+}
+
+
+bool Beidou_Dnav_Navigation_Message::bch15_11_codeword_is_valid(const std::string& subframe, std::size_t data_index, std::size_t parity_index) const
+{
+    std::string code_bits;
+    code_bits.reserve(BEIDOU_DNAV_BCH_CODE_BITS);
+    code_bits.append(subframe, data_index, BEIDOU_DNAV_BCH_DATA_BITS);
+    code_bits.append(subframe, parity_index, BEIDOU_DNAV_BCH_PARITY_BITS);
+    return bch15_11_syndrome(code_bits) == 0U;
+}
+
+
+bool Beidou_Dnav_Navigation_Message::CRC_test(std::string const& subframe) const
+{
+    if (subframe.size() != static_cast<std::size_t>(BEIDOU_DNAV_SUBFRAME_DATA_BITS))
+        {
+            return false;
+        }
+
+    for (const auto bit : subframe)
+        {
+            if (bit != '0' && bit != '1')
+                {
+                    return false;
+                }
+        }
+
+    for (std::size_t word = 0; word < BEIDOU_DNAV_WORDS_SUBFRAME; ++word)
+        {
+            const std::size_t word_index = word * BEIDOU_DNAV_WORD_LENGTH_BITS;
+            if (word == 0)
+                {
+                    // Word 1: bits 1-15 are not encoded; bits 16-26 carry data and bits 27-30 parity.
+                    if (!bch15_11_codeword_is_valid(subframe, word_index + 15U, word_index + 26U))
+                        {
+                            return false;
+                        }
+                }
+            else
+                {
+                    // Words 2-10 are expected in deinterleaved form: 11+11 data bits followed by 4+4 parity bits.
+                    if (!bch15_11_codeword_is_valid(subframe, word_index, word_index + 22U) ||
+                        !bch15_11_codeword_is_valid(subframe, word_index + 11U, word_index + 26U))
+                        {
+                            return false;
+                        }
+                }
+        }
+
+    return true;
 }
 
 
@@ -84,11 +160,14 @@ int64_t Beidou_Dnav_Navigation_Message::read_navigation_signed(
 
 int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& subframe)
 {
+    flag_crc_test = CRC_test(subframe);
+    if (flag_crc_test == false)
+        {
+            return 0;
+        }
+
     const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> subframe_bits(subframe);
     const auto subframe_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_FRAID));
-
-    // Perform crc computation (tbd)
-    flag_crc_test = true;
 
     // Decode all 5 sub-frames
     switch (subframe_ID)
@@ -376,13 +455,16 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
 
 int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& subframe)
 {
+    flag_crc_test = CRC_test(subframe);
+    if (flag_crc_test == false)
+        {
+            return 0;
+        }
+
     const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> subframe_bits(subframe);
 
     const auto subframe_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, D2_FRAID));
     const auto page_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, D2_PNUM));
-
-    // Perform crc computation (tbd)
-    flag_crc_test = true;
 
     // Decode all 5 sub-frames
     switch (subframe_ID)

@@ -28,6 +28,7 @@
 #include "beidou_dnav_iono.h"
 #include "beidou_dnav_utc_model.h"
 #include <bitset>
+#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <string>
@@ -75,6 +76,15 @@ public:
      * \brief Decodes the BDS D2 NAV message
      */
     int32_t d2_subframe_decoder(std::string const& subframe);
+
+    /*!
+     * \brief Validates the BCH(15,11,1) parity blocks in a BDS DNAV subframe.
+     *
+     * The BDS B1I/B3I DNAV ICD does not define a subframe CRC. Each 30-bit
+     * word carries BCH parity bits for error control; this method checks those
+     * ICD-defined parity blocks.
+     */
+    bool CRC_test(std::string const& subframe) const;
 
     /*!
      * \brief Computes the Coordinated Universal Time (UTC) and
@@ -141,6 +151,8 @@ private:
     uint64_t read_navigation_unsigned(const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
     int64_t read_navigation_signed(const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
     bool read_navigation_bool(const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    uint32_t bch15_11_syndrome(const std::string& code_bits) const;
+    bool bch15_11_codeword_is_valid(const std::string& subframe, std::size_t data_index, std::size_t parity_index) const;
     void print_beidou_word_bytes(uint32_t BEIDOU_word) const;
 
     // broadcast orbit 1

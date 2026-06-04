@@ -19,6 +19,7 @@
 #define GNSS_SDR_BEIDOU_DNAV_H
 
 #include "MATH_CONSTANTS.h"
+#include <cstddef>
 #include <cstdint>
 #include <utility>
 #include <vector>
@@ -80,6 +81,10 @@ constexpr double D1_A0GLO_LSB = 0.1e-9;
 constexpr double D1_A1GLO_LSB = 0.1e-9;
 constexpr double D1_A0UTC_LSB = TWO_N30;
 constexpr double D1_A1UTC_LSB = TWO_N50;
+
+constexpr std::size_t BEIDOU_DNAV_BCH_CODE_BITS = 15;
+constexpr std::size_t BEIDOU_DNAV_BCH_DATA_BITS = 11;
+constexpr std::size_t BEIDOU_DNAV_BCH_PARITY_BITS = 4;
 
 constexpr int32_t BEIDOU_DNAV_PREAMBLE_LENGTH_BITS = 11;
 constexpr int32_t BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS = 11;  // **************

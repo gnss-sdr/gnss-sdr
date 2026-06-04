@@ -457,6 +457,13 @@ typedef struct
     float has_orbit_in_track_correction_m;    /* Galileo High Accuracy Service orbit in-track correction, in [m] */
     float has_orbit_cross_track_correction_m; /* Galileo High Accuracy Service orbit cross-track correction, in [m] */
     bool apply_has_corrections;
+    int cnav_uraed;     /* GPS/QZS CNAV URAED index */
+    int cnav_uraned0;   /* GPS/QZS CNAV URANED0 index */
+    int cnav_uraned1;   /* GPS/QZS CNAV URANED1 index */
+    int cnav_uraned2;   /* GPS/QZS CNAV URANED2 index */
+    double cnav_top;    /* GPS/QZS CNAV CEI data sequence propagation time of week (s) */
+    int cnav_wnop;      /* GPS/QZS CNAV CEI data sequence propagation week number, modulo 256 (-1 if unavailable) */
+    int cnav_ura_valid; /* GPS/QZS CNAV URA indexes are available */
 } eph_t;
 
 

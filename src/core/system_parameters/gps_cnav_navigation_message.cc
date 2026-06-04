@@ -36,6 +36,7 @@ Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message(CnavSystem system)
         }
     b_flag_iono_valid = false;
     b_flag_utc_valid = false;
+    b_flag_clock_valid = false;
 }
 
 
@@ -74,6 +75,28 @@ int64_t Gps_CNAV_Navigation_Message::read_navigation_signed(const std::bitset<GP
 }
 
 
+void Gps_CNAV_Navigation_Message::decode_clock_fields(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& data_bits)
+{
+    d_clock_top = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_TOP2));
+    d_clock_top *= CNAV_TOP2_LSB;
+    ephemeris_record.toc = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_TOC));
+    ephemeris_record.toc *= CNAV_TOC_LSB;
+    ephemeris_record.URANED0 = static_cast<int32_t>(read_navigation_signed(data_bits, CNAV_URA_NED0));
+    ephemeris_record.URANED1 = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_URA_NED1));
+    ephemeris_record.URANED2 = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_URA_NED2));
+    ephemeris_record.URA0 = static_cast<double>(ephemeris_record.URANED0);
+    ephemeris_record.URA1 = static_cast<double>(ephemeris_record.URANED1);
+    ephemeris_record.URA2 = static_cast<double>(ephemeris_record.URANED2);
+    ephemeris_record.af0 = static_cast<double>(read_navigation_signed(data_bits, CNAV_AF0));
+    ephemeris_record.af0 *= CNAV_AF0_LSB;
+    ephemeris_record.af1 = static_cast<double>(read_navigation_signed(data_bits, CNAV_AF1));
+    ephemeris_record.af1 *= CNAV_AF1_LSB;
+    ephemeris_record.af2 = static_cast<double>(read_navigation_signed(data_bits, CNAV_AF2));
+    ephemeris_record.af2 *= CNAV_AF2_LSB;
+    b_flag_clock_valid = true;
+}
+
+
 void Gps_CNAV_Navigation_Message::decode_page(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& data_bits)
 {
     int32_t page_type;
@@ -103,7 +126,9 @@ void Gps_CNAV_Navigation_Message::decode_page(const std::bitset<GPS_CNAV_DATA_PA
             ephemeris_record.signal_health = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_HEALTH));
             ephemeris_record.top = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_TOP1));
             ephemeris_record.top *= CNAV_TOP1_LSB;
-            ephemeris_record.URA0 = static_cast<double>(read_navigation_signed(data_bits, CNAV_URA));
+            d_ephemeris_top = ephemeris_record.top;
+            ephemeris_record.URAED = static_cast<int32_t>(read_navigation_signed(data_bits, CNAV_URA));
+            ephemeris_record.URA = ephemeris_record.URAED;
             ephemeris_record.toe1 = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_TOE1));
             ephemeris_record.toe1 *= CNAV_TOE1_LSB;
             ephemeris_record.delta_A = static_cast<double>(read_navigation_signed(data_bits, CNAV_DELTA_A));
@@ -162,18 +187,7 @@ void Gps_CNAV_Navigation_Message::decode_page(const std::bitset<GPS_CNAV_DATA_PA
             b_flag_ephemeris_2 = true;
             break;
         case 30:  // (CLOCK, IONO, GROUP DELAY)
-            // clock
-            ephemeris_record.toc = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_TOC));
-            ephemeris_record.toc *= CNAV_TOC_LSB;
-            ephemeris_record.URA0 = static_cast<double>(read_navigation_signed(data_bits, CNAV_URA_NED0));
-            ephemeris_record.URA1 = static_cast<double>(read_navigation_unsigned(data_bits, CNAV_URA_NED1));
-            ephemeris_record.URA2 = static_cast<double>(read_navigation_unsigned(data_bits, CNAV_URA_NED2));
-            ephemeris_record.af0 = static_cast<double>(read_navigation_signed(data_bits, CNAV_AF0));
-            ephemeris_record.af0 *= CNAV_AF0_LSB;
-            ephemeris_record.af1 = static_cast<double>(read_navigation_signed(data_bits, CNAV_AF1));
-            ephemeris_record.af1 *= CNAV_AF1_LSB;
-            ephemeris_record.af2 = static_cast<double>(read_navigation_signed(data_bits, CNAV_AF2));
-            ephemeris_record.af2 *= CNAV_AF2_LSB;
+            decode_clock_fields(data_bits);
             // group delays
             // Check if the group delay values are not available. See IS-GPS-200, Table 30-IV.
             // Bit string "1000000000000" is -4096 in 2 complement
@@ -228,19 +242,25 @@ void Gps_CNAV_Navigation_Message::decode_page(const std::bitset<GPS_CNAV_DATA_PA
             iono_record.beta2 = iono_record.beta2 * CNAV_BETA2_LSB;
             iono_record.beta3 = static_cast<double>(read_navigation_signed(data_bits, CNAV_BETA3));
             iono_record.beta3 = iono_record.beta3 * CNAV_BETA3_LSB;
+            ephemeris_record.WNop = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_WNOP));
             b_flag_iono_valid = true;
             break;
+        case 31:
+        case 32:
+        case 34:
+        case 35:
+        case 36:
+        case 37:
+            decode_clock_fields(data_bits);
+            break;
+        case 61:
+            if (d_system == CnavSystem::QZSS)
+                {
+                    decode_clock_fields(data_bits);
+                }
+            break;
         case 33:  // (CLOCK & UTC)
-            ephemeris_record.top = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_TOP1));
-            ephemeris_record.top = ephemeris_record.top * CNAV_TOP1_LSB;
-            ephemeris_record.toc = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_TOC));
-            ephemeris_record.toc = ephemeris_record.toc * CNAV_TOC_LSB;
-            ephemeris_record.af0 = static_cast<double>(read_navigation_signed(data_bits, CNAV_AF0));
-            ephemeris_record.af0 = ephemeris_record.af0 * CNAV_AF0_LSB;
-            ephemeris_record.af1 = static_cast<double>(read_navigation_signed(data_bits, CNAV_AF1));
-            ephemeris_record.af1 = ephemeris_record.af1 * CNAV_AF1_LSB;
-            ephemeris_record.af2 = static_cast<double>(read_navigation_signed(data_bits, CNAV_AF2));
-            ephemeris_record.af2 = ephemeris_record.af2 * CNAV_AF2_LSB;
+            decode_clock_fields(data_bits);
 
             utc_model_record.A0 = static_cast<double>(read_navigation_signed(data_bits, CNAV_A0));
             utc_model_record.A0 = utc_model_record.A0 * CNAV_A0_LSB;
@@ -274,16 +294,18 @@ void Gps_CNAV_Navigation_Message::decode_page(const std::bitset<GPS_CNAV_DATA_PA
 }
 
 
-bool Gps_CNAV_Navigation_Message::have_new_ephemeris()  // Check if we have a new ephemeris stored in the galileo navigation class
+bool Gps_CNAV_Navigation_Message::have_new_ephemeris()  // Check if we have a new ephemeris stored in the GPS CNAV navigation class
 {
-    if (b_flag_ephemeris_1 == true and b_flag_ephemeris_2 == true)
+    if (b_flag_ephemeris_1 == true && b_flag_ephemeris_2 == true && b_flag_clock_valid == true)
         {
-            if (ephemeris_record.toe1 == ephemeris_record.toe2)  // and ephemeris_record.toe1==ephemeris_record.d_Toc)
+            if (ephemeris_record.toe1 == ephemeris_record.toe2 &&
+                ephemeris_record.toe1 == ephemeris_record.toc &&
+                d_ephemeris_top == d_clock_top)
                 {
-                    // if all ephemeris pages have the same TOE, then they belong to the same block
-                    // std::cout << "Ephemeris (1, 2) have been received and belong to the same batch\n";
-                    b_flag_ephemeris_1 = false;  // clear the flag
-                    b_flag_ephemeris_2 = false;  // clear the flag
+                    // MT10, MT11, and a clock page belong to the same CNAV CEI set.
+                    b_flag_ephemeris_1 = false;  // clear the flags
+                    b_flag_ephemeris_2 = false;
+                    b_flag_clock_valid = false;
                     return true;
                 }
         }

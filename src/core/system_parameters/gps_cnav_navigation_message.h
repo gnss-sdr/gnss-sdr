@@ -91,6 +91,7 @@ private:
     uint64_t read_navigation_unsigned(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
     int64_t read_navigation_signed(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
     bool read_navigation_bool(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    void decode_clock_fields(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& data_bits);
 
     Gps_CNAV_Ephemeris ephemeris_record{};
     Gps_CNAV_Iono iono_record{};
@@ -100,9 +101,12 @@ private:
 
     CnavSystem d_system;
     int32_t d_TOW{};
+    int32_t d_ephemeris_top{};
+    int32_t d_clock_top{};
 
     bool b_flag_ephemeris_1{};
     bool b_flag_ephemeris_2{};
+    bool b_flag_clock_valid{};
     bool b_flag_iono_valid{};  //!< If set, it indicates that the ionospheric parameters are filled and are not yet read by the get_iono
     bool b_flag_utc_valid{};   //!< If set, it indicates that the utc parameters are filled and are not yet read by the get_utc_model
 };

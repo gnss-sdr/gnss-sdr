@@ -55,6 +55,99 @@ const HAS_obs_corrections* find_has_obs_correction(const std::map<std::string, s
 }  // namespace
 
 
+static double gps_cnav_ura_upper_bound_m(int32_t ura_index)
+{
+    switch (ura_index)
+        {
+        case -15:
+            return 0.01;
+        case -14:
+            return 0.02;
+        case -13:
+            return 0.03;
+        case -12:
+            return 0.04;
+        case -11:
+            return 0.06;
+        case -10:
+            return 0.08;
+        case -9:
+            return 0.11;
+        case -8:
+            return 0.15;
+        case -7:
+            return 0.21;
+        case -6:
+            return 0.30;
+        case -5:
+            return 0.43;
+        case -4:
+            return 0.60;
+        case -3:
+            return 0.85;
+        case -2:
+            return 1.20;
+        case -1:
+            return 1.70;
+        case 0:
+            return 2.40;
+        case 1:
+            return 3.40;
+        case 2:
+            return 4.85;
+        case 3:
+            return 6.85;
+        case 4:
+            return 9.65;
+        case 5:
+            return 13.65;
+        case 6:
+            return 24.0;
+        case 7:
+            return 48.0;
+        case 8:
+            return 96.0;
+        case 9:
+            return 192.0;
+        case 10:
+            return 384.0;
+        case 11:
+            return 768.0;
+        case 12:
+            return 1536.0;
+        case 13:
+            return 3072.0;
+        case 14:
+            return 6144.0;
+        default:
+            return 6144.0;
+        }
+}
+
+
+static int32_t gps_cnav_ura_to_rtklib_sva(int32_t uraed, int32_t uraned0)
+{
+    if (uraed == 15 || uraed == -16 || uraned0 == 15 || uraned0 == -16)
+        {
+            return 15;
+        }
+
+    const double composite_ura_m = std::hypot(gps_cnav_ura_upper_bound_m(uraed), gps_cnav_ura_upper_bound_m(uraned0));
+    const double rtklib_ura_bound_m[] = {
+        2.4, 3.4, 4.85, 6.85, 9.65, 13.65, 24.0, 48.0, 96.0, 192.0, 384.0, 768.0, 1536.0, 3072.0, 6144.0};
+
+    for (int32_t i = 0; i < 15; ++i)
+        {
+            if (composite_ura_m <= rtklib_ura_bound_m[i])
+                {
+                    return i;
+                }
+        }
+
+    return 15;
+}
+
+
 obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
     const Gnss_Synchro& gnss_synchro,
     const std::map<std::string, std::map<int, HAS_obs_corrections>>& has_obs_corr,
@@ -325,7 +418,7 @@ eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph,
     const std::map<int, HAS_clock_corrections>& clock_correction_map)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false};
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, 0, 0, 0, 0, 0.0, -1, 0};
     // Galileo is the third satellite system for RTKLIB, so, add the required offset to discriminate Galileo ephemeris
     rtklib_sat.sat = gal_eph.PRN + NSATGPS + NSATGLO;
     rtklib_sat.A = gal_eph.sqrtA * gal_eph.sqrtA;
@@ -432,7 +525,7 @@ eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph,
     bool pre_2009_file)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false};
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, 0, 0, 0, 0, 0.0, -1, 0};
     const int gps_sys = (MINPRNQZS <= gps_eph.PRN && gps_eph.PRN <= MAXPRNQZS) ? SYS_QZS : SYS_GPS;
     rtklib_sat.sat = satno(gps_sys, gps_eph.PRN);
     rtklib_sat.A = gps_eph.sqrtA * gps_eph.sqrtA;
@@ -533,7 +626,7 @@ eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph,
 eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false};
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, 0, 0, 0, 0, 0.0, -1, 0};
     rtklib_sat.sat = bei_eph.PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS;
     rtklib_sat.A = bei_eph.sqrtA * bei_eph.sqrtA;
     rtklib_sat.M0 = bei_eph.M_0;
@@ -608,7 +701,7 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
 eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false};
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, 0, 0, 0, 0, 0.0, -1, 0};
     const int gps_sys = (MINPRNQZS <= gps_cnav_eph.PRN && gps_cnav_eph.PRN <= MAXPRNQZS) ? SYS_QZS : SYS_GPS;
     rtklib_sat.sat = satno(gps_sys, gps_cnav_eph.PRN);
     rtklib_sat.A = gps_cnav_eph.sqrtA * gps_cnav_eph.sqrtA;
@@ -622,6 +715,14 @@ eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph)
     rtklib_sat.e = gps_cnav_eph.ecc;
     rtklib_sat.Adot = gps_cnav_eph.Adot;        // only in CNAV;
     rtklib_sat.ndot = gps_cnav_eph.delta_ndot;  // only in CNAV;
+    rtklib_sat.cnav_uraed = gps_cnav_eph.URAED;
+    rtklib_sat.cnav_uraned0 = gps_cnav_eph.URANED0;
+    rtklib_sat.cnav_uraned1 = gps_cnav_eph.URANED1;
+    rtklib_sat.cnav_uraned2 = gps_cnav_eph.URANED2;
+    rtklib_sat.cnav_top = gps_cnav_eph.top;
+    rtklib_sat.cnav_wnop = gps_cnav_eph.WNop;
+    rtklib_sat.cnav_ura_valid = 1;
+    rtklib_sat.sva = gps_cnav_ura_to_rtklib_sva(gps_cnav_eph.URAED, gps_cnav_eph.URANED0);
 
     rtklib_sat.week = adjgpsweek(gps_cnav_eph.WN); /* week of tow */
     rtklib_sat.cic = gps_cnav_eph.Cic;

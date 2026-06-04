@@ -34,6 +34,7 @@
 #include "rtklib_preceph.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_sbas.h"
+#include <cmath>
 #include <vector>
 
 /* constants -----------------------------------------------------------------*/
@@ -73,6 +74,116 @@ double var_uraeph(int ura)
         2.4, 3.4, 4.85, 6.85, 9.65, 13.65, 24.0, 48.0, 96.0, 192.0, 384.0, 768.0, 1536.0,
         3072.0, 6144.0};
     return ura < 0 || 14 < ura ? std::pow(6144.0, 2.0) : std::pow(ura_value[ura], 2.0);
+}
+
+
+static double cnav_ura_upper_bound_m(int ura_index)
+{
+    switch (ura_index)
+        {
+        case -15:
+            return 0.01;
+        case -14:
+            return 0.02;
+        case -13:
+            return 0.03;
+        case -12:
+            return 0.04;
+        case -11:
+            return 0.06;
+        case -10:
+            return 0.08;
+        case -9:
+            return 0.11;
+        case -8:
+            return 0.15;
+        case -7:
+            return 0.21;
+        case -6:
+            return 0.30;
+        case -5:
+            return 0.43;
+        case -4:
+            return 0.60;
+        case -3:
+            return 0.85;
+        case -2:
+            return 1.20;
+        case -1:
+            return 1.70;
+        case 0:
+            return 2.40;
+        case 1:
+            return 3.40;
+        case 2:
+            return 4.85;
+        case 3:
+            return 6.85;
+        case 4:
+            return 9.65;
+        case 5:
+            return 13.65;
+        case 6:
+            return 24.0;
+        case 7:
+            return 48.0;
+        case 8:
+            return 96.0;
+        case 9:
+            return 192.0;
+        case 10:
+            return 384.0;
+        case 11:
+            return 768.0;
+        case 12:
+            return 1536.0;
+        case 13:
+            return 3072.0;
+        case 14:
+            return 6144.0;
+        default:
+            return 6144.0;
+        }
+}
+
+
+static double cnav_uraeph(gtime_t time, const eph_t *eph)
+{
+    if (eph->cnav_uraed == 15 || eph->cnav_uraed == -16 ||
+        eph->cnav_uraned0 == 15 || eph->cnav_uraned0 == -16)
+        {
+            return 6144.0;
+        }
+
+    double ned_ura_m = cnav_ura_upper_bound_m(eph->cnav_uraned0);
+    int top_week = eph->week;
+    if (eph->cnav_wnop >= 0)
+        {
+            top_week = (eph->week & ~0xFF) | (eph->cnav_wnop & 0xFF);
+            if (top_week - eph->week > 128)
+                {
+                    top_week -= 256;
+                }
+            else if (eph->week - top_week > 128)
+                {
+                    top_week += 256;
+                }
+        }
+
+    double dt = timediffweekcrossover(time, gpst2time(top_week, eph->cnav_top));
+    if (dt < 0.0)
+        {
+            dt = 0.0;
+        }
+    ned_ura_m += std::pow(2.0, -(14 + eph->cnav_uraned1)) * dt;
+    if (dt > 93600.0)
+        {
+            const double dt_second_order = dt - 93600.0;
+            ned_ura_m += std::pow(2.0, -(28 + eph->cnav_uraned2)) * dt_second_order * dt_second_order;
+        }
+
+    const double composite_ura_m = std::hypot(cnav_ura_upper_bound_m(eph->cnav_uraed), ned_ura_m);
+    return std::isfinite(composite_ura_m) ? composite_ura_m : 6144.0;
 }
 
 
@@ -406,7 +517,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
         }
 
     /* position and clock error variance */
-    *var = var_uraeph(eph->sva);
+    *var = eph->cnav_ura_valid ? std::pow(cnav_uraeph(time, eph), 2.0) : var_uraeph(eph->sva);
 }
 
 

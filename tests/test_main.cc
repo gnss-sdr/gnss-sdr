@@ -181,11 +181,13 @@ private:
 #include "unit-tests/signal-processing-blocks/tracking/galileo_e5a_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/galileo_e5b_dll_pll_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/tracking_loop_filter_test.cc"
+#include "unit-tests/system-parameters/beidou_dnav_navigation_message_test.cc"
 #include "unit-tests/system-parameters/galileo_e1b_reed_solomon_test.cc"
 #include "unit-tests/system-parameters/galileo_e6b_reed_solomon_test.cc"
 #include "unit-tests/system-parameters/galileo_ism_test.cc"
 #include "unit-tests/system-parameters/glonass_gnav_ephemeris_test.cc"
 #include "unit-tests/system-parameters/glonass_gnav_nav_message_test.cc"
+#include "unit-tests/system-parameters/gps_cnav_navigation_message_test.cc"
 #include "unit-tests/system-parameters/has_decoding_test.cc"
 #include "unit-tests/system-parameters/qzss_code_generation_test.cc"
 

@@ -791,11 +791,11 @@ void kf_tracking::start_tracking()
                 }
         }
 
-    else if (d_systemName == "Beidou" and d_signal_type == "B3")
+    else if (d_systemName == "Beidou" && d_signal_type == "B3")
         {
             beidou_b3i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
             // Update secondary code settings for geo satellites
-            if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
+            if ((d_acquisition_gnss_synchro->PRN > 0 && d_acquisition_gnss_synchro->PRN < 6) || d_acquisition_gnss_synchro->PRN > 58)
                 {
                     d_symbols_per_bit = BEIDOU_B3I_GEO_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;

@@ -576,7 +576,7 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
             // check TOW update consistency
             const uint32_t last_d_TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             // compute new TOW
-            d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + (d_required_symbols - 1U) * d_symbol_duration_ms;
+            d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + d_required_symbols * d_symbol_duration_ms;
             d_flag_SOW_set = true;
             d_nav.set_flag_new_SOW_available(false);
 

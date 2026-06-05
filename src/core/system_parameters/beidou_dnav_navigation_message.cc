@@ -18,7 +18,6 @@
 
 #include "beidou_dnav_navigation_message.h"
 #include "gnss_satellite.h"
-#include <array>     // for array
 #include <cmath>     // for cos, sin, fmod, sqrt, atan2, fabs, floor
 #include <iostream>  // for string, operator<<, cout, ostream
 #include <limits>    // for std::numeric_limits
@@ -42,40 +41,6 @@ void Beidou_Dnav_Navigation_Message::print_beidou_word_bytes(uint32_t BEIDOU_wor
 }
 
 
-uint32_t Beidou_Dnav_Navigation_Message::bch15_11_syndrome(const std::string& code_bits) const
-{
-    std::array<int32_t, BEIDOU_DNAV_BCH_PARITY_BITS> reg{{-1, -1, -1, -1}};
-
-    for (std::size_t i = 0; i < BEIDOU_DNAV_BCH_CODE_BITS; ++i)
-        {
-            const int32_t bit = reg[3];
-            const int32_t input = (code_bits[i] == '1') ? 1 : -1;
-            reg[3] = reg[2];
-            reg[2] = reg[1];
-            reg[1] = reg[0];
-            reg[0] = input * bit;
-            reg[1] *= bit;
-        }
-
-    uint32_t syndrome = 0U;
-    for (std::size_t i = 0; i < BEIDOU_DNAV_BCH_PARITY_BITS; ++i)
-        {
-            syndrome |= static_cast<uint32_t>((reg[i] + 1) / 2) << i;
-        }
-    return syndrome;
-}
-
-
-bool Beidou_Dnav_Navigation_Message::bch15_11_codeword_is_valid(const std::string& subframe, std::size_t data_index, std::size_t parity_index) const
-{
-    std::string code_bits;
-    code_bits.reserve(BEIDOU_DNAV_BCH_CODE_BITS);
-    code_bits.append(subframe, data_index, BEIDOU_DNAV_BCH_DATA_BITS);
-    code_bits.append(subframe, parity_index, BEIDOU_DNAV_BCH_PARITY_BITS);
-    return bch15_11_syndrome(code_bits) == 0U;
-}
-
-
 bool Beidou_Dnav_Navigation_Message::CRC_test(std::string const& subframe) const
 {
     if (subframe.size() != static_cast<std::size_t>(BEIDOU_DNAV_SUBFRAME_DATA_BITS))
@@ -91,29 +56,88 @@ bool Beidou_Dnav_Navigation_Message::CRC_test(std::string const& subframe) const
                 }
         }
 
-    for (std::size_t word = 0; word < BEIDOU_DNAV_WORDS_SUBFRAME; ++word)
+    return true;
+}
+
+
+void Beidou_Dnav_Navigation_Message::clear_d2_ephemeris_page_flags()
+{
+    flag_sf1_p1 = false;
+    flag_sf1_p2 = false;
+    flag_sf1_p3 = false;
+    flag_sf1_p4 = false;
+    flag_sf1_p5 = false;
+    flag_sf1_p6 = false;
+    flag_sf1_p7 = false;
+    flag_sf1_p8 = false;
+    flag_sf1_p9 = false;
+    flag_sf1_p10 = false;
+    flag_d2_ephemeris_collection_started = false;
+    d_d2_expected_page = 1;
+}
+
+
+double Beidou_Dnav_Navigation_Message::wrap_dnav_sow(double sow) const
+{
+    constexpr double seconds_per_week = 604800.0;
+
+    double wrapped_sow = std::fmod(sow, seconds_per_week);
+    if (wrapped_sow < 0.0)
         {
-            const std::size_t word_index = word * BEIDOU_DNAV_WORD_LENGTH_BITS;
-            if (word == 0)
-                {
-                    // Word 1: bits 1-15 are not encoded; bits 16-26 carry data and bits 27-30 parity.
-                    if (!bch15_11_codeword_is_valid(subframe, word_index + 15U, word_index + 26U))
-                        {
-                            return false;
-                        }
-                }
-            else
-                {
-                    // Words 2-10 are expected in deinterleaved form: 11+11 data bits followed by 4+4 parity bits.
-                    if (!bch15_11_codeword_is_valid(subframe, word_index, word_index + 22U) ||
-                        !bch15_11_codeword_is_valid(subframe, word_index + 11U, word_index + 26U))
-                        {
-                            return false;
-                        }
-                }
+            wrapped_sow += seconds_per_week;
+        }
+
+    return wrapped_sow;
+}
+
+
+bool Beidou_Dnav_Navigation_Message::d1_ephemeris_sow_is_consistent() const
+{
+    constexpr double seconds_per_subframe = 6.0;
+
+    return wrap_dnav_sow(d_SOW_SF2) == wrap_dnav_sow(d_SOW_SF1 + seconds_per_subframe) &&
+           wrap_dnav_sow(d_SOW_SF3) == wrap_dnav_sow(d_SOW_SF1 + 2.0 * seconds_per_subframe);
+}
+
+
+bool Beidou_Dnav_Navigation_Message::d2_ephemeris_page_is_expected(int32_t page_ID)
+{
+    if (page_ID < 1 || page_ID > 10)
+        {
+            return false;
+        }
+
+    if (page_ID == 1)
+        {
+            clear_d2_ephemeris_page_flags();
+            flag_d2_ephemeris_collection_started = true;
+            return true;
+        }
+
+    if (flag_d2_ephemeris_collection_started == false || page_ID != d_d2_expected_page)
+        {
+            clear_d2_ephemeris_page_flags();
+            return false;
         }
 
     return true;
+}
+
+
+void Beidou_Dnav_Navigation_Message::advance_d2_ephemeris_page(int32_t page_ID)
+{
+    if (page_ID < 1 || page_ID > 10)
+        {
+            clear_d2_ephemeris_page_flags();
+            return;
+        }
+
+    d_d2_expected_page = page_ID + 1;
+    if (page_ID == 10)
+        {
+            flag_d2_ephemeris_collection_started = false;
+            d_d2_expected_page = 1;
+        }
 }
 
 
@@ -344,7 +368,6 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
 
             if (SV_page_5 < 7)
                 {
-                    d_SOW_SF4 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SOW));
                     d_SQRT_A_ALMANAC = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SQRT_A_ALMANAC));
                     d_SQRT_A_ALMANAC = d_SQRT_A_ALMANAC * D1_SQRT_A_ALMANAC_LSB;
 
@@ -466,6 +489,12 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
     const auto subframe_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, D2_FRAID));
     const auto page_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, D2_PNUM));
 
+    // D2 ephemeris pages must be collected as one contiguous page 1-10 cycle.
+    if (subframe_ID == 1 && d2_ephemeris_page_is_expected(page_ID) == false)
+        {
+            return 0;
+        }
+
     // Decode all 5 sub-frames
     switch (subframe_ID)
         {
@@ -482,6 +511,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                     i_BEIDOU_week = static_cast<int>(read_navigation_unsigned(subframe_bits, D2_WN));
                     d_Toc = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_TOC)) * D1_TOC_LSB;
                     d_TGD1 = static_cast<double>(read_navigation_signed(subframe_bits, D2_TGD1)) * D1_TGD1_LSB;
+                    d_TGD2 = static_cast<double>(read_navigation_signed(subframe_bits, D2_TGD2)) * D1_TGD2_LSB;
 
                     // Set system flags for message reception
                     flag_sf1_p1 = true;
@@ -493,7 +523,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                     d_alpha0 = static_cast<double>(read_navigation_signed(subframe_bits, D2_ALPHA0)) * D1_ALPHA0_LSB;
                     d_alpha1 = static_cast<double>(read_navigation_signed(subframe_bits, D2_ALPHA1)) * D1_ALPHA1_LSB;
                     d_alpha2 = static_cast<double>(read_navigation_signed(subframe_bits, D2_ALPHA2)) * D1_ALPHA2_LSB;
-                    d_alpha3 = static_cast<double>(read_navigation_signed(subframe_bits, D1_ALPHA3)) * D1_ALPHA3_LSB;
+                    d_alpha3 = static_cast<double>(read_navigation_signed(subframe_bits, D2_ALPHA3)) * D1_ALPHA3_LSB;
                     d_beta0 = static_cast<double>(read_navigation_signed(subframe_bits, D2_BETA0)) * D1_BETA0_LSB;
                     d_beta1 = static_cast<double>(read_navigation_signed(subframe_bits, D2_BETA1)) * D1_BETA1_LSB;
                     d_beta2 = static_cast<double>(read_navigation_signed(subframe_bits, D2_BETA2)) * D1_BETA2_LSB;
@@ -520,7 +550,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                 case 4:
                     d_SOW = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_SOW));
                     d_A_f1_lsb_bits = (read_navigation_unsigned(subframe_bits, D2_A1_LSB));
-                    d_A_f2 = static_cast<double>(read_navigation_signed(subframe_bits, D1_A2)) * D1_A2_LSB;
+                    d_A_f2 = static_cast<double>(read_navigation_signed(subframe_bits, D2_A2)) * D1_A2_LSB;
                     d_AODE = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_AODE));
                     d_Delta_n = static_cast<double>(read_navigation_signed(subframe_bits, D2_DELTA_N)) * D1_DELTA_N_LSB;
                     d_Cuc_msb_bits = (read_navigation_unsigned(subframe_bits, D2_CUC_MSB));
@@ -617,6 +647,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                     break;
                 }
 
+            advance_d2_ephemeris_page(page_ID);
             break;
 
         case 2:  // -- It is subframe 2 -------------------
@@ -695,7 +726,7 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris() const
 {
     Beidou_Dnav_Ephemeris eph;
 
-    if ((i_satellite_PRN > 0 and i_satellite_PRN < 6) or i_satellite_PRN > 58)
+    if ((i_satellite_PRN > 0 && i_satellite_PRN < 6) || i_satellite_PRN > 58)
         {
             std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> subframe_bits;
 
@@ -833,27 +864,18 @@ Beidou_Dnav_Utc_Model Beidou_Dnav_Navigation_Message::get_utc_model()
 
 bool Beidou_Dnav_Navigation_Message::have_new_ephemeris()  // Check if we have a new ephemeris stored in the galileo navigation class
 {
-    if ((i_satellite_PRN > 0 and i_satellite_PRN < 6) or i_satellite_PRN > 58)
+    if ((i_satellite_PRN > 0 && i_satellite_PRN < 6) || i_satellite_PRN > 58)
         {
-            if ((flag_sf1_p1 == true) and (flag_sf1_p2 == true) and (flag_sf1_p3 == true) and
-                (flag_sf1_p4 == true) and (flag_sf1_p5 == true) and (flag_sf1_p6 == true) and
-                (flag_sf1_p7 == true) and (flag_sf1_p8 == true) and (flag_sf1_p9 == true) and
+            if ((flag_sf1_p1 == true) && (flag_sf1_p2 == true) && (flag_sf1_p3 == true) &&
+                (flag_sf1_p4 == true) && (flag_sf1_p5 == true) && (flag_sf1_p6 == true) &&
+                (flag_sf1_p7 == true) && (flag_sf1_p8 == true) && (flag_sf1_p9 == true) &&
                 (flag_sf1_p10 == true))
                 {
                     // if all ephemeris pages have the same IOD, then they belong to the same block
                     if (d_previous_aode != d_AODE)
                         {
                             // Clear flags for all received pages
-                            flag_sf1_p1 = false;
-                            flag_sf1_p2 = false;
-                            flag_sf1_p3 = false;
-                            flag_sf1_p4 = false;
-                            flag_sf1_p5 = false;
-                            flag_sf1_p6 = false;
-                            flag_sf1_p7 = false;
-                            flag_sf1_p8 = false;
-                            flag_sf1_p9 = false;
-                            flag_sf1_p10 = false;
+                            clear_d2_ephemeris_page_flags();
 
                             flag_eph_valid = true;
                             // Update the time of ephemeris information
@@ -865,7 +887,8 @@ bool Beidou_Dnav_Navigation_Message::have_new_ephemeris()  // Check if we have a
         }
     else
         {
-            if ((flag_d1_sf1 == true) and (flag_d1_sf2 == true) and (flag_d1_sf3 == true))
+            if ((flag_d1_sf1 == true) && (flag_d1_sf2 == true) && (flag_d1_sf3 == true) &&
+                d1_ephemeris_sow_is_consistent() == true)
                 {
                     // if all ephemeris pages have the same IOD, then they belong to the same block
                     if (d_previous_aode != d_AODE)
@@ -901,7 +924,7 @@ bool Beidou_Dnav_Navigation_Message::have_new_iono() const
 
 bool Beidou_Dnav_Navigation_Message::have_new_utc_model()
 {
-    if (flag_d1_sf5_p9 == true and flag_d1_sf5_p10 == true)
+    if (flag_d1_sf5_p9 == true && flag_d1_sf5_p10 == true)
         {
             flag_d1_sf5_p9 = false;
             flag_d1_sf5_p10 = false;
@@ -916,7 +939,7 @@ bool Beidou_Dnav_Navigation_Message::have_new_utc_model()
 
 bool Beidou_Dnav_Navigation_Message::have_new_almanac()
 {
-    if ((flag_d1_sf4 == true) and (flag_d1_sf5 == true))
+    if ((flag_d1_sf4 == true) && (flag_d1_sf5 == true))
         {
             // All Almanac data have been received
             flag_d1_sf4 = false;
@@ -937,7 +960,7 @@ bool Beidou_Dnav_Navigation_Message::satellite_validation()
     // First Step:
     // check Issue Of Ephemeris Data (AODE AODC..) to find a possible interrupted reception
     // and check if the data have been filled (!=0)
-    if (d_SOW_SF1 != 0 and d_SOW_SF2 != 0 and d_SOW_SF3 != 0)
+    if (d_SOW_SF1 != 0 && d_SOW_SF2 != 0 && d_SOW_SF3 != 0)
         {
             if (d_AODC != -1)
                 {

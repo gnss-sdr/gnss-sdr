@@ -175,9 +175,21 @@ void beidou_b1i_telemetry_decoder_gs::decode_word(
 
     if (word_counter == 1)
         {
-            for (uint32_t j = 0; j < 30; j++)
+            for (uint32_t j = 0; j < 15; j++)
                 {
                     dec_word_symbols[j] = static_cast<int32_t>(enc_word_symbols[j] > 0) ? (1) : (-1);
+                }
+
+            for (uint32_t j = 0; j < 15; j++)
+                {
+                    bitsbch[j] = static_cast<int32_t>(enc_word_symbols[j + 15] > 0) ? (1) : (-1);
+                }
+
+            decode_bch15_11_01(bitsbch.data(), first_branch);
+
+            for (uint32_t j = 0; j < 15; j++)
+                {
+                    dec_word_symbols[j + 15] = first_branch[j];
                 }
         }
     else
@@ -564,7 +576,7 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
             // check TOW update consistency
             const uint32_t last_d_TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             // compute new TOW
-            d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + d_required_symbols * d_symbol_duration_ms;
+            d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + (d_required_symbols - 1U) * d_symbol_duration_ms;
             d_flag_SOW_set = true;
             d_nav.set_flag_new_SOW_available(false);
 

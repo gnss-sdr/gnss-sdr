@@ -20,6 +20,7 @@
 
 #include "gnss_ephemeris.h"
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/version.hpp>
 #include <cstdint>
 
 /** \addtogroup Core
@@ -98,11 +99,6 @@ public:
      */
     inline void serialize(Archive& archive, const uint32_t version)
     {
-        using boost::serialization::make_nvp;
-        if (version)
-            {
-            };
-
         archive& BOOST_SERIALIZATION_NVP(PRN);
         archive& BOOST_SERIALIZATION_NVP(M_0);
         archive& BOOST_SERIALIZATION_NVP(delta_n);
@@ -131,6 +127,19 @@ public:
 
         archive& BOOST_SERIALIZATION_NVP(toe1);
         archive& BOOST_SERIALIZATION_NVP(toe2);
+        if (version > 0)
+            {
+                archive& BOOST_SERIALIZATION_NVP(WNop);
+                archive& BOOST_SERIALIZATION_NVP(top);
+                archive& BOOST_SERIALIZATION_NVP(URAED);
+                archive& BOOST_SERIALIZATION_NVP(URANED0);
+                archive& BOOST_SERIALIZATION_NVP(URANED1);
+                archive& BOOST_SERIALIZATION_NVP(URANED2);
+                archive& BOOST_SERIALIZATION_NVP(URA);
+                archive& BOOST_SERIALIZATION_NVP(URA0);
+                archive& BOOST_SERIALIZATION_NVP(URA1);
+                archive& BOOST_SERIALIZATION_NVP(URA2);
+            }
         archive& BOOST_SERIALIZATION_NVP(TGD);
         archive& BOOST_SERIALIZATION_NVP(ISCL1);
         archive& BOOST_SERIALIZATION_NVP(ISCL2);
@@ -145,6 +154,8 @@ public:
         archive& BOOST_SERIALIZATION_NVP(antispoofing_flag);
     }
 };
+
+BOOST_CLASS_VERSION(Gps_CNAV_Ephemeris, 1)
 
 
 /** \} */

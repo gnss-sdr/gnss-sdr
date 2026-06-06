@@ -706,5 +706,5 @@ bool Gps_Navigation_Message::satellite_validation()
 
 bool Gps_Navigation_Message::almanac_validation() const
 {
-    return flag_almanac_valid && (i_WN_A > 0);
+    return flag_almanac_valid && flag_almanac_week_valid;
 }

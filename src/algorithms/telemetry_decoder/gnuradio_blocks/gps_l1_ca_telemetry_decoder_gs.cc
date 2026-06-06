@@ -628,17 +628,9 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
     // 2. Add the telemetry decoder information
     if (d_flag_preamble == true)
         {
-            if (!(d_nav->get_TOW() == 0))
-                {
-                    d_TOW_at_current_symbol_ms = static_cast<uint32_t>(d_nav->get_TOW() * 1000.0);
-                    d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav->get_TOW() * 1000.0);
-                    d_flag_TOW_set = true;
-                }
-            else
-                {
-                    DLOG(INFO) << "Received " << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS")
-                               << " L1 TOW equal to zero at sat " << d_nav->get_satellite_PRN();
-                }
+            d_TOW_at_current_symbol_ms = static_cast<uint32_t>(d_nav->get_TOW() * 1000.0);
+            d_TOW_at_Preamble_ms = d_TOW_at_current_symbol_ms;
+            d_flag_TOW_set = true;
         }
     else
         {

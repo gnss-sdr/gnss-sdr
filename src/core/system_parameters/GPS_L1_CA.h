@@ -120,8 +120,8 @@ const std::vector<std::pair<int32_t, int32_t>> SQRT_A({{227, 8}, {241, 24}});
 constexpr double SQRT_A_LSB = TWO_N19;
 const std::vector<std::pair<int32_t, int32_t>> T_OE({{271, 16}});
 constexpr int32_t T_OE_LSB = static_cast<int32_t>(TWO_P4);
-const std::vector<std::pair<int32_t, int32_t>> FIT_INTERVAL_FLAG({{271, 1}});
-const std::vector<std::pair<int32_t, int32_t>> AODO({{272, 5}});
+const std::vector<std::pair<int32_t, int32_t>> FIT_INTERVAL_FLAG({{287, 1}});
+const std::vector<std::pair<int32_t, int32_t>> AODO({{288, 5}});
 constexpr int32_t AODO_LSB = 900;
 
 // SUBFRAME 3

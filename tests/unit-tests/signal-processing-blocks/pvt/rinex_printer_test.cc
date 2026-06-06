@@ -16,6 +16,7 @@
 
 #include "pvt_conf.h"
 #include "rinex_printer.h"
+#include "rtklib_rtkcmn.h"
 #include "rtklib_rtkpos.h"
 #include "rtklib_solver.h"
 #include "signal_enabled_flags.h"
@@ -146,6 +147,10 @@ void RinexPrinterTest::conf()
 void find_obs_record_lines(const std::string& obsfile, const std::string& sat, std::string& line_epoch, std::string& line_sat)
 {
     std::fstream fstr(obsfile.c_str(), std::fstream::in);
+    if (!fstr.is_open())
+        {
+            return;
+        }
     fstr.seekg(0);
 
     std::string line_str;
@@ -169,6 +174,99 @@ void find_obs_record_lines(const std::string& obsfile, const std::string& sat, s
         }
 
     fstr.close();
+}
+
+
+std::string find_rinex_header_line(const std::string& filename, const std::string& label)
+{
+    std::fstream fstr(filename.c_str(), std::fstream::in);
+    if (!fstr.is_open())
+        {
+            return {};
+        }
+    fstr.seekg(0);
+
+    std::string line_str;
+    while (!fstr.eof())
+        {
+            std::getline(fstr, line_str);
+            if (line_str.find(label, 59) != std::string::npos)
+                {
+                    return line_str;
+                }
+        }
+
+    return {};
+}
+
+
+int32_t expand_test_lnav_utc_week(int32_t utc_week, int32_t reference_week)
+{
+    int32_t expanded_week = utc_week;
+    while ((expanded_week - reference_week) < -128)
+        {
+            expanded_week += 256;
+        }
+    while ((expanded_week - reference_week) > 127)
+        {
+            expanded_week -= 256;
+        }
+
+    return expanded_week;
+}
+
+
+TEST_F(RinexPrinterTest, GpsUtcHeaderExpandsEightBitWeekFields)
+{
+    Pvt_Conf conf;
+    conf.use_e6_for_pvt = false;
+    const auto signal_enabled_flags = GPS_1C;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
+
+    Gps_Ephemeris eph;
+    eph.PRN = 1;
+    eph.WN = 512;
+    pvt_solution->gps_ephemeris_map[1] = eph;
+    pvt_solution->gps_utc_model.A0 = 1.0e-9;
+    pvt_solution->gps_utc_model.A1 = 0.0;
+    pvt_solution->gps_utc_model.tot = 0;
+    pvt_solution->gps_utc_model.WN_T = 5;
+    pvt_solution->gps_utc_model.DeltaT_LS = 18;
+    pvt_solution->gps_utc_model.WN_LSF = 7;
+    pvt_solution->gps_utc_model.DN = 4;
+    pvt_solution->gps_utc_model.DeltaT_LSF = 19;
+
+    Gnss_Synchro gs{};
+    gs.System = 'G';
+    gs.PRN = 1;
+    std::memcpy(static_cast<void*>(gs.Signal), "1C", 3);
+    gs.Pseudorange_m = 22000000.0;
+    gs.Carrier_phase_rads = 23.4;
+    gs.Carrier_Doppler_hz = 1534.0;
+    gs.CN0_dB_hz = 42.0;
+    gs.Flag_valid_pseudorange = true;
+    std::map<int, Gnss_Synchro> gnss_observables_map;
+    gnss_observables_map[1] = gs;
+
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 42.0, true);
+
+    const std::string obsfile = rp->get_obsfilename();
+    const std::string navfile = rp->get_navfilename()[0];
+    rp = nullptr;
+
+    const int32_t reference_week = adjgpsweek(eph.WN);
+    const int32_t expected_wn_t = expand_test_lnav_utc_week(pvt_solution->gps_utc_model.WN_T, reference_week);
+    const int32_t expected_wn_lsf = expand_test_lnav_utc_week(pvt_solution->gps_utc_model.WN_LSF, reference_week);
+
+    const std::string time_corr_line = find_rinex_header_line(navfile, "TIME SYSTEM CORR");
+    EXPECT_NE(std::string::npos, time_corr_line.find(std::to_string(expected_wn_t)));
+
+    const std::string leap_second_line = find_rinex_header_line(navfile, "LEAP SECONDS");
+    EXPECT_NE(std::string::npos, leap_second_line.find(std::to_string(expected_wn_lsf)));
+
+    fs::remove(obsfile);
+    fs::remove(navfile);
 }
 
 

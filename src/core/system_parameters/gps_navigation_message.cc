@@ -81,6 +81,25 @@ static double qzss_almanac_inclination_ref(uint32_t prn)
 }
 
 
+static int32_t expand_lnav_8bit_week(int32_t week, int32_t reference_week)
+{
+    constexpr int32_t LNAV_UTC_WEEK_MODULUS = 256;
+    constexpr int32_t LNAV_UTC_WEEK_HALF_MODULUS = LNAV_UTC_WEEK_MODULUS / 2;
+
+    int32_t expanded_week = week;
+    while ((expanded_week - reference_week) < -LNAV_UTC_WEEK_HALF_MODULUS)
+        {
+            expanded_week += LNAV_UTC_WEEK_MODULUS;
+        }
+    while ((expanded_week - reference_week) > LNAV_UTC_WEEK_HALF_MODULUS - 1)
+        {
+            expanded_week -= LNAV_UTC_WEEK_MODULUS;
+        }
+
+    return expanded_week;
+}
+
+
 static const std::array<const LnavParameter*, 24>& gps_sf5_health_fields()
 {
     static const std::array<const LnavParameter*, 24> fields = {
@@ -496,10 +515,12 @@ double Gps_Navigation_Message::utc_time(double gpstime_corrected) const
 {
     double t_utc;
     double t_utc_daytime;
-    double Delta_t_UTC = d_DeltaT_LS + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - i_WN_T)));
+    const int32_t utc_reference_week = expand_lnav_8bit_week(i_WN_T, i_GPS_week);
+    const int32_t leap_second_event_week = expand_lnav_8bit_week(i_WN_LSF, i_GPS_week);
+    double Delta_t_UTC = d_DeltaT_LS + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - utc_reference_week)));
 
     // Determine if the effectivity time of the leap second event is in the past
-    const int32_t weeksToLeapSecondEvent = i_WN_LSF - i_GPS_week;
+    const int32_t weeksToLeapSecondEvent = leap_second_event_week - i_GPS_week;
 
     if ((weeksToLeapSecondEvent) >= 0)  // is not in the past
         {
@@ -536,7 +557,7 @@ double Gps_Navigation_Message::utc_time(double gpstime_corrected) const
                         }
                     if ((gpstime_corrected - secondOfLeapSecondEvent) > 21600)
                         {
-                            Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - i_WN_T)));
+                            Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - utc_reference_week)));
                             t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
                         }
                 }
@@ -548,7 +569,7 @@ double Gps_Navigation_Message::utc_time(double gpstime_corrected) const
              * WNLSF and DN values, is in the "past" (relative to the user's current time),
              * and the user's current time does not fall in the time span as given above
              * in 20.3.3.5.2.4b,*/
-            Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - i_WN_T)));
+            Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - utc_reference_week)));
             t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
         }
 

@@ -36,6 +36,7 @@
 #include "gps_navigation_message.h"
 #include "gps_utc_model.h"
 #include "rtklib.h"
+#include "rtklib_rtkcmn.h"
 #include "rtklib_solver.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
@@ -148,6 +149,44 @@ std::map<char, std::set<signal_flag>> get_constel_signal_flags(const Signal_Enab
 bool is_qzss_prn(uint32_t prn)
 {
     return prn >= MINPRNQZS && prn <= MAXPRNQZS;
+}
+
+
+boost::posix_time::ptime gps_time_to_ptime(int32_t gps_week, double tow_s)
+{
+    const gtime_t time = gpst2time(gps_week, tow_s);
+    boost::posix_time::ptime p_time = boost::posix_time::from_time_t(time.time);
+    p_time += boost::posix_time::microseconds(static_cast<long>(std::round(time.sec * 1e6)));  // NOLINT(google-runtime-int)
+    return p_time;
+}
+
+
+int32_t expand_lnav_utc_week(int32_t utc_week, int32_t ephemeris_week, bool pre_2009_file)
+{
+    constexpr int32_t LNAV_UTC_WEEK_MODULUS = 256;
+    constexpr int32_t LNAV_UTC_WEEK_HALF_MODULUS = LNAV_UTC_WEEK_MODULUS / 2;
+
+    if (utc_week > 1023)
+        {
+            return utc_week;
+        }
+    if (utc_week > 255)
+        {
+            return adjgpsweek(utc_week, pre_2009_file);
+        }
+
+    const int32_t reference_week = adjgpsweek(ephemeris_week, pre_2009_file);
+    int32_t expanded_week = utc_week;
+    while ((expanded_week - reference_week) < -LNAV_UTC_WEEK_HALF_MODULUS)
+        {
+            expanded_week += LNAV_UTC_WEEK_MODULUS;
+        }
+    while ((expanded_week - reference_week) > LNAV_UTC_WEEK_HALF_MODULUS - 1)
+        {
+            expanded_week -= LNAV_UTC_WEEK_MODULUS;
+        }
+
+    return expanded_week;
 }
 
 
@@ -1247,28 +1286,8 @@ std::string get_delta_utc_line_v2(const Gps_Utc_Model& utc_model, const Gps_Ephe
     line += rightJustify(doub2for(utc_model.A1, 18, 2), 19);
     line += rightJustify(std::to_string(utc_model.tot), 9);
 
-    if (pre_2009_file == false && eph.WN < 512)
-        {
-            if (utc_model.WN_T == 0)
-                {
-                    line += rightJustify(std::to_string(eph.WN + 2048), 9);  // valid from 2019 to 2029
-                }
-            else
-                {
-                    line += rightJustify(std::to_string(utc_model.WN_T + (eph.WN / 256) * 256 + 1024), 9);  // valid from 2019 to 2029
-                }
-        }
-    else
-        {
-            if (utc_model.WN_T == 0)
-                {
-                    line += rightJustify(std::to_string(eph.WN + 1024), 9);  // valid from 2019 to 2029
-                }
-            else
-                {
-                    line += rightJustify(std::to_string(utc_model.WN_T + (eph.WN / 256) * 256 + 1024), 9);  // valid from 2009 to 2019
-                }
-        }
+    const int32_t WN_T = expand_lnav_utc_week(utc_model.WN_T, eph.WN, pre_2009_file);
+    line += rightJustify(std::to_string(WN_T), 9);
 
     line += std::string(1, ' ');
     line += leftJustify("DELTA-UTC: A0,A1,T,W", 20);
@@ -1377,30 +1396,7 @@ std::string get_beidou_iono_beta_line(const Beidou_Dnav_Iono& iono)
 
 std::string get_gps_time_corr_line(const Gps_Utc_Model& utc_model, const Gps_Ephemeris& gps_eph, bool pre_2009_file)
 {
-    int32_t WN_T = 0;
-
-    if (!pre_2009_file && gps_eph.WN < 512)
-        {
-            if (utc_model.WN_T == 0)
-                {
-                    WN_T = gps_eph.WN + 2048;  // valid from 2019 to 2029
-                }
-            else
-                {
-                    WN_T = utc_model.WN_T + (gps_eph.WN / 256) * 256 + 2048;  // valid from 2019 to 2029
-                }
-        }
-    else
-        {
-            if (utc_model.WN_T == 0)
-                {
-                    WN_T = gps_eph.WN + 1024;  // valid from 2009 to 2019
-                }
-            else
-                {
-                    WN_T = utc_model.WN_T + (gps_eph.WN / 256) * 256 + 1024;  // valid from 2009 to 2019
-                }
-        }
+    int32_t WN_T = expand_lnav_utc_week(utc_model.WN_T, gps_eph.WN, pre_2009_file);
 
     return get_time_corr_line("GPUT", utc_model.A0, utc_model.A1, &utc_model.tot, &WN_T);
 }
@@ -1476,9 +1472,10 @@ std::string get_leap_second_line_v2(const Gps_Utc_Model& utc_model)
 }
 
 
-std::string get_leap_second_line(const Gps_Utc_Model& utc_model)
+std::string get_leap_second_line(const Gps_Utc_Model& utc_model, const Gps_Ephemeris& gps_eph, bool pre_2009_file)
 {
-    return get_leap_second_line(utc_model.DeltaT_LS, utc_model.DeltaT_LSF, utc_model.WN_LSF, utc_model.DN);
+    const int32_t WN_LSF = expand_lnav_utc_week(utc_model.WN_LSF, gps_eph.WN, pre_2009_file);
+    return get_leap_second_line(utc_model.DeltaT_LS, utc_model.DeltaT_LSF, WN_LSF, utc_model.DN);
 }
 
 
@@ -2353,7 +2350,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                             iono_lines.emplace_back(get_gps_iono_alpha_line(pvt_solver->gps_iono));
                             iono_lines.emplace_back(get_gps_iono_beta_line(pvt_solver->gps_iono));
                             time_corr_lines.emplace_back(get_gps_time_corr_line(pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_pre_2009_file));
-                            leap_second_line = get_leap_second_line(pvt_solver->gps_utc_model);
+                            leap_second_line = get_leap_second_line(pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_pre_2009_file);
                         }
                 }
             else if (d_flags.check_any_enabled(GPS_2S, GPS_L5))
@@ -2465,7 +2462,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                                             nav_header_info.emplace_back("GPSA", "IONOSPHERIC CORR", get_gps_iono_alpha_line(pvt_solver->gps_iono));
                                             nav_header_info.emplace_back("GPSB", "IONOSPHERIC CORR", get_gps_iono_beta_line(pvt_solver->gps_iono));
                                             nav_header_info.emplace_back("GPUT", "TIME SYSTEM CORR", get_gps_time_corr_line(pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_pre_2009_file));
-                                            leap_second_line = get_leap_second_line(pvt_solver->gps_utc_model);
+                                            leap_second_line = get_leap_second_line(pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_pre_2009_file);
                                         }
                                     d_rinex_header_gps_updated = true;
                                 }
@@ -2599,22 +2596,7 @@ void Rinex_Printer::log_rinex_nav_gps_nav(const std::map<int32_t, Gps_Ephemeris>
 
             // -------- BROADCAST ORBIT - 5
 
-            double GPS_week_continuous_number;
-            if (d_pre_2009_file == false)
-                {
-                    if (eph.WN < 512)
-                        {
-                            GPS_week_continuous_number = static_cast<double>(eph.WN + 2048);  // valid until 2029
-                        }
-                    else
-                        {
-                            GPS_week_continuous_number = static_cast<double>(eph.WN + 1024);  // valid until April 7, 2019
-                        }
-                }
-            else
-                {
-                    GPS_week_continuous_number = static_cast<double>(eph.WN + 1024);
-                }
+            double GPS_week_continuous_number = static_cast<double>(adjgpsweek(eph.WN, d_pre_2009_file));
             // This week goes with Toe. This is different from the GPS week in the original satellite message!
             if (eph.toe < 7200.0)
                 {
@@ -3213,25 +3195,7 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Gps_Navigation_Me
     // if we are processing a file -> wait to leap second to resolve the ambiguity else take the week from the local system time
     // idea: resolve the ambiguity with the leap second
     const double utc_t = nav_msg.utc_time(nav_msg.get_TOW());
-    const boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((utc_t + 604800 * static_cast<double>(nav_msg.get_GPS_week())) * 1000));
-    // Handle week rollover
-    if (d_pre_2009_file == false)
-        {
-            // Handle week rollover (valid from 2009 to 2029)
-            if (nav_msg.get_GPS_week() < 512)
-                {
-                    boost::posix_time::ptime p_time(boost::gregorian::date(2019, 4, 7), t);
-                    return p_time;
-                }
-            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
-            return p_time;
-        }
-    else
-        {
-            // assume receiver operating in between 1999 to 2008
-            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
-            return p_time;
-        }
+    return gps_time_to_ptime(adjgpsweek(nav_msg.get_GPS_week(), d_pre_2009_file), utc_t);
 }
 
 
@@ -3254,31 +3218,14 @@ boost::posix_time::ptime Rinex_Printer::compute_GPS_time(const Gps_Ephemeris& ep
     // (see Section 3 in ftp://igs.org/pub/data/format/rinex211.txt)
     // (see Pag. 17 in ftp://igs.org/pub/data/format/rinex300.pdf)
     // No time correction here, since it will be done in the PVT processor
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((obs_time + 604800 * static_cast<double>(eph.WN % 1024)) * 1000));
+    int32_t gps_week = adjgpsweek(eph.WN, d_pre_2009_file);
     // Handle TOW rollover
     if (obs_time < 18.0)
         {
-            t += boost::posix_time::seconds(604800);
+            gps_week++;
         }
 
-    // Handle week rollover
-    if (d_pre_2009_file == false)
-        {
-            // Handle week rollover (valid from 2009 to 2029)
-            if (eph.WN < 512)
-                {
-                    boost::posix_time::ptime p_time(boost::gregorian::date(2019, 4, 7), t);
-                    return p_time;
-                }
-            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
-            return p_time;
-        }
-    else
-        {
-            // assume receiver operating in between 1999 to 2008
-            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
-            return p_time;
-        }
+    return gps_time_to_ptime(gps_week, obs_time);
 }
 
 
@@ -3288,9 +3235,7 @@ boost::posix_time::ptime Rinex_Printer::compute_GPS_time(const Gps_CNAV_Ephemeri
     // (see Section 3 in ftp://igs.org/pub/data/format/rinex211.txt)
     // (see Pag. 17 in ftp://igs.org/pub/data/format/rinex300.pdf)
     // --??? No time correction here, since it will be done in the RINEX processor
-    const boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((obs_time + 604800 * static_cast<double>(eph.WN % 8192)) * 1000));
-    boost::posix_time::ptime p_time(boost::gregorian::date(1980, 1, 6), t);
-    return p_time;
+    return gps_time_to_ptime(eph.WN, obs_time);
 }
 
 

@@ -1878,6 +1878,7 @@ std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(const std::ma
 {
     std::map<int, Gnss_Synchro> interp_observables_map;
     // Linear interpolation: y(t) = y(t0) + (y(t1) - y(t0)) * (t - t0) / (t1 - t0)
+    constexpr double GPS_WEEK_SECONDS = 604800.0;
 
     // check TOW rollover
     double time_factor;
@@ -1891,8 +1892,8 @@ std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(const std::ma
     else
         {
             // TOW rollover situation
-            time_factor = (604800000.0 + rx_time_s - observables_map_t0.cbegin()->second.RX_time) /
-                          (604800000.0 + observables_map_t1.cbegin()->second.RX_time -
+            time_factor = (GPS_WEEK_SECONDS + rx_time_s - observables_map_t0.cbegin()->second.RX_time) /
+                          (GPS_WEEK_SECONDS + observables_map_t1.cbegin()->second.RX_time -
                               observables_map_t0.cbegin()->second.RX_time);
         }
 

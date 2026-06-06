@@ -103,6 +103,19 @@ TEST(QzssL5Code, L5IGoldenFirst32Chips)
         {
             EXPECT_FLOAT_EQ(code[i], golden2[i]);
         }
+
+    qzss_l5i_code_gen_float(code, 196);
+
+    const float golden3[32] = {
+        -1, 1, 1, 1, -1, -1, -1, 1,
+        -1, -1, -1, -1, -1, -1, -1, -1,
+        1, -1, 1, 1, -1, 1, 1, -1,
+        1, -1, 1, -1, -1, -1, 1, -1};
+
+    for (int i = 0; i < 32; ++i)
+        {
+            EXPECT_FLOAT_EQ(code[i], golden3[i]);
+        }
 }
 
 

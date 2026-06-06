@@ -78,16 +78,6 @@ public:
     int32_t d2_subframe_decoder(std::string const& subframe);
 
     /*!
-     * \brief Checks that a BCH-corrected BDS DNAV subframe is well formed.
-     *
-     * BCH(15,11,1) correction is performed by the telemetry decoder before the
-     * subframe reaches this object. The BDS B1I/B3I DNAV ICD does not define a
-     * subframe CRC, so this legacy method name is kept for callers but only
-     * verifies basic subframe structure.
-     */
-    bool CRC_test(std::string const& subframe) const;
-
-    /*!
      * \brief Computes the Coordinated Universal Time (UTC) and
      * returns it in [s]
      */
@@ -155,9 +145,10 @@ private:
     void print_beidou_word_bytes(uint32_t BEIDOU_word) const;
     double wrap_dnav_sow(double sow) const;
     bool d1_ephemeris_sow_is_consistent() const;
+    bool format_check(std::string const& subframe) const;
     void clear_d2_ephemeris_page_flags();
-    bool d2_ephemeris_page_is_expected(int32_t page_ID);
-    void advance_d2_ephemeris_page(int32_t page_ID);
+    bool d2_ephemeris_page_is_expected(int32_t page_ID, double sow);
+    void advance_d2_ephemeris_page(int32_t page_ID, double sow);
 
     // broadcast orbit 1
     double d_SOW{};      // Time of BeiDou Week of the ephemeris set (taken from subframes SOW) [s]
@@ -311,6 +302,7 @@ private:
     bool flag_sf1_p10{};  // D2 NAV Message, Subframe 1, Page 10 decoded indicator
     bool flag_d2_ephemeris_collection_started{};
     int32_t d_d2_expected_page{1};
+    double d_d2_expected_sow{};
 };
 
 

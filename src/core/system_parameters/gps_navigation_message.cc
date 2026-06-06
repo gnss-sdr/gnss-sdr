@@ -403,12 +403,14 @@ int32_t Gps_Navigation_Message::subframe_decoder(const char* subframe)
                 }
             else
                 {
+                    if (SV_data_ID != GPS_LNAV_DATA_ID)
+                        {
+                            break;
+                        }
+
                     if (SV_page > 24 && SV_page < 33)  // Page 4 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200M)
                         {
-                            if (SV_data_ID != 0)
-                                {
-                                    decode_lnav_almanac(subframe_bits, static_cast<uint32_t>(SV_page), 0.0, 0.0);
-                                }
+                            decode_lnav_almanac(subframe_bits, static_cast<uint32_t>(SV_page), 0.0, 0.0);
                         }
 
                     if (SV_page == 52)  // Page 13 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200M)
@@ -466,12 +468,14 @@ int32_t Gps_Navigation_Message::subframe_decoder(const char* subframe)
                 }
             else
                 {
+                    if (SV_data_ID_5 != GPS_LNAV_DATA_ID)
+                        {
+                            break;
+                        }
+
                     if ((SV_page_5 > 0) && (SV_page_5 < 25))
                         {
-                            if (SV_data_ID_5 != 0)
-                                {
-                                    decode_lnav_almanac(subframe_bits, static_cast<uint32_t>(SV_page_5), 0.0, 0.0);
-                                }
+                            decode_lnav_almanac(subframe_bits, static_cast<uint32_t>(SV_page_5), 0.0, 0.0);
                         }
                     if (SV_page_5 == 51)  // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200M)
                         {

@@ -87,13 +87,13 @@ std::array<char, GPS_SUBFRAME_LENGTH> qzss_lnav_subframe_bytes(const std::bitset
 }
 
 
-std::bitset<GPS_SUBFRAME_BITS> qzss_lnav_page(int32_t subframe_id, int32_t sv_id)
+std::bitset<GPS_SUBFRAME_BITS> qzss_lnav_page(int32_t subframe_id, int32_t sv_id, uint64_t data_id = 3)
 {
     std::bitset<GPS_SUBFRAME_BITS> bits;
 
     set_qzss_lnav_unsigned_field(bits, TOW, 1);
     set_qzss_lnav_unsigned_field(bits, SUBFRAME_ID, static_cast<uint64_t>(subframe_id));
-    set_qzss_lnav_unsigned_field(bits, SV_DATA_ID, 3);
+    set_qzss_lnav_unsigned_field(bits, SV_DATA_ID, data_id);
     set_qzss_lnav_unsigned_field(bits, SV_PAGE, static_cast<uint64_t>(sv_id));
 
     return bits;
@@ -142,7 +142,7 @@ TEST(GpsLnavNavigationMessageTest, KeepsGpsAlmanacReferenceConvention)
 {
     Gps_Navigation_Message nav_message;
 
-    auto bits = qzss_lnav_page(5, 2);
+    auto bits = qzss_lnav_page(5, 2, GPS_LNAV_DATA_ID);
     set_qzss_lnav_unsigned_field(bits, ALM_ECC, 100);
     set_qzss_lnav_unsigned_field(bits, ALM_TOA, 7);
     set_qzss_lnav_signed_field(bits, ALM_DELTAI, -25);

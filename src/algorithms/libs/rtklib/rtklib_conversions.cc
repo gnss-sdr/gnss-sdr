@@ -781,7 +781,9 @@ alm_t alm_to_rtklib(const Gps_Almanac& gps_alm)
 
     rtklib_alm = {0, 0, 0, 0, {0, 0}, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    rtklib_alm.sat = gps_alm.PRN;
+    const int gps_sys = (MINPRNQZS <= gps_alm.PRN && gps_alm.PRN <= MAXPRNQZS) ? SYS_QZS : SYS_GPS;
+
+    rtklib_alm.sat = satno(gps_sys, gps_alm.PRN);
     rtklib_alm.svh = gps_alm.SV_health;
     rtklib_alm.svconf = gps_alm.AS_status;
     rtklib_alm.week = gps_alm.WNa;
@@ -791,7 +793,7 @@ alm_t alm_to_rtklib(const Gps_Almanac& gps_alm)
     rtklib_alm.toa = toa;
     rtklib_alm.A = gps_alm.sqrtA * gps_alm.sqrtA;
     rtklib_alm.e = gps_alm.ecc;
-    rtklib_alm.i0 = (gps_alm.delta_i + 0.3) * GNSS_PI;
+    rtklib_alm.i0 = ((gps_alm.get_system() == 'J') ? gps_alm.delta_i : (gps_alm.delta_i + 0.3)) * GNSS_PI;
     rtklib_alm.OMG0 = gps_alm.OMEGA_0 * GNSS_PI;
     rtklib_alm.OMGd = gps_alm.OMEGAdot * GNSS_PI;
     rtklib_alm.omg = gps_alm.omega * GNSS_PI;

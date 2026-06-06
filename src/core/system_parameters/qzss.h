@@ -52,6 +52,14 @@ constexpr const char QZSS_CA_PREAMBLE_SYMBOLS_STR[161] = "1111111111111111111100
 constexpr const char QZSS_L5Q_NH_CODE_STR[21] = "00000100110101001110";
 constexpr const char QZSS_L5I_NH_CODE_STR[11] = "0000110101";
 
+static constexpr int32_t QZSS_LNAV_DATA_ID = 3;
+static constexpr int32_t QZSS_ALMANAC_EPOCH_HEALTH_SV_ID = 51;
+static constexpr int32_t QZSS_IONO_UTC_WIDE_AREA_SV_ID = 56;
+static constexpr int32_t QZSS_IONO_UTC_JAPAN_AREA_SV_ID = 61;
+static constexpr uint32_t QZSS_PRN_OFFSET = 192U;
+static constexpr double QZSS_QZO_ECCENTRICITY_REF = 0.06;
+static constexpr double QZSS_QZO_INCLINATION_REF = 0.25;
+
 /** \} */
 /** \} */
 

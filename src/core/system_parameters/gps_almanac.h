@@ -43,6 +43,16 @@ public:
         this->System = 'G';
     };
 
+    void set_system(char system)
+    {
+        this->System = system;
+    }
+
+    char get_system() const
+    {
+        return this->System;
+    }
+
     int32_t SV_health{};  //!< SV Health
     int32_t AS_status{};  //!< Anti-Spoofing Flags and SV Configuration
 

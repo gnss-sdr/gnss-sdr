@@ -111,7 +111,7 @@ double Gnss_Almanac::predicted_doppler(double rx_time_s,
                     predicted_doppler = 0.0;
                 }
         }
-    else if (this->System == 'G')  // GPS
+    else if (this->System == 'G' || this->System == 'J')  // GPS/QZSS
         {
             if (band == 1)
                 {
@@ -233,7 +233,7 @@ void Gnss_Almanac::satellitePosVelComputation(double transmitTime, std::array<do
         }
     else
         {
-            i = (0.3 + this->delta_i) * GNSS_PI;
+            i = ((this->System == 'J') ? this->delta_i : (0.3 + this->delta_i)) * GNSS_PI;
         }
 
     const double sik = sin(i);

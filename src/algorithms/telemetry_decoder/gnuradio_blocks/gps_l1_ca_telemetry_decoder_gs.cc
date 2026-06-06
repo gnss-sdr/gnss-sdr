@@ -387,6 +387,16 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                 }
                             break;
                         case 5:
+                            if (d_nav->get_flag_iono_valid() == true)
+                                {
+                                    const std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(d_nav->get_iono());
+                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                }
+                            if (d_nav->get_flag_utc_model_valid() == true)
+                                {
+                                    const std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(d_nav->get_utc_model());
+                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                }
                             if (d_nav->almanac_validation() == true)
                                 {
                                     const std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(d_nav->get_almanac());

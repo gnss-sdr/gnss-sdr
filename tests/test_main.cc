@@ -189,6 +189,7 @@ private:
 #include "unit-tests/system-parameters/gps_cnav_navigation_message_test.cc"
 #include "unit-tests/system-parameters/has_decoding_test.cc"
 #include "unit-tests/system-parameters/qzss_code_generation_test.cc"
+#include "unit-tests/system-parameters/qzss_lnav_navigation_message_test.cc"
 
 #ifndef EXCLUDE_TESTS_REQUIRING_BINARIES
 #include "unit-tests/control-plane/control_thread_test.cc"

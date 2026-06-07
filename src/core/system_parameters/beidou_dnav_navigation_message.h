@@ -78,15 +78,6 @@ public:
     int32_t d2_subframe_decoder(std::string const& subframe);
 
     /*!
-     * \brief Validates the BCH(15,11,1) parity blocks in a BDS DNAV subframe.
-     *
-     * The BDS B1I/B3I DNAV ICD does not define a subframe CRC. Each 30-bit
-     * word carries BCH parity bits for error control; this method checks those
-     * ICD-defined parity blocks.
-     */
-    bool CRC_test(std::string const& subframe) const;
-
-    /*!
      * \brief Computes the Coordinated Universal Time (UTC) and
      * returns it in [s]
      */
@@ -151,9 +142,13 @@ private:
     uint64_t read_navigation_unsigned(const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
     int64_t read_navigation_signed(const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
     bool read_navigation_bool(const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
-    uint32_t bch15_11_syndrome(const std::string& code_bits) const;
-    bool bch15_11_codeword_is_valid(const std::string& subframe, std::size_t data_index, std::size_t parity_index) const;
     void print_beidou_word_bytes(uint32_t BEIDOU_word) const;
+    double wrap_dnav_sow(double sow) const;
+    bool d1_ephemeris_sow_is_consistent() const;
+    bool format_check(std::string const& subframe) const;
+    void clear_d2_ephemeris_page_flags();
+    bool d2_ephemeris_page_is_expected(int32_t page_ID, double sow);
+    void advance_d2_ephemeris_page(int32_t page_ID, double sow);
 
     // broadcast orbit 1
     double d_SOW{};      // Time of BeiDou Week of the ephemeris set (taken from subframes SOW) [s]
@@ -305,6 +300,9 @@ private:
     bool flag_sf1_p8{};   // D2 NAV Message, Subframe 1, Page 8 decoded indicator
     bool flag_sf1_p9{};   // D2 NAV Message, Subframe 1, Page 9 decoded indicator
     bool flag_sf1_p10{};  // D2 NAV Message, Subframe 1, Page 10 decoded indicator
+    bool flag_d2_ephemeris_collection_started{};
+    int32_t d_d2_expected_page{1};
+    double d_d2_expected_sow{};
 };
 
 

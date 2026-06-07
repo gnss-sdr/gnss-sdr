@@ -90,6 +90,9 @@ constexpr int32_t BEIDOU_DNAV_PREAMBLE_LENGTH_BITS = 11;
 constexpr int32_t BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS = 11;  // **************
 constexpr int32_t BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS = 300;
 constexpr int32_t BEIDOU_DNAV_SUBFRAME_DATA_BITS = 300;  //!< Number of bits per subframe in the NAV message [bits]
+constexpr double BEIDOU_DNAV_SECONDS_PER_WEEK = 604800.0;
+constexpr double BEIDOU_DNAV_D1_SUBFRAME_PERIOD_SECONDS = 6.0;
+constexpr double BEIDOU_DNAV_D2_SUBFRAME1_PAGE_PERIOD_SECONDS = 3.0;
 // Number of leap seconds passed from the start of the GPS epoch up to the start of BeiDou epoch
 constexpr int32_t BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET = 14;
 // Number of weeks passed from the start of the GPS epoch up to the start of BeiDou epoch

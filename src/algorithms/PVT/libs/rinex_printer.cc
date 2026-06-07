@@ -2596,7 +2596,7 @@ void Rinex_Printer::log_rinex_nav_gps_nav(const std::map<int32_t, Gps_Ephemeris>
 
             // -------- BROADCAST ORBIT - 5
 
-            double GPS_week_continuous_number = static_cast<double>(adjgpsweek(eph.WN, d_pre_2009_file));
+            auto GPS_week_continuous_number = static_cast<double>(adjgpsweek(eph.WN, d_pre_2009_file));
             // This week goes with Toe. This is different from the GPS week in the original satellite message!
             if (eph.toe < 7200.0)
                 {

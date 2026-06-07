@@ -26,6 +26,9 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Improved validation of GPS/QZSS CNAV Clock, Ephemeris, Integrity (CEI)
   dataset.
 - Implemented QZSS LNAV almanac/auxiliary pages decoding.
+- Hardened BeiDou DNAV decoding.
+- Improved performance of Galileo's Viterbi decoder.
+- Fixed edge cases in the retrieving of GPS L1 C/A navigation data.
 
 ### Improvements in Maintainability:
 

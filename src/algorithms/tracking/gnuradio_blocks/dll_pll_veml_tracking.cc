@@ -262,6 +262,34 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                             d_interchange_iq = true;
                         }
                 }
+            else if (d_signal_type == "L1C")
+                {
+                    // TODO: Adjust the values, copied from Galileo E1b to start
+                    d_signal_carrier_freq = GPS_L1_FREQ_HZ;
+                    d_code_period = GPS_L1_CA_CODE_PERIOD_S;
+                    d_code_chip_rate = GPS_L1_CA_CODE_RATE_CPS;
+                    d_code_length_chips = static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS);
+                    d_symbols_per_bit = 1;
+                    d_correlation_length_ms = 4;
+                    d_code_samples_per_chip = 2;  // CBOC disabled: 2 samples per chip. CBOC enabled: 12 samples per chip
+                    d_veml = true;
+                    d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
+                    d_trk_parameters.slope = static_cast<float>(-CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, d_trk_parameters.spc));
+                    d_trk_parameters.y_intercept = static_cast<float>(GetYInterceptAbs(&SinBocCorrelationFunction<1, 1>, d_trk_parameters.spc));
+                    if (d_trk_parameters.track_pilot)
+                        {
+                            d_secondary = true;
+                            d_secondary_code_length = static_cast<uint32_t>(
+                                GALILEO_E1_C_SECONDARY_CODE_LENGTH);
+                            d_secondary_code_string = GALILEO_E1_C_SECONDARY_CODE;
+                            d_signal_pretty_name = d_signal_pretty_name + "C";
+                        }
+                    else
+                        {
+                            d_secondary = false;
+                            d_signal_pretty_name = d_signal_pretty_name + "B";
+                        }
+                }
             else
                 {
                     LOG(WARNING) << "Invalid Signal argument when instantiating tracking blocks";

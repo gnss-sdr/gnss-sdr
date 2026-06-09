@@ -24,7 +24,6 @@
  */
 
 
-#include "gnss_block_factory.h"
 #include "acquisition_interface.h"
 #include "array_signal_conditioner.h"
 #include "beamformer_filter.h"
@@ -44,6 +43,7 @@
 #include "galileo_e1_tcp_connector_tracking.h"
 #include "galileo_telemetry_decoder_gs.h"
 #include "glonass_gnav_telemetry_decoder_gs.h"
+#include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_sdr_string_literals.h"
@@ -562,6 +562,10 @@ std::unique_ptr<TrackingInterface> get_trk_block(
     else if (implementation == "GPS_L1_CA_TCP_CONNECTOR_Tracking")
         {
             return std::make_unique<GpsL1CaTcpConnectorTracking>(configuration, role, in_streams, out_streams);
+        }
+    else if (implementation == "GPS_L1C_DLL_PLL_VEML_Tracking")
+        {
+            return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, GPS_L1C);
         }
     else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking")
         {

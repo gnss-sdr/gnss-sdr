@@ -515,23 +515,42 @@ void hybrid_observables_gs::forecast(int noutput_items __attribute__((unused)), 
 
 void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
 {
-    // 1. Set the TOW using the minimum TOW in the observables.
+    // 1. Set the TOW using the latest TOW in the observables.
     //    this will be the receiver time.
     // 2. If the TOW is set, it must be incremented by the desired receiver time step.
     //    the time step must match the observables timer block (connected to the las input channel)
+    const uint32_t week_ms = 604800000U;
+    const uint32_t half_week_ms = week_ms / 2U;
     std::vector<Gnss_Synchro>::const_iterator it;
     if (!d_T_rx_TOW_set)
         {
-            // int32_t TOW_ref = std::numeric_limits<uint32_t>::max();
             uint32_t TOW_ref = 0U;
             for (it = data.cbegin(); it != data.cend(); it++)
                 {
                     if (it->Flag_valid_word)
                         {
-                            if (it->TOW_at_current_symbol_ms > TOW_ref)
+                            const uint32_t tow_ms = it->TOW_at_current_symbol_ms % week_ms;
+                            if (!d_T_rx_TOW_set)
                                 {
-                                    TOW_ref = it->TOW_at_current_symbol_ms;
+                                    TOW_ref = tow_ms;
                                     d_T_rx_TOW_set = true;
+                                }
+                            else
+                                {
+                                    uint64_t tow_ref_unwrapped = TOW_ref;
+                                    uint64_t tow_unwrapped = tow_ms;
+                                    if ((TOW_ref > half_week_ms) && (tow_ms < half_week_ms))
+                                        {
+                                            tow_unwrapped += week_ms;
+                                        }
+                                    else if ((tow_ms > half_week_ms) && (TOW_ref < half_week_ms))
+                                        {
+                                            tow_ref_unwrapped += week_ms;
+                                        }
+                                    if (tow_unwrapped > tow_ref_unwrapped)
+                                        {
+                                            TOW_ref = static_cast<uint32_t>(tow_unwrapped % week_ms);
+                                        }
                                 }
                         }
                 }
@@ -541,14 +560,19 @@ void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
                 {
                     d_T_rx_TOW_ms += d_T_rx_step_ms - d_T_rx_TOW_ms % d_T_rx_step_ms;
                 }
+            if (d_T_rx_TOW_ms >= week_ms)
+                {
+                    DLOG(INFO) << "TOW RX TIME rollover!";
+                    d_T_rx_TOW_ms = d_T_rx_TOW_ms % week_ms;
+                }
         }
     else
         {
             d_T_rx_TOW_ms += d_T_rx_step_ms;  // the tow time step increment must match the ref time channel step
-            if (d_T_rx_TOW_ms >= 604800000)
+            if (d_T_rx_TOW_ms >= week_ms)
                 {
                     DLOG(INFO) << "TOW RX TIME rollover!";
-                    d_T_rx_TOW_ms = d_T_rx_TOW_ms % 604800000;
+                    d_T_rx_TOW_ms = d_T_rx_TOW_ms % week_ms;
                 }
         }
 }

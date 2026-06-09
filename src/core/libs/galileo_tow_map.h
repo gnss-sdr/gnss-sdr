@@ -21,6 +21,7 @@
 #include <gnuradio/block.h>        // for gr::block
 #include <pmt/pmt.h>               // for pmt::pmt_t
 #include <cstdint>
+#include <limits>
 #include <map>
 #include <utility>
 
@@ -35,6 +36,21 @@ using galileo_tow_map_sptr = gnss_shared_ptr<galileo_tow_map>;
 
 galileo_tow_map_sptr galileo_tow_map_make();
 
+constexpr uint32_t GALILEO_TOW_MAP_WEEK_MS = 604800000U;
+constexpr uint32_t GALILEO_TOW_MAP_INVALID_WEEK = std::numeric_limits<uint32_t>::max();
+constexpr uint32_t GALILEO_TOW_MAP_INVALID_TOW_MS = std::numeric_limits<uint32_t>::max();
+constexpr uint64_t GALILEO_TOW_MAP_INVALID_SAMPLE_COUNTER = std::numeric_limits<uint64_t>::max();
+
+struct GalileoTowMapEntry
+{
+    uint32_t week{GALILEO_TOW_MAP_INVALID_WEEK};
+    uint32_t tow_ms{GALILEO_TOW_MAP_INVALID_TOW_MS};
+    uint64_t sample_counter{GALILEO_TOW_MAP_INVALID_SAMPLE_COUNTER};
+};
+
+using GalileoTowMap = std::map<uint32_t, GalileoTowMapEntry>;
+using GalileoTowMapMessage = std::pair<uint32_t, GalileoTowMapEntry>;
+
 class galileo_tow_map : public gr::block
 {
 public:
@@ -46,7 +62,7 @@ private:
 
     void msg_handler_galileo_tow_map(const pmt::pmt_t& msg);
 
-    std::map<uint32_t, std::pair<uint32_t, uint64_t>> d_galileo_tow;
+    GalileoTowMap d_galileo_tow;
 };
 
 /** \} */

@@ -32,6 +32,7 @@
 
 #include "rtklib_solver.h"
 #include "Beidou_DNAV.h"
+#include "Galileo_CNAV.h"
 #include "gnss_sdr_filesystem.h"
 #include "matlab_writter_helper.h"
 #include "rtklib_rtkpos.h"
@@ -399,6 +400,12 @@ void Rtklib_Solver::clear_has_corrections()
 
 void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
 {
+    if (new_has_data.week == GALILEO_HAS_INVALID_WEEK || new_has_data.tow >= GALILEO_HAS_SECONDS_PER_WEEK)
+        {
+            LOG(INFO) << "Ignoring Galileo HAS corrections without valid GST";
+            return;
+        }
+
     //  Compute time of application HAS SIS ICD, Issue 1.0, Section 7.7
     const uint32_t tmt = new_has_data.get_time_of_message_s();
 

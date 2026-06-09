@@ -200,6 +200,26 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
             d_has_file << indent << "MT1 Header\n";
             d_has_file << indent << "----------\n";
             d_has_file << indent << indent << "TOH [s]:             " << static_cast<float>(has_data->header.toh) << '\n';
+            if (has_data->week != GALILEO_HAS_INVALID_WEEK && has_data->tow < GALILEO_HAS_SECONDS_PER_WEEK)
+                {
+                    const uint32_t time_of_message_s = has_data->get_time_of_message_s();
+                    const uint32_t message_age_s =
+                        (has_data->tow + GALILEO_HAS_SECONDS_PER_WEEK - time_of_message_s) % GALILEO_HAS_SECONDS_PER_WEEK;
+                    const bool tow_toh_consistent =
+                        (has_data->header.toh < GALILEO_HAS_SECONDS_PER_HOUR) && (message_age_s < GALILEO_HAS_SECONDS_PER_HOUR);
+                    if (tow_toh_consistent)
+                        {
+                            d_has_file << indent << indent << "GST:                 WN=" << has_data->week << ", TOW=" << has_data->tow << " [s]\n";
+                        }
+                    else
+                        {
+                            d_has_file << indent << indent << "GST:                 unavailable (TOH inconsistent)\n";
+                        }
+                }
+            else
+                {
+                    d_has_file << indent << indent << "GST:                 unavailable\n";
+                }
             d_has_file << indent << indent << "Mask flag:           " << static_cast<float>(has_data->header.mask_flag) << '\n';
             d_has_file << indent << indent << "Orbit Corr. Flag:    " << static_cast<float>(has_data->header.orbit_correction_flag) << '\n';
             d_has_file << indent << indent << "Clock Full-set Flag: " << static_cast<float>(has_data->header.clock_fullset_flag) << '\n';

@@ -15,6 +15,7 @@
  */
 
 #include "rtklib_pvt_gs.h"
+#include "Galileo_CNAV.h"
 #include "MATH_CONSTANTS.h"
 #include "an_packet_printer.h"
 #include "beidou_dnav_almanac.h"
@@ -1592,8 +1593,8 @@ void rtklib_pvt_gs::msg_handler_has_data(const pmt::pmt_t& msg)
             if (msg_type_hash_code == d_galileo_has_data_sptr_type_hash_code)
                 {
                     const auto has_data = wht::any_cast<std::shared_ptr<Galileo_HAS_data>>(pmt::any_ref(msg));
-                    constexpr uint32_t galileo_has_seconds_per_week = 604800;
-                    const bool has_valid_tow = has_data->tow < galileo_has_seconds_per_week;
+                    const bool has_valid_gst =
+                        has_data->week != GALILEO_HAS_INVALID_WEEK && has_data->tow < GALILEO_HAS_SECONDS_PER_WEEK;
                     if (d_use_has_corrections && (has_data->has_status == 3))  // do not use HAS
                         {
                             d_internal_pvt_solver->clear_has_corrections();
@@ -1602,7 +1603,7 @@ void rtklib_pvt_gs::msg_handler_has_data(const pmt::pmt_t& msg)
                                     d_user_pvt_solver->clear_has_corrections();
                                 }
                         }
-                    else if (d_use_has_corrections && (has_data->has_status == 1) && has_valid_tow)  // operational mode
+                    else if (d_use_has_corrections && (has_data->has_status == 1) && has_valid_gst)  // operational mode
                         {
                             d_internal_pvt_solver->store_has_data(*has_data);
                             if (d_enable_rx_clock_correction == true)
@@ -1614,7 +1615,7 @@ void rtklib_pvt_gs::msg_handler_has_data(const pmt::pmt_t& msg)
                         {
                             d_has_simple_printer->print_message(has_data.get());
                         }
-                    if (d_rtcm_printer && has_valid_tow)
+                    if (d_rtcm_printer && has_valid_gst)
                         {
                             d_rtcm_printer->Print_IGM_Messages(*has_data.get());
                         }

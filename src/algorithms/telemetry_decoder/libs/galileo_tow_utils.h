@@ -56,6 +56,39 @@ inline uint32_t floor_to_second_ms(uint32_t tow_ms)
 }
 
 
+inline int64_t floor_div(int64_t numerator, int64_t denominator)
+{
+    const int64_t quotient = numerator / denominator;
+    const int64_t remainder = numerator % denominator;
+    if (remainder != 0 && ((remainder < 0) != (denominator < 0)))
+        {
+            return quotient - 1;
+        }
+    return quotient;
+}
+
+
+inline bool week_after_delta(uint32_t week, uint32_t tow_ms, int64_t delta_ms, uint32_t& result_week)
+{
+    const int64_t week_delta = floor_div(static_cast<int64_t>(tow_ms) + delta_ms, static_cast<int64_t>(WEEK_MS));
+    if (week_delta < 0)
+        {
+            const uint64_t negative_week_delta = static_cast<uint64_t>(-(week_delta + 1LL)) + 1ULL;
+            if (negative_week_delta > static_cast<uint64_t>(week))
+                {
+                    return false;
+                }
+        }
+    else if (week_delta > static_cast<int64_t>(std::numeric_limits<uint32_t>::max() - week))
+        {
+            return false;
+        }
+
+    result_week = static_cast<uint32_t>(static_cast<int64_t>(week) + week_delta);
+    return true;
+}
+
+
 inline int64_t sample_counter_delta(uint64_t current, uint64_t reference)
 {
     const auto max_delta = static_cast<uint64_t>(std::numeric_limits<int64_t>::max());

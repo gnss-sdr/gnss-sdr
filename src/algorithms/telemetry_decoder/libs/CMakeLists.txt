@@ -17,6 +17,7 @@ set(TELEMETRY_DECODER_LIB_SOURCES
 
 set(TELEMETRY_DECODER_LIB_HEADERS
 
+    galileo_tow_utils.h
     tlm_conf.h
     tlm_crc_stats.h
     tlm_utils.h
@@ -44,6 +45,8 @@ else()
 endif()
 
 target_link_libraries(telemetry_decoder_libs
+    PUBLIC
+        core_system_parameters
     PRIVATE
         Volkgnsssdr::volkgnsssdr
         algorithms_libs

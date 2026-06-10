@@ -118,28 +118,28 @@ else()
 endif()
 
 install(TARGETS gnss-sdr
-    RUNTIME DESTINATION bin
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     COMPONENT "gnss-sdr"
 )
 
 install(DIRECTORY ${GNSSSDR_SOURCE_DIR}/conf
-    DESTINATION share/gnss-sdr
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/gnss-sdr
     FILES_MATCHING PATTERN "*.conf"
 )
 
 install(FILES ${GNSSSDR_SOURCE_DIR}/conf/gnss-sdr.conf
-    DESTINATION share/gnss-sdr/conf
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/gnss-sdr/conf
     RENAME default.conf
 )
 
 if(NOT VOLKGNSSSDR_FOUND)
     install(PROGRAMS ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/build/apps/volk_gnsssdr_profile
-        DESTINATION bin
+        DESTINATION ${CMAKE_INSTALL_BINDIR}
         COMPONENT "volk_gnsssdr"
     )
 
     install(PROGRAMS ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/build/apps/volk_gnsssdr-config-info
-        DESTINATION bin
+        DESTINATION ${CMAKE_INSTALL_BINDIR}
         COMPONENT "volk_gnsssdr"
     )
 endif()
@@ -155,7 +155,7 @@ if(NOT GZIP_NOTFOUND)
     )
 
     install(FILES ${GNSSSDR_BINARY_DIR}/gnss-sdr.1.gz
-        DESTINATION share/man/man1
+        DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
     )
 
     execute_process(COMMAND gzip -9 -c ${GNSSSDR_SOURCE_DIR}/docs/CHANGELOG.md
@@ -164,7 +164,7 @@ if(NOT GZIP_NOTFOUND)
     )
 
     install(FILES ${GNSSSDR_BINARY_DIR}/changelog.gz
-        DESTINATION share/doc/gnss-sdr
+        DESTINATION ${CMAKE_INSTALL_DOCDIR}
     )
 
     if(NOT VOLKGNSSSDR_FOUND)
@@ -179,11 +179,11 @@ if(NOT GZIP_NOTFOUND)
         )
 
         install(FILES ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_profile.1.gz
-            DESTINATION share/man/man1
+            DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
         )
 
         install(FILES ${GNSSSDR_BINARY_DIR}/volk_gnsssdr-config-info.1.gz
-            DESTINATION share/man/man1
+            DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
         )
     endif()
 endif()

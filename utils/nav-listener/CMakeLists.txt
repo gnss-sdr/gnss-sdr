@@ -12,6 +12,9 @@ set(CMAKE_CXX_STANDARD 11)
 set(NAVLISTENER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}) # allows this to be a sub-project
 set(NAVLISTENER_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
+# Standard GNU installation directories (this tool can be built standalone)
+include(GNUInstallDirs)
+
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     # Workaround for Macports
     if(NOT BOOST_ROOT)
@@ -85,7 +88,7 @@ add_executable(nav_msg_listener ${NAVLISTENER_SOURCE_DIR}/main.cc)
 target_link_libraries(nav_msg_listener PUBLIC navmsg_lib)
 
 install(TARGETS nav_msg_listener
-    RUNTIME DESTINATION bin
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     COMPONENT "nav_msg_listener"
 )
 

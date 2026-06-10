@@ -19,6 +19,13 @@ set(GNSSSDR_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}) # Allows to be a sub-project
 set(GNSSSDR_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 list(APPEND CMAKE_MODULE_PATH ${GNSSSDR_SOURCE_DIR}/cmake/Modules)
 
+# Provide the standard GNU installation directories (CMAKE_INSTALL_BINDIR,
+# CMAKE_INSTALL_LIBDIR, CMAKE_INSTALL_DATADIR, CMAKE_INSTALL_MANDIR,
+# CMAKE_INSTALL_DOCDIR, ...) to this directory and all subdirectories. Required
+# for packaging (conda-forge, Debian multiarch) and honored by all install()
+# rules below instead of hardcoded paths.
+include(GNUInstallDirs)
+
 if(NOT CMAKE_CONFIGURATION_TYPES)
     # Define extra build types
     include(GnsssdrBuildTypes)
@@ -321,10 +328,10 @@ endif()
 
 # allow 'large' files in 32 bit builds
 if(UNIX)
-    if(CMAKE_VERSION VERSION_GREATER 3.12.0)
-        add_compile_definitions(_LARGEFILE_SOURCE _FILE_OFFSET_BITS=64 _LARGE_FILES)
-    else()
+    if(CMAKE_VERSION VERSION_LESS 3.12)
         add_definitions(-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES)
+    else()
+        add_compile_definitions(_LARGEFILE_SOURCE _FILE_OFFSET_BITS=64 _LARGE_FILES)
     endif()
 endif()
 
@@ -633,7 +640,6 @@ if(CMAKE_VERSION VERSION_LESS 3.1)
     add_library(Threads::Threads SHARED IMPORTED)
     set_property(TARGET Threads::Threads PROPERTY INTERFACE_LINK_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}")
     set_property(TARGET Threads::Threads PROPERTY IMPORTED_LINK_INTERFACE_LANGUAGES "CXX")
-    include(GNUInstallDirs)
     # Fix bug in Debian 8.11
     if("${LINUX_DISTRIBUTION}" MATCHES "Debian")
         if(${LINUX_VER} VERSION_LESS 8.12)
@@ -1357,7 +1363,6 @@ if(NOT VOLKGNSSSDR_FOUND)
     if(CMAKE_SYSTEM_PROCESSOR MATCHES "^cortex")
         set(CMAKE_SYSTEM_PROCESSOR arm-${CMAKE_SYSTEM_PROCESSOR})
     endif()
-    include(GNUInstallDirs)
     set(SUPPORTED_CPU_FEATURES_ARCH FALSE)
     if(CMAKE_SYSTEM_PROCESSOR MATCHES "^mips" OR
     CMAKE_SYSTEM_PROCESSOR MATCHES "(^aarch64)|(^arm64)|(^ARM64)" OR
@@ -2079,7 +2084,6 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
         )
         file(MAKE_DIRECTORY ${GNSSSDR_BINARY_DIR}/matio/lib)
     else()  # CMake >= 3.7
-        include(GNUInstallDirs)
         set(MATIO_STATIC_LIB ${GNSSSDR_BINARY_DIR}/matio/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}matio${CMAKE_STATIC_LIBRARY_SUFFIX})
         if("${HDF5_VERSION}" VERSION_GREATER "1.8.18" AND "${HDF5_VERSION}" VERSION_LESS "1.10.4")
             # weird workaround, but it works in all tested distros (Ubuntu, Debian, Fedora, CentOS, OpenSUSE)

@@ -133,7 +133,7 @@ if(TARGET Boost::iostreams AND TARGET Boost::serialization)
     )
 
     install(TARGETS rinex2assist
-        RUNTIME DESTINATION bin
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         COMPONENT "rinex2assist"
     )
 else()

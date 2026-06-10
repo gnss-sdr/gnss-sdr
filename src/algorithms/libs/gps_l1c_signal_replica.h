@@ -37,13 +37,13 @@ namespace own = gsl_lite;
 
 
 /*!
- * \brief This function generates Galileo E1 code (can select E1B or E1C sinboc).
+ * \brief This function generates GPS L1C code (can select P or D sinboc).
  *
  */
 void gps_l1c_code_gen_sinboc11_float(own::span<float> dest, const std::array<char, 3>& signal_id, uint32_t prn);
 
 /*!
- * \brief This function generates Galileo E1 code (can select E1B or E1C, cboc or sinboc
+ * \brief This function generates GPS L1C code (can select P or D, cboc or sinboc
  * and the sample frequency sampling_freq).
  *
  */
@@ -52,7 +52,7 @@ void gps_l1c_code_gen_float_sampled(own::span<float> dest, const std::array<char
     bool secondary_flag);
 
 /*!
- * \brief This function generates Galileo E1 code (can select E1B or E1C, cboc or sinboc
+ * \brief This function generates GPS L1C code (can select P or D, cboc or sinboc
  * and the sample frequency sampling_freq).
  *
  */

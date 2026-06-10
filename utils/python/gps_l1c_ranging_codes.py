@@ -1,5 +1,5 @@
 """
-gps_l1c_ranging_Codes.py
+gps_l1c_ranging_codes.py
 
 Generates GPS L1C ranging codes for PRNs 1 through 64 given the configuration tables,
 in a format appropriate for direct insertion into C++ source code.
@@ -26,9 +26,14 @@ legendre_residues = {x * x % 10223 for x in range(10223)}
 legendre_lut = [1 if t in legendre_residues else 0 for t in range(10223)]
 legendre_lut[0] = 0
 
+
 def weil_code(w) -> list[int]:
     # Note that a XOR b for booleans is just "not equals"
-    return [1 if legendre_lut[t] != legendre_lut[(t + w) % 10223] else 0 for t in range(10223)]
+    return [
+        1 if legendre_lut[t] != legendre_lut[(t + w) % 10223] else 0
+        for t in range(10223)
+    ]
+
 
 def main():
     l1c_p_str_chunks = {}
@@ -49,30 +54,34 @@ def main():
         l1c_d_seq[d_idx:d_idx] = inserted_sequence
 
         # As integers
-        l1c_p_seq_int = int(''.join(map(str, l1c_p_seq)), 2)
-        l1c_d_seq_int = int(''.join(map(str, l1c_d_seq)), 2)
+        l1c_p_seq_int = int("".join(map(str, l1c_p_seq)), 2)
+        l1c_d_seq_int = int("".join(map(str, l1c_d_seq)), 2)
 
         # NOTE: To represent these as octal, take the entire hex string as a hex number
         #       and bit-shift it right 2 bits, after converting to octal the correct
         #       representation is achieved
-        raw_p_str = f'{l1c_p_seq_int:02558X}'
-        raw_d_str = f'{l1c_d_seq_int:02558X}'
-        p_str_chunks = [raw_p_str[i:i+73] for i in range(0, len(raw_p_str), 73)]
-        d_str_chunks = [raw_d_str[i:i+73] for i in range(0, len(raw_d_str), 73)]
+        raw_p_str = f"{l1c_p_seq_int:02558X}"
+        raw_d_str = f"{l1c_d_seq_int:02558X}"
+        p_str_chunks = [raw_p_str[i : i + 73] for i in range(0, len(raw_p_str), 73)]
+        d_str_chunks = [raw_d_str[i : i + 73] for i in range(0, len(raw_d_str), 73)]
 
         l1c_p_str_chunks[prn] = p_str_chunks
         l1c_d_str_chunks[prn] = d_str_chunks
 
     p = [
         (l1c_p_str_chunks, "GPS_L1C_P_RANGE_CODE"),
-        (l1c_d_str_chunks, "GPS_L1C_D_RANGE_CODE")
+        (l1c_d_str_chunks, "GPS_L1C_D_RANGE_CODE"),
     ]
 
-    print("constexpr size_t GPS_L1C_RANGE_CODE_STR_LENGTH = 2558; //!< Does not include the null terminator")
+    print(
+        "constexpr size_t GPS_L1C_RANGE_CODE_STR_LENGTH = 2558; //!< Does not include the null terminator"
+    )
     for chunk_array, name in p:
         # We dump the raw chip sequences written in hexadecimal string, but because 10230 is not
         # divisible by 4, the last hexadecimal symbol contains 0 padding at its LSB!
-        print(f"constexpr char {name}[GPS_L1C_NUMBER_OF_PRN][GPS_L1C_RANGE_CODE_STR_LENGTH + 1] = {{")
+        print(
+            f"constexpr char {name}[GPS_L1C_NUMBER_OF_PRN][GPS_L1C_RANGE_CODE_STR_LENGTH + 1] = {{"
+        )
         for idx in range(0, 63):
             prn = idx + 1
             chunks = chunk_array[prn]
@@ -82,8 +91,6 @@ def main():
             print(f'    "{chunks[-1]}", // PRN {prn}')
 
         print("};")
-        
-
 
 
 ###############################################################
@@ -359,4 +366,3 @@ GPS_L1C_D_INSERTION_INDICES = [
 
 if __name__ == "__main__":
     main()
-

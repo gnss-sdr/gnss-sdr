@@ -128,6 +128,33 @@ beidou_b1i_telemetry_decoder_gs::~beidou_b1i_telemetry_decoder_gs()
 }
 
 
+uint32_t beidou_b1i_telemetry_decoder_gs::gps_week_ms()
+{
+    return static_cast<uint32_t>(BEIDOU_DNAV_SECONDS_PER_WEEK * 1000.0);
+}
+
+
+uint64_t beidou_b1i_telemetry_decoder_gs::beidou_sow_to_gps_tow_ms(double sow_s)
+{
+    return static_cast<uint64_t>((sow_s + static_cast<double>(BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET)) * 1000.0);
+}
+
+
+uint32_t beidou_b1i_telemetry_decoder_gs::wrap_gps_tow_ms(uint64_t tow_ms)
+{
+    return static_cast<uint32_t>(tow_ms % gps_week_ms());
+}
+
+
+uint32_t beidou_b1i_telemetry_decoder_gs::circular_gps_tow_error_ms(uint32_t lhs_ms, uint32_t rhs_ms)
+{
+    const uint32_t week_ms = gps_week_ms();
+    const uint32_t forward_error_ms = lhs_ms >= rhs_ms ? lhs_ms - rhs_ms : lhs_ms + week_ms - rhs_ms;
+    const uint32_t reverse_error_ms = rhs_ms >= lhs_ms ? rhs_ms - lhs_ms : rhs_ms + week_ms - lhs_ms;
+    return forward_error_ms < reverse_error_ms ? forward_error_ms : reverse_error_ms;
+}
+
+
 void beidou_b1i_telemetry_decoder_gs::decode_bch15_11_01(const int32_t *bits, std::array<int32_t, 15> &decbits)
 {
     int32_t bit;
@@ -572,18 +599,20 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
         // update TOW at the preamble instant
         {
             // Reporting sow as gps time of week
-            d_TOW_at_Preamble_ms = static_cast<uint32_t>((d_nav.get_SOW() + BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET) * 1000.0);
+            const uint64_t decoded_tow_ms = beidou_sow_to_gps_tow_ms(d_nav.get_SOW());
+            d_TOW_at_Preamble_ms = wrap_gps_tow_ms(decoded_tow_ms);
             // check TOW update consistency
             const uint32_t last_d_TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             // compute new TOW
-            d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + d_required_symbols * d_symbol_duration_ms;
+            d_TOW_at_current_symbol_ms = wrap_gps_tow_ms(decoded_tow_ms + static_cast<uint64_t>(d_required_symbols) * d_symbol_duration_ms);
             d_flag_SOW_set = true;
             d_nav.set_flag_new_SOW_available(false);
 
-            if (last_d_TOW_at_current_symbol_ms != 0 && abs(static_cast<int64_t>(d_TOW_at_current_symbol_ms) - int64_t(last_d_TOW_at_current_symbol_ms)) > static_cast<int64_t>(d_symbol_duration_ms))
+            const uint32_t tow_update_error_ms = circular_gps_tow_error_ms(d_TOW_at_current_symbol_ms, last_d_TOW_at_current_symbol_ms);
+            if (last_d_TOW_at_current_symbol_ms != 0 && tow_update_error_ms > d_symbol_duration_ms)
                 {
                     LOG(INFO) << "Warning: BEIDOU B1I TOW update in ch " << d_channel
-                              << " does not match the TLM TOW counter " << static_cast<int64_t>(d_TOW_at_current_symbol_ms) - int64_t(last_d_TOW_at_current_symbol_ms) << " ms \n";
+                              << " does not match the TLM TOW counter " << tow_update_error_ms << " ms \n";
 
                     d_TOW_at_current_symbol_ms = 0;
                     d_flag_valid_word = false;
@@ -607,7 +636,7 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
         {
             if (d_flag_valid_word)
                 {
-                    d_TOW_at_current_symbol_ms += d_symbol_duration_ms;
+                    d_TOW_at_current_symbol_ms = wrap_gps_tow_ms(static_cast<uint64_t>(d_TOW_at_current_symbol_ms) + d_symbol_duration_ms);
                     if (current_symbol.Flag_valid_symbol_output == false)
                         {
                             d_flag_valid_word = false;

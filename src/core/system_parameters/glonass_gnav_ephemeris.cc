@@ -144,12 +144,22 @@ void Glonass_Gnav_Ephemeris::glot_to_gpst(double tod_offset, double glot2utc_cor
     total_sec = days * 86400 + sec_of_day;
 
     // Compute Week number
-    *wn = floor(total_sec / 604800);
+    *wn = floor(total_sec / GLONASS_GNAV_SECONDS_PER_WEEK);
 
     // Compute the arithmetic modules to wrap around range
-    *tow = total_sec - 604800 * floor(total_sec / 604800);
+    *tow = total_sec - GLONASS_GNAV_SECONDS_PER_WEEK * floor(total_sec / GLONASS_GNAV_SECONDS_PER_WEEK);
     // Perform corrections from fractional seconds
     *tow += glot2utc_corr + glot2gpst_corr;
+    while (*tow >= GLONASS_GNAV_SECONDS_PER_WEEK)
+        {
+            *tow -= GLONASS_GNAV_SECONDS_PER_WEEK;
+            ++(*wn);
+        }
+    while (*tow < 0.0)
+        {
+            *tow += GLONASS_GNAV_SECONDS_PER_WEEK;
+            --(*wn);
+        }
 }
 
 

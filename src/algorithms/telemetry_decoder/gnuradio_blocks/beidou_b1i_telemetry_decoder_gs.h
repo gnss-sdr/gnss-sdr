@@ -24,6 +24,7 @@
 #include "nav_message_packet.h"
 #include "telemetry_impl_interface.h"
 #include <boost/circular_buffer.hpp>
+#include <cstdint>
 
 
 /** \addtogroup Telemetry_Decoder
@@ -66,6 +67,10 @@ private:
     void decode_subframe(float *symbols, double cn0);
     void decode_word(int32_t word_counter, const float *enc_word_symbols, int32_t *dec_word_symbols);
     void decode_bch15_11_01(const int32_t *bits, std::array<int32_t, 15> &decbits);
+    static uint32_t gps_week_ms();
+    static uint64_t beidou_sow_to_gps_tow_ms(double sow_s);
+    static uint32_t wrap_gps_tow_ms(uint64_t tow_ms);
+    static uint32_t circular_gps_tow_error_ms(uint32_t lhs_ms, uint32_t rhs_ms);
 
     // Preamble decoding
     std::array<int32_t, BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS> d_preamble_samples{};

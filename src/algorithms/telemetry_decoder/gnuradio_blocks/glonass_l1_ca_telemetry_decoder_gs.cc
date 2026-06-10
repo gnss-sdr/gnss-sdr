@@ -106,6 +106,29 @@ glonass_l1_ca_telemetry_decoder_gs::~glonass_l1_ca_telemetry_decoder_gs()
 }
 
 
+double glonass_l1_ca_telemetry_decoder_gs::gps_week_s()
+{
+    return GLONASS_GNAV_SECONDS_PER_WEEK;
+}
+
+
+double glonass_l1_ca_telemetry_decoder_gs::wrap_gps_tow_s(double tow_s)
+{
+    double wrapped_tow_s = std::fmod(tow_s, gps_week_s());
+    if (wrapped_tow_s < 0.0)
+        {
+            wrapped_tow_s += gps_week_s();
+        }
+    return wrapped_tow_s;
+}
+
+
+uint32_t glonass_l1_ca_telemetry_decoder_gs::wrap_gps_tow_ms(double tow_s)
+{
+    return static_cast<uint32_t>(std::round(wrap_gps_tow_s(tow_s) * 1000.0)) % GLONASS_GNAV_MILLISECONDS_PER_WEEK;
+}
+
+
 void glonass_l1_ca_telemetry_decoder_gs::decode_string(const double *frame_symbols, double cn0)
 {
     // 1. Transform from symbols to bits
@@ -357,12 +380,12 @@ int glonass_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
     if (this->d_flag_preamble == true && d_nav.get_flag_TOW_new() == true)
         // update TOW at the preamble instant
         {
-            d_TOW_at_current_symbol = floor((d_nav.get_ephemeris().d_TOW - GLONASS_GNAV_PREAMBLE_DURATION_S) * 1000) / 1000;
+            d_TOW_at_current_symbol = wrap_gps_tow_s(floor((d_nav.get_ephemeris().d_TOW - GLONASS_GNAV_PREAMBLE_DURATION_S) * 1000) / 1000);
             d_nav.set_flag_TOW_new(false);
         }
     else  // if there is not a new preamble, we define the TOW of the current symbol
         {
-            d_TOW_at_current_symbol = d_TOW_at_current_symbol + GLONASS_L1_CA_SYMBOL_PERIOD_S;
+            d_TOW_at_current_symbol = wrap_gps_tow_s(d_TOW_at_current_symbol + GLONASS_L1_CA_SYMBOL_PERIOD_S);
         }
 
     // if (d_flag_frame_sync == true && d_nav.flag_TOW_set==true && d_nav.get_flag_CRC_test() == true)
@@ -373,7 +396,7 @@ int glonass_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
     //     }
 
     current_symbol.PRN = this->d_satellite.get_PRN();
-    current_symbol.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
+    current_symbol.TOW_at_current_symbol_ms = wrap_gps_tow_ms(d_TOW_at_current_symbol);
 
     if (d_flag_frame_sync == true && d_nav.is_flag_TOW_set() == true)
         {

@@ -21,6 +21,7 @@
 #include "gps_cnav_navigation_message.h"
 #include "nav_message_packet.h"
 #include "telemetry_impl_interface.h"
+#include <cstdint>
 
 extern "C"
 {
@@ -60,6 +61,11 @@ private:
     friend gps_l2c_telemetry_decoder_gs_sptr gps_l2c_make_telemetry_decoder_gs(const Tlm_Conf &conf);
 
     explicit gps_l2c_telemetry_decoder_gs(const Tlm_Conf &conf);
+
+    static uint32_t gps_week_ms();
+    static double gps_week_s();
+    static uint32_t wrap_gps_tow_ms(uint64_t tow_ms);
+    static double wrap_gps_tow_s(double tow_s);
 
     Gnss_Satellite d_satellite;
 

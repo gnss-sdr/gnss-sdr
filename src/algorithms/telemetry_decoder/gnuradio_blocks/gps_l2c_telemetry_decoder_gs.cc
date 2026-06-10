@@ -48,6 +48,35 @@ gps_l2c_telemetry_decoder_gs_sptr gps_l2c_make_telemetry_decoder_gs(const Tlm_Co
 }
 
 
+uint32_t gps_l2c_telemetry_decoder_gs::gps_week_ms()
+{
+    return 604800000U;
+}
+
+
+double gps_l2c_telemetry_decoder_gs::gps_week_s()
+{
+    return 604800.0;
+}
+
+
+uint32_t gps_l2c_telemetry_decoder_gs::wrap_gps_tow_ms(uint64_t tow_ms)
+{
+    return static_cast<uint32_t>(tow_ms % gps_week_ms());
+}
+
+
+double gps_l2c_telemetry_decoder_gs::wrap_gps_tow_s(double tow_s)
+{
+    double wrapped_tow_s = std::fmod(tow_s, gps_week_s());
+    if (wrapped_tow_s < 0.0)
+        {
+            wrapped_tow_s += gps_week_s();
+        }
+    return wrapped_tow_s;
+}
+
+
 gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(const Tlm_Conf &conf)
     : telemetry_impl_interface("gps_l2c_telemetry_decoder_gs",
           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
@@ -239,7 +268,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             // delay by the formulae:
             // \code
             // symbolTime_ms = msg->tow * 6000 + *pdelay * 20 + (12 * 20); 12 symbols of the encoder's transitory
-            d_TOW_at_current_symbol = static_cast<double>(msg.tow) * 6.0 + static_cast<double>(delay) * GPS_L2_M_PERIOD_S + 12 * GPS_L2_M_PERIOD_S;
+            d_TOW_at_current_symbol = wrap_gps_tow_s(static_cast<double>(msg.tow) * 6.0 + static_cast<double>(delay) * GPS_L2_M_PERIOD_S + 12 * GPS_L2_M_PERIOD_S);
             // d_TOW_at_current_symbol = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
             d_flag_valid_word = true;
             LOG(INFO) << "Successful frame synchronization in channel " << d_channel << " for satellite " << this->d_satellite
@@ -248,7 +277,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             if (d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
                 {
                     d_nav_msg_packet.prn = static_cast<int32_t>(current_synchro_data.PRN);
-                    d_nav_msg_packet.tow_at_current_symbol_ms = static_cast<int32_t>(d_TOW_at_current_symbol * 1000.0);
+                    d_nav_msg_packet.tow_at_current_symbol_ms = static_cast<int32_t>(wrap_gps_tow_ms(static_cast<uint64_t>(std::round(d_TOW_at_current_symbol * 1000.0))));
                     const std::shared_ptr<Nav_Message_Packet> tmp_obj = std::make_shared<Nav_Message_Packet>(d_nav_msg_packet);
                     this->message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
                     d_nav_msg_packet.nav_message = "";
@@ -256,7 +285,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
         }
     else
         {
-            d_TOW_at_current_symbol += GPS_L2_M_PERIOD_S;
+            d_TOW_at_current_symbol = wrap_gps_tow_s(d_TOW_at_current_symbol + GPS_L2_M_PERIOD_S);
             if (current_synchro_data.Flag_valid_symbol_output == false)
                 {
                     d_flag_valid_word = false;
@@ -274,7 +303,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             current_synchro_data.Flag_PLL_180_deg_phase_locked = false;
         }
 
-    current_synchro_data.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
+    current_synchro_data.TOW_at_current_symbol_ms = wrap_gps_tow_ms(static_cast<uint64_t>(std::round(d_TOW_at_current_symbol * 1000.0)));
     current_synchro_data.Flag_valid_word = d_flag_valid_word;
 
     if (d_dump == true)

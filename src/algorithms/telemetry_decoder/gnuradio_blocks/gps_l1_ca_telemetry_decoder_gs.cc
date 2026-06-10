@@ -76,6 +76,18 @@ gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(const Tl
 }
 
 
+uint32_t gps_l1_ca_telemetry_decoder_gs::gps_week_ms()
+{
+    return 604800000U;
+}
+
+
+uint32_t gps_l1_ca_telemetry_decoder_gs::wrap_gps_tow_ms(uint64_t tow_ms)
+{
+    return static_cast<uint32_t>(tow_ms % gps_week_ms());
+}
+
+
 gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(const Tlm_Conf &conf,
     L1LnavSystem system)
     : telemetry_impl_interface("gps_navigation_gs",
@@ -628,7 +640,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
     // 2. Add the telemetry decoder information
     if (d_flag_preamble == true)
         {
-            d_TOW_at_current_symbol_ms = static_cast<uint32_t>(d_nav->get_TOW() * 1000.0);
+            d_TOW_at_current_symbol_ms = wrap_gps_tow_ms(static_cast<uint64_t>(d_nav->get_TOW() * 1000.0));
             d_TOW_at_Preamble_ms = d_TOW_at_current_symbol_ms;
             d_flag_TOW_set = true;
         }
@@ -636,7 +648,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
         {
             if (d_flag_TOW_set == true)
                 {
-                    d_TOW_at_current_symbol_ms += GPS_L1_CA_BIT_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms = wrap_gps_tow_ms(static_cast<uint64_t>(d_TOW_at_current_symbol_ms) + GPS_L1_CA_BIT_PERIOD_MS);
                 }
         }
 

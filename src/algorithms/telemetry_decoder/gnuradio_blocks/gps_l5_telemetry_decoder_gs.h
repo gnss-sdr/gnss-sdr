@@ -22,6 +22,7 @@
 #include "nav_message_packet.h"
 #include "telemetry_impl_interface.h"
 #include <boost/circular_buffer.hpp>
+#include <cstdint>
 
 extern "C"
 {
@@ -62,6 +63,10 @@ private:
         CnavSystem system);
 
     gps_l5_telemetry_decoder_gs(const Tlm_Conf &conf, CnavSystem system);
+
+    static uint32_t gps_week_ms();
+    static uint32_t wrap_gps_tow_ms(uint64_t tow_ms);
+    static uint32_t circular_gps_tow_error_ms(uint32_t lhs_ms, uint32_t rhs_ms);
 
     cnav_msg_decoder_t d_cnav_decoder{};
 

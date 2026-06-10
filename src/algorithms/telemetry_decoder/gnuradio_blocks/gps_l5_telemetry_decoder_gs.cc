@@ -33,7 +33,6 @@
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
 #include <bitset>           // for std::bitset
-#include <cstdlib>          // for std::llabs
 #include <iomanip>          // for std::setprecision
 #include <iostream>         // for std::cout
 
@@ -149,6 +148,27 @@ void gps_l5_telemetry_decoder_gs::reset()
 }
 
 
+uint32_t gps_l5_telemetry_decoder_gs::gps_week_ms()
+{
+    return 604800000U;
+}
+
+
+uint32_t gps_l5_telemetry_decoder_gs::wrap_gps_tow_ms(uint64_t tow_ms)
+{
+    return static_cast<uint32_t>(tow_ms % gps_week_ms());
+}
+
+
+uint32_t gps_l5_telemetry_decoder_gs::circular_gps_tow_error_ms(uint32_t lhs_ms, uint32_t rhs_ms)
+{
+    const uint32_t week_ms = gps_week_ms();
+    const uint32_t forward_error_ms = lhs_ms >= rhs_ms ? lhs_ms - rhs_ms : lhs_ms + week_ms - rhs_ms;
+    const uint32_t reverse_error_ms = rhs_ms >= lhs_ms ? rhs_ms - lhs_ms : rhs_ms + week_ms - lhs_ms;
+    return forward_error_ms < reverse_error_ms ? forward_error_ms : reverse_error_ms;
+}
+
+
 int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)),
     gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items,
@@ -252,7 +272,9 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
                 }
 
             // update TOW at the preamble instant
-            d_TOW_at_Preamble_ms = msg.tow * 6000;
+            const auto decoded_tow_ms = static_cast<uint64_t>(msg.tow) * 6000ULL;
+            const auto symbol_delay_ms = static_cast<uint64_t>(delay + 12) * static_cast<uint64_t>(GPS_L5I_SYMBOL_PERIOD_MS);
+            d_TOW_at_Preamble_ms = wrap_gps_tow_ms(decoded_tow_ms);
 
             // The time of the last input symbol can be computed from the message ToW and
             // delay by the formulae:
@@ -261,13 +283,14 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
 
             // check TOW update consistency
             const uint32_t last_d_TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
-            d_TOW_at_current_symbol_ms = msg.tow * 6000 + (delay + 12) * GPS_L5I_SYMBOL_PERIOD_MS;
-            if (last_d_TOW_at_current_symbol_ms != 0 && std::llabs(static_cast<int64_t>(d_TOW_at_current_symbol_ms) - static_cast<int64_t>(last_d_TOW_at_current_symbol_ms)) > static_cast<int64_t>(GPS_L5I_SYMBOL_PERIOD_MS))
+            d_TOW_at_current_symbol_ms = wrap_gps_tow_ms(decoded_tow_ms + symbol_delay_ms);
+            const uint32_t tow_update_error_ms = circular_gps_tow_error_ms(d_TOW_at_current_symbol_ms, last_d_TOW_at_current_symbol_ms);
+            if (last_d_TOW_at_current_symbol_ms != 0 && tow_update_error_ms > GPS_L5I_SYMBOL_PERIOD_MS)
                 {
                     DLOG(INFO) << "Warning: " << ((d_system == CnavSystem::GPS) ? "GPS" : "QZSS")
                                << " L5 TOW update in ch " << d_channel
-                               << " does not match the TLM TOW counter " << static_cast<int64_t>(d_TOW_at_current_symbol_ms) - static_cast<int64_t>(last_d_TOW_at_current_symbol_ms) << " ms "
-                               << " with delay: " << delay << " msg tow: " << msg.tow * 6000 << " ms \n";
+                               << " does not match the TLM TOW counter " << tow_update_error_ms << " ms "
+                               << " with delay: " << delay << " msg tow: " << decoded_tow_ms << " ms \n";
 
                     d_TOW_at_current_symbol_ms = 0;
                     d_flag_valid_word = false;
@@ -293,7 +316,7 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
         {
             if (d_flag_valid_word)
                 {
-                    d_TOW_at_current_symbol_ms += GPS_L5I_SYMBOL_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms = wrap_gps_tow_ms(static_cast<uint64_t>(d_TOW_at_current_symbol_ms) + GPS_L5I_SYMBOL_PERIOD_MS);
                     if (current_synchro_data.Flag_valid_symbol_output == false)
                         {
                             d_flag_valid_word = false;

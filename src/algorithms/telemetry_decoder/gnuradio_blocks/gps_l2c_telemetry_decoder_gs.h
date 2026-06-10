@@ -62,11 +62,6 @@ private:
 
     explicit gps_l2c_telemetry_decoder_gs(const Tlm_Conf &conf);
 
-    static uint32_t gps_week_ms();
-    static double gps_week_s();
-    static uint32_t wrap_gps_tow_ms(uint64_t tow_ms);
-    static double wrap_gps_tow_s(double tow_s);
-
     Gnss_Satellite d_satellite;
 
     cnav_msg_decoder_t d_cnav_decoder{};

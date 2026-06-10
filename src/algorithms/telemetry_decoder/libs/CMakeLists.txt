@@ -21,6 +21,7 @@ set(TELEMETRY_DECODER_LIB_HEADERS
     tlm_conf.h
     tlm_crc_stats.h
     tlm_utils.h
+    tow_utils.h
     viterbi_decoder.h
     viterbi_decoder_sbas.h
 )

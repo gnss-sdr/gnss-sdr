@@ -77,8 +77,6 @@ private:
     bool gps_word_parityCheck(uint32_t gpsword);
     bool decode_subframe(double cn0, bool flag_invert);
     bool is_tow_consistent(uint32_t decoded_tow_s);
-    static uint32_t gps_week_ms();
-    static uint32_t wrap_gps_tow_ms(uint64_t tow_ms);
 
     const L1LnavSystem d_system;
     std::unique_ptr<Gps_Navigation_Message> d_nav;

@@ -64,9 +64,6 @@ private:
 
     const std::array<int16_t, GLONASS_GNAV_PREAMBLE_LENGTH_BITS> d_preambles_bits{GLONASS_GNAV_PREAMBLE_SAMPLES};
     void decode_string(const double *symbols, double cn0);
-    static double gps_week_s();
-    static double wrap_gps_tow_s(double tow_s);
-    static uint32_t wrap_gps_tow_ms(double tow_s);
 
     // Storage for incoming data
     boost::circular_buffer<Gnss_Synchro> d_symbol_history;

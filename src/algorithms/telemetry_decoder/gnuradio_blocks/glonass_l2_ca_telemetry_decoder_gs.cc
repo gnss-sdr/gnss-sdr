@@ -26,6 +26,7 @@
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
 #include "tow_to_trk.h"
+#include "tow_utils.h"  // for gnss_tow helpers
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
@@ -103,29 +104,6 @@ glonass_l2_ca_telemetry_decoder_gs::~glonass_l2_ca_telemetry_decoder_gs()
 {
     DLOG(INFO) << "Glonass L2 Telemetry decoder block (channel " << d_channel << ") destructor called.";
     tlm_cleanup_and_save_files(d_dump_file, d_dump_filename, d_dump, d_dump_mat, d_remove_dat);
-}
-
-
-double glonass_l2_ca_telemetry_decoder_gs::gps_week_s()
-{
-    return GLONASS_GNAV_SECONDS_PER_WEEK;
-}
-
-
-double glonass_l2_ca_telemetry_decoder_gs::wrap_gps_tow_s(double tow_s)
-{
-    double wrapped_tow_s = std::fmod(tow_s, gps_week_s());
-    if (wrapped_tow_s < 0.0)
-        {
-            wrapped_tow_s += gps_week_s();
-        }
-    return wrapped_tow_s;
-}
-
-
-uint32_t glonass_l2_ca_telemetry_decoder_gs::wrap_gps_tow_ms(double tow_s)
-{
-    return static_cast<uint32_t>(std::round(wrap_gps_tow_s(tow_s) * 1000.0)) % GLONASS_GNAV_MILLISECONDS_PER_WEEK;
 }
 
 
@@ -378,12 +356,12 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
     if (this->d_flag_preamble == true && d_nav.get_flag_TOW_new() == true)
         // update TOW at the preamble instant
         {
-            d_TOW_at_current_symbol = wrap_gps_tow_s(floor((d_nav.get_ephemeris().d_TOW - GLONASS_GNAV_PREAMBLE_DURATION_S) * 1000) / 1000);
+            d_TOW_at_current_symbol = gnss_tow::wrap_s(floor((d_nav.get_ephemeris().d_TOW - GLONASS_GNAV_PREAMBLE_DURATION_S) * 1000) / 1000);
             d_nav.set_flag_TOW_new(false);
         }
     else  // if there is not a new preamble, we define the TOW of the current symbol
         {
-            d_TOW_at_current_symbol = wrap_gps_tow_s(d_TOW_at_current_symbol + GLONASS_L2_CA_SYMBOL_PERIOD_S);
+            d_TOW_at_current_symbol = gnss_tow::wrap_s(d_TOW_at_current_symbol + GLONASS_L2_CA_SYMBOL_PERIOD_S);
         }
 
     // if (d_flag_frame_sync == true && d_nav.flag_TOW_set==true && d_nav.get_flag_CRC_test() == true)
@@ -394,7 +372,7 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
     //     }
 
     current_symbol.PRN = this->d_satellite.get_PRN();
-    current_symbol.TOW_at_current_symbol_ms = wrap_gps_tow_ms(d_TOW_at_current_symbol);
+    current_symbol.TOW_at_current_symbol_ms = gnss_tow::wrap_s_to_ms(d_TOW_at_current_symbol);
 
     if (d_flag_frame_sync == true && d_nav.is_flag_TOW_set() == true)
         {

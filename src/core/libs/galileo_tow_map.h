@@ -43,6 +43,14 @@ constexpr uint64_t GALILEO_TOW_MAP_INVALID_SAMPLE_COUNTER = std::numeric_limits<
 
 struct GalileoTowMapEntry
 {
+    GalileoTowMapEntry() = default;
+    GalileoTowMapEntry(uint32_t entry_week, uint32_t entry_tow_ms, uint64_t entry_sample_counter)
+        : week(entry_week),
+          tow_ms(entry_tow_ms),
+          sample_counter(entry_sample_counter)
+    {
+    }
+
     uint32_t week{GALILEO_TOW_MAP_INVALID_WEEK};
     uint32_t tow_ms{GALILEO_TOW_MAP_INVALID_TOW_MS};
     uint64_t sample_counter{GALILEO_TOW_MAP_INVALID_SAMPLE_COUNTER};

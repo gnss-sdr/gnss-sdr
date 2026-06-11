@@ -146,8 +146,9 @@ void Glonass_Gnav_Ephemeris::glot_to_gpst(double tod_offset, double glot2utc_cor
 
     // Compute the arithmetic modules to wrap around range
     *tow = total_sec - GLONASS_GNAV_SECONDS_PER_WEEK * floor(total_sec / GLONASS_GNAV_SECONDS_PER_WEEK);
-    // Perform corrections from fractional seconds
-    *tow += glot2utc_corr + glot2gpst_corr;
+    // Perform corrections from fractional seconds, plus the leap second
+    // announced by the KP word that is not yet in the leap second table
+    *tow += glot2utc_corr + glot2gpst_corr + d_kp_leap_correction_s;
     while (*tow >= GLONASS_GNAV_SECONDS_PER_WEEK)
         {
             *tow -= GLONASS_GNAV_SECONDS_PER_WEEK;

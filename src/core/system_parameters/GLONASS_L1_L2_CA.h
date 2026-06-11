@@ -337,6 +337,7 @@ const std::vector<std::pair<int32_t, int32_t>> H_N_A({{72, 5}});
 // STRING 14 FRAME 5
 const std::vector<std::pair<int32_t, int32_t>> B1({{6, 11}});
 const std::vector<std::pair<int32_t, int32_t>> B2({{17, 10}});
+const std::vector<std::pair<int32_t, int32_t>> KP({{27, 2}});
 
 
 /** \} */

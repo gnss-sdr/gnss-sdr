@@ -299,3 +299,88 @@ TEST(GlonassGnavNavigationMessageTest, String14RequiresKnownFrame)
 
     EXPECT_DOUBLE_EQ(gnav_nav_message.get_almanac(10).d_n_A, 0.0);
 }
+
+
+/*!
+ * \brief KP announces a UTC leap second correction at the end of the current
+ * quarter: 01 = +1 s, 11 = -1 s (GLONASS ICD Edition 5.1, Table 4.12)
+ */
+TEST(GlonassGnavNavigationMessageTest, KpAnnouncedLeapSecondMapping)
+{
+    Glonass_Gnav_Utc_Model gnav_utc_model;
+
+    gnav_utc_model.d_KP = 0.0;
+    EXPECT_EQ(gnav_utc_model.announced_leap_second(), 0);
+    gnav_utc_model.d_KP = 1.0;
+    EXPECT_EQ(gnav_utc_model.announced_leap_second(), 1);
+    gnav_utc_model.d_KP = 2.0;
+    EXPECT_EQ(gnav_utc_model.announced_leap_second(), 0);
+    gnav_utc_model.d_KP = 3.0;
+    EXPECT_EQ(gnav_utc_model.announced_leap_second(), -1);
+}
+
+
+// Synthetic strings (with valid Hamming code bits) for a scenario where KP
+// announces a +1 s UTC leap second at the end of a quarter. GLONASS day 913
+// of four-year interval 8 is 2026-07-01, which starts at 2026-06-30 21:00
+// UTC; the announced leap second event is at 2026-07-01 00:00:00 UTC
+std::string str1_kp_a("0000100000001001111000000000000000000000000000000000000000000000000000000000000011000");   // tk = 02:30:00 (UTC 2026-06-30 23:30)
+std::string str1_kp_b("0000100000001100101100000000000000000000000000000000000000000000000000000000000011000");   // tk = 03:11:00 (UTC 2026-07-01 00:11)
+std::string str1_kp_c("0000100000001101111000000000000000000000000000000000000000000000000000000000011011111");   // tk = 03:30:00 (UTC 2026-07-01 00:30)
+std::string str4_kp("0010000000000000000000000000000000000000000000000000000000001110010001101100001011101");     // N_T = 913, n = 22
+std::string str5_kp("0010101110010001000000000000000000000000000000000010000000000000000000000000001100000");     // N_A = 913, N_4 = 8 -> year 2026
+std::string str6_kp_f5("0011000010110000000000000000000000000000000000000000000000000000000000000000001001100");  // almanac slot 22 identifies frame 5
+std::string str14_kp1("0111000000000000000000000001000000000000000000000000000000000000000000000000011101000");   // KP = 01 (+1 s)
+
+
+/*!
+ * \brief A leap second announced by KP before the end of the quarter is
+ * applied to the GLONASS to GPS time conversion once the event epoch is
+ * reached, so the TOW remains correct even if the event is not yet in the
+ * receiver's leap second table
+ */
+TEST(GlonassGnavNavigationMessageTest, KpLeapSecondAppliedAfterQuarterEnd)
+{
+    Glonass_Gnav_Navigation_Message gnav_nav_message;
+
+    gnav_nav_message.string_decoder(str1_kp_a);  // tk = 02:30:00 GLONASS
+    gnav_nav_message.set_flag_ephemeris_str_2(true);
+    gnav_nav_message.set_flag_ephemeris_str_3(true);
+    gnav_nav_message.string_decoder(str4_kp);
+    gnav_nav_message.string_decoder(str5_kp);  // computes the TOW
+    const double tow_before = gnav_nav_message.get_ephemeris().d_TOW;
+    gnav_nav_message.string_decoder(str6_kp_f5);
+    gnav_nav_message.string_decoder(str14_kp1);
+
+    // The correction is announced but the event has not occurred yet
+    EXPECT_DOUBLE_EQ(gnav_nav_message.get_utc_model().d_KP, 1.0);
+    EXPECT_DOUBLE_EQ(gnav_nav_message.get_ephemeris().d_kp_leap_correction_s, 0.0);
+
+    gnav_nav_message.string_decoder(str1_kp_b);  // tk = 03:11:00, past the event
+    gnav_nav_message.string_decoder(str5_kp);    // recomputes the TOW
+
+    EXPECT_DOUBLE_EQ(gnav_nav_message.get_ephemeris().d_kp_leap_correction_s, 1.0);
+    // 2460 s elapsed between the two TOW computations, plus the leap second
+    EXPECT_DOUBLE_EQ(gnav_nav_message.get_ephemeris().d_TOW - tow_before, 2461.0);
+}
+
+
+/*!
+ * \brief If KP still announces a correction right after a quarter boundary
+ * (broadcast not updated yet), the leap second has just been applied to UTC,
+ * and the receiver must account for it immediately
+ */
+TEST(GlonassGnavNavigationMessageTest, KpLeapSecondAppliedRightAfterBoundary)
+{
+    Glonass_Gnav_Navigation_Message gnav_nav_message;
+
+    gnav_nav_message.string_decoder(str1_kp_c);  // tk = 03:30:00 (UTC 00:30, 30 min after the boundary)
+    gnav_nav_message.set_flag_ephemeris_str_2(true);
+    gnav_nav_message.set_flag_ephemeris_str_3(true);
+    gnav_nav_message.string_decoder(str4_kp);
+    gnav_nav_message.string_decoder(str5_kp);
+    gnav_nav_message.string_decoder(str6_kp_f5);
+    gnav_nav_message.string_decoder(str14_kp1);
+
+    EXPECT_DOUBLE_EQ(gnav_nav_message.get_ephemeris().d_kp_leap_correction_s, 1.0);
+}

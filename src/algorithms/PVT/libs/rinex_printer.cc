@@ -2861,7 +2861,9 @@ void Rinex_Printer::log_rinex_nav_glo_gnav(const std::map<int32_t, Glonass_Gnav_
             line.clear();
 
             // -------- BROADCAST ORBIT - 1
-            out << get_nav_broadcast_orbit(&eph.d_Xn, &eph.d_VXn, &eph.d_AXn, &eph.d_B_n, d_version) << '\n';
+            // RINEX expects the health flag in the MSB of the 3-bit Bn word (0 = OK)
+            const auto health_d = static_cast<double>(((static_cast<int32_t>(eph.d_B_n) & 4) == 0) ? 0 : 1);
+            out << get_nav_broadcast_orbit(&eph.d_Xn, &eph.d_VXn, &eph.d_AXn, &health_d, d_version) << '\n';
 
             // -------- BROADCAST ORBIT - 2
             const auto freq_channel_d = static_cast<double>(eph.i_satellite_freq_channel);

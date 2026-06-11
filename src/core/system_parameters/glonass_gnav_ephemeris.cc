@@ -119,8 +119,7 @@ void Glonass_Gnav_Ephemeris::glot_to_gpst(double tod_offset, double glot2utc_cor
     const boost::gregorian::date d1(d_yr - J + 1.0, 1, 1);
     const boost::gregorian::days d2(d_N_T - 1);
     const boost::posix_time::ptime utc_time(d1 + d2, t);
-    const boost::gregorian::date utc_date = utc_time.date();
-    boost::posix_time::ptime gps_time;
+    boost::posix_time::ptime gps_time = utc_time;
 
     // Adjust for leap second correction
     for (i = 0; GLONASS_LEAP_SECONDS[i][0] > 0; i++)
@@ -136,10 +135,9 @@ void Glonass_Gnav_Ephemeris::glot_to_gpst(double tod_offset, double glot2utc_cor
                 }
         }
 
-    // Total number of days
-    days = static_cast<double>((utc_date - gps_epoch).days());
-
-    // Total number of seconds
+    // Days and seconds of day must be taken from the same (GPS) timestamp,
+    // since the leap second adjustment may roll gps_time over a day boundary
+    days = static_cast<double>((gps_time.date() - gps_epoch).days());
     sec_of_day = static_cast<double>((gps_time.time_of_day()).total_seconds());
     total_sec = days * 86400 + sec_of_day;
 

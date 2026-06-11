@@ -148,6 +148,11 @@ public:
         return flag_TOW_set;
     }
 
+    inline void set_flag_TOW_set(bool tow_set)
+    {
+        flag_TOW_set = tow_set;
+    }
+
     inline void set_flag_ephemeris_str_1(bool ephemeris_str_1)
     {
         flag_ephemeris_str_1 = ephemeris_str_1;

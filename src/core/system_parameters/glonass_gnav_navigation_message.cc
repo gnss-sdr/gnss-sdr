@@ -560,8 +560,9 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
             // parameters instead of almanac data
             if (d_frame_ID == 5)
                 {
-                    gnav_utc_model.d_B1 = static_cast<double>(read_navigation_unsigned(string_bits, B1));
-                    gnav_utc_model.d_B2 = static_cast<double>(read_navigation_unsigned(string_bits, B2));
+                    // B1 and B2 are sign-magnitude values (GLONASS ICD Table 4.9)
+                    gnav_utc_model.d_B1 = static_cast<double>(read_navigation_signed(string_bits, B1)) * TWO_N10;
+                    gnav_utc_model.d_B2 = static_cast<double>(read_navigation_signed(string_bits, B2)) * TWO_N16;
                 }
             else if (d_frame_ID != 0)
                 {

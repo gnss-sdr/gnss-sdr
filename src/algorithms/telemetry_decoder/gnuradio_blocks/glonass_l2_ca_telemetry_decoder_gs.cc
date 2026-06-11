@@ -55,7 +55,6 @@ glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(const Tlm
           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
       d_dump_filename(conf.dump_filename),
-      d_preamble_time_samples(0),
       d_TOW_at_current_symbol(0),
       d_sample_counter(0ULL),
       d_preamble_index(0ULL),
@@ -72,8 +71,6 @@ glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(const Tlm
       d_tow_to_trk(conf.tow_to_trk)
 {
     configure_basic_outputs();
-
-    this->message_port_register_out(pmt::mp("preamble_timestamp_samples"));
 
     if (d_enable_navdata_monitor)
         {
@@ -224,6 +221,28 @@ void glonass_l2_ca_telemetry_decoder_gs::set_channel(int32_t channel)
 }
 
 
+void glonass_l2_ca_telemetry_decoder_gs::reset()
+{
+    gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
+    d_symbol_history.clear();
+    d_stat = 0;
+    d_CRC_error_counter = 0;
+    d_flag_frame_sync = false;
+    d_flag_preamble = false;
+    // Invalidate the propagated TOW until a new string 5 is decoded; otherwise
+    // Flag_valid_word would remain true with a TOW offset by the outage duration
+    d_nav.set_flag_TOW_set(false);
+    d_nav.set_flag_TOW_new(false);
+    // Drop partially decoded ephemeris strings so that strings received before
+    // the outage cannot be combined with strings of a different frame
+    d_nav.set_flag_ephemeris_str_1(false);
+    d_nav.set_flag_ephemeris_str_2(false);
+    d_nav.set_flag_ephemeris_str_3(false);
+    d_nav.set_flag_ephemeris_str_4(false);
+    DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
+}
+
+
 int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
@@ -269,7 +288,6 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                     LOG(INFO) << "Preamble detection for GLONASS L2 C/A SAT " << this->d_satellite;
                     // Enter into frame pre-detection status
                     d_stat = 1;
-                    d_preamble_time_samples = d_symbol_history[0].Tracking_sample_counter;  // record the preamble sample stamp
                 }
         }
     else if (d_stat == 1)  // possible preamble lock
@@ -278,14 +296,11 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                 {
                     // check preamble separation
                     preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);
-                    // Record the PRN start sample index associated to the preamble
-                    d_preamble_time_samples = static_cast<double>(d_symbol_history[0].Tracking_sample_counter);
                     if (abs(preamble_diff - GLONASS_GNAV_PREAMBLE_PERIOD_BITS) == 0)
                         {
                             // try to decode frame
                             LOG(INFO) << "Starting string decoder for GLONASS L2 C/A SAT " << this->d_satellite;
                             d_preamble_index = d_sample_counter;  // record the preamble sample stamp
-                            this->message_port_pub(pmt::mp("preamble_timestamp_samples"), pmt::mp(d_preamble_time_samples));
                             d_stat = 2;
                         }
                     else

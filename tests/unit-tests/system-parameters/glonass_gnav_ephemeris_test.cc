@@ -19,6 +19,7 @@
 
 #include "GLONASS_L1_L2_CA.h"
 #include "glonass_gnav_ephemeris.h"
+#include "glonass_gnav_utc_model.h"
 #include "gnss_satellite.h"
 #include "gnss_signal_replica.h"
 
@@ -242,4 +243,41 @@ TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT5)
     // Perform assertions of decoded fields
     ASSERT_TRUE(week - true_week < FLT_EPSILON);
     ASSERT_TRUE(tow - true_tow < FLT_EPSILON);
+}
+
+
+/*!
+ * \brief Testing conversion from GLONASST to GPST across the UTC day boundary
+ * \test The GLONASS time of day falls less than one leap-second interval
+ * before 03:00:00, so the UTC epoch lies just before midnight and the leap
+ * second correction rolls the GPS time into the next day
+ */
+TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT6)
+{
+    Glonass_Gnav_Ephemeris gnav_eph;
+    gnav_eph.d_yr = 2019;
+    gnav_eph.d_N_T = 1366;  // 2019-09-27 in the GLONASS day scale
+
+    int week = 0;
+    double tow = 0.0;
+
+    // GLONASS tod 02:59:50 -> UTC 2019-09-26 23:59:50 -> GPST 2019-09-27 00:00:08
+    gnav_eph.glot_to_gpst(10790, 0.0, 0.0, &week, &tow);
+
+    EXPECT_EQ(week, 2072);
+    EXPECT_DOUBLE_EQ(tow, 432008.0);
+}
+
+
+/*!
+ * \brief Testing the GLONASST to UTC(SU) conversion of the UTC model:
+ * tUTC = tGLO + tau_c - 3 hrs (GLONASS ICD Edition 5.1, Section 4.5)
+ */
+TEST(GlonassGnavEphemerisTest, UtcModelUtcTime)
+{
+    Glonass_Gnav_Utc_Model gnav_utc_model;
+    gnav_utc_model.d_tau_c = -1.0 / 1024.0;
+
+    // GLONASS tod 12:00:00 -> UTC 09:00:00 (minus tau_c correction)
+    EXPECT_DOUBLE_EQ(gnav_utc_model.utc_time(43200.0), 32400.0 - 1.0 / 1024.0);
 }

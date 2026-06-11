@@ -50,7 +50,7 @@ public:
     ~glonass_l1_ca_telemetry_decoder_gs() override;                //!< Class destructor
     void set_satellite(const Gnss_Satellite &satellite) override;  //!< Set satellite PRN
     void set_channel(int32_t channel) override;                    //!< Set receiver's channel
-    inline void reset() override {};
+    void reset() override;                                         //!< Clear synchronization state on channel re-acquisition
 
     /*!
      * \brief This is where all signal processing takes place
@@ -81,7 +81,6 @@ private:
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 
-    double d_preamble_time_samples;
     double d_TOW_at_current_symbol;
 
     // Variables for internal functionality

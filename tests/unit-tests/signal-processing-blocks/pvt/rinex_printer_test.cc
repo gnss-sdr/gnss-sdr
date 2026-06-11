@@ -165,7 +165,10 @@ void find_obs_record_lines(const std::string& obsfile, const std::string& sat, s
                         {
                             line_epoch = line_str;
                         }
-                    if (line_str.find(sat, 0) != std::string::npos)
+                    // Observation records start with the satellite identifier; header
+                    // lines may also contain it (e.g. GLONASS SLOT / FRQ #), so the
+                    // match is anchored to the beginning of the line
+                    if (line_str.compare(0, sat.size(), sat) == 0)
                         {
                             no_more_finds = true;
                             line_sat = line_str;
@@ -379,23 +382,25 @@ TEST_F(RinexPrinterTest, GlonassObsHeader)
 
     fstr.seekg(0);
     std::string line_aux;
+    std::string line_slot_frq;
     std::string line_str;
-    bool no_more_finds = false;
 
     while (!fstr.eof())
         {
             std::getline(fstr, line_str);
-            if (!no_more_finds)
+            if (line_aux.empty() && line_str.find("SYS / # / OBS TYPES", 59) != std::string::npos)
                 {
-                    if (line_str.find("SYS / # / OBS TYPES", 59) != std::string::npos)
-                        {
-                            no_more_finds = true;
-                            line_aux = std::string(line_str);
-                        }
+                    line_aux = std::string(line_str);
+                }
+            if (line_slot_frq.empty() && line_str.find("GLONASS SLOT / FRQ #", 59) != std::string::npos)
+                {
+                    line_slot_frq = std::string(line_str);
                 }
         }
     std::string expected_str("R    4 C1C L1C D1C S1C                                      SYS / # / OBS TYPES ");
+    std::string expected_slot_frq(" 27 R01  1 R02 -4 R03  5 R04  6 R05  1 R06 -4 R07  5 R08  6 GLONASS SLOT / FRQ #");
     EXPECT_EQ(0, expected_str.compare(line_aux));
+    EXPECT_EQ(0, expected_slot_frq.compare(line_slot_frq));
     fstr.close();
     fs::remove(obsfile);
     fs::remove(navfile);

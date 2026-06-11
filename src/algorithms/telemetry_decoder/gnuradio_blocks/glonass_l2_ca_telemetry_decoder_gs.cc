@@ -201,7 +201,6 @@ void glonass_l2_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
         {
             LOG(INFO) << "GLONASS GNAV Slot Number Identified in channel " << d_channel;
             d_satellite.update_PRN(d_nav.get_ephemeris().d_n);
-            d_satellite.what_block(d_satellite.get_system(), d_nav.get_ephemeris().d_n);
             d_nav.set_flag_update_slot_number(false);
         }
 }

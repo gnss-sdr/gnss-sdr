@@ -172,6 +172,7 @@ private:
     uint64_t read_navigation_unsigned(const std::bitset<GLONASS_GNAV_STRING_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
     int64_t read_navigation_signed(const std::bitset<GLONASS_GNAV_STRING_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
     bool read_navigation_bool(const std::bitset<GLONASS_GNAV_STRING_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    void update_almanac_satellite_info();
 
     Glonass_Gnav_Ephemeris gnav_ephemeris{};                   // Ephemeris information decoded
     Glonass_Gnav_Utc_Model gnav_utc_model{};                   // UTC model information

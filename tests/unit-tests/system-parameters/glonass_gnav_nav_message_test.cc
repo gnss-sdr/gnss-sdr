@@ -249,3 +249,53 @@ std::string str12("0110010101001100000011110110100110100100010100001000111110000
 std::string str13("0110111011100100111110100001000110100010011101001011111110100100101010011010001101001");
 std::string str14("0111010101010000000100011000011110100110111100001110110100001000001111001101010000101");
 std::string str15("0111101110101010001110101010100111101100001101001011111111100010101010011001010011101");
+
+
+/*!
+ * \brief Testing satellite identification fields filled in by the second
+ * almanac string of the pair (string 7 for satellite slot 6, whose H_n_A
+ * value of 28 represents carrier frequency channel -4)
+ */
+TEST(GlonassGnavNavigationMessageTest, String7SetsAlmanacSatelliteInfo)
+{
+    Glonass_Gnav_Navigation_Message gnav_nav_message;
+
+    gnav_nav_message.string_decoder(str6);
+    gnav_nav_message.string_decoder(str7);
+
+    Glonass_Gnav_Almanac gnav_almanac = gnav_nav_message.get_almanac(6);
+    EXPECT_EQ(gnav_almanac.i_satellite_slot_number, 6U);
+    EXPECT_EQ(gnav_almanac.PRN, 6U);
+    EXPECT_EQ(gnav_almanac.i_satellite_freq_channel, -4);
+}
+
+
+/*!
+ * \brief In frames 1-4, string 14 carries almanac data (here for satellite
+ * slot 10, in frame 2). The frame is known from the almanac slot number
+ * decoded in a previous string of the same frame
+ */
+TEST(GlonassGnavNavigationMessageTest, String14AlmanacDecoder)
+{
+    Glonass_Gnav_Navigation_Message gnav_nav_message;
+
+    gnav_nav_message.string_decoder(str6);   // almanac slot 6 identifies frame 2
+    gnav_nav_message.string_decoder(str14);  // almanac for slot 10, also in frame 2
+
+    EXPECT_DOUBLE_EQ(gnav_nav_message.get_almanac(10).d_n_A, 10.0);
+}
+
+
+/*!
+ * \brief Until the frame being received is identified, string 14 content is
+ * ambiguous (in frame 5 it carries the B1/B2 UTC parameters instead of
+ * almanac data), so it must not be decoded as almanac
+ */
+TEST(GlonassGnavNavigationMessageTest, String14RequiresKnownFrame)
+{
+    Glonass_Gnav_Navigation_Message gnav_nav_message;
+
+    gnav_nav_message.string_decoder(str14);
+
+    EXPECT_DOUBLE_EQ(gnav_nav_message.get_almanac(10).d_n_A, 0.0);
+}

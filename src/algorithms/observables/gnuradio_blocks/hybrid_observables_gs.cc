@@ -16,7 +16,6 @@
  */
 
 #include "hybrid_observables_gs.h"
-#include "GLONASS_L1_L2_CA.h"
 #include "MATH_CONSTANTS.h"  // for SPEED_OF_LIGHT_M_S, TWO_PI
 #include "gnss_circular_deque.h"
 #include "gnss_frequencies.h"
@@ -684,25 +683,7 @@ void hybrid_observables_gs::detect_cycle_slips(std::vector<Gnss_Synchro> &data, 
             const double previous_phase_cycles = prev_obs.Carrier_phase_rads / TWO_PI;
             const double delta_phase_cycles = current_phase_cycles - previous_phase_cycles;
 
-            double doppler_hz = obs.Carrier_Doppler_hz;
-            if (obs.System == 'R')
-                {
-                    const std::string signal(obs.Signal, 2);
-                    const auto it_prn = GLONASS_PRN.find(obs.PRN);
-                    if (it_prn != GLONASS_PRN.cend())
-                        {
-                            if (signal == "1G")
-                                {
-                                    doppler_hz += DFRQ1_GLO * it_prn->second;
-                                }
-                            else if (signal == "2G")
-                                {
-                                    doppler_hz += DFRQ2_GLO * it_prn->second;
-                                }
-                        }
-                }
-
-            const double residual = delta_phase_cycles + doppler_hz * d_T_rx_step_s;
+            const double residual = delta_phase_cycles + obs.Carrier_Doppler_hz * d_T_rx_step_s;
             residuals.push_back(residual);
             channels.push_back(n);
         }

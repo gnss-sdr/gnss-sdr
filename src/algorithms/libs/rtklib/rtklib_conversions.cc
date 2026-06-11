@@ -210,7 +210,11 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
                 }
             break;
         case 'R':
-            rtklib_obs.sat = gnss_synchro.PRN + NSATGPS;
+            rtklib_obs.sat = satno(SYS_GLO, gnss_synchro.PRN);
+            if (sig_ == "2G")
+                {
+                    rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L2C);
+                }
             break;
         case 'C':
             rtklib_obs.sat = gnss_synchro.PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS;
@@ -372,24 +376,24 @@ geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glona
     int adj_week;
     geph_t rtklib_sat = {0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0, 0.0, 0.0};
 
-    rtklib_sat.sat = glonass_gnav_eph.i_satellite_slot_number + NSATGPS; /* satellite number */
-    rtklib_sat.iode = static_cast<int>(glonass_gnav_eph.d_t_b);          /* IODE (0-6 bit of tb field) */
-    rtklib_sat.frq = glonass_gnav_eph.i_satellite_freq_channel;          /* satellite frequency number */
-    rtklib_sat.svh = glonass_gnav_eph.d_l3rd_n;                          /* satellite health*/
-    rtklib_sat.sva = static_cast<int>(glonass_gnav_eph.d_F_T);           /* satellite accuracy*/
-    rtklib_sat.age = static_cast<int>(glonass_gnav_eph.d_E_n);           /* satellite age*/
-    rtklib_sat.pos[0] = glonass_gnav_eph.d_Xn * 1000;                    /* satellite position (ecef) (m) */
-    rtklib_sat.pos[1] = glonass_gnav_eph.d_Yn * 1000;                    /* satellite position (ecef) (m) */
-    rtklib_sat.pos[2] = glonass_gnav_eph.d_Zn * 1000;                    /* satellite position (ecef) (m) */
-    rtklib_sat.vel[0] = glonass_gnav_eph.d_VXn * 1000;                   /* satellite velocity (ecef) (m/s) */
-    rtklib_sat.vel[1] = glonass_gnav_eph.d_VYn * 1000;                   /* satellite velocity (ecef) (m/s) */
-    rtklib_sat.vel[2] = glonass_gnav_eph.d_VZn * 1000;                   /* satellite velocity (ecef) (m/s) */
-    rtklib_sat.acc[0] = glonass_gnav_eph.d_AXn * 1000;                   /* satellite acceleration (ecef) (m/s^2) */
-    rtklib_sat.acc[1] = glonass_gnav_eph.d_AYn * 1000;                   /* satellite acceleration (ecef) (m/s^2) */
-    rtklib_sat.acc[2] = glonass_gnav_eph.d_AZn * 1000;                   /* satellite acceleration (ecef) (m/s^2) */
-    rtklib_sat.taun = glonass_gnav_eph.d_tau_n;                          /* SV clock bias (s) */
-    rtklib_sat.gamn = glonass_gnav_eph.d_gamma_n;                        /* SV relative freq bias */
-    rtklib_sat.dtaun = static_cast<int>(glonass_gnav_eph.d_Delta_tau_n); /* delay between L1 and L2 (s) */
+    rtklib_sat.sat = satno(SYS_GLO, glonass_gnav_eph.i_satellite_slot_number);                                       /* satellite number */
+    rtklib_sat.iode = static_cast<int>(glonass_gnav_eph.d_t_b / 900.0 + 0.5);                                        /* IODE (tb interval index) */
+    rtklib_sat.frq = glonass_gnav_eph.i_satellite_freq_channel;                                                      /* satellite frequency number */
+    rtklib_sat.svh = ((static_cast<int32_t>(glonass_gnav_eph.d_B_n) & 4) != 0 || glonass_gnav_eph.d_l3rd_n) ? 1 : 0; /* satellite health from Bn MSB and ln flag */
+    rtklib_sat.sva = static_cast<int>(glonass_gnav_eph.d_F_T);                                                       /* satellite accuracy*/
+    rtklib_sat.age = static_cast<int>(glonass_gnav_eph.d_E_n);                                                       /* satellite age*/
+    rtklib_sat.pos[0] = glonass_gnav_eph.d_Xn * 1000;                                                                /* satellite position (ecef) (m) */
+    rtklib_sat.pos[1] = glonass_gnav_eph.d_Yn * 1000;                                                                /* satellite position (ecef) (m) */
+    rtklib_sat.pos[2] = glonass_gnav_eph.d_Zn * 1000;                                                                /* satellite position (ecef) (m) */
+    rtklib_sat.vel[0] = glonass_gnav_eph.d_VXn * 1000;                                                               /* satellite velocity (ecef) (m/s) */
+    rtklib_sat.vel[1] = glonass_gnav_eph.d_VYn * 1000;                                                               /* satellite velocity (ecef) (m/s) */
+    rtklib_sat.vel[2] = glonass_gnav_eph.d_VZn * 1000;                                                               /* satellite velocity (ecef) (m/s) */
+    rtklib_sat.acc[0] = glonass_gnav_eph.d_AXn * 1000;                                                               /* satellite acceleration (ecef) (m/s^2) */
+    rtklib_sat.acc[1] = glonass_gnav_eph.d_AYn * 1000;                                                               /* satellite acceleration (ecef) (m/s^2) */
+    rtklib_sat.acc[2] = glonass_gnav_eph.d_AZn * 1000;                                                               /* satellite acceleration (ecef) (m/s^2) */
+    rtklib_sat.taun = glonass_gnav_eph.d_tau_n;                                                                      /* SV clock bias (s) */
+    rtklib_sat.gamn = glonass_gnav_eph.d_gamma_n;                                                                    /* SV relative freq bias */
+    rtklib_sat.dtaun = glonass_gnav_eph.d_Delta_tau_n;                                                               /* delay between L1 and L2 (s) */
 
     // Time expressed in GPS Time but using RTKLib format
     glonass_gnav_eph.glot_to_gpst(glonass_gnav_eph.d_t_b, gnav_clock_model.d_tau_c, gnav_clock_model.d_tau_gps, &week, &sec);

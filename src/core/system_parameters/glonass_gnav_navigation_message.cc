@@ -188,6 +188,25 @@ int64_t Glonass_Gnav_Navigation_Message::read_navigation_signed(const std::bitse
 }
 
 
+void Glonass_Gnav_Navigation_Message::update_almanac_satellite_info()
+{
+    Glonass_Gnav_Almanac& alm = gnav_almanac[i_alm_satellite_slot_number - 1];
+    // H_n_A values 25..31 represent carrier frequency channels -7..-1, values
+    // 0..13 map directly to channels 0..13, and values 14..24 are not used
+    // (GLONASS ICD Table 4.10)
+    if (alm.d_H_n_A > 24)
+        {
+            alm.i_satellite_freq_channel = static_cast<int32_t>(alm.d_H_n_A) - 32;
+        }
+    else if (alm.d_H_n_A <= 13)
+        {
+            alm.i_satellite_freq_channel = static_cast<int32_t>(alm.d_H_n_A);
+        }
+    alm.i_satellite_slot_number = static_cast<uint32_t>(alm.d_n_A);
+    alm.PRN = static_cast<uint32_t>(alm.d_n_A);
+}
+
+
 uint32_t Glonass_Gnav_Navigation_Message::get_frame_number(uint32_t satellite_slot_number)
 {
     uint32_t frame_ID = 0U;
@@ -225,7 +244,6 @@ uint32_t Glonass_Gnav_Navigation_Message::get_frame_number(uint32_t satellite_sl
 int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame_string)
 {
     int32_t J = 0;
-    d_frame_ID = 0U;
     uint64_t P_1_tmp = 0;
 
     // Unpack bytes to bits
@@ -304,10 +322,18 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
                     gnav_ephemeris.d_n = static_cast<double>(read_navigation_unsigned(string_bits, N));
                     gnav_ephemeris.d_M = static_cast<double>(read_navigation_unsigned(string_bits, M));
 
-                    // Fill in ephemeris deliverables in the code
-                    flag_update_slot_number = true;
-                    gnav_ephemeris.i_satellite_slot_number = static_cast<uint32_t>(gnav_ephemeris.d_n);
-                    gnav_ephemeris.PRN = static_cast<uint32_t>(gnav_ephemeris.d_n);
+                    // Fill in ephemeris deliverables in the code. Valid slot numbers
+                    // are the ones in the GLONASS_PRN table (nominal constellation
+                    // slots 1-24 plus the slots used by satellites under flight
+                    // tests). n = 0 is broadcast by satellites under test or
+                    // maintenance, and must not replace the configured satellite
+                    // identity
+                    if (static_cast<uint32_t>(gnav_ephemeris.d_n) >= 1 && GLONASS_PRN.find(static_cast<uint32_t>(gnav_ephemeris.d_n)) != GLONASS_PRN.cend())
+                        {
+                            flag_update_slot_number = true;
+                            gnav_ephemeris.i_satellite_slot_number = static_cast<uint32_t>(gnav_ephemeris.d_n);
+                            gnav_ephemeris.PRN = static_cast<uint32_t>(gnav_ephemeris.d_n);
+                        }
 
                     flag_ephemeris_str_4 = true;
                 }
@@ -396,12 +422,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_l_n = read_navigation_bool(string_bits, ALM_L_N);
 
                     // Set satellite information for redundancy purposes
-                    if (gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A > 24)
-                        {
-                            gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_freq_channel = gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A - 32.0;
-                        }
-                    gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_slot_number = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
-                    gnav_almanac[i_alm_satellite_slot_number - 1].PRN = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
+                    update_almanac_satellite_info();
 
                     if (i_alm_satellite_slot_number == gnav_ephemeris.i_satellite_slot_number)
                         {
@@ -446,12 +467,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_l_n = read_navigation_bool(string_bits, ALM_L_N);
 
                     // Set satellite information for redundancy purposes
-                    if (gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A > 24)
-                        {
-                            gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_freq_channel = gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A - 32.0;
-                        }
-                    gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_slot_number = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
-                    gnav_almanac[i_alm_satellite_slot_number - 1].PRN = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
+                    update_almanac_satellite_info();
 
                     flag_almanac_str_9 = true;
                 }
@@ -491,12 +507,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_l_n = read_navigation_bool(string_bits, ALM_L_N);
 
                     // Set satellite information for redundancy purposes
-                    if (gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A > 24)
-                        {
-                            gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_freq_channel = gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A - 32.0;
-                        }
-                    gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_slot_number = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
-                    gnav_almanac[i_alm_satellite_slot_number - 1].PRN = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
+                    update_almanac_satellite_info();
 
                     flag_almanac_str_11 = true;
                 }
@@ -535,12 +546,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_l_n = read_navigation_bool(string_bits, ALM_L_N);
 
                     // Set satellite information for redundancy purposes
-                    if (gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A > 24)
-                        {
-                            gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_freq_channel = gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A - 32.0;
-                        }
-                    gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_slot_number = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
-                    gnav_almanac[i_alm_satellite_slot_number - 1].PRN = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
+                    update_almanac_satellite_info();
 
                     flag_almanac_str_13 = true;
                 }
@@ -548,17 +554,21 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
 
         case 14:
             // --- It is string 14 ---------------------------------------------
+            // The frame being received is only known from the almanac slot numbers
+            // decoded in strings 6-13, so d_frame_ID is 0 (unknown) until one of
+            // them has been decoded. In frame 5, string 14 carries the B1/B2 UTC
+            // parameters instead of almanac data
             if (d_frame_ID == 5)
                 {
                     gnav_utc_model.d_B1 = static_cast<double>(read_navigation_unsigned(string_bits, B1));
                     gnav_utc_model.d_B2 = static_cast<double>(read_navigation_unsigned(string_bits, B2));
                 }
-            else
+            else if (d_frame_ID != 0)
                 {
                     i_alm_satellite_slot_number = static_cast<uint32_t>(read_navigation_unsigned(string_bits, N_A));
-                    d_frame_ID = get_frame_number(i_alm_satellite_slot_number);
-                    // Make sure a valid frame_ID or satellite slot number is returned
-                    if (d_frame_ID == 0)
+                    // In frames 1-4, string 14 carries the almanac of a satellite
+                    // assigned to the frame being received
+                    if (get_frame_number(i_alm_satellite_slot_number) != d_frame_ID)
                         {
                             return 0;
                         }
@@ -576,7 +586,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
 
         case 15:
             // --- It is string 15 ----------------------------------------------
-            if (d_frame_ID != 5 && flag_almanac_str_14 == true)
+            if (d_frame_ID >= 1 && d_frame_ID <= 4 && flag_almanac_str_14 == true)
                 {
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_omega_n_A = static_cast<double>(read_navigation_signed(string_bits, OMEGA_N_A)) * TWO_N15 * GNSS_PI;
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_t_lambda_n_A = static_cast<double>(read_navigation_unsigned(string_bits, T_LAMBDA_N_A)) * TWO_N5;
@@ -586,12 +596,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_l_n = read_navigation_bool(string_bits, ALM_L_N);
 
                     // Set satellite information for redundancy purposes
-                    if (gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A > 24)
-                        {
-                            gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_freq_channel = gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A - 32.0;
-                        }
-                    gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_slot_number = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
-                    gnav_almanac[i_alm_satellite_slot_number - 1].PRN = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
+                    update_almanac_satellite_info();
 
                     flag_almanac_str_15 = true;
                 }

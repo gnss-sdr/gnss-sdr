@@ -222,24 +222,15 @@ void Gnss_Satellite::update_PRN(uint32_t PRN_)
     if (system != "Glonass")
         {
             DLOG(INFO) << "Trying to update PRN for not GLONASS system";
-            PRN = 0;
+            return;
         }
-    else
+    if (PRN_ < 1 || GLONASS_PRN.find(PRN_) == GLONASS_PRN.cend())
         {
-            if (PRN_ < 1 or PRN_ > 31)
-                {
-                    DLOG(INFO) << "This GLONASS slot number is not defined";
-                    PRN = 0;
-                }
-            else
-                {
-                    if (GLONASS_PRN.find(PRN_) == GLONASS_PRN.cend())
-                        {
-                            DLOG(INFO) << "GLONASS frequency channel for slot " << PRN_ << " is not configured";
-                        }
-                    PRN = PRN_;
-                }
+            DLOG(INFO) << "This GLONASS slot number is not defined";
+            return;
         }
+    PRN = PRN_;
+    set_block(system, PRN_);
 }
 
 

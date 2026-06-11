@@ -134,7 +134,12 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
         }
     const int32_t C_Sigma = (sum_hamming % 2) ^ (sum_bits % 2);
 
-    // Verification of the data
+    // Verification of the data (ICD L1,L2 GLONASS Edition 5.1, Section 4.7).
+    // Note: rule a) of the English edition accepts a string if "only one of the
+    // checksums (C1,...,C7) is equal to zero but C_Sigma = 1"; "zero" is a
+    // translation error for "one" (single error in a check bit). Read literally
+    // it would contradict rule b): a single error in data bit 65 yields
+    // C1..C6 = 1, C7 = 0, which rule b) corrects rather than accepts as-is.
     const int32_t parity_sum = C1 + C2 + C3 + C4 + C5 + C6 + C7;
 
     // Case 1: All checksums (C1,...,C7 and C_Sigma) are equal to zero

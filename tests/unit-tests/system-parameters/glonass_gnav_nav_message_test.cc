@@ -62,6 +62,67 @@ TEST(GlonassGnavNavigationMessageTest, CRCTestFailure)
 
 
 /*!
+ * \brief Testing the data verification algorithm of GLONASS ICD Edition 5.1
+ * Section 4.7 against every possible single bit error within a string
+ * \test Errors in data bits (9-85) must be corrected in place, errors in check
+ * bits beta1-beta7 (bits 1-7) leave the data field intact and are accepted
+ * without correction, and an error in beta8 (bit 8, C1...C7 = 0 with
+ * C_Sigma = 1) is indistinguishable from multiple errors and must be rejected
+ */
+TEST(GlonassGnavNavigationMessageTest, CRCTestSingleBitErrors)
+{
+    const std::bitset<GLONASS_GNAV_STRING_BITS> valid_bits(std::string("0010100100001100000000000000000000000000110011110001100000000000000001100100011000000"));
+    auto gnav_nav_message = Glonass_Gnav_Navigation_Message();
+
+    for (size_t i = 0; i < GLONASS_GNAV_STRING_BITS; i++)
+        {
+            std::bitset<GLONASS_GNAV_STRING_BITS> corrupted_bits = valid_bits;
+            corrupted_bits.flip(i);
+
+            const bool test_result = gnav_nav_message.CRC_test(corrupted_bits);
+
+            if (i == 7)
+                {
+                    EXPECT_FALSE(test_result) << "flipped bit " << i + 1;
+                }
+            else if (i < 7)
+                {
+                    EXPECT_TRUE(test_result) << "flipped bit " << i + 1;
+                    EXPECT_EQ(corrupted_bits >> 8, valid_bits >> 8) << "flipped bit " << i + 1;
+                }
+            else
+                {
+                    EXPECT_TRUE(test_result) << "flipped bit " << i + 1;
+                    EXPECT_EQ(corrupted_bits, valid_bits) << "flipped bit " << i + 1;
+                }
+        }
+}
+
+
+/*!
+ * \brief Testing the data verification algorithm of GLONASS ICD Edition 5.1
+ * Section 4.7 against every possible double bit error within a string
+ * \test The Hamming code must detect and reject all double bit errors
+ */
+TEST(GlonassGnavNavigationMessageTest, CRCTestDoubleBitErrors)
+{
+    const std::bitset<GLONASS_GNAV_STRING_BITS> valid_bits(std::string("0010100100001100000000000000000000000000110011110001100000000000000001100100011000000"));
+    auto gnav_nav_message = Glonass_Gnav_Navigation_Message();
+
+    for (size_t i = 0; i < GLONASS_GNAV_STRING_BITS - 1; i++)
+        {
+            for (size_t j = i + 1; j < GLONASS_GNAV_STRING_BITS; j++)
+                {
+                    std::bitset<GLONASS_GNAV_STRING_BITS> corrupted_bits = valid_bits;
+                    corrupted_bits.flip(i);
+                    corrupted_bits.flip(j);
+                    EXPECT_FALSE(gnav_nav_message.CRC_test(corrupted_bits)) << "flipped bits " << i + 1 << " and " << j + 1;
+                }
+        }
+}
+
+
+/*!
  * \brief Testing string decoding for GLONASS GNAV messages
  * \test The provided string (str1.....str15) was generated with a version of
  * MATLAB GNSS-SDR that the author coded to perform proper decoding of GLONASS

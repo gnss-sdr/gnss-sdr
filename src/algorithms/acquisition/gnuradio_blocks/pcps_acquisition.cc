@@ -296,7 +296,9 @@ void pcps_acquisition::update_grid_doppler_wipeoffs_step2()
     for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins_step2; doppler_index++)
         {
             const float doppler = (static_cast<float>(doppler_index) - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0))) * d_acq_parameters.doppler_step2;
-            update_local_carrier(d_grid_doppler_wipeoffs_step_two[doppler_index], d_doppler_center_step_two + doppler);
+            // d_doppler_center_step_two holds the unbiased Doppler reported by the coarse
+            // stage, so the FDMA frequency offset must be added back to the wipeoff
+            update_local_carrier(d_grid_doppler_wipeoffs_step_two[doppler_index], static_cast<float>(d_doppler_bias) + d_doppler_center_step_two + doppler);
         }
 }
 

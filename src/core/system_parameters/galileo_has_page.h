@@ -38,8 +38,8 @@ class Galileo_HAS_page
 public:
     Galileo_HAS_page() = default;
 
-    std::string has_message_string;          //!< HAS message content
-    uint64_t time_stamp{};                   //!< HAS page time stamp, in [s]
+    std::string has_message_string;           //!< HAS message content
+    uint64_t time_stamp{};                    //!< HAS page time stamp, in [s]
     uint32_t week{GALILEO_HAS_INVALID_WEEK};  //!< HAS page Galileo week number
     uint32_t tow{GALILEO_HAS_INVALID_TOW};    //!< HAS page time of week, in [s]
 

@@ -442,7 +442,7 @@ galileo_telemetry_decoder_gs::CnavPageReceptionTime galileo_telemetry_decoder_gs
         current_symbol.fs > 0LL)
         {
             const int64_t diff = galileo_tow::sample_counter_delta(current_symbol.Tracking_sample_counter, d_received_sample_counter);
-            const int64_t time_since_reference_ms = static_cast<int64_t>(static_cast<double>(diff) * 1000.0 / static_cast<double>(current_symbol.fs));
+            const auto time_since_reference_ms = static_cast<int64_t>(static_cast<double>(diff) * 1000.0 / static_cast<double>(current_symbol.fs));
             const int64_t tow_delta_ms = time_since_reference_ms + static_cast<int64_t>(GALILEO_E6_CODE_PERIOD_MS);
             page_reception_time.tow_ms = galileo_tow::add_ms(d_received_tow_ms, tow_delta_ms);
             galileo_tow::week_after_delta(d_received_week, d_received_tow_ms, tow_delta_ms, page_reception_time.week);
@@ -1331,7 +1331,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                             if (d_received_week != GALILEO_TOW_MAP_INVALID_WEEK && d_received_tow_ms < galileo_tow::WEEK_MS && current_symbol.fs > 0LL)
                                 {
                                     const int64_t diff = galileo_tow::sample_counter_delta(current_symbol.Tracking_sample_counter, d_received_sample_counter);
-                                    const int64_t time_since_reference_ms = static_cast<int64_t>(static_cast<double>(diff) * 1000.0 / static_cast<double>(current_symbol.fs));
+                                    const auto time_since_reference_ms = static_cast<int64_t>(static_cast<double>(diff) * 1000.0 / static_cast<double>(current_symbol.fs));
                                     const int64_t tow_delta_ms = time_since_reference_ms + static_cast<int64_t>(GALILEO_E6_CODE_PERIOD_MS);
                                     uint32_t projected_week = GALILEO_TOW_MAP_INVALID_WEEK;
                                     if (galileo_tow::week_after_delta(d_received_week, d_received_tow_ms, tow_delta_ms, projected_week))

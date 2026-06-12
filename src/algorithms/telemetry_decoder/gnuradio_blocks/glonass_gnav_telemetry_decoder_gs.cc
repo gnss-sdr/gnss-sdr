@@ -1,21 +1,24 @@
 /*!
- * \file glonass_l2_ca_telemetry_decoder_gs.cc
- * \brief Implementation of a GLONASS L2 C/A NAV data decoder block
- * \author Damian Miralles, 2018. dmiralles2009(at)gmail.com
+ * \file glonass_gnav_telemetry_decoder_gs.cc
+ * \brief Implementation of a GLONASS GNAV data decoder block for the L1 and
+ * L2 C/A signals
+ * \note Code added as part of GSoC 2017 program
+ * \author Damian Miralles, 2017-2018. dmiralles2009(at)gmail.com
+ * \author Carles Fernandez, 2026. cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
  */
 
 
-#include "glonass_l2_ca_telemetry_decoder_gs.h"
+#include "glonass_gnav_telemetry_decoder_gs.h"
 #include "display.h"
 #include "dump_logger_helper.h"
 #include "glonass_gnav_almanac.h"
@@ -44,23 +47,25 @@
 #define CRC_ERROR_LIMIT 6
 
 
-glonass_l2_ca_telemetry_decoder_gs_sptr glonass_l2_ca_make_telemetry_decoder_gs(const Tlm_Conf &conf)
+glonass_gnav_telemetry_decoder_gs_sptr glonass_gnav_make_telemetry_decoder_gs(const Tlm_Conf &conf, int32_t frequency_band)
 {
-    return glonass_l2_ca_telemetry_decoder_gs_sptr(new glonass_l2_ca_telemetry_decoder_gs(conf));
+    return glonass_gnav_telemetry_decoder_gs_sptr(new glonass_gnav_telemetry_decoder_gs(conf, frequency_band));
 }
 
 
-glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(const Tlm_Conf &conf)
-    : telemetry_impl_interface("glonass_l2_ca_telemetry_decoder_gs",
+glonass_gnav_telemetry_decoder_gs::glonass_gnav_telemetry_decoder_gs(const Tlm_Conf &conf, int32_t frequency_band)
+    : telemetry_impl_interface("glonass_gnav_telemetry_decoder_gs",
           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
       d_dump_filename(conf.dump_filename),
       d_TOW_at_current_symbol(0),
+      d_symbol_period_s(frequency_band == 2 ? GLONASS_L2_CA_SYMBOL_PERIOD_S : GLONASS_L1_CA_SYMBOL_PERIOD_S),
       d_sample_counter(0ULL),
       d_preamble_index(0ULL),
       d_stat(0),
       d_CRC_error_counter(0),
       d_channel(0),
+      d_band(frequency_band == 2 ? '2' : '1'),
       d_flag_frame_sync(false),
       d_flag_preamble(false),
       d_dump(conf.dump),
@@ -77,10 +82,10 @@ glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(const Tlm
             // register nav message monitor out
             this->message_port_register_out(pmt::mp("Nav_msg_from_TLM"));
             d_nav_msg_packet.system = std::string("R");
-            d_nav_msg_packet.signal = std::string("2G");
+            d_nav_msg_packet.signal = std::string(1, d_band) + "G";
         }
 
-    LOG(INFO) << "Initializing GLONASS L2 CA TELEMETRY DECODING";
+    LOG(INFO) << "Initializing GLONASS L" << d_band << " CA TELEMETRY DECODING";
 
     d_symbol_history.set_capacity(GLONASS_GNAV_STRING_BIBINARY_WITH_PREABLE);
 
@@ -97,15 +102,19 @@ glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(const Tlm
 }
 
 
-glonass_l2_ca_telemetry_decoder_gs::~glonass_l2_ca_telemetry_decoder_gs()
+glonass_gnav_telemetry_decoder_gs::~glonass_gnav_telemetry_decoder_gs()
 {
-    DLOG(INFO) << "Glonass L2 Telemetry decoder block (channel " << d_channel << ") destructor called.";
+    DLOG(INFO) << "Glonass L" << d_band << " Telemetry decoder block (channel " << d_channel << ") destructor called.";
     tlm_cleanup_and_save_files(d_dump_file, d_dump_filename, d_dump, d_dump_mat, d_remove_dat);
 }
 
 
-void glonass_l2_ca_telemetry_decoder_gs::decode_string(const double *frame_symbols, double cn0)
+void glonass_gnav_telemetry_decoder_gs::decode_string(const double *frame_symbols, double cn0)
 {
+    // L2 messages are highlighted in cyan to tell them apart from L1 ones
+    const std::string text_color = (d_band == '2') ? TEXT_CYAN : "";
+    const std::string text_reset = (d_band == '2') ? TEXT_RESET : "";
+
     // 1. Transform from symbols to bits
     std::string relative_code;
     relative_code.reserve(GLONASS_GNAV_STRING_BITS);
@@ -163,10 +172,10 @@ void glonass_l2_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "GLONASS GNAV Ephemeris have been received in channel" << d_channel << " from satellite " << d_satellite;
             const auto default_precision = std::cout.precision();
-            std::cout << TEXT_CYAN << "New GLONASS L2 GNAV message received in channel " << d_channel
+            std::cout << text_color << "New GLONASS L" << d_band << " GNAV message received in channel " << d_channel
                       << ": ephemeris from satellite " << d_satellite
                       << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
-                      << " dB-Hz" << TEXT_RESET << std::endl;
+                      << " dB-Hz" << text_reset << std::endl;
         }
     if (d_nav.have_new_utc_model() == true)
         {
@@ -175,10 +184,10 @@ void glonass_l2_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "GLONASS GNAV UTC Model data have been received in channel" << d_channel << " from satellite " << d_satellite;
             const auto default_precision = std::cout.precision();
-            std::cout << TEXT_CYAN << "New GLONASS L2 GNAV message received in channel " << d_channel
+            std::cout << text_color << "New GLONASS L" << d_band << " GNAV message received in channel " << d_channel
                       << ": UTC model parameters from satellite " << d_satellite
                       << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
-                      << " dB-Hz" << TEXT_RESET << std::endl;
+                      << " dB-Hz" << text_reset << std::endl;
         }
     if (d_nav.have_new_almanac() == true)
         {
@@ -188,10 +197,10 @@ void glonass_l2_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "GLONASS GNAV Almanac data have been received in channel" << d_channel << " in slot number " << slot_nbr;
             const auto default_precision = std::cout.precision();
-            std::cout << TEXT_CYAN << "New GLONASS L2 GNAV almanac received in channel " << d_channel
+            std::cout << text_color << "New GLONASS L" << d_band << " GNAV almanac received in channel " << d_channel
                       << " from satellite " << d_satellite
                       << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
-                      << " dB-Hz" << TEXT_RESET << std::endl;
+                      << " dB-Hz" << text_reset << std::endl;
         }
     // 5. Update satellite information on system
     if (d_nav.get_flag_update_slot_number() == true)
@@ -203,7 +212,7 @@ void glonass_l2_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
 }
 
 
-void glonass_l2_ca_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite)
+void glonass_gnav_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
@@ -211,7 +220,7 @@ void glonass_l2_ca_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &sat
 }
 
 
-void glonass_l2_ca_telemetry_decoder_gs::set_channel(int32_t channel)
+void glonass_gnav_telemetry_decoder_gs::set_channel(int32_t channel)
 {
     d_channel = channel;
     LOG(INFO) << "Navigation channel set to " << channel;
@@ -221,7 +230,7 @@ void glonass_l2_ca_telemetry_decoder_gs::set_channel(int32_t channel)
 }
 
 
-void glonass_l2_ca_telemetry_decoder_gs::reset()
+void glonass_gnav_telemetry_decoder_gs::reset()
 {
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
     d_symbol_history.clear();
@@ -243,7 +252,7 @@ void glonass_l2_ca_telemetry_decoder_gs::reset()
 }
 
 
-int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+int glonass_gnav_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     int32_t corr_value = 0;
@@ -285,7 +294,7 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                 {
                     // Record the preamble sample stamp
                     d_preamble_index = d_sample_counter;
-                    LOG(INFO) << "Preamble detection for GLONASS L2 C/A SAT " << this->d_satellite;
+                    LOG(INFO) << "Preamble detection for GLONASS L" << d_band << " C/A SAT " << this->d_satellite;
                     // Enter into frame pre-detection status
                     d_stat = 1;
                 }
@@ -299,7 +308,7 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                     if (abs(preamble_diff - GLONASS_GNAV_PREAMBLE_PERIOD_BITS) == 0)
                         {
                             // try to decode frame
-                            LOG(INFO) << "Starting string decoder for GLONASS L2 C/A SAT " << this->d_satellite;
+                            LOG(INFO) << "Starting string decoder for GLONASS L" << d_band << " C/A SAT " << this->d_satellite;
                             d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                             d_stat = 2;
                         }
@@ -309,7 +318,7 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                                 {
                                     d_stat = 0;  // start again
                                 }
-                            DLOG(INFO) << "Failed string decoder for GLONASS L2 C/A SAT " << this->d_satellite;
+                            DLOG(INFO) << "Failed string decoder for GLONASS L" << d_band << " C/A SAT " << this->d_satellite;
                         }
                 }
         }
@@ -375,7 +384,7 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
         }
     else  // if there is not a new preamble, we define the TOW of the current symbol
         {
-            d_TOW_at_current_symbol = gnss_tow::wrap_s(d_TOW_at_current_symbol + GLONASS_L2_CA_SYMBOL_PERIOD_S);
+            d_TOW_at_current_symbol = gnss_tow::wrap_s(d_TOW_at_current_symbol + d_symbol_period_s);
         }
 
     // if (d_flag_frame_sync == true && d_nav.flag_TOW_set==true && d_nav.get_flag_CRC_test() == true)
@@ -416,9 +425,6 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
         {
             current_symbol.Flag_valid_word = false;
         }
-
-    // todo: glonass time to gps time should be done in observables block
-    // current_symbol.TOW_at_current_symbol_ms -= static_cast<uint32_t>(delta_t) * 1000;
 
     if (d_dump == true)
         {

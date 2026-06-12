@@ -1,23 +1,25 @@
 /*!
- * \file beidou_b1i_telemetry_decoder_gs.h
- * \brief Implementation of a BEIDOU BI1 DNAV data decoder block
+ * \file beidou_dnav_telemetry_decoder_gs.h
+ * \brief Implementation of a BeiDou DNAV data decoder block for the B1I and
+ * B3I signals
  * \details Code added as part of GSoC 2018 program.
- * \author Damian Miralles, 2018. dmiralles2009(at)gmail.com
+ * \author Damian Miralles, 2018-2019. dmiralles2009(at)gmail.com
  * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.es
+ * \author Carles Fernandez, 2026. cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_GS_H
-#define GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_GS_H
+#ifndef GNSS_SDR_BEIDOU_DNAV_TELEMETRY_DECODER_GS_H
+#define GNSS_SDR_BEIDOU_DNAV_TELEMETRY_DECODER_GS_H
 
 
 #include "beidou_dnav_navigation_message.h"
@@ -33,22 +35,23 @@
  * \{ */
 
 
-class ConfigurationInterface;
-class beidou_b1i_telemetry_decoder_gs;
+class beidou_dnav_telemetry_decoder_gs;
 
-using beidou_b1i_telemetry_decoder_gs_sptr = gnss_shared_ptr<beidou_b1i_telemetry_decoder_gs>;
+using beidou_dnav_telemetry_decoder_gs_sptr = gnss_shared_ptr<beidou_dnav_telemetry_decoder_gs>;
 
-beidou_b1i_telemetry_decoder_gs_sptr beidou_b1i_make_telemetry_decoder_gs(const Tlm_Conf &conf);
+beidou_dnav_telemetry_decoder_gs_sptr beidou_dnav_make_telemetry_decoder_gs(const Tlm_Conf &conf, int32_t frequency_band);
 
 
 /*!
- * \brief This class implements a block that decodes the BeiDou DNAV data.
+ * \brief This class implements a block that decodes the BeiDou DNAV data,
+ * broadcast by both the B1I and B3I signals (frequency_band = 1 or 3,
+ * respectively).
  * \note Code added as part of GSoC 2018 program
  */
-class beidou_b1i_telemetry_decoder_gs : public telemetry_impl_interface
+class beidou_dnav_telemetry_decoder_gs : public telemetry_impl_interface
 {
 public:
-    ~beidou_b1i_telemetry_decoder_gs() override;                   //!< Class destructor
+    ~beidou_dnav_telemetry_decoder_gs() override;                  //!< Class destructor
     void set_satellite(const Gnss_Satellite &satellite) override;  //!< Set satellite PRN
     void set_channel(int channel) override;                        //!< Set receiver's channel
     void reset() override;
@@ -60,9 +63,9 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 
 private:
-    friend beidou_b1i_telemetry_decoder_gs_sptr beidou_b1i_make_telemetry_decoder_gs(const Tlm_Conf &conf);
+    friend beidou_dnav_telemetry_decoder_gs_sptr beidou_dnav_make_telemetry_decoder_gs(const Tlm_Conf &conf, int32_t frequency_band);
 
-    explicit beidou_b1i_telemetry_decoder_gs(const Tlm_Conf &conf);
+    beidou_dnav_telemetry_decoder_gs(const Tlm_Conf &conf, int32_t frequency_band);
 
     void decode_subframe(float *symbols, double cn0);
     void decode_word(int32_t word_counter, const float *enc_word_symbols, int32_t *dec_word_symbols);
@@ -95,14 +98,19 @@ private:
     int32_t d_samples_per_preamble;
     int32_t d_preamble_period_samples;
     int32_t d_CRC_error_counter;  // Number of failed CRC operations
+    const int32_t d_signal_type;  // DNAV data source (1:B1I, 5:B3I)
     uint32_t d_required_symbols;
     uint32_t d_stat;  // Status of decoder
 
     // Values to populate gnss synchronization structure
     uint64_t d_last_valid_preamble;
+    const uint32_t d_symbol_duration_d1_ms;      // D1 NAV message (MEO/IGSO satellites)
+    const uint32_t d_symbol_duration_geo_d2_ms;  // D2 NAV message (GEO satellites)
     uint32_t d_symbol_duration_ms;
     uint32_t d_TOW_at_Preamble_ms;
     uint32_t d_TOW_at_current_symbol_ms;
+
+    const char d_band;  // Frequency band the block is configured for ('1' for B1I, '3' for B3I)
 
     bool d_flag_SOW_set;     // Indicates when time of week is set
     bool d_flag_frame_sync;  // Indicate when a frame sync is achieved
@@ -121,4 +129,4 @@ private:
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_GS_H
+#endif  // GNSS_SDR_BEIDOU_DNAV_TELEMETRY_DECODER_GS_H

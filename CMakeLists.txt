@@ -71,6 +71,8 @@ option(ENABLE_OSMOSDR "Enable the use of OsmoSDR and other front-ends (RTL-based
 
 option(ENABLE_LIMESDR "Enable the use of LimeSDR and Custom LimeSDR as signal source" OFF)
 
+option(ENABLE_POCKETSDR "Enable the use of Pocket SDR FE front-ends as signal source, requires gr-pocketsdr" OFF)
+
 option(ENABLE_FMCOMMS2 "Enable the use of FMCOMMS4-EBZ + ZedBoard hardware, requires gr-iio" OFF)
 
 option(ENABLE_PLUTOSDR "Enable the use of ADALM-PLUTO Evaluation Boards (Analog Devices Inc.), requires gr-iio" OFF)
@@ -2956,6 +2958,34 @@ endif()
 
 
 
+################################################
+# gr-pocketsdr - OPTIONAL
+# https://github.com/tomojitakasu/PocketSDR
+################################################
+find_package(GRPOCKETSDR)
+set_package_properties(GRPOCKETSDR PROPERTIES
+    PURPOSE "Used for communication with Pocket SDR FE front-ends."
+    TYPE OPTIONAL
+)
+if(ENABLE_POCKETSDR)
+    if(GRPOCKETSDR_FOUND)
+        message(STATUS "The driver for Pocket SDR FE front-ends will be compiled.")
+        message(STATUS " You can disable it with 'cmake -DENABLE_POCKETSDR=OFF ..'")
+    else()
+        if(ENABLE_PACKAGING)
+            message(WARNING "gr-pocketsdr has not been found. Source blocks depending on it will NOT be built.")
+        else()
+            message(FATAL_ERROR "gr-pocketsdr required to build gnss-sdr with the optional POCKETSDR driver")
+        endif()
+        set(ENABLE_POCKETSDR OFF)
+    endif()
+else()
+    message(STATUS "The (optional) driver for Pocket SDR FE front-ends is not enabled.")
+    message(STATUS " Enable it with 'cmake -DENABLE_POCKETSDR=ON ..' to add support for Pocket SDR FE front-ends.")
+endif()
+
+
+
 ##############################################
 # gr-iio - OPTIONAL
 # IIO blocks for GNU Radio
@@ -3406,6 +3436,7 @@ add_subdirectory(utils)
 add_feature_info(ENABLE_UHD ENABLE_UHD "Enables UHD_Signal_Source for using RF front-ends from the USRP family. Requires gr-uhd.")
 add_feature_info(ENABLE_OSMOSDR ENABLE_OSMOSDR "Enables Osmosdr_Signal_Source and RtlTcp_Signal_Source for using RF front-ends compatible with the OsmoSDR driver. Requires gr-osmosdr.")
 add_feature_info(ENABLE_LIMESDR ENABLE_LIMESDR "Enables Limesdr_Signal_Source. Requires gr-limesdr.")
+add_feature_info(ENABLE_POCKETSDR ENABLE_POCKETSDR "Enables Pocket_SDR_Signal_Source. Requires gr-pocketsdr.")
 add_feature_info(ENABLE_FMCOMMS2 ENABLE_FMCOMMS2 "Enables Fmcomms2_Signal_Source for FMCOMMS2/3/4 devices. Requires libiio, libad9361-dev, and gr-iio.")
 add_feature_info(ENABLE_PLUTOSDR ENABLE_PLUTOSDR "Enables Plutosdr_Signal_Source and Ad936x_Custom_Signal_Source for using ADALM-PLUTO boards. Requires libiio, libad9361-dev, and gr-iio.")
 add_feature_info(ENABLE_AD936X_SDR ENABLE_AD936X_SDR "Enables Ad936x_Custom_Signal_Source for using ADALM-PLUTO boards with custom firmware. Requires libiio and libad9361-dev.")

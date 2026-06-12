@@ -1,6 +1,6 @@
 /*!
  * \file pocket_sdr_signal_source.cc
- * \brief Signal source for Pocket SDR FE front-ends
+ * \brief Signal source for Pocket SDR front-ends
  * \author Minhaj Ahmad, 2026. mahmad12(at)crimson.ua.edu
  *
  * -----------------------------------------------------------------------------

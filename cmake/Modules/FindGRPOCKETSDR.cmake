@@ -80,7 +80,7 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GRPOCKETSDR DEFAULT_MSG GRPOCKETSDR_LIBRARIES GRPOCKETSDR_INCLUDE_DIR)
 
 set_package_properties(GRPOCKETSDR PROPERTIES
-    URL "https://github.com/tomojitakasu/PocketSDR"
+    URL "https://github.com/minhaj6/gr-pocketsdr"
     DESCRIPTION "Pocket SDR FE GNU Radio blocks"
 )
 

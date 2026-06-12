@@ -238,6 +238,7 @@ void glonass_gnav_telemetry_decoder_gs::reset()
     d_CRC_error_counter = 0;
     d_flag_frame_sync = false;
     d_flag_preamble = false;
+    d_TOW_at_current_symbol = 0;
     // Invalidate the propagated TOW until a new string 5 is decoded; otherwise
     // Flag_valid_word would remain true with a TOW offset by the outage duration
     d_nav.set_flag_TOW_set(false);

@@ -33,6 +33,7 @@
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
 #include <bitset>           // for bitset
+#include <cmath>            // for lround
 #include <iomanip>          // for setprecision
 #include <iostream>         // for cout
 
@@ -125,7 +126,9 @@ void gps_l2c_telemetry_decoder_gs::set_channel(int channel)
 void gps_l2c_telemetry_decoder_gs::reset()
 {
     d_last_valid_preamble = d_sample_counter;
+    d_TOW_at_current_symbol = 0;
     d_sent_tlm_failed_msg = false;
+    d_flag_valid_word = false;
     DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
 }
 
@@ -234,16 +237,32 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
 
             // update TOW at the preamble instant
             d_TOW_at_Preamble = static_cast<double>(msg.tow);
-            d_last_valid_preamble = d_sample_counter;
+            // check TOW update consistency
+            const uint32_t last_TOW_at_current_symbol_ms = gnss_tow::wrap_s_to_ms(d_TOW_at_current_symbol);
             // The time of the last input symbol can be computed from the message ToW and
             // delay by the formulae:
             // \code
             // symbolTime_ms = msg->tow * 6000 + *pdelay * 20 + (12 * 20); 12 symbols of the encoder's transitory
             d_TOW_at_current_symbol = gnss_tow::wrap_s(static_cast<double>(msg.tow) * 6.0 + static_cast<double>(delay) * GPS_L2_M_PERIOD_S + 12 * GPS_L2_M_PERIOD_S);
             // d_TOW_at_current_symbol = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
-            d_flag_valid_word = true;
-            LOG(INFO) << "Successful frame synchronization in channel " << d_channel << " for satellite " << this->d_satellite
-                      << " at sample_counter=" << d_sample_counter;
+            const uint32_t symbol_period_ms = static_cast<uint32_t>(std::lround(GPS_L2_M_PERIOD_S * 1000.0));
+            const uint32_t tow_update_error_ms = gnss_tow::circular_error_ms(gnss_tow::wrap_s_to_ms(d_TOW_at_current_symbol), last_TOW_at_current_symbol_ms);
+            if (last_TOW_at_current_symbol_ms != 0 && tow_update_error_ms > symbol_period_ms)
+                {
+                    LOG(INFO) << "Warning: GPS L2C TOW update in ch " << d_channel
+                              << " does not match the TLM TOW counter " << tow_update_error_ms << " ms";
+                    // Distrust both the decoded and the propagated TOW until the
+                    // next CNAV message provides a fresh value
+                    d_TOW_at_current_symbol = 0;
+                    d_flag_valid_word = false;
+                }
+            else
+                {
+                    d_last_valid_preamble = d_sample_counter;
+                    d_flag_valid_word = true;
+                    LOG(INFO) << "Successful frame synchronization in channel " << d_channel << " for satellite " << this->d_satellite
+                              << " at sample_counter=" << d_sample_counter;
+                }
 
             if (d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
                 {
@@ -256,10 +275,13 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
         }
     else
         {
-            d_TOW_at_current_symbol = gnss_tow::wrap_s(d_TOW_at_current_symbol + GPS_L2_M_PERIOD_S);
-            if (current_synchro_data.Flag_valid_symbol_output == false)
+            if (d_flag_valid_word)
                 {
-                    d_flag_valid_word = false;
+                    d_TOW_at_current_symbol = gnss_tow::wrap_s(d_TOW_at_current_symbol + GPS_L2_M_PERIOD_S);
+                    if (current_synchro_data.Flag_valid_symbol_output == false)
+                        {
+                            d_flag_valid_word = false;
+                        }
                 }
         }
 

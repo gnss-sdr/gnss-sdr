@@ -377,7 +377,7 @@ geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glona
     geph_t rtklib_sat = {0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0, 0.0, 0.0};
 
     rtklib_sat.sat = satno(SYS_GLO, glonass_gnav_eph.i_satellite_slot_number);                                       /* satellite number */
-    rtklib_sat.iode = static_cast<int>(glonass_gnav_eph.d_t_b / 900.0 + 0.5);                                        /* IODE (tb interval index) */
+    rtklib_sat.iode = static_cast<int>(std::lround(glonass_gnav_eph.d_t_b / 900.0));                                 /* IODE (tb interval index) */
     rtklib_sat.frq = glonass_gnav_eph.i_satellite_freq_channel;                                                      /* satellite frequency number */
     rtklib_sat.svh = ((static_cast<int32_t>(glonass_gnav_eph.d_B_n) & 4) != 0 || glonass_gnav_eph.d_l3rd_n) ? 1 : 0; /* satellite health from Bn MSB and ln flag */
     rtklib_sat.sva = static_cast<int>(glonass_gnav_eph.d_F_T);                                                       /* satellite accuracy*/

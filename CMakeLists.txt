@@ -2960,7 +2960,7 @@ endif()
 
 ################################################
 # gr-pocketsdr - OPTIONAL
-# https://github.com/tomojitakasu/PocketSDR
+# https://github.com/minhaj6/gr-pocketsdr
 ################################################
 find_package(GRPOCKETSDR)
 set_package_properties(GRPOCKETSDR PROPERTIES

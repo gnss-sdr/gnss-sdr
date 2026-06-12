@@ -31,7 +31,7 @@
 constexpr double GPS_L1C_FREQ_HZ = FREQ1;                  //!< GPS L1C carrier frequency [Hz]
 constexpr double GPS_L1C_CODE_CHIP_RATE_CPS = 1.023e6;     //!< GPS L1C code rate [chips/s]
 constexpr double GPS_L1C_CODE_PERIOD_S = 0.010;            //!< GPS L1C code period [s]
-constexpr double GPS_L1C_CODE_PERIOD_MS = 10;              //!< GPS L1C code period [ms]
+constexpr int GPS_L1C_CODE_PERIOD_MS = 10;                 //!< GPS L1C code period [ms]
 constexpr double GPS_L1C_CODE_LENGTH_CHIPS = 10230.0;      //!< GPS L1C code length [chips]
 constexpr double GPS_L1C_SUB_CARRIER_P_RATE_HZ = 1.023e6;  //!< GPS L1C sub-carrier 'p' rate [Hz]
 constexpr double GPS_L1C_SUB_CARRIER_D_RATE_HZ = 6.138e6;  //!< GPS L1C sub-carrier 'd' rate [Hz]
@@ -39,6 +39,9 @@ constexpr double GPS_L1C_D_SYMBOL_RATE_BPS = 100.0;        //!< GPS L1C navdata 
 constexpr double GPS_L1C_O_CODE_PERIOD_S = 18.0;           //!< GPS L1C overlay code period [s]
 constexpr double GPS_L1C_O_CODE_CHIP_RATE_BPS = 100.0;     //!< GPS L1C overlay code rate [chips/s]
 constexpr double GPS_L1C_O_CODE_LENGTH_CHIPS = 1800.0;     //!< GPS L1C overlay code length [chips]
+
+// TODO: Check if this value is sensible
+constexpr uint32_t GPS_L1C_OPT_ACQ_FS_SPS = 2000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 constexpr int32_t GPS_L1C_SAMPLES_PER_SYMBOL = 1;  //!< (GPS_L1C_CODE_CHIP_RATE_CPS / GPS_L1C_CODE_LENGTH_CHIPS) / GPS_L1C_SYMBOL_RATE_BPS
 constexpr int32_t GPS_L1C_NUMBER_OF_PRN = 63;      //!< GPS L1C allows PRN signal numbers 1 through 210, but only 1 through 63 are primary

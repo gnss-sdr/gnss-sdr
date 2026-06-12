@@ -14,9 +14,10 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "signal_enabled_flags.h"
 #include "configuration_interface.h"  // for ConfigurationInterface
-#include <vector>                     // for vector
+#include "signal_enabled_flags.h"
+#include "signal_flag.h"
+#include <vector>  // for vector
 
 namespace
 {
@@ -37,7 +38,8 @@ uint32_t flags_from_config(const ConfigurationInterface* configuration)
         {BDS_B1, "Channels_B1.count"},
         {BDS_B3, "Channels_B3.count"},
         {QZS_J1, "Channels_J1.count"},
-        {QZS_J5, "Channels_J5.count"}};
+        {QZS_J5, "Channels_J5.count"},
+        {GPS_L1, "Channels_L1.count"}};
 
     for (const auto& pair_aux : signal_flag_to_prop)
         {

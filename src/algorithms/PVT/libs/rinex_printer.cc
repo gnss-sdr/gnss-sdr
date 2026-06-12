@@ -16,7 +16,6 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "rinex_printer.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "beidou_dnav_ephemeris.h"
 #include "beidou_dnav_iono.h"
@@ -35,6 +34,7 @@
 #include "gps_iono.h"
 #include "gps_navigation_message.h"
 #include "gps_utc_model.h"
+#include "rinex_printer.h"
 #include "rtklib.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_solver.h"
@@ -81,6 +81,8 @@ std::string signal_flag_to_string(signal_flag flag)
             return "2S";
         case GPS_L5:
             return "L5";
+        case GPS_L1:
+            return "L1";
         case GAL_1B:
             return "1B";
         case GAL_E5a:

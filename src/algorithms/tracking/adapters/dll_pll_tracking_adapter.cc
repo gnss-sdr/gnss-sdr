@@ -14,10 +14,10 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "dll_pll_tracking_adapter.h"
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
 #include "GLONASS_L1_L2_CA.h"
+#include "GPS_L1C.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "GPS_L5.h"
@@ -27,6 +27,7 @@
 #include "Galileo_E6.h"
 #include "configuration_interface.h"
 #include "display.h"
+#include "dll_pll_tracking_adapter.h"
 #include "qzss.h"
 
 #if USE_GLOG_AND_GFLAGS
@@ -60,6 +61,9 @@ signal_info get_signal_info(signal_flag sig_flag)
             return {'G', {'2', 'S', '\0'}, "GPS L2", GPS_L2_M_CODE_RATE_CPS, GPS_L2_M_CODE_LENGTH_CHIPS, 1, false, true};
         case GPS_L5:
             return {'G', {'L', '5', '\0'}, "GPS L5", GPS_L5I_CODE_RATE_CPS, GPS_L5I_CODE_LENGTH_CHIPS, GPS_L5I_NH_CODE_LENGTH, true, false};
+        case GPS_L1:
+            // TODO: Ensure values are correct
+            return {'G', {'L', '1', '\0'}, "GPS L1C", GPS_L1C_CODE_CHIP_RATE_CPS, GPS_L1C_CODE_LENGTH_CHIPS, 1, true, false};
         case GAL_1B:
             return {'E', {'1', 'B', '\0'}, "Galileo E1", GALILEO_E1_CODE_CHIP_RATE_CPS, GALILEO_E1_B_CODE_LENGTH_CHIPS, 1, true, false};
         case GAL_E5a:

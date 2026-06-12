@@ -37,42 +37,41 @@ namespace own = gsl_lite;
 
 
 /*!
- * \brief This function generates GPS L1C code (can select P or D sinboc).
+ * \brief This function generates GPS L1C-P sinboc code as
+ * {-1.0, 1.0} x10230x2 floats
  *
  */
-void gps_l1c_code_gen_sinboc11_float(own::span<float> dest, const std::array<char, 3>& signal_id, uint32_t prn);
+void gps_l1c_p_sinboc(own::span<float> dest, uint32_t prn);
 
 /*!
- * \brief This function generates GPS L1C code (can select P or D, cboc or sinboc
- * and the sample frequency sampling_freq).
+ * \brief This function generates GPS L1C-D sinboc code as
+ * {-1.0, 1.0} x10230x1800x2 floats, including the fully
+ * expanded overlay code.
  *
  */
-void gps_l1c_code_gen_float_sampled(own::span<float> dest, const std::array<char, 3>& signal_id,
-    bool cboc, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift,
-    bool secondary_flag);
+void gps_l1c_d_sinboc_with_overlay(own::span<float> dest, uint32_t prn);
+
 
 /*!
- * \brief This function generates GPS L1C code (can select P or D, cboc or sinboc
- * and the sample frequency sampling_freq).
+ * \brief This function generates GPS L1C-D sinboc code as
+ * {-1.0, 1.0} x10230x2 floats, NOT including the overlay code.
  *
  */
-void gps_l1c_code_gen_float_sampled(own::span<float> dest, const std::array<char, 3>& signal_id,
-    bool cboc, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift);
+void gps_l1c_d_sinboc_no_overlay(own::span<float> dest, uint32_t prn);
 
 /*!
- * \brief This function generates GPS L1C code (can select cboc or sinboc and the sample
- * frequency sampling_freq).
+ * \brief This function generates a full GPS L1C-P code at the sample
+ *  frequency sampling_freq.
  *
  */
-void gps_l1c_code_gen_complex_sampled(own::span<std::complex<float>> dest, const std::array<char, 3>& signal_id,
-    bool cboc, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift,
-    bool secondary_flag);
+void gps_l1c_p_code_gen_float_sampled(own::span<float> dest, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift);
 
 /*!
- * \brief gps_l1c_code_gen_complex_sampled without secondary_flag for backward compatibility.
+ * \brief This function generates a full GPS L1C-P code at the sample
+ *  frequency sampling_freq.
+ *
  */
-void gps_l1c_code_gen_complex_sampled(own::span<std::complex<float>> dest, const std::array<char, 3>& signal_id,
-    bool cboc, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift);
+void gps_l1c_p_code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift);
 
 
 /** \} */

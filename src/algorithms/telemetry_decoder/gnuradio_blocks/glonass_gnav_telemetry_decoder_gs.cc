@@ -377,22 +377,31 @@ int glonass_gnav_telemetry_decoder_gs::general_work(int noutput_items __attribut
     // UPDATE GNSS SYNCHRO DATA
     // 2. Add the telemetry decoder information
     if (this->d_flag_preamble == true && d_nav.get_flag_TOW_new() == true)
-        // update TOW at the preamble instant
         {
+            // check TOW update consistency
+            const uint32_t last_TOW_at_current_symbol_ms = gnss_tow::wrap_s_to_ms(d_TOW_at_current_symbol);
             d_TOW_at_current_symbol = gnss_tow::wrap_s(floor((d_nav.get_ephemeris().d_TOW - GLONASS_GNAV_PREAMBLE_DURATION_S) * 1000) / 1000);
             d_nav.set_flag_TOW_new(false);
+
+            const uint32_t symbol_period_ms = static_cast<uint32_t>(std::lround(d_symbol_period_s * 1000.0));
+            const uint32_t tow_update_error_ms = gnss_tow::circular_error_ms(gnss_tow::wrap_s_to_ms(d_TOW_at_current_symbol), last_TOW_at_current_symbol_ms);
+            if (last_TOW_at_current_symbol_ms != 0 && tow_update_error_ms > symbol_period_ms)
+                {
+                    LOG(INFO) << "Warning: GLONASS L" << d_band << " TOW update in ch " << d_channel
+                              << " does not match the TLM TOW counter " << tow_update_error_ms << " ms";
+                    // Distrust both the decoded and the propagated TOW until a
+                    // new string 5 provides a fresh value
+                    d_TOW_at_current_symbol = 0;
+                    d_nav.set_flag_TOW_set(false);
+                }
         }
     else  // if there is not a new preamble, we define the TOW of the current symbol
         {
-            d_TOW_at_current_symbol = gnss_tow::wrap_s(d_TOW_at_current_symbol + d_symbol_period_s);
+            if (d_nav.is_flag_TOW_set())
+                {
+                    d_TOW_at_current_symbol = gnss_tow::wrap_s(d_TOW_at_current_symbol + d_symbol_period_s);
+                }
         }
-
-    // if (d_flag_frame_sync == true && d_nav.flag_TOW_set==true && d_nav.get_flag_CRC_test() == true)
-
-    // if(d_nav.flag_GGTO_1 == true  &&  d_nav.flag_GGTO_2 == true &&  d_nav.flag_GGTO_3 == true &&  d_nav.flag_GGTO_4 == true) // all GGTO parameters arrived
-    //     {
-    //         delta_t = d_nav.A_0G + d_nav.A_1G * (d_TOW_at_current_symbol - d_nav.t_0G + 604800.0 * (fmod((d_nav.WN_0 - d_nav.WN_0G), 64)));
-    //     }
 
     current_symbol.PRN = this->d_satellite.get_PRN();
     current_symbol.TOW_at_current_symbol_ms = gnss_tow::wrap_s_to_ms(d_TOW_at_current_symbol);

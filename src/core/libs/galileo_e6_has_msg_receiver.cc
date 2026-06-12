@@ -812,6 +812,13 @@ bool galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body,
                             d_HAS_data.satellite_mask[i] = read_has_message_body_uint64(msg);
                             d_satellite_mask[d_HAS_data.header.mask_id][i] = d_HAS_data.satellite_mask[i];
                             int ones_in_satellite_mask = std::count(msg.begin(), msg.end(), '1');
+                            if (ones_in_satellite_mask == 0)
+                                {
+                                    // an empty per-system cell mask would be indexed out of bounds in the bias blocks
+                                    LOG(WARNING) << "HAS MT1 Mask block contains an empty Satellite Mask for GNSS ID " << std::to_string(d_HAS_data.gnss_id_mask[i]);
+                                    clear_mask_data(d_HAS_data.header.mask_id);
+                                    return false;
+                                }
                             Nsat += ones_in_satellite_mask;
 
                             if (!read_bits(HAS_MSG_SIGNAL_MASK_LENGTH, "Signal Mask", msg))

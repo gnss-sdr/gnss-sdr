@@ -27,7 +27,7 @@
 
 
 // The last 2 bits of the 10232 bits of "dest" are zero-padding
-void gps_l1c_p_range_code_gen_int(own::span<int> dest, uint32_t prn)
+void gps_l1c_range_code_gen_int(own::span<int> dest, bool p_code, uint32_t prn)
 {
     assert(dest.size() >= 10232);
 
@@ -39,35 +39,20 @@ void gps_l1c_p_range_code_gen_int(own::span<int> dest, uint32_t prn)
             return;
         }
 
-    for (size_t i = 0; i < GPS_L1C_RANGE_CODE_STR_LENGTH; i++)
+    const auto* source = &GPS_L1C_D_RANGE_CODE;
+
+    if (p_code)
         {
-            hex_to_binary_converter(dest.subspan(index, 4), GPS_L1C_P_RANGE_CODE[prn_][i]);
-
-            index += 4;
-        }
-}
-
-// The last 2 bits of the 10232 bits of "dest" are zero-padding
-void gps_l1c_d_range_code_gen_int(own::span<int> dest, int32_t prn)
-{
-    assert(dest.size() >= 10232);
-
-    const int32_t prn_ = prn - 1;
-    int32_t index = 0;
-
-    if ((prn < 1) || (prn > GPS_L1C_NUMBER_OF_PRN))
-        {
-            return;
+            source = &GPS_L1C_P_RANGE_CODE;
         }
 
     for (size_t i = 0; i < GPS_L1C_RANGE_CODE_STR_LENGTH; i++)
         {
-            hex_to_binary_converter(dest.subspan(index, 4), GPS_L1C_D_RANGE_CODE[prn_][i]);
+            hex_to_binary_converter(dest.subspan(index, 4), (*source)[prn_][i]);
 
             index += 4;
         }
 }
-
 
 void gps_l1c_overlay_code_gen_int(own::span<int> dest, uint32_t prn)
 {
@@ -89,19 +74,14 @@ void gps_l1c_overlay_code_gen_int(own::span<int> dest, uint32_t prn)
         }
 }
 
-/*!
- * \brief This function generates GPS L1C-P sinboc code as
- * {-1.0, 1.0} x10230x2 floats
- *
- */
-void gps_l1c_p_sinboc(own::span<float> dest, uint32_t prn)
+void gps_l1c_sinboc(own::span<float> dest, bool p_code, uint32_t prn)
 {
     // Short names
     constexpr size_t nr = GPS_L1C_CODE_LENGTH_CHIPS;
 
     // +2 due to padding
     std::array<int32_t, nr + 2> range_code_chips{};
-    gps_l1c_p_range_code_gen_int(range_code_chips, prn);
+    gps_l1c_range_code_gen_int(range_code_chips, p_code, prn);
 
     assert(dest.size() >= nr * 2);
 
@@ -113,7 +93,7 @@ void gps_l1c_p_sinboc(own::span<float> dest, uint32_t prn)
         }
 }
 
-void gps_l1c_d_sinboc_with_overlay(own::span<float> dest, uint32_t prn)
+void gps_l1c_p_sinboc_with_overlay(own::span<float> dest, uint32_t prn)
 {
     // Short names
     const size_t nr = GPS_L1C_CODE_LENGTH_CHIPS;
@@ -121,7 +101,7 @@ void gps_l1c_d_sinboc_with_overlay(own::span<float> dest, uint32_t prn)
 
     // +2 due to padding
     std::array<int32_t, nr + 2> range_code_chips{};
-    gps_l1c_d_range_code_gen_int(range_code_chips, prn);
+    gps_l1c_range_code_gen_int(range_code_chips, true, prn);
 
     std::array<int32_t, no> overlay_code_chips{};
     gps_l1c_overlay_code_gen_int(overlay_code_chips, prn);
@@ -139,14 +119,14 @@ void gps_l1c_d_sinboc_with_overlay(own::span<float> dest, uint32_t prn)
         }
 }
 
-void gps_l1c_d_sinboc_no_overlay(own::span<float> dest, uint32_t prn)
+void gps_l1c_p_sinboc_no_overlay(own::span<float> dest, uint32_t prn)
 {
     // Short names
     constexpr size_t nr = GPS_L1C_CODE_LENGTH_CHIPS;
 
     // +2 due to padding
     std::array<int32_t, nr + 2> range_code_chips{};
-    gps_l1c_d_range_code_gen_int(range_code_chips, prn);
+    gps_l1c_range_code_gen_int(range_code_chips, true, prn);
 
     assert(dest.size() >= nr * 2);
 
@@ -159,7 +139,7 @@ void gps_l1c_d_sinboc_no_overlay(own::span<float> dest, uint32_t prn)
 }
 
 
-void gps_l1c_p_code_gen_float_sampled(own::span<float> dest, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift)
+void gps_l1c_code_gen_float_sampled(own::span<float> dest, bool p_code, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift)
 {
     // Short names
     const size_t nr = GPS_L1C_CODE_LENGTH_CHIPS;
@@ -173,7 +153,7 @@ void gps_l1c_p_code_gen_float_sampled(own::span<float> dest, uint32_t prn, int32
 
     // +2 due to padding
     std::array<int32_t, nr + 2> range_code_chips{};
-    gps_l1c_p_range_code_gen_int(range_code_chips, prn);
+    gps_l1c_range_code_gen_int(range_code_chips, p_code, prn);
 
     // Signal sampled at the ideal samplesPerChip * chip rate
     const uint32_t codeLength = samplesPerChip * GPS_L1C_CODE_LENGTH_CHIPS;
@@ -201,14 +181,12 @@ void gps_l1c_p_code_gen_float_sampled(own::span<float> dest, uint32_t prn, int32
         }
 }
 
-void gps_l1c_p_code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift)
+void gps_l1c_code_gen_complex_sampled(own::span<std::complex<float>> dest, bool p_code, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift)
 {
-    // We define P code phase as 0, thus it's fully real
-    //
     const auto samplesPerCode = static_cast<uint32_t>(static_cast<double>(sampling_freq) * GPS_L1C_CODE_PERIOD_S);
     std::vector<float> real_code(samplesPerCode);
 
-    gps_l1c_p_code_gen_float_sampled(real_code, prn, sampling_freq, chip_shift);
+    gps_l1c_code_gen_float_sampled(real_code, p_code, prn, sampling_freq, chip_shift);
     for (uint32_t i = 0; i < samplesPerCode; ++i)
         {
             dest[i] = std::complex<float>(real_code[i], 0.0F);

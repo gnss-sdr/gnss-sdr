@@ -852,8 +852,18 @@ void dll_pll_veml_tracking::start_tracking()
         }
     else if (d_systemName == "GPS" && d_signal_type == "L1")
         {
-            // TODO: Pilot
-            gps_l1c_p_sinboc(d_tracking_code, d_acquisition_gnss_synchro->PRN);
+            // TODO: Support for overlay code and cboc
+            if (d_trk_parameters.track_pilot)
+                {
+                    gps_l1c_sinboc(d_tracking_code, true, d_acquisition_gnss_synchro->PRN);
+                    gps_l1c_sinboc(d_data_code, false, d_acquisition_gnss_synchro->PRN);
+                    d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+                    d_correlator_data_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
+                }
+            else
+                {
+                    gps_l1c_sinboc(d_tracking_code, false, d_acquisition_gnss_synchro->PRN);
+                }
         }
     else if (d_systemName == "Galileo" && d_signal_type == "1B")
         {

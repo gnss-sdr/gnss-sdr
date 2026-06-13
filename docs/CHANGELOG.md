@@ -34,9 +34,9 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Improved performance of Galileo's Viterbi decoder.
 - Fixed edge cases in the retrieving of GPS L1 C/A navigation data.
 - Fixed Glonass carrier phase and time annotations in RINEX files.
-- Implemented handling of the GLONASS notification of a forthcoming leap
-  second event (KP word in the GNAV message), improving timekeeping across
-  leap second transitions.
+- Implemented handling of the GLONASS notification of a forthcoming leap second
+  event (KP word in the GNAV message), improving timekeeping across leap second
+  transitions.
 
 ### Improvements in Maintainability:
 

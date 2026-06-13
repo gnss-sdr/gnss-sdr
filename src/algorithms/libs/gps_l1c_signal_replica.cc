@@ -84,6 +84,7 @@ void gps_l1c_overlay_code_gen_int(own::span<int> dest, uint32_t prn)
     assert(dest.size() >= 1800);
 
     const int32_t prn_ = prn - 1;
+    int32_t index = 0;
 
     if ((prn < 1) || (prn > GPS_L1C_NUMBER_OF_PRN))
         {
@@ -92,7 +93,8 @@ void gps_l1c_overlay_code_gen_int(own::span<int> dest, uint32_t prn)
 
     for (size_t i = 0; i < GPS_L1C_OVERLAY_CODE_STR_LENGTH; i++)
         {
-            dest[i] = GPS_L1C_OVERLAY_CODE[prn_][i] == '1' ? 1 : -1;
+            hex_to_binary_converter(dest.subspan(index, 4), GPS_L1C_OVERLAY_CODE[prn_][i]);
+            index += 4;
         }
 }
 

@@ -47,9 +47,9 @@ if(CMAKE_VERSION VERSION_LESS 3.5)
         set_property(TARGET Boost::serialization PROPERTY
             INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
         set_property(TARGET Boost::serialization PROPERTY
-            INTERFACE_LINK_LIBRARIES ${Boost_SERIALIZARION_LIBRARIES})
+            INTERFACE_LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARIES})
         set_property(TARGET Boost::serialization PROPERTY
-            IMPORTED_LOCATION ${Boost_SERIALIZARION_LIBRARIES})
+            IMPORTED_LOCATION ${Boost_SERIALIZATION_LIBRARIES})
     endif()
 endif()
 
@@ -113,7 +113,7 @@ if(TARGET Boost::iostreams AND TARGET Boost::serialization)
         target_compile_definitions(rinex2assist PRIVATE -DGNSSTK_OLDER_THAN_9=1)
     endif()
 
-    if(NOT UNCOMPRESS_EXECUTABLE-NOTFOUND)
+    if(UNCOMPRESS_EXECUTABLE)
         target_compile_definitions(rinex2assist PRIVATE -DUNCOMPRESS_EXECUTABLE="${UNCOMPRESS_EXECUTABLE}")
     else()
         target_compile_definitions(rinex2assist PRIVATE -DUNCOMPRESS_EXECUTABLE="")

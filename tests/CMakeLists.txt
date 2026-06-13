@@ -638,7 +638,7 @@ if(ENABLE_UNIT_TESTING_EXTRA)
         install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat DESTINATION share/gnss-sdr/signal_samples)
         install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat DESTINATION share/gnss-sdr/signal_samples)
         install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat DESTINATION share/gnss-sdr/signal_samples)
-        install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat DESTINATION share/gnss-sdr/signal_samples)
+        install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/BdsB3IStr01_fs50e6_if0_4ms.dat DESTINATION share/gnss-sdr/signal_samples)
     endif()
 endif()
 

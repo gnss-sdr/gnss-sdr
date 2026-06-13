@@ -49,5 +49,6 @@ void gps_l1c_telemetry_decoder_gs::reset()
 int gps_l1c_telemetry_decoder_gs::general_work(int noutput_items, gr_vector_int &ninput_items,
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
+    consume_each(1);
     return 0;
 }

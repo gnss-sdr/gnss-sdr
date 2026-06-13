@@ -1952,7 +1952,7 @@ void GNSSFlowgraph::priorize_satellites(const std::vector<std::pair<int, Gnss_Sa
 
             if (visible_satellite.second.get_system() == "GPS")
                 {
-                    signal_str_vector = {"1C", "2S", "L5", "L1C"};
+                    signal_str_vector = {"1C", "2S", "L5", "L1"};
                 }
             else if (visible_satellite.second.get_system() == "Galileo")
                 {

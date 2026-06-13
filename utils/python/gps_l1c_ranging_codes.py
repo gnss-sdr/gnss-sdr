@@ -57,11 +57,11 @@ def main():
         l1c_p_seq_int = int("".join(map(str, l1c_p_seq)), 2)
         l1c_d_seq_int = int("".join(map(str, l1c_d_seq)), 2)
 
-        # NOTE: To represent these as octal, take the entire hex string as a hex number
-        #       and bit-shift it right 2 bits, after converting to octal the correct
-        #       representation is achieved
-        raw_p_str = f"{l1c_p_seq_int:02558X}"
-        raw_d_str = f"{l1c_d_seq_int:02558X}"
+        # NOTE: We have 10230 bits, which fit in 2258 hex chars, but one of the chars is "half-full".
+        #       To simplify the C++ code, we shift left 2 bits, so that the last hex char contains the
+        #       zero padding instead of the first one
+        raw_p_str = f"{l1c_p_seq_int<<2:02558X}"
+        raw_d_str = f"{l1c_d_seq_int<<2:02558X}"
         p_str_chunks = [raw_p_str[i : i + 73] for i in range(0, len(raw_p_str), 73)]
         d_str_chunks = [raw_d_str[i : i + 73] for i in range(0, len(raw_d_str), 73)]
 

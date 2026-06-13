@@ -1,8 +1,8 @@
 /*!
- * \file galileo_e1_signal_replica.cc
- * \brief This library implements various functions for Galileo E1 signal
+ * \file gps_l1c_signal_replica.h
+ * \brief This library implements various functions for GPS L1C signal
  * replica generation
- * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ * \author José Antonio Mayo, 2026. contact(at)tatjam.eu
  *
  *
  * -----------------------------------------------------------------------------
@@ -83,7 +83,7 @@ void gps_l1c_overlay_code_gen_int(own::span<int> dest, uint32_t prn)
 
     for (size_t i = 0; i < GPS_L1C_OVERLAY_CODE_STR_LENGTH; i++)
         {
-            hex_to_binary_converter(dest.subspan(index, 4), GPS_L1C_D_RANGE_CODE[prn_][i]);
+            hex_to_binary_converter(dest.subspan(index, 4), GPS_L1C_OVERLAY_CODE[prn_][i]);
 
             index += 4;
         }
@@ -133,8 +133,8 @@ void gps_l1c_d_sinboc_with_overlay(own::span<float> dest, uint32_t prn)
             for (size_t r = 0; r < nr; r++)
                 {
                     int32_t value = range_code_chips[r] * overlay_code_chips[o];
-                    dest[(o * no + r) * 2 + 0] = static_cast<float>(value);
-                    dest[(o * no + r) * 2 + 1] = -static_cast<float>(value);
+                    dest[(o * nr + r) * 2 + 0] = static_cast<float>(value);
+                    dest[(o * nr + r) * 2 + 1] = -static_cast<float>(value);
                 }
         }
 }
@@ -172,7 +172,7 @@ void gps_l1c_p_code_gen_float_sampled(own::span<float> dest, uint32_t prn, int32
     const uint32_t delay = ((static_cast<int32_t>(GPS_L1C_CODE_LENGTH_CHIPS) - chip_shift) % static_cast<int32_t>(GPS_L1C_CODE_LENGTH_CHIPS)) * samplesPerCode / GPS_L1C_CODE_LENGTH_CHIPS;
 
     // +2 due to padding
-    std::array<int32_t, nr + 2> range_code_chips;
+    std::array<int32_t, nr + 2> range_code_chips{};
     gps_l1c_p_range_code_gen_int(range_code_chips, prn);
 
     // Signal sampled at the ideal samplesPerChip * chip rate

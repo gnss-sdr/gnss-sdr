@@ -267,13 +267,12 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                 }
             else if (d_signal_type == "L1")
                 {
-                    // TODO: Adjust the values, copied from Galileo E1b to start
                     d_signal_carrier_freq = GPS_L1_FREQ_HZ;
                     d_code_period = GPS_L1C_CODE_PERIOD_S;
                     d_code_chip_rate = GPS_L1C_CODE_CHIP_RATE_CPS;
                     d_code_length_chips = static_cast<int32_t>(GPS_L1C_CODE_LENGTH_CHIPS);
                     d_symbols_per_bit = 1;
-                    d_correlation_length_ms = 4;
+                    d_correlation_length_ms = GPS_L1C_CODE_PERIOD_MS;
                     d_code_samples_per_chip = 2;  // CBOC disabled: 2 samples per chip. CBOC enabled: 12 samples per chip
                     d_veml = true;
                     d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;

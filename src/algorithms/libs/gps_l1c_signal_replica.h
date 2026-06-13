@@ -37,6 +37,12 @@ namespace own = gsl_lite;
 
 
 /*!
+ * \brief Generates a string of '1' and '0' from the overlay code
+ *
+ */
+std::string generate_gps_l1c_overlay_code(uint32_t prn);
+
+/*!
  * \brief This function generates GPS L1C-D or L1C-P sinboc code as
  * {-1.0, 1.0} x10230x2 floats. Never uses overlay in L1C-P code.
  *

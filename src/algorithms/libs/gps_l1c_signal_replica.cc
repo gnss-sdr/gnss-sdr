@@ -25,6 +25,31 @@
 #include <utility>
 #include <vector>
 
+std::string generate_gps_l1c_overlay_code(uint32_t prn)
+{
+    const int32_t prn_ = prn - 1;
+    int32_t index = 0;
+
+    if ((prn < 1) || (prn > GPS_L1C_NUMBER_OF_PRN))
+        {
+            return "";
+        }
+
+    std::string out{};
+    out.reserve(GPS_L1C_O_CODE_LENGTH_CHIPS);
+
+    for (size_t i = 0; i < GPS_L1C_OVERLAY_CODE_STR_LENGTH; i++)
+        {
+            std::string aux = hex_to_binary_string(GPS_L1C_OVERLAY_CODE[prn_][i]);
+            out[index] = aux[0];
+            out[index + 1] = aux[1];
+            out[index + 2] = aux[2];
+            out[index + 3] = aux[3];
+            index = index + 4;
+        }
+
+    return out;
+}
 
 // The last 2 bits of the 10232 bits of "dest" are zero-padding
 void gps_l1c_range_code_gen_int(own::span<int> dest, bool p_code, uint32_t prn)
@@ -59,7 +84,6 @@ void gps_l1c_overlay_code_gen_int(own::span<int> dest, uint32_t prn)
     assert(dest.size() >= 1800);
 
     const int32_t prn_ = prn - 1;
-    int32_t index = 0;
 
     if ((prn < 1) || (prn > GPS_L1C_NUMBER_OF_PRN))
         {
@@ -68,9 +92,7 @@ void gps_l1c_overlay_code_gen_int(own::span<int> dest, uint32_t prn)
 
     for (size_t i = 0; i < GPS_L1C_OVERLAY_CODE_STR_LENGTH; i++)
         {
-            hex_to_binary_converter(dest.subspan(index, 4), GPS_L1C_OVERLAY_CODE[prn_][i]);
-
-            index += 4;
+            dest[i] = GPS_L1C_OVERLAY_CODE[prn_][i] == '1' ? 1 : -1;
         }
 }
 

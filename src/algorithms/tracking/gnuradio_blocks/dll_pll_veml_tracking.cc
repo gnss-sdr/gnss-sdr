@@ -279,8 +279,16 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     d_trk_parameters.slope = static_cast<float>(-CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, d_trk_parameters.spc));
                     d_trk_parameters.y_intercept = static_cast<float>(GetYInterceptAbs(&SinBocCorrelationFunction<1, 1>, d_trk_parameters.spc));
 
-                    // TODO: Pilot
-                    d_secondary = false;
+                    if (d_trk_parameters.track_pilot)
+                        {
+                            d_secondary = true;
+                            d_secondary_code_length = static_cast<uint32_t>(GPS_L1C_O_CODE_LENGTH_CHIPS);
+                            // String set later, as it depends on the PRN
+                        }
+                    else
+                        {
+                            d_secondary = false;
+                        }
                 }
             else
                 {
@@ -858,6 +866,8 @@ void dll_pll_veml_tracking::start_tracking()
                     gps_l1c_sinboc(d_tracking_code, true, d_acquisition_gnss_synchro->PRN);
                     gps_l1c_sinboc(d_data_code, false, d_acquisition_gnss_synchro->PRN);
                     d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+                    d_secondary_code_string = generate_gps_l1c_overlay_code(d_acquisition_gnss_synchro->PRN);
+                    d_secondary_code_length = GPS_L1C_O_CODE_LENGTH_CHIPS;
                     d_correlator_data_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
                 }
             else

@@ -95,6 +95,7 @@ public:
     bool use_e6_for_pvt = true;
     bool use_has_corrections = true;
     bool use_unhealthy_sats = false;
+    bool glonass_strict_health = true;
     bool osnma_strict = false;
 
     // PVT KF parameters

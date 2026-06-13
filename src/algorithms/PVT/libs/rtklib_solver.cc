@@ -1481,7 +1481,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 if (glonass_gnav_ephemeris_iter != glonass_gnav_ephemeris_map.cend())
                                     {
                                         // convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                        geph_data[glo_valid_obs] = eph_to_rtklib(glonass_gnav_ephemeris_iter->second, gnav_utc);
+                                        geph_data[glo_valid_obs] = eph_to_rtklib(glonass_gnav_ephemeris_iter->second, gnav_utc, d_conf.glonass_strict_health);
                                         // convert observation from GNSS-SDR class to RTKLIB structure
                                         obsd_t newobs{};
                                         d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
@@ -1519,7 +1519,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             {
                                                 // insert GLONASS GNAV L2 obs as new obs and also insert its ephemeris
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                                geph_data[glo_valid_obs] = eph_to_rtklib(glonass_gnav_ephemeris_iter->second, gnav_utc);
+                                                geph_data[glo_valid_obs] = eph_to_rtklib(glonass_gnav_ephemeris_iter->second, gnav_utc, d_conf.glonass_strict_health);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
                                                 obsd_t newobs{};
                                                 d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,

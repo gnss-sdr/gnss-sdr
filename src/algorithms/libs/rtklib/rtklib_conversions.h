@@ -108,9 +108,12 @@ alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm);
 /*!
  * \brief Transforms a Glonass_Gnav_Ephemeris to its RTKLIB counterpart
  * \param glonass_gnav_eph GLONASS GNAV Ephemeris structure
+ * \param gnav_clock_model GLONASS GNAV UTC model (for the GLONASST to GPST conversion)
+ * \param glonass_strict_health when true (default), the MSB of the Bn word also marks the
+ * satellite as unhealthy; when false, only the ln flag is used
  * \return Ephemeris structure for RTKLIB parsing
  */
-geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glonass_Gnav_Utc_Model& gnav_clock_model);
+geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glonass_Gnav_Utc_Model& gnav_clock_model, bool glonass_strict_health = true);
 
 obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
     const Gnss_Synchro& gnss_synchro,

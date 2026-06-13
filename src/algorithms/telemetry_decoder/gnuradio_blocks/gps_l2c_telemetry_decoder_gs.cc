@@ -245,7 +245,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             // symbolTime_ms = msg->tow * 6000 + *pdelay * 20 + (12 * 20); 12 symbols of the encoder's transitory
             d_TOW_at_current_symbol = gnss_tow::wrap_s(static_cast<double>(msg.tow) * 6.0 + static_cast<double>(delay) * GPS_L2_M_PERIOD_S + 12 * GPS_L2_M_PERIOD_S);
             // d_TOW_at_current_symbol = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
-            const uint32_t symbol_period_ms = static_cast<uint32_t>(std::lround(GPS_L2_M_PERIOD_S * 1000.0));
+            const auto symbol_period_ms = static_cast<uint32_t>(std::lround(GPS_L2_M_PERIOD_S * 1000.0));
             const uint32_t tow_update_error_ms = gnss_tow::circular_error_ms(gnss_tow::wrap_s_to_ms(d_TOW_at_current_symbol), last_TOW_at_current_symbol_ms);
             if (last_TOW_at_current_symbol_ms != 0 && tow_update_error_ms > symbol_period_ms)
                 {

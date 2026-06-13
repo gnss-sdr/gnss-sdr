@@ -384,7 +384,7 @@ int glonass_gnav_telemetry_decoder_gs::general_work(int noutput_items __attribut
             d_TOW_at_current_symbol = gnss_tow::wrap_s(floor((d_nav.get_ephemeris().d_TOW - GLONASS_GNAV_PREAMBLE_DURATION_S) * 1000) / 1000);
             d_nav.set_flag_TOW_new(false);
 
-            const uint32_t symbol_period_ms = static_cast<uint32_t>(std::lround(d_symbol_period_s * 1000.0));
+            const auto symbol_period_ms = static_cast<uint32_t>(std::lround(d_symbol_period_s * 1000.0));
             const uint32_t tow_update_error_ms = gnss_tow::circular_error_ms(gnss_tow::wrap_s_to_ms(d_TOW_at_current_symbol), last_TOW_at_current_symbol_ms);
             if (last_TOW_at_current_symbol_ms != 0 && tow_update_error_ms > symbol_period_ms)
                 {

@@ -19,9 +19,12 @@
 #ifndef GNSS_SDR_GPS_L1C_TELEMETRY_DECODER_GS_H
 #define GNSS_SDR_GPS_L1C_TELEMETRY_DECODER_GS_H
 
+#include "GPS_L1C.h"
 #include "gnss_synchro.h"
+#include "ldpc_min_sum_decoder.h"
 #include "telemetry_impl_interface.h"
 #include <boost/circular_buffer.hpp>
+#include <bitset>
 
 /** \addtogroup Telemetry_Decoder
  * \{ */
@@ -37,8 +40,8 @@ gps_l1c_telemetry_decoder_gs_sptr gps_l1c_make_telemetry_decoder_gs(const Tlm_Co
 struct GpsL1cFrame
 {
     uint16_t toi;  //<! Decoded TOI value
-    std::array<int, 600> sf2{};
-    std::array<int, 274> sf3{};
+    std::optional<std::bitset<600>> sf2;
+    std::optional<std::bitset<274>> sf3;
 };
 
 class gps_l1c_telemetry_decoder_gs : public telemetry_impl_interface
@@ -57,14 +60,13 @@ public:
 private:
     boost::circular_buffer<float> d_symbol_history;
     uint32_t d_stat;
-    uint32_t d_samples_consumed;
-    int32_t d_frame_pos;
-    GpsL1cFrame d_active_frame;
+
+    LDPC_Min_Sum_Decoder d_sf2_decoder;
+    LDPC_Min_Sum_Decoder d_sf3_decoder;
 
     friend gps_l1c_telemetry_decoder_gs_sptr gps_l1c_make_telemetry_decoder_gs(const Tlm_Conf &conf);
 
     explicit gps_l1c_telemetry_decoder_gs(const Tlm_Conf &conf);
-
 
     // start_index must point to the index in d_symbol_history that contains the first received bit
     // (MSB) of TOI, and 52 bits will be read after it, including the first received bit.
@@ -80,6 +82,10 @@ private:
     // Attempts parsing a L1C frame, reading 1800 bits starting at start_index.
     // The first 52 bits are ignored, and must have been parsed beforehand to decode the TOI.
     std::optional<GpsL1cFrame> try_parse_frame(size_t start_index, uint16_t toi);
+
+    // Deinterleaves the 1748 bits of subframe 2 and 3, starting at start_index.
+    // The first 52 bits are ignored
+    std::array<float, GPS_L1C_SF_2_AND_3_ENCODED_BITS> deinterlave_frame(size_t start_index);
 
     // d_stat = 0
     void state_find_align(const Gnss_Synchro &synchro);

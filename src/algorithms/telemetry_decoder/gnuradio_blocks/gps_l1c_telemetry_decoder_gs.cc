@@ -38,9 +38,18 @@ gps_l1c_telemetry_decoder_gs::gps_l1c_telemetry_decoder_gs(const Tlm_Conf &conf)
           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
       d_stat(0),
-      d_samples_consumed(0),
-      d_frame_pos(-1),
-      d_active_frame(-1)
+      d_sf2_decoder(
+          GPS_L1C_LDPC_SF2_CN_NEIGHBORS_STR, GPS_L1C_LDPC_SF2_CN_NEIGHBORS_LENGTH,
+          GPS_L1C_LDPC_SF2_CN_ROW_PTR_STR, GPS_L1C_LDPC_SF2_CN_ROW_PTR_LENGTH,
+          GPS_L1C_LDPC_SF2_VN_COL_PTR_STR, GPS_L1C_LDPC_SF2_VN_COL_PTR_LENGTH,
+          GPS_L1C_LDPC_SF2_PERMUTATION_STR, GPS_L1C_LDPC_SF2_PERMUTATION_LENGTH,
+          GPS_L1C_LDPC_SF2_IS_16_BIT_HEXSTR),
+      d_sf3_decoder(
+          GPS_L1C_LDPC_SF3_CN_NEIGHBORS_STR, GPS_L1C_LDPC_SF3_CN_NEIGHBORS_LENGTH,
+          GPS_L1C_LDPC_SF3_CN_ROW_PTR_STR, GPS_L1C_LDPC_SF3_CN_ROW_PTR_LENGTH,
+          GPS_L1C_LDPC_SF3_VN_COL_PTR_STR, GPS_L1C_LDPC_SF3_VN_COL_PTR_LENGTH,
+          GPS_L1C_LDPC_SF3_PERMUTATION_STR, GPS_L1C_LDPC_SF3_PERMUTATION_LENGTH,
+          GPS_L1C_LDPC_SF3_IS_16_BIT_HEXSTR)
 {
     configure_basic_outputs();
 
@@ -73,11 +82,6 @@ int gps_l1c_telemetry_decoder_gs::general_work(int noutput_items, gr_vector_int 
 
     // MSB is the first bit to arrive, thus d_symbol_history is ordered from MSB to LSB
     d_symbol_history.push_back(current_symbol.Prompt_I);
-
-    printf("GUAMEDO\n");
-    printf("sample idx: %u\n", d_samples_consumed);
-
-    d_samples_consumed++;
 
     switch (d_stat)
         {
@@ -148,9 +152,7 @@ int16_t gps_l1c_telemetry_decoder_gs::test_toi_hypotheses(const Gnss_Synchro &sy
     for (int16_t i = 0; i < GPS_L1C_TOI_LSB_VALUES; i++)
         {
             const auto &[toi_deduced, hypothesis_val] = compute_toi_hypothesis(
-                d_symbol_history.size() - GPS_L1C_FRAME_BITS, i, normalization);
-            // const auto &[toi_deduced, hypothesis_val] = compute_toi_hypothesis(
-            //     0, i, normalization);
+                0, i, normalization);
 
             const float abs = std::abs(hypothesis_val);
 
@@ -184,8 +186,7 @@ void gps_l1c_telemetry_decoder_gs::state_find_align(const Gnss_Synchro &synchro)
     int16_t toi = test_toi_hypotheses(synchro);
     if (toi >= 0)
         {
-            // Try to decode the subframe, if we succeed we are aligned
-            // TODO
+            std::optional<GpsL1cFrame> frame = try_parse_frame(0, toi);
         }
 }
 
@@ -198,13 +199,67 @@ std::optional<GpsL1cFrame> gps_l1c_telemetry_decoder_gs::try_parse_frame(size_t 
 {
     assert(start_index + GPS_L1C_FRAME_BITS - 1 < d_symbol_history.size());
 
+    // TODO: Make configurable
+    constexpr int MAX_LDPC_ITERATIONS = 200;
+    constexpr float ATTENUATION = 0.5F;
+
+    std::array<float, GPS_L1C_SF_2_AND_3_ENCODED_BITS> deinterleaved = deinterlave_frame(start_index);
+
     GpsL1cFrame out;
     out.toi = toi;
 
-    constexpr int MAX_LDPC_ITERATIONS = 100;
-    for (size_t i = 0; i < MAX_LDPC_ITERATIONS; i++)
+    // SF2
+    std::vector<float> &sf2_inputs = d_sf2_decoder.get_inputs();
+    for (size_t i = 0; i < GPS_L1C_SF_2_ENCODED_BITS; i++)
         {
+            sf2_inputs[i] = deinterleaved[i];
         }
 
+    d_sf2_decoder.prepare_iteration();
+    std::optional<std::vector<int>> sf2_decoded = d_sf2_decoder.run_decoder(MAX_LDPC_ITERATIONS, ATTENUATION);
+
+    // TODO: Parse to bitset, and set in sf2
+    if (sf2_decoded.has_value())
+        {
+            printf("DECODED SF2\n");
+        }
+
+    // SF3
+    std::vector<float> &sf3_inputs = d_sf3_decoder.get_inputs();
+    for (size_t i = 0; i < GPS_L1C_SF_3_ENCODED_BITS; i++)
+        {
+            sf3_inputs[i] = deinterleaved[i + GPS_L1C_SF_2_ENCODED_BITS];
+        }
+
+    d_sf3_decoder.prepare_iteration();
+    std::optional<std::vector<int>> sf3_decoded = d_sf3_decoder.run_decoder(MAX_LDPC_ITERATIONS, ATTENUATION);
+
+    if (sf3_decoded.has_value())
+        {
+            printf("DECODED SF3\n");
+        }
+
+    // TODO: Parse to bitset, and set in sf3
+
     return std::nullopt;
+}
+
+std::array<float, GPS_L1C_SF_2_AND_3_ENCODED_BITS> gps_l1c_telemetry_decoder_gs::deinterlave_frame(size_t start_index)
+{
+    assert(start_index + GPS_L1C_FRAME_BITS - 1 < d_symbol_history.size());
+
+    std::array<float, GPS_L1C_SF_2_AND_3_ENCODED_BITS> out{};
+
+    for (size_t rel = 0; rel < GPS_L1C_SF_2_AND_3_ENCODED_BITS; rel++)
+        {
+            const size_t abs = rel + GPS_L1C_TOI_BCH_BITS;
+            const float bit = d_symbol_history[start_index + abs];
+
+            size_t row = rel % GPS_L1C_INTERLEAVE_ROWS;
+            size_t col = rel / GPS_L1C_INTERLEAVE_ROWS;
+
+            out[row * GPS_L1C_INTERLEAVE_COLS + col] = bit;
+        }
+
+    return out;
 }

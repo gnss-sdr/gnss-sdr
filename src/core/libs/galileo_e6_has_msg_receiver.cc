@@ -54,7 +54,6 @@ namespace wht = std;
 
 constexpr int16_t HAS_CODE_BIAS_UNAVAILABLE_RAW = -1024;
 constexpr int16_t HAS_PHASE_BIAS_UNAVAILABLE_RAW = -1024;
-constexpr uint32_t GALILEO_HAS_SECONDS_PER_WEEK = 604800U;
 
 galileo_e6_has_msg_receiver_sptr galileo_e6_has_msg_receiver_make()
 {
@@ -67,7 +66,8 @@ galileo_e6_has_msg_receiver::galileo_e6_has_msg_receiver()
           gr::io_signature::make(0, 0, 0),
           gr::io_signature::make(0, 0, 0)),
       d_last_valid_tow_timestamp(std::numeric_limits<uint64_t>::max()),
-      d_last_valid_tow(std::numeric_limits<uint32_t>::max())
+      d_last_valid_week(GALILEO_HAS_INVALID_WEEK),
+      d_last_valid_tow(GALILEO_HAS_INVALID_TOW)
 {
     // register Gal E6 HAS input message port from telemetry blocks
     this->message_port_register_in(pmt::mp("E6_HAS_from_TLM"));
@@ -126,7 +126,8 @@ void galileo_e6_has_msg_receiver::set_enable_navdata_monitor(bool enable)
 std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::process_test_page(const pmt::pmt_t& msg)
 {
     uint64_t timestamp = std::numeric_limits<uint64_t>::max();
-    uint32_t tow = std::numeric_limits<uint32_t>::max();
+    uint32_t week = GALILEO_HAS_INVALID_WEEK;
+    uint32_t tow = GALILEO_HAS_INVALID_TOW;
     try
         {
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
@@ -144,6 +145,7 @@ std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::process_test_page
                     timestamp = HAS_data_page->time_stamp;
                     update_TOW_cache(*HAS_data_page);
                     tow = get_TOW_for_page(*HAS_data_page);
+                    week = get_week_for_page(*HAS_data_page, tow);
                     process_HAS_page(*HAS_data_page.get());
                 }
             else
@@ -159,14 +161,7 @@ std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::process_test_page
     //  Return the resulting decoded HAS data (if available)
     if (d_new_message == true)
         {
-            d_HAS_data.has_status = d_current_has_status;
-            d_HAS_data.message_id = d_current_message_id;
-            d_HAS_data.tow = tow;
-            auto has_data_ptr = std::make_shared<Galileo_HAS_data>(d_HAS_data);
-            d_new_message = false;
-            d_printed_mids[d_current_message_id] = true;
-            d_printed_timestamps[d_current_message_id] = timestamp;
-            return has_data_ptr;
+            return get_ready_HAS_data(week, tow, timestamp);
         }
     return nullptr;
 }
@@ -176,7 +171,8 @@ void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& m
 {
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_galileo_e6_has function called by the scheduler
     uint64_t timestamp = std::numeric_limits<uint64_t>::max();
-    uint32_t tow = std::numeric_limits<uint32_t>::max();
+    uint32_t week = GALILEO_HAS_INVALID_WEEK;
+    uint32_t tow = GALILEO_HAS_INVALID_TOW;
     try
         {
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
@@ -194,6 +190,7 @@ void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& m
                     timestamp = HAS_data_page->time_stamp;
                     update_TOW_cache(*HAS_data_page);
                     tow = get_TOW_for_page(*HAS_data_page);
+                    week = get_week_for_page(*HAS_data_page, tow);
                     process_HAS_page(*HAS_data_page.get());
                 }
             else
@@ -209,15 +206,12 @@ void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& m
     //  Send the resulting decoded HAS data (if available) to PVT
     if (d_new_message == true)
         {
-            d_HAS_data.has_status = d_current_has_status;
-            d_HAS_data.message_id = d_current_message_id;
-            d_HAS_data.tow = tow;
-            d_printed_mids[d_current_message_id] = true;
-            d_printed_timestamps[d_current_message_id] = timestamp;
-            auto has_data_ptr = std::make_shared<Galileo_HAS_data>(d_HAS_data);
-            this->message_port_pub(pmt::mp("E6_HAS_to_PVT"), pmt::make_any(has_data_ptr));
-            d_new_message = false;
-            DLOG(INFO) << "HAS message sent to the PVT block through the E6_HAS_to_PVT async message port";
+            const auto has_data_ptr = get_ready_HAS_data(week, tow, timestamp);
+            if (has_data_ptr != nullptr)
+                {
+                    this->message_port_pub(pmt::mp("E6_HAS_to_PVT"), pmt::make_any(has_data_ptr));
+                    DLOG(INFO) << "HAS message sent to the PVT block through the E6_HAS_to_PVT async message port";
+                }
         }
 }
 
@@ -227,10 +221,12 @@ void galileo_e6_has_msg_receiver::process_HAS_page(const Galileo_HAS_page& has_p
     d_new_message = false;
     if (has_page.has_status == 3)  // Do not use HAS
         {
+            const uint32_t tow = get_TOW_for_page(has_page);
             clear_HAS_state();
             d_HAS_data.has_status = has_page.has_status;
             d_HAS_data.message_id = has_page.message_id;
-            d_HAS_data.tow = get_TOW_for_page(has_page);
+            d_HAS_data.week = get_week_for_page(has_page, tow);
+            d_HAS_data.tow = tow;
             d_new_message = true;
             return;
         }
@@ -389,7 +385,63 @@ void galileo_e6_has_msg_receiver::update_TOW_cache(const Galileo_HAS_page& has_p
         {
             d_last_valid_tow = has_page.tow;
             d_last_valid_tow_timestamp = has_page.time_stamp;
+            d_last_valid_week = has_page.week;
         }
+}
+
+
+std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::get_ready_HAS_data(uint32_t week, uint32_t tow, uint64_t time_stamp)
+{
+    if (d_current_has_status != 3 && (week == GALILEO_HAS_INVALID_WEEK || tow >= GALILEO_HAS_SECONDS_PER_WEEK))
+        {
+            LOG(INFO) << "Publishing decoded Galileo HAS message ID "
+                      << static_cast<int>(d_current_message_id)
+                      << " without GST for reporting only";
+        }
+
+    d_HAS_data.has_status = d_current_has_status;
+    d_HAS_data.message_id = d_current_message_id;
+    d_HAS_data.week = week;
+    d_HAS_data.tow = tow;
+    d_printed_mids[d_current_message_id] = true;
+    d_printed_timestamps[d_current_message_id] = time_stamp;
+    auto has_data_ptr = std::make_shared<Galileo_HAS_data>(d_HAS_data);
+    d_new_message = false;
+    return has_data_ptr;
+}
+
+
+uint32_t galileo_e6_has_msg_receiver::get_week_for_page(const Galileo_HAS_page& has_page, uint32_t tow) const
+{
+    if (has_page.week != GALILEO_HAS_INVALID_WEEK && has_page.tow < GALILEO_HAS_SECONDS_PER_WEEK)
+        {
+            return has_page.week;
+        }
+
+    if ((tow >= GALILEO_HAS_SECONDS_PER_WEEK) ||
+        (d_last_valid_week == GALILEO_HAS_INVALID_WEEK) ||
+        (has_page.time_stamp == std::numeric_limits<uint64_t>::max()) ||
+        (d_last_valid_tow_timestamp == std::numeric_limits<uint64_t>::max()))
+        {
+            return GALILEO_HAS_INVALID_WEEK;
+        }
+
+    const bool current_after_reference = has_page.time_stamp >= d_last_valid_tow_timestamp;
+    const uint64_t elapsed_s = current_after_reference ? has_page.time_stamp - d_last_valid_tow_timestamp : d_last_valid_tow_timestamp - has_page.time_stamp;
+    if (elapsed_s > MAX_SECONDS_REMEMBERING_MID)
+        {
+            return GALILEO_HAS_INVALID_WEEK;
+        }
+
+    const int64_t signed_elapsed_s = current_after_reference ? static_cast<int64_t>(elapsed_s) : -static_cast<int64_t>(elapsed_s);
+    const int64_t reference_abs_s =
+        static_cast<int64_t>(d_last_valid_week) * static_cast<int64_t>(GALILEO_HAS_SECONDS_PER_WEEK) + static_cast<int64_t>(d_last_valid_tow);
+    const int64_t page_abs_s = reference_abs_s + signed_elapsed_s;
+    if (page_abs_s < 0)
+        {
+            return GALILEO_HAS_INVALID_WEEK;
+        }
+    return static_cast<uint32_t>(page_abs_s / static_cast<int64_t>(GALILEO_HAS_SECONDS_PER_WEEK));
 }
 
 
@@ -404,14 +456,14 @@ uint32_t galileo_e6_has_msg_receiver::get_TOW_for_page(const Galileo_HAS_page& h
         (has_page.time_stamp == std::numeric_limits<uint64_t>::max()) ||
         (d_last_valid_tow_timestamp == std::numeric_limits<uint64_t>::max()))
         {
-            return std::numeric_limits<uint32_t>::max();
+            return GALILEO_HAS_INVALID_TOW;
         }
 
     const bool current_after_reference = has_page.time_stamp >= d_last_valid_tow_timestamp;
     const uint64_t elapsed_s = current_after_reference ? has_page.time_stamp - d_last_valid_tow_timestamp : d_last_valid_tow_timestamp - has_page.time_stamp;
     if (elapsed_s > MAX_SECONDS_REMEMBERING_MID)
         {
-            return std::numeric_limits<uint32_t>::max();
+            return GALILEO_HAS_INVALID_TOW;
         }
 
     const auto elapsed_week_s = static_cast<uint32_t>(elapsed_s % GALILEO_HAS_SECONDS_PER_WEEK);
@@ -596,7 +648,6 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
 
     // Trigger HAS message content reading and fill the d_HAS_data object
     d_HAS_data = Galileo_HAS_data();
-    d_HAS_data.tow = std::numeric_limits<uint32_t>::max();  // Unknown
 
     read_MT1_header(decoded_message_type_1.substr(0, GALILEO_CNAV_MT1_HEADER_BITS));
 
@@ -761,6 +812,13 @@ bool galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body,
                             d_HAS_data.satellite_mask[i] = read_has_message_body_uint64(msg);
                             d_satellite_mask[d_HAS_data.header.mask_id][i] = d_HAS_data.satellite_mask[i];
                             int ones_in_satellite_mask = std::count(msg.begin(), msg.end(), '1');
+                            if (ones_in_satellite_mask == 0)
+                                {
+                                    // an empty per-system cell mask would be indexed out of bounds in the bias blocks
+                                    LOG(WARNING) << "HAS MT1 Mask block contains an empty Satellite Mask for GNSS ID " << std::to_string(d_HAS_data.gnss_id_mask[i]);
+                                    clear_mask_data(d_HAS_data.header.mask_id);
+                                    return false;
+                                }
                             Nsat += ones_in_satellite_mask;
 
                             if (!read_bits(HAS_MSG_SIGNAL_MASK_LENGTH, "Signal Mask", msg))

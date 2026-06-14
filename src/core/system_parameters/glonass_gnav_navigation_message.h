@@ -25,6 +25,7 @@
 #include "glonass_gnav_almanac.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
+#include <boost/date_time/posix_time/ptime.hpp>
 #include <bitset>
 #include <cstdint>
 #include <string>
@@ -148,6 +149,11 @@ public:
         return flag_TOW_set;
     }
 
+    inline void set_flag_TOW_set(bool tow_set)
+    {
+        flag_TOW_set = tow_set;
+    }
+
     inline void set_flag_ephemeris_str_1(bool ephemeris_str_1)
     {
         flag_ephemeris_str_1 = ephemeris_str_1;
@@ -172,6 +178,12 @@ private:
     uint64_t read_navigation_unsigned(const std::bitset<GLONASS_GNAV_STRING_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
     int64_t read_navigation_signed(const std::bitset<GLONASS_GNAV_STRING_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
     bool read_navigation_bool(const std::bitset<GLONASS_GNAV_STRING_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    void update_almanac_satellite_info();
+    void update_kp_leap_second_state();
+    void check_kp_leap_event();
+    void apply_kp_leap_second(int32_t leap_s);
+
+    boost::posix_time::ptime d_kp_leap_event_utc;  // UTC epoch of the leap second event announced by KP, while armed
 
     Glonass_Gnav_Ephemeris gnav_ephemeris{};                   // Ephemeris information decoded
     Glonass_Gnav_Utc_Model gnav_utc_model{};                   // UTC model information
@@ -183,6 +195,8 @@ private:
     uint32_t d_frame_ID{};
     uint32_t d_string_ID{};
     uint32_t i_alm_satellite_slot_number{};  // SV Orbit Slot Number
+
+    int32_t d_kp_announced_leap_s{};  // UTC correction announced by KP (+1 or -1 s), 0 if not armed
 
     bool flag_CRC_test{};
     bool flag_update_slot_number{};

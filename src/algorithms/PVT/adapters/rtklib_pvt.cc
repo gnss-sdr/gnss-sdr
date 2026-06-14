@@ -624,6 +624,10 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     // Use unhealthy satellites
     pvt_output_parameters.use_unhealthy_sats = configuration->property(role + ".use_unhealthy_sats", pvt_output_parameters.use_unhealthy_sats);
 
+    // Apply the GLONASS Bn-word MSB health bit in addition to the ln flag when
+    // deciding whether to exclude a GLONASS satellite from the PVT.
+    pvt_output_parameters.glonass_strict_health = configuration->property(role + ".glonass_strict_health", pvt_output_parameters.glonass_strict_health);
+
     // OSNMA
     if (signal_enabled_flags.check_any_enabled(GAL_1B) > 0)
         {

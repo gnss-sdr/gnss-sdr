@@ -16,7 +16,6 @@
  */
 
 #include "hybrid_observables_gs.h"
-#include "GLONASS_L1_L2_CA.h"
 #include "MATH_CONSTANTS.h"  // for SPEED_OF_LIGHT_M_S, TWO_PI
 #include "gnss_circular_deque.h"
 #include "gnss_frequencies.h"
@@ -515,23 +514,42 @@ void hybrid_observables_gs::forecast(int noutput_items __attribute__((unused)), 
 
 void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
 {
-    // 1. Set the TOW using the minimum TOW in the observables.
+    // 1. Set the TOW using the latest TOW in the observables.
     //    this will be the receiver time.
     // 2. If the TOW is set, it must be incremented by the desired receiver time step.
     //    the time step must match the observables timer block (connected to the las input channel)
+    const uint32_t week_ms = 604800000U;
+    const uint32_t half_week_ms = week_ms / 2U;
     std::vector<Gnss_Synchro>::const_iterator it;
     if (!d_T_rx_TOW_set)
         {
-            // int32_t TOW_ref = std::numeric_limits<uint32_t>::max();
             uint32_t TOW_ref = 0U;
             for (it = data.cbegin(); it != data.cend(); it++)
                 {
                     if (it->Flag_valid_word)
                         {
-                            if (it->TOW_at_current_symbol_ms > TOW_ref)
+                            const uint32_t tow_ms = it->TOW_at_current_symbol_ms % week_ms;
+                            if (!d_T_rx_TOW_set)
                                 {
-                                    TOW_ref = it->TOW_at_current_symbol_ms;
+                                    TOW_ref = tow_ms;
                                     d_T_rx_TOW_set = true;
+                                }
+                            else
+                                {
+                                    uint64_t tow_ref_unwrapped = TOW_ref;
+                                    uint64_t tow_unwrapped = tow_ms;
+                                    if ((TOW_ref > half_week_ms) && (tow_ms < half_week_ms))
+                                        {
+                                            tow_unwrapped += week_ms;
+                                        }
+                                    else if ((tow_ms > half_week_ms) && (TOW_ref < half_week_ms))
+                                        {
+                                            tow_ref_unwrapped += week_ms;
+                                        }
+                                    if (tow_unwrapped > tow_ref_unwrapped)
+                                        {
+                                            TOW_ref = static_cast<uint32_t>(tow_unwrapped % week_ms);
+                                        }
                                 }
                         }
                 }
@@ -541,14 +559,19 @@ void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
                 {
                     d_T_rx_TOW_ms += d_T_rx_step_ms - d_T_rx_TOW_ms % d_T_rx_step_ms;
                 }
+            if (d_T_rx_TOW_ms >= week_ms)
+                {
+                    DLOG(INFO) << "TOW RX TIME rollover!";
+                    d_T_rx_TOW_ms = d_T_rx_TOW_ms % week_ms;
+                }
         }
     else
         {
             d_T_rx_TOW_ms += d_T_rx_step_ms;  // the tow time step increment must match the ref time channel step
-            if (d_T_rx_TOW_ms >= 604800000)
+            if (d_T_rx_TOW_ms >= week_ms)
                 {
                     DLOG(INFO) << "TOW RX TIME rollover!";
-                    d_T_rx_TOW_ms = d_T_rx_TOW_ms % 604800000;
+                    d_T_rx_TOW_ms = d_T_rx_TOW_ms % week_ms;
                 }
         }
 }
@@ -660,25 +683,7 @@ void hybrid_observables_gs::detect_cycle_slips(std::vector<Gnss_Synchro> &data, 
             const double previous_phase_cycles = prev_obs.Carrier_phase_rads / TWO_PI;
             const double delta_phase_cycles = current_phase_cycles - previous_phase_cycles;
 
-            double doppler_hz = obs.Carrier_Doppler_hz;
-            if (obs.System == 'R')
-                {
-                    const std::string signal(obs.Signal, 2);
-                    const auto it_prn = GLONASS_PRN.find(obs.PRN);
-                    if (it_prn != GLONASS_PRN.cend())
-                        {
-                            if (signal == "1G")
-                                {
-                                    doppler_hz += DFRQ1_GLO * it_prn->second;
-                                }
-                            else if (signal == "2G")
-                                {
-                                    doppler_hz += DFRQ2_GLO * it_prn->second;
-                                }
-                        }
-                }
-
-            const double residual = delta_phase_cycles + doppler_hz * d_T_rx_step_s;
+            const double residual = delta_phase_cycles + obs.Carrier_Doppler_hz * d_T_rx_step_s;
             residuals.push_back(residual);
             channels.push_back(n);
         }

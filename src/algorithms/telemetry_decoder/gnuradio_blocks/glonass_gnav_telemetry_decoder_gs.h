@@ -1,21 +1,24 @@
 /*!
- * \file glonass_l2_ca_telemetry_decoder_gs.h
- * \brief Implementation of a GLONASS L2 C/A NAV data decoder block
- * \author Damian Miralles, 2018. dmiralles2009(at)gmail.com
+ * \file glonass_gnav_telemetry_decoder_gs.h
+ * \brief Implementation of a GLONASS GNAV data decoder block for the L1 and
+ * L2 C/A signals
+ * \note Code added as part of GSoC 2017 program
+ * \author Damian Miralles, 2017-2018. dmiralles2009(at)gmail.com
+ * \author Carles Fernandez, 2026. cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_GS_H
-#define GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_GS_H
+#ifndef GNSS_SDR_GLONASS_GNAV_TELEMETRY_DECODER_GS_H
+#define GNSS_SDR_GLONASS_GNAV_TELEMETRY_DECODER_GS_H
 
 
 #include "GLONASS_L1_L2_CA.h"
@@ -24,31 +27,34 @@
 #include "nav_message_packet.h"
 #include "telemetry_impl_interface.h"
 #include <boost/circular_buffer.hpp>
+#include <cstdint>
 
 /** \addtogroup Telemetry_Decoder
  * \{ */
 /** \addtogroup Telemetry_Decoder_gnuradio_blocks
  * \{ */
 
+class glonass_gnav_telemetry_decoder_gs;
 
-class glonass_l2_ca_telemetry_decoder_gs;
+using glonass_gnav_telemetry_decoder_gs_sptr = gnss_shared_ptr<glonass_gnav_telemetry_decoder_gs>;
 
-using glonass_l2_ca_telemetry_decoder_gs_sptr = gnss_shared_ptr<glonass_l2_ca_telemetry_decoder_gs>;
-
-glonass_l2_ca_telemetry_decoder_gs_sptr glonass_l2_ca_make_telemetry_decoder_gs(const Tlm_Conf &conf);
+glonass_gnav_telemetry_decoder_gs_sptr glonass_gnav_make_telemetry_decoder_gs(const Tlm_Conf &conf, int32_t frequency_band);
 
 /*!
- * \brief This class implements a block that decodes the GNAV data defined in GLONASS ICD v5.1
+ * \brief This class implements a block that decodes the GNAV data defined in
+ * GLONASS ICD v5.1, broadcast by both the L1 and L2 C/A signals
+ * (frequency_band = 1 or 2, respectively).
+ * \note Code added as part of GSoC 2017 program
  * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  *
  */
-class glonass_l2_ca_telemetry_decoder_gs : public telemetry_impl_interface
+class glonass_gnav_telemetry_decoder_gs : public telemetry_impl_interface
 {
 public:
-    ~glonass_l2_ca_telemetry_decoder_gs() override;                //!< Class destructor
+    ~glonass_gnav_telemetry_decoder_gs() override;                 //!< Class destructor
     void set_satellite(const Gnss_Satellite &satellite) override;  //!< Set satellite PRN
     void set_channel(int32_t channel) override;                    //!< Set receiver's channel
-    inline void reset() override {};
+    void reset() override;                                         //!< Clear synchronization state on channel re-acquisition
 
     /*!
      * \brief This is where all signal processing takes place
@@ -57,11 +63,12 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 
 private:
-    friend glonass_l2_ca_telemetry_decoder_gs_sptr glonass_l2_ca_make_telemetry_decoder_gs(const Tlm_Conf &conf);
+    friend glonass_gnav_telemetry_decoder_gs_sptr glonass_gnav_make_telemetry_decoder_gs(const Tlm_Conf &conf, int32_t frequency_band);
 
-    explicit glonass_l2_ca_telemetry_decoder_gs(const Tlm_Conf &conf);
+    glonass_gnav_telemetry_decoder_gs(const Tlm_Conf &conf, int32_t frequency_band);
 
     const std::array<int16_t, GLONASS_GNAV_PREAMBLE_LENGTH_BITS> d_preambles_bits{GLONASS_GNAV_PREAMBLE_SAMPLES};
+
     void decode_string(const double *symbols, double cn0);
 
     // Storage for incoming data
@@ -69,6 +76,7 @@ private:
 
     // Navigation Message variable
     Glonass_Gnav_Navigation_Message d_nav;
+
     Gnss_Satellite d_satellite;
 
     Nav_Message_Packet d_nav_msg_packet;
@@ -77,15 +85,18 @@ private:
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 
-    double d_preamble_time_samples;
     double d_TOW_at_current_symbol;
+    const double d_symbol_period_s;
 
+    // Variables for internal functionality
     uint64_t d_sample_counter;  // Sample counter as an index (1,2,3,..etc) indicating number of samples processed
     uint64_t d_preamble_index;  // Index of sample number where preamble was found
-    uint32_t d_stat;            // Status of decoder
 
+    uint32_t d_stat;              // Status of decoder
     int32_t d_CRC_error_counter;  // Number of failed CRC operations
     int32_t d_channel;
+
+    const char d_band;  // Frequency band the block is configured for ('1' or '2')
 
     bool d_flag_frame_sync;  // Indicate when a frame sync is achieved
     bool d_flag_preamble;    // Flag indicating when preamble was found
@@ -100,4 +111,4 @@ private:
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_GS_H
+#endif  // GNSS_SDR_GLONASS_GNAV_TELEMETRY_DECODER_GS_H

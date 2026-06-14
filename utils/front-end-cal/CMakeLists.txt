@@ -143,7 +143,7 @@ find_program(GZIP gzip
     ${GNSSSDR_BIN_PATHS}
 )
 
-if(NOT GZIP_NOTFOUND)
+if(GZIP)
     execute_process(COMMAND gzip -9 -c ${GNSSSDR_SOURCE_DIR}/docs/manpage/front-end-cal-manpage
         WORKING_DIRECTORY ${GNSSSDR_BINARY_DIR} OUTPUT_FILE "${GNSSSDR_BINARY_DIR}/front-end-cal.1.gz"
     )

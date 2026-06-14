@@ -22,6 +22,7 @@
 #include "nav_message_packet.h"
 #include "telemetry_impl_interface.h"
 #include <boost/circular_buffer.hpp>
+#include <cstdint>
 
 extern "C"
 {

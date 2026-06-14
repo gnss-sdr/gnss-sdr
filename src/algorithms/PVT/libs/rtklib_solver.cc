@@ -32,6 +32,7 @@
 
 #include "rtklib_solver.h"
 #include "Beidou_DNAV.h"
+#include "Galileo_CNAV.h"
 #include "gnss_sdr_filesystem.h"
 #include "matlab_writter_helper.h"
 #include "rtklib_rtkpos.h"
@@ -399,6 +400,12 @@ void Rtklib_Solver::clear_has_corrections()
 
 void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
 {
+    if (new_has_data.week == GALILEO_HAS_INVALID_WEEK || new_has_data.tow >= GALILEO_HAS_SECONDS_PER_WEEK)
+        {
+            LOG(INFO) << "Ignoring Galileo HAS corrections without valid GST";
+            return;
+        }
+
     //  Compute time of application HAS SIS ICD, Issue 1.0, Section 7.7
     const uint32_t tmt = new_has_data.get_time_of_message_s();
 
@@ -1474,7 +1481,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 if (glonass_gnav_ephemeris_iter != glonass_gnav_ephemeris_map.cend())
                                     {
                                         // convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                        geph_data[glo_valid_obs] = eph_to_rtklib(glonass_gnav_ephemeris_iter->second, gnav_utc);
+                                        geph_data[glo_valid_obs] = eph_to_rtklib(glonass_gnav_ephemeris_iter->second, gnav_utc, d_conf.glonass_strict_health);
                                         // convert observation from GNSS-SDR class to RTKLIB structure
                                         obsd_t newobs{};
                                         d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
@@ -1512,7 +1519,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             {
                                                 // insert GLONASS GNAV L2 obs as new obs and also insert its ephemeris
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                                geph_data[glo_valid_obs] = eph_to_rtklib(glonass_gnav_ephemeris_iter->second, gnav_utc);
+                                                geph_data[glo_valid_obs] = eph_to_rtklib(glonass_gnav_ephemeris_iter->second, gnav_utc, d_conf.glonass_strict_health);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
                                                 obsd_t newobs{};
                                                 d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,

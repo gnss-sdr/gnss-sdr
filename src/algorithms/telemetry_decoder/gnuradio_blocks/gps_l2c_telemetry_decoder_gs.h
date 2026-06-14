@@ -21,6 +21,7 @@
 #include "gps_cnav_navigation_message.h"
 #include "nav_message_packet.h"
 #include "telemetry_impl_interface.h"
+#include <cstdint>
 
 extern "C"
 {

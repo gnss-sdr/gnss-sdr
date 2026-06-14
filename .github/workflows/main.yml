@@ -224,14 +224,14 @@ jobs:
           pip install mako
       - name: configure
         shell: powershell
-        run: cmake -S src\algorithms\libs\volk_gnsssdr_module\volk_gnsssdr -B build -G "Visual Studio 17 2022"
+        run: cmake -S src\algorithms\libs\volk_gnsssdr_module\volk_gnsssdr -B build -G "Visual Studio 18 2026"
       - name: build
         run: cmake --build build --config Release
       - name: test
         shell: powershell
         run: ctest -C Release --test-dir build
       - name: install
-        run: cmake --install build
+        run: cmake --install build --config Release
       - name: run profile
         run: cd 'C:\Program Files (x86)\volk_gnsssdr\bin'; .\volk_gnsssdr_profile.exe
 

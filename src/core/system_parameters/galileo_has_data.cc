@@ -29,9 +29,6 @@ namespace
 {
 constexpr float HAS_DEFAULT_TOLERANCE = 0.001F;
 constexpr float HAS_CODE_BIAS_TOLERANCE = 0.01F;
-constexpr uint32_t HAS_SECONDS_PER_HOUR = 3600U;
-constexpr uint32_t HAS_SECONDS_PER_WEEK = 604800U;
-constexpr uint32_t HAS_HALF_WEEK_SECONDS = HAS_SECONDS_PER_WEEK / 2U;
 
 bool is_near(float value, float sentinel, float tolerance = HAS_DEFAULT_TOLERANCE)
 {
@@ -995,9 +992,9 @@ uint16_t Galileo_HAS_data::get_validity_interval_s(uint8_t validity_interval_ind
 
 uint32_t Galileo_HAS_data::get_time_of_message_s() const
 {
-    const uint32_t hour = this->tow / HAS_SECONDS_PER_HOUR;
+    const uint32_t hour = this->tow / GALILEO_HAS_SECONDS_PER_HOUR;
     const auto seconds_of_hour = static_cast<uint32_t>(this->header.toh);
-    const uint32_t candidate_tmt = hour * HAS_SECONDS_PER_HOUR + seconds_of_hour;
+    const uint32_t candidate_tmt = hour * GALILEO_HAS_SECONDS_PER_HOUR + seconds_of_hour;
 
     if (candidate_tmt <= this->tow)
         {
@@ -1005,20 +1002,20 @@ uint32_t Galileo_HAS_data::get_time_of_message_s() const
         }
     if (hour == 0U)
         {
-            return HAS_SECONDS_PER_WEEK - HAS_SECONDS_PER_HOUR + seconds_of_hour;
+            return GALILEO_HAS_SECONDS_PER_WEEK - GALILEO_HAS_SECONDS_PER_HOUR + seconds_of_hour;
         }
-    return (hour - 1U) * HAS_SECONDS_PER_HOUR + seconds_of_hour;
+    return (hour - 1U) * GALILEO_HAS_SECONDS_PER_HOUR + seconds_of_hour;
 }
 
 
 bool Galileo_HAS_data::has_validity_interval_at_tow(uint32_t valid_until, uint32_t tow)
 {
-    if (valid_until > HAS_SECONDS_PER_WEEK)
+    if (valid_until > GALILEO_HAS_SECONDS_PER_WEEK)
         {
-            const uint32_t wrapped_valid_until = valid_until - HAS_SECONDS_PER_WEEK;
-            return (tow < wrapped_valid_until) || (tow > HAS_HALF_WEEK_SECONDS);
+            const uint32_t wrapped_valid_until = valid_until - GALILEO_HAS_SECONDS_PER_WEEK;
+            return (tow < wrapped_valid_until) || (tow > GALILEO_HAS_HALF_WEEK_SECONDS);
         }
-    if ((valid_until > HAS_HALF_WEEK_SECONDS) && (tow < HAS_HALF_WEEK_SECONDS))
+    if ((valid_until > GALILEO_HAS_HALF_WEEK_SECONDS) && (tow < GALILEO_HAS_HALF_WEEK_SECONDS))
         {
             return false;
         }

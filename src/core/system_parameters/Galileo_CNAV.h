@@ -22,6 +22,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -56,6 +57,11 @@ constexpr size_t HAS_MSG_PHASE_DISCONTINUITY_INDICATOR_LENGTH = 2;   // HAS SIS 
 
 constexpr uint64_t MAX_SECONDS_REMEMBERING_MID = 150;        // HAS SIS ICD 1.0 Section 6.4.1 HAS Message Completion Time-out
 constexpr uint64_t MAX_SECONDS_REMEMBERING_MASK_IOD = 1800;  // HAS SIS ICD 1.0 Section 7.6.1
+constexpr uint32_t GALILEO_HAS_SECONDS_PER_HOUR = 3600U;
+constexpr uint32_t GALILEO_HAS_SECONDS_PER_WEEK = 604800U;
+constexpr uint32_t GALILEO_HAS_HALF_WEEK_SECONDS = GALILEO_HAS_SECONDS_PER_WEEK / 2U;
+constexpr uint32_t GALILEO_HAS_INVALID_WEEK = std::numeric_limits<uint32_t>::max();
+constexpr uint32_t GALILEO_HAS_INVALID_TOW = std::numeric_limits<uint32_t>::max();
 
 // Galileo CNAV message structure
 constexpr int32_t GALILEO_CNAV_SYMBOLS_PER_PAGE = 1000;  // Total number of symbols per HAS page including the sync pattern

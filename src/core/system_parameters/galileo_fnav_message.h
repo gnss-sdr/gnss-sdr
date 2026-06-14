@@ -67,14 +67,29 @@ public:
         return FNAV_TOW_1;
     }
 
+    inline int32_t get_WN1() const
+    {
+        return FNAV_WN_1;
+    }
+
     inline int32_t get_TOW2() const
     {
         return FNAV_TOW_2;
     }
 
+    inline int32_t get_WN2() const
+    {
+        return FNAV_WN_2;
+    }
+
     inline int32_t get_TOW3() const
     {
         return FNAV_TOW_3;
+    }
+
+    inline int32_t get_WN3() const
+    {
+        return FNAV_WN_3;
     }
 
     inline int32_t get_TOW4() const

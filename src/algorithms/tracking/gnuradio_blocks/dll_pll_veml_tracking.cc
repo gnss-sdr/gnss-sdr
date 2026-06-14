@@ -102,6 +102,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
       d_acq_carrier_doppler_hz(0.0),
       d_current_correlation_time_s(0.0),
       d_cfo_frequency_hz(0.0),
+      d_cfo_phase_step_rad(0.0),
       d_carrier_doppler_hz(0.0),
       d_acc_carrier_phase_rad(0.0),
       d_rem_code_phase_chips(0.0),
@@ -993,6 +994,7 @@ void dll_pll_veml_tracking::start_tracking()
                     d_cfo_frequency_hz = (DFRQ2_GLO * GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
                 }
             d_carrier_phase_step_rad = TWO_PI * (d_cfo_frequency_hz + d_carrier_doppler_hz) / static_cast<double>(d_trk_parameters.fs_in);
+            d_cfo_phase_step_rad = TWO_PI * d_cfo_frequency_hz / static_cast<double>(d_trk_parameters.fs_in);
             d_symbols_per_bit = GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT;
             d_correlation_length_ms = 1;
             d_code_samples_per_chip = 1;
@@ -1450,7 +1452,7 @@ void dll_pll_veml_tracking::update_tracking_vars()
     // double a = d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples);
     // double b = 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples);
     // std::cout << fmod(b, TWO_PI) / fmod(a, TWO_PI) << '\n';
-    d_acc_carrier_phase_rad -= (d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) + 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
+    d_acc_carrier_phase_rad -= ((d_carrier_phase_step_rad - d_cfo_phase_step_rad) * static_cast<double>(d_current_prn_length_samples) + 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
 
     // ################### DLL COMMANDS #################################################
     // code phase step (Code resampler phase increment per sample) [chips/sample]
@@ -1964,7 +1966,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 d_current_prn_length_samples = round(T_prn_mod_samples);
 
                 const int32_t samples_offset = round(d_acq_code_phase_samples);
-                d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * static_cast<double>(samples_offset);
+                d_acc_carrier_phase_rad -= (d_carrier_phase_step_rad - d_cfo_phase_step_rad) * static_cast<double>(samples_offset);
                 d_state = 2;
                 // d_sample_counter += samples_offset;  // count for the processed samples
                 d_cn0_smoother.reset();

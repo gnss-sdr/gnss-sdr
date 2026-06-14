@@ -97,6 +97,20 @@ const auto signal_mapping = std::unordered_map<std::string, std::pair<std::strin
     {"J5", {"QZSS", "L5"}},
 };
 
+
+// E6 CNAV consumes Galileo timing for HAS pages, but it does not seed the TOW map.
+// Keeping it off the source side prevents reset placeholders from clearing valid entries.
+bool is_galileo_tow_source(const std::string& sig)
+{
+    return sig == "1B" || sig == "5X" || sig == "7X";
+}
+
+
+bool is_galileo_tow_consumer(const std::string& sig)
+{
+    return sig == "E6";
+}
+
 }  // namespace
 
 GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration,
@@ -913,10 +927,13 @@ int GNSSFlowgraph::connect_galileo_tow_map()
         {
             for (int i = 0; i < channels_count_; i++)
                 {
-                    std::string sig = channels_.at(i)->get_signal().get_signal_str();
-                    if (sig == "1B" || sig == "E6" || sig == "5X" || sig == "7X")
+                    const std::string sig = channels_.at(i)->get_signal().get_signal_str();
+                    if (is_galileo_tow_source(sig))
                         {
                             top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("TOW_from_TLM"), galileo_tow_map_, pmt::mp("TOW_from_TLM"));
+                        }
+                    if (is_galileo_tow_consumer(sig))
+                        {
                             top_block_->msg_connect(galileo_tow_map_, pmt::mp("TOW_to_TLM"), channels_.at(i)->get_right_block(), pmt::mp("TOW_to_TLM"));
                         }
                 }

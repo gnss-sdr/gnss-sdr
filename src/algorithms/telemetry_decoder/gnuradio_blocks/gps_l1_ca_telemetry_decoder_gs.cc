@@ -31,6 +31,7 @@
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
 #include "tow_to_trk.h"
+#include "tow_utils.h"      // for gnss_tow helpers
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
 #include <algorithm>        // for min
@@ -458,6 +459,8 @@ void gps_l1_ca_telemetry_decoder_gs::reset()
     d_last_valid_preamble = d_sample_counter;
     d_sent_tlm_failed_msg = false;
     d_flag_TOW_set = false;
+    d_TOW_at_current_symbol_ms = 0;
+    d_TOW_at_Preamble_ms = 0;
     d_have_last_decoded_tow = false;
     d_last_decoded_tow_s = 0;
     d_last_decoded_tow_sample_counter = 0;
@@ -628,15 +631,32 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
     // 2. Add the telemetry decoder information
     if (d_flag_preamble == true)
         {
-            d_TOW_at_current_symbol_ms = static_cast<uint32_t>(d_nav->get_TOW() * 1000.0);
+            // check TOW update consistency
+            const uint32_t last_TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
+            d_TOW_at_current_symbol_ms = gnss_tow::wrap_ms(static_cast<int64_t>(d_nav->get_TOW() * 1000.0));
             d_TOW_at_Preamble_ms = d_TOW_at_current_symbol_ms;
-            d_flag_TOW_set = true;
+
+            const uint32_t tow_update_error_ms = gnss_tow::circular_error_ms(d_TOW_at_current_symbol_ms, last_TOW_at_current_symbol_ms);
+            if (last_TOW_at_current_symbol_ms != 0 && tow_update_error_ms > GPS_L1_CA_BIT_PERIOD_MS)
+                {
+                    LOG(INFO) << "Warning: " << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS")
+                              << " L1 TOW update in ch " << d_channel
+                              << " does not match the TLM TOW counter " << tow_update_error_ms << " ms";
+                    // Distrust both the decoded and the propagated TOW until the
+                    // next subframe provides a fresh value
+                    d_TOW_at_current_symbol_ms = 0;
+                    d_flag_TOW_set = false;
+                }
+            else
+                {
+                    d_flag_TOW_set = true;
+                }
         }
     else
         {
             if (d_flag_TOW_set == true)
                 {
-                    d_TOW_at_current_symbol_ms += GPS_L1_CA_BIT_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms = gnss_tow::add_ms(d_TOW_at_current_symbol_ms, GPS_L1_CA_BIT_PERIOD_MS);
                 }
         }
 

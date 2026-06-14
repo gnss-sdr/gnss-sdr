@@ -29,11 +29,11 @@
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
 #include "tow_to_trk.h"
+#include "tow_utils.h"  // for gnss_tow helpers
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
 #include <bitset>           // for std::bitset
-#include <cstdlib>          // for std::llabs
 #include <iomanip>          // for std::setprecision
 #include <iostream>         // for std::cout
 
@@ -252,7 +252,9 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
                 }
 
             // update TOW at the preamble instant
-            d_TOW_at_Preamble_ms = msg.tow * 6000;
+            const auto decoded_tow_ms = static_cast<int64_t>(msg.tow) * 6000LL;
+            const auto symbol_delay_ms = static_cast<int64_t>(delay + 12) * static_cast<int64_t>(GPS_L5I_SYMBOL_PERIOD_MS);
+            d_TOW_at_Preamble_ms = gnss_tow::wrap_ms(decoded_tow_ms);
 
             // The time of the last input symbol can be computed from the message ToW and
             // delay by the formulae:
@@ -261,13 +263,14 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
 
             // check TOW update consistency
             const uint32_t last_d_TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
-            d_TOW_at_current_symbol_ms = msg.tow * 6000 + (delay + 12) * GPS_L5I_SYMBOL_PERIOD_MS;
-            if (last_d_TOW_at_current_symbol_ms != 0 && std::llabs(static_cast<int64_t>(d_TOW_at_current_symbol_ms) - static_cast<int64_t>(last_d_TOW_at_current_symbol_ms)) > static_cast<int64_t>(GPS_L5I_SYMBOL_PERIOD_MS))
+            d_TOW_at_current_symbol_ms = gnss_tow::wrap_ms(decoded_tow_ms + symbol_delay_ms);
+            const uint32_t tow_update_error_ms = gnss_tow::circular_error_ms(d_TOW_at_current_symbol_ms, last_d_TOW_at_current_symbol_ms);
+            if (last_d_TOW_at_current_symbol_ms != 0 && tow_update_error_ms > GPS_L5I_SYMBOL_PERIOD_MS)
                 {
                     DLOG(INFO) << "Warning: " << ((d_system == CnavSystem::GPS) ? "GPS" : "QZSS")
                                << " L5 TOW update in ch " << d_channel
-                               << " does not match the TLM TOW counter " << static_cast<int64_t>(d_TOW_at_current_symbol_ms) - static_cast<int64_t>(last_d_TOW_at_current_symbol_ms) << " ms "
-                               << " with delay: " << delay << " msg tow: " << msg.tow * 6000 << " ms \n";
+                               << " does not match the TLM TOW counter " << tow_update_error_ms << " ms "
+                               << " with delay: " << delay << " msg tow: " << decoded_tow_ms << " ms \n";
 
                     d_TOW_at_current_symbol_ms = 0;
                     d_flag_valid_word = false;
@@ -293,7 +296,7 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
         {
             if (d_flag_valid_word)
                 {
-                    d_TOW_at_current_symbol_ms += GPS_L5I_SYMBOL_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms = gnss_tow::add_ms(d_TOW_at_current_symbol_ms, GPS_L5I_SYMBOL_PERIOD_MS);
                     if (current_synchro_data.Flag_valid_symbol_output == false)
                         {
                             d_flag_valid_word = false;

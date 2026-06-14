@@ -1422,7 +1422,8 @@ std::string get_beidou_time_corr_line(const Beidou_Dnav_Utc_Model& utc_model)
 
 std::string get_glonass_time_corr_line(const Glonass_Gnav_Utc_Model& utc_model)
 {
-    return get_time_corr_line("GLUT", utc_model.d_tau_c, 0.0, nullptr, nullptr);
+    // The GLUT correction is defined as -TauC (see RINEX specification, Table A5)
+    return get_time_corr_line("GLUT", -utc_model.d_tau_c, 0.0, nullptr, nullptr);
 }
 
 
@@ -1452,7 +1453,7 @@ std::string get_glonass_time_corr_line_v2(const Glonass_Gnav_Utc_Model& utc_mode
     line += rightJustify(month, 6);
     line += rightJustify(day, 6);
     line += std::string(3, ' ');
-    line += rightJustify(doub2for(utc_model.d_tau_c, 19, 2), 19);
+    line += rightJustify(doub2for(-utc_model.d_tau_c, 19, 2), 19);
     line += std::string(20, ' ');
     line += leftJustify("CORR TO SYSTEM TIME", 20);
     lengthCheck(line);
@@ -1953,15 +1954,42 @@ void add_obs_sys_obs_type_v2(std::fstream& out,
 
 void add_obs_glonass_slot_freq(std::fstream& out)
 {
-    // TODO Need to provide system with list of all satellites and update this accordingly
+    // List of slot / frequency channel pairs known to the receiver, taken from
+    // the GLONASS_PRN table (slot 0 is reserved for test purposes)
+    std::vector<std::pair<uint32_t, int32_t>> slots;
+    for (const auto& slot_freq : GLONASS_PRN)
+        {
+            if (slot_freq.first != 0)
+                {
+                    slots.emplace_back(slot_freq);
+                }
+        }
+
     std::string line;
-    line += rightJustify(std::to_string(0), 3);  // Number of satellites in list
-    line += std::string(1, ' ');
-    line += satelliteSystem.at("GLONASS");
-    line += rightJustify(std::to_string(0), 2);  // Slot Number
-    line += std::string(1, ' ');
-    line += rightJustify(std::to_string(0), 2);  // Frequency Number
-    line += std::string(1, ' ');
+    line += rightJustify(std::to_string(slots.size()), 3);  // Number of satellites in list
+    size_t sats_in_line = 0;
+    for (const auto& slot_freq : slots)
+        {
+            if (sats_in_line == 8)
+                {
+                    // Continuation lines hold up to eight satellites each
+                    line += std::string(60 - line.size(), ' ');
+                    line += leftJustify("GLONASS SLOT / FRQ #", 20);
+                    lengthCheck(line);
+                    out << line << '\n';
+                    line = std::string(3, ' ');
+                    sats_in_line = 0;
+                }
+            line += std::string(1, ' ');
+            line += satelliteSystem.at("GLONASS");
+            if (slot_freq.first < 10)
+                {
+                    line += std::string("0");
+                }
+            line += std::to_string(slot_freq.first);                    // Slot Number
+            line += rightJustify(std::to_string(slot_freq.second), 3);  // Frequency Number
+            sats_in_line++;
+        }
     line += std::string(60 - line.size(), ' ');
     line += leftJustify("GLONASS SLOT / FRQ #", 20);
     lengthCheck(line);
@@ -2813,7 +2841,7 @@ void Rinex_Printer::log_rinex_nav_glo_gnav(const std::map<int32_t, Glonass_Gnav_
                     line += std::string(1, ' ');
                     line += get_datetime_v2(p_utc_time);
                     line += std::string(1, ' ');
-                    line += doub2for(-eph.d_tau_c, 18, 2);
+                    line += doub2for(-eph.d_tau_n, 18, 2);
                     line += std::string(1, ' ');
                     line += doub2for(eph.d_gamma_n, 18, 2);
                     line += std::string(1, ' ');
@@ -2824,12 +2852,18 @@ void Rinex_Printer::log_rinex_nav_glo_gnav(const std::map<int32_t, Glonass_Gnav_
                 }
             if (d_version == 3)
                 {
-                    out << get_nav_sv_epoch_svclk_line(p_utc_time, sys_char, eph.PRN, -eph.d_tau_n, +eph.d_gamma_n, eph.d_t_k + p_utc_time.date().day_of_week() * 86400) << '\n';
+                    // Message frame time in seconds of the UTC week (tk is given in
+                    // seconds of the GLONASS day, which is offset 3 h from UTC)
+                    const boost::posix_time::ptime p_frame_time_utc = eph.glot_to_utc(eph.d_t_k, 0.0);
+                    const double message_frame_time = static_cast<double>(p_frame_time_utc.date().day_of_week() * 86400 + p_frame_time_utc.time_of_day().total_seconds());
+                    out << get_nav_sv_epoch_svclk_line(p_utc_time, sys_char, eph.PRN, -eph.d_tau_n, +eph.d_gamma_n, message_frame_time) << '\n';
                 }
             line.clear();
 
             // -------- BROADCAST ORBIT - 1
-            out << get_nav_broadcast_orbit(&eph.d_Xn, &eph.d_VXn, &eph.d_AXn, &eph.d_B_n, d_version) << '\n';
+            // RINEX expects the health flag in the MSB of the 3-bit Bn word (0 = OK)
+            const auto health_d = static_cast<double>(((static_cast<int32_t>(eph.d_B_n) & 4) == 0) ? 0 : 1);
+            out << get_nav_broadcast_orbit(&eph.d_Xn, &eph.d_VXn, &eph.d_AXn, &health_d, d_version) << '\n';
 
             // -------- BROADCAST ORBIT - 2
             const auto freq_channel_d = static_cast<double>(eph.i_satellite_freq_channel);
@@ -3281,10 +3315,20 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Glonass_Gnav_Ephe
     // Get seconds of day in glonass time
     tod = fmod(obs_time_glot, 86400);
 
-    // Form date and time duration types
+    // Form date and time duration types. The date is taken from the ephemeris,
+    // so it must be adjusted if the observation time has crossed a GLONASS day
+    // boundary after the ephemeris reference time
     const boost::posix_time::time_duration t1(0, 0, tod);
     const boost::gregorian::date d1(eph.d_yr - J + 1.0, 1, 1);
-    const boost::gregorian::days d2(eph.d_N_T - 1);
+    boost::gregorian::days d2(eph.d_N_T - 1);
+    if (tod - eph.d_t_b > 43200.0)
+        {
+            d2 = boost::gregorian::days(eph.d_N_T - 2);
+        }
+    else if (tod - eph.d_t_b < -43200.0)
+        {
+            d2 = boost::gregorian::days(eph.d_N_T);
+        }
     const boost::posix_time::ptime glo_time(d1 + d2, t1);
 
     // Convert to utc

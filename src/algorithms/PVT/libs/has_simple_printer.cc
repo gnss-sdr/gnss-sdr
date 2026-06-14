@@ -20,8 +20,10 @@
 #include "Galileo_CNAV.h"
 #include "galileo_has_data.h"
 #include "gnss_sdr_filesystem.h"
+#include "rtklib_rtkcmn.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <algorithm>  // for std::find, std::count
+#include <array>      // for std::array
 #include <bitset>     // for std::bitset
 #include <cstdint>    // for uint8_t, ...
 #include <ctime>      // for tm
@@ -200,6 +202,34 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
             d_has_file << indent << "MT1 Header\n";
             d_has_file << indent << "----------\n";
             d_has_file << indent << indent << "TOH [s]:             " << static_cast<float>(has_data->header.toh) << '\n';
+            if (has_data->week != GALILEO_HAS_INVALID_WEEK && has_data->tow < GALILEO_HAS_SECONDS_PER_WEEK)
+                {
+                    const uint32_t time_of_message_s = has_data->get_time_of_message_s();
+                    const uint32_t message_age_s =
+                        (has_data->tow + GALILEO_HAS_SECONDS_PER_WEEK - time_of_message_s) % GALILEO_HAS_SECONDS_PER_WEEK;
+                    const bool tow_toh_consistent =
+                        (has_data->header.toh < GALILEO_HAS_SECONDS_PER_HOUR) && (message_age_s < GALILEO_HAS_SECONDS_PER_HOUR);
+                    if (tow_toh_consistent)
+                        {
+                            uint32_t week_at_toh = has_data->week;
+                            if (time_of_message_s > has_data->tow && week_at_toh > 0)
+                                {
+                                    week_at_toh--;  // the TOH belongs to the previous week
+                                }
+                            const gtime_t gst_time = gst2time(static_cast<int>(week_at_toh), static_cast<double>(time_of_message_s));
+                            std::array<char, 32> utc_str{};
+                            time2str(gpst2utc(gst_time), utc_str.data(), 0);
+                            d_has_file << indent << indent << "GST:                 WN=" << week_at_toh << ", TOW=" << time_of_message_s << " [s] (" << utc_str.data() << " UTC)\n";
+                        }
+                    else
+                        {
+                            d_has_file << indent << indent << "GST:                 unavailable (TOH inconsistent)\n";
+                        }
+                }
+            else
+                {
+                    d_has_file << indent << indent << "GST:                 unavailable\n";
+                }
             d_has_file << indent << indent << "Mask flag:           " << static_cast<float>(has_data->header.mask_flag) << '\n';
             d_has_file << indent << indent << "Orbit Corr. Flag:    " << static_cast<float>(has_data->header.orbit_correction_flag) << '\n';
             d_has_file << indent << indent << "Clock Full-set Flag: " << static_cast<float>(has_data->header.clock_fullset_flag) << '\n';

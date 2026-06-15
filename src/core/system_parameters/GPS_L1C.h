@@ -51,7 +51,12 @@ constexpr int GPS_L1C_SF_2_DATA_BITS = 600;      //!< Number of bits in a decode
 constexpr int GPS_L1C_SF_3_DATA_BITS = 274;      //!< Number of bits in a decoded subframe 3
 constexpr int GPS_L1C_TOI_LSB_VALUES = 256;      //!< Number of possible LSB for TOI
 
+constexpr int GPS_L1C_SF_2_DATA_BYTES = 75;  //!< Number of bytes in a decoded subframe 2
+constexpr int GPS_L1C_SF_3_DATA_BYTES = 35;  //!< Number of bytes in a decoded subframe 3, the last byte has 6 bits of zero-padding
+
 constexpr int GPS_L1C_SF_2_AND_3_ENCODED_BITS = GPS_L1C_SF_2_ENCODED_BITS + GPS_L1C_SF_3_ENCODED_BITS;
+
+constexpr int GPS_L1C_CRC_POLYNOMIAL = 0x1864CFB;
 
 constexpr int GPS_L1C_INTERLEAVE_ROWS = 38;  //!< Number of rows in the interlaver block
 constexpr int GPS_L1C_INTERLEAVE_COLS = 46;  //!< Number of columns in the interlaver block

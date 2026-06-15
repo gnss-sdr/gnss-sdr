@@ -24,6 +24,7 @@
 #include "ldpc_min_sum_decoder.h"
 #include "telemetry_impl_interface.h"
 #include <boost/circular_buffer.hpp>
+#include <boost/crc.hpp>
 #include <bitset>
 
 /** \addtogroup Telemetry_Decoder
@@ -40,9 +41,20 @@ gps_l1c_telemetry_decoder_gs_sptr gps_l1c_make_telemetry_decoder_gs(const Tlm_Co
 struct GpsL1cFrame
 {
     uint16_t toi;  //<! Decoded TOI value
-    std::optional<std::bitset<600>> sf2;
-    std::optional<std::bitset<274>> sf3;
+
+    bool has_sf2;
+    std::array<uint8_t, GPS_L1C_SF_2_DATA_BYTES> sf2;
+    bool has_sf3;
+    std::array<uint8_t, GPS_L1C_SF_3_DATA_BYTES> sf3;
+
+    bool has_any_sf() const
+    {
+        return has_sf2 || has_sf3;
+    }
 };
+
+// We need basic because the CRC is computed over single bits!
+using CRC_GPS_L1C_type = boost::crc_basic<24>;
 
 class gps_l1c_telemetry_decoder_gs : public telemetry_impl_interface
 {
@@ -60,6 +72,7 @@ public:
 private:
     boost::circular_buffer<float> d_symbol_history;
     uint32_t d_stat;
+    uint32_t d_frame_position;
 
     LDPC_Min_Sum_Decoder d_sf2_decoder;
     LDPC_Min_Sum_Decoder d_sf3_decoder;
@@ -77,11 +90,11 @@ private:
     // Tests the oldest 52 bits and finds the TOI, returning -1 if no hypothesis holds.
     // Note that, due to cyclic nature of the TOI encoded codes, if this is called near the real TOI, nonsense values
     // may be returned.
-    int16_t test_toi_hypotheses(const Gnss_Synchro &synchro);
+    int16_t test_toi_hypotheses(size_t start_index, const Gnss_Synchro &synchro);
 
     // Attempts parsing a L1C frame, reading 1800 bits starting at start_index.
     // The first 52 bits are ignored, and must have been parsed beforehand to decode the TOI.
-    std::optional<GpsL1cFrame> try_parse_frame(size_t start_index, uint16_t toi);
+    GpsL1cFrame try_parse_frame(size_t start_index, uint16_t toi);
 
     // Deinterleaves the 1748 bits of subframe 2 and 3, starting at start_index.
     // The first 52 bits are ignored
@@ -92,6 +105,23 @@ private:
 
     // d_stat = 1
     void state_aligned(const Gnss_Synchro &synchro);
+
+    void parse_new_subframe_data(const GpsL1cFrame &frame);
+
+    void parse_sf2_clock_ephemeris_tow(const std::array<uint8_t, GPS_L1C_SF_2_DATA_BYTES> &sf2);
+
+    template <size_t SIZE>
+    uint64_t extract_unsigned(const std::array<uint8_t, SIZE> &bytes, size_t first_bit, size_t last_bit);
+
+    template <size_t SIZE>
+    int64_t extract_signed(const std::array<uint8_t, SIZE> &bytes, size_t first_bit, size_t last_bit);
+
+    template <size_t SIZE>
+    void extract_bit_vector_to_array(const std::vector<int> &bits, std::array<uint8_t, SIZE> &target);
+
+    // Assumes last 24 bits are CRC of all the previous data
+    template <size_t SIZE>
+    bool check_subframe_crc(const std::array<uint8_t, SIZE> &bytes, size_t size_in_bits);
 };
 
 /** \} */

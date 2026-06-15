@@ -98,7 +98,8 @@ public:
     // setting the inputs!
     void prepare_iteration();
 
-    std::optional<std::vector<int>> run_decoder(size_t max_iterations, float c_atten);
+    // Returns empty vector if not successful
+    std::vector<int> run_decoder(size_t max_iterations, float c_atten);
 
 
     LDPC_Min_Sum_Decoder(

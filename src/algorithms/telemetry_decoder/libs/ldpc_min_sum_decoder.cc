@@ -257,18 +257,22 @@ void LDPC_Min_Sum_Decoder::prepare_iteration()
         }
 }
 
-std::optional<std::vector<int>> LDPC_Min_Sum_Decoder::run_decoder(size_t max_iterations, float c_atten)
+std::vector<int> LDPC_Min_Sum_Decoder::run_decoder(size_t max_iterations, float c_atten)
 {
     for (size_t i = 0; i < max_iterations; i++)
         {
             process_cn(c_atten);
             process_vn();
-            const std::vector<int>& llr_total = hard_decision();
+            std::vector<int> llr_total = hard_decision();
             if (check_syndrome(llr_total))
                 {
+                    // Discard the parity bits
+                    const size_t num_vns = d_vn_col_ptr.size() - 1;
+                    const size_t num_cns = d_cn_row_ptr.size() - 1;
+                    llr_total.resize(num_vns - num_cns);
                     return llr_total;
                 }
         }
 
-    return std::nullopt;
+    return {};
 }

@@ -20,6 +20,14 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Interoperability:
 
+- Added a new Signal Source implementation `Pocket_SDR_Signal_Source`, which
+  supports
+  [Pocket SDR FE](https://www.datagnss.com/products/pocketsdr-gnss-receiver)
+  2CH/4CH/8CH GNSS RF front-ends through the
+  [`gr-pocketsdr`](https://github.com/minhaj6/gr-pocketsdr) GNU Radio
+  out-of-tree module. It requires the `-DENABLE_POCKETSDR=ON` building flag.
+  Check the
+  [Signal Source documentation](https://gnss-sdr.org/docs/sp-blocks/signal-source/#implementation-pocket_sdr_signal_source).
 - Improved Galileo HAS robustness and ICD compliance, including stricter MT1
   validation, correct cache/Do-Not-Use handling, TOW fallback for E6 HAS pages,
   preserved mask/IOD correction context, and corrected HAS application in

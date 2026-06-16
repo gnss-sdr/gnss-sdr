@@ -1293,6 +1293,10 @@ if(NOT VOLKGNSSSDR_FOUND)
     endif()
 
     set(VOLK_GNSSSDR_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}")
+    set(VOLK_GNSSSDR_CMAKE_BUILD_TYPE $<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:ASAN>)
+    set(VOLK_GNSSSDR_INSTALL_BUILD_TYPE ${VOLK_GNSSSDR_CMAKE_BUILD_TYPE})
+    set(VOLK_GNSSSDR_INSTALL_PREFIX ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install)
+    set(VOLK_GNSSSDR_BUILD_DIR ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/build)
     if(PYTHON_EXECUTABLE)
         set(USE_THIS_PYTHON "-DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
     endif()
@@ -1301,7 +1305,17 @@ if(NOT VOLKGNSSSDR_FOUND)
         set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild"
             "-configuration" $<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:Debug>
         )
+        set(VOLK_GNSSSDR_INSTALL_BUILD_TYPE $<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:Debug>)
     endif()
+
+    # Run the generated install script with an explicit private prefix. This
+    # prevents subdirectory install scripts from falling back to /usr/local.
+    set(VOLK_GNSSSDR_INSTALL_COMMAND
+        ${CMAKE_COMMAND}
+        -DCMAKE_INSTALL_PREFIX=${VOLK_GNSSSDR_INSTALL_PREFIX}
+        -DBUILD_TYPE=${VOLK_GNSSSDR_INSTALL_BUILD_TYPE}
+        -P ${VOLK_GNSSSDR_BUILD_DIR}/cmake_install.cmake
+    )
 
     if(CMAKE_TOOLCHAIN_FILE)
         set(VOLK_GNSSSDR_COMPILER "")
@@ -1327,7 +1341,7 @@ if(NOT VOLKGNSSSDR_FOUND)
     endif()
 
     set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_COMPILER}
-        -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install
+        -DCMAKE_INSTALL_PREFIX=${VOLK_GNSSSDR_INSTALL_PREFIX}
         -DENABLE_STATIC_LIBS=ON
         -DENABLE_PROFILING=${ENABLE_PROFILING}
         -DENABLE_ORC=${ORC_ENABLED}
@@ -1382,19 +1396,20 @@ if(NOT VOLKGNSSSDR_FOUND)
             SOURCE_DIR ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
             BINARY_DIR ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/build
             CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
-                -DCMAKE_BUILD_TYPE=$<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:ASAN>
+                -DCMAKE_BUILD_TYPE=${VOLK_GNSSSDR_CMAKE_BUILD_TYPE}
                 -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
             DOWNLOAD_COMMAND ""
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
             BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND}
-            INSTALL_DIR ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install
+            INSTALL_COMMAND ${VOLK_GNSSSDR_INSTALL_COMMAND}
+            INSTALL_DIR ${VOLK_GNSSSDR_INSTALL_PREFIX}
         )
     else()
         if(SUPPORTED_CPU_FEATURES_ARCH)
-            set(VOLK_GNSSSDR_BUILD_BYPRODUCTS
-                ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
-                ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
+            set(VOLK_GNSSSDR_INSTALL_BYPRODUCTS
+                ${VOLK_GNSSSDR_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
+                ${VOLK_GNSSSDR_INSTALL_PREFIX}/bin/volk_gnsssdr_profile
             )
             if(ENABLE_CPUFEATURES)
                 find_package(CPUFEATURES)
@@ -1422,11 +1437,20 @@ if(NOT VOLKGNSSSDR_FOUND)
                     set_package_properties(CPUFEATURES PROPERTIES
                         PURPOSE "CpuFeatures will be built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
                     )
-                    set(VOLK_GNSSSDR_BUILD_BYPRODUCTS
-                        ${VOLK_GNSSSDR_BUILD_BYPRODUCTS}
-                        ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    set(VOLK_GNSSSDR_INSTALL_BYPRODUCTS
+                        ${VOLK_GNSSSDR_INSTALL_BYPRODUCTS}
+                        ${VOLK_GNSSSDR_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}
                     )
                 endif()
+            endif()
+            if(CMAKE_VERSION VERSION_LESS 3.26)
+                set(VOLK_GNSSSDR_BYPRODUCTS
+                    BUILD_BYPRODUCTS ${VOLK_GNSSSDR_INSTALL_BYPRODUCTS}
+                )
+            else()
+                set(VOLK_GNSSSDR_BYPRODUCTS
+                    INSTALL_BYPRODUCTS ${VOLK_GNSSSDR_INSTALL_BYPRODUCTS}
+                )
             endif()
             set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
                     -DVOLK_CPU_FEATURES=${ENABLE_CPUFEATURES}
@@ -1436,17 +1460,32 @@ if(NOT VOLKGNSSSDR_FOUND)
                 SOURCE_DIR ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
                 BINARY_DIR ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/build
                 CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
-                    -DCMAKE_BUILD_TYPE=$<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:ASAN>
+                    -DCMAKE_BUILD_TYPE=${VOLK_GNSSSDR_CMAKE_BUILD_TYPE}
                     -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                 DOWNLOAD_COMMAND ""
                 UPDATE_COMMAND ""
                 PATCH_COMMAND ""
                 BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND}
-                BUILD_BYPRODUCTS ${VOLK_GNSSSDR_BUILD_BYPRODUCTS}
-                INSTALL_DIR ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install
+                INSTALL_COMMAND ${VOLK_GNSSSDR_INSTALL_COMMAND}
+                ${VOLK_GNSSSDR_BYPRODUCTS}
+                INSTALL_DIR ${VOLK_GNSSSDR_INSTALL_PREFIX}
             )
         else()
             set(ENABLE_CPUFEATURES OFF)
+            set(VOLK_GNSSSDR_INSTALL_BYPRODUCTS
+                ${VOLK_GNSSSDR_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
+                ${VOLK_GNSSSDR_INSTALL_PREFIX}/bin/volk_gnsssdr_profile
+                ${VOLK_GNSSSDR_INSTALL_PREFIX}/bin/volk_gnsssdr-config-info
+            )
+            if(CMAKE_VERSION VERSION_LESS 3.26)
+                set(VOLK_GNSSSDR_BYPRODUCTS
+                    BUILD_BYPRODUCTS ${VOLK_GNSSSDR_INSTALL_BYPRODUCTS}
+                )
+            else()
+                set(VOLK_GNSSSDR_BYPRODUCTS
+                    INSTALL_BYPRODUCTS ${VOLK_GNSSSDR_INSTALL_BYPRODUCTS}
+                )
+            endif()
             set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
                 -DVOLK_CPU_FEATURES=${ENABLE_CPUFEATURES}
             )
@@ -1455,16 +1494,15 @@ if(NOT VOLKGNSSSDR_FOUND)
                 SOURCE_DIR ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
                 BINARY_DIR ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/build
                 CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
-                    -DCMAKE_BUILD_TYPE=$<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:ASAN>
+                    -DCMAKE_BUILD_TYPE=${VOLK_GNSSSDR_CMAKE_BUILD_TYPE}
                     -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                 DOWNLOAD_COMMAND ""
                 UPDATE_COMMAND ""
                 PATCH_COMMAND ""
                 BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND}
-                BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
-                    ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
-                    ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr-config-info
-                INSTALL_DIR ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install
+                INSTALL_COMMAND ${VOLK_GNSSSDR_INSTALL_COMMAND}
+                ${VOLK_GNSSSDR_BYPRODUCTS}
+                INSTALL_DIR ${VOLK_GNSSSDR_INSTALL_PREFIX}
             )
         endif()
     endif()

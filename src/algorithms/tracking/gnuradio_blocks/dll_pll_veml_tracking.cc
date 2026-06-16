@@ -21,6 +21,7 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "dll_pll_veml_tracking.h"
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
 #include "GLONASS_L1_L2_CA.h"
@@ -35,7 +36,6 @@
 #include "MATH_CONSTANTS.h"
 #include "beidou_b1i_signal_replica.h"
 #include "beidou_b3i_signal_replica.h"
-#include "dll_pll_veml_tracking.h"
 #include "galileo_e1_signal_replica.h"
 #include "galileo_e5_signal_replica.h"
 #include "galileo_e6_signal_replica.h"

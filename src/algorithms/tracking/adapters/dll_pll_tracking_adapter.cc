@@ -14,6 +14,7 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "dll_pll_tracking_adapter.h"
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
 #include "GLONASS_L1_L2_CA.h"
@@ -27,7 +28,6 @@
 #include "Galileo_E6.h"
 #include "configuration_interface.h"
 #include "display.h"
-#include "dll_pll_tracking_adapter.h"
 #include "qzss.h"
 
 #if USE_GLOG_AND_GFLAGS

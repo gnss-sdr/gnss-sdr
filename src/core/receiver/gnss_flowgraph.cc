@@ -19,6 +19,7 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "gnss_flowgraph.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1C.h"
 #include "GPS_L1_CA.h"
@@ -35,7 +36,6 @@
 #include "configuration_interface.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
-#include "gnss_flowgraph.h"
 #include "gnss_satellite.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_synchro_monitor.h"

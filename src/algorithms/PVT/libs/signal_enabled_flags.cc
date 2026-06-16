@@ -14,8 +14,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "configuration_interface.h"  // for ConfigurationInterface
 #include "signal_enabled_flags.h"
+#include "configuration_interface.h"  // for ConfigurationInterface
 #include "signal_flag.h"
 #include <vector>  // for vector
 

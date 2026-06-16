@@ -24,6 +24,7 @@
  */
 
 
+#include "gnss_block_factory.h"
 #include "acquisition_interface.h"
 #include "array_signal_conditioner.h"
 #include "beamformer_filter.h"
@@ -43,7 +44,6 @@
 #include "galileo_e1_tcp_connector_tracking.h"
 #include "galileo_telemetry_decoder_gs.h"
 #include "glonass_gnav_telemetry_decoder_gs.h"
-#include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_sdr_string_literals.h"

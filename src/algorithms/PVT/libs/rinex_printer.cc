@@ -16,6 +16,7 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "rinex_printer.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "beidou_dnav_ephemeris.h"
 #include "beidou_dnav_iono.h"
@@ -34,7 +35,6 @@
 #include "gps_iono.h"
 #include "gps_navigation_message.h"
 #include "gps_utc_model.h"
-#include "rinex_printer.h"
 #include "rtklib.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_solver.h"

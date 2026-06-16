@@ -16,9 +16,9 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "gps_l1c_signal_replica.h"
 #include "GPS_L1C.h"
 #include "gnss_signal_replica.h"
-#include "gps_l1c_signal_replica.h"
 #include <cassert>
 #include <cmath>
 #include <cstddef>  // for size_t

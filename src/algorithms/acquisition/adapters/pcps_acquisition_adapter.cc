@@ -16,6 +16,7 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "pcps_acquisition_adapter.h"
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
 #include "GLONASS_L1_L2_CA.h"
@@ -41,7 +42,6 @@
 #include "gps_l2c_signal_replica.h"
 #include "gps_l5_signal_replica.h"
 #include "gps_sdr_signal_replica.h"
-#include "pcps_acquisition_adapter.h"
 #include "qzss.h"
 #include "qzss_signal_replica.h"
 #include "signal_flag.h"

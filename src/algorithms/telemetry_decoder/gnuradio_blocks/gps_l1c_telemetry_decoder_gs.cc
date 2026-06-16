@@ -16,9 +16,9 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "gps_l1c_telemetry_decoder_gs.h"
 #include "GPS_L1C.h"
 #include "gnss_synchro.h"
-#include "gps_l1c_telemetry_decoder_gs.h"
 #include <optional>
 
 #if USE_GLOG_AND_GFLAGS

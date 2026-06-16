@@ -101,6 +101,13 @@ if(ENABLE_LIMESDR)
     endif()
 endif()
 
+if(ENABLE_POCKETSDR)
+    if(GRPOCKETSDR_FOUND)
+        list(APPEND OPT_DRIVER_SOURCES pocket_sdr_signal_source.cc)
+        list(APPEND OPT_DRIVER_HEADERS pocket_sdr_signal_source.h)
+    endif()
+endif()
+
 if(ENABLE_UHD)
     list(APPEND OPT_DRIVER_SOURCES uhd_signal_source.cc)
     list(APPEND OPT_DRIVER_HEADERS uhd_signal_source.h)
@@ -251,6 +258,13 @@ if(ENABLE_LIMESDR AND GRLIMESDR_FOUND)
     target_link_libraries(signal_source_adapters
         PUBLIC
             Gnuradio::limesdr
+    )
+endif()
+
+if(ENABLE_POCKETSDR AND GRPOCKETSDR_FOUND)
+    target_link_libraries(signal_source_adapters
+        PUBLIC
+            Gnuradio::pocketsdr
     )
 endif()
 

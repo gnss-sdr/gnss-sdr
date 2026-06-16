@@ -145,6 +145,10 @@
 #include "limesdr_signal_source.h"
 #endif
 
+#if POCKETSDR_DRIVER
+#include "pocket_sdr_signal_source.h"
+#endif
+
 #if FLEXIBAND_DRIVER
 #include "flexiband_signal_source.h"
 #endif
@@ -338,6 +342,12 @@ std::unique_ptr<SignalSourceInterface> get_signal_source_block(
     else if (implementation == "Limesdr_Signal_Source")
         {
             return std::make_unique<LimesdrSignalSource>(configuration, role, in_streams, out_streams, queue);
+        }
+#endif
+#if POCKETSDR_DRIVER
+    else if (implementation == "Pocket_SDR_Signal_Source")
+        {
+            return std::make_unique<PocketSdrSignalSource>(configuration, role, in_streams, out_streams, queue);
         }
 #endif
 #if PLUTOSDR_DRIVER

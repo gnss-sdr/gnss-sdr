@@ -36,7 +36,7 @@ std::string generate_gps_l1c_overlay_code(uint32_t prn)
         }
 
     std::string out{};
-    out.reserve(GPS_L1C_O_CODE_LENGTH_CHIPS);
+    out.resize(GPS_L1C_O_CODE_LENGTH_CHIPS);
 
     for (size_t i = 0; i < GPS_L1C_OVERLAY_CODE_STR_LENGTH; i++)
         {

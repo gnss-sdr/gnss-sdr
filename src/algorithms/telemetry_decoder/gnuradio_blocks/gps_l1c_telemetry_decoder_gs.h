@@ -25,7 +25,8 @@
 #include "telemetry_impl_interface.h"
 #include <boost/circular_buffer.hpp>
 #include <boost/crc.hpp>
-#include <bitset>
+#include <array>
+#include <vector>
 
 /** \addtogroup Telemetry_Decoder
  * \{ */

@@ -397,7 +397,7 @@ void gps_l1c_telemetry_decoder_gs::parse_sf2_clock_ephemeris_tow(const std::arra
     auto cisn = static_cast<int16_t>(extract_signed(sf2, 337, 353));
     auto cicn = static_cast<int16_t>(extract_signed(sf2, 353, 369));
     auto crsn = static_cast<int32_t>(extract_signed(sf2, 369, 393));
-    auto crcn = static_cast<int32_t>(extract_signed(sf2, 394, 417));
+    auto crcn = static_cast<int32_t>(extract_signed(sf2, 393, 417));
     auto cusn = static_cast<int32_t>(extract_signed(sf2, 417, 438));
     auto cucn = static_cast<int32_t>(extract_signed(sf2, 438, 459));
     auto uraned0 = static_cast<int8_t>(extract_signed(sf2, 459, 464));

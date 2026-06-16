@@ -22,9 +22,9 @@
 #define ARMA_NO_DEBUG 1
 #endif
 
-#include "control_thread.h"
 #include "concurrent_map.h"
 #include "configuration_interface.h"
+#include "control_thread.h"
 #include "file_configuration.h"
 #include "galileo_almanac.h"
 #include "galileo_ephemeris.h"
@@ -598,6 +598,8 @@ bool ControlThread::read_assistance_from_XML()
                     ret = true;
                 }
         }
+
+    // TODO: GPS L1C XML
 
     if ((configuration_->property("Channels_1B.count", 0) > 0) || (configuration_->property("Channels_5X.count", 0) > 0) ||
         (configuration_->property("Channels_7X.count", 0) > 0) || (configuration_->property("Channels_E6.count", 0) > 0))

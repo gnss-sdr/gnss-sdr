@@ -47,12 +47,7 @@ constexpr int GPS_L1C_TOI_BITS = 9;              //!< Number of bits of TOI when
 constexpr int GPS_L1C_FRAME_BITS = 1800;         //!< Number of bits in a complete frame
 constexpr int GPS_L1C_SF_2_ENCODED_BITS = 1200;  //!< Number of bits in a LDPC encoded subframe 2
 constexpr int GPS_L1C_SF_3_ENCODED_BITS = 548;   //!< Number of bits in a LDPC encoded subframe 3
-constexpr int GPS_L1C_SF_2_DATA_BITS = 600;      //!< Number of bits in a decoded subframe 2
-constexpr int GPS_L1C_SF_3_DATA_BITS = 274;      //!< Number of bits in a decoded subframe 3
 constexpr int GPS_L1C_TOI_LSB_VALUES = 256;      //!< Number of possible LSB for TOI
-
-constexpr int GPS_L1C_SF_2_DATA_BYTES = 75;  //!< Number of bytes in a decoded subframe 2
-constexpr int GPS_L1C_SF_3_DATA_BYTES = 35;  //!< Number of bytes in a decoded subframe 3, the last byte has 6 bits of zero-padding
 
 constexpr int GPS_L1C_SF_2_AND_3_ENCODED_BITS = GPS_L1C_SF_2_ENCODED_BITS + GPS_L1C_SF_3_ENCODED_BITS;
 

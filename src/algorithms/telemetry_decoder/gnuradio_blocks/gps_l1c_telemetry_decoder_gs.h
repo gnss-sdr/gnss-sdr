@@ -19,13 +19,17 @@
 #ifndef GNSS_SDR_GPS_L1C_TELEMETRY_DECODER_GS_H
 #define GNSS_SDR_GPS_L1C_TELEMETRY_DECODER_GS_H
 
+#include "GPS_CNAV2.h"
 #include "GPS_L1C.h"
 #include "gnss_synchro.h"
+#include "gps_cnav2_navigation_message.h"
+#include "gps_cnav_navigation_message.h"
 #include "ldpc_min_sum_decoder.h"
 #include "telemetry_impl_interface.h"
 #include <boost/circular_buffer.hpp>
 #include <boost/crc.hpp>
 #include <array>
+#include <bitset>
 #include <vector>
 
 /** \addtogroup Telemetry_Decoder
@@ -37,16 +41,16 @@ class gps_l1c_telemetry_decoder_gs;  // forward declaration
 
 using gps_l1c_telemetry_decoder_gs_sptr = gnss_shared_ptr<gps_l1c_telemetry_decoder_gs>;
 
-gps_l1c_telemetry_decoder_gs_sptr gps_l1c_make_telemetry_decoder_gs(const Tlm_Conf &conf);
+gps_l1c_telemetry_decoder_gs_sptr gps_l1c_make_telemetry_decoder_gs(const Tlm_Conf &conf, CnavSystem system = CnavSystem::GPS);
 
 struct GpsL1cFrame
 {
     uint16_t toi;  //<! Decoded TOI value
 
     bool has_sf2;
-    std::array<uint8_t, GPS_L1C_SF_2_DATA_BYTES> sf2;
+    std::bitset<GPS_L1C_SF_2_DATA_BITS> sf2;
     bool has_sf3;
-    std::array<uint8_t, GPS_L1C_SF_3_DATA_BYTES> sf3;
+    std::bitset<GPS_L1C_SF_3_DATA_BITS> sf3;
 
     bool has_any_sf() const
     {
@@ -71,6 +75,11 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 
 private:
+    CnavSystem d_system;
+    Gnss_Satellite d_satellite;
+    int32_t d_channel;
+
+    std::unique_ptr<Gps_CNAV2_Navigation_Message> d_cnav2_message;
     boost::circular_buffer<float> d_symbol_history;
     uint32_t d_stat;
     uint32_t d_frame_position;
@@ -78,9 +87,9 @@ private:
     LDPC_Min_Sum_Decoder d_sf2_decoder;
     LDPC_Min_Sum_Decoder d_sf3_decoder;
 
-    friend gps_l1c_telemetry_decoder_gs_sptr gps_l1c_make_telemetry_decoder_gs(const Tlm_Conf &conf);
+    friend gps_l1c_telemetry_decoder_gs_sptr gps_l1c_make_telemetry_decoder_gs(const Tlm_Conf &conf, CnavSystem system);
 
-    explicit gps_l1c_telemetry_decoder_gs(const Tlm_Conf &conf);
+    gps_l1c_telemetry_decoder_gs(const Tlm_Conf &conf, CnavSystem system);
 
     // start_index must point to the index in d_symbol_history that contains the first received bit
     // (MSB) of TOI, and 52 bits will be read after it, including the first received bit.
@@ -101,28 +110,20 @@ private:
     // The first 52 bits are ignored
     std::array<float, GPS_L1C_SF_2_AND_3_ENCODED_BITS> deinterlave_frame(size_t start_index);
 
-    // d_stat = 0
-    void state_find_align(const Gnss_Synchro &synchro);
+    // d_stat = 0, return true if synchro needs to be sent
+    bool state_find_align(Gnss_Synchro &synchro);
 
-    // d_stat = 1
-    void state_aligned(const Gnss_Synchro &synchro);
+    // d_stat = 1, return true if synchro needs to be sent
+    bool state_aligned(Gnss_Synchro &synchro);
 
-    void parse_new_subframe_data(const GpsL1cFrame &frame);
-
-    void parse_sf2_clock_ephemeris_tow(const std::array<uint8_t, GPS_L1C_SF_2_DATA_BYTES> &sf2);
+    bool parse_new_subframe_data(const GpsL1cFrame &frame, Gnss_Synchro &synchro);
 
     template <size_t SIZE>
-    uint64_t extract_unsigned(const std::array<uint8_t, SIZE> &bytes, size_t first_bit, size_t last_bit);
-
-    template <size_t SIZE>
-    int64_t extract_signed(const std::array<uint8_t, SIZE> &bytes, size_t first_bit, size_t last_bit);
-
-    template <size_t SIZE>
-    void extract_bit_vector_to_array(const std::vector<int> &bits, std::array<uint8_t, SIZE> &target);
+    void extract_bit_vector_to_bitset(const std::vector<int> &bits, std::bitset<SIZE> &target);
 
     // Assumes last 24 bits are CRC of all the previous data
     template <size_t SIZE>
-    bool check_subframe_crc(const std::array<uint8_t, SIZE> &bytes, size_t size_in_bits);
+    bool check_subframe_crc(const std::bitset<SIZE> &bits);
 };
 
 /** \} */

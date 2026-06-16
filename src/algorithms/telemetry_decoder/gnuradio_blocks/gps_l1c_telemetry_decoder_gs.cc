@@ -16,9 +16,12 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "gps_l1c_telemetry_decoder_gs.h"
 #include "GPS_L1C.h"
+#include "display.h"
 #include "gnss_synchro.h"
+#include "gps_cnav2_navigation_message.h"
+#include "gps_cnav_navigation_message.h"
+#include "gps_l1c_telemetry_decoder_gs.h"
 #include <optional>
 
 #if USE_GLOG_AND_GFLAGS
@@ -28,15 +31,17 @@
 #endif
 
 gps_l1c_telemetry_decoder_gs_sptr
-gps_l1c_make_telemetry_decoder_gs(const Tlm_Conf &conf)
+gps_l1c_make_telemetry_decoder_gs(const Tlm_Conf &conf, CnavSystem system)
 {
-    return gps_l1c_telemetry_decoder_gs_sptr(new gps_l1c_telemetry_decoder_gs(conf));
+    return gps_l1c_telemetry_decoder_gs_sptr(new gps_l1c_telemetry_decoder_gs(conf, system));
 }
 
-gps_l1c_telemetry_decoder_gs::gps_l1c_telemetry_decoder_gs(const Tlm_Conf &conf)
+gps_l1c_telemetry_decoder_gs::gps_l1c_telemetry_decoder_gs(const Tlm_Conf &conf, CnavSystem system)
     : telemetry_impl_interface("gps_l1c_telemetry_decoder_gs",
           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+      d_system(system),
+      d_channel(0),
       d_stat(0),
       d_sf2_decoder(
           GPS_L1C_LDPC_SF2_CN_NEIGHBORS_STR, GPS_L1C_LDPC_SF2_CN_NEIGHBORS_LENGTH,
@@ -54,18 +59,34 @@ gps_l1c_telemetry_decoder_gs::gps_l1c_telemetry_decoder_gs(const Tlm_Conf &conf)
     configure_basic_outputs();
 
     d_symbol_history.set_capacity(GPS_L1C_FRAME_BITS);
+    d_cnav2_message = std::make_unique<Gps_CNAV2_Navigation_Message>(0, d_system);
 }
 
 
 void gps_l1c_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite)
 {
+    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
+    DLOG(INFO) << ((d_system == CnavSystem::GPS) ? "GPS" : "QZSS")
+               << " L1C CNAV2 telemetry decoder in channel "
+               << d_channel << " set to satellite " << d_satellite;
+    d_cnav2_message = std::make_unique<Gps_CNAV2_Navigation_Message>(d_satellite.get_PRN(), d_system);
 }
 void gps_l1c_telemetry_decoder_gs::set_channel(int32_t channel)
 {
+    d_channel = channel;
+    DLOG(INFO) << ((d_system == CnavSystem::GPS) ? "GPS" : "QZSS")
+               << " L1C CNAV2 channel set to " << channel;
+
+    // TODO
+    // configure_dump_file(d_channel, d_dump, d_dump_filename, d_dump_file);
+    // configure_crc_stats_channel(d_channel, d_dump_crc_stats, d_Tlm_CRC_Stats);
+    d_cnav2_message = std::make_unique<Gps_CNAV2_Navigation_Message>(d_satellite.get_PRN(), d_system);
 }
 
 void gps_l1c_telemetry_decoder_gs::reset()
 {
+    d_stat = 0;
+    DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
 }
 
 int gps_l1c_telemetry_decoder_gs::general_work(int noutput_items, gr_vector_int &ninput_items,
@@ -79,21 +100,29 @@ int gps_l1c_telemetry_decoder_gs::general_work(int noutput_items, gr_vector_int 
 
     Gnss_Synchro current_symbol{};
     current_symbol = in[0][0];
+    consume_each(1);
 
     // MSB is the first bit to arrive, thus d_symbol_history is ordered from MSB to LSB
     d_symbol_history.push_back(current_symbol.Prompt_I);
 
+    bool need_out = false;
+
     switch (d_stat)
         {
         case 0:
-            state_find_align(current_symbol);
+            need_out = state_find_align(current_symbol);
             break;
         case 1:
-            state_aligned(current_symbol);
+            need_out = state_aligned(current_symbol);
             break;
         }
 
-    consume_each(1);
+    if (need_out)
+        {
+            out[0][0] = std::move(current_symbol);
+            return 1;
+        }
+
     return 0;
 }
 
@@ -176,7 +205,7 @@ int16_t gps_l1c_telemetry_decoder_gs::test_toi_hypotheses(size_t start_index, co
     return toi;
 }
 
-void gps_l1c_telemetry_decoder_gs::state_find_align(const Gnss_Synchro &synchro)
+bool gps_l1c_telemetry_decoder_gs::state_find_align(Gnss_Synchro &synchro)
 {
     // The TOI is transmitted at the start of the subframe,
     // i.e. if we are aligned to the secondary code, the first 52 bits received are TOI; not the last as Figure 3.2-3
@@ -185,7 +214,7 @@ void gps_l1c_telemetry_decoder_gs::state_find_align(const Gnss_Synchro &synchro)
     if (d_symbol_history.size() < GPS_L1C_FRAME_BITS)
         {
             // Skip checking for TOI until we have enough bits as to decode the full frame
-            return;
+            return false;
         }
 
     // const size_t maybe_first_subframe_bit = d_symbol_history.size() - GPS_L1C_FRAME_BITS;
@@ -196,31 +225,35 @@ void gps_l1c_telemetry_decoder_gs::state_find_align(const Gnss_Synchro &synchro)
     if (toi < 0)
         {
             // No TOI hypothesis, skip frame search
-            return;
+            return false;
         }
+
     // Try to decode the remainder of the frame
     GpsL1cFrame frame = try_parse_frame(maybe_first_subframe_bit, toi);
     if (!frame.has_any_sf())
         {
             // No frame found, the toi was not properly aligned, keep searching
-            return;
+            return false;
         }
 
-    parse_new_subframe_data(frame);
+    bool ret = parse_new_subframe_data(frame, synchro);
 
     // Frame found! We are aligned, switch to aligned state
     d_frame_position = 0;
     d_stat = 1;
+
+
+    return ret;
 }
 
-void gps_l1c_telemetry_decoder_gs::state_aligned(const Gnss_Synchro &synchro)
+bool gps_l1c_telemetry_decoder_gs::state_aligned(Gnss_Synchro &synchro)
 {
     d_frame_position++;
 
     if (d_frame_position != GPS_L1C_FRAME_BITS)
         {
             // No frame read yet, do nothing
-            return;
+            return false;
         }
 
     const size_t first_subframe_bit = d_symbol_history.size() - GPS_L1C_FRAME_BITS;
@@ -233,7 +266,7 @@ void gps_l1c_telemetry_decoder_gs::state_aligned(const Gnss_Synchro &synchro)
             // We lost lock!
             // TODO: We could search around a bit just in case we are offset by a few samples
             d_stat = 0;
-            return;
+            return false;
         }
 
     GpsL1cFrame frame = try_parse_frame(first_subframe_bit, toi);
@@ -241,13 +274,15 @@ void gps_l1c_telemetry_decoder_gs::state_aligned(const Gnss_Synchro &synchro)
         {
             // TODO: Same as before
             d_stat = 0;
-            return;
+            return false;
         }
 
-    parse_new_subframe_data(frame);
+    bool ret = parse_new_subframe_data(frame, synchro);
 
     // Reset frame pointer if frame parsed successfully
     d_frame_position = 0;
+
+    return ret;
 }
 
 
@@ -276,9 +311,9 @@ GpsL1cFrame gps_l1c_telemetry_decoder_gs::try_parse_frame(size_t start_index, ui
 
     if (!sf2_decoded.empty())
         {
-            out.sf2 = std::array<uint8_t, GPS_L1C_SF_2_DATA_BYTES>();
+            out.sf2 = std::bitset<GPS_L1C_SF_2_DATA_BITS>();
             out.has_sf2 = true;
-            extract_bit_vector_to_array(sf2_decoded, out.sf2);
+            extract_bit_vector_to_bitset(sf2_decoded, out.sf2);
         }
 
     // SF3
@@ -293,9 +328,9 @@ GpsL1cFrame gps_l1c_telemetry_decoder_gs::try_parse_frame(size_t start_index, ui
 
     if (!sf3_decoded.empty())
         {
-            out.sf3 = std::array<uint8_t, GPS_L1C_SF_3_DATA_BYTES>();
+            out.sf3 = std::bitset<GPS_L1C_SF_3_DATA_BITS>();
             out.has_sf3 = true;
-            extract_bit_vector_to_array(sf3_decoded, out.sf3);
+            extract_bit_vector_to_bitset(sf3_decoded, out.sf3);
         }
 
     return out;
@@ -322,19 +357,14 @@ std::array<float, GPS_L1C_SF_2_AND_3_ENCODED_BITS> gps_l1c_telemetry_decoder_gs:
 }
 
 template <size_t SIZE>
-bool gps_l1c_telemetry_decoder_gs::check_subframe_crc(const std::array<uint8_t, SIZE> &bytes, size_t size_in_bits)
+bool gps_l1c_telemetry_decoder_gs::check_subframe_crc(const std::bitset<SIZE> &bits)
 {
-    assert(SIZE * 8 >= size_in_bits);
-
     CRC_GPS_L1C_type crc(GPS_L1C_CRC_POLYNOMIAL);
 
-    const size_t whole_bytes = size_in_bits / 8;
-    crc.process_bytes(bytes.data(), whole_bytes);
-
-    if (size_in_bits != SIZE * 8)
+    // CRC expects bit in "left to right" order, hence we revert again
+    for (size_t i = 0; i < bits.size(); i++)
         {
-            const size_t rem_bits = size_in_bits - whole_bytes * 8;
-            crc.process_bits(bytes[whole_bytes], rem_bits);
+            crc.process_bit(bits[bits.size() - 1 - i]);
         }
 
     printf("CRC: %i\n", crc.checksum());
@@ -342,119 +372,52 @@ bool gps_l1c_telemetry_decoder_gs::check_subframe_crc(const std::array<uint8_t, 
     return crc.checksum() == 0;
 }
 
-void gps_l1c_telemetry_decoder_gs::parse_new_subframe_data(const GpsL1cFrame &frame)
+bool gps_l1c_telemetry_decoder_gs::parse_new_subframe_data(const GpsL1cFrame &frame, Gnss_Synchro &synchro)
 {
-    if (frame.has_sf2 && check_subframe_crc(frame.sf2, GPS_L1C_SF_2_DATA_BITS))
+    if (frame.has_sf2 && check_subframe_crc(frame.sf2))
         {
-            parse_sf2_clock_ephemeris_tow(frame.sf2);
+            d_cnav2_message->decode_sf2(frame.toi, frame.sf2);
         }
 
-    if (frame.has_sf3 && check_subframe_crc(frame.sf3, GPS_L1C_SF_3_DATA_BITS))
+    if (frame.has_sf3 && check_subframe_crc(frame.sf3))
         {
+            d_cnav2_message->decode_sf3(frame.toi, frame.sf3);
         }
+
+    if (d_cnav2_message->have_new_ephemeris())
+        {
+            const std::shared_ptr<Gps_CNAV2_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV2_Ephemeris>(d_cnav2_message->get_ephemeris());
+            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+
+            const auto default_precision = std::cout.precision();
+            std::cout << TEXT_MAGENTA << "New " << ((d_system == CnavSystem::GPS) ? "GPS" : "QZSS")
+                      << " L1C CNAV2 message received in channel " << d_channel
+                      << ": ephemeris from satellite " << d_satellite
+                      << " with CN0=" << std::setprecision(2) << synchro.CN0_dB_hz
+                      << std::setprecision(default_precision) << " dB-Hz" << TEXT_RESET << std::endl;
+        }
+
+    // We have TOI, if we have a recent ephemeris we can update symbol ms and similar
+    synchro.Flag_valid_word = true;
+    // TODO, need to think how to do this?
+    synchro.Flag_PLL_180_deg_phase_locked = false;
+
+    synchro.TOW_at_current_symbol_ms = frame.toi * 18000 + d_cnav2_message->get_ephemeris().tow * 1000;
+    printf("TOW_at_current_symbol = %i\n", synchro.TOW_at_current_symbol_ms);
+
+    return true;
 }
 
 template <size_t SIZE>
-void gps_l1c_telemetry_decoder_gs::extract_bit_vector_to_array(const std::vector<int> &bits, std::array<uint8_t, SIZE> &target)
+void gps_l1c_telemetry_decoder_gs::extract_bit_vector_to_bitset(const std::vector<int> &bits, std::bitset<SIZE> &target)
 {
-    assert(SIZE >= bits.size() / 8);
+    assert(SIZE >= bits.size());
 
-    target.fill(0);
+    target.reset();
 
+    // Notice the reverse order of the bits sequence, required by the message decoder
     for (size_t i = 0; i < bits.size(); i++)
         {
-            if (bits[i] > 0)
-                {
-                    const size_t byte = i / 8;
-                    const size_t bit_pos = i % 8;
-                    // Bits are read "left to right", so we fill MSB first
-                    const size_t shift = 7 - bit_pos;
-                    target[byte] |= 1 << shift;
-                }
+            target[bits.size() - 1 - i] = bits[i] > 0;
         }
-}
-
-
-void gps_l1c_telemetry_decoder_gs::parse_sf2_clock_ephemeris_tow(const std::array<uint8_t, GPS_L1C_SF_2_DATA_BYTES> &sf2)
-{
-    auto wn = static_cast<uint16_t>(extract_unsigned(sf2, 0, 13));
-    auto itow = static_cast<uint8_t>(extract_unsigned(sf2, 13, 21));
-    auto top = static_cast<uint16_t>(extract_unsigned(sf2, 21, 32));
-    auto l1c_health = static_cast<bool>(extract_unsigned(sf2, 32, 33));
-    auto uraed = static_cast<int16_t>(extract_signed(sf2, 33, 38));
-    auto toe = static_cast<uint16_t>(extract_unsigned(sf2, 38, 49));
-    auto delta_A = static_cast<int32_t>(extract_signed(sf2, 49, 75));
-    auto dot_A = static_cast<int32_t>(extract_signed(sf2, 75, 100));
-    auto delta_n = static_cast<int32_t>(extract_signed(sf2, 100, 117));
-    auto delta_dot_n = static_cast<int32_t>(extract_signed(sf2, 117, 140));
-    auto m_0 = static_cast<int64_t>(extract_signed(sf2, 140, 173));
-    auto e = static_cast<uint64_t>(extract_unsigned(sf2, 173, 206));
-    auto w = static_cast<int64_t>(extract_signed(sf2, 206, 239));
-    auto Omega = static_cast<int64_t>(extract_signed(sf2, 239, 272));
-    auto i = static_cast<int64_t>(extract_signed(sf2, 272, 305));
-    auto delta_dot_Omega = static_cast<int32_t>(extract_signed(sf2, 305, 322));
-    auto idot = static_cast<int16_t>(extract_signed(sf2, 322, 337));
-    auto cisn = static_cast<int16_t>(extract_signed(sf2, 337, 353));
-    auto cicn = static_cast<int16_t>(extract_signed(sf2, 353, 369));
-    auto crsn = static_cast<int32_t>(extract_signed(sf2, 369, 393));
-    auto crcn = static_cast<int32_t>(extract_signed(sf2, 393, 417));
-    auto cusn = static_cast<int32_t>(extract_signed(sf2, 417, 438));
-    auto cucn = static_cast<int32_t>(extract_signed(sf2, 438, 459));
-    auto uraned0 = static_cast<int8_t>(extract_signed(sf2, 459, 464));
-    auto uraned1 = static_cast<uint8_t>(extract_unsigned(sf2, 464, 467));
-    auto uraned2 = static_cast<uint8_t>(extract_unsigned(sf2, 467, 470));
-    auto af0n = static_cast<int32_t>(extract_signed(sf2, 470, 496));
-    auto af1n = static_cast<int32_t>(extract_signed(sf2, 496, 516));
-    auto af2n = static_cast<int16_t>(extract_signed(sf2, 516, 526));
-    auto tgd = static_cast<int16_t>(extract_signed(sf2, 526, 539));
-    auto isc_l1cp = static_cast<int16_t>(extract_signed(sf2, 539, 552));
-    auto isc_l1cd = static_cast<int16_t>(extract_signed(sf2, 552, 565));
-    auto isf = static_cast<bool>(extract_unsigned(sf2, 565, 566));
-    auto wnop = static_cast<uint8_t>(extract_unsigned(sf2, 567, 574));
-    auto reserved = static_cast<uint16_t>(extract_unsigned(sf2, 574, 576));
-}
-
-template <size_t SIZE>
-uint64_t gps_l1c_telemetry_decoder_gs::extract_unsigned(const std::array<uint8_t, SIZE> &bytes, size_t first_bit, size_t last_bit)
-{
-    uint64_t out = 0;
-    const size_t numbits = last_bit - first_bit;
-
-    for (size_t bit = first_bit; bit < last_bit; bit++)
-        {
-            const size_t byte = bit / 8;
-            const size_t bitpos = bit % 8;
-
-            // Array is MSB to LSB
-            const uint8_t mask = 1 << (7 - bitpos);
-            if ((bytes[byte] & mask) != 0)
-                {
-                    const size_t progress = bit - first_bit;
-
-                    // We fill the number MSB to LSB
-                    out |= 1ULL << (numbits - 1 - progress);
-                }
-        }
-
-    return out;
-}
-
-template <size_t SIZE>
-int64_t gps_l1c_telemetry_decoder_gs::extract_signed(const std::array<uint8_t, SIZE> &bytes, size_t first_bit, size_t last_bit)
-{
-    auto out = static_cast<int64_t>(extract_unsigned(bytes, first_bit, last_bit));
-
-    const size_t byte = first_bit / 8;
-    const size_t bitpos = first_bit % 8;
-    const uint8_t mask = 1 << (7 - bitpos);
-
-    const size_t numbits = last_bit - first_bit;
-
-    // Check if the number was negative
-    if ((bytes[byte] & mask) != 0)
-        {
-            out -= 1LL << numbits;
-        }
-
-    return out;
 }

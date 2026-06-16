@@ -14,7 +14,6 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "rtklib_conversions.h"
 #include "MATH_CONSTANTS.h"          // for GNSS_PI, TWO_PI
 #include "beidou_dnav_ephemeris.h"   // for Beidou_Dnav_Ephemeris
 #include "galileo_almanac.h"         // for Galileo_Almanac
@@ -26,6 +25,7 @@
 #include "gps_almanac.h"             // for Gps_Almanac
 #include "gps_cnav_ephemeris.h"      // for Gps_CNAV_Ephemeris
 #include "gps_ephemeris.h"           // for Gps_Ephemeris
+#include "rtklib_conversions.h"
 #include "rtklib_rtkcmn.h"
 #include <cmath>
 #include <vector>
@@ -779,6 +779,17 @@ eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph)
     rtklib_sat.has_orbit_cross_track_correction_m = 0.0;
     rtklib_sat.has_clock_correction_m = 0.0;
     rtklib_sat.apply_has_corrections = false;
+
+    return rtklib_sat;
+}
+
+eph_t eph_to_rtklib(const Gps_CNAV2_Ephemeris& gps_cnav2_eph)
+{
+    // Most parameters are the same as in Gps_CNAV_Ephemeris
+    eph_t rtklib_sat = eph_to_rtklib(static_cast<const Gps_CNAV_Ephemeris&>(gps_cnav2_eph));
+    rtklib_sat.sat = satno(SYS_GPS, gps_cnav2_eph.PRN);
+
+    // TODO: Timing parameters may be different, check IS-GPS
 
     return rtklib_sat;
 }

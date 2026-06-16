@@ -24,7 +24,6 @@
  */
 
 
-#include "gnss_block_factory.h"
 #include "acquisition_interface.h"
 #include "array_signal_conditioner.h"
 #include "beamformer_filter.h"
@@ -44,9 +43,11 @@
 #include "galileo_e1_tcp_connector_tracking.h"
 #include "galileo_telemetry_decoder_gs.h"
 #include "glonass_gnav_telemetry_decoder_gs.h"
+#include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_sdr_string_literals.h"
+#include "gps_cnav_navigation_message.h"
 #include "gps_l1_ca_gaussian_tracking.h"
 #include "gps_l1_ca_kf_tracking.h"
 #include "gps_l1_ca_tcp_connector_tracking.h"
@@ -754,6 +755,7 @@ std::unique_ptr<TelemetryDecoderInterface> get_tlm_block(
         {
             telemetry = gps_l5_make_telemetry_decoder_gs(get_tlm_conf(configuration, role), CnavSystem::QZSS);
         }
+    // TODO: QZSS L1C
 
     if (telemetry)
         {

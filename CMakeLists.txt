@@ -338,7 +338,7 @@ if(UNIX)
 endif()
 
 # If this is an out-of-tree build, do not pollute the original source directory
-if(${GNSSSDR_BINARY_DIR} MATCHES ${GNSSSDR_SOURCE_DIR})
+if("${GNSSSDR_BINARY_DIR}" STREQUAL "${GNSSSDR_SOURCE_DIR}")
     set(LOCAL_INSTALL_BASE_DIR ${GNSSSDR_SOURCE_DIR})
 else()
     set(LOCAL_INSTALL_BASE_DIR ${GNSSSDR_BINARY_DIR})
@@ -497,7 +497,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         RESULT_VARIABLE _res ERROR_VARIABLE _err
         ERROR_STRIP_TRAILING_WHITESPACE
     )
-    if(${_res} STREQUAL "0")
+    if("${_res}" STREQUAL "0")
         # output is in error stream
         string(REGEX MATCH "^Apple.*" IS_APPLE ${_err})
         if("${IS_APPLE}" STREQUAL "")
@@ -513,7 +513,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
             string(REGEX MATCH "(clang-[0-9.]+)" CLANG_APPLE_VERSION ${_err})
             string(REGEX MATCH "[0-9.]+" CLANG_VERSION ${CLANG_APPLE_VERSION})
         endif()
-        if(${CLANG_VERSION} VERSION_LESS "${MIN_VERSION}")
+        if("${CLANG_VERSION}" VERSION_LESS "${MIN_VERSION}")
             message(WARNING "\nThe compiler selected to build GNSS-SDR (${APPLE_STR}Clang version ${CLANG_VERSION} : ${CMAKE_CXX_COMPILER}) is older than that officially supported (${MIN_VERSION} minimum). This build may or not work. We highly recommend using Apple Clang version ${GNSSSDR_APPLECLANG_MIN_VERSION} or more recent, or Clang version ${GNSSSDR_CLANG_MIN_VERSION} or more recent.")
         endif()
     else()
@@ -644,7 +644,7 @@ if(CMAKE_VERSION VERSION_LESS 3.1)
     set_property(TARGET Threads::Threads PROPERTY IMPORTED_LINK_INTERFACE_LANGUAGES "CXX")
     # Fix bug in Debian 8.11
     if("${LINUX_DISTRIBUTION}" MATCHES "Debian")
-        if(${LINUX_VER} VERSION_LESS 8.12)
+        if("${LINUX_VER}" VERSION_LESS 8.12)
             if(ARCH_64BITS)
                 set(FIX_PTHREADS_LOCATION "x86_64-linux-gnu/")
             endif()
@@ -1769,7 +1769,7 @@ if(ARMADILLO_FOUND)
     set_package_properties(Armadillo PROPERTIES
         DESCRIPTION "C++ library for linear algebra and scientific computing (found: v${ARMADILLO_VERSION_STRING})"
     )
-    if(${ARMADILLO_VERSION_STRING} VERSION_LESS ${GNSSSDR_ARMADILLO_MIN_VERSION})
+    if("${ARMADILLO_VERSION_STRING}" VERSION_LESS "${GNSSSDR_ARMADILLO_MIN_VERSION}")
         unset(Armadillo::armadillo CACHE)
         unset(ARMADILLO_FOUND CACHE)
         set(ENABLE_OWN_ARMADILLO ON)
@@ -1832,10 +1832,10 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
         set(ARMADILLO_TOOLCHAIN_FILE "")
     endif()
     set(ARMADILLO_CXX_VERSION "")
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 4.8.3)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND "${CMAKE_CXX_COMPILER_VERSION}" VERSION_LESS 4.8.3)
         set(ARMADILLO_CXX_VERSION -DCMAKE_CXX_FLAGS=-std=c++11)
     endif()
-    if(${GNSSSDR_ARMADILLO_LOCAL_VERSION} MATCHES "12.8")
+    if("${GNSSSDR_ARMADILLO_LOCAL_VERSION}" MATCHES "12.8")
         ExternalProject_Add(armadillo-${armadillo_RELEASE}
             PREFIX ${GNSSSDR_BINARY_DIR}/armadillo-${armadillo_RELEASE}
             GIT_REPOSITORY https://gitlab.com/conradsnicta/armadillo-code.git

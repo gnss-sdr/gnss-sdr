@@ -337,12 +337,18 @@ if(UNIX)
     endif()
 endif()
 
-# If this is an out-of-tree build, do not pollute the original source directory
-if("${GNSSSDR_BINARY_DIR}" STREQUAL "${GNSSSDR_SOURCE_DIR}")
-    set(LOCAL_INSTALL_BASE_DIR ${GNSSSDR_SOURCE_DIR})
-else()
+# Keep the legacy gnss-sdr/install layout when the build directory is under the
+# source tree, but avoid writing there for genuinely external build trees.
+file(RELATIVE_PATH _gnsssdr_binary_dir_relative_to_source
+    "${GNSSSDR_SOURCE_DIR}"
+    "${GNSSSDR_BINARY_DIR}"
+)
+if("${_gnsssdr_binary_dir_relative_to_source}" MATCHES "^\\.\\.($|/)")
     set(LOCAL_INSTALL_BASE_DIR ${GNSSSDR_BINARY_DIR})
+else()
+    set(LOCAL_INSTALL_BASE_DIR ${GNSSSDR_SOURCE_DIR})
 endif()
+unset(_gnsssdr_binary_dir_relative_to_source)
 
 # Determine if CMake scripts make use of target_sources()
 if(CMAKE_VERSION VERSION_GREATER 3.13)

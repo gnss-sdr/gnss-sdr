@@ -4,7 +4,7 @@
 # SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
-
+include(XcodeRemoveWarningDuplicates)
 find_package(benchmark QUIET)
 
 if(NOT benchmark_FOUND)
@@ -97,6 +97,7 @@ macro(add_benchmark)
         foreach(dependency IN LISTS list_dependencies)
             target_link_libraries(${ARGV0} PRIVATE ${dependency})
         endforeach()
+        xcode_remove_warning_duplicates("${ARGV0}")
     endif()
     add_custom_command(TARGET ${ARGV0} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${ARGV0}>

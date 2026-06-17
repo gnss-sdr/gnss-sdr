@@ -56,7 +56,7 @@ else()
 endif()
 
 find_package(Protobuf REQUIRED)
-if(${Protobuf_VERSION} VERSION_LESS "3.0.0")
+if("${Protobuf_VERSION}" VERSION_LESS "3.0.0")
     message(FATAL_ERROR "Fatal error: Protocol Buffers >= v3.0.0 required.")
 endif()
 

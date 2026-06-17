@@ -1394,7 +1394,7 @@ if(NOT VOLKGNSSSDR_FOUND)
         ExternalProject_Add(volk_gnsssdr_module
             PREFIX ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module
             SOURCE_DIR ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
-            BINARY_DIR ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/build
+            BINARY_DIR ${VOLK_GNSSSDR_BUILD_DIR}
             CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
                 -DCMAKE_BUILD_TYPE=${VOLK_GNSSSDR_CMAKE_BUILD_TYPE}
                 -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
@@ -1458,7 +1458,7 @@ if(NOT VOLKGNSSSDR_FOUND)
             ExternalProject_Add(volk_gnsssdr_module
                 PREFIX ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module
                 SOURCE_DIR ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
-                BINARY_DIR ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/build
+                BINARY_DIR ${VOLK_GNSSSDR_BUILD_DIR}
                 CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
                     -DCMAKE_BUILD_TYPE=${VOLK_GNSSSDR_CMAKE_BUILD_TYPE}
                     -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
@@ -1492,7 +1492,7 @@ if(NOT VOLKGNSSSDR_FOUND)
             ExternalProject_Add(volk_gnsssdr_module
                 PREFIX ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module
                 SOURCE_DIR ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
-                BINARY_DIR ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/build
+                BINARY_DIR ${VOLK_GNSSSDR_BUILD_DIR}
                 CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
                     -DCMAKE_BUILD_TYPE=${VOLK_GNSSSDR_CMAKE_BUILD_TYPE}
                     -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
@@ -1513,20 +1513,20 @@ if(NOT VOLKGNSSSDR_FOUND)
     endif()
 
     add_library(volk_gnsssdr UNKNOWN IMPORTED)
-    set_property(TARGET volk_gnsssdr PROPERTY IMPORTED_LOCATION ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX})
-    set(VOLK_GNSSSDR_INCLUDE_DIRS "${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/build/include/;${GNSSSDR_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/include;${ORC_INCLUDE_DIRS}")
+    set_property(TARGET volk_gnsssdr PROPERTY IMPORTED_LOCATION ${VOLK_GNSSSDR_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX})
+    set(VOLK_GNSSSDR_INCLUDE_DIRS "${VOLK_GNSSSDR_BUILD_DIR}/include/;${GNSSSDR_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/include;${ORC_INCLUDE_DIRS}")
     set(VOLK_GNSSSDR_LIBRARIES volk_gnsssdr ${ORC_LIBRARIES_STATIC})
     if(CPUFEATURES_FOUND)
         set(VOLK_GNSSSDR_LIBRARIES ${VOLK_GNSSSDR_LIBRARIES} CpuFeature::cpu_features)
     endif()
 
     if(NOT TARGET Volkgnsssdr::volkgnsssdr)
-        file(MAKE_DIRECTORY ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/build/include)
+        file(MAKE_DIRECTORY ${VOLK_GNSSSDR_BUILD_DIR}/include)
         add_library(Volkgnsssdr::volkgnsssdr STATIC IMPORTED)
         add_dependencies(Volkgnsssdr::volkgnsssdr volk_gnsssdr_module)
         set_target_properties(Volkgnsssdr::volkgnsssdr PROPERTIES
             IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-            IMPORTED_LOCATION "${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}"
+            IMPORTED_LOCATION "${VOLK_GNSSSDR_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}"
             INTERFACE_INCLUDE_DIRECTORIES "${VOLK_GNSSSDR_INCLUDE_DIRS}"
             INTERFACE_LINK_LIBRARIES "${VOLK_GNSSSDR_LIBRARIES}"
         )
@@ -1536,7 +1536,7 @@ if(NOT VOLKGNSSSDR_FOUND)
                     Volkgnsssdr::volkgnsssdr INTERFACE_LINK_LIBRARIES
                 )
                 list(APPEND _volkgnsssdr_link_libraries
-                    "${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}"
+                    "${VOLK_GNSSSDR_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}"
                 )
                 set_target_properties(Volkgnsssdr::volkgnsssdr PROPERTIES
                     INTERFACE_LINK_LIBRARIES "${_volkgnsssdr_link_libraries}"
@@ -1548,19 +1548,19 @@ if(NOT VOLKGNSSSDR_FOUND)
 
     if(CMAKE_VERSION VERSION_LESS 3.2)
         add_custom_command(TARGET volk_gnsssdr_module POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
+            COMMAND ${CMAKE_COMMAND} -E copy ${VOLK_GNSSSDR_INSTALL_PREFIX}/bin/volk_gnsssdr_profile
                 ${LOCAL_INSTALL_BASE_DIR}/install/volk_gnsssdr_profile
         )
     else()
         add_custom_command(TARGET volk_gnsssdr_module POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
+            COMMAND ${CMAKE_COMMAND} -E copy ${VOLK_GNSSSDR_INSTALL_PREFIX}/bin/volk_gnsssdr_profile
                 ${LOCAL_INSTALL_BASE_DIR}/install/volk_gnsssdr_profile
             BYPRODUCTS ${LOCAL_INSTALL_BASE_DIR}/install/volk_gnsssdr_profile
         )
     endif()
 
     add_custom_command(TARGET volk_gnsssdr_module POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr-config-info
+        COMMAND ${CMAKE_COMMAND} -E copy ${VOLK_GNSSSDR_INSTALL_PREFIX}/bin/volk_gnsssdr-config-info
             ${LOCAL_INSTALL_BASE_DIR}/install/volk_gnsssdr-config-info
     )
 
@@ -2644,7 +2644,7 @@ int main()
         endif()
     endif()
     if(${Protobuf_VERSION} VERSION_LESS ${GNSSSDR_PROTOBUF_MIN_VERSION})
-        if(NOT (${Protobuf_VERSION} EQUAL "0.0.0"))
+        if(NOT ("${Protobuf_VERSION}" VERSION_EQUAL "0.0.0"))
             set_package_properties(Protobuf PROPERTIES
                 PURPOSE "Protocol Buffers found (v${Protobuf_VERSION}) is too old (> v${GNSSSDR_PROTOBUF_MIN_VERSION} needed)."
             )

@@ -47,6 +47,13 @@ gnss_shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
     Concurrent_Queue<pmt::pmt_t>* queue,
     bool stop_flowgraph);
 
+gnss_shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
+    size_t sizeof_stream_item,
+    uint64_t nitems,
+    Concurrent_Queue<pmt::pmt_t>* queue,
+    bool stop_flowgraph,
+    int n_streams);
+
 /*!
  * \brief Implementation of a GNU Radio block that sends a STOP message to the
  * control queue right after a specific number of samples have passed through it.
@@ -72,9 +79,18 @@ private:
         Concurrent_Queue<pmt::pmt_t>* queue,
         bool stop_flowgraph);
 
+    friend gnss_shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
+        size_t sizeof_stream_item,
+        uint64_t nitems,
+        Concurrent_Queue<pmt::pmt_t>* queue,
+        bool stop_flowgraph,
+        int n_streams);
+
     Gnss_Sdr_Valve(size_t sizeof_stream_item,
         uint64_t nitems,
-        Concurrent_Queue<pmt::pmt_t>* queue, bool stop_flowgraph);
+        Concurrent_Queue<pmt::pmt_t>* queue,
+        bool stop_flowgraph,
+        int n_streams);
 
     uint64_t d_nitems;
     uint64_t d_ncopied_items;

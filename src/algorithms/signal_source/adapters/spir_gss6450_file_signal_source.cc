@@ -233,7 +233,7 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInte
 
     for (int32_t i = 0; i < n_channels_; i++)
         {
-            valve_vec_.emplace_back(gnss_sdr_make_valve(sizeof(gr_complex), samples_, queue));
+            valve_vec_.emplace_back(gnss_sdr_make_valve(sizeof(gr_complex), samples_, queue, true, 1));
             if (dump_)
                 {
                     std::string tmp_str = dump_filename_ + "_ch" + std::to_string(i);
@@ -261,9 +261,9 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInte
         {
             LOG(ERROR) << "A signal source does not have an input stream";
         }
-    if (out_streams_ > 1)
+    if (out_streams_ == 0)
         {
-            LOG(ERROR) << "This implementation only supports one output stream";
+            LOG(ERROR) << "A signal source must have at least one output stream";
         }
 }
 

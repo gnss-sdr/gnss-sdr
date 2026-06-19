@@ -26,34 +26,44 @@
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
 #else
+#include <absl/log/check.h>
 #include <absl/log/log.h>
 #endif
 
 Gnss_Sdr_Valve::Gnss_Sdr_Valve(size_t sizeof_stream_item,
     uint64_t nitems,
     Concurrent_Queue<pmt::pmt_t>* queue,
-    bool stop_flowgraph) : gr::sync_block("valve",
-                               gr::io_signature::make(1, 20, sizeof_stream_item),
-                               gr::io_signature::make(1, 20, sizeof_stream_item)),
-                           d_nitems(nitems),
-                           d_ncopied_items(0),
-                           d_queue(queue),
-                           d_stop_flowgraph(stop_flowgraph),
-                           d_open_valve(false)
+    bool stop_flowgraph,
+    int n_streams) : gr::sync_block("valve",
+                         gr::io_signature::make(n_streams, n_streams, sizeof_stream_item),
+                         gr::io_signature::make(n_streams, n_streams, sizeof_stream_item)),
+                     d_nitems(nitems),
+                     d_ncopied_items(0),
+                     d_queue(queue),
+                     d_stop_flowgraph(stop_flowgraph),
+                     d_open_valve(false)
 {
 }
 
 
 gnss_shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(size_t sizeof_stream_item, uint64_t nitems, Concurrent_Queue<pmt::pmt_t>* queue, bool stop_flowgraph)
 {
-    gnss_shared_ptr<Gnss_Sdr_Valve> valve_(new Gnss_Sdr_Valve(sizeof_stream_item, nitems, queue, stop_flowgraph));
+    gnss_shared_ptr<Gnss_Sdr_Valve> valve_(new Gnss_Sdr_Valve(sizeof_stream_item, nitems, queue, stop_flowgraph, 1));
+    return valve_;
+}
+
+
+gnss_shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(size_t sizeof_stream_item, uint64_t nitems, Concurrent_Queue<pmt::pmt_t>* queue, bool stop_flowgraph, int n_streams)
+{
+    CHECK(n_streams > 0) << "A valve must have at least one stream";
+    gnss_shared_ptr<Gnss_Sdr_Valve> valve_(new Gnss_Sdr_Valve(sizeof_stream_item, nitems, queue, stop_flowgraph, n_streams));
     return valve_;
 }
 
 
 gnss_shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(size_t sizeof_stream_item, uint64_t nitems, Concurrent_Queue<pmt::pmt_t>* queue)
 {
-    gnss_shared_ptr<Gnss_Sdr_Valve> valve_(new Gnss_Sdr_Valve(sizeof_stream_item, nitems, queue, true));
+    gnss_shared_ptr<Gnss_Sdr_Valve> valve_(new Gnss_Sdr_Valve(sizeof_stream_item, nitems, queue, true, 1));
     return valve_;
 }
 
@@ -70,6 +80,11 @@ int Gnss_Sdr_Valve::work(int noutput_items,
 {
     if (d_open_valve == false)
         {
+            if (input_items.size() != output_items.size())
+                {
+                    LOG(ERROR) << "Valve input and output stream counts must match";
+                    return -1;
+                }
             if (d_ncopied_items >= d_nitems)
                 {
                     LOG(INFO) << "Stopping receiver, " << d_ncopied_items << " samples processed";
@@ -92,6 +107,11 @@ int Gnss_Sdr_Valve::work(int noutput_items,
                 }
             d_ncopied_items += n;
             return n;
+        }
+    if (input_items.size() != output_items.size())
+        {
+            LOG(ERROR) << "Valve input and output stream counts must match";
+            return -1;
         }
     for (size_t ch = 0; ch < output_items.size(); ch++)
         {

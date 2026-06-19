@@ -198,7 +198,7 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(const ConfigurationIn
     DLOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
     std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]\n";
 
-    valve_ = gnss_sdr_make_valve(item_size_, samples_, queue);
+    valve_ = gnss_sdr_make_valve(item_size_, samples_, queue, true, n_channels_);
     DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
 
     if (enable_throttle_control_)

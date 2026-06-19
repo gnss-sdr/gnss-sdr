@@ -88,9 +88,6 @@ public:
     bool have_new_ephemeris();
 
 private:
-    uint64_t read_navigation_unsigned(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
-    int64_t read_navigation_signed(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
-    bool read_navigation_bool(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
     void decode_clock_fields(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& data_bits);
 
     Gps_CNAV_Ephemeris ephemeris_record{};

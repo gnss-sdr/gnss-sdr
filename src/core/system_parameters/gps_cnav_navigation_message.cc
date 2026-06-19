@@ -16,8 +16,9 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "gps_cnav_navigation_message.h"
 #include "gnss_satellite.h"
+#include "gps_cnav_navigation_message.h"
+#include "read_navigation.h"
 #include <cmath>   // for std::sqrt
 #include <limits>  // for std::numeric_limits
 
@@ -37,41 +38,6 @@ Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message(CnavSystem system)
     b_flag_iono_valid = false;
     b_flag_utc_valid = false;
     b_flag_clock_valid = false;
-}
-
-
-bool Gps_CNAV_Navigation_Message::read_navigation_bool(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
-{
-    bool value = bits[GPS_CNAV_DATA_PAGE_BITS - parameter[0].first];
-    return value;
-}
-
-
-uint64_t Gps_CNAV_Navigation_Message::read_navigation_unsigned(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
-{
-    uint64_t value = 0ULL;
-    for (const auto& p : parameter)
-        {
-            for (int32_t j = 0; j < p.second; j++)
-                {
-                    value = (value << 1) | static_cast<uint64_t>(bits[GPS_CNAV_DATA_PAGE_BITS - p.first - j]);
-                }
-        }
-    return value;
-}
-
-
-int64_t Gps_CNAV_Navigation_Message::read_navigation_signed(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
-{
-    int64_t value = (bits[GPS_CNAV_DATA_PAGE_BITS - parameter[0].first] == 1) ? -1LL : 0LL;
-    for (const auto& p : parameter)
-        {
-            for (int32_t j = 0; j < p.second; j++)
-                {
-                    value = (value << 1) | static_cast<int64_t>(bits[GPS_CNAV_DATA_PAGE_BITS - p.first - j]);
-                }
-        }
-    return value;
 }
 
 

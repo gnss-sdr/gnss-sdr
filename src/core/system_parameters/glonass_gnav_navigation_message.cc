@@ -16,10 +16,11 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "glonass_gnav_navigation_message.h"
 #include "MATH_CONSTANTS.h"  // for TWO_N20, TWO_N30, TWO_N14, TWO_N15, TWO_N18
 #include "display.h"
+#include "glonass_gnav_navigation_message.h"
 #include "gnss_satellite.h"
+#include "read_navigation.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <cstddef>   // for size_t
@@ -179,44 +180,6 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
     // All other conditions are assumed errors.
     return false;
 }
-
-
-bool Glonass_Gnav_Navigation_Message::read_navigation_bool(const std::bitset<GLONASS_GNAV_STRING_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
-{
-    bool value = bits[GLONASS_GNAV_STRING_BITS - parameter[0].first];
-    return value;
-}
-
-
-uint64_t Glonass_Gnav_Navigation_Message::read_navigation_unsigned(const std::bitset<GLONASS_GNAV_STRING_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
-{
-    uint64_t value = 0ULL;
-    for (const auto& p : parameter)
-        {
-            for (int32_t j = 0; j < p.second; j++)
-                {
-                    value = (value << 1U) | static_cast<uint64_t>(bits[GLONASS_GNAV_STRING_BITS - p.first - j]);
-                }
-        }
-    return value;
-}
-
-
-int64_t Glonass_Gnav_Navigation_Message::read_navigation_signed(const std::bitset<GLONASS_GNAV_STRING_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
-{
-    int64_t value = 0LL;
-    int64_t sign = (bits[GLONASS_GNAV_STRING_BITS - parameter[0].first] == 1) ? -1LL : 1LL;
-
-    for (const auto& p : parameter)
-        {
-            for (int32_t j = 1; j < p.second; j++)
-                {
-                    value = (value << 1) + bits[GLONASS_GNAV_STRING_BITS - p.first - j];
-                }
-        }
-    return (sign * value);
-}
-
 
 void Glonass_Gnav_Navigation_Message::update_kp_leap_second_state()
 {

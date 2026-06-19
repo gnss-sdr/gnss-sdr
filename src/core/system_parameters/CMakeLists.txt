@@ -99,6 +99,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     tow_to_trk.h
     qzss.h
     signal_flag.h
+    read_navigation.h
 )
 
 list(SORT SYSTEM_PARAMETERS_HEADERS)

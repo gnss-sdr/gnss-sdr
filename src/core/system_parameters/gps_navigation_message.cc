@@ -17,8 +17,9 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "gps_navigation_message.h"
 #include "gnss_satellite.h"
+#include "gps_navigation_message.h"
+#include "read_navigation.h"
 #include <array>
 #include <cmath>     // for fmod, abs, floor
 #include <cstring>   // for memcpy
@@ -235,41 +236,6 @@ void Gps_Navigation_Message::decode_qzss_almanac_epoch_health(const std::bitset<
         {
             almanacHealth[qzss_prn_from_lnav_sv_id(sv_id)] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, *health_fields[sv_id - 1]));
         }
-}
-
-
-bool Gps_Navigation_Message::read_navigation_bool(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
-{
-    bool value = bits[GPS_SUBFRAME_BITS - parameter[0].first];
-    return value;
-}
-
-
-uint64_t Gps_Navigation_Message::read_navigation_unsigned(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
-{
-    uint64_t value = 0ULL;
-    for (const auto& p : parameter)
-        {
-            for (int32_t j = 0; j < p.second; ++j)
-                {
-                    value = (value << 1) | (bits.test(GPS_SUBFRAME_BITS - p.first - j) ? 1 : 0);
-                }
-        }
-    return value;
-}
-
-
-int64_t Gps_Navigation_Message::read_navigation_signed(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
-{
-    int64_t value = (bits[GPS_SUBFRAME_BITS - parameter[0].first] == 1) ? -1LL : 0LL;
-    for (const auto& p : parameter)
-        {
-            for (int32_t j = 0; j < p.second; j++)
-                {
-                    value = (value << 1) | static_cast<int64_t>(bits[GPS_SUBFRAME_BITS - p.first - j]);
-                }
-        }
-    return value;
 }
 
 

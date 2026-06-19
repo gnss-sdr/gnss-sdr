@@ -18,6 +18,7 @@
 
 #include "beidou_dnav_navigation_message.h"
 #include "gnss_satellite.h"
+#include "read_navigation.h"
 #include <cmath>     // for cos, sin, fmod, sqrt, atan2, fabs, floor
 #include <iostream>  // for string, operator<<, cout, ostream
 #include <limits>    // for std::numeric_limits
@@ -150,47 +151,6 @@ void Beidou_Dnav_Navigation_Message::advance_d2_ephemeris_page(int32_t page_ID, 
             d_d2_expected_page = 1;
             d_d2_expected_sow = 0.0;
         }
-}
-
-
-bool Beidou_Dnav_Navigation_Message::read_navigation_bool(
-    const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits,
-    const std::vector<std::pair<int32_t, int32_t>>& parameter) const
-{
-    bool value = bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - parameter[0].first];
-    return value;
-}
-
-
-uint64_t Beidou_Dnav_Navigation_Message::read_navigation_unsigned(
-    const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits,
-    const std::vector<std::pair<int32_t, int32_t>>& parameter) const
-{
-    uint64_t value = 0ULL;
-    for (const auto& param : parameter)
-        {
-            for (int32_t j = 0; j < param.second; j++)
-                {
-                    value = (value << 1U) | static_cast<uint64_t>(bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - param.first - j]);
-                }
-        }
-    return value;
-}
-
-
-int64_t Beidou_Dnav_Navigation_Message::read_navigation_signed(
-    const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits,
-    const std::vector<std::pair<int32_t, int32_t>>& parameter) const
-{
-    int64_t value = bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - parameter[0].first] ? -1LL : 0LL;
-    for (const auto& param : parameter)
-        {
-            for (int32_t j = 0; j < param.second; j++)
-                {
-                    value = (value << 1) | static_cast<int64_t>(bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - param.first - j]);
-                }
-        }
-    return value;
 }
 
 

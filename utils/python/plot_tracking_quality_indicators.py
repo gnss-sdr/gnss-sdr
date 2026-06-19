@@ -1,16 +1,15 @@
 """
  plot_tracking_quality_indicators.py
 
-
-
  Irene Pérez Riega, 2023. iperrie@inta.es
+ Minhaj Uddin Ahmad, 2026. mahmad12@crimson.ua.edu
 
  Modifiable in the file:
    channels             - Number of channels
-   firs_channel         - Number of the first channel
+   first_channel         - Number of the first channel
    path                 - Path to folder which contains raw files
    fig_path             - Path where doppler plots will be save
-   'trk_dump_ch'        - Fixed part of the tracking dump files names
+   file_prefix          - Fixed part of the tracking dump files names
 
  -----------------------------------------------------------------------------
 
@@ -35,12 +34,13 @@ plot_names = []
 # ---------- CHANGE HERE:
 channels = 5
 first_channel = 0
-path = '/home/labnav/Desktop/TEST_IRENE/tracking'
-fig_path = '/home/labnav/Desktop/TEST_IRENE/PLOTS/TrackingQualityIndicator'
+path = '../../../out/'
+fig_path = '../../../PLOTS/TrackingQualityIndicator'
+file_prefix = "track_ch"
 
 for N in range(1, channels + 1):
     tracking_log_path = os.path.join(path,
-                                     f'trk_dump_ch{N-1+first_channel}.dat')
+                                     f'{file_prefix}{N-1+first_channel}.dat')
     GNSS_tracking.append(dll_pll_veml_read_tracking_dump(tracking_log_path))
 
 if not os.path.exists(fig_path):
@@ -59,7 +59,7 @@ plt.legend(plot_names)
 plt.savefig(os.path.join(fig_path,
                          f'carrier_lock_test '
                          f'{str(round(np.mean(GNSS_tracking[n]["PRN"])))}'))
-plt.show()
+# plt.show()
 
 # Second plot
 plt.figure()
@@ -73,4 +73,4 @@ for n in range(len(GNSS_tracking)):
 plt.legend(plot_names)
 plt.savefig(os.path.join(
     fig_path, f'SV {str(round(np.mean(GNSS_tracking[n]["PRN"])))}'))
-plt.show()
+# plt.show()

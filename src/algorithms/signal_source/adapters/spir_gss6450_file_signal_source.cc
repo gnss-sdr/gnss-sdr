@@ -403,25 +403,21 @@ uint32_t SpirGSS6450FileSignalSource::bits_from_header(const std::string& header
     const bool is_fpga_a = filename.find(".A.") != std::string::npos || filename.find(".a.") != std::string::npos;
 
     std::vector<uint32_t> candidates;
-    for (std::vector<std::pair<int, uint32_t>>::const_iterator signal = recorded_signals.begin();
-        signal != recorded_signals.end();
-        ++signal)
+    for (const auto& recorded_signal : recorded_signals)
         {
-            if ((is_fpga_a && signal->first <= 2) ||
-                (is_fpga_b && signal->first >= 3) ||
+            if ((is_fpga_a && recorded_signal.first <= 2) ||
+                (is_fpga_b && recorded_signal.first >= 3) ||
                 (!is_fpga_a && !is_fpga_b))
                 {
-                    candidates.push_back(signal->second);
+                    candidates.push_back(recorded_signal.second);
                 }
         }
 
     if (candidates.empty())
         {
-            for (std::vector<std::pair<int, uint32_t>>::const_iterator signal = recorded_signals.begin();
-                signal != recorded_signals.end();
-                ++signal)
+            for (const auto& recorded_signal : recorded_signals)
                 {
-                    candidates.push_back(signal->second);
+                    candidates.push_back(recorded_signal.second);
                 }
         }
 

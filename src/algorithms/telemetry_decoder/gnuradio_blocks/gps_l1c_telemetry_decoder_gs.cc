@@ -22,7 +22,8 @@
 #include "gps_cnav2_navigation_message.h"
 #include "gps_cnav_navigation_message.h"
 #include "gps_l1c_telemetry_decoder_gs.h"
-#include <optional>
+#include "tow_utils.h"
+#include <gflags/gflags.h>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -43,6 +44,9 @@ gps_l1c_telemetry_decoder_gs::gps_l1c_telemetry_decoder_gs(const Tlm_Conf &conf,
       d_system(system),
       d_channel(0),
       d_stat(0),
+      d_frame_position(0),
+      d_frames_since_last_valid_tow(0),
+      d_has_valid_tow(false),
       d_sf2_decoder(
           GPS_L1C_LDPC_SF2_CN_NEIGHBORS_STR, GPS_L1C_LDPC_SF2_CN_NEIGHBORS_LENGTH,
           GPS_L1C_LDPC_SF2_CN_ROW_PTR_STR, GPS_L1C_LDPC_SF2_CN_ROW_PTR_LENGTH,
@@ -105,20 +109,26 @@ int gps_l1c_telemetry_decoder_gs::general_work(int noutput_items, gr_vector_int 
     // MSB is the first bit to arrive, thus d_symbol_history is ordered from MSB to LSB
     d_symbol_history.push_back(current_symbol.Prompt_I);
 
-    bool need_out = false;
-
     switch (d_stat)
         {
         case 0:
-            need_out = state_find_align(current_symbol);
+            state_find_align(current_symbol);
             break;
         case 1:
-            need_out = state_aligned(current_symbol);
+            state_aligned(current_symbol);
             break;
         }
 
-    if (need_out)
+    if (d_has_valid_tow)
         {
+            // Frame position refers to the bit parsed in this call
+            int64_t frame_position_ms = static_cast<int64_t>(d_frame_position) * GPS_L1C_CODE_PERIOD_MS;
+            int64_t delta_ms = static_cast<int64_t>(d_frames_since_last_valid_tow) * 18000 + frame_position_ms - 18000;
+            printf("d_last_valid_tow = %i\nd_frames_since_last_valid_tow=%i\nd_farme_position=%i\nframe_position_ms=%li\ndelta_ms=%li\n", d_last_valid_tow, d_frames_since_last_valid_tow, d_frame_position, frame_position_ms, delta_ms);
+            uint32_t tow_now = gnss_tow::add_ms(static_cast<int64_t>(d_last_valid_tow) * 1000, delta_ms);
+            current_symbol.Flag_valid_word = true;
+            current_symbol.TOW_at_current_symbol_ms = tow_now;
+
             out[0][0] = std::move(current_symbol);
             return 1;
         }
@@ -205,7 +215,7 @@ int16_t gps_l1c_telemetry_decoder_gs::test_toi_hypotheses(size_t start_index, co
     return toi;
 }
 
-bool gps_l1c_telemetry_decoder_gs::state_find_align(Gnss_Synchro &synchro)
+void gps_l1c_telemetry_decoder_gs::state_find_align(const Gnss_Synchro &synchro)
 {
     // The TOI is transmitted at the start of the subframe,
     // i.e. if we are aligned to the secondary code, the first 52 bits received are TOI; not the last as Figure 3.2-3
@@ -214,7 +224,7 @@ bool gps_l1c_telemetry_decoder_gs::state_find_align(Gnss_Synchro &synchro)
     if (d_symbol_history.size() < GPS_L1C_FRAME_BITS)
         {
             // Skip checking for TOI until we have enough bits as to decode the full frame
-            return false;
+            return;
         }
 
     // const size_t maybe_first_subframe_bit = d_symbol_history.size() - GPS_L1C_FRAME_BITS;
@@ -225,7 +235,7 @@ bool gps_l1c_telemetry_decoder_gs::state_find_align(Gnss_Synchro &synchro)
     if (toi < 0)
         {
             // No TOI hypothesis, skip frame search
-            return false;
+            return;
         }
 
     // Try to decode the remainder of the frame
@@ -233,27 +243,34 @@ bool gps_l1c_telemetry_decoder_gs::state_find_align(Gnss_Synchro &synchro)
     if (!frame.has_any_sf())
         {
             // No frame found, the toi was not properly aligned, keep searching
-            return false;
+            return;
         }
 
-    bool ret = parse_new_subframe_data(frame, synchro);
+    parse_new_subframe_data(frame, synchro);
 
-    // Frame found! We are aligned, switch to aligned state
-    d_frame_position = 0;
+    // Frame found! We are aligned, switch to aligned state. The bit we just parsed was the last in the frame, so...
+    d_frame_position = GPS_L1C_FRAME_BITS - 1;
     d_stat = 1;
-
-
-    return ret;
 }
 
-bool gps_l1c_telemetry_decoder_gs::state_aligned(Gnss_Synchro &synchro)
+void gps_l1c_telemetry_decoder_gs::state_aligned(const Gnss_Synchro &synchro)
 {
     d_frame_position++;
 
-    if (d_frame_position != GPS_L1C_FRAME_BITS)
+    if (d_frame_position == GPS_L1C_FRAME_BITS)
         {
-            // No frame read yet, do nothing
-            return false;
+            // Wrap around do d_frame_position is always in range [0, GPS_L1C_FRAME_BITS)
+            d_frame_position = 0;
+            if (d_has_valid_tow)
+                {
+                    d_frames_since_last_valid_tow++;
+                }
+        }
+
+    if (d_frame_position != GPS_L1C_FRAME_BITS - 1)
+        {
+            // No full frame read yet, do nothing
+            return;
         }
 
     const size_t first_subframe_bit = d_symbol_history.size() - GPS_L1C_FRAME_BITS;
@@ -266,7 +283,8 @@ bool gps_l1c_telemetry_decoder_gs::state_aligned(Gnss_Synchro &synchro)
             // We lost lock!
             // TODO: We could search around a bit just in case we are offset by a few samples
             d_stat = 0;
-            return false;
+            d_has_valid_tow = false;
+            return;
         }
 
     GpsL1cFrame frame = try_parse_frame(first_subframe_bit, toi);
@@ -274,15 +292,14 @@ bool gps_l1c_telemetry_decoder_gs::state_aligned(Gnss_Synchro &synchro)
         {
             // TODO: Same as before
             d_stat = 0;
-            return false;
+            d_has_valid_tow = false;
+            return;
         }
 
-    bool ret = parse_new_subframe_data(frame, synchro);
+    parse_new_subframe_data(frame, synchro);
 
     // Reset frame pointer if frame parsed successfully
-    d_frame_position = 0;
-
-    return ret;
+    d_frame_position = GPS_L1C_FRAME_BITS - 1;
 }
 
 
@@ -372,11 +389,17 @@ bool gps_l1c_telemetry_decoder_gs::check_subframe_crc(const std::bitset<SIZE> &b
     return crc.checksum() == 0;
 }
 
-bool gps_l1c_telemetry_decoder_gs::parse_new_subframe_data(const GpsL1cFrame &frame, Gnss_Synchro &synchro)
+void gps_l1c_telemetry_decoder_gs::parse_new_subframe_data(const GpsL1cFrame &frame, const Gnss_Synchro &synchro)
 {
     if (frame.has_sf2 && check_subframe_crc(frame.sf2))
         {
             d_cnav2_message->decode_sf2(frame.toi, frame.sf2);
+
+            // tow is in seconds since start of week, but goes in multiple of 2 hours, as it's actually ITOW,
+            // TOI is in 18s intervals since last ITOW, up to 399 (included) which is 2 hours
+            d_last_valid_tow = d_cnav2_message->get_ephemeris().tow + frame.toi * 18;
+            d_has_valid_tow = true;
+            d_frames_since_last_valid_tow = 0;
         }
 
     if (frame.has_sf3 && check_subframe_crc(frame.sf3))
@@ -397,15 +420,18 @@ bool gps_l1c_telemetry_decoder_gs::parse_new_subframe_data(const GpsL1cFrame &fr
                       << std::setprecision(default_precision) << " dB-Hz" << TEXT_RESET << std::endl;
         }
 
-    // We have TOI, if we have a recent ephemeris we can update symbol ms and similar
-    synchro.Flag_valid_word = true;
-    // TODO, need to think how to do this?
-    synchro.Flag_PLL_180_deg_phase_locked = false;
+    if (d_cnav2_message->have_new_ephemeris())
+        {
+            const std::shared_ptr<Gps_CNAV2_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV2_Ephemeris>(d_cnav2_message->get_ephemeris());
+            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
 
-    synchro.TOW_at_current_symbol_ms = frame.toi * 18000 + d_cnav2_message->get_ephemeris().tow * 1000;
-    printf("TOW_at_current_symbol = %i\n", synchro.TOW_at_current_symbol_ms);
-
-    return true;
+            const auto default_precision = std::cout.precision();
+            std::cout << TEXT_MAGENTA << "New " << ((d_system == CnavSystem::GPS) ? "GPS" : "QZSS")
+                      << " L1C CNAV2 message received in channel " << d_channel
+                      << ": ephemeris from satellite " << d_satellite
+                      << " with CN0=" << std::setprecision(2) << synchro.CN0_dB_hz
+                      << std::setprecision(default_precision) << " dB-Hz" << TEXT_RESET << std::endl;
+        }
 }
 
 template <size_t SIZE>

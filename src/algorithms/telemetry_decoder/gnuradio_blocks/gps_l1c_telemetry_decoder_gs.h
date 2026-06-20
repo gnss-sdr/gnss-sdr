@@ -82,7 +82,19 @@ private:
     std::unique_ptr<Gps_CNAV2_Navigation_Message> d_cnav2_message;
     boost::circular_buffer<float> d_symbol_history;
     uint32_t d_stat;
+
+    // Position within the frame in symbols, when it reaches GPS_L1C_FRAME_BITS - 1, a frame can
+    // be decoded from the alst GPS_L1C_FRAME_BITS in the buffer. It ranges [0, GPS_L1C_FRAME_BITS)
     uint32_t d_frame_position;
+
+    // TOW of last valid frame read, if sf2 could be decoded
+    uint32_t d_last_valid_tow;
+
+    // Number of frames since d_last_valid_tow was obtained
+    uint32_t d_frames_since_last_valid_tow;
+
+    // True if a TOW was read, and d_last_valid_tow and d_frames_since_last_valid_tow may be used
+    bool d_has_valid_tow;
 
     LDPC_Min_Sum_Decoder d_sf2_decoder;
     LDPC_Min_Sum_Decoder d_sf3_decoder;
@@ -110,13 +122,13 @@ private:
     // The first 52 bits are ignored
     std::array<float, GPS_L1C_SF_2_AND_3_ENCODED_BITS> deinterlave_frame(size_t start_index);
 
-    // d_stat = 0, return true if synchro needs to be sent
-    bool state_find_align(Gnss_Synchro &synchro);
+    // d_stat = 0
+    void state_find_align(const Gnss_Synchro &synchro);
 
-    // d_stat = 1, return true if synchro needs to be sent
-    bool state_aligned(Gnss_Synchro &synchro);
+    // d_stat = 1
+    void state_aligned(const Gnss_Synchro &synchro);
 
-    bool parse_new_subframe_data(const GpsL1cFrame &frame, Gnss_Synchro &synchro);
+    void parse_new_subframe_data(const GpsL1cFrame &frame, const Gnss_Synchro &synchro);
 
     template <size_t SIZE>
     void extract_bit_vector_to_bitset(const std::vector<int> &bits, std::bitset<SIZE> &target);

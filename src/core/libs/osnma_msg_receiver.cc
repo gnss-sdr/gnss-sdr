@@ -3225,7 +3225,7 @@ std::vector<uint8_t> osnma_msg_receiver::build_message(Tag& tag) const
 }
 
 
-bool osnma_msg_receiver::verify_tesla_key(std::vector<uint8_t>& key, uint32_t key_gst)
+bool osnma_msg_receiver::verify_tesla_key(const std::vector<uint8_t>& key, uint32_t key_gst)
 {
     uint32_t num_of_hashes_needed{};
     uint32_t GST_SFi = gst_with_offset(d_helper->get_WN(d_GST_Sf), d_helper->get_TOW(d_GST_Sf), -30);  // GST of target key is to be used.

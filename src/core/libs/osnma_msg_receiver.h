@@ -104,7 +104,7 @@ private:
     bool read_mack_body();
     bool process_mack_block(const std::shared_ptr<OSNMA_msg>& osnma_msg, const std::vector<uint8_t>& allowed_adkds, uint8_t nmas);
     bool set_gst_sf_for_mack(uint32_t WN, uint32_t TOW);
-    bool verify_tesla_key(std::vector<uint8_t>& key, uint32_t key_gst);
+    bool verify_tesla_key(const std::vector<uint8_t>& key, uint32_t key_gst);
     bool verify_tag(Tag& tag) const;
     bool tag_has_nav_data_available(const Tag& t) const;
     bool tag_has_key_available(const Tag& t) const;

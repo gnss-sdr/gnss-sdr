@@ -28,11 +28,13 @@ All notable changes to GNSS-SDR will be documented in this file.
   out-of-tree module. It requires the `-DENABLE_POCKETSDR=ON` building flag.
   Check the
   [Signal Source documentation](https://gnss-sdr.org/docs/sp-blocks/signal-source/#implementation-pocket_sdr_signal_source).
-- Improved support for Spirent GSS6450/GSS6425 sample files. The Signal Source
-  implementation is now named `GSS6450_File_Signal_Source`, while retaining
-  `Spir_GSS6450_File_Signal_Source` as a backward-compatible alias. It can
-  auto-detect `.gns` file layout information, unpack 2-, 4-, 8-, and 16-bit
-  samples, and expose multi-channel recordings as independent RF output streams.
+- Improved support for Keysight (formerly Spirent) GSS6450/GSS6425 format sample
+  files. The Signal Source implementation is now named
+  [`GSS6450_File_Signal_Source`](https://gnss-sdr.org/docs/docs/sp-blocks/signal-source/#implementation-gss6450_file_signal_source),
+  while retaining `Spir_GSS6450_File_Signal_Source` as a backward-compatible
+  alias. It can auto-detect `.gns` file layout information, unpack 2-, 4-, 8-,
+  and 16-bit samples, and expose multi-channel recordings as independent RF
+  output streams.
 - Improved Galileo HAS robustness and ICD compliance, including stricter MT1
   validation, correct cache/Do-Not-Use handling, TOW fallback for E6 HAS pages,
   preserved mask/IOD correction context, and corrected HAS application in

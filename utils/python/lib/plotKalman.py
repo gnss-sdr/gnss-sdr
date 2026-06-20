@@ -32,8 +32,9 @@ import os
 
 def plotKalman(channelNr, trackResults, settings):
 
-    # ---------- CHANGE HERE:
-    fig_path = '/home/labnav/Desktop/TEST_IRENE/PLOTS/PlotKalman'
+    # ---------- CHANGE HERE (or pass 'fig_path' in settings):
+    fig_path = settings.get('fig_path',
+                            '../../../PLOTS/PlotKalman')
 
     if not os.path.exists(fig_path):
         os.makedirs(fig_path)
@@ -49,7 +50,7 @@ def plotKalman(channelNr, trackResults, settings):
         # Plot all figures
         plt.figure(figsize=(1920 / 100, 1080 / 100))
         plt.clf()
-        plt.gcf().canvas.set_window_title(
+        plt.gcf().canvas.manager.set_window_title(
             f'Channel {channelNr} (PRN '
             f'{str(trackResults[channelNr-1]["PRN"][-2])}) results')
         plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1,
@@ -122,19 +123,23 @@ def plotKalman(channelNr, trackResults, settings):
 
         # Row 4
         # ----- PLL discriminator covariance ---------------------------------
-        plt.subplot(4, 2, (7,8))
-        plt.plot(time_axis_in_seconds,
-                 trackResults[channelNr-1]['r_noise_cov'], 'r')
-        plt.grid()
-        plt.axis('auto')
-        plt.xlim(time_start, time_axis_in_seconds[-1])
-        plt.xlabel('Time (s)')
-        plt.ylabel('Variance')
-        plt.title('Estimated Noise Variance', fontweight='bold')
+        # Only plotted if the dump provides a noise covariance. The GPS L1 C/A
+        # KF tracking dump does not store one, so this panel is skipped there.
+        if 'r_noise_cov' in trackResults[channelNr-1]:
+            plt.subplot(4, 2, (7,8))
+            plt.plot(time_axis_in_seconds,
+                     trackResults[channelNr-1]['r_noise_cov'], 'r')
+            plt.grid()
+            plt.axis('auto')
+            plt.xlim(time_start, time_axis_in_seconds[-1])
+            plt.xlabel('Time (s)')
+            plt.ylabel('Variance')
+            plt.title('Estimated Noise Variance', fontweight='bold')
 
         plt.tight_layout()
         plt.savefig(os.path.join(fig_path,
                                  f'kalman_ch{channelNr}_PRN_'
                                  f'{trackResults[channelNr - 1]["PRN"][-1]}'
                                  f'.png'))
-        plt.show()
+        if settings.get('show', True):
+            plt.show()

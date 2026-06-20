@@ -2,13 +2,14 @@
  * \file ion_gsms_signal_source.h
  * \brief GNSS-SDR Signal Source that reads sample streams following ION's GNSS-SDR metadata standard
  * \author Víctor Castillo Agüero, 2024. victorcastilloaguero(at)gmail.com
+ * \author Carles Fernandez, 2026 carles.fernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -56,13 +57,32 @@ protected:
 
     inline size_t item_size() override
     {
+        if (sources_.empty())
+            {
+                return 0;
+            }
         return (*sources_.begin())->output_stream_item_size(0);
     }
 
 private:
+    static constexpr double kMinimumTailSeconds = 0.2;
+
+    static std::vector<std::string> parse_comma_list(const std::string& str);
+    static bool block_contains_stream(const GnssMetadata::Block& block, const std::vector<std::string>& stream_ids);
+    static std::size_t chunk_cycle_bytes(const GnssMetadata::Block& block);
+    static std::size_t infer_block_cycles(
+        const fs::path& data_filepath,
+        const GnssMetadata::Block& block,
+        std::size_t block_start_offset);
+    static std::size_t block_storage_bytes(
+        const fs::path& data_filepath,
+        const GnssMetadata::Block& block,
+        std::size_t block_start_offset);
+
     std::vector<IONGSMSFileSource::sptr> make_stream_sources(const std::vector<std::string>& stream_ids) const;
 
     void load_metadata();
+    std::uint64_t valve_sample_count(std::uint64_t total_sample_count) const;
 
     std::vector<std::string> stream_ids_;
     std::vector<IONGSMSFileSource::sptr> sources_;
@@ -74,6 +94,8 @@ private:
 
     gnss_shared_ptr<Gnss_Sdr_Timestamp> timestamp_block_;
     std::string timestamp_file_;
+    double minimum_tail_s_;
+    int64_t sampling_frequency_;
 
     uint32_t in_streams_;
     uint32_t out_streams_;

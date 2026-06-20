@@ -2,13 +2,14 @@
  * \file ion_gsms_chunk_data.h
  * \brief Holds logic for reading and decoding samples from a chunk
  * \author Víctor Castillo Agüero, 2024. victorcastilloaguero(at)gmail.com
+ * \author Carles Fernandez, 2026 carles.fernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -20,10 +21,12 @@
 #include "ion_gsms_chunk_unpacking_ctx.h"
 #include "ion_gsms_stream_encodings.h"
 #include <gnuradio/block.h>
+#include <gnuradio/gr_complex.h>
 #include <GnssMetadata.h>
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -47,19 +50,17 @@ inline std::size_t bits_to_item_size(std::size_t bit_count)
             return 8;
         }
 
-    // You are asking too much of this humble processor
-    std::cerr << "Item size too large (" << std::to_string(bit_count) << "), returning nonsense.\n";
-    return 1;
+    throw std::runtime_error("ION_GSMS_Signal_Source item size is larger than 64 bits");
 }
 
 
 // Define a functor that has a templated operator()
 struct Allocator
 {
-    size_t countwords_;
+    std::size_t countwords_;
     void*& buffer_;  // Using void* to hold any type of pointer
 
-    Allocator(size_t countwords, void*& buffer)
+    Allocator(std::size_t countwords, void*& buffer)
         : countwords_(countwords), buffer_(buffer) {}
 
     template <typename WordType>
@@ -87,25 +88,24 @@ struct Deleter
 
 
 template <typename Callback>
-void with_word_type(uint8_t word_size, Callback callback)
+void with_word_type(std::size_t word_size, Callback callback)
 {
     switch (word_size)
         {
         case 1:
-            callback.template operator()<int8_t>();
+            callback.template operator()<uint8_t>();
             break;
         case 2:
-            callback.template operator()<int16_t>();
+            callback.template operator()<uint16_t>();
             break;
         case 4:
-            callback.template operator()<int32_t>();
+            callback.template operator()<uint32_t>();
             break;
         case 8:
-            callback.template operator()<int64_t>();
+            callback.template operator()<uint64_t>();
             break;
         default:
-            std::cerr << "Unknown word size (" << std::to_string(word_size) << "), returning nonsense.\n";
-            break;
+            throw std::runtime_error("ION_GSMS_Signal_Source unsupported chunk word size: " + std::to_string(word_size));
         }
 }
 
@@ -130,6 +130,11 @@ public:
     std::size_t output_stream_item_size(std::size_t stream_index) const;
     std::size_t output_stream_item_rate(std::size_t stream_index) const;
 
+    static bool stream_is_complex(GnssMetadata::IonStream::SampleFormat format);
+    static uint8_t stream_output_item_bits(const GnssMetadata::IonStream& stream);
+    static std::size_t stream_output_item_size(const GnssMetadata::IonStream& stream);
+    static std::size_t stream_output_item_rate(const GnssMetadata::IonStream& stream);
+
 private:
     template <typename WT>
     void unpack_words(gr_vector_void_star& outputs, std::vector<int>& output_items);
@@ -143,21 +148,43 @@ private:
         void** out);
 
     template <typename WT, typename OT>
-    void write_n_samples(
+    std::size_t write_n_samples(
         IONGSMSChunkUnpackingCtx<WT>& ctx,
         GnssMetadata::Lump::LumpShift lump_shift,
-        uint8_t sample_bitsize,
-        std::size_t sample_count,
+        const GnssMetadata::IonStream& stream,
         GnssMetadata::StreamEncoding stream_encoding,
         OT** out);
 
+    template <typename WT>
+    std::size_t write_fp32_samples(
+        IONGSMSChunkUnpackingCtx<WT>& ctx,
+        GnssMetadata::Lump::LumpShift lump_shift,
+        const GnssMetadata::IonStream& stream,
+        void** out);
+
     template <typename Sample>
-    static void decode_sample(uint8_t sample_bitsize, Sample* sample, GnssMetadata::StreamEncoding encoding);
+    static Sample decode_sample(uint8_t sample_bitsize, uint64_t raw_sample, GnssMetadata::StreamEncoding encoding);
+
+    template <typename WT>
+    static float read_fp32_sample(IONGSMSChunkUnpackingCtx<WT>& ctx);
+
+    static gr_complex complex_sample_from_format(GnssMetadata::IonStream::SampleFormat format, float first, float second);
+    static bool stream_outputs_gr_complex(const GnssMetadata::IonStream& stream);
+    static bool samples_are_reversed(GnssMetadata::IonStream::StreamShift stream_shift, GnssMetadata::Lump::LumpShift lump_shift);
+    static std::size_t stream_padding_bits(const GnssMetadata::IonStream& stream);
+    static uint64_t low_bits_mask(std::size_t bits);
+
+    template <typename Word>
+    static Word byte_swap_word(Word value);
+
+    static bool host_is_little_endian();
+    static bool source_endianness_is_different(GnssMetadata::Chunk::WordEndian endian);
 
     const GnssMetadata::Chunk& chunk_;
-    uint8_t sizeword_;
-    uint8_t countwords_;
-    uint8_t padding_bitsize_;
+    std::size_t sizeword_;
+    std::size_t countwords_;
+    std::size_t padding_bitsize_;
+    std::size_t output_stream_offset_;
     std::size_t output_stream_count_;
     std::vector<std::size_t> output_stream_item_size_;
     std::vector<std::size_t> output_stream_item_rate_;
@@ -168,21 +195,28 @@ private:
         const GnssMetadata::IonStream& stream;
         GnssMetadata::StreamEncoding stream_encoding;
         int output_index = -1;
+        std::size_t output_item_offset = 0;
+        std::size_t output_item_size = 0;
 
         stream_metadata_t(
             const GnssMetadata::Lump& lump_,
             const GnssMetadata::IonStream& stream_,
             GnssMetadata::StreamEncoding stream_encoding_,
-            int output_index_ = -1) : lump(lump_),
-                                      stream(stream_),
-                                      stream_encoding(stream_encoding_),
-                                      output_index(output_index_)
+            int output_index_ = -1,
+            std::size_t output_item_offset_ = 0,
+            std::size_t output_item_size_ = 0) : lump(lump_),
+                                                 stream(stream_),
+                                                 stream_encoding(stream_encoding_),
+                                                 output_index(output_index_),
+                                                 output_item_offset(output_item_offset_),
+                                                 output_item_size(output_item_size_)
         {
         }
     };
     std::vector<stream_metadata_t> streams_;
+    std::vector<int> output_stream_indices_;
 
-    void* buffer_;
+    void* buffer_ = nullptr;
 };
 
 #endif  // GNSS_SDR_ION_GSMS_CHUNK_DATA_H

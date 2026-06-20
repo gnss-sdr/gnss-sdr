@@ -35,6 +35,14 @@ All notable changes to GNSS-SDR will be documented in this file.
   alias. It can auto-detect `.gns` file layout information, unpack 2-, 4-, 8-,
   and 16-bit samples, and expose multi-channel recordings as independent RF
   output streams.
+- Reworked
+  [`ION_GSMS_Signal_Source`](https://gnss-sdr.org/docs/sp-blocks/signal-source/#implementation-ion_gsms_signal_source)
+  support for ION GNSS SDR metadata files. The source now validates and
+  deduplicates requested streams, honors file offsets, block headers/footers,
+  and omitted cycle counts, and stops finite captures cleanly with a guarded
+  valve tail. Chunk unpacking now handles word endianness, padding, shifts,
+  repeated lump patterns, repeated stream IDs, standard integer encodings, and
+  FP32 streams as `float` or `gr_complex` outputs.
 - Improved Galileo HAS robustness and ICD compliance, including stricter MT1
   validation, correct cache/Do-Not-Use handling, TOW fallback for E6 HAS pages,
   preserved mask/IOD correction context, and corrected HAS application in

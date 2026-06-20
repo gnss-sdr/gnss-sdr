@@ -2,13 +2,14 @@
  * \file ion_gsms.h
  * \brief GNU Radio block that reads a Block from a file following ION's GNSS-SDR metadata standard
  * \author Víctor Castillo Agüero, 2024. victorcastilloaguero(at)gmail.com
+ * \author Carles Fernandez, 2026 carles.fernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -42,6 +43,7 @@ public:
         const fs::path& metadata_filepath,
         const GnssMetadata::File& file,
         const GnssMetadata::Block& block,
+        std::size_t block_start_offset,
         const std::vector<std::string>& stream_ids);
 
     int work(
@@ -55,6 +57,14 @@ public:
 
 private:
     static gr::io_signature::sptr make_output_signature(const GnssMetadata::Block& block, const std::vector<std::string>& stream_ids);
+    static bool block_contains_stream_id(const GnssMetadata::Block& block, const std::string& stream_id);
+    static std::vector<std::string> block_output_stream_ids(const GnssMetadata::Block& block, const std::vector<std::string>& stream_ids);
+    static int output_item_size_for_stream_id(const GnssMetadata::Block& block, const std::string& stream_id);
+    static std::size_t infer_cycle_count_from_file(
+        const fs::path& data_filepath,
+        const GnssMetadata::Block& block,
+        std::size_t block_start_offset,
+        std::size_t chunk_cycle_length);
 
     std::ifstream file_stream_;
     std::vector<char> io_buffer_;
@@ -67,6 +77,7 @@ private:
     std::size_t maximum_item_rate_;
     std::vector<std::shared_ptr<IONGSMSChunkData>> chunk_data_;
     std::size_t chunk_cycle_length_;
+    std::size_t cycles_remaining_;
 };
 
 /** \} */

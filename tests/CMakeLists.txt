@@ -1144,6 +1144,11 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/unpack_2bit_samples_test.cc
     )
+    if(ENABLE_ION)
+        list(APPEND GNURADIO_BLOCK_TEST_SOURCES
+            ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/ion_gsms_chunk_data_test.cc
+        )
+    endif()
     if(USE_CMAKE_TARGET_SOURCES)
         add_executable(gnuradio_block_test)
         target_sources(gnuradio_block_test PRIVATE ${GNURADIO_BLOCK_TEST_SOURCES})

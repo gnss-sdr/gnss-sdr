@@ -680,7 +680,7 @@ bool osnma_msg_receiver::pkid_from_certificate_subject_cn(const std::string& crt
         }
 #endif  // OpenSSL
 
-    const X509_NAME* subject = X509_get_subject_name(cert);
+    auto* subject = X509_get_subject_name(cert);
     if (subject == nullptr)
         {
             LOG(WARNING) << "OpenSSL: certificate has no Subject: "
@@ -698,13 +698,13 @@ bool osnma_msg_receiver::pkid_from_certificate_subject_cn(const std::string& crt
                 NID_commonName,
                 index)) >= 0)
         {
-            const X509_NAME_ENTRY* entry = X509_NAME_get_entry(subject, index);
+            auto* entry = X509_NAME_get_entry(subject, index);
             if (entry == nullptr)
                 {
                     continue;
                 }
 
-            const ASN1_STRING* asn1 = X509_NAME_ENTRY_get_data(entry);
+            auto* asn1 = X509_NAME_ENTRY_get_data(entry);
             if (asn1 == nullptr)
                 {
                     continue;
@@ -3225,7 +3225,7 @@ std::vector<uint8_t> osnma_msg_receiver::build_message(Tag& tag) const
 }
 
 
-bool osnma_msg_receiver::verify_tesla_key(std::vector<uint8_t>& key, uint32_t key_gst)
+bool osnma_msg_receiver::verify_tesla_key(const std::vector<uint8_t>& key, uint32_t key_gst)
 {
     uint32_t num_of_hashes_needed{};
     uint32_t GST_SFi = gst_with_offset(d_helper->get_WN(d_GST_Sf), d_helper->get_TOW(d_GST_Sf), -30);  // GST of target key is to be used.

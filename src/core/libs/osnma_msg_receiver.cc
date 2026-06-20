@@ -680,7 +680,7 @@ bool osnma_msg_receiver::pkid_from_certificate_subject_cn(const std::string& crt
         }
 #endif  // OpenSSL
 
-    const X509_NAME* subject = X509_get_subject_name(cert);
+    auto* subject = X509_get_subject_name(cert);
     if (subject == nullptr)
         {
             LOG(WARNING) << "OpenSSL: certificate has no Subject: "
@@ -698,13 +698,13 @@ bool osnma_msg_receiver::pkid_from_certificate_subject_cn(const std::string& crt
                 NID_commonName,
                 index)) >= 0)
         {
-            const X509_NAME_ENTRY* entry = X509_NAME_get_entry(subject, index);
+            auto* entry = X509_NAME_get_entry(subject, index);
             if (entry == nullptr)
                 {
                     continue;
                 }
 
-            const ASN1_STRING* asn1 = X509_NAME_ENTRY_get_data(entry);
+            auto* asn1 = X509_NAME_ENTRY_get_data(entry);
             if (asn1 == nullptr)
                 {
                     continue;

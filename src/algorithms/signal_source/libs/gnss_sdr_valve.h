@@ -4,13 +4,14 @@
  * control queue right after a specific number of samples have passed through it.
  * \author Javier Arribas, 2018. jarribas(at)cttc.es
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ * \author Carles Fernandez, 2026 carles.fernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------

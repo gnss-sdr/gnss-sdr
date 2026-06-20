@@ -132,7 +132,7 @@ set(SIGNAL_SOURCE_ADAPTER_SOURCES
     gen_signal_source.cc
     nsr_file_signal_source.cc
     spir_file_signal_source.cc
-    spir_gss6450_file_signal_source.cc
+    gss6450_file_signal_source.cc
     rtl_tcp_signal_source.cc
     labsat_signal_source.cc
     two_bit_cpx_file_signal_source.cc
@@ -152,7 +152,7 @@ set(SIGNAL_SOURCE_ADAPTER_HEADERS
     gen_signal_source.h
     nsr_file_signal_source.h
     spir_file_signal_source.h
-    spir_gss6450_file_signal_source.h
+    gss6450_file_signal_source.h
     rtl_tcp_signal_source.h
     labsat_signal_source.h
     two_bit_cpx_file_signal_source.h

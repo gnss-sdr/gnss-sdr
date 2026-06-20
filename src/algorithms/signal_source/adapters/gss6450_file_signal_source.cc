@@ -1,6 +1,6 @@
 /*!
- * \file spir_gss6450_file_signal_source.cc
- * \brief Implementation of a class that reads signals samples from a SPIR file
+ * \file gss6450_file_signal_source.cc
+ * \brief Implementation of a class that reads GSS6450 sample files
  * and adapts it to a SignalSourceInterface.
  * \author Antonio Ramos, 2017 antonio.ramos(at)cttc.es
  * \author Carles Fernandez, 2026 carles.fernandez(at)cttc.es
@@ -16,7 +16,7 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "spir_gss6450_file_signal_source.h"
+#include "gss6450_file_signal_source.h"
 #include "configuration_interface.h"
 #include <algorithm>
 #include <cmath>
@@ -35,12 +35,12 @@
 #include <absl/log/log.h>
 #endif
 
-SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInterface* configuration,
+GSS6450FileSignalSource::GSS6450FileSignalSource(const ConfigurationInterface* configuration,
     const std::string& role,
     uint32_t in_streams,
     uint32_t out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue)
-    : SignalSourceBase(configuration, role, std::string("Spir_GSS6450_File_Signal_Source")),
+    : SignalSourceBase(configuration, role, std::string("GSS6450_File_Signal_Source")),
       item_type_("int"),
       samples_(configuration->property(role + ".samples", static_cast<uint64_t>(0))),
       bytes_to_skip_(configuration->property(role + ".bytes_to_skip", static_cast<int64_t>(-1))),
@@ -141,7 +141,7 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInte
     for (int32_t i = 0; i < n_channels_; i++)
         {
             null_sinks_.push_back(gr::blocks::null_sink::make(sizeof(gr_complex)));
-            unpack_spir_vec_.push_back(make_unpack_spir_gss6450_samples(adc_bits_, gss6425_compatible_));
+            unpack_gss6450_vec_.push_back(make_unpack_gss6450_samples(adc_bits_, gss6425_compatible_));
             if (endian_swap_)
                 {
                     endian_vec_.push_back(gr::blocks::endian_swap::make(item_size_));
@@ -268,7 +268,7 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInte
 }
 
 
-uint32_t SpirGSS6450FileSignalSource::read_le_word(const std::vector<uint8_t>& bytes, size_t offset)
+uint32_t GSS6450FileSignalSource::read_le_word(const std::vector<uint8_t>& bytes, size_t offset)
 {
     return static_cast<uint32_t>(bytes[offset]) |
            (static_cast<uint32_t>(bytes[offset + 1]) << 8) |
@@ -277,26 +277,26 @@ uint32_t SpirGSS6450FileSignalSource::read_le_word(const std::vector<uint8_t>& b
 }
 
 
-bool SpirGSS6450FileSignalSource::matches_sync_channel(uint32_t word, uint8_t channel_pattern)
+bool GSS6450FileSignalSource::matches_sync_channel(uint32_t word, uint8_t channel_pattern)
 {
     const auto pattern = static_cast<uint32_t>(channel_pattern);
     return (word & 0xFFFFFF00U) == ((pattern << 24) | (pattern << 16) | (pattern << 8));
 }
 
 
-bool SpirGSS6450FileSignalSource::is_ascii_digit(char value)
+bool GSS6450FileSignalSource::is_ascii_digit(char value)
 {
     return value >= '0' && value <= '9';
 }
 
 
-bool SpirGSS6450FileSignalSource::is_ascii_space(char value)
+bool GSS6450FileSignalSource::is_ascii_space(char value)
 {
     return value == ' ' || value == '\t' || value == '\n' || value == '\r' || value == '\f' || value == '\v';
 }
 
 
-char SpirGSS6450FileSignalSource::to_lower_ascii(char value)
+char GSS6450FileSignalSource::to_lower_ascii(char value)
 {
     if (value >= 'A' && value <= 'Z')
         {
@@ -306,7 +306,7 @@ char SpirGSS6450FileSignalSource::to_lower_ascii(char value)
 }
 
 
-size_t SpirGSS6450FileSignalSource::find_case_insensitive(const std::string& text, const std::string& pattern, size_t start_pos)
+size_t GSS6450FileSignalSource::find_case_insensitive(const std::string& text, const std::string& pattern, size_t start_pos)
 {
     if (pattern.empty())
         {
@@ -339,7 +339,7 @@ size_t SpirGSS6450FileSignalSource::find_case_insensitive(const std::string& tex
 }
 
 
-uint32_t SpirGSS6450FileSignalSource::bits_from_header(const std::string& header, const std::string& filename)
+uint32_t GSS6450FileSignalSource::bits_from_header(const std::string& header, const std::string& filename)
 {
     std::vector<std::pair<int, uint32_t>> recorded_signals;
     const std::string signal_recorded_tag = "<Signal Recorded>";
@@ -432,7 +432,7 @@ uint32_t SpirGSS6450FileSignalSource::bits_from_header(const std::string& header
 }
 
 
-bool SpirGSS6450FileSignalSource::is_gss6425_compatibility_header(const std::string& header)
+bool GSS6450FileSignalSource::is_gss6425_compatibility_header(const std::string& header)
 {
     const std::string header_tag = "<Header>";
     const std::string gss6425_tag = "GSS6425";
@@ -455,7 +455,7 @@ bool SpirGSS6450FileSignalSource::is_gss6425_compatibility_header(const std::str
 }
 
 
-SpirGSS6450FileSignalSource::Gss6450FileLayout SpirGSS6450FileSignalSource::detect_gss6450_layout(const std::string& filename)
+GSS6450FileSignalSource::Gss6450FileLayout GSS6450FileSignalSource::detect_gss6450_layout(const std::string& filename)
 {
     constexpr size_t MAX_HEADER_SCAN_BYTES = 1024 * 1024;
     constexpr int64_t SYNC_BYTES_PER_CHANNEL = 4096;
@@ -523,13 +523,13 @@ SpirGSS6450FileSignalSource::Gss6450FileLayout SpirGSS6450FileSignalSource::dete
 }
 
 
-bool SpirGSS6450FileSignalSource::is_valid_gss6450_bits(uint32_t bits)
+bool GSS6450FileSignalSource::is_valid_gss6450_bits(uint32_t bits)
 {
     return bits == 2 || bits == 4 || bits == 8 || bits == 16;
 }
 
 
-void SpirGSS6450FileSignalSource::connect(gr::top_block_sptr top_block)
+void GSS6450FileSignalSource::connect(gr::top_block_sptr top_block)
 {
     if (samples_ > 0)
         {
@@ -550,28 +550,28 @@ void SpirGSS6450FileSignalSource::connect(gr::top_block_sptr top_block)
                                 {
                                     top_block->connect(file_source_, 0, endian_vec_.at(i), 0);
                                 }
-                            top_block->connect(endian_vec_.at(i), 0, unpack_spir_vec_.at(i), 0);
+                            top_block->connect(endian_vec_.at(i), 0, unpack_gss6450_vec_.at(i), 0);
                         }
                     else
                         {
                             if (n_channels_ > 1)
                                 {
-                                    top_block->connect(stream_to_streams_, i, unpack_spir_vec_.at(i), 0);
+                                    top_block->connect(stream_to_streams_, i, unpack_gss6450_vec_.at(i), 0);
                                 }
                             else
                                 {
-                                    top_block->connect(file_source_, 0, unpack_spir_vec_.at(i), 0);
+                                    top_block->connect(file_source_, 0, unpack_gss6450_vec_.at(i), 0);
                                 }
                         }
 
                     if (enable_throttle_control_)
                         {
-                            top_block->connect(unpack_spir_vec_.at(i), 0, throttle_vec_.at(i), 0);
+                            top_block->connect(unpack_gss6450_vec_.at(i), 0, throttle_vec_.at(i), 0);
                             top_block->connect(throttle_vec_.at(i), 0, valve_vec_.at(i), 0);
                         }
                     else
                         {
-                            top_block->connect(unpack_spir_vec_.at(i), 0, valve_vec_.at(i), 0);
+                            top_block->connect(unpack_gss6450_vec_.at(i), 0, valve_vec_.at(i), 0);
                         }
                     if (dump_)
                         {
@@ -588,7 +588,7 @@ void SpirGSS6450FileSignalSource::connect(gr::top_block_sptr top_block)
 }
 
 
-void SpirGSS6450FileSignalSource::disconnect(gr::top_block_sptr top_block)
+void GSS6450FileSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     if (samples_ > 0)
         {
@@ -609,28 +609,28 @@ void SpirGSS6450FileSignalSource::disconnect(gr::top_block_sptr top_block)
                                 {
                                     top_block->disconnect(file_source_, 0, endian_vec_.at(i), 0);
                                 }
-                            top_block->disconnect(endian_vec_.at(i), 0, unpack_spir_vec_.at(i), 0);
+                            top_block->disconnect(endian_vec_.at(i), 0, unpack_gss6450_vec_.at(i), 0);
                         }
                     else
                         {
                             if (n_channels_ > 1)
                                 {
-                                    top_block->disconnect(stream_to_streams_, i, unpack_spir_vec_.at(i), 0);
+                                    top_block->disconnect(stream_to_streams_, i, unpack_gss6450_vec_.at(i), 0);
                                 }
                             else
                                 {
-                                    top_block->disconnect(file_source_, 0, unpack_spir_vec_.at(i), 0);
+                                    top_block->disconnect(file_source_, 0, unpack_gss6450_vec_.at(i), 0);
                                 }
                         }
 
                     if (enable_throttle_control_)
                         {
-                            top_block->disconnect(unpack_spir_vec_.at(i), 0, throttle_vec_.at(i), 0);
+                            top_block->disconnect(unpack_gss6450_vec_.at(i), 0, throttle_vec_.at(i), 0);
                             top_block->disconnect(throttle_vec_.at(i), 0, valve_vec_.at(i), 0);
                         }
                     else
                         {
-                            top_block->disconnect(unpack_spir_vec_.at(i), 0, valve_vec_.at(i), 0);
+                            top_block->disconnect(unpack_gss6450_vec_.at(i), 0, valve_vec_.at(i), 0);
                         }
                     if (dump_)
                         {
@@ -647,14 +647,14 @@ void SpirGSS6450FileSignalSource::disconnect(gr::top_block_sptr top_block)
 }
 
 
-gr::basic_block_sptr SpirGSS6450FileSignalSource::get_left_block()
+gr::basic_block_sptr GSS6450FileSignalSource::get_left_block()
 {
     LOG(WARNING) << "Left block of a signal source should not be retrieved";
     return gr::blocks::file_source::sptr();
 }
 
 
-gr::basic_block_sptr SpirGSS6450FileSignalSource::get_right_block(int RF_channel)
+gr::basic_block_sptr GSS6450FileSignalSource::get_right_block(int RF_channel)
 {
     if (RF_channel < 0 || RF_channel >= static_cast<int>(valve_vec_.size()))
         {
@@ -665,7 +665,7 @@ gr::basic_block_sptr SpirGSS6450FileSignalSource::get_right_block(int RF_channel
 }
 
 
-gr::basic_block_sptr SpirGSS6450FileSignalSource::get_right_block()
+gr::basic_block_sptr GSS6450FileSignalSource::get_right_block()
 {
     if (rf_channels_ == 1 && sel_ch_ > 1)
         {
@@ -675,7 +675,7 @@ gr::basic_block_sptr SpirGSS6450FileSignalSource::get_right_block()
 }
 
 
-size_t SpirGSS6450FileSignalSource::getRfChannels() const
+size_t GSS6450FileSignalSource::getRfChannels() const
 {
     return rf_channels_;
 }

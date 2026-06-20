@@ -1,6 +1,6 @@
 /*!
- * \file spir_gss6450_file_signal_source.h
- * \brief Implementation of a class that reads signals samples from a SPIR file
+ * \file gss6450_file_signal_source.h
+ * \brief Implementation of a class that reads GSS6450 sample files
  * and adapts it to a SignalSourceInterface.
  * \author Antonio Ramos, 2017 antonio.ramos(at)cttc.es
  * \author Carles Fernandez, 2026 carles.fernandez(at)cttc.es
@@ -16,13 +16,13 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H
-#define GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H
+#ifndef GNSS_SDR_GSS6450_FILE_SIGNAL_SOURCE_H
+#define GNSS_SDR_GSS6450_FILE_SIGNAL_SOURCE_H
 
 #include "concurrent_queue.h"
 #include "gnss_sdr_valve.h"
 #include "signal_source_base.h"
-#include "unpack_spir_gss6450_samples.h"
+#include "unpack_gss6450_samples.h"
 #include <gnuradio/blocks/endian_swap.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/file_source.h>
@@ -49,10 +49,10 @@ class ConfigurationInterface;
  * \brief Class that reads signals samples from a file
  * and adapts it to a SignalSourceInterface
  */
-class SpirGSS6450FileSignalSource : public SignalSourceBase
+class GSS6450FileSignalSource : public SignalSourceBase
 {
 public:
-    SpirGSS6450FileSignalSource(const ConfigurationInterface* configuration, const std::string& role,
+    GSS6450FileSignalSource(const ConfigurationInterface* configuration, const std::string& role,
         uint32_t in_streams, uint32_t out_streams, Concurrent_Queue<pmt::pmt_t>* queue);
 
     inline size_t item_size() override
@@ -117,7 +117,7 @@ private:
     std::vector<gnss_shared_ptr<gr::block>> valve_vec_;
     std::vector<gr::blocks::endian_swap::sptr> endian_vec_;
     std::vector<gr::blocks::null_sink::sptr> null_sinks_;
-    std::vector<unpack_spir_gss6450_samples_sptr> unpack_spir_vec_;
+    std::vector<unpack_gss6450_samples_sptr> unpack_gss6450_vec_;
     std::vector<gr::blocks::file_sink::sptr> sink_vec_;
     std::vector<gr::blocks::throttle::sptr> throttle_vec_;
     std::string filename_;
@@ -143,4 +143,4 @@ private:
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H
+#endif  // GNSS_SDR_GSS6450_FILE_SIGNAL_SOURCE_H

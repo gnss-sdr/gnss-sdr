@@ -53,6 +53,7 @@
 #include "gps_l1_ca_telemetry_decoder_gs.h"
 #include "gps_l2c_telemetry_decoder_gs.h"
 #include "gps_l5_telemetry_decoder_gs.h"
+#include "gss6450_file_signal_source.h"
 #include "hybrid_observables.h"
 #include "ibyte_to_cbyte.h"
 #include "ibyte_to_complex.h"
@@ -76,7 +77,6 @@
 #include "signal_conditioner.h"
 #include "signal_flag.h"
 #include "spir_file_signal_source.h"
-#include "spir_gss6450_file_signal_source.h"
 #include "telemetry_decoder_adapter.h"
 #include "telemetry_decoder_interface.h"
 #include "tlm_conf.h"
@@ -302,9 +302,10 @@ std::unique_ptr<SignalSourceInterface> get_signal_source_block(
         {
             return std::make_unique<SpirFileSignalSource>(configuration, role, in_streams, out_streams, queue);
         }
-    else if (implementation == "Spir_GSS6450_File_Signal_Source")
+    else if (implementation == "GSS6450_File_Signal_Source" ||
+             implementation == "Spir_GSS6450_File_Signal_Source")
         {
-            return std::make_unique<SpirGSS6450FileSignalSource>(configuration, role, in_streams, out_streams, queue);
+            return std::make_unique<GSS6450FileSignalSource>(configuration, role, in_streams, out_streams, queue);
         }
     else if (implementation == "RtlTcp_Signal_Source")
         {

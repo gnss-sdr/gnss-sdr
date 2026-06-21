@@ -2072,6 +2072,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             const auto tmp_eph_iter_gps = d_internal_pvt_solver->gps_ephemeris_map.find(in[i][epoch].PRN);
                             const auto tmp_eph_iter_gal = d_internal_pvt_solver->galileo_ephemeris_map.find(in[i][epoch].PRN);
                             const auto tmp_eph_iter_cnav = d_internal_pvt_solver->gps_cnav_ephemeris_map.find(in[i][epoch].PRN);
+                            const auto tmp_eph_iter_cnav2 = d_internal_pvt_solver->gps_cnav2_ephemeris_map.find(in[i][epoch].PRN);
                             const auto tmp_eph_iter_glo_gnav = d_internal_pvt_solver->glonass_gnav_ephemeris_map.find(in[i][epoch].PRN);
                             const auto tmp_eph_iter_bds_dnav = d_internal_pvt_solver->beidou_dnav_ephemeris_map.find(in[i][epoch].PRN);
 
@@ -2139,6 +2140,14 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_cnav->second.PRN;
                                     if ((prn_aux == in[i][epoch].PRN) && (((std::string(in[i][epoch].Signal, 2) == std::string("2S")) || (std::string(in[i][epoch].Signal, 2) == std::string("L5")) || (std::string(in[i][epoch].Signal, 2) == std::string("J5")))))
+                                        {
+                                            store_valid_observable = true;
+                                        }
+                                }
+                            if (!d_osnma_strict && tmp_eph_iter_cnav2 != d_internal_pvt_solver->gps_cnav2_ephemeris_map.cend())
+                                {
+                                    const uint32_t prn_aux = tmp_eph_iter_cnav2->second.PRN;
+                                    if (prn_aux == in[i][epoch].PRN && std::string(in[i][epoch].Signal, 2) == std::string("L1"))
                                         {
                                             store_valid_observable = true;
                                         }

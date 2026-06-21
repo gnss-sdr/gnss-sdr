@@ -787,9 +787,6 @@ eph_t eph_to_rtklib(const Gps_CNAV2_Ephemeris& gps_cnav2_eph)
 {
     // Most parameters are the same as in Gps_CNAV_Ephemeris
     eph_t rtklib_sat = eph_to_rtklib(static_cast<const Gps_CNAV_Ephemeris&>(gps_cnav2_eph));
-    rtklib_sat.sat = satno(SYS_GPS, gps_cnav2_eph.PRN);
-
-    // TODO: Timing parameters may be different, check IS-GPS
 
     return rtklib_sat;
 }

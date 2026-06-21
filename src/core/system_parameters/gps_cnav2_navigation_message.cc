@@ -30,18 +30,44 @@ Gps_CNAV2_Navigation_Message::Gps_CNAV2_Navigation_Message(uint32_t prn, CnavSys
 
 void Gps_CNAV2_Navigation_Message::decode_sf2(uint16_t toi, const std::bitset<GPS_L1C_SF_2_DATA_BITS>& data_bits)
 {
+    uint16_t this_sf_toi = toi - 1;
+    if (toi == 0)
+        {
+            this_sf_toi = 399;
+        }
+
     // TODO: Create constants for CNAV2, even if they are the same as CNAV
     b_flag_ephemeris = true;
     ephemeris_record.WN = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV2_WN));
+
     ephemeris_record.tow = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV2_ITOW));
-    // ITOW is 2 hour intervals
     ephemeris_record.tow *= 2 * 3600;
+    ephemeris_record.tow += this_sf_toi * 18;
+
     ephemeris_record.top = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV2_TOP));
     ephemeris_record.l1c_signal_health = read_navigation_bool(data_bits, CNAV2_L1C_HEALTH);
     ephemeris_record.URAED = static_cast<int32_t>(read_navigation_signed(data_bits, CNAV2_URAED));
-    ephemeris_record.toe = static_cast<uint32_t>(read_navigation_unsigned(data_bits, CNAV2_TOE));
+    // We set toe1 = toe2 = toe, as toe1 and toe2 no longer exist in CNAV2
+    ephemeris_record.toe1 = static_cast<uint32_t>(read_navigation_unsigned(data_bits, CNAV2_TOE));
+    ephemeris_record.toe1 *= CNAV_TOE1_LSB;
+    ephemeris_record.toe2 = ephemeris_record.toe1;
+    ephemeris_record.toe = ephemeris_record.toe1;
+    // toc is also toe
+    ephemeris_record.toc = ephemeris_record.toe1;
+
     ephemeris_record.delta_A = static_cast<double>(read_navigation_signed(data_bits, CNAV2_DELTA_A));
     ephemeris_record.delta_A *= CNAV_DELTA_A_LSB;
+
+    if (d_system == CnavSystem::GPS)
+        {
+            ephemeris_record.sqrtA = std::sqrt(CNAV_A_REF + ephemeris_record.delta_A);
+        }
+    else
+        {
+            ephemeris_record.sqrtA = std::sqrt(CNAV_QZSS_A_REF + ephemeris_record.delta_A);
+        }
+
+
     ephemeris_record.Adot = static_cast<double>(read_navigation_signed(data_bits, CNAV2_DOT_A));
     ephemeris_record.Adot *= CNAV_A_DOT_LSB;
     ephemeris_record.delta_n = static_cast<double>(read_navigation_signed(data_bits, CNAV2_DELTA_N));
@@ -58,6 +84,8 @@ void Gps_CNAV2_Navigation_Message::decode_sf2(uint16_t toi, const std::bitset<GP
     ephemeris_record.OMEGA_0 *= CNAV_OMEGA0_LSB;
     ephemeris_record.delta_OMEGAdot = static_cast<double>(read_navigation_signed(data_bits, CNAV2_DELTA_OMEGA_DOT));
     ephemeris_record.delta_OMEGAdot *= CNAV_DELTA_OMEGA_DOT_LSB;
+    ephemeris_record.OMEGAdot = CNAV_OMEGA_DOT_REF * GNSS_PI + ephemeris_record.delta_OMEGAdot;
+
     ephemeris_record.i_0 = static_cast<double>(read_navigation_signed(data_bits, CNAV2_I0));
     ephemeris_record.i_0 *= CNAV_I0_LSB;
     ephemeris_record.idot = static_cast<double>(read_navigation_signed(data_bits, CNAV2_IDOT));
@@ -93,6 +121,7 @@ void Gps_CNAV2_Navigation_Message::decode_sf2(uint16_t toi, const std::bitset<GP
     // ephemeris_record.ISCL2 *= CNAV_ISCL2_LSB;
     ephemeris_record.WNop = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV2_WNOP));
 }
+
 void Gps_CNAV2_Navigation_Message::decode_sf3(uint16_t toi, const std::bitset<GPS_L1C_SF_3_DATA_BITS>& data_bits)
 {
 }

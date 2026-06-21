@@ -123,7 +123,7 @@ int gps_l1c_telemetry_decoder_gs::general_work(int noutput_items, gr_vector_int 
         {
             // Frame position refers to the bit parsed in this call
             int64_t frame_position_ms = static_cast<int64_t>(d_frame_position) * GPS_L1C_CODE_PERIOD_MS;
-            int64_t delta_ms = static_cast<int64_t>(d_frames_since_last_valid_tow) * 18000 + frame_position_ms - 18000;
+            int64_t delta_ms = static_cast<int64_t>(d_frames_since_last_valid_tow) * 18000 + frame_position_ms;
 
             // TODO: It appears the TOW_at_current_symbol_ms is for the falling edge? Or
             // is this a timing issue elsewhere? A similar +1 exists in the galileo inav_current_symbol_delay_ms function.
@@ -398,10 +398,8 @@ void gps_l1c_telemetry_decoder_gs::parse_new_subframe_data(const GpsL1cFrame &fr
         {
             d_cnav2_message->decode_sf2(frame.toi, frame.sf2);
 
-            // tow is in seconds since start of week, but goes in multiple of 2 hours, as it's actually ITOW,
-            // TOI is in 18s intervals since last ITOW, up to 399 (included) which is 2 hours
-            // Note that TOI is for the next subframe rising edge!
-            d_last_valid_tow = d_cnav2_message->get_ephemeris().tow + frame.toi * 18;
+            // Note that tow includes TOI
+            d_last_valid_tow = d_cnav2_message->get_ephemeris().tow;
             d_has_valid_tow = true;
             d_frames_since_last_valid_tow = 0;
         }

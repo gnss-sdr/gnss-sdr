@@ -13,10 +13,10 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "ion_gsms_chunk_data.h"
-#include "ion_gsms.h"
 #include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_flags.h"
+#include "ion_gsms.h"
+#include "ion_gsms_chunk_data.h"
 #include <gnuradio/blocks/vector_sink.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/top_block.h>
@@ -245,7 +245,7 @@ std::vector<int8_t> run_file_source(
     for (const auto item : sink_data)
         {
             output.push_back(static_cast<int8_t>(item));
-    }
+        }
     return output;
 }
 

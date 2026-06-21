@@ -1166,6 +1166,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             GTest::GTest
             GTest::Main
             Volkgnsssdr::volkgnsssdr
+            signal_source_adapters
             signal_source_gr_blocks
             signal_source_libs
             core_receiver

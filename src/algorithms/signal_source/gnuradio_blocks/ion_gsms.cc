@@ -35,70 +35,120 @@ IONGSMSFileSource::IONGSMSFileSource(
     const GnssMetadata::Block& block,
     const std::size_t block_start_offset,
     const std::vector<std::string>& stream_ids)
+    : IONGSMSFileSource(
+          std::vector<SegmentDescriptor>{make_segment_descriptor(metadata_filepath, file, block, block_start_offset)},
+          stream_ids)
+{
+}
+
+
+IONGSMSFileSource::IONGSMSFileSource(
+    const std::vector<SegmentDescriptor>& segments,
+    const std::vector<std::string>& stream_ids)
     : gr::sync_block(
           "ion_gsms_file_source",
           gr::io_signature::make(0, 0, 0),
-          make_output_signature(block, stream_ids)),
-      file_stream_(metadata_filepath.parent_path() / file.Url().Value(), std::ios::in | std::ios::binary),
+          make_output_signature(segments, stream_ids)),
       io_buffer_offset_(0),
       maximum_item_rate_(0),
       chunk_cycle_length_(0),
-      cycles_remaining_(0)
+      cycles_remaining_(0),
+      current_segment_index_(0),
+      output_stream_ids_(segment_output_stream_ids(segments, stream_ids))
 {
-    fs::path data_filepath = metadata_filepath.parent_path() / file.Url().Value();
-    const auto output_stream_ids = block_output_stream_ids(block, stream_ids);
-
-    if (!file_stream_.is_open())
-        {
-            LOG(WARNING) << "ION_GSMS_Signal_Source - Unable to open the samples file: " << (data_filepath).c_str();
-            std::cerr << "ION_GSMS_Signal_Source - Unable to open the samples file: " << (data_filepath).c_str() << std::endl;
-            std::cout << "GNSS-SDR program ended.\n";
-            exit(1);
-        }
-
-    // Skip to this block's sample payload, after the lane offset and block header.
-    file_stream_.seekg(static_cast<std::streamoff>(block_start_offset + block.SizeHeader()), std::ios::beg);
-
-    output_stream_count_ = output_stream_ids.size();
+    output_stream_count_ = output_stream_ids_.size();
     output_stream_item_sizes_.assign(output_stream_count_, 0);
     output_stream_item_rates_.assign(output_stream_count_, 0);
+    output_stream_total_sample_counts_.assign(output_stream_count_, 0);
 
-    for (const auto& chunk : block.Chunks())
+    if (segments.empty())
         {
-            chunk_data_.emplace_back(std::make_shared<IONGSMSChunkData>(chunk, output_stream_ids, 0));
-            chunk_cycle_length_ += chunk.CountWords() * chunk.SizeWord();
+            throw std::runtime_error("ION_GSMS_Signal_Source requires at least one source segment");
+        }
+
+    for (const auto& descriptor : segments)
+        {
+            if (descriptor.block == nullptr)
+                {
+                    throw std::runtime_error("ION_GSMS_Signal_Source source segment has no block metadata");
+                }
+
+            SegmentData segment;
+            segment.data_filepath = descriptor.data_filepath;
+            segment.block = descriptor.block;
+            segment.block_start_offset = descriptor.block_start_offset;
+            segment.output_stream_item_rates.assign(output_stream_count_, 0);
+
+            for (const auto& chunk : descriptor.block->Chunks())
+                {
+                    segment.chunk_data.emplace_back(std::make_shared<IONGSMSChunkData>(chunk, output_stream_ids_, 0));
+                    segment.chunk_cycle_length += chunk.CountWords() * chunk.SizeWord();
+                    for (std::size_t i = 0; i < output_stream_count_; ++i)
+                        {
+                            const auto chunk_item_rate = segment.chunk_data.back()->output_stream_item_rate(i);
+                            if (chunk_item_rate == 0)
+                                {
+                                    continue;
+                                }
+
+                            const auto chunk_item_size = segment.chunk_data.back()->output_stream_item_size(i);
+                            if (output_stream_item_sizes_[i] != 0 && output_stream_item_sizes_[i] != chunk_item_size)
+                                {
+                                    throw std::runtime_error("ION_GSMS_Signal_Source stream appears with inconsistent output item sizes");
+                                }
+                            output_stream_item_sizes_[i] = chunk_item_size;
+                            segment.output_stream_item_rates[i] += chunk_item_rate;
+                            segment.maximum_item_rate = std::max(segment.output_stream_item_rates[i], segment.maximum_item_rate);
+                        }
+                }
+
+            std::size_t cycle_count = descriptor.block->Cycles();
+            if (cycle_count == 0)
+                {
+                    if (!descriptor.block_extends_to_eof)
+                        {
+                            throw std::runtime_error(
+                                "ION_GSMS_Signal_Source block has cycles=0 before the final lane block; "
+                                "refusing EOF-based cycle inference because later blocks would be unreachable");
+                        }
+                    const std::string warning = "ION_GSMS_Signal_Source block at offset " + std::to_string(descriptor.block_start_offset) +
+                                                " in " + segment.data_filepath.string() +
+                                                " has cycles=0; inferring cycle count from EOF. This is a non-standard metadata extension supported only for the final block in a lane.";
+                    LOG(WARNING) << warning;
+                    std::cerr << "Warning: " << warning << std::endl;
+                    cycle_count = infer_cycle_count_from_file(segment.data_filepath, *descriptor.block, descriptor.block_start_offset, segment.chunk_cycle_length);
+                }
+            segment.cycle_count = cycle_count;
+
             for (std::size_t i = 0; i < output_stream_count_; ++i)
                 {
-                    const auto chunk_item_rate = chunk_data_.back()->output_stream_item_rate(i);
-                    if (chunk_item_rate == 0)
-                        {
-                            continue;
-                        }
-
-                    const auto chunk_item_size = chunk_data_.back()->output_stream_item_size(i);
-                    if (output_stream_item_sizes_[i] != 0 && output_stream_item_sizes_[i] != chunk_item_size)
-                        {
-                            throw std::runtime_error("ION_GSMS_Signal_Source stream appears with inconsistent output item sizes");
-                        }
-                    output_stream_item_sizes_[i] = chunk_item_size;
-                    output_stream_item_rates_[i] += chunk_item_rate;
-                    maximum_item_rate_ = std::max(output_stream_item_rates_[i], maximum_item_rate_);
+                    output_stream_item_rates_[i] = std::max(output_stream_item_rates_[i], segment.output_stream_item_rates[i]);
+                    output_stream_total_sample_counts_[i] += cycle_count * segment.output_stream_item_rates[i];
                 }
+            maximum_item_rate_ = std::max(maximum_item_rate_, segment.maximum_item_rate);
+            segments_.push_back(std::move(segment));
         }
-
-    output_stream_total_sample_counts_.resize(output_stream_count_);
-
-    std::size_t cycle_count = block.Cycles();
-    if (cycle_count == 0)
-        {
-            cycle_count = infer_cycle_count_from_file(data_filepath, block, block_start_offset, chunk_cycle_length_);
-        }
-    cycles_remaining_ = cycle_count;
 
     for (std::size_t i = 0; i < output_stream_count_; ++i)
         {
-            output_stream_total_sample_counts_[i] = cycle_count * output_stream_item_rates_[i];
+            if (output_stream_item_sizes_[i] == 0)
+                {
+                    throw std::runtime_error("ION_GSMS_Signal_Source requested stream is not present in source segments");
+                }
         }
+
+    current_segment_index_ = 0;
+    advance_to_next_segment();
+}
+
+
+IONGSMSFileSource::SegmentDescriptor IONGSMSFileSource::make_segment_descriptor(
+    const fs::path& metadata_filepath,
+    const GnssMetadata::File& file,
+    const GnssMetadata::Block& block,
+    const std::size_t block_start_offset)
+{
+    return {metadata_filepath.parent_path() / file.Url().Value(), &block, block_start_offset, true};
 }
 
 
@@ -166,6 +216,94 @@ int IONGSMSFileSource::output_item_size_for_stream_id(const GnssMetadata::Block&
 }
 
 
+std::vector<std::string> IONGSMSFileSource::segment_output_stream_ids(const std::vector<SegmentDescriptor>& segments, const std::vector<std::string>& stream_ids)
+{
+    std::vector<std::string> output_stream_ids;
+    for (const auto& stream_id : stream_ids)
+        {
+            for (const auto& segment : segments)
+                {
+                    if (segment.block != nullptr && block_contains_stream_id(*segment.block, stream_id))
+                        {
+                            output_stream_ids.push_back(stream_id);
+                            break;
+                        }
+                }
+        }
+
+    return output_stream_ids;
+}
+
+
+int IONGSMSFileSource::output_item_size_for_stream_id(const std::vector<SegmentDescriptor>& segments, const std::string& stream_id)
+{
+    int item_size = 0;
+    for (const auto& segment : segments)
+        {
+            if (segment.block == nullptr)
+                {
+                    continue;
+                }
+            const auto current_item_size = output_item_size_for_stream_id(*segment.block, stream_id);
+            if (current_item_size == 0)
+                {
+                    continue;
+                }
+            if (item_size != 0 && item_size != current_item_size)
+                {
+                    throw std::runtime_error("ION_GSMS_Signal_Source stream appears with inconsistent output item sizes");
+                }
+            item_size = current_item_size;
+        }
+
+    return item_size;
+}
+
+
+std::size_t IONGSMSFileSource::output_stream_count() const
+{
+    return output_stream_count_;
+}
+
+
+std::size_t IONGSMSFileSource::output_stream_item_size(std::size_t stream_index) const
+{
+    return output_stream_item_sizes_[stream_index];
+}
+
+
+std::size_t IONGSMSFileSource::output_stream_total_sample_count(std::size_t stream_index) const
+{
+    return output_stream_total_sample_counts_[stream_index];
+}
+
+
+gr::io_signature::sptr IONGSMSFileSource::make_output_signature(const std::vector<SegmentDescriptor>& segments, const std::vector<std::string>& stream_ids)
+{
+    const auto output_stream_ids = segment_output_stream_ids(segments, stream_ids);
+    if (output_stream_ids.empty())
+        {
+            throw std::runtime_error("ION_GSMS_Signal_Source requested streams are not present in source segments");
+        }
+    std::vector<int> item_sizes{};
+
+    for (const auto& stream_id : output_stream_ids)
+        {
+            const auto item_size = output_item_size_for_stream_id(segments, stream_id);
+            if (item_size == 0)
+                {
+                    throw std::runtime_error("ION_GSMS_Signal_Source requested stream is not present in source segments");
+                }
+            item_sizes.push_back(item_size);
+        }
+
+    return gr::io_signature::makev(
+        static_cast<int>(item_sizes.size()),
+        static_cast<int>(item_sizes.size()),
+        item_sizes);
+}
+
+
 std::size_t IONGSMSFileSource::infer_cycle_count_from_file(
     const fs::path& data_filepath,
     const GnssMetadata::Block& block,
@@ -194,43 +332,38 @@ std::size_t IONGSMSFileSource::infer_cycle_count_from_file(
 }
 
 
-std::size_t IONGSMSFileSource::output_stream_count() const
+bool IONGSMSFileSource::advance_to_next_segment()
 {
-    return output_stream_count_;
-}
-
-
-std::size_t IONGSMSFileSource::output_stream_item_size(std::size_t stream_index) const
-{
-    return output_stream_item_sizes_[stream_index];
-}
-
-
-std::size_t IONGSMSFileSource::output_stream_total_sample_count(std::size_t stream_index) const
-{
-    return output_stream_total_sample_counts_[stream_index];
-}
-
-
-gr::io_signature::sptr IONGSMSFileSource::make_output_signature(const GnssMetadata::Block& block, const std::vector<std::string>& stream_ids)
-{
-    const auto output_stream_ids = block_output_stream_ids(block, stream_ids);
-    std::vector<int> item_sizes{};
-
-    for (const auto& stream_id : output_stream_ids)
+    file_stream_.close();
+    while (current_segment_index_ < segments_.size())
         {
-            const auto item_size = output_item_size_for_stream_id(block, stream_id);
-            if (item_size == 0)
+            auto& segment = segments_[current_segment_index_];
+            if (segment.cycle_count == 0)
                 {
-                    throw std::runtime_error("ION_GSMS_Signal_Source requested stream is not present in block");
+                    ++current_segment_index_;
+                    continue;
                 }
-            item_sizes.push_back(item_size);
+
+            file_stream_.open(segment.data_filepath, std::ios::in | std::ios::binary);
+            if (!file_stream_.is_open())
+                {
+                    LOG(WARNING) << "ION_GSMS_Signal_Source - Unable to open the samples file: " << segment.data_filepath.c_str();
+                    std::cerr << "ION_GSMS_Signal_Source - Unable to open the samples file: " << segment.data_filepath.c_str() << std::endl;
+                    std::cout << "GNSS-SDR program ended.\n";
+                    exit(1);
+                }
+
+            file_stream_.seekg(static_cast<std::streamoff>(segment.block_start_offset + segment.block->SizeHeader()), std::ios::beg);
+            cycles_remaining_ = segment.cycle_count;
+            chunk_cycle_length_ = segment.chunk_cycle_length;
+            maximum_item_rate_ = segment.maximum_item_rate;
+            return true;
         }
 
-    return gr::io_signature::makev(
-        static_cast<int>(item_sizes.size()),
-        static_cast<int>(item_sizes.size()),
-        item_sizes);
+    cycles_remaining_ = 0;
+    chunk_cycle_length_ = 0;
+    maximum_item_rate_ = 0;
+    return false;
 }
 
 
@@ -241,7 +374,10 @@ int IONGSMSFileSource::work(
 {
     if (cycles_remaining_ == 0)
         {
-            return WORK_DONE;
+            if (!advance_to_next_segment())
+                {
+                    return WORK_DONE;
+                }
         }
     if (noutput_items <= 0 || maximum_item_rate_ == 0 || chunk_cycle_length_ == 0)
         {
@@ -256,6 +392,7 @@ int IONGSMSFileSource::work(
             return 0;
         }
     const std::size_t cycles_to_read = std::min(max_sample_output, cycles_remaining_);
+    auto& segment = segments_[current_segment_index_];
 
     // Resize the IO buffer to fit exactly the maximum amount of samples that will be outputted.
     io_buffer_.resize(cycles_to_read * chunk_cycle_length_);
@@ -272,7 +409,8 @@ int IONGSMSFileSource::work(
     if (cycles_read == 0)
         {
             cycles_remaining_ = 0;
-            return WORK_DONE;
+            ++current_segment_index_;
+            return 0;
         }
     cycles_remaining_ = cycles_read >= cycles_remaining_ ? 0 : cycles_remaining_ - cycles_read;
     if (bytes_read < bytes_to_read)
@@ -288,7 +426,7 @@ int IONGSMSFileSource::work(
     while (io_buffer_offset_ < bytes_to_decode)
         {
             // Iterate chunks within a chunk cycle
-            for (auto& chunk : chunk_data_)
+            for (auto& chunk : segment.chunk_data)
                 {
                     // Copy chunk into a separate buffer where the samples will be shifted from.
                     const std::size_t bytes_copied = chunk->read_from_buffer(reinterpret_cast<uint8_t*>(io_buffer_.data()), io_buffer_offset_);
@@ -299,6 +437,11 @@ int IONGSMSFileSource::work(
                     // Shift samples into output buffers following the appropriate unpacking strategy for this chunk.
                     chunk->write_to_output(output_items, items_produced_);
                 }
+        }
+
+    if (cycles_remaining_ == 0)
+        {
+            ++current_segment_index_;
         }
 
     // Call `produce(int, int)` with the appropriate item count for each output stream.

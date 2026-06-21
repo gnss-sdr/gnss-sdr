@@ -36,11 +36,14 @@ struct IONGSMSChunkUnpackingCtx
     const WT* data_ = nullptr;  // Not owned by this class, MUST NOT destroy.
     std::size_t word_count_ = 0;
     std::size_t bit_offset_ = 0;
+    bool read_lsb_first_ = false;
 
     IONGSMSChunkUnpackingCtx(
         WT* data_buffer,
-        std::size_t data_buffer_word_count) : data_(data_buffer),
-                                               word_count_(data_buffer_word_count)
+        std::size_t data_buffer_word_count,
+        bool read_lsb_first) : data_(data_buffer),
+                               word_count_(data_buffer_word_count),
+                               read_lsb_first_(read_lsb_first)
     {
     }
 
@@ -61,9 +64,17 @@ struct IONGSMSChunkUnpackingCtx
                         throw std::runtime_error("ION_GSMS_Signal_Source tried to read past the chunk boundary");
                     }
                 const std::size_t bit_index = absolute_bit % word_bitsize_;
-                const std::size_t word_bit = word_bitsize_ - 1 - bit_index;
-                value <<= 1;
-                value |= (static_cast<uint64_t>(data_[word_index]) >> word_bit) & 0x01U;
+                const std::size_t word_bit = read_lsb_first_ ? bit_index : word_bitsize_ - 1 - bit_index;
+                const uint64_t bit_value = (static_cast<uint64_t>(data_[word_index]) >> word_bit) & 0x01U;
+                if (read_lsb_first_)
+                    {
+                        value |= bit_value << bit;
+                    }
+                else
+                    {
+                        value <<= 1;
+                        value |= bit_value;
+                    }
             }
 
         bit_offset_ += bit_count;

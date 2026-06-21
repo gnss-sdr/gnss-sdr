@@ -15,12 +15,16 @@
 
 #include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_sdr_make_unique.h"
+#include "in_memory_configuration.h"
 #include "ion_gsms.h"
 #include "ion_gsms_chunk_data.h"
+#include "ion_gsms_signal_source.h"
 #include <gnuradio/blocks/vector_sink.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
+#include <pmt/pmt.h>
 #include <cstdint>
 #include <cstring>
 #include <fstream>
@@ -196,7 +200,7 @@ GnssMetadata::Block make_file_block(
     const std::size_t size_header = 0,
     const std::size_t size_footer = 0)
 {
-    const auto stream = make_stream(GnssMetadata::IonStream::IF, "TC", 2, 2, 1);
+    const auto stream = make_stream(GnssMetadata::IonStream::IF, "TC", 2, 8, 4);
     auto chunk = make_chunk(stream, 1, 1);
 
     GnssMetadata::Block block;
@@ -218,6 +222,13 @@ void write_binary_file(const fs::path& path, const std::vector<uint8_t>& bytes)
 }
 
 
+void write_text_file(const fs::path& path, const std::string& text)
+{
+    std::ofstream file(path.c_str(), std::ios::out | std::ios::trunc);
+    file << text;
+}
+
+
 GnssMetadata::File make_data_file(const fs::path& data_path, const std::size_t offset)
 {
     GnssMetadata::File file;
@@ -234,6 +245,26 @@ std::vector<int8_t> run_file_source(
     const std::size_t block_start_offset)
 {
     auto source = gnss_make_shared<IONGSMSFileSource>(metadata_path, file, block, block_start_offset, std::vector<std::string>{"L1"});
+    auto sink = gr::blocks::vector_sink_b::make();
+    auto top_block = gr::make_top_block("IONGSMSFileSourceTest");
+    top_block->connect(source, 0, sink, 0);
+    top_block->run();
+
+    const auto sink_data = sink->data();
+    std::vector<int8_t> output;
+    output.reserve(sink_data.size());
+    for (const auto item : sink_data)
+        {
+            output.push_back(static_cast<int8_t>(item));
+        }
+    return output;
+}
+
+
+std::vector<int8_t> run_file_source(
+    const std::vector<IONGSMSFileSource::SegmentDescriptor>& segments)
+{
+    auto source = gnss_make_shared<IONGSMSFileSource>(segments, std::vector<std::string>{"L1"});
     auto sink = gr::blocks::vector_sink_b::make();
     auto top_block = gr::make_top_block("IONGSMSFileSourceTest");
     top_block->connect(source, 0, sink, 0);
@@ -311,6 +342,17 @@ TEST(IONGSMSChunkDataTest, HonorsStreamShiftRightWithoutOverrun)
 }
 
 
+TEST(IONGSMSChunkDataTest, HonorsRightShiftedChunkBitOrder)
+{
+    const auto stream = make_stream(GnssMetadata::IonStream::IF, "TC", 2, 8, 4);
+
+    const auto output = decode_int8_stream(stream, {0b00111001}, 1, 1, GnssMetadata::Chunk::Undefined, GnssMetadata::Chunk::Tail, GnssMetadata::Chunk::Right);
+
+    const std::vector<int8_t> expected{1, -2, -1, 0};
+    EXPECT_EQ(expected, output);
+}
+
+
 TEST(IONGSMSChunkDataTest, DecodesBigEndianWordsAsUnsigned)
 {
     const auto stream = make_stream(GnssMetadata::IonStream::IF, "OB", 4, 16, 1, GnssMetadata::IonStream::Left);
@@ -322,13 +364,13 @@ TEST(IONGSMSChunkDataTest, DecodesBigEndianWordsAsUnsigned)
 }
 
 
-TEST(IONGSMSChunkDataTest, RepeatsSingleLumpPayloadToFillChunk)
+TEST(IONGSMSChunkDataTest, DecodesOneDeclaredLumpAndLeavesTailPadding)
 {
     const auto stream = make_stream(GnssMetadata::IonStream::IF, "TC", 2, 2, 1);
 
     const auto output = decode_int8_stream(stream, {0b01101100});
 
-    const std::vector<int8_t> expected{1, -2, -1, 0};
+    const std::vector<int8_t> expected{1};
     EXPECT_EQ(expected, output);
 }
 
@@ -362,7 +404,7 @@ TEST(IONGSMSChunkDataTest, DecodesMultipleLumpsInDeclaredOrder)
 }
 
 
-TEST(IONGSMSChunkDataTest, RepeatsOrderedMultiLumpPatternToFillChunk)
+TEST(IONGSMSChunkDataTest, DecodesOrderedMultiLumpPatternOnce)
 {
     const auto first_stream = make_stream(GnssMetadata::IonStream::IF, "TC", 2, 2, 1, GnssMetadata::IonStream::Undefined, GnssMetadata::IonStream::shiftUndefined, "L1");
     const auto second_stream = make_stream(GnssMetadata::IonStream::IF, "TC", 2, 2, 1, GnssMetadata::IonStream::Undefined, GnssMetadata::IonStream::shiftUndefined, "L2");
@@ -384,8 +426,8 @@ TEST(IONGSMSChunkDataTest, RepeatsOrderedMultiLumpPatternToFillChunk)
     const auto output = decode_int8_chunk(chunk, {"L1", "L2"}, {0b01101100});
 
     ASSERT_EQ(2U, output.size());
-    const std::vector<int8_t> expected_first{1, -1};
-    const std::vector<int8_t> expected_second{-2, 0};
+    const std::vector<int8_t> expected_first{1};
+    const std::vector<int8_t> expected_second{-2};
     EXPECT_EQ(expected_first, output[0]);
     EXPECT_EQ(expected_second, output[1]);
 }
@@ -412,7 +454,7 @@ TEST(IONGSMSChunkDataTest, CollapsesRepeatedStreamIdIntoOneOutput)
     const auto output = decode_int8_chunk(chunk, {"L1"}, {0b01101100});
 
     ASSERT_EQ(1U, output.size());
-    const std::vector<int8_t> expected{1, -2, -1, 0};
+    const std::vector<int8_t> expected{1, -2};
     EXPECT_EQ(expected, output[0]);
 }
 
@@ -506,6 +548,38 @@ TEST(IONGSMSFileSourceTest, DecodesOnlyCompleteCyclesReadFromFile)
 }
 
 
+TEST(IONGSMSFileSourceTest, InfersZeroCyclesFromEofForStandaloneBlock)
+{
+    const fs::path temp_dir(GetTempDir());
+    const fs::path data_path = temp_dir / "ion_gsms_file_source_zero_cycles_standalone.bin";
+    const fs::path metadata_path = temp_dir / "ion_gsms_file_source_zero_cycles_standalone.sdrx";
+    write_binary_file(data_path, {static_cast<uint8_t>(0b01101100U), static_cast<uint8_t>(0b00011011U)});
+
+    const auto file = make_data_file(data_path, 0);
+    const auto block = make_file_block(0);
+
+    const auto output = run_file_source(metadata_path, file, block, 0);
+
+    const std::vector<int8_t> expected{1, -2, -1, 0, 0, 1, -2, -1};
+    EXPECT_EQ(expected, output);
+
+    fs::remove(data_path);
+}
+
+
+TEST(IONGSMSFileSourceTest, RejectsZeroCycleSegmentUnlessItExtendsToEof)
+{
+    const fs::path temp_dir(GetTempDir());
+    const fs::path data_path = temp_dir / "ion_gsms_file_source_zero_cycles_nonfinal.bin";
+
+    const auto block = make_file_block(0);
+    const std::vector<IONGSMSFileSource::SegmentDescriptor> segments{
+        {data_path, &block, 0}};
+
+    EXPECT_THROW(gnss_make_shared<IONGSMSFileSource>(segments, std::vector<std::string>{"L1"}), std::runtime_error);
+}
+
+
 TEST(IONGSMSFileSourceTest, CollapsesRepeatedStreamIdAcrossChunksIntoOneOutput)
 {
     const fs::path temp_dir(GetTempDir());
@@ -513,7 +587,7 @@ TEST(IONGSMSFileSourceTest, CollapsesRepeatedStreamIdAcrossChunksIntoOneOutput)
     const fs::path metadata_path = temp_dir / "ion_gsms_file_source_repeated_stream.sdrx";
     write_binary_file(data_path, {static_cast<uint8_t>(0b01101100U), static_cast<uint8_t>(0b00011011U)});
 
-    const auto stream = make_stream(GnssMetadata::IonStream::IF, "TC", 2, 2, 1);
+    const auto stream = make_stream(GnssMetadata::IonStream::IF, "TC", 2, 8, 4);
     auto first_chunk = make_chunk(stream, 1, 1);
     auto second_chunk = make_chunk(stream, 1, 1);
 
@@ -529,6 +603,29 @@ TEST(IONGSMSFileSourceTest, CollapsesRepeatedStreamIdAcrossChunksIntoOneOutput)
     EXPECT_EQ(expected, output);
 
     fs::remove(data_path);
+}
+
+
+TEST(IONGSMSFileSourceTest, ConcatenatesSegmentsForSameStream)
+{
+    const fs::path temp_dir(GetTempDir());
+    const fs::path first_data_path = temp_dir / "ion_gsms_file_source_segment_1.bin";
+    const fs::path second_data_path = temp_dir / "ion_gsms_file_source_segment_2.bin";
+    write_binary_file(first_data_path, {static_cast<uint8_t>(0b01101100U)});
+    write_binary_file(second_data_path, {static_cast<uint8_t>(0b00011011U)});
+
+    const auto block = make_file_block(1);
+    const std::vector<IONGSMSFileSource::SegmentDescriptor> segments{
+        {first_data_path, &block, 0},
+        {second_data_path, &block, 0}};
+
+    const auto output = run_file_source(segments);
+
+    const std::vector<int8_t> expected{1, -2, -1, 0, 0, 1, -2, -1};
+    EXPECT_EQ(expected, output);
+
+    fs::remove(first_data_path);
+    fs::remove(second_data_path);
 }
 
 
@@ -574,4 +671,335 @@ TEST(IONGSMSFileSourceTest, EmitsFp32IqAsComplexItems)
     EXPECT_FLOAT_EQ(-2.25F, output[0].imag());
 
     fs::remove(data_path);
+}
+
+
+TEST(IONGSMSSignalSourceTest, UsesMetadataSamplingFrequencyPerRequestedStream)
+{
+    const fs::path temp_dir(GetTempDir());
+    const fs::path data_path = temp_dir / "ion_gsms_signal_source_multirate.bin";
+    const fs::path metadata_path = temp_dir / "ion_gsms_signal_source_multirate.sdrx";
+    write_binary_file(data_path, std::vector<uint8_t>(10, 0));
+    write_text_file(metadata_path,
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<metadata xmlns=\"http://www.ion.org/standards/sdrwg/schema/metadata.xsd\">\n"
+        "  <system id=\"sys\">\n"
+        "    <freqbase format=\"Hz\">10.0</freqbase>\n"
+        "  </system>\n"
+        "  <band id=\"B\">\n"
+        "    <centerfreq format=\"Hz\">1.0</centerfreq>\n"
+        "    <translatedfreq format=\"Hz\">0.0</translatedfreq>\n"
+        "    <bandwidth format=\"Hz\">1.0</bandwidth>\n"
+        "  </band>\n"
+        "  <lane id=\"lane\">\n"
+        "    <system id=\"sys\"/>\n"
+        "    <block>\n"
+        "      <cycles>10</cycles>\n"
+        "      <chunk>\n"
+        "        <sizeword>1</sizeword>\n"
+        "        <countwords>1</countwords>\n"
+        "        <wordshift>Left</wordshift>\n"
+        "        <lump>\n"
+        "          <stream id=\"L1\">\n"
+        "            <ratefactor>2</ratefactor>\n"
+        "            <quantization>1</quantization>\n"
+        "            <packedbits>2</packedbits>\n"
+        "            <alignment>Left</alignment>\n"
+        "            <format>IF</format>\n"
+        "            <encoding>SIGN</encoding>\n"
+        "            <band id=\"B\"/>\n"
+        "          </stream>\n"
+        "          <stream id=\"L2\">\n"
+        "            <ratefactor>5</ratefactor>\n"
+        "            <quantization>1</quantization>\n"
+        "            <packedbits>5</packedbits>\n"
+        "            <alignment>Left</alignment>\n"
+        "            <format>IF</format>\n"
+        "            <encoding>SIGN</encoding>\n"
+        "            <band id=\"B\"/>\n"
+        "          </stream>\n"
+        "        </lump>\n"
+        "      </chunk>\n"
+        "    </block>\n"
+        "  </lane>\n"
+        "  <file>\n"
+        "    <url>ion_gsms_signal_source_multirate.bin</url>\n"
+        "    <timestamp>2026-06-21T00:00:00Z</timestamp>\n"
+        "    <lane id=\"lane\"/>\n"
+        "  </file>\n"
+        "</metadata>\n");
+
+    auto queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+    auto config = std::make_shared<InMemoryConfiguration>();
+    config->set_property("Test.metadata_filename", metadata_path.string());
+    config->set_property("Test.streams", "L1,L2");
+    config->set_property("Test.sampling_frequency", "100");
+
+    std::unique_ptr<SignalSourceInterface> source =
+        std::make_unique<IONGSMSSignalSource>(config.get(), "Test", 0, 1, queue.get());
+    EXPECT_EQ(2U, source->getRfChannels());
+    EXPECT_EQ(nullptr, source->get_right_block(2));
+
+    auto first_sink = gr::blocks::vector_sink_b::make();
+    auto second_sink = gr::blocks::vector_sink_b::make();
+    auto top_block = gr::make_top_block("IONGSMSSignalSourceTest");
+    source->connect(top_block);
+    top_block->connect(source->get_right_block(0), 0, first_sink, 0);
+    top_block->connect(source->get_right_block(1), 0, second_sink, 0);
+    top_block->run();
+
+    EXPECT_EQ(16U, first_sink->data().size());
+    EXPECT_EQ(40U, second_sink->data().size());
+
+    fs::remove(data_path);
+    fs::remove(metadata_path);
+}
+
+
+TEST(IONGSMSSignalSourceTest, LoadsStreamsFromRelativeIncludedMetadata)
+{
+    const fs::path temp_dir(GetTempDir());
+    const fs::path include_dir = temp_dir / "ion_gsms_signal_source_include_dir";
+    const fs::path data_path = include_dir / "ion_gsms_signal_source_included.bin";
+    const fs::path root_metadata_path = temp_dir / "ion_gsms_signal_source_include_root.sdrx";
+    const fs::path included_metadata_path = include_dir / "child.sdrx";
+    fs::create_directories(include_dir);
+    write_binary_file(data_path, std::vector<uint8_t>(10, 0));
+    write_text_file(root_metadata_path,
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<metadata xmlns=\"http://www.ion.org/standards/sdrwg/schema/metadata.xsd\">\n"
+        "  <include>ion_gsms_signal_source_include_dir/child.sdrx</include>\n"
+        "</metadata>\n");
+    write_text_file(included_metadata_path,
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<metadata xmlns=\"http://www.ion.org/standards/sdrwg/schema/metadata.xsd\">\n"
+        "  <system id=\"sys\">\n"
+        "    <freqbase format=\"Hz\">10.0</freqbase>\n"
+        "  </system>\n"
+        "  <band id=\"B\">\n"
+        "    <centerfreq format=\"Hz\">1.0</centerfreq>\n"
+        "    <translatedfreq format=\"Hz\">0.0</translatedfreq>\n"
+        "    <bandwidth format=\"Hz\">1.0</bandwidth>\n"
+        "  </band>\n"
+        "  <lane id=\"lane\">\n"
+        "    <system id=\"sys\"/>\n"
+        "    <block>\n"
+        "      <cycles>10</cycles>\n"
+        "      <chunk>\n"
+        "        <sizeword>1</sizeword>\n"
+        "        <countwords>1</countwords>\n"
+        "        <wordshift>Left</wordshift>\n"
+        "        <lump>\n"
+        "          <stream id=\"L1\">\n"
+        "            <ratefactor>4</ratefactor>\n"
+        "            <quantization>2</quantization>\n"
+        "            <packedbits>8</packedbits>\n"
+        "            <alignment>Left</alignment>\n"
+        "            <format>IF</format>\n"
+        "            <encoding>TC</encoding>\n"
+        "            <band id=\"B\"/>\n"
+        "          </stream>\n"
+        "        </lump>\n"
+        "      </chunk>\n"
+        "    </block>\n"
+        "  </lane>\n"
+        "  <file>\n"
+        "    <url>ion_gsms_signal_source_included.bin</url>\n"
+        "    <timestamp>2026-06-21T00:00:00Z</timestamp>\n"
+        "    <lane id=\"lane\"/>\n"
+        "  </file>\n"
+        "</metadata>\n");
+
+    auto queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+    auto config = std::make_shared<InMemoryConfiguration>();
+    config->set_property("Test.metadata_filename", root_metadata_path.string());
+    config->set_property("Test.streams", "L1");
+    config->set_property("Test.sampling_frequency", "100");
+
+    std::unique_ptr<SignalSourceInterface> source =
+        std::make_unique<IONGSMSSignalSource>(config.get(), "Test", 0, 1, queue.get());
+    EXPECT_EQ(1U, source->getRfChannels());
+
+    auto sink = gr::blocks::vector_sink_b::make();
+    auto top_block = gr::make_top_block("IONGSMSSignalSourceIncludeTest");
+    source->connect(top_block);
+    top_block->connect(source->get_right_block(0), 0, sink, 0);
+    top_block->run();
+
+    EXPECT_EQ(32U, sink->data().size());
+
+    fs::remove(data_path);
+    fs::remove(included_metadata_path);
+    fs::remove(root_metadata_path);
+    fs::remove(include_dir);
+}
+
+
+TEST(IONGSMSSignalSourceTest, UsesFileSetEntriesAsPreferredFileStarts)
+{
+    const fs::path temp_dir(GetTempDir());
+    const fs::path first_data_path = temp_dir / "ion_gsms_signal_source_fileset_first.bin";
+    const fs::path second_data_path = temp_dir / "ion_gsms_signal_source_fileset_second.bin";
+    const fs::path metadata_path = temp_dir / "ion_gsms_signal_source_fileset.sdrx";
+    write_binary_file(first_data_path, {static_cast<uint8_t>(0b01101100U), static_cast<uint8_t>(0b01101100U)});
+    write_binary_file(second_data_path, {static_cast<uint8_t>(0b00011011U), static_cast<uint8_t>(0b00011011U)});
+    write_text_file(metadata_path,
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<metadata xmlns=\"http://www.ion.org/standards/sdrwg/schema/metadata.xsd\">\n"
+        "  <system id=\"sys\">\n"
+        "    <freqbase format=\"Hz\">10.0</freqbase>\n"
+        "  </system>\n"
+        "  <band id=\"B\">\n"
+        "    <centerfreq format=\"Hz\">1.0</centerfreq>\n"
+        "    <translatedfreq format=\"Hz\">0.0</translatedfreq>\n"
+        "    <bandwidth format=\"Hz\">1.0</bandwidth>\n"
+        "  </band>\n"
+        "  <fileset id=\"set\">\n"
+        "    <file>ion_gsms_signal_source_fileset_first.bin</file>\n"
+        "  </fileset>\n"
+        "  <lane id=\"lane\">\n"
+        "    <system id=\"sys\"/>\n"
+        "    <block>\n"
+        "      <cycles>2</cycles>\n"
+        "      <chunk>\n"
+        "        <sizeword>1</sizeword>\n"
+        "        <countwords>1</countwords>\n"
+        "        <wordshift>Left</wordshift>\n"
+        "        <lump>\n"
+        "          <stream id=\"L1\">\n"
+        "            <ratefactor>4</ratefactor>\n"
+        "            <quantization>2</quantization>\n"
+        "            <packedbits>8</packedbits>\n"
+        "            <alignment>Left</alignment>\n"
+        "            <format>IF</format>\n"
+        "            <encoding>TC</encoding>\n"
+        "            <band id=\"B\"/>\n"
+        "          </stream>\n"
+        "        </lump>\n"
+        "      </chunk>\n"
+        "    </block>\n"
+        "  </lane>\n"
+        "  <file>\n"
+        "    <url>ion_gsms_signal_source_fileset_second.bin</url>\n"
+        "    <timestamp>2026-06-21T00:00:01Z</timestamp>\n"
+        "    <lane id=\"lane\"/>\n"
+        "  </file>\n"
+        "  <file>\n"
+        "    <url>ion_gsms_signal_source_fileset_first.bin</url>\n"
+        "    <timestamp>2026-06-21T00:00:00Z</timestamp>\n"
+        "    <lane id=\"lane\"/>\n"
+        "  </file>\n"
+        "</metadata>\n");
+
+    auto queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+    auto config = std::make_shared<InMemoryConfiguration>();
+    config->set_property("Test.metadata_filename", metadata_path.string());
+    config->set_property("Test.streams", "L1");
+    config->set_property("Test.sampling_frequency", "100");
+
+    std::unique_ptr<SignalSourceInterface> source =
+        std::make_unique<IONGSMSSignalSource>(config.get(), "Test", 0, 1, queue.get());
+
+    auto sink = gr::blocks::vector_sink_b::make();
+    auto top_block = gr::make_top_block("IONGSMSSignalSourceFileSetTest");
+    source->connect(top_block);
+    top_block->connect(source->get_right_block(0), 0, sink, 0);
+    top_block->run();
+
+    std::vector<int8_t> output;
+    output.reserve(sink->data().size());
+    for (const auto item : sink->data())
+        {
+            output.push_back(static_cast<int8_t>(item));
+        }
+    const std::vector<int8_t> expected{1, -2, -1, 0, 1, -2, -1, 0};
+    EXPECT_EQ(expected, output);
+
+    fs::remove(first_data_path);
+    fs::remove(second_data_path);
+    fs::remove(metadata_path);
+}
+
+
+TEST(IONGSMSSignalSourceTest, RejectsZeroCycleBlockBeforeLaterLaneBlocks)
+{
+    const fs::path temp_dir(GetTempDir());
+    const fs::path data_path = temp_dir / "ion_gsms_signal_source_zero_cycles_nonfinal.bin";
+    const fs::path metadata_path = temp_dir / "ion_gsms_signal_source_zero_cycles_nonfinal.sdrx";
+    write_binary_file(data_path, {static_cast<uint8_t>(0b01101100U), static_cast<uint8_t>(0b00011011U)});
+    write_text_file(metadata_path,
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<metadata xmlns=\"http://www.ion.org/standards/sdrwg/schema/metadata.xsd\">\n"
+        "  <system id=\"sys\">\n"
+        "    <freqbase format=\"Hz\">10.0</freqbase>\n"
+        "  </system>\n"
+        "  <band id=\"B\">\n"
+        "    <centerfreq format=\"Hz\">1.0</centerfreq>\n"
+        "    <translatedfreq format=\"Hz\">0.0</translatedfreq>\n"
+        "    <bandwidth format=\"Hz\">1.0</bandwidth>\n"
+        "  </band>\n"
+        "  <lane id=\"lane\">\n"
+        "    <system id=\"sys\"/>\n"
+        "    <block>\n"
+        "      <cycles>0</cycles>\n"
+        "      <chunk>\n"
+        "        <sizeword>1</sizeword>\n"
+        "        <countwords>1</countwords>\n"
+        "        <wordshift>Left</wordshift>\n"
+        "        <lump>\n"
+        "          <stream id=\"L2\">\n"
+        "            <ratefactor>4</ratefactor>\n"
+        "            <quantization>2</quantization>\n"
+        "            <packedbits>8</packedbits>\n"
+        "            <alignment>Left</alignment>\n"
+        "            <format>IF</format>\n"
+        "            <encoding>TC</encoding>\n"
+        "            <band id=\"B\"/>\n"
+        "          </stream>\n"
+        "        </lump>\n"
+        "      </chunk>\n"
+        "    </block>\n"
+        "    <block>\n"
+        "      <cycles>1</cycles>\n"
+        "      <chunk>\n"
+        "        <sizeword>1</sizeword>\n"
+        "        <countwords>1</countwords>\n"
+        "        <wordshift>Left</wordshift>\n"
+        "        <lump>\n"
+        "          <stream id=\"L1\">\n"
+        "            <ratefactor>4</ratefactor>\n"
+        "            <quantization>2</quantization>\n"
+        "            <packedbits>8</packedbits>\n"
+        "            <alignment>Left</alignment>\n"
+        "            <format>IF</format>\n"
+        "            <encoding>TC</encoding>\n"
+        "            <band id=\"B\"/>\n"
+        "          </stream>\n"
+        "        </lump>\n"
+        "      </chunk>\n"
+        "    </block>\n"
+        "  </lane>\n"
+        "  <file>\n"
+        "    <url>ion_gsms_signal_source_zero_cycles_nonfinal.bin</url>\n"
+        "    <timestamp>2026-06-21T00:00:00Z</timestamp>\n"
+        "    <lane id=\"lane\"/>\n"
+        "  </file>\n"
+        "</metadata>\n");
+
+    auto queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+    auto config = std::make_shared<InMemoryConfiguration>();
+    config->set_property("Test.metadata_filename", metadata_path.string());
+    config->set_property("Test.streams", "L1");
+    config->set_property("Test.sampling_frequency", "100");
+
+    EXPECT_THROW(
+        {
+            std::unique_ptr<SignalSourceInterface> source =
+                std::make_unique<IONGSMSSignalSource>(config.get(), "Test", 0, 1, queue.get());
+            (void)source;
+        },
+        std::runtime_error);
+
+    fs::remove(data_path);
+    fs::remove(metadata_path);
 }

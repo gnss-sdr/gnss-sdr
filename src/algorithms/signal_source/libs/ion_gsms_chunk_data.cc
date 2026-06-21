@@ -66,13 +66,10 @@ IONGSMSChunkData::IONGSMSChunkData(const GnssMetadata::Chunk& chunk, const std::
             throw std::runtime_error("ION_GSMS_Signal_Source metadata describes a lump pattern larger than its chunk");
         }
 
-    const std::size_t pattern_repeat_count = total_bitsize / pattern_bitsize;
     output_stream_count_ = stream_ids.size();
     output_stream_item_size_.assign(output_stream_count_, 0);
     output_stream_item_rate_.assign(output_stream_count_, 0);
     std::vector<bool> output_stream_seen(output_stream_count_, false);
-    std::vector<std::size_t> pattern_output_item_rates(output_stream_count_, 0);
-    std::vector<stream_metadata_t> pattern_streams;
     for (const auto& lump : chunk.Lumps())
         {
             for (const auto& stream : lump.Streams())
@@ -90,8 +87,8 @@ IONGSMSChunkData::IONGSMSChunkData(const GnssMetadata::Chunk& chunk, const std::
                             output_index = static_cast<int>(relative_output_index + output_stream_offset);
                             output_item_rate = stream_output_item_rate(stream);
                             output_item_size = stream_output_item_size(stream);
-                            output_item_offset = pattern_output_item_rates[relative_output_index];
-                            pattern_output_item_rates[relative_output_index] += output_item_rate;
+                            output_item_offset = output_stream_item_rate_[relative_output_index];
+                            output_stream_item_rate_[relative_output_index] += output_item_rate;
 
                             if (output_stream_item_size_[relative_output_index] != 0 &&
                                 output_stream_item_size_[relative_output_index] != output_item_size)
@@ -107,40 +104,11 @@ IONGSMSChunkData::IONGSMSChunkData(const GnssMetadata::Chunk& chunk, const std::
                                 }
                         }
 
-                    pattern_streams.emplace_back(lump, stream, stream_encoding, output_index, output_item_offset, output_item_size);
+                    streams_.emplace_back(lump, stream, stream_encoding, output_index, output_item_offset, output_item_size);
                 }
         }
 
-    for (std::size_t i = 0; i < output_stream_item_rate_.size(); ++i)
-        {
-            output_stream_item_rate_[i] = pattern_output_item_rates[i] * pattern_repeat_count;
-        }
-
-    for (std::size_t repeat = 0; repeat < pattern_repeat_count; ++repeat)
-        {
-            for (const auto& stream_metadata : pattern_streams)
-                {
-                    std::size_t output_item_offset = 0;
-                    if (stream_metadata.output_index != -1)
-                        {
-                            const auto relative_output_index = static_cast<std::size_t>(stream_metadata.output_index) - output_stream_offset_;
-                            const std::size_t chronological_repeat = stream_metadata.lump.Shift() == GnssMetadata::Lump::shiftRight
-                                                                         ? (pattern_repeat_count - repeat - 1)
-                                                                         : repeat;
-                            output_item_offset = chronological_repeat * pattern_output_item_rates[relative_output_index] +
-                                                 stream_metadata.output_item_offset;
-                        }
-                    streams_.emplace_back(
-                        stream_metadata.lump,
-                        stream_metadata.stream,
-                        stream_metadata.stream_encoding,
-                        stream_metadata.output_index,
-                        output_item_offset,
-                        stream_metadata.output_item_size);
-                }
-        }
-
-    padding_bitsize_ = total_bitsize - pattern_bitsize * pattern_repeat_count;
+    padding_bitsize_ = total_bitsize - pattern_bitsize;
 }
 
 
@@ -258,12 +226,7 @@ void IONGSMSChunkData::unpack_words(gr_vector_void_star& outputs, std::vector<in
                 }
         }
 
-    if (chunk_.Shift() == GnssMetadata::Chunk::Right)
-        {
-            std::reverse(data, data + countwords_);
-        }
-
-    IONGSMSChunkUnpackingCtx<WT> ctx{data, countwords_};
+    IONGSMSChunkUnpackingCtx<WT> ctx{data, countwords_, chunk_.Shift() == GnssMetadata::Chunk::Right};
 
     // Head padding
     if (padding_bitsize_ > 0 && chunk_.Padding() == GnssMetadata::Chunk::Head)

@@ -83,11 +83,13 @@ private:
     boost::circular_buffer<float> d_symbol_history;
     uint32_t d_stat;
 
-    // Position within the frame in symbols, when it reaches GPS_L1C_FRAME_BITS - 1, a frame can
+    // Index within the frame of the symbol that was last read, when it reaches GPS_L1C_FRAME_BITS - 1, a frame can
     // be decoded from the alst GPS_L1C_FRAME_BITS in the buffer. It ranges [0, GPS_L1C_FRAME_BITS)
     uint32_t d_frame_position;
 
-    // TOW of last valid frame read, if sf2 could be decoded
+    // TOW of last valid frame read, if sf2 could be decoded. It's the result of adding ITOW and TOI, and thus refers
+    // to the TOW of the leading edge of next frame. Because frames are completed the symbol before, the TOW of said symbol
+    // is 10ms before this value.
     uint32_t d_last_valid_tow;
 
     // Number of frames since d_last_valid_tow was obtained

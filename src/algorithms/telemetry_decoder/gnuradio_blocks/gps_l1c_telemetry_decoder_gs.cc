@@ -124,8 +124,13 @@ int gps_l1c_telemetry_decoder_gs::general_work(int noutput_items, gr_vector_int 
             // Frame position refers to the bit parsed in this call
             int64_t frame_position_ms = static_cast<int64_t>(d_frame_position) * GPS_L1C_CODE_PERIOD_MS;
             int64_t delta_ms = static_cast<int64_t>(d_frames_since_last_valid_tow) * 18000 + frame_position_ms - 18000;
-            printf("d_last_valid_tow = %i\nd_frames_since_last_valid_tow=%i\nd_farme_position=%i\nframe_position_ms=%li\ndelta_ms=%li\n", d_last_valid_tow, d_frames_since_last_valid_tow, d_frame_position, frame_position_ms, delta_ms);
+
+            // TODO: It appears the TOW_at_current_symbol_ms is for the falling edge? Or
+            // is this a timing issue elsewhere? A similar +1 exists in the galileo inav_current_symbol_delay_ms function.
+            delta_ms += GPS_L1C_CODE_PERIOD_MS;
+
             uint32_t tow_now = gnss_tow::add_ms(static_cast<int64_t>(d_last_valid_tow) * 1000, delta_ms);
+
             current_symbol.Flag_valid_word = true;
             current_symbol.TOW_at_current_symbol_ms = tow_now;
 
@@ -217,10 +222,6 @@ int16_t gps_l1c_telemetry_decoder_gs::test_toi_hypotheses(size_t start_index, co
 
 void gps_l1c_telemetry_decoder_gs::state_find_align(const Gnss_Synchro &synchro)
 {
-    // The TOI is transmitted at the start of the subframe,
-    // i.e. if we are aligned to the secondary code, the first 52 bits received are TOI; not the last as Figure 3.2-3
-    // in IS-GPS-800J 01-AUG-2022 would lead one to believe at first.
-
     if (d_symbol_history.size() < GPS_L1C_FRAME_BITS)
         {
             // Skip checking for TOI until we have enough bits as to decode the full frame
@@ -239,6 +240,8 @@ void gps_l1c_telemetry_decoder_gs::state_find_align(const Gnss_Synchro &synchro)
         }
 
     // Try to decode the remainder of the frame
+    // TODO: Try to decode the inverted one too, and if that one matches,
+    // invert the entire bits (i.e. change TOI MSB) as we have locked 180 out of phase
     GpsL1cFrame frame = try_parse_frame(maybe_first_subframe_bit, toi);
     if (!frame.has_any_sf())
         {
@@ -248,7 +251,7 @@ void gps_l1c_telemetry_decoder_gs::state_find_align(const Gnss_Synchro &synchro)
 
     parse_new_subframe_data(frame, synchro);
 
-    // Frame found! We are aligned, switch to aligned state. The bit we just parsed was the last in the frame, so...
+    // Frame found! We are aligned, switch to aligned state.
     d_frame_position = GPS_L1C_FRAME_BITS - 1;
     d_stat = 1;
 }
@@ -397,6 +400,7 @@ void gps_l1c_telemetry_decoder_gs::parse_new_subframe_data(const GpsL1cFrame &fr
 
             // tow is in seconds since start of week, but goes in multiple of 2 hours, as it's actually ITOW,
             // TOI is in 18s intervals since last ITOW, up to 399 (included) which is 2 hours
+            // Note that TOI is for the next subframe rising edge!
             d_last_valid_tow = d_cnav2_message->get_ephemeris().tow + frame.toi * 18;
             d_has_valid_tow = true;
             d_frames_since_last_valid_tow = 0;

@@ -19,6 +19,7 @@
 #include "gss6450_file_signal_source.h"
 #include "configuration_interface.h"
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -460,6 +461,7 @@ GSS6450FileSignalSource::Gss6450FileLayout GSS6450FileSignalSource::detect_gss64
     constexpr size_t MAX_HEADER_SCAN_BYTES = 1024 * 1024;
     constexpr int64_t SYNC_BYTES_PER_CHANNEL = 4096;
     constexpr size_t REFERENCE_WORDS_BEFORE_SYNC = 2;
+    constexpr std::array<uint8_t, 4> SYNC_CHANNEL_PATTERNS = {0x11U, 0x22U, 0x33U, 0x44U};
     const std::string end_marker = "<End of Header>";
 
     Gss6450FileLayout layout;
@@ -491,18 +493,18 @@ GSS6450FileSignalSource::Gss6450FileLayout GSS6450FileSignalSource::detect_gss64
             while (search_offset + sizeof(uint32_t) <= bytes.size())
                 {
                     const uint32_t word = read_le_word(bytes, search_offset);
-                    if (matches_sync_channel(word, 0x11))
+                    if (matches_sync_channel(word, SYNC_CHANNEL_PATTERNS.front()))
                         {
                             layout.channels = 1;
-                            if (search_offset + (2U * sizeof(uint32_t)) <= bytes.size() &&
-                                matches_sync_channel(read_le_word(bytes, search_offset + sizeof(uint32_t)), 0x22))
+                            for (size_t channel_index = 1; channel_index < SYNC_CHANNEL_PATTERNS.size(); ++channel_index)
                                 {
-                                    layout.channels = 2;
-                                    if (search_offset + (3U * sizeof(uint32_t)) <= bytes.size() &&
-                                        matches_sync_channel(read_le_word(bytes, search_offset + (2U * sizeof(uint32_t))), 0x33))
+                                    const size_t channel_offset = search_offset + (channel_index * sizeof(uint32_t));
+                                    if (channel_offset + sizeof(uint32_t) > bytes.size() ||
+                                        !matches_sync_channel(read_le_word(bytes, channel_offset), SYNC_CHANNEL_PATTERNS[channel_index]))
                                         {
-                                            layout.channels = 3;
+                                            break;
                                         }
+                                    layout.channels = static_cast<int32_t>(channel_index + 1);
                                 }
 
                             size_t reference_offset = search_offset;

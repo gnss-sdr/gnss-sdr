@@ -190,7 +190,7 @@ void IONGSMSSignalSource::load_metadata_file(
             const auto metadata_directory = metadata_path.parent_path();
             for (const auto& file : metadata.Files())
                 {
-                    metadata_files_.push_back({&file, metadata_directory});
+                    metadata_files_.push_back({metadata_files_.size(), true, file, metadata_directory});
                 }
 
             const std::vector<GnssMetadata::AnyUri> includes(metadata.Includes().begin(), metadata.Includes().end());
@@ -340,13 +340,17 @@ std::vector<IONGSMSSignalSource::StreamSourceData> IONGSMSSignalSource::make_str
             std::int64_t stream_sampling_frequency = 0;
             for (const auto& metadata_file : files)
                 {
-                    const auto* file = metadata_file.file;
-                    const fs::path data_filepath = metadata_file.metadata_directory / file->Url().Value();
+                    if (!metadata_file.has_file)
+                        {
+                            continue;
+                        }
+                    const auto& file = metadata_file.file;
+                    const fs::path data_filepath = metadata_file.metadata_directory / file.Url().Value();
                     for (const auto& lane : metadata_->Lanes())
                         {
-                            if (lane.Id() == file->Lane().Id())
+                            if (lane.Id() == file.Lane().Id())
                                 {
-                                    std::size_t block_start_offset = file->Offset();
+                                    std::size_t block_start_offset = file.Offset();
                                     const auto& blocks = lane.Blocks();
                                     for (auto block_iter = blocks.begin(); block_iter != blocks.end(); ++block_iter)
                                         {
@@ -392,7 +396,7 @@ std::vector<IONGSMSSignalSource::MetadataFileData> IONGSMSSignalSource::ordered_
             const auto metadata_directory = fs::path(metadata_filepath_).parent_path();
             for (const auto& file : metadata_->Files())
                 {
-                    files.push_back({&file, metadata_directory});
+                    files.push_back({files.size(), true, file, metadata_directory});
                 }
         }
 
@@ -400,19 +404,19 @@ std::vector<IONGSMSSignalSource::MetadataFileData> IONGSMSSignalSource::ordered_
     std::vector<MetadataFileData> remaining_files = files;
     auto find_by_url = [](const std::vector<MetadataFileData>& candidates, const std::string& url) {
         return std::find_if(candidates.begin(), candidates.end(), [&url](const auto& file) {
-            return file.file != nullptr && file.file->Url().Value() == url;
+            return file.has_file && file.file.Url().Value() == url;
         });
     };
 
     auto append_chain = [&ordered_files, &remaining_files, &find_by_url](MetadataFileData file_data) {
-        while (file_data.file != nullptr)
+        while (file_data.has_file)
             {
                 ordered_files.push_back(file_data);
                 remaining_files.erase(std::remove_if(remaining_files.begin(), remaining_files.end(), [&file_data](const auto& candidate) {
-                    return candidate.file == file_data.file;
+                    return candidate.has_file && candidate.sequence == file_data.sequence;
                 }),
                     remaining_files.end());
-                const auto next = file_data.file->Next().Value();
+                const auto next = file_data.file.Next().Value();
                 if (next.empty())
                     {
                         file_data = {};
@@ -440,7 +444,11 @@ std::vector<IONGSMSSignalSource::MetadataFileData> IONGSMSSignalSource::ordered_
     while (!remaining_files.empty())
         {
             auto first_file = std::find_if(remaining_files.begin(), remaining_files.end(), [&remaining_files, &find_by_url](const auto& file) {
-                const auto previous = file.file->Previous().Value();
+                if (!file.has_file)
+                    {
+                        return false;
+                    }
+                const auto previous = file.file.Previous().Value();
                 return previous.empty() || find_by_url(remaining_files, previous) == remaining_files.end();
             });
             if (first_file == remaining_files.end())

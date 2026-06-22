@@ -25,6 +25,7 @@
 #include "gnss_sdr_timestamp.h"
 #include "ion_gsms.h"
 #include <GnssMetadata.h>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -77,7 +78,9 @@ private:
 
     struct MetadataFileData
     {
-        const GnssMetadata::File* file = nullptr;
+        std::size_t sequence = 0;
+        bool has_file = false;
+        GnssMetadata::File file;
         fs::path metadata_directory;
     };
 

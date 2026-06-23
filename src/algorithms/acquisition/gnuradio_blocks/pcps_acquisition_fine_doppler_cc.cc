@@ -595,7 +595,7 @@ void pcps_acquisition_fine_doppler_cc::dump_results(int effective_fft_size)
             write_matlab_var<1, int32_t>("doppler_step", doppler_step, matfp, dims);
 
             const auto positive_acq = static_cast<int32_t>(d_positive_acq);
-            write_matlab_var<1, int32_t>("d_positive_acq", positive_acq, matfp, dims);
+            write_matlab_var<1, int32_t>("positive_acq", positive_acq, matfp, dims);
 
             auto aux = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
             write_matlab_var<1, float>("acq_doppler_hz", aux, matfp, dims);

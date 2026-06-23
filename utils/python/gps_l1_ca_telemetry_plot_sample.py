@@ -1,18 +1,12 @@
+#!/usr/bin/env python3
 """
  gps_l1_ca_telemetry_plot_sample.py
 
- Reads GNSS-SDR Tracking dump binary file using the provided function and
- plots some internal variables
+ Reads GNSS-SDR GPS L1 C/A telemetry dump binary files and compares telemetry
+ timing fields for two channels.
 
- Irene Pérez Riega, 2023. iperrie@inta.es
-
- Modifiable in the file:
-   sampling_freq     - Sampling frequency [Hz]
-   channels          - Number of channels to check if they exist
-   doppler_opt       - = 1 -> Plot // = 0 -> No plot
-   path              - Path to folder which contains raw file
-   fig_path          - Path where plots will be save
-   chn_num_a / b     - Channel which will be plotted
+ File format:
+   {input_path}/{file_prefix}{channel}.dat
 
  -----------------------------------------------------------------------------
 
@@ -25,75 +19,157 @@
  -----------------------------------------------------------------------------
 """
 
-import os
+import argparse
+from pathlib import Path
+
 import matplotlib.pyplot as plt
+
+from lib.dump_filename import resolve_dump_prefix
 from lib.gps_l1_ca_read_telemetry_dump import gps_l1_ca_read_telemetry_dump
+from lib.plot_format import add_output_format_argument, apply_publication_style
 
-GNSS_telemetry = []
 
-# ---------- CHANGE HERE:
-sampling_freq = 2000000
-channels = list(range(18))
-path = '/home/labnav/Desktop/TEST_IRENE/'
-fig_path = '/home/labnav/Desktop/TEST_IRENE/PLOTS/Telemetry'
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Plot GNSS-SDR GPS L1 C/A telemetry dumps."
+    )
+    parser.add_argument(
+        "-i",
+        "--input-path",
+        type=Path,
+        default=Path("."),
+        help="Directory containing telemetry .dat dumps (default: .).",
+    )
+    parser.add_argument(
+        "-o",
+        "--fig-path",
+        type=Path,
+        default=Path("plots/telemetry"),
+        help="Directory where plots are saved.",
+    )
+    parser.add_argument(
+        "--file-prefix",
+        default="telemetry",
+        help="GNSS-SDR TelemetryDecoder.dump_filename value (default: "
+        "telemetry). May include a directory and extension; the matching "
+        "<prefix><channel>.dat files are read, resolved against --input-path.",
+    )
+    parser.add_argument(
+        "--channels",
+        type=int,
+        default=18,
+        help="Number of channels to try reading.",
+    )
+    parser.add_argument(
+        "--first-channel",
+        type=int,
+        default=0,
+        help="First channel number in the dump filenames.",
+    )
+    parser.add_argument(
+        "--channel-a",
+        type=int,
+        default=0,
+        help="First channel number to plot.",
+    )
+    parser.add_argument(
+        "--channel-b",
+        type=int,
+        default=5,
+        help="Second channel number to plot.",
+    )
+    parser.add_argument(
+        "--show",
+        action="store_true",
+        help="Display figures interactively after saving them.",
+    )
+    add_output_format_argument(parser)
+    return parser.parse_args()
 
-if not os.path.exists(fig_path):
-    os.makedirs(fig_path)
 
-i = 0
-for N in channels:
+def read_telemetry_dumps(args):
+    directory, base = resolve_dump_prefix(args.file_prefix, args.input_path)
+    telemetry = {}
+    for channel in range(args.first_channel, args.first_channel + args.channels):
+        telemetry_log_path = directory / f"{base}{channel}.dat"
+        try:
+            telemetry[channel] = gps_l1_ca_read_telemetry_dump(telemetry_log_path)
+        except OSError:
+            continue
+    return telemetry
+
+
+def require_channel(telemetry, channel):
+    if channel not in telemetry:
+        available = ", ".join(str(ch) for ch in sorted(telemetry)) or "none"
+        raise ValueError(f"Channel {channel} was not read. Available: {available}")
+    return telemetry[channel]
+
+
+def main():
+    args = parse_args()
+    args.fig_path.mkdir(parents=True, exist_ok=True)
+
+    apply_publication_style()
+
+    telemetry = read_telemetry_dumps(args)
+    data_a = require_channel(telemetry, args.channel_a)
+    data_b = require_channel(telemetry, args.channel_b)
+
+    plt.figure()
+    plt.gcf().canvas.manager.set_window_title(
+        f"Telem_Current_Symbol_TOW_{args.channel_a}_{args.channel_b}.png"
+    )
+    plt.plot(
+        data_a["tracking_sample_counter"],
+        [x / 1000 for x in data_a["tow_current_symbol_ms"]],
+        "b",
+    )
+    plt.plot(
+        data_b["tracking_sample_counter"],
+        [x / 1000 for x in data_b["tow_current_symbol_ms"]],
+        "r",
+    )
+    plt.grid(True)
+    plt.xlabel("TRK Sampling Counter")
+    plt.ylabel("Current Symbol TOW [s]")
+    plt.legend([f"CHN-{args.channel_a}", f"CHN-{args.channel_b}"])
+    plt.tight_layout()
+    plt.savefig(
+        args.fig_path
+        / f"Telem_Current_Symbol_TOW_{args.channel_a}_{args.channel_b}"
+        f".{args.output_format}"
+    )
+    if not args.show:
+        plt.close()
+
+    plt.figure()
+    plt.gcf().canvas.manager.set_window_title(
+        f"Telem_TRK_Sampling_Counter_{args.channel_a}_{args.channel_b}.png"
+    )
+    plt.plot(data_a["tracking_sample_counter"], data_a["tow"], "b")
+    plt.plot(data_b["tracking_sample_counter"], data_b["tow"], "r")
+    plt.grid(True)
+    plt.xlabel("TRK Sampling Counter")
+    plt.ylabel("Decoded Nav TOW")
+    plt.legend([f"CHN-{args.channel_a}", f"CHN-{args.channel_b}"])
+    plt.tight_layout()
+    plt.savefig(
+        args.fig_path
+        / f"Telem_TRK_Sampling_Counter_{args.channel_a}_{args.channel_b}"
+        f".{args.output_format}"
+    )
+    if not args.show:
+        plt.close()
+
+    # Show all saved figures with a single plt.show() to avoid the repeated
+    # show()/close() cycle that can crash interactive backends on macOS.
+    if args.show:
+        plt.show()
+
+
+if __name__ == "__main__":
     try:
-        telemetry_log_path = os.path.join(path, f'telemetry{N}.dat')
-        telemetry_data = gps_l1_ca_read_telemetry_dump(telemetry_log_path)
-        GNSS_telemetry.append(telemetry_data)
-        i += 1
-    except:
-        pass
-
-# ---------- CHANGE HERE:
-chn_num_a = 0
-chn_num_b = 5
-
-# Plotting values
-if chn_num_a in range(i) and chn_num_b in range(i):
-
-    # First Plot:
-    plt.figure()
-    plt.gcf().canvas.manager.set_window_title(f'Telem_Current_Simbol_TOW_'
-                                              f'{chn_num_a}_{chn_num_b}.png')
-
-    plt.plot(GNSS_telemetry[chn_num_a]['tracking_sample_counter'],
-             [x / 1000 for x in GNSS_telemetry[chn_num_a]
-             ['tow_current_symbol_ms']], 'b')
-    plt.plot(GNSS_telemetry[chn_num_b]['tracking_sample_counter'],
-             GNSS_telemetry[chn_num_b]['tow_current_symbol_ms'], 'r')
-
-    plt.grid(True)
-    plt.xlabel('TRK Sampling Counter')
-    plt.ylabel('Current Symbol TOW')
-    plt.legend([f'CHN-{chn_num_a-1}', f'CHN-{chn_num_b-1}'])
-    plt.tight_layout()
-
-    plt.savefig(os.path.join(fig_path, f'Telem_Current_Simbol_TOW_{chn_num_a}'
-                                       f'_{chn_num_b}.png'))
-    plt.show()
-
-    # Second Plot:
-    plt.figure()
-    plt.gcf().canvas.manager.set_window_title(f'Telem_TRK_Sampling_Counter_'
-                                              f'{chn_num_a}_{chn_num_b}.png')
-
-    plt.plot(GNSS_telemetry[chn_num_a]['tracking_sample_counter'],
-             GNSS_telemetry[chn_num_a]['tow'], 'b')
-    plt.plot(GNSS_telemetry[chn_num_b]['tracking_sample_counter'],
-             GNSS_telemetry[chn_num_b]['tow'], 'r')
-
-    plt.grid(True)
-    plt.xlabel('TRK Sampling Counter')
-    plt.ylabel('Decoded Nav TOW')
-    plt.legend([f'CHN-{chn_num_a-1}', f'CHN-{chn_num_b-1}'])
-    plt.tight_layout()
-
-    plt.savefig(os.path.join(fig_path, f'Telem_TRK_Sampling_Counter_'
-                                       f'{chn_num_a}_{chn_num_b}.png'))
-    plt.show()
+        main()
+    except (OSError, ValueError) as exc:
+        raise SystemExit(f"Error: {exc}")

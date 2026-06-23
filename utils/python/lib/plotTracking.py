@@ -32,9 +32,8 @@ import matplotlib.pyplot as plt
 
 def plotTracking(channelNr, trackResults, settings):
 
-    # ---------- CHANGE HERE (or pass 'fig_path' in settings):
-    fig_path = settings.get('fig_path',
-                            '../../../PLOTS/PlotTracking')
+    fig_path = settings.get('fig_path', 'plots/tracking')
+    output_format = settings.get('output_format', 'png')
 
     if not os.path.exists(fig_path):
         os.makedirs(fig_path)
@@ -187,6 +186,9 @@ def plotTracking(channelNr, trackResults, settings):
         plt.savefig(os.path.join(fig_path,
                                  f'trk_dump_ch{channelNr}_PRN_'
                                  f'{trackResults[channelNr - 1]["PRN"][-1]}'
-                                 f'.png'))
-        if settings.get('show', True):
-            plt.show()
+                                 f'.{output_format}'))
+        # Close unless it will be shown; the caller triggers a single
+        # plt.show() at the end. Avoids repeated show()/close() cycles, which
+        # can crash interactive matplotlib backends (e.g. macOS) on close.
+        if not settings.get('show', True):
+            plt.close()

@@ -1,21 +1,12 @@
+#!/usr/bin/env python3
 """
  gps_l1_ca_kf_plot_sample.py
 
- Reads a GPS L1 C/A Kalman-filter tracking dump binary file
- (GPS_L1_CA_KF_Tracking) and plots some internal tracking and Kalman-filter
- variables.
+ Reads GPS L1 C/A Kalman-filter tracking dump binary files
+ (GPS_L1_CA_KF_Tracking) and plots tracking and Kalman-filter variables.
 
- Irene Pérez Riega, 2023. iperrie@inta.es
- Minhaj Uddin Ahmad, 2026. mahmad12@crimson.ua.edu
-
- Modifiable in the file:
-   samplingFreq      - Sampling frequency [Hz]
-   channels          - Number of channels
-   first_channel     - Number of the first channel
-   code_period       - Code period [s]
-   path              - Path to folder which contains the tracking dump files
-   fig_path          - Path where the plots will be saved
-   file_prefix       - Fixed part of the tracking dump file names
+ File format:
+   {input_path}/{file_prefix}{channel}.dat
 
  -----------------------------------------------------------------------------
 
@@ -28,80 +19,153 @@
  -----------------------------------------------------------------------------
 """
 
-import os
+import argparse
+from pathlib import Path
+
 import numpy as np
+
+from lib.dump_filename import resolve_dump_prefix
 from lib.gps_l1_ca_kf_read_tracking_dump import gps_l1_ca_kf_read_tracking_dump
-from lib.plotTracking import plotTracking
+from lib.plot_format import add_output_format_argument, apply_publication_style
 from lib.plotKalman import plotKalman
+from lib.plotTracking import plotTracking
 
-GNSS_tracking = []
-trackResults = []
-kalmanResults = []
 
-# ---------- CHANGE HERE:
-samplingFreq = 4000000  # must match SignalSource.sampling_frequency in the .conf
-channels = 5
-first_channel = 0
-code_period = 0.001
-path = '../../../out/'
-fig_path = '../../../PLOTS/KF_Tracking'
-file_prefix = 'track_ch'
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Plot GPS L1 C/A Kalman-filter tracking dumps."
+    )
+    parser.add_argument(
+        "-i",
+        "--input-path",
+        type=Path,
+        default=Path("."),
+        help="Directory containing tracking .dat dumps (default: .).",
+    )
+    parser.add_argument(
+        "-o",
+        "--fig-path",
+        type=Path,
+        default=Path("plots/kf-tracking"),
+        help="Directory where plots are saved.",
+    )
+    parser.add_argument(
+        "--file-prefix",
+        default="track_ch",
+        help="GNSS-SDR Tracking.dump_filename value (default: track_ch). May "
+        "include a directory and extension; the matching <prefix><channel>.dat "
+        "files are read, resolved against --input-path.",
+    )
+    parser.add_argument(
+        "--sampling-frequency",
+        type=float,
+        default=4000000.0,
+        help="Signal sampling frequency in Hz.",
+    )
+    parser.add_argument(
+        "--channels",
+        type=int,
+        default=5,
+        help="Number of channels to read.",
+    )
+    parser.add_argument(
+        "--first-channel",
+        type=int,
+        default=0,
+        help="First channel number in the dump filenames.",
+    )
+    parser.add_argument(
+        "--code-period",
+        type=float,
+        default=0.001,
+        help="Code period in seconds.",
+    )
+    parser.add_argument(
+        "--show",
+        action="store_true",
+        help="Display figures interactively after saving them.",
+    )
+    add_output_format_argument(parser)
+    return parser.parse_args()
 
-for N in range(1, channels + 1):
-    tracking_log_path = os.path.join(path,
-                                     f'{file_prefix}{N-1+first_channel}.dat')
-    GNSS_tracking.append(gps_l1_ca_kf_read_tracking_dump(tracking_log_path))
 
-for N in range(1, channels + 1):
-    trackResult = {
-        'status': 'T',  # fake track
-        'codeFreq': np.copy(GNSS_tracking[N-1]["code_freq_hz"]),
-        'carrFreq': np.copy(GNSS_tracking[N-1]["carrier_doppler_hz"]),
-        'carrFreqRate':
-            np.copy(GNSS_tracking[N-1]["carrier_doppler_rate_hz2"]),
-        'dllDiscr': np.copy(GNSS_tracking[N-1]["code_error"]),
-        'dllDiscrFilt': np.copy(GNSS_tracking[N-1]["code_nco"]),
-        'pllDiscr': np.copy(GNSS_tracking[N-1]["carr_error"]),
-        'pllDiscrFilt': np.copy(GNSS_tracking[N-1]["carr_nco"]),
+def read_tracking_dumps(args):
+    directory, base = resolve_dump_prefix(args.file_prefix, args.input_path)
+    dumps = []
+    for channel in range(args.first_channel, args.first_channel + args.channels):
+        tracking_log_path = directory / f"{base}{channel}.dat"
+        dumps.append(gps_l1_ca_kf_read_tracking_dump(tracking_log_path))
+    return dumps
 
-        'I_P': np.copy(GNSS_tracking[N-1]["prompt_I"]),
-        'Q_P': np.copy(GNSS_tracking[N-1]["prompt_Q"]),
 
-        'I_E': np.copy(GNSS_tracking[N-1]["E"]),
-        'I_L': np.copy(GNSS_tracking[N-1]["L"]),
-        'Q_E': np.zeros(len(GNSS_tracking[N-1]["E"])),
-        'Q_L': np.zeros(len(GNSS_tracking[N-1]["L"])),
-        'PRN': np.copy(GNSS_tracking[N-1]["PRN"]),
-        'CNo': np.copy(GNSS_tracking[N-1]["CN0_SNV_dB_Hz"]),
-        'prn_start_time_s':
-            np.copy(GNSS_tracking[N-1]["PRN_start_sample"]) / samplingFreq
-    }
+def main():
+    args = parse_args()
+    args.fig_path.mkdir(parents=True, exist_ok=True)
 
-    # Kalman-filter internals. The KF dump stores the carrier discriminator
-    # (carr_error -> innovation) and the filter states, but no measurement
-    # noise covariance, so 'r_noise_cov' is intentionally left out (plotKalman
-    # skips that panel when it is absent).
-    kalmanResult = {
-        'PRN': np.copy(GNSS_tracking[N-1]["PRN"]),
-        'innovation': np.copy(GNSS_tracking[N-1]["carr_error"]),
-        'state1': np.copy(GNSS_tracking[N-1]["carr_nco"]),
-        'state2': np.copy(GNSS_tracking[N-1]["carrier_doppler_hz"]),
-        'state3': np.copy(GNSS_tracking[N-1]["carrier_doppler_rate_hz2"]),
-        'CNo': np.copy(GNSS_tracking[N-1]["CN0_SNV_dB_Hz"])
-    }
+    apply_publication_style()
 
-    trackResults.append(trackResult)
-    kalmanResults.append(kalmanResult)
+    gnss_tracking = read_tracking_dumps(args)
+    track_results = []
+    kalman_results = []
 
-    settings = {
-        'numberOfChannels': channels,
-        'msToProcess': len(GNSS_tracking[N-1]['E']),
-        'codePeriod': code_period,
-        'timeStartInSeconds': 0,
-        'fig_path': fig_path,
-        'show': False  # set True to display the figures interactively
-    }
+    for index, tracking in enumerate(gnss_tracking, start=1):
+        track_result = {
+            "status": "T",
+            "codeFreq": np.copy(tracking["code_freq_hz"]),
+            "carrFreq": np.copy(tracking["carrier_doppler_hz"]),
+            "carrFreqRate": np.copy(tracking["carrier_doppler_rate_hz2"]),
+            "dllDiscr": np.copy(tracking["code_error"]),
+            "dllDiscrFilt": np.copy(tracking["code_nco"]),
+            "pllDiscr": np.copy(tracking["carr_error"]),
+            "pllDiscrFilt": np.copy(tracking["carr_nco"]),
+            "I_P": np.copy(tracking["prompt_I"]),
+            "Q_P": np.copy(tracking["prompt_Q"]),
+            "I_E": np.copy(tracking["E"]),
+            "I_L": np.copy(tracking["L"]),
+            "Q_E": np.zeros(len(tracking["E"])),
+            "Q_L": np.zeros(len(tracking["L"])),
+            "PRN": np.copy(tracking["PRN"]),
+            "CNo": np.copy(tracking["CN0_SNV_dB_Hz"]),
+            "prn_start_time_s": (
+                np.copy(tracking["PRN_start_sample"]) / args.sampling_frequency
+            ),
+        }
 
-    # Create and save graphics as PNG
-    plotTracking(N, trackResults, settings)
-    plotKalman(N, kalmanResults, settings)
+        kalman_result = {
+            "PRN": np.copy(tracking["PRN"]),
+            "innovation": np.copy(tracking["carr_error"]),
+            "state1": np.copy(tracking["carr_nco"]),
+            "state2": np.copy(tracking["carrier_doppler_hz"]),
+            "state3": np.copy(tracking["carrier_doppler_rate_hz2"]),
+            "CNo": np.copy(tracking["CN0_SNV_dB_Hz"]),
+        }
+
+        track_results.append(track_result)
+        kalman_results.append(kalman_result)
+
+        settings = {
+            "numberOfChannels": args.channels,
+            "msToProcess": len(tracking["E"]),
+            "codePeriod": args.code_period,
+            "timeStartInSeconds": 0,
+            "fig_path": args.fig_path,
+            "show": args.show,
+            "output_format": args.output_format,
+        }
+
+        plotTracking(index, track_results, settings)
+        plotKalman(index, kalman_results, settings)
+
+    # Show all saved figures with a single plt.show() to avoid the repeated
+    # show()/close() cycle that can crash interactive backends on macOS.
+    if args.show:
+        import matplotlib.pyplot as plt
+
+        plt.show()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except OSError as exc:
+        raise SystemExit(f"Error: {exc}")

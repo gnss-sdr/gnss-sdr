@@ -33,8 +33,8 @@ import os
 
 def plotVEMLTracking(channelNr, trackResults, settings):
 
-    # ---------- CHANGE HERE:
-    fig_path = '/home/labnav/Desktop/TEST_IRENE/PLOTS/VEMLTracking'
+    fig_path = settings.get('fig_path', 'plots/dll-pll-veml-tracking')
+    output_format = settings.get('output_format', 'png')
     if not os.path.exists(fig_path):
         os.makedirs(fig_path)
 
@@ -43,7 +43,7 @@ def plotVEMLTracking(channelNr, trackResults, settings):
 
         plt.figure(figsize=(1920 / 120, 1080 / 120))
         plt.clf()
-        plt.gcf().canvas.set_window_title(
+        plt.gcf().canvas.manager.set_window_title(
             f'Channel {channelNr} (PRN '
             f'{trackResults[channelNr-1]["PRN"][0]}) results')
         plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1,
@@ -167,5 +167,9 @@ def plotVEMLTracking(channelNr, trackResults, settings):
     plt.savefig(os.path.join(fig_path,
                              f'Ch{channelNr}_PRN'
                              f'{trackResults[channelNr-1]["PRN"][0]}'
-                             f'_results'))
-    plt.show()
+                             f'_results.{output_format}'))
+    # Close the figure unless it will be shown; the caller triggers a single
+    # plt.show() at the end. Avoids repeated show()/close() cycles, which can
+    # crash interactive matplotlib backends (e.g. macOS) on window close.
+    if not settings.get('show', True):
+        plt.close()

@@ -105,6 +105,15 @@ All notable changes to GNSS-SDR will be documented in this file.
   Their generation can be disabled by setting `Observables.enable_E6=false`.
   This setting is now independent of `PVT.use_e6_for_pvt`, which keeps
   controlling whether E6 observables are used in the PVT solution.
+- Reworked the Python plotting utilities under `utils/python` (acquisition,
+  tracking, telemetry, observables, and PVT diagnostics). Each script now
+  exposes a command-line interface (run with `--help`) and can be executed from
+  any directory with configurable input and output locations, instead of
+  requiring edits to the source to change file paths. The `--file-prefix` option
+  takes the value of the corresponding block's `dump_filename` configuration
+  parameter directly, reconstructing the dump file names the same way the
+  receiver does. A new `utils/python/README.md` documents all the utilities and
+  their options.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

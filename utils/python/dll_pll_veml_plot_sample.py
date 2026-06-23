@@ -1,20 +1,12 @@
+#!/usr/bin/env python3
 """
  dll_pll_veml_plot_sample.py
 
- Reads GNSS-SDR Tracking dump binary file using the provided function and
- plots some internal variables
+ Reads GNSS-SDR DLL/PLL VEML tracking dump binary files and plots internal
+ tracking variables.
 
- Irene Pérez Riega, 2023. iperrie@inta.es
-
- Modifiable in the file:
-   sampling_freq     - Sampling frequency [Hz]
-   plot_last_outputs - If 0 -> process everything / number of items processed
-   channels          - Number of channels
-   first_channel     - Number of the first channel
-   doppler_opt       - = 1 -> Plot // = 0 -> No plot
-   path              - Path to folder which contains raw files
-   fig_path          - Path where doppler plots will be save
-   'trk_dump_ch'     - Fixed part of the tracking dump files names
+ File format:
+   {input_path}/{file_prefix}{channel}.dat
 
  -----------------------------------------------------------------------------
 
@@ -27,84 +19,169 @@
  -----------------------------------------------------------------------------
 """
 
-import os
-import numpy as np
+import argparse
+from pathlib import Path
+
 import matplotlib.pyplot as plt
+import numpy as np
+
 from lib.dll_pll_veml_read_tracking_dump import dll_pll_veml_read_tracking_dump
+from lib.dump_filename import resolve_dump_prefix
+from lib.plot_format import add_output_format_argument, apply_publication_style
 from lib.plotVEMLTracking import plotVEMLTracking
 
-trackResults = []
-settings = {}
-GNSS_tracking = []
 
-# ---------- CHANGE HERE:
-sampling_freq = 3000000
-plot_last_outputs = 0
-channels = 5
-first_channel = 0
-doppler_opt = 1
-settings['numberOfChannels'] = channels
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Plot GNSS-SDR DLL/PLL VEML tracking dumps."
+    )
+    parser.add_argument(
+        "-i",
+        "--input-path",
+        type=Path,
+        default=Path("."),
+        help="Directory containing tracking .dat dumps (default: .).",
+    )
+    parser.add_argument(
+        "-o",
+        "--fig-path",
+        type=Path,
+        default=Path("plots/dll-pll-veml-tracking"),
+        help="Directory where plots are saved.",
+    )
+    parser.add_argument(
+        "--file-prefix",
+        default="track_ch",
+        help="GNSS-SDR Tracking.dump_filename value (default: track_ch). May "
+        "include a directory and extension; the matching <prefix><channel>.dat "
+        "files are read, resolved against --input-path.",
+    )
+    parser.add_argument(
+        "--sampling-frequency",
+        type=float,
+        default=3000000.0,
+        help="Signal sampling frequency in Hz.",
+    )
+    parser.add_argument(
+        "--channels",
+        type=int,
+        default=5,
+        help="Number of channels to read.",
+    )
+    parser.add_argument(
+        "--first-channel",
+        type=int,
+        default=0,
+        help="First channel number in the dump filenames.",
+    )
+    parser.add_argument(
+        "--plot-last-outputs",
+        type=int,
+        default=0,
+        help="Only plot the last N outputs; 0 plots all outputs.",
+    )
+    parser.add_argument(
+        "--no-doppler",
+        dest="plot_doppler",
+        action="store_false",
+        help="Do not generate the extra Doppler-only plots.",
+    )
+    parser.add_argument(
+        "--show",
+        action="store_true",
+        help="Display figures interactively after saving them.",
+    )
+    add_output_format_argument(parser)
+    parser.set_defaults(plot_doppler=True)
+    return parser.parse_args()
 
-path = '/home/labnav/Desktop/TEST_IRENE/tracking'
-fig_path = '/home/labnav/Desktop/TEST_IRENE/PLOTS/Doppler'
 
-for N in range(1, channels+1):
-    tracking_log_path = os.path.join(path,
-                                     f'trk_dump_ch{N-1+first_channel}.dat')
-    GNSS_tracking.append(dll_pll_veml_read_tracking_dump(tracking_log_path))
+def read_tracking_dumps(args):
+    directory, base = resolve_dump_prefix(args.file_prefix, args.input_path)
+    dumps = []
+    for channel in range(args.first_channel, args.first_channel + args.channels):
+        tracking_log_path = directory / f"{base}{channel}.dat"
+        dumps.append(dll_pll_veml_read_tracking_dump(tracking_log_path))
+    return dumps
 
-# GNSS-SDR format conversion to Python GPS receiver
-for N in range (1, channels+1):
-    if 0 < plot_last_outputs < len(GNSS_tracking[N - 1].get("code_freq_hz")):
-        start_sample = (len(GNSS_tracking[N-1].get("code_freq_hz")) -
-                        plot_last_outputs)
-    else:
-        start_sample = 0
 
-    trackResult = {
-        'status': 'T',  # fake track
-        'codeFreq': np.copy(GNSS_tracking[N-1]["code_freq_hz"][start_sample:]),
-        'carrFreq': np.copy(GNSS_tracking[N-1]["carrier_doppler_hz"][start_sample:]),
-        'dllDiscr': np.copy(GNSS_tracking[N-1]["code_error"][start_sample:]),
-        'dllDiscrFilt': np.copy(GNSS_tracking[N-1]["code_nco"][start_sample:]),
-        'pllDiscr': np.copy(GNSS_tracking[N-1]["carr_error"][start_sample:]),
-        'pllDiscrFilt': np.copy(GNSS_tracking[N-1]["carr_nco"][start_sample:]),
+def main():
+    args = parse_args()
+    args.fig_path.mkdir(parents=True, exist_ok=True)
 
-        'I_P': np.copy(GNSS_tracking[N-1]["P"][start_sample:]),
-        'Q_P': np.zeros(len(GNSS_tracking[N-1]["P"][start_sample:])),
+    apply_publication_style()
 
-        'I_VE': np.copy(GNSS_tracking[N-1]["VE"][start_sample:]),
-        'I_E': np.copy(GNSS_tracking[N-1]["E"][start_sample:]),
-        'I_L': np.copy(GNSS_tracking[N-1]["L"][start_sample:]),
-        'I_VL': np.copy(GNSS_tracking[N-1]["VL"][start_sample:]),
-        'Q_VE': np.zeros(len(GNSS_tracking[N-1]["VE"][start_sample:])),
-        'Q_E': np.zeros(len(GNSS_tracking[N-1]["E"][start_sample:])),
-        'Q_L': np.zeros(len(GNSS_tracking[N-1]["L"][start_sample:])),
-        'Q_VL': np.zeros(len(GNSS_tracking[N-1]["VL"][start_sample:])),
-        'data_I': np.copy(GNSS_tracking[N-1]["prompt_I"][start_sample:]),
-        'data_Q': np.copy(GNSS_tracking[N-1]["prompt_Q"][start_sample:]),
-        'PRN': np.copy(GNSS_tracking[N-1]["PRN"][start_sample:]),
-        'CNo': np.copy(GNSS_tracking[N-1]["CN0_SNV_dB_Hz"][start_sample:]),
-        'prn_start_time_s': np.copy(GNSS_tracking[N-1]["PRN_start_sample"]
-                                    [start_sample:]) / sampling_freq
+    gnss_tracking = read_tracking_dumps(args)
+    track_results = []
+    settings = {
+        "numberOfChannels": args.channels,
+        "fig_path": args.fig_path,
+        "show": args.show,
+        "output_format": args.output_format,
     }
-    trackResults.append(trackResult)
 
-    # Plot results:
-    plotVEMLTracking(N,trackResults,settings)
+    for index, tracking in enumerate(gnss_tracking, start=1):
+        if 0 < args.plot_last_outputs < len(tracking["code_freq_hz"]):
+            start_sample = len(tracking["code_freq_hz"]) - args.plot_last_outputs
+        else:
+            start_sample = 0
 
-    # Plot Doppler according to selected in doppler_opt variable:
-    if doppler_opt == 1:
-        if not os.path.exists(fig_path):
-            os.makedirs(fig_path)
+        track_result = {
+            "status": "T",
+            "codeFreq": np.copy(tracking["code_freq_hz"][start_sample:]),
+            "carrFreq": np.copy(tracking["carrier_doppler_hz"][start_sample:]),
+            "dllDiscr": np.copy(tracking["code_error"][start_sample:]),
+            "dllDiscrFilt": np.copy(tracking["code_nco"][start_sample:]),
+            "pllDiscr": np.copy(tracking["carr_error"][start_sample:]),
+            "pllDiscrFilt": np.copy(tracking["carr_nco"][start_sample:]),
+            "I_P": np.copy(tracking["P"][start_sample:]),
+            "Q_P": np.zeros(len(tracking["P"][start_sample:])),
+            "I_VE": np.copy(tracking["VE"][start_sample:]),
+            "I_E": np.copy(tracking["E"][start_sample:]),
+            "I_L": np.copy(tracking["L"][start_sample:]),
+            "I_VL": np.copy(tracking["VL"][start_sample:]),
+            "Q_VE": np.zeros(len(tracking["VE"][start_sample:])),
+            "Q_E": np.zeros(len(tracking["E"][start_sample:])),
+            "Q_L": np.zeros(len(tracking["L"][start_sample:])),
+            "Q_VL": np.zeros(len(tracking["VL"][start_sample:])),
+            "data_I": np.copy(tracking["prompt_I"][start_sample:]),
+            "data_Q": np.copy(tracking["prompt_Q"][start_sample:]),
+            "PRN": np.copy(tracking["PRN"][start_sample:]),
+            "CNo": np.copy(tracking["CN0_SNV_dB_Hz"][start_sample:]),
+            "prn_start_time_s": (
+                np.copy(tracking["PRN_start_sample"][start_sample:])
+                / args.sampling_frequency
+            ),
+        }
+        track_results.append(track_result)
 
-        plt.figure()
-        plt.plot(trackResults[N - 1]['prn_start_time_s'],
-                 [x/1000 for x in GNSS_tracking[N - 1]['carrier_doppler_hz']
-                 [start_sample:]])
-        plt.xlabel('Time(s)')
-        plt.ylabel('Doppler(KHz)')
-        plt.title('Doppler frequency channel ' + str(N))
+        plotVEMLTracking(index, track_results, settings)
 
-        plt.savefig(os.path.join(fig_path, f'Doppler_freq_ch_{N}.png'))
+        if args.plot_doppler:
+            channel = args.first_channel + index - 1
+            plt.figure()
+            plt.plot(
+                track_result["prn_start_time_s"],
+                [x / 1000 for x in tracking["carrier_doppler_hz"][start_sample:]],
+            )
+            plt.xlabel("Time(s)")
+            plt.ylabel("Doppler(KHz)")
+            plt.title(f"Doppler frequency channel {channel}")
+            plt.savefig(
+                args.fig_path
+                / f"Doppler_freq_ch_{channel}.{args.output_format}"
+            )
+            if not args.show:
+                plt.close()
+
+    # Show all saved figures with a single plt.show() to avoid the repeated
+    # show()/close() cycle that can crash interactive backends on macOS.
+    if args.show:
         plt.show()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except OSError as exc:
+        raise SystemExit(f"Error: {exc}")

@@ -82,20 +82,22 @@ def read_hybrid_observables_dump(channels, filename):
                     bytes_shift += double_size_bytes
                     f.seek(bytes_shift, 0)
 
-            except:
+            except struct.error:
+                # Reached a partial record at end of file: stop reading.
                 break
 
-        # Delete last Channel:
-        RX_time = [row for i, row in enumerate(RX_time) if i != 5]
+        # Delete the trailing empty channel written after the configured ones.
+        RX_time = [row for i, row in enumerate(RX_time) if i != channels]
         d_TOW_at_current_symbol = [row for i, row in enumerate(
-            d_TOW_at_current_symbol)if i != 5]
+            d_TOW_at_current_symbol)if i != channels]
         Carrier_Doppler_hz = [row for i, row in enumerate(
-            Carrier_Doppler_hz) if i != 5]
+            Carrier_Doppler_hz) if i != channels]
         Carrier_phase_hz = [row for i, row in enumerate(
-            Carrier_phase_hz) if i != 5]
-        Pseudorange_m = [row for i, row in enumerate(Pseudorange_m) if i != 5]
-        PRN = [row for i, row in enumerate(PRN) if i != 5]
-        valid = [row for i, row in enumerate(valid) if i != 5]
+            Carrier_phase_hz) if i != channels]
+        Pseudorange_m = [
+            row for i, row in enumerate(Pseudorange_m) if i != channels]
+        PRN = [row for i, row in enumerate(PRN) if i != channels]
+        valid = [row for i, row in enumerate(valid) if i != channels]
 
         observables = {
             'RX_time': RX_time,

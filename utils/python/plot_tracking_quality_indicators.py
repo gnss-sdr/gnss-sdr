@@ -1,16 +1,12 @@
+#!/usr/bin/env python3
 """
  plot_tracking_quality_indicators.py
 
+ Reads GNSS-SDR tracking dump binary files and plots C/N0 plus carrier-lock
+ quality indicators across channels.
 
-
- Irene Pérez Riega, 2023. iperrie@inta.es
-
- Modifiable in the file:
-   channels             - Number of channels
-   firs_channel         - Number of the first channel
-   path                 - Path to folder which contains raw files
-   fig_path             - Path where doppler plots will be save
-   'trk_dump_ch'        - Fixed part of the tracking dump files names
+ File format:
+   {input_path}/{file_prefix}{channel}.dat
 
  -----------------------------------------------------------------------------
 
@@ -23,54 +19,126 @@
  -----------------------------------------------------------------------------
 """
 
+import argparse
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-import os
+
 from lib.dll_pll_veml_read_tracking_dump import dll_pll_veml_read_tracking_dump
+from lib.dump_filename import resolve_dump_prefix
+from lib.plot_format import add_output_format_argument, apply_publication_style
 
-GNSS_tracking = []
-plot_names = []
 
-# ---------- CHANGE HERE:
-channels = 5
-first_channel = 0
-path = '/home/labnav/Desktop/TEST_IRENE/tracking'
-fig_path = '/home/labnav/Desktop/TEST_IRENE/PLOTS/TrackingQualityIndicator'
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Plot tracking quality indicators from GNSS-SDR dumps."
+    )
+    parser.add_argument(
+        "-i",
+        "--input-path",
+        type=Path,
+        default=Path("."),
+        help="Directory containing tracking .dat dumps (default: .).",
+    )
+    parser.add_argument(
+        "-o",
+        "--fig-path",
+        type=Path,
+        default=Path("plots/tracking-quality"),
+        help="Directory where plots are saved.",
+    )
+    parser.add_argument(
+        "--file-prefix",
+        default="track_ch",
+        help="GNSS-SDR Tracking.dump_filename value (default: track_ch). May "
+        "include a directory and extension; the matching <prefix><channel>.dat "
+        "files are read, resolved against --input-path.",
+    )
+    parser.add_argument(
+        "--channels",
+        type=int,
+        default=5,
+        help="Number of channels to read.",
+    )
+    parser.add_argument(
+        "--first-channel",
+        type=int,
+        default=0,
+        help="First channel number in the dump filenames.",
+    )
+    parser.add_argument(
+        "--signal-type",
+        type=str.upper,
+        default="1C",
+        metavar="CODE",
+        help="GNSS-SDR signal code (e.g. 1C, 5X, 7X, E6, J1) used as the "
+        "C/N0 legend label. The tracking dump stores only the PRN, so the "
+        "signal is supplied here (default: 1C).",
+    )
+    parser.add_argument(
+        "--show",
+        action="store_true",
+        help="Display figures interactively after saving them.",
+    )
+    add_output_format_argument(parser)
+    return parser.parse_args()
 
-for N in range(1, channels + 1):
-    tracking_log_path = os.path.join(path,
-                                     f'trk_dump_ch{N-1+first_channel}.dat')
-    GNSS_tracking.append(dll_pll_veml_read_tracking_dump(tracking_log_path))
 
-if not os.path.exists(fig_path):
-    os.makedirs(fig_path)
+def read_tracking_dumps(args):
+    directory, base = resolve_dump_prefix(args.file_prefix, args.input_path)
+    dumps = []
+    for channel in range(args.first_channel, args.first_channel + args.channels):
+        tracking_log_path = directory / f"{base}{channel}.dat"
+        dumps.append(dll_pll_veml_read_tracking_dump(tracking_log_path))
+    return dumps
 
-# Plot tracking quality indicators
-# First plot
-plt.figure()
-plt.gcf().canvas.manager.set_window_title('Carrier lock test output for all '
-                                          'the channels')
-plt.title('Carrier lock test output for all the channels')
-for n in range(len(GNSS_tracking)):
-    plt.plot(GNSS_tracking[n]['carrier_lock_test'])
-    plot_names.append(f'SV {str(round(np.mean(GNSS_tracking[n]["PRN"])))}')
-plt.legend(plot_names)
-plt.savefig(os.path.join(fig_path,
-                         f'carrier_lock_test '
-                         f'{str(round(np.mean(GNSS_tracking[n]["PRN"])))}'))
-plt.show()
 
-# Second plot
-plt.figure()
-plt.gcf().canvas.manager.set_window_title('Carrier CN0 output for all the '
-                                          'channels')
-plt.title('Carrier CN0 output for all the channels')
-for n in range(len(GNSS_tracking)):
-    plt.plot(GNSS_tracking[n]['CN0_SNV_dB_Hz'])
-    plot_names.append(f'CN0_SNV_dB_Hz '
-                      f'{str(round(np.mean(GNSS_tracking[n]["PRN"])))}')
-plt.legend(plot_names)
-plt.savefig(os.path.join(
-    fig_path, f'SV {str(round(np.mean(GNSS_tracking[n]["PRN"])))}'))
-plt.show()
+def mean_prn_label(tracking):
+    return str(round(np.mean(tracking["PRN"])))
+
+
+def main():
+    args = parse_args()
+    args.fig_path.mkdir(parents=True, exist_ok=True)
+    apply_publication_style()
+
+    gnss_tracking = read_tracking_dumps(args)
+
+    plt.figure()
+    plt.gcf().canvas.manager.set_window_title(
+        "Carrier lock test output for all the channels"
+    )
+    plt.title("Carrier lock test output for all the channels")
+    carrier_lock_names = []
+    for tracking in gnss_tracking:
+        plt.plot(tracking["carrier_lock_test"])
+        carrier_lock_names.append(f"SV {mean_prn_label(tracking)}")
+    plt.legend(carrier_lock_names)
+    plt.savefig(args.fig_path / f"carrier_lock_test.{args.output_format}")
+    if not args.show:
+        plt.close()
+
+    plt.figure()
+    plt.gcf().canvas.manager.set_window_title("Carrier CN0 output for all channels")
+    plt.title("Carrier CN0 output for all channels")
+    cn0_names = []
+    for tracking in gnss_tracking:
+        plt.plot(tracking["CN0_SNV_dB_Hz"])
+        cn0_names.append(f"{args.signal_type} PRN {mean_prn_label(tracking)}")
+    plt.legend(cn0_names)
+    plt.savefig(args.fig_path / f"CN0_SNV_dB_Hz.{args.output_format}")
+    if not args.show:
+        plt.close()
+
+    # Show all saved figures with a single plt.show() to avoid the repeated
+    # show()/close() cycle that can crash interactive backends on macOS.
+    if args.show:
+        plt.show()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except OSError as exc:
+        raise SystemExit(f"Error: {exc}")

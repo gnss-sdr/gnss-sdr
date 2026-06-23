@@ -5,15 +5,15 @@
  plots acquisition grid of acquisition statistic of PRN sat
 
  Irene Pérez Riega, 2023. iperrie@inta.es
+ Minhaj Uddin Ahmad, 2026. mahmad12@crimson.ua.edu
 
  Modifiable in the file:
-   sampling_freq        - Sampling frequency [Hz]
-   channels             - Number of channels to check if they exist
    path                 - Path to folder which contains raw file
    fig_path             - Path where plots will be save
    plot_all_files       - Plot all the files in a folder (True/False)
+   plot_positive_acqs   - Only plot the positive acquisition cases
    ----
-   file                 - Fixed part in files names. In our case: acq_dump
+   file_prefix          - Fixed part in files names. In our case: acquisition
    sat                  - Satellite. In our case: 1
    channel              - Channel. In our case: 1
    execution            - In our case: 0
@@ -35,24 +35,39 @@
 """
 
 import os
-import sys
+from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline
 import h5py
 
 # ---------- CHANGE HERE:
-path = '/home/labnav/Desktop/TEST_IRENE/acquisition/'
-fig_path = '/home/labnav/Desktop/TEST_IRENE/PLOTS/Acquisition/'
-plot_all_files = False
+path = '../../../out/' # path to acquisition .mat dumps
+fig_path = '../../../PLOTS/Acquisition/' # path to store figures
+plot_all_files = True
+plot_positive_acqs = True
+file_prefix = "acquisition"
+
+signal_types = {
+    1: ('G', '1C', 1023), # GPS L1
+    2: ('G', '2S', 10230), # GPS L2M
+    3: ('G', 'L5', 10230), # GPS L5
+    4: ('E', '1B', 4092), # Galileo E1B
+    5: ('E', '5X', 10230), # Galileo E5
+    6: ('R', '1G', 511), # Glonass 1G
+    7: ('R', '2G', 511), # Glonass 2G
+    8: ('C', 'B1', 2048), # Beidou B1
+    9: ('C', 'B3', 10230), # Beidou B3
+    10: ('C', '5C', 10230) # Beidou B2a
+}
+# (system, signal) -> n_chips, derived from the table above
+N_CHIPS = {(sys_, sig): nc for sys_, sig, nc in signal_types.values()}
 
 if not os.path.exists(fig_path):
     os.makedirs(fig_path)
 
 if not plot_all_files:
-
     # ---------- CHANGE HERE:
-    file = 'acq_dump'
     sat = 1
     channel = 0
     execution = 1
@@ -64,24 +79,12 @@ if not plot_all_files:
     n_samples_per_chip = 3
     d_samples_per_code = 25000
 
-    signal_types = {
-        1: ('G', '1C', 1023), # GPS L1
-        2: ('G', '2S', 10230), # GPS L2M
-        3: ('G', 'L5', 10230), # GPS L5
-        4: ('E', '1B', 4092), # Galileo E1B
-        5: ('E', '5X', 10230), # Galileo E5
-        6: ('R', '1G', 511), # Glonass 1G
-        7: ('R', '2G', 511), # Glonass 2G
-        8: ('C', 'B1', 2048), # Beidou B1
-        9: ('C', 'B3', 10230), # Beidou B3
-        10: ('C', '5C', 10230) # Beidou B2a
-    }
     system, signal, n_chips = signal_types.get(signal_type)
 
     # Load data
-    filename = (f'{path}{file}_ch_{system}_{signal}_ch_{channel}_{execution}'
+    filename = (f'{path}{file_prefix}_ch_{system}_{signal}_ch_{channel}_{execution}'
                 f'_sat_{sat}.mat')
-    img_name_root = (f'{fig_path}{file}_ch_{system}_{signal}_ch_{channel}_'
+    img_name_root = (f'{fig_path}{file_prefix}_ch_{system}_{signal}_ch_{channel}_'
                    f'{execution}_sat_{sat}')
 
     with h5py.File(filename, 'r') as data:
@@ -153,51 +156,30 @@ else:
     n_samples_per_chip = 3
     d_samples_per_code = 25000
 
-    filenames = os.listdir(path)
-    for filename in filenames:
-        sat = 1
-        channel = 0
-        execution = 1
+    file_paths = Path(path).glob(f'{file_prefix}*.mat')
+    for file_path in file_paths:
+        #     {prefix}_{system}_{signal}_ch_{channel}_{execution}_sat_{PRN}
+        #                -7       -6     -5   -4         -3       -2   -1
+        parts = file_path.stem.split('_')
 
-        system = filename[12]
-        signal = filename[14:16]
-        if system == "G":
-            if signal == "1C":
-                n_chips = 1023
-            elif signal == "2S" or "L5":
-                n_chips = 10230
-            else:
-                print("Incorrect files format. Change the code or the "
-                      "filenames.")
-                sys.exit()
-        elif system == "E":
-            if signal == "1B":
-                n_chips = 4092
-            elif signal == "5X":
-                n_chips = 10230
-            else:
-                print("Incorrect files format. Change the code or the "
-                      "filenames.")
-                sys.exit()
-        elif system == "R":
-            if signal == "1G" or "2G":
-                n_chips = 511
-            else:
-                print("Incorrect files format. Change the code or the "
-                      "filenames.")
-                sys.exit()
-        elif system == "C":
-            if signal == "B1":
-                n_chips = 2048
-            elif signal == "B3" or "5C":
-                n_chips = 10230
-            else:
-                print("Incorrect files format. Change the code or the "
-                      "filenames.")
-                sys.exit()
+        system = parts[-7]
+        signal = parts[-6]
+        channel = int(parts[-4])
+        execution = int(parts[-3])
+        sat = int(parts[-1])
 
-        complete_path = path + filename
-        with h5py.File(complete_path, 'r') as data:
+        filename = file_path.name
+
+        n_chips = N_CHIPS.get((system, signal))
+        if n_chips is None:
+            print(f"Unknown system/signal {system}/{signal}, skipping: "
+                f"{filename}")
+            continue
+
+        with h5py.File(file_path, 'r') as data:
+            if plot_positive_acqs and data.get('positive_acq')[0] != 1:
+                continue
+
             acq_grid = data['acq_grid'][:]
             n_fft, n_dop_bins = acq_grid.shape
             d_max, f_max = np.unravel_index(np.argmax(acq_grid),

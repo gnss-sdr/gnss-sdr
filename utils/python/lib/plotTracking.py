@@ -32,8 +32,9 @@ import matplotlib.pyplot as plt
 
 def plotTracking(channelNr, trackResults, settings):
 
-    # ---------- CHANGE HERE:
-    fig_path = '/home/labnav/Desktop/TEST_IRENE/PLOTS/PlotTracking'
+    # ---------- CHANGE HERE (or pass 'fig_path' in settings):
+    fig_path = settings.get('fig_path',
+                            '../../../PLOTS/PlotTracking')
 
     if not os.path.exists(fig_path):
         os.makedirs(fig_path)
@@ -43,7 +44,7 @@ def plotTracking(channelNr, trackResults, settings):
 
         plt.figure(figsize=(1920 / 120, 1080 / 120))
         plt.clf()
-        plt.gcf().canvas.set_window_title(
+        plt.gcf().canvas.manager.set_window_title(
             f'Channel {channelNr} (PRN '
             f'{trackResults[channelNr-1]["PRN"][0]}) results')
         plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1,
@@ -187,4 +188,5 @@ def plotTracking(channelNr, trackResults, settings):
                                  f'trk_dump_ch{channelNr}_PRN_'
                                  f'{trackResults[channelNr - 1]["PRN"][-1]}'
                                  f'.png'))
-        plt.show()
+        if settings.get('show', True):
+            plt.show()

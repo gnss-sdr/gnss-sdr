@@ -2558,10 +2558,10 @@ std::string Rtcm::get_MSM_1_content_sat_data(const std::map<int32_t, Gnss_Synchr
         gnss_synchro_iter != observables.cend();
         gnss_synchro_iter++)
         {
-            it = std::find(pos.begin(), pos.end(), 65 - gnss_synchro_iter->second.PRN);
+            it = std::find(pos.begin(), pos.end(), PRN_MAX + 2 - gnss_synchro_iter->second.PRN);
             if (it == pos.end())
                 {
-                    pos.push_back(65 - gnss_synchro_iter->second.PRN);
+                    pos.push_back(PRN_MAX + 2 - gnss_synchro_iter->second.PRN);
                     observables_vector.emplace_back(*gnss_synchro_iter);
                 }
         }
@@ -2825,10 +2825,10 @@ std::string Rtcm::get_MSM_4_content_sat_data(const std::map<int32_t, Gnss_Synchr
         gnss_synchro_iter != observables.cend();
         gnss_synchro_iter++)
         {
-            it = std::find(pos.begin(), pos.end(), 65 - gnss_synchro_iter->second.PRN);
+            it = std::find(pos.begin(), pos.end(), PRN_MAX + 2 - gnss_synchro_iter->second.PRN);
             if (it == pos.end())
                 {
-                    pos.push_back(65 - gnss_synchro_iter->second.PRN);
+                    pos.push_back(PRN_MAX + 2 - gnss_synchro_iter->second.PRN);
                     observables_vector.emplace_back(*gnss_synchro_iter);
                 }
         }
@@ -2955,10 +2955,10 @@ std::string Rtcm::get_MSM_5_content_sat_data(const std::map<int32_t, Gnss_Synchr
         gnss_synchro_iter != observables.cend();
         gnss_synchro_iter++)
         {
-            it = std::find(pos.begin(), pos.end(), 65 - gnss_synchro_iter->second.PRN);
+            it = std::find(pos.begin(), pos.end(), PRN_MAX + 2 - gnss_synchro_iter->second.PRN);
             if (it == pos.end())
                 {
-                    pos.push_back(65 - gnss_synchro_iter->second.PRN);
+                    pos.push_back(PRN_MAX + 2 - gnss_synchro_iter->second.PRN);
                     observables_vector.emplace_back(*gnss_synchro_iter);
                 }
         }
@@ -4824,12 +4824,12 @@ boost::posix_time::ptime Rtcm::compute_GLONASS_time(const Glonass_Gnav_Ephemeris
 uint32_t Rtcm::lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
     boost::posix_time::ptime current_time = Rtcm::compute_GPS_time(eph, obs_time);
-    boost::posix_time::ptime last_lock_time = Rtcm::gps_L1_last_lock_time[65 - gnss_synchro.PRN];
+    boost::posix_time::ptime last_lock_time = Rtcm::gps_L1_last_lock_time[PRN_MAX + 2 - gnss_synchro.PRN];
     if (last_lock_time.is_not_a_date_time())  // || CHECK LLI!!......)
         {
-            Rtcm::gps_L1_last_lock_time[65 - gnss_synchro.PRN] = current_time;
+            Rtcm::gps_L1_last_lock_time[PRN_MAX + 2 - gnss_synchro.PRN] = current_time;
         }
-    boost::posix_time::time_duration lock_duration = current_time - Rtcm::gps_L1_last_lock_time[65 - gnss_synchro.PRN];
+    boost::posix_time::time_duration lock_duration = current_time - Rtcm::gps_L1_last_lock_time[PRN_MAX + 2 - gnss_synchro.PRN];
     const auto lock_time_in_seconds = static_cast<uint32_t>(lock_duration.total_seconds());
     // Debug:
     // std::cout << "lock time PRN " << gnss_synchro.PRN << ": " << lock_time_in_seconds <<  "  current time: " << current_time << '\n';
@@ -4840,12 +4840,12 @@ uint32_t Rtcm::lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_S
 uint32_t Rtcm::lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
     const boost::posix_time::ptime current_time = Rtcm::compute_GPS_time(eph, obs_time);
-    boost::posix_time::ptime last_lock_time = Rtcm::gps_L2_last_lock_time[65 - gnss_synchro.PRN];
+    boost::posix_time::ptime last_lock_time = Rtcm::gps_L2_last_lock_time[PRN_MAX + 2 - gnss_synchro.PRN];
     if (last_lock_time.is_not_a_date_time())  // || CHECK LLI!!......)
         {
-            Rtcm::gps_L2_last_lock_time[65 - gnss_synchro.PRN] = current_time;
+            Rtcm::gps_L2_last_lock_time[PRN_MAX + 2 - gnss_synchro.PRN] = current_time;
         }
-    boost::posix_time::time_duration lock_duration = current_time - Rtcm::gps_L2_last_lock_time[65 - gnss_synchro.PRN];
+    boost::posix_time::time_duration lock_duration = current_time - Rtcm::gps_L2_last_lock_time[PRN_MAX + 2 - gnss_synchro.PRN];
     const auto lock_time_in_seconds = static_cast<uint32_t>(lock_duration.total_seconds());
     return lock_time_in_seconds;
 }
@@ -4859,33 +4859,33 @@ uint32_t Rtcm::lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gn
     const std::string sig_(gnss_synchro.Signal);
     if (sig_ == "1B")
         {
-            last_lock_time = Rtcm::gal_E1_last_lock_time[65 - gnss_synchro.PRN];
+            last_lock_time = Rtcm::gal_E1_last_lock_time[PRN_MAX + 2 - gnss_synchro.PRN];
         }
     if ((sig_ == "5X") || (sig_ == "8X") || (sig_ == "7X"))
         {
-            last_lock_time = Rtcm::gal_E5_last_lock_time[65 - gnss_synchro.PRN];
+            last_lock_time = Rtcm::gal_E5_last_lock_time[PRN_MAX + 2 - gnss_synchro.PRN];
         }
 
     if (last_lock_time.is_not_a_date_time())  // || CHECK LLI!!......)
         {
             if (sig_ == "1B")
                 {
-                    Rtcm::gal_E1_last_lock_time[65 - gnss_synchro.PRN] = current_time;
+                    Rtcm::gal_E1_last_lock_time[PRN_MAX + 2 - gnss_synchro.PRN] = current_time;
                 }
             if ((sig_ == "5X") || (sig_ == "8X") || (sig_ == "7X"))
                 {
-                    Rtcm::gal_E5_last_lock_time[65 - gnss_synchro.PRN] = current_time;
+                    Rtcm::gal_E5_last_lock_time[PRN_MAX + 2 - gnss_synchro.PRN] = current_time;
                 }
         }
 
     boost::posix_time::time_duration lock_duration = current_time - current_time;
     if (sig_ == "1B")
         {
-            lock_duration = current_time - Rtcm::gal_E1_last_lock_time[65 - gnss_synchro.PRN];
+            lock_duration = current_time - Rtcm::gal_E1_last_lock_time[PRN_MAX + 2 - gnss_synchro.PRN];
         }
     if ((sig_ == "5X") || (sig_ == "8X") || (sig_ == "7X"))
         {
-            lock_duration = current_time - Rtcm::gal_E5_last_lock_time[65 - gnss_synchro.PRN];
+            lock_duration = current_time - Rtcm::gal_E5_last_lock_time[PRN_MAX + 2 - gnss_synchro.PRN];
         }
 
     const auto lock_time_in_seconds = static_cast<uint32_t>(lock_duration.total_seconds());
@@ -4902,33 +4902,33 @@ uint32_t Rtcm::lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time, con
     const std::string sig = sig_.substr(0, 2);
     if (sig == "1G")
         {
-            last_lock_time = Rtcm::glo_L1_last_lock_time[65 - gnss_synchro.PRN];
+            last_lock_time = Rtcm::glo_L1_last_lock_time[PRN_MAX + 2 - gnss_synchro.PRN];
         }
     if (sig == "2G")
         {
-            last_lock_time = Rtcm::glo_L2_last_lock_time[65 - gnss_synchro.PRN];
+            last_lock_time = Rtcm::glo_L2_last_lock_time[PRN_MAX + 2 - gnss_synchro.PRN];
         }
 
     if (last_lock_time.is_not_a_date_time())  // || CHECK LLI!!......)
         {
             if (sig == "1G")
                 {
-                    Rtcm::glo_L1_last_lock_time[65 - gnss_synchro.PRN] = current_time;
+                    Rtcm::glo_L1_last_lock_time[PRN_MAX + 2 - gnss_synchro.PRN] = current_time;
                 }
             if (sig == "2G")
                 {
-                    Rtcm::glo_L2_last_lock_time[65 - gnss_synchro.PRN] = current_time;
+                    Rtcm::glo_L2_last_lock_time[PRN_MAX + 2 - gnss_synchro.PRN] = current_time;
                 }
         }
 
     boost::posix_time::time_duration lock_duration = current_time - current_time;
     if (sig == "1G")
         {
-            lock_duration = current_time - Rtcm::glo_L1_last_lock_time[65 - gnss_synchro.PRN];
+            lock_duration = current_time - Rtcm::glo_L1_last_lock_time[PRN_MAX + 2 - gnss_synchro.PRN];
         }
     if (sig == "2G")
         {
-            lock_duration = current_time - Rtcm::glo_L2_last_lock_time[65 - gnss_synchro.PRN];
+            lock_duration = current_time - Rtcm::glo_L2_last_lock_time[PRN_MAX + 2 - gnss_synchro.PRN];
         }
 
     const auto lock_time_in_seconds = static_cast<uint32_t>(lock_duration.total_seconds());

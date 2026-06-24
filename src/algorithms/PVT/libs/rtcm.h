@@ -420,6 +420,7 @@ public:
     bool is_server_running() const;             //!< Returns true if the server is running, false otherwise
 
 private:
+    static constexpr unsigned PRN_MAX = 206;
     //
     // Generation of messages content
     //
@@ -585,12 +586,12 @@ private:
     boost::posix_time::ptime compute_GPS_time(const Gps_CNAV_Ephemeris& eph, double obs_time) const;
     boost::posix_time::ptime compute_Galileo_time(const Galileo_Ephemeris& eph, double obs_time) const;
     boost::posix_time::ptime compute_GLONASS_time(const Glonass_Gnav_Ephemeris& eph, double obs_time) const;
-    boost::posix_time::ptime gps_L1_last_lock_time[64];
-    boost::posix_time::ptime gps_L2_last_lock_time[64];
-    boost::posix_time::ptime gal_E1_last_lock_time[64];
-    boost::posix_time::ptime gal_E5_last_lock_time[64];
-    boost::posix_time::ptime glo_L1_last_lock_time[64];
-    boost::posix_time::ptime glo_L2_last_lock_time[64];
+    boost::posix_time::ptime gps_L1_last_lock_time[PRN_MAX + 1];
+    boost::posix_time::ptime gps_L2_last_lock_time[PRN_MAX + 1];
+    boost::posix_time::ptime gal_E1_last_lock_time[PRN_MAX + 1];
+    boost::posix_time::ptime gal_E5_last_lock_time[PRN_MAX + 1];
+    boost::posix_time::ptime glo_L1_last_lock_time[PRN_MAX + 1];
+    boost::posix_time::ptime glo_L2_last_lock_time[PRN_MAX + 1];
     uint32_t lock_time_indicator(uint32_t lock_time_period_s);
     uint32_t msm_lock_time_indicator(uint32_t lock_time_period_s);
     uint32_t msm_extended_lock_time_indicator(uint32_t lock_time_period_s);

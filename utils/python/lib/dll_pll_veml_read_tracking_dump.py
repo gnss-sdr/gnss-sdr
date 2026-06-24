@@ -14,6 +14,9 @@
       Return:
         GNSS_tracking: A dictionary with the processed data in lists
 
+ Run directly to dump a .dat file's records as CSV (for debugging):
+   python dll_pll_veml_read_tracking_dump.py -i track_ch0.dat [-o out.csv]
+
  -----------------------------------------------------------------------------
 
  GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
@@ -84,3 +87,48 @@ def dll_pll_veml_read_tracking_dump (filename):
                 column.append(value)
 
     return dict(zip(_FIELD_NAMES, columns))
+
+
+if __name__ == "__main__":
+    import argparse
+    import csv
+    import sys
+    from pathlib import Path
+
+    parser = argparse.ArgumentParser(
+        description="Read a DLL/PLL VEML tracking .dat dump and write its "
+                    "records as CSV (one row per record) for debugging."
+    )
+    parser.add_argument(
+        "-i", "--input-file",
+        type=Path,
+        required=True,
+        help="Tracking .dat dump file to read.",
+    )
+    parser.add_argument(
+        "-o", "--output-file",
+        type=Path,
+        help="CSV file to write (default: stdout).",
+    )
+    parser.add_argument(
+        "-n", "--limit",
+        type=int,
+        default=None,
+        help="Write only the first N records (default: all).",
+    )
+    args = parser.parse_args()
+
+    dump = dll_pll_veml_read_tracking_dump(args.input_file)
+    rows = zip(*(dump[name] for name in _FIELD_NAMES))
+    if args.limit is not None:
+        rows = (row for i, row in enumerate(rows) if i < args.limit)
+
+    out = open(args.output_file, "w", newline="") if args.output_file else sys.stdout
+    try:
+        writer = csv.writer(out)
+        writer.writerow(_FIELD_NAMES)
+        writer.writerows(rows)
+    finally:
+        if out is not sys.stdout:
+            out.close()
+    

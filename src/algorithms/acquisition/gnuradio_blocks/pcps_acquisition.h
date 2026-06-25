@@ -169,26 +169,25 @@ private:
         uint32_t index_time{0};
         uint64_t sample_count{0};
         float test_statistics{0};
-        bool positive_acq{false};
+        float threshold{0};
     };
 
     void update_local_carrier(own::span<gr_complex> carrier_vector, float freq) const;
     void update_grid_doppler_wipeoffs();
     void update_grid_doppler_wipeoffs_step2();
-    void doppler_grid(const gr_complex* in);
-    AcquisitionResult compute_statistics();
-    void update_synchro(const AcquisitionResult& result);
-    void handle_threshold_reached(AcquisitionResult& result);
-    void handle_integration_done(const AcquisitionResult& result);
-    void acquisition_core(uint64_t sample_count);
-    void log_acquisition(const AcquisitionResult& result) const;
-    void send_negative_acquisition(const AcquisitionResult& result);
+    void doppler_grid(const gr_complex* in, bool step_two);
+    AcquisitionResult compute_statistics(uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step, bool step_two);
+    void update_synchro(const AcquisitionResult& result, float doppler_step);
+    void check_result(const AcquisitionResult& result, bool step_two);
+    bool acquisition_core(uint64_t sample_count, bool step_two);
+    void acquisition(uint64_t sample_count);
+    void log_acquisition(const AcquisitionResult& result, bool positive_acq);
     void send_positive_acquisition(const AcquisitionResult& result);
-    void dump_results(const AcquisitionResult& result);
+    void send_negative_acquisition(const AcquisitionResult& result);
+    void dump_results(const AcquisitionResult& result, bool positive_acq);
     bool is_fdma();
-    float get_threshold() const;
-    AcquisitionResult first_vs_second_peak_statistic(uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
-    AcquisitionResult max_to_input_power_statistic(uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
+    AcquisitionResult first_vs_second_peak_statistic(uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step, bool step_two);
+    AcquisitionResult max_to_input_power_statistic(uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step, bool step_two);
     void wait_if_active();
 
     const Acq_Conf d_acq_parameters;
@@ -220,11 +219,10 @@ private:
     uint32_t d_channel;
     uint32_t d_resampler_latency_samples;
     uint64_t d_sample_count;
-    bool d_step_two;
     bool d_active;
     bool d_worker_active;
 
-    // Only access these in acquisition_core and functions strictly called from acquisition_core
+    // Only access these in acquisition and functions strictly called from acquisition
     uint32_t d_num_noncoherent_integrations_counter;
     int64_t d_dump_number;
     float d_input_power;

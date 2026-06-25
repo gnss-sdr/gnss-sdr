@@ -22,9 +22,18 @@
 """
 
 import argparse
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
 
 from lib.dump_filename import resolve_dump_prefix
+from lib.gnss_sdr_conf import (
+    ConfigError,
+    N_CHIPS,
+    SIGNAL_TYPES,
+    add_conf_argument,
+    load_gnss_sdr_conf,
+)
 from lib.plot_format import add_output_format_argument, apply_publication_style
 
 # Heavy numerical and plotting libraries (h5py, numpy, matplotlib, scipy) are
@@ -32,36 +41,25 @@ from lib.plot_format import add_output_format_argument, apply_publication_style
 # argument-error invocations fast and free of matplotlib font-cache warnings.
 
 
-# GNSS-SDR signal nomenclature: each two-character signal code maps to its
-# system character (as written in the dump filename) and primary code length
-# in chips. The signal code matches the value used in GNSS-SDR configuration
-# (e.g. Galileo.implementation signals) and in the dump filename.
-SIGNAL_TYPES = {
-    "1C": ("G", 1023),  # GPS L1 C/A
-    "2S": ("G", 10230),  # GPS L2C
-    "L5": ("G", 10230),  # GPS L5
-    "1B": ("E", 4092),  # Galileo E1B
-    "5X": ("E", 10230),  # Galileo E5a
-    "7X": ("E", 10230),  # Galileo E5b
-    "E6": ("E", 5115),  # Galileo E6
-    "1G": ("R", 511),  # GLONASS L1
-    "2G": ("R", 511),  # GLONASS L2
-    "B1": ("C", 2046),  # BeiDou B1I
-    "B3": ("C", 10230),  # BeiDou B3I
-    "J1": ("J", 1023),  # QZSS L1 C/A
-    "J5": ("J", 10230),  # QZSS L5
-}
-N_CHIPS = {(system, code): nc for code, (system, nc) in SIGNAL_TYPES.items()}
+DEFAULT_FILE_PREFIX = "acquisition"
 DEFAULT_SAT = 1
 DEFAULT_CHANNEL = 0
 DEFAULT_EXECUTION = 1
 DEFAULT_SIGNAL_TYPE = "1C"
 
 
+@dataclass(frozen=True)
+class AcquisitionDumpPlan:
+    signal: Optional[str]
+    system: Optional[str]
+    file_prefix: str
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Plot GNSS-SDR acquisition dump grids."
     )
+    add_conf_argument(parser)
     parser.add_argument(
         "-i",
         "--input-path",
@@ -78,11 +76,12 @@ def parse_args():
     )
     parser.add_argument(
         "--file-prefix",
-        default="acquisition",
-        help="GNSS-SDR Acquisition.dump_filename value (default: "
-        "acquisition). May include a directory and extension; matching "
+        default=None,
+        help="GNSS-SDR Acquisition.dump_filename value. May include a "
+        "directory and extension; matching "
         "<prefix>_<sys>_<sig>_ch_<ch>_<exec>_sat_<PRN>.mat files are read, "
-        "resolved against --input-path.",
+        "resolved against --input-path. Defaults to the configured "
+        "Acquisition dump filename or filenames from --conf, or acquisition.",
     )
     parser.add_argument(
         "--output-basename",
@@ -167,8 +166,9 @@ def parse_args():
         default=None,
         metavar="CODE",
         help="GNSS-SDR signal code (e.g. 1C, 5X, 7X, E6, J1). Filters "
-        "all-files mode; defaults to 1C (GPS L1 C/A) in single-file mode. "
-        "Choices: " + ", ".join(sorted(SIGNAL_TYPES)) + ".",
+        "all-files mode; omitted with a multi-signal --conf scans all "
+        "configured signals. Defaults to 1C (GPS L1 C/A) in single-file "
+        "mode. Choices: " + ", ".join(sorted(SIGNAL_TYPES)) + ".",
     )
     parser.add_argument(
         "--samples-per-chip",
@@ -196,11 +196,82 @@ def parse_args():
     add_output_format_argument(parser)
 
     args = parser.parse_args()
+    try:
+        apply_conf_defaults(args)
+    except ConfigError as exc:
+        parser.error(str(exc))
     if args.output_basename is None:
         # Default the saved-plot basename to the dump basename, dropping any
-        # directory and extension carried by --file-prefix.
-        _, args.output_basename = resolve_dump_prefix(args.file_prefix)
+        # directory and extension carried by --file-prefix. A multi-signal
+        # configuration may use several prefixes, so leave the basename empty
+        # and let the system/signal/channel fields identify each output.
+        if getattr(args, "acquisition_plans", None) and args.file_prefix is None:
+            args.output_basename = None
+        else:
+            _, args.output_basename = resolve_dump_prefix(args.file_prefix)
     return args
+
+
+def apply_conf_defaults(args):
+    conf = load_gnss_sdr_conf(args.conf) if args.conf else None
+    signal = None
+    signals = []
+    args.acquisition_plans = []
+
+    if conf is not None:
+        if args.signal_type is not None:
+            signal = conf.require_enabled_signal(args.signal_type)
+            signals = [signal]
+        elif args.plot_all_files and args.file_prefix is None:
+            signals = conf.select_signals()
+            if len(signals) == 1:
+                signal = signals[0]
+                args.signal_type = signal.signal
+        elif not args.plot_all_files:
+            signal = conf.select_signal()
+            signals = [signal]
+            args.signal_type = signal.signal
+
+    if conf is not None and args.plot_all_files and args.file_prefix is None:
+        args.acquisition_plans = [
+            AcquisitionDumpPlan(
+                signal=selected.signal,
+                system=selected.system,
+                file_prefix=(
+                    selected.acquisition_dump_filename
+                    or DEFAULT_FILE_PREFIX
+                ),
+            )
+            for selected in signals
+        ]
+        if len(args.acquisition_plans) == 1:
+            args.file_prefix = args.acquisition_plans[0].file_prefix
+
+    if args.file_prefix is None and not args.acquisition_plans:
+        args.file_prefix = (
+            signal.acquisition_dump_filename
+            if signal is not None and signal.acquisition_dump_filename
+            else DEFAULT_FILE_PREFIX
+        )
+
+    if args.signal_type is None and not args.plot_all_files:
+        args.signal_type = DEFAULT_SIGNAL_TYPE
+
+
+def acquisition_plans_for_args(args):
+    if getattr(args, "acquisition_plans", None):
+        return args.acquisition_plans
+
+    system = None
+    if args.signal_type is not None:
+        system, _ = SIGNAL_TYPES[args.signal_type]
+    return [
+        AcquisitionDumpPlan(
+            signal=args.signal_type,
+            system=system,
+            file_prefix=args.file_prefix,
+        )
+    ]
 
 
 def positive_acq_value(data):
@@ -389,6 +460,12 @@ def metadata_matches_filters(metadata, args):
     return True
 
 
+def metadata_matches_plan(metadata, plan):
+    if plan.signal is None:
+        return True
+    return metadata["system"] == plan.system and metadata["signal"] == plan.signal
+
+
 def show_figures(args):
     # Display every saved figure with a single plt.show() call. Showing once
     # (instead of once per figure) keeps the GUI event loop to a single entry
@@ -417,32 +494,56 @@ def main():
         return
 
     plotted = 0
-    directory, base = resolve_dump_prefix(args.file_prefix, args.input_path)
-    file_paths = sorted(directory.glob(f"{base}*.mat"))
-    for file_path in file_paths:
-        metadata = parse_dump_name(file_path)
-        if metadata is None:
-            print(f"Skipping {file_path.name}: unexpected filename format")
-            continue
+    found_paths = set()
+    handled_paths = set()
+    searched_prefixes = []
+    for plan in acquisition_plans_for_args(args):
+        directory, base = resolve_dump_prefix(plan.file_prefix, args.input_path)
+        searched_prefixes.append((directory, base))
+        file_paths = sorted(directory.glob(f"{base}*.mat"))
+        for file_path in file_paths:
+            found_paths.add(file_path)
+            if file_path in handled_paths:
+                continue
 
-        if not metadata_matches_filters(metadata, args):
-            continue
+            metadata = parse_dump_name(file_path)
+            if metadata is None:
+                print(f"Skipping {file_path.name}: unexpected filename format")
+                continue
 
-        n_chips = N_CHIPS.get((metadata["system"], metadata["signal"]))
-        if n_chips is None:
-            print(
-                f"Unknown system/signal {metadata['system']}/"
-                f"{metadata['signal']}, skipping: {file_path.name}"
+            if not metadata_matches_plan(metadata, plan):
+                continue
+
+            if not metadata_matches_filters(metadata, args):
+                continue
+
+            handled_paths.add(file_path)
+            n_chips = N_CHIPS.get((metadata["system"], metadata["signal"]))
+            if n_chips is None:
+                print(
+                    f"Unknown system/signal {metadata['system']}/"
+                    f"{metadata['signal']}, skipping: {file_path.name}"
+                )
+                continue
+
+            image_name_root = image_name_from_metadata(
+                args.output_basename,
+                metadata,
             )
-            continue
+            if plot_dump(file_path, args.fig_path, image_name_root, n_chips, args):
+                plotted += 1
 
-        image_name_root = image_name_from_metadata(args.output_basename, metadata)
-        if plot_dump(file_path, args.fig_path, image_name_root, n_chips, args):
-            plotted += 1
-
-    if not file_paths:
-        print(f"No files matching {base}*.mat in {directory}")
-        prefixes = matching_dump_prefixes(directory)
+    if not found_paths:
+        for directory, base in searched_prefixes:
+            print(f"No files matching {base}*.mat in {directory}")
+        directories = sorted(
+            {directory for directory, _ in searched_prefixes},
+            key=str,
+        )
+        prefixes = []
+        for directory in directories:
+            prefixes.extend(matching_dump_prefixes(directory))
+        prefixes = sorted(set(prefixes))
         if prefixes:
             print("Available acquisition dump prefixes:")
             for prefix in prefixes:

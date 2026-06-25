@@ -26,6 +26,11 @@ repeat them with the default value that applies to each tool.
 - `-h`, `--help`: print the option list and exit.
 - `-i`, `--input-path`: directory containing the dump files (default: current
   directory).
+- `--conf`: optional GNSS-SDR configuration file. When provided, scripts infer
+  missing options such as `--file-prefix`, `--channels`, `--first-channel`,
+  `--sampling-frequency`, `--signal-type`, and `--nav-sol-period` from the
+  configuration. Explicit command-line options always take precedence over
+  values inferred from `--conf`.
 - `--file-prefix`: the value of the block's `dump_filename` configuration
   parameter in GNSS-SDR. It may include a directory and an extension; each
   script reconstructs the actual dump filenames from it exactly the way GNSS-SDR
@@ -39,6 +44,13 @@ repeat them with the default value that applies to each tool.
 
   Any directory in `--file-prefix` is resolved relative to `--input-path` (an
   absolute `--file-prefix` path overrides it).
+
+  When `--conf` is provided to the generic tracking and acquisition plotters,
+  a multi-signal configuration expands to every enabled signal. Pass
+  `--signal-type` to restrict plots to one signal. Single-file modes and
+  signal-specific scripts still require or prefer one signal. Channel ranges
+  are computed using GNSS-SDR's receiver order:
+  `1C, 2S, L5, 1B, 5X, E6, 1G, 2G, B1, B3, 7X, J1, J5`.
 
 - `-o`, `--fig-path`: directory where plots are saved. Defaults to a per-script
   subdirectory under `./plots/`.
@@ -83,7 +95,8 @@ Output PNGs (`_2D` and `_3D`):
 | Option                                   | Default                  | Description                                                                                                       |
 | ---------------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------- |
 | `-i`, `--input-path`                     | `.`                      | Directory containing the acquisition `.mat` dumps.                                                                |
-| `--file-prefix`                          | `acquisition`            | `Acquisition.dump_filename` value (may include a directory/extension).                                            |
+| `--conf`                                 | unset                    | GNSS-SDR configuration used to infer acquisition dump prefixes and signal selectors.                               |
+| `--file-prefix`                          | `--conf` or `acquisition` | `Acquisition.dump_filename` value (may include a directory/extension).                                            |
 | `-o`, `--fig-path`                       | `plots/acquisition`      | Output directory for PNGs.                                                                                        |
 | `--output-basename`, `--output-prefix`   | `--file-prefix` basename | Base name for the saved PNGs (directory and extension stripped).                                                  |
 | `--all-files` / `--single-file`          | `--all-files`            | Plot every matching dump, or a single dump chosen by the selectors below.                                         |
@@ -92,7 +105,7 @@ Output PNGs (`_2D` and `_3D`):
 | `--sat`                                  | `1` in single-file mode  | Satellite PRN. Filters in all-files mode; selects the dump in single-file mode.                                   |
 | `--channel`                              | `0` in single-file mode  | Acquisition channel number. Filter / selector.                                                                    |
 | `--execution`                            | `1` in single-file mode  | Acquisition dump execution index. Filter / selector.                                                              |
-| `--signal-type CODE`                     | `1C` (GPS L1 C/A)        | GNSS-SDR signal code (see table below); case-insensitive. Filters in all-files mode; selects in single-file mode. |
+| `--signal-type CODE`                     | `--conf` or `1C`         | GNSS-SDR signal code (see table below); case-insensitive. Filters in all-files mode; selects in single-file mode. |
 | `--samples-per-chip`                     | `3`                      | Samples per chip used by the light-grid interpolation.                                                            |
 | `--samples-per-code`                     | `25000`                  | Samples per code used for the 2D normalization.                                                                   |
 | `--input-power`                          | `100.0`                  | Input power used for the 2D normalization.                                                                        |
@@ -119,8 +132,10 @@ GNSS-SDR configuration and dump filenames (e.g. `--signal-type=E6`):
 | `J5` | QZSS    | L5     | 10230               |
 
 In all-files mode `--sat`, `--channel`, `--execution`, and `--signal-type`
-filter the matching dumps; if a `--file-prefix` matches no files, the available
-dump prefixes found in the directory are listed.
+filter the matching dumps. If `--conf` enables several signals and
+`--file-prefix` is not set, all configured acquisition dump prefixes are
+scanned. If a `--file-prefix` matches no files, the available dump prefixes
+found in the directory are listed.
 
 Examples:
 
@@ -130,6 +145,7 @@ python3 plot_acq_grid.py --input-path ./out --fig-path ./plots/acquisition
 python3 plot_acq_grid.py --file-prefix hackrf_l1_acq_dump --channel 0
 python3 plot_acq_grid.py --file-prefix hackrf_l1_acq_dump --sat 26
 python3 plot_acq_grid.py --signal-type E6
+python3 plot_acq_grid.py --conf conf/File_input/Beidou/gnss-sdr_BDS_B3I_byte.conf --signal-type B3 --input-path ./out
 python3 plot_acq_grid.py --single-file --signal-type J1 --sat 193 --channel 0 --execution 1
 python3 plot_acq_grid.py --single-file --sat 3 --channel 0 --execution 1 --full-view
 python3 plot_acq_grid.py --include-negative --output-basename my_run
@@ -145,11 +161,13 @@ Input pattern: `<input-path>/<file-prefix><channel>.dat`.
 | Option                 | Default                       | Description                                                                                                       |
 | ---------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | `-i`, `--input-path`   | `.`                           | Directory containing the tracking `.dat` dumps.                                                                   |
-| `--file-prefix`        | `track_ch`                    | `Tracking.dump_filename` value (may include a directory/extension).                                               |
+| `--conf`               | unset                         | GNSS-SDR configuration used to infer tracking dump prefix, sampling frequency, and channel range.                  |
+| `--file-prefix`        | `--conf` or `track_ch`        | `Tracking.dump_filename` value (may include a directory/extension).                                               |
 | `-o`, `--fig-path`     | `plots/dll-pll-veml-tracking` | Output directory for PNGs.                                                                                        |
-| `--sampling-frequency` | `3000000.0`                   | Signal sampling frequency in Hz (sets the RX-time axis).                                                          |
-| `--channels`           | `5`                           | Number of channels to read.                                                                                       |
-| `--first-channel`      | `0`                           | First channel number in the dump filenames.                                                                       |
+| `--sampling-frequency` | `--conf` or `3000000.0`       | Signal sampling frequency in Hz (sets the RX-time axis).                                                          |
+| `--channels`           | `--conf` or `5`               | Number of channels to read.                                                                                       |
+| `--first-channel`      | `--conf` or `0`               | First channel number in the dump filenames.                                                                       |
+| `--signal-type CODE`   | inferred if needed            | GNSS-SDR signal code used to restrict channel ranges and dump filenames from `--conf`; omitted means all configured signals. |
 | `--plot-last-outputs`  | `0`                           | Only plot the last N outputs; `0` plots all of them.                                                              |
 | `--no-doppler`         | Doppler plots on              | Skip the extra Doppler-only plots.                                                                                |
 | `--show`               | off                           | Display figures after saving.                                                                                     |
@@ -160,6 +178,7 @@ Examples:
 ```bash
 python3 dll_pll_veml_plot_sample.py --input-path ./out
 python3 dll_pll_veml_plot_sample.py --file-prefix tracking_ch_ --channels 8
+python3 dll_pll_veml_plot_sample.py --conf conf/File_input/Galileo/gnss-sdr_Galileo_E1_nsr.conf --signal-type 1B --input-path ./out
 python3 dll_pll_veml_plot_sample.py --plot-last-outputs 5000 --no-doppler
 ```
 
@@ -173,11 +192,13 @@ Input pattern: `<input-path>/<file-prefix><channel>.dat`.
 | Option                 | Default             | Description                                                                                                       |
 | ---------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | `-i`, `--input-path`   | `.`                 | Directory containing the tracking `.dat` dumps.                                                                   |
-| `--file-prefix`        | `track_ch`          | `Tracking.dump_filename` value (may include a directory/extension).                                               |
+| `--conf`               | unset               | GNSS-SDR configuration used to infer tracking dump prefix, sampling frequency, and channel range.                  |
+| `--file-prefix`        | `--conf` or `track_ch` | `Tracking.dump_filename` value (may include a directory/extension).                                            |
 | `-o`, `--fig-path`     | `plots/kf-tracking` | Output directory for PNGs.                                                                                        |
-| `--sampling-frequency` | `4000000.0`         | Signal sampling frequency in Hz.                                                                                  |
-| `--channels`           | `5`                 | Number of channels to read.                                                                                       |
-| `--first-channel`      | `0`                 | First channel number in the dump filenames.                                                                       |
+| `--sampling-frequency` | `--conf` or `4000000.0` | Signal sampling frequency in Hz.                                                                              |
+| `--channels`           | `--conf` or `5`     | Number of channels to read.                                                                                       |
+| `--first-channel`      | `--conf` or `0`     | First channel number in the dump filenames.                                                                       |
+| `--signal-type CODE`   | inferred if needed  | GNSS-SDR signal code used to select channel ranges and dump filenames from `--conf`.                              |
 | `--code-period`        | `0.001`             | Code period in seconds.                                                                                           |
 | `--show`               | off                 | Display figures after saving.                                                                                     |
 | `--format`             | `png`               | Saved figure format: `png` (default), `pdf`, `eps`, `svg`, `jpg`. Vector formats embed fonts (publication-ready). |
@@ -190,6 +211,7 @@ Examples:
 ```bash
 python3 gps_l1_ca_kf_plot_sample.py --input-path ./out
 python3 gps_l1_ca_kf_plot_sample.py --file-prefix track_ch --channels 8
+python3 gps_l1_ca_kf_plot_sample.py --conf conf/File_input/MultiCons/gnss-sdr_labsat_kf.conf --signal-type 1C --input-path ./out
 python3 gps_l1_ca_kf_plot_sample.py --sampling-frequency 4000000 --code-period 0.001
 ```
 
@@ -203,22 +225,26 @@ Input pattern: `<input-path>/<file-prefix><channel>.dat`.
 | Option               | Default                  | Description                                                                                                                                   |
 | -------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `-i`, `--input-path` | `.`                      | Directory containing the tracking `.dat` dumps.                                                                                               |
-| `--file-prefix`      | `track_ch`               | `Tracking.dump_filename` value (may include a directory/extension).                                                                           |
+| `--conf`             | unset                    | GNSS-SDR configuration used to infer tracking dump prefix, sampling frequency, signal type, and channel range.                                 |
+| `--file-prefix`      | `--conf` or `track_ch`   | `Tracking.dump_filename` value (may include a directory/extension).                                                                           |
 | `-o`, `--fig-path`   | `plots/tracking-quality` | Output directory for PNGs.                                                                                                                    |
-| `--channels`         | `5`                      | Number of channels to read.                                                                                                                   |
-| `--first-channel`    | `0`                      | First channel number in the dump filenames.                                                                                                   |
-| `--signal-type`      | `1C`                     | GNSS-SDR signal code used as the C/N0 legend label (case-insensitive). The tracking dump stores only the PRN, so the signal is supplied here. |
+| `--sampling-frequency` | `--conf` or `4000000.0` | Signal sampling frequency in Hz.                                                                                                            |
+| `--channels`         | `--conf` or `5`          | Number of channels to read.                                                                                                                   |
+| `--first-channel`    | `--conf` or `0`          | First channel number in the dump filenames.                                                                                                   |
+| `--signal-type`      | `--conf` or `1C`         | GNSS-SDR signal code used to restrict channel ranges and label traces; omitted with multi-signal `--conf` means all configured signals.       |
 | `--show`             | off                      | Display figures after saving.                                                                                                                 |
 | `--format`           | `png`                    | Saved figure format: `png` (default), `pdf`, `eps`, `svg`, `jpg`. Vector formats embed fonts (publication-ready).                             |
 
 The C/N0 legend labels each trace as `<signal-type> PRN <PRN>` (e.g.
-`1C PRN 9`); the carrier-lock legend labels traces as `SV <PRN>`.
+`1C PRN 9`); the carrier-lock legend labels traces as `SV <signal-type> PRN
+<PRN>`.
 
 Examples:
 
 ```bash
 python3 plot_tracking_quality_indicators.py --input-path ./out
 python3 plot_tracking_quality_indicators.py --file-prefix hackrf_l1_tracking_ch_ --channels 8
+python3 plot_tracking_quality_indicators.py --conf conf/RealTime_input/gnss-sdr_GPS_L1_USRP_realtime.conf --input-path ./out
 python3 plot_tracking_quality_indicators.py --file-prefix hackrf_l1_tracking_ch_ --channels 8 --signal-type 1C
 ```
 
@@ -232,12 +258,14 @@ Input pattern: `<input-path>/<file-prefix><channel>.dat`.
 | Option               | Default           | Description                                                                                                       |
 | -------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------- |
 | `-i`, `--input-path` | `.`               | Directory containing the telemetry `.dat` dumps.                                                                  |
-| `--file-prefix`      | `telemetry`       | `TelemetryDecoder.dump_filename` value (may include a directory/extension).                                       |
+| `--conf`             | unset             | GNSS-SDR configuration used to infer telemetry dump prefix and channel range.                                      |
+| `--file-prefix`      | `--conf` or `telemetry` | `TelemetryDecoder.dump_filename` value (may include a directory/extension).                                |
 | `-o`, `--fig-path`   | `plots/telemetry` | Output directory for PNGs.                                                                                        |
-| `--channels`         | `18`              | Number of channels to try reading; missing channels are skipped.                                                  |
-| `--first-channel`    | `0`               | First channel number in the dump filenames.                                                                       |
-| `--channel-a`        | `0`               | First channel number to plot.                                                                                     |
-| `--channel-b`        | `5`               | Second channel number to plot.                                                                                    |
+| `--channels`         | `--conf` or `18`  | Number of channels to try reading; missing channels are skipped.                                                  |
+| `--first-channel`    | `--conf` or `0`   | First channel number in the dump filenames.                                                                       |
+| `--signal-type CODE` | inferred if needed | GNSS-SDR signal code used to select channel ranges and dump filenames from `--conf`.                             |
+| `--channel-a`        | `--conf` or `0`   | First channel number to plot.                                                                                     |
+| `--channel-b`        | `--conf` or `5`   | Second channel number to plot.                                                                                    |
 | `--show`             | off               | Display figures after saving.                                                                                     |
 | `--format`           | `png`             | Saved figure format: `png` (default), `pdf`, `eps`, `svg`, `jpg`. Vector formats embed fonts (publication-ready). |
 
@@ -245,6 +273,7 @@ Examples:
 
 ```bash
 python3 gps_l1_ca_telemetry_plot_sample.py --input-path ./out
+python3 gps_l1_ca_telemetry_plot_sample.py --conf conf/gnss-sdr.conf --input-path ./out
 python3 gps_l1_ca_telemetry_plot_sample.py --file-prefix hackrf_l1_tlm_ch_ --channel-a 0 --channel-b 5
 ```
 
@@ -258,9 +287,10 @@ Input pattern: `<input-path>/<file-prefix>.dat` (single file).
 | Option               | Default                    | Description                                                                                                       |
 | -------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | `-i`, `--input-path` | `.`                        | Directory containing the observables dump.                                                                        |
-| `--file-prefix`      | `observables.dat`          | `Observables.dump_filename` value (may include a directory/extension).                                            |
+| `--conf`             | unset                      | GNSS-SDR configuration used to infer observables dump filename and total channel count.                            |
+| `--file-prefix`      | `--conf` or `observables.dat` | `Observables.dump_filename` value (may include a directory/extension).                                      |
 | `-o`, `--fig-path`   | `plots/hybrid-observables` | Output directory for PNGs.                                                                                        |
-| `--channels`         | `5`                        | Number of observable channels in the dump.                                                                        |
+| `--channels`         | `--conf` or `5`            | Number of observable channels in the dump.                                                                        |
 | `--show`             | off                        | Display figures after saving.                                                                                     |
 | `--format`           | `png`                      | Saved figure format: `png` (default), `pdf`, `eps`, `svg`, `jpg`. Vector formats embed fonts (publication-ready). |
 
@@ -269,6 +299,7 @@ Examples:
 ```bash
 python3 hybrid_observables_plot_sample.py
 python3 hybrid_observables_plot_sample.py --input-path ./out --channels 8
+python3 hybrid_observables_plot_sample.py --conf conf/gnss-sdr.conf --input-path ./out
 python3 hybrid_observables_plot_sample.py --file-prefix hackrf_l1_observables.dat
 ```
 
@@ -283,9 +314,10 @@ Input pattern: `<input-path>/<file-prefix>.dat` (single file).
 | Option                              | Default            | Description                                                                                                       |
 | ----------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------- |
 | `-i`, `--input-path`                | `.`                | Directory containing the PVT dump.                                                                                |
-| `--file-prefix`                     | `PVT.dat`          | `PVT.dump_filename` value (may include a directory/extension).                                                    |
+| `--conf`                            | unset              | GNSS-SDR configuration used to infer PVT dump filename and navigation solution period.                             |
+| `--file-prefix`                     | `--conf` or `PVT.dat` | `PVT.dump_filename` value (may include a directory/extension).                                                 |
 | `-o`, `--fig-path`                  | `plots/pvt`        | Output directory for PNGs and maps.                                                                               |
-| `--nav-sol-period`                  | `10.0`             | Navigation solution period in milliseconds.                                                                       |
+| `--nav-sol-period`                  | `--conf` or `10.0` | Navigation solution period in milliseconds.                                                                       |
 | `--true-position E_UTM N_UTM U_UTM` | unset (NaN)        | Reference receiver position in UTM, used for error plots.                                                         |
 | `--plot-skyplot`                    | off                | Try to generate the sky-plot panel.                                                                               |
 | `--no-position`                     | position plot on   | Skip the position/map diagnostic (avoids the `folium` dependency).                                                |
@@ -299,6 +331,7 @@ Examples:
 ```bash
 python3 gps_l1_ca_pvt_raw_plot_sample.py
 python3 gps_l1_ca_pvt_raw_plot_sample.py --input-path ./out --file-prefix PVT.dat
+python3 gps_l1_ca_pvt_raw_plot_sample.py --conf conf/gnss-sdr.conf --input-path ./out
 python3 gps_l1_ca_pvt_raw_plot_sample.py --true-position 431234.0 4587654.0 120.0
 python3 gps_l1_ca_pvt_raw_plot_sample.py --one-vs-time X_vel --one-vs-time Y_vel
 python3 gps_l1_ca_pvt_raw_plot_sample.py --no-position

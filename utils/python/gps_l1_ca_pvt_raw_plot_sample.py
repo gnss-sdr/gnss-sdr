@@ -21,13 +21,22 @@ from pathlib import Path
 import numpy as np
 
 from lib.dump_filename import resolve_dump_prefix
+from lib.gnss_sdr_conf import (
+    ConfigError,
+    add_conf_argument,
+    load_gnss_sdr_conf,
+)
 from lib.plot_format import add_output_format_argument, apply_publication_style
+
+DEFAULT_FILE_PREFIX = "PVT.dat"
+DEFAULT_NAV_SOL_PERIOD = 10.0
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Plot GNSS-SDR GPS L1 C/A PVT raw dump data."
     )
+    add_conf_argument(parser)
     parser.add_argument(
         "-i",
         "--input-path",
@@ -37,10 +46,10 @@ def parse_args():
     )
     parser.add_argument(
         "--file-prefix",
-        default="PVT.dat",
-        help="GNSS-SDR PVT.dump_filename value (default: PVT.dat). May include "
-        "a directory and extension; the matching <prefix>.dat file is read, "
-        "resolved against --input-path.",
+        default=None,
+        help="GNSS-SDR PVT.dump_filename value. May include a directory and "
+        "extension; the matching <prefix>.dat file is read, resolved against "
+        "--input-path. Defaults to PVT.dump_filename from --conf, or PVT.dat.",
     )
     parser.add_argument(
         "-o",
@@ -52,8 +61,9 @@ def parse_args():
     parser.add_argument(
         "--nav-sol-period",
         type=float,
-        default=10.0,
-        help="Navigation solution period in milliseconds.",
+        default=None,
+        help="Navigation solution period in milliseconds. Defaults to "
+        "PVT.output_rate_ms from --conf, or 10.0.",
     )
     parser.add_argument(
         "--true-position",
@@ -94,7 +104,30 @@ def parse_args():
     )
     add_output_format_argument(parser)
     parser.set_defaults(plot_position=True)
-    return parser.parse_args()
+    args = parser.parse_args()
+    try:
+        apply_conf_defaults(args)
+    except ConfigError as exc:
+        parser.error(str(exc))
+    return args
+
+
+def apply_conf_defaults(args):
+    conf = load_gnss_sdr_conf(args.conf) if args.conf else None
+
+    if args.file_prefix is None:
+        args.file_prefix = (
+            conf.pvt_dump_filename
+            if conf is not None and conf.pvt_dump_filename
+            else DEFAULT_FILE_PREFIX
+        )
+
+    if args.nav_sol_period is None:
+        args.nav_sol_period = (
+            conf.pvt_output_rate_ms
+            if conf is not None and conf.pvt_output_rate_ms is not None
+            else DEFAULT_NAV_SOL_PERIOD
+        )
 
 
 def add_utm_coordinates(nav_solutions):

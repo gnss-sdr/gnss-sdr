@@ -25,14 +25,27 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 from lib.dump_filename import resolve_dump_prefix
+from lib.gnss_sdr_conf import (
+    ConfigError,
+    SIGNAL_TYPES,
+    add_conf_argument,
+    load_gnss_sdr_conf,
+)
 from lib.gps_l1_ca_read_telemetry_dump import gps_l1_ca_read_telemetry_dump
 from lib.plot_format import add_output_format_argument, apply_publication_style
+
+DEFAULT_FILE_PREFIX = "telemetry"
+DEFAULT_CHANNELS = 18
+DEFAULT_FIRST_CHANNEL = 0
+DEFAULT_CHANNEL_A = 0
+DEFAULT_CHANNEL_B = 5
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Plot GNSS-SDR GPS L1 C/A telemetry dumps."
     )
+    add_conf_argument(parser)
     parser.add_argument(
         "-i",
         "--input-path",
@@ -49,34 +62,49 @@ def parse_args():
     )
     parser.add_argument(
         "--file-prefix",
-        default="telemetry",
-        help="GNSS-SDR TelemetryDecoder.dump_filename value (default: "
-        "telemetry). May include a directory and extension; the matching "
-        "<prefix><channel>.dat files are read, resolved against --input-path.",
+        default=None,
+        help="GNSS-SDR TelemetryDecoder.dump_filename value. May include a "
+        "directory and extension; the matching <prefix><channel>.dat files "
+        "are read, resolved against --input-path. Defaults to the selected "
+        "TelemetryDecoder dump filename from --conf, or telemetry.",
     )
     parser.add_argument(
         "--channels",
         type=int,
-        default=18,
-        help="Number of channels to try reading.",
+        default=None,
+        help="Number of channels to try reading. Defaults to the selected "
+        "signal's channel count from --conf, or 18.",
     )
     parser.add_argument(
         "--first-channel",
         type=int,
-        default=0,
-        help="First channel number in the dump filenames.",
+        default=None,
+        help="First channel number in the dump filenames. Defaults to the "
+        "selected signal's first absolute channel from --conf, or 0.",
+    )
+    parser.add_argument(
+        "--signal-type",
+        type=str.upper,
+        choices=sorted(SIGNAL_TYPES),
+        default=None,
+        metavar="CODE",
+        help="GNSS-SDR signal code used to select channel ranges and dump "
+        "filenames from --conf (default: infer from --conf, preferring 1C "
+        "when available).",
     )
     parser.add_argument(
         "--channel-a",
         type=int,
-        default=0,
-        help="First channel number to plot.",
+        default=None,
+        help="First channel number to plot. Defaults to the first selected "
+        "channel from --conf, or 0.",
     )
     parser.add_argument(
         "--channel-b",
         type=int,
-        default=5,
-        help="Second channel number to plot.",
+        default=None,
+        help="Second channel number to plot. Defaults to the second selected "
+        "channel from --conf, or 5.",
     )
     parser.add_argument(
         "--show",
@@ -84,7 +112,59 @@ def parse_args():
         help="Display figures interactively after saving them.",
     )
     add_output_format_argument(parser)
-    return parser.parse_args()
+    args = parser.parse_args()
+    try:
+        apply_conf_defaults(args)
+    except ConfigError as exc:
+        parser.error(str(exc))
+    return args
+
+
+def apply_conf_defaults(args):
+    conf = load_gnss_sdr_conf(args.conf) if args.conf else None
+    signal = None
+    if conf is not None and (
+        args.signal_type is not None
+        or args.file_prefix is None
+        or args.channels is None
+        or args.first_channel is None
+        or args.channel_a is None
+        or args.channel_b is None
+    ):
+        signal = conf.select_signal(
+            args.signal_type,
+            default_signal="1C",
+            prefer_default_on_ambiguous=True,
+        )
+        args.signal_type = signal.signal
+
+    if args.file_prefix is None:
+        args.file_prefix = (
+            signal.telemetry_dump_filename
+            if signal is not None and signal.telemetry_dump_filename
+            else DEFAULT_FILE_PREFIX
+        )
+
+    if args.channels is None:
+        args.channels = signal.count if signal is not None else DEFAULT_CHANNELS
+
+    if args.first_channel is None:
+        args.first_channel = (
+            signal.first_channel if signal is not None else DEFAULT_FIRST_CHANNEL
+        )
+
+    if args.channel_a is None:
+        args.channel_a = (
+            signal.first_channel if signal is not None else DEFAULT_CHANNEL_A
+        )
+
+    if args.channel_b is None:
+        if signal is not None and signal.count > 1:
+            args.channel_b = signal.first_channel + 1
+        elif signal is not None:
+            args.channel_b = signal.first_channel
+        else:
+            args.channel_b = DEFAULT_CHANNEL_B
 
 
 def read_telemetry_dumps(args):

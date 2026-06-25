@@ -43,6 +43,11 @@ def plotKalman(channelNr, trackResults, settings):
                                np.arange(1, settings['numberOfChannels'] + 1))
 
     for channelNr in channelNr:
+        channel_ids = settings.get('channelIds')
+        if channel_ids is not None:
+            display_channel = channel_ids[channelNr - 1]
+        else:
+            display_channel = settings.get('firstChannel', 1) + channelNr - 1
         time_start = settings['timeStartInSeconds']
         time_axis_in_seconds = np.arange(1, settings['msToProcess']+1)/1000
 
@@ -50,7 +55,7 @@ def plotKalman(channelNr, trackResults, settings):
         plt.figure(figsize=(1920 / 100, 1080 / 100))
         plt.clf()
         plt.gcf().canvas.manager.set_window_title(
-            f'Channel {channelNr} (PRN '
+            f'Channel {display_channel} (PRN '
             f'{str(trackResults[channelNr-1]["PRN"][-2])}) results')
         plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1,
                             hspace=0.4, wspace=0.4)
@@ -137,7 +142,7 @@ def plotKalman(channelNr, trackResults, settings):
 
         plt.tight_layout()
         plt.savefig(os.path.join(fig_path,
-                                 f'kalman_ch{channelNr}_PRN_'
+                                 f'kalman_ch{display_channel}_PRN_'
                                  f'{trackResults[channelNr - 1]["PRN"][-1]}'
                                  f'.{output_format}'))
         # Close unless it will be shown; the caller triggers a single

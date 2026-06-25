@@ -38,13 +38,18 @@ def plotVEMLTracking(channelNr, trackResults, settings):
     if not os.path.exists(fig_path):
         os.makedirs(fig_path)
 
+    channel_ids = settings.get('channelIds')
+    if channel_ids is not None:
+        display_channel = channel_ids[channelNr - 1]
+    else:
+        display_channel = settings.get('firstChannel', 1) + channelNr - 1
+
     # Protection - if the list contains incorrect channel numbers
     if channelNr in list(range(1,settings["numberOfChannels"]+1)):
-
         plt.figure(figsize=(1920 / 120, 1080 / 120))
         plt.clf()
         plt.gcf().canvas.manager.set_window_title(
-            f'Channel {channelNr} (PRN '
+            f'Channel {display_channel} (PRN '
             f'{trackResults[channelNr-1]["PRN"][0]}) results')
         plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1,
                             hspace=0.4, wspace=0.4)
@@ -165,7 +170,7 @@ def plotVEMLTracking(channelNr, trackResults, settings):
         plt.title('Filtered DLL discriminator',fontweight='bold')
 
     plt.savefig(os.path.join(fig_path,
-                             f'Ch{channelNr}_PRN'
+                             f'Ch{display_channel}_PRN'
                              f'{trackResults[channelNr-1]["PRN"][0]}'
                              f'_results.{output_format}'))
     # Close the figure unless it will be shown; the caller triggers a single

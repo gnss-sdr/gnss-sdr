@@ -23,14 +23,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from lib.dump_filename import resolve_dump_prefix
+from lib.gnss_sdr_conf import (
+    ConfigError,
+    add_conf_argument,
+    load_gnss_sdr_conf,
+)
 from lib.plot_format import add_output_format_argument, apply_publication_style
 from lib.read_hybrid_observables_dump import read_hybrid_observables_dump
+
+DEFAULT_FILE_PREFIX = "observables.dat"
+DEFAULT_CHANNELS = 5
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Plot GNSS-SDR hybrid observables dump data."
     )
+    add_conf_argument(parser)
     parser.add_argument(
         "-i",
         "--input-path",
@@ -40,10 +49,11 @@ def parse_args():
     )
     parser.add_argument(
         "--file-prefix",
-        default="observables.dat",
-        help="GNSS-SDR Observables.dump_filename value (default: "
-        "observables.dat). May include a directory and extension; the "
-        "matching <prefix>.dat file is read, resolved against --input-path.",
+        default=None,
+        help="GNSS-SDR Observables.dump_filename value. May include a "
+        "directory and extension; the matching <prefix>.dat file is read, "
+        "resolved against --input-path. Defaults to Observables.dump_filename "
+        "from --conf, or observables.dat.",
     )
     parser.add_argument(
         "-o",
@@ -55,8 +65,9 @@ def parse_args():
     parser.add_argument(
         "--channels",
         type=int,
-        default=5,
-        help="Number of observable channels in the dump.",
+        default=None,
+        help="Number of observable channels in the dump. Defaults to the "
+        "total configured channel count from --conf, or 5.",
     )
     parser.add_argument(
         "--show",
@@ -64,7 +75,34 @@ def parse_args():
         help="Display figures interactively after saving them.",
     )
     add_output_format_argument(parser)
-    return parser.parse_args()
+    args = parser.parse_args()
+    try:
+        apply_conf_defaults(args)
+    except ConfigError as exc:
+        parser.error(str(exc))
+    return args
+
+
+def apply_conf_defaults(args):
+    conf = load_gnss_sdr_conf(args.conf) if args.conf else None
+
+    if args.file_prefix is None:
+        args.file_prefix = (
+            conf.observables_dump_filename
+            if conf is not None and conf.observables_dump_filename
+            else DEFAULT_FILE_PREFIX
+        )
+
+    if args.channels is None:
+        if conf is not None:
+            if conf.total_channels <= 0:
+                raise ConfigError(
+                    "At least one Channels_<signal>.count value is required "
+                    "to infer --channels."
+                )
+            args.channels = conf.total_channels
+        else:
+            args.channels = DEFAULT_CHANNELS
 
 
 def first_valid_observable(gnss_observables, channels):

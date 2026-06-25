@@ -27,14 +27,28 @@ import numpy as np
 
 from lib.dll_pll_veml_read_tracking_dump import dll_pll_veml_read_tracking_dump
 from lib.dump_filename import resolve_dump_prefix
+from lib.gnss_sdr_conf import (
+    ChannelDump,
+    ConfigError,
+    SIGNAL_TYPES,
+    add_conf_argument,
+    load_gnss_sdr_conf,
+)
 from lib.plot_format import add_output_format_argument, apply_publication_style
 from lib.plotVEMLTracking import plotVEMLTracking
+
+DEFAULT_FILE_PREFIX = "track_ch"
+DEFAULT_SAMPLING_FREQUENCY = 3000000.0
+DEFAULT_CHANNELS = 5
+DEFAULT_FIRST_CHANNEL = 0
+DEFAULT_SIGNAL_TYPE = "1C"
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Plot GNSS-SDR DLL/PLL VEML tracking dumps."
     )
+    add_conf_argument(parser)
     parser.add_argument(
         "-i",
         "--input-path",
@@ -51,28 +65,42 @@ def parse_args():
     )
     parser.add_argument(
         "--file-prefix",
-        default="track_ch",
-        help="GNSS-SDR Tracking.dump_filename value (default: track_ch). May "
-        "include a directory and extension; the matching <prefix><channel>.dat "
-        "files are read, resolved against --input-path.",
+        default=None,
+        help="GNSS-SDR Tracking.dump_filename value. May include a directory "
+        "and extension; the matching <prefix><channel>.dat files are read, "
+        "resolved against --input-path. Defaults to the configured Tracking "
+        "dump filename or filenames from --conf, or track_ch.",
     )
     parser.add_argument(
         "--sampling-frequency",
         type=float,
-        default=3000000.0,
-        help="Signal sampling frequency in Hz.",
+        default=None,
+        help="Signal sampling frequency in Hz. Defaults to "
+        "GNSS-SDR.internal_fs_sps from --conf, or 3000000.0.",
     )
     parser.add_argument(
         "--channels",
         type=int,
-        default=5,
-        help="Number of channels to read.",
+        default=None,
+        help="Number of channels to read. Defaults to all selected channels "
+        "from --conf, or 5.",
     )
     parser.add_argument(
         "--first-channel",
         type=int,
-        default=0,
-        help="First channel number in the dump filenames.",
+        default=None,
+        help="First channel number in the dump filenames. Defaults to the "
+        "first selected absolute channel from --conf, or 0.",
+    )
+    parser.add_argument(
+        "--signal-type",
+        type=str.upper,
+        choices=sorted(SIGNAL_TYPES),
+        default=None,
+        metavar="CODE",
+        help="GNSS-SDR signal code used to restrict channel ranges and dump "
+        "filenames from --conf (e.g. 1C, 5X, 7X, E6, J1). Omitted with a "
+        "multi-signal --conf means all configured signals.",
     )
     parser.add_argument(
         "--plot-last-outputs",
@@ -93,15 +121,98 @@ def parse_args():
     )
     add_output_format_argument(parser)
     parser.set_defaults(plot_doppler=True)
-    return parser.parse_args()
+    args = parser.parse_args()
+    try:
+        apply_conf_defaults(args)
+    except ConfigError as exc:
+        parser.error(str(exc))
+    return args
+
+
+def apply_conf_defaults(args):
+    conf = load_gnss_sdr_conf(args.conf) if args.conf else None
+    signals = []
+    explicit_range = args.channels is not None or args.first_channel is not None
+
+    if conf is not None:
+        signals = conf.select_signals(args.signal_type)
+        if args.signal_type is not None:
+            args.signal_type = signals[0].signal
+
+    if args.file_prefix is None:
+        if conf is None or (len(signals) == 1 and explicit_range):
+            signal = signals[0] if signals else None
+            args.file_prefix = (
+                signal.tracking_dump_filename
+                if signal is not None and signal.tracking_dump_filename
+                else DEFAULT_FILE_PREFIX
+            )
+    if args.sampling_frequency is None:
+        if conf is not None:
+            if conf.internal_fs_sps is None:
+                raise ConfigError(
+                    "GNSS-SDR.internal_fs_sps is required to infer "
+                    "--sampling-frequency."
+                )
+            args.sampling_frequency = conf.internal_fs_sps
+        else:
+            args.sampling_frequency = DEFAULT_SAMPLING_FREQUENCY
+
+    if conf is not None and not explicit_range:
+        args.channel_plan = conf.channel_dump_plan(
+            signals=signals,
+            dump_filename_attr="tracking_dump_filename",
+            default_file_prefix=DEFAULT_FILE_PREFIX,
+            override_file_prefix=args.file_prefix,
+        )
+        args.channels = len(args.channel_plan)
+        args.first_channel = args.channel_plan[0].channel
+        args.channel_ids = [entry.channel for entry in args.channel_plan]
+        if len(signals) == 1:
+            args.file_prefix = args.channel_plan[0].file_prefix
+        return
+
+    if args.channels is None:
+        args.channels = signals[0].count if signals else DEFAULT_CHANNELS
+
+    if args.first_channel is None:
+        args.first_channel = (
+            signals[0].first_channel if signals else DEFAULT_FIRST_CHANNEL
+        )
+
+    if args.file_prefix is None:
+        args.file_prefix = DEFAULT_FILE_PREFIX
+
+    manual_signal = args.signal_type or (
+        signals[0].signal if signals else DEFAULT_SIGNAL_TYPE
+    )
+    args.channel_plan = [
+        ChannelDump(
+            channel=channel,
+            signal=manual_signal,
+            file_prefix=args.file_prefix,
+        )
+        for channel in range(args.first_channel, args.first_channel + args.channels)
+    ]
+    args.channel_ids = [entry.channel for entry in args.channel_plan]
 
 
 def read_tracking_dumps(args):
-    directory, base = resolve_dump_prefix(args.file_prefix, args.input_path)
     dumps = []
-    for channel in range(args.first_channel, args.first_channel + args.channels):
+    for entry in args.channel_plan:
+        directory, base = resolve_dump_prefix(entry.file_prefix, args.input_path)
+        channel = entry.channel
         tracking_log_path = directory / f"{base}{channel}.dat"
-        dumps.append(dll_pll_veml_read_tracking_dump(tracking_log_path))
+        if not tracking_log_path.exists():
+            print(f"Skipping channel {channel}: missing {tracking_log_path}")
+            continue
+        tracking = dll_pll_veml_read_tracking_dump(tracking_log_path)
+        if not tracking["PRN"]:
+            print(f"Skipping channel {channel}: no samples in {tracking_log_path}")
+            continue
+        tracking["_channel"] = channel
+        tracking["_signal_type"] = entry.signal
+        dumps.append(tracking)
     return dumps
 
 
@@ -112,9 +223,15 @@ def main():
     apply_publication_style()
 
     gnss_tracking = read_tracking_dumps(args)
+    if not gnss_tracking:
+        raise SystemExit("Error: no channel dumps found to plot.")
+
+    plotted_channel_ids = [tracking["_channel"] for tracking in gnss_tracking]
     track_results = []
     settings = {
-        "numberOfChannels": args.channels,
+        "numberOfChannels": len(gnss_tracking),
+        "firstChannel": plotted_channel_ids[0],
+        "channelIds": plotted_channel_ids,
         "fig_path": args.fig_path,
         "show": args.show,
         "output_format": args.output_format,
@@ -158,7 +275,7 @@ def main():
         plotVEMLTracking(index, track_results, settings)
 
         if args.plot_doppler:
-            channel = args.first_channel + index - 1
+            channel = tracking["_channel"]
             plt.figure()
             plt.plot(
                 track_result["prn_start_time_s"],

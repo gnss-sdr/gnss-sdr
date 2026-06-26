@@ -16,7 +16,6 @@
 
 #include "concurrent_queue.h"
 #include "gnss_sdr_filesystem.h"
-#include "gnss_sdr_flags.h"
 #include "labsat23_source.h"
 #include <gnuradio/blocks/vector_sink.h>
 #include <gnuradio/top_block.h>
@@ -48,7 +47,7 @@ struct LabSatRunResult
 fs::path temp_path(const std::string& name)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-    return fs::path(GetTempDir()) / (name + "_" + std::to_string(stamp));
+    return fs::temp_directory_path() / (name + "_" + std::to_string(stamp));
 }
 
 void append_le16(std::vector<uint8_t>& bytes, uint16_t value)

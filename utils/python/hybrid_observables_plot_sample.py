@@ -27,6 +27,7 @@ from lib.gnss_sdr_conf import (
     ConfigError,
     add_conf_argument,
     load_gnss_sdr_conf,
+    signal_pretty_name,
 )
 from lib.plot_format import add_output_format_argument, apply_publication_style
 from lib.read_hybrid_observables_dump import read_hybrid_observables_dump
@@ -104,6 +105,20 @@ def apply_conf_defaults(args):
         else:
             args.channels = DEFAULT_CHANNELS
 
+    args.channel_signals = channel_signal_labels(conf, args.channels)
+
+
+def channel_signal_labels(conf, channels):
+    labels = [""] * channels
+    if conf is None:
+        return labels
+
+    for signal in conf.enabled_signals:
+        for channel in signal.channels:
+            if 0 <= channel < channels:
+                labels[channel] = signal.signal
+    return labels
+
 
 def first_valid_observable(gnss_observables, channels):
     min_tow_idx = None
@@ -120,6 +135,100 @@ def first_valid_observable(gnss_observables, channels):
     if min_tow_idx is None:
         raise ValueError("No valid observables found in the dump.")
     return min_tow_idx, obs_idx
+
+
+def valid_channel_data(gnss_observables, channel, observable):
+    valid_mask = np.array(gnss_observables["valid"][channel]) > 0
+    rx_time = np.array(gnss_observables["RX_time"][channel])
+    values = np.array(gnss_observables[observable][channel])
+    return rx_time[valid_mask], values[valid_mask]
+
+
+def valid_channel_samples(gnss_observables, channel, observable):
+    valid_mask = np.array(gnss_observables["valid"][channel]) > 0
+    rx_time = np.array(gnss_observables["RX_time"][channel])
+    values = np.array(gnss_observables[observable][channel])
+    prns = np.array(gnss_observables["PRN"][channel])
+    return rx_time[valid_mask], values[valid_mask], prns[valid_mask]
+
+
+def valid_time_bounds(gnss_observables, channels):
+    valid_times = []
+    for channel in range(channels):
+        rx_time, _ = valid_channel_data(gnss_observables, channel, "valid")
+        if len(rx_time) > 0:
+            valid_times.append(rx_time)
+
+    if not valid_times:
+        raise ValueError("No valid observables found in the dump.")
+
+    valid_times = np.concatenate(valid_times)
+    return valid_times.min() - 100, valid_times.max() + 100
+
+
+def series_by_tracked_prn(gnss_observables, channels, observable, channel_signals):
+    parts = {}
+    for channel in range(channels):
+        rx_time, values, prns = valid_channel_samples(
+            gnss_observables, channel, observable
+        )
+        signal = channel_signals[channel] if channel < len(channel_signals) else ""
+        for prn in np.unique(prns):
+            if int(prn) == 0:
+                continue
+            selected = prns == prn
+            parts.setdefault((signal, int(prn)), []).append(
+                (rx_time[selected], values[selected])
+            )
+
+    series = {}
+    for series_key, chunks in parts.items():
+        rx_time = np.concatenate([chunk[0] for chunk in chunks])
+        values = np.concatenate([chunk[1] for chunk in chunks])
+        order = np.argsort(rx_time, kind="stable")
+        series[series_key] = (rx_time[order], values[order])
+    return series
+
+
+def tracked_prn_label(series_key):
+    signal, prn = series_key
+    if signal:
+        return f"{signal_pretty_name(signal)} PRN {prn}"
+    return f"PRN {prn}"
+
+
+def plot_observable_by_tracked_prn(
+    gnss_observables,
+    args,
+    *,
+    observable,
+    title,
+    ylabel,
+    window_title,
+    output_name,
+    time_start,
+    time_end,
+):
+    plt.figure()
+    plt.title(title)
+    series = series_by_tracked_prn(
+        gnss_observables, args.channels, observable, args.channel_signals
+    )
+    for series_key in sorted(series):
+        rx_time, values = series[series_key]
+        plt.scatter(
+            rx_time,
+            values,
+            s=1,
+            label=tracked_prn_label(series_key),
+        )
+    plt.xlim(time_start, time_end)
+    plt.xlabel("TOW [s]")
+    plt.ylabel(ylabel)
+    plt.grid(True)
+    plt.legend()
+    plt.gcf().canvas.manager.set_window_title(window_title)
+    save_figure(args.fig_path, output_name, args.show, args.output_format)
 
 
 def save_figure(fig_path, name, show, output_format):
@@ -140,74 +249,56 @@ def main():
     directory, base = resolve_dump_prefix(args.file_prefix, args.input_path)
     observables_file = directory / f"{base}.dat"
     gnss_observables = read_hybrid_observables_dump(args.channels, observables_file)
-    min_tow_idx, obs_idx = first_valid_observable(gnss_observables, args.channels)
-    time_start = gnss_observables["RX_time"][obs_idx][min_tow_idx] - 100
-    time_end = gnss_observables["RX_time"][obs_idx][-1] + 100
+    first_valid_observable(gnss_observables, args.channels)
+    time_start, time_end = valid_time_bounds(gnss_observables, args.channels)
 
-    plt.figure()
-    plt.title("Pseudorange")
-    for channel in range(args.channels):
-        plt.scatter(
-            gnss_observables["RX_time"][channel][min_tow_idx:],
-            gnss_observables["Pseudorange_m"][channel][min_tow_idx:],
-            s=1,
-            label=f"Channel {channel}",
-        )
-    plt.xlim(time_start, time_end)
-    plt.grid(True)
-    plt.xlabel("TOW [s]")
-    plt.ylabel("Pseudorange [m]")
-    plt.legend()
-    plt.gcf().canvas.manager.set_window_title("Pseudorange.png")
-    save_figure(args.fig_path, "Pseudorange", args.show, args.output_format)
+    plot_observable_by_tracked_prn(
+        gnss_observables,
+        args,
+        observable="Pseudorange_m",
+        title="Pseudorange",
+        ylabel="Pseudorange [m]",
+        window_title="Pseudorange.png",
+        output_name="Pseudorange",
+        time_start=time_start,
+        time_end=time_end,
+    )
 
-    plt.figure()
-    plt.title("Carrier Phase")
-    for channel in range(args.channels):
-        plt.scatter(
-            gnss_observables["RX_time"][channel][min_tow_idx:],
-            gnss_observables["Carrier_phase_hz"][channel][min_tow_idx:],
-            s=1,
-            label=f"Channel {channel}",
-        )
-    plt.xlim(time_start, time_end)
-    plt.xlabel("TOW [s]")
-    plt.ylabel("Accumulated Carrier Phase [cycles]")
-    plt.grid(True)
-    plt.legend()
-    plt.gcf().canvas.manager.set_window_title("AccumulatedCarrierPhase.png")
-    save_figure(args.fig_path, "AccumulatedCarrierPhase", args.show, args.output_format)
+    plot_observable_by_tracked_prn(
+        gnss_observables,
+        args,
+        observable="Carrier_phase_hz",
+        title="Carrier Phase",
+        ylabel="Accumulated Carrier Phase [cycles]",
+        window_title="AccumulatedCarrierPhase.png",
+        output_name="AccumulatedCarrierPhase",
+        time_start=time_start,
+        time_end=time_end,
+    )
 
-    plt.figure()
-    plt.title("Doppler Effect")
-    for channel in range(args.channels):
-        plt.scatter(
-            gnss_observables["RX_time"][channel][min_tow_idx:],
-            gnss_observables["Carrier_Doppler_hz"][channel][min_tow_idx:],
-            s=1,
-            label=f"Channel {channel}",
-        )
-    plt.xlim(time_start, time_end)
-    plt.xlabel("TOW [s]")
-    plt.ylabel("Doppler Frequency [Hz]")
-    plt.grid(True)
-    plt.legend()
-    plt.gcf().canvas.manager.set_window_title("DopplerFrequency.png")
-    save_figure(args.fig_path, "DopplerFrequency", args.show, args.output_format)
+    plot_observable_by_tracked_prn(
+        gnss_observables,
+        args,
+        observable="Carrier_Doppler_hz",
+        title="Doppler Effect",
+        ylabel="Doppler Frequency [Hz]",
+        window_title="DopplerFrequency.png",
+        output_name="DopplerFrequency",
+        time_start=time_start,
+        time_end=time_end,
+    )
 
     plt.figure()
     plt.title("GNSS Channels captured")
     for channel in range(args.channels):
-        label = "unknown"
-        for prn in gnss_observables["PRN"][channel][min_tow_idx:]:
-            if int(prn) != 0:
-                label = str(int(prn))
-                break
+        rx_time, prns = valid_channel_data(gnss_observables, channel, "PRN")
+        if len(rx_time) == 0:
+            continue
         plt.scatter(
-            gnss_observables["RX_time"][channel][min_tow_idx:],
-            gnss_observables["PRN"][channel][min_tow_idx:],
+            rx_time,
+            prns,
             s=1,
-            label=f"PRN {channel} = {label}",
+            label=f"Channel {channel}",
         )
     plt.xlim(time_start, time_end)
     plt.xlabel("TOW [s]")

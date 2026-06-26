@@ -896,6 +896,12 @@ std::map<int, Gps_Ephemeris> Rtklib_Pvt::get_gps_ephemeris() const
 }
 
 
+std::map<int, Gps_CNAV_Ephemeris> Rtklib_Pvt::get_gps_cnav_ephemeris() const
+{
+    return pvt_->get_gps_cnav_ephemeris_map();
+}
+
+
 std::map<int, Galileo_Ephemeris> Rtklib_Pvt::get_galileo_ephemeris() const
 {
     return pvt_->get_galileo_ephemeris_map();
@@ -905,6 +911,12 @@ std::map<int, Galileo_Ephemeris> Rtklib_Pvt::get_galileo_ephemeris() const
 std::map<int, Beidou_Dnav_Ephemeris> Rtklib_Pvt::get_beidou_dnav_ephemeris() const
 {
     return pvt_->get_beidou_dnav_ephemeris_map();
+}
+
+
+std::map<int, Beidou_Cnav1_Ephemeris> Rtklib_Pvt::get_beidou_cnav1_ephemeris() const
+{
+    return pvt_->get_beidou_cnav1_ephemeris_map();
 }
 
 
@@ -924,6 +936,13 @@ std::map<int, Beidou_Dnav_Almanac> Rtklib_Pvt::get_beidou_dnav_almanac() const
 {
     return pvt_->get_beidou_dnav_almanac_map();
 }
+
+
+std::map<int, Glonass_Gnav_Ephemeris> Rtklib_Pvt::get_glonass_gnav_ephemeris() const
+{
+    return pvt_->get_glonass_gnav_ephemeris_map();
+}
+
 
 double Rtklib_Pvt::get_clock_drift_ppm() const
 {

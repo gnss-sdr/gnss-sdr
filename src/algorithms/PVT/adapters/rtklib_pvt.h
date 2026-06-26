@@ -224,11 +224,14 @@ public:
 
     void clear_ephemeris() override;
     std::map<int, Gps_Ephemeris> get_gps_ephemeris() const override;
+    std::map<int, Gps_CNAV_Ephemeris> get_gps_cnav_ephemeris() const override;
     std::map<int, Galileo_Ephemeris> get_galileo_ephemeris() const override;
     std::map<int, Beidou_Dnav_Ephemeris> get_beidou_dnav_ephemeris() const override;
+    std::map<int, Beidou_Cnav1_Ephemeris> get_beidou_cnav1_ephemeris() const override;
     std::map<int, Gps_Almanac> get_gps_almanac() const override;
     std::map<int, Galileo_Almanac> get_galileo_almanac() const override;
     std::map<int, Beidou_Dnav_Almanac> get_beidou_dnav_almanac() const override;
+    std::map<int, Glonass_Gnav_Ephemeris> get_glonass_gnav_ephemeris() const override;
     double get_clock_drift_ppm() const override;
 
     void connect(gr::top_block_sptr top_block) override;

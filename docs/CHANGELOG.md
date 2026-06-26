@@ -43,6 +43,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   valve tail. Chunk unpacking now handles word endianness, padding, shifts,
   repeated lump patterns, repeated stream IDs, standard integer encodings, and
   FP32 streams as `float` or `gr_complex` outputs.
+- Improved `Labsat_Signal_Source` support for LabSat 2, LabSat 3, and LabSat 3
+  Wideband recordings, including more robust header parsing, corrected 2-bit
+  sample decoding, multi-channel output handling, and unit-test coverage for the
+  supported layouts.
 - Improved Galileo HAS robustness and ICD compliance, including stricter MT1
   validation, correct cache/Do-Not-Use handling, TOW fallback for E6 HAS pages,
   preserved mask/IOD correction context, and corrected HAS application in

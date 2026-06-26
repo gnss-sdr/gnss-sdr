@@ -84,6 +84,8 @@ private:
     int number_of_samples_per_ls3w_register() const;
 
     void decode_samples_one_channel(int16_t input_short, gr_complex *out, int type);
+    void decode_samples_two_channels(uint16_t input_word, std::vector<gr_complex *> &out, std::size_t output_pointer) const;
+    void decode_samples_three_channels(uint32_t input_word, std::vector<gr_complex *> &out, std::size_t output_pointer) const;
     void decode_ls3w_register(uint64_t input, std::vector<gr_complex *> &out, std::size_t output_pointer) const;
     int parse_ls23_data(int noutput_items, std::vector<gr_complex *> out);
     int parse_ls3w_data(int noutput_items, std::vector<gr_complex *> out);

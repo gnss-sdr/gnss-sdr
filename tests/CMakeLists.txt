@@ -1142,6 +1142,7 @@ endif()
 if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     set(GNURADIO_BLOCK_TEST_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/labsat23_source_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/unpack_2bit_samples_test.cc
     )
     if(ENABLE_ION)

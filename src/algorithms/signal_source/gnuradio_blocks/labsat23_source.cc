@@ -685,9 +685,9 @@ int labsat23_source::parse_header()
 }
 
 
-void labsat23_source::decode_samples_one_channel(int16_t input_short, gr_complex *out, int type)
+void labsat23_source::decode_samples_one_channel(uint16_t input_word, gr_complex *out, int type)
 {
-    std::bitset<16> bs(input_short);
+    std::bitset<16> bs(input_word);
     switch (type)
         {
         case 2:
@@ -1162,6 +1162,7 @@ void labsat23_source::decode_ls3w_register(uint64_t input, std::vector<gr_comple
         }
 }
 
+
 int labsat23_source::parse_ls23_data(int noutput_items, std::vector<gr_complex *> out)
 {
     if (d_header_parsed == false)
@@ -1180,18 +1181,18 @@ int labsat23_source::parse_ls23_data(int noutput_items, std::vector<gr_complex *
                     return -1;
                 default:
                     // single channel 2 bits per complex sample (1 bit I + 1 bit Q, 8 samples per int16)
-                    int n_int16_to_read = noutput_items / 8;
-                    if (n_int16_to_read > 0)
+                    int n_words_to_read = noutput_items / 8;
+                    if (n_words_to_read > 0)
                         {
-                            std::vector<int16_t> memblock(n_int16_to_read);
-                            binary_input_file.read(reinterpret_cast<char *>(memblock.data()), n_int16_to_read * 2);
-                            n_int16_to_read = static_cast<int>(binary_input_file.gcount()) / 2;  // from bytes to int16
-                            if (n_int16_to_read > 0)
+                            std::vector<char> memblock(n_words_to_read * 2);
+                            binary_input_file.read(memblock.data(), n_words_to_read * 2);
+                            n_words_to_read = static_cast<int>(binary_input_file.gcount()) / 2;
+                            if (n_words_to_read > 0)
                                 {
                                     int output_pointer = 0;
-                                    for (int i = 0; i < n_int16_to_read; i++)
+                                    for (int i = 0; i < n_words_to_read; i++)
                                         {
-                                            decode_samples_one_channel(memblock[i], out[0] + output_pointer, d_bits_per_sample);
+                                            decode_samples_one_channel(read_le_u16(&memblock[i * 2]), out[0] + output_pointer, d_bits_per_sample);
                                             output_pointer += 8;
                                         }
                                     return output_pointer;
@@ -1285,18 +1286,18 @@ int labsat23_source::parse_ls23_data(int noutput_items, std::vector<gr_complex *
                     }
                 default:
                     // single channel 4 bits per complex sample (2 bit I + 2 bit Q, 4 samples per int16)
-                    int n_int16_to_read = noutput_items / 4;
-                    if (n_int16_to_read > 0)
+                    int n_words_to_read = noutput_items / 4;
+                    if (n_words_to_read > 0)
                         {
-                            std::vector<int16_t> memblock(n_int16_to_read);
-                            binary_input_file.read(reinterpret_cast<char *>(memblock.data()), n_int16_to_read * 2);
-                            n_int16_to_read = static_cast<int>(binary_input_file.gcount()) / 2;  // from bytes to int16
-                            if (n_int16_to_read > 0)
+                            std::vector<char> memblock(n_words_to_read * 2);
+                            binary_input_file.read(memblock.data(), n_words_to_read * 2);
+                            n_words_to_read = static_cast<int>(binary_input_file.gcount()) / 2;
+                            if (n_words_to_read > 0)
                                 {
                                     int output_pointer = 0;
-                                    for (int i = 0; i < n_int16_to_read; i++)
+                                    for (int i = 0; i < n_words_to_read; i++)
                                         {
-                                            decode_samples_one_channel(memblock[i], out[0] + output_pointer, d_bits_per_sample);
+                                            decode_samples_one_channel(read_le_u16(&memblock[i * 2]), out[0] + output_pointer, d_bits_per_sample);
                                             output_pointer += 4;
                                         }
                                     return output_pointer;
@@ -1385,6 +1386,7 @@ int labsat23_source::parse_ls23_data(int noutput_items, std::vector<gr_complex *
     return -1;
 }
 
+
 int labsat23_source::parse_ls3w_data(int noutput_items, std::vector<gr_complex *> out)
 {
     if (binary_input_file.eof() == false)
@@ -1423,6 +1425,7 @@ int labsat23_source::parse_ls3w_data(int noutput_items, std::vector<gr_complex *
             return -1;
         }
 }
+
 
 int labsat23_source::parse_ls4_data(int noutput_items, std::vector<gr_complex *> out)
 {

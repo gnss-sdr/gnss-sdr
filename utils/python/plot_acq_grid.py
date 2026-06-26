@@ -33,6 +33,7 @@ from lib.gnss_sdr_conf import (
     SIGNAL_TYPES,
     add_conf_argument,
     load_gnss_sdr_conf,
+    signal_pretty_name,
 )
 from lib.plot_format import add_output_format_argument, apply_publication_style
 
@@ -46,6 +47,8 @@ DEFAULT_SAT = 1
 DEFAULT_CHANNEL = 0
 DEFAULT_EXECUTION = 1
 DEFAULT_SIGNAL_TYPE = "1C"
+MAX_LITE_SURFACE_CODE_POINTS = 3200
+MAX_LITE_SURFACE_DOPPLER_POINTS = 250
 
 
 @dataclass(frozen=True)
@@ -175,6 +178,20 @@ def parse_args():
         type=int,
         default=3,
         help="Samples per chip used by the light grid interpolation.",
+    )
+    parser.add_argument(
+        "--samples-per-doppler-step",
+        type=int,
+        default=5,
+        help="Interpolated samples per Doppler step used by the light grid "
+        "interpolation.",
+    )
+    parser.add_argument(
+        "--surface-smoothing",
+        type=float,
+        default=2.0,
+        help="Gaussian smoothing sigma, in interpolated surface samples, "
+        "applied only to the lite 3D view. Use 0 to disable.",
     )
     parser.add_argument(
         "--samples-per-code",
@@ -310,6 +327,52 @@ def matching_dump_prefixes(input_path):
     return sorted(prefixes)
 
 
+def configured_doppler_axis(doppler_max, doppler_step, n_dop_bins, file_path):
+    import numpy as np
+
+    doppler_max = abs(float(doppler_max))
+    doppler_step = abs(float(doppler_step))
+    if doppler_step == 0:
+        raise ValueError(f"{file_path}: doppler_step must be non-zero")
+
+    freq = np.arange(-doppler_max, doppler_max + doppler_step / 2, doppler_step)
+    if len(freq) == n_dop_bins:
+        return freq
+
+    legacy_freq = np.arange(n_dop_bins) * doppler_step - doppler_max
+    if len(freq) - 1 == n_dop_bins:
+        print(
+            f"Warning: {file_path.name}: acq_grid has {n_dop_bins} Doppler "
+            f"bins, one fewer than the inclusive configured axis from "
+            f"{-doppler_max:g} Hz to {doppler_max:g} Hz in "
+            f"{doppler_step:g} Hz steps. Plotting the available bins from "
+            f"{legacy_freq[0]:g} Hz to {legacy_freq[-1]:g} Hz."
+        )
+        return legacy_freq
+
+    print(
+        f"Warning: {file_path.name}: configured Doppler axis has {len(freq)} "
+        f"bins from {-doppler_max:g} Hz to {doppler_max:g} Hz in "
+        f"{doppler_step:g} Hz steps, but acq_grid has {n_dop_bins} columns. "
+        "Plotting the available columns over the configured Doppler range."
+    )
+    return np.linspace(-doppler_max, doppler_max, n_dop_bins)
+
+
+def expected_doppler_bin_counts(doppler_max, doppler_step):
+    import numpy as np
+
+    doppler_max = abs(float(doppler_max))
+    doppler_step = abs(float(doppler_step))
+    if doppler_step == 0:
+        return set()
+
+    inclusive_count = len(
+        np.arange(-doppler_max, doppler_max + doppler_step / 2, doppler_step)
+    )
+    return {inclusive_count, max(1, inclusive_count - 1)}
+
+
 def read_acquisition_dump(file_path, n_chips, positive_only):
     import h5py
     import numpy as np
@@ -323,21 +386,77 @@ def read_acquisition_dump(file_path, n_chips, positive_only):
             if positive_acq != 1:
                 return None
 
-        acq_grid = data["acq_grid"][:]
-        n_fft, n_dop_bins = acq_grid.shape
-        d_max, f_max = np.unravel_index(np.argmax(acq_grid), acq_grid.shape)
         doppler_step = data["doppler_step"][0]
         doppler_max = data["doppler_max"][0]
-        freq = np.arange(n_dop_bins) * doppler_step - doppler_max
+        acq_grid = data["acq_grid"][:]
+        expected_doppler_bins = expected_doppler_bin_counts(
+            doppler_max,
+            doppler_step,
+        )
+        if (
+            acq_grid.shape[1] not in expected_doppler_bins
+            and acq_grid.shape[0] in expected_doppler_bins
+        ):
+            acq_grid = acq_grid.T
+
+        n_fft, n_dop_bins = acq_grid.shape
+        freq = configured_doppler_axis(
+            doppler_max,
+            doppler_step,
+            n_dop_bins,
+            file_path,
+        )
+        d_max, f_max = np.unravel_index(np.argmax(acq_grid), acq_grid.shape)
         delay = np.arange(n_fft) / n_fft * n_chips
 
     return acq_grid, n_fft, d_max, f_max, doppler_step, doppler_max, freq, delay
 
 
-def plot_dump(file_path, fig_path, image_name_root, n_chips, args):
+def acquisition_plot_title(metadata):
+    signal_name = signal_pretty_name(metadata["signal"])
+    return (
+        f"{signal_name} PRN {metadata['sat']} "
+        f"(channel {metadata['channel']}, execution {metadata['execution']})"
+    )
+
+
+def interpolated_acquisition_grid(delay, freq, acq_grid, args, n_chips):
+    import numpy as np
+    from scipy.ndimage import gaussian_filter
+    from scipy.interpolate import RectBivariateSpline
+
+    if len(delay) < 2 or len(freq) < 2:
+        return delay, freq, acq_grid
+
+    samples_per_chip = max(1, args.samples_per_chip)
+    samples_per_doppler_step = max(1, args.samples_per_doppler_step)
+    delay_points = min(
+        samples_per_chip * n_chips,
+        MAX_LITE_SURFACE_CODE_POINTS,
+    )
+    freq_points = min(
+        (len(freq) - 1) * samples_per_doppler_step + 1,
+        MAX_LITE_SURFACE_DOPPLER_POINTS,
+    )
+    delay_interp = np.linspace(delay[0], delay[-1], max(2, delay_points))
+    freq_interp = np.linspace(freq[0], freq[-1], max(2, freq_points))
+
+    kx = min(3, len(delay) - 1)
+    ky = min(3, len(freq) - 1)
+    spline = RectBivariateSpline(delay, freq, acq_grid, kx=kx, ky=ky)
+    grid_interp = spline(delay_interp, freq_interp)
+    if args.surface_smoothing > 0:
+        grid_interp = gaussian_filter(
+            grid_interp,
+            sigma=args.surface_smoothing,
+            mode="nearest",
+        )
+    return delay_interp, freq_interp, grid_interp
+
+
+def plot_dump(file_path, fig_path, image_name_root, n_chips, args, metadata=None):
     import matplotlib.pyplot as plt
     import numpy as np
-    from scipy.interpolate import CubicSpline
 
     dump = read_acquisition_dump(file_path, n_chips, args.plot_positive_acqs)
     if dump is None:
@@ -354,28 +473,65 @@ def plot_dump(file_path, fig_path, image_name_root, n_chips, args):
         delay,
     ) = dump
 
+    if metadata is None:
+        metadata = parse_dump_name(file_path)
+    plot_title = acquisition_plot_title(metadata) if metadata else str(file_path)
+
     fig = plt.figure()
     plt.gcf().canvas.manager.set_window_title(str(file_path))
     if not args.lite_view:
         ax = fig.add_subplot(111, projection="3d")
-        x_axis, y_axis = np.meshgrid(freq, delay)
-        ax.plot_surface(x_axis, y_axis, acq_grid, cmap="viridis")
+        x_axis, y_axis = np.meshgrid(freq, delay, indexing="xy")
+        ax.plot_surface(
+            x_axis,
+            y_axis,
+            acq_grid,
+            cmap="viridis",
+            linewidth=0,
+            edgecolor="none",
+            antialiased=False,
+        )
         ax.set_ylim([min(delay), max(delay)])
     else:
-        delay_interp = (
-            np.arange(args.samples_per_chip * n_chips) / args.samples_per_chip
+        delay_interp, freq_interp, grid_interp = interpolated_acquisition_grid(
+            delay,
+            freq,
+            acq_grid,
+            args,
+            n_chips,
         )
-        spline = CubicSpline(delay, acq_grid)
-        grid_interp = spline(delay_interp)
         ax = fig.add_subplot(111, projection="3d")
-        x_axis, y_axis = np.meshgrid(freq, delay_interp)
-        ax.plot_surface(x_axis, y_axis, grid_interp, cmap="inferno")
+        x_axis, y_axis = np.meshgrid(freq_interp, delay_interp, indexing="xy")
+        ax.plot_surface(
+            x_axis,
+            y_axis,
+            grid_interp,
+            cmap="inferno",
+            rstride=1,
+            cstride=1,
+            linewidth=0,
+            edgecolor="none",
+            antialiased=False,
+        )
         ax.set_ylim([min(delay_interp), max(delay_interp)])
 
+    peak_doppler = freq[f_max]
+    peak_delay = delay[d_max]
+    peak_value = acq_grid[d_max, f_max]
+    ax.scatter(
+        [peak_doppler],
+        [peak_delay],
+        [peak_value],
+        color="red",
+        s=30,
+        label="Peak",
+    )
     ax.set_xlabel("Doppler shift (Hz)")
     ax.set_xlim([min(freq), max(freq)])
     ax.set_ylabel("Code delay (chips)")
     ax.set_zlabel("Test Statistics")
+    ax.set_title(plot_title)
+    ax.legend(loc="upper right")
     plt.tight_layout()
     plt.savefig(fig_path / f"{image_name_root}_3D.{args.output_format}")
     if not args.show:
@@ -383,24 +539,25 @@ def plot_dump(file_path, fig_path, image_name_root, n_chips, args):
 
     fig2, axes = plt.subplots(2, 1, figsize=(8, 6))
     plt.gcf().canvas.manager.set_window_title(str(file_path))
+    fig2.suptitle(plot_title)
     axes[0].plot(freq, acq_grid[d_max, :])
+    axes[0].axvline(peak_doppler, color="red", linestyle="--", linewidth=0.8)
     axes[0].set_xlim([min(freq), max(freq)])
     axes[0].set_xlabel("Doppler shift (Hz)")
     axes[0].set_ylabel("Test statistics")
-    axes[0].set_title(
-        f"Fixed code delay to {(d_max - 1) / n_fft * n_chips} chips"
-    )
+    axes[0].set_title(f"Doppler cut at code delay = {peak_delay:g} chips")
 
     normalization = (args.samples_per_code ** 4) * args.input_power
     axes[1].plot(delay, acq_grid[:, f_max] / normalization)
+    axes[1].axvline(peak_delay, color="red", linestyle="--", linewidth=0.8)
     axes[1].set_xlim([min(delay), max(delay)])
     axes[1].set_xlabel("Code delay (chips)")
     axes[1].set_ylabel("Test statistics")
     axes[1].set_title(
-        f"Doppler wipe-off = {(f_max - 1) * doppler_step - doppler_max} Hz"
+        f"Code-delay cut at Doppler wipe-off = {peak_doppler:g} Hz"
     )
 
-    plt.tight_layout()
+    fig2.tight_layout(rect=(0, 0, 1, 0.95))
     plt.savefig(fig_path / f"{image_name_root}_2D.{args.output_format}")
     if not args.show:
         plt.close(fig2)
@@ -425,17 +582,15 @@ def single_file_path(args):
         f"{base}_{system}_{signal}_ch_{channel}_"
         f"{execution}_sat_{sat}.mat"
     )
-    image_name_root = image_name_from_metadata(
-        args.output_basename,
-        {
-            "system": system,
-            "signal": signal,
-            "channel": channel,
-            "execution": execution,
-            "sat": sat,
-        },
-    )
-    return directory / filename, image_name_root, n_chips
+    metadata = {
+        "system": system,
+        "signal": signal,
+        "channel": channel,
+        "execution": execution,
+        "sat": sat,
+    }
+    image_name_root = image_name_from_metadata(args.output_basename, metadata)
+    return directory / filename, image_name_root, n_chips, metadata
 
 
 def image_name_from_metadata(output_basename, metadata):
@@ -486,10 +641,17 @@ def main():
     apply_publication_style()
 
     if not args.plot_all_files:
-        file_path, image_name_root, n_chips = single_file_path(args)
+        file_path, image_name_root, n_chips, metadata = single_file_path(args)
         if not file_path.exists():
             raise FileNotFoundError(f"dump file not found: {file_path}")
-        plot_dump(file_path, args.fig_path, image_name_root, n_chips, args)
+        plot_dump(
+            file_path,
+            args.fig_path,
+            image_name_root,
+            n_chips,
+            args,
+            metadata,
+        )
         show_figures(args)
         return
 
@@ -530,7 +692,14 @@ def main():
                 args.output_basename,
                 metadata,
             )
-            if plot_dump(file_path, args.fig_path, image_name_root, n_chips, args):
+            if plot_dump(
+                file_path,
+                args.fig_path,
+                image_name_root,
+                n_chips,
+                args,
+                metadata,
+            ):
                 plotted += 1
 
     if not found_paths:

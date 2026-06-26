@@ -33,6 +33,7 @@ from lib.gnss_sdr_conf import (
     SIGNAL_TYPES,
     add_conf_argument,
     load_gnss_sdr_conf,
+    signal_pretty_name,
 )
 from lib.plot_format import add_output_format_argument, apply_publication_style
 from lib.plotVEMLTracking import plotVEMLTracking
@@ -216,6 +217,11 @@ def read_tracking_dumps(args):
     return dumps
 
 
+def prn_label(prns):
+    prns = dict.fromkeys(int(prn) for prn in prns if int(prn))
+    return "/".join(str(prn) for prn in prns) or "unknown"
+
+
 def main():
     args = parse_args()
     args.fig_path.mkdir(parents=True, exist_ok=True)
@@ -270,6 +276,14 @@ def main():
                 / args.sampling_frequency
             ),
         }
+        signal_name = signal_pretty_name(
+            tracking.get("_signal_type") or DEFAULT_SIGNAL_TYPE
+        )
+        track_result["signalName"] = signal_name
+        track_result["prnLabel"] = prn_label(track_result["PRN"])
+        track_result["plotTitle"] = (
+            f"{signal_name} PRN {track_result['prnLabel']}"
+        )
         track_results.append(track_result)
 
         plotVEMLTracking(index, track_results, settings)
@@ -281,9 +295,12 @@ def main():
                 track_result["prn_start_time_s"],
                 [x / 1000 for x in tracking["carrier_doppler_hz"][start_sample:]],
             )
-            plt.xlabel("Time(s)")
-            plt.ylabel("Doppler(KHz)")
-            plt.title(f"Doppler frequency channel {channel}")
+            plt.xlabel("Time (s)")
+            plt.ylabel("Doppler (kHz)")
+            plt.title(
+                f"Doppler frequency - {track_result['plotTitle']} "
+                f"(channel {channel})"
+            )
             plt.savefig(
                 args.fig_path
                 / f"Doppler_freq_ch_{channel}.{args.output_format}"

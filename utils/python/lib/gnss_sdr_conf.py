@@ -39,25 +39,51 @@ SIGNAL_ORDER = (
     "J5",
 )
 
+@dataclass(frozen=True)
+class SignalType:
+    system: str
+    n_chips: int
+    pretty_name: str
+
+    def __iter__(self):
+        # Keep compatibility with callers that unpack SIGNAL_TYPES entries as
+        # (system, n_chips).
+        yield self.system
+        yield self.n_chips
+
+
 # GNSS-SDR signal nomenclature: each signal code maps to the system character
-# used in acquisition dump filenames and to its primary code length in chips.
+# used in acquisition dump filenames, its primary code length in chips, and a
+# human-friendly signal name for plot labels.
 SIGNAL_TYPES = {
-    "1C": ("G", 1023),  # GPS L1 C/A
-    "2S": ("G", 10230),  # GPS L2C
-    "L5": ("G", 10230),  # GPS L5
-    "1B": ("E", 4092),  # Galileo E1B
-    "5X": ("E", 10230),  # Galileo E5a
-    "7X": ("E", 10230),  # Galileo E5b
-    "E6": ("E", 5115),  # Galileo E6
-    "1G": ("R", 511),  # GLONASS L1
-    "2G": ("R", 511),  # GLONASS L2
-    "B1": ("C", 2046),  # BeiDou B1I
-    "B3": ("C", 10230),  # BeiDou B3I
-    "J1": ("J", 1023),  # QZSS L1 C/A
-    "J5": ("J", 10230),  # QZSS L5
+    "1C": SignalType("G", 1023, "GPS L1 C/A"),
+    "2S": SignalType("G", 10230, "GPS L2C"),
+    "L5": SignalType("G", 10230, "GPS L5"),
+    "1B": SignalType("E", 4092, "Galileo E1B"),
+    "5X": SignalType("E", 10230, "Galileo E5a"),
+    "7X": SignalType("E", 10230, "Galileo E5b"),
+    "E6": SignalType("E", 5115, "Galileo E6"),
+    "1G": SignalType("R", 511, "GLONASS L1 C/A"),
+    "2G": SignalType("R", 511, "GLONASS L2 C/A"),
+    "B1": SignalType("C", 2046, "BeiDou B1I"),
+    "B3": SignalType("C", 10230, "BeiDou B3I"),
+    "J1": SignalType("J", 1023, "QZSS L1 C/A"),
+    "J5": SignalType("J", 10230, "QZSS L5"),
 }
 
-N_CHIPS = {(system, code): nc for code, (system, nc) in SIGNAL_TYPES.items()}
+N_CHIPS = {
+    (signal_type.system, code): signal_type.n_chips
+    for code, signal_type in SIGNAL_TYPES.items()
+}
+
+
+def signal_pretty_name(signal_type):
+    if signal_type is None:
+        return ""
+    metadata = SIGNAL_TYPES.get(signal_type.upper())
+    if metadata is None:
+        return signal_type
+    return metadata.pretty_name
 
 
 class ConfigError(ValueError):

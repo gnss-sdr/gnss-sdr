@@ -46,12 +46,17 @@ def plotVEMLTracking(channelNr, trackResults, settings):
 
     # Protection - if the list contains incorrect channel numbers
     if channelNr in list(range(1,settings["numberOfChannels"]+1)):
+        track_result = trackResults[channelNr-1]
+        prn_label = track_result.get('prnLabel', str(track_result["PRN"][0]))
+        plot_title = track_result.get('plotTitle', f'PRN {prn_label}')
+
         plt.figure(figsize=(1920 / 120, 1080 / 120))
         plt.clf()
         plt.gcf().canvas.manager.set_window_title(
-            f'Channel {display_channel} (PRN '
-            f'{trackResults[channelNr-1]["PRN"][0]}) results')
-        plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1,
+            f'Channel {display_channel} - {plot_title} results')
+        plt.suptitle(f'{plot_title} (channel {display_channel})',
+                     fontweight='bold')
+        plt.subplots_adjust(left=0.1, right=0.9, top=0.86, bottom=0.1,
                             hspace=0.4, wspace=0.4)
 
         # Extract timeAxis and time_label

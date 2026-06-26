@@ -62,6 +62,24 @@ const std::unordered_map<std::string, double> SIGNAL_FREQ_MAP = {
     {"J5", FREQ5},
 };
 
+const std::unordered_map<std::string, int> SIGNAL_FREQ_IDX = {
+    {"1C", 1},
+    {"2S", 2},
+    {"L5", 5},
+    {"1B", 1},
+    {"5X", 5},
+    {"E6", 6},
+    {"7X", 7},
+    {"1G", 1},
+    {"2G", 2},
+    {"B1", 1},
+    {"B2", 2},
+    {"B3", 3},
+    {"1D", 1},
+    {"J1", 2},
+    {"J5", 3},
+};
+
 
 /** \} */
 /** \} */

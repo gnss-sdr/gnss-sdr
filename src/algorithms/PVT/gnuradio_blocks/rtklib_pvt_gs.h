@@ -49,8 +49,10 @@
  * \{ */
 
 
+class Glonass_Gnav_Ephemeris;
 class Beidou_Dnav_Almanac;
 class Beidou_Dnav_Ephemeris;
+class Beidou_Cnav1_Ephemeris;
 class Galileo_Almanac;
 class Galileo_Ephemeris;
 class Galileo_HAS_data;
@@ -59,6 +61,7 @@ class Geohash;
 class GeoJSON_Printer;
 class Gps_Almanac;
 class Gps_Ephemeris;
+class Gps_CNAV_Ephemeris;
 class Gpx_Printer;
 class Kml_Printer;
 class Monitor_Pvt_Udp_Sink;
@@ -95,6 +98,11 @@ public:
     std::map<int, Gps_Ephemeris> get_gps_ephemeris_map() const;
 
     /*!
+     * \brief Get latest set of GPS CNAV ephemeris from PVT block
+     */
+    std::map<int, Gps_CNAV_Ephemeris> get_gps_cnav_ephemeris_map() const;
+
+    /*!
      * \brief Get latest set of GPS almanac from PVT block
      */
     std::map<int, Gps_Almanac> get_gps_almanac_map() const;
@@ -115,9 +123,19 @@ public:
     std::map<int, Beidou_Dnav_Ephemeris> get_beidou_dnav_ephemeris_map() const;
 
     /*!
+     * \brief Get latest set of BeiDou CNAV1 ephemeris from PVT block
+     */
+    std::map<int, Beidou_Cnav1_Ephemeris> get_beidou_cnav1_ephemeris_map() const;
+
+    /*!
      * \brief Get latest set of BeiDou DNAV almanac from PVT block
      */
     std::map<int, Beidou_Dnav_Almanac> get_beidou_dnav_almanac_map() const;
+
+    /*!
+     * \brief Get latest set of BeiDou DNAV almanac from PVT block
+     */
+    std::map<int, Glonass_Gnav_Ephemeris> get_glonass_gnav_ephemeris_map() const;
 
     /*!
      * \brief Get clock drift from PVT block
@@ -154,6 +172,14 @@ public:
         double* ground_speed_kmh,
         double* course_over_ground_deg,
         time_t* UTC_time) const;
+
+    bool get_latest_PVT(double* longitude_deg,
+        double* latitude_deg,
+        double* height_m,
+        double* ground_speed_east,
+        double* ground_speed_north,
+        double* ground_speed_up,
+        int32_t* TOW) const;
 
     int work(int noutput_items, gr_vector_const_void_star& input_items,
         gr_vector_void_star& output_items) override;  //!< PVT Signal Processing

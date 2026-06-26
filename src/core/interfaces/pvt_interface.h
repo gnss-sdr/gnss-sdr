@@ -23,12 +23,16 @@
 #ifndef GNSS_SDR_PVT_INTERFACE_H
 #define GNSS_SDR_PVT_INTERFACE_H
 
+#include "beidou_cnav1_ephemeris.h"
 #include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
 #include "galileo_almanac.h"
 #include "galileo_ephemeris.h"
+#include "glonass_gnav_almanac.h"
+#include "glonass_gnav_ephemeris.h"
 #include "gnss_block_interface.h"
 #include "gps_almanac.h"
+#include "gps_cnav_ephemeris.h"
 #include "gps_ephemeris.h"
 #include <map>
 
@@ -53,11 +57,14 @@ public:
     virtual void reset() = 0;
     virtual void clear_ephemeris() = 0;
     virtual std::map<int, Gps_Ephemeris> get_gps_ephemeris() const = 0;
+    virtual std::map<int, Gps_CNAV_Ephemeris> get_gps_cnav_ephemeris() const = 0;
     virtual std::map<int, Galileo_Ephemeris> get_galileo_ephemeris() const = 0;
     virtual std::map<int, Beidou_Dnav_Ephemeris> get_beidou_dnav_ephemeris() const = 0;
+    virtual std::map<int, Beidou_Cnav1_Ephemeris> get_beidou_cnav1_ephemeris() const = 0;
     virtual std::map<int, Gps_Almanac> get_gps_almanac() const = 0;
     virtual std::map<int, Galileo_Almanac> get_galileo_almanac() const = 0;
     virtual std::map<int, Beidou_Dnav_Almanac> get_beidou_dnav_almanac() const = 0;
+    virtual std::map<int, Glonass_Gnav_Ephemeris> get_glonass_gnav_ephemeris() const = 0;
     virtual double get_clock_drift_ppm() const = 0;
 
     virtual bool get_latest_PVT(double* longitude_deg,
@@ -66,6 +73,13 @@ public:
         double* ground_speed_kmh,
         double* course_over_ground_deg,
         time_t* UTC_time) = 0;
+    virtual bool get_latest_PVT(double* longitude_deg,
+        double* latitude_deg,
+        double* height_m,
+        double* ground_speed_east,
+        double* ground_speed_north,
+        double* ground_speed_up,
+        int32_t* TOW) = 0;
 };
 
 

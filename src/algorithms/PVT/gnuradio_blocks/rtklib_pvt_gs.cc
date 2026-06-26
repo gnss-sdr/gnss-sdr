@@ -2073,6 +2073,12 @@ std::map<int, Gps_Ephemeris> rtklib_pvt_gs::get_gps_ephemeris_map() const
 }
 
 
+std::map<int, Gps_CNAV_Ephemeris> rtklib_pvt_gs::get_gps_cnav_ephemeris_map() const
+{
+    return d_internal_pvt_solver->gps_cnav_ephemeris_map;
+}
+
+
 std::map<int, Gps_Almanac> rtklib_pvt_gs::get_gps_almanac_map() const
 {
     return d_internal_pvt_solver->gps_almanac_map;
@@ -2097,9 +2103,20 @@ std::map<int, Beidou_Dnav_Ephemeris> rtklib_pvt_gs::get_beidou_dnav_ephemeris_ma
 }
 
 
+std::map<int, Beidou_Cnav1_Ephemeris> rtklib_pvt_gs::get_beidou_cnav1_ephemeris_map() const
+{
+    return d_internal_pvt_solver->beidou_cnav1_ephemeris_map;
+}
+
+
 std::map<int, Beidou_Dnav_Almanac> rtklib_pvt_gs::get_beidou_dnav_almanac_map() const
 {
     return d_internal_pvt_solver->beidou_dnav_almanac_map;
+}
+
+std::map<int, Glonass_Gnav_Ephemeris> rtklib_pvt_gs::get_glonass_gnav_ephemeris_map() const
+{
+    return d_internal_pvt_solver->glonass_gnav_ephemeris_map;
 }
 
 double rtklib_pvt_gs::get_clock_drift_ppm() const
@@ -2264,6 +2281,28 @@ bool rtklib_pvt_gs::get_latest_PVT(double* longitude_deg,
                 }
         }
 
+    return false;
+}
+bool rtklib_pvt_gs::get_latest_PVT(double* longitude_deg,
+    double* latitude_deg,
+    double* height_m,
+    double* ground_speed_east,
+    double* ground_speed_north,
+    double* ground_speed_up,
+    int32_t* TOW) const
+{
+    if (d_user_pvt_solver->is_valid_position())
+        {
+            *latitude_deg = d_user_pvt_solver->get_latitude();
+            *longitude_deg = d_user_pvt_solver->get_longitude();
+            *height_m = d_user_pvt_solver->get_height();
+            *ground_speed_east = d_user_pvt_solver->get_rx_vel()[0];
+            *ground_speed_north = d_user_pvt_solver->get_rx_vel()[1];
+            *ground_speed_up = d_user_pvt_solver->get_rx_vel()[2];
+            *TOW = d_user_pvt_solver->get_monitor_pvt().TOW_at_current_symbol_ms;
+
+            return true;
+        }
     return false;
 }
 

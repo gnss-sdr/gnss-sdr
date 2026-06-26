@@ -37,159 +37,6 @@
 #include <absl/log/log.h>
 #endif
 
-namespace
-{
-
-std::vector<double> generate_mapping(int qua)
-{
-    const int levels = 1 << qua;
-    const int half = levels / 2;
-    std::vector<double> mapping(levels);
-
-    // Positive half
-    for (int i = 0; i < half; i++)
-        {
-            mapping[i] = static_cast<double>(i + 1) / static_cast<double>(half);
-        }
-
-    // Negative half (mirror reversed)
-    for (int i = 0; i < half; i++)
-        {
-            mapping[half + i] = -mapping[half - 1 - i];
-        }
-
-    return mapping;
-}
-
-
-void write_samples_from_bitset(const std::bitset<64> &bs, int bit_offset, int qua, gr_complex &out)
-{
-    const auto extract_bits = [&](int start, int count) {
-        unsigned val = 0;
-        for (int i = 0; i < count; ++i)
-            {
-                val = (val << 1) | bs[63 - start - i];
-            }
-        return val;
-    };
-
-    const auto i_bits = extract_bits(bit_offset, qua);
-    const auto q_bits = extract_bits(bit_offset + qua, qua);
-
-    // Cache mapping per qua (so we only build it once), possible qua are 1,2,3,4,8,12
-    static std::vector<std::vector<double>> cache(12);
-    auto &mapping = cache[qua - 1];
-
-    if (mapping.empty())
-        {
-            mapping = generate_mapping(qua);
-        }
-
-    out = gr_complex(mapping[i_bits], mapping[q_bits]);
-}
-
-
-void write_samples_ls4(uint64_t data_index, int out_index, int sample_count, int32_t qua, std::vector<uint64_t> &data, gr_complex *out_samples)
-{
-    const auto buffer_index = data_index % data.size();
-
-    if (qua == 12)
-        {
-            // For 12 bit QUA, write 48 (MSBs) bits (2x IQ samples) and then shift left and add new data for next write (read 3 registers of 64 bits)
-
-            const auto write_value = [qua, out_samples](uint64_t value, uint64_t index) {
-                std::bitset<64> bs(value);
-                write_samples_from_bitset(bs, 0, qua, out_samples[index]);
-                write_samples_from_bitset(bs, 24, qua, out_samples[index + 1]);
-            };
-
-            uint64_t value = data[buffer_index];
-            write_value(value, out_index);
-
-            value = value << 48;
-            value = value | (data[buffer_index + 1] >> 16);
-            write_value(value, out_index + 2);
-
-            value = value << 48;
-            value = value | ((data[buffer_index + 1] & 0xFFFF) << 32);
-            value = value | (data[buffer_index + 2] >> 32);
-            write_value(value, out_index + 4);
-
-            value = value << 48;
-            value = value | ((data[buffer_index + 2] & 0xFFFFFFFF) << 16);
-            write_value(value, out_index + 6);
-        }
-    else
-        {
-            const auto buffer_index = data_index % data.size();
-            const std::bitset<64> bs(data[buffer_index]);
-
-            for (int32_t i = 0; i < sample_count; ++i)
-                {
-                    write_samples_from_bitset(bs, i * qua * 2, qua, out_samples[out_index + i]);
-                }
-        }
-}
-
-
-void read_file_register_to_local_endian(std::ifstream &binary_input_file, uint64_t &read_register)
-{
-#if HAS_BOOST_ENDIAN
-    binary_input_file.read(reinterpret_cast<char *>(&read_register), sizeof(read_register));
-    boost::endian::little_to_native_inplace(read_register);
-#else
-    std::array<char, 8> memory_block{};
-    binary_input_file.read(memory_block.data(), 8);
-    for (int k = 7; k >= 0; --k)
-        {
-            read_register <<= 8;
-            read_register |= static_cast<uint64_t>(static_cast<unsigned char>(memory_block[k]));
-        }
-#endif
-}
-
-bool are_equal_ignore_nonpositive(const std::vector<int32_t> &values)
-{
-    std::vector<int32_t> positives;
-    for (const auto &v : values)
-        {
-            if (v > 0)
-                {
-                    positives.push_back(v);
-                }
-        }
-
-    if (positives.size() <= 1)
-        {
-            return true;
-        }
-
-    return std::all_of(positives.begin(), positives.end(),
-        [&](int32_t v) { return v == positives[0]; });
-}
-
-uint8_t as_u8(char value)
-{
-    return static_cast<uint8_t>(value);
-}
-
-uint16_t read_le_u16(const char *data)
-{
-    return static_cast<uint16_t>(as_u8(data[0])) |
-           static_cast<uint16_t>(as_u8(data[1]) << 8);
-}
-
-uint32_t read_le_u32(const char *data)
-{
-    return static_cast<uint32_t>(as_u8(data[0])) |
-           (static_cast<uint32_t>(as_u8(data[1])) << 8) |
-           (static_cast<uint32_t>(as_u8(data[2])) << 16) |
-           (static_cast<uint32_t>(as_u8(data[3])) << 24);
-}
-
-}  // namespace
-
-
 labsat23_source_sptr labsat23_make_source_sptr(
     const char *signal_file_basename,
     const std::vector<int> &channel_selector,
@@ -346,6 +193,158 @@ labsat23_source::~labsat23_source()
         {
             std::cerr << e.what() << '\n';
         }
+}
+
+
+std::vector<double> labsat23_source::generate_mapping(int qua)
+{
+    const int levels = 1 << qua;
+    const int half = levels / 2;
+    std::vector<double> mapping(levels);
+
+    // Positive half
+    for (int i = 0; i < half; i++)
+        {
+            mapping[i] = static_cast<double>(i + 1) / static_cast<double>(half);
+        }
+
+    // Negative half (mirror reversed)
+    for (int i = 0; i < half; i++)
+        {
+            mapping[half + i] = -mapping[half - 1 - i];
+        }
+
+    return mapping;
+}
+
+
+void labsat23_source::write_samples_from_bitset(const std::bitset<64> &bs, int bit_offset, int qua, gr_complex &out)
+{
+    const auto extract_bits = [&](int start, int count) {
+        unsigned val = 0;
+        for (int i = 0; i < count; ++i)
+            {
+                val = (val << 1) | bs[63 - start - i];
+            }
+        return val;
+    };
+
+    const auto i_bits = extract_bits(bit_offset, qua);
+    const auto q_bits = extract_bits(bit_offset + qua, qua);
+
+    // Cache mapping per qua (so we only build it once), possible qua are 1,2,3,4,8,12
+    static std::vector<std::vector<double>> cache(12);
+    auto &mapping = cache[qua - 1];
+
+    if (mapping.empty())
+        {
+            mapping = generate_mapping(qua);
+        }
+
+    out = gr_complex(mapping[i_bits], mapping[q_bits]);
+}
+
+
+void labsat23_source::write_samples_ls4(uint64_t data_index, int out_index, int sample_count, int32_t qua, std::vector<uint64_t> &data, gr_complex *out_samples)
+{
+    const auto buffer_index = data_index % data.size();
+
+    if (qua == 12)
+        {
+            // For 12 bit QUA, write 48 (MSBs) bits (2x IQ samples) and then shift left and add new data for next write (read 3 registers of 64 bits)
+
+            const auto write_value = [qua, out_samples](uint64_t value, uint64_t index) {
+                std::bitset<64> bs(value);
+                write_samples_from_bitset(bs, 0, qua, out_samples[index]);
+                write_samples_from_bitset(bs, 24, qua, out_samples[index + 1]);
+            };
+
+            uint64_t value = data[buffer_index];
+            write_value(value, out_index);
+
+            value = value << 48;
+            value = value | (data[buffer_index + 1] >> 16);
+            write_value(value, out_index + 2);
+
+            value = value << 48;
+            value = value | ((data[buffer_index + 1] & 0xFFFF) << 32);
+            value = value | (data[buffer_index + 2] >> 32);
+            write_value(value, out_index + 4);
+
+            value = value << 48;
+            value = value | ((data[buffer_index + 2] & 0xFFFFFFFF) << 16);
+            write_value(value, out_index + 6);
+        }
+    else
+        {
+            const auto buffer_index = data_index % data.size();
+            const std::bitset<64> bs(data[buffer_index]);
+
+            for (int32_t i = 0; i < sample_count; ++i)
+                {
+                    write_samples_from_bitset(bs, i * qua * 2, qua, out_samples[out_index + i]);
+                }
+        }
+}
+
+
+void labsat23_source::read_file_register_to_local_endian(std::ifstream &binary_input_file, uint64_t &read_register)
+{
+#if HAS_BOOST_ENDIAN
+    binary_input_file.read(reinterpret_cast<char *>(&read_register), sizeof(read_register));
+    boost::endian::little_to_native_inplace(read_register);
+#else
+    std::array<char, 8> memory_block{};
+    binary_input_file.read(memory_block.data(), 8);
+    for (int k = 7; k >= 0; --k)
+        {
+            read_register <<= 8;
+            read_register |= static_cast<uint64_t>(static_cast<unsigned char>(memory_block[k]));
+        }
+#endif
+}
+
+
+bool labsat23_source::are_equal_ignore_nonpositive(const std::vector<int32_t> &values)
+{
+    std::vector<int32_t> positives;
+    for (const auto &v : values)
+        {
+            if (v > 0)
+                {
+                    positives.push_back(v);
+                }
+        }
+
+    if (positives.size() <= 1)
+        {
+            return true;
+        }
+
+    return std::all_of(positives.begin(), positives.end(),
+        [&](int32_t v) { return v == positives[0]; });
+}
+
+
+uint8_t labsat23_source::as_u8(char value)
+{
+    return static_cast<uint8_t>(value);
+}
+
+
+uint16_t labsat23_source::read_le_u16(const char *data)
+{
+    return static_cast<uint16_t>(as_u8(data[0])) |
+           static_cast<uint16_t>(as_u8(data[1]) << 8);
+}
+
+
+uint32_t labsat23_source::read_le_u32(const char *data)
+{
+    return static_cast<uint32_t>(as_u8(data[0])) |
+           (static_cast<uint32_t>(as_u8(data[1])) << 8) |
+           (static_cast<uint32_t>(as_u8(data[2])) << 16) |
+           (static_cast<uint32_t>(as_u8(data[3])) << 24);
 }
 
 
@@ -572,19 +571,18 @@ int labsat23_source::parse_header()
                                         }
                                 }
                             byte_counter++;
-                            auto quantization = static_cast<uint8_t>(memblock[byte_counter]);
+                            const auto quantization = static_cast<uint8_t>(memblock[byte_counter]);
                             switch (quantization)
                                 {
                                 case 0:
-                                    break;
-                                case 1:
                                     std::cout << "1 bit per sample\n";
                                     break;
-                                case 2:
+                                case 1:
                                     std::cout << "2 bit per sample\n";
                                     break;
                                 default:
                                     std::cout << "Unknown quantization ID " << static_cast<int>(quantization) << '\n';
+                                    return -1;
                                 }
                             byte_counter++;
                             auto channel_a_constellation = static_cast<uint8_t>(memblock[byte_counter]);

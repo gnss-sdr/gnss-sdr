@@ -24,6 +24,7 @@
 #include "gnss_block_interface.h"
 #include <gnuradio/block.h>
 #include <pmt/pmt.h>
+#include <bitset>
 #include <cstddef>
 #include <cstdint>
 #include <fstream>
@@ -76,6 +77,15 @@ private:
         Concurrent_Queue<pmt::pmt_t> *queue,
         bool digital_io_enabled,
         double seconds_to_skip);
+
+    static std::vector<double> generate_mapping(int qua);
+    static void write_samples_from_bitset(const std::bitset<64> &bs, int bit_offset, int qua, gr_complex &out);
+    static void write_samples_ls4(uint64_t data_index, int out_index, int sample_count, int32_t qua, std::vector<uint64_t> &data, gr_complex *out_samples);
+    static void read_file_register_to_local_endian(std::ifstream &binary_input_file, uint64_t &read_register);
+    static bool are_equal_ignore_nonpositive(const std::vector<int32_t> &values);
+    static uint8_t as_u8(char value);
+    static uint16_t read_le_u16(const char *data);
+    static uint32_t read_le_u32(const char *data);
 
     std::string generate_filename();
 

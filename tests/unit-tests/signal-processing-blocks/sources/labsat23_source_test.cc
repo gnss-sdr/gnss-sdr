@@ -347,6 +347,29 @@ TEST(LabSat23SourceTest, DecodesSingleChannelTwoBitUnsignedBinary)
 }
 
 
+TEST(LabSat23SourceTest, RejectsUnknownSectionTwoQuantization)
+{
+    const auto path = temp_path("labsat23_bad_quantization").replace_extension(".ls2");
+    const std::vector<gr_complex> samples = {
+        gr_complex(1, -1), gr_complex(-1, 1), gr_complex(1, 1), gr_complex(-1, -1),
+        gr_complex(1, -1), gr_complex(-1, 1), gr_complex(1, 1), gr_complex(-1, -1)};
+    auto payload = section2_payload(2, 1);
+    payload[3] = 2;
+
+    std::vector<uint8_t> bytes;
+    append_header(bytes, {{'L', 'S', '2'}}, {{0x0002, payload}});
+    append_le16(bytes, pack_single_1bit(samples));
+    write_bytes(path, bytes);
+
+    const auto result = run_labsat_source(path.string(), {1});
+
+    ASSERT_EQ(1U, result.outputs.size());
+    EXPECT_TRUE(result.outputs[0].empty());
+
+    std::remove(path.string().c_str());
+}
+
+
 TEST(LabSat23SourceTest, DecodesDualChannelOneBitSelectedOutputs)
 {
     const auto path = temp_path("labsat23_dual").replace_extension(".ls2");

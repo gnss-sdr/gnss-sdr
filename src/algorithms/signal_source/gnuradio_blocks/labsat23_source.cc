@@ -143,7 +143,7 @@ void read_file_register_to_local_endian(std::ifstream &binary_input_file, uint64
     for (int k = 7; k >= 0; --k)
         {
             read_register <<= 8;
-            read_register |= uint64_t(memory_block[k]);  // This is buggy if the MSB of the char is set.
+            read_register |= static_cast<uint64_t>(static_cast<unsigned char>(memory_block[k]));
         }
 #endif
 }

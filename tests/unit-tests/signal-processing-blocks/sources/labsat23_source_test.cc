@@ -17,7 +17,11 @@
 #include "concurrent_queue.h"
 #include "gnss_sdr_filesystem.h"
 #include "labsat23_source.h"
+#if GR_GREATER_38
 #include <gnuradio/blocks/vector_sink.h>
+#else
+#include <gnuradio/blocks/vector_sink_c.h>
+#endif
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
 #include <pmt/pmt.h>

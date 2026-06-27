@@ -313,9 +313,9 @@ $ sudo apt install libblas-dev liblapack-dev       # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel         # For Fedora/RHEL
 $ sudo zypper install lapack-devel blas-devel      # For OpenSUSE
 $ sudo pacman -S blas lapack                       # For Arch Linux
-$ wget https://sourceforge.net/projects/arma/files/armadillo-15.2.2.tar.xz
-$ tar xvfz armadillo-15.2.2.tar.xz
-$ cd armadillo-15.2.2
+$ wget https://sourceforge.net/projects/arma/files/armadillo-15.4.0.tar.xz
+$ tar xvfz armadillo-15.4.0.tar.xz
+$ cd armadillo-15.4.0
 $ cmake .
 $ make
 $ sudo make install
@@ -402,9 +402,9 @@ For more options, please check the
 #### Install [Pugixml](https://pugixml.org/ "Pugixml's Homepage"), a light-weight C++ XML processing library
 
 ```
-$ wget https://github.com/zeux/pugixml/releases/download/v1.15/pugixml-1.15.tar.gz
-$ tar xvfz pugixml-1.15.tar.gz
-$ cd pugixml-1.15
+$ wget https://github.com/zeux/pugixml/releases/download/v1.16/pugixml-1.16.tar.gz
+$ tar xvfz pugixml-1.16.tar.gz
+$ cd pugixml-1.16
 $ mkdir build && cd build
 $ cmake ..
 $ make

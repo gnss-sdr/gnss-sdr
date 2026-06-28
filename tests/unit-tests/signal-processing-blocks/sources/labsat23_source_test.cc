@@ -54,6 +54,12 @@ fs::path temp_path(const std::string& name)
     return fs::temp_directory_path() / (name + "_" + std::to_string(stamp));
 }
 
+void expect_remove(const fs::path& path)
+{
+    const auto filename = path.string();
+    EXPECT_EQ(0, std::remove(filename.c_str())) << "Failure deleting temporary file " << filename;
+}
+
 void append_le16(std::vector<uint8_t>& bytes, uint16_t value)
 {
     bytes.push_back(static_cast<uint8_t>(value & 0xFF));
@@ -280,7 +286,7 @@ LabSatRunResult run_labsat_source(const std::string& file_base, const std::vecto
         {
             auto sink = gr::blocks::vector_sink_c::make();
             top_block->connect(source, static_cast<int>(i), sink, 0);
-            sinks.push_back(sink);
+            sinks.push_back(std::move(sink));
         }
 
     top_block->run();
@@ -308,7 +314,8 @@ void expect_complex_vector_eq(const std::vector<gr_complex>& expected, const std
 
 TEST(LabSat23SourceTest, FindsSectionTwoAfterEarlierHeaderSection)
 {
-    const auto path = temp_path("labsat23_header_scan").replace_extension(".ls2");
+    fs::path path = temp_path("labsat23_header_scan");
+    path.replace_extension(".ls2");
     const std::vector<gr_complex> samples = {
         gr_complex(1, -1), gr_complex(-1, 1), gr_complex(1, 1), gr_complex(-1, -1),
         gr_complex(1, -1), gr_complex(-1, 1), gr_complex(1, 1), gr_complex(-1, -1)};
@@ -323,13 +330,14 @@ TEST(LabSat23SourceTest, FindsSectionTwoAfterEarlierHeaderSection)
     ASSERT_EQ(1U, result.outputs.size());
     expect_complex_vector_eq(samples, result.outputs[0]);
 
-    std::remove(path.string().c_str());
+    expect_remove(path);
 }
 
 
 TEST(LabSat23SourceTest, DecodesSingleChannelTwoBitUnsignedBinary)
 {
-    const auto path = temp_path("labsat23_single_2bit").replace_extension(".ls2");
+    fs::path path = temp_path("labsat23_single_2bit");
+    path.replace_extension(".ls2");
     const std::vector<gr_complex> samples = {
         gr_complex(2, -2), gr_complex(1, -1), gr_complex(-1, 1), gr_complex(-2, 2)};
 
@@ -343,13 +351,14 @@ TEST(LabSat23SourceTest, DecodesSingleChannelTwoBitUnsignedBinary)
     ASSERT_EQ(1U, result.outputs.size());
     expect_complex_vector_eq(samples, result.outputs[0]);
 
-    std::remove(path.string().c_str());
+    expect_remove(path);
 }
 
 
 TEST(LabSat23SourceTest, RejectsUnknownSectionTwoQuantization)
 {
-    const auto path = temp_path("labsat23_bad_quantization").replace_extension(".ls2");
+    fs::path path = temp_path("labsat23_bad_quantization");
+    path.replace_extension(".ls2");
     const std::vector<gr_complex> samples = {
         gr_complex(1, -1), gr_complex(-1, 1), gr_complex(1, 1), gr_complex(-1, -1),
         gr_complex(1, -1), gr_complex(-1, 1), gr_complex(1, 1), gr_complex(-1, -1)};
@@ -357,7 +366,7 @@ TEST(LabSat23SourceTest, RejectsUnknownSectionTwoQuantization)
     payload[3] = 2;
 
     std::vector<uint8_t> bytes;
-    append_header(bytes, {{'L', 'S', '2'}}, {{0x0002, payload}});
+    append_header(bytes, {{'L', 'S', '2'}}, {{0x0002, std::move(payload)}});
     append_le16(bytes, pack_single_1bit(samples));
     write_bytes(path, bytes);
 
@@ -366,13 +375,14 @@ TEST(LabSat23SourceTest, RejectsUnknownSectionTwoQuantization)
     ASSERT_EQ(1U, result.outputs.size());
     EXPECT_TRUE(result.outputs[0].empty());
 
-    std::remove(path.string().c_str());
+    expect_remove(path);
 }
 
 
 TEST(LabSat23SourceTest, DecodesDualChannelOneBitSelectedOutputs)
 {
-    const auto path = temp_path("labsat23_dual").replace_extension(".ls2");
+    fs::path path = temp_path("labsat23_dual");
+    path.replace_extension(".ls2");
     const std::vector<gr_complex> channel_a = {
         gr_complex(1, -1), gr_complex(-1, 1), gr_complex(1, 1), gr_complex(-1, -1)};
     const std::vector<gr_complex> channel_b = {
@@ -389,13 +399,13 @@ TEST(LabSat23SourceTest, DecodesDualChannelOneBitSelectedOutputs)
     expect_complex_vector_eq(channel_a, result.outputs[0]);
     expect_complex_vector_eq(channel_b, result.outputs[1]);
 
-    std::remove(path.string().c_str());
+    expect_remove(path);
 }
 
 
 TEST(LabSat23SourceTest, DecodesLs3TripleConstellation)
 {
-    const auto base = temp_path("labsat23_triple");
+    const fs::path base = temp_path("labsat23_triple");
     const fs::path path(base.string() + "_0000.LS3");
     const std::vector<gr_complex> channel_a = {
         gr_complex(1, -1), gr_complex(-1, 1), gr_complex(1, 1), gr_complex(-1, -1), gr_complex(1, -1)};
@@ -416,14 +426,16 @@ TEST(LabSat23SourceTest, DecodesLs3TripleConstellation)
     expect_complex_vector_eq(channel_b, result.outputs[1]);
     expect_complex_vector_eq(channel_c, result.outputs[2]);
 
-    std::remove(path.string().c_str());
+    expect_remove(path);
 }
 
 
 TEST(LabSat23SourceTest, DecodesLs3WidebandFromCorrectMsbOffset)
 {
-    const auto path = temp_path("labsat23_wideband").replace_extension(".LS3W");
-    const auto ini_path = fs::path(path).replace_extension(".ini");
+    fs::path path = temp_path("labsat23_wideband");
+    path.replace_extension(".LS3W");
+    fs::path ini_path(path);
+    ini_path.replace_extension(".ini");
     const std::vector<gr_complex> channel_a = {
         gr_complex(1, 0.5F), gr_complex(-1, -0.5F), gr_complex(0.5F, 1), gr_complex(-0.5F, -1), gr_complex(1, -1)};
     const std::vector<gr_complex> channel_b = {
@@ -465,6 +477,6 @@ TEST(LabSat23SourceTest, DecodesLs3WidebandFromCorrectMsbOffset)
     expect_complex_vector_eq(channel_b, result.outputs[1]);
     expect_complex_vector_eq(channel_c, result.outputs[2]);
 
-    std::remove(path.string().c_str());
-    std::remove(ini_path.string().c_str());
+    expect_remove(path);
+    expect_remove(ini_path);
 }

@@ -141,6 +141,7 @@ Acq_Conf get_acq_conf(
 {
     Acq_Conf acq_parameters;
     double chip_rate;
+    double opt_freq;
     double code_length_chips;
     uint32_t ms_per_code;
 
@@ -148,17 +149,20 @@ Acq_Conf get_acq_conf(
         {
         case GPS_1C:
             chip_rate = GPS_L1_CA_CODE_RATE_CPS;
+            opt_freq = GPS_L1_CA_OPT_ACQ_FS_SPS;
             code_length_chips = GPS_L1_CA_CODE_LENGTH_CHIPS;
             ms_per_code = GPS_L1_CA_CODE_PERIOD_MS;
             break;
         case GAL_1B:
             chip_rate = GALILEO_E1_CODE_CHIP_RATE_CPS;
+            opt_freq = GALILEO_E1_OPT_ACQ_FS_SPS;
             code_length_chips = GALILEO_E1_B_CODE_LENGTH_CHIPS;
             ms_per_code = GALILEO_E1_CODE_PERIOD_MS;
             acq_parameters.cboc = configuration->property(role + ".cboc", false);
             break;
         case GAL_E5a:
             chip_rate = GALILEO_E5A_CODE_CHIP_RATE_CPS;
+            opt_freq = GALILEO_E5A_OPT_ACQ_FS_SPS;
             code_length_chips = GALILEO_E5A_CODE_LENGTH_CHIPS;
             ms_per_code = GALILEO_E5A_CODE_PERIOD_MS;
             break;
@@ -217,7 +221,7 @@ Acq_Conf get_acq_conf(
     acq_parameters.ms_per_code = ms_per_code;
     acq_parameters.sampled_ms = ms_per_code;               // Set as default value
     acq_parameters.dump_filename = default_dump_filename;  // Set as default value
-    acq_parameters.SetFromConfiguration(configuration, role, chip_rate, 0);
+    acq_parameters.SetFromConfiguration(configuration, role, chip_rate, opt_freq);
 
     if (implementation == "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler")
         {

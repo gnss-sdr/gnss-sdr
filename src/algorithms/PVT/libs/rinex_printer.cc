@@ -2855,7 +2855,9 @@ void Rinex_Printer::log_rinex_nav_glo_gnav(const std::map<int32_t, Glonass_Gnav_
                     // Message frame time in seconds of the UTC week (tk is given in
                     // seconds of the GLONASS day, which is offset 3 h from UTC)
                     const boost::posix_time::ptime p_frame_time_utc = eph.glot_to_utc(eph.d_t_k, 0.0);
-                    const double message_frame_time = static_cast<double>(p_frame_time_utc.date().day_of_week() * 86400 + p_frame_time_utc.time_of_day().total_seconds());
+                    const auto frame_day_of_week = static_cast<double>(p_frame_time_utc.date().day_of_week());
+                    const auto frame_seconds_of_day = static_cast<double>(p_frame_time_utc.time_of_day().total_seconds());
+                    const double message_frame_time = frame_day_of_week * 86400.0 + frame_seconds_of_day;
                     out << get_nav_sv_epoch_svclk_line(p_utc_time, sys_char, eph.PRN, -eph.d_tau_n, +eph.d_gamma_n, message_frame_time) << '\n';
                 }
             line.clear();

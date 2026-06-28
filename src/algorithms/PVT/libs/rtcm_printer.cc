@@ -38,7 +38,7 @@
 #include <set>        // for set
 #include <termios.h>  // for tcgetattr
 #include <unistd.h>   // for close, write
-#include <utility>    // for make_pair
+#include <utility>    // for make_pair, move
 #include <vector>     // for std::vector
 
 #if USE_GLOG_AND_GFLAGS
@@ -167,7 +167,7 @@ std::vector<std::map<int32_t, Gnss_Synchro>> split_MSM_observables(const Signal_
 
     if (!current_block.empty())
         {
-            blocks.push_back(current_block);
+            blocks.push_back(std::move(current_block));
         }
 
     return blocks;

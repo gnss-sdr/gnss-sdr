@@ -4318,8 +4318,8 @@ bool Rtcm::get_IGM05_tracking_mode_id(uint8_t gnss_id, const std::string& signal
 
 uint8_t Rtcm::get_IGM02_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys, bool use_clock_subset)
 {
-    const auto prns = use_clock_subset ? has_data.get_PRNs_in_submask(nsys) : has_data.get_PRNs_in_mask(nsys);
-    const auto delta_clock_c0 = use_clock_subset ? has_data.get_delta_clock_subset_correction_m(nsys) : has_data.get_delta_clock_correction_m(nsys);
+    const auto& prns = use_clock_subset ? has_data.get_PRNs_in_submask(nsys) : has_data.get_PRNs_in_mask(nsys);
+    const auto& delta_clock_c0 = use_clock_subset ? has_data.get_delta_clock_subset_correction_m(nsys) : has_data.get_delta_clock_correction_m(nsys);
     return static_cast<uint8_t>(std::min(prns.size(), delta_clock_c0.size()));
 }
 

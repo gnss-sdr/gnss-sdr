@@ -673,15 +673,15 @@ void kf_tracking::start_tracking()
     Signal_[1] = d_acquisition_gnss_synchro->Signal[1];
     Signal_[2] = d_acquisition_gnss_synchro->Signal[2];
 
-    if (d_systemName == "GPS" and d_signal_type == "1C")
+    if (d_systemName == "GPS" && d_signal_type == "1C")
         {
             gps_l1_ca_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
         }
-    else if (d_systemName == "GPS" and d_signal_type == "2S")
+    else if (d_systemName == "GPS" && d_signal_type == "2S")
         {
             gps_l2c_m_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
         }
-    else if (d_systemName == "GPS" and d_signal_type == "L5")
+    else if (d_systemName == "GPS" && d_signal_type == "L5")
         {
             if (d_trk_parameters.track_pilot)
                 {
@@ -695,7 +695,7 @@ void kf_tracking::start_tracking()
                     gps_l5i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
                 }
         }
-    else if (d_systemName == "Galileo" and d_signal_type == "1B")
+    else if (d_systemName == "Galileo" && d_signal_type == "1B")
         {
             if (d_trk_parameters.track_pilot)
                 {
@@ -710,7 +710,7 @@ void kf_tracking::start_tracking()
                     galileo_e1_code_gen_sinboc11_float(d_tracking_code, Signal_, d_acquisition_gnss_synchro->PRN);
                 }
         }
-    else if (d_systemName == "Galileo" and d_signal_type == "5X")
+    else if (d_systemName == "Galileo" && d_signal_type == "5X")
         {
             volk_gnsssdr::vector<gr_complex> aux_code(d_code_length_chips);
             const std::array<char, 3> signal_type_ = {{'5', 'X', '\0'}};
@@ -734,7 +734,7 @@ void kf_tracking::start_tracking()
                         }
                 }
         }
-    else if (d_systemName == "Galileo" and d_signal_type == "7X")
+    else if (d_systemName == "Galileo" && d_signal_type == "7X")
         {
             volk_gnsssdr::vector<gr_complex> aux_code(d_code_length_chips);
             const std::array<char, 3> signal_type_ = {{'7', 'X', '\0'}};
@@ -758,11 +758,11 @@ void kf_tracking::start_tracking()
                         }
                 }
         }
-    else if (d_systemName == "Beidou" and d_signal_type == "B1")
+    else if (d_systemName == "Beidou" && d_signal_type == "B1")
         {
             beidou_b1i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
             // GEO Satellites use different secondary code
-            if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
+            if (d_acquisition_gnss_synchro->PRN > 0 && d_acquisition_gnss_synchro->PRN < 6)
                 {
                     d_symbols_per_bit = BEIDOU_B1I_GEO_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;
@@ -1092,7 +1092,7 @@ bool kf_tracking::cn0_and_tracking_lock_status(double coh_integration_time_s)
                         }
                 }
         }
-    if (d_carrier_lock_fail_counter > d_trk_parameters.max_carrier_lock_fail or d_code_lock_fail_counter > d_trk_parameters.max_code_lock_fail)
+    if (d_carrier_lock_fail_counter > d_trk_parameters.max_carrier_lock_fail || d_code_lock_fail_counter > d_trk_parameters.max_code_lock_fail)
         {
             std::cout << "Loss of lock in channel " << d_channel << "!\n";
             LOG(INFO) << "Loss of lock in channel " << d_channel

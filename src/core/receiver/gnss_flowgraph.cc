@@ -1066,7 +1066,7 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
                                             return 1;
                                         }
 
-                                    if (src->get_right_block()->output_signature()->max_streams() > 1 or src->get_right_block()->output_signature()->max_streams() == -1)
+                                    if (src->get_right_block()->output_signature()->max_streams() > 1 || src->get_right_block()->output_signature()->max_streams() == -1)
                                         {
                                             if (sig_conditioner_.size() > signal_conditioner_ID)
                                                 {
@@ -1753,7 +1753,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                 estimated_doppler,
                                 RX_time);
                             channels_[current_channel]->set_signal(gnss_signal);
-                            start_acquisition = is_primary_freq or assistance_available or !configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_);
+                            start_acquisition = is_primary_freq || assistance_available || !configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_);
                         }
                     else
                         {
@@ -1768,7 +1768,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                             DLOG(INFO) << "Channel " << current_channel
                                        << " Starting acquisition " << channels_[current_channel]->get_signal().get_satellite()
                                        << ", Signal " << channels_[current_channel]->get_signal().get_signal_str();
-                            if (assistance_available == true and configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_))
+                            if (assistance_available == true && configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_))
                                 {
                                     channels_[current_channel]->assist_acquisition_doppler(project_doppler(channels_[current_channel]->get_signal().get_signal_str(), estimated_doppler));
                                 }
@@ -1918,7 +1918,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         case 10:  // request standby mode
             for (size_t n = 0; n < channels_.size(); n++)
                 {
-                    if (channels_state_[n] == 2 or channels_state_[n] == 3)  // channel in acquisition or in tracking
+                    if (channels_state_[n] == 2 || channels_state_[n] == 3)  // channel in acquisition or in tracking
                         {
                             // recover the satellite assigned
                             Gnss_Signal gs_assigned = channels_[n]->get_signal();

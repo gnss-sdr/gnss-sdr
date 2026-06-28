@@ -315,10 +315,10 @@ int64_t Galileo_Fnav_Message::read_navigation_signed(const std::bitset<GALILEO_F
 
 bool Galileo_Fnav_Message::have_new_ephemeris()  // Check if we have a new ephemeris stored in the galileo navigation class
 {
-    if ((flag_ephemeris_1 == true) and (flag_ephemeris_2 == true) and (flag_ephemeris_3 == true) and (flag_iono_and_GST == true))
+    if ((flag_ephemeris_1 == true) && (flag_ephemeris_2 == true) && (flag_ephemeris_3 == true) && (flag_iono_and_GST == true))
         {
             // if all ephemeris pages have the same IOD, then they belong to the same block
-            if ((FNAV_IODnav_1 == FNAV_IODnav_2) and (FNAV_IODnav_3 == FNAV_IODnav_4) and (FNAV_IODnav_1 == FNAV_IODnav_3))
+            if ((FNAV_IODnav_1 == FNAV_IODnav_2) && (FNAV_IODnav_3 == FNAV_IODnav_4) && (FNAV_IODnav_1 == FNAV_IODnav_3))
                 {
                     DLOG(INFO) << "Ephemeris (1, 2, 3) have been received and belong to the same batch";
                     flag_ephemeris_1 = false;  // clear the flag
@@ -336,7 +336,7 @@ bool Galileo_Fnav_Message::have_new_ephemeris()  // Check if we have a new ephem
 
 bool Galileo_Fnav_Message::have_new_iono_and_GST()  // Check if we have a new iono data set stored in the galileo navigation class
 {
-    if ((flag_iono_and_GST == true) and (flag_utc_model == true))  // the condition on flag_utc_model is added to have a time stamp for iono
+    if ((flag_iono_and_GST == true) && (flag_utc_model == true))  // the condition on flag_utc_model is added to have a time stamp for iono
         {
             flag_iono_and_GST = false;  // clear the flag
         }
@@ -364,7 +364,7 @@ bool Galileo_Fnav_Message::have_new_utc_model()  // Check if we have a new utc d
 
 bool Galileo_Fnav_Message::have_new_almanac()  // Check if we have a new almanac data set stored in the galileo navigation class
 {
-    if ((flag_almanac_1 == true) and (flag_almanac_2 == true))
+    if ((flag_almanac_1 == true) && (flag_almanac_2 == true))
         {
             // All Almanac data have been received
             flag_almanac_1 = false;

@@ -2208,7 +2208,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                     delta_rxtime_to_tag_ms = d_rx_time * 1000.0 - current_tag.rx_time;
                                                     d_TimeChannelTagTimestamps.pop();
                                                 }
-                                            while (fabs(delta_rxtime_to_tag_ms) >= 100 and !d_TimeChannelTagTimestamps.empty());
+                                            while (fabs(delta_rxtime_to_tag_ms) >= 100 && !d_TimeChannelTagTimestamps.empty());
 
                                             // 2. If both timestamps (relative to the receiver's start) are closer than 100 ms (the granularituy of the PVT)
                                             if (fabs(delta_rxtime_to_tag_ms) <= 100)  // [ms]
@@ -2318,7 +2318,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             initialize_and_apply_carrier_phase_offset();
 
                             const double Rx_clock_offset_s = d_user_pvt_solver->get_time_offset_s();
-                            if (d_enable_rx_clock_correction == true and fabs(Rx_clock_offset_s) > 0.000001)  // 1us !!
+                            if (d_enable_rx_clock_correction == true && fabs(Rx_clock_offset_s) > 0.000001)  // 1us !!
                                 {
                                     LOG(INFO) << "Warning: Rx clock offset at interpolated RX time: " << Rx_clock_offset_s * 1000.0 << "[ms]"
                                               << " at RX time: " << static_cast<uint32_t>(d_rx_time * 1000.0) << " [ms]";

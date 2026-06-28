@@ -244,7 +244,7 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     if (system == "GPS")
         {
-            if (PRN_ < 1 or PRN_ > 32)
+            if (PRN_ < 1 || PRN_ > 32)
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
@@ -256,7 +256,7 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     else if (system == "Glonass")
         {
-            if (PRN_ == 0 or GLONASS_PRN.find(PRN_) == GLONASS_PRN.cend())
+            if (PRN_ == 0 || GLONASS_PRN.find(PRN_) == GLONASS_PRN.cend())
                 {
                     DLOG(INFO) << "This GLONASS slot/frequency channel is not configured";
                     PRN = 0;
@@ -285,7 +285,7 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     else if (system == "Galileo")
         {
-            if (PRN_ < 1 or PRN_ > 36)
+            if (PRN_ < 1 || PRN_ > 36)
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
@@ -297,7 +297,7 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     else if (system == "Beidou")
         {
-            if (PRN_ < 1 or PRN_ > 63)
+            if (PRN_ < 1 || PRN_ > 63)
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
@@ -309,7 +309,7 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     else if (system == "QZSS")
         {
-            if (PRN_ < 193 or PRN_ > 201)
+            if (PRN_ < 193 || PRN_ > 201)
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;

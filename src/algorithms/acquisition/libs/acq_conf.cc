@@ -70,13 +70,13 @@ void Acq_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     doppler_step = configuration->property(role + ".doppler_step", doppler_step);
     threshold = configuration->property(role + ".threshold", threshold);
     pfa = configuration->property(role + ".pfa", pfa);
-    if ((pfa < 0.0) or (pfa > 1.0))
+    if ((pfa < 0.0) || (pfa > 1.0))
         {
             LOG(WARNING) << "Parameter pfa should between 0.0 and 1.0. Setting it to 0.0";
             pfa = 0.0;
         }
     pfa2 = configuration->property(role + ".pfa_second_step", pfa2);
-    if ((pfa2 <= 0.0) or (pfa2 > 1.0))
+    if ((pfa2 <= 0.0) || (pfa2 > 1.0))
         {
             pfa2 = pfa;
         }

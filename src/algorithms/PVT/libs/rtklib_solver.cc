@@ -1635,7 +1635,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_nav_data.ion_gps[6] = gps_iono.beta2;
                     d_nav_data.ion_gps[7] = gps_iono.beta3;
                 }
-            if (!(gps_iono.valid) and gps_cnav_iono.valid)
+            if (!(gps_iono.valid) && gps_cnav_iono.valid)
                 {
                     d_nav_data.ion_gps[0] = gps_cnav_iono.alpha0;
                     d_nav_data.ion_gps[1] = gps_cnav_iono.alpha1;
@@ -1672,7 +1672,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_nav_data.utc_gps[3] = gps_utc_model.WN_T;
                     d_nav_data.leaps = gps_utc_model.DeltaT_LS;
                 }
-            if (!(gps_utc_model.valid) and gps_cnav_utc_model.valid)
+            if (!(gps_utc_model.valid) && gps_cnav_utc_model.valid)
                 {
                     d_nav_data.utc_gps[0] = gps_cnav_utc_model.A0;
                     d_nav_data.utc_gps[1] = gps_cnav_utc_model.A1;

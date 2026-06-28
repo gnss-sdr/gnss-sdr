@@ -114,6 +114,7 @@ Checks: >
   readability-make-member-function-const,
   readability-named-parameter,
   readability-non-const-parameter,
+  readability-operators-representation,
   readability-qualified-auto,
   readability-redundant-control-flow,
   readability-redundant-member-init,
@@ -123,6 +124,8 @@ WarningsAsErrors: ''
 HeaderFilterRegex: ''
 FormatStyle: 'file'
 CheckOptions:
+  - key: readability-operators-representation.BinaryOperators
+    value: '&&;||;!;^'
   - key: performance-unnecessary-copy-initialization.ExcludedContainerTypes
     value: ''
   - key: modernize-replace-auto-ptr.IncludeStyle

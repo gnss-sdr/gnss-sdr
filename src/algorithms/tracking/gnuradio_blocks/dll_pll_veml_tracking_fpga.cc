@@ -657,7 +657,7 @@ bool dll_pll_veml_tracking_fpga::cn0_and_tracking_lock_status(double coh_integra
                         }
                 }
         }
-    if (d_carrier_lock_fail_counter > d_trk_parameters.max_carrier_lock_fail or d_code_lock_fail_counter > d_trk_parameters.max_code_lock_fail)
+    if (d_carrier_lock_fail_counter > d_trk_parameters.max_carrier_lock_fail || d_code_lock_fail_counter > d_trk_parameters.max_code_lock_fail)
         {
             std::cout << "Loss of lock in channel " << d_channel << ", satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << " !\n";
             LOG(INFO) << "Loss of lock in channel " << d_channel << ", satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN)
@@ -708,7 +708,7 @@ void dll_pll_veml_tracking_fpga::run_dll_pll()
             d_carr_phase_error_hz = pll_four_quadrant_atan(d_P_accu) / TWO_PI;
         }
 
-    if ((d_pull_in_transitory == true and d_trk_parameters.enable_fll_pull_in == true) or d_trk_parameters.enable_fll_steady_state)
+    if ((d_pull_in_transitory == true && d_trk_parameters.enable_fll_pull_in == true) || d_trk_parameters.enable_fll_steady_state)
         {
             // FLL discriminator
             // d_carr_freq_error_hz = fll_four_quadrant_atan(d_P_accu_old, d_P_accu, 0, d_current_correlation_time_s) / TWO_PI;
@@ -717,7 +717,7 @@ void dll_pll_veml_tracking_fpga::run_dll_pll()
             d_P_accu_old = d_P_accu;
             // std::cout << "d_carr_freq_error_hz: " << d_carr_freq_error_hz << '\n';
             // Carrier discriminator filter
-            if ((d_pull_in_transitory == true and d_trk_parameters.enable_fll_pull_in == true))
+            if ((d_pull_in_transitory == true && d_trk_parameters.enable_fll_pull_in == true))
                 {
                     // pure FLL, disable PLL
                     d_carr_error_filt_hz = d_carrier_loop_filter.get_carrier_error(static_cast<float>(d_carr_freq_error_hz), 0, static_cast<float>(d_current_correlation_time_s));
@@ -762,7 +762,7 @@ void dll_pll_veml_tracking_fpga::run_dll_pll()
     // Experimental: detect Carrier Doppler vs. Code Doppler incoherence and correct the Carrier Doppler
     if (d_trk_parameters.enable_doppler_correction == true)
         {
-            if (d_pull_in_transitory == false and d_corrected_doppler == false)
+            if (d_pull_in_transitory == false && d_corrected_doppler == false)
                 {
                     d_dll_filt_history.push_back(static_cast<float>(d_code_error_filt_chips));
 
@@ -1364,14 +1364,14 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
             d_code_ph_history.clear();
             d_carr_ph_history.clear();
 
-            if ((d_systemName == "GPS" and d_signal_type == "L5") || (d_systemName == "Galileo" and d_signal_type == "1B"))
+            if ((d_systemName == "GPS" && d_signal_type == "L5") || (d_systemName == "Galileo" && d_signal_type == "1B"))
                 {
                     if (d_trk_parameters.track_pilot)
                         {
                             d_Prompt_Data[0] = gr_complex(0.0, 0.0);
                         }
                 }
-            else if (d_systemName == "Galileo" and d_signal_type == "5X")
+            else if (d_systemName == "Galileo" && d_signal_type == "5X")
                 {
                     if (d_trk_parameters.track_pilot)
                         {

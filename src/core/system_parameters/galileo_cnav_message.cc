@@ -95,7 +95,7 @@ void Galileo_Cnav_Message::read_HAS_page(const std::string& page_string)
                             break;
                         }
                 }
-            if (use_has or do_not_use_has or d_page_dummy)
+            if (use_has || do_not_use_has || d_page_dummy)
                 {
                     // Store the 424 bits of encoded data (CNAV page) and the page header
                     has_page.has_message_string = page_string.substr(GALILEO_CNAV_PAGE_RESERVED_BITS + GALILEO_CNAV_PAGE_HEADER_BITS, GALILEO_CNAV_MESSAGE_BITS_PER_PAGE);

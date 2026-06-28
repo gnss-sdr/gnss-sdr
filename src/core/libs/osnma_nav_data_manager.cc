@@ -110,7 +110,7 @@ bool tag_gst_is_coherent_with_accumulation(const OSNMA_NavData& nav_data, const 
  */
 void OSNMA_NavDataManager::add_navigation_data(const std::string& nav_bits, uint32_t PRNd, uint32_t WN, uint32_t TOW)
 {
-    if (not have_nav_data(nav_bits, PRNd, WN, TOW))
+    if (!have_nav_data(nav_bits, PRNd, WN, TOW))
         {
             const uint64_t nav_gst = gst_seconds(WN, TOW);
             auto& nav_data = d_satellite_nav_data[PRNd][nav_gst];

@@ -119,7 +119,7 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(const ConfigurationIn
                     if (samples_to_skip > 0)
                         {
                             LOG(INFO) << "Skipping " << samples_to_skip << " samples of the input file #" << n;
-                            if (not file_source_vec_.back()->seek(samples_to_skip, SEEK_SET))
+                            if (!file_source_vec_.back()->seek(samples_to_skip, SEEK_SET))
                                 {
                                     LOG(INFO) << "Error skipping bytes!";
                                 }

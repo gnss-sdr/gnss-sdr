@@ -164,7 +164,7 @@ ad936x_iio_source::ad936x_iio_source(
                             ad936x_custom->set_pps_samplestamp_queue(ppsqueue);
 
                             // start PPS RX thread
-                            if (ppsmode_ == true or customsamplesize_ == true)
+                            if (ppsmode_ == true || customsamplesize_ == true)
                                 {
                                     pps_rx_thread = std::thread(&pps_tcp_rx::receive_pps, pps_rx, fe_ip_, fe_ctlport_);
                                     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -217,7 +217,7 @@ ad936x_iio_source::ad936x_iio_source(
                                             }
                                         }
 
-                                    if (bshift_ >= 0 and bshift_ <= 14)
+                                    if (bshift_ >= 0 && bshift_ <= 14)
                                         {
                                             std::cout << "FPGA sample bits shift left set to " + std::to_string(bshift_) + " positions.\n";
                                             if (pps_rx->send_cmd("bshift=" + std::to_string(bshift_) + "\n") == false)

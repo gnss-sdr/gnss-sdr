@@ -201,7 +201,7 @@ float pcps_acquisition_fine_doppler_cc::compute_CAF()
                 }
 
             // Record results to file if required
-            if (d_dump and d_channel == d_dump_channel)
+            if (d_dump && d_channel == d_dump_channel)
                 {
                     std::copy(d_grid_data[i].data(), d_grid_data[i].data() + d_fft_size, grid_.colptr(i));
                 }
@@ -498,7 +498,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             d_positive_acq = 1;
             d_active = false;
             // Record results to file if required
-            if (d_dump and d_channel == d_dump_channel)
+            if (d_dump && d_channel == d_dump_channel)
                 {
                     dump_results(d_fft_size);
                 }
@@ -533,7 +533,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             d_positive_acq = 0;
             d_active = false;
             // Record results to file if required
-            if (d_dump and d_channel == d_dump_channel)
+            if (d_dump && d_channel == d_dump_channel)
                 {
                     dump_results(d_fft_size);
                 }

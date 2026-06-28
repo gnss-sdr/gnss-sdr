@@ -554,7 +554,7 @@ void pcps_acquisition::doppler_grid(const gr_complex* in)
                     volk_32f_x2_add_32f(d_magnitude_grid[doppler_index].data(), d_magnitude_grid[doppler_index].data(), d_tmp_buffer.data(), d_effective_fft_size);
                 }
             // Record results to file if required
-            if (d_dump and d_channel == d_dump_channel)
+            if (d_dump && d_channel == d_dump_channel)
                 {
                     std::copy(d_magnitude_grid[doppler_index].data(), d_magnitude_grid[doppler_index].data() + d_effective_fft_size, grid.colptr(doppler_index));
                 }
@@ -716,10 +716,10 @@ void pcps_acquisition::acquisition_core(uint64_t sample_count)
                 }
         }
 
-    if ((d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells) or (result.positive_acq) or (d_acq_parameters.bit_transition_flag))
+    if ((d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells) || (result.positive_acq) || (d_acq_parameters.bit_transition_flag))
         {
             // Record results to file if required
-            if (d_dump and d_channel == d_dump_channel)
+            if (d_dump && d_channel == d_dump_channel)
                 {
                     pcps_acquisition::dump_results(result);
                 }
@@ -764,7 +764,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
      * 6. Declare positive or negative acquisition using a message port
      */
     gr::thread::scoped_lock lk(d_setlock);
-    if (!d_active or d_worker_active)
+    if (!d_active || d_worker_active)
         {
             // do not consume samples while performing a non-coherent integration
             const bool consume_samples = ((!d_active) || (d_worker_active && (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)));

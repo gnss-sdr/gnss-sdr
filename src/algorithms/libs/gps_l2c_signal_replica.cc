@@ -24,7 +24,7 @@
 
 uint32_t gps_l2c_m_shift(uint32_t x)
 {
-    return ((x >> 1U) xor ((x & 1U) * 0445112474U));
+    return ((x >> 1U) ^ ((x & 1U) * 0445112474U));
 }
 
 
@@ -42,7 +42,7 @@ void gps_l2c_m_code(own::span<int32_t> dest, uint32_t prn)
 void gps_l2c_m_code_gen_complex(own::span<std::complex<float>> dest, uint32_t prn)
 {
     std::array<int32_t, GPS_L2_M_CODE_LENGTH_CHIPS> code_aux{};
-    if (prn > 0 and prn < 51)
+    if (prn > 0 && prn < 51)
         {
             gps_l2c_m_code(code_aux, prn);
         }
@@ -178,7 +178,7 @@ void gps_l2c_m_code_gen_complex_sampled(
 void gps_l2c_m_code_gen_float(own::span<float> dest, uint32_t prn)
 {
     std::array<int32_t, GPS_L2_M_CODE_LENGTH_CHIPS> code_aux{};
-    if (prn > 0 and prn < 51)
+    if (prn > 0 && prn < 51)
         {
             gps_l2c_m_code(code_aux, prn);
         }
@@ -203,7 +203,7 @@ void gps_l2c_m_code_gen_complex_sampled(own::span<std::complex<float>> dest, uin
     int32_t codeValueIndex;
 
     std::array<int32_t, GPS_L2_M_CODE_LENGTH_CHIPS> code_aux{};
-    if (prn > 0 and prn < 51)
+    if (prn > 0 && prn < 51)
         {
             gps_l2c_m_code(code_aux, prn);
         }

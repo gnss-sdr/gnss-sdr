@@ -45,7 +45,7 @@ bool Acquisition_Dump_Reader::read_binary_acq()
             Mat_Close(matfile);
             return false;
         }
-    if ((var_->dims[0] != d_samples_per_code) or (var_->dims[1] != d_num_doppler_bins))
+    if ((var_->dims[0] != d_samples_per_code) || (var_->dims[1] != d_num_doppler_bins))
         {
             std::cout << "Invalid Acquisition dump file: dimension matrix error\n";
             if (var_->dims[0] != d_samples_per_code)

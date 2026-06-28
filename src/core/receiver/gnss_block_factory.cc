@@ -128,7 +128,7 @@
 #include "fmcomms2_signal_source.h"
 #endif
 
-#if ENABLE_FPGA and AD9361_DRIVER
+#if ENABLE_FPGA && AD9361_DRIVER
 #include "adrv9361_z7035_signal_source_fpga.h"
 #include "fmcomms5_signal_source_fpga.h"
 #endif
@@ -375,7 +375,7 @@ std::unique_ptr<SignalSourceInterface> get_signal_source_block(
             return std::make_unique<FlexibandSignalSource>(configuration, role, in_streams, out_streams, queue);
         }
 #endif
-#if ENABLE_FPGA and AD9361_DRIVER
+#if ENABLE_FPGA && AD9361_DRIVER
     else if (implementation == "ADRV9361_Z7035_Signal_Source_FPGA")
         {
             return std::make_unique<Adrv9361z7035SignalSourceFPGA>(configuration, role, in_streams, out_streams, queue);
@@ -385,13 +385,13 @@ std::unique_ptr<SignalSourceInterface> get_signal_source_block(
             return std::make_unique<Fmcomms5SignalSourceFPGA>(configuration, role, in_streams, out_streams, queue);
         }
 #endif
-#if ENABLE_FPGA and MAX2771_DRIVER
+#if ENABLE_FPGA && MAX2771_DRIVER
     else if (implementation == "MAX2771_EVKIT_Signal_Source_FPGA")
         {
             return std::make_unique<MAX2771EVKITSignalSourceFPGA>(configuration, role, in_streams, out_streams, queue);
         }
 #endif
-#if ENABLE_FPGA and DMA_PROXY_DRIVER
+#if ENABLE_FPGA && DMA_PROXY_DRIVER
     else if (implementation == "DMA_Signal_Source_FPGA")
         {
             return std::make_unique<DMASignalSourceFPGA>(configuration, role, in_streams, out_streams, queue);
@@ -588,7 +588,7 @@ std::unique_ptr<TrackingInterface> get_trk_block(
         {
             return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, GPS_2S);
         }
-    else if ((implementation == "GPS_L5i_DLL_PLL_Tracking") or (implementation == "GPS_L5_DLL_PLL_Tracking"))
+    else if ((implementation == "GPS_L5i_DLL_PLL_Tracking") || (implementation == "GPS_L5_DLL_PLL_Tracking"))
         {
             return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, GPS_L5);
         }
@@ -635,7 +635,7 @@ std::unique_ptr<TrackingInterface> get_trk_block(
         {
             return std::make_unique<DllPllTrackingAdapterFpga>(configuration, role, implementation, in_streams, out_streams, GPS_2S);
         }
-    else if ((implementation == "GPS_L5i_DLL_PLL_Tracking_FPGA") or (implementation == "GPS_L5_DLL_PLL_Tracking_FPGA"))
+    else if ((implementation == "GPS_L5i_DLL_PLL_Tracking_FPGA") || (implementation == "GPS_L5_DLL_PLL_Tracking_FPGA"))
         {
             return std::make_unique<DllPllTrackingAdapterFpga>(configuration, role, implementation, in_streams, out_streams, GPS_L5);
         }
@@ -939,21 +939,21 @@ std::unique_ptr<GNSSBlockInterface> GetSignalConditioner(
 
     if (signal_conditioner == "Pass_Through")
         {
-            if (!data_type_adapter.empty() and (data_type_adapter != "Pass_Through"))
+            if (!data_type_adapter.empty() && (data_type_adapter != "Pass_Through"))
                 {
                     LOG(WARNING) << "Configuration warning: if " << role_conditioner << impl_prop << "\n"
                                  << "is set to Pass_Through, then the " << role_datatypeadapter << impl_prop << "\n"
                                  << "parameter should be either not set or set to Pass_Through.\n"
                                  << role_datatypeadapter << " configuration parameters will be ignored.";
                 }
-            if (!input_filter.empty() and (input_filter != "Pass_Through"))
+            if (!input_filter.empty() && (input_filter != "Pass_Through"))
                 {
                     LOG(WARNING) << "Configuration warning: if " << role_conditioner << impl_prop << "\n"
                                  << "is set to Pass_Through, then the " << role_inputfilter << impl_prop << "\n"
                                  << "parameter should be either not set or set to Pass_Through.\n"
                                  << role_inputfilter << " configuration parameters will be ignored.";
                 }
-            if (!resampler.empty() and (resampler != "Pass_Through"))
+            if (!resampler.empty() && (resampler != "Pass_Through"))
                 {
                     LOG(WARNING) << "Configuration warning: if " << role_conditioner << impl_prop << "\n"
                                  << "is set to Pass_Through, then the " << role_resampler << impl_prop << "\n"
@@ -1039,7 +1039,7 @@ std::unique_ptr<GNSSBlockInterface> GetChannel(
     auto trk_ = GetTrkBlock(configuration, trk_role_name, 1, 1);
     auto tlm_ = GetTlmBlock(configuration, tlm_role_name, 1, 1);
 
-    if (acq_ == nullptr or trk_ == nullptr or tlm_ == nullptr)
+    if (acq_ == nullptr || trk_ == nullptr || tlm_ == nullptr)
         {
             return nullptr;
         }

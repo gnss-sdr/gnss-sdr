@@ -229,10 +229,10 @@ void Galileo_Inav_Message::split_page(std::string page_string, int32_t flag_even
 // C: tells if W1-->W4 available from same block
 bool Galileo_Inav_Message::have_new_ephemeris()  // Check if we have a new ephemeris stored in the galileo navigation class
 {
-    if ((flag_ephemeris_1 == true) and (flag_ephemeris_2 == true) and (flag_ephemeris_3 == true) and (flag_ephemeris_4 == true) and (flag_iono_and_GST == true))
+    if ((flag_ephemeris_1 == true) && (flag_ephemeris_2 == true) && (flag_ephemeris_3 == true) && (flag_ephemeris_4 == true) && (flag_iono_and_GST == true))
         {
             // if all ephemeris pages have the same IOD, then they belong to the same block
-            if ((IOD_nav_1 == IOD_nav_2) and (IOD_nav_3 == IOD_nav_4) and (IOD_nav_1 == IOD_nav_3))
+            if ((IOD_nav_1 == IOD_nav_2) && (IOD_nav_3 == IOD_nav_4) && (IOD_nav_1 == IOD_nav_3))
                 {
                     DLOG(INFO) << "Ephemeris (1, 2, 3, 4) have been received and belong to the same batch";
                     flag_ephemeris_1 = false;  // clear the flag
@@ -369,7 +369,7 @@ bool Galileo_Inav_Message::have_new_ephemeris()  // Check if we have a new ephem
 // C: tells if W5 is available
 bool Galileo_Inav_Message::have_new_iono_and_GST()  // Check if we have a new iono data set stored in the galileo navigation class
 {
-    if ((flag_iono_and_GST == true) and (flag_utc_model == true))  // the condition on flag_utc_model is added to have a time stamp for iono
+    if ((flag_iono_and_GST == true) && (flag_utc_model == true))  // the condition on flag_utc_model is added to have a time stamp for iono
         {
             flag_iono_and_GST = false;  // clear the flag
             return true;
@@ -395,7 +395,7 @@ bool Galileo_Inav_Message::have_new_utc_model()  // Check if we have a new utc d
 // flag_almanac_4 tells if W10 available.
 bool Galileo_Inav_Message::have_new_almanac()  // Check if we have a new almanac data set stored in the galileo navigation class
 {
-    if ((flag_almanac_1 == true) and (flag_almanac_2 == true) and (flag_almanac_3 == true) and (flag_almanac_4 == true))
+    if ((flag_almanac_1 == true) && (flag_almanac_2 == true) && (flag_almanac_3 == true) && (flag_almanac_4 == true))
         {
             // All Almanac data have been received
             flag_almanac_1 = false;

@@ -24,7 +24,7 @@ SensorDataAggregator::SensorDataAggregator(const SensorDataSourceConfiguration& 
     std::vector<SensorIdentifier::value_type> missing_sensors{};
     for (const auto& required_sensor : required_sensors)
         {
-            if (not configuration.is_sensor_provided(required_sensor))
+            if (!configuration.is_sensor_provided(required_sensor))
                 {
                     // Sensor was not provided in the configuration file
                     missing_sensors.push_back(required_sensor);
@@ -49,7 +49,7 @@ SensorDataAggregator::SensorDataAggregator(const SensorDataSourceConfiguration& 
                 }
         }
 
-    if (not missing_sensors.empty())
+    if (!missing_sensors.empty())
         {
             // TODO - Throw error if not all ok
             std::stringstream ss;
@@ -71,7 +71,7 @@ void SensorDataAggregator::update(const std::vector<gr::tag_t>& tags)
     for (auto& sensor_data : f32_data_)
         {
             std::vector<SensorDataSample<float>>& sensor_samples = sensor_data.second;
-            if (not sensor_samples.empty())
+            if (!sensor_samples.empty())
                 {
                     SensorDataSample<float> last_sample = sensor_samples.back();
                     sensor_samples.clear();
@@ -81,7 +81,7 @@ void SensorDataAggregator::update(const std::vector<gr::tag_t>& tags)
     for (auto& sensor_data : f64_data_)
         {
             std::vector<SensorDataSample<double>>& sensor_samples = sensor_data.second;
-            if (not sensor_samples.empty())
+            if (!sensor_samples.empty())
                 {
                     SensorDataSample<double> last_sample = sensor_samples.back();
                     sensor_samples.clear();
@@ -207,7 +207,7 @@ void SensorDataAggregator::append_data(const pmt::pmt_t& data_dict)
     pmt::pmt_t data_list = pmt::dict_items(data_dict);
 
     uint64_t sample_stamp = pmt::to_uint64(pmt::dict_ref(data_dict, SAMPLE_STAMP_KEY, pmt::from_uint64(0)));
-    while (not pmt::is_null(data_list))
+    while (!pmt::is_null(data_list))
         {
             pmt::pmt_t pair = pmt::car(data_list);
             pmt::pmt_t key = pmt::car(pair);
@@ -216,7 +216,7 @@ void SensorDataAggregator::append_data(const pmt::pmt_t& data_dict)
             std::string key_str = pmt::write_string(std::move(key));
             SensorIdentifier::value_type sensor_id = SensorIdentifier::from_string(key_str);
 
-            if (sensor_id != SensorIdentifier::SAMPLE_STAMP and sensor_id != SensorIdentifier::CHUNK_COUNT)
+            if (sensor_id != SensorIdentifier::SAMPLE_STAMP && sensor_id != SensorIdentifier::CHUNK_COUNT)
                 {
                     switch (SensorIdentifier::get_internal_type(sensor_id))
                         {

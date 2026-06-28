@@ -352,7 +352,7 @@ std::string labsat23_source::generate_filename()
     fs::path file_path(d_signal_file_basename);
     const auto extension = file_path.extension();
 
-    if (extension == ".ls2" or extension == ".LS2")
+    if (extension == ".ls2" || extension == ".LS2")
         {
             if (d_current_file_number == 0)
                 {
@@ -360,12 +360,12 @@ std::string labsat23_source::generate_filename()
                 }
             return {"donotexist"};  // just to stop processing
         }
-    if (extension == ".ls3w" or extension == ".LS3W")
+    if (extension == ".ls3w" || extension == ".LS3W")
         {
             d_is_ls3w = true;
             return d_signal_file_basename;
         }
-    if (extension == ".ls4" or extension == ".LS4")
+    if (extension == ".ls4" || extension == ".LS4")
         {
             d_is_ls4 = true;
             return d_signal_file_basename;
@@ -410,13 +410,13 @@ int labsat23_source::parse_header()
                 }
 
             // check Labsat version
-            if (header_prefix[byte_counter] == 0x4C and header_prefix[byte_counter + 1] == 0x53 and header_prefix[byte_counter + 2] == 0x32)
+            if (header_prefix[byte_counter] == 0x4C && header_prefix[byte_counter + 1] == 0x53 && header_prefix[byte_counter + 2] == 0x32)
                 {
                     d_labsat_version = 2;
                     std::cout << "LabSat file version 2 detected\n";
                 }
 
-            if (header_prefix[byte_counter] == 0x4C and header_prefix[byte_counter + 1] == 0x53 and header_prefix[byte_counter + 2] == 0x33)
+            if (header_prefix[byte_counter] == 0x4C && header_prefix[byte_counter + 1] == 0x53 && header_prefix[byte_counter + 2] == 0x33)
                 {
                     d_labsat_version = 3;
                     std::cout << "LabSat file version 3 detected\n";
@@ -557,12 +557,12 @@ int labsat23_source::parse_header()
                                                     std::cout << "LabSat source channel config inconsistency: channel C is selected but the file has only channels A and B.\n";
                                                     return -1;
                                                 }
-                                            if (d_channel_selector != 0 and selected_channel == 1 and d_channel_selector != 1 and d_channel_selector != 3)
+                                            if (d_channel_selector != 0 && selected_channel == 1 && d_channel_selector != 1 && d_channel_selector != 3)
                                                 {
                                                     std::cout << "LabSat source channel config inconsistency: channel A is selected but the file has only channel B.\n";
                                                     return -1;
                                                 }
-                                            if (d_channel_selector != 0 and selected_channel == 2 and d_channel_selector != 2 and d_channel_selector != 4)
+                                            if (d_channel_selector != 0 && selected_channel == 2 && d_channel_selector != 2 && d_channel_selector != 4)
                                                 {
                                                     std::cout << "LabSat source channel config inconsistency: channel B is selected but the file has only channel A.\n";
                                                     return -1;
@@ -650,7 +650,7 @@ int labsat23_source::parse_header()
                             // seek file to the first signal sample
                             binary_input_file.clear();
                             binary_input_file.seekg(header_bytes, binary_input_file.beg);
-                            if (d_channel_selector_config.size() > 1 and d_bits_per_sample != 6 and d_channel_selector != 0)
+                            if (d_channel_selector_config.size() > 1 && d_bits_per_sample != 6 && d_channel_selector != 0)
                                 {
                                     std::cerr << "Multiple RF source is not implemented for LabSat version " << d_labsat_version << "files.\n";
                                     std::cerr << "The Multiple RF source feature is only available for LabSat 3 Wideband format files.\n";
@@ -793,7 +793,7 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
             else
                 {
                     // Sanity check
-                    if ((d_ls3w_OSC != "OCXO") and (d_ls3w_OSC != "TCXO") and (d_ls3w_OSC != "EXT"))
+                    if ((d_ls3w_OSC != "OCXO") && (d_ls3w_OSC != "TCXO") && (d_ls3w_OSC != "EXT"))
                         {
                             std::cerr << "LabSat reference clock is unknown.\n";
                         }

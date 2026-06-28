@@ -417,7 +417,7 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, uint3
                 }
         }
 
-    if (nearest_element != -1 and nearest_element != static_cast<int32_t>(d_gnss_synchro_history->size(ch)))
+    if (nearest_element != -1 && nearest_element != static_cast<int32_t>(d_gnss_synchro_history->size(ch)))
         {
             if ((static_cast<double>(old_abs_diff) / static_cast<double>(d_gnss_synchro_history->get(ch, nearest_element).fs)) < d_T_rx_step_s)
                 {
@@ -430,7 +430,7 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, uint3
                         {
                             neighbor_element = nearest_element - 1;
                         }
-                    if (neighbor_element < static_cast<int32_t>(d_gnss_synchro_history->size(ch)) and neighbor_element >= 0)
+                    if (neighbor_element < static_cast<int32_t>(d_gnss_synchro_history->size(ch)) && neighbor_element >= 0)
                         {
                             int32_t t1_idx;
                             int32_t t2_idx;

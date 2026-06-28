@@ -354,7 +354,7 @@ void TrackingPullInTest::configure_receiver(
             config->set_property("Tracking.early_late_space_chips", "0.5");
             config->set_property("Tracking.track_pilot", "true");
         }
-    else if (implementation == "Galileo_E5a_DLL_PLL_Tracking" or implementation == "Galileo_E5a_DLL_PLL_Tracking_b")
+    else if (implementation == "Galileo_E5a_DLL_PLL_Tracking" || implementation == "Galileo_E5a_DLL_PLL_Tracking_b")
         {
             gnss_synchro.System = 'E';
             std::string signal = "5X";
@@ -1062,9 +1062,9 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
 // ***** STEP 7: Plot results *****
 // ********************************
 #if USE_GLOG_AND_GFLAGS
-                            if (FLAGS_plot_detail_level >= 2 and FLAGS_show_plots)
+                            if (FLAGS_plot_detail_level >= 2 && FLAGS_show_plots)
 #else
-                            if (absl::GetFlag(FLAGS_plot_detail_level) >= 2 and absl::GetFlag(FLAGS_show_plots))
+                            if (absl::GetFlag(FLAGS_plot_detail_level) >= 2 && absl::GetFlag(FLAGS_show_plots))
 #endif
                                 {
                                     // load the measured values
@@ -1132,7 +1132,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
 #if USE_GLOG_AND_GFLAGS
                                                     auto decimate = static_cast<unsigned int>(FLAGS_plot_decimate);
 
-                                                    if (FLAGS_plot_detail_level >= 2 and FLAGS_show_plots)
+                                                    if (FLAGS_plot_detail_level >= 2 && FLAGS_show_plots)
                                                         {
                                                             Gnuplot g1("linespoints");
                                                             g1.showonscreen();  // window output
@@ -1147,7 +1147,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
 #else
                                                     auto decimate = static_cast<unsigned int>(absl::GetFlag(FLAGS_plot_decimate));
 
-                                                    if (absl::GetFlag(FLAGS_plot_detail_level) >= 2 and absl::GetFlag(FLAGS_show_plots))
+                                                    if (absl::GetFlag(FLAGS_plot_detail_level) >= 2 && absl::GetFlag(FLAGS_show_plots))
                                                         {
                                                             Gnuplot g1("linespoints");
                                                             g1.showonscreen();  // window output

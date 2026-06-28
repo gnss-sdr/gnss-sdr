@@ -3903,7 +3903,7 @@ void traceopen(const char *file)
     std::string path;
 
     reppath(file, path, time, "", "");
-    if (path.empty() or (fp_trace = fopen(path.data(), "we")) == nullptr)
+    if (path.empty() || (fp_trace = fopen(path.data(), "we")) == nullptr)
         {
             fp_trace = stderr;
         }
@@ -4129,7 +4129,7 @@ void createdir(fs::path const &path)
     errorlib::error_code ec;
 
     auto created = fs::create_directory(path, ec);
-    if (not created)
+    if (!created)
         {
             trace(1, "Error creating folder: %s", path.c_str());
         }

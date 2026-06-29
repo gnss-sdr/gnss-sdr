@@ -50,6 +50,8 @@
 namespace
 {
 constexpr uint32_t rtcm_msm_max_cell_mask_bits = 64;
+constexpr uint32_t min_gps_prn = 1;
+constexpr uint32_t max_gps_prn = 32;
 
 
 struct MsmSignalSpec
@@ -88,10 +90,26 @@ const MsmSignalSpec* msm_signal_spec(const Gnss_Synchro& observable)
 }
 
 
+bool is_gps_prn(uint32_t prn)
+{
+    return (prn >= min_gps_prn) && (prn <= max_gps_prn);
+}
+
+
+bool is_supported_msm_satellite(const Gnss_Synchro& observable)
+{
+    if ((observable.System == 'G') && !is_gps_prn(observable.PRN))
+        {
+            return false;
+        }
+    return true;
+}
+
+
 std::string msm_signal_key(const Signal_Enabled_Flags& flags, const Gnss_Synchro& observable)
 {
     const MsmSignalSpec* signal_spec = msm_signal_spec(observable);
-    if ((signal_spec == nullptr) || !flags.check_any_enabled(signal_spec->signal_flag))
+    if ((signal_spec == nullptr) || !is_supported_msm_satellite(observable) || !flags.check_any_enabled(signal_spec->signal_flag))
         {
             return {};
         }
@@ -405,7 +423,10 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
                 {
                     for (const auto& gps_eph_iter : pvt_solver->gps_ephemeris_map)
                         {
-                            Print_Rtcm_MT1019(gps_eph_iter.second);
+                            if (is_gps_prn(gps_eph_iter.second.PRN))
+                                {
+                                    Print_Rtcm_MT1019(gps_eph_iter.second);
+                                }
                         }
                 }
             if (print_MT1020 && d_flags.has_glonass)
@@ -707,7 +728,17 @@ bool Rtcm_Printer::Print_Rtcm_MT1012(const Glonass_Gnav_Ephemeris& glonass_gnav_
 
 bool Rtcm_Printer::Print_Rtcm_MT1019(const Gps_Ephemeris& gps_eph)
 {
+    if (!is_gps_prn(gps_eph.PRN))
+        {
+            return false;
+        }
+
     const std::string m1019 = rtcm->print_MT1019(gps_eph);
+    if (m1019.empty())
+        {
+            return false;
+        }
+
     Rtcm_Printer::Print_Message(m1019);
     return true;
 }

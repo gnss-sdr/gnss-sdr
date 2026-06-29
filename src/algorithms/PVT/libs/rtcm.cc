@@ -41,6 +41,9 @@ constexpr uint32_t rtcm_msm_max_cell_mask_bits = 64;
 constexpr uint32_t rtcm_max_payload_bytes = 1023;
 constexpr int64_t rtcm_gps_week_ms = 604800000;
 constexpr double glonass_l1_pseudorange_modulus_m = 599584.916;
+constexpr uint32_t rtcm_min_gps_prn = 1;
+constexpr uint32_t rtcm_max_gps_prn = 32;
+constexpr uint32_t rtcm_max_lock_time_prn = 64;
 
 
 boost::posix_time::ptime gps_time_to_ptime(int32_t gps_week, double tow_s)
@@ -49,6 +52,25 @@ boost::posix_time::ptime gps_time_to_ptime(int32_t gps_week, double tow_s)
     boost::posix_time::ptime p_time = boost::posix_time::from_time_t(time.time);
     p_time += boost::posix_time::microseconds(static_cast<long>(std::round(time.sec * 1e6)));  // NOLINT(google-runtime-int)
     return p_time;
+}
+
+
+bool get_lock_time_index(const Gnss_Synchro& gnss_synchro, std::size_t& lock_time_index)
+{
+    if ((gnss_synchro.PRN < 1U) || (gnss_synchro.PRN > rtcm_max_lock_time_prn))
+        {
+            LOG(WARNING) << "RTCM lock time satellite ID " << gnss_synchro.PRN
+                         << " is outside the supported range 1.." << rtcm_max_lock_time_prn;
+            return false;
+        }
+    lock_time_index = static_cast<std::size_t>(gnss_synchro.PRN - 1U);
+    return true;
+}
+
+
+bool is_gps_prn(uint32_t prn)
+{
+    return (prn >= rtcm_min_gps_prn) && (prn <= rtcm_max_gps_prn);
 }
 
 
@@ -1601,6 +1623,14 @@ std::bitset<130> Rtcm::get_MT1012_sat_content(const Glonass_Gnav_Ephemeris& ephL
 
 std::string Rtcm::print_MT1019(const Gps_Ephemeris& gps_eph)
 {
+    if (!is_gps_prn(gps_eph.PRN))
+        {
+            LOG(WARNING) << "RTCM MT1019 is only defined for GPS PRNs "
+                         << rtcm_min_gps_prn << ".." << rtcm_max_gps_prn
+                         << ", but PRN " << gps_eph.PRN << " was found";
+            return {};
+        }
+
     const uint32_t msg_number = 1019;
 
     Rtcm::set_DF002(msg_number);
@@ -4823,13 +4853,19 @@ boost::posix_time::ptime Rtcm::compute_GLONASS_time(const Glonass_Gnav_Ephemeris
 
 uint32_t Rtcm::lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
-    boost::posix_time::ptime current_time = Rtcm::compute_GPS_time(eph, obs_time);
-    boost::posix_time::ptime last_lock_time = Rtcm::gps_L1_last_lock_time[65 - gnss_synchro.PRN];
+    std::size_t lock_time_index = 0;
+    if (!get_lock_time_index(gnss_synchro, lock_time_index))
+        {
+            return 0;
+        }
+
+    const boost::posix_time::ptime current_time = Rtcm::compute_GPS_time(eph, obs_time);
+    boost::posix_time::ptime& last_lock_time = Rtcm::gps_L1_last_lock_time[lock_time_index];
     if (last_lock_time.is_not_a_date_time())  // || CHECK LLI!!......)
         {
-            Rtcm::gps_L1_last_lock_time[65 - gnss_synchro.PRN] = current_time;
+            last_lock_time = current_time;
         }
-    boost::posix_time::time_duration lock_duration = current_time - Rtcm::gps_L1_last_lock_time[65 - gnss_synchro.PRN];
+    const boost::posix_time::time_duration lock_duration = current_time - last_lock_time;
     const auto lock_time_in_seconds = static_cast<uint32_t>(lock_duration.total_seconds());
     // Debug:
     // std::cout << "lock time PRN " << gnss_synchro.PRN << ": " << lock_time_in_seconds <<  "  current time: " << current_time << '\n';
@@ -4839,13 +4875,19 @@ uint32_t Rtcm::lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_S
 
 uint32_t Rtcm::lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
+    std::size_t lock_time_index = 0;
+    if (!get_lock_time_index(gnss_synchro, lock_time_index))
+        {
+            return 0;
+        }
+
     const boost::posix_time::ptime current_time = Rtcm::compute_GPS_time(eph, obs_time);
-    boost::posix_time::ptime last_lock_time = Rtcm::gps_L2_last_lock_time[65 - gnss_synchro.PRN];
+    boost::posix_time::ptime& last_lock_time = Rtcm::gps_L2_last_lock_time[lock_time_index];
     if (last_lock_time.is_not_a_date_time())  // || CHECK LLI!!......)
         {
-            Rtcm::gps_L2_last_lock_time[65 - gnss_synchro.PRN] = current_time;
+            last_lock_time = current_time;
         }
-    boost::posix_time::time_duration lock_duration = current_time - Rtcm::gps_L2_last_lock_time[65 - gnss_synchro.PRN];
+    const boost::posix_time::time_duration lock_duration = current_time - last_lock_time;
     const auto lock_time_in_seconds = static_cast<uint32_t>(lock_duration.total_seconds());
     return lock_time_in_seconds;
 }
@@ -4853,40 +4895,35 @@ uint32_t Rtcm::lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const G
 
 uint32_t Rtcm::lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
+    std::size_t lock_time_index = 0;
+    if (!get_lock_time_index(gnss_synchro, lock_time_index))
+        {
+            return 0;
+        }
+
     const boost::posix_time::ptime current_time = Rtcm::compute_Galileo_time(eph, obs_time);
 
-    boost::posix_time::ptime last_lock_time;
+    boost::posix_time::ptime* last_lock_time = nullptr;
     const std::string sig_(gnss_synchro.Signal);
     if (sig_ == "1B")
         {
-            last_lock_time = Rtcm::gal_E1_last_lock_time[65 - gnss_synchro.PRN];
+            last_lock_time = &Rtcm::gal_E1_last_lock_time[lock_time_index];
         }
     if ((sig_ == "5X") || (sig_ == "8X") || (sig_ == "7X"))
         {
-            last_lock_time = Rtcm::gal_E5_last_lock_time[65 - gnss_synchro.PRN];
+            last_lock_time = &Rtcm::gal_E5_last_lock_time[lock_time_index];
+        }
+    if (last_lock_time == nullptr)
+        {
+            return 0;
         }
 
-    if (last_lock_time.is_not_a_date_time())  // || CHECK LLI!!......)
+    if (last_lock_time->is_not_a_date_time())  // || CHECK LLI!!......)
         {
-            if (sig_ == "1B")
-                {
-                    Rtcm::gal_E1_last_lock_time[65 - gnss_synchro.PRN] = current_time;
-                }
-            if ((sig_ == "5X") || (sig_ == "8X") || (sig_ == "7X"))
-                {
-                    Rtcm::gal_E5_last_lock_time[65 - gnss_synchro.PRN] = current_time;
-                }
+            *last_lock_time = current_time;
         }
 
-    boost::posix_time::time_duration lock_duration = current_time - current_time;
-    if (sig_ == "1B")
-        {
-            lock_duration = current_time - Rtcm::gal_E1_last_lock_time[65 - gnss_synchro.PRN];
-        }
-    if ((sig_ == "5X") || (sig_ == "8X") || (sig_ == "7X"))
-        {
-            lock_duration = current_time - Rtcm::gal_E5_last_lock_time[65 - gnss_synchro.PRN];
-        }
+    const boost::posix_time::time_duration lock_duration = current_time - *last_lock_time;
 
     const auto lock_time_in_seconds = static_cast<uint32_t>(lock_duration.total_seconds());
     return lock_time_in_seconds;
@@ -4895,41 +4932,36 @@ uint32_t Rtcm::lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gn
 
 uint32_t Rtcm::lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
+    std::size_t lock_time_index = 0;
+    if (!get_lock_time_index(gnss_synchro, lock_time_index))
+        {
+            return 0;
+        }
+
     const boost::posix_time::ptime current_time = Rtcm::compute_GLONASS_time(eph, obs_time);
 
-    boost::posix_time::ptime last_lock_time;
+    boost::posix_time::ptime* last_lock_time = nullptr;
     const std::string sig_(gnss_synchro.Signal);
     const std::string sig = sig_.substr(0, 2);
     if (sig == "1G")
         {
-            last_lock_time = Rtcm::glo_L1_last_lock_time[65 - gnss_synchro.PRN];
+            last_lock_time = &Rtcm::glo_L1_last_lock_time[lock_time_index];
         }
     if (sig == "2G")
         {
-            last_lock_time = Rtcm::glo_L2_last_lock_time[65 - gnss_synchro.PRN];
+            last_lock_time = &Rtcm::glo_L2_last_lock_time[lock_time_index];
+        }
+    if (last_lock_time == nullptr)
+        {
+            return 0;
         }
 
-    if (last_lock_time.is_not_a_date_time())  // || CHECK LLI!!......)
+    if (last_lock_time->is_not_a_date_time())  // || CHECK LLI!!......)
         {
-            if (sig == "1G")
-                {
-                    Rtcm::glo_L1_last_lock_time[65 - gnss_synchro.PRN] = current_time;
-                }
-            if (sig == "2G")
-                {
-                    Rtcm::glo_L2_last_lock_time[65 - gnss_synchro.PRN] = current_time;
-                }
+            *last_lock_time = current_time;
         }
 
-    boost::posix_time::time_duration lock_duration = current_time - current_time;
-    if (sig == "1G")
-        {
-            lock_duration = current_time - Rtcm::glo_L1_last_lock_time[65 - gnss_synchro.PRN];
-        }
-    if (sig == "2G")
-        {
-            lock_duration = current_time - Rtcm::glo_L2_last_lock_time[65 - gnss_synchro.PRN];
-        }
+    const boost::posix_time::time_duration lock_duration = current_time - *last_lock_time;
 
     const auto lock_time_in_seconds = static_cast<uint32_t>(lock_duration.total_seconds());
     return lock_time_in_seconds;

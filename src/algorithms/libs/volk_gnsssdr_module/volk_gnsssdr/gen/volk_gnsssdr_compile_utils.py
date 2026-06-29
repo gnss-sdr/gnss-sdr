@@ -9,6 +9,27 @@
 from __future__ import print_function
 
 import argparse
+import os
+import sys
+
+sys.dont_write_bytecode = True
+
+def extract_generated_python_dir(args):
+    option = '--generated-python-dir'
+    if option in args:
+        option_index = args.index(option)
+        if option_index + 1 < len(args):
+            return args[option_index + 1]
+    option_prefix = option + '='
+    for arg in args:
+        if arg.startswith(option_prefix):
+            return arg[len(option_prefix):]
+    return os.environ.get('VOLK_GNSSSDR_GENERATED_PYTHON_DIR')
+
+generated_python_dir = extract_generated_python_dir(sys.argv[1:])
+if generated_python_dir:
+    sys.path.insert(0, generated_python_dir)
+
 import volk_gnsssdr_arch_defs
 import volk_gnsssdr_machine_defs
 
@@ -44,6 +65,7 @@ def main():
     parser.add_argument('--compiler', type=str)
     parser.add_argument('--archs', type=str)
     parser.add_argument('--machine', type=str)
+    parser.add_argument('--generated-python-dir', type=str)
     args = parser.parse_args()
 
     if args.mode == 'arch_flags': return do_arch_flags_list(args.compiler.lower())

@@ -489,9 +489,9 @@ void PcpsAcquisitionAdapterCustom::set_local_code()
                     const auto vector_length = acq_parameters_.vector_length;
 
                     auto& codeI_ = code_;
-                    std::vector<std::complex<float>> codeQ_(code_length);
-                    std::vector<std::complex<float>> codeI(code_length);
-                    std::vector<std::complex<float>> codeQ(code_length);
+                    std::vector<std::complex<float>> codeQ_(vector_length);
+                    std::vector<std::complex<float>> codeI(vector_length);
+                    std::vector<std::complex<float>> codeQ(vector_length);
 
                     if (gnss_synchro_->Signal[0] == '5' && gnss_synchro_->Signal[1] == 'X')
                         {

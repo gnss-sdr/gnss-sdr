@@ -73,7 +73,31 @@ const std::vector<std::pair<int32_t, int32_t> > CNAV2_ISF({{566, 1}});          
 const std::vector<std::pair<int32_t, int32_t> > CNAV2_WNOP({{567, 8}});              //!< uint8_t
 const std::vector<std::pair<int32_t, int32_t> > CNAV2_RESERVED({{575, 2}});          //!< uint16_t
 
-// TODO: Add the SF3 message types
+constexpr int32_t CNAV2_TOE_LSB = 300;
+constexpr double CNAV2_DELTA_A_LSB = TWO_N9;
+constexpr double CNAV2_A_REF = 26559710.0;  // [m] See IS-GPS-800J, Table 3.5-2.
+constexpr double CNAV2_QZSS_A_REF = 42164200.0;
+constexpr double CNAV2_A_DOT_LSB = TWO_N21;
+constexpr double CNAV2_DELTA_N0_LSB = TWO_N44 * GNSS_PI;  // semi-circles to radians
+constexpr double CNAV2_M0_LSB = TWO_N32 * GNSS_PI;        // semi-circles to radians
+constexpr double CNAV2_E_ECCENTRICITY_LSB = TWO_N34;
+constexpr double CNAV2_DELTA_OMEGA_DOT_LSB = TWO_N44 * GNSS_PI;  // semi-circles to radians
+constexpr double CNAV2_OMEGA_DOT_REF = -2.6e-9;                  // [semicircles / s], see IS-GPS-200M, Table 30-I.
+constexpr double CNAV2_I0_LSB = TWO_N32 * GNSS_PI;               // semi-circles to radians
+constexpr double CNAV2_I0_DOT_LSB = TWO_N44 * GNSS_PI;           // semi-circles to radians
+constexpr double CNAV2_CIS_LSB = TWO_N30;
+constexpr double CNAV2_CIC_LSB = TWO_N30;
+constexpr double CNAV2_CRS_LSB = TWO_N8;
+constexpr double CNAV2_CRC_LSB = TWO_N8;
+constexpr double CNAV2_CUS_LSB = TWO_N30;
+constexpr double CNAV2_CUC_LSB = TWO_N30;
+constexpr double CNAV2_AF0_LSB = TWO_N35;
+constexpr double CNAV2_AF1_LSB = TWO_N48;
+constexpr double CNAV2_AF2_LSB = TWO_N60;
+constexpr double CNAV2_TGD_LSB = TWO_N35;
+constexpr double CNAV2_DELTA_N0_DOT_LSB = TWO_N57 * GNSS_PI;  // semi-circles to radians
+constexpr double CNAV2_OMEGA_LSB = TWO_N32 * GNSS_PI;         // semi-circles to radians
+constexpr double CNAV2_OMEGA0_LSB = TWO_N32 * GNSS_PI;        // semi-circles to radians
 
 
 /** \} */

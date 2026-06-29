@@ -90,6 +90,9 @@ void gps_l1c_telemetry_decoder_gs::set_channel(int32_t channel)
 void gps_l1c_telemetry_decoder_gs::reset()
 {
     d_stat = 0;
+    d_has_valid_tow = false;
+    d_frames_since_last_valid_tow = 0;
+    d_frame_position = 0;
     DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
 }
 
@@ -387,7 +390,6 @@ bool gps_l1c_telemetry_decoder_gs::check_subframe_crc(const std::bitset<SIZE> &b
             crc.process_bit(bits[bits.size() - 1 - i]);
         }
 
-    printf("CRC: %i\n", crc.checksum());
     // If we feed a message + CRC into itself, it must give 0
     return crc.checksum() == 0;
 }
@@ -407,19 +409,6 @@ void gps_l1c_telemetry_decoder_gs::parse_new_subframe_data(const GpsL1cFrame &fr
     if (frame.has_sf3 && check_subframe_crc(frame.sf3))
         {
             d_cnav2_message->decode_sf3(frame.toi, frame.sf3);
-        }
-
-    if (d_cnav2_message->have_new_ephemeris())
-        {
-            const std::shared_ptr<Gps_CNAV2_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV2_Ephemeris>(d_cnav2_message->get_ephemeris());
-            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-
-            const auto default_precision = std::cout.precision();
-            std::cout << TEXT_MAGENTA << "New " << ((d_system == CnavSystem::GPS) ? "GPS" : "QZSS")
-                      << " L1C CNAV2 message received in channel " << d_channel
-                      << ": ephemeris from satellite " << d_satellite
-                      << " with CN0=" << std::setprecision(2) << synchro.CN0_dB_hz
-                      << std::setprecision(default_precision) << " dB-Hz" << TEXT_RESET << std::endl;
         }
 
     if (d_cnav2_message->have_new_ephemeris())

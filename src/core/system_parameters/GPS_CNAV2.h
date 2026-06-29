@@ -78,4 +78,4 @@ const std::vector<std::pair<int32_t, int32_t> > CNAV2_RESERVED({{575, 2}});     
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_GPS_CNAV_H
+#endif  // GNSS_SDR_GPS_CNAV2_H

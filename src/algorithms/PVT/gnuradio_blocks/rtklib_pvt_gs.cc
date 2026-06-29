@@ -1323,7 +1323,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                     d_internal_pvt_solver->gps_cnav2_ephemeris_map[gps_cnav2_ephemeris->PRN] = *gps_cnav2_ephemeris;
                     if (d_enable_rx_clock_correction == true)
                         {
-                            d_user_pvt_solver->gps_cnav_ephemeris_map[gps_cnav2_ephemeris->PRN] = *gps_cnav2_ephemeris;
+                            d_user_pvt_solver->gps_cnav2_ephemeris_map[gps_cnav2_ephemeris->PRN] = *gps_cnav2_ephemeris;
                         }
 
                     if (gps_cnav2_ephemeris->l1c_signal_health != 0 || gps_cnav2_ephemeris->signal_health != 0)

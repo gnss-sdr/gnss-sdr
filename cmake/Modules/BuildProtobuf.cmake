@@ -126,6 +126,12 @@ macro(_build_protobuf_warn_explicit_version_downgrade reason)
     endif()
 endmacro()
 
+macro(_build_protobuf_set_install_prefix)
+    set(PROTOBUF_INSTALL_PREFIX_
+        "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}"
+    )
+endmacro()
+
 macro(_build_protobuf_check_absl_prefix_path)
     set(BUILD_PROTOBUF_ABSL_PREFIX_PATH_USABLE OFF)
     foreach(_build_protobuf_prefix ${CMAKE_PREFIX_PATH})
@@ -274,7 +280,7 @@ endmacro()
 macro(_build_protobuf_set_legacy_configure_command)
     set(PROTOBUF_CONFIGURE_COMMAND
         ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure
-        --prefix=${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+        --prefix=${PROTOBUF_INSTALL_PREFIX_}
     )
 
     if(CMAKE_CROSSCOMPILING)
@@ -408,15 +414,16 @@ macro(_build_protobuf_add_legacy_external_project)
 
     if(CMAKE_VERSION VERSION_LESS 3.2)
         ExternalProject_Add(protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-            PREFIX ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+            PREFIX ${PROTOBUF_INSTALL_PREFIX_}
             GIT_REPOSITORY https://github.com/protocolbuffers/protobuf
             GIT_TAG v${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
             SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-            BINARY_DIR ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+            BINARY_DIR ${PROTOBUF_INSTALL_PREFIX_}
             UPDATE_COMMAND ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
             CONFIGURE_COMMAND ${PROTOBUF_CONFIGURE_COMMAND}
             BUILD_COMMAND ${PROTOBUF_MAKE_PROGRAM}
             INSTALL_COMMAND ${PROTOBUF_MAKE_PROGRAM} DESTDIR= install
+            INSTALL_DIR ${PROTOBUF_INSTALL_PREFIX_}
         )
     else()
         if(CMAKE_MAKE_PROGRAM MATCHES "make")
@@ -427,19 +434,35 @@ macro(_build_protobuf_add_legacy_external_project)
             endif()
         endif()
 
+        set(PROTOBUF_LEGACY_INSTALL_BYPRODUCTS
+            ${PROTOBUF_INSTALL_PREFIX_}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${PROTOBUF_INSTALL_PREFIX_}/bin/protoc
+        )
+        if(CMAKE_VERSION VERSION_LESS 3.26)
+            set(PROTOBUF_LEGACY_BYPRODUCTS
+                BUILD_BYPRODUCTS ${PROTOBUF_LEGACY_INSTALL_BYPRODUCTS}
+            )
+        else()
+            set(PROTOBUF_LEGACY_BYPRODUCTS
+                INSTALL_BYPRODUCTS ${PROTOBUF_LEGACY_INSTALL_BYPRODUCTS}
+            )
+        endif()
+
         ExternalProject_Add(protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-            PREFIX ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+            PREFIX ${PROTOBUF_INSTALL_PREFIX_}
             GIT_REPOSITORY https://github.com/protocolbuffers/protobuf
             GIT_TAG v${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
             SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-            BINARY_DIR ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+            BINARY_DIR ${PROTOBUF_INSTALL_PREFIX_}
             UPDATE_COMMAND ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
             CONFIGURE_COMMAND ${PROTOBUF_CONFIGURE_COMMAND}
             BUILD_COMMAND ${PROTOBUF_MAKE_PROGRAM} ${PROTOBUF_PARALLEL_BUILD}
             INSTALL_COMMAND ${PROTOBUF_MAKE_PROGRAM} DESTDIR= install
-            BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}
-                ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc
+            ${PROTOBUF_LEGACY_BYPRODUCTS}
+            INSTALL_DIR ${PROTOBUF_INSTALL_PREFIX_}
         )
+        unset(PROTOBUF_LEGACY_BYPRODUCTS)
+        unset(PROTOBUF_LEGACY_INSTALL_BYPRODUCTS)
     endif()
 endmacro()
 
@@ -621,8 +644,8 @@ macro(_build_protobuf_set_modern_options)
     _build_protobuf_find_zlib()
 
     set(UTF8_LIBRARIES
-        ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}utf8_validity${CMAKE_STATIC_LIBRARY_SUFFIX}
-        ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}utf8_range${CMAKE_STATIC_LIBRARY_SUFFIX}
+        ${PROTOBUF_INSTALL_PREFIX_}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}utf8_validity${CMAKE_STATIC_LIBRARY_SUFFIX}
+        ${PROTOBUF_INSTALL_PREFIX_}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}utf8_range${CMAKE_STATIC_LIBRARY_SUFFIX}
     )
 
     set(ABSL_DIR_OPTION_ "")
@@ -647,31 +670,70 @@ macro(_build_protobuf_set_modern_options)
     endif()
 
     set(PROTOBUF_LIBPROTOBUF_
-        ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}
+        ${PROTOBUF_INSTALL_PREFIX_}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}
     )
     set(PROTOBUF_LIBPROTOBUF_DEBUG_
-        ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}protobufd${CMAKE_STATIC_LIBRARY_SUFFIX}
+        ${PROTOBUF_INSTALL_PREFIX_}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}protobufd${CMAKE_STATIC_LIBRARY_SUFFIX}
     )
     set(PROTOBUF_PROTOC_EXECUTABLE_
-        ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc${CMAKE_EXECUTABLE_SUFFIX}
+        ${PROTOBUF_INSTALL_PREFIX_}/bin/protoc${CMAKE_EXECUTABLE_SUFFIX}
     )
-    set(PROTOBUF_BUILD_BYPRODUCTS_
+    set(PROTOBUF_INSTALL_BYPRODUCTS_
         ${PROTOBUF_PROTOC_EXECUTABLE_}
         ${UTF8_LIBRARIES}
     )
 
     if(CMAKE_CONFIGURATION_TYPES)
-        list(APPEND PROTOBUF_BUILD_BYPRODUCTS_
+        list(APPEND PROTOBUF_INSTALL_BYPRODUCTS_
             ${PROTOBUF_LIBPROTOBUF_}
             ${PROTOBUF_LIBPROTOBUF_DEBUG_}
         )
     elseif(CMAKE_BUILD_TYPE MATCHES "^(Debug|NoOptWithASM|Coverage|ASAN)$")
-        list(APPEND PROTOBUF_BUILD_BYPRODUCTS_
+        list(APPEND PROTOBUF_INSTALL_BYPRODUCTS_
             ${PROTOBUF_LIBPROTOBUF_DEBUG_}
         )
     else()
-        list(APPEND PROTOBUF_BUILD_BYPRODUCTS_
+        list(APPEND PROTOBUF_INSTALL_BYPRODUCTS_
             ${PROTOBUF_LIBPROTOBUF_}
+        )
+    endif()
+
+    set(PROTOBUF_INSTALL_BUILD_TYPE_
+        $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+    )
+
+    if(CMAKE_VERSION VERSION_LESS 3.26)
+        set(PROTOBUF_EXTERNAL_PROJECT_BYPRODUCTS_
+            BUILD_BYPRODUCTS ${PROTOBUF_INSTALL_BYPRODUCTS_}
+        )
+        set(PROTOBUF_BUILD_COMMAND_
+            ${CMAKE_COMMAND} -E env DESTDIR=
+            ${CMAKE_COMMAND}
+            "--build" "${PROTOBUF_INSTALL_PREFIX_}"
+            "--config" ${PROTOBUF_INSTALL_BUILD_TYPE_}
+            "--target" install
+        )
+        set(PROTOBUF_INSTALL_COMMAND_ARG_
+            INSTALL_COMMAND ""
+        )
+    else()
+        set(PROTOBUF_EXTERNAL_PROJECT_BYPRODUCTS_
+            INSTALL_BYPRODUCTS ${PROTOBUF_INSTALL_BYPRODUCTS_}
+        )
+        set(PROTOBUF_BUILD_COMMAND_
+            ${CMAKE_COMMAND}
+            "--build" "${PROTOBUF_INSTALL_PREFIX_}"
+            "--config" ${PROTOBUF_INSTALL_BUILD_TYPE_}
+        )
+        set(PROTOBUF_INSTALL_COMMAND_
+            ${CMAKE_COMMAND} -E env DESTDIR=
+            ${CMAKE_COMMAND}
+            -DCMAKE_INSTALL_PREFIX=${PROTOBUF_INSTALL_PREFIX_}
+            -DBUILD_TYPE=${PROTOBUF_INSTALL_BUILD_TYPE_}
+            -P ${PROTOBUF_INSTALL_PREFIX_}/cmake_install.cmake
+        )
+        set(PROTOBUF_INSTALL_COMMAND_ARG_
+            INSTALL_COMMAND ${PROTOBUF_INSTALL_COMMAND_}
         )
     endif()
 
@@ -688,14 +750,14 @@ endmacro()
 
 macro(_build_protobuf_add_modern_external_project)
     ExternalProject_Add(protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-        PREFIX ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+        PREFIX ${PROTOBUF_INSTALL_PREFIX_}
         GIT_REPOSITORY https://github.com/protocolbuffers/protobuf
         GIT_TAG v${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
         GIT_PROGRESS ON
         UPDATE_COMMAND ""
         PATCH_COMMAND ${PROTOBUF_PATCH_COMMAND}
         SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-        BINARY_DIR ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+        BINARY_DIR ${PROTOBUF_INSTALL_PREFIX_}
         LIST_SEPARATOR |
         CMAKE_ARGS
             -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -708,18 +770,16 @@ macro(_build_protobuf_add_modern_external_project)
             -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
             -DCMAKE_CXX_VISIBILITY_PRESET=hidden
             -DCMAKE_VISIBILITY_INLINES_HIDDEN=1
-            -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+            -DCMAKE_INSTALL_PREFIX=${PROTOBUF_INSTALL_PREFIX_}
             "-DCMAKE_INSTALL_LIBDIR:PATH=${CMAKE_INSTALL_LIBDIR}"
             -Dprotobuf_BUILD_TESTS=OFF
             ${ABSL_DIR_OPTION_}
             ${GNSSSDR_ABSL_PROVIDER_}
             ${USE_ZLIB_}
-        BUILD_COMMAND ${CMAKE_COMMAND}
-            "--build" "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}"
-            "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
-            "--target" install
-        BUILD_BYPRODUCTS ${PROTOBUF_BUILD_BYPRODUCTS_}
-        INSTALL_COMMAND ""
+        BUILD_COMMAND ${PROTOBUF_BUILD_COMMAND_}
+        ${PROTOBUF_EXTERNAL_PROJECT_BYPRODUCTS_}
+        ${PROTOBUF_INSTALL_COMMAND_ARG_}
+        INSTALL_DIR ${PROTOBUF_INSTALL_PREFIX_}
     )
 endmacro()
 
@@ -734,7 +794,7 @@ macro(_build_protobuf_codesign_modern_protoc)
                     --force
                     --sign -
                     ${PROTOBUF_PROTOC_EXECUTABLE_}
-                DEPENDEES build
+                DEPENDEES install
                 COMMENT "Ad-hoc signing bundled protoc executable"
                 VERBATIM
             )
@@ -806,10 +866,10 @@ endmacro()
 
 macro(_build_protobuf_create_modern_targets)
     file(MAKE_DIRECTORY
-        ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/include
+        ${PROTOBUF_INSTALL_PREFIX_}/include
     )
     file(MAKE_DIRECTORY
-        ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/${CMAKE_INSTALL_LIBDIR}
+        ${PROTOBUF_INSTALL_PREFIX_}/${CMAKE_INSTALL_LIBDIR}
     )
 
     _build_protobuf_set_modern_extra_libraries()
@@ -834,7 +894,7 @@ macro(_build_protobuf_create_modern_targets)
             IMPORTED_LOCATION_RELEASE ${PROTOBUF_LIBPROTOBUF_}
             IMPORTED_LOCATION_RELWITHDEBINFO ${PROTOBUF_LIBPROTOBUF_}
             IMPORTED_LOCATION_MINSIZEREL ${PROTOBUF_LIBPROTOBUF_}
-            INTERFACE_INCLUDE_DIRECTORIES ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/include
+            INTERFACE_INCLUDE_DIRECTORIES ${PROTOBUF_INSTALL_PREFIX_}/include
             INTERFACE_LINK_LIBRARIES "${ZLIB_LIBRARIES_};${PROTOBUF_EXTRA_LIBRARIES_};${UTF8_LIBRARIES};${PROTOBUF_ABSL_USED_TARGETS}"
         )
     endif()
@@ -869,7 +929,12 @@ macro(_build_protobuf_cleanup_modern)
     unset(PROTOBUF_LIBPROTOBUF_)
     unset(PROTOBUF_LIBPROTOBUF_DEBUG_)
     unset(PROTOBUF_PROTOC_EXECUTABLE_)
-    unset(PROTOBUF_BUILD_BYPRODUCTS_)
+    unset(PROTOBUF_INSTALL_BYPRODUCTS_)
+    unset(PROTOBUF_EXTERNAL_PROJECT_BYPRODUCTS_)
+    unset(PROTOBUF_INSTALL_BUILD_TYPE_)
+    unset(PROTOBUF_BUILD_COMMAND_)
+    unset(PROTOBUF_INSTALL_COMMAND_)
+    unset(PROTOBUF_INSTALL_COMMAND_ARG_)
     unset(CMAKE_PREFIX_PATH_OPTION_)
     if(DEFINED CMAKE_PREFIX_PATH_EXTERNAL_)
         unset(CMAKE_PREFIX_PATH_EXTERNAL_)
@@ -898,6 +963,7 @@ endmacro()
 
 _build_protobuf_initialize()
 _build_protobuf_select_backend()
+_build_protobuf_set_install_prefix()
 
 if(BUILD_PROTOBUF_USE_LEGACY)
     _build_protobuf_add_legacy()

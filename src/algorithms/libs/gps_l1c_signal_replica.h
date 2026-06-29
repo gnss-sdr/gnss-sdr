@@ -59,17 +59,18 @@ void gps_l1c_p_sinboc_with_overlay(own::span<float> dest, uint32_t prn);
 
 /*!
  * \brief This function generates a full GPS L1C-D or GPS L1C-P code at the sample
- *  frequency sampling_freq. P code is generated without overlay.
+ *  frequency sampling_freq. P code is generated without overlay. Note that
+ *  only the P code has BOC(6,1) modulated symbols (technically not CBOC, but TMBOC).
  *
  */
-void gps_l1c_code_gen_float_sampled(own::span<float> dest, bool p_code, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift);
+void gps_l1c_code_gen_float_sampled(own::span<float> dest, bool p_code, bool cboc, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift);
 
 /*!
  * \brief This function generates a full GPS L1C-D code at the sample
- *  frequency sampling_freq. P code is generated without overlay.
- *
+ *  frequency sampling_freq. P code is generated without overlay. Note that
+ *  only the P code has BOC(6,1) modulated symbols (technically not CBOC, but TMBOC).
  */
-void gps_l1c_code_gen_complex_sampled(own::span<std::complex<float>> dest, bool p_code, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift);
+void gps_l1c_code_gen_complex_sampled(own::span<std::complex<float>> dest, bool p_code, bool cboc, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift);
 
 
 /** \} */

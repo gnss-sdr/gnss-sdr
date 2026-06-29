@@ -186,8 +186,7 @@ void code_gen_complex_sampled(signal_flag sig_flag, const Acq_Conf& conf, const 
             break;
         case GPS_L1:
             {
-                // TODO: Support for the overlay code, cboc
-                gps_l1c_code_gen_complex_sampled(dest, conf.acquire_pilot, gnss_synchro.PRN, sampling_freq, 0);
+                gps_l1c_code_gen_complex_sampled(dest, conf.acquire_pilot, conf.cboc, gnss_synchro.PRN, sampling_freq, 0);
             }
             break;
         default:
@@ -204,8 +203,6 @@ Acq_Conf get_acq_conf(const ConfigurationInterface* configuration, const std::st
     acq_parameters.ms_per_code = sig_info.ms_per_code;
     acq_parameters.sampled_ms = sig_info.ms_per_code;  // Set as default value
     acq_parameters.SetFromConfiguration(configuration, role, sig_info.chip_rate, sig_info.opt_freq);
-
-    // TODO: Entry for GPS_L1C once we have overlay option
 
     if (sig_flag == GAL_1B || sig_flag == GPS_L1)
         {

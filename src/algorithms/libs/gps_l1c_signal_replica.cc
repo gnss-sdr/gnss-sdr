@@ -16,9 +16,9 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "gps_l1c_signal_replica.h"
 #include "GPS_L1C.h"
 #include "gnss_signal_replica.h"
+#include "gps_l1c_signal_replica.h"
 #include <cassert>
 #include <cmath>
 #include <cstddef>  // for size_t
@@ -163,13 +163,13 @@ void gps_l1c_p_sinboc_no_overlay(own::span<float> dest, uint32_t prn)
 }
 
 
-void gps_l1c_code_gen_float_sampled(own::span<float> dest, bool p_code, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift)
+void gps_l1c_code_gen_float_sampled(own::span<float> dest, bool p_code, bool cboc, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift)
 {
     // Short names
     const size_t nr = GPS_L1C_CODE_LENGTH_CHIPS;
 
     const int32_t codeFreqBasis = GPS_L1C_CODE_CHIP_RATE_CPS;
-    const int32_t samplesPerChip = 2;
+    const int32_t samplesPerChip = cboc ? 12 : 2;
 
     const auto samplesPerCode = static_cast<uint32_t>(static_cast<double>(sampling_freq) * GPS_L1C_CODE_PERIOD_S);
 
@@ -183,12 +183,40 @@ void gps_l1c_code_gen_float_sampled(own::span<float> dest, bool p_code, uint32_t
     const uint32_t codeLength = samplesPerChip * GPS_L1C_CODE_LENGTH_CHIPS;
     std::vector<float> signal(codeLength);
 
-    for (uint32_t i = 0; i < GPS_L1C_CODE_LENGTH_CHIPS; i++)
+    if (cboc)
         {
-            // BOC(1, 1)
-            signal[i * 2 + 0] = range_code_chips[i];
-            signal[i * 2 + 1] = -range_code_chips[i];
+            for (uint32_t i = 0; i < GPS_L1C_CODE_LENGTH_CHIPS; i++)
+                {
+                    uint32_t ut = i % 33;
+                    const bool isCbocSymbol = p_code && (ut == 0 || ut == 4 || ut == 6 || ut == 29);
+
+                    // Either BOC(1,1) or BOC(6,1) if isCbocSymbol is true
+                    for (size_t j = 0; j < 6; j++)
+                        {
+                            if (isCbocSymbol)
+                                {
+                                    const float cbocv = (j % 2 == 0) ? 1.0F : -1.0F;
+                                    signal[i * samplesPerChip + 0 + j] = range_code_chips[i] * cbocv;
+                                    signal[i * samplesPerChip + 6 + j] = range_code_chips[i] * cbocv;
+                                }
+                            else
+                                {
+                                    signal[i * samplesPerChip + 0 + j] = range_code_chips[i];
+                                    signal[i * samplesPerChip + 6 + j] = -range_code_chips[i];
+                                }
+                        }
+                }
         }
+    else
+        {
+            // BOC(1, 1), BOC(6, 1) symbols ignored
+            for (uint32_t i = 0; i < GPS_L1C_CODE_LENGTH_CHIPS; i++)
+                {
+                    signal[i * 2 + 0] = range_code_chips[i];
+                    signal[i * 2 + 1] = -range_code_chips[i];
+                }
+        }
+
 
     if (sampling_freq != samplesPerChip * codeFreqBasis)
         {
@@ -205,12 +233,12 @@ void gps_l1c_code_gen_float_sampled(own::span<float> dest, bool p_code, uint32_t
         }
 }
 
-void gps_l1c_code_gen_complex_sampled(own::span<std::complex<float>> dest, bool p_code, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift)
+void gps_l1c_code_gen_complex_sampled(own::span<std::complex<float>> dest, bool p_code, bool cboc, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift)
 {
     const auto samplesPerCode = static_cast<uint32_t>(static_cast<double>(sampling_freq) * GPS_L1C_CODE_PERIOD_S);
     std::vector<float> real_code(samplesPerCode);
 
-    gps_l1c_code_gen_float_sampled(real_code, p_code, prn, sampling_freq, chip_shift);
+    gps_l1c_code_gen_float_sampled(real_code, p_code, cboc, prn, sampling_freq, chip_shift);
     for (uint32_t i = 0; i < samplesPerCode; ++i)
         {
             dest[i] = std::complex<float>(real_code[i], 0.0F);

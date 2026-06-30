@@ -28,12 +28,14 @@
 
 static constexpr double QZSS_L1_FREQ_HZ = FREQ1;
 static constexpr double QZSS_L5_FREQ_HZ = FREQ5;
-static constexpr double QZSS_L1_CHIP_RATE = 1.023e6;
+// L1 C/B needs twice as much chips
+static constexpr double QZSS_L1_CHIP_RATE = 1.023e6 * 2.0;
 static constexpr double QZSS_L5_CHIP_RATE = 10.23e6;
 static constexpr double QZSS_L1_CA_CODE_PERIOD_S = 0.001;
 static constexpr double QZSS_L5I_CODE_PERIOD_S = 0.001;
 
-static constexpr int QZSS_L1_CODE_LENGTH = 1023;
+// L1 C/B needs twice as much chips
+static constexpr int QZSS_L1_CODE_LENGTH = 1023 * 2;
 static constexpr int QZSS_L5_CODE_LENGTH = 10230;
 static constexpr int QZSS_L1_PERIOD_MS = 1;
 static constexpr int QZSS_L5I_PERIOD_MS = 1;

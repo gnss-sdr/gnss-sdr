@@ -186,7 +186,7 @@ const int MAXPRNGAL = 36;                         //!<   max satellite PRN numbe
 const int NSATGAL = (MAXPRNGAL - MINPRNGAL + 1);  //!<   number of Galileo satellites
 const int NSYSGAL = 1;
 
-const int MAXPRNQZS = 202;  //!<   max satellite PRN number of QZSS
+const int MAXPRNQZS = 206;  //!<   max satellite PRN number of QZSS
 const int MINPRNQZS = 193;  //!<   min satellite PRN number of QZSS
 #define ENAQZS
 #ifdef ENAQZS

@@ -19,6 +19,7 @@
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <exception>
@@ -63,8 +64,10 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(const Acq_Conf& con
       d_ifft(gnss_fft_rev_make_unique(d_fft_size)),
       d_code(d_samples_per_code, lv_cmake(0.0F, 0.0F)),
       d_fft_codes(d_fft_size),
-      d_signal_folded(d_fft_size),
       d_code_folded(d_fft_size, lv_cmake(0.0F, 0.0F)),
+      d_in_temp(d_samples_per_code * d_folding_factor),
+      d_in_1code(d_samples_per_code),
+      d_corr_output(d_samples_per_code),
       d_magnitude(d_samples_per_code * d_folding_factor),
       d_corr_output_f(d_folding_factor),
       d_magnitude_folded(d_fft_size),
@@ -189,18 +192,6 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 float magt = 0.0;
                 const auto* in = reinterpret_cast<const gr_complex*>(input_items[0]);  // Get the input samples pointer
 
-                std::vector<gr_complex> in_temp(d_samples_per_code * d_folding_factor);
-                // Create a signal to store a signal of size 1ms, to perform correlation
-                // in time. No folding on this data is required
-                std::vector<gr_complex> in_1code(d_samples_per_code);
-
-                // Stores the values of the correlation output between the local code
-                // and the signal with doppler shift corrected
-                std::vector<gr_complex> corr_output(d_samples_per_code);
-
-                // Stores a copy of the folded version of the signal.This is used for
-                // the FFT operations in future steps of execution*/
-                // gr_complex in_folded[d_fft_size];
                 float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
                 d_input_power = 0.0;
@@ -234,8 +225,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                         // Ensure that the signal is going to start with all samples
                         // at zero. This is done to avoid over accumulation when performing
                         // the folding process to be stored in d_fft_if->get_inbuf()
-                        d_signal_folded = std::vector<gr_complex>(d_fft_size, lv_cmake(0.0F, 0.0F));
-                        std::copy(d_signal_folded.data(), d_signal_folded.data() + d_fft_size, d_fft_if->get_inbuf());
+                        std::fill_n(d_fft_if->get_inbuf(), d_fft_size, lv_cmake(0.0F, 0.0F));
 
                         // Doppler search steps and then multiplication of the incoming
                         // signal with the doppler wipeoffs to eliminate frequency offset
@@ -244,7 +234,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                         // Perform multiplication of the incoming signal with the
                         // complex exponential vector. This removes the frequency doppler
                         // shift offset
-                        volk_32fc_x2_multiply_32fc(in_temp.data(), in,
+                        volk_32fc_x2_multiply_32fc(d_in_temp.data(), in,
                             d_grid_doppler_wipeoffs[doppler_index].data(),
                             d_samples_per_code * d_folding_factor);
 
@@ -253,8 +243,8 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                         // incoming raw data signal is of d_folding_factor^2
                         for (int32_t i = 0; i < static_cast<int32_t>(d_folding_factor * d_folding_factor); i++)
                             {
-                                std::transform((in_temp.data() + i * d_fft_size),
-                                    (in_temp.data() + ((i + 1) * d_fft_size)),
+                                std::transform((d_in_temp.data() + i * d_fft_size),
+                                    (d_in_temp.data() + ((i + 1) * d_fft_size)),
                                     d_fft_if->get_inbuf(),
                                     d_fft_if->get_inbuf(),
                                     std::plus<gr_complex>());
@@ -311,18 +301,18 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                                             {
                                                 // Copy a signal of 1 code length into suggested buffer.
                                                 // The copied signal must have doppler effect corrected
-                                                std::copy_n(&in_temp[d_possible_delay[i]], d_samples_per_code, in_1code.data());
+                                                std::copy_n(&d_in_temp[d_possible_delay[i]], d_samples_per_code, d_in_1code.data());
 
                                                 // Perform multiplication of the unmodified local
                                                 // generated code with the incoming signal with doppler
                                                 // effect corrected and accumulates its value. This
                                                 // is indeed correlation in time for an specific value
                                                 // of a shift
-                                                volk_32fc_x2_multiply_32fc(corr_output.data(), in_1code.data(), d_code.data(), d_samples_per_code);
+                                                volk_32fc_x2_multiply_32fc(d_corr_output.data(), d_in_1code.data(), d_code.data(), d_samples_per_code);
 
                                                 for (int32_t j = 0; j < d_samples_per_code; j++)
                                                     {
-                                                        complex_acumulator[i] += (corr_output[j]);
+                                                        complex_acumulator[i] += (d_corr_output[j]);
                                                     }
                                             }
                                         // Obtain maximum value of correlation given the possible delay selected

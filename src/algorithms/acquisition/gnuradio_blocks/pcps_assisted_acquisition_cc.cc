@@ -66,7 +66,8 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(const Acq_Conf &conf)
       d_disable_assist(false),
       d_fft_if(gnss_fft_fwd_make_unique(d_fft_size)),
       d_ifft(gnss_fft_rev_make_unique(d_fft_size)),
-      d_fft_codes(d_fft_size)
+      d_fft_codes(d_fft_size),
+      d_magnitude(d_fft_size)
 {
     this->message_port_register_out(pmt::mp("events"));
 }
@@ -231,16 +232,15 @@ float pcps_assisted_acquisition_cc::search_maximum()
 }
 
 
-float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_star &input_items) const
+float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_star &input_items)
 {
     const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  // Get the input samples pointer
     // 1- Compute the input signal power estimation
-    std::vector<float> p_tmp_vector(d_fft_size);
 
-    volk_32fc_magnitude_squared_32f(p_tmp_vector.data(), in, d_fft_size);
+    volk_32fc_magnitude_squared_32f(d_magnitude.data(), in, d_fft_size);
 
     float power;
-    volk_32f_accumulator_s32f(&power, p_tmp_vector.data(), d_fft_size);
+    volk_32f_accumulator_s32f(&power, d_magnitude.data(), d_fft_size);
     return (power / static_cast<float>(d_fft_size));
 }
 
@@ -258,8 +258,6 @@ int32_t pcps_assisted_acquisition_cc::compute_and_accumulate_grid(gr_vector_cons
                << ", doppler_step: " << d_acq_params.doppler_step;
 
     // 2- Doppler frequency search loop
-    std::vector<float> p_tmp_vector(d_fft_size);
-
     for (int32_t doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {
             // doppler search steps
@@ -277,9 +275,9 @@ int32_t pcps_assisted_acquisition_cc::compute_and_accumulate_grid(gr_vector_cons
             d_ifft->execute();
 
             // save the grid matrix delay file
-            volk_32fc_magnitude_squared_32f(p_tmp_vector.data(), d_ifft->get_outbuf(), d_fft_size);
+            volk_32fc_magnitude_squared_32f(d_magnitude.data(), d_ifft->get_outbuf(), d_fft_size);
             const float *old_vector = d_grid_data[doppler_index].data();
-            volk_32f_x2_add_32f(d_grid_data[doppler_index].data(), old_vector, p_tmp_vector.data(), d_fft_size);
+            volk_32f_x2_add_32f(d_grid_data[doppler_index].data(), old_vector, d_magnitude.data(), d_fft_size);
         }
     return d_fft_size;
 }

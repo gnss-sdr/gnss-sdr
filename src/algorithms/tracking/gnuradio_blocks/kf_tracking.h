@@ -95,7 +95,6 @@ private:
     int32_t save_matfile() const;
 
     Cpu_Multicorrelator_Real_Codes d_multicorrelator_cpu;
-    Cpu_Multicorrelator_Real_Codes d_correlator_data_cpu;  // for data channel
 
     Kf_Conf d_trk_parameters;
 

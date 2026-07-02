@@ -20,13 +20,15 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Efficiency:
 
-- Fused the pilot and data-component correlations in the CPU DLL/PLL VEML
-  tracking block into a single carrier wipe-off pass. When tracking the pilot
-  signal, the data prompt is now computed as an extra correlator tap under the
-  same carrier rotator instead of performing a second, redundant wipe-off pass
-  over the same samples. This reduces tracking-loop time by about 33% (~1.5x
-  throughput) for pilot-tracked signals (GPS L5, Galileo E1/E5a/E5b/E6, QZSS
-  L5), with bit-for-bit equivalent results.
+- Optimized CPU DLL/PLL VEML tracking for pilot/data signal pairs by computing
+  the pilot correlators and the data prompt in one multicorrelator pass. The
+  data prompt now reuses the same carrier wipe-off as the pilot correlators
+  instead of invoking a separate one-tap correlator, while non-pilot tracking
+  keeps the previous correlation path. In a Release build of the Galileo E1
+  workload, the median time to process 40 million samples decreased from 844 ms
+  to 572 ms (32% less time, 1.48x throughput). Results are mathematically
+  equivalent to the previous implementation within normal floating-point
+  behavior.
 
 ### Improvements in Interoperability:
 

@@ -101,8 +101,10 @@ labsat23_source::labsat23_source(
 
             if (d_is_ls4)
                 {
-                    d_number_register_per_output = d_ls3w_QUA == 12 ? 3 : 1;
-                    d_number_sample_per_output = (d_number_register_per_output * 64) / (d_ls3w_QUA * 2);
+                    if (configure_ls4_output_parameters() != 0)
+                        {
+                            exit(1);
+                        }
                     this->set_output_multiple(d_number_sample_per_output);
 
                     const auto size = fs::file_size(d_signal_file_basename);
@@ -120,7 +122,7 @@ labsat23_source::labsat23_source(
                                 }
                         }
 
-                    const auto bits_per_sample = d_ls3w_QUA * 2;  // I and Q
+                    const auto bits_per_sample = d_sample_quantization_bits * 2;  // I and Q
                     const auto samples = bits / bits_per_sample;
                     const auto signal_duration_s = bits / (bits_per_sample * bw_factor * d_ls3w_SMP);
                     std::cout << ", which contains " << samples << " samples (" << size << " bytes)\n";
@@ -322,6 +324,39 @@ bool labsat23_source::are_equal_ignore_nonpositive(const std::vector<int32_t> &v
 
     return std::all_of(positives.begin(), positives.end(),
         [&](int32_t v) { return v == positives[0]; });
+}
+
+
+int labsat23_source::configure_ls4_output_parameters()
+{
+    switch (d_sample_quantization_bits)
+        {
+        case 1:
+            d_number_register_per_output = 1;
+            d_number_sample_per_output = 32;
+            break;
+        case 2:
+            d_number_register_per_output = 1;
+            d_number_sample_per_output = 16;
+            break;
+        case 4:
+            d_number_register_per_output = 1;
+            d_number_sample_per_output = 8;
+            break;
+        case 8:
+            d_number_register_per_output = 1;
+            d_number_sample_per_output = 4;
+            break;
+        case 12:
+            d_number_register_per_output = 3;
+            d_number_sample_per_output = 8;
+            break;
+        default:
+            std::cerr << "LabSat sample quantization of " << d_sample_quantization_bits << " bits is not supported.\n";
+            return -1;
+        }
+
+    return 0;
 }
 
 
@@ -813,41 +848,41 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
                 }
 
             // Quantization
-            std::string ls3w_QUA_aux = ini_reader->Get("config", "QUA", empty_string);
-            if (!ls3w_QUA_aux.empty())
+            std::string sample_quantization_bits_str = ini_reader->Get("config", "QUA", empty_string);
+            if (!sample_quantization_bits_str.empty())
                 {
-                    std::stringstream qua_ss(ls3w_QUA_aux);
-                    qua_ss >> d_ls3w_QUA;
+                    std::stringstream qua_ss(sample_quantization_bits_str);
+                    qua_ss >> d_sample_quantization_bits;
 
                     // Sanity check
-                    if ((d_is_ls3w && d_ls3w_QUA > 3) || (d_is_ls4 && std::unordered_set<int>{1, 2, 4, 8, 12}.count(d_ls3w_QUA) == 0))
+                    if ((d_is_ls3w && d_sample_quantization_bits > 3) || (d_is_ls4 && std::unordered_set<int>{1, 2, 4, 8, 12}.count(d_sample_quantization_bits) == 0))
                         {
-                            std::cerr << "LabSat sample quantization of " << d_ls3w_QUA << " bits is not supported.\n";
+                            std::cerr << "LabSat sample quantization of " << d_sample_quantization_bits << " bits is not supported.\n";
                             return -1;
                         }
                     else
                         {
-                            std::cout << "LabSat sample quantization: " << d_ls3w_QUA << " bits for I + " << d_ls3w_QUA << " bits for Q.\n";
+                            std::cout << "LabSat sample quantization: " << d_sample_quantization_bits << " bits for I + " << d_sample_quantization_bits << " bits for Q.\n";
                         }
                 }
             else
                 {
                     // Look for LS4 new QUAN_A _B _C fields
-                    std::string ls3w_QUA_aux = ini_reader->Get("config", "QUAN_A", empty_string);
-                    if (!ls3w_QUA_aux.empty())
+                    sample_quantization_bits_str = ini_reader->Get("config", "QUAN_A", empty_string);
+                    if (!sample_quantization_bits_str.empty())
                         {
-                            std::stringstream qua_ss(ls3w_QUA_aux);
-                            qua_ss >> d_ls3w_QUA;
+                            std::stringstream qua_ss(sample_quantization_bits_str);
+                            qua_ss >> d_sample_quantization_bits;
 
                             // Sanity check
-                            if ((d_is_ls3w && d_ls3w_QUA > 3) || (d_is_ls4 && std::unordered_set<int>{1, 2, 4, 8, 12}.count(d_ls3w_QUA) == 0))
+                            if ((d_is_ls3w && d_sample_quantization_bits > 3) || (d_is_ls4 && std::unordered_set<int>{1, 2, 4, 8, 12}.count(d_sample_quantization_bits) == 0))
                                 {
-                                    std::cerr << "LabSat sample quantization of " << d_ls3w_QUA << " bits is not supported.\n";
+                                    std::cerr << "LabSat sample quantization of " << d_sample_quantization_bits << " bits is not supported.\n";
                                     return -1;
                                 }
                             else
                                 {
-                                    std::cout << "LabSat sample quantization: " << d_ls3w_QUA << " bits for I + " << d_ls3w_QUA << " bits for Q.\n";
+                                    std::cout << "LabSat sample quantization: " << d_sample_quantization_bits << " bits for I + " << d_sample_quantization_bits << " bits for Q.\n";
                                 }
                         }
                     else
@@ -884,10 +919,10 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
                     sft_ss >> d_ls3w_SFT;
 
                     // Sanity check
-                    if (d_ls3w_SFT != d_ls3w_CHN * d_ls3w_QUA * 2)
+                    if (d_ls3w_SFT != d_ls3w_CHN * d_sample_quantization_bits * 2)
                         {
                             std::cerr << "SFT parameter value in the .ini file is not valid.\n";
-                            d_ls3w_SFT = d_ls3w_CHN * d_ls3w_QUA * 2;
+                            d_ls3w_SFT = d_ls3w_CHN * d_sample_quantization_bits * 2;
                         }
                 }
 
@@ -967,8 +1002,10 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
 
     if (d_is_ls4)
         {
-            d_number_register_per_output = d_ls3w_QUA == 12 ? 3 : 1;
-            d_number_sample_per_output = (d_number_register_per_output * 64) / (d_ls3w_QUA * 2);
+            if (configure_ls4_output_parameters() != 0)
+                {
+                    return -1;
+                }
 
             std::vector<int32_t> bandwidths = {d_ls4_BW_MAX};
             std::vector<int32_t> relative_buff_sizes;
@@ -1049,10 +1086,10 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
     std::cout << '\n';
 
     d_ls3w_samples_per_register = this->number_of_samples_per_ls3w_register();
-    d_ls3w_spare_bits = 64 - d_ls3w_samples_per_register * d_ls3w_CHN * d_ls3w_QUA * 2;
+    d_ls3w_spare_bits = 64 - d_ls3w_samples_per_register * d_ls3w_CHN * d_sample_quantization_bits * 2;
     for (auto ch_select : d_channel_selector_config)
         {
-            d_ls3w_selected_channel_offset.push_back((ch_select - 1) * d_ls3w_QUA * 2);
+            d_ls3w_selected_channel_offset.push_back((ch_select - 1) * d_sample_quantization_bits * 2);
         }
     return 0;
 }
@@ -1061,7 +1098,7 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
 int labsat23_source::number_of_samples_per_ls3w_register() const
 {
     int number_samples = 0;
-    switch (d_ls3w_QUA)
+    switch (d_sample_quantization_bits)
         {
         case 1:
             if (d_ls3w_CHN == 1)
@@ -1153,7 +1190,7 @@ void labsat23_source::decode_ls3w_register(uint64_t input, std::vector<gr_comple
             for (int i = 0; i < d_ls3w_samples_per_register; i++)
                 {
                     const int bit_offset = d_ls3w_spare_bits + i * d_ls3w_SFT + channel_offset;
-                    write_samples_from_bitset(bs, bit_offset, d_ls3w_QUA, aux[output_pointer + i]);
+                    write_samples_from_bitset(bs, bit_offset, d_sample_quantization_bits, aux[output_pointer + i]);
                 }
             output_chan++;
         }
@@ -1455,7 +1492,7 @@ int labsat23_source::parse_ls4_data(int noutput_items, std::vector<gr_complex *>
                         {
                             gr_complex *aux = out[channel_index];
                             auto &channel = d_channel_map.at(d_channel_selector_config[channel_index]);
-                            write_samples_ls4(channel.data_index, output_index, d_number_sample_per_output, d_ls3w_QUA, channel.data, aux);
+                            write_samples_ls4(channel.data_index, output_index, d_number_sample_per_output, d_sample_quantization_bits, channel.data, aux);
                         }
 
                     output_index += d_number_sample_per_output;

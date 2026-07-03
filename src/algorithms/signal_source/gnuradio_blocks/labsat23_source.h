@@ -92,6 +92,7 @@ private:
     int parse_header();
     int read_ls3w_ini(const std::string &filename);
     int number_of_samples_per_ls3w_register() const;
+    int configure_ls4_output_parameters();
 
     void decode_samples_one_channel(uint16_t input_word, gr_complex *out, int type);
     void decode_samples_two_channels(uint16_t input_word, std::vector<gr_complex *> &out, std::size_t output_pointer) const;
@@ -113,11 +114,11 @@ private:
     uint8_t d_bits_per_sample;
     bool d_header_parsed;
 
-    // Data members for Labsat 3 Wideband
+    // Data members for Labsat 3 Wideband and Labsat 4
     std::string d_ls3w_OSC;
     std::vector<int> d_ls3w_selected_channel_offset;
     int64_t d_ls3w_SMP{};
-    int32_t d_ls3w_QUA{};
+    int32_t d_sample_quantization_bits{};
     int32_t d_ls3w_CHN{};
     int32_t d_ls3w_SFT{};
     int d_ls3w_spare_bits{};

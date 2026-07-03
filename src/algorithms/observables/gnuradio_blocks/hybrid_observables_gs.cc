@@ -106,6 +106,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
     d_channel_last_pseudorange_smooth = std::vector<double>(d_nchannels_out, 0.0);
     d_channel_last_carrier_phase_rads = std::vector<double>(d_nchannels_out, 0.0);
     d_channel_last_rx_time_valid = std::vector<bool>(d_nchannels_out, false);
+    d_last_trk_data = std::vector<Gnss_Synchro>(d_nchannels_out);
 
     d_SourceTagTimestamps = std::vector<std::queue<GnssTime>>(d_nchannels_out);
 
@@ -512,6 +513,19 @@ void hybrid_observables_gs::forecast(int noutput_items __attribute__((unused)), 
 }
 
 
+bool hybrid_observables_gs::has_fresh_trk_data(uint32_t ch, uint64_t rx_clock) const
+{
+    const Gnss_Synchro &trk = d_last_trk_data[ch];
+    if (trk.fs <= 0)
+        {
+            return false;
+        }
+    // the interpolation epoch lags the latest tracking data, so a negative age is expected
+    const auto age_samples = static_cast<int64_t>(rx_clock) - static_cast<int64_t>(trk.Tracking_sample_counter);
+    return age_samples < trk.fs;  // tracking data not older than one second
+}
+
+
 void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
 {
     // 1. Set the TOW using the latest TOW in the observables.
@@ -888,6 +902,12 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
             // ************ end time tags **************
             for (int32_t m = 0; m < ninput_items[n]; m++)
                 {
+                    if (d_conf.enable_monitor)
+                        {
+                            // Keep the latest tracking data so that channels without a
+                            // valid time reference can be reported through the Monitor
+                            d_last_trk_data[n] = in[n][m];
+                        }
                     // Push the valid tracking Gnss_Synchros to their corresponding deque
                     if (in[n][m].Flag_valid_word)
                         {
@@ -919,6 +939,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
         {
             std::vector<Gnss_Synchro> epoch_data(d_nchannels_out);
             int32_t n_valid = 0;
+            int32_t n_trk_only = 0;
             for (uint32_t n = 0; n < d_nchannels_out; n++)
                 {
                     Gnss_Synchro interpolated_gnss_synchro{};
@@ -926,6 +947,14 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                         {
                             // Produce an empty observation
                             interpolated_gnss_synchro = Gnss_Synchro();
+                            if (d_conf.enable_monitor && has_fresh_trk_data(n, d_Rx_clock_buffer.front()))
+                                {
+                                    // Report the latest tracking data (e.g., C/N0, Doppler) for
+                                    // channels lacking a valid time reference, such as Galileo E6
+                                    // when no I/NAV or F/NAV channel provides the time of week
+                                    interpolated_gnss_synchro = d_last_trk_data[n];
+                                    n_trk_only++;
+                                }
                             interpolated_gnss_synchro.Flag_valid_pseudorange = false;
                             interpolated_gnss_synchro.Flag_valid_word = false;
                             interpolated_gnss_synchro.Flag_valid_acquisition = false;
@@ -1017,7 +1046,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                         }
                 }
 
-            if (n_valid > 0)
+            if (n_valid > 0 || n_trk_only > 0)
                 {
                     // LOG(INFO) << "OBS: diff time: " << out[0][0].RX_time * 1000.0 - old_time_debug;
                     // old_time_debug = out[0][0].RX_time * 1000.0;

@@ -42,6 +42,7 @@ public:
     bool dump{false};
     bool dump_mat{false};
     bool enable_E6{true};
+    bool enable_monitor{false};
 };
 
 /** \} */

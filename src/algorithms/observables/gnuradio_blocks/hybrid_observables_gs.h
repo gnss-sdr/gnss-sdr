@@ -74,6 +74,7 @@ private:
     void msg_handler_pvt_to_observables(const pmt::pmt_t& msg);
     double compute_T_rx_s(const Gnss_Synchro& a) const;
     bool interp_trk_obs(Gnss_Synchro& interpolated_obs, uint32_t ch, uint64_t rx_clock) const;
+    bool has_fresh_trk_data(uint32_t ch, uint64_t rx_clock) const;
     void update_TOW(const std::vector<Gnss_Synchro>& data);
     void compute_pranges(std::vector<Gnss_Synchro>& data) const;
     void smooth_pseudoranges(std::vector<Gnss_Synchro>& data);
@@ -101,6 +102,7 @@ private:
     std::vector<double> d_channel_last_pseudorange_smooth;
     std::vector<double> d_channel_last_carrier_phase_rads;
     std::vector<bool> d_channel_last_rx_time_valid;
+    std::vector<Gnss_Synchro> d_last_trk_data;  // latest tracking data per channel, for the Monitor
 
     std::string d_dump_filename;
 

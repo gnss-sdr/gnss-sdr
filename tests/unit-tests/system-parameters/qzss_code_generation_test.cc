@@ -15,6 +15,7 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "qzss.h"
 #include "qzss_signal_replica.h"
 #include <gtest/gtest.h>
 #include <vector>
@@ -23,8 +24,8 @@
 TEST(QzssL1Code, Periodicity)
 {
     constexpr uint32_t prn = 193;
-    std::vector<float> code1(1023);
-    std::vector<float> code2(1023);
+    std::vector<float> code1(QZSS_L1_CODE_LENGTH);
+    std::vector<float> code2(QZSS_L1_CODE_LENGTH);
 
     qzss_l1_code_gen_float(code1, prn);
     qzss_l1_code_gen_float(code2, prn);
@@ -36,41 +37,53 @@ TEST(QzssL1Code, Periodicity)
 TEST(QzssL1Code, GoldenFirst32Chips)
 {
     constexpr uint32_t prn = 193;
-    std::vector<float> code(1023);
+    std::vector<float> code(QZSS_L1_CODE_LENGTH);
     qzss_l1_code_gen_float(code, prn);
 
-    const float golden[32] = {
-        -1, 1, 1, 1, -1, 1, -1, 1,
-        1, 1, -1, -1, -1, -1, 1, 1,
-        -1, -1, -1, -1, -1, -1, 1, -1,
-        1, -1, -1, -1, -1, -1, -1, 1};
+    const float golden[64] = {
+        -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1,
+        1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 1, 1, 1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 1, -1, -1,
+        1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 1};
 
-    for (int i = 0; i < 32; ++i)
+    for (int i = 0; i < 64; ++i)
         {
             EXPECT_FLOAT_EQ(code[i], golden[i]);
         }
     constexpr uint32_t prn2 = 195;
     qzss_l1_code_gen_float(code, prn2);
-    const float golden2[32] = {
-        -1, -1, -1, -1, -1, 1, 1, -1,
-        -1, -1, -1, 1, -1, 1, -1, 1,
-        1, 1, 1, 1, -1, -1, 1, 1,
-        -1, -1, 1, -1, 1, 1, -1, -1};
-    for (int i = 0; i < 32; ++i)
+    const float golden2[64] = {
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1,
+        -1, -1, -1, -1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1,
+        -1, -1, -1, -1, 1, 1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1};
+    for (int i = 0; i < 64; ++i)
         {
             EXPECT_FLOAT_EQ(code[i], golden2[i]);
         }
 
     constexpr uint32_t prn3 = 199;
     qzss_l1_code_gen_float(code, prn3);
-    const float golden3[32] = {
-        1, -1, -1, -1, 1, -1, 1, -1,
-        -1, -1, -1, -1, 1, -1, -1, -1,
-        -1, 1, -1, -1, 1, -1, -1, -1,
-        -1, 1, 1, 1, -1, 1, -1, -1};
-    for (int i = 0; i < 32; ++i)
+    const float golden3[64] = {
+        1, 1, -1, -1, -1, -1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, 1, 1, -1, -1, -1, -1, -1, -1,
+        -1, -1, 1, 1, -1, -1, -1, -1, 1, 1, -1, -1, -1, -1, -1, -1,
+        -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, 1, 1, -1, -1, -1, -1};
+    for (int i = 0; i < 64; ++i)
         {
             EXPECT_FLOAT_EQ(code[i], golden3[i]);
+        }
+
+    constexpr uint32_t prn4 = 205;
+    qzss_l1_code_gen_float(code, prn4);
+    const float golden4[64] = {
+        1, -1, 1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 1, -1, 1, -1,
+        1, -1, 1, -1, 1, -1, -1, 1, -1, 1, -1, 1, 1, -1, -1, 1,
+        1, -1, -1, 1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1,
+        -1, 1, -1, 1, -1, 1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1};
+    for (int i = 0; i < 64; ++i)
+        {
+            EXPECT_FLOAT_EQ(code[i], golden4[i]);
         }
 }
 

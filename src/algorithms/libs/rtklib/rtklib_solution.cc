@@ -34,6 +34,7 @@
 #include "rtklib_solution.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_rtksvr.h"
+#include <algorithm>
 #include <cctype>
 #include <cmath>
 #include <cstring>
@@ -1955,7 +1956,7 @@ int outnmea_gsv(unsigned char *buff, const sol_t *sol,
                                     az += 360.0;
                                 }
                             el = ssat[sats[k] - 1].azel[1] * R2D;
-                            snr = ssat[sats[k] - 1].snr[0] * 0.25;
+                            snr = *std::max_element(std::begin(ssat[sats[k] - 1].snr), std::end(ssat[sats[k] - 1].snr)) * 0.25;
                             p += std::snprintf(p, MAXSOLBUF - (s - p), ",%02d,%02.0f,%03.0f,%02.0f", prn, el, az, snr);
                         }
                     else
@@ -2001,7 +2002,7 @@ int outnmea_gsv(unsigned char *buff, const sol_t *sol,
                                     az += 360.0;
                                 }
                             el = ssat[sats[k] - 1].azel[1] * R2D;
-                            snr = ssat[sats[k] - 1].snr[0] * 0.25;
+                            snr = *std::max_element(std::begin(ssat[sats[k] - 1].snr), std::end(ssat[sats[k] - 1].snr)) * 0.25;
                             p += std::snprintf(p, MAXSOLBUF - (s - p), ",%02d,%02.0f,%03.0f,%02.0f", prn, el, az, snr);
                         }
                     else
@@ -2046,7 +2047,7 @@ int outnmea_gsv(unsigned char *buff, const sol_t *sol,
                                     az += 360.0;
                                 }
                             el = ssat[sats[k] - 1].azel[1] * R2D;
-                            snr = ssat[sats[k] - 1].snr[0] * 0.25;
+                            snr = *std::max_element(std::begin(ssat[sats[k] - 1].snr), std::end(ssat[sats[k] - 1].snr)) * 0.25;
                             p += std::snprintf(p, MAXSOLBUF - (s - p), ",%02d,%02.0f,%03.0f,%02.0f", prn, el, az, snr);
                         }
                     else
@@ -2091,7 +2092,7 @@ int outnmea_gsv(unsigned char *buff, const sol_t *sol,
                                     az += 360.0;
                                 }
                             el = ssat[sats[k] - 1].azel[1] * R2D;
-                            snr = ssat[sats[k] - 1].snr[0] * 0.25;
+                            snr = *std::max_element(std::begin(ssat[sats[k] - 1].snr), std::end(ssat[sats[k] - 1].snr)) * 0.25;
                             p += std::snprintf(p, MAXSOLBUF - (s - p), ",%02d,%02.0f,%03.0f,%02.0f", prn, el, az, snr);
                         }
                     else
@@ -2136,7 +2137,7 @@ int outnmea_gsv(unsigned char *buff, const sol_t *sol,
                                     az += 360.0;
                                 }
                             el = ssat[sats[k] - 1].azel[1] * R2D;
-                            snr = ssat[sats[k] - 1].snr[0] * 0.25;
+                            snr = *std::max_element(std::begin(ssat[sats[k] - 1].snr), std::end(ssat[sats[k] - 1].snr)) * 0.25;
                             p += std::snprintf(p, MAXSOLBUF - (s - p), ",%02d,%02.0f,%03.0f,%02.0f", prn, el, az, snr);
                         }
                     else

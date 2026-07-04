@@ -1162,7 +1162,10 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
                 {
                     ssat[obs[i].sat - 1].azel[0] = azel_[i * 2];
                     ssat[obs[i].sat - 1].azel[1] = azel_[1 + i * 2];
-                    ssat[obs[i].sat - 1].snr[0] = obs[i].SNR[0];
+                    for (int j = 0; j < NFREQ; j++)
+                        {
+                            ssat[obs[i].sat - 1].snr[j] = obs[i].SNR[j];
+                        }
                     if (!vsat[i])
                         {
                             continue;

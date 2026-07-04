@@ -109,6 +109,13 @@ All notable changes to GNSS-SDR will be documented in this file.
   Their generation can be disabled by setting `Observables.enable_E6=false`.
   This setting is now independent of `PVT.use_e6_for_pvt`, which keeps
   controlling whether E6 observables are used in the PVT solution.
+- The Monitor (`Monitor.enable_monitor=true`) now also reports channels that are
+  tracking a signal but do not have a valid time reference yet, filling their
+  entries with the latest raw tracking data (C/N0, Doppler, carrier phase) while
+  keeping their observable validity flags unset. This makes the Monitor usable
+  in Galileo E6-only configurations, where the time of week cannot be obtained
+  from HAS pages, as well as during the initial seconds of operation, before the
+  telemetry decoders attain synchronization.
 - Reworked the Python plotting utilities under `utils/python` (acquisition,
   tracking, telemetry, observables, and PVT diagnostics). Each script now
   exposes a command-line interface (run with `--help`) and can be executed from

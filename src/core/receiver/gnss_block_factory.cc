@@ -24,7 +24,6 @@
  */
 
 
-#include "gnss_block_factory.h"
 #include "acquisition_interface.h"
 #include "array_signal_conditioner.h"
 #include "beamformer_filter.h"
@@ -44,13 +43,16 @@
 #include "galileo_e1_tcp_connector_tracking.h"
 #include "galileo_telemetry_decoder_gs.h"
 #include "glonass_gnav_telemetry_decoder_gs.h"
+#include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_sdr_string_literals.h"
+#include "gps_cnav_navigation_message.h"
 #include "gps_l1_ca_gaussian_tracking.h"
 #include "gps_l1_ca_kf_tracking.h"
 #include "gps_l1_ca_tcp_connector_tracking.h"
 #include "gps_l1_ca_telemetry_decoder_gs.h"
+#include "gps_l1c_telemetry_decoder_gs.h"
 #include "gps_l2c_telemetry_decoder_gs.h"
 #include "gps_l5_telemetry_decoder_gs.h"
 #include "gss6450_file_signal_source.h"
@@ -202,6 +204,7 @@ std::string get_role_name(const ConfigurationInterface* configuration, const std
 const auto signal_mapping = std::vector<std::pair<std::string, std::string>>{
     {"1C", "GPS L1 C/A"},
     {"2S", "GPS L2C (M)"},
+    {"L1", "GPS L1C"},
     {"L5", "GPS L5"},
     {"1B", "GALILEO E1 B (I/NAV OS)"},
     {"5X", "GALILEO E5a I (F/NAV OS)"},
@@ -444,6 +447,10 @@ std::unique_ptr<AcquisitionInterface> get_acq_block(
         {
             return std::make_unique<PcpsAcquisitionAdapter>(configuration, role, implementation, in_streams, out_streams, GPS_L5);
         }
+    else if (implementation == "GPS_L1C_PCPS_Ambiguous_Acquisition")
+        {
+            return std::make_unique<PcpsAcquisitionAdapter>(configuration, role, implementation, in_streams, out_streams, GPS_L1);
+        }
     else if (implementation == "Galileo_E1_PCPS_Ambiguous_Acquisition")
         {
             return std::make_unique<PcpsAcquisitionAdapter>(configuration, role, implementation, in_streams, out_streams, GAL_1B);
@@ -563,6 +570,10 @@ std::unique_ptr<TrackingInterface> get_trk_block(
     else if (implementation == "GPS_L1_CA_TCP_CONNECTOR_Tracking")
         {
             return std::make_unique<GpsL1CaTcpConnectorTracking>(configuration, role, in_streams, out_streams);
+        }
+    else if (implementation == "GPS_L1C_DLL_PLL_VEML_Tracking")
+        {
+            return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, GPS_L1);
         }
     else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking")
         {
@@ -713,6 +724,10 @@ std::unique_ptr<TelemetryDecoderInterface> get_tlm_block(
         {
             telemetry = gps_l2c_make_telemetry_decoder_gs(get_tlm_conf(configuration, role));
         }
+    else if (implementation == "GPS_L1C_Telemetry_Decoder")
+        {
+            telemetry = gps_l1c_make_telemetry_decoder_gs(get_tlm_conf(configuration, role));
+        }
     else if (implementation == "GLONASS_L1_CA_Telemetry_Decoder")
         {
             telemetry = glonass_gnav_make_telemetry_decoder_gs(get_tlm_conf(configuration, role), 1);
@@ -741,6 +756,7 @@ std::unique_ptr<TelemetryDecoderInterface> get_tlm_block(
         {
             telemetry = gps_l5_make_telemetry_decoder_gs(get_tlm_conf(configuration, role), CnavSystem::QZSS);
         }
+    // TODO: QZSS L1C
 
     if (telemetry)
         {

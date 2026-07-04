@@ -21,6 +21,7 @@
 
 #include "gnss_flowgraph.h"
 #include "GLONASS_L1_L2_CA.h"
+#include "GPS_L1C.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "GPS_L5.h"
@@ -85,6 +86,7 @@ const auto signal_mapping = std::unordered_map<std::string, std::pair<std::strin
     {"1C", {"GPS", "L1"}},
     {"2S", {"GPS", "L2"}},
     {"L5", {"GPS", "L5"}},
+    {"L1", {"GPS", "L1C"}},
     {"1B", {"Galileo", "E1"}},
     {"5X", {"Galileo", "E5a"}},
     {"7X", {"Galileo", "E5b"}},
@@ -250,6 +252,7 @@ void GNSSFlowgraph::init()
     mapStringValues_["1C"] = evGPS_1C;
     mapStringValues_["2S"] = evGPS_2S;
     mapStringValues_["L5"] = evGPS_L5;
+    mapStringValues_["L1"] = evGPS_L1;
     mapStringValues_["1B"] = evGAL_1B;
     mapStringValues_["5X"] = evGAL_5X;
     mapStringValues_["7X"] = evGAL_7X;
@@ -1157,6 +1160,9 @@ int GNSSFlowgraph::connect_signal_conditioners_to_channels()
                                 case evGPS_L5:
                                     acq_fs = GPS_L5_OPT_ACQ_FS_SPS;
                                     break;
+                                case evGPS_L1:
+                                    acq_fs = GPS_L1C_OPT_ACQ_FS_SPS;
+                                    break;
                                 case evSBAS_1C:
                                     acq_fs = GPS_L1_CA_OPT_ACQ_FS_SPS;
                                     break;
@@ -1946,7 +1952,7 @@ void GNSSFlowgraph::priorize_satellites(const std::vector<std::pair<int, Gnss_Sa
 
             if (visible_satellite.second.get_system() == "GPS")
                 {
-                    signal_str_vector = {"1C", "2S", "L5"};
+                    signal_str_vector = {"1C", "2S", "L5", "L1"};
                 }
             else if (visible_satellite.second.get_system() == "Galileo")
                 {
@@ -2311,6 +2317,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
         case evGLO_1G:
         case evBDS_B1:
         case evQZS_J1:
+        case evGPS_L1:
             is_primary_frequency = true;
             break;
 

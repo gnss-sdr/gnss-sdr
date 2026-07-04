@@ -13,6 +13,7 @@ set(TELEMETRY_DECODER_LIB_SOURCES
     tlm_utils.cc
     viterbi_decoder.cc
     viterbi_decoder_sbas.cc
+    ldpc_min_sum_decoder.cc
 )
 
 set(TELEMETRY_DECODER_LIB_HEADERS
@@ -24,6 +25,7 @@ set(TELEMETRY_DECODER_LIB_HEADERS
     tow_utils.h
     viterbi_decoder.h
     viterbi_decoder_sbas.h
+    ldpc_min_sum_decoder.h
 )
 
 list(SORT TELEMETRY_DECODER_LIB_HEADERS)

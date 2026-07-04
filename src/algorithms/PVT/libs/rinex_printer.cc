@@ -81,6 +81,8 @@ std::string signal_flag_to_string(signal_flag flag)
             return "2S";
         case GPS_L5:
             return "L5";
+        case GPS_L1:
+            return "L1";
         case GAL_1B:
             return "1B";
         case GAL_E5a:

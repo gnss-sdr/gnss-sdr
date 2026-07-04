@@ -256,6 +256,7 @@ private:
         evGPS_1C,
         evGPS_2S,
         evGPS_L5,
+        evGPS_L1,
         evSBAS_1C,
         evGAL_1B,
         evGAL_5X,

@@ -30,12 +30,12 @@
  *
  * -----------------------------------------------------------------------*/
 
-#include "rtklib_solver.h"
 #include "Beidou_DNAV.h"
 #include "Galileo_CNAV.h"
 #include "gnss_sdr_filesystem.h"
 #include "matlab_writter_helper.h"
 #include "rtklib_rtkpos.h"
+#include "rtklib_solver.h"
 #include "signal_enabled_flags.h"
 #include <algorithm>
 #include <exception>
@@ -1153,6 +1153,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
     std::map<int, Gps_Ephemeris>::const_iterator gps_ephemeris_iter;
     std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_ephemeris_iter;
+    std::map<int, Gps_CNAV2_Ephemeris>::const_iterator gps_cnav2_ephemeris_iter;
     std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_ephemeris_iter;
     std::map<int, Beidou_Dnav_Ephemeris>::const_iterator beidou_ephemeris_iter;
 
@@ -1382,6 +1383,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         const bool is_l1_ca = (sig_ == "1C") || (sig_ == "J1");
                         const bool is_l2 = (sig_ == "2S");
                         const bool is_l5 = (sig_ == "L5") || (sig_ == "J5");
+                        const bool is_l1c = (sig_ == "L1");
                         const std::string rtklib_sig = is_qzss ? (is_l1_ca ? "J1" : (is_l5 ? "J5" : sig_)) : sig_;
                         if (is_l1_ca)
                             {
@@ -1459,6 +1461,62 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     gps_cnav_ephemeris_iter->second.WN,
+                                                    d_rtklib_band_index[rtklib_sig]);
+                                                valid_obs++;
+                                            }
+                                        else  // the ephemeris are not available for this SV
+                                            {
+                                                DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
+                                            }
+                                    }
+                            }
+                        if (is_l1c)
+                            {
+                                gps_cnav2_ephemeris_iter = gps_cnav2_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                                if (gps_cnav2_ephemeris_iter != gps_cnav2_ephemeris_map.cend())
+                                    {
+                                        // 1. Find the same satellite in current GPS observations
+                                        bool found_existing_obs = false;
+                                        for (int i = 0; i < valid_obs; i++)
+                                            {
+                                                if (eph_data[i].sat == sat)
+                                                    {
+                                                        // 2. If found, attach the L1C observation to the existing observation in RTKLIB structure
+                                                        if (eph_data[i].apply_has_corrections)
+                                                            {
+                                                                const HAS_obs_corrections *applied_has_correction = nullptr;
+                                                                d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
+                                                                    gnss_observables_iter->second,
+                                                                    d_has_obs_corr_map,
+                                                                    gps_cnav2_ephemeris_iter->second.WN,
+                                                                    d_rtklib_band_index[rtklib_sig],
+                                                                    &applied_has_correction,
+                                                                    false);
+                                                                clear_applied_has_phase_bias_discontinuity(applied_has_correction, prn);
+                                                            }
+                                                        else
+                                                            {
+                                                                d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
+                                                                    gnss_observables_iter->second,
+                                                                    gps_cnav2_ephemeris_iter->second.WN,
+                                                                    d_rtklib_band_index[rtklib_sig]);
+                                                            }
+                                                        found_existing_obs = true;
+                                                        break;
+                                                    }
+                                            }
+                                        if (!found_existing_obs)
+                                            {
+                                                // 3. If not found, insert the L1C ephemeris and the observation
+                                                // convert ephemeris from GNSS-SDR class to RTKLIB structure
+                                                eph_data[valid_obs] = eph_to_rtklib(gps_cnav2_ephemeris_iter->second);
+                                                const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
+                                                obsd_t newobs = {{0, 0}, '0', '0', {}, {},
+                                                    {default_code_, default_code_, default_code_},
+                                                    {}, {0.0, 0.0, 0.0}, {}};
+                                                d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                                    gnss_observables_iter->second,
+                                                    gps_cnav2_ephemeris_iter->second.WN,
                                                     d_rtklib_band_index[rtklib_sig]);
                                                 valid_obs++;
                                             }

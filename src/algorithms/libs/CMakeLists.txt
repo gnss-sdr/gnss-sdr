@@ -17,6 +17,7 @@ set(GNSS_SPLIBS_SOURCES
     glonass_l2_signal_replica.cc
     gps_l2c_signal_replica.cc
     gps_l5_signal_replica.cc
+    gps_l1c_signal_replica.cc
     gnss_signal_replica.cc
     gps_sdr_signal_replica.cc
     byte_x2_to_complex_byte.cc

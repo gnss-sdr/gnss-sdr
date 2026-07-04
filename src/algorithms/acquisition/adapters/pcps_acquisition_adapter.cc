@@ -20,6 +20,7 @@
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
 #include "GLONASS_L1_L2_CA.h"
+#include "GPS_L1C.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "GPS_L5.h"
@@ -37,6 +38,7 @@
 #include "glonass_l1_signal_replica.h"
 #include "glonass_l2_signal_replica.h"
 #include "gnss_sdr_flags.h"
+#include "gps_l1c_signal_replica.h"
 #include "gps_l2c_signal_replica.h"
 #include "gps_l5_signal_replica.h"
 #include "gps_sdr_signal_replica.h"
@@ -100,6 +102,8 @@ signal_info get_signal_info(signal_flag sig_flag)
             return {QZSS_L1_CHIP_RATE, QZSS_L1_OPT_ACQ_FS_SPS, QZSS_L1_CODE_LENGTH, QZSS_L1_PERIOD_MS};
         case QZS_J5:
             return {QZSS_L5_CHIP_RATE, QZSS_L5_OPT_ACQ_FS_SPS, QZSS_L5_CODE_LENGTH, QZSS_L5I_PERIOD_MS};
+        case GPS_L1:
+            return {GPS_L1C_CODE_CHIP_RATE_CPS, GPS_L1C_OPT_ACQ_FS_SPS, GPS_L1C_CODE_LENGTH_CHIPS, GPS_L1C_CODE_PERIOD_MS};
         default:
             break;
         }
@@ -180,6 +184,11 @@ void code_gen_complex_sampled(signal_flag sig_flag, const Acq_Conf& conf, const 
         case QZS_J5:
             qzss_l5i_code_gen_complex_sampled(dest, gnss_synchro.PRN, sampling_freq);
             break;
+        case GPS_L1:
+            {
+                gps_l1c_code_gen_complex_sampled(dest, conf.acquire_pilot, conf.cboc, gnss_synchro.PRN, sampling_freq, 0);
+            }
+            break;
         default:
             break;
         }
@@ -195,7 +204,7 @@ Acq_Conf get_acq_conf(const ConfigurationInterface* configuration, const std::st
     acq_parameters.sampled_ms = sig_info.ms_per_code;  // Set as default value
     acq_parameters.SetFromConfiguration(configuration, role, sig_info.chip_rate, sig_info.opt_freq);
 
-    if (sig_flag == GAL_1B)
+    if (sig_flag == GAL_1B || sig_flag == GPS_L1)
         {
             acq_parameters.acquire_pilot = configuration->property(role + ".acquire_pilot", acq_parameters.acquire_pilot);
             acq_parameters.cboc = configuration->property(role + ".cboc", acq_parameters.cboc);

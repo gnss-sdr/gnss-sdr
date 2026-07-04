@@ -17,6 +17,7 @@
 #ifndef GNSS_SDR_RTKLIB_CONVERSIONS_H
 #define GNSS_SDR_RTKLIB_CONVERSIONS_H
 
+#include "gps_cnav2_ephemeris.h"
 #include "rtklib.h"
 #include <cstdint>
 #include <map>
@@ -99,6 +100,7 @@ eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph,
     bool pre_2009_file = false);
 
 eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph);
+eph_t eph_to_rtklib(const Gps_CNAV2_Ephemeris& gps_cnav2_eph);
 
 eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph);
 

@@ -153,9 +153,6 @@ public:
     bool almanac_validation() const;
 
 private:
-    uint64_t read_navigation_unsigned(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
-    int64_t read_navigation_signed(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
-    bool read_navigation_bool(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
     void print_gps_word_bytes(uint32_t GPS_word) const;
     void decode_lnav_almanac(const std::bitset<GPS_SUBFRAME_BITS>& subframe_bits, uint32_t prn, double eccentricity_ref, double inclination_ref);
     void decode_lnav_iono_utc(const std::bitset<GPS_SUBFRAME_BITS>& subframe_bits);

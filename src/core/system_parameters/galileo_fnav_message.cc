@@ -21,6 +21,7 @@
  */
 
 #include "galileo_fnav_message.h"
+#include "read_navigation.h"
 #include <boost/crc.hpp>  // for boost::crc_basic, boost::crc_optimal
 #include <boost/dynamic_bitset.hpp>
 #include <algorithm>  // for reverse
@@ -281,35 +282,6 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
             flag_almanac_2 = true;
             break;
         }
-}
-
-
-uint64_t Galileo_Fnav_Message::read_navigation_unsigned(const std::bitset<GALILEO_FNAV_DATA_FRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
-{
-    uint64_t value = 0ULL;
-    for (const auto& p : parameter)
-        {
-            for (int j = 0; j < p.second; j++)
-                {
-                    value <<= 1U;  // shift left
-                    value |= static_cast<uint64_t>(bits[GALILEO_FNAV_DATA_FRAME_BITS - p.first - j]);
-                }
-        }
-    return value;
-}
-
-
-int64_t Galileo_Fnav_Message::read_navigation_signed(const std::bitset<GALILEO_FNAV_DATA_FRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
-{
-    int64_t value = (bits[GALILEO_FNAV_DATA_FRAME_BITS - parameter[0].first] == 1) ? -1LL : 0LL;
-    for (const auto& p : parameter)
-        {
-            for (int32_t j = 0; j < p.second; j++)
-                {
-                    value = (value << 1) | static_cast<int64_t>(bits[GALILEO_FNAV_DATA_FRAME_BITS - p.first - j]);
-                }
-        }
-    return value;
 }
 
 

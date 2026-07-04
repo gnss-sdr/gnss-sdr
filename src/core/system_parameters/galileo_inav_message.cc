@@ -18,6 +18,7 @@
 
 #include "galileo_inav_message.h"
 #include "galileo_reduced_ced.h"
+#include "read_navigation.h"
 #include "reed_solomon.h"
 #include <boost/crc.hpp>             // for boost::crc_basic, boost::crc_optimal
 #include <boost/dynamic_bitset.hpp>  // for boost::dynamic_bitset
@@ -75,21 +76,6 @@ bool Galileo_Inav_Message::CRC_test(const std::bitset<GALILEO_DATA_FRAME_BITS>& 
 }
 
 
-uint64_t Galileo_Inav_Message::read_navigation_unsigned(const std::bitset<GALILEO_DATA_JK_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
-{
-    uint64_t value = 0ULL;
-    for (const auto& p : parameter)
-        {
-            for (int j = 0; j < p.second; j++)
-                {
-                    value <<= 1U;  // shift left
-                    value |= static_cast<uint64_t>(bits[GALILEO_DATA_JK_BITS - p.first - j]);
-                }
-        }
-    return value;
-}
-
-
 uint8_t Galileo_Inav_Message::read_octet_unsigned(const std::bitset<GALILEO_DATA_JK_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint8_t value = 0;
@@ -116,27 +102,6 @@ uint64_t Galileo_Inav_Message::read_page_type_unsigned(const std::bitset<GALILEO
                     value |= static_cast<uint64_t>(bits[GALILEO_PAGE_TYPE_BITS - p.first - j]);
                 }
         }
-    return value;
-}
-
-
-int64_t Galileo_Inav_Message::read_navigation_signed(const std::bitset<GALILEO_DATA_JK_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
-{
-    int64_t value = (bits[GALILEO_DATA_JK_BITS - parameter[0].first] == 1) ? -1LL : 0LL;
-    for (const auto& p : parameter)
-        {
-            for (int32_t j = 0; j < p.second; j++)
-                {
-                    value = (value << 1) | static_cast<int64_t>(bits[GALILEO_DATA_JK_BITS - p.first - j]);
-                }
-        }
-    return value;
-}
-
-
-bool Galileo_Inav_Message::read_navigation_bool(const std::bitset<GALILEO_DATA_JK_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
-{
-    bool value = bits[GALILEO_DATA_JK_BITS - parameter[0].first];
     return value;
 }
 

@@ -14,7 +14,6 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "rtklib_pvt_gs.h"
 #include "Galileo_CNAV.h"
 #include "MATH_CONSTANTS.h"
 #include "an_packet_printer.h"
@@ -57,6 +56,7 @@
 #include "pvt_conf.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
+#include "rtklib_pvt_gs.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_solver.h"
 #include "signal_enabled_flags.h"
@@ -140,6 +140,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_gps_iono_sptr_type_hash_code(typeid(std::shared_ptr<Gps_Iono>).hash_code()),
       d_gps_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Gps_Utc_Model>).hash_code()),
       d_gps_cnav_ephemeris_sptr_type_hash_code(typeid(std::shared_ptr<Gps_CNAV_Ephemeris>).hash_code()),
+      d_gps_cnav2_ephemeris_sptr_type_hash_code(typeid(std::shared_ptr<Gps_CNAV2_Ephemeris>).hash_code()),
       d_gps_cnav_iono_sptr_type_hash_code(typeid(std::shared_ptr<Gps_CNAV_Iono>).hash_code()),
       d_gps_cnav_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Gps_CNAV_Utc_Model>).hash_code()),
       d_gps_almanac_sptr_type_hash_code(typeid(std::shared_ptr<Gps_Almanac>).hash_code()),
@@ -1302,6 +1303,60 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     DLOG(INFO) << "New GPS CNAV ephemeris record has arrived";
                 }
+            else if (msg_type_hash_code == d_gps_cnav2_ephemeris_sptr_type_hash_code)
+                {
+                    // ### GPS CNAV2 message ###
+                    const auto gps_cnav2_ephemeris = wht::any_cast<std::shared_ptr<Gps_CNAV2_Ephemeris>>(pmt::any_ref(msg));
+                    // update/insert new ephemeris record to the global ephemeris map
+
+                    // TODO: Rinex
+                    // if (d_rinex_output_enabled && d_rp->is_rinex_header_written())  // The header is already written, we can now log the navigation message data
+                    //     {
+                    //         const auto eph_it = d_internal_pvt_solver->gps_cnav_ephemeris_map.find(gps_cnav_ephemeris->PRN);
+
+                    //         if (eph_it == d_internal_pvt_solver->gps_cnav_ephemeris_map.cend() || eph_it->second.toe1 != gps_cnav_ephemeris->toe1)
+                    //             {
+                    //                 d_rp->log_rinex_nav_gps_cnav({{gps_cnav_ephemeris->PRN, *gps_cnav_ephemeris}});  // New record!
+                    //             }
+                    //     }
+
+                    d_internal_pvt_solver->gps_cnav2_ephemeris_map[gps_cnav2_ephemeris->PRN] = *gps_cnav2_ephemeris;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->gps_cnav2_ephemeris_map[gps_cnav2_ephemeris->PRN] = *gps_cnav2_ephemeris;
+                        }
+
+                    if (gps_cnav2_ephemeris->l1c_signal_health != 0 || gps_cnav2_ephemeris->signal_health != 0)
+                        {
+                            const std::string sat_sys = (MINPRNQZS <= gps_cnav2_ephemeris->PRN && gps_cnav2_ephemeris->PRN <= MAXPRNQZS) ? "QZSS" : "GPS";
+                            std::cout << "Satellite " << Gnss_Satellite(sat_sys, gps_cnav2_ephemeris->PRN)
+                                      << " reports an unhealthy";
+                            const char* sep = " ";
+                            if (gps_cnav2_ephemeris->l1c_signal_health != 0)
+                                {
+                                    std::cout << sep << "L1C ";
+                                    sep = "and ";
+                                }
+
+                            if (gps_cnav2_ephemeris->signal_health != 0)
+                                {
+                                    std::cout << sep << "L1/L2/L5 ";
+                                }
+
+                            std::cout << "status in the CNAV2 message,";
+
+                            if (d_use_unhealthy_sats)
+                                {
+                                    std::cout << " use PVT solutions at your own risk.\n";
+                                }
+                            else
+                                {
+                                    std::cout << " not used for navigation.\n";
+                                }
+                        }
+                    DLOG(INFO) << "New GPS CNAV2 ephemeris record has arrived";
+                }
+            // TODO: CNAV2 iono
             else if (msg_type_hash_code == d_gps_cnav_iono_sptr_type_hash_code)
                 {
                     // ### GPS CNAV IONO ###
@@ -2017,6 +2072,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             const auto tmp_eph_iter_gps = d_internal_pvt_solver->gps_ephemeris_map.find(in[i][epoch].PRN);
                             const auto tmp_eph_iter_gal = d_internal_pvt_solver->galileo_ephemeris_map.find(in[i][epoch].PRN);
                             const auto tmp_eph_iter_cnav = d_internal_pvt_solver->gps_cnav_ephemeris_map.find(in[i][epoch].PRN);
+                            const auto tmp_eph_iter_cnav2 = d_internal_pvt_solver->gps_cnav2_ephemeris_map.find(in[i][epoch].PRN);
                             const auto tmp_eph_iter_glo_gnav = d_internal_pvt_solver->glonass_gnav_ephemeris_map.find(in[i][epoch].PRN);
                             const auto tmp_eph_iter_bds_dnav = d_internal_pvt_solver->beidou_dnav_ephemeris_map.find(in[i][epoch].PRN);
 
@@ -2084,6 +2140,14 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_cnav->second.PRN;
                                     if ((prn_aux == in[i][epoch].PRN) && (((std::string(in[i][epoch].Signal, 2) == std::string("2S")) || (std::string(in[i][epoch].Signal, 2) == std::string("L5")) || (std::string(in[i][epoch].Signal, 2) == std::string("J5")))))
+                                        {
+                                            store_valid_observable = true;
+                                        }
+                                }
+                            if (!d_osnma_strict && tmp_eph_iter_cnav2 != d_internal_pvt_solver->gps_cnav2_ephemeris_map.cend())
+                                {
+                                    const uint32_t prn_aux = tmp_eph_iter_cnav2->second.PRN;
+                                    if (prn_aux == in[i][epoch].PRN && std::string(in[i][epoch].Signal, 2) == std::string("L1"))
                                         {
                                             store_valid_observable = true;
                                         }

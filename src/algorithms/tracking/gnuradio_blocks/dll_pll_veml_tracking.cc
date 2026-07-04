@@ -25,6 +25,7 @@
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
 #include "GLONASS_L1_L2_CA.h"
+#include "GPS_L1C.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "GPS_L5.h"
@@ -44,6 +45,7 @@
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_filesystem.h"
 #include "gnss_synchro.h"
+#include "gps_l1c_signal_replica.h"
 #include "gps_l2c_signal_replica.h"
 #include "gps_l5_signal_replica.h"
 #include "gps_sdr_signal_replica.h"
@@ -172,6 +174,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
 
     std::map<std::string, std::string> map_signal_pretty_name;
     map_signal_pretty_name["1C"] = "L1 C/A";
+    map_signal_pretty_name["L1"] = "L1C";
     map_signal_pretty_name["1B"] = "E1";
     map_signal_pretty_name["1G"] = "L1 C/A";
     map_signal_pretty_name["2S"] = "L2C";
@@ -260,6 +263,31 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                             d_secondary_code_string = GPS_L5I_NH_CODE_STR;
                             d_signal_pretty_name = d_signal_pretty_name + "I";
                             d_interchange_iq = true;
+                        }
+                }
+            else if (d_signal_type == "L1")
+                {
+                    d_signal_carrier_freq = GPS_L1_FREQ_HZ;
+                    d_code_period = GPS_L1C_CODE_PERIOD_S;
+                    d_code_chip_rate = GPS_L1C_CODE_CHIP_RATE_CPS;
+                    d_code_length_chips = static_cast<int32_t>(GPS_L1C_CODE_LENGTH_CHIPS);
+                    d_symbols_per_bit = 1;
+                    d_correlation_length_ms = GPS_L1C_CODE_PERIOD_MS;
+                    d_code_samples_per_chip = 2;  // CBOC disabled: 2 samples per chip. CBOC enabled: 12 samples per chip
+                    d_veml = true;
+                    d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
+                    d_trk_parameters.slope = static_cast<float>(-CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, d_trk_parameters.spc));
+                    d_trk_parameters.y_intercept = static_cast<float>(GetYInterceptAbs(&SinBocCorrelationFunction<1, 1>, d_trk_parameters.spc));
+
+                    if (d_trk_parameters.track_pilot)
+                        {
+                            d_secondary = true;
+                            d_secondary_code_length = static_cast<uint32_t>(GPS_L1C_O_CODE_LENGTH_CHIPS);
+                            // String set later, as it depends on the PRN
+                        }
+                    else
+                        {
+                            d_secondary = false;
                         }
                 }
             else
@@ -828,6 +856,23 @@ void dll_pll_veml_tracking::start_tracking()
             else
                 {
                     gps_l5i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
+                }
+        }
+    else if (d_systemName == "GPS" && d_signal_type == "L1")
+        {
+            // TODO: Support for overlay code and cboc
+            if (d_trk_parameters.track_pilot)
+                {
+                    gps_l1c_sinboc(d_tracking_code, true, d_acquisition_gnss_synchro->PRN);
+                    gps_l1c_sinboc(d_data_code, false, d_acquisition_gnss_synchro->PRN);
+                    d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+                    d_secondary_code_string = generate_gps_l1c_overlay_code(d_acquisition_gnss_synchro->PRN);
+                    d_secondary_code_length = GPS_L1C_O_CODE_LENGTH_CHIPS;
+                    d_correlator_data_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
+                }
+            else
+                {
+                    gps_l1c_sinboc(d_tracking_code, false, d_acquisition_gnss_synchro->PRN);
                 }
         }
     else if (d_systemName == "Galileo" && d_signal_type == "1B")

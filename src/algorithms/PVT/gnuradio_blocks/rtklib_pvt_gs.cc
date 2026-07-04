@@ -55,6 +55,7 @@
 #include "nmea_printer.h"
 #include "osnma_data.h"
 #include "pvt_conf.h"
+#include "qzss.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
 #include "rtklib_rtkcmn.h"
@@ -1203,6 +1204,9 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                 {
                     // ### GPS EPHEMERIS ###
                     const auto gps_eph = wht::any_cast<std::shared_ptr<Gps_Ephemeris>>(pmt::any_ref(msg));
+                    // Ephemeris decoded from QZSS L1 C/B (PRN 203-206) belongs to the satellite
+                    // identified by the PRN of its nominal PNT signals (RINEX 4.00, Table 6)
+                    gps_eph->PRN = qzss_l1cb_prn_to_nominal_prn(gps_eph->PRN);
                     DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
                                << gps_eph->PRN << " (Block "
                                << gps_eph->satelliteBlock[gps_eph->PRN] << ")"
@@ -2012,21 +2016,29 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
             // ############ 1. READ PSEUDORANGES ####
             for (uint32_t i = 0; i < d_nchannels; i++)
                 {
-                    if (in[i][epoch].Flag_valid_pseudorange)
+                    Gnss_Synchro gnss_synchro = in[i][epoch];
+                    if (gnss_synchro.System == 'J')
                         {
-                            const auto tmp_eph_iter_gps = d_internal_pvt_solver->gps_ephemeris_map.find(in[i][epoch].PRN);
-                            const auto tmp_eph_iter_gal = d_internal_pvt_solver->galileo_ephemeris_map.find(in[i][epoch].PRN);
-                            const auto tmp_eph_iter_cnav = d_internal_pvt_solver->gps_cnav_ephemeris_map.find(in[i][epoch].PRN);
-                            const auto tmp_eph_iter_glo_gnav = d_internal_pvt_solver->glonass_gnav_ephemeris_map.find(in[i][epoch].PRN);
-                            const auto tmp_eph_iter_bds_dnav = d_internal_pvt_solver->beidou_dnav_ephemeris_map.find(in[i][epoch].PRN);
+                            // QZSS L1 C/B is broadcast with a dedicated PRN (203-206), but the
+                            // transmitting satellite is identified by the PRN of its nominal PNT
+                            // signals (RINEX 4.00, Table 6: QZSS PRN to RINEX Satellite Identifier)
+                            gnss_synchro.PRN = qzss_l1cb_prn_to_nominal_prn(gnss_synchro.PRN);
+                        }
+                    if (gnss_synchro.Flag_valid_pseudorange)
+                        {
+                            const auto tmp_eph_iter_gps = d_internal_pvt_solver->gps_ephemeris_map.find(gnss_synchro.PRN);
+                            const auto tmp_eph_iter_gal = d_internal_pvt_solver->galileo_ephemeris_map.find(gnss_synchro.PRN);
+                            const auto tmp_eph_iter_cnav = d_internal_pvt_solver->gps_cnav_ephemeris_map.find(gnss_synchro.PRN);
+                            const auto tmp_eph_iter_glo_gnav = d_internal_pvt_solver->glonass_gnav_ephemeris_map.find(gnss_synchro.PRN);
+                            const auto tmp_eph_iter_bds_dnav = d_internal_pvt_solver->beidou_dnav_ephemeris_map.find(gnss_synchro.PRN);
 
                             bool store_valid_observable = false;
 
                             if (!d_osnma_strict && tmp_eph_iter_gps != d_internal_pvt_solver->gps_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_gps->second.PRN;
-                                    if ((prn_aux == in[i][epoch].PRN) &&
-                                        ((std::string(in[i][epoch].Signal, 2) == std::string("1C")) || (std::string(in[i][epoch].Signal, 2) == std::string("J1"))) &&
+                                    if ((prn_aux == gnss_synchro.PRN) &&
+                                        ((std::string(gnss_synchro.Signal, 2) == std::string("1C")) || (std::string(gnss_synchro.Signal, 2) == std::string("J1"))) &&
                                         (d_use_unhealthy_sats || (tmp_eph_iter_gps->second.SV_health == 0)))
                                         {
                                             store_valid_observable = true;
@@ -2035,10 +2047,10 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             if (tmp_eph_iter_gal != d_internal_pvt_solver->galileo_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_gal->second.PRN;
-                                    if ((prn_aux == in[i][epoch].PRN) &&
-                                        (((std::string(in[i][epoch].Signal, 2) == std::string("1B")) && (d_use_unhealthy_sats || ((tmp_eph_iter_gal->second.E1B_DVS == false) && (tmp_eph_iter_gal->second.E1B_HS == 0)))) ||
-                                            ((std::string(in[i][epoch].Signal, 2) == std::string("5X")) && (d_use_unhealthy_sats || ((tmp_eph_iter_gal->second.E5a_DVS == false) && (tmp_eph_iter_gal->second.E5a_HS == 0)))) ||
-                                            ((std::string(in[i][epoch].Signal, 2) == std::string("7X")) && (d_use_unhealthy_sats || ((tmp_eph_iter_gal->second.E5b_DVS == false) && (tmp_eph_iter_gal->second.E5b_HS == 0))))))
+                                    if ((prn_aux == gnss_synchro.PRN) &&
+                                        (((std::string(gnss_synchro.Signal, 2) == std::string("1B")) && (d_use_unhealthy_sats || ((tmp_eph_iter_gal->second.E1B_DVS == false) && (tmp_eph_iter_gal->second.E1B_HS == 0)))) ||
+                                            ((std::string(gnss_synchro.Signal, 2) == std::string("5X")) && (d_use_unhealthy_sats || ((tmp_eph_iter_gal->second.E5a_DVS == false) && (tmp_eph_iter_gal->second.E5a_HS == 0)))) ||
+                                            ((std::string(gnss_synchro.Signal, 2) == std::string("7X")) && (d_use_unhealthy_sats || ((tmp_eph_iter_gal->second.E5b_DVS == false) && (tmp_eph_iter_gal->second.E5b_HS == 0))))))
                                         {
                                             if (d_osnma_strict)
                                                 {
@@ -2083,7 +2095,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             if (!d_osnma_strict && tmp_eph_iter_cnav != d_internal_pvt_solver->gps_cnav_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_cnav->second.PRN;
-                                    if ((prn_aux == in[i][epoch].PRN) && (((std::string(in[i][epoch].Signal, 2) == std::string("2S")) || (std::string(in[i][epoch].Signal, 2) == std::string("L5")) || (std::string(in[i][epoch].Signal, 2) == std::string("J5")))))
+                                    if ((prn_aux == gnss_synchro.PRN) && (((std::string(gnss_synchro.Signal, 2) == std::string("2S")) || (std::string(gnss_synchro.Signal, 2) == std::string("L5")) || (std::string(gnss_synchro.Signal, 2) == std::string("J5")))))
                                         {
                                             store_valid_observable = true;
                                         }
@@ -2091,7 +2103,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             if (!d_osnma_strict && tmp_eph_iter_glo_gnav != d_internal_pvt_solver->glonass_gnav_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_glo_gnav->second.PRN;
-                                    if ((prn_aux == in[i][epoch].PRN) && ((std::string(in[i][epoch].Signal, 2) == std::string("1G")) || (std::string(in[i][epoch].Signal, 2) == std::string("2G"))))
+                                    if ((prn_aux == gnss_synchro.PRN) && ((std::string(gnss_synchro.Signal, 2) == std::string("1G")) || (std::string(gnss_synchro.Signal, 2) == std::string("2G"))))
                                         {
                                             store_valid_observable = true;
                                         }
@@ -2099,12 +2111,12 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             if (!d_osnma_strict && tmp_eph_iter_bds_dnav != d_internal_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_bds_dnav->second.PRN;
-                                    if ((prn_aux == in[i][epoch].PRN) && (((std::string(in[i][epoch].Signal, 2) == std::string("B1")) || (std::string(in[i][epoch].Signal, 2) == std::string("B3"))) && (d_use_unhealthy_sats || (tmp_eph_iter_bds_dnav->second.SV_health == 0))))
+                                    if ((prn_aux == gnss_synchro.PRN) && (((std::string(gnss_synchro.Signal, 2) == std::string("B1")) || (std::string(gnss_synchro.Signal, 2) == std::string("B3"))) && (d_use_unhealthy_sats || (tmp_eph_iter_bds_dnav->second.SV_health == 0))))
                                         {
                                             store_valid_observable = true;
                                         }
                                 }
-                            if (std::string(in[i][epoch].Signal, 2) == std::string("E6"))
+                            if (std::string(gnss_synchro.Signal, 2) == std::string("E6"))
                                 {
                                     if (d_osnma_strict)
                                         {
@@ -2119,7 +2131,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             if (store_valid_observable)
                                 {
                                     // store valid observables in a map.
-                                    d_gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(i, in[i][epoch]));
+                                    d_gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(i, gnss_synchro));
                                 }
 
                             if (d_rtcm_enabled)
@@ -2130,28 +2142,28 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                 {
                                                     if (tmp_eph_iter_gps != d_internal_pvt_solver->gps_ephemeris_map.cend())
                                                         {
-                                                            d_rtcm_printer->lock_time(d_internal_pvt_solver->gps_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
+                                                            d_rtcm_printer->lock_time(d_internal_pvt_solver->gps_ephemeris_map.find(gnss_synchro.PRN)->second, gnss_synchro.RX_time, gnss_synchro);  // keep track of locking time
                                                         }
                                                 }
                                             if (d_internal_pvt_solver->galileo_ephemeris_map.empty() == false)
                                                 {
                                                     if (tmp_eph_iter_gal != d_internal_pvt_solver->galileo_ephemeris_map.cend())
                                                         {
-                                                            d_rtcm_printer->lock_time(d_internal_pvt_solver->galileo_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
+                                                            d_rtcm_printer->lock_time(d_internal_pvt_solver->galileo_ephemeris_map.find(gnss_synchro.PRN)->second, gnss_synchro.RX_time, gnss_synchro);  // keep track of locking time
                                                         }
                                                 }
                                             if (d_internal_pvt_solver->gps_cnav_ephemeris_map.empty() == false)
                                                 {
                                                     if (tmp_eph_iter_cnav != d_internal_pvt_solver->gps_cnav_ephemeris_map.cend())
                                                         {
-                                                            d_rtcm_printer->lock_time(d_internal_pvt_solver->gps_cnav_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
+                                                            d_rtcm_printer->lock_time(d_internal_pvt_solver->gps_cnav_ephemeris_map.find(gnss_synchro.PRN)->second, gnss_synchro.RX_time, gnss_synchro);  // keep track of locking time
                                                         }
                                                 }
                                             if (d_internal_pvt_solver->glonass_gnav_ephemeris_map.empty() == false)
                                                 {
                                                     if (tmp_eph_iter_glo_gnav != d_internal_pvt_solver->glonass_gnav_ephemeris_map.cend())
                                                         {
-                                                            d_rtcm_printer->lock_time(d_internal_pvt_solver->glonass_gnav_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
+                                                            d_rtcm_printer->lock_time(d_internal_pvt_solver->glonass_gnav_ephemeris_map.find(gnss_synchro.PRN)->second, gnss_synchro.RX_time, gnss_synchro);  // keep track of locking time
                                                         }
                                                 }
                                         }

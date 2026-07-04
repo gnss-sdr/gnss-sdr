@@ -57,6 +57,11 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Improved validation of GPS/QZSS CNAV Clock, Ephemeris, Integrity (CEI)
   dataset.
 - Implemented QZSS LNAV almanac/auxiliary pages decoding.
+- Added support for the QZSS L1 C/B signal (PRNs 203-206), broadcast by
+  satellites configured to transmit it in place of L1 C/A. Observables and
+  ephemerides from L1 C/B PRNs are attributed to the PRN of the satellite's
+  nominal PNT signals in PVT and output products, following the RINEX 4.00
+  convention. Contributed by @vladisslav2011.
 - Hardened BeiDou DNAV and Glonass GNAV decoding.
 - Improved performance of Galileo's Viterbi decoder.
 - Fixed edge cases in the retrieving of GPS L1 C/A navigation data.

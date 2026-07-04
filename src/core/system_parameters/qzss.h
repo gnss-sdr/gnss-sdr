@@ -28,14 +28,16 @@
 
 static constexpr double QZSS_L1_FREQ_HZ = FREQ1;
 static constexpr double QZSS_L5_FREQ_HZ = FREQ5;
-// L1 C/B needs twice as much chips
-static constexpr double QZSS_L1_CHIP_RATE = 1.023e6 * 2.0;
+static constexpr double QZSS_L1_CHIP_RATE = 1.023e6;
 static constexpr double QZSS_L5_CHIP_RATE = 10.23e6;
 static constexpr double QZSS_L1_CA_CODE_PERIOD_S = 0.001;
 static constexpr double QZSS_L5I_CODE_PERIOD_S = 0.001;
 
-// L1 C/B needs twice as much chips
-static constexpr int QZSS_L1_CODE_LENGTH = 1023 * 2;
+static constexpr int QZSS_L1_CODE_LENGTH = 1023;
+// The L1 replica is generated with 2 samples per chip, so a single buffer format
+// holds either the L1 C/A BPSK chips (each repeated twice) or the L1 C/B
+// sinBOC(1,1) subchips, selected per PRN (IS-QZSS-PNT-006)
+static constexpr int QZSS_L1_SAMPLES_PER_CHIP = 2;
 static constexpr int QZSS_L5_CODE_LENGTH = 10230;
 static constexpr int QZSS_L1_PERIOD_MS = 1;
 static constexpr int QZSS_L5I_PERIOD_MS = 1;
@@ -59,8 +61,31 @@ static constexpr int32_t QZSS_ALMANAC_EPOCH_HEALTH_SV_ID = 51;
 static constexpr int32_t QZSS_IONO_UTC_WIDE_AREA_SV_ID = 56;
 static constexpr int32_t QZSS_IONO_UTC_JAPAN_AREA_SV_ID = 61;
 static constexpr uint32_t QZSS_PRN_OFFSET = 192U;
+static constexpr uint32_t QZSS_L5_MAX_PRN = 202U;  //!< L5 PRN codes are only defined for PRNs 193-202 (IS-QZSS-PNT, Table 3.2.5-1); L1 C/B PRNs 203-206 have no L5 counterpart
 static constexpr double QZSS_QZO_ECCENTRICITY_REF = 0.06;
 static constexpr double QZSS_QZO_INCLINATION_REF = 0.25;
+
+
+//! \brief Maps QZSS L1 C/B PRNs to the PRN carrying the satellite's nominal PNT signals.
+//! L1 C/B is broadcast with a dedicated PRN (203-206), but the transmitting satellite is
+//! identified by the PRN of its nominal signals (RINEX 4.00, Table 6: QZSS PRN to RINEX
+//! Satellite Identifier). Returns the input PRN unchanged if it is not an L1 C/B alias.
+constexpr uint32_t qzss_l1cb_prn_to_nominal_prn(uint32_t prn)
+{
+    switch (prn)
+        {
+        case 203:
+            return 196;  // J04
+        case 204:
+            return 197;  // J05
+        case 205:
+            return 200;  // J08
+        case 206:
+            return 201;  // J09
+        default:
+            return prn;  // PRN 202 (J10) broadcasts L1 C/B under its own PRN
+        }
+}
 
 /** \} */
 /** \} */

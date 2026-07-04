@@ -24,8 +24,8 @@
 TEST(QzssL1Code, Periodicity)
 {
     constexpr uint32_t prn = 193;
-    std::vector<float> code1(QZSS_L1_CODE_LENGTH);
-    std::vector<float> code2(QZSS_L1_CODE_LENGTH);
+    std::vector<float> code1(QZSS_L1_SAMPLES_PER_CHIP * QZSS_L1_CODE_LENGTH);
+    std::vector<float> code2(QZSS_L1_SAMPLES_PER_CHIP * QZSS_L1_CODE_LENGTH);
 
     qzss_l1_code_gen_float(code1, prn);
     qzss_l1_code_gen_float(code2, prn);
@@ -37,7 +37,7 @@ TEST(QzssL1Code, Periodicity)
 TEST(QzssL1Code, GoldenFirst32Chips)
 {
     constexpr uint32_t prn = 193;
-    std::vector<float> code(QZSS_L1_CODE_LENGTH);
+    std::vector<float> code(QZSS_L1_SAMPLES_PER_CHIP * QZSS_L1_CODE_LENGTH);
     qzss_l1_code_gen_float(code, prn);
 
     const float golden[64] = {

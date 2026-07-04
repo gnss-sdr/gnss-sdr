@@ -123,12 +123,18 @@ static QzssL5Entry qzss_l5_table(uint32_t prn)
 // QZSS L1 C/A(B) code generation
 // -----------------------------------
 
-// Generates real QZSS L1 C/A(B) code (2046 chips, +/-1)
+bool qzss_l1_code_is_boc(uint32_t prn)
+{
+    return qzss_l1_table(prn).BOC != 0;
+}
+
+
+// Generates real QZSS L1 C/A(B) replica (1023 chips, 2 samples per chip, +/-1)
 void qzss_l1_code_gen_float(own::span<float> dest, uint32_t prn)
 {
-    if (dest.size() < QZSS_L1_CODE_LENGTH)
+    if (dest.size() < QZSS_L1_SAMPLES_PER_CHIP * QZSS_L1_CODE_LENGTH)
         {
-            LOG(WARNING) << "QZSS L1 code must be >= 1023 chips";
+            LOG(WARNING) << "QZSS L1 code buffer must hold >= " << QZSS_L1_SAMPLES_PER_CHIP * QZSS_L1_CODE_LENGTH << " samples";
             return;
         }
 
@@ -144,17 +150,16 @@ void qzss_l1_code_gen_float(own::span<float> dest, uint32_t prn)
             g2[s] = static_cast<uint8_t>((init >> s) & 0x1);
         }
 
-    // Generate 2046 chips, 2 chips of primary 1023 chip sequence at once
-    // to construct either L1C/A or L1C/B code
-    const int n_iter = QZSS_L1_CODE_LENGTH / 2;
-    for (int i = 0, j = 0; i < n_iter; ++i)
+    // Generate 1023 chips, 2 samples per chip: both halves equal for L1 C/A,
+    // sinBOC(1,1) subchips for L1 C/B
+    for (int i = 0, j = 0; i < QZSS_L1_CODE_LENGTH; ++i)
         {
             const uint8_t g1_out = g1[9];
             const uint8_t g2_out = g2[9];
             const auto prn_bit = static_cast<uint8_t>(g1_out ^ g2_out);
 
             // Map 0 -> -1, 1 -> +1
-            // BOC sequence starts with 1, so invert the first chip
+            // BOC sequence starts with 1, so invert the first subchip
             // when generating L1 C/B code
             dest[j++] = (prn_bit ^ entry.BOC) ? 1.0F : -1.0F;
             dest[j++] = prn_bit ? 1.0F : -1.0F;
@@ -190,7 +195,7 @@ void qzss_l1_code_gen_complex_sampled(
             return;
         }
 
-    std::array<float, QZSS_L1_CODE_LENGTH> code{};
+    std::array<float, QZSS_L1_SAMPLES_PER_CHIP * QZSS_L1_CODE_LENGTH> code{};
     qzss_l1_code_gen_float(own::span<float>(code.data(), code.size()), prn);
 
     const double phase_step = QZSS_L1_CHIP_RATE / static_cast<double>(sampling_freq);
@@ -198,9 +203,9 @@ void qzss_l1_code_gen_complex_sampled(
 
     for (auto& d : dest)
         {
-            int chip = static_cast<int>(code_phase);
-            chip %= QZSS_L1_CODE_LENGTH;
-            d = {code[static_cast<size_t>(chip)], 0.0F};
+            auto sample = static_cast<int>(code_phase * QZSS_L1_SAMPLES_PER_CHIP);
+            sample %= QZSS_L1_SAMPLES_PER_CHIP * QZSS_L1_CODE_LENGTH;
+            d = {code[static_cast<size_t>(sample)], 0.0F};
 
             code_phase += phase_step;
             if (code_phase >= QZSS_L1_CODE_LENGTH)
@@ -311,7 +316,7 @@ void qzss_l5i_code_gen_complex_sampled(
 
     for (auto& d : dest)
         {
-            int chip = static_cast<int>(code_phase);
+            auto chip = static_cast<int>(code_phase);
             chip %= QZSS_L5_CODE_LENGTH;
 
             d = {code[static_cast<size_t>(chip)], 0.0F};
@@ -344,7 +349,7 @@ void qzss_l5q_code_gen_complex_sampled(
 
     for (auto& d : dest)
         {
-            int chip = static_cast<int>(code_phase);
+            auto chip = static_cast<int>(code_phase);
             chip %= QZSS_L5_CODE_LENGTH;
 
             d = {0.0F, code[static_cast<size_t>(chip)]};

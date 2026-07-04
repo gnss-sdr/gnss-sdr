@@ -69,22 +69,12 @@ static constexpr double QZSS_QZO_INCLINATION_REF = 0.25;
 //! \brief Maps QZSS L1 C/B PRNs to the PRN carrying the satellite's nominal PNT signals.
 //! L1 C/B is broadcast with a dedicated PRN (203-206), but the transmitting satellite is
 //! identified by the PRN of its nominal signals (RINEX 4.00, Table 6: QZSS PRN to RINEX
-//! Satellite Identifier). Returns the input PRN unchanged if it is not an L1 C/B alias.
+//! Satellite Identifier): 203->196 (J04), 204->197 (J05), 205->200 (J08), 206->201 (J09).
+//! Returns the input PRN unchanged if it is not an L1 C/B alias; in particular,
+//! PRN 202 (J10) broadcasts L1 C/B under its own PRN.
 constexpr uint32_t qzss_l1cb_prn_to_nominal_prn(uint32_t prn)
 {
-    switch (prn)
-        {
-        case 203:
-            return 196;  // J04
-        case 204:
-            return 197;  // J05
-        case 205:
-            return 200;  // J08
-        case 206:
-            return 201;  // J09
-        default:
-            return prn;  // PRN 202 (J10) broadcasts L1 C/B under its own PRN
-        }
+    return prn == 203 ? 196 : (prn == 204 ? 197 : (prn == 205 ? 200 : (prn == 206 ? 201 : prn)));
 }
 
 /** \} */

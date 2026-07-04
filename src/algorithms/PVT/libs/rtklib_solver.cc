@@ -1366,7 +1366,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 case 'G':
                 case 'J':
                     {
-                        const bool is_qzss = (gnss_observables_iter->second.PRN >= 193 && gnss_observables_iter->second.PRN <= 203);
+                        const bool is_qzss = (gnss_observables_iter->second.PRN >= 193 && gnss_observables_iter->second.PRN <= 206);
                         // GPS/QZSS L1
                         // find the ephemeris for the current SV observation. The SV PRN ID is the map key
                         const std::string gnss_str = is_qzss ? "QZSS" : "GPS";

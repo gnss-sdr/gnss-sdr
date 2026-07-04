@@ -31,6 +31,7 @@ struct QzssL1Entry
 {
     uint16_t g2_delay_chips;  // Provided by ICD, but not applied if using init_g2_octal
     uint16_t init_g2_octal;   // 10-bit value expressed in octal digits in ICD
+    uint8_t BOC;              // L1 C/B BOC(1,1) flag
 };
 
 
@@ -40,36 +41,36 @@ static QzssL1Entry qzss_l1_table(uint32_t prn)
     switch (prn)
         {
         case 193:
-            return {339, 01050};
+            return {339, 01050, 0};
         case 194:
-            return {208, 01607};
+            return {208, 01607, 0};
         case 195:
-            return {711, 01747};
+            return {711, 01747, 0};
         case 196:
-            return {189, 01305};
+            return {189, 01305, 0};
         case 197:
-            return {263, 00540};
+            return {263, 00540, 0};
         case 198:
-            return {537, 01363};  // non-standard
+            return {537, 01363, 0};  // non-standard
         case 199:
-            return {663, 00727};
+            return {663, 00727, 0};
         case 200:
-            return {942, 00147};
+            return {942, 00147, 0};
         case 201:
-            return {173, 01206};
+            return {173, 01206, 0};
         case 202:
-            return {900, 01045};  // non-standard
+            return {900, 01045, 0};  // non-standard
         case 203:
-            return {30, 00476};  // L1C/B
+            return {30, 00476, 1};  // L1C/B
         case 204:
-            return {500, 00604};  // L1C/B
+            return {500, 00604, 1};  // L1C/B
         case 205:
-            return {935, 01757};  // L1C/B
+            return {935, 01757, 1};  // L1C/B
         case 206:
-            return {556, 01330};  // L1C/B
+            return {556, 01330, 1};  // L1C/B
         default:
             LOG(WARNING) << "Unsupported QZSS L1 PRN";
-            return {0, 0};
+            return {0, 0, 0};
         }
 }
 
@@ -119,10 +120,10 @@ static QzssL5Entry qzss_l5_table(uint32_t prn)
 
 
 // -----------------------------------
-// QZSS L1 C/A code generation
+// QZSS L1 C/A(B) code generation
 // -----------------------------------
 
-// Generates real QZSS L1 C/A code (1023 chips, +/-1)
+// Generates real QZSS L1 C/A(B) code (2046 chips, +/-1)
 void qzss_l1_code_gen_float(own::span<float> dest, uint32_t prn)
 {
     if (dest.size() < QZSS_L1_CODE_LENGTH)
@@ -143,15 +144,20 @@ void qzss_l1_code_gen_float(own::span<float> dest, uint32_t prn)
             g2[s] = static_cast<uint8_t>((init >> s) & 0x1);
         }
 
-    // Generate 1023 chips
-    for (int i = 0; i < QZSS_L1_CODE_LENGTH; ++i)
+    // Generate 2046 chips, 2 chips of primary 1023 chip sequence at once
+    // to construct either L1C/A or L1C/B code
+    const int n_iter = QZSS_L1_CODE_LENGTH / 2;
+    for (int i = 0, j = 0; i < n_iter; ++i)
         {
             const uint8_t g1_out = g1[9];
             const uint8_t g2_out = g2[9];
             const auto prn_bit = static_cast<uint8_t>(g1_out ^ g2_out);
 
             // Map 0 -> -1, 1 -> +1
-            dest[i] = prn_bit ? 1.0F : -1.0F;
+            // BOC sequence starts with 1, so invert the first chip
+            // when generating L1 C/B code
+            dest[j++] = (prn_bit ^ entry.BOC) ? 1.0F : -1.0F;
+            dest[j++] = prn_bit ? 1.0F : -1.0F;
 
             // Step G1
             const auto g1_fb = static_cast<uint8_t>(g1[2] ^ g1[9]);

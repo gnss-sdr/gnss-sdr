@@ -309,7 +309,7 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     else if (system == "QZSS")
         {
-            if (PRN_ < 193 || PRN_ > 201)
+            if (PRN_ < 193 || PRN_ > 206)
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;

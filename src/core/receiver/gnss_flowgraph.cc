@@ -1958,7 +1958,13 @@ void GNSSFlowgraph::priorize_satellites(const std::vector<std::pair<int, Gnss_Sa
                 }
             for (const auto& signal_str : signal_str_vector)
                 {
-                    auto& available_signals = available_signals_map_.at(signal_str);
+                    const auto sig_it = available_signals_map_.find(signal_str);
+                    if (sig_it == available_signals_map_.end())
+                        {
+                            // No channels are configured for this signal
+                            continue;
+                        }
+                    auto& available_signals = sig_it->second;
                     gs = Gnss_Signal(visible_satellite.second, signal_str);
                     old_size = available_signals.size();
                     available_signals.remove(gs);
@@ -2096,7 +2102,10 @@ void GNSSFlowgraph::set_signals_list()
                        21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37,
                        38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54,
                        55, 56, 57, 58, 59, 60, 61, 62, 63}},
-        {"QZSS", {193, 194, 195, 196, 197, 199, 200, 201}},
+        // PRNs 198 and 202 are excluded: they are reserved but not assigned to any
+        // operational satellite (marked as non-standard codes in IS-QZSS-PNT).
+        // They can still be searched by setting the QZSS.prns configuration option.
+        {"QZSS", {193, 194, 195, 196, 197, 199, 200, 201, 203, 204, 205, 206}},
     };
 #if CXX_LESS_THAN_17
     for (auto& entry : available_prn_map)
@@ -2170,6 +2179,11 @@ void GNSSFlowgraph::set_signals_list()
 
                     for (const auto& prn : available_prn_map.at(gnss_system_str))
                         {
+                            if (signal_str == "J5" && prn > QZSS_L5_MAX_PRN)
+                                {
+                                    // QZSS L1 C/B PRNs (203-206) do not transmit an L5 signal
+                                    continue;
+                                }
                             available_signals.emplace_back(Gnss_Satellite(gnss_system_str, prn), signal_str);
                         }
                 }

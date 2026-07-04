@@ -523,11 +523,14 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     d_code_period = QZSS_L1_CA_CODE_PERIOD_S;
                     d_code_chip_rate = QZSS_L1_CHIP_RATE;
                     d_correlation_length_ms = 1;
-                    d_code_samples_per_chip = 1;
+                    // 2 samples per chip: L1 C/A chips duplicated, or L1 C/B sinBOC(1,1) subchips
+                    d_code_samples_per_chip = QZSS_L1_SAMPLES_PER_CHIP;
                     d_code_length_chips = static_cast<int32_t>(QZSS_L1_CODE_LENGTH);
                     // QZSS L1 C/A does not have pilot component nor secondary code
                     d_secondary = false;
                     d_trk_parameters.track_pilot = false;
+                    // BPSK (L1 C/A) correlation function; updated per PRN in start_tracking()
+                    // when the satellite broadcasts the BOC(1,1)-modulated L1 C/B signal
                     d_trk_parameters.slope = 1.0;
                     d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
                     d_trk_parameters.y_intercept = 1.0;
@@ -1013,6 +1016,25 @@ void dll_pll_veml_tracking::start_tracking()
     else if (d_systemName == "QZSS" && d_signal_type == "J1")
         {
             qzss_l1_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
+            if (qzss_l1_code_is_boc(d_acquisition_gnss_synchro->PRN))
+                {
+                    // L1 C/B is BOC(1,1)-modulated: normalize the DLL discriminator
+                    // with the sinBOC(1,1) correlation function, as done for Galileo E1
+                    d_trk_parameters.slope = static_cast<float>(-CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, d_trk_parameters.spc));
+                    d_trk_parameters.y_intercept = static_cast<float>(GetYInterceptAbs(&SinBocCorrelationFunction<1, 1>, d_trk_parameters.spc));
+                    if (d_trk_parameters.spc > 0.33F)
+                        {
+                            LOG(WARNING) << "early_late_space_chips = " << d_trk_parameters.spc
+                                         << " places the correlators outside the BOC(1,1) main peak while tracking QZSS L1 C/B PRN "
+                                         << d_acquisition_gnss_synchro->PRN << "; consider a value below 0.33";
+                        }
+                }
+            else
+                {
+                    // L1 C/A is BPSK: triangular correlation function
+                    d_trk_parameters.slope = 1.0;
+                    d_trk_parameters.y_intercept = 1.0;
+                }
         }
     else if (d_systemName == "QZSS" && d_signal_type == "J5")
         {

@@ -165,7 +165,30 @@ TEST_F(NmeaPrinterTest, PrintLine)
     pvt_solution->pvt_sol.rr[5] = 0.0;
     pvt_solution->pvt_sol.stat = 1;  // SOLQ_FIX
     pvt_solution->pvt_sol.time = gtime;
-
+    pvt_solution->pvt_ssat[0].vs = 1;
+    pvt_solution->pvt_ssat[0].azel[0] = 3.514475;
+    pvt_solution->pvt_ssat[0].azel[1] = 0.644151;
+    pvt_solution->pvt_ssat[0].vsat[0] = 48;
+    pvt_solution->pvt_ssat[0].snr[0] = 204;
+    pvt_solution->pvt_ssat[0].fix[0] = 48;
+    pvt_solution->pvt_ssat[0].slip[0] = 48;
+    pvt_solution->pvt_ssat[0].half[0] = 48;
+    pvt_solution->pvt_ssat[96].vs = 1;
+    pvt_solution->pvt_ssat[96].azel[0] = 0.808051;
+    pvt_solution->pvt_ssat[96].azel[1] = 1.489340;
+    pvt_solution->pvt_ssat[96].vsat[0] = 48;
+    pvt_solution->pvt_ssat[96].snr[0] = 203;
+    pvt_solution->pvt_ssat[96].fix[0] = 48;
+    pvt_solution->pvt_ssat[96].slip[0] = 48;
+    pvt_solution->pvt_ssat[96].half[0] = 48;
+    pvt_solution->pvt_ssat[97].vs = 1;
+    pvt_solution->pvt_ssat[97].azel[0] = 2.968734;
+    pvt_solution->pvt_ssat[97].azel[1] = 0.950019;
+    pvt_solution->pvt_ssat[97].vsat[0] = 48;
+    pvt_solution->pvt_ssat[97].snr[0] = 213;
+    pvt_solution->pvt_ssat[97].fix[0] = 48;
+    pvt_solution->pvt_ssat[97].slip[0] = 48;
+    pvt_solution->pvt_ssat[97].half[0] = 48;
     bool flag_nmea_output_file = true;
     ASSERT_NO_THROW({
         std::shared_ptr<Nmea_Printer> nmea_printer = std::make_shared<Nmea_Printer>(filename, flag_nmea_output_file, false, "");
@@ -175,6 +198,10 @@ TEST_F(NmeaPrinterTest, PrintLine)
     std::ifstream test_file(filename);
     std::string line;
     std::string GPRMC("$GPRMC");
+    std::string GPGSA("$GPGSA");
+    std::string GPGSV("$GPGSV");
+    std::string QZGSA("$QZGSA");
+    std::string QZGSV("$QZGSV");
     if (test_file.is_open())
         {
             while (getline(test_file, line))
@@ -183,6 +210,26 @@ TEST_F(NmeaPrinterTest, PrintLine)
                     if (found != std::string::npos)
                         {
                             EXPECT_EQ(line, "$GPRMC,225436.00,A,4916.4497617,N,12311.1202744,W,0.00,0.00,191194,0.0,E,D*21\r");
+                        }
+                    found = line.find(GPGSA);
+                    if (found != std::string::npos)
+                        {
+                            EXPECT_EQ(line, "$GPGSA,A,3,01,,,,,,,,,,,,0.0,0.0,0.0,1*2E\r");
+                        }
+                    found = line.find(GPGSV);
+                    if (found != std::string::npos)
+                        {
+                            EXPECT_EQ(line, "$GPGSV,1,1,01,01,37,201,51,,,,,,,,,,,,,1*57\r");
+                        }
+                    found = line.find(QZGSA);
+                    if (found != std::string::npos)
+                        {
+                            EXPECT_EQ(line, "$QZGSA,A,3,194,195,,,,,,,,,,,0.0,0.0,0.0,5*36\r");
+                        }
+                    found = line.find(QZGSV);
+                    if (found != std::string::npos)
+                        {
+                            EXPECT_EQ(line, "$QZGSV,1,1,02,194,85,046,51,195,54,170,53,,,,,,,,,1*71\r");
                         }
                 }
             test_file.close();

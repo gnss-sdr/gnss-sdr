@@ -18,6 +18,18 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 - Improved TOW rollover handling in Telemetry Decoder blocks.
 
+### Improvements in Efficiency:
+
+- Optimized CPU DLL/PLL VEML tracking for pilot/data signal pairs by computing
+  the pilot correlators and the data prompt in one multicorrelator pass. The
+  data prompt now reuses the same carrier wipe-off as the pilot correlators
+  instead of invoking a separate one-tap correlator, while non-pilot tracking
+  keeps the previous correlation path. In a Release build of the Galileo E1
+  workload, the median time to process 40 million samples decreased from 844 ms
+  to 572 ms (32% less time, 1.48x throughput). Results are mathematically
+  equivalent to the previous implementation within normal floating-point
+  behavior.
+
 ### Improvements in Interoperability:
 
 - Added a new Signal Source implementation `Pocket_SDR_Signal_Source`, which

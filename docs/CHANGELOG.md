@@ -69,6 +69,10 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Implemented handling of the GLONASS notification of a forthcoming leap second
   event (KP word in the GNAV message), improving timekeeping across leap second
   transitions.
+- The NMEA printer now generates QZGSA and QZGSV sentences, reporting the QZSS
+  satellites used in the PVT solution and in view (with elevation, azimuth, and
+  C/N0), using the QZSS system and signal identifiers defined in NMEA 0183.
+  Contributed by @vladisslav2011
 
 ### Improvements in Maintainability:
 

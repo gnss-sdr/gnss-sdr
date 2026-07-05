@@ -420,6 +420,20 @@ def acquisition_plot_title(metadata):
     )
 
 
+def max_pooled_axis(axis_values, grid, n_points, axis):
+    # Block-max decimation: each output bin takes the maximum of its block of
+    # input samples. A correlation peak only a couple of samples wide survives
+    # this by construction, whereas sampling a spline at sparse points (or
+    # letting plot_surface decimate) can fall between the peak samples and
+    # miss it entirely.
+    import numpy as np
+
+    edges = np.linspace(0, len(axis_values), n_points + 1, dtype=int)
+    pooled_grid = np.maximum.reduceat(grid, edges[:-1], axis=axis)
+    pooled_axis = (axis_values[edges[:-1]] + axis_values[edges[1:] - 1]) / 2
+    return pooled_axis, pooled_grid
+
+
 def interpolated_acquisition_grid(delay, freq, acq_grid, args, n_chips):
     import numpy as np
     from scipy.ndimage import gaussian_filter
@@ -438,19 +452,46 @@ def interpolated_acquisition_grid(delay, freq, acq_grid, args, n_chips):
         (len(freq) - 1) * samples_per_doppler_step + 1,
         MAX_LITE_SURFACE_DOPPLER_POINTS,
     )
-    delay_interp = np.linspace(delay[0], delay[-1], max(2, delay_points))
-    freq_interp = np.linspace(freq[0], freq[-1], max(2, freq_points))
 
-    kx = min(3, len(delay) - 1)
-    ky = min(3, len(freq) - 1)
-    spline = RectBivariateSpline(delay, freq, acq_grid, kx=kx, ky=ky)
-    grid_interp = spline(delay_interp, freq_interp)
+    pooled_delay = len(delay) > delay_points
+    if pooled_delay:
+        delay, acq_grid = max_pooled_axis(delay, acq_grid, delay_points, 0)
+    pooled_freq = len(freq) > freq_points
+    if pooled_freq:
+        freq, acq_grid = max_pooled_axis(freq, acq_grid, freq_points, 1)
+
+    delay_interp = (
+        delay
+        if pooled_delay
+        else np.linspace(delay[0], delay[-1], max(2, delay_points))
+    )
+    freq_interp = (
+        freq
+        if pooled_freq
+        else np.linspace(freq[0], freq[-1], max(2, freq_points))
+    )
+
+    if pooled_delay and pooled_freq:
+        grid_interp = acq_grid
+    else:
+        kx = min(3, len(delay) - 1)
+        ky = min(3, len(freq) - 1)
+        spline = RectBivariateSpline(delay, freq, acq_grid, kx=kx, ky=ky)
+        grid_interp = spline(delay_interp, freq_interp)
+
     if args.surface_smoothing > 0:
-        grid_interp = gaussian_filter(
-            grid_interp,
-            sigma=args.surface_smoothing,
-            mode="nearest",
+        # Smoothing a pooled axis would flatten the peak it just preserved,
+        # so only smooth along axes that were spline-upsampled.
+        sigma = (
+            0.0 if pooled_delay else args.surface_smoothing,
+            0.0 if pooled_freq else args.surface_smoothing,
         )
+        if any(sigma):
+            grid_interp = gaussian_filter(
+                grid_interp,
+                sigma=sigma,
+                mode="nearest",
+            )
     return delay_interp, freq_interp, grid_interp
 
 
@@ -482,11 +523,15 @@ def plot_dump(file_path, fig_path, image_name_root, n_chips, args, metadata=None
     if not args.lite_view:
         ax = fig.add_subplot(111, projection="3d")
         x_axis, y_axis = np.meshgrid(freq, delay, indexing="xy")
+        # rcount/ccount default to 50, which would silently decimate large
+        # grids and hide the correlation peak; render every sample instead.
         ax.plot_surface(
             x_axis,
             y_axis,
             acq_grid,
             cmap="viridis",
+            rcount=acq_grid.shape[0],
+            ccount=acq_grid.shape[1],
             linewidth=0,
             edgecolor="none",
             antialiased=False,

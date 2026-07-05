@@ -57,6 +57,10 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
       d_well_count(0),
       d_n_samples_in_buffer(0),
       d_fft_size(static_cast<int32_t>(conf_.samples_per_ms)),
+      d_fine_doppler_zero_padding_factor(8),
+      d_fine_doppler_prn_replicas(10),
+      d_fine_doppler_signal_samples(d_fine_doppler_prn_replicas * d_fft_size),
+      d_fine_doppler_fft_size(d_fine_doppler_signal_samples * d_fine_doppler_zero_padding_factor),
       d_gnuradio_forecast_samples(d_fft_size),
       d_channel(0),
       d_dump_channel(0),
@@ -64,14 +68,19 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
       d_dump(conf_.dump),
       d_fft_if(gnss_fft_fwd_make_unique(d_fft_size)),
       d_ifft(gnss_fft_rev_make_unique(d_fft_size)),
+      d_fine_doppler_fft(gnss_fft_fwd_make_unique(d_fine_doppler_fft_size)),
       d_grid_data(d_num_doppler_points, volk_gnsssdr::vector<float>(d_fft_size)),
       d_fft_codes(d_fft_size),
       d_10_ms_buffer(50 * d_fft_size),
-      d_magnitude(d_fft_size)
+      d_magnitude(d_fft_size),
+      d_fine_doppler_code_replica(d_fine_doppler_signal_samples),
+      d_fine_doppler_magnitude(d_fine_doppler_fft_size),
+      d_fine_doppler_freq_bins(d_fine_doppler_fft_size)
 {
     this->message_port_register_out(pmt::mp("events"));
 
     update_carrier_wipeoff();
+    update_fine_doppler_freq_bins();
 
     // this implementation can only produce dumps in channel 0
     // todo: migrate config parameters to the unified acquisition config class
@@ -179,6 +188,23 @@ void pcps_acquisition_fine_doppler_cc::update_carrier_wipeoff()
 }
 
 
+void pcps_acquisition_fine_doppler_cc::update_fine_doppler_freq_bins()
+{
+    int counter = 0;
+    for (int k = 0; k < (d_fine_doppler_fft_size / 2); k++)
+        {
+            d_fine_doppler_freq_bins[counter] = ((static_cast<float>(d_acq_params.fs_in) / 2.0) * static_cast<float>(k)) / (static_cast<float>(d_fine_doppler_fft_size) / 2.0);
+            counter++;
+        }
+
+    for (int k = d_fine_doppler_fft_size / 2; k > 0; k--)
+        {
+            d_fine_doppler_freq_bins[counter] = ((-static_cast<float>(d_acq_params.fs_in) / 2.0) * static_cast<float>(k)) / (static_cast<float>(d_fine_doppler_fft_size) / 2.0);
+            counter++;
+        }
+}
+
+
 float pcps_acquisition_fine_doppler_cc::compute_CAF()
 {
     float firstPeak = 0.0;
@@ -275,9 +301,6 @@ int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_cons
                << ", doppler_max: " << d_acq_params.doppler_max
                << ", doppler_step: " << d_acq_params.doppler_step;
 
-    // 2- Doppler frequency search loop
-    volk_gnsssdr::vector<float> p_tmp_vector(d_fft_size);
-
     for (int doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {
             // doppler search steps
@@ -296,9 +319,9 @@ int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_cons
             d_ifft->execute();
 
             // save the grid matrix delay file
-            volk_32fc_magnitude_squared_32f(p_tmp_vector.data(), d_ifft->get_outbuf(), d_fft_size);
+            volk_32fc_magnitude_squared_32f(d_magnitude.data(), d_ifft->get_outbuf(), d_fft_size);
             // accumulate grid values
-            volk_32f_x2_add_32f(d_grid_data[doppler_index].data(), d_grid_data[doppler_index].data(), p_tmp_vector.data(), d_fft_size);
+            volk_32f_x2_add_32f(d_grid_data[doppler_index].data(), d_grid_data[doppler_index].data(), d_magnitude.data(), d_fft_size);
         }
 
     return d_fft_size;
@@ -315,73 +338,45 @@ int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_cons
 
 int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
 {
-    // Direct FFT
-    int zero_padding_factor = 8;
-    int prn_replicas = 10;
-    int signal_samples = prn_replicas * d_fft_size;
-    // int fft_size_extended = nextPowerOf2(signal_samples * zero_padding_factor);
-    int fft_size_extended = signal_samples * zero_padding_factor;
-
-    auto fft_operator = gnss_fft_fwd_make_unique(fft_size_extended);
-
     // zero padding the entire vector
-    std::fill_n(fft_operator->get_inbuf(), fft_size_extended, gr_complex(0.0, 0.0));
+    std::fill_n(d_fine_doppler_fft->get_inbuf(), d_fine_doppler_fft_size, gr_complex(0.0, 0.0));
 
     // 1. generate local code aligned with the acquisition code phase estimation
-    volk_gnsssdr::vector<gr_complex> code_replica(signal_samples);
-
-    gps_l1_ca_code_gen_complex_sampled(code_replica, d_gnss_synchro->PRN, d_acq_params.fs_in, 0);
+    gps_l1_ca_code_gen_complex_sampled(d_fine_doppler_code_replica, d_gnss_synchro->PRN, d_acq_params.fs_in, 0);
 
     int shift_index = static_cast<int>(d_gnss_synchro->Acq_delay_samples);
 
     // Rotate to align the local code replica using acquisition time delay estimation
     if (shift_index != 0)
         {
-            std::rotate(code_replica.data(), code_replica.data() + (d_fft_size - shift_index), code_replica.data() + d_fft_size - 1);
+            std::rotate(d_fine_doppler_code_replica.data(), d_fine_doppler_code_replica.data() + (d_fft_size - shift_index), d_fine_doppler_code_replica.data() + d_fft_size - 1);
         }
 
-    for (int n = 0; n < prn_replicas - 1; n++)
+    for (int n = 0; n < d_fine_doppler_prn_replicas - 1; n++)
         {
-            std::copy_n(code_replica.data(), d_fft_size, &code_replica[(n + 1) * d_fft_size]);
+            std::copy_n(d_fine_doppler_code_replica.data(), d_fft_size, &d_fine_doppler_code_replica[(n + 1) * d_fft_size]);
         }
     // 2. Perform code wipe-off
-    volk_32fc_x2_multiply_32fc(fft_operator->get_inbuf(), d_10_ms_buffer.data(), code_replica.data(), signal_samples);
+    volk_32fc_x2_multiply_32fc(d_fine_doppler_fft->get_inbuf(), d_10_ms_buffer.data(), d_fine_doppler_code_replica.data(), d_fine_doppler_signal_samples);
 
     // 3. Perform the FFT (zero padded!)
-    fft_operator->execute();
+    d_fine_doppler_fft->execute();
 
     // 4. Compute the magnitude and find the maximum
-    volk_gnsssdr::vector<float> p_tmp_vector(fft_size_extended);
-    volk_32fc_magnitude_squared_32f(p_tmp_vector.data(), fft_operator->get_outbuf(), fft_size_extended);
+    volk_32fc_magnitude_squared_32f(d_fine_doppler_magnitude.data(), d_fine_doppler_fft->get_outbuf(), d_fine_doppler_fft_size);
 
     uint32_t tmp_index_freq = 0;
-    volk_gnsssdr_32f_index_max_32u(&tmp_index_freq, p_tmp_vector.data(), fft_size_extended);
-
-    // case even
-    int counter = 0;
-    volk_gnsssdr::vector<float> fftFreqBins(fft_size_extended);
-
-    for (int k = 0; k < (fft_size_extended / 2); k++)
-        {
-            fftFreqBins[counter] = ((static_cast<float>(d_acq_params.fs_in) / 2.0) * static_cast<float>(k)) / (static_cast<float>(fft_size_extended) / 2.0);
-            counter++;
-        }
-
-    for (int k = fft_size_extended / 2; k > 0; k--)
-        {
-            fftFreqBins[counter] = ((-static_cast<float>(d_acq_params.fs_in) / 2.0) * static_cast<float>(k)) / (static_cast<float>(fft_size_extended) / 2.0);
-            counter++;
-        }
+    volk_gnsssdr_32f_index_max_32u(&tmp_index_freq, d_fine_doppler_magnitude.data(), d_fine_doppler_fft_size);
 
     // 5. Update the Doppler estimation in Hz
-    if (std::abs(fftFreqBins[tmp_index_freq] - d_gnss_synchro->Acq_doppler_hz) < 1000)
+    if (std::abs(d_fine_doppler_freq_bins[tmp_index_freq] - d_gnss_synchro->Acq_doppler_hz) < 1000)
         {
-            d_gnss_synchro->Acq_doppler_hz = static_cast<double>(fftFreqBins[tmp_index_freq]);
-            // std::cout << "FFT maximum present at " << fftFreqBins[tmp_index_freq] << " [Hz]\n";
+            d_gnss_synchro->Acq_doppler_hz = static_cast<double>(d_fine_doppler_freq_bins[tmp_index_freq]);
+            // std::cout << "FFT maximum present at " << d_fine_doppler_freq_bins[tmp_index_freq] << " [Hz]\n";
         }
     else
         {
-            DLOG(INFO) << "Abs(Grid Doppler - FFT Doppler)=" << std::abs(fftFreqBins[tmp_index_freq] - d_gnss_synchro->Acq_doppler_hz);
+            DLOG(INFO) << "Abs(Grid Doppler - FFT Doppler)=" << std::abs(d_fine_doppler_freq_bins[tmp_index_freq] - d_gnss_synchro->Acq_doppler_hz);
             DLOG(INFO) << "Error estimating fine frequency Doppler";
         }
 

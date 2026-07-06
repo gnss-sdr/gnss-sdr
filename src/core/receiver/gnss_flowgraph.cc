@@ -1772,8 +1772,8 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                 }
                             else
                                 {
-                                    // use ephemeris/almanac to guess Doppler center and set doppler search grid size to minimum
-                                    // if no ephemeris/almanac is found, set Doppler center to 0 Hz taking into account detected clock drift
+                                    // use ephemeris to guess Doppler center and set doppler search grid size to minimum
+                                    // if no ephemeris is found, set Doppler center to 0 Hz taking into account detected clock drift
                                     // and set doppler search grid size to medium
                                     int32_t assist_level = ASSIST_UNASSISTED;
                                     double corrected_center = 0.;
@@ -1799,7 +1799,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                                             auto freq_idx = SIGNAL_FREQ_IDX.find(channels_[current_channel]->get_signal().get_signal_str());
                                                             double predicted = iter->second.predicted_doppler(TOW, latest_pvt->latitude, latest_pvt->longitude, latest_pvt->height,
                                                                 latest_pvt->vel_n, latest_pvt->vel_e, latest_pvt->vel_u, freq_idx->second);
-                                                            std::cout << "[[[[ found valid ephemeris for " << sat.get_PRN() << " predicted=" << predicted << "\n";
+                                                            // std::cout<<"[[[[ found valid ephemeris for J"<<sat.get_PRN()<<" predicted="<<predicted<<"\n";
                                                             corrected_center += predicted;
                                                         }
                                                     if (!ephemeris_found)
@@ -1819,7 +1819,21 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                                         }
                                                     if (!ephemeris_found)
                                                         {
-                                                            // std::cout<<"]]]] no valid ephemeris for "<<sat.get_PRN()<<"\n";
+                                                            const auto& almanac_map = get_pvt()->get_gps_almanac();
+                                                            auto iter = almanac_map.find(sat.get_PRN());
+                                                            if (iter != almanac_map.cend())
+                                                                {
+                                                                    assist_level = ASSIST_ESTIMATED_DOPPLER;
+                                                                    auto freq_idx = SIGNAL_FREQ_IDX.find(channels_[current_channel]->get_signal().get_signal_str());
+                                                                    double predicted = iter->second.predicted_doppler(TOW, latest_pvt->latitude, latest_pvt->longitude, latest_pvt->height,
+                                                                        latest_pvt->vel_n, latest_pvt->vel_e, latest_pvt->vel_u, freq_idx->second);
+                                                                    // std::cout<<"[[[[ found valid almanac for G"<<sat.get_PRN()<<" predicted="<<predicted<<"\n";
+                                                                    corrected_center += predicted;
+                                                                }
+                                                            else
+                                                                {
+                                                                    // std::cout<<"]]]] no valid almanac for G"<<sat.get_PRN()<<"\n";
+                                                                }
                                                         }
                                                 }
                                             if (sat.get_system() == "Galileo")
@@ -1832,12 +1846,27 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                                             auto freq_idx = SIGNAL_FREQ_IDX.find(channels_[current_channel]->get_signal().get_signal_str());
                                                             double predicted = iter->second.predicted_doppler(TOW, latest_pvt->latitude, latest_pvt->longitude, latest_pvt->height,
                                                                 latest_pvt->vel_n, latest_pvt->vel_e, latest_pvt->vel_u, freq_idx->second);
-                                                            std::cout << "[[[[ found valid ephemeris for " << sat.get_PRN() << " predicted=" << predicted << "\n";
+                                                            // std::cout<<"[[[[ found valid ephemeris for E"<<sat.get_PRN()<<" predicted="<<predicted<<"\n";
                                                             corrected_center += predicted;
                                                         }
                                                     else
                                                         {
                                                             // std::cout<<"]]]] no valid ephemeris for "<<sat.get_PRN()<<"\n";
+                                                            const auto& almanac_map = get_pvt()->get_galileo_almanac();
+                                                            auto iter = almanac_map.find(sat.get_PRN());
+                                                            if (iter != almanac_map.cend())
+                                                                {
+                                                                    assist_level = ASSIST_ESTIMATED_DOPPLER;
+                                                                    auto freq_idx = SIGNAL_FREQ_IDX.find(channels_[current_channel]->get_signal().get_signal_str());
+                                                                    double predicted = iter->second.predicted_doppler(TOW, latest_pvt->latitude, latest_pvt->longitude, latest_pvt->height,
+                                                                        latest_pvt->vel_n, latest_pvt->vel_e, latest_pvt->vel_u, freq_idx->second);
+                                                                    // std::cout<<"[[[[ found valid almanac for E"<<sat.get_PRN()<<" predicted="<<predicted<<"\n";
+                                                                    corrected_center += predicted;
+                                                                }
+                                                            else
+                                                                {
+                                                                    // std::cout<<"]]]] no valid ephemeris for E"<<sat.get_PRN()<<"\n";
+                                                                }
                                                         }
                                                 }
 // Not working yet
@@ -1871,7 +1900,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                                             auto freq_idx = SIGNAL_FREQ_IDX.find(channels_[current_channel]->get_signal().get_signal_str());
                                                             double predicted = iter->second.predicted_doppler(TOW, latest_pvt->latitude, latest_pvt->longitude, latest_pvt->height,
                                                                 latest_pvt->vel_n, latest_pvt->vel_e, latest_pvt->vel_u, freq_idx->second);
-                                                            std::cout << "[[[[ found valid ephemeris for " << sat.get_PRN() << " predicted=" << predicted << "\n";
+                                                            std::cout << "[[[[ found valid ephemeris for C" << sat.get_PRN() << " predicted=" << predicted << "\n";
                                                             corrected_center += predicted;
                                                         }
                                                     if (!ephemeris_found)
@@ -1892,6 +1921,22 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                                     if (!ephemeris_found)
                                                         {
                                                             // std::cout<<"]]]] no valid ephemeris for C"<<sat.get_PRN()<<"\n";
+                                                            const auto& almanac_map = get_pvt()->get_beidou_dnav_almanac();
+                                                            auto iter = almanac_map.find(sat.get_PRN());
+                                                            if (iter != almanac_map.cend())
+                                                                {
+                                                                    assist_level = ASSIST_ESTIMATED_DOPPLER;
+                                                                    auto freq_idx = SIGNAL_FREQ_IDX.find(channels_[current_channel]->get_signal().get_signal_str());
+                                                                    double predicted = iter->second.predicted_doppler(TOW, latest_pvt->latitude, latest_pvt->longitude, latest_pvt->height,
+                                                                        latest_pvt->vel_n, latest_pvt->vel_e, latest_pvt->vel_u, freq_idx->second);
+                                                                    corrected_center += predicted;
+                                                                    std::cout << "[[[[ found valid almanac for C" << sat.get_PRN() << " predicted=" << predicted << "\n";
+                                                                    corrected_center += predicted;
+                                                                }
+                                                            else
+                                                                {
+                                                                    // std::cout<<"]]]] no valid almanac for C"<<sat.get_PRN()<<"\n";
+                                                                }
                                                         }
                                                 }
                                         }

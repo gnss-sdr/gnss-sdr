@@ -31,8 +31,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "gnss_obs_codes.h"
 #include "rtklib_solution.h"
+#include "gnss_obs_codes.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_rtksvr.h"
 #include <algorithm>

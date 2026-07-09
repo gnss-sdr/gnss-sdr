@@ -150,7 +150,7 @@ std::string PrintGsv(const sol_t& sol, const std::array<ssat_t, MAXSAT>& ssat)
 {
     std::array<unsigned char, 1024> buff{};
     outnmea_gsv(buff.data(), &sol, ssat.data());
-    return std::string(reinterpret_cast<const char *>(buff.data()));
+    return std::string(reinterpret_cast<const char*>(buff.data()));
 }
 
 

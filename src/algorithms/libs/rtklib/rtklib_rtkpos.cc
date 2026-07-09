@@ -2398,6 +2398,7 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
             for (j = 0; j < NFREQ; j++)
                 {
                     rtk->ssat[i].vsat[j] = rtk->ssat[i].snr[j] = 0;
+                    rtk->ssat[i].code[j] = 0;
                 }
         }
     /* satellite positions/clocks */
@@ -2603,6 +2604,7 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
                 {
                     /* output snr of rover receiver */
                     rtk->ssat[sat[i] - 1].snr[j] = obs[iu[i]].SNR[j];
+                    rtk->ssat[sat[i] - 1].code[j] = obs[iu[i]].code[j];
                 }
         }
     for (i = 0; i < MAXSAT; i++)
@@ -2652,7 +2654,7 @@ void rtkinit(rtk_t *rtk, const prcopt_t *opt)
 {
     sol_t sol0 = {{0, 0}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0};
     ambc_t ambc0 = {{{0, 0}, {0, 0}, {0, 0}, {0, 0}}, {}, {}, {}, 0, {}};
-    ssat_t ssat0 = {0, 0, {0.0}, {0.0}, {0.0}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {}, {}, {}, {}, 0.0, 0.0, 0.0, 0.0, {{{0, 0}}, {{0, 0}}}, {{}, {}}};
+    ssat_t ssat0 = {0, 0, {0.0}, {0.0}, {0.0}, {'0'}, {'0'}, {}, {'0'}, {'0'}, {'0'}, {}, {}, {}, {}, 0.0, 0.0, 0.0, 0.0, {{{0, 0}}, {{0, 0}}}, {{}, {}}};
     int i;
 
     trace(3, "rtkinit :\n");

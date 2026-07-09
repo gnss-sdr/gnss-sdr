@@ -1044,6 +1044,7 @@ typedef struct
     double resc[NFREQ];        /* residuals of carrier-phase (m) */
     unsigned char vsat[NFREQ]; /* valid satellite flag */
     unsigned char snr[NFREQ];  /* signal strength (0.25 dBHz) */
+    unsigned char code[NFREQ]; /* code indicator (CODE_???) */
     unsigned char fix[NFREQ];  /* ambiguity fix flag (1:fix,2:float,3:hold) */
     unsigned char slip[NFREQ]; /* cycle-slip flag */
     unsigned char half[NFREQ]; /* half-cycle valid flag */

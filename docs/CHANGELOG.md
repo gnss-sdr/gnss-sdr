@@ -85,6 +85,11 @@ All notable changes to GNSS-SDR will be documented in this file.
   satellites used in the PVT solution and in view (with elevation, azimuth, and
   C/N0), using the QZSS system and signal identifiers defined in NMEA 0183.
   Contributed by @vladisslav2011
+- Fixed NMEA GSV C/N0 reporting for non-L1 configurations, including GPS L2 and
+  L5: RTKLIB now preserves per-frequency signal strength and observation-code
+  metadata in satellite status, and the NMEA printer emits the strongest
+  available C/N0 with the corresponding NMEA signal identifier. Contributed by
+  @vladisslav2011.
 
 ### Improvements in Maintainability:
 

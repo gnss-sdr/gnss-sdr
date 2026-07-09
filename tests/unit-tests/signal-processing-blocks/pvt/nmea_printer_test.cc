@@ -15,12 +15,16 @@
  */
 
 
+#include "gnss_obs_codes.h"
 #include "nmea_printer.h"
 #include "pvt_conf.h"
+#include "rtklib_rtkcmn.h"
 #include "rtklib_rtkpos.h"
+#include "rtklib_solution.h"
 #include "rtklib_solver.h"
 #include "signal_enabled_flags.h"
 #include <gtest/gtest.h>
+#include <array>
 #include <fstream>
 #include <string>
 
@@ -140,6 +144,91 @@ void NmeaPrinterTest::conf()
     };
 
     rtkinit(&rtk, &rtklib_configuration_options);
+}
+
+std::string PrintGsv(const sol_t& sol, const std::array<ssat_t, MAXSAT>& ssat)
+{
+    std::array<unsigned char, 1024> buff{};
+    outnmea_gsv(buff.data(), &sol, ssat.data());
+    return std::string(reinterpret_cast<const char *>(buff.data()));
+}
+
+
+TEST_F(NmeaPrinterTest, GsvUsesStrongestNonL1SnrAndMatchingSignalId)
+{
+    sol_t sol{};
+    std::array<ssat_t, MAXSAT> ssat{};
+    const int galileo_sat = satno(SYS_GAL, 1);
+    ASSERT_GT(galileo_sat, 0);
+
+    sol.stat = SOLQ_FIX;
+    ssat[galileo_sat - 1].vs = 1;
+    ssat[galileo_sat - 1].azel[0] = 3.514475;
+    ssat[galileo_sat - 1].azel[1] = 0.644151;
+    ssat[galileo_sat - 1].snr[0] = 0;
+    ssat[galileo_sat - 1].code[0] = CODE_NONE;
+    ssat[galileo_sat - 1].snr[2] = 220;
+    ssat[galileo_sat - 1].code[2] = CODE_L7X;
+
+    EXPECT_EQ(PrintGsv(sol, ssat), "$GAGSV,1,1,01,01,37,201,55,,,,,,,,,,,,,2*41\r\n");
+}
+
+
+TEST_F(NmeaPrinterTest, GsvSplitsSatellitesBySelectedSignalId)
+{
+    sol_t sol{};
+    std::array<ssat_t, MAXSAT> ssat{};
+    const int gps_l1_sat = satno(SYS_GPS, 1);
+    const int gps_l5_sat = satno(SYS_GPS, 2);
+    ASSERT_GT(gps_l1_sat, 0);
+    ASSERT_GT(gps_l5_sat, 0);
+
+    sol.stat = SOLQ_FIX;
+    ssat[gps_l1_sat - 1].vs = 1;
+    ssat[gps_l1_sat - 1].azel[0] = 3.514475;
+    ssat[gps_l1_sat - 1].azel[1] = 0.644151;
+    ssat[gps_l1_sat - 1].snr[0] = 204;
+    ssat[gps_l1_sat - 1].code[0] = CODE_L1C;
+
+    ssat[gps_l5_sat - 1].vs = 1;
+    ssat[gps_l5_sat - 1].azel[0] = 2.968734;
+    ssat[gps_l5_sat - 1].azel[1] = 0.950019;
+    ssat[gps_l5_sat - 1].snr[0] = 0;
+    ssat[gps_l5_sat - 1].code[0] = CODE_NONE;
+    ssat[gps_l5_sat - 1].snr[2] = 220;
+    ssat[gps_l5_sat - 1].code[2] = CODE_L5X;
+
+    EXPECT_EQ(PrintGsv(sol, ssat),
+        "$GPGSV,1,1,01,01,37,201,51,,,,,,,,,,,,,1*57\r\n"
+        "$GPGSV,1,1,01,02,54,170,55,,,,,,,,,,,,,7*56\r\n");
+}
+
+
+TEST_F(NmeaPrinterTest, GsvReportsGpsL2AndL5Snr)
+{
+    sol_t sol{};
+    std::array<ssat_t, MAXSAT> ssat{};
+    const int gps_l2_sat = satno(SYS_GPS, 1);
+    const int gps_l5_sat = satno(SYS_GPS, 2);
+    ASSERT_GT(gps_l2_sat, 0);
+    ASSERT_GT(gps_l5_sat, 0);
+
+    sol.stat = SOLQ_FIX;
+    ssat[gps_l2_sat - 1].vs = 1;
+    ssat[gps_l2_sat - 1].azel[0] = 3.514475;
+    ssat[gps_l2_sat - 1].azel[1] = 0.644151;
+    ssat[gps_l2_sat - 1].snr[1] = 180;
+    ssat[gps_l2_sat - 1].code[1] = CODE_L2S;
+
+    ssat[gps_l5_sat - 1].vs = 1;
+    ssat[gps_l5_sat - 1].azel[0] = 2.968734;
+    ssat[gps_l5_sat - 1].azel[1] = 0.950019;
+    ssat[gps_l5_sat - 1].snr[2] = 220;
+    ssat[gps_l5_sat - 1].code[2] = CODE_L5X;
+
+    EXPECT_EQ(PrintGsv(sol, ssat),
+        "$GPGSV,1,1,01,01,37,201,45,,,,,,,,,,,,,5*56\r\n"
+        "$GPGSV,1,1,01,02,54,170,55,,,,,,,,,,,,,7*56\r\n");
 }
 
 

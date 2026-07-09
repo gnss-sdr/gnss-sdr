@@ -31,6 +31,7 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "gnss_obs_codes.h"
 #include "rtklib_solution.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_rtksvr.h"
@@ -56,6 +57,276 @@ static const int SOLQ_NMEA[] = {/* nmea quality flags to rtklib sol quality */
     /*  6=estimated (dead reckoning), 7=manual input, 8=simulation */
     SOLQ_NONE, SOLQ_SINGLE, SOLQ_DGPS, SOLQ_PPP, SOLQ_FIX,
     SOLQ_FLOAT, SOLQ_DR, SOLQ_NONE, SOLQ_NONE, SOLQ_NONE};
+
+struct nmea_gsv_signal_t
+{
+    unsigned char snr;
+    int signal_id;
+};
+
+static int nmea_gsv_signal_id(int sys, unsigned char code, int fallback_signal_id)
+{
+    switch (sys)
+        {
+        case SYS_GPS:
+        case SYS_SBS:
+            switch (code)
+                {
+                case CODE_L1C:
+                    return 1; /* L1 C/A */
+                case CODE_L1P:
+                case CODE_L1W:
+                case CODE_L1Y:
+                    return 2; /* L1 P(Y) */
+                case CODE_L1M:
+                    return 3; /* L1 M */
+                case CODE_L2P:
+                case CODE_L2W:
+                case CODE_L2Y:
+                    return 4; /* L2 P(Y) */
+                case CODE_L2S:
+                    return 5; /* L2C-M */
+                case CODE_L2L:
+                case CODE_L2X:
+                    return 6; /* L2C-L */
+                case CODE_L5I:
+                case CODE_L5X:
+                    return 7; /* L5-I */
+                case CODE_L5Q:
+                    return 8; /* L5-Q */
+                default:
+                    return fallback_signal_id;
+                }
+        case SYS_GLO:
+            switch (code)
+                {
+                case CODE_L1C:
+                    return 1; /* L1 C/A */
+                case CODE_L1P:
+                    return 2; /* L1 P */
+                case CODE_L2C:
+                    return 3; /* L2 C/A */
+                case CODE_L2P:
+                    return 4; /* L2 P */
+                default:
+                    return fallback_signal_id;
+                }
+        case SYS_GAL:
+            switch (code)
+                {
+                case CODE_L5I:
+                case CODE_L5Q:
+                case CODE_L5X:
+                    return 1; /* E5a */
+                case CODE_L7I:
+                case CODE_L7Q:
+                case CODE_L7X:
+                    return 2; /* E5b */
+                case CODE_L8I:
+                case CODE_L8Q:
+                case CODE_L8X:
+                    return 3; /* E5a+b */
+                case CODE_L6A:
+                    return 4; /* E6-A */
+                case CODE_L6B:
+                case CODE_L6C:
+                case CODE_L6X:
+                case CODE_L6Z:
+                    return 5; /* E6-BC */
+                case CODE_L1A:
+                    return 6; /* L1-A */
+                case CODE_L1B:
+                case CODE_L1C:
+                case CODE_L1X:
+                case CODE_L1Z:
+                    return 7; /* L1-BC */
+                default:
+                    return fallback_signal_id;
+                }
+        case SYS_QZS:
+            switch (code)
+                {
+                case CODE_L1C:
+                    return 1; /* L1 C/A */
+                case CODE_L1S:
+                    return 2; /* L1C (D) */
+                case CODE_L1L:
+                case CODE_L1X:
+                    return 3; /* L1C (P) */
+                case CODE_L2S:
+                    return 5; /* L2C-M */
+                case CODE_L2L:
+                case CODE_L2X:
+                    return 6; /* L2C-L */
+                case CODE_L5I:
+                case CODE_L5X:
+                    return 7; /* L5-I */
+                case CODE_L5Q:
+                    return 8; /* L5-Q */
+                case CODE_L6S:
+                case CODE_L6X:
+                    return 9; /* L6D */
+                case CODE_L6L:
+                    return 10; /* L6E */
+                default:
+                    return fallback_signal_id;
+                }
+        case SYS_BDS:
+            switch (code)
+                {
+                case CODE_L2I:
+                    return 1; /* B1I */
+                case CODE_L2Q:
+                    return 2; /* B1Q */
+                case CODE_L1C:
+                case CODE_L1I:
+                case CODE_L1Q:
+                    return 3; /* B1C */
+                case CODE_L5I:
+                    return 5; /* B2-a */
+                case CODE_L7I:
+                case CODE_L7Q:
+                case CODE_L7X:
+                    return 11; /* B2I */
+                case CODE_L6I:
+                    return 8; /* B3I */
+                case CODE_L6Q:
+                    return 9; /* B3Q */
+                case CODE_L6X:
+                    return 10; /* B3A */
+                default:
+                    return fallback_signal_id;
+                }
+        default:
+            return fallback_signal_id;
+        }
+}
+
+static nmea_gsv_signal_t nmea_gsv_signal(const ssat_t *ssat, int sys, int fallback_signal_id)
+{
+    int selected_freq = 0;
+
+    for (int i = 1; i < NFREQ; i++)
+        {
+            if (ssat->snr[i] > ssat->snr[selected_freq])
+                {
+                    selected_freq = i;
+                }
+        }
+
+    nmea_gsv_signal_t signal = {
+        ssat->snr[selected_freq],
+        nmea_gsv_signal_id(sys, ssat->code[selected_freq], fallback_signal_id)};
+    return signal;
+}
+
+static bool nmea_gsv_has_system(int sys, int target_sys)
+{
+    return target_sys == SYS_GPS ? (sys == SYS_GPS || sys == SYS_SBS) : sys == target_sys;
+}
+
+static int nmea_gsv_prn(int sat)
+{
+    int prn;
+    const int sys = satsys(sat, &prn);
+
+    if (sys == SYS_SBS)
+        {
+            prn += 33 - MINPRNSBS;
+        }
+    else if (sys == SYS_GLO)
+        {
+            prn += 64;
+        }
+    return prn;
+}
+
+static char *outnmea_gsv_system(char *p, const char *sentence, const ssat_t *ssat,
+    int target_sys, int fallback_signal_id)
+{
+    char *q;
+    char *s;
+    char sum;
+    int prn;
+    int sys;
+    int n = 0;
+    std::vector<int> sats(MAXSAT);
+    std::vector<int> signal_ids;
+    const int MSG_TAIL = 6;
+
+    for (int sat = 1; sat < MAXSAT && n < 12; sat++)
+        {
+            sys = satsys(sat, &prn);
+            if (!nmea_gsv_has_system(sys, target_sys))
+                {
+                    continue;
+                }
+            if (ssat[sat - 1].vs && ssat[sat - 1].azel[1] > 0.0)
+                {
+                    const int signal_id = nmea_gsv_signal(ssat + sat - 1, sys, fallback_signal_id).signal_id;
+                    if (std::find(signal_ids.begin(), signal_ids.end(), signal_id) == signal_ids.end())
+                        {
+                            signal_ids.push_back(signal_id);
+                        }
+                    sats[n++] = sat;
+                }
+        }
+
+    for (const auto signal_id : signal_ids)
+        {
+            int nsat = 0;
+            int nmsg;
+            int k;
+            std::vector<int> signal_sats(MAXSAT);
+
+            for (int i = 0; i < n; i++)
+                {
+                    sys = satsys(sats[i], nullptr);
+                    if (nmea_gsv_signal(ssat + sats[i] - 1, sys, fallback_signal_id).signal_id == signal_id)
+                        {
+                            signal_sats[nsat++] = sats[i];
+                        }
+                }
+
+            nmsg = nsat <= 0 ? 0 : (nsat - 1) / 4 + 1;
+
+            for (int i = k = 0; i < nmsg; i++)
+                {
+                    s = p;
+                    p += std::snprintf(p, MAXSOLBUF, "%s,%d,%d,%02d", sentence, nmsg, i + 1, nsat);
+
+                    for (int j = 0; j < 4; j++, k++)
+                        {
+                            if (k < nsat)
+                                {
+                                    const int sat = signal_sats[k];
+                                    const nmea_gsv_signal_t signal = nmea_gsv_signal(ssat + sat - 1,
+                                        satsys(sat, nullptr), fallback_signal_id);
+                                    double az = ssat[sat - 1].azel[0] * R2D;
+                                    if (az < 0.0)
+                                        {
+                                            az += 360.0;
+                                        }
+                                    const double el = ssat[sat - 1].azel[1] * R2D;
+                                    const double snr = signal.snr * 0.25;
+                                    p += std::snprintf(p, MAXSOLBUF - (p - s), ",%02d,%02.0f,%03.0f,%02.0f",
+                                        nmea_gsv_prn(sat), el, az, snr);
+                                }
+                            else
+                                {
+                                    p += std::snprintf(p, MAXSOLBUF - (p - s), ",,,,");
+                                }
+                        }
+                    p += std::snprintf(p, MAXSOLBUF - (p - s), ",%d", signal_id);
+                    for (q = s + 1, sum = 0; *q; q++)
+                        {
+                            sum ^= *q; /* check-sum */
+                        }
+                    p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
+                }
+        }
+    return p;
+}
 
 
 /* solution option to field separator ----------------------------------------*/
@@ -1892,21 +2163,8 @@ int outnmea_gsa(unsigned char *buff, const sol_t *sol,
 int outnmea_gsv(unsigned char *buff, const sol_t *sol,
     const ssat_t *ssat)
 {
-    double az;
-    double el;
-    double snr;
-    int i;
-    int j;
-    int k;
-    int n;
-    int sat;
-    int prn;
-    int sys;
-    int nmsg;
-    std::vector<int> sats(MAXSAT);
     char *p = reinterpret_cast<char *>(buff);
     char *q;
-    char *s;
     char sum;
     const int MSG_TAIL = 6;
 
@@ -1922,236 +2180,11 @@ int outnmea_gsv(unsigned char *buff, const sol_t *sol,
             p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
             return p - reinterpret_cast<char *>(buff);
         }
-    /* GPGSV: gps/sbas */
-    for (sat = 1, n = 0; sat < MAXSAT && n < 12; sat++)
-        {
-            sys = satsys(sat, &prn);
-            if (sys != SYS_GPS && sys != SYS_SBS)
-                {
-                    continue;
-                }
-            if (ssat[sat - 1].vs && ssat[sat - 1].azel[1] > 0.0)
-                {
-                    sats[n++] = sat;
-                }
-        }
-    nmsg = n <= 0 ? 0 : (n - 1) / 4 + 1;
-
-    for (i = k = 0; i < nmsg; i++)
-        {
-            s = p;
-            p += std::snprintf(p, MAXSOLBUF, "$GPGSV,%d,%d,%02d", nmsg, i + 1, n);
-
-            for (j = 0; j < 4; j++, k++)
-                {
-                    if (k < n)
-                        {
-                            if (satsys(sats[k], &prn) == SYS_SBS)
-                                {
-                                    prn += 33 - MINPRNSBS;
-                                }
-                            az = ssat[sats[k] - 1].azel[0] * R2D;
-                            if (az < 0.0)
-                                {
-                                    az += 360.0;
-                                }
-                            el = ssat[sats[k] - 1].azel[1] * R2D;
-                            snr = *std::max_element(std::begin(ssat[sats[k] - 1].snr), std::end(ssat[sats[k] - 1].snr)) * 0.25;
-                            p += std::snprintf(p, MAXSOLBUF - (s - p), ",%02d,%02.0f,%03.0f,%02.0f", prn, el, az, snr);
-                        }
-                    else
-                        {
-                            p += std::snprintf(p, MAXSOLBUF - (s - p), ",,,,");
-                        }
-                }
-            p += std::snprintf(p, MAXSOLBUF - (s - p), ",1"); /* L1C/A */
-            for (q = s + 1, sum = 0; *q; q++)
-                {
-                    sum ^= *q; /* check-sum */
-                }
-            p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
-        }
-    /* GLGSV: glonass */
-    for (sat = 1, n = 0; sat < MAXSAT && n < 12; sat++)
-        {
-            if (satsys(sat, &prn) != SYS_GLO)
-                {
-                    continue;
-                }
-            if (ssat[sat - 1].vs && ssat[sat - 1].azel[1] > 0.0)
-                {
-                    sats[n++] = sat;
-                }
-        }
-    nmsg = n <= 0 ? 0 : (n - 1) / 4 + 1;
-
-    for (i = k = 0; i < nmsg; i++)
-        {
-            s = p;
-            p += std::snprintf(p, MAXSOLBUF, "$GLGSV,%d,%d,%02d", nmsg, i + 1, n);
-
-            for (j = 0; j < 4; j++, k++)
-                {
-                    if (k < n)
-                        {
-                            satsys(sats[k], &prn);
-                            prn += 64; /* 65-99 */
-                            az = ssat[sats[k] - 1].azel[0] * R2D;
-                            if (az < 0.0)
-                                {
-                                    az += 360.0;
-                                }
-                            el = ssat[sats[k] - 1].azel[1] * R2D;
-                            snr = *std::max_element(std::begin(ssat[sats[k] - 1].snr), std::end(ssat[sats[k] - 1].snr)) * 0.25;
-                            p += std::snprintf(p, MAXSOLBUF - (s - p), ",%02d,%02.0f,%03.0f,%02.0f", prn, el, az, snr);
-                        }
-                    else
-                        {
-                            p += std::snprintf(p, MAXSOLBUF - (s - p), ",,,,");
-                        }
-                }
-            p += std::snprintf(p, MAXSOLBUF - (s - p), ",1"); /* L1C/A */
-            for (q = s + 1, sum = 0; *q; q++)
-                {
-                    sum ^= *q; /* check-sum */
-                }
-            p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
-        }
-    /* GAGSV: galileo */
-    for (sat = 1, n = 0; sat < MAXSAT && n < 12; sat++)
-        {
-            if (satsys(sat, &prn) != SYS_GAL)
-                {
-                    continue;
-                }
-            if (ssat[sat - 1].vs && ssat[sat - 1].azel[1] > 0.0)
-                {
-                    sats[n++] = sat;
-                }
-        }
-    nmsg = n <= 0 ? 0 : (n - 1) / 4 + 1;
-
-    for (i = k = 0; i < nmsg; i++)
-        {
-            s = p;
-            p += std::snprintf(p, MAXSOLBUF, "$GAGSV,%d,%d,%02d", nmsg, i + 1, n);
-
-            for (j = 0; j < 4; j++, k++)
-                {
-                    if (k < n)
-                        {
-                            satsys(sats[k], &prn); /* 1-36 */
-                            az = ssat[sats[k] - 1].azel[0] * R2D;
-                            if (az < 0.0)
-                                {
-                                    az += 360.0;
-                                }
-                            el = ssat[sats[k] - 1].azel[1] * R2D;
-                            snr = *std::max_element(std::begin(ssat[sats[k] - 1].snr), std::end(ssat[sats[k] - 1].snr)) * 0.25;
-                            p += std::snprintf(p, MAXSOLBUF - (s - p), ",%02d,%02.0f,%03.0f,%02.0f", prn, el, az, snr);
-                        }
-                    else
-                        {
-                            p += std::snprintf(p, MAXSOLBUF - (s - p), ",,,,");
-                        }
-                }
-            p += std::snprintf(p, MAXSOLBUF - (s - p), ",7"); /* L1BC */
-            for (q = s + 1, sum = 0; *q; q++)
-                {
-                    sum ^= *q; /* check-sum */
-                }
-            p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
-        }
-    /* QZGSV: QZSS */
-    for (sat = 1, n = 0; sat < MAXSAT && n < 12; sat++)
-        {
-            if (satsys(sat, &prn) != SYS_QZS)
-                {
-                    continue;
-                }
-            if (ssat[sat - 1].vs && ssat[sat - 1].azel[1] > 0.0)
-                {
-                    sats[n++] = sat;
-                }
-        }
-    nmsg = n <= 0 ? 0 : (n - 1) / 4 + 1;
-
-    for (i = k = 0; i < nmsg; i++)
-        {
-            s = p;
-            p += std::snprintf(p, MAXSOLBUF, "$QZGSV,%d,%d,%02d", nmsg, i + 1, n);
-
-            for (j = 0; j < 4; j++, k++)
-                {
-                    if (k < n)
-                        {
-                            satsys(sats[k], &prn); /* 193-206 */
-                            az = ssat[sats[k] - 1].azel[0] * R2D;
-                            if (az < 0.0)
-                                {
-                                    az += 360.0;
-                                }
-                            el = ssat[sats[k] - 1].azel[1] * R2D;
-                            snr = *std::max_element(std::begin(ssat[sats[k] - 1].snr), std::end(ssat[sats[k] - 1].snr)) * 0.25;
-                            p += std::snprintf(p, MAXSOLBUF - (s - p), ",%02d,%02.0f,%03.0f,%02.0f", prn, el, az, snr);
-                        }
-                    else
-                        {
-                            p += std::snprintf(p, MAXSOLBUF - (s - p), ",,,,");
-                        }
-                }
-            p += std::snprintf(p, MAXSOLBUF - (s - p), ",1"); /* L1C/A */
-            for (q = s + 1, sum = 0; *q; q++)
-                {
-                    sum ^= *q; /* check-sum */
-                }
-            p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
-        }
-    /* BDGSV: beidou */
-    for (sat = 1, n = 0; sat < MAXSAT && n < 12; sat++)
-        {
-            if (satsys(sat, &prn) != SYS_BDS)
-                {
-                    continue;
-                }
-            if (ssat[sat - 1].vs && ssat[sat - 1].azel[1] > 0.0)
-                {
-                    sats[n++] = sat;
-                }
-        }
-    nmsg = n <= 0 ? 0 : (n - 1) / 4 + 1;
-
-    for (i = k = 0; i < nmsg; i++)
-        {
-            s = p;
-            p += std::snprintf(p, MAXSOLBUF, "$BDGSV,%d,%d,%02d", nmsg, i + 1, n);
-
-            for (j = 0; j < 4; j++, k++)
-                {
-                    if (k < n)
-                        {
-                            satsys(sats[k], &prn); /* 1-63 */
-                            az = ssat[sats[k] - 1].azel[0] * R2D;
-                            if (az < 0.0)
-                                {
-                                    az += 360.0;
-                                }
-                            el = ssat[sats[k] - 1].azel[1] * R2D;
-                            snr = *std::max_element(std::begin(ssat[sats[k] - 1].snr), std::end(ssat[sats[k] - 1].snr)) * 0.25;
-                            p += std::snprintf(p, MAXSOLBUF - (s - p), ",%02d,%02.0f,%03.0f,%02.0f", prn, el, az, snr);
-                        }
-                    else
-                        {
-                            p += std::snprintf(p, MAXSOLBUF - (s - p), ",,,,");
-                        }
-                }
-            p += std::snprintf(p, MAXSOLBUF - (s - p), ",1");
-            for (q = s + 1, sum = 0; *q; q++)
-                {
-                    sum ^= *q; /* check-sum */
-                }
-            p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
-        }
+    p = outnmea_gsv_system(p, "$GPGSV", ssat, SYS_GPS, 1);
+    p = outnmea_gsv_system(p, "$GLGSV", ssat, SYS_GLO, 1);
+    p = outnmea_gsv_system(p, "$GAGSV", ssat, SYS_GAL, 7);
+    p = outnmea_gsv_system(p, "$QZGSV", ssat, SYS_QZS, 1);
+    p = outnmea_gsv_system(p, "$BDGSV", ssat, SYS_BDS, 1);
     return p - reinterpret_cast<char *>(buff);
 }
 

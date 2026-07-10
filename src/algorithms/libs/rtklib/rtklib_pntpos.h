@@ -49,6 +49,8 @@ double varerr(const prcopt_t *opt, double el, int sys);
 /* get tgd parameter (m) -----------------------------------------------------*/
 double gettgd(int sat, const nav_t *nav);
 double gettgd(int sat, const nav_t *nav, int tgd_index);
+/* BDS DNAV/CNAV1 TGD selection by observation code (CODE_L1D/L1P/...) */
+double gettgd(int sat, const nav_t *nav, unsigned char obs_code);
 
 /* select Galileo BGD from observation and ephemeris provenance -------------*/
 int galileo_bgd_index(unsigned char observation_code, int sat, const nav_t *nav);
@@ -77,10 +79,12 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
  *          int    ionoopt   I   ionospheric correction option (IONOOPT_???)
  *          double *ion      O   ionospheric delay (L1) (m)
  *          double *var      O   ionospheric delay (L1) variance (m^2)
+ *          unsigned char obs_code I optional observation code (CODE_???); for BDS
+ *                                   CODE_L1D/L1P selects BDGIM at FREQ1 (B1C)
  * return : status(1:ok,0:error)
  *-----------------------------------------------------------------------------*/
 int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
-    const double *azel, int ionoopt, double *ion, double *var);
+    const double *azel, int ionoopt, double *ion, double *var, unsigned char obs_code = 0);
 /* tropospheric correction -----------------------------------------------------
  * compute tropospheric correction
  * args   : gtime_t time     I   time

@@ -11,9 +11,9 @@
 #include "nav_message_packet.h"
 #include "telemetry_impl_interface.h"
 #include "tlm_conf.h"
-#include <boost/circular_buffer.hpp>
 #include <vector>
 
+class Gnss_Synchro;
 class beidou_b1c_telemetry_decoder_gs;
 using beidou_b1c_telemetry_decoder_gs_sptr = gnss_shared_ptr<beidou_b1c_telemetry_decoder_gs>;
 
@@ -28,6 +28,7 @@ public:
     void set_satellite(const Gnss_Satellite& satellite) override;
     void set_channel(int channel) override;
     void reset() override;
+    void forecast(int noutput_items, gr_vector_int& ninput_items_required) override;
     int general_work(int noutput_items, gr_vector_int& ninput_items,
         gr_vector_const_void_star& input_items, gr_vector_void_star& output_items) override;
 
@@ -36,16 +37,12 @@ private:
         const Gnss_Satellite& satellite, const Tlm_Conf& conf);
 
     beidou_b1c_telemetry_decoder_gs(const Gnss_Satellite& satellite, const Tlm_Conf& conf);
-    bool decode_frame_from_history(bool invert);
-    bool decode_frame_from_history_with_offset(int32_t start_offset, bool invert);
-    bool probe_frame_from_history_with_offset(int32_t start_offset, bool invert) const;
+    bool decode_frame_from_window(const Gnss_Synchro* window, int32_t start_offset, bool invert);
     void publish_navigation(double cn0_db_hz);
 
     Beidou_Cnav1_Navigation_Message d_nav;
     Nav_Message_Packet d_nav_msg_packet;
     Gnss_Satellite d_satellite;
-    boost::circular_buffer<float> d_symbol_history;
-    boost::circular_buffer<float> d_symbol_history_q;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
     std::unique_ptr<Tlm_CRC_Stats> d_Tlm_CRC_Stats;
@@ -54,6 +51,7 @@ private:
     int32_t d_channel{};
     int32_t d_stat{};
     int32_t d_CRC_error_counter{};
+    int32_t d_frame_soh_offset{0};
     uint32_t d_TOW_at_current_symbol_ms{};
     uint32_t d_symbol_duration_ms{};
     bool d_flag_valid_word{false};
@@ -68,9 +66,7 @@ private:
     bool d_prev_valid_symbol_output{false};
     bool d_await_post_lock_frame_decode{false};
     uint32_t d_post_lock_valid_symbols{0U};
-    std::vector<float> d_prev_candidate_frame;
     int32_t d_prev_candidate_offset{-1};
-    bool d_have_prev_candidate_frame{false};
 };
 
 #endif

@@ -2464,6 +2464,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     current_synchro_data.Flag_valid_symbol_output = true;
                 }
             current_synchro_data.Flag_PLL_180_deg_phase_locked = d_Flag_PLL_180_deg_phase_locked;
+            current_synchro_data.Flag_tracking_pilot = d_trk_parameters.track_pilot;
 
             // generate new tag associated with gnss-synchro object
             if (d_timetag_waiting == true)

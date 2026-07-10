@@ -1,0 +1,166 @@
+/*!
+ * \file beidou_b1c_pvt_helpers_test.cc
+ * \brief Unit tests for B1C PVT helpers (TGD/ISC, seleph, band/wavelength map)
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+#include "MATH_CONSTANTS.h"
+#include "gnss_frequencies.h"
+#include "gnss_obs_codes.h"
+#include "gnss_synchro.h"
+#include "rtklib.h"
+#include "rtklib_conversions.h"
+#include "rtklib_ephemeris.h"
+#include "rtklib_pntpos.h"
+#include "rtklib_rtkcmn.h"
+#include <gtest/gtest.h>
+#include <cstring>
+#include <string>
+#include <vector>
+
+namespace
+{
+eph_t make_bds_eph(int sat, int code, double tgd0, double tgd2, gtime_t toe)
+{
+    eph_t e{};
+    std::memset(&e, 0, sizeof(e));
+    e.sat = sat;
+    e.code = code;
+    e.A = 27906100.0;
+    e.e = 0.01;
+    e.toe = toe;
+    e.toc = toe;
+    e.toes = 0.0;
+    e.tgd[0] = tgd0;
+    e.tgd[2] = tgd2;
+    return e;
+}
+
+Gnss_Synchro make_bds_synchro(const char *signal, uint32_t prn, double pr_m, bool pilot)
+{
+    Gnss_Synchro gs{};
+    gs.System = 'C';
+    gs.Signal[0] = signal[0];
+    gs.Signal[1] = signal[1];
+    gs.Signal[2] = '\0';
+    gs.PRN = prn;
+    gs.Pseudorange_m = pr_m;
+    gs.Carrier_Doppler_hz = 100.0;
+    gs.Carrier_phase_rads = 0.0;
+    gs.CN0_dB_hz = 40.0;
+    gs.Flag_valid_pseudorange = true;
+    gs.Flag_tracking_pilot = pilot;
+    return gs;
+}
+}  // namespace
+
+TEST(BeidouB1cPvtHelpersTest, GettgdAppliesIscForDataComponent)
+{
+    const int sat = NSATGPS + NSATGLO + NSATGAL + NSATQZS + 19;
+    const double ep[] = {2020, 1, 1, 0, 0, 0};
+    const gtime_t t0 = epoch2time(ep);
+    std::vector<eph_t> ephs;
+    ephs.push_back(make_bds_eph(sat, 7, 1.0e-9, 2.0e-9, t0));
+    nav_t nav;
+    std::memset(&nav, 0, sizeof(nav));
+    nav.eph = ephs.data();
+    nav.n = 1;
+
+    const double tgd_pilot = gettgd(sat, &nav, static_cast<unsigned char>(CODE_L1P));
+    const double tgd_data = gettgd(sat, &nav, static_cast<unsigned char>(CODE_L1D));
+    EXPECT_NEAR(tgd_pilot, SPEED_OF_LIGHT_M_S * 1.0e-9, 1.0e-6);
+    EXPECT_NEAR(tgd_data, SPEED_OF_LIGHT_M_S * 3.0e-9, 1.0e-6);
+}
+
+TEST(BeidouB1cPvtHelpersTest, SelephPrefersCnav1WhenRequested)
+{
+    const int sat = NSATGPS + NSATGLO + NSATGAL + NSATQZS + 20;
+    const double ep[] = {2020, 6, 1, 12, 0, 0};
+    const gtime_t t0 = epoch2time(ep);
+    std::vector<eph_t> ephs;
+    ephs.push_back(make_bds_eph(sat, 1, 1.0e-9, 0.0, t0));    /* DNAV */
+    ephs.push_back(make_bds_eph(sat, 7, 2.0e-9, 1.0e-9, t0)); /* CNAV1 */
+    nav_t nav;
+    std::memset(&nav, 0, sizeof(nav));
+    nav.eph = ephs.data();
+    nav.n = 2;
+
+    eph_t *e_cnav = seleph(t0, sat, -1, &nav, 7);
+    eph_t *e_dnav = seleph(t0, sat, -1, &nav, 0);
+    ASSERT_NE(e_cnav, static_cast<eph_t *>(nullptr));
+    ASSERT_NE(e_dnav, static_cast<eph_t *>(nullptr));
+    EXPECT_EQ(e_cnav->code, 7);
+    EXPECT_NE(e_dnav->code, 7);
+}
+
+/* Regression: B1C must not share B1I wavelength / B2 slot (PM review).
+ * GNSS-SDR BDS NFREQ=3 map: frq0=B1I, frq1=B1C (FREQ1), frq2=B3I. */
+TEST(BeidouB1cPvtHelpersTest, SatwavelenBdsFrq1IsB1cNotB1iOrB2)
+{
+    const int sat = satno(SYS_BDS, 19);
+    nav_t nav{};
+    const double lam0 = satwavelen(sat, 0, &nav);
+    const double lam1 = satwavelen(sat, 1, &nav);
+    const double lam2 = satwavelen(sat, 2, &nav);
+
+    EXPECT_NEAR(lam0, SPEED_OF_LIGHT_M_S / FREQ1_BDS, 1.0e-9);
+    EXPECT_NEAR(lam1, SPEED_OF_LIGHT_M_S / FREQ1, 1.0e-9);
+    EXPECT_NEAR(lam2, SPEED_OF_LIGHT_M_S / FREQ3_BDS, 1.0e-9);
+
+    EXPECT_NE(lam1, lam0);
+    EXPECT_NE(lam1, SPEED_OF_LIGHT_M_S / FREQ2_BDS);
+}
+
+TEST(BeidouB1cPvtHelpersTest, SignalFreqMapB1cUsesFreq1)
+{
+    ASSERT_NE(SIGNAL_FREQ_MAP.find("1D"), SIGNAL_FREQ_MAP.end());
+    ASSERT_NE(SIGNAL_FREQ_MAP.find("B1"), SIGNAL_FREQ_MAP.end());
+    EXPECT_DOUBLE_EQ(SIGNAL_FREQ_MAP.at("1D"), FREQ1);
+    EXPECT_DOUBLE_EQ(SIGNAL_FREQ_MAP.at("B1"), FREQ1_BDS);
+    EXPECT_NE(SIGNAL_FREQ_MAP.at("1D"), SIGNAL_FREQ_MAP.at("B1"));
+}
+
+/* Contract matching rtklib_solver band map: B1→0, 1D→1 (distinct slots). */
+TEST(BeidouB1cPvtHelpersTest, InsertObsPlacesB1iAndB1cOnDistinctBands)
+{
+    constexpr int k_b1i_band = 0;
+    constexpr int k_b1c_band = 1;
+    constexpr uint32_t prn = 19;
+    constexpr int week = 2100;
+
+    Gnss_Synchro b1i = make_bds_synchro("B1", prn, 2.2e7, false);
+    Gnss_Synchro b1c = make_bds_synchro("1D", prn, 2.2e7, false);
+
+    obsd_t obs{};
+    obs = insert_obs_to_rtklib(obs, b1i, week, k_b1i_band);
+    obs = insert_obs_to_rtklib(obs, b1c, week, k_b1c_band);
+
+    EXPECT_EQ(obs.code[k_b1i_band], static_cast<unsigned char>(CODE_L2I));
+    EXPECT_EQ(obs.code[k_b1c_band], static_cast<unsigned char>(CODE_L1D));
+    EXPECT_NEAR(obs.P[k_b1i_band], 2.2e7, 1.0e-3);
+    EXPECT_NEAR(obs.P[k_b1c_band], 2.2e7, 1.0e-3);
+
+    Gnss_Synchro b1c_pilot = make_bds_synchro("1D", prn, 2.1e7, true);
+    obsd_t obs_pilot{};
+    obs_pilot = insert_obs_to_rtklib(obs_pilot, b1c_pilot, week, k_b1c_band);
+    EXPECT_EQ(obs_pilot.code[k_b1c_band], static_cast<unsigned char>(CODE_L1P));
+}
+
+TEST(BeidouB1cPvtHelpersTest, GettgdPrefersMatchingEphTypeWhenBothPresent)
+{
+    const int sat = NSATGPS + NSATGLO + NSATGAL + NSATQZS + 21;
+    const double ep[] = {2021, 3, 1, 0, 0, 0};
+    const gtime_t t0 = epoch2time(ep);
+    std::vector<eph_t> ephs;
+    ephs.push_back(make_bds_eph(sat, 1, 5.0e-9, 0.0, t0));    /* DNAV TGD1 */
+    ephs.push_back(make_bds_eph(sat, 7, 1.0e-9, 2.0e-9, t0)); /* CNAV1 */
+    nav_t nav;
+    std::memset(&nav, 0, sizeof(nav));
+    nav.eph = ephs.data();
+    nav.n = 2;
+
+    const double tgd_b1c = gettgd(sat, &nav, static_cast<unsigned char>(CODE_L1D));
+    const double tgd_b1i = gettgd(sat, &nav, static_cast<unsigned char>(CODE_L2I));
+    EXPECT_NEAR(tgd_b1c, SPEED_OF_LIGHT_M_S * 3.0e-9, 1.0e-6);
+    EXPECT_NEAR(tgd_b1i, SPEED_OF_LIGHT_M_S * 5.0e-9, 1.0e-6);
+}

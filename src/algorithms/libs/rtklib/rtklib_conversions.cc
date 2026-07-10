@@ -230,7 +230,15 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
                 }
             else if (sig_ == "1D")
                 {
-                    rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L1D);
+                    // RINEX: B1C pilot = 1P, B1C data = 1D (ICD §7.6 TGD/ISC)
+                    if (gnss_synchro.Flag_tracking_pilot)
+                        {
+                            rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L1P);
+                        }
+                    else
+                        {
+                            rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L1D);
+                        }
                 }
 
             break;
@@ -728,6 +736,8 @@ eph_t eph_to_rtklib(const Beidou_Cnav1_Ephemeris& bei_eph)
     rtklib_sat.i0 = bei_eph.i_0;
     rtklib_sat.idot = bei_eph.idot;
     rtklib_sat.e = bei_eph.ecc;
+    rtklib_sat.Adot = bei_eph.Adot;
+    rtklib_sat.ndot = bei_eph.delta_n_dot;
     rtklib_sat.svh = 0;
     rtklib_sat.sva = 0;
     rtklib_sat.code = bei_eph.sig_type;

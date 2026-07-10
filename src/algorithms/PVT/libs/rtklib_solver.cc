@@ -33,6 +33,7 @@
 #include "rtklib_solver.h"
 #include "Beidou_DNAV.h"
 #include "Galileo_CNAV.h"
+#include "gnss_obs_codes.h"
 #include "gnss_sdr_filesystem.h"
 #include "matlab_writter_helper.h"
 #include "rtklib_rtkpos.h"
@@ -40,6 +41,7 @@
 #include <algorithm>
 #include <cmath>
 #include <exception>
+#include <iostream>
 #include <iterator>
 #include <limits>
 #include <utility>
@@ -69,11 +71,13 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     d_rtklib_freq_index[1] = 1;
     d_rtklib_freq_index[2] = 2;
 
+    // RTKLIB BDS frequency slots (see satwavelen):
+    //   band/frq 0 = B1I (1561.098 MHz), 1 = B1C (1575.42 MHz), 2 = B3I (1268.52 MHz)
     d_rtklib_band_index["1G"] = 0;
     d_rtklib_band_index["1C"] = 0;
     d_rtklib_band_index["1B"] = 0;
     d_rtklib_band_index["B1"] = 0;
-    d_rtklib_band_index["1D"] = 0;
+    d_rtklib_band_index["1D"] = 1;
     d_rtklib_band_index["B3"] = 2;
     d_rtklib_band_index["2G"] = 1;
     d_rtklib_band_index["2S"] = 1;
@@ -1776,17 +1780,114 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     }
                 case 'C':
                     {
-                        // BEIDOU B1I
-                        //  - find the ephemeris for the current BEIDOU SV observation. The SV PRN ID is the map key
+                        // BEIDOU B1I / B1C / B3I
+                        // Prefer B1C when the same PRN has a usable CNAV1 ephemeris.
+                        // If B1C is tracked but CNAV1 is missing/stale, keep B1I+DNAV.
                         const std::string sig_(gnss_observables_iter->second.Signal);
+                        const int bds_sat = static_cast<int>(gnss_observables_iter->second.PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS);
+                        auto bds_toe_age_ok = [](double obs_tow_gpst_s, double toe_bdt_s) -> bool {
+                            const double toe_gpst_s = toe_bdt_s + static_cast<double>(BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET);
+                            double toe_age_s = std::fabs(obs_tow_gpst_s - toe_gpst_s);
+                            if (toe_age_s > 302400.0)
+                                {
+                                    toe_age_s = 604800.0 - toe_age_s;
+                                }
+                            return toe_age_s <= MAXDTOE_BDS;
+                        };
+                        // Absolute PR floor/ceiling alone is unreliable: RX TOW is the
+                        // latest TX TOW, so common bias can make all PRs look "short".
+                        // Reject only clearly impossible values here; relative outliers
+                        // (e.g. C35 ~3e6 m vs peers ~15e6 m) are filtered below.
+                        auto bds_pr_absolute_ok = [](double pr_m) -> bool {
+                            return pr_m > 1.0e5 && pr_m < 1.0e8;
+                        };
+                        auto dnav_eph_sane = [](const Beidou_Dnav_Ephemeris &eph) -> bool {
+                            // ICD B1I Table 5-10: toe ∈ [0, 604792], sqrt(A) ∈ [0, 8192]
+                            return eph.toe >= 0 && eph.toe <= static_cast<int32_t>(D1_TOE_MAX_S) &&
+                                   eph.sqrtA >= D1_SQRT_A_MIN_SANE && eph.sqrtA <= D1_SQRT_A_MAX;
+                        };
+
+                        // Relative PR outlier vs other BeiDou obs in this epoch (~10 ms · c).
+                        // Catches per-SV TOW desync (C35 B1I/B1C both ~3.18e6 m while peers ~15e6 m).
+                        std::vector<double> bds_prs;
+                        bds_prs.reserve(gnss_observables_map.size());
+                        for (const auto &obs_pair : gnss_observables_map)
+                            {
+                                if (obs_pair.second.System == 'C' && bds_pr_absolute_ok(obs_pair.second.Pseudorange_m))
+                                    {
+                                        bds_prs.push_back(obs_pair.second.Pseudorange_m);
+                                    }
+                            }
+                        double bds_pr_median = 0.0;
+                        if (!bds_prs.empty())
+                            {
+                                std::nth_element(bds_prs.begin(), bds_prs.begin() + static_cast<std::ptrdiff_t>(bds_prs.size() / 2), bds_prs.end());
+                                bds_pr_median = bds_prs[bds_prs.size() / 2];
+                            }
+                        constexpr double bds_pr_outlier_m = 5.0e6;  // ~16.7 ms · c
+                        auto bds_pr_sane = [&](double pr_m) -> bool {
+                            if (!bds_pr_absolute_ok(pr_m))
+                                {
+                                    return false;
+                                }
+                            if (bds_prs.size() >= 3 && bds_pr_median > 0.0 &&
+                                std::fabs(pr_m - bds_pr_median) > bds_pr_outlier_m)
+                                {
+                                    return false;
+                                }
+                            return true;
+                        };
+
                         if (sig_ == "B1")
                             {
+                                if (!bds_pr_sane(gnss_observables_iter->second.Pseudorange_m))
+                                    {
+                                        DLOG(INFO) << "Skip B1I PRN " << gnss_observables_iter->second.PRN
+                                                   << " (absurd/outlier pseudorange " << gnss_observables_iter->second.Pseudorange_m << " m)";
+                                        break;
+                                    }
+                                bool prefer_b1c = false;
+                                for (const auto &obs_pair : gnss_observables_map)
+                                    {
+                                        if (obs_pair.second.System == 'C' &&
+                                            obs_pair.second.PRN == gnss_observables_iter->second.PRN &&
+                                            std::string(obs_pair.second.Signal, 2) == "1D" &&
+                                            bds_pr_sane(obs_pair.second.Pseudorange_m))
+                                            {
+                                                const auto cnav1_it = beidou_cnav1_ephemeris_map.find(obs_pair.second.PRN);
+                                                if (cnav1_it != beidou_cnav1_ephemeris_map.cend() &&
+                                                    bds_toe_age_ok(obs_pair.second.RX_time, static_cast<double>(cnav1_it->second.toe)))
+                                                    {
+                                                        prefer_b1c = true;
+                                                        break;
+                                                    }
+                                            }
+                                    }
+                                if (prefer_b1c)
+                                    {
+                                        DLOG(INFO) << "Skip B1I for PRN " << gnss_observables_iter->second.PRN
+                                                   << " (B1C present; prefer CNAV1)";
+                                        break;
+                                    }
                                 beidou_ephemeris_iter = beidou_dnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (beidou_ephemeris_iter != beidou_dnav_ephemeris_map.cend())
                                     {
-                                        // convert ephemeris from GNSS-SDR class to RTKLIB structure
+                                        if (!dnav_eph_sane(beidou_ephemeris_iter->second))
+                                            {
+                                                DLOG(INFO) << "Skip corrupt DNAV ephemeris for SV "
+                                                           << beidou_ephemeris_iter->second.PRN
+                                                           << " toe=" << beidou_ephemeris_iter->second.toe
+                                                           << " sqrtA=" << beidou_ephemeris_iter->second.sqrtA;
+                                                break;
+                                            }
+                                        if (!bds_toe_age_ok(gnss_observables_iter->second.RX_time,
+                                                static_cast<double>(beidou_ephemeris_iter->second.toe)))
+                                            {
+                                                DLOG(INFO) << "Skip stale DNAV ephemeris for SV "
+                                                           << beidou_ephemeris_iter->second.PRN;
+                                                break;
+                                            }
                                         eph_data[valid_obs] = eph_to_rtklib(beidou_ephemeris_iter->second);
-                                        // convert observation from GNSS-SDR class to RTKLIB structure
                                         obsd_t newobs{};
                                         d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
@@ -1794,17 +1895,38 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             d_rtklib_band_index.at(sig_));
                                         valid_obs++;
                                     }
-                                else  // the ephemeris are not available for this SV
+                                else
                                     {
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->first;
                                     }
                             }
                         if (sig_ == "1D")
                             {
+                                if (!bds_pr_sane(gnss_observables_iter->second.Pseudorange_m))
+                                    {
+                                        DLOG(INFO) << "Skip B1C PRN " << gnss_observables_iter->second.PRN
+                                                   << " (absurd/outlier pseudorange " << gnss_observables_iter->second.Pseudorange_m << " m)";
+                                        break;
+                                    }
                                 const auto cnav1_iter = beidou_cnav1_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (cnav1_iter != beidou_cnav1_ephemeris_map.cend())
                                     {
+                                        // Reject stale CNAV1 before it enters the epoch (MAXDTOE_BDS = 6 h).
+                                        // RX_time is GPST; CNAV1 toe is BDT (ICD §7.7) — convert before age check.
+                                        if (!bds_toe_age_ok(gnss_observables_iter->second.RX_time,
+                                                static_cast<double>(cnav1_iter->second.toe)))
+                                            {
+                                                DLOG(INFO) << "Skip stale B-CNAV1 ephemeris for SV "
+                                                           << cnav1_iter->second.PRN;
+                                                break;
+                                            }
                                         eph_data[valid_obs] = eph_to_rtklib(cnav1_iter->second);
+                                        // Apply SF3 health (HS) when available
+                                        const auto page_it = beidou_cnav1_page_data_map.find(cnav1_iter->second.PRN);
+                                        if (page_it != beidou_cnav1_page_data_map.cend() && page_it->second.common.hs != 0)
+                                            {
+                                                eph_data[valid_obs].svh = page_it->second.common.hs;
+                                            }
                                         obsd_t newobs{};
                                         d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
@@ -1817,31 +1939,35 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         DLOG(INFO) << "No B-CNAV1 ephemeris data for SV " << gnss_observables_iter->second.PRN;
                                     }
                             }
-                        // BeiDou B3
+                        // BeiDou B3: merge only with DNAV/B1I obs (never with CNAV1/B1C)
                         if (sig_ == "B3")
                             {
                                 beidou_ephemeris_iter = beidou_dnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                                if (beidou_ephemeris_iter != beidou_dnav_ephemeris_map.cend())
+                                if (beidou_ephemeris_iter != beidou_dnav_ephemeris_map.cend() &&
+                                    dnav_eph_sane(beidou_ephemeris_iter->second) &&
+                                    bds_toe_age_ok(gnss_observables_iter->second.RX_time,
+                                        static_cast<double>(beidou_ephemeris_iter->second.toe)))
                                     {
                                         bool found_B1I_obs = false;
                                         for (int i = 0; i < valid_obs; i++)
                                             {
-                                                if (eph_data[i].sat == (static_cast<int>(gnss_observables_iter->second.PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS)))
+                                                if (eph_data[i].sat == bds_sat && eph_data[i].code != 7)
                                                     {
-                                                        d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
-                                                            gnss_observables_iter->second,
-                                                            beidou_ephemeris_iter->second.WN + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
-                                                            d_rtklib_band_index.at(sig_));
-                                                        found_B1I_obs = true;
-                                                        break;
+                                                        const unsigned char c0 = d_obs_data[i + glo_valid_obs].code[0];
+                                                        if (c0 == CODE_L2I || c0 == CODE_L1I)
+                                                            {
+                                                                d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
+                                                                    gnss_observables_iter->second,
+                                                                    beidou_ephemeris_iter->second.WN + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
+                                                                    d_rtklib_band_index.at(sig_));
+                                                                found_B1I_obs = true;
+                                                                break;
+                                                            }
                                                     }
                                             }
                                         if (!found_B1I_obs)
                                             {
-                                                // insert BeiDou B3I obs as new obs and also insert its ephemeris
-                                                // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                                 eph_data[valid_obs] = eph_to_rtklib(beidou_ephemeris_iter->second);
-                                                // convert observation from GNSS-SDR class to RTKLIB structure
                                                 const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
@@ -1853,7 +1979,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 valid_obs++;
                                             }
                                     }
-                                else  // the ephemeris are not available for this SV
+                                else
                                     {
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
                                     }
@@ -1945,17 +2071,22 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_nav_data.ion_cmp[6] = beidou_dnav_iono.beta2;
                     d_nav_data.ion_cmp[7] = beidou_dnav_iono.beta3;
                 }
-            else if (beidou_cnav1_iono.valid)
+            if (beidou_cnav1_iono.valid)
                 {
-                    // B-CNAV1 BDGIM parameters mapped to RTKLIB ion_cmp slots (best-effort until BDGIM is native).
-                    d_nav_data.ion_cmp[0] = beidou_cnav1_iono.alpha1;
-                    d_nav_data.ion_cmp[1] = beidou_cnav1_iono.alpha2;
-                    d_nav_data.ion_cmp[2] = beidou_cnav1_iono.alpha3;
-                    d_nav_data.ion_cmp[3] = beidou_cnav1_iono.alpha4;
-                    d_nav_data.ion_cmp[4] = beidou_cnav1_iono.alpha5;
-                    d_nav_data.ion_cmp[5] = beidou_cnav1_iono.alpha6;
-                    d_nav_data.ion_cmp[6] = beidou_cnav1_iono.alpha7;
-                    d_nav_data.ion_cmp[7] = beidou_cnav1_iono.alpha8;
+                    d_nav_data.ion_bdgim[0] = beidou_cnav1_iono.alpha1;
+                    d_nav_data.ion_bdgim[1] = beidou_cnav1_iono.alpha2;
+                    d_nav_data.ion_bdgim[2] = beidou_cnav1_iono.alpha3;
+                    d_nav_data.ion_bdgim[3] = beidou_cnav1_iono.alpha4;
+                    d_nav_data.ion_bdgim[4] = beidou_cnav1_iono.alpha5;
+                    d_nav_data.ion_bdgim[5] = beidou_cnav1_iono.alpha6;
+                    d_nav_data.ion_bdgim[6] = beidou_cnav1_iono.alpha7;
+                    d_nav_data.ion_bdgim[7] = beidou_cnav1_iono.alpha8;
+                    d_nav_data.ion_bdgim[8] = beidou_cnav1_iono.alpha9;
+                    d_nav_data.ion_bdgim_valid = 1;
+                }
+            else
+                {
+                    d_nav_data.ion_bdgim_valid = 0;
                 }
             if (gps_utc_model.valid)
                 {
@@ -2032,7 +2163,34 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     update_galileo_observation_wavelengths(d_obs_data[i]);
                 }
 
-            result = rtkpos(&d_rtk, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data);
+            const int nobs_total = valid_obs + glo_valid_obs;
+            // Hybrid GPS/Gal + B1C: urban multipath often trips RTKLIB chi-square (alpha=0.001)
+            // with opposite-sign B1C residuals (ISB cannot absorb). Enable RAIM FDE so one
+            // outlier can be excluded while keeping the rest of the B1C constellation.
+            {
+                bool has_b1c = false;
+                for (int k = 0; k < nobs_total; k++)
+                    {
+                        for (int b = 0; b < NFREQ; b++)
+                            {
+                                const unsigned char cb = d_obs_data[k].code[b];
+                                if (cb == CODE_L1D || cb == CODE_L1P)
+                                    {
+                                        has_b1c = true;
+                                        break;
+                                    }
+                            }
+                        if (has_b1c)
+                            {
+                                break;
+                            }
+                    }
+                if (has_b1c)
+                    {
+                        d_rtk.opt.posopt[4] = 1;
+                    }
+            }
+            result = rtkpos(&d_rtk, d_obs_data.data(), nobs_total, &d_nav_data);
 
             if (result == 0)
                 {

@@ -161,4 +161,8 @@ TEST(BeidouCnav1NavigationMessageTest, DecodeEphemerisFromZeroSf2Payload)
     EXPECT_EQ(rtklib_eph.iode, 0);
     EXPECT_EQ(rtklib_eph.iodc, 0);
     EXPECT_NEAR(rtklib_eph.A, BEIDOU_CNAV1_A_REF_MEO, 1.0);
+    EXPECT_EQ(rtklib_eph.code, 7);
+    /* Adot/ndot retained through parse → RTKLIB conversion (may be zero in synthetic frame) */
+    EXPECT_DOUBLE_EQ(rtklib_eph.Adot, nav.get_ephemeris().Adot);
+    EXPECT_DOUBLE_EQ(rtklib_eph.ndot, nav.get_ephemeris().delta_n_dot);
 }

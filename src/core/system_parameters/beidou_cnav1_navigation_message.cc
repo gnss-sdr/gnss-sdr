@@ -335,8 +335,8 @@ void parse_subframe2(const uint8_t* bits, Beidou_Cnav1_Ephemeris& eph, double so
     offset += 12;
     eph.TGD_B1Cp = static_cast<double>(read_signed(bits, offset, 12)) * BEIDOU_CNAV1_TGD_LSB;
     offset += 12;
-    (void)a_dot;
-    (void)delta_n_dot;
+    eph.Adot = a_dot;
+    eph.delta_n_dot = delta_n_dot;
 
     const double a_ref = a_ref_from_sat_type(sat_type);
     eph.sqrtA = std::sqrt(a_ref + delta_a);

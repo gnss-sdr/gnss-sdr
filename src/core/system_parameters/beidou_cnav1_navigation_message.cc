@@ -287,11 +287,11 @@ void parse_subframe2(const uint8_t* bits, Beidou_Cnav1_Ephemeris& eph, double so
     offset += 2;
     const auto delta_a = static_cast<double>(read_signed(bits, offset, 26)) * BEIDOU_CNAV1_DELTA_A_LSB;
     offset += 26;
-    const auto a_dot = static_cast<double>(read_signed(bits, offset, 25)) * BEIDOU_CNAV1_A_DOT_LSB;
+    eph.Adot = static_cast<double>(read_signed(bits, offset, 25)) * BEIDOU_CNAV1_A_DOT_LSB;
     offset += 25;
     eph.delta_n = static_cast<double>(read_signed(bits, offset, 17)) * BEIDOU_CNAV1_DELTA_N0_LSB;
     offset += 17;
-    const auto delta_n_dot = static_cast<double>(read_signed(bits, offset, 23)) * BEIDOU_CNAV1_DELTA_N0_DOT_LSB;
+    eph.delta_ndot = static_cast<double>(read_signed(bits, offset, 23)) * BEIDOU_CNAV1_DELTA_N0_DOT_LSB;
     offset += 23;
     eph.M_0 = static_cast<double>(read_signed(bits, offset, 33)) * BEIDOU_CNAV1_M0_LSB;
     offset += 33;
@@ -335,11 +335,9 @@ void parse_subframe2(const uint8_t* bits, Beidou_Cnav1_Ephemeris& eph, double so
     offset += 12;
     eph.TGD_B1Cp = static_cast<double>(read_signed(bits, offset, 12)) * BEIDOU_CNAV1_TGD_LSB;
     offset += 12;
-    eph.Adot = a_dot;
-    eph.delta_n_dot = delta_n_dot;
 
     const double a_ref = a_ref_from_sat_type(sat_type);
-    eph.sqrtA = std::sqrt(a_ref + delta_a);
+    eph.A0 = a_ref + delta_a;
     eph.toe = static_cast<int32_t>(toe_raw * BEIDOU_CNAV1_TOE_TOC_LSB);
     eph.toc = static_cast<int32_t>(eph.toc * BEIDOU_CNAV1_TOE_TOC_LSB);
     eph.tow = static_cast<int32_t>(how * 3600 + soh_seconds);
@@ -745,12 +743,13 @@ bool Beidou_Cnav1_Navigation_Message::decode_frame(
         }
 
     parse_subframe2(sf2_data.data(), ephemeris_, soh_seconds);
+#if 0
     if (ephemeris_.sqrtA < 5000.0 || ephemeris_.sqrtA > 6700.0)
         {
             set_fail(7);
             return false;
         }
-
+#endif
     ephemeris_.PRN = static_cast<int32_t>(prn);
     tow_s_ = static_cast<double>(ephemeris_.tow);
     flag_new_ephemeris_ = true;

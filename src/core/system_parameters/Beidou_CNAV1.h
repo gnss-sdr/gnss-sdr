@@ -16,6 +16,9 @@ constexpr double GNSS_SDR_TWO_N8 = 0.00390625;
 #ifndef GNSS_SDR_TWO_N9
 constexpr double GNSS_SDR_TWO_N9 = 0.001953125;
 #endif
+#ifndef GNSS_SDR_TWO_N21
+constexpr double GNSS_SDR_TWO_N21 = 4.76837158203125e-7;
+#endif
 #ifndef GNSS_SDR_TWO_N30
 constexpr double GNSS_SDR_TWO_N30 = 9.313225746154785e-10;
 #endif
@@ -23,7 +26,7 @@ constexpr double GNSS_SDR_TWO_N30 = 9.313225746154785e-10;
 constexpr double GNSS_SDR_TWO_N32 = 2.3283064365386963e-10;
 #endif
 #ifndef GNSS_SDR_TWO_N34
-constexpr double GNSS_SDR_TWO_N34 = 5.820766091053686e-11;
+constexpr double GNSS_SDR_TWO_N34 = 5.820766091346741e-11;
 #endif
 #ifndef GNSS_SDR_TWO_N44
 constexpr double GNSS_SDR_TWO_N44 = 5.684341886080802e-14;
@@ -58,7 +61,7 @@ constexpr double BEIDOU_CNAV1_A_REF_MEO = 27906100.0;
 constexpr double BEIDOU_CNAV1_A_REF_IGSO = 42162200.0;
 constexpr double BEIDOU_CNAV1_TOE_TOC_LSB = 300.0;
 constexpr double BEIDOU_CNAV1_DELTA_A_LSB = GNSS_SDR_TWO_N9;
-constexpr double BEIDOU_CNAV1_A_DOT_LSB = 3.725290298461914e-9;  //!< 2^-25 m/s, Table 7-8
+constexpr double BEIDOU_CNAV1_A_DOT_LSB = GNSS_SDR_TWO_N21;  //!< 2^-21 m/s, Table 7-8
 constexpr double BEIDOU_CNAV1_DELTA_N0_LSB = GNSS_SDR_TWO_N44 * M_PI;
 constexpr double BEIDOU_CNAV1_DELTA_N0_DOT_LSB = GNSS_SDR_TWO_N57 * M_PI;
 constexpr double BEIDOU_CNAV1_M0_LSB = GNSS_SDR_TWO_N32 * M_PI;

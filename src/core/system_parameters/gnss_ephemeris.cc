@@ -169,8 +169,8 @@ void Gnss_Ephemeris::satellitePosition(double transmitTime)
 
 void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<double, 7>& pos_vel_dtr) const
 {
-    // Restore semi-major axis
-    const double a = this->sqrtA * this->sqrtA;
+    // Restore semi-major axis (sqrtA for legacy NAV; A0 for B-CNAV1)
+    const double a = this->sqrtA * this->sqrtA + this->A0;
 
     // Computed mean motion
     double n0;
@@ -324,8 +324,9 @@ double Gnss_Ephemeris::check_t(double time) const
 
 double Gnss_Ephemeris::sv_clock_relativistic_term(double transmitTime) const
 {
-    // Restore semi-major axis
-    const double a = this->sqrtA * this->sqrtA;
+    // Restore semi-major axis (sqrtA for legacy NAV; A0 for B-CNAV1)
+    const double a = this->sqrtA * this->sqrtA + this->A0;
+    const double sqrtA_eff = std::sqrt(a);
 
     // Time from ephemeris reference epoch
     const double tk = check_t(transmitTime - this->toe);
@@ -372,15 +373,15 @@ double Gnss_Ephemeris::sv_clock_relativistic_term(double transmitTime) const
     double dtr_;
     if (this->System == 'E')
         {
-            dtr_ = GALILEO_F * this->ecc * this->sqrtA * sek;
+            dtr_ = GALILEO_F * this->ecc * sqrtA_eff * sek;
         }
     else if (this->System == 'C')
         {
-            dtr_ = BEIDOU_F * this->ecc * this->sqrtA * sek;
+            dtr_ = BEIDOU_F * this->ecc * sqrtA_eff * sek;
         }
     else
         {
-            dtr_ = GPS_F * this->ecc * this->sqrtA * sek;
+            dtr_ = GPS_F * this->ecc * sqrtA_eff * sek;
         }
     return dtr_;
 }

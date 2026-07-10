@@ -727,7 +727,7 @@ eph_t eph_to_rtklib(const Beidou_Cnav1_Ephemeris& bei_eph)
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, 0, 0, 0, 0, 0.0, -1, 0};
     rtklib_sat.sat = bei_eph.PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS;
-    rtklib_sat.A = bei_eph.sqrtA * bei_eph.sqrtA;
+    rtklib_sat.A = bei_eph.A0;
     rtklib_sat.M0 = bei_eph.M_0;
     rtklib_sat.deln = bei_eph.delta_n;
     rtklib_sat.OMG0 = bei_eph.OMEGA_0;
@@ -737,7 +737,7 @@ eph_t eph_to_rtklib(const Beidou_Cnav1_Ephemeris& bei_eph)
     rtklib_sat.idot = bei_eph.idot;
     rtklib_sat.e = bei_eph.ecc;
     rtklib_sat.Adot = bei_eph.Adot;
-    rtklib_sat.ndot = bei_eph.delta_n_dot;
+    rtklib_sat.ndot = bei_eph.delta_ndot;
     rtklib_sat.svh = 0;
     rtklib_sat.sva = 0;
     rtklib_sat.code = bei_eph.sig_type;

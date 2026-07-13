@@ -1781,86 +1781,23 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 case 'C':
                     {
                         // BEIDOU B1I / B1C / B3I
-                        // Prefer B1C when the same PRN has a usable CNAV1 ephemeris.
-                        // If B1C is tracked but CNAV1 is missing/stale, keep B1I+DNAV.
+                        // Prefer B1C when the same PRN has CNAV1 ephemeris and a B1C observation.
+                        // If B1C is tracked but CNAV1 is missing, keep B1I+DNAV.
                         const std::string sig_(gnss_observables_iter->second.Signal);
                         const int bds_sat = static_cast<int>(gnss_observables_iter->second.PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS);
-                        auto bds_toe_age_ok = [](double obs_tow_gpst_s, double toe_bdt_s) -> bool {
-                            const double toe_gpst_s = toe_bdt_s + static_cast<double>(BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET);
-                            double toe_age_s = std::fabs(obs_tow_gpst_s - toe_gpst_s);
-                            if (toe_age_s > 302400.0)
-                                {
-                                    toe_age_s = 604800.0 - toe_age_s;
-                                }
-                            return toe_age_s <= MAXDTOE_BDS;
-                        };
-                        // Absolute PR floor/ceiling alone is unreliable: RX TOW is the
-                        // latest TX TOW, so common bias can make all PRs look "short".
-                        // Reject only clearly impossible values here; relative outliers
-                        // (e.g. C35 ~3e6 m vs peers ~15e6 m) are filtered below.
-                        auto bds_pr_absolute_ok = [](double pr_m) -> bool {
-                            return pr_m > 1.0e5 && pr_m < 1.0e8;
-                        };
-                        auto dnav_eph_sane = [](const Beidou_Dnav_Ephemeris &eph) -> bool {
-                            // ICD B1I Table 5-10: toe ∈ [0, 604792], sqrt(A) ∈ [0, 8192]
-                            return eph.toe >= 0 && eph.toe <= static_cast<int32_t>(D1_TOE_MAX_S) &&
-                                   eph.sqrtA >= D1_SQRT_A_MIN_SANE && eph.sqrtA <= D1_SQRT_A_MAX;
-                        };
-
-                        // Relative PR outlier vs other BeiDou obs in this epoch (~10 ms · c).
-                        // Catches per-SV TOW desync (C35 B1I/B1C both ~3.18e6 m while peers ~15e6 m).
-                        std::vector<double> bds_prs;
-                        bds_prs.reserve(gnss_observables_map.size());
-                        for (const auto &obs_pair : gnss_observables_map)
-                            {
-                                if (obs_pair.second.System == 'C' && bds_pr_absolute_ok(obs_pair.second.Pseudorange_m))
-                                    {
-                                        bds_prs.push_back(obs_pair.second.Pseudorange_m);
-                                    }
-                            }
-                        double bds_pr_median = 0.0;
-                        if (!bds_prs.empty())
-                            {
-                                std::nth_element(bds_prs.begin(), bds_prs.begin() + static_cast<std::ptrdiff_t>(bds_prs.size() / 2), bds_prs.end());
-                                bds_pr_median = bds_prs[bds_prs.size() / 2];
-                            }
-                        constexpr double bds_pr_outlier_m = 5.0e6;  // ~16.7 ms · c
-                        auto bds_pr_sane = [&](double pr_m) -> bool {
-                            if (!bds_pr_absolute_ok(pr_m))
-                                {
-                                    return false;
-                                }
-                            if (bds_prs.size() >= 3 && bds_pr_median > 0.0 &&
-                                std::fabs(pr_m - bds_pr_median) > bds_pr_outlier_m)
-                                {
-                                    return false;
-                                }
-                            return true;
-                        };
 
                         if (sig_ == "B1")
                             {
-                                if (!bds_pr_sane(gnss_observables_iter->second.Pseudorange_m))
-                                    {
-                                        DLOG(INFO) << "Skip B1I PRN " << gnss_observables_iter->second.PRN
-                                                   << " (absurd/outlier pseudorange " << gnss_observables_iter->second.Pseudorange_m << " m)";
-                                        break;
-                                    }
                                 bool prefer_b1c = false;
                                 for (const auto &obs_pair : gnss_observables_map)
                                     {
                                         if (obs_pair.second.System == 'C' &&
                                             obs_pair.second.PRN == gnss_observables_iter->second.PRN &&
                                             std::string(obs_pair.second.Signal, 2) == "1D" &&
-                                            bds_pr_sane(obs_pair.second.Pseudorange_m))
+                                            beidou_cnav1_ephemeris_map.find(obs_pair.second.PRN) != beidou_cnav1_ephemeris_map.cend())
                                             {
-                                                const auto cnav1_it = beidou_cnav1_ephemeris_map.find(obs_pair.second.PRN);
-                                                if (cnav1_it != beidou_cnav1_ephemeris_map.cend() &&
-                                                    bds_toe_age_ok(obs_pair.second.RX_time, static_cast<double>(cnav1_it->second.toe)))
-                                                    {
-                                                        prefer_b1c = true;
-                                                        break;
-                                                    }
+                                                prefer_b1c = true;
+                                                break;
                                             }
                                     }
                                 if (prefer_b1c)
@@ -1872,21 +1809,6 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 beidou_ephemeris_iter = beidou_dnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (beidou_ephemeris_iter != beidou_dnav_ephemeris_map.cend())
                                     {
-                                        if (!dnav_eph_sane(beidou_ephemeris_iter->second))
-                                            {
-                                                DLOG(INFO) << "Skip corrupt DNAV ephemeris for SV "
-                                                           << beidou_ephemeris_iter->second.PRN
-                                                           << " toe=" << beidou_ephemeris_iter->second.toe
-                                                           << " sqrtA=" << beidou_ephemeris_iter->second.sqrtA;
-                                                break;
-                                            }
-                                        if (!bds_toe_age_ok(gnss_observables_iter->second.RX_time,
-                                                static_cast<double>(beidou_ephemeris_iter->second.toe)))
-                                            {
-                                                DLOG(INFO) << "Skip stale DNAV ephemeris for SV "
-                                                           << beidou_ephemeris_iter->second.PRN;
-                                                break;
-                                            }
                                         eph_data[valid_obs] = eph_to_rtklib(beidou_ephemeris_iter->second);
                                         obsd_t newobs{};
                                         d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
@@ -1902,24 +1824,9 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             }
                         if (sig_ == "1D")
                             {
-                                if (!bds_pr_sane(gnss_observables_iter->second.Pseudorange_m))
-                                    {
-                                        DLOG(INFO) << "Skip B1C PRN " << gnss_observables_iter->second.PRN
-                                                   << " (absurd/outlier pseudorange " << gnss_observables_iter->second.Pseudorange_m << " m)";
-                                        break;
-                                    }
                                 const auto cnav1_iter = beidou_cnav1_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (cnav1_iter != beidou_cnav1_ephemeris_map.cend())
                                     {
-                                        // Reject stale CNAV1 before it enters the epoch (MAXDTOE_BDS = 6 h).
-                                        // RX_time is GPST; CNAV1 toe is BDT (ICD §7.7) — convert before age check.
-                                        if (!bds_toe_age_ok(gnss_observables_iter->second.RX_time,
-                                                static_cast<double>(cnav1_iter->second.toe)))
-                                            {
-                                                DLOG(INFO) << "Skip stale B-CNAV1 ephemeris for SV "
-                                                           << cnav1_iter->second.PRN;
-                                                break;
-                                            }
                                         eph_data[valid_obs] = eph_to_rtklib(cnav1_iter->second);
                                         // Apply SF3 health (HS) when available
                                         const auto page_it = beidou_cnav1_page_data_map.find(cnav1_iter->second.PRN);
@@ -1943,10 +1850,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         if (sig_ == "B3")
                             {
                                 beidou_ephemeris_iter = beidou_dnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                                if (beidou_ephemeris_iter != beidou_dnav_ephemeris_map.cend() &&
-                                    dnav_eph_sane(beidou_ephemeris_iter->second) &&
-                                    bds_toe_age_ok(gnss_observables_iter->second.RX_time,
-                                        static_cast<double>(beidou_ephemeris_iter->second.toe)))
+                                if (beidou_ephemeris_iter != beidou_dnav_ephemeris_map.cend())
                                     {
                                         bool found_B1I_obs = false;
                                         for (int i = 0; i < valid_obs; i++)
@@ -2147,7 +2051,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_nav_data.utc_cmp[1] = beidou_cnav1_utc_model.A1;
                     d_nav_data.utc_cmp[2] = static_cast<double>(beidou_cnav1_utc_model.tot);
                     d_nav_data.utc_cmp[3] = static_cast<double>(beidou_cnav1_utc_model.WN_t);
-                    d_nav_data.leaps = beidou_cnav1_utc_model.delta_t_LSF;
+                    d_nav_data.leaps = beidou_cnav1_utc_model.delta_t_LS;
                 }
 
             /* update carrier wave length using native function call in RTKlib */
@@ -2171,9 +2075,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 bool has_b1c = false;
                 for (int k = 0; k < nobs_total; k++)
                     {
-                        for (int b = 0; b < NFREQ; b++)
+                        for (const unsigned char cb : d_obs_data[k].code)
                             {
-                                const unsigned char cb = d_obs_data[k].code[b];
                                 if (cb == CODE_L1D || cb == CODE_L1P)
                                     {
                                         has_b1c = true;

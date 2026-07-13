@@ -112,45 +112,49 @@ double gettgd(int sat, const nav_t *nav)
 
 
 /* get tgd parameter (m) -----------------------------------------------------
- * BDS DNAV: tgd[0]=TGD1
- * BDS CNAV1 (code==7): tgd[0]=TGD_B1Cp, tgd[2]=ISC_B1Cd (ICD B1C §7.6)
- * For B1C data (CODE_L1D) apply TGD_B1Cp+ISC_B1Cd; for pilot (CODE_L1P) TGD_B1Cp only.
+ * GPS/QZS/GAL: return c·tgd[0] from the first matching ephemeris (classic RTKLIB).
+ * BDS DNAV (eph.code!=7): tgd[0]=TGD1 (B1I vs B3I timing reference)
+ * BDS CNAV1 (eph.code==7), stored by eph_to_rtklib(Beidou_Cnav1_Ephemeris):
+ *   tgd[0]=TGD_B1Cp, tgd[1]=TGD_B2ap, tgd[2]=ISC_B1Cd  (ICD B1C §7.6)
+ * BDS user algorithm (applied in prange as PC = P - c·Δt_TGD):
+ *   B1C pilot CODE_L1P: (Δtsv)_B1Cp = Δtsv - TGD_B1Cp           → (7-4)
+ *   B1C data  CODE_L1D: (Δtsv)_B1Cd = Δtsv - TGD_B1Cp - ISC_B1Cd → (7-5)
+ *   B1I (CODE_L2I/L1I): use DNAV TGD1; B3I skips TGD in prange.
+ * NOTE: CODE_L1P is also GPS/GLO L1P in RINEX — CNAV1 selection is SYS_BDS only.
+ * Do not fall back across DNAV↔CNAV1: TGD1 and TGD_B1Cp are different quantities.
  *-----------------------------------------------------------------------------*/
 double gettgd(int sat, const nav_t *nav, unsigned char obs_code)
 {
     int i;
-    const int prefer_cnav1 = (obs_code == CODE_L1D || obs_code == CODE_L1P) ? 1 : 0;
-    int fallback = -1;
+    int prn = 0;
+    const int sys = satsys(sat, &prn);
+    const int is_b1c_obs = (obs_code == CODE_L1D || obs_code == CODE_L1P) ? 1 : 0;
+
     for (i = 0; i < nav->n; i++)
         {
             if (nav->eph[i].sat != sat)
                 {
                     continue;
                 }
-            const int is_cnav1 = (nav->eph[i].code == 7) ? 1 : 0;
-            if (prefer_cnav1 != is_cnav1)
+
+            if (sys == SYS_BDS)
                 {
-                    if (fallback < 0)
+                    const int is_cnav1 = (nav->eph[i].code == 7) ? 1 : 0;
+                    /* B1C obs ↔ CNAV1 eph; B1I/other ↔ DNAV eph */
+                    if (is_b1c_obs != is_cnav1)
                         {
-                            fallback = i;
+                            continue;
                         }
-                    continue;
+                    double tgd_s = nav->eph[i].tgd[0];
+                    if (is_cnav1 && obs_code == CODE_L1D)
+                        {
+                            tgd_s += nav->eph[i].tgd[2];
+                        }
+                    return SPEED_OF_LIGHT_M_S * tgd_s;
                 }
-            double tgd_s = nav->eph[i].tgd[0];
-            if (is_cnav1 && obs_code == CODE_L1D)
-                {
-                    tgd_s += nav->eph[i].tgd[2];
-                }
-            return SPEED_OF_LIGHT_M_S * tgd_s;
-        }
-    if (fallback >= 0)
-        {
-            double tgd_s = nav->eph[fallback].tgd[0];
-            if (nav->eph[fallback].code == 7 && obs_code == CODE_L1D)
-                {
-                    tgd_s += nav->eph[fallback].tgd[2];
-                }
-            return SPEED_OF_LIGHT_M_S * tgd_s;
+
+            /* GPS/GAL/QZS/... : first ephemeris for this sat */
+            return SPEED_OF_LIGHT_M_S * nav->eph[i].tgd[0];
         }
     return 0.0;
 }

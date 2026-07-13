@@ -1,9 +1,18 @@
 /*!
  * \file beidou_b1c_pvt_helpers_test.cc
  * \brief Unit tests for B1C PVT helpers (TGD/ISC, seleph, band/wavelength map)
+ * \author Wenhao Ou, 2026. ouwh(at)mail2.sysu.edu.cn
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * This file is part of GNSS-SDR.
+ *
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * -----------------------------------------------------------------------------
  */
-
 #include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 #include "gnss_obs_codes.h"
@@ -163,4 +172,44 @@ TEST(BeidouB1cPvtHelpersTest, GettgdPrefersMatchingEphTypeWhenBothPresent)
     const double tgd_b1i = gettgd(sat, &nav, static_cast<unsigned char>(CODE_L2I));
     EXPECT_NEAR(tgd_b1c, SPEED_OF_LIGHT_M_S * 3.0e-9, 1.0e-6);
     EXPECT_NEAR(tgd_b1i, SPEED_OF_LIGHT_M_S * 5.0e-9, 1.0e-6);
+}
+
+TEST(BeidouB1cPvtHelpersTest, GettgdReturnsZeroWhenOnlyWrongEphFamilyPresent)
+{
+    const int sat = NSATGPS + NSATGLO + NSATGAL + NSATQZS + 22;
+    const double ep[] = {2021, 3, 1, 0, 0, 0};
+    const gtime_t t0 = epoch2time(ep);
+    std::vector<eph_t> ephs;
+    ephs.push_back(make_bds_eph(sat, 1, 5.0e-9, 0.0, t0)); /* DNAV only */
+    nav_t nav;
+    std::memset(&nav, 0, sizeof(nav));
+    nav.eph = ephs.data();
+    nav.n = 1;
+
+    /* B1C obs must not fall back to DNAV TGD1 */
+    EXPECT_DOUBLE_EQ(gettgd(sat, &nav, static_cast<unsigned char>(CODE_L1D)), 0.0);
+    EXPECT_DOUBLE_EQ(gettgd(sat, &nav, static_cast<unsigned char>(CODE_L1P)), 0.0);
+}
+
+/* CODE_L1P is shared with GPS L1P — CNAV1 filtering must be SYS_BDS-only. */
+TEST(BeidouB1cPvtHelpersTest, GettgdGpsIgnoresB1cCodeSelection)
+{
+    const int sat = satno(SYS_GPS, 5);
+    const double ep[] = {2020, 1, 1, 0, 0, 0};
+    const gtime_t t0 = epoch2time(ep);
+    eph_t e{};
+    std::memset(&e, 0, sizeof(e));
+    e.sat = sat;
+    e.code = 0; /* LNAV, not CNAV1 */
+    e.tgd[0] = 4.0e-9;
+    e.toe = t0;
+    e.toc = t0;
+    nav_t nav;
+    std::memset(&nav, 0, sizeof(nav));
+    nav.eph = &e;
+    nav.n = 1;
+
+    EXPECT_NEAR(gettgd(sat, &nav, static_cast<unsigned char>(CODE_L1C)), SPEED_OF_LIGHT_M_S * 4.0e-9, 1.0e-6);
+    /* Must still return GPS TGD even though CODE_L1P is also used for B1C pilot */
+    EXPECT_NEAR(gettgd(sat, &nav, static_cast<unsigned char>(CODE_L1P)), SPEED_OF_LIGHT_M_S * 4.0e-9, 1.0e-6);
 }

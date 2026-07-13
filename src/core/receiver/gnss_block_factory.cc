@@ -28,9 +28,6 @@
 #include "acquisition_interface.h"
 #include "array_signal_conditioner.h"
 #include "beamformer_filter.h"
-#include "beidou_b1c_dll_pll_veml_tracking.h"
-#include "beidou_b1c_pcps_ambiguous_acquisition.h"
-#include "beidou_b1c_telemetry_decoder.h"
 #include "beidou_b1c_telemetry_decoder_gs.h"
 #include "beidou_dnav_telemetry_decoder_gs.h"
 #include "byte_to_short.h"
@@ -499,7 +496,7 @@ std::unique_ptr<AcquisitionInterface> get_acq_block(
         }
     else if (implementation == "BEIDOU_B1C_PCPS_Ambiguous_Acquisition")
         {
-            return std::make_unique<BeidouB1cPcpsAmbiguousAcquisition>(configuration, role, in_streams, out_streams);
+            return std::make_unique<PcpsAcquisitionAdapter>(configuration, role, implementation, in_streams, out_streams, BDS_B1C);
         }
     else if (implementation == "BEIDOU_B3I_PCPS_Acquisition")
         {
@@ -615,7 +612,7 @@ std::unique_ptr<TrackingInterface> get_trk_block(
         }
     else if (implementation == "BEIDOU_B1C_DLL_PLL_VEML_Tracking")
         {
-            return std::make_unique<BeidouB1cDllPllVemlTracking>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, BDS_B1C);
         }
     else if (implementation == "BEIDOU_B3I_DLL_PLL_Tracking")
         {
@@ -696,14 +693,13 @@ std::unique_ptr<TelemetryDecoderInterface> get_tlm_block(
     unsigned int in_streams,
     unsigned int out_streams)
 {
-    if (implementation == "BEIDOU_B1C_Telemetry_Decoder")
-        {
-            return std::make_unique<BeidouB1cTelemetryDecoder>(configuration, role, in_streams, out_streams);
-        }
-
     telemetry_impl_interface_sptr telemetry;
 
-    if (implementation == "GPS_L1_CA_Telemetry_Decoder")
+    if (implementation == "BEIDOU_B1C_Telemetry_Decoder")
+        {
+            telemetry = beidou_b1c_make_telemetry_decoder_gs(Gnss_Satellite{}, get_tlm_conf(configuration, role));
+        }
+    else if (implementation == "GPS_L1_CA_Telemetry_Decoder")
         {
             telemetry = gps_l1_ca_make_telemetry_decoder_gs(get_tlm_conf(configuration, role));
         }

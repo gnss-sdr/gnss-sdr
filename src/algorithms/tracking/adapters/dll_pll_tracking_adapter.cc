@@ -15,6 +15,7 @@
  */
 
 #include "dll_pll_tracking_adapter.h"
+#include "Beidou_B1C.h"
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
 #include "GLONASS_L1_L2_CA.h"
@@ -28,6 +29,7 @@
 #include "configuration_interface.h"
 #include "display.h"
 #include "qzss.h"
+#include "signal_flag.h"
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -76,6 +78,8 @@ signal_info get_signal_info(signal_flag sig_flag)
             return {'C', {'B', '1', '\0'}, "BEIDOU B1I", BEIDOU_B1I_CODE_RATE_CPS, BEIDOU_B1I_CODE_LENGTH_CHIPS, 20, false, true};
         case BDS_B3:
             return {'C', {'B', '3', '\0'}, "BEIDOU B3I", BEIDOU_B3I_CODE_RATE_CPS, BEIDOU_B3I_CODE_LENGTH_CHIPS, 20, false, false};  // Does false, false make sense?
+        case BDS_B1C:
+            return {'C', {'1', 'D', '\0'}, "BeiDou B1C", BEIDOU_B1C_CODE_RATE_CPS, BEIDOU_B1C_CODE_LENGTH_CHIPS, 1, true, false};
         case QZS_J1:
             return {'J', {'J', '1', '\0'}, "QZSS L1 C/A", QZSS_L1_CHIP_RATE, QZSS_L1_CODE_LENGTH, 20, false, true};
         case QZS_J5:
@@ -87,7 +91,7 @@ signal_info get_signal_info(signal_flag sig_flag)
     return {};
 }
 
-void check_and_configure_trk_params(const ConfigurationInterface* configuration, const std::string& role, const signal_info& sig_info, Dll_Pll_Conf& trk_params)
+void check_and_configure_trk_params(const ConfigurationInterface* configuration, const std::string& role, signal_flag sig_flag, const signal_info& sig_info, Dll_Pll_Conf& trk_params)
 {
     trk_params.SetFromConfiguration(configuration, role);
     trk_params.vector_length = static_cast<int>(std::round(trk_params.fs_in / (sig_info.code_chip_rate / sig_info.code_length_chips)));
@@ -145,6 +149,24 @@ void check_and_configure_trk_params(const ConfigurationInterface* configuration,
         {
             std::cout << TEXT_RED << "WARNING: " << sig_info.sig_name << ". PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << '\n';
         }
+
+    if (sig_flag == BDS_B1C)
+        {
+            // Keep tracking-side local replica modulation aligned with acquisition by default.
+            const bool acq_qmboc = configuration->property("Acquisition_1D.qmboc", trk_params.b1c_qmboc_tracking);
+            trk_params.b1c_qmboc_tracking = configuration->property(role + ".b1c_qmboc_tracking", acq_qmboc);
+
+            // B1C pilot secondary sync spans one B-CNAV1 frame (18 s); keep coherent integration at 1 symbol.
+            if (trk_params.track_pilot)
+                {
+                    trk_params.extend_correlation_symbols = 1;
+                    const auto min_bit_sync_limit_s = static_cast<uint32_t>(BEIDOU_B1C_FRAME_PERIOD_S + 30);
+                    if (trk_params.bit_synchronization_time_limit_s < min_bit_sync_limit_s)
+                        {
+                            trk_params.bit_synchronization_time_limit_s = min_bit_sync_limit_s;
+                        }
+                }
+        }
 }
 
 }  // namespace
@@ -166,7 +188,7 @@ DllPllTrackingAdapter::DllPllTrackingAdapter(
 
     if (!sig_info.sig_name.empty())
         {
-            check_and_configure_trk_params(configuration, role_, sig_info, trk_params_);
+            check_and_configure_trk_params(configuration, role_, sig_flag, sig_info, trk_params_);
 
             if (trk_params_.item_type == "gr_complex")
                 {

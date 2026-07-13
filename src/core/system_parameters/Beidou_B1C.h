@@ -1,7 +1,7 @@
 /*!
  * \file Beidou_B1C.h
- * \brief  Defines system parameters for BeiDou B1C open service signal
- * \author GNSS-SDR contributors
+ * \brief Defines system parameters for BeiDou B1C open service signal
+ * \author Wenhao Ou, 2026. ouwh(at)mail2.sysu.edu.cn
  *
  * Parameter values from BDS-SIS-ICD-B1C-1.0 (2017-12).
  *
@@ -10,12 +10,11 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
  */
-
 #ifndef GNSS_SDR_BEIDOU_B1C_H
 #define GNSS_SDR_BEIDOU_B1C_H
 

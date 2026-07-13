@@ -754,6 +754,7 @@ eph_t eph_to_rtklib(const Beidou_Cnav1_Ephemeris& bei_eph)
     rtklib_sat.f0 = bei_eph.af0;
     rtklib_sat.f1 = bei_eph.af1;
     rtklib_sat.f2 = bei_eph.af2;
+    /* ICD §7.6 → gettgd(): tgd[0]=TGD_B1Cp, tgd[1]=TGD_B2ap, tgd[2]=ISC_B1Cd */
     rtklib_sat.tgd[0] = bei_eph.TGD_B1Cp;
     rtklib_sat.tgd[1] = bei_eph.TGD_B2ap;
     rtklib_sat.tgd[2] = bei_eph.ISC_B1Cd;

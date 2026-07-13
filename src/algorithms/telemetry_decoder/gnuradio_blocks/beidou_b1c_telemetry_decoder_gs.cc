@@ -1,9 +1,18 @@
 /*!
  * \file beidou_b1c_telemetry_decoder_gs.cc
  * \brief BeiDou B1C B-CNAV1 telemetry decoder block
+ * \author Wenhao Ou, 2026. ouwh(at)mail2.sysu.edu.cn
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * This file is part of GNSS-SDR.
+ *
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * -----------------------------------------------------------------------------
  */
-
 #include "beidou_b1c_telemetry_decoder_gs.h"
 #include "Beidou_B1C.h"
 #include "Beidou_B1C_codes.h"
@@ -138,18 +147,18 @@ bool apply_llr_scale_and_decode(
 {
     const int32_t n = BEIDOU_CNAV1_FRAME_SYMBOLS;
     double rms_acc = 0.0;
-    for (size_t i = 0; i < frame.size(); ++i)
+    for (float sample : frame)
         {
-            const double v = static_cast<double>(frame[i]);
+            const auto v = static_cast<double>(sample);
             rms_acc += v * v;
         }
     const double rms = std::sqrt(rms_acc / static_cast<double>(n)) + 1e-6;
     const double cn0_linear = std::pow(10.0, static_cast<double>(cn0_db_hz) / 10.0);
     const double snr_sym = std::max(cn0_linear * (BEIDOU_B1C_CODE_PERIOD_MS * 1e-3), 1e-4);
     const double llr_scale = std::min(std::max(std::sqrt(snr_sym) / rms, 0.05), 50.0);
-    for (size_t i = 0; i < frame.size(); ++i)
+    for (float& sample : frame)
         {
-            frame[i] = static_cast<float>(static_cast<double>(frame[i]) * llr_scale);
+            sample = static_cast<float>(static_cast<double>(sample) * llr_scale);
         }
     return nav.decode_frame_symbols(frame.data(), BEIDOU_CNAV1_FRAME_SYMBOLS, expected_prn, fail_stage);
 }
@@ -469,9 +478,8 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
 
                             if (!candidate_offsets.empty())
                                 {
-                                    for (size_t cidx = 0; cidx < candidate_offsets.size(); ++cidx)
+                                    for (int32_t candidate_offset : candidate_offsets)
                                         {
-                                            const int32_t candidate_offset = candidate_offsets[cidx];
                                             for (int32_t delta = -local_offset_span; delta <= local_offset_span; delta++)
                                                 {
                                                     const int32_t start_offset =

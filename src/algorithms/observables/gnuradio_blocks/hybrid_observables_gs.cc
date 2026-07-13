@@ -598,11 +598,8 @@ void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data) con
     std::vector<Gnss_Synchro>::iterator it;
     const auto current_T_rx_TOW_ms = static_cast<double>(d_T_rx_TOW_ms);
     const double current_T_rx_TOW_s = current_T_rx_TOW_ms / 1000.0;
-    // RX TOW is initialized from the latest satellite transmit TOW, so absolute
-    // travel times are often far below the physical ~60–90 ms (common bias → clock).
-    // Only reject clearly impossible values (negative / multi-second).
-    constexpr double min_travel_ms = 1.0;
-    constexpr double max_travel_ms = 500.0;
+    double min_abs = 1e30;
+    double min_pseudorange = 0.0;
     for (it = data.begin(); it != data.end(); it++)
         {
             if (it->Flag_valid_word)
@@ -613,18 +610,12 @@ void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data) con
                             traveltime_ms = 604800000.0 + current_T_rx_TOW_ms - it->interp_TOW_ms;
                         }
                     it->RX_time = current_T_rx_TOW_s;
-                    if (traveltime_ms >= min_travel_ms && traveltime_ms <= max_travel_ms)
+                    it->Pseudorange_m = traveltime_ms * SPEED_OF_LIGHT_M_MS;
+                    it->Flag_valid_pseudorange = true;
+                    if (d_conf.reject_outlier_pseudoranges && (std::abs(it->Pseudorange_m) < min_abs))
                         {
-                            it->Pseudorange_m = traveltime_ms * SPEED_OF_LIGHT_M_MS;
-                            it->Flag_valid_pseudorange = true;
-                        }
-                    else
-                        {
-                            it->Pseudorange_m = 0.0;
-                            it->Flag_valid_pseudorange = false;
-                            DLOG(INFO) << "Reject absurd travel time " << traveltime_ms
-                                       << " ms on ch " << it->Channel_ID << " PRN " << it->PRN
-                                       << " Signal " << it->Signal;
+                            min_pseudorange = it->Pseudorange_m;
+                            min_abs = std::abs(it->Pseudorange_m);
                         }
                     // debug code
                     // std::cout << "[" << it->Channel_ID << "] interp_TOW_ms: " << it->interp_TOW_ms << '\n';
@@ -633,6 +624,17 @@ void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data) con
             else
                 {
                     it->RX_time = current_T_rx_TOW_s;
+                }
+        }
+    if (d_conf.reject_outlier_pseudoranges)
+        {
+            // Reject satellites whose pseudorange differs from the nearest-to-zero
+            for (it = data.begin(); it != data.end(); it++)
+                {
+                    if (it->Flag_valid_pseudorange && (std::abs(it->Pseudorange_m - min_pseudorange) > 1e8))
+                        {
+                            it->Flag_valid_pseudorange = false;
+                        }
                 }
         }
 }

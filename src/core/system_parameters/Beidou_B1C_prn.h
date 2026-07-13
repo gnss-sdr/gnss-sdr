@@ -1,10 +1,16 @@
 /*!
  * \file Beidou_B1C_prn.h
- * \brief  B1C PRN Weil code parameters from BDS-SIS-ICD-B1C-1.0 Table 5-2/5-3/5-4
- * \author GNSS-SDR contributors
+ * \brief B1C PRN Weil code parameters from BDS-SIS-ICD-B1C-1.0 Table 5-2/5-3/5-4
+ * \author Wenhao Ou, 2026. ouwh(at)mail2.sysu.edu.cn
  *
  * -----------------------------------------------------------------------------
+ *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * This file is part of GNSS-SDR.
+ *
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
+ *
  * -----------------------------------------------------------------------------
  */
 #ifndef GNSS_SDR_BEIDOU_B1C_PRN_H

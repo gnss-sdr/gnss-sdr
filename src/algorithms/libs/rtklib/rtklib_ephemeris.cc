@@ -405,6 +405,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
             omge = GNSS_OMEGA_EARTH_DOT;
             break;
         }
+    const int is_bds_cnav1 = (sys == SYS_BDS && eph->code == 7) ? 1 : 0;
     Ak = eph->A + eph->Adot * tk;
     delta_na = eph->deln + 0.5 * eph->ndot * tk;
     na = sqrt(mu / (eph->A * eph->A * eph->A)) + delta_na;
@@ -437,8 +438,8 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     y = r * sin(u);
     cosi = cos(i);
 
-    /* beidou geo satellite (ref [9]) */
-    if (sys == SYS_BDS && (prn <= 5 || prn > 58))
+    /* BeiDou GEO 5° transform is DNAV-only (B1I ICD). B-CNAV1 Table 7-9 is MEO/IGSO only */
+    if (sys == SYS_BDS && !is_bds_cnav1 && (prn <= 5 || prn > 58))
         {
             O = eph->OMG0 + eph->OMGd * tk - omge * eph->toes;
             sinO = sin(O);
@@ -554,7 +555,10 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
         }
     else
         {
-            *dts -= 2.0 * sqrt(mu * A) * eph->e * sinE / (SPEED_OF_LIGHT_M_S * SPEED_OF_LIGHT_M_S);
+            /* ICD B1C (7-3): Δtr = F·e·√A0·sin(Ek); F = -2√μ/c².
+             * Use reference semi-major axis A0 for B-CNAV1 (not Ak). */
+            const double A_rel = is_bds_cnav1 ? A0 : A;
+            *dts -= 2.0 * sqrt(mu * A_rel) * eph->e * sinE / (SPEED_OF_LIGHT_M_S * SPEED_OF_LIGHT_M_S);
         }
 
     /* position and clock error variance */

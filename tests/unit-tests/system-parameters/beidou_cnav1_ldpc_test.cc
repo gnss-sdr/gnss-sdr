@@ -1,9 +1,18 @@
 /*!
  * \file beidou_cnav1_ldpc_test.cc
  * \brief Unit tests for B-CNAV1 NB-LDPC decoder
+ * \author Wenhao Ou, 2026. ouwh(at)mail2.sysu.edu.cn
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * This file is part of GNSS-SDR.
+ *
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * -----------------------------------------------------------------------------
  */
-
 #include "Beidou_CNAV1.h"
 #include "beidou_cnav1_ldpc.h"
 #include <gtest/gtest.h>

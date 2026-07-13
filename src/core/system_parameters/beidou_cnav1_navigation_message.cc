@@ -1,9 +1,18 @@
 /*!
  * \file beidou_cnav1_navigation_message.cc
  * \brief B-CNAV1 navigation message parser (BDS-SIS-ICD-B1C-1.0 §6.2)
+ * \author Wenhao Ou, 2026. ouwh(at)mail2.sysu.edu.cn
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * This file is part of GNSS-SDR.
+ *
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * -----------------------------------------------------------------------------
  */
-
 #include "beidou_cnav1_navigation_message.h"
 #include "Beidou_B1C.h"
 #include "Beidou_CNAV1.h"
@@ -469,15 +478,16 @@ void parse_page1(
 {
     int32_t offset = 0;
     parse_page_common(bits, true, true, page_data, offset);
-    iono.alpha1 = static_cast<double>(read_signed(bits, offset, 10)) * 0.125;
+    // ICD Table 7-10
+    iono.alpha1 = static_cast<double>(read_unsigned(bits, offset, 10)) * 0.125;
     offset += 10;
     iono.alpha2 = static_cast<double>(read_signed(bits, offset, 8)) * 0.125;
     offset += 8;
-    iono.alpha3 = static_cast<double>(read_signed(bits, offset, 8)) * 0.125;
+    iono.alpha3 = static_cast<double>(read_unsigned(bits, offset, 8)) * 0.125;
     offset += 8;
-    iono.alpha4 = static_cast<double>(read_signed(bits, offset, 8)) * 0.125;
+    iono.alpha4 = static_cast<double>(read_unsigned(bits, offset, 8)) * 0.125;
     offset += 8;
-    iono.alpha5 = static_cast<double>(read_signed(bits, offset, 8)) * 0.125;
+    iono.alpha5 = static_cast<double>(read_unsigned(bits, offset, 8)) * 0.125;
     offset += 8;
     iono.alpha6 = static_cast<double>(read_signed(bits, offset, 8)) * 0.125;
     offset += 8;
@@ -488,15 +498,16 @@ void parse_page1(
     iono.alpha9 = static_cast<double>(read_signed(bits, offset, 8)) * 0.125;
     offset += 8;
 
-    utc.A0 = static_cast<double>(read_signed(bits, offset, 16)) * GNSS_SDR_TWO_N34;
+    // ICD Table 7-20 / Figure 6-17
+    utc.A0 = static_cast<double>(read_signed(bits, offset, 16)) * GNSS_SDR_TWO_N35;
     offset += 16;
-    utc.A1 = static_cast<double>(read_signed(bits, offset, 13)) * GNSS_SDR_TWO_N50;
+    utc.A1 = static_cast<double>(read_signed(bits, offset, 13)) * GNSS_SDR_TWO_N51;
     offset += 13;
-    utc.A2 = static_cast<double>(read_signed(bits, offset, 7)) * GNSS_SDR_TWO_N66;
+    utc.A2 = static_cast<double>(read_signed(bits, offset, 7)) * GNSS_SDR_TWO_N68;
     offset += 7;
-    utc.delta_t_LSF = static_cast<int32_t>(read_signed(bits, offset, 8));
+    utc.delta_t_LS = static_cast<int32_t>(read_signed(bits, offset, 8));
     offset += 8;
-    utc.tot = static_cast<int32_t>(read_unsigned(bits, offset, 16));
+    utc.tot = static_cast<int32_t>(read_unsigned(bits, offset, 16)) * 16;  // scale 2^4
     offset += 16;
     utc.WN_t = static_cast<int32_t>(read_unsigned(bits, offset, 13));
     offset += 13;
@@ -504,7 +515,7 @@ void parse_page1(
     offset += 13;
     utc.DN = static_cast<int32_t>(read_unsigned(bits, offset, 3));
     offset += 3;
-    (void)read_signed(bits, offset, 8);
+    utc.delta_t_LSF = static_cast<int32_t>(read_signed(bits, offset, 8));
 }
 
 void parse_page2(const uint8_t* bits, Bds3_B1c_PageData& page_data)
@@ -628,13 +639,12 @@ bool Beidou_Cnav1_Navigation_Message::decode_frame(
     // Reverse bit order within each 6-LLR GF(64) symbol; inv applies the same polarity flip.
     for (int32_t symbol = 0; symbol < BEIDOU_CNAV1_SUBFRAME2_SYMBOLS / 6; symbol++)
         {
-            const int32_t base = symbol * 6;
+            const auto base = static_cast<size_t>(symbol) * 6U;
             for (int32_t bit = 0; bit < 6; bit++)
                 {
-                    sf2_llr_bitrev[static_cast<size_t>(base + bit)] =
-                        sf2_llr[static_cast<size_t>(base + (5 - bit))];
-                    sf2_llr_bitrev_inv[static_cast<size_t>(base + bit)] =
-                        -sf2_llr_bitrev[static_cast<size_t>(base + bit)];
+                    const auto bit_u = static_cast<size_t>(bit);
+                    sf2_llr_bitrev[base + bit_u] = sf2_llr[base + (5U - bit_u)];
+                    sf2_llr_bitrev_inv[base + bit_u] = -sf2_llr_bitrev[base + bit_u];
                 }
         }
     // SF3: same four LLR variants as SF2.
@@ -644,13 +654,12 @@ bool Beidou_Cnav1_Navigation_Message::decode_frame(
         }
     for (int32_t symbol = 0; symbol < BEIDOU_CNAV1_SUBFRAME3_SYMBOLS / 6; symbol++)
         {
-            const int32_t base = symbol * 6;
+            const auto base = static_cast<size_t>(symbol) * 6U;
             for (int32_t bit = 0; bit < 6; bit++)
                 {
-                    sf3_llr_bitrev[static_cast<size_t>(base + bit)] =
-                        sf3_llr[static_cast<size_t>(base + (5 - bit))];
-                    sf3_llr_bitrev_inv[static_cast<size_t>(base + bit)] =
-                        -sf3_llr_bitrev[static_cast<size_t>(base + bit)];
+                    const auto bit_u = static_cast<size_t>(bit);
+                    sf3_llr_bitrev[base + bit_u] = sf3_llr[base + (5U - bit_u)];
+                    sf3_llr_bitrev_inv[base + bit_u] = -sf3_llr_bitrev[base + bit_u];
                 }
         }
 
@@ -742,17 +751,23 @@ bool Beidou_Cnav1_Navigation_Message::decode_frame(
             return false;
         }
 
-    parse_subframe2(sf2_data.data(), ephemeris_, soh_seconds);
-#if 0
-    if (ephemeris_.sqrtA < 5000.0 || ephemeris_.sqrtA > 6700.0)
+    // Parse SF2 into a candidate so a mismatched IODE/IODC pair cannot overwrite a good set.
+    Beidou_Cnav1_Ephemeris candidate{};
+    parse_subframe2(sf2_data.data(), candidate, soh_seconds);
+    candidate.PRN = static_cast<int32_t>(prn);
+    // ICD B1C §7.4.3: usable only when IODE equals IODC low 8 bits.
+    const auto iode = static_cast<uint32_t>(candidate.IODE);
+    const auto iodc_lo = static_cast<uint32_t>(candidate.IODC) & 0xFFU;
+    tow_s_ = static_cast<double>(candidate.tow);
+    if (iode != iodc_lo)
         {
-            set_fail(7);
-            return false;
+            // Frame CRC is OK; do not publish unmatched eph/clock (keep prior ephemeris_).
         }
-#endif
-    ephemeris_.PRN = static_cast<int32_t>(prn);
-    tow_s_ = static_cast<double>(ephemeris_.tow);
-    flag_new_ephemeris_ = true;
+    else
+        {
+            ephemeris_ = candidate;
+            flag_new_ephemeris_ = true;
+        }
 
     if (sf3_crc_ok)
         {

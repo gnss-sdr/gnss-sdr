@@ -1,21 +1,19 @@
 /*!
  * \file beidou_b1c_pcps_acquisition_test.cc
- * \brief Unit tests for BeidouB1cPcpsAmbiguousAcquisition
- * \author GNSS-SDR contributors
+ * \brief Unit tests for BeiDou B1C PCPS acquisition via PcpsAcquisitionAdapter
+ * \author Wenhao Ou, 2026. ouwh(at)mail2.sysu.edu.cn
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
  */
-
 #include "acquisition_interface.h"
-#include "beidou_b1c_pcps_ambiguous_acquisition.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "in_memory_configuration.h"

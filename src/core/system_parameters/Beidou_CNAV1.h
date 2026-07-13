@@ -1,9 +1,18 @@
 /*!
  * \file Beidou_CNAV1.h
  * \brief B-CNAV1 navigation message constants (BDS-SIS-ICD-B1C-1.0 §6.2, §7)
+ * \author Wenhao Ou, 2026. ouwh(at)mail2.sysu.edu.cn
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * This file is part of GNSS-SDR.
+ *
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * -----------------------------------------------------------------------------
  */
-
 #ifndef GNSS_SDR_BEIDOU_CNAV1_H
 #define GNSS_SDR_BEIDOU_CNAV1_H
 
@@ -28,17 +37,26 @@ constexpr double GNSS_SDR_TWO_N32 = 2.3283064365386963e-10;
 #ifndef GNSS_SDR_TWO_N34
 constexpr double GNSS_SDR_TWO_N34 = 5.820766091346741e-11;
 #endif
+#ifndef GNSS_SDR_TWO_N35
+constexpr double GNSS_SDR_TWO_N35 = 2.910383045673370e-11;
+#endif
 #ifndef GNSS_SDR_TWO_N44
 constexpr double GNSS_SDR_TWO_N44 = 5.684341886080802e-14;
 #endif
 #ifndef GNSS_SDR_TWO_N50
 constexpr double GNSS_SDR_TWO_N50 = 8.881784197001252e-16;
 #endif
+#ifndef GNSS_SDR_TWO_N51
+constexpr double GNSS_SDR_TWO_N51 = 4.440892098500626e-16;
+#endif
 #ifndef GNSS_SDR_TWO_N57
 constexpr double GNSS_SDR_TWO_N57 = 6.938893903907228e-18;
 #endif
 #ifndef GNSS_SDR_TWO_N66
 constexpr double GNSS_SDR_TWO_N66 = 1.3552527156068805e-20;
+#endif
+#ifndef GNSS_SDR_TWO_N68
+constexpr double GNSS_SDR_TWO_N68 = 3.3881317890172013e-21;
 #endif
 
 constexpr int32_t BEIDOU_CNAV1_FRAME_SYMBOLS = 1800;

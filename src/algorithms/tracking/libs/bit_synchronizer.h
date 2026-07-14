@@ -20,6 +20,7 @@
 #include <cmath>
 #include <complex>
 #include <cstdint>
+#include <deque>
 #include <vector>
 
 /** \addtogroup Tracking
@@ -84,10 +85,20 @@ public:
         double dominance_ratio;
 
         /**
+         * @brief Required normalized margin between the best and second-best bins.
+         *
+         * The margin is computed as (best_count - second_best_count) / total_events.
+         * This prevents lock when two candidate phases have similar support.
+         */
+        double runner_up_margin;
+
+        /**
          * @brief Required stability of the dominant histogram bin (consecutive evaluations).
          *
          * Even if the dominance ratio is met, the algorithm requires that the same histogram
-         * bin remains dominant for this many consecutive lock evaluations before declaring lock.
+         * bin remains dominant for this many consecutive event-driven lock evaluations before
+         * declaring lock. Evaluations without a newly detected transition do not count toward
+         * this requirement.
          *
          * This helps prevent locking on transient peaks caused by noise or short-lived disturbances.
          */
@@ -105,17 +116,47 @@ public:
         float min_prompt_mag;
 
         /**
+         * @brief Number of prompt epochs averaged on each side of a candidate edge.
+         *
+         * A transition is evaluated after this many prompt epochs have been observed on
+         * both sides of the candidate boundary. Values larger than one improve rejection
+         * of isolated noisy prompt inversions at the cost of a short detection delay.
+         */
+        int transition_window_epochs;
+
+        /**
+         * @brief Minimum normalized transition confidence required for a histogram vote.
+         *
+         * Confidence combines the phase inversion between the pre-edge and post-edge
+         * prompt averages with their internal coherence. It lies in the range [-1, 1],
+         * with values near 1 indicating a clean polarity inversion.
+         */
+        double transition_confidence;
+
+        /**
+         * @brief Number of fresh phase-matching events required after tentative lock.
+         *
+         * Once the histogram satisfies its dominance, runner-up margin, and stability
+         * requirements, this many subsequent transition events must occur in the same
+         * phase bin before lock is declared. Winner stability and tentative validation
+         * advance concurrently; they are not applied as serial waiting periods.
+         */
+        int tentative_events_required;
+
+        /**
          * @brief Select the transition detection method.
          *
-         * If true (recommended), uses a “phase-dot” detector:
-         *   - A candidate transition is detected when:
+         * If true (recommended), compares coherent prompt averages immediately before
+         * and after each candidate boundary. A transition is detected when:
          *     @f[
-         *       \Re\{ P_k \cdot P^*_{k-1} \} < 0
+         *       -\frac{\Re\{ A_{after} A^*_{before} \}}
+         *       {|A_{after}| |A_{before}|}
          *     @f]
-         *     where @f$P_k@f$ is the current prompt and @f$P^*_{k-1}@f$ the conjugate of the previous.
+         * combined with the internal coherence of each averaging window exceeds
+         * Config::transition_confidence.
          *
-         * This method is largely insensitive to constant carrier phase rotations and is often
-         * more robust during early tracking / imperfect carrier phase alignment.
+         * This method is insensitive to constant carrier phase rotations and rejects isolated
+         * prompt inversions and ambiguous samples near a candidate boundary.
          *
          * If false, uses a simpler sign-change detector on the real part:
          *   - A candidate transition is detected when sign(Re(P_k)) != sign(Re(P_{k-1})).
@@ -130,8 +171,12 @@ public:
               epoch_ms(1),
               min_events_for_lock(10),
               dominance_ratio(0.6),
+              runner_up_margin(0.2),
               stable_best_required(5),
               min_prompt_mag(0.0f),
+              transition_window_epochs(3),
+              transition_confidence(0.6),
+              tentative_events_required(2),
               use_phase_dot_detector(true)
         {
         }
@@ -150,15 +195,16 @@ public:
           hist_(),
           total_events_(0),
           epoch_count_(0),
-          last_prompt_(0.0f, 0.0f),
           edge_phase_(-1),
           last_sign_(+1),
           last_best_bin_(0),
           stable_best_count_(0),
+          tentative_phase_(-1),
+          tentative_event_count_(0),
           locked_(false),
-          has_last_prompt_(false),
           has_last_sign_(false),
-          has_last_best_bin_(false)
+          has_last_best_bin_(false),
+          tentative_lock_(false)
     {
         hist_.assign(bins(), 0);
     }
@@ -287,25 +333,28 @@ public:
     int epochs_until_next_edge() const;
 
 private:
-    void best_bin_and_count(int& best_bin, int& best_count) const;
+    void best_bins_and_counts(int& best_bin, int& best_count, int& second_best_count) const;
+    bool histogram_confident(int best_count, int second_best_count) const;
+    int transition_window_epochs() const;
 
     Config cfg_;
     std::vector<int> hist_;
+    std::deque<std::complex<float>> prompt_window_;
 
     std::int64_t total_events_;
     std::int64_t epoch_count_;
-
-    std::complex<float> last_prompt_;  // Sign history (for simple detector)
 
     int edge_phase_;
     int last_sign_;          // Sign history (for simple detector)
     int last_best_bin_;      // Stability tracking for best bin
     int stable_best_count_;  // Stability tracking for best bin
+    int tentative_phase_;
+    int tentative_event_count_;
 
     bool locked_;
-    bool has_last_prompt_;    // Prompt history (for dot detector)
     bool has_last_sign_;      // Sign history (for simple detector)
     bool has_last_best_bin_;  // Stability tracking for best bin
+    bool tentative_lock_;
 };
 
 /** \} */

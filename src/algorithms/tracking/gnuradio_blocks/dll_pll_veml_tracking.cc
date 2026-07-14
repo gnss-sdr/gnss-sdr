@@ -1399,11 +1399,15 @@ void dll_pll_veml_tracking::clear_tracking_vars()
     d_carr_ph_history.clear();
     d_code_ph_history.clear();
     d_bit_sync.reset();
+    d_wait_for_bit_edge = false;
+    d_bit_sync_target_epoch = 0;
 }
 
 
 void dll_pll_veml_tracking::configure_bit_synchronizer()
 {
+    d_wait_for_bit_edge = false;
+    d_bit_sync_target_epoch = 0;
     d_use_histogram_bit_sync = (!d_secondary && d_symbols_per_bit > 1) && (d_systemName != "Glonass");  // Glonass uses Manchester coding
     if (!d_use_histogram_bit_sync)
         {
@@ -1417,7 +1421,11 @@ void dll_pll_veml_tracking::configure_bit_synchronizer()
     cfg.min_events_for_lock = d_trk_parameters.bs_min_events_for_lock;
     cfg.stable_best_required = d_trk_parameters.bs_stable_best_required;
     cfg.dominance_ratio = d_trk_parameters.bs_dominance_ratio;
+    cfg.runner_up_margin = d_trk_parameters.bs_runner_up_margin;
     cfg.min_prompt_mag = d_trk_parameters.bs_min_prompt_mag;
+    cfg.transition_window_epochs = d_trk_parameters.bs_transition_window_epochs;
+    cfg.transition_confidence = d_trk_parameters.bs_transition_confidence;
+    cfg.tentative_events_required = d_trk_parameters.bs_tentative_events_required;
     cfg.use_phase_dot_detector = d_trk_parameters.bs_use_phase_dot_detector;
     d_bit_sync = HistogramBitSynchronizer(cfg);
     d_bit_sync.reset();

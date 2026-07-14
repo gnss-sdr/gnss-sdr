@@ -17,6 +17,18 @@ All notable changes to GNSS-SDR will be documented in this file.
 ### Improvements in Availability:
 
 - Improved TOW rollover handling in Telemetry Decoder blocks.
+- Improved the availability of navigation data by making histogram-based bit
+  synchronization more resistant to weak or ambiguous prompt transitions, which
+  could select the wrong bit-boundary phase, prevent telemetry frame
+  synchronization, and delay TTFF. Candidate edges are now scored with
+  normalized coherent prompt averages, require a configurable margin over the
+  second-best phase bin, and are validated with fresh matching transition
+  events. Histogram stability and tentative-lock validation advance concurrently
+  to avoid unnecessary synchronization delay. New configuration parameters are
+  `Tracking_1C.bs_runner_up_margin` (default: 0.2),
+  `Tracking_1C.bs_transition_window_epochs` (default: 3),
+  `Tracking_1C.bs_transition_confidence` (default: 0.6), and
+  `Tracking_1C.bs_tentative_events_required` (default: 2).
 
 ### Improvements in Efficiency:
 

@@ -1320,6 +1320,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     endif()
     set(TRKTEST_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/bit_synchronizer_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/tracking_loop_filter_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_real_codes_test.cc
@@ -1346,6 +1347,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             signal_source_gr_blocks
             signal_source_libs
             algorithms_libs
+            tracking_libs
             tracking_adapters
             signal_generator_gr_blocks
             core_receiver

@@ -113,7 +113,7 @@ bool file_exist(const char* fileName)
 std::map<int, arma::mat> ReadRinexObs(const std::string& rinex_file, char system, const std::string& signal)
 {
     std::map<int, arma::mat> obs_map;
-    if (! file_exist(rinex_file.c_str()))
+    if (!file_exist(rinex_file.c_str()))
         {
             std::cout << "Warning: RINEX Obs file " << rinex_file << " does not exist\n";
             return obs_map;
@@ -1191,7 +1191,7 @@ void code_phase_diff(
 double compute_rx_clock_error(const std::string& rinex_nav_filename, const std::string& rinex_obs_file)
 {
     std::cout << "Computing receiver's clock error...\n";
-    if (! file_exist(rinex_nav_filename.c_str()))
+    if (!file_exist(rinex_nav_filename.c_str()))
         {
             std::cout << "Warning: RINEX Nav file " << rinex_nav_filename << " does not exist, receiver's clock error could not be computed!\n";
             return 0.0;

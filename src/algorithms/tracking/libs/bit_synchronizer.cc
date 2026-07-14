@@ -226,7 +226,7 @@ bool HistogramBitSynchronizer::histogram_confident(int best_count, int second_be
         {
             return false;
         }
-    const double total = static_cast<double>(total_events_);
+    const auto total = static_cast<double>(total_events_);
     const double dominance = static_cast<double>(best_count) / total;
     const double runner_up_margin = static_cast<double>(best_count - second_best_count) / total;
     return dominance >= cfg_.dominance_ratio && runner_up_margin >= cfg_.runner_up_margin;

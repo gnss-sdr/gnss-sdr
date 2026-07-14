@@ -113,7 +113,7 @@ bool file_exist(const char* fileName)
 std::map<int, arma::mat> ReadRinexObs(const std::string& rinex_file, char system, const std::string& signal)
 {
     std::map<int, arma::mat> obs_map;
-    if (not file_exist(rinex_file.c_str()))
+    if (! file_exist(rinex_file.c_str()))
         {
             std::cout << "Warning: RINEX Obs file " << rinex_file << " does not exist\n";
             return obs_map;
@@ -1191,7 +1191,7 @@ void code_phase_diff(
 double compute_rx_clock_error(const std::string& rinex_nav_filename, const std::string& rinex_obs_file)
 {
     std::cout << "Computing receiver's clock error...\n";
-    if (not file_exist(rinex_nav_filename.c_str()))
+    if (! file_exist(rinex_nav_filename.c_str()))
         {
             std::cout << "Warning: RINEX Nav file " << rinex_nav_filename << " does not exist, receiver's clock error could not be computed!\n";
             return 0.0;
@@ -1454,7 +1454,7 @@ void RINEX_doublediff_dupli_sat()
     for (auto& rover_ob : rover_obs)
         {
             index = arma::find(rover_ob.second.col(0) >= (rover_ob.second.col(0)(0) + initial_transitory_s), 1, "first");
-            if ((!index.empty()) and (index(0) > 0))
+            if ((!index.empty()) && (index(0) > 0))
                 {
                     rover_ob.second.shed_rows(0, index(0));
                 }
@@ -1485,7 +1485,7 @@ void RINEX_doublediff_dupli_sat()
             for (unsigned int n = 0; n < prn_pairs.size(); n = n + 2)
                 {
                     // compute double differences
-                    if (rover_obs.find(prn_pairs.at(n)) != rover_obs.end() and rover_obs.find(prn_pairs.at(n + 1)) != rover_obs.end())
+                    if (rover_obs.find(prn_pairs.at(n)) != rover_obs.end() && rover_obs.find(prn_pairs.at(n + 1)) != rover_obs.end())
                         {
                             std::cout << "Computing single difference observables for duplicated SV pairs...\n";
                             std::cout << "SD = OBS_ROVER(SV" << prn_pairs.at(n) << ") - OBS_ROVER(SV" << prn_pairs.at(n + 1) << ")\n";
@@ -1524,7 +1524,7 @@ void RINEX_doublediff(bool remove_rx_clock_error)
     // read rinex receiver-under-test (rover) observations
     std::map<int, arma::mat> rover_obs = ReadRinexObs(absl::GetFlag(FLAGS_rover_rinex_obs), absl::GetFlag(FLAGS_system).c_str()[0], absl::GetFlag(FLAGS_signal));
 #endif
-    if (base_obs.empty() or rover_obs.empty())
+    if (base_obs.empty() || rover_obs.empty())
         {
             return;
         }
@@ -1557,7 +1557,7 @@ void RINEX_doublediff(bool remove_rx_clock_error)
     for (auto& rover_ob : rover_obs)
         {
             index = arma::find(rover_ob.second.col(0) >= (rover_ob.second.col(0)(0) + initial_transitory_s), 1, "first");
-            if ((!index.empty()) and (index(0) > 0))
+            if ((!index.empty()) && (index(0) > 0))
                 {
                     rover_ob.second.shed_rows(0, index(0));
                 }
@@ -1576,7 +1576,7 @@ void RINEX_doublediff(bool remove_rx_clock_error)
             for (auto& rover_ob : rover_obs)
                 {
                     index = arma::find(rover_ob.second.col(0) >= base_obs_time.back(), 1, "first");
-                    if ((!index.empty()) and (index(0) > 0))
+                    if ((!index.empty()) && (index(0) > 0))
                         {
                             rover_ob.second.shed_rows(index(0), rover_ob.second.n_rows - 1);
                         }
@@ -1590,7 +1590,7 @@ void RINEX_doublediff(bool remove_rx_clock_error)
             for (auto& base_ob : base_obs)
                 {
                     index = arma::find(base_ob.second.col(0) >= rover_obs_time.back(), 1, "first");
-                    if ((!index.empty()) and (index(0) > 0))
+                    if ((!index.empty()) && (index(0) > 0))
                         {
                             base_ob.second.shed_rows(index(0), base_ob.second.n_rows - 1);
                         }
@@ -1610,7 +1610,7 @@ void RINEX_doublediff(bool remove_rx_clock_error)
     for (auto& rover_ob : rover_obs)
         {
             index = arma::find(rover_ob.second.col(0) >= (rover_obs_time.back() - skip_ends_s), 1, "first");
-            if ((!index.empty()) and (index(0) > 0))
+            if ((!index.empty()) && (index(0) > 0))
                 {
                     rover_ob.second.shed_rows(index(0), rover_ob.second.n_rows - 1);
                 }
@@ -1618,7 +1618,7 @@ void RINEX_doublediff(bool remove_rx_clock_error)
     for (auto& base_ob : base_obs)
         {
             index = arma::find(base_ob.second.col(0) >= (base_obs_time.back() - skip_ends_s), 1, "first");
-            if ((!index.empty()) and (index(0) > 0))
+            if ((!index.empty()) && (index(0) > 0))
                 {
                     base_ob.second.shed_rows(index(0), base_ob.second.n_rows - 1);
                 }
@@ -1669,7 +1669,7 @@ void RINEX_doublediff(bool remove_rx_clock_error)
     int reference_sat_id = 1;
     for (const auto& base_prn_it : PRN_set)
         {
-            if (base_obs.find(base_prn_it) != base_obs.end() and rover_obs.find(base_prn_it) != rover_obs.end())
+            if (base_obs.find(base_prn_it) != base_obs.end() && rover_obs.find(base_prn_it) != rover_obs.end())
                 {
                     if (rover_obs.at(base_prn_it).at(0, 1) < min_range)
                         {
@@ -1680,14 +1680,14 @@ void RINEX_doublediff(bool remove_rx_clock_error)
         }
 
     // compute double differences
-    if (base_obs.find(reference_sat_id) != base_obs.end() and rover_obs.find(reference_sat_id) != rover_obs.end())
+    if (base_obs.find(reference_sat_id) != base_obs.end() && rover_obs.find(reference_sat_id) != rover_obs.end())
         {
             std::cout << "Using reference satellite SV " << reference_sat_id << " with minimum range of " << min_range << " [meters]\n";
             for (const auto& current_sat_id : PRN_set)
                 {
                     if (current_sat_id != reference_sat_id)
                         {
-                            if (base_obs.find(current_sat_id) != base_obs.end() and rover_obs.find(current_sat_id) != rover_obs.end())
+                            if (base_obs.find(current_sat_id) != base_obs.end() && rover_obs.find(current_sat_id) != rover_obs.end())
                                 {
                                     std::cout << "Computing double difference observables for SV " << current_sat_id << '\n';
                                     std::cout << "DD = (OBS_ROVER(SV" << current_sat_id << ") - OBS_ROVER(SV" << reference_sat_id << "))"
@@ -1746,7 +1746,7 @@ void RINEX_singlediff()
     for (auto& rover_ob : rover_obs)
         {
             index = arma::find(rover_ob.second.col(0) >= (rover_ob.second.col(0)(0) + initial_transitory_s), 1, "first");
-            if ((!index.empty()) and (index(0) > 0))
+            if ((!index.empty()) && (index(0) > 0))
                 {
                     rover_ob.second.shed_rows(0, index(0));
                 }
@@ -1764,7 +1764,7 @@ void RINEX_singlediff()
     for (auto& rover_ob : rover_obs)
         {
             index = arma::find(rover_ob.second.col(0) >= (rover_obs_time.back() - skip_ends_s), 1, "first");
-            if ((!index.empty()) and (index(0) > 0))
+            if ((!index.empty()) && (index(0) > 0))
                 {
                     rover_ob.second.shed_rows(index(0), rover_ob.second.n_rows - 1);
                 }

@@ -98,7 +98,7 @@ public:
     }
 
     /*!
-     * \brief Set Doppler center for the grid search
+     * \brief Set Doppler center for the grid search and update grid size
      */
     void set_assistance(int doppler_center, int32_t assist_level) override;
 

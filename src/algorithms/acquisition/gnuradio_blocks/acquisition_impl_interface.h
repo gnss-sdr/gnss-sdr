@@ -73,6 +73,14 @@ public:
     virtual void set_local_code(std::complex<float>* /*code_data*/, std::complex<float>* /*code_pilot*/) {};
     virtual uint32_t mag() const = 0;
     virtual void set_active(bool active) = 0;
+    enum
+    {
+        UNASSISTED = 0,
+        COMPENSATEED_DRIFT = 1,
+        ESTIMATED_DOPPLER = 2,
+        SKIP_ACQUISITION = 3,
+        ASSIST_COUNT = 3  // We don't need to stopre step/max for "SKIP_ACQUISITION" level
+    };
 };
 
 

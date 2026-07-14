@@ -21,6 +21,8 @@
 #include <algorithm>
 #include <cmath>
 #include <functional>
+#include <iostream>  // for debugging
+#include <limits>
 #include <numeric>
 #include <utility>
 #include <vector>
@@ -71,6 +73,19 @@ double Gnss_Ephemeris::predicted_doppler(double rx_time_s,
 
     std::vector<double> x_sr = pos_sat;
     std::transform(x_sr.begin(), x_sr.end(), pos_rx.begin(), x_sr.begin(), std::minus<double>());  // pos_sat - pos_rx
+
+    // Elevation angle
+    std::vector<double> enu(3);
+    enu[0] = cosl * x_sr[1] - sinl * x_sr[0];
+    enu[1] = -sinp * cosl * x_sr[0] - sinp * sinl * x_sr[1] + cosp * x_sr[2];
+    enu[2] = cosp * cosl * x_sr[0] + cosp * sinl * x_sr[1] + sinp * x_sr[2];
+    double el = asin(enu[2] / sqrt(enu[0] * enu[0] + enu[1] * enu[1] + enu[2] * enu[2]));
+    double az = atan2(enu[0], enu[1]);
+    az = (az < 0) ? az + TWO_PI : az;
+    if (0. > el)
+        {
+            return std::numeric_limits<double>::quiet_NaN();
+        }
 
     const double norm_x_sr = std::sqrt(std::inner_product(x_sr.begin(), x_sr.end(), x_sr.begin(), 0.0));  // Euclidean norm
 
@@ -149,6 +164,7 @@ double Gnss_Ephemeris::predicted_doppler(double rx_time_s,
         {
             predicted_doppler = 0.0;
         }
+    std::cout << "E EL[" << System << PRN << "]=" << el * R2D << "deg " << predicted_doppler << "Hz\n";
     return predicted_doppler;
 }
 

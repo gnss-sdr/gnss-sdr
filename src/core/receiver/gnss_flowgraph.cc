@@ -1758,11 +1758,6 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
 
                     if (start_acquisition == true)
                         {
-                            channels_state_[current_channel] = 2;
-                            acq_channels_count_++;
-                            DLOG(INFO) << "Channel " << current_channel
-                                       << " Starting acquisition " << channels_[current_channel]->get_signal().get_satellite()
-                                       << ", Signal " << channels_[current_channel]->get_signal().get_signal_str();
                             if (assistance_available == true && configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_))
                                 {
                                     // Estimated doppler is known, narrow doppler range search
@@ -1803,7 +1798,14 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                                             double predicted = iter->second.predicted_doppler(TOW, latitude_deg, longitude_deg, height_m,
                                                                 ground_speed_north, ground_speed_east, ground_speed_up, freq_idx->second);
                                                             // std::cout<<"[[[[ found valid ephemeris for J"<<sat.get_PRN()<<" predicted="<<predicted<<"\n";
-                                                            corrected_center += predicted;
+                                                            if (std::isfinite(predicted))
+                                                                corrected_center += predicted;
+                                                            else
+                                                                {
+                                                                    // std::cout<<"Satellite G"<<sat.get_PRN()<<" is skipped due to negative elevation or invalid ephemeris\n";
+                                                                    // push_back_signal(gnss_signal);
+                                                                    // return;
+                                                                }
                                                         }
                                                     if (!ephemeris_found)
                                                         {
@@ -1816,8 +1818,15 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                                                     auto freq_idx = SIGNAL_FREQ_IDX.find(channels_[current_channel]->get_signal().get_signal_str());
                                                                     double predicted = iter->second.predicted_doppler(TOW, latitude_deg, longitude_deg, height_m,
                                                                         ground_speed_north, ground_speed_east, ground_speed_up, freq_idx->second);
-                                                                    std::cout << "[[[[ found valid ephemeris for J" << sat.get_PRN() << " predicted=" << predicted << "\n";
-                                                                    corrected_center += predicted;
+                                                                    // std::cout<<"[[[[ found valid ephemeris for J"<<sat.get_PRN()<<" predicted="<<predicted<<"\n";
+                                                                    if (std::isfinite(predicted))
+                                                                        corrected_center += predicted;
+                                                                    else
+                                                                        {
+                                                                            // std::cout<<"Satellite G"<<sat.get_PRN()<<" is skipped due to negative elevation or invalid ephemeris\n";
+                                                                            // push_back_signal(gnss_signal);
+                                                                            // return;
+                                                                        }
                                                                 }
                                                         }
                                                     if (!ephemeris_found)
@@ -1831,7 +1840,14 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                                                     double predicted = iter->second.predicted_doppler(TOW, latitude_deg, longitude_deg, height_m,
                                                                         ground_speed_north, ground_speed_east, ground_speed_up, freq_idx->second);
                                                                     // std::cout<<"[[[[ found valid almanac for G"<<sat.get_PRN()<<" predicted="<<predicted<<"\n";
-                                                                    corrected_center += predicted;
+                                                                    if (std::isfinite(predicted))
+                                                                        corrected_center += predicted;
+                                                                    else
+                                                                        {
+                                                                            // std::cout<<"Satellite G"<<sat.get_PRN()<<" is skipped due to negative elevation or invalid almanac\n";
+                                                                            // push_back_signal(gnss_signal);
+                                                                            // return;
+                                                                        }
                                                                 }
                                                             else
                                                                 {
@@ -1850,7 +1866,14 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                                             double predicted = iter->second.predicted_doppler(TOW, latitude_deg, longitude_deg, height_m,
                                                                 ground_speed_north, ground_speed_east, ground_speed_up, freq_idx->second);
                                                             // std::cout<<"[[[[ found valid ephemeris for E"<<sat.get_PRN()<<" predicted="<<predicted<<"\n";
-                                                            corrected_center += predicted;
+                                                            if (std::isfinite(predicted))
+                                                                corrected_center += predicted;
+                                                            else
+                                                                {
+                                                                    // std::cout<<"Satellite E"<<sat.get_PRN()<<" is skipped due to negative elevation\n";
+                                                                    // push_back_signal(gnss_signal);
+                                                                    // return;
+                                                                }
                                                         }
                                                     else
                                                         {
@@ -1864,7 +1887,14 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                                                     double predicted = iter->second.predicted_doppler(TOW, latitude_deg, longitude_deg, height_m,
                                                                         ground_speed_north, ground_speed_east, ground_speed_up, freq_idx->second);
                                                                     // std::cout<<"[[[[ found valid almanac for E"<<sat.get_PRN()<<" predicted="<<predicted<<"\n";
-                                                                    corrected_center += predicted;
+                                                                    if (std::isfinite(predicted))
+                                                                        corrected_center += predicted;
+                                                                    else
+                                                                        {
+                                                                            // std::cout<<"Satellite E"<<sat.get_PRN()<<" is skipped due to negative elevation or invalid almanac\n";
+                                                                            // push_back_signal(gnss_signal);
+                                                                            // return;
+                                                                        }
                                                                 }
                                                             else
                                                                 {
@@ -1903,8 +1933,15 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                                             auto freq_idx = SIGNAL_FREQ_IDX.find(channels_[current_channel]->get_signal().get_signal_str());
                                                             double predicted = iter->second.predicted_doppler(TOW, latitude_deg, longitude_deg, height_m,
                                                                 ground_speed_north, ground_speed_east, ground_speed_up, freq_idx->second);
-                                                            std::cout << "[[[[ found valid ephemeris for C" << sat.get_PRN() << " predicted=" << predicted << "\n";
-                                                            corrected_center += predicted;
+                                                            if (std::isfinite(predicted))
+                                                                corrected_center += predicted;
+                                                            else
+                                                                {
+                                                                    // std::cout<<"Satellite C"<<sat.get_PRN()<<" is skipped due to negative elevation\n";
+                                                                    // push_back_signal(gnss_signal);
+                                                                    // return;
+                                                                }
+                                                            // std::cout<<"[[[[ found valid ephemeris for C"<<sat.get_PRN()<<" predicted="<<corrected_center<<"\n";
                                                         }
                                                     if (!ephemeris_found)
                                                         {
@@ -1917,7 +1954,14 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                                                     auto freq_idx = SIGNAL_FREQ_IDX.find(channels_[current_channel]->get_signal().get_signal_str());
                                                                     double predicted = iter->second.predicted_doppler(TOW, latitude_deg, longitude_deg, height_m,
                                                                         ground_speed_north, ground_speed_east, ground_speed_up, freq_idx->second);
-                                                                    corrected_center += predicted;
+                                                                    if (std::isfinite(predicted))
+                                                                        corrected_center += predicted;
+                                                                    else
+                                                                        {
+                                                                            // std::cout<<"Satellite C"<<sat.get_PRN()<<" is skipped due to negative elevation\n";
+                                                                            // push_back_signal(gnss_signal);
+                                                                            // return;
+                                                                        }
                                                                     // std::cout<<"[[[[ found valid ephemeris for C"<<sat.get_PRN()<<" predicted="<<corrected_center<<"\n";
                                                                 }
                                                         }
@@ -1932,9 +1976,15 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                                                     auto freq_idx = SIGNAL_FREQ_IDX.find(channels_[current_channel]->get_signal().get_signal_str());
                                                                     double predicted = iter->second.predicted_doppler(TOW, latitude_deg, longitude_deg, height_m,
                                                                         ground_speed_north, ground_speed_east, ground_speed_up, freq_idx->second);
-                                                                    corrected_center += predicted;
-                                                                    std::cout << "[[[[ found valid almanac for C" << sat.get_PRN() << " predicted=" << predicted << "\n";
-                                                                    corrected_center += predicted;
+                                                                    if (std::isfinite(predicted))
+                                                                        corrected_center += predicted;
+                                                                    else
+                                                                        {
+                                                                            // std::cout<<"Satellite C"<<sat.get_PRN()<<" is skipped due to negative elevation or invalid almanac\n";
+                                                                            // return;
+                                                                            // push_back_signal(gnss_signal);
+                                                                        }
+                                                                    // std::cout<<"[[[[ found valid almanac for C"<<sat.get_PRN()<<" predicted="<<(predicted+corrected_center)<<"\n";
                                                                 }
                                                             else
                                                                 {
@@ -1945,6 +1995,11 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                         }
                                     channels_[current_channel]->assist_acquisition_doppler(corrected_center, assist_level);
                                 }
+                            channels_state_[current_channel] = 2;
+                            acq_channels_count_++;
+                            DLOG(INFO) << "Channel " << current_channel
+                                       << " Starting acquisition " << channels_[current_channel]->get_signal().get_satellite()
+                                       << ", Signal " << channels_[current_channel]->get_signal().get_signal_str();
 #if ENABLE_FPGA
                             if (enable_fpga_offloading_)
                                 {

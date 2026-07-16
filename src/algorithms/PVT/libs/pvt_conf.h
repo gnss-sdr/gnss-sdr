@@ -65,6 +65,7 @@ public:
     int32_t rinexobs_rate_ms = 0;
     int32_t an_rate_ms = 20;
     int32_t max_obs_block_rx_clock_offset_ms = 40;
+    int32_t ref_gps_week = 0;  // reference GPS week to resolve the mod-1024 week rollover in post-processing (0: use system clock)
     int udp_eph_port = 0;
     int rtk_trace_level = 0;
 
@@ -88,7 +89,6 @@ public:
     bool protobuf_enabled = true;
     bool enable_rx_clock_correction = true;
     bool show_local_time_zone = false;
-    bool pre_2009_file = false;
     bool dump = false;
     bool dump_mat = true;
     bool log_source_timetag = false;

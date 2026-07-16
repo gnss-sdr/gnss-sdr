@@ -129,7 +129,7 @@ int decode_type1012(rtcm_t *rtcm);
 
 int decode_type1013(rtcm_t *rtcm);
 
-int decode_type1019(rtcm_t *rtcm, bool pre_2009_file = false);
+int decode_type1019(rtcm_t *rtcm, int ref_week = 0);
 
 int decode_type1020(rtcm_t *rtcm);
 
@@ -167,7 +167,7 @@ int decode_type1038(rtcm_t *rtcm);
 
 int decode_type1039(rtcm_t *rtcm);
 
-int decode_type1044(rtcm_t *rtcm, bool pre_2009_file = false);
+int decode_type1044(rtcm_t *rtcm, int ref_week = 0);
 
 int decode_type1045(rtcm_t *rtcm);
 

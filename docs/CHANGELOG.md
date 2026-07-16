@@ -136,6 +136,20 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Usability:
 
+- A new global parameter `GNSS-SDR.observation_date` allows specifying the
+  approximate date of the signal capture, in `YYYY-MM-DD` or `YYYY` format
+  (e.g., `GNSS-SDR.observation_date=2014-12-20`), when post-processing recorded
+  signal files. It is used to resolve the GPS mod-1024 week-number rollover:
+  each broadcast week number is expanded to the 1024-week era closest to the
+  given date. This works for recordings from any era, including files captured
+  after the April 2019 rollover replayed far in the future, and also fixes the
+  applied leap-second offset, which is derived from the resolved date. If the
+  parameter is not set, the era is derived from the system clock, as before,
+  which is the right choice for live operation. The `GNSS-SDR.pre_2009_file`
+  flag, which could only select the August 1999 - April 2019 era, is now
+  deprecated: it keeps working exactly as before, but the receiver prints a
+  notice suggesting `GNSS-SDR.observation_date` instead, and it is ignored if
+  the new parameter is also set.
 - Added Galileo System Time (GST) annotations to HAS outputs when GST is decoded
   from an I/NAV channel, enabling the HAS Time of Hour (TOH) to be associated
   with an absolute UTC timestamp.

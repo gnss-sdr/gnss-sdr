@@ -188,7 +188,7 @@ double utc2gmst(gtime_t t, double ut1_utc);
 void time2str(gtime_t t, char *s, int n);
 char *time_str(gtime_t t, int n);
 double time2doy(gtime_t t);
-int adjgpsweek(int week, bool pre_2009_file = false);
+int adjgpsweek(int week, int ref_week = 0);
 unsigned int tickget();
 void sleepms(int ms);
 void deg2dms(double deg, double *dms, int ndec);

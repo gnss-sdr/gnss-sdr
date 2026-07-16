@@ -298,6 +298,17 @@ int PositionSystemTest::configure_receiver()
                 {
                     config->set_property("GNSS-SDR.use_acquisition_resampler", "true");
                 }
+#if USE_GLOG_AND_GFLAGS
+            if (FLAGS_rinex_nav_file == std::string(DEFAULT_RINEX_NAV))
+#else
+            if (absl::GetFlag(FLAGS_rinex_nav_file) == std::string(DEFAULT_RINEX_NAV))
+#endif
+                {
+                    // The signal is generated from the default RINEX nav file
+                    // (brdc3540.14n, dated December 20, 2014), so set the observation
+                    // date accordingly to resolve the GPS week rollover to that era
+                    config->set_property("GNSS-SDR.observation_date", "2014-12-20");
+                }
             config->set_property("GNSS-SDR.GPS_banned_prns", std::to_string(1));
             // Set the assistance system parameters
             config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");

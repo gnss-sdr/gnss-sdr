@@ -12,6 +12,7 @@ set(SYSTEM_PARAMETERS_SOURCES
     gnss_signal.cc
     gps_navigation_message.cc
     gps_ephemeris.cc
+    gps_week_rollover.cc
     galileo_utc_model.cc
     galileo_ephemeris.cc
     galileo_almanac_helper.cc
@@ -43,6 +44,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     gps_iono.h
     gps_almanac.h
     gps_utc_model.h
+    gps_week_rollover.h
     gps_acq_assist.h
     agnss_ref_time.h
     agnss_ref_location.h

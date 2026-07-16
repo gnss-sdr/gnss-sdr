@@ -91,12 +91,12 @@ eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph,
     const std::map<int, HAS_clock_corrections>& clock_correction_map);
 
 eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph,
-    bool pre_2009_file = false);
+    int ref_week = 0);
 
 eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph,
     const std::map<int, HAS_orbit_corrections>& orbit_correction_map,
     const std::map<int, HAS_clock_corrections>& clock_correction_map,
-    bool pre_2009_file = false);
+    int ref_week = 0);
 
 eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph);
 
@@ -121,16 +121,16 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
     int week,
     int band,
     const HAS_obs_corrections** applied_has_correction,
-    bool pre_2009_file);
+    int ref_week);
 
 obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
     const Gnss_Synchro& gnss_synchro,
     const std::map<std::string, std::map<int, HAS_obs_corrections>>& has_obs_corr,
     int week,
     int band,
-    bool pre_2009_file = false);
+    int ref_week = 0);
 
-obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro, int week, int band, bool pre_2009_file = false);
+obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro, int week, int band, int ref_week = 0);
 
 
 /** \} */

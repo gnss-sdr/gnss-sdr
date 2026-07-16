@@ -414,7 +414,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     // initialize RINEX printer
     if (d_rinex_output_enabled)
         {
-            d_rp = std::make_unique<Rinex_Printer>(d_signal_enabled_flags, d_rinex_version, conf_.rinex_output_path, conf_.rinex_name, conf_.pre_2009_file);
+            d_rp = std::make_unique<Rinex_Printer>(d_signal_enabled_flags, d_rinex_version, conf_.rinex_output_path, conf_.rinex_name, conf_.ref_gps_week);
         }
     else
         {
@@ -578,19 +578,19 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             // setup two PVT solvers: internal solver for rx clock and user solver
             // user PVT solver
             d_user_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, conf_, dump_ls_pvt_filename, d_signal_enabled_flags, d_dump, d_dump_mat);
-            d_user_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
+            d_user_pvt_solver->set_ref_gps_week(conf_.ref_gps_week);
 
             // internal PVT solver, mainly used to estimate the receiver clock
             rtk_t internal_rtk = rtk;
             internal_rtk.opt.mode = PMODE_SINGLE;  // use single positioning mode in internal PVT solver
             d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(internal_rtk, conf_, dump_ls_pvt_filename, d_signal_enabled_flags, false, false);
-            d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
+            d_internal_pvt_solver->set_ref_gps_week(conf_.ref_gps_week);
         }
     else
         {
             // only one solver, customized by the user options
             d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, conf_, dump_ls_pvt_filename, d_signal_enabled_flags, d_dump, d_dump_mat);
-            d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
+            d_internal_pvt_solver->set_ref_gps_week(conf_.ref_gps_week);
             d_user_pvt_solver = d_internal_pvt_solver;
         }
 
@@ -2198,8 +2198,17 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     // LOG(INFO) << "diff raw obs time: " << d_gnss_observables_map.cbegin()->second.RX_time * 1000.0 - old_time_debug;
                     // old_time_debug = d_gnss_observables_map.cbegin()->second.RX_time * 1000.0;
                     uint32_t current_RX_time_ms = 0;
+                    // If the Rx clock correction is disabled, d_internal_pvt_solver and d_user_pvt_solver
+                    // are the same object and this is its only get_PVT call, executed at the observables
+                    // rate; restrict dumping to epochs aligned with the configured output rate
+                    bool dump_this_epoch = false;
+                    if (d_enable_rx_clock_correction == false)
+                        {
+                            const auto rx_time_ms = static_cast<uint32_t>(d_gnss_observables_map.cbegin()->second.RX_time * 1000.0);
+                            dump_this_epoch = (rx_time_ms % d_output_rate_ms == 0);
+                        }
                     // #### solve PVT and store the corrected observable set
-                    if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, d_observable_interval_ms / 1000.0, *d_sensor_data_aggregator))
+                    if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, d_observable_interval_ms / 1000.0, *d_sensor_data_aggregator, dump_this_epoch))
                         {
                             d_pvt_errors_counter = 0;  // Reset consecutive PVT error counter
                             const double Rx_clock_offset_s = d_internal_pvt_solver->get_time_offset_s();
@@ -2310,10 +2319,14 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 }
                         }
 
-                    // compute on the fly PVT solution
-                    if (flag_compute_pvt_output == true)
+                    // compute on the fly PVT solution at the output rate, on the clock-corrected
+                    // and interpolated observables. If the Rx clock correction is disabled, the user
+                    // solver is the same object as the internal one and already holds this epoch's
+                    // solution (flag_pvt_valid was set above), so solving again would feed the same
+                    // epoch twice to the solver and duplicate the dump record
+                    if (flag_compute_pvt_output == true && d_enable_rx_clock_correction == true)
                         {
-                            flag_pvt_valid = d_user_pvt_solver->get_PVT(d_gnss_observables_map, d_output_rate_ms / 1000.0, *d_sensor_data_aggregator);
+                            flag_pvt_valid = d_user_pvt_solver->get_PVT(d_gnss_observables_map, d_output_rate_ms / 1000.0, *d_sensor_data_aggregator, true);
                         }
 
                     if (flag_pvt_valid == true)

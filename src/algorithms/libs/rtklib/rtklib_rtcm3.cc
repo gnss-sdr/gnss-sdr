@@ -1015,7 +1015,7 @@ int decode_type1013(rtcm_t *rtcm __attribute__((unused)))
 
 
 /* decode type 1019: gps ephemerides -----------------------------------------*/
-int decode_type1019(rtcm_t *rtcm, bool pre_2009_file)
+int decode_type1019(rtcm_t *rtcm, int ref_week)
 {
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -1115,7 +1115,7 @@ int decode_type1019(rtcm_t *rtcm, bool pre_2009_file)
             return -1;
         }
     eph.sat = sat;
-    eph.week = adjgpsweek(week, pre_2009_file);
+    eph.week = adjgpsweek(week, ref_week);
     eph.toe = gpst2time(eph.week, eph.toes);
     eph.toc = gpst2time(eph.week, toc);
     eph.ttr = rtcm->time;
@@ -1514,7 +1514,7 @@ int decode_type1039(rtcm_t *rtcm __attribute__((unused)))
 
 
 /* decode type 1044: qzss ephemerides (ref [15]) -----------------------------*/
-int decode_type1044(rtcm_t *rtcm, bool pre_2009_file)
+int decode_type1044(rtcm_t *rtcm, int ref_week)
 {
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -1607,7 +1607,7 @@ int decode_type1044(rtcm_t *rtcm, bool pre_2009_file)
             return -1;
         }
     eph.sat = sat;
-    eph.week = adjgpsweek(week, pre_2009_file);
+    eph.week = adjgpsweek(week, ref_week);
     eph.toe = gpst2time(eph.week, eph.toes);
     eph.toc = gpst2time(eph.week, toc);
     eph.ttr = rtcm->time;

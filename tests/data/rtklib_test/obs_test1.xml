@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2018 Javier Arribas <javier.arribas@cttc.es> -->
 <!DOCTYPE boost_serialization>
 <boost_serialization signature="serialization::archive" version="12">
 <GNSS-SDR_gnss_synchro_map class_id="0" tracking_level="0" version="0">
@@ -22,7 +20,6 @@
 			<Acq_doppler_hz>-2.50000000000000000e+03</Acq_doppler_hz>
 			<Acq_samplestamp_samples>10791</Acq_samplestamp_samples>
 			<Acq_doppler_step>0</Acq_doppler_step>
-			<Flag_valid_acquisition>0</Flag_valid_acquisition>
 			<fs>2600000</fs>
 			<Prompt_I>-3.85959140625000000e+04</Prompt_I>
 			<Prompt_Q>-9.03592163085937500e+02</Prompt_Q>
@@ -31,14 +28,17 @@
 			<Carrier_phase_rads>8.35350813421410858e+05</Carrier_phase_rads>
 			<Code_phase_samples>3.31084377635761484e-01</Code_phase_samples>
 			<Tracking_sample_counter>133923691</Tracking_sample_counter>
-			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
 			<correlation_length_ms>1</correlation_length_ms>
-			<Flag_valid_word>1</Flag_valid_word>
 			<TOW_at_current_symbol_ms>518451424</TOW_at_current_symbol_ms>
 			<Pseudorange_m>2.28178186234515086e+07</Pseudorange_m>
 			<RX_time>5.18451500000000000e+05</RX_time>
-			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
 			<interp_TOW_ms>5.18451423887949765e+08</interp_TOW_ms>
+			<Flag_valid_acquisition>0</Flag_valid_acquisition>
+			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
+			<Flag_valid_word>1</Flag_valid_word>
+			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
+			<Flag_PLL_180_deg_phase_locked>0</Flag_PLL_180_deg_phase_locked>
+			<Flag_cycle_slip>0</Flag_cycle_slip>
 		</second>
 	</item>
 	<item>
@@ -57,7 +57,6 @@
 			<Acq_doppler_hz>-3.00000000000000000e+03</Acq_doppler_hz>
 			<Acq_samplestamp_samples>68450858</Acq_samplestamp_samples>
 			<Acq_doppler_step>0</Acq_doppler_step>
-			<Flag_valid_acquisition>0</Flag_valid_acquisition>
 			<fs>2600000</fs>
 			<Prompt_I>-4.34972734375000000e+04</Prompt_I>
 			<Prompt_Q>4.21364685058593750e+02</Prompt_Q>
@@ -66,14 +65,17 @@
 			<Carrier_phase_rads>4.93910706686261110e+05</Carrier_phase_rads>
 			<Code_phase_samples>7.36033200862493686e-01</Code_phase_samples>
 			<Tracking_sample_counter>133923971</Tracking_sample_counter>
-			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
 			<correlation_length_ms>1</correlation_length_ms>
-			<Flag_valid_word>1</Flag_valid_word>
 			<TOW_at_current_symbol_ms>518451431</TOW_at_current_symbol_ms>
 			<Pseudorange_m>2.07516033774388395e+07</Pseudorange_m>
 			<RX_time>5.18451500000000000e+05</RX_time>
-			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
 			<interp_TOW_ms>5.18451430780101955e+08</interp_TOW_ms>
+			<Flag_valid_acquisition>0</Flag_valid_acquisition>
+			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
+			<Flag_valid_word>1</Flag_valid_word>
+			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
+			<Flag_PLL_180_deg_phase_locked>0</Flag_PLL_180_deg_phase_locked>
+			<Flag_cycle_slip>0</Flag_cycle_slip>
 		</second>
 	</item>
 	<item>
@@ -92,7 +94,6 @@
 			<Acq_doppler_hz>-3.00000000000000000e+03</Acq_doppler_hz>
 			<Acq_samplestamp_samples>1350770</Acq_samplestamp_samples>
 			<Acq_doppler_step>0</Acq_doppler_step>
-			<Flag_valid_acquisition>0</Flag_valid_acquisition>
 			<fs>2600000</fs>
 			<Prompt_I>4.46268046875000000e+04</Prompt_I>
 			<Prompt_Q>-3.98811938476562500e+03</Prompt_Q>
@@ -101,14 +102,17 @@
 			<Carrier_phase_rads>9.35704822809229488e+05</Carrier_phase_rads>
 			<Code_phase_samples>9.30327007595224131e-01</Code_phase_samples>
 			<Tracking_sample_counter>133923941</Tracking_sample_counter>
-			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
 			<correlation_length_ms>1</correlation_length_ms>
-			<Flag_valid_word>1</Flag_valid_word>
 			<TOW_at_current_symbol_ms>518451436</TOW_at_current_symbol_ms>
 			<Pseudorange_m>1.92492043561209217e+07</Pseudorange_m>
 			<RX_time>5.18451500000000000e+05</RX_time>
-			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
 			<interp_TOW_ms>5.18451435791565657e+08</interp_TOW_ms>
+			<Flag_valid_acquisition>0</Flag_valid_acquisition>
+			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
+			<Flag_valid_word>1</Flag_valid_word>
+			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
+			<Flag_PLL_180_deg_phase_locked>0</Flag_PLL_180_deg_phase_locked>
+			<Flag_cycle_slip>0</Flag_cycle_slip>
 		</second>
 	</item>
 	<item>
@@ -127,7 +131,6 @@
 			<Acq_doppler_hz>1.00000000000000000e+03</Acq_doppler_hz>
 			<Acq_samplestamp_samples>994247</Acq_samplestamp_samples>
 			<Acq_doppler_step>0</Acq_doppler_step>
-			<Flag_valid_acquisition>0</Flag_valid_acquisition>
 			<fs>2600000</fs>
 			<Prompt_I>3.98655546875000000e+04</Prompt_I>
 			<Prompt_Q>-8.63781860351562500e+02</Prompt_Q>
@@ -136,14 +139,17 @@
 			<Carrier_phase_rads>-3.54128275530727289e+05</Carrier_phase_rads>
 			<Code_phase_samples>4.08304036132904002e-01</Code_phase_samples>
 			<Tracking_sample_counter>133922883</Tracking_sample_counter>
-			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
 			<correlation_length_ms>1</correlation_length_ms>
-			<Flag_valid_word>1</Flag_valid_word>
 			<TOW_at_current_symbol_ms>518451429</TOW_at_current_symbol_ms>
 			<Pseudorange_m>2.12256989876578376e+07</Pseudorange_m>
 			<RX_time>5.18451500000000000e+05</RX_time>
-			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
 			<interp_TOW_ms>5.18451429198689222e+08</interp_TOW_ms>
+			<Flag_valid_acquisition>0</Flag_valid_acquisition>
+			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
+			<Flag_valid_word>1</Flag_valid_word>
+			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
+			<Flag_PLL_180_deg_phase_locked>0</Flag_PLL_180_deg_phase_locked>
+			<Flag_cycle_slip>0</Flag_cycle_slip>
 		</second>
 	</item>
 	<item>
@@ -162,7 +168,6 @@
 			<Acq_doppler_hz>1.75000000000000000e+03</Acq_doppler_hz>
 			<Acq_samplestamp_samples>4917751</Acq_samplestamp_samples>
 			<Acq_doppler_step>0</Acq_doppler_step>
-			<Flag_valid_acquisition>0</Flag_valid_acquisition>
 			<fs>2600000</fs>
 			<Prompt_I>-4.72456406250000000e+04</Prompt_I>
 			<Prompt_Q>-2.63723022460937500e+02</Prompt_Q>
@@ -171,14 +176,17 @@
 			<Carrier_phase_rads>-5.72184006019302527e+05</Carrier_phase_rads>
 			<Code_phase_samples>5.89544135488722532e-01</Code_phase_samples>
 			<Tracking_sample_counter>133922337</Tracking_sample_counter>
-			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
 			<correlation_length_ms>1</correlation_length_ms>
-			<Flag_valid_word>1</Flag_valid_word>
 			<TOW_at_current_symbol_ms>518451430</TOW_at_current_symbol_ms>
 			<Pseudorange_m>2.08629709015843943e+07</Pseudorange_m>
 			<RX_time>5.18451500000000000e+05</RX_time>
-			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
 			<interp_TOW_ms>5.18451430408619881e+08</interp_TOW_ms>
+			<Flag_valid_acquisition>0</Flag_valid_acquisition>
+			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
+			<Flag_valid_word>1</Flag_valid_word>
+			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
+			<Flag_PLL_180_deg_phase_locked>0</Flag_PLL_180_deg_phase_locked>
+			<Flag_cycle_slip>0</Flag_cycle_slip>
 		</second>
 	</item>
 	<item>
@@ -197,7 +205,6 @@
 			<Acq_doppler_hz>2.50000000000000000e+02</Acq_doppler_hz>
 			<Acq_samplestamp_samples>514377</Acq_samplestamp_samples>
 			<Acq_doppler_step>0</Acq_doppler_step>
-			<Flag_valid_acquisition>0</Flag_valid_acquisition>
 			<fs>2600000</fs>
 			<Prompt_I>4.27717460937500000e+04</Prompt_I>
 			<Prompt_Q>-9.45822082519531250e+02</Prompt_Q>
@@ -206,14 +213,17 @@
 			<Carrier_phase_rads>-9.09813659855529113e+04</Carrier_phase_rads>
 			<Code_phase_samples>6.57473345280777721e-01</Code_phase_samples>
 			<Tracking_sample_counter>133923172</Tracking_sample_counter>
-			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
 			<correlation_length_ms>1</correlation_length_ms>
-			<Flag_valid_word>1</Flag_valid_word>
 			<TOW_at_current_symbol_ms>518451440</TOW_at_current_symbol_ms>
 			<Pseudorange_m>1.79613337841309197e+07</Pseudorange_m>
 			<RX_time>5.18451500000000000e+05</RX_time>
-			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
 			<interp_TOW_ms>5.18451440087439477e+08</interp_TOW_ms>
+			<Flag_valid_acquisition>0</Flag_valid_acquisition>
+			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
+			<Flag_valid_word>1</Flag_valid_word>
+			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
+			<Flag_PLL_180_deg_phase_locked>0</Flag_PLL_180_deg_phase_locked>
+			<Flag_cycle_slip>0</Flag_cycle_slip>
 		</second>
 	</item>
 	<item>
@@ -232,7 +242,6 @@
 			<Acq_doppler_hz>2.25000000000000000e+03</Acq_doppler_hz>
 			<Acq_samplestamp_samples>7365787</Acq_samplestamp_samples>
 			<Acq_doppler_step>0</Acq_doppler_step>
-			<Flag_valid_acquisition>0</Flag_valid_acquisition>
 			<fs>2600000</fs>
 			<Prompt_I>-3.96159960937500000e+04</Prompt_I>
 			<Prompt_Q>-5.03847460937500000e+03</Prompt_Q>
@@ -241,14 +250,17 @@
 			<Carrier_phase_rads>-7.04913853936602012e+05</Carrier_phase_rads>
 			<Code_phase_samples>3.21518194999043772e-01</Code_phase_samples>
 			<Tracking_sample_counter>133922169</Tracking_sample_counter>
-			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
 			<correlation_length_ms>1</correlation_length_ms>
-			<Flag_valid_word>1</Flag_valid_word>
 			<TOW_at_current_symbol_ms>518451430</TOW_at_current_symbol_ms>
 			<Pseudorange_m>2.08435687343175523e+07</Pseudorange_m>
 			<RX_time>5.18451500000000000e+05</RX_time>
-			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
 			<interp_TOW_ms>5.18451430473338544e+08</interp_TOW_ms>
+			<Flag_valid_acquisition>0</Flag_valid_acquisition>
+			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
+			<Flag_valid_word>1</Flag_valid_word>
+			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
+			<Flag_PLL_180_deg_phase_locked>0</Flag_PLL_180_deg_phase_locked>
+			<Flag_cycle_slip>0</Flag_cycle_slip>
 		</second>
 	</item>
 	<item>
@@ -267,7 +279,6 @@
 			<Acq_doppler_hz>2.75000000000000000e+03</Acq_doppler_hz>
 			<Acq_samplestamp_samples>2173576</Acq_samplestamp_samples>
 			<Acq_doppler_step>0</Acq_doppler_step>
-			<Flag_valid_acquisition>0</Flag_valid_acquisition>
 			<fs>2600000</fs>
 			<Prompt_I>4.00322539062500000e+04</Prompt_I>
 			<Prompt_Q>-3.88590087890625000e+02</Prompt_Q>
@@ -276,14 +287,17 @@
 			<Carrier_phase_rads>-8.99142229977656389e+05</Carrier_phase_rads>
 			<Code_phase_samples>1.02370741655249731e-01</Code_phase_samples>
 			<Tracking_sample_counter>133922664</Tracking_sample_counter>
-			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
 			<correlation_length_ms>1</correlation_length_ms>
-			<Flag_valid_word>1</Flag_valid_word>
 			<TOW_at_current_symbol_ms>518451438</TOW_at_current_symbol_ms>
 			<Pseudorange_m>1.85022797143675610e+07</Pseudorange_m>
 			<RX_time>5.18451500000000000e+05</RX_time>
-			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
 			<interp_TOW_ms>5.18451438283038080e+08</interp_TOW_ms>
+			<Flag_valid_acquisition>0</Flag_valid_acquisition>
+			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
+			<Flag_valid_word>1</Flag_valid_word>
+			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
+			<Flag_PLL_180_deg_phase_locked>0</Flag_PLL_180_deg_phase_locked>
+			<Flag_cycle_slip>0</Flag_cycle_slip>
 		</second>
 	</item>
 	<item>
@@ -302,7 +316,6 @@
 			<Acq_doppler_hz>3.00000000000000000e+03</Acq_doppler_hz>
 			<Acq_samplestamp_samples>7464974</Acq_samplestamp_samples>
 			<Acq_doppler_step>0</Acq_doppler_step>
-			<Flag_valid_acquisition>0</Flag_valid_acquisition>
 			<fs>2600000</fs>
 			<Prompt_I>-4.03654140625000000e+04</Prompt_I>
 			<Prompt_Q>3.92351245117187500e+03</Prompt_Q>
@@ -311,14 +324,17 @@
 			<Carrier_phase_rads>-9.28340507655202877e+05</Carrier_phase_rads>
 			<Code_phase_samples>5.73995602361264901e-01</Code_phase_samples>
 			<Tracking_sample_counter>133923741</Tracking_sample_counter>
-			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
 			<correlation_length_ms>1</correlation_length_ms>
-			<Flag_valid_word>1</Flag_valid_word>
 			<TOW_at_current_symbol_ms>518451427</TOW_at_current_symbol_ms>
 			<Pseudorange_m>2.19242346189941987e+07</Pseudorange_m>
 			<RX_time>5.18451500000000000e+05</RX_time>
-			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
 			<interp_TOW_ms>5.18451426868625164e+08</interp_TOW_ms>
+			<Flag_valid_acquisition>0</Flag_valid_acquisition>
+			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
+			<Flag_valid_word>1</Flag_valid_word>
+			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
+			<Flag_PLL_180_deg_phase_locked>0</Flag_PLL_180_deg_phase_locked>
+			<Flag_cycle_slip>0</Flag_cycle_slip>
 		</second>
 	</item>
 	<item>
@@ -337,7 +353,6 @@
 			<Acq_doppler_hz>5.00000000000000000e+02</Acq_doppler_hz>
 			<Acq_samplestamp_samples>1859813</Acq_samplestamp_samples>
 			<Acq_doppler_step>0</Acq_doppler_step>
-			<Flag_valid_acquisition>0</Flag_valid_acquisition>
 			<fs>2600000</fs>
 			<Prompt_I>3.87814335937500000e+04</Prompt_I>
 			<Prompt_Q>2.13637329101562500e+03</Prompt_Q>
@@ -346,14 +361,17 @@
 			<Carrier_phase_rads>-1.78723083774703584e+05</Carrier_phase_rads>
 			<Code_phase_samples>3.47952294631795667e-01</Code_phase_samples>
 			<Tracking_sample_counter>133924211</Tracking_sample_counter>
-			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
 			<correlation_length_ms>1</correlation_length_ms>
-			<Flag_valid_word>1</Flag_valid_word>
 			<TOW_at_current_symbol_ms>518451439</TOW_at_current_symbol_ms>
 			<Pseudorange_m>1.83808922785463184e+07</Pseudorange_m>
 			<RX_time>5.18451500000000000e+05</RX_time>
-			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
 			<interp_TOW_ms>5.18451438687942982e+08</interp_TOW_ms>
+			<Flag_valid_acquisition>0</Flag_valid_acquisition>
+			<Flag_valid_symbol_output>1</Flag_valid_symbol_output>
+			<Flag_valid_word>1</Flag_valid_word>
+			<Flag_valid_pseudorange>1</Flag_valid_pseudorange>
+			<Flag_PLL_180_deg_phase_locked>0</Flag_PLL_180_deg_phase_locked>
+			<Flag_cycle_slip>0</Flag_cycle_slip>
 		</second>
 	</item>
 </GNSS-SDR_gnss_synchro_map>

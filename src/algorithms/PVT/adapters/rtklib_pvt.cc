@@ -24,6 +24,7 @@
 #include "gnss_sdr_string_literals.h"  // for std::string_literals in C++11
 #include "gps_almanac.h"               // for Gps_Almanac
 #include "gps_ephemeris.h"             // for Gps_Ephemeris
+#include "gps_week_rollover.h"         // for gps_ref_week_from_config
 #include "pvt_conf.h"                  // for Pvt_Conf
 #include "rtklib_rtkpos.h"             // for rtkfree, rtkinit
 #include "signal_enabled_flags.h"      // for signal_enabled_flags
@@ -68,8 +69,11 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     pvt_output_parameters.rtk_trace_level = configuration->property(role + ".rtk_trace_level"s, 0);
 
-    // Flag to postprocess old gnss records (older than 2009) and avoid wrong week rollover
-    pvt_output_parameters.pre_2009_file = configuration->property("GNSS-SDR.pre_2009_file", false);
+    // Approximate date of the signal capture, used to resolve the GPS mod-1024
+    // week-number rollover when post-processing recorded files
+    pvt_output_parameters.ref_gps_week = gps_ref_week_from_config(
+        configuration->property("GNSS-SDR.observation_date", std::string("")),
+        configuration->property("GNSS-SDR.pre_2009_file", false));
 
     // output rate
     pvt_output_parameters.observable_interval_ms = configuration->property("GNSS-SDR.observable_interval_ms", pvt_output_parameters.observable_interval_ms);

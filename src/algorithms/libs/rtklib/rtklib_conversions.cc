@@ -154,7 +154,7 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
     int week,
     int band,
     const HAS_obs_corrections** applied_has_correction,
-    bool pre_2009_file)
+    int ref_week)
 {
     if (applied_has_correction != nullptr)
         {
@@ -254,7 +254,7 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
         }
     else
         {
-            rtklib_obs.time = gpst2time(adjgpsweek(week, pre_2009_file), gnss_synchro.RX_time);
+            rtklib_obs.time = gpst2time(adjgpsweek(week, ref_week), gnss_synchro.RX_time);
         }
     // account for the TOW crossover transitory in the first 18 seconds where the week is not yet updated!
     if (gnss_synchro.RX_time < 18.0)
@@ -341,7 +341,7 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
     const std::map<std::string, std::map<int, HAS_obs_corrections>>& has_obs_corr,
     int week,
     int band,
-    bool pre_2009_file)
+    int ref_week)
 {
     return insert_obs_to_rtklib(rtklib_obs,
         gnss_synchro,
@@ -349,7 +349,7 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
         week,
         band,
         static_cast<const HAS_obs_corrections**>(nullptr),
-        pre_2009_file);
+        ref_week);
 }
 
 
@@ -357,7 +357,7 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
     const Gnss_Synchro& gnss_synchro,
     int week,
     int band,
-    bool pre_2009_file)
+    int ref_week)
 {
     std::map<std::string, std::map<int, HAS_obs_corrections>> empty_map;
     return insert_obs_to_rtklib(rtklib_obs,
@@ -365,7 +365,7 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
         empty_map,
         week,
         band,
-        pre_2009_file);
+        ref_week);
 }
 
 
@@ -520,18 +520,18 @@ eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph,
 }
 
 
-eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph, bool pre_2009_file)
+eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph, int ref_week)
 {
     std::map<int, HAS_orbit_corrections> empty_orbit_map;
     std::map<int, HAS_clock_corrections> empty_clock_map;
-    return eph_to_rtklib(gps_eph, empty_orbit_map, empty_clock_map, pre_2009_file);
+    return eph_to_rtklib(gps_eph, empty_orbit_map, empty_clock_map, ref_week);
 }
 
 
 eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph,
     const std::map<int, HAS_orbit_corrections>& orbit_correction_map,
     const std::map<int, HAS_clock_corrections>& clock_correction_map,
-    bool pre_2009_file)
+    int ref_week)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, 0, 0, 0, 0, 0.0, -1, 0};
@@ -549,7 +549,7 @@ eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph,
     rtklib_sat.Adot = 0;  // only in CNAV;
     rtklib_sat.ndot = 0;  // only in CNAV;
 
-    rtklib_sat.week = adjgpsweek(gps_eph.WN, pre_2009_file); /* week of tow */
+    rtklib_sat.week = adjgpsweek(gps_eph.WN, ref_week); /* week of tow */
     rtklib_sat.cic = gps_eph.Cic;
     rtklib_sat.cis = gps_eph.Cis;
     rtklib_sat.cuc = gps_eph.Cuc;

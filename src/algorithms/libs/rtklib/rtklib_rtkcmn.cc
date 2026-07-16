@@ -2114,43 +2114,35 @@ double time2doy(gtime_t t)
 
 
 /* adjust gps week number ------------------------------------------------------
- * adjust gps week number using cpu time
- * args   : int   week       I   not-adjusted gps week number
+ * adjust gps week number using a reference week or cpu time
+ * args   : int   week       I   not-adjusted (mod-1024) gps week number
+ *          int   ref_week   I   full gps week number used as reference to
+ *                               resolve the mod-1024 rollover, e.g. derived
+ *                               from the approximate date of signal capture
+ *                               when post-processing recorded files
+ *                               (0: use cpu time)
  * return : adjusted gps week number
  *-----------------------------------------------------------------------------*/
-int adjgpsweek(int week, bool pre_2009_file)
+int adjgpsweek(int week, int ref_week)
 {
-    //    int w;
-    //    if (week < 512)
-    //        {
-    //            //assume receiver date > 7 april 2019
-    //            w = week + 2048;  //add weeks from 6-january-1980 to week rollover in 6 april 2019
-    //        }
-    //    else
-    //        {
-    //            //assume receiver date < 7 april 2019
-    //            w = week + 1024;  //add weeks from 6-january-1980 to week rollover in 21 august 1999
-    //        }
     int w;
     if (week > 1023)
         {
             return week;
         }
 
-    if (pre_2009_file == false)
+    if (ref_week > 0)
         {
-            (void)time2gpst(utc2gpst(timeget()), &w);
-            if (w < 1560)
-                {
-                    w = 1560; /* use 2009/12/1 if time is earlier than 2009/12/1 */
-                }
-            return week + (w - week + 512) / 1024 * 1024;
+            /* pick the 1024-week era that places the output closest to ref_week */
+            return week + (ref_week - week + 512) / 1024 * 1024;
         }
-    else
+
+    (void)time2gpst(utc2gpst(timeget()), &w);
+    if (w < 1560)
         {
-            w = week + 1024;  // add weeks from 6-january-1980 to week rollover in 21 august 1999
-            return w;
+            w = 1560; /* use 2009/12/1 if time is earlier than 2009/12/1 */
         }
+    return week + (w - week + 512) / 1024 * 1024;
 }
 
 

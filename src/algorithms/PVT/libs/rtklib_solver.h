@@ -91,7 +91,7 @@ public:
 
     ~Rtklib_Solver() noexcept override;
 
-    bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, double kf_update_interval_s, const SensorDataAggregator& sensor_data_aggregator);
+    bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, double kf_update_interval_s, const SensorDataAggregator& sensor_data_aggregator, bool dump_this_epoch = true);
 
     double get_hdop() const override;
     double get_vdop() const override;

@@ -1147,7 +1147,7 @@ void Rtklib_Solver::clear_applied_has_phase_bias_discontinuity(const HAS_obs_cor
 }
 
 
-bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, double kf_update_interval_s, const SensorDataAggregator &sensor_data_aggregator)
+bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, double kf_update_interval_s, const SensorDataAggregator &sensor_data_aggregator, bool dump_this_epoch)
 {
     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
     std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
@@ -1939,7 +1939,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_monitor_pvt.utc_time = stream.str();
 
                     // ######## LOG FILE #########
-                    if (d_flag_dump_enabled == true)
+                    if (d_flag_dump_enabled == true && dump_this_epoch == true)
                         {
                             // MULTIPLEXED FILE RECORDING - Record results to file
                             try

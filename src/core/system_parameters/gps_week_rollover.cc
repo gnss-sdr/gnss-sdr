@@ -32,7 +32,7 @@ boost::gregorian::date parse_observation_date(const std::string& date_str)
         {
             if (date_str.size() == 4 && std::all_of(date_str.begin(), date_str.end(), [](char c) { return c >= '0' && c <= '9'; }))
                 {
-                    return boost::gregorian::date(static_cast<uint16_t>(std::stoi(date_str)), 7, 1);
+                    return {static_cast<uint16_t>(std::stoi(date_str)), 7, 1};
                 }
             return boost::gregorian::from_simple_string(date_str);
         }

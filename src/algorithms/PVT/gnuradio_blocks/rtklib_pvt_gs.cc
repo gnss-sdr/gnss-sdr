@@ -414,7 +414,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     // initialize RINEX printer
     if (d_rinex_output_enabled)
         {
-            d_rp = std::make_unique<Rinex_Printer>(d_signal_enabled_flags, d_rinex_version, conf_.rinex_output_path, conf_.rinex_name, conf_.pre_2009_file);
+            d_rp = std::make_unique<Rinex_Printer>(d_signal_enabled_flags, d_rinex_version, conf_.rinex_output_path, conf_.rinex_name, conf_.ref_gps_week);
         }
     else
         {
@@ -578,19 +578,19 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             // setup two PVT solvers: internal solver for rx clock and user solver
             // user PVT solver
             d_user_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, conf_, dump_ls_pvt_filename, d_signal_enabled_flags, d_dump, d_dump_mat);
-            d_user_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
+            d_user_pvt_solver->set_ref_gps_week(conf_.ref_gps_week);
 
             // internal PVT solver, mainly used to estimate the receiver clock
             rtk_t internal_rtk = rtk;
             internal_rtk.opt.mode = PMODE_SINGLE;  // use single positioning mode in internal PVT solver
             d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(internal_rtk, conf_, dump_ls_pvt_filename, d_signal_enabled_flags, false, false);
-            d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
+            d_internal_pvt_solver->set_ref_gps_week(conf_.ref_gps_week);
         }
     else
         {
             // only one solver, customized by the user options
             d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, conf_, dump_ls_pvt_filename, d_signal_enabled_flags, d_dump, d_dump_mat);
-            d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
+            d_internal_pvt_solver->set_ref_gps_week(conf_.ref_gps_week);
             d_user_pvt_solver = d_internal_pvt_solver;
         }
 

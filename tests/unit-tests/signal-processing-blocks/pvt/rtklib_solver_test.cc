@@ -17,6 +17,7 @@
 #include "geofunctions.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_sdr_supl_client.h"
+#include "gps_week_rollover.h"
 #include "in_memory_configuration.h"
 #include "pvt_conf.h"
 #include "rtklib_solver.h"
@@ -390,8 +391,9 @@ TEST(RTKLibSolverTest, test1)
     conf.use_e6_for_pvt = false;
     auto d_ls_pvt = std::make_unique<Rtklib_Solver>(rtk, conf, dump_filename, GPS_1C, flag_dump_to_file, save_to_mat);
     // the scenario was simulated in December 2014 (GPS week 1823, transmitted mod-1024
-    // week 799), so the week rollover must be resolved to the 1999-2019 era
-    d_ls_pvt->set_pre_2009_file(true);
+    // week 799); the approximate capture date resolves the week rollover, as the
+    // GNSS-SDR.observation_date configuration option does in the full receiver
+    d_ls_pvt->set_ref_gps_week(gps_ref_week_from_config("2014-12-20", false));
 
     // sensor data aggregator with no external sensors
     auto sensor_configuration = std::make_shared<InMemoryConfiguration>();

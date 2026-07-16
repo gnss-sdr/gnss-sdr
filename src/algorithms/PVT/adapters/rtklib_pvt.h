@@ -47,7 +47,8 @@ class Gps_Ephemeris;
  *
  * Global configuration options used:
  *
- * GNSS-SDR.pre_2009_file - flag indicating a file older than 2009 rollover should be processed (false)
+ * GNSS-SDR.observation_date - approximate date of the signal capture in YYYY-MM-DD or YYYY format, used to resolve the GPS mod-1024 week-number rollover when post-processing recorded files (empty: derive it from the system clock)
+ * GNSS-SDR.pre_2009_file - deprecated, use GNSS-SDR.observation_date instead; flag indicating a file captured in the Aug 1999 - Apr 2019 week-number era (false)
  * GNSS-SDR.observable_interval_ms - (20)
  *
  * It supports the following configuration options:

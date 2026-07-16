@@ -161,7 +161,7 @@ boost::posix_time::ptime gps_time_to_ptime(int32_t gps_week, double tow_s)
 }
 
 
-int32_t expand_lnav_utc_week(int32_t utc_week, int32_t ephemeris_week, bool pre_2009_file)
+int32_t expand_lnav_utc_week(int32_t utc_week, int32_t ephemeris_week, int32_t ref_gps_week)
 {
     constexpr int32_t LNAV_UTC_WEEK_MODULUS = 256;
     constexpr int32_t LNAV_UTC_WEEK_HALF_MODULUS = LNAV_UTC_WEEK_MODULUS / 2;
@@ -172,10 +172,10 @@ int32_t expand_lnav_utc_week(int32_t utc_week, int32_t ephemeris_week, bool pre_
         }
     if (utc_week > 255)
         {
-            return adjgpsweek(utc_week, pre_2009_file);
+            return adjgpsweek(utc_week, ref_gps_week);
         }
 
-    const int32_t reference_week = adjgpsweek(ephemeris_week, pre_2009_file);
+    const int32_t reference_week = adjgpsweek(ephemeris_week, ref_gps_week);
     int32_t expanded_week = utc_week;
     while ((expanded_week - reference_week) < -LNAV_UTC_WEEK_HALF_MODULUS)
         {
@@ -1277,7 +1277,7 @@ std::string get_gps_iono_beta_line_v2(const Gps_Iono& iono)
 }
 
 
-std::string get_delta_utc_line_v2(const Gps_Utc_Model& utc_model, const Gps_Ephemeris& eph, bool pre_2009_file)
+std::string get_delta_utc_line_v2(const Gps_Utc_Model& utc_model, const Gps_Ephemeris& eph, int32_t ref_gps_week)
 {
     std::string line;
 
@@ -1286,7 +1286,7 @@ std::string get_delta_utc_line_v2(const Gps_Utc_Model& utc_model, const Gps_Ephe
     line += rightJustify(doub2for(utc_model.A1, 18, 2), 19);
     line += rightJustify(std::to_string(utc_model.tot), 9);
 
-    const int32_t WN_T = expand_lnav_utc_week(utc_model.WN_T, eph.WN, pre_2009_file);
+    const int32_t WN_T = expand_lnav_utc_week(utc_model.WN_T, eph.WN, ref_gps_week);
     line += rightJustify(std::to_string(WN_T), 9);
 
     line += std::string(1, ' ');
@@ -1394,9 +1394,9 @@ std::string get_beidou_iono_beta_line(const Beidou_Dnav_Iono& iono)
 }
 
 
-std::string get_gps_time_corr_line(const Gps_Utc_Model& utc_model, const Gps_Ephemeris& gps_eph, bool pre_2009_file)
+std::string get_gps_time_corr_line(const Gps_Utc_Model& utc_model, const Gps_Ephemeris& gps_eph, int32_t ref_gps_week)
 {
-    int32_t WN_T = expand_lnav_utc_week(utc_model.WN_T, gps_eph.WN, pre_2009_file);
+    int32_t WN_T = expand_lnav_utc_week(utc_model.WN_T, gps_eph.WN, ref_gps_week);
 
     return get_time_corr_line("GPUT", utc_model.A0, utc_model.A1, &utc_model.tot, &WN_T);
 }
@@ -1473,9 +1473,9 @@ std::string get_leap_second_line_v2(const Gps_Utc_Model& utc_model)
 }
 
 
-std::string get_leap_second_line(const Gps_Utc_Model& utc_model, const Gps_Ephemeris& gps_eph, bool pre_2009_file)
+std::string get_leap_second_line(const Gps_Utc_Model& utc_model, const Gps_Ephemeris& gps_eph, int32_t ref_gps_week)
 {
-    const int32_t WN_LSF = expand_lnav_utc_week(utc_model.WN_LSF, gps_eph.WN, pre_2009_file);
+    const int32_t WN_LSF = expand_lnav_utc_week(utc_model.WN_LSF, gps_eph.WN, ref_gps_week);
     return get_leap_second_line(utc_model.DeltaT_LS, utc_model.DeltaT_LSF, WN_LSF, utc_model.DN);
 }
 
@@ -2157,7 +2157,7 @@ Rinex_Printer::Rinex_Printer(uint32_t signal_enabled_flags,
     int version,
     const std::string& base_path,
     const std::string& base_name,
-    bool pre_2009_file) : Rinex_Printer(signal_enabled_flags, base_name, getAndCreateBaseRinexPath(base_path), version, pre_2009_file)
+    int32_t ref_gps_week) : Rinex_Printer(signal_enabled_flags, base_name, getAndCreateBaseRinexPath(base_path), version, ref_gps_week)
 {
 }
 
@@ -2166,23 +2166,23 @@ Rinex_Printer::Rinex_Printer(uint32_t signal_enabled_flags,
     const std::string& base_name,
     const std::string& base_rinex_path,
     int version,
-    bool pre_2009_file) : observationType(getObservationTypes()),
-                          observationCode(getObservationCodes()),
-                          d_flags(signal_enabled_flags),
-                          d_version(get_version(d_flags, version)),
-                          d_stringVersion(d_version == 2 ? "2.11" : "3.02"),  // Only version 2.11 and 3.02
-                          d_fake_cnav_iode(1),
-                          d_rinex_header_updated(false),
-                          d_rinex_header_gps_updated(!d_flags.has_gps),
-                          d_rinex_header_galileo_updated(!d_flags.has_galileo),
-                          d_rinex_header_glonass_updated(!d_flags.has_glonass),
-                          d_rinex_header_beidou_updated(!d_flags.has_beidou),
-                          d_rinex_header_written(false),
-                          d_pre_2009_file(pre_2009_file),
-                          navfilename(getNavFilePath(d_flags, d_version, base_name, base_rinex_path)),
-                          obsfilename(getFilePath("RINEX_FILE_TYPE_OBS", base_name, base_rinex_path)),
-                          navGlofilename(getFilePath("RINEX_FILE_TYPE_GLO_NAV", base_name, base_rinex_path)),
-                          output_navfilename({navfilename})
+    int32_t ref_gps_week) : observationType(getObservationTypes()),
+                            observationCode(getObservationCodes()),
+                            d_flags(signal_enabled_flags),
+                            d_version(get_version(d_flags, version)),
+                            d_stringVersion(d_version == 2 ? "2.11" : "3.02"),  // Only version 2.11 and 3.02
+                            d_fake_cnav_iode(1),
+                            d_rinex_header_updated(false),
+                            d_rinex_header_gps_updated(!d_flags.has_gps),
+                            d_rinex_header_galileo_updated(!d_flags.has_galileo),
+                            d_rinex_header_glonass_updated(!d_flags.has_glonass),
+                            d_rinex_header_beidou_updated(!d_flags.has_beidou),
+                            d_rinex_header_written(false),
+                            d_ref_gps_week(ref_gps_week),
+                            navfilename(getNavFilePath(d_flags, d_version, base_name, base_rinex_path)),
+                            obsfilename(getFilePath("RINEX_FILE_TYPE_OBS", base_name, base_rinex_path)),
+                            navGlofilename(getFilePath("RINEX_FILE_TYPE_GLO_NAV", base_name, base_rinex_path)),
+                            output_navfilename({navfilename})
 {
     std::map<std::string, std::fstream&> fileMap = {
         {navfilename, navFile},
@@ -2370,15 +2370,15 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                         {
                             iono_lines.emplace_back(get_gps_iono_alpha_line_v2(pvt_solver->gps_iono));
                             iono_lines.emplace_back(get_gps_iono_beta_line_v2(pvt_solver->gps_iono));
-                            time_corr_lines.emplace_back(get_delta_utc_line_v2(pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_pre_2009_file));
+                            time_corr_lines.emplace_back(get_delta_utc_line_v2(pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_ref_gps_week));
                             leap_second_line = get_leap_second_line_v2(pvt_solver->gps_utc_model);
                         }
                     else
                         {
                             iono_lines.emplace_back(get_gps_iono_alpha_line(pvt_solver->gps_iono));
                             iono_lines.emplace_back(get_gps_iono_beta_line(pvt_solver->gps_iono));
-                            time_corr_lines.emplace_back(get_gps_time_corr_line(pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_pre_2009_file));
-                            leap_second_line = get_leap_second_line(pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_pre_2009_file);
+                            time_corr_lines.emplace_back(get_gps_time_corr_line(pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_ref_gps_week));
+                            leap_second_line = get_leap_second_line(pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_ref_gps_week);
                         }
                 }
             else if (d_flags.check_any_enabled(GPS_2S, GPS_L5))
@@ -2482,15 +2482,15 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                                         {
                                             nav_header_info.emplace_back("", "ION ALPHA", get_gps_iono_alpha_line_v2(pvt_solver->gps_iono));
                                             nav_header_info.emplace_back("", "ION BETA", get_gps_iono_beta_line_v2(pvt_solver->gps_iono));
-                                            nav_header_info.emplace_back("", "DELTA-UTC", get_delta_utc_line_v2(pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_pre_2009_file));
+                                            nav_header_info.emplace_back("", "DELTA-UTC", get_delta_utc_line_v2(pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_ref_gps_week));
                                             leap_second_line = get_leap_second_line_v2(pvt_solver->gps_utc_model);
                                         }
                                     else
                                         {
                                             nav_header_info.emplace_back("GPSA", "IONOSPHERIC CORR", get_gps_iono_alpha_line(pvt_solver->gps_iono));
                                             nav_header_info.emplace_back("GPSB", "IONOSPHERIC CORR", get_gps_iono_beta_line(pvt_solver->gps_iono));
-                                            nav_header_info.emplace_back("GPUT", "TIME SYSTEM CORR", get_gps_time_corr_line(pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_pre_2009_file));
-                                            leap_second_line = get_leap_second_line(pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_pre_2009_file);
+                                            nav_header_info.emplace_back("GPUT", "TIME SYSTEM CORR", get_gps_time_corr_line(pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_ref_gps_week));
+                                            leap_second_line = get_leap_second_line(pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_ref_gps_week);
                                         }
                                     d_rinex_header_gps_updated = true;
                                 }
@@ -2624,7 +2624,7 @@ void Rinex_Printer::log_rinex_nav_gps_nav(const std::map<int32_t, Gps_Ephemeris>
 
             // -------- BROADCAST ORBIT - 5
 
-            auto GPS_week_continuous_number = static_cast<double>(adjgpsweek(eph.WN, d_pre_2009_file));
+            auto GPS_week_continuous_number = static_cast<double>(adjgpsweek(eph.WN, d_ref_gps_week));
             // This week goes with Toe. This is different from the GPS week in the original satellite message!
             if (eph.toe < 7200.0)
                 {
@@ -3231,7 +3231,7 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Gps_Navigation_Me
     // if we are processing a file -> wait to leap second to resolve the ambiguity else take the week from the local system time
     // idea: resolve the ambiguity with the leap second
     const double utc_t = nav_msg.utc_time(nav_msg.get_TOW());
-    return gps_time_to_ptime(adjgpsweek(nav_msg.get_GPS_week(), d_pre_2009_file), utc_t);
+    return gps_time_to_ptime(adjgpsweek(nav_msg.get_GPS_week(), d_ref_gps_week), utc_t);
 }
 
 
@@ -3254,7 +3254,7 @@ boost::posix_time::ptime Rinex_Printer::compute_GPS_time(const Gps_Ephemeris& ep
     // (see Section 3 in ftp://igs.org/pub/data/format/rinex211.txt)
     // (see Pag. 17 in ftp://igs.org/pub/data/format/rinex300.pdf)
     // No time correction here, since it will be done in the PVT processor
-    int32_t gps_week = adjgpsweek(eph.WN, d_pre_2009_file);
+    int32_t gps_week = adjgpsweek(eph.WN, d_ref_gps_week);
     // Handle TOW rollover
     if (obs_time < 18.0)
         {

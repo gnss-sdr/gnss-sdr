@@ -89,7 +89,7 @@ public:
         int version = 3,
         const std::string& base_path = ".",
         const std::string& base_name = "-",
-        bool pre_2009_file = false);
+        int32_t ref_gps_week = 0);
 
     /*!
      * \brief Destructor. Removes created files if empty.
@@ -165,7 +165,7 @@ private:
         const std::string& base_name,
         const std::string& base_rinex_path,
         int version,
-        bool pre_2009_file);
+        int32_t ref_gps_week);
 
     /*
      * Generates the GPS Observation data header
@@ -250,7 +250,7 @@ private:
     bool d_rinex_header_glonass_updated;
     bool d_rinex_header_beidou_updated;
     bool d_rinex_header_written;
-    const bool d_pre_2009_file;
+    const int32_t d_ref_gps_week;
 
     const std::string navfilename;                // Name of RINEX navigation file
     const std::string obsfilename;                // Name of RINEX observation file

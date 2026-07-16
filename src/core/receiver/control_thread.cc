@@ -44,6 +44,7 @@
 #include "gps_ephemeris.h"                           // for Gps_Ephemeris
 #include "gps_iono.h"                                // for Gps_Iono
 #include "gps_utc_model.h"                           // for Gps_Utc_Model
+#include "gps_week_rollover.h"                       // for gps_ref_week_from_config
 #include "pvt_interface.h"                           // for PvtInterface
 #include "rtklib.h"                                  // for gtime_t, alm_t
 #include "rtklib_conversions.h"                      // for alm_to_rtklib
@@ -169,8 +170,11 @@ ControlThread::ControlThread(std::shared_ptr<ConfigurationInterface> configurati
 void ControlThread::init()
 {
     telecommand_enabled_ = configuration_->property("GNSS-SDR.telecommand_enabled", false);
-    // OPTIONAL: specify a custom year to override the system time in order to postprocess old gnss records and avoid wrong week rollover
-    pre_2009_file_ = configuration_->property("GNSS-SDR.pre_2009_file", false);
+    // OPTIONAL: approximate date of the signal capture, used to resolve the GPS
+    // mod-1024 week-number rollover when post-processing old gnss records
+    ref_gps_week_ = gps_ref_week_from_config(
+        configuration_->property("GNSS-SDR.observation_date", std::string("")),
+        configuration_->property("GNSS-SDR.pre_2009_file", false));
     // Instantiates a control queue, a GNSS flowgraph, and a control message factory
     control_queue_ = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     cmd_interface_.set_msg_queue(control_queue_);  // set also the queue pointer for the telecommand thread
@@ -1055,7 +1059,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     const std::map<int, Gps_Ephemeris> gps_eph_map = pvt_ptr->get_gps_ephemeris();
     for (const auto &it : gps_eph_map)
         {
-            const eph_t rtklib_eph = eph_to_rtklib(it.second, pre_2009_file_);
+            const eph_t rtklib_eph = eph_to_rtklib(it.second, ref_gps_week_);
             std::array<double, 3> r_sat{};
             double clock_bias_s;
             double sat_pos_variance_m2;

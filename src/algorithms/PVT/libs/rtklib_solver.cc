@@ -1392,7 +1392,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         eph_data[valid_obs] = eph_to_rtklib(gps_ephemeris_iter->second,
                                             this->d_has_orbit_corrections_store_map[gnss_str],
                                             this->d_has_clock_corrections_store_map[gnss_str],
-                                            this->is_pre_2009());
+                                            this->get_ref_gps_week());
                                         // convert observation from GNSS-SDR class to RTKLIB structure
                                         obsd_t newobs{};
                                         const HAS_obs_corrections *applied_has_correction = nullptr;
@@ -1402,7 +1402,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             gps_ephemeris_iter->second.WN,
                                             d_rtklib_band_index[rtklib_sig],
                                             &applied_has_correction,
-                                            this->is_pre_2009());
+                                            this->get_ref_gps_week());
                                         clear_applied_has_phase_bias_discontinuity(applied_has_correction, prn);
                                         valid_obs++;
                                     }
@@ -1855,7 +1855,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // TOW
                     d_monitor_pvt.TOW_at_current_symbol_ms = gnss_observables_map.cbegin()->second.TOW_at_current_symbol_ms;
                     // WEEK
-                    d_monitor_pvt.week = adjgpsweek(d_nav_data.eph[0].week, this->is_pre_2009());
+                    d_monitor_pvt.week = adjgpsweek(d_nav_data.eph[0].week, this->get_ref_gps_week());
                     // PVT GPS time
                     d_monitor_pvt.RX_time = gnss_observables_map.cbegin()->second.RX_time;
                     // User clock offset [s]
@@ -1950,7 +1950,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     tmp_uint32 = gnss_observables_map.cbegin()->second.TOW_at_current_symbol_ms;
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
                                     // WEEK
-                                    tmp_uint32 = adjgpsweek(d_nav_data.eph[0].week, this->is_pre_2009());
+                                    tmp_uint32 = adjgpsweek(d_nav_data.eph[0].week, this->get_ref_gps_week());
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
                                     // PVT GPS time
                                     tmp_double = gnss_observables_map.cbegin()->second.RX_time;

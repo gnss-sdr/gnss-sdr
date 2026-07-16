@@ -20,6 +20,9 @@
 #include "in_memory_configuration.h"
 #include "pvt_conf.h"
 #include "rtklib_solver.h"
+#include "sensor_data/sensor_data_aggregator.h"
+#include "sensor_data/sensor_data_source_configuration.h"
+#include "signal_flag.h"
 #include <armadillo>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
@@ -378,7 +381,6 @@ TEST(RTKLibSolverTest, test1)
 {
     // test case #1: GPS L1 CA simulated with gnss-sim
     std::string path = std::string(TEST_PATH);
-    int nchannels = 8;
     std::string dump_filename = ".rtklib_solver_dump.dat";
     bool flag_dump_to_file = false;
     bool save_to_mat = false;
@@ -386,8 +388,15 @@ TEST(RTKLibSolverTest, test1)
 
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto d_ls_pvt = std::make_unique<Rtklib_Solver>(rtk, conf, nchannels, dump_filename, 1, flag_dump_to_file, save_to_mat);
-    d_ls_pvt->set_averaging_depth(1);
+    auto d_ls_pvt = std::make_unique<Rtklib_Solver>(rtk, conf, dump_filename, GPS_1C, flag_dump_to_file, save_to_mat);
+    // the scenario was simulated in December 2014 (GPS week 1823, transmitted mod-1024
+    // week 799), so the week rollover must be resolved to the 1999-2019 era
+    d_ls_pvt->set_pre_2009_file(true);
+
+    // sensor data aggregator with no external sensors
+    auto sensor_configuration = std::make_shared<InMemoryConfiguration>();
+    const SensorDataSourceConfiguration sensor_data_source_configuration(sensor_configuration.get());
+    const SensorDataAggregator sensor_data_aggregator(sensor_data_source_configuration, {});
 
     // load ephemeris
     std::string eph_xml_filename = path + "data/rtklib_test/eph_GPS_L1CA_test1.xml";
@@ -443,7 +452,7 @@ TEST(RTKLibSolverTest, test1)
 
     // solve
     bool pvt_valid = false;
-    if (d_ls_pvt->get_PVT(gnss_synchro_map, false))
+    if (d_ls_pvt->get_PVT(gnss_synchro_map, 0.02, sensor_data_aggregator))
         {
             // DEBUG MESSAGE: Display position in console output
             if (d_ls_pvt->is_valid_position())

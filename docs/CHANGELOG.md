@@ -25,8 +25,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   second-best phase bin, and are validated with fresh matching transition
   events. Histogram stability and tentative-lock validation advance concurrently
   to avoid unnecessary synchronization delay. New configuration parameters are
-  `Tracking_1C.bs_runner_up_margin` (default: 0.2),
-  `Tracking_1C.bs_transition_window_epochs` (default: 3),
+  `Tracking_1C.bs_runner_up_margin` (default: 0.3),
+  `Tracking_1C.bs_transition_window_epochs` (default: 4),
   `Tracking_1C.bs_transition_confidence` (default: 0.6), and
   `Tracking_1C.bs_tentative_events_required` (default: 2).
 

@@ -169,12 +169,12 @@ public:
         Config()
             : bit_period_ms(20),
               epoch_ms(1),
-              min_events_for_lock(10),
-              dominance_ratio(0.6),
-              runner_up_margin(0.2),
-              stable_best_required(5),
+              min_events_for_lock(6),
+              dominance_ratio(0.5),
+              runner_up_margin(0.3),
+              stable_best_required(3),
               min_prompt_mag(0.0f),
-              transition_window_epochs(3),
+              transition_window_epochs(4),
               transition_confidence(0.6),
               tentative_events_required(2),
               use_phase_dot_detector(true)

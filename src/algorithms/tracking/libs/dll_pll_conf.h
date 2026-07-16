@@ -40,8 +40,8 @@ public:
     std::string dump_filename{"./dll_pll_dump.dat"};
     double fs_in{2000000.0};
     double carrier_lock_th{0.0};
-    double bs_dominance_ratio{0.6};
-    double bs_runner_up_margin{0.2};
+    double bs_dominance_ratio{0.5};
+    double bs_runner_up_margin{0.3};
     double bs_transition_confidence{0.6};
     float pll_pull_in_bw_hz{50.0};
     float dll_pull_in_bw_hz{3.0};
@@ -75,8 +75,8 @@ public:
     int32_t max_code_lock_fail{0};
     int32_t max_carrier_lock_fail{0};
     int32_t bs_stable_best_required{3};
-    int32_t bs_min_events_for_lock{10};
-    int32_t bs_transition_window_epochs{3};
+    int32_t bs_min_events_for_lock{6};
+    int32_t bs_transition_window_epochs{4};
     int32_t bs_tentative_events_required{2};
     char signal[3]{};
     char system{'G'};

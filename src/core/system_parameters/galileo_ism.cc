@@ -95,9 +95,9 @@ uint16_t Galileo_ISM::get_WN_ISM() const
 }
 
 
-uint16_t Galileo_ISM::get_t0_ISM() const
+uint32_t Galileo_ISM::get_t0_ISM() const
 {
-    return (this->d_ism_t0 * 1800);
+    return static_cast<uint32_t>(this->d_ism_t0) * 1800U;
 }
 
 

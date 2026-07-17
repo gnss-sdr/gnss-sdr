@@ -1426,7 +1426,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                                     gal_ism.set_ism_Tvalidity(read_octet_unsigned(data_jk_bits, ISM_TVALIDITY_BIT));
                                     LOG(INFO) << "I/NAV ARAIM Integrity Support Message: "
                                               << "WN_ISM=" << static_cast<uint32_t>(gal_ism.get_WN_ISM()) << ", "
-                                              << "t0_ISM=" << static_cast<uint32_t>(gal_ism.get_t0_ISM()) << ", "
+                                              << "t0_ISM=" << gal_ism.get_t0_ISM() << ", "
                                               << "Mask_MSB_ISM=" << static_cast<uint32_t>(gal_ism.get_ism_mask_msb()) << ", "
                                               << "Mask_ISM=" << gal_ism.get_mask_ISM() << ", "
                                               << "Pconst=" << gal_ism.get_pconst_value() << ", "

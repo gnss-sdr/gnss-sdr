@@ -434,7 +434,7 @@ typedef struct
 {                          /* GPS/QZS/GAL broadcast ephemeris type */
     int sat;               /* satellite number */
     int iode, iodc;        /* IODE,IODC */
-    int sva;               /* SV accuracy (URA index) */
+    int sva;               /* SV accuracy (URA index, GAL: SISA index) */
     int svh;               /* SV health (0:ok) */
     int week;              /* GPS/QZS: gps week, GAL: galileo week */
     int code;              /* GPS/QZS: code on L2, GAL/BDS: data sources */

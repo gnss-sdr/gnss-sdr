@@ -407,6 +407,7 @@ Galileo_Ephemeris Galileo_Fnav_Message::get_ephemeris() const
     ephemeris.af0 = FNAV_af0_1;        // SV clock bias correction coefficient [s]
     ephemeris.af1 = FNAV_af1_1;        // SV clock drift correction coefficient [s/s]
     ephemeris.af2 = FNAV_af2_1;        // SV clock drift rate correction coefficient [s/s^2]
+    ephemeris.SISA = FNAV_SISA_1;      // Signal In Space Accuracy index
     ephemeris.BGD_E1E5a = FNAV_BGD_1;  // E1-E5a Broadcast Group Delay [s]
 
     // GST

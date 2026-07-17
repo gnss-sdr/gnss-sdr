@@ -50,7 +50,7 @@ public:
     int32_t IOD_nav{};
 
     // SV status
-    int32_t SISA{};      //!< Signal in space accuracy index
+    int32_t SISA{-1};    //!< Signal in space accuracy index (-1 if unavailable in the source data)
     int32_t E5a_HS{};    //!< E5a Signal Health Status
     int32_t E5b_HS{};    //!< E5b Signal Health Status
     int32_t E1B_HS{};    //!< E1B Signal Health Status

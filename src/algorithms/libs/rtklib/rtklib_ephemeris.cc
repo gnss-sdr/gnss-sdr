@@ -77,6 +77,41 @@ double var_uraeph(int ura)
 }
 
 
+/* variance by galileo sisa ephemeris (OS SIS ICD, table 91) ----------------*/
+double var_sisaeph(int sisa)
+{
+    double sisa_m;
+    if (sisa == -1)
+        {
+            // Reduced CED does not contain SISA. Retain RTKLIB's default
+            // broadcast-ephemeris accuracy when no index was supplied.
+            sisa_m = 2.4;
+        }
+    else if (sisa < 0 || sisa > 125)
+        {
+            // Spare values and NAPA (255) provide no usable accuracy prediction.
+            sisa_m = 6144.0;
+        }
+    else if (sisa <= 49)
+        {
+            sisa_m = static_cast<double>(sisa) * 0.01;
+        }
+    else if (sisa <= 74)
+        {
+            sisa_m = 0.50 + static_cast<double>(sisa - 50) * 0.02;
+        }
+    else if (sisa <= 99)
+        {
+            sisa_m = 1.00 + static_cast<double>(sisa - 75) * 0.04;
+        }
+    else
+        {
+            sisa_m = 2.00 + static_cast<double>(sisa - 100) * 0.16;
+        }
+    return std::pow(sisa_m, 2.0);
+}
+
+
 static double cnav_ura_upper_bound_m(int ura_index)
 {
     switch (ura_index)
@@ -517,7 +552,18 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
         }
 
     /* position and clock error variance */
-    *var = eph->cnav_ura_valid ? std::pow(cnav_uraeph(time, eph), 2.0) : var_uraeph(eph->sva);
+    if (eph->cnav_ura_valid)
+        {
+            *var = std::pow(cnav_uraeph(time, eph), 2.0);
+        }
+    else if (satsys(eph->sat, nullptr) == SYS_GAL)
+        {
+            *var = var_sisaeph(eph->sva);
+        }
+    else
+        {
+            *var = var_uraeph(eph->sva);
+        }
 }
 
 

@@ -48,6 +48,7 @@ double varerr(const prcopt_t *opt, double el, int sys);
 
 /* get tgd parameter (m) -----------------------------------------------------*/
 double gettgd(int sat, const nav_t *nav);
+double gettgd(int sat, const nav_t *nav, int tgd_index);
 
 /* get isc parameter (m) -----------------------------------------------------*/
 double getiscl1(int sat, const nav_t *nav);

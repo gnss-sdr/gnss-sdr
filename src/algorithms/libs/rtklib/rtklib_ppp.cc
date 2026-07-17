@@ -1040,8 +1040,13 @@ int ifmeas(const obsd_t *obs, const nav_t *nav, const double *azel,
 
 
 /* get tgd parameter (m) -----------------------------------------------------*/
-double gettgd_ppp(int sat, const nav_t *nav)
+double gettgd_ppp(int sat, const nav_t *nav, int tgd_index)
 {
+    if (tgd_index < 0 || tgd_index >= 4)
+        {
+            return 0.0;
+        }
+
     int i;
     for (i = 0; i < nav->n; i++)
         {
@@ -1049,9 +1054,15 @@ double gettgd_ppp(int sat, const nav_t *nav)
                 {
                     continue;
                 }
-            return SPEED_OF_LIGHT_M_S * nav->eph[i].tgd[0];
+            return SPEED_OF_LIGHT_M_S * nav->eph[i].tgd[tgd_index];
         }
     return 0.0;
+}
+
+
+double gettgd_ppp(int sat, const nav_t *nav)
+{
+    return gettgd_ppp(sat, nav, 0);
 }
 
 
@@ -1137,9 +1148,13 @@ int corrmeas(const obsd_t *obs, const nav_t *nav, const double *pos,
     gamma = std::pow(lam[1] / lam[0], 2.0); /* f1^2/f2^2 */
     P1_P2 = nav->cbias[obs->sat - 1][0];
     P1_C1 = nav->cbias[obs->sat - 1][1];
-    if (P1_P2 == 0.0 && (satsys(obs->sat, nullptr) & (SYS_GPS | SYS_GAL | SYS_QZS)))
+    const int sys = satsys(obs->sat, nullptr);
+    if (P1_P2 == 0.0 && (sys & (SYS_GPS | SYS_GAL | SYS_QZS)))
         {
-            P1_P2 = (1.0 - gamma) * gettgd_ppp(obs->sat, nav);
+            // Galileo I/NAV clocks are referenced to E1/E5b. PPP reaches
+            // this path for E1, whose BGD is stored in tgd[1].
+            const int tgd_index = sys == SYS_GAL ? 1 : 0;
+            P1_P2 = (1.0 - gamma) * gettgd_ppp(obs->sat, nav, tgd_index);
         }
     if (obs->code[0] == CODE_L1C)
         {

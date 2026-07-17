@@ -58,8 +58,13 @@ double varerr(const prcopt_t *opt, double el, int sys)
 
 
 /* get tgd parameter (m) -----------------------------------------------------*/
-double gettgd(int sat, const nav_t *nav)
+double gettgd(int sat, const nav_t *nav, int tgd_index)
 {
+    if (tgd_index < 0 || tgd_index >= 4)
+        {
+            return 0.0;
+        }
+
     int i;
     for (i = 0; i < nav->n; i++)
         {
@@ -67,9 +72,15 @@ double gettgd(int sat, const nav_t *nav)
                 {
                     continue;
                 }
-            return SPEED_OF_LIGHT_M_S * nav->eph[i].tgd[0];
+            return SPEED_OF_LIGHT_M_S * nav->eph[i].tgd[tgd_index];
         }
     return 0.0;
+}
+
+
+double gettgd(int sat, const nav_t *nav)
+{
+    return gettgd(sat, nav, 0);
 }
 
 /* get isc parameter (m) -----------------------------------------------------*/
@@ -209,7 +220,10 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     /* if no P1-P2 DCB, use TGD instead */
     if (P1_P2 == 0.0)
         {
-            P1_P2 = gettgd(obs->sat, nav);
+            // Galileo I/NAV clocks are referenced to E1/E5b. For an E1
+            // pseudorange, use BGD(E1,E5b), stored in tgd[1].
+            const int tgd_index = (sys == SYS_GAL && obs->code[i] != CODE_NONE) ? 1 : 0;
+            P1_P2 = gettgd(obs->sat, nav, tgd_index);
         }
 
     if (sys == SYS_GPS || sys == SYS_QZS)

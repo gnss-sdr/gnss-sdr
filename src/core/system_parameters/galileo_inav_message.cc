@@ -524,6 +524,7 @@ Galileo_Utc_Model Galileo_Inav_Message::get_utc_model() const
     utc_model.A_1G = A_1G_10;
     utc_model.t_0G = t_0G_10;
     utc_model.WN_0G = WN_0G_10;
+    utc_model.flag_GGTO = get_flag_GGTO();
     return utc_model;
 }
 
@@ -1243,6 +1244,12 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             WN_0G_10 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, WN_0_G_10_BIT));
             flag_GGTO_4 = true;
             DLOG(INFO) << "WN_0G_10= " << WN_0G_10;
+            // OS SIS ICD: GGTO is unavailable only when all four raw fields
+            // are simultaneously encoded as all ones.
+            flag_GGTO_valid = !(read_navigation_unsigned(data_jk_bits, A_0_G_10_BIT) == 0xFFFFU &&
+                                read_navigation_unsigned(data_jk_bits, A_1_G_10_BIT) == 0x0FFFU &&
+                                read_navigation_unsigned(data_jk_bits, T_0_G_10_BIT) == 0x00FFU &&
+                                read_navigation_unsigned(data_jk_bits, WN_0_G_10_BIT) == 0x003FU);
             flag_almanac_4 = true;
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
             nav_bits_word_10 = data_jk_bits.to_string().substr(86, 42);

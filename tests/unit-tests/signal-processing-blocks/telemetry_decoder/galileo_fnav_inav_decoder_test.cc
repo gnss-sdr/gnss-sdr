@@ -70,22 +70,19 @@ uint32_t compute_galileo_inav_crc(const std::string& crc_data)
 }
 
 
-std::pair<std::string, std::string> build_inav_page(uint8_t word_type, char page_type, const std::string& osnma_sis)
+std::pair<std::string, std::string> build_inav_page_from_data(const std::string& data_jk, char page_type, const std::string& osnma_sis)
 {
-    std::string data_k = to_bit_string(word_type, 6);
-    data_k.append(106, '0');
-
     std::string even_page;
     even_page.reserve(114);
     even_page.push_back('0');
     even_page.push_back(page_type);
-    even_page += data_k;
+    even_page += data_jk.substr(0, 112);
 
     std::string odd_page_without_crc;
     odd_page_without_crc.reserve(82);
     odd_page_without_crc.push_back('1');
     odd_page_without_crc.push_back(page_type);
-    odd_page_without_crc.append(16, '0');
+    odd_page_without_crc += data_jk.substr(112, 16);
     odd_page_without_crc += osnma_sis;
     odd_page_without_crc.append(22, '0');  // SAR
     odd_page_without_crc.append(2, '0');   // Spare
@@ -98,6 +95,33 @@ std::pair<std::string, std::string> build_inav_page(uint8_t word_type, char page
     odd_page.append(6, '0');  // Tail
 
     return std::make_pair(even_page, odd_page);
+}
+
+
+std::pair<std::string, std::string> build_inav_page(uint8_t word_type, char page_type, const std::string& osnma_sis)
+{
+    std::string data_jk = to_bit_string(word_type, 6);
+    data_jk.append(122, '0');
+    return build_inav_page_from_data(data_jk, page_type, osnma_sis);
+}
+
+
+void set_inav_field(std::string& data_jk, const std::vector<std::pair<int32_t, int32_t>>& field, uint32_t value)
+{
+    const auto& range = field.front();
+    data_jk.replace(static_cast<size_t>(range.first - 1), static_cast<size_t>(range.second), to_bit_string(value, static_cast<size_t>(range.second)));
+}
+
+
+std::string build_ggto_word(uint32_t a0g, uint32_t a1g, uint32_t t0g, uint32_t wn0g)
+{
+    std::string data_jk(128, '0');
+    set_inav_field(data_jk, PAGE_TYPE_BIT, 10U);
+    set_inav_field(data_jk, A_0_G_10_BIT, a0g);
+    set_inav_field(data_jk, A_1_G_10_BIT, a1g);
+    set_inav_field(data_jk, T_0_G_10_BIT, t0g);
+    set_inav_field(data_jk, WN_0_G_10_BIT, wn0g);
+    return data_jk;
 }
 
 
@@ -115,6 +139,14 @@ void feed_inav_page(Galileo_Inav_Message& decoder, uint8_t word_type, char page_
 }
 
 
+void feed_inav_data_page(Galileo_Inav_Message& decoder, const std::string& data_jk)
+{
+    const auto page = build_inav_page_from_data(data_jk, '0', std::string(40, '0'));
+    decoder.split_page(page.first, 0);
+    decoder.split_page(page.second, 1);
+}
+
+
 OSNMA_msg decode_osnma_page(uint8_t word_type, char page_type, const std::string& osnma_sis)
 {
     Galileo_Inav_Message decoder;
@@ -122,6 +154,40 @@ OSNMA_msg decode_osnma_page(uint8_t word_type, char page_type, const std::string
     return decoder.get_osnma_msg();
 }
 }  // namespace
+
+
+TEST(Galileo_INAV_Message_Test, GgtoAllOnesEncodingIsUnavailable)
+{
+    Galileo_Inav_Message decoder;
+    feed_inav_data_page(decoder, build_ggto_word(0xFFFFU, 0x0FFFU, 0x00FFU, 0x003FU));
+
+    ASSERT_TRUE(decoder.get_flag_CRC_test());
+    EXPECT_FALSE(decoder.get_flag_GGTO());
+    EXPECT_FALSE(decoder.get_utc_model().flag_GGTO);
+}
+
+
+TEST(Galileo_INAV_Message_Test, GgtoUnavailableRequiresAllFourAllOnesFields)
+{
+    const std::array<std::array<uint32_t, 4>, 4> available_encodings{{
+        {{0xFFFEU, 0x0FFFU, 0x00FFU, 0x003FU}},
+        {{0xFFFFU, 0x0FFEU, 0x00FFU, 0x003FU}},
+        {{0xFFFFU, 0x0FFFU, 0x00FEU, 0x003FU}},
+        {{0xFFFFU, 0x0FFFU, 0x00FFU, 0x003EU}},
+    }};
+
+    for (size_t i = 0; i < available_encodings.size(); ++i)
+        {
+            SCOPED_TRACE(i);
+            Galileo_Inav_Message decoder;
+            const auto& fields = available_encodings[i];
+            feed_inav_data_page(decoder, build_ggto_word(fields[0], fields[1], fields[2], fields[3]));
+
+            ASSERT_TRUE(decoder.get_flag_CRC_test());
+            EXPECT_TRUE(decoder.get_flag_GGTO());
+            EXPECT_TRUE(decoder.get_utc_model().flag_GGTO);
+        }
+}
 
 
 class Galileo_FNAV_INAV_test : public ::testing::Test

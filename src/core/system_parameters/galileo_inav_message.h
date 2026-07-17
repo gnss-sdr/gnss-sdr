@@ -230,7 +230,7 @@ public:
 
     inline bool get_flag_GGTO() const
     {
-        return (flag_GGTO_1 == true && flag_GGTO_2 == true && flag_GGTO_3 == true && flag_GGTO_4 == true);
+        return (flag_GGTO_1 == true && flag_GGTO_2 == true && flag_GGTO_3 == true && flag_GGTO_4 == true && flag_GGTO_valid == true);
     }
 
     inline double get_A0G() const
@@ -499,6 +499,7 @@ private:
     bool flag_GGTO_2{};
     bool flag_GGTO_3{};
     bool flag_GGTO_4{};
+    bool flag_GGTO_valid{};
 
     bool flag_CED{};
     bool enable_rs{};

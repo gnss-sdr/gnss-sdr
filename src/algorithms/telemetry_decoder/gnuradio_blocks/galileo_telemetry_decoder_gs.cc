@@ -649,8 +649,11 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
                               << " dB-Hz" << TEXT_RESET << std::endl;
                 }
 
-            d_delta_t = tmp_obj->A_0G + tmp_obj->A_1G * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - tmp_obj->t_0G + 604800 * (std::fmod(static_cast<float>(d_inav_nav.get_Galileo_week() - tmp_obj->WN_0G), 64.0)));
-            DLOG(INFO) << "delta_t=" << d_delta_t << "[s]";
+            if (tmp_obj->flag_GGTO)
+                {
+                    d_delta_t = tmp_obj->A_0G + tmp_obj->A_1G * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - tmp_obj->t_0G + 604800 * (std::fmod(static_cast<float>(d_inav_nav.get_Galileo_week() - tmp_obj->WN_0G), 64.0)));
+                    DLOG(INFO) << "delta_t=" << d_delta_t << "[s]";
+                }
         }
 
     if (d_inav_nav.have_new_almanac() == true)  // flag_almanac_4 tells if W10 available.

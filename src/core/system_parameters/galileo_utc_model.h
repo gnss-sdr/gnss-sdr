@@ -20,6 +20,7 @@
 #define GNSS_SDR_GALILEO_UTC_MODEL_H
 
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/version.hpp>
 #include <cstdint>
 
 /** \addtogroup Core
@@ -61,6 +62,7 @@ public:
     int32_t WN_0G{};
 
     bool flag_utc_model{};
+    bool flag_GGTO{};
 
     template <class Archive>
 
@@ -70,9 +72,6 @@ public:
      */
     inline void serialize(Archive& archive, const unsigned int version)
     {
-        if (version)
-            {
-            };
         archive& BOOST_SERIALIZATION_NVP(A0);
         archive& BOOST_SERIALIZATION_NVP(A1);
         archive& BOOST_SERIALIZATION_NVP(Delta_tLS);
@@ -82,8 +81,27 @@ public:
         archive& BOOST_SERIALIZATION_NVP(DN);
         archive& BOOST_SERIALIZATION_NVP(Delta_tLSF);
         archive& BOOST_SERIALIZATION_NVP(flag_utc_model);
+        if (version > 0)
+            {
+                archive& BOOST_SERIALIZATION_NVP(A_0G);
+                archive& BOOST_SERIALIZATION_NVP(A_1G);
+                archive& BOOST_SERIALIZATION_NVP(t_0G);
+                archive& BOOST_SERIALIZATION_NVP(WN_0G);
+                archive& BOOST_SERIALIZATION_NVP(flag_GGTO);
+            }
+        else
+            {
+                // Version 0 archives predate GGTO persistence.
+                A_0G = 0.0;
+                A_1G = 0.0;
+                t_0G = 0;
+                WN_0G = 0;
+                flag_GGTO = false;
+            }
     }
 };
+
+BOOST_CLASS_VERSION(Galileo_Utc_Model, 1)
 
 
 /** \} */

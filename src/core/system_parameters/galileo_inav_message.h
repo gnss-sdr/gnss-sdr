@@ -486,8 +486,9 @@ private:
     bool flag_TOW_5{};
     bool flag_TOW_6{};
     bool flag_TOW_0{};
-    bool flag_TOW_set{};    // it is true when page 5 or page 6 arrives
-    bool flag_utc_model{};  // Flag indicating that utc model parameters (word 6) have been received
+    bool flag_TOW_set{};          // it is true when page 5 or page 6 arrives
+    bool flag_utc_model_valid{};  // Flag indicating that UTC model parameters (word 6) have been received
+    bool flag_new_utc_model{};    // Flag indicating that a newly decoded UTC model is pending publication
 
     bool flag_all_almanac{};  // Flag indicating that all Almanac data have been received
     bool flag_almanac_1{};    // Flag indicating that almanac 1/4 (word 7) have been received

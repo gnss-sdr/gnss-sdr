@@ -194,7 +194,8 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
             flag_TOW_4 = true;
             flag_TOW_set = true;
             flag_ephemeris_3 = true;
-            flag_utc_model = true;  // set to false externally
+            flag_utc_model_valid = true;
+            flag_new_utc_model = true;  // set to false externally
             break;
         case 5:  // Almanac (SVID1 and SVID2(1/2)), Week Number and almanac reference time
             FNAV_IODa_5 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_IO_DA_5_BIT));
@@ -336,7 +337,7 @@ bool Galileo_Fnav_Message::have_new_ephemeris()  // Check if we have a new ephem
 
 bool Galileo_Fnav_Message::have_new_iono_and_GST()  // Check if we have a new iono data set stored in the galileo navigation class
 {
-    if ((flag_iono_and_GST == true) && (flag_utc_model == true))  // the condition on flag_utc_model is added to have a time stamp for iono
+    if ((flag_iono_and_GST == true) && (flag_utc_model_valid == true))  // the UTC model is required to have a time stamp for iono
         {
             flag_iono_and_GST = false;  // clear the flag
         }
@@ -350,9 +351,9 @@ bool Galileo_Fnav_Message::have_new_iono_and_GST()  // Check if we have a new io
 
 bool Galileo_Fnav_Message::have_new_utc_model()  // Check if we have a new utc data set stored in the galileo navigation class
 {
-    if (flag_utc_model == true)
+    if (flag_new_utc_model == true)
         {
-            flag_utc_model = false;  // clear the flag
+            flag_new_utc_model = false;  // clear the publication flag
         }
     else
         {
@@ -446,7 +447,7 @@ Galileo_Iono Galileo_Fnav_Message::get_iono() const
 Galileo_Utc_Model Galileo_Fnav_Message::get_utc_model() const
 {
     Galileo_Utc_Model utc_model;
-    // Word type 6: GST-UTC conversion parameters
+    // Word type 4: GST-UTC conversion parameters
     utc_model.A0 = FNAV_A0_4;
     utc_model.A1 = FNAV_A1_4;
     utc_model.Delta_tLS = FNAV_deltatls_4;
@@ -455,7 +456,7 @@ Galileo_Utc_Model Galileo_Fnav_Message::get_utc_model() const
     utc_model.WN_LSF = FNAV_WNlsf_4;
     utc_model.DN = FNAV_DN_4;
     utc_model.Delta_tLSF = FNAV_deltatlsf_4;
-    utc_model.flag_utc_model = flag_utc_model;
+    utc_model.flag_utc_model = flag_utc_model_valid;
     return utc_model;
 }
 

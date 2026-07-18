@@ -369,7 +369,7 @@ bool Galileo_Inav_Message::have_new_ephemeris()  // Check if we have a new ephem
 // C: tells if W5 is available
 bool Galileo_Inav_Message::have_new_iono_and_GST()  // Check if we have a new iono data set stored in the galileo navigation class
 {
-    if ((flag_iono_and_GST == true) && (flag_utc_model == true))  // the condition on flag_utc_model is added to have a time stamp for iono
+    if ((flag_iono_and_GST == true) && (flag_utc_model_valid == true))  // the UTC model is required to have a time stamp for iono
         {
             flag_iono_and_GST = false;  // clear the flag
             return true;
@@ -382,9 +382,9 @@ bool Galileo_Inav_Message::have_new_iono_and_GST()  // Check if we have a new io
 // C: tells if W6 is available
 bool Galileo_Inav_Message::have_new_utc_model()  // Check if we have a new utc data set stored in the galileo navigation class
 {
-    if (flag_utc_model == true)
+    if (flag_new_utc_model == true)
         {
-            flag_utc_model = false;  // clear the flag
+            flag_new_utc_model = false;  // clear the publication flag
             return true;
         }
 
@@ -518,7 +518,7 @@ Galileo_Utc_Model Galileo_Inav_Message::get_utc_model() const
     utc_model.WN_LSF = WN_LSF_6;
     utc_model.DN = DN_6;
     utc_model.Delta_tLSF = Delta_tLSF_6;
-    utc_model.flag_utc_model = flag_utc_model;
+    utc_model.flag_utc_model = flag_utc_model_valid;
     // GPS to Galileo GST conversion parameters
     utc_model.A_0G = A_0G_10;
     utc_model.A_1G = A_1G_10;
@@ -1085,9 +1085,10 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             DLOG(INFO) << "Delta_tLSF_6= " << Delta_tLSF_6;
             TOW_6 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, TOW_6_BIT));
             DLOG(INFO) << "TOW_6= " << TOW_6;
-            flag_TOW_6 = true;      // set to false externally
-            flag_utc_model = true;  // set to false externally
-            flag_TOW_set = true;    // set to false externally
+            flag_TOW_6 = true;  // set to false externally
+            flag_utc_model_valid = true;
+            flag_new_utc_model = true;  // set to false externally
+            flag_TOW_set = true;        // set to false externally
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
             nav_bits_word_6 = data_jk_bits.to_string().substr(6, 99);
             break;

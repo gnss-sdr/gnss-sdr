@@ -225,10 +225,11 @@ uint32_t Galileo_ISM::compute_crc(const std::vector<uint8_t>& data)
 }
 
 
-bool Galileo_ISM::ism_parameters_apply(uint32_t prn) const
+bool Galileo_ISM::ism_parameters_apply(uint32_t svid) const
 {
-    // ICD 2.1 Table 96
-    if (prn == 0 || prn > 63 || d_ism_service_level_id != 2 || d_ism_constellation_id != 1)
+    // The upper half of the mask covers SVIDs 33-50; its remaining bits are reserved.
+    constexpr uint32_t max_galileo_svid = 50U;
+    if (svid == 0 || svid > max_galileo_svid || d_ism_service_level_id != 2 || d_ism_constellation_id != 1)
         {
             return false;
         }
@@ -236,18 +237,18 @@ bool Galileo_ISM::ism_parameters_apply(uint32_t prn) const
     if (d_ism_mask_msb == false)
         {
             // For numbering in the ICD, the most significant bit/byte is numbered as bit/byte 0
-            if (prn > 32)
+            if (svid > 32)
                 {
                     return false;
                 }
-            return b.test(32 - prn);
+            return b.test(32 - svid);
         }
     else
         {
-            if (prn <= 32)
+            if (svid <= 32)
                 {
                     return false;
                 }
-            return b.test(64 - prn);
+            return b.test(64 - svid);
         }
 }

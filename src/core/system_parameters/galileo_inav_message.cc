@@ -151,6 +151,8 @@ void Galileo_Inav_Message::split_page(std::string page_string, int32_t flag_even
                 {
                     const std::string page_INAV_even = page_Even;
                     const std::string page_INAV = page_INAV_even + page_Odd;  // Join pages: Even + Odd = INAV page
+                    const bool nominal_inav_page = page_INAV[GALILEO_INAV_EVEN_PAGE_TYPE_BIT] == '0' &&
+                                                   page_INAV[GALILEO_INAV_ODD_PAGE_TYPE_BIT] == '0';
 
                     const std::string Data_k = page_INAV.substr(2, 112);
                     const std::string Data_j = page_INAV.substr(116, 16);
@@ -177,15 +179,17 @@ void Galileo_Inav_Message::split_page(std::string page_string, int32_t flag_even
                     if (CRC_test(TLM_word_for_CRC_bits, checksum.to_ulong()) == true)
                         {
                             flag_CRC_test = true;
-                            // CRC correct: Decode word
+                            // Alert pages contain reserved data and must not enter the nominal word decoder.
                             const std::string Data_jk_ephemeris = Data_k + Data_j;
-                            const int32_t word_type = page_jk_decoder(Data_jk_ephemeris.c_str());
+                            int32_t word_type = GALILEO_INAV_DUMMY_WORD_TYPE;
+                            if (nominal_inav_page)
+                                {
+                                    word_type = page_jk_decoder(Data_jk_ephemeris.c_str());
+                                }
 
                             const std::bitset<8> hkroot_bs(osnma_sis.substr(0, 8));
                             const std::bitset<32> mack_bs(osnma_sis.substr(8, 32));
                             const bool osnma_sis_available = hkroot_bs.any() || mack_bs.any();
-                            const bool nominal_inav_page = page_INAV[GALILEO_INAV_EVEN_PAGE_TYPE_BIT] == '0' &&
-                                                           page_INAV[GALILEO_INAV_ODD_PAGE_TYPE_BIT] == '0';
                             const bool admit_osnma_page = nominal_inav_page &&
                                                           word_type != GALILEO_INAV_DUMMY_WORD_TYPE &&
                                                           osnma_sis_available;

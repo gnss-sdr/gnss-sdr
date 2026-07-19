@@ -79,6 +79,8 @@ private:
     bool update_known_galileo_week(int32_t week);
     bool set_current_tow_from_preamble(uint32_t preamble_week, uint32_t preamble_tow_ms, int64_t delay_ms);
     void advance_current_tow(int64_t delta_ms);
+    void capture_pending_reduced_ced(double cn0);
+    void publish_pending_reduced_ced();
     CnavPageReceptionTime get_cnav_page_reception_time(const Gnss_Synchro &current_symbol) const;
     void deinterleaver(int32_t rows, int32_t cols, const float *in, float *out);
     void decode_INAV_word(float *page_part_symbols, int32_t frame_length, double cn0);
@@ -112,6 +114,9 @@ private:
     uint64_t d_preamble_index;
     uint64_t d_last_valid_preamble;
     uint64_t d_received_sample_counter;
+    uint64_t d_pending_reduced_ced_start_symbol;
+
+    double d_pending_reduced_ced_cn0;
 
     int32_t d_mm;
     int32_t d_codelength;
@@ -146,6 +151,7 @@ private:
     const bool d_dump_mat;
     const bool d_remove_dat;
     bool d_first_eph_sent;
+    bool d_pending_reduced_ced;
     bool d_cnav_dummy_page;
     bool d_print_cnav_page;
     const bool d_enable_navdata_monitor;

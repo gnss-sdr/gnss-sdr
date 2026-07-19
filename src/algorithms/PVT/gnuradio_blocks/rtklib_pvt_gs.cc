@@ -28,6 +28,7 @@
 #include "galileo_ephemeris.h"
 #include "galileo_has_data.h"
 #include "galileo_iono.h"
+#include "galileo_reduced_ced.h"
 #include "galileo_utc_model.h"
 #include "geohash.h"
 #include "geojson_printer.h"
@@ -145,6 +146,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_gps_cnav_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Gps_CNAV_Utc_Model>).hash_code()),
       d_gps_almanac_sptr_type_hash_code(typeid(std::shared_ptr<Gps_Almanac>).hash_code()),
       d_galileo_ephemeris_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_Ephemeris>).hash_code()),
+      d_galileo_reduced_ced_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_Reduced_CED>).hash_code()),
       d_galileo_iono_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_Iono>).hash_code()),
       d_galileo_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_Utc_Model>).hash_code()),
       d_galileo_almanac_helper_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_Almanac_Helper>).hash_code()),
@@ -1386,6 +1388,22 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                 }
                         }
                 }
+            else if (msg_type_hash_code == d_galileo_reduced_ced_sptr_type_hash_code)
+                {
+                    // Reduced CED remains separate from full Galileo ephemerides so it cannot
+                    // enter RINEX, RTCM, HAS, or IOD-based OSNMA processing.
+                    const auto reduced_ced = wht::any_cast<std::shared_ptr<Galileo_Reduced_CED>>(pmt::any_ref(msg));
+                    if (reduced_ced->PRN >= 1U && reduced_ced->PRN <= 36U)
+                        {
+                            d_internal_pvt_solver->galileo_reduced_ced_map[reduced_ced->PRN] = *reduced_ced;
+                            if (d_enable_rx_clock_correction == true)
+                                {
+                                    d_user_pvt_solver->galileo_reduced_ced_map[reduced_ced->PRN] = *reduced_ced;
+                                }
+                            DLOG(INFO) << "Galileo Reduced CED stored for PRN " << reduced_ced->PRN
+                                       << " at WN=" << reduced_ced->WN << ", TOW=" << reduced_ced->TOTRedCED;
+                        }
+                }
             else if (msg_type_hash_code == d_galileo_iono_sptr_type_hash_code)
                 {
                     // ### Galileo IONO ###
@@ -1706,6 +1724,7 @@ void rtklib_pvt_gs::clear_ephemeris()
     d_internal_pvt_solver->gps_ephemeris_map.clear();
     d_internal_pvt_solver->gps_almanac_map.clear();
     d_internal_pvt_solver->galileo_ephemeris_map.clear();
+    d_internal_pvt_solver->galileo_reduced_ced_map.clear();
     d_internal_pvt_solver->galileo_almanac_map.clear();
     d_internal_pvt_solver->beidou_dnav_ephemeris_map.clear();
     d_internal_pvt_solver->beidou_dnav_almanac_map.clear();
@@ -1714,6 +1733,7 @@ void rtklib_pvt_gs::clear_ephemeris()
             d_user_pvt_solver->gps_ephemeris_map.clear();
             d_user_pvt_solver->gps_almanac_map.clear();
             d_user_pvt_solver->galileo_ephemeris_map.clear();
+            d_user_pvt_solver->galileo_reduced_ced_map.clear();
             d_user_pvt_solver->galileo_almanac_map.clear();
             d_user_pvt_solver->beidou_dnav_ephemeris_map.clear();
             d_user_pvt_solver->beidou_dnav_almanac_map.clear();
@@ -2044,52 +2064,55 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             store_valid_observable = true;
                                         }
                                 }
-                            if (tmp_eph_iter_gal != d_internal_pvt_solver->galileo_ephemeris_map.cend())
+                            Galileo_Ephemeris selected_galileo_ephemeris;
+                            bool selected_from_reduced_ced = false;
+                            const std::string galileo_signal(gnss_synchro.Signal, 2);
+                            const uint32_t galileo_observation_tow = static_cast<uint32_t>(gnss_synchro.interp_TOW_ms / 1000.0);
+                            if (d_internal_pvt_solver->select_galileo_ephemeris(gnss_synchro.PRN,
+                                    galileo_signal, galileo_observation_tow,
+                                    selected_galileo_ephemeris, selected_from_reduced_ced))
                                 {
-                                    const uint32_t prn_aux = tmp_eph_iter_gal->second.PRN;
-                                    if ((prn_aux == gnss_synchro.PRN) &&
-                                        (((std::string(gnss_synchro.Signal, 2) == std::string("1B")) && (d_use_unhealthy_sats || ((tmp_eph_iter_gal->second.E1B_DVS == false) && (tmp_eph_iter_gal->second.E1B_HS == 0)))) ||
-                                            ((std::string(gnss_synchro.Signal, 2) == std::string("5X")) && (d_use_unhealthy_sats || ((tmp_eph_iter_gal->second.E5a_DVS == false) && (tmp_eph_iter_gal->second.E5a_HS == 0)))) ||
-                                            ((std::string(gnss_synchro.Signal, 2) == std::string("7X")) && (d_use_unhealthy_sats || ((tmp_eph_iter_gal->second.E5b_DVS == false) && (tmp_eph_iter_gal->second.E5b_HS == 0))))))
+                                    const bool signal_is_healthy =
+                                        (galileo_signal == "1B" && (d_use_unhealthy_sats || (!selected_galileo_ephemeris.E1B_DVS && selected_galileo_ephemeris.E1B_HS == 0))) ||
+                                        (galileo_signal == "5X" && (d_use_unhealthy_sats || (!selected_galileo_ephemeris.E5a_DVS && selected_galileo_ephemeris.E5a_HS == 0))) ||
+                                        (galileo_signal == "7X" && (d_use_unhealthy_sats || (!selected_galileo_ephemeris.E5b_DVS && selected_galileo_ephemeris.E5b_HS == 0)));
+                                    if (signal_is_healthy && !selected_from_reduced_ced && d_osnma_strict)
                                         {
-                                            if (d_osnma_strict)
+                                            // Pick up only recently authenticated full-precision navigation data.
+                                            const auto eph_gst = osnma::galileo_gst_seconds(osnma::galileo_week_to_uint(selected_galileo_ephemeris.WN),
+                                                osnma::galileo_tow_to_uint(selected_galileo_ephemeris.tow));
+                                            auto IOD_nav_list = d_auth_nav_data_map.find(selected_galileo_ephemeris.PRN);
+                                            if (IOD_nav_list != d_auth_nav_data_map.cend())
                                                 {
-                                                    // Pick up only recently authenticated nav data. IOD_nav is 10 bits and can be reused.
-                                                    const auto eph_gst = osnma::galileo_gst_seconds(osnma::galileo_week_to_uint(tmp_eph_iter_gal->second.WN),
-                                                        osnma::galileo_tow_to_uint(tmp_eph_iter_gal->second.tow));
-                                                    auto IOD_nav_list = d_auth_nav_data_map.find(tmp_eph_iter_gal->second.PRN);
-                                                    if (IOD_nav_list != d_auth_nav_data_map.cend())
+                                                    for (auto auth_it = IOD_nav_list->second.begin(); auth_it != IOD_nav_list->second.end();)
                                                         {
-                                                            for (auto auth_it = IOD_nav_list->second.begin(); auth_it != IOD_nav_list->second.end();)
+                                                            if (osnma::auth_gst_is_stale(auth_it->second, eph_gst))
                                                                 {
-                                                                    if (osnma::auth_gst_is_stale(auth_it->second, eph_gst))
-                                                                        {
-                                                                            auth_it = IOD_nav_list->second.erase(auth_it);
-                                                                        }
-                                                                    else
-                                                                        {
-                                                                            ++auth_it;
-                                                                        }
+                                                                    auth_it = IOD_nav_list->second.erase(auth_it);
                                                                 }
-
-                                                            const auto IOD_nav = static_cast<uint32_t>(tmp_eph_iter_gal->second.IOD_nav);
-                                                            const auto auth_it = IOD_nav_list->second.find(IOD_nav);
-                                                            if (auth_it != IOD_nav_list->second.cend() &&
-                                                                osnma::auth_gst_matches_nav_data(auth_it->second, eph_gst))
+                                                            else
                                                                 {
-                                                                    store_valid_observable = true;
-                                                                }
-
-                                                            if (IOD_nav_list->second.empty())
-                                                                {
-                                                                    d_auth_nav_data_map.erase(IOD_nav_list);
+                                                                    ++auth_it;
                                                                 }
                                                         }
+
+                                                    const auto IOD_nav = static_cast<uint32_t>(selected_galileo_ephemeris.IOD_nav);
+                                                    const auto auth_it = IOD_nav_list->second.find(IOD_nav);
+                                                    if (auth_it != IOD_nav_list->second.cend() &&
+                                                        osnma::auth_gst_matches_nav_data(auth_it->second, eph_gst))
+                                                        {
+                                                            store_valid_observable = true;
+                                                        }
+
+                                                    if (IOD_nav_list->second.empty())
+                                                        {
+                                                            d_auth_nav_data_map.erase(IOD_nav_list);
+                                                        }
                                                 }
-                                            else
-                                                {
-                                                    store_valid_observable = true;
-                                                }
+                                        }
+                                    else if (signal_is_healthy && !d_osnma_strict)
+                                        {
+                                            store_valid_observable = true;
                                         }
                                 }
                             if (!d_osnma_strict && tmp_eph_iter_cnav != d_internal_pvt_solver->gps_cnav_ephemeris_map.cend())

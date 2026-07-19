@@ -43,6 +43,7 @@
 #include "galileo_ephemeris.h"
 #include "galileo_has_data.h"
 #include "galileo_iono.h"
+#include "galileo_reduced_ced.h"
 #include "galileo_utc_model.h"
 #include "glonass_gnav_almanac.h"
 #include "glonass_gnav_ephemeris.h"
@@ -101,11 +102,14 @@ public:
     void store_has_data(const Galileo_HAS_data& new_has_data);
     void clear_has_corrections();
     void update_has_corrections(const std::map<int, Gnss_Synchro>& obs_map);
+    bool select_galileo_ephemeris(uint32_t prn, const std::string& signal, uint32_t observation_tow,
+        Galileo_Ephemeris& ephemeris, bool& from_reduced_ced) const;
 
     sol_t pvt_sol{};
     std::array<ssat_t, MAXSAT> pvt_ssat{};
 
     std::map<int, Galileo_Ephemeris> galileo_ephemeris_map;            //!< Map storing new Galileo_Ephemeris
+    std::map<int, Galileo_Reduced_CED> galileo_reduced_ced_map;        //!< Map storing provisional Galileo Reduced CED
     std::map<int, Gps_Ephemeris> gps_ephemeris_map;                    //!< Map storing new GPS_Ephemeris
     std::map<int, Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;          //!< Map storing new GPS_CNAV_Ephemeris
     std::map<int, Glonass_Gnav_Ephemeris> glonass_gnav_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephemeris

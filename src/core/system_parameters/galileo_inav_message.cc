@@ -417,7 +417,7 @@ bool Galileo_Inav_Message::have_new_almanac()  // Check if we have a new almanac
 bool Galileo_Inav_Message::have_new_reduced_ced()
 {
     // Check if we have a new CED data set stored in the galileo navigation class
-    if ((flag_CED == true) && (WN_5 > 0))  // We need the week number to compute GST
+    if (flag_CED == true)
         {
             flag_CED = false;
             return true;
@@ -592,30 +592,10 @@ Galileo_Almanac_Helper Galileo_Inav_Message::get_almanac() const
 }
 
 
-Galileo_Ephemeris Galileo_Inav_Message::get_reduced_ced() const
+Galileo_Reduced_CED Galileo_Inav_Message::get_reduced_ced() const
 {
     Galileo_Reduced_CED ced{};
     ced.PRN = SV_ID_PRN_4;
-    // From ICD: TOTRedCED is the start time of transmission of the
-    // Reduced CED word 16 in GST
-    if (TOW_5 > TOW_6)
-        {
-            ced.TOTRedCED = WN_5 * 604800 + TOW_5 + 4;  // According to ICD 2.0, Table 38
-        }
-    else
-        {
-            ced.TOTRedCED = WN_5 * 604800 + TOW_6 + 10;  // According to ICD 2.0, Table 38
-        }
-    std::array<int32_t, 4> iod_navs = {IOD_nav_1, IOD_nav_2, IOD_nav_3, IOD_nav_4};
-    int32_t max_IOD_nav = IOD_nav_1;
-    for (int i = 1; i < 4; i++)
-        {
-            if (iod_navs[i] > max_IOD_nav)
-                {
-                    max_IOD_nav = iod_navs[i];
-                }
-        }
-    ced.IODnav = max_IOD_nav;
     ced.DeltaAred = ced_DeltaAred;
     ced.exred = ced_exred;
     ced.eyred = ced_eyred;
@@ -624,10 +604,13 @@ Galileo_Ephemeris Galileo_Inav_Message::get_reduced_ced() const
     ced.lambda0red = ced_lambda0red;
     ced.af0red = ced_af0red;
     ced.af1red = ced_af1red;
+    ced.BGD_E1E5b = BGD_E1E5b_5;
+    ced.E5b_HS = E5b_HS_5;
+    ced.E1B_HS = E1B_HS_5;
+    ced.E5b_DVS = E5b_DVS_5;
+    ced.E1B_DVS = E1B_DVS_5;
 
-    Galileo_Ephemeris eph = ced.compute_eph();
-
-    return eph;
+    return ced;
 }
 
 
@@ -1061,7 +1044,8 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             spare_5 = static_cast<double>(read_navigation_unsigned(data_jk_bits, SPARE_5_BIT));
             DLOG(INFO) << "spare_5= " << spare_5;
             flag_iono_and_GST = true;  // set to false externally
-            flag_TOW_set = true;       // set to false externally
+            flag_word_5_received = true;
+            flag_TOW_set = true;  // set to false externally
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
             nav_bits_word_5 = data_jk_bits.to_string().substr(6, 67);
             break;

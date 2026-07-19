@@ -54,6 +54,7 @@ class Beidou_Dnav_Ephemeris;
 class Galileo_Almanac;
 class Galileo_Ephemeris;
 class Galileo_HAS_data;
+class Galileo_Reduced_CED;
 class Geohash;
 class GeoJSON_Printer;
 class Gps_Almanac;
@@ -224,6 +225,7 @@ private:
     const size_t d_gps_cnav_utc_model_sptr_type_hash_code;
     const size_t d_gps_almanac_sptr_type_hash_code;
     const size_t d_galileo_ephemeris_sptr_type_hash_code;
+    const size_t d_galileo_reduced_ced_sptr_type_hash_code;
     const size_t d_galileo_iono_sptr_type_hash_code;
     const size_t d_galileo_utc_model_sptr_type_hash_code;
     const size_t d_galileo_almanac_helper_sptr_type_hash_code;

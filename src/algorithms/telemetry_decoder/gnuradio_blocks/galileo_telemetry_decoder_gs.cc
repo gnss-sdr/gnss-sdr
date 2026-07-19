@@ -88,6 +88,8 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(const Tlm_Conf &conf,
       d_preamble_index(0ULL),
       d_last_valid_preamble(0ULL),
       d_received_sample_counter(0),
+      d_pending_reduced_ced_start_symbol(0ULL),
+      d_pending_reduced_ced_cn0(0.0),
       d_frame_type(frame_type),
       d_CRC_error_counter(0),
       d_channel(0),
@@ -108,6 +110,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(const Tlm_Conf &conf,
       d_dump_mat(conf.dump_mat),
       d_remove_dat(conf.remove_dat),
       d_first_eph_sent(false),
+      d_pending_reduced_ced(false),
       d_cnav_dummy_page(false),
       d_print_cnav_page(true),
       d_enable_navdata_monitor(conf.enable_navdata_monitor),
@@ -420,6 +423,65 @@ void galileo_telemetry_decoder_gs::advance_current_tow(int64_t delta_ms)
 }
 
 
+void galileo_telemetry_decoder_gs::capture_pending_reduced_ced(double cn0)
+{
+    if (d_band != '1' || !d_use_ced || d_first_eph_sent)
+        {
+            return;
+        }
+
+    const int64_t decoder_delay_ms = galileo_tow::inav_current_symbol_delay_ms(d_required_symbols, d_PRN_code_period_ms);
+    const uint64_t decoder_delay_symbols = static_cast<uint64_t>(decoder_delay_ms / static_cast<int64_t>(d_PRN_code_period_ms));
+    if (d_symbol_counter < decoder_delay_symbols)
+        {
+            return;
+        }
+
+    d_pending_reduced_ced_start_symbol = d_symbol_counter - decoder_delay_symbols;
+    d_pending_reduced_ced_cn0 = cn0;
+    d_pending_reduced_ced = true;
+}
+
+
+void galileo_telemetry_decoder_gs::publish_pending_reduced_ced()
+{
+    if (!d_pending_reduced_ced || d_first_eph_sent || !d_inav_nav.has_valid_word_5() ||
+        d_TOW_week == GALILEO_TOW_MAP_INVALID_WEEK)
+        {
+            return;
+        }
+
+    const int64_t symbol_delta = galileo_tow::sample_counter_delta(d_pending_reduced_ced_start_symbol, d_symbol_counter);
+    const int64_t code_period_ms = static_cast<int64_t>(d_PRN_code_period_ms);
+    if (symbol_delta > std::numeric_limits<int64_t>::max() / code_period_ms ||
+        symbol_delta < std::numeric_limits<int64_t>::min() / code_period_ms)
+        {
+            d_pending_reduced_ced = false;
+            return;
+        }
+    const int64_t tow_delta_ms = symbol_delta * code_period_ms;
+    uint32_t reduced_ced_week = GALILEO_TOW_MAP_INVALID_WEEK;
+    if (!galileo_tow::week_after_delta(d_TOW_week, d_TOW_at_current_symbol_ms, tow_delta_ms, reduced_ced_week))
+        {
+            d_pending_reduced_ced = false;
+            return;
+        }
+
+    Galileo_Reduced_CED reduced_ced = d_inav_nav.get_reduced_ced();
+    reduced_ced.WN = reduced_ced_week;
+    reduced_ced.TOTRedCED = galileo_tow::add_ms(d_TOW_at_current_symbol_ms, tow_delta_ms) / 1000U;
+    const auto tmp_obj = std::make_shared<Galileo_Reduced_CED>(reduced_ced);
+    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+
+    const auto default_precision = std::cout.precision();
+    std::cout << "New Galileo E1 I/NAV reduced CED message received in channel "
+              << d_channel << " from satellite " << d_satellite << " with CN0="
+              << std::setprecision(2) << d_pending_reduced_ced_cn0 << std::setprecision(default_precision)
+              << " dB-Hz" << std::endl;
+    d_pending_reduced_ced = false;
+}
+
+
 galileo_telemetry_decoder_gs::CnavPageReceptionTime galileo_telemetry_decoder_gs::get_cnav_page_reception_time(const Gnss_Synchro &current_symbol) const
 {
     CnavPageReceptionTime page_reception_time{GALILEO_TOW_MAP_INVALID_WEEK, GALILEO_TOW_MAP_INVALID_TOW_MS};
@@ -563,6 +625,11 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             d_inav_nav.reset_osnma_nav_bits_adkd4();
         }
 
+    if (d_inav_nav.have_new_reduced_ced())
+        {
+            capture_pending_reduced_ced(cn0);
+        }
+
     if (d_inav_nav.have_new_ephemeris() == true)  // C: tells if W1-->W4 available from same block (and W5!)
         {
             // get object for this SV (mandatory)
@@ -586,20 +653,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
                 }
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             d_first_eph_sent = true;  // do not send reduced CED anymore, since we have the full ephemeris set
-        }
-    else
-        {
-            // If we still do not have ephemeris, check if we have a reduced CED
-            if ((d_band == '1') && d_use_ced && !d_first_eph_sent && (d_inav_nav.have_new_reduced_ced() == true))
-                {
-                    const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_inav_nav.get_reduced_ced());
-                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                    const auto default_precision = std::cout.precision();
-                    std::cout << "New Galileo E1 I/NAV reduced CED message received in channel "
-                              << d_channel << " from satellite " << d_satellite << " with CN0="
-                              << std::setprecision(2) << cn0 << std::setprecision(default_precision)
-                              << " dB-Hz" << std::endl;
-                }
+            d_pending_reduced_ced = false;
         }
 
     if (d_inav_nav.have_new_iono_and_GST() == true)  // C: W5
@@ -876,6 +930,8 @@ void galileo_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite
     d_galileo_week_valid = false;
     d_E6_TOW_set = false;
     d_valid_timetag = false;
+    d_first_eph_sent = false;
+    d_pending_reduced_ced = false;
     d_inav_nav.init_PRN(d_satellite.get_PRN());
     d_symbol_history.clear();
     clear_galileo_tow_map_entry();
@@ -906,6 +962,8 @@ void galileo_telemetry_decoder_gs::reset()
     d_received_sample_counter = GALILEO_TOW_MAP_INVALID_SAMPLE_COUNTER;
     d_viterbi->reset();
     d_valid_timetag = false;
+    d_first_eph_sent = false;
+    d_pending_reduced_ced = false;
     d_symbol_history.clear();
     clear_galileo_tow_map_entry();
     if (d_enable_reed_solomon_inav == true)
@@ -1242,6 +1300,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                     advance_current_tow(d_PRN_code_period_ms);
                                 }
                         }
+                    publish_pending_reduced_ced();
                     if (d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
                         {
                             d_nav_msg_packet.system = std::string(1, current_symbol.System);

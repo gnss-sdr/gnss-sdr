@@ -24,6 +24,7 @@
 #include "galileo_ephemeris.h"
 #include "galileo_iono.h"
 #include "galileo_ism.h"
+#include "galileo_reduced_ced.h"
 #include "galileo_utc_model.h"
 #include "gnss_sdr_make_unique.h"  // for std::unique_ptr in C++11
 #include <array>
@@ -129,9 +130,17 @@ public:
     Galileo_Almanac_Helper get_almanac() const;
 
     /*
-     * \brief Returns a Galileo_Ephemeris object filled with the latest reduced CED received
+     * \brief Returns a Galileo_Reduced_CED object filled with the latest Word 16 and Word 5 data received
      */
-    Galileo_Ephemeris get_reduced_ced() const;
+    Galileo_Reduced_CED get_reduced_ced() const;
+
+    /*
+     * \brief Returns true after a CRC-valid Word 5 has been received for the current satellite.
+     */
+    inline bool has_valid_word_5() const
+    {
+        return flag_word_5_received;
+    }
 
     /*
      * \brief Returns a Galileo_ISMs object filled with the latest ISM data received
@@ -259,6 +268,8 @@ public:
     inline void init_PRN(uint32_t prn)
     {
         SV_ID_PRN_4 = prn;
+        flag_CED = false;
+        flag_word_5_received = false;
         nma_msg.PRN = prn;
         nma_msg.mack = std::array<uint32_t, 15>{};
         nma_msg.hkroot = std::array<uint8_t, 15>{};
@@ -482,7 +493,8 @@ private:
     bool flag_ephemeris_3{};    // Flag indicating that ephemeris 3/4 (word 3) have been received
     bool flag_ephemeris_4{};    // Flag indicating that ephemeris 4/4 (word 4) have been received
 
-    bool flag_iono_and_GST{};  // Flag indicating that ionospheric and GST parameters (word 5) have been received
+    bool flag_iono_and_GST{};     // Flag indicating that ionospheric and GST parameters (word 5) have been received
+    bool flag_word_5_received{};  // Persistent Word 5 validity for Reduced CED auxiliary data
     bool flag_TOW_5{};
     bool flag_TOW_6{};
     bool flag_TOW_0{};

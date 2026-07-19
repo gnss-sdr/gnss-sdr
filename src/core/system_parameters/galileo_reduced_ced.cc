@@ -34,12 +34,13 @@ Galileo_Ephemeris Galileo_Reduced_CED::compute_eph() const
     eph.M_0 = lambda0red * GNSS_PI - eph.omega;          // Mean anomaly at reference time [rad]
     eph.OMEGA_0 = Omega0red * GNSS_PI;                   // Longitude of ascending node of orbital plane at weekly epoch [rad]
 
-    eph.flag_all_ephemeris = true;
-    eph.IOD_ephemeris = IODnav;
-    eph.IOD_nav = IODnav;
+    // Word 16 has no IODnav and is not a full-precision ephemeris set.
+    eph.flag_all_ephemeris = false;
+    eph.IOD_ephemeris = -1;
+    eph.IOD_nav = -1;
     eph.PRN = PRN;
 
-    int32_t t0r = (30 * (TOTRedCED / 30) + 1) % 604800;
+    const uint32_t t0r = reference_time();
     eph.toe = t0r;  // Ephemeris reference time [s]
 
     // Clock correction parameters
@@ -48,8 +49,34 @@ Galileo_Ephemeris Galileo_Reduced_CED::compute_eph() const
     eph.af1 = af1red;  // SV clock drift correction coefficient [s/s]
 
     // GST
-    eph.WN = TOTRedCED / 604800;   // Week number
-    eph.tow = TOTRedCED % 604800;  // Time of Week
+    eph.WN = WN;
+    eph.tow = TOTRedCED;
+
+    eph.BGD_E1E5b = BGD_E1E5b;
+    eph.E5b_HS = E5b_HS;
+    eph.E1B_HS = E1B_HS;
+    eph.E5b_DVS = E5b_DVS;
+    eph.E1B_DVS = E1B_DVS;
 
     return eph;
+}
+
+
+uint32_t Galileo_Reduced_CED::reference_time() const
+{
+    return (30U * (TOTRedCED / 30U) + 1U) % 604800U;
+}
+
+
+bool Galileo_Reduced_CED::is_valid_at(uint32_t week, uint32_t tow) const
+{
+    if (TOTRedCED >= 604800U || tow >= 604800U)
+        {
+            return false;
+        }
+
+    const uint64_t reference_epoch = static_cast<uint64_t>(WN) * 604800ULL + reference_time();
+    const uint64_t observation_epoch = static_cast<uint64_t>(week) * 604800ULL + tow;
+    return observation_epoch >= reference_epoch &&
+           observation_epoch - reference_epoch < static_cast<uint64_t>(CED_VALIDITY_SECONDS);
 }

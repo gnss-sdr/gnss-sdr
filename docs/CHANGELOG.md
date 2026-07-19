@@ -483,8 +483,8 @@ https://gnss-sdr.org/design-forces/
 ### Improvements in Usability:
 
 - The Galileo E1B Reduced CED parameters usage has been set to `false` by
-  default. You can activate its usage with `Galileo_E1B_Telemetry_Decoder=true`
-  in your configuration file.
+  default. You can activate its usage with
+  `TelemetryDecoder_1B.use_reduced_ced=true` in your configuration file.
 - The generation of Galileo E6B observables has been disabled if the user sets
   `PVT.use_e6_for_pvt=false`, fixing the PVT computation in some multi-band
   configurations.

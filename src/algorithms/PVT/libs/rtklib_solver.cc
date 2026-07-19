@@ -71,13 +71,12 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     d_rtklib_freq_index[1] = 1;
     d_rtklib_freq_index[2] = 2;
 
-    // RTKLIB BDS frequency slots (see satwavelen):
-    //   band/frq 0 = B1I (1561.098 MHz), 1 = B1C (1575.42 MHz), 2 = B3I (1268.52 MHz)
+    // BDS: B1I and B1C share slot 0 (prefer-B1C XOR). Override lam[0] for B1C (FREQ1).
     d_rtklib_band_index["1G"] = 0;
     d_rtklib_band_index["1C"] = 0;
     d_rtklib_band_index["1B"] = 0;
     d_rtklib_band_index["B1"] = 0;
-    d_rtklib_band_index["1D"] = 1;
+    d_rtklib_band_index["1D"] = 0;
     d_rtklib_band_index["B3"] = 2;
     d_rtklib_band_index["2G"] = 1;
     d_rtklib_band_index["2S"] = 1;
@@ -1780,9 +1779,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     }
                 case 'C':
                     {
-                        // BEIDOU B1I / B1C / B3I
-                        // Prefer B1C when the same PRN has CNAV1 ephemeris and a B1C observation.
-                        // If B1C is tracked but CNAV1 is missing, keep B1I+DNAV.
+                        // BeiDou B1I / B1C / B3I (prefer B1C when CNAV1 + B1C obs are both present)
                         const std::string sig_(gnss_observables_iter->second.Signal);
                         const int bds_sat = static_cast<int>(gnss_observables_iter->second.PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS);
 
@@ -1846,7 +1843,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         DLOG(INFO) << "No B-CNAV1 ephemeris data for SV " << gnss_observables_iter->second.PRN;
                                     }
                             }
-                        // BeiDou B3: merge only with DNAV/B1I obs (never with CNAV1/B1C)
+                        // BeiDou B3: merge with DNAV/B1I only
                         if (sig_ == "B3")
                             {
                                 beidou_ephemeris_iter = beidou_dnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -2068,31 +2065,19 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 }
 
             const int nobs_total = valid_obs + glo_valid_obs;
-            // Hybrid GPS/Gal + B1C: urban multipath often trips RTKLIB chi-square (alpha=0.001)
-            // with opposite-sign B1C residuals (ISB cannot absorb). Enable RAIM FDE so one
-            // outlier can be excluded while keeping the rest of the B1C constellation.
-            {
-                bool has_b1c = false;
-                for (int k = 0; k < nobs_total; k++)
-                    {
-                        for (const unsigned char cb : d_obs_data[k].code)
-                            {
-                                if (cb == CODE_L1D || cb == CODE_L1P)
-                                    {
-                                        has_b1c = true;
-                                        break;
-                                    }
-                            }
-                        if (has_b1c)
-                            {
-                                break;
-                            }
-                    }
-                if (has_b1c)
-                    {
-                        d_rtk.opt.posopt[4] = 1;
-                    }
-            }
+            /* B1C on slot 0: override lam[0] to FREQ1 (satwavelen frq0 is B1I). */
+            for (int k = 0; k < nobs_total; k++)
+                {
+                    if (satsys(d_obs_data[k].sat, nullptr) != SYS_BDS)
+                        {
+                            continue;
+                        }
+                    const unsigned char c0 = d_obs_data[k].code[0];
+                    if (c0 == CODE_L1D || c0 == CODE_L1P)
+                        {
+                            d_nav_data.lam[d_obs_data[k].sat - 1][0] = SPEED_OF_LIGHT_M_S / FREQ1;
+                        }
+                }
             result = rtkpos(&d_rtk, d_obs_data.data(), nobs_total, &d_nav_data);
 
             if (result == 0)

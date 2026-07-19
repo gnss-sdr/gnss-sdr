@@ -45,7 +45,7 @@ eph_t make_bds_eph(int sat, int code, double tgd0, double tgd2, gtime_t toe)
     return e;
 }
 
-Gnss_Synchro make_bds_synchro(const char *signal, uint32_t prn, double pr_m, bool pilot)
+Gnss_Synchro make_bds_synchro(const char *signal, uint32_t prn, double pr_m)
 {
     Gnss_Synchro gs{};
     gs.System = 'C';
@@ -58,7 +58,6 @@ Gnss_Synchro make_bds_synchro(const char *signal, uint32_t prn, double pr_m, boo
     gs.Carrier_phase_rads = 0.0;
     gs.CN0_dB_hz = 40.0;
     gs.Flag_valid_pseudorange = true;
-    gs.Flag_tracking_pilot = pilot;
     return gs;
 }
 }  // namespace
@@ -102,9 +101,8 @@ TEST(BeidouB1cPvtHelpersTest, SelephPrefersCnav1WhenRequested)
     EXPECT_NE(e_dnav->code, 7);
 }
 
-/* Regression: B1C must not share B1I wavelength / B2 slot (PM review).
- * GNSS-SDR BDS NFREQ=3 map: frq0=B1I, frq1=B1C (FREQ1), frq2=B3I. */
-TEST(BeidouB1cPvtHelpersTest, SatwavelenBdsFrq1IsB1cNotB1iOrB2)
+/* satwavelen BDS: frq0=B1I, frq1=B2, frq2=B3I */
+TEST(BeidouB1cPvtHelpersTest, SatwavelenBdsKeepsOfficialB1B2B3Map)
 {
     const int sat = satno(SYS_BDS, 19);
     nav_t nav{};
@@ -113,11 +111,11 @@ TEST(BeidouB1cPvtHelpersTest, SatwavelenBdsFrq1IsB1cNotB1iOrB2)
     const double lam2 = satwavelen(sat, 2, &nav);
 
     EXPECT_NEAR(lam0, SPEED_OF_LIGHT_M_S / FREQ1_BDS, 1.0e-9);
-    EXPECT_NEAR(lam1, SPEED_OF_LIGHT_M_S / FREQ1, 1.0e-9);
+    EXPECT_NEAR(lam1, SPEED_OF_LIGHT_M_S / FREQ2_BDS, 1.0e-9);
     EXPECT_NEAR(lam2, SPEED_OF_LIGHT_M_S / FREQ3_BDS, 1.0e-9);
 
-    EXPECT_NE(lam1, lam0);
-    EXPECT_NE(lam1, SPEED_OF_LIGHT_M_S / FREQ2_BDS);
+    EXPECT_NE(lam1, SPEED_OF_LIGHT_M_S / FREQ1);
+    EXPECT_NE(lam0, SPEED_OF_LIGHT_M_S / FREQ1);
 }
 
 TEST(BeidouB1cPvtHelpersTest, SignalFreqMapB1cUsesFreq1)
@@ -129,30 +127,25 @@ TEST(BeidouB1cPvtHelpersTest, SignalFreqMapB1cUsesFreq1)
     EXPECT_NE(SIGNAL_FREQ_MAP.at("1D"), SIGNAL_FREQ_MAP.at("B1"));
 }
 
-/* Contract matching rtklib_solver band map: B1→0, 1D→1 (distinct slots). */
-TEST(BeidouB1cPvtHelpersTest, InsertObsPlacesB1iAndB1cOnDistinctBands)
+/* B1I and B1C both use slot 0; distinguished by RINEX code. */
+TEST(BeidouB1cPvtHelpersTest, InsertObsPlacesB1iAndB1cOnSlot0WithDistinctCodes)
 {
-    constexpr int k_b1i_band = 0;
-    constexpr int k_b1c_band = 1;
+    constexpr int k_band = 0;
     constexpr uint32_t prn = 19;
     constexpr int week = 2100;
 
-    Gnss_Synchro b1i = make_bds_synchro("B1", prn, 2.2e7, false);
-    Gnss_Synchro b1c = make_bds_synchro("1D", prn, 2.2e7, false);
+    Gnss_Synchro b1i = make_bds_synchro("B1", prn, 2.2e7);
+    Gnss_Synchro b1c = make_bds_synchro("1D", prn, 2.1e7);
 
-    obsd_t obs{};
-    obs = insert_obs_to_rtklib(obs, b1i, week, k_b1i_band);
-    obs = insert_obs_to_rtklib(obs, b1c, week, k_b1c_band);
+    obsd_t obs_b1i{};
+    obs_b1i = insert_obs_to_rtklib(obs_b1i, b1i, week, k_band);
+    EXPECT_EQ(obs_b1i.code[k_band], static_cast<unsigned char>(CODE_L2I));
+    EXPECT_NEAR(obs_b1i.P[k_band], 2.2e7, 1.0e-3);
 
-    EXPECT_EQ(obs.code[k_b1i_band], static_cast<unsigned char>(CODE_L2I));
-    EXPECT_EQ(obs.code[k_b1c_band], static_cast<unsigned char>(CODE_L1D));
-    EXPECT_NEAR(obs.P[k_b1i_band], 2.2e7, 1.0e-3);
-    EXPECT_NEAR(obs.P[k_b1c_band], 2.2e7, 1.0e-3);
-
-    Gnss_Synchro b1c_pilot = make_bds_synchro("1D", prn, 2.1e7, true);
-    obsd_t obs_pilot{};
-    obs_pilot = insert_obs_to_rtklib(obs_pilot, b1c_pilot, week, k_b1c_band);
-    EXPECT_EQ(obs_pilot.code[k_b1c_band], static_cast<unsigned char>(CODE_L1P));
+    obsd_t obs_b1c{};
+    obs_b1c = insert_obs_to_rtklib(obs_b1c, b1c, week, k_band);
+    EXPECT_EQ(obs_b1c.code[k_band], static_cast<unsigned char>(CODE_L1P));
+    EXPECT_NEAR(obs_b1c.P[k_band], 2.1e7, 1.0e-3);
 }
 
 TEST(BeidouB1cPvtHelpersTest, GettgdPrefersMatchingEphTypeWhenBothPresent)
@@ -186,12 +179,11 @@ TEST(BeidouB1cPvtHelpersTest, GettgdReturnsZeroWhenOnlyWrongEphFamilyPresent)
     nav.eph = ephs.data();
     nav.n = 1;
 
-    /* B1C obs must not fall back to DNAV TGD1 */
     EXPECT_DOUBLE_EQ(gettgd(sat, &nav, static_cast<unsigned char>(CODE_L1D)), 0.0);
     EXPECT_DOUBLE_EQ(gettgd(sat, &nav, static_cast<unsigned char>(CODE_L1P)), 0.0);
 }
 
-/* CODE_L1P is shared with GPS L1P — CNAV1 filtering must be SYS_BDS-only. */
+/* CODE_L1P also means GPS L1P; CNAV1 filtering is SYS_BDS-only. */
 TEST(BeidouB1cPvtHelpersTest, GettgdGpsIgnoresB1cCodeSelection)
 {
     const int sat = satno(SYS_GPS, 5);
@@ -210,6 +202,5 @@ TEST(BeidouB1cPvtHelpersTest, GettgdGpsIgnoresB1cCodeSelection)
     nav.n = 1;
 
     EXPECT_NEAR(gettgd(sat, &nav, static_cast<unsigned char>(CODE_L1C)), SPEED_OF_LIGHT_M_S * 4.0e-9, 1.0e-6);
-    /* Must still return GPS TGD even though CODE_L1P is also used for B1C pilot */
     EXPECT_NEAR(gettgd(sat, &nav, static_cast<unsigned char>(CODE_L1P)), SPEED_OF_LIGHT_M_S * 4.0e-9, 1.0e-6);
 }

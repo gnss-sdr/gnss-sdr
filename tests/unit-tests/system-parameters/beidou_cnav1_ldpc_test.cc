@@ -87,7 +87,7 @@ TEST(BeidouCnav1LdpcTest, CorrectSingleSymbolError200_100)
 TEST(BeidouCnav1LdpcTest, CorrectSingleSymbolError88_44)
 {
     std::array<uint8_t, BEIDOU_CNAV1_SUBFRAME3_SYMBOLS> bits{};
-    const uint8_t wrong_symbol = 17U;
+    const uint8_t wrong_symbol = 1U;  // single GF(64) symbol error
     for (int32_t bit = 0; bit < 6; bit++)
         {
             bits[static_cast<size_t>(bit)] = static_cast<uint8_t>((wrong_symbol >> (5 - bit)) & 1U);

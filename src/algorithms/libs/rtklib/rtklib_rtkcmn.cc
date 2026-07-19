@@ -4283,22 +4283,18 @@ double satwavelen(int sat, int frq, const nav_t *nav)
         }
     else if (sys == SYS_BDS)
         {
-            /* GNSS-SDR BDS slot map (NFREQ=3):
-             *   frq 0: B1I  1561.098 MHz (FREQ1_BDS)
-             *   frq 1: B1C  1575.42  MHz (FREQ1) — distinct from B1I; not B2
-             *   frq 2: B3I  1268.52  MHz (FREQ3_BDS)
-             * B2 (FREQ2_BDS) is unused in this receiver build. */
+            /* BDS frq: 0=B1I (FREQ1_BDS), 1=B2, 2=B3I. B1C uses FREQ1 via PVT lam[0] override. */
             if (frq == 0)
                 {
-                    return SPEED_OF_LIGHT_M_S / FREQ1_BDS; /* B1I */
+                    return SPEED_OF_LIGHT_M_S / FREQ1_BDS; /* B1 */
                 }
             if (frq == 1)
                 {
-                    return SPEED_OF_LIGHT_M_S / FREQ1; /* B1C */
+                    return SPEED_OF_LIGHT_M_S / FREQ2_BDS; /* B2 */
                 }
             if (frq == 2)
                 {
-                    return SPEED_OF_LIGHT_M_S / FREQ3_BDS; /* B3I */
+                    return SPEED_OF_LIGHT_M_S / FREQ3_BDS; /* B3 */
                 }
         }
     else

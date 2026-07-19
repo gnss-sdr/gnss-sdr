@@ -16,48 +16,8 @@
 #ifndef GNSS_SDR_BEIDOU_CNAV1_H
 #define GNSS_SDR_BEIDOU_CNAV1_H
 
-#include <cmath>
+#include "MATH_CONSTANTS.h"
 #include <cstdint>
-
-#ifndef GNSS_SDR_TWO_N8
-constexpr double GNSS_SDR_TWO_N8 = 0.00390625;
-#endif
-#ifndef GNSS_SDR_TWO_N9
-constexpr double GNSS_SDR_TWO_N9 = 0.001953125;
-#endif
-#ifndef GNSS_SDR_TWO_N21
-constexpr double GNSS_SDR_TWO_N21 = 4.76837158203125e-7;
-#endif
-#ifndef GNSS_SDR_TWO_N30
-constexpr double GNSS_SDR_TWO_N30 = 9.313225746154785e-10;
-#endif
-#ifndef GNSS_SDR_TWO_N32
-constexpr double GNSS_SDR_TWO_N32 = 2.3283064365386963e-10;
-#endif
-#ifndef GNSS_SDR_TWO_N34
-constexpr double GNSS_SDR_TWO_N34 = 5.820766091346741e-11;
-#endif
-#ifndef GNSS_SDR_TWO_N35
-constexpr double GNSS_SDR_TWO_N35 = 2.910383045673370e-11;
-#endif
-#ifndef GNSS_SDR_TWO_N44
-constexpr double GNSS_SDR_TWO_N44 = 5.684341886080802e-14;
-#endif
-#ifndef GNSS_SDR_TWO_N50
-constexpr double GNSS_SDR_TWO_N50 = 8.881784197001252e-16;
-#endif
-#ifndef GNSS_SDR_TWO_N51
-constexpr double GNSS_SDR_TWO_N51 = 4.440892098500626e-16;
-#endif
-#ifndef GNSS_SDR_TWO_N57
-constexpr double GNSS_SDR_TWO_N57 = 6.938893903907228e-18;
-#endif
-#ifndef GNSS_SDR_TWO_N66
-constexpr double GNSS_SDR_TWO_N66 = 1.3552527156068805e-20;
-#endif
-#ifndef GNSS_SDR_TWO_N68
-constexpr double GNSS_SDR_TWO_N68 = 3.3881317890172013e-21;
-#endif
 
 constexpr int32_t BEIDOU_CNAV1_FRAME_SYMBOLS = 1800;
 constexpr int32_t BEIDOU_CNAV1_FRAME_PERIOD_S = 18;
@@ -78,26 +38,26 @@ constexpr int32_t BEIDOU_CNAV1_PAGE_IONO_UTC = 1;
 constexpr double BEIDOU_CNAV1_A_REF_MEO = 27906100.0;
 constexpr double BEIDOU_CNAV1_A_REF_IGSO = 42162200.0;
 constexpr double BEIDOU_CNAV1_TOE_TOC_LSB = 300.0;
-constexpr double BEIDOU_CNAV1_DELTA_A_LSB = GNSS_SDR_TWO_N9;
-constexpr double BEIDOU_CNAV1_A_DOT_LSB = GNSS_SDR_TWO_N21;  //!< 2^-21 m/s, Table 7-8
-constexpr double BEIDOU_CNAV1_DELTA_N0_LSB = GNSS_SDR_TWO_N44 * M_PI;
-constexpr double BEIDOU_CNAV1_DELTA_N0_DOT_LSB = GNSS_SDR_TWO_N57 * M_PI;
-constexpr double BEIDOU_CNAV1_M0_LSB = GNSS_SDR_TWO_N32 * M_PI;
-constexpr double BEIDOU_CNAV1_E_LSB = GNSS_SDR_TWO_N34;
-constexpr double BEIDOU_CNAV1_OMEGA_LSB = GNSS_SDR_TWO_N32 * M_PI;
-constexpr double BEIDOU_CNAV1_I0_LSB = GNSS_SDR_TWO_N32 * M_PI;
-constexpr double BEIDOU_CNAV1_OMEGADOT_LSB = GNSS_SDR_TWO_N44 * M_PI;
-constexpr double BEIDOU_CNAV1_IDOT_LSB = GNSS_SDR_TWO_N44 * M_PI;
-constexpr double BEIDOU_CNAV1_CIS_LSB = GNSS_SDR_TWO_N30;
-constexpr double BEIDOU_CNAV1_CIC_LSB = GNSS_SDR_TWO_N30;
-constexpr double BEIDOU_CNAV1_CRS_LSB = GNSS_SDR_TWO_N8;
-constexpr double BEIDOU_CNAV1_CRC_LSB = GNSS_SDR_TWO_N8;
-constexpr double BEIDOU_CNAV1_CUS_LSB = GNSS_SDR_TWO_N30;
-constexpr double BEIDOU_CNAV1_CUC_LSB = GNSS_SDR_TWO_N30;
-constexpr double BEIDOU_CNAV1_AF0_LSB = GNSS_SDR_TWO_N34;
-constexpr double BEIDOU_CNAV1_AF1_LSB = GNSS_SDR_TWO_N50;
-constexpr double BEIDOU_CNAV1_AF2_LSB = GNSS_SDR_TWO_N66;
-constexpr double BEIDOU_CNAV1_TGD_LSB = GNSS_SDR_TWO_N34;
-constexpr double BEIDOU_CNAV1_ISC_LSB = GNSS_SDR_TWO_N34;
+constexpr double BEIDOU_CNAV1_DELTA_A_LSB = TWO_N9;
+constexpr double BEIDOU_CNAV1_A_DOT_LSB = TWO_N21;  //!< 2^-21 m/s, Table 7-8
+constexpr double BEIDOU_CNAV1_DELTA_N0_LSB = TWO_N44 * GNSS_PI;
+constexpr double BEIDOU_CNAV1_DELTA_N0_DOT_LSB = TWO_N57 * GNSS_PI;
+constexpr double BEIDOU_CNAV1_M0_LSB = TWO_N32 * GNSS_PI;
+constexpr double BEIDOU_CNAV1_E_LSB = TWO_N34;
+constexpr double BEIDOU_CNAV1_OMEGA_LSB = TWO_N32 * GNSS_PI;
+constexpr double BEIDOU_CNAV1_I0_LSB = TWO_N32 * GNSS_PI;
+constexpr double BEIDOU_CNAV1_OMEGADOT_LSB = TWO_N44 * GNSS_PI;
+constexpr double BEIDOU_CNAV1_IDOT_LSB = TWO_N44 * GNSS_PI;
+constexpr double BEIDOU_CNAV1_CIS_LSB = TWO_N30;
+constexpr double BEIDOU_CNAV1_CIC_LSB = TWO_N30;
+constexpr double BEIDOU_CNAV1_CRS_LSB = TWO_N8;
+constexpr double BEIDOU_CNAV1_CRC_LSB = TWO_N8;
+constexpr double BEIDOU_CNAV1_CUS_LSB = TWO_N30;
+constexpr double BEIDOU_CNAV1_CUC_LSB = TWO_N30;
+constexpr double BEIDOU_CNAV1_AF0_LSB = TWO_N34;
+constexpr double BEIDOU_CNAV1_AF1_LSB = TWO_N50;
+constexpr double BEIDOU_CNAV1_AF2_LSB = TWO_N66;
+constexpr double BEIDOU_CNAV1_TGD_LSB = TWO_N34;
+constexpr double BEIDOU_CNAV1_ISC_LSB = TWO_N34;
 
 #endif  // GNSS_SDR_BEIDOU_CNAV1_H

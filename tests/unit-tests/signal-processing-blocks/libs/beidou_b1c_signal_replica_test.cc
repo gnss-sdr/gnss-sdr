@@ -78,3 +78,29 @@ TEST(BeidouB1cSignalReplicaTest, SinBoc11AutocorrelationShape)
     EXPECT_GT(side, 0.0);
     EXPECT_LT(side, peak);
 }
+
+
+TEST(BeidouB1cSignalReplicaTest, QmbocPilotKeepsComponentsInQuadrature)
+{
+    // ICD eqs. (4-10)/(4-11): Re=BOC(6,1), Im=BOC(1,1).
+    constexpr int32_t fs = 12 * 1023000;
+    const auto expected_length = static_cast<size_t>(BEIDOU_B1C_CODE_LENGTH_CHIPS * 12);
+    std::vector<std::complex<float>> code(expected_length);
+    const std::array<char, 3> pilot_signal = {{'1', 'P', '\0'}};
+    beidou_b1c_code_gen_complex_sampled(code, pilot_signal, true, 1, fs, 0);
+
+    double power_re = 0.0;
+    double power_im = 0.0;
+    double cross = 0.0;
+    for (const auto& s : code)
+        {
+            power_re += static_cast<double>(s.real()) * static_cast<double>(s.real());
+            power_im += static_cast<double>(s.imag()) * static_cast<double>(s.imag());
+            cross += static_cast<double>(s.real()) * static_cast<double>(s.imag());
+        }
+    ASSERT_GT(power_re, 0.0);
+    ASSERT_GT(power_im, 0.0);
+    EXPECT_NEAR(power_re / power_im, 4.0 / 29.0, 1.0e-3);
+    // Re and Im should be orthogonal.
+    EXPECT_NEAR(cross / static_cast<double>(code.size()), 0.0, 1.0e-3);
+}

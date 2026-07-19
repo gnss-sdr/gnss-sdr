@@ -152,6 +152,15 @@ double mapping_function(double el_rad)
 }  // namespace
 
 
+double beidou_bdgim_nearest_odd_hour_mjd(double time_mjd)
+{
+    /* ICD §7.8.2: t_p ∈ {01:00, 03:00, …, 23:00} nearest the epoch [MJD days]. */
+    const double hours = time_mjd * 24.0;
+    const double odd_hour = 2.0 * std::round((hours - 1.0) / 2.0) + 1.0;
+    return odd_hour / 24.0;
+}
+
+
 double beidou_bdgim_delay_m(
     double time_mjd,
     double lat_rad,
@@ -205,9 +214,9 @@ double beidou_bdgim_delay_m(
             sum_alpha_a += alpha[i] * spherical_harmonic(K_AI_N[i], K_AI_M[i], phi_p, lam_p);
         }
 
-    /* A0 from non-broadcast betas (7-14)(7-15) */
+    /* A0 from non-broadcast betas (7-14)(7-15); t_p is quantized, Slon is not. */
     double a0 = 0.0;
-    const double tp = time_mjd;
+    const double tp = beidou_bdgim_nearest_odd_hour_mjd(time_mjd);
     for (int j = 0; j < 17; j++)
         {
             double beta = K_A0[j];

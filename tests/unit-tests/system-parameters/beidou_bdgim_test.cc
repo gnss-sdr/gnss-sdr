@@ -54,3 +54,16 @@ TEST(BeidouBdgimTest, ZeroElevationReturnsZero)
     const double delay = beidou_bdgim_delay_m(58000.0, 0.0, 0.0, 0.0, 0.0, alpha, FREQ1);
     EXPECT_DOUBLE_EQ(delay, 0.0);
 }
+
+
+TEST(BeidouBdgimTest, NearestOddHourMjd)
+{
+    constexpr double day = 58000.0;
+    EXPECT_DOUBLE_EQ(beidou_bdgim_nearest_odd_hour_mjd(day + 1.0 / 24.0), day + 1.0 / 24.0);
+    EXPECT_DOUBLE_EQ(beidou_bdgim_nearest_odd_hour_mjd(day + 1.4 / 24.0), day + 1.0 / 24.0);
+    EXPECT_DOUBLE_EQ(beidou_bdgim_nearest_odd_hour_mjd(day + 2.6 / 24.0), day + 3.0 / 24.0);
+    EXPECT_DOUBLE_EQ(beidou_bdgim_nearest_odd_hour_mjd(day + 23.0 / 24.0), day + 23.0 / 24.0);
+    // Equidistant midnight → 01:00 (std::round half away from zero).
+    EXPECT_DOUBLE_EQ(beidou_bdgim_nearest_odd_hour_mjd(day), day + 1.0 / 24.0);
+    EXPECT_DOUBLE_EQ(beidou_bdgim_nearest_odd_hour_mjd(day - 0.1 / 24.0), day - 1.0 / 24.0);
+}

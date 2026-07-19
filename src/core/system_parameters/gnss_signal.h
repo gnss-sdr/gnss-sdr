@@ -59,8 +59,8 @@ public:
     friend std::ostream& operator<<(std::ostream& /*out*/, const Gnss_Signal& /*sig*/);  //!< operator<< for pretty printing
 
 private:
-    Gnss_Satellite satellite;
-    std::string signal;
+    Gnss_Satellite satellite{};
+    std::string signal{};
 };
 
 

@@ -456,8 +456,7 @@ void reorder_icd_column_bands_to_check_rows(
     std::vector<uint16_t>& reordered_index,
     std::vector<uint8_t>& reordered_element)
 {
-    // ICD publishes a compact matrix with 4-column bands; decoding should read each band
-    // top-to-bottom ("按栏读取"), then move left-to-right to the next band.
+    // ICD matrix is stored in 4-column bands: read each band top-to-bottom, then next band.
     const int32_t base_rows = num_checks / row_weight;
     const int32_t cols_per_base_row = row_weight * row_weight;
 

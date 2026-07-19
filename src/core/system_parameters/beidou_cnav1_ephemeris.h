@@ -22,7 +22,10 @@
 class Beidou_Cnav1_Ephemeris : public Gnss_Ephemeris
 {
 public:
-    Beidou_Cnav1_Ephemeris() = default;
+    Beidou_Cnav1_Ephemeris()
+    {
+        this->System = 'C';
+    }
 
     double TGD_B1Cp{};    //!< §7.6 B1C pilot group delay
     double TGD_B2ap{};    //!< §7.6 B2a pilot group delay
@@ -44,7 +47,7 @@ public:
         archive& BOOST_SERIALIZATION_NVP(delta_ndot);
         archive& BOOST_SERIALIZATION_NVP(ecc);
         archive& BOOST_SERIALIZATION_NVP(A0);
-        archive& BOOST_SERIALIZATION_NVP(Adot);
+        archive& BOOST_SERIALIZATION_NVP(Adot);  // Gnss_Ephemeris::Adot
         archive& BOOST_SERIALIZATION_NVP(OMEGA_0);
         archive& BOOST_SERIALIZATION_NVP(i_0);
         archive& BOOST_SERIALIZATION_NVP(omega);

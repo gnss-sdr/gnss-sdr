@@ -255,9 +255,7 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
 
             d_AODE = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_AODE));
 
-            // New SF1 starts a fresh ephemeris set. Discard any buffered SF2/SF3 so
-            // toe (split across SF2 MSBs + SF3 LSBs) and sqrt(A) cannot be assembled
-            // from mismatched frames (ICD B1I §5.2.4.12).
+            // New SF1: drop buffered SF2/SF3 (ICD B1I §5.2.4.12).
             flag_d1_sf2 = false;
             flag_d1_sf3 = false;
 
@@ -914,7 +912,7 @@ bool Beidou_Dnav_Navigation_Message::have_new_ephemeris()  // Check if we have a
                     if (d_previous_aode != d_AODE)
                         {
                             const double toe_s = (d_Toe_sf2 + d_Toe_sf3) * D1_TOE_LSB;
-                            // ICD B1I Table 5-10 range checks before publishing.
+                            // ICD B1I Table 5-10 range checks.
                             if (toe_s < 0.0 || toe_s > D1_TOE_MAX_S ||
                                 d_sqrt_A < D1_SQRT_A_MIN_SANE || d_sqrt_A > D1_SQRT_A_MAX)
                                 {

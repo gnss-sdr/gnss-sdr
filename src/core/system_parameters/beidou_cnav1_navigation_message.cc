@@ -126,7 +126,7 @@ bool decode_bch_codeword(const int32_t* in, int32_t* out_msg, const BchCodebook&
 static bool decode_bch_21_6(const int32_t* in, int32_t* out_msg)
 {
     static const std::vector<int32_t> feedback_pos = {2, 4, 5, 6};
-    static const BchCodebook cb = build_bch_codebook(21, 6, feedback_pos, 20);
+    static const BchCodebook cb = build_bch_codebook(21, 6, feedback_pos, 15);
     return decode_bch_codeword(in, out_msg, cb);
 }
 
@@ -134,7 +134,7 @@ static bool decode_bch_21_6(const int32_t* in, int32_t* out_msg)
 static bool decode_bch_51_8(const int32_t* in, int32_t* out_msg)
 {
     static const std::vector<int32_t> feedback_pos = {1, 4, 5, 6, 7, 8};
-    static const BchCodebook cb = build_bch_codebook(51, 8, feedback_pos, 50);
+    static const BchCodebook cb = build_bch_codebook(51, 8, feedback_pos, 29);
     return decode_bch_codeword(in, out_msg, cb);
 }
 
@@ -227,29 +227,21 @@ int64_t read_signed(const uint8_t* bits, int32_t offset, int32_t length)
 }
 uint32_t crc24q(const uint8_t* bits, int32_t num_bits)
 {
-    // 寄存器初始值设为全 0
+    // CRC-24Q (poly 0x864CFB)
     uint32_t crc = 0;
-
-    // 生成多项式去除了最高位 x^24 后的低 24 位掩码 (0x1864CFB & 0xFFFFFF)
     const uint32_t POLY = 0x864CFBU;
 
     for (int32_t i = 0; i < num_bits; i++)
         {
-            // 提取当前最高位（第24位，索引为23）
             uint32_t msb = (crc >> 23) & 1U;
             uint32_t bit = (bits[i] != 0U) ? 1U : 0U;
-
-            // 寄存器左移，保持 24 位位宽
             crc = (crc << 1) & 0xFFFFFFU;
-
-            // MSB 反馈与输入信息比特异或，决定是否执行多项式除法（异或生成多项式）
             if (msb ^ bit)
                 {
                     crc ^= POLY;
                 }
         }
 
-    // 依次输出构成 CRC 校验序列
     return crc;
 }
 
@@ -396,9 +388,9 @@ void parse_reduced_almanac(const uint8_t* bits, int32_t& offset, Bds3_B1c_Almana
     offset += 2;
     almanac.delta_a_m = static_cast<double>(read_signed(bits, offset, 8)) * twos_pow(9);
     offset += 8;
-    almanac.omega0_rad = static_cast<double>(read_signed(bits, offset, 7)) * twos_pow(-6) * M_PI;
+    almanac.omega0_rad = static_cast<double>(read_signed(bits, offset, 7)) * twos_pow(-6) * GNSS_PI;
     offset += 7;
-    almanac.phi0_rad = static_cast<double>(read_signed(bits, offset, 7)) * twos_pow(-6) * M_PI;
+    almanac.phi0_rad = static_cast<double>(read_signed(bits, offset, 7)) * twos_pow(-6) * GNSS_PI;
     offset += 7;
     almanac.health = static_cast<int32_t>(read_unsigned(bits, offset, 8));
     offset += 8;
@@ -416,17 +408,17 @@ void parse_medium_almanac(const uint8_t* bits, int32_t& offset, Bds3_B1c_Almanac
     offset += 8;
     almanac.eccentricity = static_cast<double>(read_unsigned(bits, offset, 11)) * twos_pow(-16);
     offset += 11;
-    almanac.delta_i_rad = static_cast<double>(read_signed(bits, offset, 11)) * twos_pow(-14) * M_PI;
+    almanac.delta_i_rad = static_cast<double>(read_signed(bits, offset, 11)) * twos_pow(-14) * GNSS_PI;
     offset += 11;
     almanac.sqrt_a_m_sqrt = static_cast<double>(read_unsigned(bits, offset, 17)) * twos_pow(-4);
     offset += 17;
-    almanac.omega0_rad = static_cast<double>(read_signed(bits, offset, 16)) * twos_pow(-15) * M_PI;
+    almanac.omega0_rad = static_cast<double>(read_signed(bits, offset, 16)) * twos_pow(-15) * GNSS_PI;
     offset += 16;
-    almanac.omega_dot_rad_s = static_cast<double>(read_signed(bits, offset, 11)) * twos_pow(-33) * M_PI;
+    almanac.omega_dot_rad_s = static_cast<double>(read_signed(bits, offset, 11)) * twos_pow(-33) * GNSS_PI;
     offset += 11;
-    almanac.omega_rad = static_cast<double>(read_signed(bits, offset, 16)) * twos_pow(-15) * M_PI;
+    almanac.omega_rad = static_cast<double>(read_signed(bits, offset, 16)) * twos_pow(-15) * GNSS_PI;
     offset += 16;
-    almanac.m0_rad = static_cast<double>(read_signed(bits, offset, 16)) * twos_pow(-15) * M_PI;
+    almanac.m0_rad = static_cast<double>(read_signed(bits, offset, 16)) * twos_pow(-15) * GNSS_PI;
     offset += 16;
     almanac.af0_s = static_cast<double>(read_signed(bits, offset, 11)) * twos_pow(-20);
     offset += 11;
@@ -487,7 +479,7 @@ void parse_page1(
     offset += 8;
     iono.alpha4 = static_cast<double>(read_unsigned(bits, offset, 8)) * 0.125;
     offset += 8;
-    iono.alpha5 = static_cast<double>(read_unsigned(bits, offset, 8)) * 0.125;
+    iono.alpha5 = static_cast<double>(read_unsigned(bits, offset, 8)) * -0.125;
     offset += 8;
     iono.alpha6 = static_cast<double>(read_signed(bits, offset, 8)) * 0.125;
     offset += 8;
@@ -499,11 +491,11 @@ void parse_page1(
     offset += 8;
 
     // ICD Table 7-20 / Figure 6-17
-    utc.A0 = static_cast<double>(read_signed(bits, offset, 16)) * GNSS_SDR_TWO_N35;
+    utc.A0 = static_cast<double>(read_signed(bits, offset, 16)) * TWO_N35;
     offset += 16;
-    utc.A1 = static_cast<double>(read_signed(bits, offset, 13)) * GNSS_SDR_TWO_N51;
+    utc.A1 = static_cast<double>(read_signed(bits, offset, 13)) * TWO_N51;
     offset += 13;
-    utc.A2 = static_cast<double>(read_signed(bits, offset, 7)) * GNSS_SDR_TWO_N68;
+    utc.A2 = static_cast<double>(read_signed(bits, offset, 7)) * TWO_N68;
     offset += 7;
     utc.delta_t_LS = static_cast<int32_t>(read_signed(bits, offset, 8));
     offset += 8;
@@ -538,10 +530,8 @@ void parse_page3(const uint8_t* bits, Bds3_B1c_PageData& page_data)
     parse_page_common(bits, true, false, page_data, offset);
     parse_eop(bits, offset, page_data.eop);
     parse_bgto(bits, offset, page_data.bgto);
-    // Consume trailing reserved block and CRC for layout completeness.
-    (void)read_unsigned(bits, offset, 14);
-    offset += 14;
-    (void)read_unsigned(bits, offset, 24);
+    offset += 14;  // reserved
+    offset += 24;  // CRC
 }
 
 void parse_page4(const uint8_t* bits, Bds3_B1c_PageData& page_data)
@@ -549,10 +539,8 @@ void parse_page4(const uint8_t* bits, Bds3_B1c_PageData& page_data)
     int32_t offset = 0;
     parse_page_common(bits, false, true, page_data, offset);
     parse_medium_almanac(bits, offset, page_data.medium_almanac);
-    // Consume trailing reserved block and CRC for layout completeness.
-    (void)read_unsigned(bits, offset, 47);
-    offset += 47;
-    (void)read_unsigned(bits, offset, 24);
+    offset += 47;  // reserved
+    offset += 24;  // CRC
 }
 }  // namespace
 
@@ -630,13 +618,11 @@ bool Beidou_Cnav1_Navigation_Message::decode_frame(
     std::array<float, BEIDOU_CNAV1_SUBFRAME3_SYMBOLS> sf3_llr_bitrev{};
     std::array<float, BEIDOU_CNAV1_SUBFRAME3_SYMBOLS> sf3_llr_bitrev_inv{};
     deinterleave_sf2_sf3(bit_llr.data() + BEIDOU_CNAV1_SUBFRAME1_SYMBOLS, sf2_llr.data(), sf3_llr.data());
-    // LDPC works on GF(64): 6 bit-LLRs per symbol. Build four polarity/order variants
-    // (normal, inverted, per-symbol bit-reversed, both) and try each below.
+    // Try normal / inverted / bit-reversed LLR polarity for GF(64) LDPC.
     for (int32_t i = 0; i < BEIDOU_CNAV1_SUBFRAME2_SYMBOLS; i++)
         {
             sf2_llr_inv[static_cast<size_t>(i)] = -sf2_llr[static_cast<size_t>(i)];
         }
-    // Reverse bit order within each 6-LLR GF(64) symbol; inv applies the same polarity flip.
     for (int32_t symbol = 0; symbol < BEIDOU_CNAV1_SUBFRAME2_SYMBOLS / 6; symbol++)
         {
             const auto base = static_cast<size_t>(symbol) * 6U;
@@ -647,7 +633,6 @@ bool Beidou_Cnav1_Navigation_Message::decode_frame(
                     sf2_llr_bitrev_inv[base + bit_u] = -sf2_llr_bitrev[base + bit_u];
                 }
         }
-    // SF3: same four LLR variants as SF2.
     for (int32_t i = 0; i < BEIDOU_CNAV1_SUBFRAME3_SYMBOLS; i++)
         {
             sf3_llr_inv[static_cast<size_t>(i)] = -sf3_llr[static_cast<size_t>(i)];
@@ -686,8 +671,7 @@ bool Beidou_Cnav1_Navigation_Message::decode_frame(
         }
     if (!sf2_ldpc_ok)
         {
-            // SF2 LDPC fallback: after normal/inverted/bit-reversed attempts all fail,
-            // hard-slice the deinterleaved LLRs (sign of sf2_llr) as information bits.
+            // Hard-slice LLRs if LDPC fails.
             for (int32_t i = 0; i < BEIDOU_CNAV1_SF2_DATA_BITS; i++)
                 {
                     sf2_data[static_cast<size_t>(i)] = (sf2_llr[static_cast<size_t>(i)] >= 0.0F) ? 1U : 0U;
@@ -695,8 +679,7 @@ bool Beidou_Cnav1_Navigation_Message::decode_frame(
         }
     else
         {
-            // Some matrix descriptions/orderings are not guaranteed to keep information symbols
-            // in the first K symbols. Prefer the half that satisfies CRC if available.
+            // Prefer the codeword half that passes CRC (info may be first or second K symbols).
             std::copy_n(sf2_codeword_bits.begin(), BEIDOU_CNAV1_SF2_DATA_BITS, sf2_data.begin());
             if (!verify_crc24q(sf2_data.data(), BEIDOU_CNAV1_SF2_DATA_BITS - BEIDOU_CNAV1_CRC_BITS))
                 {
@@ -751,19 +734,14 @@ bool Beidou_Cnav1_Navigation_Message::decode_frame(
             return false;
         }
 
-    // Parse SF2 into a candidate so a mismatched IODE/IODC pair cannot overwrite a good set.
     Beidou_Cnav1_Ephemeris candidate{};
     parse_subframe2(sf2_data.data(), candidate, soh_seconds);
     candidate.PRN = static_cast<int32_t>(prn);
-    // ICD B1C §7.4.3: usable only when IODE equals IODC low 8 bits.
+    // ICD §7.4.3: publish only when IODE matches IODC low 8 bits.
     const auto iode = static_cast<uint32_t>(candidate.IODE);
     const auto iodc_lo = static_cast<uint32_t>(candidate.IODC) & 0xFFU;
     tow_s_ = static_cast<double>(candidate.tow);
-    if (iode != iodc_lo)
-        {
-            // Frame CRC is OK; do not publish unmatched eph/clock (keep prior ephemeris_).
-        }
-    else
+    if (iode == iodc_lo)
         {
             ephemeris_ = candidate;
             flag_new_ephemeris_ = true;

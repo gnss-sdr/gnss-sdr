@@ -555,10 +555,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
         }
     else
         {
-            /* ICD B1C (7-3): Δtr = F·e·√A0·sin(Ek); F = -2√μ/c².
-             * Use reference semi-major axis A0 for B-CNAV1 (not Ak). */
-            const double A_rel = is_bds_cnav1 ? A0 : A;
-            *dts -= 2.0 * sqrt(mu * A_rel) * eph->e * sinE / (SPEED_OF_LIGHT_M_S * SPEED_OF_LIGHT_M_S);
+            *dts -= 2.0 * sqrt(mu * eph->A) * eph->e * sinE / (SPEED_OF_LIGHT_M_S * SPEED_OF_LIGHT_M_S);
         }
 
     /* position and clock error variance */

@@ -152,11 +152,11 @@ void check_and_configure_trk_params(const ConfigurationInterface* configuration,
 
     if (sig_flag == BDS_B1C)
         {
-            // Keep tracking-side local replica modulation aligned with acquisition by default.
+            // Default tracking QMBOC flag from Acquisition_1D.qmboc.
             const bool acq_qmboc = configuration->property("Acquisition_1D.qmboc", trk_params.b1c_qmboc_tracking);
             trk_params.b1c_qmboc_tracking = configuration->property(role + ".b1c_qmboc_tracking", acq_qmboc);
 
-            // B1C pilot secondary sync spans one B-CNAV1 frame (18 s); keep coherent integration at 1 symbol.
+            // Pilot secondary sync needs a full 18 s frame; disable extended coherent integration.
             if (trk_params.track_pilot)
                 {
                     trk_params.extend_correlation_symbols = 1;

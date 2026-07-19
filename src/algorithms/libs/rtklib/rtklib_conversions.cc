@@ -230,15 +230,7 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
                 }
             else if (sig_ == "1D")
                 {
-                    // RINEX: B1C pilot = 1P, B1C data = 1D (ICD §7.6 TGD/ISC)
-                    if (gnss_synchro.Flag_tracking_pilot)
-                        {
-                            rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L1P);
-                        }
-                    else
-                        {
-                            rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L1D);
-                        }
+                    rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L1P);
                 }
 
             break;

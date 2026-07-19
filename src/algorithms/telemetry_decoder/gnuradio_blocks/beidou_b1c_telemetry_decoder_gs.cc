@@ -48,11 +48,7 @@
 
 namespace
 {
-// ICD B1C §7.3: SOH is the BDT second of the first symbol of subframe 1 (frame start).
-// With set_history(N), in[0] is oldest and in[N-1] is the symbol being tagged.
-// If SOH is at window index `offset`, symbols from SOH through current = N - offset
-// (same counting as B1I: preamble_tow + required_symbols * dt). Using N-1 left a
-// systematic -10 ms B1C TOW that hybrid PVT absorbed into dtr_bds≈0.01 s.
+// ICD §7.3: SOH marks subframe-1 start. Symbols from SOH to current = N - offset.
 int32_t resolve_b1c_frame_soh_offset(int32_t matched_offset, int32_t prev_candidate_offset)
 {
     if (matched_offset >= 0)
@@ -269,7 +265,6 @@ beidou_b1c_telemetry_decoder_gs::beidou_b1c_telemetry_decoder_gs(
       d_dump_crc_stats(conf.dump_crc_stats),
       d_tow_to_trk(conf.tow_to_trk)
 {
-    // Keep one full CNAV1 frame in the GR input buffer (oldest sample at in[0]).
     set_history(static_cast<unsigned int>(BEIDOU_CNAV1_FRAME_SYMBOLS));
     set_output_multiple(1);
     configure_basic_outputs();
@@ -333,7 +328,6 @@ void beidou_b1c_telemetry_decoder_gs::reset()
 
 void beidou_b1c_telemetry_decoder_gs::forecast(int noutput_items, gr_vector_int& ninput_items_required)
 {
-    // Ask the scheduler for a full-frame history window plus new items to produce outputs.
     ninput_items_required[0] = BEIDOU_CNAV1_FRAME_SYMBOLS + std::max(noutput_items, 1) - 1;
 }
 
@@ -422,7 +416,6 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
             return 0;
         }
 
-    // With set_history(N), in[0] is the oldest sample and in[N-1] is the newest.
     const int32_t hist = BEIDOU_CNAV1_FRAME_SYMBOLS;
     const Gnss_Synchro* frame_window = in;
     Gnss_Synchro current_symbol = in[hist - 1];
@@ -437,8 +430,7 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
             d_post_lock_valid_symbols++;
         }
 
-    // After pilot-secondary lock (first valid symbol): decode once if 18 s history is ready.
-    // While tracking: only decode on 18 s frame boundaries (no periodic LDPC polling).
+    // Decode on lock (or when 18 s history is ready), then only on frame boundaries.
     const bool at_frame_boundary =
         d_flag_frame_sync &&
         (d_sample_counter > d_frame_sync_index) &&
@@ -448,7 +440,6 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
         d_post_lock_valid_symbols >= static_cast<uint32_t>(BEIDOU_CNAV1_FRAME_SYMBOLS);
     bool frame_decoded = false;
 
-    // Require a full history of real symbols before attempting frame decode.
     const bool history_ready = (d_sample_counter >= static_cast<uint64_t>(BEIDOU_CNAV1_FRAME_SYMBOLS));
     if (history_ready)
         {
@@ -465,7 +456,6 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
                     int32_t matched_offset = -1;
                     if (d_stat == 0 && just_locked_event)
                         {
-                            // One-shot sync-decode on pilot-secondary lock (no periodic LDPC polling).
                             const int32_t expected_prn_scan = d_satellite.get_PRN();
                             std::vector<float> history_i;
                             std::vector<float> history_q;
@@ -542,7 +532,6 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
                         }
                     else
                         {
-                            // Tracking path: SOH index tracked in d_frame_soh_offset (0 once aligned).
                             frame_decoded = decode_frame_from_window(frame_window, d_frame_soh_offset, false);
                             if (!frame_decoded)
                                 {
@@ -566,8 +555,6 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
                                 {
                                     d_flag_frame_sync = true;
                                     d_stat = 2;
-                                    // Remember SOH index in the sliding GR history window.
-                                    // Each subsequent consume(1) moves SOH one sample closer to in[0].
                                     d_frame_soh_offset = (matched_offset >= 0) ? matched_offset : 0;
                                     LOG(INFO) << "Successful frame synchronization in channel " << d_channel
                                               << " for satellite " << d_satellite
@@ -619,7 +606,6 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
             current_symbol.Flag_PLL_180_deg_phase_locked = false;
         }
 
-    // Slide the GR history window by one symbol. SOH index decreases until aligned at in[0].
     consume_each(1);
     if (d_flag_frame_sync && d_frame_soh_offset > 0)
         {

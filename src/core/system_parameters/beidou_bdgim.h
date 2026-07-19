@@ -43,6 +43,11 @@ double beidou_bdgim_delay_m(
     const double alpha[9],
     double freq_hz);
 
+/*!
+ * \brief ICD §7.8.2: odd hour of day (01:00 … 23:00) nearest to time_mjd [MJD days].
+ */
+double beidou_bdgim_nearest_odd_hour_mjd(double time_mjd);
+
 /** \} */
 /** \} */
 #endif  // GNSS_SDR_BEIDOU_BDGIM_H

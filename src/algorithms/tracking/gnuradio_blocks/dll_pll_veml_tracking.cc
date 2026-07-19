@@ -985,10 +985,10 @@ void dll_pll_veml_tracking::start_tracking()
             if (d_trk_parameters.track_pilot)
                 {
                     const std::array<char, 3> pilot_signal = {{'1', 'P', '\0'}};
+                    // Pilot BOC(1,1) for the real multicorrelator (QMBOC is acquisition-only).
                     beidou_b1c_code_gen_float_sampled(
                         d_tracking_code, pilot_signal, d_trk_parameters.b1c_qmboc_tracking,
                         d_acquisition_gnss_synchro->PRN, b1c_replica_fs, 0, false);
-                    // Data component remains BOC(1,1) even when pilot is QMBOC.
                     beidou_b1c_code_gen_float_sampled(
                         d_data_code, Signal_, d_trk_parameters.b1c_qmboc_tracking,
                         d_acquisition_gnss_synchro->PRN, b1c_replica_fs, 0, false);
@@ -1712,8 +1712,6 @@ void dll_pll_veml_tracking::assign_correlators_to_synchro(Gnss_Synchro &synchro)
         {
             const gr_complex pilot_raw = *d_Prompt;
             gr_complex pilot_ref = (d_state == 2) ? pilot_raw : d_P_accu;
-            // Do not apply pilot-secondary sign during pre-lock (phase unknown until acquire_secondary()).
-
             const float pilot_abs = std::abs(pilot_ref);
             gr_complex data_aligned = d_P_data_accu;
             if (pilot_abs > 1e-6F)
@@ -2173,14 +2171,10 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                         // enable write dump file this cycle (valid DLL/PLL cycle)
                         log_data();
 
-                        // Feed 10 ms B1C data symbols to telemetry while secondary lock is pending,
-                        // so telemetry can build a rolling 18 s frame history before the first valid symbol.
+                        // Prefill telemetry history with 10 ms B1C symbols before secondary lock.
                         if (d_systemName == "Beidou" && d_signal_type == "1D" && d_trk_parameters.track_pilot &&
                             !d_pull_in_transitory && d_current_data_symbol == 0)
                             {
-                                // State 2 does not update d_P_data_accu in save_correlation_results().
-                                // Use the instantaneous 10 ms data prompt and assign_correlators_to_synchro()
-                                // to publish data (Prompt_I) and pilot (Prompt_Q) to telemetry.
                                 d_P_data_accu = d_Prompt_Data[0];
                                 current_synchro_data = *d_acquisition_gnss_synchro;
                                 assign_correlators_to_synchro(current_synchro_data);
@@ -2189,8 +2183,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                 current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                                 current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
                                 current_synchro_data.correlation_length_ms = d_correlation_length_ms;
-                                // Cache pre-lock symbols for telemetry history, but mark them invalid so
-                                // telemetry can avoid running BCH/LDPC before secondary alignment is confirmed.
+                                // Invalid until secondary lock (no BCH/LDPC yet).
                                 current_synchro_data.Flag_valid_symbol_output = false;
                                 d_b1c_prelock_output_pending = true;
                                 d_P_data_accu = gr_complex(0.0, 0.0);
@@ -2464,7 +2457,6 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     current_synchro_data.Flag_valid_symbol_output = true;
                 }
             current_synchro_data.Flag_PLL_180_deg_phase_locked = d_Flag_PLL_180_deg_phase_locked;
-            current_synchro_data.Flag_tracking_pilot = d_trk_parameters.track_pilot;
 
             // generate new tag associated with gnss-synchro object
             if (d_timetag_waiting == true)

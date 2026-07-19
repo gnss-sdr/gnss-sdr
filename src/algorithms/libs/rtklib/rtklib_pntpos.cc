@@ -120,8 +120,8 @@ double gettgd(int sat, const nav_t *nav)
  *   B1C pilot CODE_L1P: (Δtsv)_B1Cp = Δtsv - TGD_B1Cp           → (7-4)
  *   B1C data  CODE_L1D: (Δtsv)_B1Cd = Δtsv - TGD_B1Cp - ISC_B1Cd → (7-5)
  *   B1I (CODE_L2I/L1I): use DNAV TGD1; B3I skips TGD in prange.
- * NOTE: CODE_L1P is also GPS/GLO L1P in RINEX — CNAV1 selection is SYS_BDS only.
- * Do not fall back across DNAV↔CNAV1: TGD1 and TGD_B1Cp are different quantities.
+ * CODE_L1P is also GPS/GLO L1P — CNAV1 matching is SYS_BDS only.
+ * No DNAV↔CNAV1 TGD fallback (TGD1 vs TGD_B1Cp).
  *-----------------------------------------------------------------------------*/
 double gettgd(int sat, const nav_t *nav, unsigned char obs_code)
 {
@@ -247,22 +247,25 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         }
 
     /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS;
-     * BDS: B1I(band0)+B3I(band2). B1C alone sits on band1 (no IF pair here). */
+     * BDS: B1I(band0)+B3I(band2). B1C (CODE_L1P/L1D) is single-frequency on
+     * slot 0 under GNSS-SDR prefer-B1C XOR (never paired as IF with B1I). */
     if (sys == SYS_GAL || sys == SYS_SBS)
         {
             j = 2;
         }
     else if (sys == SYS_BDS)
         {
-            if (obs->code[0] != CODE_NONE && obs->code[2] != CODE_NONE)
+            const bool b1c0 = (obs->code[0] == CODE_L1D || obs->code[0] == CODE_L1P);
+            const bool b1c1 = (obs->code[1] == CODE_L1D || obs->code[1] == CODE_L1P);
+            if (b1c0 || b1c1)
+                {
+                    i = b1c0 ? 0 : 1;
+                    j = i; /* B1C single-frequency */
+                }
+            else if (obs->code[0] != CODE_NONE && obs->code[2] != CODE_NONE)
                 {
                     i = 0;
                     j = 2; /* B1I + B3I */
-                }
-            else if (obs->code[1] != CODE_NONE)
-                {
-                    i = 1;
-                    j = 1; /* B1C single-frequency */
                 }
             else if (obs->code[0] != CODE_NONE)
                 {
@@ -703,8 +706,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                     continue;
                 }
 
-            /* Scale broadcast iono (GPS-L1 reference) to the observed carrier.
-             * B1C band1 uses FREQ1 so the scale is 1 when BDGIM already returns FREQ1 delay. */
+            /* Scale broadcast iono (L1 reference) to the observed carrier. */
             if ((lam_L1 = nav->lam[obs[i].sat - 1][iono_band]) > 0.0)
                 {
                     /* iono delay scales with f^-2, its variance with f^-4 */

@@ -19,65 +19,70 @@
 #include <gtest/gtest.h>
 #include <array>
 #include <cmath>
+#include <cstdint>
+#include <vector>
 
 namespace
 {
+// LFSR encoder matching beidou_cnav1_navigation_message.cc
+std::vector<int8_t> encode_bch_lfsr_bipolar(
+    uint16_t msg_bits,
+    int32_t n,
+    int32_t k,
+    const std::vector<int32_t>& feedback_pos_1based)
+{
+    std::vector<int8_t> register_state(static_cast<size_t>(k), 1);
+    std::vector<int8_t> encoded(static_cast<size_t>(n), 1);
+
+    for (int32_t i = 0; i < k; i++)
+        {
+            const auto bit = static_cast<int32_t>((msg_bits >> static_cast<uint32_t>(k - 1 - i)) & 1U);
+            register_state[static_cast<size_t>(k - 1 - i)] = (bit == 0) ? 1 : -1;
+        }
+
+    for (int32_t ind = 0; ind < n; ind++)
+        {
+            encoded[static_cast<size_t>(ind)] = register_state.back();
+            int8_t feedback = 1;
+            for (const int32_t pos : feedback_pos_1based)
+                {
+                    feedback = static_cast<int8_t>(feedback * register_state[static_cast<size_t>(pos - 1)]);
+                }
+            for (int32_t j = k - 1; j > 0; j--)
+                {
+                    register_state[static_cast<size_t>(j)] = register_state[static_cast<size_t>(j - 1)];
+                }
+            register_state[0] = feedback;
+        }
+
+    return encoded;
+}
+
+void append_bch_codeword(
+    std::vector<float>& frame,
+    uint16_t msg_bits,
+    int32_t n,
+    int32_t k,
+    const std::vector<int32_t>& feedback_pos_1based)
+{
+    const auto encoded = encode_bch_lfsr_bipolar(msg_bits, n, k, feedback_pos_1based);
+    for (const auto cw : encoded)
+        {
+            // Map bipolar codeword to float symbols expected by the hard-decision BCH decoder.
+            frame.push_back(cw > 0 ? -1.0F : 1.0F);
+        }
+}
+
 void append_bch21_6(std::vector<float>& frame, uint32_t prn)
 {
-    std::array<int32_t, 6> msg{};
-    for (int32_t bit = 5; bit >= 0; bit--)
-        {
-            msg[5 - bit] = static_cast<int32_t>((prn >> bit) & 1U);
-        }
-    static const int32_t g[7] = {1, 0, 1, 0, 1, 1, 1};
-    std::array<int32_t, 21> codeword{};
-    for (int32_t i = 0; i < 6; i++)
-        {
-            codeword[i] = msg[i];
-        }
-    for (int32_t i = 0; i < 6; i++)
-        {
-            if (codeword[i] != 0)
-                {
-                    for (int32_t j = 0; j < 7; j++)
-                        {
-                            codeword[i + j] ^= g[j];
-                        }
-                }
-        }
-    for (const auto bit : codeword)
-        {
-            frame.push_back(bit != 0 ? 1.0F : -1.0F);
-        }
+    static const std::vector<int32_t> feedback_pos = {2, 4, 5, 6};
+    append_bch_codeword(frame, static_cast<uint16_t>(prn & 0x3FU), 21, 6, feedback_pos);
 }
 
 void append_bch51_8(std::vector<float>& frame, uint32_t soh)
 {
-    std::array<int32_t, 8> msg{};
-    for (int32_t bit = 7; bit >= 0; bit--)
-        {
-            msg[7 - bit] = static_cast<int32_t>((soh >> bit) & 1U);
-        }
-    static const int32_t g[9] = {1, 1, 0, 0, 1, 1, 1, 1, 1};
-    std::array<int32_t, 51> codeword{};
-    for (int32_t i = 0; i < 8; i++)
-        {
-            codeword[i] = msg[i];
-        }
-    for (int32_t i = 0; i < 8; i++)
-        {
-            if (codeword[i] != 0)
-                {
-                    for (int32_t j = 0; j < 9; j++)
-                        {
-                            codeword[i + j] ^= g[j];
-                        }
-                }
-        }
-    for (const auto bit : codeword)
-        {
-            frame.push_back(bit != 0 ? 1.0F : -1.0F);
-        }
+    static const std::vector<int32_t> feedback_pos = {1, 4, 5, 6, 7, 8};
+    append_bch_codeword(frame, static_cast<uint16_t>(soh & 0xFFU), 51, 8, feedback_pos);
 }
 
 void deinterleave_like_icd(const std::vector<float>& sf2_bits, const std::vector<float>& sf3_bits, std::vector<float>& interleaved)
@@ -138,7 +143,11 @@ TEST(BeidouCnav1NavigationMessageTest, DecodeSubframe1OnlyFrameFailsWithoutSf2Cr
     std::vector<float> frame;
     append_bch21_6(frame, 19U);
     append_bch51_8(frame, 1U);
-    frame.insert(frame.end(), BEIDOU_CNAV1_INTERLEAVED_SYMBOLS, 4.0F);
+    // Non-constant SF2/SF3 noise (constant LLRs can decode as the all-zero codeword).
+    for (int32_t i = 0; i < BEIDOU_CNAV1_INTERLEAVED_SYMBOLS; i++)
+        {
+            frame.push_back(((i * 17 + 3) % 5 < 2) ? 4.0F : -4.0F);
+        }
 
     Beidou_Cnav1_Navigation_Message nav;
     EXPECT_FALSE(nav.decode_frame_symbols(frame.data(), BEIDOU_CNAV1_FRAME_SYMBOLS));
@@ -171,36 +180,30 @@ TEST(BeidouCnav1NavigationMessageTest, DecodeEphemerisFromZeroSf2Payload)
     EXPECT_EQ(rtklib_eph.iodc, 0);
     EXPECT_NEAR(rtklib_eph.A, BEIDOU_CNAV1_A_REF_MEO, 1.0);
     EXPECT_EQ(rtklib_eph.code, 7);
-    /* Adot/ndot retained through parse → RTKLIB conversion (may be zero in synthetic frame) */
     EXPECT_DOUBLE_EQ(rtklib_eph.Adot, nav.get_ephemeris().Adot);
     EXPECT_DOUBLE_EQ(rtklib_eph.ndot, nav.get_ephemeris().delta_n0dot);
 }
 
 TEST(BeidouCnav1NavigationMessageTest, RejectsEphemerisWhenIodeIodcMismatch)
 {
-    // Build SF2 with IODC=0x101 (low 8 = 0x01) and IODE=0x02 → §7.4.3 mismatch.
+    // SF2 with IODC/IODE mismatch (ICD §7.4.3).
     std::vector<uint8_t> sf2_bits(static_cast<size_t>(BEIDOU_CNAV1_SUBFRAME2_SYMBOLS), 0U);
-    // WN=0, HOW=0 already zero; set IODC at bit 21 (13+8), 10 bits = 0x101
     const int32_t iodc_offset = 13 + 8;
-    const uint32_t iodc = 0x101U;
+    const uint32_t iodc = 0x101U;  // low 8 = 0x01
     for (int32_t b = 0; b < 10; b++)
         {
             sf2_bits[static_cast<size_t>(iodc_offset + b)] = static_cast<uint8_t>((iodc >> static_cast<uint32_t>(9 - b)) & 1U);
         }
-    // IODE at bit 31, 8 bits = 0x02
     const int32_t iode_offset = iodc_offset + 10;
     const uint32_t iode = 0x02U;
     for (int32_t b = 0; b < 8; b++)
         {
             sf2_bits[static_cast<size_t>(iode_offset + b)] = static_cast<uint8_t>((iode >> static_cast<uint32_t>(7 - b)) & 1U);
         }
-    // SatType MEO = 0b11 at toe(11)+offset after IODE
-    const int32_t sat_type_offset = iode_offset + 8 + 11;
+    const int32_t sat_type_offset = iode_offset + 8 + 11;  // MEO
     sf2_bits[static_cast<size_t>(sat_type_offset)] = 1U;
     sf2_bits[static_cast<size_t>(sat_type_offset + 1)] = 1U;
 
-    // Append valid CRC24Q over first 576 bits (zeros+fields above) — use decoder's CRC by
-    // zeroing CRC field and computing via a local copy of the same polynomial as the parser.
     auto crc24q_bits = [](const uint8_t* bits, int32_t num_bits) -> uint32_t {
         uint32_t crc = 0;
         const uint32_t POLY = 0x864CFBU;

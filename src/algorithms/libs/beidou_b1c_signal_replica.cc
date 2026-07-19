@@ -103,30 +103,29 @@ void beidou_b1c_sinboc_61_gen_int(own::span<int32_t> dest, own::span<const int32
 }
 
 
-void beidou_b1c_qmboc_gen_float(own::span<float> dest, own::span<const int32_t> prn, bool pilot)
+namespace
+{
+/*!
+ * QMBOC(6,1,4/33) pilot subcarrier (ICD eqs. 4-10/4-11):
+ * Re = BOC(6,1), Im = BOC(1,1), power ratio 4:29.
+ */
+void beidou_b1c_qmboc_gen_complex(own::span<std::complex<float>> dest, own::span<const int32_t> prn)
 {
     const auto code_length = dest.size();
-    const float alpha = std::sqrt(29.0F / 44.0F);
-    const float beta = std::sqrt(4.0F / 44.0F);
+    const float alpha = std::sqrt(29.0F / 33.0F);  // BOC(1,1) weight in sc_B1C_pilot
+    const float beta = std::sqrt(4.0F / 33.0F);    // BOC(6,1) weight in sc_B1C_pilot
     std::vector<int32_t> sinboc_11(code_length);
     std::vector<int32_t> sinboc_61(code_length);
     beidou_b1c_sinboc_11_gen_int(sinboc_11, prn);
     beidou_b1c_sinboc_61_gen_int(sinboc_61, prn);
-    if (pilot)
+    for (size_t i = 0; i < code_length; i++)
         {
-            for (size_t i = 0; i < code_length; i++)
-                {
-                    dest[i] = alpha * static_cast<float>(sinboc_11[i]) + beta * static_cast<float>(sinboc_61[i]);
-                }
-        }
-    else
-        {
-            for (size_t i = 0; i < code_length; i++)
-                {
-                    dest[i] = static_cast<float>(sinboc_11[i]);
-                }
+            dest[i] = std::complex<float>(
+                beta * static_cast<float>(sinboc_61[i]),
+                alpha * static_cast<float>(sinboc_11[i]));
         }
 }
+}  // namespace
 
 
 void beidou_b1c_code_gen_sinboc11_float(own::span<float> dest, const std::array<char, 3>& signal_id, uint32_t prn)
@@ -166,19 +165,13 @@ void beidou_b1c_code_gen_float_sampled(own::span<float> dest, const std::array<c
             primary_bipolar[i] = primary_code[i] == 0 ? 1 : -1;
         }
 
+    // Tracking path: real BOC(1,1) only (full QMBOC is complex).
     std::vector<float> signal_b1c(code_length);
-    if (qmboc && is_pilot)
+    std::vector<int32_t> signal_b1c_int(code_length);
+    beidou_b1c_sinboc_11_gen_int(signal_b1c_int, primary_bipolar);
+    for (uint32_t ii = 0; ii < code_length; ++ii)
         {
-            beidou_b1c_qmboc_gen_float(signal_b1c, primary_bipolar, true);
-        }
-    else
-        {
-            std::vector<int32_t> signal_b1c_int(code_length);
-            beidou_b1c_sinboc_11_gen_int(signal_b1c_int, primary_bipolar);
-            for (uint32_t ii = 0; ii < code_length; ++ii)
-                {
-                    signal_b1c[ii] = static_cast<float>(signal_b1c_int[ii]);
-                }
+            signal_b1c[ii] = static_cast<float>(signal_b1c_int[ii]);
         }
 
     if (sampling_freq != samples_per_chip * code_freq_basis)
@@ -220,20 +213,76 @@ void beidou_b1c_code_gen_float_sampled(own::span<float> dest, const std::array<c
 void beidou_b1c_code_gen_complex_sampled(own::span<std::complex<float>> dest, const std::array<char, 3>& signal_id,
     bool qmboc, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift, bool secondary_flag)
 {
+    constexpr auto code_freq_basis = static_cast<int32_t>(BEIDOU_B1C_CODE_RATE_CPS);
+    const int32_t samples_per_chip = qmboc ? 12 : 2;
+    const uint32_t code_length = samples_per_chip * static_cast<uint32_t>(BEIDOU_B1C_CODE_LENGTH_CHIPS);
     const std::string b1c_signal = signal_id.data();
     const bool is_pilot = b1c_signal.rfind("1P") != std::string::npos;
     auto samples_per_code = static_cast<uint32_t>(static_cast<double>(sampling_freq) /
-                                                  (BEIDOU_B1C_CODE_RATE_CPS / BEIDOU_B1C_CODE_LENGTH_CHIPS));
-    if (is_pilot && secondary_flag)
+                                                  (static_cast<double>(code_freq_basis) / BEIDOU_B1C_CODE_LENGTH_CHIPS));
+    const uint32_t delay = ((static_cast<int32_t>(BEIDOU_B1C_CODE_LENGTH_CHIPS) - static_cast<int32_t>(chip_shift)) %
+                               static_cast<int32_t>(BEIDOU_B1C_CODE_LENGTH_CHIPS)) *
+                           samples_per_code / static_cast<uint32_t>(BEIDOU_B1C_CODE_LENGTH_CHIPS);
+
+    std::array<int32_t, 10230> primary_code{};
+    beidou_b1c_code_gen_int(primary_code, signal_id, static_cast<int32_t>(prn));
+
+    std::array<int32_t, 10230> primary_bipolar{};
+    for (uint32_t i = 0; i < static_cast<uint32_t>(BEIDOU_B1C_CODE_LENGTH_CHIPS); i++)
         {
-            samples_per_code *= static_cast<uint32_t>(BEIDOU_B1C_PILOT_SECONDARY_CODE_LENGTH);
+            primary_bipolar[i] = primary_code[i] == 0 ? 1 : -1;
         }
 
-    std::vector<float> real_code(samples_per_code);
-    beidou_b1c_code_gen_float_sampled(real_code, signal_id, qmboc, prn, sampling_freq, chip_shift, secondary_flag);
-    for (uint32_t ii = 0; ii < samples_per_code; ++ii)
+    std::vector<std::complex<float>> signal_b1c(code_length);
+    if (qmboc && is_pilot)
         {
-            dest[ii] = std::complex<float>(real_code[ii], 0.0F);
+            beidou_b1c_qmboc_gen_complex(signal_b1c, primary_bipolar);
+        }
+    else
+        {
+            std::vector<int32_t> signal_b1c_int(code_length);
+            beidou_b1c_sinboc_11_gen_int(signal_b1c_int, primary_bipolar);
+            for (uint32_t ii = 0; ii < code_length; ++ii)
+                {
+                    signal_b1c[ii] = std::complex<float>(static_cast<float>(signal_b1c_int[ii]), 0.0F);
+                }
+        }
+
+    if (sampling_freq != samples_per_chip * code_freq_basis)
+        {
+            std::vector<std::complex<float>> resampled_signal(samples_per_code);
+            resampler(signal_b1c, resampled_signal, static_cast<float>(samples_per_chip * code_freq_basis),
+                static_cast<float>(sampling_freq));
+            signal_b1c = std::move(resampled_signal);
+        }
+    else
+        {
+            samples_per_code = code_length;
+        }
+
+    if (is_pilot && secondary_flag)
+        {
+            const int32_t prn_index = static_cast<int32_t>(prn) - 1;
+            const char* sec_code = BEIDOU_B1C_PILOT_SECONDARY_CODE[prn_index];
+
+            std::vector<std::complex<float>> signal_with_secondary(
+                static_cast<size_t>(BEIDOU_B1C_PILOT_SECONDARY_CODE_LENGTH) * samples_per_code);
+            for (int32_t i = 0; i < BEIDOU_B1C_PILOT_SECONDARY_CODE_LENGTH; i++)
+                {
+                    const float sec_chip = sec_code[i] == '0' ? 1.0F : -1.0F;
+                    for (uint32_t k = 0; k < samples_per_code; k++)
+                        {
+                            signal_with_secondary[static_cast<size_t>(i) * samples_per_code + k] =
+                                signal_b1c[k] * sec_chip;
+                        }
+                }
+            samples_per_code *= static_cast<uint32_t>(BEIDOU_B1C_PILOT_SECONDARY_CODE_LENGTH);
+            signal_b1c = std::move(signal_with_secondary);
+        }
+
+    for (uint32_t i = 0; i < samples_per_code; i++)
+        {
+            dest[(i + delay) % samples_per_code] = signal_b1c[i];
         }
 }
 

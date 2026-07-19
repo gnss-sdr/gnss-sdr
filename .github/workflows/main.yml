@@ -113,109 +113,109 @@ jobs:
           ./install/position_test
           ./install/run_tests --gtest_filter='Osnma*'
 
-build-macos-xcode:
-  runs-on: macos-latest
-  steps:
-    - uses: actions/checkout@v7
-    - name: Install dependencies
-      run: |
-        brew update
-        export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-        brew install \
-          ninja \
-          pkg-config \
-          hdf5 \
-          automake \
-          armadillo \
-          lapack \
-          libmatio \
-          gnuradio \
-          openssl \
-          pugixml \
-          protobuf \
-          boost
+  build-macos-xcode:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install dependencies
+        run: |
+          brew update
+          export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+          brew install \
+            ninja \
+            pkg-config \
+            hdf5 \
+            automake \
+            armadillo \
+            lapack \
+            libmatio \
+            gnuradio \
+            openssl \
+            pugixml \
+            protobuf \
+            boost
 
-        # Find the Python formula used directly by GNU Radio.
-        PYTHON_FORMULA="$(
-          brew deps --direct gnuradio |
-          grep -E '^python(@[0-9.]+)?$' |
-          head -n 1
-        )"
+          # Find the Python formula used directly by GNU Radio.
+          PYTHON_FORMULA="$(
+            brew deps --direct gnuradio |
+            grep -E '^python(@[0-9.]+)?$' |
+            head -n 1
+          )"
 
-        if [ -z "$PYTHON_FORMULA" ]; then
-          echo "Could not determine GNU Radio's Python dependency."
-          echo "Direct GNU Radio dependencies:"
-          brew deps --direct gnuradio
-          exit 1
-        fi
+          if [ -z "$PYTHON_FORMULA" ]; then
+            echo "Could not determine GNU Radio's Python dependency."
+            echo "Direct GNU Radio dependencies:"
+            brew deps --direct gnuradio
+            exit 1
+          fi
 
-        PYTHON_PREFIX="$(brew --prefix "$PYTHON_FORMULA")"
+          PYTHON_PREFIX="$(brew --prefix "$PYTHON_FORMULA")"
 
-        # Find the versioned executable, such as python3.13 or python3.14.
-        PYTHON_EXECUTABLE="$(
-          find "$PYTHON_PREFIX/bin" \
-            -maxdepth 1 \
-            -type f \
-            -name 'python3.*' |
-          sort |
-          head -n 1
-        )"
+          # Find the versioned executable, such as python3.13 or python3.14.
+          PYTHON_EXECUTABLE="$(
+            find "$PYTHON_PREFIX/bin" \
+              -maxdepth 1 \
+              -type f \
+              -name 'python3.*' |
+            sort |
+            head -n 1
+          )"
 
-        if [ -z "$PYTHON_EXECUTABLE" ]; then
-          echo "Could not find Python under $PYTHON_PREFIX/bin."
-          ls -la "$PYTHON_PREFIX/bin"
-          exit 1
-        fi
+          if [ -z "$PYTHON_EXECUTABLE" ]; then
+            echo "Could not find Python under $PYTHON_PREFIX/bin."
+            ls -la "$PYTHON_PREFIX/bin"
+            exit 1
+          fi
 
-        echo "GNU Radio Python formula: $PYTHON_FORMULA"
-        echo "Python prefix:           $PYTHON_PREFIX"
-        echo "Python executable:       $PYTHON_EXECUTABLE"
-        "$PYTHON_EXECUTABLE" --version
+          echo "GNU Radio Python formula: $PYTHON_FORMULA"
+          echo "Python prefix:           $PYTHON_PREFIX"
+          echo "Python executable:       $PYTHON_EXECUTABLE"
+          "$PYTHON_EXECUTABLE" --version
 
-        # Make Homebrew's unversioned python/python3 commands available
-        # to subsequent GitHub Actions steps.
-        echo "$PYTHON_PREFIX/libexec/bin" >> "$GITHUB_PATH"
+          # Make Homebrew's unversioned python/python3 commands available
+          # to subsequent GitHub Actions steps.
+          echo "$PYTHON_PREFIX/libexec/bin" >> "$GITHUB_PATH"
 
-        # Persist the exact interpreter for CMake.
-        echo "GNURADIO_PYTHON=$PYTHON_EXECUTABLE" >> "$GITHUB_ENV"
+          # Persist the exact interpreter for CMake.
+          echo "GNURADIO_PYTHON=$PYTHON_EXECUTABLE" >> "$GITHUB_ENV"
 
-        "$PYTHON_EXECUTABLE" -m pip install mako
+          "$PYTHON_EXECUTABLE" -m pip install mako
 
-    - name: Check Python environment
-      run: |
-        echo "GNURADIO_PYTHON=$GNURADIO_PYTHON"
-        command -v python
-        command -v python3
-        python --version
-        python -c 'import sys; print(sys.executable)'
-        python -m pip --version
-        python -c 'import mako; print(mako.__file__)'
-        python -c 'import gnuradio; print(gnuradio.__path__)'
+      - name: Check Python environment
+        run: |
+          echo "GNURADIO_PYTHON=$GNURADIO_PYTHON"
+          command -v python
+          command -v python3
+          python --version
+          python -c 'import sys; print(sys.executable)'
+          python -m pip --version
+          python -c 'import mako; print(mako.__file__)'
+          python -c 'import gnuradio; print(gnuradio.__path__)'
 
-    - name: Configure
-      run: |
-        cmake -S . -B build -GXcode \
-          -DPython3_EXECUTABLE="$GNURADIO_PYTHON"
+      - name: Configure
+        run: |
+          cmake -S . -B build -GXcode \
+            -DPython3_EXECUTABLE="$GNURADIO_PYTHON"
 
-    - name: Build
-      run: cmake --build build --config Release
+      - name: Build
+        run: cmake --build build --config Release
 
-    - name: Check
-      run: |
-        cmake --build build --config Release --target check
-        ./install/volk_gnsssdr_profile
-        ./install/run_tests
+      - name: Check
+        run: |
+          cmake --build build --config Release --target check
+          ./install/volk_gnsssdr_profile
+          ./install/run_tests
 
-    - name: Default position_test
-      run: |
-        cmake -S . -B build -GXcode \
-          -DPython3_EXECUTABLE="$GNURADIO_PYTHON" \
-          -DENABLE_SYSTEM_TESTING_EXTRA=ON \
-          -DENABLE_UNIT_TESTING_EXTRA=OFF
+      - name: Default position_test
+        run: |
+          cmake -S . -B build -GXcode \
+            -DPython3_EXECUTABLE="$GNURADIO_PYTHON" \
+            -DENABLE_SYSTEM_TESTING_EXTRA=ON \
+            -DENABLE_UNIT_TESTING_EXTRA=OFF
 
-        cmake --build build --config Release --target position_test
-        ./install/position_test
-        ./install/run_tests --gtest_filter='Osnma*'
+          cmake --build build --config Release --target position_test
+          ./install/position_test
+          ./install/run_tests --gtest_filter='Osnma*'
 
   clang-format:
     runs-on: ubuntu-latest

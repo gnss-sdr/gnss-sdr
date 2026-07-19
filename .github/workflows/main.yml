@@ -88,14 +88,17 @@ jobs:
 
           "$PYTHON_EXECUTABLE" --version
 
-          # Make Homebrew's unversioned Python commands available to later steps.
-          echo "$PYTHON_PREFIX/libexec/bin" >> "$GITHUB_PATH"
+          VENV_PATH="$RUNNER_TEMP/gnuradio-python-venv"
 
-          # Persist the exact interpreter for CMake and later commands.
-          echo "GNURADIO_PYTHON=$PYTHON_EXECUTABLE" >> "$GITHUB_ENV"
+          "$PYTHON_EXECUTABLE" -m venv \
+            --system-site-packages \
+            "$VENV_PATH"
 
-          "$PYTHON_EXECUTABLE" -m pip install mako
+          "$VENV_PATH/bin/python" -m pip install --upgrade pip
+          "$VENV_PATH/bin/python" -m pip install mako
 
+          echo "$VENV_PATH/bin" >> "$GITHUB_PATH"
+          echo "GNURADIO_PYTHON=$VENV_PATH/bin/python" >> "$GITHUB_ENV"
       - name: Check Python and GNU Radio
         run: |
           echo "GNURADIO_PYTHON=$GNURADIO_PYTHON"
@@ -108,21 +111,17 @@ jobs:
           "$GNURADIO_PYTHON" -c 'import mako; print(mako.__file__)'
           "$GNURADIO_PYTHON" -c 'import gnuradio; print(gnuradio.__path__)'
           "$GNURADIO_PYTHON" -m pip --version
-
       - name: Configure
         run: |
           cmake -S . -B build -GNinja \
             -DPython3_EXECUTABLE="$GNURADIO_PYTHON"
-
       - name: Build
         run: cmake --build build
-
       - name: Check
         run: |
           cmake --build build --target check
           ./install/volk_gnsssdr_profile
           ./install/run_tests
-
       - name: Default position_test
         run: |
           cmake -S . -B build \
@@ -157,6 +156,7 @@ jobs:
             protobuf \
             boost
 
+          # Find the Python formula used directly by GNU Radio.
           PYTHON_FORMULA="$(
             brew deps --direct gnuradio |
             grep -E '^python(@[0-9.]+)?$' |
@@ -165,6 +165,7 @@ jobs:
 
           if [ -z "$PYTHON_FORMULA" ]; then
             echo "Could not determine GNU Radio's Python dependency."
+            echo "Direct GNU Radio dependencies:"
             brew deps --direct gnuradio
             exit 1
           fi
@@ -184,38 +185,44 @@ jobs:
 
           "$PYTHON_EXECUTABLE" --version
 
-          echo "$PYTHON_PREFIX/libexec/bin" >> "$GITHUB_PATH"
-          echo "GNURADIO_PYTHON=$PYTHON_EXECUTABLE" >> "$GITHUB_ENV"
+          VENV_PATH="$RUNNER_TEMP/gnuradio-python-venv"
 
-          "$PYTHON_EXECUTABLE" -m pip install mako
+          "$PYTHON_EXECUTABLE" -m venv \
+            --system-site-packages \
+            "$VENV_PATH"
 
-      - name: Check Python environment
+          "$VENV_PATH/bin/python" -m pip install --upgrade pip
+          "$VENV_PATH/bin/python" -m pip install mako
+
+          echo "$VENV_PATH/bin" >> "$GITHUB_PATH"
+          echo "GNURADIO_PYTHON=$VENV_PATH/bin/python" >> "$GITHUB_ENV"
+      - name: Check Python and GNU Radio
         run: |
           echo "GNURADIO_PYTHON=$GNURADIO_PYTHON"
+
+          command -v python
           command -v python3
-          python3 --version
+
+          "$GNURADIO_PYTHON" --version
           "$GNURADIO_PYTHON" -c 'import sys; print(sys.executable)'
-          "$GNURADIO_PYTHON" -m pip --version
           "$GNURADIO_PYTHON" -c 'import mako; print(mako.__file__)'
           "$GNURADIO_PYTHON" -c 'import gnuradio; print(gnuradio.__path__)'
-
+          "$GNURADIO_PYTHON" -m pip --version
       - name: Configure
         run: |
           cmake -S . -B build -GXcode \
             -DPython3_EXECUTABLE="$GNURADIO_PYTHON"
-
       - name: Build
         run: cmake --build build --config Release
-
       - name: Check
         run: |
           cmake --build build --config Release --target check
           ./install/volk_gnsssdr_profile
           ./install/run_tests
-
       - name: Default position_test
         run: |
-          cmake -S . -B build -GXcode \
+          cmake -S . -B build \
+            -GXcode \
             -DPython3_EXECUTABLE="$GNURADIO_PYTHON" \
             -DENABLE_SYSTEM_TESTING_EXTRA=ON \
             -DENABLE_UNIT_TESTING_EXTRA=OFF

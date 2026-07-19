@@ -17,6 +17,15 @@ All notable changes to GNSS-SDR will be documented in this file.
 ### Improvements in Availability:
 
 - Improved TOW rollover handling in Telemetry Decoder blocks.
+- Galileo F/NAV and I/NAV ephemerides are now retained independently instead
+  of overwriting each other when they have the same PRN. PVT automatically uses
+  the ICD-consistent service for the enabled bands (E1/E5a uses F/NAV;
+  E1/E5b uses I/NAV, with I/NAV taking priority when E5a and E5b are both
+  enabled), while RINEX, RTCM MT1045, monitoring, and assistance-data
+  persistence preserve the navigation-message source. XML persistence keeps
+  the legacy `gal_ephemeris.xml` view and automatically adds
+  `gal_inav_ephemeris.xml` and `gal_fnav_ephemeris.xml`; no configuration
+  change is required.
 - Improved the availability of navigation data by making histogram-based bit
   synchronization more resistant to weak or ambiguous prompt transitions, which
   could select the wrong bit-boundary phase, prevent telemetry frame

@@ -431,7 +431,7 @@ void galileo_telemetry_decoder_gs::capture_pending_reduced_ced(double cn0)
         }
 
     const int64_t decoder_delay_ms = galileo_tow::inav_current_symbol_delay_ms(d_required_symbols, d_PRN_code_period_ms);
-    const uint64_t decoder_delay_symbols = static_cast<uint64_t>(decoder_delay_ms / static_cast<int64_t>(d_PRN_code_period_ms));
+    const auto decoder_delay_symbols = static_cast<uint64_t>(decoder_delay_ms / static_cast<int64_t>(d_PRN_code_period_ms));
     if (d_symbol_counter < decoder_delay_symbols)
         {
             return;
@@ -439,20 +439,21 @@ void galileo_telemetry_decoder_gs::capture_pending_reduced_ced(double cn0)
 
     d_pending_reduced_ced_start_symbol = d_symbol_counter - decoder_delay_symbols;
     d_pending_reduced_ced_cn0 = cn0;
+    d_pending_reduced_ced_data = d_inav_nav.get_reduced_ced();
     d_pending_reduced_ced = true;
 }
 
 
 void galileo_telemetry_decoder_gs::publish_pending_reduced_ced()
 {
-    if (!d_pending_reduced_ced || d_first_eph_sent || !d_inav_nav.has_valid_word_5() ||
+    if (!d_pending_reduced_ced || d_first_eph_sent ||
         d_TOW_week == GALILEO_TOW_MAP_INVALID_WEEK)
         {
             return;
         }
 
     const int64_t symbol_delta = galileo_tow::sample_counter_delta(d_pending_reduced_ced_start_symbol, d_symbol_counter);
-    const int64_t code_period_ms = static_cast<int64_t>(d_PRN_code_period_ms);
+    const auto code_period_ms = static_cast<int64_t>(d_PRN_code_period_ms);
     if (symbol_delta > std::numeric_limits<int64_t>::max() / code_period_ms ||
         symbol_delta < std::numeric_limits<int64_t>::min() / code_period_ms)
         {
@@ -467,7 +468,7 @@ void galileo_telemetry_decoder_gs::publish_pending_reduced_ced()
             return;
         }
 
-    Galileo_Reduced_CED reduced_ced = d_inav_nav.get_reduced_ced();
+    Galileo_Reduced_CED reduced_ced = d_pending_reduced_ced_data;
     reduced_ced.WN = reduced_ced_week;
     reduced_ced.TOTRedCED = galileo_tow::add_ms(d_TOW_at_current_symbol_ms, tow_delta_ms) / 1000U;
     const auto tmp_obj = std::make_shared<Galileo_Reduced_CED>(reduced_ced);

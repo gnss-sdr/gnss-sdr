@@ -60,6 +60,7 @@
 #include <csignal>                                   // for signal, SIGINT
 #include <ctime>                                     // for time_t, gmtime, strftime
 #include <exception>                                 // for exception
+#include <fstream>                                   // for ifstream
 #include <iostream>                                  // for operator<<
 #include <limits>                                    // for numeric_limits
 #include <map>                                       // for map
@@ -606,18 +607,34 @@ bool ControlThread::read_assistance_from_XML()
     if ((configuration_->property("Channels_1B.count", 0) > 0) || (configuration_->property("Channels_5X.count", 0) > 0) ||
         (configuration_->property("Channels_7X.count", 0) > 0) || (configuration_->property("Channels_E6.count", 0) > 0))
         {
-            if (supl_client_ephemeris_.load_gal_ephemeris_xml(eph_gal_xml_filename) == true)
+            const auto publish_galileo_ephemeris_map = [this]() {
+                for (const auto &gal_eph : supl_client_ephemeris_.gal_ephemeris_map)
+                    {
+                        std::cout << "From XML file: Read ephemeris for satellite " << Gnss_Satellite("Galileo", gal_eph.second.PRN) << '\n';
+                        const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(gal_eph.second);
+                        flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                    }
+            };
+
+            if (supl_client_ephemeris_.load_gal_ephemeris_xml(eph_gal_xml_filename))
                 {
-                    std::map<int, Galileo_Ephemeris>::const_iterator gal_eph_iter;
-                    for (gal_eph_iter = supl_client_ephemeris_.gal_ephemeris_map.cbegin();
-                        gal_eph_iter != supl_client_ephemeris_.gal_ephemeris_map.cend();
-                        gal_eph_iter++)
-                        {
-                            std::cout << "From XML file: Read ephemeris for satellite " << Gnss_Satellite("Galileo", gal_eph_iter->second.PRN) << '\n';
-                            const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(gal_eph_iter->second);
-                            flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
-                        }
+                    publish_galileo_ephemeris_map();
                     ret = true;
+                }
+
+            const auto separator = eph_gal_xml_filename.find_last_of("/\\");
+            const std::string ephemeris_directory = separator == std::string::npos ? std::string() : eph_gal_xml_filename.substr(0, separator + 1);
+            const std::array<std::string, 2> source_files = {
+                ephemeris_directory + "gal_inav_ephemeris.xml",
+                ephemeris_directory + "gal_fnav_ephemeris.xml"};
+            for (const auto &source_file : source_files)
+                {
+                    std::ifstream source_stream(source_file.c_str());
+                    if (source_stream.good() && supl_client_ephemeris_.load_gal_ephemeris_xml(source_file))
+                        {
+                            publish_galileo_ephemeris_map();
+                            ret = true;
+                        }
                 }
 
             if (supl_client_acquisition_.load_gal_iono_xml(gal_iono_xml_filename) == true)

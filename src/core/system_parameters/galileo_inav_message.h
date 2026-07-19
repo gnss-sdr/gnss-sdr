@@ -135,14 +135,6 @@ public:
     Galileo_Reduced_CED get_reduced_ced() const;
 
     /*
-     * \brief Returns true after a CRC-valid Word 5 has been received for the current satellite.
-     */
-    inline bool has_valid_word_5() const
-    {
-        return flag_word_5_received;
-    }
-
-    /*
      * \brief Returns a Galileo_ISMs object filled with the latest ISM data received
      */
     Galileo_ISM get_galileo_ism() const;
@@ -269,7 +261,10 @@ public:
     {
         SV_ID_PRN_4 = prn;
         flag_CED = false;
-        flag_word_5_received = false;
+        flag_rs_recovered_ephemeris_pending = false;
+        word_5_generation = 0U;
+        reduced_ced_word_5_generation = 0U;
+        rs_recovery_word_5_generation = 0U;
         nma_msg.PRN = prn;
         nma_msg.mack = std::array<uint32_t, 15>{};
         nma_msg.hkroot = std::array<uint8_t, 15>{};
@@ -483,6 +478,10 @@ private:
     uint8_t IODnav_LSB19{};
     uint8_t IODnav_LSB20{};
 
+    uint64_t word_5_generation{};
+    uint64_t reduced_ced_word_5_generation{};
+    uint64_t rs_recovery_word_5_generation{};
+
     uint8_t ism_constellation_id{};
     uint8_t ism_service_level_id{};
 
@@ -493,8 +492,7 @@ private:
     bool flag_ephemeris_3{};    // Flag indicating that ephemeris 3/4 (word 3) have been received
     bool flag_ephemeris_4{};    // Flag indicating that ephemeris 4/4 (word 4) have been received
 
-    bool flag_iono_and_GST{};     // Flag indicating that ionospheric and GST parameters (word 5) have been received
-    bool flag_word_5_received{};  // Persistent Word 5 validity for Reduced CED auxiliary data
+    bool flag_iono_and_GST{};  // Flag indicating that ionospheric and GST parameters (word 5) have been received
     bool flag_TOW_5{};
     bool flag_TOW_6{};
     bool flag_TOW_0{};
@@ -515,6 +513,7 @@ private:
     bool flag_GGTO_valid{};
 
     bool flag_CED{};
+    bool flag_rs_recovered_ephemeris_pending{};
     bool enable_rs{};
     bool have_ISM{};
     bool current_IODnav_valid{};  // IOD_nav can be zero, so track initialization separately.

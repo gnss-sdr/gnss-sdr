@@ -5,6 +5,12 @@ syntax = "proto3";
 package gnss_sdr;
 
 message GalileoEphemeris {
+  enum NavMessageType {
+    UNKNOWN = 0;
+    INAV = 1;
+    FNAV = 2;
+  }
+
   int32 PRN = 1;        // SV ID
   double M_0 = 2;       // Mean anomaly at reference time [rad]
   double delta_n = 3;   // Mean motion difference from computed value [rad/sec]
@@ -50,4 +56,5 @@ message GalileoEphemeris {
   bool E1B_DVS = 34;      // E1B Data Validity Status
   double BGD_E1E5a = 35;  // E1-E5a Broadcast Group Delay [s]
   double BGD_E1E5b = 36;  // E1-E5b Broadcast Group Delay [s]
+  NavMessageType nav_message_type = 37;  // Navigation message carrying this record
 }

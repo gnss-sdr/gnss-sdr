@@ -40,6 +40,7 @@ TEST(Serdes_Monitor_Pvt_Test, GalileoEphemerisSerdes)
     auto eph = std::make_shared<Galileo_Ephemeris>();
     int true_tow = 12345;
     eph->tow = true_tow;
+    eph->nav_message_type = Galileo_Nav_Message_Type::FNAV;
 
     Serdes_Galileo_Eph gal_serdes = Serdes_Galileo_Eph();
     std::string serialized_data = gal_serdes.createProtobuffer(std::move(eph));
@@ -61,4 +62,5 @@ TEST(Serdes_Monitor_Pvt_Test, GalileoEphemerisSerdes)
     int read2_tow = eph2.tow;
     EXPECT_EQ(true_tow, read2_tow);
     EXPECT_NEAR(true_delta_n, read2_delta_n, 0.000001);
+    EXPECT_EQ(Galileo_Nav_Message_Type::FNAV, eph2.nav_message_type);
 }

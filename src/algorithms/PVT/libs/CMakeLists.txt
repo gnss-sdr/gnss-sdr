@@ -32,6 +32,7 @@ set(PVT_LIB_HEADERS
     pvt_conf.h
     pvt_solution.h
     geojson_printer.h
+    galileo_ephemeris_store.h
     gpx_printer.h
     kml_printer.h
     nmea_printer.h

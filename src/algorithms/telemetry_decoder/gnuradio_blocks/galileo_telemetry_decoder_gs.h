@@ -102,6 +102,7 @@ private:
     Galileo_Cnav_Message d_cnav_nav;
     Galileo_Inav_Message d_inav_nav;
     Galileo_Fnav_Message d_fnav_nav;
+    Galileo_Reduced_CED d_pending_reduced_ced_data;
 
     Nav_Message_Packet d_nav_msg_packet;
     GnssTime d_current_timetag{};

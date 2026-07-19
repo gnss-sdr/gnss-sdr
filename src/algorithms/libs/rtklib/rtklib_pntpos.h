@@ -50,6 +50,9 @@ double varerr(const prcopt_t *opt, double el, int sys);
 double gettgd(int sat, const nav_t *nav);
 double gettgd(int sat, const nav_t *nav, int tgd_index);
 
+/* select Galileo BGD from observation and ephemeris provenance -------------*/
+int galileo_bgd_index(unsigned char observation_code, int sat, const nav_t *nav);
+
 /* get isc parameter (m) -----------------------------------------------------*/
 double getiscl1(int sat, const nav_t *nav);
 double getiscl2(int sat, const nav_t *nav);

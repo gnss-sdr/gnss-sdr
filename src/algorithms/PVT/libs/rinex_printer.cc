@@ -626,19 +626,6 @@ double asDouble(const std::string& s)
 }
 
 
-int toInt(const std::string& bitString, int sLength)
-{
-    int tempInt;
-    int num = 0;
-    for (int i = 0; i < sLength; i++)
-        {
-            tempInt = bitString[i] - '0';
-            num |= (1 << (sLength - 1 - i)) * tempInt;
-        }
-    return num;
-}
-
-
 /*
  * Convert a string to an integer.
  * @param s string containing a number.
@@ -2451,7 +2438,15 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
 
             if (has_galileo_eph)
                 {
-                    log_rinex_nav_gal_nav(pvt_solver->galileo_ephemeris_map);
+                    if (pvt_solver->galileo_ephemeris_store.empty())
+                        {
+                            log_rinex_nav_gal_nav(pvt_solver->galileo_ephemeris_map);
+                        }
+                    else
+                        {
+                            log_rinex_nav_gal_nav(pvt_solver->galileo_ephemeris_store.inav());
+                            log_rinex_nav_gal_nav(pvt_solver->galileo_ephemeris_store.fnav());
+                        }
                 }
             if (has_glonass_eph)
                 {
@@ -2802,22 +2797,36 @@ void Rinex_Printer::log_rinex_nav_gal_nav(const std::map<int32_t, Galileo_Epheme
             out << get_nav_broadcast_orbit(&eph.i_0, &eph.Crc, &eph.omega, &eph.OMEGAdot) << '\n';
 
             // -------- BROADCAST ORBIT - 5
-            const std::string iNAVE1B("1000000001");
-            const auto data_source_INAV = static_cast<double>(toInt(iNAVE1B, 10));
+            // RINEX Galileo data-source bits: bit 0 is I/NAV E1-B, bit 1 is
+            // F/NAV E5a-I, bit 8 marks F/NAV clock parameters, and bit 9
+            // marks I/NAV clock parameters.
+            const uint32_t data_source = eph.nav_message_type == Galileo_Nav_Message_Type::FNAV ? ((1U << 1U) | (1U << 8U)) : ((1U << 0U) | (1U << 9U));
+            const auto data_source_rinex = static_cast<double>(data_source);
 
             const auto GST_week = static_cast<double>(eph.WN);
             const double num_GST_rollovers = floor((GST_week + 1024.0) / 4096.0);
             const double Galileo_week_continuous_number = GST_week + 1024.0 + num_GST_rollovers * 4096.0;
             const double zero = 0.0;
-            out << get_nav_broadcast_orbit(&eph.idot, &data_source_INAV, &Galileo_week_continuous_number, &zero) << '\n';
+            out << get_nav_broadcast_orbit(&eph.idot, &data_source_rinex, &Galileo_week_continuous_number, &zero) << '\n';
 
             // -------- BROADCAST ORBIT - 6
-            std::string E1B_HS = std::bitset<2>(eph.E1B_HS).to_string();
-            std::string E5B_HS = std::bitset<2>(eph.E5b_HS).to_string();
-
-            std::string E1B_DVS = std::to_string(eph.E1B_DVS);
-            const std::string SVhealth_str = std::move(E5B_HS) + std::to_string(eph.E5b_DVS) + "11" + "1" + std::move(E1B_DVS) + std::move(E1B_HS) + std::to_string(eph.E1B_DVS);
-            const auto SVhealth = static_cast<double>(toInt(SVhealth_str, 9));
+            const uint32_t unavailable_hs = 3U;
+            const uint32_t unavailable_dvs = 1U;
+            const bool is_fnav = eph.nav_message_type == Galileo_Nav_Message_Type::FNAV;
+            const uint32_t e1b_hs = is_fnav ? unavailable_hs : static_cast<uint32_t>(eph.E1B_HS);
+            const uint32_t e1b_dvs = is_fnav ? unavailable_dvs : static_cast<uint32_t>(eph.E1B_DVS);
+            const uint32_t e5a_hs = is_fnav ? static_cast<uint32_t>(eph.E5a_HS) : unavailable_hs;
+            const uint32_t e5a_dvs = is_fnav ? static_cast<uint32_t>(eph.E5a_DVS) : unavailable_dvs;
+            const uint32_t e5b_hs = is_fnav ? unavailable_hs : static_cast<uint32_t>(eph.E5b_HS);
+            const uint32_t e5b_dvs = is_fnav ? unavailable_dvs : static_cast<uint32_t>(eph.E5b_DVS);
+            const uint32_t health_bits =
+                (e1b_hs & 0x3U) |
+                ((e1b_dvs & 0x1U) << 2U) |
+                ((e5a_hs & 0x3U) << 3U) |
+                ((e5a_dvs & 0x1U) << 5U) |
+                ((e5b_hs & 0x3U) << 6U) |
+                ((e5b_dvs & 0x1U) << 8U);
+            const auto SVhealth = static_cast<double>(health_bits);
             const auto SISA_d = static_cast<double>(eph.SISA);
             out << get_nav_broadcast_orbit(&SISA_d, &SVhealth, &eph.BGD_E1E5a, &eph.BGD_E1E5b) << '\n';
 

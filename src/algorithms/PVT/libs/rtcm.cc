@@ -1037,7 +1037,7 @@ int32_t Rtcm::read_MT1005(const std::string& message, uint32_t& ref_id, double& 
             return 1;
         }
 
-    // Check than the message number is correct
+    // Check that the message number is correct
     const uint32_t preamble_length = 8;
     const uint32_t reserved_field_length = 6;
     uint32_t index = preamble_length + reserved_field_length;
@@ -2172,6 +2172,12 @@ std::string Rtcm::print_MT1029(uint32_t ref_id, const Gps_Ephemeris& gps_eph, do
 
 std::string Rtcm::print_MT1045(const Galileo_Ephemeris& gal_eph)
 {
+    if (gal_eph.nav_message_type == Galileo_Nav_Message_Type::INAV)
+        {
+            LOG(WARNING) << "RTCM MT1045 requires a Galileo F/NAV ephemeris";
+            return {};
+        }
+
     const uint32_t msg_number = 1045;
 
     Rtcm::set_DF002(msg_number);
@@ -2179,6 +2185,7 @@ std::string Rtcm::print_MT1045(const Galileo_Ephemeris& gal_eph)
     Rtcm::set_DF289(gal_eph);
     Rtcm::set_DF290(gal_eph);
     Rtcm::set_DF291(gal_eph);
+    Rtcm::set_DF292(gal_eph);
     Rtcm::set_DF293(gal_eph);
     Rtcm::set_DF294(gal_eph);
     Rtcm::set_DF295(gal_eph);
@@ -2237,6 +2244,7 @@ std::string Rtcm::print_MT1045(const Galileo_Ephemeris& gal_eph)
     if (data.length() != 496)
         {
             LOG(WARNING) << "Bad-formatted RTCM MT1045 (496 bits expected, found " << data.length() << ")";
+            return {};
         }
 
     std::string msg = build_message(data);
@@ -2268,7 +2276,7 @@ int32_t Rtcm::read_MT1045(const std::string& message, Galileo_Ephemeris& gal_eph
 
     if (read_message_length != 62)
         {
-            LOG(WARNING) << " Message MT1045 seems too long (62 bytes expected, " << read_message_length << " received)";
+            LOG(WARNING) << " Invalid MT1045 payload length (62 bytes expected, " << read_message_length << " received)";
             return 1;
         }
 
@@ -2283,79 +2291,82 @@ int32_t Rtcm::read_MT1045(const std::string& message, Galileo_Ephemeris& gal_eph
         }
 
     // Fill Galileo Ephemeris with message data content
+    gal_eph.nav_message_type = Galileo_Nav_Message_Type::FNAV;
     gal_eph.PRN = Rtcm::bin_to_uint(message_bin.substr(index, 6));
     index += 6;
 
-    gal_eph.WN = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 12)));
+    gal_eph.WN = Rtcm::bin_to_uint(message_bin.substr(index, 12));
     index += 12;
 
-    gal_eph.IOD_nav = static_cast<int32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
+    const auto iod_nav = static_cast<int32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
+    gal_eph.IOD_nav = iod_nav;
+    gal_eph.IOD_ephemeris = iod_nav;
     index += 10;
 
-    gal_eph.SISA = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 8)));
+    gal_eph.SISA = Rtcm::bin_to_uint(message_bin.substr(index, 8));
     index += 8;
 
-    gal_eph.idot = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 14))) * I_DOT_2_LSB;
+    gal_eph.idot = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 14))) * FNAV_IDOT_2_LSB;
     index += 14;
 
-    gal_eph.toc = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 14))) * T0C_4_LSB;
+    gal_eph.toc = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 14))) * FNAV_T0C_1_LSB;
     index += 14;
 
-    gal_eph.af2 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 6))) * AF2_4_LSB;
+    gal_eph.af2 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 6))) * FNAV_AF2_1_LSB;
     index += 6;
 
-    gal_eph.af1 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 21))) * AF1_4_LSB;
+    gal_eph.af1 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 21))) * FNAV_AF1_1_LSB;
     index += 21;
 
-    gal_eph.af0 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 31))) * AF0_4_LSB;
+    gal_eph.af0 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 31))) * FNAV_AF0_1_LSB;
     index += 31;
 
-    gal_eph.Crs = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_RS_3_LSB;
+    gal_eph.Crs = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * FNAV_CRS_3_LSB;
     index += 16;
 
-    gal_eph.delta_n = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * DELTA_N_3_LSB;
+    gal_eph.delta_n = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * FNAV_DELTAN_3_LSB;
     index += 16;
 
-    gal_eph.M_0 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 32))) * M0_1_LSB;
+    gal_eph.M_0 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 32))) * FNAV_M0_2_LSB;
     index += 32;
 
-    gal_eph.Cuc = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_UC_3_LSB;
+    gal_eph.Cuc = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * FNAV_CUC_3_LSB;
     index += 16;
 
-    gal_eph.ecc = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 32))) * E_1_LSB;
+    gal_eph.ecc = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 32))) * FNAV_E_2_LSB;
     index += 32;
 
-    gal_eph.Cus = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_US_3_LSB;
+    gal_eph.Cus = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * FNAV_CUS_3_LSB;
     index += 16;
 
-    gal_eph.sqrtA = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 32))) * A_1_LSB_GAL;
+    gal_eph.sqrtA = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 32))) * FNAV_A12_2_LSB;
     index += 32;
 
-    gal_eph.toe = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 14))) * T0E_1_LSB;
+    gal_eph.toe = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 14))) * FNAV_T0E_3_LSB;
     index += 14;
 
-    gal_eph.Cic = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_IC_4_LSB;
+    gal_eph.Cic = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * FNAV_CIC_4_LSB;
     index += 16;
 
-    gal_eph.OMEGA_0 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 32))) * OMEGA_0_2_LSB;
+    gal_eph.OMEGA_0 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 32))) * FNAV_OMEGA0_2_LSB;
     index += 32;
 
-    gal_eph.Cis = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_IS_4_LSB;
+    gal_eph.Cis = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * FNAV_CIS_4_LSB;
     index += 16;
 
-    gal_eph.i_0 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 32))) * I_0_2_LSB;
+    gal_eph.i_0 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 32))) * FNAV_I0_3_LSB;
     index += 32;
 
-    gal_eph.Crc = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_RC_3_LSB;
+    gal_eph.Crc = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * FNAV_CRC_3_LSB;
     index += 16;
 
-    gal_eph.omega = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 32))) * OMEGA_2_LSB;
+    gal_eph.omega = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 32))) * FNAV_W_3_LSB;
     index += 32;
 
-    gal_eph.OMEGAdot = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 24))) * OMEGA_DOT_3_LSB;
+    gal_eph.OMEGAdot = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 24))) * FNAV_OMEGADOT_2_LSB;
     index += 24;
 
-    gal_eph.BGD_E1E5a = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 10)));
+    gal_eph.BGD_E1E5a = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 10))) * FNAV_BGD_1_LSB;
     index += 10;
 
     gal_eph.E5a_HS = Rtcm::bin_to_uint(message_bin.substr(index, 2));
@@ -6234,7 +6245,7 @@ int32_t Rtcm::set_DF289(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF290(const Galileo_Ephemeris& gal_eph)
 {
-    const auto iod_nav = static_cast<uint32_t>(gal_eph.IOD_nav);
+    const auto iod_nav = static_cast<uint32_t>(gal_eph.IOD_ephemeris);
     if (iod_nav > 1023)
         {
             LOG(WARNING) << "Error decoding Galileo IODnav (it has a max of 1023, but " << iod_nav << " was detected)";
@@ -6263,11 +6274,12 @@ int32_t Rtcm::set_DF292(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF293(const Galileo_Ephemeris& gal_eph)
 {
-    const auto toc = static_cast<uint32_t>(gal_eph.toc);
-    if (toc > 604740)
+    const auto toc_seconds = static_cast<uint32_t>(gal_eph.toc);
+    if (toc_seconds > 604740)
         {
-            LOG(WARNING) << "Error decoding Galileo ephemeris time (max of 604740, but " << toc << " was detected)";
+            LOG(WARNING) << "Error decoding Galileo ephemeris time (max of 604740, but " << toc_seconds << " was detected)";
         }
+    const auto toc = static_cast<uint32_t>(std::round(gal_eph.toc / FNAV_T0C_1_LSB));
     DF293 = std::bitset<14>(toc);
     return 0;
 }
@@ -6291,7 +6303,7 @@ int32_t Rtcm::set_DF295(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF296(const Galileo_Ephemeris& gal_eph)
 {
-    const int64_t af0 = static_cast<uint32_t>(std::round(gal_eph.af0 / FNAV_AF0_1_LSB));
+    const auto af0 = static_cast<int64_t>(std::round(gal_eph.af0 / FNAV_AF0_1_LSB));
     DF296 = std::bitset<31>(af0);
     return 0;
 }
@@ -6323,7 +6335,7 @@ int32_t Rtcm::set_DF299(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF300(const Galileo_Ephemeris& gal_eph)
 {
-    const int32_t cuc = static_cast<uint32_t>(std::round(gal_eph.Cuc / FNAV_CUC_3_LSB));
+    const auto cuc = static_cast<int32_t>(std::round(gal_eph.Cuc / FNAV_CUC_3_LSB));
     DF300 = std::bitset<16>(cuc);
     return 0;
 }
@@ -6395,7 +6407,7 @@ int32_t Rtcm::set_DF308(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF309(const Galileo_Ephemeris& gal_eph)
 {
-    const int32_t crc = static_cast<uint32_t>(std::round(gal_eph.Crc / FNAV_CRC_3_LSB));
+    const auto crc = static_cast<int32_t>(std::round(gal_eph.Crc / FNAV_CRC_3_LSB));
     DF309 = std::bitset<16>(crc);
     return 0;
 }
@@ -6403,7 +6415,7 @@ int32_t Rtcm::set_DF309(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF310(const Galileo_Ephemeris& gal_eph)
 {
-    const auto omega = static_cast<int32_t>(std::round(gal_eph.omega / FNAV_OMEGA0_2_LSB));
+    const auto omega = static_cast<int64_t>(std::round(gal_eph.omega / FNAV_W_3_LSB));
     DF310 = std::bitset<32>(omega);
     return 0;
 }

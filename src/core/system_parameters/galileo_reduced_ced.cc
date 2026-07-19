@@ -22,6 +22,7 @@
 Galileo_Ephemeris Galileo_Reduced_CED::compute_eph() const
 {
     Galileo_Ephemeris eph{};
+    eph.nav_message_type = Galileo_Nav_Message_Type::INAV;
 
     const double A_nominal = 29600000;  // meters (Table 1 Galileo ICD 2.0)
     const double Ared = DeltaAred + A_nominal;

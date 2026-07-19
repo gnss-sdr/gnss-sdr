@@ -42,6 +42,31 @@
 #include <cstring>
 #include <vector>
 
+int galileo_bgd_index(unsigned char observation_code, int sat, const nav_t *nav)
+{
+    int frequency = 0;
+    code2obs(observation_code, &frequency);
+
+    switch (frequency)
+        {
+        case 3:  // E5a
+            return 0;
+        case 5:  // E5b
+            return 1;
+        case 1:  // E1: select the BGD belonging to the ephemeris clock model.
+            for (int i = 0; i < nav->n; ++i)
+                {
+                    if (nav->eph[i].sat == sat)
+                        {
+                            return nav->eph[i].code == 2 ? 0 : 1;
+                        }
+                }
+            return -1;
+        default:
+            return -1;
+        }
+}
+
 /* pseudorange measurement error variance ------------------------------------*/
 double varerr(const prcopt_t *opt, double el, int sys)
 {
@@ -147,6 +172,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     double P1_P2 = 0.0;
     double P1_C1 = 0.0;
     double P2_C2 = 0.0;
+    bool uses_galileo_bgd = false;
     // Intersignal corrections (m). See GPS IS-200 CNAV message
     // double ISCl1 = 0.0;
     double ISCl2 = 0.0;
@@ -220,9 +246,13 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     /* if no P1-P2 DCB, use TGD instead */
     if (P1_P2 == 0.0)
         {
-            // Galileo I/NAV clocks are referenced to E1/E5b. For an E1
-            // pseudorange, use BGD(E1,E5b), stored in tgd[1].
-            const int tgd_index = (sys == SYS_GAL && obs->code[i] != CODE_NONE) ? 1 : 0;
+            int tgd_index = 0;
+            if (sys == SYS_GAL)
+                {
+                    const unsigned char observation_code = obs->code[j] != CODE_NONE ? obs->code[j] : obs->code[i];
+                    tgd_index = galileo_bgd_index(observation_code, obs->sat, nav);
+                    uses_galileo_bgd = tgd_index >= 0;
+                }
             P1_P2 = gettgd(obs->sat, nav, tgd_index);
         }
 
@@ -287,7 +317,14 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                             P2 += P2_C2; /* C2->P2 */
                             PC = P2;     // no tgd corrections for B3I
                         }
-                    else if (sys == SYS_GAL || sys == SYS_GLO || sys == SYS_BDS)  // Gal. E5a single freq.
+                    else if (sys == SYS_GAL)
+                        {
+                            P2 += P2_C2; /* C2->P2 */
+                            // Galileo OS SIS ICD, Eq. 19: E5a/E5b uses
+                            // (f_E1/f_E5)^2 times its corresponding BGD.
+                            PC = uses_galileo_bgd ? P2 - gamma_ * P1_P2 : P2 - gamma_ * P1_P2 / (1.0 - gamma_);
+                        }
+                    else if (sys == SYS_GLO)
                         {
                             P2 += P2_C2; /* C2->P2 */
                             PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);

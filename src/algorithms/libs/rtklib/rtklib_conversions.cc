@@ -430,6 +430,7 @@ eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, 0, 0, 0, 0, 0.0, -1, 0};
     // Galileo is the third satellite system for RTKLIB, so, add the required offset to discriminate Galileo ephemeris
     rtklib_sat.sat = gal_eph.PRN + NSATGPS + NSATGLO;
+    rtklib_sat.code = gal_eph.nav_message_type == Galileo_Nav_Message_Type::FNAV ? 2 : 1;
     rtklib_sat.sva = gal_eph.SISA;
     rtklib_sat.A = gal_eph.sqrtA * gal_eph.sqrtA;
     rtklib_sat.M0 = gal_eph.M_0;

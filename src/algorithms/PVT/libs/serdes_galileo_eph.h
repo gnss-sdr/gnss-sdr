@@ -114,6 +114,7 @@ public:
         monitor_.set_e1b_dvs(monitor->E1B_DVS);
         monitor_.set_bgd_e1e5a(monitor->BGD_E1E5a);
         monitor_.set_bgd_e1e5b(monitor->BGD_E1E5b);
+        monitor_.set_nav_message_type(static_cast<gnss_sdr::GalileoEphemeris_NavMessageType>(monitor->nav_message_type));
 
         if (!monitor_.SerializeToString(&data))
             {
@@ -164,6 +165,11 @@ public:
         monitor.E1B_DVS = mon.e1b_dvs();
         monitor.BGD_E1E5a = mon.bgd_e1e5a();
         monitor.BGD_E1E5b = mon.bgd_e1e5b();
+        const auto nav_message_type = static_cast<uint32_t>(mon.nav_message_type());
+        if (nav_message_type <= static_cast<uint32_t>(Galileo_Nav_Message_Type::FNAV))
+            {
+                monitor.nav_message_type = static_cast<Galileo_Nav_Message_Type>(nav_message_type);
+            }
 
         return monitor;
     }

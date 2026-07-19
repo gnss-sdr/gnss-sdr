@@ -691,40 +691,38 @@ rtklib_pvt_gs::~rtklib_pvt_gs()
                             LOG(INFO) << "Failed to save GPS L1 CA Ephemeris, map is empty";
                         }
 
-                    // save Galileo E1 ephemeris to XML file
-                    file_name = d_xml_base_path + "gal_ephemeris.xml";
-                    if (d_internal_pvt_solver->galileo_ephemeris_map.empty() == false)
-                        {
-                            std::ofstream ofs;
-                            try
-                                {
-                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                                    boost::archive::xml_oarchive xml(ofs);
-                                    // Annotate as full GPS week number
-                                    for (auto& gal_eph_iter : d_internal_pvt_solver->galileo_ephemeris_map)
-                                        {
-                                            gal_eph_iter.second.WN += 1024;
-                                        }
-                                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_ephemeris_map", d_internal_pvt_solver->galileo_ephemeris_map);
-                                    LOG(INFO) << "Saved Galileo E1 Ephemeris map data";
-                                }
-                            catch (const boost::archive::archive_exception& e)
-                                {
-                                    LOG(WARNING) << e.what();
-                                }
-                            catch (const std::ofstream::failure& e)
-                                {
-                                    LOG(WARNING) << "Problem opening output XML file";
-                                }
-                            catch (const std::exception& e)
-                                {
-                                    LOG(WARNING) << e.what();
-                                }
-                        }
-                    else
-                        {
-                            LOG(INFO) << "Failed to save Galileo E1 Ephemeris, map is empty";
-                        }
+                    // Keep the legacy file as a deterministic PVT view and
+                    // persist both navigation families in companion files.
+                    // Copies are used so serializing the full GPS week does
+                    // not mutate live receiver state.
+                    const auto save_galileo_ephemeris_map = [](const std::string& output_file,
+                                                                const std::map<int, Galileo_Ephemeris>& source_map) {
+                        if (source_map.empty())
+                            {
+                                return;
+                            }
+                        auto serialized_map = source_map;
+                        for (auto& ephemeris : serialized_map)
+                            {
+                                ephemeris.second.WN += 1024;
+                            }
+                        try
+                            {
+                                std::ofstream ofs(output_file.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                boost::archive::xml_oarchive xml(ofs);
+                                xml << boost::serialization::make_nvp("GNSS-SDR_gal_ephemeris_map", serialized_map);
+                            }
+                        catch (const std::exception& e)
+                            {
+                                LOG(WARNING) << e.what() << " File: " << output_file;
+                            }
+                    };
+                    save_galileo_ephemeris_map(d_xml_base_path + "gal_ephemeris.xml",
+                        d_internal_pvt_solver->get_galileo_ephemeris_map_for_pvt());
+                    save_galileo_ephemeris_map(d_xml_base_path + "gal_inav_ephemeris.xml",
+                        d_internal_pvt_solver->galileo_ephemeris_store.inav());
+                    save_galileo_ephemeris_map(d_xml_base_path + "gal_fnav_ephemeris.xml",
+                        d_internal_pvt_solver->galileo_ephemeris_store.fnav());
 
                     // save GLONASS GNAV ephemeris to XML file
                     file_name = d_xml_base_path + "eph_GLONASS_GNAV.xml";
@@ -1346,7 +1344,14 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
             else if (msg_type_hash_code == d_galileo_ephemeris_sptr_type_hash_code)
                 {
                     // ### Galileo EPHEMERIS ###
-                    const auto galileo_eph = wht::any_cast<std::shared_ptr<Galileo_Ephemeris>>(pmt::any_ref(msg));
+                    auto galileo_eph = wht::any_cast<std::shared_ptr<Galileo_Ephemeris>>(pmt::any_ref(msg));
+                    if (galileo_eph->nav_message_type == Galileo_Nav_Message_Type::Unknown)
+                        {
+                            galileo_eph = std::make_shared<Galileo_Ephemeris>(*galileo_eph);
+                            galileo_eph->nav_message_type = d_internal_pvt_solver->galileo_nav_message_type_for_pvt();
+                            LOG(WARNING) << "Galileo ephemeris for PRN " << galileo_eph->PRN
+                                         << " has no navigation-message provenance; assigning the receiver's automatic PVT source";
+                        }
                     // insert new ephemeris record
                     DLOG(INFO) << "Galileo New Ephemeris record inserted in global map with TOW =" << galileo_eph->tow
                                << ", GALILEO Week Number =" << galileo_eph->WN
@@ -1360,21 +1365,28 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                     // update/insert new ephemeris record to the global ephemeris map
                     if (d_rinex_output_enabled && d_rp->is_rinex_header_written())  // The header is already written, we can now log the navigation message data
                         {
-                            const auto eph_it = d_internal_pvt_solver->galileo_ephemeris_map.find(galileo_eph->PRN);
+                            const auto& source_map = d_internal_pvt_solver->galileo_ephemeris_store.by_source(galileo_eph->nav_message_type);
+                            const auto eph_it = source_map.find(galileo_eph->PRN);
 
-                            if ((eph_it == d_internal_pvt_solver->galileo_ephemeris_map.cend() || eph_it->second.toe != galileo_eph->toe) && galileo_eph->WN != 0 && galileo_eph->PRN <= 36)
+                            if ((eph_it == source_map.cend() || eph_it->second.toe != galileo_eph->toe ||
+                                    eph_it->second.IOD_ephemeris != galileo_eph->IOD_ephemeris) &&
+                                galileo_eph->WN != 0 && galileo_eph->PRN <= 36)
                                 {
                                     d_rp->log_rinex_nav_gal_nav({{galileo_eph->PRN, *galileo_eph}});  // New record!
                                 }
                         }
-                    d_internal_pvt_solver->galileo_ephemeris_map[galileo_eph->PRN] = *galileo_eph;
+                    d_internal_pvt_solver->store_galileo_ephemeris(*galileo_eph);
                     if (d_enable_rx_clock_correction == true)
                         {
-                            d_user_pvt_solver->galileo_ephemeris_map[galileo_eph->PRN] = *galileo_eph;
+                            d_user_pvt_solver->store_galileo_ephemeris(*galileo_eph);
                         }
-                    if (((galileo_eph->E1B_HS != 0) || (galileo_eph->E1B_DVS == true)) ||
-                        ((galileo_eph->E5a_HS != 0) || (galileo_eph->E5a_DVS == true)) ||
-                        ((galileo_eph->E5b_HS != 0) || (galileo_eph->E5b_DVS == true)))
+                    const bool reports_unhealthy =
+                        (galileo_eph->nav_message_type == Galileo_Nav_Message_Type::FNAV &&
+                            ((galileo_eph->E5a_HS != 0) || galileo_eph->E5a_DVS)) ||
+                        (galileo_eph->nav_message_type == Galileo_Nav_Message_Type::INAV &&
+                            (((galileo_eph->E1B_HS != 0) || galileo_eph->E1B_DVS) ||
+                                ((galileo_eph->E5b_HS != 0) || galileo_eph->E5b_DVS)));
+                    if (reports_unhealthy)
                         {
                             std::cout << TEXT_RED << "Satellite " << Gnss_Satellite(std::string("Galileo"), galileo_eph->PRN)
                                       << " reports an unhealthy status,";
@@ -1697,7 +1709,7 @@ std::map<int, Gps_Almanac> rtklib_pvt_gs::get_gps_almanac_map() const
 
 std::map<int, Galileo_Ephemeris> rtklib_pvt_gs::get_galileo_ephemeris_map() const
 {
-    return d_internal_pvt_solver->galileo_ephemeris_map;
+    return d_internal_pvt_solver->get_galileo_ephemeris_map_for_pvt();
 }
 
 
@@ -1724,6 +1736,7 @@ void rtklib_pvt_gs::clear_ephemeris()
     d_internal_pvt_solver->gps_ephemeris_map.clear();
     d_internal_pvt_solver->gps_almanac_map.clear();
     d_internal_pvt_solver->galileo_ephemeris_map.clear();
+    d_internal_pvt_solver->galileo_ephemeris_store.clear();
     d_internal_pvt_solver->galileo_reduced_ced_map.clear();
     d_internal_pvt_solver->galileo_almanac_map.clear();
     d_internal_pvt_solver->beidou_dnav_ephemeris_map.clear();
@@ -1733,6 +1746,7 @@ void rtklib_pvt_gs::clear_ephemeris()
             d_user_pvt_solver->gps_ephemeris_map.clear();
             d_user_pvt_solver->gps_almanac_map.clear();
             d_user_pvt_solver->galileo_ephemeris_map.clear();
+            d_user_pvt_solver->galileo_ephemeris_store.clear();
             d_user_pvt_solver->galileo_reduced_ced_map.clear();
             d_user_pvt_solver->galileo_almanac_map.clear();
             d_user_pvt_solver->beidou_dnav_ephemeris_map.clear();
@@ -2067,16 +2081,28 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             Galileo_Ephemeris selected_galileo_ephemeris;
                             bool selected_from_reduced_ced = false;
                             const std::string galileo_signal(gnss_synchro.Signal, 2);
-                            const uint32_t galileo_observation_tow = static_cast<uint32_t>(gnss_synchro.interp_TOW_ms / 1000.0);
+                            const auto galileo_observation_tow = static_cast<uint32_t>(gnss_synchro.interp_TOW_ms / 1000.0);
                             if (d_internal_pvt_solver->select_galileo_ephemeris(gnss_synchro.PRN,
                                     galileo_signal, galileo_observation_tow,
                                     selected_galileo_ephemeris, selected_from_reduced_ced))
                                 {
-                                    const bool signal_is_healthy =
-                                        (galileo_signal == "1B" && (d_use_unhealthy_sats || (!selected_galileo_ephemeris.E1B_DVS && selected_galileo_ephemeris.E1B_HS == 0))) ||
-                                        (galileo_signal == "5X" && (d_use_unhealthy_sats || (!selected_galileo_ephemeris.E5a_DVS && selected_galileo_ephemeris.E5a_HS == 0))) ||
-                                        (galileo_signal == "7X" && (d_use_unhealthy_sats || (!selected_galileo_ephemeris.E5b_DVS && selected_galileo_ephemeris.E5b_HS == 0)));
-                                    if (signal_is_healthy && !selected_from_reduced_ced && d_osnma_strict)
+                                    bool signal_is_healthy = false;
+                                    bool signal_health_available = false;
+                                    if (selected_from_reduced_ced)
+                                        {
+                                            signal_health_available = galileo_signal == "1B" || galileo_signal == "7X";
+                                            signal_is_healthy =
+                                                (galileo_signal == "1B" && !selected_galileo_ephemeris.E1B_DVS && selected_galileo_ephemeris.E1B_HS == 0) ||
+                                                (galileo_signal == "7X" && !selected_galileo_ephemeris.E5b_DVS && selected_galileo_ephemeris.E5b_HS == 0);
+                                        }
+                                    else
+                                        {
+                                            signal_health_available = d_internal_pvt_solver->get_galileo_signal_health(
+                                                gnss_synchro.PRN, galileo_signal, galileo_observation_tow, signal_is_healthy);
+                                        }
+                                    signal_is_healthy = d_use_unhealthy_sats || (signal_health_available && signal_is_healthy);
+                                    if (signal_is_healthy && !selected_from_reduced_ced && d_osnma_strict &&
+                                        selected_galileo_ephemeris.nav_message_type == Galileo_Nav_Message_Type::INAV)
                                         {
                                             // Pick up only recently authenticated full-precision navigation data.
                                             const auto eph_gst = osnma::galileo_gst_seconds(osnma::galileo_week_to_uint(selected_galileo_ephemeris.WN),

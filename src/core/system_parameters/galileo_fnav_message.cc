@@ -383,6 +383,7 @@ bool Galileo_Fnav_Message::have_new_almanac()  // Check if we have a new almanac
 Galileo_Ephemeris Galileo_Fnav_Message::get_ephemeris() const
 {
     Galileo_Ephemeris ephemeris;
+    ephemeris.nav_message_type = Galileo_Nav_Message_Type::FNAV;
     ephemeris.flag_all_ephemeris = flag_all_ephemeris;
     ephemeris.IOD_ephemeris = IOD_ephemeris;
     ephemeris.PRN = FNAV_SV_ID_PRN_1;

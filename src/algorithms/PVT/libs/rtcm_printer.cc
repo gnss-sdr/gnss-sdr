@@ -438,9 +438,21 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
                 }
             if (print_MT1045 && d_flags.has_galileo)
                 {
-                    for (const auto& gal_eph_iter : pvt_solver->galileo_ephemeris_map)
+                    // RTCM MT1045 carries Galileo F/NAV ephemerides.
+                    for (const auto& gal_eph_iter : pvt_solver->galileo_ephemeris_store.fnav())
                         {
                             Print_Rtcm_MT1045(gal_eph_iter.second);
+                        }
+                    if (pvt_solver->galileo_ephemeris_store.fnav().empty() &&
+                        pvt_solver->galileo_nav_message_type_for_pvt() == Galileo_Nav_Message_Type::FNAV)
+                        {
+                            for (const auto& gal_eph_iter : pvt_solver->galileo_ephemeris_map)
+                                {
+                                    if (gal_eph_iter.second.nav_message_type != Galileo_Nav_Message_Type::INAV)
+                                        {
+                                            Print_Rtcm_MT1045(gal_eph_iter.second);
+                                        }
+                                }
                         }
                 }
             if (print_MSM)
@@ -493,12 +505,15 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
                                 }
                         }
 
-                    auto gal_eph_iter = pvt_solver->galileo_ephemeris_map.cend();
+                    const auto& source_ephemeris_map = pvt_solver->galileo_ephemeris_store.by_source(
+                        pvt_solver->galileo_nav_message_type_for_pvt());
+                    const auto& galileo_ephemeris_map = source_ephemeris_map.empty() ? pvt_solver->galileo_ephemeris_map : source_ephemeris_map;
+                    auto gal_eph_iter = galileo_ephemeris_map.cend();
                     for (const auto& galileo_observables_iter : galileo_observables)
                         {
-                            if (gal_eph_iter == pvt_solver->galileo_ephemeris_map.cend())
+                            if (gal_eph_iter == galileo_ephemeris_map.cend())
                                 {
-                                    gal_eph_iter = pvt_solver->galileo_ephemeris_map.find(galileo_observables_iter.second.PRN);
+                                    gal_eph_iter = galileo_ephemeris_map.find(galileo_observables_iter.second.PRN);
                                 }
                         }
 
@@ -515,7 +530,7 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
                                                ((gps_eph_iter != pvt_solver->gps_ephemeris_map.cend()) ||
                                                    (gps_cnav_eph_iter != pvt_solver->gps_cnav_ephemeris_map.cend()));
                     const bool print_galileo_msm = rtcm_MT1097_enabled && !galileo_observables.empty() &&
-                                                   (gal_eph_iter != pvt_solver->galileo_ephemeris_map.cend());
+                                                   (gal_eph_iter != galileo_ephemeris_map.cend());
                     const bool print_glonass_msm = rtcm_MT1087_enabled && !glonass_observables.empty() &&
                                                    (glonass_gnav_eph_iter != pvt_solver->glonass_gnav_ephemeris_map.cend());
 
@@ -755,6 +770,10 @@ bool Rtcm_Printer::Print_Rtcm_MT1020(const Glonass_Gnav_Ephemeris& glonass_gnav_
 bool Rtcm_Printer::Print_Rtcm_MT1045(const Galileo_Ephemeris& gal_eph)
 {
     const std::string m1045 = rtcm->print_MT1045(gal_eph);
+    if (m1045.empty())
+        {
+            return false;
+        }
     Rtcm_Printer::Print_Message(m1045);
     return true;
 }

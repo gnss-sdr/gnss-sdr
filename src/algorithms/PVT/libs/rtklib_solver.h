@@ -41,6 +41,7 @@
 #include "beidou_dnav_utc_model.h"
 #include "galileo_almanac.h"
 #include "galileo_ephemeris.h"
+#include "galileo_ephemeris_store.h"
 #include "galileo_has_data.h"
 #include "galileo_iono.h"
 #include "galileo_reduced_ced.h"
@@ -102,13 +103,19 @@ public:
     void store_has_data(const Galileo_HAS_data& new_has_data);
     void clear_has_corrections();
     void update_has_corrections(const std::map<int, Gnss_Synchro>& obs_map);
+    bool store_galileo_ephemeris(const Galileo_Ephemeris& ephemeris);
+    Galileo_Nav_Message_Type galileo_nav_message_type_for_pvt() const;
+    bool is_galileo_signal_used_in_pvt(const std::string& signal) const;
+    bool get_galileo_signal_health(uint32_t prn, const std::string& signal, uint32_t observation_tow, bool& healthy) const;
+    std::map<int, Galileo_Ephemeris> get_galileo_ephemeris_map_for_pvt() const;
     bool select_galileo_ephemeris(uint32_t prn, const std::string& signal, uint32_t observation_tow,
         Galileo_Ephemeris& ephemeris, bool& from_reduced_ced) const;
 
     sol_t pvt_sol{};
     std::array<ssat_t, MAXSAT> pvt_ssat{};
 
-    std::map<int, Galileo_Ephemeris> galileo_ephemeris_map;            //!< Map storing new Galileo_Ephemeris
+    Galileo_Ephemeris_Store galileo_ephemeris_store;                   //!< Source-aware Galileo ephemeris storage
+    std::map<int, Galileo_Ephemeris> galileo_ephemeris_map;            //!< Compatibility PVT view; source-aware storage is authoritative
     std::map<int, Galileo_Reduced_CED> galileo_reduced_ced_map;        //!< Map storing provisional Galileo Reduced CED
     std::map<int, Gps_Ephemeris> gps_ephemeris_map;                    //!< Map storing new GPS_Ephemeris
     std::map<int, Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;          //!< Map storing new GPS_CNAV_Ephemeris
@@ -134,7 +141,11 @@ public:
     std::map<int, Beidou_Dnav_Almanac> beidou_dnav_almanac_map;
 
 private:
+    friend class GalileoEphemerisSourceTest_E6SlotsFollowRtklibGalileoPolicy_Test;
+
     bool save_matfile() const;
+    bool galileo_ephemeris_is_usable(const Galileo_Ephemeris& ephemeris, uint32_t observation_tow) const;
+    void update_galileo_observation_wavelengths(const obsd_t& observation);
 
     void check_has_orbit_clock_validity(const std::map<int, Gnss_Synchro>& obs_map);
     void get_has_biases(const std::map<int, Gnss_Synchro>& obs_map);
@@ -168,6 +179,7 @@ private:
     Pvt_Conf d_conf;
     Pvt_Kf d_pvt_kf;
     uint32_t d_signal_enabled_flags;
+    Galileo_Nav_Message_Type d_galileo_nav_message_type_for_pvt{Galileo_Nav_Message_Type::INAV};
     bool d_flag_dump_enabled;
     bool d_flag_dump_mat_enabled;
 };

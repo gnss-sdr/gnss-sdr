@@ -245,10 +245,18 @@ bool Galileo_Inav_Message::have_new_ephemeris()  // Check if we have a new ephem
                     flag_ephemeris_4 = false;  // clear the flag
                     flag_all_ephemeris = true;
                     IOD_ephemeris = IOD_nav_1;
+                    flag_rs_recovered_ephemeris_pending = false;
                     enable_rs = false;  // Do not retrieve reduced CED if we already have the full ephemeris set
                     DLOG(INFO) << "Batch number: " << IOD_ephemeris;
                     return true;
                 }
+        }
+
+    if (flag_rs_recovered_ephemeris_pending &&
+        word_5_generation != rs_recovery_word_5_generation)
+        {
+            flag_rs_recovered_ephemeris_pending = false;
+            return true;
         }
 
     if (enable_rs)
@@ -360,9 +368,11 @@ bool Galileo_Inav_Message::have_new_ephemeris()  // Check if we have a new ephem
                             flag_ephemeris_4 = false;  // clear the flag
                             flag_all_ephemeris = true;
                             IOD_ephemeris = IOD_nav_1;
+                            flag_rs_recovered_ephemeris_pending = true;
+                            rs_recovery_word_5_generation = word_5_generation;
                             enable_rs = false;  // Retrieve reduced CED only once
                             DLOG(INFO) << "Batch number: " << IOD_ephemeris;
-                            return true;
+                            DLOG(INFO) << "Reed-Solomon-recovered CED awaiting a new CRC-valid Word 5";
                         }
                 }
         }
@@ -416,8 +426,10 @@ bool Galileo_Inav_Message::have_new_almanac()  // Check if we have a new almanac
 
 bool Galileo_Inav_Message::have_new_reduced_ced()
 {
-    // Check if we have a new CED data set stored in the galileo navigation class
-    if (flag_CED == true)
+    // Word 5 supplies the BGD, DVS, and HS fields that accompany Reduced CED.
+    // Require a CRC-valid Word 5 decoded after the pending Word 16 so an old
+    // auxiliary-data set cannot be reused by later Reduced CED messages.
+    if (flag_CED && word_5_generation != reduced_ced_word_5_generation)
         {
             flag_CED = false;
             return true;
@@ -440,6 +452,7 @@ bool Galileo_Inav_Message::have_new_ism()
 Galileo_Ephemeris Galileo_Inav_Message::get_ephemeris() const
 {
     Galileo_Ephemeris ephemeris;
+    ephemeris.nav_message_type = Galileo_Nav_Message_Type::INAV;
     ephemeris.flag_all_ephemeris = flag_all_ephemeris;
     ephemeris.IOD_ephemeris = IOD_ephemeris;
     ephemeris.IOD_nav = IOD_nav_1;
@@ -1044,7 +1057,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             spare_5 = static_cast<double>(read_navigation_unsigned(data_jk_bits, SPARE_5_BIT));
             DLOG(INFO) << "spare_5= " << spare_5;
             flag_iono_and_GST = true;  // set to false externally
-            flag_word_5_received = true;
+            ++word_5_generation;
             flag_TOW_set = true;  // set to false externally
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
             nav_bits_word_5 = data_jk_bits.to_string().substr(6, 67);
@@ -1271,6 +1284,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             ced_af1red = ced_af1red * CED_af1red_LSB;
             DLOG(INFO) << "af1red = " << ced_af1red;
             flag_CED = true;
+            reduced_ced_word_5_generation = word_5_generation;
             break;
 
         case 17:  // Word type 17: FEC2 Reed-Solomon for CED

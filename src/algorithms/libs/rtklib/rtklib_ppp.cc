@@ -34,6 +34,7 @@
 #include "rtklib_ephemeris.h"
 #include "rtklib_ionex.h"
 #include "rtklib_lambda.h"
+#include "rtklib_pntpos.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_sbas.h"
 #include "rtklib_tides.h"
@@ -1151,9 +1152,11 @@ int corrmeas(const obsd_t *obs, const nav_t *nav, const double *pos,
     const int sys = satsys(obs->sat, nullptr);
     if (P1_P2 == 0.0 && (sys & (SYS_GPS | SYS_GAL | SYS_QZS)))
         {
-            // Galileo I/NAV clocks are referenced to E1/E5b. PPP reaches
-            // this path for E1, whose BGD is stored in tgd[1].
-            const int tgd_index = sys == SYS_GAL ? 1 : 0;
+            int tgd_index = 0;
+            if (sys == SYS_GAL)
+                {
+                    tgd_index = galileo_bgd_index(obs->code[0], obs->sat, nav);
+                }
             P1_P2 = (1.0 - gamma) * gettgd_ppp(obs->sat, nav, tgd_index);
         }
     if (obs->code[0] == CODE_L1C)

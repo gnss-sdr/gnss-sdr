@@ -59,7 +59,7 @@ jobs:
             protobuf \
             boost
 
-          # Find the Python formula on which GNU Radio directly depends.
+          # Find the Python formula used directly by GNU Radio.
           PYTHON_FORMULA="$(
             brew deps --direct gnuradio |
             grep -E '^python(@[0-9.]+)?$' |
@@ -67,45 +67,67 @@ jobs:
           )"
 
           if [ -z "$PYTHON_FORMULA" ]; then
-            echo "Could not determine GNU Radio's Python dependency"
+            echo "Could not determine GNU Radio's Python dependency."
+            echo "Direct GNU Radio dependencies:"
             brew deps --direct gnuradio
             exit 1
           fi
 
           PYTHON_PREFIX="$(brew --prefix "$PYTHON_FORMULA")"
+          PYTHON_EXECUTABLE="$PYTHON_PREFIX/bin/python3"
+
+          if [ ! -x "$PYTHON_EXECUTABLE" ]; then
+            echo "Could not execute $PYTHON_EXECUTABLE"
+            ls -la "$PYTHON_PREFIX/bin"
+            exit 1
+          fi
+
           echo "GNU Radio Python formula: $PYTHON_FORMULA"
-          echo "GNU Radio Python prefix:  $PYTHON_PREFIX"
+          echo "Python prefix:            $PYTHON_PREFIX"
+          echo "Python executable:        $PYTHON_EXECUTABLE"
 
-          # Persist it for all subsequent GitHub Actions steps.
+          "$PYTHON_EXECUTABLE" --version
+
+          # Make Homebrew's unversioned Python commands available to later steps.
           echo "$PYTHON_PREFIX/libexec/bin" >> "$GITHUB_PATH"
-          echo "Python3_EXECUTABLE=$PYTHON_PREFIX/bin/$(ls "$PYTHON_PREFIX/bin" | grep -E '^python3\.[0-9]+$' | head -n 1)" >> "$GITHUB_ENV"
 
-          # Use that exact interpreter in this step.
-          "$PYTHON_PREFIX/libexec/bin/python" -m pip install mako
+          # Persist the exact interpreter for CMake and later commands.
+          echo "GNURADIO_PYTHON=$PYTHON_EXECUTABLE" >> "$GITHUB_ENV"
+
+          "$PYTHON_EXECUTABLE" -m pip install mako
+
       - name: Check Python and GNU Radio
         run: |
+          echo "GNURADIO_PYTHON=$GNURADIO_PYTHON"
+
           command -v python
           command -v python3
-          python --version
-          python -c 'import sys; print(sys.executable)'
-          python -c 'import gnuradio; print(gnuradio.__path__)'
-          python -m pip --version
+
+          "$GNURADIO_PYTHON" --version
+          "$GNURADIO_PYTHON" -c 'import sys; print(sys.executable)'
+          "$GNURADIO_PYTHON" -c 'import mako; print(mako.__file__)'
+          "$GNURADIO_PYTHON" -c 'import gnuradio; print(gnuradio.__path__)'
+          "$GNURADIO_PYTHON" -m pip --version
+
       - name: Configure
         run: |
           cmake -S . -B build -GNinja \
-            -DPython3_EXECUTABLE="$Python3_EXECUTABLE"
+            -DPython3_EXECUTABLE="$GNURADIO_PYTHON"
+
       - name: Build
         run: cmake --build build
+
       - name: Check
         run: |
           cmake --build build --target check
           ./install/volk_gnsssdr_profile
           ./install/run_tests
+
       - name: Default position_test
         run: |
           cmake -S . -B build \
             -GNinja \
-            -DPython3_EXECUTABLE="$Python3_EXECUTABLE" \
+            -DPython3_EXECUTABLE="$GNURADIO_PYTHON" \
             -DENABLE_SYSTEM_TESTING_EXTRA=ON \
             -DENABLE_UNIT_TESTING_EXTRA=OFF
 
@@ -135,7 +157,6 @@ jobs:
             protobuf \
             boost
 
-          # Find the Python formula used directly by GNU Radio.
           PYTHON_FORMULA="$(
             brew deps --direct gnuradio |
             grep -E '^python(@[0-9.]+)?$' |
@@ -144,39 +165,26 @@ jobs:
 
           if [ -z "$PYTHON_FORMULA" ]; then
             echo "Could not determine GNU Radio's Python dependency."
-            echo "Direct GNU Radio dependencies:"
             brew deps --direct gnuradio
             exit 1
           fi
 
           PYTHON_PREFIX="$(brew --prefix "$PYTHON_FORMULA")"
+          PYTHON_EXECUTABLE="$PYTHON_PREFIX/bin/python3"
 
-          # Find the versioned executable, such as python3.13 or python3.14.
-          PYTHON_EXECUTABLE="$(
-            find "$PYTHON_PREFIX/bin" \
-              -maxdepth 1 \
-              -type f \
-              -name 'python3.*' |
-            sort |
-            head -n 1
-          )"
-
-          if [ -z "$PYTHON_EXECUTABLE" ]; then
-            echo "Could not find Python under $PYTHON_PREFIX/bin."
+          if [ ! -x "$PYTHON_EXECUTABLE" ]; then
+            echo "Could not execute $PYTHON_EXECUTABLE"
             ls -la "$PYTHON_PREFIX/bin"
             exit 1
           fi
 
           echo "GNU Radio Python formula: $PYTHON_FORMULA"
-          echo "Python prefix:           $PYTHON_PREFIX"
-          echo "Python executable:       $PYTHON_EXECUTABLE"
+          echo "Python prefix:            $PYTHON_PREFIX"
+          echo "Python executable:        $PYTHON_EXECUTABLE"
+
           "$PYTHON_EXECUTABLE" --version
 
-          # Make Homebrew's unversioned python/python3 commands available
-          # to subsequent GitHub Actions steps.
           echo "$PYTHON_PREFIX/libexec/bin" >> "$GITHUB_PATH"
-
-          # Persist the exact interpreter for CMake.
           echo "GNURADIO_PYTHON=$PYTHON_EXECUTABLE" >> "$GITHUB_ENV"
 
           "$PYTHON_EXECUTABLE" -m pip install mako
@@ -184,13 +192,12 @@ jobs:
       - name: Check Python environment
         run: |
           echo "GNURADIO_PYTHON=$GNURADIO_PYTHON"
-          command -v python
           command -v python3
-          python --version
-          python -c 'import sys; print(sys.executable)'
-          python -m pip --version
-          python -c 'import mako; print(mako.__file__)'
-          python -c 'import gnuradio; print(gnuradio.__path__)'
+          python3 --version
+          "$GNURADIO_PYTHON" -c 'import sys; print(sys.executable)'
+          "$GNURADIO_PYTHON" -m pip --version
+          "$GNURADIO_PYTHON" -c 'import mako; print(mako.__file__)'
+          "$GNURADIO_PYTHON" -c 'import gnuradio; print(gnuradio.__path__)'
 
       - name: Configure
         run: |

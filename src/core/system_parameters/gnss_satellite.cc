@@ -600,6 +600,9 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                 case 27:
                     block_ = std::string("FOC-FM17");  // Galileo Full Operational Capability (FOC) satellite FM17 / GSAT0217, launched on Dec. 12, 2017.
                     break;
+                case 28:
+                    block_ = std::string("FOC-FM33");  // Galileo Full Operational Capability (FOC) satellite FM33 / GSAT0233, launched on Dec. 17, 2025.
+                    break;    
                 case 29:
                     block_ = std::string("FOC-FM25");  // Galileo Full Operational Capability (FOC) satellite FM25 / GSAT0225, launched on Apr. 28, 2024.
                     break;
@@ -608,6 +611,9 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                     break;
                 case 31:
                     block_ = std::string("FOC-FM18");  // Galileo Full Operational Capability (FOC) satellite FM18 / GSAT0218, launched on Dec. 12, 2017.
+                    break;
+                case 32:
+                    block_ = std::string("FOC-FM34");  // Galileo Full Operational Capability (FOC) satellite FM34 / GSAT0234, launched on Dec. 17, 2025.
                     break;
                 case 33:
                     block_ = std::string("FOC-FM22");  // Galileo Full Operational Capability (FOC) satellite FM22 / GSAT0222, launched on Jul. 25, 2018.

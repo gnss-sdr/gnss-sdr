@@ -1184,7 +1184,11 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                             break;
                         }
                     bool crc_ok = (d_inav_nav.get_flag_CRC_test() || d_fnav_nav.get_flag_CRC_test() || d_cnav_nav.get_flag_CRC_test());
-                    if (d_dump_crc_stats)
+                    // The CRC of I/NAV alert pages (Page Type = 1) is computed horizontally, across
+                    // the E5b-I and E1-B components of the same epoch (ICD 2.2 Table 39), so it cannot be
+                    // verified with the two page parts received on a single frequency
+                    const bool inav_alert_page = (d_frame_type == 1) && d_inav_nav.is_alert_page();
+                    if (d_dump_crc_stats && !inav_alert_page)
                         {
                             // update CRC statistics
                             d_Tlm_CRC_Stats->update_CRC_stats(crc_ok);
@@ -1203,6 +1207,16 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                     LOG(INFO) << "Successful frame synchronization in channel " << d_channel << " for satellite " << this->d_satellite
                                               << " at sample_counter=" << d_received_sample_counter;
                                 }
+                        }
+                    else if (inav_alert_page)
+                        {
+                            // Unverifiable but structurally consistent page: keep frame
+                            // synchronization. Alert pages contain neither decodable words nor
+                            // timing information, so no observable is produced from them.
+                            LOG(INFO) << "Galileo I/NAV alert page received in channel " << d_channel
+                                      << " from satellite " << d_satellite;
+                            std::cout << TEXT_RED << "Galileo I/NAV alert page received in channel " << d_channel
+                                      << " from satellite " << d_satellite << TEXT_RESET << std::endl;
                         }
                     else
                         {

@@ -153,6 +153,11 @@ void Galileo_Inav_Message::split_page(std::string page_string, int32_t flag_even
                     const std::string page_INAV = page_INAV_even + page_Odd;  // Join pages: Even + Odd = INAV page
                     const bool nominal_inav_page = page_INAV[GALILEO_INAV_EVEN_PAGE_TYPE_BIT] == '0' &&
                                                    page_INAV[GALILEO_INAV_ODD_PAGE_TYPE_BIT] == '0';
+                    // The CRC of alert pages is computed horizontally, across the E5b-I and E1-B
+                    // components of the same epoch (ICD 2.2 Table 39), so it cannot be verified with
+                    // the two page parts received on a single frequency.
+                    flag_alert_page = page_INAV[GALILEO_INAV_EVEN_PAGE_TYPE_BIT] == '1' &&
+                                      page_INAV[GALILEO_INAV_ODD_PAGE_TYPE_BIT] == '1';
 
                     const std::string Data_k = page_INAV.substr(2, 112);
                     const std::string Data_j = page_INAV.substr(116, 16);

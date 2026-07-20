@@ -169,6 +169,11 @@ public:
         return flag_CRC_test;
     }
 
+    inline bool is_alert_page() const
+    {
+        return flag_alert_page;
+    }
+
     inline bool get_flag_TOW_set() const
     {
         return flag_TOW_set;
@@ -486,6 +491,7 @@ private:
     uint8_t ism_service_level_id{};
 
     bool flag_CRC_test{};
+    bool flag_alert_page{};     // Flag indicating that the last complete page (even + odd) was an alert page (Page Type = 1), whose CRC cannot be verified on a single frequency
     bool flag_all_ephemeris{};  // Flag indicating that all words containing ephemeris have been received
     bool flag_ephemeris_1{};    // Flag indicating that ephemeris 1/4 (word 1) have been received
     bool flag_ephemeris_2{};    // Flag indicating that ephemeris 2/4 (word 2) have been received

@@ -40,7 +40,7 @@ double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int32_t WN) const
     double Delta_t_Utc = 0;
     // Week roll-over handling of the truncated week numbers (OS SIS ICD 5.1.7:
     // the magnitude of the untruncated differences does not exceed 127 weeks)
-    const double weeks_since_t0t = static_cast<double>(truncated_week_diff(WN, WNot, 256));
+    const auto weeks_since_t0t = static_cast<double>(truncated_week_diff(WN, WNot, 256));
     // Determine if the effectivity time of the leap second event is in the past
     const int32_t weeksToLeapSecondEvent = truncated_week_diff(WN_LSF, WN, 256);
 

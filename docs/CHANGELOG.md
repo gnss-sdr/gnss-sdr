@@ -191,6 +191,14 @@ All notable changes to GNSS-SDR will be documented in this file.
   parameter directly, reconstructing the dump file names the same way the
   receiver does. A new `utils/python/README.md` documents all the utilities and
   their options.
+- Fixed the time tags of position solutions reported in the terminal and in
+  NMEA, KML, GPX, and GeoJSON outputs for configurations without GPS channels
+  (e.g., Galileo-only receivers): the reported epoch was shifted by the residual
+  receiver clock offset, which in the absence of GPS satellites is absorbed by
+  an inter-system bias state instead of the receiver clock state. Reported
+  epochs now fall on the same integer-millisecond grid as the observables, as
+  they already did in configurations including GPS. RINEX files were not
+  affected.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

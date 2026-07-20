@@ -45,6 +45,13 @@ public:
     // double TOW;
     double GST_to_UTC_time(double t_e, int32_t WN) const;  //!< GST-UTC Conversion Algorithm and Parameters
 
+    /*!
+     * \brief Signed difference between two truncated week numbers, wrapped to
+     * [-modulus/2, modulus/2). Implements the week roll-over handling required
+     * by OS SIS ICD 5.1.7 (modulus 256) and 5.1.8 (modulus 64).
+     */
+    static int32_t truncated_week_diff(int32_t wn, int32_t wn_ref, int32_t modulus);
+
     // Word type 6: GST-UTC conversion parameters
     double A0{};
     double A1{};

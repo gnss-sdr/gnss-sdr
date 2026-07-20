@@ -41,7 +41,7 @@
 #include "viterbi_decoder.h"  // for Viterbi_Decoder
 #include <pmt/pmt_sugar.h>    // for pmt::mp
 #include <array>              // for std::array
-#include <cmath>              // for std::fmod, std::abs
+#include <cmath>              // for std::abs
 #include <cstddef>            // for size_t
 #include <iomanip>            // for std::setprecision
 #include <iostream>           // for std::cout
@@ -706,7 +706,9 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
 
             if (tmp_obj->flag_GGTO)
                 {
-                    d_delta_t = tmp_obj->A_0G + tmp_obj->A_1G * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - tmp_obj->t_0G + 604800 * (std::fmod(static_cast<float>(d_inav_nav.get_Galileo_week() - tmp_obj->WN_0G), 64.0)));
+                    // Week roll-over handling of the truncated week numbers (OS SIS ICD 5.1.8:
+                    // the magnitude of the untruncated difference does not exceed 31 weeks)
+                    d_delta_t = tmp_obj->A_0G + tmp_obj->A_1G * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - tmp_obj->t_0G + 604800.0 * static_cast<double>(Galileo_Utc_Model::truncated_week_diff(d_inav_nav.get_Galileo_week(), tmp_obj->WN_0G, 64)));
                     DLOG(INFO) << "delta_t=" << d_delta_t << "[s]";
                 }
         }
@@ -1464,7 +1466,9 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 {
                     if (d_inav_nav.get_flag_GGTO() == true)  // all GGTO parameters arrived
                         {
-                            d_delta_t = d_inav_nav.get_A0G() + d_inav_nav.get_A1G() * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - d_inav_nav.get_t0G() + 604800.0 * (std::fmod(static_cast<float>(d_inav_nav.get_Galileo_week() - d_inav_nav.get_WN0G()), 64.0)));
+                            // Week roll-over handling of the truncated week numbers (OS SIS ICD 5.1.8:
+                            // the magnitude of the untruncated difference does not exceed 31 weeks)
+                            d_delta_t = d_inav_nav.get_A0G() + d_inav_nav.get_A1G() * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - d_inav_nav.get_t0G() + 604800.0 * static_cast<double>(Galileo_Utc_Model::truncated_week_diff(d_inav_nav.get_Galileo_week(), static_cast<int32_t>(d_inav_nav.get_WN0G()), 64)));
                         }
                     current_symbol.Flag_valid_word = true;
                 }

@@ -47,14 +47,14 @@ message GalileoEphemeris {
   int32 IOD_nav = 27;
 
   // SV status
-  int32 SISA = 28;        // Signal in space accuracy index
-  int32 E5a_HS = 29;      // E5a Signal Health Status
-  int32 E5b_HS = 30;      // E5b Signal Health Status
-  int32 E1B_HS = 31;      // E1B Signal Health Status
-  bool E5a_DVS = 32;      // E5a Data Validity Status
-  bool E5b_DVS = 33;      // E5b Data Validity Status
-  bool E1B_DVS = 34;      // E1B Data Validity Status
-  double BGD_E1E5a = 35;  // E1-E5a Broadcast Group Delay [s]
-  double BGD_E1E5b = 36;  // E1-E5b Broadcast Group Delay [s]
+  int32 SISA = 28;                       // Signal in space accuracy index
+  int32 E5a_HS = 29;                     // E5a Signal Health Status
+  int32 E5b_HS = 30;                     // E5b Signal Health Status
+  int32 E1B_HS = 31;                     // E1B Signal Health Status
+  bool E5a_DVS = 32;                     // E5a Data Validity Status
+  bool E5b_DVS = 33;                     // E5b Data Validity Status
+  bool E1B_DVS = 34;                     // E1B Data Validity Status
+  double BGD_E1E5a = 35;                 // E1-E5a Broadcast Group Delay [s]
+  double BGD_E1E5b = 36;                 // E1-E5b Broadcast Group Delay [s]
   NavMessageType nav_message_type = 37;  // Navigation message carrying this record
 }

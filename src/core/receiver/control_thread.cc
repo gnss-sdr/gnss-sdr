@@ -557,7 +557,7 @@ bool ControlThread::read_assistance_from_XML()
 
     std::cout << "Trying to read GNSS ephemeris from XML file(s)...\n";
 
-    if (configuration_->property("Channels_1C.count", 0) > 0)
+    if ((configuration_->property("Channels_1C.count", 0) > 0) || (configuration_->property("Channels_J1.count", 0) > 0))
         {
             if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)
                 {
@@ -566,7 +566,8 @@ bool ControlThread::read_assistance_from_XML()
                         gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
                         gps_eph_iter++)
                         {
-                            std::cout << "From XML file: Read NAV ephemeris for satellite " << Gnss_Satellite("GPS", gps_eph_iter->second.PRN) << '\n';
+                            const std::string system = gps_eph_iter->second.get_system() == 'J' ? "QZSS" : "GPS";
+                            std::cout << "From XML file: Read NAV ephemeris for satellite " << Gnss_Satellite(system, gps_eph_iter->second.PRN) << '\n';
                             const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);
                             flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                         }

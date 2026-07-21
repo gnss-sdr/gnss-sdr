@@ -26,6 +26,7 @@
 #include "galileo_utc_model.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
+#include "gnss_satellite.h"
 #include "gnss_sdr_filesystem.h"
 #include "gnss_synchro.h"
 #include "gps_cnav_ephemeris.h"
@@ -149,6 +150,12 @@ std::map<char, std::set<signal_flag>> get_constel_signal_flags(const Signal_Enab
 bool is_qzss_prn(uint32_t prn)
 {
     return prn >= MINPRNQZS && prn <= MAXPRNQZS;
+}
+
+
+bool is_gps_prn(uint32_t prn)
+{
+    return prn >= MINPRNGPS && prn <= MAXPRNGPS;
 }
 
 
@@ -2566,6 +2573,28 @@ void Rinex_Printer::log_rinex_nav_gps_nav(const std::map<int32_t, Gps_Ephemeris>
         {
             const auto& eph = gps_ephemeris_iter.second;
 
+            const bool key_matches_prn = gps_ephemeris_iter.first >= 0 && static_cast<uint32_t>(gps_ephemeris_iter.first) == eph.PRN;
+            if (!key_matches_prn || (!is_gps_prn(eph.PRN) && !is_qzss_prn(eph.PRN)))
+                {
+                    LOG(WARNING) << "Skipping malformed GPS/QZSS LNAV ephemeris in RINEX output: map key="
+                                 << gps_ephemeris_iter.first << ", PRN=" << eph.PRN;
+                    continue;
+                }
+
+            const auto satellite_block_iter = eph.satelliteBlock.find(eph.PRN);
+            std::string satellite_block;
+            if (satellite_block_iter != eph.satelliteBlock.cend())
+                {
+                    satellite_block = satellite_block_iter->second;
+                }
+            else
+                {
+                    const std::string system = is_qzss_prn(eph.PRN) ? "QZSS" : "GPS";
+                    satellite_block = Gnss_Satellite().what_block(system, eph.PRN);
+                    LOG(WARNING) << "Missing satellite block metadata for " << system << " PRN " << eph.PRN
+                                 << " in RINEX output; reconstructed block as " << satellite_block;
+                }
+
             // -------- SV / EPOCH / SV CLK
             const boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_GPS_time(eph, eph.toc);
 
@@ -2651,7 +2680,7 @@ void Rinex_Printer::log_rinex_nav_gps_nav(const std::map<int32_t, Gps_Ephemeris>
 
             int curve_fit_interval = 4;
 
-            if (eph.satelliteBlock.at(eph.PRN) == "IIA")
+            if (satellite_block == "IIA")
                 {
                     // Block II/IIA (Table 20-XI IS-GPS-200M)
                     if ((eph.IODC > 239) && (eph.IODC < 248))
@@ -2680,10 +2709,10 @@ void Rinex_Printer::log_rinex_nav_gps_nav(const std::map<int32_t, Gps_Ephemeris>
                         }
                 }
 
-            if ((eph.satelliteBlock.at(eph.PRN) == "IIR") ||
-                (eph.satelliteBlock.at(eph.PRN) == "IIR-M") ||
-                (eph.satelliteBlock.at(eph.PRN) == "IIF") ||
-                (eph.satelliteBlock.at(eph.PRN) == "III"))
+            if ((satellite_block == "IIR") ||
+                (satellite_block == "IIR-M") ||
+                (satellite_block == "IIF") ||
+                (satellite_block == "III"))
                 {
                     // Block IIR/IIR-M/IIF/III/IIIF (Table 20-XII IS-GPS-200M)
                     if ((eph.IODC > 239) && (eph.IODC < 248))

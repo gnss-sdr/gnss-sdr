@@ -622,6 +622,7 @@ Gps_Ephemeris Gps_Navigation_Message::get_ephemeris() const
     ephemeris.antispoofing_flag = b_antispoofing_flag;
     if (d_system == LnavSystem::QZSS)
         {
+            ephemeris.set_system('J');
             auto gnss_sat = Gnss_Satellite();
             for (uint32_t i = 193; i < 207; i++)
                 {

@@ -47,8 +47,6 @@ public:
     }
 
     double delta_A{};         //!< Semi-major axis difference at reference time
-    double Adot{};            //!< Change rate in semi-major axis
-    double delta_ndot{};      //!< Rate of mean motion difference from computed value
     double delta_OMEGAdot{};  //!< Rate of Right Ascension  difference [semi-circles/s]
     int32_t toe1{};           //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200M) [s]
     int32_t toe2{};           //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200M) [s]

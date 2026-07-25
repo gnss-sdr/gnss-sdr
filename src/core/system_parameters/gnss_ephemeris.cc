@@ -190,8 +190,11 @@ void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<
     // Time from ephemeris reference epoch
     double tk = check_t(transmitTime - static_cast<double>(this->toe));
 
+    // Semi-major axis correction (CNAV)
+    const double Ak = a + this->Adot * tk;
+
     // Corrected mean motion
-    const double n = n0 + this->delta_n;
+    const double n = n0 + this->delta_n + 0.5 * this->delta_ndot * tk;
 
     // Mean anomaly
     const double M = this->M_0 + n * tk;
@@ -240,8 +243,8 @@ void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<
     const double ukdot = pkdot * (1.0 + 2.0 * (this->Cus * c2pk - this->Cuc * s2pk));
 
     // Correct radius
-    const double r = a * OneMinusecosE + this->Crc * c2pk + this->Crs * s2pk;
-    const double rkdot = a * this->ecc * sek * ekdot + 2.0 * pkdot * (this->Crs * c2pk - this->Crc * s2pk);
+    const double r = Ak * OneMinusecosE + this->Crc * c2pk + this->Crs * s2pk;
+    const double rkdot = this->Adot * (1. - this->ecc * cek) + a * this->ecc * sek * ekdot + 2.0 * pkdot * (this->Crs * c2pk - this->Crc * s2pk);
 
     // Correct inclination
     const double i = this->i_0 + this->idot * tk + this->Cic * c2pk + this->Cis * s2pk;

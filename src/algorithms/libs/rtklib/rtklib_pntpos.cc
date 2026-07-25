@@ -163,7 +163,7 @@ double getiscl5q(int sat, const nav_t *nav)
 
 /* psendorange with code bias correction -------------------------------------*/
 double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
-    int iter, const prcopt_t *opt, double *var)
+    int iter, const prcopt_t *opt, double *var, int *fidx)
 {
     const double *lam = nav->lam[obs->sat - 1];
     double PC = 0.0;
@@ -296,6 +296,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                 {
                     P1 += P1_C1; /* C1->P1 */
                     PC = P1 - P1_P2;
+                    *fidx = i;
                 }
             else if (obs->code[i] == CODE_NONE && obs->code[j] != CODE_NONE)
                 {
@@ -305,17 +306,20 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                             // PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
                             if (obs->code[j] == CODE_L2S)  // L2 single freq.
                                 {
-                                    PC = P2 + P1_P2 - ISCl2;
+                                    PC = P2 - P1_P2 + ISCl2;
+                                    *fidx = j;
                                 }
                             else if (obs->code[j] == CODE_L5X)  // L5 single freq.
                                 {
-                                    PC = P2 + P1_P2 - ISCl5i;
+                                    PC = P2 - P1_P2 + ISCl5i;
+                                    *fidx = j;
                                 }
                         }
                     if (sys == SYS_BDS)
                         {
                             P2 += P2_C2; /* C2->P2 */
                             PC = P2;     // no tgd corrections for B3I
+                            *fidx = j;
                         }
                     else if (sys == SYS_GAL)
                         {
@@ -323,11 +327,13 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                             // Galileo OS SIS ICD, Eq. 19: E5a/E5b uses
                             // (f_E1/f_E5)^2 times its corresponding BGD.
                             PC = uses_galileo_bgd ? P2 - gamma_ * P1_P2 : P2 - gamma_ * P1_P2 / (1.0 - gamma_);
+                            *fidx = j;
                         }
                     else if (sys == SYS_GLO)
                         {
                             P2 += P2_C2; /* C2->P2 */
                             PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
+                            *fidx = j;
                         }
                 }
             /* dual-frequency */
@@ -477,6 +483,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
     int nv = 0;
     int sys;
     int mask[4] = {0};
+    int fidx = 0;
 
     trace(3, "resprng : n=%d\n", n);
 
@@ -519,7 +526,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                     continue;
                 }
             /* psudorange with code bias correction */
-            if ((P = prange(obs + i, nav, azel + i * 2, iter, opt, &vmeas)) == 0.0)
+            if ((P = prange(obs + i, nav, azel + i * 2, iter, opt, &vmeas, &fidx)) == 0.0)
                 {
                     trace(4, "prange error\n");
                     continue;
@@ -541,7 +548,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                 }
 
             /* GPS-L1 -> L1/B1 */
-            if ((lam_L1 = nav->lam[obs[i].sat - 1][0]) > 0.0)
+            if ((lam_L1 = nav->lam[obs[i].sat - 1][fidx]) > 0.0)
                 {
                     dion *= std::pow(lam_L1 / LAM_CARR[0], 2.0);
                 }

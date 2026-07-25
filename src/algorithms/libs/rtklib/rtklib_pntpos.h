@@ -61,7 +61,7 @@ double getiscl5q(int sat, const nav_t *nav);
 
 /* psendorange with code bias correction -------------------------------------*/
 double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
-    int iter, const prcopt_t *opt, double *var);
+    int iter, const prcopt_t *opt, double *var, int *fidx);
 
 /* ionospheric correction ------------------------------------------------------
  * compute ionospheric correction

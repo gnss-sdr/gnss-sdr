@@ -35,12 +35,6 @@
  *
  * The length of the initialization can be controlled with
  * set_samples_for_initialization(int num_samples)
- *
- * If the average of an initialization window falls below
- * min_value + offset, the window is discarded and initialization
- * starts again, up to a maximum number of attempts; after that, the
- * smoother engages with the last window average so that weak but valid
- * signals still get smoothed.
  */
 class Exponential_Smoother
 {
@@ -68,8 +62,6 @@ private:
     float offset_{12.0};
     int samples_for_initialization_{200};
     int init_counter_{0};
-    int init_attempts_{0};
-    int max_init_attempts_{3};
     bool initializing_{true};
 };
 

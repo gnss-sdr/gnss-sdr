@@ -194,10 +194,10 @@ void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<
     const double Ak = a + this->Adot * tk;
 
     // Corrected mean motion
-    const double n = n0 + this->delta_n + 0.5 * this->delta_ndot * tk;
+    const double n = n0 + this->delta_n;
 
     // Mean anomaly
-    const double M = this->M_0 + n * tk;
+    const double M = this->M_0 + (n + 0.5 * this->delta_ndot * tk) * tk;
 
     // Initial guess of eccentric anomaly
     double E = M;
@@ -221,7 +221,7 @@ void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<
     const double cek = cos(E);
     const double OneMinusecosE = 1.0 - this->ecc * cek;
     const double sq1e2 = sqrt(1.0 - this->ecc * this->ecc);
-    const double ekdot = n / OneMinusecosE;
+    const double ekdot = (n + this->delta_ndot * tk) / OneMinusecosE;
 
     // Compute the true anomaly
     const double tmp_Y = sq1e2 * sek;
@@ -244,7 +244,7 @@ void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<
 
     // Correct radius
     const double r = Ak * OneMinusecosE + this->Crc * c2pk + this->Crs * s2pk;
-    const double rkdot = this->Adot * (1. - this->ecc * cek) + a * this->ecc * sek * ekdot + 2.0 * pkdot * (this->Crs * c2pk - this->Crc * s2pk);
+    const double rkdot = this->Adot * (1. - this->ecc * cek) + Ak * this->ecc * sek * ekdot + 2.0 * pkdot * (this->Crs * c2pk - this->Crc * s2pk);
 
     // Correct inclination
     const double i = this->i_0 + this->idot * tk + this->Cic * c2pk + this->Cis * s2pk;
@@ -348,7 +348,7 @@ double Gnss_Ephemeris::sv_clock_relativistic_term(double transmitTime) const
     const double n = n0 + this->delta_n;
 
     // Mean anomaly
-    const double M = this->M_0 + n * tk;
+    const double M = this->M_0 + (n + 0.5 * this->delta_ndot * tk) * tk;
 
     // Initial guess of eccentric anomaly
     double E = M;

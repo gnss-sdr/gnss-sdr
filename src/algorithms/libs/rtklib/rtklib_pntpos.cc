@@ -183,6 +183,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     int j = 1;
     int sys = satsys(obs->sat, nullptr);
     *var = 0.0;
+    *fidx = 0;
 
     if (sys == SYS_NONE)
         {

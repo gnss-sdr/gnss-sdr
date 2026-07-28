@@ -138,6 +138,10 @@ public:
                 archive& BOOST_SERIALIZATION_NVP(URA1);
                 archive& BOOST_SERIALIZATION_NVP(URA2);
             }
+        if (version > 1)
+            {
+                archive& BOOST_SERIALIZATION_NVP(delta_ndot);
+            }
         archive& BOOST_SERIALIZATION_NVP(TGD);
         archive& BOOST_SERIALIZATION_NVP(ISCL1);
         archive& BOOST_SERIALIZATION_NVP(ISCL2);
@@ -153,7 +157,7 @@ public:
     }
 };
 
-BOOST_CLASS_VERSION(Gps_CNAV_Ephemeris, 1)
+BOOST_CLASS_VERSION(Gps_CNAV_Ephemeris, 2)
 
 
 /** \} */

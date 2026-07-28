@@ -331,9 +331,9 @@ BLAS, LAPACK, and ATLAS).
 #### Install [Gflags](https://github.com/gflags/gflags "Gflags' Homepage"), a commandline flags processing module for C++
 
 ```
-$ wget https://github.com/gflags/gflags/archive/v2.3.0.tar.gz
-$ tar xvfz v2.3.0.tar.gz
-$ cd gflags-2.3.0
+$ wget https://github.com/gflags/gflags/archive/v2.3.1.tar.gz
+$ tar xvfz v2.3.1.tar.gz
+$ cd gflags-2.3.1
 $ cmake -S . -B building -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF
 $ cmake --build building
 $ sudo cmake --install building

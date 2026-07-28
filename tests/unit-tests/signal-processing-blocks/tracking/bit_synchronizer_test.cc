@@ -47,6 +47,11 @@ bool feed_alternating_bits(HistogramBitSynchronizer& synchronizer,
     int detection_window_epochs = 3)
 {
     const int period = synchronizer.bins();
+    if (period <= 0)
+        {
+            ADD_FAILURE() << "The bit synchronizer must have a positive number of bins";
+            return false;
+        }
     const int first_edge = (edge_phase == 0) ? period : edge_phase;
     const int epochs = first_edge + (transition_count - 1) * period + detection_window_epochs;
     float polarity = 1.0F;

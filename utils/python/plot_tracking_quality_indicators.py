@@ -235,6 +235,15 @@ def time_seconds(tracking, sampling_frequency):
     return np.asarray(tracking["PRN_start_sample"], dtype=float) / sampling_frequency
 
 
+def mask_startup_zeros(values):
+    # C/N0 is dumped as exactly 0.0 while the estimation buffer refills after
+    # each tracking (re)start; a genuine 0.0 dB-Hz estimate does not occur.
+    # NaN breaks the plotted line, so restarts appear as gaps instead of
+    # spikes down to zero.
+    values = np.asarray(values, dtype=float)
+    return np.where(values == 0.0, np.nan, values)
+
+
 def series_by_prn(tracking_list, key, sampling_frequency):
     # Merge each signal/PRN series across all channels, sorted by time, so a
     # satellite handed between channels becomes one continuous series. Assumes
@@ -286,6 +295,8 @@ def plot_per_satellite(tracking_list, spec, args):
     for ax, p in zip(axes.flat, prns):
         ax.set_visible(True)
         time_s, values = series[p]
+        if spec.get("mask_zeros"):
+            values = mask_startup_zeros(values)
         ax.plot(time_s, values, linewidth=0.8)
         ax.set_title(satellite_title(p), fontsize=9)
         ax.grid(alpha=0.3)
@@ -304,9 +315,12 @@ def plot_per_channel(tracking_list, spec, args):
     plt.title(f"{spec['ylabel']} per channel")
     for tracking in tracking_list:
         time_s = time_seconds(tracking, args.sampling_frequency)
+        values = tracking[spec["key"]]
+        if spec.get("mask_zeros"):
+            values = mask_startup_zeros(values)
         plt.plot(
             time_s,
-            tracking[spec["key"]],
+            values,
             label=spec["label"](tracking),
         )
     plt.xlabel("Time(s)")
@@ -336,6 +350,7 @@ def main():
             "ylabel": "C/N0 (dB-Hz)",
             "stem": "CN0_SNV_dB_Hz",
             "label": lambda tracking: prn_label(tracking),
+            "mask_zeros": True,
         },
     ]
     for spec in specs:

@@ -766,15 +766,19 @@ void dll_pll_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
                     const int tlm_event = wht::any_cast<int>(pmt::any_ref(msg));
                     if (tlm_event == 1)
                         {
-                            DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
                             gr::thread::scoped_lock lock(d_setlock);
+                            DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
                             d_carrier_lock_fail_counter = 200000;  // force loss-of-lock condition
                         }
                 }
             if (d_trk_parameters.tow_to_trk && pmt::any_ref(msg).type().hash_code() == d_tow_to_trk_type_hash_code)
                 {
                     const auto tow_event = wht::any_cast<const std::shared_ptr<TOW_to_trk>>(pmt::any_ref(msg));
-                    if (tow_event->signal == d_signal_type && tow_event->channel == static_cast<int32_t>(d_channel) && tow_event->prn == d_acquisition_gnss_synchro->PRN)
+                    gr::thread::scoped_lock lock(d_setlock);
+                    if (tow_event && d_acquisition_gnss_synchro != nullptr &&
+                        tow_event->signal == d_signal_type &&
+                        tow_event->channel == static_cast<int32_t>(d_channel) &&
+                        tow_event->prn == d_acquisition_gnss_synchro->PRN)
                         {
                             d_last_tow_received = tow_event;
                         }

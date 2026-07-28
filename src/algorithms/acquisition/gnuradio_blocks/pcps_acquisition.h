@@ -93,7 +93,7 @@ pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_);
 class pcps_acquisition : public acquisition_impl_interface
 {
 public:
-    ~pcps_acquisition() override;
+    ~pcps_acquisition() noexcept override;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer

@@ -36,6 +36,7 @@
 #include <algorithm>  // for std::fill_n, std::min, std::copy
 #include <array>
 #include <cmath>  // for floor, fmod, rint, ceil
+#include <exception>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -194,9 +195,20 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
 }
 
 
-pcps_acquisition::~pcps_acquisition()
+pcps_acquisition::~pcps_acquisition() noexcept
 {
-    wait_if_active();
+    try
+        {
+            wait_if_active();
+        }
+    catch (const std::exception& e)
+        {
+            LOG(WARNING) << "Exception while waiting for the acquisition worker in destructor: " << e.what();
+        }
+    catch (...)
+        {
+            LOG(WARNING) << "Unknown exception while waiting for the acquisition worker in destructor";
+        }
 }
 
 

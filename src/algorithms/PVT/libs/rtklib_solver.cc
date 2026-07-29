@@ -1890,8 +1890,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_nav_data.ion_cmp[2] = beidou_dnav_iono.alpha2;
                     d_nav_data.ion_cmp[3] = beidou_dnav_iono.alpha3;
                     d_nav_data.ion_cmp[4] = beidou_dnav_iono.beta0;
-                    d_nav_data.ion_cmp[5] = beidou_dnav_iono.beta0;
-                    d_nav_data.ion_cmp[6] = beidou_dnav_iono.beta0;
+                    d_nav_data.ion_cmp[5] = beidou_dnav_iono.beta1;
+                    d_nav_data.ion_cmp[6] = beidou_dnav_iono.beta2;
                     d_nav_data.ion_cmp[7] = beidou_dnav_iono.beta3;
                 }
             if (gps_utc_model.valid)

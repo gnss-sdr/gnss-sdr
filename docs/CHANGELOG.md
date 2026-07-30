@@ -14,6 +14,39 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Accuracy:
+
+- Fixed the sign of the group-delay correction applied to GPS and QZSS L1+L2C
+  dual-band observations in the SPP solver when a single-frequency ionospheric
+  model is used: the L1 C/A pseudorange is now corrected as `P1 - c*TGD`, as
+  specified in IS-GPS-200 20.3.3.3.3.2, instead of `P1 + c*TGD`, removing a
+  per-satellite bias of twice the broadcast group delay (up to several meters).
+- Fixed the GPS L1+L5 dual-frequency ionosphere-free correction in the SPP
+  solver: the gamma-weighted L1 term now applies `ISC_L1C/A` as specified in
+  IS-GPS-705 20.3.3.3.1.2.2, instead of erroneously reusing `ISC_L5I5` on both
+  terms of the combination.
+- The variance of the broadcast ionospheric delay estimate is now scaled
+  consistently with the delay itself when converting from the GPS L1 frequency
+  to the L1/B1 frequency of other constellations (delay scales with f^-2, its
+  variance with f^-4).
+- Fixed a double-counting of the ionospheric delay in the SPP solver for
+  dual-band satellites processed with a single-frequency ionospheric model
+  (e.g., `PVT.iono_model=Broadcast`): the ionosphere-free pseudorange
+  combinations formed for GPS/QZSS L1+L5 and Galileo/GLONASS/BeiDou dual-band
+  observations no longer get the modeled ionospheric delay applied on top, which
+  biased those residuals by the (elevation-dependent) modeled delay. The
+  measurement variance of these combinations now also receives the same
+  noise-amplification factor already used in the ionosphere-free positioning
+  mode, instead of a Klobuchar-based variance term that did not correspond to
+  the measurement.
+- The modeled ionospheric delay in the SPP solver is now scaled to the observed
+  frequency band for single-band measurements outside the L1/E1/B1 band (GPS
+  L2C-only or L5-only, Galileo E5a-only or E5b-only, GLONASS L2-only, BeiDou
+  B3I-only): the L1 delay is multiplied by (f_L1/f_band)^2 (about 1.65 for L2
+  and 1.79 for L5/E5a), and its variance by the square of that factor.
+  Previously the unscaled L1 delay was applied to those measurements,
+  undercorrecting the ionosphere by the same factor.
+
 ### Improvements in Availability:
 
 - Improved TOW rollover handling in Telemetry Decoder blocks.
@@ -152,7 +185,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   robustness across dependency discovery, distro detection, and
   cross-compilation handling.
 
-### Improvements in Reliability
+### Improvements in Reliability:
 
 - Hardened the Galileo OSNMA protocol implementation, adding support for Chain
   Renewal, Chain Revocation, Public Key Renewal, Public Key Revocation, Merkle

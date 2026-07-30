@@ -8,11 +8,13 @@
 set(ACQ_ADAPTER_SOURCES
     pcps_acquisition_adapter.cc
     pcps_acquisition_adapter_custom.cc
+    sbas_l1_pcps_acquisition.cc
 )
 
 set(ACQ_ADAPTER_HEADERS
     pcps_acquisition_adapter.h
     pcps_acquisition_adapter_custom.h
+    sbas_l1_pcps_acquisition.h
 )
 
 if(ENABLE_FPGA)

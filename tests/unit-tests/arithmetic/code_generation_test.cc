@@ -17,9 +17,11 @@
  */
 
 #include "Galileo_E6.h"
+#include "SBAS_L1.h"
 #include "galileo_e6_signal_replica.h"
 #include "gnss_signal_replica.h"
 #include "gps_sdr_signal_replica.h"
+#include "sbas_signal_replica.h"
 #include <array>
 #include <chrono>
 #include <complex>
@@ -396,4 +398,91 @@ TEST(CodeGenerationTest, GalileoE6BTest)
         {
             ASSERT_FLOAT_EQ(gale6b_code[i].real(), expected_output[i].real());
         }
+}
+
+
+// ===== SBAS L1 signal replica tests =====
+
+TEST(CodeGenerationTest, SbasL1ComplexCodePrn120Test)
+{
+    // PRN 120 is the lowest SBAS PRN; verify code generates without error
+    // and has correct length. Values are ±1 (BPSK spreading).
+    std::array<std::complex<float>, 1023> dest{};
+    const uint32_t prn = SBAS_L1_PRN_MIN;  // 120
+    sbas_l1_code_gen_complex(dest, prn, 0U);
+
+    for (const auto& chip : dest)
+        {
+            ASSERT_FLOAT_EQ(std::abs(chip.imag()), 0.0F);
+            ASSERT_TRUE(chip.real() == 1.0F || chip.real() == -1.0F)
+                << "Chip value out of range for PRN " << prn;
+        }
+}
+
+
+TEST(CodeGenerationTest, SbasL1ComplexCodePrn138Test)
+{
+    // PRN 138 is the highest SBAS PRN; verify code generates without error.
+    std::array<std::complex<float>, 1023> dest{};
+    const uint32_t prn = SBAS_L1_PRN_MAX;  // 138
+    sbas_l1_code_gen_complex(dest, prn, 0U);
+
+    for (const auto& chip : dest)
+        {
+            ASSERT_FLOAT_EQ(std::abs(chip.imag()), 0.0F);
+            ASSERT_TRUE(chip.real() == 1.0F || chip.real() == -1.0F)
+                << "Chip value out of range for PRN " << prn;
+        }
+}
+
+
+TEST(CodeGenerationTest, SbasL1FloatCodePrn121Test)
+{
+    // PRN 121 — verify float variant generates 1023 chips of ±1.
+    std::array<float, 1023> dest{};
+    sbas_l1_code_gen_float(dest, 121U);
+
+    for (const auto& chip : dest)
+        {
+            ASSERT_TRUE(chip == 1.0F || chip == -1.0F)
+                << "Float chip value out of range for PRN 121";
+        }
+}
+
+
+TEST(CodeGenerationTest, SbasL1SampledCodeAutocorrelationTest)
+{
+    // Verify that the sampled SBAS L1 code has a sharp autocorrelation peak
+    // at zero lag (property of maximal-length sequences).
+    const int32_t fs = static_cast<int32_t>(SBAS_L1_OPT_ACQ_FS_SPS);  // 2 Msps
+    const int32_t code_rate = static_cast<int32_t>(SBAS_L1_CODE_RATE_CPS);
+    const int32_t code_length = static_cast<int32_t>(SBAS_L1_CODE_LENGTH_CHIPS);
+    const int samples_per_code = static_cast<int>(std::round(
+        static_cast<double>(fs) / (static_cast<double>(code_rate) / static_cast<double>(code_length))));
+
+    std::vector<std::complex<float>> code(samples_per_code);
+    sbas_l1_code_gen_complex_sampled(code, 120U, fs);
+
+    // Compute circular autocorrelation at lag 0
+    float r0 = 0.0F;
+    for (const auto& s : code)
+        {
+            r0 += s.real() * s.real() + s.imag() * s.imag();
+        }
+
+    // Compute autocorrelation at a full-chip lag to measure the sidelobe level.
+    // At 2 Msps with 1.023 Mcps, each chip spans ~2 samples, so lag=2 takes
+    // us to an adjacent-chip offset well outside the main correlation peak.
+    const int chip_lag = static_cast<int>(std::round(static_cast<double>(fs) / static_cast<double>(code_rate)));
+    float r1 = 0.0F;
+    for (int i = 0; i < samples_per_code; ++i)
+        {
+            const int j = (i + chip_lag) % samples_per_code;
+            r1 += code[i].real() * code[j].real() + code[i].imag() * code[j].imag();
+        }
+
+    // Peak at zero lag should dominate (ratio > 10)
+    ASSERT_GT(r0, 0.0F);
+    ASSERT_GT(r0 / (std::abs(r1) + 1e-6F), 10.0F)
+        << "Autocorrelation peak-to-sidelobe ratio too small for SBAS PRN 120";
 }

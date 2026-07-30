@@ -96,6 +96,7 @@ const auto signal_mapping = std::unordered_map<std::string, std::pair<std::strin
     {"2G", {"Glonass", "L2"}},
     {"J1", {"QZSS", "L1"}},
     {"J5", {"QZSS", "L5"}},
+    {"S1", {"SBAS", "L1"}},
 };
 
 
@@ -261,6 +262,7 @@ void GNSSFlowgraph::init()
     mapStringValues_["B3"] = evBDS_B3;
     mapStringValues_["J1"] = evQZS_J1;
     mapStringValues_["J5"] = evQZS_J5;
+    mapStringValues_["S1"] = evSBAS_1C;
 
     // fill the signals queue with the satellites ID's to be searched by the acquisition
     set_signals_list();
@@ -2097,7 +2099,7 @@ void GNSSFlowgraph::set_signals_list()
     // GLONASS uses FDMA, so only one orbital slot per frequency channel is queued for acquisition.
     std::unordered_map<std::string, std::set<unsigned int>> available_prn_map = {
         {"GPS", {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32}},
-        {"SBAS", {123, 131, 135, 136, 138}},
+        {"SBAS", {120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138}},
         {"Galileo", {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
                         21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36}},
         {"Glonass", {1, 2, 3, 4, 9, 10, 11, 12, 18, 19, 20, 21, 26, 27, 28}},

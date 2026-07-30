@@ -33,6 +33,7 @@
 #include "Galileo_E5b.h"
 #include "Galileo_E6.h"
 #include "MATH_CONSTANTS.h"
+#include "SBAS_L1.h"
 #include "beidou_b1i_signal_replica.h"
 #include "beidou_b3i_signal_replica.h"
 #include "galileo_e1_signal_replica.h"
@@ -51,6 +52,7 @@
 #include "matlab_writter_helper.h"
 #include "qzss.h"
 #include "qzss_signal_replica.h"
+#include "sbas_signal_replica.h"
 #include "tracking_discriminators.h"
 #include <gnuradio/io_signature.h>   // for io_signature
 #include <gnuradio/thread/thread.h>  // for scoped_lock
@@ -587,7 +589,46 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     d_code_samples_per_chip = 0U;
                     d_symbols_per_bit = 0;
                 }
-        }
+        }  // end QZSS
+    else if (d_trk_parameters.system == 'S')
+        {
+            d_systemName = "SBAS";
+            if (d_signal_type == "S1")
+                {
+                    d_signal_carrier_freq = SBAS_L1_FREQ_HZ;
+                    d_code_period = SBAS_L1_CODE_PERIOD_S;
+                    d_code_chip_rate = SBAS_L1_CODE_RATE_CPS;
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_code_length_chips = static_cast<int32_t>(SBAS_L1_CODE_LENGTH_CHIPS);
+                    // SBAS has no pilot and no secondary code.
+                    // FEC (rate-1/2, K=7) and bit-sync are handled by sbas_l1_telemetry_decoder_gs.
+                    d_secondary = false;
+                    d_trk_parameters.track_pilot = false;
+                    d_trk_parameters.slope = 1.0;
+                    d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
+                    d_trk_parameters.y_intercept = 1.0;
+                    // SBAS telemetry decoder handles preamble detection and Viterbi FEC.
+                    // Set d_secondary_code_length to a non-zero value for buffer capacity.
+                    // d_symbols_per_bit=1: each 1 ms correlation is forwarded directly;
+                    // disables the GPS-style histogram bit synchronizer (wrong for SBAS).
+                    d_secondary_code_length = 20U;                          // placeholder (not used with d_secondary=false)
+                    d_secondary_code_string = GPS_CA_PREAMBLE_SYMBOLS_STR;  // placeholder
+                    d_symbols_per_bit = 1;
+                }
+            else
+                {
+                    LOG(WARNING) << "Invalid Signal argument when instantiating tracking blocks";
+                    std::cerr << "Invalid Signal argument when instantiating tracking blocks\n";
+                    d_correlation_length_ms = 1;
+                    d_secondary = false;
+                    d_signal_carrier_freq = 0.0;
+                    d_code_period = 0.0;
+                    d_code_length_chips = 0;
+                    d_code_samples_per_chip = 0U;
+                    d_symbols_per_bit = 0;
+                }
+        }  // end SBAS
     else
         {
             LOG(WARNING) << "Invalid System argument when instantiating tracking blocks";
@@ -1052,6 +1093,10 @@ void dll_pll_veml_tracking::start_tracking()
                 {
                     qzss_l5i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
                 }
+        }
+    else if (d_systemName == "SBAS" && d_signal_type == "S1")
+        {
+            sbas_l1_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
         }
 
     d_multicorrelator_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_tracking_code.data(), d_local_code_shift_chips.data());

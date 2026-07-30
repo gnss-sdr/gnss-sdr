@@ -2,13 +2,15 @@
  * \file sbas_l1_telemetry_decoder_gs.h
  * \brief Interface of a SBAS telemetry data decoder block
  * \author Daniel Fehr 2013. daniel.co(at)bluewin.ch
+ * \author Miguel Gómez López, 2026. mgomezl(at)ing.uc3m.es
+ * \author Víctor Castillo Agüero, 2026. victorcastilloaguero(at)gmail.com
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -36,7 +38,9 @@ class sbas_l1_telemetry_decoder_gs;
 
 using sbas_l1_telemetry_decoder_gs_sptr = gnss_shared_ptr<sbas_l1_telemetry_decoder_gs>;
 
-sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(bool dump);
+sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
+    bool dump,
+    std::string dump_filename = std::string());
 
 /*!
  * \brief This class implements a block that decodes the SBAS integrity and
@@ -57,9 +61,11 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 
 private:
-    friend sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(bool dump);
+    friend sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
+        bool dump,
+        std::string dump_filename);
 
-    explicit sbas_l1_telemetry_decoder_gs(bool dump);
+    explicit sbas_l1_telemetry_decoder_gs(bool dump, std::string dump_filename = std::string());
 
     void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits);
     void align_samples();
@@ -74,6 +80,7 @@ private:
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;
+    std::ofstream d_ems_file;
 
     size_t d_block_size;               //!< number of samples which are processed during one invocation of the algorithms
     std::vector<double> d_sample_buf;  //!< input buffer holding the samples to be processed in one block

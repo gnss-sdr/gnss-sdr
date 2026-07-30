@@ -2,13 +2,15 @@
  * \file sbas_l1_telemetry_decoder_gs.cc
  * \brief Implementation of a SBAS telemetry data decoder block
  * \author Daniel Fehr 2013. daniel.co(at)bluewin.ch
+ * \author Miguel Gómez López, 2026. mgomezl(at)ing.uc3m.es
+ * \author Víctor Castillo Agüero, 2026. victorcastilloaguero(at)gmail.com
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -23,6 +25,9 @@
 #include <cmath>      // for abs
 #include <exception>  // for exception
 #include <iomanip>    // for operator<<, setw
+#include <iostream>   // for std::cout
+#include <string>     // for std::string
+#include <utility>    // for std::move
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -37,25 +42,35 @@
 #define LMORE 5      //
 
 
-sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(bool dump)
+sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
+    bool dump,
+    std::string dump_filename)
 {
-    return sbas_l1_telemetry_decoder_gs_sptr(new sbas_l1_telemetry_decoder_gs(dump));
+    return sbas_l1_telemetry_decoder_gs_sptr(new sbas_l1_telemetry_decoder_gs(dump, std::move(dump_filename)));
 }
 
 
-sbas_l1_telemetry_decoder_gs::sbas_l1_telemetry_decoder_gs(bool dump)
-    : telemetry_impl_interface("sbas_l1_telemetry_decoder_gs",
-          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
-      d_dump(dump),
-      d_channel(0),
-      d_block_size(D_SAMPLES_PER_SYMBOL * D_SYMBOLS_PER_BIT * D_BLOCK_SIZE_IN_BITS)
+sbas_l1_telemetry_decoder_gs::sbas_l1_telemetry_decoder_gs(
+    bool dump,
+    std::string dump_filename) : telemetry_impl_interface("sbas_l1_telemetry_decoder_gs",
+                                     gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+                                     gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+                                 d_dump(dump),
+                                 d_channel(0),
+                                 d_block_size(D_SAMPLES_PER_SYMBOL * D_SYMBOLS_PER_BIT * D_BLOCK_SIZE_IN_BITS)
 {
     configure_basic_outputs();
 
     // initialize internal vars
     LOG(INFO) << "SBAS L1 TELEMETRY PROCESSING: satellite " << d_satellite;
     set_output_multiple(1);
+
+    if (d_dump && !dump_filename.empty())
+        {
+            // Store the stem; actual EMS file is opened lazily in general_work()
+            // after set_satellite() has been called and d_satellite PRN is valid.
+            d_dump_filename = std::move(dump_filename);
+        }
 }
 
 
@@ -71,6 +86,10 @@ sbas_l1_telemetry_decoder_gs::~sbas_l1_telemetry_decoder_gs()
                 {
                     LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
                 }
+        }
+    if (d_ems_file.is_open())
+        {
+            d_ems_file.close();
         }
 }
 
@@ -446,17 +465,135 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 << " relative_preamble_start=" << valid_msg.first
                                 << " message_sample_offset=" << message_sample_offset
                                 << ")";
-                    // Sbas_Raw_Msg sbas_raw_msg(message_sample_stamp, this->d_satellite.get_PRN(), it->second);
-                    // sbas_raw_msgs.push_back(sbas_raw_msg);
+                    // extract message type: bits 8-13 of 250-bit message (top 6 bits of byte[1])
+                    const int msg_type = (valid_msg.second.size() > 1)
+                                             ? ((static_cast<int>(valid_msg.second[1]) >> 2) & 0x3F)
+                                             : -1;
+                    VLOG(EVENT) << "SBAS PRN " << d_satellite.get_PRN()
+                                << " MT" << msg_type
+                                << " at t=" << std::fixed << std::setprecision(3)
+                                << message_sample_stamp << " s";
+                    // Lazy-open EMS file on first decoded message so PRN is known
+                    if (d_dump && !d_dump_filename.empty() && !d_ems_file.is_open())
+                        {
+                            std::string ems_fn = d_dump_filename;
+                            const std::string dat_ext(".dat");
+                            if (ems_fn.size() > dat_ext.size() &&
+                                ems_fn.compare(ems_fn.size() - dat_ext.size(), dat_ext.size(), dat_ext) == 0)
+                                {
+                                    ems_fn = ems_fn.substr(0, ems_fn.size() - dat_ext.size());
+                                }
+                            ems_fn += "_PRN" + std::to_string(d_satellite.get_PRN()) + ".ems";
+                            d_ems_file.open(ems_fn, std::ios::out | std::ios::app);
+                            if (d_ems_file.is_open())
+                                {
+                                    // Write header only if file is new (empty)
+                                    d_ems_file.seekp(0, std::ios::end);
+                                    if (d_ems_file.tellp() == 0)
+                                        {
+                                            d_ems_file << "; SBAS/EGNOS Message Service (EMS) file\n";
+                                            d_ems_file << "; Generated by GNSS-SDR v0.0.20\n";
+                                            d_ems_file << "; Satellite: SBAS PRN " << d_satellite.get_PRN() << "\n";
+                                            d_ems_file << "; TOW field: receiver time in seconds from recording start\n";
+                                            d_ems_file << ";            GPS week = 0  (no absolute GPS fix in this output)\n";
+                                            d_ems_file << "; Msg bytes: 32 bytes (250-bit SBAS frame zero-padded to 256 bits)\n";
+                                            d_ems_file << ";   Layout: preamble(8b) type(6b) data(212b) CRC-24Q(24b) pad(6b)\n";
+                                            d_ems_file << "; Format:   <gps_week> <tow_s> <prn> <msg_type> : <64_hex_chars>\n";
+                                            d_ems_file << ";\n";
+                                        }
+                                    LOG(INFO) << "SBAS EMS file opened: " << ems_fn;
+                                }
+                            else
+                                {
+                                    LOG(WARNING) << "Could not open SBAS EMS file: " << ems_fn;
+                                }
+                        }
+                    if (d_ems_file.is_open())
+                        {
+                            d_ems_file << std::dec << std::setfill(' ')
+                                       << std::setw(4) << 0 << " "
+                                       << std::setw(10) << std::fixed << std::setprecision(3)
+                                       << message_sample_stamp << " "
+                                       << std::setw(3) << d_satellite.get_PRN() << " "
+                                       << std::setw(2) << msg_type << " : ";
+                            for (const auto byte : valid_msg.second)
+                                {
+                                    d_ems_file << std::setw(2) << std::setfill('0') << std::hex
+                                               << static_cast<unsigned int>(byte);
+                                }
+                            d_ems_file << std::dec << std::setfill(' ') << '\n';
+                            d_ems_file.flush();
+                        }
+                        // Sbas_Raw_Msg sbas_raw_msg(message_sample_stamp, this->d_satellite.get_PRN(), it->second);
+                        // sbas_raw_msgs.push_back(sbas_raw_msg);
+#if __cplusplus == 201103L
+                    const int default_precision = std::cout.precision();
+#else
+                    const auto default_precision{std::cout.precision()};
+#endif
+                    std::cout << "New SBAS L1 NAV message received in channel " << d_channel
+                              << ": MT" << msg_type << " from satellite " << d_satellite
+                              << " with CN0=" << std::setprecision(2) << current_symbol.CN0_dB_hz
+                              << std::setprecision(default_precision) << " dB-Hz" << std::endl;
                 }
 
-            // parse messages
-            // and send them to the SBAS raw message queue
-            // for(std::vector<Sbas_Raw_Msg>::iterator it = sbas_raw_msgs.begin(); it != sbas_raw_msgs.end(); it++)
-            //    {
-            // std::cout << "SBAS message type " << it->get_msg_type() << " from PRN" << it->get_prn() << " received\n";
-            // sbas_telemetry_data.update(*it);
-            //    }
+            // TODO: parse per-message-type content and apply SBAS corrections
+            // -----------------------------------------------------------------------
+            // SBAS L1 message parsing status (RTCA DO-229E / ICAO SARPs Appendix B)
+            // -----------------------------------------------------------------------
+            // SIGNAL / TRANSPORT LAYER — implemented:
+            //   [x] Viterbi FEC decoding (rate-1/2, K=7 )
+            //   [x] Three-preamble detection (0x53 / 0x9A / 0xC6)
+            //   [x] CRC-24Q verification
+            //   [x] 6-bit message type extraction
+            //   [x] Raw EMS file output (32 bytes / message)
+            //
+            // NAVIGATION DATA LAYER — NOT yet implemented (all content is written to
+            // the EMS file as raw bytes; no correction data is used by the receiver):
+            //
+            //   Satellite information messages (DO-229E §A.4.4):
+            //   [ ] MT1  — PRN mask assignments (up to 51 of 210 GNSS/GEO PRNs)
+            //   [ ] MT2–5 — Fast corrections + UDREI for satellites in mask
+            //   [ ] MT6  — Integrity information (UDREI for all 51 mask slots)
+            //   [ ] MT7  — Fast correction degradation factors (aij table)
+            //   [ ] MT9  — GEO navigation message (ECEF pos/vel, URA, t0)
+            //   [ ] MT17 — GEO satellite almanacs (health/status + rough position)
+            //   [ ] MT24 — Mixed fast corrections / long-term corrections
+            //   [ ] MT25 — Long-term satellite error corrections (orbit + clock)
+            //   [ ] MT28 — Clock–Ephemeris covariance matrix (optional)
+            //
+            //   Ionospheric messages (DO-229E §A.4.4.9–10):
+            //   [ ] MT18 — Ionospheric grid point (IGP) masks (per band 0–10)
+            //   [ ] MT26 — Ionospheric grid delays (GIVD) + error bounds (GIVEI)
+            //
+            //   Ancillary messages:
+            //   [ ] MT0  — Don't Use / test-mode flag (safety de-selection)
+            //   [ ] MT10 — Degradation parameters (σ²_flt, σ²_iono for PA ops)
+            //   [ ] MT12 — SBAS Network time / UTC offset (GPS-week + SOW)
+            //   [ ] MT27 — Service message / δUDRE regional factors (optional)
+            //   [ ] MT62 — Internal test message (optional, not used by EGNOS)
+            //   [ ] MT63 — Null message (optional, not used by EGNOS)
+            //
+            //   SBAS L5 / DFMC messages (DO-229F, dual-freq multi-constellation):
+            //   [ ] MT31 — Satellite Mask (up to 92 SV slots)
+            //   [ ] MT32 — Clock-Ephemeris corrections + covariance matrix
+            //   [ ] MT34–36 — Integrity messages (DFRECIs / DFREIs)
+            //   [ ] MT37 — Degradation parameters + DFREI scale table
+            //   [ ] MT39/40 — SBAS satellite ephemeris (Keplerian) + covariance
+            //   [ ] MT47 — SBAS satellite almanacs (Keplerian, 2 GEOs per msg)
+            //
+            //   Receiver-level corrections (depends on navigation layer above):
+            //   [ ] Apply fast + long-term satellite corrections to pseudoranges
+            //   [ ] Apply ionospheric grid delay corrections (MOPS §A.4.4.10)
+            //   [ ] Enable SBAS ranging (set Flag_valid_word = true when ranging ok)
+            //   [ ] Propagate SBAS correction quality (UDRE, GIVE) into PVT
+            //
+            // Reference: https://gssc.esa.int/navipedia/index.php/
+            //            The_EGNOS_SBAS_Message_Format_Explained
+            // -----------------------------------------------------------------------
+            // (old hook kept for reference)
+            // for (auto it = sbas_raw_msgs.begin(); it != sbas_raw_msgs.end(); ++it)
+            //     sbas_telemetry_data.update(*it);
 
             // clear all processed samples in the input buffer
             d_sample_buf.clear();

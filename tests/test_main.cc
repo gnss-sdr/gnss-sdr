@@ -188,6 +188,7 @@ private:
 #include "unit-tests/system-parameters/galileo_ism_test.cc"
 #include "unit-tests/system-parameters/glonass_gnav_ephemeris_test.cc"
 #include "unit-tests/system-parameters/glonass_gnav_nav_message_test.cc"
+#include "unit-tests/system-parameters/gnss_ephemeris_posvel_test.cc"
 #include "unit-tests/system-parameters/gps_cnav_navigation_message_test.cc"
 #include "unit-tests/system-parameters/has_decoding_test.cc"
 #include "unit-tests/system-parameters/qzss_code_generation_test.cc"

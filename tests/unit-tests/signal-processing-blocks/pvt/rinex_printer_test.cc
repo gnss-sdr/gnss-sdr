@@ -625,6 +625,54 @@ TEST_F(RinexPrinterTest, Rinex4QzssNav)
 }
 
 
+TEST_F(RinexPrinterTest, Rinex4QzssCnavNav)
+{
+    Pvt_Conf conf;
+    conf.use_e6_for_pvt = false;
+    const auto signal_enabled_flags = QZS_J5;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
+
+    Gps_CNAV_Ephemeris eph;
+    eph.PRN = 193;  // QZSS J01
+    eph.WN = 2338;
+    pvt_solution->gps_cnav_ephemeris_map[193] = eph;
+    pvt_solution->qzss_cnav_iono.alpha0 = 2.6077032089233398e-08;
+    pvt_solution->qzss_cnav_iono.beta0 = 118784.0;
+    pvt_solution->qzss_cnav_utc_model.A0 = -9.3132257461547852e-10;
+    pvt_solution->qzss_cnav_utc_model.A1 = -8.8817841970012523e-16;
+    pvt_solution->qzss_cnav_utc_model.tot = 233472;
+    pvt_solution->qzss_cnav_utc_model.WN_T = 2338;
+    pvt_solution->qzss_cnav_utc_model.DeltaT_LS = 18;
+
+    std::map<int, Gnss_Synchro> gnss_observables_map;
+    Gnss_Synchro gs{};
+    gs.System = 'J';
+    gs.PRN = 193;
+    std::memcpy(static_cast<void*>(gs.Signal), "J5", 3);
+    gnss_observables_map[193] = std::move(gs);
+
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 42.0, true);
+
+    const std::string obsfile = rp->get_obsfilename();
+    const std::string navfile = rp->get_navfilename()[0];
+    rp = nullptr;  // close the RINEX files so we can inspect them
+
+    EXPECT_FALSE(find_line_starting_with(navfile, "> EPH J01 CNAV").empty());
+    EXPECT_FALSE(find_line_starting_with(navfile, "> ION J   CNVX WIDE").empty());
+    EXPECT_FALSE(find_line_starting_with(navfile, "> STO J   CNVX").empty());
+
+    const std::string sto_line = find_line_containing(navfile, "QZUT");
+    EXPECT_NE(std::string::npos, sto_line.find("UTC(NICT)"));
+
+    const std::string leap_second_line = find_rinex_header_line(navfile, "LEAP SECONDS");
+    EXPECT_NE(std::string::npos, leap_second_line.find("18"));
+
+    fs::remove(obsfile);
+    fs::remove(navfile);
+}
+
+
 TEST_F(RinexPrinterTest, GalileoObsHeader)
 {
     Pvt_Conf conf;

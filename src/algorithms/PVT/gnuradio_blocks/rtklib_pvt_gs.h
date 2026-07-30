@@ -226,6 +226,8 @@ private:
     const size_t d_gps_almanac_sptr_type_hash_code;
     const size_t d_qzss_iono_sptr_type_hash_code;
     const size_t d_qzss_utc_model_sptr_type_hash_code;
+    const size_t d_qzss_cnav_iono_sptr_type_hash_code;
+    const size_t d_qzss_cnav_utc_model_sptr_type_hash_code;
     const size_t d_galileo_ephemeris_sptr_type_hash_code;
     const size_t d_galileo_reduced_ced_sptr_type_hash_code;
     const size_t d_galileo_iono_sptr_type_hash_code;

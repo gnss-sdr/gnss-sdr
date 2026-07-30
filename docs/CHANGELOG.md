@@ -65,12 +65,15 @@ All notable changes to GNSS-SDR will be documented in this file.
   structure introduced in RINEX 4.00. The default behavior when
   `PVT.rinex_version` is not set remains unchanged (RINEX 3.02).
 - The ionospheric Klobuchar coefficients and the UTC(NICT) offset parameters
-  broadcast by QZSS satellites are now stored separately from the GPS ones
-  instead of overwriting them. This enables the QZUT / QZSS ION RINEX 4 data
-  records, prevents QZSS-sourced parameters from being mislabeled as GPS
-  corrections in mixed GPS + QZSS configurations, feeds the QZSS slots of the
-  RTKLIB navigation structure, and adds `qzss_utc_model.xml` / `qzss_iono.xml`
-  to the XML storage output.
+  broadcast by QZSS satellites, both in the L1 C/A LNAV message and in the L5
+  CNAV message, are now stored separately from the GPS ones instead of
+  overwriting them. This enables the QZUT / QZSS ION RINEX 4 data records (with
+  the compulsory `WIDE` subtype for the CNVX Klobuchar set, broadcast in CNAV
+  Message Type 30), prevents QZSS-sourced parameters from being mislabeled as
+  GPS corrections in mixed GPS + QZSS configurations, feeds the QZSS slots of
+  the RTKLIB navigation structure, and adds `qzss_utc_model.xml`,
+  `qzss_iono.xml`, `qzss_cnav_utc_model.xml`, and `qzss_cnav_iono.xml` to the
+  XML storage output.
 - Added a new Signal Source implementation `Pocket_SDR_Signal_Source`, which
   supports
   [Pocket SDR FE](https://www.datagnss.com/products/pocketsdr-gnss-receiver)

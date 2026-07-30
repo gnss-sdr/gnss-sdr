@@ -61,6 +61,8 @@
 #include "pvt_conf.h"
 #include "pvt_kf.h"
 #include "pvt_solution.h"
+#include "qzss_cnav_iono.h"
+#include "qzss_cnav_utc_model.h"
 #include "qzss_iono.h"
 #include "qzss_utc_model.h"
 #include "rtklib.h"
@@ -137,6 +139,9 @@ public:
 
     Qzss_Utc_Model qzss_utc_model;
     Qzss_Iono qzss_iono;
+
+    Qzss_CNAV_Utc_Model qzss_cnav_utc_model;
+    Qzss_CNAV_Iono qzss_cnav_iono;
 
     Glonass_Gnav_Utc_Model glonass_gnav_utc_model;  //!< Map storing GLONASS GNAV UTC Model
     Glonass_Gnav_Almanac glonass_gnav_almanac;      //!< Map storing GLONASS GNAV Almanac Model

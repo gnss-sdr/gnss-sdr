@@ -1872,14 +1872,23 @@ void add_sto_record(std::fstream& out, char sys_char, const std::string& msg_typ
 
 /*
  * RINEX 4 Ionosphere (ION) Klobuchar model data record
- * (see RINEX 4.02 specification, Table A35)
+ * (see RINEX 4.02 specification, Table A35). The message subtype is
+ * compulsory for the QZSS CNVX message type (WIDE or JAPN) and shall be
+ * left blank otherwise
  */
 void add_ion_klobuchar_record(std::fstream& out, char sys_char, const std::string& msg_type,
     const boost::posix_time::ptime& transmit_time,
     double alpha0, double alpha1, double alpha2, double alpha3,
-    double beta0, double beta1, double beta2, double beta3)
+    double beta0, double beta1, double beta2, double beta3,
+    const std::string& subtype = "")
 {
-    out << get_nav_record_header_line("ION", sys_char, 0, msg_type) << '\n';
+    std::string header_line = get_nav_record_header_line("ION", sys_char, 0, msg_type);
+    if (!subtype.empty())
+        {
+            header_line += std::string(1, ' ');
+            header_line += subtype;
+        }
+    out << header_line << '\n';
 
     std::string line;
     line += std::string(4, ' ');
@@ -2389,7 +2398,7 @@ Rinex_Printer::Rinex_Printer(uint32_t signal_enabled_flags,
                             d_rinex_header_galileo_updated(!d_flags.has_galileo),
                             d_rinex_header_glonass_updated(!d_flags.has_glonass),
                             d_rinex_header_beidou_updated(!d_flags.has_beidou),
-                            d_rinex_header_qzss_updated(!d_flags.check_any_enabled(QZS_J1)),
+                            d_rinex_header_qzss_updated(!d_flags.has_qzss),
                             d_rinex_header_written(false),
                             d_ref_gps_week(ref_gps_week),
                             navfilename(getNavFilePath(d_flags, d_version, base_name, base_rinex_path)),
@@ -2843,27 +2852,51 @@ void Rinex_Printer::log_rinex_nav_v4_ion_sto_records(const Rtklib_Solver* pvt_so
                     records_written = true;
                 }
         }
-    if (!d_rinex_header_qzss_updated && pvt_solver->qzss_utc_model.A0 != 0)
+    if (!d_rinex_header_qzss_updated)
         {
-            // QZSS weeks are aligned with GPS weeks, so any ephemeris of the
-            // shared GPS/QZSS LNAV map works as reference to resolve the
-            // 8-bit UTC week number
-            const auto& eph = pvt_solver->gps_ephemeris_map.cbegin()->second;
-            const auto& utc_model = pvt_solver->qzss_utc_model;
-            const auto& iono = pvt_solver->qzss_iono;
-            add_ion_klobuchar_record(out, satelliteSystem.at("QZSS"), "LNAV", Rinex_Printer::compute_GPS_time(eph, rx_time),
-                iono.alpha0, iono.alpha1, iono.alpha2, iono.alpha3,
-                iono.beta0, iono.beta1, iono.beta2, iono.beta3);
-            const int32_t wn_t = expand_lnav_utc_week(utc_model.WN_T, eph.WN, d_ref_gps_week);
-            add_sto_record(out, satelliteSystem.at("QZSS"), "LNAV", gps_time_to_ptime(wn_t, utc_model.tot),
-                "QZUT", "UTC(NICT)", tow, utc_model.A0, utc_model.A1, utc_model.A2);
-
-            if (system_time_str == "QZS")
+            if (d_flags.check_any_enabled(QZS_J1) && pvt_solver->qzss_utc_model.A0 != 0)
                 {
-                    leap_second_line = get_leap_second_line(utc_model, eph, d_ref_gps_week);
+                    // QZSS weeks are aligned with GPS weeks, so any ephemeris of the
+                    // shared GPS/QZSS LNAV map works as reference to resolve the
+                    // 8-bit UTC week number
+                    const auto& eph = pvt_solver->gps_ephemeris_map.cbegin()->second;
+                    const auto& utc_model = pvt_solver->qzss_utc_model;
+                    const auto& iono = pvt_solver->qzss_iono;
+                    add_ion_klobuchar_record(out, satelliteSystem.at("QZSS"), "LNAV", Rinex_Printer::compute_GPS_time(eph, rx_time),
+                        iono.alpha0, iono.alpha1, iono.alpha2, iono.alpha3,
+                        iono.beta0, iono.beta1, iono.beta2, iono.beta3);
+                    const int32_t wn_t = expand_lnav_utc_week(utc_model.WN_T, eph.WN, d_ref_gps_week);
+                    add_sto_record(out, satelliteSystem.at("QZSS"), "LNAV", gps_time_to_ptime(wn_t, utc_model.tot),
+                        "QZUT", "UTC(NICT)", tow, utc_model.A0, utc_model.A1, utc_model.A2);
+
+                    if (system_time_str == "QZS")
+                        {
+                            leap_second_line = get_leap_second_line(utc_model, eph, d_ref_gps_week);
+                        }
+                    d_rinex_header_qzss_updated = true;
+                    records_written = true;
                 }
-            d_rinex_header_qzss_updated = true;
-            records_written = true;
+            else if (d_flags.check_any_enabled(QZS_J5) && pvt_solver->qzss_cnav_utc_model.A0 != 0)
+                {
+                    const auto& eph = pvt_solver->gps_cnav_ephemeris_map.cbegin()->second;
+                    const auto& utc_model = pvt_solver->qzss_cnav_utc_model;
+                    const auto& iono = pvt_solver->qzss_cnav_iono;
+                    // QZSS CNAV Message Type 30 broadcasts the Wide Area coefficient
+                    // set (the Japan area set of Message Type 61 is not decoded), so
+                    // the compulsory CNVX message subtype is WIDE (see Table A35)
+                    add_ion_klobuchar_record(out, satelliteSystem.at("QZSS"), "CNVX", Rinex_Printer::compute_GPS_time(eph, rx_time),
+                        iono.alpha0, iono.alpha1, iono.alpha2, iono.alpha3,
+                        iono.beta0, iono.beta1, iono.beta2, iono.beta3, "WIDE");
+                    add_sto_record(out, satelliteSystem.at("QZSS"), "CNVX", gps_time_to_ptime(utc_model.WN_T, utc_model.tot),
+                        "QZUT", "UTC(NICT)", tow, utc_model.A0, utc_model.A1, utc_model.A2);
+
+                    if (system_time_str == "QZS")
+                        {
+                            leap_second_line = get_leap_second_line(utc_model);
+                        }
+                    d_rinex_header_qzss_updated = true;
+                    records_written = true;
+                }
         }
     if (!d_rinex_header_galileo_updated && pvt_solver->galileo_utc_model.A0 != 0)
         {

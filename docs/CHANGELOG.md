@@ -62,14 +62,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   `PVT.rinex_version=4` in the configuration file (or with the
   `-RINEX_version=4.02` command-line flag). Observation files are generated in
   the 4.02 version format, and navigation files make use of the data record
-  structure introduced in RINEX 4.00: `EPH` ephemeris records preceded by
-  `> EPH <sat> <msg-type>` header lines (GPS/QZSS LNAV and CNAV, Galileo INAV
-  and FNAV, GLONASS FDMA including the new broadcast orbit line with status and
-  health flags, and BeiDou D1/D2), and ionospheric and time system corrections
-  logged as `ION` (Klobuchar, NeQuick-G) and `STO` (GPUT, GAUT, GAGP, GLUT,
-  GLGP, BDUT) data records instead of header lines, using the recommended `e`
-  exponent indicator. The default behavior when `PVT.rinex_version` is not set
-  remains unchanged (RINEX 3.02).
+  structure introduced in RINEX 4.00. The default behavior when
+  `PVT.rinex_version` is not set remains unchanged (RINEX 3.02).
 - Added a new Signal Source implementation `Pocket_SDR_Signal_Source`, which
   supports
   [Pocket SDR FE](https://www.datagnss.com/products/pocketsdr-gnss-receiver)

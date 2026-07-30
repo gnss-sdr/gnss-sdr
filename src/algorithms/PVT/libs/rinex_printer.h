@@ -1,7 +1,7 @@
 /*!
  * \file rinex_printer.h
- * \brief Interface of a RINEX 2.11 / 3.01 printer
- * See ftp://igs.org/pub/data/format/rinex301.pdf
+ * \brief Interface of a RINEX 2.11 / 3.02 / 4.02 printer
+ * See https://files.igs.org/pub/data/format/rinex_4.02.pdf
  *
  * Receiver Independent EXchange Format (RINEX):
  * The first proposal for the Receiver Independent Exchange Format RINEX
@@ -184,6 +184,15 @@ private:
         const std::string& leap_second_line) const;
 
     /*
+     * Logs RINEX 4 ION and STO data records for the enabled constellations as
+     * soon as the iono model and UTC data become available, and updates the
+     * LEAP SECONDS header line of the observation and navigation files
+     */
+    void log_rinex_nav_v4_ion_sto_records(const Rtklib_Solver* pvt_solver,
+        double rx_time,
+        const std::string& system_time_str);
+
+    /*
      * Computes the BDS Time and returns a boost::posix_time::ptime object
      *  \details Function used to convert the observation time into BDT time which is used
      *  as the default time for RINEX files
@@ -240,8 +249,8 @@ private:
 
     const Signal_Enabled_Flags d_flags;
 
-    const int d_version;                // RINEX version (2 for 2.10/2.11 and 3 for 3.01)
-    const std::string d_stringVersion;  // RINEX version (2.10/2.11 or 3.01/3.02)
+    const int d_version;                // RINEX version (2 for 2.11, 3 for 3.02, 4 for 4.02)
+    const std::string d_stringVersion;  // RINEX version (2.11, 3.02 or 4.02)
 
     double d_fake_cnav_iode;
     bool d_rinex_header_updated;

@@ -14,9 +14,78 @@
  * -----------------------------------------------------------------------------
  */
 
-
 #include "gnss_ephemeris.h"
 #include "gps_cnav_ephemeris.h"
+#include "gps_ephemeris.h"
+
+
+TEST(GnssEphemerisPosVelTest, NAV)
+{
+    Gps_Ephemeris e{};
+    e.PRN = 15;
+    e.M_0 = 1.35464234665685956e+00;
+    e.delta_n = 5.10199823299105835e-09;
+    e.ecc = 1.70680778101086582e-02;
+    e.sqrtA = 5.15376512145996094e+03;
+    e.OMEGA_0 = 2.35100387398234556e+00;
+    e.i_0 = 9.44768674001770559e-01;
+    e.omega = 1.54160131395114042e+00;
+    e.OMEGAdot = -8.57285709390860145e-09;
+    e.idot = -2.30366738556474118e-10;
+    e.Cuc = -6.73159956932067871e-06;
+    e.Cus = 3.66382300853729248e-06;
+    e.Crc = 3.05843750000000000e+02;
+    e.Crs = -1.23937500000000000e+02;
+    e.Cic = -1.17346644401550293e-07;
+    e.Cis = -3.91155481338500977e-07;
+    e.toe = 331200;
+    e.toc = 331200;
+    e.af0 = 4.32340428233146667e-04;
+    e.af1 = 3.06954461848363200e-12;
+    e.af2 = 0.00000000000000000e+00;
+    e.WN = 381;
+    e.tow = 326166;
+    e.satClkDrift = 0.00000000000000000e+00;
+    e.dtr = 0.00000000000000000e+00;
+    e.IODE_SF2 = 30;
+    e.IODE_SF3 = 30;
+    e.code_on_L2 = 1;
+    e.L2_P_data_flag = 0;
+    e.SV_accuracy = 0;
+    e.SV_health = 0;
+    e.TGD = -1.07102096080780029e-08;
+    e.IODC = 30;
+    e.AODO = 16200;
+    e.fit_interval_flag = 0;
+    e.spare1 = 0.00000000000000000e+00;
+    e.spare2 = 0.00000000000000000e+00;
+    e.integrity_status_flag = 0;
+    e.alert_flag = 0;
+    e.antispoofing_flag = 1;
+    auto dopplerL1 = e.predicted_doppler(590328., 0., 0., 0., 0., 0., 0., 1);
+    e.satellitePosition(590328.);
+    EXPECT_NEAR(98.676019, dopplerL1, 1e-4);
+    EXPECT_NEAR(26325247.164428, e.satpos_X, 1e-4);
+    EXPECT_NEAR(1943900.228289, e.satpos_Y, 1e-4);
+    EXPECT_NEAR(2494201.363945, e.satpos_Z, 1e-4);
+    EXPECT_NEAR(333.268032, e.satvel_X, 1e-4);
+    EXPECT_NEAR(384.414587, e.satvel_Y, 1e-4);
+    EXPECT_NEAR(-3116.921783, e.satvel_Z, 1e-4);
+    double satvel_X = e.satvel_X;
+    double satvel_Y = e.satvel_Y;
+    double satvel_Z = e.satvel_Z;
+    e.satellitePosition(590327.995);
+    double satpos_X = e.satpos_X;
+    double satpos_Y = e.satpos_Y;
+    double satpos_Z = e.satpos_Z;
+    e.satellitePosition(590328.005);
+    double d_X = (e.satpos_X - satpos_X) * 100.;
+    double d_Y = (e.satpos_Y - satpos_Y) * 100.;
+    double d_Z = (e.satpos_Z - satpos_Z) * 100.;
+    EXPECT_NEAR(d_X, satvel_X, 1e-4);
+    EXPECT_NEAR(d_Y, satvel_Y, 1e-4);
+    EXPECT_NEAR(d_Z, satvel_Z, 1e-4);
+}
 
 
 TEST(GnssEphemerisPosVelTest, CNAV)

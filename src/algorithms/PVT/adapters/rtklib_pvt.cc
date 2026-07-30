@@ -102,7 +102,11 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     // RINEX version
     pvt_output_parameters.rinex_version = configuration->property(role + ".rinex_version", 3);
 #if USE_GLOG_AND_GFLAGS
-    if (FLAGS_RINEX_version == "3.01" || FLAGS_RINEX_version == "3.02" || FLAGS_RINEX_version == "3")
+    if (FLAGS_RINEX_version == "4.00" || FLAGS_RINEX_version == "4.01" || FLAGS_RINEX_version == "4.02" || FLAGS_RINEX_version == "4")
+        {
+            pvt_output_parameters.rinex_version = 4;
+        }
+    else if (FLAGS_RINEX_version == "3.01" || FLAGS_RINEX_version == "3.02" || FLAGS_RINEX_version == "3")
         {
             pvt_output_parameters.rinex_version = 3;
         }
@@ -111,7 +115,11 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             pvt_output_parameters.rinex_version = 2;
         }
 #else
-    if (absl::GetFlag(FLAGS_RINEX_version) == "3.01" || absl::GetFlag(FLAGS_RINEX_version) == "3.02" || absl::GetFlag(FLAGS_RINEX_version) == "3")
+    if (absl::GetFlag(FLAGS_RINEX_version) == "4.00" || absl::GetFlag(FLAGS_RINEX_version) == "4.01" || absl::GetFlag(FLAGS_RINEX_version) == "4.02" || absl::GetFlag(FLAGS_RINEX_version) == "4")
+        {
+            pvt_output_parameters.rinex_version = 4;
+        }
+    else if (absl::GetFlag(FLAGS_RINEX_version) == "3.01" || absl::GetFlag(FLAGS_RINEX_version) == "3.02" || absl::GetFlag(FLAGS_RINEX_version) == "3")
         {
             pvt_output_parameters.rinex_version = 3;
         }

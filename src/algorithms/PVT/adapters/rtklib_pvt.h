@@ -66,7 +66,7 @@ class Gps_Ephemeris;
  *  .nmea_dump_filename - ("./nmea_pvt.nmea")
  *  .nmea_dump_devname - ("/dev/tty1")
  *
- *  .rinex_version - (3) overridden by -RINEX_version=n.nn command line argument
+ *  .rinex_version - (3) values 2 (2.11), 3 (3.02) or 4 (4.02), overridden by -RINEX_version=n.nn command line argument
  *  .rinexobs_rate_ms - rate at which RINEX observations are written (1000).  Note that
  *                      the actual rate is the least common multiple of this value and
  *                      .output_rate_ms

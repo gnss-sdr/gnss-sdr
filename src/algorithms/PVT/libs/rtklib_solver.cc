@@ -1876,6 +1876,31 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_nav_data.ion_gps[6] = gps_cnav_iono.beta2;
                     d_nav_data.ion_gps[7] = gps_cnav_iono.beta3;
                 }
+            if (qzss_iono.valid || qzss_cnav_iono.valid)
+                {
+                    const Gps_Iono &qzss_iono_ref = qzss_iono.valid ? static_cast<const Gps_Iono &>(qzss_iono) : static_cast<const Gps_Iono &>(qzss_cnav_iono);
+                    d_nav_data.ion_qzs[0] = qzss_iono_ref.alpha0;
+                    d_nav_data.ion_qzs[1] = qzss_iono_ref.alpha1;
+                    d_nav_data.ion_qzs[2] = qzss_iono_ref.alpha2;
+                    d_nav_data.ion_qzs[3] = qzss_iono_ref.alpha3;
+                    d_nav_data.ion_qzs[4] = qzss_iono_ref.beta0;
+                    d_nav_data.ion_qzs[5] = qzss_iono_ref.beta1;
+                    d_nav_data.ion_qzs[6] = qzss_iono_ref.beta2;
+                    d_nav_data.ion_qzs[7] = qzss_iono_ref.beta3;
+                    if (!(gps_iono.valid) && !(gps_cnav_iono.valid))
+                        {
+                            // Keep the GPS-interoperable QZSS Klobuchar coefficients available
+                            // to the broadcast ionospheric model in QZSS-only configurations
+                            d_nav_data.ion_gps[0] = qzss_iono_ref.alpha0;
+                            d_nav_data.ion_gps[1] = qzss_iono_ref.alpha1;
+                            d_nav_data.ion_gps[2] = qzss_iono_ref.alpha2;
+                            d_nav_data.ion_gps[3] = qzss_iono_ref.alpha3;
+                            d_nav_data.ion_gps[4] = qzss_iono_ref.beta0;
+                            d_nav_data.ion_gps[5] = qzss_iono_ref.beta1;
+                            d_nav_data.ion_gps[6] = qzss_iono_ref.beta2;
+                            d_nav_data.ion_gps[7] = qzss_iono_ref.beta3;
+                        }
+                }
             if (galileo_iono.ai0 != 0.0)
                 {
                     d_nav_data.ion_gal[0] = galileo_iono.ai0;
@@ -1909,6 +1934,20 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_nav_data.utc_gps[2] = gps_cnav_utc_model.tot;
                     d_nav_data.utc_gps[3] = gps_cnav_utc_model.WN_T;
                     d_nav_data.leaps = gps_cnav_utc_model.DeltaT_LS;
+                }
+            if (qzss_utc_model.valid || qzss_cnav_utc_model.valid)
+                {
+                    const Gps_Utc_Model &qzss_utc_ref = qzss_utc_model.valid ? static_cast<const Gps_Utc_Model &>(qzss_utc_model) : static_cast<const Gps_Utc_Model &>(qzss_cnav_utc_model);
+                    d_nav_data.utc_qzs[0] = qzss_utc_ref.A0;
+                    d_nav_data.utc_qzs[1] = qzss_utc_ref.A1;
+                    d_nav_data.utc_qzs[2] = qzss_utc_ref.tot;
+                    d_nav_data.utc_qzs[3] = qzss_utc_ref.WN_T;
+                    if (!(gps_utc_model.valid) && !(gps_cnav_utc_model.valid))
+                        {
+                            // QZSS time is aligned with GPS time, so its leap seconds apply
+                            // in QZSS-only configurations
+                            d_nav_data.leaps = qzss_utc_ref.DeltaT_LS;
+                        }
                 }
             if (glonass_gnav_utc_model.valid)
                 {

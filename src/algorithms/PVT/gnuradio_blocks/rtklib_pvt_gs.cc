@@ -57,6 +57,10 @@
 #include "osnma_data.h"
 #include "pvt_conf.h"
 #include "qzss.h"
+#include "qzss_cnav_iono.h"
+#include "qzss_cnav_utc_model.h"
+#include "qzss_iono.h"
+#include "qzss_utc_model.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
 #include "rtklib_rtkcmn.h"
@@ -145,6 +149,10 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_gps_cnav_iono_sptr_type_hash_code(typeid(std::shared_ptr<Gps_CNAV_Iono>).hash_code()),
       d_gps_cnav_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Gps_CNAV_Utc_Model>).hash_code()),
       d_gps_almanac_sptr_type_hash_code(typeid(std::shared_ptr<Gps_Almanac>).hash_code()),
+      d_qzss_iono_sptr_type_hash_code(typeid(std::shared_ptr<Qzss_Iono>).hash_code()),
+      d_qzss_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Qzss_Utc_Model>).hash_code()),
+      d_qzss_cnav_iono_sptr_type_hash_code(typeid(std::shared_ptr<Qzss_CNAV_Iono>).hash_code()),
+      d_qzss_cnav_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Qzss_CNAV_Utc_Model>).hash_code()),
       d_galileo_ephemeris_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_Ephemeris>).hash_code()),
       d_galileo_reduced_ced_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_Reduced_CED>).hash_code()),
       d_galileo_iono_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_Iono>).hash_code()),
@@ -874,6 +882,126 @@ rtklib_pvt_gs::~rtklib_pvt_gs()
                             LOG(INFO) << "Failed to save GPS CNAV ionospheric model parameters, not valid data";
                         }
 
+                    // Save QZSS UTC model parameters
+                    file_name = d_xml_base_path + "qzss_utc_model.xml";
+                    if (d_internal_pvt_solver->qzss_utc_model.valid)
+                        {
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_qzss_utc_model", d_internal_pvt_solver->qzss_utc_model);
+                                    LOG(INFO) << "Saved QZSS UTC model parameters";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                        }
+                    else
+                        {
+                            LOG(INFO) << "Failed to save QZSS UTC model parameters, not valid data";
+                        }
+
+                    // Save QZSS iono parameters
+                    file_name = d_xml_base_path + "qzss_iono.xml";
+                    if (d_internal_pvt_solver->qzss_iono.valid == true)
+                        {
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_qzss_iono_model", d_internal_pvt_solver->qzss_iono);
+                                    LOG(INFO) << "Saved QZSS ionospheric model parameters";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                        }
+                    else
+                        {
+                            LOG(INFO) << "Failed to save QZSS ionospheric model parameters, not valid data";
+                        }
+
+                    // Save QZSS CNAV UTC model parameters
+                    file_name = d_xml_base_path + "qzss_cnav_utc_model.xml";
+                    if (d_internal_pvt_solver->qzss_cnav_utc_model.valid)
+                        {
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_qzss_cnav_utc_model", d_internal_pvt_solver->qzss_cnav_utc_model);
+                                    LOG(INFO) << "Saved QZSS CNAV UTC model parameters";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                        }
+                    else
+                        {
+                            LOG(INFO) << "Failed to save QZSS CNAV UTC model parameters, not valid data";
+                        }
+
+                    // Save QZSS CNAV iono parameters
+                    file_name = d_xml_base_path + "qzss_cnav_iono.xml";
+                    if (d_internal_pvt_solver->qzss_cnav_iono.valid == true)
+                        {
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_qzss_cnav_iono_model", d_internal_pvt_solver->qzss_cnav_iono);
+                                    LOG(INFO) << "Saved QZSS CNAV ionospheric model parameters";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                        }
+                    else
+                        {
+                            LOG(INFO) << "Failed to save QZSS CNAV ionospheric model parameters, not valid data";
+                        }
+
                     // Save Galileo iono parameters
                     file_name = d_xml_base_path + "gal_iono.xml";
                     if (d_internal_pvt_solver->galileo_iono.ai0 != 0.0)
@@ -1270,6 +1398,50 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                             d_user_pvt_solver->gps_utc_model = *gps_utc_model;
                         }
                     DLOG(INFO) << "New UTC record has arrived";
+                }
+            else if (msg_type_hash_code == d_qzss_iono_sptr_type_hash_code)
+                {
+                    // ### QZSS IONO ###
+                    const auto qzss_iono = wht::any_cast<std::shared_ptr<Qzss_Iono>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->qzss_iono = *qzss_iono;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->qzss_iono = *qzss_iono;
+                        }
+                    DLOG(INFO) << "New QZSS IONO record has arrived";
+                }
+            else if (msg_type_hash_code == d_qzss_utc_model_sptr_type_hash_code)
+                {
+                    // ### QZSS UTC MODEL ###
+                    const auto qzss_utc_model = wht::any_cast<std::shared_ptr<Qzss_Utc_Model>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->qzss_utc_model = *qzss_utc_model;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->qzss_utc_model = *qzss_utc_model;
+                        }
+                    DLOG(INFO) << "New QZSS UTC record has arrived";
+                }
+            else if (msg_type_hash_code == d_qzss_cnav_iono_sptr_type_hash_code)
+                {
+                    // ### QZSS CNAV IONO ###
+                    const auto qzss_cnav_iono = wht::any_cast<std::shared_ptr<Qzss_CNAV_Iono>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->qzss_cnav_iono = *qzss_cnav_iono;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->qzss_cnav_iono = *qzss_cnav_iono;
+                        }
+                    DLOG(INFO) << "New QZSS CNAV IONO record has arrived";
+                }
+            else if (msg_type_hash_code == d_qzss_cnav_utc_model_sptr_type_hash_code)
+                {
+                    // ### QZSS CNAV UTC MODEL ###
+                    const auto qzss_cnav_utc_model = wht::any_cast<std::shared_ptr<Qzss_CNAV_Utc_Model>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->qzss_cnav_utc_model = *qzss_cnav_utc_model;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->qzss_cnav_utc_model = *qzss_cnav_utc_model;
+                        }
+                    DLOG(INFO) << "New QZSS CNAV UTC record has arrived";
                 }
             else if (msg_type_hash_code == d_gps_cnav_ephemeris_sptr_type_hash_code)
                 {

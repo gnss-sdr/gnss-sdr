@@ -14,6 +14,7 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "galileo_ephemeris.h"
 #include "gnss_ephemeris.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_ephemeris.h"
@@ -168,3 +169,77 @@ TEST(GnssEphemerisPosVelTest, CNAV)
     EXPECT_NEAR(d_Z, satvel_Z, 1e-4);
 }
 
+
+TEST(GnssEphemerisPosVelTest, Galileo)
+{
+    Galileo_Ephemeris e{};
+    e.PRN = 13;
+    e.M_0 = 2.41163546760016079e+00;
+    e.delta_n = 2.66832543217894277e-09;
+    e.ecc = 4.77104913443326882e-05;
+    e.sqrtA = 5.44060108375549316e+03;
+    e.OMEGA_0 = 6.47008588356165260e-01;
+    e.i_0 = 9.97650131401018214e-01;
+    e.omega = -7.14945752017439456e-02;
+    e.OMEGAdot = -5.50165773755647669e-09;
+    e.idot = 3.22870591713259829e-10;
+    e.Cuc = 6.63474202156066895e-06;
+    e.Cus = 2.07684934139251709e-06;
+    e.Crc = 3.11656250000000000e+02;
+    e.Crs = 1.40062500000000000e+02;
+    e.Cic = -2.79396772384643555e-08;
+    e.Cis = 4.47034835815429688e-08;
+    e.toe = 57000;
+    e.toc = 57000;
+    e.af0 = -6.03639055043458871e-05;
+    e.af1 = -9.37916411203332043e-13;
+    e.af2 = 0.00000000000000000e+00;
+    e.WN = 2429;
+    e.tow = 59670;
+    e.satClkDrift = 0.00000000000000000e+00;
+    e.dtr = 0.00000000000000000e+00;
+    e.IOD_ephemeris = 95;
+    e.IOD_nav = 0;
+    e.SISA = 107;
+    e.E5a_HS = 0;
+    e.E5b_HS = 0;
+    e.E1B_HS = 0;
+    e.E5a_DVS = 0;
+    e.E5b_DVS = 0;
+    e.E1B_DVS = 0;
+    e.BGD_E1E5a = 4.42378222942352212e-09;
+    e.BGD_E1E5b = 0.00000000000000000e+00;
+    e.flag_all_ephemeris = 1;
+    e.nav_message_type = static_cast<Galileo_Nav_Message_Type>(2);
+    auto dopplerL1 = e.predicted_doppler(59328., 0., 0., 0., 0., 0., 0., 1);
+    auto dopplerL5 = e.predicted_doppler(59328., 0., 0., 0., 0., 0., 0., 5);
+    auto dopplerL6 = e.predicted_doppler(59328., 0., 0., 0., 0., 0., 0., 6);
+    auto dopplerL7 = e.predicted_doppler(59328., 0., 0., 0., 0., 0., 0., 7);
+    auto dopplerL8 = e.predicted_doppler(59328., 0., 0., 0., 0., 0., 0., 8);
+    e.satellitePosition(59328.);
+    EXPECT_NEAR(1250.566176, dopplerL1, 1e-4);
+    EXPECT_NEAR(933.864352, dopplerL5, 1e-4);
+    EXPECT_NEAR(1015.069948, dopplerL6, 1e-4);
+    EXPECT_NEAR(958.226030, dopplerL7, 1e-4);
+    EXPECT_NEAR(946.045191, dopplerL8, 1e-4);
+    EXPECT_NEAR(18121174.847871, e.satpos_X, 1e-4);
+    EXPECT_NEAR(-19974436.330324, e.satpos_Y, 1e-4);
+    EXPECT_NEAR(12202101.756204, e.satpos_Z, 1e-4);
+    EXPECT_NEAR(977.807753, e.satvel_X, 1e-4);
+    EXPECT_NEAR(-754.332969, e.satvel_Y, 1e-4);
+    EXPECT_NEAR(-2686.561660, e.satvel_Z, 1e-4);
+    double satvel_X = e.satvel_X;
+    double satvel_Y = e.satvel_Y;
+    double satvel_Z = e.satvel_Z;
+    e.satellitePosition(59327.995);
+    double satpos_X = e.satpos_X;
+    double satpos_Y = e.satpos_Y;
+    double satpos_Z = e.satpos_Z;
+    e.satellitePosition(59328.005);
+    double d_X = (e.satpos_X - satpos_X) * 100.;
+    double d_Y = (e.satpos_Y - satpos_Y) * 100.;
+    double d_Z = (e.satpos_Z - satpos_Z) * 100.;
+    EXPECT_NEAR(d_X, satvel_X, 1e-4);
+    EXPECT_NEAR(d_Y, satvel_Y, 1e-4);
+    EXPECT_NEAR(d_Z, satvel_Z, 1e-4);
+}

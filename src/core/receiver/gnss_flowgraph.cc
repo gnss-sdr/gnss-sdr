@@ -21,6 +21,7 @@
 
 #include "gnss_flowgraph.h"
 #include "GLONASS_L1_L2_CA.h"
+#include "Beidou_B1I.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "GPS_L5.h"
@@ -1172,9 +1173,11 @@ int GNSSFlowgraph::connect_signal_conditioners_to_channels()
                                 case evGAL_E6:
                                     acq_fs = GALILEO_E6_OPT_ACQ_FS_SPS;
                                     break;
+                                case evBDS_B1:
+                                    acq_fs = BEIDOU_B1I_OPT_ACQ_FS_SPS;
+                                    break;
                                 case evGLO_1G:
                                 case evGLO_2G:
-                                case evBDS_B1:
                                 case evBDS_B3:
                                     acq_fs = fs;
                                     break;

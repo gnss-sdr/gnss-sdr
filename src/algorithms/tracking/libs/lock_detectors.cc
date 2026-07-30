@@ -55,7 +55,6 @@ float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_i
 {
     // Accumulation in double precision: the Ptot - Psig subtraction below
     // is a catastrophic cancellation at high C/N0
-    double SNR = 0.0;
     double Psig = 0.0;
     double Ptot = 0.0;
     if (length == 0 || coh_integration_time_s == 0.0)
@@ -71,13 +70,13 @@ float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_i
     Psig = Psig * Psig;
     Ptot /= static_cast<double>(length);
     const double aux = Ptot - Psig;
-    if (aux <= 0)
+    if (aux > 0.0)
         {
-            return -100.0;
+            const double SNR = Psig / aux;
+            const double SNR_dB_Hz = 10.0 * std::log10(SNR) - 10.0 * std::log10(static_cast<double>(coh_integration_time_s));
+            return static_cast<float>(SNR_dB_Hz);
         }
-    SNR = Psig / aux;
-    const double SNR_dB_Hz = 10.0 * std::log10(SNR) - 10.0 * std::log10(static_cast<double>(coh_integration_time_s));
-    return static_cast<float>(SNR_dB_Hz);
+    return -100.0;
 }
 
 

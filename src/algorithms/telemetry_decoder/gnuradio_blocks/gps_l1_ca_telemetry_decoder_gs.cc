@@ -23,10 +23,12 @@
 #include "dump_logger_helper.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include "gnss_synchro.h"
-#include "gnss_time.h"      // for timetags produced by Tracking
-#include "gps_ephemeris.h"  // for Gps_Ephemeris
-#include "gps_iono.h"       // for Gps_Iono
-#include "gps_utc_model.h"  // for Gps_Utc_Model
+#include "gnss_time.h"       // for timetags produced by Tracking
+#include "gps_ephemeris.h"   // for Gps_Ephemeris
+#include "gps_iono.h"        // for Gps_Iono
+#include "gps_utc_model.h"   // for Gps_Utc_Model
+#include "qzss_iono.h"       // for Qzss_Iono
+#include "qzss_utc_model.h"  // for Qzss_Utc_Model
 #include "tlm_conf.h"
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
@@ -373,13 +375,32 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                         case 4:  // Possible IONOSPHERE and UTC model update (page 18)
                             if (d_nav->get_flag_iono_valid() == true)
                                 {
-                                    const std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(d_nav->get_iono());
-                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                    if (d_system == L1LnavSystem::QZSS)
+                                        {
+                                            // QZSS broadcasts its own Klobuchar coefficients; keep them
+                                            // separate from the GPS ones
+                                            const std::shared_ptr<Qzss_Iono> tmp_obj = std::make_shared<Qzss_Iono>(d_nav->get_iono());
+                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                        }
+                                    else
+                                        {
+                                            const std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(d_nav->get_iono());
+                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                        }
                                 }
                             if (d_nav->get_flag_utc_model_valid() == true)
                                 {
-                                    const std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(d_nav->get_utc_model());
-                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                    if (d_system == L1LnavSystem::QZSS)
+                                        {
+                                            // The QZSS UTC offset refers to UTC(NICT), not to UTC(USNO)
+                                            const std::shared_ptr<Qzss_Utc_Model> tmp_obj = std::make_shared<Qzss_Utc_Model>(d_nav->get_utc_model());
+                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                        }
+                                    else
+                                        {
+                                            const std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(d_nav->get_utc_model());
+                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                        }
                                 }
                             if (d_nav->almanac_validation() == true)
                                 {
@@ -390,13 +411,32 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                         case 5:
                             if (d_nav->get_flag_iono_valid() == true)
                                 {
-                                    const std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(d_nav->get_iono());
-                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                    if (d_system == L1LnavSystem::QZSS)
+                                        {
+                                            // QZSS broadcasts its own Klobuchar coefficients; keep them
+                                            // separate from the GPS ones
+                                            const std::shared_ptr<Qzss_Iono> tmp_obj = std::make_shared<Qzss_Iono>(d_nav->get_iono());
+                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                        }
+                                    else
+                                        {
+                                            const std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(d_nav->get_iono());
+                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                        }
                                 }
                             if (d_nav->get_flag_utc_model_valid() == true)
                                 {
-                                    const std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(d_nav->get_utc_model());
-                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                    if (d_system == L1LnavSystem::QZSS)
+                                        {
+                                            // The QZSS UTC offset refers to UTC(NICT), not to UTC(USNO)
+                                            const std::shared_ptr<Qzss_Utc_Model> tmp_obj = std::make_shared<Qzss_Utc_Model>(d_nav->get_utc_model());
+                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                        }
+                                    else
+                                        {
+                                            const std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(d_nav->get_utc_model());
+                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                        }
                                 }
                             if (d_nav->almanac_validation() == true)
                                 {

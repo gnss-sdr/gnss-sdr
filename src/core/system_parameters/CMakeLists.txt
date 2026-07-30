@@ -100,6 +100,8 @@ set(SYSTEM_PARAMETERS_HEADERS
     osnma_dsm_reader.h
     tow_to_trk.h
     qzss.h
+    qzss_iono.h
+    qzss_utc_model.h
     signal_flag.h
 )
 

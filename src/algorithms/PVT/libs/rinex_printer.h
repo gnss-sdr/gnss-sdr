@@ -258,6 +258,7 @@ private:
     bool d_rinex_header_galileo_updated;
     bool d_rinex_header_glonass_updated;
     bool d_rinex_header_beidou_updated;
+    bool d_rinex_header_qzss_updated;
     bool d_rinex_header_written;
     const int32_t d_ref_gps_week;
 

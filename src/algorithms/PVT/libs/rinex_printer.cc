@@ -2389,6 +2389,7 @@ Rinex_Printer::Rinex_Printer(uint32_t signal_enabled_flags,
                             d_rinex_header_galileo_updated(!d_flags.has_galileo),
                             d_rinex_header_glonass_updated(!d_flags.has_glonass),
                             d_rinex_header_beidou_updated(!d_flags.has_beidou),
+                            d_rinex_header_qzss_updated(!d_flags.check_any_enabled(QZS_J1)),
                             d_rinex_header_written(false),
                             d_ref_gps_week(ref_gps_week),
                             navfilename(getNavFilePath(d_flags, d_version, base_name, base_rinex_path)),
@@ -2842,6 +2843,28 @@ void Rinex_Printer::log_rinex_nav_v4_ion_sto_records(const Rtklib_Solver* pvt_so
                     records_written = true;
                 }
         }
+    if (!d_rinex_header_qzss_updated && pvt_solver->qzss_utc_model.A0 != 0)
+        {
+            // QZSS weeks are aligned with GPS weeks, so any ephemeris of the
+            // shared GPS/QZSS LNAV map works as reference to resolve the
+            // 8-bit UTC week number
+            const auto& eph = pvt_solver->gps_ephemeris_map.cbegin()->second;
+            const auto& utc_model = pvt_solver->qzss_utc_model;
+            const auto& iono = pvt_solver->qzss_iono;
+            add_ion_klobuchar_record(out, satelliteSystem.at("QZSS"), "LNAV", Rinex_Printer::compute_GPS_time(eph, rx_time),
+                iono.alpha0, iono.alpha1, iono.alpha2, iono.alpha3,
+                iono.beta0, iono.beta1, iono.beta2, iono.beta3);
+            const int32_t wn_t = expand_lnav_utc_week(utc_model.WN_T, eph.WN, d_ref_gps_week);
+            add_sto_record(out, satelliteSystem.at("QZSS"), "LNAV", gps_time_to_ptime(wn_t, utc_model.tot),
+                "QZUT", "UTC(NICT)", tow, utc_model.A0, utc_model.A1, utc_model.A2);
+
+            if (system_time_str == "QZS")
+                {
+                    leap_second_line = get_leap_second_line(utc_model, eph, d_ref_gps_week);
+                }
+            d_rinex_header_qzss_updated = true;
+            records_written = true;
+        }
     if (!d_rinex_header_galileo_updated && pvt_solver->galileo_utc_model.A0 != 0)
         {
             const auto& eph = pvt_solver->galileo_ephemeris_map.cbegin()->second;
@@ -2923,7 +2946,7 @@ void Rinex_Printer::log_rinex_nav_v4_ion_sto_records(const Rtklib_Solver* pvt_so
         }
 
     std::cout << "The RINEX Navigation file has been updated with UTC and IONO data records.\n";
-    d_rinex_header_updated = d_rinex_header_gps_updated && d_rinex_header_galileo_updated && d_rinex_header_glonass_updated && d_rinex_header_beidou_updated;
+    d_rinex_header_updated = d_rinex_header_gps_updated && d_rinex_header_qzss_updated && d_rinex_header_galileo_updated && d_rinex_header_glonass_updated && d_rinex_header_beidou_updated;
 }
 
 

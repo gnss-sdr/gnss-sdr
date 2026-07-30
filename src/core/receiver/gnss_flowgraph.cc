@@ -20,8 +20,8 @@
  */
 
 #include "gnss_flowgraph.h"
-#include "GLONASS_L1_L2_CA.h"
 #include "Beidou_B1I.h"
+#include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "GPS_L5.h"

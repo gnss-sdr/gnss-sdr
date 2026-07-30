@@ -593,11 +593,16 @@ void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
 
 void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data) const
 {
-    // std::cout.precision(17);
-    // std::cout << " d_T_rx_TOW_ms: " << static_cast<double>(d_T_rx_TOW_ms) << '\n';
+    constexpr double PR_OUTLIER_RELATIVE_THRESHOLD_M = 1.0e8;
+
     std::vector<Gnss_Synchro>::iterator it;
     const auto current_T_rx_TOW_ms = static_cast<double>(d_T_rx_TOW_ms);
     const double current_T_rx_TOW_s = current_T_rx_TOW_ms / 1000.0;
+    std::vector<double> valid_pseudoranges;
+    if (d_conf.reject_outlier_pseudoranges)
+        {
+            valid_pseudoranges.reserve(data.size());
+        }
     for (it = data.begin(); it != data.end(); it++)
         {
             if (it->Flag_valid_word)
@@ -610,13 +615,31 @@ void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data) con
                     it->RX_time = current_T_rx_TOW_s;
                     it->Pseudorange_m = traveltime_ms * SPEED_OF_LIGHT_M_MS;
                     it->Flag_valid_pseudorange = true;
-                    // debug code
-                    // std::cout << "[" << it->Channel_ID << "] interp_TOW_ms: " << it->interp_TOW_ms << '\n';
-                    // std::cout << "[" << it->Channel_ID << "] Diff d_T_rx_TOW_ms - interp_TOW_ms: " << static_cast<double>(d_T_rx_TOW_ms) - it->interp_TOW_ms << '\n';
+                    if (d_conf.reject_outlier_pseudoranges)
+                        {
+                            valid_pseudoranges.push_back(it->Pseudorange_m);
+                        }
                 }
             else
                 {
                     it->RX_time = current_T_rx_TOW_s;
+                }
+        }
+    if (d_conf.reject_outlier_pseudoranges && !valid_pseudoranges.empty())
+        {
+            const auto mid = static_cast<std::ptrdiff_t>(valid_pseudoranges.size() / 2);
+            std::nth_element(valid_pseudoranges.begin(), valid_pseudoranges.begin() + mid, valid_pseudoranges.end());
+            const double reference_pseudorange = valid_pseudoranges[static_cast<size_t>(mid)];
+            for (it = data.begin(); it != data.end(); it++)
+                {
+                    if (it->Flag_valid_pseudorange &&
+                        (std::abs(it->Pseudorange_m - reference_pseudorange) > PR_OUTLIER_RELATIVE_THRESHOLD_M))
+                        {
+                            DLOG(INFO) << "Reject outlier pseudorange " << it->Pseudorange_m
+                                       << " m (ref median " << reference_pseudorange << " m) on ch "
+                                       << it->Channel_ID << " PRN " << it->PRN << " Signal " << it->Signal;
+                            it->Flag_valid_pseudorange = false;
+                        }
                 }
         }
 }

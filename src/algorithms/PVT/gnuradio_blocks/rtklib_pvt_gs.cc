@@ -18,6 +18,10 @@
 #include "Galileo_CNAV.h"
 #include "MATH_CONSTANTS.h"
 #include "an_packet_printer.h"
+#include "beidou_cnav1_ephemeris.h"
+#include "beidou_cnav1_iono.h"
+#include "beidou_cnav1_navigation_message.h"
+#include "beidou_cnav1_utc_model.h"
 #include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
 #include "beidou_dnav_iono.h"
@@ -166,6 +170,10 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_beidou_dnav_iono_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Dnav_Iono>).hash_code()),
       d_beidou_dnav_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Dnav_Utc_Model>).hash_code()),
       d_beidou_dnav_almanac_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Dnav_Almanac>).hash_code()),
+      d_beidou_cnav1_ephemeris_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Cnav1_Ephemeris>).hash_code()),
+      d_beidou_cnav1_iono_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Cnav1_Iono>).hash_code()),
+      d_beidou_cnav1_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Cnav1_Utc_Model>).hash_code()),
+      d_beidou_cnav1_page_data_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Cnav1_PageData_Message>).hash_code()),
       d_galileo_has_data_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_HAS_data>).hash_code()),
       d_rinex_version(conf_.rinex_version),
       d_rx_time(0.0),
@@ -1301,6 +1309,36 @@ rtklib_pvt_gs::~rtklib_pvt_gs()
                         {
                             LOG(INFO) << "Failed to save BeiDou DNAV UTC model parameters, not valid data";
                         }
+
+                    // save BeiDou B-CNAV1 ephemeris to XML file
+                    file_name = d_xml_base_path + "bds_cnav1_ephemeris.xml";
+                    if (d_internal_pvt_solver->beidou_cnav1_ephemeris_map.empty() == false)
+                        {
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_bds_cnav1_ephemeris_map", d_internal_pvt_solver->beidou_cnav1_ephemeris_map);
+                                    LOG(INFO) << "Saved BeiDou B-CNAV1 Ephemeris map data";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                        }
+                    else
+                        {
+                            LOG(INFO) << "Failed to save BeiDou B-CNAV1 Ephemeris, map is empty";
+                        }
                 }
 
             if (d_log_timetag_file.is_open())
@@ -1779,6 +1817,55 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     DLOG(INFO) << "New BeiDou DNAV almanac record has arrived";
                 }
+            else if (msg_type_hash_code == d_beidou_cnav1_ephemeris_sptr_type_hash_code)
+                {
+                    const auto bds_cnav1_eph = wht::any_cast<std::shared_ptr<Beidou_Cnav1_Ephemeris>>(pmt::any_ref(msg));
+                    if (d_rinex_output_enabled && d_rp->is_rinex_header_written())
+                        {
+                            const auto eph_it = d_internal_pvt_solver->beidou_cnav1_ephemeris_map.find(bds_cnav1_eph->PRN);
+                            if (eph_it == d_internal_pvt_solver->beidou_cnav1_ephemeris_map.cend() || eph_it->second.toe != bds_cnav1_eph->toe)
+                                {
+                                    d_rp->log_rinex_nav_bds_cnav1({{bds_cnav1_eph->PRN, *bds_cnav1_eph}});
+                                }
+                        }
+                    d_internal_pvt_solver->beidou_cnav1_ephemeris_map[bds_cnav1_eph->PRN] = *bds_cnav1_eph;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->beidou_cnav1_ephemeris_map[bds_cnav1_eph->PRN] = *bds_cnav1_eph;
+                        }
+                    DLOG(INFO) << "New BeiDou B-CNAV1 ephemeris record has arrived from SAT ID " << bds_cnav1_eph->PRN;
+                }
+            else if (msg_type_hash_code == d_beidou_cnav1_iono_sptr_type_hash_code)
+                {
+                    const auto bds_cnav1_iono = wht::any_cast<std::shared_ptr<Beidou_Cnav1_Iono>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->beidou_cnav1_iono = *bds_cnav1_iono;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->beidou_cnav1_iono = *bds_cnav1_iono;
+                        }
+                    DLOG(INFO) << "New BeiDou B-CNAV1 IONO record has arrived";
+                }
+            else if (msg_type_hash_code == d_beidou_cnav1_utc_model_sptr_type_hash_code)
+                {
+                    const auto bds_cnav1_utc = wht::any_cast<std::shared_ptr<Beidou_Cnav1_Utc_Model>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->beidou_cnav1_utc_model = *bds_cnav1_utc;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->beidou_cnav1_utc_model = *bds_cnav1_utc;
+                        }
+                    DLOG(INFO) << "New BeiDou B-CNAV1 UTC record has arrived";
+                }
+            else if (msg_type_hash_code == d_beidou_cnav1_page_data_sptr_type_hash_code)
+                {
+                    const auto bds_cnav1_page = wht::any_cast<std::shared_ptr<Beidou_Cnav1_PageData_Message>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->beidou_cnav1_page_data_map[bds_cnav1_page->PRN] = bds_cnav1_page->page_data;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->beidou_cnav1_page_data_map[bds_cnav1_page->PRN] = bds_cnav1_page->page_data;
+                        }
+                    DLOG(INFO) << "New BeiDou B-CNAV1 page data record has arrived from SAT ID " << bds_cnav1_page->PRN
+                               << " PageID=" << bds_cnav1_page->page_data.common.page_id;
+                }
             else
                 {
                     LOG(WARNING) << "msg_handler_telemetry unknown object type!";
@@ -2237,6 +2324,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             const auto tmp_eph_iter_cnav = d_internal_pvt_solver->gps_cnav_ephemeris_map.find(gnss_synchro.PRN);
                             const auto tmp_eph_iter_glo_gnav = d_internal_pvt_solver->glonass_gnav_ephemeris_map.find(gnss_synchro.PRN);
                             const auto tmp_eph_iter_bds_dnav = d_internal_pvt_solver->beidou_dnav_ephemeris_map.find(gnss_synchro.PRN);
+                            const auto tmp_eph_iter_bds_cnav1 = d_internal_pvt_solver->beidou_cnav1_ephemeris_map.find(gnss_synchro.PRN);
 
                             bool store_valid_observable = false;
 
@@ -2333,6 +2421,14 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_bds_dnav->second.PRN;
                                     if ((prn_aux == gnss_synchro.PRN) && (((std::string(gnss_synchro.Signal, 2) == std::string("B1")) || (std::string(gnss_synchro.Signal, 2) == std::string("B3"))) && (d_use_unhealthy_sats || (tmp_eph_iter_bds_dnav->second.SV_health == 0))))
+                                        {
+                                            store_valid_observable = true;
+                                        }
+                                }
+                            if (!d_osnma_strict && tmp_eph_iter_bds_cnav1 != d_internal_pvt_solver->beidou_cnav1_ephemeris_map.cend())
+                                {
+                                    const uint32_t prn_aux = tmp_eph_iter_bds_cnav1->second.PRN;
+                                    if ((prn_aux == gnss_synchro.PRN) && (std::string(gnss_synchro.Signal, 2) == std::string("1D")))
                                         {
                                             store_valid_observable = true;
                                         }

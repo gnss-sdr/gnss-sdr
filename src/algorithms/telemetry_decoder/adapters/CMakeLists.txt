@@ -7,10 +7,14 @@
 
 set(TELEMETRY_DECODER_ADAPTER_SOURCES
     telemetry_decoder_adapter.cc
+    telemetry_decoder_adapter_base.cc
+    beidou_b1c_telemetry_decoder.cc
 )
 
 set(TELEMETRY_DECODER_ADAPTER_HEADERS
     telemetry_decoder_adapter.h
+    telemetry_decoder_adapter_base.h
+    beidou_b1c_telemetry_decoder.h
 )
 
 list(SORT TELEMETRY_DECODER_ADAPTER_HEADERS)

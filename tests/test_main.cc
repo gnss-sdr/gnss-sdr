@@ -235,6 +235,11 @@ private:
 #if EXTRA_TESTS
 #include "unit-tests/signal-processing-blocks/acquisition/acq_performance_test.cc"
 // #include "unit-tests/signal-processing-blocks/acquisition/beidou_b1i_pcps_acquisition_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/beidou_b1c_pcps_acquisition_test.cc"
+#include "unit-tests/signal-processing-blocks/libs/beidou_b1c_signal_replica_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/beidou_b1c_dll_pll_veml_tracking_test.cc"
+#include "unit-tests/system-parameters/beidou_cnav1_ldpc_test.cc"
+#include "unit-tests/system-parameters/beidou_cnav1_navigation_message_test.cc"
 // #include "unit-tests/signal-processing-blocks/acquisition/beidou_b3i_pcps_acquisition_test.cc"
 #ifndef EXCLUDE_TESTS_REQUIRING_BINARIES
 #include "unit-tests/signal-processing-blocks/acquisition/glonass_l1_ca_pcps_acquisition_test.cc"

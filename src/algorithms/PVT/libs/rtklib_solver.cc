@@ -73,6 +73,7 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     d_rtklib_band_index["1C"] = 0;
     d_rtklib_band_index["1B"] = 0;
     d_rtklib_band_index["B1"] = 0;
+    d_rtklib_band_index["1D"] = 0;
     d_rtklib_band_index["B3"] = 2;
     d_rtklib_band_index["2G"] = 1;
     d_rtklib_band_index["2S"] = 1;
@@ -1798,6 +1799,24 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->first;
                                     }
                             }
+                        if (sig_ == "1D")
+                            {
+                                const auto cnav1_iter = beidou_cnav1_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                                if (cnav1_iter != beidou_cnav1_ephemeris_map.cend())
+                                    {
+                                        eph_data[valid_obs] = eph_to_rtklib(cnav1_iter->second);
+                                        obsd_t newobs{};
+                                        d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                            gnss_observables_iter->second,
+                                            cnav1_iter->second.WN + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
+                                            d_rtklib_band_index[sig_]);
+                                        valid_obs++;
+                                    }
+                                else
+                                    {
+                                        DLOG(INFO) << "No B-CNAV1 ephemeris data for SV " << gnss_observables_iter->second.PRN;
+                                    }
+                            }
                         // BeiDou B3
                         if (sig_ == "B3")
                             {
@@ -1926,6 +1945,18 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_nav_data.ion_cmp[6] = beidou_dnav_iono.beta2;
                     d_nav_data.ion_cmp[7] = beidou_dnav_iono.beta3;
                 }
+            else if (beidou_cnav1_iono.valid)
+                {
+                    // B-CNAV1 BDGIM parameters mapped to RTKLIB ion_cmp slots (best-effort until BDGIM is native).
+                    d_nav_data.ion_cmp[0] = beidou_cnav1_iono.alpha1;
+                    d_nav_data.ion_cmp[1] = beidou_cnav1_iono.alpha2;
+                    d_nav_data.ion_cmp[2] = beidou_cnav1_iono.alpha3;
+                    d_nav_data.ion_cmp[3] = beidou_cnav1_iono.alpha4;
+                    d_nav_data.ion_cmp[4] = beidou_cnav1_iono.alpha5;
+                    d_nav_data.ion_cmp[5] = beidou_cnav1_iono.alpha6;
+                    d_nav_data.ion_cmp[6] = beidou_cnav1_iono.alpha7;
+                    d_nav_data.ion_cmp[7] = beidou_cnav1_iono.alpha8;
+                }
             if (gps_utc_model.valid)
                 {
                     d_nav_data.utc_gps[0] = gps_utc_model.A0;
@@ -1978,6 +2009,14 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_nav_data.utc_cmp[2] = 0.0;  // ??
                     d_nav_data.utc_cmp[3] = 0.0;  // ??
                     d_nav_data.leaps = beidou_dnav_utc_model.DeltaT_LS;
+                }
+            else if (beidou_cnav1_utc_model.valid)
+                {
+                    d_nav_data.utc_cmp[0] = beidou_cnav1_utc_model.A0;
+                    d_nav_data.utc_cmp[1] = beidou_cnav1_utc_model.A1;
+                    d_nav_data.utc_cmp[2] = static_cast<double>(beidou_cnav1_utc_model.tot);
+                    d_nav_data.utc_cmp[3] = static_cast<double>(beidou_cnav1_utc_model.WN_t);
+                    d_nav_data.leaps = beidou_cnav1_utc_model.delta_t_LSF;
                 }
 
             /* update carrier wave length using native function call in RTKlib */

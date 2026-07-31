@@ -85,7 +85,7 @@ rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
 class rtklib_pvt_gs : public gr::sync_block
 {
 public:
-    ~rtklib_pvt_gs();  //!< Default destructor
+    ~rtklib_pvt_gs() override;  //!< Default destructor
 
     /*!
      * \brief Get latest set of GPS ephemeris from PVT block
@@ -133,7 +133,7 @@ public:
         time_t* UTC_time) const;
 
     int work(int noutput_items, gr_vector_const_void_star& input_items,
-        gr_vector_void_star& output_items);  //!< PVT Signal Processing
+        gr_vector_void_star& output_items) override;  //!< PVT Signal Processing
 
 private:
     friend rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
@@ -241,6 +241,10 @@ private:
     const size_t d_beidou_dnav_iono_sptr_type_hash_code;
     const size_t d_beidou_dnav_utc_model_sptr_type_hash_code;
     const size_t d_beidou_dnav_almanac_sptr_type_hash_code;
+    const size_t d_beidou_cnav1_ephemeris_sptr_type_hash_code;
+    const size_t d_beidou_cnav1_iono_sptr_type_hash_code;
+    const size_t d_beidou_cnav1_utc_model_sptr_type_hash_code;
+    const size_t d_beidou_cnav1_page_data_sptr_type_hash_code;
     const size_t d_galileo_has_data_sptr_type_hash_code;
 
     const double d_rinex_version;

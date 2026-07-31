@@ -244,7 +244,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     int num_bands = 0;
 
-    if (signal_enabled_flags.check_any_enabled(GPS_1C, GAL_1B, GLO_1G, BDS_B1, QZS_J1))
+    if (signal_enabled_flags.check_any_enabled(GPS_1C, GAL_1B, GLO_1G, BDS_B1, BDS_B1C, QZS_J1))
         {
             num_bands += 1;
         }
@@ -396,7 +396,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {
             nsys += SYS_GLO;
         }
-    if (signal_enabled_flags.check_any_enabled(BDS_B1, BDS_B3))
+    if (signal_enabled_flags.check_any_enabled(BDS_B1, BDS_B3, BDS_B1C))
         {
             nsys += SYS_BDS;
         }

@@ -22,6 +22,7 @@
  */
 
 #include "dll_pll_veml_tracking.h"
+#include "Beidou_B1C.h"
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
 #include "GLONASS_L1_L2_CA.h"
@@ -33,6 +34,7 @@
 #include "Galileo_E5b.h"
 #include "Galileo_E6.h"
 #include "MATH_CONSTANTS.h"
+#include "beidou_b1c_signal_replica.h"
 #include "beidou_b1i_signal_replica.h"
 #include "beidou_b3i_signal_replica.h"
 #include "galileo_e1_signal_replica.h"
@@ -180,6 +182,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
     map_signal_pretty_name["7X"] = "E5b";
     map_signal_pretty_name["L5"] = "L5";
     map_signal_pretty_name["B1"] = "B1I";
+    map_signal_pretty_name["1D"] = "B1C";
     map_signal_pretty_name["B3"] = "B3I";
     map_signal_pretty_name["E6"] = "E6";
     map_signal_pretty_name["J1"] = "L1 C/A";
@@ -449,6 +452,31 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B3I_SECONDARY_CODE_LENGTH);
                     d_data_secondary_code_string = BEIDOU_B3I_SECONDARY_CODE_STR;
                 }
+            else if (d_signal_type == "1D")
+                {
+                    d_signal_carrier_freq = BEIDOU_B1C_FREQ_HZ;
+                    d_code_period = BEIDOU_B1C_CODE_PERIOD_S;
+                    d_code_chip_rate = BEIDOU_B1C_CODE_RATE_CPS;
+                    d_code_length_chips = static_cast<int32_t>(BEIDOU_B1C_CODE_LENGTH_CHIPS);
+                    d_symbols_per_bit = BEIDOU_B1C_SYMBOLS_PER_BIT;
+                    d_correlation_length_ms = static_cast<int32_t>(BEIDOU_B1C_CODE_PERIOD_MS);
+                    d_code_samples_per_chip = d_trk_parameters.b1c_qmboc_tracking ? 12 : 2;
+                    d_veml = true;
+                    d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
+                    d_trk_parameters.slope = static_cast<float>(-CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, d_trk_parameters.spc));
+                    d_trk_parameters.y_intercept = static_cast<float>(GetYInterceptAbs(&SinBocCorrelationFunction<1, 1>, d_trk_parameters.spc));
+                    if (d_trk_parameters.track_pilot)
+                        {
+                            d_secondary = true;
+                            d_secondary_code_length = static_cast<uint32_t>(BEIDOU_B1C_PILOT_SECONDARY_CODE_LENGTH);
+                            d_signal_pretty_name = d_signal_pretty_name + "P";
+                        }
+                    else
+                        {
+                            d_secondary = false;
+                            d_signal_pretty_name = d_signal_pretty_name + "D";
+                        }
+                }
             else
                 {
                     LOG(WARNING) << "Invalid Signal argument when instantiating tracking blocks";
@@ -609,8 +637,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
     d_carrier_loop_filter.set_params(d_trk_parameters.fll_bw_hz, d_trk_parameters.pll_bw_hz, d_trk_parameters.pll_filter_order);
 
     // Initialization of local code replica
-    // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
-    d_tracking_code.resize(2 * d_code_length_chips, 0.0);
+    d_tracking_code.resize(static_cast<size_t>(d_code_samples_per_chip) * static_cast<size_t>(d_code_length_chips), 0.0);
     // correlator outputs (scalar)
     if (d_veml)
         {
@@ -668,7 +695,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
     // Enable Data component prompt correlator (slave to Pilot prompt) if tracking uses Pilot signal
     if (d_trk_parameters.track_pilot)
         {
-            d_data_code.resize(2 * d_code_length_chips, 0.0);
+            d_data_code.resize(static_cast<size_t>(d_code_samples_per_chip) * static_cast<size_t>(d_code_length_chips), 0.0);
         }
 
     // --- Initializations ---
@@ -806,6 +833,7 @@ void dll_pll_veml_tracking::start_tracking()
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = TWO_PI * d_carrier_doppler_hz / d_trk_parameters.fs_in;
     d_carrier_phase_rate_step_rad = 0.0;
+    d_b1c_prelock_output_pending = false;
     d_carr_ph_history.clear();
     d_code_ph_history.clear();
     std::array<char, 3> Signal_{};
@@ -948,6 +976,32 @@ void dll_pll_veml_tracking::start_tracking()
                     d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B1I_SECONDARY_CODE_LENGTH);
                     d_data_secondary_code_string = BEIDOU_B1I_SECONDARY_CODE_STR;
                     d_Prompt_circular_buffer.set_capacity(d_secondary_code_length);
+                }
+        }
+    else if (d_systemName == "Beidou" && d_signal_type == "1D")
+        {
+            const int32_t prn_index = static_cast<int32_t>(d_acquisition_gnss_synchro->PRN) - 1;
+            const auto b1c_replica_fs = static_cast<int32_t>(d_code_samples_per_chip * BEIDOU_B1C_CODE_RATE_CPS);
+            if (d_trk_parameters.track_pilot)
+                {
+                    const std::array<char, 3> pilot_signal = {{'1', 'P', '\0'}};
+                    beidou_b1c_code_gen_float_sampled(
+                        d_tracking_code, pilot_signal, d_trk_parameters.b1c_qmboc_tracking,
+                        d_acquisition_gnss_synchro->PRN, b1c_replica_fs, 0, false);
+                    // Data component remains BOC(1,1) even when pilot is QMBOC.
+                    beidou_b1c_code_gen_float_sampled(
+                        d_data_code, Signal_, d_trk_parameters.b1c_qmboc_tracking,
+                        d_acquisition_gnss_synchro->PRN, b1c_replica_fs, 0, false);
+                    d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+                    d_multicorrelator_cpu.set_data_code_and_prompt_tap(
+                        d_code_samples_per_chip * d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
+                    d_secondary_code_string = BEIDOU_B1C_PILOT_SECONDARY_CODE[prn_index];
+                }
+            else
+                {
+                    beidou_b1c_code_gen_float_sampled(
+                        d_tracking_code, Signal_, d_trk_parameters.b1c_qmboc_tracking,
+                        d_acquisition_gnss_synchro->PRN, b1c_replica_fs, 0, false);
                 }
         }
 
@@ -1170,7 +1224,15 @@ bool dll_pll_veml_tracking::acquire_secondary()
                 }
         }
 
-    if (abs(corr_value) == static_cast<int32_t>(d_secondary_code_length))
+    auto lock_threshold = static_cast<int32_t>(d_secondary_code_length);
+    if (d_systemName == "Beidou" && d_signal_type == "1D")
+        {
+            const float ratio = std::min(std::max(d_trk_parameters.b1c_secondary_lock_ratio, 0.5F), 1.0F);
+            lock_threshold = std::max(1, static_cast<int32_t>(std::lround(
+                                             ratio * static_cast<float>(d_secondary_code_length))));
+        }
+
+    if (abs(corr_value) >= lock_threshold)
         {
             if (corr_value < 0)
                 {
@@ -1397,6 +1459,7 @@ void dll_pll_veml_tracking::clear_tracking_vars()
     d_code_error_filt_chips = 0.0;
     d_current_symbol = 0;
     d_current_data_symbol = 0;
+    d_b1c_prelock_output_pending = false;
     d_Prompt_circular_buffer.clear();
     d_carrier_phase_rate_step_rad = 0.0;
     d_code_phase_rate_step_chips = 0.0;
@@ -1625,6 +1688,61 @@ void dll_pll_veml_tracking::save_correlation_results()
         {
             d_cloop = true;
         }
+}
+
+
+void dll_pll_veml_tracking::map_correlator_to_iq(const gr_complex &c, float &out_i, float &out_q) const
+{
+    if (d_interchange_iq)
+        {
+            out_i = c.imag();
+            out_q = c.real();
+        }
+    else
+        {
+            out_i = c.real();
+            out_q = c.imag();
+        }
+}
+
+
+void dll_pll_veml_tracking::assign_correlators_to_synchro(Gnss_Synchro &synchro) const
+{
+    if (d_systemName == "Beidou" && d_signal_type == "1D" && d_trk_parameters.track_pilot)
+        {
+            const gr_complex pilot_raw = *d_Prompt;
+            gr_complex pilot_ref = (d_state == 2) ? pilot_raw : d_P_accu;
+            // Do not apply pilot-secondary sign during pre-lock (phase unknown until acquire_secondary()).
+
+            const float pilot_abs = std::abs(pilot_ref);
+            gr_complex data_aligned = d_P_data_accu;
+            if (pilot_abs > 1e-6F)
+                {
+                    data_aligned = d_P_data_accu * std::conj(pilot_ref) / pilot_abs;
+                }
+
+            float data_prompt = d_trk_parameters.b1c_prompt_use_data_q ? data_aligned.imag() : data_aligned.real();
+            float pilot_i_for_sync = 0.0F;
+            float pilot_q_unused = 0.0F;
+            map_correlator_to_iq(pilot_raw, pilot_i_for_sync, pilot_q_unused);
+            float pilot_prompt = pilot_i_for_sync;
+            if (d_trk_parameters.b1c_prompt_normalize_power)
+                {
+                    data_prompt *= d_trk_parameters.b1c_data_prompt_scale;
+                    pilot_prompt *= d_trk_parameters.b1c_pilot_prompt_scale;
+                }
+            synchro.Prompt_I = static_cast<double>(data_prompt);
+            synchro.Prompt_Q = static_cast<double>(pilot_prompt);
+            return;
+        }
+
+    float prompt_i = 0.0F;
+    float prompt_q = 0.0F;
+
+    map_correlator_to_iq(d_P_data_accu, prompt_i, prompt_q);
+
+    synchro.Prompt_I = static_cast<double>(prompt_i);
+    synchro.Prompt_Q = static_cast<double>(prompt_q);
 }
 
 
@@ -2055,6 +2173,29 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                         // enable write dump file this cycle (valid DLL/PLL cycle)
                         log_data();
 
+                        // Feed 10 ms B1C data symbols to telemetry while secondary lock is pending,
+                        // so telemetry can build a rolling 18 s frame history before the first valid symbol.
+                        if (d_systemName == "Beidou" && d_signal_type == "1D" && d_trk_parameters.track_pilot &&
+                            !d_pull_in_transitory && d_current_data_symbol == 0)
+                            {
+                                // State 2 does not update d_P_data_accu in save_correlation_results().
+                                // Use the instantaneous 10 ms data prompt and assign_correlators_to_synchro()
+                                // to publish data (Prompt_I) and pilot (Prompt_Q) to telemetry.
+                                d_P_data_accu = d_Prompt_Data[0];
+                                current_synchro_data = *d_acquisition_gnss_synchro;
+                                assign_correlators_to_synchro(current_synchro_data);
+                                current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
+                                current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
+                                current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
+                                current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
+                                current_synchro_data.correlation_length_ms = d_correlation_length_ms;
+                                // Cache pre-lock symbols for telemetry history, but mark them invalid so
+                                // telemetry can avoid running BCH/LDPC before secondary alignment is confirmed.
+                                current_synchro_data.Flag_valid_symbol_output = false;
+                                d_b1c_prelock_output_pending = true;
+                                d_P_data_accu = gr_complex(0.0, 0.0);
+                            }
+
                         if (!d_pull_in_transitory)
                             {
                                 if (d_secondary)
@@ -2203,16 +2344,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                         // ########### Output the tracking results to Telemetry block ##########
                         // Fill the acquisition data
                         current_synchro_data = *d_acquisition_gnss_synchro;
-                        if (d_interchange_iq)
-                            {
-                                current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.imag());
-                                current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.real());
-                            }
-                        else
-                            {
-                                current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.real());
-                                current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.imag());
-                            }
+                        assign_correlators_to_synchro(current_synchro_data);
                         current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
                         current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
                         current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
@@ -2255,16 +2387,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                 // ########### Output the tracking results to Telemetry block ##########
                                 // Fill the acquisition data
                                 current_synchro_data = *d_acquisition_gnss_synchro;
-                                if (d_interchange_iq)
-                                    {
-                                        current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.imag());
-                                        current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.real());
-                                    }
-                                else
-                                    {
-                                        current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.real());
-                                        current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.imag());
-                                    }
+                                assign_correlators_to_synchro(current_synchro_data);
                                 current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
                                 current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
                                 current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
@@ -2322,11 +2445,24 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
 
     consume_each(d_current_prn_length_samples);
     // d_sample_counter += static_cast<uint64_t>(d_current_prn_length_samples);
-    if (current_synchro_data.Flag_valid_symbol_output || loss_of_lock)
+    if (current_synchro_data.Flag_valid_symbol_output || loss_of_lock || d_b1c_prelock_output_pending)
         {
             current_synchro_data.fs = static_cast<int64_t>(d_trk_parameters.fs_in);
             current_synchro_data.Tracking_sample_counter = this->nitems_read(0);
-            current_synchro_data.Flag_valid_symbol_output = !loss_of_lock;
+            if (loss_of_lock)
+                {
+                    current_synchro_data.Flag_valid_symbol_output = false;
+                    d_b1c_prelock_output_pending = false;
+                }
+            else if (d_b1c_prelock_output_pending)
+                {
+                    current_synchro_data.Flag_valid_symbol_output = false;
+                    d_b1c_prelock_output_pending = false;
+                }
+            else
+                {
+                    current_synchro_data.Flag_valid_symbol_output = true;
+                }
             current_synchro_data.Flag_PLL_180_deg_phase_locked = d_Flag_PLL_180_deg_phase_locked;
 
             // generate new tag associated with gnss-synchro object

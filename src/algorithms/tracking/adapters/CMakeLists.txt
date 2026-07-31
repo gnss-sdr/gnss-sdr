@@ -28,6 +28,8 @@ endif()
 
 set(TRACKING_ADAPTER_SOURCES
     dll_pll_tracking_adapter.cc
+    base_dll_pll_tracking.cc
+    beidou_b1c_dll_pll_veml_tracking.cc
     galileo_e1_tcp_connector_tracking.cc
     gps_l1_ca_tcp_connector_tracking.cc
     gps_l1_ca_gaussian_tracking.cc
@@ -37,6 +39,8 @@ set(TRACKING_ADAPTER_SOURCES
 
 set(TRACKING_ADAPTER_HEADERS
     dll_pll_tracking_adapter.h
+    base_dll_pll_tracking.h
+    beidou_b1c_dll_pll_veml_tracking.h
     galileo_e1_tcp_connector_tracking.h
     gps_l1_ca_tcp_connector_tracking.h
     gps_l1_ca_gaussian_tracking.h

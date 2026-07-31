@@ -55,6 +55,7 @@
  * \{ */
 
 
+class Beidou_Cnav1_Ephemeris;
 class Beidou_Dnav_Ephemeris;
 class Beidou_Dnav_Iono;
 class Beidou_Dnav_Utc_Model;
@@ -135,6 +136,11 @@ public:
     void log_rinex_nav_bds_dnav(const std::map<int32_t, Beidou_Dnav_Ephemeris>& new_bds_eph);
 
     /*!
+     * \brief Print RINEX annotation for BeiDou B-CNAV1 message
+     */
+    void log_rinex_nav_bds_cnav1(const std::map<int32_t, Beidou_Cnav1_Ephemeris>& new_bds_eph);
+
+    /*!
      * \brief Returns true is the RINEX file headers are already written
      */
     inline bool is_rinex_header_written() const
@@ -200,6 +206,7 @@ private:
      *  \param obs_time Observation time in BDT seconds of week
      */
     boost::posix_time::ptime compute_BDS_time(const Beidou_Dnav_Ephemeris& eph, double obs_time) const;
+    boost::posix_time::ptime compute_BDS_time(const Beidou_Cnav1_Ephemeris& eph, double obs_time) const;
 
     /*
      * Computes the UTC time and returns a boost::posix_time::ptime object

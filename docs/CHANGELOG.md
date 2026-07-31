@@ -46,6 +46,11 @@ All notable changes to GNSS-SDR will be documented in this file.
   and 1.79 for L5/E5a), and its variance by the square of that factor.
   Previously the unscaled L1 delay was applied to those measurements,
   undercorrecting the ionosphere by the same factor.
+- Improved PVT processing of GPS L2C, GPS L5, and QZSS signals using CNAV
+  navigation data: satellite positions now include the CNAV semi-major axis and
+  mean-motion rate terms, and group-delay / inter-signal corrections follow
+  IS-GPS-200 / IS-GPS-705 in both single-band and L1+L5 dual-band
+  configurations. Contributed by @vladisslav2011.
 
 ### Improvements in Availability:
 

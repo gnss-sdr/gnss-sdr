@@ -1653,6 +1653,13 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 if (eph_data[i].sat == sat)
                                                     {
                                                         // 2. If found, attach the L2/L5 observation to the existing observation in RTKLIB structure
+                                                        // The existing entry carries the LNAV ephemeris, which has no
+                                                        // inter-signal corrections: take the ISCs from CNAV so the
+                                                        // dual-frequency correction in prange() can apply them.
+                                                        eph_data[i].isc[0] = gps_cnav_ephemeris_iter->second.ISCL1;
+                                                        eph_data[i].isc[1] = gps_cnav_ephemeris_iter->second.ISCL2;
+                                                        eph_data[i].isc[2] = gps_cnav_ephemeris_iter->second.ISCL5I;
+                                                        eph_data[i].isc[3] = gps_cnav_ephemeris_iter->second.ISCL5Q;
                                                         if (eph_data[i].apply_has_corrections)
                                                             {
                                                                 const HAS_obs_corrections *applied_has_correction = nullptr;

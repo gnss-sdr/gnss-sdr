@@ -350,6 +350,9 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     double *var)
 {
     double tk;
+    double Ak;
+    double na;
+    double delta_na;
     double M;
     double E;
     double Ek;
@@ -402,7 +405,10 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
             omge = GNSS_OMEGA_EARTH_DOT;
             break;
         }
-    M = eph->M0 + (sqrt(mu / (eph->A * eph->A * eph->A)) + eph->deln) * tk;
+    Ak = eph->A + eph->Adot * tk;
+    delta_na = eph->deln + 0.5 * eph->ndot * tk;
+    na = sqrt(mu / (eph->A * eph->A * eph->A)) + delta_na;
+    M = eph->M0 + na * tk;
 
     for (n = 0, E = M, Ek = 0.0; fabs(E - Ek) > RTOL_KEPLER && n < MAX_ITER_KEPLER; n++)
         {
@@ -420,7 +426,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     trace(4, "kepler: sat=%2d e=%8.5f n=%2d del=%10.3e\n", eph->sat, eph->e, n, E - Ek);
 
     u = atan2(sqrt(1.0 - eph->e * eph->e) * sinE, cosE - eph->e) + eph->omg;
-    r = eph->A * (1.0 - eph->e * cosE);
+    r = Ak * (1.0 - eph->e * cosE);
     i = eph->i0 + eph->idot * tk;
     sin2u = sin(2.0 * u);
     cos2u = cos(2.0 * u);

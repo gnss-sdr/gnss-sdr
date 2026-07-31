@@ -81,6 +81,7 @@ TEST(GpsCnavNavigationMessageTest, EphemerisRequiresMatchingClockPage)
     set_gps_cnav_unsigned_field(mt30_matching, CNAV_TOC, 200);
     nav_message.decode_page(mt30_matching);
     EXPECT_TRUE(nav_message.have_new_ephemeris());
+    EXPECT_EQ(200 * CNAV_TOE1_LSB, nav_message.get_ephemeris().toe);
     EXPECT_FALSE(nav_message.have_new_ephemeris());
 }
 

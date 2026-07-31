@@ -303,6 +303,7 @@ bool Gps_CNAV_Navigation_Message::have_new_ephemeris()  // Check if we have a ne
                 d_ephemeris_top == d_clock_top)
                 {
                     // MT10, MT11, and a clock page belong to the same CNAV CEI set.
+                    ephemeris_record.toe = ephemeris_record.toe1;
                     b_flag_ephemeris_1 = false;  // clear the flags
                     b_flag_ephemeris_2 = false;
                     b_flag_clock_valid = false;

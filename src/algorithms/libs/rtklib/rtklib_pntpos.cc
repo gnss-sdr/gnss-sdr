@@ -336,11 +336,11 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                             P2 += P2_C2;                   // C2->P2
                             if (obs->code[j] == CODE_L2S)  // L2 single freq.
                                 {
-                                    PC = P2 + P1_P2 - ISCl2;
+                                    PC = P2 - P1_P2 + ISCl2;
                                 }
                             else if (obs->code[j] == CODE_L5X)  // L5 single freq.
                                 {
-                                    PC = P2 + P1_P2 - ISCl5i;
+                                    PC = P2 - P1_P2 + ISCl5i;
                                 }
                         }
                     if (sys == SYS_BDS)

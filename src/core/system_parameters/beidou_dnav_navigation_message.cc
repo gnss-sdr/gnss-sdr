@@ -359,7 +359,7 @@ void Beidou_Dnav_Navigation_Message::decode_d2_iono_grid(
     for (int32_t i = 0; i < count; ++i)
         {
             const uint64_t ion = read_navigation_data_unsigned(bits, D2_ION_LOGICAL_FIRST_BIT, i * 13, 13);
-            const int32_t delay_code = static_cast<int32_t>(ion >> 4U);
+            const auto delay_code = static_cast<int32_t>(ion >> 4U);
             Beidou_Dnav_Iono_Grid_Point grid_point;
             grid_point.vertical_delay = static_cast<double>(delay_code) * D2_ION_DELAY_LSB;
             grid_point.GIVEI = static_cast<int32_t>(ion & 0x0FULL);
@@ -586,7 +586,7 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
                 }
             else if (SV_page_5 >= 11 && SV_page_5 <= 23 && i_AmEpID == 3)
                 {
-                    const int32_t amid = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D1_AMID));
+                    const auto amid = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D1_AMID));
                     int32_t prn = 0;
                     if (amid == 1)
                         {
@@ -607,7 +607,7 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
                 }
             else if (SV_page_5 == 24 && i_AmEpID == 3)
                 {
-                    const int32_t amid = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D1_AMID_HEALTH));
+                    const auto amid = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D1_AMID_HEALTH));
                     if (amid == 1)
                         {
                             decode_almanac_health(subframe_bits, 13, 31);
@@ -952,7 +952,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                 }
             else if (page_ID >= 103 && page_ID <= 115 && i_AmEpID == 3)
                 {
-                    const int32_t amid = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D1_AMID));
+                    const auto amid = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D1_AMID));
                     int32_t prn = 0;
                     if (amid == 1)
                         {
@@ -973,7 +973,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                 }
             else if (page_ID == 116 && i_AmEpID == 3)
                 {
-                    const int32_t amid = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D1_AMID_HEALTH));
+                    const auto amid = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D1_AMID_HEALTH));
                     if (amid == 1)
                         {
                             decode_almanac_health(subframe_bits, 13, 31);

@@ -59,9 +59,13 @@ double getiscl2(int sat, const nav_t *nav);
 double getiscl5i(int sat, const nav_t *nav);
 double getiscl5q(int sat, const nav_t *nav);
 
-/* psendorange with code bias correction -------------------------------------*/
+/* psendorange with code bias correction -------------------------------------
+ * iono_scale (O) is the multiplier the caller must apply to the modeled L1
+ * ionospheric delay so that it is consistent with the returned pseudorange:
+ * 1.0 for L1-referenced measurements, (f_L1/f_band)^2 for single-band
+ * measurements on another band, 0.0 for ionosphere-free combinations  */
 double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
-    int iter, const prcopt_t *opt, double *var);
+    int iter, const prcopt_t *opt, double *var, double *iono_scale);
 
 /* ionospheric correction ------------------------------------------------------
  * compute ionospheric correction

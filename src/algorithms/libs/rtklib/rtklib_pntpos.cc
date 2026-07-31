@@ -307,6 +307,12 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                 } /* C2->P2 */
 
             /* iono-free combination */
+            if (sys == SYS_BDS)
+                {
+                    /* the DNAV clock is referenced to B3I: remove TGD1 from
+                       the B1I pseudorange before combining (BDS SIS ICD) */
+                    P1 -= P1_P2;
+                }
             PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
             *iono_scale = 0.0;
         }
@@ -389,6 +395,12 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                 {
                     P1 += P1_C1;
                     P2 += P2_C2;
+                    if (sys == SYS_BDS)
+                        {
+                            /* the DNAV clock is referenced to B3I: remove TGD1
+                               from the B1I pseudorange before combining */
+                            P1 -= P1_P2;
+                        }
                     PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
                     *iono_scale = 0.0;
                 }
@@ -424,7 +436,18 @@ int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
     /* broadcast model */
     if (ionoopt == IONOOPT_BRDC)
         {
-            *ion = ionmodel(time, nav->ion_gps, pos, azel);
+            const double *ion_coeffs = nav->ion_gps;
+            double ref_freq_scale = 1.0;
+            if (satsys(sat, nullptr) == SYS_BDS && norm_rtk(nav->ion_cmp, 8) > 0.0)
+                {
+                    /* prefer the BDS broadcast Klobuchar for BDS satellites.
+                       Its coefficients are referenced to B1I: express the
+                       result at the GPS L1 frequency, since callers rescale
+                       the delay to the observed band */
+                    ion_coeffs = nav->ion_cmp;
+                    ref_freq_scale = std::pow(FREQ1_BDS / FREQ1, 2.0);
+                }
+            *ion = ionmodel(time, ion_coeffs, pos, azel) * ref_freq_scale;
             *var = std::pow(*ion * ERR_BRDCI, 2.0);
             return 1;
         }

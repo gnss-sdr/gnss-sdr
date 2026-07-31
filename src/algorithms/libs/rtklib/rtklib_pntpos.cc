@@ -34,6 +34,7 @@
 #endif
 
 #include "rtklib_pntpos.h"
+#include "Beidou_CNAV1.h"
 #include "beidou_bdgim.h"
 #include "gnss_frequencies.h"
 #include "rtklib_ephemeris.h"
@@ -113,8 +114,8 @@ double gettgd(int sat, const nav_t *nav)
 
 /* get tgd parameter (m) -----------------------------------------------------
  * GPS/QZS/GAL: return c·tgd[0] from the first matching ephemeris (classic RTKLIB).
- * BDS DNAV (eph.code!=7): tgd[0]=TGD1 (B1I vs B3I timing reference)
- * BDS CNAV1 (eph.code==7), stored by eph_to_rtklib(Beidou_Cnav1_Ephemeris):
+ * BDS DNAV (eph.code!=BDS_EPH_SOURCE_CNAV1): tgd[0]=TGD1 (B1I vs B3I timing reference)
+ * BDS CNAV1 (eph.code==BDS_EPH_SOURCE_CNAV1), stored by eph_to_rtklib(Beidou_Cnav1_Ephemeris):
  *   tgd[0]=TGD_B1Cp, tgd[1]=TGD_B2ap, tgd[2]=ISC_B1Cd  (ICD B1C §7.6)
  * BDS user algorithm (applied in prange as PC = P - c·Δt_TGD):
  *   B1C pilot CODE_L1P: (Δtsv)_B1Cp = Δtsv - TGD_B1Cp           → (7-4)
@@ -123,7 +124,7 @@ double gettgd(int sat, const nav_t *nav)
  * CODE_L1P is also GPS/GLO L1P — CNAV1 matching is SYS_BDS only.
  * No DNAV↔CNAV1 TGD fallback (TGD1 vs TGD_B1Cp).
  *-----------------------------------------------------------------------------*/
-double gettgd(int sat, const nav_t *nav, unsigned char obs_code)
+double gettgd_bds_by_obs_code(int sat, const nav_t *nav, unsigned char obs_code)
 {
     int i;
     int prn = 0;
@@ -139,7 +140,7 @@ double gettgd(int sat, const nav_t *nav, unsigned char obs_code)
 
             if (sys == SYS_BDS)
                 {
-                    const int is_cnav1 = (nav->eph[i].code == 7) ? 1 : 0;
+                    const int is_cnav1 = (nav->eph[i].code == BDS_EPH_SOURCE_CNAV1) ? 1 : 0;
                     /* B1C obs ↔ CNAV1 eph; B1I/other ↔ DNAV eph */
                     if (is_b1c_obs != is_cnav1)
                         {
@@ -351,7 +352,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         {
             if (sys == SYS_BDS)
                 {
-                    P1_P2 = gettgd(obs->sat, nav, obs->code[i]);
+                    P1_P2 = gettgd_bds_by_obs_code(obs->sat, nav, obs->code[i]);
                 }
             else
                 {

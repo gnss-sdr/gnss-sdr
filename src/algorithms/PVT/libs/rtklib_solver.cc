@@ -31,6 +31,7 @@
  * -----------------------------------------------------------------------*/
 
 #include "rtklib_solver.h"
+#include "Beidou_CNAV1.h"
 #include "Beidou_DNAV.h"
 #include "Galileo_CNAV.h"
 #include "gnss_obs_codes.h"
@@ -44,7 +45,6 @@
 #include <iostream>
 #include <iterator>
 #include <limits>
-#include <utility>
 #include <vector>
 
 #if USE_GLOG_AND_GFLAGS
@@ -1825,9 +1825,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 if (cnav1_iter != beidou_cnav1_ephemeris_map.cend())
                                     {
                                         eph_data[valid_obs] = eph_to_rtklib(cnav1_iter->second);
-                                        // Apply SF3 health (HS) when available
                                         const auto page_it = beidou_cnav1_page_data_map.find(cnav1_iter->second.PRN);
-                                        if (page_it != beidou_cnav1_page_data_map.cend() && page_it->second.common.hs != 0)
+                                        if (page_it != beidou_cnav1_page_data_map.cend())
                                             {
                                                 eph_data[valid_obs].svh = page_it->second.common.hs;
                                             }
@@ -1835,7 +1834,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
                                             cnav1_iter->second.WN + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
-                                            d_rtklib_band_index[sig_]);
+                                            d_rtklib_band_index.at(sig_));
                                         valid_obs++;
                                     }
                                 else
@@ -1852,7 +1851,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         bool found_B1I_obs = false;
                                         for (int i = 0; i < valid_obs; i++)
                                             {
-                                                if (eph_data[i].sat == bds_sat && eph_data[i].code != 7)
+                                                if (eph_data[i].sat == bds_sat && eph_data[i].code != BDS_EPH_SOURCE_CNAV1)
                                                     {
                                                         const unsigned char c0 = d_obs_data[i + glo_valid_obs].code[0];
                                                         if (c0 == CODE_L2I || c0 == CODE_L1I)

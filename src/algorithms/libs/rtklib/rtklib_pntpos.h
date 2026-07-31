@@ -50,7 +50,7 @@ double varerr(const prcopt_t *opt, double el, int sys);
 double gettgd(int sat, const nav_t *nav);
 double gettgd(int sat, const nav_t *nav, int tgd_index);
 /* BDS DNAV/CNAV1 TGD selection by observation code (CODE_L1D/L1P/...) */
-double gettgd(int sat, const nav_t *nav, unsigned char obs_code);
+double gettgd_bds_by_obs_code(int sat, const nav_t *nav, unsigned char obs_code);
 
 /* select Galileo BGD from observation and ephemeris provenance -------------*/
 int galileo_bgd_index(unsigned char observation_code, int sat, const nav_t *nav);

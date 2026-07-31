@@ -53,7 +53,7 @@ void geph2pos(gtime_t time, const geph_t *geph, double *rs, double *dts,
 double seph2clk(gtime_t time, const seph_t *seph);
 void seph2pos(gtime_t time, const seph_t *seph, double *rs, double *dts,
     double *var);
-/* bds_eph_sel: -1=any, 0=DNAV (code!=7), 7=B-CNAV1 (code==7) */
+/* bds_eph_sel: -1=any, 0=DNAV (code!=BDS_EPH_SOURCE_CNAV1), BDS_EPH_SOURCE_CNAV1=B-CNAV1 */
 eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav, int bds_eph_sel = -1);
 geph_t *selgeph(gtime_t time, int sat, int iode, const nav_t *nav);
 seph_t *selseph(gtime_t time, int sat, const nav_t *nav);

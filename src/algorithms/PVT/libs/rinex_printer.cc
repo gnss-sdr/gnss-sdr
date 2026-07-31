@@ -3503,6 +3503,7 @@ void Rinex_Printer::log_rinex_nav_bds_dnav(const std::map<int32_t, Beidou_Dnav_E
 
 void Rinex_Printer::log_rinex_nav_bds_cnav1(const std::map<int32_t, Beidou_Cnav1_Ephemeris>& new_bds_eph)
 {
+    // RINEX-3 D1-style stand-in; proper CNAV1 needs RINEX 4 EPH (see header).
     auto& out = navFile;
     const auto& sys_char = satelliteSystem.at("Beidou");
 
@@ -3524,8 +3525,10 @@ void Rinex_Printer::log_rinex_nav_bds_cnav1(const std::map<int32_t, Beidou_Cnav1
             const auto wn_d = static_cast<double>(eph.WN);
             out << get_nav_broadcast_orbit(&eph.idot, nullptr, &wn_d, nullptr) << '\n';
 
-            const double zero_health = 0.0;
-            out << get_nav_broadcast_orbit(&zero_health, &zero_health, &eph.TGD_B1Cp, &eph.TGD_B2ap) << '\n';
+            // Acc left 0; health = SF3 HS; TGD1/TGD2 hold TGD_B1Cp/TGD_B2ap.
+            const double sv_accuracy = 0.0;
+            const auto health_d = static_cast<double>(eph.hs);
+            out << get_nav_broadcast_orbit(&sv_accuracy, &health_d, &eph.TGD_B1Cp, &eph.TGD_B2ap) << '\n';
 
             const auto tow_d = static_cast<double>(eph.tow);
             const auto iodc_d = eph.IODC;

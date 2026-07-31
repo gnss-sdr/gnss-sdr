@@ -730,7 +730,7 @@ eph_t eph_to_rtklib(const Beidou_Cnav1_Ephemeris& bei_eph)
     rtklib_sat.e = bei_eph.ecc;
     rtklib_sat.Adot = bei_eph.Adot;
     rtklib_sat.ndot = bei_eph.delta_ndot;
-    rtklib_sat.svh = 0;
+    rtklib_sat.svh = bei_eph.hs;
     rtklib_sat.sva = 0;
     rtklib_sat.code = bei_eph.sig_type;
     rtklib_sat.flag = bei_eph.nav_type;

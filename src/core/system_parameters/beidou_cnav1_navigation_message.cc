@@ -22,10 +22,29 @@
 #include <cmath>
 #include <cstdint>
 #include <limits>
+#include <string>
 #include <vector>
 
 namespace
 {
+void append_bits_as_chars(std::string& out, const int32_t* bits, int32_t n)
+{
+    out.reserve(out.size() + static_cast<size_t>(n));
+    for (int32_t i = 0; i < n; i++)
+        {
+            out.push_back(bits[i] != 0 ? '1' : '0');
+        }
+}
+
+void append_bits_as_chars(std::string& out, const uint8_t* bits, int32_t n)
+{
+    out.reserve(out.size() + static_cast<size_t>(n));
+    for (int32_t i = 0; i < n; i++)
+        {
+            out.push_back(bits[i] != 0U ? '1' : '0');
+        }
+}
+
 struct BchCodebook
 {
     int32_t n = 0;
@@ -343,7 +362,7 @@ void parse_subframe2(const uint8_t* bits, Beidou_Cnav1_Ephemeris& eph, double so
     eph.toc = static_cast<int32_t>(eph.toc * BEIDOU_CNAV1_TOE_TOC_LSB);
     eph.tow = static_cast<int32_t>(how * 3600 + soh_seconds);
     eph.nav_type = nav_type_from_sat_type(sat_type);
-    eph.sig_type = 7;
+    eph.sig_type = BDS_EPH_SOURCE_CNAV1;
 }
 
 void parse_page_common(
@@ -611,64 +630,15 @@ bool Beidou_Cnav1_Navigation_Message::decode_frame(
 
     std::array<float, BEIDOU_CNAV1_SUBFRAME2_SYMBOLS> sf2_llr{};
     std::array<float, BEIDOU_CNAV1_SUBFRAME3_SYMBOLS> sf3_llr{};
-    std::array<float, BEIDOU_CNAV1_SUBFRAME2_SYMBOLS> sf2_llr_inv{};
-    std::array<float, BEIDOU_CNAV1_SUBFRAME2_SYMBOLS> sf2_llr_bitrev{};
-    std::array<float, BEIDOU_CNAV1_SUBFRAME2_SYMBOLS> sf2_llr_bitrev_inv{};
-    std::array<float, BEIDOU_CNAV1_SUBFRAME3_SYMBOLS> sf3_llr_inv{};
-    std::array<float, BEIDOU_CNAV1_SUBFRAME3_SYMBOLS> sf3_llr_bitrev{};
-    std::array<float, BEIDOU_CNAV1_SUBFRAME3_SYMBOLS> sf3_llr_bitrev_inv{};
     deinterleave_sf2_sf3(bit_llr.data() + BEIDOU_CNAV1_SUBFRAME1_SYMBOLS, sf2_llr.data(), sf3_llr.data());
-    // Try normal / inverted / bit-reversed LLR polarity for GF(64) LDPC.
-    for (int32_t i = 0; i < BEIDOU_CNAV1_SUBFRAME2_SYMBOLS; i++)
-        {
-            sf2_llr_inv[static_cast<size_t>(i)] = -sf2_llr[static_cast<size_t>(i)];
-        }
-    for (int32_t symbol = 0; symbol < BEIDOU_CNAV1_SUBFRAME2_SYMBOLS / 6; symbol++)
-        {
-            const auto base = static_cast<size_t>(symbol) * 6U;
-            for (int32_t bit = 0; bit < 6; bit++)
-                {
-                    const auto bit_u = static_cast<size_t>(bit);
-                    sf2_llr_bitrev[base + bit_u] = sf2_llr[base + (5U - bit_u)];
-                    sf2_llr_bitrev_inv[base + bit_u] = -sf2_llr_bitrev[base + bit_u];
-                }
-        }
-    for (int32_t i = 0; i < BEIDOU_CNAV1_SUBFRAME3_SYMBOLS; i++)
-        {
-            sf3_llr_inv[static_cast<size_t>(i)] = -sf3_llr[static_cast<size_t>(i)];
-        }
-    for (int32_t symbol = 0; symbol < BEIDOU_CNAV1_SUBFRAME3_SYMBOLS / 6; symbol++)
-        {
-            const auto base = static_cast<size_t>(symbol) * 6U;
-            for (int32_t bit = 0; bit < 6; bit++)
-                {
-                    const auto bit_u = static_cast<size_t>(bit);
-                    sf3_llr_bitrev[base + bit_u] = sf3_llr[base + (5U - bit_u)];
-                    sf3_llr_bitrev_inv[base + bit_u] = -sf3_llr_bitrev[base + bit_u];
-                }
-        }
 
     std::array<uint8_t, BEIDOU_CNAV1_SF2_DATA_BITS> sf2_data{};
     std::array<uint8_t, BEIDOU_CNAV1_SF3_DATA_BITS> sf3_data{};
     std::array<uint8_t, BEIDOU_CNAV1_SUBFRAME2_SYMBOLS> sf2_codeword_bits{};
     std::array<uint8_t, BEIDOU_CNAV1_SUBFRAME3_SYMBOLS> sf3_codeword_bits{};
+    // One LLR polarity: PLL 180° is handled by the telemetry invert path upstream.
     bool sf2_ldpc_ok = beidou_cnav1_ldpc_decode_200_100_codeword(
         sf2_llr.data(), BEIDOU_CNAV1_SUBFRAME2_SYMBOLS, sf2_codeword_bits.data());
-    if (!sf2_ldpc_ok)
-        {
-            sf2_ldpc_ok = beidou_cnav1_ldpc_decode_200_100_codeword(
-                sf2_llr_inv.data(), BEIDOU_CNAV1_SUBFRAME2_SYMBOLS, sf2_codeword_bits.data());
-        }
-    if (!sf2_ldpc_ok)
-        {
-            sf2_ldpc_ok = beidou_cnav1_ldpc_decode_200_100_codeword(
-                sf2_llr_bitrev.data(), BEIDOU_CNAV1_SUBFRAME2_SYMBOLS, sf2_codeword_bits.data());
-        }
-    if (!sf2_ldpc_ok)
-        {
-            sf2_ldpc_ok = beidou_cnav1_ldpc_decode_200_100_codeword(
-                sf2_llr_bitrev_inv.data(), BEIDOU_CNAV1_SUBFRAME2_SYMBOLS, sf2_codeword_bits.data());
-        }
     if (!sf2_ldpc_ok)
         {
             // Hard-slice LLRs if LDPC fails.
@@ -691,21 +661,6 @@ bool Beidou_Cnav1_Navigation_Message::decode_frame(
         }
     bool sf3_ldpc_ok = beidou_cnav1_ldpc_decode_88_44_codeword(
         sf3_llr.data(), BEIDOU_CNAV1_SUBFRAME3_SYMBOLS, sf3_codeword_bits.data());
-    if (!sf3_ldpc_ok)
-        {
-            sf3_ldpc_ok = beidou_cnav1_ldpc_decode_88_44_codeword(
-                sf3_llr_inv.data(), BEIDOU_CNAV1_SUBFRAME3_SYMBOLS, sf3_codeword_bits.data());
-        }
-    if (!sf3_ldpc_ok)
-        {
-            sf3_ldpc_ok = beidou_cnav1_ldpc_decode_88_44_codeword(
-                sf3_llr_bitrev.data(), BEIDOU_CNAV1_SUBFRAME3_SYMBOLS, sf3_codeword_bits.data());
-        }
-    if (!sf3_ldpc_ok)
-        {
-            sf3_ldpc_ok = beidou_cnav1_ldpc_decode_88_44_codeword(
-                sf3_llr_bitrev_inv.data(), BEIDOU_CNAV1_SUBFRAME3_SYMBOLS, sf3_codeword_bits.data());
-        }
     if (!sf3_ldpc_ok)
         {
             for (int32_t i = 0; i < BEIDOU_CNAV1_SF3_DATA_BITS; i++)
@@ -732,6 +687,16 @@ bool Beidou_Cnav1_Navigation_Message::decode_frame(
         {
             set_fail(sf2_ldpc_ok ? 6 : 5);
             return false;
+        }
+
+    // Nav monitor string (same role as DNAV subframe bit chars): SF1 BCH info + SF2 data [+ SF3 if CRC OK].
+    last_nav_bits_.clear();
+    append_bits_as_chars(last_nav_bits_, prn_bits, 6);
+    append_bits_as_chars(last_nav_bits_, soh_bits, 8);
+    append_bits_as_chars(last_nav_bits_, sf2_data.data(), BEIDOU_CNAV1_SF2_DATA_BITS);
+    if (sf3_crc_ok)
+        {
+            append_bits_as_chars(last_nav_bits_, sf3_data.data(), BEIDOU_CNAV1_SF3_DATA_BITS);
         }
 
     Beidou_Cnav1_Ephemeris candidate{};
@@ -772,6 +737,11 @@ bool Beidou_Cnav1_Navigation_Message::decode_frame(
                     break;
                 default:
                     break;
+                }
+            if (flag_new_page_data_)
+                {
+                    // Copy SF3 HS into the stored ephemeris.
+                    ephemeris_.hs = page_data_.common.hs;
                 }
         }
 
@@ -848,6 +818,7 @@ void Beidou_Cnav1_Navigation_Message::clear_flags()
     flag_new_iono_ = false;
     flag_new_utc_ = false;
     flag_new_page_data_ = false;
+    last_nav_bits_.clear();
 }
 
 const Beidou_Cnav1_Ephemeris& Beidou_Cnav1_Navigation_Message::get_ephemeris() const
@@ -868,6 +839,11 @@ const Beidou_Cnav1_Utc_Model& Beidou_Cnav1_Navigation_Message::get_utc_model() c
 const Bds3_B1c_PageData& Beidou_Cnav1_Navigation_Message::get_page_data() const
 {
     return page_data_;
+}
+
+const std::string& Beidou_Cnav1_Navigation_Message::get_last_nav_bits() const
+{
+    return last_nav_bits_;
 }
 
 double Beidou_Cnav1_Navigation_Message::get_tow_s() const

@@ -28,6 +28,7 @@ set(SYSTEM_PARAMETERS_SOURCES
     beidou_cnav1_navigation_message.cc
     beidou_cnav1_ldpc.cc
     beidou_bdgim.cc
+    Beidou_B1C_codes.cc
     sbas_ephemeris.cc
     gps_cnav_navigation_message.cc
     glonass_gnav_ephemeris.cc

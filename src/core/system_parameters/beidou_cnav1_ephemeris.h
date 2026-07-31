@@ -16,6 +16,7 @@
 #ifndef GNSS_SDR_BEIDOU_CNAV1_EPHEMERIS_H
 #define GNSS_SDR_BEIDOU_CNAV1_EPHEMERIS_H
 
+#include "Beidou_CNAV1.h"
 #include "gnss_ephemeris.h"
 #include <boost/serialization/nvp.hpp>
 
@@ -27,13 +28,14 @@ public:
         this->System = 'C';
     }
 
-    double TGD_B1Cp{};    //!< §7.6 B1C pilot group delay
-    double TGD_B2ap{};    //!< §7.6 B2a pilot group delay
-    double ISC_B1Cd{};    //!< §7.6 B1C data-to-pilot intra-frequency delay correction
-    double IODC{};        //!< §7.4.2
-    double IODE{};        //!< §7.4.1
-    int32_t sig_type{7};  //!< B1C data component identifier for PVT
-    int32_t nav_type{1};  //!< 0: GEO, 1: MEO/IGSO
+    double TGD_B1Cp{};                       //!< §7.6 B1C pilot group delay
+    double TGD_B2ap{};                       //!< §7.6 B2a pilot group delay
+    double ISC_B1Cd{};                       //!< §7.6 B1C data-to-pilot intra-frequency delay correction
+    double IODC{};                           //!< §7.4.2
+    double IODE{};                           //!< §7.4.1
+    int32_t hs{};                            //!< SF3 satellite health (2 bits, ICD §6.2.3)
+    int32_t sig_type{BDS_EPH_SOURCE_CNAV1};  //!< RTKLIB eph.code for B-CNAV1
+    int32_t nav_type{1};                     //!< 0: GEO, 1: MEO/IGSO
 
     template <class Archive>
     void serialize(Archive& archive, const unsigned int version)
@@ -71,6 +73,7 @@ public:
         archive& BOOST_SERIALIZATION_NVP(ISC_B1Cd);
         archive& BOOST_SERIALIZATION_NVP(IODC);
         archive& BOOST_SERIALIZATION_NVP(IODE);
+        archive& BOOST_SERIALIZATION_NVP(hs);
         archive& BOOST_SERIALIZATION_NVP(sig_type);
         archive& BOOST_SERIALIZATION_NVP(nav_type);
     }

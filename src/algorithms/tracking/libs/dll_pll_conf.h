@@ -91,7 +91,7 @@ public:
     bool tow_to_trk{false};
     bool bs_use_phase_dot_detector{true};
     // BeiDou B1C-specific options.
-    bool b1c_qmboc_tracking{true};
+    bool qmboc{true};  //!< QMBOC local replica (same key as Acquisition_*.qmboc).
     bool b1c_prompt_use_data_q{true};
     bool b1c_prompt_normalize_power{true};
     float b1c_data_prompt_scale{1.7320508F};  // sqrt(3), compensates 1:3 data:pilot power.

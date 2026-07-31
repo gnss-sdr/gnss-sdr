@@ -18,7 +18,6 @@
 #ifndef GNSS_SDR_BEIDOU_B1C_H
 #define GNSS_SDR_BEIDOU_B1C_H
 
-#include "Beidou_B1C_codes.h"
 #include "gnss_frequencies.h"
 #include <cstdint>
 

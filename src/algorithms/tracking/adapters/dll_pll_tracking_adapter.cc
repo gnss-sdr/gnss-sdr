@@ -152,14 +152,34 @@ void check_and_configure_trk_params(const ConfigurationInterface* configuration,
 
     if (sig_flag == BDS_B1C)
         {
-            // Default tracking QMBOC flag from Acquisition_1D.qmboc.
-            const bool acq_qmboc = configuration->property("Acquisition_1D.qmboc", trk_params.b1c_qmboc_tracking);
-            trk_params.b1c_qmboc_tracking = configuration->property(role + ".b1c_qmboc_tracking", acq_qmboc);
+            std::string acq_role = role;
+            const std::string tracking_prefix = "Tracking_";
+            if (acq_role.compare(0, tracking_prefix.size(), tracking_prefix) == 0)
+                {
+                    acq_role.replace(0, tracking_prefix.size(), "Acquisition_");
+                }
+            // Tracking_*.qmboc overrides Acquisition_*.qmboc; else inherit / default.
+            const std::string acq_qmboc_key = acq_role + ".qmboc";
+            const std::string trk_qmboc_key = role + ".qmboc";
+            const bool acq_qmboc = configuration->property(acq_qmboc_key, trk_params.qmboc);
+            trk_params.qmboc = configuration->property(trk_qmboc_key, acq_qmboc);
+            if (configuration->is_present(acq_qmboc_key) && configuration->is_present(trk_qmboc_key) && acq_qmboc != trk_params.qmboc)
+                {
+                    std::cout << TEXT_RED << "WARNING: BeiDou B1C: " << acq_qmboc_key << "=" << (acq_qmboc ? "true" : "false")
+                              << " differs from " << trk_qmboc_key << "=" << (trk_params.qmboc ? "true" : "false")
+                              << "; using tracking value." << TEXT_RESET << '\n';
+                }
 
-            // Pilot secondary sync needs a full 18 s frame; disable extended coherent integration.
+            // Pilot secondary sync needs one-symbol correlation.
+            if (trk_params.track_pilot && trk_params.extend_correlation_symbols != 1)
+                {
+                    std::cout << TEXT_RED << "WARNING: BeiDou B1C: extend_correlation_symbols forced to 1 while tracking the pilot "
+                              << "(secondary-code sync requires one-symbol correlation). Configured value was "
+                              << trk_params.extend_correlation_symbols << TEXT_RESET << '\n';
+                    trk_params.extend_correlation_symbols = 1;
+                }
             if (trk_params.track_pilot)
                 {
-                    trk_params.extend_correlation_symbols = 1;
                     const auto min_bit_sync_limit_s = static_cast<uint32_t>(BEIDOU_B1C_FRAME_PERIOD_S + 30);
                     if (trk_params.bit_synchronization_time_limit_s < min_bit_sync_limit_s)
                         {

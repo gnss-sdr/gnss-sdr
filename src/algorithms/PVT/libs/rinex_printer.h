@@ -136,7 +136,10 @@ public:
     void log_rinex_nav_bds_dnav(const std::map<int32_t, Beidou_Dnav_Ephemeris>& new_bds_eph);
 
     /*!
-     * \brief Print RINEX annotation for BeiDou B-CNAV1 message
+     * \brief Print RINEX navigation records for BeiDou B-CNAV1 ephemerides.
+     *
+     * Limitation: written as RINEX-3 D1-style BDS records (TGD_B1Cp/TGD_B2ap mapped
+     * into TGD1/TGD2). Proper CNAV1 support would use a RINEX 4 EPH record.
      */
     void log_rinex_nav_bds_cnav1(const std::map<int32_t, Beidou_Cnav1_Ephemeris>& new_bds_eph);
 

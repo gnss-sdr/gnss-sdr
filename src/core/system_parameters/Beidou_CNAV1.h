@@ -35,6 +35,9 @@ constexpr int32_t BEIDOU_CNAV1_CRC_BITS = 24;
 
 constexpr int32_t BEIDOU_CNAV1_PAGE_IONO_UTC = 1;
 
+//! RTKLIB eph_t::code / Beidou_Cnav1_Ephemeris::sig_type for B-CNAV1 (DNAV uses 0–6).
+constexpr int32_t BDS_EPH_SOURCE_CNAV1 = 7;
+
 constexpr double BEIDOU_CNAV1_A_REF_MEO = 27906100.0;
 constexpr double BEIDOU_CNAV1_A_REF_IGSO = 42162200.0;
 constexpr double BEIDOU_CNAV1_TOE_TOC_LSB = 300.0;

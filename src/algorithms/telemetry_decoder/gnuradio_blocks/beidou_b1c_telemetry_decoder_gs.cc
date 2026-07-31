@@ -23,6 +23,7 @@
 #include "beidou_cnav1_iono.h"
 #include "beidou_cnav1_utc_model.h"
 #include "display.h"
+#include "dump_logger_helper.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_synchro.h"
 #include "tlm_crc_stats.h"
@@ -44,23 +45,12 @@
 #include <absl/log/log.h>
 #endif
 
-#define CRC_ERROR_LIMIT 8
-
 namespace
 {
-// ICD §7.3: SOH marks subframe-1 start. Symbols from SOH to current = N - offset.
-int32_t resolve_b1c_frame_soh_offset(int32_t matched_offset, int32_t prev_candidate_offset)
-{
-    if (matched_offset >= 0)
-        {
-            return matched_offset;
-        }
-    if (matched_offset == -2 && prev_candidate_offset >= 0)
-        {
-            return prev_candidate_offset;
-        }
-    return 0;
-}
+constexpr int32_t CRC_ERROR_LIMIT = 8;
+constexpr uint64_t B1C_REACQ_INTERVAL_SYMBOLS = static_cast<uint64_t>(BEIDOU_CNAV1_FRAME_SYMBOLS);
+constexpr int32_t B1C_SCAN_OFFSET_SPAN_LOOSE = 4;
+constexpr int32_t B1C_SCAN_MAX_FULL_DECODES = 16;
 
 
 uint32_t compute_b1c_tow_ms_at_current_symbol(
@@ -276,6 +266,15 @@ beidou_b1c_telemetry_decoder_gs::beidou_b1c_telemetry_decoder_gs(
             d_nav_msg_packet.system = std::string("C");
             d_nav_msg_packet.signal = std::string("1D");
         }
+    if (d_dump_crc_stats)
+        {
+            d_Tlm_CRC_Stats = std::make_unique<Tlm_CRC_Stats>();
+            d_Tlm_CRC_Stats->initialize(conf.dump_crc_stats_filename);
+        }
+    else
+        {
+            d_Tlm_CRC_Stats = nullptr;
+        }
     configure_dump_file(d_channel, d_dump, d_dump_filename, d_dump_file);
     configure_crc_stats_channel(d_channel, d_dump_crc_stats, d_Tlm_CRC_Stats);
 }
@@ -283,10 +282,7 @@ beidou_b1c_telemetry_decoder_gs::beidou_b1c_telemetry_decoder_gs(
 
 beidou_b1c_telemetry_decoder_gs::~beidou_b1c_telemetry_decoder_gs()
 {
-    if (d_dump_file.is_open())
-        {
-            d_dump_file.close();
-        }
+    tlm_cleanup_and_save_files(d_dump_file, d_dump_filename, d_dump, d_dump_mat, d_remove_dat);
 }
 
 
@@ -317,7 +313,6 @@ void beidou_b1c_telemetry_decoder_gs::reset()
     d_stat = 0;
     d_CRC_error_counter = 0;
     d_frame_soh_offset = 0;
-    d_prev_candidate_offset = -1;
     d_prev_valid_symbol_output = false;
     d_await_post_lock_frame_decode = false;
     d_post_lock_valid_symbols = 0U;
@@ -398,8 +393,17 @@ void beidou_b1c_telemetry_decoder_gs::publish_navigation(double cn0_db_hz)
                        << " in channel " << d_channel
                        << " PageID=" << d_nav.get_page_data().common.page_id;
         }
+    // Same port as DNAV/GPS: bit chars for the nav-data monitor (not a placeholder label).
+    if (d_enable_navdata_monitor && !d_nav.get_last_nav_bits().empty())
+        {
+            d_nav_msg_packet.prn = static_cast<int32_t>(d_satellite.get_PRN());
+            d_nav_msg_packet.tow_at_current_symbol_ms = static_cast<int32_t>(d_TOW_at_current_symbol_ms);
+            d_nav_msg_packet.nav_message = d_nav.get_last_nav_bits();
+            const auto tmp_obj = std::make_shared<Nav_Message_Packet>(d_nav_msg_packet);
+            message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
+            d_nav_msg_packet.nav_message.clear();
+        }
     d_nav.clear_flags();
-    d_prev_candidate_offset = -1;
 }
 
 
@@ -430,7 +434,6 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
             d_post_lock_valid_symbols++;
         }
 
-    // Decode on lock (or when 18 s history is ready), then only on frame boundaries.
     const bool at_frame_boundary =
         d_flag_frame_sync &&
         (d_sample_counter > d_frame_sync_index) &&
@@ -438,6 +441,11 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
     const bool post_lock_frame_ready =
         d_await_post_lock_frame_decode &&
         d_post_lock_valid_symbols >= static_cast<uint32_t>(BEIDOU_CNAV1_FRAME_SYMBOLS);
+    const bool periodic_reacq =
+        (d_stat == 0) &&
+        current_symbol.Flag_valid_symbol_output &&
+        !just_locked_event &&
+        ((d_sample_counter % B1C_REACQ_INTERVAL_SYMBOLS) == 0U);
     bool frame_decoded = false;
 
     const bool history_ready = (d_sample_counter >= static_cast<uint64_t>(BEIDOU_CNAV1_FRAME_SYMBOLS));
@@ -446,6 +454,7 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
             const bool should_try_decode =
                 current_symbol.Flag_valid_symbol_output &&
                 ((d_stat == 0 && just_locked_event) ||
+                    (d_stat == 0 && periodic_reacq) ||
                     (d_stat == 0 && post_lock_frame_ready && !just_locked_event) ||
                     (d_stat == 2 && at_frame_boundary &&
                         d_sample_counter >= d_frame_sync_index + static_cast<uint64_t>(BEIDOU_CNAV1_FRAME_SYMBOLS)));
@@ -454,7 +463,7 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
                 {
                     bool invert = false;
                     int32_t matched_offset = -1;
-                    if (d_stat == 0 && just_locked_event)
+                    if (d_stat == 0 && (just_locked_event || periodic_reacq))
                         {
                             const int32_t expected_prn_scan = d_satellite.get_PRN();
                             std::vector<float> history_i;
@@ -463,8 +472,11 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
                             const auto sec_candidates =
                                 find_secondary_code_candidates(history_q, expected_prn_scan);
                             const auto& candidate_offsets = sec_candidates.second;
-                            constexpr int32_t local_offset_span = 32;
+                            // Exact secondary matches need no lag search; loose matches get a small span.
+                            const int32_t local_offset_span =
+                                (sec_candidates.first >= 1799.0F) ? 0 : B1C_SCAN_OFFSET_SPAN_LOOSE;
                             const auto cn0_db_hz = static_cast<float>(current_symbol.CN0_dB_hz);
+                            int32_t full_decode_attempts = 0;
 
                             if (!candidate_offsets.empty())
                                 {
@@ -472,10 +484,18 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
                                         {
                                             for (int32_t delta = -local_offset_span; delta <= local_offset_span; delta++)
                                                 {
+                                                    if (full_decode_attempts >= B1C_SCAN_MAX_FULL_DECODES)
+                                                        {
+                                                            break;
+                                                        }
                                                     const int32_t start_offset =
                                                         (candidate_offset + delta + BEIDOU_CNAV1_FRAME_SYMBOLS) % BEIDOU_CNAV1_FRAME_SYMBOLS;
                                                     for (int inv_i = 0; inv_i < 2; ++inv_i)
                                                         {
+                                                            if (full_decode_attempts >= B1C_SCAN_MAX_FULL_DECODES)
+                                                                {
+                                                                    break;
+                                                                }
                                                             const bool inv = (inv_i != 0);
                                                             if (!probe_frame_from_iq_window(
                                                                     history_i, history_q, d_nav, expected_prn_scan, start_offset, inv))
@@ -483,6 +503,7 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
                                                                     continue;
                                                                 }
                                                             int32_t fail_stage = -1;
+                                                            ++full_decode_attempts;
                                                             if (decode_frame_from_iq_window(
                                                                     history_i, history_q, d_nav, expected_prn_scan, start_offset, inv,
                                                                     cn0_db_hz, &fail_stage))
@@ -498,7 +519,7 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
                                                             break;
                                                         }
                                                 }
-                                            if (frame_decoded)
+                                            if (frame_decoded || full_decode_attempts >= B1C_SCAN_MAX_FULL_DECODES)
                                                 {
                                                     break;
                                                 }
@@ -510,7 +531,7 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
                                     d_await_post_lock_frame_decode = false;
                                     d_post_lock_valid_symbols = 0U;
                                 }
-                            else
+                            else if (just_locked_event)
                                 {
                                     d_await_post_lock_frame_decode = true;
                                     d_post_lock_valid_symbols = 1U;
@@ -522,6 +543,7 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
                             if (!frame_decoded)
                                 {
                                     frame_decoded = decode_frame_from_window(frame_window, 0, true);
+                                    invert = frame_decoded;
                                 }
                             if (frame_decoded)
                                 {
@@ -532,11 +554,12 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
                         }
                     else
                         {
-                            frame_decoded = decode_frame_from_window(frame_window, d_frame_soh_offset, false);
-                            if (!frame_decoded)
+                            // Use polarity confirmed at first sync.
+                            invert = d_flag_PLL_180_deg_phase_locked;
+                            frame_decoded = decode_frame_from_window(frame_window, d_frame_soh_offset, invert);
+                            if (frame_decoded)
                                 {
-                                    frame_decoded = decode_frame_from_window(frame_window, d_frame_soh_offset, true);
-                                    invert = frame_decoded;
+                                    matched_offset = d_frame_soh_offset;
                                 }
                         }
 
@@ -545,10 +568,14 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
                             d_CRC_error_counter = 0;
                             d_flag_PLL_180_deg_phase_locked = invert;
                             d_frame_sync_index = d_sample_counter;
-                            const int32_t frame_soh_offset = resolve_b1c_frame_soh_offset(matched_offset, d_prev_candidate_offset);
+                            const int32_t frame_soh_offset = (matched_offset >= 0) ? matched_offset : 0;
                             d_TOW_at_current_symbol_ms = compute_b1c_tow_ms_at_current_symbol(
                                 d_nav.get_tow_s(), frame_soh_offset, d_symbol_duration_ms);
                             d_flag_valid_word = true;
+                            if (d_dump_crc_stats && d_Tlm_CRC_Stats)
+                                {
+                                    d_Tlm_CRC_Stats->update_CRC_stats(true);
+                                }
                             publish_navigation(current_symbol.CN0_dB_hz);
 
                             if (!d_flag_frame_sync)
@@ -573,6 +600,10 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
                     else if (d_stat == 2)
                         {
                             d_CRC_error_counter++;
+                            if (d_dump_crc_stats && d_Tlm_CRC_Stats)
+                                {
+                                    d_Tlm_CRC_Stats->update_CRC_stats(false);
+                                }
                             if (d_CRC_error_counter > CRC_ERROR_LIMIT)
                                 {
                                     DLOG(INFO) << "B-CNAV1 frame sync lost for satellite " << d_satellite
@@ -582,6 +613,8 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
                                     d_frame_soh_offset = 0;
                                     d_stat = 0;
                                     d_CRC_error_counter = 0;
+                                    d_await_post_lock_frame_decode = false;
+                                    d_post_lock_valid_symbols = 0U;
                                 }
                         }
                 }
@@ -607,15 +640,26 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
         }
 
     consume_each(1);
-    if (d_flag_frame_sync && d_frame_soh_offset > 0)
-        {
-            d_frame_soh_offset--;
-        }
 
     if (d_flag_valid_word)
         {
             current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             current_symbol.Flag_valid_word = true;
+            if (d_dump)
+                {
+                    try
+                        {
+                            write_value(d_dump_file, static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0);
+                            write_value(d_dump_file, current_symbol.Tracking_sample_counter);
+                            write_value(d_dump_file, static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0);
+                            write_value(d_dump_file, current_symbol.Prompt_I > 0.0 ? 1 : -1);
+                            write_value(d_dump_file, static_cast<int32_t>(current_symbol.PRN));
+                        }
+                    catch (const std::ofstream::failure& e)
+                        {
+                            LOG(WARNING) << "Exception writing Telemetry BeiDou B1C dump file " << e.what();
+                        }
+                }
             if (d_tow_to_trk)
                 {
                     const auto tow_obj = std::make_shared<TOW_to_trk>(TOW_to_trk(

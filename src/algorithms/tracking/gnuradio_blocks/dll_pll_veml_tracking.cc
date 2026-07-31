@@ -23,6 +23,7 @@
 
 #include "dll_pll_veml_tracking.h"
 #include "Beidou_B1C.h"
+#include "Beidou_B1C_codes.h"
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
 #include "GLONASS_L1_L2_CA.h"
@@ -460,7 +461,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     d_code_length_chips = static_cast<int32_t>(BEIDOU_B1C_CODE_LENGTH_CHIPS);
                     d_symbols_per_bit = BEIDOU_B1C_SYMBOLS_PER_BIT;
                     d_correlation_length_ms = static_cast<int32_t>(BEIDOU_B1C_CODE_PERIOD_MS);
-                    d_code_samples_per_chip = d_trk_parameters.b1c_qmboc_tracking ? 12 : 2;
+                    d_code_samples_per_chip = d_trk_parameters.qmboc ? 12 : 2;
                     d_veml = true;
                     d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
                     d_trk_parameters.slope = static_cast<float>(-CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, d_trk_parameters.spc));
@@ -987,10 +988,10 @@ void dll_pll_veml_tracking::start_tracking()
                     const std::array<char, 3> pilot_signal = {{'1', 'P', '\0'}};
                     // Pilot BOC(1,1) for the real multicorrelator (QMBOC is acquisition-only).
                     beidou_b1c_code_gen_float_sampled(
-                        d_tracking_code, pilot_signal, d_trk_parameters.b1c_qmboc_tracking,
+                        d_tracking_code, pilot_signal, d_trk_parameters.qmboc,
                         d_acquisition_gnss_synchro->PRN, b1c_replica_fs, 0, false);
                     beidou_b1c_code_gen_float_sampled(
-                        d_data_code, Signal_, d_trk_parameters.b1c_qmboc_tracking,
+                        d_data_code, Signal_, d_trk_parameters.qmboc,
                         d_acquisition_gnss_synchro->PRN, b1c_replica_fs, 0, false);
                     d_Prompt_Data[0] = gr_complex(0.0, 0.0);
                     d_multicorrelator_cpu.set_data_code_and_prompt_tap(
@@ -1000,7 +1001,7 @@ void dll_pll_veml_tracking::start_tracking()
             else
                 {
                     beidou_b1c_code_gen_float_sampled(
-                        d_tracking_code, Signal_, d_trk_parameters.b1c_qmboc_tracking,
+                        d_tracking_code, Signal_, d_trk_parameters.qmboc,
                         d_acquisition_gnss_synchro->PRN, b1c_replica_fs, 0, false);
                 }
         }

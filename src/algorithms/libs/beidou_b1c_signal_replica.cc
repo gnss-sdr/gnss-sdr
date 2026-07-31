@@ -19,6 +19,7 @@
  */
 #include "beidou_b1c_signal_replica.h"
 #include "Beidou_B1C.h"
+#include "Beidou_B1C_codes.h"
 #include "gnss_signal_replica.h"
 #include <cmath>
 #include <string>
@@ -187,20 +188,23 @@ void beidou_b1c_code_gen_float_sampled(own::span<float> dest, const std::array<c
 
     if (is_pilot && secondary_flag)
         {
-            const int32_t prn_index = static_cast<int32_t>(prn) - 1;
-            const char* sec_code = BEIDOU_B1C_PILOT_SECONDARY_CODE[prn_index];
-
-            std::vector<float> signal_with_secondary(BEIDOU_B1C_PILOT_SECONDARY_CODE_LENGTH * samples_per_code);
-            for (int32_t i = 0; i < BEIDOU_B1C_PILOT_SECONDARY_CODE_LENGTH; i++)
+            if (prn >= 1 && prn <= static_cast<uint32_t>(BEIDOU_B1C_NUMBER_OF_PRNS))
                 {
-                    const float sec_chip = sec_code[i] == '0' ? 1.0F : -1.0F;
-                    for (uint32_t k = 0; k < samples_per_code; k++)
+                    const int32_t prn_index = static_cast<int32_t>(prn) - 1;
+                    const char* sec_code = BEIDOU_B1C_PILOT_SECONDARY_CODE[prn_index];
+
+                    std::vector<float> signal_with_secondary(BEIDOU_B1C_PILOT_SECONDARY_CODE_LENGTH * samples_per_code);
+                    for (int32_t i = 0; i < BEIDOU_B1C_PILOT_SECONDARY_CODE_LENGTH; i++)
                         {
-                            signal_with_secondary[static_cast<size_t>(i) * samples_per_code + k] = signal_b1c[k] * sec_chip;
+                            const float sec_chip = sec_code[i] == '0' ? 1.0F : -1.0F;
+                            for (uint32_t k = 0; k < samples_per_code; k++)
+                                {
+                                    signal_with_secondary[static_cast<size_t>(i) * samples_per_code + k] = signal_b1c[k] * sec_chip;
+                                }
                         }
+                    samples_per_code *= static_cast<uint32_t>(BEIDOU_B1C_PILOT_SECONDARY_CODE_LENGTH);
+                    signal_b1c = std::move(signal_with_secondary);
                 }
-            samples_per_code *= static_cast<uint32_t>(BEIDOU_B1C_PILOT_SECONDARY_CODE_LENGTH);
-            signal_b1c = std::move(signal_with_secondary);
         }
 
     for (uint32_t i = 0; i < samples_per_code; i++)
@@ -262,22 +266,25 @@ void beidou_b1c_code_gen_complex_sampled(own::span<std::complex<float>> dest, co
 
     if (is_pilot && secondary_flag)
         {
-            const int32_t prn_index = static_cast<int32_t>(prn) - 1;
-            const char* sec_code = BEIDOU_B1C_PILOT_SECONDARY_CODE[prn_index];
-
-            std::vector<std::complex<float>> signal_with_secondary(
-                static_cast<size_t>(BEIDOU_B1C_PILOT_SECONDARY_CODE_LENGTH) * samples_per_code);
-            for (int32_t i = 0; i < BEIDOU_B1C_PILOT_SECONDARY_CODE_LENGTH; i++)
+            if (prn >= 1 && prn <= static_cast<uint32_t>(BEIDOU_B1C_NUMBER_OF_PRNS))
                 {
-                    const float sec_chip = sec_code[i] == '0' ? 1.0F : -1.0F;
-                    for (uint32_t k = 0; k < samples_per_code; k++)
+                    const int32_t prn_index = static_cast<int32_t>(prn) - 1;
+                    const char* sec_code = BEIDOU_B1C_PILOT_SECONDARY_CODE[prn_index];
+
+                    std::vector<std::complex<float>> signal_with_secondary(
+                        static_cast<size_t>(BEIDOU_B1C_PILOT_SECONDARY_CODE_LENGTH) * samples_per_code);
+                    for (int32_t i = 0; i < BEIDOU_B1C_PILOT_SECONDARY_CODE_LENGTH; i++)
                         {
-                            signal_with_secondary[static_cast<size_t>(i) * samples_per_code + k] =
-                                signal_b1c[k] * sec_chip;
+                            const float sec_chip = sec_code[i] == '0' ? 1.0F : -1.0F;
+                            for (uint32_t k = 0; k < samples_per_code; k++)
+                                {
+                                    signal_with_secondary[static_cast<size_t>(i) * samples_per_code + k] =
+                                        signal_b1c[k] * sec_chip;
+                                }
                         }
+                    samples_per_code *= static_cast<uint32_t>(BEIDOU_B1C_PILOT_SECONDARY_CODE_LENGTH);
+                    signal_b1c = std::move(signal_with_secondary);
                 }
-            samples_per_code *= static_cast<uint32_t>(BEIDOU_B1C_PILOT_SECONDARY_CODE_LENGTH);
-            signal_b1c = std::move(signal_with_secondary);
         }
 
     for (uint32_t i = 0; i < samples_per_code; i++)

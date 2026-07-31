@@ -31,6 +31,7 @@
  */
 
 #include "rtklib_ephemeris.h"
+#include "Beidou_CNAV1.h"
 #include "rtklib_preceph.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_sbas.h"
@@ -405,7 +406,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
             omge = GNSS_OMEGA_EARTH_DOT;
             break;
         }
-    const int is_bds_cnav1 = (sys == SYS_BDS && eph->code == 7) ? 1 : 0;
+    const int is_bds_cnav1 = (sys == SYS_BDS && eph->code == BDS_EPH_SOURCE_CNAV1) ? 1 : 0;
     Ak = eph->A + eph->Adot * tk;
     delta_na = eph->deln + 0.5 * eph->ndot * tk;
     na = sqrt(mu / (eph->A * eph->A * eph->A)) + delta_na;
@@ -762,7 +763,8 @@ void seph2pos(gtime_t time, const seph_t *seph, double *rs, double *dts,
 
 
 /* select ephemeris --------------------------------------------------------
- * bds_eph_sel: -1=any, 0=DNAV (eph.code!=7), 7=B-CNAV1 (eph.code==7)
+ * bds_eph_sel: -1=any, 0=DNAV (eph.code!=BDS_EPH_SOURCE_CNAV1),
+ *              BDS_EPH_SOURCE_CNAV1=B-CNAV1
  *-----------------------------------------------------------------------------*/
 eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav, int bds_eph_sel)
 {
@@ -798,11 +800,11 @@ eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav, int bds_eph_sel
                 {
                     continue;
                 }
-            if (sys == SYS_BDS && bds_eph_sel == 7 && nav->eph[i].code != 7)
+            if (sys == SYS_BDS && bds_eph_sel == BDS_EPH_SOURCE_CNAV1 && nav->eph[i].code != BDS_EPH_SOURCE_CNAV1)
                 {
                     continue;
                 }
-            if (sys == SYS_BDS && bds_eph_sel == 0 && nav->eph[i].code == 7)
+            if (sys == SYS_BDS && bds_eph_sel == 0 && nav->eph[i].code == BDS_EPH_SOURCE_CNAV1)
                 {
                     continue;
                 }
@@ -1321,7 +1323,7 @@ void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
                             const unsigned char cj = obs[i].code[j];
                             if (cj == CODE_L1D || cj == CODE_L1P)
                                 {
-                                    bds_eph_sel = 7;
+                                    bds_eph_sel = BDS_EPH_SOURCE_CNAV1;
                                     break;
                                 }
                         }

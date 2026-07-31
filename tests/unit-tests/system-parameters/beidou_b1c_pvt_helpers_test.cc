@@ -13,6 +13,7 @@
  *
  * -----------------------------------------------------------------------------
  */
+#include "Beidou_CNAV1.h"
 #include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 #include "gnss_obs_codes.h"
@@ -68,14 +69,14 @@ TEST(BeidouB1cPvtHelpersTest, GettgdAppliesIscForDataComponent)
     const double ep[] = {2020, 1, 1, 0, 0, 0};
     const gtime_t t0 = epoch2time(ep);
     std::vector<eph_t> ephs;
-    ephs.push_back(make_bds_eph(sat, 7, 1.0e-9, 2.0e-9, t0));
+    ephs.push_back(make_bds_eph(sat, BDS_EPH_SOURCE_CNAV1, 1.0e-9, 2.0e-9, t0));
     nav_t nav;
     std::memset(&nav, 0, sizeof(nav));
     nav.eph = ephs.data();
     nav.n = 1;
 
-    const double tgd_pilot = gettgd(sat, &nav, static_cast<unsigned char>(CODE_L1P));
-    const double tgd_data = gettgd(sat, &nav, static_cast<unsigned char>(CODE_L1D));
+    const double tgd_pilot = gettgd_bds_by_obs_code(sat, &nav, static_cast<unsigned char>(CODE_L1P));
+    const double tgd_data = gettgd_bds_by_obs_code(sat, &nav, static_cast<unsigned char>(CODE_L1D));
     EXPECT_NEAR(tgd_pilot, SPEED_OF_LIGHT_M_S * 1.0e-9, 1.0e-6);
     EXPECT_NEAR(tgd_data, SPEED_OF_LIGHT_M_S * 3.0e-9, 1.0e-6);
 }
@@ -86,19 +87,19 @@ TEST(BeidouB1cPvtHelpersTest, SelephPrefersCnav1WhenRequested)
     const double ep[] = {2020, 6, 1, 12, 0, 0};
     const gtime_t t0 = epoch2time(ep);
     std::vector<eph_t> ephs;
-    ephs.push_back(make_bds_eph(sat, 1, 1.0e-9, 0.0, t0));    /* DNAV */
-    ephs.push_back(make_bds_eph(sat, 7, 2.0e-9, 1.0e-9, t0)); /* CNAV1 */
+    ephs.push_back(make_bds_eph(sat, 1, 1.0e-9, 0.0, t0));                       /* DNAV */
+    ephs.push_back(make_bds_eph(sat, BDS_EPH_SOURCE_CNAV1, 2.0e-9, 1.0e-9, t0)); /* CNAV1 */
     nav_t nav;
     std::memset(&nav, 0, sizeof(nav));
     nav.eph = ephs.data();
     nav.n = 2;
 
-    eph_t *e_cnav = seleph(t0, sat, -1, &nav, 7);
+    eph_t *e_cnav = seleph(t0, sat, -1, &nav, BDS_EPH_SOURCE_CNAV1);
     eph_t *e_dnav = seleph(t0, sat, -1, &nav, 0);
     ASSERT_NE(e_cnav, static_cast<eph_t *>(nullptr));
     ASSERT_NE(e_dnav, static_cast<eph_t *>(nullptr));
-    EXPECT_EQ(e_cnav->code, 7);
-    EXPECT_NE(e_dnav->code, 7);
+    EXPECT_EQ(e_cnav->code, BDS_EPH_SOURCE_CNAV1);
+    EXPECT_NE(e_dnav->code, BDS_EPH_SOURCE_CNAV1);
 }
 
 /* satwavelen BDS: frq0=B1I, frq1=B2, frq2=B3I */
@@ -154,15 +155,15 @@ TEST(BeidouB1cPvtHelpersTest, GettgdPrefersMatchingEphTypeWhenBothPresent)
     const double ep[] = {2021, 3, 1, 0, 0, 0};
     const gtime_t t0 = epoch2time(ep);
     std::vector<eph_t> ephs;
-    ephs.push_back(make_bds_eph(sat, 1, 5.0e-9, 0.0, t0));    /* DNAV TGD1 */
-    ephs.push_back(make_bds_eph(sat, 7, 1.0e-9, 2.0e-9, t0)); /* CNAV1 */
+    ephs.push_back(make_bds_eph(sat, 1, 5.0e-9, 0.0, t0));                       /* DNAV TGD1 */
+    ephs.push_back(make_bds_eph(sat, BDS_EPH_SOURCE_CNAV1, 1.0e-9, 2.0e-9, t0)); /* CNAV1 */
     nav_t nav;
     std::memset(&nav, 0, sizeof(nav));
     nav.eph = ephs.data();
     nav.n = 2;
 
-    const double tgd_b1c = gettgd(sat, &nav, static_cast<unsigned char>(CODE_L1D));
-    const double tgd_b1i = gettgd(sat, &nav, static_cast<unsigned char>(CODE_L2I));
+    const double tgd_b1c = gettgd_bds_by_obs_code(sat, &nav, static_cast<unsigned char>(CODE_L1D));
+    const double tgd_b1i = gettgd_bds_by_obs_code(sat, &nav, static_cast<unsigned char>(CODE_L2I));
     EXPECT_NEAR(tgd_b1c, SPEED_OF_LIGHT_M_S * 3.0e-9, 1.0e-6);
     EXPECT_NEAR(tgd_b1i, SPEED_OF_LIGHT_M_S * 5.0e-9, 1.0e-6);
 }
@@ -179,8 +180,8 @@ TEST(BeidouB1cPvtHelpersTest, GettgdReturnsZeroWhenOnlyWrongEphFamilyPresent)
     nav.eph = ephs.data();
     nav.n = 1;
 
-    EXPECT_DOUBLE_EQ(gettgd(sat, &nav, static_cast<unsigned char>(CODE_L1D)), 0.0);
-    EXPECT_DOUBLE_EQ(gettgd(sat, &nav, static_cast<unsigned char>(CODE_L1P)), 0.0);
+    EXPECT_DOUBLE_EQ(gettgd_bds_by_obs_code(sat, &nav, static_cast<unsigned char>(CODE_L1D)), 0.0);
+    EXPECT_DOUBLE_EQ(gettgd_bds_by_obs_code(sat, &nav, static_cast<unsigned char>(CODE_L1P)), 0.0);
 }
 
 /* CODE_L1P also means GPS L1P; CNAV1 filtering is SYS_BDS-only. */
@@ -201,6 +202,6 @@ TEST(BeidouB1cPvtHelpersTest, GettgdGpsIgnoresB1cCodeSelection)
     nav.eph = &e;
     nav.n = 1;
 
-    EXPECT_NEAR(gettgd(sat, &nav, static_cast<unsigned char>(CODE_L1C)), SPEED_OF_LIGHT_M_S * 4.0e-9, 1.0e-6);
-    EXPECT_NEAR(gettgd(sat, &nav, static_cast<unsigned char>(CODE_L1P)), SPEED_OF_LIGHT_M_S * 4.0e-9, 1.0e-6);
+    EXPECT_NEAR(gettgd_bds_by_obs_code(sat, &nav, static_cast<unsigned char>(CODE_L1C)), SPEED_OF_LIGHT_M_S * 4.0e-9, 1.0e-6);
+    EXPECT_NEAR(gettgd_bds_by_obs_code(sat, &nav, static_cast<unsigned char>(CODE_L1P)), SPEED_OF_LIGHT_M_S * 4.0e-9, 1.0e-6);
 }

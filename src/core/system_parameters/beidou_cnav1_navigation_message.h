@@ -20,6 +20,8 @@
 #include "beidou_cnav1_iono.h"
 #include "beidou_cnav1_utc_model.h"
 #include <array>
+#include <cstdint>
+#include <string>
 
 struct Bds3_B1c_PageCommon
 {
@@ -114,6 +116,8 @@ public:
     const Beidou_Cnav1_Iono& get_iono() const;
     const Beidou_Cnav1_Utc_Model& get_utc_model() const;
     const Bds3_B1c_PageData& get_page_data() const;
+    //! Last successfully decoded frame as '0'/'1' chars for Nav_msg_from_TLM (SF1 info + SF2 [+ SF3]).
+    const std::string& get_last_nav_bits() const;
     double get_tow_s() const;
 
 private:
@@ -126,6 +130,7 @@ private:
     bool flag_new_page_data_{false};
     double tow_s_{0.0};
     Bds3_B1c_PageData page_data_{};
+    std::string last_nav_bits_{};
 };
 
 #endif

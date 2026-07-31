@@ -159,7 +159,6 @@ public:
                 this->Flag_valid_word = other.Flag_valid_word;
                 this->Flag_valid_pseudorange = other.Flag_valid_pseudorange;
                 this->Flag_PLL_180_deg_phase_locked = other.Flag_PLL_180_deg_phase_locked;
-                this->Flag_cycle_slip = other.Flag_cycle_slip;
 
                 // Leave the source object in a valid but unspecified state
                 other.Signal[0] = '\0';

@@ -128,3 +128,15 @@ TEST(BeidouDnavNavigationMessageTest, D2Subframe1PagesAcceptSowWeekRollover)
     EXPECT_EQ(1, dnav_msg.d2_subframe_decoder(make_d2_subframe1_page(3, 3)));
     EXPECT_TRUE(dnav_msg.get_flag_CRC_test());
 }
+
+
+TEST(BeidouDnavNavigationMessageTest, D1ToeAndSqrtAIcdLimits)
+{
+    // ICD B1I Table 5-10: toe max 604792 s, sqrt(A) max 8192 m^1/2.
+    // The corrupt PRN7 DNAV case (toe=988032, sqrtA≈1698) must be rejected.
+    EXPECT_GT(988032.0, D1_TOE_MAX_S);
+    EXPECT_LT(1698.0, D1_SQRT_A_MIN_SANE);
+    EXPECT_LE(201600.0, D1_TOE_MAX_S);
+    EXPECT_GE(5282.0, D1_SQRT_A_MIN_SANE);
+    EXPECT_LE(6493.0, D1_SQRT_A_MAX);
+}

@@ -255,6 +255,10 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
 
             d_AODE = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_AODE));
 
+            // New SF1: drop buffered SF2/SF3 (ICD B1I §5.2.4.12).
+            flag_d1_sf2 = false;
+            flag_d1_sf3 = false;
+
             // Set system flags for message reception
             flag_d1_sf1 = true;
             flag_iono_valid = true;
@@ -907,6 +911,17 @@ bool Beidou_Dnav_Navigation_Message::have_new_ephemeris()  // Check if we have a
                     // if all ephemeris pages have the same IOD, then they belong to the same block
                     if (d_previous_aode != d_AODE)
                         {
+                            const double toe_s = (d_Toe_sf2 + d_Toe_sf3) * D1_TOE_LSB;
+                            // ICD B1I Table 5-10 range checks.
+                            if (toe_s < 0.0 || toe_s > D1_TOE_MAX_S ||
+                                d_sqrt_A < D1_SQRT_A_MIN_SANE || d_sqrt_A > D1_SQRT_A_MAX)
+                                {
+                                    flag_d1_sf1 = false;
+                                    flag_d1_sf2 = false;
+                                    flag_d1_sf3 = false;
+                                    return false;
+                                }
+
                             // Clear flags for all received subframes
                             flag_d1_sf1 = false;
                             flag_d1_sf2 = false;

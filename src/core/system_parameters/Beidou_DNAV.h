@@ -55,6 +55,13 @@ constexpr double D1_CRC_LSB = TWO_N6;
 constexpr double D1_CRS_LSB = TWO_N6;
 constexpr double D1_SQRT_A_LSB = TWO_N19;
 constexpr double D1_TOE_LSB = TWO_P3;
+/* ICD B1I §5.2.4.12 Table 5-10: toe scale 2^3, valid range 0..604792 s */
+constexpr double D1_TOE_MAX_S = 604792.0;
+/* ICD B1I Table 5-10: sqrt(A) scale 2^-19, valid range 0..8192 m^1/2.
+ * Practical MEO/IGSO/GEO broadcast values are ~4200..7000; reject clearly
+ * corrupted assemblies (e.g. mismatched SF2/SF3) below this floor. */
+constexpr double D1_SQRT_A_MAX = 8192.0;
+constexpr double D1_SQRT_A_MIN_SANE = 4000.0;
 constexpr double D1_I0_LSB = PI_TWO_N31;
 constexpr double D1_CIC_LSB = TWO_N31;
 constexpr double D1_OMEGA_DOT_LSB = PI_TWO_N43;

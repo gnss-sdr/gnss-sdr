@@ -20,6 +20,7 @@
 
 #include "gnss_almanac.h"
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/version.hpp>
 
 /** \addtogroup Core
  * \{ */
@@ -28,7 +29,7 @@
 
 
 /*!
- * \brief This class is a storage for the BeiDou D1 almanac
+ * \brief This class is a storage for the BeiDou D1/D2 almanac
  */
 class Beidou_Dnav_Almanac : public Gnss_Almanac
 {
@@ -42,6 +43,9 @@ public:
     };
 
     int SV_health{};  //!< SV Health
+    int AmEpID{};     //!< Identification of the expanded-almanac sequence
+    int AmID{};       //!< Identification of the expanded-almanac time-sharing group
+    bool expanded{};  //!< True for almanacs of SV ID 31 through 63
 
     template <class Archive>
 
@@ -63,8 +67,16 @@ public:
         ar& BOOST_SERIALIZATION_NVP(af0);
         ar& BOOST_SERIALIZATION_NVP(af1);
         ar& BOOST_SERIALIZATION_NVP(SV_health);
+        if (version > 0)
+            {
+                ar& BOOST_SERIALIZATION_NVP(AmEpID);
+                ar& BOOST_SERIALIZATION_NVP(AmID);
+                ar& BOOST_SERIALIZATION_NVP(expanded);
+            }
     }
 };
+
+BOOST_CLASS_VERSION(Beidou_Dnav_Almanac, 1)
 
 
 /** \} */

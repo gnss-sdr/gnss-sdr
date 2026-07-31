@@ -155,6 +155,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   nominal PNT signals in PVT and output products, following the RINEX 4.00
   convention. Contributed by @vladisslav2011.
 - Hardened BeiDou DNAV and Glonass GNAV decoding.
+- Completed BeiDou D1/D2 DNAV decoding, including almanac, time, integrity,
+  differential-correction, and ionospheric-grid data, with BeiDou almanacs wired
+  into RTKLIB-assisted satellite visibility.
 - Improved performance of Galileo's Viterbi decoder.
 - Fixed edge cases in the retrieving of GPS L1 C/A navigation data.
 - Fixed Glonass carrier phase and time annotations in RINEX files.

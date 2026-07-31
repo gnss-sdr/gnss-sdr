@@ -1,16 +1,17 @@
 /*!
  * \file beidou_dnav_navigation_message.cc
- * \brief  Implementation of a BeiDou D1 NAV Data message decoder as described
- * in BeiDou ICD Version 2.1
+ * \brief  Implementation of a BeiDou D1/D2 NAV data message decoder as
+ * described in BDS-SIS-ICD-B1I Version 3.0
  *
  * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
  * \author Damian Miralles, 2018. dmiralles2009@gmail.com
+ * \author Carles Fernandez-Prades, 2018-2026. cfernandez(at)cttc.es
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -194,6 +195,208 @@ int64_t Beidou_Dnav_Navigation_Message::read_navigation_signed(
 }
 
 
+uint64_t Beidou_Dnav_Navigation_Message::read_navigation_data_unsigned(
+    const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits,
+    int32_t first_bit,
+    int32_t logical_offset,
+    int32_t length) const
+{
+    uint64_t value = 0ULL;
+    int32_t logical_bit = 0;
+    int32_t transmitted_bit = first_bit;
+
+    while (logical_bit < logical_offset + length && transmitted_bit <= BEIDOU_DNAV_SUBFRAME_DATA_BITS)
+        {
+            const int32_t word_bit = ((transmitted_bit - 1) % BEIDOU_DNAV_WORD_LENGTH_BITS) + 1;
+            const bool parity_bit = (transmitted_bit <= static_cast<int32_t>(BEIDOU_DNAV_WORD_LENGTH_BITS)) ? (word_bit > 26) : (word_bit > 22);
+            if (parity_bit == false)
+                {
+                    if (logical_bit >= logical_offset)
+                        {
+                            value = (value << 1U) |
+                                    static_cast<uint64_t>(bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - transmitted_bit]);
+                        }
+                    ++logical_bit;
+                }
+            ++transmitted_bit;
+        }
+
+    return value;
+}
+
+
+int64_t Beidou_Dnav_Navigation_Message::sign_extend(uint64_t value, int32_t length) const
+{
+    if (length <= 0 || length > 64)
+        {
+            return 0;
+        }
+    if (length == 64)
+        {
+            return static_cast<int64_t>(value);
+        }
+
+    const uint64_t sign_bit = 1ULL << (length - 1);
+    if ((value & sign_bit) != 0ULL)
+        {
+            value |= (~0ULL << length);
+        }
+    return static_cast<int64_t>(value);
+}
+
+
+void Beidou_Dnav_Navigation_Message::decode_almanac(
+    const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits,
+    int32_t prn,
+    int32_t amid,
+    bool expanded)
+{
+    d_SQRT_A_ALMANAC = static_cast<double>(read_navigation_unsigned(bits, D1_SQRT_A_ALMANAC)) * D1_SQRT_A_ALMANAC_LSB;
+    d_A1_ALMANAC = static_cast<double>(read_navigation_signed(bits, D1_A1_ALMANAC)) * D1_A1_ALMANAC_LSB;
+    d_A0_ALMANAC = static_cast<double>(read_navigation_signed(bits, D1_A0_ALMANAC)) * D1_A0_ALMANAC_LSB;
+    d_OMEGA0_ALMANAC = static_cast<double>(read_navigation_signed(bits, D1_OMEGA0_ALMANAC)) * D1_OMEGA0_ALMANAC_LSB;
+    d_E_ALMANAC = static_cast<double>(read_navigation_unsigned(bits, D1_E_ALMANAC)) * D1_E_ALMANAC_LSB;
+    d_DELTA_I = static_cast<double>(read_navigation_signed(bits, D1_DELTA_I)) * D1_DELTA_I_LSB;
+    d_TOA = static_cast<double>(read_navigation_unsigned(bits, D1_TOA)) * D1_TOA_LSB;
+    d_OMEGA_DOT_ALMANAC = static_cast<double>(read_navigation_signed(bits, D1_OMEGA_DOT_ALMANAC)) * D1_OMEGA_DOT_ALMANAC_LSB;
+    d_OMEGA_ALMANAC = static_cast<double>(read_navigation_signed(bits, D1_OMEGA_ALMANAC)) * D1_OMEGA_ALMANAC_LSB;
+    d_M0_ALMANAC = static_cast<double>(read_navigation_signed(bits, D1_M0_ALMANAC)) * D1_M0_ALMANAC_LSB;
+
+    d_almanac.PRN = static_cast<uint32_t>(prn);
+    d_almanac.sqrtA = d_SQRT_A_ALMANAC;
+    d_almanac.af1 = d_A1_ALMANAC;
+    d_almanac.af0 = d_A0_ALMANAC;
+    d_almanac.OMEGA_0 = d_OMEGA0_ALMANAC;
+    d_almanac.ecc = d_E_ALMANAC;
+    d_almanac.delta_i = d_DELTA_I;
+    d_almanac.toa = static_cast<int32_t>(d_TOA);
+    d_almanac.OMEGAdot = d_OMEGA_DOT_ALMANAC;
+    d_almanac.omega = d_OMEGA_ALMANAC;
+    d_almanac.M_0 = d_M0_ALMANAC;
+    d_almanac.WNa = almanac_WN;
+    d_almanac.SV_health = almanacHealth[prn];
+    d_almanac.AmEpID = i_AmEpID;
+    d_almanac.AmID = amid;
+    d_almanac.expanded = expanded;
+    flag_new_almanac = true;
+}
+
+
+void Beidou_Dnav_Navigation_Message::decode_almanac_health(
+    const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits,
+    int32_t count,
+    int32_t first_prn)
+{
+    for (int32_t i = 0; i < count; ++i)
+        {
+            const int32_t prn = first_prn + i;
+            almanacHealth[prn] = static_cast<int32_t>(read_navigation_data_unsigned(bits, 51, i * 9, 9));
+            if (d_almanac.PRN == static_cast<uint32_t>(prn))
+                {
+                    d_almanac.SV_health = almanacHealth[prn];
+                }
+        }
+}
+
+
+void Beidou_Dnav_Navigation_Message::decode_time_offsets(
+    const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits)
+{
+    d_A0GPS = static_cast<double>(read_navigation_signed(bits, D1_A0GPS)) * D1_A0GPS_LSB;
+    d_A1GPS = static_cast<double>(read_navigation_signed(bits, D1_A1GPS)) * D1_A1GPS_LSB;
+    d_A0GAL = static_cast<double>(read_navigation_signed(bits, D1_A0GAL)) * D1_A0GAL_LSB;
+    d_A1GAL = static_cast<double>(read_navigation_signed(bits, D1_A1GAL)) * D1_A1GAL_LSB;
+    d_A0GLO = static_cast<double>(read_navigation_signed(bits, D1_A0GLO)) * D1_A0GLO_LSB;
+    d_A1GLO = static_cast<double>(read_navigation_signed(bits, D1_A1GLO)) * D1_A1GLO_LSB;
+    flag_d1_sf5_p9 = true;
+}
+
+
+void Beidou_Dnav_Navigation_Message::decode_utc_parameters(
+    const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits)
+{
+    i_DeltaT_LS = static_cast<int32_t>(read_navigation_signed(bits, D1_DELTA_T_LS));
+    d_DeltaT_LSF = static_cast<double>(read_navigation_signed(bits, D1_DELTA_T_LSF));
+    i_WN_LSF = static_cast<int32_t>(read_navigation_unsigned(bits, D1_WN_LSF));
+    d_A0UTC = static_cast<double>(read_navigation_signed(bits, D1_A0UTC)) * D1_A0UTC_LSB;
+    d_A1UTC = static_cast<double>(read_navigation_signed(bits, D1_A1UTC)) * D1_A1UTC_LSB;
+    i_DN = static_cast<int32_t>(read_navigation_unsigned(bits, D1_DN));
+    flag_d1_sf5_p10 = true;
+}
+
+
+void Beidou_Dnav_Navigation_Message::decode_d2_iono_grid(
+    const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits,
+    int32_t page_ID)
+{
+    int32_t first_igp = 0;
+    int32_t count = 0;
+    if (page_ID >= 1 && page_ID <= 12)
+        {
+            first_igp = 1 + (page_ID - 1) * 13;
+            count = 13;
+        }
+    else if (page_ID == 13)
+        {
+            first_igp = 157;
+            count = 4;
+        }
+    else if (page_ID >= 61 && page_ID <= 72)
+        {
+            first_igp = 161 + (page_ID - 61) * 13;
+            count = 13;
+        }
+    else if (page_ID == 73)
+        {
+            first_igp = 317;
+            count = 4;
+        }
+    else
+        {
+            return;
+        }
+
+    for (int32_t i = 0; i < count; ++i)
+        {
+            const uint64_t ion = read_navigation_data_unsigned(bits, D2_ION_LOGICAL_FIRST_BIT, i * 13, 13);
+            const int32_t delay_code = static_cast<int32_t>(ion >> 4U);
+            Beidou_Dnav_Iono_Grid_Point grid_point;
+            grid_point.vertical_delay = static_cast<double>(delay_code) * D2_ION_DELAY_LSB;
+            grid_point.GIVEI = static_cast<int32_t>(ion & 0x0FULL);
+            grid_point.monitored = delay_code < 510;
+            grid_point.available = delay_code != 511;
+            d_iono_grid[first_igp + i] = grid_point;
+        }
+
+    flag_iono_grid_valid = true;
+    flag_iono_valid = true;
+}
+
+
+void Beidou_Dnav_Navigation_Message::update_d2_bdid(uint64_t value, int32_t first_prn, int32_t count)
+{
+    for (int32_t i = 0; i < count; ++i)
+        {
+            d_d2_bdid[static_cast<std::size_t>(first_prn + i - 1)] =
+                ((value >> (count - i - 1)) & 1ULL) != 0ULL;
+        }
+}
+
+
+void Beidou_Dnav_Navigation_Message::update_d2_udrei(
+    const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits,
+    int32_t first_bit,
+    int32_t first_slot,
+    int32_t count)
+{
+    for (int32_t i = 0; i < count; ++i)
+        {
+            d_d2_udrei[static_cast<std::size_t>(first_slot + i - 1)] =
+                static_cast<int32_t>(read_navigation_data_unsigned(bits, first_bit, i * 4, 4));
+        }
+}
+
+
 int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& subframe)
 {
     flag_crc_test = format_check(subframe);
@@ -336,35 +539,14 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
             d_SOW_SF4 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SOW));
             d_SOW = d_SOW_SF4;  // Set transmission time
 
-            d_SQRT_A_ALMANAC = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SQRT_A_ALMANAC));
-            d_SQRT_A_ALMANAC = d_SQRT_A_ALMANAC * D1_SQRT_A_ALMANAC_LSB;
-
-            d_A1_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_A1_ALMANAC));
-            d_A1_ALMANAC = d_A1_ALMANAC * D1_A1_ALMANAC_LSB;
-
-            d_A0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_A0_ALMANAC));
-            d_A0_ALMANAC = d_A0_ALMANAC * D1_A0_ALMANAC_LSB;
-
-            d_OMEGA0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA0_ALMANAC));
-            d_OMEGA0_ALMANAC = d_OMEGA0_ALMANAC * D1_OMEGA0_ALMANAC_LSB;
-
-            d_E_ALMANAC = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_E_ALMANAC));
-            d_E_ALMANAC = d_E_ALMANAC * D1_E_ALMANAC_LSB;
-
-            d_DELTA_I = static_cast<double>(read_navigation_signed(subframe_bits, D1_DELTA_I));
-            d_DELTA_I = d_DELTA_I * D1_DELTA_I_LSB;
-
-            d_TOA = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_TOA));
-            d_TOA = d_TOA * D1_TOA_LSB;
-
-            d_OMEGA_DOT_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA_DOT_ALMANAC));
-            d_OMEGA_DOT_ALMANAC = d_OMEGA_DOT_ALMANAC * D1_OMEGA_DOT_ALMANAC_LSB;
-
-            d_OMEGA_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA_ALMANAC));
-            d_OMEGA_ALMANAC = d_OMEGA_ALMANAC * D1_OMEGA_ALMANAC_LSB;
-
-            d_M0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_M0_ALMANAC));
-            d_M0_ALMANAC = d_M0_ALMANAC * D1_M0_ALMANAC_LSB;
+            {
+                const auto page_ID = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D1_PNUM));
+                if (page_ID >= 1 && page_ID <= 24)
+                    {
+                        i_AmEpID = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D1_AMEPID));
+                        decode_almanac(subframe_bits, page_ID, 0, false);
+                    }
+            }
 
             // Set system flags for message reception
             flag_d1_sf4 = true;
@@ -378,100 +560,66 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
             d_SOW = d_SOW_SF5;  // Set transmission time
             SV_page_5 = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_PNUM));
 
-            if (SV_page_5 < 7)
+            if (SV_page_5 >= 1 && SV_page_5 <= 6)
                 {
-                    d_SQRT_A_ALMANAC = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SQRT_A_ALMANAC));
-                    d_SQRT_A_ALMANAC = d_SQRT_A_ALMANAC * D1_SQRT_A_ALMANAC_LSB;
-
-                    d_A1_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_A1_ALMANAC));
-                    d_A1_ALMANAC = d_A1_ALMANAC * D1_A1_ALMANAC_LSB;
-
-                    d_A0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_A0_ALMANAC));
-                    d_A0_ALMANAC = d_A0_ALMANAC * D1_A0_ALMANAC_LSB;
-
-                    d_OMEGA0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA0_ALMANAC));
-                    d_OMEGA0_ALMANAC = d_OMEGA0_ALMANAC * D1_OMEGA0_ALMANAC_LSB;
-
-                    d_E_ALMANAC = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_E_ALMANAC));
-                    d_E_ALMANAC = d_E_ALMANAC * D1_E_ALMANAC_LSB;
-
-                    d_DELTA_I = static_cast<double>(read_navigation_signed(subframe_bits, D1_DELTA_I));
-                    d_DELTA_I = d_DELTA_I * D1_DELTA_I_LSB;
-
-                    d_TOA = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_TOA));
-                    d_TOA = d_TOA * D1_TOA_LSB;
-
-                    d_OMEGA_DOT_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA_DOT_ALMANAC));
-                    d_OMEGA_DOT_ALMANAC = d_OMEGA_DOT_ALMANAC * D1_OMEGA_DOT_ALMANAC_LSB;
-
-                    d_OMEGA_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA_ALMANAC));
-                    d_OMEGA_ALMANAC = d_OMEGA_ALMANAC * D1_OMEGA_ALMANAC_LSB;
-
-                    d_M0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_M0_ALMANAC));
-                    d_M0_ALMANAC = d_M0_ALMANAC * D1_M0_ALMANAC_LSB;
+                    i_AmEpID = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D1_AMEPID));
+                    decode_almanac(subframe_bits, 24 + SV_page_5, 0, false);
                 }
-
-            if (SV_page_5 == 7)
+            else if (SV_page_5 == 7)
                 {
-                    almanacHealth[1] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA1));
-                    almanacHealth[2] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA2));
-                    almanacHealth[3] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA3));
-                    almanacHealth[4] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA4));
-                    almanacHealth[5] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA5));
-                    almanacHealth[6] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA6));
-                    almanacHealth[7] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA7));
-                    almanacHealth[8] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA8));
-                    almanacHealth[9] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA9));
-                    almanacHealth[10] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA10));
-                    almanacHealth[11] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA11));
-                    almanacHealth[12] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA12));
-                    almanacHealth[13] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA13));
-                    almanacHealth[14] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA14));
-                    almanacHealth[15] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA15));
-                    almanacHealth[16] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA16));
-                    almanacHealth[17] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA17));
-                    almanacHealth[18] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA18));
-                    almanacHealth[19] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA19));
+                    decode_almanac_health(subframe_bits, 19, 1);
                 }
-            if (SV_page_5 == 8)
+            else if (SV_page_5 == 8)
                 {
-                    almanacHealth[20] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA20));
-                    almanacHealth[21] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA21));
-                    almanacHealth[22] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA22));
-                    almanacHealth[23] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA23));
-                    almanacHealth[24] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA24));
-                    almanacHealth[25] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA25));
-                    almanacHealth[26] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA26));
-                    almanacHealth[27] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA27));
-                    almanacHealth[28] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA28));
-                    almanacHealth[29] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA29));
-                    almanacHealth[30] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA30));
+                    decode_almanac_health(subframe_bits, 11, 20);
                     almanac_WN = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_WNA));
-                    d_toa2 = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_TOA2));
+                    d_toa2 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_TOA2)) * D1_TOA_LSB;
+                    flag_almanac_week_valid = true;
                 }
-
-            if (SV_page_5 == 9)
+            else if (SV_page_5 == 9)
                 {
-                    d_A0GPS = static_cast<double>(read_navigation_signed(subframe_bits, D1_A0GPS)) * D1_A0GPS_LSB;
-                    d_A1GPS = static_cast<double>(read_navigation_signed(subframe_bits, D1_A1GPS)) * D1_A1GPS_LSB;
-                    d_A0GAL = static_cast<double>(read_navigation_signed(subframe_bits, D1_A0GAL)) * D1_A0GAL_LSB;
-                    d_A1GAL = static_cast<double>(read_navigation_signed(subframe_bits, D1_A1GAL)) * D1_A1GAL_LSB;
-                    d_A0GLO = static_cast<double>(read_navigation_signed(subframe_bits, D1_A0GLO)) * D1_A0GLO_LSB;
-                    d_A1GLO = static_cast<double>(read_navigation_signed(subframe_bits, D1_A1GLO)) * D1_A1GLO_LSB;
-
-                    flag_d1_sf5_p9 = true;
+                    decode_time_offsets(subframe_bits);
                 }
-            if (SV_page_5 == 10)
+            else if (SV_page_5 == 10)
                 {
-                    i_DeltaT_LS = static_cast<int>(read_navigation_signed(subframe_bits, D1_DELTA_T_LS));
-                    d_DeltaT_LSF = static_cast<double>(read_navigation_signed(subframe_bits, D1_DELTA_T_LSF));
-                    i_WN_LSF = static_cast<double>(read_navigation_signed(subframe_bits, D1_WN_LSF));
-                    d_A0UTC = static_cast<double>(read_navigation_signed(subframe_bits, D1_A0UTC));
-                    d_A0UTC = d_A0UTC * D1_A0UTC_LSB;
-                    d_A1UTC = static_cast<double>(read_navigation_signed(subframe_bits, D1_A1UTC));
-                    d_A1UTC = d_A1UTC * D1_A1UTC_LSB;
-
-                    flag_d1_sf5_p10 = true;
+                    decode_utc_parameters(subframe_bits);
+                }
+            else if (SV_page_5 >= 11 && SV_page_5 <= 23 && i_AmEpID == 3)
+                {
+                    const int32_t amid = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D1_AMID));
+                    int32_t prn = 0;
+                    if (amid == 1)
+                        {
+                            prn = 31 + SV_page_5 - 11;
+                        }
+                    else if (amid == 2)
+                        {
+                            prn = 44 + SV_page_5 - 11;
+                        }
+                    else if (amid == 3 && SV_page_5 <= 17)
+                        {
+                            prn = 57 + SV_page_5 - 11;
+                        }
+                    if (prn != 0)
+                        {
+                            decode_almanac(subframe_bits, prn, amid, true);
+                        }
+                }
+            else if (SV_page_5 == 24 && i_AmEpID == 3)
+                {
+                    const int32_t amid = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D1_AMID_HEALTH));
+                    if (amid == 1)
+                        {
+                            decode_almanac_health(subframe_bits, 13, 31);
+                        }
+                    else if (amid == 2)
+                        {
+                            decode_almanac_health(subframe_bits, 13, 44);
+                        }
+                    else if (amid == 3)
+                        {
+                            decode_almanac_health(subframe_bits, 7, 57);
+                        }
                 }
 
             // Set system flags for message reception
@@ -499,7 +647,19 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
     const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> subframe_bits(subframe);
 
     const auto subframe_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, D2_FRAID));
-    const auto page_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, D2_PNUM));
+    int32_t page_ID = 0;
+    if (subframe_ID == 1)
+        {
+            page_ID = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D2_PNUM1));
+        }
+    else if (subframe_ID == 2)
+        {
+            page_ID = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D2_PNUM2));
+        }
+    else if (subframe_ID == 5)
+        {
+            page_ID = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D2_PNUM5));
+        }
     const auto sow = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_SOW));
 
     // D2 ephemeris pages must be collected as one contiguous page 1-10 cycle.
@@ -564,6 +724,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                 case 4:
                     d_SOW = sow;
                     d_A_f1_lsb_bits = (read_navigation_unsigned(subframe_bits, D2_A1_LSB));
+                    d_A_f1 = static_cast<double>(sign_extend(d_A_f1_msb_bits | d_A_f1_lsb_bits, 22)) * D1_A1_LSB;
                     d_A_f2 = static_cast<double>(read_navigation_signed(subframe_bits, D2_A2)) * D1_A2_LSB;
                     d_AODE = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_AODE));
                     d_Delta_n = static_cast<double>(read_navigation_signed(subframe_bits, D2_DELTA_N)) * D1_DELTA_N_LSB;
@@ -579,10 +740,11 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                 case 5:
                     d_SOW = sow;
                     d_Cuc_lsb_bits = (read_navigation_unsigned(subframe_bits, D2_CUC_LSB));
+                    d_Cuc = static_cast<double>(sign_extend(d_Cuc_msb_bits | d_Cuc_lsb_bits, 18)) * D1_CUC_LSB;
                     d_M_0 = static_cast<double>(read_navigation_signed(subframe_bits, D2_M0)) * D1_M0_LSB;
                     d_Cus = static_cast<double>(read_navigation_signed(subframe_bits, D2_CUS)) * D1_CUS_LSB;
-                    d_eccentricity_msb = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_E_MSB));
-                    d_eccentricity_msb_bits = (read_navigation_unsigned(subframe_bits, D2_E_MSB));
+                    d_eccentricity_msb = read_navigation_unsigned(subframe_bits, D2_E_MSB);
+                    d_eccentricity_msb_bits = d_eccentricity_msb;
                     // Adjust for lsb in next page (shift number of lsb to the left)
                     d_eccentricity_msb = static_cast<uint64_t>(d_eccentricity_msb) << 22U;
                     d_eccentricity_msb_bits = d_eccentricity_msb_bits << 22U;
@@ -594,8 +756,9 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                     break;
                 case 6:
                     d_SOW = sow;
-                    d_eccentricity_lsb = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_E_LSB));
+                    d_eccentricity_lsb = read_navigation_unsigned(subframe_bits, D2_E_LSB);
                     d_eccentricity_lsb_bits = (read_navigation_unsigned(subframe_bits, D2_E_LSB));
+                    d_eccentricity = static_cast<double>(d_eccentricity_msb | d_eccentricity_lsb) * D1_E_LSB;
                     d_sqrt_A = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_SQRT_A)) * D1_SQRT_A_LSB;
                     d_Cic_msb_bits = (read_navigation_unsigned(subframe_bits, D2_CIC_MSB));
                     // Adjust for lsb in next page (shift number of lsb to the left)
@@ -609,6 +772,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                 case 7:
                     d_SOW = sow;
                     d_Cic_lsb_bits = (read_navigation_unsigned(subframe_bits, D2_CIC_LSB));
+                    d_Cic = static_cast<double>(sign_extend(d_Cic_msb_bits | d_Cic_lsb_bits, 18)) * D1_CIC_LSB;
                     d_Cis = static_cast<double>(read_navigation_signed(subframe_bits, D2_CIS)) * D1_CIS_LSB;
                     d_Toe = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_TOE)) * D1_TOE_LSB;
                     d_i_0_msb_bits = (read_navigation_unsigned(subframe_bits, D2_I0_MSB));
@@ -623,6 +787,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                 case 8:
                     d_SOW = sow;
                     d_i_0_lsb_bits = (read_navigation_unsigned(subframe_bits, D2_I0_LSB));
+                    d_i_0 = static_cast<double>(sign_extend(d_i_0_msb_bits | d_i_0_lsb_bits, 32)) * D1_I0_LSB;
                     d_Crc = static_cast<double>(read_navigation_signed(subframe_bits, D2_CRC)) * D1_CRC_LSB;
                     d_Crs = static_cast<double>(read_navigation_signed(subframe_bits, D2_CRS)) * D1_CRS_LSB;
                     d_OMEGA_DOT_msb_bits = (read_navigation_unsigned(subframe_bits, D2_OMEGA_DOT_MSB));
@@ -637,6 +802,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                 case 9:
                     d_SOW = sow;
                     d_OMEGA_DOT_lsb_bits = (read_navigation_unsigned(subframe_bits, D2_OMEGA_DOT_LSB));
+                    d_OMEGA_DOT = static_cast<double>(sign_extend(d_OMEGA_DOT_msb_bits | d_OMEGA_DOT_lsb_bits, 24)) * D1_OMEGA_DOT_LSB;
                     d_OMEGA0 = static_cast<double>(read_navigation_signed(subframe_bits, D2_OMEGA0)) * D1_OMEGA0_LSB;
                     d_OMEGA_msb_bits = (read_navigation_unsigned(subframe_bits, D2_OMEGA_MSB));
                     // Adjust for lsb in next page (shift number of lsb to the left)
@@ -650,6 +816,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                 case 10:
                     d_SOW = sow;
                     d_OMEGA_lsb_bits = (read_navigation_unsigned(subframe_bits, D2_OMEGA_LSB));
+                    d_OMEGA = static_cast<double>(sign_extend(d_OMEGA_msb_bits | d_OMEGA_lsb_bits, 32)) * D1_OMEGA_LSB;
                     d_IDOT = static_cast<double>(read_navigation_signed(subframe_bits, D2_IDOT)) * D1_IDOT_LSB;
 
                     // Set system flags for message reception
@@ -665,19 +832,161 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
             break;
 
         case 2:  // -- It is subframe 2 -------------------
+            d_SOW = wrap_dnav_sow(sow + 0.6);
+            flag_new_SOW_available = true;
+            if (page_ID >= 1 && page_ID <= 6)
+                {
+                    i_d2_integrity_page = page_ID;
+                    d_d2_integrity_sow = sow;
+                    flag_d2_sf2_valid = true;
+                    flag_d2_sf3_valid = false;
+                    d_d2_correction_valid.fill(false);
 
+                    i_SatH2 = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D2_SAT_H2));
+                    update_d2_bdid(read_navigation_unsigned(subframe_bits, D2_BDID1_30), 1, 30);
+                    update_d2_udrei(subframe_bits, D2_UDREI1_LOGICAL_FIRST_BIT, 1, 18);
+
+                    const int32_t slot = 3 * (page_ID - 1);
+                    d_d2_rurai[static_cast<std::size_t>(slot)] =
+                        static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D2_RURAI_SF2));
+                    const int64_t delta_t = read_navigation_signed(subframe_bits, D2_DELTA_T_SF2);
+                    d_d2_delta_t[static_cast<std::size_t>(slot)] = static_cast<double>(delta_t) * D2_DELTA_T_LSB;
+                    d_d2_delta_t_available[static_cast<std::size_t>(slot)] = delta_t != -4096;
+                    d_d2_correction_valid[static_cast<std::size_t>(slot)] = true;
+                }
             break;
 
         case 3:  // --- It is subframe 3 -------------------------------------
+            d_SOW = wrap_dnav_sow(sow + 1.2);
+            flag_new_SOW_available = true;
+            if (flag_d2_sf2_valid && sow == d_d2_integrity_sow)
+                {
+                    const int32_t first_slot = 3 * (i_d2_integrity_page - 1) + 1;
+                    d_d2_rurai[static_cast<std::size_t>(first_slot)] =
+                        static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D2_RURAI_SF3_1));
+                    const int64_t delta_t_1 = read_navigation_signed(subframe_bits, D2_DELTA_T_SF3_1);
+                    d_d2_delta_t[static_cast<std::size_t>(first_slot)] = static_cast<double>(delta_t_1) * D2_DELTA_T_LSB;
+                    d_d2_delta_t_available[static_cast<std::size_t>(first_slot)] = delta_t_1 != -4096;
+                    d_d2_correction_valid[static_cast<std::size_t>(first_slot)] = true;
 
+                    const int32_t second_slot = first_slot + 1;
+                    d_d2_rurai[static_cast<std::size_t>(second_slot)] =
+                        static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D2_RURAI_SF3_2));
+                    const int64_t delta_t_2 = read_navigation_signed(subframe_bits, D2_DELTA_T_SF3_2);
+                    d_d2_delta_t[static_cast<std::size_t>(second_slot)] = static_cast<double>(delta_t_2) * D2_DELTA_T_LSB;
+                    d_d2_delta_t_available[static_cast<std::size_t>(second_slot)] = delta_t_2 != -4096;
+                    d_d2_correction_valid[static_cast<std::size_t>(second_slot)] = true;
+                    flag_d2_sf3_valid = true;
+                }
             break;
 
-        case 4:  // --- It is subframe 4 ---------- Almanac, ionospheric model, UTC parameters, SV health (PRN: 25-32)
+        case 4:  // --- It is subframe 4: expanded integrity and differential corrections ---
+            d_SOW = wrap_dnav_sow(sow + 1.8);
+            flag_new_SOW_available = true;
+            if (flag_d2_sf2_valid && flag_d2_sf3_valid && sow == d_d2_integrity_sow)
+                {
+                    i_BDEpID = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D2_BDEPID));
+                    if (i_BDEpID == 3)
+                        {
+                            update_d2_bdid(read_navigation_unsigned(subframe_bits, D2_BDID31_63), 31, 33);
+                            update_d2_udrei(subframe_bits, D2_UDREI19_LOGICAL_FIRST_BIT, 19, 6);
 
+                            const int32_t slot = 18 + i_d2_integrity_page - 1;
+                            d_d2_rurai[static_cast<std::size_t>(slot)] =
+                                static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D2_RURAI_SF4));
+                            const int64_t delta_t = read_navigation_signed(subframe_bits, D2_DELTA_T_SF4);
+                            d_d2_delta_t[static_cast<std::size_t>(slot)] = static_cast<double>(delta_t) * D2_DELTA_T_LSB;
+                            d_d2_delta_t_available[static_cast<std::size_t>(slot)] = delta_t != -4096;
+                            d_d2_correction_valid[static_cast<std::size_t>(slot)] = true;
+                        }
+                    else
+                        {
+                            for (std::size_t i = 30; i < d_d2_bdid.size(); ++i)
+                                {
+                                    d_d2_bdid[i] = false;
+                                }
+                            for (std::size_t i = 18; i < d_d2_correction_valid.size(); ++i)
+                                {
+                                    d_d2_correction_valid[i] = false;
+                                }
+                        }
+                    flag_new_differential_corrections = true;
+                }
+            flag_d2_sf2_valid = false;
+            flag_d2_sf3_valid = false;
             break;
 
-        case 5:  // -- It is subframe 5 -----------------almanac health (PRN: 1-24) and Almanac reference week number and time.
+        case 5:  // --- It is subframe 5: ionosphere, almanac and time parameters ---
+            d_SOW = wrap_dnav_sow(sow + 2.4);
+            flag_new_SOW_available = true;
+            decode_d2_iono_grid(subframe_bits, page_ID);
 
+            if (page_ID == 35)
+                {
+                    decode_almanac_health(subframe_bits, 19, 1);
+                }
+            else if (page_ID == 36)
+                {
+                    decode_almanac_health(subframe_bits, 11, 20);
+                    almanac_WN = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D1_WNA));
+                    d_toa2 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_TOA2)) * D1_TOA_LSB;
+                    flag_almanac_week_valid = true;
+                }
+            else if (page_ID >= 37 && page_ID <= 60)
+                {
+                    i_AmEpID = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D1_AMEPID));
+                    decode_almanac(subframe_bits, page_ID - 36, 0, false);
+                }
+            else if (page_ID >= 95 && page_ID <= 100)
+                {
+                    i_AmEpID = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D1_AMEPID));
+                    decode_almanac(subframe_bits, page_ID - 70, 0, false);
+                }
+            else if (page_ID == 101)
+                {
+                    decode_time_offsets(subframe_bits);
+                }
+            else if (page_ID == 102)
+                {
+                    decode_utc_parameters(subframe_bits);
+                }
+            else if (page_ID >= 103 && page_ID <= 115 && i_AmEpID == 3)
+                {
+                    const int32_t amid = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D1_AMID));
+                    int32_t prn = 0;
+                    if (amid == 1)
+                        {
+                            prn = 31 + page_ID - 103;
+                        }
+                    else if (amid == 2)
+                        {
+                            prn = 44 + page_ID - 103;
+                        }
+                    else if (amid == 3 && page_ID <= 109)
+                        {
+                            prn = 57 + page_ID - 103;
+                        }
+                    if (prn != 0)
+                        {
+                            decode_almanac(subframe_bits, prn, amid, true);
+                        }
+                }
+            else if (page_ID == 116 && i_AmEpID == 3)
+                {
+                    const int32_t amid = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, D1_AMID_HEALTH));
+                    if (amid == 1)
+                        {
+                            decode_almanac_health(subframe_bits, 13, 31);
+                        }
+                    else if (amid == 2)
+                        {
+                            decode_almanac_health(subframe_bits, 13, 44);
+                        }
+                    else if (amid == 3)
+                        {
+                            decode_almanac_health(subframe_bits, 7, 57);
+                        }
+                }
             break;
 
         default:
@@ -742,8 +1051,6 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris() const
 
     if ((i_satellite_PRN > 0 && i_satellite_PRN < 6) || i_satellite_PRN > 58)
         {
-            std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> subframe_bits;
-
             // Order as given by eph_t in rtklib
             eph.PRN = i_satellite_PRN;
             eph.AODC = d_AODC;
@@ -759,31 +1066,25 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris() const
             eph.toc = d_Toc;
 
             eph.sqrtA = d_sqrt_A;
-            eph.ecc = static_cast<double>((d_eccentricity_msb + d_eccentricity_lsb)) * D1_E_LSB;
-            subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_i_0_msb_bits + d_i_0_lsb_bits);
-            eph.i_0 = static_cast<double>(read_navigation_signed(subframe_bits, D2_I0)) * D1_I0_LSB;
+            eph.ecc = d_eccentricity;
+            eph.i_0 = d_i_0;
             eph.OMEGA_0 = d_OMEGA0;
-            subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_OMEGA_msb_bits + d_OMEGA_lsb_bits);
-            eph.omega = static_cast<double>(read_navigation_signed(subframe_bits, D2_OMEGA)) * D1_OMEGA_LSB;
+            eph.omega = d_OMEGA;
             eph.M_0 = d_M_0;
             eph.delta_n = d_Delta_n;
 
-            subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_OMEGA_DOT_msb_bits + d_OMEGA_DOT_lsb_bits);
-            eph.OMEGAdot = static_cast<double>(read_navigation_signed(subframe_bits, D2_OMEGA_DOT)) * D1_OMEGA_DOT_LSB;
+            eph.OMEGAdot = d_OMEGA_DOT;
             eph.idot = d_IDOT;
 
             eph.Crc = d_Crc;
             eph.Crs = d_Crs;
-            subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_Cuc_msb_bits + d_Cuc_lsb_bits);
-            eph.Cuc = static_cast<double>(read_navigation_signed(subframe_bits, D2_CUC)) * D1_CUC_LSB;
+            eph.Cuc = d_Cuc;
             eph.Cus = d_Cus;
-            subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_Cic_msb_bits + d_Cic_lsb_bits);
-            eph.Cic = static_cast<double>(read_navigation_signed(subframe_bits, D2_CIC)) * D1_CIC_LSB;
+            eph.Cic = d_Cic;
             eph.Cis = d_Cis;
 
             eph.af0 = d_A_f0;
-            subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_A_f1_msb_bits + d_A_f1_lsb_bits);
-            eph.af1 = static_cast<double>(read_navigation_signed(subframe_bits, D2_A1)) * D1_A1_LSB;
+            eph.af1 = d_A_f1;
             eph.af2 = d_A_f2;
 
             eph.TGD1 = d_TGD1;
@@ -845,7 +1146,9 @@ Beidou_Dnav_Iono Beidou_Dnav_Navigation_Message::get_iono()
     iono.beta2 = d_beta2;
     iono.beta3 = d_beta3;
     iono.valid = flag_iono_valid;
-    // WARNING: We clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
+    iono.grid_points = d_iono_grid;
+    iono.grid_valid = flag_iono_grid_valid;
+    // Do not re-send the same information to the ionospheric parameters queue.
     flag_iono_valid = false;
     return iono;
 }
@@ -873,6 +1176,67 @@ Beidou_Dnav_Utc_Model Beidou_Dnav_Navigation_Message::get_utc_model()
     // warning: We clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
     flag_utc_model_valid = false;
     return utc_model;
+}
+
+
+Beidou_Dnav_Almanac Beidou_Dnav_Navigation_Message::get_almanac() const
+{
+    Beidou_Dnav_Almanac almanac = d_almanac;
+    int32_t expanded_week = almanac_WN;
+    if (i_BEIDOU_week != 0)
+        {
+            expanded_week = (i_BEIDOU_week & ~0xFF) | almanac_WN;
+            if (expanded_week - i_BEIDOU_week > 128)
+                {
+                    expanded_week -= 256;
+                }
+            else if (i_BEIDOU_week - expanded_week > 128)
+                {
+                    expanded_week += 256;
+                }
+        }
+    almanac.WNa = expanded_week;
+    const auto health = almanacHealth.find(static_cast<int32_t>(almanac.PRN));
+    if (health != almanacHealth.cend())
+        {
+            almanac.SV_health = health->second;
+        }
+    return almanac;
+}
+
+
+Beidou_Dnav_Differential_Corrections Beidou_Dnav_Navigation_Message::get_differential_corrections() const
+{
+    Beidou_Dnav_Differential_Corrections data;
+    data.source_PRN = i_satellite_PRN;
+    data.SOW = d_d2_integrity_sow;
+    data.Pnum2 = i_d2_integrity_page;
+    data.SatH2 = i_SatH2;
+    data.BDEpID = i_BDEpID;
+    data.range_corrections_valid = (i_SatH2 & 0x2) == 0;
+    data.ionospheric_grid_valid = (i_SatH2 & 0x1) == 0;
+    data.expanded_corrections = i_BDEpID == 3;
+
+    std::size_t slot = 0;
+    for (std::size_t prn_index = 0; prn_index < d_d2_bdid.size() && slot < d_d2_correction_valid.size(); ++prn_index)
+        {
+            if (d_d2_bdid[prn_index] == false)
+                {
+                    continue;
+                }
+            if (d_d2_correction_valid[slot])
+                {
+                    Beidou_Dnav_Differential_Correction correction;
+                    correction.PRN = static_cast<uint32_t>(prn_index + 1);
+                    correction.RURAI = d_d2_rurai[slot];
+                    correction.UDREI = d_d2_udrei[slot];
+                    correction.delta_t = d_d2_delta_t[slot];
+                    correction.delta_t_available = d_d2_delta_t_available[slot];
+                    data.corrections[static_cast<int32_t>(correction.PRN)] = correction;
+                }
+            ++slot;
+        }
+    return data;
 }
 
 
@@ -953,15 +1317,23 @@ bool Beidou_Dnav_Navigation_Message::have_new_utc_model()
 
 bool Beidou_Dnav_Navigation_Message::have_new_almanac()
 {
-    if ((flag_d1_sf4 == true) && (flag_d1_sf5 == true))
+    if (flag_new_almanac && flag_almanac_week_valid)
         {
-            // All Almanac data have been received
-            flag_d1_sf4 = false;
-            flag_d1_sf5 = false;
-
+            flag_new_almanac = false;
             return true;
         }
 
+    return false;
+}
+
+
+bool Beidou_Dnav_Navigation_Message::have_new_differential_corrections()
+{
+    if (flag_new_differential_corrections)
+        {
+            flag_new_differential_corrections = false;
+            return true;
+        }
     return false;
 }
 

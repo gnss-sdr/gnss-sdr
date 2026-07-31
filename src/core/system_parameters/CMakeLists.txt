@@ -72,6 +72,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     glonass_gnav_utc_model.h
     glonass_gnav_navigation_message.h
     beidou_dnav_navigation_message.h
+    beidou_dnav_differential_corrections.h
     beidou_dnav_ephemeris.h
     beidou_dnav_iono.h
     beidou_dnav_almanac.h

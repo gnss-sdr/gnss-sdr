@@ -42,6 +42,12 @@
 #include <cstring>
 #include <vector>
 
+namespace
+{
+/* Caller buffer in rtkpos()/pntpos() is char msg[128]; not MAXSOLBUF/MAXSOLMSG. */
+constexpr int PNTPOS_MSG_LEN = 128;
+}  // namespace
+
 int galileo_bgd_index(unsigned char observation_code, int sat, const nav_t *nav)
 {
     int frequency = 0;
@@ -684,7 +690,7 @@ int valsol(const double *azel, const int *vsat, int n,
     vv = dot(v, v, nv);
     if (nv > nx && vv > CHISQR[nv - nx - 1])
         {
-            std::snprintf(msg, MAXSOLBUF, "chi-square error nv=%d vv=%.1f cs=%.1f", nv, vv, CHISQR[nv - nx - 1]);
+            std::snprintf(msg, PNTPOS_MSG_LEN, "chi-square error nv=%d vv=%.1f cs=%.1f", nv, vv, CHISQR[nv - nx - 1]);
             return 0;
         }
     /* large gdop check */
@@ -701,7 +707,7 @@ int valsol(const double *azel, const int *vsat, int n,
     dops(ns, azels, opt->elmin, dop);
     if (dop[0] <= 0.0 || dop[0] > opt->maxgdop)
         {
-            std::snprintf(msg, MAXSOLBUF, "gdop error nv=%d gdop=%.1f", nv, dop[0]);
+            std::snprintf(msg, PNTPOS_MSG_LEN, "gdop error nv=%d gdop=%.1f", nv, dop[0]);
             return 0;
         }
     return 1;
@@ -803,7 +809,7 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     int stat;
     int nv;
     int ns;
-    char msg_aux[128];
+    char msg_aux[PNTPOS_MSG_LEN]{};
 
     trace(3, "estpos  : n=%d\n", n);
 
@@ -905,7 +911,6 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
                     free(v);
                     free(H);
                     free(var);
-                    msg = msg_aux;
                     return stat;
                 }
         }
@@ -917,7 +922,11 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     free(v);
     free(H);
     free(var);
-    msg = msg_aux;
+    /* Copy into caller's buffer: "msg = msg_aux" only rebinds the local pointer. */
+    if (msg_aux[0] != '\0')
+        {
+            std::snprintf(msg, sizeof(msg_aux), "%s", msg_aux);
+        }
 
     return 0;
 }
@@ -932,7 +941,7 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
     obsd_t *obs_e;
     sol_t sol_e = {{0, 0}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0};
     char tstr[32];
-    char msg_e[128];
+    char msg_e[PNTPOS_MSG_LEN]{};
     double *rs_e;
     double *dts_e;
     double *vare_e;
@@ -1025,7 +1034,7 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
             sat = obs[i].sat;
             rms = rms_e;
             vsat[i] = 0;
-            std::strncpy(msg, msg_e, 128);
+            std::snprintf(msg, sizeof(msg_e), "%s", msg_e);
         }
     if (stat)
         {
@@ -1207,7 +1216,7 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
 
     if (n <= 0)
         {
-            std::strncpy(msg, "no observation data", 20);
+            std::snprintf(msg, PNTPOS_MSG_LEN, "no observation data");
             return 0;
         }
 

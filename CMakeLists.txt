@@ -7,7 +7,7 @@
 ################################################################################
 # Project setup
 ################################################################################
-cmake_minimum_required(VERSION 2.8.12...4.3)
+cmake_minimum_required(VERSION 2.8.12...4.4)
 project(gnss-sdr CXX C)
 
 # In-tree build guard

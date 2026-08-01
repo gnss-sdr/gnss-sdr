@@ -1,5 +1,5 @@
 /*!
- * \signal_source_interface.h
+ * \file signal_source_interface.h
  * \brief Header file of the interface to a signal_source GNSS block.
  * \author Jim Melton, 2020. jim.melton(at)sncorp.com
  *
@@ -51,6 +51,10 @@
 class SignalSourceInterface : public GNSSBlockInterface
 {
 public:
+    /*!
+     * \brief Returns the number of RF channels provided by the signal source.
+     * \return Number of RF channels.
+     */
     virtual size_t getRfChannels() const = 0;
 
 protected:

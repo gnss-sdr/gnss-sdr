@@ -43,17 +43,69 @@
 class ChannelInterface : public GNSSBlockInterface
 {
 public:
+    /*!
+     * \brief Returns the leftmost GNU Radio block of the tracking sub-chain.
+     * \return Shared pointer to the leftmost tracking basic block.
+     */
     virtual gr::basic_block_sptr get_left_block_trk() = 0;
+
+    /*!
+     * \brief Returns the rightmost GNU Radio block of the tracking sub-chain.
+     * \return Shared pointer to the rightmost tracking basic block.
+     */
     virtual gr::basic_block_sptr get_right_block_trk() = 0;
+
+    /*!
+     * \brief Returns the leftmost GNU Radio block of the acquisition sub-chain.
+     * \return Shared pointer to the leftmost acquisition basic block.
+     */
     virtual gr::basic_block_sptr get_left_block_acq() = 0;
+
+    /*!
+     * \brief Returns the rightmost GNU Radio block of the acquisition sub-chain.
+     * \return Shared pointer to the rightmost acquisition basic block.
+     */
     virtual gr::basic_block_sptr get_right_block_acq() = 0;
+
+    /*!
+     * \brief Returns the leftmost GNU Radio block of the entire channel.
+     * \return Shared pointer to the leftmost basic block.
+     */
     virtual gr::basic_block_sptr get_left_block() = 0;
+
+    /*!
+     * \brief Returns the rightmost GNU Radio block of the entire channel.
+     * \return Shared pointer to the rightmost basic block.
+     */
     virtual gr::basic_block_sptr get_right_block() = 0;
+
+    /*!
+     * \brief Returns the GNSS signal assigned to this channel.
+     * \return The Gnss_Signal object for this channel.
+     */
     virtual Gnss_Signal get_signal() = 0;
+
+    /*!
+     * \brief Initiates the acquisition process on this channel.
+     */
     virtual void start_acquisition() = 0;
+
+    /*!
+     * \brief Provides Doppler assistance to the acquisition process.
+     * \param[in] Carrier_Doppler_hz Doppler frequency in Hz.
+     */
     virtual void assist_acquisition_doppler(double Carrier_Doppler_hz) = 0;
+
+    /*!
+     * \brief Stops the channel operation.
+     */
     virtual void stop_channel() = 0;
-    virtual void set_signal(const Gnss_Signal&) = 0;
+
+    /*!
+     * \brief Assigns a GNSS signal to this channel.
+     * \param[in] gnss_signal Reference to the Gnss_Signal to assign.
+     */
+    virtual void set_signal(const Gnss_Signal& gnss_signal) = 0;
 };
 
 

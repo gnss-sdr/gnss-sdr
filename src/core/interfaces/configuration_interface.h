@@ -45,17 +45,99 @@ class ConfigurationInterface
 {
 public:
     virtual ~ConfigurationInterface() = default;
+
+    /*!
+     * \brief Retrieves a configuration parameter as a string.
+     * \param[in] property_name Name of the configuration parameter.
+     * \param[in] default_value Value returned if the property is not found.
+     * \return The property value as a string, or default_value if absent.
+     */
     virtual std::string property(std::string property_name, std::string default_value) const = 0;
+
+    /*!
+     * \brief Retrieves a configuration parameter as a bool.
+     * \param[in] property_name Name of the configuration parameter.
+     * \param[in] default_value Value returned if the property is not found.
+     * \return The property value as a bool, or default_value if absent.
+     */
     virtual bool property(std::string property_name, bool default_value) const = 0;
+
+    /*!
+     * \brief Retrieves a configuration parameter as a signed 64-bit integer.
+     * \param[in] property_name Name of the configuration parameter.
+     * \param[in] default_value Value returned if the property is not found.
+     * \return The property value as an int64_t, or default_value if absent.
+     */
     virtual int64_t property(std::string property_name, int64_t default_value) const = 0;
+
+    /*!
+     * \brief Retrieves a configuration parameter as an unsigned 64-bit integer.
+     * \param[in] property_name Name of the configuration parameter.
+     * \param[in] default_value Value returned if the property is not found.
+     * \return The property value as a uint64_t, or default_value if absent.
+     */
     virtual uint64_t property(std::string property_name, uint64_t default_value) const = 0;
+
+    /*!
+     * \brief Retrieves a configuration parameter as a signed 32-bit integer.
+     * \param[in] property_name Name of the configuration parameter.
+     * \param[in] default_value Value returned if the property is not found.
+     * \return The property value as an int32_t, or default_value if absent.
+     */
     virtual int32_t property(std::string property_name, int32_t default_value) const = 0;
+
+    /*!
+     * \brief Retrieves a configuration parameter as an unsigned 32-bit integer.
+     * \param[in] property_name Name of the configuration parameter.
+     * \param[in] default_value Value returned if the property is not found.
+     * \return The property value as a uint32_t, or default_value if absent.
+     */
     virtual uint32_t property(std::string property_name, uint32_t default_value) const = 0;
+
+    /*!
+     * \brief Retrieves a configuration parameter as a signed 16-bit integer.
+     * \param[in] property_name Name of the configuration parameter.
+     * \param[in] default_value Value returned if the property is not found.
+     * \return The property value as an int16_t, or default_value if absent.
+     */
     virtual int16_t property(std::string property_name, int16_t default_value) const = 0;
+
+    /*!
+     * \brief Retrieves a configuration parameter as an unsigned 16-bit integer.
+     * \param[in] property_name Name of the configuration parameter.
+     * \param[in] default_value Value returned if the property is not found.
+     * \return The property value as a uint16_t, or default_value if absent.
+     */
     virtual uint16_t property(std::string property_name, uint16_t default_value) const = 0;
+
+    /*!
+     * \brief Retrieves a configuration parameter as a single-precision float.
+     * \param[in] property_name Name of the configuration parameter.
+     * \param[in] default_value Value returned if the property is not found.
+     * \return The property value as a float, or default_value if absent.
+     */
     virtual float property(std::string property_name, float default_value) const = 0;
+
+    /*!
+     * \brief Retrieves a configuration parameter as a double-precision float.
+     * \param[in] property_name Name of the configuration parameter.
+     * \param[in] default_value Value returned if the property is not found.
+     * \return The property value as a double, or default_value if absent.
+     */
     virtual double property(std::string property_name, double default_value) const = 0;
+
+    /*!
+     * \brief Sets a configuration parameter value.
+     * \param[in] property_name Name of the configuration parameter.
+     * \param[in] value The value to assign.
+     */
     virtual void set_property(std::string property_name, std::string value) = 0;
+
+    /*!
+     * \brief Checks whether a configuration parameter exists.
+     * \param[in] property_name Name of the configuration parameter.
+     * \return True if the property is present, false otherwise.
+     */
     virtual bool is_present(const std::string& property_name) const = 0;
 };
 

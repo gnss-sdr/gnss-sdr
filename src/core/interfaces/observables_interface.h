@@ -43,6 +43,9 @@
 class ObservablesInterface : public GNSSBlockInterface
 {
 public:
+    /*!
+     * \brief Resets the observables block state.
+     */
     virtual void reset() = 0;
 };
 

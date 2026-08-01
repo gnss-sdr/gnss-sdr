@@ -43,8 +43,21 @@
 class TelemetryDecoderInterface : public GNSSBlockInterface
 {
 public:
+    /*!
+     * \brief Resets the telemetry decoder state.
+     */
     virtual void reset() = 0;
+
+    /*!
+     * \brief Sets the satellite whose navigation data will be decoded.
+     * \param[in] sat Reference to the Gnss_Satellite object.
+     */
     virtual void set_satellite(const Gnss_Satellite& sat) = 0;
+
+    /*!
+     * \brief Sets the channel identifier.
+     * \param[in] channel The channel identifier.
+     */
     virtual void set_channel(int channel) = 0;
 };
 

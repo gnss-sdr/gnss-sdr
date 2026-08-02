@@ -2802,7 +2802,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                     if (!leap_second_line.empty())
                         {
                             update_obs_header(obsFile, leap_second_line);
-                            nav_header_info.emplace_back("", "LEAP SECONDS", leap_second_line);
+                            nav_header_info.emplace_back("", "LEAP SECONDS", std::move(leap_second_line));
                         }
 
                     update_nav_header_from_info(navFile, navfilename, nav_header_info);
@@ -2975,7 +2975,7 @@ void Rinex_Printer::log_rinex_nav_v4_ion_sto_records(const Rtklib_Solver* pvt_so
     if (!leap_second_line.empty())
         {
             update_obs_header(obsFile, leap_second_line);
-            update_nav_header_from_info(navFile, navfilename, {NavHeaderInfo("", "LEAP SECONDS", leap_second_line)});
+            update_nav_header_from_info(navFile, navfilename, {NavHeaderInfo("", "LEAP SECONDS", std::move(leap_second_line))});
         }
 
     std::cout << "The RINEX Navigation file has been updated with UTC and IONO data records.\n";

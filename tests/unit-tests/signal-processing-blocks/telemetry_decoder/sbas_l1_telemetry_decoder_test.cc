@@ -18,6 +18,8 @@
 #include "SBAS_L1.h"
 #include "sbas_l1_telemetry_decoder_gs.h"
 #include <gtest/gtest.h>
+#include <cmath>
+#include <cstdint>
 
 TEST(SbasL1TelemetryDecoderTest, TimestampMatchesFirstBitWhenFullyAligned)
 {
@@ -32,18 +34,22 @@ TEST(SbasL1TelemetryDecoderTest, TimestampMatchesFirstBitWhenFullyAligned)
 
 TEST(SbasL1TelemetryDecoderTest, TimestampCorrectionIsBoundedBySymbolPeriod)
 {
-    // The residual sample/symbol alignment correction must never exceed one
-    // encoded symbol period: it only resolves a small, sub-bit ambiguity, not
-    // the block-level offset that used to cause ~1 s errors.
+    // The correction is always a whole number of code periods, and spans at
+    // most one code period (sample-pairing ambiguity) plus one symbol, i.e.
+    // two code periods (bit-pairing ambiguity). It only resolves a small
+    // sub-bit ambiguity, not the block-level offset that used to cause ~1 s
+    // errors.
     const double first_bit_stamp_s = 1000.0;
-    const double max_correction_s = 2.0 * SBAS_L1_CODE_PERIOD_S;  // 1 symbol = 2 code periods
+    const int64_t max_correction_code_periods = 3;
 
     for (const bool sample_aligned : {false, true})
         {
             for (const bool symbol_aligned : {false, true})
                 {
                     const double message_stamp_s = sbas_l1_telemetry_decoder_gs::compute_message_timestamp(first_bit_stamp_s, sample_aligned, symbol_aligned);
-                    EXPECT_NEAR(first_bit_stamp_s, message_stamp_s, max_correction_s);
+                    const int64_t correction_code_periods = std::llround((first_bit_stamp_s - message_stamp_s) / SBAS_L1_CODE_PERIOD_S);
+                    EXPECT_GE(correction_code_periods, 0);
+                    EXPECT_LE(correction_code_periods, max_correction_code_periods);
                 }
         }
 }

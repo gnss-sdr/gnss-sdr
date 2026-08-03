@@ -129,7 +129,7 @@ double sbas_l1_telemetry_decoder_gs::compute_message_timestamp(double first_bit_
     // Residual sub-bit correction: which of the two possible sample/symbol
     // alignments was chosen shifts the true message start by a few samples
     // with respect to the first bit's own timestamp.
-    const int32_t offset_samples = (sample_aligned ? 0 : -1) + D_SAMPLES_PER_SYMBOL * (symbol_aligned ? -1 : 0);
+    const int32_t offset_samples = (sample_aligned ? 0 : -1) + D_SAMPLES_PER_SYMBOL * (symbol_aligned ? 0 : -1);
     return first_bit_stamp_s + static_cast<double>(offset_samples) * SBAS_L1_CODE_PERIOD_S;
 }
 

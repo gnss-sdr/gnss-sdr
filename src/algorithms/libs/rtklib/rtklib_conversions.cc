@@ -15,7 +15,9 @@
  */
 
 #include "rtklib_conversions.h"
+#include "Beidou_DNAV.h"             // for BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET
 #include "MATH_CONSTANTS.h"          // for GNSS_PI, TWO_PI
+#include "beidou_dnav_almanac.h"     // for Beidou_Dnav_Almanac
 #include "beidou_dnav_ephemeris.h"   // for Beidou_Dnav_Ephemeris
 #include "galileo_almanac.h"         // for Galileo_Almanac
 #include "galileo_ephemeris.h"       // for Galileo_Ephemeris
@@ -841,6 +843,31 @@ alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm)
     rtklib_alm.f0 = gal_alm.af0;
     rtklib_alm.f1 = gal_alm.af1;
     rtklib_alm.toas = gal_alm.toa;
+
+    return rtklib_alm;
+}
+
+
+alm_t alm_to_rtklib(const Beidou_Dnav_Almanac& bei_alm)
+{
+    alm_t rtklib_alm = {0, 0, 0, 0, {0, 0}, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    rtklib_alm.sat = satno(SYS_BDS, static_cast<int32_t>(bei_alm.PRN));
+    rtklib_alm.svh = bei_alm.SV_health;
+    rtklib_alm.svconf = 0;
+    rtklib_alm.week = bei_alm.WNa + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET;
+    rtklib_alm.toa = bdt2gpst(bdt2time(bei_alm.WNa, static_cast<double>(bei_alm.toa)));
+    rtklib_alm.A = bei_alm.sqrtA * bei_alm.sqrtA;
+    rtklib_alm.e = bei_alm.ecc;
+    const bool geo = (bei_alm.PRN >= 1 && bei_alm.PRN <= 5) || (bei_alm.PRN >= 59 && bei_alm.PRN <= 63);
+    rtklib_alm.i0 = bei_alm.delta_i + (geo ? 0.0 : 0.3 * GNSS_PI);
+    rtklib_alm.OMG0 = bei_alm.OMEGA_0;
+    rtklib_alm.OMGd = bei_alm.OMEGAdot;
+    rtklib_alm.omg = bei_alm.omega;
+    rtklib_alm.M0 = bei_alm.M_0;
+    rtklib_alm.f0 = bei_alm.af0;
+    rtklib_alm.f1 = bei_alm.af1;
+    rtklib_alm.toas = static_cast<double>(bei_alm.toa);
 
     return rtklib_alm;
 }

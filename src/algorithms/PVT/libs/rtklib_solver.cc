@@ -1977,7 +1977,9 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_nav_data.utc_cmp[1] = beidou_dnav_utc_model.A1_UTC;
                     d_nav_data.utc_cmp[2] = 0.0;  // ??
                     d_nav_data.utc_cmp[3] = 0.0;  // ??
-                    d_nav_data.leaps = beidou_dnav_utc_model.DeltaT_LS;
+                    // RTKLIB stores the GPS-UTC leap-second count, whereas the
+                    // BeiDou message broadcasts BDT-UTC.
+                    d_nav_data.leaps = beidou_dnav_utc_model.DeltaT_LS + BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET;
                 }
 
             /* update carrier wave length using native function call in RTKlib */

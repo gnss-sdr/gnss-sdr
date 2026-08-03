@@ -1065,6 +1065,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     std::vector<std::pair<int, Gnss_Satellite>> available_satellites;
     std::vector<unsigned int> visible_gps;
     std::vector<unsigned int> visible_gal;
+    std::vector<unsigned int> visible_bds;
     const std::shared_ptr<PvtInterface> pvt_ptr = flowgraph_->get_pvt();
     struct tm tstruct{};
     char buf[80];
@@ -1121,6 +1122,30 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
                     available_satellites.emplace_back(floor(El),
                         (Gnss_Satellite(std::string("Galileo"), it.second.PRN)));
                     visible_gal.push_back(it.second.PRN);
+                }
+        }
+
+    const std::map<int, Beidou_Dnav_Ephemeris> bds_eph_map = pvt_ptr->get_beidou_dnav_ephemeris();
+    for (const auto &it : bds_eph_map)
+        {
+            const eph_t rtklib_eph = eph_to_rtklib(it.second);
+            std::array<double, 3> r_sat{};
+            double clock_bias_s;
+            double sat_pos_variance_m2;
+            eph2pos(gps_gtime, &rtklib_eph, r_sat.data(), &clock_bias_s,
+                &sat_pos_variance_m2);
+            double Az;
+            double El;
+            double dist_m;
+            const arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
+            const arma::vec dx = r_sat_eb_e - r_eb_e;
+            topocent(&Az, &El, &dist_m, r_eb_e, dx);
+            if (El > 0)
+                {
+                    std::cout << "Using BeiDou Ephemeris: Sat " << it.second.PRN << " Az: " << Az << " El: " << El << '\n';
+                    available_satellites.emplace_back(floor(El),
+                        (Gnss_Satellite(std::string("Beidou"), it.second.PRN)));
+                    visible_bds.push_back(it.second.PRN);
                 }
         }
 
@@ -1181,6 +1206,27 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
                             available_satellites.emplace_back(floor(El),
                                 (Gnss_Satellite(std::string("Galileo"), it.second.PRN)));
                         }
+                }
+        }
+
+    const std::map<int, Beidou_Dnav_Almanac> bds_alm_map = pvt_ptr->get_beidou_dnav_almanac();
+    for (const auto &it : bds_alm_map)
+        {
+            const alm_t rtklib_alm = alm_to_rtklib(it.second);
+            std::array<double, 3> r_sat{};
+            double clock_bias_s;
+            alm2pos(gps_gtime, &rtklib_alm, r_sat.data(), &clock_bias_s);
+            double Az;
+            double El;
+            double dist_m;
+            const arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
+            const arma::vec dx = r_sat_eb_e - r_eb_e;
+            topocent(&Az, &El, &dist_m, r_eb_e, dx);
+            if (El > 0 && std::find(visible_bds.begin(), visible_bds.end(), it.second.PRN) == visible_bds.end())
+                {
+                    std::cout << "Using BeiDou Almanac:  Sat " << it.second.PRN << " Az: " << Az << " El: " << El << '\n';
+                    available_satellites.emplace_back(floor(El),
+                        (Gnss_Satellite(std::string("Beidou"), it.second.PRN)));
                 }
         }
 

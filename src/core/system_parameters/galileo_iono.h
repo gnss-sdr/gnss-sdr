@@ -20,6 +20,7 @@
 #define GNSS_SDR_GALILEO_IONO_H
 
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/version.hpp>
 #include <cstdint>
 
 /** \addtogroup Core
@@ -57,6 +58,7 @@ public:
     bool Region3_flag{};  //!< Ionospheric Disturbance Flag for region 3
     bool Region4_flag{};  //!< Ionospheric Disturbance Flag for region 4
     bool Region5_flag{};  //!< Ionospheric Disturbance Flag for region 5
+    bool valid{};         //!< True after a complete ionospheric model has been decoded
 
     template <class Archive>
 
@@ -79,8 +81,15 @@ public:
         archive& BOOST_SERIALIZATION_NVP(Region3_flag);
         archive& BOOST_SERIALIZATION_NVP(Region4_flag);
         archive& BOOST_SERIALIZATION_NVP(Region5_flag);
+        if (version > 0)
+            {
+                archive& BOOST_SERIALIZATION_NVP(valid);
+            }
     }
 };
+
+
+BOOST_CLASS_VERSION(Galileo_Iono, 1)
 
 
 /** \} */

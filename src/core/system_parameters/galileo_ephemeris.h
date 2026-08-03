@@ -45,6 +45,15 @@ enum class Galileo_Nav_Message_Type : uint8_t
 };
 
 
+enum class Galileo_Nav_Message_Source : uint8_t
+{
+    Unknown = 0,
+    E1B = 1,
+    E5a = 2,
+    E5b = 3
+};
+
+
 class Galileo_Ephemeris : public Gnss_Ephemeris
 {
 public:
@@ -70,6 +79,8 @@ public:
     double BGD_E1E5b{};  //!< E1-E5b Broadcast Group Delay [s]
     //! Navigation message carrying this record
     Galileo_Nav_Message_Type nav_message_type{Galileo_Nav_Message_Type::Unknown};
+    //! Signal from which this navigation record was decoded
+    Galileo_Nav_Message_Source nav_message_source{Galileo_Nav_Message_Source::Unknown};
 
     bool flag_all_ephemeris{};
 
@@ -136,11 +147,24 @@ public:
                         nav_message_type = Galileo_Nav_Message_Type::Unknown;
                     }
             }
+        if (version > 1)
+            {
+                uint32_t nav_message_source_value = static_cast<uint32_t>(nav_message_source);
+                archive& boost::serialization::make_nvp("nav_message_source", nav_message_source_value);
+                if (nav_message_source_value <= static_cast<uint32_t>(Galileo_Nav_Message_Source::E5b))
+                    {
+                        nav_message_source = static_cast<Galileo_Nav_Message_Source>(nav_message_source_value);
+                    }
+                else
+                    {
+                        nav_message_source = Galileo_Nav_Message_Source::Unknown;
+                    }
+            }
     }
 };
 
 
-BOOST_CLASS_VERSION(Galileo_Ephemeris, 1)
+BOOST_CLASS_VERSION(Galileo_Ephemeris, 2)
 
 
 /** \} */

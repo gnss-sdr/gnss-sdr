@@ -507,6 +507,7 @@ Galileo_Ephemeris Galileo_Inav_Message::get_ephemeris() const
 Galileo_Iono Galileo_Inav_Message::get_iono() const
 {
     Galileo_Iono iono;
+    iono.valid = flag_iono_model_valid;
     // Ionospheric correction
     iono.ai0 = ai0_5;  // Effective Ionisation Level 1st order parameter [sfu]
     iono.ai1 = ai1_5;  // Effective Ionisation Level 2st order parameter [sfu/degree]
@@ -1062,6 +1063,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             spare_5 = static_cast<double>(read_navigation_unsigned(data_jk_bits, SPARE_5_BIT));
             DLOG(INFO) << "spare_5= " << spare_5;
             flag_iono_and_GST = true;  // set to false externally
+            flag_iono_model_valid = true;
             ++word_5_generation;
             flag_TOW_set = true;  // set to false externally
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;

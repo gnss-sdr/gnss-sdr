@@ -41,6 +41,7 @@
 #include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_make_unique.h"
 #include "gps_almanac.h"
+#include "gps_cnav_eop.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
 #include "gps_cnav_utc_model.h"
@@ -57,6 +58,7 @@
 #include "osnma_data.h"
 #include "pvt_conf.h"
 #include "qzss.h"
+#include "qzss_cnav_eop.h"
 #include "qzss_cnav_iono.h"
 #include "qzss_cnav_utc_model.h"
 #include "qzss_iono.h"
@@ -146,11 +148,13 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_gps_iono_sptr_type_hash_code(typeid(std::shared_ptr<Gps_Iono>).hash_code()),
       d_gps_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Gps_Utc_Model>).hash_code()),
       d_gps_cnav_ephemeris_sptr_type_hash_code(typeid(std::shared_ptr<Gps_CNAV_Ephemeris>).hash_code()),
+      d_gps_cnav_eop_sptr_type_hash_code(typeid(std::shared_ptr<Gps_CNAV_Eop>).hash_code()),
       d_gps_cnav_iono_sptr_type_hash_code(typeid(std::shared_ptr<Gps_CNAV_Iono>).hash_code()),
       d_gps_cnav_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Gps_CNAV_Utc_Model>).hash_code()),
       d_gps_almanac_sptr_type_hash_code(typeid(std::shared_ptr<Gps_Almanac>).hash_code()),
       d_qzss_iono_sptr_type_hash_code(typeid(std::shared_ptr<Qzss_Iono>).hash_code()),
       d_qzss_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Qzss_Utc_Model>).hash_code()),
+      d_qzss_cnav_eop_sptr_type_hash_code(typeid(std::shared_ptr<Qzss_CNAV_Eop>).hash_code()),
       d_qzss_cnav_iono_sptr_type_hash_code(typeid(std::shared_ptr<Qzss_CNAV_Iono>).hash_code()),
       d_qzss_cnav_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Qzss_CNAV_Utc_Model>).hash_code()),
       d_galileo_ephemeris_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_Ephemeris>).hash_code()),
@@ -1432,6 +1436,17 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     DLOG(INFO) << "New QZSS CNAV IONO record has arrived";
                 }
+            else if (msg_type_hash_code == d_qzss_cnav_eop_sptr_type_hash_code)
+                {
+                    // ### QZSS CNAV EARTH ORIENTATION PARAMETERS ###
+                    const auto qzss_cnav_eop = wht::any_cast<std::shared_ptr<Qzss_CNAV_Eop>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->qzss_cnav_eop = *qzss_cnav_eop;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->qzss_cnav_eop = *qzss_cnav_eop;
+                        }
+                    DLOG(INFO) << "New QZSS CNAV EOP record has arrived";
+                }
             else if (msg_type_hash_code == d_qzss_cnav_utc_model_sptr_type_hash_code)
                 {
                     // ### QZSS CNAV UTC MODEL ###
@@ -1488,6 +1503,17 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                             d_user_pvt_solver->gps_cnav_iono = *gps_cnav_iono;
                         }
                     DLOG(INFO) << "New CNAV IONO record has arrived";
+                }
+            else if (msg_type_hash_code == d_gps_cnav_eop_sptr_type_hash_code)
+                {
+                    // ### GPS CNAV EARTH ORIENTATION PARAMETERS ###
+                    const auto gps_cnav_eop = wht::any_cast<std::shared_ptr<Gps_CNAV_Eop>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->gps_cnav_eop = *gps_cnav_eop;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->gps_cnav_eop = *gps_cnav_eop;
+                        }
+                    DLOG(INFO) << "New GPS CNAV EOP record has arrived";
                 }
             else if (msg_type_hash_code == d_gps_cnav_utc_model_sptr_type_hash_code)
                 {

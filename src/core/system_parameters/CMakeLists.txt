@@ -64,6 +64,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     galileo_reduced_ced.h
     sbas_ephemeris.h
     gps_cnav_ephemeris.h
+    gps_cnav_eop.h
     gps_cnav_navigation_message.h
     gps_cnav_iono.h
     gps_cnav_utc_model.h
@@ -101,6 +102,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     osnma_dsm_reader.h
     tow_to_trk.h
     qzss.h
+    qzss_cnav_eop.h
     qzss_cnav_iono.h
     qzss_cnav_utc_model.h
     qzss_iono.h

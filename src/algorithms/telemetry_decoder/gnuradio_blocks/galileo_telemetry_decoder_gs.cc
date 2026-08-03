@@ -635,6 +635,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_inav_nav.get_ephemeris());
+            tmp_obj->nav_message_source = d_band == '7' ? Galileo_Nav_Message_Source::E5b : Galileo_Nav_Message_Source::E1B;
             if (d_band == '1')
                 {
                     const auto default_precision = std::cout.precision();

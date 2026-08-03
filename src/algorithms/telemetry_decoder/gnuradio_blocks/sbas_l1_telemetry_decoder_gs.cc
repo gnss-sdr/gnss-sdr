@@ -17,6 +17,7 @@
  */
 
 #include "sbas_l1_telemetry_decoder_gs.h"
+#include "SBAS_L1.h"
 #include "gnss_synchro.h"
 #include "viterbi_decoder_sbas.h"
 #include <pmt/pmt_sugar.h>  // for mp
@@ -105,6 +106,31 @@ void sbas_l1_telemetry_decoder_gs::set_channel(int32_t channel)
 {
     d_channel = channel;
     LOG(INFO) << "SBAS channel set to " << channel;
+}
+
+
+void sbas_l1_telemetry_decoder_gs::reset()
+{
+    d_sample_buf.clear();
+    d_sample_stamps.clear();
+    d_sample_aligner.reset();
+    d_symbol_aligner_and_decoder.reset();
+    d_frame_detector.reset();
+    d_crc_verifier.reset();
+    if (d_ems_file.is_open())
+        {
+            d_ems_file.close();
+        }
+}
+
+
+double sbas_l1_telemetry_decoder_gs::compute_message_timestamp(double first_bit_stamp_s, bool sample_aligned, bool symbol_aligned)
+{
+    // Residual sub-bit correction: which of the two possible sample/symbol
+    // alignments was chosen shifts the true message start by a few samples
+    // with respect to the first bit's own timestamp.
+    const int32_t offset_samples = (sample_aligned ? 0 : -1) + D_SAMPLES_PER_SYMBOL * (symbol_aligned ? -1 : 0);
+    return first_bit_stamp_s + static_cast<double>(offset_samples) * SBAS_L1_CODE_PERIOD_S;
 }
 
 
@@ -244,10 +270,11 @@ bool sbas_l1_telemetry_decoder_gs::Symbol_Aligner_And_Decoder::get_bits(const st
 void sbas_l1_telemetry_decoder_gs::Frame_Detector::reset()
 {
     d_buffer.clear();
+    d_bit_stamps.clear();
 }
 
 
-void sbas_l1_telemetry_decoder_gs::Frame_Detector::get_frame_candidates(const std::vector<int32_t> &bits, std::vector<std::pair<int32_t, std::vector<int32_t>>> &msg_candidates)
+void sbas_l1_telemetry_decoder_gs::Frame_Detector::get_frame_candidates(const std::vector<int32_t> &bits, const std::vector<double> &bit_stamps, std::vector<std::pair<double, std::vector<int32_t>>> &msg_candidates)
 {
     std::stringstream ss;
     const uint32_t sbas_msg_length = 250;
@@ -258,15 +285,15 @@ void sbas_l1_telemetry_decoder_gs::Frame_Detector::get_frame_candidates(const st
                << "d_buffer.size()=" << d_buffer.size() << "\tbits.size()=" << bits.size();
     ss << "copy bits ";
     int32_t count = 0;
-    // copy new bits into the working buffer
-    for (auto bit_it = bits.cbegin(); bit_it < bits.cend(); ++bit_it)
+    // copy new bits (and their absolute timestamps) into the working buffer
+    for (size_t i = 0; i < bits.size(); i++)
         {
-            d_buffer.push_back(*bit_it);
-            ss << *bit_it;
+            d_buffer.push_back(bits[i]);
+            d_bit_stamps.push_back(bit_stamps[i]);
+            ss << bits[i];
             count++;
         }
     VLOG(SAMP_SYNC) << ss.str() << " into working buffer (" << count << " bits)";
-    int32_t relative_preamble_start = 0;
     while (d_buffer.size() >= sbas_msg_length)
         {
             // compare with all preambles
@@ -293,7 +320,8 @@ void sbas_l1_telemetry_decoder_gs::Frame_Detector::get_frame_candidates(const st
                                             candidate_bit_it = candidate_bit_it == 0 ? 1 : 0;
                                         }
                                 }
-                            msg_candidates.emplace_back(relative_preamble_start, candidate);
+                            // the candidate's absolute timestamp is that of its first (preamble) bit
+                            msg_candidates.emplace_back(d_bit_stamps.front(), candidate);
                             ss.str("");
                             ss << "preamble " << preample_it - preambles.begin() << (inv_preamble_detected ? " inverted" : " normal") << " detected! candidate=";
                             for (auto bit_it = candidate.begin(); bit_it < candidate.end(); ++bit_it)
@@ -303,9 +331,9 @@ void sbas_l1_telemetry_decoder_gs::Frame_Detector::get_frame_candidates(const st
                             VLOG(EVENT) << ss.str();
                         }
                 }
-            relative_preamble_start++;
-            // remove bit in front
+            // remove bit (and its timestamp) in front
             d_buffer.pop_front();
+            d_bit_stamps.pop_front();
         }
 }
 
@@ -424,8 +452,11 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     // copy correlation samples into samples vector
     d_sample_buf.push_back(current_symbol.Prompt_I);  // add new symbol to the symbol queue
 
-    // store the time stamp of the first sample in the processed sample block
+    // absolute reception timestamp of this sample; stored so that, once a message is
+    // eventually found several blocks later, its true timestamp can be recovered instead
+    // of approximated from whichever sample happens to be current at that later time.
     const double sample_stamp = static_cast<double>(in[0].Tracking_sample_counter) / static_cast<double>(in[0].fs);
+    d_sample_stamps.push_back(sample_stamp);
 
     // decode only if enough samples in buffer
     if (d_sample_buf.size() >= d_block_size)
@@ -440,10 +471,18 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             std::vector<int32_t> bits;
             const bool symbol_alignment = d_symbol_aligner_and_decoder.get_bits(symbols, bits);
 
+            // absolute timestamp of each decoded bit: the timestamp of the first
+            // sample that contributed to it, taken from this block's own samples
+            std::vector<double> bit_stamps(bits.size());
+            for (size_t i = 0; i < bits.size(); i++)
+                {
+                    bit_stamps[i] = d_sample_stamps[i * D_SAMPLES_PER_SYMBOL * D_SYMBOLS_PER_BIT];
+                }
+
             // search for preambles
             // and extract the corresponding message candidates
             std::vector<msg_candiate_int_t> msg_candidates;
-            d_frame_detector.get_frame_candidates(bits, msg_candidates);
+            d_frame_detector.get_frame_candidates(bits, bit_stamps, msg_candidates);
 
             // verify checksum
             // and return the valid messages
@@ -455,15 +494,12 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             // std::vector<Sbas_Raw_Msg> sbas_raw_msgs;
             for (const auto &valid_msg : valid_msgs)
                 {
-                    const int32_t message_sample_offset =
-                        (sample_alignment ? 0 : -1) + D_SAMPLES_PER_SYMBOL * (symbol_alignment ? -1 : 0) + D_SAMPLES_PER_SYMBOL * D_SYMBOLS_PER_BIT * valid_msg.first;
-                    const double message_sample_stamp = sample_stamp + static_cast<double>(message_sample_offset) / 1000.0;
+                    // valid_msg.first is the absolute timestamp of the message's first bit
+                    const double message_sample_stamp = compute_message_timestamp(valid_msg.first, sample_alignment, symbol_alignment);
                     VLOG(EVENT) << "message_sample_stamp=" << message_sample_stamp
-                                << " (sample_stamp=" << sample_stamp
+                                << " (first_bit_stamp=" << valid_msg.first
                                 << " sample_alignment=" << sample_alignment
                                 << " symbol_alignment=" << symbol_alignment
-                                << " relative_preamble_start=" << valid_msg.first
-                                << " message_sample_offset=" << message_sample_offset
                                 << ")";
                     // extract message type: bits 8-13 of 250-bit message (top 6 bits of byte[1])
                     const int msg_type = (valid_msg.second.size() > 1)
@@ -473,7 +509,8 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 << " MT" << msg_type
                                 << " at t=" << std::fixed << std::setprecision(3)
                                 << message_sample_stamp << " s";
-                    // Lazy-open EMS file on first decoded message so PRN is known
+                    // Lazy-open message dump file on first decoded message so PRN is known.
+                    // Dumps are overwritten (not appended) on every run.
                     if (d_dump && !d_dump_filename.empty() && !d_ems_file.is_open())
                         {
                             std::string ems_fn = d_dump_filename;
@@ -484,28 +521,28 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                     ems_fn = ems_fn.substr(0, ems_fn.size() - dat_ext.size());
                                 }
                             ems_fn += "_PRN" + std::to_string(d_satellite.get_PRN()) + ".ems";
-                            d_ems_file.open(ems_fn, std::ios::out | std::ios::app);
+                            d_ems_file.open(ems_fn, std::ios::out | std::ios::trunc);
                             if (d_ems_file.is_open())
                                 {
-                                    // Write header only if file is new (empty)
-                                    d_ems_file.seekp(0, std::ios::end);
-                                    if (d_ems_file.tellp() == 0)
-                                        {
-                                            d_ems_file << "; SBAS/EGNOS Message Service (EMS) file\n";
-                                            d_ems_file << "; Generated by GNSS-SDR v0.0.20\n";
-                                            d_ems_file << "; Satellite: SBAS PRN " << d_satellite.get_PRN() << "\n";
-                                            d_ems_file << "; TOW field: receiver time in seconds from recording start\n";
-                                            d_ems_file << ";            GPS week = 0  (no absolute GPS fix in this output)\n";
-                                            d_ems_file << "; Msg bytes: 32 bytes (250-bit SBAS frame zero-padded to 256 bits)\n";
-                                            d_ems_file << ";   Layout: preamble(8b) type(6b) data(212b) CRC-24Q(24b) pad(6b)\n";
-                                            d_ems_file << "; Format:   <gps_week> <tow_s> <prn> <msg_type> : <64_hex_chars>\n";
-                                            d_ems_file << ";\n";
-                                        }
-                                    LOG(INFO) << "SBAS EMS file opened: " << ems_fn;
+                                    // NOTE on naming/format: this is a raw dump of decoded SBAS L1 messages
+                                    // using the same field layout as ESA's EGNOS Message Service (EMS)
+                                    // archive files (week, tow, prn, type : hex bytes). It is NOT a
+                                    // conformant EMS file: this receiver has no absolute GPS time
+                                    // reference, so "week" is always 0 and "tow" is the receiver's
+                                    // elapsed time since recording start, not the real GPS time of week.
+                                    d_ems_file << "; Raw SBAS L1 message dump (EMS-like layout, not a conformant EMS file)\n";
+                                    d_ems_file << "; Satellite: SBAS PRN " << d_satellite.get_PRN() << "\n";
+                                    d_ems_file << "; TOW field: receiver time in seconds from recording start\n";
+                                    d_ems_file << ";            GPS week = 0  (no absolute GPS fix in this output)\n";
+                                    d_ems_file << "; Msg bytes: 32 bytes (250-bit SBAS frame zero-padded to 256 bits)\n";
+                                    d_ems_file << ";   Layout: preamble(8b) type(6b) data(212b) CRC-24Q(24b) pad(6b)\n";
+                                    d_ems_file << "; Format:   <gps_week> <tow_s> <prn> <msg_type> : <64_hex_chars>\n";
+                                    d_ems_file << ";\n";
+                                    LOG(INFO) << "SBAS raw message dump file opened: " << ems_fn;
                                 }
                             else
                                 {
-                                    LOG(WARNING) << "Could not open SBAS EMS file: " << ems_fn;
+                                    LOG(WARNING) << "Could not open SBAS raw message dump file: " << ems_fn;
                                 }
                         }
                     if (d_ems_file.is_open())
@@ -597,6 +634,7 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
 
             // clear all processed samples in the input buffer
             d_sample_buf.clear();
+            d_sample_stamps.clear();
         }
 
     // UPDATE GNSS SYNCHRO DATA

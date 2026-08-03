@@ -53,9 +53,11 @@ constexpr int32_t SBAS_L1_CHANNEL_SYMBOL_PERIOD_MS = 2;   //!< Encoded channel s
 constexpr int32_t SBAS_L1_MSG_LENGTH_BITS = 250;          //!< Information bits per 1-second message frame [bits]
 
 // Maximum coherent integration extension in terms of 1 ms code periods.
-// Each encoded symbol spans 2 code periods (2 ms), so extending beyond 2
-// would straddle a symbol boundary and reduce coherent gain.
-constexpr int32_t SBAS_L1_MAX_COHERENT_INTEGRATION_SYMBOLS = 2;
+// Kept at 1 (no extension): the tracking correlator dumps are not
+// synchronized to the encoded symbol boundary, so extending beyond a single
+// code period would straddle that boundary and corrupt the sample pairing
+// that sbas_l1_telemetry_decoder_gs performs on its own.
+constexpr int32_t SBAS_L1_MAX_COHERENT_INTEGRATION_SYMBOLS = 1;
 
 // Preamble bytes (RTCA DO-229, Section A.4.4.2)
 constexpr uint8_t SBAS_L1_PREAMBLE_1 = 0x53U;  //!< First preamble byte  (binary: 0101 0011)

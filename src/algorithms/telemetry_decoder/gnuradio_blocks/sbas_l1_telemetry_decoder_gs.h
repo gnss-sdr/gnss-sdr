@@ -52,7 +52,15 @@ public:
     ~sbas_l1_telemetry_decoder_gs() override;
     void set_satellite(const Gnss_Satellite &satellite) override;  //!< Set satellite PRN
     void set_channel(int32_t channel) override;                    //!< Set receiver's channel
-    inline void reset() override {};
+    //! Clears all internal decoding state (buffers, aligners, Viterbi decoders)
+    //! and closes the dump file, so that a channel reassigned to a different
+    //! PRN never mixes messages from the previous satellite into its file.
+    void reset() override;
+
+    //! Exposed for unit testing: combines an absolute per-bit reception
+    //! timestamp with the residual sample/symbol alignment correction to
+    //! obtain the final message timestamp.
+    static double compute_message_timestamp(double first_bit_stamp_s, bool sample_aligned, bool symbol_aligned);
 
     /*!
      * \brief This is where all signal processing takes place
@@ -82,11 +90,13 @@ private:
     std::ofstream d_dump_file;
     std::ofstream d_ems_file;
 
-    size_t d_block_size;               //!< number of samples which are processed during one invocation of the algorithms
-    std::vector<double> d_sample_buf;  //!< input buffer holding the samples to be processed in one block
+    size_t d_block_size;                  //!< number of samples which are processed during one invocation of the algorithms
+    std::vector<double> d_sample_buf;     //!< input buffer holding the samples to be processed in one block
+    std::vector<double> d_sample_stamps;  //!< absolute reception timestamp [s] of each sample in d_sample_buf, same indexing
 
-    typedef std::pair<int32_t, std::vector<int32_t>> msg_candiate_int_t;
-    typedef std::pair<int32_t, std::vector<uint8_t>> msg_candiate_char_t;
+    // first element: absolute reception timestamp [s] of the message's first bit
+    typedef std::pair<double, std::vector<int32_t>> msg_candiate_int_t;
+    typedef std::pair<double, std::vector<uint8_t>> msg_candiate_char_t;
 
     // helper class for sample alignment
     class Sample_Aligner
@@ -130,10 +140,12 @@ private:
     {
     public:
         void reset();
-        void get_frame_candidates(const std::vector<int32_t> &bits, std::vector<std::pair<int32_t, std::vector<int32_t>>> &msg_candidates);
+        // bit_stamps[i] must hold the absolute reception timestamp [s] of bits[i]
+        void get_frame_candidates(const std::vector<int32_t> &bits, const std::vector<double> &bit_stamps, std::vector<std::pair<double, std::vector<int32_t>>> &msg_candidates);
 
     private:
         std::deque<int32_t> d_buffer;
+        std::deque<double> d_bit_stamps;  //!< absolute reception timestamp [s] of each bit in d_buffer, same indexing
     } d_frame_detector;
 
 

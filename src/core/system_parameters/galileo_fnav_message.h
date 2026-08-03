@@ -279,6 +279,7 @@ private:
     bool flag_ephemeris_3{};    // Flag indicating that ephemeris 3/3 (word 4) have been received
 
     bool flag_iono_and_GST{};  // Flag indicating that ionospheric and GST parameters (word 1) have been received
+    bool flag_iono_model_valid{};
     bool flag_TOW_1{};
     bool flag_TOW_2{};
     bool flag_TOW_3{};

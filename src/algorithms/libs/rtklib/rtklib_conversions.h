@@ -29,6 +29,7 @@
 
 
 class Beidou_Cnav1_Ephemeris;
+class Beidou_Dnav_Almanac;
 class Beidou_Dnav_Ephemeris;
 class Galileo_Almanac;
 class Galileo_Ephemeris;
@@ -107,6 +108,7 @@ eph_t eph_to_rtklib(const Beidou_Cnav1_Ephemeris& bei_eph);
 
 alm_t alm_to_rtklib(const Gps_Almanac& gps_alm);
 alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm);
+alm_t alm_to_rtklib(const Beidou_Dnav_Almanac& bei_alm);
 
 /*!
  * \brief Transforms a Glonass_Gnav_Ephemeris to its RTKLIB counterpart

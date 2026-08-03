@@ -702,6 +702,12 @@ std::map<int, Galileo_Ephemeris> Rtklib_Pvt::get_galileo_ephemeris() const
 }
 
 
+std::map<int, Beidou_Dnav_Ephemeris> Rtklib_Pvt::get_beidou_dnav_ephemeris() const
+{
+    return pvt_->get_beidou_dnav_ephemeris_map();
+}
+
+
 std::map<int, Gps_Almanac> Rtklib_Pvt::get_gps_almanac() const
 {
     return pvt_->get_gps_almanac_map();
@@ -711,6 +717,12 @@ std::map<int, Gps_Almanac> Rtklib_Pvt::get_gps_almanac() const
 std::map<int, Galileo_Almanac> Rtklib_Pvt::get_galileo_almanac() const
 {
     return pvt_->get_galileo_almanac_map();
+}
+
+
+std::map<int, Beidou_Dnav_Almanac> Rtklib_Pvt::get_beidou_dnav_almanac() const
+{
+    return pvt_->get_beidou_dnav_almanac_map();
 }
 
 

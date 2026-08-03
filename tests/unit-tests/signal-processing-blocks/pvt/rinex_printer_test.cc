@@ -14,6 +14,8 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "Beidou_DNAV.h"
+#include "GPS_CNAV.h"
 #include "pvt_conf.h"
 #include "rinex_printer.h"
 #include "rtklib_rtkcmn.h"
@@ -21,9 +23,11 @@
 #include "rtklib_solver.h"
 #include "signal_enabled_flags.h"
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <fstream>
 #include <string>
 #include <utility>
+#include <vector>
 
 
 class RinexPrinterTest : public ::testing::Test
@@ -285,6 +289,92 @@ int32_t count_record_body_lines(const std::string& filename, const std::string& 
 }
 
 
+std::string find_record_body_line(const std::string& filename, const std::string& record_header, int32_t body_line_index)
+{
+    std::fstream fstr(filename.c_str(), std::fstream::in);
+    if (!fstr.is_open())
+        {
+            return {};
+        }
+
+    std::string line_str;
+    bool found = false;
+    int32_t current_body_line = 0;
+    while (std::getline(fstr, line_str))
+        {
+            if (!found)
+                {
+                    found = line_str.compare(0, record_header.length(), record_header) == 0;
+                    continue;
+                }
+
+            if (line_str.empty() || line_str[0] == '>')
+                {
+                    return {};
+                }
+            if (current_body_line == body_line_index)
+                {
+                    return line_str;
+                }
+            current_body_line++;
+        }
+
+    return {};
+}
+
+
+int32_t count_lines_starting_with(const std::string& filename, const std::string& prefix)
+{
+    std::fstream fstr(filename.c_str(), std::fstream::in);
+    if (!fstr.is_open())
+        {
+            return -1;
+        }
+
+    int32_t count = 0;
+    std::string line;
+    while (std::getline(fstr, line))
+        {
+            if (line.compare(0, prefix.size(), prefix) == 0)
+                {
+                    count++;
+                }
+        }
+    return count;
+}
+
+
+int32_t count_rinex_header_lines(const std::string& filename, const std::string& label)
+{
+    std::fstream fstr(filename.c_str(), std::fstream::in);
+    if (!fstr.is_open())
+        {
+            return -1;
+        }
+
+    int32_t count = 0;
+    std::string line;
+    while (std::getline(fstr, line))
+        {
+            if (line.find(label, 59) != std::string::npos)
+                {
+                    count++;
+                }
+        }
+    return count;
+}
+
+
+double rinex_nav_field(const std::string& line, int32_t field_index, int32_t version)
+{
+    const size_t first_field = version == 4 ? 4U : static_cast<size_t>(version + 2);
+    const size_t field_start = first_field + static_cast<size_t>(field_index) * 19;
+    std::string value = line.substr(field_start, version == 4 ? 19U : 18U);
+    std::replace(value.begin(), value.end(), 'D', 'E');
+    return std::stod(value);
+}
+
+
 int32_t expand_test_lnav_utc_week(int32_t utc_week, int32_t reference_week)
 {
     int32_t expanded_week = utc_week;
@@ -312,6 +402,7 @@ TEST_F(RinexPrinterTest, GpsUtcHeaderExpandsEightBitWeekFields)
     eph.PRN = 1;
     eph.WN = 512;
     pvt_solution->gps_ephemeris_map[1] = eph;
+    pvt_solution->gps_iono.valid = true;
     pvt_solution->gps_utc_model.A0 = 1.0e-9;
     pvt_solution->gps_utc_model.A1 = 0.0;
     pvt_solution->gps_utc_model.tot = 0;
@@ -320,6 +411,7 @@ TEST_F(RinexPrinterTest, GpsUtcHeaderExpandsEightBitWeekFields)
     pvt_solution->gps_utc_model.WN_LSF = 7;
     pvt_solution->gps_utc_model.DN = 4;
     pvt_solution->gps_utc_model.DeltaT_LSF = 19;
+    pvt_solution->gps_utc_model.valid = true;
 
     Gnss_Synchro gs{};
     gs.System = 'G';
@@ -374,6 +466,7 @@ TEST_F(RinexPrinterTest, Rinex4GpsNavAndObs)
     pvt_solution->gps_iono.beta1 = -16384.0;
     pvt_solution->gps_iono.beta2 = -131072.0;
     pvt_solution->gps_iono.beta3 = 589824.0;
+    pvt_solution->gps_iono.valid = true;
     pvt_solution->gps_utc_model.A0 = 9.3132257461547852e-10;
     pvt_solution->gps_utc_model.A1 = 8.8817841970012523e-16;
     pvt_solution->gps_utc_model.tot = 233472;
@@ -382,6 +475,7 @@ TEST_F(RinexPrinterTest, Rinex4GpsNavAndObs)
     pvt_solution->gps_utc_model.WN_LSF = 7;
     pvt_solution->gps_utc_model.DN = 7;
     pvt_solution->gps_utc_model.DeltaT_LSF = 18;
+    pvt_solution->gps_utc_model.valid = true;
 
     Gnss_Synchro gs{};
     gs.System = 'G';
@@ -449,6 +543,9 @@ TEST_F(RinexPrinterTest, Rinex4GalileoNav)
     pvt_solution->galileo_iono.ai0 = 45.75;
     pvt_solution->galileo_iono.ai1 = 0.1875;
     pvt_solution->galileo_iono.ai2 = 0.0135;
+    pvt_solution->galileo_iono.WN = 120;
+    pvt_solution->galileo_iono.tow = 0;
+    pvt_solution->galileo_iono.valid = true;
     pvt_solution->galileo_utc_model.A0 = -9.3132257461547852e-10;
     pvt_solution->galileo_utc_model.A1 = -8.8817841970012523e-16;
     pvt_solution->galileo_utc_model.tot = 432000;
@@ -457,6 +554,7 @@ TEST_F(RinexPrinterTest, Rinex4GalileoNav)
     pvt_solution->galileo_utc_model.WN_LSF = 137;
     pvt_solution->galileo_utc_model.DN = 7;
     pvt_solution->galileo_utc_model.Delta_tLSF = 18;
+    pvt_solution->galileo_utc_model.flag_utc_model = true;
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     Gnss_Synchro gs{};
@@ -496,6 +594,7 @@ TEST_F(RinexPrinterTest, Rinex4GlonassNav)
     pvt_solution->glonass_gnav_ephemeris_map[1] = std::move(eph);
     pvt_solution->glonass_gnav_utc_model.d_tau_c = -9.3132257461547852e-09;
     pvt_solution->glonass_gnav_utc_model.d_tau_gps = 1.8626451492309570e-09;
+    pvt_solution->glonass_gnav_utc_model.valid = true;
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     Gnss_Synchro gs{};
@@ -539,11 +638,23 @@ TEST_F(RinexPrinterTest, Rinex4GpsCnavNav)
     pvt_solution->gps_cnav_ephemeris_map[1] = eph;
     pvt_solution->gps_cnav_iono.alpha0 = 1.1175870895385742e-08;
     pvt_solution->gps_cnav_iono.beta0 = 90112.0;
+    pvt_solution->gps_cnav_iono.valid = true;
     pvt_solution->gps_cnav_utc_model.A0 = 9.3132257461547852e-10;
     pvt_solution->gps_cnav_utc_model.A1 = 8.8817841970012523e-16;
     pvt_solution->gps_cnav_utc_model.tot = 233472;
     pvt_solution->gps_cnav_utc_model.WN_T = 2338;
     pvt_solution->gps_cnav_utc_model.DeltaT_LS = 18;
+    pvt_solution->gps_cnav_utc_model.valid = true;
+    pvt_solution->gps_cnav_eop.PRN = 1;
+    pvt_solution->gps_cnav_eop.tow = 253248.0;
+    pvt_solution->gps_cnav_eop.t_eop = 233472.0;
+    pvt_solution->gps_cnav_eop.pm_x = 0.2070846557617;
+    pvt_solution->gps_cnav_eop.pm_x_dot = -0.0002679824829102;
+    pvt_solution->gps_cnav_eop.pm_y = 0.3392457962036;
+    pvt_solution->gps_cnav_eop.pm_y_dot = -0.001400947570801;
+    pvt_solution->gps_cnav_eop.delta_ut1_gps = -0.1759799122810;
+    pvt_solution->gps_cnav_eop.delta_ut1_gps_dot = -0.00007975101470947;
+    pvt_solution->gps_cnav_eop.valid = true;
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     Gnss_Synchro gs{};
@@ -554,18 +665,69 @@ TEST_F(RinexPrinterTest, Rinex4GpsCnavNav)
 
     auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 42.0, true);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 43.0, false);
+    pvt_solution->gps_cnav_eop.pm_x += CNAV_PM_X_LSB;
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 44.0, false);
 
     const std::string obsfile = rp->get_obsfilename();
     const std::string navfile = rp->get_navfilename()[0];
     rp = nullptr;  // close the RINEX files so we can inspect them
 
     EXPECT_FALSE(find_line_starting_with(navfile, "> EPH G01 CNAV").empty());
+    EXPECT_FALSE(find_line_starting_with(navfile, "> EOP G01 CNVX").empty());
     EXPECT_FALSE(find_line_starting_with(navfile, "> ION G   CNVX").empty());
     EXPECT_FALSE(find_line_starting_with(navfile, "> STO G   CNVX").empty());
 
     // The CNAV record has the SV / EPOCH / SV CLK line plus eight broadcast
     // orbit lines (see RINEX 4.02 specification, Table A10)
     EXPECT_EQ(9, count_record_body_lines(navfile, "> EPH G01 CNAV"));
+    EXPECT_EQ(3, count_record_body_lines(navfile, "> EOP G01 CNVX"));
+    EXPECT_EQ(2, count_lines_starting_with(navfile, "> EOP G01 CNVX"));
+    const std::string eop_x_line = find_record_body_line(navfile, "> EOP G01 CNVX", 0);
+    const std::string eop_y_line = find_record_body_line(navfile, "> EOP G01 CNVX", 1);
+    const std::string eop_ut1_line = find_record_body_line(navfile, "> EOP G01 CNVX", 2);
+    ASSERT_EQ(80U, eop_x_line.size());
+    ASSERT_EQ(80U, eop_y_line.size());
+    ASSERT_EQ(80U, eop_ut1_line.size());
+    EXPECT_DOUBLE_EQ(0.2070846557617, std::stod(eop_x_line.substr(23, 19)));
+    EXPECT_DOUBLE_EQ(-0.0002679824829102, std::stod(eop_x_line.substr(42, 19)));
+    EXPECT_DOUBLE_EQ(0.0, std::stod(eop_x_line.substr(61, 19)));
+    EXPECT_DOUBLE_EQ(0.3392457962036, std::stod(eop_y_line.substr(23, 19)));
+    EXPECT_DOUBLE_EQ(-0.001400947570801, std::stod(eop_y_line.substr(42, 19)));
+    EXPECT_DOUBLE_EQ(0.0, std::stod(eop_y_line.substr(61, 19)));
+    EXPECT_DOUBLE_EQ(253248.0, rinex_nav_field(eop_ut1_line, 0, 4));
+    EXPECT_DOUBLE_EQ(-0.1759799122810, rinex_nav_field(eop_ut1_line, 1, 4));
+    EXPECT_DOUBLE_EQ(-0.00007975101470947, rinex_nav_field(eop_ut1_line, 2, 4));
+    EXPECT_DOUBLE_EQ(0.0, rinex_nav_field(eop_ut1_line, 3, 4));
+
+    fs::remove(obsfile);
+    fs::remove(navfile);
+}
+
+
+TEST_F(RinexPrinterTest, Rinex3GpsCnavOnlyPromotesBothFilesToRinex4)
+{
+    Pvt_Conf conf;
+    conf.use_e6_for_pvt = false;
+    const auto signal_enabled_flags = GPS_2S;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
+
+    Gps_CNAV_Ephemeris eph;
+    eph.PRN = 1;
+    eph.WN = 2338;
+    pvt_solution->gps_cnav_ephemeris_map[1] = eph;
+
+    const std::map<int, Gnss_Synchro> no_observations;
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 3);
+    rp->print_rinex_annotation(pvt_solution.get(), no_observations, 42.0, false);
+
+    const std::string obsfile = rp->get_obsfilename();
+    const std::string navfile = rp->get_navfilename()[0];
+    rp = nullptr;
+
+    EXPECT_NE(std::string::npos, find_rinex_header_line(obsfile, "RINEX VERSION / TYPE").find("4.02"));
+    EXPECT_NE(std::string::npos, find_rinex_header_line(navfile, "RINEX VERSION / TYPE").find("4.02"));
+    EXPECT_FALSE(find_line_starting_with(navfile, "> EPH G01 CNAV").empty());
 
     fs::remove(obsfile);
     fs::remove(navfile);
@@ -587,6 +749,7 @@ TEST_F(RinexPrinterTest, Rinex4QzssNav)
     pvt_solution->qzss_iono.alpha1 = -7.4505805969238281e-09;
     pvt_solution->qzss_iono.beta0 = 118784.0;
     pvt_solution->qzss_iono.beta1 = -16384.0;
+    pvt_solution->qzss_iono.valid = true;
     pvt_solution->qzss_utc_model.A0 = -9.3132257461547852e-10;
     pvt_solution->qzss_utc_model.A1 = -8.8817841970012523e-16;
     pvt_solution->qzss_utc_model.tot = 233472;
@@ -595,6 +758,7 @@ TEST_F(RinexPrinterTest, Rinex4QzssNav)
     pvt_solution->qzss_utc_model.WN_LSF = 7;
     pvt_solution->qzss_utc_model.DN = 7;
     pvt_solution->qzss_utc_model.DeltaT_LSF = 18;
+    pvt_solution->qzss_utc_model.valid = true;
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     Gnss_Synchro gs{};
@@ -638,11 +802,23 @@ TEST_F(RinexPrinterTest, Rinex4QzssCnavNav)
     pvt_solution->gps_cnav_ephemeris_map[193] = eph;
     pvt_solution->qzss_cnav_iono.alpha0 = 2.6077032089233398e-08;
     pvt_solution->qzss_cnav_iono.beta0 = 118784.0;
+    pvt_solution->qzss_cnav_iono.valid = true;
     pvt_solution->qzss_cnav_utc_model.A0 = -9.3132257461547852e-10;
     pvt_solution->qzss_cnav_utc_model.A1 = -8.8817841970012523e-16;
     pvt_solution->qzss_cnav_utc_model.tot = 233472;
     pvt_solution->qzss_cnav_utc_model.WN_T = 2338;
     pvt_solution->qzss_cnav_utc_model.DeltaT_LS = 18;
+    pvt_solution->qzss_cnav_utc_model.valid = true;
+    pvt_solution->qzss_cnav_eop.PRN = 193;
+    pvt_solution->qzss_cnav_eop.tow = 172986.0;
+    pvt_solution->qzss_cnav_eop.t_eop = 233472.0;
+    pvt_solution->qzss_cnav_eop.pm_x = 0.2082471847534;
+    pvt_solution->qzss_cnav_eop.pm_x_dot = -0.0006551742553711;
+    pvt_solution->qzss_cnav_eop.pm_y = 0.3444433212280;
+    pvt_solution->qzss_cnav_eop.pm_y_dot = -0.0009121894836426;
+    pvt_solution->qzss_cnav_eop.delta_ut1_gps = -0.1754972934723;
+    pvt_solution->qzss_cnav_eop.delta_ut1_gps_dot = 0.0005635917186737;
+    pvt_solution->qzss_cnav_eop.valid = true;
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     Gnss_Synchro gs{};
@@ -659,6 +835,7 @@ TEST_F(RinexPrinterTest, Rinex4QzssCnavNav)
     rp = nullptr;  // close the RINEX files so we can inspect them
 
     EXPECT_FALSE(find_line_starting_with(navfile, "> EPH J01 CNAV").empty());
+    EXPECT_FALSE(find_line_starting_with(navfile, "> EOP J01 CNVX").empty());
     EXPECT_FALSE(find_line_starting_with(navfile, "> ION J   CNVX WIDE").empty());
     EXPECT_FALSE(find_line_starting_with(navfile, "> STO J   CNVX").empty());
 
@@ -667,6 +844,511 @@ TEST_F(RinexPrinterTest, Rinex4QzssCnavNav)
 
     const std::string leap_second_line = find_rinex_header_line(navfile, "LEAP SECONDS");
     EXPECT_NE(std::string::npos, leap_second_line.find("18"));
+
+    EXPECT_EQ(3, count_record_body_lines(navfile, "> EOP J01 CNVX"));
+    const std::string eop_ut1_line = find_record_body_line(navfile, "> EOP J01 CNVX", 2);
+    EXPECT_DOUBLE_EQ(172986.0, rinex_nav_field(eop_ut1_line, 0, 4));
+    EXPECT_DOUBLE_EQ(-0.1754972934723, rinex_nav_field(eop_ut1_line, 1, 4));
+
+    fs::remove(obsfile);
+    fs::remove(navfile);
+}
+
+
+TEST_F(RinexPrinterTest, Rinex3QzssCnavOnlyPromotesBothFilesToRinex4)
+{
+    Pvt_Conf conf;
+    conf.use_e6_for_pvt = false;
+    const auto signal_enabled_flags = QZS_J5;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
+
+    Gps_CNAV_Ephemeris eph;
+    eph.PRN = 193;  // QZSS J01
+    eph.WN = 2338;
+    pvt_solution->gps_cnav_ephemeris_map[193] = eph;
+
+    const std::map<int, Gnss_Synchro> no_observations;
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 3);
+    rp->print_rinex_annotation(pvt_solution.get(), no_observations, 42.0, false);
+
+    const std::string obsfile = rp->get_obsfilename();
+    const std::string navfile = rp->get_navfilename()[0];
+    rp = nullptr;
+
+    EXPECT_NE(std::string::npos, find_rinex_header_line(obsfile, "RINEX VERSION / TYPE").find("4.02"));
+    EXPECT_NE(std::string::npos, find_rinex_header_line(navfile, "RINEX VERSION / TYPE").find("4.02"));
+    EXPECT_FALSE(find_line_starting_with(navfile, "> EPH J01 CNAV").empty());
+
+    fs::remove(obsfile);
+    fs::remove(navfile);
+}
+
+
+TEST_F(RinexPrinterTest, Rinex3GpsCnavObservationsUseLnavNavigationWhenAvailable)
+{
+    Pvt_Conf conf;
+    conf.use_e6_for_pvt = false;
+    const auto signal_enabled_flags = GPS_1C | GPS_2S;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
+
+    Gps_Ephemeris lnav_eph;
+    lnav_eph.PRN = 1;
+    lnav_eph.WN = 512;
+    pvt_solution->gps_ephemeris_map[1] = lnav_eph;
+
+    Gps_CNAV_Ephemeris cnav_eph;
+    cnav_eph.PRN = 1;
+    cnav_eph.WN = 2338;
+    pvt_solution->gps_cnav_ephemeris_map[1] = cnav_eph;
+
+    const std::map<int, Gnss_Synchro> no_observations;
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 3);
+    rp->print_rinex_annotation(pvt_solution.get(), no_observations, 42.0, false);
+
+    const std::string obsfile = rp->get_obsfilename();
+    const std::string navfile = rp->get_navfilename()[0];
+    rp = nullptr;
+
+    EXPECT_NE(std::string::npos, find_rinex_header_line(obsfile, "RINEX VERSION / TYPE").find("3.02"));
+    EXPECT_NE(std::string::npos, find_rinex_header_line(navfile, "RINEX VERSION / TYPE").find("3.02"));
+    EXPECT_NE(std::string::npos, find_rinex_header_line(obsfile, "SYS / # / OBS TYPES").find("C2S L2S D2S S2S"));
+    EXPECT_FALSE(find_line_starting_with(navfile, "G01 ").empty());
+    EXPECT_TRUE(find_line_starting_with(navfile, "> EPH G01 CNAV").empty());
+
+    fs::remove(obsfile);
+    fs::remove(navfile);
+}
+
+
+TEST_F(RinexPrinterTest, Rinex4GpsWritesLnavAndCnavWhenBothAreAvailable)
+{
+    Pvt_Conf conf;
+    conf.use_e6_for_pvt = false;
+    const auto signal_enabled_flags = GPS_1C | GPS_2S;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
+
+    Gps_Ephemeris lnav_eph;
+    lnav_eph.PRN = 1;
+    lnav_eph.WN = 512;
+    pvt_solution->gps_ephemeris_map[1] = lnav_eph;
+
+    Gps_CNAV_Ephemeris cnav_eph;
+    cnav_eph.PRN = 1;
+    cnav_eph.WN = 2338;
+    pvt_solution->gps_cnav_ephemeris_map[1] = cnav_eph;
+
+    const std::map<int, Gnss_Synchro> no_observations;
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
+    rp->print_rinex_annotation(pvt_solution.get(), no_observations, 42.0, false);
+
+    const std::string obsfile = rp->get_obsfilename();
+    const std::string navfile = rp->get_navfilename()[0];
+    rp = nullptr;
+
+    EXPECT_FALSE(find_line_starting_with(navfile, "> EPH G01 LNAV").empty());
+    EXPECT_FALSE(find_line_starting_with(navfile, "> EPH G01 CNAV").empty());
+
+    fs::remove(obsfile);
+    fs::remove(navfile);
+}
+
+
+TEST_F(RinexPrinterTest, Rinex4ModelRecordsAreNavOnlyDeduplicatedAndRefreshable)
+{
+    Pvt_Conf conf;
+    conf.use_e6_for_pvt = false;
+    const auto signal_enabled_flags = GPS_1C;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
+
+    Gps_Ephemeris eph;
+    eph.PRN = 1;
+    eph.WN = 2300;
+    pvt_solution->gps_ephemeris_map[1] = eph;
+
+    // An all-zero model is valid and must not be confused with an unavailable model.
+    pvt_solution->gps_iono.valid = true;
+    pvt_solution->gps_utc_model.valid = true;
+    pvt_solution->gps_utc_model.WN_T = 2300;
+    pvt_solution->gps_utc_model.DeltaT_LS = 18;
+
+    const std::map<int, Gnss_Synchro> no_observations;
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
+    rp->print_rinex_annotation(pvt_solution.get(), no_observations, 42.0, false);
+    rp->print_rinex_annotation(pvt_solution.get(), no_observations, 43.0, false);
+
+    pvt_solution->gps_iono.alpha0 = 1.0e-8;
+    pvt_solution->gps_utc_model.A0 = 2.0e-9;
+    pvt_solution->gps_utc_model.DeltaT_LS = 19;
+    rp->print_rinex_annotation(pvt_solution.get(), no_observations, 44.0, false);
+    rp->print_rinex_annotation(pvt_solution.get(), no_observations, 45.0, false);
+
+    const std::string obsfile = rp->get_obsfilename();
+    const std::string navfile = rp->get_navfilename()[0];
+    rp = nullptr;
+
+    EXPECT_EQ(2, count_lines_starting_with(navfile, "> ION G   LNAV"));
+    EXPECT_EQ(2, count_lines_starting_with(navfile, "> STO G   LNAV"));
+    EXPECT_EQ(1, count_rinex_header_lines(navfile, "LEAP SECONDS"));
+    EXPECT_EQ(1, count_rinex_header_lines(obsfile, "LEAP SECONDS"));
+    EXPECT_NE(std::string::npos, find_rinex_header_line(navfile, "LEAP SECONDS").find("19"));
+    EXPECT_NE(std::string::npos, find_rinex_header_line(obsfile, "LEAP SECONDS").find("19"));
+
+    fs::remove(obsfile);
+    fs::remove(navfile);
+}
+
+
+TEST_F(RinexPrinterTest, Rinex4GpsAndQzssLnavFieldsUseRinexSemantics)
+{
+    Pvt_Conf conf;
+    conf.use_e6_for_pvt = false;
+    const auto signal_enabled_flags = GPS_1C | QZS_J1;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
+
+    Gps_Ephemeris gps;
+    gps.PRN = 1;
+    gps.WN = 2300;
+    gps.toe = 10000.0;
+    gps.toc = 10000.0;
+    gps.tow = 10030.0;
+    gps.IODE_SF2 = 12;
+    gps.IODE_SF3 = 12;
+    gps.code_on_L2 = 2;
+    gps.L2_P_data_flag = true;
+    gps.SV_accuracy = 5;
+    gps.IODC = 240;
+    gps.fit_interval_flag = true;
+    gps.satelliteBlock[1] = "IIA";
+    pvt_solution->gps_ephemeris_map[1] = gps;
+
+    Gps_Ephemeris qzss = gps;
+    qzss.PRN = 193;
+    qzss.code_on_L2 = 3;
+    qzss.L2_P_data_flag = false;
+    qzss.SV_accuracy = 7;
+    qzss.fit_interval_flag = true;
+    qzss.satelliteBlock[193] = "QZS-2";
+    pvt_solution->gps_ephemeris_map[193] = qzss;
+
+    const std::map<int, Gnss_Synchro> no_observations;
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
+    rp->print_rinex_annotation(pvt_solution.get(), no_observations, 10030.0, false);
+
+    const std::string obsfile = rp->get_obsfilename();
+    const std::string navfile = rp->get_navfilename()[0];
+    rp = nullptr;
+
+    const std::string gps_orbit5 = find_record_body_line(navfile, "> EPH G01 LNAV", 5);
+    const std::string gps_orbit6 = find_record_body_line(navfile, "> EPH G01 LNAV", 6);
+    const std::string gps_orbit7 = find_record_body_line(navfile, "> EPH G01 LNAV", 7);
+    ASSERT_FALSE(gps_orbit5.empty());
+    ASSERT_FALSE(gps_orbit6.empty());
+    ASSERT_FALSE(gps_orbit7.empty());
+    EXPECT_DOUBLE_EQ(2.0, rinex_nav_field(gps_orbit5, 1, 4));
+    EXPECT_DOUBLE_EQ(1.0, rinex_nav_field(gps_orbit5, 3, 4));
+    EXPECT_NEAR(11.3, rinex_nav_field(gps_orbit6, 0, 4), 1.0e-12);
+    EXPECT_DOUBLE_EQ(8.0, rinex_nav_field(gps_orbit7, 1, 4));
+
+    const std::string qzss_orbit5 = find_record_body_line(navfile, "> EPH J01 LNAV", 5);
+    const std::string qzss_orbit6 = find_record_body_line(navfile, "> EPH J01 LNAV", 6);
+    const std::string qzss_orbit7 = find_record_body_line(navfile, "> EPH J01 LNAV", 7);
+    ASSERT_FALSE(qzss_orbit5.empty());
+    ASSERT_FALSE(qzss_orbit6.empty());
+    ASSERT_FALSE(qzss_orbit7.empty());
+    EXPECT_DOUBLE_EQ(3.0, rinex_nav_field(qzss_orbit5, 1, 4));
+    EXPECT_DOUBLE_EQ(1.0, rinex_nav_field(qzss_orbit5, 3, 4));
+    EXPECT_DOUBLE_EQ(32.0, rinex_nav_field(qzss_orbit6, 0, 4));
+    EXPECT_DOUBLE_EQ(1.0, rinex_nav_field(qzss_orbit7, 1, 4));
+
+    fs::remove(obsfile);
+    fs::remove(navfile);
+}
+
+
+TEST_F(RinexPrinterTest, Rinex4GalileoFieldsPreserveSignalProvenanceAndPhysicalUnits)
+{
+    Pvt_Conf conf;
+    conf.use_e6_for_pvt = false;
+    const auto signal_enabled_flags = GAL_1B | GAL_E5a | GAL_E5b;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
+
+    Galileo_Ephemeris inav;
+    inav.PRN = 11;
+    inav.WN = 120;
+    inav.toe = 0.0;
+    inav.toc = 3600.0;
+    inav.tow = 3700.0;
+    inav.nav_message_type = Galileo_Nav_Message_Type::INAV;
+    inav.nav_message_source = Galileo_Nav_Message_Source::E5b;
+    inav.SISA = 75;
+    inav.E1B_DVS = true;
+    inav.E1B_HS = 2;
+    inav.E5a_DVS = true;  // unavailable in I/NAV and therefore ignored
+    inav.E5a_HS = 3;
+    inav.E5b_DVS = true;
+    inav.E5b_HS = 1;
+    inav.BGD_E1E5a = 1.0e-9;
+    inav.BGD_E1E5b = 2.0e-9;
+    pvt_solution->galileo_ephemeris_map[11] = inav;
+
+    Galileo_Ephemeris fnav = inav;
+    fnav.PRN = 12;
+    fnav.nav_message_type = Galileo_Nav_Message_Type::FNAV;
+    fnav.nav_message_source = Galileo_Nav_Message_Source::E5a;
+    fnav.SISA = 126;
+    fnav.E1B_DVS = true;  // unavailable in F/NAV and therefore ignored
+    fnav.E1B_HS = 3;
+    fnav.E5a_DVS = true;
+    fnav.E5a_HS = 2;
+    fnav.E5b_DVS = true;  // unavailable in F/NAV and therefore ignored
+    fnav.E5b_HS = 3;
+    fnav.BGD_E1E5b = 9.0e-9;
+    pvt_solution->galileo_ephemeris_map[12] = fnav;
+
+    const std::map<int, Gnss_Synchro> no_observations;
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
+    rp->print_rinex_annotation(pvt_solution.get(), no_observations, 3700.0, false);
+
+    const std::string obsfile = rp->get_obsfilename();
+    const std::string navfile = rp->get_navfilename()[0];
+    rp = nullptr;
+
+    const std::string inav_epoch = find_record_body_line(navfile, "> EPH E11 INAV", 0);
+    const std::string inav_orbit5 = find_record_body_line(navfile, "> EPH E11 INAV", 5);
+    const std::string inav_orbit6 = find_record_body_line(navfile, "> EPH E11 INAV", 6);
+    ASSERT_FALSE(inav_epoch.empty());
+    ASSERT_FALSE(inav_orbit5.empty());
+    ASSERT_FALSE(inav_orbit6.empty());
+    EXPECT_NE(std::string::npos, inav_epoch.find(" 01 00 00"));
+    EXPECT_DOUBLE_EQ(516.0, rinex_nav_field(inav_orbit5, 1, 4));
+    EXPECT_DOUBLE_EQ(1.0, rinex_nav_field(inav_orbit6, 0, 4));
+    EXPECT_DOUBLE_EQ(197.0, rinex_nav_field(inav_orbit6, 1, 4));
+    EXPECT_DOUBLE_EQ(2.0e-9, rinex_nav_field(inav_orbit6, 3, 4));
+
+    const std::string fnav_orbit5 = find_record_body_line(navfile, "> EPH E12 FNAV", 5);
+    const std::string fnav_orbit6 = find_record_body_line(navfile, "> EPH E12 FNAV", 6);
+    ASSERT_FALSE(fnav_orbit5.empty());
+    ASSERT_FALSE(fnav_orbit6.empty());
+    EXPECT_DOUBLE_EQ(258.0, rinex_nav_field(fnav_orbit5, 1, 4));
+    EXPECT_DOUBLE_EQ(-1.0, rinex_nav_field(fnav_orbit6, 0, 4));
+    EXPECT_DOUBLE_EQ(40.0, rinex_nav_field(fnav_orbit6, 1, 4));
+    EXPECT_DOUBLE_EQ(0.0, rinex_nav_field(fnav_orbit6, 3, 4));
+
+    fs::remove(obsfile);
+    fs::remove(navfile);
+}
+
+
+TEST_F(RinexPrinterTest, GalileoObsHeaderUsesContinuationLines)
+{
+    Pvt_Conf conf;
+    conf.use_e6_for_pvt = true;
+    const auto signal_enabled_flags = GAL_1B | GAL_E5a | GAL_E5b | GAL_E6;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
+
+    Galileo_Ephemeris eph;
+    eph.PRN = 11;
+    eph.WN = 120;
+    pvt_solution->galileo_ephemeris_map[11] = eph;
+
+    const std::map<int, Gnss_Synchro> no_observations;
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
+    rp->print_rinex_annotation(pvt_solution.get(), no_observations, 0.0, false);
+
+    const std::string obsfile = rp->get_obsfilename();
+    const std::string navfile = rp->get_navfilename()[0];
+    rp = nullptr;
+
+    std::vector<std::string> observation_type_lines;
+    std::fstream obs(obsfile.c_str(), std::fstream::in);
+    std::string line;
+    while (std::getline(obs, line))
+        {
+            if (line.find("SYS / # / OBS TYPES", 59) != std::string::npos)
+                {
+                    observation_type_lines.push_back(line);
+                }
+        }
+
+    ASSERT_EQ(2U, observation_type_lines.size());
+    EXPECT_EQ(80U, observation_type_lines[0].size());
+    EXPECT_EQ(80U, observation_type_lines[1].size());
+    EXPECT_EQ("E   16", observation_type_lines[0].substr(0, 6));
+    EXPECT_NE(std::string::npos, observation_type_lines[0].find(" C6B"));
+    EXPECT_EQ("      ", observation_type_lines[1].substr(0, 6));
+    EXPECT_NE(std::string::npos, observation_type_lines[1].find(" L6B D6B S6B"));
+
+    fs::remove(obsfile);
+    fs::remove(navfile);
+}
+
+
+TEST_F(RinexPrinterTest, Rinex4BeidouDnavAndObs)
+{
+    Pvt_Conf conf;
+    conf.use_e6_for_pvt = false;
+    const auto signal_enabled_flags = BDS_B1;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
+
+    Beidou_Dnav_Ephemeris d1_eph;
+    d1_eph.PRN = 6;
+    d1_eph.WN = 1000;
+    d1_eph.nav_type = 1;
+    d1_eph.SV_accuracy = 5;
+    d1_eph.sqrtA = 5153.5;
+    d1_eph.toc = 960.0;
+    d1_eph.toe = 960;
+    d1_eph.tow = 1000;
+    pvt_solution->beidou_dnav_ephemeris_map[6] = d1_eph;
+
+    Beidou_Dnav_Ephemeris d2_eph = d1_eph;
+    d2_eph.PRN = 3;
+    d2_eph.nav_type = 2;
+    d2_eph.SV_accuracy = 15;
+    pvt_solution->beidou_dnav_ephemeris_map[3] = d2_eph;
+
+    pvt_solution->beidou_dnav_iono.valid = true;
+    pvt_solution->beidou_dnav_iono.alpha0 = 1.1175870895385742e-08;
+    pvt_solution->beidou_dnav_iono.beta0 = 90112.0;
+
+    auto& utc_model = pvt_solution->beidou_dnav_utc_model;
+    utc_model.valid = true;
+    utc_model.A0_UTC = 0.0;  // Zero is a valid broadcast coefficient.
+    utc_model.A1_UTC = 8.8817841970012523e-16;
+    utc_model.A0_GPS = 1.0e-9;
+    utc_model.A1_GPS = 2.0e-15;
+    utc_model.A0_GAL = -3.0e-9;
+    utc_model.A1_GAL = -4.0e-15;
+    utc_model.A0_GLO = 5.0e-9;
+    utc_model.A1_GLO = 6.0e-15;
+    utc_model.DeltaT_LS = 4;
+    utc_model.DeltaT_LSF = 5;
+    utc_model.WN_LSF = 235;
+    utc_model.DN = 6;
+
+    Gnss_Synchro gs{};
+    gs.System = 'C';
+    gs.PRN = 6;
+    std::memcpy(static_cast<void*>(gs.Signal), "B1", 3);
+    gs.Pseudorange_m = 22000000.0;
+    gs.Carrier_phase_rads = 23.4;
+    gs.Carrier_Doppler_hz = 1534.0;
+    gs.CN0_dB_hz = 42.0;
+    gs.Flag_valid_pseudorange = true;
+    std::map<int, Gnss_Synchro> gnss_observables_map;
+    gnss_observables_map[6] = gs;
+
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 1000.0, true);
+
+    const std::string obsfile = rp->get_obsfilename();
+    const std::string navfile = rp->get_navfilename()[0];
+    rp = nullptr;
+
+    const std::string obs_types_line = find_rinex_header_line(obsfile, "SYS / # / OBS TYPES");
+    EXPECT_NE(std::string::npos, obs_types_line.find("C2I L2I D2I S2I"));
+    EXPECT_EQ(std::string::npos, obs_types_line.find("C1I"));
+    EXPECT_FALSE(find_line_starting_with(obsfile, "C06").empty());
+    const std::string time_of_first_obs_line = find_rinex_header_line(obsfile, "TIME OF FIRST OBS");
+    ASSERT_GE(time_of_first_obs_line.size(), 51U);
+    EXPECT_EQ("BDT", time_of_first_obs_line.substr(48, 3));
+
+    EXPECT_FALSE(find_line_starting_with(navfile, "> EPH C06 D1").empty());
+    EXPECT_FALSE(find_line_starting_with(navfile, "> EPH C03 D2").empty());
+    EXPECT_FALSE(find_line_starting_with(navfile, "> ION C   D1D2").empty());
+    EXPECT_FALSE(find_line_containing(navfile, "BDUT").empty());
+    EXPECT_FALSE(find_line_containing(navfile, "BDGP").empty());
+    EXPECT_FALSE(find_line_containing(navfile, "BDGA").empty());
+    EXPECT_FALSE(find_line_containing(navfile, "BDGL").empty());
+
+    const std::string d1_accuracy_line = find_record_body_line(navfile, "> EPH C06 D1", 6);
+    const std::string d2_accuracy_line = find_record_body_line(navfile, "> EPH C03 D2", 6);
+    ASSERT_GE(d1_accuracy_line.size(), 23U);
+    ASSERT_GE(d2_accuracy_line.size(), 23U);
+    EXPECT_DOUBLE_EQ(11.3, std::stod(d1_accuracy_line.substr(4, 19)));
+    EXPECT_DOUBLE_EQ(8192.0, std::stod(d2_accuracy_line.substr(4, 19)));
+
+    const int32_t expected_lsf_week = expand_test_lnav_utc_week(utc_model.WN_LSF, d1_eph.WN) + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET;
+    for (const auto& leap_second_line : {find_rinex_header_line(navfile, "LEAP SECONDS"), find_rinex_header_line(obsfile, "LEAP SECONDS")})
+        {
+            ASSERT_GE(leap_second_line.size(), 24U);
+            EXPECT_EQ(18, std::stoi(leap_second_line.substr(0, 6)));
+            EXPECT_EQ(19, std::stoi(leap_second_line.substr(6, 6)));
+            EXPECT_EQ(expected_lsf_week, std::stoi(leap_second_line.substr(12, 6)));
+            EXPECT_EQ(7, std::stoi(leap_second_line.substr(18, 6)));
+        }
+
+    fs::remove(obsfile);
+    fs::remove(navfile);
+}
+
+
+TEST_F(RinexPrinterTest, Rinex3BeidouModelsAreInsertedWhenValid)
+{
+    Pvt_Conf conf;
+    conf.use_e6_for_pvt = false;
+    const auto signal_enabled_flags = BDS_B1;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
+
+    Beidou_Dnav_Ephemeris eph;
+    eph.PRN = 6;
+    eph.WN = 1000;
+    eph.sqrtA = 5153.5;
+    eph.toc = 960.0;
+    eph.toe = 960;
+    eph.tow = 1000;
+    pvt_solution->beidou_dnav_ephemeris_map[6] = eph;
+
+    Gnss_Synchro gs{};
+    gs.System = 'C';
+    gs.PRN = 6;
+    std::memcpy(static_cast<void*>(gs.Signal), "B1", 3);
+    gs.Flag_valid_pseudorange = true;
+    std::map<int, Gnss_Synchro> gnss_observables_map;
+    gnss_observables_map[6] = gs;
+
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 3);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 1000.0, true);
+
+    pvt_solution->beidou_dnav_iono.valid = true;
+    pvt_solution->beidou_dnav_iono.alpha0 = 1.0e-8;
+    pvt_solution->beidou_dnav_iono.beta0 = 90112.0;
+    auto& utc_model = pvt_solution->beidou_dnav_utc_model;
+    utc_model.valid = true;
+    utc_model.A0_UTC = 0.0;
+    utc_model.A1_UTC = 1.0e-15;
+    utc_model.DeltaT_LS = 4;
+    utc_model.DeltaT_LSF = 4;
+    utc_model.WN_LSF = 235;
+    utc_model.DN = 6;
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 1001.0, true);
+
+    const std::string obsfile = rp->get_obsfilename();
+    const std::string navfile = rp->get_navfilename()[0];
+    rp = nullptr;
+
+    const std::string obs_types_line = find_rinex_header_line(obsfile, "SYS / # / OBS TYPES");
+    EXPECT_NE(std::string::npos, obs_types_line.find("C1I L1I D1I S1I"));
+    EXPECT_EQ(std::string::npos, obs_types_line.find("C2I"));
+    const std::string time_of_first_obs_line = find_rinex_header_line(obsfile, "TIME OF FIRST OBS");
+    ASSERT_GE(time_of_first_obs_line.size(), 51U);
+    EXPECT_EQ("BDT", time_of_first_obs_line.substr(48, 3));
+
+    const std::string alpha_line = find_line_starting_with(navfile, "BDSA");
+    ASSERT_GE(alpha_line.size(), 17U);
+    std::string alpha0_field = alpha_line.substr(5, 12);
+    const std::size_t exponent_pos = alpha0_field.find('D');
+    ASSERT_NE(std::string::npos, exponent_pos);
+    alpha0_field[exponent_pos] = 'E';
+    EXPECT_DOUBLE_EQ(1.0e-8, std::stod(alpha0_field));
+    EXPECT_FALSE(find_line_starting_with(navfile, "BDSB").empty());
+    EXPECT_FALSE(find_line_starting_with(navfile, "BDUT").empty());
+    EXPECT_TRUE(find_line_containing(navfile, "BDGP").empty());
+
+    const std::string leap_second_line = find_rinex_header_line(navfile, "LEAP SECONDS");
+    ASSERT_GE(leap_second_line.size(), 24U);
+    EXPECT_EQ(18, std::stoi(leap_second_line.substr(0, 6)));
+    EXPECT_EQ(7, std::stoi(leap_second_line.substr(18, 6)));
 
     fs::remove(obsfile);
     fs::remove(navfile);
@@ -1146,7 +1828,7 @@ TEST_F(RinexPrinterTest, GpsObsLogDualBand)
     find_obs_record_lines(obsfile, "G08", line_epoch, line_sat);
 
     std::string expected_epoch = "> 2019 04 14 00 00 00.0000000  0  3                                             ";
-    std::string expected_sat("G08  22000002.100 6         7.226 6       321.000 6        39.000  22000000.000 7         3.724 7      1534.000 7        42.000");
+    std::string expected_sat("G08  22000002.100 6         7.226 6       321.000 6        39.000    22000000.000 7         3.724 7      1534.000 7        42.000  ");
     EXPECT_EQ(0, expected_epoch.compare(line_epoch));
     EXPECT_EQ(0, expected_sat.compare(line_sat));
 
@@ -1224,7 +1906,7 @@ TEST_F(RinexPrinterTest, GalileoObsLogDualBand)
     find_obs_record_lines(obsfile, "E08", line_epoch, line_sat);
 
     std::string expected_epoch = "> 1999 08 22 00 00 00.0000000  0  2                                             ";
-    std::string expected_sat("E08  22000002.100 6         7.226 6       321.000 6        39.000  22000000.000 7         3.724 7      1534.000 7        42.000");
+    std::string expected_sat("E08  22000002.100 6         7.226 6       321.000 6        39.000    22000000.000 7         3.724 7      1534.000 7        42.000  ");
     EXPECT_EQ(0, expected_epoch.compare(line_epoch));
     EXPECT_EQ(0, expected_sat.compare(line_sat));
 
@@ -1334,7 +2016,7 @@ TEST_F(RinexPrinterTest, MixedObsLog)
     find_obs_record_lines(obsfile, "E16", line_epoch, line_sat);
 
     std::string expected_epoch = "> 2019 04 14 00 00 00.0000000  0  7                                             ";
-    std::string expected_sat("E16  22000000.000 7         0.127 7       -20.000 7        42.000  22000000.000 6         8.292 6      1534.000 6        41.000");
+    std::string expected_sat("E16  22000000.000 7         0.127 7       -20.000 7        42.000    22000000.000 6         8.292 6      1534.000 6        41.000  ");
     EXPECT_EQ(0, expected_epoch.compare(line_epoch));
     EXPECT_EQ(0, expected_sat.compare(line_sat));
 
@@ -1444,7 +2126,7 @@ TEST_F(RinexPrinterTest, MixedObsLogGpsGlo)
     find_obs_record_lines(obsfile, "R16", line_epoch, line_sat);
 
     std::string expected_epoch = "> 2019 04 14 00 00 00.0000000  0  7                                             ";
-    std::string expected_sat("R16  22000000.000 6         8.292 6      1534.000 6        41.000  22000000.000 7         0.127 7       -20.000 7        42.000");
+    std::string expected_sat("R16  22000000.000 6         8.292 6      1534.000 6        41.000    22000000.000 7         0.127 7       -20.000 7        42.000  ");
     EXPECT_EQ(0, expected_epoch.compare(line_epoch));
     EXPECT_EQ(0, expected_sat.compare(line_sat));
 

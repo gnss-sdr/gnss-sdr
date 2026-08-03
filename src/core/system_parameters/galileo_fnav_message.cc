@@ -121,6 +121,7 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
             flag_TOW_1 = true;
             flag_TOW_set = true;
             flag_iono_and_GST = true;  // set to false externally
+            flag_iono_model_valid = true;
             break;
         case 2:  // Ephemeris (1/3) and GST
             FNAV_IODnav_2 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_IO_DNAV_2_BIT));
@@ -384,6 +385,7 @@ Galileo_Ephemeris Galileo_Fnav_Message::get_ephemeris() const
 {
     Galileo_Ephemeris ephemeris;
     ephemeris.nav_message_type = Galileo_Nav_Message_Type::FNAV;
+    ephemeris.nav_message_source = Galileo_Nav_Message_Source::E5a;
     ephemeris.flag_all_ephemeris = flag_all_ephemeris;
     ephemeris.IOD_ephemeris = IOD_ephemeris;
     ephemeris.PRN = FNAV_SV_ID_PRN_1;
@@ -426,6 +428,7 @@ Galileo_Ephemeris Galileo_Fnav_Message::get_ephemeris() const
 Galileo_Iono Galileo_Fnav_Message::get_iono() const
 {
     Galileo_Iono iono;
+    iono.valid = flag_iono_model_valid;
     // Ionospheric correction
     iono.ai0 = FNAV_ai0_1;  // Effective Ionisation Level 1st order parameter [sfu]
     iono.ai1 = FNAV_ai1_1;  // Effective Ionisation Level 2st order parameter [sfu/degree]

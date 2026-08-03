@@ -221,11 +221,13 @@ private:
     const size_t d_gps_iono_sptr_type_hash_code;
     const size_t d_gps_utc_model_sptr_type_hash_code;
     const size_t d_gps_cnav_ephemeris_sptr_type_hash_code;
+    const size_t d_gps_cnav_eop_sptr_type_hash_code;
     const size_t d_gps_cnav_iono_sptr_type_hash_code;
     const size_t d_gps_cnav_utc_model_sptr_type_hash_code;
     const size_t d_gps_almanac_sptr_type_hash_code;
     const size_t d_qzss_iono_sptr_type_hash_code;
     const size_t d_qzss_utc_model_sptr_type_hash_code;
+    const size_t d_qzss_cnav_eop_sptr_type_hash_code;
     const size_t d_qzss_cnav_iono_sptr_type_hash_code;
     const size_t d_qzss_cnav_utc_model_sptr_type_hash_code;
     const size_t d_galileo_ephemeris_sptr_type_hash_code;

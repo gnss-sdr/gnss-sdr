@@ -55,6 +55,7 @@
 #include "glonass_gnav_utc_model.h"
 #include "gnss_synchro.h"
 #include "gps_almanac.h"
+#include "gps_cnav_eop.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
 #include "gps_cnav_utc_model.h"
@@ -65,6 +66,7 @@
 #include "pvt_conf.h"
 #include "pvt_kf.h"
 #include "pvt_solution.h"
+#include "qzss_cnav_eop.h"
 #include "qzss_cnav_iono.h"
 #include "qzss_cnav_utc_model.h"
 #include "qzss_iono.h"
@@ -139,14 +141,16 @@ public:
     Gps_Iono gps_iono;
     std::map<int, Gps_Almanac> gps_almanac_map;
 
+    Gps_CNAV_Eop gps_cnav_eop;
     Gps_CNAV_Iono gps_cnav_iono;
     Gps_CNAV_Utc_Model gps_cnav_utc_model;
 
     Qzss_Utc_Model qzss_utc_model;
     Qzss_Iono qzss_iono;
 
-    Qzss_CNAV_Utc_Model qzss_cnav_utc_model;
+    Qzss_CNAV_Eop qzss_cnav_eop;
     Qzss_CNAV_Iono qzss_cnav_iono;
+    Qzss_CNAV_Utc_Model qzss_cnav_utc_model;
 
     Glonass_Gnav_Utc_Model glonass_gnav_utc_model;  //!< Map storing GLONASS GNAV UTC Model
     Glonass_Gnav_Almanac glonass_gnav_almanac;      //!< Map storing GLONASS GNAV Almanac Model

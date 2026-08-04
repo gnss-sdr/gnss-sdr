@@ -1960,14 +1960,18 @@ include(GnsssdrCrypto)
 ################################################################################
 # Matio - https://github.com/tbeu/matio
 ################################################################################
-find_package(MATIO)
+find_package(MATIO ${GNSSSDR_MATIO_MIN_VERSION})
 set_package_properties(MATIO PROPERTIES
     PURPOSE "Used to store processing block's results in MAT files readable from MATLAB/Octave."
     TYPE REQUIRED
 )
 if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERSION})
-    if(MATIO_FOUND)
+    if(MATIO_INCLUDE_DIR AND MATIO_LIBRARY AND
+        MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERSION})
         message(STATUS " Matio installed version (${MATIO_VERSION_STRING}) is too old (>= ${GNSSSDR_MATIO_MIN_VERSION} is required).")
+    elseif(MATIO_INCLUDE_DIR AND MATIO_LIBRARY AND NOT MATIO_MAT73_FOUND)
+        message(STATUS " Matio installed version (${MATIO_VERSION_STRING}) does not support MATLAB 7.3 files.")
+        message(STATUS " Reinstall Matio with HDF5 support enabled.")
     endif()
     message(STATUS " Matio v${GNSSSDR_MATIO_LOCAL_VERSION} will be downloaded, built, and statically linked automatically")
     message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")

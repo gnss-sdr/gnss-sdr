@@ -2292,27 +2292,23 @@ if(((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSI
         find_package(Protobuf 3.0...21.12)
     endif()
 else()
-    find_package(Protobuf)
+    if(NOT CMAKE_VERSION VERSION_LESS 3.9)
+        # Prefer Protobuf's package configuration because it carries the
+        # version-specific Abseil and utf8_range link dependencies. Keep the
+        # compatibility layer enabled while GNSS-SDR uses protobuf_generate_cpp().
+        set(protobuf_MODULE_COMPATIBLE TRUE)
+        find_package(Protobuf CONFIG QUIET)
+    endif()
 
-    if((CMAKE_BUILD_TYPE STREQUAL "Debug") AND Protobuf_FOUND AND absl_FOUND)
-        # This Regular Expression is used to convert the version string provided by `find_package(Protobuf)` into the
-        # appropriate binary version string. So, for instance, "4.25.3" becomes "25.3.0".
-        string(REGEX REPLACE "^[0-9]+\.([0-9]+\.[0-9]+)$" "\\1.0" PROTOBUF_LIBRARY_VERSION "${Protobuf_VERSION}")
-        if(NOT (PROTOBUF_LIBRARY_VERSION VERSION_LESS "22") AND
-            PROTOBUF_LIBRARY_VERSION VERSION_LESS "26")
-            pkg_check_modules(protobuf REQUIRED IMPORTED_TARGET protobuf=${PROTOBUF_LIBRARY_VERSION})
-            target_link_libraries(protobuf::libprotobuf INTERFACE PkgConfig::protobuf)
-        endif()
+    if(NOT Protobuf_FOUND)
+        set(GNSSSDR_PROTOBUF_MODULE_MODE TRUE)
+        find_package(Protobuf MODULE)
     endif()
 endif()
-set_package_properties(Protobuf PROPERTIES
-    URL "https://protobuf.dev/"
-    PURPOSE "Used to serialize output data in a way that can be read by other applications."
-    TYPE REQUIRED
-)
-if(NOT Protobuf_VERSION)
-    set(Protobuf_VERSION "0.0.0")
-endif()
+
+# FindProtobuf used only upper-case output variables before CMake 3.6 and did
+# not provide a version before CMake 3.6. Normalize those results before using
+# them to decide whether modern Protobuf dependencies are needed.
 if(CMAKE_VERSION VERSION_LESS 3.6)
     if(PROTOBUF_FOUND)
         set(Protobuf_FOUND ${PROTOBUF_FOUND})
@@ -2322,6 +2318,11 @@ if(Protobuf_FOUND AND CMAKE_VERSION VERSION_LESS 3.9)
     if(PROTOBUF_INCLUDE_DIR)
         set(Protobuf_INCLUDE_DIR ${PROTOBUF_INCLUDE_DIR})
     endif()
+    if(PROTOBUF_INCLUDE_DIRS)
+        set(Protobuf_INCLUDE_DIRS ${PROTOBUF_INCLUDE_DIRS})
+    elseif(PROTOBUF_INCLUDE_DIR)
+        set(Protobuf_INCLUDE_DIRS ${PROTOBUF_INCLUDE_DIR})
+    endif()
     if(PROTOBUF_LIBRARY)
         set(Protobuf_LIBRARY ${PROTOBUF_LIBRARY})
     endif()
@@ -2329,8 +2330,123 @@ if(Protobuf_FOUND AND CMAKE_VERSION VERSION_LESS 3.9)
         set(Protobuf_PROTOC_EXECUTABLE ${PROTOBUF_PROTOC_EXECUTABLE})
     endif()
     if(PROTOBUF_PROTOC_LIBRARY)
-        set(Protobuf_PROTOC_LIBRARY ${PROTOBUF_PROTOC_EXECUTABLE})
+        set(Protobuf_PROTOC_LIBRARY ${PROTOBUF_PROTOC_LIBRARY})
     endif()
+endif()
+if(Protobuf_FOUND AND NOT Protobuf_VERSION)
+    set(_PROTOBUF_COMMON_HEADER ${Protobuf_INCLUDE_DIR}/google/protobuf/stubs/common.h)
+    if(EXISTS "${_PROTOBUF_COMMON_HEADER}")
+        file(STRINGS ${_PROTOBUF_COMMON_HEADER} _PROTOBUF_COMMON_H_CONTENTS
+            REGEX "#define[ \t]+GOOGLE_PROTOBUF_VERSION[ \t]+[0-9]+")
+        if(_PROTOBUF_COMMON_H_CONTENTS MATCHES
+            "#define[ \t]+GOOGLE_PROTOBUF_VERSION[ \t]+([0-9]+)")
+            set(Protobuf_LIB_VERSION "${CMAKE_MATCH_1}")
+            math(EXPR _PROTOBUF_MAJOR_VERSION "${Protobuf_LIB_VERSION} / 1000000")
+            math(EXPR _PROTOBUF_MINOR_VERSION "${Protobuf_LIB_VERSION} / 1000 % 1000")
+            math(EXPR _PROTOBUF_SUBMINOR_VERSION "${Protobuf_LIB_VERSION} % 1000")
+            set(Protobuf_VERSION
+                "${_PROTOBUF_MAJOR_VERSION}.${_PROTOBUF_MINOR_VERSION}.${_PROTOBUF_SUBMINOR_VERSION}")
+        endif()
+        unset(_PROTOBUF_COMMON_H_CONTENTS)
+    endif()
+    unset(_PROTOBUF_COMMON_HEADER)
+endif()
+if(NOT Protobuf_VERSION)
+    set(Protobuf_VERSION "0.0.0")
+endif()
+
+if(GNSSSDR_PROTOBUF_MODULE_MODE AND Protobuf_FOUND)
+    # FindProtobuf reports the C++ runtime version, while protobuf.pc uses the
+    # release version. For example, "7.34.2" maps to "34.2.0".
+    string(REGEX REPLACE "^[0-9]+[.]([0-9]+[.][0-9]+)$" "\\1.0"
+        PROTOBUF_LIBRARY_VERSION "${Protobuf_VERSION}")
+    if(NOT (PROTOBUF_LIBRARY_VERSION VERSION_LESS "22"))
+        if(CMAKE_VERSION VERSION_LESS 3.6)
+            pkg_check_modules(GNSSSDR_PROTOBUF_PC QUIET
+                protobuf=${PROTOBUF_LIBRARY_VERSION})
+        else()
+            pkg_check_modules(GNSSSDR_PROTOBUF_PC QUIET IMPORTED_TARGET
+                protobuf=${PROTOBUF_LIBRARY_VERSION})
+        endif()
+        if(NOT GNSSSDR_PROTOBUF_PC_FOUND)
+            message(FATAL_ERROR
+                "Protocol Buffers ${Protobuf_VERSION} was found through CMake's FindProtobuf module, "
+                "but matching pkg-config metadata for protobuf ${PROTOBUF_LIBRARY_VERSION} was not found. "
+                "Make protobuf-config.cmake discoverable or install the matching protobuf.pc file so "
+                "that Protobuf's Abseil and utf8_range dependencies can be linked correctly."
+            )
+        endif()
+
+        # protobuf.pc exposes the link dependencies, but some distributions do
+        # not publish the C++ standard used to build Abseil. Probe the installed
+        # headers and propagate the lowest standard that is actually accepted.
+        include(CheckCXXSourceCompiles)
+        set(_GNSSSDR_REQUIRED_FLAGS_SAVED "${CMAKE_REQUIRED_FLAGS}")
+        set(_GNSSSDR_REQUIRED_INCLUDES_SAVED "${CMAKE_REQUIRED_INCLUDES}")
+        string(REPLACE ";" " " _GNSSSDR_PROTOBUF_PC_CFLAGS
+            "${GNSSSDR_PROTOBUF_PC_CFLAGS_OTHER}")
+        set(CMAKE_REQUIRED_INCLUDES
+            "${Protobuf_INCLUDE_DIRS};${GNSSSDR_PROTOBUF_PC_INCLUDE_DIRS}")
+        set(_GNSSSDR_PROTOBUF_STANDARD_PROBE
+            "#include <google/protobuf/any.pb.h>\nint main() { return 0; }\n")
+        set(_GNSSSDR_PROTOBUF_MINIMUM_CXX_STANDARD 14)
+        if(NOT (PROTOBUF_LIBRARY_VERSION VERSION_LESS "30"))
+            set(_GNSSSDR_PROTOBUF_MINIMUM_CXX_STANDARD 17)
+        endif()
+        unset(GNSSSDR_PROTOBUF_REQUIRED_CXX_STANDARD)
+        foreach(_GNSSSDR_CXX_STANDARD 14 17 20)
+            if(NOT (_GNSSSDR_CXX_STANDARD VERSION_LESS
+                _GNSSSDR_PROTOBUF_MINIMUM_CXX_STANDARD))
+                if(MSVC)
+                    if(_GNSSSDR_CXX_STANDARD VERSION_LESS "17")
+                        set(_GNSSSDR_CXX_STANDARD_OPTION "")
+                    else()
+                        set(_GNSSSDR_CXX_STANDARD_OPTION
+                            "/std:c++${_GNSSSDR_CXX_STANDARD}")
+                    endif()
+                else()
+                    set(_GNSSSDR_CXX_STANDARD_OPTION
+                        "-std=c++${_GNSSSDR_CXX_STANDARD}")
+                endif()
+                set(CMAKE_REQUIRED_FLAGS
+                    "${_GNSSSDR_REQUIRED_FLAGS_SAVED} ${_GNSSSDR_PROTOBUF_PC_CFLAGS} ${_GNSSSDR_CXX_STANDARD_OPTION}")
+                set(_GNSSSDR_PROTOBUF_STANDARD_TEST
+                    "GNSSSDR_PROTOBUF_CXX${_GNSSSDR_CXX_STANDARD}_WORKS")
+                unset(${_GNSSSDR_PROTOBUF_STANDARD_TEST} CACHE)
+                check_cxx_source_compiles(
+                    "${_GNSSSDR_PROTOBUF_STANDARD_PROBE}"
+                    ${_GNSSSDR_PROTOBUF_STANDARD_TEST})
+                if(${_GNSSSDR_PROTOBUF_STANDARD_TEST})
+                    set(GNSSSDR_PROTOBUF_REQUIRED_CXX_STANDARD
+                        ${_GNSSSDR_CXX_STANDARD})
+                    break()
+                endif()
+            endif()
+        endforeach()
+        set(CMAKE_REQUIRED_FLAGS "${_GNSSSDR_REQUIRED_FLAGS_SAVED}")
+        set(CMAKE_REQUIRED_INCLUDES "${_GNSSSDR_REQUIRED_INCLUDES_SAVED}")
+        if(NOT GNSSSDR_PROTOBUF_REQUIRED_CXX_STANDARD)
+            message(FATAL_ERROR
+                "Protocol Buffers ${Protobuf_VERSION} headers do not compile with any C++ standard "
+                "supported by GNSS-SDR (up to C++20). Install a compatible Protobuf and Abseil pair."
+            )
+        endif()
+        unset(_GNSSSDR_CXX_STANDARD)
+        unset(_GNSSSDR_CXX_STANDARD_OPTION)
+        unset(_GNSSSDR_PROTOBUF_MINIMUM_CXX_STANDARD)
+        unset(_GNSSSDR_PROTOBUF_PC_CFLAGS)
+        unset(_GNSSSDR_PROTOBUF_STANDARD_PROBE)
+        unset(_GNSSSDR_PROTOBUF_STANDARD_TEST)
+        unset(_GNSSSDR_REQUIRED_FLAGS_SAVED)
+        unset(_GNSSSDR_REQUIRED_INCLUDES_SAVED)
+    endif()
+endif()
+set_package_properties(Protobuf PROPERTIES
+    URL "https://protobuf.dev/"
+    PURPOSE "Used to serialize output data in a way that can be read by other applications."
+    TYPE REQUIRED
+)
+if(Protobuf_FOUND AND CMAKE_VERSION VERSION_LESS 3.9)
     add_library(protobuf::libprotobuf SHARED IMPORTED)
     set_target_properties(protobuf::libprotobuf PROPERTIES
         IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
@@ -2344,20 +2460,48 @@ if(Protobuf_FOUND AND CMAKE_VERSION VERSION_LESS 3.9)
         IMPORTED_LOCATION "${Protobuf_PROTOC_EXECUTABLE}"
         INTERFACE_LINK_LIBRARIES "${Protobuf_PROTOC_LIBRARY}"
     )
-    if(${Protobuf_VERSION} VERSION_EQUAL "0.0.0")
-        set(_PROTOBUF_COMMON_HEADER ${Protobuf_INCLUDE_DIR}/google/protobuf/stubs/common.h)
-        set(Protobuf_VERSION "")
-        set(Protobuf_LIB_VERSION "")
-        file(STRINGS ${_PROTOBUF_COMMON_HEADER} _PROTOBUF_COMMON_H_CONTENTS REGEX "#define[ \t]+GOOGLE_PROTOBUF_VERSION[ \t]+")
-        if(_PROTOBUF_COMMON_H_CONTENTS MATCHES "#define[ \t]+GOOGLE_PROTOBUF_VERSION[ \t]+([0-9]+)")
-            set(Protobuf_LIB_VERSION "${CMAKE_MATCH_1}")
-        endif()
-        unset(_PROTOBUF_COMMON_H_CONTENTS)
-        math(EXPR _PROTOBUF_MAJOR_VERSION "${Protobuf_LIB_VERSION} / 1000000")
-        math(EXPR _PROTOBUF_MINOR_VERSION "${Protobuf_LIB_VERSION} / 1000 % 1000")
-        math(EXPR _PROTOBUF_SUBMINOR_VERSION "${Protobuf_LIB_VERSION} % 1000")
-        set(Protobuf_VERSION "${_PROTOBUF_MAJOR_VERSION}.${_PROTOBUF_MINOR_VERSION}.${_PROTOBUF_SUBMINOR_VERSION}")
+endif()
+
+if(GNSSSDR_PROTOBUF_MODULE_MODE AND GNSSSDR_PROTOBUF_PC_FOUND)
+    if(TARGET PkgConfig::GNSSSDR_PROTOBUF_PC)
+        target_link_libraries(protobuf::libprotobuf
+            INTERFACE PkgConfig::GNSSSDR_PROTOBUF_PC)
+    else()
+        # IMPORTED_TARGET was added to FindPkgConfig in CMake 3.6.
+        set_property(TARGET protobuf::libprotobuf APPEND PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES "${GNSSSDR_PROTOBUF_PC_INCLUDE_DIRS}")
+        set_property(TARGET protobuf::libprotobuf APPEND PROPERTY
+            INTERFACE_COMPILE_OPTIONS "${GNSSSDR_PROTOBUF_PC_CFLAGS_OTHER}")
+        set_property(TARGET protobuf::libprotobuf APPEND PROPERTY
+            INTERFACE_LINK_LIBRARIES "${GNSSSDR_PROTOBUF_PC_LDFLAGS}")
     endif()
+
+    if(CMAKE_VERSION VERSION_LESS 3.1 OR
+        ((GNSSSDR_PROTOBUF_REQUIRED_CXX_STANDARD VERSION_EQUAL 17) AND
+            CMAKE_VERSION VERSION_LESS 3.8) OR
+        ((GNSSSDR_PROTOBUF_REQUIRED_CXX_STANDARD VERSION_EQUAL 20) AND
+            CMAKE_VERSION VERSION_LESS 3.12))
+        if(MSVC)
+            if(NOT GNSSSDR_PROTOBUF_REQUIRED_CXX_STANDARD VERSION_LESS "17")
+                set(_GNSSSDR_PROTOBUF_CXX_STANDARD_OPTION
+                    "/std:c++${GNSSSDR_PROTOBUF_REQUIRED_CXX_STANDARD}")
+            endif()
+        else()
+            set(_GNSSSDR_PROTOBUF_CXX_STANDARD_OPTION
+                "-std=c++${GNSSSDR_PROTOBUF_REQUIRED_CXX_STANDARD}")
+        endif()
+        if(_GNSSSDR_PROTOBUF_CXX_STANDARD_OPTION)
+            add_compile_options(
+                "$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:${_GNSSSDR_PROTOBUF_CXX_STANDARD_OPTION}>")
+        endif()
+        unset(_GNSSSDR_PROTOBUF_CXX_STANDARD_OPTION)
+    else()
+        set_property(TARGET protobuf::libprotobuf APPEND PROPERTY
+            INTERFACE_COMPILE_FEATURES
+                "cxx_std_${GNSSSDR_PROTOBUF_REQUIRED_CXX_STANDARD}")
+    endif()
+    message(STATUS
+        "Protobuf module fallback requires C++${GNSSSDR_PROTOBUF_REQUIRED_CXX_STANDARD}")
 endif()
 
 if(Protobuf_FOUND)

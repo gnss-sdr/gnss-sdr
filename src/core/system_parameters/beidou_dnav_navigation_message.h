@@ -3,13 +3,14 @@
  * \brief  Interface of a BeiDou DNAV Data message decoder
  * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
  * \author Damian Miralles, 2018. dmiralles2009@gmail.com
+ * \author Carles Fernandez-Prades, 2018-2026. cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -24,9 +25,11 @@
 #include "Beidou_B3I.h"
 #include "Beidou_DNAV.h"
 #include "beidou_dnav_almanac.h"
+#include "beidou_dnav_differential_corrections.h"
 #include "beidou_dnav_ephemeris.h"
 #include "beidou_dnav_iono.h"
 #include "beidou_dnav_utc_model.h"
+#include <array>
 #include <bitset>
 #include <cstddef>
 #include <cstdint>
@@ -42,7 +45,7 @@
 
 
 /*!
- * \brief This class decodes a BeiDou D1 NAV Data message
+ * \brief This class decodes BeiDou D1 and D2 NAV data messages
  */
 class Beidou_Dnav_Navigation_Message
 {
@@ -66,6 +69,16 @@ public:
      * \brief Obtain a BDS UTC model parameters class filled with current SV data
      */
     Beidou_Dnav_Utc_Model get_utc_model();
+
+    /*!
+     * \brief Obtain the last decoded BeiDou almanac record
+     */
+    Beidou_Dnav_Almanac get_almanac() const;
+
+    /*!
+     * \brief Obtain the latest D2 integrity and differential corrections
+     */
+    Beidou_Dnav_Differential_Corrections get_differential_corrections() const;
 
     /*!
      * \brief Decodes the BDS D1 NAV message
@@ -106,6 +119,11 @@ public:
     bool have_new_almanac();
 
     /*!
+     * \brief Returns true when a complete D2 subframes 2-4 correction page has arrived
+     */
+    bool have_new_differential_corrections();
+
+    /*!
      * \brief Sets satellite PRN number
      */
     inline void set_satellite_PRN(uint32_t prn)
@@ -141,6 +159,8 @@ public:
 private:
     uint64_t read_navigation_unsigned(const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
     int64_t read_navigation_signed(const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    uint64_t read_navigation_data_unsigned(const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits, int32_t first_bit, int32_t logical_offset, int32_t length) const;
+    int64_t sign_extend(uint64_t value, int32_t length) const;
     bool read_navigation_bool(const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
     void print_beidou_word_bytes(uint32_t BEIDOU_word) const;
     double wrap_dnav_sow(double sow) const;
@@ -149,6 +169,13 @@ private:
     void clear_d2_ephemeris_page_flags();
     bool d2_ephemeris_page_is_expected(int32_t page_ID, double sow);
     void advance_d2_ephemeris_page(int32_t page_ID, double sow);
+    void decode_almanac(const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits, int32_t prn, int32_t amid, bool expanded);
+    void decode_almanac_health(const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits, int32_t count, int32_t first_prn);
+    void decode_time_offsets(const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits);
+    void decode_utc_parameters(const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits);
+    void decode_d2_iono_grid(const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits, int32_t page_ID);
+    void update_d2_bdid(uint64_t value, int32_t first_prn, int32_t count);
+    void update_d2_udrei(const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits, int32_t first_bit, int32_t first_slot, int32_t count);
 
     // broadcast orbit 1
     double d_SOW{};      // Time of BeiDou Week of the ephemeris set (taken from subframes SOW) [s]
@@ -224,10 +251,29 @@ private:
     uint64_t d_OMEGA_DOT_msb_bits{};  // Rate of Right Ascension [semi-circles/s]
     uint64_t d_OMEGA_DOT_lsb_bits{};  // Rate of Right Ascension [semi-circles/s]
 
+    // D2 integrity and differential corrections
+    std::array<bool, 63> d_d2_bdid{};
+    std::array<int32_t, 24> d_d2_rurai{};
+    std::array<int32_t, 24> d_d2_udrei{};
+    std::array<double, 24> d_d2_delta_t{};
+    std::array<bool, 24> d_d2_delta_t_available{};
+    std::array<bool, 24> d_d2_correction_valid{};
+    int32_t i_SatH2{};
+    int32_t i_BDEpID{};
+    int32_t i_d2_integrity_page{};
+    double d_d2_integrity_sow{};
+    bool flag_d2_sf2_valid{};
+    bool flag_d2_sf3_valid{};
+    bool flag_new_differential_corrections{};
+
     // Almanac
     // double d_Toa{};                            // Almanac reference time [s]
     // int32_t i_WN_A{};                          // Modulo 256 of the GPS week number to which the almanac reference time (d_Toa) is referenced
     std::map<int32_t, int32_t> almanacHealth;  // Map that stores the health information stored in the almanac
+    Beidou_Dnav_Almanac d_almanac;
+    int32_t i_AmEpID{};
+    bool flag_new_almanac{};
+    bool flag_almanac_week_valid{};
 
     std::map<int32_t, std::string> satelliteBlock;  // Map that stores to which block the PRN belongs
 
@@ -244,11 +290,13 @@ private:
     double d_beta1{};   // Coefficient 1 of a cubic equation representing the period of the model [s/semi-circle]
     double d_beta2{};   // Coefficient 2 of a cubic equation representing the period of the model [s(semi-circle)^2]
     double d_beta3{};   // Coefficient 3 of a cubic equation representing the period of the model [s(semi-circle)^3]
+    std::map<int, Beidou_Dnav_Iono_Grid_Point> d_iono_grid;
+    bool flag_iono_grid_valid{};
 
     // UTC parameters
     double d_A1UTC{};       // 1st order term of a model that relates GPS and UTC time [s/s]
     double d_A0UTC{};       // Constant of a model that relates GPS and UTC time [s]
-    int32_t i_DeltaT_LS{};  // delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
+    int32_t i_DeltaT_LS{};  // BDT-UTC delta time due to leap seconds [s]
     int32_t i_WN_LSF{};     // Week number at the end of which the leap second becomes effective [weeks]
     int32_t i_DN{};         // Day number (DN) at the end of which the leap second becomes effective [days]
     double d_DeltaT_LSF{};  // Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]
@@ -283,7 +331,7 @@ private:
     bool flag_d1_sf5{};
     bool flag_new_SOW_available{};
     bool flag_crc_test{};
-    double d_previous_aode{};
+    double d_previous_aode{-1.0};
 
     // bool flag_d1_sf5_p7{};   // D1 NAV Message, Subframe 5, Page 09 decoded indicator
     // bool flag_d1_sf5_p8{};   // D1 NAV Message, Subframe 5, Page 09 decoded indicator

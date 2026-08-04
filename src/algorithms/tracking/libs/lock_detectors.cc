@@ -70,6 +70,12 @@ float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_i
     Psig = Psig * Psig;
     Ptot /= static_cast<double>(length);
     const double aux = Ptot - Psig;
+    if (aux == 0.0)
+        {
+            // redundant with the aux > 0.0 check below, but makes the nonzero
+            // divisor explicit for static analyzers (e.g. Coverity Scan)
+            return -100.0;
+        }
     if (aux > 0.0)
         {
             const double SNR = Psig / aux;

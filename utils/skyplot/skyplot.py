@@ -29,9 +29,9 @@ import argparse
 import re
 import sys
 from datetime import datetime, timedelta
-from math import atan2, cos, sin, sqrt
+from math import atan2, cos, isfinite, sin, sqrt
 from pathlib import Path
-from typing import Any, Dict, List, Tuple, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 try:
     import matplotlib.pyplot as plt
@@ -341,29 +341,30 @@ def get_approx_position_from_obs(
 
 
 def parse_rinex_float(s: str) -> float:
-    """Parse RINEX formatted float string which may contain D or E exponent and compact spacing"""
-    # Handle empty string
-    if not s.strip():
+    """Parse a RINEX float, preserving blank optional fields as zero."""
+    value = s.strip()
+    if not value:
         return 0.0
 
-    # Replace D exponent with E (some RINEX files use D instead of E)
-    s = s.replace("D", "E").replace("d", "e")
-
-    # Handle cases where exponent lacks E (e.g., "12345-3")
-    if re.match(r"[+-]?\d+[+-]\d+", s.strip()):
-        s = s.replace("+", "E+").replace("-", "E-")
+    value = value.replace("D", "E").replace("d", "e")
 
     try:
-        return float(s)
+        parsed = float(value)
     except ValueError:
-        # Handle cases where the number runs into the next field
-        # Try to split at the exponent if present
-        if "E" in s:
-            base, exp = s.split("E")[:2]
-            # Take first character of exponent if needed
-            if exp and exp[0] in "+-" and len(exp) > 1:
-                return float(base + "E" + exp[0] + exp[1:].split()[0])
-        return 0.0  # Default if parsing fails
+        # Accept compact exponents occasionally found in older files, for
+        # example "-.12345-03". Do not turn other malformed fields into zero.
+        compact = re.fullmatch(
+            r"([+-]?(?:\d+(?:\.\d*)?|\.\d+))([+-]\d+)", value
+        )
+        if compact:
+            parsed = float(f"{compact.group(1)}E{compact.group(2)}")
+        else:
+            raise ValueError(f"invalid RINEX numeric field {s!r}") from None
+
+    if not isfinite(parsed):
+        raise ValueError(f"invalid RINEX numeric field {s!r}") from None
+
+    return parsed
 
 
 def read_rinex_header(filename: str) -> Tuple[str, str]:
@@ -380,12 +381,257 @@ def read_rinex_header(filename: str) -> Tuple[str, str]:
     return "", ""
 
 
+def parse_nav_epoch(line: str) -> datetime:
+    """Parse the fixed-width epoch from a RINEX 3/4 NAV data line."""
+    if len(line) < 23:
+        raise ValueError("navigation epoch line is shorter than 23 characters")
+
+    try:
+        second = float(line[21:23])
+        return datetime(
+            int(line[4:8]),
+            int(line[9:11]),
+            int(line[12:14]),
+            int(line[15:17]),
+            int(line[18:20]),
+            int(second),
+            int((second % 1) * 1e6),
+        )
+    except ValueError as error:
+        raise ValueError(
+            f"invalid fixed-width navigation epoch {line[:23]!r}"
+        ) from error
+
+
+def parse_nav_field(line: str, field: int, first_line: bool = False) -> float:
+    """Parse a 19-character numeric field from a RINEX 3/4 NAV record."""
+    start = (23 if first_line else 4) + 19 * field
+    return parse_rinex_float(line[start : start + 19])
+
+
+def seconds_of_week(epoch: datetime) -> float:
+    """Return seconds elapsed since Sunday 00:00 in the epoch's time scale."""
+    days_since_sunday = (epoch.weekday() + 1) % 7
+    return (
+        days_since_sunday * 86400.0
+        + epoch.hour * 3600.0
+        + epoch.minute * 60.0
+        + epoch.second
+        + epoch.microsecond * 1e-6
+    )
+
+
+def parse_state_vector_ephemeris(
+    prn: str,
+    lines: List[str],
+    message_type: Optional[str] = None,
+    message_subtype: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Parse a GLONASS or SBAS state-vector navigation record."""
+    ephemeris = {
+        "prn": prn,
+        "epoch": parse_nav_epoch(lines[0]),
+        "message_type": message_type,
+        "message_subtype": message_subtype,
+        "sv_clock_bias": parse_nav_field(lines[0], 0, True),
+        "x": parse_nav_field(lines[1], 0),
+        "x_vel": parse_nav_field(lines[1], 1),
+        "x_acc": parse_nav_field(lines[1], 2),
+        "health": parse_nav_field(lines[1], 3),
+        "y": parse_nav_field(lines[2], 0),
+        "y_vel": parse_nav_field(lines[2], 1),
+        "y_acc": parse_nav_field(lines[2], 2),
+        "z": parse_nav_field(lines[3], 0),
+        "z_vel": parse_nav_field(lines[3], 1),
+        "z_acc": parse_nav_field(lines[3], 2),
+        "extra": lines[4:],
+    }
+
+    if prn.startswith("R"):
+        ephemeris.update(
+            {
+                "sv_relative_freq_bias": parse_nav_field(lines[0], 1, True),
+                "message_frame_time": parse_nav_field(lines[0], 2, True),
+                "freq_num": parse_nav_field(lines[2], 3),
+                "age": parse_nav_field(lines[3], 3),
+            }
+        )
+    else:
+        ephemeris.update(
+            {
+                "sv_clock_drift": parse_nav_field(lines[0], 1, True),
+                "sv_clock_drift_rate": parse_nav_field(lines[0], 2, True),
+            }
+        )
+
+    return ephemeris
+
+
+def parse_keplerian_ephemeris(
+    prn: str,
+    lines: List[str],
+    message_type: Optional[str] = None,
+    message_subtype: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Parse the common eight-line RINEX Keplerian navigation layout."""
+    return {
+        "prn": prn,
+        "epoch": parse_nav_epoch(lines[0]),
+        "message_type": message_type,
+        "message_subtype": message_subtype,
+        "sv_clock_bias": parse_nav_field(lines[0], 0, True),
+        "sv_clock_drift": parse_nav_field(lines[0], 1, True),
+        "sv_clock_drift_rate": parse_nav_field(lines[0], 2, True),
+        "iode": parse_nav_field(lines[1], 0),
+        "crs": parse_nav_field(lines[1], 1),
+        "delta_n": parse_nav_field(lines[1], 2),
+        "m0": parse_nav_field(lines[1], 3),
+        "cuc": parse_nav_field(lines[2], 0),
+        "ecc": parse_nav_field(lines[2], 1),
+        "cus": parse_nav_field(lines[2], 2),
+        "sqrt_a": parse_nav_field(lines[2], 3),
+        "toe": parse_nav_field(lines[3], 0),
+        "cic": parse_nav_field(lines[3], 1),
+        "omega0": parse_nav_field(lines[3], 2),
+        "cis": parse_nav_field(lines[3], 3),
+        "i0": parse_nav_field(lines[4], 0),
+        "crc": parse_nav_field(lines[4], 1),
+        "omega": parse_nav_field(lines[4], 2),
+        "omega_dot": parse_nav_field(lines[4], 3),
+        "idot": parse_nav_field(lines[5], 0),
+        "codes_l2": parse_nav_field(lines[5], 1),
+        "gps_week": parse_nav_field(lines[5], 2),
+        "l2p_flag": parse_nav_field(lines[5], 3),
+        "sv_accuracy": parse_nav_field(lines[6], 0),
+        "sv_health": parse_nav_field(lines[6], 1),
+        "tgd": parse_nav_field(lines[6], 2),
+        "iodc": parse_nav_field(lines[6], 3),
+        "transmission_time": parse_nav_field(lines[7], 0),
+        "fit_interval": parse_nav_field(lines[7], 1),
+        "extra": lines[8:],
+    }
+
+
+def parse_cnav_ephemeris(
+    prn: str,
+    lines: List[str],
+    message_type: str,
+    message_subtype: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Parse the RINEX 4 GPS/QZSS CNAV nine-line ephemeris layout."""
+    epoch = parse_nav_epoch(lines[0])
+    return {
+        "prn": prn,
+        "epoch": epoch,
+        "message_type": message_type,
+        "message_subtype": message_subtype,
+        "sv_clock_bias": parse_nav_field(lines[0], 0, True),
+        "sv_clock_drift": parse_nav_field(lines[0], 1, True),
+        "sv_clock_drift_rate": parse_nav_field(lines[0], 2, True),
+        "adot": parse_nav_field(lines[1], 0),
+        "crs": parse_nav_field(lines[1], 1),
+        "delta_n": parse_nav_field(lines[1], 2),
+        "m0": parse_nav_field(lines[1], 3),
+        "cuc": parse_nav_field(lines[2], 0),
+        "ecc": parse_nav_field(lines[2], 1),
+        "cus": parse_nav_field(lines[2], 2),
+        "sqrt_a": parse_nav_field(lines[2], 3),
+        "top": parse_nav_field(lines[3], 0),
+        "toe": seconds_of_week(epoch),
+        "cic": parse_nav_field(lines[3], 1),
+        "omega0": parse_nav_field(lines[3], 2),
+        "cis": parse_nav_field(lines[3], 3),
+        "i0": parse_nav_field(lines[4], 0),
+        "crc": parse_nav_field(lines[4], 1),
+        "omega": parse_nav_field(lines[4], 2),
+        "omega_dot": parse_nav_field(lines[4], 3),
+        "idot": parse_nav_field(lines[5], 0),
+        "delta_ndot": parse_nav_field(lines[5], 1),
+        "urai_ned0": parse_nav_field(lines[5], 2),
+        "urai_ned1": parse_nav_field(lines[5], 3),
+        "urai_ed": parse_nav_field(lines[6], 0),
+        "sv_health": parse_nav_field(lines[6], 1),
+        "tgd": parse_nav_field(lines[6], 2),
+        "urai_ned2": parse_nav_field(lines[6], 3),
+        "isc_l1ca": parse_nav_field(lines[7], 0),
+        "isc_l2c": parse_nav_field(lines[7], 1),
+        "isc_l5i5": parse_nav_field(lines[7], 2),
+        "isc_l5q5": parse_nav_field(lines[7], 3),
+        "transmission_time": parse_nav_field(lines[8], 0),
+        "wn_op": parse_nav_field(lines[8], 1),
+        "flags": parse_nav_field(lines[8], 2),
+        "extra": lines[9:],
+    }
+
+
+def parse_rinex4_ephemeris(
+    record_header: str, lines: List[str]
+) -> Optional[Dict[str, Any]]:
+    """Dispatch a framed RINEX 4 EPH record to its message-specific parser."""
+    header_fields = record_header.split()
+    if len(header_fields) < 4 or header_fields[1] != "EPH":
+        return None
+
+    prn = header_fields[2]
+    message_type = header_fields[3]
+    message_subtype = header_fields[4] if len(header_fields) > 4 else None
+    system = prn[0] if prn else ""
+
+    try:
+        if system in ("G", "J") and message_type == "CNAV":
+            if len(lines) < 9:
+                raise ValueError("CNAV record has fewer than nine data lines")
+            return parse_cnav_ephemeris(
+                prn, lines, message_type, message_subtype
+            )
+
+        legacy_message_types = {
+            "G": ("LNAV",),
+            "J": ("LNAV",),
+            "E": ("INAV", "FNAV"),
+            "C": ("D1", "D2"),
+            "I": ("LNAV",),
+        }
+        if message_type in legacy_message_types.get(system, ()):
+            if len(lines) < 8:
+                raise ValueError(
+                    "Keplerian record has fewer than eight data lines"
+                )
+            return parse_keplerian_ephemeris(
+                prn, lines, message_type, message_subtype
+            )
+
+        state_vector_message_types = {"R": "FDMA", "S": "SBAS"}
+        if message_type == state_vector_message_types.get(system):
+            if len(lines) < 4:
+                raise ValueError(
+                    "state-vector record has fewer than four data lines"
+                )
+            return parse_state_vector_ephemeris(
+                prn, lines, message_type, message_subtype
+            )
+
+        print(
+            f"Warning: unsupported RINEX 4 EPH record: "
+            f"{system or '?'} {message_type}",
+            file=sys.stderr,
+        )
+    except (ValueError, IndexError) as error:
+        print(
+            f"Warning: malformed RINEX 4 EPH record for {prn}: {error}",
+            file=sys.stderr,
+        )
+
+    return None
+
+
 def read_rinex_nav(filename: str) -> Dict[str, List[Dict[str, Any]]]:
     """
     Read RINEX v2/v3/v4 navigation file into a dict { 'Gxx': [eph...], 'Rxx': [...], 'Sxxx': [...] }.
     """
     version_str, ftype = read_rinex_header(filename)
     is_v2 = version_str.startswith("2")
+    is_v4 = version_str.startswith("4")
 
     satellites = {}
     line_number = 0
@@ -403,12 +649,48 @@ def read_rinex_nav(filename: str) -> Dict[str, List[Dict[str, Any]]]:
         line_number += 1
 
         # ----------------------------
+        # RINEX 4 parsing
+        # ----------------------------
+        if is_v4:
+            record_header = None
+            record_lines = []
+
+            while current_line:
+                if current_line.startswith(">"):
+                    if record_header is not None:
+                        ephemeris = parse_rinex4_ephemeris(
+                            record_header, record_lines
+                        )
+                        if ephemeris:
+                            satellites.setdefault(ephemeris["prn"], []).append(
+                                ephemeris
+                            )
+
+                    record_header = current_line.rstrip("\r\n")
+                    record_lines = []
+                elif record_header is not None:
+                    record_lines.append(current_line)
+
+                current_line = f.readline()
+                line_number += 1
+
+            if record_header is not None:
+                ephemeris = parse_rinex4_ephemeris(record_header, record_lines)
+                if ephemeris:
+                    satellites.setdefault(ephemeris["prn"], []).append(
+                        ephemeris
+                    )
+
+            return satellites
+
+        # ----------------------------
         # RINEX 2.10 / 2.11 parsing
         # ----------------------------
         if is_v2:
             # File type: 'N' (GPS), 'G' (GLONASS), 'H' (GEO/SBAS)
             v2_system = ftype  # keep original char
             while current_line:
+                record_line_number = line_number
                 # Skip empties
                 if not current_line.strip():
                     current_line = f.readline()
@@ -575,8 +857,12 @@ def read_rinex_nav(filename: str) -> Dict[str, List[Dict[str, Any]]]:
                     if ephemeris:
                         satellites.setdefault(prn, []).append(ephemeris)
 
-                except (ValueError, IndexError):
-                    # Skip malformed block; advance
+                except (ValueError, IndexError) as error:
+                    print(
+                        f"Warning: malformed RINEX 2 navigation record near "
+                        f"line {record_line_number}: {error}",
+                        file=sys.stderr,
+                    )
                     current_line = f.readline()
                     line_number += 1
                     continue
@@ -587,41 +873,30 @@ def read_rinex_nav(filename: str) -> Dict[str, List[Dict[str, Any]]]:
             return satellites  # done with v2
 
         # ----------------------------
-        # RINEX 3 / 4 parsing
+        # RINEX 3 parsing
         # ----------------------------
         while current_line:
+            record_line_number = line_number
             # Skip short/noise lines
             if len(current_line) < 23:
                 current_line = f.readline()
                 line_number += 1
                 continue
 
-            # Parse the epoch line
-            parts = current_line.split()
-            if len(parts) < 8:
+            prn = current_line[0:3].strip()
+            if not prn:
+                print(
+                    f"Warning: missing satellite identifier near line "
+                    f"{record_line_number}",
+                    file=sys.stderr,
+                )
                 current_line = f.readline()
                 line_number += 1
                 continue
-
-            prn = parts[0].strip()
             system = prn[0]
 
             try:
-                year = int(parts[1])
-                month = int(parts[2])
-                day = int(parts[3])
-                hour = int(parts[4])
-                minute = int(parts[5])
-                second = float(parts[6][:2])
-                epoch = datetime(
-                    year,
-                    month,
-                    day,
-                    hour,
-                    minute,
-                    int(second),
-                    int((second % 1) * 1e6),
-                )
+                epoch = parse_nav_epoch(current_line)
                 lines = [current_line]
                 line_count = 4 if system == "R" or system == "S" else 7
                 for _ in range(line_count):
@@ -744,14 +1019,22 @@ def read_rinex_nav(filename: str) -> Dict[str, List[Dict[str, Any]]]:
                         "extra": lines[8:],
                     }
                 else:
-                    ephemeris = []
+                    print(
+                        f"Warning: unsupported RINEX 3 navigation system "
+                        f"{system!r} near line {record_line_number}",
+                        file=sys.stderr,
+                    )
+                    ephemeris = None
 
                 if ephemeris:
                     satellites.setdefault(prn, []).append(ephemeris)
 
-            except (ValueError, IndexError):
-                # Skip to next line
-                pass
+            except (ValueError, IndexError) as error:
+                print(
+                    f"Warning: malformed RINEX 3 navigation record near "
+                    f"line {record_line_number}: {error}",
+                    file=sys.stderr,
+                )
 
             current_line = f.readline()
             line_number += 1
@@ -788,12 +1071,20 @@ def calculate_satellite_position(
         mu = 3.986005e14  # Earth's gravitational constant (m^3/s^2)
         omega_e_dot = 7.2921151467e-5  # Earth rotation rate (rad/s)
 
-        # Semi-major axis
-        a = ephemeris["sqrt_a"] ** 2
+        # Semi-major axis. CNAV provides its rate of change at the reference
+        # epoch; legacy navigation messages omit it.
+        a0 = ephemeris["sqrt_a"] ** 2
+        a = a0 + ephemeris.get("adot", 0.0) * transmit_time
+        if a0 <= 0.0 or a <= 0.0:
+            raise ValueError("invalid semi-major axis")
 
         # Corrected mean motion
-        n0 = sqrt(mu / (a**3))
-        n = n0 + ephemeris["delta_n"]
+        n0 = sqrt(mu / (a0**3))
+        n = (
+            n0
+            + ephemeris["delta_n"]
+            + 0.5 * ephemeris.get("delta_ndot", 0.0) * transmit_time
+        )
 
         # Mean anomaly
         mk = ephemeris["m0"] + n * transmit_time
@@ -1439,12 +1730,12 @@ def main():
             elev_mask=args.elev_mask,
             output_format=args.format,
         )
-    except Exception as e:
-        print(f"Error: {str(e)}")
+    except Exception as error:
+        print(f"Error: {error}", file=sys.stderr)
         return 1
 
     return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

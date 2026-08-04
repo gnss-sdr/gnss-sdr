@@ -116,7 +116,7 @@ public:
     void log_rinex_nav_gps_nav(const std::map<int32_t, Gps_Ephemeris>& new_eph);
 
     /*!
-     * \brief Print RINEX annotation for GPS CNAV message
+     * \brief Print RINEX 4 annotation for GPS/QZSS CNAV message
      */
     void log_rinex_nav_gps_cnav(const std::map<int32_t, Gps_CNAV_Ephemeris>& new_cnav_eph);
 
@@ -193,11 +193,11 @@ private:
         const std::string& leap_second_line) const;
 
     /*
-     * Logs RINEX 4 ION and STO data records for the enabled constellations as
-     * soon as the iono model and UTC data become available, and updates the
-     * LEAP SECONDS header line of the observation and navigation files
+     * Logs RINEX 4 auxiliary data records for the enabled constellations as
+     * soon as they become available, and updates the LEAP SECONDS header line
+     * of the observation and navigation files
      */
-    void log_rinex_nav_v4_ion_sto_records(const Rtklib_Solver* pvt_solver,
+    void log_rinex_nav_v4_aux_records(const Rtklib_Solver* pvt_solver,
         double rx_time,
         const std::string& system_time_str);
 
@@ -262,14 +262,22 @@ private:
     const int d_version;                // RINEX version (2 for 2.11, 3 for 3.02, 4 for 4.02)
     const std::string d_stringVersion;  // RINEX version (2.11, 3.02 or 4.02)
 
-    double d_fake_cnav_iode;
-    bool d_rinex_header_updated;
-    bool d_rinex_header_gps_updated;
-    bool d_rinex_header_galileo_updated;
-    bool d_rinex_header_glonass_updated;
-    bool d_rinex_header_beidou_updated;
-    bool d_rinex_header_qzss_updated;
-    bool d_rinex_header_written;
+    std::string d_last_gps_lnav_iono_signature;
+    std::string d_last_gps_lnav_sto_signature;
+    std::string d_last_gps_cnav_eop_signature;
+    std::string d_last_gps_cnav_iono_signature;
+    std::string d_last_gps_cnav_sto_signature;
+    std::string d_last_qzss_lnav_iono_signature;
+    std::string d_last_qzss_lnav_sto_signature;
+    std::string d_last_qzss_cnav_eop_signature;
+    std::string d_last_qzss_cnav_iono_signature;
+    std::string d_last_qzss_cnav_sto_signature;
+    std::string d_last_galileo_iono_signature;
+    std::string d_last_galileo_sto_signature;
+    std::string d_last_glonass_sto_signature;
+    std::string d_last_beidou_iono_signature;
+    std::string d_last_beidou_sto_signature;
+    std::string d_last_leap_second_line;
     const int32_t d_ref_gps_week;
 
     const std::string navfilename;                // Name of RINEX navigation file
@@ -280,6 +288,14 @@ private:
     std::fstream obsFile;     // Output file stream for RINEX observation file
     std::fstream navFile;     // Output file stream for RINEX navigation data file
     std::fstream navGloFile;  // Output file stream for RINEX GLONASS navigation data file
+
+    bool d_rinex_header_updated;
+    bool d_rinex_header_gps_updated;
+    bool d_rinex_header_galileo_updated;
+    bool d_rinex_header_glonass_updated;
+    bool d_rinex_header_beidou_iono_updated;
+    bool d_rinex_header_beidou_time_updated;
+    bool d_rinex_header_written;
 };
 
 

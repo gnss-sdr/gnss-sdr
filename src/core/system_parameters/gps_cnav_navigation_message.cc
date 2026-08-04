@@ -37,6 +37,7 @@ Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message(CnavSystem system)
     b_flag_iono_valid = false;
     b_flag_utc_valid = false;
     b_flag_clock_valid = false;
+    b_flag_eop_valid = false;
 }
 
 
@@ -242,16 +243,30 @@ void Gps_CNAV_Navigation_Message::decode_page(const std::bitset<GPS_CNAV_DATA_PA
             iono_record.beta2 = iono_record.beta2 * CNAV_BETA2_LSB;
             iono_record.beta3 = static_cast<double>(read_navigation_signed(data_bits, CNAV_BETA3));
             iono_record.beta3 = iono_record.beta3 * CNAV_BETA3_LSB;
+            iono_record.valid = true;
             ephemeris_record.WNop = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_WNOP));
             b_flag_iono_valid = true;
             break;
         case 31:
-        case 32:
         case 34:
         case 35:
         case 36:
         case 37:
             decode_clock_fields(data_bits);
+            break;
+        case 32:  // (CLOCK and EARTH ORIENTATION PARAMETERS)
+            decode_clock_fields(data_bits);
+            eop_record.PRN = static_cast<uint32_t>(PRN);
+            eop_record.tow = static_cast<double>(d_TOW);
+            eop_record.t_eop = static_cast<double>(read_navigation_unsigned(data_bits, CNAV_T_EOP)) * CNAV_T_EOP_LSB;
+            eop_record.pm_x = static_cast<double>(read_navigation_signed(data_bits, CNAV_PM_X)) * CNAV_PM_X_LSB;
+            eop_record.pm_x_dot = static_cast<double>(read_navigation_signed(data_bits, CNAV_PM_X_DOT)) * CNAV_PM_X_DOT_LSB;
+            eop_record.pm_y = static_cast<double>(read_navigation_signed(data_bits, CNAV_PM_Y)) * CNAV_PM_Y_LSB;
+            eop_record.pm_y_dot = static_cast<double>(read_navigation_signed(data_bits, CNAV_PM_Y_DOT)) * CNAV_PM_Y_DOT_LSB;
+            eop_record.delta_ut1_gps = static_cast<double>(read_navigation_signed(data_bits, CNAV_DELTA_UT1_GPS)) * CNAV_DELTA_UT1_GPS_LSB;
+            eop_record.delta_ut1_gps_dot = static_cast<double>(read_navigation_signed(data_bits, CNAV_DELTA_UT1_GPS_DOT)) * CNAV_DELTA_UT1_GPS_DOT_LSB;
+            eop_record.valid = true;
+            b_flag_eop_valid = true;
             break;
         case 61:
             if (d_system == CnavSystem::QZSS)
@@ -317,6 +332,23 @@ bool Gps_CNAV_Navigation_Message::have_new_ephemeris()  // Check if we have a ne
 Gps_CNAV_Ephemeris Gps_CNAV_Navigation_Message::get_ephemeris() const
 {
     return ephemeris_record;
+}
+
+
+bool Gps_CNAV_Navigation_Message::have_new_eop()
+{
+    if (b_flag_eop_valid)
+        {
+            b_flag_eop_valid = false;
+            return true;
+        }
+    return false;
+}
+
+
+Gps_CNAV_Eop Gps_CNAV_Navigation_Message::get_eop() const
+{
+    return eop_record;
 }
 
 

@@ -2292,16 +2292,39 @@ if(((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSI
         find_package(Protobuf 3.0...21.12)
     endif()
 else()
-    find_package(Protobuf)
+    if(NOT CMAKE_VERSION VERSION_LESS 3.9)
+        # Prefer Protobuf's package configuration because it carries the
+        # version-specific Abseil and utf8_range link dependencies. Keep the
+        # compatibility layer enabled while GNSS-SDR uses protobuf_generate_cpp().
+        set(protobuf_MODULE_COMPATIBLE TRUE)
+        find_package(Protobuf CONFIG QUIET)
+    endif()
 
-    if((CMAKE_BUILD_TYPE STREQUAL "Debug") AND Protobuf_FOUND AND absl_FOUND)
-        # This Regular Expression is used to convert the version string provided by `find_package(Protobuf)` into the
-        # appropriate binary version string. So, for instance, "4.25.3" becomes "25.3.0".
-        string(REGEX REPLACE "^[0-9]+\.([0-9]+\.[0-9]+)$" "\\1.0" PROTOBUF_LIBRARY_VERSION "${Protobuf_VERSION}")
-        if(NOT (PROTOBUF_LIBRARY_VERSION VERSION_LESS "22") AND
-            PROTOBUF_LIBRARY_VERSION VERSION_LESS "26")
-            pkg_check_modules(protobuf REQUIRED IMPORTED_TARGET protobuf=${PROTOBUF_LIBRARY_VERSION})
-            target_link_libraries(protobuf::libprotobuf INTERFACE PkgConfig::protobuf)
+    if(NOT Protobuf_FOUND)
+        find_package(Protobuf MODULE)
+
+        if(Protobuf_FOUND)
+            # FindProtobuf reports the C++ runtime version, while protobuf.pc
+            # uses the release version. For example, "4.25.3" maps to "25.3.0".
+            string(REGEX REPLACE "^[0-9]+\.([0-9]+\.[0-9]+)$" "\\1.0"
+                PROTOBUF_LIBRARY_VERSION "${Protobuf_VERSION}")
+            if(NOT (PROTOBUF_LIBRARY_VERSION VERSION_LESS "22"))
+                if(CMAKE_VERSION VERSION_LESS 3.6)
+                    pkg_check_modules(GNSSSDR_PROTOBUF_PC QUIET
+                        protobuf=${PROTOBUF_LIBRARY_VERSION})
+                else()
+                    pkg_check_modules(GNSSSDR_PROTOBUF_PC QUIET IMPORTED_TARGET
+                        protobuf=${PROTOBUF_LIBRARY_VERSION})
+                endif()
+                if(NOT GNSSSDR_PROTOBUF_PC_FOUND)
+                    message(FATAL_ERROR
+                        "Protocol Buffers ${Protobuf_VERSION} was found through CMake's FindProtobuf module, "
+                        "but matching pkg-config metadata for protobuf ${PROTOBUF_LIBRARY_VERSION} was not found. "
+                        "Make protobuf-config.cmake discoverable or install the matching protobuf.pc file so "
+                        "that Protobuf's Abseil and utf8_range dependencies can be linked correctly."
+                    )
+                endif()
+            endif()
         endif()
     endif()
 endif()
@@ -2357,6 +2380,21 @@ if(Protobuf_FOUND AND CMAKE_VERSION VERSION_LESS 3.9)
         math(EXPR _PROTOBUF_MINOR_VERSION "${Protobuf_LIB_VERSION} / 1000 % 1000")
         math(EXPR _PROTOBUF_SUBMINOR_VERSION "${Protobuf_LIB_VERSION} % 1000")
         set(Protobuf_VERSION "${_PROTOBUF_MAJOR_VERSION}.${_PROTOBUF_MINOR_VERSION}.${_PROTOBUF_SUBMINOR_VERSION}")
+    endif()
+endif()
+
+if(GNSSSDR_PROTOBUF_PC_FOUND)
+    if(TARGET PkgConfig::GNSSSDR_PROTOBUF_PC)
+        target_link_libraries(protobuf::libprotobuf
+            INTERFACE PkgConfig::GNSSSDR_PROTOBUF_PC)
+    else()
+        # IMPORTED_TARGET was added to FindPkgConfig in CMake 3.6.
+        set_property(TARGET protobuf::libprotobuf APPEND PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES "${GNSSSDR_PROTOBUF_PC_INCLUDE_DIRS}")
+        set_property(TARGET protobuf::libprotobuf APPEND PROPERTY
+            INTERFACE_COMPILE_OPTIONS "${GNSSSDR_PROTOBUF_PC_CFLAGS_OTHER}")
+        set_property(TARGET protobuf::libprotobuf APPEND PROPERTY
+            INTERFACE_LINK_LIBRARIES "${GNSSSDR_PROTOBUF_PC_LDFLAGS}")
     endif()
 endif()
 

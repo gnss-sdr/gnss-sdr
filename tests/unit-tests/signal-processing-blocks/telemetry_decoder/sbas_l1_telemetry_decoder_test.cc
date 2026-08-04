@@ -31,7 +31,6 @@ TEST(SbasL1TelemetryDecoderTest, TimestampMatchesFirstBitWhenFullyAligned)
     EXPECT_DOUBLE_EQ(first_bit_stamp_s, message_stamp_s);
 }
 
-
 TEST(SbasL1TelemetryDecoderTest, TimestampCorrectionIsBoundedBySymbolPeriod)
 {
     // The correction is always a whole number of code periods, and spans at

@@ -36,6 +36,7 @@ public:
     int32_t hs{};                            //!< SF3 satellite health (2 bits, ICD §6.2.3)
     int32_t sig_type{BDS_EPH_SOURCE_CNAV1};  //!< RTKLIB eph.code for B-CNAV1
     int32_t nav_type{1};                     //!< 0: GEO, 1: MEO/IGSO
+    int32_t sat_type{};                      //!< SF2 SatType (2 bits, ICD §7.5): 1=GEO, 2=IGSO, 3=MEO. Same encoding as RINEX 4 CNV1
 
     template <class Archive>
     void serialize(Archive& archive, const unsigned int version)
@@ -76,6 +77,7 @@ public:
         archive& BOOST_SERIALIZATION_NVP(hs);
         archive& BOOST_SERIALIZATION_NVP(sig_type);
         archive& BOOST_SERIALIZATION_NVP(nav_type);
+        archive& BOOST_SERIALIZATION_NVP(sat_type);
     }
 };
 

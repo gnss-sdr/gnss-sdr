@@ -20,7 +20,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 PRN_HEADER = ROOT / "src/core/system_parameters/Beidou_B1C_prn.h"
 OUT_HEADER = ROOT / "src/core/system_parameters/Beidou_B1C_codes.h"
 OUT_SOURCE = ROOT / "src/core/system_parameters/Beidou_B1C_codes.cc"

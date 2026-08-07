@@ -362,6 +362,7 @@ void parse_subframe2(const uint8_t* bits, Beidou_Cnav1_Ephemeris& eph, double so
     eph.toc = static_cast<int32_t>(eph.toc * BEIDOU_CNAV1_TOE_TOC_LSB);
     eph.tow = static_cast<int32_t>(how * 3600 + soh_seconds);
     eph.nav_type = nav_type_from_sat_type(sat_type);
+    eph.sat_type = static_cast<int32_t>(sat_type);
     eph.sig_type = BDS_EPH_SOURCE_CNAV1;
 }
 

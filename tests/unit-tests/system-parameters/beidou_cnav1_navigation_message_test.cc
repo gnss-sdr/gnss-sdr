@@ -216,6 +216,44 @@ TEST(BeidouCnav1NavigationMessageTest, DecodeEphemerisFromZeroSf2Payload)
     EXPECT_DOUBLE_EQ(rtklib_eph.ndot, nav.get_ephemeris().delta_ndot);
 }
 
+TEST(BeidouCnav1NavigationMessageTest, SingleSymbolErrorIsCorrectedAnywhereInFrame)
+{
+    // One wrong channel symbol (full-confidence sign flip) must be corrected by
+    // the BCH decoders (SF1) or the 64-ary LDPC decoders (SF2/SF3), and the
+    // decoded navigation bits must be identical to the clean-frame decode.
+    constexpr uint32_t prn = 19U;
+    const std::vector<float> clean_frame = build_valid_zero_payload_frame(prn, 1U);
+    ASSERT_EQ(clean_frame.size(), static_cast<size_t>(BEIDOU_CNAV1_FRAME_SYMBOLS));
+
+    Beidou_Cnav1_Navigation_Message reference_nav;
+    ASSERT_TRUE(reference_nav.decode_frame_symbols(clean_frame.data(), BEIDOU_CNAV1_FRAME_SYMBOLS, static_cast<int32_t>(prn)));
+    const std::string reference_bits = reference_nav.get_last_nav_bits();
+    ASSERT_FALSE(reference_bits.empty());
+
+    // Positions covering the BCH(21,6) PRN block, the BCH(51,8) SOH block, and
+    // a stride across the interleaved LDPC region (SF2 and SF3 symbols mixed).
+    std::vector<int32_t> error_positions = {0, 10, 20, 21, 45, 71, 72, 1799};
+    for (int32_t pos = 100; pos < BEIDOU_CNAV1_FRAME_SYMBOLS; pos += 97)
+        {
+            error_positions.push_back(pos);
+        }
+
+    for (const int32_t error_position : error_positions)
+        {
+            std::vector<float> corrupted_frame(clean_frame);
+            corrupted_frame[static_cast<size_t>(error_position)] = -corrupted_frame[static_cast<size_t>(error_position)];
+
+            Beidou_Cnav1_Navigation_Message nav;
+            ASSERT_TRUE(nav.decode_frame_symbols(corrupted_frame.data(), BEIDOU_CNAV1_FRAME_SYMBOLS, static_cast<int32_t>(prn)))
+                << "decode failed with a single symbol error at position " << error_position;
+            EXPECT_TRUE(nav.have_new_ephemeris())
+                << "no ephemeris with a single symbol error at position " << error_position;
+            EXPECT_EQ(nav.get_last_nav_bits(), reference_bits)
+                << "decoded bits differ from clean frame with error at position " << error_position;
+        }
+}
+
+
 TEST(BeidouCnav1NavigationMessageTest, MultiFrameSteadyStateKeepsConstantSohOffset)
 {
     // Nonzero start_offset must stay constant across frame boundaries.

@@ -1851,7 +1851,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                             const auto eph_it = d_internal_pvt_solver->beidou_cnav1_ephemeris_map.find(bds_cnav1_eph->PRN);
                             if (eph_it == d_internal_pvt_solver->beidou_cnav1_ephemeris_map.cend() || eph_it->second.toe != bds_cnav1_eph->toe)
                                 {
-                                    d_rp->log_rinex_nav_bds_cnav1({{bds_cnav1_eph->PRN, *bds_cnav1_eph}});
+                                    d_rp->log_rinex_nav_bds_cnav1({{bds_cnav1_eph->PRN, *bds_cnav1_eph}}, d_internal_pvt_solver->beidou_cnav1_page_data_map);
                                 }
                         }
                     d_internal_pvt_solver->beidou_cnav1_ephemeris_map[bds_cnav1_eph->PRN] = *bds_cnav1_eph;
@@ -2481,33 +2481,36 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 {
                                     try
                                         {
-                                            if (d_internal_pvt_solver->gps_ephemeris_map.empty() == false)
+                                            // Keep track of locking time. The ephemeris maps are keyed by
+                                            // PRN only, so gate on the observable's system to avoid
+                                            // cross-constellation PRN collisions (e.g., a BeiDou C19
+                                            // observable touching the GPS G19 lock-time slot).
+                                            switch (gnss_synchro.System)
                                                 {
+                                                case 'G':
                                                     if (tmp_eph_iter_gps != d_internal_pvt_solver->gps_ephemeris_map.cend())
                                                         {
-                                                            d_rtcm_printer->lock_time(d_internal_pvt_solver->gps_ephemeris_map.find(gnss_synchro.PRN)->second, gnss_synchro.RX_time, gnss_synchro);  // keep track of locking time
+                                                            d_rtcm_printer->lock_time(tmp_eph_iter_gps->second, gnss_synchro.RX_time, gnss_synchro);
                                                         }
-                                                }
-                                            if (d_internal_pvt_solver->galileo_ephemeris_map.empty() == false)
-                                                {
-                                                    if (tmp_eph_iter_gal != d_internal_pvt_solver->galileo_ephemeris_map.cend())
-                                                        {
-                                                            d_rtcm_printer->lock_time(d_internal_pvt_solver->galileo_ephemeris_map.find(gnss_synchro.PRN)->second, gnss_synchro.RX_time, gnss_synchro);  // keep track of locking time
-                                                        }
-                                                }
-                                            if (d_internal_pvt_solver->gps_cnav_ephemeris_map.empty() == false)
-                                                {
                                                     if (tmp_eph_iter_cnav != d_internal_pvt_solver->gps_cnav_ephemeris_map.cend())
                                                         {
-                                                            d_rtcm_printer->lock_time(d_internal_pvt_solver->gps_cnav_ephemeris_map.find(gnss_synchro.PRN)->second, gnss_synchro.RX_time, gnss_synchro);  // keep track of locking time
+                                                            d_rtcm_printer->lock_time(tmp_eph_iter_cnav->second, gnss_synchro.RX_time, gnss_synchro);
                                                         }
-                                                }
-                                            if (d_internal_pvt_solver->glonass_gnav_ephemeris_map.empty() == false)
-                                                {
+                                                    break;
+                                                case 'E':
+                                                    if (tmp_eph_iter_gal != d_internal_pvt_solver->galileo_ephemeris_map.cend())
+                                                        {
+                                                            d_rtcm_printer->lock_time(tmp_eph_iter_gal->second, gnss_synchro.RX_time, gnss_synchro);
+                                                        }
+                                                    break;
+                                                case 'R':
                                                     if (tmp_eph_iter_glo_gnav != d_internal_pvt_solver->glonass_gnav_ephemeris_map.cend())
                                                         {
-                                                            d_rtcm_printer->lock_time(d_internal_pvt_solver->glonass_gnav_ephemeris_map.find(gnss_synchro.PRN)->second, gnss_synchro.RX_time, gnss_synchro);  // keep track of locking time
+                                                            d_rtcm_printer->lock_time(tmp_eph_iter_glo_gnav->second, gnss_synchro.RX_time, gnss_synchro);
                                                         }
+                                                    break;
+                                                default:
+                                                    break;
                                                 }
                                         }
                                     catch (const boost::exception& ex)

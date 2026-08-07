@@ -55,6 +55,7 @@
  * \{ */
 
 
+struct Bds3_B1c_PageData;
 class Beidou_Cnav1_Ephemeris;
 class Beidou_Dnav_Ephemeris;
 class Beidou_Dnav_Iono;
@@ -138,10 +139,14 @@ public:
     /*!
      * \brief Print RINEX navigation records for BeiDou B-CNAV1 ephemerides.
      *
-     * Limitation: written as RINEX-3 D1-style BDS records (TGD_B1Cp/TGD_B2ap mapped
-     * into TGD1/TGD2). Proper CNAV1 support would use a RINEX 4 EPH record.
+     * RINEX 4 writes proper CNV1 records (Table A24), taking SISAI/SISMAI/
+     * integrity and t_op from the last decoded SF3 page when it carries them.
+     * RINEX 3 has no CNAV1 representation, so records are written as D1-style
+     * stand-ins: sqrt(A0) in the sqrtA field with the Adot term dropped,
+     * IODE/IODC in AODE/AODC, and TGD_B1Cp/TGD_B2ap mapped into TGD1/TGD2.
      */
-    void log_rinex_nav_bds_cnav1(const std::map<int32_t, Beidou_Cnav1_Ephemeris>& new_bds_eph);
+    void log_rinex_nav_bds_cnav1(const std::map<int32_t, Beidou_Cnav1_Ephemeris>& new_bds_eph,
+        const std::map<int32_t, Bds3_B1c_PageData>& bds_page_data);
 
     /*!
      * \brief Returns true is the RINEX file headers are already written
@@ -277,6 +282,8 @@ private:
     std::string d_last_glonass_sto_signature;
     std::string d_last_beidou_iono_signature;
     std::string d_last_beidou_sto_signature;
+    std::string d_last_bds_cnav1_iono_signature;
+    std::string d_last_bds_cnav1_sto_signature;
     std::string d_last_leap_second_line;
     const int32_t d_ref_gps_week;
 

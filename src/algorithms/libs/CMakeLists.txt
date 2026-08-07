@@ -9,6 +9,7 @@ add_subdirectory(rtklib)
 
 set(GNSS_SPLIBS_SOURCES
     beidou_b1i_signal_replica.cc
+    beidou_b1c_signal_replica.cc
     beidou_b3i_signal_replica.cc
     galileo_e1_signal_replica.cc
     galileo_e5_signal_replica.cc
@@ -37,6 +38,7 @@ set(GNSS_SPLIBS_SOURCES
 
 set(GNSS_SPLIBS_HEADERS
     beidou_b1i_signal_replica.h
+    beidou_b1c_signal_replica.h
     beidou_b3i_signal_replica.h
     galileo_e1_signal_replica.h
     galileo_e5_signal_replica.h

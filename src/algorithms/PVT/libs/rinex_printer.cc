@@ -19,6 +19,7 @@
 #include "rinex_printer.h"
 #include "Beidou_DNAV.h"
 #include "GLONASS_L1_L2_CA.h"
+#include "beidou_cnav1_ephemeris.h"
 #include "beidou_dnav_ephemeris.h"
 #include "beidou_dnav_iono.h"
 #include "beidou_dnav_utc_model.h"
@@ -103,6 +104,8 @@ std::string signal_flag_to_string(signal_flag flag)
             return "B1";
         case BDS_B3:
             return "B3";
+        case BDS_B1C:
+            return "1D";
         case QZS_J1:
             return "J1";
         case QZS_J5:
@@ -117,7 +120,7 @@ std::map<std::string, signal_flag> string_to_signal_flag_map()
 {
     std::map<std::string, signal_flag> convertion_map;
 
-    for (const auto flag : {GPS_1C, GPS_2S, GPS_L5, GAL_1B, GAL_E5a, GAL_E5b, GAL_E6, GLO_1G, GLO_2G, BDS_B1, BDS_B3, QZS_J1, QZS_J5})
+    for (const auto flag : {GPS_1C, GPS_2S, GPS_L5, GAL_1B, GAL_E5a, GAL_E5b, GAL_E6, GLO_1G, GLO_2G, BDS_B1, BDS_B3, BDS_B1C, QZS_J1, QZS_J5})
         {
             convertion_map[signal_flag_to_string(flag)] = flag;
         }
@@ -137,7 +140,7 @@ std::map<char, std::set<signal_flag>> get_constel_signal_flags(const Signal_Enab
 {
     std::map<char, std::set<signal_flag>> constel_signal_flags;
 
-    for (const auto& it : std::map<char, std::set<signal_flag>>{{'G', {GPS_1C, GPS_2S, GPS_L5}}, {'E', {GAL_1B, GAL_E5a, GAL_E5b, GAL_E6}}, {'R', {GLO_1G, GLO_2G}}, {'C', {BDS_B1, BDS_B3}}, {'J', {QZS_J1, QZS_J5}}})
+    for (const auto& it : std::map<char, std::set<signal_flag>>{{'G', {GPS_1C, GPS_2S, GPS_L5}}, {'E', {GAL_1B, GAL_E5a, GAL_E5b, GAL_E6}}, {'R', {GLO_1G, GLO_2G}}, {'C', {BDS_B1, BDS_B3, BDS_B1C}}, {'J', {QZS_J1, QZS_J5}}})
         {
             for (const auto flag : it.second)
                 {
@@ -470,6 +473,7 @@ std::map<std::string, std::string> getObservationCodes()
         {"BEIDOU_B1_I", "1I"},
         {"BEIDOU_B1_Q", "1Q"},
         {"BEIDOU_B1_IQ", "1X"},
+        {"BEIDOU_B1C_D", "1D"},
         {"BEIDOU_B1_I_RINEX4", "2I"},
         {"BEIDOU_B1_Q_RINEX4", "2Q"},
         {"BEIDOU_B1_IQ_RINEX4", "2X"},
@@ -2309,6 +2313,7 @@ void add_obs_sys_obs_type_beidou(std::fstream& out,
 {
     const std::map<uint32_t, std::string> signal_to_code_map = {
         {BDS_B1, version == 4 ? "BEIDOU_B1_I_RINEX4" : "BEIDOU_B1_I"},
+        {BDS_B1C, "BEIDOU_B1C_D"},
         {BDS_B3, "BEIDOU_B3_I"},
     };
 
@@ -2697,12 +2702,14 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
     const auto gps_cnav_ephemeris_iter = pvt_solver->gps_cnav_ephemeris_map.cbegin();
     const auto glonass_gnav_ephemeris_iter = pvt_solver->glonass_gnav_ephemeris_map.cbegin();
     const auto beidou_dnav_ephemeris_iter = pvt_solver->beidou_dnav_ephemeris_map.cbegin();
+    const auto beidou_cnav1_ephemeris_iter = pvt_solver->beidou_cnav1_ephemeris_map.cbegin();
 
     const bool has_gps_lnav_eph = !pvt_solver->gps_ephemeris_map.empty();
     const bool has_gps_cnav_eph = !pvt_solver->gps_cnav_ephemeris_map.empty();
     const bool has_galileo_eph = !pvt_solver->galileo_ephemeris_map.empty();
     const bool has_glonass_eph = !pvt_solver->glonass_gnav_ephemeris_map.empty();
     const bool has_beidou_dnav_eph = !pvt_solver->beidou_dnav_ephemeris_map.empty();
+    const bool has_beidou_cnav1_eph = !pvt_solver->beidou_cnav1_ephemeris_map.empty();
 
     // We require at least one ephemeris for an active signal of a constellation
     // Note: this is currently required because ephemeris are used when creating the headers,
@@ -2725,7 +2732,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
         {
             return;
         }
-    if (d_flags.has_beidou && !has_beidou_dnav_eph)
+    if (d_flags.has_beidou && !has_beidou_dnav_eph && !has_beidou_cnav1_eph)
         {
             return;
         }
@@ -2762,7 +2769,14 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
         }
     else if (d_flags.has_beidou)
         {
-            system_time = Rinex_Printer::compute_BDS_time(beidou_dnav_ephemeris_iter->second, rx_time);
+            if (has_beidou_cnav1_eph)
+                {
+                    system_time = Rinex_Printer::compute_BDS_time(beidou_cnav1_ephemeris_iter->second, rx_time);
+                }
+            else
+                {
+                    system_time = Rinex_Printer::compute_BDS_time(beidou_dnav_ephemeris_iter->second, rx_time);
+                }
             seconds = fmod(rx_time, 60);
             system_time_str = "BDT";
         }
@@ -2935,6 +2949,10 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
             if (has_beidou_dnav_eph)
                 {
                     log_rinex_nav_bds_dnav(pvt_solver->beidou_dnav_ephemeris_map);
+                }
+            if (has_beidou_cnav1_eph)
+                {
+                    log_rinex_nav_bds_cnav1(pvt_solver->beidou_cnav1_ephemeris_map);
                 }
 
             d_rinex_header_written = true;
@@ -3801,6 +3819,42 @@ void Rinex_Printer::log_rinex_nav_bds_dnav(const std::map<int32_t, Beidou_Dnav_E
 }
 
 
+void Rinex_Printer::log_rinex_nav_bds_cnav1(const std::map<int32_t, Beidou_Cnav1_Ephemeris>& new_bds_eph)
+{
+    // RINEX-3 D1-style stand-in; proper CNAV1 needs RINEX 4 EPH (see header).
+    auto& out = navFile;
+    const auto& sys_char = satelliteSystem.at("Beidou");
+
+    for (const auto& bds_ephemeris_iter : new_bds_eph)
+        {
+            const auto& eph = bds_ephemeris_iter.second;
+
+            const boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_BDS_time(eph, eph.toc);
+            out << get_nav_sv_epoch_svclk_line(p_utc_time, sys_char, eph.PRN, eph.af0, eph.af1, eph.af2) << '\n';
+
+            const auto iode_d = eph.IODE;
+            out << get_nav_broadcast_orbit(&iode_d, &eph.Crs, &eph.delta_n, &eph.M_0) << '\n';
+            out << get_nav_broadcast_orbit(&eph.Cuc, &eph.ecc, &eph.Cus, &eph.sqrtA) << '\n';
+
+            const auto toe_d = static_cast<double>(eph.toe);
+            out << get_nav_broadcast_orbit(&toe_d, &eph.Cic, &eph.OMEGA_0, &eph.Cis) << '\n';
+            out << get_nav_broadcast_orbit(&eph.i_0, &eph.Crc, &eph.omega, &eph.OMEGAdot) << '\n';
+
+            const auto wn_d = static_cast<double>(eph.WN);
+            out << get_nav_broadcast_orbit(&eph.idot, nullptr, &wn_d, nullptr) << '\n';
+
+            // Acc left 0; health = SF3 HS; TGD1/TGD2 hold TGD_B1Cp/TGD_B2ap.
+            const double sv_accuracy = 0.0;
+            const auto health_d = static_cast<double>(eph.hs);
+            out << get_nav_broadcast_orbit(&sv_accuracy, &health_d, &eph.TGD_B1Cp, &eph.TGD_B2ap) << '\n';
+
+            const auto tow_d = static_cast<double>(eph.tow);
+            const auto iodc_d = eph.IODC;
+            out << get_nav_broadcast_orbit(&tow_d, &iodc_d, nullptr, nullptr) << '\n';
+        }
+}
+
+
 void Rinex_Printer::rinex_nav_header(std::fstream& out,
     const std::vector<std::string>& iono_lines,
     const std::vector<std::string>& time_corr_lines,
@@ -4138,6 +4192,15 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Gps_Navigation_Me
 boost::posix_time::ptime Rinex_Printer::compute_BDS_time(const Beidou_Dnav_Ephemeris& eph, double obs_time) const
 {
     // BeiDou observation epochs use BDT, so no UTC leap-second adjustment is needed here.
+    const double bds_t = obs_time;
+    const boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((bds_t + 604800 * static_cast<double>(eph.WN % 8192)) * 1000));
+    boost::posix_time::ptime p_time(boost::gregorian::date(2006, 1, 1), t);
+    return p_time;
+}
+
+
+boost::posix_time::ptime Rinex_Printer::compute_BDS_time(const Beidou_Cnav1_Ephemeris& eph, double obs_time) const
+{
     const double bds_t = obs_time;
     const boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((bds_t + 604800 * static_cast<double>(eph.WN % 8192)) * 1000));
     boost::posix_time::ptime p_time(boost::gregorian::date(2006, 1, 1), t);

@@ -90,6 +90,13 @@ public:
     bool dump_mat{true};
     bool tow_to_trk{false};
     bool bs_use_phase_dot_detector{true};
+    // BeiDou B1C-specific options.
+    bool qmboc{true};  //!< QMBOC local replica (same key as Acquisition_*.qmboc).
+    bool b1c_prompt_use_data_q{true};
+    bool b1c_prompt_normalize_power{true};
+    float b1c_data_prompt_scale{1.7320508F};  // sqrt(3), compensates 1:3 data:pilot power.
+    float b1c_pilot_prompt_scale{1.0F};
+    float b1c_secondary_lock_ratio{0.88F};
 };
 
 

@@ -17,6 +17,7 @@
 #include "rtklib_conversions.h"
 #include "Beidou_DNAV.h"             // for BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET
 #include "MATH_CONSTANTS.h"          // for GNSS_PI, TWO_PI
+#include "beidou_cnav1_ephemeris.h"  // for Beidou_Cnav1_Ephemeris
 #include "beidou_dnav_almanac.h"     // for Beidou_Dnav_Almanac
 #include "beidou_dnav_ephemeris.h"   // for Beidou_Dnav_Ephemeris
 #include "galileo_almanac.h"         // for Galileo_Almanac
@@ -228,6 +229,10 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
             else if (sig_ == "B3")
                 {
                     rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L6I);
+                }
+            else if (sig_ == "1D")
+                {
+                    rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L1P);
                 }
 
             break;
@@ -707,6 +712,73 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
     rtklib_sat.has_clock_correction_m = 0.0;
     rtklib_sat.apply_has_corrections = false;
 
+    return rtklib_sat;
+}
+
+
+eph_t eph_to_rtklib(const Beidou_Cnav1_Ephemeris& bei_eph)
+{
+    eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, 0, 0, 0, 0, 0.0, -1, 0};
+    rtklib_sat.sat = bei_eph.PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS;
+    rtklib_sat.A = bei_eph.A0;
+    rtklib_sat.M0 = bei_eph.M_0;
+    rtklib_sat.deln = bei_eph.delta_n;
+    rtklib_sat.OMG0 = bei_eph.OMEGA_0;
+    rtklib_sat.OMGd = bei_eph.OMEGAdot;
+    rtklib_sat.omg = bei_eph.omega;
+    rtklib_sat.i0 = bei_eph.i_0;
+    rtklib_sat.idot = bei_eph.idot;
+    rtklib_sat.e = bei_eph.ecc;
+    rtklib_sat.Adot = bei_eph.Adot;
+    rtklib_sat.ndot = bei_eph.delta_ndot;
+    rtklib_sat.svh = bei_eph.hs;
+    rtklib_sat.sva = 0;
+    rtklib_sat.code = bei_eph.sig_type;
+    rtklib_sat.flag = bei_eph.nav_type;
+    rtklib_sat.iode = static_cast<int32_t>(bei_eph.IODE);
+    rtklib_sat.iodc = static_cast<int32_t>(bei_eph.IODC);
+    rtklib_sat.week = bei_eph.WN;
+    rtklib_sat.cic = bei_eph.Cic;
+    rtklib_sat.cis = bei_eph.Cis;
+    rtklib_sat.cuc = bei_eph.Cuc;
+    rtklib_sat.cus = bei_eph.Cus;
+    rtklib_sat.crc = bei_eph.Crc;
+    rtklib_sat.crs = bei_eph.Crs;
+    rtklib_sat.f0 = bei_eph.af0;
+    rtklib_sat.f1 = bei_eph.af1;
+    rtklib_sat.f2 = bei_eph.af2;
+    /* ICD §7.6 → gettgd(): tgd[0]=TGD_B1Cp, tgd[1]=TGD_B2ap, tgd[2]=ISC_B1Cd */
+    rtklib_sat.tgd[0] = bei_eph.TGD_B1Cp;
+    rtklib_sat.tgd[1] = bei_eph.TGD_B2ap;
+    rtklib_sat.tgd[2] = bei_eph.ISC_B1Cd;
+    rtklib_sat.toes = bei_eph.toe;
+    rtklib_sat.toe = bdt2gpst(bdt2time(rtklib_sat.week, bei_eph.toe));
+    rtklib_sat.toc = bdt2gpst(bdt2time(rtklib_sat.week, bei_eph.toc));
+    rtklib_sat.ttr = bdt2gpst(bdt2time(rtklib_sat.week, bei_eph.tow));
+
+    double tow = time2gpst(rtklib_sat.ttr, &rtklib_sat.week);
+    const double toc = time2gpst(rtklib_sat.toc, nullptr);
+    const double toe = time2gpst(rtklib_sat.toe, nullptr);
+    if (rtklib_sat.toes < tow - 302400.0)
+        {
+            rtklib_sat.week++;
+            tow -= 604800.0;
+        }
+    else if (rtklib_sat.toes > tow + 302400.0)
+        {
+            rtklib_sat.week--;
+            tow += 604800.0;
+        }
+    rtklib_sat.toe = gpst2time(rtklib_sat.week, toe);
+    rtklib_sat.toc = gpst2time(rtklib_sat.week, toc);
+    rtklib_sat.ttr = gpst2time(rtklib_sat.week, tow);
+
+    rtklib_sat.has_orbit_radial_correction_m = 0.0;
+    rtklib_sat.has_orbit_in_track_correction_m = 0.0;
+    rtklib_sat.has_orbit_cross_track_correction_m = 0.0;
+    rtklib_sat.has_clock_correction_m = 0.0;
+    rtklib_sat.apply_has_corrections = false;
     return rtklib_sat;
 }
 

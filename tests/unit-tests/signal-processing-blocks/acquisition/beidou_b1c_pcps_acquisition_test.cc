@@ -15,7 +15,7 @@
  */
 #include "acquisition_interface.h"
 #include "gnss_block_factory.h"
-#include "gnss_block_interface.h"
+#include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include "in_memory_configuration.h"
 #include <gtest/gtest.h>
 #include <memory>
@@ -25,9 +25,7 @@ TEST(BeidouB1cPcpsAcquisitionTest, Instantiate)
     auto configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("Acquisition_1D.implementation", "BEIDOU_B1C_PCPS_Ambiguous_Acquisition");
     configuration->set_property("Acquisition_1D.item_type", "gr_complex");
-    auto factory = std::make_unique<GNSSBlockFactory>();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(configuration.get(), "Acquisition_1D", 1, 0);
-    auto acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
+    std::unique_ptr<AcquisitionInterface> acquisition = block_factory::GetAcqBlock(configuration.get(), "Acquisition_1D", 1, 0);
     ASSERT_NE(acquisition, nullptr);
     EXPECT_STREQ("BEIDOU_B1C_PCPS_Ambiguous_Acquisition", acquisition->implementation().c_str());
 }

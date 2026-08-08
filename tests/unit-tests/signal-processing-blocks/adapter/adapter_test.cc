@@ -288,7 +288,7 @@ TEST_F(DataTypeAdapter, IbyteToCbyteValidationOfResults)
 
 TEST_F(DataTypeAdapter, IbyteToComplexValidationOfResults)
 {
-    run_ibyte_to_cbyte_block();
+    run_ibyte_to_complex_block();
     std::ifstream ifs(file_name_output.data(), std::ifstream::binary | std::ifstream::in);
     gr_complex iSample;
     int i = 0;

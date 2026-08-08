@@ -111,6 +111,17 @@ All notable changes to GNSS-SDR will be documented in this file.
   sample configuration file is provided at
   `conf/File_input/Beidou/gnss-sdr_BDS_B1C_geb_if20k_fs18m_ibyte.conf`.
   Contributed by @OuWenhao16.
+- Added reception of SBAS L1 signals (EGNOS and WAAS, PRN 120-138), with signal
+  identifier `S1`: PCPS acquisition (`SBAS_L1_PCPS_Acquisition`), DLL+PLL
+  tracking (`SBAS_L1_DLL_PLL_Tracking`), and telemetry decoding
+  (`SBAS_L1_Telemetry_Decoder`) with Viterbi FEC decoding, CRC-24Q verification,
+  and message-type reporting. Decoded frames carry traceback-corrected reception
+  timestamps and can be dumped to per-PRN text files in an EMS-like layout with
+  `TelemetryDecoder_S1.dump=true`. SBAS satellites are not used as ranging
+  sources yet, and message contents are not applied to the PVT solution. A
+  sample configuration file is provided at
+  `conf/File_input/SBAS/gnss-sdr_SBAS_EGNOS_rx.conf`. Contributed by
+  @kalmancito.
 - Added support for RINEX 4.02 output, activated by setting
   `PVT.rinex_version=4` in the configuration file (or with the
   `-RINEX_version=4.02` command-line flag). Observation files are generated in
@@ -401,10 +412,10 @@ https://gnss-sdr.org/design-forces/
   - `FMCOMMS5_Signal_Source_FPGA`: FMCOMMS5 analog front-end.
   - `MAX2771_EVKIT_Signal_Source_FPGA`: MAX2771 evaluation kit analog front-end.
   - `DMA_Signal_Source_FPGA`: FPGA DMA working in post-processing mode.
+
   When building GNSS-SDR for the SoC FPGA, the following options can be passed
   to CMake with possible values of `ON` or `OFF`, and their default value is
   `OFF`:
-
   - `-DENABLE_AD9361`: Checks if the IIO driver is installed and builds the
     `ADRV9361_Z7035_Signal_Source_FPGA` and the `FMCOMMS5_Signal_Source_FPGA`
     sources.

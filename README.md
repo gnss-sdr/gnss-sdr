@@ -29,6 +29,8 @@ In the L1 band:
 - &#128752; BeiDou B1C (centered at 1575.420 MHz) ✅
 - &#128752; BeiDou B1I (centered at 1561.098 MHz) ✅
 - &#128752; QZSS L1 C/A and C/B, where available (centered at 1575.420 MHz) ✅
+- &#128752; SBAS L1 (EGNOS and WAAS, centered at 1575.420 MHz) — navigation
+  message decoding only; SBAS satellites are not yet used as ranging sources
 
 In the E6 band:
 
@@ -1557,6 +1559,7 @@ identifiers:
 | Beidou B1I     |       B1       |
 | Beidou B1C     |       1D       |
 | QZSS L1 C/A    |       J1       |
+| SBAS L1        |       S1       |
 | Galileo E6B    |       E6       |
 | Beidou B3I     |       B3       |
 | GPS L2 L2C(M)  |       2S       |

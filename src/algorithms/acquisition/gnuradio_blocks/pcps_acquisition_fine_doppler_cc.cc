@@ -177,7 +177,7 @@ void pcps_acquisition_fine_doppler_cc::update_carrier_wipeoff()
     d_grid_doppler_wipeoffs = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>(d_num_doppler_points, volk_gnsssdr::vector<std::complex<float>>(d_fft_size));
     for (int doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {
-            doppler_hz = d_acq_params.doppler_step * doppler_index - d_acq_params.doppler_step;
+            doppler_hz = d_acq_params.doppler_step * doppler_index - d_acq_params.doppler_max;
             // doppler search steps
             // compute the carrier doppler wipe-off signal and store it
             phase_step_rad = static_cast<float>(TWO_PI) * static_cast<float>(doppler_hz) / static_cast<float>(d_acq_params.fs_in);

@@ -74,6 +74,7 @@ public:
     double delta_n{};     //!< Mean motion difference from computed value [rad/sec]
     double ecc{};         //!< Eccentricity
     double sqrtA{};       //!< Square root of the semi-major axis [meters^1/2]
+    double A0{};          //!< Semi-major axis [meters] (B-CNAV1); unused when sqrtA is set
     double OMEGA_0{};     //!< Longitude of ascending node of orbital plane at weekly epoch [rad]
     double i_0{};         //!< Inclination angle at reference time [rad]
     double omega{};       //!< Argument of perigee [rad]

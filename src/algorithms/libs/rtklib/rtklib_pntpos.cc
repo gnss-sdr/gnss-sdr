@@ -34,6 +34,9 @@
 #endif
 
 #include "rtklib_pntpos.h"
+#include "Beidou_CNAV1.h"
+#include "beidou_bdgim.h"
+#include "gnss_frequencies.h"
 #include "rtklib_ephemeris.h"
 #include "rtklib_ionex.h"
 #include "rtklib_sbas.h"
@@ -111,7 +114,56 @@ double gettgd(int sat, const nav_t *nav, int tgd_index)
 
 double gettgd(int sat, const nav_t *nav)
 {
-    return gettgd(sat, nav, 0);
+    return gettgd(sat, nav, static_cast<int>(0));
+}
+
+
+/* get tgd parameter (m) -----------------------------------------------------
+ * GPS/QZS/GAL: return c·tgd[0] from the first matching ephemeris (classic RTKLIB).
+ * BDS DNAV (eph.code!=BDS_EPH_SOURCE_CNAV1): tgd[0]=TGD1 (B1I vs B3I timing reference)
+ * BDS CNAV1 (eph.code==BDS_EPH_SOURCE_CNAV1), stored by eph_to_rtklib(Beidou_Cnav1_Ephemeris):
+ *   tgd[0]=TGD_B1Cp, tgd[1]=TGD_B2ap, tgd[2]=ISC_B1Cd  (ICD B1C §7.6)
+ * BDS user algorithm (applied in prange as PC = P - c·Δt_TGD):
+ *   B1C pilot CODE_L1P: (Δtsv)_B1Cp = Δtsv - TGD_B1Cp           → (7-4)
+ *   B1C data  CODE_L1D: (Δtsv)_B1Cd = Δtsv - TGD_B1Cp - ISC_B1Cd → (7-5)
+ *   B1I (CODE_L2I/L1I): use DNAV TGD1; B3I skips TGD in prange.
+ * CODE_L1P is also GPS/GLO L1P — CNAV1 matching is SYS_BDS only.
+ * No DNAV↔CNAV1 TGD fallback (TGD1 vs TGD_B1Cp).
+ *-----------------------------------------------------------------------------*/
+double gettgd_bds_by_obs_code(int sat, const nav_t *nav, unsigned char obs_code)
+{
+    int i;
+    int prn = 0;
+    const int sys = satsys(sat, &prn);
+    const int is_b1c_obs = (obs_code == CODE_L1D || obs_code == CODE_L1P) ? 1 : 0;
+
+    for (i = 0; i < nav->n; i++)
+        {
+            if (nav->eph[i].sat != sat)
+                {
+                    continue;
+                }
+
+            if (sys == SYS_BDS)
+                {
+                    const int is_cnav1 = (nav->eph[i].code == BDS_EPH_SOURCE_CNAV1) ? 1 : 0;
+                    /* B1C obs ↔ CNAV1 eph; B1I/other ↔ DNAV eph */
+                    if (is_b1c_obs != is_cnav1)
+                        {
+                            continue;
+                        }
+                    double tgd_s = nav->eph[i].tgd[0];
+                    if (is_cnav1 && obs_code == CODE_L1D)
+                        {
+                            tgd_s += nav->eph[i].tgd[2];
+                        }
+                    return SPEED_OF_LIGHT_M_S * tgd_s;
+                }
+
+            /* GPS/GAL/QZS/... : first ephemeris for this sat */
+            return SPEED_OF_LIGHT_M_S * nav->eph[i].tgd[0];
+        }
+    return 0.0;
 }
 
 /* get isc parameter (m) -----------------------------------------------------*/
@@ -201,10 +253,37 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
             return 0.0;
         }
 
-    /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS/BDS */
-    if (sys == SYS_GAL || sys == SYS_SBS || sys == SYS_BDS)
+    /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS;
+     * BDS: B1I(band0)+B3I(band2). B1C (CODE_L1P/L1D) is single-frequency on
+     * slot 0 under GNSS-SDR prefer-B1C XOR (never paired as IF with B1I). */
+    if (sys == SYS_GAL || sys == SYS_SBS)
         {
             j = 2;
+        }
+    else if (sys == SYS_BDS)
+        {
+            const bool b1c0 = (obs->code[0] == CODE_L1D || obs->code[0] == CODE_L1P);
+            const bool b1c1 = (obs->code[1] == CODE_L1D || obs->code[1] == CODE_L1P);
+            if (b1c0 || b1c1)
+                {
+                    i = b1c0 ? 0 : 1;
+                    j = i; /* B1C single-frequency */
+                }
+            else if (obs->code[0] != CODE_NONE && obs->code[2] != CODE_NONE)
+                {
+                    i = 0;
+                    j = 2; /* B1I + B3I */
+                }
+            else if (obs->code[0] != CODE_NONE)
+                {
+                    i = 0;
+                    j = 2; /* B1I-only: keep legacy pair indices for lam check */
+                }
+            else if (obs->code[2] != CODE_NONE)
+                {
+                    i = 2;
+                    j = 2; /* B3I-only */
+                }
         }
     else if (sys == SYS_GPS || sys == SYS_GLO || sys == SYS_QZS)
         {
@@ -234,7 +313,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                         time_str(obs->time, 0), obs->sat, azel[1] * R2D, obs->SNR[i] * 0.25);
                     return 0.0;
                 }
-            if (opt->ionoopt == IONOOPT_IFLC)
+            if (opt->ionoopt == IONOOPT_IFLC && i != j)
                 {
                     if (testsnr(0, j, azel[1], obs->SNR[j] * 0.25, &opt->snrmask))
                         {
@@ -246,10 +325,10 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     /* fL1^2 / fL2(orL5)^2 . See IS-GPS-200, p. 103 and Galileo ICD p. 48 */
     if (sys == SYS_GPS || sys == SYS_GAL || sys == SYS_GLO || sys == SYS_BDS || sys == SYS_QZS)
         {
-            gamma_ = std::pow(lam[j], 2.0) / std::pow(lam[i], 2.0);
+            gamma_ = (i == j) ? 1.0 : (std::pow(lam[j], 2.0) / std::pow(lam[i], 2.0));
         }
     P1 = obs->P[i];
-    P2 = obs->P[j];
+    P2 = (i == j) ? 0.0 : obs->P[j];
     P1_P2 = nav->cbias[obs->sat - 1][0];
     P1_C1 = nav->cbias[obs->sat - 1][1];
     P2_C2 = nav->cbias[obs->sat - 1][2];
@@ -277,14 +356,21 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     /* if no P1-P2 DCB, use TGD instead */
     if (P1_P2 == 0.0)
         {
-            int tgd_index = 0;
-            if (sys == SYS_GAL)
+            if (sys == SYS_BDS)
                 {
-                    const unsigned char observation_code = obs->code[j] != CODE_NONE ? obs->code[j] : obs->code[i];
-                    tgd_index = galileo_bgd_index(observation_code, obs->sat, nav);
-                    uses_galileo_bgd = tgd_index >= 0;
+                    P1_P2 = gettgd_bds_by_obs_code(obs->sat, nav, obs->code[i]);
                 }
-            P1_P2 = gettgd(obs->sat, nav, tgd_index);
+            else
+                {
+                    int tgd_index = 0;
+                    if (sys == SYS_GAL)
+                        {
+                            const unsigned char observation_code = obs->code[j] != CODE_NONE ? obs->code[j] : obs->code[i];
+                            tgd_index = galileo_bgd_index(observation_code, obs->sat, nav);
+                            uses_galileo_bgd = tgd_index >= 0;
+                        }
+                    P1_P2 = gettgd(obs->sat, nav, tgd_index);
+                }
         }
 
     if (sys == SYS_GPS || sys == SYS_QZS)
@@ -299,7 +385,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     if (opt->ionoopt == IONOOPT_IFLC)
         {
             /* dual-frequency */
-            if (P1 == 0.0 || P2 == 0.0)
+            if (P1 == 0.0 || P2 == 0.0 || i == j)
                 {
                     return 0.0;
                 }
@@ -325,15 +411,23 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     ////////////////////////////////////////////
     else
         { /* single-frequency */
-            if (obs->code[i] == CODE_NONE && obs->code[j] == CODE_NONE)
+            if (obs->code[i] == CODE_NONE && (i == j || obs->code[j] == CODE_NONE))
                 {
                     return 0.0;
                 }
 
-            if (obs->code[i] != CODE_NONE && obs->code[j] == CODE_NONE)
+            if (obs->code[i] != CODE_NONE && (i == j || obs->code[j] == CODE_NONE))
                 {
-                    P1 += P1_C1; /* C1->P1 */
-                    PC = P1 - P1_P2;
+                    if (sys == SYS_BDS && (obs->code[i] == CODE_L6I || obs->code[i] == CODE_L6Q))
+                        {
+                            /* B3I is the DNAV timing reference; no TGD1 applied */
+                            PC = P1;
+                        }
+                    else
+                        {
+                            P1 += P1_C1; /* C1->P1 */
+                            PC = P1 - P1_P2;
+                        }
                 }
             else if (obs->code[i] == CODE_NONE && obs->code[j] != CODE_NONE)
                 {
@@ -397,7 +491,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                             *iono_scale = 0.0;
                         }
                 }
-            else if (sys == SYS_GAL || sys == SYS_GLO || sys == SYS_BDS) /* E1 + E5a */
+            else if (sys == SYS_GAL || sys == SYS_GLO || sys == SYS_BDS) /* E1 + E5a / B1I + B3I */
                 {
                     P1 += P1_C1;
                     P2 += P2_C2;
@@ -433,7 +527,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
  * return : status(1:ok,0:error)
  *-----------------------------------------------------------------------------*/
 int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
-    const double *azel, int ionoopt, double *ion, double *var)
+    const double *azel, int ionoopt, double *ion, double *var, unsigned char obs_code)
 {
     trace(4, "ionocorr: time=%s opt=%d sat=%2d pos=%.3f %.3f azel=%.3f %.3f\n",
         time_str(time, 3), ionoopt, sat, pos[0] * R2D, pos[1] * R2D, azel[0] * R2D,
@@ -442,18 +536,32 @@ int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
     /* broadcast model */
     if (ionoopt == IONOOPT_BRDC)
         {
-            const double *ion_coeffs = nav->ion_gps;
-            double ref_freq_scale = 1.0;
-            if (satsys(sat, nullptr) == SYS_BDS && norm_rtk(nav->ion_cmp, 8) > 0.0)
+            const int sys = satsys(sat, nullptr);
+            if (sys == SYS_BDS)
                 {
-                    /* prefer the BDS broadcast Klobuchar for BDS satellites.
-                       Its coefficients are referenced to B1I: express the
-                       result at the GPS L1 frequency, since callers rescale
-                       the delay to the observed band */
-                    ion_coeffs = nav->ion_cmp;
-                    ref_freq_scale = std::pow(FREQ1_BDS / FREQ1, 2.0);
+                    /* B1C (CODE_L1D/L1P) uses BDGIM at FREQ1; B1I/B3I use DNAV Klobuchar */
+                    const bool is_b1c = (obs_code == CODE_L1D || obs_code == CODE_L1P);
+                    if (is_b1c && nav->ion_bdgim_valid)
+                        {
+                            const double ep0[] = {2000, 1, 1, 12, 0, 0};
+                            const double mjd = 51544.5 + timediff(gpst2utc(time), epoch2time(ep0)) / 86400.0;
+                            *ion = beidou_bdgim_delay_m(mjd, pos[0], pos[1], azel[0], azel[1],
+                                nav->ion_bdgim, FREQ1);
+                            *var = std::pow(*ion * ERR_BRDCI, 2.0);
+                            return 1;
+                        }
+                    if (norm_rtk(nav->ion_cmp, 8) > 0.0)
+                        {
+                            /* BDS Klobuchar coefficients are referenced to B1I.
+                               Express the result at GPS L1 because rescode()
+                               rescales the delay to the observed carrier. */
+                            const double ref_freq_scale = std::pow(FREQ1_BDS / FREQ1, 2.0);
+                            *ion = ionmodel(time, nav->ion_cmp, pos, azel) * ref_freq_scale;
+                            *var = std::pow(*ion * ERR_BRDCI, 2.0);
+                            return 1;
+                        }
                 }
-            *ion = ionmodel(time, ion_coeffs, pos, azel) * ref_freq_scale;
+            *ion = ionmodel(time, nav->ion_gps, pos, azel);
             *var = std::pow(*ion * ERR_BRDCI, 2.0);
             return 1;
         }
@@ -602,16 +710,27 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                     continue;
                 }
 
-            /* ionospheric corrections */
+            /* ionospheric corrections — use first available observation code/band */
+            unsigned char iono_code = CODE_NONE;
+            int iono_band = 0;
+            for (j = 0; j < NFREQ; j++)
+                {
+                    if (obs[i].code[j] != CODE_NONE && obs[i].P[j] != 0.0)
+                        {
+                            iono_code = obs[i].code[j];
+                            iono_band = j;
+                            break;
+                        }
+                }
             if (!ionocorr(obs[i].time, nav, obs[i].sat, pos, azel + i * 2,
-                    iter > 0 ? opt->ionoopt : IONOOPT_BRDC, &dion, &vion))
+                    iter > 0 ? opt->ionoopt : IONOOPT_BRDC, &dion, &vion, iono_code))
                 {
                     trace(4, "ionocorr error\n");
                     continue;
                 }
 
-            /* GPS-L1 -> L1/B1 */
-            if ((lam_L1 = nav->lam[obs[i].sat - 1][0]) > 0.0)
+            /* Scale broadcast iono (L1 reference) to the observed carrier. */
+            if ((lam_L1 = nav->lam[obs[i].sat - 1][iono_band]) > 0.0)
                 {
                     /* iono delay scales with f^-2, its variance with f^-4 */
                     const double freq_factor = std::pow(lam_L1 / LAM_CARR[0], 2.0);

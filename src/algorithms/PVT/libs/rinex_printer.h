@@ -55,6 +55,8 @@
  * \{ */
 
 
+struct Bds3_B1c_PageData;
+class Beidou_Cnav1_Ephemeris;
 class Beidou_Dnav_Ephemeris;
 class Beidou_Dnav_Iono;
 class Beidou_Dnav_Utc_Model;
@@ -135,6 +137,18 @@ public:
     void log_rinex_nav_bds_dnav(const std::map<int32_t, Beidou_Dnav_Ephemeris>& new_bds_eph);
 
     /*!
+     * \brief Print RINEX navigation records for BeiDou B-CNAV1 ephemerides.
+     *
+     * RINEX 4 writes proper CNV1 records (Table A24), taking SISAI/SISMAI/
+     * integrity and t_op from the last decoded SF3 page when it carries them.
+     * RINEX 3 has no CNAV1 representation, so records are written as D1-style
+     * stand-ins: sqrt(A0) in the sqrtA field with the Adot term dropped,
+     * IODE/IODC in AODE/AODC, and TGD_B1Cp/TGD_B2ap mapped into TGD1/TGD2.
+     */
+    void log_rinex_nav_bds_cnav1(const std::map<int32_t, Beidou_Cnav1_Ephemeris>& new_bds_eph,
+        const std::map<int32_t, Bds3_B1c_PageData>& bds_page_data);
+
+    /*!
      * \brief Returns true is the RINEX file headers are already written
      */
     inline bool is_rinex_header_written() const
@@ -200,6 +214,7 @@ private:
      *  \param obs_time Observation time in BDT seconds of week
      */
     boost::posix_time::ptime compute_BDS_time(const Beidou_Dnav_Ephemeris& eph, double obs_time) const;
+    boost::posix_time::ptime compute_BDS_time(const Beidou_Cnav1_Ephemeris& eph, double obs_time) const;
 
     /*
      * Computes the UTC time and returns a boost::posix_time::ptime object
@@ -267,6 +282,8 @@ private:
     std::string d_last_glonass_sto_signature;
     std::string d_last_beidou_iono_signature;
     std::string d_last_beidou_sto_signature;
+    std::string d_last_bds_cnav1_iono_signature;
+    std::string d_last_bds_cnav1_sto_signature;
     std::string d_last_leap_second_line;
     const int32_t d_ref_gps_week;
 

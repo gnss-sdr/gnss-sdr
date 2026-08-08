@@ -31,8 +31,10 @@
  * -----------------------------------------------------------------------*/
 
 #include "rtklib_solver.h"
+#include "Beidou_CNAV1.h"
 #include "Beidou_DNAV.h"
 #include "Galileo_CNAV.h"
+#include "gnss_obs_codes.h"
 #include "gnss_sdr_filesystem.h"
 #include "matlab_writter_helper.h"
 #include "rtklib_rtkpos.h"
@@ -40,9 +42,9 @@
 #include <algorithm>
 #include <cmath>
 #include <exception>
+#include <iostream>
 #include <iterator>
 #include <limits>
-#include <utility>
 #include <vector>
 
 #if USE_GLOG_AND_GFLAGS
@@ -69,10 +71,12 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     d_rtklib_freq_index[1] = 1;
     d_rtklib_freq_index[2] = 2;
 
+    // BDS: B1I and B1C share slot 0 (prefer-B1C XOR). Override lam[0] for B1C (FREQ1).
     d_rtklib_band_index["1G"] = 0;
     d_rtklib_band_index["1C"] = 0;
     d_rtklib_band_index["1B"] = 0;
     d_rtklib_band_index["B1"] = 0;
+    d_rtklib_band_index["1D"] = 0;
     d_rtklib_band_index["B3"] = 2;
     d_rtklib_band_index["2G"] = 1;
     d_rtklib_band_index["2S"] = 1;
@@ -1775,17 +1779,34 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     }
                 case 'C':
                     {
-                        // BEIDOU B1I
-                        //  - find the ephemeris for the current BEIDOU SV observation. The SV PRN ID is the map key
+                        // BeiDou B1I / B1C / B3I (prefer B1C when CNAV1 + B1C obs are both present)
                         const std::string sig_(gnss_observables_iter->second.Signal);
+                        const int bds_sat = static_cast<int>(gnss_observables_iter->second.PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS);
+
                         if (sig_ == "B1")
                             {
+                                bool prefer_b1c = false;
+                                for (const auto &obs_pair : gnss_observables_map)
+                                    {
+                                        if (obs_pair.second.System == 'C' &&
+                                            obs_pair.second.PRN == gnss_observables_iter->second.PRN &&
+                                            std::string(obs_pair.second.Signal, 2) == "1D" &&
+                                            beidou_cnav1_ephemeris_map.find(obs_pair.second.PRN) != beidou_cnav1_ephemeris_map.cend())
+                                            {
+                                                prefer_b1c = true;
+                                                break;
+                                            }
+                                    }
+                                if (prefer_b1c)
+                                    {
+                                        DLOG(INFO) << "Skip B1I for PRN " << gnss_observables_iter->second.PRN
+                                                   << " (B1C present; prefer CNAV1)";
+                                        break;
+                                    }
                                 beidou_ephemeris_iter = beidou_dnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (beidou_ephemeris_iter != beidou_dnav_ephemeris_map.cend())
                                     {
-                                        // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                         eph_data[valid_obs] = eph_to_rtklib(beidou_ephemeris_iter->second);
-                                        // convert observation from GNSS-SDR class to RTKLIB structure
                                         obsd_t newobs{};
                                         d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
@@ -1793,12 +1814,35 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             d_rtklib_band_index.at(sig_));
                                         valid_obs++;
                                     }
-                                else  // the ephemeris are not available for this SV
+                                else
                                     {
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->first;
                                     }
                             }
-                        // BeiDou B3
+                        if (sig_ == "1D")
+                            {
+                                const auto cnav1_iter = beidou_cnav1_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                                if (cnav1_iter != beidou_cnav1_ephemeris_map.cend())
+                                    {
+                                        eph_data[valid_obs] = eph_to_rtklib(cnav1_iter->second);
+                                        const auto page_it = beidou_cnav1_page_data_map.find(cnav1_iter->second.PRN);
+                                        if (page_it != beidou_cnav1_page_data_map.cend())
+                                            {
+                                                eph_data[valid_obs].svh = page_it->second.common.hs;
+                                            }
+                                        obsd_t newobs{};
+                                        d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                            gnss_observables_iter->second,
+                                            cnav1_iter->second.WN + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
+                                            d_rtklib_band_index.at(sig_));
+                                        valid_obs++;
+                                    }
+                                else
+                                    {
+                                        DLOG(INFO) << "No B-CNAV1 ephemeris data for SV " << gnss_observables_iter->second.PRN;
+                                    }
+                            }
+                        // BeiDou B3: merge with DNAV/B1I only
                         if (sig_ == "B3")
                             {
                                 beidou_ephemeris_iter = beidou_dnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -1807,22 +1851,23 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         bool found_B1I_obs = false;
                                         for (int i = 0; i < valid_obs; i++)
                                             {
-                                                if (eph_data[i].sat == (static_cast<int>(gnss_observables_iter->second.PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS)))
+                                                if (eph_data[i].sat == bds_sat && eph_data[i].code != BDS_EPH_SOURCE_CNAV1)
                                                     {
-                                                        d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
-                                                            gnss_observables_iter->second,
-                                                            beidou_ephemeris_iter->second.WN + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
-                                                            d_rtklib_band_index.at(sig_));
-                                                        found_B1I_obs = true;
-                                                        break;
+                                                        const unsigned char c0 = d_obs_data[i + glo_valid_obs].code[0];
+                                                        if (c0 == CODE_L2I || c0 == CODE_L1I)
+                                                            {
+                                                                d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
+                                                                    gnss_observables_iter->second,
+                                                                    beidou_ephemeris_iter->second.WN + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
+                                                                    d_rtklib_band_index.at(sig_));
+                                                                found_B1I_obs = true;
+                                                                break;
+                                                            }
                                                     }
                                             }
                                         if (!found_B1I_obs)
                                             {
-                                                // insert BeiDou B3I obs as new obs and also insert its ephemeris
-                                                // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                                 eph_data[valid_obs] = eph_to_rtklib(beidou_ephemeris_iter->second);
-                                                // convert observation from GNSS-SDR class to RTKLIB structure
                                                 const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
@@ -1834,7 +1879,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 valid_obs++;
                                             }
                                     }
-                                else  // the ephemeris are not available for this SV
+                                else
                                     {
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
                                     }
@@ -1926,6 +1971,23 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_nav_data.ion_cmp[6] = beidou_dnav_iono.beta2;
                     d_nav_data.ion_cmp[7] = beidou_dnav_iono.beta3;
                 }
+            if (beidou_cnav1_iono.valid)
+                {
+                    d_nav_data.ion_bdgim[0] = beidou_cnav1_iono.alpha1;
+                    d_nav_data.ion_bdgim[1] = beidou_cnav1_iono.alpha2;
+                    d_nav_data.ion_bdgim[2] = beidou_cnav1_iono.alpha3;
+                    d_nav_data.ion_bdgim[3] = beidou_cnav1_iono.alpha4;
+                    d_nav_data.ion_bdgim[4] = beidou_cnav1_iono.alpha5;
+                    d_nav_data.ion_bdgim[5] = beidou_cnav1_iono.alpha6;
+                    d_nav_data.ion_bdgim[6] = beidou_cnav1_iono.alpha7;
+                    d_nav_data.ion_bdgim[7] = beidou_cnav1_iono.alpha8;
+                    d_nav_data.ion_bdgim[8] = beidou_cnav1_iono.alpha9;
+                    d_nav_data.ion_bdgim_valid = 1;
+                }
+            else
+                {
+                    d_nav_data.ion_bdgim_valid = 0;
+                }
             if (gps_utc_model.valid)
                 {
                     d_nav_data.utc_gps[0] = gps_utc_model.A0;
@@ -1981,6 +2043,16 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // BeiDou message broadcasts BDT-UTC.
                     d_nav_data.leaps = beidou_dnav_utc_model.DeltaT_LS + BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET;
                 }
+            else if (beidou_cnav1_utc_model.valid)
+                {
+                    d_nav_data.utc_cmp[0] = beidou_cnav1_utc_model.A0;
+                    d_nav_data.utc_cmp[1] = beidou_cnav1_utc_model.A1;
+                    d_nav_data.utc_cmp[2] = static_cast<double>(beidou_cnav1_utc_model.tot);
+                    d_nav_data.utc_cmp[3] = static_cast<double>(beidou_cnav1_utc_model.WN_t);
+                    // RTKLIB stores the GPS-UTC leap-second count, whereas the
+                    // BeiDou message broadcasts BDT-UTC.
+                    d_nav_data.leaps = beidou_cnav1_utc_model.delta_t_LS + BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET;
+                }
 
             /* update carrier wave length using native function call in RTKlib */
             for (int i = 0; i < MAXSAT; i++)
@@ -1995,7 +2067,21 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     update_galileo_observation_wavelengths(d_obs_data[i]);
                 }
 
-            result = rtkpos(&d_rtk, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data);
+            const int nobs_total = valid_obs + glo_valid_obs;
+            /* B1C on slot 0: override lam[0] to FREQ1 (satwavelen frq0 is B1I). */
+            for (int k = 0; k < nobs_total; k++)
+                {
+                    if (satsys(d_obs_data[k].sat, nullptr) != SYS_BDS)
+                        {
+                            continue;
+                        }
+                    const unsigned char c0 = d_obs_data[k].code[0];
+                    if (c0 == CODE_L1D || c0 == CODE_L1P)
+                        {
+                            d_nav_data.lam[d_obs_data[k].sat - 1][0] = SPEED_OF_LIGHT_M_S / FREQ1;
+                        }
+                }
+            result = rtkpos(&d_rtk, d_obs_data.data(), nobs_total, &d_nav_data);
 
             if (result == 0)
                 {

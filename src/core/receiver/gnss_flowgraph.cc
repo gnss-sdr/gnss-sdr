@@ -20,6 +20,7 @@
  */
 
 #include "gnss_flowgraph.h"
+#include "Beidou_B1C.h"
 #include "Beidou_B1I.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
@@ -91,6 +92,7 @@ const auto signal_mapping = std::unordered_map<std::string, std::pair<std::strin
     {"7X", {"Galileo", "E5b"}},
     {"E6", {"Galileo", "E6"}},
     {"B1", {"Beidou", "B1"}},
+    {"1D", {"Beidou", "B1C"}},
     {"B3", {"Beidou", "B3"}},
     {"1G", {"Glonass", "L1"}},
     {"2G", {"Glonass", "L2"}},
@@ -258,6 +260,7 @@ void GNSSFlowgraph::init()
     mapStringValues_["1G"] = evGLO_1G;
     mapStringValues_["2G"] = evGLO_2G;
     mapStringValues_["B1"] = evBDS_B1;
+    mapStringValues_["1D"] = evBDS_B1C;
     mapStringValues_["B3"] = evBDS_B3;
     mapStringValues_["J1"] = evQZS_J1;
     mapStringValues_["J5"] = evQZS_J5;
@@ -1175,6 +1178,9 @@ int GNSSFlowgraph::connect_signal_conditioners_to_channels()
                                     break;
                                 case evBDS_B1:
                                     acq_fs = BEIDOU_B1I_OPT_ACQ_FS_SPS;
+                                    break;
+                                case evBDS_B1C:
+                                    acq_fs = BEIDOU_B1C_OPT_ACQ_FS_SPS;
                                     break;
                                 case evGLO_1G:
                                 case evGLO_2G:
@@ -2182,6 +2188,13 @@ void GNSSFlowgraph::set_signals_list()
 
                     for (const auto& prn : available_prn_map.at(gnss_system_str))
                         {
+                            if (signal_str == "1D")
+                                {
+                                    if ((prn >= 1U && prn <= 5U) || (prn >= 59U && prn <= 63U))
+                                        {
+                                            continue;  // GEO satellites do not broadcast B1C (ICD section 3.1)
+                                        }
+                                }
                             if (signal_str == "J5" && prn > QZSS_L5_MAX_PRN)
                                 {
                                     // QZSS L1 C/B PRNs (203-206) do not transmit an L5 signal

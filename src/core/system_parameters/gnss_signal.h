@@ -49,7 +49,7 @@ public:
      *  - GPS: "1C" (L1 C/A), "2S" (L2C), "L5"
      *  - GLONASS: "1G" (L1 C/A), "2G" (L2 C/A)
      *  - Galileo: "1B" (E1B), "5X" (E5a), "7X" (E5b), "6C" (E6C)
-     *  - BeiDou: "B1" (B1I), "B3" (B3I)
+     *  - BeiDou: "B1" (B1I), "B3" (B3I), "1D" (B1C)
      */
     std::string get_signal_str() const;
 

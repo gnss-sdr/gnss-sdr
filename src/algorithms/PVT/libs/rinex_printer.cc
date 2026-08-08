@@ -17,8 +17,11 @@
  */
 
 #include "rinex_printer.h"
+#include "Beidou_CNAV1.h"
 #include "Beidou_DNAV.h"
 #include "GLONASS_L1_L2_CA.h"
+#include "beidou_cnav1_ephemeris.h"
+#include "beidou_cnav1_navigation_message.h"
 #include "beidou_dnav_ephemeris.h"
 #include "beidou_dnav_iono.h"
 #include "beidou_dnav_utc_model.h"
@@ -103,6 +106,8 @@ std::string signal_flag_to_string(signal_flag flag)
             return "B1";
         case BDS_B3:
             return "B3";
+        case BDS_B1C:
+            return "1D";
         case QZS_J1:
             return "J1";
         case QZS_J5:
@@ -117,7 +122,7 @@ std::map<std::string, signal_flag> string_to_signal_flag_map()
 {
     std::map<std::string, signal_flag> convertion_map;
 
-    for (const auto flag : {GPS_1C, GPS_2S, GPS_L5, GAL_1B, GAL_E5a, GAL_E5b, GAL_E6, GLO_1G, GLO_2G, BDS_B1, BDS_B3, QZS_J1, QZS_J5})
+    for (const auto flag : {GPS_1C, GPS_2S, GPS_L5, GAL_1B, GAL_E5a, GAL_E5b, GAL_E6, GLO_1G, GLO_2G, BDS_B1, BDS_B3, BDS_B1C, QZS_J1, QZS_J5})
         {
             convertion_map[signal_flag_to_string(flag)] = flag;
         }
@@ -137,7 +142,7 @@ std::map<char, std::set<signal_flag>> get_constel_signal_flags(const Signal_Enab
 {
     std::map<char, std::set<signal_flag>> constel_signal_flags;
 
-    for (const auto& it : std::map<char, std::set<signal_flag>>{{'G', {GPS_1C, GPS_2S, GPS_L5}}, {'E', {GAL_1B, GAL_E5a, GAL_E5b, GAL_E6}}, {'R', {GLO_1G, GLO_2G}}, {'C', {BDS_B1, BDS_B3}}, {'J', {QZS_J1, QZS_J5}}})
+    for (const auto& it : std::map<char, std::set<signal_flag>>{{'G', {GPS_1C, GPS_2S, GPS_L5}}, {'E', {GAL_1B, GAL_E5a, GAL_E5b, GAL_E6}}, {'R', {GLO_1G, GLO_2G}}, {'C', {BDS_B1, BDS_B3, BDS_B1C}}, {'J', {QZS_J1, QZS_J5}}})
         {
             for (const auto flag : it.second)
                 {
@@ -470,6 +475,7 @@ std::map<std::string, std::string> getObservationCodes()
         {"BEIDOU_B1_I", "1I"},
         {"BEIDOU_B1_Q", "1Q"},
         {"BEIDOU_B1_IQ", "1X"},
+        {"BEIDOU_B1C_D", "1D"},
         {"BEIDOU_B1_I_RINEX4", "2I"},
         {"BEIDOU_B1_Q_RINEX4", "2Q"},
         {"BEIDOU_B1_IQ_RINEX4", "2X"},
@@ -1650,6 +1656,13 @@ std::string get_beidou_time_corr_line(const Beidou_Dnav_Utc_Model& utc_model)
 }
 
 
+std::string get_beidou_time_corr_line(const Beidou_Cnav1_Utc_Model& utc_model)
+{
+    // Unlike DNAV, B-CNAV1 broadcasts the reference time and full BDT week.
+    return get_time_corr_line("BDUT", utc_model.A0, utc_model.A1, &utc_model.tot, &utc_model.WN_t);
+}
+
+
 std::string get_glonass_time_corr_line(const Glonass_Gnav_Utc_Model& utc_model)
 {
     // The GLUT correction is defined as -TauC (see RINEX specification, Table A5)
@@ -1730,6 +1743,18 @@ std::string get_leap_second_line(const Beidou_Dnav_Utc_Model& utc_model, const B
     const int32_t gps_week_lsf = bds_week_lsf + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET;
     const int32_t gps_delta_tls = utc_model.DeltaT_LS + BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET;
     const int32_t gps_delta_tlsf = static_cast<int32_t>(utc_model.DeltaT_LSF) + BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET;
+    const int32_t gps_day_number = utc_model.DN + 1;
+    return get_leap_second_line(gps_delta_tls, gps_delta_tlsf, gps_week_lsf, gps_day_number);
+}
+
+
+std::string get_leap_second_line(const Beidou_Cnav1_Utc_Model& utc_model)
+{
+    // B-CNAV1 broadcasts BDT-UTC, a full 13-bit BDT week, and day 0-6;
+    // RINEX requires GPS-UTC, a continuous GPS week, and day 1-7.
+    const int32_t gps_week_lsf = utc_model.WN_LSF + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET;
+    const int32_t gps_delta_tls = utc_model.delta_t_LS + BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET;
+    const int32_t gps_delta_tlsf = utc_model.delta_t_LSF + BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET;
     const int32_t gps_day_number = utc_model.DN + 1;
     return get_leap_second_line(gps_delta_tls, gps_delta_tlsf, gps_week_lsf, gps_day_number);
 }
@@ -2079,6 +2104,31 @@ void add_ion_klobuchar_record(std::fstream& out, char sys_char, const std::strin
 
 
 /*
+ * RINEX 4 Ionosphere (ION) BDGIM model data record
+ * (see RINEX 4.02 specification, Table A37)
+ */
+void add_ion_bdgim_record(std::fstream& out, char sys_char,
+    const boost::posix_time::ptime& transmit_time,
+    double alpha1, double alpha2, double alpha3, double alpha4, double alpha5,
+    double alpha6, double alpha7, double alpha8, double alpha9)
+{
+    out << get_nav_record_header_line("ION", sys_char, 0, "CNVX") << '\n';
+
+    std::string line;
+    line += std::string(4, ' ');
+    line += get_v4_epoch_string(transmit_time);
+    line += doub2e(alpha1);
+    line += doub2e(alpha2);
+    line += doub2e(alpha3);
+    lengthCheck(line);
+    out << line << '\n';
+
+    out << get_nav_broadcast_orbit(&alpha4, &alpha5, &alpha6, &alpha7, 4) << '\n';
+    out << get_nav_broadcast_orbit(&alpha8, &alpha9, nullptr, nullptr, 4) << '\n';
+}
+
+
+/*
  * RINEX 4 Ionosphere (ION) NeQuick-G model data record
  * (see RINEX 4.02 specification, Table A36)
  */
@@ -2309,6 +2359,7 @@ void add_obs_sys_obs_type_beidou(std::fstream& out,
 {
     const std::map<uint32_t, std::string> signal_to_code_map = {
         {BDS_B1, version == 4 ? "BEIDOU_B1_I_RINEX4" : "BEIDOU_B1_I"},
+        {BDS_B1C, "BEIDOU_B1C_D"},
         {BDS_B3, "BEIDOU_B3_I"},
     };
 
@@ -2607,7 +2658,9 @@ Rinex_Printer::Rinex_Printer(uint32_t signal_enabled_flags,
                             d_rinex_header_gps_updated(!d_flags.has_gps),
                             d_rinex_header_galileo_updated(!d_flags.has_galileo),
                             d_rinex_header_glonass_updated(!d_flags.has_glonass),
-                            d_rinex_header_beidou_iono_updated(!d_flags.has_beidou),
+                            // Klobuchar comes from DNAV only; B1C-only configs get BDGIM,
+                            // which has no RINEX 3 header representation.
+                            d_rinex_header_beidou_iono_updated(!d_flags.check_any_enabled(BDS_B1, BDS_B3)),
                             d_rinex_header_beidou_time_updated(!d_flags.has_beidou),
                             d_rinex_header_written(false)
 {
@@ -2697,12 +2750,14 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
     const auto gps_cnav_ephemeris_iter = pvt_solver->gps_cnav_ephemeris_map.cbegin();
     const auto glonass_gnav_ephemeris_iter = pvt_solver->glonass_gnav_ephemeris_map.cbegin();
     const auto beidou_dnav_ephemeris_iter = pvt_solver->beidou_dnav_ephemeris_map.cbegin();
+    const auto beidou_cnav1_ephemeris_iter = pvt_solver->beidou_cnav1_ephemeris_map.cbegin();
 
     const bool has_gps_lnav_eph = !pvt_solver->gps_ephemeris_map.empty();
     const bool has_gps_cnav_eph = !pvt_solver->gps_cnav_ephemeris_map.empty();
     const bool has_galileo_eph = !pvt_solver->galileo_ephemeris_map.empty();
     const bool has_glonass_eph = !pvt_solver->glonass_gnav_ephemeris_map.empty();
     const bool has_beidou_dnav_eph = !pvt_solver->beidou_dnav_ephemeris_map.empty();
+    const bool has_beidou_cnav1_eph = !pvt_solver->beidou_cnav1_ephemeris_map.empty();
 
     // We require at least one ephemeris for an active signal of a constellation
     // Note: this is currently required because ephemeris are used when creating the headers,
@@ -2725,7 +2780,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
         {
             return;
         }
-    if (d_flags.has_beidou && !has_beidou_dnav_eph)
+    if (d_flags.has_beidou && !has_beidou_dnav_eph && !has_beidou_cnav1_eph)
         {
             return;
         }
@@ -2762,7 +2817,14 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
         }
     else if (d_flags.has_beidou)
         {
-            system_time = Rinex_Printer::compute_BDS_time(beidou_dnav_ephemeris_iter->second, rx_time);
+            if (has_beidou_cnav1_eph)
+                {
+                    system_time = Rinex_Printer::compute_BDS_time(beidou_cnav1_ephemeris_iter->second, rx_time);
+                }
+            else
+                {
+                    system_time = Rinex_Printer::compute_BDS_time(beidou_dnav_ephemeris_iter->second, rx_time);
+                }
             seconds = fmod(rx_time, 60);
             system_time_str = "BDT";
         }
@@ -2888,19 +2950,29 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
             if (d_flags.has_beidou)
                 {
                     const auto& utc_model = pvt_solver->beidou_dnav_utc_model;
+                    const auto& cnav1_utc_model = pvt_solver->beidou_cnav1_utc_model;
                     if (d_version == 3 && pvt_solver->beidou_dnav_iono.valid)
                         {
                             iono_lines.emplace_back(get_beidou_iono_alpha_line(pvt_solver->beidou_dnav_iono));
                             iono_lines.emplace_back(get_beidou_iono_beta_line(pvt_solver->beidou_dnav_iono));
                         }
+                    // BDGIM (B1C-only) has no RINEX 3 header representation.
                     if (d_version == 3 && utc_model.valid)
                         {
                             time_corr_lines.emplace_back(get_beidou_time_corr_line(utc_model));
+                        }
+                    else if (d_version == 3 && cnav1_utc_model.valid)
+                        {
+                            time_corr_lines.emplace_back(get_beidou_time_corr_line(cnav1_utc_model));
                         }
 
                     if (system_time_str == "BDT" && utc_model.valid)
                         {
                             leap_second_line = get_leap_second_line(utc_model, beidou_dnav_ephemeris_iter->second);
+                        }
+                    else if (system_time_str == "BDT" && cnav1_utc_model.valid)
+                        {
+                            leap_second_line = get_leap_second_line(cnav1_utc_model);
                         }
                 }
 
@@ -2935,6 +3007,10 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
             if (has_beidou_dnav_eph)
                 {
                     log_rinex_nav_bds_dnav(pvt_solver->beidou_dnav_ephemeris_map);
+                }
+            if (has_beidou_cnav1_eph)
+                {
+                    log_rinex_nav_bds_cnav1(pvt_solver->beidou_cnav1_ephemeris_map, pvt_solver->beidou_cnav1_page_data_map);
                 }
 
             d_rinex_header_written = true;
@@ -3019,6 +3095,16 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                             if (system_time_str == "BDT")
                                 {
                                     leap_second_line = get_leap_second_line(pvt_solver->beidou_dnav_utc_model, beidou_dnav_ephemeris_iter->second);
+                                }
+                        }
+                    else if (!d_rinex_header_beidou_time_updated && !d_flags.check_any_enabled(BDS_B1, BDS_B3) && pvt_solver->beidou_cnav1_utc_model.valid)
+                        {
+                            nav_header_info.emplace_back("BDUT", "TIME SYSTEM CORR", get_beidou_time_corr_line(pvt_solver->beidou_cnav1_utc_model));
+                            d_rinex_header_beidou_time_updated = true;
+
+                            if (system_time_str == "BDT")
+                                {
+                                    leap_second_line = get_leap_second_line(pvt_solver->beidou_cnav1_utc_model);
                                 }
                         }
 
@@ -3357,12 +3443,47 @@ void Rinex_Printer::log_rinex_nav_v4_aux_records(const Rtklib_Solver* pvt_solver
                     leap_second_line = get_leap_second_line(utc_model, eph);
                 }
         }
+    if (d_flags.check_any_enabled(BDS_B1C) && pvt_solver->beidou_cnav1_iono.valid && !pvt_solver->beidou_cnav1_ephemeris_map.empty())
+        {
+            const auto& eph = pvt_solver->beidou_cnav1_ephemeris_map.cbegin()->second;
+            const auto& iono = pvt_solver->beidou_cnav1_iono;
+            const std::string signature = make_record_signature(
+                iono.alpha1, iono.alpha2, iono.alpha3, iono.alpha4, iono.alpha5,
+                iono.alpha6, iono.alpha7, iono.alpha8, iono.alpha9);
+            if (signature != d_last_bds_cnav1_iono_signature)
+                {
+                    add_ion_bdgim_record(out, satelliteSystem.at("Beidou"), Rinex_Printer::compute_BDS_time(eph, rx_time),
+                        iono.alpha1, iono.alpha2, iono.alpha3, iono.alpha4, iono.alpha5,
+                        iono.alpha6, iono.alpha7, iono.alpha8, iono.alpha9);
+                    d_last_bds_cnav1_iono_signature = signature;
+                    records_written = true;
+                }
+        }
+    if (d_flags.check_any_enabled(BDS_B1C) && pvt_solver->beidou_cnav1_utc_model.valid)
+        {
+            const auto& utc_model = pvt_solver->beidou_cnav1_utc_model;
+            const std::string signature = make_record_signature(utc_model.A0, utc_model.A1, utc_model.A2, utc_model.tot, utc_model.WN_t);
+            if (signature != d_last_bds_cnav1_sto_signature)
+                {
+                    // B-CNAV1 provides the full 13-bit BDT reference week WN_t.
+                    const boost::posix_time::ptime ref_epoch(boost::gregorian::date(2006, 1, 1),
+                        boost::posix_time::seconds(static_cast<int64_t>(utc_model.WN_t) * 604800LL + static_cast<int64_t>(utc_model.tot)));
+                    add_sto_record(out, satelliteSystem.at("Beidou"), "CNVX", ref_epoch,
+                        "BDUT", "UTC(NTSC)", tow, utc_model.A0, utc_model.A1, utc_model.A2);
+                    d_last_bds_cnav1_sto_signature = signature;
+                    records_written = true;
+                }
+            if (system_time_str == "BDT" && leap_second_line.empty())
+                {
+                    leap_second_line = get_leap_second_line(utc_model);
+                }
+        }
 
     if (!leap_second_line.empty() && leap_second_line != d_last_leap_second_line)
         {
             update_obs_header(obsFile, leap_second_line);
             update_nav_header_from_info(navFile, navfilename, {NavHeaderInfo("", "LEAP SECONDS", leap_second_line)});
-            d_last_leap_second_line = leap_second_line;
+            d_last_leap_second_line = std::move(leap_second_line);
             records_written = true;
         }
 
@@ -3801,6 +3922,139 @@ void Rinex_Printer::log_rinex_nav_bds_dnav(const std::map<int32_t, Beidou_Dnav_E
 }
 
 
+void Rinex_Printer::log_rinex_nav_bds_cnav1(const std::map<int32_t, Beidou_Cnav1_Ephemeris>& new_bds_eph,
+    const std::map<int32_t, Bds3_B1c_PageData>& bds_page_data)
+{
+    auto& out = navFile;
+    const auto& sys_char = satelliteSystem.at("Beidou");
+
+    for (const auto& bds_ephemeris_iter : new_bds_eph)
+        {
+            const auto& eph = bds_ephemeris_iter.second;
+            const boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_BDS_time(eph, eph.toc);
+
+            if (d_version == 4)
+                {
+                    // B-CNAV1 EPH record, RINEX 4.02 Table A24 (CNV1).
+                    out << get_nav_record_header_line("EPH", sys_char, eph.PRN, "CNV1") << '\n';
+                    out << get_nav_sv_epoch_svclk_line(p_utc_time, sys_char, eph.PRN, eph.af0, eph.af1, eph.af2, d_version) << '\n';
+
+                    // -------- BROADCAST ORBIT - 1: ADOT, Crs, Delta_n0, M0
+                    out << get_nav_broadcast_orbit(&eph.Adot, &eph.Crs, &eph.delta_n, &eph.M_0, d_version) << '\n';
+
+                    // -------- BROADCAST ORBIT - 2: Cuc, e, Cus, sqrt(A0)
+                    const double sqrt_a0 = std::sqrt(eph.A0);
+                    out << get_nav_broadcast_orbit(&eph.Cuc, &eph.ecc, &eph.Cus, &sqrt_a0, d_version) << '\n';
+
+                    // -------- BROADCAST ORBIT - 3: ToE, Cic, OMEGA0, Cis
+                    const auto toe_d = static_cast<double>(eph.toe);
+                    out << get_nav_broadcast_orbit(&toe_d, &eph.Cic, &eph.OMEGA_0, &eph.Cis, d_version) << '\n';
+
+                    // -------- BROADCAST ORBIT - 4: i0, Crc, omega, OMEGA_DOT
+                    out << get_nav_broadcast_orbit(&eph.i_0, &eph.Crc, &eph.omega, &eph.OMEGAdot, d_version) << '\n';
+
+                    // The stored page is the last one decoded, and each page type
+                    // carries a different SISAI subset (ICD §6.2.3): page 1 has
+                    // SISAI_oe and the SISAI_OC group, pages 2/4 only SISAI_OC,
+                    // page 3 only SISAI_oe. The 22-bit SISAI_OC group packs
+                    // t_op(11)/SISAI_ocb(5)/SISAI_oc1(3)/SISAI_oc2(3). Fields the
+                    // stored page does not carry are left blank.
+                    double top_s = 0.0;
+                    double sisai_ocb = 0.0;
+                    double sisai_oc1 = 0.0;
+                    double sisai_oc2 = 0.0;
+                    double sisai_oe = 0.0;
+                    double sismai = 0.0;
+                    double integrity_flags = 0.0;
+                    const double* top_p = nullptr;
+                    const double* sisai_ocb_p = nullptr;
+                    const double* sisai_oc1_p = nullptr;
+                    const double* sisai_oc2_p = nullptr;
+                    const double* sisai_oe_p = nullptr;
+                    const double* sismai_p = nullptr;
+                    const double* integrity_flags_p = nullptr;
+                    const auto page_it = bds_page_data.find(static_cast<int32_t>(eph.PRN));
+                    if (page_it != bds_page_data.cend())
+                        {
+                            const auto& page = page_it->second;
+                            const int32_t page_id = page.common.page_id;
+                            if (page_id == 1 || page_id == 2 || page_id == 4)
+                                {
+                                    const auto sisai_oc = static_cast<uint32_t>(page.sisaioc);
+                                    top_s = static_cast<double>((sisai_oc >> 11U) & 0x7FFU) * BEIDOU_CNAV1_TOE_TOC_LSB;
+                                    sisai_ocb = static_cast<double>((sisai_oc >> 6U) & 0x1FU);
+                                    sisai_oc1 = static_cast<double>((sisai_oc >> 3U) & 0x7U);
+                                    sisai_oc2 = static_cast<double>(sisai_oc & 0x7U);
+                                    top_p = &top_s;
+                                    sisai_ocb_p = &sisai_ocb;
+                                    sisai_oc1_p = &sisai_oc1;
+                                    sisai_oc2_p = &sisai_oc2;
+                                }
+                            if (page_id == 1 || page_id == 3)
+                                {
+                                    sisai_oe = static_cast<double>(page.sisaioe);
+                                    sisai_oe_p = &sisai_oe;
+                                }
+                            sismai = static_cast<double>(page.common.sismai);
+                            sismai_p = &sismai;
+                            integrity_flags = static_cast<double>((page.common.dif ? 4 : 0) + (page.common.sif ? 2 : 0) + (page.common.aif ? 1 : 0));
+                            integrity_flags_p = &integrity_flags;
+                        }
+
+                    // -------- BROADCAST ORBIT - 5: IDOT, Delta_n0_dot, SatType, t_op
+                    const auto sat_type_d = static_cast<double>(eph.sat_type);
+                    const double* sat_type_p = (eph.sat_type > 0) ? &sat_type_d : nullptr;  // 0 = reserved
+                    out << get_nav_broadcast_orbit(&eph.idot, &eph.delta_ndot, sat_type_p, top_p, d_version) << '\n';
+
+                    // -------- BROADCAST ORBIT - 6: SISAI_oe, SISAI_ocb, SISAI_oc1, SISAI_oc2
+                    out << get_nav_broadcast_orbit(sisai_oe_p, sisai_ocb_p, sisai_oc1_p, sisai_oc2_p, d_version) << '\n';
+
+                    // -------- BROADCAST ORBIT - 7: ISC_B1Cd, spare, TGD_B1Cp, TGD_B2ap
+                    out << get_nav_broadcast_orbit(&eph.ISC_B1Cd, nullptr, &eph.TGD_B1Cp, &eph.TGD_B2ap, d_version) << '\n';
+
+                    // -------- BROADCAST ORBIT - 8: SISMAI, Health, B1C integrity flags, IODC
+                    const auto health_d = static_cast<double>(eph.hs);
+                    out << get_nav_broadcast_orbit(sismai_p, &health_d, integrity_flags_p, &eph.IODC, d_version) << '\n';
+
+                    // -------- BROADCAST ORBIT - 9: t_tm, spare, spare, IODE
+                    const auto ttm_d = static_cast<double>(eph.tow);
+                    out << get_nav_broadcast_orbit(&ttm_d, nullptr, nullptr, &eph.IODE, d_version) << '\n';
+
+                    continue;
+                }
+
+            // RINEX 3: D1-style stand-in (CNAV1 has no representation before
+            // RINEX 4). IODE/IODC land in AODE/AODC, TGD_B1Cp/TGD_B2ap in
+            // TGD1/TGD2, and the Adot term is dropped (no D1 field).
+            out << get_nav_sv_epoch_svclk_line(p_utc_time, sys_char, eph.PRN, eph.af0, eph.af1, eph.af2, d_version) << '\n';
+
+            const auto iode_d = eph.IODE;
+            out << get_nav_broadcast_orbit(&iode_d, &eph.Crs, &eph.delta_n, &eph.M_0, d_version) << '\n';
+
+            // B-CNAV1 broadcasts the semi-major axis (A0 at toe); the D1 field
+            // expects its square root.
+            const double sqrt_a = std::sqrt(eph.A0);
+            out << get_nav_broadcast_orbit(&eph.Cuc, &eph.ecc, &eph.Cus, &sqrt_a, d_version) << '\n';
+
+            const auto toe_d = static_cast<double>(eph.toe);
+            out << get_nav_broadcast_orbit(&toe_d, &eph.Cic, &eph.OMEGA_0, &eph.Cis, d_version) << '\n';
+            out << get_nav_broadcast_orbit(&eph.i_0, &eph.Crc, &eph.omega, &eph.OMEGAdot, d_version) << '\n';
+
+            const auto wn_d = static_cast<double>(eph.WN);
+            out << get_nav_broadcast_orbit(&eph.idot, nullptr, &wn_d, nullptr, d_version) << '\n';
+
+            // Acc left 0; health = SF3 HS; TGD1/TGD2 hold TGD_B1Cp/TGD_B2ap.
+            const double sv_accuracy = 0.0;
+            const auto health_d = static_cast<double>(eph.hs);
+            out << get_nav_broadcast_orbit(&sv_accuracy, &health_d, &eph.TGD_B1Cp, &eph.TGD_B2ap, d_version) << '\n';
+
+            const auto tow_d = static_cast<double>(eph.tow);
+            const auto iodc_d = eph.IODC;
+            out << get_nav_broadcast_orbit(&tow_d, &iodc_d, nullptr, nullptr, d_version) << '\n';
+        }
+}
+
+
 void Rinex_Printer::rinex_nav_header(std::fstream& out,
     const std::vector<std::string>& iono_lines,
     const std::vector<std::string>& time_corr_lines,
@@ -4138,6 +4392,15 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Gps_Navigation_Me
 boost::posix_time::ptime Rinex_Printer::compute_BDS_time(const Beidou_Dnav_Ephemeris& eph, double obs_time) const
 {
     // BeiDou observation epochs use BDT, so no UTC leap-second adjustment is needed here.
+    const double bds_t = obs_time;
+    const boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((bds_t + 604800 * static_cast<double>(eph.WN % 8192)) * 1000));
+    boost::posix_time::ptime p_time(boost::gregorian::date(2006, 1, 1), t);
+    return p_time;
+}
+
+
+boost::posix_time::ptime Rinex_Printer::compute_BDS_time(const Beidou_Cnav1_Ephemeris& eph, double obs_time) const
+{
     const double bds_t = obs_time;
     const boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((bds_t + 604800 * static_cast<double>(eph.WN % 8192)) * 1000));
     boost::posix_time::ptime p_time(boost::gregorian::date(2006, 1, 1), t);

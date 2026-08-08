@@ -35,6 +35,10 @@
 #define GNSS_SDR_RTKLIB_SOLVER_H
 
 
+#include "beidou_cnav1_ephemeris.h"
+#include "beidou_cnav1_iono.h"
+#include "beidou_cnav1_navigation_message.h"
+#include "beidou_cnav1_utc_model.h"
 #include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
 #include "beidou_dnav_iono.h"
@@ -127,6 +131,7 @@ public:
     std::map<int, Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;          //!< Map storing new GPS_CNAV_Ephemeris
     std::map<int, Glonass_Gnav_Ephemeris> glonass_gnav_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephemeris
     std::map<int, Beidou_Dnav_Ephemeris> beidou_dnav_ephemeris_map;    //!< Map storing new BeiDou DNAV Ephmeris
+    std::map<int, Beidou_Cnav1_Ephemeris> beidou_cnav1_ephemeris_map;  //!< Map storing BeiDou B-CNAV1 ephemeris
 
     Galileo_Utc_Model galileo_utc_model;
     Galileo_Iono galileo_iono;
@@ -152,7 +157,10 @@ public:
 
     Beidou_Dnav_Utc_Model beidou_dnav_utc_model;
     Beidou_Dnav_Iono beidou_dnav_iono;
+    Beidou_Cnav1_Iono beidou_cnav1_iono;
+    Beidou_Cnav1_Utc_Model beidou_cnav1_utc_model;
     std::map<int, Beidou_Dnav_Almanac> beidou_dnav_almanac_map;
+    std::map<int, Bds3_B1c_PageData> beidou_cnav1_page_data_map;
 
 private:
     friend class GalileoEphemerisSourceTest_E6SlotsFollowRtklibGalileoPolicy_Test;

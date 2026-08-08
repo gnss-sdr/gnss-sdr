@@ -83,7 +83,8 @@ constexpr uint32_t CODE_L9A = 52;  //!<   obs code: SA SPS     (IRN)
 constexpr uint32_t CODE_L9B = 53;  //!<   obs code: SB RS(D)   (IRN)
 constexpr uint32_t CODE_L9C = 54;  //!<   obs code: SC RS(P)   (IRN)
 constexpr uint32_t CODE_L9X = 55;  //!<   obs code: SB+C       (IRN)
-constexpr int32_t MAXCODE = 55;    //!<   max number of obs code
+constexpr uint32_t CODE_L1D = 56;  //!<   obs code: B1C data   (BDS)
+constexpr int32_t MAXCODE = 56;    //!<   max number of obs code
 
 
 /** \} */

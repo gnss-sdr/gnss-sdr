@@ -786,7 +786,9 @@ typedef struct
     double ion_gps[8];            /* GPS iono model parameters {a0,a1,a2,a3,b0,b1,b2,b3} */
     double ion_gal[4];            /* Galileo iono model parameters {ai0,ai1,ai2,0} */
     double ion_qzs[8];            /* QZSS iono model parameters {a0,a1,a2,a3,b0,b1,b2,b3} */
-    double ion_cmp[8];            /* BeiDou iono model parameters {a0,a1,a2,a3,b0,b1,b2,b3} */
+    double ion_cmp[8];            /* BeiDou DNAV Klobuchar {a0,a1,a2,a3,b0,b1,b2,b3} */
+    double ion_bdgim[9];          /* BeiDou B-CNAV1 BDGIM alphas alpha1..alpha9 [TECu] */
+    int ion_bdgim_valid;          /* 1 if ion_bdgim is usable */
     double ion_irn[8];            /* IRNSS iono model parameters {a0,a1,a2,a3,b0,b1,b2,b3} */
     int leaps;                    /* leap seconds (s) */
     double lam[MAXSAT][NFREQ];    /* carrier wave lengths (m) */

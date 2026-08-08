@@ -28,6 +28,7 @@
  * \{ */
 
 
+class Beidou_Cnav1_Ephemeris;
 class Beidou_Dnav_Almanac;
 class Beidou_Dnav_Ephemeris;
 class Galileo_Almanac;
@@ -102,6 +103,8 @@ eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph,
 eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph);
 
 eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph);
+
+eph_t eph_to_rtklib(const Beidou_Cnav1_Ephemeris& bei_eph);
 
 alm_t alm_to_rtklib(const Gps_Almanac& gps_alm);
 alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm);

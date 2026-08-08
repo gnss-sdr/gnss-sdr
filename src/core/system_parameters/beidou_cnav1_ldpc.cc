@@ -38,6 +38,8 @@ struct TruncMessage
 
 struct FixedPathCandidate
 {
+    FixedPathCandidate() = default;
+    FixedPathCandidate(uint8_t sym_, float llr_) : sym(sym_), llr(llr_) {}
     uint8_t sym = 0;
     float llr = std::numeric_limits<float>::max();
 };
@@ -307,7 +309,7 @@ void build_fixed_path_candidates(
             cand[idx++] = {sym, llr};
         }
 
-    constexpr std::array<std::pair<int32_t, int32_t>, 6> pairs = {
+    static const std::array<std::pair<int32_t, int32_t>, 6> pairs = {
         std::pair<int32_t, int32_t>{0, 1},
         {0, 2},
         {0, 3},

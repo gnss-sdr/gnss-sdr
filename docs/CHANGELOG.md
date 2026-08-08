@@ -106,9 +106,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   B-CNAV1, and supports both B1C-only and mixed B1I+B1C configurations, keeping
   DNAV and B-CNAV1 ephemerides isolated and preferring B1C over B1I when both
   signals are available from the same satellite. B-CNAV1 ephemerides are also
-  written to RINEX navigation files (native CNV1 records in RINEX 4.02,
-  D1-style stand-in records in RINEX 3.02) and to the XML assistance-data
-  storage. A sample configuration file is provided at
+  written to RINEX navigation files (native CNV1 records in RINEX 4.02, D1-style
+  stand-in records in RINEX 3.02) and to the XML assistance-data storage. A
+  sample configuration file is provided at
   `conf/File_input/Beidou/gnss-sdr_BDS_B1C_geb_if20k_fs18m_ibyte.conf`.
   Contributed by @OuWenhao16.
 - Added support for RINEX 4.02 output, activated by setting
@@ -397,12 +397,10 @@ https://gnss-sdr.org/design-forces/
   https://www.youtube.com/watch?v=HnZkKj9a-QM
 - Add the following signal sources for use when GNSS-SDR is operating on SoC
   FPGA boards (`-DENABLE_FPGA=ON`):
-
   - `ADRV9361_Z7035_Signal_Source_FPGA`: Analog Devices ADRV9361-Z7035 board.
   - `FMCOMMS5_Signal_Source_FPGA`: FMCOMMS5 analog front-end.
   - `MAX2771_EVKIT_Signal_Source_FPGA`: MAX2771 evaluation kit analog front-end.
   - `DMA_Signal_Source_FPGA`: FPGA DMA working in post-processing mode.
-
   When building GNSS-SDR for the SoC FPGA, the following options can be passed
   to CMake with possible values of `ON` or `OFF`, and their default value is
   `OFF`:

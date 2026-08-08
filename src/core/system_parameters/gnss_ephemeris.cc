@@ -258,6 +258,10 @@ void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<
     bool is_BeiDou_GEO = false;
     if (this->System == 'C')
         {
+            // GEO satellites (C01-C05, C59-C63) broadcast D1/D2 NAV ephemeris
+            // in a rotated frame (BDS-SIS-ICD-B1I-3.0, Section 5.2.4.12). GEOs
+            // do not transmit B1C; if B-CNAV3 (B2b) support is ever added,
+            // re-check this path against the corresponding ICD.
             if (this->PRN <= 5 || this->PRN > 58)
                 {
                     Omega_dot = this->OMEGAdot;
@@ -282,48 +286,46 @@ void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<
     const double xprime = r * cuk;
     const double yprime = r * suk;
 
+    // For BeiDou GEO satellites, these are coordinates in the inertial GK frame;
+    // in all other cases, ECEF coordinates
+    const double x = xprime * cok - yprime * cik * sok;
+    const double y = xprime * sok + yprime * cik * cok;  // ********NOTE: in GALILEO ICD this expression is not correct because it has minus (- sin(u) * r * cos(i) * cos(Omega)) instead of plus
+    const double z = yprime * sik;
+
+    // Satellite's velocity. Can be useful for Vector Tracking loops
+    const double xpkdot = rkdot * cuk - yprime * ukdot;
+    const double ypkdot = rkdot * suk + xprime * ukdot;
+    const double tmp = ypkdot * cik - z * ikdot;
+
+    const double vx = -Omega_dot * y + xpkdot * cok - tmp * sok;
+    const double vy = Omega_dot * x + xpkdot * sok + tmp * cok;
+    const double vz = yprime * cik * ikdot + ypkdot * sik;
+
     if (is_BeiDou_GEO)
         {
-            constexpr double SIN_5 = -0.0871557427476582; /* sin(-5.0 deg) */
-            constexpr double COS_5 = 0.9961946980917456;  /* cos(-5.0 deg) */
-
-            const double xg = xprime * cok - yprime * cik * sok;
-            const double yg = xprime * sok + yprime * cik * cok;
-            const double zg = yprime * sik;
+            // Rotate from the GK frame to BDCS: R_z(omega_e * tk) * R_x(-5 deg)
+            constexpr double SIN_5 = -0.0871557427476582;  // sin(-5.0 deg)
+            constexpr double COS_5 = 0.9961946980917456;   // cos(-5.0 deg)
             const double sino = sin(BEIDOU_OMEGA_EARTH_DOT * tk);
             const double coso = cos(BEIDOU_OMEGA_EARTH_DOT * tk);
 
-            pos_vel_dtr[0] = xg * coso + yg * sino * COS_5 + zg * sino * SIN_5;
-            pos_vel_dtr[1] = -xg * sino + yg * coso * COS_5 + zg * coso * SIN_5;
-            pos_vel_dtr[2] = -yg * SIN_5 + zg * COS_5;
-            // Satellite's velocity. Can be useful for Vector Tracking loops
-            const double xpkdot = rkdot * cuk - yprime * ukdot;
-            const double ypkdot = rkdot * suk + xprime * ukdot;
-            const double tmp = ypkdot * cik - zg * ikdot;
+            pos_vel_dtr[0] = x * coso + y * sino * COS_5 + z * sino * SIN_5;
+            pos_vel_dtr[1] = -x * sino + y * coso * COS_5 + z * coso * SIN_5;
+            pos_vel_dtr[2] = -y * SIN_5 + z * COS_5;
 
-            const double vx = -Omega_dot * yg + xpkdot * cok - tmp * sok;
-            const double vy = Omega_dot * xg + xpkdot * sok + tmp * cok;
-            const double vz = yprime * cik * ikdot + ypkdot * sik;
-
-            pos_vel_dtr[3] = vx * coso + vy * sino * COS_5 + vz * sino * SIN_5 + sin(BEIDOU_OMEGA_EARTH_DOT) * pos_vel_dtr[1];
-            pos_vel_dtr[4] = -vx * sino + vy * coso * COS_5 + vz * coso * SIN_5 - sin(BEIDOU_OMEGA_EARTH_DOT) * pos_vel_dtr[0];
+            pos_vel_dtr[3] = vx * coso + vy * sino * COS_5 + vz * sino * SIN_5 + BEIDOU_OMEGA_EARTH_DOT * pos_vel_dtr[1];
+            pos_vel_dtr[4] = -vx * sino + vy * coso * COS_5 + vz * coso * SIN_5 - BEIDOU_OMEGA_EARTH_DOT * pos_vel_dtr[0];
             pos_vel_dtr[5] = -vy * SIN_5 + vz * COS_5;
         }
     else
         {
-            pos_vel_dtr[0] = xprime * cok - yprime * cik * sok;
-            pos_vel_dtr[1] = xprime * sok + yprime * cik * cok;  // ********NOTE: in GALILEO ICD this expression is not correct because it has minus (- sin(u) * r * cos(i) * cos(Omega)) instead of plus
-            pos_vel_dtr[2] = yprime * sik;
-            // Satellite's velocity. Can be useful for Vector Tracking loops
-            const double xpkdot = rkdot * cuk - yprime * ukdot;
-            const double ypkdot = rkdot * suk + xprime * ukdot;
-            const double tmp = ypkdot * cik - pos_vel_dtr[2] * ikdot;
-
-            pos_vel_dtr[3] = -Omega_dot * pos_vel_dtr[1] + xpkdot * cok - tmp * sok;
-            pos_vel_dtr[4] = Omega_dot * pos_vel_dtr[0] + xpkdot * sok + tmp * cok;
-            pos_vel_dtr[5] = yprime * cik * ikdot + ypkdot * sik;
+            pos_vel_dtr[0] = x;
+            pos_vel_dtr[1] = y;
+            pos_vel_dtr[2] = z;
+            pos_vel_dtr[3] = vx;
+            pos_vel_dtr[4] = vy;
+            pos_vel_dtr[5] = vz;
         }
-
 
     // Time from ephemeris reference clock
     tk = check_t(transmitTime - this->toc);

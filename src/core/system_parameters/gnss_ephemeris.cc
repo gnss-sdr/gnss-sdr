@@ -255,9 +255,18 @@ void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<
     // Compute the angle between the ascending node and the Greenwich meridian
     double Omega;
     double Omega_dot;
+    bool is_BeiDou_GEO = false;
     if (this->System == 'C')
         {
-            Omega_dot = this->OMEGAdot - BEIDOU_OMEGA_EARTH_DOT;
+            if (this->PRN <= 5 || this->PRN > 58)
+                {
+                    Omega_dot = this->OMEGAdot;
+                    is_BeiDou_GEO = true;
+                }
+            else
+                {
+                    Omega_dot = this->OMEGAdot - BEIDOU_OMEGA_EARTH_DOT;
+                }
             Omega = this->OMEGA_0 + Omega_dot * tk - BEIDOU_OMEGA_EARTH_DOT * static_cast<double>(this->toe);
         }
     else
@@ -273,18 +282,48 @@ void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<
     const double xprime = r * cuk;
     const double yprime = r * suk;
 
-    pos_vel_dtr[0] = xprime * cok - yprime * cik * sok;
-    pos_vel_dtr[1] = xprime * sok + yprime * cik * cok;  // ********NOTE: in GALILEO ICD this expression is not correct because it has minus (- sin(u) * r * cos(i) * cos(Omega)) instead of plus
-    pos_vel_dtr[2] = yprime * sik;
+    if (is_BeiDou_GEO)
+        {
+            constexpr double SIN_5 = -0.0871557427476582; /* sin(-5.0 deg) */
+            constexpr double COS_5 = 0.9961946980917456;  /* cos(-5.0 deg) */
 
-    // Satellite's velocity. Can be useful for Vector Tracking loops
-    const double xpkdot = rkdot * cuk - yprime * ukdot;
-    const double ypkdot = rkdot * suk + xprime * ukdot;
-    const double tmp = ypkdot * cik - pos_vel_dtr[2] * ikdot;
+            const double xg = xprime * cok - yprime * cik * sok;
+            const double yg = xprime * sok + yprime * cik * cok;
+            const double zg = yprime * sik;
+            const double sino = sin(BEIDOU_OMEGA_EARTH_DOT * tk);
+            const double coso = cos(BEIDOU_OMEGA_EARTH_DOT * tk);
 
-    pos_vel_dtr[3] = -Omega_dot * pos_vel_dtr[1] + xpkdot * cok - tmp * sok;
-    pos_vel_dtr[4] = Omega_dot * pos_vel_dtr[0] + xpkdot * sok + tmp * cok;
-    pos_vel_dtr[5] = yprime * cik * ikdot + ypkdot * sik;
+            pos_vel_dtr[0] = xg * coso + yg * sino * COS_5 + zg * sino * SIN_5;
+            pos_vel_dtr[1] = -xg * sino + yg * coso * COS_5 + zg * coso * SIN_5;
+            pos_vel_dtr[2] = -yg * SIN_5 + zg * COS_5;
+            // Satellite's velocity. Can be useful for Vector Tracking loops
+            const double xpkdot = rkdot * cuk - yprime * ukdot;
+            const double ypkdot = rkdot * suk + xprime * ukdot;
+            const double tmp = ypkdot * cik - zg * ikdot;
+
+            const double vx = -Omega_dot * yg + xpkdot * cok - tmp * sok;
+            const double vy = Omega_dot * xg + xpkdot * sok + tmp * cok;
+            const double vz = yprime * cik * ikdot + ypkdot * sik;
+
+            pos_vel_dtr[3] = vx * coso + vy * sino * COS_5 + vz * sino * SIN_5 + sin(BEIDOU_OMEGA_EARTH_DOT) * pos_vel_dtr[1];
+            pos_vel_dtr[4] = -vx * sino + vy * coso * COS_5 + vz * coso * SIN_5 - sin(BEIDOU_OMEGA_EARTH_DOT) * pos_vel_dtr[0];
+            pos_vel_dtr[5] = -vy * SIN_5 + vz * COS_5;
+        }
+    else
+        {
+            pos_vel_dtr[0] = xprime * cok - yprime * cik * sok;
+            pos_vel_dtr[1] = xprime * sok + yprime * cik * cok;  // ********NOTE: in GALILEO ICD this expression is not correct because it has minus (- sin(u) * r * cos(i) * cos(Omega)) instead of plus
+            pos_vel_dtr[2] = yprime * sik;
+            // Satellite's velocity. Can be useful for Vector Tracking loops
+            const double xpkdot = rkdot * cuk - yprime * ukdot;
+            const double ypkdot = rkdot * suk + xprime * ukdot;
+            const double tmp = ypkdot * cik - pos_vel_dtr[2] * ikdot;
+
+            pos_vel_dtr[3] = -Omega_dot * pos_vel_dtr[1] + xpkdot * cok - tmp * sok;
+            pos_vel_dtr[4] = Omega_dot * pos_vel_dtr[0] + xpkdot * sok + tmp * cok;
+            pos_vel_dtr[5] = yprime * cik * ikdot + ypkdot * sik;
+        }
+
 
     // Time from ephemeris reference clock
     tk = check_t(transmitTime - this->toc);

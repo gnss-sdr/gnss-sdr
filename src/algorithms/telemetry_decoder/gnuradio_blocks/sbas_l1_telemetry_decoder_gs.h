@@ -24,6 +24,9 @@
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <cstddef>           // for size_t
 #include <deque>
+#include <fstream>
+#include <memory>
+#include <string>
 #include <vector>
 
 /** \addtogroup Telemetry_Decoder
@@ -35,6 +38,24 @@
 class Viterbi_Decoder_Sbas;
 
 class sbas_l1_telemetry_decoder_gs;
+
+class SbasL1DumpSession
+{
+public:
+    SbasL1DumpSession();
+    ~SbasL1DumpSession();
+
+    SbasL1DumpSession(const SbasL1DumpSession &) = delete;
+    SbasL1DumpSession &operator=(const SbasL1DumpSession &) = delete;
+
+    //! Opens filename with truncation on first use and append on later uses.
+    //! Returns true on first use; stream state reports whether opening succeeded.
+    bool open(std::ofstream &stream, const std::string &filename);
+
+private:
+    class Impl;
+    std::unique_ptr<Impl> d_impl;
+};
 
 using sbas_l1_telemetry_decoder_gs_sptr = gnss_shared_ptr<sbas_l1_telemetry_decoder_gs>;
 
@@ -57,10 +78,12 @@ public:
     //! PRN never mixes messages from the previous satellite into its file.
     void reset() override;
 
-    //! Exposed for unit testing: combines an absolute per-bit reception
-    //! timestamp with the residual sample/symbol alignment correction to
-    //! obtain the final message timestamp.
-    static double compute_message_timestamp(double first_bit_stamp_s, bool sample_aligned, bool symbol_aligned);
+    //! Exposed for unit testing: appends timestamps entering a continuous
+    //! decoder and returns the timestamps corresponding to the decoded bits.
+    static std::vector<double> consume_decoded_timestamps(
+        std::deque<double> &pending_stamps,
+        const std::vector<double> &input_stamps,
+        int32_t decoded_bits);
 
     /*!
      * \brief This is where all signal processing takes place
@@ -74,6 +97,7 @@ private:
         std::string dump_filename);
 
     explicit sbas_l1_telemetry_decoder_gs(bool dump, std::string dump_filename = std::string());
+    static std::shared_ptr<SbasL1DumpSession> acquire_dump_session(const std::string &dump_filename);
 
     void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits);
     void align_samples();
@@ -89,6 +113,7 @@ private:
     std::string d_dump_filename;
     std::ofstream d_dump_file;
     std::ofstream d_ems_file;
+    std::shared_ptr<SbasL1DumpSession> d_dump_session;
 
     size_t d_block_size;                  //!< number of samples which are processed during one invocation of the algorithms
     std::vector<double> d_sample_buf;     //!< input buffer holding the samples to be processed in one block
@@ -108,7 +133,11 @@ private:
          * samples length must be a multiple of two
          * for block operation
          */
-        bool get_symbols(const std::vector<double> &samples, std::vector<double> &symbols);
+        bool get_symbols(
+            const std::vector<double> &samples,
+            const std::vector<double> &sample_stamps,
+            std::vector<double> &symbols,
+            std::vector<double> &symbol_stamps);
 
     private:
         int32_t d_n_smpls_in_history{3};
@@ -117,6 +146,8 @@ private:
         double d_corr_shifted{};
         bool d_aligned{};
         double d_past_sample{};
+        double d_past_sample_stamp{};
+        bool d_has_past_sample{};
     } d_sample_aligner;
 
     // helper class for symbol alignment and Viterbi decoding
@@ -125,13 +156,21 @@ private:
     public:
         Symbol_Aligner_And_Decoder();
         void reset();
-        bool get_bits(const std::vector<double> &symbols, std::vector<int32_t> &bits);
+        bool get_bits(
+            const std::vector<double> &symbols,
+            const std::vector<double> &symbol_stamps,
+            std::vector<int32_t> &bits,
+            std::vector<double> &bit_stamps);
 
     private:
         int32_t d_KK{7};
         std::shared_ptr<Viterbi_Decoder_Sbas> d_vd1;
         std::shared_ptr<Viterbi_Decoder_Sbas> d_vd2;
         double d_past_symbol{0};
+        double d_past_symbol_stamp{};
+        bool d_has_past_symbol{};
+        std::deque<double> d_pending_bit_stamps_vd1;
+        std::deque<double> d_pending_bit_stamps_vd2;
     } d_symbol_aligner_and_decoder;
 
 

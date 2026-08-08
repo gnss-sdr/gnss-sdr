@@ -32,7 +32,6 @@ set(TRACKING_ADAPTER_SOURCES
     gps_l1_ca_tcp_connector_tracking.cc
     gps_l1_ca_gaussian_tracking.cc
     gps_l1_ca_kf_tracking.cc
-    sbas_l1_dll_pll_tracking.cc
     ${OPT_TRACKING_ADAPTERS_SOURCES}
 )
 
@@ -42,7 +41,6 @@ set(TRACKING_ADAPTER_HEADERS
     gps_l1_ca_tcp_connector_tracking.h
     gps_l1_ca_gaussian_tracking.h
     gps_l1_ca_kf_tracking.h
-    sbas_l1_dll_pll_tracking.h
     ${OPT_TRACKING_ADAPTERS_HEADERS}
 )
 

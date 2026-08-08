@@ -20,13 +20,17 @@
 #include "SBAS_L1.h"
 #include "gnss_synchro.h"
 #include "viterbi_decoder_sbas.h"
-#include <pmt/pmt_sugar.h>  // for mp
-#include <algorithm>        // for copy
+#include <gnuradio/thread/thread.h>  // for scoped_lock
+#include <pmt/pmt_sugar.h>           // for mp
+#include <algorithm>                 // for copy
 #include <array>
 #include <cmath>      // for abs
 #include <exception>  // for exception
 #include <iomanip>    // for operator<<, setw
 #include <iostream>   // for std::cout
+#include <map>        // for map
+#include <mutex>      // for lock_guard, mutex
+#include <set>        // for set
 #include <string>     // for std::string
 #include <utility>    // for std::move
 
@@ -41,6 +45,57 @@
 #define FLOW 3       // logs the function calls of block processing functions
 #define SAMP_SYNC 4  // about 1 log entry per sample -> high output
 #define LMORE 5      //
+
+
+class SbasL1DumpSession::Impl
+{
+public:
+    bool open(std::ofstream &stream, const std::string &filename)
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        const auto insertion = initialized_files.insert(filename);
+        const auto open_mode = std::ios::out | (insertion.second ? std::ios::trunc : std::ios::app);
+        stream.open(filename, open_mode);
+        if (!stream.is_open() && insertion.second)
+            {
+                initialized_files.erase(insertion.first);
+            }
+        return insertion.second;
+    }
+
+    std::mutex mutex;
+    std::set<std::string> initialized_files;
+};
+
+
+SbasL1DumpSession::SbasL1DumpSession() : d_impl(new Impl)
+{
+}
+
+
+SbasL1DumpSession::~SbasL1DumpSession() = default;
+
+
+bool SbasL1DumpSession::open(std::ofstream &stream, const std::string &filename)
+{
+    return d_impl->open(stream, filename);
+}
+
+
+std::shared_ptr<SbasL1DumpSession> sbas_l1_telemetry_decoder_gs::acquire_dump_session(const std::string &dump_filename)
+{
+    static std::mutex registry_mutex;
+    static std::map<std::string, std::weak_ptr<SbasL1DumpSession>> sessions;
+
+    std::lock_guard<std::mutex> lock(registry_mutex);
+    auto session = sessions[dump_filename].lock();
+    if (!session)
+        {
+            session = std::make_shared<SbasL1DumpSession>();
+            sessions[dump_filename] = session;
+        }
+    return session;
+}
 
 
 sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
@@ -71,6 +126,7 @@ sbas_l1_telemetry_decoder_gs::sbas_l1_telemetry_decoder_gs(
             // Store the stem; actual EMS file is opened lazily in general_work()
             // after set_satellite() has been called and d_satellite PRN is valid.
             d_dump_filename = std::move(dump_filename);
+            d_dump_session = acquire_dump_session(d_dump_filename);
         }
 }
 
@@ -97,6 +153,7 @@ sbas_l1_telemetry_decoder_gs::~sbas_l1_telemetry_decoder_gs()
 
 void sbas_l1_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite)
 {
+    gr::thread::scoped_lock lock(d_setlock);
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "SBAS telemetry decoder in channel " << this->d_channel << " set to satellite " << d_satellite;
 }
@@ -104,6 +161,7 @@ void sbas_l1_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite
 
 void sbas_l1_telemetry_decoder_gs::set_channel(int32_t channel)
 {
+    gr::thread::scoped_lock lock(d_setlock);
     d_channel = channel;
     LOG(INFO) << "SBAS channel set to " << channel;
 }
@@ -111,6 +169,7 @@ void sbas_l1_telemetry_decoder_gs::set_channel(int32_t channel)
 
 void sbas_l1_telemetry_decoder_gs::reset()
 {
+    gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
     d_sample_buf.clear();
     d_sample_stamps.clear();
     d_sample_aligner.reset();
@@ -124,13 +183,21 @@ void sbas_l1_telemetry_decoder_gs::reset()
 }
 
 
-double sbas_l1_telemetry_decoder_gs::compute_message_timestamp(double first_bit_stamp_s, bool sample_aligned, bool symbol_aligned)
+std::vector<double> sbas_l1_telemetry_decoder_gs::consume_decoded_timestamps(
+    std::deque<double> &pending_stamps,
+    const std::vector<double> &input_stamps,
+    int32_t decoded_bits)
 {
-    // Residual sub-bit correction: which of the two possible sample/symbol
-    // alignments was chosen shifts the true message start by a few samples
-    // with respect to the first bit's own timestamp.
-    const int32_t offset_samples = (sample_aligned ? 0 : -1) + D_SAMPLES_PER_SYMBOL * (symbol_aligned ? 0 : -1);
-    return first_bit_stamp_s + static_cast<double>(offset_samples) * SBAS_L1_CODE_PERIOD_S;
+    pending_stamps.insert(pending_stamps.end(), input_stamps.cbegin(), input_stamps.cend());
+
+    std::vector<double> output_stamps;
+    output_stamps.reserve(static_cast<size_t>(decoded_bits));
+    for (int32_t i = 0; i < decoded_bits; ++i)
+        {
+            output_stamps.push_back(pending_stamps.front());
+            pending_stamps.pop_front();
+        }
+    return output_stamps;
 }
 
 
@@ -144,6 +211,8 @@ sbas_l1_telemetry_decoder_gs::Sample_Aligner::Sample_Aligner()
 void sbas_l1_telemetry_decoder_gs::Sample_Aligner::reset()
 {
     d_past_sample = 0;
+    d_past_sample_stamp = 0;
+    d_has_past_sample = false;
     d_corr_paired = 0;
     d_corr_shifted = 0;
     d_aligned = true;
@@ -153,9 +222,14 @@ void sbas_l1_telemetry_decoder_gs::Sample_Aligner::reset()
 /*
  * samples length must be a multiple of two
  */
-bool sbas_l1_telemetry_decoder_gs::Sample_Aligner::get_symbols(const std::vector<double> &samples, std::vector<double> &symbols)
+bool sbas_l1_telemetry_decoder_gs::Sample_Aligner::get_symbols(
+    const std::vector<double> &samples,
+    const std::vector<double> &sample_stamps,
+    std::vector<double> &symbols,
+    std::vector<double> &symbol_stamps)
 {
     std::array<double, 3> smpls{};
+    std::array<double, 3> smpl_stamps{};
     double corr_diff;
     bool stand_by = true;
     double sym;
@@ -168,7 +242,19 @@ bool sbas_l1_telemetry_decoder_gs::Sample_Aligner::get_symbols(const std::vector
             // get the next samples
             for (int32_t i = 0; i < d_n_smpls_in_history; i++)
                 {
-                    smpls[i] = static_cast<int32_t>(i_sym) * sbas_l1_telemetry_decoder_gs::D_SAMPLES_PER_SYMBOL + i - 1 == -1 ? d_past_sample : samples[i_sym * sbas_l1_telemetry_decoder_gs::D_SAMPLES_PER_SYMBOL + i - 1];
+                    const int32_t sample_index = static_cast<int32_t>(i_sym) * sbas_l1_telemetry_decoder_gs::D_SAMPLES_PER_SYMBOL + i - 1;
+                    if (sample_index == -1)
+                        {
+                            smpls[i] = d_past_sample;
+                            smpl_stamps[i] = d_has_past_sample
+                                                 ? d_past_sample_stamp
+                                                 : sample_stamps.front() - SBAS_L1_CODE_PERIOD_S;
+                        }
+                    else
+                        {
+                            smpls[i] = samples[static_cast<size_t>(sample_index)];
+                            smpl_stamps[i] = sample_stamps[static_cast<size_t>(sample_index)];
+                        }
                 }
 
             // update the pseudo correlations (IIR method) of the two possible alignments
@@ -186,6 +272,7 @@ bool sbas_l1_telemetry_decoder_gs::Sample_Aligner::get_symbols(const std::vector
             // sum the correct pair of samples to a symbol, depending on the current alignment d_align
             sym = smpls[0 + int32_t(d_aligned) * 2] + smpls[1];
             symbols.push_back(sym);
+            symbol_stamps.push_back(d_aligned ? smpl_stamps[1] : smpl_stamps[0]);
 
             // sample alignment debug output
             VLOG(SAMP_SYNC) << std::setprecision(5)
@@ -203,9 +290,9 @@ bool sbas_l1_telemetry_decoder_gs::Sample_Aligner::get_symbols(const std::vector
         }
 
     // save last sample for next block
-    double temp;
-    temp = samples.back();
-    d_past_sample = (temp);
+    d_past_sample = samples.back();
+    d_past_sample_stamp = sample_stamps.back();
+    d_has_past_sample = true;
     return d_aligned;
 }
 
@@ -225,44 +312,73 @@ sbas_l1_telemetry_decoder_gs::Symbol_Aligner_And_Decoder::Symbol_Aligner_And_Dec
 void sbas_l1_telemetry_decoder_gs::Symbol_Aligner_And_Decoder::reset()
 {
     d_past_symbol = 0;
+    d_past_symbol_stamp = 0;
+    d_has_past_symbol = false;
+    d_pending_bit_stamps_vd1.clear();
+    d_pending_bit_stamps_vd2.clear();
     d_vd1->reset();
     d_vd2->reset();
 }
 
 
-bool sbas_l1_telemetry_decoder_gs::Symbol_Aligner_And_Decoder::get_bits(const std::vector<double> &symbols, std::vector<int32_t> &bits)
+bool sbas_l1_telemetry_decoder_gs::Symbol_Aligner_And_Decoder::get_bits(
+    const std::vector<double> &symbols,
+    const std::vector<double> &symbol_stamps,
+    std::vector<int32_t> &bits,
+    std::vector<double> &bit_stamps)
 {
     const int32_t traceback_depth = 5 * d_KK;
     const int32_t nbits_requested = symbols.size() / D_SYMBOLS_PER_BIT;
-    int32_t nbits_decoded;
+    int32_t nbits_decoded_vd1;
+    int32_t nbits_decoded_vd2;
     // fill two vectors with the two possible symbol alignments
     const std::vector<double> &symbols_vd1(symbols);  // aligned symbol vector -> copy input symbol vector
     std::vector<double> symbols_vd2;                  // shifted symbol vector -> add past sample in front of input vector
+    std::vector<double> symbol_stamps_vd2;
+    symbols_vd2.reserve(symbols.size());
+    symbol_stamps_vd2.reserve(symbol_stamps.size());
     symbols_vd2.push_back(d_past_symbol);
-    for (auto symbol_it = symbols.cbegin(); symbol_it != symbols.cend() - 1; ++symbol_it)
+    symbol_stamps_vd2.push_back(d_has_past_symbol
+                                    ? d_past_symbol_stamp
+                                    : symbol_stamps.front() - D_SAMPLES_PER_SYMBOL * SBAS_L1_CODE_PERIOD_S);
+    for (size_t i = 0; i + 1 < symbols.size(); ++i)
         {
-            symbols_vd2.push_back(*symbol_it);
+            symbols_vd2.push_back(symbols[i]);
+            symbol_stamps_vd2.push_back(symbol_stamps[i]);
         }
+
+    std::vector<double> input_bit_stamps_vd1(static_cast<size_t>(nbits_requested));
+    std::vector<double> input_bit_stamps_vd2(static_cast<size_t>(nbits_requested));
+    for (int32_t i = 0; i < nbits_requested; ++i)
+        {
+            const auto symbol_index = static_cast<size_t>(i * D_SYMBOLS_PER_BIT);
+            input_bit_stamps_vd1[static_cast<size_t>(i)] = symbol_stamps[symbol_index];
+            input_bit_stamps_vd2[static_cast<size_t>(i)] = symbol_stamps_vd2[symbol_index];
+        }
+
     // arrays for decoded bits
     std::vector<int32_t> bits_vd1(nbits_requested);
     std::vector<int32_t> bits_vd2(nbits_requested);
     // decode
-    const float metric_vd1 = d_vd1->decode_continuous(symbols_vd1.data(), traceback_depth, bits_vd1.data(), nbits_requested, nbits_decoded);
-    const float metric_vd2 = d_vd2->decode_continuous(symbols_vd2.data(), traceback_depth, bits_vd2.data(), nbits_requested, nbits_decoded);
+    const float metric_vd1 = d_vd1->decode_continuous(symbols_vd1.data(), traceback_depth, bits_vd1.data(), nbits_requested, nbits_decoded_vd1);
+    const float metric_vd2 = d_vd2->decode_continuous(symbols_vd2.data(), traceback_depth, bits_vd2.data(), nbits_requested, nbits_decoded_vd2);
+    const auto bit_stamps_vd1 = sbas_l1_telemetry_decoder_gs::consume_decoded_timestamps(d_pending_bit_stamps_vd1, input_bit_stamps_vd1, nbits_decoded_vd1);
+    const auto bit_stamps_vd2 = sbas_l1_telemetry_decoder_gs::consume_decoded_timestamps(d_pending_bit_stamps_vd2, input_bit_stamps_vd2, nbits_decoded_vd2);
+
     // choose the bits with the better metric
+    const bool use_vd1 = metric_vd1 > metric_vd2;
+    const int32_t nbits_decoded = use_vd1 ? nbits_decoded_vd1 : nbits_decoded_vd2;
+    const auto &selected_bits = use_vd1 ? bits_vd1 : bits_vd2;
+    const auto &selected_bit_stamps = use_vd1 ? bit_stamps_vd1 : bit_stamps_vd2;
     for (int32_t i = 0; i < nbits_decoded; i++)
         {
-            if (metric_vd1 > metric_vd2)
-                {  // symbols aligned
-                    bits.push_back(bits_vd1[i]);
-                }
-            else
-                {  // symbols shifted
-                    bits.push_back(bits_vd2[i]);
-                }
+            bits.push_back(selected_bits[static_cast<size_t>(i)]);
+            bit_stamps.push_back(selected_bit_stamps[static_cast<size_t>(i)]);
         }
     d_past_symbol = symbols.back();
-    return metric_vd1 > metric_vd2;
+    d_past_symbol_stamp = symbol_stamps.back();
+    d_has_past_symbol = true;
+    return use_vd1;
 }
 
 
@@ -440,6 +556,7 @@ void sbas_l1_telemetry_decoder_gs::Crc_Verifier::zerropad_front_and_convert_to_b
 int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
+    gr::thread::scoped_lock lock(d_setlock);  // require mutex with reset() called by the control thread
     VLOG(FLOW) << "general_work(): "
                << "noutput_items=" << noutput_items << "\toutput_items real size=" << output_items.size() << "\tninput_items size=" << ninput_items.size() << "\tinput_items real size=" << input_items.size() << "\tninput_items[0]=" << ninput_items[0];
     // get pointers on in- and output gnss-synchro objects
@@ -464,20 +581,14 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             // align correlation samples in pairs
             // and obtain the symbols by summing the paired correlation samples
             std::vector<double> symbols;
-            const bool sample_alignment = d_sample_aligner.get_symbols(d_sample_buf, symbols);
+            std::vector<double> symbol_stamps;
+            d_sample_aligner.get_symbols(d_sample_buf, d_sample_stamps, symbols, symbol_stamps);
 
             // align symbols in pairs
             // and obtain the bits by decoding the symbol pairs
             std::vector<int32_t> bits;
-            const bool symbol_alignment = d_symbol_aligner_and_decoder.get_bits(symbols, bits);
-
-            // absolute timestamp of each decoded bit: the timestamp of the first
-            // sample that contributed to it, taken from this block's own samples
-            std::vector<double> bit_stamps(bits.size());
-            for (size_t i = 0; i < bits.size(); i++)
-                {
-                    bit_stamps[i] = d_sample_stamps[i * D_SAMPLES_PER_SYMBOL * D_SYMBOLS_PER_BIT];
-                }
+            std::vector<double> bit_stamps;
+            d_symbol_aligner_and_decoder.get_bits(symbols, symbol_stamps, bits, bit_stamps);
 
             // search for preambles
             // and extract the corresponding message candidates
@@ -495,12 +606,9 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             for (const auto &valid_msg : valid_msgs)
                 {
                     // valid_msg.first is the absolute timestamp of the message's first bit
-                    const double message_sample_stamp = compute_message_timestamp(valid_msg.first, sample_alignment, symbol_alignment);
+                    const double message_sample_stamp = valid_msg.first;
                     VLOG(EVENT) << "message_sample_stamp=" << message_sample_stamp
-                                << " (first_bit_stamp=" << valid_msg.first
-                                << " sample_alignment=" << sample_alignment
-                                << " symbol_alignment=" << symbol_alignment
-                                << ")";
+                                << " (first_bit_stamp=" << valid_msg.first << ")";
                     // extract message type: bits 8-13 of 250-bit message (top 6 bits of byte[1])
                     const int msg_type = (valid_msg.second.size() > 1)
                                              ? ((static_cast<int>(valid_msg.second[1]) >> 2) & 0x3F)
@@ -521,24 +629,32 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                     ems_fn = ems_fn.substr(0, ems_fn.size() - dat_ext.size());
                                 }
                             ems_fn += "_PRN" + std::to_string(d_satellite.get_PRN()) + ".ems";
-                            d_ems_file.open(ems_fn, std::ios::out | std::ios::trunc);
+                            // All channel decoders using this dump stem share a session.
+                            // The first open of each PRN truncates stale data from a
+                            // previous receiver run; later opens append after reset or
+                            // channel reassignment, preserving messages from this run.
+                            const bool first_open = d_dump_session->open(d_ems_file, ems_fn);
                             if (d_ems_file.is_open())
                                 {
-                                    // NOTE on naming/format: this is a raw dump of decoded SBAS L1 messages
-                                    // using the same field layout as ESA's EGNOS Message Service (EMS)
-                                    // archive files (week, tow, prn, type : hex bytes). It is NOT a
-                                    // conformant EMS file: this receiver has no absolute GPS time
-                                    // reference, so "week" is always 0 and "tow" is the receiver's
-                                    // elapsed time since recording start, not the real GPS time of week.
-                                    d_ems_file << "; Raw SBAS L1 message dump (EMS-like layout, not a conformant EMS file)\n";
-                                    d_ems_file << "; Satellite: SBAS PRN " << d_satellite.get_PRN() << "\n";
-                                    d_ems_file << "; TOW field: receiver time in seconds from recording start\n";
-                                    d_ems_file << ";            GPS week = 0  (no absolute GPS fix in this output)\n";
-                                    d_ems_file << "; Msg bytes: 32 bytes (250-bit SBAS frame zero-padded to 256 bits)\n";
-                                    d_ems_file << ";   Layout: preamble(8b) type(6b) data(212b) CRC-24Q(24b) pad(6b)\n";
-                                    d_ems_file << "; Format:   <gps_week> <tow_s> <prn> <msg_type> : <64_hex_chars>\n";
-                                    d_ems_file << ";\n";
-                                    LOG(INFO) << "SBAS raw message dump file opened: " << ems_fn;
+                                    if (first_open)
+                                        {
+                                            // NOTE on naming/format: this is a raw dump of decoded SBAS L1 messages
+                                            // using the same field layout as ESA's EGNOS Message Service (EMS)
+                                            // archive files (week, tow, prn, type : hex bytes). It is NOT a
+                                            // conformant EMS file: this receiver has no absolute GPS time
+                                            // reference, so "week" is always 0 and "tow" is the receiver's
+                                            // elapsed time since recording start, not the real GPS time of week.
+                                            d_ems_file << "; Raw SBAS L1 message dump (EMS-like layout, not a conformant EMS file)\n";
+                                            d_ems_file << "; Satellite: SBAS PRN " << d_satellite.get_PRN() << "\n";
+                                            d_ems_file << "; TOW field: receiver time in seconds from recording start\n";
+                                            d_ems_file << ";            GPS week = 0  (no absolute GPS fix in this output)\n";
+                                            d_ems_file << "; Msg bytes: 32 bytes (250-bit SBAS frame zero-padded to 256 bits)\n";
+                                            d_ems_file << ";   Layout: preamble(8b) type(6b) data(212b) CRC-24Q(24b) pad(6b)\n";
+                                            d_ems_file << "; Format:   <gps_week> <tow_s> <prn> <msg_type> : <64_hex_chars>\n";
+                                            d_ems_file << ";\n";
+                                        }
+                                    LOG(INFO) << "SBAS raw message dump file "
+                                              << (first_open ? "created: " : "reopened: ") << ems_fn;
                                 }
                             else
                                 {

@@ -74,8 +74,6 @@
 #include "pulse_blanking_filter.h"
 #include "rtklib_pvt.h"
 #include "rtl_tcp_signal_source.h"
-#include "sbas_l1_dll_pll_tracking.h"
-#include "sbas_l1_pcps_acquisition.h"
 #include "sbas_l1_telemetry_decoder_gs.h"
 #include "signal_conditioner.h"
 #include "signal_flag.h"
@@ -515,7 +513,7 @@ std::unique_ptr<AcquisitionInterface> get_acq_block(
         }
     else if (implementation == "SBAS_L1_PCPS_Acquisition")
         {
-            return std::make_unique<SbasL1PcpsAcquisition>(configuration, role, in_streams, out_streams);
+            return std::make_unique<PcpsAcquisitionAdapter>(configuration, role, implementation, in_streams, out_streams, SBAS_S1);
         }
 #if OPENCL_BLOCKS
     else if (implementation == "GPS_L1_CA_PCPS_OpenCl_Acquisition")
@@ -635,7 +633,7 @@ std::unique_ptr<TrackingInterface> get_trk_block(
         }
     else if (implementation == "SBAS_L1_DLL_PLL_Tracking")
         {
-            return std::make_unique<SbasL1DllPllTracking>(configuration, role, in_streams, out_streams);
+            return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, SBAS_S1);
         }
 #if CUDA_GPU_ACCEL
     else if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_GPU")

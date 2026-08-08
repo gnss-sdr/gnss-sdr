@@ -45,7 +45,7 @@ void gps_l1_ca_code_gen_int(own::span<int32_t> dest, int32_t prn, uint32_t chip_
     // compute delay array index for given PRN number
     if (120 <= prn && prn <= 138)
         {
-            prn_idx = prn - 88;  // SBAS PRNs are at array indices 31 to 50 (offset: -120+33-1 =-88)
+            prn_idx = prn - 88;  // SBAS PRNs are at array indices 32 to 50 (offset: -120+33-1 =-88)
         }
     else
         {
@@ -53,7 +53,7 @@ void gps_l1_ca_code_gen_int(own::span<int32_t> dest, int32_t prn, uint32_t chip_
         }
 
     // A simple error check
-    if ((prn_idx < 0) || (prn_idx > 51))
+    if ((prn_idx < 0) || (prn_idx > 50))
         {
             return;
         }

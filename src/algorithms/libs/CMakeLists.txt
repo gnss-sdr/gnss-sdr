@@ -34,6 +34,7 @@ set(GNSS_SPLIBS_SOURCES
     short_x2_to_cshort.cc
     gnss_sdr_string_literals.cc
     qzss_signal_replica.cc
+    sbas_signal_replica.cc
 )
 
 set(GNSS_SPLIBS_HEADERS
@@ -70,6 +71,7 @@ set(GNSS_SPLIBS_HEADERS
     gnss_time.h
     matlab_writter_helper.h
     qzss_signal_replica.h
+    sbas_signal_replica.h
 )
 
 set(GNSS_SPLIBS_HEADERS ${GNSS_SPLIBS_HEADERS}

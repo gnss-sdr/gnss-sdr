@@ -36,7 +36,8 @@ enum signal_flag : uint32_t
     BDS_B3 = 0x1 << 10,
     BDS_B1C = 0x1 << 13,
     QZS_J1 = 0x1 << 11,
-    QZS_J5 = 0x1 << 12
+    QZS_J5 = 0x1 << 12,
+    SBAS_S1 = 0x1 << 13
 };
 
 #endif  // GNSS_SDR_SIGNAL_FLAG_H

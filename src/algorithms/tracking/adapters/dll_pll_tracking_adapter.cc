@@ -26,6 +26,7 @@
 #include "Galileo_E5a.h"
 #include "Galileo_E5b.h"
 #include "Galileo_E6.h"
+#include "SBAS_L1.h"
 #include "configuration_interface.h"
 #include "display.h"
 #include "qzss.h"
@@ -84,6 +85,8 @@ signal_info get_signal_info(signal_flag sig_flag)
             return {'J', {'J', '1', '\0'}, "QZSS L1 C/A", QZSS_L1_CHIP_RATE, QZSS_L1_CODE_LENGTH, 20, false, true};
         case QZS_J5:
             return {'J', {'J', '5', '\0'}, "QZSS L5", QZSS_L5_CHIP_RATE, QZSS_L5_CODE_LENGTH, QZSS_L5I_NH_CODE_LENGTH, true, false};
+        case SBAS_S1:
+            return {'S', {'S', '1', '\0'}, "SBAS L1", SBAS_L1_CODE_RATE_CPS, SBAS_L1_CODE_LENGTH_CHIPS, SBAS_L1_MAX_COHERENT_INTEGRATION_SYMBOLS, false, true};
         default:
             break;
         }

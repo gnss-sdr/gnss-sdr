@@ -28,6 +28,7 @@
 #include "Galileo_E5a.h"
 #include "Galileo_E5b.h"
 #include "Galileo_E6.h"
+#include "SBAS_L1.h"
 #include "acq_conf.h"
 #include "beidou_b1c_signal_replica.h"
 #include "beidou_b1i_signal_replica.h"
@@ -44,6 +45,7 @@
 #include "gps_sdr_signal_replica.h"
 #include "qzss.h"
 #include "qzss_signal_replica.h"
+#include "sbas_signal_replica.h"
 #include "signal_flag.h"
 
 #if USE_GLOG_AND_GFLAGS
@@ -104,6 +106,8 @@ signal_info get_signal_info(signal_flag sig_flag)
             return {QZSS_L1_CHIP_RATE, QZSS_L1_OPT_ACQ_FS_SPS, QZSS_L1_CODE_LENGTH, QZSS_L1_PERIOD_MS};
         case QZS_J5:
             return {QZSS_L5_CHIP_RATE, QZSS_L5_OPT_ACQ_FS_SPS, QZSS_L5_CODE_LENGTH, QZSS_L5I_PERIOD_MS};
+        case SBAS_S1:
+            return {SBAS_L1_CODE_RATE_CPS, SBAS_L1_OPT_ACQ_FS_SPS, SBAS_L1_CODE_LENGTH_CHIPS, SBAS_L1_CODE_PERIOD_MS};
         default:
             break;
         }
@@ -189,6 +193,9 @@ void code_gen_complex_sampled(signal_flag sig_flag, const Acq_Conf& conf, const 
             break;
         case QZS_J5:
             qzss_l5i_code_gen_complex_sampled(dest, gnss_synchro.PRN, sampling_freq);
+            break;
+        case SBAS_S1:
+            sbas_l1_code_gen_complex_sampled(dest, gnss_synchro.PRN, sampling_freq);
             break;
         default:
             break;

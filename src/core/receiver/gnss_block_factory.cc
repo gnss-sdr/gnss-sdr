@@ -74,6 +74,8 @@
 #include "pulse_blanking_filter.h"
 #include "rtklib_pvt.h"
 #include "rtl_tcp_signal_source.h"
+#include "sbas_l1_dll_pll_tracking.h"
+#include "sbas_l1_pcps_acquisition.h"
 #include "sbas_l1_telemetry_decoder_gs.h"
 #include "signal_conditioner.h"
 #include "signal_flag.h"
@@ -215,6 +217,7 @@ const auto signal_mapping = std::vector<std::pair<std::string, std::string>>{
     {"7X", "GALILEO E5b I (I/NAV OS)"},
     {"J1", "QZSS L1 C/A"},
     {"J5", "QZSS L5"},
+    {"S1", "SBAS L1"},
 };
 
 unsigned int get_channel_count(const ConfigurationInterface* configuration)
@@ -510,6 +513,10 @@ std::unique_ptr<AcquisitionInterface> get_acq_block(
         {
             return std::make_unique<PcpsAcquisitionAdapter>(configuration, role, implementation, in_streams, out_streams, QZS_J5);
         }
+    else if (implementation == "SBAS_L1_PCPS_Acquisition")
+        {
+            return std::make_unique<SbasL1PcpsAcquisition>(configuration, role, in_streams, out_streams);
+        }
 #if OPENCL_BLOCKS
     else if (implementation == "GPS_L1_CA_PCPS_OpenCl_Acquisition")
         {
@@ -626,6 +633,10 @@ std::unique_ptr<TrackingInterface> get_trk_block(
         {
             return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, QZS_J5);
         }
+    else if (implementation == "SBAS_L1_DLL_PLL_Tracking")
+        {
+            return std::make_unique<SbasL1DllPllTracking>(configuration, role, in_streams, out_streams);
+        }
 #if CUDA_GPU_ACCEL
     else if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_GPU")
         {
@@ -709,7 +720,9 @@ std::unique_ptr<TelemetryDecoderInterface> get_tlm_block(
         }
     else if (implementation == "SBAS_L1_Telemetry_Decoder")
         {
-            telemetry = sbas_l1_make_telemetry_decoder_gs(configuration != nullptr ? configuration->property(role + ".dump", false) : false);
+            telemetry = sbas_l1_make_telemetry_decoder_gs(
+                configuration != nullptr ? configuration->property(role + ".dump", false) : false,
+                configuration != nullptr ? configuration->property(role + ".dump_filename", std::string()) : std::string());
         }
     else if (implementation == "Galileo_E5a_Telemetry_Decoder")
         {

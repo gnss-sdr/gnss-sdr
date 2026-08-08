@@ -176,6 +176,7 @@ private:
 #include "unit-tests/signal-processing-blocks/sources/gnss_sdr_valve_test.cc"
 #include "unit-tests/signal-processing-blocks/sources/unpack_2bit_samples_test.cc"
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/galileo_fnav_inav_decoder_test.cc"
+#include "unit-tests/signal-processing-blocks/telemetry_decoder/sbas_l1_telemetry_decoder_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/bit_synchronizer_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_real_codes_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_test.cc"

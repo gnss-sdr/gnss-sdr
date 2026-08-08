@@ -2,13 +2,15 @@
  * \file sbas_l1_telemetry_decoder_gs.h
  * \brief Interface of a SBAS telemetry data decoder block
  * \author Daniel Fehr 2013. daniel.co(at)bluewin.ch
+ * \author Miguel Gómez López, 2026. mgomezl(at)ing.uc3m.es
+ * \author Víctor Castillo Agüero, 2026. victorcastilloaguero(at)gmail.com
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -36,7 +38,9 @@ class sbas_l1_telemetry_decoder_gs;
 
 using sbas_l1_telemetry_decoder_gs_sptr = gnss_shared_ptr<sbas_l1_telemetry_decoder_gs>;
 
-sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(bool dump);
+sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
+    bool dump,
+    std::string dump_filename = std::string());
 
 /*!
  * \brief This class implements a block that decodes the SBAS integrity and
@@ -48,7 +52,15 @@ public:
     ~sbas_l1_telemetry_decoder_gs() override;
     void set_satellite(const Gnss_Satellite &satellite) override;  //!< Set satellite PRN
     void set_channel(int32_t channel) override;                    //!< Set receiver's channel
-    inline void reset() override {};
+    //! Clears all internal decoding state (buffers, aligners, Viterbi decoders)
+    //! and closes the dump file, so that a channel reassigned to a different
+    //! PRN never mixes messages from the previous satellite into its file.
+    void reset() override;
+
+    //! Exposed for unit testing: combines an absolute per-bit reception
+    //! timestamp with the residual sample/symbol alignment correction to
+    //! obtain the final message timestamp.
+    static double compute_message_timestamp(double first_bit_stamp_s, bool sample_aligned, bool symbol_aligned);
 
     /*!
      * \brief This is where all signal processing takes place
@@ -57,9 +69,11 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 
 private:
-    friend sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(bool dump);
+    friend sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
+        bool dump,
+        std::string dump_filename);
 
-    explicit sbas_l1_telemetry_decoder_gs(bool dump);
+    explicit sbas_l1_telemetry_decoder_gs(bool dump, std::string dump_filename = std::string());
 
     void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits);
     void align_samples();
@@ -74,12 +88,15 @@ private:
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;
+    std::ofstream d_ems_file;
 
-    size_t d_block_size;               //!< number of samples which are processed during one invocation of the algorithms
-    std::vector<double> d_sample_buf;  //!< input buffer holding the samples to be processed in one block
+    size_t d_block_size;                  //!< number of samples which are processed during one invocation of the algorithms
+    std::vector<double> d_sample_buf;     //!< input buffer holding the samples to be processed in one block
+    std::vector<double> d_sample_stamps;  //!< absolute reception timestamp [s] of each sample in d_sample_buf, same indexing
 
-    typedef std::pair<int32_t, std::vector<int32_t>> msg_candiate_int_t;
-    typedef std::pair<int32_t, std::vector<uint8_t>> msg_candiate_char_t;
+    // first element: absolute reception timestamp [s] of the message's first bit
+    typedef std::pair<double, std::vector<int32_t>> msg_candiate_int_t;
+    typedef std::pair<double, std::vector<uint8_t>> msg_candiate_char_t;
 
     // helper class for sample alignment
     class Sample_Aligner
@@ -123,10 +140,12 @@ private:
     {
     public:
         void reset();
-        void get_frame_candidates(const std::vector<int32_t> &bits, std::vector<std::pair<int32_t, std::vector<int32_t>>> &msg_candidates);
+        // bit_stamps[i] must hold the absolute reception timestamp [s] of bits[i]
+        void get_frame_candidates(const std::vector<int32_t> &bits, const std::vector<double> &bit_stamps, std::vector<std::pair<double, std::vector<int32_t>>> &msg_candidates);
 
     private:
         std::deque<int32_t> d_buffer;
+        std::deque<double> d_bit_stamps;  //!< absolute reception timestamp [s] of each bit in d_buffer, same indexing
     } d_frame_detector;
 
 

@@ -246,7 +246,7 @@ TEST(GnssEphemerisPosVelTest, Galileo)
 }
 
 
-TEST(GnssEphemerisPosVelTest, DNAV)
+TEST(GnssEphemerisPosVelTest, DNAV_MEO)
 {
     Beidou_Dnav_Ephemeris e{};
     e.PRN = 41;
@@ -308,6 +308,148 @@ TEST(GnssEphemerisPosVelTest, DNAV)
     double satpos_Y = e.satpos_Y;
     double satpos_Z = e.satpos_Z;
     e.satellitePosition(590328.005);
+    double d_X = (e.satpos_X - satpos_X) * 100.;
+    double d_Y = (e.satpos_Y - satpos_Y) * 100.;
+    double d_Z = (e.satpos_Z - satpos_Z) * 100.;
+    EXPECT_NEAR(d_X, satvel_X, 1e-4);
+    EXPECT_NEAR(d_Y, satvel_Y, 1e-4);
+    EXPECT_NEAR(d_Z, satvel_Z, 1e-4);
+}
+
+
+TEST(GnssEphemerisPosVelTest, DNAV_GEO)
+{
+    Beidou_Dnav_Ephemeris e{};
+    e.PRN = 2;
+    e.M_0 = -2.61675466105504029e+00;
+    e.delta_n = -7.00743474492716572e-10;
+    e.ecc = 2.27454933337867233e-04;
+    e.sqrtA = 6.49340903472900391e+03;
+    e.OMEGA_0 = 2.11101911340236281e+00;
+    e.i_0 = 1.37762755606023468e-01;
+    e.omega = 9.72540339237386253e-01;
+    e.OMEGAdot = 1.84186243524920458e-09;
+    e.idot = 6.45384025692323640e-10;
+    e.Cuc = -1.65463425219058990e-05;
+    e.Cus = 5.06918877363204956e-06;
+    e.Crc = -1.57140625000000000e+02;
+    e.Crs = -5.02812500000000000e+02;
+    e.Cic = -1.56462192535400391e-07;
+    e.Cis = -8.52160155773162842e-08;
+    e.toe = 590400;
+    e.toc = 590400;
+    e.af0 = 6.37955963611602651e-08;
+    e.af1 = -1.06581410364015028e-13;
+    e.af2 = 0.00000000000000000e+00;
+    e.WN = 1072;
+    e.tow = 591357;
+    e.satClkDrift = 0.00000000000000000e+00;
+    e.dtr = 0.00000000000000000e+00;
+    e.AODE = 1.00000000000000000e+00;
+    e.SV_accuracy = 0;
+    e.SV_health = 0;
+    e.AODC = 1.00000000000000000e+00;
+    e.TGD1 = 4.73000000000000000e-08;
+    e.TGD2 = 4.73000000000000000e-08;
+    e.sig_type = 1;
+    e.nav_type = 2;
+    e.AODO = 0;
+    e.fit_interval_flag = 0;
+    e.spare1 = 0.00000000000000000e+00;
+    e.spare2 = 0.00000000000000000e+00;
+    e.integrity_status_flag = 0;
+    e.alert_flag = 0;
+    e.antispoofing_flag = 0;
+    auto dopplerL1 = e.predicted_doppler(591000., 0., 0., 0., 0., 0., 0., 1);
+    auto dopplerL3 = e.predicted_doppler(591000., 0., 0., 0., 0., 0., 0., 3);
+    e.satellitePosition(591000.);
+    EXPECT_NEAR(-0.468139, dopplerL1, 1e-4);
+    EXPECT_NEAR(-0.380402, dopplerL3, 1e-4);
+    EXPECT_NEAR(7282284.6601, e.satpos_X, 1e-4);
+    EXPECT_NEAR(41483008.42595, e.satpos_Y, 1e-4);
+    EXPECT_NEAR(-2157310.914266, e.satpos_Z, 1e-4);
+    EXPECT_NEAR(-2.581621, e.satvel_X, 1e-4);
+    EXPECT_NEAR(1.305572, e.satvel_Y, 1e-4);
+    EXPECT_NEAR(22.291453, e.satvel_Z, 1e-4);
+    double satvel_X = e.satvel_X;
+    double satvel_Y = e.satvel_Y;
+    double satvel_Z = e.satvel_Z;
+    e.satellitePosition(590999.995);
+    double satpos_X = e.satpos_X;
+    double satpos_Y = e.satpos_Y;
+    double satpos_Z = e.satpos_Z;
+    e.satellitePosition(591000.005);
+    double d_X = (e.satpos_X - satpos_X) * 100.;
+    double d_Y = (e.satpos_Y - satpos_Y) * 100.;
+    double d_Z = (e.satpos_Z - satpos_Z) * 100.;
+    EXPECT_NEAR(d_X, satvel_X, 1e-4);
+    EXPECT_NEAR(d_Y, satvel_Y, 1e-4);
+    EXPECT_NEAR(d_Z, satvel_Z, 1e-4);
+}
+
+
+TEST(GnssEphemerisPosVelTest, DNAV_IGSO)
+{
+    Beidou_Dnav_Ephemeris e{};
+    e.PRN = 8;
+    e.M_0 = -1.96010426198161447e+00;
+    e.delta_n = 6.03239413057185651e-10;
+    e.ecc = 4.62797412183135661e-03;
+    e.sqrtA = 6.49328671455383301e+03;
+    e.OMEGA_0 = -2.84366631754490673e-01;
+    e.i_0 = 9.55790891292791489e-01;
+    e.omega = -2.88036029820220163e+00;
+    e.OMEGAdot = -1.47756154636919916e-09;
+    e.idot = -3.91802034413104032e-10;
+    e.Cuc = 1.69612467288970947e-05;
+    e.Cus = 1.32843852043151855e-05;
+    e.Crc = -1.54000000000000000e+02;
+    e.Crs = 5.17625000000000000e+02;
+    e.Cic = -1.99768692255020142e-07;
+    e.Cis = -7.77654349803924561e-08;
+    e.toe = 590400;
+    e.toc = 590400;
+    e.af0 = -2.52385274507105296e-04;
+    e.af1 = -3.34754446384977200e-12;
+    e.af2 = 0.00000000000000000e+00;
+    e.WN = 1072;
+    e.tow = 591342;
+    e.satClkDrift = 0.00000000000000000e+00;
+    e.dtr = 0.00000000000000000e+00;
+    e.AODE = 1.00000000000000000e+00;
+    e.SV_accuracy = 0;
+    e.SV_health = 0;
+    e.AODC = 1.00000000000000000e+00;
+    e.TGD1 = 8.99999999999999994e-10;
+    e.TGD2 = 8.99999999999999994e-10;
+    e.sig_type = 1;
+    e.nav_type = 1;
+    e.AODO = 0;
+    e.fit_interval_flag = 0;
+    e.spare1 = 0.00000000000000000e+00;
+    e.spare2 = 0.00000000000000000e+00;
+    e.integrity_status_flag = 0;
+    e.alert_flag = 0;
+    e.antispoofing_flag = 0;
+    auto dopplerL1 = e.predicted_doppler(591000., 0., 100., 0., 0., 0., 0., 1);
+    auto dopplerL3 = e.predicted_doppler(591000., 0., 100., 0., 0., 0., 0., 3);
+    e.satellitePosition(591000.);
+    EXPECT_NEAR(-478.907311, dopplerL1, 1e-4);
+    EXPECT_NEAR(-389.151419, dopplerL3, 1e-4);
+    EXPECT_NEAR(-10494445.564195, e.satpos_X, 1e-4);
+    EXPECT_NEAR(22221395.784030, e.satpos_Y, 1e-4);
+    EXPECT_NEAR(34342997.780007, e.satpos_Z, 1e-4);
+    EXPECT_NEAR(-989.313135, e.satvel_X, 1e-4);
+    EXPECT_NEAR(-835.796243, e.satvel_Y, 1e-4);
+    EXPECT_NEAR(221.987047, e.satvel_Z, 1e-4);
+    double satvel_X = e.satvel_X;
+    double satvel_Y = e.satvel_Y;
+    double satvel_Z = e.satvel_Z;
+    e.satellitePosition(590999.995);
+    double satpos_X = e.satpos_X;
+    double satpos_Y = e.satpos_Y;
+    double satpos_Z = e.satpos_Z;
+    e.satellitePosition(591000.005);
     double d_X = (e.satpos_X - satpos_X) * 100.;
     double d_Y = (e.satpos_Y - satpos_Y) * 100.;
     double d_Z = (e.satpos_Z - satpos_Z) * 100.;

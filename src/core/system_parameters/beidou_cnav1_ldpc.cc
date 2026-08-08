@@ -102,7 +102,7 @@ uint8_t row_syndrome(const BeidouCnav1LdpcGraph& graph, int32_t check_index, con
 {
     uint8_t syndrome = GaloisField64::kZero;
     const uint32_t begin = graph.check_offsets[static_cast<size_t>(check_index)];
-    const uint32_t end = graph.check_offsets[static_cast<size_t>(check_index + 1)];
+    const uint32_t end = graph.check_offsets[static_cast<size_t>(check_index) + 1];
     for (uint32_t edge = begin; edge < end; edge++)
         {
             const uint16_t var = graph.check_to_var[edge];
@@ -143,8 +143,8 @@ bool graph_is_valid(const BeidouCnav1LdpcGraph& graph)
             return false;
         }
     const int32_t expected_edges = graph.num_checks * graph.row_weight;
-    return graph.check_offsets.size() == static_cast<size_t>(graph.num_checks + 1) &&
-           graph.var_offsets.size() == static_cast<size_t>(graph.num_variables + 1) &&
+    return graph.check_offsets.size() == static_cast<size_t>(graph.num_checks) + 1 &&
+           graph.var_offsets.size() == static_cast<size_t>(graph.num_variables) + 1 &&
            graph.check_to_var.size() == static_cast<size_t>(expected_edges) &&
            graph.check_to_h.size() == static_cast<size_t>(expected_edges) &&
            graph.var_to_check.size() == static_cast<size_t>(expected_edges) &&
@@ -223,7 +223,7 @@ void variable_node_update(
     for (int32_t var = 0; var < graph.num_variables; var++)
         {
             const uint32_t begin = graph.var_offsets[static_cast<size_t>(var)];
-            const uint32_t end = graph.var_offsets[static_cast<size_t>(var + 1)];
+            const uint32_t end = graph.var_offsets[static_cast<size_t>(var) + 1];
 
             for (int32_t x = 0; x < Q; x++)
                 {
@@ -356,7 +356,7 @@ void fixed_path_check_update(
     for (int32_t check = 0; check < graph.num_checks; check++)
         {
             const uint32_t begin = graph.check_offsets[static_cast<size_t>(check)];
-            const uint32_t end = graph.check_offsets[static_cast<size_t>(check + 1)];
+            const uint32_t end = graph.check_offsets[static_cast<size_t>(check) + 1];
             if (static_cast<int32_t>(end - begin) != 4)
                 {
                     continue;
@@ -474,10 +474,10 @@ void reorder_icd_column_bands_to_check_rows(
                     const int32_t dst_offset = check_row * row_weight;
                     for (int32_t k = 0; k < row_weight; k++)
                         {
-                            reordered_index[static_cast<size_t>(dst_offset + k)] =
-                                icd_index[static_cast<size_t>(src_offset + k)];
-                            reordered_element[static_cast<size_t>(dst_offset + k)] =
-                                icd_element[static_cast<size_t>(src_offset + k)];
+                            const size_t dst = static_cast<size_t>(dst_offset) + static_cast<size_t>(k);
+                            const size_t src = static_cast<size_t>(src_offset) + static_cast<size_t>(k);
+                            reordered_index[dst] = icd_index[src];
+                            reordered_element[dst] = icd_element[src];
                         }
                 }
         }
@@ -580,10 +580,10 @@ bool init_graph_impl(
     graph.num_checks = num_checks;
     graph.num_variables = num_variables;
     graph.row_weight = row_weight;
-    graph.check_offsets.assign(static_cast<size_t>(num_checks + 1), 0U);
+    graph.check_offsets.assign(static_cast<size_t>(num_checks) + 1, 0U);
     graph.check_to_var.assign(static_cast<size_t>(num_entries), 0U);
     graph.check_to_h.assign(static_cast<size_t>(num_entries), 0U);
-    graph.var_offsets.assign(static_cast<size_t>(num_variables + 1), 0U);
+    graph.var_offsets.assign(static_cast<size_t>(num_variables) + 1, 0U);
     graph.var_to_check.assign(static_cast<size_t>(num_entries), 0U);
     graph.var_to_edge.assign(static_cast<size_t>(num_entries), 0U);
     graph.var_to_h.assign(static_cast<size_t>(num_entries), 0U);
@@ -591,7 +591,7 @@ bool init_graph_impl(
 
     for (int32_t i = 0; i < num_checks; i++)
         {
-            graph.check_offsets[static_cast<size_t>(i + 1)] =
+            graph.check_offsets[static_cast<size_t>(i) + 1] =
                 graph.check_offsets[static_cast<size_t>(i)] + static_cast<uint32_t>(row_weight);
         }
 
@@ -613,7 +613,7 @@ bool init_graph_impl(
 
     for (int32_t j = 0; j < num_variables; j++)
         {
-            graph.var_offsets[static_cast<size_t>(j + 1)] =
+            graph.var_offsets[static_cast<size_t>(j) + 1] =
                 graph.var_offsets[static_cast<size_t>(j)] + var_degree[static_cast<size_t>(j)];
         }
 
@@ -621,7 +621,7 @@ bool init_graph_impl(
     for (int32_t i = 0; i < num_checks; i++)
         {
             const uint32_t begin = graph.check_offsets[static_cast<size_t>(i)];
-            const uint32_t end = graph.check_offsets[static_cast<size_t>(i + 1)];
+            const uint32_t end = graph.check_offsets[static_cast<size_t>(i) + 1];
             for (uint32_t edge = begin; edge < end; edge++)
                 {
                     const uint16_t var = graph.check_to_var[edge];

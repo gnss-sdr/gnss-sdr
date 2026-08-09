@@ -103,7 +103,7 @@ void Sbas_Rtklib_Corrections::update(int32_t gps_week, double gps_tow_s,
                     ++message_week;
                 }
 
-            int32_t integer_tow_s = static_cast<int32_t>(std::lround(message_tow_s));
+            auto integer_tow_s = static_cast<int32_t>(std::lround(message_tow_s));
             if (integer_tow_s >= 604800)
                 {
                     integer_tow_s -= 604800;

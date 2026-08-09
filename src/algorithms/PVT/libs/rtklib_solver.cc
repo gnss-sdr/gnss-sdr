@@ -1945,7 +1945,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                     if (navigation_ephemerides >= static_cast<int>(eph_data.size()))
                         {
-                            eph_data.resize(static_cast<size_t>(navigation_ephemerides + 1));
+                            eph_data.resize(static_cast<size_t>(navigation_ephemerides) + 1);
                         }
                     const std::string system = is_qzss ? "QZSS" : "GPS";
                     eph_data[navigation_ephemerides] = eph_to_rtklib(previous_ephemeris.second,

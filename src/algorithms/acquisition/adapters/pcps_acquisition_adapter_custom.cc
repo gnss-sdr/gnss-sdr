@@ -223,11 +223,6 @@ Acq_Conf get_acq_conf(
     acq_parameters.dump_filename = default_dump_filename;  // Set as default value
     acq_parameters.SetFromConfiguration(configuration, role, chip_rate, opt_freq);
 
-    if (implementation == "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler")
-        {
-            acq_parameters.samples_per_ms = static_cast<float>(acq_parameters.vector_length);
-        }
-
 #if USE_GLOG_AND_GFLAGS
     if (FLAGS_doppler_max != 0)
         {
@@ -259,6 +254,11 @@ Acq_Conf get_acq_conf(
     acq_parameters.code_length = static_cast<unsigned int>(round(acq_parameters.fs_in / (chip_rate / code_length_chips)));
     acq_parameters.vector_length = acq_parameters.code_length * acq_parameters.num_codes;
     acq_parameters.threshold = threshold_compute->calculate_threshold(acq_parameters);
+
+    if (implementation == "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler")
+        {
+            acq_parameters.samples_per_ms = static_cast<float>(acq_parameters.vector_length);
+        }
 
     return acq_parameters;
 }

@@ -1861,8 +1861,10 @@ Configuration example:
 ;######### PVT CONFIG ############
 PVT.implementation=RTKLIB_PVT
 PVT.positioning_mode=Single      ; options: Single, Static, Kinematic, PPP_Static, PPP_Kinematic
-PVT.iono_model=Broadcast         ; options: OFF, Broadcast
-PVT.trop_model=Saastamoinen      ; options: OFF, Saastamoinen
+PVT.satellite_ephemeris=Broadcast ; options: Broadcast, SBAS
+PVT.sbas_satellite=0             ; 0: first SBAS GEO received, or select PRN 120-138
+PVT.iono_model=Broadcast         ; options: OFF, Broadcast, SBAS, Iono-Free-LC, Estimate_STEC, IONEX
+PVT.trop_model=Saastamoinen      ; options: OFF, Saastamoinen, SBAS, Estimate_ZTD, Estimate_ZTD_Grad
 PVT.rinex_version=2              ; options: 2 or 3
 PVT.output_rate_ms=100           ; Period in [ms] between two PVT outputs
 PVT.display_rate_ms=500          ; Position console print (std::out) interval [ms].
@@ -1878,6 +1880,14 @@ PVT.rtcm_MT1045_rate_ms=5000
 PVT.rtcm_MT1097_rate_ms=1000
 PVT.rtcm_MT1077_rate_ms=1000
 ```
+
+For legacy SBAS/EGNOS L1 positioning, use GPS L1 observation channels together
+with at least one SBAS L1 telemetry channel, and set
+`PVT.satellite_ephemeris=SBAS`, `PVT.iono_model=SBAS`, and
+`PVT.trop_model=SBAS`. EGNOS currently augments GPS L1; RTKLIB excludes a
+satellite when the selected SBAS stream has no valid correction for it. This
+path provides non-safety-critical Open Service positioning and does not compute
+protection levels or implement a Safety-of-Life receiver.
 
 **Notes on the output formats:**
 

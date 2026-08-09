@@ -68,6 +68,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     galileo_ism.h
     galileo_reduced_ced.h
     sbas_ephemeris.h
+    sbas_raw_message.h
     gps_cnav_ephemeris.h
     gps_cnav_eop.h
     gps_cnav_navigation_message.h

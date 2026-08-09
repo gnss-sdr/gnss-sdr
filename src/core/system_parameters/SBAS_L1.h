@@ -51,6 +51,8 @@ constexpr int32_t SBAS_L1_DATA_RATE_BPS = 250;            //!< Raw data bit rate
 constexpr int32_t SBAS_L1_CHANNEL_SYMBOL_RATE_SPS = 500;  //!< Encoded channel symbol rate (rate-1/2 FEC) [symbols/s]
 constexpr int32_t SBAS_L1_CHANNEL_SYMBOL_PERIOD_MS = 2;   //!< Encoded channel symbol period [ms] (1/500 sps)
 constexpr int32_t SBAS_L1_MSG_LENGTH_BITS = 250;          //!< Information bits per 1-second message frame [bits]
+constexpr int32_t SBAS_L1_MSG_LENGTH_BYTES = 32;          //!< Bytes holding a 250-bit frame with six trailing zero bits
+constexpr int32_t SBAS_L1_DATA_FIELD_BYTES = 29;          //!< Bytes holding preamble, type, and 212-bit data field
 
 // Maximum coherent integration extension in terms of 1 ms code periods.
 // Kept at 1 (no extension): the tracking correlator dumps are not

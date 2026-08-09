@@ -97,7 +97,12 @@ class Gps_Ephemeris;
  *  .num_bands - number of frequencies to use, between 1 and 3. Default is based on the channels configured
  *  .elevation_mask - (15.0). Value must be in the range [0,90.0]
  *  .dynamics_model - (0) 0:none, 1:velocity, 2:acceleration
-
+ *  .satellite_ephemeris - ("Broadcast"). Supported values are "Broadcast" and "SBAS".
+ *                      "SBAS" applies the fast and long-term satellite corrections received
+ *                      from an SBAS telemetry channel. Legacy EGNOS L1 corrections augment
+ *                      GPS L1 observations; satellites without valid corrections are excluded
+ *  .sbas_satellite - (0). SBAS PRN whose correction stream is used. Zero selects the first
+ *                      received stream; set a PRN in [120,138] when tracking multiple GEOs
  *  .iono_model - ("OFF"). Supported values are "OFF", "Broadcast", "SBAS", "Iono-Free-LC",
  *                      "Estimate_STEC", "IONEX". Unsupported values include QZSS broadcast, QZSS
  *                      LEX, and SLANT TEC.

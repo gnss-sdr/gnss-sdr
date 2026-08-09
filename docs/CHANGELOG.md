@@ -118,8 +118,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   and message-type reporting. Decoded frames carry traceback-corrected reception
   timestamps and can be dumped to per-PRN text files in an EMS-like layout with
   `TelemetryDecoder_S1.dump=true`. SBAS satellites are not used as ranging
-  sources yet, and message contents are not applied to the PVT solution. A
-  sample configuration file is provided at
+  sources yet. A sample configuration file is provided at
   `conf/File_input/SBAS/gnss-sdr_SBAS_EGNOS_rx.conf`. Contributed by
   @kalmancito.
 - Added support for RINEX 4.02 output, activated by setting

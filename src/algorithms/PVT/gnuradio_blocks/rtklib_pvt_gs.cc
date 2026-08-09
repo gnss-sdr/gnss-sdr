@@ -1401,10 +1401,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     d_rp->log_rinex_nav_gps_nav({{gps_eph->PRN, *gps_eph}});  // New record!
                                 }
                         }
-                    d_internal_pvt_solver->gps_ephemeris_map[gps_eph->PRN] = *gps_eph;
+                    d_internal_pvt_solver->store_gps_ephemeris(*gps_eph);
                     if (d_enable_rx_clock_correction == true)
                         {
-                            d_user_pvt_solver->gps_ephemeris_map[gps_eph->PRN] = *gps_eph;
+                            d_user_pvt_solver->store_gps_ephemeris(*gps_eph);
                         }
                     if (gps_eph->SV_health != 0)
                         {
@@ -2032,7 +2032,7 @@ std::map<int, Beidou_Dnav_Almanac> rtklib_pvt_gs::get_beidou_dnav_almanac_map() 
 
 void rtklib_pvt_gs::clear_ephemeris()
 {
-    d_internal_pvt_solver->gps_ephemeris_map.clear();
+    d_internal_pvt_solver->clear_gps_ephemerides();
     d_internal_pvt_solver->gps_almanac_map.clear();
     d_internal_pvt_solver->galileo_ephemeris_map.clear();
     d_internal_pvt_solver->galileo_ephemeris_store.clear();
@@ -2042,7 +2042,7 @@ void rtklib_pvt_gs::clear_ephemeris()
     d_internal_pvt_solver->beidou_dnav_almanac_map.clear();
     if (d_enable_rx_clock_correction == true)
         {
-            d_user_pvt_solver->gps_ephemeris_map.clear();
+            d_user_pvt_solver->clear_gps_ephemerides();
             d_user_pvt_solver->gps_almanac_map.clear();
             d_user_pvt_solver->galileo_ephemeris_map.clear();
             d_user_pvt_solver->galileo_ephemeris_store.clear();

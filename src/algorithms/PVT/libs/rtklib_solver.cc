@@ -416,6 +416,28 @@ void Rtklib_Solver::store_sbas_message(const Sbas_Raw_Message &message)
 }
 
 
+void Rtklib_Solver::store_gps_ephemeris(const Gps_Ephemeris &ephemeris)
+{
+    const auto current_ephemeris = gps_ephemeris_map.find(ephemeris.PRN);
+    if (current_ephemeris != gps_ephemeris_map.cend() &&
+        current_ephemeris->second.IODE_SF3 != ephemeris.IODE_SF3)
+        {
+            // SBAS long-term corrections identify the broadcast ephemeris by
+            // IODE. Retain the preceding issue across the handover so RTKLIB
+            // can keep applying a still-current MT24/25 correction.
+            gps_previous_ephemeris_map[ephemeris.PRN] = current_ephemeris->second;
+        }
+    gps_ephemeris_map[ephemeris.PRN] = ephemeris;
+}
+
+
+void Rtklib_Solver::clear_gps_ephemerides()
+{
+    gps_ephemeris_map.clear();
+    gps_previous_ephemeris_map.clear();
+}
+
+
 void Rtklib_Solver::clear_has_corrections()
 {
     d_has_orbit_corrections_store_map.clear();
@@ -1900,6 +1922,40 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 }
         }
 
+    int navigation_ephemerides = valid_obs;
+    if (d_rtk.opt.sateph == EPHOPT_SBAS)
+        {
+            for (const auto &previous_ephemeris : gps_previous_ephemeris_map)
+                {
+                    const bool is_qzss = MINPRNQZS <= previous_ephemeris.first && previous_ephemeris.first <= MAXPRNQZS;
+                    const int satellite = satno(is_qzss ? SYS_QZS : SYS_GPS, previous_ephemeris.first);
+                    bool satellite_is_observed = false;
+                    for (int index = 0; index < valid_obs; ++index)
+                        {
+                            if (eph_data[index].sat == satellite)
+                                {
+                                    satellite_is_observed = true;
+                                    break;
+                                }
+                        }
+                    if (!satellite_is_observed)
+                        {
+                            continue;
+                        }
+
+                    if (navigation_ephemerides >= static_cast<int>(eph_data.size()))
+                        {
+                            eph_data.resize(static_cast<size_t>(navigation_ephemerides + 1));
+                        }
+                    const std::string system = is_qzss ? "QZSS" : "GPS";
+                    eph_data[navigation_ephemerides] = eph_to_rtklib(previous_ephemeris.second,
+                        d_has_orbit_corrections_store_map[system],
+                        d_has_clock_corrections_store_map[system],
+                        this->get_ref_gps_week());
+                    ++navigation_ephemerides;
+                }
+        }
+
     // **********************************************************************
     // ****** SOLVE PVT******************************************************
     // **********************************************************************
@@ -1929,7 +1985,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
             d_nav_data = {};
             d_nav_data.eph = eph_data.data();
             d_nav_data.geph = geph_data.data();
-            d_nav_data.n = valid_obs;
+            d_nav_data.n = navigation_ephemerides;
             d_nav_data.ng = glo_valid_obs;
             d_sbas_corrections.copy_to(d_nav_data);
             if (gps_iono.valid)

@@ -73,6 +73,8 @@
 #include "qzss_utc_model.h"
 #include "rtklib.h"
 #include "rtklib_conversions.h"
+#include "sbas_raw_message.h"
+#include "sbas_rtklib_corrections.h"
 #include "sensor_data/sensor_data_aggregator.h"
 #include <array>
 #include <cstdint>
@@ -113,6 +115,9 @@ public:
     void store_has_data(const Galileo_HAS_data& new_has_data);
     void clear_has_corrections();
     void update_has_corrections(const std::map<int, Gnss_Synchro>& obs_map);
+    void store_sbas_message(const Sbas_Raw_Message& message);
+    void store_gps_ephemeris(const Gps_Ephemeris& ephemeris);
+    void clear_gps_ephemerides();
     bool store_galileo_ephemeris(const Galileo_Ephemeris& ephemeris);
     Galileo_Nav_Message_Type galileo_nav_message_type_for_pvt() const;
     bool is_galileo_signal_used_in_pvt(const std::string& signal) const;
@@ -128,6 +133,7 @@ public:
     std::map<int, Galileo_Ephemeris> galileo_ephemeris_map;            //!< Compatibility PVT view; source-aware storage is authoritative
     std::map<int, Galileo_Reduced_CED> galileo_reduced_ced_map;        //!< Map storing provisional Galileo Reduced CED
     std::map<int, Gps_Ephemeris> gps_ephemeris_map;                    //!< Map storing new GPS_Ephemeris
+    std::map<int, Gps_Ephemeris> gps_previous_ephemeris_map;           //!< Previous GPS/QZSS issue retained for SBAS IODE handover
     std::map<int, Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;          //!< Map storing new GPS_CNAV_Ephemeris
     std::map<int, Glonass_Gnav_Ephemeris> glonass_gnav_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephemeris
     std::map<int, Beidou_Dnav_Ephemeris> beidou_dnav_ephemeris_map;    //!< Map storing new BeiDou DNAV Ephmeris
@@ -196,6 +202,7 @@ private:
     std::string d_dump_filename;
     std::ofstream d_dump_file;
     rtk_t d_rtk{};
+    Sbas_Rtklib_Corrections d_sbas_corrections;
     nav_t d_nav_data{};
     Monitor_Pvt d_monitor_pvt{};
     Pvt_Conf d_conf;

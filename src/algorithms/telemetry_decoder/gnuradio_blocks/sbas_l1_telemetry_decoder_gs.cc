@@ -19,6 +19,7 @@
 #include "sbas_l1_telemetry_decoder_gs.h"
 #include "SBAS_L1.h"
 #include "gnss_synchro.h"
+#include "sbas_raw_message.h"
 #include "viterbi_decoder_sbas.h"
 #include <gnuradio/thread/thread.h>  // for scoped_lock
 #include <pmt/pmt_sugar.h>           // for mp
@@ -600,9 +601,9 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             std::vector<msg_candiate_char_t> valid_msgs;
             d_crc_verifier.get_valid_frames(msg_candidates, valid_msgs);
 
-            // compute message sample stamp
-            // and fill messages in SBAS raw message objects
-            // std::vector<Sbas_Raw_Msg> sbas_raw_msgs;
+            // Publish each CRC-validated message with the timestamp of its first
+            // preamble bit. PVT relates this receiver timestamp to GPST before
+            // handing the frame to RTKLIB's SBAS parser.
             for (const auto &valid_msg : valid_msgs)
                 {
                     // valid_msg.first is the absolute timestamp of the message's first bit
@@ -677,8 +678,11 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                             d_ems_file << std::dec << std::setfill(' ') << '\n';
                             d_ems_file.flush();
                         }
-                        // Sbas_Raw_Msg sbas_raw_msg(message_sample_stamp, this->d_satellite.get_PRN(), it->second);
-                        // sbas_raw_msgs.push_back(sbas_raw_msg);
+                    const auto sbas_raw_message = std::make_shared<Sbas_Raw_Message>(
+                        message_sample_stamp,
+                        static_cast<uint32_t>(d_satellite.get_PRN()),
+                        valid_msg.second);
+                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(sbas_raw_message));
 #if __cplusplus == 201103L
                     const int default_precision = std::cout.precision();
 #else
@@ -690,9 +694,8 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                               << std::setprecision(default_precision) << " dB-Hz" << std::endl;
                 }
 
-            // TODO: parse per-message-type content and apply SBAS corrections
             // -----------------------------------------------------------------------
-            // SBAS L1 message parsing status (RTCA DO-229E / ICAO SARPs Appendix B)
+            // SBAS L1 message support (RTCA DO-229E / ICAO SARPs Appendix B)
             // -----------------------------------------------------------------------
             // SIGNAL / TRANSPORT LAYER — implemented:
             //   [x] Viterbi FEC decoding (rate-1/2, K=7 )
@@ -701,31 +704,31 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             //   [x] 6-bit message type extraction
             //   [x] Raw EMS file output (32 bytes / message)
             //
-            // NAVIGATION DATA LAYER — NOT yet implemented (all content is written to
-            // the EMS file as raw bytes; no correction data is used by the receiver):
+            // NAVIGATION DATA LAYER — delegated to the RTKLIB-based PVT engine:
             //
             //   Satellite information messages (DO-229E §A.4.4):
-            //   [ ] MT1  — PRN mask assignments (up to 51 of 210 GNSS/GEO PRNs)
-            //   [ ] MT2–5 — Fast corrections + UDREI for satellites in mask
-            //   [ ] MT6  — Integrity information (UDREI for all 51 mask slots)
-            //   [ ] MT7  — Fast correction degradation factors (aij table)
-            //   [ ] MT9  — GEO navigation message (ECEF pos/vel, URA, t0)
+            //   [x] MT1  — PRN mask assignments (up to 51 of 210 GNSS/GEO PRNs)
+            //   [x] MT2–5 — Fast corrections + UDREI for satellites in mask
+            //   [x] MT6  — Integrity information (UDREI for all 51 mask slots)
+            //   [x] MT7  — Fast correction degradation factors (aij table)
+            //   [x] MT9  — GEO navigation message (ECEF pos/vel, URA, t0)
             //   [ ] MT17 — GEO satellite almanacs (health/status + rough position)
-            //   [ ] MT24 — Mixed fast corrections / long-term corrections
-            //   [ ] MT25 — Long-term satellite error corrections (orbit + clock)
+            //   [x] MT24 — Mixed fast corrections / long-term corrections
+            //   [x] MT25 — Long-term satellite error corrections (orbit + clock)
             //   [ ] MT28 — Clock–Ephemeris covariance matrix (optional)
             //
             //   Ionospheric messages (DO-229E §A.4.4.9–10):
-            //   [ ] MT18 — Ionospheric grid point (IGP) masks (per band 0–10)
-            //   [ ] MT26 — Ionospheric grid delays (GIVD) + error bounds (GIVEI)
+            //   [x] MT18 — Ionospheric grid point (IGP) masks (per band 0–10)
+            //   [x] MT26 — Ionospheric grid delays (GIVD) + error bounds (GIVEI)
             //
             //   Ancillary messages:
-            //   [ ] MT0  — Don't Use / test-mode flag (safety de-selection)
+            //   [x] MT0/2 — Fast corrections from an EGNOS test-mode signal
+            //                (non-SoL use only; advertised OS performance does not apply)
             //   [ ] MT10 — Degradation parameters (σ²_flt, σ²_iono for PA ops)
             //   [ ] MT12 — SBAS Network time / UTC offset (GPS-week + SOW)
             //   [ ] MT27 — Service message / δUDRE regional factors (optional)
             //   [ ] MT62 — Internal test message (optional, not used by EGNOS)
-            //   [ ] MT63 — Null message (optional, not used by EGNOS)
+            //   [x] MT63 — Null message (recognized and ignored)
             //
             //   SBAS L5 / DFMC messages (DO-229F, dual-freq multi-constellation):
             //   [ ] MT31 — Satellite Mask (up to 92 SV slots)
@@ -735,19 +738,16 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             //   [ ] MT39/40 — SBAS satellite ephemeris (Keplerian) + covariance
             //   [ ] MT47 — SBAS satellite almanacs (Keplerian, 2 GEOs per msg)
             //
-            //   Receiver-level corrections (depends on navigation layer above):
-            //   [ ] Apply fast + long-term satellite corrections to pseudoranges
-            //   [ ] Apply ionospheric grid delay corrections (MOPS §A.4.4.10)
+            //   Receiver-level corrections (RTKLIB single-point positioning):
+            //   [x] Apply fast + long-term satellite corrections to GPS observations
+            //   [x] Apply ionospheric grid delay corrections (MOPS §A.4.4.10)
             //   [ ] Enable SBAS ranging (set Flag_valid_word = true when ranging ok)
-            //   [ ] Propagate SBAS correction quality (UDRE, GIVE) into PVT
+            //   [x] Use UDRE/GIVE to exclude unusable corrections and set variances
+            //   [ ] Compute protection levels or provide a safety-of-life solution
             //
-            // Reference: https://gssc.esa.int/navipedia/index.php/
-            //            The_EGNOS_SBAS_Message_Format_Explained
+            // Reference: EGNOS Open Service Definition Document, Issue 3.0
+            // https://egnos.gsc-europa.eu/sites/default/files/documents/egnos_os_sdd_in_force.pdf
             // -----------------------------------------------------------------------
-            // (old hook kept for reference)
-            // for (auto it = sbas_raw_msgs.begin(); it != sbas_raw_msgs.end(); ++it)
-            //     sbas_telemetry_data.update(*it);
-
             // clear all processed samples in the input buffer
             d_sample_buf.clear();
             d_sample_stamps.clear();

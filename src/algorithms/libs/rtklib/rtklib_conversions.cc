@@ -546,6 +546,8 @@ eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, 0, 0, 0, 0, 0.0, -1, 0};
     const int gps_sys = (MINPRNQZS <= gps_eph.PRN && gps_eph.PRN <= MAXPRNQZS) ? SYS_QZS : SYS_GPS;
     rtklib_sat.sat = satno(gps_sys, gps_eph.PRN);
+    rtklib_sat.iode = gps_eph.IODE_SF3;
+    rtklib_sat.iodc = gps_eph.IODC;
     rtklib_sat.A = gps_eph.sqrtA * gps_eph.sqrtA;
     rtklib_sat.M0 = gps_eph.M_0;
     rtklib_sat.deln = gps_eph.delta_n;

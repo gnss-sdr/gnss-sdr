@@ -19,6 +19,7 @@ set(PVT_LIB_SOURCES
     rtcm_printer.cc
     rtcm.cc
     rtklib_solver.cc
+    sbas_rtklib_corrections.cc
     monitor_pvt_udp_sink.cc
     monitor_ephemeris_udp_sink.cc
     has_simple_printer.cc
@@ -40,6 +41,7 @@ set(PVT_LIB_HEADERS
     rtcm_printer.h
     rtcm.h
     rtklib_solver.h
+    sbas_rtklib_corrections.h
     monitor_pvt_udp_sink.h
     monitor_pvt.h
     serdes_monitor_pvt.h

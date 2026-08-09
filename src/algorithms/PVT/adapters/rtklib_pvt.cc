@@ -17,6 +17,7 @@
 
 #include "rtklib_pvt.h"
 #include "MATH_CONSTANTS.h"            // for D2R
+#include "SBAS_L1.h"                   // for SBAS PRN limits
 #include "configuration_interface.h"   // for ConfigurationInterface
 #include "galileo_almanac.h"           // for Galileo_Almanac
 #include "galileo_ephemeris.h"         // for Galileo_Ephemeris
@@ -293,6 +294,37 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             dynamics_model = 0;
         }
 
+    const std::string default_satellite_ephemeris("Broadcast");
+    const std::string satellite_ephemeris_str = configuration->property(
+        role + ".satellite_ephemeris", default_satellite_ephemeris);
+    int satellite_ephemeris = -1;
+    if (satellite_ephemeris_str == "Broadcast")
+        {
+            satellite_ephemeris = EPHOPT_BRDC;
+        }
+    if (satellite_ephemeris_str == "SBAS")
+        {
+            satellite_ephemeris = EPHOPT_SBAS;
+        }
+    if (satellite_ephemeris == -1)
+        {
+            std::cout << "WARNING: Bad specification of satellite ephemeris source.\n"
+                      << "satellite_ephemeris possible values: Broadcast / SBAS\n"
+                      << "satellite_ephemeris specified value: " << satellite_ephemeris_str << "\n"
+                      << "Setting satellite_ephemeris to Broadcast\n"
+                      << std::flush;
+            satellite_ephemeris = EPHOPT_BRDC;
+        }
+
+    int sbas_satellite = configuration->property(role + ".sbas_satellite", 0);
+    if (sbas_satellite != 0 &&
+        (sbas_satellite < static_cast<int>(SBAS_L1_PRN_MIN) ||
+            sbas_satellite > static_cast<int>(SBAS_L1_PRN_MAX)))
+        {
+            LOG(WARNING) << "Erroneous SBAS satellite PRN. Selecting the first received SBAS stream";
+            sbas_satellite = 0;
+        }
+
     const std::string default_iono_model("OFF");
     const std::string iono_model_str = configuration->property(role + ".iono_model", default_iono_model); /*  (IONOOPT_XXX) see src/algorithms/libs/rtklib/rtklib.h */
     int iono_model = -1;
@@ -524,7 +556,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         navigation_system,                                                                 /* navigation system  */
         elevation_mask * D2R,                                                              /* elevation mask angle (degrees) */
         snrmask,                                                                           /* snrmask_t snrmask    SNR mask */
-        0,                                                                                 /* satellite ephemeris/clock (EPHOPT_XXX) */
+        satellite_ephemeris,                                                               /* satellite ephemeris/clock (EPHOPT_XXX) */
         integer_ambiguity_resolution_gps,                                                  /* AR mode (0:off,1:continuous,2:instantaneous,3:fix and hold,4:ppp-ar) */
         integer_ambiguity_resolution_glo,                                                  /* GLONASS AR mode (0:off,1:on,2:auto cal,3:ext cal) */
         integer_ambiguity_resolution_bds,                                                  /* BeiDou AR mode (0:off,1:on) */
@@ -539,8 +571,8 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         number_filter_iter,                                                                /* number of filter iteration */
         0,                                                                                 /* code smoothing window size (0:none) */
         0,                                                                                 /* interpolate reference obs (for post mission) */
-        0,                                                                                 /* sbssat_t sbssat  SBAS correction options */
-        0,                                                                                 /* sbsion_t sbsion[MAXBAND+1] SBAS satellite selection (0:all) */
+        0,                                                                                 /* SBAS correction options */
+        sbas_satellite,                                                                    /* SBAS satellite selection (0:first received) */
         0,                                                                                 /* rover position for fixed mode */
         0,                                                                                 /* base position for relative mode */
                                                                                            /*    0:pos in prcopt,  1:average of single pos, */

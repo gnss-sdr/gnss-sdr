@@ -71,6 +71,7 @@
 #include "rtcm_printer.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_solver.h"
+#include "sbas_raw_message.h"
 #include "signal_enabled_flags.h"
 #include "trackingcmd.h"
 #include <boost/archive/xml_iarchive.hpp>  // for xml_iarchive
@@ -178,6 +179,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_beidou_cnav1_iono_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Cnav1_Iono>).hash_code()),
       d_beidou_cnav1_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Cnav1_Utc_Model>).hash_code()),
       d_beidou_cnav1_page_data_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Cnav1_PageData_Message>).hash_code()),
+      d_sbas_raw_message_sptr_type_hash_code(typeid(std::shared_ptr<Sbas_Raw_Message>).hash_code()),
       d_galileo_has_data_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_HAS_data>).hash_code()),
       d_rinex_version(conf_.rinex_version),
       d_rx_time(0.0),
@@ -1399,10 +1401,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     d_rp->log_rinex_nav_gps_nav({{gps_eph->PRN, *gps_eph}});  // New record!
                                 }
                         }
-                    d_internal_pvt_solver->gps_ephemeris_map[gps_eph->PRN] = *gps_eph;
+                    d_internal_pvt_solver->store_gps_ephemeris(*gps_eph);
                     if (d_enable_rx_clock_correction == true)
                         {
-                            d_user_pvt_solver->gps_ephemeris_map[gps_eph->PRN] = *gps_eph;
+                            d_user_pvt_solver->store_gps_ephemeris(*gps_eph);
                         }
                     if (gps_eph->SV_health != 0)
                         {
@@ -1892,6 +1894,18 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                     DLOG(INFO) << "New BeiDou B-CNAV1 page data record has arrived from SAT ID " << bds_cnav1_page->PRN
                                << " PageID=" << bds_cnav1_page->page_data.common.page_id;
                 }
+            else if (msg_type_hash_code == d_sbas_raw_message_sptr_type_hash_code)
+                {
+                    const auto sbas_message = wht::any_cast<std::shared_ptr<Sbas_Raw_Message>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->store_sbas_message(*sbas_message);
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->store_sbas_message(*sbas_message);
+                        }
+                    DLOG(INFO) << "SBAS MT" << sbas_message->message_type()
+                               << " from PRN " << sbas_message->prn()
+                               << " forwarded to the RTKLIB correction engine";
+                }
             else
                 {
                     LOG(WARNING) << "msg_handler_telemetry unknown object type!";
@@ -2018,7 +2032,7 @@ std::map<int, Beidou_Dnav_Almanac> rtklib_pvt_gs::get_beidou_dnav_almanac_map() 
 
 void rtklib_pvt_gs::clear_ephemeris()
 {
-    d_internal_pvt_solver->gps_ephemeris_map.clear();
+    d_internal_pvt_solver->clear_gps_ephemerides();
     d_internal_pvt_solver->gps_almanac_map.clear();
     d_internal_pvt_solver->galileo_ephemeris_map.clear();
     d_internal_pvt_solver->galileo_ephemeris_store.clear();
@@ -2028,7 +2042,7 @@ void rtklib_pvt_gs::clear_ephemeris()
     d_internal_pvt_solver->beidou_dnav_almanac_map.clear();
     if (d_enable_rx_clock_correction == true)
         {
-            d_user_pvt_solver->gps_ephemeris_map.clear();
+            d_user_pvt_solver->clear_gps_ephemerides();
             d_user_pvt_solver->gps_almanac_map.clear();
             d_user_pvt_solver->galileo_ephemeris_map.clear();
             d_user_pvt_solver->galileo_ephemeris_store.clear();

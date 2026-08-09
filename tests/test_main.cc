@@ -170,6 +170,7 @@ private:
 #include "unit-tests/signal-processing-blocks/pvt/rinex_printer_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rtcm_printer_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rtcm_test.cc"
+#include "unit-tests/signal-processing-blocks/pvt/sbas_rtklib_corrections_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/serdes_monitor_pvt_test.cc"
 #include "unit-tests/signal-processing-blocks/resampler/direct_resampler_conditioner_cc_test.cc"
 #include "unit-tests/signal-processing-blocks/resampler/mmse_resampler_test.cc"

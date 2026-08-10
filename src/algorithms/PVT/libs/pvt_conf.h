@@ -75,6 +75,7 @@ public:
     int rtk_trace_level = 0;
     int32_t ntrip_timeout_ms = 10000;
     int32_t ntrip_reconnect_interval_ms = 10000;
+    int32_t ntrip_version = 2;  // 2: NTRIP v2 with automatic fallback to v1; 1: force legacy v1
 
     uint16_t rtcm_tcp_port = 0;
     uint16_t rtcm_station_id = 0;
@@ -105,6 +106,7 @@ public:
     bool log_source_timetag = false;
     bool ntrip_client_enabled = false;
     bool ntrip_fallback_to_single = true;
+    bool ntrip_tls_enabled = false;
     bool use_e6_for_pvt = true;
     bool use_has_corrections = true;
     bool use_unhealthy_sats = false;

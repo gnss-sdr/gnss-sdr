@@ -238,7 +238,13 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             pvt_output_parameters.ntrip_reconnect_interval_ms = configuration->property(role + ".ntrip_reconnect_interval_ms", pvt_output_parameters.ntrip_reconnect_interval_ms);
             pvt_output_parameters.ntrip_max_correction_age_s = configuration->property(role + ".ntrip_max_correction_age_s", pvt_output_parameters.ntrip_max_correction_age_s);
             pvt_output_parameters.ntrip_fallback_to_single = configuration->property(role + ".ntrip_fallback_to_single", pvt_output_parameters.ntrip_fallback_to_single);
+            pvt_output_parameters.ntrip_tls_enabled = configuration->property(role + ".ntrip_tls_enabled", pvt_output_parameters.ntrip_tls_enabled);
+            pvt_output_parameters.ntrip_version = configuration->property(role + ".ntrip_version", pvt_output_parameters.ntrip_version);
 
+            if (pvt_output_parameters.ntrip_version != 1 && pvt_output_parameters.ntrip_version != 2)
+                {
+                    throw std::invalid_argument(role + ".ntrip_version must be 1 or 2");
+                }
             if (ntrip_port < 1 || ntrip_port > 65535)
                 {
                     throw std::invalid_argument(role + ".ntrip_caster_port must be in the range 1..65535");
@@ -292,7 +298,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
                 has_space_or_control(pvt_output_parameters.ntrip_username) ||
                 has_space_or_control(pvt_output_parameters.ntrip_password))
                 {
-                    throw std::invalid_argument(role + ".ntrip_username or .ntrip_password contains characters unsupported by the NTRIP v1 client");
+                    throw std::invalid_argument(role + ".ntrip_username or .ntrip_password contains characters unsupported by the NTRIP client");
                 }
             if (!pvt_output_parameters.ntrip_password_env.empty())
                 {

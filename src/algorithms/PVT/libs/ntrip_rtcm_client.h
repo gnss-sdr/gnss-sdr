@@ -1,6 +1,6 @@
 /*!
  * \file ntrip_rtcm_client.h
- * \brief NTRIP v1 client for RTCM3 fixed-base corrections
+ * \brief NTRIP client for RTCM3 fixed-base corrections
  * \author Carles Fernandez-Prades, 2026. cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
@@ -43,6 +43,15 @@ struct Ntrip_Rtcm_Client_Config
     double max_age_s = 5.0;
     bool send_gga = false;
     int gga_period_ms = 10000;
+
+    // NTRIP protocol version requested from the transport: 2 negotiates NTRIP
+    // v2 with automatic fallback to v1 when the caster does not answer with an
+    // HTTP status line; 1 forces the legacy v1 protocol.
+    int version = 2;
+
+    // Enables TLS transport with certificate validation against the system CA
+    // store and host name verification.
+    bool tls_enabled = false;
 
     // Zero accepts any stream station while keeping observations and position
     // bound to one ID. A positive value filters to that exact 12-bit ID.
@@ -104,8 +113,9 @@ struct Ntrip_Rtcm_Snapshot
 
 
 /*!
- * \brief Receives and decodes a fixed-base RTCM3 stream from an NTRIP v1
- * caster.
+ * \brief Receives and decodes a fixed-base RTCM3 stream from an NTRIP caster,
+ * using NTRIP v2 with automatic fallback to v1, or forced v1, optionally over
+ * TLS.
  *
  * The object owns one worker thread. The public snapshot and status methods
  * copy data under a mutex and can be called concurrently with the worker.

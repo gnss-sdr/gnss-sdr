@@ -86,7 +86,7 @@ class Gps_Ephemeris;
  *  .rtcm_MT1087_rate_ms - (.rtcm_MSM_rate_ms)
  *  .rtcm_MT1097_rate_ms - (.rtcm_MSM_rate_ms)
  *
- * Fixed-base GPS L1/L2 RTK input through plaintext NTRIP v1 (disabled by default):
+ * Fixed-base GPS L1/L2 RTK input through NTRIP (disabled by default):
  *  .ntrip_client_enabled - (false)
  *  .ntrip_caster_address - caster hostname or IPv4 address, without a scheme or port ("")
  *  .ntrip_caster_port - (2101)
@@ -94,6 +94,8 @@ class Gps_Ephemeris;
  *  .ntrip_username - Basic-authentication username ("")
  *  .ntrip_password - Basic-authentication password ("")
  *  .ntrip_password_env - environment variable containing the password (""), mutually exclusive with .ntrip_password
+ *  .ntrip_version - 2 negotiates NTRIP v2 with automatic fallback to v1; 1 forces legacy v1 (2)
+ *  .ntrip_tls_enabled - TLS transport with system-CA certificate and hostname verification (false)
  *  .ntrip_inactivity_timeout_ms - (10000)
  *  .ntrip_reconnect_interval_ms - (10000)
  *  .ntrip_max_correction_age_s - (5.0)
@@ -101,8 +103,7 @@ class Gps_Ephemeris;
  *  .ntrip_fallback_to_single - report SOLQ_SINGLE while fixed-base data is unavailable (true)
  * This milestone requires exactly GPS 1C and 2S channels, num_bands=2,
  * navigation_system=1, positioning_mode Static or Kinematic, RTCM 1005/1006,
- * and compatible GPS L1/L2 observation messages. TLS, NTRIP v2, and VRS/GGA
- * are not supported.
+ * and compatible GPS L1/L2 observation messages. VRS/GGA is not supported.
  *
  *  .kml_rate_ms - (1000)
  *  .gpx_rate_ms - (1000)

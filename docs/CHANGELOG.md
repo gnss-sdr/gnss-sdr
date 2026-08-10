@@ -97,13 +97,15 @@ All notable changes to GNSS-SDR will be documented in this file.
 ### Improvements in Interoperability:
 
 - Added an opt-in fixed-base RTK path for GPS L1 C/A + L2C receivers. The PVT
-  block can now connect to a plaintext NTRIP v1 caster, decode RTCM 3 base
-  position and GPS L1/L2 observations, and feed time-aligned reference data to
-  its RTKLIB relative-positioning solver. The client reconnects without blocking
-  the GNU Radio work function, filters station changes and stale corrections,
-  redacts credentials from RTKLIB traces, and retains an explicitly labeled
-  single-point fallback when configured. TLS, NTRIP v2, and VRS/GGA are not yet
-  supported.
+  block can now connect to an NTRIP caster, decode RTCM 3 base position and GPS
+  L1/L2 observations, and feed time-aligned reference data to its RTKLIB
+  relative-positioning solver. The client negotiates NTRIP v2 with automatic
+  fallback to v1 (`PVT.ntrip_version=1` forces the legacy protocol) and
+  supports TLS with system-CA certificate and hostname verification
+  (`PVT.ntrip_tls_enabled=true`). It reconnects without blocking the GNU Radio
+  work function, filters station changes and stale corrections, redacts
+  credentials from RTKLIB traces, and retains an explicitly labeled
+  single-point fallback when configured. VRS/GGA is not yet supported.
 - Added the BeiDou B1C receiver chain, with signal identifier `1D`: acquisition
   (`BEIDOU_B1C_PCPS_Ambiguous_Acquisition`, with optional QMBOC local replica),
   tracking (`BEIDOU_B1C_DLL_PLL_VEML_Tracking`, tracking the pilot component by

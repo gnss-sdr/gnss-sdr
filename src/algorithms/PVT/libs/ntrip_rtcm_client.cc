@@ -1,6 +1,6 @@
 /*!
  * \file ntrip_rtcm_client.cc
- * \brief NTRIP v1 client for RTCM3 fixed-base corrections
+ * \brief NTRIP client for RTCM3 fixed-base corrections
  * \author Carles Fernandez-Prades, 2026. cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
@@ -40,7 +40,6 @@
 namespace
 {
 constexpr std::size_t READ_BUFFER_SIZE = 8192;
-constexpr std::size_t HANDSHAKE_BUFFER_SIZE = 4096;
 constexpr int WORKER_POLL_INTERVAL_MS = 10;
 constexpr int MAX_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
@@ -57,30 +56,6 @@ void secure_clear(std::string* value)
             data[i] = 0;
         }
     value->clear();
-}
-
-
-std::string base64_encode(const std::string& input)
-{
-    static const char TABLE[] =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    std::string result;
-    result.reserve(4 * ((input.size() + 2) / 3));
-
-    for (std::size_t i = 0; i < input.size(); i += 3)
-        {
-            const std::size_t remaining = input.size() - i;
-            const unsigned int first = static_cast<unsigned char>(input[i]);
-            const unsigned int second = remaining > 1 ? static_cast<unsigned char>(input[i + 1]) : 0U;
-            const unsigned int third = remaining > 2 ? static_cast<unsigned char>(input[i + 2]) : 0U;
-            const unsigned int value = (first << 16U) | (second << 8U) | third;
-
-            result.push_back(TABLE[(value >> 18U) & 0x3FU]);
-            result.push_back(TABLE[(value >> 12U) & 0x3FU]);
-            result.push_back(remaining > 1 ? TABLE[(value >> 6U) & 0x3FU] : '=');
-            result.push_back(remaining > 2 ? TABLE[value & 0x3FU] : '=');
-        }
-    return result;
 }
 
 
@@ -197,9 +172,31 @@ public:
     Stream_Owner(const Stream_Owner&) = delete;
     Stream_Owner& operator=(const Stream_Owner&) = delete;
 
-    bool open(const std::string& path)
+    bool open(const std::string& path, const std::string& hostname,
+        const std::string& username, const std::string& password)
     {
-        return stropen(&d_stream, STR_NTRIPCLI, STR_MODE_RW, path.c_str()) != 0;
+        if (stropen(&d_stream, STR_NTRIPCLI, STR_MODE_RW, path.c_str()) == 0)
+            {
+                return false;
+            }
+        ntrip_t* ntrip = static_cast<ntrip_t*>(d_stream.port);
+        if (ntrip == nullptr)
+            {
+                close();
+                return false;
+            }
+        // Credentials are installed directly instead of being embedded in the
+        // stream path, which RTKLIB stores verbatim in the stream object.
+        std::snprintf(ntrip->user, sizeof(ntrip->user), "%s", username.c_str());
+        std::snprintf(ntrip->passwd, sizeof(ntrip->passwd), "%s", password.c_str());
+        // The stream path carries a pre-resolved numeric address; restore the
+        // caster host name for the NTRIP v2 Host header and TLS verification.
+        if (ntripsethost(ntrip, hostname.c_str(), d_stream.msg) == 0)
+            {
+                close();
+                return false;
+            }
+        return true;
     }
 
     void close()
@@ -207,6 +204,8 @@ public:
         if (d_stream.port != nullptr)
             {
                 ntrip_t* ntrip = static_cast<ntrip_t*>(d_stream.port);
+                std::memset(ntrip->user, 0, sizeof(ntrip->user));
+                std::memset(ntrip->passwd, 0, sizeof(ntrip->passwd));
                 // RTKLIB initializes the socket descriptor to zero and may
                 // leave a closed descriptor behind after a failed connection.
                 // Prevent strclose() from closing stdin or a reused descriptor.
@@ -627,6 +626,11 @@ private:
                 *reason = "station ID is outside the 12-bit RTCM range";
                 return false;
             }
+        if (d_config.version != 1 && d_config.version != 2)
+            {
+                *reason = "NTRIP version must be 1 or 2";
+                return false;
+            }
         if (transport_path().size() >= MAXSTRPATH)
             {
                 *reason = "NTRIP endpoint is too long";
@@ -644,7 +648,12 @@ private:
     {
         std::ostringstream path;
         path << host << ':' << d_config.port << '/'
-             << normalized_mountpoint(d_config.mountpoint);
+             << normalized_mountpoint(d_config.mountpoint)
+             << "::NTRIP=" << d_config.version;
+        if (d_config.tls_enabled)
+            {
+                path << "::TLS";
+            }
         return path.str();
     }
 
@@ -734,29 +743,16 @@ private:
         return Resolve_Result::SUCCESS;
     }
 
-    std::string make_request() const
+    std::string negotiating_message() const
     {
-        std::string request = "GET /";
-        request += normalized_mountpoint(d_config.mountpoint);
-        request += " HTTP/1.0\r\n";
-        request += "User-Agent: NTRIP GNSS-SDR\r\n";
-        request += "Accept: */*\r\n";
-        request += "Connection: close\r\n";
-
-        if (!d_config.username.empty())
+        std::string message = "negotiating NTRIP v";
+        message += (d_config.version == 1 ? '1' : '2');
+        message += " stream";
+        if (d_config.tls_enabled)
             {
-                std::string credentials = d_config.username;
-                credentials.push_back(':');
-                credentials += d_config.password;
-                std::string encoded = base64_encode(credentials);
-                request += "Authorization: Basic ";
-                request += encoded;
-                request += "\r\n";
-                secure_clear(&credentials);
-                secure_clear(&encoded);
+                message += " over TLS";
             }
-        request += "\r\n";
-        return request;
+        return message;
     }
 
     void worker_entry() noexcept
@@ -813,7 +809,8 @@ private:
                         Stream_Owner stream;
                         set_state(Ntrip_Rtcm_Client_State::CONNECTING,
                             "connecting to NTRIP caster", false);
-                        if (!stream.open(transport_path(resolved_host)))
+                        if (!stream.open(transport_path(resolved_host), d_config.host,
+                                d_config.username, d_config.password))
                             {
                                 failure_message = "could not initialize NTRIP transport";
                             }
@@ -837,6 +834,12 @@ private:
                                 else
                                     {
                                         failure_message = handshake_failure_message(handshake);
+                                        if (stream.get()->msg[0] != '\0')
+                                            {
+                                                failure_message += " (";
+                                                failure_message += stream.get()->msg;
+                                                failure_message += ')';
+                                            }
                                     }
                             }
                     }
@@ -871,14 +874,34 @@ private:
 
         const std::chrono::steady_clock::time_point deadline =
             std::chrono::steady_clock::now() + std::chrono::milliseconds(d_config.timeout_ms);
+        bool connected = false;
         while (!d_stop_requested.load() && std::chrono::steady_clock::now() < deadline)
             {
-                const int connection_state = waittcpcli(ntrip->tcp, stream->msg);
-                if (connection_state != 0 && ntrip->tcp->svr.state == 2)
+                // waitntrip() advances the whole negotiation: TCP connection,
+                // optional TLS handshake, NTRIP request, and response parsing
+                // (v2 with automatic v1 fallback, or forced v1).
+                const int previous_state = ntrip->state;
+                const int negotiated = waitntrip(ntrip, stream->msg);
+                if (!connected && ntrip->tcp->svr.state == 2)
                     {
-                        break;
+                        connected = true;
+                        set_state(Ntrip_Rtcm_Client_State::AUTHENTICATING,
+                            negotiating_message(), false);
                     }
-                if (ntrip->tcp->svr.state <= 0)
+                if (negotiated != 0 && ntrip->state == 2)
+                    {
+                        return Handshake_Result::SUCCESS;
+                    }
+                if (connected && ntrip->tcp->svr.state == 0)
+                    {
+                        // The transport dropped after being established: either
+                        // the caster rejected the request that was already sent
+                        // (a response was pending) or the TLS/send step failed.
+                        return previous_state == 1
+                                   ? Handshake_Result::RESPONSE_REJECTED
+                                   : Handshake_Result::CONNECT_FAILED;
+                    }
+                if (ntrip->tcp->svr.state < 0)
                     {
                         return Handshake_Result::CONNECT_FAILED;
                     }
@@ -891,100 +914,8 @@ private:
             {
                 return Handshake_Result::STOPPED;
             }
-        if (ntrip->tcp->svr.state != 2)
-            {
-                return Handshake_Result::CONNECT_TIMEOUT;
-            }
-
-        set_state(Ntrip_Rtcm_Client_State::AUTHENTICATING,
-            "negotiating NTRIP v1 stream", false);
-        std::string request = make_request();
-        std::size_t sent = 0;
-        while (!d_stop_requested.load() && sent < request.size() &&
-               std::chrono::steady_clock::now() < deadline)
-            {
-                const int count = writetcpcli(ntrip->tcp,
-                    reinterpret_cast<unsigned char*>(&request[0]) + sent,
-                    static_cast<int>(request.size() - sent), stream->msg);
-                if (count > 0)
-                    {
-                        sent += static_cast<std::size_t>(count);
-                    }
-                else if (ntrip->tcp->svr.state != 2)
-                    {
-                        secure_clear(&request);
-                        return Handshake_Result::SEND_FAILED;
-                    }
-                if (sent < request.size() && wait_interruptible(WORKER_POLL_INTERVAL_MS))
-                    {
-                        secure_clear(&request);
-                        return Handshake_Result::STOPPED;
-                    }
-            }
-        secure_clear(&request);
-        if (d_stop_requested.load())
-            {
-                return Handshake_Result::STOPPED;
-            }
-        if (sent == 0 || ntrip->tcp->svr.state != 2)
-            {
-                return Handshake_Result::SEND_FAILED;
-            }
-        if (std::chrono::steady_clock::now() >= deadline)
-            {
-                return Handshake_Result::RESPONSE_TIMEOUT;
-            }
-
-        ntrip->state = 1;
-        ntrip->nb = 0;
-        std::vector<unsigned char> response;
-        response.reserve(HANDSHAKE_BUFFER_SIZE);
-        const std::string accepted_response = "ICY 200 OK\r\n";
-        const std::array<unsigned char, 2> line_end = {{'\r', '\n'}};
-        std::array<unsigned char, HANDSHAKE_BUFFER_SIZE> input = {{0}};
-
-        while (!d_stop_requested.load() && std::chrono::steady_clock::now() < deadline)
-            {
-                const int count = readtcpcli(ntrip->tcp, input.data(),
-                    static_cast<int>(input.size()), stream->msg);
-                if (count > 0)
-                    {
-                        if (response.size() + static_cast<std::size_t>(count) >= NTRIP_MAXRSP)
-                            {
-                                return Handshake_Result::RESPONSE_REJECTED;
-                            }
-                        response.insert(response.end(), input.begin(), input.begin() + count);
-
-                        if (response.size() >= accepted_response.size() &&
-                            std::equal(accepted_response.begin(), accepted_response.end(), response.begin()))
-                            {
-                                const std::size_t remaining = response.size() - accepted_response.size();
-                                if (remaining > 0)
-                                    {
-                                        std::memcpy(ntrip->buff,
-                                            response.data() + accepted_response.size(), remaining);
-                                    }
-                                ntrip->nb = static_cast<int>(remaining);
-                                ntrip->state = 2;
-                                return Handshake_Result::SUCCESS;
-                            }
-
-                        if (std::search(response.begin(), response.end(),
-                                line_end.begin(), line_end.end()) != response.end())
-                            {
-                                return Handshake_Result::RESPONSE_REJECTED;
-                            }
-                    }
-                else if (ntrip->tcp->svr.state != 2)
-                    {
-                        return Handshake_Result::RESPONSE_REJECTED;
-                    }
-                if (wait_interruptible(WORKER_POLL_INTERVAL_MS))
-                    {
-                        return Handshake_Result::STOPPED;
-                    }
-            }
-        return d_stop_requested.load() ? Handshake_Result::STOPPED : Handshake_Result::RESPONSE_TIMEOUT;
+        return connected ? Handshake_Result::RESPONSE_TIMEOUT
+                         : Handshake_Result::CONNECT_TIMEOUT;
     }
 
     std::string stream_corrections(stream_t* stream, rtcm_t* decoder,
@@ -1263,7 +1194,7 @@ private:
             case Handshake_Result::RESPONSE_TIMEOUT:
                 return "NTRIP caster response timed out";
             case Handshake_Result::RESPONSE_REJECTED:
-                return "NTRIP v1 request was rejected";
+                return "NTRIP request was rejected";
             case Handshake_Result::STOPPED:
                 return "stopped";
             case Handshake_Result::SUCCESS:

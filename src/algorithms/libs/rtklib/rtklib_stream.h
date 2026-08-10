@@ -54,6 +54,8 @@
 #define NTRIP_RSP_TBLEND "ENDSOURCETABLE"
 #define NTRIP_RSP_HTTP "HTTP/"  /* ntrip response: http */
 #define NTRIP_RSP_ERROR "ERROR" /* ntrip response: error */
+#define NTRIP_VERSION_1 1
+#define NTRIP_VERSION_2 2
 
 #define FTP_CMD "wget" /* ftp/http command */
 #define FTP_TIMEOUT 30 /* ftp/http timeout (s) */
@@ -148,9 +150,13 @@ int rspntrip_s(ntrip_t *ntrip, char *msg);
 
 int rspntrip_c(ntrip_t *ntrip, char *msg);
 
+int rspntrip_c_v2(ntrip_t *ntrip, char *msg);
+
 int waitntrip(ntrip_t *ntrip, char *msg);
 
 ntrip_t *openntrip(const char *path, int type, char *msg);
+
+int ntripsethost(ntrip_t *ntrip, const char *hostname, char *msg);
 
 void closentrip(ntrip_t *ntrip);
 

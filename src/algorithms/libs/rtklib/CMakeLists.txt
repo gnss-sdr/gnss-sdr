@@ -18,6 +18,7 @@ set(RTKLIB_LIB_SOURCES
     rtklib_rtkpos.cc
     rtklib_conversions.cc
     rtklib_stream.cc
+    rtklib_tls.cc
     rtklib_rtksvr.cc
     rtklib_solution.cc
     rtklib_rtcm.cc
@@ -38,6 +39,7 @@ set(RTKLIB_LIB_HEADERS
     rtklib_rtkpos.h
     rtklib_conversions.h
     rtklib_stream.h
+    rtklib_tls.h
     rtklib_rtksvr.h
     rtklib_solution.h
     rtklib_rtcm.h
@@ -73,6 +75,10 @@ target_link_libraries(algorithms_libs_rtklib
         LAPACK::LAPACK
         BLAS::BLAS
 )
+
+# Use the same OpenSSL-preferred/GnuTLS-fallback selection as the rest of
+# GNSS-SDR. This also propagates USE_GNUTLS_FALLBACK when appropriate.
+link_to_crypto_dependencies(algorithms_libs_rtklib)
 
 if(ENABLE_GLOG_AND_GFLAGS)
     target_link_libraries(algorithms_libs_rtklib PRIVATE Gflags::gflags Glog::glog)

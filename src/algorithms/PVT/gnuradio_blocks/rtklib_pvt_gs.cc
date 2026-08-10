@@ -638,6 +638,8 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             ntrip_config.timeout_ms = conf_.ntrip_timeout_ms;
             ntrip_config.max_age_s = conf_.ntrip_max_correction_age_s;
             ntrip_config.station_id = conf_.ntrip_station_id;
+            ntrip_config.version = conf_.ntrip_version;
+            ntrip_config.tls_enabled = conf_.ntrip_tls_enabled;
             const auto clear_local_credentials = [&ntrip_config]() {
                 const auto clear_string = [](std::string* value) {
                     if (value->empty())
@@ -670,7 +672,9 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
                 {
                     throw std::runtime_error("Unable to start the NTRIP RTCM client");
                 }
-            LOG(INFO) << "NTRIP v1 client enabled for " << conf_.ntrip_caster_address << ':' << conf_.ntrip_port
+            LOG(INFO) << "NTRIP v" << conf_.ntrip_version
+                      << (conf_.ntrip_tls_enabled ? " client (TLS) enabled for " : " client enabled for ")
+                      << conf_.ntrip_caster_address << ':' << conf_.ntrip_port
                       << '/' << conf_.ntrip_mountpoint;
         }
 

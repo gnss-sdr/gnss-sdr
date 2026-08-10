@@ -509,9 +509,7 @@ Observables.dump_filename=./observables.dat
 \endverbatim
 
 \subsection pvt Computation of Position, Velocity and Time
-Although data processing for obtaining high-accuracy PVT solutions is out of the scope of GNSS-SDR, we provide a module that can compute a simple least square
-solution and leaves room for more sophisticated positioning methods. The integration with libraries and software tools that are able to deal with multi-constellation
-data such as <a href="https://github.com/SGL-UT/gnsstk" target="_blank">GNSSTk</a> or <a href="https://gage.upc.edu/gLAB/" target="_blank">gLAB</a> appears as a viable solution for high performance, completely customizable GNSS receivers.
+GNSS-SDR provides a module that can compute standalone position fixes and an opt-in fixed-base RTK solution for GPS L1 C/A and L2C receivers. It can also store observables and navigation data for use with tools such as <a href="https://github.com/SGL-UT/gnsstk" target="_blank">GNSSTk</a> or <a href="https://gage.upc.edu/gLAB/" target="_blank">gLAB</a>.
 
 The common interface is PvtInterface. For instance, in order to use the implementation RTKLIB_PVT, add to the configuration file:
 \verbatim
@@ -545,7 +543,8 @@ PVT.display_rate_ms=500          ; Position console print (std::out) interval [m
 PVT.nmea_dump_filename=./gnss_sdr_pvt.nmea ; NMEA log path and filename
 PVT.flag_nmea_tty_port=false     ; Enables the NMEA log to a serial TTY port
 PVT.nmea_dump_devname=/dev/pts/4 ; serial device descriptor for NMEA logging
-PVT.flag_rtcm_server=true        ; Enables or disables a TCP/IP server dispatching RTCM messages
+PVT.flag_rtcm_server=true        ; Enables an outbound raw TCP server dispatching generated RTCM messages
+PVT.ntrip_client_enabled=false   ; Enables inbound fixed-base RTCM corrections from an NTRIP caster
 PVT.flag_rtcm_tty_port=false     ; Enables the RTCM log to a serial TTY port
 PVT.rtcm_dump_devname=/dev/pts/1 ; serial device descriptor for RTCM logging
 PVT.rtcm_tcp_port=2101
@@ -554,6 +553,43 @@ PVT.rtcm_MT1045_rate_ms=5000
 PVT.rtcm_MT1097_rate_ms=1000
 PVT.rtcm_MT1077_rate_ms=1000
 \endverbatim
+
+\subsubsection pvt_ntrip Fixed-base GPS L1/L2 RTK through NTRIP
+
+The <code>RTKLIB_PVT</code> implementation can obtain base-station corrections from an NTRIP caster. This feature is opt-in: <code>PVT.ntrip_client_enabled</code> defaults to <code>false</code>, and no caster connection is attempted while it is disabled. The first implementation is limited to exactly GPS L1 C/A (<code>GPS_1C</code>) and GPS L2C (<code>GPS_2S</code>), with <code>PVT.num_bands=2</code> and <code>PVT.navigation_system=1</code> (GPS). Select <code>Static</code> for a stationary rover or <code>Kinematic</code> for a moving rover; other positioning modes are rejected when the NTRIP client is enabled.
+
+A fixed-base rover configuration can include:
+
+\verbatim
+Channels_1C.count=8
+Channels_2S.count=8
+
+PVT.implementation=RTKLIB_PVT
+PVT.positioning_mode=Kinematic
+PVT.num_bands=2
+PVT.navigation_system=1
+
+PVT.ntrip_client_enabled=true
+PVT.ntrip_caster_address=caster.example.org
+PVT.ntrip_caster_port=2101
+PVT.ntrip_mountpoint=EXAMPLE_MOUNTPOINT
+PVT.ntrip_username=example_user
+PVT.ntrip_password=
+PVT.ntrip_password_env=GNSS_SDR_NTRIP_PASSWORD
+PVT.ntrip_inactivity_timeout_ms=10000
+PVT.ntrip_reconnect_interval_ms=10000
+PVT.ntrip_max_correction_age_s=5.0
+PVT.ntrip_station_id=0
+PVT.ntrip_fallback_to_single=true
+\endverbatim
+
+The caster address, mountpoint, username, password, and password-environment variable name default to empty strings; the remaining defaults are those shown above, except that <code>PVT.ntrip_client_enabled</code> defaults to <code>false</code>. Set either <code>PVT.ntrip_password</code> or <code>PVT.ntrip_password_env</code>, never both. The latter names an environment variable from which GNSS-SDR reads the password and avoids placing the password in the configuration file. Station ID <code>0</code> accepts any station; otherwise, set the expected RTCM station ID. Setting <code>PVT.ntrip_reconnect_interval_ms=0</code> disables automatic reconnect attempts.
+
+The correction stream must provide an RTCM 3 base position message 1005 or 1006 and GPS observation messages carrying both L1 and L2, either as message 1004 or as MSM4 through MSM7 (1074 through 1077). Corrections older than <code>PVT.ntrip_max_correction_age_s</code> are not used. Enabling this client forces a separate internal single-point solver for receiver-clock correction, independently of the RTK solver. With <code>PVT.ntrip_fallback_to_single=true</code>, the receiver reports an explicitly labeled <code>SOLQ_SINGLE</code> solution while corrections are unavailable, incomplete, or stale; it does not label that fallback as an RTK solution.
+
+This client implements plaintext NTRIP version 1 over an HTTP/1.0 connection with Basic authentication. Basic authentication only encodes credentials; it does not encrypt them. TLS/HTTPS, NTRIP version 2, and VRS mountpoints requiring rover GGA messages are not supported. Use a trusted network or a suitable secure tunnel, and prefer <code>PVT.ntrip_password_env</code> over a password stored in a file.
+
+<code>PVT.flag_rtcm_server</code> is unrelated to the NTRIP correction client. It controls an outbound raw TCP server for RTCM messages generated by GNSS-SDR; it neither connects to a caster nor supplies corrections to the RTK solver. The outbound server and inbound NTRIP client can be enabled independently.
 
 For legacy SBAS/EGNOS L1 positioning, use GPS L1 observation channels together
 with at least one SBAS L1 telemetry channel, and set

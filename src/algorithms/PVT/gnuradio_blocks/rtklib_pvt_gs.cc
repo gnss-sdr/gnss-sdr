@@ -59,6 +59,7 @@
 #include "monitor_pvt.h"
 #include "monitor_pvt_udp_sink.h"
 #include "nmea_printer.h"
+#include "ntrip_rtcm_client.h"
 #include "osnma_data.h"
 #include "pvt_conf.h"
 #include "qzss.h"
@@ -199,6 +200,8 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_signal_enabled_flags(conf_.signal_enabled_flags),
       d_observable_interval_ms(conf_.observable_interval_ms),
       d_pvt_errors_counter(0),
+      d_last_ntrip_client_state(-1),
+      d_last_fixed_base_status(-1),
       d_dump(conf_.dump),
       d_dump_mat(conf_.dump_mat && conf_.dump),
       d_rinex_output_enabled(conf_.rinex_output_enabled),
@@ -210,7 +213,8 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_flag_monitor_pvt_enabled(conf_.monitor_enabled),
       d_flag_monitor_ephemeris_enabled(conf_.monitor_ephemeris_enabled),
       d_show_local_time_zone(conf_.show_local_time_zone),
-      d_enable_rx_clock_correction(conf_.enable_rx_clock_correction),
+      d_enable_rx_clock_correction(conf_.enable_rx_clock_correction || conf_.ntrip_client_enabled),
+      d_ntrip_client_enabled(conf_.ntrip_client_enabled),
       d_an_printer_enabled(conf_.an_output_enabled),
       d_log_timetag(conf_.log_source_timetag),
       d_use_has_corrections(conf_.use_has_corrections),
@@ -621,6 +625,55 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     // set the RTKLIB trace (debug) level
     tracelevel(conf_.rtk_trace_level);
 
+    if (d_ntrip_client_enabled)
+        {
+            Ntrip_Rtcm_Client_Config ntrip_config;
+            ntrip_config.enabled = true;
+            ntrip_config.host = conf_.ntrip_caster_address;
+            ntrip_config.port = conf_.ntrip_port;
+            ntrip_config.mountpoint = conf_.ntrip_mountpoint;
+            ntrip_config.username = conf_.ntrip_username;
+            ntrip_config.password = conf_.ntrip_password;
+            ntrip_config.reconnect_interval_ms = conf_.ntrip_reconnect_interval_ms;
+            ntrip_config.timeout_ms = conf_.ntrip_timeout_ms;
+            ntrip_config.max_age_s = conf_.ntrip_max_correction_age_s;
+            ntrip_config.station_id = conf_.ntrip_station_id;
+            const auto clear_local_credentials = [&ntrip_config]() {
+                const auto clear_string = [](std::string* value) {
+                    if (value->empty())
+                        {
+                            return;
+                        }
+                    volatile char* data = &(*value)[0];
+                    for (std::size_t index = 0; index < value->size(); ++index)
+                        {
+                            data[index] = 0;
+                        }
+                    value->clear();
+                };
+                clear_string(&ntrip_config.username);
+                clear_string(&ntrip_config.password);
+            };
+            bool ntrip_started = false;
+            try
+                {
+                    d_ntrip_client = std::make_unique<Ntrip_Rtcm_Client>(ntrip_config);
+                    ntrip_started = d_ntrip_client->start();
+                }
+            catch (...)
+                {
+                    clear_local_credentials();
+                    throw;
+                }
+            clear_local_credentials();
+            if (!ntrip_started)
+                {
+                    throw std::runtime_error("Unable to start the NTRIP RTCM client");
+                }
+            LOG(INFO) << "NTRIP v1 client enabled for " << conf_.ntrip_caster_address << ':' << conf_.ntrip_port
+                      << '/' << conf_.ntrip_mountpoint;
+        }
+
     // timetag
     if (d_log_timetag)
         {
@@ -653,6 +706,10 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 rtklib_pvt_gs::~rtklib_pvt_gs()
 {
     DLOG(INFO) << "PVT block destructor called.";
+    if (d_ntrip_client)
+        {
+            d_ntrip_client->stop();
+        }
     if (d_mq)
         {
             boost::interprocess::message_queue::remove(d_queue_name.c_str());
@@ -2297,6 +2354,81 @@ void rtklib_pvt_gs::update_HAS_corrections()
 }
 
 
+void rtklib_pvt_gs::report_ntrip_client_status()
+{
+    if (!d_ntrip_client)
+        {
+            return;
+        }
+    const Ntrip_Rtcm_Client_Status status = d_ntrip_client->status();
+    const int state = static_cast<int>(status.state);
+    if (state == d_last_ntrip_client_state)
+        {
+            return;
+        }
+    d_last_ntrip_client_state = state;
+    if (status.state == Ntrip_Rtcm_Client_State::ERROR || status.state == Ntrip_Rtcm_Client_State::RECONNECT_WAIT)
+        {
+            LOG(WARNING) << "NTRIP client: " << status.message;
+        }
+    else
+        {
+            LOG(INFO) << "NTRIP client: " << status.message;
+        }
+}
+
+
+void rtklib_pvt_gs::report_fixed_base_status()
+{
+    if (!d_ntrip_client)
+        {
+            return;
+        }
+    const Rtklib_Fixed_Base_Status status = d_user_pvt_solver->get_fixed_base_status();
+    const int status_value = static_cast<int>(status);
+    if (status_value == d_last_fixed_base_status || status == Rtklib_Fixed_Base_Status::NOT_REQUESTED)
+        {
+            return;
+        }
+    d_last_fixed_base_status = status_value;
+
+    switch (status)
+        {
+        case Rtklib_Fixed_Base_Status::APPLIED:
+            LOG(INFO) << "NTRIP fixed-base observations applied: age="
+                      << d_user_pvt_solver->get_fixed_base_age_s() << " s, common satellites="
+                      << d_user_pvt_solver->get_fixed_base_common_satellites();
+            break;
+        case Rtklib_Fixed_Base_Status::SOLVER_FALLBACK:
+            LOG(WARNING) << "NTRIP fixed-base data were available, but RTKLIB returned the configured single-point fallback";
+            break;
+        case Rtklib_Fixed_Base_Status::SOLVER_FAILURE:
+            LOG(WARNING) << "NTRIP fixed-base data were available, but RTKLIB could not produce a position solution";
+            break;
+        case Rtklib_Fixed_Base_Status::MISSING_OBSERVATIONS:
+            LOG(WARNING) << "NTRIP RTK waiting for a complete GPS L1/L2 base observation epoch";
+            break;
+        case Rtklib_Fixed_Base_Status::MISSING_POSITION:
+            LOG(WARNING) << "NTRIP RTK waiting for an RTCM 1005 or 1006 base position";
+            break;
+        case Rtklib_Fixed_Base_Status::STALE:
+            LOG(WARNING) << "NTRIP base observations are stale: age="
+                         << d_user_pvt_solver->get_fixed_base_age_s() << " s";
+            break;
+        case Rtklib_Fixed_Base_Status::INVALID_POSITION:
+            LOG(WARNING) << "NTRIP base position is invalid";
+            break;
+        case Rtklib_Fixed_Base_Status::INSUFFICIENT_COMMON_SATELLITES:
+            LOG(WARNING) << "NTRIP RTK has fewer than four common GPS satellites: "
+                         << d_user_pvt_solver->get_fixed_base_common_satellites();
+            break;
+        case Rtklib_Fixed_Base_Status::NOT_REQUESTED:
+        default:
+            break;
+        }
+}
+
+
 int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
@@ -2343,6 +2475,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
             bool flag_write_RTCM_MSM_output = false;
             bool flag_write_RINEX_obs_output = false;
             d_local_counter_ms += static_cast<uint64_t>(d_observable_interval_ms);
+            report_ntrip_client_status();
 
             d_gnss_observables_map.clear();
             const auto** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);  // Get the input buffer pointer
@@ -2572,6 +2705,10 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                         {
                             d_pvt_errors_counter = 0;  // Reset consecutive PVT error counter
                             const double Rx_clock_offset_s = d_internal_pvt_solver->get_time_offset_s();
+                            if (d_ntrip_client)
+                                {
+                                    d_ntrip_client->update_rover_position(d_internal_pvt_solver->get_rx_pos(), d_internal_pvt_solver->pvt_sol.time);
+                                }
 
                             // **************** time tags ****************
                             if (d_enable_rx_clock_correction == false)  // todo: currently only works if clock correction is disabled (computed clock offset is applied here)
@@ -2686,7 +2823,20 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     // epoch twice to the solver and duplicate the dump record
                     if (flag_compute_pvt_output == true && d_enable_rx_clock_correction == true)
                         {
-                            flag_pvt_valid = d_user_pvt_solver->get_PVT(d_gnss_observables_map, d_output_rate_ms / 1000.0, *d_sensor_data_aggregator, true);
+                            Ntrip_Rtcm_Snapshot fixed_base_snapshot;
+                            const Ntrip_Rtcm_Snapshot* fixed_base = nullptr;
+                            if (d_ntrip_client)
+                                {
+                                    fixed_base_snapshot = d_ntrip_client->latest_snapshot(d_internal_pvt_solver->pvt_sol.time);
+                                    fixed_base = &fixed_base_snapshot;
+                                }
+                            flag_pvt_valid = d_user_pvt_solver->get_PVT(
+                                d_gnss_observables_map,
+                                d_output_rate_ms / 1000.0,
+                                *d_sensor_data_aggregator,
+                                true,
+                                fixed_base);
+                            report_fixed_base_status();
                         }
 
                     if (flag_pvt_valid == true)

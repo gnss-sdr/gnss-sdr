@@ -77,6 +77,7 @@
 #include "sbas_rtklib_corrections.h"
 #include "sensor_data/sensor_data_aggregator.h"
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <fstream>
 #include <map>
@@ -88,6 +89,21 @@
 /** \addtogroup PVT_libs pvt_libs
  * Library for the computation of PVT solutions.
  * \{ */
+
+struct Ntrip_Rtcm_Snapshot;
+
+enum class Rtklib_Fixed_Base_Status
+{
+    NOT_REQUESTED,
+    MISSING_OBSERVATIONS,
+    MISSING_POSITION,
+    STALE,
+    INVALID_POSITION,
+    INSUFFICIENT_COMMON_SATELLITES,
+    APPLIED,
+    SOLVER_FALLBACK,
+    SOLVER_FAILURE
+};
 
 
 /*!
@@ -105,13 +121,25 @@ public:
 
     ~Rtklib_Solver() noexcept override;
 
-    bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, double kf_update_interval_s, const SensorDataAggregator& sensor_data_aggregator, bool dump_this_epoch = true);
+    Rtklib_Solver(const Rtklib_Solver&) = delete;
+    Rtklib_Solver& operator=(const Rtklib_Solver&) = delete;
+    Rtklib_Solver(Rtklib_Solver&&) = delete;
+    Rtklib_Solver& operator=(Rtklib_Solver&&) = delete;
+
+    bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map,
+        double kf_update_interval_s,
+        const SensorDataAggregator& sensor_data_aggregator,
+        bool dump_this_epoch = true,
+        const Ntrip_Rtcm_Snapshot* fixed_base = nullptr);
 
     double get_hdop() const override;
     double get_vdop() const override;
     double get_pdop() const override;
     double get_gdop() const override;
     Monitor_Pvt get_monitor_pvt() const;
+    Rtklib_Fixed_Base_Status get_fixed_base_status() const;
+    double get_fixed_base_age_s() const;
+    std::size_t get_fixed_base_common_satellites() const;
     void store_has_data(const Galileo_HAS_data& new_has_data);
     void clear_has_corrections();
     void update_has_corrections(const std::map<int, Gnss_Synchro>& obs_map);
@@ -172,6 +200,9 @@ private:
     friend class GalileoEphemerisSourceTest_E6SlotsFollowRtklibGalileoPolicy_Test;
 
     bool save_matfile() const;
+    bool prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot& fixed_base,
+        int& rover_observation_count,
+        int& base_observation_count);
     bool galileo_ephemeris_is_usable(const Galileo_Ephemeris& ephemeris, uint32_t observation_tow) const;
     void update_galileo_observation_wavelengths(const obsd_t& observation);
 
@@ -183,7 +214,9 @@ private:
     bool has_active_has_orbit_clock(const std::string& system, int prn, uint16_t sis_iod, uint32_t tow_obs) const;
     bool get_active_has_context(const std::string& system, int prn, uint16_t sis_iod, uint32_t tow_obs, uint8_t& mask_id, uint8_t& iod_set_id) const;
 
-    std::array<obsd_t, MAXOBS> d_obs_data{};
+    void reset_relative_filter();
+
+    std::array<obsd_t, MAXOBS * 2> d_obs_data{};
     std::array<double, 4> d_dop{};
     std::map<int, int> d_rtklib_freq_index;
     std::map<std::string, int> d_rtklib_band_index;
@@ -208,7 +241,15 @@ private:
     Pvt_Conf d_conf;
     Pvt_Kf d_pvt_kf;
     uint32_t d_signal_enabled_flags;
+    std::array<double, 3> d_fixed_base_position_ecef_m{};
+    gtime_t d_fixed_base_last_observation_time{0, 0.0};
+    double d_fixed_base_age_s = 0.0;
+    std::size_t d_fixed_base_common_satellites = 0;
+    int d_fixed_base_station_id = -1;
     Galileo_Nav_Message_Type d_galileo_nav_message_type_for_pvt{Galileo_Nav_Message_Type::INAV};
+    Rtklib_Fixed_Base_Status d_fixed_base_status = Rtklib_Fixed_Base_Status::NOT_REQUESTED;
+    bool d_fixed_base_initialized = false;
+    bool d_fixed_base_was_applied = false;
     bool d_flag_dump_enabled;
     bool d_flag_dump_mat_enabled;
 };

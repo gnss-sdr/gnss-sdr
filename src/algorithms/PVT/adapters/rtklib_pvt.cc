@@ -29,7 +29,12 @@
 #include "pvt_conf.h"                  // for Pvt_Conf
 #include "rtklib_rtkpos.h"             // for rtkfree, rtkinit
 #include "signal_enabled_flags.h"      // for signal_enabled_flags
+#include <algorithm>                   // for any_of
+#include <cctype>                      // for isspace, iscntrl
+#include <cmath>                       // for isfinite
+#include <cstdlib>                     // for getenv
 #include <iostream>                    // for std::cout
+#include <stdexcept>                   // for invalid_argument
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
 #else
@@ -50,6 +55,47 @@ namespace bc = boost::integer;
 
 using namespace std::string_literals;
 
+namespace
+{
+void secure_clear_string(std::string* value) noexcept
+{
+    if (value->empty())
+        {
+            return;
+        }
+    volatile char* data = &(*value)[0];
+    for (std::size_t index = 0; index < value->size(); ++index)
+        {
+            data[index] = 0;
+        }
+    value->clear();
+}
+
+
+class Ntrip_Credential_Guard
+{
+public:
+    explicit Ntrip_Credential_Guard(Pvt_Conf* configuration) noexcept
+        : d_configuration(configuration)
+    {
+    }
+
+    ~Ntrip_Credential_Guard()
+    {
+        secure_clear_string(&d_configuration->ntrip_username);
+        secure_clear_string(&d_configuration->ntrip_password);
+        secure_clear_string(&d_configuration->ntrip_password_env);
+    }
+
+    Ntrip_Credential_Guard(const Ntrip_Credential_Guard&) = delete;
+    Ntrip_Credential_Guard& operator=(const Ntrip_Credential_Guard&) = delete;
+
+private:
+    Pvt_Conf* d_configuration;
+};
+}  // namespace
+
+
 Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
@@ -58,6 +104,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
                                 out_streams_(out_streams)
 {
     Pvt_Conf pvt_output_parameters = Pvt_Conf();
+    Ntrip_Credential_Guard ntrip_credential_guard(&pvt_output_parameters);
     // dump parameters
     const std::string default_dump_filename("./pvt.dat");
     const std::string default_nmea_dump_filename("./nmea_pvt.nmea");
@@ -173,6 +220,123 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             pvt_output_parameters.rtcm_msg_rate_ms[k] = rtcm_MT1097_rate_ms;
         }
 
+    // NTRIP client settings. These properties are intentionally ignored unless
+    // the client is enabled so existing configurations retain their exact
+    // startup and data-flow behavior.
+    pvt_output_parameters.ntrip_client_enabled = configuration->property(role + ".ntrip_client_enabled", false);
+    if (pvt_output_parameters.ntrip_client_enabled)
+        {
+            pvt_output_parameters.ntrip_caster_address = configuration->property(role + ".ntrip_caster_address", std::string(""));
+            pvt_output_parameters.ntrip_mountpoint = configuration->property(role + ".ntrip_mountpoint", std::string(""));
+            pvt_output_parameters.ntrip_username = configuration->property(role + ".ntrip_username", std::string(""));
+            pvt_output_parameters.ntrip_password = configuration->property(role + ".ntrip_password", std::string(""));
+            pvt_output_parameters.ntrip_password_env = configuration->property(role + ".ntrip_password_env", std::string(""));
+
+            const int ntrip_port = configuration->property(role + ".ntrip_caster_port", 2101);
+            const int ntrip_station_id = configuration->property(role + ".ntrip_station_id", 0);
+            pvt_output_parameters.ntrip_timeout_ms = configuration->property(role + ".ntrip_inactivity_timeout_ms", pvt_output_parameters.ntrip_timeout_ms);
+            pvt_output_parameters.ntrip_reconnect_interval_ms = configuration->property(role + ".ntrip_reconnect_interval_ms", pvt_output_parameters.ntrip_reconnect_interval_ms);
+            pvt_output_parameters.ntrip_max_correction_age_s = configuration->property(role + ".ntrip_max_correction_age_s", pvt_output_parameters.ntrip_max_correction_age_s);
+            pvt_output_parameters.ntrip_fallback_to_single = configuration->property(role + ".ntrip_fallback_to_single", pvt_output_parameters.ntrip_fallback_to_single);
+
+            if (ntrip_port < 1 || ntrip_port > 65535)
+                {
+                    throw std::invalid_argument(role + ".ntrip_caster_port must be in the range 1..65535");
+                }
+            if (ntrip_station_id < 0 || ntrip_station_id > 4095)
+                {
+                    throw std::invalid_argument(role + ".ntrip_station_id must be in the range 0..4095");
+                }
+            pvt_output_parameters.ntrip_port = static_cast<uint16_t>(ntrip_port);
+            pvt_output_parameters.ntrip_station_id = static_cast<uint16_t>(ntrip_station_id);
+
+            const auto has_space_or_control = [](const std::string& value) {
+                return std::any_of(value.cbegin(), value.cend(), [](char character) {
+                    const auto byte = static_cast<unsigned char>(character);
+                    return std::isspace(byte) != 0 || std::iscntrl(byte) != 0;
+                });
+            };
+            const auto has_non_ascii_graphic = [](const std::string& value) {
+                return std::any_of(value.cbegin(), value.cend(), [](char character) {
+                    const auto byte = static_cast<unsigned char>(character);
+                    return byte <= 0x20U || byte >= 0x7FU;
+                });
+            };
+            if (pvt_output_parameters.ntrip_caster_address.empty() ||
+                pvt_output_parameters.ntrip_caster_address.find("://") != std::string::npos ||
+                pvt_output_parameters.ntrip_caster_address.find('@') != std::string::npos ||
+                pvt_output_parameters.ntrip_caster_address.find('/') != std::string::npos ||
+                pvt_output_parameters.ntrip_caster_address.find(':') != std::string::npos ||
+                pvt_output_parameters.ntrip_caster_address.find('[') != std::string::npos ||
+                pvt_output_parameters.ntrip_caster_address.find(']') != std::string::npos ||
+                has_non_ascii_graphic(pvt_output_parameters.ntrip_caster_address))
+                {
+                    throw std::invalid_argument(role + ".ntrip_caster_address must be a hostname or IPv4 address without a scheme, credentials, port, or path");
+                }
+            while (!pvt_output_parameters.ntrip_mountpoint.empty() && pvt_output_parameters.ntrip_mountpoint.front() == '/')
+                {
+                    pvt_output_parameters.ntrip_mountpoint.erase(0, 1);
+                }
+            if (pvt_output_parameters.ntrip_mountpoint.empty() ||
+                pvt_output_parameters.ntrip_mountpoint.size() >= 256 ||
+                pvt_output_parameters.ntrip_mountpoint.find('@') != std::string::npos ||
+                pvt_output_parameters.ntrip_mountpoint.find('/') != std::string::npos ||
+                pvt_output_parameters.ntrip_mountpoint.find(':') != std::string::npos ||
+                has_non_ascii_graphic(pvt_output_parameters.ntrip_mountpoint))
+                {
+                    throw std::invalid_argument(role + ".ntrip_mountpoint must name one caster mountpoint without a path separator");
+                }
+            if (pvt_output_parameters.ntrip_username.size() >= 256 ||
+                pvt_output_parameters.ntrip_password.size() >= 256 ||
+                pvt_output_parameters.ntrip_username.find(':') != std::string::npos ||
+                has_space_or_control(pvt_output_parameters.ntrip_username) ||
+                has_space_or_control(pvt_output_parameters.ntrip_password))
+                {
+                    throw std::invalid_argument(role + ".ntrip_username or .ntrip_password contains characters unsupported by the NTRIP v1 client");
+                }
+            if (!pvt_output_parameters.ntrip_password_env.empty())
+                {
+                    if (!pvt_output_parameters.ntrip_password.empty())
+                        {
+                            throw std::invalid_argument(role + ".ntrip_password and .ntrip_password_env are mutually exclusive");
+                        }
+                    if (has_space_or_control(pvt_output_parameters.ntrip_password_env))
+                        {
+                            throw std::invalid_argument(role + ".ntrip_password_env must be one environment-variable name");
+                        }
+                    const char* password = std::getenv(pvt_output_parameters.ntrip_password_env.c_str());
+                    if (password == nullptr)
+                        {
+                            throw std::invalid_argument(role + ".ntrip_password_env names an environment variable that is not set");
+                        }
+                    pvt_output_parameters.ntrip_password = password;
+                    if (pvt_output_parameters.ntrip_password.size() >= 256 ||
+                        has_space_or_control(pvt_output_parameters.ntrip_password))
+                        {
+                            throw std::invalid_argument("The NTRIP password environment variable is too long or contains unsupported control or whitespace characters");
+                        }
+                }
+            if (!pvt_output_parameters.ntrip_password.empty() && pvt_output_parameters.ntrip_username.empty())
+                {
+                    throw std::invalid_argument(role + ".ntrip_username is required when a password is configured");
+                }
+            if (pvt_output_parameters.ntrip_caster_address.size() + pvt_output_parameters.ntrip_mountpoint.size() + 8 >= MAXSTRPATH)
+                {
+                    throw std::invalid_argument("The configured NTRIP endpoint is too long");
+                }
+            constexpr int max_ntrip_interval_ms = 24 * 60 * 60 * 1000;
+            if (pvt_output_parameters.ntrip_timeout_ms < 1000 || pvt_output_parameters.ntrip_timeout_ms > max_ntrip_interval_ms ||
+                (pvt_output_parameters.ntrip_reconnect_interval_ms != 0 && pvt_output_parameters.ntrip_reconnect_interval_ms < 1000) ||
+                pvt_output_parameters.ntrip_reconnect_interval_ms > max_ntrip_interval_ms)
+                {
+                    throw std::invalid_argument("NTRIP timeout and reconnect intervals must be within 1000 ms and 24 hours; reconnect may also be zero");
+                }
+            if (!std::isfinite(pvt_output_parameters.ntrip_max_correction_age_s) || pvt_output_parameters.ntrip_max_correction_age_s <= 0.0)
+                {
+                    throw std::invalid_argument(role + ".ntrip_max_correction_age_s must be a finite positive value");
+                }
+        }
+
     // Advanced Nativation Protocol Printer settings
     pvt_output_parameters.an_output_enabled = configuration->property(role + ".an_output_enabled", pvt_output_parameters.an_output_enabled);
     pvt_output_parameters.an_dump_devname = configuration->property(role + ".an_dump_devname", default_nmea_dump_devname);
@@ -243,6 +407,18 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             positioning_mode = PMODE_SINGLE;
         }
 
+    if (pvt_output_parameters.ntrip_client_enabled)
+        {
+            if (positioning_mode != PMODE_STATIC && positioning_mode != PMODE_KINEMA)
+                {
+                    throw std::invalid_argument(role + ".ntrip_client_enabled requires positioning_mode=Static or positioning_mode=Kinematic");
+                }
+            if (!signal_enabled_flags.check_only_enabled(GPS_1C, GPS_2S))
+                {
+                    throw std::invalid_argument("The first NTRIP RTK milestone requires exactly GPS L1 C/A and GPS L2C channels");
+                }
+        }
+
     int num_bands = 0;
 
     if (signal_enabled_flags.check_any_enabled(GPS_1C, GAL_1B, GLO_1G, BDS_B1, BDS_B1C, QZS_J1))
@@ -276,6 +452,10 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {
             // warn user and set the default
             number_of_frequencies = num_bands;
+        }
+    if (pvt_output_parameters.ntrip_client_enabled && number_of_frequencies != 2)
+        {
+            throw std::invalid_argument(role + ".num_bands must be 2 for the GPS L1/L2 NTRIP RTK milestone");
         }
 
     double elevation_mask = configuration->property(role + ".elevation_mask", 15.0);
@@ -444,6 +624,10 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             LOG(WARNING) << "Erroneous Navigation System. Setting to default value of (0:none)";
             navigation_system = nsys;
         }
+    if (pvt_output_parameters.ntrip_client_enabled && navigation_system != SYS_GPS)
+        {
+            throw std::invalid_argument(role + ".navigation_system must select GPS only for the GPS L1/L2 NTRIP RTK milestone");
+        }
 
     // Settings 2
     const std::string default_gps_ar("Continuous");
@@ -548,6 +732,8 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const bool bancroft_init = configuration->property(role + ".bancroft_init", true);
 
     snrmask_t snrmask = {{}, {{}, {}}};
+    const double max_time_difference_s = pvt_output_parameters.ntrip_client_enabled ? pvt_output_parameters.ntrip_max_correction_age_s : 30.0;
+    const int output_single_on_outage = (!pvt_output_parameters.ntrip_client_enabled || pvt_output_parameters.ntrip_fallback_to_single) ? 1 : 0;
 
     prcopt_t rtklib_configuration_options = {
         positioning_mode,                                                                  /* positioning mode (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h */
@@ -586,7 +772,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         min_elevation_to_fix_ambiguity,                                                    /* elevation mask of AR for rising satellite (deg) */
         0.0,                                                                               /* elevation mask to hold ambiguity (deg) */
         slip_threshold,                                                                    /* slip threshold of geometry-free phase (m) */
-        30.0,                                                                              /* max difference of time (sec) */
+        max_time_difference_s,                                                             /* max difference of time (sec) */
         threshold_reject_innovation,                                                       /* reject threshold of innovation (m) */
         threshold_reject_gdop,                                                             /* reject threshold of gdop */
         {},                                                                                /* double baseline[2] baseline length constraint {const,sigma} (m) */
@@ -598,7 +784,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {},                                                                                /* unsigned char exsats[MAXSAT]  excluded satellites (1:excluded, 2:included) */
         0,                                                                                 /* max averaging epoches */
         0,                                                                                 /* initialize by restart */
-        1,                                                                                 /* output single by dgps/float/fix/ppp outage */
+        output_single_on_outage,                                                           /* output single by dgps/float/fix/ppp outage */
         {"", ""},                                                                          /* char rnxopt[2][256]   rinex options {rover,base} */
         {sat_PCV, rec_PCV, phwindup, reject_GPS_IIA, raim_fde},                            /* posopt[6] positioning options [0]: satellite and receiver antenna PCV model; [1]: interpolate antenna parameters; [2]: apply phase wind-up correction for PPP modes; [3]: exclude measurements of GPS Block IIA satellites satellite [4]: RAIM FDE (fault detection and exclusion) [5]: handle day-boundary clock jump */
         0,                                                                                 /* solution sync mode (0:off,1:on) */
@@ -608,8 +794,6 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {},                                                                                /* char pppopt[256]   ppp option   "-GAP_RESION="  default gap to reset iono parameters (ep) */
         bancroft_init                                                                      /* enable Bancroft initialization for the first iteration of the PVT computation, useful in some geometries */
     };
-
-    rtkinit(&rtk, &rtklib_configuration_options);
 
     // Outputs
     const bool default_output_enabled = configuration->property(role + ".output_enabled", true);
@@ -683,8 +867,22 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
                 }
         }
 
-    // make PVT object
-    pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk, sensor_data_configuration);
+    // make PVT object. rtk_t owns raw filter buffers, so allocate the adapter's
+    // seed only after all potentially throwing C++ configuration work, and
+    // release it once each solver has initialized its independent state.
+    rtkinit(&rtk, &rtklib_configuration_options);
+
+    // Release the seed as well if block construction fails.
+    try
+        {
+            pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk, sensor_data_configuration);
+        }
+    catch (...)
+        {
+            rtkfree(&rtk);
+            throw;
+        }
+    rtkfree(&rtk);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
     if (out_streams_ > 0)
         {

@@ -37,6 +37,7 @@
 #include "gnss_obs_codes.h"
 #include "gnss_sdr_filesystem.h"
 #include "matlab_writter_helper.h"
+#include "ntrip_rtcm_client.h"
 #include "rtklib_rtkpos.h"
 #include "signal_enabled_flags.h"
 #include <algorithm>
@@ -53,19 +54,41 @@
 #include <absl/log/log.h>
 #endif
 
+namespace
+{
+void clear_sensitive_string(std::string *value)
+{
+    if (value == nullptr || value->empty())
+        {
+            return;
+        }
+    volatile char *data = &(*value)[0];
+    for (std::size_t index = 0; index < value->size(); ++index)
+        {
+            data[index] = 0;
+        }
+    value->clear();
+}
+}  // namespace
+
 Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     const Pvt_Conf &conf,
     const std::string &dump_filename,
     uint32_t signal_enabled_flags,
     bool flag_dump_to_file,
     bool flag_dump_to_mat) : d_dump_filename(dump_filename),
-                             d_rtk(rtk),
                              d_sbas_corrections(rtk.opt.sbassatsel),
                              d_conf(conf),
                              d_signal_enabled_flags(signal_enabled_flags),
                              d_flag_dump_enabled(flag_dump_to_file),
                              d_flag_dump_mat_enabled(flag_dump_to_mat)
 {
+    // Solver instances need correction policy but never caster credentials.
+    // Remove secrets from this long-lived configuration copy immediately.
+    clear_sensitive_string(&d_conf.ntrip_username);
+    clear_sensitive_string(&d_conf.ntrip_password);
+    clear_sensitive_string(&d_conf.ntrip_password_env);
+
     // see freq index at src/algorithms/libs/rtklib/rtklib_rtkcmn.cc
     // function: satwavelen
     d_rtklib_freq_index[0] = 0;
@@ -178,6 +201,12 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
                         }
                 }
         }
+
+    // rtk_t owns dynamically allocated filter state. A struct copy would make
+    // the adapter, clock solver, and user solver alias the same state and would
+    // make independent RTK updates unsafe. Initialize it after all potentially
+    // throwing C++ setup so a failed constructor cannot leak the C allocation.
+    rtkinit(&d_rtk, &rtk.opt);
 }
 
 
@@ -224,6 +253,7 @@ Rtklib_Solver::~Rtklib_Solver() noexcept
                     LOG(WARNING) << "Exception in destructor saving the PVT .mat dump file " << ex.what();
                 }
         }
+    rtkfree(&d_rtk);
 }
 
 
@@ -407,6 +437,24 @@ double Rtklib_Solver::get_vdop() const
 Monitor_Pvt Rtklib_Solver::get_monitor_pvt() const
 {
     return d_monitor_pvt;
+}
+
+
+Rtklib_Fixed_Base_Status Rtklib_Solver::get_fixed_base_status() const
+{
+    return d_fixed_base_status;
+}
+
+
+double Rtklib_Solver::get_fixed_base_age_s() const
+{
+    return d_fixed_base_age_s;
+}
+
+
+std::size_t Rtklib_Solver::get_fixed_base_common_satellites() const
+{
+    return d_fixed_base_common_satellites;
 }
 
 
@@ -1425,7 +1473,209 @@ bool Rtklib_Solver::select_galileo_ephemeris(uint32_t prn, const std::string &si
 }
 
 
-bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, double kf_update_interval_s, const SensorDataAggregator &sensor_data_aggregator, bool dump_this_epoch)
+void Rtklib_Solver::reset_relative_filter()
+{
+    const prcopt_t options = d_rtk.opt;
+    rtkfree(&d_rtk);
+    rtkinit(&d_rtk, &options);
+    if (d_conf.enable_pvt_kf)
+        {
+            d_pvt_kf.reset_Kf();
+        }
+}
+
+
+bool Rtklib_Solver::prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot &fixed_base,
+    int &rover_observation_count,
+    int &base_observation_count)
+{
+    const auto clear_unsupported_slots = [](obsd_t &observation) {
+        for (int frequency = 2; frequency < NFREQ + NEXOBS; ++frequency)
+            {
+                observation.P[frequency] = 0.0;
+                observation.L[frequency] = 0.0;
+                observation.D[frequency] = 0.0F;
+                observation.SNR[frequency] = 0;
+                observation.LLI[frequency] = 0;
+                observation.code[frequency] = CODE_NONE;
+            }
+    };
+    const auto has_l1_or_l2_measurement = [](const obsd_t &observation) {
+        for (int frequency = 0; frequency < 2; ++frequency)
+            {
+                if (observation.code[frequency] != CODE_NONE &&
+                    (observation.P[frequency] != 0.0 || observation.L[frequency] != 0.0))
+                    {
+                        return true;
+                    }
+            }
+        return false;
+    };
+    const auto merge_observation = [](obsd_t &destination, const obsd_t &source) {
+        for (int frequency = 0; frequency < 2; ++frequency)
+            {
+                if (source.code[frequency] == CODE_NONE && source.P[frequency] == 0.0 && source.L[frequency] == 0.0)
+                    {
+                        continue;
+                    }
+                destination.P[frequency] = source.P[frequency];
+                destination.L[frequency] = source.L[frequency];
+                destination.D[frequency] = source.D[frequency];
+                destination.SNR[frequency] = source.SNR[frequency];
+                destination.LLI[frequency] = source.LLI[frequency];
+                destination.code[frequency] = source.code[frequency];
+            }
+    };
+    const auto sort_and_merge = [&merge_observation](std::vector<obsd_t> &observations) {
+        std::sort(observations.begin(), observations.end(), [](const obsd_t &left, const obsd_t &right) {
+            return left.sat < right.sat;
+        });
+        std::vector<obsd_t> merged;
+        merged.reserve(observations.size());
+        for (const auto &observation : observations)
+            {
+                if (!merged.empty() && merged.back().sat == observation.sat)
+                    {
+                        merge_observation(merged.back(), observation);
+                    }
+                else
+                    {
+                        merged.push_back(observation);
+                    }
+            }
+        observations.swap(merged);
+    };
+
+    std::vector<obsd_t> rover_observations;
+    rover_observations.reserve(static_cast<std::size_t>(rover_observation_count));
+    for (int index = 0; index < rover_observation_count; ++index)
+        {
+            obsd_t observation = d_obs_data[index];
+            if (observation.sat <= 0 || satsys(observation.sat, nullptr) != SYS_GPS)
+                {
+                    continue;
+                }
+            observation.rcv = 1;
+            clear_unsupported_slots(observation);
+            if (has_l1_or_l2_measurement(observation))
+                {
+                    rover_observations.push_back(observation);
+                }
+        }
+    sort_and_merge(rover_observations);
+    if (rover_observations.size() > MAXOBS)
+        {
+            rover_observations.resize(MAXOBS);
+        }
+    rover_observation_count = static_cast<int>(rover_observations.size());
+    base_observation_count = 0;
+    d_obs_data.fill({});
+    std::copy(rover_observations.cbegin(), rover_observations.cend(), d_obs_data.begin());
+
+    if (!fixed_base.has_observations || rover_observations.empty())
+        {
+            d_fixed_base_status = Rtklib_Fixed_Base_Status::MISSING_OBSERVATIONS;
+            return false;
+        }
+    if (!fixed_base.has_base_position)
+        {
+            d_fixed_base_status = Rtklib_Fixed_Base_Status::MISSING_POSITION;
+            return false;
+        }
+
+    d_fixed_base_age_s = timediff(rover_observations.front().time, fixed_base.observation_time);
+    if (!std::isfinite(d_fixed_base_age_s) || std::fabs(d_fixed_base_age_s) > d_conf.ntrip_max_correction_age_s)
+        {
+            d_fixed_base_status = Rtklib_Fixed_Base_Status::STALE;
+            return false;
+        }
+
+    double base_position_norm_squared = 0.0;
+    for (const double coordinate : fixed_base.base_position_ecef_m)
+        {
+            if (!std::isfinite(coordinate))
+                {
+                    d_fixed_base_status = Rtklib_Fixed_Base_Status::INVALID_POSITION;
+                    return false;
+                }
+            base_position_norm_squared += coordinate * coordinate;
+        }
+    if (base_position_norm_squared < 1.0e12 || base_position_norm_squared > 1.0e16)
+        {
+            d_fixed_base_status = Rtklib_Fixed_Base_Status::INVALID_POSITION;
+            return false;
+        }
+
+    std::vector<obsd_t> base_observations;
+    base_observations.reserve(fixed_base.observations.size());
+    for (auto observation : fixed_base.observations)
+        {
+            if (observation.sat <= 0 || satsys(observation.sat, nullptr) != SYS_GPS)
+                {
+                    continue;
+                }
+            observation.rcv = 2;
+            clear_unsupported_slots(observation);
+            if (!has_l1_or_l2_measurement(observation))
+                {
+                    continue;
+                }
+            const auto rover = std::lower_bound(rover_observations.cbegin(), rover_observations.cend(), observation.sat,
+                [](const obsd_t &candidate, int satellite) { return candidate.sat < satellite; });
+            if (rover != rover_observations.cend() && rover->sat == observation.sat)
+                {
+                    base_observations.push_back(observation);
+                }
+        }
+    sort_and_merge(base_observations);
+    if (base_observations.size() > MAXOBS)
+        {
+            base_observations.resize(MAXOBS);
+        }
+    d_fixed_base_common_satellites = base_observations.size();
+    if (d_fixed_base_common_satellites < 4)
+        {
+            d_fixed_base_status = Rtklib_Fixed_Base_Status::INSUFFICIENT_COMMON_SATELLITES;
+            return false;
+        }
+
+    bool base_changed = d_fixed_base_initialized && d_fixed_base_station_id != fixed_base.station_id;
+    double position_delta_squared = 0.0;
+    for (std::size_t index = 0; index < d_fixed_base_position_ecef_m.size(); ++index)
+        {
+            const double delta = fixed_base.base_position_ecef_m[index] - d_fixed_base_position_ecef_m[index];
+            position_delta_squared += delta * delta;
+        }
+    base_changed = base_changed || (d_fixed_base_initialized && position_delta_squared > 1.0e-6);
+    const bool correction_gap = d_fixed_base_was_applied &&
+                                d_fixed_base_last_observation_time.time != 0 &&
+                                std::fabs(timediff(fixed_base.observation_time,
+                                    d_fixed_base_last_observation_time)) > d_conf.ntrip_max_correction_age_s;
+    if (base_changed || correction_gap)
+        {
+            reset_relative_filter();
+        }
+    d_fixed_base_initialized = true;
+    d_fixed_base_station_id = fixed_base.station_id;
+    d_fixed_base_position_ecef_m = fixed_base.base_position_ecef_m;
+    d_fixed_base_last_observation_time = fixed_base.observation_time;
+    for (std::size_t index = 0; index < d_fixed_base_position_ecef_m.size(); ++index)
+        {
+            d_rtk.opt.rb[index] = d_fixed_base_position_ecef_m[index];
+        }
+
+    std::copy(base_observations.cbegin(), base_observations.cend(), d_obs_data.begin() + rover_observation_count);
+    base_observation_count = static_cast<int>(base_observations.size());
+    d_fixed_base_status = Rtklib_Fixed_Base_Status::APPLIED;
+    return true;
+}
+
+
+bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map,
+    double kf_update_interval_s,
+    const SensorDataAggregator &sensor_data_aggregator,
+    bool dump_this_epoch,
+    const Ntrip_Rtcm_Snapshot *fixed_base)
 {
     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
     std::map<int, Gps_Ephemeris>::const_iterator gps_ephemeris_iter;
@@ -1440,6 +1690,10 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     // ********************************************************************************
     int valid_obs = 0;      // valid observations counter
     int glo_valid_obs = 0;  // GLONASS L1/L2 valid observations counter
+
+    d_fixed_base_status = fixed_base == nullptr ? Rtklib_Fixed_Base_Status::NOT_REQUESTED : Rtklib_Fixed_Base_Status::MISSING_OBSERVATIONS;
+    d_fixed_base_age_s = 0.0;
+    d_fixed_base_common_satellites = 0;
 
     d_obs_data.fill({});
     std::vector<eph_t> eph_data(MAXOBS);
@@ -1960,8 +2214,32 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     // ****** SOLVE PVT******************************************************
     // **********************************************************************
 
+    int rover_observation_count = valid_obs + glo_valid_obs;
+    int base_observation_count = 0;
+    bool fixed_base_applied = false;
+    if (fixed_base != nullptr)
+        {
+            const bool fixed_base_was_applied = d_fixed_base_was_applied;
+            fixed_base_applied = prepare_fixed_base_observations(*fixed_base, rover_observation_count, base_observation_count);
+            if (!fixed_base_applied && fixed_base_was_applied)
+                {
+                    // Do not resume carrier-phase ambiguities after an outage.
+                    // The temporary single-point fallback updates solution time
+                    // but does not make the prior relative filter state valid.
+                    reset_relative_filter();
+                }
+            d_fixed_base_was_applied = fixed_base_applied;
+        }
+    const bool use_single_fallback = fixed_base != nullptr && !fixed_base_applied && d_conf.ntrip_fallback_to_single;
+    const int nobs_total = rover_observation_count + base_observation_count;
+
     this->set_valid_position(false);
-    if ((valid_obs + glo_valid_obs) > 3)
+    if (fixed_base != nullptr && !fixed_base_applied && !d_conf.ntrip_fallback_to_single)
+        {
+            this->set_num_valid_observations(0);
+            return false;
+        }
+    if (rover_observation_count > 3)
         {
             int result = 0;
 
@@ -2144,12 +2422,11 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             d_nav_data.lam[i][j] = satwavelen(i + 1, d_rtklib_freq_index[j], &d_nav_data);
                         }
                 }
-            for (int i = 0; i < valid_obs + glo_valid_obs; ++i)
+            for (int i = 0; i < nobs_total; ++i)
                 {
                     update_galileo_observation_wavelengths(d_obs_data[i]);
                 }
 
-            const int nobs_total = valid_obs + glo_valid_obs;
             /* B1C on slot 0: override lam[0] to FREQ1 (satwavelen frq0 is B1I). */
             for (int k = 0; k < nobs_total; k++)
                 {
@@ -2163,11 +2440,28 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             d_nav_data.lam[d_obs_data[k].sat - 1][0] = SPEED_OF_LIGHT_M_S / FREQ1;
                         }
                 }
-            result = rtkpos(&d_rtk, d_obs_data.data(), nobs_total, &d_nav_data);
-
-            if (result == 0)
+            const int configured_positioning_mode = d_rtk.opt.mode;
+            if (use_single_fallback)
                 {
-                    LOG(INFO) << "RTKLIB rtkpos error: " << d_rtk.errbuf;
+                    d_rtk.opt.mode = PMODE_SINGLE;
+                }
+            result = rtkpos(&d_rtk, d_obs_data.data(), nobs_total, &d_nav_data);
+            d_rtk.opt.mode = configured_positioning_mode;
+            if (fixed_base_applied && result != 0 && d_rtk.sol.stat == SOLQ_SINGLE)
+                {
+                    d_fixed_base_status = Rtklib_Fixed_Base_Status::SOLVER_FALLBACK;
+                }
+            else if (fixed_base_applied && (result == 0 || d_rtk.sol.stat == SOLQ_NONE))
+                {
+                    d_fixed_base_status = Rtklib_Fixed_Base_Status::SOLVER_FAILURE;
+                }
+
+            if (result == 0 || d_rtk.sol.stat == SOLQ_NONE)
+                {
+                    if (d_rtk.neb > 0)
+                        {
+                            LOG(INFO) << "RTKLIB rtkpos error: " << d_rtk.errbuf;
+                        }
                     d_rtk.neb = 0;                 // clear error buffer to avoid repeating the error message
                     this->set_time_offset_s(0.0);  // reset rx time estimation
                     this->set_num_valid_observations(0);
@@ -2249,17 +2543,16 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     rx_position_and_time[1] = pvt_sol.rr[1];  // [m]
                     rx_position_and_time[2] = pvt_sol.rr[2];  // [m]
 
-                    // todo: fix this ambiguity in the RTKLIB units in receiver clock offset!
-                    if (d_rtk.opt.mode == PMODE_SINGLE)
+                    const bool is_ppp_solution = d_rtk.opt.mode >= PMODE_PPP_KINEMA && pvt_sol.stat == SOLQ_PPP;
+                    if (!is_ppp_solution)
                         {
-                            // if the RTKLIB solver is set to SINGLE, the dtr is already expressed in [s]
-                            // add also the clock offset from gps to galileo (pvt_sol.dtr[2])
+                            // SPP and relative-positioning solutions express dtr in seconds.
                             rx_position_and_time[3] = pvt_sol.dtr[0] + pvt_sol.dtr[2];
                         }
                     else
                         {
-                            // the receiver clock offset is expressed in [meters], so we convert it into [s]
-                            // add also the clock offset from gps to galileo (pvt_sol.dtr[2])
+                            // PPP stores its estimated receiver-clock state in metres. Inter-system
+                            // offsets retained from the point solution remain in seconds.
                             rx_position_and_time[3] = pvt_sol.dtr[2] + pvt_sol.dtr[0] / SPEED_OF_LIGHT_M_S;
                         }
                     this->set_rx_pos({rx_position_and_time[0], rx_position_and_time[1], rx_position_and_time[2]});  // save ECEF position for the next iteration
@@ -2293,7 +2586,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // state dtr[0], so only that term must be added back here. In solutions without
                     // GPS satellites, the receiver clock offset is absorbed by the inter-system
                     // states (dtr[1..3]) and pvt_sol.time already holds the uncorrected epoch.
-                    const double dtr0_s = (d_rtk.opt.mode == PMODE_SINGLE) ? pvt_sol.dtr[0] : pvt_sol.dtr[0] / SPEED_OF_LIGHT_M_S;
+                    const double dtr0_s = is_ppp_solution ? pvt_sol.dtr[0] / SPEED_OF_LIGHT_M_S : pvt_sol.dtr[0];
                     const gtime_t rtklib_time = timeadd(pvt_sol.time, dtr0_s);  // uncorrected rx time
                     const gtime_t rtklib_utc_time = gpst2utc(rtklib_time);
                     boost::posix_time::ptime p_time = boost::posix_time::from_time_t(rtklib_utc_time.time);

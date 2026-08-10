@@ -51,6 +51,11 @@ public:
     std::string udp_ports;
     std::string udp_eph_addresses;
     std::string log_source_timetag_file;
+    std::string ntrip_caster_address;
+    std::string ntrip_mountpoint;
+    std::string ntrip_username;
+    std::string ntrip_password;
+    std::string ntrip_password_env;
 
     uint32_t signal_enabled_flags = 0;
     uint32_t observable_interval_ms = 20;
@@ -68,9 +73,15 @@ public:
     int32_t ref_gps_week = 0;  // reference GPS week to resolve the mod-1024 week rollover in post-processing (0: use system clock)
     int udp_eph_port = 0;
     int rtk_trace_level = 0;
+    int32_t ntrip_timeout_ms = 10000;
+    int32_t ntrip_reconnect_interval_ms = 10000;
 
     uint16_t rtcm_tcp_port = 0;
     uint16_t rtcm_station_id = 0;
+    uint16_t ntrip_port = 2101;
+    uint16_t ntrip_station_id = 0;
+
+    double ntrip_max_correction_age_s = 5.0;
 
     bool flag_nmea_tty_port = false;
     bool flag_rtcm_server = false;
@@ -92,6 +103,8 @@ public:
     bool dump = false;
     bool dump_mat = true;
     bool log_source_timetag = false;
+    bool ntrip_client_enabled = false;
+    bool ntrip_fallback_to_single = true;
     bool use_e6_for_pvt = true;
     bool use_has_corrections = true;
     bool use_unhealthy_sats = false;

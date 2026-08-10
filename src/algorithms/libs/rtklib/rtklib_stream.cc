@@ -729,7 +729,9 @@ void decodetcppath(const char *path, char *addr, char *port, char *user,
     char *p;
     char *q;
 
-    tracet(4, "decodetcpepath: path=%s\n", path);
+    /* The path can contain NTRIP/FTP credentials. Never emit it at any trace
+     * level; callers log non-sensitive endpoint details after decoding. */
+    tracet(4, "decodetcppath:\n");
 
     if (port)
         {
@@ -856,6 +858,12 @@ int setsock(socket_t sock, char *msg)
             tracet(1, "setsock: setsockopt error 3 sock=%d err=%d\n", sock, errsock());
             std::snprintf(msg, MAXSTRMSG, "sockopt error: nodelay");
         }
+#ifdef SO_NOSIGPIPE
+    if (setsockopt(sock, SOL_SOCKET, SO_NOSIGPIPE, reinterpret_cast<const char *>(&mode), sizeof(mode)) == -1)
+        {
+            tracet(1, "setsock: setsockopt error 4 sock=%d err=%d\n", sock, errsock());
+        }
+#endif
     return 1;
 }
 
@@ -928,20 +936,24 @@ int send_nb(socket_t sock, unsigned char *buff, int n)
 {
     struct timeval tv = {0, 0};
     fd_set ws;
+    int flags = 0;
+#ifdef MSG_NOSIGNAL
+    flags |= MSG_NOSIGNAL;
+#endif
     std::memset(&ws, 0, sizeof(fd_set));
     FD_SET(sock, &ws);
     if (!select(sock + 1, nullptr, &ws, nullptr, &tv))
         {
             return 0;
         }
-    return send(sock, reinterpret_cast<char *>(buff), n, 0);
+    return send(sock, reinterpret_cast<char *>(buff), n, flags);
 }
 
 
 /* generate tcp socket -------------------------------------------------------*/
 int gentcp(tcp_t *tcp, int type, char *msg)
 {
-    struct hostent *hp;
+    struct hostent *hp = nullptr;
 #ifdef SVR_REUSEADDR
     int opt = 1;
 #endif
@@ -984,7 +996,8 @@ int gentcp(tcp_t *tcp, int type, char *msg)
         }
     else
         { /* client socket */
-            if (!(hp = gethostbyname(tcp->saddr)))
+            if (inet_pton(AF_INET, tcp->saddr, &tcp->addr.sin_addr) != 1 &&
+                !(hp = gethostbyname(tcp->saddr)))
                 {
                     std::snprintf(msg, MAXSTRMSG, "address error (%s)", tcp->saddr);
                     tracet(1, "gentcp: gethostbyname error addr=%s err=%d\n", tcp->saddr, errsock());
@@ -994,7 +1007,10 @@ int gentcp(tcp_t *tcp, int type, char *msg)
                     tcp->tdis = tickget();
                     return 0;
                 }
-            memcpy(&tcp->addr.sin_addr, hp->h_addr, hp->h_length);
+            if (hp != nullptr)
+                {
+                    memcpy(&tcp->addr.sin_addr, hp->h_addr, hp->h_length);
+                }
         }
     tcp->state = 1;
     tcp->tact = tickget();
@@ -1482,7 +1498,8 @@ int encbase64(char *str, const unsigned char *byte, int n)
             str[j++] = '=';
         }
     str[j] = '\0';
-    tracet(5, "encbase64: str=%s\n", str);
+    /* The encoded value is commonly an NTRIP Basic credential token. */
+    tracet(5, "encbase64: output redacted n=%d\n", j);
     return j;
 }
 
@@ -1508,7 +1525,8 @@ int reqntrip_s(ntrip_t *ntrip, char *msg)
         }
 
     tracet(2, "reqntrip_s: send request state=%d ns=%" PRIdPTR "\n", ntrip->state, p - buff);
-    tracet(5, "reqntrip_s: n=%" PRIdPTR " buff=\n%s\n", p - buff, buff);
+    /* The SOURCE request contains the caster password. */
+    tracet(5, "reqntrip_s: request headers redacted n=%" PRIdPTR "\n", p - buff);
     ntrip->state = 1;
     return 1;
 }
@@ -1548,7 +1566,8 @@ int reqntrip_c(ntrip_t *ntrip, char *msg)
         }
 
     tracet(2, "reqntrip_c: send request state=%d ns=%" PRIdPTR "\n", ntrip->state, p - buff);
-    tracet(5, "reqntrip_c: n=%" PRIdPTR " buff=\n%s\n", p - buff, buff);
+    /* The request can contain a Basic Authorization header. */
+    tracet(5, "reqntrip_c: request headers redacted n=%" PRIdPTR "\n", p - buff);
     ntrip->state = 1;
     return 1;
 }
@@ -1737,7 +1756,7 @@ ntrip_t *openntrip(const char *path, int type, char *msg)
     char port[256] = "";
     char tpath[MAXSTRPATH];
 
-    tracet(3, "openntrip: path=%s type=%d\n", path, type);
+    tracet(3, "openntrip: type=%d\n", type);
 
     if (!(ntrip = static_cast<ntrip_t *>(malloc(sizeof(ntrip_t)))))
         {
@@ -2266,7 +2285,14 @@ void strinit(stream_t *stream)
  *-----------------------------------------------------------------------------*/
 int stropen(stream_t *stream, int type, int mode, const char *path)
 {
-    tracet(3, "stropen: type=%d mode=%d path=%s\n", type, mode, path);
+    if (type == STR_NTRIPSVR || type == STR_NTRIPCLI)
+        {
+            tracet(3, "stropen: type=%d mode=%d path=<redacted>\n", type, mode);
+        }
+    else
+        {
+            tracet(3, "stropen: type=%d mode=%d path=%s\n", type, mode, path);
+        }
     if (!stream || !path)
         {
             return 0; /* invalid arguments */

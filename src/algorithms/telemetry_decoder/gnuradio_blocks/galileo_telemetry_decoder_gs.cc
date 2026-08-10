@@ -122,7 +122,8 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(const Tlm_Conf &conf,
       d_there_are_e1_channels(conf.there_are_e1_channels),
       d_there_are_e6_channels(conf.there_are_e6_channels),
       d_use_ced(conf.use_ced),
-      d_tow_to_trk(conf.tow_to_trk)
+      d_tow_to_trk(conf.tow_to_trk),
+      d_early_monitor(conf.early_monitor)
 {
     configure_basic_outputs();
 
@@ -1014,6 +1015,14 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     current_symbol = in[0][0];
     d_band = current_symbol.Signal[0];
 
+    // Early monitor output
+    if (d_early_monitor && !current_symbol.Flag_valid_symbol_output)
+        {
+            consume_each(1);  // one by one
+            *out[0] = std::move(current_symbol);
+            return 1;
+        }
+
     // add new symbol to the symbol queue
     d_symbol_history.push_back(current_symbol.Prompt_I);
 
@@ -1486,7 +1495,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             break;
         }
 
-    if (current_symbol.Flag_valid_word == true)
+    if (current_symbol.Flag_valid_word || d_early_monitor)
         {
             current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             // todo: Galileo to GPS time conversion should be moved to observable block.

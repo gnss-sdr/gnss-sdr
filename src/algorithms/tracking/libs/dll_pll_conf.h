@@ -101,6 +101,7 @@ public:
     float b1c_data_prompt_scale{1.7320508F};  // sqrt(3), compensates 1:3 data:pilot power.
     float b1c_pilot_prompt_scale{1.0F};
     float b1c_secondary_lock_ratio{0.88F};
+    bool early_monitor{true};  // early tracking monitor output in on by default
 };
 
 

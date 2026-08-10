@@ -180,4 +180,5 @@ void Dll_Pll_Conf::SetFromConfiguration(const ConfigurationInterface *configurat
     b1c_data_prompt_scale = configuration->property(role + ".b1c_data_prompt_scale", b1c_data_prompt_scale);
     b1c_pilot_prompt_scale = configuration->property(role + ".b1c_pilot_prompt_scale", b1c_pilot_prompt_scale);
     b1c_secondary_lock_ratio = configuration->property(role + ".b1c_secondary_lock_ratio", b1c_secondary_lock_ratio);
+    early_monitor = configuration->property("Monitor.early", early_monitor);
 }

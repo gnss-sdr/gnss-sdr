@@ -77,6 +77,12 @@ if(ENABLE_FPGA)
     )
 endif()
 
+if(ENABLE_OPENCL)
+    target_compile_definitions(acquisition_adapters PRIVATE -DOPENCL_BLOCKS=1)
+else()
+    target_compile_definitions(acquisition_adapters PRIVATE -DOPENCL_BLOCKS=0)
+endif()
+
 target_include_directories(acquisition_adapters
     PUBLIC
         ${GNSSSDR_SOURCE_DIR}/src/core/interfaces

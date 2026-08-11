@@ -37,14 +37,15 @@
 #include "rtklib_rtkcmn.h"
 
 /* constants -----------------------------------------------------------------*/
-const int NX = 4 + 3;         //!< # of estimated parameters
-const int MAXITR = 10;        //!< max number of iteration for point pos
-const double ERR_ION = 5.0;   //!< ionospheric delay std (m)
-const double ERR_TROP = 3.0;  //!< tropspheric delay std (m)
+const int NX = 4 + 4;                    //!< # of estimated parameters: pos (3), GPS clock, GLO/GAL/BDS/QZS-GPS offsets
+const int MAXITR = 10;                   //!< max number of iteration for point pos
+const double VARERR_MIN_EL = 5.0 * D2R;  //!< minimum elevation for measurement error variance (rad)
+const double ERR_ION = 5.0;              //!< ionospheric delay std (m)
+const double ERR_TROP = 3.0;             //!< tropspheric delay std (m)
 
 
 /* pseudorange measurement error variance ------------------------------------*/
-double varerr(const prcopt_t *opt, double el, int sys);
+double varerr(const prcopt_t *opt, const obsd_t *obs, double el, int sys);
 
 /* get tgd parameter (m) -----------------------------------------------------*/
 double gettgd(int sat, const nav_t *nav);

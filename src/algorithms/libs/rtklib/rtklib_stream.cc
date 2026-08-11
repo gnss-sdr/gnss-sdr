@@ -49,7 +49,6 @@
 #include <memory>
 #include <netdb.h>
 #include <netinet/tcp.h>
-#include <regex>
 #include <sstream>
 #include <string>
 #include <sys/socket.h>
@@ -370,11 +369,21 @@ file_t *openfile(std::string const &path, int mode, char *msg)
             return nullptr;
         }
 
-    // Split the string by regular expression (in this case, the trivial "::" string)
-    std::regex re("::");
-    auto first = std::sregex_token_iterator(path.begin(), path.end(), re, -1);
-    auto last = std::sregex_token_iterator();
-    std::deque<std::string> tokens(first, last);
+    // Split the string at the literal "::" separators. Plain string search is
+    // used instead of std::regex, which is not functional in GCC < 4.9
+    std::deque<std::string> tokens;
+    std::string::size_type token_start = 0;
+    for (;;)
+        {
+            const std::string::size_type separator = path.find("::", token_start);
+            if (separator == std::string::npos)
+                {
+                    tokens.push_back(path.substr(token_start));
+                    break;
+                }
+            tokens.push_back(path.substr(token_start, separator - token_start));
+            token_start = separator + 2;
+        }
 
     auto file = std::make_unique<file_t>();
 
@@ -3248,7 +3257,7 @@ gtime_t strgettime(stream_t *stream)
  *-----------------------------------------------------------------------------*/
 void strsendnmea(stream_t *stream, const double *pos)
 {
-    sol_t sol = {{0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, '0', '0', '0', 0, 0, 0};
+    sol_t sol = {{0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, '0', '0', '0', 0, 0, 0, 0, 0};
     unsigned char buff[1024];
     int i;
     int n;

@@ -1737,12 +1737,12 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
                             rtk->ssat[sat - 1].resp[0] = v[nv];
                         }
 
-                        /* test innovation */
+                        /* test innovation, with separate thresholds for phase (j=0) and code (j=1) */
 #if 0
-                    if (opt->maxinno>0.0 && fabs(v[nv])>opt->maxinno)
+                    if (opt->maxinno[j]>0.0 && fabs(v[nv])>opt->maxinno[j])
                         {
 #else
-                    if (opt->maxinno > 0.0 && fabs(v[nv]) > opt->maxinno && sys != SYS_GLO)
+                    if (opt->maxinno[j] > 0.0 && fabs(v[nv]) > opt->maxinno[j] && sys != SYS_GLO)
                         {
 #endif
                             trace(2, "ppp outlier rejected %s sat=%2d type=%d v=%.3f\n",

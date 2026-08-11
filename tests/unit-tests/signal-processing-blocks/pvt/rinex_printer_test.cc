@@ -121,8 +121,9 @@ void RinexPrinterTest::conf()
         min_elevation_to_fix_ambiguity,                                                    /* elevation mask of AR for rising satellite (deg) */
         0.0,                                                                               /* elevation mask to hold ambiguity (deg) */
         slip_threshold,                                                                    /* slip threshold of geometry-free phase (m) */
+        0.0,                                                                               /* slip threshold of doppler (m/s) (0:disabled) */
         30.0,                                                                              /* max difference of time (sec) */
-        threshold_reject_innovation,                                                       /* reject threshold of innovation (m) */
+        {threshold_reject_innovation, threshold_reject_innovation},                        /* reject threshold of innovation {phase, code} (m) */
         threshold_reject_gdop,                                                             /* reject threshold of gdop */
         {},                                                                                /* double baseline[2] baseline length constraint {const,sigma} (m) */
         {},                                                                                /* double ru[3]  rover position for fixed mode {x,y,z} (ecef) (m) */
@@ -141,7 +142,9 @@ void RinexPrinterTest::conf()
         {{}, {{}, {}}, {{}, {}}, {}, {}},                                                  /*  exterr_t exterr   extended receiver error model */
         0,                                                                                 /* disable L2-AR */
         {},                                                                                /* char pppopt[256]   ppp option   "-GAP_RESION="  default gap to reset iono parameters (ep) */
-        true                                                                               /* enable Bancroft initialization for the first iteration of the PVT computation, useful in some geometries */
+        true,                                                                              /* enable Bancroft initialization for the first iteration of the PVT computation, useful in some geometries */
+        false,                                                                             /* estimate QZS-GPS inter-system bias */
+        0, 0, 0, 0, 0.0, 0.0                                                               /* demo5 AR management options: arfilter, minfixsats, minholdsats, mindropsats, varholdamb, armaxposvar (all off) */
     };
 
     rtkinit(&rtk, &rtklib_configuration_options);

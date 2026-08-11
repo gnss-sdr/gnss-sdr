@@ -370,6 +370,8 @@ typedef struct
     double L[NFREQ + NEXOBS];           /* observation data carrier-phase (cycle) */
     double P[NFREQ + NEXOBS];           /* observation data pseudorange (m) */
     float D[NFREQ + NEXOBS];            /* observation data doppler frequency (Hz) */
+    float Lstd[NFREQ + NEXOBS];         /* receiver-reported stdev of carrier phase (cycle) (0:unknown) */
+    float Pstd[NFREQ + NEXOBS];         /* receiver-reported stdev of pseudorange (m) (0:unknown) */
 } obsd_t;
 
 
@@ -841,6 +843,8 @@ typedef struct
     float age;          /* age of differential (s) */
     float ratio;        /* AR ratio factor for validation */
     float thres;        /* AR ratio threshold for validation */
+    float prev_ratio1;  /* previous AR ratio factor for validation */
+    float prev_ratio2;  /* previous AR ratio factor for validation, after sat exclusion */
 } sol_t;
 
 
@@ -979,7 +983,10 @@ typedef struct
                                   /* (0:pos in prcopt,  1:average of single pos, */
                                   /*  2:read from file, 3:rinex header, 4:rtcm pos) */
     double eratio[NFREQ];         /* code/phase error ratio */
-    double err[5];                /* measurement error factor */
+    double err[8];                /* measurement error factor */
+                                  /* [5]: SNR reference (dBHz) for the SNR term */
+                                  /* [6]: SNR error term (m) (0:disabled) */
+                                  /* [7]: receiver-stdev error term (0:disabled) */
                                   /* [0]:reserved */
                                   /* [1-3]:error factor a/b/c of phase (m) */
                                   /* [4]:doppler frequency (hz) */
@@ -990,8 +997,9 @@ typedef struct
     double elmaskar;              /* elevation mask of AR for rising satellite (deg) */
     double elmaskhold;            /* elevation mask to hold ambiguity (deg) */
     double thresslip;             /* slip threshold of geometry-free phase (m) */
+    double thresdop;              /* slip threshold of doppler (m/s) (0:disabled) */
     double maxtdiff;              /* max difference of time (sec) */
-    double maxinno;               /* reject threshold of innovation (m) */
+    double maxinno[2];            /* reject threshold of innovation {phase, code} (m) */
     double maxgdop;               /* reject threshold of gdop */
     double baseline[2];           /* baseline length constraint {const,sigma} (m) */
     double ru[3];                 /* rover position for fixed mode {x,y,z} (ecef) (m) */
@@ -1011,6 +1019,18 @@ typedef struct
     int freqopt;                  /* disable L2-AR */
     char pppopt[256];             /* ppp option */
     bool bancroft_init;           /* enable Bancroft initialization for the first iteration of the PVT computation */
+    bool estqzsisb;               /* estimate a separate QZS-GPS inter-system bias in single-point positioning.
+                                     Requires one extra satellite in mixed GPS+QZSS epochs; keep disabled in
+                                     degraded-visibility scenarios */
+    /* AR management options from the demo5 RTKLIB fork. Value-initialized (all zeros)
+       they reproduce the classic behavior: no AR filtering, no minimum-satellite gates,
+       no satellite exclusion cycling, no position-variance gate */
+    int arfilter;       /* AR filtering to reject newly-added sats on AR ratio degradation (0:off,1:on) */
+    int minfixsats;     /* min number of sats to fix integer ambiguities (0:no limit) */
+    int minholdsats;    /* min number of sats to hold integer ambiguities (0:no limit) */
+    int mindropsats;    /* min number of sats to enable single-sat exclusion cycling in AR (0:disabled) */
+    double varholdamb;  /* variance of the fix-and-hold pseudo measurements (cycle^2) (0:use default) */
+    double armaxposvar; /* max position variance to attempt AR (m^2) (0:no gate) */
 } prcopt_t;
 
 
@@ -1060,6 +1080,8 @@ typedef struct
     double phw;                /* phase windup (cycle) */
     gtime_t pt[2][NFREQ];      /* previous carrier-phase time */
     double ph[2][NFREQ];       /* previous carrier-phase observable (cycle) */
+    float snr_rover[NFREQ];    /* rover signal strength (dBHz) */
+    float snr_base[NFREQ];     /* base signal strength (dBHz) */
 } ssat_t;
 
 
@@ -1083,6 +1105,9 @@ typedef struct
     double *x, *P;          /* float states and their covariance */
     double *xa, *Pa;        /* fixed states and their covariance */
     int nfix;               /* number of continuous fixes of ambiguity */
+    int excsat;             /* satellite currently excluded from AR for partial ambiguity resolution */
+    int nb_ar;              /* number of double-differenced ambiguities used in the last AR attempt */
+    int holdamb;            /* set to 1 once fix-and-hold has been applied */
     ambc_t ambc[MAXSAT];    /* ambiguity control */
     ssat_t ssat[MAXSAT];    /* satellite status */
     int neb;                /* bytes in error message buffer */

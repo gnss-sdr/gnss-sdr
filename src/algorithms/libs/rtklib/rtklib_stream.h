@@ -75,7 +75,7 @@ int openfile_(file_t *file, gtime_t time, char *msg);
 
 void closefile_(file_t *file);
 
-file_t *openfile(const char *path, int mode, char *msg);
+file_t *openfile(const std::string &path, int mode, char *msg);
 
 void closefile(file_t *file);
 

@@ -348,8 +348,9 @@ rtk_t configure_rtklib_options()
         min_elevation_to_fix_ambiguity,                                                    /* elevation mask of AR for rising satellite (deg) */
         0.0,                                                                               /* elevation mask to hold ambiguity (deg) */
         slip_threshold,                                                                    /* slip threshold of geometry-free phase (m) */
+        0.0,                                                                               /* slip threshold of doppler (m/s) (0:disabled) */
         30.0,                                                                              /* max difference of time (sec) */
-        threshold_reject_innovation,                                                       /* reject threshold of innovation (m) */
+        {threshold_reject_innovation, threshold_reject_innovation},                        /* reject threshold of innovation {phase, code} (m) */
         threshold_reject_gdop,                                                             /* reject threshold of gdop */
         {},                                                                                /* double baseline[2] baseline length constraint {const,sigma} (m) */
         {},                                                                                /* double ru[3]  rover position for fixed mode {x,y,z} (ecef) (m) */

@@ -100,12 +100,12 @@ All notable changes to GNSS-SDR will be documented in this file.
   block can now connect to an NTRIP caster, decode RTCM 3 base position and GPS
   L1/L2 observations, and feed time-aligned reference data to its RTKLIB
   relative-positioning solver. The client negotiates NTRIP v2 with automatic
-  fallback to v1 (`PVT.ntrip_version=1` forces the legacy protocol) and
-  supports TLS with system-CA certificate and hostname verification
+  fallback to v1 (`PVT.ntrip_version=1` forces the legacy protocol) and supports
+  TLS with system-CA certificate and hostname verification
   (`PVT.ntrip_tls_enabled=true`). It reconnects without blocking the GNU Radio
   work function, filters station changes and stale corrections, redacts
-  credentials from RTKLIB traces, and retains an explicitly labeled
-  single-point fallback when configured. VRS/GGA is not yet supported.
+  credentials from RTKLIB traces, and retains an explicitly labeled single-point
+  fallback when configured. VRS/GGA is not yet supported.
 - Added the BeiDou B1C receiver chain, with signal identifier `1D`: acquisition
   (`BEIDOU_B1C_PCPS_Ambiguous_Acquisition`, with optional QMBOC local replica),
   tracking (`BEIDOU_B1C_DLL_PLL_VEML_Tracking`, tracking the pilot component by
@@ -417,6 +417,7 @@ https://gnss-sdr.org/design-forces/
   https://www.youtube.com/watch?v=HnZkKj9a-QM
 - Add the following signal sources for use when GNSS-SDR is operating on SoC
   FPGA boards (`-DENABLE_FPGA=ON`):
+
   - `ADRV9361_Z7035_Signal_Source_FPGA`: Analog Devices ADRV9361-Z7035 board.
   - `FMCOMMS5_Signal_Source_FPGA`: FMCOMMS5 analog front-end.
   - `MAX2771_EVKIT_Signal_Source_FPGA`: MAX2771 evaluation kit analog front-end.
@@ -425,6 +426,7 @@ https://gnss-sdr.org/design-forces/
   When building GNSS-SDR for the SoC FPGA, the following options can be passed
   to CMake with possible values of `ON` or `OFF`, and their default value is
   `OFF`:
+
   - `-DENABLE_AD9361`: Checks if the IIO driver is installed and builds the
     `ADRV9361_Z7035_Signal_Source_FPGA` and the `FMCOMMS5_Signal_Source_FPGA`
     sources.

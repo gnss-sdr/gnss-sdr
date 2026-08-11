@@ -76,16 +76,56 @@ int galileo_bgd_index(unsigned char observation_code, int sat, const nav_t *nav)
         }
 }
 
-/* pseudorange measurement error variance ------------------------------------*/
-double varerr(const prcopt_t *opt, double el, int sys)
+/* pseudorange measurement error variance ------------------------------------
+ * var = fact^2*eratio^2*(a^2 + b^2/sin(el) + c^2*10^(0.1*(snr_max-snr))) +
+ *       (d*rcv_std)^2   (demo5 form)                                         */
+double varerr(const prcopt_t *opt, const obsd_t *obs, double el, int sys)
 {
-    double fact;
+    double fact = 1.0;
     double varr;
-    fact = sys == SYS_GLO ? EFACT_GLO : (sys == SYS_SBS ? EFACT_SBS : EFACT_GPS);
-    varr = std::pow(opt->err[0], 2.0) * (std::pow(opt->err[1], 2.0) + std::pow(opt->err[2], 2.0) / sin(el));
+
+    switch (sys)
+        {
+        case SYS_GPS:
+            fact *= EFACT_GPS;
+            break;
+        case SYS_GLO:
+            fact *= EFACT_GLO;
+            break;
+        case SYS_GAL:
+            fact *= EFACT_GAL;
+            break;
+        case SYS_SBS:
+            fact *= EFACT_SBS;
+            break;
+        case SYS_QZS:
+            fact *= EFACT_QZS;
+            break;
+        case SYS_BDS:
+            fact *= EFACT_BDS;
+            break;
+        default:
+            fact *= EFACT_GPS;
+            break;
+        }
+    if (el < VARERR_MIN_EL)
+        {
+            el = VARERR_MIN_EL;
+        }
+    varr = std::pow(opt->err[1], 2.0) + std::pow(opt->err[2], 2.0) / sin(el);
+    if (opt->err[6] > 0.0)
+        { /* SNR-dependent term */
+            varr += std::pow(opt->err[6], 2.0) *
+                    std::pow(10.0, 0.1 * std::max(opt->err[5] - obs->SNR[0] * 0.25, 0.0));
+        }
+    varr *= std::pow(opt->eratio[0], 2.0);
+    if (opt->err[7] > 0.0)
+        { /* receiver-reported stdev term */
+            varr += std::pow(opt->err[7] * obs->Pstd[0], 2.0);
+        }
     if (opt->ionoopt == IONOOPT_IFLC)
         {
-            varr *= std::pow(2, 3.0); /* iono-free */
+            varr *= std::pow(3.0, 2.0); /* iono-free */
         }
     return std::pow(fact, 2.0) * varr;
 }
@@ -653,7 +693,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
     int j;
     int nv = 0;
     int sys;
-    int mask[4] = {0};
+    int mask[5] = {0};
 
     trace(3, "resprng : n=%d\n", n);
 
@@ -776,8 +816,16 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                     H[6 + nv * NX] = 1.0;
                     mask[3] = 1;
                 }
+            else if (sys == SYS_QZS && opt->estqzsisb)
+                {
+                    v[nv] -= x[7];
+                    H[7 + nv * NX] = 1.0;
+                    mask[4] = 1;
+                }
             else
                 {
+                    /* GPS and SBS; also QZS sharing the GPS clock unless
+                       PVT.estimate_qzss_isb is enabled */
                     mask[0] = 1;
                 }
 
@@ -786,7 +834,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
             (*ns)++;
 
             /* error variance */
-            double vmeasure = varerr(opt, azel[1 + i * 2], sys);
+            double vmeasure = varerr(opt, &obs[i], azel[1 + i * 2], sys);
             if (iono_scale == 0.0 && opt->ionoopt != IONOOPT_IFLC)
                 {
                     /* same noise amplification varerr applies for IONOOPT_IFLC */
@@ -798,7 +846,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                 azel[i * 2] * R2D, azel[1 + i * 2] * R2D, resp[i], sqrt(var[nv - 1]));
         }
     /* constraint to avoid rank-deficient */
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < 5; i++)
         {
             if (mask[i])
                 {
@@ -955,9 +1003,9 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
 
     trace(3, "estpos  : n=%d\n", n);
 
-    v = mat(n + 4, 1);
-    H = mat(NX, n + 4);
-    var = mat(n + 4, 1);
+    v = mat(n + 5, 1);
+    H = mat(NX, n + 5);
+    var = mat(n + 5, 1);
 
     for (i = 0; i < 3; i++)
         {
@@ -1031,6 +1079,7 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
                     sol->dtr[1] = x[4] / SPEED_OF_LIGHT_M_S; /* glo-gps time offset (s) */
                     sol->dtr[2] = x[5] / SPEED_OF_LIGHT_M_S; /* gal-gps time offset (s) */
                     sol->dtr[3] = x[6] / SPEED_OF_LIGHT_M_S; /* bds-gps time offset (s) */
+                    sol->dtr[4] = x[7] / SPEED_OF_LIGHT_M_S; /* qzs-gps time offset (s) */
                     for (j = 0; j < 6; j++)
                         {
                             sol->rr[j] = j < 3 ? x[j] : 0.0;
@@ -1081,7 +1130,7 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
     double *azel, int *vsat, double *resp, char *msg)
 {
     obsd_t *obs_e;
-    sol_t sol_e = {{0, 0}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0};
+    sol_t sol_e = {{0, 0}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0, 0.0, 0.0};
     char tstr[32];
     char msg_e[PNTPOS_MSG_LEN]{};
     double *rs_e;

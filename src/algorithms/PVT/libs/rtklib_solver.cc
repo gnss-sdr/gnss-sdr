@@ -1799,7 +1799,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
-                                                    {}, {0.0, 0.0, 0.0}, {}};
+                                                    {}, {0.0, 0.0, 0.0}, {}, {}, {}};
                                                 const HAS_obs_corrections *applied_has_correction = nullptr;
                                                 if (selected_from_reduced_ced)
                                                     {
@@ -1860,7 +1860,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
-                                                    {}, {0.0, 0.0, 0.0}, {}};
+                                                    {}, {0.0, 0.0, 0.0}, {}, {}, {}};
                                                 const HAS_obs_corrections *applied_has_correction = nullptr;
                                                 d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
@@ -1979,7 +1979,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
-                                                    {}, {0.0, 0.0, 0.0}, {}};
+                                                    {}, {0.0, 0.0, 0.0}, {}, {}, {}};
                                                 d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     gps_cnav_ephemeris_iter->second.WN,
@@ -2154,7 +2154,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
-                                                    {}, {0.0, 0.0, 0.0}, {}};
+                                                    {}, {0.0, 0.0, 0.0}, {}, {}, {}};
                                                 d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     beidou_ephemeris_iter->second.WN + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,

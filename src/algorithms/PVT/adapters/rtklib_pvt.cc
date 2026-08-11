@@ -699,9 +699,13 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     const double slip_threshold = configuration->property(role + ".slip_threshold", 0.05); /* set the cycle‐slip threshold (m) of geometry‐free LC carrier‐phase difference between epochs */
 
+    const double slip_threshold_doppler = configuration->property(role + ".slip_threshold_doppler", 0.0); /* cycle-slip threshold (m/s) of the phase-doppler difference, after removing the median common range-rate error over all satellites. 0 disables the test. */
+
     const double threshold_reject_gdop = configuration->property(role + ".threshold_reject_gdop", 30.0); /* reject threshold of GDOP. If the GDOP is over the value, the observable is excluded for the estimation process as an outlier. */
 
-    const double threshold_reject_innovation = configuration->property(role + ".threshold_reject_innovation", 30.0); /* reject threshold of innovation (m). If the innovation is over the value, the observable is excluded for the estimation process as an outlier. */
+    const double threshold_reject_innovation = configuration->property(role + ".threshold_reject_innovation", 30.0); /* reject threshold of innovation (m) for code observables. If the innovation is over the value, the observable is excluded for the estimation process as an outlier. */
+
+    const double threshold_reject_innovation_phase = configuration->property(role + ".threshold_reject_innovation_phase", threshold_reject_innovation); /* reject threshold of innovation (m) for carrier-phase observables. Defaults to threshold_reject_innovation; the demo5 RTKLIB fork recommends 5.0 for RTK. */
 
     const int number_filter_iter = configuration->property(role + ".number_filter_iter", 1); /* Set the number of iteration in the measurement update of the estimation filter.
                                                                                          If the baseline length is very short like 1 m, the iteration may be effective to handle
@@ -735,7 +739,25 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const double carrier_phase_error_factor_a = configuration->property(role + ".carrier_phase_error_factor_a", 0.003);
     const double carrier_phase_error_factor_b = configuration->property(role + ".carrier_phase_error_factor_b", 0.003);
 
+    /* SNR-dependent and receiver-reported-stdev observation weighting (demo5). Both terms default to
+       0.0 (disabled), preserving the elevation-only error model */
+    const double error_snr_max = configuration->property(role + ".error_snr_max", 52.0);              /* SNR reference (dB-Hz) above which no SNR penalty is applied */
+    const double error_factor_snr = configuration->property(role + ".error_factor_snr", 0.0);         /* SNR error term (m); demo5 uses 0.005 for its receivers */
+    const double error_factor_rcv_std = configuration->property(role + ".error_factor_rcv_std", 0.0); /* receiver-reported stdev error term; requires Pstd/Lstd filled in the observations */
+
+    /* AR management options (demo5) */
+    const bool ar_filter = configuration->property(role + ".ar_filter", true);                                 /* reject newly-risen satellites from AR and retry when the AR ratio degrades */
+    const int min_fix_sats = configuration->property(role + ".min_fix_sats", 4);                               /* min satellites required to fix integer ambiguities */
+    const int min_hold_sats = configuration->property(role + ".min_hold_sats", 5);                             /* min satellites required to hold integer ambiguities */
+    const int min_drop_sats = configuration->property(role + ".min_drop_sats", 10);                            /* min satellites to enable single-satellite exclusion cycling in AR (0 disables) */
+    const double var_holdamb = configuration->property(role + ".var_holdamb", 0.1);                            /* variance (cycle^2) of the fix-and-hold pseudo measurements */
+    const double ar_max_position_variance = configuration->property(role + ".ar_max_position_variance", 0.25); /* max float-position variance (m^2) to attempt AR; avoids false fixes while the filter converges (0 disables the gate) */
+    const double ar_ratio_min = configuration->property(role + ".ar_ratio_min", 0.0);                          /* lower bound for the satellite-count-dependent AR ratio threshold; leave equal to ar_ratio_max to use the fixed min_ratio_to_fix_ambiguity */
+    const double ar_ratio_max = configuration->property(role + ".ar_ratio_max", 0.0);                          /* upper bound for the satellite-count-dependent AR ratio threshold */
+
     const bool bancroft_init = configuration->property(role + ".bancroft_init", true);
+
+    const bool estimate_qzss_isb = configuration->property(role + ".estimate_qzss_isb", false); /* estimate a separate QZS-GPS inter-system bias in single-point positioning. It requires one extra satellite in mixed GPS+QZSS epochs, so keep disabled under degraded visibility. */
 
     snrmask_t snrmask = {{}, {{}, {}}};
     const double max_time_difference_s = pvt_output_parameters.ntrip_client_enabled ? pvt_output_parameters.ntrip_max_correction_age_s : 30.0;
@@ -770,35 +792,44 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
                                                                                            /*    0:pos in prcopt,  1:average of single pos, */
                                                                                            /*    2:read from file, 3:rinex header, 4:rtcm pos */
         {code_phase_error_ratio_l1, code_phase_error_ratio_l2, code_phase_error_ratio_l5}, /* eratio[NFREQ] code/phase error ratio */
-        {100.0, carrier_phase_error_factor_a, carrier_phase_error_factor_b, 0.0, 1.0},     /* err[5]:  measurement error factor [0]:reserved, [1-3]:error factor a/b/c of phase (m) , [4]:doppler frequency (hz) */
-        {bias_0, iono_0, trop_0},                                                          /* std[3]: initial-state std [0]bias,[1]iono [2]trop*/
-        {sigma_bias, sigma_iono, sigma_trop, sigma_acch, sigma_accv, sigma_pos},           /* prn[6] process-noise std */
-        5e-12,                                                                             /* sclkstab: satellite clock stability (sec/sec) */
-        {min_ratio_to_fix_ambiguity, 0.9999, 0.25, 0.1, 0.05, 0.0, 0.0, 0.0},              /* thresar[8]: AR validation threshold */
-        min_elevation_to_fix_ambiguity,                                                    /* elevation mask of AR for rising satellite (deg) */
-        0.0,                                                                               /* elevation mask to hold ambiguity (deg) */
-        slip_threshold,                                                                    /* slip threshold of geometry-free phase (m) */
-        max_time_difference_s,                                                             /* max difference of time (sec) */
-        threshold_reject_innovation,                                                       /* reject threshold of innovation (m) */
-        threshold_reject_gdop,                                                             /* reject threshold of gdop */
-        {},                                                                                /* double baseline[2] baseline length constraint {const,sigma} (m) */
-        {},                                                                                /* double ru[3]  rover position for fixed mode {x,y,z} (ecef) (m) */
-        {},                                                                                /* double rb[3]  base position for relative mode {x,y,z} (ecef) (m) */
-        {"", ""},                                                                          /* char anttype[2][MAXANT]  antenna types {rover,base}  */
-        {{}, {}},                                                                          /* double antdel[2][3]   antenna delta {{rov_e,rov_n,rov_u},{ref_e,ref_n,ref_u}} */
-        {},                                                                                /* pcv_t pcvr[2]   receiver antenna parameters {rov,base} */
-        {},                                                                                /* unsigned char exsats[MAXSAT]  excluded satellites (1:excluded, 2:included) */
-        0,                                                                                 /* max averaging epoches */
-        0,                                                                                 /* initialize by restart */
-        output_single_on_outage,                                                           /* output single by dgps/float/fix/ppp outage */
-        {"", ""},                                                                          /* char rnxopt[2][256]   rinex options {rover,base} */
-        {sat_PCV, rec_PCV, phwindup, reject_GPS_IIA, raim_fde},                            /* posopt[6] positioning options [0]: satellite and receiver antenna PCV model; [1]: interpolate antenna parameters; [2]: apply phase wind-up correction for PPP modes; [3]: exclude measurements of GPS Block IIA satellites satellite [4]: RAIM FDE (fault detection and exclusion) [5]: handle day-boundary clock jump */
-        0,                                                                                 /* solution sync mode (0:off,1:on) */
-        {{}, {}},                                                                          /* odisp[2][6*11] ocean tide loading parameters {rov,base} */
-        {{}, {{}, {}}, {{}, {}}, {}, {}},                                                  /* exterr_t exterr   extended receiver error model */
-        0,                                                                                 /* disable L2-AR */
-        {},                                                                                /* char pppopt[256]   ppp option   "-GAP_RESION="  default gap to reset iono parameters (ep) */
-        bancroft_init                                                                      /* enable Bancroft initialization for the first iteration of the PVT computation, useful in some geometries */
+        {100.0, carrier_phase_error_factor_a, carrier_phase_error_factor_b, 0.0, 1.0,
+            error_snr_max, error_factor_snr, error_factor_rcv_std},                             /* err[8]:  measurement error factor [0]:reserved, [1-3]:error factor a/b/c of phase (m), [4]:doppler frequency (hz), [5]:SNR reference (dBHz), [6]:SNR error term (m), [7]:receiver stdev term */
+        {bias_0, iono_0, trop_0},                                                               /* std[3]: initial-state std [0]bias,[1]iono [2]trop*/
+        {sigma_bias, sigma_iono, sigma_trop, sigma_acch, sigma_accv, sigma_pos},                /* prn[6] process-noise std */
+        5e-12,                                                                                  /* sclkstab: satellite clock stability (sec/sec) */
+        {min_ratio_to_fix_ambiguity, 0.9999, 0.25, 0.1, 0.05, ar_ratio_min, ar_ratio_max, 0.0}, /* thresar[8]: AR validation threshold; [5]/[6]: min/max of the sat-count-dependent AR ratio threshold (equal: fixed threshold) */
+        min_elevation_to_fix_ambiguity,                                                         /* elevation mask of AR for rising satellite (deg) */
+        0.0,                                                                                    /* elevation mask to hold ambiguity (deg) */
+        slip_threshold,                                                                         /* slip threshold of geometry-free phase (m) */
+        slip_threshold_doppler,                                                                 /* slip threshold of doppler (m/s) (0:disabled) */
+        max_time_difference_s,                                                                  /* max difference of time (sec) */
+        {threshold_reject_innovation_phase, threshold_reject_innovation},                       /* reject threshold of innovation {phase, code} (m) */
+        threshold_reject_gdop,                                                                  /* reject threshold of gdop */
+        {},                                                                                     /* double baseline[2] baseline length constraint {const,sigma} (m) */
+        {},                                                                                     /* double ru[3]  rover position for fixed mode {x,y,z} (ecef) (m) */
+        {},                                                                                     /* double rb[3]  base position for relative mode {x,y,z} (ecef) (m) */
+        {"", ""},                                                                               /* char anttype[2][MAXANT]  antenna types {rover,base}  */
+        {{}, {}},                                                                               /* double antdel[2][3]   antenna delta {{rov_e,rov_n,rov_u},{ref_e,ref_n,ref_u}} */
+        {},                                                                                     /* pcv_t pcvr[2]   receiver antenna parameters {rov,base} */
+        {},                                                                                     /* unsigned char exsats[MAXSAT]  excluded satellites (1:excluded, 2:included) */
+        0,                                                                                      /* max averaging epoches */
+        0,                                                                                      /* initialize by restart */
+        output_single_on_outage,                                                                /* output single by dgps/float/fix/ppp outage */
+        {"", ""},                                                                               /* char rnxopt[2][256]   rinex options {rover,base} */
+        {sat_PCV, rec_PCV, phwindup, reject_GPS_IIA, raim_fde},                                 /* posopt[6] positioning options [0]: satellite and receiver antenna PCV model; [1]: interpolate antenna parameters; [2]: apply phase wind-up correction for PPP modes; [3]: exclude measurements of GPS Block IIA satellites satellite [4]: RAIM FDE (fault detection and exclusion) [5]: handle day-boundary clock jump */
+        0,                                                                                      /* solution sync mode (0:off,1:on) */
+        {{}, {}},                                                                               /* odisp[2][6*11] ocean tide loading parameters {rov,base} */
+        {{}, {{}, {}}, {{}, {}}, {}, {}},                                                       /* exterr_t exterr   extended receiver error model */
+        0,                                                                                      /* disable L2-AR */
+        {},                                                                                     /* char pppopt[256]   ppp option   "-GAP_RESION="  default gap to reset iono parameters (ep) */
+        bancroft_init,                                                                          /* enable Bancroft initialization for the first iteration of the PVT computation, useful in some geometries */
+        estimate_qzss_isb,                                                                      /* estimate a separate QZS-GPS inter-system bias (needs one extra satellite in mixed GPS+QZSS epochs) */
+        ar_filter ? 1 : 0,                                                                      /* AR filtering to reject newly-added sats on AR ratio degradation */
+        min_fix_sats,                                                                           /* min sats to fix integer ambiguities */
+        min_hold_sats,                                                                          /* min sats to hold integer ambiguities */
+        min_drop_sats,                                                                          /* min sats to enable single-sat exclusion cycling in AR */
+        var_holdamb,                                                                            /* variance of the fix-and-hold pseudo measurements (cycle^2) */
+        ar_max_position_variance                                                                /* max position variance to attempt AR (m^2) */
     };
 
     // Outputs

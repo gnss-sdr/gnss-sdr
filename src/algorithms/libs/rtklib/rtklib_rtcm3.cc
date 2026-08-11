@@ -1971,7 +1971,7 @@ int decode_type1047(rtcm_t *rtcm)
 }
 
 
-/* decode type 63: beidou ephemerides (rtcm draft) ---------------------------*/
+/* decode type 1042/63: beidou ephemerides (1042: RTCM 3.3, 63: rtcm draft) --*/
 int decode_type63(rtcm_t *rtcm)
 {
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
@@ -2000,7 +2000,7 @@ int decode_type63(rtcm_t *rtcm)
             i += 5; /* AODE */
             toc = getbitu(rtcm->buff, i, 17) * 8.0;
             i += 17;
-            eph.f2 = getbits(rtcm->buff, i, 11) * TWO_N55;
+            eph.f2 = getbits(rtcm->buff, i, 11) * TWO_N66;
             i += 11;
             eph.f1 = getbits(rtcm->buff, i, 22) * TWO_N50;
             i += 22;
@@ -3989,6 +3989,9 @@ int decode_rtcm3(rtcm_t *rtcm)
         case 1047:
             ret = decode_type1047(rtcm);
             break; /* beidou ephemeris (tentative mt) */
+        case 1042:
+            ret = decode_type63(rtcm);
+            break; /* beidou ephemeris (RTCM 3.3) */
         case 63:
             ret = decode_type63(rtcm);
             break; /* beidou ephemeris (rtcm draft) */

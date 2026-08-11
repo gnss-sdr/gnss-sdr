@@ -124,6 +124,10 @@ if(ENABLE_LIMESDR)
     target_compile_definitions(core_receiver PRIVATE -DLIMESDR_DRIVER=1)
 endif()
 
+if(ENABLE_BLADERF)
+    target_compile_definitions(core_receiver PRIVATE -DBLADERF_DRIVER=1)
+endif()
+
 if(ENABLE_POCKETSDR)
     target_compile_definitions(core_receiver PRIVATE -DPOCKETSDR_DRIVER=1)
 endif()

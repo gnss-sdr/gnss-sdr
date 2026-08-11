@@ -146,6 +146,10 @@
 #include "limesdr_signal_source.h"
 #endif
 
+#if BLADERF_DRIVER
+#include "bladerf_signal_source.h"
+#endif
+
 #if POCKETSDR_DRIVER
 #include "pocket_sdr_signal_source.h"
 #endif
@@ -346,6 +350,12 @@ std::unique_ptr<SignalSourceInterface> get_signal_source_block(
     else if (implementation == "Limesdr_Signal_Source")
         {
             return std::make_unique<LimesdrSignalSource>(configuration, role, in_streams, out_streams, queue);
+        }
+#endif
+#if BLADERF_DRIVER
+    else if (implementation == "Bladerf_Signal_Source")
+        {
+            return std::make_unique<BladerfSignalSource>(configuration, role, in_streams, out_streams, queue);
         }
 #endif
 #if POCKETSDR_DRIVER

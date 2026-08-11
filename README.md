@@ -171,7 +171,7 @@ dependencies with:
 
 ```
 $ sudo apt install build-essential cmake git gnuradio-dev gr-limesdr gr-osmosdr \
-       libabsl-dev libad9361-dev libarmadillo-dev libblas-dev \
+       libabsl-dev libad9361-dev libarmadillo-dev libbladerf-dev libblas-dev \
        libboost-chrono-dev libboost-date-time-dev libboost-dev \
        libboost-filesystem-dev libboost-serialization-dev libboost-thread-dev \
        libcpu-features-dev libgtest-dev libiio-dev liblapack-dev libmatio-dev \
@@ -183,7 +183,7 @@ On older versions:
 
 ```
 $ sudo apt install build-essential cmake git gnuradio-dev gr-limesdr gr-osmosdr \
-       libad9361-dev libarmadillo-dev libblas-dev \
+       libad9361-dev libarmadillo-dev libbladerf-dev libblas-dev \
        libboost-chrono-dev libboost-date-time-dev libboost-dev \
        libboost-filesystem-dev libboost-serialization-dev libboost-system-dev \
        libboost-thread-dev \
@@ -608,6 +608,36 @@ $ sudo cmake --install build
 
 (in order to disable the `Osmosdr_Signal_Source` compilation, you can pass
 `-DENABLE_OSMOSDR=OFF` to cmake and build GNSS-SDR again).
+
+#### Build BladeRF support (OPTIONAL)
+
+GNSS-SDR can talk to Nuand's [bladeRF](https://www.nuand.com/) front-ends
+(bladeRF x40, x115, and bladeRF 2.0 Micro xA4/xA9) directly through
+`libbladeRF`, without going through OsmoSDR. This requires `libbladeRF` v2.6.0
+or newer (needed for reliable bladeRF 2.0 Micro support); older packaged
+versions (e.g., the one currently in Ubuntu's `universe` repository) are
+rejected at `cmake` configuration time with a message asking you to upgrade.
+Install the library and headers (e.g., on Debian / Ubuntu,
+`sudo apt install libbladerf-dev`, then check its version with
+`pkg-config --modversion libbladeRF`; if it is older than 2.6.0, build
+`libbladeRF` from source instead -- see
+[Nuand's bladeRF repository](https://github.com/Nuand/bladeRF)), then configure
+GNSS-SDR to build the `Bladerf_Signal_Source` by:
+
+```
+$ cmake -S . -B build -DENABLE_BLADERF=ON
+$ cmake --build build
+$ sudo cmake --install build
+```
+
+(in order to disable the `Bladerf_Signal_Source` compilation, you can pass
+`-DENABLE_BLADERF=OFF` to cmake and build GNSS-SDR again). A sample
+configuration file is provided at
+[conf/RealTime_input/gnss-sdr_GPS_L1_bladeRF_native.conf](./conf/RealTime_input/gnss-sdr_GPS_L1_bladeRF_native.conf).
+Note that, unlike the `Osmosdr_Signal_Source` path, `libbladeRF` exposes a
+single overall RX gain instead of separate LNA / VGA1 / VGA2 stages, and only
+single-channel (SISO) reception is currently supported (bladeRF 2.0 Micro xA9's
+second RX channel is not yet exposed).
 
 #### Build FMCOMMS2 based SDR Hardware support (OPTIONAL)
 

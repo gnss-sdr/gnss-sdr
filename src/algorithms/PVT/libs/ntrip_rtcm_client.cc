@@ -179,7 +179,7 @@ public:
             {
                 return false;
             }
-        ntrip_t* ntrip = static_cast<ntrip_t*>(d_stream.port);
+        auto* ntrip = static_cast<ntrip_t*>(d_stream.port);
         if (ntrip == nullptr)
             {
                 close();
@@ -203,7 +203,7 @@ public:
     {
         if (d_stream.port != nullptr)
             {
-                ntrip_t* ntrip = static_cast<ntrip_t*>(d_stream.port);
+                auto* ntrip = static_cast<ntrip_t*>(d_stream.port);
                 std::memset(ntrip->user, 0, sizeof(ntrip->user));
                 std::memset(ntrip->passwd, 0, sizeof(ntrip->passwd));
                 // RTKLIB initializes the socket descriptor to zero and may
@@ -233,10 +233,10 @@ class Rtcm_Owner
 {
 public:
     Rtcm_Owner()
-        : d_rtcm(new rtcm_t())
+        : d_rtcm(new rtcm_t()),
+          d_initialized(init_rtcm(d_rtcm.get()) != 0)
     {
         std::memset(d_rtcm.get(), 0, sizeof(rtcm_t));
-        d_initialized = init_rtcm(d_rtcm.get()) != 0;
     }
 
     ~Rtcm_Owner()
@@ -563,9 +563,9 @@ private:
                 *reason = "mountpoint is empty or too long";
                 return false;
             }
-        for (std::size_t i = 0; i < d_config.host.size(); ++i)
+        for (char i : d_config.host)
             {
-                const unsigned char c = static_cast<unsigned char>(d_config.host[i]);
+                const auto c = static_cast<unsigned char>(i);
                 if (c <= 0x20U || c >= 0x7FU || c == ':' || c == '/' || c == '@' ||
                     c == '[' || c == ']')
                     {
@@ -573,9 +573,9 @@ private:
                         return false;
                     }
             }
-        for (std::size_t i = 0; i < mountpoint.size(); ++i)
+        for (char i : mountpoint)
             {
-                const unsigned char c = static_cast<unsigned char>(mountpoint[i]);
+                const auto c = static_cast<unsigned char>(i);
                 if (c <= 0x20U || c >= 0x7FU || c == '@' || c == ':')
                     {
                         *reason = "mountpoint contains an unsupported character";
@@ -866,7 +866,7 @@ private:
 
     Handshake_Result perform_handshake(stream_t* stream)
     {
-        ntrip_t* ntrip = static_cast<ntrip_t*>(stream->port);
+        auto* ntrip = static_cast<ntrip_t*>(stream->port);
         if (ntrip == nullptr || ntrip->tcp == nullptr)
             {
                 return Handshake_Result::CONNECT_FAILED;
@@ -921,7 +921,7 @@ private:
     std::string stream_corrections(stream_t* stream, rtcm_t* decoder,
         std::uint64_t* applied_rover_time_generation)
     {
-        ntrip_t* ntrip = static_cast<ntrip_t*>(stream->port);
+        auto* ntrip = static_cast<ntrip_t*>(stream->port);
         std::array<unsigned char, READ_BUFFER_SIZE> buffer = {{0}};
         bool sent_gga = false;
         std::chrono::steady_clock::time_point last_gga;
@@ -1078,11 +1078,11 @@ private:
             }
 
         std::lock_guard<std::mutex> lock(d_output_mutex);
-        for (std::size_t i = 0; i < d_gps_ephemerides.size(); ++i)
+        for (auto& d_gps_ephemeride : d_gps_ephemerides)
             {
-                if (d_gps_ephemerides[i].sat == ephemeris.sat)
+                if (d_gps_ephemeride.sat == ephemeris.sat)
                     {
-                        d_gps_ephemerides[i] = ephemeris;
+                        d_gps_ephemeride = ephemeris;
                         return;
                     }
             }

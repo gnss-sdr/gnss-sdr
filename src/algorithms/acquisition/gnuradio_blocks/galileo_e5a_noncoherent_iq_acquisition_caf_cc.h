@@ -31,6 +31,7 @@
 #include "gnss_synchro.h"
 #include <gnuradio/block.h>
 #include <gnuradio/gr_complex.h>
+#include <array>
 #include <fstream>
 #include <memory>
 #include <string>
@@ -74,6 +75,7 @@ public:
      */
     inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override
     {
+        gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
         d_gnss_synchro = p_gnss_synchro;
     }
 
@@ -124,6 +126,13 @@ public:
     }
 
     /*!
+     * \brief Set Doppler center frequency and preset for the grid search. It will refresh the Doppler grid.
+     * \param doppler_center - Frequency center of the search grid [Hz].
+     * \param assist_level - Assistance level: 0 - unassisted, 1 - LO drift, 2 - predicted doppler.
+     */
+    void set_assistance(int32_t doppler_center, int32_t assist_level = ASSIST_COMPENSATEED_DRIFT) override;
+
+    /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.
      */
     int general_work(int noutput_items, gr_vector_int& ninput_items,
@@ -144,6 +153,7 @@ private:
         int CAF_window_hz,
         int Zero_padding);
 
+    float calculate_threshold() const;
     void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
         int doppler_offset);
 
@@ -166,13 +176,18 @@ private:
     const int d_CAF_window_hz;
     int d_buffer_count;
     int d_doppler_resolution;
+    int32_t d_doppler_center;
     const int d_fft_size;
-    int d_num_doppler_bins;
+    std::array<int, ASSIST_COUNT> d_num_doppler_bins;
+    const std::array<float, ASSIST_COUNT> d_doppler_max;
+    const std::array<uint32_t, ASSIST_COUNT> d_doppler_step;
     unsigned int d_gr_stream_buffer;
     unsigned int d_channel;
     unsigned int d_well_count;
     unsigned int d_sampled_ms;
     unsigned int d_code_phase;
+    int32_t d_assist_level;
+    float d_threshold;
 
     bool d_active;
     const bool d_both_signal_components;

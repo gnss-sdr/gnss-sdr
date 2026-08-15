@@ -74,6 +74,7 @@ target_link_libraries(algorithms_libs_rtklib
         Armadillo::armadillo
         LAPACK::LAPACK
         BLAS::BLAS
+        Threads::Threads
 )
 
 # Use the same OpenSSL-preferred/GnuTLS-fallback selection as the rest of

@@ -75,7 +75,7 @@ public:
     int rtk_trace_level = 0;
     int32_t ntrip_timeout_ms = 10000;
     int32_t ntrip_reconnect_interval_ms = 10000;
-    int32_t ntrip_version = 2;  // 2: NTRIP v2 with automatic fallback to v1; 1: force legacy v1
+    int32_t ntrip_version = 2;  // 2: prefer v2 with one compatible v1 retry; 1: force legacy v1
 
     uint16_t rtcm_tcp_port = 0;
     uint16_t rtcm_station_id = 0;

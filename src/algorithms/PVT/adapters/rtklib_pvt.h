@@ -94,8 +94,8 @@ class Gps_Ephemeris;
  *  .ntrip_username - Basic-authentication username ("")
  *  .ntrip_password - Basic-authentication password ("")
  *  .ntrip_password_env - environment variable containing the password (""), mutually exclusive with .ntrip_password
- *  .ntrip_version - 2 negotiates NTRIP v2 with automatic fallback to v1; 1 forces legacy v1 (2)
- *  .ntrip_tls_enabled - TLS transport with system-CA certificate and hostname verification (false)
+ *  .ntrip_version - 2 prefers v2 with one compatible v1 retry; 1 forces legacy v1 (2)
+ *  .ntrip_tls_enabled - TLS 1.2-or-newer transport with system-CA certificate and hostname verification (false)
  *  .ntrip_inactivity_timeout_ms - (10000)
  *  .ntrip_reconnect_interval_ms - (10000)
  *  .ntrip_max_correction_age_s - (5.0)

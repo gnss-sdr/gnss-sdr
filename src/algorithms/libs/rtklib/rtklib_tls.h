@@ -1,6 +1,6 @@
 /*!
  * \file rtklib_tls.h
- * \brief TLS client transport for RTKLIB streams
+ * \brief TLS 1.2-or-newer client transport for RTKLIB streams
  * \author Carles Fernandez-Prades, 2026. cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------

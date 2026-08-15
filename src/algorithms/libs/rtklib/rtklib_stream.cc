@@ -70,6 +70,7 @@ static char localdir[1024] = "";     /* local directory for ftp/http */
 static char proxyaddr[256] = "";     /* http/ntrip/ftp proxy address */
 static unsigned int tick_master = 0; /* time tick master for replay */
 static int fswapmargin = 30;         /* file swap margin (s) */
+static constexpr int RECV_WOULD_BLOCK = -2;
 
 
 /* open serial ---------------------------------------------------------------*/
@@ -939,7 +940,7 @@ int recv_nb(socket_t sock, unsigned char *buff, int n)
     FD_SET(sock, &rs);
     if (!select(sock + 1, &rs, nullptr, nullptr, &tv))
         {
-            return 0;
+            return RECV_WOULD_BLOCK;
         }
     return recv(sock, reinterpret_cast<char *>(buff), n, 0);
 }
@@ -1243,11 +1244,24 @@ int readtcpsvr(tcpsvr_t *tcpsvr, unsigned char *buff, int n, char *msg)
             return 0;
         }
 
-    if ((nr = recv_nb(tcpsvr->cli[0].sock, buff, n)) == -1)
+    nr = recv_nb(tcpsvr->cli[0].sock, buff, n);
+    if (nr == RECV_WOULD_BLOCK)
         {
-            err = errsock();
-            tracet(1, "readtcpsvr: recv error sock=%d err=%d\n", tcpsvr->cli[0].sock, err);
-            std::snprintf(msg, MAXSTRMSG, "recv error (%d)", err);
+            return 0;
+        }
+    if (nr <= 0)
+        {
+            if (nr == 0)
+                {
+                    tracet(2, "readtcpsvr: connection closed sock=%d\n", tcpsvr->cli[0].sock);
+                    std::snprintf(msg, MAXSTRMSG, "connection closed");
+                }
+            else
+                {
+                    err = errsock();
+                    tracet(1, "readtcpsvr: recv error sock=%d err=%d\n", tcpsvr->cli[0].sock, err);
+                    std::snprintf(msg, MAXSTRMSG, "recv error (%d)", err);
+                }
             discontcp(&tcpsvr->cli[0], ticonnect);
             updatetcpsvr(tcpsvr, msg);
             return 0;
@@ -1441,11 +1455,24 @@ int readtcpcli(tcpcli_t *tcpcli, unsigned char *buff, int n, char *msg)
             return 0;
         }
 
-    if ((nr = recv_nb(tcpcli->svr.sock, buff, n)) == -1)
+    nr = recv_nb(tcpcli->svr.sock, buff, n);
+    if (nr == RECV_WOULD_BLOCK)
         {
-            err = errsock();
-            tracet(1, "readtcpcli: recv error sock=%d err=%d\n", tcpcli->svr.sock, err);
-            std::snprintf(msg, MAXSTRMSG, "recv error (%d)", err);
+            return 0;
+        }
+    if (nr <= 0)
+        {
+            if (nr == 0)
+                {
+                    tracet(2, "readtcpcli: connection closed sock=%d\n", tcpcli->svr.sock);
+                    std::snprintf(msg, MAXSTRMSG, "connection closed");
+                }
+            else
+                {
+                    err = errsock();
+                    tracet(1, "readtcpcli: recv error sock=%d err=%d\n", tcpcli->svr.sock, err);
+                    std::snprintf(msg, MAXSTRMSG, "recv error (%d)", err);
+                }
             discontcp(&tcpcli->svr, tcpcli->tirecon);
             return 0;
         }
@@ -1638,6 +1665,9 @@ bool ntrip_prepare_request(ntrip_t *ntrip, const std::string &request, char *msg
     std::memcpy(ntrip->request_buff, request.data(), request.size());
     ntrip->request_length = static_cast<int>(request.size());
     ntrip->request_offset = 0;
+    ntrip->request_sent = 0;
+    ntrip->response_received = 0;
+    ntrip->v1_retry_requested = 0;
     return true;
 }
 
@@ -2144,6 +2174,7 @@ int reqntrip_s(ntrip_t *ntrip, char *msg)
     /* The SOURCE request contains the caster password. */
     tracet(5, "reqntrip_s: request headers redacted n=%d\n", request_length);
     ntrip->state = 1;
+    ntrip->request_sent = 1;
     return 1;
 }
 
@@ -2200,6 +2231,7 @@ int reqntrip_c(ntrip_t *ntrip, char *msg)
     tracet(2, "reqntrip_c: request sent state=%d version=%d ns=%d\n",
         ntrip->state, ntrip->version, request_length);
     ntrip->state = 1;
+    ntrip->request_sent = 1;
     return 1;
 }
 
@@ -2230,6 +2262,8 @@ int rspntrip_c_v2(ntrip_t *ntrip, char *msg)
 
     if (status != 200)
         {
+            ntrip->v1_retry_requested =
+                status == 400 || status == 501 || status == 505;
             const int line_size = std::min(static_cast<int>(line_end - data), MAXSTRMSG - 1);
             return reject_ntrip_v2_response(ntrip, msg,
                 std::string(data, static_cast<std::size_t>(line_size)));
@@ -2443,6 +2477,9 @@ int waitntrip(ntrip_t *ntrip, char *msg)
     if (ntrip->tcp->svr.state < 2)
         {
             ntrip->state = 0; /* tcp disconnected */
+            ntrip->request_sent = 0;
+            ntrip->response_received = 0;
+            ntrip->v1_retry_requested = 0;
             /* A new connection must send the complete request, never just the
              * suffix left from a short write on the previous socket. */
             ntrip_clear_request(ntrip);
@@ -2473,6 +2510,7 @@ int waitntrip(ntrip_t *ntrip, char *msg)
                     return 0;
                 }
             ntrip->nb += n;
+            ntrip->response_received = 1;
             ntrip->buff[ntrip->nb] = '\0';
 
             /* wait response */
@@ -2516,6 +2554,9 @@ ntrip_t *openntrip(const char *path, int type, char *msg)
     ntrip->nb = 0;
     ntrip->request_length = 0;
     ntrip->request_offset = 0;
+    ntrip->request_sent = 0;
+    ntrip->response_received = 0;
+    ntrip->v1_retry_requested = 0;
     ntrip->tls_ctx = nullptr;
     ntrip->url[0] = '\0';
     ntrip->host[0] = ntrip->port[0] = '\0';
@@ -3091,10 +3132,11 @@ void strinit(stream_t *stream)
  *   STR_NTRIPSVR user[:passwd]@address[:port]/moutpoint[:string]
  *   STR_NTRIPCLI [user[:passwd]]@address[:port][/mountpoint][::options]
  *                    NTRIP=1 = force legacy NTRIP v1
- *                    NTRIP=2 = use NTRIP v2, with automatic fallback to v1
- *                              when the caster does not answer with an HTTP
- *                              status line (default)
- *                    TLS     = enable TLS with system CA/hostname verification
+ *                    NTRIP=2 = use NTRIP v2 and accept a v1-style response on
+ *                              the same connection (default); the owning PVT
+ *                              client performs fresh-connection v1 retries
+ *                    TLS     = enable TLS 1.2 or newer with system
+ *                              CA/hostname verification
  *   STR_FTP      [user[:passwd]]@address/file_path[::T=poff[, tint[, toff, tret]]]]
  *   STR_HTTP     address/file_path[::T=poff[, tint[, toff, tret]]]]
  *                    poff  = time offset for path extension (s)

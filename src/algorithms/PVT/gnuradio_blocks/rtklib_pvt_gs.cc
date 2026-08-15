@@ -717,8 +717,8 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
                 {
                     throw std::runtime_error("Unable to start the NTRIP RTCM client");
                 }
-            LOG(INFO) << "NTRIP v" << conf_.ntrip_version
-                      << (conf_.ntrip_tls_enabled ? " client (TLS) enabled for " : " client enabled for ")
+            LOG(INFO) << "NTRIP client configured for v" << conf_.ntrip_version
+                      << (conf_.ntrip_tls_enabled ? " (TLS 1.2+) at " : " at ")
                       << conf_.ntrip_caster_address << ':' << conf_.ntrip_port
                       << '/' << conf_.ntrip_mountpoint;
         }

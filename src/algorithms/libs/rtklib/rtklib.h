@@ -1214,6 +1214,9 @@ typedef struct
     int nb;                                   /* response buffer size */
     int request_length;                       /* buffered NTRIP request size */
     int request_offset;                       /* bytes of buffered request already sent */
+    int request_sent;                         /* complete request sent on current connection */
+    int response_received;                    /* response bytes received on current connection */
+    int v1_retry_requested;                   /* response indicates a fresh v1 retry */
     char url[256];                            /* url for proxy */
     char host[256];                           /* caster hostname (not proxy hostname) */
     char port[16];                            /* caster port */

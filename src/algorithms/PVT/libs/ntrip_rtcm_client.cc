@@ -282,7 +282,8 @@ enum class Handshake_Result : std::uint8_t
     CONNECT_TIMEOUT,
     SEND_FAILED,
     RESPONSE_TIMEOUT,
-    RESPONSE_REJECTED
+    RESPONSE_REJECTED,
+    RETRY_V1
 };
 
 
@@ -662,10 +663,15 @@ private:
 
     std::string transport_path(const std::string& host) const
     {
+        return transport_path(host, d_config.version);
+    }
+
+    std::string transport_path(const std::string& host, int version) const
+    {
         std::ostringstream path;
         path << host << ':' << d_config.port << '/'
              << normalized_mountpoint(d_config.mountpoint)
-             << "::NTRIP=" << d_config.version;
+             << "::NTRIP=" << version;
         if (d_config.tls_enabled)
             {
                 path << "::TLS";
@@ -759,14 +765,25 @@ private:
         return Resolve_Result::SUCCESS;
     }
 
-    std::string negotiating_message() const
+    std::string negotiating_message(int version) const
     {
         std::string message = "negotiating NTRIP v";
-        message += (d_config.version == 1 ? '1' : '2');
+        message += (version == 1 ? '1' : '2');
         message += " stream";
         if (d_config.tls_enabled)
             {
                 message += " over TLS";
+            }
+        return message;
+    }
+
+    static std::string streaming_message(int version, bool fallback_from_v2)
+    {
+        std::string message = "receiving RTCM3 corrections over NTRIP v";
+        message += (version == NTRIP_VERSION_1 ? '1' : '2');
+        if (fallback_from_v2)
+            {
+                message += " (fallback from v2)";
             }
         return message;
     }
@@ -797,12 +814,24 @@ private:
     void worker_loop()
     {
         std::uint64_t applied_rover_time_generation = 0;
+        int active_version = d_config.version;
+        bool fallback_from_v2 = false;
+        std::string immediate_retry_host;
         while (!d_stop_requested.load())
             {
                 std::string failure_message = "correction stream disconnected";
+                bool retry_with_v1 = false;
                 std::string resolved_host;
-                const Resolve_Result resolve_result = resolve_transport_host(
-                    &d_pending_resolution, &resolved_host, &failure_message);
+                Resolve_Result resolve_result = Resolve_Result::SUCCESS;
+                if (!immediate_retry_host.empty())
+                    {
+                        resolved_host.swap(immediate_retry_host);
+                    }
+                else
+                    {
+                        resolve_result = resolve_transport_host(
+                            &d_pending_resolution, &resolved_host, &failure_message);
+                    }
                 if (resolve_result == Resolve_Result::STOPPED)
                     {
                         return;
@@ -825,7 +854,7 @@ private:
                         Stream_Owner stream;
                         set_state(Ntrip_Rtcm_Client_State::CONNECTING,
                             "connecting to NTRIP caster", false);
-                        if (!stream.open(transport_path(resolved_host), d_config.host,
+                        if (!stream.open(transport_path(resolved_host, active_version), d_config.host,
                                 d_config.username, d_config.password))
                             {
                                 failure_message = "could not initialize NTRIP transport";
@@ -834,12 +863,20 @@ private:
                             {
                                 strsettimeout(stream.get(), d_config.timeout_ms,
                                     d_config.reconnect_interval_ms);
-                                const Handshake_Result handshake = perform_handshake(stream.get());
+                                const Handshake_Result handshake =
+                                    perform_handshake(stream.get(), active_version);
                                 if (handshake == Handshake_Result::SUCCESS)
                                     {
+                                        const auto* ntrip = static_cast<const ntrip_t*>(stream.get()->port);
+                                        if (active_version == NTRIP_VERSION_2 && ntrip != nullptr &&
+                                            ntrip->version == NTRIP_VERSION_1)
+                                            {
+                                                active_version = NTRIP_VERSION_1;
+                                                fallback_from_v2 = true;
+                                            }
                                         apply_decoder_time(decoder.get(), &applied_rover_time_generation, true);
                                         set_state(Ntrip_Rtcm_Client_State::STREAMING,
-                                            "receiving RTCM3 corrections", true);
+                                            streaming_message(active_version, fallback_from_v2), true);
                                         failure_message = stream_corrections(stream.get(), decoder.get(),
                                             &applied_rover_time_generation);
                                     }
@@ -856,6 +893,9 @@ private:
                                                 failure_message += stream.get()->msg;
                                                 failure_message += ')';
                                             }
+                                        retry_with_v1 =
+                                            active_version == NTRIP_VERSION_2 &&
+                                            handshake == Handshake_Result::RETRY_V1;
                                     }
                             }
                     }
@@ -863,6 +903,20 @@ private:
                 if (d_stop_requested.load())
                     {
                         return;
+                    }
+                if (!retry_with_v1 && fallback_from_v2 &&
+                    active_version == NTRIP_VERSION_1)
+                    {
+                        failure_message.insert(0, "NTRIP v1 fallback: ");
+                    }
+                if (retry_with_v1)
+                    {
+                        active_version = NTRIP_VERSION_1;
+                        fallback_from_v2 = true;
+                        immediate_retry_host = resolved_host;
+                        set_state(Ntrip_Rtcm_Client_State::CONNECTING,
+                            "NTRIP v2 negotiation failed; retrying with v1", false);
+                        continue;
                     }
                 if (d_config.reconnect_interval_ms == 0)
                     {
@@ -880,7 +934,7 @@ private:
             }
     }
 
-    Handshake_Result perform_handshake(stream_t* stream)
+    Handshake_Result perform_handshake(stream_t* stream, int requested_version)
     {
         auto* ntrip = static_cast<ntrip_t*>(stream->port);
         if (ntrip == nullptr || ntrip->tcp == nullptr)
@@ -895,27 +949,38 @@ private:
             {
                 // waitntrip() advances the whole negotiation: TCP connection,
                 // optional TLS handshake, NTRIP request, and response parsing
-                // (v2 with automatic v1 fallback, or forced v1).
-                const int previous_state = ntrip->state;
+                // (v2 with same-connection v1 response compatibility, or
+                // forced v1). Fresh-connection fallback is owned by the worker.
                 const int negotiated = waitntrip(ntrip, stream->msg);
                 if (!connected && ntrip->tcp->svr.state == 2)
                     {
                         connected = true;
                         set_state(Ntrip_Rtcm_Client_State::AUTHENTICATING,
-                            negotiating_message(), false);
+                            negotiating_message(ntrip->version), false);
                     }
                 if (negotiated != 0 && ntrip->state == 2)
                     {
                         return Handshake_Result::SUCCESS;
                     }
-                if (connected && ntrip->tcp->svr.state == 0)
+                if (ntrip->tcp->svr.state == 0)
                     {
-                        // The transport dropped after being established: either
-                        // the caster rejected the request that was already sent
-                        // (a response was pending) or the TLS/send step failed.
-                        return previous_state == 1
-                                   ? Handshake_Result::RESPONSE_REJECTED
-                                   : Handshake_Result::CONNECT_FAILED;
+                        // A complete request is sufficient evidence even when
+                        // a fast caster accepts and closes within this single
+                        // waitntrip() call, before connected can be latched.
+                        if (ntrip->request_sent != 0)
+                            {
+                                if (requested_version == NTRIP_VERSION_2 &&
+                                    (ntrip->v1_retry_requested != 0 ||
+                                        ntrip->version == NTRIP_VERSION_1 ||
+                                        ntrip->response_received == 0))
+                                    {
+                                        return Handshake_Result::RETRY_V1;
+                                    }
+                                return Handshake_Result::RESPONSE_REJECTED;
+                            }
+                        // TCP, TLS, and partial-request failures are never
+                        // interpreted as protocol downgrade evidence.
+                        return Handshake_Result::CONNECT_FAILED;
                     }
                 if (ntrip->tcp->svr.state < 0)
                     {
@@ -930,8 +995,22 @@ private:
             {
                 return Handshake_Result::STOPPED;
             }
-        return connected ? Handshake_Result::RESPONSE_TIMEOUT
-                         : Handshake_Result::CONNECT_TIMEOUT;
+        if (!connected)
+            {
+                return Handshake_Result::CONNECT_TIMEOUT;
+            }
+        if (ntrip->request_sent == 0)
+            {
+                return Handshake_Result::SEND_FAILED;
+            }
+        if (requested_version == NTRIP_VERSION_2 &&
+            (ntrip->v1_retry_requested != 0 ||
+                ntrip->version == NTRIP_VERSION_1 ||
+                ntrip->response_received == 0))
+            {
+                return Handshake_Result::RETRY_V1;
+            }
+        return Handshake_Result::RESPONSE_TIMEOUT;
     }
 
     std::string stream_corrections(stream_t* stream, rtcm_t* decoder,
@@ -1211,6 +1290,8 @@ private:
                 return "NTRIP caster response timed out";
             case Handshake_Result::RESPONSE_REJECTED:
                 return "NTRIP request was rejected";
+            case Handshake_Result::RETRY_V1:
+                return "NTRIP v2 exchange requires a v1 retry";
             case Handshake_Result::STOPPED:
                 return "stopped";
             case Handshake_Result::SUCCESS:

@@ -37,20 +37,21 @@ struct Ntrip_Rtcm_Client_Config
     std::string mountpoint;
     std::string username;
     std::string password;
-    // Zero disables automatic reconnect; positive values select the delay.
+    // Zero disables operational reconnects, but not the single immediate v2-to-v1
+    // compatibility retry; positive values select the reconnect delay.
     int reconnect_interval_ms = 10000;
     int timeout_ms = 10000;
     double max_age_s = 5.0;
     bool send_gga = false;
     int gga_period_ms = 10000;
 
-    // NTRIP protocol version requested from the transport: 2 negotiates NTRIP
-    // v2 with automatic fallback to v1 when the caster does not answer with an
-    // HTTP status line; 1 forces the legacy v1 protocol.
+    // NTRIP protocol version requested from the transport: 2 prefers v2,
+    // accepts a legacy reply, and retries once on a fresh v1 connection after
+    // HTTP 400/501/505 or no response bytes; 1 forces legacy v1.
     int version = 2;
 
-    // Enables TLS transport with certificate validation against the system CA
-    // store and host name verification.
+    // Enables TLS 1.2-or-newer transport with certificate validation against
+    // the system CA store and host name verification.
     bool tls_enabled = false;
 
     // Zero accepts any stream station while keeping observations and position
@@ -114,8 +115,8 @@ struct Ntrip_Rtcm_Snapshot
 
 /*!
  * \brief Receives and decodes a fixed-base RTCM3 stream from an NTRIP caster,
- * using NTRIP v2 with automatic fallback to v1, or forced v1, optionally over
- * TLS.
+ * preferring NTRIP v2 with a fresh-connection fallback to v1, or using forced
+ * v1, optionally over TLS.
  *
  * The object owns one worker thread. The public snapshot and status methods
  * copy data under a mutex and can be called concurrently with the worker.

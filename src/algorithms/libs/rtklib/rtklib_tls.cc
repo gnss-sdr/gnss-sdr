@@ -1,6 +1,6 @@
 /*!
  * \file rtklib_tls.cc
- * \brief TLS client transport for RTKLIB streams
+ * \brief TLS 1.2-or-newer client transport for RTKLIB streams
  * \author Carles Fernandez-Prades, 2026. cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
@@ -16,6 +16,8 @@
 
 #include "rtklib_tls.h"
 #include <arpa/inet.h>
+#include <cerrno>
+#include <csignal>
 #include <cstdio>
 #include <mutex>
 #include <utility>
@@ -30,6 +32,77 @@
 
 namespace
 {
+// OpenSSL's socket BIO and older GnuTLS releases can call send() without
+// MSG_NOSIGNAL. Block SIGPIPE only in the calling thread while TLS performs
+// I/O, consume only a signal raised by that operation, and leave the process-
+// wide signal disposition untouched.
+class Tls_Sigpipe_Guard
+{
+public:
+    Tls_Sigpipe_Guard() noexcept
+    {
+        if (sigemptyset(&d_sigpipe_set) != 0 ||
+            sigaddset(&d_sigpipe_set, SIGPIPE) != 0)
+            {
+                return;
+            }
+
+        if (pthread_sigmask(SIG_BLOCK, &d_sigpipe_set, &d_previous_mask) != 0)
+            {
+                return;
+            }
+        d_restore_mask = true;
+
+        sigset_t pending_signals;
+        if (sigpending(&pending_signals) != 0)
+            {
+                pthread_sigmask(SIG_SETMASK, &d_previous_mask, nullptr);
+                d_restore_mask = false;
+                return;
+            }
+
+        d_sigpipe_was_pending = sigismember(&pending_signals, SIGPIPE) == 1;
+        d_ready = true;
+    }
+
+    ~Tls_Sigpipe_Guard()
+    {
+        if (!d_restore_mask)
+            {
+                return;
+            }
+
+        const int saved_errno = errno;
+        if (!d_sigpipe_was_pending)
+            {
+                sigset_t pending_signals;
+                if (sigpending(&pending_signals) == 0 &&
+                    sigismember(&pending_signals, SIGPIPE) == 1)
+                    {
+                        int received_signal = 0;
+                        sigwait(&d_sigpipe_set, &received_signal);
+                    }
+            }
+        pthread_sigmask(SIG_SETMASK, &d_previous_mask, nullptr);
+        errno = saved_errno;
+    }
+
+    Tls_Sigpipe_Guard(const Tls_Sigpipe_Guard &) = delete;
+    Tls_Sigpipe_Guard &operator=(const Tls_Sigpipe_Guard &) = delete;
+    Tls_Sigpipe_Guard(Tls_Sigpipe_Guard &&) = delete;
+    Tls_Sigpipe_Guard &operator=(Tls_Sigpipe_Guard &&) = delete;
+
+    bool ready() const noexcept { return d_ready; }
+
+private:
+    sigset_t d_sigpipe_set{};
+    sigset_t d_previous_mask{};
+    bool d_sigpipe_was_pending = false;
+    bool d_restore_mask = false;
+    bool d_ready = false;
+};
+
+
 bool is_numeric_address(const std::string &hostname)
 {
     struct in_addr addr4{};
@@ -49,6 +122,9 @@ void set_tls_msg(char *msg, const char *text)
 #ifdef USE_GNUTLS_FALLBACK
 std::once_flag gnutls_init_flag;
 int gnutls_init_result = GNUTLS_E_SUCCESS;
+
+constexpr char GNUTLS_TLS_1_2_OR_NEWER_PRIORITY[] =
+    "-VERS-SSL3.0:-VERS-TLS1.0:-VERS-TLS1.1";
 
 void initialize_gnutls_once()
 {
@@ -123,6 +199,32 @@ public:
                 return false;
             }
 
+#if OPENSSL_VERSION_NUMBER < 0x10002000L
+        SSL_CTX_free(d_context);
+        d_context = nullptr;
+        set_tls_msg(msg, "OpenSSL >= 1.0.2 required for NTRIP TLS");
+        return false;
+#elif OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
+        if (SSL_CTX_set_min_proto_version(d_context, TLS1_2_VERSION) != 1)
+            {
+                SSL_CTX_free(d_context);
+                d_context = nullptr;
+                set_tls_msg(msg, "OpenSSL TLS 1.2 policy failed");
+                return false;
+            }
+#else
+        const long disabled_protocols = SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 |
+                                        SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1;
+        if ((SSL_CTX_set_options(d_context, disabled_protocols) &
+                disabled_protocols) != disabled_protocols)
+            {
+                SSL_CTX_free(d_context);
+                d_context = nullptr;
+                set_tls_msg(msg, "OpenSSL TLS 1.2 policy failed");
+                return false;
+            }
+#endif
+
         SSL_CTX_set_verify(d_context, SSL_VERIFY_PEER, nullptr);
         if (SSL_CTX_set_default_verify_paths(d_context) != 1)
             {
@@ -179,14 +281,31 @@ public:
 #ifdef USE_GNUTLS_FALLBACK
         if (!d_session)
             {
-                int ret = gnutls_init(&d_session, GNUTLS_CLIENT | GNUTLS_NONBLOCK);
+                unsigned int init_flags = GNUTLS_CLIENT | GNUTLS_NONBLOCK;
+#if GNUTLS_VERSION_NUMBER >= 0x030402
+                init_flags |= GNUTLS_NO_SIGNAL;
+#endif
+                int ret = gnutls_init(&d_session, init_flags);
                 if (ret < 0)
                     {
                         set_tls_msg(msg, "GnuTLS session failed");
                         return -1;
                     }
-                if ((ret = gnutls_set_default_priority(d_session)) < 0 ||
-                    (ret = gnutls_credentials_set(d_session, GNUTLS_CRD_CERTIFICATE, d_credentials)) < 0)
+#if GNUTLS_VERSION_NUMBER >= 0x030603
+                ret = gnutls_set_default_priority_append(d_session,
+                    GNUTLS_TLS_1_2_OR_NEWER_PRIORITY, nullptr, 0);
+#else
+                ret = gnutls_priority_set_direct(d_session,
+                    "NORMAL:-VERS-SSL3.0:-VERS-TLS1.0:-VERS-TLS1.1", nullptr);
+#endif
+                if (ret < 0)
+                    {
+                        reset();
+                        set_tls_msg(msg, "GnuTLS TLS 1.2 policy failed");
+                        return -1;
+                    }
+                ret = gnutls_credentials_set(d_session, GNUTLS_CRD_CERTIFICATE, d_credentials);
+                if (ret < 0)
                     {
                         reset();
                         set_tls_msg(msg, "GnuTLS setup failed");
@@ -206,6 +325,13 @@ public:
                 gnutls_transport_set_int(d_session, sock);
             }
 
+        Tls_Sigpipe_Guard sigpipe_guard;
+        if (!sigpipe_guard.ready())
+            {
+                reset();
+                set_tls_msg(msg, "TLS signal protection failed");
+                return -1;
+            }
         int ret = gnutls_handshake(d_session);
         if (ret == GNUTLS_E_AGAIN || ret == GNUTLS_E_INTERRUPTED)
             {
@@ -275,6 +401,13 @@ public:
                 SSL_set_connect_state(d_session);
             }
 
+        Tls_Sigpipe_Guard sigpipe_guard;
+        if (!sigpipe_guard.ready())
+            {
+                reset();
+                set_tls_msg(msg, "TLS signal protection failed");
+                return -1;
+            }
         int ret = SSL_connect(d_session);
         if (ret != 1)
             {
@@ -307,6 +440,12 @@ public:
                 return 0;
             }
 #ifdef USE_GNUTLS_FALLBACK
+        Tls_Sigpipe_Guard sigpipe_guard;
+        if (!sigpipe_guard.ready())
+            {
+                set_tls_msg(msg, "TLS signal protection failed");
+                return -1;
+            }
         const ssize_t ret = gnutls_record_recv(d_session, buff, static_cast<size_t>(n));
         if (ret > 0)
             {
@@ -326,6 +465,12 @@ public:
             }
         return -1;
 #else
+        Tls_Sigpipe_Guard sigpipe_guard;
+        if (!sigpipe_guard.ready())
+            {
+                set_tls_msg(msg, "TLS signal protection failed");
+                return -1;
+            }
         const int ret = SSL_read(d_session, buff, n);
         if (ret > 0)
             {
@@ -348,6 +493,12 @@ public:
                 return 0;
             }
 #ifdef USE_GNUTLS_FALLBACK
+        Tls_Sigpipe_Guard sigpipe_guard;
+        if (!sigpipe_guard.ready())
+            {
+                set_tls_msg(msg, "TLS signal protection failed");
+                return -1;
+            }
         const ssize_t ret = gnutls_record_send(d_session, buff, static_cast<size_t>(n));
         if (ret >= 0)
             {
@@ -360,6 +511,12 @@ public:
         set_tls_msg(msg, "GnuTLS send failed");
         return -1;
 #else
+        Tls_Sigpipe_Guard sigpipe_guard;
+        if (!sigpipe_guard.ready())
+            {
+                set_tls_msg(msg, "TLS signal protection failed");
+                return -1;
+            }
         const int ret = SSL_write(d_session, buff, n);
         if (ret > 0)
             {

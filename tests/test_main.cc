@@ -163,6 +163,8 @@ private:
 #include "unit-tests/signal-processing-blocks/adapter/pass_through_test.cc"
 #include "unit-tests/signal-processing-blocks/libs/beidou_b1c_signal_replica_test.cc"
 #include "unit-tests/signal-processing-blocks/libs/item_type_helpers_test.cc"
+#include "unit-tests/signal-processing-blocks/libs/rtklib_lli_test.cc"
+#include "unit-tests/signal-processing-blocks/observables/observables_phase_continuity_test.cc"
 #include "unit-tests/signal-processing-blocks/osnma/gnss_crypto_test.cc"
 #include "unit-tests/signal-processing-blocks/osnma/osnma_msg_receiver_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/geohash_test.cc"

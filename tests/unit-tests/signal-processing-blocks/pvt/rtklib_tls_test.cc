@@ -32,6 +32,13 @@
 #include <openssl/ssl3.h>
 #endif
 
+#if defined(GTEST_SKIP)
+#define GNSSSDR_TLS_TEST_SKIP() GTEST_SKIP()
+#else
+// GoogleTest < 1.10 has no GTEST_SKIP(); record a success and leave the test
+#define GNSSSDR_TLS_TEST_SKIP() return GTEST_SUCCEED() << "Test skipped: "
+#endif
+
 namespace rtklib_tls_test
 {
 constexpr char TLS_TEST_CERTIFICATE[] = R"pem(-----BEGIN CERTIFICATE-----
@@ -592,7 +599,7 @@ TEST(RtklibTlsTest, RejectsTls11OnlyServer)
 
     if (!backend_supports(Tls_Test_Version::TLS_1_1))
         {
-            GTEST_SKIP() << "The active TLS backend cannot enable TLS 1.1";
+            GNSSSDR_TLS_TEST_SKIP() << "The active TLS backend cannot enable TLS 1.1";
         }
 
     const Tls_Handshake_Result result =

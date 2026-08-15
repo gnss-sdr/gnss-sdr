@@ -51,6 +51,11 @@ All notable changes to GNSS-SDR will be documented in this file.
   mean-motion rate terms, and group-delay / inter-signal corrections follow
   IS-GPS-200 / IS-GPS-705 in both single-band and L1+L5 dual-band
   configurations. Contributed by @vladisslav2011.
+- Carrier-phase discontinuities are now detected and flagged: cycle slips after
+  a signal reacquisition, and half-cycle jumps caused by a change in the
+  telemetry-resolved phase polarity. RINEX observation files report them with
+  standard loss-of-lock indicator values, and the optional carrier smoothing
+  filter restarts instead of smoothing across the jump.
 
 ### Improvements in Availability:
 
@@ -99,13 +104,66 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Added an opt-in fixed-base RTK path for GPS L1 C/A + L2C receivers. The PVT
   block can now connect to an NTRIP caster, decode RTCM 3 base position and GPS
   L1/L2 observations, and feed time-aligned reference data to its RTKLIB
-  relative-positioning solver. The client negotiates NTRIP v2 with automatic
-  fallback to v1 (`PVT.ntrip_version=1` forces the legacy protocol) and supports
-  TLS with system-CA certificate and hostname verification
+  relative-positioning solver. The client prefers NTRIP v2 and, after a
+  fully-sent v2 exchange closes or times out before receiving response bytes, or
+  returns HTTP 400, 501, or 505, retries on a fresh NTRIP v1 connection
+  (`PVT.ntrip_version=1` forces the legacy protocol). It supports TLS 1.2 or
+  newer with system-CA certificate and hostname verification
   (`PVT.ntrip_tls_enabled=true`). It reconnects without blocking the GNU Radio
   work function, filters station changes and stale corrections, redacts
   credentials from RTKLIB traces, and retains an explicitly labeled single-point
   fallback when configured. VRS/GGA is not yet supported.
+- QZSS ambiguities are now resolved in their own group instead of jointly with
+  GPS, avoiding integer fixes across the GPS-QZSS inter-system bias, and the
+  RTCM 3 decoder accepts the final RTCM 3.3 BeiDou ephemeris message type 1042
+  (in addition to the draft type 63), with the a2 clock drift rate term now
+  scaled per the BeiDou ICD ($$ 2^{-66} $$ instead of $$ 2^{-55} $$).
+- Cycle-slip detection by phase-doppler difference is now available: the
+  detector removes the common receiver clock error as the median range-rate
+  residual over all satellites before thresholding. It is enabled by setting
+  `PVT.slip_threshold_doppler` (in m/s; 0, the default, disables it). The
+  innovation rejection threshold in relative positioning and PPP is now split
+  between carrier-phase and code observables:
+  `PVT.threshold_reject_innovation_phase` complements the existing
+  `PVT.threshold_reject_innovation` (which now applies to code) and defaults to
+  the same value, so existing configurations behave identically; a value of 5.0
+  m for the phase threshold is recommended in RTK modes.
+- The double-difference ambiguity transformation now uses the index-based
+  formulation, and integer ambiguity resolution is driven by a new management
+  layer that can skip AR while the float position variance is still high
+  (`PVT.ar_max_position_variance`, default $$ 0.25 m^2
+  $$
+  ; 0 disables the gate), reject
+  newly-risen satellites and retry when the AR ratio degrades (`PVT.ar_filter`,
+  default true), cycle a single satellite out of AR when no fix is achieved with
+  many satellites in view (`PVT.min_drop_sats`, default 10; 0 disables), scale
+  the AR ratio threshold with the number of ambiguity pairs
+  (`PVT.ar_ratio_min`/`PVT.ar_ratio_max`; equal values keep the fixed
+  `PVT.min_ratio_to_fix_ambiguity`), and gate fixing and holding on minimum
+  satellite counts (`PVT.min_fix_sats`, default 4; `PVT.min_hold_sats`,
+  default 5) with a configurable fix-and-hold pseudo-measurement variance
+  (`PVT.var_holdamb`, default $$ 0.1 \text{cycle}^2 $$). The reference satellite for double differencing is now selected by lowest
+  measurement variance instead of highest elevation, excluding slipped
+  satellites, which behaves better in urban conditions where SNR is a better
+  quality proxy than elevation. Also fixed an out-of-bounds risk in the
+  double-difference bias bookkeeping when five constellation groups are active.
+  $$
+- Added SNR-dependent and receiver-reported-stdev terms to the observation
+  weighting model of the single-point and RTK solvers: `PVT.error_factor_snr`
+  (m; a recomended value is 0.005) adds a term driven by the C/N0 of rover and
+  base observations relative to `PVT.error_snr_max` (default 52 dB-Hz), and
+  `PVT.error_factor_rcv_std` weights observations by receiver-reported
+  pseudorange/carrier-phase standard deviations (new `Pstd`/`Lstd` fields in the
+  observation structure, ready to be populated from the tracking-loop variance
+  estimates). Both terms default to 0.0 (disabled), preserving the
+  elevation-only error model.
+- The single-point solver can now estimate a separate QZS-GPS inter-system bias
+  instead of assuming QZSS shares the GPS receiver clock. The estimated offset
+  is reported in `sol.dtr[4]`. It is opt-in via `PVT.estimate_qzss_isb=true`
+  (default `false`) because the extra unknown requires one more satellite in
+  mixed GPS+QZSS epochs, which degrades availability under limited sky
+  visibility; enable it only in open-sky scenarios with six or more satellites
+  in view.
 - Added the BeiDou B1C receiver chain, with signal identifier `1D`: acquisition
   (`BEIDOU_B1C_PCPS_Ambiguous_Acquisition`, with optional QMBOC local replica),
   tracking (`BEIDOU_B1C_DLL_PLL_VEML_Tracking`, tracking the pilot component by
@@ -246,6 +304,16 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Usability:
 
+- The console now reports the RTKLIB solution status. The `First position fix`
+  and periodic `Position at` lines are tagged with `[RTK FIXED]`, `[RTK FLOAT]`,
+  `[DGNSS]`, `[SBAS]` or `[PPP]` (color-coded), and status transitions are
+  announced once when they happen, including the LAMBDA ambiguity-resolution
+  ratio and its threshold when an RTK fix is acquired or lost. The `[PPP]` label
+  is only shown when precise ephemeris and clock products are actually loaded;
+  PPP-mode processing on broadcast products is not labeled as PPP. Plain
+  single-point operation keeps the classic, unmodified console output. The
+  underlying outputs (PVT dump, Monitor, NMEA) keep reporting the raw RTKLIB
+  solution status.
 - A new global parameter `GNSS-SDR.observation_date` allows specifying the
   approximate date of the signal capture, in `YYYY-MM-DD` or `YYYY` format
   (e.g., `GNSS-SDR.observation_date=2014-12-20`), when post-processing recorded
@@ -417,7 +485,6 @@ https://gnss-sdr.org/design-forces/
   https://www.youtube.com/watch?v=HnZkKj9a-QM
 - Add the following signal sources for use when GNSS-SDR is operating on SoC
   FPGA boards (`-DENABLE_FPGA=ON`):
-
   - `ADRV9361_Z7035_Signal_Source_FPGA`: Analog Devices ADRV9361-Z7035 board.
   - `FMCOMMS5_Signal_Source_FPGA`: FMCOMMS5 analog front-end.
   - `MAX2771_EVKIT_Signal_Source_FPGA`: MAX2771 evaluation kit analog front-end.
@@ -426,7 +493,6 @@ https://gnss-sdr.org/design-forces/
   When building GNSS-SDR for the SoC FPGA, the following options can be passed
   to CMake with possible values of `ON` or `OFF`, and their default value is
   `OFF`:
-
   - `-DENABLE_AD9361`: Checks if the IIO driver is installed and builds the
     `ADRV9361_Z7035_Signal_Source_FPGA` and the `FMCOMMS5_Signal_Source_FPGA`
     sources.

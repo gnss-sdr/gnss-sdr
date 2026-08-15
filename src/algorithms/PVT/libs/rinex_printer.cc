@@ -1835,6 +1835,11 @@ void add_obs_sat_record_line(const Gnss_Synchro& synchro, std::string& line, boo
 {
     const int32_t ssi = signal_strength(synchro.CN0_dB_hz);
     const char lli = synchro.Flag_cycle_slip ? '1' : ' ';
+    // bit 0: loss of lock or cycle slip, bit 1: half-cycle ambiguity change.
+    // The half-cycle bit only makes sense for the carrier phase observable
+    const int32_t phase_lli_bits = (synchro.Flag_cycle_slip ? 1 : 0) +
+                                   (synchro.Flag_half_cycle_slip ? 2 : 0);
+    const char phase_lli = phase_lli_bits != 0 ? static_cast<char>('0' + phase_lli_bits) : ' ';
 
     // PSEUDORANGE
     line += rightJustify(asString(synchro.Pseudorange_m, 3), 14);
@@ -1843,7 +1848,7 @@ void add_obs_sat_record_line(const Gnss_Synchro& synchro, std::string& line, boo
 
     // PHASE
     line += rightJustify(asString(synchro.Carrier_phase_rads / TWO_PI, 3), 14);
-    line += std::string(1, lli);                      // Loss of lock indicator (LLI)
+    line += std::string(1, phase_lli);                // Loss of lock indicator (LLI)
     line += rightJustify(asString<int32_t>(ssi), 1);  // Signal Strength Indicator (SSI)
 
     // DOPPLER

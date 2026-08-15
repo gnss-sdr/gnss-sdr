@@ -3222,8 +3222,12 @@ void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
                                 {
                                     rtcm->obs.data[index].D[ind[k]] = static_cast<float>(-(rr[i] + rrf[j]) / wl);
                                 }
+                            /* bit 0: loss of lock, bit 1: half-cycle ambiguity unresolved.
+                               Adding 2 (not 3) keeps both flags in their own bit: a set
+                               half-cycle indicator must not be reported as a cycle slip,
+                               and a real loss of lock must not overflow into bit 2 */
                             rtcm->obs.data[index].LLI[ind[k]] =
-                                lossoflock(rtcm, sat, ind[k], lock[j]) + (half[j] ? 3 : 0);
+                                lossoflock(rtcm, sat, ind[k], lock[j]) + (half[j] ? 2 : 0);
                             rtcm->obs.data[index].SNR[ind[k]] = static_cast<unsigned char>(cnr[j] * 4.0);
                             rtcm->obs.data[index].code[ind[k]] = code[k];
                         }

@@ -680,6 +680,188 @@ TEST_F(RtklibFixedBaseTest, ConsistentDualFrequencyBaseProducesRelativeSolution)
 }
 
 
+TEST_F(RtklibFixedBaseTest, RepeatedPhaseOutliersResetTheStaleAmbiguity)
+{
+    using namespace rtklib_fixed_base_test_detail;
+    const double base_position_geodetic[3] = {45.0 * D2R, 8.0 * D2R, 100.0};
+    double base_position_ecef[3]{};
+    pos2ecef(base_position_geodetic, base_position_ecef);
+    const double baseline_enu_m[3] = {8.0, 4.0, 1.0};
+    double baseline_ecef_m[3]{};
+    enu2ecef(base_position_geodetic, baseline_enu_m, baseline_ecef_m);
+    const double rover_position_ecef[3] = {
+        base_position_ecef[0] + baseline_ecef_m[0],
+        base_position_ecef[1] + baseline_ecef_m[1],
+        base_position_ecef[2] + baseline_ecef_m[2]};
+
+    /* a long outage counter keeps the satellite from being rescued by the
+       maxout path, so the recovery below can only come from the reject counter */
+    prcopt_t options = fixed_base_options();
+    options.maxout = 50;
+    auto solver = make_solver_with_options(options);
+    const std::vector<unsigned int> satellites = select_relative_satellites(
+        base_position_ecef, rover_position_ecef);
+    ASSERT_GE(satellites.size(), 6U);
+
+    /* a carrier-phase jump larger than the innovation threshold (100 m here)
+       makes the double differences of one satellite outliers from then on */
+    const unsigned int corrupted_prn = satellites.back();
+    constexpr double PHASE_JUMP_M = 300.0;
+    constexpr int FIRST_CORRUPTED_EPOCH = 4;
+    const double wavelengths_m[2] = {
+        SPEED_OF_LIGHT_M_S / FREQ1,
+        SPEED_OF_LIGHT_M_S / FREQ2};
+
+    std::vector<unsigned int> valid_satellites;
+    for (int epoch_index = 0; epoch_index < 12; ++epoch_index)
+        {
+            Synthetic_Relative_Epoch epoch = make_relative_epoch(
+                *solver, epoch_index, base_position_ecef, rover_position_ecef, satellites);
+            if (epoch_index >= FIRST_CORRUPTED_EPOCH)
+                {
+                    for (unsigned int band = 0; band < 2U; ++band)
+                        {
+                            const auto observation = epoch.rover_observations.find(
+                                static_cast<int>(corrupted_prn * 2U + band));
+                            ASSERT_NE(epoch.rover_observations.end(), observation);
+                            observation->second.Carrier_phase_rads +=
+                                PHASE_JUMP_M / wavelengths_m[band] * 2.0 * GNSS_PI;
+                        }
+                }
+
+            SCOPED_TRACE(::testing::Message() << "epoch=" << epoch_index);
+            ASSERT_TRUE(solve(*solver, epoch.rover_observations, &epoch.base_snapshot));
+            valid_satellites.push_back(solver->pvt_sol.ns);
+        }
+
+    const unsigned int all_satellites = static_cast<unsigned int>(satellites.size());
+    EXPECT_EQ(all_satellites, valid_satellites[FIRST_CORRUPTED_EPOCH - 1]);
+    /* the jump first takes the satellite out of the solution ... */
+    EXPECT_LT(valid_satellites[FIRST_CORRUPTED_EPOCH], all_satellites);
+    /* ... and the stale bias is then reinitialized instead of being rejected
+       forever, so the satellite comes back on its own */
+    EXPECT_EQ(all_satellites, valid_satellites.back());
+}
+
+
+TEST_F(RtklibFixedBaseTest, AnUnresolvedHalfCycleAmbiguityIsDeweighted)
+{
+    using namespace rtklib_fixed_base_test_detail;
+    const double base_position_geodetic[3] = {45.0 * D2R, 8.0 * D2R, 100.0};
+    double base_position_ecef[3]{};
+    pos2ecef(base_position_geodetic, base_position_ecef);
+    const double baseline_enu_m[3] = {8.0, 4.0, 1.0};
+    double baseline_ecef_m[3]{};
+    enu2ecef(base_position_geodetic, baseline_enu_m, baseline_ecef_m);
+    const double rover_position_ecef[3] = {
+        base_position_ecef[0] + baseline_ecef_m[0],
+        base_position_ecef[1] + baseline_ecef_m[1],
+        base_position_ecef[2] + baseline_ecef_m[2]};
+
+    /* keep the float solution: a satellite flagged as half-cycle ambiguous is
+       excluded from ambiguity resolution on its own, and this exercises the
+       measurement weighting instead */
+    prcopt_t options = fixed_base_options();
+    options.modear = ARMODE_OFF;
+
+    const auto position_variance_with_flag = [&](bool report_half_cycle) {
+        auto solver = make_solver_with_options(options);
+        const std::vector<unsigned int> satellites = select_relative_satellites(
+            base_position_ecef, rover_position_ecef);
+        EXPECT_GE(satellites.size(), 6U);
+
+        for (int epoch_index = 0; epoch_index < 6; ++epoch_index)
+            {
+                Synthetic_Relative_Epoch epoch = make_relative_epoch(
+                    *solver, epoch_index, base_position_ecef, rover_position_ecef, satellites);
+                for (auto& rover_observation : epoch.rover_observations)
+                    {
+                        rover_observation.second.Flag_half_cycle_slip = report_half_cycle;
+                    }
+
+                EXPECT_TRUE(solve(*solver, epoch.rover_observations, &epoch.base_snapshot));
+            }
+
+        return static_cast<double>(solver->pvt_sol.qr[0]) +
+               static_cast<double>(solver->pvt_sol.qr[1]) +
+               static_cast<double>(solver->pvt_sol.qr[2]);
+    };
+
+    const double variance_unflagged = position_variance_with_flag(false);
+    const double variance_flagged = position_variance_with_flag(true);
+
+    // the flagged carrier phases are worth their half wavelength rather than a
+    // few millimeters, and the reported solution says so
+    EXPECT_GT(variance_flagged, 1.001 * variance_unflagged)
+        << "flagged: " << variance_flagged << " m^2, unflagged: " << variance_unflagged << " m^2";
+}
+
+
+TEST_F(RtklibFixedBaseTest, TooFewPhaseObservationsFallBackToACodeDifferencedSolution)
+{
+    using namespace rtklib_fixed_base_test_detail;
+    const double base_position_geodetic[3] = {45.0 * D2R, 8.0 * D2R, 100.0};
+    double base_position_ecef[3]{};
+    pos2ecef(base_position_geodetic, base_position_ecef);
+    const double baseline_enu_m[3] = {8.0, 4.0, 1.0};
+    double baseline_ecef_m[3]{};
+    enu2ecef(base_position_geodetic, baseline_enu_m, baseline_ecef_m);
+    const double rover_position_ecef[3] = {
+        base_position_ecef[0] + baseline_ecef_m[0],
+        base_position_ecef[1] + baseline_ecef_m[1],
+        base_position_ecef[2] + baseline_ecef_m[2]};
+
+    auto solver = make_solver(false);
+    const std::vector<unsigned int> satellites = select_relative_satellites(
+        base_position_ecef, rover_position_ecef);
+    ASSERT_GE(satellites.size(), 6U);
+
+    /* keep the code observations of every satellite but leave carrier phase on
+       only two of them, so fewer than four phase measurements survive */
+    const std::vector<unsigned int> phase_satellites(satellites.cbegin(), satellites.cbegin() + 2);
+
+    for (int epoch_index = 0; epoch_index < 4; ++epoch_index)
+        {
+            Synthetic_Relative_Epoch epoch = make_relative_epoch(
+                *solver, epoch_index, base_position_ecef, rover_position_ecef, satellites);
+            for (const unsigned int prn : satellites)
+                {
+                    if (std::find(phase_satellites.cbegin(), phase_satellites.cend(), prn) !=
+                        phase_satellites.cend())
+                        {
+                            continue;
+                        }
+                    for (unsigned int band = 0; band < 2U; ++band)
+                        {
+                            const auto observation = epoch.rover_observations.find(
+                                static_cast<int>(prn * 2U + band));
+                            ASSERT_NE(epoch.rover_observations.end(), observation);
+                            observation->second.Carrier_phase_rads = 0.0;
+                        }
+                    for (obsd_t& base_observation : epoch.base_snapshot.observations)
+                        {
+                            if (base_observation.sat == satno(SYS_GPS, static_cast<int>(prn)))
+                                {
+                                    base_observation.L[0] = base_observation.L[1] = 0.0;
+                                }
+                        }
+                }
+
+            SCOPED_TRACE(::testing::Message() << "epoch=" << epoch_index);
+            /* the epoch is not dropped: the code-differenced solution is kept */
+            ASSERT_TRUE(solve(*solver, epoch.rover_observations, &epoch.base_snapshot));
+            EXPECT_EQ(Rtklib_Fixed_Base_Status::APPLIED, solver->get_fixed_base_status());
+            EXPECT_EQ(SOLQ_DGPS, solver->pvt_sol.stat);
+        }
+
+    const double position_error_m = std::sqrt(
+        std::pow(solver->pvt_sol.rr[0] - rover_position_ecef[0], 2.0) +
+        std::pow(solver->pvt_sol.rr[1] - rover_position_ecef[1], 2.0) +
+        std::pow(solver->pvt_sol.rr[2] - rover_position_ecef[2], 2.0));
+    EXPECT_LT(position_error_m, 10.0);
+}
+
+
 TEST_F(RtklibFixedBaseTest, Demo5ArManagementProducesFixedSolutionWithFixAndHold)
 {
     using namespace rtklib_fixed_base_test_detail;

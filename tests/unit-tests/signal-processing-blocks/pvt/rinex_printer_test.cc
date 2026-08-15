@@ -532,6 +532,71 @@ TEST_F(RinexPrinterTest, Rinex4GpsNavAndObs)
 }
 
 
+TEST_F(RinexPrinterTest, ObservationRecordsReportLossOfLockIndicatorBits)
+{
+    Pvt_Conf conf;
+    conf.use_e6_for_pvt = false;
+    const auto signal_enabled_flags = GPS_1C;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
+
+    Gps_Ephemeris eph;
+    eph.PRN = 1;
+    eph.WN = 512;
+    pvt_solution->gps_ephemeris_map[1] = eph;
+
+    Gnss_Synchro gs{};
+    gs.System = 'G';
+    std::memcpy(static_cast<void*>(gs.Signal), "1C", 3);
+    gs.Pseudorange_m = 22000000.0;
+    gs.Carrier_phase_rads = 23.4;
+    gs.Carrier_Doppler_hz = 1534.0;
+    gs.CN0_dB_hz = 42.0;
+    gs.Flag_valid_pseudorange = true;
+
+    std::map<int, Gnss_Synchro> gnss_observables_map;
+    gs.PRN = 1;  // clean
+    gnss_observables_map[1] = gs;
+    gs.PRN = 2;  // cycle slip
+    gs.Flag_cycle_slip = true;
+    gnss_observables_map[2] = gs;
+    gs.PRN = 3;  // half-cycle slip
+    gs.Flag_cycle_slip = false;
+    gs.Flag_half_cycle_slip = true;
+    gnss_observables_map[3] = gs;
+    gs.PRN = 4;  // both
+    gs.Flag_cycle_slip = true;
+    gnss_observables_map[4] = gs;
+    for (int prn = 2; prn <= 4; prn++)
+        {
+            pvt_solution->gps_ephemeris_map[prn] = eph;
+        }
+
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 3);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 42.0, true);
+
+    const std::string obsfile = rp->get_obsfilename();
+    const std::string navfile = rp->get_navfilename()[0];
+    rp = nullptr;  // close the RINEX files so we can inspect them
+
+    // the LLI of the carrier phase observation sits right after its 14-character
+    // value, which follows the 3-character satellite id and the pseudorange field
+    const std::size_t phase_lli_position = 3 + 16 + 14;
+    const auto phase_lli_of = [&obsfile](const std::string& satellite) {
+        const std::string record = find_line_starting_with(obsfile, satellite);
+        EXPECT_FALSE(record.empty()) << "no observation record for " << satellite;
+        return record.size() > phase_lli_position ? record[phase_lli_position] : '?';
+    };
+
+    EXPECT_EQ(' ', phase_lli_of("G01"));
+    EXPECT_EQ('1', phase_lli_of("G02"));
+    EXPECT_EQ('2', phase_lli_of("G03"));
+    EXPECT_EQ('3', phase_lli_of("G04"));
+
+    fs::remove(obsfile);
+    fs::remove(navfile);
+}
+
+
 TEST_F(RinexPrinterTest, Rinex4GalileoNav)
 {
     Pvt_Conf conf;

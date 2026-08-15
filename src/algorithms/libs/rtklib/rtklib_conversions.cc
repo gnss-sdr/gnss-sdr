@@ -170,7 +170,9 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
     rtklib_obs.D[band] = gnss_synchro.Carrier_Doppler_hz;
     rtklib_obs.P[band] = gnss_synchro.Pseudorange_m;
     rtklib_obs.L[band] = gnss_synchro.Carrier_phase_rads / TWO_PI;
-    rtklib_obs.LLI[band] = gnss_synchro.Flag_cycle_slip ? 1U : 0U;
+    // bit 0: loss of lock or cycle slip, bit 1: half-cycle ambiguity change
+    rtklib_obs.LLI[band] = static_cast<unsigned char>((gnss_synchro.Flag_cycle_slip ? 1U : 0U) |
+                                                      (gnss_synchro.Flag_half_cycle_slip ? 2U : 0U));
 
     switch (band)
         {

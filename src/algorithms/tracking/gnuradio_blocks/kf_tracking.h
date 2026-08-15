@@ -229,6 +229,7 @@ private:
     bool d_dump;
     bool d_dump_mat;
     bool d_acc_carrier_phase_initialized;
+    bool d_carrier_phase_discontinuity{true};  // pending report of a new carrier phase ambiguity
     bool d_enable_extended_integration;
 };
 

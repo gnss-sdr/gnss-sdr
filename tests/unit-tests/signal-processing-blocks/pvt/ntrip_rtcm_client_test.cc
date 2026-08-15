@@ -625,7 +625,9 @@ std::vector<unsigned char> make_mt1002()
 }
 
 
-std::vector<unsigned char> make_mt1074()
+std::vector<unsigned char> make_mt1074(bool half_cycle_ambiguity = false,
+    unsigned int lock_indicator = 5,
+    double tow_s = TEST_TOW_S)
 {
     // One GPS satellite with L1 C/A (signal ID 2) and L2C(M) (signal ID 15).
     // Nonzero fine code and phase fields make both decoded bands usable.
@@ -640,7 +642,7 @@ std::vector<unsigned char> make_mt1074()
     setbitu(frame.data(), bit, 12, TEST_STATION_ID);
     bit += 12;
     setbitu(frame.data(), bit, 30,
-        static_cast<unsigned int>(TEST_TOW_S * 1000.0));
+        static_cast<unsigned int>(tow_s * 1000.0));
     bit += 30;
     setbitu(frame.data(), bit, 1, 0);  // Last message in the epoch
     bit += 1;
@@ -680,12 +682,12 @@ std::vector<unsigned char> make_mt1074()
     bit += 22;
     setbits(frame.data(), bit, 22, 2500);
     bit += 22;
-    setbitu(frame.data(), bit, 4, 5);
+    setbitu(frame.data(), bit, 4, lock_indicator);  // Lock time indicator, signal 1
     bit += 4;
-    setbitu(frame.data(), bit, 4, 5);
+    setbitu(frame.data(), bit, 4, lock_indicator);  // Lock time indicator, signal 2
     bit += 4;
-    setbitu(frame.data(), bit++, 1, 0);
-    setbitu(frame.data(), bit++, 1, 0);
+    setbitu(frame.data(), bit++, 1, half_cycle_ambiguity ? 1U : 0U);
+    setbitu(frame.data(), bit++, 1, half_cycle_ambiguity ? 1U : 0U);
     setbitu(frame.data(), bit, 6, 45);
     bit += 6;
     setbitu(frame.data(), bit, 6, 45);
@@ -1552,6 +1554,65 @@ TEST(NtripRtcmClientTest, GeneratedMsm4FixtureIsValidDualBandRtcm3)
     EXPECT_NE(0.0, decoder.obs.data[0].P[1]);
     EXPECT_NE(0.0, decoder.obs.data[0].L[0]);
     EXPECT_NE(0.0, decoder.obs.data[0].L[1]);
+    free_rtcm(&decoder);
+}
+
+
+TEST(NtripRtcmClientTest, Msm4HalfCycleAmbiguityDoesNotFlagACycleSlip)
+{
+    using namespace ntrip_rtcm_client_test;
+    rtcm_t decoder = {};
+    ASSERT_EQ(1, init_rtcm(&decoder));
+    decoder.time = gpst2time(TEST_GPS_WEEK, TEST_TOW_S);
+
+    int decode_result = 0;
+    const std::vector<unsigned char> frame = make_mt1074(true);
+    for (const unsigned char byte : frame)
+        {
+            decode_result = input_rtcm3(&decoder, byte);
+        }
+
+    ASSERT_EQ(1, decode_result);
+    ASSERT_EQ(1, decoder.obs.n);
+
+    // An unresolved half-cycle ambiguity sets bit 1 only. Reporting bit 0 as
+    // well would make detslp_ll() declare a cycle slip on every epoch the base
+    // keeps the flag raised, resetting the ambiguity and preventing a fix.
+    EXPECT_EQ(2, decoder.obs.data[0].LLI[0]);
+    EXPECT_EQ(2, decoder.obs.data[0].LLI[1]);
+    free_rtcm(&decoder);
+}
+
+
+TEST(NtripRtcmClientTest, Msm4LossOfLockAndHalfCycleAmbiguityKeepSeparateBits)
+{
+    using namespace ntrip_rtcm_client_test;
+    rtcm_t decoder = {};
+    ASSERT_EQ(1, init_rtcm(&decoder));
+    decoder.time = gpst2time(TEST_GPS_WEEK, TEST_TOW_S);
+
+    int decode_result = 0;
+    const std::vector<unsigned char> locked = make_mt1074(false, 9, TEST_TOW_S);
+    for (const unsigned char byte : locked)
+        {
+            decode_result = input_rtcm3(&decoder, byte);
+        }
+    ASSERT_EQ(1, decode_result);
+    ASSERT_EQ(1, decoder.obs.n);
+    EXPECT_EQ(0, decoder.obs.data[0].LLI[0]);
+
+    // Lock indicator decreases (loss of lock) while the half-cycle ambiguity is
+    // unresolved: both flags must survive, one per bit. Adding them as 1 + 3
+    // would yield 4, silently dropping the slip.
+    const std::vector<unsigned char> reacquired = make_mt1074(true, 1, TEST_TOW_S + 1.0);
+    for (const unsigned char byte : reacquired)
+        {
+            decode_result = input_rtcm3(&decoder, byte);
+        }
+    ASSERT_EQ(1, decode_result);
+    ASSERT_EQ(1, decoder.obs.n);
+    EXPECT_EQ(3, decoder.obs.data[0].LLI[0]);
+    EXPECT_EQ(3, decoder.obs.data[0].LLI[1]);
     free_rtcm(&decoder);
 }
 

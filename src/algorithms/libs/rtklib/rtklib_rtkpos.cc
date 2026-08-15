@@ -49,6 +49,18 @@ static const double AR_POLY_COEFFS[3][5] = {
     {6.42237302e-01, -8.39813962e+00, 2.92107285e+01, -2.37577308e+01, -1.14307128e+00},
     {-2.22600390e-02, 3.23169103e-01, -1.39837429e+00, 2.19282996e+00, -5.34583971e-02}};
 
+/* number of consecutive innovation rejections after which a phase bias is
+   considered stale and reinitialized (demo5) */
+const unsigned int MAX_REJECTIONS_BEFORE_RESET = 2;
+
+/* factor applied to the innovation threshold when one of the two phase biases
+   of a double difference has just been initialized (demo5) */
+const double INNOVATION_THRESHOLD_INIT_FACTOR = 10.0;
+
+/* variance added to a carrier phase measurement whose half-cycle ambiguity is
+   not resolved (m^2), which brings its weight down to decimeter level (demo5) */
+const double HALF_CYCLE_VARIANCE_M2 = 0.01;
+
 static int resamb_WLNL(rtk_t *rtk __attribute((unused)), const obsd_t *obs __attribute((unused)), const int *sat __attribute((unused)),
     const int *iu __attribute((unused)), const int *ir __attribute((unused)), int ns __attribute__((unused)), const nav_t *nav __attribute((unused)),
     const double *azel __attribute((unused))) { return 0; }
@@ -734,8 +746,10 @@ void udpos(rtk_t *rtk, double tt)
                 }
             return;
         }
-    /* initialize position for first epoch */
-    if (norm_rtk(rtk->x, 3) <= 0.0)
+    /* initialize position for the first epoch, or whenever the state does not
+       hold a plausible position on the Earth, which would otherwise keep the
+       filter from converging (demo5) */
+    if (norm_rtk(rtk->x, 3) <= RE_WGS84 / 2.0)
         {
             for (i = 0; i < 3; i++)
                 {
@@ -802,15 +816,30 @@ void udpos(rtk_t *rtk, double tt)
         {
             F[i + (i + 3) * rtk->nx] = tt;
         }
+    /* let the acceleration states drive the position only once the filter has
+       converged: while the position variance is still large the acceleration
+       estimates are meaningless and would inject noise into the position
+       (demo5, which reuses its AR position-variance gate for this) */
+    if (rtk->opt.armaxposvar <= 0.0 || var < rtk->opt.armaxposvar)
+        {
+            for (i = 0; i < 3; i++)
+                {
+                    F[i + (i + 6) * rtk->nx] = (tt >= 0.0 ? 1.0 : -1.0) * tt * tt / 2.0;
+                }
+        }
+    else
+        {
+            trace(3, "udpos : position variance too high for the acceleration term: %.4f\n", var);
+        }
     /* x=F*x, P=F*P*F+Q */
     matmul("NN", rtk->nx, 1, rtk->nx, 1.0, F, rtk->x, 0.0, xp);
     matcpy(rtk->x, xp, rtk->nx, 1);
     matmul("NN", rtk->nx, rtk->nx, rtk->nx, 1.0, F, rtk->P, 0.0, FP);
     matmul("NT", rtk->nx, rtk->nx, rtk->nx, 1.0, FP, F, 0.0, rtk->P);
 
-    /* process noise added to only acceleration */
-    Q[0] = Q[4] = std::pow(rtk->opt.prn[3], 2.0);
-    Q[8] = std::pow(rtk->opt.prn[4], 2.0);
+    /* process noise added to only acceleration, scaled by the elapsed time */
+    Q[0] = Q[4] = std::pow(rtk->opt.prn[3], 2.0) * fabs(tt);
+    Q[8] = std::pow(rtk->opt.prn[4], 2.0) * fabs(tt);
     ecef2pos(rtk->x, pos);
     covecef(pos, Q, Qv);
     for (i = 0; i < 3; i++)
@@ -858,7 +887,7 @@ void udion(rtk_t *rtk, double tt, double bl, const int *sat, int ns)
                     /* elevation dependent factor of process noise */
                     el = rtk->ssat[sat[i] - 1].azel[1];
                     fact = cos(el);
-                    rtk->P[j + j * rtk->nx] += std::pow(rtk->opt.prn[1] * bl / 1e4 * fact, 2.0) * tt;
+                    rtk->P[j + j * rtk->nx] += std::pow(rtk->opt.prn[1] * bl / 1e4 * fact, 2.0) * fabs(tt);
                 }
         }
 }
@@ -891,7 +920,7 @@ void udtrop(rtk_t *rtk, double tt, double bl __attribute((unused)))
                 }
             else
                 {
-                    rtk->P[j + j * rtk->nx] += std::pow(rtk->opt.prn[2], 2.0) * tt;
+                    rtk->P[j + j * rtk->nx] += std::pow(rtk->opt.prn[2], 2.0) * fabs(tt);
 
                     if (rtk->opt.tropopt >= TROPOPT_ESTG)
                         {
@@ -928,7 +957,7 @@ void udrcvbias(rtk_t *rtk, double tt)
                 }
             else
                 {
-                    rtk->P[j + j * rtk->nx] += std::pow(PRN_HWBIAS, 2.0) * tt;
+                    rtk->P[j + j * rtk->nx] += std::pow(PRN_HWBIAS, 2.0) * fabs(tt);
                 }
         }
 }
@@ -1183,6 +1212,7 @@ void udbias(rtk_t *rtk, double tt, const obsd_t *obs, const int *sat,
     int j;
     int f;
     int slip;
+    unsigned int rejc;
     int reset;
     int nf = NF_RTK(&rtk->opt);
 
@@ -1243,21 +1273,26 @@ void udbias(rtk_t *rtk, double tt, const obsd_t *obs, const int *sat,
                             rtk->ssat[i - 1].lock[f] = -rtk->opt.minlock;
                         }
                 }
-            /* reset phase-bias if detecting cycle slip */
+            /* reset phase-bias if detecting cycle slip or repeated outliers */
             for (i = 0; i < ns; i++)
                 {
                     j = IB_RTK(sat[i], f, &rtk->opt);
-                    rtk->P[j + j * rtk->nx] += rtk->opt.prn[0] * rtk->opt.prn[0] * tt;
+                    rtk->P[j + j * rtk->nx] += rtk->opt.prn[0] * rtk->opt.prn[0] * fabs(tt);
                     slip = rtk->ssat[sat[i] - 1].slip[f];
+                    rejc = rtk->ssat[sat[i] - 1].rejc[f];
                     if (rtk->opt.ionoopt == IONOOPT_IFLC)
                         {
                             slip |= rtk->ssat[sat[i] - 1].slip[1];
                         }
-                    if (rtk->opt.modear == ARMODE_INST || !(slip & 1))
+                    /* a bias that keeps producing outliers is stale: reinitialize it
+                       instead of rejecting its measurements forever (demo5) */
+                    if (rtk->opt.modear == ARMODE_INST ||
+                        (!(slip & 1) && rejc < MAX_REJECTIONS_BEFORE_RESET))
                         {
                             continue;
                         }
                     rtk->x[j] = 0.0;
+                    rtk->ssat[sat[i] - 1].rejc[f] = 0;
                     rtk->ssat[sat[i] - 1].lock[f] = -rtk->opt.minlock;
                 }
             bias = zeros(ns, 1);
@@ -1720,6 +1755,7 @@ int ddres(rtk_t *rtk, const obsd_t *obs, const nav_t *nav, double dt, const doub
     double fi;
     double fj;
     double df;
+    double threshadj;
     double *Hi = nullptr;
     int i;
     int j;
@@ -1958,8 +1994,23 @@ int ddres(rtk_t *rtk, const obsd_t *obs, const nav_t *nav, double dt, const doub
                                     rtk->ssat[sat[j] - 1].resp[f - nf] = v[nv];
                                 }
 
+                            /* open up the innovation threshold if one of the two phase
+                               biases has just been initialized, otherwise the freshly
+                               reset bias is rejected again and never recovers (demo5) */
+                            threshadj = 1.0;
+                            if (P != nullptr && opt->mode > PMODE_DGPS)
+                                {
+                                    const int ii = IB_RTK(sat[i], frq, opt);
+                                    const int jj = IB_RTK(sat[j], frq, opt);
+                                    if (P[ii + rtk->nx * ii] == std::pow(opt->std[0], 2.0) ||
+                                        P[jj + rtk->nx * jj] == std::pow(opt->std[0], 2.0))
+                                        {
+                                            threshadj = INNOVATION_THRESHOLD_INIT_FACTOR;
+                                        }
+                                }
                             /* test innovation, with separate thresholds for phase and code */
-                            if (opt->maxinno[f < nf ? 0 : 1] > 0.0 && fabs(v[nv]) > opt->maxinno[f < nf ? 0 : 1])
+                            if (opt->maxinno[f < nf ? 0 : 1] > 0.0 &&
+                                fabs(v[nv]) > opt->maxinno[f < nf ? 0 : 1] * threshadj)
                                 {
                                     if (f < nf)
                                         {
@@ -1978,6 +2029,22 @@ int ddres(rtk_t *rtk, const obsd_t *obs, const nav_t *nav, double dt, const doub
                                 rtk->ssat[sat[j] - 1].snr_rover[frq], rtk->ssat[sat[j] - 1].snr_base[frq],
                                 bl, dt, f, opt, &obs[iu[j]]);
 
+                            /* a carrier phase with an unresolved half-cycle ambiguity is
+                               only worth its half wavelength, so deweight it instead of
+                               feeding it to the filter with full carrier phase accuracy
+                               (demo5, extended here to the base observations, which carry
+                               the flag too) */
+                            if (f < nf)
+                                {
+                                    if ((obs[iu[i]].LLI[frq] & 2) || (obs[ir[i]].LLI[frq] & 2))
+                                        {
+                                            Ri[nv] += HALF_CYCLE_VARIANCE_M2;
+                                        }
+                                    if ((obs[iu[j]].LLI[frq] & 2) || (obs[ir[j]].LLI[frq] & 2))
+                                        {
+                                            Rj[nv] += HALF_CYCLE_VARIANCE_M2;
+                                        }
+                                }
                             /* set valid data flags */
                             if (opt->mode > PMODE_DGPS)
                                 {
@@ -2984,10 +3051,11 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
                                         }
                                 }
                         }
-                    /* lack of valid satellites */
+                    /* too few valid phase measurements: fall back to the code-differenced
+                       solution instead of dropping the epoch altogether (demo5) */
                     if (rtk->sol.ns < 4)
                         {
-                            stat = SOLQ_NONE;
+                            stat = SOLQ_DGPS;
                         }
                 }
             else
@@ -3011,8 +3079,9 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
                     stat = SOLQ_FIX;
                 }
         }
-    /* resolve integer ambiguity by LAMBDA */
-    else if (stat != SOLQ_NONE && manage_amb_LAMBDA(rtk, bias, xa, sat.data(), nf, ns) > 1)
+    /* resolve integer ambiguity by LAMBDA (only from a valid float solution: a
+       code-differenced epoch has no phase biases to fix) */
+    else if (stat == SOLQ_FLOAT && manage_amb_LAMBDA(rtk, bias, xa, sat.data(), nf, ns) > 1)
         {
             if (zdres(0, obs, nu, rs, dts, svh.data(), nav, xa, opt, 0, y, e, azel))
                 {

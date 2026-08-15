@@ -1163,6 +1163,7 @@ void dll_pll_veml_tracking::start_tracking()
     d_rem_carr_phase_rad = 0.0;
     d_rem_code_phase_chips = 0.0;
     d_acc_carrier_phase_rad = 0.0;
+    d_carrier_phase_discontinuity = true;  // the carrier phase ambiguity starts again
     d_cn0_estimation_counter = 0;
     d_carrier_lock_test = 1.0;
     d_CN0_SNV_dB_Hz = 0.0;
@@ -1485,6 +1486,7 @@ void dll_pll_veml_tracking::check_carrier_phase_coherent_initialization()
         {
             d_acc_carrier_phase_rad = -d_rem_carr_phase_rad;
             d_acc_carrier_phase_initialized = true;
+            d_carrier_phase_discontinuity = true;  // the carrier phase ambiguity starts again
         }
 }
 
@@ -2503,6 +2505,15 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     current_synchro_data.Flag_valid_symbol_output = true;
                 }
             current_synchro_data.Flag_PLL_180_deg_phase_locked = d_Flag_PLL_180_deg_phase_locked;
+
+            // report a restarted carrier phase accumulator on the first valid
+            // output that carries it, so that downstream blocks know that the
+            // ambiguity of this channel is not the one they saw before
+            current_synchro_data.Flag_carrier_phase_continuous = !d_carrier_phase_discontinuity;
+            if (current_synchro_data.Flag_valid_symbol_output)
+                {
+                    d_carrier_phase_discontinuity = false;
+                }
 
             // generate new tag associated with gnss-synchro object
             if (d_timetag_waiting == true)

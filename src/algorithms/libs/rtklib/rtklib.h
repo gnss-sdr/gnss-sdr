@@ -1203,25 +1203,28 @@ typedef struct
 
 
 typedef struct
-{                                     /* ntrip control type */
-    int state;                        /* state (0:close,1:wait,2:connect) */
-    int type;                         /* type (0:server,1:client) */
-    int version;                      /* NTRIP client version (1 or 2) */
-    int tls_enabled;                  /* TLS transport enabled */
-    int chunked;                      /* HTTP chunked transfer encoding */
-    int chunk_state;                  /* chunk parser state (0:size,1:data,2:crlf) */
-    unsigned int chunk_remaining;     /* bytes left in current HTTP chunk */
-    int nb;                           /* response buffer size */
-    char url[256];                    /* url for proxy */
-    char host[256];                   /* caster hostname (not proxy hostname) */
-    char port[16];                    /* caster port */
-    char mntpnt[256];                 /* mountpoint */
-    char user[256];                   /* user */
-    char passwd[256];                 /* password */
-    char str[NTRIP_MAXSTR];           /* mountpoint string for server */
-    unsigned char buff[NTRIP_MAXRSP]; /* response buffer */
-    tcpcli_t *tcp;                    /* tcp client */
-    void *tls_ctx;                    /* opaque Rtklib_Tls_Client pointer */
+{                                             /* ntrip control type */
+    int state;                                /* state (0:close,1:wait,2:connect) */
+    int type;                                 /* type (0:server,1:client) */
+    int version;                              /* NTRIP client version (1 or 2) */
+    int tls_enabled;                          /* TLS transport enabled */
+    int chunked;                              /* HTTP chunked transfer encoding */
+    int chunk_state;                          /* chunk parser state (0:size,1:data,2:crlf) */
+    unsigned int chunk_remaining;             /* bytes left in current HTTP chunk */
+    int nb;                                   /* response buffer size */
+    int request_length;                       /* buffered NTRIP request size */
+    int request_offset;                       /* bytes of buffered request already sent */
+    char url[256];                            /* url for proxy */
+    char host[256];                           /* caster hostname (not proxy hostname) */
+    char port[16];                            /* caster port */
+    char mntpnt[256];                         /* mountpoint */
+    char user[256];                           /* user */
+    char passwd[256];                         /* password */
+    char str[NTRIP_MAXSTR];                   /* mountpoint string for server */
+    unsigned char buff[NTRIP_MAXRSP];         /* response buffer */
+    unsigned char request_buff[NTRIP_MAXRSP]; /* persistent non-blocking request buffer */
+    tcpcli_t *tcp;                            /* tcp client */
+    void *tls_ctx;                            /* opaque Rtklib_Tls_Client pointer */
 } ntrip_t;
 
 

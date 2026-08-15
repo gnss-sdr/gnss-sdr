@@ -89,6 +89,8 @@ public:
 
     Ntrip_Credential_Guard(const Ntrip_Credential_Guard&) = delete;
     Ntrip_Credential_Guard& operator=(const Ntrip_Credential_Guard&) = delete;
+    Ntrip_Credential_Guard(Ntrip_Credential_Guard&&) = delete;
+    Ntrip_Credential_Guard& operator=(Ntrip_Credential_Guard&&) = delete;
 
 private:
     Pvt_Conf* d_configuration;

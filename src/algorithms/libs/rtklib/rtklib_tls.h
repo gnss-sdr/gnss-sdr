@@ -29,6 +29,8 @@ public:
 
     Rtklib_Tls_Client(const Rtklib_Tls_Client &) = delete;
     Rtklib_Tls_Client &operator=(const Rtklib_Tls_Client &) = delete;
+    Rtklib_Tls_Client(Rtklib_Tls_Client &&) = delete;
+    Rtklib_Tls_Client &operator=(Rtklib_Tls_Client &&) = delete;
 
     bool initialize(char *msg);
     void reset();

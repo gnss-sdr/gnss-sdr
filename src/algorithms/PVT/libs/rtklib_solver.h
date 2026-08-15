@@ -140,6 +140,13 @@ public:
     Rtklib_Fixed_Base_Status get_fixed_base_status() const;
     double get_fixed_base_age_s() const;
     std::size_t get_fixed_base_common_satellites() const;
+
+    //! true only if precise ephemeris and clock products are loaded; used to
+    //! distinguish real PPP from PPP-mode processing with broadcast products
+    inline bool has_precise_ephemeris() const
+    {
+        return d_nav_data.ne > 0 && d_nav_data.nc > 0;
+    }
     void store_has_data(const Galileo_HAS_data& new_has_data);
     void clear_has_corrections();
     void update_has_corrections(const std::map<int, Gnss_Synchro>& obs_map);

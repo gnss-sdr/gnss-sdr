@@ -166,6 +166,10 @@ private:
 
     void report_fixed_base_status();
 
+    void report_solution_status();
+
+    int displayed_solution_status() const;
+
     std::map<int, Gnss_Synchro> interpolate_observables(const std::map<int, Gnss_Synchro>& observables_map_t0,
         const std::map<int, Gnss_Synchro>& observables_map_t1,
         double rx_time_s);
@@ -285,6 +289,7 @@ private:
     uint32_t d_pvt_errors_counter;
     int d_last_ntrip_client_state;
     int d_last_fixed_base_status;
+    int d_last_solution_status;
 
     bool d_dump;
     const bool d_dump_mat;

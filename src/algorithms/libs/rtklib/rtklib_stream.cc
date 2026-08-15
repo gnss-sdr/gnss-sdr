@@ -42,6 +42,7 @@
 #include <cerrno>
 #include <cinttypes>
 #include <climits>
+#include <cstddef>
 #include <cstdlib>
 #include <cstring>
 #include <deque>
@@ -983,6 +984,7 @@ int gentcp(tcp_t *tcp, int type, char *msg)
         }
     if (!setsock(tcp->sock, msg))
         {
+            tcp->sock = -1;
             tcp->state = -1;
             return 0;
         }
@@ -1002,6 +1004,7 @@ int gentcp(tcp_t *tcp, int type, char *msg)
                     std::snprintf(msg, MAXSTRMSG, "bind error (%d) : %d", errsock(), tcp->port);
                     tracet(1, "gentcp: bind error port=%d err=%d\n", tcp->port, errsock());
                     closesocket(tcp->sock);
+                    tcp->sock = -1;
                     tcp->state = -1;
                     return 0;
                 }
@@ -1015,6 +1018,7 @@ int gentcp(tcp_t *tcp, int type, char *msg)
                     std::snprintf(msg, MAXSTRMSG, "address error (%s)", tcp->saddr);
                     tracet(1, "gentcp: gethostbyname error addr=%s err=%d\n", tcp->saddr, errsock());
                     closesocket(tcp->sock);
+                    tcp->sock = -1;
                     tcp->state = 0;
                     tcp->tcon = ticonnect;
                     tcp->tdis = tickget();
@@ -1036,7 +1040,11 @@ int gentcp(tcp_t *tcp, int type, char *msg)
 void discontcp(tcp_t *tcp, int tcon)
 {
     tracet(3, "discontcp: sock=%d tcon=%d\n", tcp->sock, tcon);
-    closesocket(tcp->sock);
+    if (tcp->sock >= 0)
+        {
+            closesocket(tcp->sock);
+            tcp->sock = -1;
+        }
     tcp->state = 0;
     tcp->tcon = tcon;
     tcp->tdis = tickget();
@@ -1322,6 +1330,7 @@ int consock(tcpcli_t *tcpcli, char *msg)
             std::snprintf(msg, MAXSTRMSG, "connect error (%d)", err);
             tracet(1, "consock: connect error sock=%d err=%d\n", tcpcli->svr.sock, err);
             closesocket(tcpcli->svr.sock);
+            tcpcli->svr.sock = -1;
             tcpcli->svr.state = 0;
             return 0;
         }
@@ -1352,6 +1361,7 @@ tcpcli_t *opentcpcli(const char *path, char *msg)
             return nullptr;
         }
     *tcpcli = tcpcli0;
+    tcpcli->svr.sock = -1;
     decodetcppath(path, tcpcli->svr.saddr, port, nullptr, nullptr, nullptr, nullptr);
     if (sscanf(port, "%d", &tcpcli->svr.port) < 1)
         {
@@ -1371,7 +1381,10 @@ tcpcli_t *opentcpcli(const char *path, char *msg)
 void closetcpcli(tcpcli_t *tcpcli)
 {
     tracet(3, "closetcpcli: sock=%d\n", tcpcli->svr.sock);
-    closesocket(tcpcli->svr.sock);
+    if (tcpcli->svr.sock >= 0)
+        {
+            closesocket(tcpcli->svr.sock);
+        }
     free(tcpcli);
 }
 
@@ -1524,6 +1537,19 @@ Rtklib_Tls_Client *ntrip_tls(ntrip_t *ntrip)
     return static_cast<Rtklib_Tls_Client *>(ntrip->tls_ctx);
 }
 
+void ntrip_clear_request(ntrip_t *ntrip)
+{
+    /* Requests can contain caster credentials. Use volatile stores so clearing
+     * the persistent retry buffer is not optimized away. */
+    volatile unsigned char *request = ntrip->request_buff;
+    for (std::size_t i = 0; i < sizeof(ntrip->request_buff); ++i)
+        {
+            request[i] = 0;
+        }
+    ntrip->request_length = 0;
+    ntrip->request_offset = 0;
+}
+
 void ntrip_reset_tls(ntrip_t *ntrip)
 {
     if (ntrip->tls_ctx)
@@ -1534,6 +1560,7 @@ void ntrip_reset_tls(ntrip_t *ntrip)
 
 void ntrip_disconnect(ntrip_t *ntrip, int tcon)
 {
+    ntrip_clear_request(ntrip);
     ntrip_reset_tls(ntrip);
     discontcp(&ntrip->tcp->svr, tcon);
 }
@@ -1596,6 +1623,71 @@ int ntrip_write_transport(ntrip_t *ntrip, const unsigned char *buff, int n, char
             ntrip->tcp->svr.tact = tickget();
         }
     return ns;
+}
+
+bool ntrip_prepare_request(ntrip_t *ntrip, const std::string &request, char *msg)
+{
+    if (request.empty() || request.size() > sizeof(ntrip->request_buff))
+        {
+            std::snprintf(msg, MAXSTRMSG, "NTRIP request too large");
+            ntrip->state = -1;
+            ntrip_disconnect(ntrip, -1);
+            return false;
+        }
+
+    std::memcpy(ntrip->request_buff, request.data(), request.size());
+    ntrip->request_length = static_cast<int>(request.size());
+    ntrip->request_offset = 0;
+    return true;
+}
+
+int ntrip_flush_request(ntrip_t *ntrip, char *msg)
+{
+    if (ntrip->request_length <= 0 ||
+        ntrip->request_offset < 0 ||
+        ntrip->request_offset > ntrip->request_length)
+        {
+            std::snprintf(msg, MAXSTRMSG, "invalid NTRIP request state");
+            ntrip->state = -1;
+            ntrip_disconnect(ntrip, -1);
+            return 0;
+        }
+
+    const int remaining = ntrip->request_length - ntrip->request_offset;
+    const int ns = ntrip_write_transport(ntrip,
+        ntrip->request_buff + ntrip->request_offset, remaining, msg);
+
+    /* A fatal transport error resets the request in ntrip_disconnect(). Plain
+     * TCP errors also leave the socket disconnected. In both cases, rebuild
+     * and resend the complete request on the next connection. */
+    if (ntrip->tcp->svr.state != 2)
+        {
+            ntrip_clear_request(ntrip);
+            return 0;
+        }
+    if (ns <= 0)
+        {
+            /* The non-blocking transport would block. Keeping both the buffer
+             * address and the remaining length unchanged is required when an
+             * OpenSSL SSL_write() call returns WANT_READ or WANT_WRITE. */
+            return 0;
+        }
+    if (ns > remaining)
+        {
+            std::snprintf(msg, MAXSTRMSG, "invalid NTRIP write result");
+            ntrip->state = -1;
+            ntrip_disconnect(ntrip, -1);
+            return 0;
+        }
+
+    ntrip->request_offset += ns;
+    if (ntrip->request_offset < ntrip->request_length)
+        {
+            return 0;
+        }
+
+    ntrip_clear_request(ntrip);
+    return 1;
 }
 
 void ntrip_consume_buffer(ntrip_t *ntrip, int n)
@@ -1677,8 +1769,9 @@ int read_ntrip_chunked(ntrip_t *ntrip, unsigned char *buff, int n, char *msg)
                     std::memcpy(size_text, ntrip->buff, eol);
                     size_text[eol] = '\0';
                     char *end = nullptr;
-                    const unsigned long chunk_size = std::strtoul(size_text, &end, 16);
-                    if (end == size_text || chunk_size > UINT_MAX)
+                    errno = 0;
+                    const uint64_t chunk_size = std::strtoul(size_text, &end, 16);
+                    if (end == size_text || errno == ERANGE || chunk_size > UINT_MAX)
                         {
                             std::snprintf(msg, MAXSTRMSG, "invalid HTTP chunk");
                             ntrip_disconnect(ntrip, ntrip->tcp->tirecon);
@@ -1706,15 +1799,16 @@ int read_ntrip_chunked(ntrip_t *ntrip, unsigned char *buff, int n, char *msg)
                             return copied;
                         }
 
-                    const int available = std::min(ntrip->nb,
-                        static_cast<int>(ntrip->chunk_remaining));
-                    const int take = std::min(available, n - copied);
+                    const unsigned int available = std::min(
+                        static_cast<unsigned int>(ntrip->nb), ntrip->chunk_remaining);
+                    const unsigned int take = std::min(
+                        available, static_cast<unsigned int>(n - copied));
                     if (take > 0)
                         {
                             std::memcpy(buff + copied, ntrip->buff, take);
-                            ntrip_consume_buffer(ntrip, take);
-                            ntrip->chunk_remaining -= static_cast<unsigned int>(take);
-                            copied += take;
+                            ntrip_consume_buffer(ntrip, static_cast<int>(take));
+                            ntrip->chunk_remaining -= take;
+                            copied += static_cast<int>(take);
                         }
                     if (ntrip->chunk_remaining == 0)
                         {
@@ -1747,6 +1841,223 @@ int read_ntrip_chunked(ntrip_t *ntrip, unsigned char *buff, int n, char *msg)
                 }
         }
     return copied;
+}
+
+void trim_http_ows(std::string *value)
+{
+    std::string::size_type first = 0;
+    while (first < value->size() &&
+           ((*value)[first] == ' ' || (*value)[first] == '\t'))
+        {
+            ++first;
+        }
+    std::string::size_type last = value->size();
+    while (last > first &&
+           ((*value)[last - 1] == ' ' || (*value)[last - 1] == '\t'))
+        {
+            --last;
+        }
+    *value = value->substr(first, last - first);
+}
+
+void lowercase_ascii(std::string *value)
+{
+    std::transform(value->begin(), value->end(), value->begin(), [](unsigned char c) {
+        return static_cast<char>(c >= 'A' && c <= 'Z' ? c + ('a' - 'A') : c);
+    });
+}
+
+bool is_http_token_character(unsigned char c)
+{
+    const bool ascii_alphanumeric =
+        (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
+        (c >= 'a' && c <= 'z');
+    return ascii_alphanumeric || c == '!' || c == '#' || c == '$' ||
+           c == '%' || c == '&' || c == '\'' || c == '*' || c == '+' ||
+           c == '-' || c == '.' || c == '^' || c == '_' || c == '`' ||
+           c == '|' || c == '~';
+}
+
+bool is_ascii_digit(char c)
+{
+    return c >= '0' && c <= '9';
+}
+
+bool parse_http_status_line(const char *begin, const char *end, int *status)
+{
+    const char prefix[] = "HTTP/";
+    if (end - begin < static_cast<std::ptrdiff_t>(sizeof(prefix) - 1) ||
+        std::memcmp(begin, prefix, sizeof(prefix) - 1) != 0)
+        {
+            return false;
+        }
+
+    const char *p = begin + sizeof(prefix) - 1;
+    const char *number_begin = p;
+    while (p < end && is_ascii_digit(*p))
+        {
+            ++p;
+        }
+    if (p == number_begin || p == end || *p++ != '.')
+        {
+            return false;
+        }
+    number_begin = p;
+    while (p < end && is_ascii_digit(*p))
+        {
+            ++p;
+        }
+    if (p == number_begin || p == end || *p++ != ' ' || end - p < 3)
+        {
+            return false;
+        }
+    if (!is_ascii_digit(p[0]) || !is_ascii_digit(p[1]) ||
+        !is_ascii_digit(p[2]))
+        {
+            return false;
+        }
+    *status = (p[0] - '0') * 100 + (p[1] - '0') * 10 + (p[2] - '0');
+    p += 3;
+    if (p < end && *p++ != ' ')
+        {
+            return false;
+        }
+    while (p < end)
+        {
+            const auto c = static_cast<unsigned char>(*p++);
+            if ((c < 0x20U && c != '\t') || c == 0x7FU)
+                {
+                    return false;
+                }
+        }
+    return true;
+}
+
+bool parse_transfer_encoding(const std::string &value, bool *chunked)
+{
+    std::string::size_type begin = 0;
+    do
+        {
+            const std::string::size_type end = value.find(',', begin);
+            std::string coding = value.substr(begin,
+                end == std::string::npos ? std::string::npos : end - begin);
+            trim_http_ows(&coding);
+            lowercase_ascii(&coding);
+
+            /* GNSS-SDR only decodes the chunked transfer coding. Requiring an
+             * exact token avoids treating values such as "notchunked" as
+             * chunked, and rejecting other codings avoids feeding encoded data
+             * to the RTCM decoder. RFC 7230 also forbids applying chunked more
+             * than once. */
+            if (coding != "chunked" || *chunked)
+                {
+                    return false;
+                }
+            *chunked = true;
+
+            if (end == std::string::npos)
+                {
+                    break;
+                }
+            begin = end + 1;
+        }
+    while (begin <= value.size());
+    return true;
+}
+
+bool parse_ntrip_v2_headers(const char *begin, const char *headers_end,
+    bool *content_type_present, std::string *content_type, bool *chunked,
+    std::string *error)
+{
+    const char *cursor = begin;
+    while (cursor < headers_end)
+        {
+            const char *field_end = cursor;
+            while (field_end + 1 < headers_end &&
+                   !(field_end[0] == '\r' && field_end[1] == '\n'))
+                {
+                    ++field_end;
+                }
+            if (field_end + 1 >= headers_end)
+                {
+                    *error = "malformed NTRIP v2 response headers";
+                    return false;
+                }
+
+            const char *colon = std::find(cursor, field_end, ':');
+            if (colon == field_end || colon == cursor)
+                {
+                    *error = "malformed NTRIP v2 response header";
+                    return false;
+                }
+            for (const char *p = cursor; p < colon; ++p)
+                {
+                    if (!is_http_token_character(static_cast<unsigned char>(*p)))
+                        {
+                            *error = "malformed NTRIP v2 response header name";
+                            return false;
+                        }
+                }
+            for (const char *p = colon + 1; p < field_end; ++p)
+                {
+                    const auto c = static_cast<unsigned char>(*p);
+                    if ((c < 0x20U && c != '\t') || c == 0x7FU)
+                        {
+                            *error = "malformed NTRIP v2 response header value";
+                            return false;
+                        }
+                }
+
+            std::string name(cursor, colon);
+            std::string value(colon + 1, field_end);
+            lowercase_ascii(&name);
+            trim_http_ows(&value);
+
+            if (name == "content-type")
+                {
+                    if (*content_type_present)
+                        {
+                            *error = "duplicate NTRIP Content-Type header";
+                            return false;
+                        }
+                    *content_type_present = true;
+                    const std::string::size_type parameter = value.find(';');
+                    *content_type = value.substr(0, parameter);
+                    trim_http_ows(content_type);
+                    lowercase_ascii(content_type);
+                    if (content_type->empty())
+                        {
+                            *error = "empty NTRIP Content-Type header";
+                            return false;
+                        }
+                }
+            else if (name == "transfer-encoding")
+                {
+                    if (!parse_transfer_encoding(value, chunked))
+                        {
+                            *error = "unsupported NTRIP Transfer-Encoding";
+                            return false;
+                        }
+                }
+
+            cursor = field_end + 2;
+        }
+    return cursor == headers_end;
+}
+
+int reject_ntrip_v2_response(ntrip_t *ntrip, char *msg,
+    const std::string &reason)
+{
+    std::snprintf(msg, MAXSTRMSG, "%s", reason.c_str());
+    tracet(1, "rspntrip_c: %s nb=%d\n", msg, ntrip->nb);
+    ntrip->nb = 0;
+    ntrip->buff[0] = '\0';
+    ntrip->chunked = 0;
+    ntrip->chunk_state = 0;
+    ntrip->chunk_remaining = 0;
+    ntrip->state = 0;
+    ntrip_disconnect(ntrip, ntrip->tcp->tirecon);
+    return 0;
 }
 
 bool parse_ntrip_client_options(const char *path, std::string &clean_path,
@@ -1809,26 +2120,29 @@ bool parse_ntrip_client_options(const char *path, std::string &clean_path,
 /* send ntrip server request -------------------------------------------------*/
 int reqntrip_s(ntrip_t *ntrip, char *msg)
 {
-    char buff[256 + NTRIP_MAXSTR];
-    char *p = buff;
-    char *s;
-    s = p;
-
     tracet(3, "reqntrip_s: state=%d\n", ntrip->state);
 
-    p += std::snprintf(p, 256 + NTRIP_MAXSTR, "SOURCE %s %s\r\n", ntrip->passwd, ntrip->mntpnt);
-    p += std::snprintf(p, NTRIP_MAXSTR - (p - s), "Source-Agent: NTRIP %s\r\n", NTRIP_AGENT);
-    p += std::snprintf(p, NTRIP_MAXSTR - (p - s), "STR: %s\r\n", ntrip->str);
-    p += std::snprintf(p, sizeof("\r\n") + 1, "\r\n");
+    if (ntrip->request_length == 0)
+        {
+            std::ostringstream request;
+            request << "SOURCE " << ntrip->passwd << " " << ntrip->mntpnt << "\r\n";
+            request << "Source-Agent: NTRIP " << NTRIP_AGENT << "\r\n";
+            request << "STR: " << ntrip->str << "\r\n\r\n";
+            if (!ntrip_prepare_request(ntrip, request.str(), msg))
+                {
+                    return 0;
+                }
+        }
 
-    if (writetcpcli(ntrip->tcp, reinterpret_cast<unsigned char *>(buff), p - buff, msg) != p - buff)
+    const int request_length = ntrip->request_length;
+    if (!ntrip_flush_request(ntrip, msg))
         {
             return 0;
         }
 
-    tracet(2, "reqntrip_s: send request state=%d ns=%" PRIdPTR "\n", ntrip->state, p - buff);
+    tracet(2, "reqntrip_s: send request state=%d ns=%d\n", ntrip->state, request_length);
     /* The SOURCE request contains the caster password. */
-    tracet(5, "reqntrip_s: request headers redacted n=%" PRIdPTR "\n", p - buff);
+    tracet(5, "reqntrip_s: request headers redacted n=%d\n", request_length);
     ntrip->state = 1;
     return 1;
 }
@@ -1843,42 +2157,48 @@ int reqntrip_c(ntrip_t *ntrip, char *msg)
     tracet(3, "reqntrip_c: state=%d version=%d tls=%d\n", ntrip->state,
         ntrip->version, ntrip->tls_enabled);
 
-    std::string target = *ntrip->url ? std::string(ntrip->url) : std::string();
-    target += "/";
-    target += ntrip->mntpnt;
-
-    std::ostringstream request;
-    request << "GET " << target << (ntrip->version == NTRIP_VERSION_2 ? " HTTP/1.1\r\n" : " HTTP/1.0\r\n");
-
-    if (ntrip->version == NTRIP_VERSION_2)
+    if (ntrip->request_length == 0)
         {
-            request << "Host: " << ntrip->host << ":" << ntrip->port << "\r\n";
-            request << "Ntrip-Version: Ntrip/2.0\r\n";
-        }
-    request << "User-Agent: NTRIP " << NTRIP_AGENT << "\r\n";
-    request << "Accept: */*\r\n";
-    request << "Connection: close\r\n";
+            std::string target = *ntrip->url ? std::string(ntrip->url) : std::string();
+            target += "/";
+            target += ntrip->mntpnt;
 
-    if (*ntrip->user)
-        {
-            std::snprintf(user, sizeof(user), "%s:%s", ntrip->user, ntrip->passwd);
-            encbase64(authorization, reinterpret_cast<unsigned char *>(user), strlen(user));
-            request << "Authorization: Basic " << authorization << "\r\n";
-        }
-    request << "\r\n";
+            std::ostringstream request;
+            request << "GET " << target << (ntrip->version == NTRIP_VERSION_2 ? " HTTP/1.1\r\n" : " HTTP/1.0\r\n");
 
-    const std::string request_text = request.str();
-    if (ntrip_write_transport(ntrip,
-            reinterpret_cast<const unsigned char *>(request_text.data()),
-            static_cast<int>(request_text.size()), msg) != static_cast<int>(request_text.size()))
+            if (ntrip->version == NTRIP_VERSION_2)
+                {
+                    request << "Host: " << ntrip->host << ":" << ntrip->port << "\r\n";
+                    request << "Ntrip-Version: Ntrip/2.0\r\n";
+                }
+            request << "User-Agent: NTRIP " << NTRIP_AGENT << "\r\n";
+            request << "Accept: */*\r\n";
+            request << "Connection: close\r\n";
+
+            if (*ntrip->user)
+                {
+                    std::snprintf(user, sizeof(user), "%s:%s", ntrip->user, ntrip->passwd);
+                    encbase64(authorization, reinterpret_cast<unsigned char *>(user), strlen(user));
+                    request << "Authorization: Basic " << authorization << "\r\n";
+                }
+            request << "\r\n";
+
+            if (!ntrip_prepare_request(ntrip, request.str(), msg))
+                {
+                    return 0;
+                }
+        }
+
+    const int request_length = ntrip->request_length;
+    if (!ntrip_flush_request(ntrip, msg))
         {
             return 0;
         }
 
     /* The request can contain a Basic Authorization header, so only sizes are
      * logged here. */
-    tracet(2, "reqntrip_c: request sent state=%d version=%d ns=%zu\n",
-        ntrip->state, ntrip->version, request_text.size());
+    tracet(2, "reqntrip_c: request sent state=%d version=%d ns=%d\n",
+        ntrip->state, ntrip->version, request_length);
     ntrip->state = 1;
     return 1;
 }
@@ -1893,41 +2213,51 @@ int rspntrip_c_v2(ntrip_t *ntrip, char *msg)
         {
             if (ntrip->nb >= NTRIP_MAXRSP - 1)
                 {
-                    std::snprintf(msg, MAXSTRMSG, "response overflow");
-                    ntrip->state = 0;
-                    ntrip_disconnect(ntrip, ntrip->tcp->tirecon);
+                    return reject_ntrip_v2_response(ntrip, msg,
+                        "NTRIP v2 response header overflow");
                 }
             return 0;
         }
 
     char *line_end = std::strstr(data, "\r\n");
-    int http_major = 0;
-    int http_minor = 0;
     int status = 0;
-    if (!line_end || std::sscanf(data, "HTTP/%d.%d %d", &http_major, &http_minor, &status) != 3)
+    if (!line_end || line_end > header_end ||
+        !parse_http_status_line(data, line_end, &status))
         {
-            std::snprintf(msg, MAXSTRMSG, "invalid NTRIP v2 response");
-            ntrip->state = 0;
-            ntrip_disconnect(ntrip, ntrip->tcp->tirecon);
-            return 0;
+            return reject_ntrip_v2_response(ntrip, msg,
+                "invalid NTRIP v2 HTTP status line");
         }
 
     if (status != 200)
         {
             const int line_size = std::min(static_cast<int>(line_end - data), MAXSTRMSG - 1);
-            std::memcpy(msg, data, line_size);
-            msg[line_size] = '\0';
-            ntrip->state = 0;
-            ntrip_disconnect(ntrip, ntrip->tcp->tirecon);
-            return 0;
+            return reject_ntrip_v2_response(ntrip, msg,
+                std::string(data, static_cast<std::size_t>(line_size)));
+        }
+
+    bool content_type_present = false;
+    std::string content_type;
+    bool chunked = false;
+    std::string header_error;
+    if (!parse_ntrip_v2_headers(line_end + 2, header_end + 2,
+            &content_type_present, &content_type, &chunked, &header_error))
+        {
+            return reject_ntrip_v2_response(ntrip, msg, header_error);
+        }
+    if (content_type_present)
+        {
+            const char *expected_type = *ntrip->mntpnt
+                                            ? "gnss/data"
+                                            : "gnss/sourcetable";
+            if (content_type != expected_type)
+                {
+                    return reject_ntrip_v2_response(ntrip, msg,
+                        std::string("unexpected NTRIP Content-Type: ") + content_type);
+                }
         }
 
     const int header_size = static_cast<int>(header_end + 4 - data);
-    std::string headers(data, header_size);
-    std::transform(headers.begin(), headers.end(), headers.begin(),
-        [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-    ntrip->chunked = headers.find("transfer-encoding:") != std::string::npos &&
-                     headers.find("chunked") != std::string::npos;
+    ntrip->chunked = chunked ? 1 : 0;
     ntrip->chunk_state = 0;
     ntrip->chunk_remaining = 0;
     ntrip_consume_buffer(ntrip, header_size);
@@ -2113,6 +2443,9 @@ int waitntrip(ntrip_t *ntrip, char *msg)
     if (ntrip->tcp->svr.state < 2)
         {
             ntrip->state = 0; /* tcp disconnected */
+            /* A new connection must send the complete request, never just the
+             * suffix left from a short write on the previous socket. */
+            ntrip_clear_request(ntrip);
             ntrip_reset_tls(ntrip);
         }
 
@@ -2181,6 +2514,8 @@ ntrip_t *openntrip(const char *path, int type, char *msg)
     ntrip->chunk_state = 0;
     ntrip->chunk_remaining = 0;
     ntrip->nb = 0;
+    ntrip->request_length = 0;
+    ntrip->request_offset = 0;
     ntrip->tls_ctx = nullptr;
     ntrip->url[0] = '\0';
     ntrip->host[0] = ntrip->port[0] = '\0';
@@ -2188,6 +2523,7 @@ ntrip_t *openntrip(const char *path, int type, char *msg)
     for (i = 0; i < NTRIP_MAXRSP; i++)
         {
             ntrip->buff[i] = 0;
+            ntrip->request_buff[i] = 0;
         }
 
     /* decode tcp/ntrip path */
@@ -2254,6 +2590,7 @@ ntrip_t *openntrip(const char *path, int type, char *msg)
 void closentrip(ntrip_t *ntrip)
 {
     tracet(3, "closentrip: state=%d\n", ntrip->state);
+    ntrip_clear_request(ntrip);
     delete ntrip_tls(ntrip);
     closetcpcli(ntrip->tcp);
     free(ntrip);

@@ -73,6 +73,11 @@ class Rtklib_Tls_Client::Impl
 public:
     explicit Impl(std::string hostname) : d_hostname(std::move(hostname)) {}
 
+    Impl(const Impl &) = delete;
+    Impl &operator=(const Impl &) = delete;
+    Impl(Impl &&) = delete;
+    Impl &operator=(Impl &&) = delete;
+
     bool initialize(char *msg)
     {
 #ifdef USE_GNUTLS_FALLBACK

@@ -171,6 +171,8 @@ public:
 
     Stream_Owner(const Stream_Owner&) = delete;
     Stream_Owner& operator=(const Stream_Owner&) = delete;
+    Stream_Owner(Stream_Owner&&) = delete;
+    Stream_Owner& operator=(Stream_Owner&&) = delete;
 
     bool open(const std::string& path, const std::string& hostname,
         const std::string& username, const std::string& password)
@@ -206,9 +208,8 @@ public:
                 auto* ntrip = static_cast<ntrip_t*>(d_stream.port);
                 std::memset(ntrip->user, 0, sizeof(ntrip->user));
                 std::memset(ntrip->passwd, 0, sizeof(ntrip->passwd));
-                // RTKLIB initializes the socket descriptor to zero and may
-                // leave a closed descriptor behind after a failed connection.
-                // Prevent strclose() from closing stdin or a reused descriptor.
+                // Keep unopened and disconnected transports explicitly invalid
+                // before handing ownership back to RTKLIB's stream cleanup.
                 if (ntrip->tcp != nullptr && ntrip->tcp->svr.state < 1)
                     {
                         ntrip->tcp->svr.sock = -1;
@@ -232,11 +233,16 @@ private:
 class Rtcm_Owner
 {
 public:
+    // The analyzer loses the unique_ptr member's ownership while following
+    // init_rtcm(), whose failure paths also release all partial allocations.
+    // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
     Rtcm_Owner()
-        : d_rtcm(new rtcm_t()),
-          d_initialized(init_rtcm(d_rtcm.get()) != 0)
+        : d_rtcm(new rtcm_t{})
     {
-        std::memset(d_rtcm.get(), 0, sizeof(rtcm_t));
+        // init_rtcm() populates pointers owned by the value-initialized
+        // control structure, so it must run after d_rtcm is constructed.
+        // NOLINTNEXTLINE(cppcoreguidelines-prefer-member-initializer)
+        d_initialized = init_rtcm(d_rtcm.get()) != 0;
     }
 
     ~Rtcm_Owner()
@@ -249,6 +255,8 @@ public:
 
     Rtcm_Owner(const Rtcm_Owner&) = delete;
     Rtcm_Owner& operator=(const Rtcm_Owner&) = delete;
+    Rtcm_Owner(Rtcm_Owner&&) = delete;
+    Rtcm_Owner& operator=(Rtcm_Owner&&) = delete;
 
     bool initialized() const
     {
@@ -356,6 +364,9 @@ void resolve_ipv4_hostname(const std::shared_ptr<Host_Resolution_State>& state,
 }  // namespace
 
 
+// The layout follows mutex-protected state groups. Saving a few padding bytes
+// in this single-instance class is not worth separating each lock from its data.
+// NOLINTNEXTLINE(clang-analyzer-optin.performance.Padding)
 class Ntrip_Rtcm_Client::Impl
 {
 public:
@@ -372,6 +383,11 @@ public:
         secure_clear(&d_config.username);
         secure_clear(&d_config.password);
     }
+
+    Impl(const Impl&) = delete;
+    Impl& operator=(const Impl&) = delete;
+    Impl(Impl&&) = delete;
+    Impl& operator=(Impl&&) = delete;
 
     bool start()
     {
@@ -689,7 +705,7 @@ private:
                                 // shutdown wait. Keep the exceptional joinable
                                 // handle alive; its task owns no client state
                                 // and still reports through the shared result.
-                                (void)resolver.release();
+                                (void)resolver.release();  // NOLINT(bugprone-unused-return-value)
                             }
                     }
                 catch (...)

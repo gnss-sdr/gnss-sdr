@@ -128,6 +128,50 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
+namespace
+{
+/* console tag for the RTKLIB solution status; empty for single-point and
+   no-solution so that the default output is unchanged */
+std::string solution_status_tag(int solution_status)
+{
+    switch (solution_status)
+        {
+        case SOLQ_FIX:
+            return " [RTK FIXED]";
+        case SOLQ_FLOAT:
+            return " [RTK FLOAT]";
+        case SOLQ_SBAS:
+            return " [SBAS]";
+        case SOLQ_DGPS:
+            return " [DGNSS]";
+        case SOLQ_PPP:
+            return " [PPP]";
+        default:
+            return "";
+        }
+}
+
+
+const std::string& solution_status_color(int solution_status)
+{
+    switch (solution_status)
+        {
+        case SOLQ_FIX:
+            return TEXT_BOLD_GREEN;
+        case SOLQ_FLOAT:
+        case SOLQ_DGPS:
+            return TEXT_BOLD_YELLOW;
+        case SOLQ_SBAS:
+            return TEXT_BOLD_CYAN;
+        case SOLQ_PPP:
+            return TEXT_BOLD_MAGENTA;
+        default:
+            return TEXT_RESET;
+        }
+}
+}  // namespace
+
+
 rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,
     const rtk_t& rtk,
@@ -202,6 +246,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_pvt_errors_counter(0),
       d_last_ntrip_client_state(-1),
       d_last_fixed_base_status(-1),
+      d_last_solution_status(SOLQ_NONE),
       d_dump(conf_.dump),
       d_dump_mat(conf_.dump_mat && conf_.dump),
       d_rinex_output_enabled(conf_.rinex_output_enabled),
@@ -2433,6 +2478,84 @@ void rtklib_pvt_gs::report_fixed_base_status()
 }
 
 
+int rtklib_pvt_gs::displayed_solution_status() const
+{
+    const int status = d_user_pvt_solver->pvt_sol.stat;
+    /* RTKLIB stamps SOLQ_PPP whenever the PPP filter runs, even on broadcast
+       orbits and clocks; only claim PPP when precise products are loaded */
+    if (status == SOLQ_PPP && !d_user_pvt_solver->has_precise_ephemeris())
+        {
+            return SOLQ_SINGLE;
+        }
+    return status;
+}
+
+
+void rtklib_pvt_gs::report_solution_status()
+{
+    const int status = displayed_solution_status();
+    if (status == d_last_solution_status)
+        {
+            return;
+        }
+    const int previous_status = d_last_solution_status;
+    d_last_solution_status = status;
+    /* announce only transitions involving a differential, SBAS or PPP state;
+       plain single-point operation keeps the classic console output */
+    if (solution_status_tag(previous_status).empty() && solution_status_tag(status).empty())
+        {
+            return;
+        }
+    std::ostringstream report;
+    switch (status)
+        {
+        case SOLQ_FIX:
+            report << "RTK ambiguities fixed (AR ratio " << std::fixed << std::setprecision(1)
+                   << d_user_pvt_solver->pvt_sol.ratio << ", threshold "
+                   << d_user_pvt_solver->pvt_sol.thres << ")";
+            break;
+        case SOLQ_FLOAT:
+            if (previous_status == SOLQ_FIX)
+                {
+                    report << "RTK fix lost: float solution (AR ratio " << std::fixed
+                           << std::setprecision(1) << d_user_pvt_solver->pvt_sol.ratio << ")";
+                }
+            else
+                {
+                    report << "RTK float solution";
+                }
+            break;
+        case SOLQ_DGPS:
+            report << "RTK degraded to code differential (DGNSS)";
+            break;
+        case SOLQ_SBAS:
+            report << "SBAS-corrected solution";
+            break;
+        case SOLQ_PPP:
+            report << "PPP solution";
+            break;
+        default:
+            /* fell back to single-point (or lost the solution) from a labeled state */
+            if (previous_status == SOLQ_SBAS)
+                {
+                    report << "SBAS corrections lost: single-point solution";
+                }
+            else if (previous_status == SOLQ_PPP)
+                {
+                    report << "PPP lost: single-point solution";
+                }
+            else
+                {
+                    report << "RTK lost: single-point solution";
+                }
+            break;
+        }
+    const std::string& color = solution_status_tag(status).empty() ? TEXT_BOLD_YELLOW : solution_status_color(status);
+    std::cout << color << report.str() << TEXT_RESET << std::endl;
+    LOG(INFO) << "Solution status change: " << report.str();
+}
+
+
 int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
@@ -2845,6 +2968,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                     if (flag_pvt_valid == true)
                         {
+                            report_solution_status();
                             // experimental VTL tests
                             // send tracking command
                             //                            const std::shared_ptr<TrackingCmd> trk_cmd_test = std::make_shared<TrackingCmd>(TrackingCmd());
@@ -2955,7 +3079,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             ss << " is Lat = " << d_user_pvt_solver->get_latitude()
                                                << " [deg], Long = " << d_user_pvt_solver->get_longitude()
                                                << " [deg], Height = " << d_user_pvt_solver->get_height()
-                                               << " [m], with GDOP = " << d_user_pvt_solver->get_gdop();
+                                               << " [m], with GDOP = " << d_user_pvt_solver->get_gdop()
+                                               << solution_status_tag(displayed_solution_status());
                                             std::cout << ss.str() << std::endl;
                                             d_end = std::chrono::system_clock::now();
                                             std::chrono::duration<double> elapsed_seconds = d_end - d_start;
@@ -3054,13 +3179,16 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             std::cout.setf(std::ios::fixed, std::ios::floatfield);
                             auto* facet = new boost::posix_time::time_facet("%Y-%b-%d %H:%M:%S.%f %z");
                             std::cout.imbue(std::locale(std::cout.getloc(), facet));
+                            const int solq = displayed_solution_status();
+                            const std::string solq_tag = solution_status_tag(solq);
+                            const std::string solq_txt = solq_tag.empty() ? "" : solution_status_color(solq) + solq_tag;
                             std::cout
                                 << TEXT_BOLD_GREEN
                                 << "Position at " << time_solution << UTC_solution_str
                                 << " using " << d_user_pvt_solver->get_num_valid_observations() << " observations is Lat = "
                                 << std::fixed << std::setprecision(6) << d_user_pvt_solver->get_latitude()
                                 << " [deg], Long = " << d_user_pvt_solver->get_longitude() << " [deg], Height = "
-                                << std::fixed << std::setprecision(2) << d_user_pvt_solver->get_height() << std::setprecision(ss) << " [m]" << TEXT_RESET << std::endl;
+                                << std::fixed << std::setprecision(2) << d_user_pvt_solver->get_height() << std::setprecision(ss) << " [m]" << solq_txt << TEXT_RESET << std::endl;
                             DLOG(INFO) << "RX clock offset: " << d_user_pvt_solver->get_time_offset_s() << "[s]";
 
                             std::cout

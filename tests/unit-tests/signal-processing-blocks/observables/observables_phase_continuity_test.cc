@@ -17,6 +17,7 @@
 
 #include "hybrid_observables_gs.h"
 #include <gtest/gtest.h>
+#include <cmath>
 #include <cstdint>
 
 namespace
@@ -64,8 +65,10 @@ TEST(ObservablesPhaseContinuityTest, ShortInterruptionsDoNotBreakContinuity)
 
 TEST(ObservablesPhaseContinuityTest, InterruptionsLongerThanAReacquisitionAreDiscontinuous)
 {
-    const auto epochs_in_gap = static_cast<uint64_t>(
-        hybrid_observables_gs::MIN_REACQUISITION_GAP_S / EPOCH_INTERVAL_S);
+    // Round to the nearest epoch: truncating would turn the x87 quotient
+    // 49.999... into an off-by-one epoch count on 32-bit x86
+    const auto epochs_in_gap = static_cast<uint64_t>(std::llround(
+        hybrid_observables_gs::MIN_REACQUISITION_GAP_S / EPOCH_INTERVAL_S));
     EXPECT_FALSE(is_discontinuous(true, 100, 100 + epochs_in_gap));
     EXPECT_TRUE(is_discontinuous(true, 100, 100 + epochs_in_gap + 1));
     EXPECT_TRUE(is_discontinuous(true, 100, 100 + 10 * epochs_in_gap));

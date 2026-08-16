@@ -728,12 +728,17 @@ private:
         while (!d_stop_requested.load() &&
                std::chrono::steady_clock::now() < deadline)
             {
-                std::unique_lock<std::mutex> lock((*pending_resolution)->mutex);
-                if ((*pending_resolution)->complete)
+                // Stop requests arrive through d_wait_condition, never through
+                // this condition variable, so the wait stays bounded to one
+                // poll interval instead of blocking on the resolver
+                Host_Resolution_State& resolution_state = **pending_resolution;
+                std::unique_lock<std::mutex> lock(resolution_state.mutex);
+                if (resolution_state.condition.wait_for(lock,
+                        std::chrono::milliseconds(WORKER_POLL_INTERVAL_MS),
+                        [&resolution_state] { return resolution_state.complete; }))
                     {
                         break;
                     }
-                (*pending_resolution)->condition.wait_for(lock, std::chrono::milliseconds(WORKER_POLL_INTERVAL_MS));
             }
         if (d_stop_requested.load())
             {
@@ -761,7 +766,7 @@ private:
                 *failure_message = "NTRIP caster hostname could not be resolved";
                 return Resolve_Result::FAILED;
             }
-        *resolved_host = numeric_ipv4;
+        *resolved_host = std::move(numeric_ipv4);
         return Resolve_Result::SUCCESS;
     }
 
@@ -913,7 +918,7 @@ private:
                     {
                         active_version = NTRIP_VERSION_1;
                         fallback_from_v2 = true;
-                        immediate_retry_host = resolved_host;
+                        immediate_retry_host = std::move(resolved_host);
                         set_state(Ntrip_Rtcm_Client_State::CONNECTING,
                             "NTRIP v2 negotiation failed; retrying with v1", false);
                         continue;

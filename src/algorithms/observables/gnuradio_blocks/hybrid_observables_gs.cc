@@ -684,8 +684,11 @@ bool hybrid_observables_gs::phase_stream_is_discontinuous(bool has_previous_obse
         {
             return true;
         }
+    // The gap is quantized in whole epochs, so the threshold is placed half an
+    // epoch past the limit: an exact comparison against MIN_REACQUISITION_GAP_S
+    // flips at the boundary on x87 targets, where gap_s carries excess precision
     const double gap_s = static_cast<double>(current_epoch - last_valid_epoch) * epoch_interval_s;
-    return gap_s > MIN_REACQUISITION_GAP_S;
+    return gap_s > MIN_REACQUISITION_GAP_S + 0.5 * epoch_interval_s;
 }
 
 

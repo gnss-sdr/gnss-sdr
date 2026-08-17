@@ -245,6 +245,32 @@ TEST_F(RtklibPvtNtripConfigurationTest, AcceptsGalileoE1E5aChannelPairs)
 }
 
 
+TEST_F(RtklibPvtNtripConfigurationTest, AcceptsGpsL1L5ChannelPairs)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    std::unique_ptr<InMemoryConfiguration> gps_l1_l5 = make_valid_ntrip_configuration();
+    gps_l1_l5->supersede_property("Channels_2S.count", "0");
+    gps_l1_l5->set_property("Channels_L5.count", "1");
+    std::unique_ptr<Rtklib_Pvt> adapter;
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(gps_l1_l5.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+
+    std::unique_ptr<InMemoryConfiguration> combined = make_valid_ntrip_configuration();
+    combined->supersede_property("Channels_2S.count", "0");
+    combined->set_property("Channels_L5.count", "1");
+    combined->set_property("Channels_1B.count", "1");
+    combined->set_property("Channels_5X.count", "1");
+    combined->supersede_property("PVT.navigation_system", "9");
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(combined.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+
+    // three GPS bands are not an accepted pair
+    std::unique_ptr<InMemoryConfiguration> triple_gps = make_valid_ntrip_configuration();
+    triple_gps->set_property("Channels_L5.count", "1");
+    expect_invalid_configuration(*triple_gps, "complete dual-band channel pairs");
+}
+
+
 TEST_F(RtklibPvtNtripConfigurationTest, RejectsWrongBandCountOrNavigationSystemBeforeConnecting)
 {
     using namespace rtklib_pvt_ntrip_configuration_test_detail;

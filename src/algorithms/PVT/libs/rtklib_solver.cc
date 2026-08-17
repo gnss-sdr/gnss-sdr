@@ -1490,10 +1490,16 @@ bool Rtklib_Solver::prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot &f
     int &rover_observation_count,
     int &base_observation_count)
 {
-    // The dual-band pair sits in slots 0/1 for GPS (L1/L2) and slots 0/2 for
-    // Galileo (E1/E5a shares RTKLIB's L5 frequency index)
-    const auto second_band_slot = [](const obsd_t &observation) {
-        return satsys(observation.sat, nullptr) == SYS_GAL ? 2 : 1;
+    // The dual-band pair sits in slots 0/2 for Galileo (E1/E5a shares
+    // RTKLIB's L5 frequency index) and, for GPS, in slots 0/1 (L1/L2) or
+    // slots 0/2 (L1/L5) depending on the configured channel pair
+    const Signal_Enabled_Flags enabled_flags(d_signal_enabled_flags);
+    const int gps_second_band_slot = (!enabled_flags.check_any_enabled(GPS_2S) &&
+                                         enabled_flags.check_any_enabled(GPS_L5))
+                                         ? 2
+                                         : 1;
+    const auto second_band_slot = [gps_second_band_slot](const obsd_t &observation) {
+        return satsys(observation.sat, nullptr) == SYS_GAL ? 2 : gps_second_band_slot;
     };
     const auto clear_unsupported_slots = [&second_band_slot](obsd_t &observation) {
         const int second = second_band_slot(observation);

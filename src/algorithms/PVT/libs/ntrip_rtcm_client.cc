@@ -131,7 +131,8 @@ bool supported_gal_e1_code(unsigned char code)
 }
 
 
-bool supported_gal_e5a_code(unsigned char code)
+// GPS L5 and Galileo E5a share the observation codes of RTKLIB's L5 band
+bool supported_l5_band_code(unsigned char code)
 {
     switch (code)
         {
@@ -1144,9 +1145,10 @@ private:
                         continue;
                     }
                 obsd_t observation = decoder.obs.data[i];
-                // Each satellite must provide its dual-frequency pair: GPS
-                // L1/L2 in slots 0/1, Galileo E1/E5a in slots 0/2 (E5a shares
-                // RTKLIB's L5 frequency index)
+                // Each satellite must provide a dual-frequency pair: GPS L1
+                // with L2 (slot 1) or L5 (slot 2), Galileo E1 with E5a
+                // (slot 2 - E5a and L5 share RTKLIB's third frequency index).
+                // The solver keeps whichever second band matches the receiver.
                 bool has_first_band = false;
                 bool has_second_band = false;
                 for (int slot = 0; slot < NFREQ + NEXOBS; ++slot)
@@ -1160,15 +1162,17 @@ private:
                             {
                                 keep_first = slot == 0 && has_measurement &&
                                              supported_gps_l1_code(observation.code[slot]);
-                                keep_second = slot == 1 && has_measurement &&
-                                              supported_gps_l2_code(observation.code[slot]);
+                                keep_second = (slot == 1 && has_measurement &&
+                                                  supported_gps_l2_code(observation.code[slot])) ||
+                                              (slot == 2 && has_measurement &&
+                                                  supported_l5_band_code(observation.code[slot]));
                             }
                         else
                             {
                                 keep_first = slot == 0 && has_measurement &&
                                              supported_gal_e1_code(observation.code[slot]);
                                 keep_second = slot == 2 && has_measurement &&
-                                              supported_gal_e5a_code(observation.code[slot]);
+                                              supported_l5_band_code(observation.code[slot]);
                             }
                         if (!(keep_first || keep_second))
                             {

@@ -404,8 +404,8 @@ void add_galileo_to_relative_epoch(Rtklib_Solver& solver,
                     Gnss_Synchro& rover_observation = band == 0 ? rover_e1 : rover_e5a;
                     rover_observation.Pseudorange_m = rover_range_m + ROVER_CLOCK_M;
                     rover_observation.Carrier_phase_rads = ((rover_range_m + ROVER_CLOCK_M) / wavelengths_m[band] +
-                                                              rover_ambiguity_cycles) *
-                                                          (2.0 * GNSS_PI);
+                                                               rover_ambiguity_cycles) *
+                                                           (2.0 * GNSS_PI);
                 }
 
             epoch.rover_observations[static_cast<int>(ROVER_KEY_OFFSET + prn * 2U)] = rover_e1;

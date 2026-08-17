@@ -42,6 +42,7 @@
  * \{ */
 
 
+class Gnss_Satellite;
 class Gnss_Synchro;
 class hybrid_observables_gs;
 
@@ -130,6 +131,8 @@ private:
 
     const size_t d_double_type_hash_code = typeid(double).hash_code();
     const size_t d_int_type_hash_code = typeid(int).hash_code();
+
+    static Gnss_Satellite pretty_satellite(char system, uint32_t prn);
 
     void msg_handler_pvt_to_observables(const pmt::pmt_t& msg);
     double compute_T_rx_s(const Gnss_Synchro& a) const;

@@ -19,6 +19,7 @@
 #include "MATH_CONSTANTS.h"  // for SPEED_OF_LIGHT_M_S, TWO_PI
 #include "gnss_circular_deque.h"
 #include "gnss_frequencies.h"
+#include "gnss_satellite.h"
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_make_unique.h"
@@ -59,6 +60,28 @@ namespace wht = std;
 hybrid_observables_gs_sptr hybrid_observables_gs_make(const Obs_Conf &conf_)
 {
     return hybrid_observables_gs_sptr(new hybrid_observables_gs(conf_));
+}
+
+
+Gnss_Satellite hybrid_observables_gs::pretty_satellite(char system, uint32_t prn)
+{
+    switch (system)
+        {
+        case 'G':
+            return Gnss_Satellite(std::string("GPS"), prn);
+        case 'R':
+            return Gnss_Satellite(std::string("Glonass"), prn);
+        case 'S':
+            return Gnss_Satellite(std::string("SBAS"), prn);
+        case 'E':
+            return Gnss_Satellite(std::string("Galileo"), prn);
+        case 'C':
+            return Gnss_Satellite(std::string("Beidou"), prn);
+        case 'J':
+            return Gnss_Satellite(std::string("QZSS"), prn);
+        default:
+            return Gnss_Satellite();
+        }
 }
 
 
@@ -769,7 +792,7 @@ void hybrid_observables_gs::detect_cycle_slips(std::vector<Gnss_Synchro> &data, 
                     obs.Flag_half_cycle_slip = true;
                     LOG(INFO) << "Half-cycle slip on channel " << n
                               << " at RX time " << obs.RX_time
-                              << " s, for satellite " << obs.System << obs.PRN
+                              << " s, for satellite " << pretty_satellite(obs.System, obs.PRN)
                               << ", signal " << std::string(obs.Signal, 2)
                               << " (PLL 180 deg lock is now " << std::boolalpha
                               << obs.Flag_PLL_180_deg_phase_locked << ')';
@@ -781,7 +804,7 @@ void hybrid_observables_gs::detect_cycle_slips(std::vector<Gnss_Synchro> &data, 
                     LOG(INFO) << "Carrier phase discontinuity on channel " << n
                               << " after " << static_cast<double>(d_epoch_counter - previous_epoch) * d_T_rx_step_s
                               << " s without observations, at RX time " << obs.RX_time
-                              << " s, for satellite " << obs.System << obs.PRN
+                              << " s, for satellite " << pretty_satellite(obs.System, obs.PRN)
                               << ", signal " << std::string(obs.Signal, 2);
                     continue;
                 }
@@ -833,8 +856,8 @@ void hybrid_observables_gs::detect_cycle_slips(std::vector<Gnss_Synchro> &data, 
                         {
                             LOG(INFO) << "Cycle slip detected on channel " << channels[i]
                                       << " at RX time " << data[channels[i]].RX_time
-                                      << " s, for satellite " << data[channels[i]].System
-                                      << data[channels[i]].PRN
+                                      << " s, for satellite "
+                                      << pretty_satellite(data[channels[i]].System, data[channels[i]].PRN)
                                       << ", signal " << std::string(data[channels[i]].Signal, 2);
                         }
                 }

@@ -115,13 +115,6 @@ bool supported_gps_l2_code(unsigned char code)
 }
 
 
-bool supported_gps_l1_l2_message(int message_type)
-{
-    return message_type == 1004 ||
-           (message_type >= 1074 && message_type <= 1077);
-}
-
-
 void clear_observation_slot(obsd_t* observation, int slot)
 {
     observation->SNR[slot] = 0;
@@ -1090,8 +1083,12 @@ private:
 
                 increment_decoded_messages();
                 const int message_type = current_rtcm3_message_type(*decoder);
-                if (result == 1 && supported_gps_l1_l2_message(message_type))
+                if (result == 1)
                     {
+                        // The epoch-ready trigger may be a non-GPS message: casters
+                        // interleaving constellations close the epoch on the last
+                        // one sent (e.g. GLONASS 1012 with synchronous flag 0).
+                        // store_observations() filters the epoch per satellite.
                         store_observations(*decoder);
                     }
                 else if (result == 2)

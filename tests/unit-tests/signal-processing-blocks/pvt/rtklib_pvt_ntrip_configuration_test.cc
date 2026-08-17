@@ -206,16 +206,42 @@ TEST_F(RtklibPvtNtripConfigurationTest, RejectsInvalidGgaPeriodOnlyWhenGgaIsEnab
 }
 
 
-TEST_F(RtklibPvtNtripConfigurationTest, RejectsSignalsOutsideGpsL1L2BeforeConnecting)
+TEST_F(RtklibPvtNtripConfigurationTest, RejectsIncompleteDualBandPairsBeforeConnecting)
 {
     using namespace rtklib_pvt_ntrip_configuration_test_detail;
     std::unique_ptr<InMemoryConfiguration> missing_l2 = make_valid_ntrip_configuration();
     missing_l2->supersede_property("Channels_2S.count", "0");
-    expect_invalid_configuration(*missing_l2, "exactly GPS L1 C/A and GPS L2C channels");
+    expect_invalid_configuration(*missing_l2, "complete dual-band channel pairs");
 
-    std::unique_ptr<InMemoryConfiguration> additional_signal = make_valid_ntrip_configuration();
-    additional_signal->set_property("Channels_1B.count", "1");
-    expect_invalid_configuration(*additional_signal, "exactly GPS L1 C/A and GPS L2C channels");
+    std::unique_ptr<InMemoryConfiguration> incomplete_galileo = make_valid_ntrip_configuration();
+    incomplete_galileo->set_property("Channels_1B.count", "1");
+    expect_invalid_configuration(*incomplete_galileo, "complete dual-band channel pairs");
+
+    std::unique_ptr<InMemoryConfiguration> unsupported_signal = make_valid_ntrip_configuration();
+    unsupported_signal->set_property("Channels_1G.count", "1");
+    expect_invalid_configuration(*unsupported_signal, "complete dual-band channel pairs");
+}
+
+
+TEST_F(RtklibPvtNtripConfigurationTest, AcceptsGalileoE1E5aChannelPairs)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    std::unique_ptr<InMemoryConfiguration> galileo_only = make_valid_ntrip_configuration();
+    galileo_only->supersede_property("Channels_1C.count", "0");
+    galileo_only->supersede_property("Channels_2S.count", "0");
+    galileo_only->set_property("Channels_1B.count", "1");
+    galileo_only->set_property("Channels_5X.count", "1");
+    galileo_only->supersede_property("PVT.navigation_system", "8");
+    std::unique_ptr<Rtklib_Pvt> adapter;
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(galileo_only.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+
+    std::unique_ptr<InMemoryConfiguration> gps_and_galileo = make_valid_ntrip_configuration();
+    gps_and_galileo->set_property("Channels_1B.count", "1");
+    gps_and_galileo->set_property("Channels_5X.count", "1");
+    gps_and_galileo->supersede_property("PVT.navigation_system", "9");
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(gps_and_galileo.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
 }
 
 
@@ -228,7 +254,7 @@ TEST_F(RtklibPvtNtripConfigurationTest, RejectsWrongBandCountOrNavigationSystemB
 
     std::unique_ptr<InMemoryConfiguration> bad_navigation_system = make_valid_ntrip_configuration();
     bad_navigation_system->supersede_property("PVT.navigation_system", "9");
-    expect_invalid_configuration(*bad_navigation_system, "navigation_system must select GPS only");
+    expect_invalid_configuration(*bad_navigation_system, "navigation_system must select exactly");
 }
 
 

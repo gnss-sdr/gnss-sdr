@@ -41,6 +41,7 @@
 #include "rtklib_rtkpos.h"
 #include "signal_enabled_flags.h"
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <exception>
 #include <iostream>
@@ -1489,9 +1490,19 @@ bool Rtklib_Solver::prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot &f
     int &rover_observation_count,
     int &base_observation_count)
 {
-    const auto clear_unsupported_slots = [](obsd_t &observation) {
-        for (int frequency = 2; frequency < NFREQ + NEXOBS; ++frequency)
+    // The dual-band pair sits in slots 0/1 for GPS (L1/L2) and slots 0/2 for
+    // Galileo (E1/E5a shares RTKLIB's L5 frequency index)
+    const auto second_band_slot = [](const obsd_t &observation) {
+        return satsys(observation.sat, nullptr) == SYS_GAL ? 2 : 1;
+    };
+    const auto clear_unsupported_slots = [&second_band_slot](obsd_t &observation) {
+        const int second = second_band_slot(observation);
+        for (int frequency = 1; frequency < NFREQ + NEXOBS; ++frequency)
             {
+                if (frequency == second)
+                    {
+                        continue;
+                    }
                 observation.P[frequency] = 0.0;
                 observation.L[frequency] = 0.0;
                 observation.D[frequency] = 0.0F;
@@ -1500,8 +1511,9 @@ bool Rtklib_Solver::prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot &f
                 observation.code[frequency] = CODE_NONE;
             }
     };
-    const auto has_l1_or_l2_measurement = [](const obsd_t &observation) {
-        for (int frequency = 0; frequency < 2; ++frequency)
+    const auto has_supported_band_measurement = [&second_band_slot](const obsd_t &observation) {
+        const std::array<int, 2> slots = {0, second_band_slot(observation)};
+        for (const int frequency : slots)
             {
                 if (observation.code[frequency] != CODE_NONE &&
                     (observation.P[frequency] != 0.0 || observation.L[frequency] != 0.0))
@@ -1512,7 +1524,7 @@ bool Rtklib_Solver::prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot &f
         return false;
     };
     const auto merge_observation = [](obsd_t &destination, const obsd_t &source) {
-        for (int frequency = 0; frequency < 2; ++frequency)
+        for (int frequency = 0; frequency < NFREQ + NEXOBS; ++frequency)
             {
                 if (source.code[frequency] == CODE_NONE && source.P[frequency] == 0.0 && source.L[frequency] == 0.0)
                     {
@@ -1551,13 +1563,15 @@ bool Rtklib_Solver::prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot &f
     for (int index = 0; index < rover_observation_count; ++index)
         {
             obsd_t observation = d_obs_data[index];
-            if (observation.sat <= 0 || satsys(observation.sat, nullptr) != SYS_GPS)
+            if (observation.sat <= 0 ||
+                (satsys(observation.sat, nullptr) != SYS_GPS &&
+                    satsys(observation.sat, nullptr) != SYS_GAL))
                 {
                     continue;
                 }
             observation.rcv = 1;
             clear_unsupported_slots(observation);
-            if (has_l1_or_l2_measurement(observation))
+            if (has_supported_band_measurement(observation))
                 {
                     rover_observations.push_back(observation);
                 }
@@ -1610,13 +1624,15 @@ bool Rtklib_Solver::prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot &f
     base_observations.reserve(fixed_base.observations.size());
     for (auto observation : fixed_base.observations)
         {
-            if (observation.sat <= 0 || satsys(observation.sat, nullptr) != SYS_GPS)
+            if (observation.sat <= 0 ||
+                (satsys(observation.sat, nullptr) != SYS_GPS &&
+                    satsys(observation.sat, nullptr) != SYS_GAL))
                 {
                     continue;
                 }
             observation.rcv = 2;
             clear_unsupported_slots(observation);
-            if (!has_l1_or_l2_measurement(observation))
+            if (!has_supported_band_measurement(observation))
                 {
                     continue;
                 }

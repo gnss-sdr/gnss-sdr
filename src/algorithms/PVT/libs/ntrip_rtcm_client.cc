@@ -115,6 +115,36 @@ bool supported_gps_l2_code(unsigned char code)
 }
 
 
+bool supported_gal_e1_code(unsigned char code)
+{
+    switch (code)
+        {
+        case CODE_L1A:
+        case CODE_L1B:
+        case CODE_L1C:
+        case CODE_L1X:
+        case CODE_L1Z:
+            return true;
+        default:
+            return false;
+        }
+}
+
+
+bool supported_gal_e5a_code(unsigned char code)
+{
+    switch (code)
+        {
+        case CODE_L5I:
+        case CODE_L5Q:
+        case CODE_L5X:
+            return true;
+        default:
+            return false;
+        }
+}
+
+
 void clear_observation_slot(obsd_t* observation, int slot)
 {
     observation->SNR[slot] = 0;
@@ -1108,34 +1138,49 @@ private:
         filtered.reserve(static_cast<std::size_t>(decoder.obs.n));
         for (int i = 0; i < decoder.obs.n; ++i)
             {
-                if (satsys(decoder.obs.data[i].sat, nullptr) != SYS_GPS)
+                const int system = satsys(decoder.obs.data[i].sat, nullptr);
+                if (system != SYS_GPS && system != SYS_GAL)
                     {
                         continue;
                     }
                 obsd_t observation = decoder.obs.data[i];
-                bool has_l1 = false;
-                bool has_l2 = false;
+                // Each satellite must provide its dual-frequency pair: GPS
+                // L1/L2 in slots 0/1, Galileo E1/E5a in slots 0/2 (E5a shares
+                // RTKLIB's L5 frequency index)
+                bool has_first_band = false;
+                bool has_second_band = false;
                 for (int slot = 0; slot < NFREQ + NEXOBS; ++slot)
                     {
                         const bool has_measurement =
                             (std::isfinite(observation.P[slot]) && observation.P[slot] != 0.0) ||
                             (std::isfinite(observation.L[slot]) && observation.L[slot] != 0.0);
-                        const bool keep_l1 = slot == 0 && has_measurement &&
+                        bool keep_first = false;
+                        bool keep_second = false;
+                        if (system == SYS_GPS)
+                            {
+                                keep_first = slot == 0 && has_measurement &&
                                              supported_gps_l1_code(observation.code[slot]);
-                        const bool keep_l2 = slot == 1 && has_measurement &&
-                                             supported_gps_l2_code(observation.code[slot]);
-                        const bool keep = keep_l1 || keep_l2;
-                        if (!keep)
+                                keep_second = slot == 1 && has_measurement &&
+                                              supported_gps_l2_code(observation.code[slot]);
+                            }
+                        else
+                            {
+                                keep_first = slot == 0 && has_measurement &&
+                                             supported_gal_e1_code(observation.code[slot]);
+                                keep_second = slot == 2 && has_measurement &&
+                                              supported_gal_e5a_code(observation.code[slot]);
+                            }
+                        if (!(keep_first || keep_second))
                             {
                                 clear_observation_slot(&observation, slot);
                             }
                         else
                             {
-                                has_l1 = has_l1 || keep_l1;
-                                has_l2 = has_l2 || keep_l2;
+                                has_first_band = has_first_band || keep_first;
+                                has_second_band = has_second_band || keep_second;
                             }
                     }
-                if (has_l1 && has_l2)
+                if (has_first_band && has_second_band)
                     {
                         observation.rcv = 2;
                         filtered.push_back(observation);

@@ -422,15 +422,19 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             positioning_mode = PMODE_SINGLE;
         }
 
+    const bool ntrip_gps_l1_l2_channels = signal_enabled_flags.check_only_enabled(GPS_1C, GPS_2S);
+    const bool ntrip_gal_e1_e5a_channels = signal_enabled_flags.check_only_enabled(GAL_1B, GAL_E5a);
+    const bool ntrip_gps_gal_channels = signal_enabled_flags.check_only_enabled(GPS_1C, GPS_2S, GAL_1B, GAL_E5a);
+
     if (pvt_output_parameters.ntrip_client_enabled)
         {
             if (positioning_mode != PMODE_STATIC && positioning_mode != PMODE_KINEMA)
                 {
                     throw std::invalid_argument(role + ".ntrip_client_enabled requires positioning_mode=Static or positioning_mode=Kinematic");
                 }
-            if (!signal_enabled_flags.check_only_enabled(GPS_1C, GPS_2S))
+            if (!ntrip_gps_l1_l2_channels && !ntrip_gal_e1_e5a_channels && !ntrip_gps_gal_channels)
                 {
-                    throw std::invalid_argument("The first NTRIP RTK milestone requires exactly GPS L1 C/A and GPS L2C channels");
+                    throw std::invalid_argument("NTRIP RTK requires complete dual-band channel pairs: GPS L1 C/A + L2C, Galileo E1 + E5a, or both");
                 }
         }
 
@@ -468,9 +472,22 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             // warn user and set the default
             number_of_frequencies = num_bands;
         }
-    if (pvt_output_parameters.ntrip_client_enabled && number_of_frequencies != 2)
+    if (pvt_output_parameters.ntrip_client_enabled)
         {
-            throw std::invalid_argument(role + ".num_bands must be 2 for the GPS L1/L2 NTRIP RTK milestone");
+            if (ntrip_gal_e1_e5a_channels || ntrip_gps_gal_channels)
+                {
+                    if (number_of_frequencies != 3)
+                        {
+                            // Galileo E5a occupies RTKLIB's third frequency slot, so the
+                            // relative-positioning loops must span three bands
+                            LOG(INFO) << "NTRIP RTK with Galileo E1/E5a: setting the number of frequency slots to 3";
+                            number_of_frequencies = 3;
+                        }
+                }
+            else if (number_of_frequencies != 2)
+                {
+                    throw std::invalid_argument(role + ".num_bands must be 2 for GPS L1/L2 NTRIP RTK");
+                }
         }
 
     double elevation_mask = configuration->property(role + ".elevation_mask", 15.0);
@@ -639,9 +656,15 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             LOG(WARNING) << "Erroneous Navigation System. Setting to default value of (0:none)";
             navigation_system = nsys;
         }
-    if (pvt_output_parameters.ntrip_client_enabled && navigation_system != SYS_GPS)
+    if (pvt_output_parameters.ntrip_client_enabled)
         {
-            throw std::invalid_argument(role + ".navigation_system must select GPS only for the GPS L1/L2 NTRIP RTK milestone");
+            const int expected_navigation_system = ntrip_gal_e1_e5a_channels
+                                                       ? SYS_GAL
+                                                       : (ntrip_gps_gal_channels ? (SYS_GPS | SYS_GAL) : SYS_GPS);
+            if (navigation_system != expected_navigation_system)
+                {
+                    throw std::invalid_argument(role + ".navigation_system must select exactly the constellations of the enabled RTK channel pairs");
+                }
         }
 
     // Settings 2

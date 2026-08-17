@@ -685,6 +685,8 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             ntrip_config.station_id = conf_.ntrip_station_id;
             ntrip_config.version = conf_.ntrip_version;
             ntrip_config.tls_enabled = conf_.ntrip_tls_enabled;
+            ntrip_config.send_gga = conf_.ntrip_send_gga;
+            ntrip_config.gga_period_ms = conf_.ntrip_gga_period_ms;
             const auto clear_local_credentials = [&ntrip_config]() {
                 const auto clear_string = [](std::string* value) {
                     if (value->empty())

@@ -76,6 +76,7 @@ public:
     int32_t ntrip_timeout_ms = 10000;
     int32_t ntrip_reconnect_interval_ms = 10000;
     int32_t ntrip_version = 2;  // 2: prefer v2 with one compatible v1 retry; 1: force legacy v1
+    int32_t ntrip_gga_period_ms = 10000;
 
     uint16_t rtcm_tcp_port = 0;
     uint16_t rtcm_station_id = 0;
@@ -107,6 +108,7 @@ public:
     bool ntrip_client_enabled = false;
     bool ntrip_fallback_to_single = true;
     bool ntrip_tls_enabled = false;
+    bool ntrip_send_gga = true;  // VRS/nearest-station casters need the rover GGA to serve corrections
     bool use_e6_for_pvt = true;
     bool use_has_corrections = true;
     bool use_unhealthy_sats = false;

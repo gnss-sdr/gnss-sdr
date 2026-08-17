@@ -189,6 +189,23 @@ TEST_F(RtklibPvtNtripConfigurationTest, RejectsInvalidAgeOrTimeoutBeforeConnecti
 }
 
 
+TEST_F(RtklibPvtNtripConfigurationTest, RejectsInvalidGgaPeriodOnlyWhenGgaIsEnabled)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    std::unique_ptr<InMemoryConfiguration> bad_period = make_valid_ntrip_configuration();
+    bad_period->supersede_property("PVT.ntrip_gga_period_ms", "999");
+    expect_invalid_configuration(*bad_period, "ntrip_gga_period_ms");
+
+    // the period is not used while the GGA upload is disabled
+    std::unique_ptr<InMemoryConfiguration> gga_disabled = make_valid_ntrip_configuration();
+    gga_disabled->supersede_property("PVT.ntrip_send_gga", "false");
+    gga_disabled->supersede_property("PVT.ntrip_gga_period_ms", "999");
+    std::unique_ptr<Rtklib_Pvt> adapter;
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(gga_disabled.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+}
+
+
 TEST_F(RtklibPvtNtripConfigurationTest, RejectsSignalsOutsideGpsL1L2BeforeConnecting)
 {
     using namespace rtklib_pvt_ntrip_configuration_test_detail;

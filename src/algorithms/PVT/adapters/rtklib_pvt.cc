@@ -242,6 +242,8 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             pvt_output_parameters.ntrip_fallback_to_single = configuration->property(role + ".ntrip_fallback_to_single", pvt_output_parameters.ntrip_fallback_to_single);
             pvt_output_parameters.ntrip_tls_enabled = configuration->property(role + ".ntrip_tls_enabled", pvt_output_parameters.ntrip_tls_enabled);
             pvt_output_parameters.ntrip_version = configuration->property(role + ".ntrip_version", pvt_output_parameters.ntrip_version);
+            pvt_output_parameters.ntrip_send_gga = configuration->property(role + ".ntrip_send_gga", pvt_output_parameters.ntrip_send_gga);
+            pvt_output_parameters.ntrip_gga_period_ms = configuration->property(role + ".ntrip_gga_period_ms", pvt_output_parameters.ntrip_gga_period_ms);
 
             if (pvt_output_parameters.ntrip_version != 1 && pvt_output_parameters.ntrip_version != 2)
                 {
@@ -338,6 +340,11 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
                 pvt_output_parameters.ntrip_reconnect_interval_ms > max_ntrip_interval_ms)
                 {
                     throw std::invalid_argument("NTRIP timeout and reconnect intervals must be within 1000 ms and 24 hours; reconnect may also be zero");
+                }
+            if (pvt_output_parameters.ntrip_send_gga &&
+                (pvt_output_parameters.ntrip_gga_period_ms < 1000 || pvt_output_parameters.ntrip_gga_period_ms > max_ntrip_interval_ms))
+                {
+                    throw std::invalid_argument(role + ".ntrip_gga_period_ms must be within 1000 ms and 24 hours");
                 }
             if (!std::isfinite(pvt_output_parameters.ntrip_max_correction_age_s) || pvt_output_parameters.ntrip_max_correction_age_s <= 0.0)
                 {

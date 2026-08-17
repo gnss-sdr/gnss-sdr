@@ -875,6 +875,12 @@ public:
         return d_received_first_v2_request;
     }
 
+    // safe to poll while the caster is serving
+    bool received_gga() const
+    {
+        return d_received_gga.load();
+    }
+
 private:
     void record_start_failure(const char* operation)
     {
@@ -1068,6 +1074,7 @@ private:
             std::chrono::steady_clock::now() +
             std::chrono::milliseconds(SERVER_TIMEOUT_MS);
         unsigned char discard[256];
+        std::string upstream;
         while (!d_stop_requested.load() &&
                std::chrono::steady_clock::now() < close_deadline)
             {
@@ -1084,6 +1091,21 @@ private:
                 if (count < 0 && errno != EINTR)
                     {
                         break;
+                    }
+                if (count > 0 && !d_received_gga.load())
+                    {
+                        upstream.append(reinterpret_cast<const char*>(discard),
+                            static_cast<std::size_t>(count));
+                        if (upstream.find("$GPGGA") != std::string::npos)
+                            {
+                                d_received_gga.store(true);
+                            }
+                        // a GGA sentence is under 128 bytes: keep only enough
+                        // to bridge a split across recv() boundaries
+                        if (upstream.size() > 512)
+                            {
+                                upstream.erase(0, upstream.size() - 128);
+                            }
                     }
             }
         shutdown(client_socket, SHUT_RDWR);
@@ -1129,6 +1151,7 @@ private:
     bool d_server_closed_after_payload = false;
     bool d_server_closed_on_accept = false;
     bool d_received_first_v2_request = false;
+    std::atomic<bool> d_received_gga{false};
     std::string d_start_failure;
     int d_start_errno = 0;
 };
@@ -1769,6 +1792,50 @@ TEST(NtripRtcmClientTest, AuthenticatedFragmentedStreamPublishesFixedBaseSnapsho
     EXPECT_NE(std::string::npos, rtklib_trace.find("stropen:"));
     EXPECT_EQ(std::string::npos, rtklib_trace.find(TRACE_PASSWORD));
     EXPECT_EQ(std::string::npos, rtklib_trace.find(TRACE_BASIC_TOKEN));
+}
+
+
+TEST(NtripRtcmClientTest, RoverGgaReachesTheCasterWhenEnabled)
+{
+    using namespace ntrip_rtcm_client_test;
+
+    Loopback_Ntrip_Caster caster;
+    ASSERT_TRUE(caster.start()) << caster.start_failure() << ": "
+                                << std::strerror(caster.start_errno());
+    ASSERT_NE(0, caster.port());
+
+    Ntrip_Rtcm_Client_Config config;
+    config.enabled = true;
+    config.host = "localhost";
+    config.port = caster.port();
+    config.mountpoint = "/BASE";
+    config.username = TRACE_USERNAME;
+    config.password = TRACE_PASSWORD;
+    config.reconnect_interval_ms = 500;
+    config.timeout_ms = 1000;
+    config.max_age_s = 1.0;
+    config.station_id = TEST_STATION_ID;
+    config.send_gga = true;
+    config.gga_period_ms = 100;
+
+    Ntrip_Rtcm_Client client(config);
+    // A VRS caster serves no corrections until it receives the rover GGA,
+    // so the position must be known before the stream connects
+    client.update_rover_position({{4797642.0, 166322.0, 4185504.0}});
+    ASSERT_TRUE(client.start());
+
+    const std::chrono::steady_clock::time_point gga_deadline =
+        std::chrono::steady_clock::now() + std::chrono::milliseconds(2000);
+    while (!caster.received_gga() &&
+           std::chrono::steady_clock::now() < gga_deadline)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    client.stop();
+    caster.join();
+
+    EXPECT_TRUE(caster.accepted_client());
+    EXPECT_TRUE(caster.received_gga());
 }
 
 

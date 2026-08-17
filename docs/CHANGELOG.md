@@ -101,22 +101,27 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Interoperability:
 
-- Added an opt-in fixed-base RTK path for GPS L1 C/A + L2C receivers. The PVT
-  block can now connect to an NTRIP caster, decode RTCM 3 base position and GPS
-  L1/L2 observations, and feed time-aligned reference data to its RTKLIB
-  relative-positioning solver. The client prefers NTRIP v2 and, after a
-  fully-sent v2 exchange closes or times out before receiving response bytes, or
-  returns HTTP 400, 501, or 505, retries on a fresh NTRIP v1 connection
-  (`PVT.ntrip_version=1` forces the legacy protocol). It supports TLS 1.2 or
-  newer with system-CA certificate and hostname verification
-  (`PVT.ntrip_tls_enabled=true`). It reconnects without blocking the GNU Radio
-  work function, filters station changes and stale corrections, redacts
-  credentials from RTKLIB traces, and retains an explicitly labeled single-point
-  fallback when configured. VRS and nearest-station mountpoints are supported:
-  the client periodically reports the rover position upstream as an NMEA GGA
-  sentence (`PVT.ntrip_send_gga`, enabled by default, with the cadence set by
-  `PVT.ntrip_gga_period_ms`, 10 s by default), starting as soon as the receiver
-  produces its first position solution.
+- Added an opt-in RTK path fed by NTRIP corrections. The PVT block can now
+  connect to an NTRIP caster, decode the RTCM 3 base position and base
+  observations, and feed time-aligned reference data to its RTKLIB
+  relative-positioning solver. Supported receiver configurations are complete
+  dual-band pairs per constellation: GPS L1 C/A + L2C, GPS L1 C/A + L5, Galileo
+  E1 + E5a, or one GPS pair together with the Galileo pair for combined
+  multi-constellation RTK. Since GPS L5 and Galileo E5a share the same center
+  frequency, the combined GPS L1+L5 / Galileo E1+E5a receiver needs only two RF
+  channels. The client prefers NTRIP v2 and, after a fully-sent v2 exchange
+  closes or times out before receiving response bytes, or returns HTTP 400, 501,
+  or 505, retries on a fresh NTRIP v1 connection (`PVT.ntrip_version=1` forces
+  the legacy protocol). It supports TLS 1.2 or newer with system-CA certificate
+  and hostname verification (`PVT.ntrip_tls_enabled=true`). It reconnects
+  without blocking the GNU Radio work function, filters station changes and
+  stale corrections, redacts credentials from RTKLIB traces, and retains an
+  explicitly labeled single-point fallback when configured. VRS and
+  nearest-station mountpoints are supported: the client periodically reports the
+  rover position upstream as an NMEA GGA sentence (`PVT.ntrip_send_gga`, enabled
+  by default, with the cadence set by `PVT.ntrip_gga_period_ms`, 10 s by
+  default), starting as soon as the receiver produces its first position
+  solution.
 - QZSS ambiguities are now resolved in their own group instead of jointly with
   GPS, avoiding integer fixes across the GPS-QZSS inter-system bias, and the
   RTCM 3 decoder accepts the final RTCM 3.3 BeiDou ephemeris message type 1042

@@ -113,7 +113,7 @@ information about this open-source, software-defined GNSS receiver.
       - [Decoding of the navigation message](#decoding-of-the-navigation-message)
     - [Observables](#observables)
     - [Computation of Position, Velocity, and Time](#computation-of-position-velocity-and-time)
-      - [Fixed-base GPS L1/L2 RTK through NTRIP](#fixed-base-gps-l1l2-rtk-through-ntrip)
+      - [Dual-band RTK through NTRIP](#dual-band-rtk-through-ntrip)
 - [About the software license](#about-the-software-license)
 - [Publications and Credits](#publications-and-credits)
 - [Ok, now what?](#ok-now-what)
@@ -1843,7 +1843,8 @@ More documentation at the
 ### Computation of Position, Velocity, and Time
 
 GNSS-SDR provides a module that can compute standalone position fixes and an
-opt-in fixed-base RTK solution for GPS L1 C/A and L2C receivers. Results can be
+opt-in NTRIP-corrected RTK solution for dual-band GPS (L1 C/A + L2C or L1 C/A +
+L5), Galileo (E1 + E5a), and combined GPS+Galileo receivers. Results can be
 stored in GIS-friendly formats such as
 [GeoJSON](https://tools.ietf.org/html/rfc7946),
 [GPX](https://www.topografix.com/gpx.asp), and
@@ -1874,7 +1875,7 @@ PVT.nmea_dump_filename=./gnss_sdr_pvt.nmea ; NMEA log path and filename
 PVT.flag_nmea_tty_port=false     ; Enables the NMEA log to a serial TTY port
 PVT.nmea_dump_devname=/dev/pts/4 ; serial device descriptor for NMEA logging
 PVT.flag_rtcm_server=true        ; Enables an outbound raw TCP server dispatching generated RTCM messages
-PVT.ntrip_client_enabled=false   ; Enables inbound fixed-base RTCM corrections from an NTRIP caster
+PVT.ntrip_client_enabled=false   ; Enables inbound RTCM corrections from an NTRIP caster (physical base or VRS)
 PVT.flag_rtcm_tty_port=false     ; Enables the RTCM log to a serial TTY port
 PVT.rtcm_dump_devname=/dev/pts/1 ; serial device descriptor for RTCM logging
 PVT.rtcm_tcp_port=2101
@@ -1884,17 +1885,24 @@ PVT.rtcm_MT1097_rate_ms=1000
 PVT.rtcm_MT1077_rate_ms=1000
 ```
 
-#### Fixed-base GPS L1/L2 RTK through NTRIP
+#### Dual-band RTK through NTRIP
 
 The `RTKLIB_PVT` implementation can obtain base-station corrections from an
 NTRIP caster. This feature is opt-in: `PVT.ntrip_client_enabled` defaults to
-`false`, and no caster connection is attempted while it is disabled. The first
-implementation is deliberately limited to exactly GPS L1 C/A (`GPS_1C`) and GPS
-L2C (`GPS_2S`), with `PVT.num_bands=2` and `PVT.navigation_system=1` (GPS).
-Select `Static` for a stationary rover or `Kinematic` for a moving rover; other
-positioning modes are rejected when the NTRIP client is enabled.
+`false`, and no caster connection is attempted while it is disabled. The
+receiver must be configured with complete dual-band channel pairs: GPS L1 C/A +
+L2C (`1C`+`2S`), GPS L1 C/A + L5 (`1C`+`L5`), Galileo E1 + E5a (`1B`+`5X`), or
+one GPS pair together with the Galileo pair for combined multi-constellation
+RTK; incomplete pairs and other signals are rejected. `PVT.navigation_system`
+must match the enabled constellations exactly (`1` GPS, `8` Galileo, `9` both),
+and the number of frequency slots is set automatically (2 for GPS L1/L2; 3
+whenever L5 or E5a is involved, since both occupy the third RTKLIB slot). GPS L5
+and Galileo E5a share the same center frequency, so the combined GPS L1+L5 /
+Galileo E1+E5a receiver needs only two RF channels. Select `Static` for a
+stationary rover or `Kinematic` for a moving rover; other positioning modes are
+rejected when the NTRIP client is enabled.
 
-A fixed-base rover configuration can include:
+An NTRIP-corrected rover configuration can include:
 
 ```
 Channels_1C.count=8
@@ -1902,8 +1910,6 @@ Channels_2S.count=8
 
 PVT.implementation=RTKLIB_PVT
 PVT.positioning_mode=Kinematic
-PVT.num_bands=2
-PVT.navigation_system=1
 
 PVT.ntrip_client_enabled=true
 PVT.ntrip_caster_address=caster.example.org
@@ -1919,6 +1925,8 @@ PVT.ntrip_reconnect_interval_ms=10000
 PVT.ntrip_max_correction_age_s=5.0
 PVT.ntrip_station_id=0
 PVT.ntrip_fallback_to_single=true
+PVT.ntrip_send_gga=true
+PVT.ntrip_gga_period_ms=10000
 ```
 
 The caster address, mountpoint, username, password, and password-environment
@@ -1933,8 +1941,11 @@ one immediate v2-to-v1 compatibility retry still runs and is not counted as an
 automatic reconnect.
 
 The correction stream must provide an RTCM 3 base position message 1005 or 1006
-and GPS observation messages carrying both L1 and L2, either as message 1004 or
-as MSM4 through MSM7 (1074 through 1077). Corrections older than
+and observation messages carrying the receiver's dual-band pair per satellite:
+for GPS, L1 together with L2 or L5, either as message 1004 or as MSM4 through
+MSM7 (1074 through 1077); for Galileo, E1 together with E5a as MSM4 through MSM7
+(1094 through 1097). Base satellites lacking the second band of the configured
+pair do not contribute to the relative solution. Corrections older than
 `PVT.ntrip_max_correction_age_s` are not used. Enabling this client forces a
 separate internal single-point solver for receiver-clock correction,
 independently of the RTK solver. With `PVT.ntrip_fallback_to_single=true`, the
@@ -1954,7 +1965,14 @@ with TLS 1.2 or newer and validates the caster certificate against the system CA
 store and its host name. Without TLS, Basic authentication only encodes
 credentials; it does not encrypt them, so use a trusted network or a suitable
 secure tunnel. Prefer `PVT.ntrip_password_env` over a password stored in a file.
-VRS mountpoints requiring rover GGA messages are supported.
+VRS and nearest-station mountpoints that require rover GGA reports are
+supported: with `PVT.ntrip_send_gga=true` (the default), the client periodically
+sends an NMEA GGA sentence derived from the receiver's current position
+estimate, every `PVT.ntrip_gga_period_ms` (10 s by default). No GGA is sent
+before the receiver produces its first position solution; the single-point
+bootstrap fix is enough for the caster to start serving the virtual station. Set
+`PVT.ntrip_send_gga=false` if the rover position must not be reported to the
+caster; physical-base mountpoints work either way.
 
 `PVT.flag_rtcm_server` is unrelated to the NTRIP correction client. It controls
 an outbound raw TCP server for RTCM messages generated by GNSS-SDR; it neither
@@ -2075,7 +2093,7 @@ PVT.rtcm_tcp_port=2102
 PVT.rtcm_station_id=1111
 ```
 
-This outbound server is independent of the inbound fixed-base correction client
+This outbound server is independent of the inbound NTRIP correction client
 configured with `PVT.ntrip_client_enabled`.
 
 **Important note:**

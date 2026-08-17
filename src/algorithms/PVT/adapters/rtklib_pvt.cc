@@ -422,11 +422,22 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             positioning_mode = PMODE_SINGLE;
         }
 
-    const bool ntrip_gps_l1_l2_channels = signal_enabled_flags.check_only_enabled(GPS_1C, GPS_2S);
-    const bool ntrip_gps_l1_l5_channels = signal_enabled_flags.check_only_enabled(GPS_1C, GPS_L5);
-    const bool ntrip_gal_e1_e5a_channels = signal_enabled_flags.check_only_enabled(GAL_1B, GAL_E5a);
-    const bool ntrip_gps_gal_channels = signal_enabled_flags.check_only_enabled(GPS_1C, GPS_2S, GAL_1B, GAL_E5a) ||
-                                        signal_enabled_flags.check_only_enabled(GPS_1C, GPS_L5, GAL_1B, GAL_E5a);
+    // Per-system NTRIP RTK channel rule: GPS is L1 C/A alone or with one
+    // second band (L2C or L5); Galileo is E1 alone or with E5a. Single-band
+    // sets run single-frequency RTK.
+    const bool ntrip_gps_l1 = signal_enabled_flags.check_any_enabled(GPS_1C);
+    const bool ntrip_gps_l2 = signal_enabled_flags.check_any_enabled(GPS_2S);
+    const bool ntrip_gps_l5 = signal_enabled_flags.check_any_enabled(GPS_L5);
+    const bool ntrip_gal_e1 = signal_enabled_flags.check_any_enabled(GAL_1B);
+    const bool ntrip_gal_e5a = signal_enabled_flags.check_any_enabled(GAL_E5a);
+    const bool ntrip_only_supported_signals =
+        (signal_enabled_flags.flags & ~(GPS_1C | GPS_2S | GPS_L5 | GAL_1B | GAL_E5a)) == 0;
+    const bool ntrip_valid_channel_set =
+        ntrip_only_supported_signals &&
+        (ntrip_gps_l1 || ntrip_gal_e1) &&
+        !(ntrip_gps_l2 && ntrip_gps_l5) &&
+        (!(ntrip_gps_l2 || ntrip_gps_l5) || ntrip_gps_l1) &&
+        (!ntrip_gal_e5a || ntrip_gal_e1);
 
     if (pvt_output_parameters.ntrip_client_enabled)
         {
@@ -434,10 +445,9 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
                 {
                     throw std::invalid_argument(role + ".ntrip_client_enabled requires positioning_mode=Static or positioning_mode=Kinematic");
                 }
-            if (!ntrip_gps_l1_l2_channels && !ntrip_gps_l1_l5_channels &&
-                !ntrip_gal_e1_e5a_channels && !ntrip_gps_gal_channels)
+            if (!ntrip_valid_channel_set)
                 {
-                    throw std::invalid_argument("NTRIP RTK requires complete dual-band channel pairs: GPS L1 C/A + L2C, GPS L1 C/A + L5, Galileo E1 + E5a, or one GPS pair together with the Galileo pair");
+                    throw std::invalid_argument("NTRIP RTK channels must be GPS L1 C/A alone or with one of L2C or L5, and/or Galileo E1 alone or with E5a");
                 }
         }
 
@@ -477,20 +487,14 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         }
     if (pvt_output_parameters.ntrip_client_enabled)
         {
-            if (!ntrip_gps_l1_l2_channels)
+            // The slot count is fully determined by the channel set: GPS L5
+            // and Galileo E5a occupy RTKLIB's third frequency slot, GPS L2C
+            // the second, and single-band sets run on the first slot alone
+            const int ntrip_required_bands = (ntrip_gps_l5 || ntrip_gal_e5a) ? 3 : (ntrip_gps_l2 ? 2 : 1);
+            if (number_of_frequencies != ntrip_required_bands)
                 {
-                    if (number_of_frequencies != 3)
-                        {
-                            // GPS L5 and Galileo E5a occupy RTKLIB's third frequency
-                            // slot, so the relative-positioning loops must span three
-                            // bands in every accepted set except GPS L1/L2
-                            LOG(INFO) << "NTRIP RTK with an L5/E5a pair: setting the number of frequency slots to 3";
-                            number_of_frequencies = 3;
-                        }
-                }
-            else if (number_of_frequencies != 2)
-                {
-                    throw std::invalid_argument(role + ".num_bands must be 2 for GPS L1/L2 NTRIP RTK");
+                    LOG(INFO) << "NTRIP RTK: setting the number of frequency slots to " << ntrip_required_bands;
+                    number_of_frequencies = ntrip_required_bands;
                 }
         }
 
@@ -662,12 +666,11 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         }
     if (pvt_output_parameters.ntrip_client_enabled)
         {
-            const int expected_navigation_system = ntrip_gal_e1_e5a_channels
-                                                       ? SYS_GAL
-                                                       : (ntrip_gps_gal_channels ? (SYS_GPS | SYS_GAL) : SYS_GPS);
+            const int expected_navigation_system =
+                (ntrip_gps_l1 ? SYS_GPS : 0) | (ntrip_gal_e1 ? SYS_GAL : 0);
             if (navigation_system != expected_navigation_system)
                 {
-                    throw std::invalid_argument(role + ".navigation_system must select exactly the constellations of the enabled RTK channel pairs");
+                    throw std::invalid_argument(role + ".navigation_system must select exactly the constellations of the enabled RTK channels");
                 }
         }
 

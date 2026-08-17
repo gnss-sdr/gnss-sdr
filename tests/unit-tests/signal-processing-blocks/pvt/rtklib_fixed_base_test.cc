@@ -109,7 +109,8 @@ Gps_Ephemeris make_relative_ephemeris(unsigned int prn)
 }
 
 
-Galileo_Ephemeris make_relative_galileo_ephemeris(unsigned int prn)
+Galileo_Ephemeris make_relative_galileo_ephemeris(unsigned int prn,
+    Galileo_Nav_Message_Type nav_message_type = Galileo_Nav_Message_Type::FNAV)
 {
     Galileo_Ephemeris ephemeris;
     ephemeris.PRN = prn;
@@ -130,7 +131,7 @@ Galileo_Ephemeris make_relative_galileo_ephemeris(unsigned int prn)
     ephemeris.omega = 0.0;
     ephemeris.OMEGAdot = -5.3e-9;
     ephemeris.IOD_ephemeris = static_cast<int32_t>(prn);
-    ephemeris.nav_message_type = Galileo_Nav_Message_Type::FNAV;
+    ephemeris.nav_message_type = nav_message_type;
     return ephemeris;
 }
 
@@ -280,12 +281,14 @@ Synthetic_Relative_Epoch make_relative_epoch(Rtklib_Solver& solver,
     const double* base_position_ecef,
     const double* rover_position_ecef,
     const std::vector<unsigned int>& satellites,
-    bool gps_l1_l5 = false)
+    bool gps_l1_l5 = false,
+    bool single_band = false)
 {
     const double tow_s = TEST_TOW_S + static_cast<double>(epoch_index);
     const gtime_t reception_time = gpst2time(TEST_GPS_WEEK, tow_s);
     // The GPS second band is L2 in slot 1, or L5 in slot 2 (shared with E5a)
     const int second_slot = gps_l1_l5 ? 2 : 1;
+    const int band_count = single_band ? 1 : 2;
     const double wavelengths_m[2] = {
         SPEED_OF_LIGHT_M_S / FREQ1,
         SPEED_OF_LIGHT_M_S / (gps_l1_l5 ? FREQ5 : FREQ2)};
@@ -321,7 +324,7 @@ Synthetic_Relative_Epoch make_relative_epoch(Rtklib_Solver& solver,
             Gnss_Synchro rover_l2 = rover_l1;
             std::memcpy(rover_l2.Signal, gps_l1_l5 ? "L5" : "2S", 3);
 
-            for (int frequency = 0; frequency < 2; ++frequency)
+            for (int frequency = 0; frequency < band_count; ++frequency)
                 {
                     const int slot = frequency == 0 ? 0 : second_slot;
                     const double base_ambiguity_cycles = 100000.0 + 31.0 * static_cast<double>(prn) + 700.0 * frequency;
@@ -341,7 +344,10 @@ Synthetic_Relative_Epoch make_relative_epoch(Rtklib_Solver& solver,
                 }
 
             epoch.rover_observations[static_cast<int>(prn * 2U)] = rover_l1;
-            epoch.rover_observations[static_cast<int>(prn * 2U + 1U)] = rover_l2;
+            if (!single_band)
+                {
+                    epoch.rover_observations[static_cast<int>(prn * 2U + 1U)] = rover_l2;
+                }
             epoch.base_snapshot.observations.push_back(base_observation);
         }
     return epoch;
@@ -353,7 +359,8 @@ void add_galileo_to_relative_epoch(Rtklib_Solver& solver,
     int epoch_index,
     const double* base_position_ecef,
     const double* rover_position_ecef,
-    const std::vector<unsigned int>& satellites)
+    const std::vector<unsigned int>& satellites,
+    bool single_band = false)
 {
     const double tow_s = TEST_TOW_S + static_cast<double>(epoch_index);
     const gtime_t reception_time = gpst2time(TEST_GPS_WEEK, tow_s);
@@ -368,7 +375,9 @@ void add_galileo_to_relative_epoch(Rtklib_Solver& solver,
 
     for (const unsigned int prn : satellites)
         {
-            const Galileo_Ephemeris ephemeris = make_relative_galileo_ephemeris(prn);
+            // An E1-only receiver runs on I/NAV; E1+E5a selects F/NAV
+            const Galileo_Ephemeris ephemeris = make_relative_galileo_ephemeris(prn,
+                single_band ? Galileo_Nav_Message_Type::INAV : Galileo_Nav_Message_Type::FNAV);
             solver.store_galileo_ephemeris(ephemeris);
 
             const double base_range_m = modeled_signal_range(
@@ -389,7 +398,7 @@ void add_galileo_to_relative_epoch(Rtklib_Solver& solver,
             Gnss_Synchro rover_e5a = rover_e1;
             std::memcpy(rover_e5a.Signal, "5X", 3);
 
-            for (int band = 0; band < 2; ++band)
+            for (int band = 0; band < (single_band ? 1 : 2); ++band)
                 {
                     const int slot = slots[band];
                     const double base_ambiguity_cycles = 200000.0 + 37.0 * static_cast<double>(prn) + 900.0 * band;
@@ -409,7 +418,10 @@ void add_galileo_to_relative_epoch(Rtklib_Solver& solver,
                 }
 
             epoch.rover_observations[static_cast<int>(ROVER_KEY_OFFSET + prn * 2U)] = rover_e1;
-            epoch.rover_observations[static_cast<int>(ROVER_KEY_OFFSET + prn * 2U + 1U)] = rover_e5a;
+            if (!single_band)
+                {
+                    epoch.rover_observations[static_cast<int>(ROVER_KEY_OFFSET + prn * 2U + 1U)] = rover_e5a;
+                }
             epoch.base_snapshot.observations.push_back(base_observation);
         }
 }
@@ -935,6 +947,70 @@ TEST_F(RtklibFixedBaseTest, CombinedGpsL1L5GalileoBaseProducesRelativeSolution)
                         {
                             EXPECT_EQ(CODE_L5Q, base_observation.code[2]);
                         }
+                }
+
+            SCOPED_TRACE(::testing::Message() << "epoch=" << epoch_index);
+            ASSERT_TRUE(solve(*solver, epoch.rover_observations, &epoch.base_snapshot));
+            EXPECT_EQ(Rtklib_Fixed_Base_Status::APPLIED, solver->get_fixed_base_status());
+            EXPECT_EQ(gps_satellites.size() + galileo_satellites.size(),
+                solver->get_fixed_base_common_satellites());
+            obtained_fix = obtained_fix || solver->pvt_sol.stat == SOLQ_FIX;
+            EXPECT_TRUE(solver->pvt_sol.stat == SOLQ_FLOAT || solver->pvt_sol.stat == SOLQ_FIX);
+        }
+
+    EXPECT_TRUE(obtained_fix);
+    const double position_error_m = std::sqrt(
+        std::pow(solver->pvt_sol.rr[0] - rover_position_ecef[0], 2.0) +
+        std::pow(solver->pvt_sol.rr[1] - rover_position_ecef[1], 2.0) +
+        std::pow(solver->pvt_sol.rr[2] - rover_position_ecef[2], 2.0));
+    EXPECT_LT(position_error_m, 0.1);
+}
+
+
+TEST_F(RtklibFixedBaseTest, SingleFrequencyGpsGalileoBaseProducesRelativeSolution)
+{
+    using namespace rtklib_fixed_base_test_detail;
+    const double base_position_geodetic[3] = {45.0 * D2R, 8.0 * D2R, 100.0};
+    double base_position_ecef[3]{};
+    pos2ecef(base_position_geodetic, base_position_ecef);
+    const double baseline_enu_m[3] = {8.0, 4.0, 1.0};
+    double baseline_ecef_m[3]{};
+    enu2ecef(base_position_geodetic, baseline_enu_m, baseline_ecef_m);
+    const double rover_position_ecef[3] = {
+        base_position_ecef[0] + baseline_ecef_m[0],
+        base_position_ecef[1] + baseline_ecef_m[1],
+        base_position_ecef[2] + baseline_ecef_m[2]};
+
+    prcopt_t options = fixed_base_options();
+    // Single-frequency multi-constellation RTK: L1/E1 only
+    options.nf = 1;
+    options.navsys = SYS_GPS | SYS_GAL;
+    auto solver = make_solver_with_options(options, false, GPS_1C | GAL_1B);
+
+    const std::vector<unsigned int> gps_satellites = select_relative_satellites(
+        base_position_ecef, rover_position_ecef);
+    const std::vector<unsigned int> galileo_satellites = select_relative_galileo_satellites(
+        base_position_ecef, rover_position_ecef);
+    ASSERT_GE(gps_satellites.size(), 4U);
+    ASSERT_GE(galileo_satellites.size(), 4U);
+
+    bool obtained_fix = false;
+    for (int epoch_index = 0; epoch_index < 8; ++epoch_index)
+        {
+            Synthetic_Relative_Epoch epoch = make_relative_epoch(
+                *solver, epoch_index, base_position_ecef, rover_position_ecef,
+                gps_satellites, false, true);
+            add_galileo_to_relative_epoch(
+                *solver, epoch, epoch_index, base_position_ecef, rover_position_ecef,
+                galileo_satellites, true);
+            // one rover observation per satellite: first band only
+            ASSERT_EQ(gps_satellites.size() + galileo_satellites.size(),
+                epoch.rover_observations.size());
+            for (const obsd_t& base_observation : epoch.base_snapshot.observations)
+                {
+                    EXPECT_NE(0.0, base_observation.L[0]);
+                    EXPECT_EQ(CODE_NONE, base_observation.code[1]);
+                    EXPECT_EQ(CODE_NONE, base_observation.code[2]);
                 }
 
             SCOPED_TRACE(::testing::Message() << "epoch=" << epoch_index);

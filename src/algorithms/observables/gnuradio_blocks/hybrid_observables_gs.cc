@@ -80,7 +80,7 @@ Gnss_Satellite hybrid_observables_gs::pretty_satellite(char system, uint32_t prn
         case 'J':
             return Gnss_Satellite(std::string("QZSS"), prn);
         default:
-            return Gnss_Satellite();
+            return {};
         }
 }
 

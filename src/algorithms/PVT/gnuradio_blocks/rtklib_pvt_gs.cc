@@ -2457,7 +2457,7 @@ void rtklib_pvt_gs::report_fixed_base_status()
             LOG(WARNING) << "NTRIP fixed-base data were available, but RTKLIB could not produce a position solution";
             break;
         case Rtklib_Fixed_Base_Status::MISSING_OBSERVATIONS:
-            LOG(WARNING) << "NTRIP RTK waiting for a complete dual-band base observation epoch";
+            LOG(WARNING) << "NTRIP RTK waiting for a usable base observation epoch";
             break;
         case Rtklib_Fixed_Base_Status::MISSING_POSITION:
             LOG(WARNING) << "NTRIP RTK waiting for an RTCM 1005 or 1006 base position";

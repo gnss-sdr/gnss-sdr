@@ -582,8 +582,8 @@ std::vector<unsigned char> make_mt1004()
 
 std::vector<unsigned char> make_mt1002()
 {
-    // Extended L1-only GPS observation. The milestone client must ignore this
-    // instead of replacing a valid dual-frequency correction epoch with it.
+    // Extended L1-only GPS observation: a valid single-band correction
+    // epoch since single-frequency RTK support.
     constexpr int payload_size = 18;
     std::vector<unsigned char> frame(static_cast<std::size_t>(3 + payload_size + 3), 0);
     frame[0] = 0xD3;
@@ -1729,7 +1729,10 @@ TEST(NtripRtcmClientTest, AuthenticatedFragmentedStreamPublishesFixedBaseSnapsho
 
     ASSERT_TRUE(snapshot.has_base_position);
     ASSERT_TRUE(snapshot.has_observations);
-    ASSERT_EQ(1U, snapshot.observations.size());
+    // The same-TOW epoch merges the dual-band satellite (PRN 3, from 1004 and
+    // MSM4) with the single-band satellite of the extended L1-only message
+    // (PRN 8), kept since single-frequency RTK support
+    ASSERT_EQ(2U, snapshot.observations.size());
     EXPECT_EQ(TEST_STATION_ID, snapshot.station_id);
     EXPECT_EQ(1006, snapshot.base_position_message_type);
     EXPECT_NEAR(1114104.5999, snapshot.base_position_ecef_m[0], 1e-4);
@@ -1737,19 +1740,37 @@ TEST(NtripRtcmClientTest, AuthenticatedFragmentedStreamPublishesFixedBaseSnapsho
     EXPECT_NEAR(3975521.4643, snapshot.base_position_ecef_m[2], 1e-4);
     EXPECT_DOUBLE_EQ(0.0, snapshot.antenna_height_m);
 
-    const obsd_t& observation = snapshot.observations.front();
-    int prn = 0;
-    EXPECT_EQ(SYS_GPS, satsys(observation.sat, &prn));
-    EXPECT_EQ(3, prn);
-    EXPECT_EQ(2, observation.rcv);
-    EXPECT_EQ(CODE_L1C, observation.code[0]);
-    EXPECT_EQ(CODE_L2S, observation.code[1]);
-    EXPECT_EQ(CODE_NONE, observation.code[2]);
-    EXPECT_GT(observation.P[0], 0.0);
-    EXPECT_GT(observation.P[1], 0.0);
-    EXPECT_DOUBLE_EQ(0.0, observation.P[2]);
-    EXPECT_DOUBLE_EQ(0.0, observation.L[2]);
-    EXPECT_NEAR(0.0, timediff(observation.time, rover_time), 1e-9);
+    const obsd_t* dual_band_observation = nullptr;
+    const obsd_t* single_band_observation = nullptr;
+    for (const obsd_t& observation : snapshot.observations)
+        {
+            int prn = 0;
+            EXPECT_EQ(SYS_GPS, satsys(observation.sat, &prn));
+            EXPECT_EQ(2, observation.rcv);
+            if (prn == 3)
+                {
+                    dual_band_observation = &observation;
+                }
+            else
+                {
+                    EXPECT_EQ(8, prn);
+                    single_band_observation = &observation;
+                }
+        }
+    ASSERT_NE(nullptr, dual_band_observation);
+    ASSERT_NE(nullptr, single_band_observation);
+    EXPECT_EQ(CODE_L1C, dual_band_observation->code[0]);
+    EXPECT_EQ(CODE_L2S, dual_band_observation->code[1]);
+    EXPECT_EQ(CODE_NONE, dual_band_observation->code[2]);
+    EXPECT_GT(dual_band_observation->P[0], 0.0);
+    EXPECT_GT(dual_band_observation->P[1], 0.0);
+    EXPECT_DOUBLE_EQ(0.0, dual_band_observation->P[2]);
+    EXPECT_DOUBLE_EQ(0.0, dual_band_observation->L[2]);
+    EXPECT_NEAR(0.0, timediff(dual_band_observation->time, rover_time), 1e-9);
+    EXPECT_EQ(CODE_L1C, single_band_observation->code[0]);
+    EXPECT_EQ(CODE_NONE, single_band_observation->code[1]);
+    EXPECT_EQ(CODE_NONE, single_band_observation->code[2]);
+    EXPECT_GT(single_band_observation->P[0], 0.0);
     EXPECT_TRUE(snapshot.fresh);
     EXPECT_NEAR(0.0, snapshot.age_s, 1e-9);
     EXPECT_GT(snapshot.observation_generation, 0U);
@@ -1767,7 +1788,8 @@ TEST(NtripRtcmClientTest, AuthenticatedFragmentedStreamPublishesFixedBaseSnapsho
     EXPECT_TRUE(streaming_status.running);
     EXPECT_TRUE(streaming_status.connected);
     EXPECT_GE(streaming_status.rtcm_messages_decoded, 5U);
-    EXPECT_EQ(2U, streaming_status.observation_epochs_decoded);
+    // 1004, the single-band 1002, and the MSM4 epoch all count
+    EXPECT_EQ(3U, streaming_status.observation_epochs_decoded);
     EXPECT_GE(streaming_status.decoder_errors, 1U);
     EXPECT_FALSE(client.running());
     EXPECT_EQ(Ntrip_Rtcm_Client_State::STOPPED, client.status().state);
@@ -1892,14 +1914,16 @@ TEST(NtripRtcmClientTest, NtripV2ChunkedStreamPublishesFixedBaseSnapshot)
 
     ASSERT_TRUE(snapshot.has_base_position);
     ASSERT_TRUE(snapshot.has_observations);
-    ASSERT_EQ(1U, snapshot.observations.size());
+    // dual-band PRN 3 plus the single-band PRN 8 from the L1-only message
+    ASSERT_EQ(2U, snapshot.observations.size());
     EXPECT_EQ(TEST_STATION_ID, snapshot.station_id);
     EXPECT_EQ(1006, snapshot.base_position_message_type);
     EXPECT_NEAR(1114104.5999, snapshot.base_position_ecef_m[0], 1e-4);
     EXPECT_NEAR(-4850729.7108, snapshot.base_position_ecef_m[1], 1e-4);
     EXPECT_NEAR(3975521.4643, snapshot.base_position_ecef_m[2], 1e-4);
     EXPECT_EQ(Ntrip_Rtcm_Client_State::STREAMING, streaming_status.state);
-    EXPECT_EQ(2U, streaming_status.observation_epochs_decoded);
+    // 1004, the single-band 1002, and the MSM4 epoch all count
+    EXPECT_EQ(3U, streaming_status.observation_epochs_decoded);
 }
 
 

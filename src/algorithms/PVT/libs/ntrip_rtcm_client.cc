@@ -1145,12 +1145,13 @@ private:
                         continue;
                     }
                 obsd_t observation = decoder.obs.data[i];
-                // Each satellite must provide a dual-frequency pair: GPS L1
-                // with L2 (slot 1) or L5 (slot 2), Galileo E1 with E5a
-                // (slot 2 - E5a and L5 share RTKLIB's third frequency index).
-                // The solver keeps whichever second band matches the receiver.
+                // Each satellite must provide at least its first band (GPS L1
+                // or Galileo E1). Second-band observations - GPS L2 in slot 1
+                // or L5 in slot 2, Galileo E5a in slot 2 (E5a and L5 share
+                // RTKLIB's third frequency index) - are kept when present; the
+                // solver pairs whichever bands the receiver is configured for,
+                // and single-frequency receivers need only the first band.
                 bool has_first_band = false;
-                bool has_second_band = false;
                 for (int slot = 0; slot < NFREQ + NEXOBS; ++slot)
                     {
                         const bool has_measurement =
@@ -1181,10 +1182,9 @@ private:
                         else
                             {
                                 has_first_band = has_first_band || keep_first;
-                                has_second_band = has_second_band || keep_second;
                             }
                     }
-                if (has_first_band && has_second_band)
+                if (has_first_band)
                     {
                         observation.rcv = 2;
                         filtered.push_back(observation);

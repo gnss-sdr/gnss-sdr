@@ -798,7 +798,7 @@ void pcps_acquisition::acquisition_core(uint64_t sample_count)
         }
     else
         {
-            if (result.test_statistics > d_threshold)
+            if (result.test_statistics > get_threshold())
                 {
                     handle_threshold_reached(result);
                 }

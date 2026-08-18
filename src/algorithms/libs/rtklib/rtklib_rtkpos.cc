@@ -2012,11 +2012,12 @@ int ddres(rtk_t *rtk, const obsd_t *obs, const nav_t *nav, double dt, const doub
                             if (opt->maxinno[f < nf ? 0 : 1] > 0.0 &&
                                 fabs(v[nv]) > opt->maxinno[f < nf ? 0 : 1] * threshadj)
                                 {
-                                    if (f < nf)
-                                        {
-                                            rtk->ssat[sat[i] - 1].rejc[f]++;
-                                            rtk->ssat[sat[j] - 1].rejc[f]++;
-                                        }
+                                    /* charge the outlier only to the non-reference
+                                       satellite (demo5): the reference is part of every
+                                       pair and would otherwise reach the rejc-based bias
+                                       reset from rejections it did not cause */
+                                    rtk->ssat[sat[j] - 1].vsat[frq] = 0;
+                                    rtk->ssat[sat[j] - 1].rejc[frq]++;
                                     errmsg(rtk, "outlier rejected (sat=%3d-%3d %s%d v=%.3f)\n",
                                         sat[i], sat[j], f < nf ? "L" : "P", f % nf + 1, v[nv]);
                                     continue;
@@ -2978,6 +2979,10 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
     Pp = zeros(rtk->nx, rtk->nx);
     xa = mat(rtk->nx, 1);
     matcpy(xp, rtk->x, rtk->nx, 1);
+    /* the first ddres call reads Pp to detect freshly initialized phase
+       biases (innovation-threshold opening), so it must see the real
+       covariance, not zeros (demo5) */
+    matcpy(Pp, rtk->P, rtk->nx, rtk->nx);
 
     ny = ns * nf * 2 + 2;
     v = mat(ny, 1);
@@ -3151,10 +3156,11 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
         {
             for (j = 0; j < nf; j++)
                 {
-                    if (rtk->ssat[i].fix[j] == 2 && stat != SOLQ_FIX)
-                        {
-                            rtk->ssat[i].fix[j] = 1;
-                        }
+                    /* keep fix[] == 2 across non-fixed epochs (demo5): the flags
+                       record which satellites entered the last AR attempt, and
+                       manage_amb_LAMBDA's mindropsats exclusion cycling counts
+                       them after a failed epoch — demoting them here would make
+                       that gate unreachable */
                     if (rtk->ssat[i].slip[j] & 1)
                         {
                             rtk->ssat[i].slipc[j]++;

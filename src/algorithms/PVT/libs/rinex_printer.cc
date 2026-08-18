@@ -1835,11 +1835,13 @@ void add_obs_sat_record_line(const Gnss_Synchro& synchro, std::string& line, boo
 {
     const int32_t ssi = signal_strength(synchro.CN0_dB_hz);
     const char lli = synchro.Flag_cycle_slip ? '1' : ' ';
-    // bit 0: loss of lock or cycle slip, bit 1: half-cycle ambiguity change.
-    // The half-cycle bit only makes sense for the carrier phase observable
-    const int32_t phase_lli_bits = (synchro.Flag_cycle_slip ? 1 : 0) +
-                                   (synchro.Flag_half_cycle_slip ? 2 : 0);
-    const char phase_lli = phase_lli_bits != 0 ? static_cast<char>('0' + phase_lli_bits) : ' ';
+    // bit 0: loss of lock or cycle slip; a half-cycle re-resolution is a
+    // one-epoch slip event on the carrier phase only. RINEX defines bit 1 as
+    // a persistent "half-cycle ambiguity unresolved" state, which never
+    // applies here (polarity is always resolved before observations are
+    // produced), so writing the event to bit 1 would make post-processors
+    // see two spurious state transitions per event
+    const char phase_lli = (synchro.Flag_cycle_slip || synchro.Flag_half_cycle_slip) ? '1' : ' ';
 
     // PSEUDORANGE
     line += rightJustify(asString(synchro.Pseudorange_m, 3), 14);

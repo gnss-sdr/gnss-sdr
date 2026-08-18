@@ -170,9 +170,14 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
     rtklib_obs.D[band] = gnss_synchro.Carrier_Doppler_hz;
     rtklib_obs.P[band] = gnss_synchro.Pseudorange_m;
     rtklib_obs.L[band] = gnss_synchro.Carrier_phase_rads / TWO_PI;
-    // bit 0: loss of lock or cycle slip, bit 1: half-cycle ambiguity change
-    rtklib_obs.LLI[band] = static_cast<unsigned char>((gnss_synchro.Flag_cycle_slip ? 1U : 0U) |
-                                                      (gnss_synchro.Flag_half_cycle_slip ? 2U : 0U));
+    // bit 0: loss of lock or cycle slip. A half-cycle re-resolution steps the
+    // reported phase by half a cycle at this single epoch, i.e. it is a slip
+    // event, not a persistent "half-cycle unresolved" condition: LLI bit 1 is
+    // a state indicator whose every transition counts as a slip downstream
+    // (detslp_ll), so mapping the one-epoch event flag there would reset the
+    // phase bias a second, spurious time when the flag drops
+    rtklib_obs.LLI[band] = static_cast<unsigned char>(
+        (gnss_synchro.Flag_cycle_slip || gnss_synchro.Flag_half_cycle_slip) ? 1U : 0U);
 
     switch (band)
         {

@@ -22,6 +22,7 @@
 #include <arpa/inet.h>
 #include <array>
 #include <atomic>
+#include <cctype>
 #include <chrono>
 #include <cmath>
 #include <condition_variable>
@@ -42,21 +43,9 @@ namespace
 constexpr std::size_t READ_BUFFER_SIZE = 8192;
 constexpr int WORKER_POLL_INTERVAL_MS = 10;
 constexpr int MAX_INTERVAL_MS = 24 * 60 * 60 * 1000;
-
-
-void secure_clear(std::string* value)
-{
-    if (value == nullptr || value->empty())
-        {
-            return;
-        }
-    volatile char* data = &(*value)[0];
-    for (std::size_t i = 0; i < value->size(); ++i)
-        {
-            data[i] = 0;
-        }
-    value->clear();
-}
+// the interval floor rejects busy-loop configurations; zero keeps its
+// dedicated meaning (reconnects disabled)
+constexpr int MIN_INTERVAL_MS = 1000;
 
 
 bool valid_gtime(const gtime_t& time)
@@ -403,6 +392,127 @@ void resolve_ipv4_hostname(const std::shared_ptr<Host_Resolution_State>& state,
 }  // namespace
 
 
+void secure_clear_string(std::string* value) noexcept
+{
+    if (value == nullptr || value->empty())
+        {
+            return;
+        }
+    volatile char* data = &(*value)[0];
+    for (std::size_t i = 0; i < value->size(); ++i)
+        {
+            data[i] = 0;
+        }
+    value->clear();
+}
+
+
+std::string Ntrip_Rtcm_Client_Config::validate() const
+{
+    const std::string clean_mountpoint = normalized_mountpoint(mountpoint);
+    if (host.empty())
+        {
+            return "the caster address must be a non-empty hostname or IPv4 address";
+        }
+    for (const char character : host)
+        {
+            const auto byte = static_cast<unsigned char>(character);
+            if (byte <= 0x20U || byte >= 0x7FU || byte == ':' || byte == '/' ||
+                byte == '@' || byte == '[' || byte == ']')
+                {
+                    return "the caster address must be a hostname or IPv4 address without a scheme, credentials, port, or path";
+                }
+        }
+    if (port == 0)
+        {
+            return "the caster port must not be zero";
+        }
+    if (clean_mountpoint.empty() || clean_mountpoint.size() >= 256)
+        {
+            return "the mountpoint must name one caster mountpoint";
+        }
+    for (const char character : clean_mountpoint)
+        {
+            const auto byte = static_cast<unsigned char>(character);
+            if (byte <= 0x20U || byte >= 0x7FU || byte == '@' || byte == ':' ||
+                byte == '/')
+                {
+                    return "the mountpoint must name one caster mountpoint without a path separator";
+                }
+        }
+    const auto has_space_or_control = [](const std::string& value) {
+        return std::any_of(value.cbegin(), value.cend(), [](char character) {
+            const auto byte = static_cast<unsigned char>(character);
+            return std::isspace(byte) != 0 || std::iscntrl(byte) != 0;
+        });
+    };
+    if (username.size() >= 256 || password.size() >= 256 ||
+        username.find(':') != std::string::npos ||
+        has_space_or_control(username) || has_space_or_control(password))
+        {
+            return "the username or the password contains characters unsupported by the NTRIP client";
+        }
+    if (!password.empty() && username.empty())
+        {
+            return "a username is required when a password is configured";
+        }
+    if (timeout_ms < MIN_INTERVAL_MS || timeout_ms > MAX_INTERVAL_MS ||
+        (reconnect_interval_ms != 0 && reconnect_interval_ms < MIN_INTERVAL_MS) ||
+        reconnect_interval_ms > MAX_INTERVAL_MS)
+        {
+            return "timeout and reconnect intervals must be within 1000 ms and 24 hours; reconnect may also be zero";
+        }
+    if (send_gga && (gga_period_ms < MIN_INTERVAL_MS || gga_period_ms > MAX_INTERVAL_MS))
+        {
+            return "the GGA period must be within 1000 ms and 24 hours";
+        }
+    if (!std::isfinite(max_age_s) || max_age_s <= 0.0)
+        {
+            return "the maximum correction age must be a finite positive value";
+        }
+    if (station_id < 0 || station_id > 4095)
+        {
+            return "the station ID must be in the range 0..4095";
+        }
+    if (version != 1 && version != 2)
+        {
+            return "the NTRIP version must be 1 or 2";
+        }
+    // worst-case transport path: host (a resolved IPv4 literal can be longer
+    // than a short hostname, hence the 15-character floor) + ":65535/" +
+    // mountpoint + "::NTRIP=v::TLS"
+    constexpr std::size_t transport_overhead = 21;
+    if (std::max<std::size_t>(host.size(), 15U) + clean_mountpoint.size() +
+            transport_overhead >=
+        MAXSTRPATH)
+        {
+            return "the NTRIP endpoint is too long";
+        }
+    return "";
+}
+
+
+Ntrip_Rtcm_Client_Config make_ntrip_rtcm_client_config(const Pvt_Conf& conf)
+{
+    Ntrip_Rtcm_Client_Config config;
+    config.enabled = conf.ntrip_client_enabled;
+    config.host = conf.ntrip_caster_address;
+    config.port = conf.ntrip_port;
+    config.mountpoint = normalized_mountpoint(conf.ntrip_mountpoint);
+    config.username = conf.ntrip_username;
+    config.password = conf.ntrip_password;
+    config.reconnect_interval_ms = conf.ntrip_reconnect_interval_ms;
+    config.timeout_ms = conf.ntrip_timeout_ms;
+    config.max_age_s = conf.ntrip_max_correction_age_s;
+    config.send_gga = conf.ntrip_send_gga;
+    config.gga_period_ms = conf.ntrip_gga_period_ms;
+    config.version = conf.ntrip_version;
+    config.tls_enabled = conf.ntrip_tls_enabled;
+    config.station_id = conf.ntrip_station_id;
+    return config;
+}
+
+
 // The layout follows mutex-protected state groups. Saving a few padding bytes
 // in this single-instance class is not worth separating each lock from its data.
 // NOLINTNEXTLINE(clang-analyzer-optin.performance.Padding)
@@ -419,8 +529,8 @@ public:
     ~Impl() noexcept
     {
         stop();
-        secure_clear(&d_config.username);
-        secure_clear(&d_config.password);
+        secure_clear_string(&d_config.username);
+        secure_clear_string(&d_config.password);
     }
 
     Impl(const Impl&) = delete;
@@ -602,93 +712,10 @@ public:
 private:
     bool validate_config(std::string* reason) const
     {
-        const std::string mountpoint = normalized_mountpoint(d_config.mountpoint);
-        if (d_config.host.empty())
+        const std::string error = d_config.validate();
+        if (!error.empty())
             {
-                *reason = "host is empty";
-                return false;
-            }
-        if (d_config.port == 0)
-            {
-                *reason = "port is zero";
-                return false;
-            }
-        if (mountpoint.empty() || mountpoint.size() >= 256)
-            {
-                *reason = "mountpoint is empty or too long";
-                return false;
-            }
-        for (char i : d_config.host)
-            {
-                const auto c = static_cast<unsigned char>(i);
-                if (c <= 0x20U || c >= 0x7FU || c == ':' || c == '/' || c == '@' ||
-                    c == '[' || c == ']')
-                    {
-                        *reason = "host contains an unsupported character";
-                        return false;
-                    }
-            }
-        for (char i : mountpoint)
-            {
-                const auto c = static_cast<unsigned char>(i);
-                if (c <= 0x20U || c >= 0x7FU || c == '@' || c == ':')
-                    {
-                        *reason = "mountpoint contains an unsupported character";
-                        return false;
-                    }
-            }
-        if (d_config.username.size() >= 256 || d_config.password.size() >= 256)
-            {
-                *reason = "credentials are too long";
-                return false;
-            }
-        if (d_config.username.empty() && !d_config.password.empty())
-            {
-                *reason = "password requires a username";
-                return false;
-            }
-        if (d_config.username.find(':') != std::string::npos ||
-            d_config.username.find('\r') != std::string::npos ||
-            d_config.username.find('\n') != std::string::npos)
-            {
-                *reason = "username contains an unsupported character";
-                return false;
-            }
-        if (d_config.timeout_ms <= 0 || d_config.timeout_ms > MAX_INTERVAL_MS)
-            {
-                *reason = "timeout is outside the supported range";
-                return false;
-            }
-        if (d_config.reconnect_interval_ms < 0 ||
-            d_config.reconnect_interval_ms > MAX_INTERVAL_MS)
-            {
-                *reason = "reconnect interval is outside the supported range";
-                return false;
-            }
-        if (!std::isfinite(d_config.max_age_s) || d_config.max_age_s <= 0.0)
-            {
-                *reason = "maximum correction age must be positive";
-                return false;
-            }
-        if (d_config.send_gga &&
-            (d_config.gga_period_ms <= 0 || d_config.gga_period_ms > MAX_INTERVAL_MS))
-            {
-                *reason = "GGA period is outside the supported range";
-                return false;
-            }
-        if (d_config.station_id < 0 || d_config.station_id > 4095)
-            {
-                *reason = "station ID is outside the 12-bit RTCM range";
-                return false;
-            }
-        if (d_config.version != 1 && d_config.version != 2)
-            {
-                *reason = "NTRIP version must be 1 or 2";
-                return false;
-            }
-        if (transport_path().size() >= MAXSTRPATH)
-            {
-                *reason = "NTRIP endpoint is too long";
+                *reason = error;
                 return false;
             }
         return true;
@@ -859,7 +886,28 @@ private:
         std::uint64_t applied_rover_time_generation = 0;
         int active_version = d_config.version;
         bool fallback_from_v2 = false;
+        bool v1_fallback_confirmed = false;
         std::string immediate_retry_host;
+        // one decoder for the whole worker lifetime: its lock-time table is
+        // the baseline lossoflock() uses to flag base-receiver cycle slips,
+        // and a per-connection decoder would zero that baseline on every
+        // reconnect — a base slip during a brief outage would then arrive
+        // with no loss-of-lock indication and stale carrier ambiguities
+        // would survive it (rtksvr keeps one rtcm_t across stream reconnects
+        // for the same reason)
+        Rtcm_Owner decoder;
+        if (!decoder.initialized())
+            {
+                set_state(Ntrip_Rtcm_Client_State::ERROR,
+                    "could not initialize RTCM3 decoder", false);
+                return;
+            }
+        if (d_config.station_id > 0)
+            {
+                std::snprintf(decoder.get()->opt,
+                    sizeof(decoder.get()->opt), "-STA=%d",
+                    d_config.station_id);
+            }
         while (!d_stop_requested.load())
             {
                 std::string failure_message = "correction stream disconnected";
@@ -881,19 +929,12 @@ private:
                     }
                 if (resolve_result == Resolve_Result::SUCCESS)
                     {
-                        Rtcm_Owner decoder;
-                        if (!decoder.initialized())
-                            {
-                                set_state(Ntrip_Rtcm_Client_State::ERROR,
-                                    "could not initialize RTCM3 decoder", false);
-                                return;
-                            }
-                        if (d_config.station_id > 0)
-                            {
-                                std::snprintf(decoder.get()->opt,
-                                    sizeof(decoder.get()->opt), "-STA=%d",
-                                    d_config.station_id);
-                            }
+                        // a new connection starts at an arbitrary point of the
+                        // caster's byte stream: drop any partially assembled
+                        // frame left over from the previous connection, but
+                        // keep the per-satellite lock-time baseline
+                        decoder.get()->nbyte = 0;
+                        decoder.get()->len = 0;
                         Stream_Owner stream;
                         set_state(Ntrip_Rtcm_Client_State::CONNECTING,
                             "connecting to NTRIP caster", false);
@@ -916,6 +957,10 @@ private:
                                             {
                                                 active_version = NTRIP_VERSION_1;
                                                 fallback_from_v2 = true;
+                                            }
+                                        if (active_version == NTRIP_VERSION_1 && fallback_from_v2)
+                                            {
+                                                v1_fallback_confirmed = true;
                                             }
                                         apply_decoder_time(decoder.get(), &applied_rover_time_generation, true);
                                         set_state(Ntrip_Rtcm_Client_State::STREAMING,
@@ -960,6 +1005,18 @@ private:
                         set_state(Ntrip_Rtcm_Client_State::CONNECTING,
                             "NTRIP v2 negotiation failed; retrying with v1", false);
                         continue;
+                    }
+                if (fallback_from_v2 && !v1_fallback_confirmed &&
+                    active_version == NTRIP_VERSION_1)
+                    {
+                        // the v1 fallback was inferred from a failed v2 handshake
+                        // (which a transient drop — e.g. a caster restart closing
+                        // the connection before any response byte — also produces)
+                        // and never carried a stream: start the next cycle from
+                        // the configured version instead of locking the whole
+                        // session to v1 on that one-shot evidence
+                        active_version = d_config.version;
+                        fallback_from_v2 = false;
                     }
                 if (d_config.reconnect_interval_ms == 0)
                     {

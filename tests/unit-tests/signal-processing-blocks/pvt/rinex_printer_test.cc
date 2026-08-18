@@ -589,8 +589,11 @@ TEST_F(RinexPrinterTest, ObservationRecordsReportLossOfLockIndicatorBits)
 
     EXPECT_EQ(' ', phase_lli_of("G01"));
     EXPECT_EQ('1', phase_lli_of("G02"));
-    EXPECT_EQ('2', phase_lli_of("G03"));
-    EXPECT_EQ('3', phase_lli_of("G04"));
+    // a half-cycle slip is a one-epoch event, reported through bit 0: RINEX
+    // bit 1 means "half-cycle ambiguity currently unresolved", which never
+    // applies to observations produced after polarity resolution
+    EXPECT_EQ('1', phase_lli_of("G03"));
+    EXPECT_EQ('1', phase_lli_of("G04"));
 
     fs::remove(obsfile);
     fs::remove(navfile);

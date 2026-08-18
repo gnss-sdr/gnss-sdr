@@ -131,11 +131,11 @@ TEST_F(RtklibPvtNtripConfigurationTest, RejectsMissingCasterOrMountpointBeforeCo
     using namespace rtklib_pvt_ntrip_configuration_test_detail;
     std::unique_ptr<InMemoryConfiguration> missing_caster = make_valid_ntrip_configuration();
     missing_caster->supersede_property("PVT.ntrip_caster_address", "");
-    expect_invalid_configuration(*missing_caster, "ntrip_caster_address");
+    expect_invalid_configuration(*missing_caster, "caster address");
 
     std::unique_ptr<InMemoryConfiguration> missing_mountpoint = make_valid_ntrip_configuration();
     missing_mountpoint->supersede_property("PVT.ntrip_mountpoint", "");
-    expect_invalid_configuration(*missing_mountpoint, "ntrip_mountpoint");
+    expect_invalid_configuration(*missing_mountpoint, "mountpoint");
 }
 
 
@@ -157,7 +157,7 @@ TEST_F(RtklibPvtNtripConfigurationTest, RejectsUnsupportedNtripVersionBeforeConn
     using namespace rtklib_pvt_ntrip_configuration_test_detail;
     std::unique_ptr<InMemoryConfiguration> bad_version = make_valid_ntrip_configuration();
     bad_version->supersede_property("PVT.ntrip_version", "3");
-    expect_invalid_configuration(*bad_version, "ntrip_version");
+    expect_invalid_configuration(*bad_version, "NTRIP version");
 
     std::unique_ptr<InMemoryConfiguration> forced_v1 = make_valid_ntrip_configuration();
     forced_v1->supersede_property("PVT.ntrip_version", "1");
@@ -177,7 +177,7 @@ TEST_F(RtklibPvtNtripConfigurationTest, RejectsInvalidAgeOrTimeoutBeforeConnecti
     using namespace rtklib_pvt_ntrip_configuration_test_detail;
     std::unique_ptr<InMemoryConfiguration> bad_age = make_valid_ntrip_configuration();
     bad_age->supersede_property("PVT.ntrip_max_correction_age_s", "0");
-    expect_invalid_configuration(*bad_age, "ntrip_max_correction_age_s");
+    expect_invalid_configuration(*bad_age, "maximum correction age");
 
     std::unique_ptr<InMemoryConfiguration> bad_timeout = make_valid_ntrip_configuration();
     bad_timeout->supersede_property("PVT.ntrip_inactivity_timeout_ms", "999");
@@ -194,7 +194,7 @@ TEST_F(RtklibPvtNtripConfigurationTest, RejectsInvalidGgaPeriodOnlyWhenGgaIsEnab
     using namespace rtklib_pvt_ntrip_configuration_test_detail;
     std::unique_ptr<InMemoryConfiguration> bad_period = make_valid_ntrip_configuration();
     bad_period->supersede_property("PVT.ntrip_gga_period_ms", "999");
-    expect_invalid_configuration(*bad_period, "ntrip_gga_period_ms");
+    expect_invalid_configuration(*bad_period, "GGA period");
 
     // the period is not used while the GGA upload is disabled
     std::unique_ptr<InMemoryConfiguration> gga_disabled = make_valid_ntrip_configuration();
@@ -346,7 +346,7 @@ TEST_F(RtklibPvtNtripConfigurationTest, RejectsInvalidPasswordConfigurationBefor
     using namespace rtklib_pvt_ntrip_configuration_test_detail;
     std::unique_ptr<InMemoryConfiguration> missing_username = make_valid_ntrip_configuration();
     missing_username->set_property("PVT.ntrip_password", "secret");
-    expect_invalid_configuration(*missing_username, "ntrip_username is required");
+    expect_invalid_configuration(*missing_username, "username is required");
 
     std::unique_ptr<InMemoryConfiguration> duplicate_password_source = make_valid_ntrip_configuration();
     duplicate_password_source->set_property("PVT.ntrip_username", "user");

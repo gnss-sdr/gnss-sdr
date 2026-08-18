@@ -57,20 +57,22 @@ TEST(RtklibLliTest, ACycleSlipSetsBitZero)
 }
 
 
-TEST(RtklibLliTest, AHalfCycleSlipSetsBitOne)
+TEST(RtklibLliTest, AHalfCycleSlipSetsBitZero)
 {
-    // RTKLIB reads a transition of this bit as a slip and excludes the satellite
-    // from ambiguity resolution while it is set
+    // A half-cycle re-resolution is a one-epoch slip event. LLI bit 1 is a
+    // persistent "half-cycle unresolved" state whose every transition counts
+    // as a slip in detslp_ll, so mapping the pulse there would reset the
+    // phase bias a second time when the flag drops one epoch later
     Gnss_Synchro observation = make_gps_l1_observation();
     observation.Flag_half_cycle_slip = true;
-    EXPECT_EQ(2U, lli_of(observation));
+    EXPECT_EQ(1U, lli_of(observation));
 }
 
 
-TEST(RtklibLliTest, BothConditionsKeepTheirOwnBit)
+TEST(RtklibLliTest, BothConditionsShareBitZero)
 {
     Gnss_Synchro observation = make_gps_l1_observation();
     observation.Flag_cycle_slip = true;
     observation.Flag_half_cycle_slip = true;
-    EXPECT_EQ(3U, lli_of(observation));
+    EXPECT_EQ(1U, lli_of(observation));
 }

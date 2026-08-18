@@ -672,36 +672,10 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 
     if (d_ntrip_client_enabled)
         {
-            Ntrip_Rtcm_Client_Config ntrip_config;
-            ntrip_config.enabled = true;
-            ntrip_config.host = conf_.ntrip_caster_address;
-            ntrip_config.port = conf_.ntrip_port;
-            ntrip_config.mountpoint = conf_.ntrip_mountpoint;
-            ntrip_config.username = conf_.ntrip_username;
-            ntrip_config.password = conf_.ntrip_password;
-            ntrip_config.reconnect_interval_ms = conf_.ntrip_reconnect_interval_ms;
-            ntrip_config.timeout_ms = conf_.ntrip_timeout_ms;
-            ntrip_config.max_age_s = conf_.ntrip_max_correction_age_s;
-            ntrip_config.station_id = conf_.ntrip_station_id;
-            ntrip_config.version = conf_.ntrip_version;
-            ntrip_config.tls_enabled = conf_.ntrip_tls_enabled;
-            ntrip_config.send_gga = conf_.ntrip_send_gga;
-            ntrip_config.gga_period_ms = conf_.ntrip_gga_period_ms;
+            Ntrip_Rtcm_Client_Config ntrip_config = make_ntrip_rtcm_client_config(conf_);
             const auto clear_local_credentials = [&ntrip_config]() {
-                const auto clear_string = [](std::string* value) {
-                    if (value->empty())
-                        {
-                            return;
-                        }
-                    volatile char* data = &(*value)[0];
-                    for (std::size_t index = 0; index < value->size(); ++index)
-                        {
-                            data[index] = 0;
-                        }
-                    value->clear();
-                };
-                clear_string(&ntrip_config.username);
-                clear_string(&ntrip_config.password);
+                secure_clear_string(&ntrip_config.username);
+                secure_clear_string(&ntrip_config.password);
             };
             bool ntrip_started = false;
             try

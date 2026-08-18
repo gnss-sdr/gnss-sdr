@@ -86,7 +86,7 @@ class Gps_Ephemeris;
  *  .rtcm_MT1087_rate_ms - (.rtcm_MSM_rate_ms)
  *  .rtcm_MT1097_rate_ms - (.rtcm_MSM_rate_ms)
  *
- * Fixed-base GPS L1/L2 RTK input through NTRIP (disabled by default):
+ * Fixed-base RTK input through NTRIP (disabled by default):
  *  .ntrip_client_enabled - (false)
  *  .ntrip_caster_address - caster hostname or IPv4 address, without a scheme or port ("")
  *  .ntrip_caster_port - (2101)
@@ -99,11 +99,17 @@ class Gps_Ephemeris;
  *  .ntrip_inactivity_timeout_ms - (10000)
  *  .ntrip_reconnect_interval_ms - (10000)
  *  .ntrip_max_correction_age_s - (5.0)
+ *  .ntrip_send_gga - upload the rover position as NMEA GGA, required by VRS/nearest-station casters (true)
+ *  .ntrip_gga_period_ms - period of the GGA upload (10000)
  *  .ntrip_station_id - expected RTCM station ID, or zero to accept any stream station (0)
  *  .ntrip_fallback_to_single - report SOLQ_SINGLE while fixed-base data is unavailable (true)
- * This milestone requires exactly GPS 1C and 2S channels, num_bands=2,
- * navigation_system=1, positioning_mode Static or Kinematic, RTCM 1005/1006,
- * and compatible GPS L1/L2 observation messages. VRS/GGA is not supported.
+ * Supported rover channel sets, per system: GPS 1C alone, 1C+2S, or 1C+L5;
+ * Galileo 1B alone or 1B+5X; BeiDou B1C alone; in any combination across
+ * systems. num_bands is derived from the channel set, navigation_system must
+ * match the enabled constellations, and positioning_mode must be Static or
+ * Kinematic. The base must provide its position through RTCM 1005/1006 and
+ * observations through legacy 1002/1004 or MSM messages; VRS/nearest-station
+ * casters are supported through the periodic GGA upload.
  *
  *  .kml_rate_ms - (1000)
  *  .gpx_rate_ms - (1000)

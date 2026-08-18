@@ -493,7 +493,16 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, uint3
                                                            d_gnss_synchro_history->get(ch, t1_idx).RX_time);
 
                             // CARRIER PHASE INTERPOLATION
-                            interpolated_obs.Carrier_phase_rads = d_gnss_synchro_history->get(ch, t1_idx).Carrier_phase_rads + (d_gnss_synchro_history->get(ch, t2_idx).Carrier_phase_rads - d_gnss_synchro_history->get(ch, t1_idx).Carrier_phase_rads) * time_factor;
+                            // done in the late sample's polarity frame, whose PLL-180
+                            // state is also stamped on the output so the half-cycle
+                            // step and its flag land on the same epoch
+                            interpolated_obs.Carrier_phase_rads = interpolate_carrier_phase(
+                                d_gnss_synchro_history->get(ch, t1_idx).Carrier_phase_rads,
+                                d_gnss_synchro_history->get(ch, t1_idx).Flag_PLL_180_deg_phase_locked,
+                                d_gnss_synchro_history->get(ch, t2_idx).Carrier_phase_rads,
+                                d_gnss_synchro_history->get(ch, t2_idx).Flag_PLL_180_deg_phase_locked,
+                                time_factor);
+                            interpolated_obs.Flag_PLL_180_deg_phase_locked = d_gnss_synchro_history->get(ch, t2_idx).Flag_PLL_180_deg_phase_locked;
                             // CARRIER DOPPLER INTERPOLATION
                             interpolated_obs.Carrier_Doppler_hz = d_gnss_synchro_history->get(ch, t1_idx).Carrier_Doppler_hz + (d_gnss_synchro_history->get(ch, t2_idx).Carrier_Doppler_hz - d_gnss_synchro_history->get(ch, t1_idx).Carrier_Doppler_hz) * time_factor;
                             // TOW INTERPOLATION
@@ -669,7 +678,9 @@ void hybrid_observables_gs::smooth_pseudoranges(std::vector<Gnss_Synchro> &data)
                     //    observations and its carrier phase is continuous with them:
                     //    a phase discontinuity would otherwise propagate into the
                     //    smoothed pseudorange through the carrier phase term below
-                    if (d_channel_last_pll_lock[it->Channel_ID] == true && !it->Flag_cycle_slip)
+                    //    (a half-cycle step is half a wavelength of the same poison)
+                    if (d_channel_last_pll_lock[it->Channel_ID] == true && !it->Flag_cycle_slip &&
+                        !it->Flag_half_cycle_slip)
                         {
                             // 2. Compute the smoothed pseudorange for this channel
                             // Hatch filter algorithm (https://insidegnss.com/can-you-list-all-the-properties-of-the-carrier-smoothing-filter/)
@@ -728,6 +739,26 @@ bool hybrid_observables_gs::half_cycle_ambiguity_changed(bool has_previous_obser
             return false;
         }
     return last_pll_180_locked != current_pll_180_locked;
+}
+
+
+double hybrid_observables_gs::interpolate_carrier_phase(double phase_early_rads,
+    bool pll_180_early,
+    double phase_late_rads,
+    bool pll_180_late,
+    double time_factor)
+{
+    // The Telemetry Decoder adds half a cycle to the reported phase while the
+    // PLL is locked at 180 degrees, so when the two samples disagree the early
+    // one is shifted into the late sample's frame before interpolating; the
+    // resulting half-cycle step between consecutive epochs is reported through
+    // Flag_half_cycle_slip on the epoch stamped with the new polarity
+    double early = phase_early_rads;
+    if (pll_180_early != pll_180_late)
+        {
+            early += pll_180_late ? (TWO_PI / 2.0) : -(TWO_PI / 2.0);
+        }
+    return early + (phase_late_rads - early) * time_factor;
 }
 
 

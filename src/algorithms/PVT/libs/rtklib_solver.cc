@@ -55,23 +55,6 @@
 #include <absl/log/log.h>
 #endif
 
-namespace
-{
-void clear_sensitive_string(std::string *value)
-{
-    if (value == nullptr || value->empty())
-        {
-            return;
-        }
-    volatile char *data = &(*value)[0];
-    for (std::size_t index = 0; index < value->size(); ++index)
-        {
-            data[index] = 0;
-        }
-    value->clear();
-}
-}  // namespace
-
 Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     const Pvt_Conf &conf,
     const std::string &dump_filename,
@@ -86,9 +69,9 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
 {
     // Solver instances need correction policy but never caster credentials.
     // Remove secrets from this long-lived configuration copy immediately.
-    clear_sensitive_string(&d_conf.ntrip_username);
-    clear_sensitive_string(&d_conf.ntrip_password);
-    clear_sensitive_string(&d_conf.ntrip_password_env);
+    secure_clear_string(&d_conf.ntrip_username);
+    secure_clear_string(&d_conf.ntrip_password);
+    secure_clear_string(&d_conf.ntrip_password_env);
 
     // see freq index at src/algorithms/libs/rtklib/rtklib_rtkcmn.cc
     // function: satwavelen
@@ -1948,6 +1931,37 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             this->get_ref_gps_week());
                                         clear_applied_has_phase_bias_discontinuity(applied_has_correction, prn);
                                         valid_obs++;
+                                    }
+                                else if (!is_qzss && fixed_base != nullptr)
+                                    {
+                                        // the rover has not decoded this satellite's LNAV yet, but
+                                        // the base stream may have delivered its broadcast ephemeris
+                                        // over NTRIP (RTCM MT1019, already in RTKLIB format): use it
+                                        // so the satellite contributes without waiting the ~30 s of
+                                        // subframe decoding
+                                        const eph_t *base_ephemeris = nullptr;
+                                        for (const auto &candidate : fixed_base->gps_ephemerides)
+                                            {
+                                                if (candidate.sat == sat)
+                                                    {
+                                                        base_ephemeris = &candidate;
+                                                        break;
+                                                    }
+                                            }
+                                        if (base_ephemeris != nullptr)
+                                            {
+                                                eph_data[valid_obs] = *base_ephemeris;
+                                                obsd_t newobs{};
+                                                d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                                    gnss_observables_iter->second,
+                                                    base_ephemeris->week,
+                                                    d_rtklib_band_index.at(rtklib_sig));
+                                                valid_obs++;
+                                            }
+                                        else
+                                            {
+                                                DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->first;
+                                            }
                                     }
                                 else  // the ephemeris are not available for this SV
                                     {

@@ -15,6 +15,7 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "MATH_CONSTANTS.h"
 #include "hybrid_observables_gs.h"
 #include <gtest/gtest.h>
 #include <cmath>
@@ -114,4 +115,40 @@ TEST(ObservablesPhaseContinuityTest, ContinuityIsPreservedAcrossTheEpochCounterR
     const uint64_t large_epoch = 4300000000ULL;
     EXPECT_FALSE(is_discontinuous(true, large_epoch, large_epoch + 1));
     EXPECT_TRUE(is_discontinuous(true, large_epoch, large_epoch + 1000));
+}
+
+
+TEST(ObservablesPhaseInterpolationTest, InterpolationIsLinearWhenThePolarityIsStable)
+{
+    EXPECT_DOUBLE_EQ(1.25, hybrid_observables_gs::interpolate_carrier_phase(1.0, false, 2.0, false, 0.25));
+    EXPECT_DOUBLE_EQ(1.75, hybrid_observables_gs::interpolate_carrier_phase(1.0, true, 2.0, true, 0.75));
+}
+
+
+TEST(ObservablesPhaseInterpolationTest, APolarityChangeInsideTheWindowDoesNotLeakAPartialStep)
+{
+    // the late sample carries the pi correction, so the early one is lifted
+    // into the same frame: the output must be the early phase plus the full
+    // step plus the interpolated true motion, never a time_factor-dependent
+    // fraction of pi
+    const double true_motion = 0.5;
+    const double phase_early = 10.0;
+    const double phase_late = phase_early + true_motion + TWO_PI / 2.0;
+    for (const double time_factor : {0.0, 0.25, 0.5, 0.75, 1.0})
+        {
+            const double interpolated = hybrid_observables_gs::interpolate_carrier_phase(
+                phase_early, false, phase_late, true, time_factor);
+            EXPECT_DOUBLE_EQ(phase_early + TWO_PI / 2.0 + true_motion * time_factor, interpolated);
+        }
+}
+
+
+TEST(ObservablesPhaseInterpolationTest, ADroppedPolarityCorrectionIsRemovedBeforeInterpolating)
+{
+    const double true_motion = -0.25;
+    const double phase_early = 4.0;  // reported while the pi correction was applied
+    const double phase_late = phase_early + true_motion - TWO_PI / 2.0;
+    const double interpolated = hybrid_observables_gs::interpolate_carrier_phase(
+        phase_early, true, phase_late, false, 0.5);
+    EXPECT_DOUBLE_EQ(phase_early - TWO_PI / 2.0 + true_motion * 0.5, interpolated);
 }

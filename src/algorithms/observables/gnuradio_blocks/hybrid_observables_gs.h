@@ -124,6 +124,30 @@ public:
         bool last_pll_180_locked,
         bool current_pll_180_locked);
 
+    /*!
+     * \brief Linearly interpolates the carrier phase between two tracking
+     * samples, in the polarity frame of the later sample.
+     *
+     * When the PLL-180 half-cycle correction toggles between the two samples,
+     * their reported phases differ by half a cycle on top of the true motion:
+     * interpolating across that step would leak a fraction of it into the
+     * output with no slip flag raised. Shifting the early sample into the
+     * late sample's frame pins the whole step to the epoch where the polarity
+     * change is reported.
+     *
+     * \param phase_early_rads Carrier phase of the earlier sample
+     * \param pll_180_early PLL-180 correction state of the earlier sample
+     * \param phase_late_rads Carrier phase of the later sample
+     * \param pll_180_late PLL-180 correction state of the later sample
+     * \param time_factor Position of the epoch inside the window, in [0, 1]
+     * \return the interpolated carrier phase, in the late sample's frame
+     */
+    static double interpolate_carrier_phase(double phase_early_rads,
+        bool pll_180_early,
+        double phase_late_rads,
+        bool pll_180_late,
+        double time_factor);
+
 private:
     friend hybrid_observables_gs_sptr hybrid_observables_gs_make(const Obs_Conf& conf_);
 

@@ -787,7 +787,9 @@ enum class Loopback_Caster_Response_Mode
     V2_HTTP_CHUNKED,
     V2_HTTP_UNAUTHORIZED,
     STRICT_V1_AFTER_V2_REJECTION,
-    STRICT_V1_AFTER_V2_CLOSE
+    STRICT_V1_AFTER_V2_CLOSE,
+    V2_RECOVERY_AFTER_TRANSIENT_CLOSES,
+    LOCK_RESET_AFTER_RECONNECT
 };
 
 
@@ -1060,6 +1062,100 @@ private:
                 receive_request(client_socket, &received_request);
                 d_requests.push_back(received_request);
             }
+
+        if (d_response_mode ==
+            Loopback_Caster_Response_Mode::V2_RECOVERY_AFTER_TRANSIENT_CLOSES)
+            {
+                // two consecutive zero-byte closes: the v2 attempt and its v1
+                // retry both look like a transient caster drop; the third
+                // connection is then served normally
+                for (int closed_connection = 0; closed_connection < 2; ++closed_connection)
+                    {
+                        shutdown(client_socket, SHUT_RDWR);
+                        close(client_socket);
+                        client_socket = accept_client();
+                        if (client_socket < 0)
+                            {
+                                return;
+                            }
+                        received_request.clear();
+                        receive_request(client_socket, &received_request);
+                        d_requests.push_back(received_request);
+                    }
+            }
+
+        if (d_response_mode ==
+            Loopback_Caster_Response_Mode::LOCK_RESET_AFTER_RECONNECT)
+            {
+                // first connection: healthy stream with a long lock time, then
+                // a drop; second connection: the base receiver re-locked during
+                // the outage, so the lock-time indicator decreased
+                const char icy_response[] = "ICY 200 OK\r\n\r\n";
+                const std::vector<unsigned char> base_position = make_mt1005();
+
+                std::vector<unsigned char> first_payload = base_position;
+                const std::vector<unsigned char> locked_observations =
+                    make_mt1074(false, 9, TEST_TOW_S);
+                first_payload.insert(first_payload.end(),
+                    locked_observations.begin(), locked_observations.end());
+                send_all(client_socket,
+                    reinterpret_cast<const unsigned char*>(icy_response),
+                    sizeof(icy_response) - 1);
+                send_all(client_socket, first_payload.data(), first_payload.size());
+                // give the client time to ingest the epoch before the drop
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                shutdown(client_socket, SHUT_RDWR);
+                close(client_socket);
+
+                client_socket = accept_client();
+                if (client_socket < 0)
+                    {
+                        return;
+                    }
+                received_request.clear();
+                receive_request(client_socket, &received_request);
+                d_requests.push_back(received_request);
+                d_request = received_request;
+
+                std::vector<unsigned char> second_payload = base_position;
+                const std::vector<unsigned char> relocked_observations =
+                    make_mt1074(false, 1, TEST_TOW_S + 1.0);
+                second_payload.insert(second_payload.end(),
+                    relocked_observations.begin(), relocked_observations.end());
+                send_all(client_socket,
+                    reinterpret_cast<const unsigned char*>(icy_response),
+                    sizeof(icy_response) - 1);
+                send_all(client_socket, second_payload.data(), second_payload.size());
+
+                // hold the connection open until the peer closes it (the
+                // client's stop()), a stop request, or the server timeout
+                const std::chrono::steady_clock::time_point close_deadline =
+                    std::chrono::steady_clock::now() +
+                    std::chrono::milliseconds(SERVER_TIMEOUT_MS);
+                unsigned char discard[64];
+                while (!d_stop_requested.load() &&
+                       std::chrono::steady_clock::now() < close_deadline)
+                    {
+                        if (!wait_readable(client_socket, SOCKET_WAIT_MS))
+                            {
+                                continue;
+                            }
+                        const ssize_t count = recv(client_socket, discard,
+                            sizeof(discard), 0);
+                        if (count == 0)
+                            {
+                                d_peer_closed_cleanly = true;
+                                break;
+                            }
+                        if (count < 0 && errno != EINTR)
+                            {
+                                break;
+                            }
+                    }
+                shutdown(client_socket, SHUT_RDWR);
+                close(client_socket);
+                return;
+            }
         d_request = received_request;
 
         if (d_request.find("\r\n\r\n") != std::string::npos)
@@ -1327,10 +1423,14 @@ TEST(NtripRtcmClientTest, V2ResponseRejectsExplicitNonCorrectionContentTypes)
 {
     using namespace ntrip_rtcm_client_test;
 
+    // a sourcetable answer to a mountpoint request means the mountpoint does
+    // not exist, and a textual document is an error page served with status
+    // 200 — neither is a correction stream
     const char* const rejected_content_types[] = {
         "gnss/sourcetable",
         "text/html; charset=utf-8",
-        "application/octet-stream"};
+        "text/plain",
+        "application/json"};
     for (const char* const content_type : rejected_content_types)
         {
             SCOPED_TRACE(content_type);
@@ -1344,6 +1444,31 @@ TEST(NtripRtcmClientTest, V2ResponseRejectsExplicitNonCorrectionContentTypes)
             EXPECT_EQ(0, response.chunk_state);
             EXPECT_EQ(0U, response.chunk_remaining);
             EXPECT_TRUE(response.payload.empty());
+        }
+}
+
+
+TEST(NtripRtcmClientTest, V2ResponseToleratesNonStandardBinaryContentTypes)
+{
+    using namespace ntrip_rtcm_client_test;
+
+    // NTRIP 2.0 mandates gnss/data, but deployed casters also label their
+    // correction streams with generic binary types: rejecting them would loop
+    // the client through reject-reconnect forever with no recovery path,
+    // while the RTCM decoder validates every frame anyway
+    const char* const tolerated_content_types[] = {
+        "application/octet-stream",
+        "application/rtcm3"};
+    for (const char* const content_type : tolerated_content_types)
+        {
+            SCOPED_TRACE(content_type);
+            const V2_Response_Result response = parse_v2_response(
+                std::string("HTTP/1.1 200 OK\r\nContent-Type: ") +
+                content_type + "\r\n\r\nRTCM");
+            EXPECT_EQ(1, response.parsed) << response.message;
+            EXPECT_EQ(2, response.state);
+            EXPECT_EQ(2, response.transport_state);
+            EXPECT_EQ("RTCM", response.payload);
         }
 }
 
@@ -1794,7 +1919,7 @@ TEST(NtripRtcmClientTest, AuthenticatedFragmentedStreamPublishesFixedBaseSnapsho
     config.mountpoint = "/BASE";
     config.username = TRACE_USERNAME;
     config.password = TRACE_PASSWORD;
-    config.reconnect_interval_ms = 500;
+    config.reconnect_interval_ms = 1000;
     config.timeout_ms = 1000;
     config.max_age_s = 1.0;
     config.station_id = TEST_STATION_ID;
@@ -1934,12 +2059,12 @@ TEST(NtripRtcmClientTest, RoverGgaReachesTheCasterWhenEnabled)
     config.mountpoint = "/BASE";
     config.username = TRACE_USERNAME;
     config.password = TRACE_PASSWORD;
-    config.reconnect_interval_ms = 500;
+    config.reconnect_interval_ms = 1000;
     config.timeout_ms = 1000;
     config.max_age_s = 1.0;
     config.station_id = TEST_STATION_ID;
     config.send_gga = true;
-    config.gga_period_ms = 100;
+    config.gga_period_ms = 1000;
 
     Ntrip_Rtcm_Client client(config);
     // A VRS caster serves no corrections until it receives the rover GGA,
@@ -1979,7 +2104,7 @@ TEST(NtripRtcmClientTest, NtripV2ChunkedStreamPublishesFixedBaseSnapshot)
     config.mountpoint = "/BASE";
     config.username = TRACE_USERNAME;
     config.password = TRACE_PASSWORD;
-    config.reconnect_interval_ms = 500;
+    config.reconnect_interval_ms = 1000;
     config.timeout_ms = 1000;
     config.max_age_s = 1.0;
     config.station_id = TEST_STATION_ID;
@@ -2109,6 +2234,140 @@ TEST(NtripRtcmClientTest, V2CloseRetriesFreshConnectionAsV1)
 }
 
 
+TEST(NtripRtcmClientTest, UnconfirmedV1FallbackRestoresConfiguredV2OnReconnect)
+{
+    using namespace ntrip_rtcm_client_test;
+
+    Loopback_Ntrip_Caster caster(Loopback_Caster_Close_Mode::KEEP_OPEN,
+        Loopback_Caster_Response_Mode::V2_RECOVERY_AFTER_TRANSIENT_CLOSES);
+    ASSERT_TRUE(caster.start()) << caster.start_failure() << ": "
+                                << std::strerror(caster.start_errno());
+
+    Ntrip_Rtcm_Client_Config config;
+    config.enabled = true;
+    config.host = "127.0.0.1";
+    config.port = caster.port();
+    config.mountpoint = "/BASE";
+    config.username = TRACE_USERNAME;
+    config.password = TRACE_PASSWORD;
+    config.reconnect_interval_ms = 1000;
+    config.timeout_ms = 1000;
+    config.max_age_s = 1.0;
+    config.station_id = TEST_STATION_ID;
+
+    const gtime_t rover_time = gpst2time(TEST_GPS_WEEK, TEST_TOW_S);
+    Ntrip_Rtcm_Client client(config);
+    client.update_rover_time(rover_time);
+    ASSERT_TRUE(client.start());
+
+    Ntrip_Rtcm_Snapshot snapshot;
+    const std::chrono::steady_clock::time_point snapshot_deadline =
+        std::chrono::steady_clock::now() + std::chrono::milliseconds(3500);
+    do
+        {
+            snapshot = client.latest_snapshot(rover_time);
+            if (snapshot.has_base_position && snapshot.has_observations)
+                {
+                    break;
+                }
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    while (std::chrono::steady_clock::now() < snapshot_deadline);
+
+    client.stop();
+    caster.join();
+
+    ASSERT_EQ(3U, caster.accepted_connection_count());
+    ASSERT_EQ(3U, caster.requests().size());
+    // the v2 attempt and its immediate v1 retry both die on a zero-byte close
+    EXPECT_EQ(0U, caster.requests()[0].find("GET /BASE HTTP/1.1\r\n"));
+    EXPECT_NE(std::string::npos,
+        caster.requests()[0].find("Ntrip-Version: Ntrip/2.0\r\n"));
+    EXPECT_EQ(0U, caster.requests()[1].find("GET /BASE HTTP/1.0\r\n"));
+    // the fallback never carried a stream, so the next cycle starts from the
+    // configured version again instead of staying locked to v1 for the session
+    EXPECT_EQ(0U, caster.requests()[2].find("GET /BASE HTTP/1.1\r\n"));
+    EXPECT_NE(std::string::npos,
+        caster.requests()[2].find("Ntrip-Version: Ntrip/2.0\r\n"));
+    EXPECT_TRUE(snapshot.has_base_position);
+    EXPECT_TRUE(snapshot.has_observations);
+}
+
+
+TEST(NtripRtcmClientTest, BaseLockTimeBaselineSurvivesReconnect)
+{
+    using namespace ntrip_rtcm_client_test;
+
+    Loopback_Ntrip_Caster caster(Loopback_Caster_Close_Mode::KEEP_OPEN,
+        Loopback_Caster_Response_Mode::LOCK_RESET_AFTER_RECONNECT);
+    ASSERT_TRUE(caster.start()) << caster.start_failure() << ": "
+                                << std::strerror(caster.start_errno());
+
+    Ntrip_Rtcm_Client_Config config;
+    config.enabled = true;
+    config.host = "127.0.0.1";
+    config.port = caster.port();
+    config.mountpoint = "/BASE";
+    config.username = TRACE_USERNAME;
+    config.password = TRACE_PASSWORD;
+    config.version = 1;
+    config.reconnect_interval_ms = 1000;
+    config.timeout_ms = 1000;
+    config.max_age_s = 5.0;
+    config.station_id = TEST_STATION_ID;
+
+    const gtime_t rover_time = gpst2time(TEST_GPS_WEEK, TEST_TOW_S + 1.0);
+    Ntrip_Rtcm_Client client(config);
+    client.update_rover_time(rover_time);
+    ASSERT_TRUE(client.start());
+
+    // the first stream must publish observations before the drop
+    Ntrip_Rtcm_Snapshot baseline;
+    const std::chrono::steady_clock::time_point baseline_deadline =
+        std::chrono::steady_clock::now() + std::chrono::milliseconds(2000);
+    do
+        {
+            baseline = client.latest_snapshot(rover_time);
+            if (baseline.has_observations)
+                {
+                    break;
+                }
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
+    while (std::chrono::steady_clock::now() < baseline_deadline);
+    ASSERT_TRUE(baseline.has_observations);
+
+    // the reconnected stream carries a decreased lock-time indicator: with the
+    // lock-time baseline preserved across the reconnect, the observations must
+    // arrive flagged with a loss-of-lock indication
+    Ntrip_Rtcm_Snapshot slipped;
+    const std::chrono::steady_clock::time_point slip_deadline =
+        std::chrono::steady_clock::now() + std::chrono::milliseconds(3500);
+    do
+        {
+            slipped = client.latest_snapshot(rover_time);
+            if (slipped.has_observations &&
+                (slipped.observations[0].LLI[0] & 1U) != 0)
+                {
+                    break;
+                }
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    while (std::chrono::steady_clock::now() < slip_deadline);
+
+    client.stop();
+    caster.join();
+
+    ASSERT_EQ(2U, caster.accepted_connection_count());
+    ASSERT_EQ(2U, caster.requests().size());
+    ASSERT_TRUE(slipped.has_observations);
+    // a per-connection decoder would restart the lock table at zero and
+    // report the re-locked base satellite as continuous (LLI 0)
+    EXPECT_EQ(1, slipped.observations[0].LLI[0]);
+    EXPECT_EQ(1, slipped.observations[0].LLI[1]);
+}
+
+
 TEST(NtripRtcmClientTest, V2AuthenticationFailureDoesNotDowngrade)
 {
     using namespace ntrip_rtcm_client_test;
@@ -2169,8 +2428,8 @@ TEST(NtripRtcmClientTest, ConnectFailureBeforeRequestDoesNotDowngradeV2)
     config.host = "127.0.0.1";
     config.port = reserved_port.port();
     config.mountpoint = "/BASE";
-    config.reconnect_interval_ms = 50;
-    config.timeout_ms = 500;
+    config.reconnect_interval_ms = 1000;
+    config.timeout_ms = 1000;
     config.max_age_s = 1.0;
     config.station_id = TEST_STATION_ID;
 
@@ -2244,7 +2503,7 @@ TEST(NtripRtcmClientTest, ForcedV1ClientSendsLegacyRequest)
     config.mountpoint = "/BASE";
     config.username = TRACE_USERNAME;
     config.password = TRACE_PASSWORD;
-    config.reconnect_interval_ms = 500;
+    config.reconnect_interval_ms = 1000;
     config.timeout_ms = 1000;
     config.max_age_s = 1.0;
     config.station_id = TEST_STATION_ID;
@@ -2296,7 +2555,7 @@ TEST(NtripRtcmClientTest, ZeroReconnectIntervalStopsAfterStreamDisconnect)
     config.port = caster.port();
     config.mountpoint = "BASE";
     config.reconnect_interval_ms = 0;
-    config.timeout_ms = 500;
+    config.timeout_ms = 1000;
     config.max_age_s = 1.0;
     config.station_id = TEST_STATION_ID;
 
@@ -2359,7 +2618,7 @@ TEST(NtripRtcmClientTest, PeerResetDuringAuthenticationDoesNotTerminateClient)
     config.username = "reset-test-user";
     config.password = "reset-test-password";
     config.reconnect_interval_ms = 0;
-    config.timeout_ms = 500;
+    config.timeout_ms = 1000;
 
     Ntrip_Rtcm_Client client(config);
     ASSERT_TRUE(client.start());

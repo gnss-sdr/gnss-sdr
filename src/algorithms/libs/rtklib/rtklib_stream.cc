@@ -2280,10 +2280,32 @@ int rspntrip_c_v2(ntrip_t *ntrip, char *msg)
         }
     if (content_type_present)
         {
-            const char *expected_type = *ntrip->mntpnt
-                                            ? "gnss/data"
-                                            : "gnss/sourcetable";
-            if (content_type != expected_type)
+            if (*ntrip->mntpnt)
+                {
+                    /* NTRIP 2.0 mandates gnss/data, but deployed casters also
+                       label correction streams application/octet-stream and
+                       the like: reject only what clearly is not a correction
+                       stream — a sourcetable answer (unknown mountpoint) or a
+                       textual document (an error page served with status
+                       200) — and tolerate the rest, since the RTCM decoder
+                       validates every frame anyway */
+                    const bool textual =
+                        content_type.compare(0, 5, "text/") == 0 ||
+                        content_type == "application/json" ||
+                        content_type == "application/xml" ||
+                        content_type == "application/xhtml+xml";
+                    if (textual || content_type == "gnss/sourcetable")
+                        {
+                            return reject_ntrip_v2_response(ntrip, msg,
+                                std::string("unexpected NTRIP Content-Type: ") + content_type);
+                        }
+                    if (content_type != "gnss/data")
+                        {
+                            tracet(2, "ntrip: tolerating Content-Type %s\n",
+                                content_type.c_str());
+                        }
+                }
+            else if (content_type != "gnss/sourcetable")
                 {
                     return reject_ntrip_v2_response(ntrip, msg,
                         std::string("unexpected NTRIP Content-Type: ") + content_type);

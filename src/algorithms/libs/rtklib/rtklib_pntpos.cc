@@ -79,6 +79,25 @@ int galileo_bgd_index(unsigned char observation_code, int sat, const nav_t *nav)
 /* pseudorange measurement error variance ------------------------------------
  * var = fact^2*eratio^2*(a^2 + b^2/sin(el) + c^2*10^(0.1*(snr_max-snr))) +
  *       (d*rcv_std)^2   (demo5 form)                                         */
+/* first frequency slot carrying a pseudorange. GNSS-SDR places single-band
+   L2C/L5/E5a/B3I observations in slots 1/2 with slot 0 empty, unlike the
+   upstream receivers demo5 was written for, so the SNR and receiver-stdev
+   weighting terms must follow the measurement instead of hardcoding slot 0
+   (an empty slot reads as SNR 0 and inflates the variance by orders of
+   magnitude) */
+static int used_frequency_slot(const obsd_t *obs)
+{
+    for (int f = 0; f < NFREQ + NEXOBS; f++)
+        {
+            if (obs->P[f] != 0.0)
+                {
+                    return f;
+                }
+        }
+    return 0;
+}
+
+
 double varerr(const prcopt_t *opt, const obsd_t *obs, double el, int sys)
 {
     double fact = 1.0;
@@ -112,16 +131,17 @@ double varerr(const prcopt_t *opt, const obsd_t *obs, double el, int sys)
         {
             el = VARERR_MIN_EL;
         }
+    const int slot = used_frequency_slot(obs);
     varr = std::pow(opt->err[1], 2.0) + std::pow(opt->err[2], 2.0) / sin(el);
     if (opt->err[6] > 0.0)
         { /* SNR-dependent term */
             varr += std::pow(opt->err[6], 2.0) *
-                    std::pow(10.0, 0.1 * std::max(opt->err[5] - obs->SNR[0] * 0.25, 0.0));
+                    std::pow(10.0, 0.1 * std::max(opt->err[5] - obs->SNR[slot] * 0.25, 0.0));
         }
     varr *= std::pow(opt->eratio[0], 2.0);
     if (opt->err[7] > 0.0)
         { /* receiver-reported stdev term */
-            varr += std::pow(opt->err[7] * obs->Pstd[0], 2.0);
+            varr += std::pow(opt->err[7] * obs->Pstd[slot], 2.0);
         }
     if (opt->ionoopt == IONOOPT_IFLC)
         {
@@ -838,7 +858,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
             if (iono_scale == 0.0 && opt->ionoopt != IONOOPT_IFLC)
                 {
                     /* same noise amplification varerr applies for IONOOPT_IFLC */
-                    vmeasure *= std::pow(2, 3.0);
+                    vmeasure *= std::pow(3.0, 2.0);
                 }
             var[nv++] = vmeasure + vare[i] + vmeas + vion + vtrp;
 

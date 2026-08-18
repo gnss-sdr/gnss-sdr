@@ -26,6 +26,7 @@
 #include "gps_almanac.h"               // for Gps_Almanac
 #include "gps_ephemeris.h"             // for Gps_Ephemeris
 #include "gps_week_rollover.h"         // for gps_ref_week_from_config
+#include "ntrip_rtcm_client.h"         // for make_ntrip_rtcm_client_config, secure_clear_string
 #include "pvt_conf.h"                  // for Pvt_Conf
 #include "rtklib_rtkpos.h"             // for rtkfree, rtkinit
 #include "signal_enabled_flags.h"      // for signal_enabled_flags
@@ -57,21 +58,6 @@ using namespace std::string_literals;
 
 namespace
 {
-void secure_clear_string(std::string* value) noexcept
-{
-    if (value->empty())
-        {
-            return;
-        }
-    volatile char* data = &(*value)[0];
-    for (std::size_t index = 0; index < value->size(); ++index)
-        {
-            data[index] = 0;
-        }
-    value->clear();
-}
-
-
 class Ntrip_Credential_Guard
 {
 public:
@@ -245,10 +231,6 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             pvt_output_parameters.ntrip_send_gga = configuration->property(role + ".ntrip_send_gga", pvt_output_parameters.ntrip_send_gga);
             pvt_output_parameters.ntrip_gga_period_ms = configuration->property(role + ".ntrip_gga_period_ms", pvt_output_parameters.ntrip_gga_period_ms);
 
-            if (pvt_output_parameters.ntrip_version != 1 && pvt_output_parameters.ntrip_version != 2)
-                {
-                    throw std::invalid_argument(role + ".ntrip_version must be 1 or 2");
-                }
             if (ntrip_port < 1 || ntrip_port > 65535)
                 {
                     throw std::invalid_argument(role + ".ntrip_caster_port must be in the range 1..65535");
@@ -266,44 +248,6 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
                     return std::isspace(byte) != 0 || std::iscntrl(byte) != 0;
                 });
             };
-            const auto has_non_ascii_graphic = [](const std::string& value) {
-                return std::any_of(value.cbegin(), value.cend(), [](char character) {
-                    const auto byte = static_cast<unsigned char>(character);
-                    return byte <= 0x20U || byte >= 0x7FU;
-                });
-            };
-            if (pvt_output_parameters.ntrip_caster_address.empty() ||
-                pvt_output_parameters.ntrip_caster_address.find("://") != std::string::npos ||
-                pvt_output_parameters.ntrip_caster_address.find('@') != std::string::npos ||
-                pvt_output_parameters.ntrip_caster_address.find('/') != std::string::npos ||
-                pvt_output_parameters.ntrip_caster_address.find(':') != std::string::npos ||
-                pvt_output_parameters.ntrip_caster_address.find('[') != std::string::npos ||
-                pvt_output_parameters.ntrip_caster_address.find(']') != std::string::npos ||
-                has_non_ascii_graphic(pvt_output_parameters.ntrip_caster_address))
-                {
-                    throw std::invalid_argument(role + ".ntrip_caster_address must be a hostname or IPv4 address without a scheme, credentials, port, or path");
-                }
-            while (!pvt_output_parameters.ntrip_mountpoint.empty() && pvt_output_parameters.ntrip_mountpoint.front() == '/')
-                {
-                    pvt_output_parameters.ntrip_mountpoint.erase(0, 1);
-                }
-            if (pvt_output_parameters.ntrip_mountpoint.empty() ||
-                pvt_output_parameters.ntrip_mountpoint.size() >= 256 ||
-                pvt_output_parameters.ntrip_mountpoint.find('@') != std::string::npos ||
-                pvt_output_parameters.ntrip_mountpoint.find('/') != std::string::npos ||
-                pvt_output_parameters.ntrip_mountpoint.find(':') != std::string::npos ||
-                has_non_ascii_graphic(pvt_output_parameters.ntrip_mountpoint))
-                {
-                    throw std::invalid_argument(role + ".ntrip_mountpoint must name one caster mountpoint without a path separator");
-                }
-            if (pvt_output_parameters.ntrip_username.size() >= 256 ||
-                pvt_output_parameters.ntrip_password.size() >= 256 ||
-                pvt_output_parameters.ntrip_username.find(':') != std::string::npos ||
-                has_space_or_control(pvt_output_parameters.ntrip_username) ||
-                has_space_or_control(pvt_output_parameters.ntrip_password))
-                {
-                    throw std::invalid_argument(role + ".ntrip_username or .ntrip_password contains characters unsupported by the NTRIP client");
-                }
             if (!pvt_output_parameters.ntrip_password_env.empty())
                 {
                     if (!pvt_output_parameters.ntrip_password.empty())
@@ -320,35 +264,16 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
                             throw std::invalid_argument(role + ".ntrip_password_env names an environment variable that is not set");
                         }
                     pvt_output_parameters.ntrip_password = password;
-                    if (pvt_output_parameters.ntrip_password.size() >= 256 ||
-                        has_space_or_control(pvt_output_parameters.ntrip_password))
-                        {
-                            throw std::invalid_argument("The NTRIP password environment variable is too long or contains unsupported control or whitespace characters");
-                        }
                 }
-            if (!pvt_output_parameters.ntrip_password.empty() && pvt_output_parameters.ntrip_username.empty())
+            // the client library owns the configuration rules; the adapter
+            // only turns the verdict into a constructor-time throw
+            Ntrip_Rtcm_Client_Config ntrip_probe = make_ntrip_rtcm_client_config(pvt_output_parameters);
+            const std::string ntrip_error = ntrip_probe.validate();
+            secure_clear_string(&ntrip_probe.username);
+            secure_clear_string(&ntrip_probe.password);
+            if (!ntrip_error.empty())
                 {
-                    throw std::invalid_argument(role + ".ntrip_username is required when a password is configured");
-                }
-            if (pvt_output_parameters.ntrip_caster_address.size() + pvt_output_parameters.ntrip_mountpoint.size() + 8 >= MAXSTRPATH)
-                {
-                    throw std::invalid_argument("The configured NTRIP endpoint is too long");
-                }
-            constexpr int max_ntrip_interval_ms = 24 * 60 * 60 * 1000;
-            if (pvt_output_parameters.ntrip_timeout_ms < 1000 || pvt_output_parameters.ntrip_timeout_ms > max_ntrip_interval_ms ||
-                (pvt_output_parameters.ntrip_reconnect_interval_ms != 0 && pvt_output_parameters.ntrip_reconnect_interval_ms < 1000) ||
-                pvt_output_parameters.ntrip_reconnect_interval_ms > max_ntrip_interval_ms)
-                {
-                    throw std::invalid_argument("NTRIP timeout and reconnect intervals must be within 1000 ms and 24 hours; reconnect may also be zero");
-                }
-            if (pvt_output_parameters.ntrip_send_gga &&
-                (pvt_output_parameters.ntrip_gga_period_ms < 1000 || pvt_output_parameters.ntrip_gga_period_ms > max_ntrip_interval_ms))
-                {
-                    throw std::invalid_argument(role + ".ntrip_gga_period_ms must be within 1000 ms and 24 hours");
-                }
-            if (!std::isfinite(pvt_output_parameters.ntrip_max_correction_age_s) || pvt_output_parameters.ntrip_max_correction_age_s <= 0.0)
-                {
-                    throw std::invalid_argument(role + ".ntrip_max_correction_age_s must be a finite positive value");
+                    throw std::invalid_argument(role + " NTRIP configuration: " + ntrip_error);
                 }
         }
 

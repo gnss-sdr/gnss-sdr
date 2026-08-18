@@ -17,6 +17,7 @@
 #ifndef GNSS_SDR_NTRIP_RTCM_CLIENT_H
 #define GNSS_SDR_NTRIP_RTCM_CLIENT_H
 
+#include "pvt_conf.h"
 #include "rtklib.h"
 #include <array>
 #include <cstdint>
@@ -28,6 +29,11 @@
  * \{ */
 /** \addtogroup PVT_libs
  * \{ */
+
+//! Overwrites a credential string before releasing its storage, so the
+//! secret does not linger in freed heap memory. Single implementation for
+//! every holder of a Pvt_Conf / NTRIP configuration copy.
+void secure_clear_string(std::string* value) noexcept;
 
 struct Ntrip_Rtcm_Client_Config
 {
@@ -57,7 +63,20 @@ struct Ntrip_Rtcm_Client_Config
     // Zero accepts any stream station while keeping observations and position
     // bound to one ID. A positive value filters to that exact 12-bit ID.
     int station_id = 0;
+
+    //! Returns an empty string when the configuration is usable, or the
+    //! reason it is not. Single source of the NTRIP configuration rules,
+    //! shared by the adapter (which turns the reason into a throw at
+    //! constructor time) and by start() (which turns it into an ERROR state).
+    std::string validate() const;
 };
+
+
+//! Builds the NTRIP client configuration from the PVT configuration —
+//! the single home of the field mapping and of the mountpoint
+//! normalization, shared by the adapter's validation and by the PVT block's
+//! client construction.
+Ntrip_Rtcm_Client_Config make_ntrip_rtcm_client_config(const Pvt_Conf& conf);
 
 
 enum class Ntrip_Rtcm_Client_State

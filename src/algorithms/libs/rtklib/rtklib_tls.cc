@@ -225,6 +225,15 @@ public:
             }
 #endif
 
+        // SSL_write() demands a retry after WANT_READ/WANT_WRITE to present
+        // the very same buffer and length, but the periodic GGA upload builds
+        // a fresh sentence on a fresh stack buffer each cycle: without these
+        // modes a backpressured GGA send is followed by a fatal
+        // SSL_R_BAD_WRITE_RETRY and a full NTRIP disconnect. With them a
+        // moved or shortened buffer is legal and partial writes report the
+        // bytes actually consumed, like a plain socket send
+        SSL_CTX_set_mode(d_context,
+            SSL_MODE_ENABLE_PARTIAL_WRITE | SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
         SSL_CTX_set_verify(d_context, SSL_VERIFY_PEER, nullptr);
         if (SSL_CTX_set_default_verify_paths(d_context) != 1)
             {
@@ -261,6 +270,7 @@ public:
                 gnutls_deinit(d_session);
                 d_session = nullptr;
             }
+        d_send_pending = false;
 #else
         if (d_session)
             {
@@ -499,13 +509,26 @@ public:
                 set_tls_msg(msg, "TLS signal protection failed");
                 return -1;
             }
+        // after GNUTLS_E_AGAIN the record stays cached inside the session and
+        // the next gnutls_record_send() transmits that cached record, ignoring
+        // the new arguments and returning the cached size: track the pending
+        // state so a caller retrying with different data (a fresh GGA
+        // sentence) is never told more than its own length was written, and a
+        // stable-buffer retry loop keeps its accounting exact
         const ssize_t ret = gnutls_record_send(d_session, buff, static_cast<size_t>(n));
         if (ret >= 0)
             {
+                const bool flushed_cached_record = d_send_pending;
+                d_send_pending = false;
+                if (flushed_cached_record && ret > static_cast<ssize_t>(n))
+                    {
+                        return n;
+                    }
                 return static_cast<int>(ret);
             }
         if (ret == GNUTLS_E_AGAIN || ret == GNUTLS_E_INTERRUPTED)
             {
+                d_send_pending = true;
                 return 0;
             }
         set_tls_msg(msg, "GnuTLS send failed");
@@ -538,6 +561,7 @@ private:
 #ifdef USE_GNUTLS_FALLBACK
     gnutls_certificate_credentials_t d_credentials = nullptr;
     gnutls_session_t d_session = nullptr;
+    bool d_send_pending = false;
 #else
     SSL_CTX *d_context = nullptr;
     SSL *d_session = nullptr;

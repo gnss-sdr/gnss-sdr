@@ -135,6 +135,11 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
       d_channel(0),
       d_secondary_code_length(0U),
       d_data_secondary_code_length(0U),
+      d_f_error_num_bins(0U),
+      d_f_error_bin_index(0U),
+      d_f_error_accum_counter(0U),
+      d_f_error_center_doppler_hz(0.0),
+      d_f_error_power(),
       d_pull_in_transitory(true),
       d_corrected_doppler(false),
       d_interchange_iq(false),
@@ -2094,6 +2099,18 @@ int64_t dll_pll_veml_tracking::uint64diff(uint64_t first, uint64_t second)
 }
 
 
+double dll_pll_veml_tracking::f_error_bin_multiplier(uint32_t bin_index)
+{
+    // bin 0 -> 0; then alternating outward: +1, -1, +2, -2, +3, -3, ...
+    if (bin_index == 0)
+        {
+            return 0.0;
+        }
+    const double half = static_cast<double>((bin_index + 1) / 2);
+    return (bin_index % 2 == 1) ? half : -half;
+}
+
+
 int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
@@ -2164,7 +2181,20 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
 
                 const int32_t samples_offset = round(d_acq_code_phase_samples);
                 d_acc_carrier_phase_rad -= (d_carrier_phase_step_rad - d_cfo_phase_step_rad) * static_cast<double>(samples_offset);
-                d_state = 2;
+                if (d_trk_parameters.f_error_step_num != 0)
+                    {
+                        // enter the frequency error reduction scan, centered on the pull-in Doppler estimate
+                        d_state = 5;
+                        d_f_error_center_doppler_hz = d_carrier_doppler_hz;
+                        d_f_error_bin_index = 0U;
+                        d_f_error_accum_counter = 0U;
+                        d_f_error_num_bins = d_trk_parameters.f_error_step_num;
+                        d_f_error_power.assign(d_f_error_num_bins, 0.0);
+                    }
+                else
+                    {
+                        d_state = 2;
+                    }
                 // d_sample_counter += samples_offset;  // count for the processed samples
                 d_cn0_smoother.reset();
                 d_carrier_lock_test_smoother.reset();
@@ -2452,6 +2482,51 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                 d_state = 3;  // new coherent integration (correlation time extension) cycle
                             }
                     }
+            }
+            break;
+        case 5:  // Frequency error reduction: passive Doppler bin scan, no filter updates
+            {
+                // Doppler offsets tested around the pull-in estimate, centered at bin 0 and
+                // alternating outward: +0, +step, -step, +2*step, -2*step, +3*step, -3*step, ...
+                // d_f_error_num_bins (always odd) is set from d_trk_parameters.f_error_step_num.
+                do_correlation_step(in);
+
+                // incoherent accumulation of the correlated power for the current Doppler bin
+                // (only the Prompt correlator matters here; Early/Late/Very-Early/Very-Late are
+                // unused in this passive state -- no DLL runs, and state 2 overwrites them anyway)
+                d_f_error_power[d_f_error_bin_index] += static_cast<double>(std::norm(*d_Prompt));
+                d_f_error_accum_counter++;
+
+                if (d_f_error_accum_counter == d_trk_parameters.f_error_accumulation)
+                    {
+                        d_f_error_accum_counter = 0U;
+                        d_f_error_bin_index++;
+                    }
+
+                if (d_f_error_bin_index < d_f_error_num_bins)
+                    {
+                        // prepare the NCO for the (possibly new) bin under test; no DLL/PLL filter update
+                        d_carrier_doppler_hz = d_f_error_center_doppler_hz + f_error_bin_multiplier(d_f_error_bin_index) * d_trk_parameters.f_error_doppler_step;
+                        update_tracking_vars();
+                    }
+                else
+                    {
+                        // all bins tested: keep the Doppler offset that provided the highest incoherent accumulation
+                        uint32_t best_bin = 0U;
+                        for (uint32_t i = 1U; i < d_f_error_num_bins; i++)
+                            {
+                                if (d_f_error_power[i] > d_f_error_power[best_bin])
+                                    {
+                                        best_bin = i;
+                                    }
+                            }
+                        d_carrier_doppler_hz = d_f_error_center_doppler_hz + f_error_bin_multiplier(best_bin) * d_trk_parameters.f_error_doppler_step;
+                        LOG(INFO) << "Frequency error reduction: selected Doppler offset " << f_error_bin_multiplier(best_bin) * d_trk_parameters.f_error_doppler_step
+                                  << " Hz on channel " << d_channel << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
+                        update_tracking_vars();
+                        d_state = 2;
+                    }
+                break;
             }
         }
 

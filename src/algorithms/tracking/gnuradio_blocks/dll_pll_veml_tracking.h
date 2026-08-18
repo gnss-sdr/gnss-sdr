@@ -40,6 +40,7 @@
 #include <string>                             // for string
 #include <typeinfo>                           // for typeid
 #include <utility>                            // for pair
+#include <vector>                             // for vector
 
 /** \addtogroup Tracking
  * \{ */
@@ -92,6 +93,7 @@ private:
     bool acquire_secondary();
     int64_t uint64diff(uint64_t first, uint64_t second);
     int32_t save_matfile() const;
+    static double f_error_bin_multiplier(uint32_t bin_index);
 
     Cpu_Multicorrelator_Real_Codes d_multicorrelator_cpu;
 
@@ -207,6 +209,14 @@ private:
     uint32_t d_channel;
     uint32_t d_secondary_code_length;
     uint32_t d_data_secondary_code_length;
+
+    // State 5: frequency error reduction (passive Doppler bin scan run right after pull-in).
+    // Bin count comes from d_trk_parameters.f_error_step_num (0 disables state 5 entirely).
+    uint32_t d_f_error_num_bins;
+    uint32_t d_f_error_bin_index;
+    uint32_t d_f_error_accum_counter;
+    double d_f_error_center_doppler_hz;
+    std::vector<double> d_f_error_power;
 
     bool d_pull_in_transitory;
     bool d_corrected_doppler;

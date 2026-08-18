@@ -74,6 +74,11 @@ public:
 
     void forecast(int noutput_items, gr_vector_int &ninput_items_required) override;
 
+    //! Doppler offset multiplier (in units of f_error_doppler_step) for the given
+    //! frequency-error-reduction bin index: bin 0 -> 0, then alternating outward
+    //! +1, -1, +2, -2, +3, -3, ...
+    static double f_error_bin_multiplier(uint32_t bin_index);
+
 private:
     friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
     explicit dll_pll_veml_tracking(const Dll_Pll_Conf &conf_);
@@ -93,7 +98,6 @@ private:
     bool acquire_secondary();
     int64_t uint64diff(uint64_t first, uint64_t second);
     int32_t save_matfile() const;
-    static double f_error_bin_multiplier(uint32_t bin_index);
 
     Cpu_Multicorrelator_Real_Codes d_multicorrelator_cpu;
 

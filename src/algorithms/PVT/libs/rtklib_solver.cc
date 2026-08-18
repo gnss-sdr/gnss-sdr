@@ -56,6 +56,11 @@
 #include <absl/log/log.h>
 #endif
 
+/* out-of-line definition: pre-C++17 builds require it when the constant is
+   odr-used (e.g. streamed to a logger by const reference); in C++17 and
+   later this is a harmless redeclaration */
+constexpr int Rtklib_Solver::NTRIP_MIN_COMMON_SATELLITES;
+
 Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     const Pvt_Conf &conf,
     const std::string &dump_filename,
@@ -1473,7 +1478,7 @@ bool Rtklib_Solver::prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot &f
     int &base_observation_count)
 {
     // Per-constellation band-to-slot mapping, shared with the adapter's
-    // channel-set validation (see NTRIP_RTK_SIGNALS in ntrip_rtk_signals.h)
+    // channel-set validation (see ntrip_rtk_signals() in ntrip_rtk_signals.h)
     const Signal_Enabled_Flags enabled_flags(d_signal_enabled_flags);
     const auto second_band_slot = [&enabled_flags](const obsd_t &observation) {
         return ntrip_rtk_second_band_slot(satsys(observation.sat, nullptr), enabled_flags);

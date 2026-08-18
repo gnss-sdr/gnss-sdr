@@ -46,25 +46,31 @@ struct Ntrip_Rtk_Signal
 
 
 /*!
- * Keep each constellation's second bands ordered by preference: with more
- * than one enabled (a configuration the adapter rejects today),
+ * The signal table. A function-local static keeps the header buildable as
+ * C++11 (an inline variable would need C++17) while still providing a single
+ * instance. Keep each constellation's second bands ordered by preference:
+ * with more than one enabled (a configuration the adapter rejects today),
  * ntrip_rtk_second_band_slot() picks the first match.
  */
-inline constexpr std::array<Ntrip_Rtk_Signal, 6> NTRIP_RTK_SIGNALS = {{
-    {GPS_1C, SYS_GPS, 0, true},    // GPS L1 C/A
-    {GPS_2S, SYS_GPS, 1, false},   // GPS L2C
-    {GPS_L5, SYS_GPS, 2, false},   // GPS L5 (shares the third slot with E5a)
-    {GAL_1B, SYS_GAL, 0, true},    // Galileo E1
-    {GAL_E5a, SYS_GAL, 2, false},  // Galileo E5a
-    {BDS_B1C, SYS_BDS, 0, true},   // BeiDou B1C
-}};
+inline const std::array<Ntrip_Rtk_Signal, 6>& ntrip_rtk_signals()
+{
+    static const std::array<Ntrip_Rtk_Signal, 6> table = {{
+        {GPS_1C, SYS_GPS, 0, true},    // GPS L1 C/A
+        {GPS_2S, SYS_GPS, 1, false},   // GPS L2C
+        {GPS_L5, SYS_GPS, 2, false},   // GPS L5 (shares the third slot with E5a)
+        {GAL_1B, SYS_GAL, 0, true},    // Galileo E1
+        {GAL_E5a, SYS_GAL, 2, false},  // Galileo E5a
+        {BDS_B1C, SYS_BDS, 0, true},   // BeiDou B1C
+    }};
+    return table;
+}
 
 
 //! Bitmask of every signal_flag the NTRIP RTK path supports
-inline constexpr uint32_t ntrip_rtk_supported_signal_mask()
+inline uint32_t ntrip_rtk_supported_signal_mask()
 {
     uint32_t mask = 0;
-    for (const auto& signal : NTRIP_RTK_SIGNALS)
+    for (const auto& signal : ntrip_rtk_signals())
         {
             mask |= signal.flag;
         }
@@ -76,7 +82,7 @@ inline constexpr uint32_t ntrip_rtk_supported_signal_mask()
 inline int ntrip_rtk_navigation_systems(const Signal_Enabled_Flags& enabled)
 {
     int navsys = 0;
-    for (const auto& signal : NTRIP_RTK_SIGNALS)
+    for (const auto& signal : ntrip_rtk_signals())
         {
             if (signal.first_band && enabled.check_any_enabled(signal.flag))
                 {
@@ -91,7 +97,7 @@ inline int ntrip_rtk_navigation_systems(const Signal_Enabled_Flags& enabled)
 inline int ntrip_rtk_required_bands(const Signal_Enabled_Flags& enabled)
 {
     int bands = 1;
-    for (const auto& signal : NTRIP_RTK_SIGNALS)
+    for (const auto& signal : ntrip_rtk_signals())
         {
             if (enabled.check_any_enabled(signal.flag) && signal.band_slot + 1 > bands)
                 {
@@ -111,7 +117,7 @@ inline int ntrip_rtk_required_bands(const Signal_Enabled_Flags& enabled)
 inline int ntrip_rtk_second_band_slot(int system, const Signal_Enabled_Flags& enabled)
 {
     const int lookup_system = (system == SYS_QZS) ? SYS_GPS : system;
-    for (const auto& signal : NTRIP_RTK_SIGNALS)
+    for (const auto& signal : ntrip_rtk_signals())
         {
             if (signal.system == lookup_system && !signal.first_band &&
                 enabled.check_any_enabled(signal.flag))

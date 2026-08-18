@@ -413,7 +413,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     if (pvt_output_parameters.ntrip_client_enabled)
         {
             // The slot count is fully determined by the channel set (see the
-            // slot column of NTRIP_RTK_SIGNALS): single-band sets run on the
+            // slot column of ntrip_rtk_signals()): single-band sets run on the
             // first slot alone
             const int ntrip_required_bands = ntrip_rtk_required_bands(signal_enabled_flags);
             if (number_of_frequencies != ntrip_required_bands)

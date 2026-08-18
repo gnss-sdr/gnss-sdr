@@ -131,6 +131,20 @@ bool supported_gal_e1_code(unsigned char code)
 }
 
 
+bool supported_bds_b1c_code(unsigned char code)
+{
+    switch (code)
+        {
+        case CODE_L1D:
+        case CODE_L1P:
+        case CODE_L1X:
+            return true;
+        default:
+            return false;
+        }
+}
+
+
 // GPS L5 and Galileo E5a share the observation codes of RTKLIB's L5 band
 bool supported_l5_band_code(unsigned char code)
 {
@@ -1140,17 +1154,20 @@ private:
         for (int i = 0; i < decoder.obs.n; ++i)
             {
                 const int system = satsys(decoder.obs.data[i].sat, nullptr);
-                if (system != SYS_GPS && system != SYS_GAL)
+                if (system != SYS_GPS && system != SYS_GAL && system != SYS_BDS)
                     {
                         continue;
                     }
                 obsd_t observation = decoder.obs.data[i];
-                // Each satellite must provide at least its first band (GPS L1
-                // or Galileo E1). Second-band observations - GPS L2 in slot 1
-                // or L5 in slot 2, Galileo E5a in slot 2 (E5a and L5 share
-                // RTKLIB's third frequency index) - are kept when present; the
-                // solver pairs whichever bands the receiver is configured for,
-                // and single-frequency receivers need only the first band.
+                // Each satellite must provide at least its first band (GPS L1,
+                // Galileo E1, or BeiDou B1C). Second-band observations - GPS
+                // L2 in slot 1 or L5 in slot 2, Galileo E5a in slot 2 (E5a and
+                // L5 share RTKLIB's third frequency index) - are kept when
+                // present; the solver pairs whichever bands the receiver is
+                // configured for, and single-frequency receivers need only the
+                // first band. BeiDou is B1C-only for now: the decoder prefers
+                // B1C over B1I in the shared first slot, and B1I-only
+                // satellites are dropped.
                 bool has_first_band = false;
                 for (int slot = 0; slot < NFREQ + NEXOBS; ++slot)
                     {
@@ -1168,12 +1185,17 @@ private:
                                               (slot == 2 && has_measurement &&
                                                   supported_l5_band_code(observation.code[slot]));
                             }
-                        else
+                        else if (system == SYS_GAL)
                             {
                                 keep_first = slot == 0 && has_measurement &&
                                              supported_gal_e1_code(observation.code[slot]);
                                 keep_second = slot == 2 && has_measurement &&
                                               supported_l5_band_code(observation.code[slot]);
+                            }
+                        else
+                            {
+                                keep_first = slot == 0 && has_measurement &&
+                                             supported_bds_b1c_code(observation.code[slot]);
                             }
                         if (!(keep_first || keep_second))
                             {

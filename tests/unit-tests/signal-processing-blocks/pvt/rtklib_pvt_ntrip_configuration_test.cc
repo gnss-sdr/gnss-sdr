@@ -261,6 +261,23 @@ TEST_F(RtklibPvtNtripConfigurationTest, AcceptsSingleFrequencyChannelSets)
     mixed->supersede_property("PVT.navigation_system", "9");
     EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(mixed.get(), ROLE, 2, 0)));
     ASSERT_NE(nullptr, adapter);
+
+    std::unique_ptr<InMemoryConfiguration> beidou_b1c_only = make_valid_ntrip_configuration();
+    beidou_b1c_only->supersede_property("Channels_1C.count", "0");
+    beidou_b1c_only->supersede_property("Channels_2S.count", "0");
+    beidou_b1c_only->set_property("Channels_1D.count", "1");
+    beidou_b1c_only->supersede_property("PVT.navigation_system", "32");
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(beidou_b1c_only.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+
+    // triple-constellation single-frequency: GPS L1 + Galileo E1 + BeiDou B1C
+    std::unique_ptr<InMemoryConfiguration> triple = make_valid_ntrip_configuration();
+    triple->supersede_property("Channels_2S.count", "0");
+    triple->set_property("Channels_1B.count", "1");
+    triple->set_property("Channels_1D.count", "1");
+    triple->supersede_property("PVT.navigation_system", "41");
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(triple.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
 }
 
 

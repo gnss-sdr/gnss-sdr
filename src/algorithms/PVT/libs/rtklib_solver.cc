@@ -1499,7 +1499,9 @@ bool Rtklib_Solver::prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot &f
                                          ? 2
                                          : 1;
     const auto second_band_slot = [gps_second_band_slot](const obsd_t &observation) {
-        return satsys(observation.sat, nullptr) == SYS_GAL ? 2 : gps_second_band_slot;
+        // Galileo E5a and a future BeiDou B3 both live in slot 2
+        const int system = satsys(observation.sat, nullptr);
+        return (system == SYS_GAL || system == SYS_BDS) ? 2 : gps_second_band_slot;
     };
     const auto clear_unsupported_slots = [&second_band_slot](obsd_t &observation) {
         const int second = second_band_slot(observation);
@@ -1571,7 +1573,8 @@ bool Rtklib_Solver::prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot &f
             obsd_t observation = d_obs_data[index];
             if (observation.sat <= 0 ||
                 (satsys(observation.sat, nullptr) != SYS_GPS &&
-                    satsys(observation.sat, nullptr) != SYS_GAL))
+                    satsys(observation.sat, nullptr) != SYS_GAL &&
+                    satsys(observation.sat, nullptr) != SYS_BDS))
                 {
                     continue;
                 }
@@ -1632,7 +1635,8 @@ bool Rtklib_Solver::prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot &f
         {
             if (observation.sat <= 0 ||
                 (satsys(observation.sat, nullptr) != SYS_GPS &&
-                    satsys(observation.sat, nullptr) != SYS_GAL))
+                    satsys(observation.sat, nullptr) != SYS_GAL &&
+                    satsys(observation.sat, nullptr) != SYS_BDS))
                 {
                     continue;
                 }

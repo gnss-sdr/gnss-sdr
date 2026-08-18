@@ -423,18 +423,19 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         }
 
     // Per-system NTRIP RTK channel rule: GPS is L1 C/A alone or with one
-    // second band (L2C or L5); Galileo is E1 alone or with E5a. Single-band
-    // sets run single-frequency RTK.
+    // second band (L2C or L5); Galileo is E1 alone or with E5a; BeiDou is
+    // B1C alone. Single-band sets run single-frequency RTK.
     const bool ntrip_gps_l1 = signal_enabled_flags.check_any_enabled(GPS_1C);
     const bool ntrip_gps_l2 = signal_enabled_flags.check_any_enabled(GPS_2S);
     const bool ntrip_gps_l5 = signal_enabled_flags.check_any_enabled(GPS_L5);
     const bool ntrip_gal_e1 = signal_enabled_flags.check_any_enabled(GAL_1B);
     const bool ntrip_gal_e5a = signal_enabled_flags.check_any_enabled(GAL_E5a);
+    const bool ntrip_bds_b1c = signal_enabled_flags.check_any_enabled(BDS_B1C);
     const bool ntrip_only_supported_signals =
-        (signal_enabled_flags.flags & ~(GPS_1C | GPS_2S | GPS_L5 | GAL_1B | GAL_E5a)) == 0;
+        (signal_enabled_flags.flags & ~(GPS_1C | GPS_2S | GPS_L5 | GAL_1B | GAL_E5a | BDS_B1C)) == 0;
     const bool ntrip_valid_channel_set =
         ntrip_only_supported_signals &&
-        (ntrip_gps_l1 || ntrip_gal_e1) &&
+        (ntrip_gps_l1 || ntrip_gal_e1 || ntrip_bds_b1c) &&
         !(ntrip_gps_l2 && ntrip_gps_l5) &&
         (!(ntrip_gps_l2 || ntrip_gps_l5) || ntrip_gps_l1) &&
         (!ntrip_gal_e5a || ntrip_gal_e1);
@@ -447,7 +448,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
                 }
             if (!ntrip_valid_channel_set)
                 {
-                    throw std::invalid_argument("NTRIP RTK channels must be GPS L1 C/A alone or with one of L2C or L5, and/or Galileo E1 alone or with E5a");
+                    throw std::invalid_argument("NTRIP RTK channels must be GPS L1 C/A alone or with one of L2C or L5, and/or Galileo E1 alone or with E5a, and/or BeiDou B1C");
                 }
         }
 
@@ -667,7 +668,8 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     if (pvt_output_parameters.ntrip_client_enabled)
         {
             const int expected_navigation_system =
-                (ntrip_gps_l1 ? SYS_GPS : 0) | (ntrip_gal_e1 ? SYS_GAL : 0);
+                (ntrip_gps_l1 ? SYS_GPS : 0) | (ntrip_gal_e1 ? SYS_GAL : 0) |
+                (ntrip_bds_b1c ? SYS_BDS : 0);
             if (navigation_system != expected_navigation_system)
                 {
                     throw std::invalid_argument(role + ".navigation_system must select exactly the constellations of the enabled RTK channels");

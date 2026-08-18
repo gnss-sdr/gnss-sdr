@@ -14,6 +14,7 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "beidou_cnav1_ephemeris.h"
 #include "galileo_ephemeris.h"
 #include "gps_cnav_ephemeris.h"
 #include "in_memory_configuration.h"
@@ -136,6 +137,33 @@ Galileo_Ephemeris make_relative_galileo_ephemeris(unsigned int prn,
 }
 
 
+Beidou_Cnav1_Ephemeris make_relative_beidou_ephemeris(unsigned int prn)
+{
+    Beidou_Cnav1_Ephemeris ephemeris;
+    ephemeris.PRN = prn;
+    // eph_to_rtklib() converts from BDT: week offset 1356, time offset 14 s
+    ephemeris.WN = TEST_GPS_WEEK - 1356;
+    ephemeris.toe = TEST_TOW_S - 14.0;
+    ephemeris.toc = TEST_TOW_S - 14.0;
+    ephemeris.tow = TEST_TOW_S - 14.0;
+    // The B-CNAV1 conversion reads the semi-major axis directly (A0, in
+    // meters), not sqrtA
+    ephemeris.A0 = 27906100.0;  // BeiDou MEO
+    ephemeris.ecc = 0.0;
+    ephemeris.i_0 = 0.9599;  // 55 deg
+    const unsigned int index = prn - 19U;
+    const unsigned int plane = index / 8U;
+    const unsigned int slot = index % 8U;
+    // Phasing offset keeps the constellation apart from the GPS and Galileo
+    // synthetic satellites in the sky
+    ephemeris.M_0 = 2.0 * GNSS_PI * (static_cast<double>(slot) + 0.25) / 8.0;
+    ephemeris.OMEGA_0 = 2.0 * GNSS_PI * static_cast<double>(plane) / 3.0 + 0.7;
+    ephemeris.omega = 0.0;
+    ephemeris.OMEGAdot = -6.0e-9;
+    return ephemeris;
+}
+
+
 Gps_CNAV_Ephemeris make_cnav_ephemeris(const Gps_Ephemeris& lnav)
 {
     Gps_CNAV_Ephemeris cnav;
@@ -234,6 +262,17 @@ double modeled_signal_range(const Galileo_Ephemeris& ephemeris,
 }
 
 
+double modeled_signal_range(const Beidou_Cnav1_Ephemeris& ephemeris,
+    const gtime_t& reception_time,
+    const double* receiver_position_ecef,
+    double receiver_clock_m,
+    double* elevation_rad)
+{
+    return modeled_signal_range(eph_to_rtklib(ephemeris),
+        reception_time, receiver_position_ecef, receiver_clock_m, elevation_rad);
+}
+
+
 std::vector<unsigned int> select_relative_satellites(const double* base_position_ecef,
     const double* rover_position_ecef)
 {
@@ -242,6 +281,28 @@ std::vector<unsigned int> select_relative_satellites(const double* base_position
     for (unsigned int prn = 1; prn <= 32; ++prn)
         {
             const Gps_Ephemeris ephemeris = make_relative_ephemeris(prn);
+            double base_elevation_rad = 0.0;
+            double rover_elevation_rad = 0.0;
+            modeled_signal_range(ephemeris, reception_time, base_position_ecef, 0.0, &base_elevation_rad);
+            modeled_signal_range(ephemeris, reception_time, rover_position_ecef, 0.0, &rover_elevation_rad);
+            if (base_elevation_rad > 15.0 * D2R && rover_elevation_rad > 15.0 * D2R)
+                {
+                    satellites.push_back(prn);
+                }
+        }
+    return satellites;
+}
+
+
+std::vector<unsigned int> select_relative_beidou_satellites(const double* base_position_ecef,
+    const double* rover_position_ecef)
+{
+    const gtime_t reception_time = gpst2time(TEST_GPS_WEEK, TEST_TOW_S);
+    std::vector<unsigned int> satellites;
+    // BDS-3 MEO PRN range; GEO/IGSO are deliberately excluded
+    for (unsigned int prn = 19; prn <= 35; ++prn)
+        {
+            const Beidou_Cnav1_Ephemeris ephemeris = make_relative_beidou_ephemeris(prn);
             double base_elevation_rad = 0.0;
             double rover_elevation_rad = 0.0;
             modeled_signal_range(ephemeris, reception_time, base_position_ecef, 0.0, &base_elevation_rad);
@@ -422,6 +483,58 @@ void add_galileo_to_relative_epoch(Rtklib_Solver& solver,
                 {
                     epoch.rover_observations[static_cast<int>(ROVER_KEY_OFFSET + prn * 2U + 1U)] = rover_e5a;
                 }
+            epoch.base_snapshot.observations.push_back(base_observation);
+        }
+}
+
+
+void add_beidou_to_relative_epoch(Rtklib_Solver& solver,
+    Synthetic_Relative_Epoch& epoch,
+    int epoch_index,
+    const double* base_position_ecef,
+    const double* rover_position_ecef,
+    const std::vector<unsigned int>& satellites)
+{
+    const double tow_s = TEST_TOW_S + static_cast<double>(epoch_index);
+    const gtime_t reception_time = gpst2time(TEST_GPS_WEEK, tow_s);
+    // BeiDou runs B1C only: slot 0 at the L1 center frequency
+    const double wavelength_m = SPEED_OF_LIGHT_M_S / FREQ1;
+    constexpr double BASE_CLOCK_M = -45000.0;
+    constexpr double ROVER_CLOCK_M = 75000.0;
+    constexpr int ROVER_KEY_OFFSET = 2000;
+
+    for (const unsigned int prn : satellites)
+        {
+            const Beidou_Cnav1_Ephemeris ephemeris = make_relative_beidou_ephemeris(prn);
+            solver.beidou_cnav1_ephemeris_map[static_cast<int>(prn)] = ephemeris;
+
+            const double base_range_m = modeled_signal_range(
+                ephemeris, reception_time, base_position_ecef, BASE_CLOCK_M, nullptr);
+            const double rover_range_m = modeled_signal_range(
+                ephemeris, reception_time, rover_position_ecef, ROVER_CLOCK_M, nullptr);
+
+            obsd_t base_observation{};
+            base_observation.time = reception_time;
+            base_observation.sat = static_cast<unsigned char>(satno(SYS_BDS, static_cast<int>(prn)));
+            base_observation.rcv = 2;
+            const double base_ambiguity_cycles = 300000.0 + 41.0 * static_cast<double>(prn);
+            const double rover_ambiguity_cycles = base_ambiguity_cycles + 60.0 + 7.0 * static_cast<double>(prn);
+            base_observation.P[0] = base_range_m + BASE_CLOCK_M;
+            base_observation.L[0] = (base_range_m + BASE_CLOCK_M) / wavelength_m + base_ambiguity_cycles;
+            base_observation.SNR[0] = 200;
+            base_observation.code[0] = CODE_L1P;  // B1C pilot, as broadcast in MSM
+
+            Gnss_Synchro rover_b1c = make_rover_observation(prn);
+            rover_b1c.System = 'C';
+            std::memcpy(rover_b1c.Signal, "1D", 3);
+            rover_b1c.RX_time = tow_s;
+            rover_b1c.interp_TOW_ms = tow_s * 1000.0;
+            rover_b1c.Pseudorange_m = rover_range_m + ROVER_CLOCK_M;
+            rover_b1c.Carrier_phase_rads = ((rover_range_m + ROVER_CLOCK_M) / wavelength_m +
+                                               rover_ambiguity_cycles) *
+                                           (2.0 * GNSS_PI);
+
+            epoch.rover_observations[static_cast<int>(ROVER_KEY_OFFSET + prn)] = rover_b1c;
             epoch.base_snapshot.observations.push_back(base_observation);
         }
 }
@@ -967,7 +1080,7 @@ TEST_F(RtklibFixedBaseTest, CombinedGpsL1L5GalileoBaseProducesRelativeSolution)
 }
 
 
-TEST_F(RtklibFixedBaseTest, SingleFrequencyGpsGalileoBaseProducesRelativeSolution)
+TEST_F(RtklibFixedBaseTest, SingleFrequencyGpsGalileoBeidouBaseProducesRelativeSolution)
 {
     using namespace rtklib_fixed_base_test_detail;
     const double base_position_geodetic[3] = {45.0 * D2R, 8.0 * D2R, 100.0};
@@ -982,17 +1095,20 @@ TEST_F(RtklibFixedBaseTest, SingleFrequencyGpsGalileoBaseProducesRelativeSolutio
         base_position_ecef[2] + baseline_ecef_m[2]};
 
     prcopt_t options = fixed_base_options();
-    // Single-frequency multi-constellation RTK: L1/E1 only
+    // Single-frequency multi-constellation RTK: L1/E1/B1C only
     options.nf = 1;
-    options.navsys = SYS_GPS | SYS_GAL;
-    auto solver = make_solver_with_options(options, false, GPS_1C | GAL_1B);
+    options.navsys = SYS_GPS | SYS_GAL | SYS_BDS;
+    auto solver = make_solver_with_options(options, false, GPS_1C | GAL_1B | BDS_B1C);
 
     const std::vector<unsigned int> gps_satellites = select_relative_satellites(
         base_position_ecef, rover_position_ecef);
     const std::vector<unsigned int> galileo_satellites = select_relative_galileo_satellites(
         base_position_ecef, rover_position_ecef);
+    const std::vector<unsigned int> beidou_satellites = select_relative_beidou_satellites(
+        base_position_ecef, rover_position_ecef);
     ASSERT_GE(gps_satellites.size(), 4U);
     ASSERT_GE(galileo_satellites.size(), 4U);
+    ASSERT_GE(beidou_satellites.size(), 3U);
 
     bool obtained_fix = false;
     for (int epoch_index = 0; epoch_index < 8; ++epoch_index)
@@ -1003,8 +1119,11 @@ TEST_F(RtklibFixedBaseTest, SingleFrequencyGpsGalileoBaseProducesRelativeSolutio
             add_galileo_to_relative_epoch(
                 *solver, epoch, epoch_index, base_position_ecef, rover_position_ecef,
                 galileo_satellites, true);
+            add_beidou_to_relative_epoch(
+                *solver, epoch, epoch_index, base_position_ecef, rover_position_ecef,
+                beidou_satellites);
             // one rover observation per satellite: first band only
-            ASSERT_EQ(gps_satellites.size() + galileo_satellites.size(),
+            ASSERT_EQ(gps_satellites.size() + galileo_satellites.size() + beidou_satellites.size(),
                 epoch.rover_observations.size());
             for (const obsd_t& base_observation : epoch.base_snapshot.observations)
                 {
@@ -1016,7 +1135,7 @@ TEST_F(RtklibFixedBaseTest, SingleFrequencyGpsGalileoBaseProducesRelativeSolutio
             SCOPED_TRACE(::testing::Message() << "epoch=" << epoch_index);
             ASSERT_TRUE(solve(*solver, epoch.rover_observations, &epoch.base_snapshot));
             EXPECT_EQ(Rtklib_Fixed_Base_Status::APPLIED, solver->get_fixed_base_status());
-            EXPECT_EQ(gps_satellites.size() + galileo_satellites.size(),
+            EXPECT_EQ(gps_satellites.size() + galileo_satellites.size() + beidou_satellites.size(),
                 solver->get_fixed_base_common_satellites());
             obtained_fix = obtained_fix || solver->pvt_sol.stat == SOLQ_FIX;
             EXPECT_TRUE(solver->pvt_sol.stat == SOLQ_FLOAT || solver->pvt_sol.stat == SOLQ_FIX);

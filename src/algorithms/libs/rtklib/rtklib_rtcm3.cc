@@ -75,10 +75,10 @@ const char *msm_sig_sbs[32] = {
 
 
 const char *msm_sig_cmp[32] = {
-    /* BeiDou: ref [15] table 3.5-106 */
+    /* BeiDou: ref [15] table 3.5-106, B1C signal IDs 30-32 per RTCM 3.3 */
     "", "1I", "1Q", "1X", "", "", "", "6I", "6Q", "6X", "", "",
     "", "7I", "7Q", "7X", "", "", "", "", "", "", "", "",
-    "", "", "", "", "", "", "", ""};
+    "", "", "", "", "", "1D", "1P", "1X"};
 
 /* get sign-magnitude bits ---------------------------------------------------*/
 double getbitg(const unsigned char *buff, int pos, int len)

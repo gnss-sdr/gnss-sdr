@@ -132,7 +132,7 @@ char codepris[7][MAXFREQ][16] = {
     {"CABXZ", "", "IQX", "ABCXZ", "IQX", "IQX", ""},   /* GAL */
     {"CSLXZ", "SLX", "IQX", "SLX", "", "", ""},        /* QZS */
     {"C", "", "IQX", "", "", "", ""},                  /* SBS */
-    {"IQX", "IQX", "IQX", "IQX", "IQX", "", ""},       /* BDS */
+    {"DPXIQ", "IQX", "IQX", "IQX", "IQX", "", ""},     /* BDS: B1C (D/P) preferred over B1I in the shared slot */
     {"", "", "ABCX", "", "", "", "ABCX"}               /* IRN */
 };
 

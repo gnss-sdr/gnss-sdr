@@ -700,6 +700,79 @@ std::vector<unsigned char> make_mt1074(bool half_cycle_ambiguity = false,
 }
 
 
+std::vector<unsigned char> make_mt1124()
+{
+    // One BeiDou satellite (C19) broadcasting B1I (signal ID 2) and B1C pilot
+    // (signal ID 31), which contend for the same first frequency slot
+    constexpr int payload_size = 36;
+    std::vector<unsigned char> frame(static_cast<std::size_t>(3 + payload_size + 3), 0);
+    frame[0] = 0xD3;
+    setbitu(frame.data(), 14, 10, payload_size);
+
+    int bit = 24;
+    setbitu(frame.data(), bit, 12, 1124);
+    bit += 12;
+    setbitu(frame.data(), bit, 12, TEST_STATION_ID);
+    bit += 12;
+    setbitu(frame.data(), bit, 30,
+        static_cast<unsigned int>(TEST_TOW_S * 1000.0));
+    bit += 30;
+    setbitu(frame.data(), bit, 1, 0);  // Last message in the epoch
+    bit += 1;
+    setbitu(frame.data(), bit, 3, 0);  // Issue of data station
+    bit += 3;
+    bit += 7;  // Reserved
+    setbitu(frame.data(), bit, 2, 0);
+    bit += 2;
+    setbitu(frame.data(), bit, 2, 0);
+    bit += 2;
+    setbitu(frame.data(), bit, 1, 0);
+    bit += 1;
+    setbitu(frame.data(), bit, 3, 0);
+    bit += 3;
+
+    for (int satellite_id = 1; satellite_id <= 64; ++satellite_id)
+        {
+            setbitu(frame.data(), bit++, 1, satellite_id == 19 ? 1U : 0U);
+        }
+    for (int signal_id = 1; signal_id <= 32; ++signal_id)
+        {
+            const bool selected = signal_id == 2 || signal_id == 31;
+            setbitu(frame.data(), bit++, 1, selected ? 1U : 0U);
+        }
+    setbitu(frame.data(), bit++, 1, 1);
+    setbitu(frame.data(), bit++, 1, 1);
+
+    setbitu(frame.data(), bit, 8, 75);  // Rough range in milliseconds
+    bit += 8;
+    setbitu(frame.data(), bit, 10, 512);
+    bit += 10;
+    setbits(frame.data(), bit, 15, 1000);
+    bit += 15;
+    setbits(frame.data(), bit, 15, 2000);
+    bit += 15;
+    setbits(frame.data(), bit, 22, 1500);
+    bit += 22;
+    setbits(frame.data(), bit, 22, 2500);
+    bit += 22;
+    setbitu(frame.data(), bit, 4, 5);  // Lock time indicator, signal 1
+    bit += 4;
+    setbitu(frame.data(), bit, 4, 5);  // Lock time indicator, signal 2
+    bit += 4;
+    setbitu(frame.data(), bit++, 1, 0);
+    setbitu(frame.data(), bit++, 1, 0);
+    setbitu(frame.data(), bit, 6, 45);
+    bit += 6;
+    setbitu(frame.data(), bit, 6, 45);
+
+    const unsigned int crc = rtk_crc24q(frame.data(), 3 + payload_size);
+    frame[3 + payload_size] = static_cast<unsigned char>((crc >> 16U) & 0xFFU);
+    frame[4 + payload_size] = static_cast<unsigned char>((crc >> 8U) & 0xFFU);
+    frame[5 + payload_size] = static_cast<unsigned char>(crc & 0xFFU);
+    return frame;
+}
+
+
 enum class Loopback_Caster_Close_Mode
 {
     KEEP_OPEN,
@@ -1577,6 +1650,34 @@ TEST(NtripRtcmClientTest, GeneratedMsm4FixtureIsValidDualBandRtcm3)
     EXPECT_NE(0.0, decoder.obs.data[0].P[1]);
     EXPECT_NE(0.0, decoder.obs.data[0].L[0]);
     EXPECT_NE(0.0, decoder.obs.data[0].L[1]);
+    free_rtcm(&decoder);
+}
+
+
+TEST(NtripRtcmClientTest, GeneratedBeidouMsm4PrefersB1cOverB1iInTheSharedSlot)
+{
+    using namespace ntrip_rtcm_client_test;
+    rtcm_t decoder = {};
+    ASSERT_EQ(1, init_rtcm(&decoder));
+    decoder.time = gpst2time(TEST_GPS_WEEK, TEST_TOW_S);
+
+    int decode_result = 0;
+    const std::vector<unsigned char> frame = make_mt1124();
+    for (const unsigned char byte : frame)
+        {
+            decode_result = input_rtcm3(&decoder, byte);
+        }
+
+    ASSERT_EQ(1, decode_result);
+    ASSERT_EQ(1, decoder.obs.n);
+    int prn = 0;
+    EXPECT_EQ(SYS_BDS, satsys(decoder.obs.data[0].sat, &prn));
+    EXPECT_EQ(19, prn);
+    // Both signals target the first slot; the code priority table must
+    // resolve the contention in favor of the B1C pilot
+    EXPECT_EQ(CODE_L1P, decoder.obs.data[0].code[0]);
+    EXPECT_NE(0.0, decoder.obs.data[0].P[0]);
+    EXPECT_NE(0.0, decoder.obs.data[0].L[0]);
     free_rtcm(&decoder);
 }
 

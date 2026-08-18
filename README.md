@@ -1891,20 +1891,21 @@ The `RTKLIB_PVT` implementation can obtain base-station corrections from an
 NTRIP caster. This feature is opt-in: `PVT.ntrip_client_enabled` defaults to
 `false`, and no caster connection is attempted while it is disabled. The
 receiver may run, per constellation and freely combined, GPS L1 C/A (`1C`) alone
-or together with one of L2C (`2S`) or L5 (`L5`), and Galileo E1 (`1B`) alone or
-together with E5a (`5X`); a second band without its first band, both GPS second
-bands at once, and other signals are rejected. Single-band sets run
-single-frequency RTK, which is viable on the short effective baselines of VRS
-services and benefits from combining both constellations.
-`PVT.navigation_system` must match the enabled constellations exactly (`1` GPS,
-`8` Galileo, `9` both), and the number of frequency slots is derived from the
-channel set (1 for single-band sets; 2 with GPS L2C; 3 whenever L5 or E5a is
-involved, since both occupy the third RTKLIB slot). GPS L5 and Galileo E5a share
-the same center frequency, so the combined GPS L1+L5 / Galileo E1+E5a
-dual-frequency receiver needs only two RF channels, and a single-frequency
-GPS+Galileo receiver needs one. Select `Static` for a stationary rover or
-`Kinematic` for a moving rover; other positioning modes are rejected when the
-NTRIP client is enabled.
+or together with one of L2C (`2S`) or L5 (`L5`), Galileo E1 (`1B`) alone or
+together with E5a (`5X`), and BeiDou B1C (`1D`, single-frequency); a second band
+without its first band, both GPS second bands at once, and other signals are
+rejected. Single-band sets run single-frequency RTK, which is viable on the
+short effective baselines of VRS services and benefits from combining
+constellations. `PVT.navigation_system` must match the enabled constellations
+exactly (`1` GPS, `8` Galileo, `32` BeiDou, or their sum), and the number of
+frequency slots is derived from the channel set (1 for single-band sets; 2 with
+GPS L2C; 3 whenever L5 or E5a is involved, since both occupy the third RTKLIB
+slot). GPS L5 and Galileo E5a share the same center frequency, and BeiDou B1C
+shares the GPS L1 / Galileo E1 center, so the combined GPS L1+L5 / Galileo
+E1+E5a dual-frequency receiver needs only two RF channels, and a
+single-frequency GPS+Galileo+BeiDou receiver needs one. Select `Static` for a
+stationary rover or `Kinematic` for a moving rover; other positioning modes are
+rejected when the NTRIP client is enabled.
 
 An NTRIP-corrected rover configuration can include:
 
@@ -1948,7 +1949,9 @@ The correction stream must provide an RTCM 3 base position message 1005 or 1006
 and observation messages carrying at least each satellite's first band: for GPS,
 L1 (with L2 or L5 when available) as messages 1002 or 1004 or as MSM4 through
 MSM7 (1074 through 1077); for Galileo, E1 (with E5a when available) as MSM4
-through MSM7 (1094 through 1097). Base satellites providing only the first band
+through MSM7 (1094 through 1097); for BeiDou, B1C as MSM4 through MSM7 (1124
+through 1127), where the decoder prefers B1C over B1I when the base broadcasts
+both in the shared first slot. Base satellites providing only the first band
 contribute single-band double differences; the second band of the receiver's
 pair is used whenever both sides supply it. Corrections older than
 `PVT.ntrip_max_correction_age_s` are not used. Enabling this client forces a

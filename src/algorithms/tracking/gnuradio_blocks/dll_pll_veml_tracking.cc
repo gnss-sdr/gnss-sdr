@@ -139,7 +139,6 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
       d_f_error_bin_index(0U),
       d_f_error_accum_counter(0U),
       d_f_error_center_doppler_hz(0.0),
-      d_f_error_power(),
       d_pull_in_transitory(true),
       d_corrected_doppler(false),
       d_interchange_iq(false),
@@ -2106,7 +2105,8 @@ double dll_pll_veml_tracking::f_error_bin_multiplier(uint32_t bin_index)
         {
             return 0.0;
         }
-    const double half = static_cast<double>((bin_index + 1) / 2);
+    const uint32_t half_steps = (bin_index + 1) / 2;
+    const auto half = static_cast<double>(half_steps);
     return (bin_index % 2 == 1) ? half : -half;
 }
 

@@ -156,13 +156,13 @@ double intpres(gtime_t time, const obsd_t *obs, int n, const nav_t *nav,
     rtk_t *rtk, double *y);
 
 
-int ddidx(rtk_t *rtk, int *ix, int gps, int glo, int sbs);
+int ddidx(rtk_t *rtk, int *ix, int glo, int sbs);
 
 void restamb(rtk_t *rtk, const double *bias, int nb, double *xa);
 
 void holdamb(rtk_t *rtk, const double *xa);
 
-int resamb_LAMBDA(rtk_t *rtk, double *bias, double *xa, int gps, int glo, int sbs);
+int resamb_LAMBDA(rtk_t *rtk, double *bias, double *xa, int glo, int sbs);
 
 int manage_amb_LAMBDA(rtk_t *rtk, double *bias, double *xa, const int *sat,
     int nf, int ns);

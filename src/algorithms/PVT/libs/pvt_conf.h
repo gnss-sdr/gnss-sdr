@@ -17,6 +17,7 @@
 #ifndef GNSS_SDR_PVT_CONF_H
 #define GNSS_SDR_PVT_CONF_H
 
+#include "secure_string.h"
 #include <cstdint>
 #include <map>
 #include <string>
@@ -53,9 +54,13 @@ public:
     std::string log_source_timetag_file;
     std::string ntrip_caster_address;
     std::string ntrip_mountpoint;
-    std::string ntrip_username;
-    std::string ntrip_password;
-    std::string ntrip_password_env;
+    // Self-scrubbing: every copy of this struct wipes the caster credentials
+    // on release, so new holders need no manual scrub site (the explicit
+    // early scrubs via secure_clear_ntrip_credentials() remain worthwhile
+    // for long-lived copies)
+    Secure_String ntrip_username;
+    Secure_String ntrip_password;
+    Secure_String ntrip_password_env;
 
     uint32_t signal_enabled_flags = 0;
     uint32_t observable_interval_ms = 20;

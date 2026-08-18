@@ -720,6 +720,9 @@ if(ENABLE_UNIT_TESTING)
             system_testing_lib
             core_receiver
     )
+    # rtklib_tls_test.cc drives the crypto backend directly (test TLS server),
+    # so link it explicitly instead of relying on transitive propagation
+    link_to_crypto_dependencies(run_tests PRIVATE)
     if(ENABLE_GLOG_AND_GFLAGS)
         target_link_libraries(run_tests PRIVATE Gflags::gflags Glog::glog)
         target_compile_definitions(run_tests PRIVATE -DUSE_GLOG_AND_GFLAGS=1)

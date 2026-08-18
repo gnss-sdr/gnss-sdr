@@ -32,8 +32,15 @@
 
 //! Overwrites a credential string before releasing its storage, so the
 //! secret does not linger in freed heap memory. Single implementation for
-//! every holder of a Pvt_Conf / NTRIP configuration copy.
+//! every holder of a Pvt_Conf / NTRIP configuration copy (backed by the
+//! secure_wipe() primitive in rtklib_stream.h).
 void secure_clear_string(std::string* value) noexcept;
+
+//! Scrubs the NTRIP credential fields of a Pvt_Conf copy ahead of its
+//! destruction (the Secure_String fields wipe themselves on release, but a
+//! long-lived copy should drop its secrets as soon as they are consumed).
+//! Single home of the credential field list.
+void secure_clear_ntrip_credentials(Pvt_Conf* conf) noexcept;
 
 struct Ntrip_Rtcm_Client_Config
 {
@@ -117,7 +124,9 @@ struct Ntrip_Rtcm_Snapshot
     // value, so a small future-dated base epoch is accepted as well.
     double age_s = 0.0;
     bool fresh = false;
-    std::uint64_t observation_generation = 0;
+    // Bumped on every output-side change (observations, base position,
+    // ephemerides, reset), so equal values mean an identical snapshot.
+    std::uint64_t generation = 0;
 
     bool has_base_position = false;
     std::array<double, 3> base_position_ecef_m = {{0.0, 0.0, 0.0}};
@@ -126,9 +135,10 @@ struct Ntrip_Rtcm_Snapshot
     int itrf = 0;
     double antenna_height_m = 0.0;
 
-    // Latest decoded GPS broadcast ephemeris for each satellite seen on the
-    // correction stream. The records own no dynamic memory.
-    std::vector<eph_t> gps_ephemerides;
+    // Latest decoded broadcast ephemeris for each GPS, Galileo, BeiDou or
+    // QZSS satellite seen on the correction stream (RTCM MT1019/1044/1045/
+    // 1046/1042). The records own no dynamic memory.
+    std::vector<eph_t> ephemerides;
 };
 
 
@@ -163,6 +173,12 @@ public:
     // on wall-clock time.
     Ntrip_Rtcm_Snapshot latest_snapshot() const;
     Ntrip_Rtcm_Snapshot latest_snapshot(const gtime_t& rover_time) const;
+
+    // Cheap change detectors so per-epoch callers can skip the deep copies:
+    // snapshot_generation() matches Ntrip_Rtcm_Snapshot::generation, and
+    // state_generation() changes whenever the status state/message is set.
+    std::uint64_t snapshot_generation() const;
+    std::uint64_t state_generation() const noexcept;
 
     // Position is ECEF in metres. Invalid/non-finite positions disable GGA
     // until another valid position is supplied.

@@ -112,6 +112,10 @@ enum class Rtklib_Fixed_Base_Status
 class Rtklib_Solver : public Pvt_Solution
 {
 public:
+    //! Minimum satellites common to rover and base (any constellation) for
+    //! the fixed-base merge; the solver-owned policy the display layer quotes
+    static constexpr int NTRIP_MIN_COMMON_SATELLITES = 4;
+
     Rtklib_Solver(const rtk_t& rtk,
         const Pvt_Conf& conf,
         const std::string& dump_filename,
@@ -224,6 +228,10 @@ private:
     void reset_relative_filter();
 
     std::array<obsd_t, MAXOBS * 2> d_obs_data{};
+    // per-epoch scratch of prepare_fixed_base_observations(); members so
+    // their capacity is reused across epochs
+    std::vector<obsd_t> d_fixed_base_rover_scratch;
+    std::vector<obsd_t> d_fixed_base_base_scratch;
     std::array<double, 4> d_dop{};
     std::map<int, int> d_rtklib_freq_index;
     std::map<std::string, int> d_rtklib_band_index;

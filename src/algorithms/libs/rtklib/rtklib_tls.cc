@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <mutex>
 #include <utility>
+#include <vector>
 
 #ifdef USE_GNUTLS_FALLBACK
 #include <gnutls/gnutls.h>
@@ -226,12 +227,13 @@ public:
 #endif
 
         // SSL_write() demands a retry after WANT_READ/WANT_WRITE to present
-        // the very same buffer and length, but the periodic GGA upload builds
-        // a fresh sentence on a fresh stack buffer each cycle: without these
-        // modes a backpressured GGA send is followed by a fatal
-        // SSL_R_BAD_WRITE_RETRY and a full NTRIP disconnect. With them a
-        // moved or shortened buffer is legal and partial writes report the
-        // bytes actually consumed, like a plain socket send
+        // the very same buffer and length. These modes make a moved buffer
+        // legal and let partial writes report the bytes actually consumed,
+        // but ssl3_write_pending() still rejects a retry SHORTER than the
+        // pending record with SSL_R_BAD_WRITE_RETRY, and an equal-or-longer
+        // retry silently transmits the cached record instead of the new data:
+        // write() below therefore keeps its own copy of a backpressured
+        // buffer and flushes exactly that copy before accepting new data
         SSL_CTX_set_mode(d_context,
             SSL_MODE_ENABLE_PARTIAL_WRITE | SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
         SSL_CTX_set_verify(d_context, SSL_VERIFY_PEER, nullptr);
@@ -262,6 +264,16 @@ public:
 #endif
     }
 
+    bool set_hostname(const std::string &hostname)
+    {
+        if (hostname.empty() || d_session != nullptr)
+            {
+                return false;
+            }
+        d_hostname = hostname;
+        return true;
+    }
+
     void reset()
     {
 #ifdef USE_GNUTLS_FALLBACK
@@ -277,6 +289,7 @@ public:
                 SSL_free(d_session);
                 d_session = nullptr;
             }
+        d_pending_record.clear();
 #endif
         d_established = false;
     }
@@ -540,6 +553,31 @@ public:
                 set_tls_msg(msg, "TLS signal protection failed");
                 return -1;
             }
+        // OpenSSL keeps the record pending after WANT_READ/WANT_WRITE and
+        // rejects any retry shorter than it (SSL_R_BAD_WRITE_RETRY), even
+        // with SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER; an equal-or-longer retry
+        // silently transmits the cached record in place of the new data.
+        // Flush the stored copy of the backpressured buffer first: a stable-
+        // buffer retry (the handshake path) resends its own data exactly
+        // once, and a fresh GGA retry costs at most one stale-by-a-period
+        // sentence, with the report clamped to the caller's length
+        if (!d_pending_record.empty())
+            {
+                const int pending = static_cast<int>(d_pending_record.size());
+                const int flushed = SSL_write(d_session, d_pending_record.data(), pending);
+                if (flushed <= 0)
+                    {
+                        const int flush_error = SSL_get_error(d_session, flushed);
+                        if (flush_error == SSL_ERROR_WANT_READ || flush_error == SSL_ERROR_WANT_WRITE)
+                            {
+                                return 0;
+                            }
+                        set_tls_msg(msg, "OpenSSL send failed");
+                        return -1;
+                    }
+                d_pending_record.clear();
+                return flushed > n ? n : flushed;
+            }
         const int ret = SSL_write(d_session, buff, n);
         if (ret > 0)
             {
@@ -548,6 +586,7 @@ public:
         const int ssl_error = SSL_get_error(d_session, ret);
         if (ssl_error == SSL_ERROR_WANT_READ || ssl_error == SSL_ERROR_WANT_WRITE)
             {
+                d_pending_record.assign(buff, buff + n);
                 return 0;
             }
         set_tls_msg(msg, "OpenSSL send failed");
@@ -565,6 +604,7 @@ private:
 #else
     SSL_CTX *d_context = nullptr;
     SSL *d_session = nullptr;
+    std::vector<unsigned char> d_pending_record;
 #endif
 };
 
@@ -587,6 +627,12 @@ bool Rtklib_Tls_Client::initialize(char *msg)
 void Rtklib_Tls_Client::reset()
 {
     d_impl->reset();
+}
+
+
+bool Rtklib_Tls_Client::set_hostname(const std::string &hostname)
+{
+    return d_impl->set_hostname(hostname);
 }
 
 

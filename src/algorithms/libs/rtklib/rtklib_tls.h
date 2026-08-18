@@ -35,6 +35,12 @@ public:
     bool initialize(char *msg);
     void reset();
 
+    // Replace the host name used for SNI and certificate verification. The
+    // SSL context and CA store are host-independent, so an initialized client
+    // can be retargeted without rebuilding them. Fails (returns false) once a
+    // TLS session exists: the hostname is consumed when the handshake starts.
+    bool set_hostname(const std::string &hostname);
+
     // Return 1 when the TLS session is established, 0 while a non-blocking
     // handshake is in progress, and -1 on a fatal error.
     int handshake(socket_t sock, char *msg);

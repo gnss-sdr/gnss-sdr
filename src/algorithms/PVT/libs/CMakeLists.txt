@@ -39,6 +39,8 @@ set(PVT_LIB_HEADERS
     kml_printer.h
     nmea_printer.h
     ntrip_rtcm_client.h
+    ntrip_rtk_signals.h
+    secure_string.h
     rinex_printer.h
     rtcm_printer.h
     rtcm.h

@@ -27,6 +27,7 @@
 #include "gps_ephemeris.h"             // for Gps_Ephemeris
 #include "gps_week_rollover.h"         // for gps_ref_week_from_config
 #include "ntrip_rtcm_client.h"         // for make_ntrip_rtcm_client_config, secure_clear_string
+#include "ntrip_rtk_signals.h"         // for the NTRIP RTK signal table and derived masks
 #include "pvt_conf.h"                  // for Pvt_Conf
 #include "rtklib_rtkpos.h"             // for rtkfree, rtkinit
 #include "signal_enabled_flags.h"      // for signal_enabled_flags
@@ -68,9 +69,7 @@ public:
 
     ~Ntrip_Credential_Guard()
     {
-        secure_clear_string(&d_configuration->ntrip_username);
-        secure_clear_string(&d_configuration->ntrip_password);
-        secure_clear_string(&d_configuration->ntrip_password_env);
+        secure_clear_ntrip_credentials(d_configuration);
     }
 
     Ntrip_Credential_Guard(const Ntrip_Credential_Guard&) = delete;
@@ -254,11 +253,11 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
                         {
                             throw std::invalid_argument(role + ".ntrip_password and .ntrip_password_env are mutually exclusive");
                         }
-                    if (has_space_or_control(pvt_output_parameters.ntrip_password_env))
+                    if (has_space_or_control(pvt_output_parameters.ntrip_password_env.value()))
                         {
                             throw std::invalid_argument(role + ".ntrip_password_env must be one environment-variable name");
                         }
-                    const char* password = std::getenv(pvt_output_parameters.ntrip_password_env.c_str());
+                    const char* password = std::getenv(pvt_output_parameters.ntrip_password_env.value().c_str());
                     if (password == nullptr)
                         {
                             throw std::invalid_argument(role + ".ntrip_password_env names an environment variable that is not set");
@@ -357,7 +356,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const bool ntrip_gal_e5a = signal_enabled_flags.check_any_enabled(GAL_E5a);
     const bool ntrip_bds_b1c = signal_enabled_flags.check_any_enabled(BDS_B1C);
     const bool ntrip_only_supported_signals =
-        (signal_enabled_flags.flags & ~(GPS_1C | GPS_2S | GPS_L5 | GAL_1B | GAL_E5a | BDS_B1C)) == 0;
+        (signal_enabled_flags.flags & ~ntrip_rtk_supported_signal_mask()) == 0;
     const bool ntrip_valid_channel_set =
         ntrip_only_supported_signals &&
         (ntrip_gps_l1 || ntrip_gal_e1 || ntrip_bds_b1c) &&
@@ -413,10 +412,10 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         }
     if (pvt_output_parameters.ntrip_client_enabled)
         {
-            // The slot count is fully determined by the channel set: GPS L5
-            // and Galileo E5a occupy RTKLIB's third frequency slot, GPS L2C
-            // the second, and single-band sets run on the first slot alone
-            const int ntrip_required_bands = (ntrip_gps_l5 || ntrip_gal_e5a) ? 3 : (ntrip_gps_l2 ? 2 : 1);
+            // The slot count is fully determined by the channel set (see the
+            // slot column of NTRIP_RTK_SIGNALS): single-band sets run on the
+            // first slot alone
+            const int ntrip_required_bands = ntrip_rtk_required_bands(signal_enabled_flags);
             if (number_of_frequencies != ntrip_required_bands)
                 {
                     LOG(INFO) << "NTRIP RTK: setting the number of frequency slots to " << ntrip_required_bands;
@@ -592,9 +591,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         }
     if (pvt_output_parameters.ntrip_client_enabled)
         {
-            const int expected_navigation_system =
-                (ntrip_gps_l1 ? SYS_GPS : 0) | (ntrip_gal_e1 ? SYS_GAL : 0) |
-                (ntrip_bds_b1c ? SYS_BDS : 0);
+            const int expected_navigation_system = ntrip_rtk_navigation_systems(signal_enabled_flags);
             if (navigation_system != expected_navigation_system)
                 {
                     throw std::invalid_argument(role + ".navigation_system must select exactly the constellations of the enabled RTK channels");
@@ -797,6 +794,21 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         var_holdamb,                                                                            /* variance of the fix-and-hold pseudo measurements (cycle^2) */
         ar_max_position_variance                                                                /* max position variance to attempt AR (m^2) */
     };
+
+    if (integer_ambiguity_resolution_gps > 0 &&
+        (ar_filter || min_fix_sats > 0 || min_hold_sats > 0 || min_drop_sats > 0 || ar_max_position_variance > 0.0))
+        {
+            // These gates default ON (demo5 behavior), unlike the RTKLIB
+            // PRCOPT_DEFAULT zeros: say so where the user can see why AR may
+            // silently be skipped (e.g. float variance above the gate)
+            LOG(INFO) << "RTK AR management gates active: ar_filter=" << (ar_filter ? "true" : "false")
+                      << ", min_fix_sats=" << min_fix_sats
+                      << ", min_hold_sats=" << min_hold_sats
+                      << ", min_drop_sats=" << min_drop_sats
+                      << ", ar_max_position_variance=" << ar_max_position_variance
+                      << " m^2 (AR is skipped while the float position variance exceeds it;"
+                      << " set these options to 0/false for the classic RTKLIB behavior)";
+        }
 
     // Outputs
     const bool default_output_enabled = configuration->property(role + ".output_enabled", true);

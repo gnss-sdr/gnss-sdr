@@ -918,7 +918,7 @@ double varerr(int sat __attribute__((unused)), int sys, double el, int type, con
                 {
                     fact *= opt->eratio[0];
                 }
-            fact *= sys == SYS_GLO ? EFACT_GLO : (sys == SYS_SBS ? EFACT_SBS : EFACT_GPS);
+            fact *= sysefact(sys);
             if (opt->ionoopt == IONOOPT_IFLC)
                 {
                     fact *= 3.0;

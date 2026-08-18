@@ -617,30 +617,7 @@ double varerr(int sat __attribute((unused)), int sys, double el,
                     fact = opt->eratio[0];
                 }
             /* adjust variance for constellation */
-            switch (sys)
-                {
-                case SYS_GPS:
-                    fact *= EFACT_GPS;
-                    break;
-                case SYS_GLO:
-                    fact *= EFACT_GLO;
-                    break;
-                case SYS_GAL:
-                    fact *= EFACT_GAL;
-                    break;
-                case SYS_SBS:
-                    fact *= EFACT_SBS;
-                    break;
-                case SYS_QZS:
-                    fact *= EFACT_QZS;
-                    break;
-                case SYS_BDS:
-                    fact *= EFACT_BDS;
-                    break;
-                default:
-                    fact *= EFACT_GPS;
-                    break;
-                }
+            fact *= sysefact(sys);
             a = fact * opt->err[1];
             b = fact * opt->err[2];
         }
@@ -1176,7 +1153,11 @@ void detslp_dop(rtk_t *rtk, const obsd_t *obs, const int *ix, int ns, int rcv,
             sat = obs[ix[i]].sat;
             for (f = 0; f < nf; f++)
                 {
-                    if (dt[i][f] == 0.0)
+                    /* skip entries whose difference was never computed (guards
+                       above): dt alone is set before the DTTOL and wavelength
+                       checks, so testing it would evaluate those entries as
+                       dopdif = 0 against the median (demo5 tests dopdif) */
+                    if (dopdif[i][f] == 0.0)
                         {
                             continue;
                         }
@@ -1813,10 +1794,16 @@ int ddres(rtk_t *rtk, const obsd_t *obs, const nav_t *nav, double dt, const doub
                 {
                     frq = f % nf;
 
-                    /* choose the minimum-variance satellite without a slip as
-                       the reference (demo5: better than highest elevation in
-                       urban conditions, where SNR is the better quality proxy) */
+                    /* choose the minimum-variance satellite as the reference
+                       (demo5: better than highest elevation in urban
+                       conditions, where SNR is the better quality proxy),
+                       preferring one without a slip and with a valid lock;
+                       one pass tracks the best clean and the best overall
+                       candidate, and the overall one is used only if no
+                       clean reference exists */
                     minvar = 0.0;
+                    double minvar_any = 0.0;
+                    int ref_any = -1;
                     for (i = -1, j = 0; j < ns; j++)
                         {
                             sysj = rtk->ssat[sat[j] - 1].sys;
@@ -1828,47 +1815,29 @@ int ddres(rtk_t *rtk, const obsd_t *obs, const nav_t *nav, double dt, const doub
                                 {
                                     continue;
                                 }
-                            if (rtk->ssat[sat[j] - 1].slip[frq] & 1)
-                                {
-                                    continue;
-                                }
-                            if (rtk->ssat[sat[j] - 1].lock[frq] < 0)
-                                {
-                                    continue;
-                                }
                             refvar = varerr(sat[j], sysj, azel[1 + iu[j] * 2],
                                 rtk->ssat[sat[j] - 1].snr_rover[frq], rtk->ssat[sat[j] - 1].snr_base[frq],
                                 bl, dt, f, opt, &obs[iu[j]]);
+                            if (ref_any < 0 || refvar < minvar_any)
+                                {
+                                    ref_any = j;
+                                    minvar_any = refvar;
+                                }
+                            if ((rtk->ssat[sat[j] - 1].slip[frq] & 1) ||
+                                rtk->ssat[sat[j] - 1].lock[frq] < 0)
+                                {
+                                    continue;
+                                }
                             if (i < 0 || refvar < minvar)
                                 {
                                     i = j;
                                     minvar = refvar;
                                 }
                         }
-                    /* fall back to a slipped satellite only if no clean reference exists */
                     if (i < 0)
-                        {
-                            minvar = 0.0;
-                            for (j = 0; j < ns; j++)
-                                {
-                                    sysj = rtk->ssat[sat[j] - 1].sys;
-                                    if (!test_sys(sysj, m) || sysj == SYS_SBS)
-                                        {
-                                            continue;
-                                        }
-                                    if (!validobs(iu[j], ir[j], f, nf, y))
-                                        {
-                                            continue;
-                                        }
-                                    refvar = varerr(sat[j], sysj, azel[1 + iu[j] * 2],
-                                        rtk->ssat[sat[j] - 1].snr_rover[frq], rtk->ssat[sat[j] - 1].snr_base[frq],
-                                        bl, dt, f, opt, &obs[iu[j]]);
-                                    if (i < 0 || refvar < minvar)
-                                        {
-                                            i = j;
-                                            minvar = refvar;
-                                        }
-                                }
+                        { /* fall back to a slipped/unlocked reference */
+                            i = ref_any;
+                            minvar = minvar_any;
                         }
                     if (i < 0)
                         {
@@ -2022,10 +1991,10 @@ int ddres(rtk_t *rtk, const obsd_t *obs, const nav_t *nav, double dt, const doub
                                         sat[i], sat[j], f < nf ? "L" : "P", f % nf + 1, v[nv]);
                                     continue;
                                 }
-                            /* single-differenced measurement error variances */
-                            Ri[nv] = varerr(sat[i], sysi, azel[1 + iu[i] * 2],
-                                rtk->ssat[sat[i] - 1].snr_rover[frq], rtk->ssat[sat[i] - 1].snr_base[frq],
-                                bl, dt, f, opt, &obs[iu[i]]);
+                            /* single-differenced measurement error variances;
+                               the reference variance was already computed by
+                               the selection loop and is invariant in j */
+                            Ri[nv] = minvar;
                             Rj[nv] = varerr(sat[j], sysj, azel[1 + iu[j] * 2],
                                 rtk->ssat[sat[j] - 1].snr_rover[frq], rtk->ssat[sat[j] - 1].snr_base[frq],
                                 bl, dt, f, opt, &obs[iu[j]]);
@@ -2196,7 +2165,7 @@ double intpres(gtime_t time, const obsd_t *obs, int n, const nav_t *nav,
 /* single to double-difference transformation matrix (D') --------------------*/
 /* index of single-to-double-difference transformation (demo5/RTKLIB 2.4.3 style):
    returns pairs of phase-bias state indices {ref, target} instead of a D matrix */
-int ddidx(rtk_t *rtk, int *ix, int gps, int glo, int sbs)
+int ddidx(rtk_t *rtk, int *ix, int glo, int sbs)
 {
     int i;
     int j;
@@ -2209,7 +2178,7 @@ int ddidx(rtk_t *rtk, int *ix, int gps, int glo, int sbs)
     int nf = NF_RTK(&rtk->opt);
     int nofix;
 
-    trace(3, "ddidx: gps=%d glo=%d/%d sbs=%d\n", gps, glo, rtk->opt.glomodear, sbs);
+    trace(3, "ddidx: glo=%d/%d sbs=%d\n", glo, rtk->opt.glomodear, sbs);
 
     /* clear fix flag for all sats (1=float, 2=fix) */
     for (i = 0; i < MAXSAT; i++)
@@ -2221,8 +2190,10 @@ int ddidx(rtk_t *rtk, int *ix, int gps, int glo, int sbs)
         }
     for (m = 0; m < 5; m++)
         { /* m=0:gps/sbs, 1:glo, 2:gal, 3:bds, 4:qzs */
-            /* skip if ambiguity resolution turned off for this sys */
-            nofix = (m == 0 && gps == 0) || (m == 1 && glo == 0) || (m == 3 && rtk->opt.bdsmodear == 0);
+            /* skip if ambiguity resolution turned off for this sys
+               (GPS AR is never disabled here: ARMODE_OFF is handled upstream
+               in manage_amb_LAMBDA) */
+            nofix = (m == 1 && glo == 0) || (m == 3 && rtk->opt.bdsmodear == 0);
 
             /* step through freqs */
             for (f = 0, k = na; f < nf; f++, k += MAXSAT)
@@ -2429,13 +2400,33 @@ void holdamb(rtk_t *rtk, const double *xa)
 }
 
 
+/* count satellites with an ambiguity flagged for AR (fix == 2) on at least
+   one frequency; sat == nullptr scans the whole satellite table ------------*/
+static int count_fixed_sats(const rtk_t *rtk, const int *sat, int ns, int nf)
+{
+    int count = 0;
+    for (int i = 0; i < ns; i++)
+        {
+            const int index = (sat != nullptr ? sat[i] : i + 1) - 1;
+            for (int f = 0; f < nf; f++)
+                {
+                    if (rtk->ssat[index].fix[f] == 2)
+                        {
+                            count++;
+                            break;
+                        }
+                }
+        }
+    return count;
+}
+
+
 /* resolve integer ambiguity by LAMBDA ---------------------------------------*/
-int resamb_LAMBDA(rtk_t *rtk, double *bias, double *xa, int gps, int glo, int sbs)
+int resamb_LAMBDA(rtk_t *rtk, double *bias, double *xa, int glo, int sbs)
 {
     prcopt_t *opt = &rtk->opt;
     int i;
     int j;
-    int f;
     int ns;
     int nb;
     int nb1;
@@ -2461,21 +2452,10 @@ int resamb_LAMBDA(rtk_t *rtk, double *bias, double *xa, int gps, int glo, int sb
     /* index of single to double-difference transformation matrix (D'),
        used to translate phase biases to double differences */
     ix = imat(nx, 2);
-    nb = ddidx(rtk, ix, gps, glo, sbs);
+    nb = ddidx(rtk, ix, glo, sbs);
 
     /* count unique sats used for AR on at least one frequency */
-    ns = 0;
-    for (i = 0; i < MAXSAT; i++)
-        {
-            for (f = 0; f < NF_RTK(opt); f++)
-                {
-                    if (rtk->ssat[i].fix[f] == 2)
-                        {
-                            ns++;
-                            break;
-                        }
-                }
-        }
+    ns = count_fixed_sats(rtk, nullptr, MAXSAT, NF_RTK(opt));
     if (nb <= 0 || ns < opt->minfixsats)
         {
             errmsg(rtk, "not enough valid sats for AR: nb=%d ns=%d min=%d\n",
@@ -2610,6 +2590,8 @@ int resamb_LAMBDA(rtk_t *rtk, double *bias, double *xa, int gps, int glo, int sb
     else
         {
             errmsg(rtk, "lambda error (info=%d)\n", info);
+            nb = 0; /* do not report the pair count as fixed ambiguities: bias[]
+                       and xa were never written (demo5 zeroes nb here too) */
         }
     free(ix);
     free(y);
@@ -2633,12 +2615,9 @@ int manage_amb_LAMBDA(rtk_t *rtk, double *bias, double *xa, const int *sat,
     int f;
     int lockc[NFREQ];
     int excsat = 0;
-    int nbsat = 0;
-    int gps1;
+    int nbsat;
     int glo1;
     int sbas1;
-    int glo2;
-    int sbas2;
     int nb;
     int rerun;
     int dly;
@@ -2668,17 +2647,7 @@ int manage_amb_LAMBDA(rtk_t *rtk, double *bias, double *xa, const int *sat,
             return 0;
         }
     /* if no fix on previous sample and enough sats, cycle the excluded sat */
-    for (i = 0; i < ns; i++)
-        {
-            for (f = 0; f < nf; f++)
-                {
-                    if (rtk->ssat[sat[i] - 1].fix[f] == 2)
-                        {
-                            nbsat++;
-                            break;
-                        }
-                }
-        }
+    nbsat = count_fixed_sats(rtk, sat, ns, nf);
     if (rtk->opt.mindropsats > 0 && rtk->sol.prev_ratio2 < rtk->sol.thres &&
         nbsat >= rtk->opt.mindropsats)
         {
@@ -2729,8 +2698,6 @@ int manage_amb_LAMBDA(rtk_t *rtk, double *bias, double *xa, const int *sat,
             rtk->excsat = excsat;
         }
 
-    /* for the initial ambiguity resolution attempt, include all enabled sats */
-    gps1 = 1;
     /* enable GLO AR only if configured and, for fix-and-hold, once hold has been acquired */
     glo1 = ((rtk->opt.navsys & SYS_GLO) != 0 && rtk->opt.glomodear != 0 &&
                (rtk->opt.glomodear != 3 || rtk->holdamb))
@@ -2739,7 +2706,7 @@ int manage_amb_LAMBDA(rtk_t *rtk, double *bias, double *xa, const int *sat,
     sbas1 = (rtk->opt.navsys & SYS_GLO) != 0 ? glo1 : (((rtk->opt.navsys & SYS_SBS) != 0) ? 1 : 0);
 
     /* first attempt to resolve ambiguities */
-    nb = resamb_LAMBDA(rtk, bias, xa, gps1, glo1, sbas1);
+    nb = resamb_LAMBDA(rtk, bias, xa, glo1, sbas1);
     ratio1 = rtk->sol.ratio;
 
     /* reject bad satellites if AR filtering enabled */
@@ -2778,18 +2745,15 @@ int manage_amb_LAMBDA(rtk_t *rtk, double *bias, double *xa, const int *sat,
             if (rerun)
                 {
                     trace(3, "rerun AR with new sats removed\n");
-                    nb = resamb_LAMBDA(rtk, bias, xa, gps1, glo1, sbas1);
+                    nb = resamb_LAMBDA(rtk, bias, xa, glo1, sbas1);
                 }
         }
 
-    /* if fix-and-hold glomodear enabled, re-run AR with GLO/SBS disabled if it differs */
-    if ((rtk->opt.navsys & SYS_GLO) != 0 && rtk->opt.glomodear == 3 && rtk->sol.ratio < rtk->sol.thres)
+    /* if fix-and-hold glomodear enabled, re-run AR with GLO/SBS disabled if it was enabled */
+    if ((rtk->opt.navsys & SYS_GLO) != 0 && rtk->opt.glomodear == 3 && rtk->sol.ratio < rtk->sol.thres &&
+        glo1 != 0)
         {
-            glo2 = sbas2 = 0;
-            if (glo1 != glo2)
-                {
-                    nb = resamb_LAMBDA(rtk, bias, xa, 1, glo2, sbas2);
-                }
+            nb = resamb_LAMBDA(rtk, bias, xa, 0, 0);
         }
     /* restore the excluded sat if still no fix or no significant increase in AR ratio */
     if (excsat != 0 && (rtk->sol.ratio < rtk->sol.thres) &&
@@ -2976,12 +2940,13 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
     tracemat(4, rtk->x, 1, NR_RTK(opt), 13, 4);
 
     xp = mat(rtk->nx, 1);
-    Pp = zeros(rtk->nx, rtk->nx);
+    Pp = mat(rtk->nx, rtk->nx);
     xa = mat(rtk->nx, 1);
     matcpy(xp, rtk->x, rtk->nx, 1);
     /* the first ddres call reads Pp to detect freshly initialized phase
        biases (innovation-threshold opening), so it must see the real
-       covariance, not zeros (demo5) */
+       covariance (demo5); this copy also fully initializes the mat()
+       allocation */
     matcpy(Pp, rtk->P, rtk->nx, rtk->nx);
 
     ny = ns * nf * 2 + 2;
@@ -3009,8 +2974,13 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
                     stat = SOLQ_NONE;
                     break;
                 }
-            /* kalman filter measurement update */
-            matcpy(Pp, rtk->P, rtk->nx, rtk->nx);
+            /* kalman filter measurement update (on the first iteration Pp
+               already holds rtk->P from the pre-loop copy and nothing has
+               written either since) */
+            if (i > 0)
+                {
+                    matcpy(Pp, rtk->P, rtk->nx, rtk->nx);
+                }
             if ((info = filter(xp, Pp, H, v, R, rtk->nx, nv)))
                 {
                     errmsg(rtk, "filter error (info=%d)\n", info);

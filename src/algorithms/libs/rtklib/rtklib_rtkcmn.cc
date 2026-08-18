@@ -2353,6 +2353,48 @@ void enu2ecef(const double *pos, const double *e, double *r)
 }
 
 
+/* antenna phase-center position of a station record ---------------------------
+ * apply the antenna delta of an RTCM 1005/1006 station record to its stored
+ * reference-point position. Single home of this geodesy: an inconsistency
+ * between consumers would directly bias the RTK baseline
+ * args   : sta_t *sta       I   station parameters (pos, del, deltype, hgt)
+ *          double *rr       O   antenna phase-center position ecef (m)
+ * notes  : deltype 0: del is an e/n/u offset;
+ *          deltype 1: del is an ecef x/y/z offset and hgt an additional up
+ *          offset
+ *-----------------------------------------------------------------------------*/
+void sta2antpos(const sta_t *sta, double *rr)
+{
+    double pos[3];
+    double del[3] = {0.0, 0.0, 0.0};
+    double dr[3];
+    int i;
+
+    for (i = 0; i < 3; i++)
+        {
+            rr[i] = sta->pos[i];
+        }
+    ecef2pos(rr, pos);
+    if (sta->deltype)
+        { /* xyz + height */
+            del[2] = sta->hgt;
+            enu2ecef(pos, del, dr);
+            for (i = 0; i < 3; i++)
+                {
+                    rr[i] += sta->del[i] + dr[i];
+                }
+        }
+    else
+        { /* enu */
+            enu2ecef(pos, sta->del, dr);
+            for (i = 0; i < 3; i++)
+                {
+                    rr[i] += dr[i];
+                }
+        }
+}
+
+
 /* transform covariance to local tangental coordinate --------------------------
  * transform ecef covariance to local tangental coordinate
  * args   : double *pos      I   geodetic position {lat, lon} (rad)

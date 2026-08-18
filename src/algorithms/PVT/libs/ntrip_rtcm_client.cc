@@ -63,63 +63,40 @@ bool valid_ecef_position(const std::array<double, 3>& position)
 }
 
 
+/* Band membership comes from RTKLIB's own code table (obsfreqs[] via
+   code2obs() in rtklib_rtkcmn.cc), so a code added there - as this branch
+   itself did for B1C's CODE_L1D - is accepted here without a parallel edit.
+   The caller has already filtered by satellite system, which restricts the
+   codes the RTCM decoder can produce to that system's signal set. */
+bool code_in_band(unsigned char code, int band)
+{
+    int freq = 0;
+    code2obs(code, &freq);
+    return freq == band;
+}
+
+
 bool supported_gps_l1_code(unsigned char code)
 {
-    switch (code)
-        {
-        case CODE_L1C:
-        case CODE_L1P:
-        case CODE_L1W:
-        case CODE_L1Y:
-        case CODE_L1M:
-        case CODE_L1N:
-        case CODE_L1S:
-        case CODE_L1L:
-        case CODE_L1X:
-            return true;
-        default:
-            return false;
-        }
+    return code_in_band(code, 1);
 }
 
 
 bool supported_gps_l2_code(unsigned char code)
 {
-    switch (code)
-        {
-        case CODE_L2C:
-        case CODE_L2D:
-        case CODE_L2S:
-        case CODE_L2L:
-        case CODE_L2X:
-        case CODE_L2P:
-        case CODE_L2W:
-        case CODE_L2Y:
-        case CODE_L2M:
-        case CODE_L2N:
-            return true;
-        default:
-            return false;
-        }
+    return code_in_band(code, 2);
 }
 
 
 bool supported_gal_e1_code(unsigned char code)
 {
-    switch (code)
-        {
-        case CODE_L1A:
-        case CODE_L1B:
-        case CODE_L1C:
-        case CODE_L1X:
-        case CODE_L1Z:
-            return true;
-        default:
-            return false;
-        }
+    return code_in_band(code, 1);
 }
 
 
+// Deliberately an explicit list, not a band lookup: this is the GNSS-SDR
+// prefer-B1C rule for RTKLIB's shared first slot (B1I satellites are
+// dropped), not band membership
 bool supported_bds_b1c_code(unsigned char code)
 {
     switch (code)
@@ -134,18 +111,10 @@ bool supported_bds_b1c_code(unsigned char code)
 }
 
 
-// GPS L5 and Galileo E5a share the observation codes of RTKLIB's L5 band
+// GPS L5 and Galileo E5a share RTKLIB's L5/E5a band
 bool supported_l5_band_code(unsigned char code)
 {
-    switch (code)
-        {
-        case CODE_L5I:
-        case CODE_L5Q:
-        case CODE_L5X:
-            return true;
-        default:
-            return false;
-        }
+    return code_in_band(code, 3);
 }
 
 
@@ -233,8 +202,8 @@ public:
         if (d_stream.port != nullptr)
             {
                 auto* ntrip = static_cast<ntrip_t*>(d_stream.port);
-                std::memset(ntrip->user, 0, sizeof(ntrip->user));
-                std::memset(ntrip->passwd, 0, sizeof(ntrip->passwd));
+                secure_wipe(ntrip->user, sizeof(ntrip->user));
+                secure_wipe(ntrip->passwd, sizeof(ntrip->passwd));
                 // Keep unopened and disconnected transports explicitly invalid
                 // before handing ownership back to RTKLIB's stream cleanup.
                 if (ntrip->tcp != nullptr && ntrip->tcp->svr.state < 1)
@@ -398,12 +367,20 @@ void secure_clear_string(std::string* value) noexcept
         {
             return;
         }
-    volatile char* data = &(*value)[0];
-    for (std::size_t i = 0; i < value->size(); ++i)
-        {
-            data[i] = 0;
-        }
+    secure_wipe(&(*value)[0], value->size());
     value->clear();
+}
+
+
+void secure_clear_ntrip_credentials(Pvt_Conf* conf) noexcept
+{
+    if (conf == nullptr)
+        {
+            return;
+        }
+    conf->ntrip_username.clear();
+    conf->ntrip_password.clear();
+    conf->ntrip_password_env.clear();
 }
 
 
@@ -499,8 +476,8 @@ Ntrip_Rtcm_Client_Config make_ntrip_rtcm_client_config(const Pvt_Conf& conf)
     config.host = conf.ntrip_caster_address;
     config.port = conf.ntrip_port;
     config.mountpoint = normalized_mountpoint(conf.ntrip_mountpoint);
-    config.username = conf.ntrip_username;
-    config.password = conf.ntrip_password;
+    config.username = conf.ntrip_username.value();
+    config.password = conf.ntrip_password.value();
     config.reconnect_interval_ms = conf.ntrip_reconnect_interval_ms;
     config.timeout_ms = conf.ntrip_timeout_ms;
     config.max_age_s = conf.ntrip_max_correction_age_s;
@@ -644,6 +621,17 @@ public:
         return result;
     }
 
+    std::uint64_t state_generation() const noexcept
+    {
+        return d_state_generation.load(std::memory_order_relaxed);
+    }
+
+    std::uint64_t snapshot_generation() const
+    {
+        std::lock_guard<std::mutex> lock(d_output_mutex);
+        return d_output_generation;
+    }
+
     Ntrip_Rtcm_Snapshot latest_snapshot() const
     {
         return latest_snapshot(utc2gpst(timeget()));
@@ -657,14 +645,14 @@ public:
             result.has_observations = d_has_observations;
             result.observations = d_observations;
             result.observation_time = d_observation_time;
-            result.observation_generation = d_observation_generation;
+            result.generation = d_output_generation;
             result.has_base_position = d_has_base_position;
             result.base_position_ecef_m = d_base_position_ecef_m;
             result.base_position_message_type = d_base_position_message_type;
             result.station_id = d_has_observations ? d_observation_station_id : d_base_position_station_id;
             result.itrf = d_base_position_itrf;
             result.antenna_height_m = d_antenna_height_m;
-            result.gps_ephemerides = d_gps_ephemerides;
+            result.ephemerides = d_ephemerides;
         }
 
         if (result.has_observations)
@@ -822,6 +810,12 @@ private:
         }
         if (!complete)
             {
+                // Abandon the stalled resolution so the next reconnect cycle
+                // spawns a fresh lookup instead of re-waiting forever on this
+                // one: a getaddrinfo() stuck on a dead DNS server would
+                // otherwise wedge reconnection until receiver restart. The
+                // detached thread keeps its own shared_ptr to the state.
+                pending_resolution->reset();
                 *failure_message = "NTRIP caster hostname resolution timed out";
                 return Resolve_Result::FAILED;
             }
@@ -1034,6 +1028,20 @@ private:
             }
     }
 
+    /* Evidence that the caster cannot speak NTRIP v2 on this connection and
+       a fresh-connection v1 retry is warranted: it explicitly asked for v1,
+       answered in v1, or dropped the request without any response bytes.
+       Single home of the heuristic, shared by the connection-closed and
+       timeout paths of perform_handshake() - a refinement applied to only
+       one of them would make the two downgrade under different rules. */
+    static bool v1_downgrade_indicated(const ntrip_t* ntrip, int requested_version)
+    {
+        return requested_version == NTRIP_VERSION_2 &&
+               (ntrip->v1_retry_requested != 0 ||
+                   ntrip->version == NTRIP_VERSION_1 ||
+                   ntrip->response_received == 0);
+    }
+
     Handshake_Result perform_handshake(stream_t* stream, int requested_version)
     {
         auto* ntrip = static_cast<ntrip_t*>(stream->port);
@@ -1069,10 +1077,7 @@ private:
                         // waitntrip() call, before connected can be latched.
                         if (ntrip->request_sent != 0)
                             {
-                                if (requested_version == NTRIP_VERSION_2 &&
-                                    (ntrip->v1_retry_requested != 0 ||
-                                        ntrip->version == NTRIP_VERSION_1 ||
-                                        ntrip->response_received == 0))
+                                if (v1_downgrade_indicated(ntrip, requested_version))
                                     {
                                         return Handshake_Result::RETRY_V1;
                                     }
@@ -1103,10 +1108,7 @@ private:
             {
                 return Handshake_Result::SEND_FAILED;
             }
-        if (requested_version == NTRIP_VERSION_2 &&
-            (ntrip->v1_retry_requested != 0 ||
-                ntrip->version == NTRIP_VERSION_1 ||
-                ntrip->response_received == 0))
+        if (v1_downgrade_indicated(ntrip, requested_version))
             {
                 return Handshake_Result::RETRY_V1;
             }
@@ -1120,15 +1122,28 @@ private:
         std::array<unsigned char, READ_BUFFER_SIZE> buffer = {{0}};
         bool sent_gga = false;
         std::chrono::steady_clock::time_point last_gga;
+        std::chrono::steady_clock::time_point last_data = std::chrono::steady_clock::now();
 
         while (!d_stop_requested.load())
             {
                 apply_decoder_time(decoder, applied_rover_time_generation, false);
                 const int count = strread(stream, buffer.data(), static_cast<int>(buffer.size()));
+                const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
                 if (count > 0)
                     {
+                        last_data = now;
                         add_received_bytes(static_cast<std::uint64_t>(count));
                         decode_bytes(decoder, buffer.data(), count);
+                    }
+                else if (d_config.timeout_ms > 0 &&
+                         std::chrono::duration_cast<std::chrono::milliseconds>(now - last_data).count() >
+                             d_config.timeout_ms)
+                    {
+                        // The TCP-level inactivity watchdog counts writes too, so
+                        // the periodic GGA upload keeps feeding it while a hung
+                        // caster ACKs and sends nothing: enforce the timeout on
+                        // received-data age here so the stream reconnects
+                        return "correction stream inactive";
                     }
 
                 if (ntrip == nullptr || ntrip->tcp == nullptr ||
@@ -1139,7 +1154,6 @@ private:
 
                 if (d_config.send_gga)
                     {
-                        const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
                         if (!sent_gga ||
                             std::chrono::duration_cast<std::chrono::milliseconds>(now - last_gga).count() >=
                                 d_config.gga_period_ms)
@@ -1284,14 +1298,15 @@ private:
             d_observation_time = d_observations.front().time;
             d_observation_station_id = decoder.staid;
             d_has_observations = true;
-            ++d_observation_generation;
+            ++d_output_generation;
         }
         increment_observation_epochs();
     }
 
     void store_ephemeris(const rtcm_t& decoder)
     {
-        if (decoder.ephsat <= 0 || satsys(decoder.ephsat, nullptr) != SYS_GPS ||
+        const int system = decoder.ephsat > 0 ? satsys(decoder.ephsat, nullptr) : 0;
+        if ((system != SYS_GPS && system != SYS_GAL && system != SYS_BDS && system != SYS_QZS) ||
             decoder.nav.eph == nullptr || decoder.ephsat > decoder.nav.n)
             {
                 return;
@@ -1303,42 +1318,25 @@ private:
             }
 
         std::lock_guard<std::mutex> lock(d_output_mutex);
-        for (auto& d_gps_ephemeride : d_gps_ephemerides)
+        ++d_output_generation;
+        for (auto& stored_ephemeris : d_ephemerides)
             {
-                if (d_gps_ephemeride.sat == ephemeris.sat)
+                if (stored_ephemeris.sat == ephemeris.sat)
                     {
-                        d_gps_ephemeride = ephemeris;
+                        stored_ephemeris = ephemeris;
                         return;
                     }
             }
-        d_gps_ephemerides.push_back(ephemeris);
+        d_ephemerides.push_back(ephemeris);
     }
 
     void store_base_position(const rtcm_t& decoder, int message_type)
     {
-        std::array<double, 3> position = {{decoder.sta.pos[0], decoder.sta.pos[1], decoder.sta.pos[2]}};
-        double geodetic_position[3] = {0.0, 0.0, 0.0};
-        double delta_ecef[3] = {0.0, 0.0, 0.0};
-        ecef2pos(position.data(), geodetic_position);
-        if (decoder.sta.deltype != 0)
-            {
-                double antenna_height_enu[3] = {0.0, 0.0, decoder.sta.hgt};
-                enu2ecef(geodetic_position, antenna_height_enu, delta_ecef);
-                for (std::size_t i = 0; i < position.size(); ++i)
-                    {
-                        position[i] += decoder.sta.del[i] + delta_ecef[i];
-                    }
-            }
-        else
-            {
-                enu2ecef(geodetic_position, decoder.sta.del, delta_ecef);
-                for (std::size_t i = 0; i < position.size(); ++i)
-                    {
-                        position[i] += delta_ecef[i];
-                    }
-            }
+        std::array<double, 3> position = {{0.0, 0.0, 0.0}};
+        sta2antpos(&decoder.sta, position.data());
 
         std::lock_guard<std::mutex> lock(d_output_mutex);
+        ++d_output_generation;
         if (d_has_observations && d_observation_station_id != decoder.staid)
             {
                 invalidate_observations_locked();
@@ -1369,10 +1367,12 @@ private:
         d_observations.clear();
         d_observation_time = gtime_t{0, 0.0};
         d_has_observations = false;
-        d_observation_generation = 0;
+        /* a reset is an output change too: never rewind the generation, or a
+           caller could match a stale cached snapshot after restart */
+        ++d_output_generation;
         d_observation_station_id = 0;
         invalidate_base_position_locked();
-        d_gps_ephemerides.clear();
+        d_ephemerides.clear();
     }
 
     void invalidate_observations_locked()
@@ -1381,7 +1381,7 @@ private:
         d_observation_time = gtime_t{0, 0.0};
         d_has_observations = false;
         d_observation_station_id = 0;
-        ++d_observation_generation;
+        ++d_output_generation;
     }
 
     void invalidate_base_position_locked()
@@ -1434,6 +1434,7 @@ private:
     {
         std::lock_guard<std::mutex> lock(d_status_mutex);
         d_status = Ntrip_Rtcm_Client_Status();
+        d_state_generation.fetch_add(1, std::memory_order_relaxed);
     }
 
     void set_state(Ntrip_Rtcm_Client_State state, const std::string& message,
@@ -1443,6 +1444,7 @@ private:
         d_status.state = state;
         d_status.connected = connected;
         d_status.message = message;
+        d_state_generation.fetch_add(1, std::memory_order_relaxed);
     }
 
     void add_received_bytes(std::uint64_t count)
@@ -1487,6 +1489,7 @@ private:
 
     mutable std::mutex d_status_mutex;
     Ntrip_Rtcm_Client_Status d_status;
+    std::atomic<std::uint64_t> d_state_generation{0};
 
     mutable std::mutex d_input_mutex;
     std::array<double, 3> d_rover_position_ecef_m = {{0.0, 0.0, 0.0}};
@@ -1499,7 +1502,7 @@ private:
     std::vector<obsd_t> d_observations;
     gtime_t d_observation_time = {0, 0.0};
     bool d_has_observations = false;
-    std::uint64_t d_observation_generation = 0;
+    std::uint64_t d_output_generation = 0;
     int d_observation_station_id = 0;
     std::array<double, 3> d_base_position_ecef_m = {{0.0, 0.0, 0.0}};
     bool d_has_base_position = false;
@@ -1507,7 +1510,7 @@ private:
     int d_base_position_station_id = 0;
     int d_base_position_itrf = 0;
     double d_antenna_height_m = 0.0;
-    std::vector<eph_t> d_gps_ephemerides;
+    std::vector<eph_t> d_ephemerides;
 };
 
 
@@ -1553,6 +1556,18 @@ Ntrip_Rtcm_Snapshot Ntrip_Rtcm_Client::latest_snapshot() const
 Ntrip_Rtcm_Snapshot Ntrip_Rtcm_Client::latest_snapshot(const gtime_t& rover_time) const
 {
     return d_impl->latest_snapshot(rover_time);
+}
+
+
+std::uint64_t Ntrip_Rtcm_Client::snapshot_generation() const
+{
+    return d_impl->snapshot_generation();
+}
+
+
+std::uint64_t Ntrip_Rtcm_Client::state_generation() const noexcept
+{
+    return d_impl->state_generation();
 }
 
 

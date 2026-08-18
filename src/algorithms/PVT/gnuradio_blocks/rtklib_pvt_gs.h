@@ -65,6 +65,7 @@ class Monitor_Pvt_Udp_Sink;
 class Monitor_Ephemeris_Udp_Sink;
 class Nmea_Printer;
 class Ntrip_Rtcm_Client;
+struct Ntrip_Rtcm_Snapshot;
 class Pvt_Conf;
 class Rinex_Printer;
 class Rtcm_Printer;
@@ -168,7 +169,7 @@ private:
 
     void report_solution_status();
 
-    int displayed_solution_status() const;
+    void report_solution_outage();
 
     std::map<int, Gnss_Synchro> interpolate_observables(const std::map<int, Gnss_Synchro>& observables_map_t0,
         const std::map<int, Gnss_Synchro>& observables_map_t1,
@@ -199,6 +200,10 @@ private:
     std::unique_ptr<Gpx_Printer> d_gpx_dump;
     std::unique_ptr<Nmea_Printer> d_nmea_printer;
     std::unique_ptr<Ntrip_Rtcm_Client> d_ntrip_client;
+    // Cached copy of the client's latest snapshot, refreshed only when the
+    // client's snapshot generation changes (the deep copy is expensive at the
+    // observables rate).
+    std::unique_ptr<Ntrip_Rtcm_Snapshot> d_fixed_base_snapshot;
     std::unique_ptr<GeoJSON_Printer> d_geojson_printer;
     std::unique_ptr<Rtcm_Printer> d_rtcm_printer;
     std::unique_ptr<Monitor_Pvt_Udp_Sink> d_udp_sink_ptr;
@@ -289,6 +294,8 @@ private:
     uint32_t d_pvt_errors_counter;
     int d_last_ntrip_client_state;
     int d_last_fixed_base_status;
+    uint64_t d_last_ntrip_state_generation = 0;
+    uint64_t d_ntrip_snapshot_generation = 0;
     int d_last_solution_status;
 
     bool d_dump;

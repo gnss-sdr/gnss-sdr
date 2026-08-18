@@ -100,33 +100,9 @@ static int used_frequency_slot(const obsd_t *obs)
 
 double varerr(const prcopt_t *opt, const obsd_t *obs, double el, int sys)
 {
-    double fact = 1.0;
+    double fact = sysefact(sys);
     double varr;
 
-    switch (sys)
-        {
-        case SYS_GPS:
-            fact *= EFACT_GPS;
-            break;
-        case SYS_GLO:
-            fact *= EFACT_GLO;
-            break;
-        case SYS_GAL:
-            fact *= EFACT_GAL;
-            break;
-        case SYS_SBS:
-            fact *= EFACT_SBS;
-            break;
-        case SYS_QZS:
-            fact *= EFACT_QZS;
-            break;
-        case SYS_BDS:
-            fact *= EFACT_BDS;
-            break;
-        default:
-            fact *= EFACT_GPS;
-            break;
-        }
     if (el < VARERR_MIN_EL)
         {
             el = VARERR_MIN_EL;
@@ -341,8 +317,12 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                 }
             else if (obs->code[2] != CODE_NONE)
                 {
-                    i = 2;
-                    j = 2; /* B3I-only */
+                    /* B3I-only: same index pattern as L5-only (empty first
+                       band), so the second-band branch applies the B3I rules -
+                       no TGD (DNAV timing reference) and the broadcast iono,
+                       modeled at B1I, scaled by gamma13 via iono_scale */
+                    i = 0;
+                    j = 2;
                 }
         }
     else if (sys == SYS_GPS || sys == SYS_GLO || sys == SYS_QZS)

@@ -45,7 +45,6 @@
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
-#include <deque>
 #include <fcntl.h>
 #include <memory>
 #include <netdb.h>
@@ -57,6 +56,7 @@
 #include <sys/time.h>
 #include <termios.h>
 #include <unistd.h>
+#include <vector>
 
 using namespace std::string_literals;
 
@@ -361,19 +361,14 @@ void closefile_(file_t *file)
 }
 
 
-/* open file (path=filepath[::T[::+<off>][::x<speed>]][::S=swapintv]) --------*/
-file_t *openfile(std::string const &path, int mode, char *msg)
+/* Split a stream path at the literal "::" separators, preserving empty
+ * tokens. Plain string search is used instead of std::regex, which is not
+ * functional in GCC < 4.9. Single tokenizer for every "::"-delimited stream
+ * path (file options, NTRIP client options): these paths carry credentials,
+ * so the index arithmetic lives in exactly one place. */
+static std::vector<std::string> split_double_colon(const std::string &path)
 {
-    tracet(3, "openfile: path=%s mode=%d\n", path.data(), mode);
-
-    if ((mode & (STR_MODE_R | STR_MODE_W)) == 0)
-        {
-            return nullptr;
-        }
-
-    // Split the string at the literal "::" separators. Plain string search is
-    // used instead of std::regex, which is not functional in GCC < 4.9
-    std::deque<std::string> tokens;
+    std::vector<std::string> tokens;
     std::string::size_type token_start = 0;
     for (;;)
         {
@@ -386,19 +381,31 @@ file_t *openfile(std::string const &path, int mode, char *msg)
             tokens.push_back(path.substr(token_start, separator - token_start));
             token_start = separator + 2;
         }
+    return tokens;
+}
+
+
+/* open file (path=filepath[::T[::+<off>][::x<speed>]][::S=swapintv]) --------*/
+file_t *openfile(std::string const &path, int mode, char *msg)
+{
+    tracet(3, "openfile: path=%s mode=%d\n", path.data(), mode);
+
+    if ((mode & (STR_MODE_R | STR_MODE_W)) == 0)
+        {
+            return nullptr;
+        }
+
+    const std::vector<std::string> tokens = split_double_colon(path);
 
     auto file = std::make_unique<file_t>();
 
     file->mode = mode;
     file->path = tokens.front();  // first token is the path
-    tokens.pop_front();
-
 
     /* file options */
-    while (!tokens.empty())
+    for (std::size_t token_index = 1; token_index < tokens.size(); ++token_index)
         {
-            auto tag = tokens.front();
-            tokens.pop_front();
+            const std::string &tag = tokens[token_index];
 
             // edge case that may not be possible, but I don't want to test for right now
             if (tag.empty()) continue;  // NOLINT(readability-braces-around-statements)
@@ -1454,6 +1461,12 @@ int readtcpcli(tcpcli_t *tcpcli, unsigned char *buff, int n, char *msg)
         {
             return 0;
         }
+    if (n <= 0)
+        {
+            /* recv() returns 0 for a zero-length request too: without this
+               guard a full caller buffer would be misread as a peer close */
+            return 0;
+        }
 
     nr = recv_nb(tcpcli->svr.sock, buff, n);
     if (nr == RECV_WOULD_BLOCK)
@@ -1557,6 +1570,20 @@ int encbase64(char *str, const unsigned char *byte, int n)
 }
 
 
+void secure_wipe(void *data, size_t size)
+{
+    if (data == nullptr || size == 0)
+        {
+            return;
+        }
+    volatile auto *bytes = static_cast<volatile unsigned char *>(data);
+    for (size_t i = 0; i < size; ++i)
+        {
+            bytes[i] = 0;
+        }
+}
+
+
 namespace
 {
 Rtklib_Tls_Client *ntrip_tls(ntrip_t *ntrip)
@@ -1566,13 +1593,8 @@ Rtklib_Tls_Client *ntrip_tls(ntrip_t *ntrip)
 
 void ntrip_clear_request(ntrip_t *ntrip)
 {
-    /* Requests can contain caster credentials. Use volatile stores so clearing
-     * the persistent retry buffer is not optimized away. */
-    volatile unsigned char *request = ntrip->request_buff;
-    for (std::size_t i = 0; i < sizeof(ntrip->request_buff); ++i)
-        {
-            request[i] = 0;
-        }
+    /* Requests can contain caster credentials */
+    secure_wipe(ntrip->request_buff, sizeof(ntrip->request_buff));
     ntrip->request_length = 0;
     ntrip->request_offset = 0;
 }
@@ -2093,24 +2115,14 @@ int reject_ntrip_v2_response(ntrip_t *ntrip, char *msg,
 bool parse_ntrip_client_options(const char *path, std::string &clean_path,
     int &version, int &tls_enabled, char *msg)
 {
-    clean_path = path;
     version = NTRIP_VERSION_2;
     tls_enabled = 0;
 
-    const std::string::size_type first = clean_path.find("::");
-    if (first == std::string::npos)
+    const std::vector<std::string> tokens = split_double_colon(path);
+    clean_path = tokens.front();
+    for (std::size_t token_index = 1; token_index < tokens.size(); ++token_index)
         {
-            return true;
-        }
-
-    std::string options = clean_path.substr(first + 2);
-    clean_path.resize(first);
-    std::string::size_type begin = 0;
-    while (begin <= options.size())
-        {
-            const std::string::size_type end = options.find("::", begin);
-            std::string option = options.substr(begin,
-                end == std::string::npos ? std::string::npos : end - begin);
+            std::string option = tokens[token_index];
             std::transform(option.begin(), option.end(), option.begin(),
                 [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
 
@@ -2135,12 +2147,6 @@ bool parse_ntrip_client_options(const char *path, std::string &clean_path,
                     std::snprintf(msg, MAXSTRMSG, "unknown NTRIP option");
                     return false;
                 }
-
-            if (end == std::string::npos)
-                {
-                    break;
-                }
-            begin = end + 2;
         }
     return true;
 }
@@ -2462,15 +2468,16 @@ int rspntrip_c(ntrip_t *ntrip, char *msg)
                 {
                     ntrip->buff[128] = '\0';
                 }
-            std::strncpy(msg, p, MAXSTRMSG);
+            std::snprintf(msg, MAXSTRMSG, "%s", p);
             tracet(1, "rspntrip_s: %s nb=%d\n", msg, ntrip->nb);
             ntrip->nb = 0;
             ntrip->buff[0] = '\0';
             ntrip->state = 0;
             ntrip_disconnect(ntrip, ntrip->tcp->tirecon);
         }
-    else if (ntrip->nb >= NTRIP_MAXRSP)
-        { /* buffer overflow */
+    else if (ntrip->nb >= NTRIP_MAXRSP - 1)
+        { /* buffer overflow (reads are capped at NTRIP_MAXRSP - nb - 1, so the
+             buffer is effectively full one byte before NTRIP_MAXRSP) */
             std::snprintf(msg, MAXSTRMSG, "response overflow");
             tracet(1, "rspntrip_s: response overflow nb=%d\n", ntrip->nb);
             ntrip->nb = 0;
@@ -2505,6 +2512,16 @@ int waitntrip(ntrip_t *ntrip, char *msg)
             /* A new connection must send the complete request, never just the
              * suffix left from a short write on the previous socket. */
             ntrip_clear_request(ntrip);
+            /* The response buffer and the chunked-transfer parser state belong
+             * to the previous connection too: leftover stream bytes ahead of
+             * the new HTTP response would make rspntrip_c parse garbage (and
+             * spuriously downgrade a v2 session to v1), and a stale chunked
+             * flag would de-frame a response that is not chunked. */
+            ntrip->nb = 0;
+            ntrip->buff[0] = '\0';
+            ntrip->chunked = 0;
+            ntrip->chunk_state = 0;
+            ntrip->chunk_remaining = 0;
             ntrip_reset_tls(ntrip);
         }
 
@@ -2525,6 +2542,19 @@ int waitntrip(ntrip_t *ntrip, char *msg)
         }
     if (ntrip->state == 1)
         { /* read response */
+            if (ntrip->nb >= NTRIP_MAXRSP - 1)
+                { /* the buffer filled without a recognizable status line: report
+                     overflow instead of issuing a zero-length read (recv() would
+                     return 0 and be misread as a peer disconnect; the TLS reader
+                     would return 0 forever and stall until an external timeout) */
+                    std::snprintf(msg, MAXSTRMSG, "response overflow");
+                    tracet(1, "waitntrip: response overflow nb=%d\n", ntrip->nb);
+                    ntrip->nb = 0;
+                    ntrip->buff[0] = '\0';
+                    ntrip->state = 0;
+                    ntrip_disconnect(ntrip, ntrip->tcp->tirecon);
+                    return 0;
+                }
             p = reinterpret_cast<char *>(ntrip->buff) + ntrip->nb;
             if ((n = ntrip_read_transport(ntrip, reinterpret_cast<unsigned char *>(p), NTRIP_MAXRSP - ntrip->nb - 1, msg)) == 0)
                 {
@@ -2612,14 +2642,7 @@ ntrip_t *openntrip(const char *path, int type, char *msg)
                     return nullptr;
                 }
             std::string s_aux = "http://"s + std::string(tpath);
-            int n = s_aux.length();
-            if (n < 256)
-                {
-                    for (int k = 0; k < n; k++)
-                        {
-                            ntrip->url[k] = s_aux[k];
-                        }
-                }
+            std::snprintf(ntrip->url, sizeof(ntrip->url), "%s", s_aux.c_str());
             std::strncpy(tpath, proxyaddr, MAXSTRPATH);
         }
     /* open tcp client stream */
@@ -2676,14 +2699,15 @@ int ntripsethost(ntrip_t *ntrip, const char *hostname, char *msg)
     std::snprintf(ntrip->host, sizeof(ntrip->host), "%s", hostname);
     if (ntrip->tls_enabled)
         {
-            auto *tls = new (std::nothrow) Rtklib_Tls_Client(hostname);
-            if (!tls || !tls->initialize(msg))
+            /* retarget the existing context instead of building a second one:
+               the SSL context and CA store are host-independent, and the
+               hostname is consumed when the handshake starts */
+            Rtklib_Tls_Client *tls = ntrip_tls(ntrip);
+            if (!tls || !tls->set_hostname(hostname))
                 {
-                    delete tls;
+                    std::snprintf(msg, MAXSTRMSG, "TLS host name update failed");
                     return 0;
                 }
-            delete ntrip_tls(ntrip);
-            ntrip->tls_ctx = tls;
         }
     return 1;
 }

@@ -67,19 +67,25 @@ else()
     )
 endif()
 
+# Threads::Threads is PUBLIC because rtklib.h includes <pthread.h> and exposes
+# pthread_t/pthread_mutex_t members and the lock_t/rtk_lock macros to every
+# consumer, which therefore needs the -pthread compile usage requirement too.
 target_link_libraries(algorithms_libs_rtklib
+    PUBLIC
+        Threads::Threads
     PRIVATE
         core_system_parameters
         algorithms_libs
         Armadillo::armadillo
         LAPACK::LAPACK
         BLAS::BLAS
-        Threads::Threads
 )
 
 # Use the same OpenSSL-preferred/GnuTLS-fallback selection as the rest of
-# GNSS-SDR. This also propagates USE_GNUTLS_FALLBACK when appropriate.
-link_to_crypto_dependencies(algorithms_libs_rtklib)
+# GNSS-SDR. PRIVATE: the crypto backend is used only in rtklib_tls.cc and no
+# public header of this target exposes it, so consumers must not inherit the
+# backend's include directories or USE_* definitions.
+link_to_crypto_dependencies(algorithms_libs_rtklib PRIVATE)
 
 if(ENABLE_GLOG_AND_GFLAGS)
     target_link_libraries(algorithms_libs_rtklib PRIVATE Gflags::gflags Glog::glog)

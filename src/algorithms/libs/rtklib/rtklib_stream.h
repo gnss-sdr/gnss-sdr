@@ -61,6 +61,11 @@
 #define FTP_TIMEOUT 30 /* ftp/http timeout (s) */
 
 
+/* Overwrite credential-bearing memory with volatile stores so the wipe is not
+ * optimized away (a memset before free is a legal elision target). Single
+ * wipe primitive behind every credential scrub in the code base. */
+void secure_wipe(void *data, size_t size);
+
 serial_t *openserial(const char *path, int mode, char *msg);
 
 void closeserial(serial_t *serial);

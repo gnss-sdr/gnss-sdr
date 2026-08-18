@@ -199,6 +199,8 @@ void pos2ecef(const double *pos, double *r);
 void xyz2enu(const double *pos, double *E);
 void ecef2enu(const double *pos, const double *r, double *e);
 void enu2ecef(const double *pos, const double *e, double *r);
+
+void sta2antpos(const sta_t *sta, double *rr);
 void covenu(const double *pos, const double *P, double *Q);
 void covecef(const double *pos, const double *Q, double *P);
 void ast_args(double t, double *f);

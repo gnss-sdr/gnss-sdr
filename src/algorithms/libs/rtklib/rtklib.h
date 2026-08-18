@@ -300,6 +300,31 @@ const double EFACT_BDS = 1.0;  //!<    error factor: BeiDou
 const double EFACT_IRN = 1.5;  //!<    error factor: IRNSS
 const double EFACT_SBS = 3.0;  //!<    error factor: SBAS
 
+//! Measurement error factor of a navigation system (single home of the
+//! sys-to-EFACT mapping used by the single-point, relative and PPP error
+//! models)
+inline double sysefact(int sys)
+{
+    switch (sys)
+        {
+        case SYS_GLO:
+            return EFACT_GLO;
+        case SYS_GAL:
+            return EFACT_GAL;
+        case SYS_SBS:
+            return EFACT_SBS;
+        case SYS_QZS:
+            return EFACT_QZS;
+        case SYS_BDS:
+            return EFACT_BDS;
+        case SYS_IRN:
+            return EFACT_IRN;
+        case SYS_GPS:
+        default:
+            return EFACT_GPS;
+        }
+}
+
 const int MAXEXFILE = 1024;        //!<    max number of expanded files
 const double MAXSBSAGEF = 30.0;    //!<    max age of SBAS fast correction (s)
 const double MAXSBSAGEL = 1800.0;  //!<    max age of SBAS long term corr (s)
@@ -1024,7 +1049,11 @@ typedef struct
                                      degraded-visibility scenarios */
     /* AR management options from the demo5 RTKLIB fork. Value-initialized (all zeros)
        they reproduce the classic behavior: no AR filtering, no minimum-satellite gates,
-       no satellite exclusion cycling, no position-variance gate */
+       no satellite exclusion cycling, no position-variance gate. PRCOPT_DEFAULT keeps
+       them at zero; note that the GNSS-SDR PVT adapter enables the demo5 defaults
+       instead (PVT.ar_filter=true, min_fix_sats=4, min_hold_sats=5, min_drop_sats=10,
+       ar_max_position_variance=0.25) - set those configuration options to zero/false
+       to recover the classic behavior */
     int arfilter;       /* AR filtering to reject newly-added sats on AR ratio degradation (0:off,1:on) */
     int minfixsats;     /* min number of sats to fix integer ambiguities (0:no limit) */
     int minholdsats;    /* min number of sats to hold integer ambiguities (0:no limit) */

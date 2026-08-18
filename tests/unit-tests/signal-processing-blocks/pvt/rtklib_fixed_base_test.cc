@@ -1437,7 +1437,7 @@ TEST_F(RtklibFixedBaseTest, BaseStreamEphemerisSubstitutesForUndecodedRoverEphem
                 satellites, false, true);
             solver->gps_ephemeris_map.erase(static_cast<int>(undecoded_prn));
             solver->gps_cnav_ephemeris_map.erase(static_cast<int>(undecoded_prn));
-            epoch.base_snapshot.gps_ephemerides.push_back(
+            epoch.base_snapshot.ephemerides.push_back(
                 eph_to_rtklib(make_relative_ephemeris(undecoded_prn)));
 
             SCOPED_TRACE(::testing::Message() << "epoch=" << epoch_index);

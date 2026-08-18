@@ -1999,7 +1999,8 @@ TEST(NtripRtcmClientTest, AuthenticatedFragmentedStreamPublishesFixedBaseSnapsho
     EXPECT_GT(single_band_observation->P[0], 0.0);
     EXPECT_TRUE(snapshot.fresh);
     EXPECT_NEAR(0.0, snapshot.age_s, 1e-9);
-    EXPECT_GT(snapshot.observation_generation, 0U);
+    EXPECT_GT(snapshot.generation, 0U);
+    EXPECT_EQ(snapshot.generation, client.snapshot_generation());
 
     const Ntrip_Rtcm_Snapshot slightly_future_snapshot =
         client.latest_snapshot(timeadd(rover_time, -0.5));

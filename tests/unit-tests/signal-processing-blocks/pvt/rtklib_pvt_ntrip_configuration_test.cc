@@ -17,6 +17,7 @@
 #include "in_memory_configuration.h"
 #include "rtklib_pvt.h"
 #include <gtest/gtest.h>
+#include <cstdlib>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -353,4 +354,39 @@ TEST_F(RtklibPvtNtripConfigurationTest, RejectsInvalidPasswordConfigurationBefor
     duplicate_password_source->set_property("PVT.ntrip_password", "secret");
     duplicate_password_source->set_property("PVT.ntrip_password_env", "UNUSED_NTRIP_PASSWORD");
     expect_invalid_configuration(*duplicate_password_source, "mutually exclusive");
+}
+
+
+TEST_F(RtklibPvtNtripConfigurationTest, ResolvesThePasswordFromTheNamedEnvironmentVariable)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    ASSERT_EQ(0, setenv("GNSS_SDR_TEST_NTRIP_PASSWORD", "secret-from-env", 1));
+
+    // Without a username, a resolved password must trigger the
+    // username-is-required rule: the throw proves the environment value
+    // actually materialized as the password
+    std::unique_ptr<InMemoryConfiguration> env_password_no_username = make_valid_ntrip_configuration();
+    env_password_no_username->set_property("PVT.ntrip_password_env", "GNSS_SDR_TEST_NTRIP_PASSWORD");
+    expect_invalid_configuration(*env_password_no_username, "username is required");
+
+    std::unique_ptr<InMemoryConfiguration> env_password = make_valid_ntrip_configuration();
+    env_password->set_property("PVT.ntrip_username", "user");
+    env_password->set_property("PVT.ntrip_password_env", "GNSS_SDR_TEST_NTRIP_PASSWORD");
+    std::unique_ptr<Rtklib_Pvt> adapter;
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(env_password.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+
+    ASSERT_EQ(0, unsetenv("GNSS_SDR_TEST_NTRIP_PASSWORD"));
+}
+
+
+TEST_F(RtklibPvtNtripConfigurationTest, RejectsAPasswordEnvironmentVariableThatIsNotSet)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    ASSERT_EQ(0, unsetenv("GNSS_SDR_TEST_NTRIP_PASSWORD_UNSET"));
+
+    std::unique_ptr<InMemoryConfiguration> unset_variable = make_valid_ntrip_configuration();
+    unset_variable->set_property("PVT.ntrip_username", "user");
+    unset_variable->set_property("PVT.ntrip_password_env", "GNSS_SDR_TEST_NTRIP_PASSWORD_UNSET");
+    expect_invalid_configuration(*unset_variable, "not set");
 }

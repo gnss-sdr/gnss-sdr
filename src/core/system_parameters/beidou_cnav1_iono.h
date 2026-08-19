@@ -16,6 +16,11 @@
 #ifndef GNSS_SDR_BEIDOU_CNAV1_IONO_H
 #define GNSS_SDR_BEIDOU_CNAV1_IONO_H
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 class Beidou_Cnav1_Iono
 {
 public:
@@ -31,4 +36,6 @@ public:
     bool valid{};
 };
 
-#endif
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_BEIDOU_CNAV1_IONO_H

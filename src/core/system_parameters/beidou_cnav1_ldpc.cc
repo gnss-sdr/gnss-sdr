@@ -36,6 +36,7 @@ struct TruncMessage
     std::array<float, NM> llr{};
 };
 
+
 struct FixedPathCandidate
 {
     FixedPathCandidate() = default;
@@ -43,6 +44,7 @@ struct FixedPathCandidate
     uint8_t sym = 0;
     float llr = std::numeric_limits<float>::max();
 };
+
 
 uint8_t bits_to_symbol_msb_first(const float* bit_llr, int32_t bit_offset)
 {
@@ -54,6 +56,7 @@ uint8_t bits_to_symbol_msb_first(const float* bit_llr, int32_t bit_offset)
     return symbol;
 }
 
+
 void normalize_message(TruncMessage& msg)
 {
     const float min_llr = msg.llr[0];
@@ -62,6 +65,7 @@ void normalize_message(TruncMessage& msg)
             msg.llr[i] -= min_llr;
         }
 }
+
 
 float lookup_message_llr_var_domain(const TruncMessage& c2v_msg, uint8_t h_inv, uint8_t x_var)
 {
@@ -75,6 +79,7 @@ float lookup_message_llr_var_domain(const TruncMessage& c2v_msg, uint8_t h_inv, 
         }
     return c2v_msg.llr[NM - 1] + LLR_FALLBACK_GAP;
 }
+
 
 void truncate_metric_vector(const std::array<float, Q>& metric, TruncMessage& out)
 {
@@ -98,6 +103,7 @@ void truncate_metric_vector(const std::array<float, Q>& metric, TruncMessage& ou
     normalize_message(out);
 }
 
+
 uint8_t row_syndrome(const BeidouCnav1LdpcGraph& graph, int32_t check_index, const std::vector<uint8_t>& codeword)
 {
     uint8_t syndrome = GaloisField64::kZero;
@@ -112,6 +118,7 @@ uint8_t row_syndrome(const BeidouCnav1LdpcGraph& graph, int32_t check_index, con
     return syndrome;
 }
 
+
 bool syndrome_is_zero(const BeidouCnav1LdpcGraph& graph, const std::vector<uint8_t>& codeword)
 {
     for (int32_t row = 0; row < graph.num_checks; row++)
@@ -124,6 +131,7 @@ bool syndrome_is_zero(const BeidouCnav1LdpcGraph& graph, const std::vector<uint8
     return true;
 }
 
+
 void symbols_to_bits(const std::vector<uint8_t>& symbols, int32_t num_info_symbols, uint8_t* info_bits)
 {
     for (int32_t symbol_index = 0; symbol_index < num_info_symbols; symbol_index++)
@@ -135,6 +143,7 @@ void symbols_to_bits(const std::vector<uint8_t>& symbols, int32_t num_info_symbo
                 }
         }
 }
+
 
 bool graph_is_valid(const BeidouCnav1LdpcGraph& graph)
 {
@@ -152,6 +161,7 @@ bool graph_is_valid(const BeidouCnav1LdpcGraph& graph)
            graph.var_to_h.size() == static_cast<size_t>(expected_edges) &&
            graph.var_to_h_inv.size() == static_cast<size_t>(expected_edges);
 }
+
 
 void initialize_channel_llr(
     const float* bit_llr,
@@ -189,6 +199,7 @@ void initialize_channel_llr(
         }
 }
 
+
 void initialize_v2c_messages(
     const BeidouCnav1LdpcGraph& graph,
     const std::vector<float>& channel_llr,
@@ -209,6 +220,7 @@ void initialize_v2c_messages(
             truncate_metric_vector(mapped_metric, v2c[static_cast<size_t>(edge)]);
         }
 }
+
 
 void variable_node_update(
     const BeidouCnav1LdpcGraph& graph,
@@ -278,6 +290,7 @@ void variable_node_update(
         }
 }
 
+
 void build_fixed_path_candidates(
     const std::array<TruncMessage, 4>& in,
     std::array<FixedPathCandidate, FP_CANDIDATES>& cand)
@@ -340,6 +353,7 @@ void build_fixed_path_candidates(
                 }
         }
 }
+
 
 void fixed_path_check_update(
     const BeidouCnav1LdpcGraph& graph,
@@ -449,6 +463,7 @@ void fixed_path_check_update(
         }
 }
 
+
 void reorder_icd_column_bands_to_check_rows(
     int32_t num_checks,
     int32_t row_weight,
@@ -482,6 +497,7 @@ void reorder_icd_column_bands_to_check_rows(
                 }
         }
 }
+
 
 bool decode_block(
     const BeidouCnav1LdpcGraph& graph,
@@ -534,6 +550,7 @@ bool decode_block(
 
     return false;
 }
+
 
 bool init_graph_impl(
     int32_t num_checks,
@@ -650,6 +667,7 @@ bool beidou_cnav1_ldpc_init_graph(
     return init_graph_impl(num_checks, num_variables, row_weight, icd_index, icd_element, num_entries, graph);
 }
 
+
 const BeidouCnav1LdpcGraph& beidou_cnav1_ldpc_graph_200_100()
 {
     static const BeidouCnav1LdpcGraph graph = []() {
@@ -670,6 +688,7 @@ const BeidouCnav1LdpcGraph& beidou_cnav1_ldpc_graph_200_100()
     }();
     return graph;
 }
+
 
 const BeidouCnav1LdpcGraph& beidou_cnav1_ldpc_graph_88_44()
 {
@@ -692,20 +711,24 @@ const BeidouCnav1LdpcGraph& beidou_cnav1_ldpc_graph_88_44()
     return graph;
 }
 
+
 bool beidou_cnav1_ldpc_decode_200_100(const float* symbol_llr, int32_t num_bits, uint8_t* info_bits600)
 {
     return decode_block(beidou_cnav1_ldpc_graph_200_100(), symbol_llr, num_bits, info_bits600, nullptr);
 }
+
 
 bool beidou_cnav1_ldpc_decode_88_44(const float* symbol_llr, int32_t num_bits, uint8_t* info_bits264)
 {
     return decode_block(beidou_cnav1_ldpc_graph_88_44(), symbol_llr, num_bits, info_bits264, nullptr);
 }
 
+
 bool beidou_cnav1_ldpc_decode_200_100_codeword(const float* symbol_llr, int32_t num_bits, uint8_t* codeword_bits1200)
 {
     return decode_block(beidou_cnav1_ldpc_graph_200_100(), symbol_llr, num_bits, nullptr, codeword_bits1200);
 }
+
 
 bool beidou_cnav1_ldpc_decode_88_44_codeword(const float* symbol_llr, int32_t num_bits, uint8_t* codeword_bits528)
 {

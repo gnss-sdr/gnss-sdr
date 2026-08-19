@@ -13,12 +13,18 @@
  *
  * -----------------------------------------------------------------------------
  */
+
 #ifndef GNSS_SDR_BEIDOU_CNAV1_LDPC_DECODER_H
 #define GNSS_SDR_BEIDOU_CNAV1_LDPC_DECODER_H
 
 #include <cstddef>
 #include <cstdint>
 #include <vector>
+
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
 
 constexpr int32_t BEIDOU_CNAV1_LDPC_N200 = 200;
 constexpr int32_t BEIDOU_CNAV1_LDPC_K200 = 100;
@@ -60,6 +66,8 @@ constexpr uint16_t BEIDOU_CNAV1_H100_200_INDEX[400] = {
     166, 43, 97, 145, 193, 16, 97, 150, 186, 11, 63, 111, 163, 32, 71, 127, 160,
     42, 55, 134, 157, 38, 88, 136, 184, 47, 74, 141, 189, 49, 77, 144, 193, 27,
     92, 110, 181};
+
+
 constexpr uint8_t BEIDOU_CNAV1_H100_200_ELEMENT[400] = {
     35, 13, 51, 60, 1, 44, 53, 24, 1, 45, 15, 6, 45, 15, 6, 1, 1, 44, 53, 24, 1,
     45, 15, 6, 35, 46, 56, 15, 6, 1, 45, 15, 15, 6, 1, 45, 44, 53, 24, 1, 24, 1,
@@ -81,6 +89,8 @@ constexpr uint8_t BEIDOU_CNAV1_H100_200_ELEMENT[400] = {
     35, 13, 29, 28, 30, 31, 6, 1, 45, 15, 24, 1, 44, 53, 44, 53, 24, 1, 44, 30,
     24, 1, 38, 49, 11, 17, 44, 30, 24, 1, 24, 1, 44, 30, 24, 1, 44, 30, 1, 44, 53,
     24, 53, 24, 1, 44};
+
+
 constexpr uint16_t BEIDOU_CNAV1_H44_88_INDEX[176] = {
     14, 35, 56, 70, 11, 29, 55, 73, 13, 39, 53, 69, 15, 34, 57, 71, 1, 27, 45, 54,
     23, 41, 63, 87, 2, 20, 46, 68, 6, 24, 50, 61, 2, 26, 61, 79, 9, 33, 59, 77, 4,
@@ -91,6 +101,8 @@ constexpr uint16_t BEIDOU_CNAV1_H44_88_INDEX[176] = {
     72, 7, 30, 50, 81, 1, 36, 71, 87, 16, 38, 45, 74, 8, 34, 48, 73, 8, 32, 58, 76,
     12, 37, 57, 83, 6, 31, 51, 80, 15, 33, 47, 79, 16, 42, 66, 80, 7, 25, 51, 60, 3,
     27, 60, 78, 14, 32, 46, 78, 18, 20, 62, 65};
+
+
 constexpr uint8_t BEIDOU_CNAV1_H44_88_ELEMENT[176] = {
     30, 24, 1, 44, 24, 1, 44, 30, 40, 32, 61, 18, 53, 24, 1, 44, 51, 60, 35, 13, 18,
     15, 32, 61, 15, 6, 1, 45, 30, 24, 1, 44, 6, 1, 45, 15, 45, 15, 6, 1, 1, 45, 15,
@@ -101,10 +113,14 @@ constexpr uint8_t BEIDOU_CNAV1_H44_88_ELEMENT[176] = {
     30, 44, 30, 24, 1, 15, 6, 1, 45, 30, 24, 1, 44, 2, 50, 22, 14, 33, 42, 14, 5, 34,
     3, 55, 9, 44, 35, 61, 50, 15, 6, 1, 45, 45, 15, 6, 1, 1, 44, 30, 24, 6, 1, 45,
     15, 1, 44, 53, 24};
+
+
 constexpr uint8_t BEIDOU_CNAV1_GF64_EXP[64] = {
     1, 2, 4, 8, 16, 32, 3, 6, 12, 24, 48, 35, 5, 10, 20, 40, 19, 38, 15, 30, 60, 59, 53,
     41, 17, 34, 7, 14, 28, 56, 51, 37, 9, 18, 36, 11, 22, 44, 27, 54, 47, 29, 58, 55,
     45, 25, 50, 39, 13, 26, 52, 43, 21, 42, 23, 46, 31, 62, 63, 61, 57, 49, 33, 1};
+
+
 constexpr int8_t BEIDOU_CNAV1_GF64_LOG[64] = {
     0, 0, 1, 6, 2, 12, 7, 26, 3, 32, 13, 35, 8, 48, 27, 18, 4, 24, 33, 16, 14, 52, 36,
     54, 9, 45, 49, 38, 28, 41, 19, 56, 5, 62, 25, 11, 34, 31, 17, 47, 15, 23, 53, 51,
@@ -127,6 +143,7 @@ inline bool valid_symbol(uint8_t x)
     return x < kFieldSize;
 }
 
+
 inline uint8_t add(uint8_t a, uint8_t b)
 {
     if (!valid_symbol(a) || !valid_symbol(b))
@@ -135,6 +152,7 @@ inline uint8_t add(uint8_t a, uint8_t b)
         }
     return static_cast<uint8_t>(a ^ b);
 }
+
 
 inline uint8_t mul(uint8_t a, uint8_t b)
 {
@@ -147,6 +165,7 @@ inline uint8_t mul(uint8_t a, uint8_t b)
     return BEIDOU_CNAV1_GF64_EXP[log_sum % kOrder];
 }
 
+
 inline uint8_t inv(uint8_t a)
 {
     if (!valid_symbol(a) || a == kZero)
@@ -157,6 +176,7 @@ inline uint8_t inv(uint8_t a)
     return BEIDOU_CNAV1_GF64_EXP[exponent % kOrder];
 }
 }  // namespace GaloisField64
+
 
 struct BeidouCnav1LdpcGraph
 {
@@ -177,6 +197,7 @@ struct BeidouCnav1LdpcGraph
     std::vector<uint8_t> var_to_h_inv;
 };
 
+
 bool beidou_cnav1_ldpc_init_graph(
     int32_t num_checks,
     int32_t num_variables,
@@ -186,7 +207,10 @@ bool beidou_cnav1_ldpc_init_graph(
     int32_t num_entries,
     BeidouCnav1LdpcGraph& graph);
 
+
 const BeidouCnav1LdpcGraph& beidou_cnav1_ldpc_graph_200_100();
 const BeidouCnav1LdpcGraph& beidou_cnav1_ldpc_graph_88_44();
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_BEIDOU_CNAV1_LDPC_DECODER_H

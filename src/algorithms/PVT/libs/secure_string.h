@@ -46,9 +46,8 @@ class Secure_String
 public:
     Secure_String() = default;
 
-    // Implicit by design: a drop-in for std::string configuration fields
-    Secure_String(std::string value) : d_value(std::move(value)) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-    Secure_String(const char* value) : d_value(value) {}             // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+    explicit Secure_String(std::string value) : d_value(std::move(value)) {}
+    explicit Secure_String(const char* value) : d_value(value) {}
 
     Secure_String(const Secure_String& other) = default;
 

@@ -30,6 +30,7 @@
 #include "ntrip_rtk_signals.h"         // for the NTRIP RTK signal table and derived masks
 #include "pvt_conf.h"                  // for Pvt_Conf
 #include "rtklib_rtkpos.h"             // for rtkfree, rtkinit
+#include "secure_string.h"             // for Secure_String
 #include "signal_enabled_flags.h"      // for signal_enabled_flags
 #include <algorithm>                   // for any_of
 #include <cctype>                      // for isspace, iscntrl
@@ -215,9 +216,9 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {
             pvt_output_parameters.ntrip_caster_address = configuration->property(role + ".ntrip_caster_address", std::string(""));
             pvt_output_parameters.ntrip_mountpoint = configuration->property(role + ".ntrip_mountpoint", std::string(""));
-            pvt_output_parameters.ntrip_username = configuration->property(role + ".ntrip_username", std::string(""));
-            pvt_output_parameters.ntrip_password = configuration->property(role + ".ntrip_password", std::string(""));
-            pvt_output_parameters.ntrip_password_env = configuration->property(role + ".ntrip_password_env", std::string(""));
+            pvt_output_parameters.ntrip_username = Secure_String(configuration->property(role + ".ntrip_username", std::string("")));
+            pvt_output_parameters.ntrip_password = Secure_String(configuration->property(role + ".ntrip_password", std::string("")));
+            pvt_output_parameters.ntrip_password_env = Secure_String(configuration->property(role + ".ntrip_password_env", std::string("")));
 
             const int ntrip_port = configuration->property(role + ".ntrip_caster_port", 2101);
             const int ntrip_station_id = configuration->property(role + ".ntrip_station_id", 0);
@@ -262,7 +263,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
                         {
                             throw std::invalid_argument(role + ".ntrip_password_env names an environment variable that is not set");
                         }
-                    pvt_output_parameters.ntrip_password = password;
+                    pvt_output_parameters.ntrip_password = Secure_String(password);
                 }
             // the client library owns the configuration rules; the adapter
             // only turns the verdict into a constructor-time throw

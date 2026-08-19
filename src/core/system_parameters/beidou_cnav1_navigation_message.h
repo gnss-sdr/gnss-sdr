@@ -13,6 +13,7 @@
  *
  * -----------------------------------------------------------------------------
  */
+
 #ifndef GNSS_SDR_BEIDOU_CNAV1_NAVIGATION_MESSAGE_H
 #define GNSS_SDR_BEIDOU_CNAV1_NAVIGATION_MESSAGE_H
 
@@ -22,6 +23,11 @@
 #include <array>
 #include <cstdint>
 #include <string>
+
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
 
 struct Bds3_B1c_PageCommon
 {
@@ -33,6 +39,7 @@ struct Bds3_B1c_PageCommon
     bool aif{};
 };
 
+
 struct Bds3_B1c_AlmanacReduced
 {
     int32_t prn{};
@@ -42,6 +49,7 @@ struct Bds3_B1c_AlmanacReduced
     double phi0_rad{};
     int32_t health{};
 };
+
 
 struct Bds3_B1c_AlmanacMedium
 {
@@ -61,6 +69,7 @@ struct Bds3_B1c_AlmanacMedium
     int32_t health{};
 };
 
+
 struct Bds3_B1c_Eop
 {
     int32_t t_eop_s{};
@@ -72,6 +81,7 @@ struct Bds3_B1c_Eop
     double delta_ut1_dot_s_day{};
 };
 
+
 struct Bds3_B1c_Bgto
 {
     int32_t gnss_id{};
@@ -81,6 +91,7 @@ struct Bds3_B1c_Bgto
     double a1_bgto_s_s{};
     double a2_bgto_s_s2{};
 };
+
 
 struct Bds3_B1c_PageData
 {
@@ -95,11 +106,13 @@ struct Bds3_B1c_PageData
     Bds3_B1c_AlmanacMedium medium_almanac{};
 };
 
+
 struct Beidou_Cnav1_PageData_Message
 {
     int32_t PRN{};
     Bds3_B1c_PageData page_data{};
 };
+
 
 class Beidou_Cnav1_Navigation_Message
 {
@@ -133,4 +146,6 @@ private:
     std::string last_nav_bits_{};
 };
 
-#endif
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_BEIDOU_CNAV1_NAVIGATION_MESSAGE_H

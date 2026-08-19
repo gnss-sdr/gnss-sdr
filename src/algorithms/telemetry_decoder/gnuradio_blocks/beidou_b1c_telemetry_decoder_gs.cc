@@ -13,6 +13,7 @@
  *
  * -----------------------------------------------------------------------------
  */
+
 #include "beidou_b1c_telemetry_decoder_gs.h"
 #include "Beidou_B1C.h"
 #include "Beidou_B1C_codes.h"
@@ -22,7 +23,6 @@
 #include "beidou_cnav1_ephemeris.h"
 #include "beidou_cnav1_iono.h"
 #include "beidou_cnav1_utc_model.h"
-#include "display.h"
 #include "dump_logger_helper.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_synchro.h"
@@ -360,10 +360,10 @@ void beidou_b1c_telemetry_decoder_gs::publish_navigation(double cn0_db_hz)
 #else
             const auto default_precision{std::cout.precision()};
 #endif
-            std::cout << TEXT_BLUE << "New BeiDou B-CNAV1 ephemeris in channel " << d_channel
+            std::cout << "New BeiDou B-CNAV1 ephemeris in channel " << d_channel
                       << " from satellite " << d_satellite
                       << " with CN0=" << std::setprecision(2) << cn0_db_hz << std::setprecision(default_precision)
-                      << " dB-Hz" << TEXT_RESET << std::endl;
+                      << " dB-Hz" << std::endl;
             LOG(INFO) << "New BeiDou B-CNAV1 ephemeris from PRN " << d_satellite.get_PRN()
                       << " in channel " << d_channel << " with CN0=" << cn0_db_hz << " dB-Hz";
         }
@@ -591,10 +591,10 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
 #else
                                     const auto default_precision{std::cout.precision()};
 #endif
-                                    std::cout << TEXT_GREEN << "B-CNAV1 frame sync on channel " << d_channel
+                                    std::cout << "B-CNAV1 frame sync on channel " << d_channel
                                               << ", satellite " << d_satellite
                                               << ", TOW=" << std::setprecision(3) << d_nav.get_tow_s()
-                                              << std::setprecision(default_precision) << " s" << TEXT_RESET << std::endl;
+                                              << std::setprecision(default_precision) << " s" << std::endl;
                                 }
                         }
                     else if (d_stat == 2)

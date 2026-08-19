@@ -245,7 +245,6 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_observable_interval_ms(conf_.observable_interval_ms),
       d_ntrip_max_correction_age_s(conf_.ntrip_max_correction_age_s),
       d_pvt_errors_counter(0),
-      d_last_ntrip_client_state(-1),
       d_last_fixed_base_status(-1),
       d_last_solution_status(SOLQ_NONE),
       d_dump(conf_.dump),
@@ -689,10 +688,6 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
                 {
                     throw std::runtime_error("Unable to start the NTRIP RTCM client");
                 }
-            LOG(INFO) << "NTRIP client configured for v" << conf_.ntrip_version
-                      << (conf_.ntrip_tls_enabled ? " (TLS 1.2+) at " : " at ")
-                      << conf_.ntrip_caster_address << ':' << conf_.ntrip_port
-                      << '/' << conf_.ntrip_mountpoint;
         }
 
     // timetag
@@ -2422,38 +2417,6 @@ void rtklib_pvt_gs::update_HAS_corrections()
 }
 
 
-void rtklib_pvt_gs::report_ntrip_client_status()
-{
-    if (!d_ntrip_client)
-        {
-            return;
-        }
-    /* the status copy locks the client's mutex and allocates for the message
-       string; skip it while nothing has changed (this runs once per epoch) */
-    const uint64_t state_generation = d_ntrip_client->state_generation();
-    if (state_generation == d_last_ntrip_state_generation)
-        {
-            return;
-        }
-    d_last_ntrip_state_generation = state_generation;
-    const Ntrip_Rtcm_Client_Status status = d_ntrip_client->status();
-    const int state = static_cast<int>(status.state);
-    if (state == d_last_ntrip_client_state)
-        {
-            return;
-        }
-    d_last_ntrip_client_state = state;
-    if (status.state == Ntrip_Rtcm_Client_State::ERROR || status.state == Ntrip_Rtcm_Client_State::RECONNECT_WAIT)
-        {
-            LOG(WARNING) << "NTRIP client: " << status.message;
-        }
-    else
-        {
-            LOG(INFO) << "NTRIP client: " << status.message;
-        }
-}
-
-
 void rtklib_pvt_gs::report_fixed_base_status()
 {
     if (!d_ntrip_client)
@@ -2654,7 +2617,6 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
             bool flag_write_RTCM_MSM_output = false;
             bool flag_write_RINEX_obs_output = false;
             d_local_counter_ms += static_cast<uint64_t>(d_observable_interval_ms);
-            report_ntrip_client_status();
 
             d_gnss_observables_map.clear();
             const auto** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);  // Get the input buffer pointer

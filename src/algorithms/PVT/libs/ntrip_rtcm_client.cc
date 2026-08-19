@@ -39,6 +39,13 @@
 #include <utility>
 #include <vector>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
+
+
 namespace
 {
 constexpr std::size_t READ_BUFFER_SIZE = 8192;
@@ -549,6 +556,10 @@ public:
                 return false;
             }
 
+        LOG(INFO) << "NTRIP client configured for v" << d_config.version
+                  << (d_config.tls_enabled ? " (TLS 1.2+) at " : " at ")
+                  << d_config.host << ':' << d_config.port
+                  << '/' << normalized_mountpoint(d_config.mountpoint);
         reset_output_data();
         reset_status();
         d_stop_requested.store(false);
@@ -567,6 +578,7 @@ public:
             }
         return true;
     }
+
 
     void stop() noexcept
     {
@@ -821,6 +833,12 @@ private:
                 *failure_message = "NTRIP caster hostname could not be resolved";
                 return Resolve_Result::FAILED;
             }
+        if (numeric_ipv4 != d_logged_resolved_ipv4)
+            {
+                LOG(INFO) << "NTRIP client: caster hostname " << d_config.host
+                          << " resolved to " << numeric_ipv4;
+                d_logged_resolved_ipv4 = numeric_ipv4;
+            }
         *resolved_host = std::move(numeric_ipv4);
         return Resolve_Result::SUCCESS;
     }
@@ -868,7 +886,30 @@ private:
                         d_running.store(false);
                     }
             }
+        log_session_summary();
         d_running.store(false);
+    }
+
+    void log_session_summary() noexcept
+    {
+        try
+            {
+                Ntrip_Rtcm_Client_Status counters;
+                {
+                    std::lock_guard<std::mutex> lock(d_status_mutex);
+                    counters = d_status;
+                }
+                LOG(INFO) << "NTRIP client: session summary: "
+                          << counters.bytes_received << " bytes received, "
+                          << counters.rtcm_messages_decoded << " RTCM3 messages ("
+                          << counters.observation_epochs_decoded << " observation epochs, "
+                          << counters.decoder_errors << " decoder errors), "
+                          << counters.reconnect_count << " reconnects";
+            }
+        catch (...)
+            {
+                // the summary is best-effort diagnostics
+            }
     }
 
     void worker_loop()
@@ -925,6 +966,8 @@ private:
                         // keep the per-satellite lock-time baseline
                         decoder.get()->nbyte = 0;
                         decoder.get()->len = 0;
+                        d_logged_first_observations = false;
+                        d_logged_decoder_error = false;
                         Stream_Owner stream;
                         set_state(Ntrip_Rtcm_Client_State::CONNECTING,
                             "connecting to NTRIP caster", false);
@@ -947,6 +990,8 @@ private:
                                             {
                                                 active_version = NTRIP_VERSION_1;
                                                 fallback_from_v2 = true;
+                                                LOG(INFO) << "NTRIP client: caster answered in v1; "
+                                                             "continuing this connection with NTRIP v1";
                                             }
                                         if (active_version == NTRIP_VERSION_1 && fallback_from_v2)
                                             {
@@ -1007,6 +1052,9 @@ private:
                         // session to v1 on that one-shot evidence
                         active_version = d_config.version;
                         fallback_from_v2 = false;
+                        LOG(INFO) << "NTRIP client: unconfirmed v1 fallback discarded; "
+                                     "the next attempt uses the configured NTRIP v"
+                                  << d_config.version;
                     }
                 if (d_config.reconnect_interval_ms == 0)
                     {
@@ -1117,6 +1165,7 @@ private:
         auto* ntrip = static_cast<ntrip_t*>(stream->port);
         std::array<unsigned char, READ_BUFFER_SIZE> buffer = {{0}};
         bool sent_gga = false;
+        bool warned_gga_suppressed = false;
         std::chrono::steady_clock::time_point last_gga;
         std::chrono::steady_clock::time_point last_data = std::chrono::steady_clock::now();
 
@@ -1165,7 +1214,20 @@ private:
                                     {
                                         strsendnmea(stream, rover_position.data());
                                         last_gga = now;
+                                        if (!sent_gga)
+                                            {
+                                                LOG(INFO) << "NTRIP client: NMEA GGA rover position "
+                                                             "uploaded to the caster (period "
+                                                          << d_config.gga_period_ms << " ms)";
+                                            }
                                         sent_gga = true;
+                                    }
+                                else if (!sent_gga && !warned_gga_suppressed)
+                                    {
+                                        LOG(INFO) << "NTRIP client: GGA upload is enabled but no "
+                                                     "valid rover position is available yet; the "
+                                                     "caster receives no position until the first fix";
+                                        warned_gga_suppressed = true;
                                     }
                             }
                     }
@@ -1186,6 +1248,13 @@ private:
                 if (result < 0)
                     {
                         increment_decoder_errors();
+                        if (!d_logged_decoder_error)
+                            {
+                                LOG(WARNING) << "NTRIP client: RTCM3 decoder error (corrupted "
+                                                "frame or unsupported message); further errors "
+                                                "on this connection are only counted";
+                                d_logged_decoder_error = true;
+                            }
                         continue;
                     }
                 if (result == 0)
@@ -1285,10 +1354,15 @@ private:
                 return;
             }
 
+        const std::size_t satellite_count = filtered.size();
+        bool invalidated_base_position = false;
+        int invalidated_base_station_id = 0;
         {
             std::lock_guard<std::mutex> lock(d_output_mutex);
             if (d_has_base_position && d_base_position_station_id != decoder.staid)
                 {
+                    invalidated_base_position = true;
+                    invalidated_base_station_id = d_base_position_station_id;
                     invalidate_base_position_locked();
                 }
             d_observations.swap(filtered);
@@ -1298,6 +1372,20 @@ private:
             ++d_output_generation;
         }
         increment_observation_epochs();
+        if (invalidated_base_position)
+            {
+                LOG(WARNING) << "NTRIP client: observations arrived from station "
+                             << decoder.staid << " while the cached base position "
+                                                 "belongs to station "
+                             << invalidated_base_station_id
+                             << "; base position dropped";
+            }
+        if (!d_logged_first_observations)
+            {
+                LOG(INFO) << "NTRIP client: receiving base observations from station "
+                          << decoder.staid << " (" << satellite_count << " satellites)";
+                d_logged_first_observations = true;
+            }
     }
 
     void store_ephemeris(const rtcm_t& decoder)
@@ -1333,11 +1421,15 @@ private:
                     {
                         *position = ephemeris;
                         ++d_output_generation;
+                        DLOG(INFO) << "NTRIP client: updated broadcast ephemeris for satellite "
+                                   << ephemeris.sat;
                     }
                 return;
             }
         d_ephemerides.insert(position, ephemeris);
         ++d_output_generation;
+        DLOG(INFO) << "NTRIP client: stored broadcast ephemeris for satellite "
+                   << ephemeris.sat;
     }
 
     void store_base_position(const rtcm_t& decoder, int message_type)
@@ -1345,18 +1437,46 @@ private:
         std::array<double, 3> position = {{0.0, 0.0, 0.0}};
         sta2antpos(&decoder.sta, position.data());
 
-        std::lock_guard<std::mutex> lock(d_output_mutex);
-        ++d_output_generation;
-        if (d_has_observations && d_observation_station_id != decoder.staid)
+        bool announce = false;
+        bool invalidated_observations = false;
+        int invalidated_station_id = 0;
+        {
+            std::lock_guard<std::mutex> lock(d_output_mutex);
+            ++d_output_generation;
+            if (d_has_observations && d_observation_station_id != decoder.staid)
+                {
+                    invalidated_observations = true;
+                    invalidated_station_id = d_observation_station_id;
+                    invalidate_observations_locked();
+                }
+            // a rebroadcast of the same position is not news; a first fill,
+            // a station change, or a moved base (e.g. a VRS re-centering) is
+            announce = !d_has_base_position ||
+                       d_base_position_station_id != decoder.staid ||
+                       d_base_position_ecef_m != position;
+            d_base_position_ecef_m = position;
+            d_base_position_message_type = message_type;
+            d_base_position_station_id = decoder.staid;
+            d_base_position_itrf = decoder.sta.itrf;
+            d_antenna_height_m = decoder.sta.hgt;
+            d_has_base_position = true;
+        }
+        if (invalidated_observations)
             {
-                invalidate_observations_locked();
+                LOG(WARNING) << "NTRIP client: base position arrived from station "
+                             << decoder.staid << " while the cached observations "
+                                                 "belong to station "
+                             << invalidated_station_id
+                             << "; base observations dropped";
             }
-        d_base_position_ecef_m = position;
-        d_base_position_message_type = message_type;
-        d_base_position_station_id = decoder.staid;
-        d_base_position_itrf = decoder.sta.itrf;
-        d_antenna_height_m = decoder.sta.hgt;
-        d_has_base_position = true;
+        if (announce)
+            {
+                LOG(INFO) << "NTRIP client: base station " << decoder.staid
+                          << " position received (RTCM " << message_type
+                          << "): ECEF [" << position[0] << ", " << position[1]
+                          << ", " << position[2] << "] m, antenna height "
+                          << decoder.sta.hgt << " m";
+            }
     }
 
     void apply_decoder_time(rtcm_t* decoder,
@@ -1450,11 +1570,32 @@ private:
     void set_state(Ntrip_Rtcm_Client_State state, const std::string& message,
         bool connected)
     {
-        std::lock_guard<std::mutex> lock(d_status_mutex);
-        d_status.state = state;
-        d_status.connected = connected;
-        d_status.message = message;
-        d_state_generation.fetch_add(1, std::memory_order_relaxed);
+        {
+            std::lock_guard<std::mutex> lock(d_status_mutex);
+            if (d_status.state == state && d_status.connected == connected &&
+                d_status.message == message)
+                {
+                    // reasserting the current status is not a transition:
+                    // no generation bump, no log line
+                    return;
+                }
+            d_status.state = state;
+            d_status.connected = connected;
+            d_status.message = message;
+            d_state_generation.fetch_add(1, std::memory_order_relaxed);
+        }
+        // every lifecycle transition logs exactly once, outside the status
+        // lock; failures and reconnect waits are warnings, the rest is
+        // informational
+        if (state == Ntrip_Rtcm_Client_State::ERROR ||
+            state == Ntrip_Rtcm_Client_State::RECONNECT_WAIT)
+            {
+                LOG(WARNING) << "NTRIP client: " << message;
+            }
+        else
+            {
+                LOG(INFO) << "NTRIP client: " << message;
+            }
     }
 
     void add_received_bytes(std::uint64_t count)
@@ -1496,6 +1637,10 @@ private:
     std::mutex d_wait_mutex;
     std::condition_variable d_wait_condition;
     std::shared_ptr<Host_Resolution_State> d_pending_resolution;
+
+    std::string d_logged_resolved_ipv4;
+    bool d_logged_first_observations = false;
+    bool d_logged_decoder_error = false;
 
     mutable std::mutex d_status_mutex;
     Ntrip_Rtcm_Client_Status d_status;

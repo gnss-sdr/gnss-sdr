@@ -179,8 +179,6 @@ private:
 
     void update_HAS_corrections();
 
-    void report_ntrip_client_status();
-
     void report_fixed_base_status();
 
     void report_solution_status();
@@ -316,9 +314,7 @@ private:
     const uint32_t d_observable_interval_ms;
     const double d_ntrip_max_correction_age_s;
     uint32_t d_pvt_errors_counter;
-    int d_last_ntrip_client_state;
     int d_last_fixed_base_status;
-    uint64_t d_last_ntrip_state_generation = 0;
     uint64_t d_ntrip_snapshot_generation = 0;
     int d_last_solution_status;
 

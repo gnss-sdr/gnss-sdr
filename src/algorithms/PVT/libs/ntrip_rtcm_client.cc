@@ -15,6 +15,7 @@
  */
 
 #include "ntrip_rtcm_client.h"
+#include "ntrip_rtk_signals.h"
 #include "rtklib_rtcm.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_stream.h"
@@ -48,6 +49,16 @@ constexpr int MAX_INTERVAL_MS = 24 * 60 * 60 * 1000;
 constexpr int MIN_INTERVAL_MS = 1000;
 
 
+// identity of a broadcast ephemeris: issue numbers, reference times, data
+// source, and health — a rebroadcast of the same data set matches all of them
+bool same_broadcast_ephemeris(const eph_t& a, const eph_t& b)
+{
+    return a.sat == b.sat && a.iode == b.iode && a.iodc == b.iodc &&
+           a.week == b.week && a.code == b.code && a.svh == b.svh &&
+           timediff(a.toe, b.toe) == 0.0 && timediff(a.toc, b.toc) == 0.0;
+}
+
+
 bool valid_gtime(const gtime_t& time)
 {
     return time.time != 0 && std::isfinite(time.sec);
@@ -76,24 +87,6 @@ bool code_in_band(unsigned char code, int band)
 }
 
 
-bool supported_gps_l1_code(unsigned char code)
-{
-    return code_in_band(code, 1);
-}
-
-
-bool supported_gps_l2_code(unsigned char code)
-{
-    return code_in_band(code, 2);
-}
-
-
-bool supported_gal_e1_code(unsigned char code)
-{
-    return code_in_band(code, 1);
-}
-
-
 // Deliberately an explicit list, not a band lookup: this is the GNSS-SDR
 // prefer-B1C rule for RTKLIB's shared first slot (B1I satellites are
 // dropped), not band membership
@@ -108,13 +101,6 @@ bool supported_bds_b1c_code(unsigned char code)
         default:
             return false;
         }
-}
-
-
-// GPS L5 and Galileo E5a share RTKLIB's L5/E5a band
-bool supported_l5_band_code(unsigned char code)
-{
-    return code_in_band(code, 3);
 }
 
 
@@ -136,6 +122,32 @@ int current_rtcm3_message_type(const rtcm_t& rtcm)
             return 0;
         }
     return static_cast<int>(getbitu(rtcm.buff, 24, 12));
+}
+
+
+// One builder for the RTKLIB stream path, measured by validate() and used
+// by the transport, so the two cannot drift on the path format
+std::string ntrip_transport_path_string(const std::string& host, std::uint16_t port,
+    const std::string& clean_mountpoint, int version, bool tls)
+{
+    std::ostringstream path;
+    path << host << ':' << port << '/' << clean_mountpoint << "::NTRIP=" << version;
+    if (tls)
+        {
+            path << "::TLS";
+        }
+    return path.str();
+}
+
+
+// non-printable-ASCII, or any of the explicitly rejected characters
+bool has_non_graphic_or(const std::string& value, const char* rejected)
+{
+    return std::any_of(value.cbegin(), value.cend(), [rejected](char character) {
+        const auto byte = static_cast<unsigned char>(character);
+        return byte <= 0x20U || byte >= 0x7FU ||
+               std::strchr(rejected, character) != nullptr;
+    });
 }
 
 
@@ -361,17 +373,6 @@ void resolve_ipv4_hostname(const std::shared_ptr<Host_Resolution_State>& state,
 }  // namespace
 
 
-void secure_clear_string(std::string* value) noexcept
-{
-    if (value == nullptr || value->empty())
-        {
-            return;
-        }
-    secure_wipe(&(*value)[0], value->size());
-    value->clear();
-}
-
-
 void secure_clear_ntrip_credentials(Pvt_Conf* conf) noexcept
 {
     if (conf == nullptr)
@@ -384,6 +385,28 @@ void secure_clear_ntrip_credentials(Pvt_Conf* conf) noexcept
 }
 
 
+void Ntrip_Rtcm_Snapshot::refresh_age(const gtime_t& rover_time, double max_age_s)
+{
+    if (!has_observations)
+        {
+            return;
+        }
+    const gtime_t age_reference =
+        valid_gtime(rover_time) ? rover_time : utc2gpst(timeget());
+    age_s = timediff(age_reference, observation_time);
+    fresh = std::isfinite(age_s) && std::fabs(age_s) <= max_age_s;
+}
+
+
+bool ntrip_text_has_space_or_control(const std::string& text)
+{
+    return std::any_of(text.cbegin(), text.cend(), [](char character) {
+        const auto byte = static_cast<unsigned char>(character);
+        return std::isspace(byte) != 0 || std::iscntrl(byte) != 0;
+    });
+}
+
+
 std::string Ntrip_Rtcm_Client_Config::validate() const
 {
     const std::string clean_mountpoint = normalized_mountpoint(mountpoint);
@@ -391,14 +414,9 @@ std::string Ntrip_Rtcm_Client_Config::validate() const
         {
             return "the caster address must be a non-empty hostname or IPv4 address";
         }
-    for (const char character : host)
+    if (has_non_graphic_or(host, ":/@[]"))
         {
-            const auto byte = static_cast<unsigned char>(character);
-            if (byte <= 0x20U || byte >= 0x7FU || byte == ':' || byte == '/' ||
-                byte == '@' || byte == '[' || byte == ']')
-                {
-                    return "the caster address must be a hostname or IPv4 address without a scheme, credentials, port, or path";
-                }
+            return "the caster address must be a hostname or IPv4 address without a scheme, credentials, port, or path";
         }
     if (port == 0)
         {
@@ -408,28 +426,20 @@ std::string Ntrip_Rtcm_Client_Config::validate() const
         {
             return "the mountpoint must name one caster mountpoint";
         }
-    for (const char character : clean_mountpoint)
+    if (has_non_graphic_or(clean_mountpoint, "@:/"))
         {
-            const auto byte = static_cast<unsigned char>(character);
-            if (byte <= 0x20U || byte >= 0x7FU || byte == '@' || byte == ':' ||
-                byte == '/')
-                {
-                    return "the mountpoint must name one caster mountpoint without a path separator";
-                }
+            return "the mountpoint must name one caster mountpoint without a path separator";
         }
-    const auto has_space_or_control = [](const std::string& value) {
-        return std::any_of(value.cbegin(), value.cend(), [](char character) {
-            const auto byte = static_cast<unsigned char>(character);
-            return std::isspace(byte) != 0 || std::iscntrl(byte) != 0;
-        });
-    };
-    if (username.size() >= 256 || password.size() >= 256 ||
-        username.find(':') != std::string::npos ||
-        has_space_or_control(username) || has_space_or_control(password))
+    const std::string& username_value = username.value();
+    const std::string& password_value = password.value();
+    if (username_value.size() >= 256 || password_value.size() >= 256 ||
+        username_value.find(':') != std::string::npos ||
+        ntrip_text_has_space_or_control(username_value) ||
+        ntrip_text_has_space_or_control(password_value))
         {
             return "the username or the password contains characters unsupported by the NTRIP client";
         }
-    if (!password.empty() && username.empty())
+    if (!password_value.empty() && username_value.empty())
         {
             return "a username is required when a password is configured";
         }
@@ -455,13 +465,14 @@ std::string Ntrip_Rtcm_Client_Config::validate() const
         {
             return "the NTRIP version must be 1 or 2";
         }
-    // worst-case transport path: host (a resolved IPv4 literal can be longer
-    // than a short hostname, hence the 15-character floor) + ":65535/" +
-    // mountpoint + "::NTRIP=v::TLS"
-    constexpr std::size_t transport_overhead = 21;
-    if (std::max<std::size_t>(host.size(), 15U) + clean_mountpoint.size() +
-            transport_overhead >=
-        MAXSTRPATH)
+    // measure the real worst-case transport path instead of modeling its
+    // format by hand: the widest host this configuration can produce is
+    // either the configured name or a resolved IPv4 literal (15 characters)
+    const std::string worst_case_host =
+        host.size() >= 15 ? host : std::string(15, 'n');
+    if (ntrip_transport_path_string(worst_case_host, 65535, clean_mountpoint,
+            version, true)
+            .size() >= MAXSTRPATH)
         {
             return "the NTRIP endpoint is too long";
         }
@@ -476,8 +487,8 @@ Ntrip_Rtcm_Client_Config make_ntrip_rtcm_client_config(const Pvt_Conf& conf)
     config.host = conf.ntrip_caster_address;
     config.port = conf.ntrip_port;
     config.mountpoint = normalized_mountpoint(conf.ntrip_mountpoint);
-    config.username = conf.ntrip_username.value();
-    config.password = conf.ntrip_password.value();
+    config.username = conf.ntrip_username;
+    config.password = conf.ntrip_password;
     config.reconnect_interval_ms = conf.ntrip_reconnect_interval_ms;
     config.timeout_ms = conf.ntrip_timeout_ms;
     config.max_age_s = conf.ntrip_max_correction_age_s;
@@ -506,8 +517,6 @@ public:
     ~Impl() noexcept
     {
         stop();
-        secure_clear_string(&d_config.username);
-        secure_clear_string(&d_config.password);
     }
 
     Impl(const Impl&) = delete;
@@ -626,10 +635,9 @@ public:
         return d_state_generation.load(std::memory_order_relaxed);
     }
 
-    std::uint64_t snapshot_generation() const
+    std::uint64_t snapshot_generation() const noexcept
     {
-        std::lock_guard<std::mutex> lock(d_output_mutex);
-        return d_output_generation;
+        return d_output_generation.load(std::memory_order_acquire);
     }
 
     Ntrip_Rtcm_Snapshot latest_snapshot() const
@@ -645,7 +653,7 @@ public:
             result.has_observations = d_has_observations;
             result.observations = d_observations;
             result.observation_time = d_observation_time;
-            result.generation = d_output_generation;
+            result.generation = d_output_generation.load(std::memory_order_relaxed);
             result.has_base_position = d_has_base_position;
             result.base_position_ecef_m = d_base_position_ecef_m;
             result.base_position_message_type = d_base_position_message_type;
@@ -655,13 +663,7 @@ public:
             result.ephemerides = d_ephemerides;
         }
 
-        if (result.has_observations)
-            {
-                const gtime_t age_reference = valid_gtime(reference_time) ? reference_time : utc2gpst(timeget());
-                result.age_s = timediff(age_reference, result.observation_time);
-                result.fresh = std::isfinite(result.age_s) &&
-                               std::fabs(result.age_s) <= d_config.max_age_s;
-            }
+        result.refresh_age(reference_time, d_config.max_age_s);
         return result;
     }
 
@@ -721,15 +723,9 @@ private:
 
     std::string transport_path(const std::string& host, int version) const
     {
-        std::ostringstream path;
-        path << host << ':' << d_config.port << '/'
-             << normalized_mountpoint(d_config.mountpoint)
-             << "::NTRIP=" << version;
-        if (d_config.tls_enabled)
-            {
-                path << "::TLS";
-            }
-        return path.str();
+        return ntrip_transport_path_string(host, d_config.port,
+            normalized_mountpoint(d_config.mountpoint), version,
+            d_config.tls_enabled);
     }
 
     Resolve_Result resolve_transport_host(
@@ -933,7 +929,7 @@ private:
                         set_state(Ntrip_Rtcm_Client_State::CONNECTING,
                             "connecting to NTRIP caster", false);
                         if (!stream.open(transport_path(resolved_host, active_version), d_config.host,
-                                d_config.username, d_config.password))
+                                d_config.username.value(), d_config.password.value()))
                             {
                                 failure_message = "could not initialize NTRIP transport";
                             }
@@ -1245,36 +1241,37 @@ private:
                         const bool has_measurement =
                             (std::isfinite(observation.P[slot]) && observation.P[slot] != 0.0) ||
                             (std::isfinite(observation.L[slot]) && observation.L[slot] != 0.0);
-                        bool keep_first = false;
-                        bool keep_second = false;
-                        if (system == SYS_GPS)
+                        // a slot survives when the signal table lists a signal
+                        // of this system in it and the observation code belongs
+                        // to the slot's band; the BeiDou first slot applies the
+                        // explicit prefer-B1C rule instead of band membership,
+                        // dropping B1I satellites
+                        bool keep = false;
+                        bool is_first_band = false;
+                        if (has_measurement)
                             {
-                                keep_first = slot == 0 && has_measurement &&
-                                             supported_gps_l1_code(observation.code[slot]);
-                                keep_second = (slot == 1 && has_measurement &&
-                                                  supported_gps_l2_code(observation.code[slot])) ||
-                                              (slot == 2 && has_measurement &&
-                                                  supported_l5_band_code(observation.code[slot]));
+                                for (const auto& signal : ntrip_rtk_signals())
+                                    {
+                                        if (signal.system != system || signal.band_slot != slot)
+                                            {
+                                                continue;
+                                            }
+                                        const bool code_matches =
+                                            (system == SYS_BDS && slot == 0)
+                                                ? supported_bds_b1c_code(observation.code[slot])
+                                                : code_in_band(observation.code[slot], slot + 1);
+                                        keep = code_matches;
+                                        is_first_band = ntrip_rtk_is_entry_band(signal);
+                                        break;  // one table row per (system, slot)
+                                    }
                             }
-                        else if (system == SYS_GAL)
-                            {
-                                keep_first = slot == 0 && has_measurement &&
-                                             supported_gal_e1_code(observation.code[slot]);
-                                keep_second = slot == 2 && has_measurement &&
-                                              supported_l5_band_code(observation.code[slot]);
-                            }
-                        else
-                            {
-                                keep_first = slot == 0 && has_measurement &&
-                                             supported_bds_b1c_code(observation.code[slot]);
-                            }
-                        if (!(keep_first || keep_second))
+                        if (!keep)
                             {
                                 clear_observation_slot(&observation, slot);
                             }
                         else
                             {
-                                has_first_band = has_first_band || keep_first;
+                                has_first_band = has_first_band || is_first_band;
                             }
                     }
                 if (has_first_band)
@@ -1306,7 +1303,10 @@ private:
     void store_ephemeris(const rtcm_t& decoder)
     {
         const int system = decoder.ephsat > 0 ? satsys(decoder.ephsat, nullptr) : 0;
-        if ((system != SYS_GPS && system != SYS_GAL && system != SYS_BDS && system != SYS_QZS) ||
+        // keep the stored (and snapshot-copied) ephemerides aligned with the
+        // systems store_observations admits: an ephemeris for a system whose
+        // base observations are dropped could never pair with anything
+        if ((system != SYS_GPS && system != SYS_GAL && system != SYS_BDS) ||
             decoder.nav.eph == nullptr || decoder.ephsat > decoder.nav.n)
             {
                 return;
@@ -1318,16 +1318,26 @@ private:
             }
 
         std::lock_guard<std::mutex> lock(d_output_mutex);
-        ++d_output_generation;
-        for (auto& stored_ephemeris : d_ephemerides)
+        // kept sorted by satellite number so the solver's per-epoch lookup
+        // can binary-search the snapshot copy
+        const auto position = std::lower_bound(
+            d_ephemerides.begin(), d_ephemerides.end(), ephemeris.sat,
+            [](const eph_t& stored, int sat) { return stored.sat < sat; });
+        if (position != d_ephemerides.end() && position->sat == ephemeris.sat)
             {
-                if (stored_ephemeris.sat == ephemeris.sat)
+                // casters rebroadcast unchanged ephemerides every few
+                // seconds: only an actually new data set may bump the
+                // generation, or the consumers' generation-keyed snapshot
+                // cache is invalidated for nothing
+                if (!same_broadcast_ephemeris(*position, ephemeris))
                     {
-                        stored_ephemeris = ephemeris;
-                        return;
+                        *position = ephemeris;
+                        ++d_output_generation;
                     }
+                return;
             }
-        d_ephemerides.push_back(ephemeris);
+        d_ephemerides.insert(position, ephemeris);
+        ++d_output_generation;
     }
 
     void store_base_position(const rtcm_t& decoder, int message_type)
@@ -1502,7 +1512,9 @@ private:
     std::vector<obsd_t> d_observations;
     gtime_t d_observation_time = {0, 0.0};
     bool d_has_observations = false;
-    std::uint64_t d_output_generation = 0;
+    // written only under d_output_mutex; atomic so the per-epoch change
+    // detector reads it without contending with the worker's deep copies
+    std::atomic<std::uint64_t> d_output_generation{0};
     int d_observation_station_id = 0;
     std::array<double, 3> d_base_position_ecef_m = {{0.0, 0.0, 0.0}};
     bool d_has_base_position = false;
@@ -1559,7 +1571,7 @@ Ntrip_Rtcm_Snapshot Ntrip_Rtcm_Client::latest_snapshot(const gtime_t& rover_time
 }
 
 
-std::uint64_t Ntrip_Rtcm_Client::snapshot_generation() const
+std::uint64_t Ntrip_Rtcm_Client::snapshot_generation() const noexcept
 {
     return d_impl->snapshot_generation();
 }

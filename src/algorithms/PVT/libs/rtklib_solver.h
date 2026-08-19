@@ -221,6 +221,22 @@ private:
     void get_has_biases(const std::map<int, Gnss_Synchro>& obs_map);
     void get_current_has_obs_correction(const std::string& signal, uint32_t tow_obs, int prn, uint8_t mask_id, uint8_t iod_set_id);
     void clear_applied_has_phase_bias_discontinuity(const HAS_obs_corrections* has_correction, int prn);
+
+    /*!
+     * Substitutes a base-stream broadcast ephemeris for a satellite whose
+     * navigation message the rover has not decoded yet, inserting both the
+     * ephemeris and the observation. Owns the per-system week derivation and
+     * mirrors the rover-decoded path's HAS-correction handling, so the two
+     * conversion policies cannot drift. Returns false when the base stream
+     * has no ephemeris for the satellite.
+     */
+    bool substitute_base_ephemeris(const Ntrip_Rtcm_Snapshot* fixed_base,
+        int sat,
+        const Gnss_Synchro& gnss_synchro,
+        const std::string& band_key,
+        std::vector<eph_t>& eph_data,
+        int& valid_obs,
+        int glo_valid_obs);
     bool has_active_has_do_not_use(const std::string& system, int prn, uint32_t tow_obs) const;
     bool has_active_has_orbit_clock(const std::string& system, int prn, uint16_t sis_iod, uint32_t tow_obs) const;
     bool get_active_has_context(const std::string& system, int prn, uint16_t sis_iod, uint32_t tow_obs, uint8_t& mask_id, uint8_t& iod_set_id) const;
@@ -234,6 +250,12 @@ private:
     std::vector<obsd_t> d_fixed_base_base_scratch;
     std::array<double, 4> d_dop{};
     std::map<int, int> d_rtklib_freq_index;
+    // NTRIP fixed-base second-band slots, resolved once from the signal
+    // table and the construction-time channel set (the table scan is not
+    // for the per-observation path)
+    int d_ntrip_second_band_slot_gps = 1;
+    int d_ntrip_second_band_slot_gal = 2;
+    int d_ntrip_second_band_slot_bds = 2;
     std::map<std::string, int> d_rtklib_band_index;
 
     std::map<std::string, std::map<int, HAS_orbit_corrections>> d_has_orbit_corrections_store_map;  // first key is system, second key is PRN

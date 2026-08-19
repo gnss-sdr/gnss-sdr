@@ -213,22 +213,22 @@ TEST_F(RtklibPvtNtripConfigurationTest, RejectsUnsupportedChannelSetsBeforeConne
     // a second band without its first band is meaningless
     std::unique_ptr<InMemoryConfiguration> l2_without_l1 = make_valid_ntrip_configuration();
     l2_without_l1->supersede_property("Channels_1C.count", "0");
-    expect_invalid_configuration(*l2_without_l1, "GPS L1 C/A alone or with one of L2C or L5");
+    expect_invalid_configuration(*l2_without_l1, "GPS 1C alone or with one of 2S or L5");
 
     std::unique_ptr<InMemoryConfiguration> e5a_without_e1 = make_valid_ntrip_configuration();
     e5a_without_e1->supersede_property("Channels_1C.count", "0");
     e5a_without_e1->supersede_property("Channels_2S.count", "0");
     e5a_without_e1->set_property("Channels_5X.count", "1");
-    expect_invalid_configuration(*e5a_without_e1, "GPS L1 C/A alone or with one of L2C or L5");
+    expect_invalid_configuration(*e5a_without_e1, "GPS 1C alone or with one of 2S or L5");
 
     // at most one GPS second band
     std::unique_ptr<InMemoryConfiguration> triple_gps = make_valid_ntrip_configuration();
     triple_gps->set_property("Channels_L5.count", "1");
-    expect_invalid_configuration(*triple_gps, "GPS L1 C/A alone or with one of L2C or L5");
+    expect_invalid_configuration(*triple_gps, "GPS 1C alone or with one of 2S or L5");
 
     std::unique_ptr<InMemoryConfiguration> unsupported_signal = make_valid_ntrip_configuration();
     unsupported_signal->set_property("Channels_1G.count", "1");
-    expect_invalid_configuration(*unsupported_signal, "GPS L1 C/A alone or with one of L2C or L5");
+    expect_invalid_configuration(*unsupported_signal, "GPS 1C alone or with one of 2S or L5");
 }
 
 
@@ -360,6 +360,12 @@ TEST_F(RtklibPvtNtripConfigurationTest, RejectsInvalidPasswordConfigurationBefor
 TEST_F(RtklibPvtNtripConfigurationTest, ResolvesThePasswordFromTheNamedEnvironmentVariable)
 {
     using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    // unsets the variable on every exit path, so a failing assertion cannot
+    // leak the fake credential into the rest of the test process
+    struct Env_Var_Guard
+    {
+        ~Env_Var_Guard() { unsetenv("GNSS_SDR_TEST_NTRIP_PASSWORD"); }
+    } env_var_guard;
     ASSERT_EQ(0, setenv("GNSS_SDR_TEST_NTRIP_PASSWORD", "secret-from-env", 1));
 
     // Without a username, a resolved password must trigger the
@@ -375,8 +381,6 @@ TEST_F(RtklibPvtNtripConfigurationTest, ResolvesThePasswordFromTheNamedEnvironme
     std::unique_ptr<Rtklib_Pvt> adapter;
     EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(env_password.get(), ROLE, 2, 0)));
     ASSERT_NE(nullptr, adapter);
-
-    ASSERT_EQ(0, unsetenv("GNSS_SDR_TEST_NTRIP_PASSWORD"));
 }
 
 

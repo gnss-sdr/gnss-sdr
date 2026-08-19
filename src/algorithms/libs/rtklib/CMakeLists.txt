@@ -41,6 +41,7 @@ set(RTKLIB_LIB_HEADERS
     rtklib_stream.h
     rtklib_tls.h
     rtklib_rtksvr.h
+    rtklib_secure_wipe.h
     rtklib_solution.h
     rtklib_rtcm.h
     rtklib_rtcm2.h

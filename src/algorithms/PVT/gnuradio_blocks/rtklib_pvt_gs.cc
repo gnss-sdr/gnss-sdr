@@ -243,6 +243,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_nchannels(nchannels),
       d_signal_enabled_flags(conf_.signal_enabled_flags),
       d_observable_interval_ms(conf_.observable_interval_ms),
+      d_ntrip_max_correction_age_s(conf_.ntrip_max_correction_age_s),
       d_pvt_errors_counter(0),
       d_last_ntrip_client_state(-1),
       d_last_fixed_base_status(-1),
@@ -679,23 +680,11 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 
     if (d_ntrip_client_enabled)
         {
-            Ntrip_Rtcm_Client_Config ntrip_config = make_ntrip_rtcm_client_config(conf_);
-            const auto clear_local_credentials = [&ntrip_config]() {
-                secure_clear_string(&ntrip_config.username);
-                secure_clear_string(&ntrip_config.password);
-            };
-            bool ntrip_started = false;
-            try
-                {
-                    d_ntrip_client = std::make_unique<Ntrip_Rtcm_Client>(ntrip_config);
-                    ntrip_started = d_ntrip_client->start();
-                }
-            catch (...)
-                {
-                    clear_local_credentials();
-                    throw;
-                }
-            clear_local_credentials();
+            // the configuration's Secure_String credentials wipe themselves
+            // when this local copy dies, on the throwing paths included
+            const Ntrip_Rtcm_Client_Config ntrip_config = make_ntrip_rtcm_client_config(conf_);
+            d_ntrip_client = std::make_unique<Ntrip_Rtcm_Client>(ntrip_config);
+            const bool ntrip_started = d_ntrip_client->start();
             if (!ntrip_started)
                 {
                     throw std::runtime_error("Unable to start the NTRIP RTCM client");
@@ -2299,6 +2288,40 @@ void rtklib_pvt_gs::apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observabl
 }
 
 
+Gnss_Synchro rtklib_pvt_gs::interpolate_observable(const Gnss_Synchro& early,
+    const Gnss_Synchro& late,
+    double time_factor,
+    double rx_time_s)
+{
+    Gnss_Synchro interpolated = early;
+    interpolated.RX_time = rx_time_s;
+    interpolated.Pseudorange_m += (late.Pseudorange_m - early.Pseudorange_m) * time_factor;
+    interpolated.Carrier_Doppler_hz += (late.Carrier_Doppler_hz - early.Carrier_Doppler_hz) * time_factor;
+    // interpolate the carrier phase in the late epoch's polarity frame: the
+    // telemetry decoder adds pi to the reported phase while the PLL is locked
+    // at 180 degrees, so when the resolution toggles between the two epochs
+    // the raw phases differ by pi on top of the true motion (twin of
+    // hybrid_observables_gs::interpolate_carrier_phase, kept local because
+    // the PVT block does not link the observables block)
+    double early_phase_rads = early.Carrier_phase_rads;
+    const bool polarity_changed =
+        early.Flag_PLL_180_deg_phase_locked != late.Flag_PLL_180_deg_phase_locked;
+    if (polarity_changed)
+        {
+            early_phase_rads += late.Flag_PLL_180_deg_phase_locked ? (TWO_PI / 2.0) : -(TWO_PI / 2.0);
+        }
+    interpolated.Carrier_phase_rads = early_phase_rads +
+                                      (late.Carrier_phase_rads - early_phase_rads) * time_factor;
+    interpolated.Flag_PLL_180_deg_phase_locked = late.Flag_PLL_180_deg_phase_locked;
+    // the half-cycle step lands on this output, and a slip on either endpoint
+    // belongs to it too
+    interpolated.Flag_cycle_slip = early.Flag_cycle_slip || late.Flag_cycle_slip;
+    interpolated.Flag_half_cycle_slip = early.Flag_half_cycle_slip ||
+                                        late.Flag_half_cycle_slip || polarity_changed;
+    return interpolated;
+}
+
+
 std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(const std::map<int, Gnss_Synchro>& observables_map_t0,
     const std::map<int, Gnss_Synchro>& observables_map_t1,
     double rx_time_s)
@@ -2333,11 +2356,24 @@ std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(const std::ma
                 {
                     if (observables_map_t1.at(observables_iter->first).PRN == observables_iter->second.PRN)
                         {
-                            interp_observables_map.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
-                            interp_observables_map.at(observables_iter->first).RX_time = rx_time_s;  // interpolation point
-                            interp_observables_map.at(observables_iter->first).Pseudorange_m += (observables_map_t1.at(observables_iter->first).Pseudorange_m - observables_iter->second.Pseudorange_m) * time_factor;
-                            interp_observables_map.at(observables_iter->first).Carrier_phase_rads += (observables_map_t1.at(observables_iter->first).Carrier_phase_rads - observables_iter->second.Carrier_phase_rads) * time_factor;
-                            interp_observables_map.at(observables_iter->first).Carrier_Doppler_hz += (observables_map_t1.at(observables_iter->first).Carrier_Doppler_hz - observables_iter->second.Carrier_Doppler_hz) * time_factor;
+                            Gnss_Synchro interpolated = interpolate_observable(observables_iter->second,
+                                observables_map_t1.at(observables_iter->first),
+                                time_factor, rx_time_s);
+                            // consume the slip flags latched from the epochs
+                            // that streamed through t1 since the last output
+                            auto& pending_slip = d_interp_pending_cycle_slip[observables_iter->first];
+                            if (pending_slip)
+                                {
+                                    interpolated.Flag_cycle_slip = true;
+                                    pending_slip = false;
+                                }
+                            auto& pending_half = d_interp_pending_half_cycle_slip[observables_iter->first];
+                            if (pending_half)
+                                {
+                                    interpolated.Flag_half_cycle_slip = true;
+                                    pending_half = false;
+                                }
+                            interp_observables_map.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, interpolated));
                         }
                 }
             catch (const std::out_of_range& oor)
@@ -2908,6 +2944,21 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             d_gnss_observables_map_t0 = d_gnss_observables_map_t1;
                                             apply_rx_clock_offset(d_gnss_observables_map, Rx_clock_offset_s);
                                             d_gnss_observables_map_t1 = d_gnss_observables_map;
+                                            // latch the slip flags of every epoch entering t1: with
+                                            // output_rate_ms > observable_interval_ms most epochs are
+                                            // never sampled by interpolate_observables, and a flag
+                                            // riding one of them would otherwise vanish
+                                            for (const auto& observable : d_gnss_observables_map_t1)
+                                                {
+                                                    if (observable.second.Flag_cycle_slip)
+                                                        {
+                                                            d_interp_pending_cycle_slip[observable.first] = true;
+                                                        }
+                                                    if (observable.second.Flag_half_cycle_slip)
+                                                        {
+                                                            d_interp_pending_half_cycle_slip[observable.first] = true;
+                                                        }
+                                                }
 
                                             // ### select the rx_time and interpolate observables at that time
                                             if (!d_gnss_observables_map_t0.empty() && !d_gnss_observables_map_t1.empty())
@@ -2948,9 +2999,23 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                         }
                     else
                         {
-                            report_solution_outage();
-                            // sanity check: If the PVT solver is getting 100 consecutive errors, send a reset command to observables block
                             d_pvt_errors_counter++;
+                            // the status banners track the output-rate solution stream while
+                            // this solver runs at the observables rate: announce an outage
+                            // only once a whole output period has elapsed without a solution,
+                            // so a single-epoch transient between two valid outputs does not
+                            // flap the console with lost/recovered pairs
+                            uint32_t failed_epochs_per_output =
+                                static_cast<uint32_t>(d_output_rate_ms) / d_observable_interval_ms;
+                            if (failed_epochs_per_output == 0)
+                                {
+                                    failed_epochs_per_output = 1;
+                                }
+                            if (d_pvt_errors_counter >= failed_epochs_per_output)
+                                {
+                                    report_solution_outage();
+                                }
+                            // sanity check: If the PVT solver is getting 100 consecutive errors, send a reset command to observables block
                             if (d_pvt_errors_counter >= 100)
                                 {
                                     int command = 1;
@@ -2980,6 +3045,12 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                 d_ntrip_client->latest_snapshot(d_internal_pvt_solver->pvt_sol.time)));
                                             d_ntrip_snapshot_generation = snapshot_generation;
                                         }
+                                    // the generation covers the received data, not the passage
+                                    // of rover time: the cached copy's age/freshness must track
+                                    // every epoch, or a stalled base stream would stay 'fresh'
+                                    d_fixed_base_snapshot->refresh_age(
+                                        d_internal_pvt_solver->pvt_sol.time,
+                                        d_ntrip_max_correction_age_s);
                                     fixed_base = d_fixed_base_snapshot.get();
                                 }
                             flag_pvt_valid = d_user_pvt_solver->get_PVT(

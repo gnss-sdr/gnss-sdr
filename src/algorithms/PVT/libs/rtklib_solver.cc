@@ -48,6 +48,8 @@
 #include <iostream>
 #include <iterator>
 #include <limits>
+#include <stdexcept>
+#include <string>
 #include <vector>
 
 #if USE_GLOG_AND_GFLAGS
@@ -168,6 +170,36 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
         {
             d_rtklib_freq_index[2] = 4;
         }
+
+    if (d_conf.ntrip_client_enabled)
+        {
+            // the fixed-base path pairs rover and base observations by slot,
+            // so the signal table's slot column and this solver's finished
+            // band map must agree for every enabled NTRIP signal — fail
+            // loudly at construction instead of silently pairing across bands
+            for (const auto &signal : ntrip_rtk_signals())
+                {
+                    if (!flags.check_any_enabled(signal.flag))
+                        {
+                            continue;
+                        }
+                    const auto mapped_slot = d_rtklib_band_index.find(signal.signal);
+                    if (mapped_slot == d_rtklib_band_index.cend() ||
+                        mapped_slot->second != signal.band_slot)
+                        {
+                            throw std::runtime_error(
+                                std::string("NTRIP RTK signal table and solver band mapping disagree for signal ") +
+                                signal.signal);
+                        }
+                }
+        }
+
+    // resolve the per-system second-band slots once: the channel set is
+    // fixed for the solver's lifetime, and the per-epoch fixed-base path
+    // must not rescan the signal table per observation
+    d_ntrip_second_band_slot_gps = ntrip_rtk_second_band_slot(SYS_GPS, flags);
+    d_ntrip_second_band_slot_gal = ntrip_rtk_second_band_slot(SYS_GAL, flags);
+    d_ntrip_second_band_slot_bds = ntrip_rtk_second_band_slot(SYS_BDS, flags);
 
     // auto empty_map = std::map < int, HAS_obs_corrections >> ();
     // d_has_obs_corr_map["L1 C/A"] = empty_map;
@@ -1479,12 +1511,20 @@ bool Rtklib_Solver::prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot &f
 {
     // Per-constellation band-to-slot mapping, shared with the adapter's
     // channel-set validation (see ntrip_rtk_signals() in ntrip_rtk_signals.h)
-    const Signal_Enabled_Flags enabled_flags(d_signal_enabled_flags);
-    const auto second_band_slot = [&enabled_flags](const obsd_t &observation) {
-        return ntrip_rtk_second_band_slot(satsys(observation.sat, nullptr), enabled_flags);
+    // and resolved once at construction
+    const auto second_band_slot = [this](int system) {
+        switch (system)
+            {
+            case SYS_GAL:
+                return d_ntrip_second_band_slot_gal;
+            case SYS_BDS:
+                return d_ntrip_second_band_slot_bds;
+            default:
+                return d_ntrip_second_band_slot_gps;
+            }
     };
-    const auto clear_unsupported_slots = [&second_band_slot](obsd_t &observation) {
-        const int second = second_band_slot(observation);
+    const auto clear_unsupported_slots = [&second_band_slot](obsd_t &observation, int system) {
+        const int second = second_band_slot(system);
         for (int frequency = 1; frequency < NFREQ + NEXOBS; ++frequency)
             {
                 if (frequency == second)
@@ -1499,8 +1539,8 @@ bool Rtklib_Solver::prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot &f
                 observation.code[frequency] = CODE_NONE;
             }
     };
-    const auto has_supported_band_measurement = [&second_band_slot](const obsd_t &observation) {
-        const std::array<int, 2> slots = {0, second_band_slot(observation)};
+    const auto has_supported_band_measurement = [&second_band_slot](const obsd_t &observation, int system) {
+        const std::array<int, 2> slots = {0, second_band_slot(system)};
         for (const int frequency : slots)
             {
                 if (observation.code[frequency] != CODE_NONE &&
@@ -1558,19 +1598,19 @@ bool Rtklib_Solver::prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot &f
     for (int index = 0; index < rover_observation_count; ++index)
         {
             obsd_t observation = d_obs_data[index];
-            /* QZSS shares the GPS band slots and has its own AR group in the
-               engine, so its rover observations enter the relative solution */
-            if (observation.sat <= 0 ||
-                (satsys(observation.sat, nullptr) != SYS_GPS &&
-                    satsys(observation.sat, nullptr) != SYS_QZS &&
-                    satsys(observation.sat, nullptr) != SYS_GAL &&
-                    satsys(observation.sat, nullptr) != SYS_BDS))
+            /* the fixed-base path admits exactly the systems the whole chain
+               supports (signal table, adapter navigation-system mask, client
+               observation filter, and this merge): QZSS is deliberately not
+               among them yet — its rover observations would be excluded by
+               satexclude() anyway and could never find base counterparts */
+            const int system = observation.sat > 0 ? satsys(observation.sat, nullptr) : 0;
+            if (system != SYS_GPS && system != SYS_GAL && system != SYS_BDS)
                 {
                     continue;
                 }
             observation.rcv = 1;
-            clear_unsupported_slots(observation);
-            if (has_supported_band_measurement(observation))
+            clear_unsupported_slots(observation, system);
+            if (has_supported_band_measurement(observation, system))
                 {
                     rover_observations.push_back(observation);
                 }
@@ -1625,16 +1665,14 @@ bool Rtklib_Solver::prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot &f
     base_observations.reserve(fixed_base.observations.size());
     for (auto observation : fixed_base.observations)
         {
-            if (observation.sat <= 0 ||
-                (satsys(observation.sat, nullptr) != SYS_GPS &&
-                    satsys(observation.sat, nullptr) != SYS_GAL &&
-                    satsys(observation.sat, nullptr) != SYS_BDS))
+            const int system = observation.sat > 0 ? satsys(observation.sat, nullptr) : 0;
+            if (system != SYS_GPS && system != SYS_GAL && system != SYS_BDS)
                 {
                     continue;
                 }
             observation.rcv = 2;
-            clear_unsupported_slots(observation);
-            if (!has_supported_band_measurement(observation))
+            clear_unsupported_slots(observation, system);
+            if (!has_supported_band_measurement(observation, system))
                 {
                     continue;
                 }
@@ -1709,14 +1747,73 @@ static const eph_t *find_base_ephemeris(const Ntrip_Rtcm_Snapshot *fixed_base, i
         {
             return nullptr;
         }
-    for (const auto &candidate : fixed_base->ephemerides)
+    // the client keeps the vector sorted by satellite number
+    const auto candidate = std::lower_bound(
+        fixed_base->ephemerides.cbegin(), fixed_base->ephemerides.cend(), sat,
+        [](const eph_t &stored, int wanted) { return stored.sat < wanted; });
+    if (candidate != fixed_base->ephemerides.cend() && candidate->sat == sat)
         {
-            if (candidate.sat == sat)
-                {
-                    return &candidate;
-                }
+            return &(*candidate);
         }
     return nullptr;
+}
+
+
+bool Rtklib_Solver::substitute_base_ephemeris(const Ntrip_Rtcm_Snapshot *fixed_base,
+    int sat,
+    const Gnss_Synchro &gnss_synchro,
+    const std::string &band_key,
+    std::vector<eph_t> &eph_data,
+    int &valid_obs,
+    int glo_valid_obs)
+{
+    const eph_t *base_ephemeris = find_base_ephemeris(fixed_base, sat);
+    if (base_ephemeris == nullptr)
+        {
+            return false;
+        }
+    // the substituted record's own reference time, expressed in the week
+    // convention the rover-decoded path uses for the system
+    const int system = satsys(sat, nullptr);
+    int week = 0;
+    switch (system)
+        {
+        case SYS_GAL:
+            time2gst(base_ephemeris->toe, &week);
+            break;
+        case SYS_BDS:
+            time2gpst(base_ephemeris->toe, &week);
+            break;
+        default:
+            // GPS/QZSS: RTCM MT1019/MT1044 carry the full GPS week
+            week = base_ephemeris->week;
+            break;
+        }
+    eph_data[valid_obs] = *base_ephemeris;
+    obsd_t newobs{};
+    if (system == SYS_BDS)
+        {
+            // HAS corrections cover GPS and Galileo only
+            d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                gnss_synchro, week, d_rtklib_band_index.at(band_key));
+        }
+    else
+        {
+            // HAS observation corrections apply to the measurement no matter
+            // where the ephemeris came from: mirror the rover-decoded path
+            const HAS_obs_corrections *applied_has_correction = nullptr;
+            d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                gnss_synchro,
+                d_has_obs_corr_map,
+                week,
+                d_rtklib_band_index.at(band_key),
+                &applied_has_correction,
+                system == SYS_GAL ? 0 : this->get_ref_gps_week());
+            clear_applied_has_phase_bias_discontinuity(applied_has_correction,
+                static_cast<int>(gnss_synchro.PRN));
+        }
+    valid_obs++;
+    return true;
 }
 
 
@@ -1765,8 +1862,12 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         const bool has_selected_galileo_ephemeris = select_galileo_ephemeris(
                             gnss_observables_iter->second.PRN, sig_, obs_tow,
                             selected_galileo_ephemeris, selected_from_reduced_ced);
-                        if (has_selected_galileo_ephemeris &&
-                            !selected_from_reduced_ced && has_active_has_do_not_use(gal_str, prn, obs_tow))
+                        // the do-not-use exclusion must hold whether the ephemeris
+                        // comes from the rover or from the base stream: checking it
+                        // only for a selected rover ephemeris would let the
+                        // base-ephemeris substitution admit a HAS-flagged satellite
+                        // (the GPS block below checks it unconditionally too)
+                        if (!selected_from_reduced_ced && has_active_has_do_not_use(gal_str, prn, obs_tow))
                             {
                                 break;
                             }
@@ -1800,32 +1901,14 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         clear_applied_has_phase_bias_discontinuity(applied_has_correction, prn);
                                         valid_obs++;
                                     }
-                                else if (fixed_base != nullptr)
-                                    {
-                                        // the rover has not decoded this satellite's I/NAV yet, but
-                                        // the base stream may have delivered its broadcast ephemeris
-                                        // over NTRIP (RTCM MT1045/MT1046): use it so the satellite
-                                        // contributes without waiting for the page decoding. E5a
-                                        // joins once the rover ephemeris is available.
-                                        const eph_t *base_ephemeris = find_base_ephemeris(fixed_base, satno(SYS_GAL, prn));
-                                        if (base_ephemeris != nullptr)
-                                            {
-                                                int gst_week = 0;
-                                                time2gst(base_ephemeris->toe, &gst_week);
-                                                eph_data[valid_obs] = *base_ephemeris;
-                                                obsd_t newobs{};
-                                                d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
-                                                    gnss_observables_iter->second,
-                                                    gst_week,
-                                                    d_rtklib_band_index.at(sig_));
-                                                valid_obs++;
-                                            }
-                                        else
-                                            {
-                                                DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
-                                            }
-                                    }
-                                else  // the ephemeris are not available for this SV
+                                // the rover has not decoded this satellite's I/NAV yet: the
+                                // base stream may have delivered its broadcast ephemeris over
+                                // NTRIP (RTCM MT1045/MT1046), so the satellite contributes
+                                // without waiting for the page decoding. E5a joins once the
+                                // rover ephemeris is available.
+                                else if (!substitute_base_ephemeris(fixed_base, satno(SYS_GAL, prn),
+                                             gnss_observables_iter->second, sig_,
+                                             eph_data, valid_obs, glo_valid_obs))
                                     {
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
                                     }
@@ -1997,30 +2080,14 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         clear_applied_has_phase_bias_discontinuity(applied_has_correction, prn);
                                         valid_obs++;
                                     }
-                                else if (fixed_base != nullptr)
-                                    {
-                                        // the rover has not decoded this satellite's LNAV yet, but
-                                        // the base stream may have delivered its broadcast ephemeris
-                                        // over NTRIP (RTCM MT1019/MT1044, already in RTKLIB format):
-                                        // use it so the satellite contributes without waiting the
-                                        // ~30 s of subframe decoding
-                                        const eph_t *base_ephemeris = find_base_ephemeris(fixed_base, sat);
-                                        if (base_ephemeris != nullptr)
-                                            {
-                                                eph_data[valid_obs] = *base_ephemeris;
-                                                obsd_t newobs{};
-                                                d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
-                                                    gnss_observables_iter->second,
-                                                    base_ephemeris->week,
-                                                    d_rtklib_band_index.at(rtklib_sig));
-                                                valid_obs++;
-                                            }
-                                        else
-                                            {
-                                                DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->first;
-                                            }
-                                    }
-                                else  // the ephemeris are not available for this SV
+                                // the rover has not decoded this satellite's LNAV yet: the
+                                // base stream may have delivered its broadcast ephemeris over
+                                // NTRIP (RTCM MT1019, already in RTKLIB format), so the
+                                // satellite contributes without waiting the ~30 s of subframe
+                                // decoding
+                                else if (!substitute_base_ephemeris(fixed_base, sat,
+                                             gnss_observables_iter->second, rtklib_sig,
+                                             eph_data, valid_obs, glo_valid_obs))
                                     {
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->first;
                                     }
@@ -2217,30 +2284,12 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             d_rtklib_band_index.at(sig_));
                                         valid_obs++;
                                     }
-                                else if (fixed_base != nullptr)
-                                    {
-                                        // base-stream broadcast ephemeris substitution (RTCM
-                                        // MT1042; DNAV orbit, fine for satellite positions while
-                                        // the rover B-CNAV1 decode completes)
-                                        const eph_t *base_ephemeris = find_base_ephemeris(fixed_base, bds_sat);
-                                        if (base_ephemeris != nullptr)
-                                            {
-                                                int gps_week = 0;
-                                                time2gpst(base_ephemeris->toe, &gps_week);
-                                                eph_data[valid_obs] = *base_ephemeris;
-                                                obsd_t newobs{};
-                                                d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
-                                                    gnss_observables_iter->second,
-                                                    gps_week,
-                                                    d_rtklib_band_index.at(sig_));
-                                                valid_obs++;
-                                            }
-                                        else
-                                            {
-                                                DLOG(INFO) << "No B-CNAV1 ephemeris data for SV " << gnss_observables_iter->second.PRN;
-                                            }
-                                    }
-                                else
+                                // base-stream broadcast ephemeris substitution (RTCM MT1042;
+                                // DNAV orbit, fine for satellite positions while the rover
+                                // B-CNAV1 decode completes)
+                                else if (!substitute_base_ephemeris(fixed_base, bds_sat,
+                                             gnss_observables_iter->second, sig_,
+                                             eph_data, valid_obs, glo_valid_obs))
                                     {
                                         DLOG(INFO) << "No B-CNAV1 ephemeris data for SV " << gnss_observables_iter->second.PRN;
                                     }

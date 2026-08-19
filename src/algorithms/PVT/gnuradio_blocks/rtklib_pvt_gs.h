@@ -125,6 +125,22 @@ public:
     void clear_ephemeris();
 
     /*!
+     * \brief Interpolates one observable between two epochs, in the carrier
+     * polarity frame of the later epoch.
+     *
+     * A plain linear carrier-phase interpolation across a PLL-180 half-cycle
+     * re-resolution would leak a fraction of the pi step into the output with
+     * no slip flag attached; the early phase is therefore shifted into the
+     * late epoch's polarity frame first, the late polarity is stamped on the
+     * output, and a slip on either endpoint (or a polarity change itself)
+     * marks the output.
+     */
+    static Gnss_Synchro interpolate_observable(const Gnss_Synchro& early,
+        const Gnss_Synchro& late,
+        double time_factor,
+        double rx_time_s);
+
+    /*!
      * \brief Get the latest Position WGS84 [deg], Ground Velocity, Course over Ground, and UTC Time, if available
      */
     bool get_latest_PVT(double* longitude_deg,
@@ -170,6 +186,13 @@ private:
     void report_solution_status();
 
     void report_solution_outage();
+
+    // slip flags ride single observables epochs, but the user solver only
+    // samples the maps on output epochs: every flag seen while an epoch
+    // passes through t1 is latched per channel and consumed on the next
+    // interpolated output, so no slip vanishes between outputs
+    std::map<int, bool> d_interp_pending_cycle_slip;
+    std::map<int, bool> d_interp_pending_half_cycle_slip;
 
     std::map<int, Gnss_Synchro> interpolate_observables(const std::map<int, Gnss_Synchro>& observables_map_t0,
         const std::map<int, Gnss_Synchro>& observables_map_t1,
@@ -291,6 +314,7 @@ private:
     const uint32_t d_nchannels;
     const uint32_t d_signal_enabled_flags;
     const uint32_t d_observable_interval_ms;
+    const double d_ntrip_max_correction_age_s;
     uint32_t d_pvt_errors_counter;
     int d_last_ntrip_client_state;
     int d_last_fixed_base_status;

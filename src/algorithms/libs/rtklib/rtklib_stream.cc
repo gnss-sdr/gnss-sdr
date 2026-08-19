@@ -1570,7 +1570,7 @@ int encbase64(char *str, const unsigned char *byte, int n)
 }
 
 
-void secure_wipe(void *data, size_t size)
+void secure_wipe(void *data, std::size_t size)
 {
     if (data == nullptr || size == 0)
         {
@@ -1759,9 +1759,19 @@ void ntrip_consume_buffer(ntrip_t *ntrip, int n)
     ntrip->buff[ntrip->nb] = '\0';
 }
 
+/* response buffer effectively full: every read caps its length at
+   NTRIP_MAXRSP - nb - 1 (see ntrip_fill_buffer), so nb can never exceed
+   NTRIP_MAXRSP - 1 and every response state machine must treat that value
+   as the overflow condition -------------------------------------------*/
+static int ntrip_response_buffer_full(const ntrip_t *ntrip)
+{
+    return ntrip->nb >= NTRIP_MAXRSP - 1;
+}
+
+
 int ntrip_fill_buffer(ntrip_t *ntrip, char *msg)
 {
-    if (ntrip->nb >= NTRIP_MAXRSP - 1)
+    if (ntrip_response_buffer_full(ntrip))
         {
             std::snprintf(msg, MAXSTRMSG, "response overflow");
             ntrip_disconnect(ntrip, ntrip->tcp->tirecon);
@@ -2249,7 +2259,7 @@ int rspntrip_c_v2(ntrip_t *ntrip, char *msg)
     char *header_end = std::strstr(data, "\r\n\r\n");
     if (!header_end)
         {
-            if (ntrip->nb >= NTRIP_MAXRSP - 1)
+            if (ntrip_response_buffer_full(ntrip))
                 {
                     return reject_ntrip_v2_response(ntrip, msg,
                         "NTRIP v2 response header overflow");
@@ -2383,7 +2393,7 @@ int rspntrip_s(ntrip_t *ntrip, char *msg)
             ntrip->state = 0;
             discontcp(&ntrip->tcp->svr, ntrip->tcp->tirecon);
         }
-    else if (ntrip->nb >= NTRIP_MAXRSP)
+    else if (ntrip_response_buffer_full(ntrip))
         { /* buffer overflow */
             std::snprintf(msg, MAXSTRMSG, "response overflow");
             tracet(1, "rspntrip_s: response overflow nb=%d\n", ntrip->nb);
@@ -2475,11 +2485,11 @@ int rspntrip_c(ntrip_t *ntrip, char *msg)
             ntrip->state = 0;
             ntrip_disconnect(ntrip, ntrip->tcp->tirecon);
         }
-    else if (ntrip->nb >= NTRIP_MAXRSP - 1)
+    else if (ntrip_response_buffer_full(ntrip))
         { /* buffer overflow (reads are capped at NTRIP_MAXRSP - nb - 1, so the
              buffer is effectively full one byte before NTRIP_MAXRSP) */
             std::snprintf(msg, MAXSTRMSG, "response overflow");
-            tracet(1, "rspntrip_s: response overflow nb=%d\n", ntrip->nb);
+            tracet(1, "rspntrip_c: response overflow nb=%d\n", ntrip->nb);
             ntrip->nb = 0;
             ntrip->buff[0] = '\0';
             ntrip->state = 0;
@@ -2542,7 +2552,7 @@ int waitntrip(ntrip_t *ntrip, char *msg)
         }
     if (ntrip->state == 1)
         { /* read response */
-            if (ntrip->nb >= NTRIP_MAXRSP - 1)
+            if (ntrip_response_buffer_full(ntrip))
                 { /* the buffer filled without a recognizable status line: report
                      overflow instead of issuing a zero-length read (recv() would
                      return 0 and be misread as a peer disconnect; the TLS reader

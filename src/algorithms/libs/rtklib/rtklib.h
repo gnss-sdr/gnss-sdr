@@ -292,13 +292,14 @@ const int EPHOPT_SSRAPC = 3;  //!<    ephemeris option: broadcast + SSR_APC
 const int EPHOPT_SSRCOM = 4;  //!<    ephemeris option: broadcast + SSR_COM
 const int EPHOPT_LEX = 5;     //!<    ephemeris option: QZSS LEX ephemeris
 
-const double EFACT_GPS = 1.0;  //!<    error factor: GPS
-const double EFACT_GLO = 1.5;  //!<    error factor: GLONASS
-const double EFACT_GAL = 1.0;  //!<    error factor: Galileo
-const double EFACT_QZS = 1.0;  //!<    error factor: QZSS
-const double EFACT_BDS = 1.0;  //!<    error factor: BeiDou
-const double EFACT_IRN = 1.5;  //!<    error factor: IRNSS
-const double EFACT_SBS = 3.0;  //!<    error factor: SBAS
+
+constexpr double EFACT_GPS = 1.0;  //!<    error factor: GPS
+constexpr double EFACT_GLO = 1.5;  //!<    error factor: GLONASS
+constexpr double EFACT_GAL = 1.0;  //!<    error factor: Galileo
+constexpr double EFACT_QZS = 1.0;  //!<    error factor: QZSS
+constexpr double EFACT_BDS = 1.0;  //!<    error factor: BeiDou
+constexpr double EFACT_IRN = 1.5;  //!<    error factor: IRNSS
+constexpr double EFACT_SBS = 3.0;  //!<    error factor: SBAS
 
 //! Measurement error factor of a navigation system (single home of the
 //! sys-to-EFACT mapping used by the single-point, relative and PPP error

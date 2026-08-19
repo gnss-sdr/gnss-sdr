@@ -26,7 +26,7 @@
 #include "gps_almanac.h"               // for Gps_Almanac
 #include "gps_ephemeris.h"             // for Gps_Ephemeris
 #include "gps_week_rollover.h"         // for gps_ref_week_from_config
-#include "ntrip_rtcm_client.h"         // for make_ntrip_rtcm_client_config, secure_clear_string
+#include "ntrip_rtcm_client.h"         // for make_ntrip_rtcm_client_config
 #include "ntrip_rtk_signals.h"         // for the NTRIP RTK signal table and derived masks
 #include "pvt_conf.h"                  // for Pvt_Conf
 #include "rtklib_rtkpos.h"             // for rtkfree, rtkinit
@@ -58,32 +58,6 @@ namespace bc = boost::integer;
 
 using namespace std::string_literals;
 
-namespace
-{
-class Ntrip_Credential_Guard
-{
-public:
-    explicit Ntrip_Credential_Guard(Pvt_Conf* configuration) noexcept
-        : d_configuration(configuration)
-    {
-    }
-
-    ~Ntrip_Credential_Guard()
-    {
-        secure_clear_ntrip_credentials(d_configuration);
-    }
-
-    Ntrip_Credential_Guard(const Ntrip_Credential_Guard&) = delete;
-    Ntrip_Credential_Guard& operator=(const Ntrip_Credential_Guard&) = delete;
-    Ntrip_Credential_Guard(Ntrip_Credential_Guard&&) = delete;
-    Ntrip_Credential_Guard& operator=(Ntrip_Credential_Guard&&) = delete;
-
-private:
-    Pvt_Conf* d_configuration;
-};
-}  // namespace
-
-
 Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
@@ -91,8 +65,9 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
+    // the Secure_String credential fields of this local configuration wipe
+    // themselves at every exit of this constructor, throwing included
     Pvt_Conf pvt_output_parameters = Pvt_Conf();
-    Ntrip_Credential_Guard ntrip_credential_guard(&pvt_output_parameters);
     // dump parameters
     const std::string default_dump_filename("./pvt.dat");
     const std::string default_nmea_dump_filename("./nmea_pvt.nmea");
@@ -242,19 +217,13 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             pvt_output_parameters.ntrip_port = static_cast<uint16_t>(ntrip_port);
             pvt_output_parameters.ntrip_station_id = static_cast<uint16_t>(ntrip_station_id);
 
-            const auto has_space_or_control = [](const std::string& value) {
-                return std::any_of(value.cbegin(), value.cend(), [](char character) {
-                    const auto byte = static_cast<unsigned char>(character);
-                    return std::isspace(byte) != 0 || std::iscntrl(byte) != 0;
-                });
-            };
             if (!pvt_output_parameters.ntrip_password_env.empty())
                 {
                     if (!pvt_output_parameters.ntrip_password.empty())
                         {
                             throw std::invalid_argument(role + ".ntrip_password and .ntrip_password_env are mutually exclusive");
                         }
-                    if (has_space_or_control(pvt_output_parameters.ntrip_password_env.value()))
+                    if (ntrip_text_has_space_or_control(pvt_output_parameters.ntrip_password_env.value()))
                         {
                             throw std::invalid_argument(role + ".ntrip_password_env must be one environment-variable name");
                         }
@@ -267,10 +236,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
                 }
             // the client library owns the configuration rules; the adapter
             // only turns the verdict into a constructor-time throw
-            Ntrip_Rtcm_Client_Config ntrip_probe = make_ntrip_rtcm_client_config(pvt_output_parameters);
-            const std::string ntrip_error = ntrip_probe.validate();
-            secure_clear_string(&ntrip_probe.username);
-            secure_clear_string(&ntrip_probe.password);
+            const std::string ntrip_error = make_ntrip_rtcm_client_config(pvt_output_parameters).validate();
             if (!ntrip_error.empty())
                 {
                     throw std::invalid_argument(role + " NTRIP configuration: " + ntrip_error);
@@ -347,23 +313,10 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             positioning_mode = PMODE_SINGLE;
         }
 
-    // Per-system NTRIP RTK channel rule: GPS is L1 C/A alone or with one
-    // second band (L2C or L5); Galileo is E1 alone or with E5a; BeiDou is
-    // B1C alone. Single-band sets run single-frequency RTK.
-    const bool ntrip_gps_l1 = signal_enabled_flags.check_any_enabled(GPS_1C);
-    const bool ntrip_gps_l2 = signal_enabled_flags.check_any_enabled(GPS_2S);
-    const bool ntrip_gps_l5 = signal_enabled_flags.check_any_enabled(GPS_L5);
-    const bool ntrip_gal_e1 = signal_enabled_flags.check_any_enabled(GAL_1B);
-    const bool ntrip_gal_e5a = signal_enabled_flags.check_any_enabled(GAL_E5a);
-    const bool ntrip_bds_b1c = signal_enabled_flags.check_any_enabled(BDS_B1C);
-    const bool ntrip_only_supported_signals =
-        (signal_enabled_flags.flags & ~ntrip_rtk_supported_signal_mask()) == 0;
-    const bool ntrip_valid_channel_set =
-        ntrip_only_supported_signals &&
-        (ntrip_gps_l1 || ntrip_gal_e1 || ntrip_bds_b1c) &&
-        !(ntrip_gps_l2 && ntrip_gps_l5) &&
-        (!(ntrip_gps_l2 || ntrip_gps_l5) || ntrip_gps_l1) &&
-        (!ntrip_gal_e5a || ntrip_gal_e1);
+    // Per-system NTRIP RTK channel rule, fully derived from the signal
+    // table: an entry band alone or with at most one of its second bands.
+    // Single-band sets run single-frequency RTK.
+    const bool ntrip_valid_channel_set = ntrip_rtk_valid_channel_set(signal_enabled_flags);
 
     if (pvt_output_parameters.ntrip_client_enabled)
         {
@@ -373,7 +326,8 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
                 }
             if (!ntrip_valid_channel_set)
                 {
-                    throw std::invalid_argument("NTRIP RTK channels must be GPS L1 C/A alone or with one of L2C or L5, and/or Galileo E1 alone or with E5a, and/or BeiDou B1C");
+                    throw std::invalid_argument("NTRIP RTK channels must be, per constellation: " +
+                                                ntrip_rtk_supported_sets_description());
                 }
         }
 

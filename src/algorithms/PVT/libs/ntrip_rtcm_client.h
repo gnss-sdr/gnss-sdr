@@ -30,17 +30,16 @@
 /** \addtogroup PVT_libs
  * \{ */
 
-//! Overwrites a credential string before releasing its storage, so the
-//! secret does not linger in freed heap memory. Single implementation for
-//! every holder of a Pvt_Conf / NTRIP configuration copy (backed by the
-//! secure_wipe() primitive in rtklib_stream.h).
-void secure_clear_string(std::string* value) noexcept;
-
 //! Scrubs the NTRIP credential fields of a Pvt_Conf copy ahead of its
 //! destruction (the Secure_String fields wipe themselves on release, but a
 //! long-lived copy should drop its secrets as soon as they are consumed).
 //! Single home of the credential field list.
 void secure_clear_ntrip_credentials(Pvt_Conf* conf) noexcept;
+
+//! True when the text contains whitespace or control characters — the
+//! character rule shared by the credential validation and the adapter's
+//! environment-variable-name check.
+bool ntrip_text_has_space_or_control(const std::string& text);
 
 struct Ntrip_Rtcm_Client_Config
 {
@@ -48,8 +47,10 @@ struct Ntrip_Rtcm_Client_Config
     std::string host;
     std::uint16_t port = 2101;
     std::string mountpoint;
-    std::string username;
-    std::string password;
+    // self-wiping: every copy of this configuration scrubs its credentials on
+    // destruction, so holders need no manual scrub site
+    Secure_String username;
+    Secure_String password;
     // Zero disables operational reconnects, but not the single immediate v2-to-v1
     // compatibility retry; positive values select the reconnect delay.
     int reconnect_interval_ms = 10000;
@@ -79,10 +80,11 @@ struct Ntrip_Rtcm_Client_Config
 };
 
 
-//! Builds the NTRIP client configuration from the PVT configuration —
-//! the single home of the field mapping and of the mountpoint
-//! normalization, shared by the adapter's validation and by the PVT block's
-//! client construction.
+//! Builds the NTRIP client configuration from the PVT configuration — the
+//! single home of the field mapping, shared by the adapter's validation and
+//! by the PVT block's client construction. The mountpoint is stored
+//! normalized; validate() and the transport-path builder normalize again
+//! defensively for directly-built configurations.
 Ntrip_Rtcm_Client_Config make_ntrip_rtcm_client_config(const Pvt_Conf& conf);
 
 
@@ -135,10 +137,16 @@ struct Ntrip_Rtcm_Snapshot
     int itrf = 0;
     double antenna_height_m = 0.0;
 
-    // Latest decoded broadcast ephemeris for each GPS, Galileo, BeiDou or
-    // QZSS satellite seen on the correction stream (RTCM MT1019/1044/1045/
-    // 1046/1042). The records own no dynamic memory.
+    // Latest decoded broadcast ephemeris for each GPS, Galileo or BeiDou
+    // satellite seen on the correction stream (RTCM MT1019/1045/1046/1042),
+    // sorted by satellite number for binary lookup. The records own no
+    // dynamic memory.
     std::vector<eph_t> ephemerides;
+
+    //! Recomputes the rover-time-dependent fields age_s and fresh. A cached
+    //! copy must call this per epoch: the generation covers the received
+    //! data, not the passage of rover time.
+    void refresh_age(const gtime_t& rover_time, double max_age_s);
 };
 
 
@@ -177,7 +185,7 @@ public:
     // Cheap change detectors so per-epoch callers can skip the deep copies:
     // snapshot_generation() matches Ntrip_Rtcm_Snapshot::generation, and
     // state_generation() changes whenever the status state/message is set.
-    std::uint64_t snapshot_generation() const;
+    std::uint64_t snapshot_generation() const noexcept;
     std::uint64_t state_generation() const noexcept;
 
     // Position is ECEF in metres. Invalid/non-finite positions disable GGA

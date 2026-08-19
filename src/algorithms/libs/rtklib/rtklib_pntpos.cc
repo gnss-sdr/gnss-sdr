@@ -85,6 +85,9 @@ int galileo_bgd_index(unsigned char observation_code, int sat, const nav_t *nav)
    weighting terms must follow the measurement instead of hardcoding slot 0
    (an empty slot reads as SNR 0 and inflates the variance by orders of
    magnitude) */
+/* rescode()'s per-system i/j band selection walks the same slots for the
+   iono/TGD pairing — a change to either scan's notion of "the measured
+   slot" must be mirrored there */
 static int used_frequency_slot(const obsd_t *obs)
 {
     for (int f = 0; f < NFREQ + NEXOBS; f++)
@@ -344,13 +347,17 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
             return 0.0;
         }
 
-    /* test snr mask */
+    /* test snr mask on the band that actually carries a measurement: for the
+       single-band second-slot cases (GPS L2C/L5-only, Galileo E5a-only, BDS
+       B3I-only) the first band is empty and obs->SNR[i] reads 0, which would
+       mask the satellite out at any nonzero threshold */
+    const int snr_slot = obs->code[i] != CODE_NONE ? i : j;
     if (iter > 0)
         {
-            if (testsnr(0, i, azel[1], obs->SNR[i] * 0.25, &opt->snrmask))
+            if (testsnr(0, snr_slot, azel[1], obs->SNR[snr_slot] * 0.25, &opt->snrmask))
                 {
                     trace(4, "snr mask: %s sat=%2d el=%.1f snr=%.1f\n",
-                        time_str(obs->time, 0), obs->sat, azel[1] * R2D, obs->SNR[i] * 0.25);
+                        time_str(obs->time, 0), obs->sat, azel[1] * R2D, obs->SNR[snr_slot] * 0.25);
                     return 0.0;
                 }
             if (opt->ionoopt == IONOOPT_IFLC && i != j)

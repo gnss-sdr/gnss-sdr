@@ -17,7 +17,7 @@
 #ifndef GNSS_SDR_SECURE_STRING_H
 #define GNSS_SDR_SECURE_STRING_H
 
-#include <cstddef>
+#include "rtklib_secure_wipe.h"
 #include <string>
 #include <utility>
 
@@ -26,11 +26,6 @@
 /** \addtogroup PVT_libs
  * \{ */
 
-/* Single wipe primitive of the code base, defined in rtklib_stream.cc. It is
- * declared here directly so this header stays free of the heavy rtklib
- * includes; the compiler rejects any signature divergence in translation
- * units that also see rtklib_stream.h. */
-void secure_wipe(void* data, size_t size);
 
 /*!
  * \brief Value type for credential-bearing configuration fields.
@@ -46,7 +41,13 @@ class Secure_String
 public:
     Secure_String() = default;
 
-    explicit Secure_String(std::string value) : d_value(std::move(value)) {}
+    explicit Secure_String(std::string value) : d_value(std::move(value))
+    {
+        // a long secret moves its heap buffer out, but a short one is
+        // byte-copied under the small-string optimization and its bytes stay
+        // behind in the moved-from parameter: wipe them before it dies
+        wipe_residue(value);
+    }
     explicit Secure_String(const char* value) : d_value(value) {}
 
     Secure_String(const Secure_String& other) = default;
@@ -77,6 +78,15 @@ public:
         return *this;
     }
 
+    Secure_String& operator=(std::string value)
+    {
+        clear();
+        d_value = std::move(value);
+        // the moved-from parameter may keep an SSO copy of the secret
+        wipe_residue(value);
+        return *this;
+    }
+
     ~Secure_String()
     {
         clear();
@@ -84,11 +94,7 @@ public:
 
     void clear() noexcept
     {
-        if (!d_value.empty())
-            {
-                secure_wipe(&d_value[0], d_value.size());
-            }
-        d_value.clear();
+        wipe_residue(d_value);
     }
 
     const std::string& value() const noexcept
@@ -102,6 +108,21 @@ public:
     }
 
 private:
+    // wipes the string's whole allocated buffer, not just its current size:
+    // a moved-from small string reads empty while its inline buffer still
+    // holds the secret's bytes, so size()-based wiping would skip exactly
+    // the residue this class exists to remove. The resize() never
+    // reallocates (the count is bounded by capacity()) and cannot throw.
+    static void wipe_residue(std::string& value) noexcept
+    {
+        if (value.capacity() > 0)
+            {
+                value.resize(value.capacity(), '\0');
+                secure_wipe(&value[0], value.size());
+            }
+        value.clear();
+    }
+
     std::string d_value;
 };
 

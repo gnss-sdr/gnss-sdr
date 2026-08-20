@@ -24,7 +24,6 @@ set(SYSTEM_PARAMETERS_SOURCES
     galileo_reduced_ced.cc
     beidou_dnav_navigation_message.cc
     beidou_dnav_ephemeris.cc
-    beidou_cnav1_ephemeris.cc
     beidou_cnav1_navigation_message.cc
     beidou_cnav1_ldpc.cc
     beidou_bdgim.cc

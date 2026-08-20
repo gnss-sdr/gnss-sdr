@@ -13,11 +13,17 @@
  *
  * -----------------------------------------------------------------------------
  */
+
 #ifndef GNSS_SDR_BEIDOU_CNAV1_H
 #define GNSS_SDR_BEIDOU_CNAV1_H
 
 #include "MATH_CONSTANTS.h"
 #include <cstdint>
+
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
 
 constexpr int32_t BEIDOU_CNAV1_FRAME_SYMBOLS = 1800;
 constexpr int32_t BEIDOU_CNAV1_FRAME_PERIOD_S = 18;
@@ -63,4 +69,6 @@ constexpr double BEIDOU_CNAV1_AF2_LSB = TWO_N66;
 constexpr double BEIDOU_CNAV1_TGD_LSB = TWO_N34;
 constexpr double BEIDOU_CNAV1_ISC_LSB = TWO_N34;
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_BEIDOU_CNAV1_H

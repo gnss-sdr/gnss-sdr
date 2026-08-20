@@ -41,7 +41,7 @@ except ImportError:
     print("Install them with: pip install matplotlib numpy")
     sys.exit(1)
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 # Default position: Castelldefels, Barcelona
 DEFAULT_LAT = 41.275
@@ -409,6 +409,17 @@ def parse_nav_field(line: str, field: int, first_line: bool = False) -> float:
     return parse_rinex_float(line[start : start + 19])
 
 
+def parse_nav_field_v2(line: str, field: int, first_line: bool = False) -> float:
+    """Parse a 19-character numeric field from a RINEX 2 NAV record.
+
+    RINEX 2.11 packs D19.12 fields one column earlier than RINEX 3/4:
+    after column 22 on the PRN/EPOCH/CLK line and after 3X on
+    continuation lines (Tables A4/A11/A16).
+    """
+    start = (22 if first_line else 3) + 19 * field
+    return parse_rinex_float(line[start : start + 19])
+
+
 def seconds_of_week(epoch: datetime) -> float:
     """Return seconds elapsed since Sunday 00:00 in the epoch's time scale."""
     days_since_sunday = (epoch.weekday() + 1) % 7
@@ -448,14 +459,26 @@ def parse_state_vector_ephemeris(
     }
 
     if prn.startswith("R"):
-        ephemeris.update(
-            {
-                "sv_relative_freq_bias": parse_nav_field(lines[0], 1, True),
-                "message_frame_time": parse_nav_field(lines[0], 2, True),
-                "freq_num": parse_nav_field(lines[2], 3),
-                "age": parse_nav_field(lines[3], 3),
-            }
-        )
+        ephemeris["sv_relative_freq_bias"] = parse_nav_field(lines[0], 1, True)
+        if message_type in ("L1OC", "L3OC"):
+            # GLONASS CDMA (RINEX 4.02): clock line carries the drift rate,
+            # orbit lines 2/3 carry data validity and TGD/ISC instead of the
+            # FDMA frequency number and age fields.
+            ephemeris.update(
+                {
+                    "sv_clock_drift_rate": parse_nav_field(lines[0], 2, True),
+                    "data_validity": parse_nav_field(lines[2], 3),
+                    "isc": parse_nav_field(lines[3], 3),
+                }
+            )
+        else:  # FDMA (RINEX 4) and unframed RINEX 3 records
+            ephemeris.update(
+                {
+                    "message_frame_time": parse_nav_field(lines[0], 2, True),
+                    "freq_num": parse_nav_field(lines[2], 3),
+                    "age": parse_nav_field(lines[3], 3),
+                }
+            )
     else:
         ephemeris.update(
             {
@@ -518,9 +541,9 @@ def parse_cnav_ephemeris(
     message_type: str,
     message_subtype: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Parse the RINEX 4 GPS/QZSS CNAV nine-line ephemeris layout."""
+    """Parse the RINEX 4 GPS/QZSS CNAV (nine-line) or CNV2 (ten-line) layout."""
     epoch = parse_nav_epoch(lines[0])
-    return {
+    ephemeris = {
         "prn": prn,
         "epoch": epoch,
         "message_type": message_type,
@@ -557,9 +580,150 @@ def parse_cnav_ephemeris(
         "isc_l2c": parse_nav_field(lines[7], 1),
         "isc_l5i5": parse_nav_field(lines[7], 2),
         "isc_l5q5": parse_nav_field(lines[7], 3),
+    }
+
+    # CNV2 (CNAV-2, L1C) inserts the L1C inter-signal corrections between
+    # the legacy ISC line and the transmission-time line (Table A11).
+    tail = 8
+    if message_type == "CNV2":
+        ephemeris["isc_l1cd"] = parse_nav_field(lines[8], 0)
+        ephemeris["isc_l1cp"] = parse_nav_field(lines[8], 1)
+        tail = 9
+
+    ephemeris["transmission_time"] = parse_nav_field(lines[tail], 0)
+    ephemeris["wn_op"] = parse_nav_field(lines[tail], 1)
+    ephemeris["flags"] = parse_nav_field(lines[tail], 2)
+    ephemeris["extra"] = lines[tail + 1 :]
+    return ephemeris
+
+
+def parse_bds_cnav_ephemeris(
+    prn: str,
+    lines: List[str],
+    message_type: str,
+    message_subtype: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Parse the RINEX 4 BeiDou CNV1/CNV2 (ten-line) or CNV3 (nine-line) layout.
+
+    Unlike GPS/QZSS CNAV, BeiDou CNAV records broadcast ToE directly on
+    broadcast-orbit line 3 (Tables A24-A26).
+    """
+    ephemeris = {
+        "prn": prn,
+        "epoch": parse_nav_epoch(lines[0]),
+        "message_type": message_type,
+        "message_subtype": message_subtype,
+        "sv_clock_bias": parse_nav_field(lines[0], 0, True),
+        "sv_clock_drift": parse_nav_field(lines[0], 1, True),
+        "sv_clock_drift_rate": parse_nav_field(lines[0], 2, True),
+        "adot": parse_nav_field(lines[1], 0),
+        "crs": parse_nav_field(lines[1], 1),
+        "delta_n": parse_nav_field(lines[1], 2),
+        "m0": parse_nav_field(lines[1], 3),
+        "cuc": parse_nav_field(lines[2], 0),
+        "ecc": parse_nav_field(lines[2], 1),
+        "cus": parse_nav_field(lines[2], 2),
+        "sqrt_a": parse_nav_field(lines[2], 3),
+        "toe": parse_nav_field(lines[3], 0),
+        "cic": parse_nav_field(lines[3], 1),
+        "omega0": parse_nav_field(lines[3], 2),
+        "cis": parse_nav_field(lines[3], 3),
+        "i0": parse_nav_field(lines[4], 0),
+        "crc": parse_nav_field(lines[4], 1),
+        "omega": parse_nav_field(lines[4], 2),
+        "omega_dot": parse_nav_field(lines[4], 3),
+        "idot": parse_nav_field(lines[5], 0),
+        "delta_ndot": parse_nav_field(lines[5], 1),
+        "sat_type": parse_nav_field(lines[5], 2),
+        "top": parse_nav_field(lines[5], 3),
+        "sisai_oe": parse_nav_field(lines[6], 0),
+        "sisai_ocb": parse_nav_field(lines[6], 1),
+        "sisai_oc1": parse_nav_field(lines[6], 2),
+        "sisai_oc2": parse_nav_field(lines[6], 3),
+    }
+
+    if message_type == "CNV3":
+        ephemeris.update(
+            {
+                "sismai": parse_nav_field(lines[7], 0),
+                "sv_health": parse_nav_field(lines[7], 1),
+                "integrity_flags": parse_nav_field(lines[7], 2),
+                "tgd_b2bi": parse_nav_field(lines[7], 3),
+                "transmission_time": parse_nav_field(lines[8], 0),
+                "extra": lines[9:],
+            }
+        )
+    else:  # CNV1 / CNV2
+        if message_type == "CNV1":
+            ephemeris["isc_b1cd"] = parse_nav_field(lines[7], 0)
+        else:
+            ephemeris["isc_b2ad"] = parse_nav_field(lines[7], 1)
+        ephemeris.update(
+            {
+                "tgd_b1cp": parse_nav_field(lines[7], 2),
+                "tgd_b2ap": parse_nav_field(lines[7], 3),
+                "sismai": parse_nav_field(lines[8], 0),
+                "sv_health": parse_nav_field(lines[8], 1),
+                "integrity_flags": parse_nav_field(lines[8], 2),
+                "iodc": parse_nav_field(lines[8], 3),
+                "transmission_time": parse_nav_field(lines[9], 0),
+                "iode": parse_nav_field(lines[9], 3),
+                "extra": lines[10:],
+            }
+        )
+
+    return ephemeris
+
+
+def parse_navic_l1nv_ephemeris(
+    prn: str,
+    lines: List[str],
+    message_type: str,
+    message_subtype: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Parse the RINEX 4 NavIC L1NV nine-line ephemeris layout (Table A31).
+
+    L1NV carries IODEC instead of ToE on broadcast-orbit line 3; like
+    GPS/QZSS CNAV, the single reference epoch means toe = toc.
+    """
+    epoch = parse_nav_epoch(lines[0])
+    return {
+        "prn": prn,
+        "epoch": epoch,
+        "message_type": message_type,
+        "message_subtype": message_subtype,
+        "sv_clock_bias": parse_nav_field(lines[0], 0, True),
+        "sv_clock_drift": parse_nav_field(lines[0], 1, True),
+        "sv_clock_drift_rate": parse_nav_field(lines[0], 2, True),
+        "adot": parse_nav_field(lines[1], 0),
+        "crs": parse_nav_field(lines[1], 1),
+        "delta_n": parse_nav_field(lines[1], 2),
+        "m0": parse_nav_field(lines[1], 3),
+        "cuc": parse_nav_field(lines[2], 0),
+        "ecc": parse_nav_field(lines[2], 1),
+        "cus": parse_nav_field(lines[2], 2),
+        "sqrt_a": parse_nav_field(lines[2], 3),
+        "iodec": parse_nav_field(lines[3], 0),
+        "toe": seconds_of_week(epoch),
+        "cic": parse_nav_field(lines[3], 1),
+        "omega0": parse_nav_field(lines[3], 2),
+        "cis": parse_nav_field(lines[3], 3),
+        "i0": parse_nav_field(lines[4], 0),
+        "crc": parse_nav_field(lines[4], 1),
+        "omega": parse_nav_field(lines[4], 2),
+        "omega_dot": parse_nav_field(lines[4], 3),
+        "idot": parse_nav_field(lines[5], 0),
+        "delta_ndot": parse_nav_field(lines[5], 1),
+        "rsf": parse_nav_field(lines[5], 3),
+        "urai": parse_nav_field(lines[6], 0),
+        "sv_health": parse_nav_field(lines[6], 1),
+        "tgd_l1p_l5": parse_nav_field(lines[6], 2),
+        "tgd_s_l5": parse_nav_field(lines[6], 3),
+        "isc_s_l1p": parse_nav_field(lines[7], 0),
+        "isc_l1d_l1p": parse_nav_field(lines[7], 1),
+        "isc_l1p_s": parse_nav_field(lines[7], 2),
+        "isc_l1d_s": parse_nav_field(lines[7], 3),
         "transmission_time": parse_nav_field(lines[8], 0),
-        "wn_op": parse_nav_field(lines[8], 1),
-        "flags": parse_nav_field(lines[8], 2),
         "extra": lines[9:],
     }
 
@@ -578,10 +742,32 @@ def parse_rinex4_ephemeris(
     system = prn[0] if prn else ""
 
     try:
-        if system in ("G", "J") and message_type == "CNAV":
-            if len(lines) < 9:
-                raise ValueError("CNAV record has fewer than nine data lines")
+        if system in ("G", "J") and message_type in ("CNAV", "CNV2"):
+            required = 10 if message_type == "CNV2" else 9
+            if len(lines) < required:
+                raise ValueError(
+                    f"{message_type} record has fewer than "
+                    f"{required} data lines"
+                )
             return parse_cnav_ephemeris(
+                prn, lines, message_type, message_subtype
+            )
+
+        if system == "C" and message_type in ("CNV1", "CNV2", "CNV3"):
+            required = 9 if message_type == "CNV3" else 10
+            if len(lines) < required:
+                raise ValueError(
+                    f"{message_type} record has fewer than "
+                    f"{required} data lines"
+                )
+            return parse_bds_cnav_ephemeris(
+                prn, lines, message_type, message_subtype
+            )
+
+        if system == "I" and message_type == "L1NV":
+            if len(lines) < 9:
+                raise ValueError("L1NV record has fewer than nine data lines")
+            return parse_navic_l1nv_ephemeris(
                 prn, lines, message_type, message_subtype
             )
 
@@ -601,8 +787,11 @@ def parse_rinex4_ephemeris(
                 prn, lines, message_type, message_subtype
             )
 
-        state_vector_message_types = {"R": "FDMA", "S": "SBAS"}
-        if message_type == state_vector_message_types.get(system):
+        state_vector_message_types = {
+            "R": ("FDMA", "L1OC", "L3OC"),
+            "S": ("SBAS",),
+        }
+        if message_type in state_vector_message_types.get(system, ()):
             if len(lines) < 4:
                 raise ValueError(
                     "state-vector record has fewer than four data lines"
@@ -706,7 +895,7 @@ def read_rinex_nav(filename: str) -> Dict[str, List[Dict[str, Any]]]:
                     dd = int(current_line[9:11])
                     hh = int(current_line[12:14])
                     mi = int(current_line[15:17])
-                    ss = float(current_line[18:23])
+                    ss = float(current_line[17:22])  # F5.1, columns 18-22
 
                     # Year mapping: 80–99 => 1980–1999, 00–79 => 2000–2079
                     yyyy = 1900 + yy if yy >= 80 else 2000 + yy
@@ -750,49 +939,49 @@ def read_rinex_nav(filename: str) -> Dict[str, List[Dict[str, Any]]]:
                         continue
 
                     if v2_system == "N":
-                        # GPS
+                        # GPS (Table A4)
                         ephemeris = {
                             "prn": prn,
                             "epoch": epoch,
-                            "sv_clock_bias": parse_rinex_float(
-                                lines[0][23:41]
+                            "sv_clock_bias": parse_nav_field_v2(
+                                lines[0], 0, True
                             ),
-                            "sv_clock_drift": parse_rinex_float(
-                                lines[0][41:61]
+                            "sv_clock_drift": parse_nav_field_v2(
+                                lines[0], 1, True
                             ),
-                            "sv_clock_drift_rate": parse_rinex_float(
-                                lines[0][61:80]
+                            "sv_clock_drift_rate": parse_nav_field_v2(
+                                lines[0], 2, True
                             ),
-                            "iode": parse_rinex_float(lines[1][4:22]),
-                            "crs": parse_rinex_float(lines[1][22:41]),
-                            "delta_n": parse_rinex_float(lines[1][41:60]),
-                            "m0": parse_rinex_float(lines[1][61:80]),
-                            "cuc": parse_rinex_float(lines[2][4:22]),
-                            "ecc": parse_rinex_float(lines[2][22:41]),
-                            "cus": parse_rinex_float(lines[2][41:60]),
-                            "sqrt_a": parse_rinex_float(lines[2][60:80]),
-                            "toe": parse_rinex_float(lines[3][4:22]),
-                            "cic": parse_rinex_float(lines[3][22:41]),
-                            "omega0": parse_rinex_float(lines[3][41:60]),
-                            "cis": parse_rinex_float(lines[3][60:80]),
-                            "i0": parse_rinex_float(lines[4][4:22]),
-                            "crc": parse_rinex_float(lines[4][22:41]),
-                            "omega": parse_rinex_float(lines[4][41:60]),
-                            "omega_dot": parse_rinex_float(lines[4][60:80]),
-                            "idot": parse_rinex_float(lines[5][4:22]),
-                            "codes_l2": parse_rinex_float(lines[5][22:41]),
-                            "gps_week": parse_rinex_float(lines[5][41:61]),
-                            "l2p_flag": parse_rinex_float(lines[5][61:80]),
-                            "sv_accuracy": parse_rinex_float(lines[6][4:22]),
-                            "sv_health": parse_rinex_float(lines[6][22:41]),
-                            "tgd": parse_rinex_float(lines[6][41:61]),
-                            "iodc": parse_rinex_float(lines[6][61:80]),
-                            "transmission_time": parse_rinex_float(
-                                lines[7][4:22]
+                            "iode": parse_nav_field_v2(lines[1], 0),
+                            "crs": parse_nav_field_v2(lines[1], 1),
+                            "delta_n": parse_nav_field_v2(lines[1], 2),
+                            "m0": parse_nav_field_v2(lines[1], 3),
+                            "cuc": parse_nav_field_v2(lines[2], 0),
+                            "ecc": parse_nav_field_v2(lines[2], 1),
+                            "cus": parse_nav_field_v2(lines[2], 2),
+                            "sqrt_a": parse_nav_field_v2(lines[2], 3),
+                            "toe": parse_nav_field_v2(lines[3], 0),
+                            "cic": parse_nav_field_v2(lines[3], 1),
+                            "omega0": parse_nav_field_v2(lines[3], 2),
+                            "cis": parse_nav_field_v2(lines[3], 3),
+                            "i0": parse_nav_field_v2(lines[4], 0),
+                            "crc": parse_nav_field_v2(lines[4], 1),
+                            "omega": parse_nav_field_v2(lines[4], 2),
+                            "omega_dot": parse_nav_field_v2(lines[4], 3),
+                            "idot": parse_nav_field_v2(lines[5], 0),
+                            "codes_l2": parse_nav_field_v2(lines[5], 1),
+                            "gps_week": parse_nav_field_v2(lines[5], 2),
+                            "l2p_flag": parse_nav_field_v2(lines[5], 3),
+                            "sv_accuracy": parse_nav_field_v2(lines[6], 0),
+                            "sv_health": parse_nav_field_v2(lines[6], 1),
+                            "tgd": parse_nav_field_v2(lines[6], 2),
+                            "iodc": parse_nav_field_v2(lines[6], 3),
+                            "transmission_time": parse_nav_field_v2(
+                                lines[7], 0
                             )
                             if len(lines) > 7
                             else None,
-                            "fit_interval": parse_rinex_float(lines[7][22:41])
+                            "fit_interval": parse_nav_field_v2(lines[7], 1)
                             if len(lines) > 7
                             else None,
                             "extra": lines[8:],
@@ -802,53 +991,53 @@ def read_rinex_nav(filename: str) -> Dict[str, List[Dict[str, Any]]]:
                         ephemeris = {
                             "prn": prn,
                             "epoch": epoch,
-                            "sv_clock_bias": parse_rinex_float(
-                                lines[0][23:41]
+                            "sv_clock_bias": parse_nav_field_v2(
+                                lines[0], 0, True
                             ),
-                            "sv_clock_drift": parse_rinex_float(
-                                lines[0][41:61]
+                            "sv_clock_drift": parse_nav_field_v2(
+                                lines[0], 1, True
                             ),
-                            "sv_clock_drift_rate": parse_rinex_float(
-                                lines[0][61:80]
+                            "sv_clock_drift_rate": parse_nav_field_v2(
+                                lines[0], 2, True
                             ),
-                            "x": parse_rinex_float(lines[1][4:22]),
-                            "x_vel": parse_rinex_float(lines[1][22:41]),
-                            "x_acc": parse_rinex_float(lines[1][41:60]),
-                            "health": parse_rinex_float(lines[1][60:80]),
-                            "y": parse_rinex_float(lines[2][4:22]),
-                            "y_vel": parse_rinex_float(lines[2][22:41]),
-                            "y_acc": parse_rinex_float(lines[2][41:61]),
-                            "z": parse_rinex_float(lines[3][4:22]),
-                            "z_vel": parse_rinex_float(lines[3][21:41]),
-                            "z_acc": parse_rinex_float(lines[3][41:61]),
+                            "x": parse_nav_field_v2(lines[1], 0),
+                            "x_vel": parse_nav_field_v2(lines[1], 1),
+                            "x_acc": parse_nav_field_v2(lines[1], 2),
+                            "health": parse_nav_field_v2(lines[1], 3),
+                            "y": parse_nav_field_v2(lines[2], 0),
+                            "y_vel": parse_nav_field_v2(lines[2], 1),
+                            "y_acc": parse_nav_field_v2(lines[2], 2),
+                            "z": parse_nav_field_v2(lines[3], 0),
+                            "z_vel": parse_nav_field_v2(lines[3], 1),
+                            "z_acc": parse_nav_field_v2(lines[3], 2),
                             "extra": lines[4:],
                         }
                     elif v2_system == "G":
-                        # GLONASS
+                        # GLONASS (Table A11)
                         ephemeris = {
                             "prn": prn,
                             "epoch": epoch,
-                            "sv_clock_bias": parse_rinex_float(
-                                lines[0][23:42]
+                            "sv_clock_bias": parse_nav_field_v2(
+                                lines[0], 0, True
                             ),
-                            "sv_relative_freq_bias": parse_rinex_float(
-                                lines[0][42:61]
+                            "sv_relative_freq_bias": parse_nav_field_v2(
+                                lines[0], 1, True
                             ),
-                            "message_frame_time": parse_rinex_float(
-                                lines[0][61:80]
+                            "message_frame_time": parse_nav_field_v2(
+                                lines[0], 2, True
                             ),
-                            "x": parse_rinex_float(lines[1][4:22]),
-                            "x_vel": parse_rinex_float(lines[1][22:41]),
-                            "x_acc": parse_rinex_float(lines[1][41:60]),
-                            "health": parse_rinex_float(lines[1][60:80]),
-                            "y": parse_rinex_float(lines[2][4:22]),
-                            "y_vel": parse_rinex_float(lines[2][22:41]),
-                            "y_acc": parse_rinex_float(lines[2][41:60]),
-                            "freq_num": parse_rinex_float(lines[2][60:80]),
-                            "z": parse_rinex_float(lines[3][4:22]),
-                            "z_vel": parse_rinex_float(lines[3][22:41]),
-                            "z_acc": parse_rinex_float(lines[3][41:60]),
-                            "age": parse_rinex_float(lines[3][60:80]),
+                            "x": parse_nav_field_v2(lines[1], 0),
+                            "x_vel": parse_nav_field_v2(lines[1], 1),
+                            "x_acc": parse_nav_field_v2(lines[1], 2),
+                            "health": parse_nav_field_v2(lines[1], 3),
+                            "y": parse_nav_field_v2(lines[2], 0),
+                            "y_vel": parse_nav_field_v2(lines[2], 1),
+                            "y_acc": parse_nav_field_v2(lines[2], 2),
+                            "freq_num": parse_nav_field_v2(lines[2], 3),
+                            "z": parse_nav_field_v2(lines[3], 0),
+                            "z_vel": parse_nav_field_v2(lines[3], 1),
+                            "z_acc": parse_nav_field_v2(lines[3], 2),
+                            "age": parse_nav_field_v2(lines[3], 3),
                             "extra": lines[4:],
                         }
                     else:
@@ -895,27 +1084,37 @@ def read_rinex_nav(filename: str) -> Dict[str, List[Dict[str, Any]]]:
                 continue
             system = prn[0]
 
-            try:
-                epoch = parse_nav_epoch(current_line)
-                lines = [current_line]
-                line_count = 4 if system == "R" or system == "S" else 7
-                for _ in range(line_count):
-                    next_line = f.readline()
-                    line_number += 1
-                    if not next_line:
-                        break
-                    lines.append(next_line)
+            # Collect the epoch line plus every continuation line (their
+            # satellite-identifier columns are blank). The record length
+            # varies with version and system -- e.g. GLONASS grew a fourth
+            # broadcast-orbit line in RINEX 3.05 -- so frame the record by
+            # content instead of a fixed line count.
+            lines = [current_line]
+            current_line = f.readline()
+            line_number += 1
+            while (
+                current_line
+                and current_line.strip()
+                and not current_line[0:3].strip()
+            ):
+                lines.append(current_line)
+                current_line = f.readline()
+                line_number += 1
 
-                if len(lines) < line_count + 1:
-                    current_line = f.readline()
-                    line_number += 1
-                    continue
+            try:
+                epoch = parse_nav_epoch(lines[0])
+                min_lines = 4 if system in ("R", "S") else 7
+                if len(lines) < min_lines:
+                    raise ValueError(
+                        f"record has {len(lines)} lines, expected at least "
+                        f"{min_lines}"
+                    )
 
                 if system == "R":  # GLONASS
                     ephemeris = {
                         "prn": prn,
                         "epoch": epoch,
-                        "sv_clock_bias": parse_rinex_float(lines[0][23:41]),
+                        "sv_clock_bias": parse_rinex_float(lines[0][23:42]),
                         "sv_relative_freq_bias": parse_rinex_float(
                             lines[0][42:61]
                         ),
@@ -923,15 +1122,15 @@ def read_rinex_nav(filename: str) -> Dict[str, List[Dict[str, Any]]]:
                             lines[0][61:80]
                         ),
                         "x": parse_rinex_float(lines[1][4:23]),
-                        "x_vel": parse_rinex_float(lines[1][23:41]),
+                        "x_vel": parse_rinex_float(lines[1][23:42]),
                         "x_acc": parse_rinex_float(lines[1][42:61]),
                         "health": parse_rinex_float(lines[1][61:80]),
                         "y": parse_rinex_float(lines[2][4:23]),
-                        "y_vel": parse_rinex_float(lines[2][23:41]),
+                        "y_vel": parse_rinex_float(lines[2][23:42]),
                         "y_acc": parse_rinex_float(lines[2][42:61]),
                         "freq_num": parse_rinex_float(lines[2][61:80]),
                         "z": parse_rinex_float(lines[3][4:23]),
-                        "z_vel": parse_rinex_float(lines[3][23:41]),
+                        "z_vel": parse_rinex_float(lines[3][23:42]),
                         "z_acc": parse_rinex_float(lines[3][42:61]),
                         "age": parse_rinex_float(lines[3][61:80]),
                         "extra": lines[4:],
@@ -1036,10 +1235,20 @@ def read_rinex_nav(filename: str) -> Dict[str, List[Dict[str, Any]]]:
                     file=sys.stderr,
                 )
 
-            current_line = f.readline()
-            line_number += 1
-
     return satellites
+
+
+def is_bds_geo_ephemeris(ephemeris: Dict[str, Any]) -> bool:
+    """Return True for BeiDou GEO satellites, whose broadcast ephemeris is
+    referred to a frame inclined -5 deg to the equator (BDS ICD)."""
+    sat_type = ephemeris.get("sat_type")
+    if sat_type:  # CNV1/CNV2/CNV3: 1=GEO, 2=IGSO, 3=MEO
+        return int(sat_type) == 1
+    try:
+        prn_num = int(ephemeris["prn"][1:])
+    except ValueError:
+        return False
+    return prn_num <= 5 or prn_num >= 59
 
 
 def calculate_satellite_position(
@@ -1126,17 +1335,37 @@ def calculate_satellite_position(
         xk_prime = rk * cos(uk)
         yk_prime = rk * sin(uk)
 
-        # Corrected longitude of ascending node
-        omega_k = (
-            ephemeris["omega0"]
-            + (ephemeris["omega_dot"] - omega_e_dot) * transmit_time
-            - omega_e_dot * ephemeris["toe"]
-        )
+        if system == "C" and is_bds_geo_ephemeris(ephemeris):
+            # BeiDou GEO ephemerides are referred to a frame inclined -5 deg
+            # to the equator: longitude of ascending node without the Earth
+            # rotation term, then rotate into ECEF (BDS ICD).
+            omega_k = (
+                ephemeris["omega0"]
+                + ephemeris["omega_dot"] * transmit_time
+                - omega_e_dot * ephemeris["toe"]
+            )
+            xg = xk_prime * cos(omega_k) - yk_prime * cos(ik) * sin(omega_k)
+            yg = xk_prime * sin(omega_k) + yk_prime * cos(ik) * cos(omega_k)
+            zg = yk_prime * sin(ik)
 
-        # Earth-fixed coordinates
-        xk = xk_prime * cos(omega_k) - yk_prime * cos(ik) * sin(omega_k)
-        yk = xk_prime * sin(omega_k) + yk_prime * cos(ik) * cos(omega_k)
-        zk = yk_prime * sin(ik)
+            phi = omega_e_dot * transmit_time
+            sin_t = sin(np.radians(-5.0))
+            cos_t = cos(np.radians(-5.0))
+            xk = xg * cos(phi) + yg * sin(phi) * cos_t + zg * sin(phi) * sin_t
+            yk = -xg * sin(phi) + yg * cos(phi) * cos_t + zg * cos(phi) * sin_t
+            zk = -yg * sin_t + zg * cos_t
+        else:
+            # Corrected longitude of ascending node
+            omega_k = (
+                ephemeris["omega0"]
+                + (ephemeris["omega_dot"] - omega_e_dot) * transmit_time
+                - omega_e_dot * ephemeris["toe"]
+            )
+
+            # Earth-fixed coordinates
+            xk = xk_prime * cos(omega_k) - yk_prime * cos(ik) * sin(omega_k)
+            yk = xk_prime * sin(omega_k) + yk_prime * cos(ik) * cos(omega_k)
+            zk = yk_prime * sin(ik)
 
     return xk, yk, zk
 

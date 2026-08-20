@@ -274,7 +274,7 @@ jobs:
       - name: Prepare run
         run: |
           cmake -S . -B build-tidy -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_C_COMPILER=/usr/bin/clang
-          cmake --build build-tidy --target volk_gnsssdr_module gtest-1.17.0 core_monitor core_libs pvt_libs
+          cmake --build build-tidy --target volk_gnsssdr_module gtest-1.18.0 core_monitor core_libs pvt_libs
       - name: Run clang-tidy
         run: |
           cd build-tidy && run-clang-tidy -fix -format

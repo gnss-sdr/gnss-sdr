@@ -36,6 +36,7 @@ void append_bits_as_chars(std::string& out, const int32_t* bits, int32_t n)
         }
 }
 
+
 void append_bits_as_chars(std::string& out, const uint8_t* bits, int32_t n)
 {
     out.reserve(out.size() + static_cast<size_t>(n));
@@ -45,6 +46,7 @@ void append_bits_as_chars(std::string& out, const uint8_t* bits, int32_t n)
         }
 }
 
+
 struct BchCodebook
 {
     int32_t n = 0;
@@ -53,6 +55,7 @@ struct BchCodebook
     std::vector<int8_t> bipolar_codewords;
     std::vector<uint16_t> messages;
 };
+
 
 std::vector<int8_t> encode_bch_hypothesis_bipolar(
     uint16_t msg_bits,
@@ -87,6 +90,7 @@ std::vector<int8_t> encode_bch_hypothesis_bipolar(
     return encoded;
 }
 
+
 BchCodebook build_bch_codebook(
     int32_t n,
     int32_t k,
@@ -109,6 +113,7 @@ BchCodebook build_bch_codebook(
         }
     return cb;
 }
+
 
 bool decode_bch_codeword(const int32_t* in, int32_t* out_msg, const BchCodebook& cb)
 {
@@ -168,6 +173,7 @@ uint32_t bits_to_unsigned(const int32_t* bits, int32_t length)
     return value;
 }
 
+
 template <typename UIntT>
 UIntT read_bits_be(const uint8_t* bits, int32_t offset, int32_t length)
 {
@@ -178,6 +184,7 @@ UIntT read_bits_be(const uint8_t* bits, int32_t offset, int32_t length)
         }
     return value;
 }
+
 
 template <typename IntT>
 IntT sign_extend(uint64_t raw, int32_t bit_width)
@@ -190,6 +197,7 @@ IntT sign_extend(uint64_t raw, int32_t bit_width)
     const uint64_t extend_mask = ~((1ULL << static_cast<uint64_t>(bit_width)) - 1ULL);
     return static_cast<IntT>(raw | extend_mask);
 }
+
 
 double twos_pow(int32_t exponent)
 {
@@ -234,16 +242,20 @@ void deinterleave_sf2_sf3(const float* interleaved, float* sf2, float* sf3)
     (void)sf3_idx;
 }
 
+
 uint64_t read_unsigned(const uint8_t* bits, int32_t offset, int32_t length)
 {
     return read_bits_be<uint64_t>(bits, offset, length);
 }
+
 
 int64_t read_signed(const uint8_t* bits, int32_t offset, int32_t length)
 {
     const uint64_t raw = read_unsigned(bits, offset, length);
     return sign_extend<int64_t>(raw, length);
 }
+
+
 uint32_t crc24q(const uint8_t* bits, int32_t num_bits)
 {
     // CRC-24Q (poly 0x864CFB)
@@ -264,12 +276,14 @@ uint32_t crc24q(const uint8_t* bits, int32_t num_bits)
     return crc;
 }
 
+
 bool verify_crc24q(const uint8_t* bits, int32_t data_bits)
 {
     const uint32_t computed = crc24q(bits, data_bits);
     const auto received = static_cast<uint32_t>(read_unsigned(bits, data_bits, BEIDOU_CNAV1_CRC_BITS));
     return computed == received;
 }
+
 
 double a_ref_from_sat_type(uint32_t sat_type)
 {
@@ -280,6 +294,7 @@ double a_ref_from_sat_type(uint32_t sat_type)
     return BEIDOU_CNAV1_A_REF_MEO;
 }
 
+
 int32_t nav_type_from_sat_type(uint32_t sat_type)
 {
     if (sat_type == 0b01U)
@@ -288,6 +303,7 @@ int32_t nav_type_from_sat_type(uint32_t sat_type)
         }
     return 1;
 }
+
 
 void parse_subframe2(const uint8_t* bits, Beidou_Cnav1_Ephemeris& eph, double soh_seconds)
 {
@@ -366,6 +382,7 @@ void parse_subframe2(const uint8_t* bits, Beidou_Cnav1_Ephemeris& eph, double so
     eph.sig_type = BDS_EPH_SOURCE_CNAV1;
 }
 
+
 void parse_page_common(
     const uint8_t* bits,
     bool has_sisaioe,
@@ -400,6 +417,7 @@ void parse_page_common(
         }
 }
 
+
 void parse_reduced_almanac(const uint8_t* bits, int32_t& offset, Bds3_B1c_AlmanacReduced& almanac)
 {
     almanac.prn = static_cast<int32_t>(read_unsigned(bits, offset, 6));
@@ -415,6 +433,7 @@ void parse_reduced_almanac(const uint8_t* bits, int32_t& offset, Bds3_B1c_Almana
     almanac.health = static_cast<int32_t>(read_unsigned(bits, offset, 8));
     offset += 8;
 }
+
 
 void parse_medium_almanac(const uint8_t* bits, int32_t& offset, Bds3_B1c_AlmanacMedium& almanac)
 {
@@ -448,6 +467,7 @@ void parse_medium_almanac(const uint8_t* bits, int32_t& offset, Bds3_B1c_Almanac
     offset += 8;
 }
 
+
 void parse_eop(const uint8_t* bits, int32_t& offset, Bds3_B1c_Eop& eop)
 {
     eop.t_eop_s = static_cast<int32_t>(read_unsigned(bits, offset, 16)) * 16;
@@ -466,6 +486,7 @@ void parse_eop(const uint8_t* bits, int32_t& offset, Bds3_B1c_Eop& eop)
     offset += 19;
 }
 
+
 void parse_bgto(const uint8_t* bits, int32_t& offset, Bds3_B1c_Bgto& bgto)
 {
     bgto.gnss_id = static_cast<int32_t>(read_unsigned(bits, offset, 3));
@@ -481,6 +502,7 @@ void parse_bgto(const uint8_t* bits, int32_t& offset, Bds3_B1c_Bgto& bgto)
     bgto.a2_bgto_s_s2 = static_cast<double>(read_signed(bits, offset, 7)) * twos_pow(-68);
     offset += 7;
 }
+
 
 void parse_page1(
     const uint8_t* bits,
@@ -530,6 +552,7 @@ void parse_page1(
     utc.delta_t_LSF = static_cast<int32_t>(read_signed(bits, offset, 8));
 }
 
+
 void parse_page2(const uint8_t* bits, Bds3_B1c_PageData& page_data)
 {
     int32_t offset = 0;
@@ -544,6 +567,7 @@ void parse_page2(const uint8_t* bits, Bds3_B1c_PageData& page_data)
         }
 }
 
+
 void parse_page3(const uint8_t* bits, Bds3_B1c_PageData& page_data)
 {
     int32_t offset = 0;
@@ -553,6 +577,7 @@ void parse_page3(const uint8_t* bits, Bds3_B1c_PageData& page_data)
     offset += 14;  // reserved
     offset += 24;  // CRC
 }
+
 
 void parse_page4(const uint8_t* bits, Bds3_B1c_PageData& page_data)
 {
@@ -798,20 +823,24 @@ bool Beidou_Cnav1_Navigation_Message::have_new_ephemeris() const
     return flag_new_ephemeris_;
 }
 
+
 bool Beidou_Cnav1_Navigation_Message::have_new_iono() const
 {
     return flag_new_iono_;
 }
+
 
 bool Beidou_Cnav1_Navigation_Message::have_new_utc_model() const
 {
     return flag_new_utc_;
 }
 
+
 bool Beidou_Cnav1_Navigation_Message::have_new_page_data() const
 {
     return flag_new_page_data_;
 }
+
 
 void Beidou_Cnav1_Navigation_Message::clear_flags()
 {
@@ -822,30 +851,36 @@ void Beidou_Cnav1_Navigation_Message::clear_flags()
     last_nav_bits_.clear();
 }
 
+
 const Beidou_Cnav1_Ephemeris& Beidou_Cnav1_Navigation_Message::get_ephemeris() const
 {
     return ephemeris_;
 }
+
 
 const Beidou_Cnav1_Iono& Beidou_Cnav1_Navigation_Message::get_iono() const
 {
     return iono_;
 }
 
+
 const Beidou_Cnav1_Utc_Model& Beidou_Cnav1_Navigation_Message::get_utc_model() const
 {
     return utc_model_;
 }
+
 
 const Bds3_B1c_PageData& Beidou_Cnav1_Navigation_Message::get_page_data() const
 {
     return page_data_;
 }
 
+
 const std::string& Beidou_Cnav1_Navigation_Message::get_last_nav_bits() const
 {
     return last_nav_bits_;
 }
+
 
 double Beidou_Cnav1_Navigation_Message::get_tow_s() const
 {

@@ -114,7 +114,7 @@ sbas_l1_telemetry_decoder_gs::sbas_l1_telemetry_decoder_gs(
                                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
                                  d_dump(dump),
                                  d_channel(0),
-                                 d_block_size(D_SAMPLES_PER_SYMBOL * D_SYMBOLS_PER_BIT * D_BLOCK_SIZE_IN_BITS)
+                                 d_block_size(D_SAMPLES_PER_SYMBOL_SBAS * D_SYMBOLS_PER_BIT_SBAS * D_BLOCK_SIZE_IN_BITS_SBAS)
 {
     configure_basic_outputs();
 
@@ -238,12 +238,12 @@ bool sbas_l1_telemetry_decoder_gs::Sample_Aligner::get_symbols(
     VLOG(FLOW) << "get_symbols(): "
                << "d_past_sample=" << d_past_sample << "\tsamples size=" << samples.size();
 
-    for (size_t i_sym = 0; i_sym < samples.size() / sbas_l1_telemetry_decoder_gs::D_SAMPLES_PER_SYMBOL; i_sym++)
+    for (size_t i_sym = 0; i_sym < samples.size() / sbas_l1_telemetry_decoder_gs::D_SAMPLES_PER_SYMBOL_SBAS; i_sym++)
         {
             // get the next samples
             for (int32_t i = 0; i < d_n_smpls_in_history; i++)
                 {
-                    const int32_t sample_index = static_cast<int32_t>(i_sym) * sbas_l1_telemetry_decoder_gs::D_SAMPLES_PER_SYMBOL + i - 1;
+                    const int32_t sample_index = static_cast<int32_t>(i_sym) * sbas_l1_telemetry_decoder_gs::D_SAMPLES_PER_SYMBOL_SBAS + i - 1;
                     if (sample_index == -1)
                         {
                             smpls[i] = d_past_sample;
@@ -329,7 +329,7 @@ bool sbas_l1_telemetry_decoder_gs::Symbol_Aligner_And_Decoder::get_bits(
     std::vector<double> &bit_stamps)
 {
     const int32_t traceback_depth = 5 * d_KK;
-    const int32_t nbits_requested = symbols.size() / D_SYMBOLS_PER_BIT;
+    const int32_t nbits_requested = symbols.size() / D_SYMBOLS_PER_BIT_SBAS;
     int32_t nbits_decoded_vd1;
     int32_t nbits_decoded_vd2;
     // fill two vectors with the two possible symbol alignments
@@ -341,7 +341,7 @@ bool sbas_l1_telemetry_decoder_gs::Symbol_Aligner_And_Decoder::get_bits(
     symbols_vd2.push_back(d_past_symbol);
     symbol_stamps_vd2.push_back(d_has_past_symbol
                                     ? d_past_symbol_stamp
-                                    : symbol_stamps.front() - D_SAMPLES_PER_SYMBOL * SBAS_L1_CODE_PERIOD_S);
+                                    : symbol_stamps.front() - D_SAMPLES_PER_SYMBOL_SBAS * SBAS_L1_CODE_PERIOD_S);
     for (size_t i = 0; i + 1 < symbols.size(); ++i)
         {
             symbols_vd2.push_back(symbols[i]);
@@ -352,7 +352,7 @@ bool sbas_l1_telemetry_decoder_gs::Symbol_Aligner_And_Decoder::get_bits(
     std::vector<double> input_bit_stamps_vd2(static_cast<size_t>(nbits_requested));
     for (int32_t i = 0; i < nbits_requested; ++i)
         {
-            const auto symbol_index = static_cast<size_t>(i * D_SYMBOLS_PER_BIT);
+            const auto symbol_index = static_cast<size_t>(i) * D_SYMBOLS_PER_BIT_SBAS;
             input_bit_stamps_vd1[static_cast<size_t>(i)] = symbol_stamps[symbol_index];
             input_bit_stamps_vd2[static_cast<size_t>(i)] = symbol_stamps_vd2[symbol_index];
         }

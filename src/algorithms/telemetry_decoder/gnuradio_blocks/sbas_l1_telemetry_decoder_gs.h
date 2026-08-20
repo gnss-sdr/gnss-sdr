@@ -102,9 +102,9 @@ private:
     void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits);
     void align_samples();
 
-    static const int32_t D_SAMPLES_PER_SYMBOL = 2;
-    static const int32_t D_SYMBOLS_PER_BIT = 2;
-    static const int32_t D_BLOCK_SIZE_IN_BITS = 30;
+    static const int32_t D_SAMPLES_PER_SYMBOL_SBAS = 2;
+    static const int32_t D_SYMBOLS_PER_BIT_SBAS = 2;
+    static const int32_t D_BLOCK_SIZE_IN_BITS_SBAS = 30;
 
     bool d_dump;
     Gnss_Satellite d_satellite;

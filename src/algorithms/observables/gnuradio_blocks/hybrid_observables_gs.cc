@@ -63,28 +63,6 @@ hybrid_observables_gs_sptr hybrid_observables_gs_make(const Obs_Conf &conf_)
 }
 
 
-Gnss_Satellite hybrid_observables_gs::pretty_satellite(char system, uint32_t prn)
-{
-    switch (system)
-        {
-        case 'G':
-            return Gnss_Satellite(std::string("GPS"), prn);
-        case 'R':
-            return Gnss_Satellite(std::string("Glonass"), prn);
-        case 'S':
-            return Gnss_Satellite(std::string("SBAS"), prn);
-        case 'E':
-            return Gnss_Satellite(std::string("Galileo"), prn);
-        case 'C':
-            return Gnss_Satellite(std::string("Beidou"), prn);
-        case 'J':
-            return Gnss_Satellite(std::string("QZSS"), prn);
-        default:
-            return {};
-        }
-}
-
-
 hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
     : gr::block("hybrid_observables_gs",
           gr::io_signature::make(conf_.nchannels_in, conf_.nchannels_in, sizeof(Gnss_Synchro)),
@@ -423,6 +401,28 @@ int32_t hybrid_observables_gs::save_matfile() const
     Mat_Close(matfp);
 
     return 0;
+}
+
+
+Gnss_Satellite hybrid_observables_gs::pretty_satellite(char system, uint32_t prn)
+{
+    switch (system)
+        {
+        case 'G':
+            return {std::string("GPS"), prn};
+        case 'R':
+            return {std::string("Glonass"), prn};
+        case 'S':
+            return {std::string("SBAS"), prn};
+        case 'E':
+            return {std::string("Galileo"), prn};
+        case 'C':
+            return {std::string("Beidou"), prn};
+        case 'J':
+            return {std::string("QZSS"), prn};
+        default:
+            return {};
+        }
 }
 
 

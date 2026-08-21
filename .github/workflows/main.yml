@@ -245,14 +245,14 @@ jobs:
       - name: run clang-format
         uses: jidicula/clang-format-action@v4.18.0
         with:
-          clang-format-version: "19"
+          clang-format-version: "22"
           check-path: ${{ matrix.path }}
           exclude-regex: '(libs\/gsl\/)|(tmpl)|(cpu_features)|^.*\.(cu)$'
 
   clang-tidy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     env:
-      CLANG_VERSION: 20
+      CLANG_VERSION: 22
     steps:
       - uses: actions/checkout@v7
       - name: Install dependencies
@@ -260,11 +260,11 @@ jobs:
           sudo apt update
           sudo apt install -y --no-install-recommends cmake \
           clang-${CLANG_VERSION} clang-tidy-${CLANG_VERSION} clang-format-${CLANG_VERSION} \
-          libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev \
+          libboost-dev libboost-date-time-dev libboost-filesystem-dev \
           libboost-thread-dev libboost-chrono-dev libboost-serialization-dev \
-          liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev \
-          liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libunwind-dev \
-          libgnutls-openssl-dev libmatio-dev googletest protobuf-compiler libprotobuf-dev \
+          gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev \
+          liblapack-dev libarmadillo-dev libabsl-dev \
+          libssl-dev libmatio-dev libgtest-dev protobuf-compiler libprotobuf-dev \
           python3-mako liborc-0.4-dev
           sudo ln -sf /usr/lib/llvm-${CLANG_VERSION}/bin/clang /usr/bin/clang
           sudo ln -sf /usr/lib/llvm-${CLANG_VERSION}/bin/clang /usr/bin/clang++
@@ -274,10 +274,10 @@ jobs:
       - name: Prepare run
         run: |
           cmake -S . -B build-tidy -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_C_COMPILER=/usr/bin/clang
-          cmake --build build-tidy --target volk_gnsssdr_module gtest-1.18.0 core_monitor core_libs pvt_libs
+          cmake --build build-tidy --target volk_gnsssdr_module core_monitor core_libs pvt_libs
       - name: Run clang-tidy
         run: |
-          cd build-tidy && run-clang-tidy -fix -format
+          cd build-tidy && run-clang-tidy -config-file="$GITHUB_WORKSPACE/.clang-tidy" -fix -format
       - name: check
         run: |
           git diff > clang_tidy.patch

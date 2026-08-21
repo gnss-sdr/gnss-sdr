@@ -24,7 +24,8 @@ static asn_TYPE_member_t asn_MBR_GPSTOWAssist_1[] = {
 static ber_tlv_tag_t asn_DEF_GPSTOWAssist_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
 static asn_SET_OF_specifics_t asn_SPC_GPSTOWAssist_specs_1 = {
-    sizeof(struct GPSTOWAssist), offsetof(struct GPSTOWAssist, _asn_ctx),
+    sizeof(struct GPSTOWAssist),
+    offsetof(struct GPSTOWAssist, _asn_ctx),
     0, /* XER encoding is XMLDelimitedItemList */
 };
 asn_TYPE_descriptor_t asn_DEF_GPSTOWAssist = {

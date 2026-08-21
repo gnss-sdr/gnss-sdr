@@ -768,6 +768,10 @@ int getcodepri(int sys, unsigned char code, const char *opt)
             return 0;
         }
     obs = code2obs(code, &j);
+    if (*obs == '\0' || j < 1 || j > MAXFREQ)
+        {
+            return 0;
+        }
 
     /* parse code options */
     for (p = opt; p && (p = strchr(p, '-')); p++)

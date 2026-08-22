@@ -1801,6 +1801,188 @@ int find_crlf(const unsigned char *buff, int n)
     return -1;
 }
 
+bool is_http_token_character(unsigned char c)
+{
+    const bool ascii_alphanumeric =
+        (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
+        (c >= 'a' && c <= 'z');
+    return ascii_alphanumeric || c == '!' || c == '#' || c == '$' ||
+           c == '%' || c == '&' || c == '\'' || c == '*' || c == '+' ||
+           c == '-' || c == '.' || c == '^' || c == '_' || c == '`' ||
+           c == '|' || c == '~';
+}
+
+bool is_http_bad_whitespace(unsigned char c)
+{
+    return c == ' ' || c == '\t';
+}
+
+void skip_http_bad_whitespace(const unsigned char **cursor,
+    const unsigned char *end)
+{
+    while (*cursor < end && is_http_bad_whitespace(**cursor))
+        {
+            ++(*cursor);
+        }
+}
+
+bool is_http_quoted_text(unsigned char c)
+{
+    return c == '\t' || c == ' ' || c == 0x21U ||
+           (c >= 0x23U && c <= 0x5BU) ||
+           (c >= 0x5DU && c <= 0x7EU) || c >= 0x80U;
+}
+
+bool is_http_quoted_pair_character(unsigned char c)
+{
+    return c == '\t' || c == ' ' ||
+           (c >= 0x21U && c <= 0x7EU) || c >= 0x80U;
+}
+
+bool parse_http_quoted_string(const unsigned char **cursor,
+    const unsigned char *end)
+{
+    if (*cursor == end || **cursor != '"')
+        {
+            return false;
+        }
+    ++(*cursor);
+    while (*cursor < end)
+        {
+            const unsigned char c = *(*cursor)++;
+            if (c == '"')
+                {
+                    return true;
+                }
+            if (c == '\\')
+                {
+                    if (*cursor == end ||
+                        !is_http_quoted_pair_character(**cursor))
+                        {
+                            return false;
+                        }
+                    ++(*cursor);
+                }
+            else if (!is_http_quoted_text(c))
+                {
+                    return false;
+                }
+        }
+    return false;
+}
+
+int http_hexadecimal_digit_value(unsigned char c)
+{
+    if (c >= '0' && c <= '9')
+        {
+            return c - '0';
+        }
+    if (c >= 'A' && c <= 'F')
+        {
+            return c - 'A' + 10;
+        }
+    if (c >= 'a' && c <= 'f')
+        {
+            return c - 'a' + 10;
+        }
+    return -1;
+}
+
+bool parse_http_chunk_size_line(const unsigned char *line, int length,
+    unsigned int *chunk_size)
+{
+    if (length <= 0)
+        {
+            return false;
+        }
+
+    const unsigned char *cursor = line;
+    const unsigned char *const end = line + length;
+    unsigned int value = 0;
+    bool has_digit = false;
+    while (cursor < end)
+        {
+            const int digit = http_hexadecimal_digit_value(*cursor);
+            if (digit < 0)
+                {
+                    break;
+                }
+            has_digit = true;
+            if (value > (UINT_MAX - static_cast<unsigned int>(digit)) / 16U)
+                {
+                    return false;
+                }
+            value = value * 16U + static_cast<unsigned int>(digit);
+            ++cursor;
+        }
+    if (!has_digit)
+        {
+            return false;
+        }
+
+    // RFC 9112 chunk extensions are ignored, but their syntax still has to be
+    // validated so arbitrary suffix bytes cannot alter the framing boundary.
+    while (cursor < end)
+        {
+            skip_http_bad_whitespace(&cursor, end);
+            if (cursor == end || *cursor++ != ';')
+                {
+                    return false;
+                }
+            skip_http_bad_whitespace(&cursor, end);
+
+            const unsigned char *const name_begin = cursor;
+            while (cursor < end && is_http_token_character(*cursor))
+                {
+                    ++cursor;
+                }
+            if (cursor == name_begin)
+                {
+                    return false;
+                }
+
+            const unsigned char *const after_name = cursor;
+            skip_http_bad_whitespace(&cursor, end);
+            if (cursor < end && *cursor == '=')
+                {
+                    ++cursor;
+                    skip_http_bad_whitespace(&cursor, end);
+                    if (cursor == end)
+                        {
+                            return false;
+                        }
+                    if (*cursor == '"')
+                        {
+                            if (!parse_http_quoted_string(&cursor, end))
+                                {
+                                    return false;
+                                }
+                        }
+                    else
+                        {
+                            const unsigned char *const value_begin = cursor;
+                            while (cursor < end &&
+                                   is_http_token_character(*cursor))
+                                {
+                                    ++cursor;
+                                }
+                            if (cursor == value_begin)
+                                {
+                                    return false;
+                                }
+                        }
+                }
+            else if (cursor == end && cursor != after_name)
+                {
+                    // BWS can precede the next semicolon, but not the CRLF.
+                    return false;
+                }
+        }
+
+    *chunk_size = value;
+    return true;
+}
+
 int read_ntrip_chunked(ntrip_t *ntrip, unsigned char *buff, int n, char *msg)
 {
     int copied = 0;
@@ -1827,13 +2009,9 @@ int read_ntrip_chunked(ntrip_t *ntrip, unsigned char *buff, int n, char *msg)
                             return copied;
                         }
 
-                    char size_text[64];
-                    std::memcpy(size_text, ntrip->buff, eol);
-                    size_text[eol] = '\0';
-                    char *end = nullptr;
-                    errno = 0;
-                    const uint64_t chunk_size = std::strtoul(size_text, &end, 16);
-                    if (end == size_text || errno == ERANGE || chunk_size > UINT_MAX)
+                    unsigned int chunk_size = 0;
+                    if (!parse_http_chunk_size_line(ntrip->buff, eol,
+                            &chunk_size))
                         {
                             std::snprintf(msg, MAXSTRMSG, "invalid HTTP chunk");
                             ntrip_disconnect(ntrip, ntrip->tcp->tirecon);
@@ -1850,7 +2028,7 @@ int read_ntrip_chunked(ntrip_t *ntrip, unsigned char *buff, int n, char *msg)
                             return copied;
                         }
 
-                    ntrip->chunk_remaining = static_cast<unsigned int>(chunk_size);
+                    ntrip->chunk_remaining = chunk_size;
                     ntrip->chunk_state = 1;
                 }
 
@@ -1927,17 +2105,6 @@ void lowercase_ascii(std::string *value)
     std::transform(value->begin(), value->end(), value->begin(), [](unsigned char c) {
         return static_cast<char>(c >= 'A' && c <= 'Z' ? c + ('a' - 'A') : c);
     });
-}
-
-bool is_http_token_character(unsigned char c)
-{
-    const bool ascii_alphanumeric =
-        (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
-        (c >= 'a' && c <= 'z');
-    return ascii_alphanumeric || c == '!' || c == '#' || c == '$' ||
-           c == '%' || c == '&' || c == '\'' || c == '*' || c == '+' ||
-           c == '-' || c == '.' || c == '^' || c == '_' || c == '`' ||
-           c == '|' || c == '~';
 }
 
 bool is_ascii_digit(char c)

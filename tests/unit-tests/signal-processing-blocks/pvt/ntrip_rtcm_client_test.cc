@@ -320,6 +320,52 @@ private:
 };
 
 
+struct Chunk_Read_Result
+{
+    int count = 0;
+    unsigned char output = 0xA5U;
+    int state = 0;
+    int transport_state = 0;
+    int chunk_state = 0;
+    unsigned int chunk_remaining = 0;
+    std::string message;
+};
+
+
+Chunk_Read_Result read_first_chunk_byte(const std::string& size_line)
+{
+    tcpcli_t tcp_client = {};
+    tcp_client.svr.state = 2;
+    tcp_client.svr.sock = -1;
+
+    ntrip_t ntrip = {};
+    ntrip.state = 2;
+    ntrip.type = 1;
+    ntrip.version = NTRIP_VERSION_2;
+    ntrip.chunked = 1;
+    ntrip.tcp = &tcp_client;
+
+    const std::string encoded_chunk = size_line + "\r\nQ\r\n";
+    Chunk_Read_Result result;
+    if (encoded_chunk.size() >= sizeof(ntrip.buff))
+        {
+            result.message = "test chunk is too large";
+            return result;
+        }
+    std::memcpy(ntrip.buff, encoded_chunk.data(), encoded_chunk.size());
+    ntrip.nb = static_cast<int>(encoded_chunk.size());
+
+    char message[MAXSTRMSG] = "";
+    result.count = readntrip(&ntrip, &result.output, 1, message);
+    result.state = ntrip.state;
+    result.transport_state = tcp_client.svr.state;
+    result.chunk_state = ntrip.chunk_state;
+    result.chunk_remaining = ntrip.chunk_remaining;
+    result.message = message;
+    return result;
+}
+
+
 int read_maximum_size_chunk()
 {
     tcpcli_t tcp_client = {};
@@ -1808,6 +1854,102 @@ TEST(NtripRtcmClientTest, MaximumSizeChunkMakesProgressWithoutNarrowing)
 #else
     EXPECT_EQ(0, read_maximum_size_chunk());
 #endif
+}
+
+
+TEST(NtripRtcmClientTest, MalformedChunkSizeLinesAreRejected)
+{
+    using namespace ntrip_rtcm_client_test;
+
+    char overflowing_size[(sizeof(unsigned int) * CHAR_BIT + 3U) / 4U + 2U] = "";
+    const int overflowing_size_length = std::snprintf(overflowing_size,
+        sizeof(overflowing_size), "%X0", UINT_MAX);
+    ASSERT_GT(overflowing_size_length, 0);
+    ASSERT_LT(overflowing_size_length,
+        static_cast<int>(sizeof(overflowing_size)));
+
+    const std::vector<std::string> malformed_size_lines = {
+        "1Z",
+        "0Z",
+        "0;name=",
+        "+1",
+        "-1",
+        " 1",
+        "\t1",
+        "0x1",
+        "1 ",
+        "1;",
+        "1;=value",
+        "1;name=",
+        "1;name=@",
+        "1;name=value@",
+        "1;flag ",
+        "1;name=\"unterminated",
+        "1;name=\"value\"junk",
+        "1;name=\"bad\\",
+        std::string("1\0Z", 3),
+        std::string("1;name=\"bad") + static_cast<char>(0x01) + "\"",
+        overflowing_size};
+
+    for (std::size_t i = 0; i < malformed_size_lines.size(); ++i)
+        {
+            SCOPED_TRACE(::testing::Message() << "case " << i);
+            const Chunk_Read_Result result =
+                read_first_chunk_byte(malformed_size_lines[i]);
+            EXPECT_EQ(0, result.count);
+            EXPECT_EQ(0xA5U, result.output);
+            EXPECT_EQ(0, result.state);
+            EXPECT_EQ(0, result.transport_state);
+            EXPECT_EQ(0, result.chunk_state);
+            EXPECT_EQ(0U, result.chunk_remaining);
+            EXPECT_EQ("invalid HTTP chunk", result.message);
+        }
+}
+
+
+TEST(NtripRtcmClientTest, ValidChunkExtensionsRemainCompatible)
+{
+    using namespace ntrip_rtcm_client_test;
+
+    const std::vector<std::string> valid_size_lines = {
+        "1",
+        "01",
+        "1;flag",
+        "1;name=value",
+        "1;name=\"\"",
+        "1;name=\"bar baz\"",
+        "1 \t; \tname \t= \t\"bar baz\" \t; flag",
+        "1;name=\"bar\\\"baz\""};
+
+    for (std::size_t i = 0; i < valid_size_lines.size(); ++i)
+        {
+            SCOPED_TRACE(::testing::Message() << "case " << i);
+            const Chunk_Read_Result result =
+                read_first_chunk_byte(valid_size_lines[i]);
+            EXPECT_EQ(1, result.count);
+            EXPECT_EQ('Q', result.output);
+            EXPECT_EQ(2, result.state);
+            EXPECT_EQ(2, result.transport_state);
+            EXPECT_EQ(2, result.chunk_state);
+            EXPECT_EQ(0U, result.chunk_remaining);
+            EXPECT_TRUE(result.message.empty());
+        }
+}
+
+
+TEST(NtripRtcmClientTest, ValidZeroChunkExtensionEndsTheStream)
+{
+    using namespace ntrip_rtcm_client_test;
+
+    const Chunk_Read_Result result =
+        read_first_chunk_byte("00 \t; \tname \t= \t\"\"");
+    EXPECT_EQ(0, result.count);
+    EXPECT_EQ(0xA5U, result.output);
+    EXPECT_EQ(0, result.state);
+    EXPECT_EQ(0, result.transport_state);
+    EXPECT_EQ(0, result.chunk_state);
+    EXPECT_EQ(0U, result.chunk_remaining);
+    EXPECT_EQ("NTRIP stream ended", result.message);
 }
 
 

@@ -51,6 +51,7 @@ namespace
 constexpr std::size_t READ_BUFFER_SIZE = 8192;
 constexpr int WORKER_POLL_INTERVAL_MS = 10;
 constexpr int MAX_INTERVAL_MS = 24 * 60 * 60 * 1000;
+constexpr std::size_t MAX_IN_FLIGHT_HOST_RESOLUTIONS = 4;
 // the interval floor rejects busy-loop configurations; zero keeps its
 // dedicated meaning (reconnects disabled)
 constexpr int MIN_INTERVAL_MS = 1000;
@@ -312,8 +313,14 @@ enum class Resolve_Result : std::uint8_t
 
 struct Host_Resolution_State
 {
+    explicit Host_Resolution_State(std::string requested_hostname)
+        : hostname(std::move(requested_hostname))
+    {
+    }
+
     std::mutex mutex;
     std::condition_variable condition;
+    const std::string hostname;
     std::string numeric_ipv4;
     bool complete = false;
     bool success = false;
@@ -322,6 +329,179 @@ struct Host_Resolution_State
 
 using Hostname_Resolver =
     std::function<bool(const std::string&, std::string*)>;
+
+
+void run_hostname_resolution(const std::shared_ptr<Host_Resolution_State>& state,
+    const std::string& hostname, const Hostname_Resolver& resolver) noexcept;
+
+
+struct Host_Resolution_Request
+{
+    std::shared_ptr<Host_Resolution_State> state;
+};
+
+
+struct Host_Resolution_Slot
+{
+    std::weak_ptr<Host_Resolution_State> state;
+    std::unique_ptr<std::thread> joinable_thread;
+};
+
+
+// POSIX getaddrinfo() has no portable cancellation mechanism. Keep incomplete
+// lookups discoverable after their client is destroyed so the same hostname
+// remains single-flight, and cap distinct stalled lookups process-wide. A
+// completed result is removed on the next acquisition rather than cached.
+class Host_Resolution_Coordinator
+{
+public:
+    Host_Resolution_Coordinator() = default;
+    ~Host_Resolution_Coordinator() = default;
+
+    Host_Resolution_Coordinator(const Host_Resolution_Coordinator&) = delete;
+    Host_Resolution_Coordinator& operator=(const Host_Resolution_Coordinator&) = delete;
+    Host_Resolution_Coordinator(Host_Resolution_Coordinator&&) = delete;
+    Host_Resolution_Coordinator& operator=(Host_Resolution_Coordinator&&) = delete;
+
+    Host_Resolution_Request acquire(const std::string& hostname,
+        const Hostname_Resolver& resolver)
+    {
+        std::lock_guard<std::mutex> lock(d_mutex);
+        Host_Resolution_Slot* available_slot = nullptr;
+        for (auto& slot : d_in_flight)
+            {
+                if (reclaim_if_complete(&slot))
+                    {
+                        if (available_slot == nullptr)
+                            {
+                                available_slot = &slot;
+                            }
+                        continue;
+                    }
+
+                const std::shared_ptr<Host_Resolution_State> state =
+                    slot.state.lock();
+                if (!state)
+                    {
+                        // A retained handle whose join failed keeps this slot
+                        // unavailable, preserving the process-wide bound.
+                        continue;
+                    }
+                if (state->hostname == hostname)
+                    {
+                        Host_Resolution_Request request;
+                        request.state = state;
+                        return request;
+                    }
+            }
+
+        Host_Resolution_Request request;
+        if (available_slot == nullptr)
+            {
+                return request;
+            }
+        request.state.reset(new Host_Resolution_State(hostname));
+        available_slot->state = request.state;
+        try
+            {
+                std::unique_ptr<std::thread> resolver_thread(new std::thread(
+                    run_hostname_resolution, request.state, hostname, resolver));
+                try
+                    {
+                        resolver_thread->detach();
+                    }
+                catch (...)
+                    {
+                        // Keep this exceptional joinable handle in its
+                        // coordinator slot. It is reaped after the resolver
+                        // publishes completion, so detach failures cannot
+                        // escape the same process-wide resource bound.
+                        available_slot->joinable_thread =
+                            std::move(resolver_thread);
+                    }
+            }
+        catch (...)
+            {
+                available_slot->state.reset();
+                throw;
+            }
+        ++d_launch_count;
+        return request;
+    }
+
+    std::uint64_t launch_count()
+    {
+        std::lock_guard<std::mutex> lock(d_mutex);
+        return d_launch_count;
+    }
+
+    std::size_t in_flight_count()
+    {
+        std::lock_guard<std::mutex> lock(d_mutex);
+        std::size_t count = 0;
+        for (auto& slot : d_in_flight)
+            {
+                if (reclaim_if_complete(&slot))
+                    {
+                        continue;
+                    }
+                if (!slot.state.expired() || slot.joinable_thread)
+                    {
+                        ++count;
+                    }
+            }
+        return count;
+    }
+
+private:
+    static bool reclaim_if_complete(Host_Resolution_Slot* slot)
+    {
+        const std::shared_ptr<Host_Resolution_State> state = slot->state.lock();
+        bool complete = !state;
+        if (state)
+            {
+                std::lock_guard<std::mutex> state_lock(state->mutex);
+                complete = state->complete;
+            }
+        if (!complete)
+            {
+                return false;
+            }
+        if (slot->joinable_thread)
+            {
+                if (slot->joinable_thread->joinable())
+                    {
+                        try
+                            {
+                                slot->joinable_thread->join();
+                            }
+                        catch (...)
+                            {
+                                return false;
+                            }
+                    }
+                slot->joinable_thread.reset();
+            }
+        slot->state.reset();
+        return true;
+    }
+
+    std::mutex d_mutex;
+    std::array<Host_Resolution_Slot,
+        MAX_IN_FLIGHT_HOST_RESOLUTIONS>
+        d_in_flight;
+    std::uint64_t d_launch_count = 0;
+};
+
+
+Host_Resolution_Coordinator& host_resolution_coordinator()
+{
+    // Resolver calls can outlive ordinary object and static teardown. Keep the
+    // fixed-size coordinator alive until process termination so exit paths
+    // cannot race its destructor or destroy retained joinable thread handles.
+    static auto* const coordinator = new Host_Resolution_Coordinator;
+    return *coordinator;
+}
 
 
 bool resolve_ipv4_hostname(const std::string& hostname,
@@ -789,24 +969,18 @@ private:
             "resolving NTRIP caster hostname", false);
         if (!*pending_resolution)
             {
-                pending_resolution->reset(new Host_Resolution_State);
                 try
                     {
-                        std::unique_ptr<std::thread> resolver(new std::thread(
-                            run_hostname_resolution, *pending_resolution,
-                            d_config.host, d_hostname_resolver));
-                        try
+                        Host_Resolution_Request request =
+                            host_resolution_coordinator().acquire(
+                                d_config.host, d_hostname_resolver);
+                        if (!request.state)
                             {
-                                resolver->detach();
+                                *failure_message =
+                                    "NTRIP caster hostname resolver capacity is exhausted";
+                                return Resolve_Result::FAILED;
                             }
-                        catch (...)
-                            {
-                                // A join here could reintroduce an unbounded
-                                // shutdown wait. Keep the exceptional joinable
-                                // handle alive; its task owns no client state
-                                // and still reports through the shared result.
-                                (void)resolver.release();  // NOLINT(bugprone-unused-return-value)
-                            }
+                        *pending_resolution = request.state;
                     }
                 catch (...)
                     {
@@ -1759,6 +1933,18 @@ bool Ntrip_Rtcm_Client::set_hostname_resolver_for_test(
     Hostname_Resolver resolver)
 {
     return d_impl->set_hostname_resolver_for_test(std::move(resolver));
+}
+
+
+std::uint64_t Ntrip_Rtcm_Client::hostname_resolution_launch_count_for_test()
+{
+    return host_resolution_coordinator().launch_count();
+}
+
+
+std::size_t Ntrip_Rtcm_Client::in_flight_hostname_resolution_count_for_test()
+{
+    return host_resolution_coordinator().in_flight_count();
 }
 
 

@@ -20,6 +20,7 @@
 #include "pvt_conf.h"
 #include "rtklib.h"
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -210,6 +211,9 @@ private:
     // Test-only resolver injection. Production callers always use the system
     // IPv4 resolver installed by the implementation constructor.
     bool set_hostname_resolver_for_test(Hostname_Resolver resolver);
+    // Synchronized process-wide observations used by resolver lifecycle tests.
+    static std::uint64_t hostname_resolution_launch_count_for_test();
+    static std::size_t in_flight_hostname_resolution_count_for_test();
 
     class Impl;
     std::unique_ptr<Impl> d_impl;

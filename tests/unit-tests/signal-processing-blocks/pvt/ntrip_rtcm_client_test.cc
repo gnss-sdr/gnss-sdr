@@ -55,6 +55,16 @@ public:
     {
         return client.set_hostname_resolver_for_test(resolver);
     }
+
+    static std::uint64_t hostname_resolution_launch_count()
+    {
+        return Ntrip_Rtcm_Client::hostname_resolution_launch_count_for_test();
+    }
+
+    static std::size_t in_flight_hostname_resolution_count()
+    {
+        return Ntrip_Rtcm_Client::in_flight_hostname_resolution_count_for_test();
+    }
 };
 
 namespace ntrip_rtcm_client_test
@@ -68,6 +78,46 @@ constexpr char TRACE_USERNAME[] = "trace-user";
 constexpr char TRACE_PASSWORD[] = "NTRIP-PASSWORD-SENTINEL-7f3c";
 constexpr char TRACE_BASIC_TOKEN[] =
     "dHJhY2UtdXNlcjpOVFJJUC1QQVNTV09SRC1TRU5USU5FTC03ZjNj";
+
+
+bool wait_for_in_flight_hostname_resolutions(std::size_t expected,
+    std::chrono::milliseconds timeout)
+{
+    const std::chrono::steady_clock::time_point deadline =
+        std::chrono::steady_clock::now() + timeout;
+    do
+        {
+            if (Ntrip_Rtcm_Client_Test_Access::
+                    in_flight_hostname_resolution_count() == expected)
+                {
+                    return true;
+                }
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    while (std::chrono::steady_clock::now() < deadline);
+    return Ntrip_Rtcm_Client_Test_Access::
+               in_flight_hostname_resolution_count() == expected;
+}
+
+
+bool wait_for_hostname_resolution_launch_count(std::uint64_t expected,
+    std::chrono::milliseconds timeout)
+{
+    const std::chrono::steady_clock::time_point deadline =
+        std::chrono::steady_clock::now() + timeout;
+    do
+        {
+            if (Ntrip_Rtcm_Client_Test_Access::
+                    hostname_resolution_launch_count() >= expected)
+                {
+                    return true;
+                }
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    while (std::chrono::steady_clock::now() < deadline);
+    return Ntrip_Rtcm_Client_Test_Access::
+               hostname_resolution_launch_count() >= expected;
+}
 
 
 class File_Descriptor_Zero_Guard
@@ -2162,6 +2212,11 @@ TEST(NtripRtcmClientTest, TimedOutDnsLookupRemainsSingleFlightAcrossReconnects)
 {
     using namespace ntrip_rtcm_client_test;
 
+    ASSERT_TRUE(wait_for_in_flight_hostname_resolutions(
+        0, std::chrono::milliseconds(1000)));
+    const std::uint64_t launches_before =
+        Ntrip_Rtcm_Client_Test_Access::hostname_resolution_launch_count();
+
     Ntrip_Rtcm_Client_Config config;
     config.enabled = true;
     config.host = "stalled-resolver.invalid";
@@ -2197,20 +2252,180 @@ TEST(NtripRtcmClientTest, TimedOutDnsLookupRemainsSingleFlightAcrossReconnects)
     const std::chrono::milliseconds stop_duration =
         std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::steady_clock::now() - stop_start);
-    // No resolver can be launched after stop(). Give any thread already
-    // created by the faulty path a final chance to enter its callback before
-    // taking the invocation count used by the assertion and cleanup wait.
-    resolver.wait_for_calls(2, std::chrono::milliseconds(250));
-    const std::size_t resolver_calls = resolver.call_count();
+    const std::uint64_t launches_after =
+        Ntrip_Rtcm_Client_Test_Access::hostname_resolution_launch_count();
     resolver.release();
+    const bool coordinator_idle = wait_for_in_flight_hostname_resolutions(
+        0, std::chrono::milliseconds(1000));
+    const std::size_t resolver_calls = resolver.call_count();
     const bool all_callbacks_completed = resolver.wait_for_completions(
         resolver_calls, std::chrono::milliseconds(1000));
 
     ASSERT_GE(retry_status.reconnect_count, 2U);
     ASSERT_EQ(Ntrip_Rtcm_Client_State::RECONNECT_WAIT, retry_status.state);
+    EXPECT_EQ(launches_before + 1, launches_after);
     EXPECT_EQ(1U, resolver_calls);
     EXPECT_LT(stop_duration.count(), 1000);
     EXPECT_TRUE(all_callbacks_completed);
+    EXPECT_TRUE(coordinator_idle);
+}
+
+
+TEST(NtripRtcmClientTest, TimedOutDnsLookupRemainsSingleFlightAcrossClientLifetimes)
+{
+    using namespace ntrip_rtcm_client_test;
+
+    ASSERT_TRUE(wait_for_in_flight_hostname_resolutions(
+        0, std::chrono::milliseconds(1000)));
+    const std::uint64_t launches_before =
+        Ntrip_Rtcm_Client_Test_Access::hostname_resolution_launch_count();
+
+    Ntrip_Rtcm_Client_Config config;
+    config.enabled = true;
+    config.host = "stalled-resolver-across-lifetimes.invalid";
+    config.mountpoint = "BASE";
+    config.reconnect_interval_ms = 0;
+    config.timeout_ms = 1000;
+
+    Blocking_Hostname_Resolver resolver;
+    for (std::size_t lifetime = 0; lifetime < 3; ++lifetime)
+        {
+            Ntrip_Rtcm_Client client(config);
+            ASSERT_TRUE(Ntrip_Rtcm_Client_Test_Access::set_hostname_resolver(
+                client, resolver.callback()));
+            ASSERT_TRUE(client.start());
+
+            Ntrip_Rtcm_Client_Status status;
+            const std::chrono::steady_clock::time_point error_deadline =
+                std::chrono::steady_clock::now() +
+                std::chrono::milliseconds(2000);
+            do
+                {
+                    status = client.status();
+                    if (status.state == Ntrip_Rtcm_Client_State::ERROR)
+                        {
+                            break;
+                        }
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                }
+            while (std::chrono::steady_clock::now() < error_deadline);
+
+            client.stop();
+            ASSERT_EQ(Ntrip_Rtcm_Client_State::ERROR, status.state);
+        }
+
+    const std::uint64_t launches_after =
+        Ntrip_Rtcm_Client_Test_Access::hostname_resolution_launch_count();
+    resolver.release();
+    const bool coordinator_idle = wait_for_in_flight_hostname_resolutions(
+        0, std::chrono::milliseconds(1000));
+    const std::size_t resolver_calls = resolver.call_count();
+    const bool all_callbacks_completed = resolver.wait_for_completions(
+        resolver_calls, std::chrono::milliseconds(1000));
+
+    EXPECT_EQ(launches_before + 1, launches_after);
+    EXPECT_EQ(1U, resolver_calls);
+    EXPECT_TRUE(all_callbacks_completed);
+    EXPECT_TRUE(coordinator_idle);
+}
+
+
+TEST(NtripRtcmClientTest, DistinctTimedOutDnsLookupsStayProcessBounded)
+{
+    using namespace ntrip_rtcm_client_test;
+
+    constexpr std::size_t resolver_capacity = 4;
+    constexpr std::size_t client_count = resolver_capacity + 2;
+    ASSERT_TRUE(wait_for_in_flight_hostname_resolutions(
+        0, std::chrono::milliseconds(1000)));
+    const std::uint64_t launches_before =
+        Ntrip_Rtcm_Client_Test_Access::hostname_resolution_launch_count();
+    Blocking_Hostname_Resolver resolver;
+    std::vector<std::unique_ptr<Ntrip_Rtcm_Client>> clients;
+    clients.reserve(client_count);
+    for (std::size_t i = 0; i < client_count; ++i)
+        {
+            Ntrip_Rtcm_Client_Config config;
+            config.enabled = true;
+            config.host = std::string("stalled-resolver-") +
+                          std::to_string(i) + ".invalid";
+            config.mountpoint = "BASE";
+            config.reconnect_interval_ms = 0;
+            config.timeout_ms = 1000;
+
+            clients.push_back(
+                std::unique_ptr<Ntrip_Rtcm_Client>(new Ntrip_Rtcm_Client(config)));
+            ASSERT_TRUE(Ntrip_Rtcm_Client_Test_Access::set_hostname_resolver(
+                *clients.back(), resolver.callback()));
+            ASSERT_TRUE(clients.back()->start());
+        }
+
+    bool all_clients_finished = false;
+    const std::chrono::steady_clock::time_point error_deadline =
+        std::chrono::steady_clock::now() + std::chrono::milliseconds(2000);
+    do
+        {
+            all_clients_finished = true;
+            for (const auto& client : clients)
+                {
+                    if (client->status().state != Ntrip_Rtcm_Client_State::ERROR)
+                        {
+                            all_clients_finished = false;
+                            break;
+                        }
+                }
+            if (!all_clients_finished)
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                }
+        }
+    while (!all_clients_finished &&
+           std::chrono::steady_clock::now() < error_deadline);
+
+    const std::uint64_t launches_after =
+        Ntrip_Rtcm_Client_Test_Access::hostname_resolution_launch_count();
+    for (auto& client : clients)
+        {
+            client->stop();
+        }
+    resolver.release();
+    const bool coordinator_idle = wait_for_in_flight_hostname_resolutions(
+        0, std::chrono::milliseconds(1000));
+    const std::size_t resolver_calls = resolver.call_count();
+    const bool all_callbacks_completed = resolver.wait_for_completions(
+        resolver_calls, std::chrono::milliseconds(1000));
+
+    EXPECT_TRUE(all_clients_finished);
+    EXPECT_EQ(launches_before + resolver_capacity, launches_after);
+    EXPECT_EQ(resolver_capacity, resolver_calls);
+    EXPECT_TRUE(all_callbacks_completed);
+    ASSERT_TRUE(coordinator_idle);
+
+    Ntrip_Rtcm_Client_Config reclaimed_config;
+    reclaimed_config.enabled = true;
+    reclaimed_config.host = "reclaimed-resolver-capacity.invalid";
+    reclaimed_config.mountpoint = "BASE";
+    reclaimed_config.reconnect_interval_ms = 0;
+    reclaimed_config.timeout_ms = 1000;
+    Ntrip_Rtcm_Client reclaimed_client(reclaimed_config);
+    ASSERT_TRUE(Ntrip_Rtcm_Client_Test_Access::set_hostname_resolver(
+        reclaimed_client, resolver.callback()));
+    ASSERT_TRUE(reclaimed_client.start());
+    const bool reclaimed_capacity = wait_for_hostname_resolution_launch_count(
+        launches_after + 1, std::chrono::milliseconds(1000));
+    const bool reclaimed_callback_completed = resolver.wait_for_completions(
+        resolver_capacity + 1, std::chrono::milliseconds(1000));
+    reclaimed_client.stop();
+    const std::uint64_t reclaimed_launches_after =
+        Ntrip_Rtcm_Client_Test_Access::hostname_resolution_launch_count();
+    const bool reclaimed_coordinator_idle =
+        wait_for_in_flight_hostname_resolutions(
+            0, std::chrono::milliseconds(1000));
+
+    EXPECT_TRUE(reclaimed_capacity);
+    EXPECT_EQ(launches_after + 1, reclaimed_launches_after);
+    EXPECT_TRUE(reclaimed_callback_completed);
+    EXPECT_TRUE(reclaimed_coordinator_idle);
 }
 
 

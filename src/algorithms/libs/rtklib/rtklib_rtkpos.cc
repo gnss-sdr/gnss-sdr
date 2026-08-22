@@ -1981,12 +1981,16 @@ int ddres(rtk_t *rtk, const obsd_t *obs, const nav_t *nav, double dt, const doub
                             if (opt->maxinno[f < nf ? 0 : 1] > 0.0 &&
                                 fabs(v[nv]) > opt->maxinno[f < nf ? 0 : 1] * threshadj)
                                 {
-                                    /* charge the outlier only to the non-reference
+                                    /* charge phase outliers only to the non-reference
                                        satellite (demo5): the reference is part of every
                                        pair and would otherwise reach the rejc-based bias
-                                       reset from rejections it did not cause */
-                                    rtk->ssat[sat[j] - 1].vsat[frq] = 0;
-                                    rtk->ssat[sat[j] - 1].rejc[frq]++;
+                                       reset from rejections it did not cause. Code
+                                       outliers must not modify carrier-phase state */
+                                    if (f < nf)
+                                        {
+                                            rtk->ssat[sat[j] - 1].vsat[frq] = 0;
+                                            rtk->ssat[sat[j] - 1].rejc[frq]++;
+                                        }
                                     errmsg(rtk, "outlier rejected (sat=%3d-%3d %s%d v=%.3f)\n",
                                         sat[i], sat[j], f < nf ? "L" : "P", f % nf + 1, v[nv]);
                                     continue;

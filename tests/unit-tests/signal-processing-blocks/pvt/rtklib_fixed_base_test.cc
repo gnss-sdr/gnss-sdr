@@ -1281,6 +1281,64 @@ TEST_F(RtklibFixedBaseTest, AFreshlyResetBiasIsAdmittedThroughTheWidenedInnovati
 }
 
 
+TEST_F(RtklibFixedBaseTest, CodeOutliersDoNotCorruptCarrierPhaseState)
+{
+    using namespace rtklib_fixed_base_test_detail;
+    const double base_position_geodetic[3] = {45.0 * D2R, 8.0 * D2R, 100.0};
+    double base_position_ecef[3]{};
+    pos2ecef(base_position_geodetic, base_position_ecef);
+    const double baseline_enu_m[3] = {8.0, 4.0, 1.0};
+    double baseline_ecef_m[3]{};
+    enu2ecef(base_position_geodetic, baseline_enu_m, baseline_ecef_m);
+    const double rover_position_ecef[3] = {
+        base_position_ecef[0] + baseline_ecef_m[0],
+        base_position_ecef[1] + baseline_ecef_m[1],
+        base_position_ecef[2] + baseline_ecef_m[2]};
+
+    prcopt_t options = fixed_base_options();
+    options.modear = ARMODE_OFF;
+    options.maxout = 50;
+    auto solver = make_solver_with_options(options);
+    const std::vector<unsigned int> satellites = select_relative_satellites(
+        base_position_ecef, rover_position_ecef);
+    ASSERT_GE(satellites.size(), 6U);
+
+    /* Corrupt only an L2 pseudorange after the filter has converged. The L2
+       carrier and the L1 code used by the single-point seed remain clean. */
+    const unsigned int corrupted_prn = satellites.back();
+    constexpr int OUTLIER_EPOCH = 6;
+    constexpr double CODE_ERROR_M = 300.0;
+
+    for (int epoch_index = 0; epoch_index <= OUTLIER_EPOCH; ++epoch_index)
+        {
+            Synthetic_Relative_Epoch epoch = make_relative_epoch(
+                *solver, epoch_index, base_position_ecef, rover_position_ecef, satellites);
+            if (epoch_index == OUTLIER_EPOCH)
+                {
+                    const auto observation = epoch.rover_observations.find(
+                        static_cast<int>(corrupted_prn * 2U + 1U));
+                    ASSERT_NE(epoch.rover_observations.end(), observation);
+                    observation->second.Pseudorange_m += CODE_ERROR_M;
+                }
+
+            SCOPED_TRACE(::testing::Message() << "epoch=" << epoch_index);
+            ASSERT_TRUE(solve(*solver, epoch.rover_observations, &epoch.base_snapshot));
+        }
+
+    bool rejected_code_row = false;
+    for (const unsigned int prn : satellites)
+        {
+            const auto& state = solver->pvt_ssat[prn - 1U];
+            rejected_code_row = rejected_code_row ||
+                                std::fabs(state.resp[1]) > options.maxinno[1];
+            EXPECT_EQ(0U, state.rejc[1]);
+            EXPECT_NE(0U, state.vsat[1]);
+            EXPECT_EQ(0U, state.outc[1]);
+        }
+    EXPECT_TRUE(rejected_code_row);
+}
+
+
 TEST_F(RtklibFixedBaseTest, ATransientOutlierDoesNotChargeTheReferenceSatellite)
 {
     using namespace rtklib_fixed_base_test_detail;

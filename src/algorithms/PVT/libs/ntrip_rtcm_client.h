@@ -21,9 +21,12 @@
 #include "rtklib.h"
 #include <array>
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
+
+class Ntrip_Rtcm_Client_Test_Access;
 
 /** \addtogroup PVT
  * \{ */
@@ -199,6 +202,15 @@ public:
     void update_rover_time(const gtime_t& rover_time);
 
 private:
+    friend class Ntrip_Rtcm_Client_Test_Access;
+
+    using Hostname_Resolver =
+        std::function<bool(const std::string&, std::string*)>;
+
+    // Test-only resolver injection. Production callers always use the system
+    // IPv4 resolver installed by the implementation constructor.
+    bool set_hostname_resolver_for_test(Hostname_Resolver resolver);
+
     class Impl;
     std::unique_ptr<Impl> d_impl;
 };

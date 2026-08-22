@@ -320,10 +320,13 @@ struct Host_Resolution_State
 };
 
 
-void resolve_ipv4_hostname(const std::shared_ptr<Host_Resolution_State>& state,
-    const std::string& hostname) noexcept
+using Hostname_Resolver =
+    std::function<bool(const std::string&, std::string*)>;
+
+
+bool resolve_ipv4_hostname(const std::string& hostname,
+    std::string* numeric_ipv4) noexcept
 {
-    std::string numeric_ipv4;
     bool success = false;
     struct addrinfo* addresses = nullptr;
     try
@@ -345,7 +348,7 @@ void resolve_ipv4_hostname(const std::shared_ptr<Host_Resolution_State>& state,
                             if (inet_ntop(AF_INET, &ipv4_address->sin_addr,
                                     buffer, sizeof(buffer)) != nullptr)
                                 {
-                                    numeric_ipv4 = buffer;
+                                    *numeric_ipv4 = buffer;
                                     success = true;
                                     break;
                                 }
@@ -355,11 +358,29 @@ void resolve_ipv4_hostname(const std::shared_ptr<Host_Resolution_State>& state,
     catch (...)
         {
             success = false;
-            numeric_ipv4.clear();
+            numeric_ipv4->clear();
         }
     if (addresses != nullptr)
         {
             freeaddrinfo(addresses);
+        }
+    return success;
+}
+
+
+void run_hostname_resolution(const std::shared_ptr<Host_Resolution_State>& state,
+    const std::string& hostname, const Hostname_Resolver& resolver) noexcept
+{
+    std::string numeric_ipv4;
+    bool success = false;
+    try
+        {
+            success = resolver && resolver(hostname, &numeric_ipv4);
+        }
+    catch (...)
+        {
+            success = false;
+            numeric_ipv4.clear();
         }
 
     try
@@ -515,7 +536,8 @@ class Ntrip_Rtcm_Client::Impl
 {
 public:
     explicit Impl(const Ntrip_Rtcm_Client_Config& config)
-        : d_config(config)
+        : d_config(config),
+          d_hostname_resolver(resolve_ipv4_hostname)
     {
         d_status.state = d_config.enabled ? Ntrip_Rtcm_Client_State::STOPPED : Ntrip_Rtcm_Client_State::DISABLED;
         d_status.message = d_config.enabled ? "stopped" : "disabled";
@@ -632,6 +654,17 @@ public:
     bool running() const noexcept
     {
         return d_running.load();
+    }
+
+    bool set_hostname_resolver_for_test(Hostname_Resolver resolver)
+    {
+        std::lock_guard<std::mutex> lifecycle_lock(d_lifecycle_mutex);
+        if (d_running.load() || !resolver)
+            {
+                return false;
+            }
+        d_hostname_resolver = std::move(resolver);
+        return true;
     }
 
     Ntrip_Rtcm_Client_Status status() const
@@ -760,8 +793,8 @@ private:
                 try
                     {
                         std::unique_ptr<std::thread> resolver(new std::thread(
-                            resolve_ipv4_hostname, *pending_resolution,
-                            d_config.host));
+                            run_hostname_resolution, *pending_resolution,
+                            d_config.host, d_hostname_resolver));
                         try
                             {
                                 resolver->detach();
@@ -818,12 +851,11 @@ private:
         }
         if (!complete)
             {
-                // Abandon the stalled resolution so the next reconnect cycle
-                // spawns a fresh lookup instead of re-waiting forever on this
-                // one: a getaddrinfo() stuck on a dead DNS server would
-                // otherwise wedge reconnection until receiver restart. The
-                // detached thread keeps its own shared_ptr to the state.
-                pending_resolution->reset();
+                // Keep one lookup in flight across reconnect cycles. Portable
+                // getaddrinfo() has no safe cancellation mechanism, so replacing
+                // a stalled detached resolver on every timeout would accumulate
+                // threads without bound. If it eventually completes, a later
+                // cycle consumes its result and clears the shared state below.
                 *failure_message = "NTRIP caster hostname resolution timed out";
                 return Resolve_Result::FAILED;
             }
@@ -1629,6 +1661,7 @@ private:
     }
 
     Ntrip_Rtcm_Client_Config d_config;
+    Hostname_Resolver d_hostname_resolver;
 
     mutable std::mutex d_lifecycle_mutex;
     std::thread d_worker;
@@ -1701,6 +1734,13 @@ bool Ntrip_Rtcm_Client::running() const noexcept
 Ntrip_Rtcm_Client_Status Ntrip_Rtcm_Client::status() const
 {
     return d_impl->status();
+}
+
+
+bool Ntrip_Rtcm_Client::set_hostname_resolver_for_test(
+    Hostname_Resolver resolver)
+{
+    return d_impl->set_hostname_resolver_for_test(std::move(resolver));
 }
 
 

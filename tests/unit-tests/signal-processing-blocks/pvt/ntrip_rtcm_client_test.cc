@@ -27,6 +27,7 @@
 #include <chrono>
 #include <climits>
 #include <cmath>
+#include <condition_variable>
 #include <csignal>
 #include <cstdint>
 #include <cstdio>
@@ -34,6 +35,9 @@
 #include <cstring>
 #include <fcntl.h>
 #include <fstream>
+#include <functional>
+#include <memory>
+#include <mutex>
 #include <netinet/in.h>
 #include <sstream>
 #include <string>
@@ -42,6 +46,16 @@
 #include <thread>
 #include <unistd.h>
 #include <vector>
+
+class Ntrip_Rtcm_Client_Test_Access
+{
+public:
+    static bool set_hostname_resolver(Ntrip_Rtcm_Client& client,
+        const std::function<bool(const std::string&, std::string*)>& resolver)
+    {
+        return client.set_hostname_resolver_for_test(resolver);
+    }
+};
 
 namespace ntrip_rtcm_client_test
 {
@@ -221,6 +235,88 @@ public:
 private:
     int d_socket = -1;
     std::uint16_t d_port = 0;
+};
+
+
+class Blocking_Hostname_Resolver
+{
+public:
+    Blocking_Hostname_Resolver()
+        : d_state(new State)
+    {
+    }
+
+    ~Blocking_Hostname_Resolver()
+    {
+        release();
+    }
+
+    Blocking_Hostname_Resolver(const Blocking_Hostname_Resolver&) = delete;
+    Blocking_Hostname_Resolver& operator=(const Blocking_Hostname_Resolver&) = delete;
+
+    std::function<bool(const std::string&, std::string*)> callback() const
+    {
+        const std::shared_ptr<State> state = d_state;
+        return [state](const std::string&, std::string* numeric_ipv4) {
+            {
+                std::unique_lock<std::mutex> lock(state->mutex);
+                ++state->calls;
+                state->condition.notify_all();
+                state->condition.wait(lock,
+                    [state] { return state->released; });
+            }
+            *numeric_ipv4 = "127.0.0.1";
+            {
+                std::lock_guard<std::mutex> lock(state->mutex);
+                ++state->completions;
+            }
+            state->condition.notify_all();
+            return true;
+        };
+    }
+
+    bool wait_for_calls(std::size_t count,
+        std::chrono::milliseconds timeout) const
+    {
+        std::unique_lock<std::mutex> lock(d_state->mutex);
+        return d_state->condition.wait_for(lock, timeout,
+            [this, count] { return d_state->calls >= count; });
+    }
+
+    std::size_t call_count() const
+    {
+        std::lock_guard<std::mutex> lock(d_state->mutex);
+        return d_state->calls;
+    }
+
+    void release()
+    {
+        {
+            std::lock_guard<std::mutex> lock(d_state->mutex);
+            d_state->released = true;
+        }
+        d_state->condition.notify_all();
+    }
+
+    bool wait_for_completions(std::size_t count,
+        std::chrono::milliseconds timeout) const
+    {
+        std::unique_lock<std::mutex> lock(d_state->mutex);
+        return d_state->condition.wait_for(lock, timeout,
+            [this, count] { return d_state->completions >= count; });
+    }
+
+private:
+    struct State
+    {
+        std::mutex mutex;
+        std::condition_variable condition;
+        std::size_t calls = 0;
+        std::size_t completions = 0;
+        bool released = false;
+    };
+
+    std::shared_ptr<State> d_state;
 };
 
 
@@ -1897,6 +1993,62 @@ TEST(NtripRtcmClientTest, DisabledAndInvalidConfigurationsDoNotStartAWorker)
     EXPECT_EQ(std::string::npos, invalid_status.message.find("test-secret"));
     invalid_client.stop();
     EXPECT_FALSE(invalid_client.running());
+}
+
+
+TEST(NtripRtcmClientTest, TimedOutDnsLookupRemainsSingleFlightAcrossReconnects)
+{
+    using namespace ntrip_rtcm_client_test;
+
+    Ntrip_Rtcm_Client_Config config;
+    config.enabled = true;
+    config.host = "stalled-resolver.invalid";
+    config.mountpoint = "BASE";
+    config.reconnect_interval_ms = 1000;
+    config.timeout_ms = 1000;
+
+    Blocking_Hostname_Resolver resolver;
+    Ntrip_Rtcm_Client client(config);
+    ASSERT_TRUE(Ntrip_Rtcm_Client_Test_Access::set_hostname_resolver(
+        client, resolver.callback()));
+    ASSERT_TRUE(client.start());
+    ASSERT_TRUE(resolver.wait_for_calls(1, std::chrono::milliseconds(2000)));
+
+    Ntrip_Rtcm_Client_Status retry_status;
+    const std::chrono::steady_clock::time_point retry_deadline =
+        std::chrono::steady_clock::now() + std::chrono::milliseconds(4500);
+    do
+        {
+            retry_status = client.status();
+            if (retry_status.reconnect_count >= 2 &&
+                retry_status.state == Ntrip_Rtcm_Client_State::RECONNECT_WAIT)
+                {
+                    break;
+                }
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    while (std::chrono::steady_clock::now() < retry_deadline);
+
+    const std::chrono::steady_clock::time_point stop_start =
+        std::chrono::steady_clock::now();
+    client.stop();
+    const std::chrono::milliseconds stop_duration =
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now() - stop_start);
+    // No resolver can be launched after stop(). Give any thread already
+    // created by the faulty path a final chance to enter its callback before
+    // taking the invocation count used by the assertion and cleanup wait.
+    resolver.wait_for_calls(2, std::chrono::milliseconds(250));
+    const std::size_t resolver_calls = resolver.call_count();
+    resolver.release();
+    const bool all_callbacks_completed = resolver.wait_for_completions(
+        resolver_calls, std::chrono::milliseconds(1000));
+
+    ASSERT_GE(retry_status.reconnect_count, 2U);
+    ASSERT_EQ(Ntrip_Rtcm_Client_State::RECONNECT_WAIT, retry_status.state);
+    EXPECT_EQ(1U, resolver_calls);
+    EXPECT_LT(stop_duration.count(), 1000);
+    EXPECT_TRUE(all_callbacks_completed);
 }
 
 

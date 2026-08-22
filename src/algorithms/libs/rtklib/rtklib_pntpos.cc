@@ -320,11 +320,10 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                 }
             else if (obs->code[2] != CODE_NONE)
                 {
-                    /* B3I-only: same index pattern as L5-only (empty first
-                       band), so the second-band branch applies the B3I rules -
-                       no TGD (DNAV timing reference) and the broadcast iono,
-                       modeled at B1I, scaled by gamma13 via iono_scale */
-                    i = 0;
+                    /* B3I-only: B3I is the DNAV timing reference, so use it
+                       directly without TGD. rescode() scales the broadcast
+                       ionosphere correction using this observation slot. */
+                    i = 2;
                     j = 2;
                 }
         }

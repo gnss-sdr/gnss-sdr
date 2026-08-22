@@ -62,7 +62,7 @@ TEST(BdsTgdIonoTest, SingleFrequencyB1IAppliesMinusTgd1)
 }
 
 
-TEST(BdsTgdIonoTest, SingleFrequencyB3IHasNoTgdAndScalesIonoByGamma13)
+TEST(BdsTgdIonoTest, SingleFrequencyB3IHasNoTgdAndDefersIonoScalingToRescode)
 {
     nav_t nav{};
     eph_t eph{};
@@ -86,8 +86,9 @@ TEST(BdsTgdIonoTest, SingleFrequencyB3IHasNoTgdAndScalesIonoByGamma13)
 
     // B3I is the clock reference signal: no group-delay correction
     EXPECT_NEAR(obs.P[2], corrected_pseudorange, 1.0e-6);
-    const double gamma13 = std::pow(B3I_WAVELENGTH_M / B1I_WAVELENGTH_M, 2.0);
-    EXPECT_DOUBLE_EQ(gamma13, iono_scale);
+    // rescode() scales the L1-referenced ionosphere model using the actual
+    // observation slot, so prange() must not apply the B1I/B3I factor again.
+    EXPECT_DOUBLE_EQ(1.0, iono_scale);
 }
 
 
@@ -196,4 +197,75 @@ TEST(BdsTgdIonoTest, IonocorrPrefersBdsKlobucharForBdsSatellites)
         }
     ASSERT_EQ(1, ionocorr(t, &nav, satno(SYS_BDS, 6), pos, azel, IONOOPT_BRDC, &ion, &var));
     EXPECT_NEAR(ionmodel(t, nav.ion_gps, pos, azel), ion, 1.0e-9);
+}
+
+
+TEST(BdsTgdIonoTest, SingleFrequencyB3ISppScalesBroadcastIonoExactlyOnce)
+{
+    nav_t nav{};
+    eph_t eph{};
+    obsd_t obs{};
+    prcopt_t options{};
+    const int sat = satno(SYS_BDS, 6);
+    ASSERT_GT(sat, 0);
+    set_bds_test_ephemeris(nav, eph, sat);
+
+    nav.lam[sat - 1][0] = B1I_WAVELENGTH_M;
+    nav.lam[sat - 1][2] = B3I_WAVELENGTH_M;
+    const double ion_bds[8] = {0.2235e-7, -0.1490e-7, -0.1192e-6, 0.2384e-6,
+        0.1290e6, -0.1966e6, -0.2621e6, 0.8389e6};
+    for (int k = 0; k < 8; ++k)
+        {
+            nav.ion_cmp[k] = ion_bds[k];
+        }
+
+    const double ep[6] = {2026, 7, 31, 12, 0, 0};
+    obs.time = epoch2time(ep);
+    obs.sat = sat;
+    obs.code[2] = CODE_L6I;
+    obs.SNR[2] = 160;
+
+    constexpr int output_rows = 5;  // one observation plus four clock constraints
+    double satellite_state[6] = {RE_WGS84 + 20200000.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    double receiver_state[NX] = {RE_WGS84, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    double line_of_sight[3] = {};
+    const double geometric_range = geodist(satellite_state, receiver_state, line_of_sight);
+    ASSERT_GT(geometric_range, 0.0);
+
+    double receiver_position[3] = {};
+    double expected_azel[2] = {};
+    ecef2pos(receiver_state, receiver_position);
+    ASSERT_GT(satazel(receiver_position, line_of_sight, expected_azel), 0.0);
+    const double b1i_iono = ionmodel(obs.time, nav.ion_cmp,
+        receiver_position, expected_azel);
+    const double gamma13 = std::pow(FREQ1_BDS / FREQ3_BDS, 2.0);
+    const double expected_b3i_iono = b1i_iono * gamma13;
+    ASSERT_GT(expected_b3i_iono, 0.0);
+    obs.P[2] = geometric_range + expected_b3i_iono;
+
+    options.navsys = SYS_BDS;
+    options.ionoopt = IONOOPT_BRDC;
+    options.tropopt = TROPOPT_OFF;
+
+    const double satellite_clock[2] = {};
+    const double ephemeris_variance[1] = {};
+    const int satellite_health[1] = {};
+    double residuals[output_rows] = {};
+    double design_matrix[NX * output_rows] = {};
+    double variances[output_rows] = {};
+    double azel[2] = {};
+    int valid_satellite[1] = {};
+    double pseudorange_residual[1] = {};
+    int valid_satellite_count = 0;
+
+    const int residual_count = rescode(1, &obs, 1, satellite_state,
+        satellite_clock, ephemeris_variance, satellite_health, &nav,
+        receiver_state, &options, residuals, design_matrix, variances, azel,
+        valid_satellite, pseudorange_residual, &valid_satellite_count);
+
+    EXPECT_EQ(5, residual_count);
+    EXPECT_EQ(1, valid_satellite_count);
+    EXPECT_EQ(1, valid_satellite[0]);
+    EXPECT_NEAR(0.0, residuals[0], 1.0e-6);
+    EXPECT_NEAR(0.0, pseudorange_residual[0], 1.0e-6);
 }

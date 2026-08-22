@@ -18,15 +18,19 @@
 #include <arpa/inet.h>
 #include <cerrno>
 #include <csignal>
+#include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <mutex>
 #include <utility>
 #include <vector>
 
 #ifdef USE_GNUTLS_FALLBACK
 #include <gnutls/gnutls.h>
+#include <gnutls/x509.h>
 #else
 #include <openssl/err.h>
+#include <openssl/pem.h>
 #include <openssl/ssl.h>
 #include <openssl/x509_vfy.h>
 #endif
@@ -124,13 +128,95 @@ void set_tls_msg(char *msg, const char *text)
 std::once_flag gnutls_init_flag;
 int gnutls_init_result = GNUTLS_E_SUCCESS;
 
+#if GNUTLS_VERSION_NUMBER >= 0x030603
 constexpr char GNUTLS_TLS_1_2_OR_NEWER_PRIORITY[] =
     "-VERS-SSL3.0:-VERS-TLS1.0:-VERS-TLS1.1";
+#endif
 
 void initialize_gnutls_once()
 {
     gnutls_init_result = gnutls_global_init();
 }
+
+void gnutls_set_socket_transport(gnutls_session_t session, socket_t socket)
+{
+#if GNUTLS_VERSION_NUMBER >= 0x030200
+    gnutls_transport_set_int(session, socket);
+#else
+    gnutls_transport_set_ptr(session,
+        reinterpret_cast<gnutls_transport_ptr_t>(
+            static_cast<std::intptr_t>(socket)));
+#endif
+}
+
+#if GNUTLS_VERSION_NUMBER >= 0x030104
+bool gnutls_leaf_allows_server_auth(gnutls_session_t session)
+{
+    if (gnutls_certificate_type_get(session) != GNUTLS_CRT_X509)
+        {
+            return false;
+        }
+
+    unsigned int peer_count = 0;
+    const gnutls_datum_t *peers =
+        gnutls_certificate_get_peers(session, &peer_count);
+    if (peers == nullptr || peer_count == 0 ||
+        peers[0].data == nullptr || peers[0].size == 0)
+        {
+            return false;
+        }
+
+    gnutls_x509_crt_t leaf = nullptr;
+    if (gnutls_x509_crt_init(&leaf) < 0)
+        {
+            return false;
+        }
+
+    bool allowed = false;
+    if (gnutls_x509_crt_import(leaf, &peers[0], GNUTLS_X509_FMT_DER) >= 0)
+        {
+            bool saw_key_purpose = false;
+            for (unsigned int index = 0;; ++index)
+                {
+                    char oid[64] = {};
+                    size_t oid_size = sizeof(oid);
+                    unsigned int critical = 0;
+                    const int ret = gnutls_x509_crt_get_key_purpose_oid(
+                        leaf, index, oid, &oid_size, &critical);
+                    if (ret == GNUTLS_E_REQUESTED_DATA_NOT_AVAILABLE)
+                        {
+                            // No EKU extension means unrestricted use. Once
+                            // an EKU was seen, reaching the end without a
+                            // permitted purpose is a mismatch.
+                            allowed = !saw_key_purpose;
+                            break;
+                        }
+                    if (ret == GNUTLS_E_SHORT_MEMORY_BUFFER)
+                        {
+                            // Both accepted OIDs fit in this buffer, so an
+                            // overlong OID cannot be one of them.
+                            saw_key_purpose = true;
+                            continue;
+                        }
+                    if (ret < 0)
+                        {
+                            break;
+                        }
+
+                    saw_key_purpose = true;
+                    if (std::strcmp(oid, GNUTLS_KP_TLS_WWW_SERVER) == 0 ||
+                        std::strcmp(oid, GNUTLS_KP_ANY) == 0)
+                        {
+                            allowed = true;
+                            break;
+                        }
+                }
+        }
+
+    gnutls_x509_crt_deinit(leaf);
+    return allowed;
+}
+#endif
 #else
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
 std::once_flag openssl_init_flag;
@@ -141,6 +227,29 @@ void initialize_openssl_once()
     SSL_load_error_strings();
 }
 #endif
+
+bool openssl_load_trust_anchor(SSL_CTX *context, const std::string &pem)
+{
+    BIO *bio = BIO_new_mem_buf(const_cast<char *>(pem.data()),
+        static_cast<int>(pem.size()));
+    if (bio == nullptr)
+        {
+            return false;
+        }
+
+    X509 *certificate = PEM_read_bio_X509(bio, nullptr, nullptr, nullptr);
+    BIO_free(bio);
+    if (certificate == nullptr)
+        {
+            return false;
+        }
+
+    X509_STORE *store = SSL_CTX_get_cert_store(context);
+    const bool loaded = store != nullptr &&
+                        X509_STORE_add_cert(store, certificate) == 1;
+    X509_free(certificate);
+    return loaded;
+}
 #endif
 }  // namespace
 
@@ -155,7 +264,7 @@ public:
     Impl(Impl &&) = delete;
     Impl &operator=(Impl &&) = delete;
 
-    bool initialize(char *msg)
+    bool initialize(char *msg, const std::string *trust_anchor_pem = nullptr)
     {
 #ifdef USE_GNUTLS_FALLBACK
         std::call_once(gnutls_init_flag, initialize_gnutls_once);
@@ -176,12 +285,31 @@ public:
                 return false;
             }
 
-        ret = gnutls_certificate_set_x509_system_trust(d_credentials);
-        if (ret < 0)
+        if (trust_anchor_pem != nullptr)
+            {
+                gnutls_datum_t trust_anchor;
+                trust_anchor.data = reinterpret_cast<unsigned char *>(
+                    const_cast<char *>(trust_anchor_pem->data()));
+                trust_anchor.size = static_cast<unsigned int>(trust_anchor_pem->size());
+                ret = gnutls_certificate_set_x509_trust_mem(d_credentials,
+                    &trust_anchor, GNUTLS_X509_FMT_PEM);
+            }
+        else
+            {
+                ret = gnutls_certificate_set_x509_system_trust(d_credentials);
+            }
+        if (ret < 0 || (trust_anchor_pem != nullptr && ret == 0))
             {
                 gnutls_certificate_free_credentials(d_credentials);
                 d_credentials = nullptr;
-                set_tls_msg(msg, "GnuTLS system trust failed");
+                if (trust_anchor_pem == nullptr)
+                    {
+                        set_tls_msg(msg, "GnuTLS system trust failed");
+                    }
+                else
+                    {
+                        set_tls_msg(msg, "GnuTLS test trust failed");
+                    }
                 return false;
             }
 #endif
@@ -237,11 +365,28 @@ public:
         SSL_CTX_set_mode(d_context,
             SSL_MODE_ENABLE_PARTIAL_WRITE | SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
         SSL_CTX_set_verify(d_context, SSL_VERIFY_PEER, nullptr);
-        if (SSL_CTX_set_default_verify_paths(d_context) != 1)
+        bool trust_loaded = false;
+        if (trust_anchor_pem != nullptr)
+            {
+                trust_loaded = openssl_load_trust_anchor(d_context,
+                    *trust_anchor_pem);
+            }
+        else
+            {
+                trust_loaded = SSL_CTX_set_default_verify_paths(d_context) == 1;
+            }
+        if (!trust_loaded)
             {
                 SSL_CTX_free(d_context);
                 d_context = nullptr;
-                set_tls_msg(msg, "OpenSSL system trust failed");
+                if (trust_anchor_pem == nullptr)
+                    {
+                        set_tls_msg(msg, "OpenSSL system trust failed");
+                    }
+                else
+                    {
+                        set_tls_msg(msg, "OpenSSL test trust failed");
+                    }
                 return false;
             }
 #endif
@@ -345,7 +490,7 @@ public:
                                 return -1;
                             }
                     }
-                gnutls_transport_set_int(d_session, sock);
+                gnutls_set_socket_transport(d_session, sock);
             }
 
         Tls_Sigpipe_Guard sigpipe_guard;
@@ -367,20 +512,42 @@ public:
                 return -1;
             }
 
-#if GNUTLS_VERSION_NUMBER >= 0x030104
+#if GNUTLS_VERSION_NUMBER >= 0x030300
         unsigned int status = 0;
-        ret = gnutls_certificate_verify_peers3(d_session, d_hostname.c_str(), &status);
+        gnutls_typed_vdata_st verification_data[2] = {};
+        verification_data[0].type = GNUTLS_DT_DNS_HOSTNAME;
+        verification_data[0].data = const_cast<unsigned char *>(
+            reinterpret_cast<const unsigned char *>(d_hostname.c_str()));
+        verification_data[1].type = GNUTLS_DT_KEY_PURPOSE_OID;
+        verification_data[1].data = const_cast<unsigned char *>(
+            reinterpret_cast<const unsigned char *>(GNUTLS_KP_TLS_WWW_SERVER));
+        ret = gnutls_certificate_verify_peers(d_session,
+            verification_data, 2, &status);
+#elif GNUTLS_VERSION_NUMBER >= 0x030104
+        unsigned int status = 0;
+        ret = gnutls_certificate_verify_peers3(
+            d_session, d_hostname.c_str(), &status);
+#else
+        unsigned int status = GNUTLS_CERT_INVALID;
+        ret = GNUTLS_E_UNIMPLEMENTED_FEATURE;
+#endif
+#if GNUTLS_VERSION_NUMBER >= 0x030104
+        // GnuTLS 3.1 and 3.2 cannot receive a purpose in their peer
+        // verification API. Keep the explicit leaf check on newer releases
+        // as well so the compatibility path is covered by normal CI.
+        if (ret >= 0 && status == 0 &&
+            !gnutls_leaf_allows_server_auth(d_session))
+            {
+                status |= GNUTLS_CERT_INVALID |
+                          GNUTLS_CERT_SIGNER_CONSTRAINTS_FAILURE;
+            }
+#endif
         if (ret < 0 || status != 0)
             {
                 reset();
                 set_tls_msg(msg, "GnuTLS certificate failed");
                 return -1;
             }
-#else
-        reset();
-        set_tls_msg(msg, "GnuTLS >= 3.1.4 required for NTRIP TLS");
-        return -1;
-#endif
 #else
         if (!d_session)
             {
@@ -621,6 +788,13 @@ Rtklib_Tls_Client::~Rtklib_Tls_Client() = default;
 bool Rtklib_Tls_Client::initialize(char *msg)
 {
     return d_impl->initialize(msg);
+}
+
+
+bool Rtklib_Tls_Client::initialize_with_trust_anchor(
+    const std::string &trust_anchor_pem, char *msg)
+{
+    return d_impl->initialize(msg, &trust_anchor_pem);
 }
 
 

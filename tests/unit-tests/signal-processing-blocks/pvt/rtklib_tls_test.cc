@@ -16,6 +16,8 @@
 
 #include "rtklib_tls.h"
 #include <gtest/gtest.h>
+#include <chrono>
+#include <cstdint>
 #include <cstring>
 #include <mutex>
 #include <string>
@@ -38,6 +40,16 @@
 // GoogleTest < 1.10 has no GTEST_SKIP(); record a success and leave the test
 #define GNSSSDR_TLS_TEST_SKIP() return GTEST_SUCCEED() << "Test skipped: "
 #endif
+
+class Rtklib_Tls_Client_Test_Access
+{
+public:
+    static bool initialize_with_trust_anchor(Rtklib_Tls_Client& client,
+        const std::string& trust_anchor_pem, char* msg)
+    {
+        return client.initialize_with_trust_anchor(trust_anchor_pem, msg);
+    }
+};
 
 namespace rtklib_tls_test
 {
@@ -90,6 +102,151 @@ zlKCcRoQZH8JBdbZBOlkSpKqz+hJIb+pxB5hMokCgYEAiu3+lrv66I2sFTwI6ZtZ
 7JgavFOm82GM5pVObiOrtsKZvmwRF/T5zormjnm4B7VVr7mtxpLtlEQFcvd2fh/6
 kHqVAAP1Rlu8ODL/VQKTIialUIMfD4txpwG9yjLst+7BuY8trAWOnDCZ03B/Xu78
 xdMrgAdtCksfXBKvBdxn6Xw=
+-----END PRIVATE KEY-----
+)pem";
+
+// A dedicated unconstrained root and otherwise-identical localhost leaves let
+// the client tests isolate Extended Key Usage verification from chain and
+// hostname verification. The leaves share this test-only key; the root private
+// key is not part of the repository.
+constexpr char TLS_TEST_ROOT_CA[] = R"pem(-----BEGIN CERTIFICATE-----
+MIIDPDCCAiSgAwIBAgIUbyKsSquBKYhDc87+F1aln5bQS/QwDQYJKoZIhvcNAQEL
+BQAwJDEiMCAGA1UEAwwZR05TUy1TRFIgVExTIFRlc3QgUm9vdCBDQTAeFw0yNjA4
+MjIwNTM1MDNaFw0zNjA4MTkwNTM1MDNaMCQxIjAgBgNVBAMMGUdOU1MtU0RSIFRM
+UyBUZXN0IFJvb3QgQ0EwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC1
+NH0lwlmFP3jKvCp4VwpLCUEPcbfIUUfgGKPBh7kSZk5RQgBv7b7er73i0k2sYBa3
+7mFzuU+76Y5VJ69SdEfIvjbFLyeLs/rcq0av2TxKfFqwGPf3vmAXfMWQT6418bHM
+vXHRGg88TuqoeCW/BipsP62RQU0zfLPF5oijsr+Kuxx/kUC9n1P1J29q9pr1PvzP
+9AwapOZ/MNXgHYLLgBQJYJcHRnd5yOCmHQrUfPiW8MYPVs9F+2tHH12f3R8DOC/+
+aH1X8+/zPtkcXOU4u9L/N21A3NSUxJAKvjAXGMJa0Lj3THZ1Lc4XPelQREjvJ7sn
+2A/iiRwDFLGDT/k6PXwZAgMBAAGjZjBkMB8GA1UdIwQYMBaAFLJNdnRMm7tDhniN
+OTeeCHyp/q7oMBIGA1UdEwEB/wQIMAYBAf8CAQAwDgYDVR0PAQH/BAQDAgEGMB0G
+A1UdDgQWBBSyTXZ0TJu7Q4Z4jTk3ngh8qf6u6DANBgkqhkiG9w0BAQsFAAOCAQEA
+Z8sJxDqWFZxSncowVl2DSTipOWiisjJNRmbAnA4WUmVA5nP4IGnmGJxELYuNLbjT
+CPx9gKQ3A0oFLW83i9Wi4aQT09b8SXgniLnP3iM0rOi/5kuqRM2p/lix7bSQ2doV
+8LhaTu3qMgwYSZsDfHqLQQ14au1znpuBiHX412Mm3+QcGJ04bpOrtPOpaKsBuNOG
+2xWyp+wNKqncQXl3TRIVAWufyOlSdt8S+JJB1WP+q3ebguLVPz8RePh6B+B6QnXg
+X8jPyH1eT6bslUucPyG78/SicgP+wyGP6GS4/LlpgA3henzonQFoJc1qz8xZPrFc
+WOnV0aJeh09viDawvtZEBw==
+-----END CERTIFICATE-----
+)pem";
+
+constexpr char TLS_TEST_SERVER_AUTH_CERTIFICATE[] = R"pem(-----BEGIN CERTIFICATE-----
+MIIDQDCCAiigAwIBAgIBAjANBgkqhkiG9w0BAQsFADAkMSIwIAYDVQQDDBlHTlNT
+LVNEUiBUTFMgVGVzdCBSb290IENBMB4XDTI2MDgyMjA1MzUwM1oXDTM2MDgxOTA1
+MzUwM1owFDESMBAGA1UEAwwJbG9jYWxob3N0MIIBIjANBgkqhkiG9w0BAQEFAAOC
+AQ8AMIIBCgKCAQEAu+6nn6H31Zx5Abw5VTQD1//UlWPoA7IKZnIRz7mMBCwkAAKM
+cXvx4i75jNXWJohFthknH7wz8AW+FdfqunTlIyiAPUhDhxGG8Yasq0kzaxJYeG1g
+BWG5pG5N2vH+4YCpIg6+z9oPPKmJXpVId3smbzf6sp7prvSlJ1ULAZkeYin16i30
+pu2hbKPSYdjjGVcbnYC5JTy+UnyqMbaccTXX5HeJZlmzrS4wBIxWi/th1O5qHJn3
+0rmmZ3WglUTYWc8sQRK+uBmxfaSHOFmFBV+iHiDwJ3Uu5UM0rSxJEdN6kHH6RMAj
+45LgCUgVqDrzn7fir+vKMuByaQnfhwzzeUd6XQIDAQABo4GMMIGJMAwGA1UdEwEB
+/wQCMAAwDgYDVR0PAQH/BAQDAgWgMBMGA1UdJQQMMAoGCCsGAQUFBwMBMBQGA1Ud
+EQQNMAuCCWxvY2FsaG9zdDAdBgNVHQ4EFgQUUx7AAvieL6vi1/pKctmamlQs6yIw
+HwYDVR0jBBgwFoAUsk12dEybu0OGeI05N54IfKn+rugwDQYJKoZIhvcNAQELBQAD
+ggEBAKRXMCFk+34kL9dzn/9LZbgfv4V7F0WcUkjkll0iGdoFDrDJB4tPpeIK+eeB
+MsKvTChlzs0Qvg6ojypyuRBn7XsATwIllWq1trXiHLn+wvyXNx2ZfoYtbbae7d9/
+yyAGlOosXFIwGxi8wiy2Ajg6fzQYAXllnJMaAMWw4umuyjiL7daaFzgHL1madvbO
+Kf9osQXeMxBO3zdYout7c8aOgRCAlbIY14W5UvzBb67YqErDF3ksrVT7gQOrk3Sr
+lzXZoWDKH+j3hixVfBkc0rjE1n6E2Y7DarysJGpKaLgl7HLMH0D9yKAcN/dAcSk1
+bRpm7xfMiWfUjQsoztBPj+QJ73E=
+-----END CERTIFICATE-----
+)pem";
+
+constexpr char TLS_TEST_CLIENT_AUTH_CERTIFICATE[] = R"pem(-----BEGIN CERTIFICATE-----
+MIIDQDCCAiigAwIBAgIBAzANBgkqhkiG9w0BAQsFADAkMSIwIAYDVQQDDBlHTlNT
+LVNEUiBUTFMgVGVzdCBSb290IENBMB4XDTI2MDgyMjA1MzUwM1oXDTM2MDgxOTA1
+MzUwM1owFDESMBAGA1UEAwwJbG9jYWxob3N0MIIBIjANBgkqhkiG9w0BAQEFAAOC
+AQ8AMIIBCgKCAQEAu+6nn6H31Zx5Abw5VTQD1//UlWPoA7IKZnIRz7mMBCwkAAKM
+cXvx4i75jNXWJohFthknH7wz8AW+FdfqunTlIyiAPUhDhxGG8Yasq0kzaxJYeG1g
+BWG5pG5N2vH+4YCpIg6+z9oPPKmJXpVId3smbzf6sp7prvSlJ1ULAZkeYin16i30
+pu2hbKPSYdjjGVcbnYC5JTy+UnyqMbaccTXX5HeJZlmzrS4wBIxWi/th1O5qHJn3
+0rmmZ3WglUTYWc8sQRK+uBmxfaSHOFmFBV+iHiDwJ3Uu5UM0rSxJEdN6kHH6RMAj
+45LgCUgVqDrzn7fir+vKMuByaQnfhwzzeUd6XQIDAQABo4GMMIGJMAwGA1UdEwEB
+/wQCMAAwDgYDVR0PAQH/BAQDAgWgMBMGA1UdJQQMMAoGCCsGAQUFBwMCMBQGA1Ud
+EQQNMAuCCWxvY2FsaG9zdDAdBgNVHQ4EFgQUUx7AAvieL6vi1/pKctmamlQs6yIw
+HwYDVR0jBBgwFoAUsk12dEybu0OGeI05N54IfKn+rugwDQYJKoZIhvcNAQELBQAD
+ggEBAEqfON/6faL2YqCaZVajvoUqzpkQRzGALwzrA3CYYLeYAqpUUuJgBW4X/rIF
+3I8Fkve4mzY6qfZCr3nXQmx+gbwy4UsLIcGiC/buSsb02P/90r1ug6oHswo5mP+R
+d79IIk56SWgED+SWTHVRUPltpP2Bx+mV6oiVqVv3S7w6wnvkdxoFaVyQtNlaeC+s
+GGguPxQBQJYZA9tCEwVu5gClS1gzdbFXy6968+pTxJZU+eUIIjvMA7o6XP3Qjwh+
+YaGG/U8UqWqUpA0R2hcis5EkHAADUMmK0GELAkXUiOH/L8R+dnfojsrFmdWgrDi6
+/uGxuSfjr6zvAfeaIb0RxHEG+Mc=
+-----END CERTIFICATE-----
+)pem";
+
+constexpr char TLS_TEST_NO_EKU_CERTIFICATE[] = R"pem(-----BEGIN CERTIFICATE-----
+MIIDKTCCAhGgAwIBAgIBBDANBgkqhkiG9w0BAQsFADAkMSIwIAYDVQQDDBlHTlNT
+LVNEUiBUTFMgVGVzdCBSb290IENBMB4XDTI2MDgyMjA2MDMwNFoXDTM2MDgxOTA2
+MDMwNFowFDESMBAGA1UEAwwJbG9jYWxob3N0MIIBIjANBgkqhkiG9w0BAQEFAAOC
+AQ8AMIIBCgKCAQEAu+6nn6H31Zx5Abw5VTQD1//UlWPoA7IKZnIRz7mMBCwkAAKM
+cXvx4i75jNXWJohFthknH7wz8AW+FdfqunTlIyiAPUhDhxGG8Yasq0kzaxJYeG1g
+BWG5pG5N2vH+4YCpIg6+z9oPPKmJXpVId3smbzf6sp7prvSlJ1ULAZkeYin16i30
+pu2hbKPSYdjjGVcbnYC5JTy+UnyqMbaccTXX5HeJZlmzrS4wBIxWi/th1O5qHJn3
+0rmmZ3WglUTYWc8sQRK+uBmxfaSHOFmFBV+iHiDwJ3Uu5UM0rSxJEdN6kHH6RMAj
+45LgCUgVqDrzn7fir+vKMuByaQnfhwzzeUd6XQIDAQABo3YwdDAMBgNVHRMBAf8E
+AjAAMA4GA1UdDwEB/wQEAwIFoDAUBgNVHREEDTALgglsb2NhbGhvc3QwHQYDVR0O
+BBYEFFMewAL4ni+r4tf6SnLZmppULOsiMB8GA1UdIwQYMBaAFLJNdnRMm7tDhniN
+OTeeCHyp/q7oMA0GCSqGSIb3DQEBCwUAA4IBAQApzMyj/61xlCLHrtq/7Euv61mb
+ZpYzNWx1ehglOASoixkgGxvD9+PhBgucVYc50rr6cLyVF4w92or3tMLcNbJZ4MPm
+SIdAWJnV14/YW1r+w7UzDAoC8SK4Q7XunHLC5N49ZHqSAtWOzsZNBrR7y/Gv+huZ
+0MNohi5aGf3DK8Mbcyh7XHGF4MKuGjEtleYF+ABaQOASOsHyrB3WoA3vYV1XC2Gt
+ZOfGjBkTVTGsiD6P+t6a9QKYKpE4BUE2vuAGamu6Z+bym7hCXD7qE2kNSKs5cjq/
+RgulMgtXEYkbNa9ViyouORFP67MwrXiX6ZZQHIhy8b2ZPDPDiERt5l4Gjpy+
+-----END CERTIFICATE-----
+)pem";
+
+#ifdef USE_GNUTLS_FALLBACK
+constexpr char TLS_TEST_ANY_EKU_CERTIFICATE[] = R"pem(-----BEGIN CERTIFICATE-----
+MIIDPDCCAiSgAwIBAgIBBTANBgkqhkiG9w0BAQsFADAkMSIwIAYDVQQDDBlHTlNT
+LVNEUiBUTFMgVGVzdCBSb290IENBMB4XDTI2MDgyMjA2MDMwNFoXDTM2MDgxOTA2
+MDMwNFowFDESMBAGA1UEAwwJbG9jYWxob3N0MIIBIjANBgkqhkiG9w0BAQEFAAOC
+AQ8AMIIBCgKCAQEAu+6nn6H31Zx5Abw5VTQD1//UlWPoA7IKZnIRz7mMBCwkAAKM
+cXvx4i75jNXWJohFthknH7wz8AW+FdfqunTlIyiAPUhDhxGG8Yasq0kzaxJYeG1g
+BWG5pG5N2vH+4YCpIg6+z9oPPKmJXpVId3smbzf6sp7prvSlJ1ULAZkeYin16i30
+pu2hbKPSYdjjGVcbnYC5JTy+UnyqMbaccTXX5HeJZlmzrS4wBIxWi/th1O5qHJn3
+0rmmZ3WglUTYWc8sQRK+uBmxfaSHOFmFBV+iHiDwJ3Uu5UM0rSxJEdN6kHH6RMAj
+45LgCUgVqDrzn7fir+vKMuByaQnfhwzzeUd6XQIDAQABo4GIMIGFMAwGA1UdEwEB
+/wQCMAAwDgYDVR0PAQH/BAQDAgWgMA8GA1UdJQQIMAYGBFUdJQAwFAYDVR0RBA0w
+C4IJbG9jYWxob3N0MB0GA1UdDgQWBBRTHsAC+J4vq+LX+kpy2ZqaVCzrIjAfBgNV
+HSMEGDAWgBSyTXZ0TJu7Q4Z4jTk3ngh8qf6u6DANBgkqhkiG9w0BAQsFAAOCAQEA
+J9KrKX26T9gjeVQj7J3yMldLTv+mcNdbo7LgKqY4xTgi2OJrgmNvH3BpOD5Q+5h2
+54I0wjJT4bHYY0xNRTEJadU+OgLQ9Zwo/0O//gaUMiF0dAoTYbQxsb4m3jKwZl7u
+lcGerwR0p1F12ZdbZimbLBGsEvSg3Wxxojuvmj1P14Hio91P1+xpHlv2ouBfF1lW
+D5nYPZsLrgFD/VVgHmG/b1ehUVsejuTm5hvv4QHC3MNq57w5XiZ4R64Xl5/AZAtm
+FvTN7EGftZOqImIkl+QFjsVMubDLYlIfWuL8NvRm/qoM8qJUKtoxteBDZc8z/byo
+oF+IE5tVQzmt81owsM0C3A==
+-----END CERTIFICATE-----
+)pem";
+#endif
+
+constexpr char TLS_TEST_LEAF_PRIVATE_KEY[] = R"pem(-----BEGIN PRIVATE KEY-----
+MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQC77qefoffVnHkB
+vDlVNAPX/9SVY+gDsgpmchHPuYwELCQAAoxxe/HiLvmM1dYmiEW2GScfvDPwBb4V
+1+q6dOUjKIA9SEOHEYbxhqyrSTNrElh4bWAFYbmkbk3a8f7hgKkiDr7P2g88qYle
+lUh3eyZvN/qynumu9KUnVQsBmR5iKfXqLfSm7aFso9Jh2OMZVxudgLklPL5SfKox
+tpxxNdfkd4lmWbOtLjAEjFaL+2HU7mocmffSuaZndaCVRNhZzyxBEr64GbF9pIc4
+WYUFX6IeIPAndS7lQzStLEkR03qQcfpEwCPjkuAJSBWoOvOft+Kv68oy4HJpCd+H
+DPN5R3pdAgMBAAECggEAIff0bOZsAzyN47onm8az1ig7/seo4XgeKJ/AJ+2ICR4I
+YMcVJxMJ6MHoYeQp2duiTBSWTYZpVd5X2h9lok+sNhNlQI5uBD0vCLt4vNoVlOoj
+Oxs78qUUFsxIPsWkdhKZH5qOM0gdHnAfcAzoJQ6Jpys1YXFXWEQIkQguXdrVEtVm
+1ekuhGb4TTwVss2SC2HwE1Op4DJ/cuBwnbWSLw9d7lBoGE6THlwci54EAl5l8/V4
+sZ7VbtiHMnjmdijvbOiw7LrhO+IsnxV5VW7pVx4YNYzfAeasdg3VxyIecdF84sBD
+t0xrFu53JpD/XCp38327qvkrnN5U7y7XuPIb3Bww0QKBgQDpqDQyi9N/SWfnmxAm
+6eA39BCFpEtQGCvoYZsh+c/twIvSZ0yekki7VyCxQvy2DeLlah2NtOzv3r4LEZ65
+aG0ZtsSxkjbGcS6akBllwAc/WcfmOMWvscUG+kAsg+RaXBXoMmkFpfusAX2OLIPr
+er0d4aSJ2isjJQ6xgaJ0sWhWkQKBgQDN5yIEEm+xWwUtdGQrx+d+t0qPn8Yq13PO
+Gdywh3nGgq2iKJbkjp0Pf/98EH02odDpPE9zj96S3Wi107WliPNBELgx97i7rqv0
+O+MRzRYN4BbgBcMmV5JYZzciBJuOex89y4SKrt06F3eAOUqd+EilfJ5oPAKGaVMZ
+7Wjg7EZFDQKBgQDV/bOYW1DesWbUycHYMbek5wS+sII9H3YPBF1kl3qj3wTvNKYK
+UCUGVjxdu+DgBwW3YCEi6AFbid75GjEI0yegNjAcBLHfukaZTcHE20KH9XzLT1FV
+oHS2+DgPzNc1HkL9/jUK9EHy/QZ1UDWdUzKijEX57nI1ZLn5PaWAQ/4v0QKBgQCh
+8jsE7ONAoZBu8e6fqLlhJxTT5hzdMVx6LEkx5zxWcA3VTwtvdOP/fvMZR3bUc213
+JOJwyCWNaeujp4JlUlPRRy84zdhUdcv1auzr4VyJSUl0pdOZ4qLOOVBZxzn6VMh7
+uAjlcye5Ox/YkDcqDFBHKL8GyLxLr6eW6u3kirGyOQKBgQCeiVm/upB77ihH7hzi
+FVX+EHI4VkWc0Fz70afDRLEhmwtNxE2Ac33DaVBx5jUMzz9IWYaTAwR4QWcz84Ay
+/J63Nh2WGhey4pcg6BLqBgMICjfA/FN2eiFgelAMLlXdd8iheKVyj/d3fzKQed3g
+hNAIqqk3Hc6v8sjdnvOyJK2XAQ==
 -----END PRIVATE KEY-----
 )pem";
 
@@ -184,6 +341,18 @@ gnutls_datum_t make_datum(const char* pem)
 }
 
 
+void set_socket_transport(gnutls_session_t session, int socket)
+{
+#if GNUTLS_VERSION_NUMBER >= 0x030200
+    gnutls_transport_set_int(session, socket);
+#else
+    gnutls_transport_set_ptr(session,
+        reinterpret_cast<gnutls_transport_ptr_t>(
+            static_cast<std::intptr_t>(socket)));
+#endif
+}
+
+
 class Tls_Test_Server
 {
 public:
@@ -203,7 +372,9 @@ public:
     Tls_Test_Server& operator=(const Tls_Test_Server&) = delete;
     Tls_Test_Server() = default;
 
-    bool initialize(int socket, Tls_Test_Version version)
+    bool initialize(int socket, Tls_Test_Version version,
+        const char* certificate_pem = TLS_TEST_CERTIFICATE,
+        const char* private_key_pem = TLS_TEST_PRIVATE_KEY)
     {
         std::call_once(tls_test_init_flag, initialize_tls_test_backend);
         if (tls_test_init_result < 0 ||
@@ -212,8 +383,8 @@ public:
                 return false;
             }
 
-        gnutls_datum_t certificate = make_datum(TLS_TEST_CERTIFICATE);
-        gnutls_datum_t private_key = make_datum(TLS_TEST_PRIVATE_KEY);
+        gnutls_datum_t certificate = make_datum(certificate_pem);
+        gnutls_datum_t private_key = make_datum(private_key_pem);
         if (gnutls_certificate_set_x509_key_mem(d_credentials,
                 &certificate, &private_key, GNUTLS_X509_FMT_PEM) < 0 ||
             gnutls_init(&d_session, GNUTLS_SERVER) < 0)
@@ -235,7 +406,7 @@ public:
             GNUTLS_HANDSHAKE_SERVER_HELLO, GNUTLS_HOOK_POST,
             &Tls_Test_Server::server_hello_hook);
 #endif
-        gnutls_transport_set_int(d_session, socket);
+        set_socket_transport(d_session, socket);
         return true;
     }
 
@@ -305,7 +476,7 @@ bool native_client_handshake(int socket, Tls_Test_Version version)
             credentials) >= 0;
     if (configured)
         {
-            gnutls_transport_set_int(session, socket);
+            set_socket_transport(session, socket);
         }
     const bool connected = configured && gnutls_handshake(session) == 0;
     gnutls_deinit(session);
@@ -355,12 +526,13 @@ bool set_exact_protocol(SSL_CTX* context, Tls_Test_Version version)
 }
 
 
-bool install_test_identity(SSL_CTX* context)
+bool install_test_identity(SSL_CTX* context, const char* certificate_pem,
+    const char* private_key_pem)
 {
     BIO* certificate_bio = BIO_new_mem_buf(
-        const_cast<char*>(TLS_TEST_CERTIFICATE), -1);
+        const_cast<char*>(certificate_pem), -1);
     BIO* private_key_bio = BIO_new_mem_buf(
-        const_cast<char*>(TLS_TEST_PRIVATE_KEY), -1);
+        const_cast<char*>(private_key_pem), -1);
     if (certificate_bio == nullptr || private_key_bio == nullptr)
         {
             BIO_free(certificate_bio);
@@ -409,7 +581,9 @@ public:
     Tls_Test_Server& operator=(const Tls_Test_Server&) = delete;
     Tls_Test_Server() = default;
 
-    bool initialize(int socket, Tls_Test_Version version)
+    bool initialize(int socket, Tls_Test_Version version,
+        const char* certificate_pem = TLS_TEST_CERTIFICATE,
+        const char* private_key_pem = TLS_TEST_PRIVATE_KEY)
     {
         std::call_once(tls_test_init_flag, initialize_tls_test_backend);
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
@@ -420,7 +594,8 @@ public:
         if (d_context == nullptr ||
             !set_exact_protocol(d_context, version) ||
             SSL_CTX_set_cipher_list(d_context, "ALL") != 1 ||
-            !install_test_identity(d_context))
+            !install_test_identity(d_context, certificate_pem,
+                private_key_pem))
             {
                 return false;
             }
@@ -552,7 +727,11 @@ bool backend_supports(Tls_Test_Version version)
 }
 
 
-Tls_Handshake_Result run_rtklib_handshake(Tls_Test_Version version)
+Tls_Handshake_Result run_rtklib_handshake(Tls_Test_Version version,
+    const char* certificate_pem = TLS_TEST_CERTIFICATE,
+    const char* private_key_pem = TLS_TEST_PRIVATE_KEY,
+    const char* trust_anchor_pem = nullptr,
+    const char* hostname = "localhost")
 {
     Tls_Handshake_Result result;
     Socket_Pair sockets;
@@ -563,15 +742,27 @@ Tls_Handshake_Result run_rtklib_handshake(Tls_Test_Version version)
         }
 
     Tls_Test_Server server;
-    if (!server.initialize(sockets.server(), version))
+    if (!server.initialize(sockets.server(), version,
+            certificate_pem, private_key_pem))
         {
             result.server_error = "TLS server setup failed";
             return result;
         }
 
-    Rtklib_Tls_Client client("localhost");
+    Rtklib_Tls_Client client(hostname);
     char message[MAXSTRMSG] = "";
-    if (!client.initialize(message))
+    bool initialized = false;
+    if (trust_anchor_pem == nullptr)
+        {
+            initialized = client.initialize(message);
+        }
+    else
+        {
+            initialized = Rtklib_Tls_Client_Test_Access::
+                initialize_with_trust_anchor(
+                    client, trust_anchor_pem, message);
+        }
+    if (!initialized)
         {
             result.server_error = message;
             return result;
@@ -579,7 +770,18 @@ Tls_Handshake_Result run_rtklib_handshake(Tls_Test_Version version)
     result.initialized = true;
 
     std::thread server_thread(&Tls_Test_Server::handshake, &server);
-    result.client_result = client.handshake(sockets.client(), message);
+    const auto deadline = std::chrono::steady_clock::now() +
+                          std::chrono::seconds(TLS_HANDSHAKE_TIMEOUT_S);
+    do
+        {
+            result.client_result = client.handshake(sockets.client(), message);
+            if (result.client_result == 0)
+                {
+                    std::this_thread::yield();
+                }
+        }
+    while (result.client_result == 0 &&
+           std::chrono::steady_clock::now() < deadline);
     shutdown(sockets.client(), SHUT_RDWR);
     server_thread.join();
 
@@ -646,4 +848,84 @@ TEST(RtklibTlsTest, AllowsTls12Negotiation)
         << "The TLS 1.2 handshake did not reach certificate validation: "
         << result.server_error;
 #endif
+}
+
+
+TEST(RtklibTlsTest, AcceptsTrustedServerAuthLeaf)
+{
+    using namespace rtklib_tls_test;
+
+    const Tls_Handshake_Result result = run_rtklib_handshake(
+        Tls_Test_Version::TLS_1_2, TLS_TEST_SERVER_AUTH_CERTIFICATE,
+        TLS_TEST_LEAF_PRIVATE_KEY, TLS_TEST_ROOT_CA);
+
+    ASSERT_TRUE(result.initialized) << result.server_error;
+    EXPECT_EQ(1, result.client_result) << result.client_message;
+    EXPECT_TRUE(result.server_handshake_completed) << result.server_error;
+    EXPECT_FALSE(result.protocol_version_rejected);
+}
+
+
+TEST(RtklibTlsTest, RejectsTrustedClientAuthOnlyLeaf)
+{
+    using namespace rtklib_tls_test;
+
+    const Tls_Handshake_Result result = run_rtklib_handshake(
+        Tls_Test_Version::TLS_1_2, TLS_TEST_CLIENT_AUTH_CERTIFICATE,
+        TLS_TEST_LEAF_PRIVATE_KEY, TLS_TEST_ROOT_CA);
+
+    ASSERT_TRUE(result.initialized) << result.server_error;
+    EXPECT_EQ(-1, result.client_result) << result.client_message;
+    EXPECT_FALSE(result.protocol_version_rejected)
+        << "The client rejected TLS 1.2 rather than the certificate purpose";
+}
+
+
+TEST(RtklibTlsTest, AcceptsTrustedLeafWithoutEku)
+{
+    using namespace rtklib_tls_test;
+
+    const Tls_Handshake_Result result = run_rtklib_handshake(
+        Tls_Test_Version::TLS_1_2, TLS_TEST_NO_EKU_CERTIFICATE,
+        TLS_TEST_LEAF_PRIVATE_KEY, TLS_TEST_ROOT_CA);
+
+    ASSERT_TRUE(result.initialized) << result.server_error;
+    EXPECT_EQ(1, result.client_result) << result.client_message;
+    EXPECT_TRUE(result.server_handshake_completed) << result.server_error;
+    EXPECT_FALSE(result.protocol_version_rejected);
+}
+
+
+TEST(RtklibTlsTest, AcceptsTrustedAnyEkuLeaf)
+{
+    using namespace rtklib_tls_test;
+
+#ifndef USE_GNUTLS_FALLBACK
+    GNSSSDR_TLS_TEST_SKIP()
+        << "OpenSSL requires an explicit serverAuth purpose";
+#else
+    const Tls_Handshake_Result result = run_rtklib_handshake(
+        Tls_Test_Version::TLS_1_2, TLS_TEST_ANY_EKU_CERTIFICATE,
+        TLS_TEST_LEAF_PRIVATE_KEY, TLS_TEST_ROOT_CA);
+
+    ASSERT_TRUE(result.initialized) << result.server_error;
+    EXPECT_EQ(1, result.client_result) << result.client_message;
+    EXPECT_TRUE(result.server_handshake_completed) << result.server_error;
+    EXPECT_FALSE(result.protocol_version_rejected);
+#endif
+}
+
+
+TEST(RtklibTlsTest, RejectsTrustedHostnameMismatch)
+{
+    using namespace rtklib_tls_test;
+
+    const Tls_Handshake_Result result = run_rtklib_handshake(
+        Tls_Test_Version::TLS_1_2, TLS_TEST_SERVER_AUTH_CERTIFICATE,
+        TLS_TEST_LEAF_PRIVATE_KEY, TLS_TEST_ROOT_CA, "not-localhost");
+
+    ASSERT_TRUE(result.initialized) << result.server_error;
+    EXPECT_EQ(-1, result.client_result) << result.client_message;
+    EXPECT_FALSE(result.protocol_version_rejected)
+        << "The client rejected TLS 1.2 rather than the hostname";
 }

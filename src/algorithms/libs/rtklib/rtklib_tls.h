@@ -21,6 +21,8 @@
 #include <memory>
 #include <string>
 
+class Rtklib_Tls_Client_Test_Access;
+
 class Rtklib_Tls_Client
 {
 public:
@@ -51,6 +53,12 @@ public:
     int write(const unsigned char *buff, int n, char *msg);
 
 private:
+    friend class Rtklib_Tls_Client_Test_Access;
+
+    // Test-only trust injection. Production callers always use initialize(),
+    // which loads the platform trust store.
+    bool initialize_with_trust_anchor(const std::string &trust_anchor_pem, char *msg);
+
     class Impl;
     std::unique_ptr<Impl> d_impl;
 };

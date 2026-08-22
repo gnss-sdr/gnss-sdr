@@ -1402,6 +1402,96 @@ TEST_F(RtklibFixedBaseTest, ATransientOutlierDoesNotChargeTheReferenceSatellite)
 }
 
 
+TEST_F(RtklibFixedBaseTest, ACorruptedReferenceDoesNotPoisonHealthySatellites)
+{
+    using namespace rtklib_fixed_base_test_detail;
+    const double base_position_geodetic[3] = {45.0 * D2R, 8.0 * D2R, 100.0};
+    double base_position_ecef[3]{};
+    pos2ecef(base_position_geodetic, base_position_ecef);
+    const double baseline_enu_m[3] = {8.0, 4.0, 1.0};
+    double baseline_ecef_m[3]{};
+    enu2ecef(base_position_geodetic, baseline_enu_m, baseline_ecef_m);
+    const double rover_position_ecef[3] = {
+        base_position_ecef[0] + baseline_ecef_m[0],
+        base_position_ecef[1] + baseline_ecef_m[1],
+        base_position_ecef[2] + baseline_ecef_m[2]};
+
+    prcopt_t options = fixed_base_options();
+    options.modear = ARMODE_OFF;
+    options.maxout = 50;
+    options.err[5] = 52.0;
+    options.err[6] = 0.005;
+    auto solver = make_solver_with_options(options);
+    const std::vector<unsigned int> satellites = select_relative_satellites(
+        base_position_ecef, rover_position_ecef);
+    ASSERT_GE(satellites.size(), 6U);
+
+    /* Report much stronger signals for the satellite that will jump, forcing
+       a variance-only selector to use it as the phase reference. Equal jumps
+       in meters on both bands keep the geometry-free slip detector quiet. */
+    const unsigned int corrupted_prn = satellites.back();
+    constexpr int OUTLIER_EPOCH = 6;
+    constexpr double PHASE_JUMP_M = 300.0;
+    const double wavelengths_m[2] = {
+        SPEED_OF_LIGHT_M_S / FREQ1,
+        SPEED_OF_LIGHT_M_S / FREQ2};
+
+    for (int epoch_index = 0; epoch_index <= OUTLIER_EPOCH; ++epoch_index)
+        {
+            Synthetic_Relative_Epoch epoch = make_relative_epoch(
+                *solver, epoch_index, base_position_ecef, rover_position_ecef, satellites);
+            for (auto& rover_observation : epoch.rover_observations)
+                {
+                    rover_observation.second.CN0_dB_hz = 20.0;
+                }
+            for (unsigned int band = 0; band < 2U; ++band)
+                {
+                    const auto observation = epoch.rover_observations.find(
+                        static_cast<int>(corrupted_prn * 2U + band));
+                    ASSERT_NE(epoch.rover_observations.end(), observation);
+                    observation->second.CN0_dB_hz = 60.0;
+                    if (epoch_index == OUTLIER_EPOCH)
+                        {
+                            observation->second.Carrier_phase_rads +=
+                                PHASE_JUMP_M / wavelengths_m[band] * 2.0 * GNSS_PI;
+                        }
+                }
+            for (obsd_t& base_observation : epoch.base_snapshot.observations)
+                {
+                    base_observation.SNR[0] = base_observation.SNR[1] = 80U;
+                    if (base_observation.sat == satno(SYS_GPS, static_cast<int>(corrupted_prn)))
+                        {
+                            base_observation.SNR[0] = base_observation.SNR[1] = 240U;
+                        }
+                }
+
+            SCOPED_TRACE(::testing::Message() << "epoch=" << epoch_index);
+            ASSERT_TRUE(solve(*solver, epoch.rover_observations, &epoch.base_snapshot));
+        }
+
+    EXPECT_EQ(SOLQ_FLOAT, solver->pvt_sol.stat);
+    EXPECT_EQ(satellites.size() - 1U, static_cast<std::size_t>(solver->pvt_sol.ns));
+    for (const unsigned int prn : satellites)
+        {
+            const auto& state = solver->pvt_ssat[prn - 1U];
+            for (unsigned int band = 0; band < 2U; ++band)
+                {
+                    if (prn == corrupted_prn)
+                        {
+                            EXPECT_GT(state.rejc[band], 0U);
+                            EXPECT_EQ(0U, state.vsat[band]);
+                        }
+                    else
+                        {
+                            EXPECT_EQ(0U, state.rejc[band]);
+                            EXPECT_NE(0U, state.vsat[band]);
+                            EXPECT_EQ(0U, state.outc[band]);
+                        }
+                }
+        }
+}
+
+
 TEST_F(RtklibFixedBaseTest, MinDropSatsCyclesAPoisonedSatelliteOutOfAmbiguityResolution)
 {
     using namespace rtklib_fixed_base_test_detail;

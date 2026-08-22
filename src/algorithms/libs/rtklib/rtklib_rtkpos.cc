@@ -1736,7 +1736,6 @@ int ddres(rtk_t *rtk, const obsd_t *obs, const nav_t *nav, double dt, const doub
     double fi;
     double fj;
     double df;
-    double threshadj;
     double *Hi = nullptr;
     int i;
     int j;
@@ -1788,22 +1787,109 @@ int ddres(rtk_t *rtk, const obsd_t *obs, const nav_t *nav, double dt, const doub
                     tropr[i] = prectrop(rtk->sol.time, posr, 1, azel + ir[i] * 2, opt, x, dtdxr + i * 3);
                 }
         }
+
+    /* Calculate the same state-corrected double difference used by the
+       measurement loop. Reference selection uses it to find the mutually
+       consistent satellite cluster before choosing its lowest-variance pivot. */
+    const auto measurement_residual = [&](int reference, int target, int measurement) {
+        const int frequency = measurement % nf;
+        const int reference_satellite = sat[reference];
+        const int target_satellite = sat[target];
+        const int reference_system = rtk->ssat[reference_satellite - 1].sys;
+        const int target_system = rtk->ssat[target_satellite - 1].sys;
+        const double reference_wavelength = nav->lam[reference_satellite - 1][frequency];
+        const double target_wavelength = nav->lam[target_satellite - 1][frequency];
+        double residual =
+            (y[measurement + iu[reference] * nf * 2] - y[measurement + ir[reference] * nf * 2]) -
+            (y[measurement + iu[target] * nf * 2] - y[measurement + ir[target] * nf * 2]);
+
+        if (opt->ionoopt == IONOOPT_EST)
+            {
+                const double reference_frequency_ratio = reference_wavelength / LAM_CARR[0];
+                const double target_frequency_ratio = target_wavelength / LAM_CARR[0];
+                const double reference_factor =
+                    (measurement < nf ? -1.0 : 1.0) *
+                    reference_frequency_ratio * reference_frequency_ratio * im[reference];
+                const double target_factor =
+                    (measurement < nf ? -1.0 : 1.0) *
+                    target_frequency_ratio * target_frequency_ratio * im[target];
+                residual -= reference_factor * x[II_RTK(reference_satellite, opt)] -
+                            target_factor * x[II_RTK(target_satellite, opt)];
+            }
+        if (opt->tropopt == TROPOPT_EST || opt->tropopt == TROPOPT_ESTG)
+            {
+                residual -= (tropu[reference] - tropu[target]) -
+                            (tropr[reference] - tropr[target]);
+            }
+        if (measurement < nf)
+            {
+                if (opt->ionoopt != IONOOPT_IFLC)
+                    {
+                        residual -= reference_wavelength * x[IB_RTK(reference_satellite, measurement, opt)] -
+                                    target_wavelength * x[IB_RTK(target_satellite, measurement, opt)];
+                    }
+                else
+                    {
+                        residual -= x[IB_RTK(reference_satellite, measurement, opt)] -
+                                    x[IB_RTK(target_satellite, measurement, opt)];
+                    }
+            }
+        if (opt->glomodear == 2 && reference_system == SYS_GLO && target_system == SYS_GLO &&
+            frequency < NFREQGLO)
+            {
+                const double frequency_difference =
+                    (SPEED_OF_LIGHT_M_S / reference_wavelength - SPEED_OF_LIGHT_M_S / target_wavelength) / 1E6;
+                residual -= frequency_difference * x[IL_RTK(frequency, opt)];
+            }
+        else if (reference_system == SYS_GLO && target_system == SYS_GLO)
+            {
+                residual -= gloicbcorr(reference_satellite, target_satellite, opt,
+                    reference_wavelength, target_wavelength, measurement);
+            }
+        return residual;
+    };
+
+    /* Match the measurement gate exactly, including the temporary opening
+       used while either phase bias has just been initialized. */
+    const auto innovation_threshold = [&](int reference, int target, int measurement) {
+        double threshold = opt->maxinno[measurement < nf ? 0 : 1];
+        if (threshold <= 0.0 || P == nullptr || opt->mode <= PMODE_DGPS)
+            {
+                return threshold;
+            }
+        const int frequency = measurement % nf;
+        const int reference_bias = IB_RTK(sat[reference], frequency, opt);
+        const int target_bias = IB_RTK(sat[target], frequency, opt);
+        const double initial_variance = std::pow(opt->std[0], 2.0);
+        if (P[reference_bias + rtk->nx * reference_bias] == initial_variance ||
+            P[target_bias + rtk->nx * target_bias] == initial_variance)
+            {
+                threshold *= INNOVATION_THRESHOLD_INIT_FACTOR;
+            }
+        return threshold;
+    };
+
+    const auto innovation_outlier = [&](int reference, int target, int measurement, double residual) {
+        const double threshold = innovation_threshold(reference, target, measurement);
+        return threshold > 0.0 && fabs(residual) > threshold;
+    };
+
     for (m = 0; m < 5; m++)
         { /* m=0:gps/sbs, 1:glo, 2:gal, 3:bds, 4:qzs */
             for (f = opt->mode > PMODE_DGPS ? 0 : nf; f < nf * 2; f++)
                 {
                     frq = f % nf;
 
-                    /* choose the minimum-variance satellite as the reference
-                       (demo5: better than highest elevation in urban
-                       conditions, where SNR is the better quality proxy),
-                       preferring one without a slip and with a valid lock;
-                       one pass tracks the best clean and the best overall
-                       candidate, and the overall one is used only if no
-                       clean reference exists */
+                    /* Choose a reference from the largest innovation-consistent
+                       satellite cluster, breaking ties by measurement variance.
+                       This keeps a high-SNR outlier from becoming the pivot and
+                       making every healthy satellite appear faulty. As before,
+                       prefer a reference without a slip and with a valid lock. */
                     minvar = 0.0;
                     double minvar_any = 0.0;
                     int ref_any = -1;
+                    int max_support = -1;
+                    int max_support_any = -1;
                     for (i = -1, j = 0; j < ns; j++)
                         {
                             sysj = rtk->ssat[sat[j] - 1].sys;
@@ -1815,23 +1901,51 @@ int ddres(rtk_t *rtk, const obsd_t *obs, const nav_t *nav, double dt, const doub
                                 {
                                     continue;
                                 }
+                            if (nav->lam[sat[j] - 1][frq] <= 0.0)
+                                {
+                                    continue;
+                                }
+                            int support = 0;
+                            for (k = 0; k < ns; k++)
+                                {
+                                    if (k == j)
+                                        {
+                                            continue;
+                                        }
+                                    const int peer_system = rtk->ssat[sat[k] - 1].sys;
+                                    if (!test_sys(peer_system, m) ||
+                                        !validobs(iu[k], ir[k], f, nf, y) ||
+                                        nav->lam[sat[k] - 1][frq] <= 0.0)
+                                        {
+                                            continue;
+                                        }
+                                    if (!innovation_outlier(j, k, f,
+                                            measurement_residual(j, k, f)))
+                                        {
+                                            support++;
+                                        }
+                                }
                             refvar = varerr(sat[j], sysj, azel[1 + iu[j] * 2],
                                 rtk->ssat[sat[j] - 1].snr_rover[frq], rtk->ssat[sat[j] - 1].snr_base[frq],
                                 bl, dt, f, opt, &obs[iu[j]]);
-                            if (ref_any < 0 || refvar < minvar_any)
+                            if (ref_any < 0 || support > max_support_any ||
+                                (support == max_support_any && refvar < minvar_any))
                                 {
                                     ref_any = j;
                                     minvar_any = refvar;
+                                    max_support_any = support;
                                 }
                             if ((rtk->ssat[sat[j] - 1].slip[frq] & 1) ||
                                 rtk->ssat[sat[j] - 1].lock[frq] < 0)
                                 {
                                     continue;
                                 }
-                            if (i < 0 || refvar < minvar)
+                            if (i < 0 || support > max_support ||
+                                (support == max_support && refvar < minvar))
                                 {
                                     i = j;
                                     minvar = refvar;
+                                    max_support = support;
                                 }
                         }
                     if (i < 0)
@@ -1878,8 +1992,7 @@ int ddres(rtk_t *rtk, const obsd_t *obs, const nav_t *nav, double dt, const doub
                                         }
                                 }
                             /* double-differenced residual */
-                            v[nv] = (y[f + iu[i] * nf * 2] - y[f + ir[i] * nf * 2]) -
-                                    (y[f + iu[j] * nf * 2] - y[f + ir[j] * nf * 2]);
+                            v[nv] = measurement_residual(i, j, f);
 
                             /* partial derivatives by rover position */
                             if (H)
@@ -1896,7 +2009,6 @@ int ddres(rtk_t *rtk, const obsd_t *obs, const nav_t *nav, double dt, const doub
                                     fj = lamj / LAM_CARR[0];
                                     didxi = (f < nf ? -1.0 : 1.0) * fi * fi * im[i];
                                     didxj = (f < nf ? -1.0 : 1.0) * fj * fj * im[j];
-                                    v[nv] -= didxi * x[II_RTK(sat[i], opt)] - didxj * x[II_RTK(sat[j], opt)];
                                     if (H)
                                         {
                                             Hi[II_RTK(sat[i], opt)] = didxi;
@@ -1906,7 +2018,6 @@ int ddres(rtk_t *rtk, const obsd_t *obs, const nav_t *nav, double dt, const doub
                             /* double-differenced tropospheric delay term */
                             if (opt->tropopt == TROPOPT_EST || opt->tropopt == TROPOPT_ESTG)
                                 {
-                                    v[nv] -= (tropu[i] - tropu[j]) - (tropr[i] - tropr[j]);
                                     for (k = 0; k < (opt->tropopt < TROPOPT_ESTG ? 1 : 3); k++)
                                         {
                                             if (!H)
@@ -1922,7 +2033,6 @@ int ddres(rtk_t *rtk, const obsd_t *obs, const nav_t *nav, double dt, const doub
                                 {
                                     if (opt->ionoopt != IONOOPT_IFLC)
                                         {
-                                            v[nv] -= lami * x[IB_RTK(sat[i], f, opt)] - lamj * x[IB_RTK(sat[j], f, opt)];
                                             if (H)
                                                 {
                                                     Hi[IB_RTK(sat[i], f, opt)] = lami;
@@ -1931,7 +2041,6 @@ int ddres(rtk_t *rtk, const obsd_t *obs, const nav_t *nav, double dt, const doub
                                         }
                                     else
                                         {
-                                            v[nv] -= x[IB_RTK(sat[i], f, opt)] - x[IB_RTK(sat[j], f, opt)];
                                             if (H)
                                                 {
                                                     Hi[IB_RTK(sat[i], f, opt)] = 1.0;
@@ -1943,16 +2052,10 @@ int ddres(rtk_t *rtk, const obsd_t *obs, const nav_t *nav, double dt, const doub
                             if (rtk->opt.glomodear == 2 && sysi == SYS_GLO && sysj == SYS_GLO && ff < NFREQGLO)
                                 {
                                     df = (SPEED_OF_LIGHT_M_S / lami - SPEED_OF_LIGHT_M_S / lamj) / 1E6; /* freq-difference (MHz) */
-                                    v[nv] -= df * x[IL_RTK(ff, opt)];
                                     if (H)
                                         {
                                             Hi[IL_RTK(ff, opt)] = df;
                                         }
-                                }
-                            /* glonass interchannel bias correction */
-                            else if (sysi == SYS_GLO && sysj == SYS_GLO)
-                                {
-                                    v[nv] -= gloicbcorr(sat[i], sat[j], &rtk->opt, lami, lamj, f);
                                 }
                             if (f < nf)
                                 {
@@ -1963,23 +2066,8 @@ int ddres(rtk_t *rtk, const obsd_t *obs, const nav_t *nav, double dt, const doub
                                     rtk->ssat[sat[j] - 1].resp[f - nf] = v[nv];
                                 }
 
-                            /* open up the innovation threshold if one of the two phase
-                               biases has just been initialized, otherwise the freshly
-                               reset bias is rejected again and never recovers (demo5) */
-                            threshadj = 1.0;
-                            if (P != nullptr && opt->mode > PMODE_DGPS)
-                                {
-                                    const int ii = IB_RTK(sat[i], frq, opt);
-                                    const int jj = IB_RTK(sat[j], frq, opt);
-                                    if (P[ii + rtk->nx * ii] == std::pow(opt->std[0], 2.0) ||
-                                        P[jj + rtk->nx * jj] == std::pow(opt->std[0], 2.0))
-                                        {
-                                            threshadj = INNOVATION_THRESHOLD_INIT_FACTOR;
-                                        }
-                                }
                             /* test innovation, with separate thresholds for phase and code */
-                            if (opt->maxinno[f < nf ? 0 : 1] > 0.0 &&
-                                fabs(v[nv]) > opt->maxinno[f < nf ? 0 : 1] * threshadj)
+                            if (innovation_outlier(i, j, f, v[nv]))
                                 {
                                     /* charge phase outliers only to the non-reference
                                        satellite (demo5): the reference is part of every

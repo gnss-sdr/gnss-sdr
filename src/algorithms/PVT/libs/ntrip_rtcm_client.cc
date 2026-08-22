@@ -1474,24 +1474,42 @@ private:
         int invalidated_station_id = 0;
         {
             std::lock_guard<std::mutex> lock(d_output_mutex);
-            ++d_output_generation;
-            if (d_has_observations && d_observation_station_id != decoder.staid)
-                {
-                    invalidated_observations = true;
-                    invalidated_station_id = d_observation_station_id;
-                    invalidate_observations_locked();
-                }
+            const bool base_position_changed =
+                !d_has_base_position ||
+                d_base_position_ecef_m != position ||
+                d_base_position_message_type != message_type ||
+                d_base_position_station_id != decoder.staid ||
+                d_base_position_itrf != decoder.sta.itrf ||
+                d_antenna_height_m != decoder.sta.hgt;
+            const bool observation_station_mismatch =
+                d_has_observations &&
+                d_observation_station_id != decoder.staid;
             // a rebroadcast of the same position is not news; a first fill,
             // a station change, or a moved base (e.g. a VRS re-centering) is
             announce = !d_has_base_position ||
                        d_base_position_station_id != decoder.staid ||
                        d_base_position_ecef_m != position;
-            d_base_position_ecef_m = position;
-            d_base_position_message_type = message_type;
-            d_base_position_station_id = decoder.staid;
-            d_base_position_itrf = decoder.sta.itrf;
-            d_antenna_height_m = decoder.sta.hgt;
-            d_has_base_position = true;
+            if (base_position_changed)
+                {
+                    d_base_position_ecef_m = position;
+                    d_base_position_message_type = message_type;
+                    d_base_position_station_id = decoder.staid;
+                    d_base_position_itrf = decoder.sta.itrf;
+                    d_antenna_height_m = decoder.sta.hgt;
+                    d_has_base_position = true;
+                }
+            if (observation_station_mismatch)
+                {
+                    invalidated_observations = true;
+                    invalidated_station_id = d_observation_station_id;
+                    // This publishes both the observation invalidation and
+                    // any base-position update as one locked output change.
+                    invalidate_observations_locked();
+                }
+            else if (base_position_changed)
+                {
+                    ++d_output_generation;
+                }
         }
         if (invalidated_observations)
             {

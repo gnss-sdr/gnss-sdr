@@ -885,7 +885,8 @@ enum class Loopback_Caster_Response_Mode
     STRICT_V1_AFTER_V2_REJECTION,
     STRICT_V1_AFTER_V2_CLOSE,
     V2_RECOVERY_AFTER_TRANSIENT_CLOSES,
-    LOCK_RESET_AFTER_RECONNECT
+    LOCK_RESET_AFTER_RECONNECT,
+    REPEATED_BASE_POSITIONS
 };
 
 
@@ -1257,25 +1258,44 @@ private:
         if (d_request.find("\r\n\r\n") != std::string::npos)
             {
                 std::vector<unsigned char> rtcm_payload;
-                std::vector<unsigned char> corrupted_frame = make_mt1005();
-                corrupted_frame.back() ^= 0x01U;
                 const std::vector<unsigned char> base_position = make_mt1005();
                 const std::vector<unsigned char> base_position_with_height = make_mt1006();
-                const std::vector<unsigned char> observations = make_mt1004();
-                const std::vector<unsigned char> l1_only_observations = make_mt1002();
-                const std::vector<unsigned char> msm4_observations = make_mt1074();
-                rtcm_payload.insert(rtcm_payload.end(),
-                    corrupted_frame.begin(), corrupted_frame.end());
-                rtcm_payload.insert(rtcm_payload.end(),
-                    base_position.begin(), base_position.end());
-                rtcm_payload.insert(rtcm_payload.end(),
-                    base_position_with_height.begin(), base_position_with_height.end());
-                rtcm_payload.insert(rtcm_payload.end(),
-                    observations.begin(), observations.end());
-                rtcm_payload.insert(rtcm_payload.end(),
-                    l1_only_observations.begin(), l1_only_observations.end());
-                rtcm_payload.insert(rtcm_payload.end(),
-                    msm4_observations.begin(), msm4_observations.end());
+                if (d_response_mode ==
+                    Loopback_Caster_Response_Mode::REPEATED_BASE_POSITIONS)
+                    {
+                        for (int repetition = 0; repetition < 2; ++repetition)
+                            {
+                                rtcm_payload.insert(rtcm_payload.end(),
+                                    base_position.begin(), base_position.end());
+                            }
+                        for (int repetition = 0; repetition < 2; ++repetition)
+                            {
+                                rtcm_payload.insert(rtcm_payload.end(),
+                                    base_position_with_height.begin(),
+                                    base_position_with_height.end());
+                            }
+                    }
+                else
+                    {
+                        std::vector<unsigned char> corrupted_frame = base_position;
+                        corrupted_frame.back() ^= 0x01U;
+                        const std::vector<unsigned char> observations = make_mt1004();
+                        const std::vector<unsigned char> l1_only_observations = make_mt1002();
+                        const std::vector<unsigned char> msm4_observations = make_mt1074();
+                        rtcm_payload.insert(rtcm_payload.end(),
+                            corrupted_frame.begin(), corrupted_frame.end());
+                        rtcm_payload.insert(rtcm_payload.end(),
+                            base_position.begin(), base_position.end());
+                        rtcm_payload.insert(rtcm_payload.end(),
+                            base_position_with_height.begin(),
+                            base_position_with_height.end());
+                        rtcm_payload.insert(rtcm_payload.end(),
+                            observations.begin(), observations.end());
+                        rtcm_payload.insert(rtcm_payload.end(),
+                            l1_only_observations.begin(), l1_only_observations.end());
+                        rtcm_payload.insert(rtcm_payload.end(),
+                            msm4_observations.begin(), msm4_observations.end());
+                    }
 
                 if (d_response_mode == Loopback_Caster_Response_Mode::V2_HTTP_CHUNKED)
                     {
@@ -2193,6 +2213,56 @@ TEST(NtripRtcmClientTest, AuthenticatedFragmentedStreamPublishesFixedBaseSnapsho
     EXPECT_NE(std::string::npos, rtklib_trace.find("stropen:"));
     EXPECT_EQ(std::string::npos, rtklib_trace.find(TRACE_PASSWORD));
     EXPECT_EQ(std::string::npos, rtklib_trace.find(TRACE_BASIC_TOKEN));
+}
+
+
+TEST(NtripRtcmClientTest, RepeatedBasePositionsDoNotAdvanceSnapshotGeneration)
+{
+    using namespace ntrip_rtcm_client_test;
+
+    Loopback_Ntrip_Caster caster(Loopback_Caster_Close_Mode::AFTER_PAYLOAD,
+        Loopback_Caster_Response_Mode::REPEATED_BASE_POSITIONS);
+    ASSERT_TRUE(caster.start()) << caster.start_failure() << ": "
+                                << std::strerror(caster.start_errno());
+
+    Ntrip_Rtcm_Client_Config config;
+    config.enabled = true;
+    config.host = "127.0.0.1";
+    config.port = caster.port();
+    config.mountpoint = "/BASE";
+    config.version = 1;
+    config.reconnect_interval_ms = 0;
+    config.timeout_ms = 1000;
+    config.station_id = TEST_STATION_ID;
+
+    Ntrip_Rtcm_Client client(config);
+    const std::uint64_t generation_before_start = client.snapshot_generation();
+    ASSERT_TRUE(client.start());
+
+    const std::chrono::steady_clock::time_point stopped_deadline =
+        std::chrono::steady_clock::now() + std::chrono::milliseconds(2000);
+    while (client.running() &&
+           std::chrono::steady_clock::now() < stopped_deadline)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+
+    const Ntrip_Rtcm_Client_Status final_status = client.status();
+    const Ntrip_Rtcm_Snapshot snapshot = client.latest_snapshot();
+    client.stop();
+    caster.join();
+
+    ASSERT_FALSE(final_status.running);
+    ASSERT_EQ(4U, final_status.rtcm_messages_decoded);
+    ASSERT_TRUE(snapshot.has_base_position);
+    EXPECT_EQ(1006, snapshot.base_position_message_type);
+    // One bump resets the output at start, one stores the first 1005, and one
+    // publishes the visible 1005-to-1006 message-type change. The repeated
+    // 1005 and 1006 frames describe identical snapshots and add no bumps.
+    EXPECT_EQ(generation_before_start + 3U, snapshot.generation);
+    EXPECT_EQ(snapshot.generation, client.snapshot_generation());
+    EXPECT_TRUE(caster.sent_coalesced_payload());
+    EXPECT_TRUE(caster.server_closed_after_payload());
 }
 
 

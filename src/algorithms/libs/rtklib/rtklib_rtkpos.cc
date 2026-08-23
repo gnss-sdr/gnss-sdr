@@ -2219,7 +2219,7 @@ double intpres(gtime_t time, const obsd_t *obs, int n, const nav_t *nav,
             return tt;
         }
 
-    satposs(time, obsb, nb, nav, opt->sateph, rs, dts, var, svh);
+    satposs_relative(time, obsb, nb, nav, opt->sateph, rs, dts, var, svh);
 
     if (!zdres(1, obsb, nb, rs, dts, svh, nav, rtk->rb, opt, 1, yb, e, azel))
         {
@@ -2980,7 +2980,7 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
                 }
         }
     /* satellite positions/clocks */
-    satposs(time, obs, n, nav, opt->sateph, rs, dts, var, svh.data());
+    satposs_relative(time, obs, n, nav, opt->sateph, rs, dts, var, svh.data());
 
     /* undifferenced residuals for base station */
     if (!zdres(1, obs + nu, nr, rs + nu * 6, dts + nu * 2, &svh[nu], nav, rtk->rb, opt, 1,

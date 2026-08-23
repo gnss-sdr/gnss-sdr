@@ -14,6 +14,8 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "Beidou_CNAV1.h"
+#include "beidou_bdgim.h"
 #include "rtklib_pntpos.h"
 #include "rtklib_rtkcmn.h"
 #include <gtest/gtest.h>
@@ -23,6 +25,7 @@ namespace
 {
 constexpr double TGD1_S = 5.0e-9;
 constexpr double B1I_WAVELENGTH_M = SPEED_OF_LIGHT_M_S / FREQ1_BDS;
+constexpr double B1C_WAVELENGTH_M = SPEED_OF_LIGHT_M_S / FREQ1;
 constexpr double B3I_WAVELENGTH_M = SPEED_OF_LIGHT_M_S / FREQ3_BDS;
 
 void set_bds_test_ephemeris(nav_t& nav, eph_t& eph, int sat)
@@ -58,6 +61,39 @@ TEST(BdsTgdIonoTest, SingleFrequencyB1IAppliesMinusTgd1)
     const double corrected_pseudorange = prange(&obs, &nav, azel, 0, &options, &variance, &iono_scale);
 
     EXPECT_NEAR(obs.P[0] - SPEED_OF_LIGHT_M_S * TGD1_S, corrected_pseudorange, 1.0e-6);
+    EXPECT_DOUBLE_EQ(1.0, iono_scale);
+}
+
+
+TEST(BdsTgdIonoTest, SingleFrequencyB1cCombinedUsesCnav1PilotTgd)
+{
+    nav_t nav{};
+    eph_t eph{};
+    obsd_t obs{};
+    prcopt_t options{};
+    const int sat = satno(SYS_BDS, 6);
+    ASSERT_GT(sat, 0);
+    eph.sat = sat;
+    eph.code = BDS_EPH_SOURCE_CNAV1;
+    eph.tgd[0] = 1.0e-9;
+    eph.tgd[2] = 2.0e-9;
+    nav.n = 1;
+    nav.eph = &eph;
+
+    nav.lam[sat - 1][0] = B1C_WAVELENGTH_M;
+    obs.sat = sat;
+    obs.P[0] = 24000000.0;
+    obs.code[0] = CODE_L1X;
+    options.ionoopt = IONOOPT_BRDC;
+
+    const double azel[2] = {0.0, 1.0};
+    double variance = 0.0;
+    double iono_scale = -1.0;
+    const double corrected_pseudorange =
+        prange(&obs, &nav, azel, 0, &options, &variance, &iono_scale);
+
+    EXPECT_NEAR(obs.P[0] - SPEED_OF_LIGHT_M_S * eph.tgd[0],
+        corrected_pseudorange, 1.0e-6);
     EXPECT_DOUBLE_EQ(1.0, iono_scale);
 }
 
@@ -197,6 +233,35 @@ TEST(BdsTgdIonoTest, IonocorrPrefersBdsKlobucharForBdsSatellites)
         }
     ASSERT_EQ(1, ionocorr(t, &nav, satno(SYS_BDS, 6), pos, azel, IONOOPT_BRDC, &ion, &var));
     EXPECT_NEAR(ionmodel(t, nav.ion_gps, pos, azel), ion, 1.0e-9);
+}
+
+
+TEST(BdsTgdIonoTest, IonocorrUsesBdgimForB1cCombined)
+{
+    nav_t nav{};
+    const double ep[6] = {2026, 7, 31, 12, 0, 0};
+    const gtime_t time = epoch2time(ep);
+    const double position[3] = {40.0 * D2R, 116.0 * D2R, 100.0};
+    const double azel[2] = {45.0 * D2R, 40.0 * D2R};
+    const double coefficients[9] = {10.0, 1.0, 0.5, -0.5, 0.2, 0.1, -0.1, 0.05, -0.05};
+    for (int i = 0; i < 9; ++i)
+        {
+            nav.ion_bdgim[i] = coefficients[i];
+        }
+    nav.ion_bdgim_valid = 1;
+    nav.ion_cmp[0] = 0.25e-7;
+
+    const double reference_epoch[6] = {2000, 1, 1, 12, 0, 0};
+    const double mjd = 51544.5 +
+                       timediff(gpst2utc(time), epoch2time(reference_epoch)) / 86400.0;
+    const double expected = beidou_bdgim_delay_m(mjd, position[0], position[1],
+        azel[0], azel[1], nav.ion_bdgim, FREQ1);
+    double ionosphere_delay = 0.0;
+    double variance = 0.0;
+
+    ASSERT_EQ(1, ionocorr(time, &nav, satno(SYS_BDS, 6), position, azel,
+                     IONOOPT_BRDC, &ionosphere_delay, &variance, CODE_L1X));
+    EXPECT_NEAR(expected, ionosphere_delay, 1.0e-9);
 }
 
 

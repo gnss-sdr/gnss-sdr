@@ -102,6 +102,70 @@ TEST(BeidouB1cPvtHelpersTest, SelephPrefersCnav1WhenRequested)
     EXPECT_NE(e_dnav->code, BDS_EPH_SOURCE_CNAV1);
 }
 
+TEST(BeidouB1cPvtHelpersTest, SelephCnav1PreferenceFallsBackWithoutWeakeningStrictSelection)
+{
+    const int sat = NSATGPS + NSATGLO + NSATGAL + NSATQZS + 20;
+    const double ep[] = {2020, 6, 1, 12, 0, 0};
+    const gtime_t t0 = epoch2time(ep);
+    std::vector<eph_t> ephs;
+    ephs.push_back(make_bds_eph(sat, 1, 1.0e-9, 0.0, t0)); /* DNAV */
+    ephs.push_back(make_bds_eph(
+        sat, BDS_EPH_SOURCE_CNAV1, 2.0e-9, 1.0e-9, timeadd(t0, -60.0))); /* CNAV1 */
+    nav_t nav;
+    std::memset(&nav, 0, sizeof(nav));
+    nav.eph = ephs.data();
+    nav.n = 2;
+
+    /* Prefer the matching B-CNAV1 source even when DNAV has the closer toe. */
+    eph_t *preferred = seleph(t0, sat, -1, &nav, BDS_EPH_SELECTION_CNAV1_PREFERRED);
+    ASSERT_NE(preferred, static_cast<eph_t *>(nullptr));
+    EXPECT_EQ(BDS_EPH_SOURCE_CNAV1, preferred->code);
+    eph_t *preferred_iode = seleph(t0, sat, 0, &nav, BDS_EPH_SELECTION_CNAV1_PREFERRED);
+    ASSERT_NE(preferred_iode, static_cast<eph_t *>(nullptr));
+    EXPECT_EQ(BDS_EPH_SOURCE_CNAV1, preferred_iode->code);
+
+    /* MT1042/DNAV remains usable only through the preference-mode fallback;
+       callers asking for strict B-CNAV1 retain the old filtering contract. */
+    nav.n = 1;
+    eph_t *fallback = seleph(t0, sat, -1, &nav, BDS_EPH_SELECTION_CNAV1_PREFERRED);
+    eph_t *strict = seleph(t0, sat, -1, &nav, BDS_EPH_SOURCE_CNAV1);
+    ASSERT_NE(fallback, static_cast<eph_t *>(nullptr));
+    EXPECT_NE(BDS_EPH_SOURCE_CNAV1, fallback->code);
+    EXPECT_EQ(strict, static_cast<eph_t *>(nullptr));
+}
+
+TEST(BeidouB1cPvtHelpersTest, SatpossLimitsDnavFallbackToExplicitRelativePolicy)
+{
+    const int sat = satno(SYS_BDS, 23);
+    const double ep[] = {2020, 6, 1, 12, 0, 0};
+    const gtime_t t0 = epoch2time(ep);
+    eph_t dnav = make_bds_eph(sat, 1, 5.0e-9, 0.0, t0);
+    nav_t nav{};
+    nav.eph = &dnav;
+    nav.n = 1;
+    obsd_t observation{};
+    observation.time = t0;
+    observation.sat = static_cast<unsigned char>(sat);
+    observation.P[0] = 24000000.0;
+    observation.code[0] = CODE_L1X;
+
+    double strict_position[6] = {};
+    double strict_clock[2] = {};
+    double strict_variance = 0.0;
+    int strict_health = 0;
+    satposs(t0, &observation, 1, &nav, EPHOPT_BRDC, strict_position,
+        strict_clock, &strict_variance, &strict_health);
+    EXPECT_DOUBLE_EQ(0.0, norm_rtk(strict_position, 3));
+
+    double relative_position[6] = {};
+    double relative_clock[2] = {};
+    double relative_variance = 0.0;
+    int relative_health = 0;
+    satposs_relative(t0, &observation, 1, &nav, EPHOPT_BRDC, relative_position,
+        relative_clock, &relative_variance, &relative_health);
+    EXPECT_GT(norm_rtk(relative_position, 3), 1.0e6);
+}
+
 /* satwavelen BDS: frq0=B1I, frq1=B2, frq2=B3I */
 TEST(BeidouB1cPvtHelpersTest, SatwavelenBdsKeepsOfficialB1B2B3Map)
 {
@@ -163,8 +227,11 @@ TEST(BeidouB1cPvtHelpersTest, GettgdPrefersMatchingEphTypeWhenBothPresent)
     nav.n = 2;
 
     const double tgd_b1c = gettgd_bds_by_obs_code(sat, &nav, static_cast<unsigned char>(CODE_L1D));
+    const double tgd_b1c_combined =
+        gettgd_bds_by_obs_code(sat, &nav, static_cast<unsigned char>(CODE_L1X));
     const double tgd_b1i = gettgd_bds_by_obs_code(sat, &nav, static_cast<unsigned char>(CODE_L2I));
     EXPECT_NEAR(tgd_b1c, SPEED_OF_LIGHT_M_S * 3.0e-9, 1.0e-6);
+    EXPECT_NEAR(tgd_b1c_combined, SPEED_OF_LIGHT_M_S * 1.0e-9, 1.0e-6);
     EXPECT_NEAR(tgd_b1i, SPEED_OF_LIGHT_M_S * 5.0e-9, 1.0e-6);
 }
 
@@ -182,6 +249,7 @@ TEST(BeidouB1cPvtHelpersTest, GettgdReturnsZeroWhenOnlyWrongEphFamilyPresent)
 
     EXPECT_DOUBLE_EQ(gettgd_bds_by_obs_code(sat, &nav, static_cast<unsigned char>(CODE_L1D)), 0.0);
     EXPECT_DOUBLE_EQ(gettgd_bds_by_obs_code(sat, &nav, static_cast<unsigned char>(CODE_L1P)), 0.0);
+    EXPECT_DOUBLE_EQ(gettgd_bds_by_obs_code(sat, &nav, static_cast<unsigned char>(CODE_L1X)), 0.0);
 }
 
 /* CODE_L1P also means GPS L1P; CNAV1 filtering is SYS_BDS-only. */

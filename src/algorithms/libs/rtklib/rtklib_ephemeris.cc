@@ -764,7 +764,8 @@ void seph2pos(gtime_t time, const seph_t *seph, double *rs, double *dts,
 
 /* select ephemeris --------------------------------------------------------
  * bds_eph_sel: -1=any, 0=DNAV (eph.code!=BDS_EPH_SOURCE_CNAV1),
- *              BDS_EPH_SOURCE_CNAV1=B-CNAV1
+ *              BDS_EPH_SELECTION_CNAV1_PREFERRED=B-CNAV1 then DNAV,
+ *              BDS_EPH_SOURCE_CNAV1=B-CNAV1 only
  *-----------------------------------------------------------------------------*/
 eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav, int bds_eph_sel)
 {
@@ -773,7 +774,10 @@ eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav, int bds_eph_sel
     double tmin;
     int i;
     int j = -1;
+    int selected_source_priority = -1;
     const int sys = satsys(sat, nullptr);
+    const bool prefer_bds_cnav1 =
+        sys == SYS_BDS && bds_eph_sel == BDS_EPH_SELECTION_CNAV1_PREFERRED;
 
     trace(4, "seleph  : time=%s sat=%2d iode=%d bds_sel=%d\n", time_str(time, 3), sat, iode, bds_eph_sel);
 
@@ -818,15 +822,27 @@ eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav, int bds_eph_sel
                 }
             if (iode >= 0)
                 {
-                    return nav->eph + i;
+                    if (!prefer_bds_cnav1 || nav->eph[i].code == BDS_EPH_SOURCE_CNAV1)
+                        {
+                            return nav->eph + i;
+                        }
+                    if (j < 0)
+                        {
+                            j = i; /* retain a DNAV fallback while looking for B-CNAV1 */
+                        }
+                    continue;
                 }
-            if (t <= tmin)
+            const int source_priority =
+                prefer_bds_cnav1 && nav->eph[i].code == BDS_EPH_SOURCE_CNAV1 ? 1 : 0;
+            if (source_priority > selected_source_priority ||
+                (source_priority == selected_source_priority && t <= tmin))
                 {
                     j = i;
                     tmin = t;
+                    selected_source_priority = source_priority;
                 } /* toe closest to time */
         }
-    if (iode >= 0 || j < 0)
+    if (j < 0)
         {
             trace(3, "no broadcast ephemeris: %s sat=%2d iode=%3d\n", time_str(time, 0),
                 sat, iode);
@@ -1276,6 +1292,8 @@ int satpos(gtime_t time, gtime_t teph, int sat, int ephopt,
  *          double *dts      O   satellite clocks
  *          double *var      O   sat position and clock error variances (m^2)
  *          int    *svh      O   sat health flag (-1:correction not available)
+ *          bool allow_bds_dnav_for_b1c I permit DNAV orbit/clock fallback for
+ *                                      relative same-signal processing
  * return : none
  * notes  : rs [(0:2)+i*6]= obs[i] sat position {x,y,z} (m)
  *          rs [(3:5)+i*6]= obs[i] sat velocity {vx,vy,vz} (m/s)
@@ -1289,8 +1307,9 @@ int satpos(gtime_t time, gtime_t teph, int sat, int ephopt,
  *          any pseudorange and broadcast ephemeris are always needed to get
  *          signal transmission time
  *-----------------------------------------------------------------------------*/
-void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
-    int ephopt, double *rs, double *dts, double *var, int *svh)
+static void satposs_impl(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
+    int ephopt, double *rs, double *dts, double *var, int *svh,
+    bool allow_bds_dnav_for_b1c)
 {
     std::vector<gtime_t> time(MAXOBS);
     double dt;
@@ -1313,7 +1332,9 @@ void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
             var[i] = 0.0;
             svh[i] = 0;
 
-            /* BDS: prefer CNAV1 when any band carries B1C codes, DNAV otherwise */
+            /* Relative same-signal B1C may use a DNAV orbit/clock fallback;
+               absolute B1C remains CNAV1-only because the DNAV clock lacks
+               the B1C TGD/ISC relationship. Other BDS signals are DNAV-only. */
             int bds_eph_sel = -1;
             if (satsys(obs[i].sat, nullptr) == SYS_BDS)
                 {
@@ -1321,9 +1342,11 @@ void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
                     for (j = 0; j < NFREQ; j++)
                         {
                             const unsigned char cj = obs[i].code[j];
-                            if (cj == CODE_L1D || cj == CODE_L1P)
+                            if (is_bds_b1c_code(cj))
                                 {
-                                    bds_eph_sel = BDS_EPH_SOURCE_CNAV1;
+                                    bds_eph_sel = allow_bds_dnav_for_b1c
+                                                      ? BDS_EPH_SELECTION_CNAV1_PREFERRED
+                                                      : BDS_EPH_SOURCE_CNAV1;
                                     break;
                                 }
                         }
@@ -1378,4 +1401,18 @@ void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
                 time_str(time[i], 6), obs[i].sat, rs[i * 6], rs[1 + i * 6], rs[2 + i * 6],
                 dts[i * 2] * 1e9, var[i], svh[i]);
         }
+}
+
+
+void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
+    int ephopt, double *rs, double *dts, double *var, int *svh)
+{
+    satposs_impl(teph, obs, n, nav, ephopt, rs, dts, var, svh, false);
+}
+
+
+void satposs_relative(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
+    int ephopt, double *rs, double *dts, double *var, int *svh)
+{
+    satposs_impl(teph, obs, n, nav, ephopt, rs, dts, var, svh, true);
 }

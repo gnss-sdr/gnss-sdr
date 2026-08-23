@@ -39,6 +39,7 @@
 #include "matlab_writter_helper.h"
 #include "ntrip_rtcm_client.h"
 #include "ntrip_rtk_signals.h"
+#include "rtklib_rtkcmn.h"
 #include "rtklib_rtkpos.h"
 #include "signal_enabled_flags.h"
 #include <algorithm>
@@ -2284,9 +2285,9 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             d_rtklib_band_index.at(sig_));
                                         valid_obs++;
                                     }
-                                // base-stream broadcast ephemeris substitution (RTCM MT1042;
-                                // DNAV orbit, fine for satellite positions while the rover
-                                // B-CNAV1 decode completes)
+                                // Base-stream broadcast ephemeris substitution (RTCM MT1042):
+                                // use its DNAV orbit/clock while the rover B-CNAV1 decode
+                                // completes. B1C TGD/ISC selection remains CNAV1-only.
                                 else if (!substitute_base_ephemeris(fixed_base, bds_sat,
                                              gnss_observables_iter->second, sig_,
                                              eph_data, valid_obs, glo_valid_obs))
@@ -2604,7 +2605,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             continue;
                         }
                     const unsigned char c0 = d_obs_data[k].code[0];
-                    if (c0 == CODE_L1D || c0 == CODE_L1P)
+                    if (is_bds_b1c_code(c0))
                         {
                             d_nav_data.lam[d_obs_data[k].sat - 1][0] = SPEED_OF_LIGHT_M_S / FREQ1;
                         }

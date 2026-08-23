@@ -100,15 +100,7 @@ bool code_in_band(unsigned char code, int band)
 // dropped), not band membership
 bool supported_bds_b1c_code(unsigned char code)
 {
-    switch (code)
-        {
-        case CODE_L1D:
-        case CODE_L1P:
-        case CODE_L1X:
-            return true;
-        default:
-            return false;
-        }
+    return is_bds_b1c_code(code);
 }
 
 

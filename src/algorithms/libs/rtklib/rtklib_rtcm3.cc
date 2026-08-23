@@ -34,6 +34,7 @@
 
 #include "rtklib_rtcm3.h"
 #include "rtklib_rtkcmn.h"
+#include <cstdio>
 #include <cstring>
 
 
@@ -76,7 +77,7 @@ const char *msm_sig_sbs[32] = {
 
 const char *msm_sig_cmp[32] = {
     /* BeiDou: ref [15] table 3.5-106, B1C signal IDs 30-32 per RTCM 3.3 */
-    "", "1I", "1Q", "1X", "", "", "", "6I", "6Q", "6X", "", "",
+    "", "2I", "2Q", "2X", "", "", "", "6I", "6Q", "6X", "", "",
     "", "7I", "7Q", "7X", "", "", "", "", "", "", "", "",
     "", "", "", "", "", "1D", "1P", "1X"};
 
@@ -2992,12 +2993,30 @@ int decode_ssr7(rtcm_t *rtcm, int sys)
 void sigindex(int sys, const unsigned char *code, const int *freq, int n,
     const char *opt, int *ind)
 {
+    bool explicit_bds_slot_selection = false;
     int i;
     int nex;
     int pri;
     int pri_h[8] = {0};
     int index[8] = {0};
     int ex[32] = {0};
+
+    /* GNSS-SDR keeps B1I and B1C in the same observation slot. Respect an
+       explicit RTKLIB -CL2x/-CL1x selection; otherwise prefer B1C. */
+    if (sys == SYS_BDS && opt)
+        {
+            const char *option;
+            char selected_code[3] = "";
+            for (option = opt; (option = std::strchr(option, '-')); option++)
+                {
+                    if (std::sscanf(option, "-CL%2s", selected_code) == 1 &&
+                        (selected_code[0] == '1' || selected_code[0] == '2'))
+                        {
+                            explicit_bds_slot_selection = true;
+                            break;
+                        }
+                }
+        }
 
     /* test code priority */
     for (i = 0; i < n; i++)
@@ -3014,6 +3033,11 @@ void sigindex(int sys, const unsigned char *code, const int *freq, int n,
                 }
             /* code priority */
             pri = getcodepri(sys, code[i], opt);
+            if (pri > 0 && sys == SYS_BDS && freq[i] == 1 && !explicit_bds_slot_selection &&
+                is_bds_b1c_code(code[i]))
+                {
+                    pri += 16;
+                }
 
             /* select highest priority signal */
             if (pri > pri_h[freq[i] - 1])
@@ -3132,7 +3156,13 @@ void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
             /* frequency index for beidou */
             if (sys == SYS_BDS)
                 {
-                    if (freq[i] == 5)
+                    if (2 <= h->sigs[i] && h->sigs[i] <= 4)
+                        {
+                            /* B1I uses RINEX 2I/2Q/2X codes but retains
+                               GNSS-SDR's legacy shared B1I/B1C slot 0. */
+                            freq[i] = 1;
+                        }
+                    else if (freq[i] == 5)
                         {
                             freq[i] = 2; /* B2 */
                         }
@@ -3198,7 +3228,20 @@ void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
                     if (sat && index >= 0 && ind[k] >= 0)
                         {
                             /* satellite carrier wave length */
-                            wl = satwavelen(sat, freq[k] - 1, &rtcm->nav);
+                            if (sys == SYS_BDS && 30 <= h->sigs[k] && h->sigs[k] <= 32)
+                                {
+                                    /* RTCM BDS signal IDs 30-32 are B1C at
+                                       1575.42 MHz. B1C and B1I share RTKLIB's
+                                       first observation slot, whose generic
+                                       BDS wavelength is the 1561.098 MHz B1I
+                                       carrier. Preserve the MSM signal identity
+                                       while it is still available here. */
+                                    wl = SPEED_OF_LIGHT_M_S / FREQ1;
+                                }
+                            else
+                                {
+                                    wl = satwavelen(sat, freq[k] - 1, &rtcm->nav);
+                                }
 
                             /* glonass wave length by extended info */
                             if (sys == SYS_GLO && ex && ex[i] <= 13)

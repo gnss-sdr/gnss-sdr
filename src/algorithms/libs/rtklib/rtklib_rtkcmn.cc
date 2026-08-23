@@ -132,7 +132,7 @@ char codepris[7][MAXFREQ][16] = {
     {"CABXZ", "", "IQX", "ABCXZ", "IQX", "IQX", ""},   /* GAL */
     {"CSLXZ", "SLX", "IQX", "SLX", "", "", ""},        /* QZS */
     {"C", "", "IQX", "", "", "", ""},                  /* SBS */
-    {"DPXIQ", "IQX", "IQX", "IQX", "IQX", "", ""},     /* BDS: B1C (D/P) preferred over B1I in the shared slot */
+    {"DPXIQ", "IQX", "IQX", "IQX", "IQX", "", ""},     /* BDS: shared-slot B1C preference is applied by sigindex() */
     {"", "", "ABCX", "", "", "", "ABCX"}               /* IRN */
 };
 
@@ -654,6 +654,13 @@ char *code2obs(unsigned char code, int *freq)
             *freq = obsfreqs[code];
         }
     return obscodes[code];
+}
+
+
+/* test for a BeiDou B1C observation code ------------------------------------*/
+bool is_bds_b1c_code(unsigned char code)
+{
+    return code == CODE_L1D || code == CODE_L1P || code == CODE_L1X;
 }
 
 
@@ -4329,7 +4336,7 @@ double satwavelen(int sat, int frq, const nav_t *nav)
         }
     else if (sys == SYS_BDS)
         {
-            /* BDS frq: 0=B1I (FREQ1_BDS), 1=B2, 2=B3I. B1C uses FREQ1 via PVT lam[0] override. */
+            /* BDS frq: 0=B1I (FREQ1_BDS), 1=B2, 2=B3I. Signal-aware B1C callers use FREQ1. */
             if (frq == 0)
                 {
                     return SPEED_OF_LIGHT_M_S / FREQ1_BDS; /* B1 */

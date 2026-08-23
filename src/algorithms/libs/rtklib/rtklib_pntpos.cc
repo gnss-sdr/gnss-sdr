@@ -163,8 +163,8 @@ double gettgd(int sat, const nav_t *nav)
  * BDS CNAV1 (eph.code==BDS_EPH_SOURCE_CNAV1), stored by eph_to_rtklib(Beidou_Cnav1_Ephemeris):
  *   tgd[0]=TGD_B1Cp, tgd[1]=TGD_B2ap, tgd[2]=ISC_B1Cd  (ICD B1C §7.6)
  * BDS user algorithm (applied in prange as PC = P - c·Δt_TGD):
- *   B1C pilot CODE_L1P: (Δtsv)_B1Cp = Δtsv - TGD_B1Cp           → (7-4)
- *   B1C data  CODE_L1D: (Δtsv)_B1Cd = Δtsv - TGD_B1Cp - ISC_B1Cd → (7-5)
+ *   B1C pilot/combined CODE_L1P/L1X: (Δtsv)_B1Cp = Δtsv - TGD_B1Cp → (7-4)
+ *   B1C data CODE_L1D: (Δtsv)_B1Cd = Δtsv - TGD_B1Cp - ISC_B1Cd   → (7-5)
  *   B1I (CODE_L2I/L1I): use DNAV TGD1; B3I skips TGD in prange.
  * CODE_L1P is also GPS/GLO L1P — CNAV1 matching is SYS_BDS only.
  * No DNAV↔CNAV1 TGD fallback (TGD1 vs TGD_B1Cp).
@@ -174,7 +174,7 @@ double gettgd_bds_by_obs_code(int sat, const nav_t *nav, unsigned char obs_code)
     int i;
     int prn = 0;
     const int sys = satsys(sat, &prn);
-    const int is_b1c_obs = (obs_code == CODE_L1D || obs_code == CODE_L1P) ? 1 : 0;
+    const int is_b1c_obs = is_bds_b1c_code(obs_code) ? 1 : 0;
 
     for (i = 0; i < nav->n; i++)
         {
@@ -293,7 +293,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         }
 
     /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS;
-     * BDS: B1I(band0)+B3I(band2). B1C (CODE_L1P/L1D) is single-frequency on
+     * BDS: B1I(band0)+B3I(band2). B1C (CODE_L1D/L1P/L1X) is single-frequency on
      * slot 0 under GNSS-SDR prefer-B1C XOR (never paired as IF with B1I). */
     if (sys == SYS_GAL || sys == SYS_SBS)
         {
@@ -301,8 +301,8 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         }
     else if (sys == SYS_BDS)
         {
-            const bool b1c0 = (obs->code[0] == CODE_L1D || obs->code[0] == CODE_L1P);
-            const bool b1c1 = (obs->code[1] == CODE_L1D || obs->code[1] == CODE_L1P);
+            const bool b1c0 = is_bds_b1c_code(obs->code[0]);
+            const bool b1c1 = is_bds_b1c_code(obs->code[1]);
             if (b1c0 || b1c1)
                 {
                     i = b1c0 ? 0 : 1;
@@ -585,8 +585,8 @@ int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
             const int sys = satsys(sat, nullptr);
             if (sys == SYS_BDS)
                 {
-                    /* B1C (CODE_L1D/L1P) uses BDGIM at FREQ1; B1I/B3I use DNAV Klobuchar */
-                    const bool is_b1c = (obs_code == CODE_L1D || obs_code == CODE_L1P);
+                    /* B1C (CODE_L1D/L1P/L1X) uses BDGIM at FREQ1; B1I/B3I use DNAV Klobuchar */
+                    const bool is_b1c = is_bds_b1c_code(obs_code);
                     if (is_b1c && nav->ion_bdgim_valid)
                         {
                             const double ep0[] = {2000, 1, 1, 12, 0, 0};

@@ -16,6 +16,7 @@
 
 #include "ntrip_rtcm_client.h"
 #include "rtklib_rtcm.h"
+#include "rtklib_rtcm3.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_stream.h"
 #include "rtklib_tls.h"
@@ -956,6 +957,112 @@ std::vector<unsigned char> make_mt1124()
     setbitu(frame.data(), bit, 6, 45);
     bit += 6;
     setbitu(frame.data(), bit, 6, 45);
+
+    const unsigned int crc = rtk_crc24q(frame.data(), 3 + payload_size);
+    frame[3 + payload_size] = static_cast<unsigned char>((crc >> 16U) & 0xFFU);
+    frame[4 + payload_size] = static_cast<unsigned char>((crc >> 8U) & 0xFFU);
+    frame[5 + payload_size] = static_cast<unsigned char>(crc & 0xFFU);
+    return frame;
+}
+
+
+struct Bds_Msm5_Cell
+{
+    unsigned int signal_id;
+    int pseudorange;
+    int phase_range;
+    int phase_range_rate;
+};
+
+
+std::vector<unsigned char> make_mt1125(const std::vector<Bds_Msm5_Cell>& cells)
+{
+    // One BeiDou satellite (C19). MSM cell arrays follow ascending signal-ID
+    // order, so callers provide cells in that same order.
+    const int cell_count = static_cast<int>(cells.size());
+    const int payload_size = (205 + 64 * cell_count + 7) / 8;
+    std::vector<unsigned char> frame(static_cast<std::size_t>(3 + payload_size + 3), 0);
+    frame[0] = 0xD3;
+    setbitu(frame.data(), 14, 10, static_cast<unsigned int>(payload_size));
+
+    int bit = 24;
+    setbitu(frame.data(), bit, 12, 1125);
+    bit += 12;
+    setbitu(frame.data(), bit, 12, TEST_STATION_ID);
+    bit += 12;
+    setbitu(frame.data(), bit, 30,
+        static_cast<unsigned int>(TEST_TOW_S * 1000.0));
+    bit += 30;
+    setbitu(frame.data(), bit, 1, 0);  // Last message in the epoch
+    bit += 1;
+    setbitu(frame.data(), bit, 3, 0);  // Issue of data station
+    bit += 3;
+    bit += 7;  // Reserved
+    setbitu(frame.data(), bit, 2, 0);
+    bit += 2;
+    setbitu(frame.data(), bit, 2, 0);
+    bit += 2;
+    setbitu(frame.data(), bit, 1, 0);
+    bit += 1;
+    setbitu(frame.data(), bit, 3, 0);
+    bit += 3;
+
+    for (int satellite_id = 1; satellite_id <= 64; ++satellite_id)
+        {
+            setbitu(frame.data(), bit++, 1, satellite_id == 19 ? 1U : 0U);
+        }
+    for (unsigned int signal_id = 1; signal_id <= 32; ++signal_id)
+        {
+            bool selected = false;
+            for (const auto& cell : cells)
+                {
+                    selected = selected || cell.signal_id == signal_id;
+                }
+            setbitu(frame.data(), bit++, 1, selected ? 1U : 0U);
+        }
+    for (int i = 0; i < cell_count; ++i)
+        {
+            setbitu(frame.data(), bit++, 1, 1);
+        }
+
+    setbitu(frame.data(), bit, 8, 75);  // Rough range in milliseconds
+    bit += 8;
+    setbitu(frame.data(), bit, 4, 0);  // Extended satellite information
+    bit += 4;
+    setbitu(frame.data(), bit, 10, 512);
+    bit += 10;
+    setbits(frame.data(), bit, 14, 12);  // Rough phase-range rate in m/s
+    bit += 14;
+
+    for (const auto& cell : cells)
+        {
+            setbits(frame.data(), bit, 15, cell.pseudorange);
+            bit += 15;
+        }
+    for (const auto& cell : cells)
+        {
+            setbits(frame.data(), bit, 22, cell.phase_range);
+            bit += 22;
+        }
+    for (int i = 0; i < cell_count; ++i)
+        {
+            setbitu(frame.data(), bit, 4, 5);
+            bit += 4;
+        }
+    for (int i = 0; i < cell_count; ++i)
+        {
+            setbitu(frame.data(), bit++, 1, 0);
+        }
+    for (int i = 0; i < cell_count; ++i)
+        {
+            setbitu(frame.data(), bit, 6, 45);
+            bit += 6;
+        }
+    for (const auto& cell : cells)
+        {
+            setbits(frame.data(), bit, 15, cell.phase_range_rate);
+            bit += 15;
+        }
 
     const unsigned int crc = rtk_crc24q(frame.data(), 3 + payload_size);
     frame[3 + payload_size] = static_cast<unsigned char>((crc >> 16U) & 0xFFU);
@@ -2109,9 +2216,142 @@ TEST(NtripRtcmClientTest, GeneratedBeidouMsm4PrefersB1cOverB1iInTheSharedSlot)
     // Both signals target the first slot; the code priority table must
     // resolve the contention in favor of the B1C pilot
     EXPECT_EQ(CODE_L1P, decoder.obs.data[0].code[0]);
-    EXPECT_NE(0.0, decoder.obs.data[0].P[0]);
-    EXPECT_NE(0.0, decoder.obs.data[0].L[0]);
+    const double rough_range_m = (75.0 + 512.0 * TWO_N10) * RANGE_MS;
+    EXPECT_NEAR(rough_range_m + 2000.0 * TWO_N24 * RANGE_MS,
+        decoder.obs.data[0].P[0], 1e-6);
+    EXPECT_NEAR((rough_range_m + 2500.0 * TWO_N29 * RANGE_MS) * FREQ1 /
+                    SPEED_OF_LIGHT_M_S,
+        decoder.obs.data[0].L[0], 1e-3);
     free_rtcm(&decoder);
+}
+
+
+TEST(NtripRtcmClientTest, BeidouMsm5UsesSignalSpecificWavelengthForPhaseAndDoppler)
+{
+    using namespace ntrip_rtcm_client_test;
+    struct Test_Case
+    {
+        Bds_Msm5_Cell cell;
+        unsigned char expected_code;
+        double carrier_frequency_hz;
+    };
+    const Test_Case test_cases[] = {
+        {{2, 100, 1000, 1000}, CODE_L2I, FREQ1_BDS},
+        {{3, 100, 1000, 1000}, CODE_L2Q, FREQ1_BDS},
+        {{4, 100, 1000, 1000}, CODE_L2X, FREQ1_BDS},
+        {{30, 200, 2000, 2000}, CODE_L1D, FREQ1},
+        {{31, 300, 3000, 3000}, CODE_L1P, FREQ1},
+        {{32, 400, 4000, 4000}, CODE_L1X, FREQ1}};
+
+    const double rough_range_m = (75.0 + 512.0 * TWO_N10) * RANGE_MS;
+    for (const auto& test_case : test_cases)
+        {
+            SCOPED_TRACE(::testing::Message() << "signal ID " << test_case.cell.signal_id);
+            rtcm_t decoder = {};
+            ASSERT_EQ(1, init_rtcm(&decoder));
+            decoder.time = gpst2time(TEST_GPS_WEEK, TEST_TOW_S);
+
+            int decode_result = 0;
+            const std::vector<unsigned char> frame = make_mt1125({test_case.cell});
+            for (const unsigned char byte : frame)
+                {
+                    decode_result = input_rtcm3(&decoder, byte);
+                }
+
+            EXPECT_EQ(1, decode_result);
+            EXPECT_EQ(1, decoder.obs.n);
+            if (decode_result == 1 && decoder.obs.n == 1)
+                {
+                    int prn = 0;
+                    EXPECT_EQ(SYS_BDS, satsys(decoder.obs.data[0].sat, &prn));
+                    EXPECT_EQ(19, prn);
+                    EXPECT_EQ(test_case.expected_code, decoder.obs.data[0].code[0]);
+                    const double wavelength_m =
+                        SPEED_OF_LIGHT_M_S / test_case.carrier_frequency_hz;
+                    EXPECT_NEAR(rough_range_m +
+                                    test_case.cell.pseudorange * TWO_N24 * RANGE_MS,
+                        decoder.obs.data[0].P[0], 1e-6);
+                    EXPECT_NEAR((rough_range_m +
+                                    test_case.cell.phase_range * TWO_N29 * RANGE_MS) /
+                                    wavelength_m,
+                        decoder.obs.data[0].L[0], 1e-3);
+                    EXPECT_NEAR(-(12.0 + test_case.cell.phase_range_rate * 0.0001) /
+                                    wavelength_m,
+                        decoder.obs.data[0].D[0], 1e-4);
+                }
+            free_rtcm(&decoder);
+        }
+}
+
+
+TEST(NtripRtcmClientTest, BeidouMsm5PrefersCombinedB1cUnlessB1iIsExplicitlySelected)
+{
+    using namespace ntrip_rtcm_client_test;
+    const Bds_Msm5_Cell b1i = {4, 100, 1000, 1000};
+    const Bds_Msm5_Cell b1c = {32, 400, 4000, 4000};
+    const std::vector<unsigned char> frame = make_mt1125({b1i, b1c});
+    const double rough_range_m = (75.0 + 512.0 * TWO_N10) * RANGE_MS;
+
+    rtcm_t decoder = {};
+    ASSERT_EQ(1, init_rtcm(&decoder));
+    decoder.time = gpst2time(TEST_GPS_WEEK, TEST_TOW_S);
+    int decode_result = 0;
+    for (const unsigned char byte : frame)
+        {
+            decode_result = input_rtcm3(&decoder, byte);
+        }
+    ASSERT_EQ(1, decode_result);
+    ASSERT_EQ(1, decoder.obs.n);
+    EXPECT_EQ(CODE_L1X, decoder.obs.data[0].code[0]);
+    EXPECT_NEAR(rough_range_m + b1c.pseudorange * TWO_N24 * RANGE_MS,
+        decoder.obs.data[0].P[0], 1e-6);
+    EXPECT_NEAR((rough_range_m + b1c.phase_range * TWO_N29 * RANGE_MS) * FREQ1 /
+                    SPEED_OF_LIGHT_M_S,
+        decoder.obs.data[0].L[0], 1e-3);
+    free_rtcm(&decoder);
+
+    rtcm_t explicitly_selected_decoder = {};
+    ASSERT_EQ(1, init_rtcm(&explicitly_selected_decoder));
+    explicitly_selected_decoder.time = gpst2time(TEST_GPS_WEEK, TEST_TOW_S);
+    std::snprintf(explicitly_selected_decoder.opt,
+        sizeof(explicitly_selected_decoder.opt), "%s", "-CL2X");
+    decode_result = 0;
+    for (const unsigned char byte : frame)
+        {
+            decode_result = input_rtcm3(&explicitly_selected_decoder, byte);
+        }
+    ASSERT_EQ(1, decode_result);
+    ASSERT_EQ(1, explicitly_selected_decoder.obs.n);
+    EXPECT_EQ(CODE_L2X, explicitly_selected_decoder.obs.data[0].code[0]);
+    EXPECT_NEAR(rough_range_m + b1i.pseudorange * TWO_N24 * RANGE_MS,
+        explicitly_selected_decoder.obs.data[0].P[0], 1e-6);
+    EXPECT_NEAR((rough_range_m + b1i.phase_range * TWO_N29 * RANGE_MS) * FREQ1_BDS /
+                    SPEED_OF_LIGHT_M_S,
+        explicitly_selected_decoder.obs.data[0].L[0], 1e-3);
+    free_rtcm(&explicitly_selected_decoder);
+}
+
+
+TEST(NtripRtcmClientTest, BeidouSharedSlotPreferenceHonorsDisabledCodes)
+{
+    const unsigned char codes[] = {CODE_L2X, CODE_L1X};
+    const int frequencies[] = {1, 1};
+    int indices[] = {-1, -1};
+
+    setcodepri(SYS_BDS, 1, "IQ");
+    sigindex(SYS_BDS, codes, frequencies, 2, "", indices);
+    setcodepri(SYS_BDS, 1, "DPXIQ");
+
+    EXPECT_EQ(0, indices[0]);
+    EXPECT_EQ(-1, indices[1]);
+}
+
+
+TEST(NtripRtcmClientTest, BeidouSsrB1iCodesMatchMsmObservationCodes)
+{
+    EXPECT_EQ(CODE_L2I, CODES_BDS[0]);
+    EXPECT_EQ(CODE_L2Q, CODES_BDS[1]);
+    EXPECT_EQ(CODE_L2X, CODES_BDS[2]);
 }
 
 

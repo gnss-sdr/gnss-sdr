@@ -164,6 +164,18 @@ Beidou_Cnav1_Ephemeris make_relative_beidou_ephemeris(unsigned int prn)
 }
 
 
+eph_t make_mt1042_style_beidou_ephemeris(unsigned int prn)
+{
+    /* Keep the synthetic CNAV1 orbit numerically identical to the rover/base
+       observations, but mark it as the DNAV family produced by RTCM MT1042.
+       The MT1042 decoder leaves both BDS source fields at zero. */
+    eph_t ephemeris = eph_to_rtklib(make_relative_beidou_ephemeris(prn));
+    ephemeris.code = 0;
+    ephemeris.flag = 0;
+    return ephemeris;
+}
+
+
 Gps_CNAV_Ephemeris make_cnav_ephemeris(const Gps_Ephemeris& lnav)
 {
     Gps_CNAV_Ephemeris cnav;
@@ -522,7 +534,7 @@ void add_beidou_to_relative_epoch(Rtklib_Solver& solver,
             base_observation.P[0] = base_range_m + BASE_CLOCK_M;
             base_observation.L[0] = (base_range_m + BASE_CLOCK_M) / wavelength_m + base_ambiguity_cycles;
             base_observation.SNR[0] = 200;
-            base_observation.code[0] = CODE_L1P;  // B1C pilot, as broadcast in MSM
+            base_observation.code[0] = CODE_L1X;  // B1C combined, as broadcast in MSM
 
             Gnss_Synchro rover_b1c = make_rover_observation(prn);
             rover_b1c.System = 'C';
@@ -1130,6 +1142,10 @@ TEST_F(RtklibFixedBaseTest, SingleFrequencyGpsGalileoBeidouBaseProducesRelativeS
                     EXPECT_NE(0.0, base_observation.L[0]);
                     EXPECT_EQ(CODE_NONE, base_observation.code[1]);
                     EXPECT_EQ(CODE_NONE, base_observation.code[2]);
+                    if (satsys(base_observation.sat, nullptr) == SYS_BDS)
+                        {
+                            EXPECT_EQ(CODE_L1X, base_observation.code[0]);
+                        }
                 }
 
             SCOPED_TRACE(::testing::Message() << "epoch=" << epoch_index);
@@ -1594,6 +1610,67 @@ TEST_F(RtklibFixedBaseTest, BaseStreamEphemerisSubstitutesForUndecodedRoverEphem
             /* without the substitution the satellite is skipped and ns drops */
             EXPECT_EQ(static_cast<unsigned int>(satellites.size()),
                 static_cast<unsigned int>(solver->pvt_sol.ns));
+        }
+}
+
+
+TEST_F(RtklibFixedBaseTest, BaseStreamMt1042SubstitutesForUndecodedB1cEphemeris)
+{
+    using namespace rtklib_fixed_base_test_detail;
+    const double base_position_geodetic[3] = {45.0 * D2R, 8.0 * D2R, 100.0};
+    double base_position_ecef[3]{};
+    pos2ecef(base_position_geodetic, base_position_ecef);
+    const double baseline_enu_m[3] = {8.0, 4.0, 1.0};
+    double baseline_ecef_m[3]{};
+    enu2ecef(base_position_geodetic, baseline_enu_m, baseline_ecef_m);
+    const double rover_position_ecef[3] = {
+        base_position_ecef[0] + baseline_ecef_m[0],
+        base_position_ecef[1] + baseline_ecef_m[1],
+        base_position_ecef[2] + baseline_ecef_m[2]};
+
+    prcopt_t options = fixed_base_options();
+    options.nf = 1;
+    options.navsys = SYS_GPS | SYS_GAL | SYS_BDS;
+    options.modear = ARMODE_OFF;
+    auto solver = make_solver_with_options(options, false, GPS_1C | GAL_1B | BDS_B1C);
+
+    const std::vector<unsigned int> gps_satellites = select_relative_satellites(
+        base_position_ecef, rover_position_ecef);
+    const std::vector<unsigned int> galileo_satellites = select_relative_galileo_satellites(
+        base_position_ecef, rover_position_ecef);
+    const std::vector<unsigned int> beidou_satellites = select_relative_beidou_satellites(
+        base_position_ecef, rover_position_ecef);
+    ASSERT_GE(gps_satellites.size(), 4U);
+    ASSERT_GE(galileo_satellites.size(), 4U);
+    ASSERT_GE(beidou_satellites.size(), 3U);
+
+    /* The rover tracks this B1C satellite but has not completed B-CNAV1. Its
+       base-stream MT1042 DNAV orbit must keep it in the relative solution. */
+    const unsigned int undecoded_prn = beidou_satellites.back();
+    const int undecoded_sat = satno(SYS_BDS, static_cast<int>(undecoded_prn));
+    ASSERT_GT(undecoded_sat, 0);
+
+    for (int epoch_index = 0; epoch_index < 6; ++epoch_index)
+        {
+            Synthetic_Relative_Epoch epoch = make_relative_epoch(
+                *solver, epoch_index, base_position_ecef, rover_position_ecef,
+                gps_satellites, false, true);
+            add_galileo_to_relative_epoch(
+                *solver, epoch, epoch_index, base_position_ecef, rover_position_ecef,
+                galileo_satellites, true);
+            add_beidou_to_relative_epoch(
+                *solver, epoch, epoch_index, base_position_ecef, rover_position_ecef,
+                beidou_satellites);
+
+            solver->beidou_cnav1_ephemeris_map.erase(static_cast<int>(undecoded_prn));
+            const eph_t mt1042_ephemeris = make_mt1042_style_beidou_ephemeris(undecoded_prn);
+            ASSERT_NE(BDS_EPH_SOURCE_CNAV1, mt1042_ephemeris.code);
+            epoch.base_snapshot.ephemerides.push_back(mt1042_ephemeris);
+
+            SCOPED_TRACE(::testing::Message() << "epoch=" << epoch_index);
+            ASSERT_TRUE(solve(*solver, epoch.rover_observations, &epoch.base_snapshot));
+            EXPECT_EQ(Rtklib_Fixed_Base_Status::APPLIED, solver->get_fixed_base_status());
+            EXPECT_NE(0U, solver->pvt_ssat[static_cast<std::size_t>(undecoded_sat - 1)].vsat[0]);
         }
 }
 

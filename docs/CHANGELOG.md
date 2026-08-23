@@ -29,16 +29,16 @@ All notable changes to GNSS-SDR will be documented in this file.
   consistently with the delay itself when converting from the GPS L1 frequency
   to the L1/B1 frequency of other constellations (delay scales with f^-2, its
   variance with f^-4).
-- Fixed a double-counting of the ionospheric delay in the SPP solver for
-  dual-band satellites processed with a single-frequency ionospheric model
-  (e.g., `PVT.iono_model=Broadcast`): the ionosphere-free pseudorange
-  combinations formed for GPS/QZSS L1+L5 and Galileo/GLONASS/BeiDou dual-band
-  observations no longer get the modeled ionospheric delay applied on top, which
-  biased those residuals by the (elevation-dependent) modeled delay. The
-  measurement variance of these combinations now also receives the same
-  noise-amplification factor already used in the ionosphere-free positioning
-  mode, instead of a Klobuchar-based variance term that did not correspond to
-  the measurement.
+- Fixed a double-counting of the ionospheric delay in the Single Point
+  Positioning (SPP) solver for dual-band satellites processed with a
+  single-frequency ionospheric model (e.g., `PVT.iono_model=Broadcast`): the
+  ionosphere-free pseudorange combinations formed for GPS/QZSS L1+L5 and
+  Galileo/GLONASS/BeiDou dual-band observations no longer get the modeled
+  ionospheric delay applied on top, which biased those residuals by the
+  (elevation-dependent) modeled delay. The measurement variance of these
+  combinations now also receives the same noise-amplification factor already
+  used in the ionosphere-free positioning mode, instead of a Klobuchar-based
+  variance term that did not correspond to the measurement.
 - The modeled ionospheric delay in the SPP solver is now scaled to the observed
   frequency band for single-band measurements outside the L1/E1/B1 band (GPS
   L2C-only or L5-only, Galileo E5a-only or E5b-only, GLONASS L2-only, BeiDou
@@ -56,6 +56,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   telemetry-resolved phase polarity. RINEX observation files report them with
   standard loss-of-lock indicator values, and the optional carrier smoothing
   filter restarts instead of smoothing across the jump.
+- Added real-time kinematic (RTK) positioning using RTCM 3 corrections received
+  from NTRIP casters, enabling centimeter-level relative positioning under
+  suitable observing conditions.
 
 ### Improvements in Availability:
 
@@ -110,27 +113,28 @@ All notable changes to GNSS-SDR will be documented in this file.
   Single-band sets run single-frequency RTK, viable on the short effective
   baselines of VRS services. GPS L5 and Galileo E5a share the same center
   frequency, and BeiDou B1C shares the GPS L1 / Galileo E1 center, so the
-  combined GPS L1+L5 / Galileo E1+E5a dual-frequency receiver needs only two RF
-  channels, and a single-frequency GPS+Galileo+BeiDou receiver needs one. The
-  RTCM 3 MSM decoder gained the BeiDou B1C signal identifiers and prefers B1C
-  over B1I when a base station broadcasts both in the shared first frequency
-  slot. The client prefers NTRIP v2 and, after a fully-sent v2 exchange closes
-  or times out before receiving response bytes, or returns HTTP 400, 501, or
-  505, retries on a fresh NTRIP v1 connection (`PVT.ntrip_version=1` forces the
-  legacy protocol). It supports TLS 1.2 or newer with system-CA certificate and
-  hostname verification (`PVT.ntrip_tls_enabled=true`). It reconnects without
-  blocking the GNU Radio work function, filters station changes and stale
-  corrections, redacts credentials from RTKLIB traces, and retains an explicitly
-  labeled single-point fallback when configured. VRS and nearest-station
-  mountpoints are supported: the client periodically reports the rover position
-  upstream as an NMEA GGA sentence (`PVT.ntrip_send_gga`, enabled by default,
-  with the cadence set by `PVT.ntrip_gga_period_ms`, 10 s by default), starting
-  as soon as the receiver produces its first position solution.
+  combined GPS L1+L5 / Galileo E1+E5a / BeiDou B1C dual-frequency receiver needs
+  only two RF channels, and a single-frequency GPS+Galileo+BeiDou receiver needs
+  one. The RTCM 3 MSM decoder gained the BeiDou B1C signal identifiers and
+  prefers B1C over B1I when a base station broadcasts both in the shared first
+  frequency slot. The client prefers NTRIP v2 and, after a fully-sent v2
+  exchange closes or times out before receiving response bytes, or returns HTTP
+  400, 501, or 505, retries on a fresh NTRIP v1 connection
+  (`PVT.ntrip_version=1` forces the legacy protocol). It supports TLS 1.2 or
+  newer with system-CA certificate and hostname verification
+  (`PVT.ntrip_tls_enabled=true`). It reconnects without blocking the GNU Radio
+  work function, filters station changes and stale corrections, redacts
+  credentials from RTKLIB traces, and retains an explicitly labeled single-point
+  fallback when configured. VRS and nearest-station mountpoints are supported:
+  the client periodically reports the rover position upstream as an NMEA GGA
+  sentence (`PVT.ntrip_send_gga`, enabled by default, with the cadence set by
+  `PVT.ntrip_gga_period_ms`, 10 s by default), starting as soon as the receiver
+  produces its first position solution.
 - QZSS ambiguities are now resolved in their own group instead of jointly with
   GPS, avoiding integer fixes across the GPS-QZSS inter-system bias, and the
   RTCM 3 decoder accepts the final RTCM 3.3 BeiDou ephemeris message type 1042
   (in addition to the draft type 63), with the a2 clock drift rate term now
-  scaled per the BeiDou ICD ($$ 2^{-66} $$ instead of $$ 2^{-55} $$).
+  scaled per the BeiDou ICD (2^-66 instead of 2^-55).
 - Cycle-slip detection by phase-doppler difference is now available: the
   detector removes the common receiver clock error as the median range-rate
   residual over all satellites before thresholding. It is enabled by setting
@@ -144,23 +148,21 @@ All notable changes to GNSS-SDR will be documented in this file.
 - The double-difference ambiguity transformation now uses the index-based
   formulation, and integer ambiguity resolution is driven by a new management
   layer that can skip AR while the float position variance is still high
-  (`PVT.ar_max_position_variance`, default $$ 0.25 m^2
-  $$
-  ; 0 disables the gate), reject
-  newly-risen satellites and retry when the AR ratio degrades (`PVT.ar_filter`,
-  default true), cycle a single satellite out of AR when no fix is achieved with
-  many satellites in view (`PVT.min_drop_sats`, default 10; 0 disables), scale
-  the AR ratio threshold with the number of ambiguity pairs
+  (`PVT.ar_max_position_variance`, default 0.25 m^2; 0 disables the gate),
+  reject newly-risen satellites and retry when the AR ratio degrades
+  (`PVT.ar_filter`, default true), cycle a single satellite out of AR when no
+  fix is achieved with many satellites in view (`PVT.min_drop_sats`, default 10;
+  0 disables), scale the AR ratio threshold with the number of ambiguity pairs
   (`PVT.ar_ratio_min`/`PVT.ar_ratio_max`; equal values keep the fixed
   `PVT.min_ratio_to_fix_ambiguity`), and gate fixing and holding on minimum
   satellite counts (`PVT.min_fix_sats`, default 4; `PVT.min_hold_sats`,
   default 5) with a configurable fix-and-hold pseudo-measurement variance
-  (`PVT.var_holdamb`, default $$ 0.1 \text{cycle}^2 $$). The reference satellite for double differencing is now selected by lowest
-  measurement variance instead of highest elevation, excluding slipped
-  satellites, which behaves better in urban conditions where SNR is a better
-  quality proxy than elevation. Also fixed an out-of-bounds risk in the
-  double-difference bias bookkeeping when five constellation groups are active.
-  $$
+  (`PVT.var_holdamb`, default 0.1 cycle^2). The reference satellite for double
+  differencing is now selected by lowest measurement variance instead of highest
+  elevation, excluding slipped satellites, which behaves better in urban
+  conditions where SNR is a better quality proxy than elevation. Also fixed an
+  out-of-bounds risk in the double-difference bias bookkeeping when five
+  constellation groups are active.
 - Added SNR-dependent and receiver-reported-stdev terms to the observation
   weighting model of the single-point and RTK solvers: `PVT.error_factor_snr`
   (m; a recomended value is 0.005) adds a term driven by the C/N0 of rover and

@@ -832,6 +832,7 @@ void kf_tracking::start_tracking()
     d_rem_carr_phase_rad = 0.0;
     d_rem_code_phase_chips = 0.0;
     d_acc_carrier_phase_rad = 0.0;
+    d_carrier_phase_discontinuity = true;  // the carrier phase ambiguity starts again
     d_cn0_estimation_counter = 0;
     d_carrier_lock_test = 1.0;
     d_CN0_SNV_dB_Hz = 0.0;
@@ -1220,6 +1221,7 @@ void kf_tracking::check_carrier_phase_coherent_initialization()
         {
             d_acc_carrier_phase_rad = -d_rem_carr_phase_rad;
             d_acc_carrier_phase_initialized = true;
+            d_carrier_phase_discontinuity = true;  // the carrier phase ambiguity starts again
         }
 }
 
@@ -2019,6 +2021,10 @@ int kf_tracking::general_work(int noutput_items __attribute__((unused)), gr_vect
         {
             current_synchro_data.fs = static_cast<int64_t>(d_trk_parameters.fs_in);
             current_synchro_data.Tracking_sample_counter = d_sample_counter;
+            // report a restarted carrier phase accumulator on the first valid
+            // output that carries it
+            current_synchro_data.Flag_carrier_phase_continuous = !d_carrier_phase_discontinuity;
+            d_carrier_phase_discontinuity = false;
             *out[0] = std::move(current_synchro_data);
             return 1;
         }

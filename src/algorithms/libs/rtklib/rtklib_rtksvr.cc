@@ -175,9 +175,6 @@ void updatesvr(rtksvr_t *svr, int ret, obs_t *obs, nav_t *nav, int sat,
     geph_t *geph2;
     geph_t *geph3;
     // gtime_t tof;
-    double pos[3];
-    double del[3] = {0};
-    double dr[3];
     int i;
     int n = 0;
     int prn;
@@ -302,29 +299,8 @@ void updatesvr(rtksvr_t *svr, int ret, obs_t *obs, nav_t *nav, int sat,
         { /* antenna position parameters */
             if (svr->rtk.opt.refpos == 4 && index == 1)
                 {
-                    for (i = 0; i < 3; i++)
-                        {
-                            svr->rtk.rb[i] = svr->rtcm[1].sta.pos[i];
-                        }
                     /* antenna delta */
-                    ecef2pos(svr->rtk.rb, pos);
-                    if (svr->rtcm[1].sta.deltype)
-                        { /* xyz */
-                            del[2] = svr->rtcm[1].sta.hgt;
-                            enu2ecef(pos, del, dr);
-                            for (i = 0; i < 3; i++)
-                                {
-                                    svr->rtk.rb[i] += svr->rtcm[1].sta.del[i] + dr[i];
-                                }
-                        }
-                    else
-                        { /* enu */
-                            enu2ecef(pos, svr->rtcm[1].sta.del, dr);
-                            for (i = 0; i < 3; i++)
-                                {
-                                    svr->rtk.rb[i] += dr[i];
-                                }
-                        }
+                    sta2antpos(&svr->rtcm[1].sta, svr->rtk.rb);
                 }
             svr->nmsg[index][4]++;
         }
@@ -685,7 +661,7 @@ int rtksvrinit(rtksvr_t *svr)
 {
     gtime_t time0 = {0, 0.0};
     sol_t sol0 = {{0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0},
-        '0', '0', '0', 0, 0, 0};
+        '0', '0', '0', 0, 0, 0, 0, 0};
     eph_t eph0 = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, {0.0}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, 0, 0, 0, 0, 0.0, -1, 0};

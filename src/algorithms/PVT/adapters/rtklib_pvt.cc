@@ -26,10 +26,18 @@
 #include "gps_almanac.h"               // for Gps_Almanac
 #include "gps_ephemeris.h"             // for Gps_Ephemeris
 #include "gps_week_rollover.h"         // for gps_ref_week_from_config
+#include "ntrip_rtcm_client.h"         // for make_ntrip_rtcm_client_config
+#include "ntrip_rtk_signals.h"         // for the NTRIP RTK signal table and derived masks
 #include "pvt_conf.h"                  // for Pvt_Conf
 #include "rtklib_rtkpos.h"             // for rtkfree, rtkinit
+#include "secure_string.h"             // for Secure_String
 #include "signal_enabled_flags.h"      // for signal_enabled_flags
+#include <algorithm>                   // for any_of
+#include <cctype>                      // for isspace, iscntrl
+#include <cmath>                       // for isfinite
+#include <cstdlib>                     // for getenv
 #include <iostream>                    // for std::cout
+#include <stdexcept>                   // for invalid_argument
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
 #else
@@ -57,6 +65,8 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
+    // the Secure_String credential fields of this local configuration wipe
+    // themselves at every exit of this constructor, throwing included
     Pvt_Conf pvt_output_parameters = Pvt_Conf();
     // dump parameters
     const std::string default_dump_filename("./pvt.dat");
@@ -173,6 +183,66 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             pvt_output_parameters.rtcm_msg_rate_ms[k] = rtcm_MT1097_rate_ms;
         }
 
+    // NTRIP client settings. These properties are intentionally ignored unless
+    // the client is enabled so existing configurations retain their exact
+    // startup and data-flow behavior.
+    pvt_output_parameters.ntrip_client_enabled = configuration->property(role + ".ntrip_client_enabled", false);
+    if (pvt_output_parameters.ntrip_client_enabled)
+        {
+            pvt_output_parameters.ntrip_caster_address = configuration->property(role + ".ntrip_caster_address", std::string(""));
+            pvt_output_parameters.ntrip_mountpoint = configuration->property(role + ".ntrip_mountpoint", std::string(""));
+            pvt_output_parameters.ntrip_username = Secure_String(configuration->property(role + ".ntrip_username", std::string("")));
+            pvt_output_parameters.ntrip_password = Secure_String(configuration->property(role + ".ntrip_password", std::string("")));
+            pvt_output_parameters.ntrip_password_env = Secure_String(configuration->property(role + ".ntrip_password_env", std::string("")));
+
+            const int ntrip_port = configuration->property(role + ".ntrip_caster_port", 2101);
+            const int ntrip_station_id = configuration->property(role + ".ntrip_station_id", 0);
+            pvt_output_parameters.ntrip_timeout_ms = configuration->property(role + ".ntrip_inactivity_timeout_ms", pvt_output_parameters.ntrip_timeout_ms);
+            pvt_output_parameters.ntrip_reconnect_interval_ms = configuration->property(role + ".ntrip_reconnect_interval_ms", pvt_output_parameters.ntrip_reconnect_interval_ms);
+            pvt_output_parameters.ntrip_max_correction_age_s = configuration->property(role + ".ntrip_max_correction_age_s", pvt_output_parameters.ntrip_max_correction_age_s);
+            pvt_output_parameters.ntrip_fallback_to_single = configuration->property(role + ".ntrip_fallback_to_single", pvt_output_parameters.ntrip_fallback_to_single);
+            pvt_output_parameters.ntrip_tls_enabled = configuration->property(role + ".ntrip_tls_enabled", pvt_output_parameters.ntrip_tls_enabled);
+            pvt_output_parameters.ntrip_version = configuration->property(role + ".ntrip_version", pvt_output_parameters.ntrip_version);
+            pvt_output_parameters.ntrip_send_gga = configuration->property(role + ".ntrip_send_gga", pvt_output_parameters.ntrip_send_gga);
+            pvt_output_parameters.ntrip_gga_period_ms = configuration->property(role + ".ntrip_gga_period_ms", pvt_output_parameters.ntrip_gga_period_ms);
+
+            if (ntrip_port < 1 || ntrip_port > 65535)
+                {
+                    throw std::invalid_argument(role + ".ntrip_caster_port must be in the range 1..65535");
+                }
+            if (ntrip_station_id < 0 || ntrip_station_id > 4095)
+                {
+                    throw std::invalid_argument(role + ".ntrip_station_id must be in the range 0..4095");
+                }
+            pvt_output_parameters.ntrip_port = static_cast<uint16_t>(ntrip_port);
+            pvt_output_parameters.ntrip_station_id = static_cast<uint16_t>(ntrip_station_id);
+
+            if (!pvt_output_parameters.ntrip_password_env.empty())
+                {
+                    if (!pvt_output_parameters.ntrip_password.empty())
+                        {
+                            throw std::invalid_argument(role + ".ntrip_password and .ntrip_password_env are mutually exclusive");
+                        }
+                    if (ntrip_text_has_space_or_control(pvt_output_parameters.ntrip_password_env.value()))
+                        {
+                            throw std::invalid_argument(role + ".ntrip_password_env must be one environment-variable name");
+                        }
+                    const char* password = std::getenv(pvt_output_parameters.ntrip_password_env.value().c_str());
+                    if (password == nullptr)
+                        {
+                            throw std::invalid_argument(role + ".ntrip_password_env names an environment variable that is not set");
+                        }
+                    pvt_output_parameters.ntrip_password = Secure_String(password);
+                }
+            // the client library owns the configuration rules; the adapter
+            // only turns the verdict into a constructor-time throw
+            const std::string ntrip_error = make_ntrip_rtcm_client_config(pvt_output_parameters).validate();
+            if (!ntrip_error.empty())
+                {
+                    throw std::invalid_argument(role + " NTRIP configuration: " + ntrip_error);
+                }
+        }
+
     // Advanced Nativation Protocol Printer settings
     pvt_output_parameters.an_output_enabled = configuration->property(role + ".an_output_enabled", pvt_output_parameters.an_output_enabled);
     pvt_output_parameters.an_dump_devname = configuration->property(role + ".an_dump_devname", default_nmea_dump_devname);
@@ -243,6 +313,24 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             positioning_mode = PMODE_SINGLE;
         }
 
+    // Per-system NTRIP RTK channel rule, fully derived from the signal
+    // table: an entry band alone or with at most one of its second bands.
+    // Single-band sets run single-frequency RTK.
+    const bool ntrip_valid_channel_set = ntrip_rtk_valid_channel_set(signal_enabled_flags);
+
+    if (pvt_output_parameters.ntrip_client_enabled)
+        {
+            if (positioning_mode != PMODE_STATIC && positioning_mode != PMODE_KINEMA)
+                {
+                    throw std::invalid_argument(role + ".ntrip_client_enabled requires positioning_mode=Static or positioning_mode=Kinematic");
+                }
+            if (!ntrip_valid_channel_set)
+                {
+                    throw std::invalid_argument("NTRIP RTK channels must be, per constellation: " +
+                                                ntrip_rtk_supported_sets_description());
+                }
+        }
+
     int num_bands = 0;
 
     if (signal_enabled_flags.check_any_enabled(GPS_1C, GAL_1B, GLO_1G, BDS_B1, BDS_B1C, QZS_J1))
@@ -276,6 +364,18 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {
             // warn user and set the default
             number_of_frequencies = num_bands;
+        }
+    if (pvt_output_parameters.ntrip_client_enabled)
+        {
+            // The slot count is fully determined by the channel set (see the
+            // slot column of ntrip_rtk_signals()): single-band sets run on the
+            // first slot alone
+            const int ntrip_required_bands = ntrip_rtk_required_bands(signal_enabled_flags);
+            if (number_of_frequencies != ntrip_required_bands)
+                {
+                    LOG(INFO) << "NTRIP RTK: setting the number of frequency slots to " << ntrip_required_bands;
+                    number_of_frequencies = ntrip_required_bands;
+                }
         }
 
     double elevation_mask = configuration->property(role + ".elevation_mask", 15.0);
@@ -444,6 +544,14 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             LOG(WARNING) << "Erroneous Navigation System. Setting to default value of (0:none)";
             navigation_system = nsys;
         }
+    if (pvt_output_parameters.ntrip_client_enabled)
+        {
+            const int expected_navigation_system = ntrip_rtk_navigation_systems(signal_enabled_flags);
+            if (navigation_system != expected_navigation_system)
+                {
+                    throw std::invalid_argument(role + ".navigation_system must select exactly the constellations of the enabled RTK channels");
+                }
+        }
 
     // Settings 2
     const std::string default_gps_ar("Continuous");
@@ -509,9 +617,13 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     const double slip_threshold = configuration->property(role + ".slip_threshold", 0.05); /* set the cycle‐slip threshold (m) of geometry‐free LC carrier‐phase difference between epochs */
 
+    const double slip_threshold_doppler = configuration->property(role + ".slip_threshold_doppler", 0.0); /* cycle-slip threshold (m/s) of the phase-doppler difference, after removing the median common range-rate error over all satellites. 0 disables the test. */
+
     const double threshold_reject_gdop = configuration->property(role + ".threshold_reject_gdop", 30.0); /* reject threshold of GDOP. If the GDOP is over the value, the observable is excluded for the estimation process as an outlier. */
 
-    const double threshold_reject_innovation = configuration->property(role + ".threshold_reject_innovation", 30.0); /* reject threshold of innovation (m). If the innovation is over the value, the observable is excluded for the estimation process as an outlier. */
+    const double threshold_reject_innovation = configuration->property(role + ".threshold_reject_innovation", 30.0); /* reject threshold of innovation (m) for code observables. If the innovation is over the value, the observable is excluded for the estimation process as an outlier. */
+
+    const double threshold_reject_innovation_phase = configuration->property(role + ".threshold_reject_innovation_phase", threshold_reject_innovation); /* reject threshold of innovation (m) for carrier-phase observables. Defaults to threshold_reject_innovation; the demo5 RTKLIB fork recommends 5.0 for RTK. */
 
     const int number_filter_iter = configuration->property(role + ".number_filter_iter", 1); /* Set the number of iteration in the measurement update of the estimation filter.
                                                                                          If the baseline length is very short like 1 m, the iteration may be effective to handle
@@ -545,9 +657,29 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const double carrier_phase_error_factor_a = configuration->property(role + ".carrier_phase_error_factor_a", 0.003);
     const double carrier_phase_error_factor_b = configuration->property(role + ".carrier_phase_error_factor_b", 0.003);
 
+    /* SNR-dependent and receiver-reported-stdev observation weighting (demo5). Both terms default to
+       0.0 (disabled), preserving the elevation-only error model */
+    const double error_snr_max = configuration->property(role + ".error_snr_max", 52.0);              /* SNR reference (dB-Hz) above which no SNR penalty is applied */
+    const double error_factor_snr = configuration->property(role + ".error_factor_snr", 0.0);         /* SNR error term (m); demo5 uses 0.005 for its receivers */
+    const double error_factor_rcv_std = configuration->property(role + ".error_factor_rcv_std", 0.0); /* receiver-reported stdev error term; requires Pstd/Lstd filled in the observations */
+
+    /* AR management options (demo5) */
+    const bool ar_filter = configuration->property(role + ".ar_filter", true);                                 /* reject newly-risen satellites from AR and retry when the AR ratio degrades */
+    const int min_fix_sats = configuration->property(role + ".min_fix_sats", 4);                               /* min satellites required to fix integer ambiguities */
+    const int min_hold_sats = configuration->property(role + ".min_hold_sats", 5);                             /* min satellites required to hold integer ambiguities */
+    const int min_drop_sats = configuration->property(role + ".min_drop_sats", 10);                            /* min satellites to enable single-satellite exclusion cycling in AR (0 disables) */
+    const double var_holdamb = configuration->property(role + ".var_holdamb", 0.1);                            /* variance (cycle^2) of the fix-and-hold pseudo measurements */
+    const double ar_max_position_variance = configuration->property(role + ".ar_max_position_variance", 0.25); /* max float-position variance (m^2) to attempt AR; avoids false fixes while the filter converges (0 disables the gate) */
+    const double ar_ratio_min = configuration->property(role + ".ar_ratio_min", 0.0);                          /* lower bound for the satellite-count-dependent AR ratio threshold; leave equal to ar_ratio_max to use the fixed min_ratio_to_fix_ambiguity */
+    const double ar_ratio_max = configuration->property(role + ".ar_ratio_max", 0.0);                          /* upper bound for the satellite-count-dependent AR ratio threshold */
+
     const bool bancroft_init = configuration->property(role + ".bancroft_init", true);
 
+    const bool estimate_qzss_isb = configuration->property(role + ".estimate_qzss_isb", false); /* estimate a separate QZS-GPS inter-system bias in single-point positioning. It requires one extra satellite in mixed GPS+QZSS epochs, so keep disabled under degraded visibility. */
+
     snrmask_t snrmask = {{}, {{}, {}}};
+    const double max_time_difference_s = pvt_output_parameters.ntrip_client_enabled ? pvt_output_parameters.ntrip_max_correction_age_s : 30.0;
+    const int output_single_on_outage = (!pvt_output_parameters.ntrip_client_enabled || pvt_output_parameters.ntrip_fallback_to_single) ? 1 : 0;
 
     prcopt_t rtklib_configuration_options = {
         positioning_mode,                                                                  /* positioning mode (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h */
@@ -578,38 +710,60 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
                                                                                            /*    0:pos in prcopt,  1:average of single pos, */
                                                                                            /*    2:read from file, 3:rinex header, 4:rtcm pos */
         {code_phase_error_ratio_l1, code_phase_error_ratio_l2, code_phase_error_ratio_l5}, /* eratio[NFREQ] code/phase error ratio */
-        {100.0, carrier_phase_error_factor_a, carrier_phase_error_factor_b, 0.0, 1.0},     /* err[5]:  measurement error factor [0]:reserved, [1-3]:error factor a/b/c of phase (m) , [4]:doppler frequency (hz) */
-        {bias_0, iono_0, trop_0},                                                          /* std[3]: initial-state std [0]bias,[1]iono [2]trop*/
-        {sigma_bias, sigma_iono, sigma_trop, sigma_acch, sigma_accv, sigma_pos},           /* prn[6] process-noise std */
-        5e-12,                                                                             /* sclkstab: satellite clock stability (sec/sec) */
-        {min_ratio_to_fix_ambiguity, 0.9999, 0.25, 0.1, 0.05, 0.0, 0.0, 0.0},              /* thresar[8]: AR validation threshold */
-        min_elevation_to_fix_ambiguity,                                                    /* elevation mask of AR for rising satellite (deg) */
-        0.0,                                                                               /* elevation mask to hold ambiguity (deg) */
-        slip_threshold,                                                                    /* slip threshold of geometry-free phase (m) */
-        30.0,                                                                              /* max difference of time (sec) */
-        threshold_reject_innovation,                                                       /* reject threshold of innovation (m) */
-        threshold_reject_gdop,                                                             /* reject threshold of gdop */
-        {},                                                                                /* double baseline[2] baseline length constraint {const,sigma} (m) */
-        {},                                                                                /* double ru[3]  rover position for fixed mode {x,y,z} (ecef) (m) */
-        {},                                                                                /* double rb[3]  base position for relative mode {x,y,z} (ecef) (m) */
-        {"", ""},                                                                          /* char anttype[2][MAXANT]  antenna types {rover,base}  */
-        {{}, {}},                                                                          /* double antdel[2][3]   antenna delta {{rov_e,rov_n,rov_u},{ref_e,ref_n,ref_u}} */
-        {},                                                                                /* pcv_t pcvr[2]   receiver antenna parameters {rov,base} */
-        {},                                                                                /* unsigned char exsats[MAXSAT]  excluded satellites (1:excluded, 2:included) */
-        0,                                                                                 /* max averaging epoches */
-        0,                                                                                 /* initialize by restart */
-        1,                                                                                 /* output single by dgps/float/fix/ppp outage */
-        {"", ""},                                                                          /* char rnxopt[2][256]   rinex options {rover,base} */
-        {sat_PCV, rec_PCV, phwindup, reject_GPS_IIA, raim_fde},                            /* posopt[6] positioning options [0]: satellite and receiver antenna PCV model; [1]: interpolate antenna parameters; [2]: apply phase wind-up correction for PPP modes; [3]: exclude measurements of GPS Block IIA satellites satellite [4]: RAIM FDE (fault detection and exclusion) [5]: handle day-boundary clock jump */
-        0,                                                                                 /* solution sync mode (0:off,1:on) */
-        {{}, {}},                                                                          /* odisp[2][6*11] ocean tide loading parameters {rov,base} */
-        {{}, {{}, {}}, {{}, {}}, {}, {}},                                                  /* exterr_t exterr   extended receiver error model */
-        0,                                                                                 /* disable L2-AR */
-        {},                                                                                /* char pppopt[256]   ppp option   "-GAP_RESION="  default gap to reset iono parameters (ep) */
-        bancroft_init                                                                      /* enable Bancroft initialization for the first iteration of the PVT computation, useful in some geometries */
+        {100.0, carrier_phase_error_factor_a, carrier_phase_error_factor_b, 0.0, 1.0,
+            error_snr_max, error_factor_snr, error_factor_rcv_std},                             /* err[8]:  measurement error factor [0]:reserved, [1-3]:error factor a/b/c of phase (m), [4]:doppler frequency (hz), [5]:SNR reference (dBHz), [6]:SNR error term (m), [7]:receiver stdev term */
+        {bias_0, iono_0, trop_0},                                                               /* std[3]: initial-state std [0]bias,[1]iono [2]trop*/
+        {sigma_bias, sigma_iono, sigma_trop, sigma_acch, sigma_accv, sigma_pos},                /* prn[6] process-noise std */
+        5e-12,                                                                                  /* sclkstab: satellite clock stability (sec/sec) */
+        {min_ratio_to_fix_ambiguity, 0.9999, 0.25, 0.1, 0.05, ar_ratio_min, ar_ratio_max, 0.0}, /* thresar[8]: AR validation threshold; [5]/[6]: min/max of the sat-count-dependent AR ratio threshold (equal: fixed threshold) */
+        min_elevation_to_fix_ambiguity,                                                         /* elevation mask of AR for rising satellite (deg) */
+        0.0,                                                                                    /* elevation mask to hold ambiguity (deg) */
+        slip_threshold,                                                                         /* slip threshold of geometry-free phase (m) */
+        slip_threshold_doppler,                                                                 /* slip threshold of doppler (m/s) (0:disabled) */
+        max_time_difference_s,                                                                  /* max difference of time (sec) */
+        {threshold_reject_innovation_phase, threshold_reject_innovation},                       /* reject threshold of innovation {phase, code} (m) */
+        threshold_reject_gdop,                                                                  /* reject threshold of gdop */
+        {},                                                                                     /* double baseline[2] baseline length constraint {const,sigma} (m) */
+        {},                                                                                     /* double ru[3]  rover position for fixed mode {x,y,z} (ecef) (m) */
+        {},                                                                                     /* double rb[3]  base position for relative mode {x,y,z} (ecef) (m) */
+        {"", ""},                                                                               /* char anttype[2][MAXANT]  antenna types {rover,base}  */
+        {{}, {}},                                                                               /* double antdel[2][3]   antenna delta {{rov_e,rov_n,rov_u},{ref_e,ref_n,ref_u}} */
+        {},                                                                                     /* pcv_t pcvr[2]   receiver antenna parameters {rov,base} */
+        {},                                                                                     /* unsigned char exsats[MAXSAT]  excluded satellites (1:excluded, 2:included) */
+        0,                                                                                      /* max averaging epoches */
+        0,                                                                                      /* initialize by restart */
+        output_single_on_outage,                                                                /* output single by dgps/float/fix/ppp outage */
+        {"", ""},                                                                               /* char rnxopt[2][256]   rinex options {rover,base} */
+        {sat_PCV, rec_PCV, phwindup, reject_GPS_IIA, raim_fde},                                 /* posopt[6] positioning options [0]: satellite and receiver antenna PCV model; [1]: interpolate antenna parameters; [2]: apply phase wind-up correction for PPP modes; [3]: exclude measurements of GPS Block IIA satellites satellite [4]: RAIM FDE (fault detection and exclusion) [5]: handle day-boundary clock jump */
+        0,                                                                                      /* solution sync mode (0:off,1:on) */
+        {{}, {}},                                                                               /* odisp[2][6*11] ocean tide loading parameters {rov,base} */
+        {{}, {{}, {}}, {{}, {}}, {}, {}},                                                       /* exterr_t exterr   extended receiver error model */
+        0,                                                                                      /* disable L2-AR */
+        {},                                                                                     /* char pppopt[256]   ppp option   "-GAP_RESION="  default gap to reset iono parameters (ep) */
+        bancroft_init,                                                                          /* enable Bancroft initialization for the first iteration of the PVT computation, useful in some geometries */
+        estimate_qzss_isb,                                                                      /* estimate a separate QZS-GPS inter-system bias (needs one extra satellite in mixed GPS+QZSS epochs) */
+        ar_filter ? 1 : 0,                                                                      /* AR filtering to reject newly-added sats on AR ratio degradation */
+        min_fix_sats,                                                                           /* min sats to fix integer ambiguities */
+        min_hold_sats,                                                                          /* min sats to hold integer ambiguities */
+        min_drop_sats,                                                                          /* min sats to enable single-sat exclusion cycling in AR */
+        var_holdamb,                                                                            /* variance of the fix-and-hold pseudo measurements (cycle^2) */
+        ar_max_position_variance                                                                /* max position variance to attempt AR (m^2) */
     };
 
-    rtkinit(&rtk, &rtklib_configuration_options);
+    if (integer_ambiguity_resolution_gps > 0 &&
+        (ar_filter || min_fix_sats > 0 || min_hold_sats > 0 || min_drop_sats > 0 || ar_max_position_variance > 0.0))
+        {
+            // These gates default ON (demo5 behavior), unlike the RTKLIB
+            // PRCOPT_DEFAULT zeros: say so where the user can see why AR may
+            // silently be skipped (e.g. float variance above the gate)
+            LOG(INFO) << "RTK AR management gates active: ar_filter=" << (ar_filter ? "true" : "false")
+                      << ", min_fix_sats=" << min_fix_sats
+                      << ", min_hold_sats=" << min_hold_sats
+                      << ", min_drop_sats=" << min_drop_sats
+                      << ", ar_max_position_variance=" << ar_max_position_variance
+                      << " m^2 (AR is skipped while the float position variance exceeds it;"
+                      << " set these options to 0/false for the classic RTKLIB behavior)";
+        }
 
     // Outputs
     const bool default_output_enabled = configuration->property(role + ".output_enabled", true);
@@ -683,8 +837,22 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
                 }
         }
 
-    // make PVT object
-    pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk, sensor_data_configuration);
+    // make PVT object. rtk_t owns raw filter buffers, so allocate the adapter's
+    // seed only after all potentially throwing C++ configuration work, and
+    // release it once each solver has initialized its independent state.
+    rtkinit(&rtk, &rtklib_configuration_options);
+
+    // Release the seed as well if block construction fails.
+    try
+        {
+            pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk, sensor_data_configuration);
+        }
+    catch (...)
+        {
+            rtkfree(&rtk);
+            throw;
+        }
+    rtkfree(&rtk);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
     if (out_streams_ > 0)
         {

@@ -37,19 +37,20 @@
 #include "rtklib_rtkcmn.h"
 
 /* constants -----------------------------------------------------------------*/
-const int NX = 4 + 3;         //!< # of estimated parameters
-const int MAXITR = 10;        //!< max number of iteration for point pos
-const double ERR_ION = 5.0;   //!< ionospheric delay std (m)
-const double ERR_TROP = 3.0;  //!< tropspheric delay std (m)
+const int NX = 4 + 4;                    //!< # of estimated parameters: pos (3), GPS clock, GLO/GAL/BDS/QZS-GPS offsets
+const int MAXITR = 10;                   //!< max number of iteration for point pos
+const double VARERR_MIN_EL = 5.0 * D2R;  //!< minimum elevation for measurement error variance (rad)
+const double ERR_ION = 5.0;              //!< ionospheric delay std (m)
+const double ERR_TROP = 3.0;             //!< tropspheric delay std (m)
 
 
 /* pseudorange measurement error variance ------------------------------------*/
-double varerr(const prcopt_t *opt, double el, int sys);
+double varerr(const prcopt_t *opt, const obsd_t *obs, double el, int sys);
 
 /* get tgd parameter (m) -----------------------------------------------------*/
 double gettgd(int sat, const nav_t *nav);
 double gettgd(int sat, const nav_t *nav, int tgd_index);
-/* BDS DNAV/CNAV1 TGD selection by observation code (CODE_L1D/L1P/...) */
+/* BDS DNAV/CNAV1 TGD selection by observation code (CODE_L1D/L1P/L1X/...) */
 double gettgd_bds_by_obs_code(int sat, const nav_t *nav, unsigned char obs_code);
 
 /* select Galileo BGD from observation and ephemeris provenance -------------*/
@@ -80,7 +81,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
  *          double *ion      O   ionospheric delay (L1) (m)
  *          double *var      O   ionospheric delay (L1) variance (m^2)
  *          unsigned char obs_code I optional observation code (CODE_???); for BDS
- *                                   CODE_L1D/L1P selects BDGIM at FREQ1 (B1C)
+ *                                   CODE_L1D/L1P/L1X selects BDGIM at FREQ1 (B1C)
  * return : status(1:ok,0:error)
  *-----------------------------------------------------------------------------*/
 int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,

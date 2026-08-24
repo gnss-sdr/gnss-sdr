@@ -23,9 +23,13 @@
 #   GNSSSDR_GNUTLS_INCLUDE_DIR    - Path to the GnuTLS include directory
 #
 # Provided function:
-#   link_to_crypto_dependencies(<target>)
+#   link_to_crypto_dependencies(<target> [<scope>])
 #     Links <target> against the selected crypto backend and sets the
-#     appropriate compile definitions:
+#     appropriate compile definitions. <scope> (PUBLIC, PRIVATE or INTERFACE,
+#     default PUBLIC) controls whether the backend libraries, include
+#     directories and USE_* definitions propagate to the target's consumers;
+#     use PRIVATE when the crypto backend is an implementation detail that no
+#     public header of <target> exposes:
 #       USE_OPENSSL_3=1            (OpenSSL >= 3.0.0)
 #       USE_OPENSSL_111=1          (OpenSSL >= 1.1.1, < 3.0.0)
 #       USE_GNUTLS_FALLBACK=1      (GnuTLS backend)
@@ -326,10 +330,20 @@ function(link_to_crypto_dependencies target)
         )
     endif()
 
+    set(scope PUBLIC)
+    if(ARGC GREATER 1)
+        set(scope ${ARGV1})
+        if(NOT scope MATCHES "^(PUBLIC|PRIVATE|INTERFACE)$")
+            message(FATAL_ERROR
+                "link_to_crypto_dependencies: invalid scope ${scope} (expected PUBLIC, PRIVATE or INTERFACE)"
+            )
+        endif()
+    endif()
+
     if(GNSSSDR_OPENSSL_FOUND)
         if(TARGET OpenSSL::SSL)
             target_link_libraries(${target}
-                PUBLIC
+                ${scope}
                     OpenSSL::SSL
             )
 
@@ -354,19 +368,19 @@ function(link_to_crypto_dependencies target)
             if(_gnsssdr_openssl_libraries)
                 list(REMOVE_DUPLICATES _gnsssdr_openssl_libraries)
                 target_link_libraries(${target}
-                    PUBLIC
+                    ${scope}
                         ${_gnsssdr_openssl_libraries}
                 )
             endif()
 
             if(OPENSSL_INCLUDE_DIR)
                 target_include_directories(${target}
-                    PUBLIC
+                    ${scope}
                         ${OPENSSL_INCLUDE_DIR}
                 )
             elseif(OPENSSL_INCLUDE_DIRS)
                 target_include_directories(${target}
-                    PUBLIC
+                    ${scope}
                         ${OPENSSL_INCLUDE_DIRS}
                 )
             endif()
@@ -377,12 +391,12 @@ function(link_to_crypto_dependencies target)
         if(GNSSSDR_OPENSSL_VERSION_NUMBER)
             if(NOT "${GNSSSDR_OPENSSL_VERSION_NUMBER}" VERSION_LESS "3.0.0")
                 target_compile_definitions(${target}
-                    PUBLIC
+                    ${scope}
                         USE_OPENSSL_3=1
                 )
             elseif(NOT "${GNSSSDR_OPENSSL_VERSION_NUMBER}" VERSION_LESS "1.1.1")
                 target_compile_definitions(${target}
-                    PUBLIC
+                    ${scope}
                         USE_OPENSSL_111=1
                 )
             endif()
@@ -390,25 +404,25 @@ function(link_to_crypto_dependencies target)
     else()
         if(TARGET GnuTLS::GnuTLS)
             target_link_libraries(${target}
-                PUBLIC
+                ${scope}
                     GnuTLS::GnuTLS
                     ${GNUTLS_OPENSSL_LIBRARY}
             )
         else()
             target_link_libraries(${target}
-                PUBLIC
+                ${scope}
                     ${GNUTLS_LIBRARIES}
                     ${GNUTLS_OPENSSL_LIBRARY}
             )
 
             if(GNUTLS_INCLUDE_DIRS)
                 target_include_directories(${target}
-                    PUBLIC
+                    ${scope}
                         ${GNUTLS_INCLUDE_DIRS}
                 )
             elseif(GNSSSDR_GNUTLS_INCLUDE_DIR)
                 target_include_directories(${target}
-                    PUBLIC
+                    ${scope}
                         ${GNSSSDR_GNUTLS_INCLUDE_DIR}
                 )
             endif()
@@ -442,13 +456,13 @@ function(link_to_crypto_dependencies target)
 
         if(GNUTLS_DEFINITIONS)
             target_compile_options(${target}
-                PUBLIC
+                ${scope}
                     ${GNUTLS_DEFINITIONS}
             )
         endif()
 
         target_compile_definitions(${target}
-            PUBLIC
+            ${scope}
                 USE_GNUTLS_FALLBACK=1
         )
 

@@ -1,0 +1,396 @@
+/*!
+ * \file rtklib_pvt_ntrip_configuration_test.cc
+ * \brief Unit tests for RTKLIB PVT NTRIP client configuration validation
+ * \author Carles Fernandez-Prades, 2026. cfernandez(at)cttc.es
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * This file is part of GNSS-SDR.
+ *
+ * SPDX-FileCopyrightText: 2026 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * -----------------------------------------------------------------------------
+ */
+
+#include "in_memory_configuration.h"
+#include "rtklib_pvt.h"
+#include <gtest/gtest.h>
+#include <cstdlib>
+#include <memory>
+#include <stdexcept>
+#include <string>
+
+namespace rtklib_pvt_ntrip_configuration_test_detail
+{
+const char* const ROLE = "PVT";
+
+
+std::unique_ptr<InMemoryConfiguration> make_base_configuration()
+{
+    std::unique_ptr<InMemoryConfiguration> configuration(new InMemoryConfiguration);
+    configuration->set_property("Channels_1C.count", "1");
+    configuration->set_property("Channels_2S.count", "1");
+    configuration->set_property("PVT.output_enabled", "false");
+    configuration->set_property("PVT.dump", "false");
+    return configuration;
+}
+
+
+std::unique_ptr<InMemoryConfiguration> make_valid_ntrip_configuration()
+{
+    std::unique_ptr<InMemoryConfiguration> configuration = make_base_configuration();
+    configuration->set_property("PVT.ntrip_client_enabled", "true");
+    configuration->set_property("PVT.ntrip_caster_address", "127.0.0.1");
+    configuration->set_property("PVT.ntrip_mountpoint", "TEST");
+    configuration->set_property("PVT.positioning_mode", "Static");
+    configuration->set_property("PVT.num_bands", "2");
+    configuration->set_property("PVT.navigation_system", "1");
+    return configuration;
+}
+}  // namespace rtklib_pvt_ntrip_configuration_test_detail
+
+
+class RtklibPvtNtripConfigurationTest : public ::testing::Test
+{
+protected:
+    static void expect_invalid_configuration(
+        const InMemoryConfiguration& configuration,
+        const std::string& expected_message_fragment)
+    {
+        try
+            {
+                Rtklib_Pvt adapter(&configuration,
+                    rtklib_pvt_ntrip_configuration_test_detail::ROLE,
+                    2,
+                    0);
+                (void)adapter;
+                FAIL() << "Expected the NTRIP configuration to be rejected";
+            }
+        catch (const std::invalid_argument& error)
+            {
+                EXPECT_NE(std::string::npos, std::string(error.what()).find(expected_message_fragment))
+                    << "Unexpected validation error: " << error.what();
+            }
+        catch (const std::exception& error)
+            {
+                FAIL() << "Expected std::invalid_argument, got: " << error.what();
+            }
+        catch (...)
+            {
+                FAIL() << "Expected std::invalid_argument, got a non-standard exception";
+            }
+    }
+};
+
+
+TEST_F(RtklibPvtNtripConfigurationTest, ClientDefaultsToDisabledAndIgnoresNtripOnlyProperties)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    std::unique_ptr<InMemoryConfiguration> configuration = make_base_configuration();
+    configuration->set_property("PVT.ntrip_caster_address", "not a valid endpoint://");
+    configuration->set_property("PVT.ntrip_caster_port", "0");
+    configuration->set_property("PVT.ntrip_mountpoint", "");
+    configuration->set_property("PVT.ntrip_max_correction_age_s", "0");
+
+    std::unique_ptr<Rtklib_Pvt> adapter;
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(configuration.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+    EXPECT_EQ("RTKLIB_PVT", adapter->implementation());
+}
+
+
+TEST_F(RtklibPvtNtripConfigurationTest, ExplicitlyDisabledClientIgnoresNtripOnlyProperties)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    std::unique_ptr<InMemoryConfiguration> configuration = make_base_configuration();
+    configuration->set_property("PVT.ntrip_client_enabled", "false");
+    configuration->set_property("PVT.ntrip_caster_address", "https://user:secret@example.invalid:0");
+    configuration->set_property("PVT.ntrip_mountpoint", "bad/path");
+    configuration->set_property("PVT.ntrip_inactivity_timeout_ms", "1");
+
+    std::unique_ptr<Rtklib_Pvt> adapter;
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(configuration.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+    EXPECT_EQ("PVT", adapter->role());
+}
+
+
+TEST_F(RtklibPvtNtripConfigurationTest, RejectsUnsupportedPositioningModeBeforeConnecting)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    std::unique_ptr<InMemoryConfiguration> configuration = make_valid_ntrip_configuration();
+    configuration->supersede_property("PVT.positioning_mode", "Single");
+
+    expect_invalid_configuration(*configuration, "positioning_mode=Static or positioning_mode=Kinematic");
+}
+
+
+TEST_F(RtklibPvtNtripConfigurationTest, RejectsMissingCasterOrMountpointBeforeConnecting)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    std::unique_ptr<InMemoryConfiguration> missing_caster = make_valid_ntrip_configuration();
+    missing_caster->supersede_property("PVT.ntrip_caster_address", "");
+    expect_invalid_configuration(*missing_caster, "caster address");
+
+    std::unique_ptr<InMemoryConfiguration> missing_mountpoint = make_valid_ntrip_configuration();
+    missing_mountpoint->supersede_property("PVT.ntrip_mountpoint", "");
+    expect_invalid_configuration(*missing_mountpoint, "mountpoint");
+}
+
+
+TEST_F(RtklibPvtNtripConfigurationTest, RejectsOutOfRangePortOrStationBeforeConnecting)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    std::unique_ptr<InMemoryConfiguration> bad_port = make_valid_ntrip_configuration();
+    bad_port->supersede_property("PVT.ntrip_caster_port", "65536");
+    expect_invalid_configuration(*bad_port, "ntrip_caster_port");
+
+    std::unique_ptr<InMemoryConfiguration> bad_station = make_valid_ntrip_configuration();
+    bad_station->supersede_property("PVT.ntrip_station_id", "4096");
+    expect_invalid_configuration(*bad_station, "ntrip_station_id");
+}
+
+
+TEST_F(RtklibPvtNtripConfigurationTest, RejectsUnsupportedNtripVersionBeforeConnecting)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    std::unique_ptr<InMemoryConfiguration> bad_version = make_valid_ntrip_configuration();
+    bad_version->supersede_property("PVT.ntrip_version", "3");
+    expect_invalid_configuration(*bad_version, "NTRIP version");
+
+    std::unique_ptr<InMemoryConfiguration> forced_v1 = make_valid_ntrip_configuration();
+    forced_v1->supersede_property("PVT.ntrip_version", "1");
+    std::unique_ptr<Rtklib_Pvt> adapter;
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(forced_v1.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+
+    std::unique_ptr<InMemoryConfiguration> with_tls = make_valid_ntrip_configuration();
+    with_tls->supersede_property("PVT.ntrip_tls_enabled", "true");
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(with_tls.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+}
+
+
+TEST_F(RtklibPvtNtripConfigurationTest, RejectsInvalidAgeOrTimeoutBeforeConnecting)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    std::unique_ptr<InMemoryConfiguration> bad_age = make_valid_ntrip_configuration();
+    bad_age->supersede_property("PVT.ntrip_max_correction_age_s", "0");
+    expect_invalid_configuration(*bad_age, "maximum correction age");
+
+    std::unique_ptr<InMemoryConfiguration> bad_timeout = make_valid_ntrip_configuration();
+    bad_timeout->supersede_property("PVT.ntrip_inactivity_timeout_ms", "999");
+    expect_invalid_configuration(*bad_timeout, "timeout and reconnect intervals");
+
+    std::unique_ptr<InMemoryConfiguration> bad_reconnect = make_valid_ntrip_configuration();
+    bad_reconnect->supersede_property("PVT.ntrip_reconnect_interval_ms", "999");
+    expect_invalid_configuration(*bad_reconnect, "timeout and reconnect intervals");
+}
+
+
+TEST_F(RtklibPvtNtripConfigurationTest, RejectsInvalidGgaPeriodOnlyWhenGgaIsEnabled)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    std::unique_ptr<InMemoryConfiguration> bad_period = make_valid_ntrip_configuration();
+    bad_period->supersede_property("PVT.ntrip_gga_period_ms", "999");
+    expect_invalid_configuration(*bad_period, "GGA period");
+
+    // the period is not used while the GGA upload is disabled
+    std::unique_ptr<InMemoryConfiguration> gga_disabled = make_valid_ntrip_configuration();
+    gga_disabled->supersede_property("PVT.ntrip_send_gga", "false");
+    gga_disabled->supersede_property("PVT.ntrip_gga_period_ms", "999");
+    std::unique_ptr<Rtklib_Pvt> adapter;
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(gga_disabled.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+}
+
+
+TEST_F(RtklibPvtNtripConfigurationTest, RejectsUnsupportedChannelSetsBeforeConnecting)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    // a second band without its first band is meaningless
+    std::unique_ptr<InMemoryConfiguration> l2_without_l1 = make_valid_ntrip_configuration();
+    l2_without_l1->supersede_property("Channels_1C.count", "0");
+    expect_invalid_configuration(*l2_without_l1, "GPS 1C alone or with one of 2S or L5");
+
+    std::unique_ptr<InMemoryConfiguration> e5a_without_e1 = make_valid_ntrip_configuration();
+    e5a_without_e1->supersede_property("Channels_1C.count", "0");
+    e5a_without_e1->supersede_property("Channels_2S.count", "0");
+    e5a_without_e1->set_property("Channels_5X.count", "1");
+    expect_invalid_configuration(*e5a_without_e1, "GPS 1C alone or with one of 2S or L5");
+
+    // at most one GPS second band
+    std::unique_ptr<InMemoryConfiguration> triple_gps = make_valid_ntrip_configuration();
+    triple_gps->set_property("Channels_L5.count", "1");
+    expect_invalid_configuration(*triple_gps, "GPS 1C alone or with one of 2S or L5");
+
+    std::unique_ptr<InMemoryConfiguration> unsupported_signal = make_valid_ntrip_configuration();
+    unsupported_signal->set_property("Channels_1G.count", "1");
+    expect_invalid_configuration(*unsupported_signal, "GPS 1C alone or with one of 2S or L5");
+}
+
+
+TEST_F(RtklibPvtNtripConfigurationTest, AcceptsSingleFrequencyChannelSets)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    std::unique_ptr<InMemoryConfiguration> gps_l1_only = make_valid_ntrip_configuration();
+    gps_l1_only->supersede_property("Channels_2S.count", "0");
+    std::unique_ptr<Rtklib_Pvt> adapter;
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(gps_l1_only.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+
+    std::unique_ptr<InMemoryConfiguration> galileo_e1_only = make_valid_ntrip_configuration();
+    galileo_e1_only->supersede_property("Channels_1C.count", "0");
+    galileo_e1_only->supersede_property("Channels_2S.count", "0");
+    galileo_e1_only->set_property("Channels_1B.count", "1");
+    galileo_e1_only->supersede_property("PVT.navigation_system", "8");
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(galileo_e1_only.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+
+    std::unique_ptr<InMemoryConfiguration> l1_e1 = make_valid_ntrip_configuration();
+    l1_e1->supersede_property("Channels_2S.count", "0");
+    l1_e1->set_property("Channels_1B.count", "1");
+    l1_e1->supersede_property("PVT.navigation_system", "9");
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(l1_e1.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+
+    // a dual-band system may coexist with a single-band one
+    std::unique_ptr<InMemoryConfiguration> mixed = make_valid_ntrip_configuration();
+    mixed->set_property("Channels_1B.count", "1");
+    mixed->supersede_property("PVT.navigation_system", "9");
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(mixed.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+
+    std::unique_ptr<InMemoryConfiguration> beidou_b1c_only = make_valid_ntrip_configuration();
+    beidou_b1c_only->supersede_property("Channels_1C.count", "0");
+    beidou_b1c_only->supersede_property("Channels_2S.count", "0");
+    beidou_b1c_only->set_property("Channels_1D.count", "1");
+    beidou_b1c_only->supersede_property("PVT.navigation_system", "32");
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(beidou_b1c_only.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+
+    // triple-constellation single-frequency: GPS L1 + Galileo E1 + BeiDou B1C
+    std::unique_ptr<InMemoryConfiguration> triple = make_valid_ntrip_configuration();
+    triple->supersede_property("Channels_2S.count", "0");
+    triple->set_property("Channels_1B.count", "1");
+    triple->set_property("Channels_1D.count", "1");
+    triple->supersede_property("PVT.navigation_system", "41");
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(triple.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+}
+
+
+TEST_F(RtklibPvtNtripConfigurationTest, AcceptsGalileoE1E5aChannelPairs)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    std::unique_ptr<InMemoryConfiguration> galileo_only = make_valid_ntrip_configuration();
+    galileo_only->supersede_property("Channels_1C.count", "0");
+    galileo_only->supersede_property("Channels_2S.count", "0");
+    galileo_only->set_property("Channels_1B.count", "1");
+    galileo_only->set_property("Channels_5X.count", "1");
+    galileo_only->supersede_property("PVT.navigation_system", "8");
+    std::unique_ptr<Rtklib_Pvt> adapter;
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(galileo_only.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+
+    std::unique_ptr<InMemoryConfiguration> gps_and_galileo = make_valid_ntrip_configuration();
+    gps_and_galileo->set_property("Channels_1B.count", "1");
+    gps_and_galileo->set_property("Channels_5X.count", "1");
+    gps_and_galileo->supersede_property("PVT.navigation_system", "9");
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(gps_and_galileo.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+}
+
+
+TEST_F(RtklibPvtNtripConfigurationTest, AcceptsGpsL1L5ChannelPairs)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    std::unique_ptr<InMemoryConfiguration> gps_l1_l5 = make_valid_ntrip_configuration();
+    gps_l1_l5->supersede_property("Channels_2S.count", "0");
+    gps_l1_l5->set_property("Channels_L5.count", "1");
+    std::unique_ptr<Rtklib_Pvt> adapter;
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(gps_l1_l5.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+
+    std::unique_ptr<InMemoryConfiguration> combined = make_valid_ntrip_configuration();
+    combined->supersede_property("Channels_2S.count", "0");
+    combined->set_property("Channels_L5.count", "1");
+    combined->set_property("Channels_1B.count", "1");
+    combined->set_property("Channels_5X.count", "1");
+    combined->supersede_property("PVT.navigation_system", "9");
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(combined.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+}
+
+
+TEST_F(RtklibPvtNtripConfigurationTest, DerivesBandCountAndRejectsWrongNavigationSystem)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    // the frequency-slot count is derived from the channel set, so an
+    // explicit num_bands cannot make the configuration invalid
+    std::unique_ptr<InMemoryConfiguration> explicit_band_count = make_valid_ntrip_configuration();
+    explicit_band_count->supersede_property("PVT.num_bands", "1");
+    std::unique_ptr<Rtklib_Pvt> adapter;
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(explicit_band_count.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+
+    std::unique_ptr<InMemoryConfiguration> bad_navigation_system = make_valid_ntrip_configuration();
+    bad_navigation_system->supersede_property("PVT.navigation_system", "9");
+    expect_invalid_configuration(*bad_navigation_system, "navigation_system must select exactly");
+}
+
+
+TEST_F(RtklibPvtNtripConfigurationTest, RejectsInvalidPasswordConfigurationBeforeConnecting)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    std::unique_ptr<InMemoryConfiguration> missing_username = make_valid_ntrip_configuration();
+    missing_username->set_property("PVT.ntrip_password", "secret");
+    expect_invalid_configuration(*missing_username, "username is required");
+
+    std::unique_ptr<InMemoryConfiguration> duplicate_password_source = make_valid_ntrip_configuration();
+    duplicate_password_source->set_property("PVT.ntrip_username", "user");
+    duplicate_password_source->set_property("PVT.ntrip_password", "secret");
+    duplicate_password_source->set_property("PVT.ntrip_password_env", "UNUSED_NTRIP_PASSWORD");
+    expect_invalid_configuration(*duplicate_password_source, "mutually exclusive");
+}
+
+
+TEST_F(RtklibPvtNtripConfigurationTest, ResolvesThePasswordFromTheNamedEnvironmentVariable)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    // unsets the variable on every exit path, so a failing assertion cannot
+    // leak the fake credential into the rest of the test process
+    struct Env_Var_Guard
+    {
+        ~Env_Var_Guard() { unsetenv("GNSS_SDR_TEST_NTRIP_PASSWORD"); }
+    } env_var_guard;
+    ASSERT_EQ(0, setenv("GNSS_SDR_TEST_NTRIP_PASSWORD", "secret-from-env", 1));
+
+    // Without a username, a resolved password must trigger the
+    // username-is-required rule: the throw proves the environment value
+    // actually materialized as the password
+    std::unique_ptr<InMemoryConfiguration> env_password_no_username = make_valid_ntrip_configuration();
+    env_password_no_username->set_property("PVT.ntrip_password_env", "GNSS_SDR_TEST_NTRIP_PASSWORD");
+    expect_invalid_configuration(*env_password_no_username, "username is required");
+
+    std::unique_ptr<InMemoryConfiguration> env_password = make_valid_ntrip_configuration();
+    env_password->set_property("PVT.ntrip_username", "user");
+    env_password->set_property("PVT.ntrip_password_env", "GNSS_SDR_TEST_NTRIP_PASSWORD");
+    std::unique_ptr<Rtklib_Pvt> adapter;
+    EXPECT_NO_THROW(adapter.reset(new Rtklib_Pvt(env_password.get(), ROLE, 2, 0)));
+    ASSERT_NE(nullptr, adapter);
+}
+
+
+TEST_F(RtklibPvtNtripConfigurationTest, RejectsAPasswordEnvironmentVariableThatIsNotSet)
+{
+    using namespace rtklib_pvt_ntrip_configuration_test_detail;
+    ASSERT_EQ(0, unsetenv("GNSS_SDR_TEST_NTRIP_PASSWORD_UNSET"));
+
+    std::unique_ptr<InMemoryConfiguration> unset_variable = make_valid_ntrip_configuration();
+    unset_variable->set_property("PVT.ntrip_username", "user");
+    unset_variable->set_property("PVT.ntrip_password_env", "GNSS_SDR_TEST_NTRIP_PASSWORD_UNSET");
+    expect_invalid_configuration(*unset_variable, "not set");
+}

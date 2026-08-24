@@ -15,6 +15,7 @@ set(PVT_LIB_SOURCES
     gpx_printer.cc
     kml_printer.cc
     nmea_printer.cc
+    ntrip_rtcm_client.cc
     rinex_printer.cc
     rtcm_printer.cc
     rtcm.cc
@@ -37,6 +38,9 @@ set(PVT_LIB_HEADERS
     gpx_printer.h
     kml_printer.h
     nmea_printer.h
+    ntrip_rtcm_client.h
+    ntrip_rtk_signals.h
+    secure_string.h
     rinex_printer.h
     rtcm_printer.h
     rtcm.h
@@ -99,6 +103,7 @@ target_link_libraries(pvt_libs
         algorithms_libs
         gnss_sdr_flags
         Matio::matio
+        Threads::Threads
 )
 
 if(ENABLE_GLOG_AND_GFLAGS)

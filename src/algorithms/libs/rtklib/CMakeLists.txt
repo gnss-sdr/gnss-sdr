@@ -18,6 +18,7 @@ set(RTKLIB_LIB_SOURCES
     rtklib_rtkpos.cc
     rtklib_conversions.cc
     rtklib_stream.cc
+    rtklib_tls.cc
     rtklib_rtksvr.cc
     rtklib_solution.cc
     rtklib_rtcm.cc
@@ -38,7 +39,9 @@ set(RTKLIB_LIB_HEADERS
     rtklib_rtkpos.h
     rtklib_conversions.h
     rtklib_stream.h
+    rtklib_tls.h
     rtklib_rtksvr.h
+    rtklib_secure_wipe.h
     rtklib_solution.h
     rtklib_rtcm.h
     rtklib_rtcm2.h
@@ -65,7 +68,12 @@ else()
     )
 endif()
 
+# Threads::Threads is PUBLIC because rtklib.h includes <pthread.h> and exposes
+# pthread_t/pthread_mutex_t members and the lock_t/rtk_lock macros to every
+# consumer, which therefore needs the -pthread compile usage requirement too.
 target_link_libraries(algorithms_libs_rtklib
+    PUBLIC
+        Threads::Threads
     PRIVATE
         core_system_parameters
         algorithms_libs
@@ -73,6 +81,12 @@ target_link_libraries(algorithms_libs_rtklib
         LAPACK::LAPACK
         BLAS::BLAS
 )
+
+# Use the same OpenSSL-preferred/GnuTLS-fallback selection as the rest of
+# GNSS-SDR. PRIVATE: the crypto backend is used only in rtklib_tls.cc and no
+# public header of this target exposes it, so consumers must not inherit the
+# backend's include directories or USE_* definitions.
+link_to_crypto_dependencies(algorithms_libs_rtklib PRIVATE)
 
 if(ENABLE_GLOG_AND_GFLAGS)
     target_link_libraries(algorithms_libs_rtklib PRIVATE Gflags::gflags Glog::glog)

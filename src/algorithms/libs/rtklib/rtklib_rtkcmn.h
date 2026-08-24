@@ -125,6 +125,7 @@ int satexclude(int sat, int svh, const prcopt_t *opt);
 int testsnr(int base, int freq, double el, double snr, const snrmask_t *mask);
 unsigned char obs2code(const char *obs, int *freq);
 char *code2obs(unsigned char code, int *freq);
+bool is_bds_b1c_code(unsigned char code);
 void setcodepri(int sys, int freq, const char *pri);
 int getcodepri(int sys, unsigned char code, const char *opt);
 unsigned int getbitu(const unsigned char *buff, int pos, int len);
@@ -199,6 +200,8 @@ void pos2ecef(const double *pos, double *r);
 void xyz2enu(const double *pos, double *E);
 void ecef2enu(const double *pos, const double *r, double *e);
 void enu2ecef(const double *pos, const double *e, double *r);
+
+void sta2antpos(const sta_t *sta, double *rr);
 void covenu(const double *pos, const double *P, double *Q);
 void covecef(const double *pos, const double *Q, double *P);
 void ast_args(double t, double *f);

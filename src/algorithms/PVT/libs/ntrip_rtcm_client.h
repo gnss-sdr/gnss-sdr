@@ -1,0 +1,225 @@
+/*!
+ * \file ntrip_rtcm_client.h
+ * \brief NTRIP client for RTCM3 fixed-base corrections
+ * \author Carles Fernandez-Prades, 2026. cfernandez(at)cttc.es
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * This file is part of GNSS-SDR.
+ *
+ * SPDX-FileCopyrightText: 2026 (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * -----------------------------------------------------------------------------
+ */
+
+#ifndef GNSS_SDR_NTRIP_RTCM_CLIENT_H
+#define GNSS_SDR_NTRIP_RTCM_CLIENT_H
+
+#include "pvt_conf.h"
+#include "rtklib.h"
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <memory>
+#include <string>
+#include <vector>
+
+class Ntrip_Rtcm_Client_Test_Access;
+
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup PVT_libs
+ * \{ */
+
+//! Scrubs the NTRIP credential fields of a Pvt_Conf copy ahead of its
+//! destruction (the Secure_String fields wipe themselves on release, but a
+//! long-lived copy should drop its secrets as soon as they are consumed).
+//! Single home of the credential field list.
+void secure_clear_ntrip_credentials(Pvt_Conf* conf) noexcept;
+
+//! True when the text contains whitespace or control characters — the
+//! character rule shared by the credential validation and the adapter's
+//! environment-variable-name check.
+bool ntrip_text_has_space_or_control(const std::string& text);
+
+struct Ntrip_Rtcm_Client_Config
+{
+    bool enabled = false;
+    std::string host;
+    std::uint16_t port = 2101;
+    std::string mountpoint;
+    // self-wiping: every copy of this configuration scrubs its credentials on
+    // destruction, so holders need no manual scrub site
+    Secure_String username;
+    Secure_String password;
+    // Zero disables operational reconnects, but not the single immediate v2-to-v1
+    // compatibility retry; positive values select the reconnect delay.
+    int reconnect_interval_ms = 10000;
+    int timeout_ms = 10000;
+    double max_age_s = 5.0;
+    bool send_gga = false;
+    int gga_period_ms = 10000;
+
+    // NTRIP protocol version requested from the transport: 2 prefers v2,
+    // accepts a legacy reply, and retries once on a fresh v1 connection after
+    // HTTP 400/501/505 or no response bytes; 1 forces legacy v1.
+    int version = 2;
+
+    // Enables TLS 1.2-or-newer transport with certificate validation against
+    // the system CA store and host name verification.
+    bool tls_enabled = false;
+
+    // Zero accepts any stream station while keeping observations and position
+    // bound to one ID. A positive value filters to that exact 12-bit ID.
+    int station_id = 0;
+
+    //! Returns an empty string when the configuration is usable, or the
+    //! reason it is not. Single source of the NTRIP configuration rules,
+    //! shared by the adapter (which turns the reason into a throw at
+    //! constructor time) and by start() (which turns it into an ERROR state).
+    std::string validate() const;
+};
+
+
+//! Builds the NTRIP client configuration from the PVT configuration — the
+//! single home of the field mapping, shared by the adapter's validation and
+//! by the PVT block's client construction. The mountpoint is stored
+//! normalized; validate() and the transport-path builder normalize again
+//! defensively for directly-built configurations.
+Ntrip_Rtcm_Client_Config make_ntrip_rtcm_client_config(const Pvt_Conf& conf);
+
+
+enum class Ntrip_Rtcm_Client_State
+{
+    DISABLED,
+    STOPPED,
+    STARTING,
+    CONNECTING,
+    AUTHENTICATING,
+    STREAMING,
+    RECONNECT_WAIT,
+    ERROR,
+    STOPPING
+};
+
+
+struct Ntrip_Rtcm_Client_Status
+{
+    Ntrip_Rtcm_Client_State state = Ntrip_Rtcm_Client_State::STOPPED;
+    bool running = false;
+    bool connected = false;
+    std::string message;
+    std::uint64_t bytes_received = 0;
+    std::uint64_t rtcm_messages_decoded = 0;
+    std::uint64_t observation_epochs_decoded = 0;
+    std::uint64_t decoder_errors = 0;
+    std::uint64_t reconnect_count = 0;
+};
+
+
+struct Ntrip_Rtcm_Snapshot
+{
+    bool has_observations = false;
+    std::vector<obsd_t> observations;
+    gtime_t observation_time = {0, 0.0};
+
+    // Signed reference-minus-base time difference. Freshness uses its absolute
+    // value, so a small future-dated base epoch is accepted as well.
+    double age_s = 0.0;
+    bool fresh = false;
+    // Bumped on every output-side change (observations, base position,
+    // ephemerides, reset), so equal values mean an identical snapshot.
+    std::uint64_t generation = 0;
+
+    bool has_base_position = false;
+    std::array<double, 3> base_position_ecef_m = {{0.0, 0.0, 0.0}};
+    int base_position_message_type = 0;
+    int station_id = 0;
+    int itrf = 0;
+    double antenna_height_m = 0.0;
+
+    // Latest decoded broadcast ephemeris for each GPS, Galileo or BeiDou
+    // satellite seen on the correction stream (RTCM MT1019/1045/1046/1042),
+    // sorted by satellite number for binary lookup. The records own no
+    // dynamic memory.
+    std::vector<eph_t> ephemerides;
+
+    //! Recomputes the rover-time-dependent fields age_s and fresh. A cached
+    //! copy must call this per epoch: the generation covers the received
+    //! data, not the passage of rover time.
+    void refresh_age(const gtime_t& rover_time, double max_age_s);
+};
+
+
+/*!
+ * \brief Receives and decodes a fixed-base RTCM3 stream from an NTRIP caster,
+ * preferring NTRIP v2 with a fresh-connection fallback to v1, or using forced
+ * v1, optionally over TLS.
+ *
+ * The object owns one worker thread. The public snapshot and status methods
+ * copy data under a mutex and can be called concurrently with the worker.
+ */
+class Ntrip_Rtcm_Client
+{
+public:
+    explicit Ntrip_Rtcm_Client(const Ntrip_Rtcm_Client_Config& config);
+    ~Ntrip_Rtcm_Client() noexcept;
+
+    Ntrip_Rtcm_Client(const Ntrip_Rtcm_Client&) = delete;
+    Ntrip_Rtcm_Client& operator=(const Ntrip_Rtcm_Client&) = delete;
+    Ntrip_Rtcm_Client(Ntrip_Rtcm_Client&&) = delete;
+    Ntrip_Rtcm_Client& operator=(Ntrip_Rtcm_Client&&) = delete;
+
+    // Returns false when disabled, invalidly configured, or if the worker
+    // thread could not be created. Calling start() on a running client is safe.
+    bool start();
+    void stop() noexcept;
+    bool running() const noexcept;
+    Ntrip_Rtcm_Client_Status status() const;
+
+    // The no-argument overload evaluates age against current GPST. The rover
+    // overload should be used by an RTK solver so recorded data does not depend
+    // on wall-clock time.
+    Ntrip_Rtcm_Snapshot latest_snapshot() const;
+    Ntrip_Rtcm_Snapshot latest_snapshot(const gtime_t& rover_time) const;
+
+    // Cheap change detectors so per-epoch callers can skip the deep copies:
+    // snapshot_generation() matches Ntrip_Rtcm_Snapshot::generation, and
+    // state_generation() changes whenever the status state/message is set.
+    std::uint64_t snapshot_generation() const noexcept;
+    std::uint64_t state_generation() const noexcept;
+
+    // Position is ECEF in metres. Invalid/non-finite positions disable GGA
+    // until another valid position is supplied.
+    void update_rover_position(const std::array<double, 3>& position_ecef_m);
+    void update_rover_position(const std::array<double, 3>& position_ecef_m,
+        const gtime_t& rover_time);
+
+    // Supplies the approximate GPST used to resolve RTCM epoch rollovers. It
+    // can be called before start() and updated once per rover observation epoch.
+    void update_rover_time(const gtime_t& rover_time);
+
+private:
+    friend class Ntrip_Rtcm_Client_Test_Access;
+
+    using Hostname_Resolver =
+        std::function<bool(const std::string&, std::string*)>;
+
+    // Test-only resolver injection. Production callers always use the system
+    // IPv4 resolver installed by the implementation constructor.
+    bool set_hostname_resolver_for_test(Hostname_Resolver resolver);
+    // Synchronized process-wide observations used by resolver lifecycle tests.
+    static std::uint64_t hostname_resolution_launch_count_for_test();
+    static std::size_t in_flight_hostname_resolution_count_for_test();
+
+    class Impl;
+    std::unique_ptr<Impl> d_impl;
+};
+
+/** \} */
+/** \} */
+
+#endif  // GNSS_SDR_NTRIP_RTCM_CLIENT_H

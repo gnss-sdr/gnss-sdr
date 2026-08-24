@@ -121,8 +121,9 @@ void RinexPrinterTest::conf()
         min_elevation_to_fix_ambiguity,                                                    /* elevation mask of AR for rising satellite (deg) */
         0.0,                                                                               /* elevation mask to hold ambiguity (deg) */
         slip_threshold,                                                                    /* slip threshold of geometry-free phase (m) */
+        0.0,                                                                               /* slip threshold of doppler (m/s) (0:disabled) */
         30.0,                                                                              /* max difference of time (sec) */
-        threshold_reject_innovation,                                                       /* reject threshold of innovation (m) */
+        {threshold_reject_innovation, threshold_reject_innovation},                        /* reject threshold of innovation {phase, code} (m) */
         threshold_reject_gdop,                                                             /* reject threshold of gdop */
         {},                                                                                /* double baseline[2] baseline length constraint {const,sigma} (m) */
         {},                                                                                /* double ru[3]  rover position for fixed mode {x,y,z} (ecef) (m) */
@@ -141,7 +142,9 @@ void RinexPrinterTest::conf()
         {{}, {{}, {}}, {{}, {}}, {}, {}},                                                  /*  exterr_t exterr   extended receiver error model */
         0,                                                                                 /* disable L2-AR */
         {},                                                                                /* char pppopt[256]   ppp option   "-GAP_RESION="  default gap to reset iono parameters (ep) */
-        true                                                                               /* enable Bancroft initialization for the first iteration of the PVT computation, useful in some geometries */
+        true,                                                                              /* enable Bancroft initialization for the first iteration of the PVT computation, useful in some geometries */
+        false,                                                                             /* estimate QZS-GPS inter-system bias */
+        0, 0, 0, 0, 0.0, 0.0                                                               /* demo5 AR management options: arfilter, minfixsats, minholdsats, mindropsats, varholdamb, armaxposvar (all off) */
     };
 
     rtkinit(&rtk, &rtklib_configuration_options);
@@ -523,6 +526,74 @@ TEST_F(RinexPrinterTest, Rinex4GpsNavAndObs)
     EXPECT_TRUE(find_line_containing(navfile, "D+0").empty());
     EXPECT_TRUE(find_line_containing(navfile, "D-0").empty());
     EXPECT_FALSE(find_line_containing(navfile, "e+0").empty());
+
+    fs::remove(obsfile);
+    fs::remove(navfile);
+}
+
+
+TEST_F(RinexPrinterTest, ObservationRecordsReportLossOfLockIndicatorBits)
+{
+    Pvt_Conf conf;
+    conf.use_e6_for_pvt = false;
+    const auto signal_enabled_flags = GPS_1C;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", signal_enabled_flags, false, false);
+
+    Gps_Ephemeris eph;
+    eph.PRN = 1;
+    eph.WN = 512;
+    pvt_solution->gps_ephemeris_map[1] = eph;
+
+    Gnss_Synchro gs{};
+    gs.System = 'G';
+    std::memcpy(static_cast<void*>(gs.Signal), "1C", 3);
+    gs.Pseudorange_m = 22000000.0;
+    gs.Carrier_phase_rads = 23.4;
+    gs.Carrier_Doppler_hz = 1534.0;
+    gs.CN0_dB_hz = 42.0;
+    gs.Flag_valid_pseudorange = true;
+
+    std::map<int, Gnss_Synchro> gnss_observables_map;
+    gs.PRN = 1;  // clean
+    gnss_observables_map[1] = gs;
+    gs.PRN = 2;  // cycle slip
+    gs.Flag_cycle_slip = true;
+    gnss_observables_map[2] = gs;
+    gs.PRN = 3;  // half-cycle slip
+    gs.Flag_cycle_slip = false;
+    gs.Flag_half_cycle_slip = true;
+    gnss_observables_map[3] = gs;
+    gs.PRN = 4;  // both
+    gs.Flag_cycle_slip = true;
+    gnss_observables_map[4] = gs;
+    for (int prn = 2; prn <= 4; prn++)
+        {
+            pvt_solution->gps_ephemeris_map[prn] = eph;
+        }
+
+    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 3);
+    rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 42.0, true);
+
+    const std::string obsfile = rp->get_obsfilename();
+    const std::string navfile = rp->get_navfilename()[0];
+    rp = nullptr;  // close the RINEX files so we can inspect them
+
+    // the LLI of the carrier phase observation sits right after its 14-character
+    // value, which follows the 3-character satellite id and the pseudorange field
+    const std::size_t phase_lli_position = 3 + 16 + 14;
+    const auto phase_lli_of = [&obsfile](const std::string& satellite) {
+        const std::string record = find_line_starting_with(obsfile, satellite);
+        EXPECT_FALSE(record.empty()) << "no observation record for " << satellite;
+        return record.size() > phase_lli_position ? record[phase_lli_position] : '?';
+    };
+
+    EXPECT_EQ(' ', phase_lli_of("G01"));
+    EXPECT_EQ('1', phase_lli_of("G02"));
+    // a half-cycle slip is a one-epoch event, reported through bit 0: RINEX
+    // bit 1 means "half-cycle ambiguity currently unresolved", which never
+    // applies to observations produced after polarity resolution
+    EXPECT_EQ('1', phase_lli_of("G03"));
+    EXPECT_EQ('1', phase_lli_of("G04"));
 
     fs::remove(obsfile);
     fs::remove(navfile);

@@ -1835,6 +1835,13 @@ void add_obs_sat_record_line(const Gnss_Synchro& synchro, std::string& line, boo
 {
     const int32_t ssi = signal_strength(synchro.CN0_dB_hz);
     const char lli = synchro.Flag_cycle_slip ? '1' : ' ';
+    // bit 0: loss of lock or cycle slip; a half-cycle re-resolution is a
+    // one-epoch slip event on the carrier phase only. RINEX defines bit 1 as
+    // a persistent "half-cycle ambiguity unresolved" state, which never
+    // applies here (polarity is always resolved before observations are
+    // produced), so writing the event to bit 1 would make post-processors
+    // see two spurious state transitions per event
+    const char phase_lli = (synchro.Flag_cycle_slip || synchro.Flag_half_cycle_slip) ? '1' : ' ';
 
     // PSEUDORANGE
     line += rightJustify(asString(synchro.Pseudorange_m, 3), 14);
@@ -1843,7 +1850,7 @@ void add_obs_sat_record_line(const Gnss_Synchro& synchro, std::string& line, boo
 
     // PHASE
     line += rightJustify(asString(synchro.Carrier_phase_rads / TWO_PI, 3), 14);
-    line += std::string(1, lli);                      // Loss of lock indicator (LLI)
+    line += std::string(1, phase_lli);                // Loss of lock indicator (LLI)
     line += rightJustify(asString<int32_t>(ssi), 1);  // Signal Strength Indicator (SSI)
 
     // DOPPLER

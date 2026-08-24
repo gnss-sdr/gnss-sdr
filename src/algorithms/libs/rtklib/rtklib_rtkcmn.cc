@@ -132,7 +132,7 @@ char codepris[7][MAXFREQ][16] = {
     {"CABXZ", "", "IQX", "ABCXZ", "IQX", "IQX", ""},   /* GAL */
     {"CSLXZ", "SLX", "IQX", "SLX", "", "", ""},        /* QZS */
     {"C", "", "IQX", "", "", "", ""},                  /* SBS */
-    {"IQX", "IQX", "IQX", "IQX", "IQX", "", ""},       /* BDS */
+    {"DPXIQ", "IQX", "IQX", "IQX", "IQX", "", ""},     /* BDS: shared-slot B1C preference is applied by sigindex() */
     {"", "", "ABCX", "", "", "", "ABCX"}               /* IRN */
 };
 
@@ -657,6 +657,13 @@ char *code2obs(unsigned char code, int *freq)
 }
 
 
+/* test for a BeiDou B1C observation code ------------------------------------*/
+bool is_bds_b1c_code(unsigned char code)
+{
+    return code == CODE_L1D || code == CODE_L1P || code == CODE_L1X;
+}
+
+
 /* set code priority -----------------------------------------------------------
  * set code priority for multiple codes in a frequency
  * args   : int    sys     I     system (or of SYS_???)
@@ -768,6 +775,10 @@ int getcodepri(int sys, unsigned char code, const char *opt)
             return 0;
         }
     obs = code2obs(code, &j);
+    if (*obs == '\0' || j < 1 || j > MAXFREQ)
+        {
+            return 0;
+        }
 
     /* parse code options */
     for (p = opt; p && (p = strchr(p, '-')); p++)
@@ -2350,6 +2361,48 @@ void enu2ecef(const double *pos, const double *e, double *r)
 
     xyz2enu(pos, E);
     matmul("TN", 3, 1, 3, 1.0, E, e, 0.0, r);
+}
+
+
+/* antenna phase-center position of a station record ---------------------------
+ * apply the antenna delta of an RTCM 1005/1006 station record to its stored
+ * reference-point position. Single home of this geodesy: an inconsistency
+ * between consumers would directly bias the RTK baseline
+ * args   : sta_t *sta       I   station parameters (pos, del, deltype, hgt)
+ *          double *rr       O   antenna phase-center position ecef (m)
+ * notes  : deltype 0: del is an e/n/u offset;
+ *          deltype 1: del is an ecef x/y/z offset and hgt an additional up
+ *          offset
+ *-----------------------------------------------------------------------------*/
+void sta2antpos(const sta_t *sta, double *rr)
+{
+    double pos[3];
+    double del[3] = {0.0, 0.0, 0.0};
+    double dr[3];
+    int i;
+
+    for (i = 0; i < 3; i++)
+        {
+            rr[i] = sta->pos[i];
+        }
+    ecef2pos(rr, pos);
+    if (sta->deltype)
+        { /* xyz + height */
+            del[2] = sta->hgt;
+            enu2ecef(pos, del, dr);
+            for (i = 0; i < 3; i++)
+                {
+                    rr[i] += sta->del[i] + dr[i];
+                }
+        }
+    else
+        { /* enu */
+            enu2ecef(pos, sta->del, dr);
+            for (i = 0; i < 3; i++)
+                {
+                    rr[i] += dr[i];
+                }
+        }
 }
 
 
@@ -4283,7 +4336,7 @@ double satwavelen(int sat, int frq, const nav_t *nav)
         }
     else if (sys == SYS_BDS)
         {
-            /* BDS frq: 0=B1I (FREQ1_BDS), 1=B2, 2=B3I. B1C uses FREQ1 via PVT lam[0] override. */
+            /* BDS frq: 0=B1I (FREQ1_BDS), 1=B2, 2=B3I. Signal-aware B1C callers use FREQ1. */
             if (frq == 0)
                 {
                     return SPEED_OF_LIGHT_M_S / FREQ1_BDS; /* B1 */

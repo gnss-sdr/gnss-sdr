@@ -59,6 +59,7 @@
 #include "monitor_pvt.h"
 #include "monitor_pvt_udp_sink.h"
 #include "nmea_printer.h"
+#include "ntrip_rtcm_client.h"
 #include "osnma_data.h"
 #include "pvt_conf.h"
 #include "qzss.h"
@@ -126,6 +127,50 @@ namespace wht = boost;
 #include <any>
 namespace wht = std;
 #endif
+
+namespace
+{
+/* console tag for the RTKLIB solution status; empty for single-point and
+   no-solution so that the default output is unchanged */
+std::string solution_status_tag(int solution_status)
+{
+    switch (solution_status)
+        {
+        case SOLQ_FIX:
+            return " [RTK FIXED]";
+        case SOLQ_FLOAT:
+            return " [RTK FLOAT]";
+        case SOLQ_SBAS:
+            return " [SBAS]";
+        case SOLQ_DGPS:
+            return " [DGNSS]";
+        case SOLQ_PPP:
+            return " [PPP]";
+        default:
+            return "";
+        }
+}
+
+
+const std::string& solution_status_color(int solution_status)
+{
+    switch (solution_status)
+        {
+        case SOLQ_FIX:
+            return TEXT_BOLD_GREEN;
+        case SOLQ_FLOAT:
+        case SOLQ_DGPS:
+            return TEXT_BOLD_YELLOW;
+        case SOLQ_SBAS:
+            return TEXT_BOLD_CYAN;
+        case SOLQ_PPP:
+            return TEXT_BOLD_MAGENTA;
+        default:
+            return TEXT_RESET;
+        }
+}
+}  // namespace
+
 
 rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,
@@ -198,7 +243,10 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_nchannels(nchannels),
       d_signal_enabled_flags(conf_.signal_enabled_flags),
       d_observable_interval_ms(conf_.observable_interval_ms),
+      d_ntrip_max_correction_age_s(conf_.ntrip_max_correction_age_s),
       d_pvt_errors_counter(0),
+      d_last_fixed_base_status(-1),
+      d_last_solution_status(SOLQ_NONE),
       d_dump(conf_.dump),
       d_dump_mat(conf_.dump_mat && conf_.dump),
       d_rinex_output_enabled(conf_.rinex_output_enabled),
@@ -210,13 +258,21 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_flag_monitor_pvt_enabled(conf_.monitor_enabled),
       d_flag_monitor_ephemeris_enabled(conf_.monitor_ephemeris_enabled),
       d_show_local_time_zone(conf_.show_local_time_zone),
-      d_enable_rx_clock_correction(conf_.enable_rx_clock_correction),
+      d_enable_rx_clock_correction(conf_.enable_rx_clock_correction || conf_.ntrip_client_enabled),
+      d_ntrip_client_enabled(conf_.ntrip_client_enabled),
       d_an_printer_enabled(conf_.an_output_enabled),
       d_log_timetag(conf_.log_source_timetag),
       d_use_has_corrections(conf_.use_has_corrections),
       d_use_unhealthy_sats(conf_.use_unhealthy_sats),
       d_osnma_strict(conf_.osnma_strict)
 {
+    if (conf_.ntrip_client_enabled && !conf_.enable_rx_clock_correction)
+        {
+            // do not override an explicit user setting silently: the timetag
+            // processing path only runs when the clock correction is disabled
+            std::cout << "Warning: PVT.enable_rx_clock_correction=false is overridden because the NTRIP client requires the receiver clock correction\n";
+            LOG(WARNING) << "PVT.enable_rx_clock_correction=false overridden: the NTRIP client requires the receiver clock correction, so source-timetag processing is disabled";
+        }
     // Send feedback message to observables block with the receiver clock offset
     this->message_port_register_out(pmt::mp("pvt_to_observables"));
     // Experimental: VLT commands from PVT to tracking channels
@@ -621,6 +677,19 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     // set the RTKLIB trace (debug) level
     tracelevel(conf_.rtk_trace_level);
 
+    if (d_ntrip_client_enabled)
+        {
+            // the configuration's Secure_String credentials wipe themselves
+            // when this local copy dies, on the throwing paths included
+            const Ntrip_Rtcm_Client_Config ntrip_config = make_ntrip_rtcm_client_config(conf_);
+            d_ntrip_client = std::make_unique<Ntrip_Rtcm_Client>(ntrip_config);
+            const bool ntrip_started = d_ntrip_client->start();
+            if (!ntrip_started)
+                {
+                    throw std::runtime_error("Unable to start the NTRIP RTCM client");
+                }
+        }
+
     // timetag
     if (d_log_timetag)
         {
@@ -653,6 +722,10 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 rtklib_pvt_gs::~rtklib_pvt_gs()
 {
     DLOG(INFO) << "PVT block destructor called.";
+    if (d_ntrip_client)
+        {
+            d_ntrip_client->stop();
+        }
     if (d_mq)
         {
             boost::interprocess::message_queue::remove(d_queue_name.c_str());
@@ -2210,6 +2283,40 @@ void rtklib_pvt_gs::apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observabl
 }
 
 
+Gnss_Synchro rtklib_pvt_gs::interpolate_observable(const Gnss_Synchro& early,
+    const Gnss_Synchro& late,
+    double time_factor,
+    double rx_time_s)
+{
+    Gnss_Synchro interpolated = early;
+    interpolated.RX_time = rx_time_s;
+    interpolated.Pseudorange_m += (late.Pseudorange_m - early.Pseudorange_m) * time_factor;
+    interpolated.Carrier_Doppler_hz += (late.Carrier_Doppler_hz - early.Carrier_Doppler_hz) * time_factor;
+    // interpolate the carrier phase in the late epoch's polarity frame: the
+    // telemetry decoder adds pi to the reported phase while the PLL is locked
+    // at 180 degrees, so when the resolution toggles between the two epochs
+    // the raw phases differ by pi on top of the true motion (twin of
+    // hybrid_observables_gs::interpolate_carrier_phase, kept local because
+    // the PVT block does not link the observables block)
+    double early_phase_rads = early.Carrier_phase_rads;
+    const bool polarity_changed =
+        early.Flag_PLL_180_deg_phase_locked != late.Flag_PLL_180_deg_phase_locked;
+    if (polarity_changed)
+        {
+            early_phase_rads += late.Flag_PLL_180_deg_phase_locked ? (TWO_PI / 2.0) : -(TWO_PI / 2.0);
+        }
+    interpolated.Carrier_phase_rads = early_phase_rads +
+                                      (late.Carrier_phase_rads - early_phase_rads) * time_factor;
+    interpolated.Flag_PLL_180_deg_phase_locked = late.Flag_PLL_180_deg_phase_locked;
+    // the half-cycle step lands on this output, and a slip on either endpoint
+    // belongs to it too
+    interpolated.Flag_cycle_slip = early.Flag_cycle_slip || late.Flag_cycle_slip;
+    interpolated.Flag_half_cycle_slip = early.Flag_half_cycle_slip ||
+                                        late.Flag_half_cycle_slip || polarity_changed;
+    return interpolated;
+}
+
+
 std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(const std::map<int, Gnss_Synchro>& observables_map_t0,
     const std::map<int, Gnss_Synchro>& observables_map_t1,
     double rx_time_s)
@@ -2244,11 +2351,24 @@ std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(const std::ma
                 {
                     if (observables_map_t1.at(observables_iter->first).PRN == observables_iter->second.PRN)
                         {
-                            interp_observables_map.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
-                            interp_observables_map.at(observables_iter->first).RX_time = rx_time_s;  // interpolation point
-                            interp_observables_map.at(observables_iter->first).Pseudorange_m += (observables_map_t1.at(observables_iter->first).Pseudorange_m - observables_iter->second.Pseudorange_m) * time_factor;
-                            interp_observables_map.at(observables_iter->first).Carrier_phase_rads += (observables_map_t1.at(observables_iter->first).Carrier_phase_rads - observables_iter->second.Carrier_phase_rads) * time_factor;
-                            interp_observables_map.at(observables_iter->first).Carrier_Doppler_hz += (observables_map_t1.at(observables_iter->first).Carrier_Doppler_hz - observables_iter->second.Carrier_Doppler_hz) * time_factor;
+                            Gnss_Synchro interpolated = interpolate_observable(observables_iter->second,
+                                observables_map_t1.at(observables_iter->first),
+                                time_factor, rx_time_s);
+                            // consume the slip flags latched from the epochs
+                            // that streamed through t1 since the last output
+                            auto& pending_slip = d_interp_pending_cycle_slip[observables_iter->first];
+                            if (pending_slip)
+                                {
+                                    interpolated.Flag_cycle_slip = true;
+                                    pending_slip = false;
+                                }
+                            auto& pending_half = d_interp_pending_half_cycle_slip[observables_iter->first];
+                            if (pending_half)
+                                {
+                                    interpolated.Flag_half_cycle_slip = true;
+                                    pending_half = false;
+                                }
+                            interp_observables_map.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, interpolated));
                         }
                 }
             catch (const std::out_of_range& oor)
@@ -2294,6 +2414,160 @@ void rtklib_pvt_gs::update_HAS_corrections()
         {
             this->d_user_pvt_solver->update_has_corrections(this->d_gnss_observables_map);
         }
+}
+
+
+void rtklib_pvt_gs::report_fixed_base_status()
+{
+    if (!d_ntrip_client)
+        {
+            return;
+        }
+    const Rtklib_Fixed_Base_Status status = d_user_pvt_solver->get_fixed_base_status();
+    const int status_value = static_cast<int>(status);
+    if (status_value == d_last_fixed_base_status || status == Rtklib_Fixed_Base_Status::NOT_REQUESTED)
+        {
+            return;
+        }
+    d_last_fixed_base_status = status_value;
+
+    switch (status)
+        {
+        case Rtklib_Fixed_Base_Status::APPLIED:
+            LOG(INFO) << "NTRIP fixed-base observations applied: age="
+                      << d_user_pvt_solver->get_fixed_base_age_s() << " s, common satellites="
+                      << d_user_pvt_solver->get_fixed_base_common_satellites();
+            break;
+        case Rtklib_Fixed_Base_Status::SOLVER_FALLBACK:
+            LOG(WARNING) << "NTRIP fixed-base data were available, but RTKLIB returned the configured single-point fallback";
+            break;
+        case Rtklib_Fixed_Base_Status::SOLVER_FAILURE:
+            LOG(WARNING) << "NTRIP fixed-base data were available, but RTKLIB could not produce a position solution";
+            break;
+        case Rtklib_Fixed_Base_Status::MISSING_OBSERVATIONS:
+            LOG(WARNING) << "NTRIP RTK waiting for a usable base observation epoch";
+            break;
+        case Rtklib_Fixed_Base_Status::MISSING_POSITION:
+            LOG(WARNING) << "NTRIP RTK waiting for an RTCM 1005 or 1006 base position";
+            break;
+        case Rtklib_Fixed_Base_Status::STALE:
+            LOG(WARNING) << "NTRIP base observations are stale: age="
+                         << d_user_pvt_solver->get_fixed_base_age_s() << " s";
+            break;
+        case Rtklib_Fixed_Base_Status::INVALID_POSITION:
+            LOG(WARNING) << "NTRIP base position is invalid";
+            break;
+        case Rtklib_Fixed_Base_Status::INSUFFICIENT_COMMON_SATELLITES:
+            /* the count spans every RTK constellation; the threshold is the
+               solver's, not this display layer's */
+            LOG(WARNING) << "NTRIP RTK has fewer than " << Rtklib_Solver::NTRIP_MIN_COMMON_SATELLITES
+                         << " common satellites: "
+                         << d_user_pvt_solver->get_fixed_base_common_satellites();
+            break;
+        case Rtklib_Fixed_Base_Status::NOT_REQUESTED:
+        default:
+            break;
+        }
+}
+
+
+void rtklib_pvt_gs::report_solution_status()
+{
+    /* the solver already demotes broadcast-products PPP to SOLQ_SINGLE, so
+       pvt_sol.stat is the effective status for every output */
+    const int status = d_user_pvt_solver->pvt_sol.stat;
+    if (status == d_last_solution_status)
+        {
+            return;
+        }
+    const int previous_status = d_last_solution_status;
+    d_last_solution_status = status;
+    /* announce only transitions involving a differential, SBAS or PPP state;
+       plain single-point operation keeps the classic console output */
+    if (solution_status_tag(previous_status).empty() && solution_status_tag(status).empty())
+        {
+            return;
+        }
+    std::ostringstream report;
+    switch (status)
+        {
+        case SOLQ_FIX:
+            report << "RTK ambiguities fixed (AR ratio " << std::fixed << std::setprecision(1)
+                   << d_user_pvt_solver->pvt_sol.ratio << ", threshold "
+                   << d_user_pvt_solver->pvt_sol.thres << ")";
+            break;
+        case SOLQ_FLOAT:
+            if (previous_status == SOLQ_FIX)
+                {
+                    report << "RTK fix lost: float solution (AR ratio " << std::fixed
+                           << std::setprecision(1) << d_user_pvt_solver->pvt_sol.ratio << ")";
+                }
+            else
+                {
+                    report << "RTK float solution";
+                }
+            break;
+        case SOLQ_DGPS:
+            report << "RTK degraded to code differential (DGNSS)";
+            break;
+        case SOLQ_SBAS:
+            report << "SBAS-corrected solution";
+            break;
+        case SOLQ_PPP:
+            report << "PPP solution";
+            break;
+        default:
+            /* fell back to single-point (or lost the solution) from a labeled state */
+            if (previous_status == SOLQ_SBAS)
+                {
+                    report << "SBAS corrections lost: single-point solution";
+                }
+            else if (previous_status == SOLQ_PPP)
+                {
+                    report << "PPP lost: single-point solution";
+                }
+            else
+                {
+                    report << "RTK lost: single-point solution";
+                }
+            break;
+        }
+    const std::string& color = solution_status_tag(status).empty() ? TEXT_BOLD_YELLOW : solution_status_color(status);
+    std::cout << color << report.str() << TEXT_RESET << std::endl;
+    LOG(INFO) << "Solution status change: " << report.str();
+}
+
+
+void rtklib_pvt_gs::report_solution_outage()
+{
+    /* a failed solve from a labeled state must be announced and must clear
+       d_last_solution_status: otherwise an outage that recovers into the same
+       status (e.g. FIXED -> outage -> FIXED) would print nothing at all */
+    const int previous_status = d_last_solution_status;
+    if (previous_status == SOLQ_NONE)
+        {
+            return;
+        }
+    d_last_solution_status = SOLQ_NONE;
+    if (solution_status_tag(previous_status).empty())
+        {
+            return; /* plain single-point operation keeps the classic output */
+        }
+    std::ostringstream report;
+    if (previous_status == SOLQ_SBAS)
+        {
+            report << "SBAS corrections lost: no PVT solution";
+        }
+    else if (previous_status == SOLQ_PPP)
+        {
+            report << "PPP lost: no PVT solution";
+        }
+    else
+        {
+            report << "RTK lost: no PVT solution";
+        }
+    std::cout << TEXT_BOLD_YELLOW << report.str() << TEXT_RESET << std::endl;
+    LOG(INFO) << "Solution status change: " << report.str();
 }
 
 
@@ -2572,6 +2846,10 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                         {
                             d_pvt_errors_counter = 0;  // Reset consecutive PVT error counter
                             const double Rx_clock_offset_s = d_internal_pvt_solver->get_time_offset_s();
+                            if (d_ntrip_client)
+                                {
+                                    d_ntrip_client->update_rover_position(d_internal_pvt_solver->get_rx_pos(), d_internal_pvt_solver->pvt_sol.time);
+                                }
 
                             // **************** time tags ****************
                             if (d_enable_rx_clock_correction == false)  // todo: currently only works if clock correction is disabled (computed clock offset is applied here)
@@ -2628,6 +2906,21 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             d_gnss_observables_map_t0 = d_gnss_observables_map_t1;
                                             apply_rx_clock_offset(d_gnss_observables_map, Rx_clock_offset_s);
                                             d_gnss_observables_map_t1 = d_gnss_observables_map;
+                                            // latch the slip flags of every epoch entering t1: with
+                                            // output_rate_ms > observable_interval_ms most epochs are
+                                            // never sampled by interpolate_observables, and a flag
+                                            // riding one of them would otherwise vanish
+                                            for (const auto& observable : d_gnss_observables_map_t1)
+                                                {
+                                                    if (observable.second.Flag_cycle_slip)
+                                                        {
+                                                            d_interp_pending_cycle_slip[observable.first] = true;
+                                                        }
+                                                    if (observable.second.Flag_half_cycle_slip)
+                                                        {
+                                                            d_interp_pending_half_cycle_slip[observable.first] = true;
+                                                        }
+                                                }
 
                                             // ### select the rx_time and interpolate observables at that time
                                             if (!d_gnss_observables_map_t0.empty() && !d_gnss_observables_map_t1.empty())
@@ -2668,8 +2961,23 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                         }
                     else
                         {
-                            // sanity check: If the PVT solver is getting 100 consecutive errors, send a reset command to observables block
                             d_pvt_errors_counter++;
+                            // the status banners track the output-rate solution stream while
+                            // this solver runs at the observables rate: announce an outage
+                            // only once a whole output period has elapsed without a solution,
+                            // so a single-epoch transient between two valid outputs does not
+                            // flap the console with lost/recovered pairs
+                            uint32_t failed_epochs_per_output =
+                                static_cast<uint32_t>(d_output_rate_ms) / d_observable_interval_ms;
+                            if (failed_epochs_per_output == 0)
+                                {
+                                    failed_epochs_per_output = 1;
+                                }
+                            if (d_pvt_errors_counter >= failed_epochs_per_output)
+                                {
+                                    report_solution_outage();
+                                }
+                            // sanity check: If the PVT solver is getting 100 consecutive errors, send a reset command to observables block
                             if (d_pvt_errors_counter >= 100)
                                 {
                                     int command = 1;
@@ -2686,11 +2994,43 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     // epoch twice to the solver and duplicate the dump record
                     if (flag_compute_pvt_output == true && d_enable_rx_clock_correction == true)
                         {
-                            flag_pvt_valid = d_user_pvt_solver->get_PVT(d_gnss_observables_map, d_output_rate_ms / 1000.0, *d_sensor_data_aggregator, true);
+                            const Ntrip_Rtcm_Snapshot* fixed_base = nullptr;
+                            if (d_ntrip_client)
+                                {
+                                    /* deep-copy the snapshot only when the client's data
+                                       actually changed; base epochs arrive at ~1 Hz while
+                                       this path runs at the output rate */
+                                    const uint64_t snapshot_generation = d_ntrip_client->snapshot_generation();
+                                    if (!d_fixed_base_snapshot || snapshot_generation != d_ntrip_snapshot_generation)
+                                        {
+                                            d_fixed_base_snapshot.reset(new Ntrip_Rtcm_Snapshot(
+                                                d_ntrip_client->latest_snapshot(d_internal_pvt_solver->pvt_sol.time)));
+                                            d_ntrip_snapshot_generation = snapshot_generation;
+                                        }
+                                    // the generation covers the received data, not the passage
+                                    // of rover time: the cached copy's age/freshness must track
+                                    // every epoch, or a stalled base stream would stay 'fresh'
+                                    d_fixed_base_snapshot->refresh_age(
+                                        d_internal_pvt_solver->pvt_sol.time,
+                                        d_ntrip_max_correction_age_s);
+                                    fixed_base = d_fixed_base_snapshot.get();
+                                }
+                            flag_pvt_valid = d_user_pvt_solver->get_PVT(
+                                d_gnss_observables_map,
+                                d_output_rate_ms / 1000.0,
+                                *d_sensor_data_aggregator,
+                                true,
+                                fixed_base);
+                            report_fixed_base_status();
+                            if (!flag_pvt_valid)
+                                {
+                                    report_solution_outage();
+                                }
                         }
 
                     if (flag_pvt_valid == true)
                         {
+                            report_solution_status();
                             // experimental VTL tests
                             // send tracking command
                             //                            const std::shared_ptr<TrackingCmd> trk_cmd_test = std::make_shared<TrackingCmd>(TrackingCmd());
@@ -2801,7 +3141,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             ss << " is Lat = " << d_user_pvt_solver->get_latitude()
                                                << " [deg], Long = " << d_user_pvt_solver->get_longitude()
                                                << " [deg], Height = " << d_user_pvt_solver->get_height()
-                                               << " [m], with GDOP = " << d_user_pvt_solver->get_gdop();
+                                               << " [m], with GDOP = " << d_user_pvt_solver->get_gdop()
+                                               << solution_status_tag(d_user_pvt_solver->pvt_sol.stat);
                                             std::cout << ss.str() << std::endl;
                                             d_end = std::chrono::system_clock::now();
                                             std::chrono::duration<double> elapsed_seconds = d_end - d_start;
@@ -2900,13 +3241,16 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             std::cout.setf(std::ios::fixed, std::ios::floatfield);
                             auto* facet = new boost::posix_time::time_facet("%Y-%b-%d %H:%M:%S.%f %z");
                             std::cout.imbue(std::locale(std::cout.getloc(), facet));
+                            const int solq = d_user_pvt_solver->pvt_sol.stat;
+                            const std::string solq_tag = solution_status_tag(solq);
+                            const std::string solq_txt = solq_tag.empty() ? "" : solution_status_color(solq) + solq_tag;
                             std::cout
                                 << TEXT_BOLD_GREEN
                                 << "Position at " << time_solution << UTC_solution_str
                                 << " using " << d_user_pvt_solver->get_num_valid_observations() << " observations is Lat = "
                                 << std::fixed << std::setprecision(6) << d_user_pvt_solver->get_latitude()
                                 << " [deg], Long = " << d_user_pvt_solver->get_longitude() << " [deg], Height = "
-                                << std::fixed << std::setprecision(2) << d_user_pvt_solver->get_height() << std::setprecision(ss) << " [m]" << TEXT_RESET << std::endl;
+                                << std::fixed << std::setprecision(2) << d_user_pvt_solver->get_height() << std::setprecision(ss) << " [m]" << solq_txt << TEXT_RESET << std::endl;
                             DLOG(INFO) << "RX clock offset: " << d_user_pvt_solver->get_time_offset_s() << "[s]";
 
                             std::cout

@@ -76,16 +76,55 @@ int galileo_bgd_index(unsigned char observation_code, int sat, const nav_t *nav)
         }
 }
 
-/* pseudorange measurement error variance ------------------------------------*/
-double varerr(const prcopt_t *opt, double el, int sys)
+/* pseudorange measurement error variance ------------------------------------
+ * var = fact^2*eratio^2*(a^2 + b^2/sin(el) + c^2*10^(0.1*(snr_max-snr))) +
+ *       (d*rcv_std)^2   (demo5 form)                                         */
+/* first frequency slot carrying a pseudorange. GNSS-SDR places single-band
+   L2C/L5/E5a/B3I observations in slots 1/2 with slot 0 empty, unlike the
+   upstream receivers demo5 was written for, so the SNR and receiver-stdev
+   weighting terms must follow the measurement instead of hardcoding slot 0
+   (an empty slot reads as SNR 0 and inflates the variance by orders of
+   magnitude) */
+/* rescode()'s per-system i/j band selection walks the same slots for the
+   iono/TGD pairing — a change to either scan's notion of "the measured
+   slot" must be mirrored there */
+static int used_frequency_slot(const obsd_t *obs)
 {
-    double fact;
+    for (int f = 0; f < NFREQ + NEXOBS; f++)
+        {
+            if (obs->P[f] != 0.0)
+                {
+                    return f;
+                }
+        }
+    return 0;
+}
+
+
+double varerr(const prcopt_t *opt, const obsd_t *obs, double el, int sys)
+{
+    double fact = sysefact(sys);
     double varr;
-    fact = sys == SYS_GLO ? EFACT_GLO : (sys == SYS_SBS ? EFACT_SBS : EFACT_GPS);
-    varr = std::pow(opt->err[0], 2.0) * (std::pow(opt->err[1], 2.0) + std::pow(opt->err[2], 2.0) / sin(el));
+
+    if (el < VARERR_MIN_EL)
+        {
+            el = VARERR_MIN_EL;
+        }
+    const int slot = used_frequency_slot(obs);
+    varr = std::pow(opt->err[1], 2.0) + std::pow(opt->err[2], 2.0) / sin(el);
+    if (opt->err[6] > 0.0)
+        { /* SNR-dependent term */
+            varr += std::pow(opt->err[6], 2.0) *
+                    std::pow(10.0, 0.1 * std::max(opt->err[5] - obs->SNR[slot] * 0.25, 0.0));
+        }
+    varr *= std::pow(opt->eratio[0], 2.0);
+    if (opt->err[7] > 0.0)
+        { /* receiver-reported stdev term */
+            varr += std::pow(opt->err[7] * obs->Pstd[slot], 2.0);
+        }
     if (opt->ionoopt == IONOOPT_IFLC)
         {
-            varr *= std::pow(2, 3.0); /* iono-free */
+            varr *= std::pow(3.0, 2.0); /* iono-free */
         }
     return std::pow(fact, 2.0) * varr;
 }
@@ -124,8 +163,8 @@ double gettgd(int sat, const nav_t *nav)
  * BDS CNAV1 (eph.code==BDS_EPH_SOURCE_CNAV1), stored by eph_to_rtklib(Beidou_Cnav1_Ephemeris):
  *   tgd[0]=TGD_B1Cp, tgd[1]=TGD_B2ap, tgd[2]=ISC_B1Cd  (ICD B1C §7.6)
  * BDS user algorithm (applied in prange as PC = P - c·Δt_TGD):
- *   B1C pilot CODE_L1P: (Δtsv)_B1Cp = Δtsv - TGD_B1Cp           → (7-4)
- *   B1C data  CODE_L1D: (Δtsv)_B1Cd = Δtsv - TGD_B1Cp - ISC_B1Cd → (7-5)
+ *   B1C pilot/combined CODE_L1P/L1X: (Δtsv)_B1Cp = Δtsv - TGD_B1Cp → (7-4)
+ *   B1C data CODE_L1D: (Δtsv)_B1Cd = Δtsv - TGD_B1Cp - ISC_B1Cd   → (7-5)
  *   B1I (CODE_L2I/L1I): use DNAV TGD1; B3I skips TGD in prange.
  * CODE_L1P is also GPS/GLO L1P — CNAV1 matching is SYS_BDS only.
  * No DNAV↔CNAV1 TGD fallback (TGD1 vs TGD_B1Cp).
@@ -135,7 +174,7 @@ double gettgd_bds_by_obs_code(int sat, const nav_t *nav, unsigned char obs_code)
     int i;
     int prn = 0;
     const int sys = satsys(sat, &prn);
-    const int is_b1c_obs = (obs_code == CODE_L1D || obs_code == CODE_L1P) ? 1 : 0;
+    const int is_b1c_obs = is_bds_b1c_code(obs_code) ? 1 : 0;
 
     for (i = 0; i < nav->n; i++)
         {
@@ -254,7 +293,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         }
 
     /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS;
-     * BDS: B1I(band0)+B3I(band2). B1C (CODE_L1P/L1D) is single-frequency on
+     * BDS: B1I(band0)+B3I(band2). B1C (CODE_L1D/L1P/L1X) is single-frequency on
      * slot 0 under GNSS-SDR prefer-B1C XOR (never paired as IF with B1I). */
     if (sys == SYS_GAL || sys == SYS_SBS)
         {
@@ -262,8 +301,8 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         }
     else if (sys == SYS_BDS)
         {
-            const bool b1c0 = (obs->code[0] == CODE_L1D || obs->code[0] == CODE_L1P);
-            const bool b1c1 = (obs->code[1] == CODE_L1D || obs->code[1] == CODE_L1P);
+            const bool b1c0 = is_bds_b1c_code(obs->code[0]);
+            const bool b1c1 = is_bds_b1c_code(obs->code[1]);
             if (b1c0 || b1c1)
                 {
                     i = b1c0 ? 0 : 1;
@@ -281,8 +320,11 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                 }
             else if (obs->code[2] != CODE_NONE)
                 {
+                    /* B3I-only: B3I is the DNAV timing reference, so use it
+                       directly without TGD. rescode() scales the broadcast
+                       ionosphere correction using this observation slot. */
                     i = 2;
-                    j = 2; /* B3I-only */
+                    j = 2;
                 }
         }
     else if (sys == SYS_GPS || sys == SYS_GLO || sys == SYS_QZS)
@@ -304,13 +346,17 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
             return 0.0;
         }
 
-    /* test snr mask */
+    /* test snr mask on the band that actually carries a measurement: for the
+       single-band second-slot cases (GPS L2C/L5-only, Galileo E5a-only, BDS
+       B3I-only) the first band is empty and obs->SNR[i] reads 0, which would
+       mask the satellite out at any nonzero threshold */
+    const int snr_slot = obs->code[i] != CODE_NONE ? i : j;
     if (iter > 0)
         {
-            if (testsnr(0, i, azel[1], obs->SNR[i] * 0.25, &opt->snrmask))
+            if (testsnr(0, snr_slot, azel[1], obs->SNR[snr_slot] * 0.25, &opt->snrmask))
                 {
                     trace(4, "snr mask: %s sat=%2d el=%.1f snr=%.1f\n",
-                        time_str(obs->time, 0), obs->sat, azel[1] * R2D, obs->SNR[i] * 0.25);
+                        time_str(obs->time, 0), obs->sat, azel[1] * R2D, obs->SNR[snr_slot] * 0.25);
                     return 0.0;
                 }
             if (opt->ionoopt == IONOOPT_IFLC && i != j)
@@ -539,8 +585,8 @@ int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
             const int sys = satsys(sat, nullptr);
             if (sys == SYS_BDS)
                 {
-                    /* B1C (CODE_L1D/L1P) uses BDGIM at FREQ1; B1I/B3I use DNAV Klobuchar */
-                    const bool is_b1c = (obs_code == CODE_L1D || obs_code == CODE_L1P);
+                    /* B1C (CODE_L1D/L1P/L1X) uses BDGIM at FREQ1; B1I/B3I use DNAV Klobuchar */
+                    const bool is_b1c = is_bds_b1c_code(obs_code);
                     if (is_b1c && nav->ion_bdgim_valid)
                         {
                             const double ep0[] = {2000, 1, 1, 12, 0, 0};
@@ -653,7 +699,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
     int j;
     int nv = 0;
     int sys;
-    int mask[4] = {0};
+    int mask[5] = {0};
 
     trace(3, "resprng : n=%d\n", n);
 
@@ -776,8 +822,16 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                     H[6 + nv * NX] = 1.0;
                     mask[3] = 1;
                 }
+            else if (sys == SYS_QZS && opt->estqzsisb)
+                {
+                    v[nv] -= x[7];
+                    H[7 + nv * NX] = 1.0;
+                    mask[4] = 1;
+                }
             else
                 {
+                    /* GPS and SBS; also QZS sharing the GPS clock unless
+                       PVT.estimate_qzss_isb is enabled */
                     mask[0] = 1;
                 }
 
@@ -786,11 +840,11 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
             (*ns)++;
 
             /* error variance */
-            double vmeasure = varerr(opt, azel[1 + i * 2], sys);
+            double vmeasure = varerr(opt, &obs[i], azel[1 + i * 2], sys);
             if (iono_scale == 0.0 && opt->ionoopt != IONOOPT_IFLC)
                 {
                     /* same noise amplification varerr applies for IONOOPT_IFLC */
-                    vmeasure *= std::pow(2, 3.0);
+                    vmeasure *= std::pow(3.0, 2.0);
                 }
             var[nv++] = vmeasure + vare[i] + vmeas + vion + vtrp;
 
@@ -798,7 +852,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                 azel[i * 2] * R2D, azel[1 + i * 2] * R2D, resp[i], sqrt(var[nv - 1]));
         }
     /* constraint to avoid rank-deficient */
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < 5; i++)
         {
             if (mask[i])
                 {
@@ -955,9 +1009,9 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
 
     trace(3, "estpos  : n=%d\n", n);
 
-    v = mat(n + 4, 1);
-    H = mat(NX, n + 4);
-    var = mat(n + 4, 1);
+    v = mat(n + 5, 1);
+    H = mat(NX, n + 5);
+    var = mat(n + 5, 1);
 
     for (i = 0; i < 3; i++)
         {
@@ -1031,6 +1085,7 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
                     sol->dtr[1] = x[4] / SPEED_OF_LIGHT_M_S; /* glo-gps time offset (s) */
                     sol->dtr[2] = x[5] / SPEED_OF_LIGHT_M_S; /* gal-gps time offset (s) */
                     sol->dtr[3] = x[6] / SPEED_OF_LIGHT_M_S; /* bds-gps time offset (s) */
+                    sol->dtr[4] = x[7] / SPEED_OF_LIGHT_M_S; /* qzs-gps time offset (s) */
                     for (j = 0; j < 6; j++)
                         {
                             sol->rr[j] = j < 3 ? x[j] : 0.0;
@@ -1081,7 +1136,7 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
     double *azel, int *vsat, double *resp, char *msg)
 {
     obsd_t *obs_e;
-    sol_t sol_e = {{0, 0}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0};
+    sol_t sol_e = {{0, 0}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0, 0.0, 0.0};
     char tstr[32];
     char msg_e[PNTPOS_MSG_LEN]{};
     double *rs_e;

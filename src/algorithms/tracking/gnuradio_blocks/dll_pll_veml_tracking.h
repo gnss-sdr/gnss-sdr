@@ -222,6 +222,7 @@ private:
     bool d_use_histogram_bit_sync;
     bool d_wait_for_bit_edge{false};
     bool d_b1c_prelock_output_pending{false};
+    bool d_carrier_phase_discontinuity{true};  // pending report of a new carrier phase ambiguity
 };
 
 

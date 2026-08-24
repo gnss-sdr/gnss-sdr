@@ -42,6 +42,7 @@
  * \{ */
 
 
+class Gnss_Satellite;
 class Gnss_Synchro;
 class hybrid_observables_gs;
 
@@ -63,6 +64,90 @@ public:
     int general_work(int noutput_items, gr_vector_int& ninput_items,
         gr_vector_const_void_star& input_items, gr_vector_void_star& output_items);
 
+    /*!
+     * \brief Shortest interruption of the observation stream of a channel that
+     * can be attributed to a loss of lock, in seconds.
+     *
+     * Reacquiring a satellite and decoding its telemetry again takes seconds,
+     * so shorter interruptions are transient failures to interpolate the
+     * tracking history and leave the carrier phase untouched.
+     */
+    static constexpr double MIN_REACQUISITION_GAP_S = 1.0;
+
+    /*!
+     * \brief Tells whether the carrier phase of a channel can be assumed to be
+     * continuous with respect to its previous observation.
+     *
+     * The accumulated carrier phase of a tracking channel restarts from scratch
+     * whenever the channel (re)acquires a satellite, so an observation that
+     * resumes after a loss of lock carries a new ambiguity.
+     *
+     * \param has_previous_observation Whether the channel produced a valid
+     *        observation since it was last reset
+     * \param last_valid_epoch Epoch count when the channel last produced a
+     *        valid observation
+     * \param current_epoch Epoch count of the observation being checked
+     * \param last_valid_prn PRN of the last valid observation of the channel
+     * \param current_prn PRN of the observation being checked
+     * \param epoch_interval_s Time between consecutive observation epochs
+     * \return true if the carrier phase ambiguity may have changed
+     */
+    static bool phase_stream_is_discontinuous(bool has_previous_observation,
+        uint64_t last_valid_epoch,
+        uint64_t current_epoch,
+        uint32_t last_valid_prn,
+        uint32_t current_prn,
+        double epoch_interval_s);
+
+    /*!
+     * \brief Tells whether the carrier phase has stepped by half a cycle because
+     * the Costas loop phase ambiguity resolved by the Telemetry Decoder changed.
+     *
+     * The Telemetry Decoder compensates that ambiguity by adding half a cycle to
+     * the carrier phase while the PLL is locked at 180 degrees, so a change of
+     * its determination steps the reported carrier phase.
+     *
+     * \param has_previous_observation Whether the channel produced a valid
+     *        observation since it was last reset
+     * \param carrier_phase_discontinuous Whether the carrier phase ambiguity has
+     *        already changed for another reason, which supersedes this one
+     * \param last_valid_prn PRN of the last valid observation of the channel
+     * \param current_prn PRN of the observation being checked
+     * \param last_pll_180_locked Ambiguity resolved for the previous observation
+     * \param current_pll_180_locked Ambiguity resolved for this observation
+     * \return true if the carrier phase stepped by half a cycle
+     */
+    static bool half_cycle_ambiguity_changed(bool has_previous_observation,
+        bool carrier_phase_discontinuous,
+        uint32_t last_valid_prn,
+        uint32_t current_prn,
+        bool last_pll_180_locked,
+        bool current_pll_180_locked);
+
+    /*!
+     * \brief Linearly interpolates the carrier phase between two tracking
+     * samples, in the polarity frame of the later sample.
+     *
+     * When the PLL-180 half-cycle correction toggles between the two samples,
+     * their reported phases differ by half a cycle on top of the true motion:
+     * interpolating across that step would leak a fraction of it into the
+     * output with no slip flag raised. Shifting the early sample into the
+     * late sample's frame pins the whole step to the epoch where the polarity
+     * change is reported.
+     *
+     * \param phase_early_rads Carrier phase of the earlier sample
+     * \param pll_180_early PLL-180 correction state of the earlier sample
+     * \param phase_late_rads Carrier phase of the later sample
+     * \param pll_180_late PLL-180 correction state of the later sample
+     * \param time_factor Position of the epoch inside the window, in [0, 1]
+     * \return the interpolated carrier phase, in the late sample's frame
+     */
+    static double interpolate_carrier_phase(double phase_early_rads,
+        bool pll_180_early,
+        double phase_late_rads,
+        bool pll_180_late,
+        double time_factor);
+
 private:
     friend hybrid_observables_gs_sptr hybrid_observables_gs_make(const Obs_Conf& conf_);
 
@@ -70,6 +155,8 @@ private:
 
     const size_t d_double_type_hash_code = typeid(double).hash_code();
     const size_t d_int_type_hash_code = typeid(int).hash_code();
+
+    static Gnss_Satellite pretty_satellite(char system, uint32_t prn);
 
     void msg_handler_pvt_to_observables(const pmt::pmt_t& msg);
     double compute_T_rx_s(const Gnss_Synchro& a) const;
@@ -101,7 +188,11 @@ private:
     std::vector<bool> d_channel_last_pll_lock;
     std::vector<double> d_channel_last_pseudorange_smooth;
     std::vector<double> d_channel_last_carrier_phase_rads;
-    std::vector<bool> d_channel_last_rx_time_valid;
+    std::vector<bool> d_channel_has_previous_observation;     // carrier phase continuity bookkeeping
+    std::vector<bool> d_channel_phase_discontinuity_pending;  // reported by the tracking block
+    std::vector<bool> d_channel_last_pll_180_locked;          // Costas loop ambiguity state
+    std::vector<uint64_t> d_channel_last_valid_epoch;
+    std::vector<uint32_t> d_channel_last_valid_prn;
     std::vector<Gnss_Synchro> d_last_trk_data;  // latest tracking data per channel, for the Monitor
 
     std::string d_dump_filename;
@@ -111,6 +202,8 @@ private:
     double d_smooth_filter_M;
     double d_T_rx_step_s;
     double d_last_rx_clock_round20ms_error;
+
+    uint64_t d_epoch_counter{0};
 
     uint32_t d_T_rx_TOW_ms;
     uint32_t d_T_rx_step_ms;

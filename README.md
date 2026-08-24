@@ -376,11 +376,16 @@ $ sudo pacman -S openssl                  # For Arch Linux
 
 #### Install [Matio](https://github.com/tbeu/matio "Matio's Homepage"), MATLAB MAT file I/O library
 
+Requires [zlib](https://zlib.net/) and
+[HDF5](https://www.hdfgroup.org/solutions/hdf5/). For Debian and derivatives,
+`sudo apt install libhdf5-dev` should work fine.
+
 ```
-$ wget https://github.com/tbeu/matio/releases/download/v1.5.30/matio-1.5.30.tar.gz
-$ tar xvfz matio-1.5.30.tar.gz
-$ cd matio-1.5.30
-$ ./configure
+$ wget https://github.com/tbeu/matio/releases/download/v1.6.0/matio-1.6.0.tar.gz
+$ tar xvfz matio-1.6.0.tar.gz
+$ cd matio-1.6.0
+$ ./autogen.sh
+$ ./configure --enable-mat73=yes --with-default-file-ver=7.3  ; you might also need --with-hdf5=DIR
 $ make
 $ sudo make install
 $ sudo ldconfig

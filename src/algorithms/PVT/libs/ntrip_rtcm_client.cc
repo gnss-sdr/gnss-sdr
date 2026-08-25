@@ -29,6 +29,7 @@
 #include <condition_variable>
 #include <cstdio>
 #include <cstring>
+#include <iostream>
 #include <limits>
 #include <mutex>
 #include <netdb.h>
@@ -750,10 +751,16 @@ public:
                 return false;
             }
 
-        LOG(INFO) << "NTRIP client configured for v" << d_config.version
-                  << (d_config.tls_enabled ? " (TLS 1.2+) at " : " at ")
-                  << d_config.host << ':' << d_config.port
-                  << '/' << normalized_mountpoint(d_config.mountpoint);
+        std::ostringstream message;
+        message << "NTRIP client configured for v" << d_config.version
+                << (d_config.tls_enabled ? " (TLS 1.2+) at " : " at ")
+                << d_config.host << ':' << d_config.port
+                << '/' << normalized_mountpoint(d_config.mountpoint);
+
+        const std::string text = message.str();
+        LOG(INFO) << text;
+        std::cout << text << std::endl;
+
         reset_output_data();
         reset_status();
         d_stop_requested.store(false);
@@ -1572,11 +1579,19 @@ private:
         increment_observation_epochs();
         if (invalidated_base_position)
             {
-                LOG(WARNING) << "NTRIP client: observations arrived from station "
-                             << decoder.staid << " while the cached base position "
-                                                 "belongs to station "
-                             << invalidated_base_station_id
-                             << "; base position dropped";
+                std::ostringstream message;
+                message << "NTRIP client: observations arrived from station "
+                        << decoder.staid << " while the cached base position "
+                                            "belongs to station "
+                        << invalidated_base_station_id
+                        << "; base position dropped";
+                const std::string text = message.str();
+                LOG(WARNING) << text;
+                if (!d_console_station_mismatch_reported)
+                    {
+                        std::cout << text << std::endl;
+                        d_console_station_mismatch_reported = true;
+                    }
             }
         if (!d_logged_first_observations)
             {
@@ -1679,11 +1694,19 @@ private:
         }
         if (invalidated_observations)
             {
-                LOG(WARNING) << "NTRIP client: base position arrived from station "
-                             << decoder.staid << " while the cached observations "
-                                                 "belong to station "
-                             << invalidated_station_id
-                             << "; base observations dropped";
+                std::ostringstream message;
+                message << "NTRIP client: base position arrived from station "
+                        << decoder.staid << " while the cached observations "
+                                            "belong to station "
+                        << invalidated_station_id
+                        << "; base observations dropped";
+                const std::string text = message.str();
+                LOG(WARNING) << text;
+                if (!d_console_station_mismatch_reported)
+                    {
+                        std::cout << text << std::endl;
+                        d_console_station_mismatch_reported = true;
+                    }
             }
         if (announce)
             {
@@ -1719,6 +1742,7 @@ private:
         d_observation_station_id = 0;
         invalidate_base_position_locked();
         d_ephemerides.clear();
+        d_console_station_mismatch_reported = false;
     }
 
     void invalidate_observations_locked()
@@ -1780,12 +1804,14 @@ private:
     {
         std::lock_guard<std::mutex> lock(d_status_mutex);
         d_status = Ntrip_Rtcm_Client_Status();
+        d_console_connection_failure_reported = false;
         d_state_generation.fetch_add(1, std::memory_order_relaxed);
     }
 
     void set_state(Ntrip_Rtcm_Client_State state, const std::string& message,
         bool connected)
     {
+        bool report_to_console = false;
         {
             std::lock_guard<std::mutex> lock(d_status_mutex);
             if (d_status.state == state && d_status.connected == connected &&
@@ -1799,10 +1825,34 @@ private:
             d_status.connected = connected;
             d_status.message = message;
             d_state_generation.fetch_add(1, std::memory_order_relaxed);
+
+            if (state == Ntrip_Rtcm_Client_State::STREAMING)
+                {
+                    // Announce both the initial usable stream and recovery
+                    // after an outage. A recovered stream also arms the next
+                    // connection-loss notification.
+                    report_to_console = true;
+                    d_console_connection_failure_reported = false;
+                }
+            else if (state == Ntrip_Rtcm_Client_State::RECONNECT_WAIT &&
+                     !d_console_connection_failure_reported)
+                {
+                    // One console warning describes the outage; individual
+                    // retry failures remain in the log until streaming resumes.
+                    report_to_console = true;
+                    d_console_connection_failure_reported = true;
+                }
+            else if (state == Ntrip_Rtcm_Client_State::ERROR)
+                {
+                    // Terminal failures are always actionable, including an
+                    // error reached after an already-reported reconnect wait.
+                    report_to_console = true;
+                }
         }
         // every lifecycle transition logs exactly once, outside the status
-        // lock; failures and reconnect waits are warnings, the rest is
-        // informational
+        // lock; failures and reconnect waits are warnings, while the rest is
+        // informational. Console output is limited to stream availability and
+        // actionable failures.
         if (state == Ntrip_Rtcm_Client_State::ERROR ||
             state == Ntrip_Rtcm_Client_State::RECONNECT_WAIT)
             {
@@ -1811,6 +1861,15 @@ private:
         else
             {
                 LOG(INFO) << "NTRIP client: " << message;
+            }
+        if (report_to_console)
+            {
+                std::cout << "NTRIP client: " << message;
+                if (state == Ntrip_Rtcm_Client_State::RECONNECT_WAIT)
+                    {
+                        std::cout << "; reconnecting";
+                    }
+                std::cout << std::endl;
             }
     }
 
@@ -1858,9 +1917,11 @@ private:
     std::string d_logged_resolved_ipv4;
     bool d_logged_first_observations = false;
     bool d_logged_decoder_error = false;
+    bool d_console_station_mismatch_reported = false;
 
     mutable std::mutex d_status_mutex;
     Ntrip_Rtcm_Client_Status d_status;
+    bool d_console_connection_failure_reported = false;
     std::atomic<std::uint64_t> d_state_generation{0};
 
     mutable std::mutex d_input_mutex;

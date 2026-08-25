@@ -57,7 +57,16 @@ class ThresholdComputeInterface
 {
 public:
     virtual ~ThresholdComputeInterface() = default;
+
+    ThresholdComputeInterface(const ThresholdComputeInterface&) = delete;
+    ThresholdComputeInterface& operator=(const ThresholdComputeInterface&) = delete;
+    ThresholdComputeInterface(ThresholdComputeInterface&&) = delete;
+    ThresholdComputeInterface& operator=(ThresholdComputeInterface&&) = delete;
+
     virtual float calculate_threshold(const Acq_Conf& acq_parameters) const = 0;
+
+protected:
+    ThresholdComputeInterface() = default;
 };
 
 class ThresholdComputeBasic : public ThresholdComputeInterface

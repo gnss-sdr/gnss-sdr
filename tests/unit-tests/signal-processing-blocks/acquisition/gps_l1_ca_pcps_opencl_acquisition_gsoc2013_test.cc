@@ -26,8 +26,8 @@
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
-#include "gps_l1_ca_pcps_opencl_acquisition.h"
 #include "in_memory_configuration.h"
+#include "pcps_opencl_acquisition_cc.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -498,7 +498,8 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResults)
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
-    if (!acquisition->opencl_ready())
+    auto opencl_block = std::dynamic_pointer_cast<pcps_opencl_acquisition_cc>(acquisition->get_right_block());
+    if (!opencl_block || !opencl_block->opencl_ready())
         {
             std::cout << "OpenCL Platform is not ready.\n";
         }
@@ -572,7 +573,8 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResultsProbabilitie
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
-    if (!acquisition->opencl_ready())
+    auto opencl_block = std::dynamic_pointer_cast<pcps_opencl_acquisition_cc>(acquisition->get_right_block());
+    if (!opencl_block || !opencl_block->opencl_ready())
         {
             std::cout << "OpenCL Platform is not ready.\n";
         }

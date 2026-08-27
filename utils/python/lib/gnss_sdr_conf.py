@@ -20,9 +20,10 @@ from pathlib import Path
 from typing import Optional
 
 
-# Keep this order in sync with src/core/receiver/gnss_block_factory.cc. GNSS-SDR
-# assigns absolute channel IDs by walking the configured signal counts in this
-# order.
+# Keep this order in sync with signal_mapping in
+# src/core/receiver/gnss_block_factory.cc. GNSS-SDR assigns absolute channel
+# IDs by walking the configured signal counts in this order (it does not use
+# the per-channel Channel<N>.signal lines in the conf file for this).
 SIGNAL_ORDER = (
     "1C",
     "2S",
@@ -33,10 +34,12 @@ SIGNAL_ORDER = (
     "1G",
     "2G",
     "B1",
+    "1D",
     "B3",
     "7X",
     "J1",
     "J5",
+    "S1",
 )
 
 @dataclass(frozen=True)
@@ -66,9 +69,11 @@ SIGNAL_TYPES = {
     "1G": SignalType("R", 511, "GLONASS L1 C/A"),
     "2G": SignalType("R", 511, "GLONASS L2 C/A"),
     "B1": SignalType("C", 2046, "BeiDou B1I"),
+    "1D": SignalType("C", 10230, "BeiDou B1C"),
     "B3": SignalType("C", 10230, "BeiDou B3I"),
     "J1": SignalType("J", 1023, "QZSS L1 C/A"),
     "J5": SignalType("J", 10230, "QZSS L5"),
+    "S1": SignalType("S", 1023, "SBAS L1"),
 }
 
 N_CHIPS = {

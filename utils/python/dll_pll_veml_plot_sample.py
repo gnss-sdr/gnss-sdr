@@ -184,13 +184,28 @@ def apply_conf_defaults(args):
     if args.file_prefix is None:
         args.file_prefix = DEFAULT_FILE_PREFIX
 
-    manual_signal = args.signal_type or (
+    manual_signal_fallback = args.signal_type or (
         signals[0].signal if signals else DEFAULT_SIGNAL_TYPE
     )
+
+    def signal_for_channel(channel):
+        # An explicit --first-channel/--channels range overrides the conf's
+        # auto-derived range, but the channel-to-signal mapping should still
+        # come from the conf when possible: signals[0] (first enabled signal
+        # in SIGNAL_ORDER) is not necessarily the signal actually occupying
+        # this channel index once the range has been overridden manually.
+        if args.signal_type is not None:
+            return args.signal_type
+        if conf is not None:
+            for signal in conf.signals:
+                if channel in signal.channels:
+                    return signal.signal
+        return manual_signal_fallback
+
     args.channel_plan = [
         ChannelDump(
             channel=channel,
-            signal=manual_signal,
+            signal=signal_for_channel(channel),
             file_prefix=args.file_prefix,
         )
         for channel in range(args.first_channel, args.first_channel + args.channels)

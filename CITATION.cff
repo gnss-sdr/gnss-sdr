@@ -137,6 +137,10 @@ authors:
     email: wsilberm@google.com
     family-names: Silberman
     given-names: Will
+  - alias: MrCry0
+    email: github@say.od.ua
+    family-names: Suvorov
+    given-names: Oleksandr
   - email: tonetto.dev@gmail.com
     family-names: Tonetto
     given-names: Leonardo

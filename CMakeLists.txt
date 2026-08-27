@@ -71,6 +71,8 @@ option(ENABLE_OSMOSDR "Enable the use of OsmoSDR and other front-ends (RTL-based
 
 option(ENABLE_LIMESDR "Enable the use of LimeSDR and Custom LimeSDR as signal source" OFF)
 
+option(ENABLE_BLADERF "Enable the use of bladeRF front-ends as signal source, requires libbladeRF" OFF)
+
 option(ENABLE_POCKETSDR "Enable the use of Pocket SDR FE front-ends as signal source, requires gr-pocketsdr" OFF)
 
 option(ENABLE_FMCOMMS2 "Enable the use of FMCOMMS4-EBZ + ZedBoard hardware, requires gr-iio" OFF)
@@ -387,6 +389,7 @@ set(GNSSSDR_CLANG_MIN_VERSION "3.4.0")
 set(GNSSSDR_GCC_MIN_VERSION "4.7.2")
 set(GNSSSDR_GFLAGS_MIN_VERSION "2.1.2")
 set(GNSSSDR_GNURADIO_MIN_VERSION "3.7.3")
+set(GNSSSDR_LIBBLADERF_MIN_VERSION "2.6.0")
 set(GNSSSDR_MAKO_MIN_VERSION "0.4.2")
 set(GNSSSDR_MATIO_MIN_VERSION "1.5.3")
 set(GNSSSDR_PROTOBUF_MIN_VERSION "3.0.0")
@@ -2893,6 +2896,34 @@ endif()
 
 
 
+##########################################
+# libbladeRF - OPTIONAL
+# https://github.com/Nuand/bladeRF
+##########################################
+find_package(LIBBLADERF)
+set_package_properties(LIBBLADERF PROPERTIES
+    PURPOSE "Used for communication with bladeRF front-ends."
+    TYPE OPTIONAL
+)
+if(ENABLE_BLADERF)
+    if(LIBBLADERF_FOUND)
+        message(STATUS "The driver for bladeRF will be compiled.")
+        message(STATUS " You can disable it with 'cmake -DENABLE_BLADERF=OFF ..'")
+    else()
+        if(ENABLE_PACKAGING)
+            message(WARNING "libbladeRF has not been found. Source blocks depending on it will NOT be built.")
+        else()
+            message(FATAL_ERROR "libbladeRF required to build gnss-sdr with the optional BLADERF driver")
+        endif()
+        set(ENABLE_BLADERF OFF)
+    endif()
+else()
+    message(STATUS "The (optional) driver for bladeRF is not enabled.")
+    message(STATUS " Enable it with 'cmake -DENABLE_BLADERF=ON ..' to add support for bladeRF.")
+endif()
+
+
+
 ################################################
 # gr-pocketsdr - OPTIONAL
 # https://github.com/minhaj6/gr-pocketsdr
@@ -3371,6 +3402,7 @@ add_subdirectory(utils)
 add_feature_info(ENABLE_UHD ENABLE_UHD "Enables UHD_Signal_Source for using RF front-ends from the USRP family. Requires gr-uhd.")
 add_feature_info(ENABLE_OSMOSDR ENABLE_OSMOSDR "Enables Osmosdr_Signal_Source and RtlTcp_Signal_Source for using RF front-ends compatible with the OsmoSDR driver. Requires gr-osmosdr.")
 add_feature_info(ENABLE_LIMESDR ENABLE_LIMESDR "Enables Limesdr_Signal_Source. Requires gr-limesdr.")
+add_feature_info(ENABLE_BLADERF ENABLE_BLADERF "Enables Bladerf_Signal_Source. Requires libbladeRF.")
 add_feature_info(ENABLE_POCKETSDR ENABLE_POCKETSDR "Enables Pocket_SDR_Signal_Source. Requires gr-pocketsdr.")
 add_feature_info(ENABLE_FMCOMMS2 ENABLE_FMCOMMS2 "Enables Fmcomms2_Signal_Source for FMCOMMS2/3/4 devices. Requires libiio, libad9361-dev, and gr-iio.")
 add_feature_info(ENABLE_PLUTOSDR ENABLE_PLUTOSDR "Enables Plutosdr_Signal_Source and Ad936x_Custom_Signal_Source for using ADALM-PLUTO boards. Requires libiio, libad9361-dev, and gr-iio.")

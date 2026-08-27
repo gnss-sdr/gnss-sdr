@@ -220,6 +220,15 @@ All notable changes to GNSS-SDR will be documented in this file.
   the RTKLIB navigation structure, and adds `qzss_utc_model.xml`,
   `qzss_iono.xml`, `qzss_cnav_utc_model.xml`, and `qzss_cnav_iono.xml` to the
   XML storage output.
+- Added a `Bladerf_Signal_Source` for interoperability with Nuand's bladeRF
+  front-ends (bladeRF x40, x115, and bladeRF 2.0 Micro xA4/xA9), streaming RX
+  samples directly through `libbladeRF` (requires the `-DENABLE_BLADERF=ON`
+  building flag) instead of going through `gr-osmosdr`. Supports single-channel
+  (SISO) reception, an optional RX bias tee for powering an active antenna on
+  the 2.0 Micro, and exposes a single overall RX gain (unlike the `if_gain` /
+  `rf_gain` split used by `Osmosdr_Signal_Source`). A sample configuration file
+  is provided at `conf/RealTime_input/gnss-sdr_GPS_L1_bladeRF_native.conf`.
+  Contributed by @MrCry0.
 - Added a new Signal Source implementation `Pocket_SDR_Signal_Source`, which
   supports
   [Pocket SDR FE](https://www.datagnss.com/products/pocketsdr-gnss-receiver)

@@ -101,6 +101,13 @@ if(ENABLE_LIMESDR)
     endif()
 endif()
 
+if(ENABLE_BLADERF)
+    if(LIBBLADERF_FOUND)
+        list(APPEND OPT_DRIVER_SOURCES bladerf_signal_source.cc)
+        list(APPEND OPT_DRIVER_HEADERS bladerf_signal_source.h)
+    endif()
+endif()
+
 if(ENABLE_POCKETSDR)
     if(GRPOCKETSDR_FOUND)
         list(APPEND OPT_DRIVER_SOURCES pocket_sdr_signal_source.cc)

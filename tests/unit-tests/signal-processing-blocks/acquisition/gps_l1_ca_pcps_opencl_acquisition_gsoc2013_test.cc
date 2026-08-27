@@ -64,6 +64,15 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
+static gnss_shared_ptr<pcps_opencl_acquisition_cc> get_opencl_block(const gr::basic_block_sptr& block)
+{
+#if GNURADIO_USES_STD_POINTERS
+    return std::dynamic_pointer_cast<pcps_opencl_acquisition_cc>(block);
+#else
+    return boost::dynamic_pointer_cast<pcps_opencl_acquisition_cc>(block);
+#endif
+}
+
 // ######## GNURADIO BLOCK MESSAGE RECEIVER #########
 class GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx;
 
@@ -498,7 +507,7 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResults)
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
-    auto opencl_block = std::dynamic_pointer_cast<pcps_opencl_acquisition_cc>(acquisition->get_right_block());
+    auto opencl_block = get_opencl_block(acquisition->get_right_block());
     if (!opencl_block || !opencl_block->opencl_ready())
         {
             std::cout << "OpenCL Platform is not ready.\n";
@@ -549,6 +558,10 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResults)
                         {
                             EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                         }
+
+                    ASSERT_NO_THROW({
+                        ch_thread.join();
+                    }) << "Failure while waiting the queue to stop";
                 }
         }
 }
@@ -573,7 +586,7 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResultsProbabilitie
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
-    auto opencl_block = std::dynamic_pointer_cast<pcps_opencl_acquisition_cc>(acquisition->get_right_block());
+    auto opencl_block = get_opencl_block(acquisition->get_right_block());
     if (!opencl_block || !opencl_block->opencl_ready())
         {
             std::cout << "OpenCL Platform is not ready.\n";
@@ -625,6 +638,10 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResultsProbabilitie
                             std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << '\n';
                             std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds.\n";
                         }
+
+                    ASSERT_NO_THROW({
+                        ch_thread.join();
+                    }) << "Failure while waiting the queue to stop";
                 }
         }
 }

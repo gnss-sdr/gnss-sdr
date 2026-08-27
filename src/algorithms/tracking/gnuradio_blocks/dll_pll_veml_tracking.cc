@@ -1809,8 +1809,11 @@ void dll_pll_veml_tracking::log_data()
             uint64_t tmp_long_int;
             if (d_trk_parameters.track_pilot)
                 {
-                    prompt_I = d_Prompt_Data.data()->real();
-                    prompt_Q = d_Prompt_Data.data()->imag();
+                    // Same I/Q interchange as assign_correlators_to_synchro(): for signals whose
+                    // data and pilot components are true RF quadrature (e.g. Galileo E5a/E5b,
+                    // GPS L5), d_interchange_iq is true and the data bits are on the imaginary
+                    // axis of d_Prompt_Data, not the real one.
+                    map_correlator_to_iq(*d_Prompt_Data.data(), prompt_I, prompt_Q);
                 }
             else
                 {

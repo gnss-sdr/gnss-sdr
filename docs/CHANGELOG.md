@@ -228,6 +228,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   the 2.0 Micro, and exposes a single overall RX gain (unlike the `if_gain` /
   `rf_gain` split used by `Osmosdr_Signal_Source`). A sample configuration file
   is provided at `conf/RealTime_input/gnss-sdr_GPS_L1_bladeRF_native.conf`.
+  Contributed by @MrCry0.
 - Added a new Signal Source implementation `Pocket_SDR_Signal_Source`, which
   supports
   [Pocket SDR FE](https://www.datagnss.com/products/pocketsdr-gnss-receiver)

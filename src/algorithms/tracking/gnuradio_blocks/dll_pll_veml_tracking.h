@@ -85,6 +85,8 @@ private:
     void clear_tracking_vars();
     void save_correlation_results();
     void log_data();
+    void map_correlator_to_iq(const gr_complex &c, float &out_i, float &out_q) const;
+    void assign_correlators_to_synchro(Gnss_Synchro &synchro) const;
     void configure_bit_synchronizer();
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
@@ -92,7 +94,6 @@ private:
     int32_t save_matfile() const;
 
     Cpu_Multicorrelator_Real_Codes d_multicorrelator_cpu;
-    Cpu_Multicorrelator_Real_Codes d_correlator_data_cpu;  // for data channel
 
     Dll_Pll_Conf d_trk_parameters;
 
@@ -220,6 +221,8 @@ private:
     bool d_Flag_PLL_180_deg_phase_locked;
     bool d_use_histogram_bit_sync;
     bool d_wait_for_bit_edge{false};
+    bool d_b1c_prelock_output_pending{false};
+    bool d_carrier_phase_discontinuity{true};  // pending report of a new carrier phase ambiguity
 };
 
 

@@ -169,8 +169,8 @@ void Gnss_Ephemeris::satellitePosition(double transmitTime)
 
 void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<double, 7>& pos_vel_dtr) const
 {
-    // Restore semi-major axis
-    const double a = this->sqrtA * this->sqrtA;
+    // Restore semi-major axis (sqrtA for legacy NAV; A0 for B-CNAV1)
+    const double a = this->sqrtA * this->sqrtA + this->A0;
 
     // Computed mean motion
     double n0;
@@ -190,11 +190,14 @@ void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<
     // Time from ephemeris reference epoch
     double tk = check_t(transmitTime - static_cast<double>(this->toe));
 
+    // Semi-major axis correction (CNAV)
+    const double Ak = a + this->Adot * tk;
+
     // Corrected mean motion
     const double n = n0 + this->delta_n;
 
     // Mean anomaly
-    const double M = this->M_0 + n * tk;
+    const double M = this->M_0 + (n + 0.5 * this->delta_ndot * tk) * tk;
 
     // Initial guess of eccentric anomaly
     double E = M;
@@ -218,7 +221,7 @@ void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<
     const double cek = cos(E);
     const double OneMinusecosE = 1.0 - this->ecc * cek;
     const double sq1e2 = sqrt(1.0 - this->ecc * this->ecc);
-    const double ekdot = n / OneMinusecosE;
+    const double ekdot = (n + this->delta_ndot * tk) / OneMinusecosE;
 
     // Compute the true anomaly
     const double tmp_Y = sq1e2 * sek;
@@ -240,8 +243,8 @@ void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<
     const double ukdot = pkdot * (1.0 + 2.0 * (this->Cus * c2pk - this->Cuc * s2pk));
 
     // Correct radius
-    const double r = a * OneMinusecosE + this->Crc * c2pk + this->Crs * s2pk;
-    const double rkdot = a * this->ecc * sek * ekdot + 2.0 * pkdot * (this->Crs * c2pk - this->Crc * s2pk);
+    const double r = Ak * OneMinusecosE + this->Crc * c2pk + this->Crs * s2pk;
+    const double rkdot = this->Adot * (1. - this->ecc * cek) + Ak * this->ecc * sek * ekdot + 2.0 * pkdot * (this->Crs * c2pk - this->Crc * s2pk);
 
     // Correct inclination
     const double i = this->i_0 + this->idot * tk + this->Cic * c2pk + this->Cis * s2pk;
@@ -252,9 +255,22 @@ void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<
     // Compute the angle between the ascending node and the Greenwich meridian
     double Omega;
     double Omega_dot;
+    bool is_BeiDou_GEO = false;
     if (this->System == 'C')
         {
-            Omega_dot = this->OMEGAdot - BEIDOU_OMEGA_EARTH_DOT;
+            // GEO satellites (C01-C05, C59-C63) broadcast D1/D2 NAV ephemeris
+            // in a rotated frame (BDS-SIS-ICD-B1I-3.0, Section 5.2.4.12). GEOs
+            // do not transmit B1C; if B-CNAV3 (B2b) support is ever added,
+            // re-check this path against the corresponding ICD.
+            if (this->PRN <= 5 || this->PRN > 58)
+                {
+                    Omega_dot = this->OMEGAdot;
+                    is_BeiDou_GEO = true;
+                }
+            else
+                {
+                    Omega_dot = this->OMEGAdot - BEIDOU_OMEGA_EARTH_DOT;
+                }
             Omega = this->OMEGA_0 + Omega_dot * tk - BEIDOU_OMEGA_EARTH_DOT * static_cast<double>(this->toe);
         }
     else
@@ -270,18 +286,46 @@ void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<
     const double xprime = r * cuk;
     const double yprime = r * suk;
 
-    pos_vel_dtr[0] = xprime * cok - yprime * cik * sok;
-    pos_vel_dtr[1] = xprime * sok + yprime * cik * cok;  // ********NOTE: in GALILEO ICD this expression is not correct because it has minus (- sin(u) * r * cos(i) * cos(Omega)) instead of plus
-    pos_vel_dtr[2] = yprime * sik;
+    // For BeiDou GEO satellites, these are coordinates in the inertial GK frame;
+    // in all other cases, ECEF coordinates
+    const double x = xprime * cok - yprime * cik * sok;
+    const double y = xprime * sok + yprime * cik * cok;  // ********NOTE: in GALILEO ICD this expression is not correct because it has minus (- sin(u) * r * cos(i) * cos(Omega)) instead of plus
+    const double z = yprime * sik;
 
     // Satellite's velocity. Can be useful for Vector Tracking loops
     const double xpkdot = rkdot * cuk - yprime * ukdot;
     const double ypkdot = rkdot * suk + xprime * ukdot;
-    const double tmp = ypkdot * cik - pos_vel_dtr[2] * ikdot;
+    const double tmp = ypkdot * cik - z * ikdot;
 
-    pos_vel_dtr[3] = -Omega_dot * pos_vel_dtr[1] + xpkdot * cok - tmp * sok;
-    pos_vel_dtr[4] = Omega_dot * pos_vel_dtr[0] + xpkdot * sok + tmp * cok;
-    pos_vel_dtr[5] = yprime * cik * ikdot + ypkdot * sik;
+    const double vx = -Omega_dot * y + xpkdot * cok - tmp * sok;
+    const double vy = Omega_dot * x + xpkdot * sok + tmp * cok;
+    const double vz = yprime * cik * ikdot + ypkdot * sik;
+
+    if (is_BeiDou_GEO)
+        {
+            // Rotate from the GK frame to BDCS: R_z(omega_e * tk) * R_x(-5 deg)
+            constexpr double SIN_5 = -0.0871557427476582;  // sin(-5.0 deg)
+            constexpr double COS_5 = 0.9961946980917456;   // cos(-5.0 deg)
+            const double sino = sin(BEIDOU_OMEGA_EARTH_DOT * tk);
+            const double coso = cos(BEIDOU_OMEGA_EARTH_DOT * tk);
+
+            pos_vel_dtr[0] = x * coso + y * sino * COS_5 + z * sino * SIN_5;
+            pos_vel_dtr[1] = -x * sino + y * coso * COS_5 + z * coso * SIN_5;
+            pos_vel_dtr[2] = -y * SIN_5 + z * COS_5;
+
+            pos_vel_dtr[3] = vx * coso + vy * sino * COS_5 + vz * sino * SIN_5 + BEIDOU_OMEGA_EARTH_DOT * pos_vel_dtr[1];
+            pos_vel_dtr[4] = -vx * sino + vy * coso * COS_5 + vz * coso * SIN_5 - BEIDOU_OMEGA_EARTH_DOT * pos_vel_dtr[0];
+            pos_vel_dtr[5] = -vy * SIN_5 + vz * COS_5;
+        }
+    else
+        {
+            pos_vel_dtr[0] = x;
+            pos_vel_dtr[1] = y;
+            pos_vel_dtr[2] = z;
+            pos_vel_dtr[3] = vx;
+            pos_vel_dtr[4] = vy;
+            pos_vel_dtr[5] = vz;
+        }
 
     // Time from ephemeris reference clock
     tk = check_t(transmitTime - this->toc);
@@ -321,8 +365,9 @@ double Gnss_Ephemeris::check_t(double time) const
 
 double Gnss_Ephemeris::sv_clock_relativistic_term(double transmitTime) const
 {
-    // Restore semi-major axis
-    const double a = this->sqrtA * this->sqrtA;
+    // Restore semi-major axis (sqrtA for legacy NAV; A0 for B-CNAV1)
+    const double a = this->sqrtA * this->sqrtA + this->A0;
+    const double sqrtA_eff = std::sqrt(a);
 
     // Time from ephemeris reference epoch
     const double tk = check_t(transmitTime - this->toe);
@@ -345,7 +390,7 @@ double Gnss_Ephemeris::sv_clock_relativistic_term(double transmitTime) const
     const double n = n0 + this->delta_n;
 
     // Mean anomaly
-    const double M = this->M_0 + n * tk;
+    const double M = this->M_0 + (n + 0.5 * this->delta_ndot * tk) * tk;
 
     // Initial guess of eccentric anomaly
     double E = M;
@@ -369,15 +414,15 @@ double Gnss_Ephemeris::sv_clock_relativistic_term(double transmitTime) const
     double dtr_;
     if (this->System == 'E')
         {
-            dtr_ = GALILEO_F * this->ecc * this->sqrtA * sek;
+            dtr_ = GALILEO_F * this->ecc * sqrtA_eff * sek;
         }
     else if (this->System == 'C')
         {
-            dtr_ = BEIDOU_F * this->ecc * this->sqrtA * sek;
+            dtr_ = BEIDOU_F * this->ecc * sqrtA_eff * sek;
         }
     else
         {
-            dtr_ = GPS_F * this->ecc * this->sqrtA * sek;
+            dtr_ = GPS_F * this->ecc * sqrtA_eff * sek;
         }
     return dtr_;
 }

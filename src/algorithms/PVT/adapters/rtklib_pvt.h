@@ -47,7 +47,8 @@ class Gps_Ephemeris;
  *
  * Global configuration options used:
  *
- * GNSS-SDR.pre_2009_file - flag indicating a file older than 2009 rollover should be processed (false)
+ * GNSS-SDR.observation_date - approximate date of the signal capture in YYYY-MM-DD or YYYY format, used to resolve the GPS mod-1024 week-number rollover when post-processing recorded files (empty: derive it from the system clock)
+ * GNSS-SDR.pre_2009_file - deprecated, use GNSS-SDR.observation_date instead; flag indicating a file captured in the Aug 1999 - Apr 2019 week-number era (false)
  * GNSS-SDR.observable_interval_ms - (20)
  *
  * It supports the following configuration options:
@@ -65,7 +66,7 @@ class Gps_Ephemeris;
  *  .nmea_dump_filename - ("./nmea_pvt.nmea")
  *  .nmea_dump_devname - ("/dev/tty1")
  *
- *  .rinex_version - (3) overridden by -RINEX_version=n.nn command line argument
+ *  .rinex_version - (3) values 2 (2.11), 3 (3.02) or 4 (4.02), overridden by -RINEX_version=n.nn command line argument
  *  .rinexobs_rate_ms - rate at which RINEX observations are written (1000).  Note that
  *                      the actual rate is the least common multiple of this value and
  *                      .output_rate_ms
@@ -85,6 +86,31 @@ class Gps_Ephemeris;
  *  .rtcm_MT1087_rate_ms - (.rtcm_MSM_rate_ms)
  *  .rtcm_MT1097_rate_ms - (.rtcm_MSM_rate_ms)
  *
+ * Fixed-base RTK input through NTRIP (disabled by default):
+ *  .ntrip_client_enabled - (false)
+ *  .ntrip_caster_address - caster hostname or IPv4 address, without a scheme or port ("")
+ *  .ntrip_caster_port - (2101)
+ *  .ntrip_mountpoint - caster mountpoint ("")
+ *  .ntrip_username - Basic-authentication username ("")
+ *  .ntrip_password - Basic-authentication password ("")
+ *  .ntrip_password_env - environment variable containing the password (""), mutually exclusive with .ntrip_password
+ *  .ntrip_version - 2 prefers v2 with one compatible v1 retry; 1 forces legacy v1 (2)
+ *  .ntrip_tls_enabled - TLS 1.2-or-newer transport with system-CA certificate and hostname verification (false)
+ *  .ntrip_inactivity_timeout_ms - (10000)
+ *  .ntrip_reconnect_interval_ms - (10000)
+ *  .ntrip_max_correction_age_s - (5.0)
+ *  .ntrip_send_gga - upload the rover position as NMEA GGA, required by VRS/nearest-station casters (true)
+ *  .ntrip_gga_period_ms - period of the GGA upload (10000)
+ *  .ntrip_station_id - expected RTCM station ID, or zero to accept any stream station (0)
+ *  .ntrip_fallback_to_single - report SOLQ_SINGLE while fixed-base data is unavailable (true)
+ * Supported rover channel sets, per system: GPS 1C alone, 1C+2S, or 1C+L5;
+ * Galileo 1B alone or 1B+5X; BeiDou B1C alone; in any combination across
+ * systems. num_bands is derived from the channel set, navigation_system must
+ * match the enabled constellations, and positioning_mode must be Static or
+ * Kinematic. The base must provide its position through RTCM 1005/1006 and
+ * observations through legacy 1002/1004 or MSM messages; VRS/nearest-station
+ * casters are supported through the periodic GGA upload.
+ *
  *  .kml_rate_ms - (1000)
  *  .gpx_rate_ms - (1000)
  *  .geojson_rate_ms - (1000)
@@ -96,7 +122,12 @@ class Gps_Ephemeris;
  *  .num_bands - number of frequencies to use, between 1 and 3. Default is based on the channels configured
  *  .elevation_mask - (15.0). Value must be in the range [0,90.0]
  *  .dynamics_model - (0) 0:none, 1:velocity, 2:acceleration
-
+ *  .satellite_ephemeris - ("Broadcast"). Supported values are "Broadcast" and "SBAS".
+ *                      "SBAS" applies the fast and long-term satellite corrections received
+ *                      from an SBAS telemetry channel. Legacy EGNOS L1 corrections augment
+ *                      GPS L1 observations; satellites without valid corrections are excluded
+ *  .sbas_satellite - (0). SBAS PRN whose correction stream is used. Zero selects the first
+ *                      received stream; set a PRN in [120,138] when tracking multiple GEOs
  *  .iono_model - ("OFF"). Supported values are "OFF", "Broadcast", "SBAS", "Iono-Free-LC",
  *                      "Estimate_STEC", "IONEX". Unsupported values include QZSS broadcast, QZSS
  *                      LEX, and SLANT TEC.
@@ -194,8 +225,10 @@ public:
     void clear_ephemeris() override;
     std::map<int, Gps_Ephemeris> get_gps_ephemeris() const override;
     std::map<int, Galileo_Ephemeris> get_galileo_ephemeris() const override;
+    std::map<int, Beidou_Dnav_Ephemeris> get_beidou_dnav_ephemeris() const override;
     std::map<int, Gps_Almanac> get_gps_almanac() const override;
     std::map<int, Galileo_Almanac> get_galileo_almanac() const override;
+    std::map<int, Beidou_Dnav_Almanac> get_beidou_dnav_almanac() const override;
 
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;

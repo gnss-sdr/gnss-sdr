@@ -570,7 +570,15 @@ gnss_shared_ptr<gr::block> FileSourceBase::create_valve()
         {
             // if a number of samples is specified, honor it by creating a valve
             // in practice, this is always true
-            valve_ = gnss_sdr_make_valve(source_item_size(), samples(), queue_);
+            const auto source_block = source();
+            const auto source_output_signature = source_block->output_signature();
+            auto n_streams = 1;
+            if (source_output_signature->min_streams() == source_output_signature->max_streams() &&
+                source_output_signature->min_streams() > 0)
+                {
+                    n_streams = source_output_signature->min_streams();
+                }
+            valve_ = gnss_sdr_make_valve(source_output_signature->sizeof_stream_item(0), samples(), queue_, true, n_streams);
             DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
 
             // enable subclass hooks

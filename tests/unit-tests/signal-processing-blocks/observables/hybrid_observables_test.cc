@@ -845,7 +845,7 @@ void HybridObservablesTest::configure_receiver(
 
             config->set_property("TelemetryDecoder.implementation", "GPS_L2C_Telemetry_Decoder");
         }
-    else if (implementation == "Galileo_E5a_DLL_PLL_Tracking" or implementation == "Galileo_E5a_DLL_PLL_Tracking_b")
+    else if (implementation == "Galileo_E5a_DLL_PLL_Tracking" || implementation == "Galileo_E5a_DLL_PLL_Tracking_b")
         {
             gnss_synchro_master.System = 'E';
             std::string signal = "5X";
@@ -2178,7 +2178,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     for (auto& n : measured_obs_vec)
         {
             index = arma::find(n.col(0) > 0.0, 1, "last");
-            if ((!index.empty()) and index(0) < (nepoch - 1))
+            if ((!index.empty()) && index(0) < (nepoch - 1))
                 {
                     n.shed_rows(index(0) + 1, nepoch - 1);
                 }
@@ -2193,7 +2193,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
         {
             index = arma::find(measured_obs_vec.at(n).col(0) >= (measured_obs_vec.at(n)(0, 0) + initial_transitory_s), 1, "first");
-            if ((!index.empty()) and (index(0) > 0))
+            if ((!index.empty()) && (index(0) > 0))
                 {
                     measured_obs_vec.at(n).shed_rows(0, index(0));
                 }
@@ -2204,7 +2204,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 #endif
                 {
                     index = arma::find(measured_obs_vec.at(n).col(0) >= true_obs_vec.at(n)(0, 0), 1, "first");
-                    if ((!index.empty()) and (index(0) > 0))
+                    if ((!index.empty()) && (index(0) > 0))
                         {
                             measured_obs_vec.at(n).shed_rows(0, index(0));
                         }
@@ -2258,7 +2258,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                                                 }
                                         }
                                 }
-                            if (sat1_ch_id != -1 and sat2_ch_id != -1)
+                            if (sat1_ch_id != -1 && sat2_ch_id != -1)
                                 {
                                     // compute single differences for the duplicated satellite
                                     check_results_duplicated_satellite(
@@ -2306,7 +2306,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
             arma::vec receiver_time_offset_ref_channel_s;
             arma::uvec index2;
             index2 = arma::find(true_obs_vec.at(min_pr_ch_id).col(0) >= measured_obs_vec.at(min_pr_ch_id).col(0)(0), 1, "first");
-            if ((!index2.empty()) and (index2(0) > 0))
+            if ((!index2.empty()) && (index2(0) > 0))
                 {
                     receiver_time_offset_ref_channel_s = (true_obs_vec.at(min_pr_ch_id).col(1)(index2(0)) - measured_obs_vec.at(min_pr_ch_id).col(4)(0)) / SPEED_OF_LIGHT_M_S;
                     std::cout << "Ref. channel initial Receiver time offset " << receiver_time_offset_ref_channel_s(0) * 1e3 << " [ms]\n";
@@ -2374,9 +2374,9 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 // Do not compare E5a with E5 RINEX due to the Doppler frequency discrepancy caused by the different center frequencies
 // E5a_fc=1176.45e6, E5b_fc=1207.14e6, E5_fc=1191.795e6;
 #if USE_GLOG_AND_GFLAGS
-                                    if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 or FLAGS_compare_with_5X)
+                                    if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 || FLAGS_compare_with_5X)
 #else
-                                    if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 or absl::GetFlag(FLAGS_compare_with_5X))
+                                    if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 || absl::GetFlag(FLAGS_compare_with_5X))
 #endif
                                         {
                                             check_results_carrier_phase_double_diff(true_obs_vec.at(n),

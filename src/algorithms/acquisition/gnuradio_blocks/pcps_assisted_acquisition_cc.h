@@ -148,7 +148,7 @@ private:
     void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift, int32_t doppler_offset);
 
     int32_t compute_and_accumulate_grid(gr_vector_const_void_star& input_items);
-    float estimate_input_power(gr_vector_const_void_star& input_items) const;
+    float estimate_input_power(gr_vector_const_void_star& input_items);
     float search_maximum();
     void get_assistance();
     void reset_grid();
@@ -187,6 +187,7 @@ private:
     std::vector<std::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
     std::vector<std::vector<float>> d_grid_data;
     std::vector<gr_complex> d_fft_codes;
+    std::vector<float> d_magnitude;
 };
 
 

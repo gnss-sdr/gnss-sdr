@@ -1,7 +1,7 @@
 /*!
  * \file rinex_printer.h
- * \brief Interface of a RINEX 2.11 / 3.01 printer
- * See ftp://igs.org/pub/data/format/rinex301.pdf
+ * \brief Interface of a RINEX 2.11 / 3.02 / 4.02 printer
+ * See https://files.igs.org/pub/data/format/rinex_4.02.pdf
  *
  * Receiver Independent EXchange Format (RINEX):
  * The first proposal for the Receiver Independent Exchange Format RINEX
@@ -55,6 +55,8 @@
  * \{ */
 
 
+struct Bds3_B1c_PageData;
+class Beidou_Cnav1_Ephemeris;
 class Beidou_Dnav_Ephemeris;
 class Beidou_Dnav_Iono;
 class Beidou_Dnav_Utc_Model;
@@ -89,7 +91,7 @@ public:
         int version = 3,
         const std::string& base_path = ".",
         const std::string& base_name = "-",
-        bool pre_2009_file = false);
+        int32_t ref_gps_week = 0);
 
     /*!
      * \brief Destructor. Removes created files if empty.
@@ -115,7 +117,7 @@ public:
     void log_rinex_nav_gps_nav(const std::map<int32_t, Gps_Ephemeris>& new_eph);
 
     /*!
-     * \brief Print RINEX annotation for GPS CNAV message
+     * \brief Print RINEX 4 annotation for GPS/QZSS CNAV message
      */
     void log_rinex_nav_gps_cnav(const std::map<int32_t, Gps_CNAV_Ephemeris>& new_cnav_eph);
 
@@ -133,6 +135,18 @@ public:
      * \brief Print RINEX annotation for BeiDou DNAV message
      */
     void log_rinex_nav_bds_dnav(const std::map<int32_t, Beidou_Dnav_Ephemeris>& new_bds_eph);
+
+    /*!
+     * \brief Print RINEX navigation records for BeiDou B-CNAV1 ephemerides.
+     *
+     * RINEX 4 writes proper CNV1 records (Table A24), taking SISAI/SISMAI/
+     * integrity and t_op from the last decoded SF3 page when it carries them.
+     * RINEX 3 has no CNAV1 representation, so records are written as D1-style
+     * stand-ins: sqrt(A0) in the sqrtA field with the Adot term dropped,
+     * IODE/IODC in AODE/AODC, and TGD_B1Cp/TGD_B2ap mapped into TGD1/TGD2.
+     */
+    void log_rinex_nav_bds_cnav1(const std::map<int32_t, Beidou_Cnav1_Ephemeris>& new_bds_eph,
+        const std::map<int32_t, Bds3_B1c_PageData>& bds_page_data);
 
     /*!
      * \brief Returns true is the RINEX file headers are already written
@@ -165,7 +179,7 @@ private:
         const std::string& base_name,
         const std::string& base_rinex_path,
         int version,
-        bool pre_2009_file);
+        int32_t ref_gps_week);
 
     /*
      * Generates the GPS Observation data header
@@ -184,6 +198,15 @@ private:
         const std::string& leap_second_line) const;
 
     /*
+     * Logs RINEX 4 auxiliary data records for the enabled constellations as
+     * soon as they become available, and updates the LEAP SECONDS header line
+     * of the observation and navigation files
+     */
+    void log_rinex_nav_v4_aux_records(const Rtklib_Solver* pvt_solver,
+        double rx_time,
+        const std::string& system_time_str);
+
+    /*
      * Computes the BDS Time and returns a boost::posix_time::ptime object
      *  \details Function used to convert the observation time into BDT time which is used
      *  as the default time for RINEX files
@@ -191,6 +214,7 @@ private:
      *  \param obs_time Observation time in BDT seconds of week
      */
     boost::posix_time::ptime compute_BDS_time(const Beidou_Dnav_Ephemeris& eph, double obs_time) const;
+    boost::posix_time::ptime compute_BDS_time(const Beidou_Cnav1_Ephemeris& eph, double obs_time) const;
 
     /*
      * Computes the UTC time and returns a boost::posix_time::ptime object
@@ -240,17 +264,28 @@ private:
 
     const Signal_Enabled_Flags d_flags;
 
-    const int d_version;                // RINEX version (2 for 2.10/2.11 and 3 for 3.01)
-    const std::string d_stringVersion;  // RINEX version (2.10/2.11 or 3.01/3.02)
+    const int d_version;                // RINEX version (2 for 2.11, 3 for 3.02, 4 for 4.02)
+    const std::string d_stringVersion;  // RINEX version (2.11, 3.02 or 4.02)
 
-    double d_fake_cnav_iode;
-    bool d_rinex_header_updated;
-    bool d_rinex_header_gps_updated;
-    bool d_rinex_header_galileo_updated;
-    bool d_rinex_header_glonass_updated;
-    bool d_rinex_header_beidou_updated;
-    bool d_rinex_header_written;
-    const bool d_pre_2009_file;
+    std::string d_last_gps_lnav_iono_signature;
+    std::string d_last_gps_lnav_sto_signature;
+    std::string d_last_gps_cnav_eop_signature;
+    std::string d_last_gps_cnav_iono_signature;
+    std::string d_last_gps_cnav_sto_signature;
+    std::string d_last_qzss_lnav_iono_signature;
+    std::string d_last_qzss_lnav_sto_signature;
+    std::string d_last_qzss_cnav_eop_signature;
+    std::string d_last_qzss_cnav_iono_signature;
+    std::string d_last_qzss_cnav_sto_signature;
+    std::string d_last_galileo_iono_signature;
+    std::string d_last_galileo_sto_signature;
+    std::string d_last_glonass_sto_signature;
+    std::string d_last_beidou_iono_signature;
+    std::string d_last_beidou_sto_signature;
+    std::string d_last_bds_cnav1_iono_signature;
+    std::string d_last_bds_cnav1_sto_signature;
+    std::string d_last_leap_second_line;
+    const int32_t d_ref_gps_week;
 
     const std::string navfilename;                // Name of RINEX navigation file
     const std::string obsfilename;                // Name of RINEX observation file
@@ -260,6 +295,14 @@ private:
     std::fstream obsFile;     // Output file stream for RINEX observation file
     std::fstream navFile;     // Output file stream for RINEX navigation data file
     std::fstream navGloFile;  // Output file stream for RINEX GLONASS navigation data file
+
+    bool d_rinex_header_updated;
+    bool d_rinex_header_gps_updated;
+    bool d_rinex_header_galileo_updated;
+    bool d_rinex_header_glonass_updated;
+    bool d_rinex_header_beidou_iono_updated;
+    bool d_rinex_header_beidou_time_updated;
+    bool d_rinex_header_written;
 };
 
 

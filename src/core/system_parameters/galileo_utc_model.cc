@@ -18,13 +18,31 @@
 #include <cmath>
 
 
+int32_t Galileo_Utc_Model::truncated_week_diff(int32_t wn, int32_t wn_ref, int32_t modulus)
+{
+    int32_t diff = (wn - wn_ref) % modulus;
+    if (diff < 0)
+        {
+            diff += modulus;
+        }
+    if (diff >= modulus / 2)
+        {
+            diff -= modulus;
+        }
+    return diff;
+}
+
+
 double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int32_t WN) const
 {
     double t_Utc;
     double t_Utc_daytime;
     double Delta_t_Utc = 0;
+    // Week roll-over handling of the truncated week numbers (OS SIS ICD 5.1.7:
+    // the magnitude of the untruncated differences does not exceed 127 weeks)
+    const auto weeks_since_t0t = static_cast<double>(truncated_week_diff(WN, WNot, 256));
     // Determine if the effectivity time of the leap second event is in the past
-    const int32_t weeksToLeapSecondEvent = WN_LSF - (WN % 256);
+    const int32_t weeksToLeapSecondEvent = truncated_week_diff(WN_LSF, WN, 256);
 
     if ((weeksToLeapSecondEvent) >= 0)  // is not in the past
         {
@@ -39,7 +57,7 @@ double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int32_t WN) const
                      * to the effective time and ends at six hours after the effective time,
                      * the GST/Utc relationship is given by
                      */
-                    Delta_t_Utc = Delta_tLS + A0 + A1 * (t_e - tot + 604800 * static_cast<double>((WN % 256) - WNot));
+                    Delta_t_Utc = Delta_tLS + A0 + A1 * (t_e - tot + 604800 * weeks_since_t0t);
                     t_Utc_daytime = fmod(t_e - Delta_t_Utc, 86400);
                 }
             else
@@ -49,7 +67,7 @@ double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int32_t WN) const
                      * prior to the leap second adjustment to six hours after the adjustment time,
                      * the effective time is computed according to the following equations:
                      */
-                    Delta_t_Utc = Delta_tLS + A0 + A1 * (t_e - tot + 604800 * static_cast<double>((WN % 256) - WNot));
+                    Delta_t_Utc = Delta_tLS + A0 + A1 * (t_e - tot + 604800 * weeks_since_t0t);
                     const double W = fmod(t_e - Delta_t_Utc - 43200, 86400) + 43200;
                     t_Utc_daytime = fmod(W, 86400 + Delta_tLSF - Delta_tLS);
                     // implement something to handle a leap second event!
@@ -64,7 +82,7 @@ double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int32_t WN) const
              * ends six hours after the adjustment time, the effective time is computed according to
              * the following equation:
              */
-            Delta_t_Utc = Delta_tLSF + A0 + A1 * (t_e - tot + 604800 * static_cast<double>((WN % 256) - WNot));
+            Delta_t_Utc = Delta_tLSF + A0 + A1 * (t_e - tot + 604800 * weeks_since_t0t);
             t_Utc_daytime = fmod(t_e - Delta_t_Utc, 86400);
         }
 

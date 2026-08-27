@@ -58,7 +58,7 @@ TEST(DllNcEMinusLNormalizedTest, Bpsk)
                                     EXPECT_TRUE(err * disc_out >= 0.0);
                                 }
 
-                            if (spacing != 0.5 and err != 0.0)
+                            if (spacing != 0.5 && err != 0.0)
                                 {
                                     double disc_out_old = dll_nc_e_minus_l_normalized(E, L);
 
@@ -92,13 +92,13 @@ TEST(DllNcEMinusLNormalizedTest, SinBoc11)
                             double corr_slope_at_err = -CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, spacing + err);
                             double corr_slope_at_neg_err = -CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, spacing - err);
 
-                            bool in_linear_region = (std::abs(err) < spacing) and (std::abs(corr_slope_at_err - corr_slope_at_neg_err) < 0.01);
+                            bool in_linear_region = (std::abs(err) < spacing) && (std::abs(corr_slope_at_err - corr_slope_at_neg_err) < 0.01);
                             double norm_factor = (y_intercept - corr_slope * spacing) / spacing;
 
                             if (in_linear_region)
                                 {
                                     EXPECT_NEAR(disc_out, err, 1e-4) << " Spacing: " << spacing << ", slope : " << corr_slope << ", y_intercept: " << y_intercept << ", norm: " << norm_factor << " E: " << E << ", L: " << L;
-                                    if (norm_factor != 0.5 and err != 0.0)
+                                    if (norm_factor != 0.5 && err != 0.0)
                                         {
                                             double disc_out_old = dll_nc_e_minus_l_normalized(E, L);
                                             EXPECT_NE(disc_out_old, err) << " Spacing: " << spacing << ", slope : " << corr_slope << ", y_intercept: " << y_intercept << ", norm: " << norm_factor << " E: " << E << ", L: " << L;
@@ -156,13 +156,13 @@ TEST(DllNcEMinusLNormalizedTest, CosBoc11)
                             double corr_slope_at_err = -CalculateSlopeAbs(&CosBocCorrelationFunction<1, 1>, spacing + err);
                             double corr_slope_at_neg_err = -CalculateSlopeAbs(&CosBocCorrelationFunction<1, 1>, spacing - err);
 
-                            bool in_linear_region = (std::abs(err) < spacing) and (std::abs(corr_slope_at_err - corr_slope_at_neg_err) < 0.01);
+                            bool in_linear_region = (std::abs(err) < spacing) && (std::abs(corr_slope_at_err - corr_slope_at_neg_err) < 0.01);
                             double norm_factor = (y_intercept - corr_slope * spacing) / spacing;
 
                             if (in_linear_region)
                                 {
                                     EXPECT_NEAR(disc_out, err, 1e-4) << " Spacing: " << spacing << ", slope : " << corr_slope << ", y_intercept: " << y_intercept << ", norm: " << norm_factor << " E: " << E << ", L: " << L;
-                                    if (norm_factor != 0.5 and err != 0.0)
+                                    if (norm_factor != 0.5 && err != 0.0)
                                         {
                                             double disc_out_old = dll_nc_e_minus_l_normalized(E, L);
                                             EXPECT_NE(disc_out_old, err) << " Spacing: " << spacing << ", slope : " << corr_slope << ", y_intercept: " << y_intercept << ", norm: " << norm_factor << " E: " << E << ", L: " << L;

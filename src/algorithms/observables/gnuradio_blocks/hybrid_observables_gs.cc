@@ -19,6 +19,7 @@
 #include "MATH_CONSTANTS.h"  // for SPEED_OF_LIGHT_M_S, TWO_PI
 #include "gnss_circular_deque.h"
 #include "gnss_frequencies.h"
+#include "gnss_satellite.h"
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_make_unique.h"
@@ -105,7 +106,12 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
     d_channel_last_pll_lock = std::vector<bool>(d_nchannels_out, false);
     d_channel_last_pseudorange_smooth = std::vector<double>(d_nchannels_out, 0.0);
     d_channel_last_carrier_phase_rads = std::vector<double>(d_nchannels_out, 0.0);
-    d_channel_last_rx_time_valid = std::vector<bool>(d_nchannels_out, false);
+    d_channel_has_previous_observation = std::vector<bool>(d_nchannels_out, false);
+    d_channel_phase_discontinuity_pending = std::vector<bool>(d_nchannels_out, false);
+    d_channel_last_pll_180_locked = std::vector<bool>(d_nchannels_out, false);
+    d_channel_last_valid_epoch = std::vector<uint64_t>(d_nchannels_out, 0);
+    d_channel_last_valid_prn = std::vector<uint32_t>(d_nchannels_out, 0);
+    d_last_trk_data = std::vector<Gnss_Synchro>(d_nchannels_out);
 
     d_SourceTagTimestamps = std::vector<std::queue<GnssTime>>(d_nchannels_out);
 
@@ -248,7 +254,9 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
                         {
                             d_gnss_synchro_history->clear(n);
                         }
-                    std::fill(d_channel_last_rx_time_valid.begin(), d_channel_last_rx_time_valid.end(), false);
+                    // the carrier phase continuity bookkeeping is deliberately kept:
+                    // realigning the receiver clock discards the interpolation history
+                    // but leaves the accumulated carrier phase of the channels untouched
 
                     LOG(INFO) << "Corrected new RX Time offset: " << static_cast<int>(round(new_rx_clock_offset_s * 1000.0)) << "[ms]";
                 }
@@ -265,7 +273,6 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
                                 {
                                     d_gnss_synchro_history->clear(n);
                                 }
-                            std::fill(d_channel_last_rx_time_valid.begin(), d_channel_last_rx_time_valid.end(), false);
                             LOG(INFO) << "Received reset observables TOW command from PVT";
                             break;
                         default:
@@ -397,6 +404,28 @@ int32_t hybrid_observables_gs::save_matfile() const
 }
 
 
+Gnss_Satellite hybrid_observables_gs::pretty_satellite(char system, uint32_t prn)
+{
+    switch (system)
+        {
+        case 'G':
+            return {std::string("GPS"), prn};
+        case 'R':
+            return {std::string("Glonass"), prn};
+        case 'S':
+            return {std::string("SBAS"), prn};
+        case 'E':
+            return {std::string("Galileo"), prn};
+        case 'C':
+            return {std::string("Beidou"), prn};
+        case 'J':
+            return {std::string("QZSS"), prn};
+        default:
+            return {};
+        }
+}
+
+
 double hybrid_observables_gs::compute_T_rx_s(const Gnss_Synchro &a) const
 {
     return ((static_cast<double>(a.Tracking_sample_counter) + a.Code_phase_samples) / static_cast<double>(a.fs));
@@ -417,7 +446,7 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, uint3
                 }
         }
 
-    if (nearest_element != -1 and nearest_element != static_cast<int32_t>(d_gnss_synchro_history->size(ch)))
+    if (nearest_element != -1 && nearest_element != static_cast<int32_t>(d_gnss_synchro_history->size(ch)))
         {
             if ((static_cast<double>(old_abs_diff) / static_cast<double>(d_gnss_synchro_history->get(ch, nearest_element).fs)) < d_T_rx_step_s)
                 {
@@ -430,7 +459,7 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, uint3
                         {
                             neighbor_element = nearest_element - 1;
                         }
-                    if (neighbor_element < static_cast<int32_t>(d_gnss_synchro_history->size(ch)) and neighbor_element >= 0)
+                    if (neighbor_element < static_cast<int32_t>(d_gnss_synchro_history->size(ch)) && neighbor_element >= 0)
                         {
                             int32_t t1_idx;
                             int32_t t2_idx;
@@ -464,7 +493,16 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, uint3
                                                            d_gnss_synchro_history->get(ch, t1_idx).RX_time);
 
                             // CARRIER PHASE INTERPOLATION
-                            interpolated_obs.Carrier_phase_rads = d_gnss_synchro_history->get(ch, t1_idx).Carrier_phase_rads + (d_gnss_synchro_history->get(ch, t2_idx).Carrier_phase_rads - d_gnss_synchro_history->get(ch, t1_idx).Carrier_phase_rads) * time_factor;
+                            // done in the late sample's polarity frame, whose PLL-180
+                            // state is also stamped on the output so the half-cycle
+                            // step and its flag land on the same epoch
+                            interpolated_obs.Carrier_phase_rads = interpolate_carrier_phase(
+                                d_gnss_synchro_history->get(ch, t1_idx).Carrier_phase_rads,
+                                d_gnss_synchro_history->get(ch, t1_idx).Flag_PLL_180_deg_phase_locked,
+                                d_gnss_synchro_history->get(ch, t2_idx).Carrier_phase_rads,
+                                d_gnss_synchro_history->get(ch, t2_idx).Flag_PLL_180_deg_phase_locked,
+                                time_factor);
+                            interpolated_obs.Flag_PLL_180_deg_phase_locked = d_gnss_synchro_history->get(ch, t2_idx).Flag_PLL_180_deg_phase_locked;
                             // CARRIER DOPPLER INTERPOLATION
                             interpolated_obs.Carrier_Doppler_hz = d_gnss_synchro_history->get(ch, t1_idx).Carrier_Doppler_hz + (d_gnss_synchro_history->get(ch, t2_idx).Carrier_Doppler_hz - d_gnss_synchro_history->get(ch, t1_idx).Carrier_Doppler_hz) * time_factor;
                             // TOW INTERPOLATION
@@ -509,6 +547,19 @@ void hybrid_observables_gs::forecast(int noutput_items __attribute__((unused)), 
         }
     // last input channel is the sample counter, triggered each ms
     ninput_items_required[d_nchannels_in - 1] = 1;
+}
+
+
+bool hybrid_observables_gs::has_fresh_trk_data(uint32_t ch, uint64_t rx_clock) const
+{
+    const Gnss_Synchro &trk = d_last_trk_data[ch];
+    if (trk.fs <= 0)
+        {
+            return false;
+        }
+    // the interpolation epoch lags the latest tracking data, so a negative age is expected
+    const auto age_samples = static_cast<int64_t>(rx_clock) - static_cast<int64_t>(trk.Tracking_sample_counter);
+    return age_samples < trk.fs;  // tracking data not older than one second
 }
 
 
@@ -623,9 +674,13 @@ void hybrid_observables_gs::smooth_pseudoranges(std::vector<Gnss_Synchro> &data)
                             wavelength_m = SPEED_OF_LIGHT_M_S / it_freq_map->second;
                         }
 
-                    // todo: propagate the PLL lock status in Gnss_Synchro
-                    // 1. check if last PLL lock status was false and initialize last d_channel_last_pseudorange_smooth
-                    if (d_channel_last_pll_lock[it->Channel_ID] == true)
+                    // 1. restart the filter unless the channel was already producing
+                    //    observations and its carrier phase is continuous with them:
+                    //    a phase discontinuity would otherwise propagate into the
+                    //    smoothed pseudorange through the carrier phase term below
+                    //    (a half-cycle step is half a wavelength of the same poison)
+                    if (d_channel_last_pll_lock[it->Channel_ID] == true && !it->Flag_cycle_slip &&
+                        !it->Flag_half_cycle_slip)
                         {
                             // 2. Compute the smoothed pseudorange for this channel
                             // Hatch filter algorithm (https://insidegnss.com/can-you-list-all-the-properties-of-the-carrier-smoothing-filter/)
@@ -645,6 +700,68 @@ void hybrid_observables_gs::smooth_pseudoranges(std::vector<Gnss_Synchro> &data)
 }
 
 
+bool hybrid_observables_gs::phase_stream_is_discontinuous(bool has_previous_observation,
+    uint64_t last_valid_epoch,
+    uint64_t current_epoch,
+    uint32_t last_valid_prn,
+    uint32_t current_prn,
+    double epoch_interval_s)
+{
+    // A satellite seen for the first time on this channel always comes with a
+    // new ambiguity
+    if (!has_previous_observation || last_valid_prn != current_prn)
+        {
+            return true;
+        }
+    // Repeated or out-of-order epochs are not expected: assume the worst
+    if (current_epoch <= last_valid_epoch)
+        {
+            return true;
+        }
+    // The gap is quantized in whole epochs, so the threshold is placed half an
+    // epoch past the limit: an exact comparison against MIN_REACQUISITION_GAP_S
+    // flips at the boundary on x87 targets, where gap_s carries excess precision
+    const double gap_s = static_cast<double>(current_epoch - last_valid_epoch) * epoch_interval_s;
+    return gap_s > MIN_REACQUISITION_GAP_S + 0.5 * epoch_interval_s;
+}
+
+
+bool hybrid_observables_gs::half_cycle_ambiguity_changed(bool has_previous_observation,
+    bool carrier_phase_discontinuous,
+    uint32_t last_valid_prn,
+    uint32_t current_prn,
+    bool last_pll_180_locked,
+    bool current_pll_180_locked)
+{
+    // nothing to compare against, or the whole ambiguity is new anyway
+    if (!has_previous_observation || carrier_phase_discontinuous || last_valid_prn != current_prn)
+        {
+            return false;
+        }
+    return last_pll_180_locked != current_pll_180_locked;
+}
+
+
+double hybrid_observables_gs::interpolate_carrier_phase(double phase_early_rads,
+    bool pll_180_early,
+    double phase_late_rads,
+    bool pll_180_late,
+    double time_factor)
+{
+    // The Telemetry Decoder adds half a cycle to the reported phase while the
+    // PLL is locked at 180 degrees, so when the two samples disagree the early
+    // one is shifted into the late sample's frame before interpolating; the
+    // resulting half-cycle step between consecutive epochs is reported through
+    // Flag_half_cycle_slip on the epoch stamped with the new polarity
+    double early = phase_early_rads;
+    if (pll_180_early != pll_180_late)
+        {
+            early += pll_180_late ? (TWO_PI / 2.0) : -(TWO_PI / 2.0);
+        }
+    return early + (phase_late_rads - early) * time_factor;
+}
+
+
 void hybrid_observables_gs::detect_cycle_slips(std::vector<Gnss_Synchro> &data, uint64_t rx_clock)
 {
     constexpr double kCycleSlipThresholdCycles = 0.5;
@@ -657,12 +774,73 @@ void hybrid_observables_gs::detect_cycle_slips(std::vector<Gnss_Synchro> &data, 
     for (auto &obs : data)
         {
             obs.Flag_cycle_slip = false;
+            obs.Flag_half_cycle_slip = false;
         }
 
     for (uint32_t n = 0; n < d_nchannels_out; n++)
         {
             auto &obs = data[n];
-            if (!obs.Flag_valid_pseudorange || obs.fs == 0LL)
+            if (!obs.Flag_valid_pseudorange)
+                {
+                    continue;
+                }
+
+            // A satellite whose observations resume after a loss of lock comes with
+            // a brand-new carrier phase ambiguity, since the accumulated carrier
+            // phase of the tracking channel restarts on every (re)acquisition.
+            // Report the discontinuity and keep the observation out of the
+            // common-mode estimate: its phase difference is meaningless and would
+            // bias the median.
+            const uint64_t previous_epoch = d_channel_last_valid_epoch[n];
+            // the tracking block reports a restarted phase accumulator on a single
+            // sample, which interpolation may skip, so the report is latched as it
+            // enters the block and consumed here; the gap heuristic below covers
+            // the tracking blocks that do not report it
+            const bool reported_discontinuity = d_channel_phase_discontinuity_pending[n];
+            d_channel_phase_discontinuity_pending[n] = false;
+            const bool discontinuous = reported_discontinuity ||
+                                       phase_stream_is_discontinuous(
+                                           d_channel_has_previous_observation[n],
+                                           d_channel_last_valid_epoch[n],
+                                           d_epoch_counter,
+                                           d_channel_last_valid_prn[n],
+                                           obs.PRN,
+                                           d_T_rx_step_s);
+            const bool half_cycle_step = half_cycle_ambiguity_changed(
+                d_channel_has_previous_observation[n],
+                discontinuous,
+                d_channel_last_valid_prn[n],
+                obs.PRN,
+                d_channel_last_pll_180_locked[n],
+                obs.Flag_PLL_180_deg_phase_locked);
+            d_channel_last_pll_180_locked[n] = obs.Flag_PLL_180_deg_phase_locked;
+            d_channel_has_previous_observation[n] = true;
+            d_channel_last_valid_epoch[n] = d_epoch_counter;
+            d_channel_last_valid_prn[n] = obs.PRN;
+
+            if (half_cycle_step)
+                {
+                    obs.Flag_half_cycle_slip = true;
+                    LOG(INFO) << "Half-cycle slip on channel " << n
+                              << " at RX time " << obs.RX_time
+                              << " s, for satellite " << pretty_satellite(obs.System, obs.PRN)
+                              << ", signal " << std::string(obs.Signal, 2)
+                              << " (PLL 180 deg lock is now " << std::boolalpha
+                              << obs.Flag_PLL_180_deg_phase_locked << ')';
+                }
+
+            if (discontinuous)
+                {
+                    obs.Flag_cycle_slip = true;
+                    LOG(INFO) << "Carrier phase discontinuity on channel " << n
+                              << " after " << static_cast<double>(d_epoch_counter - previous_epoch) * d_T_rx_step_s
+                              << " s without observations, at RX time " << obs.RX_time
+                              << " s, for satellite " << pretty_satellite(obs.System, obs.PRN)
+                              << ", signal " << std::string(obs.Signal, 2);
+                    continue;
+                }
+
+            if (obs.fs == 0LL)
                 {
                     continue;
                 }
@@ -709,8 +887,8 @@ void hybrid_observables_gs::detect_cycle_slips(std::vector<Gnss_Synchro> &data, 
                         {
                             LOG(INFO) << "Cycle slip detected on channel " << channels[i]
                                       << " at RX time " << data[channels[i]].RX_time
-                                      << " s, for satellite " << data[channels[i]].System
-                                      << data[channels[i]].PRN
+                                      << " s, for satellite "
+                                      << pretty_satellite(data[channels[i]].System, data[channels[i]].PRN)
                                       << ", signal " << std::string(data[channels[i]].Signal, 2);
                         }
                 }
@@ -768,6 +946,7 @@ void hybrid_observables_gs::set_tag_timestamp_in_sdr_timeframe(const std::vector
                 }
         }
 }
+
 
 void hybrid_observables_gs::propagate_sensor_data(const std::vector<Gnss_Synchro> &data)
 {
@@ -888,6 +1067,19 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
             // ************ end time tags **************
             for (int32_t m = 0; m < ninput_items[n]; m++)
                 {
+                    if (d_conf.enable_monitor)
+                        {
+                            // Keep the latest tracking data so that channels without a
+                            // valid time reference can be reported through the Monitor
+                            d_last_trk_data[n] = in[n][m];
+                        }
+                    // Latch a restarted carrier phase accumulator reported by the
+                    // tracking block: it is flagged on a single sample, which may
+                    // not be the one the observation is interpolated from
+                    if (!in[n][m].Flag_carrier_phase_continuous)
+                        {
+                            d_channel_phase_discontinuity_pending[n] = true;
+                        }
                     // Push the valid tracking Gnss_Synchros to their corresponding deque
                     if (in[n][m].Flag_valid_word)
                         {
@@ -904,7 +1096,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                                     if (d_gnss_synchro_history->front(n).PRN != in[n][m].PRN)
                                         {
                                             d_gnss_synchro_history->clear(n);
-                                            d_channel_last_rx_time_valid[n] = false;
+                                            d_channel_has_previous_observation[n] = false;
                                             // LOG(INFO) << "Channel " << d_gnss_synchro_history->front(n).Channel_ID << " changed satellite to PRN " << in[n][m].PRN;
                                         }
                                 }
@@ -919,6 +1111,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
         {
             std::vector<Gnss_Synchro> epoch_data(d_nchannels_out);
             int32_t n_valid = 0;
+            int32_t n_trk_only = 0;
             for (uint32_t n = 0; n < d_nchannels_out; n++)
                 {
                     Gnss_Synchro interpolated_gnss_synchro{};
@@ -926,6 +1119,14 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                         {
                             // Produce an empty observation
                             interpolated_gnss_synchro = Gnss_Synchro();
+                            if (d_conf.enable_monitor && has_fresh_trk_data(n, d_Rx_clock_buffer.front()))
+                                {
+                                    // Report the latest tracking data (e.g., C/N0, Doppler) for
+                                    // channels lacking a valid time reference, such as Galileo E6
+                                    // when no I/NAV or F/NAV channel provides the time of week
+                                    interpolated_gnss_synchro = d_last_trk_data[n];
+                                    n_trk_only++;
+                                }
                             interpolated_gnss_synchro.Flag_valid_pseudorange = false;
                             interpolated_gnss_synchro.Flag_valid_word = false;
                             interpolated_gnss_synchro.Flag_valid_acquisition = false;
@@ -938,6 +1139,10 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                         }
                     epoch_data[n] = std::move(interpolated_gnss_synchro);
                 }
+            // counts every produced epoch, including those with no valid
+            // observation at all, so that gaps in a channel are always visible
+            d_epoch_counter++;
+
             if (d_T_rx_TOW_set)
                 {
                     update_TOW(epoch_data);
@@ -957,15 +1162,17 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                     propagate_sensor_data(epoch_data);
                 }
 
+            // Cycle slip detection runs first: the carrier smoothing filter needs
+            // to know whether the carrier phase is continuous before using it
+            if (n_valid > 0)
+                {
+                    detect_cycle_slips(epoch_data, d_Rx_clock_buffer.front());
+                }
+
             // Carrier smoothing (optional)
             if (d_conf.enable_carrier_smoothing == true)
                 {
                     smooth_pseudoranges(epoch_data);
-                }
-
-            if (n_valid > 0)
-                {
-                    detect_cycle_slips(epoch_data, d_Rx_clock_buffer.front());
                 }
 
             // output the observables set to the PVT block
@@ -1017,7 +1224,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                         }
                 }
 
-            if (n_valid > 0)
+            if (n_valid > 0 || n_trk_only > 0)
                 {
                     // LOG(INFO) << "OBS: diff time: " << out[0][0].RX_time * 1000.0 - old_time_debug;
                     // old_time_debug = out[0][0].RX_time * 1000.0;

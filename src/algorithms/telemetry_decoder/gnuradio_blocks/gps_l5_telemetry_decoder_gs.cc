@@ -22,9 +22,13 @@
 #include "dump_logger_helper.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include "gnss_synchro.h"
+#include "gps_cnav_eop.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
-#include "gps_cnav_utc_model.h"  // for Gps_CNAV_Utc_Model
+#include "gps_cnav_utc_model.h"   // for Gps_CNAV_Utc_Model
+#include "qzss_cnav_eop.h"        // for Qzss_CNAV_Eop
+#include "qzss_cnav_iono.h"       // for Qzss_CNAV_Iono
+#include "qzss_cnav_utc_model.h"  // for Qzss_CNAV_Utc_Model
 #include "tlm_conf.h"
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
@@ -227,10 +231,39 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
                               << " with CN0=" << std::setprecision(2) << current_synchro_data.CN0_dB_hz
                               << std::setprecision(default_precision) << " dB-Hz" << TEXT_RESET << std::endl;
                 }
+            if (d_CNAV_Message->have_new_eop() == true)
+                {
+                    if (d_system == CnavSystem::QZSS)
+                        {
+                            const std::shared_ptr<Qzss_CNAV_Eop> tmp_obj = std::make_shared<Qzss_CNAV_Eop>(d_CNAV_Message->get_eop());
+                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                        }
+                    else
+                        {
+                            const std::shared_ptr<Gps_CNAV_Eop> tmp_obj = std::make_shared<Gps_CNAV_Eop>(d_CNAV_Message->get_eop());
+                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                        }
+                    const auto default_precision = std::cout.precision();
+                    std::cout << TEXT_MAGENTA << "New " << ((d_system == CnavSystem::GPS) ? "GPS" : "QZSS")
+                              << " L5 CNAV message received in channel " << d_channel
+                              << ": Earth orientation parameters from satellite " << d_satellite
+                              << " with CN0=" << std::setprecision(2) << current_synchro_data.CN0_dB_hz
+                              << std::setprecision(default_precision) << " dB-Hz" << TEXT_RESET << std::endl;
+                }
             if (d_CNAV_Message->have_new_iono() == true)
                 {
-                    const std::shared_ptr<Gps_CNAV_Iono> tmp_obj = std::make_shared<Gps_CNAV_Iono>(d_CNAV_Message->get_iono());
-                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                    if (d_system == CnavSystem::QZSS)
+                        {
+                            // QZSS broadcasts its own Klobuchar coefficients (the Wide Area
+                            // set in Message Type 30); keep them separate from the GPS ones
+                            const std::shared_ptr<Qzss_CNAV_Iono> tmp_obj = std::make_shared<Qzss_CNAV_Iono>(d_CNAV_Message->get_iono());
+                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                        }
+                    else
+                        {
+                            const std::shared_ptr<Gps_CNAV_Iono> tmp_obj = std::make_shared<Gps_CNAV_Iono>(d_CNAV_Message->get_iono());
+                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                        }
                     const auto default_precision = std::cout.precision();
                     std::cout << TEXT_MAGENTA << "New " << ((d_system == CnavSystem::GPS) ? "GPS" : "QZSS")
                               << " L5 CNAV message received in channel " << d_channel
@@ -241,8 +274,17 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
 
             if (d_CNAV_Message->have_new_utc_model() == true)
                 {
-                    const std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(d_CNAV_Message->get_utc_model());
-                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                    if (d_system == CnavSystem::QZSS)
+                        {
+                            // The QZSS UTC offset refers to UTC(NICT), not to UTC(USNO)
+                            const std::shared_ptr<Qzss_CNAV_Utc_Model> tmp_obj = std::make_shared<Qzss_CNAV_Utc_Model>(d_CNAV_Message->get_utc_model());
+                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                        }
+                    else
+                        {
+                            const std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(d_CNAV_Message->get_utc_model());
+                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                        }
                     const auto default_precision = std::cout.precision();
                     std::cout << TEXT_MAGENTA << "New " << ((d_system == CnavSystem::GPS) ? "GPS" : "QZSS")
                               << " L5 CNAV message received in channel " << d_channel

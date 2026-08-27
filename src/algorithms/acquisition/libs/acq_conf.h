@@ -79,6 +79,7 @@ public:
     bool acquire_pilot{false};
     bool acquire_iq{false};
     bool cboc{false};
+    bool qmboc{false};
     int zero_padding{0};
     uint32_t folding_factor{0};
 

@@ -24,9 +24,9 @@
 
 bool item_type_valid(const std::string &item_type)
 {
-    if (item_type != "byte" and item_type != "cbyte" and item_type != "ibyte" and
-        item_type != "short" and item_type != "cshort" and item_type != "ishort" and
-        item_type != "float" and item_type != "gr_complex")
+    if (item_type != "byte" && item_type != "cbyte" && item_type != "ibyte" &&
+        item_type != "short" && item_type != "cshort" && item_type != "ishort" &&
+        item_type != "float" && item_type != "gr_complex")
         {
             return false;
         }
@@ -37,7 +37,7 @@ bool item_type_valid(const std::string &item_type)
 
 size_t item_type_size(const std::string &item_type)
 {
-    if (item_type == "byte" or item_type == "ibyte")
+    if (item_type == "byte" || item_type == "ibyte")
         {
             return sizeof(int8_t);
         }
@@ -45,7 +45,7 @@ size_t item_type_size(const std::string &item_type)
         {
             return 2 * sizeof(int8_t);
         }
-    else if (item_type == "short" or item_type == "ishort")
+    else if (item_type == "short" || item_type == "ishort")
         {
             return sizeof(int16_t);
         }
@@ -70,7 +70,7 @@ size_t item_type_size(const std::string &item_type)
 
 bool item_type_is_complex(const std::string &item_type)
 {
-    return (item_type == "ibyte") or (item_type == "cbyte") or (item_type == "ishort") or (item_type == "cshort") or (item_type == "gr_complex");
+    return (item_type == "ibyte") || (item_type == "cbyte") || (item_type == "ishort") || (item_type == "cshort") || (item_type == "gr_complex");
 }
 
 
@@ -167,7 +167,7 @@ void convert_32fc_16ic(void *dest, const void *src, uint32_t num_items)
 item_type_converter_t make_vector_converter(const std::string &input_type,
     const std::string &output_type)
 {
-    if (not item_type_valid(input_type) or not item_type_valid(output_type))
+    if (!item_type_valid(input_type) || !item_type_valid(output_type))
         {
             throw std::runtime_error("make_vector_converter: invalid item types : " + input_type + " " + output_type);
         }
@@ -212,7 +212,7 @@ item_type_converter_t make_vector_converter(const std::string &input_type,
                     return [=](auto &&arg1, auto &&arg2, auto &&arg3) { return copy_converter(arg1, arg2, arg3, input_size); };
 #endif
                 }
-            if (output_type == "cshort" or output_type == "ishort")
+            if (output_type == "cshort" || output_type == "ishort")
                 {
 #ifdef DO_NOT_USE_LAMBDAS
                     return std::bind(convert_8ic_16ic, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);  // NOLINT(modernize-avoid-bind)
@@ -240,7 +240,7 @@ item_type_converter_t make_vector_converter(const std::string &input_type,
                     return [=](auto &&arg1, auto &&arg2, auto &&arg3) { return copy_converter(arg1, arg2, arg3, input_size); };
 #endif
                 }
-            else if (output_type == "cshort" or output_type == "ishort")
+            else if (output_type == "cshort" || output_type == "ishort")
                 {
 #ifdef DO_NOT_USE_LAMBDAS
                     return std::bind(convert_8i_16i, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);  // NOLINT(modernize-avoid-bind)
@@ -278,7 +278,7 @@ item_type_converter_t make_vector_converter(const std::string &input_type,
         }
     else if (input_type == "cshort")
         {
-            if (output_type == "cbyte" or output_type == "ibyte")
+            if (output_type == "cbyte" || output_type == "ibyte")
                 {
 #ifdef DO_NOT_USE_LAMBDAS
                     return std::bind(convert_16ic_8ic, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);  // NOLINT(modernize-avoid-bind)
@@ -306,7 +306,7 @@ item_type_converter_t make_vector_converter(const std::string &input_type,
         }
     else if (input_type == "ishort")
         {
-            if (output_type == "cbyte" or output_type == "ibyte")
+            if (output_type == "cbyte" || output_type == "ibyte")
                 {
 #ifdef DO_NOT_USE_LAMBDAS
                     return std::bind(convert_16i_8i, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);  // NOLINT(modernize-avoid-bind)
@@ -353,7 +353,7 @@ item_type_converter_t make_vector_converter(const std::string &input_type,
         }
     else if (input_type == "gr_complex")
         {
-            if (output_type == "cbyte" or output_type == "ibyte")
+            if (output_type == "cbyte" || output_type == "ibyte")
                 {
 #ifdef DO_NOT_USE_LAMBDAS
                     return std::bind(convert_32fc_8ic, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);  // NOLINT(modernize-avoid-bind)
@@ -361,7 +361,7 @@ item_type_converter_t make_vector_converter(const std::string &input_type,
                     return [=](auto &&arg1, auto &&arg2, auto &&arg3) { return convert_32fc_8ic(arg1, arg2, arg3); };
 #endif
                 }
-            else if (output_type == "cshort" or output_type == "ishort")
+            else if (output_type == "cshort" || output_type == "ishort")
                 {
 #ifdef DO_NOT_USE_LAMBDAS
                     return std::bind(convert_32fc_16ic, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);  // NOLINT(modernize-avoid-bind)

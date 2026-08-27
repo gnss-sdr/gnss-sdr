@@ -317,7 +317,7 @@ try
                 // Read navigation data
                 while (rnffs >> rne)
                     {
-                        if (rne.satSys == "G" or rne.satSys.empty())
+                        if (rne.satSys == "G" || rne.satSys.empty())
                             {
                                 // Fill GPS ephemeris object
                                 Gps_Ephemeris eph;
@@ -403,7 +403,7 @@ try
                 return 1;
             }
 
-        if (i == 0 and j == 0)
+        if (i == 0 && j == 0)
             {
                 std::cerr << "No navigation data found in the RINEX file. No XML file will be created.\n";
 #if USE_GLOG_AND_GFLAGS

@@ -29,6 +29,8 @@
  * \{ */
 
 
+class Beidou_Cnav1_Ephemeris;
+class Beidou_Dnav_Almanac;
 class Beidou_Dnav_Ephemeris;
 class Galileo_Almanac;
 class Galileo_Ephemeris;
@@ -92,20 +94,23 @@ eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph,
     const std::map<int, HAS_clock_corrections>& clock_correction_map);
 
 eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph,
-    bool pre_2009_file = false);
+    int ref_week = 0);
 
 eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph,
     const std::map<int, HAS_orbit_corrections>& orbit_correction_map,
     const std::map<int, HAS_clock_corrections>& clock_correction_map,
-    bool pre_2009_file = false);
+    int ref_week = 0);
 
 eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph);
 eph_t eph_to_rtklib(const Gps_CNAV2_Ephemeris& gps_cnav2_eph);
 
 eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph);
 
+eph_t eph_to_rtklib(const Beidou_Cnav1_Ephemeris& bei_eph);
+
 alm_t alm_to_rtklib(const Gps_Almanac& gps_alm);
 alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm);
+alm_t alm_to_rtklib(const Beidou_Dnav_Almanac& bei_alm);
 
 /*!
  * \brief Transforms a Glonass_Gnav_Ephemeris to its RTKLIB counterpart
@@ -123,16 +128,16 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
     int week,
     int band,
     const HAS_obs_corrections** applied_has_correction,
-    bool pre_2009_file);
+    int ref_week);
 
 obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
     const Gnss_Synchro& gnss_synchro,
     const std::map<std::string, std::map<int, HAS_obs_corrections>>& has_obs_corr,
     int week,
     int band,
-    bool pre_2009_file = false);
+    int ref_week = 0);
 
-obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro, int week, int band, bool pre_2009_file = false);
+obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro, int week, int band, int ref_week = 0);
 
 
 /** \} */

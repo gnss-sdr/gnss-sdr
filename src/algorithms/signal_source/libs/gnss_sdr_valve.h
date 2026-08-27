@@ -4,13 +4,14 @@
  * control queue right after a specific number of samples have passed through it.
  * \author Javier Arribas, 2018. jarribas(at)cttc.es
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ * \author Carles Fernandez, 2026 carles.fernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -47,6 +48,13 @@ gnss_shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
     Concurrent_Queue<pmt::pmt_t>* queue,
     bool stop_flowgraph);
 
+gnss_shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
+    size_t sizeof_stream_item,
+    uint64_t nitems,
+    Concurrent_Queue<pmt::pmt_t>* queue,
+    bool stop_flowgraph,
+    int n_streams);
+
 /*!
  * \brief Implementation of a GNU Radio block that sends a STOP message to the
  * control queue right after a specific number of samples have passed through it.
@@ -72,9 +80,18 @@ private:
         Concurrent_Queue<pmt::pmt_t>* queue,
         bool stop_flowgraph);
 
+    friend gnss_shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
+        size_t sizeof_stream_item,
+        uint64_t nitems,
+        Concurrent_Queue<pmt::pmt_t>* queue,
+        bool stop_flowgraph,
+        int n_streams);
+
     Gnss_Sdr_Valve(size_t sizeof_stream_item,
         uint64_t nitems,
-        Concurrent_Queue<pmt::pmt_t>* queue, bool stop_flowgraph);
+        Concurrent_Queue<pmt::pmt_t>* queue,
+        bool stop_flowgraph,
+        int n_streams);
 
     uint64_t d_nitems;
     uint64_t d_ncopied_items;

@@ -86,8 +86,8 @@ double gfobs_L1L2(const obsd_t *obs, int i, int j, const double *lam);
 
 double gfobs_L1L5(const obsd_t *obs, int i, int j, const double *lam);
 
-double varerr(int sat, int sys, double el, double bl, double dt, int f,
-    const prcopt_t *opt);
+double varerr(int sat, int sys, double el, double snr_rover, double snr_base,
+    double bl, double dt, int f, const prcopt_t *opt, const obsd_t *obs);
 
 
 double baseline(const double *ru, const double *rb, double *dr);
@@ -112,7 +112,7 @@ void detslp_gf_L1L2(rtk_t *rtk, const obsd_t *obs, int i, int j,
 void detslp_gf_L1L5(rtk_t *rtk, const obsd_t *obs, int i, int j,
     const nav_t *nav);
 
-void detslp_dop(rtk_t *rtk, const obsd_t *obs, int i, int rcv,
+void detslp_dop(rtk_t *rtk, const obsd_t *obs, const int *ix, int ns, int rcv,
     const nav_t *nav);
 
 void udbias(rtk_t *rtk, double tt, const obsd_t *obs, const int *sat,
@@ -147,7 +147,7 @@ double gloicbcorr(int sat1, int sat2, const prcopt_t *opt, double lam1,
 
 int test_sys(int sys, int m);
 
-int ddres(rtk_t *rtk, const nav_t *nav, double dt, const double *x,
+int ddres(rtk_t *rtk, const obsd_t *obs, const nav_t *nav, double dt, const double *x,
     const double *P, const int *sat, double *y, const double *e,
     double *azel, const int *iu, const int *ir, int ns, double *v,
     double *H, double *R, int *vflg);
@@ -156,13 +156,16 @@ double intpres(gtime_t time, const obsd_t *obs, int n, const nav_t *nav,
     rtk_t *rtk, double *y);
 
 
-int ddmat(rtk_t *rtk, double *D);
+int ddidx(rtk_t *rtk, int *ix, int glo, int sbs);
 
 void restamb(rtk_t *rtk, const double *bias, int nb, double *xa);
 
 void holdamb(rtk_t *rtk, const double *xa);
 
-int resamb_LAMBDA(rtk_t *rtk, double *bias, double *xa);
+int resamb_LAMBDA(rtk_t *rtk, double *bias, double *xa, int glo, int sbs);
+
+int manage_amb_LAMBDA(rtk_t *rtk, double *bias, double *xa, const int *sat,
+    int nf, int ns);
 
 int valpos(rtk_t *rtk, const double *v, const double *R, const int *vflg,
     int nv, double thres);

@@ -30,17 +30,27 @@
  *
  * -----------------------------------------------------------------------*/
 
+#include "rtklib_solver.h"
+#include "Beidou_CNAV1.h"
 #include "Beidou_DNAV.h"
 #include "Galileo_CNAV.h"
+#include "gnss_obs_codes.h"
 #include "gnss_sdr_filesystem.h"
 #include "matlab_writter_helper.h"
+#include "ntrip_rtcm_client.h"
+#include "ntrip_rtk_signals.h"
+#include "rtklib_rtkcmn.h"
 #include "rtklib_rtkpos.h"
-#include "rtklib_solver.h"
 #include "signal_enabled_flags.h"
 #include <algorithm>
+#include <array>
+#include <cmath>
 #include <exception>
+#include <iostream>
 #include <iterator>
-#include <utility>
+#include <limits>
+#include <stdexcept>
+#include <string>
 #include <vector>
 
 #if USE_GLOG_AND_GFLAGS
@@ -49,33 +59,42 @@
 #include <absl/log/log.h>
 #endif
 
+/* out-of-line definition: pre-C++17 builds require it when the constant is
+   odr-used (e.g. streamed to a logger by const reference); in C++17 and
+   later this is a harmless redeclaration */
+constexpr int Rtklib_Solver::NTRIP_MIN_COMMON_SATELLITES;
+
 Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     const Pvt_Conf &conf,
     const std::string &dump_filename,
     uint32_t signal_enabled_flags,
     bool flag_dump_to_file,
     bool flag_dump_to_mat) : d_dump_filename(dump_filename),
-                             d_rtk(rtk),
+                             d_sbas_corrections(rtk.opt.sbassatsel),
                              d_conf(conf),
                              d_signal_enabled_flags(signal_enabled_flags),
                              d_flag_dump_enabled(flag_dump_to_file),
                              d_flag_dump_mat_enabled(flag_dump_to_mat)
 {
+    // Solver instances need correction policy but never caster credentials.
+    // Remove secrets from this long-lived configuration copy immediately.
+    secure_clear_ntrip_credentials(&d_conf);
+
     // see freq index at src/algorithms/libs/rtklib/rtklib_rtkcmn.cc
     // function: satwavelen
     d_rtklib_freq_index[0] = 0;
     d_rtklib_freq_index[1] = 1;
     d_rtklib_freq_index[2] = 2;
 
+    // BDS: B1I and B1C share slot 0 (prefer-B1C XOR). Override lam[0] for B1C (FREQ1).
     d_rtklib_band_index["1G"] = 0;
     d_rtklib_band_index["1C"] = 0;
     d_rtklib_band_index["1B"] = 0;
     d_rtklib_band_index["B1"] = 0;
+    d_rtklib_band_index["1D"] = 0;
     d_rtklib_band_index["B3"] = 2;
     d_rtklib_band_index["2G"] = 1;
     d_rtklib_band_index["2S"] = 1;
-    d_rtklib_band_index["7X"] = 2;
-    d_rtklib_band_index["5X"] = 2;
     d_rtklib_band_index["L5"] = 2;
     d_rtklib_band_index["E6"] = 0;
     d_rtklib_band_index["J1"] = 0;
@@ -83,55 +102,105 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
 
     const Signal_Enabled_Flags flags(d_signal_enabled_flags);
 
-    if (flags.check_only_enabled(GAL_E5b) ||
-        flags.check_only_enabled(GPS_1C, GAL_E5b) ||
-        flags.check_only_enabled(GAL_1B, GAL_E5b) ||
-        flags.check_only_enabled(GPS_2S, GAL_E5b))
+    // The Galileo OS SIS ICD defines E1/E5b as the I/NAV service and E1/E5a
+    // as the F/NAV service. Select one service deterministically for the whole
+    // receiver so channel and message arrival order cannot change the clock
+    // model used by PVT. I/NAV has priority when E5b is enabled; otherwise an
+    // enabled E5a selects F/NAV. E1-only receivers use I/NAV.
+    if (flags.check_any_enabled(GAL_E5b))
         {
-            d_rtklib_freq_index[2] = 4;
+            d_galileo_nav_message_type_for_pvt = Galileo_Nav_Message_Type::INAV;
         }
-    else if (flags.check_only_enabled(GAL_E5a, GAL_E5b))
+    else if (flags.check_any_enabled(GAL_E5a))
         {
-            d_rtklib_band_index["5X"] = 0;
-            d_rtklib_freq_index[0] = 2;
-            d_rtklib_freq_index[2] = 4;
+            d_galileo_nav_message_type_for_pvt = Galileo_Nav_Message_Type::FNAV;
         }
-    else if (flags.check_only_enabled(GPS_L5, GAL_E5b))
+
+    // Only the E5 signal belonging to the selected Galileo navigation service
+    // is admitted to RTKLIB. Keeping the inactive signal out of this map makes
+    // the shared third observation slot an explicit invariant rather than an
+    // ordering-dependent overwrite.
+    if (d_galileo_nav_message_type_for_pvt == Galileo_Nav_Message_Type::INAV &&
+        flags.check_any_enabled(GAL_E5b))
+        {
+            d_rtklib_band_index["7X"] = 2;
+        }
+    else if (d_galileo_nav_message_type_for_pvt == Galileo_Nav_Message_Type::FNAV &&
+             flags.check_any_enabled(GAL_E5a))
+        {
+            d_rtklib_band_index["5X"] = 2;
+        }
+
+    const bool has_selected_galileo_e5 =
+        d_rtklib_band_index.find("5X") != d_rtklib_band_index.cend() ||
+        d_rtklib_band_index.find("7X") != d_rtklib_band_index.cend();
+
+    // RTKLIB's Galileo SPP/PPP paths use slots 0 and 2 for their primary
+    // dual-frequency pair. Put E6 in slot 2 when E1+E6 is that pair. If the
+    // automatically selected E5 signal already owns slot 2, keep E6 in the
+    // remaining slot so E1, E5, and E6 can coexist without overwriting one
+    // another. E6-only reception stays in the primary slot.
+    if (flags.check_any_enabled(GAL_E6))
+        {
+            if (has_selected_galileo_e5)
+                {
+                    d_rtklib_band_index["E6"] = 1;
+                }
+            else if (flags.check_any_enabled(GAL_1B))
+                {
+                    d_rtklib_band_index["E6"] = 2;
+                }
+        }
+
+    // GPS L5 needs the primary slot in this single-frequency GPS setup. The
+    // Galileo wavelength is corrected from its observation code below, so the
+    // two constellations do not need a shared nominal frequency index.
+    if (flags.check_only_enabled(GPS_L5, GAL_E5b))
         {
             d_rtklib_band_index["L5"] = 0;
             d_rtklib_freq_index[0] = 2;
+        }
+
+    // In automatic I/NAV mode E5a observations are not admitted to PVT, so
+    // Galileo-only multi-band configurations must use the E5b wavelength in
+    // the third RTKLIB slot. This also covers E1+E5a+E5b, which was not part
+    // of the legacy exact-flag special cases above.
+    if (d_galileo_nav_message_type_for_pvt == Galileo_Nav_Message_Type::INAV &&
+        flags.check_any_enabled(GAL_E5b) &&
+        !flags.check_any_enabled(GPS_L5, QZS_J5))
+        {
             d_rtklib_freq_index[2] = 4;
         }
-    else if (flags.check_only_enabled(GAL_E6))
+
+    if (d_conf.ntrip_client_enabled)
         {
-            d_rtklib_freq_index[0] = 3;
+            // the fixed-base path pairs rover and base observations by slot,
+            // so the signal table's slot column and this solver's finished
+            // band map must agree for every enabled NTRIP signal — fail
+            // loudly at construction instead of silently pairing across bands
+            for (const auto &signal : ntrip_rtk_signals())
+                {
+                    if (!flags.check_any_enabled(signal.flag))
+                        {
+                            continue;
+                        }
+                    const auto mapped_slot = d_rtklib_band_index.find(signal.signal);
+                    if (mapped_slot == d_rtklib_band_index.cend() ||
+                        mapped_slot->second != signal.band_slot)
+                        {
+                            throw std::runtime_error(
+                                std::string("NTRIP RTK signal table and solver band mapping disagree for signal ") +
+                                signal.signal);
+                        }
+                }
         }
-    else if (flags.check_only_enabled(GAL_1B, GAL_E6) ||
-             flags.check_only_enabled(GAL_E5a, GAL_E6) ||
-             flags.check_only_enabled(GAL_1B, GAL_E5a, GAL_E6))
-        {
-            d_rtklib_band_index["E6"] = 1;
-            d_rtklib_freq_index[1] = 3;
-        }
-    else if (flags.check_only_enabled(GAL_E5b, GAL_E6) ||
-             flags.check_only_enabled(GAL_1B, GAL_E5b, GAL_E6))
-        {
-            d_rtklib_band_index["E6"] = 1;
-            d_rtklib_freq_index[1] = 3;
-            d_rtklib_freq_index[2] = 4;
-        }
-    else if (flags.check_only_enabled(GAL_1B, GAL_E5a, GAL_E6) ||
-             flags.check_only_enabled(GPS_1C, GAL_1B, GAL_E6) ||
-             flags.check_only_enabled(GPS_1C, GAL_E6))
-        {
-            d_rtklib_band_index["E6"] = 1;
-            d_rtklib_freq_index[1] = 3;
-        }
-    else if (flags.check_only_enabled(GPS_1C, GAL_1B, GPS_L5, GAL_E5a, GAL_E5b))
-        {
-            d_rtklib_band_index["E6"] = 2;
-            d_rtklib_freq_index[2] = 3;
-        }
+
+    // resolve the per-system second-band slots once: the channel set is
+    // fixed for the solver's lifetime, and the per-epoch fixed-base path
+    // must not rescan the signal table per observation
+    d_ntrip_second_band_slot_gps = ntrip_rtk_second_band_slot(SYS_GPS, flags);
+    d_ntrip_second_band_slot_gal = ntrip_rtk_second_band_slot(SYS_GAL, flags);
+    d_ntrip_second_band_slot_bds = ntrip_rtk_second_band_slot(SYS_BDS, flags);
 
     // auto empty_map = std::map < int, HAS_obs_corrections >> ();
     // d_has_obs_corr_map["L1 C/A"] = empty_map;
@@ -153,6 +222,12 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
                         }
                 }
         }
+
+    // rtk_t owns dynamically allocated filter state. A struct copy would make
+    // the adapter, clock solver, and user solver alias the same state and would
+    // make independent RTK updates unsafe. Initialize it after all potentially
+    // throwing C++ setup so a failed constructor cannot leak the C allocation.
+    rtkinit(&d_rtk, &rtk.opt);
 }
 
 
@@ -199,6 +274,7 @@ Rtklib_Solver::~Rtklib_Solver() noexcept
                     LOG(WARNING) << "Exception in destructor saving the PVT .mat dump file " << ex.what();
                 }
         }
+    rtkfree(&d_rtk);
 }
 
 
@@ -385,6 +461,52 @@ Monitor_Pvt Rtklib_Solver::get_monitor_pvt() const
 }
 
 
+Rtklib_Fixed_Base_Status Rtklib_Solver::get_fixed_base_status() const
+{
+    return d_fixed_base_status;
+}
+
+
+double Rtklib_Solver::get_fixed_base_age_s() const
+{
+    return d_fixed_base_age_s;
+}
+
+
+std::size_t Rtklib_Solver::get_fixed_base_common_satellites() const
+{
+    return d_fixed_base_common_satellites;
+}
+
+
+void Rtklib_Solver::store_sbas_message(const Sbas_Raw_Message &message)
+{
+    d_sbas_corrections.push(message);
+}
+
+
+void Rtklib_Solver::store_gps_ephemeris(const Gps_Ephemeris &ephemeris)
+{
+    const auto current_ephemeris = gps_ephemeris_map.find(ephemeris.PRN);
+    if (current_ephemeris != gps_ephemeris_map.cend() &&
+        current_ephemeris->second.IODE_SF3 != ephemeris.IODE_SF3)
+        {
+            // SBAS long-term corrections identify the broadcast ephemeris by
+            // IODE. Retain the preceding issue across the handover so RTKLIB
+            // can keep applying a still-current MT24/25 correction.
+            gps_previous_ephemeris_map[ephemeris.PRN] = current_ephemeris->second;
+        }
+    gps_ephemeris_map[ephemeris.PRN] = ephemeris;
+}
+
+
+void Rtklib_Solver::clear_gps_ephemerides()
+{
+    gps_ephemeris_map.clear();
+    gps_previous_ephemeris_map.clear();
+}
+
+
 void Rtklib_Solver::clear_has_corrections()
 {
     d_has_orbit_corrections_store_map.clear();
@@ -446,7 +568,7 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                 }
 
             // for each satellite in Galileo ephemeris
-            for (const auto &galeph : galileo_ephemeris_map)
+            for (const auto &galeph : galileo_ephemeris_store.by_source(d_galileo_nav_message_type_for_pvt))
                 {
                     int prn = galeph.second.PRN;
                     int32_t sis_iod = galeph.second.IOD_ephemeris;
@@ -524,7 +646,7 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
 
             // for each satellite in Galileo ephemeris
             const auto gal_prns = new_has_data.get_PRNs_in_mask(gal_str);
-            for (const auto &galeph : galileo_ephemeris_map)
+            for (const auto &galeph : galileo_ephemeris_store.by_source(d_galileo_nav_message_type_for_pvt))
                 {
                     int prn = galeph.second.PRN;
                     if (std::find(gal_prns.cbegin(), gal_prns.cend(), prn) == gal_prns.cend())
@@ -625,7 +747,7 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                 {
                     const auto gal_sys_index = static_cast<uint8_t>(std::distance(systems.cbegin(), gal_sys_it));
                     const auto gal_subset_prns = new_has_data.get_PRNs_in_submask(gal_sys_index);
-                    for (const auto &galeph : galileo_ephemeris_map)
+                    for (const auto &galeph : galileo_ephemeris_store.by_source(d_galileo_nav_message_type_for_pvt))
                         {
                             int prn = galeph.second.PRN;
                             if (std::find(gal_subset_prns.cbegin(), gal_subset_prns.cend(), prn) == gal_subset_prns.cend())
@@ -891,6 +1013,7 @@ void Rtklib_Solver::check_has_orbit_clock_validity(const std::map<int, Gnss_Sync
             else if (it.second.System == 'E')
                 {
                     system = "Galileo";
+                    const auto &galileo_ephemeris_map = galileo_ephemeris_store.by_source(d_galileo_nav_message_type_for_pvt);
                     auto eph_it = galileo_ephemeris_map.find(it.second.PRN);
                     if (eph_it != galileo_ephemeris_map.end())
                         {
@@ -995,6 +1118,7 @@ void Rtklib_Solver::get_has_biases(const std::map<int, Gnss_Synchro> &obs_map)
                     std::string sig(it.second.Signal, 2);
                     if (it.second.System == 'E')
                         {
+                            const auto &galileo_ephemeris_map = galileo_ephemeris_store.by_source(d_galileo_nav_message_type_for_pvt);
                             auto eph_it = galileo_ephemeris_map.find(it.second.PRN);
                             uint8_t mask_id = 0;
                             uint8_t iod_set_id = 0;
@@ -1126,6 +1250,51 @@ void Rtklib_Solver::get_current_has_obs_correction(const std::string &signal, ui
 }
 
 
+bool Rtklib_Solver::galileo_ephemeris_is_usable(const Galileo_Ephemeris &ephemeris, uint32_t observation_tow) const
+{
+    if (observation_tow >= 604800U)
+        {
+            return false;
+        }
+    double toe_distance = std::fabs(static_cast<double>(observation_tow) - ephemeris.toe);
+    if (toe_distance > 302400.0)
+        {
+            toe_distance = 604800.0 - toe_distance;
+        }
+    return toe_distance <= MAXDTOE_GAL;
+}
+
+
+void Rtklib_Solver::update_galileo_observation_wavelengths(const obsd_t &observation)
+{
+    if (satsys(observation.sat, nullptr) != SYS_GAL)
+        {
+            return;
+        }
+
+    for (int slot = 0; slot < NFREQ; ++slot)
+        {
+            if (observation.code[slot] == CODE_NONE)
+                {
+                    continue;
+                }
+
+            int frequency = 0;
+            code2obs(observation.code[slot], &frequency);
+            if (frequency <= 0)
+                {
+                    continue;
+                }
+
+            const double wavelength = satwavelen(observation.sat, frequency - 1, &d_nav_data);
+            if (wavelength > 0.0)
+                {
+                    d_nav_data.lam[observation.sat - 1][slot] = wavelength;
+                }
+        }
+}
+
+
 void Rtklib_Solver::clear_applied_has_phase_bias_discontinuity(const HAS_obs_corrections *has_correction, int prn)
 {
     if (has_correction == nullptr || !has_correction->phase_bias_discontinuity || has_correction->signal.empty())
@@ -1147,10 +1316,515 @@ void Rtklib_Solver::clear_applied_has_phase_bias_discontinuity(const HAS_obs_cor
 }
 
 
-bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, double kf_update_interval_s, const SensorDataAggregator &sensor_data_aggregator)
+bool Rtklib_Solver::store_galileo_ephemeris(const Galileo_Ephemeris &ephemeris)
+{
+    Galileo_Ephemeris source_ephemeris = ephemeris;
+    if (source_ephemeris.nav_message_type == Galileo_Nav_Message_Type::Unknown)
+        {
+            source_ephemeris.nav_message_type = d_galileo_nav_message_type_for_pvt;
+            LOG(WARNING) << "Galileo ephemeris for PRN " << source_ephemeris.PRN
+                         << " has no navigation-message provenance; assigning the receiver's automatic PVT source";
+        }
+    if (!galileo_ephemeris_store.insert(source_ephemeris))
+        {
+            return false;
+        }
+    const auto compatibility_entry = galileo_ephemeris_map.find(static_cast<int>(source_ephemeris.PRN));
+    if (source_ephemeris.nav_message_type == d_galileo_nav_message_type_for_pvt ||
+        compatibility_entry == galileo_ephemeris_map.cend())
+        {
+            galileo_ephemeris_map[static_cast<int>(source_ephemeris.PRN)] = source_ephemeris;
+        }
+    return true;
+}
+
+
+Galileo_Nav_Message_Type Rtklib_Solver::galileo_nav_message_type_for_pvt() const
+{
+    return d_galileo_nav_message_type_for_pvt;
+}
+
+
+bool Rtklib_Solver::is_galileo_signal_used_in_pvt(const std::string &signal) const
+{
+    if (signal == "E6")
+        {
+            return d_conf.use_e6_for_pvt;
+        }
+    if (d_galileo_nav_message_type_for_pvt == Galileo_Nav_Message_Type::FNAV)
+        {
+            return signal == "1B" ||
+                   (signal == "5X" && d_rtklib_band_index.find(signal) != d_rtklib_band_index.cend());
+        }
+    return signal == "1B" ||
+           (signal == "7X" && d_rtklib_band_index.find(signal) != d_rtklib_band_index.cend());
+}
+
+
+bool Rtklib_Solver::get_galileo_signal_health(uint32_t prn, const std::string &signal,
+    uint32_t observation_tow, bool &healthy) const
+{
+    Galileo_Nav_Message_Type health_source = Galileo_Nav_Message_Type::Unknown;
+    if (signal == "5X")
+        {
+            health_source = Galileo_Nav_Message_Type::FNAV;
+        }
+    else if (signal == "1B" || signal == "7X")
+        {
+            health_source = Galileo_Nav_Message_Type::INAV;
+        }
+    else
+        {
+            return false;
+        }
+
+    const Galileo_Ephemeris *health_ephemeris = galileo_ephemeris_store.find(static_cast<int>(prn), health_source);
+    if (health_ephemeris == nullptr || !galileo_ephemeris_is_usable(*health_ephemeris, observation_tow))
+        {
+            return false;
+        }
+
+    if (signal == "1B")
+        {
+            healthy = !health_ephemeris->E1B_DVS && health_ephemeris->E1B_HS == 0;
+        }
+    else if (signal == "5X")
+        {
+            healthy = !health_ephemeris->E5a_DVS && health_ephemeris->E5a_HS == 0;
+        }
+    else
+        {
+            healthy = !health_ephemeris->E5b_DVS && health_ephemeris->E5b_HS == 0;
+        }
+    return true;
+}
+
+
+std::map<int, Galileo_Ephemeris> Rtklib_Solver::get_galileo_ephemeris_map_for_pvt() const
+{
+    auto result = galileo_ephemeris_store.combined_view(d_galileo_nav_message_type_for_pvt);
+    for (const auto &ephemeris : galileo_ephemeris_map)
+        {
+            if (result.find(ephemeris.first) == result.cend())
+                {
+                    result.insert(ephemeris);
+                }
+        }
+    return result;
+}
+
+
+bool Rtklib_Solver::select_galileo_ephemeris(uint32_t prn, const std::string &signal, uint32_t observation_tow,
+    Galileo_Ephemeris &ephemeris, bool &from_reduced_ced) const
+{
+    from_reduced_ced = false;
+    if (!is_galileo_signal_used_in_pvt(signal) || observation_tow >= 604800U)
+        {
+            return false;
+        }
+
+    const Galileo_Ephemeris *full_ephemeris = galileo_ephemeris_store.find(
+        static_cast<int>(prn), d_galileo_nav_message_type_for_pvt);
+    const auto compatibility_ephemeris = galileo_ephemeris_map.find(static_cast<int>(prn));
+    if (full_ephemeris == nullptr && compatibility_ephemeris != galileo_ephemeris_map.cend() &&
+        (compatibility_ephemeris->second.nav_message_type == Galileo_Nav_Message_Type::Unknown ||
+            compatibility_ephemeris->second.nav_message_type == d_galileo_nav_message_type_for_pvt))
+        {
+            full_ephemeris = &compatibility_ephemeris->second;
+        }
+    if (full_ephemeris != nullptr && galileo_ephemeris_is_usable(*full_ephemeris, observation_tow))
+        {
+            ephemeris = *full_ephemeris;
+            return true;
+        }
+
+    // The ICD only defines Reduced CED use for the E1/E5b service.
+    if (d_galileo_nav_message_type_for_pvt != Galileo_Nav_Message_Type::INAV ||
+        (signal != "1B" && signal != "7X"))
+        {
+            return false;
+        }
+
+    const auto reduced_ced = galileo_reduced_ced_map.find(static_cast<int>(prn));
+    if (reduced_ced == galileo_reduced_ced_map.cend())
+        {
+            return false;
+        }
+
+    uint32_t observation_week = reduced_ced->second.WN;
+    uint32_t week_reference_tow = reduced_ced->second.TOTRedCED;
+    // A later GST model prevents a stale Reduced CED from becoming valid
+    // again after a week. Older assistance data must not override the directly
+    // decoded Reduced CED epoch.
+    if (galileo_iono.WN > 0 &&
+        static_cast<uint32_t>(galileo_iono.WN) > reduced_ced->second.WN &&
+        galileo_iono.tow >= 0 && galileo_iono.tow < 604800)
+        {
+            observation_week = static_cast<uint32_t>(galileo_iono.WN);
+            week_reference_tow = static_cast<uint32_t>(galileo_iono.tow);
+        }
+
+    if (observation_tow < week_reference_tow &&
+        week_reference_tow - observation_tow > 302400U)
+        {
+            if (observation_week == std::numeric_limits<uint32_t>::max())
+                {
+                    return false;
+                }
+            ++observation_week;
+        }
+    else if (observation_tow > week_reference_tow &&
+             observation_tow - week_reference_tow > 302400U)
+        {
+            if (observation_week == 0U)
+                {
+                    return false;
+                }
+            --observation_week;
+        }
+
+    if (!reduced_ced->second.is_valid_at(observation_week, observation_tow))
+        {
+            return false;
+        }
+
+    ephemeris = reduced_ced->second.compute_eph();
+    from_reduced_ced = true;
+    return true;
+}
+
+
+void Rtklib_Solver::reset_relative_filter()
+{
+    const prcopt_t options = d_rtk.opt;
+    rtkfree(&d_rtk);
+    rtkinit(&d_rtk, &options);
+    if (d_conf.enable_pvt_kf)
+        {
+            d_pvt_kf.reset_Kf();
+        }
+}
+
+
+bool Rtklib_Solver::prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot &fixed_base,
+    int &rover_observation_count,
+    int &base_observation_count)
+{
+    // Per-constellation band-to-slot mapping, shared with the adapter's
+    // channel-set validation (see ntrip_rtk_signals() in ntrip_rtk_signals.h)
+    // and resolved once at construction
+    const auto second_band_slot = [this](int system) {
+        switch (system)
+            {
+            case SYS_GAL:
+                return d_ntrip_second_band_slot_gal;
+            case SYS_BDS:
+                return d_ntrip_second_band_slot_bds;
+            default:
+                return d_ntrip_second_band_slot_gps;
+            }
+    };
+    const auto clear_unsupported_slots = [&second_band_slot](obsd_t &observation, int system) {
+        const int second = second_band_slot(system);
+        for (int frequency = 1; frequency < NFREQ + NEXOBS; ++frequency)
+            {
+                if (frequency == second)
+                    {
+                        continue;
+                    }
+                observation.P[frequency] = 0.0;
+                observation.L[frequency] = 0.0;
+                observation.D[frequency] = 0.0F;
+                observation.SNR[frequency] = 0;
+                observation.LLI[frequency] = 0;
+                observation.code[frequency] = CODE_NONE;
+            }
+    };
+    const auto has_supported_band_measurement = [&second_band_slot](const obsd_t &observation, int system) {
+        const std::array<int, 2> slots = {0, second_band_slot(system)};
+        for (const int frequency : slots)
+            {
+                if (observation.code[frequency] != CODE_NONE &&
+                    (observation.P[frequency] != 0.0 || observation.L[frequency] != 0.0))
+                    {
+                        return true;
+                    }
+            }
+        return false;
+    };
+    const auto merge_observation = [](obsd_t &destination, const obsd_t &source) {
+        for (int frequency = 0; frequency < NFREQ + NEXOBS; ++frequency)
+            {
+                if (source.code[frequency] == CODE_NONE && source.P[frequency] == 0.0 && source.L[frequency] == 0.0)
+                    {
+                        continue;
+                    }
+                destination.P[frequency] = source.P[frequency];
+                destination.L[frequency] = source.L[frequency];
+                destination.D[frequency] = source.D[frequency];
+                destination.SNR[frequency] = source.SNR[frequency];
+                destination.LLI[frequency] = source.LLI[frequency];
+                destination.code[frequency] = source.code[frequency];
+            }
+    };
+    const auto sort_and_merge = [&merge_observation](std::vector<obsd_t> &observations) {
+        std::sort(observations.begin(), observations.end(), [](const obsd_t &left, const obsd_t &right) {
+            return left.sat < right.sat;
+        });
+        /* in-place merge of same-satellite entries: no scratch allocation */
+        std::size_t out = 0;
+        for (std::size_t in = 0; in < observations.size(); ++in)
+            {
+                if (out > 0 && observations[out - 1].sat == observations[in].sat)
+                    {
+                        merge_observation(observations[out - 1], observations[in]);
+                    }
+                else
+                    {
+                        if (out != in)
+                            {
+                                observations[out] = observations[in];
+                            }
+                        ++out;
+                    }
+            }
+        observations.resize(out);
+    };
+
+    /* member scratch vectors: their capacity persists across epochs, so this
+       per-epoch path stops allocating once warmed up */
+    std::vector<obsd_t> &rover_observations = d_fixed_base_rover_scratch;
+    rover_observations.clear();
+    rover_observations.reserve(static_cast<std::size_t>(rover_observation_count));
+    for (int index = 0; index < rover_observation_count; ++index)
+        {
+            obsd_t observation = d_obs_data[index];
+            /* the fixed-base path admits exactly the systems the whole chain
+               supports (signal table, adapter navigation-system mask, client
+               observation filter, and this merge): QZSS is deliberately not
+               among them yet — its rover observations would be excluded by
+               satexclude() anyway and could never find base counterparts */
+            const int system = observation.sat > 0 ? satsys(observation.sat, nullptr) : 0;
+            if (system != SYS_GPS && system != SYS_GAL && system != SYS_BDS)
+                {
+                    continue;
+                }
+            observation.rcv = 1;
+            clear_unsupported_slots(observation, system);
+            if (has_supported_band_measurement(observation, system))
+                {
+                    rover_observations.push_back(observation);
+                }
+        }
+    sort_and_merge(rover_observations);
+    if (rover_observations.size() > MAXOBS)
+        {
+            rover_observations.resize(MAXOBS);
+        }
+    /* d_obs_data and the counts are rewritten only when the base data is
+       actually applied (at the end of this function): every early return
+       below leaves the full multi-constellation rover set untouched so the
+       single-point fallback solves with the same satellites as a receiver
+       without NTRIP */
+
+    if (!fixed_base.has_observations || rover_observations.empty())
+        {
+            d_fixed_base_status = Rtklib_Fixed_Base_Status::MISSING_OBSERVATIONS;
+            return false;
+        }
+    if (!fixed_base.has_base_position)
+        {
+            d_fixed_base_status = Rtklib_Fixed_Base_Status::MISSING_POSITION;
+            return false;
+        }
+
+    d_fixed_base_age_s = timediff(rover_observations.front().time, fixed_base.observation_time);
+    if (!std::isfinite(d_fixed_base_age_s) || std::fabs(d_fixed_base_age_s) > d_conf.ntrip_max_correction_age_s)
+        {
+            d_fixed_base_status = Rtklib_Fixed_Base_Status::STALE;
+            return false;
+        }
+
+    double base_position_norm_squared = 0.0;
+    for (const double coordinate : fixed_base.base_position_ecef_m)
+        {
+            if (!std::isfinite(coordinate))
+                {
+                    d_fixed_base_status = Rtklib_Fixed_Base_Status::INVALID_POSITION;
+                    return false;
+                }
+            base_position_norm_squared += coordinate * coordinate;
+        }
+    if (base_position_norm_squared < 1.0e12 || base_position_norm_squared > 1.0e16)
+        {
+            d_fixed_base_status = Rtklib_Fixed_Base_Status::INVALID_POSITION;
+            return false;
+        }
+
+    std::vector<obsd_t> &base_observations = d_fixed_base_base_scratch;
+    base_observations.clear();
+    base_observations.reserve(fixed_base.observations.size());
+    for (auto observation : fixed_base.observations)
+        {
+            const int system = observation.sat > 0 ? satsys(observation.sat, nullptr) : 0;
+            if (system != SYS_GPS && system != SYS_GAL && system != SYS_BDS)
+                {
+                    continue;
+                }
+            observation.rcv = 2;
+            clear_unsupported_slots(observation, system);
+            if (!has_supported_band_measurement(observation, system))
+                {
+                    continue;
+                }
+            const auto rover = std::lower_bound(rover_observations.cbegin(), rover_observations.cend(), observation.sat,
+                [](const obsd_t &candidate, int satellite) { return candidate.sat < satellite; });
+            if (rover != rover_observations.cend() && rover->sat == observation.sat)
+                {
+                    base_observations.push_back(observation);
+                }
+        }
+    sort_and_merge(base_observations);
+    if (base_observations.size() > MAXOBS)
+        {
+            base_observations.resize(MAXOBS);
+        }
+    d_fixed_base_common_satellites = base_observations.size();
+    if (d_fixed_base_common_satellites < NTRIP_MIN_COMMON_SATELLITES)
+        {
+            d_fixed_base_status = Rtklib_Fixed_Base_Status::INSUFFICIENT_COMMON_SATELLITES;
+            return false;
+        }
+
+    bool base_changed = d_fixed_base_initialized && d_fixed_base_station_id != fixed_base.station_id;
+    double position_delta_squared = 0.0;
+    for (std::size_t index = 0; index < d_fixed_base_position_ecef_m.size(); ++index)
+        {
+            const double delta = fixed_base.base_position_ecef_m[index] - d_fixed_base_position_ecef_m[index];
+            position_delta_squared += delta * delta;
+        }
+    base_changed = base_changed || (d_fixed_base_initialized && position_delta_squared > 1.0e-6);
+    const bool correction_gap = d_fixed_base_was_applied &&
+                                d_fixed_base_last_observation_time.time != 0 &&
+                                std::fabs(timediff(fixed_base.observation_time,
+                                    d_fixed_base_last_observation_time)) > d_conf.ntrip_max_correction_age_s;
+    if (base_changed || correction_gap)
+        {
+            reset_relative_filter();
+        }
+    d_fixed_base_initialized = true;
+    d_fixed_base_station_id = fixed_base.station_id;
+    d_fixed_base_position_ecef_m = fixed_base.base_position_ecef_m;
+    d_fixed_base_last_observation_time = fixed_base.observation_time;
+    for (std::size_t index = 0; index < d_fixed_base_position_ecef_m.size(); ++index)
+        {
+            d_rtk.opt.rb[index] = d_fixed_base_position_ecef_m[index];
+        }
+
+    /* slots beyond the entry rover count are already zero (get_PVT clears the
+       whole array at epoch start), so only the leftover entry-rover slots the
+       filtered set no longer covers need clearing */
+    const int previously_filled = rover_observation_count;
+    rover_observation_count = static_cast<int>(rover_observations.size());
+    std::copy(rover_observations.cbegin(), rover_observations.cend(), d_obs_data.begin());
+    std::copy(base_observations.cbegin(), base_observations.cend(), d_obs_data.begin() + rover_observation_count);
+    base_observation_count = static_cast<int>(base_observations.size());
+    const int used = rover_observation_count + base_observation_count;
+    if (used < previously_filled)
+        {
+            std::fill(d_obs_data.begin() + used, d_obs_data.begin() + previously_filled, obsd_t{});
+        }
+    d_fixed_base_status = Rtklib_Fixed_Base_Status::APPLIED;
+    return true;
+}
+
+
+/* Latest base-stream broadcast ephemeris for a satellite, or nullptr. The
+   records are RTKLIB-format already (RTCM MT1019/1044/1045/1046/1042), so a
+   satellite the rover has not finished decoding can still contribute. */
+static const eph_t *find_base_ephemeris(const Ntrip_Rtcm_Snapshot *fixed_base, int sat)
+{
+    if (fixed_base == nullptr)
+        {
+            return nullptr;
+        }
+    // the client keeps the vector sorted by satellite number
+    const auto candidate = std::lower_bound(
+        fixed_base->ephemerides.cbegin(), fixed_base->ephemerides.cend(), sat,
+        [](const eph_t &stored, int wanted) { return stored.sat < wanted; });
+    if (candidate != fixed_base->ephemerides.cend() && candidate->sat == sat)
+        {
+            return &(*candidate);
+        }
+    return nullptr;
+}
+
+
+bool Rtklib_Solver::substitute_base_ephemeris(const Ntrip_Rtcm_Snapshot *fixed_base,
+    int sat,
+    const Gnss_Synchro &gnss_synchro,
+    const std::string &band_key,
+    std::vector<eph_t> &eph_data,
+    int &valid_obs,
+    int glo_valid_obs)
+{
+    const eph_t *base_ephemeris = find_base_ephemeris(fixed_base, sat);
+    if (base_ephemeris == nullptr)
+        {
+            return false;
+        }
+    // the substituted record's own reference time, expressed in the week
+    // convention the rover-decoded path uses for the system
+    const int system = satsys(sat, nullptr);
+    int week = 0;
+    switch (system)
+        {
+        case SYS_GAL:
+            time2gst(base_ephemeris->toe, &week);
+            break;
+        case SYS_BDS:
+            time2gpst(base_ephemeris->toe, &week);
+            break;
+        default:
+            // GPS/QZSS: RTCM MT1019/MT1044 carry the full GPS week
+            week = base_ephemeris->week;
+            break;
+        }
+    eph_data[valid_obs] = *base_ephemeris;
+    obsd_t newobs{};
+    if (system == SYS_BDS)
+        {
+            // HAS corrections cover GPS and Galileo only
+            d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                gnss_synchro, week, d_rtklib_band_index.at(band_key));
+        }
+    else
+        {
+            // HAS observation corrections apply to the measurement no matter
+            // where the ephemeris came from: mirror the rover-decoded path
+            const HAS_obs_corrections *applied_has_correction = nullptr;
+            d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                gnss_synchro,
+                d_has_obs_corr_map,
+                week,
+                d_rtklib_band_index.at(band_key),
+                &applied_has_correction,
+                system == SYS_GAL ? 0 : this->get_ref_gps_week());
+            clear_applied_has_phase_bias_discontinuity(applied_has_correction,
+                static_cast<int>(gnss_synchro.PRN));
+        }
+    valid_obs++;
+    return true;
+}
+
+
+bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map,
+    double kf_update_interval_s,
+    const SensorDataAggregator &sensor_data_aggregator,
+    bool dump_this_epoch,
+    const Ntrip_Rtcm_Snapshot *fixed_base)
 {
     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
-    std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
     std::map<int, Gps_Ephemeris>::const_iterator gps_ephemeris_iter;
     std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_ephemeris_iter;
     std::map<int, Gps_CNAV2_Ephemeris>::const_iterator gps_cnav2_ephemeris_iter;
@@ -1164,6 +1838,10 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     // ********************************************************************************
     int valid_obs = 0;      // valid observations counter
     int glo_valid_obs = 0;  // GLONASS L1/L2 valid observations counter
+
+    d_fixed_base_status = fixed_base == nullptr ? Rtklib_Fixed_Base_Status::NOT_REQUESTED : Rtklib_Fixed_Base_Status::MISSING_OBSERVATIONS;
+    d_fixed_base_age_s = 0.0;
+    d_fixed_base_common_satellites = 0;
 
     d_obs_data.fill({});
     std::vector<eph_t> eph_data(MAXOBS);
@@ -1181,35 +1859,58 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         const std::string sig_(gnss_observables_iter->second.Signal, 2);
                         const uint32_t obs_tow = gnss_observables_iter->second.interp_TOW_ms / 1000.0;
                         const int prn = static_cast<int>(gnss_observables_iter->second.PRN);
-                        if (has_active_has_do_not_use(gal_str, prn, obs_tow))
+                        Galileo_Ephemeris selected_galileo_ephemeris;
+                        bool selected_from_reduced_ced = false;
+                        const bool has_selected_galileo_ephemeris = select_galileo_ephemeris(
+                            gnss_observables_iter->second.PRN, sig_, obs_tow,
+                            selected_galileo_ephemeris, selected_from_reduced_ced);
+                        // the do-not-use exclusion must hold whether the ephemeris
+                        // comes from the rover or from the base stream: checking it
+                        // only for a selected rover ephemeris would let the
+                        // base-ephemeris substitution admit a HAS-flagged satellite
+                        // (the GPS block below checks it unconditionally too)
+                        if (!selected_from_reduced_ced && has_active_has_do_not_use(gal_str, prn, obs_tow))
                             {
                                 break;
                             }
                         // Galileo E1
                         if (sig_ == "1B")
                             {
-                                // 1 Gal - find the ephemeris for the current GALILEO SV observation. The SV PRN ID is the map key
-                                galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                                if (galileo_ephemeris_iter != galileo_ephemeris_map.cend())
+                                if (has_selected_galileo_ephemeris)
                                     {
                                         // convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                        eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second,
-                                            this->d_has_orbit_corrections_store_map[gal_str],
-                                            this->d_has_clock_corrections_store_map[gal_str]);
+                                        eph_data[valid_obs] = selected_from_reduced_ced ? eph_to_rtklib(selected_galileo_ephemeris) : eph_to_rtklib(selected_galileo_ephemeris, this->d_has_orbit_corrections_store_map[gal_str], this->d_has_clock_corrections_store_map[gal_str]);
                                         // convert observation from GNSS-SDR class to RTKLIB structure
                                         obsd_t newobs{};
                                         const HAS_obs_corrections *applied_has_correction = nullptr;
-                                        d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
-                                            gnss_observables_iter->second,
-                                            d_has_obs_corr_map,
-                                            galileo_ephemeris_iter->second.WN,
-                                            d_rtklib_band_index[sig_],
-                                            &applied_has_correction,
-                                            false);
+                                        if (selected_from_reduced_ced)
+                                            {
+                                                d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                                    gnss_observables_iter->second,
+                                                    selected_galileo_ephemeris.WN,
+                                                    d_rtklib_band_index.at(sig_));
+                                            }
+                                        else
+                                            {
+                                                d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                                    gnss_observables_iter->second,
+                                                    d_has_obs_corr_map,
+                                                    selected_galileo_ephemeris.WN,
+                                                    d_rtklib_band_index.at(sig_),
+                                                    &applied_has_correction,
+                                                    false);
+                                            }
                                         clear_applied_has_phase_bias_discontinuity(applied_has_correction, prn);
                                         valid_obs++;
                                     }
-                                else  // the ephemeris are not available for this SV
+                                // the rover has not decoded this satellite's I/NAV yet: the
+                                // base stream may have delivered its broadcast ephemeris over
+                                // NTRIP (RTCM MT1045/MT1046), so the satellite contributes
+                                // without waiting for the page decoding. E5a joins once the
+                                // rover ephemeris is available.
+                                else if (!substitute_base_ephemeris(fixed_base, satno(SYS_GAL, prn),
+                                             gnss_observables_iter->second, sig_,
+                                             eph_data, valid_obs, glo_valid_obs))
                                     {
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
                                     }
@@ -1218,9 +1919,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         // Galileo E5
                         if ((sig_ == "5X") || (sig_ == "7X"))
                             {
-                                // 1 Gal - find the ephemeris for the current GALILEO SV observation. The SV PRN ID is the map key
-                                galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                                if (galileo_ephemeris_iter != galileo_ephemeris_map.cend())
+                                if (has_selected_galileo_ephemeris)
                                     {
                                         bool found_E1_obs = false;
                                         for (int i = 0; i < valid_obs; i++)
@@ -1228,13 +1927,23 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 if (eph_data[i].sat == (static_cast<int>(gnss_observables_iter->second.PRN + NSATGPS + NSATGLO)))
                                                     {
                                                         const HAS_obs_corrections *applied_has_correction = nullptr;
-                                                        d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
-                                                            gnss_observables_iter->second,
-                                                            d_has_obs_corr_map,
-                                                            galileo_ephemeris_iter->second.WN,
-                                                            d_rtklib_band_index[sig_],
-                                                            &applied_has_correction,
-                                                            false);
+                                                        if (selected_from_reduced_ced)
+                                                            {
+                                                                d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
+                                                                    gnss_observables_iter->second,
+                                                                    selected_galileo_ephemeris.WN,
+                                                                    d_rtklib_band_index.at(sig_));
+                                                            }
+                                                        else
+                                                            {
+                                                                d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
+                                                                    gnss_observables_iter->second,
+                                                                    d_has_obs_corr_map,
+                                                                    selected_galileo_ephemeris.WN,
+                                                                    d_rtklib_band_index.at(sig_),
+                                                                    &applied_has_correction,
+                                                                    false);
+                                                            }
                                                         clear_applied_has_phase_bias_discontinuity(applied_has_correction, prn);
                                                         found_E1_obs = true;
                                                         break;
@@ -1244,22 +1953,30 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             {
                                                 // insert Galileo E5 obs as new obs and also insert its ephemeris
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                                eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second,
-                                                    this->d_has_orbit_corrections_store_map[gal_str],
-                                                    this->d_has_clock_corrections_store_map[gal_str]);
+                                                eph_data[valid_obs] = selected_from_reduced_ced ? eph_to_rtklib(selected_galileo_ephemeris) : eph_to_rtklib(selected_galileo_ephemeris, this->d_has_orbit_corrections_store_map[gal_str], this->d_has_clock_corrections_store_map[gal_str]);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
                                                 const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
-                                                    {}, {0.0, 0.0, 0.0}, {}};
+                                                    {}, {0.0, 0.0, 0.0}, {}, {}, {}};
                                                 const HAS_obs_corrections *applied_has_correction = nullptr;
-                                                d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
-                                                    gnss_observables_iter->second,
-                                                    d_has_obs_corr_map,
-                                                    galileo_ephemeris_iter->second.WN,
-                                                    d_rtklib_band_index[sig_],
-                                                    &applied_has_correction,
-                                                    false);
+                                                if (selected_from_reduced_ced)
+                                                    {
+                                                        d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                                            gnss_observables_iter->second,
+                                                            selected_galileo_ephemeris.WN,
+                                                            d_rtklib_band_index.at(sig_));
+                                                    }
+                                                else
+                                                    {
+                                                        d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                                            gnss_observables_iter->second,
+                                                            d_has_obs_corr_map,
+                                                            selected_galileo_ephemeris.WN,
+                                                            d_rtklib_band_index.at(sig_),
+                                                            &applied_has_correction,
+                                                            false);
+                                                    }
                                                 clear_applied_has_phase_bias_discontinuity(applied_has_correction, prn);
                                                 valid_obs++;
                                             }
@@ -1271,8 +1988,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             }
                         if (sig_ == "E6" && d_conf.use_e6_for_pvt)
                             {
-                                galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                                if (galileo_ephemeris_iter != galileo_ephemeris_map.cend())
+                                if (has_selected_galileo_ephemeris)
                                     {
                                         bool found_E1_obs = false;
                                         for (int i = 0; i < valid_obs; i++)
@@ -1283,8 +1999,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                         d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
                                                             gnss_observables_iter->second,
                                                             d_has_obs_corr_map,
-                                                            galileo_ephemeris_iter->second.WN,
-                                                            d_rtklib_band_index[sig_],
+                                                            selected_galileo_ephemeris.WN,
+                                                            d_rtklib_band_index.at(sig_),
                                                             &applied_has_correction,
                                                             false);
                                                         clear_applied_has_phase_bias_discontinuity(applied_has_correction, prn);
@@ -1296,64 +2012,23 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             {
                                                 // insert Galileo E6 obs as new obs and also insert its ephemeris
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                                eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second,
+                                                eph_data[valid_obs] = eph_to_rtklib(selected_galileo_ephemeris,
                                                     this->d_has_orbit_corrections_store_map[gal_str],
                                                     this->d_has_clock_corrections_store_map[gal_str]);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
                                                 const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
-                                                    {}, {0.0, 0.0, 0.0}, {}};
+                                                    {}, {0.0, 0.0, 0.0}, {}, {}, {}};
                                                 const HAS_obs_corrections *applied_has_correction = nullptr;
                                                 d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     d_has_obs_corr_map,
-                                                    galileo_ephemeris_iter->second.WN,
-                                                    d_rtklib_band_index[sig_],
+                                                    selected_galileo_ephemeris.WN,
+                                                    d_rtklib_band_index.at(sig_),
                                                     &applied_has_correction,
                                                     false);
                                                 clear_applied_has_phase_bias_discontinuity(applied_has_correction, prn);
-                                                valid_obs++;
-                                            }
-                                    }
-                                else  // the ephemeris are not available for this SV
-                                    {
-                                        DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
-                                    }
-                            }
-                        else if (sig_ == "E6")
-                            {
-                                galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                                if (galileo_ephemeris_iter != galileo_ephemeris_map.cend())
-                                    {
-                                        bool found_E1_obs = false;
-                                        for (int i = 0; i < valid_obs; i++)
-                                            {
-                                                if (eph_data[i].sat == (static_cast<int>(gnss_observables_iter->second.PRN + NSATGPS + NSATGLO)))
-                                                    {
-                                                        d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
-                                                            gnss_observables_iter->second,
-                                                            galileo_ephemeris_iter->second.WN,
-                                                            2);  // Band E6
-                                                        found_E1_obs = true;
-                                                        break;
-                                                    }
-                                            }
-                                        if (!found_E1_obs)
-                                            {
-                                                // insert Galileo E6 obs as new obs and also insert its ephemeris
-                                                // convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                                eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second);
-                                                // convert observation from GNSS-SDR class to RTKLIB structure
-                                                const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
-                                                obsd_t newobs = {{0, 0}, '0', '0', {}, {},
-                                                    {default_code_, default_code_, default_code_},
-                                                    {}, {0.0, 0.0, 0.0}, {}};
-                                                d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
-                                                    gnss_observables_iter->second,
-                                                    galileo_ephemeris_iter->second.WN,
-                                                    2);  // Band E6
-                                                // std::cout << "Week " << galileo_ephemeris_iter->second.WN << '\n';
                                                 valid_obs++;
                                             }
                                     }
@@ -1367,7 +2042,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 case 'G':
                 case 'J':
                     {
-                        const bool is_qzss = (gnss_observables_iter->second.PRN >= 193 && gnss_observables_iter->second.PRN <= 203);
+                        const bool is_qzss = (gnss_observables_iter->second.PRN >= 193 && gnss_observables_iter->second.PRN <= 206);
                         // GPS/QZSS L1
                         // find the ephemeris for the current SV observation. The SV PRN ID is the map key
                         const std::string gnss_str = is_qzss ? "QZSS" : "GPS";
@@ -1394,7 +2069,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         eph_data[valid_obs] = eph_to_rtklib(gps_ephemeris_iter->second,
                                             this->d_has_orbit_corrections_store_map[gnss_str],
                                             this->d_has_clock_corrections_store_map[gnss_str],
-                                            this->is_pre_2009());
+                                            this->get_ref_gps_week());
                                         // convert observation from GNSS-SDR class to RTKLIB structure
                                         obsd_t newobs{};
                                         const HAS_obs_corrections *applied_has_correction = nullptr;
@@ -1402,13 +2077,20 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             gnss_observables_iter->second,
                                             d_has_obs_corr_map,
                                             gps_ephemeris_iter->second.WN,
-                                            d_rtklib_band_index[rtklib_sig],
+                                            d_rtklib_band_index.at(rtklib_sig),
                                             &applied_has_correction,
-                                            this->is_pre_2009());
+                                            this->get_ref_gps_week());
                                         clear_applied_has_phase_bias_discontinuity(applied_has_correction, prn);
                                         valid_obs++;
                                     }
-                                else  // the ephemeris are not available for this SV
+                                // the rover has not decoded this satellite's LNAV yet: the
+                                // base stream may have delivered its broadcast ephemeris over
+                                // NTRIP (RTCM MT1019, already in RTKLIB format), so the
+                                // satellite contributes without waiting the ~30 s of subframe
+                                // decoding
+                                else if (!substitute_base_ephemeris(fixed_base, sat,
+                                             gnss_observables_iter->second, rtklib_sig,
+                                             eph_data, valid_obs, glo_valid_obs))
                                     {
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->first;
                                     }
@@ -1425,6 +2107,13 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 if (eph_data[i].sat == sat)
                                                     {
                                                         // 2. If found, attach the L2/L5 observation to the existing observation in RTKLIB structure
+                                                        // The existing entry carries the LNAV ephemeris, which has no
+                                                        // inter-signal corrections: take the ISCs from CNAV so the
+                                                        // dual-frequency correction in prange() can apply them.
+                                                        eph_data[i].isc[0] = gps_cnav_ephemeris_iter->second.ISCL1;
+                                                        eph_data[i].isc[1] = gps_cnav_ephemeris_iter->second.ISCL2;
+                                                        eph_data[i].isc[2] = gps_cnav_ephemeris_iter->second.ISCL5I;
+                                                        eph_data[i].isc[3] = gps_cnav_ephemeris_iter->second.ISCL5Q;
                                                         if (eph_data[i].apply_has_corrections)
                                                             {
                                                                 const HAS_obs_corrections *applied_has_correction = nullptr;
@@ -1432,7 +2121,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                                     gnss_observables_iter->second,
                                                                     d_has_obs_corr_map,
                                                                     gps_cnav_ephemeris_iter->second.WN,
-                                                                    d_rtklib_band_index[rtklib_sig],
+                                                                    d_rtklib_band_index.at(rtklib_sig),
                                                                     &applied_has_correction,
                                                                     false);
                                                                 clear_applied_has_phase_bias_discontinuity(applied_has_correction, prn);
@@ -1442,7 +2131,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                                 d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
                                                                     gnss_observables_iter->second,
                                                                     gps_cnav_ephemeris_iter->second.WN,
-                                                                    d_rtklib_band_index[rtklib_sig]);
+                                                                    d_rtklib_band_index.at(rtklib_sig));
                                                             }
                                                         found_existing_obs = true;
                                                         break;
@@ -1457,11 +2146,11 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
-                                                    {}, {0.0, 0.0, 0.0}, {}};
+                                                    {}, {0.0, 0.0, 0.0}, {}, {}, {}};
                                                 d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     gps_cnav_ephemeris_iter->second.WN,
-                                                    d_rtklib_band_index[rtklib_sig]);
+                                                    d_rtklib_band_index.at(rtklib_sig));
                                                 valid_obs++;
                                             }
                                         else  // the ephemeris are not available for this SV
@@ -1545,7 +2234,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
                                             glonass_gnav_ephemeris_iter->second.d_WN,
-                                            d_rtklib_band_index[sig_]);
+                                            d_rtklib_band_index.at(sig_));
                                         glo_valid_obs++;
                                     }
                                 else  // the ephemeris are not available for this SV
@@ -1568,7 +2257,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                         d_obs_data[i + valid_obs] = insert_obs_to_rtklib(d_obs_data[i + valid_obs],
                                                             gnss_observables_iter->second,
                                                             glonass_gnav_ephemeris_iter->second.d_WN,
-                                                            d_rtklib_band_index[sig_]);
+                                                            d_rtklib_band_index.at(sig_));
                                                         found_L1_obs = true;
                                                         break;
                                                     }
@@ -1583,7 +2272,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     glonass_gnav_ephemeris_iter->second.d_WN,
-                                                    d_rtklib_band_index[sig_]);
+                                                    d_rtklib_band_index.at(sig_));
                                                 glo_valid_obs++;
                                             }
                                     }
@@ -1596,30 +2285,75 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     }
                 case 'C':
                     {
-                        // BEIDOU B1I
-                        //  - find the ephemeris for the current BEIDOU SV observation. The SV PRN ID is the map key
+                        // BeiDou B1I / B1C / B3I (prefer B1C when CNAV1 + B1C obs are both present)
                         const std::string sig_(gnss_observables_iter->second.Signal);
+                        const int bds_sat = static_cast<int>(gnss_observables_iter->second.PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS);
+
                         if (sig_ == "B1")
                             {
+                                bool prefer_b1c = false;
+                                for (const auto &obs_pair : gnss_observables_map)
+                                    {
+                                        if (obs_pair.second.System == 'C' &&
+                                            obs_pair.second.PRN == gnss_observables_iter->second.PRN &&
+                                            std::string(obs_pair.second.Signal, 2) == "1D" &&
+                                            beidou_cnav1_ephemeris_map.find(obs_pair.second.PRN) != beidou_cnav1_ephemeris_map.cend())
+                                            {
+                                                prefer_b1c = true;
+                                                break;
+                                            }
+                                    }
+                                if (prefer_b1c)
+                                    {
+                                        DLOG(INFO) << "Skip B1I for PRN " << gnss_observables_iter->second.PRN
+                                                   << " (B1C present; prefer CNAV1)";
+                                        break;
+                                    }
                                 beidou_ephemeris_iter = beidou_dnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (beidou_ephemeris_iter != beidou_dnav_ephemeris_map.cend())
                                     {
-                                        // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                         eph_data[valid_obs] = eph_to_rtklib(beidou_ephemeris_iter->second);
-                                        // convert observation from GNSS-SDR class to RTKLIB structure
                                         obsd_t newobs{};
                                         d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
                                             beidou_ephemeris_iter->second.WN + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
-                                            d_rtklib_band_index[sig_]);
+                                            d_rtklib_band_index.at(sig_));
                                         valid_obs++;
                                     }
-                                else  // the ephemeris are not available for this SV
+                                else
                                     {
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->first;
                                     }
                             }
-                        // BeiDou B3
+                        if (sig_ == "1D")
+                            {
+                                const auto cnav1_iter = beidou_cnav1_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                                if (cnav1_iter != beidou_cnav1_ephemeris_map.cend())
+                                    {
+                                        eph_data[valid_obs] = eph_to_rtklib(cnav1_iter->second);
+                                        const auto page_it = beidou_cnav1_page_data_map.find(cnav1_iter->second.PRN);
+                                        if (page_it != beidou_cnav1_page_data_map.cend())
+                                            {
+                                                eph_data[valid_obs].svh = page_it->second.common.hs;
+                                            }
+                                        obsd_t newobs{};
+                                        d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                            gnss_observables_iter->second,
+                                            cnav1_iter->second.WN + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
+                                            d_rtklib_band_index.at(sig_));
+                                        valid_obs++;
+                                    }
+                                // Base-stream broadcast ephemeris substitution (RTCM MT1042):
+                                // use its DNAV orbit/clock while the rover B-CNAV1 decode
+                                // completes. B1C TGD/ISC selection remains CNAV1-only.
+                                else if (!substitute_base_ephemeris(fixed_base, bds_sat,
+                                             gnss_observables_iter->second, sig_,
+                                             eph_data, valid_obs, glo_valid_obs))
+                                    {
+                                        DLOG(INFO) << "No B-CNAV1 ephemeris data for SV " << gnss_observables_iter->second.PRN;
+                                    }
+                            }
+                        // BeiDou B3: merge with DNAV/B1I only
                         if (sig_ == "B3")
                             {
                                 beidou_ephemeris_iter = beidou_dnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -1628,34 +2362,35 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         bool found_B1I_obs = false;
                                         for (int i = 0; i < valid_obs; i++)
                                             {
-                                                if (eph_data[i].sat == (static_cast<int>(gnss_observables_iter->second.PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS)))
+                                                if (eph_data[i].sat == bds_sat && eph_data[i].code != BDS_EPH_SOURCE_CNAV1)
                                                     {
-                                                        d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
-                                                            gnss_observables_iter->second,
-                                                            beidou_ephemeris_iter->second.WN + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
-                                                            d_rtklib_band_index[sig_]);
-                                                        found_B1I_obs = true;
-                                                        break;
+                                                        const unsigned char c0 = d_obs_data[i + glo_valid_obs].code[0];
+                                                        if (c0 == CODE_L2I || c0 == CODE_L1I)
+                                                            {
+                                                                d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
+                                                                    gnss_observables_iter->second,
+                                                                    beidou_ephemeris_iter->second.WN + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
+                                                                    d_rtklib_band_index.at(sig_));
+                                                                found_B1I_obs = true;
+                                                                break;
+                                                            }
                                                     }
                                             }
                                         if (!found_B1I_obs)
                                             {
-                                                // insert BeiDou B3I obs as new obs and also insert its ephemeris
-                                                // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                                 eph_data[valid_obs] = eph_to_rtklib(beidou_ephemeris_iter->second);
-                                                // convert observation from GNSS-SDR class to RTKLIB structure
                                                 const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
-                                                    {}, {0.0, 0.0, 0.0}, {}};
+                                                    {}, {0.0, 0.0, 0.0}, {}, {}, {}};
                                                 d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     beidou_ephemeris_iter->second.WN + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
-                                                    d_rtklib_band_index[sig_]);
+                                                    d_rtklib_band_index.at(sig_));
                                                 valid_obs++;
                                             }
                                     }
-                                else  // the ephemeris are not available for this SV
+                                else
                                     {
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
                                     }
@@ -1669,19 +2404,96 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 }
         }
 
+    int navigation_ephemerides = valid_obs;
+    if (d_rtk.opt.sateph == EPHOPT_SBAS)
+        {
+            for (const auto &previous_ephemeris : gps_previous_ephemeris_map)
+                {
+                    const bool is_qzss = MINPRNQZS <= previous_ephemeris.first && previous_ephemeris.first <= MAXPRNQZS;
+                    const int satellite = satno(is_qzss ? SYS_QZS : SYS_GPS, previous_ephemeris.first);
+                    bool satellite_is_observed = false;
+                    for (int index = 0; index < valid_obs; ++index)
+                        {
+                            if (eph_data[index].sat == satellite)
+                                {
+                                    satellite_is_observed = true;
+                                    break;
+                                }
+                        }
+                    if (!satellite_is_observed)
+                        {
+                            continue;
+                        }
+
+                    if (navigation_ephemerides >= static_cast<int>(eph_data.size()))
+                        {
+                            eph_data.resize(static_cast<size_t>(navigation_ephemerides) + 1);
+                        }
+                    const std::string system = is_qzss ? "QZSS" : "GPS";
+                    eph_data[navigation_ephemerides] = eph_to_rtklib(previous_ephemeris.second,
+                        d_has_orbit_corrections_store_map[system],
+                        d_has_clock_corrections_store_map[system],
+                        this->get_ref_gps_week());
+                    ++navigation_ephemerides;
+                }
+        }
+
     // **********************************************************************
     // ****** SOLVE PVT******************************************************
     // **********************************************************************
 
+    int rover_observation_count = valid_obs + glo_valid_obs;
+    int base_observation_count = 0;
+    bool fixed_base_applied = false;
+    if (fixed_base != nullptr)
+        {
+            const bool fixed_base_was_applied = d_fixed_base_was_applied;
+            fixed_base_applied = prepare_fixed_base_observations(*fixed_base, rover_observation_count, base_observation_count);
+            if (!fixed_base_applied && fixed_base_was_applied)
+                {
+                    // Do not resume carrier-phase ambiguities after an outage.
+                    // The temporary single-point fallback updates solution time
+                    // but does not make the prior relative filter state valid.
+                    reset_relative_filter();
+                }
+            d_fixed_base_was_applied = fixed_base_applied;
+        }
+    const bool use_single_fallback = fixed_base != nullptr && !fixed_base_applied && d_conf.ntrip_fallback_to_single;
+    const int nobs_total = rover_observation_count + base_observation_count;
+
     this->set_valid_position(false);
-    if ((valid_obs + glo_valid_obs) > 3)
+    if (fixed_base != nullptr && !fixed_base_applied && !d_conf.ntrip_fallback_to_single)
+        {
+            this->set_num_valid_observations(0);
+            return false;
+        }
+    if (rover_observation_count > 3)
         {
             int result = 0;
+
+            const auto sbas_time_reference = std::find_if(
+                gnss_observables_map.cbegin(), gnss_observables_map.cend(),
+                [](const std::pair<const int, Gnss_Synchro> &entry) {
+                    return entry.second.fs > 0;
+                });
+            if (sbas_time_reference != gnss_observables_map.cend())
+                {
+                    int gps_week = 0;
+                    const double gps_tow_s = time2gpst(d_obs_data[0].time, &gps_week);
+                    const auto &reference_observation = sbas_time_reference->second;
+                    const double receiver_sample_stamp_s =
+                        (static_cast<double>(reference_observation.Tracking_sample_counter) +
+                            reference_observation.Code_phase_samples) /
+                        static_cast<double>(reference_observation.fs);
+                    d_sbas_corrections.update(gps_week, gps_tow_s, receiver_sample_stamp_s);
+                }
+
             d_nav_data = {};
             d_nav_data.eph = eph_data.data();
             d_nav_data.geph = geph_data.data();
-            d_nav_data.n = valid_obs;
+            d_nav_data.n = navigation_ephemerides;
             d_nav_data.ng = glo_valid_obs;
+            d_sbas_corrections.copy_to(d_nav_data);
             if (gps_iono.valid)
                 {
                     d_nav_data.ion_gps[0] = gps_iono.alpha0;
@@ -1693,7 +2505,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_nav_data.ion_gps[6] = gps_iono.beta2;
                     d_nav_data.ion_gps[7] = gps_iono.beta3;
                 }
-            if (!(gps_iono.valid) and gps_cnav_iono.valid)
+            if (!(gps_iono.valid) && gps_cnav_iono.valid)
                 {
                     d_nav_data.ion_gps[0] = gps_cnav_iono.alpha0;
                     d_nav_data.ion_gps[1] = gps_cnav_iono.alpha1;
@@ -1703,6 +2515,31 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_nav_data.ion_gps[5] = gps_cnav_iono.beta1;
                     d_nav_data.ion_gps[6] = gps_cnav_iono.beta2;
                     d_nav_data.ion_gps[7] = gps_cnav_iono.beta3;
+                }
+            if (qzss_iono.valid || qzss_cnav_iono.valid)
+                {
+                    const Gps_Iono &qzss_iono_ref = qzss_iono.valid ? static_cast<const Gps_Iono &>(qzss_iono) : static_cast<const Gps_Iono &>(qzss_cnav_iono);
+                    d_nav_data.ion_qzs[0] = qzss_iono_ref.alpha0;
+                    d_nav_data.ion_qzs[1] = qzss_iono_ref.alpha1;
+                    d_nav_data.ion_qzs[2] = qzss_iono_ref.alpha2;
+                    d_nav_data.ion_qzs[3] = qzss_iono_ref.alpha3;
+                    d_nav_data.ion_qzs[4] = qzss_iono_ref.beta0;
+                    d_nav_data.ion_qzs[5] = qzss_iono_ref.beta1;
+                    d_nav_data.ion_qzs[6] = qzss_iono_ref.beta2;
+                    d_nav_data.ion_qzs[7] = qzss_iono_ref.beta3;
+                    if (!(gps_iono.valid) && !(gps_cnav_iono.valid))
+                        {
+                            // Keep the GPS-interoperable QZSS Klobuchar coefficients available
+                            // to the broadcast ionospheric model in QZSS-only configurations
+                            d_nav_data.ion_gps[0] = qzss_iono_ref.alpha0;
+                            d_nav_data.ion_gps[1] = qzss_iono_ref.alpha1;
+                            d_nav_data.ion_gps[2] = qzss_iono_ref.alpha2;
+                            d_nav_data.ion_gps[3] = qzss_iono_ref.alpha3;
+                            d_nav_data.ion_gps[4] = qzss_iono_ref.beta0;
+                            d_nav_data.ion_gps[5] = qzss_iono_ref.beta1;
+                            d_nav_data.ion_gps[6] = qzss_iono_ref.beta2;
+                            d_nav_data.ion_gps[7] = qzss_iono_ref.beta3;
+                        }
                 }
             if (galileo_iono.ai0 != 0.0)
                 {
@@ -1718,9 +2555,26 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_nav_data.ion_cmp[2] = beidou_dnav_iono.alpha2;
                     d_nav_data.ion_cmp[3] = beidou_dnav_iono.alpha3;
                     d_nav_data.ion_cmp[4] = beidou_dnav_iono.beta0;
-                    d_nav_data.ion_cmp[5] = beidou_dnav_iono.beta0;
-                    d_nav_data.ion_cmp[6] = beidou_dnav_iono.beta0;
+                    d_nav_data.ion_cmp[5] = beidou_dnav_iono.beta1;
+                    d_nav_data.ion_cmp[6] = beidou_dnav_iono.beta2;
                     d_nav_data.ion_cmp[7] = beidou_dnav_iono.beta3;
+                }
+            if (beidou_cnav1_iono.valid)
+                {
+                    d_nav_data.ion_bdgim[0] = beidou_cnav1_iono.alpha1;
+                    d_nav_data.ion_bdgim[1] = beidou_cnav1_iono.alpha2;
+                    d_nav_data.ion_bdgim[2] = beidou_cnav1_iono.alpha3;
+                    d_nav_data.ion_bdgim[3] = beidou_cnav1_iono.alpha4;
+                    d_nav_data.ion_bdgim[4] = beidou_cnav1_iono.alpha5;
+                    d_nav_data.ion_bdgim[5] = beidou_cnav1_iono.alpha6;
+                    d_nav_data.ion_bdgim[6] = beidou_cnav1_iono.alpha7;
+                    d_nav_data.ion_bdgim[7] = beidou_cnav1_iono.alpha8;
+                    d_nav_data.ion_bdgim[8] = beidou_cnav1_iono.alpha9;
+                    d_nav_data.ion_bdgim_valid = 1;
+                }
+            else
+                {
+                    d_nav_data.ion_bdgim_valid = 0;
                 }
             if (gps_utc_model.valid)
                 {
@@ -1730,13 +2584,27 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_nav_data.utc_gps[3] = gps_utc_model.WN_T;
                     d_nav_data.leaps = gps_utc_model.DeltaT_LS;
                 }
-            if (!(gps_utc_model.valid) and gps_cnav_utc_model.valid)
+            if (!(gps_utc_model.valid) && gps_cnav_utc_model.valid)
                 {
                     d_nav_data.utc_gps[0] = gps_cnav_utc_model.A0;
                     d_nav_data.utc_gps[1] = gps_cnav_utc_model.A1;
                     d_nav_data.utc_gps[2] = gps_cnav_utc_model.tot;
                     d_nav_data.utc_gps[3] = gps_cnav_utc_model.WN_T;
                     d_nav_data.leaps = gps_cnav_utc_model.DeltaT_LS;
+                }
+            if (qzss_utc_model.valid || qzss_cnav_utc_model.valid)
+                {
+                    const Gps_Utc_Model &qzss_utc_ref = qzss_utc_model.valid ? static_cast<const Gps_Utc_Model &>(qzss_utc_model) : static_cast<const Gps_Utc_Model &>(qzss_cnav_utc_model);
+                    d_nav_data.utc_qzs[0] = qzss_utc_ref.A0;
+                    d_nav_data.utc_qzs[1] = qzss_utc_ref.A1;
+                    d_nav_data.utc_qzs[2] = qzss_utc_ref.tot;
+                    d_nav_data.utc_qzs[3] = qzss_utc_ref.WN_T;
+                    if (!(gps_utc_model.valid) && !(gps_cnav_utc_model.valid))
+                        {
+                            // QZSS time is aligned with GPS time, so its leap seconds apply
+                            // in QZSS-only configurations
+                            d_nav_data.leaps = qzss_utc_ref.DeltaT_LS;
+                        }
                 }
             if (glonass_gnav_utc_model.valid)
                 {
@@ -1759,7 +2627,19 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_nav_data.utc_cmp[1] = beidou_dnav_utc_model.A1_UTC;
                     d_nav_data.utc_cmp[2] = 0.0;  // ??
                     d_nav_data.utc_cmp[3] = 0.0;  // ??
-                    d_nav_data.leaps = beidou_dnav_utc_model.DeltaT_LS;
+                    // RTKLIB stores the GPS-UTC leap-second count, whereas the
+                    // BeiDou message broadcasts BDT-UTC.
+                    d_nav_data.leaps = beidou_dnav_utc_model.DeltaT_LS + BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET;
+                }
+            else if (beidou_cnav1_utc_model.valid)
+                {
+                    d_nav_data.utc_cmp[0] = beidou_cnav1_utc_model.A0;
+                    d_nav_data.utc_cmp[1] = beidou_cnav1_utc_model.A1;
+                    d_nav_data.utc_cmp[2] = static_cast<double>(beidou_cnav1_utc_model.tot);
+                    d_nav_data.utc_cmp[3] = static_cast<double>(beidou_cnav1_utc_model.WN_t);
+                    // RTKLIB stores the GPS-UTC leap-second count, whereas the
+                    // BeiDou message broadcasts BDT-UTC.
+                    d_nav_data.leaps = beidou_cnav1_utc_model.delta_t_LS + BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET;
                 }
 
             /* update carrier wave length using native function call in RTKlib */
@@ -1770,12 +2650,46 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             d_nav_data.lam[i][j] = satwavelen(i + 1, d_rtklib_freq_index[j], &d_nav_data);
                         }
                 }
-
-            result = rtkpos(&d_rtk, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data);
-
-            if (result == 0)
+            for (int i = 0; i < nobs_total; ++i)
                 {
-                    LOG(INFO) << "RTKLIB rtkpos error: " << d_rtk.errbuf;
+                    update_galileo_observation_wavelengths(d_obs_data[i]);
+                }
+
+            /* B1C on slot 0: override lam[0] to FREQ1 (satwavelen frq0 is B1I). */
+            for (int k = 0; k < nobs_total; k++)
+                {
+                    if (satsys(d_obs_data[k].sat, nullptr) != SYS_BDS)
+                        {
+                            continue;
+                        }
+                    const unsigned char c0 = d_obs_data[k].code[0];
+                    if (is_bds_b1c_code(c0))
+                        {
+                            d_nav_data.lam[d_obs_data[k].sat - 1][0] = SPEED_OF_LIGHT_M_S / FREQ1;
+                        }
+                }
+            const int configured_positioning_mode = d_rtk.opt.mode;
+            if (use_single_fallback)
+                {
+                    d_rtk.opt.mode = PMODE_SINGLE;
+                }
+            result = rtkpos(&d_rtk, d_obs_data.data(), nobs_total, &d_nav_data);
+            d_rtk.opt.mode = configured_positioning_mode;
+            if (fixed_base_applied && result != 0 && d_rtk.sol.stat == SOLQ_SINGLE)
+                {
+                    d_fixed_base_status = Rtklib_Fixed_Base_Status::SOLVER_FALLBACK;
+                }
+            else if (fixed_base_applied && (result == 0 || d_rtk.sol.stat == SOLQ_NONE))
+                {
+                    d_fixed_base_status = Rtklib_Fixed_Base_Status::SOLVER_FAILURE;
+                }
+
+            if (result == 0 || d_rtk.sol.stat == SOLQ_NONE)
+                {
+                    if (d_rtk.neb > 0)
+                        {
+                            LOG(INFO) << "RTKLIB rtkpos error: " << d_rtk.errbuf;
+                        }
                     d_rtk.neb = 0;                 // clear error buffer to avoid repeating the error message
                     this->set_time_offset_s(0.0);  // reset rx time estimation
                     this->set_num_valid_observations(0);
@@ -1857,20 +2771,30 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     rx_position_and_time[1] = pvt_sol.rr[1];  // [m]
                     rx_position_and_time[2] = pvt_sol.rr[2];  // [m]
 
-                    // todo: fix this ambiguity in the RTKLIB units in receiver clock offset!
-                    if (d_rtk.opt.mode == PMODE_SINGLE)
+                    const bool is_ppp_solution = d_rtk.opt.mode >= PMODE_PPP_KINEMA && pvt_sol.stat == SOLQ_PPP;
+                    if (!is_ppp_solution)
                         {
-                            // if the RTKLIB solver is set to SINGLE, the dtr is already expressed in [s]
-                            // add also the clock offset from gps to galileo (pvt_sol.dtr[2])
+                            // SPP and relative-positioning solutions express dtr in seconds.
                             rx_position_and_time[3] = pvt_sol.dtr[0] + pvt_sol.dtr[2];
                         }
                     else
                         {
-                            // the receiver clock offset is expressed in [meters], so we convert it into [s]
-                            // add also the clock offset from gps to galileo (pvt_sol.dtr[2])
+                            // PPP stores its estimated receiver-clock state in metres. Inter-system
+                            // offsets retained from the point solution remain in seconds.
                             rx_position_and_time[3] = pvt_sol.dtr[2] + pvt_sol.dtr[0] / SPEED_OF_LIGHT_M_S;
                         }
                     this->set_rx_pos({rx_position_and_time[0], rx_position_and_time[1], rx_position_and_time[2]});  // save ECEF position for the next iteration
+
+                    /* RTKLIB stamps SOLQ_PPP whenever the PPP filter runs, even on
+                       broadcast orbits and clocks; only claim PPP when precise
+                       products are loaded. Demoting here - after the PPP dtr-unit
+                       handling above, which must follow the filter's internal
+                       state - keeps the console, Monitor, dump and NMEA outputs
+                       consistent with each other */
+                    if (pvt_sol.stat == SOLQ_PPP && !has_precise_ephemeris())
+                        {
+                            pvt_sol.stat = SOLQ_SINGLE;
+                        }
 
                     // compute Ground speed and COG
                     double ground_speed_ms = 0.0;
@@ -1897,7 +2821,12 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                     // gtime_t rtklib_utc_time = gpst2utc(pvt_sol.time); // Corrected RX Time (Non integer multiply of 1 ms of granularity)
                     // Uncorrected RX Time (integer multiply of 1 ms and the same observables time reported in RTCM and RINEX)
-                    const gtime_t rtklib_time = timeadd(pvt_sol.time, rx_position_and_time[3]);  // uncorrected rx time
+                    // Note: estpos() corrects the solution time only by the receiver-to-GPS clock
+                    // state dtr[0], so only that term must be added back here. In solutions without
+                    // GPS satellites, the receiver clock offset is absorbed by the inter-system
+                    // states (dtr[1..3]) and pvt_sol.time already holds the uncorrected epoch.
+                    const double dtr0_s = is_ppp_solution ? pvt_sol.dtr[0] / SPEED_OF_LIGHT_M_S : pvt_sol.dtr[0];
+                    const gtime_t rtklib_time = timeadd(pvt_sol.time, dtr0_s);  // uncorrected rx time
                     const gtime_t rtklib_utc_time = gpst2utc(rtklib_time);
                     boost::posix_time::ptime p_time = boost::posix_time::from_time_t(rtklib_utc_time.time);
                     p_time += boost::posix_time::microseconds(static_cast<long>(round(rtklib_utc_time.sec * 1e6)));  // NOLINT(google-runtime-int)
@@ -1913,7 +2842,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // TOW
                     d_monitor_pvt.TOW_at_current_symbol_ms = gnss_observables_map.cbegin()->second.TOW_at_current_symbol_ms;
                     // WEEK
-                    d_monitor_pvt.week = adjgpsweek(d_nav_data.eph[0].week, this->is_pre_2009());
+                    d_monitor_pvt.week = adjgpsweek(d_nav_data.eph[0].week, this->get_ref_gps_week());
                     // PVT GPS time
                     d_monitor_pvt.RX_time = gnss_observables_map.cbegin()->second.RX_time;
                     // User clock offset [s]
@@ -1997,7 +2926,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_monitor_pvt.utc_time = stream.str();
 
                     // ######## LOG FILE #########
-                    if (d_flag_dump_enabled == true)
+                    if (d_flag_dump_enabled == true && dump_this_epoch == true)
                         {
                             // MULTIPLEXED FILE RECORDING - Record results to file
                             try
@@ -2008,7 +2937,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     tmp_uint32 = gnss_observables_map.cbegin()->second.TOW_at_current_symbol_ms;
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
                                     // WEEK
-                                    tmp_uint32 = adjgpsweek(d_nav_data.eph[0].week, this->is_pre_2009());
+                                    tmp_uint32 = adjgpsweek(d_nav_data.eph[0].week, this->get_ref_gps_week());
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
                                     // PVT GPS time
                                     tmp_double = gnss_observables_map.cbegin()->second.RX_time;

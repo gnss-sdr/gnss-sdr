@@ -114,6 +114,8 @@ public:
                 obs->set_flag_valid_pseudorange(gs.Flag_valid_pseudorange);
                 obs->set_flag_pll_180_deg_phase_locked(gs.Flag_PLL_180_deg_phase_locked);
                 obs->set_flag_cycle_slip(gs.Flag_cycle_slip);
+                obs->set_flag_carrier_phase_discontinuity(!gs.Flag_carrier_phase_continuous);
+                obs->set_flag_half_cycle_slip(gs.Flag_half_cycle_slip);
                 obs->set_interp_tow_ms(gs.interp_TOW_ms);
             }
         if (!observables.SerializeToString(&data))
@@ -163,6 +165,8 @@ public:
                 gs.Flag_valid_pseudorange = gs_read.flag_valid_pseudorange();
                 gs.Flag_PLL_180_deg_phase_locked = gs_read.flag_pll_180_deg_phase_locked();
                 gs.Flag_cycle_slip = gs_read.flag_cycle_slip();
+                gs.Flag_carrier_phase_continuous = !gs_read.flag_carrier_phase_discontinuity();
+                gs.Flag_half_cycle_slip = gs_read.flag_half_cycle_slip();
                 gs.interp_TOW_ms = gs_read.interp_tow_ms();
 
                 vgs.push_back(gs);

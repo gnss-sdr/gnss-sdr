@@ -16,6 +16,7 @@
 
 #include "gnss_satellite.h"
 #include "GLONASS_L1_L2_CA.h"
+#include "SBAS_L1.h"
 #include <stdexcept>
 #include <utility>
 
@@ -244,7 +245,7 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     if (system == "GPS")
         {
-            if (PRN_ < 1 or PRN_ > 32)
+            if (PRN_ < 1 || PRN_ > 32)
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
@@ -256,7 +257,7 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     else if (system == "Glonass")
         {
-            if (PRN_ == 0 or GLONASS_PRN.find(PRN_) == GLONASS_PRN.cend())
+            if (PRN_ == 0 || GLONASS_PRN.find(PRN_) == GLONASS_PRN.cend())
                 {
                     DLOG(INFO) << "This GLONASS slot/frequency channel is not configured";
                     PRN = 0;
@@ -268,24 +269,23 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     else if (system == "SBAS")
         {
-            if ((PRN_ == 120)      // EGNOS Test Platform.Inmarsat 3-F2 (Atlantic Ocean Region-East)
-                || (PRN_ == 123)   // EGNOS Operational Platform. Astra 5B
-                || (PRN_ == 131)   // WAAS Eutelsat 117 West B
-                || (PRN_ == 135)   // WAAS Galaxy 15
-                || (PRN_ == 136)   // EGNOS Operational Platform. SES-5 (a.k.a. Sirius 5 or Astra 4B)
-                || (PRN_ == 138))  // WAAS Anik F1R
-                {
-                    PRN = PRN_;
-                }
-            else
+            // SBAS PRN assignments (RTCA DO-229, Table A-1) are reassigned between
+            // satellites over time, so no specific PRN-to-satellite mapping is
+            // hardcoded here. Any PRN within the supported range is accepted;
+            // see SBAS_L1_PRN_MIN/SBAS_L1_PRN_MAX for the currently supported range.
+            if (PRN_ < SBAS_L1_PRN_MIN || PRN_ > SBAS_L1_PRN_MAX)
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
                 }
+            else
+                {
+                    PRN = PRN_;
+                }
         }
     else if (system == "Galileo")
         {
-            if (PRN_ < 1 or PRN_ > 36)
+            if (PRN_ < 1 || PRN_ > 36)
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
@@ -297,7 +297,7 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     else if (system == "Beidou")
         {
-            if (PRN_ < 1 or PRN_ > 63)
+            if (PRN_ < 1 || PRN_ > 63)
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
@@ -309,7 +309,7 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     else if (system == "QZSS")
         {
-            if (PRN_ < 193 or PRN_ > 201)
+            if (PRN_ < 193 || PRN_ > 206)
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
@@ -493,29 +493,10 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
         }
     if (system_ == "SBAS")
         {
-            switch (PRN_)
-                {
-                case 120:
-                    block_ = std::string("EGNOS Test Platform");  // Inmarsat 3-F2 (Atlantic Ocean Region-East)
-                    break;
-                case 123:
-                    block_ = std::string("EGNOS");  // EGNOS Operational Platform. Astra 5B
-                    break;
-                case 131:                          // NOLINT(bugprone-branch-clone)
-                    block_ = std::string("WAAS");  // WAAS Eutelsat 117 West B
-                    break;
-                case 135:
-                    block_ = std::string("WAAS");  // WAAS Galaxy 15
-                    break;
-                case 136:
-                    block_ = std::string("EGNOS");  // EGNOS Operational Platform. SES-5 (a.k.a. Sirius 5 or Astra 4B)
-                    break;
-                case 138:
-                    block_ = std::string("WAAS");  // WAAS Anik F1R
-                    break;
-                default:
-                    block_ = std::string("Unknown");
-                }
+            // Which augmentation service (EGNOS, WAAS, GAGAN, ...) owns a given PRN
+            // changes over time as satellites are reassigned, so no per-PRN service
+            // name is hardcoded here to avoid publishing stale information.
+            block_ = std::string("SBAS");
         }
     if (system_ == "Galileo")
         {
@@ -600,6 +581,9 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                 case 27:
                     block_ = std::string("FOC-FM17");  // Galileo Full Operational Capability (FOC) satellite FM17 / GSAT0217, launched on Dec. 12, 2017.
                     break;
+                case 28:
+                    block_ = std::string("FOC-FM33");  // Galileo Full Operational Capability (FOC) satellite FM33 / GSAT0233, launched on Dec. 17, 2025.
+                    break;
                 case 29:
                     block_ = std::string("FOC-FM25");  // Galileo Full Operational Capability (FOC) satellite FM25 / GSAT0225, launched on Apr. 28, 2024.
                     break;
@@ -608,6 +592,9 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                     break;
                 case 31:
                     block_ = std::string("FOC-FM18");  // Galileo Full Operational Capability (FOC) satellite FM18 / GSAT0218, launched on Dec. 12, 2017.
+                    break;
+                case 32:
+                    block_ = std::string("FOC-FM34");  // Galileo Full Operational Capability (FOC) satellite FM34 / GSAT0234, launched on Dec. 17, 2025.
                     break;
                 case 33:
                     block_ = std::string("FOC-FM22");  // Galileo Full Operational Capability (FOC) satellite FM22 / GSAT0222, launched on Jul. 25, 2018.

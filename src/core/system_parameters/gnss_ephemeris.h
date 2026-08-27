@@ -67,23 +67,26 @@ public:
 
     void satellitePosition(double transmitTime);  //!< Computes the ECEF SV coordinates and ECEF velocity
 
-    uint32_t PRN{};     //!< SV ID
-    double M_0{};       //!< Mean anomaly at reference time [rad]
-    double delta_n{};   //!< Mean motion difference from computed value [rad/sec]
-    double ecc{};       //!< Eccentricity
-    double sqrtA{};     //!< Square root of the semi-major axis [meters^1/2]
-    double OMEGA_0{};   //!< Longitude of ascending node of orbital plane at weekly epoch [rad]
-    double i_0{};       //!< Inclination angle at reference time [rad]
-    double omega{};     //!< Argument of perigee [rad]
-    double OMEGAdot{};  //!< Rate of right ascension [rad/sec]
-    double idot{};      //!< Rate of inclination angle [rad/sec]
-    double Cuc{};       //!< Amplitude of the cosine harmonic correction term to the argument of latitude [rad]
-    double Cus{};       //!< Amplitude of the sine harmonic correction term to the argument of latitude [rad]
-    double Crc{};       //!< Amplitude of the cosine harmonic correction term to the orbit radius [meters]
-    double Crs{};       //!< Amplitude of the sine harmonic correction term to the orbit radius [meters]
-    double Cic{};       //!< Amplitude of the cosine harmonic correction term to the angle of inclination [rad]
-    double Cis{};       //!< Amplitude of the sine harmonic correction term to the angle of inclination [rad]
-    int32_t toe{};      //!< Ephemeris reference time [s]
+    uint32_t PRN{};       //!< SV ID
+    double M_0{};         //!< Mean anomaly at reference time [rad]
+    double Adot{};        //!< Change rate in semi-major axis (CNAV)
+    double delta_ndot{};  //!< Rate of mean motion difference from computed value (CNAV)
+    double delta_n{};     //!< Mean motion difference from computed value [rad/sec]
+    double ecc{};         //!< Eccentricity
+    double sqrtA{};       //!< Square root of the semi-major axis [meters^1/2]
+    double A0{};          //!< Semi-major axis [meters] (B-CNAV1); unused when sqrtA is set
+    double OMEGA_0{};     //!< Longitude of ascending node of orbital plane at weekly epoch [rad]
+    double i_0{};         //!< Inclination angle at reference time [rad]
+    double omega{};       //!< Argument of perigee [rad]
+    double OMEGAdot{};    //!< Rate of right ascension [rad/sec]
+    double idot{};        //!< Rate of inclination angle [rad/sec]
+    double Cuc{};         //!< Amplitude of the cosine harmonic correction term to the argument of latitude [rad]
+    double Cus{};         //!< Amplitude of the sine harmonic correction term to the argument of latitude [rad]
+    double Crc{};         //!< Amplitude of the cosine harmonic correction term to the orbit radius [meters]
+    double Crs{};         //!< Amplitude of the sine harmonic correction term to the orbit radius [meters]
+    double Cic{};         //!< Amplitude of the cosine harmonic correction term to the angle of inclination [rad]
+    double Cis{};         //!< Amplitude of the sine harmonic correction term to the angle of inclination [rad]
+    int32_t toe{};        //!< Ephemeris reference time [s]
 
     // Clock correction parameters
     int32_t toc{};  //!< Clock correction data reference Time of Week [sec]

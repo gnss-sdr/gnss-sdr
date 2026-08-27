@@ -34,6 +34,7 @@
 
 #include "rtklib_rtcm3.h"
 #include "rtklib_rtkcmn.h"
+#include <cstdio>
 #include <cstring>
 
 
@@ -75,10 +76,10 @@ const char *msm_sig_sbs[32] = {
 
 
 const char *msm_sig_cmp[32] = {
-    /* BeiDou: ref [15] table 3.5-106 */
-    "", "1I", "1Q", "1X", "", "", "", "6I", "6Q", "6X", "", "",
+    /* BeiDou: ref [15] table 3.5-106, B1C signal IDs 30-32 per RTCM 3.3 */
+    "", "2I", "2Q", "2X", "", "", "", "6I", "6Q", "6X", "", "",
     "", "7I", "7Q", "7X", "", "", "", "", "", "", "", "",
-    "", "", "", "", "", "", "", ""};
+    "", "", "", "", "", "1D", "1P", "1X"};
 
 /* get sign-magnitude bits ---------------------------------------------------*/
 double getbitg(const unsigned char *buff, int pos, int len)
@@ -1015,7 +1016,7 @@ int decode_type1013(rtcm_t *rtcm __attribute__((unused)))
 
 
 /* decode type 1019: gps ephemerides -----------------------------------------*/
-int decode_type1019(rtcm_t *rtcm, bool pre_2009_file)
+int decode_type1019(rtcm_t *rtcm, int ref_week)
 {
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -1115,7 +1116,7 @@ int decode_type1019(rtcm_t *rtcm, bool pre_2009_file)
             return -1;
         }
     eph.sat = sat;
-    eph.week = adjgpsweek(week, pre_2009_file);
+    eph.week = adjgpsweek(week, ref_week);
     eph.toe = gpst2time(eph.week, eph.toes);
     eph.toc = gpst2time(eph.week, toc);
     eph.ttr = rtcm->time;
@@ -1514,7 +1515,7 @@ int decode_type1039(rtcm_t *rtcm __attribute__((unused)))
 
 
 /* decode type 1044: qzss ephemerides (ref [15]) -----------------------------*/
-int decode_type1044(rtcm_t *rtcm, bool pre_2009_file)
+int decode_type1044(rtcm_t *rtcm, int ref_week)
 {
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -1607,7 +1608,7 @@ int decode_type1044(rtcm_t *rtcm, bool pre_2009_file)
             return -1;
         }
     eph.sat = sat;
-    eph.week = adjgpsweek(week, pre_2009_file);
+    eph.week = adjgpsweek(week, ref_week);
     eph.toe = gpst2time(eph.week, eph.toes);
     eph.toc = gpst2time(eph.week, toc);
     eph.ttr = rtcm->time;
@@ -1971,7 +1972,7 @@ int decode_type1047(rtcm_t *rtcm)
 }
 
 
-/* decode type 63: beidou ephemerides (rtcm draft) ---------------------------*/
+/* decode type 1042/63: beidou ephemerides (1042: RTCM 3.3, 63: rtcm draft) --*/
 int decode_type63(rtcm_t *rtcm)
 {
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
@@ -2000,7 +2001,7 @@ int decode_type63(rtcm_t *rtcm)
             i += 5; /* AODE */
             toc = getbitu(rtcm->buff, i, 17) * 8.0;
             i += 17;
-            eph.f2 = getbits(rtcm->buff, i, 11) * TWO_N55;
+            eph.f2 = getbits(rtcm->buff, i, 11) * TWO_N66;
             i += 11;
             eph.f1 = getbits(rtcm->buff, i, 22) * TWO_N50;
             i += 22;
@@ -2992,12 +2993,30 @@ int decode_ssr7(rtcm_t *rtcm, int sys)
 void sigindex(int sys, const unsigned char *code, const int *freq, int n,
     const char *opt, int *ind)
 {
+    bool explicit_bds_slot_selection = false;
     int i;
     int nex;
     int pri;
     int pri_h[8] = {0};
     int index[8] = {0};
     int ex[32] = {0};
+
+    /* GNSS-SDR keeps B1I and B1C in the same observation slot. Respect an
+       explicit RTKLIB -CL2x/-CL1x selection; otherwise prefer B1C. */
+    if (sys == SYS_BDS && opt)
+        {
+            const char *option;
+            char selected_code[3] = "";
+            for (option = opt; (option = std::strchr(option, '-')); option++)
+                {
+                    if (std::sscanf(option, "-CL%2s", selected_code) == 1 &&
+                        (selected_code[0] == '1' || selected_code[0] == '2'))
+                        {
+                            explicit_bds_slot_selection = true;
+                            break;
+                        }
+                }
+        }
 
     /* test code priority */
     for (i = 0; i < n; i++)
@@ -3014,6 +3033,11 @@ void sigindex(int sys, const unsigned char *code, const int *freq, int n,
                 }
             /* code priority */
             pri = getcodepri(sys, code[i], opt);
+            if (pri > 0 && sys == SYS_BDS && freq[i] == 1 && !explicit_bds_slot_selection &&
+                is_bds_b1c_code(code[i]))
+                {
+                    pri += 16;
+                }
 
             /* select highest priority signal */
             if (pri > pri_h[freq[i] - 1])
@@ -3132,7 +3156,13 @@ void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
             /* frequency index for beidou */
             if (sys == SYS_BDS)
                 {
-                    if (freq[i] == 5)
+                    if (2 <= h->sigs[i] && h->sigs[i] <= 4)
+                        {
+                            /* B1I uses RINEX 2I/2Q/2X codes but retains
+                               GNSS-SDR's legacy shared B1I/B1C slot 0. */
+                            freq[i] = 1;
+                        }
+                    else if (freq[i] == 5)
                         {
                             freq[i] = 2; /* B2 */
                         }
@@ -3198,7 +3228,20 @@ void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
                     if (sat && index >= 0 && ind[k] >= 0)
                         {
                             /* satellite carrier wave length */
-                            wl = satwavelen(sat, freq[k] - 1, &rtcm->nav);
+                            if (sys == SYS_BDS && 30 <= h->sigs[k] && h->sigs[k] <= 32)
+                                {
+                                    /* RTCM BDS signal IDs 30-32 are B1C at
+                                       1575.42 MHz. B1C and B1I share RTKLIB's
+                                       first observation slot, whose generic
+                                       BDS wavelength is the 1561.098 MHz B1I
+                                       carrier. Preserve the MSM signal identity
+                                       while it is still available here. */
+                                    wl = SPEED_OF_LIGHT_M_S / FREQ1;
+                                }
+                            else
+                                {
+                                    wl = satwavelen(sat, freq[k] - 1, &rtcm->nav);
+                                }
 
                             /* glonass wave length by extended info */
                             if (sys == SYS_GLO && ex && ex[i] <= 13)
@@ -3222,8 +3265,12 @@ void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
                                 {
                                     rtcm->obs.data[index].D[ind[k]] = static_cast<float>(-(rr[i] + rrf[j]) / wl);
                                 }
+                            /* bit 0: loss of lock, bit 1: half-cycle ambiguity unresolved.
+                               Adding 2 (not 3) keeps both flags in their own bit: a set
+                               half-cycle indicator must not be reported as a cycle slip,
+                               and a real loss of lock must not overflow into bit 2 */
                             rtcm->obs.data[index].LLI[ind[k]] =
-                                lossoflock(rtcm, sat, ind[k], lock[j]) + (half[j] ? 3 : 0);
+                                lossoflock(rtcm, sat, ind[k], lock[j]) + (half[j] ? 2 : 0);
                             rtcm->obs.data[index].SNR[ind[k]] = static_cast<unsigned char>(cnr[j] * 4.0);
                             rtcm->obs.data[index].code[ind[k]] = code[k];
                         }
@@ -3989,6 +4036,9 @@ int decode_rtcm3(rtcm_t *rtcm)
         case 1047:
             ret = decode_type1047(rtcm);
             break; /* beidou ephemeris (tentative mt) */
+        case 1042:
+            ret = decode_type63(rtcm);
+            break; /* beidou ephemeris (RTCM 3.3) */
         case 63:
             ret = decode_type63(rtcm);
             break; /* beidou ephemeris (rtcm draft) */

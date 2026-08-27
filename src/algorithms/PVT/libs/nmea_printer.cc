@@ -72,7 +72,7 @@ Nmea_Printer::Nmea_Printer(const std::string& filename,
                     nmea_base_path = p.string();
                 }
 
-            if ((nmea_base_path != ".") and (d_flag_nmea_output_file == true))
+            if ((nmea_base_path != ".") && (d_flag_nmea_output_file == true))
                 {
                     std::cout << "NMEA files will be stored at " << nmea_base_path << std::endl;
                 }

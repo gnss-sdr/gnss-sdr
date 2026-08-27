@@ -2,13 +2,15 @@
  * \file sbas_l1_telemetry_decoder_gs.h
  * \brief Interface of a SBAS telemetry data decoder block
  * \author Daniel Fehr 2013. daniel.co(at)bluewin.ch
+ * \author Miguel Gómez López, 2026. mgomezl(at)ing.uc3m.es
+ * \author Víctor Castillo Agüero, 2026. victorcastilloaguero(at)gmail.com
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -22,6 +24,9 @@
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <cstddef>           // for size_t
 #include <deque>
+#include <fstream>
+#include <memory>
+#include <string>
 #include <vector>
 
 /** \addtogroup Telemetry_Decoder
@@ -34,9 +39,29 @@ class Viterbi_Decoder_Sbas;
 
 class sbas_l1_telemetry_decoder_gs;
 
+class SbasL1DumpSession
+{
+public:
+    SbasL1DumpSession();
+    ~SbasL1DumpSession();
+
+    SbasL1DumpSession(const SbasL1DumpSession &) = delete;
+    SbasL1DumpSession &operator=(const SbasL1DumpSession &) = delete;
+
+    //! Opens filename with truncation on first use and append on later uses.
+    //! Returns true on first use; stream state reports whether opening succeeded.
+    bool open(std::ofstream &stream, const std::string &filename);
+
+private:
+    class Impl;
+    std::unique_ptr<Impl> d_impl;
+};
+
 using sbas_l1_telemetry_decoder_gs_sptr = gnss_shared_ptr<sbas_l1_telemetry_decoder_gs>;
 
-sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(bool dump);
+sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
+    bool dump,
+    std::string dump_filename = std::string());
 
 /*!
  * \brief This class implements a block that decodes the SBAS integrity and
@@ -48,7 +73,17 @@ public:
     ~sbas_l1_telemetry_decoder_gs() override;
     void set_satellite(const Gnss_Satellite &satellite) override;  //!< Set satellite PRN
     void set_channel(int32_t channel) override;                    //!< Set receiver's channel
-    inline void reset() override {};
+    //! Clears all internal decoding state (buffers, aligners, Viterbi decoders)
+    //! and closes the dump file, so that a channel reassigned to a different
+    //! PRN never mixes messages from the previous satellite into its file.
+    void reset() override;
+
+    //! Exposed for unit testing: appends timestamps entering a continuous
+    //! decoder and returns the timestamps corresponding to the decoded bits.
+    static std::vector<double> consume_decoded_timestamps(
+        std::deque<double> &pending_stamps,
+        const std::vector<double> &input_stamps,
+        int32_t decoded_bits);
 
     /*!
      * \brief This is where all signal processing takes place
@@ -57,16 +92,19 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 
 private:
-    friend sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(bool dump);
+    friend sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
+        bool dump,
+        std::string dump_filename);
 
-    explicit sbas_l1_telemetry_decoder_gs(bool dump);
+    explicit sbas_l1_telemetry_decoder_gs(bool dump, std::string dump_filename = std::string());
+    static std::shared_ptr<SbasL1DumpSession> acquire_dump_session(const std::string &dump_filename);
 
     void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits);
     void align_samples();
 
-    static const int32_t D_SAMPLES_PER_SYMBOL = 2;
-    static const int32_t D_SYMBOLS_PER_BIT = 2;
-    static const int32_t D_BLOCK_SIZE_IN_BITS = 30;
+    static const int32_t D_SAMPLES_PER_SYMBOL_SBAS = 2;
+    static const int32_t D_SYMBOLS_PER_BIT_SBAS = 2;
+    static const int32_t D_BLOCK_SIZE_IN_BITS_SBAS = 30;
 
     bool d_dump;
     Gnss_Satellite d_satellite;
@@ -74,12 +112,16 @@ private:
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;
+    std::ofstream d_ems_file;
+    std::shared_ptr<SbasL1DumpSession> d_dump_session;
 
-    size_t d_block_size;               //!< number of samples which are processed during one invocation of the algorithms
-    std::vector<double> d_sample_buf;  //!< input buffer holding the samples to be processed in one block
+    size_t d_block_size;                  //!< number of samples which are processed during one invocation of the algorithms
+    std::vector<double> d_sample_buf;     //!< input buffer holding the samples to be processed in one block
+    std::vector<double> d_sample_stamps;  //!< absolute reception timestamp [s] of each sample in d_sample_buf, same indexing
 
-    typedef std::pair<int32_t, std::vector<int32_t>> msg_candiate_int_t;
-    typedef std::pair<int32_t, std::vector<uint8_t>> msg_candiate_char_t;
+    // first element: absolute reception timestamp [s] of the message's first bit
+    typedef std::pair<double, std::vector<int32_t>> msg_candiate_int_t;
+    typedef std::pair<double, std::vector<uint8_t>> msg_candiate_char_t;
 
     // helper class for sample alignment
     class Sample_Aligner
@@ -91,7 +133,11 @@ private:
          * samples length must be a multiple of two
          * for block operation
          */
-        bool get_symbols(const std::vector<double> &samples, std::vector<double> &symbols);
+        bool get_symbols(
+            const std::vector<double> &samples,
+            const std::vector<double> &sample_stamps,
+            std::vector<double> &symbols,
+            std::vector<double> &symbol_stamps);
 
     private:
         int32_t d_n_smpls_in_history{3};
@@ -100,6 +146,8 @@ private:
         double d_corr_shifted{};
         bool d_aligned{};
         double d_past_sample{};
+        double d_past_sample_stamp{};
+        bool d_has_past_sample{};
     } d_sample_aligner;
 
     // helper class for symbol alignment and Viterbi decoding
@@ -108,13 +156,21 @@ private:
     public:
         Symbol_Aligner_And_Decoder();
         void reset();
-        bool get_bits(const std::vector<double> &symbols, std::vector<int32_t> &bits);
+        bool get_bits(
+            const std::vector<double> &symbols,
+            const std::vector<double> &symbol_stamps,
+            std::vector<int32_t> &bits,
+            std::vector<double> &bit_stamps);
 
     private:
         int32_t d_KK{7};
         std::shared_ptr<Viterbi_Decoder_Sbas> d_vd1;
         std::shared_ptr<Viterbi_Decoder_Sbas> d_vd2;
         double d_past_symbol{0};
+        double d_past_symbol_stamp{};
+        bool d_has_past_symbol{};
+        std::deque<double> d_pending_bit_stamps_vd1;
+        std::deque<double> d_pending_bit_stamps_vd2;
     } d_symbol_aligner_and_decoder;
 
 
@@ -123,10 +179,12 @@ private:
     {
     public:
         void reset();
-        void get_frame_candidates(const std::vector<int32_t> &bits, std::vector<std::pair<int32_t, std::vector<int32_t>>> &msg_candidates);
+        // bit_stamps[i] must hold the absolute reception timestamp [s] of bits[i]
+        void get_frame_candidates(const std::vector<int32_t> &bits, const std::vector<double> &bit_stamps, std::vector<std::pair<double, std::vector<int32_t>>> &msg_candidates);
 
     private:
         std::deque<int32_t> d_buffer;
+        std::deque<double> d_bit_stamps;  //!< absolute reception timestamp [s] of each bit in d_buffer, same indexing
     } d_frame_detector;
 
 

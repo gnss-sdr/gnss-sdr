@@ -9,6 +9,7 @@ add_subdirectory(rtklib)
 
 set(GNSS_SPLIBS_SOURCES
     beidou_b1i_signal_replica.cc
+    beidou_b1c_signal_replica.cc
     beidou_b3i_signal_replica.cc
     galileo_e1_signal_replica.cc
     galileo_e5_signal_replica.cc
@@ -34,10 +35,12 @@ set(GNSS_SPLIBS_SOURCES
     short_x2_to_cshort.cc
     gnss_sdr_string_literals.cc
     qzss_signal_replica.cc
+    sbas_signal_replica.cc
 )
 
 set(GNSS_SPLIBS_HEADERS
     beidou_b1i_signal_replica.h
+    beidou_b1c_signal_replica.h
     beidou_b3i_signal_replica.h
     galileo_e1_signal_replica.h
     galileo_e5_signal_replica.h
@@ -69,6 +72,7 @@ set(GNSS_SPLIBS_HEADERS
     gnss_time.h
     matlab_writter_helper.h
     qzss_signal_replica.h
+    sbas_signal_replica.h
 )
 
 set(GNSS_SPLIBS_HEADERS ${GNSS_SPLIBS_HEADERS}

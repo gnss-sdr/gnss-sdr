@@ -20,6 +20,8 @@
  */
 
 #include "gnss_flowgraph.h"
+#include "Beidou_B1C.h"
+#include "Beidou_B1I.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1C.h"
 #include "GPS_L1_CA.h"
@@ -92,11 +94,13 @@ const auto signal_mapping = std::unordered_map<std::string, std::pair<std::strin
     {"7X", {"Galileo", "E5b"}},
     {"E6", {"Galileo", "E6"}},
     {"B1", {"Beidou", "B1"}},
+    {"1D", {"Beidou", "B1C"}},
     {"B3", {"Beidou", "B3"}},
     {"1G", {"Glonass", "L1"}},
     {"2G", {"Glonass", "L2"}},
     {"J1", {"QZSS", "L1"}},
     {"J5", {"QZSS", "L5"}},
+    {"S1", {"SBAS", "L1"}},
 };
 
 
@@ -260,9 +264,11 @@ void GNSSFlowgraph::init()
     mapStringValues_["1G"] = evGLO_1G;
     mapStringValues_["2G"] = evGLO_2G;
     mapStringValues_["B1"] = evBDS_B1;
+    mapStringValues_["1D"] = evBDS_B1C;
     mapStringValues_["B3"] = evBDS_B3;
     mapStringValues_["J1"] = evQZS_J1;
     mapStringValues_["J5"] = evQZS_J5;
+    mapStringValues_["S1"] = evSBAS_1C;
 
     // fill the signals queue with the satellites ID's to be searched by the acquisition
     set_signals_list();
@@ -1069,7 +1075,7 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
                                             return 1;
                                         }
 
-                                    if (src->get_right_block()->output_signature()->max_streams() > 1 or src->get_right_block()->output_signature()->max_streams() == -1)
+                                    if (src->get_right_block()->output_signature()->max_streams() > 1 || src->get_right_block()->output_signature()->max_streams() == -1)
                                         {
                                             if (sig_conditioner_.size() > signal_conditioner_ID)
                                                 {
@@ -1178,9 +1184,14 @@ int GNSSFlowgraph::connect_signal_conditioners_to_channels()
                                 case evGAL_E6:
                                     acq_fs = GALILEO_E6_OPT_ACQ_FS_SPS;
                                     break;
+                                case evBDS_B1:
+                                    acq_fs = BEIDOU_B1I_OPT_ACQ_FS_SPS;
+                                    break;
+                                case evBDS_B1C:
+                                    acq_fs = BEIDOU_B1C_OPT_ACQ_FS_SPS;
+                                    break;
                                 case evGLO_1G:
                                 case evGLO_2G:
-                                case evBDS_B1:
                                 case evBDS_B3:
                                     acq_fs = fs;
                                     break;
@@ -1759,7 +1770,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                 estimated_doppler,
                                 RX_time);
                             channels_[current_channel]->set_signal(gnss_signal);
-                            start_acquisition = is_primary_freq or assistance_available or !configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_);
+                            start_acquisition = is_primary_freq || assistance_available || !configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_);
                         }
                     else
                         {
@@ -1774,7 +1785,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                             DLOG(INFO) << "Channel " << current_channel
                                        << " Starting acquisition " << channels_[current_channel]->get_signal().get_satellite()
                                        << ", Signal " << channels_[current_channel]->get_signal().get_signal_str();
-                            if (assistance_available == true and configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_))
+                            if (assistance_available == true && configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_))
                                 {
                                     channels_[current_channel]->assist_acquisition_doppler(project_doppler(channels_[current_channel]->get_signal().get_signal_str(), estimated_doppler));
                                 }
@@ -1924,7 +1935,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         case 10:  // request standby mode
             for (size_t n = 0; n < channels_.size(); n++)
                 {
-                    if (channels_state_[n] == 2 or channels_state_[n] == 3)  // channel in acquisition or in tracking
+                    if (channels_state_[n] == 2 || channels_state_[n] == 3)  // channel in acquisition or in tracking
                         {
                             // recover the satellite assigned
                             Gnss_Signal gs_assigned = channels_[n]->get_signal();
@@ -1964,7 +1975,13 @@ void GNSSFlowgraph::priorize_satellites(const std::vector<std::pair<int, Gnss_Sa
                 }
             for (const auto& signal_str : signal_str_vector)
                 {
-                    auto& available_signals = available_signals_map_.at(signal_str);
+                    const auto sig_it = available_signals_map_.find(signal_str);
+                    if (sig_it == available_signals_map_.end())
+                        {
+                            // No channels are configured for this signal
+                            continue;
+                        }
+                    auto& available_signals = sig_it->second;
                     gs = Gnss_Signal(visible_satellite.second, signal_str);
                     old_size = available_signals.size();
                     available_signals.remove(gs);
@@ -2094,7 +2111,7 @@ void GNSSFlowgraph::set_signals_list()
     // GLONASS uses FDMA, so only one orbital slot per frequency channel is queued for acquisition.
     std::unordered_map<std::string, std::set<unsigned int>> available_prn_map = {
         {"GPS", {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32}},
-        {"SBAS", {123, 131, 135, 136, 138}},
+        {"SBAS", {120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138}},
         {"Galileo", {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
                         21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36}},
         {"Glonass", {1, 2, 3, 4, 9, 10, 11, 12, 18, 19, 20, 21, 26, 27, 28}},
@@ -2102,7 +2119,10 @@ void GNSSFlowgraph::set_signals_list()
                        21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37,
                        38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54,
                        55, 56, 57, 58, 59, 60, 61, 62, 63}},
-        {"QZSS", {193, 194, 195, 196, 197, 199, 200, 201}},
+        // PRNs 198 and 202 are excluded: they are reserved but not assigned to any
+        // operational satellite (marked as non-standard codes in IS-QZSS-PNT).
+        // They can still be searched by setting the QZSS.prns configuration option.
+        {"QZSS", {193, 194, 195, 196, 197, 199, 200, 201, 203, 204, 205, 206}},
     };
 #if CXX_LESS_THAN_17
     for (auto& entry : available_prn_map)
@@ -2176,6 +2196,18 @@ void GNSSFlowgraph::set_signals_list()
 
                     for (const auto& prn : available_prn_map.at(gnss_system_str))
                         {
+                            if (signal_str == "1D")
+                                {
+                                    if ((prn >= 1U && prn <= 5U) || (prn >= 59U && prn <= 63U))
+                                        {
+                                            continue;  // GEO satellites do not broadcast B1C (ICD section 3.1)
+                                        }
+                                }
+                            if (signal_str == "J5" && prn > QZSS_L5_MAX_PRN)
+                                {
+                                    // QZSS L1 C/B PRNs (203-206) do not transmit an L5 signal
+                                    continue;
+                                }
                             available_signals.emplace_back(Gnss_Satellite(gnss_system_str, prn), signal_str);
                         }
                 }

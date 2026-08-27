@@ -116,6 +116,13 @@ void Galileo_Inav_Message::split_page(std::string page_string, int32_t flag_even
                 {
                     const std::string page_INAV_even = page_Even;
                     const std::string page_INAV = page_INAV_even + page_Odd;  // Join pages: Even + Odd = INAV page
+                    const bool nominal_inav_page = page_INAV[GALILEO_INAV_EVEN_PAGE_TYPE_BIT] == '0' &&
+                                                   page_INAV[GALILEO_INAV_ODD_PAGE_TYPE_BIT] == '0';
+                    // The CRC of alert pages is computed horizontally, across the E5b-I and E1-B
+                    // components of the same epoch (ICD 2.2 Table 39), so it cannot be verified with
+                    // the two page parts received on a single frequency.
+                    flag_alert_page = page_INAV[GALILEO_INAV_EVEN_PAGE_TYPE_BIT] == '1' &&
+                                      page_INAV[GALILEO_INAV_ODD_PAGE_TYPE_BIT] == '1';
 
                     const std::string Data_k = page_INAV.substr(2, 112);
                     const std::string Data_j = page_INAV.substr(116, 16);
@@ -142,15 +149,17 @@ void Galileo_Inav_Message::split_page(std::string page_string, int32_t flag_even
                     if (CRC_test(TLM_word_for_CRC_bits, checksum.to_ulong()) == true)
                         {
                             flag_CRC_test = true;
-                            // CRC correct: Decode word
+                            // Alert pages contain reserved data and must not enter the nominal word decoder.
                             const std::string Data_jk_ephemeris = Data_k + Data_j;
-                            const int32_t word_type = page_jk_decoder(Data_jk_ephemeris.c_str());
+                            int32_t word_type = GALILEO_INAV_DUMMY_WORD_TYPE;
+                            if (nominal_inav_page)
+                                {
+                                    word_type = page_jk_decoder(Data_jk_ephemeris.c_str());
+                                }
 
                             const std::bitset<8> hkroot_bs(osnma_sis.substr(0, 8));
                             const std::bitset<32> mack_bs(osnma_sis.substr(8, 32));
                             const bool osnma_sis_available = hkroot_bs.any() || mack_bs.any();
-                            const bool nominal_inav_page = page_INAV[GALILEO_INAV_EVEN_PAGE_TYPE_BIT] == '0' &&
-                                                           page_INAV[GALILEO_INAV_ODD_PAGE_TYPE_BIT] == '0';
                             const bool admit_osnma_page = nominal_inav_page &&
                                                           word_type != GALILEO_INAV_DUMMY_WORD_TYPE &&
                                                           osnma_sis_available;
@@ -194,10 +203,10 @@ void Galileo_Inav_Message::split_page(std::string page_string, int32_t flag_even
 // C: tells if W1-->W4 available from same block
 bool Galileo_Inav_Message::have_new_ephemeris()  // Check if we have a new ephemeris stored in the galileo navigation class
 {
-    if ((flag_ephemeris_1 == true) and (flag_ephemeris_2 == true) and (flag_ephemeris_3 == true) and (flag_ephemeris_4 == true) and (flag_iono_and_GST == true))
+    if ((flag_ephemeris_1 == true) && (flag_ephemeris_2 == true) && (flag_ephemeris_3 == true) && (flag_ephemeris_4 == true) && (flag_iono_and_GST == true))
         {
             // if all ephemeris pages have the same IOD, then they belong to the same block
-            if ((IOD_nav_1 == IOD_nav_2) and (IOD_nav_3 == IOD_nav_4) and (IOD_nav_1 == IOD_nav_3))
+            if ((IOD_nav_1 == IOD_nav_2) && (IOD_nav_3 == IOD_nav_4) && (IOD_nav_1 == IOD_nav_3))
                 {
                     DLOG(INFO) << "Ephemeris (1, 2, 3, 4) have been received and belong to the same batch";
                     flag_ephemeris_1 = false;  // clear the flag
@@ -206,10 +215,18 @@ bool Galileo_Inav_Message::have_new_ephemeris()  // Check if we have a new ephem
                     flag_ephemeris_4 = false;  // clear the flag
                     flag_all_ephemeris = true;
                     IOD_ephemeris = IOD_nav_1;
+                    flag_rs_recovered_ephemeris_pending = false;
                     enable_rs = false;  // Do not retrieve reduced CED if we already have the full ephemeris set
                     DLOG(INFO) << "Batch number: " << IOD_ephemeris;
                     return true;
                 }
+        }
+
+    if (flag_rs_recovered_ephemeris_pending &&
+        word_5_generation != rs_recovery_word_5_generation)
+        {
+            flag_rs_recovered_ephemeris_pending = false;
+            return true;
         }
 
     if (enable_rs)
@@ -321,9 +338,11 @@ bool Galileo_Inav_Message::have_new_ephemeris()  // Check if we have a new ephem
                             flag_ephemeris_4 = false;  // clear the flag
                             flag_all_ephemeris = true;
                             IOD_ephemeris = IOD_nav_1;
+                            flag_rs_recovered_ephemeris_pending = true;
+                            rs_recovery_word_5_generation = word_5_generation;
                             enable_rs = false;  // Retrieve reduced CED only once
                             DLOG(INFO) << "Batch number: " << IOD_ephemeris;
-                            return true;
+                            DLOG(INFO) << "Reed-Solomon-recovered CED awaiting a new CRC-valid Word 5";
                         }
                 }
         }
@@ -334,7 +353,7 @@ bool Galileo_Inav_Message::have_new_ephemeris()  // Check if we have a new ephem
 // C: tells if W5 is available
 bool Galileo_Inav_Message::have_new_iono_and_GST()  // Check if we have a new iono data set stored in the galileo navigation class
 {
-    if ((flag_iono_and_GST == true) and (flag_utc_model == true))  // the condition on flag_utc_model is added to have a time stamp for iono
+    if ((flag_iono_and_GST == true) && (flag_utc_model_valid == true))  // the UTC model is required to have a time stamp for iono
         {
             flag_iono_and_GST = false;  // clear the flag
             return true;
@@ -347,9 +366,9 @@ bool Galileo_Inav_Message::have_new_iono_and_GST()  // Check if we have a new io
 // C: tells if W6 is available
 bool Galileo_Inav_Message::have_new_utc_model()  // Check if we have a new utc data set stored in the galileo navigation class
 {
-    if (flag_utc_model == true)
+    if (flag_new_utc_model == true)
         {
-            flag_utc_model = false;  // clear the flag
+            flag_new_utc_model = false;  // clear the publication flag
             return true;
         }
 
@@ -360,7 +379,7 @@ bool Galileo_Inav_Message::have_new_utc_model()  // Check if we have a new utc d
 // flag_almanac_4 tells if W10 available.
 bool Galileo_Inav_Message::have_new_almanac()  // Check if we have a new almanac data set stored in the galileo navigation class
 {
-    if ((flag_almanac_1 == true) and (flag_almanac_2 == true) and (flag_almanac_3 == true) and (flag_almanac_4 == true))
+    if ((flag_almanac_1 == true) && (flag_almanac_2 == true) && (flag_almanac_3 == true) && (flag_almanac_4 == true))
         {
             // All Almanac data have been received
             flag_almanac_1 = false;
@@ -377,8 +396,10 @@ bool Galileo_Inav_Message::have_new_almanac()  // Check if we have a new almanac
 
 bool Galileo_Inav_Message::have_new_reduced_ced()
 {
-    // Check if we have a new CED data set stored in the galileo navigation class
-    if ((flag_CED == true) && (WN_5 > 0))  // We need the week number to compute GST
+    // Word 5 supplies the BGD, DVS, and HS fields that accompany Reduced CED.
+    // Require a CRC-valid Word 5 decoded after the pending Word 16 so an old
+    // auxiliary-data set cannot be reused by later Reduced CED messages.
+    if (flag_CED && word_5_generation != reduced_ced_word_5_generation)
         {
             flag_CED = false;
             return true;
@@ -401,6 +422,7 @@ bool Galileo_Inav_Message::have_new_ism()
 Galileo_Ephemeris Galileo_Inav_Message::get_ephemeris() const
 {
     Galileo_Ephemeris ephemeris;
+    ephemeris.nav_message_type = Galileo_Nav_Message_Type::INAV;
     ephemeris.flag_all_ephemeris = flag_all_ephemeris;
     ephemeris.IOD_ephemeris = IOD_ephemeris;
     ephemeris.IOD_nav = IOD_nav_1;
@@ -450,6 +472,7 @@ Galileo_Ephemeris Galileo_Inav_Message::get_ephemeris() const
 Galileo_Iono Galileo_Inav_Message::get_iono() const
 {
     Galileo_Iono iono;
+    iono.valid = flag_iono_model_valid;
     // Ionospheric correction
     iono.ai0 = ai0_5;  // Effective Ionisation Level 1st order parameter [sfu]
     iono.ai1 = ai1_5;  // Effective Ionisation Level 2st order parameter [sfu/degree]
@@ -483,12 +506,13 @@ Galileo_Utc_Model Galileo_Inav_Message::get_utc_model() const
     utc_model.WN_LSF = WN_LSF_6;
     utc_model.DN = DN_6;
     utc_model.Delta_tLSF = Delta_tLSF_6;
-    utc_model.flag_utc_model = flag_utc_model;
+    utc_model.flag_utc_model = flag_utc_model_valid;
     // GPS to Galileo GST conversion parameters
     utc_model.A_0G = A_0G_10;
     utc_model.A_1G = A_1G_10;
     utc_model.t_0G = t_0G_10;
     utc_model.WN_0G = WN_0G_10;
+    utc_model.flag_GGTO = get_flag_GGTO();
     return utc_model;
 }
 
@@ -552,30 +576,10 @@ Galileo_Almanac_Helper Galileo_Inav_Message::get_almanac() const
 }
 
 
-Galileo_Ephemeris Galileo_Inav_Message::get_reduced_ced() const
+Galileo_Reduced_CED Galileo_Inav_Message::get_reduced_ced() const
 {
     Galileo_Reduced_CED ced{};
     ced.PRN = SV_ID_PRN_4;
-    // From ICD: TOTRedCED is the start time of transmission of the
-    // Reduced CED word 16 in GST
-    if (TOW_5 > TOW_6)
-        {
-            ced.TOTRedCED = WN_5 * 604800 + TOW_5 + 4;  // According to ICD 2.0, Table 38
-        }
-    else
-        {
-            ced.TOTRedCED = WN_5 * 604800 + TOW_6 + 10;  // According to ICD 2.0, Table 38
-        }
-    std::array<int32_t, 4> iod_navs = {IOD_nav_1, IOD_nav_2, IOD_nav_3, IOD_nav_4};
-    int32_t max_IOD_nav = IOD_nav_1;
-    for (int i = 1; i < 4; i++)
-        {
-            if (iod_navs[i] > max_IOD_nav)
-                {
-                    max_IOD_nav = iod_navs[i];
-                }
-        }
-    ced.IODnav = max_IOD_nav;
     ced.DeltaAred = ced_DeltaAred;
     ced.exred = ced_exred;
     ced.eyred = ced_eyred;
@@ -584,10 +588,13 @@ Galileo_Ephemeris Galileo_Inav_Message::get_reduced_ced() const
     ced.lambda0red = ced_lambda0red;
     ced.af0red = ced_af0red;
     ced.af1red = ced_af1red;
+    ced.BGD_E1E5b = BGD_E1E5b_5;
+    ced.E5b_HS = E5b_HS_5;
+    ced.E1B_HS = E1B_HS_5;
+    ced.E5b_DVS = E5b_DVS_5;
+    ced.E1B_DVS = E1B_DVS_5;
 
-    Galileo_Ephemeris eph = ced.compute_eph();
-
-    return eph;
+    return ced;
 }
 
 
@@ -1021,7 +1028,9 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             spare_5 = static_cast<double>(read_navigation_unsigned(data_jk_bits, SPARE_5_BIT));
             DLOG(INFO) << "spare_5= " << spare_5;
             flag_iono_and_GST = true;  // set to false externally
-            flag_TOW_set = true;       // set to false externally
+            flag_iono_model_valid = true;
+            ++word_5_generation;
+            flag_TOW_set = true;  // set to false externally
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
             nav_bits_word_5 = data_jk_bits.to_string().substr(6, 67);
             break;
@@ -1049,9 +1058,10 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             DLOG(INFO) << "Delta_tLSF_6= " << Delta_tLSF_6;
             TOW_6 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, TOW_6_BIT));
             DLOG(INFO) << "TOW_6= " << TOW_6;
-            flag_TOW_6 = true;      // set to false externally
-            flag_utc_model = true;  // set to false externally
-            flag_TOW_set = true;    // set to false externally
+            flag_TOW_6 = true;  // set to false externally
+            flag_utc_model_valid = true;
+            flag_new_utc_model = true;  // set to false externally
+            flag_TOW_set = true;        // set to false externally
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
             nav_bits_word_6 = data_jk_bits.to_string().substr(6, 99);
             break;
@@ -1208,6 +1218,12 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             WN_0G_10 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, WN_0_G_10_BIT));
             flag_GGTO_4 = true;
             DLOG(INFO) << "WN_0G_10= " << WN_0G_10;
+            // OS SIS ICD: GGTO is unavailable only when all four raw fields
+            // are simultaneously encoded as all ones.
+            flag_GGTO_valid = !(read_navigation_unsigned(data_jk_bits, A_0_G_10_BIT) == 0xFFFFU &&
+                                read_navigation_unsigned(data_jk_bits, A_1_G_10_BIT) == 0x0FFFU &&
+                                read_navigation_unsigned(data_jk_bits, T_0_G_10_BIT) == 0x00FFU &&
+                                read_navigation_unsigned(data_jk_bits, WN_0_G_10_BIT) == 0x003FU);
             flag_almanac_4 = true;
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
             nav_bits_word_10 = data_jk_bits.to_string().substr(86, 42);
@@ -1240,6 +1256,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             ced_af1red = ced_af1red * CED_af1red_LSB;
             DLOG(INFO) << "af1red = " << ced_af1red;
             flag_CED = true;
+            reduced_ced_word_5_generation = word_5_generation;
             break;
 
         case 17:  // Word type 17: FEC2 Reed-Solomon for CED
@@ -1391,7 +1408,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                                     gal_ism.set_ism_Tvalidity(read_octet_unsigned(data_jk_bits, ISM_TVALIDITY_BIT));
                                     LOG(INFO) << "I/NAV ARAIM Integrity Support Message: "
                                               << "WN_ISM=" << static_cast<uint32_t>(gal_ism.get_WN_ISM()) << ", "
-                                              << "t0_ISM=" << static_cast<uint32_t>(gal_ism.get_t0_ISM()) << ", "
+                                              << "t0_ISM=" << gal_ism.get_t0_ISM() << ", "
                                               << "Mask_MSB_ISM=" << static_cast<uint32_t>(gal_ism.get_ism_mask_msb()) << ", "
                                               << "Mask_ISM=" << gal_ism.get_mask_ISM() << ", "
                                               << "Pconst=" << gal_ism.get_pconst_value() << ", "

@@ -53,30 +53,36 @@
  */
 float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_integration_time_s)
 {
-    float SNR = 0.0;
-    float SNR_dB_Hz = 0.0;
-    float Psig = 0.0;
-    float Ptot = 0.0;
+    // Accumulation in double precision: the Ptot - Psig subtraction below
+    // is a catastrophic cancellation at high C/N0
+    double Psig = 0.0;
+    double Ptot = 0.0;
     if (length == 0 || coh_integration_time_s == 0.0)
         {
             return -100.0;
         }
     for (int i = 0; i < length; i++)
         {
-            Psig += std::fabs(Prompt_buffer[i].real());
-            Ptot += Prompt_buffer[i].imag() * Prompt_buffer[i].imag() + Prompt_buffer[i].real() * Prompt_buffer[i].real();
+            Psig += std::fabs(static_cast<double>(Prompt_buffer[i].real()));
+            Ptot += static_cast<double>(Prompt_buffer[i].imag()) * Prompt_buffer[i].imag() + static_cast<double>(Prompt_buffer[i].real()) * Prompt_buffer[i].real();
         }
-    Psig /= static_cast<float>(length);
+    Psig /= static_cast<double>(length);
     Psig = Psig * Psig;
-    Ptot /= static_cast<float>(length);
-    float aux = Ptot - Psig;
+    Ptot /= static_cast<double>(length);
+    const double aux = Ptot - Psig;
     if (aux == 0.0)
         {
+            // redundant with the aux > 0.0 check below, but makes the nonzero
+            // divisor explicit for static analyzers (e.g. Coverity Scan)
             return -100.0;
         }
-    SNR = Psig / aux;
-    SNR_dB_Hz = 10.0F * std::log10(SNR) - 10.0F * std::log10(coh_integration_time_s);
-    return SNR_dB_Hz;
+    if (aux > 0.0)
+        {
+            const double SNR = Psig / aux;
+            const double SNR_dB_Hz = 10.0 * std::log10(SNR) - 10.0 * std::log10(static_cast<double>(coh_integration_time_s));
+            return static_cast<float>(SNR_dB_Hz);
+        }
+    return -100.0;
 }
 
 
@@ -98,21 +104,23 @@ float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_i
  */
 float cn0_m2m4_estimator(const gr_complex* Prompt_buffer, int length, float coh_integration_time_s)
 {
-    float SNR_aux = 0.0;
-    float SNR_dB_Hz = 0.0;
-    float Psig = 0.0;
-    float m_2 = 0.0;
-    float m_4 = 0.0;
-    float aux;
-    const auto n = static_cast<float>(length);
+    // Moments are accumulated in double precision: |P|^4 overflows single
+    // precision for large correlator amplitudes, and the m_2 - sqrt(...)
+    // subtraction below is a catastrophic cancellation at high C/N0
+    double SNR_aux = 0.0;
+    double Psig = 0.0;
+    double m_2 = 0.0;
+    double m_4 = 0.0;
+    double aux;
+    const auto n = static_cast<double>(length);
     if (length == 0 || coh_integration_time_s == 0.0)
         {
             return -100.0;
         }
     for (int i = 0; i < length; i++)
         {
-            Psig += std::fabs(Prompt_buffer[i].real());
-            aux = Prompt_buffer[i].imag() * Prompt_buffer[i].imag() + Prompt_buffer[i].real() * Prompt_buffer[i].real();
+            Psig += std::fabs(static_cast<double>(Prompt_buffer[i].real()));
+            aux = static_cast<double>(Prompt_buffer[i].imag()) * Prompt_buffer[i].imag() + static_cast<double>(Prompt_buffer[i].real()) * Prompt_buffer[i].real();
             m_2 += aux;
             m_4 += (aux * aux);
         }
@@ -120,8 +128,8 @@ float cn0_m2m4_estimator(const gr_complex* Prompt_buffer, int length, float coh_
     Psig = Psig * Psig;
     m_2 /= n;
     m_4 /= n;
-    aux = std::sqrt(2.0F * m_2 * m_2 - m_4);
-    float denominator;
+    aux = std::sqrt(2.0 * m_2 * m_2 - m_4);
+    double denominator;
     if (std::isnan(aux))
         {
             denominator = m_2 - Psig;
@@ -141,13 +149,13 @@ float cn0_m2m4_estimator(const gr_complex* Prompt_buffer, int length, float coh_
             SNR_aux = aux / denominator;
         }
 
-    if (SNR_aux == 0)
+    if (SNR_aux <= 0)
         {
             return -100.0;
         }
-    SNR_dB_Hz = 10.0F * std::log10(SNR_aux) - 10.0F * std::log10(coh_integration_time_s);
+    const double SNR_dB_Hz = 10.0 * std::log10(SNR_aux) - 10.0 * std::log10(static_cast<double>(coh_integration_time_s));
 
-    return SNR_dB_Hz;
+    return static_cast<float>(SNR_dB_Hz);
 }
 
 

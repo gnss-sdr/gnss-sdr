@@ -14,6 +14,7 @@
 #   MATIO_LIBRARIES      - MATIO libraries.
 #   MATIO_INCLUDE_DIRS   - Where to find matio.h, etc.
 #   MATIO_VERSION_STRING - Version number as a string (e.g. "1.5.28")
+#   MATIO_MAT73_FOUND    - True if MATIO can create MATLAB 7.3 files.
 #
 # Provides the following imported target:
 #   Matio::matio
@@ -131,6 +132,48 @@ endif()
 
 
 ########################################################################
+# Check MATLAB 7.3 support
+########################################################################
+if(MATIO_INCLUDE_DIR AND MATIO_LIBRARY)
+    if(CMAKE_CROSSCOMPILING)
+        # A runtime probe cannot be executed while cross-compiling. Keep the
+        # historical behavior in that case and let the toolchain provider
+        # ensure that MATIO was built with HDF5/MATLAB 7.3 support.
+        set(MATIO_MAT73_FOUND TRUE)
+        message(STATUS
+            "Matio MATLAB 7.3 support cannot be verified while cross-compiling"
+        )
+    else()
+        include(CheckCSourceRuns)
+
+        set(_MATIO_REQUIRED_INCLUDES_SAVED "${CMAKE_REQUIRED_INCLUDES}")
+        set(_MATIO_REQUIRED_LIBRARIES_SAVED "${CMAKE_REQUIRED_LIBRARIES}")
+        set(CMAKE_REQUIRED_INCLUDES
+            "${MATIO_INCLUDE_DIR};${_MATIO_REQUIRED_INCLUDES_SAVED}"
+        )
+        set(CMAKE_REQUIRED_LIBRARIES
+            "${MATIO_LIBRARY};${_MATIO_REQUIRED_LIBRARIES_SAVED}"
+        )
+
+        # MAT_FT_MAT73 is declared even when MATIO is built without HDF5, so
+        # compiling against matio.h is not enough. Creating a temporary file
+        # is the public API probe that distinguishes a MAT73-capable build.
+        unset(MATIO_MAT73_FOUND CACHE)
+        unset(MATIO_MAT73_FOUND)
+        check_c_source_runs(
+            "#include <matio.h>\n#include <stdio.h>\nint main(void)\n{\n    const char filename[] = \"gnsssdr_matio_mat73_probe.mat\";\n    mat_t *matfp = Mat_CreateVer(filename, NULL, MAT_FT_MAT73);\n    int result;\n    if (matfp == NULL)\n        {\n            return 1;\n        }\n    result = Mat_Close(matfp);\n    remove(filename);\n    return result == 0 ? 0 : 1;\n}\n"
+            MATIO_MAT73_FOUND
+        )
+
+        set(CMAKE_REQUIRED_INCLUDES "${_MATIO_REQUIRED_INCLUDES_SAVED}")
+        set(CMAKE_REQUIRED_LIBRARIES "${_MATIO_REQUIRED_LIBRARIES_SAVED}")
+        unset(_MATIO_REQUIRED_INCLUDES_SAVED)
+        unset(_MATIO_REQUIRED_LIBRARIES_SAVED)
+    endif()
+endif()
+
+
+########################################################################
 # Standard result handling
 ########################################################################
 include(FindPackageHandleStandardArgs)
@@ -138,6 +181,7 @@ find_package_handle_standard_args(MATIO
     REQUIRED_VARS
         MATIO_LIBRARY
         MATIO_INCLUDE_DIR
+        MATIO_MAT73_FOUND
     VERSION_VAR
         MATIO_VERSION_STRING
 )
@@ -159,6 +203,7 @@ mark_as_advanced(
     MATIO_LIBRARY
     MATIO_LIBRARIES
     MATIO_INCLUDE_DIRS
+    MATIO_MAT73_FOUND
     MATIO_VERSION_STRING
 )
 

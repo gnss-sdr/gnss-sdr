@@ -558,7 +558,7 @@ void TrackingPullInTestFpga::configure_receiver(
             config->set_property("Tracking.very_early_late_space_narrow_chips", "0.6");
             config->set_property("Tracking.track_pilot", "true");
         }
-    else if (implementation == "Galileo_E5a_DLL_PLL_Tracking_FPGA" or implementation == "Galileo_E5a_DLL_PLL_Tracking_b_Fpga")
+    else if (implementation == "Galileo_E5a_DLL_PLL_Tracking_FPGA" || implementation == "Galileo_E5a_DLL_PLL_Tracking_b_Fpga")
         {
             gnss_synchro.System = 'E';
             std::string signal = "5X";
@@ -752,7 +752,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
             acquisition->stop_acquisition();  // reset the whole system including the sample counters
             acquisition->set_local_code();
 
-            if ((implementation == "GPS_L1_CA_DLL_PLL_Tracking_FPGA") or (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking_FPGA"))
+            if ((implementation == "GPS_L1_CA_DLL_PLL_Tracking_FPGA") || (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking_FPGA"))
                 {
                     // Configure the DMA to send TEST_TRK_PULL_IN_TEST_SKIP_SAMPLES in order to initialize the internal
                     // states of the downsampling filter in the FPGA
@@ -1209,9 +1209,9 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                             // ********************************
 
 #if USE_GLOG_AND_GFLAGS
-                            if (FLAGS_plot_detail_level >= 2 and FLAGS_show_plots)
+                            if (FLAGS_plot_detail_level >= 2 && FLAGS_show_plots)
 #else
-                            if (absl::GetFlag(FLAGS_plot_detail_level) >= 2 and absl::GetFlag(FLAGS_show_plots))
+                            if (absl::GetFlag(FLAGS_plot_detail_level) >= 2 && absl::GetFlag(FLAGS_show_plots))
 #endif
                                 {
                                     // load the measured values
@@ -1279,7 +1279,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 #if USE_GLOG_AND_GFLAGS
                                                     auto decimate = static_cast<unsigned int>(FLAGS_plot_decimate);
 
-                                                    if (FLAGS_plot_detail_level >= 2 and FLAGS_show_plots)
+                                                    if (FLAGS_plot_detail_level >= 2 && FLAGS_show_plots)
                                                         {
                                                             Gnuplot g1("linespoints");
                                                             g1.showonscreen();  // window output
@@ -1294,7 +1294,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 #else
                                                     auto decimate = static_cast<unsigned int>(absl::GetFlag(FLAGS_plot_decimate));
 
-                                                    if (absl::GetFlag(FLAGS_plot_detail_level) >= 2 and absl::GetFlag(FLAGS_show_plots))
+                                                    if (absl::GetFlag(FLAGS_plot_detail_level) >= 2 && absl::GetFlag(FLAGS_show_plots))
                                                         {
                                                             Gnuplot g1("linespoints");
                                                             g1.showonscreen();  // window output

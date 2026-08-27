@@ -16,8 +16,12 @@
  */
 
 
+#include "Galileo_FNAV.h"
 #include "Galileo_INAV.h"
 #include "rtcm.h"
+#include "rtklib_rtcm.h"
+#include "rtklib_rtkcmn.h"
+#include <cmath>
 #include <cstring>
 #include <memory>
 #include <thread>
@@ -321,22 +325,191 @@ TEST(RtcmTest, MT1029)
 TEST(RtcmTest, MT1045)
 {
     auto rtcm = std::make_shared<Rtcm>();
-    bool expected_true = true;
 
-    Galileo_Ephemeris gal_eph = Galileo_Ephemeris();
-    Galileo_Ephemeris gal_eph_read = Galileo_Ephemeris();
+    const int32_t idot_raw = -1234;
+    const int32_t af2_raw = -17;
+    const int32_t af1_raw = 123456;
+    const int32_t af0_raw = -123456789;
+    const int32_t crs_raw = -1234;
+    const int32_t delta_n_raw = 2345;
+    const int32_t m0_raw = -123456789;
+    const int32_t cuc_raw = -2345;
+    const uint32_t ecc_raw = 123456789U;
+    const int32_t cus_raw = 3456;
+    const uint32_t sqrt_a_raw = 2850000000U;
+    const int32_t cic_raw = -4567;
+    const int32_t omega0_raw = 987654321;
+    const int32_t cis_raw = 5678;
+    const int32_t i0_raw = 678901234;
+    const int32_t crc_raw = -6789;
+    const int32_t omega_raw = -789012345;
+    const int32_t omega_dot_raw = -123456;
+    const int32_t bgd_raw = -123;
 
-    gal_eph.PRN = 5;
-    gal_eph.OMEGAdot = 53.0 * OMEGA_DOT_3_LSB;
+    Galileo_Ephemeris gal_eph;
+    gal_eph.nav_message_type = Galileo_Nav_Message_Type::FNAV;
+    gal_eph.PRN = 5U;
+    gal_eph.WN = 2345U;
+    gal_eph.IOD_ephemeris = 511;
+    gal_eph.IOD_nav = 17;  // MT1045 must use the F/NAV ephemeris IOD.
+    gal_eph.SISA = 42;
+    gal_eph.idot = static_cast<double>(idot_raw) * FNAV_IDOT_2_LSB;
+    gal_eph.toc = 345600.0;
+    gal_eph.af2 = static_cast<double>(af2_raw) * FNAV_AF2_1_LSB;
+    gal_eph.af1 = static_cast<double>(af1_raw) * FNAV_AF1_1_LSB;
+    gal_eph.af0 = static_cast<double>(af0_raw) * FNAV_AF0_1_LSB;
+    gal_eph.Crs = static_cast<double>(crs_raw) * FNAV_CRS_3_LSB;
+    gal_eph.delta_n = static_cast<double>(delta_n_raw) * FNAV_DELTAN_3_LSB;
+    gal_eph.M_0 = static_cast<double>(m0_raw) * FNAV_M0_2_LSB;
+    gal_eph.Cuc = static_cast<double>(cuc_raw) * FNAV_CUC_3_LSB;
+    gal_eph.ecc = static_cast<double>(ecc_raw) * FNAV_E_2_LSB;
+    gal_eph.Cus = static_cast<double>(cus_raw) * FNAV_CUS_3_LSB;
+    gal_eph.sqrtA = static_cast<double>(sqrt_a_raw) * FNAV_A12_2_LSB;
+    gal_eph.toe = 432000.0;
+    gal_eph.Cic = static_cast<double>(cic_raw) * FNAV_CIC_4_LSB;
+    gal_eph.OMEGA_0 = static_cast<double>(omega0_raw) * FNAV_OMEGA0_2_LSB;
+    gal_eph.Cis = static_cast<double>(cis_raw) * FNAV_CIS_4_LSB;
+    gal_eph.i_0 = static_cast<double>(i0_raw) * FNAV_I0_3_LSB;
+    gal_eph.Crc = static_cast<double>(crc_raw) * FNAV_CRC_3_LSB;
+    gal_eph.omega = static_cast<double>(omega_raw) * FNAV_W_3_LSB;
+    gal_eph.OMEGAdot = static_cast<double>(omega_dot_raw) * FNAV_OMEGADOT_2_LSB;
+    gal_eph.BGD_E1E5a = static_cast<double>(bgd_raw) * FNAV_BGD_1_LSB;
+    gal_eph.E5a_HS = 2;
     gal_eph.E5a_DVS = true;
 
-    std::string tx_msg = rtcm->print_MT1045(gal_eph);
+    const std::string tx_msg = rtcm->print_MT1045(gal_eph);
+    ASSERT_EQ(68U, tx_msg.size());  // 3-byte header, 62-byte payload, 3-byte CRC.
+    ASSERT_TRUE(rtcm->check_CRC(tx_msg));
 
+    const std::string message_bits = rtcm->binary_data_to_bin(tx_msg);
+    ASSERT_EQ(544U, message_bits.size());
+    EXPECT_EQ("11010011", message_bits.substr(0, 8));
+    EXPECT_EQ(0U, rtcm->bin_to_uint(message_bits.substr(8, 6)));
+    EXPECT_EQ(62U, rtcm->bin_to_uint(message_bits.substr(14, 10)));
+
+    std::size_t field_index = 24U;
+    const auto read_unsigned = [&message_bits, &field_index, &rtcm](std::size_t width) {
+        const auto value = rtcm->bin_to_uint(message_bits.substr(field_index, width));
+        field_index += width;
+        return value;
+    };
+    const auto read_signed = [&message_bits, &field_index, &rtcm](std::size_t width) {
+        const auto value = rtcm->bin_to_int(message_bits.substr(field_index, width));
+        field_index += width;
+        return value;
+    };
+
+    EXPECT_EQ(1045U, read_unsigned(12));
+    EXPECT_EQ(gal_eph.PRN, read_unsigned(6));
+    EXPECT_EQ(gal_eph.WN, read_unsigned(12));
+    EXPECT_EQ(static_cast<uint32_t>(gal_eph.IOD_ephemeris), read_unsigned(10));
+    EXPECT_EQ(static_cast<uint32_t>(gal_eph.SISA), read_unsigned(8));
+    EXPECT_EQ(idot_raw, read_signed(14));
+    EXPECT_EQ(5760U, read_unsigned(14));
+    EXPECT_EQ(af2_raw, read_signed(6));
+    EXPECT_EQ(af1_raw, read_signed(21));
+    EXPECT_EQ(af0_raw, read_signed(31));
+    EXPECT_EQ(crs_raw, read_signed(16));
+    EXPECT_EQ(delta_n_raw, read_signed(16));
+    EXPECT_EQ(m0_raw, read_signed(32));
+    EXPECT_EQ(cuc_raw, read_signed(16));
+    EXPECT_EQ(ecc_raw, read_unsigned(32));
+    EXPECT_EQ(cus_raw, read_signed(16));
+    EXPECT_EQ(sqrt_a_raw, read_unsigned(32));
+    EXPECT_EQ(7200U, read_unsigned(14));
+    EXPECT_EQ(cic_raw, read_signed(16));
+    EXPECT_EQ(omega0_raw, read_signed(32));
+    EXPECT_EQ(cis_raw, read_signed(16));
+    EXPECT_EQ(i0_raw, read_signed(32));
+    EXPECT_EQ(crc_raw, read_signed(16));
+    EXPECT_EQ(omega_raw, read_signed(32));
+    EXPECT_EQ(omega_dot_raw, read_signed(24));
+    EXPECT_EQ(bgd_raw, read_signed(10));
+    EXPECT_EQ(2U, read_unsigned(2));
+    EXPECT_EQ(1U, read_unsigned(1));
+    EXPECT_EQ(0U, read_unsigned(7));
+    EXPECT_EQ(520U, field_index);
+
+    Galileo_Ephemeris gal_eph_read;
     EXPECT_EQ(0, rtcm->read_MT1045(tx_msg, gal_eph_read));
-    EXPECT_EQ(expected_true, gal_eph_read.E5a_DVS);
-    EXPECT_DOUBLE_EQ(53.0 * OMEGA_DOT_3_LSB, gal_eph_read.OMEGAdot);
-    EXPECT_EQ(static_cast<unsigned int>(5), gal_eph_read.PRN);
+    EXPECT_EQ(gal_eph.PRN, gal_eph_read.PRN);
+    EXPECT_EQ(gal_eph.WN, gal_eph_read.WN);
+    EXPECT_EQ(gal_eph.IOD_ephemeris, gal_eph_read.IOD_ephemeris);
+    EXPECT_EQ(gal_eph.IOD_ephemeris, gal_eph_read.IOD_nav);
+    EXPECT_EQ(gal_eph.SISA, gal_eph_read.SISA);
+    EXPECT_DOUBLE_EQ(gal_eph.idot, gal_eph_read.idot);
+    EXPECT_DOUBLE_EQ(gal_eph.toc, gal_eph_read.toc);
+    EXPECT_DOUBLE_EQ(gal_eph.af2, gal_eph_read.af2);
+    EXPECT_DOUBLE_EQ(gal_eph.af1, gal_eph_read.af1);
+    EXPECT_DOUBLE_EQ(gal_eph.af0, gal_eph_read.af0);
+    EXPECT_DOUBLE_EQ(gal_eph.Crs, gal_eph_read.Crs);
+    EXPECT_DOUBLE_EQ(gal_eph.delta_n, gal_eph_read.delta_n);
+    EXPECT_DOUBLE_EQ(gal_eph.M_0, gal_eph_read.M_0);
+    EXPECT_DOUBLE_EQ(gal_eph.Cuc, gal_eph_read.Cuc);
+    EXPECT_DOUBLE_EQ(gal_eph.ecc, gal_eph_read.ecc);
+    EXPECT_DOUBLE_EQ(gal_eph.Cus, gal_eph_read.Cus);
+    EXPECT_DOUBLE_EQ(gal_eph.sqrtA, gal_eph_read.sqrtA);
+    EXPECT_DOUBLE_EQ(gal_eph.toe, gal_eph_read.toe);
+    EXPECT_DOUBLE_EQ(gal_eph.Cic, gal_eph_read.Cic);
+    EXPECT_DOUBLE_EQ(gal_eph.OMEGA_0, gal_eph_read.OMEGA_0);
+    EXPECT_DOUBLE_EQ(gal_eph.Cis, gal_eph_read.Cis);
+    EXPECT_DOUBLE_EQ(gal_eph.i_0, gal_eph_read.i_0);
+    EXPECT_DOUBLE_EQ(gal_eph.Crc, gal_eph_read.Crc);
+    EXPECT_DOUBLE_EQ(gal_eph.omega, gal_eph_read.omega);
+    EXPECT_DOUBLE_EQ(gal_eph.OMEGAdot, gal_eph_read.OMEGAdot);
+    EXPECT_DOUBLE_EQ(gal_eph.BGD_E1E5a, gal_eph_read.BGD_E1E5a);
+    EXPECT_EQ(gal_eph.E5a_HS, gal_eph_read.E5a_HS);
+    EXPECT_EQ(gal_eph.E5a_DVS, gal_eph_read.E5a_DVS);
+    EXPECT_EQ(Galileo_Nav_Message_Type::FNAV, gal_eph_read.nav_message_type);
+
+    // Verify interoperability with the independent RTKLIB RTCM3 decoder.
+    rtcm_t rtklib_decoder{};
+    ASSERT_EQ(1, init_rtcm(&rtklib_decoder));
+    int decoder_status = 0;
+    for (const char byte : tx_msg)
+        {
+            decoder_status = input_rtcm3(&rtklib_decoder, static_cast<unsigned char>(byte));
+        }
+    EXPECT_EQ(2, decoder_status);
+    ASSERT_GT(rtklib_decoder.ephsat, 0);
+    const eph_t& rtklib_ephemeris = rtklib_decoder.nav.eph[rtklib_decoder.ephsat - 1];
+    EXPECT_EQ(gal_eph.IOD_ephemeris, rtklib_ephemeris.iode);
+    EXPECT_EQ(static_cast<int>(gal_eph.WN + 1024U), rtklib_ephemeris.week);
+    EXPECT_EQ(gal_eph.SISA, rtklib_ephemeris.sva);
+    const auto expect_rtklib_near = [](double expected, double actual) {
+        EXPECT_NEAR(expected, actual, std::fabs(expected) * 1e-14 + 1e-30);
+    };
+    expect_rtklib_near(gal_eph.idot, rtklib_ephemeris.idot);
+    int decoded_week = 0;
+    EXPECT_DOUBLE_EQ(gal_eph.toc, time2gpst(rtklib_ephemeris.toc, &decoded_week));
+    EXPECT_EQ(static_cast<int>(gal_eph.WN + 1024U), decoded_week);
+    EXPECT_DOUBLE_EQ(gal_eph.af2, rtklib_ephemeris.f2);
+    EXPECT_DOUBLE_EQ(gal_eph.af1, rtklib_ephemeris.f1);
+    EXPECT_DOUBLE_EQ(gal_eph.af0, rtklib_ephemeris.f0);
+    EXPECT_DOUBLE_EQ(gal_eph.Crs, rtklib_ephemeris.crs);
+    expect_rtklib_near(gal_eph.delta_n, rtklib_ephemeris.deln);
+    expect_rtklib_near(gal_eph.M_0, rtklib_ephemeris.M0);
+    EXPECT_DOUBLE_EQ(gal_eph.Cuc, rtklib_ephemeris.cuc);
+    EXPECT_DOUBLE_EQ(gal_eph.ecc, rtklib_ephemeris.e);
+    EXPECT_DOUBLE_EQ(gal_eph.Cus, rtklib_ephemeris.cus);
+    EXPECT_DOUBLE_EQ(gal_eph.sqrtA * gal_eph.sqrtA, rtklib_ephemeris.A);
+    EXPECT_DOUBLE_EQ(gal_eph.toe, rtklib_ephemeris.toes);
+    EXPECT_DOUBLE_EQ(gal_eph.Cic, rtklib_ephemeris.cic);
+    expect_rtklib_near(gal_eph.OMEGA_0, rtklib_ephemeris.OMG0);
+    EXPECT_DOUBLE_EQ(gal_eph.Cis, rtklib_ephemeris.cis);
+    expect_rtklib_near(gal_eph.i_0, rtklib_ephemeris.i0);
+    EXPECT_DOUBLE_EQ(gal_eph.Crc, rtklib_ephemeris.crc);
+    expect_rtklib_near(gal_eph.omega, rtklib_ephemeris.omg);
+    expect_rtklib_near(gal_eph.OMEGAdot, rtklib_ephemeris.OMGd);
+    EXPECT_DOUBLE_EQ(gal_eph.BGD_E1E5a, rtklib_ephemeris.tgd[0]);
+    EXPECT_EQ((gal_eph.E5a_HS << 4) + (static_cast<int>(gal_eph.E5a_DVS) << 3), rtklib_ephemeris.svh);
+    EXPECT_EQ(2, rtklib_ephemeris.code);
+    free_rtcm(&rtklib_decoder);
+
     EXPECT_EQ(1, rtcm->read_MT1045(rtcm->bin_to_binary_data(rtcm->hex_to_bin("FFFFFFFFFFF")), gal_eph_read));
+
+    gal_eph.nav_message_type = Galileo_Nav_Message_Type::INAV;
+    EXPECT_TRUE(rtcm->print_MT1045(gal_eph).empty());
 }
 
 

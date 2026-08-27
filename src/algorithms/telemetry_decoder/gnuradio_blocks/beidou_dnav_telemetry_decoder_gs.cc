@@ -324,9 +324,8 @@ void beidou_dnav_telemetry_decoder_gs::decode_subframe(float *frame_symbols, dou
         }
     if (d_nav.have_new_almanac() == true)
         {
-            // uint32_t slot_nbr = d_nav.i_alm_satellite_PRN;
-            // std::shared_ptr<Beidou_Dnav_Almanac> tmp_obj = std::make_shared<Beidou_Dnav_Almanac>(d_nav.get_almanac(slot_nbr));
-            // this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            const std::shared_ptr<Beidou_Dnav_Almanac> tmp_obj = std::make_shared<Beidou_Dnav_Almanac>(d_nav.get_almanac());
+            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV Almanac data have been received in channel" << d_channel << " from satellite " << d_satellite << " with CN0=" << cn0 << " dB-Hz";
             const auto default_precision = std::cout.precision();
             std::cout << text_color << "New BEIDOU B" << d_band << "I DNAV almanac received in channel " << d_channel

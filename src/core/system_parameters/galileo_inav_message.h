@@ -24,6 +24,7 @@
 #include "galileo_ephemeris.h"
 #include "galileo_iono.h"
 #include "galileo_ism.h"
+#include "galileo_reduced_ced.h"
 #include "galileo_utc_model.h"
 #include "gnss_sdr_make_unique.h"  // for std::unique_ptr in C++11
 #include <array>
@@ -129,9 +130,9 @@ public:
     Galileo_Almanac_Helper get_almanac() const;
 
     /*
-     * \brief Returns a Galileo_Ephemeris object filled with the latest reduced CED received
+     * \brief Returns a Galileo_Reduced_CED object filled with the latest Word 16 and Word 5 data received
      */
-    Galileo_Ephemeris get_reduced_ced() const;
+    Galileo_Reduced_CED get_reduced_ced() const;
 
     /*
      * \brief Returns a Galileo_ISMs object filled with the latest ISM data received
@@ -166,6 +167,11 @@ public:
     inline bool get_flag_CRC_test() const
     {
         return flag_CRC_test;
+    }
+
+    inline bool is_alert_page() const
+    {
+        return flag_alert_page;
     }
 
     inline bool get_flag_TOW_set() const
@@ -230,7 +236,7 @@ public:
 
     inline bool get_flag_GGTO() const
     {
-        return (flag_GGTO_1 == true and flag_GGTO_2 == true and flag_GGTO_3 == true and flag_GGTO_4 == true);
+        return (flag_GGTO_1 == true && flag_GGTO_2 == true && flag_GGTO_3 == true && flag_GGTO_4 == true && flag_GGTO_valid == true);
     }
 
     inline double get_A0G() const
@@ -259,6 +265,11 @@ public:
     inline void init_PRN(uint32_t prn)
     {
         SV_ID_PRN_4 = prn;
+        flag_CED = false;
+        flag_rs_recovered_ephemeris_pending = false;
+        word_5_generation = 0U;
+        reduced_ced_word_5_generation = 0U;
+        rs_recovery_word_5_generation = 0U;
         nma_msg.PRN = prn;
         nma_msg.mack = std::array<uint32_t, 15>{};
         nma_msg.hkroot = std::array<uint8_t, 15>{};
@@ -469,10 +480,15 @@ private:
     uint8_t IODnav_LSB19{};
     uint8_t IODnav_LSB20{};
 
+    uint64_t word_5_generation{};
+    uint64_t reduced_ced_word_5_generation{};
+    uint64_t rs_recovery_word_5_generation{};
+
     uint8_t ism_constellation_id{};
     uint8_t ism_service_level_id{};
 
     bool flag_CRC_test{};
+    bool flag_alert_page{};     // Flag indicating that the last complete page (even + odd) was an alert page (Page Type = 1), whose CRC cannot be verified on a single frequency
     bool flag_all_ephemeris{};  // Flag indicating that all words containing ephemeris have been received
     bool flag_ephemeris_1{};    // Flag indicating that ephemeris 1/4 (word 1) have been received
     bool flag_ephemeris_2{};    // Flag indicating that ephemeris 2/4 (word 2) have been received
@@ -480,11 +496,13 @@ private:
     bool flag_ephemeris_4{};    // Flag indicating that ephemeris 4/4 (word 4) have been received
 
     bool flag_iono_and_GST{};  // Flag indicating that ionospheric and GST parameters (word 5) have been received
+    bool flag_iono_model_valid{};
     bool flag_TOW_5{};
     bool flag_TOW_6{};
     bool flag_TOW_0{};
-    bool flag_TOW_set{};    // it is true when page 5 or page 6 arrives
-    bool flag_utc_model{};  // Flag indicating that utc model parameters (word 6) have been received
+    bool flag_TOW_set{};          // it is true when page 5 or page 6 arrives
+    bool flag_utc_model_valid{};  // Flag indicating that UTC model parameters (word 6) have been received
+    bool flag_new_utc_model{};    // Flag indicating that a newly decoded UTC model is pending publication
 
     bool flag_all_almanac{};  // Flag indicating that all Almanac data have been received
     bool flag_almanac_1{};    // Flag indicating that almanac 1/4 (word 7) have been received
@@ -496,8 +514,10 @@ private:
     bool flag_GGTO_2{};
     bool flag_GGTO_3{};
     bool flag_GGTO_4{};
+    bool flag_GGTO_valid{};
 
     bool flag_CED{};
+    bool flag_rs_recovered_ephemeris_pending{};
     bool enable_rs{};
     bool have_ISM{};
     bool current_IODnav_valid{};  // IOD_nav can be zero, so track initialization separately.

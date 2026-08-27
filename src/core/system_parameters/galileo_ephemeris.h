@@ -21,6 +21,7 @@
 
 #include "gnss_ephemeris.h"
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/version.hpp>
 #include <cstdint>
 
 /** \addtogroup Core
@@ -36,6 +37,23 @@
  *  (See https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo_OS_SIS_ICD_v2.0.pdf )
  *
  */
+enum class Galileo_Nav_Message_Type : uint8_t
+{
+    Unknown = 0,
+    INAV = 1,
+    FNAV = 2
+};
+
+
+enum class Galileo_Nav_Message_Source : uint8_t
+{
+    Unknown = 0,
+    E1B = 1,
+    E5a = 2,
+    E5b = 3
+};
+
+
 class Galileo_Ephemeris : public Gnss_Ephemeris
 {
 public:
@@ -50,7 +68,7 @@ public:
     int32_t IOD_nav{};
 
     // SV status
-    int32_t SISA{};      //!< Signal in space accuracy index
+    int32_t SISA{-1};    //!< Signal in space accuracy index (-1 if unavailable in the source data)
     int32_t E5a_HS{};    //!< E5a Signal Health Status
     int32_t E5b_HS{};    //!< E5b Signal Health Status
     int32_t E1B_HS{};    //!< E1B Signal Health Status
@@ -59,6 +77,10 @@ public:
     bool E1B_DVS{};      //!< E1B Data Validity Status
     double BGD_E1E5a{};  //!< E1-E5a Broadcast Group Delay [s]
     double BGD_E1E5b{};  //!< E1-E5b Broadcast Group Delay [s]
+    //! Navigation message carrying this record
+    Galileo_Nav_Message_Type nav_message_type{Galileo_Nav_Message_Type::Unknown};
+    //! Signal from which this navigation record was decoded
+    Galileo_Nav_Message_Source nav_message_source{Galileo_Nav_Message_Source::Unknown};
 
     bool flag_all_ephemeris{};
 
@@ -112,8 +134,37 @@ public:
         archive& BOOST_SERIALIZATION_NVP(BGD_E1E5a);
         archive& BOOST_SERIALIZATION_NVP(BGD_E1E5b);
         archive& BOOST_SERIALIZATION_NVP(flag_all_ephemeris);
+        if (version > 0)
+            {
+                uint32_t nav_message_type_value = static_cast<uint32_t>(nav_message_type);
+                archive& boost::serialization::make_nvp("nav_message_type", nav_message_type_value);
+                if (nav_message_type_value <= static_cast<uint32_t>(Galileo_Nav_Message_Type::FNAV))
+                    {
+                        nav_message_type = static_cast<Galileo_Nav_Message_Type>(nav_message_type_value);
+                    }
+                else
+                    {
+                        nav_message_type = Galileo_Nav_Message_Type::Unknown;
+                    }
+            }
+        if (version > 1)
+            {
+                uint32_t nav_message_source_value = static_cast<uint32_t>(nav_message_source);
+                archive& boost::serialization::make_nvp("nav_message_source", nav_message_source_value);
+                if (nav_message_source_value <= static_cast<uint32_t>(Galileo_Nav_Message_Source::E5b))
+                    {
+                        nav_message_source = static_cast<Galileo_Nav_Message_Source>(nav_message_source_value);
+                    }
+                else
+                    {
+                        nav_message_source = Galileo_Nav_Message_Source::Unknown;
+                    }
+            }
     }
 };
+
+
+BOOST_CLASS_VERSION(Galileo_Ephemeris, 2)
 
 
 /** \} */

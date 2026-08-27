@@ -21,6 +21,7 @@
 #include "dump_logger_helper.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include "gnss_synchro.h"
+#include "gps_cnav_eop.h"        // for Gps_CNAV_Eop
 #include "gps_cnav_ephemeris.h"  // for Gps_CNAV_Ephemeris
 #include "gps_cnav_iono.h"       // for Gps_CNAV_Iono
 #include "gps_cnav_utc_model.h"  // for Gps_CNAV_Utc_Model
@@ -210,6 +211,16 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     const auto default_precision = std::cout.precision();
                     std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel
                               << ": ephemeris from satellite " << d_satellite
+                              << " with CN0=" << std::setprecision(2) << current_synchro_data.CN0_dB_hz << std::setprecision(default_precision)
+                              << " dB-Hz" << TEXT_RESET << std::endl;
+                }
+            if (d_CNAV_Message.have_new_eop() == true)
+                {
+                    const std::shared_ptr<Gps_CNAV_Eop> tmp_obj = std::make_shared<Gps_CNAV_Eop>(d_CNAV_Message.get_eop());
+                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                    const auto default_precision = std::cout.precision();
+                    std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel
+                              << ": Earth orientation parameters from satellite " << d_satellite
                               << " with CN0=" << std::setprecision(2) << current_synchro_data.CN0_dB_hz << std::setprecision(default_precision)
                               << " dB-Hz" << TEXT_RESET << std::endl;
                 }

@@ -32,8 +32,8 @@ import os
 
 def plotKalman(channelNr, trackResults, settings):
 
-    # ---------- CHANGE HERE:
-    fig_path = '/home/labnav/Desktop/TEST_IRENE/PLOTS/PlotKalman'
+    fig_path = settings.get('fig_path', 'plots/kalman')
+    output_format = settings.get('output_format', 'png')
 
     if not os.path.exists(fig_path):
         os.makedirs(fig_path)
@@ -43,14 +43,19 @@ def plotKalman(channelNr, trackResults, settings):
                                np.arange(1, settings['numberOfChannels'] + 1))
 
     for channelNr in channelNr:
+        channel_ids = settings.get('channelIds')
+        if channel_ids is not None:
+            display_channel = channel_ids[channelNr - 1]
+        else:
+            display_channel = settings.get('firstChannel', 1) + channelNr - 1
         time_start = settings['timeStartInSeconds']
         time_axis_in_seconds = np.arange(1, settings['msToProcess']+1)/1000
 
         # Plot all figures
         plt.figure(figsize=(1920 / 100, 1080 / 100))
         plt.clf()
-        plt.gcf().canvas.set_window_title(
-            f'Channel {channelNr} (PRN '
+        plt.gcf().canvas.manager.set_window_title(
+            f'Channel {display_channel} (PRN '
             f'{str(trackResults[channelNr-1]["PRN"][-2])}) results')
         plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1,
                             hspace=0.4, wspace=0.4)
@@ -122,19 +127,26 @@ def plotKalman(channelNr, trackResults, settings):
 
         # Row 4
         # ----- PLL discriminator covariance ---------------------------------
-        plt.subplot(4, 2, (7,8))
-        plt.plot(time_axis_in_seconds,
-                 trackResults[channelNr-1]['r_noise_cov'], 'r')
-        plt.grid()
-        plt.axis('auto')
-        plt.xlim(time_start, time_axis_in_seconds[-1])
-        plt.xlabel('Time (s)')
-        plt.ylabel('Variance')
-        plt.title('Estimated Noise Variance', fontweight='bold')
+        # Only plotted if the dump provides a noise covariance. The GPS L1 C/A
+        # KF tracking dump does not store one, so this panel is skipped there.
+        if 'r_noise_cov' in trackResults[channelNr-1]:
+            plt.subplot(4, 2, (7,8))
+            plt.plot(time_axis_in_seconds,
+                     trackResults[channelNr-1]['r_noise_cov'], 'r')
+            plt.grid()
+            plt.axis('auto')
+            plt.xlim(time_start, time_axis_in_seconds[-1])
+            plt.xlabel('Time (s)')
+            plt.ylabel('Variance')
+            plt.title('Estimated Noise Variance', fontweight='bold')
 
         plt.tight_layout()
         plt.savefig(os.path.join(fig_path,
-                                 f'kalman_ch{channelNr}_PRN_'
+                                 f'kalman_ch{display_channel}_PRN_'
                                  f'{trackResults[channelNr - 1]["PRN"][-1]}'
-                                 f'.png'))
-        plt.show()
+                                 f'.{output_format}'))
+        # Close unless it will be shown; the caller triggers a single
+        # plt.show() at the end. Avoids repeated show()/close() cycles, which
+        # can crash interactive matplotlib backends (e.g. macOS) on close.
+        if not settings.get('show', True):
+            plt.close()

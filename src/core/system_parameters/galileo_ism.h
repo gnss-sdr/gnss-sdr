@@ -67,10 +67,10 @@ public:
     float get_bnom_m() const;
     uint32_t get_mask_ISM() const;
     uint16_t get_WN_ISM() const;
-    uint16_t get_t0_ISM() const;
+    uint32_t get_t0_ISM() const;
     uint16_t get_Tvalidity_hours() const;
     bool get_ism_mask_msb() const;
-    bool ism_parameters_apply(uint32_t prn) const;
+    bool ism_parameters_apply(uint32_t svid) const;
 
 private:
     uint32_t compute_crc(const std::vector<uint8_t>& data);

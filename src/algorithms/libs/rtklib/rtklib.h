@@ -186,7 +186,7 @@ const int MAXPRNGAL = 36;                         //!<   max satellite PRN numbe
 const int NSATGAL = (MAXPRNGAL - MINPRNGAL + 1);  //!<   number of Galileo satellites
 const int NSYSGAL = 1;
 
-const int MAXPRNQZS = 202;  //!<   max satellite PRN number of QZSS
+const int MAXPRNQZS = 206;  //!<   max satellite PRN number of QZSS
 const int MINPRNQZS = 193;  //!<   min satellite PRN number of QZSS
 #define ENAQZS
 #ifdef ENAQZS
@@ -292,13 +292,39 @@ const int EPHOPT_SSRAPC = 3;  //!<    ephemeris option: broadcast + SSR_APC
 const int EPHOPT_SSRCOM = 4;  //!<    ephemeris option: broadcast + SSR_COM
 const int EPHOPT_LEX = 5;     //!<    ephemeris option: QZSS LEX ephemeris
 
-const double EFACT_GPS = 1.0;  //!<    error factor: GPS
-const double EFACT_GLO = 1.5;  //!<    error factor: GLONASS
-const double EFACT_GAL = 1.0;  //!<    error factor: Galileo
-const double EFACT_QZS = 1.0;  //!<    error factor: QZSS
-const double EFACT_BDS = 1.0;  //!<    error factor: BeiDou
-const double EFACT_IRN = 1.5;  //!<    error factor: IRNSS
-const double EFACT_SBS = 3.0;  //!<    error factor: SBAS
+
+constexpr double EFACT_GPS = 1.0;  //!<    error factor: GPS
+constexpr double EFACT_GLO = 1.5;  //!<    error factor: GLONASS
+constexpr double EFACT_GAL = 1.0;  //!<    error factor: Galileo
+constexpr double EFACT_QZS = 1.0;  //!<    error factor: QZSS
+constexpr double EFACT_BDS = 1.0;  //!<    error factor: BeiDou
+constexpr double EFACT_IRN = 1.5;  //!<    error factor: IRNSS
+constexpr double EFACT_SBS = 3.0;  //!<    error factor: SBAS
+
+//! Measurement error factor of a navigation system (single home of the
+//! sys-to-EFACT mapping used by the single-point, relative and PPP error
+//! models)
+inline double sysefact(int sys)
+{
+    switch (sys)
+        {
+        case SYS_GLO:
+            return EFACT_GLO;
+        case SYS_GAL:
+            return EFACT_GAL;
+        case SYS_SBS:
+            return EFACT_SBS;
+        case SYS_QZS:
+            return EFACT_QZS;
+        case SYS_BDS:
+            return EFACT_BDS;
+        case SYS_IRN:
+            return EFACT_IRN;
+        case SYS_GPS:
+        default:
+            return EFACT_GPS;
+        }
+}
 
 const int MAXEXFILE = 1024;        //!<    max number of expanded files
 const double MAXSBSAGEF = 30.0;    //!<    max age of SBAS fast correction (s)
@@ -370,6 +396,8 @@ typedef struct
     double L[NFREQ + NEXOBS];           /* observation data carrier-phase (cycle) */
     double P[NFREQ + NEXOBS];           /* observation data pseudorange (m) */
     float D[NFREQ + NEXOBS];            /* observation data doppler frequency (Hz) */
+    float Lstd[NFREQ + NEXOBS];         /* receiver-reported stdev of carrier phase (cycle) (0:unknown) */
+    float Pstd[NFREQ + NEXOBS];         /* receiver-reported stdev of pseudorange (m) (0:unknown) */
 } obsd_t;
 
 
@@ -434,7 +462,7 @@ typedef struct
 {                          /* GPS/QZS/GAL broadcast ephemeris type */
     int sat;               /* satellite number */
     int iode, iodc;        /* IODE,IODC */
-    int sva;               /* SV accuracy (URA index) */
+    int sva;               /* SV accuracy (URA index, GAL: SISA index) */
     int svh;               /* SV health (0:ok) */
     int week;              /* GPS/QZS: gps week, GAL: galileo week */
     int code;              /* GPS/QZS: code on L2, GAL/BDS: data sources */
@@ -786,7 +814,9 @@ typedef struct
     double ion_gps[8];            /* GPS iono model parameters {a0,a1,a2,a3,b0,b1,b2,b3} */
     double ion_gal[4];            /* Galileo iono model parameters {ai0,ai1,ai2,0} */
     double ion_qzs[8];            /* QZSS iono model parameters {a0,a1,a2,a3,b0,b1,b2,b3} */
-    double ion_cmp[8];            /* BeiDou iono model parameters {a0,a1,a2,a3,b0,b1,b2,b3} */
+    double ion_cmp[8];            /* BeiDou DNAV Klobuchar {a0,a1,a2,a3,b0,b1,b2,b3} */
+    double ion_bdgim[9];          /* BeiDou B-CNAV1 BDGIM alphas alpha1..alpha9 [TECu] */
+    int ion_bdgim_valid;          /* 1 if ion_bdgim is usable */
     double ion_irn[8];            /* IRNSS iono model parameters {a0,a1,a2,a3,b0,b1,b2,b3} */
     int leaps;                    /* leap seconds (s) */
     double lam[MAXSAT][NFREQ];    /* carrier wave lengths (m) */
@@ -839,6 +869,8 @@ typedef struct
     float age;          /* age of differential (s) */
     float ratio;        /* AR ratio factor for validation */
     float thres;        /* AR ratio threshold for validation */
+    float prev_ratio1;  /* previous AR ratio factor for validation */
+    float prev_ratio2;  /* previous AR ratio factor for validation, after sat exclusion */
 } sol_t;
 
 
@@ -977,7 +1009,10 @@ typedef struct
                                   /* (0:pos in prcopt,  1:average of single pos, */
                                   /*  2:read from file, 3:rinex header, 4:rtcm pos) */
     double eratio[NFREQ];         /* code/phase error ratio */
-    double err[5];                /* measurement error factor */
+    double err[8];                /* measurement error factor */
+                                  /* [5]: SNR reference (dBHz) for the SNR term */
+                                  /* [6]: SNR error term (m) (0:disabled) */
+                                  /* [7]: receiver-stdev error term (0:disabled) */
                                   /* [0]:reserved */
                                   /* [1-3]:error factor a/b/c of phase (m) */
                                   /* [4]:doppler frequency (hz) */
@@ -988,8 +1023,9 @@ typedef struct
     double elmaskar;              /* elevation mask of AR for rising satellite (deg) */
     double elmaskhold;            /* elevation mask to hold ambiguity (deg) */
     double thresslip;             /* slip threshold of geometry-free phase (m) */
+    double thresdop;              /* slip threshold of doppler (m/s) (0:disabled) */
     double maxtdiff;              /* max difference of time (sec) */
-    double maxinno;               /* reject threshold of innovation (m) */
+    double maxinno[2];            /* reject threshold of innovation {phase, code} (m) */
     double maxgdop;               /* reject threshold of gdop */
     double baseline[2];           /* baseline length constraint {const,sigma} (m) */
     double ru[3];                 /* rover position for fixed mode {x,y,z} (ecef) (m) */
@@ -1009,6 +1045,22 @@ typedef struct
     int freqopt;                  /* disable L2-AR */
     char pppopt[256];             /* ppp option */
     bool bancroft_init;           /* enable Bancroft initialization for the first iteration of the PVT computation */
+    bool estqzsisb;               /* estimate a separate QZS-GPS inter-system bias in single-point positioning.
+                                     Requires one extra satellite in mixed GPS+QZSS epochs; keep disabled in
+                                     degraded-visibility scenarios */
+    /* AR management options from the demo5 RTKLIB fork. Value-initialized (all zeros)
+       they reproduce the classic behavior: no AR filtering, no minimum-satellite gates,
+       no satellite exclusion cycling, no position-variance gate. PRCOPT_DEFAULT keeps
+       them at zero; note that the GNSS-SDR PVT adapter enables the demo5 defaults
+       instead (PVT.ar_filter=true, min_fix_sats=4, min_hold_sats=5, min_drop_sats=10,
+       ar_max_position_variance=0.25) - set those configuration options to zero/false
+       to recover the classic behavior */
+    int arfilter;       /* AR filtering to reject newly-added sats on AR ratio degradation (0:off,1:on) */
+    int minfixsats;     /* min number of sats to fix integer ambiguities (0:no limit) */
+    int minholdsats;    /* min number of sats to hold integer ambiguities (0:no limit) */
+    int mindropsats;    /* min number of sats to enable single-sat exclusion cycling in AR (0:disabled) */
+    double varholdamb;  /* variance of the fix-and-hold pseudo measurements (cycle^2) (0:use default) */
+    double armaxposvar; /* max position variance to attempt AR (m^2) (0:no gate) */
 } prcopt_t;
 
 
@@ -1044,6 +1096,7 @@ typedef struct
     double resc[NFREQ];        /* residuals of carrier-phase (m) */
     unsigned char vsat[NFREQ]; /* valid satellite flag */
     unsigned char snr[NFREQ];  /* signal strength (0.25 dBHz) */
+    unsigned char code[NFREQ]; /* code indicator (CODE_???) */
     unsigned char fix[NFREQ];  /* ambiguity fix flag (1:fix,2:float,3:hold) */
     unsigned char slip[NFREQ]; /* cycle-slip flag */
     unsigned char half[NFREQ]; /* half-cycle valid flag */
@@ -1057,6 +1110,8 @@ typedef struct
     double phw;                /* phase windup (cycle) */
     gtime_t pt[2][NFREQ];      /* previous carrier-phase time */
     double ph[2][NFREQ];       /* previous carrier-phase observable (cycle) */
+    float snr_rover[NFREQ];    /* rover signal strength (dBHz) */
+    float snr_base[NFREQ];     /* base signal strength (dBHz) */
 } ssat_t;
 
 
@@ -1080,6 +1135,9 @@ typedef struct
     double *x, *P;          /* float states and their covariance */
     double *xa, *Pa;        /* fixed states and their covariance */
     int nfix;               /* number of continuous fixes of ambiguity */
+    int excsat;             /* satellite currently excluded from AR for partial ambiguity resolution */
+    int nb_ar;              /* number of double-differenced ambiguities used in the last AR attempt */
+    int holdamb;            /* set to 1 once fix-and-hold has been applied */
     ambc_t ambc[MAXSAT];    /* ambiguity control */
     ssat_t ssat[MAXSAT];    /* satellite status */
     int neb;                /* bytes in error message buffer */
@@ -1175,17 +1233,31 @@ typedef struct
 
 
 typedef struct
-{                                     /* ntrip control type */
-    int state;                        /* state (0:close,1:wait,2:connect) */
-    int type;                         /* type (0:server,1:client) */
-    int nb;                           /* response buffer size */
-    char url[256];                    /* url for proxy */
-    char mntpnt[256];                 /* mountpoint */
-    char user[256];                   /* user */
-    char passwd[256];                 /* password */
-    char str[NTRIP_MAXSTR];           /* mountpoint string for server */
-    unsigned char buff[NTRIP_MAXRSP]; /* response buffer */
-    tcpcli_t *tcp;                    /* tcp client */
+{                                             /* ntrip control type */
+    int state;                                /* state (0:close,1:wait,2:connect) */
+    int type;                                 /* type (0:server,1:client) */
+    int version;                              /* NTRIP client version (1 or 2) */
+    int tls_enabled;                          /* TLS transport enabled */
+    int chunked;                              /* HTTP chunked transfer encoding */
+    int chunk_state;                          /* chunk parser state (0:size,1:data,2:crlf) */
+    unsigned int chunk_remaining;             /* bytes left in current HTTP chunk */
+    int nb;                                   /* response buffer size */
+    int request_length;                       /* buffered NTRIP request size */
+    int request_offset;                       /* bytes of buffered request already sent */
+    int request_sent;                         /* complete request sent on current connection */
+    int response_received;                    /* response bytes received on current connection */
+    int v1_retry_requested;                   /* response indicates a fresh v1 retry */
+    char url[256];                            /* url for proxy */
+    char host[256];                           /* caster hostname (not proxy hostname) */
+    char port[16];                            /* caster port */
+    char mntpnt[256];                         /* mountpoint */
+    char user[256];                           /* user */
+    char passwd[256];                         /* password */
+    char str[NTRIP_MAXSTR];                   /* mountpoint string for server */
+    unsigned char buff[NTRIP_MAXRSP];         /* response buffer */
+    unsigned char request_buff[NTRIP_MAXRSP]; /* persistent non-blocking request buffer */
+    tcpcli_t *tcp;                            /* tcp client */
+    void *tls_ctx;                            /* opaque Rtklib_Tls_Client pointer */
 } ntrip_t;
 
 

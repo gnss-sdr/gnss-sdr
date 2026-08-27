@@ -122,9 +122,9 @@ void beidou_b3i_code_gen_int(own::span<int> dest, int32_t prn, uint32_t chip_shi
             G1[lcv] = G1_register[0];
             G2[lcv] = G2_register[0];
 
-            feedback1 = G1_register[0] xor G1_register[9] xor G1_register[10] xor G1_register[12];
-            feedback2 = G2_register[0] xor G2_register[1] xor G2_register[3] xor G2_register[4] xor
-                        G2_register[6] xor G2_register[7] xor G2_register[8] xor G2_register[12];
+            feedback1 = G1_register[0] ^ G1_register[9] ^ G1_register[10] ^ G1_register[12];
+            feedback2 = G2_register[0] ^ G2_register[1] ^ G2_register[3] ^ G2_register[4] ^
+                        G2_register[6] ^ G2_register[7] ^ G2_register[8] ^ G2_register[12];
 
             for (lcv2 = 0; lcv2 < 12; lcv2++)
                 {
@@ -149,7 +149,7 @@ void beidou_b3i_code_gen_int(own::span<int> dest, int32_t prn, uint32_t chip_shi
     // Generate PRN from G1 and G2 Registers
     for (lcv = 0; lcv < code_length; lcv++)
         {
-            aux = G1[(lcv + chip_shift) % code_length] xor G2[delay];
+            aux = G1[(lcv + chip_shift) % code_length] ^ G2[delay];
             if (aux == true)
                 {
                     dest[lcv] = 1;

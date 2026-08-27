@@ -44,6 +44,7 @@
 #include "gps_ephemeris.h"                           // for Gps_Ephemeris
 #include "gps_iono.h"                                // for Gps_Iono
 #include "gps_utc_model.h"                           // for Gps_Utc_Model
+#include "gps_week_rollover.h"                       // for gps_ref_week_from_config
 #include "pvt_interface.h"                           // for PvtInterface
 #include "rtklib.h"                                  // for gtime_t, alm_t
 #include "rtklib_conversions.h"                      // for alm_to_rtklib
@@ -59,6 +60,7 @@
 #include <csignal>                                   // for signal, SIGINT
 #include <ctime>                                     // for time_t, gmtime, strftime
 #include <exception>                                 // for exception
+#include <fstream>                                   // for ifstream
 #include <iostream>                                  // for operator<<
 #include <limits>                                    // for numeric_limits
 #include <map>                                       // for map
@@ -169,8 +171,11 @@ ControlThread::ControlThread(std::shared_ptr<ConfigurationInterface> configurati
 void ControlThread::init()
 {
     telecommand_enabled_ = configuration_->property("GNSS-SDR.telecommand_enabled", false);
-    // OPTIONAL: specify a custom year to override the system time in order to postprocess old gnss records and avoid wrong week rollover
-    pre_2009_file_ = configuration_->property("GNSS-SDR.pre_2009_file", false);
+    // OPTIONAL: approximate date of the signal capture, used to resolve the GPS
+    // mod-1024 week-number rollover when post-processing old gnss records
+    ref_gps_week_ = gps_ref_week_from_config(
+        configuration_->property("GNSS-SDR.observation_date", std::string("")),
+        configuration_->property("GNSS-SDR.pre_2009_file", false));
     // Instantiates a control queue, a GNSS flowgraph, and a control message factory
     control_queue_ = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     cmd_interface_.set_msg_queue(control_queue_);  // set also the queue pointer for the telecommand thread
@@ -552,7 +557,7 @@ bool ControlThread::read_assistance_from_XML()
 
     std::cout << "Trying to read GNSS ephemeris from XML file(s)...\n";
 
-    if (configuration_->property("Channels_1C.count", 0) > 0)
+    if ((configuration_->property("Channels_1C.count", 0) > 0) || (configuration_->property("Channels_J1.count", 0) > 0))
         {
             if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)
                 {
@@ -561,7 +566,8 @@ bool ControlThread::read_assistance_from_XML()
                         gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
                         gps_eph_iter++)
                         {
-                            std::cout << "From XML file: Read NAV ephemeris for satellite " << Gnss_Satellite("GPS", gps_eph_iter->second.PRN) << '\n';
+                            const std::string system = gps_eph_iter->second.get_system() == 'J' ? "QZSS" : "GPS";
+                            std::cout << "From XML file: Read NAV ephemeris for satellite " << Gnss_Satellite(system, gps_eph_iter->second.PRN) << '\n';
                             const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);
                             flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                         }
@@ -604,18 +610,34 @@ bool ControlThread::read_assistance_from_XML()
     if ((configuration_->property("Channels_1B.count", 0) > 0) || (configuration_->property("Channels_5X.count", 0) > 0) ||
         (configuration_->property("Channels_7X.count", 0) > 0) || (configuration_->property("Channels_E6.count", 0) > 0))
         {
-            if (supl_client_ephemeris_.load_gal_ephemeris_xml(eph_gal_xml_filename) == true)
+            const auto publish_galileo_ephemeris_map = [this]() {
+                for (const auto &gal_eph : supl_client_ephemeris_.gal_ephemeris_map)
+                    {
+                        std::cout << "From XML file: Read ephemeris for satellite " << Gnss_Satellite("Galileo", gal_eph.second.PRN) << '\n';
+                        const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(gal_eph.second);
+                        flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                    }
+            };
+
+            if (supl_client_ephemeris_.load_gal_ephemeris_xml(eph_gal_xml_filename))
                 {
-                    std::map<int, Galileo_Ephemeris>::const_iterator gal_eph_iter;
-                    for (gal_eph_iter = supl_client_ephemeris_.gal_ephemeris_map.cbegin();
-                        gal_eph_iter != supl_client_ephemeris_.gal_ephemeris_map.cend();
-                        gal_eph_iter++)
-                        {
-                            std::cout << "From XML file: Read ephemeris for satellite " << Gnss_Satellite("Galileo", gal_eph_iter->second.PRN) << '\n';
-                            const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(gal_eph_iter->second);
-                            flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
-                        }
+                    publish_galileo_ephemeris_map();
                     ret = true;
+                }
+
+            const auto separator = eph_gal_xml_filename.find_last_of("/\\");
+            const std::string ephemeris_directory = separator == std::string::npos ? std::string() : eph_gal_xml_filename.substr(0, separator + 1);
+            const std::array<std::string, 2> source_files = {
+                ephemeris_directory + "gal_inav_ephemeris.xml",
+                ephemeris_directory + "gal_fnav_ephemeris.xml"};
+            for (const auto &source_file : source_files)
+                {
+                    std::ifstream source_stream(source_file.c_str());
+                    if (source_stream.good() && supl_client_ephemeris_.load_gal_ephemeris_xml(source_file))
+                        {
+                            publish_galileo_ephemeris_map();
+                            ret = true;
+                        }
                 }
 
             if (supl_client_acquisition_.load_gal_iono_xml(gal_iono_xml_filename) == true)
@@ -1045,6 +1067,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     std::vector<std::pair<int, Gnss_Satellite>> available_satellites;
     std::vector<unsigned int> visible_gps;
     std::vector<unsigned int> visible_gal;
+    std::vector<unsigned int> visible_bds;
     const std::shared_ptr<PvtInterface> pvt_ptr = flowgraph_->get_pvt();
     struct tm tstruct{};
     char buf[80];
@@ -1057,7 +1080,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     const std::map<int, Gps_Ephemeris> gps_eph_map = pvt_ptr->get_gps_ephemeris();
     for (const auto &it : gps_eph_map)
         {
-            const eph_t rtklib_eph = eph_to_rtklib(it.second, pre_2009_file_);
+            const eph_t rtklib_eph = eph_to_rtklib(it.second, ref_gps_week_);
             std::array<double, 3> r_sat{};
             double clock_bias_s;
             double sat_pos_variance_m2;
@@ -1101,6 +1124,30 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
                     available_satellites.emplace_back(floor(El),
                         (Gnss_Satellite(std::string("Galileo"), it.second.PRN)));
                     visible_gal.push_back(it.second.PRN);
+                }
+        }
+
+    const std::map<int, Beidou_Dnav_Ephemeris> bds_eph_map = pvt_ptr->get_beidou_dnav_ephemeris();
+    for (const auto &it : bds_eph_map)
+        {
+            const eph_t rtklib_eph = eph_to_rtklib(it.second);
+            std::array<double, 3> r_sat{};
+            double clock_bias_s;
+            double sat_pos_variance_m2;
+            eph2pos(gps_gtime, &rtklib_eph, r_sat.data(), &clock_bias_s,
+                &sat_pos_variance_m2);
+            double Az;
+            double El;
+            double dist_m;
+            const arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
+            const arma::vec dx = r_sat_eb_e - r_eb_e;
+            topocent(&Az, &El, &dist_m, r_eb_e, dx);
+            if (El > 0)
+                {
+                    std::cout << "Using BeiDou Ephemeris: Sat " << it.second.PRN << " Az: " << Az << " El: " << El << '\n';
+                    available_satellites.emplace_back(floor(El),
+                        (Gnss_Satellite(std::string("Beidou"), it.second.PRN)));
+                    visible_bds.push_back(it.second.PRN);
                 }
         }
 
@@ -1161,6 +1208,27 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
                             available_satellites.emplace_back(floor(El),
                                 (Gnss_Satellite(std::string("Galileo"), it.second.PRN)));
                         }
+                }
+        }
+
+    const std::map<int, Beidou_Dnav_Almanac> bds_alm_map = pvt_ptr->get_beidou_dnav_almanac();
+    for (const auto &it : bds_alm_map)
+        {
+            const alm_t rtklib_alm = alm_to_rtklib(it.second);
+            std::array<double, 3> r_sat{};
+            double clock_bias_s;
+            alm2pos(gps_gtime, &rtklib_alm, r_sat.data(), &clock_bias_s);
+            double Az;
+            double El;
+            double dist_m;
+            const arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
+            const arma::vec dx = r_sat_eb_e - r_eb_e;
+            topocent(&Az, &El, &dist_m, r_eb_e, dx);
+            if (El > 0 && std::find(visible_bds.begin(), visible_bds.end(), it.second.PRN) == visible_bds.end())
+                {
+                    std::cout << "Using BeiDou Almanac:  Sat " << it.second.PRN << " Az: " << Az << " El: " << El << '\n';
+                    available_satellites.emplace_back(floor(El),
+                        (Gnss_Satellite(std::string("Beidou"), it.second.PRN)));
                 }
         }
 

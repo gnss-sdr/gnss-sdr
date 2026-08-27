@@ -23,6 +23,8 @@
 #ifndef GNSS_SDR_PVT_INTERFACE_H
 #define GNSS_SDR_PVT_INTERFACE_H
 
+#include "beidou_dnav_almanac.h"
+#include "beidou_dnav_ephemeris.h"
 #include "galileo_almanac.h"
 #include "galileo_ephemeris.h"
 #include "gnss_block_interface.h"
@@ -52,8 +54,10 @@ public:
     virtual void clear_ephemeris() = 0;
     virtual std::map<int, Gps_Ephemeris> get_gps_ephemeris() const = 0;
     virtual std::map<int, Galileo_Ephemeris> get_galileo_ephemeris() const = 0;
+    virtual std::map<int, Beidou_Dnav_Ephemeris> get_beidou_dnav_ephemeris() const = 0;
     virtual std::map<int, Gps_Almanac> get_gps_almanac() const = 0;
     virtual std::map<int, Galileo_Almanac> get_galileo_almanac() const = 0;
+    virtual std::map<int, Beidou_Dnav_Almanac> get_beidou_dnav_almanac() const = 0;
 
     virtual bool get_latest_PVT(double* longitude_deg,
         double* latitude_deg,

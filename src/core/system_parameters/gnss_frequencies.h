@@ -57,6 +57,7 @@ const std::unordered_map<std::string, double> SIGNAL_FREQ_MAP = {
     {"B1", FREQ1_BDS},
     {"B2", FREQ2_BDS},
     {"B3", FREQ3_BDS},
+    {"1D", FREQ1},
     {"J1", FREQ1},
     {"J5", FREQ5},
 };

@@ -170,7 +170,7 @@ void LabsatSignalSource::connect(gr::top_block_sptr top_block)
                 {
                     if (dump_)
                         {
-                            top_block->connect(labsat23_source_, 0, file_sink_[rf_chan], 0);
+                            top_block->connect(labsat23_source_, rf_chan, file_sink_[rf_chan], 0);
                             DLOG(INFO) << "connected labsat23_source_ to sink";
                         }
                     else

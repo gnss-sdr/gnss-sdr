@@ -1,23 +1,8 @@
+#!/usr/bin/env python3
 """
  gps_l1_ca_pvt_raw_plot_sample.py
 
- Reads GNSS-SDR PVT raw dump binary file using the provided function and plots
- some internal variables
-
- Irene Pérez Riega, 2023. iperrie@inta.es
-
- Modifiable in the file:
-   sampling_freq     - Sampling frequency [Hz]
-   channels          - Number of channels to check if they exist
-   path              - Path to folder which contains raw file
-   pvt_raw_log_path  - Completed path to PVT raw data file
-   nav_sol_period    - Measurement period [ms]
-   plot_skyplot      - = 1 -> Sky Plot (TO DO) // = 0 -> No Sky Plot
-   true_position     - In settings, If not known enter all NaN's and mean
-                        position will be used as a reference in UTM
-                        coordinate system
-   plot_position     - Optional function at the end
-   plot_oneVStime    - Optional function at the end, select variable to plot
+ Reads a GNSS-SDR PVT raw dump and plots navigation/position diagnostics.
 
  -----------------------------------------------------------------------------
 
@@ -30,72 +15,222 @@
  -----------------------------------------------------------------------------
 """
 
-import utm
+import argparse
+from pathlib import Path
+
 import numpy as np
-from lib.gps_l1_ca_read_pvt_dump import gps_l1_ca_read_pvt_dump
-from lib.plotNavigation import plotNavigation
-import pyproj
-from lib.plotPosition import plot_position, plot_oneVStime
 
-settings = {}
-utm_e = []
-utm_n = []
-E_UTM = []
-N_UTM = []
-utm_zone = []
+from lib.dump_filename import resolve_dump_prefix
+from lib.gnss_sdr_conf import (
+    ConfigError,
+    add_conf_argument,
+    load_gnss_sdr_conf,
+)
+from lib.plot_format import add_output_format_argument, apply_publication_style
 
-# ---------- CHANGE HERE:
-samplingFreq = 64e6 / 16
-channels = 5
-path = '/home/labnav/Desktop/TEST_IRENE/'
-pvt_raw_log_path = path + 'PVT.dat'
-nav_sol_period = 10
-plot_skyplot = 0
-
-settings['true_position'] = {'E_UTM':np.nan,'N_UTM':np.nan,'U_UTM':np.nan}
-settings['navSolPeriod'] = nav_sol_period
-
-navSolutions = gps_l1_ca_read_pvt_dump(pvt_raw_log_path)
-X, Y, Z = navSolutions['X'], navSolutions['Y'], navSolutions['Z']
-
-utm_coords = []
-
-for i in range(len(navSolutions['longitude'])):
-    utm_coords.append(utm.from_latlon(navSolutions['latitude'][i],
-                                      navSolutions['longitude'][i]))
+DEFAULT_FILE_PREFIX = "PVT.dat"
+DEFAULT_NAV_SOL_PERIOD = 10.0
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Plot GNSS-SDR GPS L1 C/A PVT raw dump data."
+    )
+    add_conf_argument(parser)
+    parser.add_argument(
+        "-i",
+        "--input-path",
+        type=Path,
+        default=Path("."),
+        help="Directory containing the PVT dump (default: .).",
+    )
+    parser.add_argument(
+        "--file-prefix",
+        default=None,
+        help="GNSS-SDR PVT.dump_filename value. May include a directory and "
+        "extension; the matching <prefix>.dat file is read, resolved against "
+        "--input-path. Defaults to PVT.dump_filename from --conf, or PVT.dat.",
+    )
+    parser.add_argument(
+        "-o",
+        "--fig-path",
+        type=Path,
+        default=Path("plots/pvt"),
+        help="Directory where plots are saved.",
+    )
+    parser.add_argument(
+        "--nav-sol-period",
+        type=float,
+        default=None,
+        help="Navigation solution period in milliseconds. Defaults to "
+        "PVT.output_rate_ms from --conf, or 10.0.",
+    )
+    parser.add_argument(
+        "--true-position",
+        type=float,
+        nargs=3,
+        metavar=("E_UTM", "N_UTM", "U_UTM"),
+        default=[np.nan, np.nan, np.nan],
+        help="Reference receiver position in UTM coordinates.",
+    )
+    parser.add_argument(
+        "--plot-skyplot",
+        action="store_true",
+        help="Placeholder: the sky plot panel is not available from a PVT "
+        "dump (no azimuth/elevation data). Use utils/skyplot/skyplot.py "
+        "instead.",
+    )
+    parser.add_argument(
+        "--no-position",
+        dest="plot_position",
+        action="store_false",
+        help="Skip the position/map diagnostic plot.",
+    )
+    parser.add_argument(
+        "--one-vs-time",
+        action="append",
+        default=None,
+        help="navSolutions variable to plot versus time. Can be repeated.",
+    )
+    parser.add_argument(
+        "--show",
+        action="store_true",
+        help="Display figures interactively after saving them.",
+    )
+    parser.add_argument(
+        "--open-maps",
+        action="store_true",
+        help="Open generated folium map HTML files in a browser.",
+    )
+    add_output_format_argument(parser)
+    parser.set_defaults(plot_position=True)
+    args = parser.parse_args()
+    try:
+        apply_conf_defaults(args)
+    except ConfigError as exc:
+        parser.error(str(exc))
+    return args
 
-for i in range(len(utm_coords)):
-    utm_e.append(utm_coords[i][0])
-    utm_n.append(utm_coords[i][1])
-    utm_zone.append(utm_coords[i][2])
 
-# Transform from Lat Long degrees to UTM coordinate system
-# It's supposed utm_zone and letter will not change during tracking
-input_projection = pyproj.CRS.from_string("+proj=longlat "
-                                          "+datum=WGS84 +no_defs")
+def apply_conf_defaults(args):
+    conf = load_gnss_sdr_conf(args.conf) if args.conf else None
 
-utm_e = []
-utm_n = []
-for i in range(len(navSolutions['longitude'])):
-    output_projection = pyproj.CRS (f"+proj=utm +zone={utm_zone[i]} "
-                                    f"+datum=WGS84 +units=m +no_defs")
-    transformer = pyproj.Transformer.from_crs(input_projection,
-                                              output_projection)
-    utm_e, utm_n = transformer.transform(navSolutions['longitude'][i],
-                                         navSolutions['latitude'][i])
-    E_UTM.append(utm_e)
-    N_UTM.append(utm_n)
+    if args.file_prefix is None:
+        args.file_prefix = (
+            conf.pvt_dump_filename
+            if conf is not None and conf.pvt_dump_filename
+            else DEFAULT_FILE_PREFIX
+        )
+
+    if args.nav_sol_period is None:
+        args.nav_sol_period = (
+            conf.pvt_output_rate_ms
+            if conf is not None and conf.pvt_output_rate_ms is not None
+            else DEFAULT_NAV_SOL_PERIOD
+        )
 
 
-navSolutions['E_UTM'] = E_UTM
-navSolutions['N_UTM'] = N_UTM
-navSolutions['U_UTM'] = navSolutions['Z']
+def add_utm_coordinates(nav_solutions):
+    try:
+        from pyproj import CRS, Transformer
+        from pyproj.aoi import AreaOfInterest
+        from pyproj.database import query_utm_crs_info
+    except ModuleNotFoundError as exc:
+        raise SystemExit(
+            "gps_l1_ca_pvt_raw_plot_sample.py requires pyproj for PVT "
+            "coordinate conversion."
+        ) from exc
 
-plotNavigation(navSolutions,settings,plot_skyplot)
+    input_projection = CRS.from_epsg(4326)
+    e_utm = []
+    n_utm = []
+    for longitude, latitude in zip(
+        nav_solutions["longitude"], nav_solutions["latitude"]
+    ):
+        utm_crs_info = query_utm_crs_info(
+            datum_name="WGS 84",
+            area_of_interest=AreaOfInterest(
+                west_lon_degree=longitude,
+                south_lat_degree=latitude,
+                east_lon_degree=longitude,
+                north_lat_degree=latitude,
+            ),
+        )
+        if utm_crs_info:
+            output_projection = CRS.from_epsg(utm_crs_info[0].code)
+        else:
+            zone = int((longitude + 180) // 6) + 1
+            epsg = (32600 if latitude >= 0 else 32700) + zone
+            output_projection = CRS.from_epsg(epsg)
 
-# OPTIONAL: Other plots ->
-plot_position(navSolutions)
-plot_oneVStime(navSolutions, 'X_vel')
-plot_oneVStime(navSolutions, 'Tot_Vel')
+        transformer = Transformer.from_crs(
+            input_projection, output_projection, always_xy=True)
+        east, north = transformer.transform(longitude, latitude)
+        e_utm.append(east)
+        n_utm.append(north)
+
+    nav_solutions["E_UTM"] = e_utm
+    nav_solutions["N_UTM"] = n_utm
+    nav_solutions["U_UTM"] = nav_solutions["Z"]
+
+
+def main():
+    args = parse_args()
+    args.fig_path.mkdir(parents=True, exist_ok=True)
+    apply_publication_style()
+
+    from lib.gps_l1_ca_read_pvt_dump import gps_l1_ca_read_pvt_dump
+    from lib.plotNavigation import plotNavigation
+    from lib.plotPosition import plot_oneVStime, plot_position
+
+    settings = {
+        "true_position": {
+            "E_UTM": args.true_position[0],
+            "N_UTM": args.true_position[1],
+            "U_UTM": args.true_position[2],
+        },
+        "navSolPeriod": args.nav_sol_period,
+        "fig_path": args.fig_path,
+        "show": args.show,
+        "output_format": args.output_format,
+    }
+
+    directory, base = resolve_dump_prefix(args.file_prefix, args.input_path)
+    pvt_file = directory / f"{base}.dat"
+    nav_solutions = gps_l1_ca_read_pvt_dump(pvt_file)
+    add_utm_coordinates(nav_solutions)
+
+    plotNavigation(nav_solutions, settings, int(args.plot_skyplot))
+
+    if args.plot_position:
+        plot_position(
+            nav_solutions,
+            fig_path=args.fig_path,
+            show=args.show,
+            open_maps=args.open_maps,
+            output_format=args.output_format,
+        )
+
+    one_vs_time = args.one_vs_time or ["X_vel", "Tot_Vel"]
+    for variable_name in one_vs_time:
+        plot_oneVStime(
+            nav_solutions,
+            variable_name,
+            fig_path=args.fig_path,
+            show=args.show,
+            output_format=args.output_format,
+        )
+
+    # Show all saved figures with a single plt.show() to avoid the repeated
+    # show()/close() cycle that can crash interactive backends on macOS.
+    if args.show:
+        import matplotlib.pyplot as plt
+
+        plt.show()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except OSError as exc:
+        raise SystemExit(f"Error: {exc}")

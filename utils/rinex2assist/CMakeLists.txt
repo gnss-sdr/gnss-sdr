@@ -4,6 +4,8 @@
 # SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
+include(XcodeRemoveWarningDuplicates)
+
 if(NOT GNSSTK_FOUND AND NOT ENABLE_OWN_GNSSTK)
     find_package(GNSSTK)
 endif()
@@ -118,7 +120,7 @@ if(TARGET Boost::iostreams AND TARGET Boost::serialization)
     else()
         target_compile_definitions(rinex2assist PRIVATE -DUNCOMPRESS_EXECUTABLE="")
     endif()
-
+    xcode_remove_warning_duplicates(rinex2assist)
     if(NOT GNSSTK_FOUND OR ENABLE_OWN_GNSSTK)
         add_dependencies(rinex2assist gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION})
     endif()

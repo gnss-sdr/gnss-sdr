@@ -37,17 +37,24 @@
 #include "rtklib_rtkcmn.h"
 
 /* constants -----------------------------------------------------------------*/
-const int NX = 4 + 3;         //!< # of estimated parameters
-const int MAXITR = 10;        //!< max number of iteration for point pos
-const double ERR_ION = 5.0;   //!< ionospheric delay std (m)
-const double ERR_TROP = 3.0;  //!< tropspheric delay std (m)
+const int NX = 4 + 4;                    //!< # of estimated parameters: pos (3), GPS clock, GLO/GAL/BDS/QZS-GPS offsets
+const int MAXITR = 10;                   //!< max number of iteration for point pos
+const double VARERR_MIN_EL = 5.0 * D2R;  //!< minimum elevation for measurement error variance (rad)
+const double ERR_ION = 5.0;              //!< ionospheric delay std (m)
+const double ERR_TROP = 3.0;             //!< tropspheric delay std (m)
 
 
 /* pseudorange measurement error variance ------------------------------------*/
-double varerr(const prcopt_t *opt, double el, int sys);
+double varerr(const prcopt_t *opt, const obsd_t *obs, double el, int sys);
 
 /* get tgd parameter (m) -----------------------------------------------------*/
 double gettgd(int sat, const nav_t *nav);
+double gettgd(int sat, const nav_t *nav, int tgd_index);
+/* BDS DNAV/CNAV1 TGD selection by observation code (CODE_L1D/L1P/L1X/...) */
+double gettgd_bds_by_obs_code(int sat, const nav_t *nav, unsigned char obs_code);
+
+/* select Galileo BGD from observation and ephemeris provenance -------------*/
+int galileo_bgd_index(unsigned char observation_code, int sat, const nav_t *nav);
 
 /* get isc parameter (m) -----------------------------------------------------*/
 double getiscl1(int sat, const nav_t *nav);
@@ -55,9 +62,13 @@ double getiscl2(int sat, const nav_t *nav);
 double getiscl5i(int sat, const nav_t *nav);
 double getiscl5q(int sat, const nav_t *nav);
 
-/* psendorange with code bias correction -------------------------------------*/
+/* psendorange with code bias correction -------------------------------------
+ * iono_scale (O) is the multiplier the caller must apply to the modeled L1
+ * ionospheric delay so that it is consistent with the returned pseudorange:
+ * 1.0 for L1-referenced measurements, (f_L1/f_band)^2 for single-band
+ * measurements on another band, 0.0 for ionosphere-free combinations  */
 double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
-    int iter, const prcopt_t *opt, double *var);
+    int iter, const prcopt_t *opt, double *var, double *iono_scale);
 
 /* ionospheric correction ------------------------------------------------------
  * compute ionospheric correction
@@ -69,10 +80,12 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
  *          int    ionoopt   I   ionospheric correction option (IONOOPT_???)
  *          double *ion      O   ionospheric delay (L1) (m)
  *          double *var      O   ionospheric delay (L1) variance (m^2)
+ *          unsigned char obs_code I optional observation code (CODE_???); for BDS
+ *                                   CODE_L1D/L1P/L1X selects BDGIM at FREQ1 (B1C)
  * return : status(1:ok,0:error)
  *-----------------------------------------------------------------------------*/
 int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
-    const double *azel, int ionoopt, double *ion, double *var);
+    const double *azel, int ionoopt, double *ion, double *var, unsigned char obs_code = 0);
 /* tropospheric correction -----------------------------------------------------
  * compute tropospheric correction
  * args   : gtime_t time     I   time

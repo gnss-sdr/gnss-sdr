@@ -96,3 +96,75 @@ TEST(Protobuf, Works)
     EXPECT_EQ(prn_read, prn_read3);
     EXPECT_EQ(2, obs_size);
 }
+
+
+TEST(Protobuf, CarrierPhaseContinuitySurvivesSerialization)
+{
+    Serdes_Gnss_Synchro serdes = Serdes_Gnss_Synchro();
+
+    Gnss_Synchro gs = Gnss_Synchro();
+    EXPECT_TRUE(gs.Flag_carrier_phase_continuous) << "a fresh Gnss_Synchro must not report a discontinuity";
+
+    std::vector<Gnss_Synchro> vgs;
+    vgs.push_back(gs);
+    gs.Flag_carrier_phase_continuous = false;
+    vgs.push_back(gs);
+
+    gnss_sdr::Observables obs;
+    ASSERT_TRUE(obs.ParseFromString(serdes.createProtobuffer(vgs)));
+    const std::vector<Gnss_Synchro> vgs_read = serdes.readProtobuffer(obs);
+
+    ASSERT_EQ(2U, vgs_read.size());
+    EXPECT_TRUE(vgs_read[0].Flag_carrier_phase_continuous);
+    EXPECT_FALSE(vgs_read[1].Flag_carrier_phase_continuous);
+
+    // the flag travels negated, so that a message written by a version that does
+    // not know the field is read back as "no discontinuity"
+    EXPECT_FALSE(obs.observable(0).flag_carrier_phase_discontinuity());
+    EXPECT_TRUE(obs.observable(1).flag_carrier_phase_discontinuity());
+
+    gnss_sdr::Observables without_field;
+    without_field.add_observable();
+    EXPECT_TRUE(serdes.readProtobuffer(without_field)[0].Flag_carrier_phase_continuous);
+    EXPECT_FALSE(serdes.readProtobuffer(without_field)[0].Flag_half_cycle_slip);
+}
+
+
+TEST(Protobuf, HalfCycleSlipSurvivesSerialization)
+{
+    Serdes_Gnss_Synchro serdes = Serdes_Gnss_Synchro();
+
+    Gnss_Synchro gs = Gnss_Synchro();
+    EXPECT_FALSE(gs.Flag_half_cycle_slip);
+
+    std::vector<Gnss_Synchro> vgs;
+    vgs.push_back(gs);
+    gs.Flag_half_cycle_slip = true;
+    vgs.push_back(gs);
+
+    gnss_sdr::Observables obs;
+    ASSERT_TRUE(obs.ParseFromString(serdes.createProtobuffer(vgs)));
+    const std::vector<Gnss_Synchro> vgs_read = serdes.readProtobuffer(obs);
+
+    ASSERT_EQ(2U, vgs_read.size());
+    EXPECT_FALSE(vgs_read[0].Flag_half_cycle_slip);
+    EXPECT_TRUE(vgs_read[1].Flag_half_cycle_slip);
+}
+
+
+TEST(Protobuf, CarrierPhaseContinuitySurvivesCopyAndMove)
+{
+    Gnss_Synchro gs = Gnss_Synchro();
+    gs.Flag_carrier_phase_continuous = false;
+
+    Gnss_Synchro copy_constructed(gs);
+    EXPECT_FALSE(copy_constructed.Flag_carrier_phase_continuous);
+
+    Gnss_Synchro copy_assigned = Gnss_Synchro();
+    copy_assigned = gs;
+    EXPECT_FALSE(copy_assigned.Flag_carrier_phase_continuous);
+
+    Gnss_Synchro move_assigned = Gnss_Synchro();
+    move_assigned = std::move(copy_constructed);
+    EXPECT_FALSE(move_assigned.Flag_carrier_phase_continuous);
+}

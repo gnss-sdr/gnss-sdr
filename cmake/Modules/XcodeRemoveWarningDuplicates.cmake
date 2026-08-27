@@ -10,6 +10,9 @@ endif()
 set(__INCLUDED_XCODE_REMOVE_WARNING_DUPLICATES_CMAKE TRUE)
 
 function(xcode_remove_warning_duplicates target)
+    if(CMAKE_VERSION VERSION_LESS 3.13)
+        return()  # target_link_options() and the LINKER: prefix require CMake >= 3.13
+    endif()
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
         if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "15.0.0")
             # A bug in Xcode 15 adds duplicate flags to the linker. In addition, the

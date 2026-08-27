@@ -81,6 +81,16 @@ public:
     bool Flag_PLL_180_deg_phase_locked{};  //!< Set by Telemetry Decoder processing block
     bool Flag_cycle_slip{};                //!< Set by Observables processing block
 
+    //! Set by Observables processing block. Signals that the carrier phase has
+    //! jumped by half a cycle because the Costas loop phase ambiguity resolved
+    //! by the Telemetry Decoder changed
+    bool Flag_half_cycle_slip{};
+
+    //! Set by Tracking processing block. False on the first output after the
+    //! accumulated carrier phase has been (re)initialized, that is, whenever
+    //! the carrier phase ambiguity of the channel has changed
+    bool Flag_carrier_phase_continuous{true};
+
     /// Copy constructor
     Gnss_Synchro(const Gnss_Synchro& other) noexcept = default;
 
@@ -119,6 +129,8 @@ public:
                 this->Flag_valid_pseudorange = rhs.Flag_valid_pseudorange;
                 this->Flag_PLL_180_deg_phase_locked = rhs.Flag_PLL_180_deg_phase_locked;
                 this->Flag_cycle_slip = rhs.Flag_cycle_slip;
+                this->Flag_half_cycle_slip = rhs.Flag_half_cycle_slip;
+                this->Flag_carrier_phase_continuous = rhs.Flag_carrier_phase_continuous;
             }
         return *this;
     };
@@ -159,6 +171,9 @@ public:
                 this->Flag_valid_word = other.Flag_valid_word;
                 this->Flag_valid_pseudorange = other.Flag_valid_pseudorange;
                 this->Flag_PLL_180_deg_phase_locked = other.Flag_PLL_180_deg_phase_locked;
+                this->Flag_cycle_slip = other.Flag_cycle_slip;
+                this->Flag_half_cycle_slip = other.Flag_half_cycle_slip;
+                this->Flag_carrier_phase_continuous = other.Flag_carrier_phase_continuous;
 
                 // Leave the source object in a valid but unspecified state
                 other.Signal[0] = '\0';
@@ -190,6 +205,8 @@ public:
                 other.Flag_valid_pseudorange = false;
                 other.Flag_PLL_180_deg_phase_locked = false;
                 other.Flag_cycle_slip = false;
+                other.Flag_half_cycle_slip = false;
+                other.Flag_carrier_phase_continuous = true;
             }
         return *this;
     };
@@ -238,6 +255,8 @@ public:
         ar& BOOST_SERIALIZATION_NVP(Flag_valid_pseudorange);
         ar& BOOST_SERIALIZATION_NVP(Flag_PLL_180_deg_phase_locked);
         ar& BOOST_SERIALIZATION_NVP(Flag_cycle_slip);
+        ar& BOOST_SERIALIZATION_NVP(Flag_half_cycle_slip);
+        ar& BOOST_SERIALIZATION_NVP(Flag_carrier_phase_continuous);
     }
 };
 

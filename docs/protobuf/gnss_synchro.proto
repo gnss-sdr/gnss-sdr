@@ -38,6 +38,15 @@ message GnssSynchro {
   double interp_tow_ms = 25;                // Interpolated time of week, in ms
   bool flag_PLL_180_deg_phase_locked = 26;  // PLL lock at 180º
   bool flag_cycle_slip = 27;                // Carrier cycle slip detection flag
+
+  // Carrier phase ambiguity change, reported by the tracking block. Sent
+  // negated with respect to Gnss_Synchro::Flag_carrier_phase_continuous so that
+  // the protobuf default for a missing field (false) means "no discontinuity"
+  bool flag_carrier_phase_discontinuity = 28;
+
+  // Half-cycle jump of the carrier phase, caused by a change in the Costas loop
+  // phase ambiguity resolved by the Telemetry Decoder
+  bool flag_half_cycle_slip = 29;
 }
 
 /* Observables represents a collection of GnssSynchro annotations */

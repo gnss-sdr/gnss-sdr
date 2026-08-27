@@ -17,6 +17,7 @@
 #ifndef GNSS_SDR_PVT_CONF_H
 #define GNSS_SDR_PVT_CONF_H
 
+#include "secure_string.h"
 #include <cstdint>
 #include <map>
 #include <string>
@@ -51,6 +52,15 @@ public:
     std::string udp_ports;
     std::string udp_eph_addresses;
     std::string log_source_timetag_file;
+    std::string ntrip_caster_address;
+    std::string ntrip_mountpoint;
+    // Self-scrubbing: every copy of this struct wipes the caster credentials
+    // on release, so new holders need no manual scrub site (the explicit
+    // early scrubs via secure_clear_ntrip_credentials() remain worthwhile
+    // for long-lived copies)
+    Secure_String ntrip_username;
+    Secure_String ntrip_password;
+    Secure_String ntrip_password_env;
 
     uint32_t signal_enabled_flags = 0;
     uint32_t observable_interval_ms = 20;
@@ -65,11 +75,20 @@ public:
     int32_t rinexobs_rate_ms = 0;
     int32_t an_rate_ms = 20;
     int32_t max_obs_block_rx_clock_offset_ms = 40;
+    int32_t ref_gps_week = 0;  // reference GPS week to resolve the mod-1024 week rollover in post-processing (0: use system clock)
     int udp_eph_port = 0;
     int rtk_trace_level = 0;
+    int32_t ntrip_timeout_ms = 10000;
+    int32_t ntrip_reconnect_interval_ms = 10000;
+    int32_t ntrip_version = 2;  // 2: prefer v2 with one compatible v1 retry; 1: force legacy v1
+    int32_t ntrip_gga_period_ms = 10000;
 
     uint16_t rtcm_tcp_port = 0;
     uint16_t rtcm_station_id = 0;
+    uint16_t ntrip_port = 2101;
+    uint16_t ntrip_station_id = 0;
+
+    double ntrip_max_correction_age_s = 5.0;
 
     bool flag_nmea_tty_port = false;
     bool flag_rtcm_server = false;
@@ -88,10 +107,13 @@ public:
     bool protobuf_enabled = true;
     bool enable_rx_clock_correction = true;
     bool show_local_time_zone = false;
-    bool pre_2009_file = false;
     bool dump = false;
     bool dump_mat = true;
     bool log_source_timetag = false;
+    bool ntrip_client_enabled = false;
+    bool ntrip_fallback_to_single = true;
+    bool ntrip_tls_enabled = false;
+    bool ntrip_send_gga = true;  // VRS/nearest-station casters need the rover GGA to serve corrections
     bool use_e6_for_pvt = true;
     bool use_has_corrections = true;
     bool use_unhealthy_sats = false;

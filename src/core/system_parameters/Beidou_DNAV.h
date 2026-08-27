@@ -81,6 +81,8 @@ constexpr double D1_A0GLO_LSB = 0.1e-9;
 constexpr double D1_A1GLO_LSB = 0.1e-9;
 constexpr double D1_A0UTC_LSB = TWO_N30;
 constexpr double D1_A1UTC_LSB = TWO_N50;
+constexpr double D2_DELTA_T_LSB = 0.1;  // Equivalent clock correction [m]
+constexpr double D2_ION_DELAY_LSB = 0.125;
 
 constexpr std::size_t BEIDOU_DNAV_BCH_CODE_BITS = 15;
 constexpr std::size_t BEIDOU_DNAV_BCH_DATA_BITS = 11;
@@ -164,6 +166,9 @@ const std::vector<std::pair<int32_t, int32_t> > D1_TOA({{194, 8}});
 const std::vector<std::pair<int32_t, int32_t> > D1_OMEGA_DOT_ALMANAC({{202, 1}, {211, 16}});
 const std::vector<std::pair<int32_t, int32_t> > D1_OMEGA_ALMANAC({{227, 6}, {241, 18}});
 const std::vector<std::pair<int32_t, int32_t> > D1_M0_ALMANAC({{259, 4}, {271, 20}});
+const std::vector<std::pair<int32_t, int32_t> > D1_AMEPID({{291, 2}});
+const std::vector<std::pair<int32_t, int32_t> > D1_AMID({{291, 2}});
+const std::vector<std::pair<int32_t, int32_t> > D1_AMID_HEALTH({{216, 2}});
 
 // SUBFRAME 5 PAGE 7
 const std::vector<std::pair<int32_t, int32_t> > D1_HEA1({{51, 2}, {61, 7}});
@@ -221,7 +226,10 @@ const std::vector<std::pair<int32_t, int32_t> > D1_DN({{163, 8}});
 const std::vector<std::pair<int32_t, int32_t> > D2_PRE({{1, 11}});
 const std::vector<std::pair<int32_t, int32_t> > D2_FRAID({{16, 3}});
 const std::vector<std::pair<int32_t, int32_t> > D2_SOW({{19, 8}, {31, 12}});
-const std::vector<std::pair<int32_t, int32_t> > D2_PNUM({{43, 4}});
+const std::vector<std::pair<int32_t, int32_t> > D2_PNUM1({{43, 4}});
+const std::vector<std::pair<int32_t, int32_t> > D2_PNUM(D2_PNUM1);  // Backward-compatible name
+const std::vector<std::pair<int32_t, int32_t> > D2_PNUM2({{44, 4}});
+const std::vector<std::pair<int32_t, int32_t> > D2_PNUM5({{44, 7}});
 
 // D2 NAV, SUBFRAME 1, PAGE 1
 const std::vector<std::pair<int32_t, int32_t> > D2_SAT_H1({{47, 1}});
@@ -290,6 +298,33 @@ const std::vector<std::pair<int32_t, int32_t> > D2_OMEGA({{269, 32}});
 
 // D2 NAV, SUBFRAME 1, PAGE 10
 const std::vector<std::pair<int32_t, int32_t> > D2_IDOT({{52, 1}, {61, 13}});
+
+// D2 NAV, SUBFRAME 2, PAGES 1 THROUGH 6
+const std::vector<std::pair<int32_t, int32_t> > D2_SAT_H2({{48, 2}});
+const std::vector<std::pair<int32_t, int32_t> > D2_BDID1_30({{50, 3}, {61, 22}, {91, 5}});
+const std::vector<std::pair<int32_t, int32_t> > D2_RURAI_SF2({{276, 4}});
+const std::vector<std::pair<int32_t, int32_t> > D2_DELTA_T_SF2({{280, 13}});
+
+// D2 NAV, SUBFRAME 3, PAGES 1 THROUGH 6. The page number is carried by
+// subframe 2 in the same frame.
+const std::vector<std::pair<int32_t, int32_t> > D2_RURAI_SF3_1({{44, 4}});
+const std::vector<std::pair<int32_t, int32_t> > D2_DELTA_T_SF3_1({{48, 5}, {61, 8}});
+const std::vector<std::pair<int32_t, int32_t> > D2_RURAI_SF3_2({{69, 4}});
+const std::vector<std::pair<int32_t, int32_t> > D2_DELTA_T_SF3_2({{73, 10}, {91, 3}});
+
+// D2 NAV, SUBFRAME 4, PAGES 1 THROUGH 6. Bits 171 through 300 are usable
+// only when BDEpID is 3.
+const std::vector<std::pair<int32_t, int32_t> > D2_BDEPID({{169, 2}});
+const std::vector<std::pair<int32_t, int32_t> > D2_BDID31_63({{171, 2}, {181, 22}, {211, 9}});
+const std::vector<std::pair<int32_t, int32_t> > D2_RURAI_SF4({{252, 4}});
+const std::vector<std::pair<int32_t, int32_t> > D2_DELTA_T_SF4({{256, 7}, {271, 6}});
+
+// Logical payload offsets used for repeated D2 data. The first logical bit is
+// at the indicated transmitted bit and subsequent logical bits skip the BCH
+// parity positions.
+constexpr int32_t D2_UDREI1_LOGICAL_FIRST_BIT = 172;
+constexpr int32_t D2_UDREI19_LOGICAL_FIRST_BIT = 220;
+constexpr int32_t D2_ION_LOGICAL_FIRST_BIT = 51;
 
 
 /** \} */

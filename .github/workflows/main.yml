@@ -15,7 +15,7 @@ jobs:
   build-ubuntu:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: install dependencies
         run: |
           sudo apt update
@@ -41,75 +41,195 @@ jobs:
   build-macos:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
-        with:
-          python-version: '3.13'      
-      - name: install dependencies
+      - uses: actions/checkout@v7
+      - name: Install dependencies
         run: |
           brew update
-          rm /usr/local/bin/2to3 || true
-          rm /usr/local/bin/idle3 || true
-          rm /usr/local/bin/pydoc3 || true
-          rm /usr/local/bin/python3 || true
-          rm /usr/local/bin/python3-config || true
-          rm /usr/local/bin/2to3-3.1* || true
-          rm /usr/local/bin/idle3.1* || true
-          rm /usr/local/bin/pydoc3.1* || true
-          rm /usr/local/bin/python3.1* || true
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-          brew link --overwrite python@3.13
-          brew install ninja hdf5 automake armadillo lapack libmatio gnuradio openssl pugixml protobuf boost
-          pip3 install mako
-      - name: configure
-        run: cmake -S . -B build -GNinja
-      - name: build
-        run: cmake --build build
-      - name: check
-        run: cmake --build build --target check && ./install/volk_gnsssdr_profile && ./install/run_tests
-      - name: default position_test
+          brew install \
+            ninja \
+            hdf5 \
+            automake \
+            armadillo \
+            lapack \
+            libmatio \
+            gnuradio \
+            openssl \
+            pugixml \
+            protobuf \
+            boost
+
+          # Find the Python formula used directly by GNU Radio.
+          PYTHON_FORMULA="$(
+            brew deps --direct gnuradio |
+            grep -E '^python(@[0-9.]+)?$' |
+            head -n 1
+          )"
+
+          if [ -z "$PYTHON_FORMULA" ]; then
+            echo "Could not determine GNU Radio's Python dependency."
+            echo "Direct GNU Radio dependencies:"
+            brew deps --direct gnuradio
+            exit 1
+          fi
+
+          PYTHON_PREFIX="$(brew --prefix "$PYTHON_FORMULA")"
+          PYTHON_EXECUTABLE="$PYTHON_PREFIX/bin/python3"
+
+          if [ ! -x "$PYTHON_EXECUTABLE" ]; then
+            echo "Could not execute $PYTHON_EXECUTABLE"
+            ls -la "$PYTHON_PREFIX/bin"
+            exit 1
+          fi
+
+          echo "GNU Radio Python formula: $PYTHON_FORMULA"
+          echo "Python prefix:            $PYTHON_PREFIX"
+          echo "Python executable:        $PYTHON_EXECUTABLE"
+
+          "$PYTHON_EXECUTABLE" --version
+
+          VENV_PATH="$RUNNER_TEMP/gnuradio-python-venv"
+
+          "$PYTHON_EXECUTABLE" -m venv \
+            --system-site-packages \
+            "$VENV_PATH"
+
+          "$VENV_PATH/bin/python" -m pip install --upgrade pip
+          "$VENV_PATH/bin/python" -m pip install mako
+
+          echo "$VENV_PATH/bin" >> "$GITHUB_PATH"
+          echo "GNURADIO_PYTHON=$VENV_PATH/bin/python" >> "$GITHUB_ENV"
+      - name: Check Python and GNU Radio
         run: |
-          cmake -S . -B build -DENABLE_SYSTEM_TESTING_EXTRA=ON -DENABLE_UNIT_TESTING_EXTRA=OFF && \
-          cmake --build build && ./install/position_test && ./install/run_tests --gtest_filter=Osnma*
+          echo "GNURADIO_PYTHON=$GNURADIO_PYTHON"
+
+          command -v python
+          command -v python3
+
+          "$GNURADIO_PYTHON" --version
+          "$GNURADIO_PYTHON" -c 'import sys; print(sys.executable)'
+          "$GNURADIO_PYTHON" -c 'import mako; print(mako.__file__)'
+          "$GNURADIO_PYTHON" -c 'import gnuradio; print(gnuradio.__path__)'
+          "$GNURADIO_PYTHON" -m pip --version
+      - name: Configure
+        run: |
+          cmake -S . -B build -GNinja \
+            -DPython3_EXECUTABLE="$GNURADIO_PYTHON"
+      - name: Build
+        run: cmake --build build
+      - name: Check
+        run: |
+          cmake --build build --target check
+          ./install/volk_gnsssdr_profile
+          ./install/run_tests
+      - name: Default position_test
+        run: |
+          cmake -S . -B build \
+            -GNinja \
+            -DPython3_EXECUTABLE="$GNURADIO_PYTHON" \
+            -DENABLE_SYSTEM_TESTING_EXTRA=ON \
+            -DENABLE_UNIT_TESTING_EXTRA=OFF
+
+          cmake --build build
+          ./install/position_test
+          ./install/run_tests --gtest_filter='Osnma*'
 
   build-macos-xcode:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
-        with:
-          python-version: '3.13'
-      - name: install dependencies
+      - uses: actions/checkout@v7
+      - name: Install dependencies
         run: |
           brew update
-          rm /usr/local/bin/2to3 || true
-          rm /usr/local/bin/idle3 || true
-          rm /usr/local/bin/pydoc3 || true
-          rm /usr/local/bin/python3 || true
-          rm /usr/local/bin/python3-config || true
-          rm /usr/local/bin/2to3-3.1* || true
-          rm /usr/local/bin/idle3.1* || true
-          rm /usr/local/bin/pydoc3.1* || true
-          rm /usr/local/bin/python3.1* || true
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-          brew link --overwrite python@3.13
-          brew install ninja pkg-config hdf5 automake armadillo lapack libmatio gnuradio openssl pugixml protobuf boost
-          pip3 install mako          
-      - name: configure
-        run: cmake -S . -B build -GXcode
-      - name: build
+          brew install \
+            ninja \
+            pkg-config \
+            hdf5 \
+            automake \
+            armadillo \
+            lapack \
+            libmatio \
+            gnuradio \
+            openssl \
+            pugixml \
+            protobuf \
+            boost
+
+          # Find the Python formula used directly by GNU Radio.
+          PYTHON_FORMULA="$(
+            brew deps --direct gnuradio |
+            grep -E '^python(@[0-9.]+)?$' |
+            head -n 1
+          )"
+
+          if [ -z "$PYTHON_FORMULA" ]; then
+            echo "Could not determine GNU Radio's Python dependency."
+            echo "Direct GNU Radio dependencies:"
+            brew deps --direct gnuradio
+            exit 1
+          fi
+
+          PYTHON_PREFIX="$(brew --prefix "$PYTHON_FORMULA")"
+          PYTHON_EXECUTABLE="$PYTHON_PREFIX/bin/python3"
+
+          if [ ! -x "$PYTHON_EXECUTABLE" ]; then
+            echo "Could not execute $PYTHON_EXECUTABLE"
+            ls -la "$PYTHON_PREFIX/bin"
+            exit 1
+          fi
+
+          echo "GNU Radio Python formula: $PYTHON_FORMULA"
+          echo "Python prefix:            $PYTHON_PREFIX"
+          echo "Python executable:        $PYTHON_EXECUTABLE"
+
+          "$PYTHON_EXECUTABLE" --version
+
+          VENV_PATH="$RUNNER_TEMP/gnuradio-python-venv"
+
+          "$PYTHON_EXECUTABLE" -m venv \
+            --system-site-packages \
+            "$VENV_PATH"
+
+          "$VENV_PATH/bin/python" -m pip install --upgrade pip
+          "$VENV_PATH/bin/python" -m pip install mako
+
+          echo "$VENV_PATH/bin" >> "$GITHUB_PATH"
+          echo "GNURADIO_PYTHON=$VENV_PATH/bin/python" >> "$GITHUB_ENV"
+      - name: Check Python and GNU Radio
+        run: |
+          echo "GNURADIO_PYTHON=$GNURADIO_PYTHON"
+
+          command -v python
+          command -v python3
+
+          "$GNURADIO_PYTHON" --version
+          "$GNURADIO_PYTHON" -c 'import sys; print(sys.executable)'
+          "$GNURADIO_PYTHON" -c 'import mako; print(mako.__file__)'
+          "$GNURADIO_PYTHON" -c 'import gnuradio; print(gnuradio.__path__)'
+          "$GNURADIO_PYTHON" -m pip --version
+      - name: Configure
+        run: |
+          cmake -S . -B build -GXcode \
+            -DPython3_EXECUTABLE="$GNURADIO_PYTHON"
+      - name: Build
         run: cmake --build build --config Release
-      - name: check
+      - name: Check
         run: |
           cmake --build build --config Release --target check
           ./install/volk_gnsssdr_profile
           ./install/run_tests
-      - name: default position_test
+      - name: Default position_test
         run: |
-          cmake -S . -B build -DENABLE_SYSTEM_TESTING_EXTRA=ON -DENABLE_UNIT_TESTING_EXTRA=OFF
+          cmake -S . -B build \
+            -GXcode \
+            -DPython3_EXECUTABLE="$GNURADIO_PYTHON" \
+            -DENABLE_SYSTEM_TESTING_EXTRA=ON \
+            -DENABLE_UNIT_TESTING_EXTRA=OFF
+
           cmake --build build --config Release --target position_test
           ./install/position_test
-          ./install/run_tests --gtest_filter=Osnma*
+          ./install/run_tests --gtest_filter='Osnma*'
 
   clang-format:
     runs-on: ubuntu-latest
@@ -121,30 +241,30 @@ jobs:
           - 'utils'
           - 'docs'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: run clang-format
         uses: jidicula/clang-format-action@v4.18.0
         with:
-          clang-format-version: "19"
+          clang-format-version: "22"
           check-path: ${{ matrix.path }}
           exclude-regex: '(libs\/gsl\/)|(tmpl)|(cpu_features)|^.*\.(cu)$'
 
   clang-tidy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     env:
-      CLANG_VERSION: 20
+      CLANG_VERSION: 22
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install -y --no-install-recommends cmake \
           clang-${CLANG_VERSION} clang-tidy-${CLANG_VERSION} clang-format-${CLANG_VERSION} \
-          libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev \
+          libboost-dev libboost-date-time-dev libboost-filesystem-dev \
           libboost-thread-dev libboost-chrono-dev libboost-serialization-dev \
-          liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev \
-          liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libunwind-dev \
-          libgnutls-openssl-dev libmatio-dev googletest protobuf-compiler libprotobuf-dev \
+          gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev \
+          liblapack-dev libarmadillo-dev libabsl-dev \
+          libssl-dev libmatio-dev libgtest-dev protobuf-compiler libprotobuf-dev \
           python3-mako liborc-0.4-dev
           sudo ln -sf /usr/lib/llvm-${CLANG_VERSION}/bin/clang /usr/bin/clang
           sudo ln -sf /usr/lib/llvm-${CLANG_VERSION}/bin/clang /usr/bin/clang++
@@ -154,10 +274,10 @@ jobs:
       - name: Prepare run
         run: |
           cmake -S . -B build-tidy -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_C_COMPILER=/usr/bin/clang
-          cmake --build build-tidy --target volk_gnsssdr_module gtest-1.17.0 core_monitor core_libs pvt_libs
+          cmake --build build-tidy --target volk_gnsssdr_module core_monitor core_libs pvt_libs
       - name: Run clang-tidy
         run: |
-          cd build-tidy && run-clang-tidy -fix -format
+          cd build-tidy && run-clang-tidy -config-file="$GITHUB_WORKSPACE/.clang-tidy" -fix -format
       - name: check
         run: |
           git diff > clang_tidy.patch
@@ -168,7 +288,7 @@ jobs:
   cpplint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: install dependencies
         run: sudo apt install python3-pip && sudo pip3 install cpplint
       - name: run checks
@@ -189,9 +309,9 @@ jobs:
   prettier-markdown:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set up latest Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: latest
       - name: Install prettier
@@ -204,7 +324,7 @@ jobs:
   cmakelint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: install dependencies
         run: |
           sudo pip install cmakelint
@@ -214,8 +334,8 @@ jobs:
   volk-gnsssdr-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.13'
       - name: Install dependencies
@@ -238,7 +358,7 @@ jobs:
   volk-gnsssdr-ubuntu:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: install dependencies
         run: sudo apt install python3-mako liborc-dev
       - name: configure
@@ -253,8 +373,8 @@ jobs:
   volk-gnsssdr-macos:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.13'
       - name: Install dependencies
@@ -271,8 +391,8 @@ jobs:
   volk-gnsssdr-macos-xcode:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.13'
       - name: Install dependencies
@@ -291,7 +411,7 @@ jobs:
   shellcheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: install dependencies
         run: sudo apt install shellcheck
       - name: check scripts
@@ -300,7 +420,7 @@ jobs:
   REUSE-compliance:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Check REUSE compliance
         uses: docker://fsfe/reuse
         with:
@@ -309,7 +429,7 @@ jobs:
   long-line-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Find lines longer than 512 characters
         run: |
           set -uo pipefail

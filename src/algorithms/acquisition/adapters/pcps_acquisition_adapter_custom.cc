@@ -57,7 +57,16 @@ class ThresholdComputeInterface
 {
 public:
     virtual ~ThresholdComputeInterface() = default;
+
+    ThresholdComputeInterface(const ThresholdComputeInterface&) = delete;
+    ThresholdComputeInterface& operator=(const ThresholdComputeInterface&) = delete;
+    ThresholdComputeInterface(ThresholdComputeInterface&&) = delete;
+    ThresholdComputeInterface& operator=(ThresholdComputeInterface&&) = delete;
+
     virtual float calculate_threshold(const Acq_Conf& acq_parameters) const = 0;
+
+protected:
+    ThresholdComputeInterface() = default;
 };
 
 class ThresholdComputeBasic : public ThresholdComputeInterface
@@ -141,6 +150,7 @@ Acq_Conf get_acq_conf(
 {
     Acq_Conf acq_parameters;
     double chip_rate;
+    double opt_freq;
     double code_length_chips;
     uint32_t ms_per_code;
 
@@ -148,17 +158,20 @@ Acq_Conf get_acq_conf(
         {
         case GPS_1C:
             chip_rate = GPS_L1_CA_CODE_RATE_CPS;
+            opt_freq = GPS_L1_CA_OPT_ACQ_FS_SPS;
             code_length_chips = GPS_L1_CA_CODE_LENGTH_CHIPS;
             ms_per_code = GPS_L1_CA_CODE_PERIOD_MS;
             break;
         case GAL_1B:
             chip_rate = GALILEO_E1_CODE_CHIP_RATE_CPS;
+            opt_freq = GALILEO_E1_OPT_ACQ_FS_SPS;
             code_length_chips = GALILEO_E1_B_CODE_LENGTH_CHIPS;
             ms_per_code = GALILEO_E1_CODE_PERIOD_MS;
             acq_parameters.cboc = configuration->property(role + ".cboc", false);
             break;
         case GAL_E5a:
             chip_rate = GALILEO_E5A_CODE_CHIP_RATE_CPS;
+            opt_freq = GALILEO_E5A_OPT_ACQ_FS_SPS;
             code_length_chips = GALILEO_E5A_CODE_LENGTH_CHIPS;
             ms_per_code = GALILEO_E5A_CODE_PERIOD_MS;
             break;
@@ -217,12 +230,7 @@ Acq_Conf get_acq_conf(
     acq_parameters.ms_per_code = ms_per_code;
     acq_parameters.sampled_ms = ms_per_code;               // Set as default value
     acq_parameters.dump_filename = default_dump_filename;  // Set as default value
-    acq_parameters.SetFromConfiguration(configuration, role, chip_rate, 0);
-
-    if (implementation == "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler")
-        {
-            acq_parameters.samples_per_ms = static_cast<float>(acq_parameters.vector_length);
-        }
+    acq_parameters.SetFromConfiguration(configuration, role, chip_rate, opt_freq);
 
 #if USE_GLOG_AND_GFLAGS
     if (FLAGS_doppler_max != 0)
@@ -255,6 +263,11 @@ Acq_Conf get_acq_conf(
     acq_parameters.code_length = static_cast<unsigned int>(round(acq_parameters.fs_in / (chip_rate / code_length_chips)));
     acq_parameters.vector_length = acq_parameters.code_length * acq_parameters.num_codes;
     acq_parameters.threshold = threshold_compute->calculate_threshold(acq_parameters);
+
+    if (implementation == "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler")
+        {
+            acq_parameters.samples_per_ms = static_cast<float>(acq_parameters.vector_length);
+        }
 
     return acq_parameters;
 }
@@ -485,9 +498,9 @@ void PcpsAcquisitionAdapterCustom::set_local_code()
                     const auto vector_length = acq_parameters_.vector_length;
 
                     auto& codeI_ = code_;
-                    std::vector<std::complex<float>> codeQ_(code_length);
-                    std::vector<std::complex<float>> codeI(code_length);
-                    std::vector<std::complex<float>> codeQ(code_length);
+                    std::vector<std::complex<float>> codeQ_(vector_length);
+                    std::vector<std::complex<float>> codeI(vector_length);
+                    std::vector<std::complex<float>> codeQ(vector_length);
 
                     if (gnss_synchro_->Signal[0] == '5' && gnss_synchro_->Signal[1] == 'X')
                         {

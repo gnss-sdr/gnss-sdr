@@ -122,6 +122,7 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
             flag_TOW_1 = true;
             flag_TOW_set = true;
             flag_iono_and_GST = true;  // set to false externally
+            flag_iono_model_valid = true;
             break;
         case 2:  // Ephemeris (1/3) and GST
             FNAV_IODnav_2 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_IO_DNAV_2_BIT));
@@ -195,7 +196,8 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
             flag_TOW_4 = true;
             flag_TOW_set = true;
             flag_ephemeris_3 = true;
-            flag_utc_model = true;  // set to false externally
+            flag_utc_model_valid = true;
+            flag_new_utc_model = true;  // set to false externally
             break;
         case 5:  // Almanac (SVID1 and SVID2(1/2)), Week Number and almanac reference time
             FNAV_IODa_5 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_IO_DA_5_BIT));
@@ -287,10 +289,10 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
 
 bool Galileo_Fnav_Message::have_new_ephemeris()  // Check if we have a new ephemeris stored in the galileo navigation class
 {
-    if ((flag_ephemeris_1 == true) and (flag_ephemeris_2 == true) and (flag_ephemeris_3 == true) and (flag_iono_and_GST == true))
+    if ((flag_ephemeris_1 == true) && (flag_ephemeris_2 == true) && (flag_ephemeris_3 == true) && (flag_iono_and_GST == true))
         {
             // if all ephemeris pages have the same IOD, then they belong to the same block
-            if ((FNAV_IODnav_1 == FNAV_IODnav_2) and (FNAV_IODnav_3 == FNAV_IODnav_4) and (FNAV_IODnav_1 == FNAV_IODnav_3))
+            if ((FNAV_IODnav_1 == FNAV_IODnav_2) && (FNAV_IODnav_3 == FNAV_IODnav_4) && (FNAV_IODnav_1 == FNAV_IODnav_3))
                 {
                     DLOG(INFO) << "Ephemeris (1, 2, 3) have been received and belong to the same batch";
                     flag_ephemeris_1 = false;  // clear the flag
@@ -308,7 +310,7 @@ bool Galileo_Fnav_Message::have_new_ephemeris()  // Check if we have a new ephem
 
 bool Galileo_Fnav_Message::have_new_iono_and_GST()  // Check if we have a new iono data set stored in the galileo navigation class
 {
-    if ((flag_iono_and_GST == true) and (flag_utc_model == true))  // the condition on flag_utc_model is added to have a time stamp for iono
+    if ((flag_iono_and_GST == true) && (flag_utc_model_valid == true))  // the UTC model is required to have a time stamp for iono
         {
             flag_iono_and_GST = false;  // clear the flag
         }
@@ -322,9 +324,9 @@ bool Galileo_Fnav_Message::have_new_iono_and_GST()  // Check if we have a new io
 
 bool Galileo_Fnav_Message::have_new_utc_model()  // Check if we have a new utc data set stored in the galileo navigation class
 {
-    if (flag_utc_model == true)
+    if (flag_new_utc_model == true)
         {
-            flag_utc_model = false;  // clear the flag
+            flag_new_utc_model = false;  // clear the publication flag
         }
     else
         {
@@ -336,7 +338,7 @@ bool Galileo_Fnav_Message::have_new_utc_model()  // Check if we have a new utc d
 
 bool Galileo_Fnav_Message::have_new_almanac()  // Check if we have a new almanac data set stored in the galileo navigation class
 {
-    if ((flag_almanac_1 == true) and (flag_almanac_2 == true))
+    if ((flag_almanac_1 == true) && (flag_almanac_2 == true))
         {
             // All Almanac data have been received
             flag_almanac_1 = false;
@@ -354,6 +356,8 @@ bool Galileo_Fnav_Message::have_new_almanac()  // Check if we have a new almanac
 Galileo_Ephemeris Galileo_Fnav_Message::get_ephemeris() const
 {
     Galileo_Ephemeris ephemeris;
+    ephemeris.nav_message_type = Galileo_Nav_Message_Type::FNAV;
+    ephemeris.nav_message_source = Galileo_Nav_Message_Source::E5a;
     ephemeris.flag_all_ephemeris = flag_all_ephemeris;
     ephemeris.IOD_ephemeris = IOD_ephemeris;
     ephemeris.PRN = FNAV_SV_ID_PRN_1;
@@ -379,6 +383,7 @@ Galileo_Ephemeris Galileo_Fnav_Message::get_ephemeris() const
     ephemeris.af0 = FNAV_af0_1;        // SV clock bias correction coefficient [s]
     ephemeris.af1 = FNAV_af1_1;        // SV clock drift correction coefficient [s/s]
     ephemeris.af2 = FNAV_af2_1;        // SV clock drift rate correction coefficient [s/s^2]
+    ephemeris.SISA = FNAV_SISA_1;      // Signal In Space Accuracy index
     ephemeris.BGD_E1E5a = FNAV_BGD_1;  // E1-E5a Broadcast Group Delay [s]
 
     // GST
@@ -395,6 +400,7 @@ Galileo_Ephemeris Galileo_Fnav_Message::get_ephemeris() const
 Galileo_Iono Galileo_Fnav_Message::get_iono() const
 {
     Galileo_Iono iono;
+    iono.valid = flag_iono_model_valid;
     // Ionospheric correction
     iono.ai0 = FNAV_ai0_1;  // Effective Ionisation Level 1st order parameter [sfu]
     iono.ai1 = FNAV_ai1_1;  // Effective Ionisation Level 2st order parameter [sfu/degree]
@@ -417,7 +423,7 @@ Galileo_Iono Galileo_Fnav_Message::get_iono() const
 Galileo_Utc_Model Galileo_Fnav_Message::get_utc_model() const
 {
     Galileo_Utc_Model utc_model;
-    // Word type 6: GST-UTC conversion parameters
+    // Word type 4: GST-UTC conversion parameters
     utc_model.A0 = FNAV_A0_4;
     utc_model.A1 = FNAV_A1_4;
     utc_model.Delta_tLS = FNAV_deltatls_4;
@@ -426,7 +432,7 @@ Galileo_Utc_Model Galileo_Fnav_Message::get_utc_model() const
     utc_model.WN_LSF = FNAV_WNlsf_4;
     utc_model.DN = FNAV_DN_4;
     utc_model.Delta_tLSF = FNAV_deltatlsf_4;
-    utc_model.flag_utc_model = flag_utc_model;
+    utc_model.flag_utc_model = flag_utc_model_valid;
     return utc_model;
 }
 

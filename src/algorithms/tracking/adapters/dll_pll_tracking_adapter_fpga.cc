@@ -562,7 +562,7 @@ uint32_t DllPllTrackingAdapterFpga::get_num_alternative_devices_locked() const
                     if (it != channel_counts_.end())
                         {
                             num_channels = it->second;
-                            const auto device_name = signal_to_device_.at(signal_type);
+                            const auto& device_name = signal_to_device_.at(signal_type);
                             const auto num_devices_available = get_num_devices(device_name);
                             if (num_devices_available < num_channels)
                                 {

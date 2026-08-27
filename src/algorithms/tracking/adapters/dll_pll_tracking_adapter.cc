@@ -15,6 +15,7 @@
  */
 
 #include "dll_pll_tracking_adapter.h"
+#include "Beidou_B1C.h"
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
 #include "GLONASS_L1_L2_CA.h"
@@ -26,9 +27,11 @@
 #include "Galileo_E5a.h"
 #include "Galileo_E5b.h"
 #include "Galileo_E6.h"
+#include "SBAS_L1.h"
 #include "configuration_interface.h"
 #include "display.h"
 #include "qzss.h"
+#include "signal_flag.h"
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -80,10 +83,14 @@ signal_info get_signal_info(signal_flag sig_flag)
             return {'C', {'B', '1', '\0'}, "BEIDOU B1I", BEIDOU_B1I_CODE_RATE_CPS, BEIDOU_B1I_CODE_LENGTH_CHIPS, 20, false, true};
         case BDS_B3:
             return {'C', {'B', '3', '\0'}, "BEIDOU B3I", BEIDOU_B3I_CODE_RATE_CPS, BEIDOU_B3I_CODE_LENGTH_CHIPS, 20, false, false};  // Does false, false make sense?
+        case BDS_B1C:
+            return {'C', {'1', 'D', '\0'}, "BeiDou B1C", BEIDOU_B1C_CODE_RATE_CPS, BEIDOU_B1C_CODE_LENGTH_CHIPS, 1, true, false};
         case QZS_J1:
             return {'J', {'J', '1', '\0'}, "QZSS L1 C/A", QZSS_L1_CHIP_RATE, QZSS_L1_CODE_LENGTH, 20, false, true};
         case QZS_J5:
             return {'J', {'J', '5', '\0'}, "QZSS L5", QZSS_L5_CHIP_RATE, QZSS_L5_CODE_LENGTH, QZSS_L5I_NH_CODE_LENGTH, true, false};
+        case SBAS_S1:
+            return {'S', {'S', '1', '\0'}, "SBAS L1", SBAS_L1_CODE_RATE_CPS, SBAS_L1_CODE_LENGTH_CHIPS, SBAS_L1_MAX_COHERENT_INTEGRATION_SYMBOLS, false, true};
         default:
             break;
         }
@@ -91,7 +98,7 @@ signal_info get_signal_info(signal_flag sig_flag)
     return {};
 }
 
-void check_and_configure_trk_params(const ConfigurationInterface* configuration, const std::string& role, const signal_info& sig_info, Dll_Pll_Conf& trk_params)
+void check_and_configure_trk_params(const ConfigurationInterface* configuration, const std::string& role, signal_flag sig_flag, const signal_info& sig_info, Dll_Pll_Conf& trk_params)
 {
     trk_params.SetFromConfiguration(configuration, role);
     trk_params.vector_length = static_cast<int>(std::round(trk_params.fs_in / (sig_info.code_chip_rate / sig_info.code_length_chips)));
@@ -149,6 +156,44 @@ void check_and_configure_trk_params(const ConfigurationInterface* configuration,
         {
             std::cout << TEXT_RED << "WARNING: " << sig_info.sig_name << ". PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << '\n';
         }
+
+    if (sig_flag == BDS_B1C)
+        {
+            std::string acq_role = role;
+            const std::string tracking_prefix = "Tracking_";
+            if (acq_role.compare(0, tracking_prefix.size(), tracking_prefix) == 0)
+                {
+                    acq_role.replace(0, tracking_prefix.size(), "Acquisition_");
+                }
+            // Tracking_*.qmboc overrides Acquisition_*.qmboc; else inherit / default.
+            const std::string acq_qmboc_key = acq_role + ".qmboc";
+            const std::string trk_qmboc_key = role + ".qmboc";
+            const bool acq_qmboc = configuration->property(acq_qmboc_key, trk_params.qmboc);
+            trk_params.qmboc = configuration->property(trk_qmboc_key, acq_qmboc);
+            if (configuration->is_present(acq_qmboc_key) && configuration->is_present(trk_qmboc_key) && acq_qmboc != trk_params.qmboc)
+                {
+                    std::cout << TEXT_RED << "WARNING: BeiDou B1C: " << acq_qmboc_key << "=" << (acq_qmboc ? "true" : "false")
+                              << " differs from " << trk_qmboc_key << "=" << (trk_params.qmboc ? "true" : "false")
+                              << "; using tracking value." << TEXT_RESET << '\n';
+                }
+
+            // Pilot secondary sync needs one-symbol correlation.
+            if (trk_params.track_pilot && trk_params.extend_correlation_symbols != 1)
+                {
+                    std::cout << TEXT_RED << "WARNING: BeiDou B1C: extend_correlation_symbols forced to 1 while tracking the pilot "
+                              << "(secondary-code sync requires one-symbol correlation). Configured value was "
+                              << trk_params.extend_correlation_symbols << TEXT_RESET << '\n';
+                    trk_params.extend_correlation_symbols = 1;
+                }
+            if (trk_params.track_pilot)
+                {
+                    const auto min_bit_sync_limit_s = static_cast<uint32_t>(BEIDOU_B1C_FRAME_PERIOD_S + 30);
+                    if (trk_params.bit_synchronization_time_limit_s < min_bit_sync_limit_s)
+                        {
+                            trk_params.bit_synchronization_time_limit_s = min_bit_sync_limit_s;
+                        }
+                }
+        }
 }
 
 }  // namespace
@@ -170,7 +215,7 @@ DllPllTrackingAdapter::DllPllTrackingAdapter(
 
     if (!sig_info.sig_name.empty())
         {
-            check_and_configure_trk_params(configuration, role_, sig_info, trk_params_);
+            check_and_configure_trk_params(configuration, role_, sig_flag, sig_info, trk_params_);
 
             if (trk_params_.item_type == "gr_complex")
                 {

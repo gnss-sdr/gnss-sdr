@@ -37,7 +37,7 @@ Gps_Navigation_Message::Gps_Navigation_Message(LnavSystem system)
     const std::string sys_str = (d_system == LnavSystem::GPS) ? "GPS" : "QZSS";
 
     uint32_t prn_min = (d_system == LnavSystem::GPS) ? 1 : 193;
-    uint32_t prn_max = (d_system == LnavSystem::GPS) ? 32 : 202;
+    uint32_t prn_max = (d_system == LnavSystem::GPS) ? 32 : 206;
 
     for (uint32_t i = prn_min; i <= prn_max; ++i)
         {
@@ -588,8 +588,9 @@ Gps_Ephemeris Gps_Navigation_Message::get_ephemeris() const
     ephemeris.antispoofing_flag = b_antispoofing_flag;
     if (d_system == LnavSystem::QZSS)
         {
+            ephemeris.set_system('J');
             auto gnss_sat = Gnss_Satellite();
-            for (uint32_t i = 193; i < 203; i++)
+            for (uint32_t i = 193; i < 207; i++)
                 {
                     ephemeris.satelliteBlock[i] = gnss_sat.what_block("QZSS", i);
                 }

@@ -1,17 +1,9 @@
+#!/usr/bin/env python3
 """
  hybrid_observables_plot_sample.py
 
- Reads GNSS-SDR observables raw dump binary file using the provided function
- and plots some internal variables
-
- Irene Pérez Riega, 2023. iperrie@inta.es
-
- Modifiable in the file:
-   sampling_freq        - Sampling frequency [Hz]
-   channels             - Number of channels to check if they exist
-   path                 - Path to folder which contains raw file
-   fig_path             - Path where plots will be save
-   observables_log_path - Completed path to observables raw data file
+ Reads a GNSS-SDR hybrid observables raw dump and plots pseudorange, carrier
+ phase, Doppler, and PRN values.
 
  -----------------------------------------------------------------------------
 
@@ -24,116 +16,306 @@
  -----------------------------------------------------------------------------
 """
 
-import numpy as np
+import argparse
+from pathlib import Path
+
 import matplotlib.pyplot as plt
+import numpy as np
+
+from lib.dump_filename import resolve_dump_prefix
+from lib.gnss_sdr_conf import (
+    ConfigError,
+    add_conf_argument,
+    load_gnss_sdr_conf,
+    signal_pretty_name,
+)
+from lib.plot_format import add_output_format_argument, apply_publication_style
 from lib.read_hybrid_observables_dump import read_hybrid_observables_dump
-import os
 
-observables = {}
-double_size_bytes = 8
-bytes_shift = 0
+DEFAULT_FILE_PREFIX = "observables.dat"
+DEFAULT_CHANNELS = 5
 
-# ---------- CHANGE HERE:
-samplingFreq = 2000000
-channels = 5
-path = '/home/labnav/Desktop/TEST_IRENE/'
-fig_path = '/home/labnav/Desktop/TEST_IRENE/PLOTS/HybridObservables/'
-observables_log_path = path + 'observables.dat'
 
-if not os.path.exists(fig_path):
-    os.makedirs(fig_path)
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Plot GNSS-SDR hybrid observables dump data."
+    )
+    add_conf_argument(parser)
+    parser.add_argument(
+        "-i",
+        "--input-path",
+        type=Path,
+        default=Path("."),
+        help="Directory containing the observables dump (default: .).",
+    )
+    parser.add_argument(
+        "--file-prefix",
+        default=None,
+        help="GNSS-SDR Observables.dump_filename value. May include a "
+        "directory and extension; the matching <prefix>.dat file is read, "
+        "resolved against --input-path. Defaults to Observables.dump_filename "
+        "from --conf, or observables.dat.",
+    )
+    parser.add_argument(
+        "-o",
+        "--fig-path",
+        type=Path,
+        default=Path("plots/hybrid-observables"),
+        help="Directory where plots are saved.",
+    )
+    parser.add_argument(
+        "--channels",
+        type=int,
+        default=None,
+        help="Number of observable channels in the dump. Defaults to the "
+        "total configured channel count from --conf, or 5.",
+    )
+    parser.add_argument(
+        "--show",
+        action="store_true",
+        help="Display figures interactively after saving them.",
+    )
+    add_output_format_argument(parser)
+    args = parser.parse_args()
+    try:
+        apply_conf_defaults(args)
+    except ConfigError as exc:
+        parser.error(str(exc))
+    return args
 
-GNSS_observables = read_hybrid_observables_dump(channels,observables_log_path)
 
-# Plot data
-# --- optional: plot since it detect the first satellite connected
-min_tow_idx = 1
-obs_idx = 1
+def apply_conf_defaults(args):
+    conf = load_gnss_sdr_conf(args.conf) if args.conf else None
 
-for n in range(0, channels):
+    if args.file_prefix is None:
+        args.file_prefix = (
+            conf.observables_dump_filename
+            if conf is not None and conf.observables_dump_filename
+            else DEFAULT_FILE_PREFIX
+        )
 
-    idx = np.where(np.array(GNSS_observables['valid'][n])>0)[0][0]
-    # Find the index from the first satellite connected
-    if n == 0:
-        min_tow_idx = idx
-    if min_tow_idx > idx:
-        min_tow_idx = idx
-        obs_idx = n
+    if args.channels is None:
+        if conf is not None:
+            if conf.total_channels <= 0:
+                raise ConfigError(
+                    "At least one Channels_<signal>.count value is required "
+                    "to infer --channels."
+                )
+            args.channels = conf.total_channels
+        else:
+            args.channels = DEFAULT_CHANNELS
 
-# Plot observables from that index
-# First plot
-plt.figure()
-plt.title('Pseudorange')
-for i in range(channels):
-    plt.scatter(GNSS_observables['RX_time'][i][min_tow_idx:],
-                GNSS_observables['Pseudorange_m'][i][min_tow_idx:],s=1,
-                label=f'Channel {i}')
-plt.xlim(GNSS_observables['RX_time'][obs_idx][min_tow_idx]-100,
-         GNSS_observables['RX_time'][obs_idx][-1]+100)
-plt.grid(True)
-plt.xlabel('TOW [s]')
-plt.ylabel('Pseudorange [m]')
-plt.legend()
-plt.gcf().canvas.manager.set_window_title('Pseudorange.png')
-plt.tight_layout()
-plt.savefig(os.path.join(fig_path, 'Pseudorange.png'))
-plt.show()
+    args.channel_signals = channel_signal_labels(conf, args.channels)
 
-# Second plot
-plt.figure()
-plt.title('Carrier Phase')
-for i in range(channels):
-    plt.scatter(GNSS_observables['RX_time'][i][min_tow_idx:],
-                GNSS_observables['Carrier_phase_hz'][i][min_tow_idx:],s=1,
-                label=f'Channel {i}')
-plt.xlim(GNSS_observables['RX_time'][obs_idx][min_tow_idx]-100,
-         GNSS_observables['RX_time'][obs_idx][-1]+100)
-plt.xlabel('TOW [s]')
-plt.ylabel('Accumulated Carrier Phase [cycles]')
-plt.grid(True)
-plt.legend()
-plt.gcf().canvas.manager.set_window_title('AccumulatedCarrierPhase.png')
-plt.tight_layout()
-plt.savefig(os.path.join(fig_path, 'AccumulatedCarrierPhase.png'))
-plt.show()
 
-# Third plot
-plt.figure()
-plt.title('Doppler Effect')
-for i in range(channels):
-    plt.scatter(GNSS_observables['RX_time'][i][min_tow_idx:],
-                GNSS_observables['Carrier_Doppler_hz'][i][min_tow_idx:],s=1,
-                label=f'Channel {i}')
-plt.xlim(GNSS_observables['RX_time'][obs_idx][min_tow_idx]-100,
-         GNSS_observables['RX_time'][obs_idx][-1]+100)
-plt.xlabel('TOW [s]')
-plt.ylabel('Doppler Frequency [Hz]')
-plt.grid(True)
-plt.legend()
-plt.gcf().canvas.manager.set_window_title('DopplerFrequency.png')
-plt.tight_layout()
-plt.savefig(os.path.join(fig_path, 'DopplerFrequency.png'))
-plt.show()
+def channel_signal_labels(conf, channels):
+    labels = [""] * channels
+    if conf is None:
+        return labels
 
-# Fourth plot
-plt.figure()
-plt.title('GNSS Channels captured')
-for i in range(channels):
-    lab = 0
-    a = 0
-    while lab == 0:
-        lab = int(GNSS_observables["PRN"][i][min_tow_idx+a])
-        a += 1
-    plt.scatter(GNSS_observables['RX_time'][i][min_tow_idx:],
-                GNSS_observables['PRN'][i][min_tow_idx:], s=1,
-                label=f'PRN {i} = {lab}')
-plt.xlim(GNSS_observables['RX_time'][obs_idx][min_tow_idx]-100,
-         GNSS_observables['RX_time'][obs_idx][-1]+100)
-plt.xlabel('TOW [s]')
-plt.ylabel('PRN')
-plt.grid(True)
-plt.legend()
-plt.gcf().canvas.manager.set_window_title('PRNs.png')
-plt.tight_layout()
-plt.savefig(os.path.join(fig_path, 'PRNs.png'))
-plt.show()
+    for signal in conf.enabled_signals:
+        for channel in signal.channels:
+            if 0 <= channel < channels:
+                labels[channel] = signal.signal
+    return labels
+
+
+def first_valid_observable(gnss_observables, channels):
+    min_tow_idx = None
+    obs_idx = 0
+    for channel in range(channels):
+        valid_indices = np.where(np.array(gnss_observables["valid"][channel]) > 0)[0]
+        if len(valid_indices) == 0:
+            continue
+        idx = valid_indices[0]
+        if min_tow_idx is None or idx < min_tow_idx:
+            min_tow_idx = idx
+            obs_idx = channel
+
+    if min_tow_idx is None:
+        raise ValueError("No valid observables found in the dump.")
+    return min_tow_idx, obs_idx
+
+
+def valid_channel_data(gnss_observables, channel, observable):
+    valid_mask = np.array(gnss_observables["valid"][channel]) > 0
+    rx_time = np.array(gnss_observables["RX_time"][channel])
+    values = np.array(gnss_observables[observable][channel])
+    return rx_time[valid_mask], values[valid_mask]
+
+
+def valid_channel_samples(gnss_observables, channel, observable):
+    valid_mask = np.array(gnss_observables["valid"][channel]) > 0
+    rx_time = np.array(gnss_observables["RX_time"][channel])
+    values = np.array(gnss_observables[observable][channel])
+    prns = np.array(gnss_observables["PRN"][channel])
+    return rx_time[valid_mask], values[valid_mask], prns[valid_mask]
+
+
+def valid_time_bounds(gnss_observables, channels):
+    valid_times = []
+    for channel in range(channels):
+        rx_time, _ = valid_channel_data(gnss_observables, channel, "valid")
+        if len(rx_time) > 0:
+            valid_times.append(rx_time)
+
+    if not valid_times:
+        raise ValueError("No valid observables found in the dump.")
+
+    valid_times = np.concatenate(valid_times)
+    return valid_times.min() - 100, valid_times.max() + 100
+
+
+def series_by_tracked_prn(gnss_observables, channels, observable, channel_signals):
+    parts = {}
+    for channel in range(channels):
+        rx_time, values, prns = valid_channel_samples(
+            gnss_observables, channel, observable
+        )
+        signal = channel_signals[channel] if channel < len(channel_signals) else ""
+        for prn in np.unique(prns):
+            if int(prn) == 0:
+                continue
+            selected = prns == prn
+            parts.setdefault((signal, int(prn)), []).append(
+                (rx_time[selected], values[selected])
+            )
+
+    series = {}
+    for series_key, chunks in parts.items():
+        rx_time = np.concatenate([chunk[0] for chunk in chunks])
+        values = np.concatenate([chunk[1] for chunk in chunks])
+        order = np.argsort(rx_time, kind="stable")
+        series[series_key] = (rx_time[order], values[order])
+    return series
+
+
+def tracked_prn_label(series_key):
+    signal, prn = series_key
+    if signal:
+        return f"{signal_pretty_name(signal)} PRN {prn}"
+    return f"PRN {prn}"
+
+
+def plot_observable_by_tracked_prn(
+    gnss_observables,
+    args,
+    *,
+    observable,
+    title,
+    ylabel,
+    window_title,
+    output_name,
+    time_start,
+    time_end,
+):
+    plt.figure()
+    plt.title(title)
+    series = series_by_tracked_prn(
+        gnss_observables, args.channels, observable, args.channel_signals
+    )
+    for series_key in sorted(series):
+        rx_time, values = series[series_key]
+        plt.scatter(
+            rx_time,
+            values,
+            s=1,
+            label=tracked_prn_label(series_key),
+        )
+    plt.xlim(time_start, time_end)
+    plt.xlabel("TOW [s]")
+    plt.ylabel(ylabel)
+    plt.grid(True)
+    plt.legend()
+    plt.gcf().canvas.manager.set_window_title(window_title)
+    save_figure(args.fig_path, output_name, args.show, args.output_format)
+
+
+def save_figure(fig_path, name, show, output_format):
+    plt.tight_layout()
+    plt.savefig(fig_path / f"{name}.{output_format}")
+    # Close unless it will be shown; main() triggers a single plt.show() at the
+    # end. Avoids repeated show()/close() cycles, which can crash interactive
+    # matplotlib backends (e.g. macOS) on window close.
+    if not show:
+        plt.close()
+
+
+def main():
+    args = parse_args()
+    args.fig_path.mkdir(parents=True, exist_ok=True)
+    apply_publication_style()
+
+    directory, base = resolve_dump_prefix(args.file_prefix, args.input_path)
+    observables_file = directory / f"{base}.dat"
+    gnss_observables = read_hybrid_observables_dump(args.channels, observables_file)
+    first_valid_observable(gnss_observables, args.channels)
+    time_start, time_end = valid_time_bounds(gnss_observables, args.channels)
+
+    plot_observable_by_tracked_prn(
+        gnss_observables,
+        args,
+        observable="Pseudorange_m",
+        title="Pseudorange",
+        ylabel="Pseudorange [m]",
+        window_title="Pseudorange.png",
+        output_name="Pseudorange",
+        time_start=time_start,
+        time_end=time_end,
+    )
+
+    plot_observable_by_tracked_prn(
+        gnss_observables,
+        args,
+        observable="Carrier_phase_hz",
+        title="Carrier Phase",
+        ylabel="Accumulated Carrier Phase [cycles]",
+        window_title="AccumulatedCarrierPhase.png",
+        output_name="AccumulatedCarrierPhase",
+        time_start=time_start,
+        time_end=time_end,
+    )
+
+    plot_observable_by_tracked_prn(
+        gnss_observables,
+        args,
+        observable="Carrier_Doppler_hz",
+        title="Doppler Effect",
+        ylabel="Doppler Frequency [Hz]",
+        window_title="DopplerFrequency.png",
+        output_name="DopplerFrequency",
+        time_start=time_start,
+        time_end=time_end,
+    )
+
+    plt.figure()
+    plt.title("GNSS Channels captured")
+    for channel in range(args.channels):
+        rx_time, prns = valid_channel_data(gnss_observables, channel, "PRN")
+        if len(rx_time) == 0:
+            continue
+        plt.scatter(
+            rx_time,
+            prns,
+            s=1,
+            label=f"Channel {channel}",
+        )
+    plt.xlim(time_start, time_end)
+    plt.xlabel("TOW [s]")
+    plt.ylabel("PRN")
+    plt.grid(True)
+    plt.legend()
+    plt.gcf().canvas.manager.set_window_title("PRNs.png")
+    save_figure(args.fig_path, "PRNs", args.show, args.output_format)
+
+    # Show all saved figures with a single plt.show() to avoid the repeated
+    # show()/close() cycle that can crash interactive backends on macOS.
+    if args.show:
+        plt.show()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (OSError, ValueError) as exc:
+        raise SystemExit(f"Error: {exc}")

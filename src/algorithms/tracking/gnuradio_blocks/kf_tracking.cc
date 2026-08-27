@@ -506,7 +506,7 @@ kf_tracking::kf_tracking(const Kf_Conf &conf_)
             d_prompt_data_shift = &d_local_code_shift_chips[1];
         }
 
-    d_multicorrelator_cpu.init(static_cast<int>(2 * d_trk_parameters.vector_length), d_n_correlator_taps);
+    d_multicorrelator_cpu.init(static_cast<int>(2 * d_trk_parameters.vector_length), d_n_correlator_taps, d_trk_parameters.track_pilot);
 
     if (d_trk_parameters.extend_correlation_symbols > 1)
         {
@@ -521,9 +521,6 @@ kf_tracking::kf_tracking(const Kf_Conf &conf_)
     // Enable Data component prompt correlator (slave to Pilot prompt) if tracking uses Pilot signal
     if (d_trk_parameters.track_pilot)
         {
-            // Extra correlator for the data component
-            d_correlator_data_cpu.init(static_cast<int>(2 * d_trk_parameters.vector_length), 1);
-            d_correlator_data_cpu.set_high_dynamics_resampler(d_trk_parameters.high_dyn);
             d_data_code.resize(2 * d_code_length_chips, 0.0);
         }
 
@@ -540,10 +537,12 @@ kf_tracking::kf_tracking(const Kf_Conf &conf_)
     d_Prompt_Data = volk_gnsssdr::vector<gr_complex>(1);
     d_cn0_smoother = Exponential_Smoother();
     d_cn0_smoother.set_alpha(d_trk_parameters.cn0_smoother_alpha);
+    d_cn0_smoother.set_min_value(static_cast<float>(d_trk_parameters.cn0_min));
+    d_cn0_smoother.set_offset(0.0);
 
     if (d_code_period > 0.0)
         {
-            d_cn0_smoother.set_samples_for_initialization(d_trk_parameters.cn0_smoother_samples / static_cast<int>(d_code_period * 1000.0));
+            d_cn0_smoother.set_samples_for_initialization(d_trk_parameters.cn0_smoother_samples / std::max(1, static_cast<int>(d_code_period * 1000.0)));
         }
 
     d_carrier_lock_test_smoother = Exponential_Smoother();
@@ -673,29 +672,29 @@ void kf_tracking::start_tracking()
     Signal_[1] = d_acquisition_gnss_synchro->Signal[1];
     Signal_[2] = d_acquisition_gnss_synchro->Signal[2];
 
-    if (d_systemName == "GPS" and d_signal_type == "1C")
+    if (d_systemName == "GPS" && d_signal_type == "1C")
         {
             gps_l1_ca_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
         }
-    else if (d_systemName == "GPS" and d_signal_type == "2S")
+    else if (d_systemName == "GPS" && d_signal_type == "2S")
         {
             gps_l2c_m_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
         }
-    else if (d_systemName == "GPS" and d_signal_type == "L5")
+    else if (d_systemName == "GPS" && d_signal_type == "L5")
         {
             if (d_trk_parameters.track_pilot)
                 {
                     gps_l5q_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
                     gps_l5i_code_gen_float(d_data_code, d_acquisition_gnss_synchro->PRN);
                     d_Prompt_Data[0] = gr_complex(0.0, 0.0);
-                    d_correlator_data_cpu.set_local_code_and_taps(d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
+                    d_multicorrelator_cpu.set_data_code_and_prompt_tap(d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
                 }
             else
                 {
                     gps_l5i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
                 }
         }
-    else if (d_systemName == "Galileo" and d_signal_type == "1B")
+    else if (d_systemName == "Galileo" && d_signal_type == "1B")
         {
             if (d_trk_parameters.track_pilot)
                 {
@@ -703,14 +702,14 @@ void kf_tracking::start_tracking()
                     galileo_e1_code_gen_sinboc11_float(d_tracking_code, pilot_signal, d_acquisition_gnss_synchro->PRN);
                     galileo_e1_code_gen_sinboc11_float(d_data_code, Signal_, d_acquisition_gnss_synchro->PRN);
                     d_Prompt_Data[0] = gr_complex(0.0, 0.0);
-                    d_correlator_data_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
+                    d_multicorrelator_cpu.set_data_code_and_prompt_tap(d_code_samples_per_chip * d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
                 }
             else
                 {
                     galileo_e1_code_gen_sinboc11_float(d_tracking_code, Signal_, d_acquisition_gnss_synchro->PRN);
                 }
         }
-    else if (d_systemName == "Galileo" and d_signal_type == "5X")
+    else if (d_systemName == "Galileo" && d_signal_type == "5X")
         {
             volk_gnsssdr::vector<gr_complex> aux_code(d_code_length_chips);
             const std::array<char, 3> signal_type_ = {{'5', 'X', '\0'}};
@@ -724,7 +723,7 @@ void kf_tracking::start_tracking()
                             d_data_code[i] = aux_code[i].real();  // the same because it is generated the full signal (E5aI + E5aQ)
                         }
                     d_Prompt_Data[0] = gr_complex(0.0, 0.0);
-                    d_correlator_data_cpu.set_local_code_and_taps(d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
+                    d_multicorrelator_cpu.set_data_code_and_prompt_tap(d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
                 }
             else
                 {
@@ -734,7 +733,7 @@ void kf_tracking::start_tracking()
                         }
                 }
         }
-    else if (d_systemName == "Galileo" and d_signal_type == "7X")
+    else if (d_systemName == "Galileo" && d_signal_type == "7X")
         {
             volk_gnsssdr::vector<gr_complex> aux_code(d_code_length_chips);
             const std::array<char, 3> signal_type_ = {{'7', 'X', '\0'}};
@@ -748,7 +747,7 @@ void kf_tracking::start_tracking()
                             d_data_code[i] = aux_code[i].real();  // the same because it is generated the full signal (E5bI + E5bsQ)
                         }
                     d_Prompt_Data[0] = gr_complex(0.0, 0.0);
-                    d_correlator_data_cpu.set_local_code_and_taps(d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
+                    d_multicorrelator_cpu.set_data_code_and_prompt_tap(d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
                 }
             else
                 {
@@ -758,11 +757,11 @@ void kf_tracking::start_tracking()
                         }
                 }
         }
-    else if (d_systemName == "Beidou" and d_signal_type == "B1")
+    else if (d_systemName == "Beidou" && d_signal_type == "B1")
         {
             beidou_b1i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
             // GEO Satellites use different secondary code
-            if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
+            if (d_acquisition_gnss_synchro->PRN > 0 && d_acquisition_gnss_synchro->PRN < 6)
                 {
                     d_symbols_per_bit = BEIDOU_B1I_GEO_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;
@@ -833,6 +832,7 @@ void kf_tracking::start_tracking()
     d_rem_carr_phase_rad = 0.0;
     d_rem_code_phase_chips = 0.0;
     d_acc_carrier_phase_rad = 0.0;
+    d_carrier_phase_discontinuity = true;  // the carrier phase ambiguity starts again
     d_cn0_estimation_counter = 0;
     d_carrier_lock_test = 1.0;
     d_CN0_SNV_dB_Hz = 0.0;
@@ -995,10 +995,6 @@ kf_tracking::~kf_tracking()
         }
     try
         {
-            if (d_trk_parameters.track_pilot)
-                {
-                    d_correlator_data_cpu.free();
-                }
             d_multicorrelator_cpu.free();
         }
     catch (const std::exception &ex)
@@ -1064,7 +1060,7 @@ bool kf_tracking::cn0_and_tracking_lock_status(double coh_integration_time_s)
     const float d_CN0_SNV_dB_Hz_raw = cn0_m2m4_estimator(d_Prompt_buffer.data(), d_trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
     d_CN0_SNV_dB_Hz = d_cn0_smoother.smooth(d_CN0_SNV_dB_Hz_raw);
     // Carrier lock indicator
-    d_carrier_lock_test = d_carrier_lock_test_smoother.smooth(carrier_lock_detector(d_Prompt_buffer.data(), 1));
+    d_carrier_lock_test = d_carrier_lock_test_smoother.smooth(carrier_lock_detector(&d_P_accu, 1));
     // Loss of lock detection
     if (!d_pull_in_transitory)
         {
@@ -1092,7 +1088,7 @@ bool kf_tracking::cn0_and_tracking_lock_status(double coh_integration_time_s)
                         }
                 }
         }
-    if (d_carrier_lock_fail_counter > d_trk_parameters.max_carrier_lock_fail or d_code_lock_fail_counter > d_trk_parameters.max_code_lock_fail)
+    if (d_carrier_lock_fail_counter > d_trk_parameters.max_carrier_lock_fail || d_code_lock_fail_counter > d_trk_parameters.max_code_lock_fail)
         {
             std::cout << "Loss of lock in channel " << d_channel << "!\n";
             LOG(INFO) << "Loss of lock in channel " << d_channel
@@ -1116,20 +1112,21 @@ void kf_tracking::do_correlation_step(const gr_complex *input_samples)
 {
     // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
     // perform carrier wipe-off and compute Early, Prompt and Late correlation
-    d_multicorrelator_cpu.set_input_output_vectors(d_correlator_outs.data(), input_samples);
-    d_multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(
-        d_rem_carr_phase_rad,
-        static_cast<float>(d_carrier_phase_step_rad), static_cast<float>(d_carrier_phase_rate_step_rad),
-        static_cast<float>(d_rem_code_phase_chips) * static_cast<float>(d_code_samples_per_chip),
-        static_cast<float>(d_code_phase_step_chips) * static_cast<float>(d_code_samples_per_chip),
-        static_cast<float>(d_code_phase_rate_step_chips) * static_cast<float>(d_code_samples_per_chip),
-        d_trk_parameters.vector_length);
-
-    // DATA CORRELATOR (if tracking tracks the pilot signal)
     if (d_trk_parameters.track_pilot)
         {
-            d_correlator_data_cpu.set_input_output_vectors(d_Prompt_Data.data(), input_samples);
-            d_correlator_data_cpu.Carrier_wipeoff_multicorrelator_resampler(
+            d_multicorrelator_cpu.set_input_output_vectors(d_correlator_outs.data(), d_Prompt_Data.data(), input_samples);
+            d_multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler_with_data_prompt(
+                d_rem_carr_phase_rad,
+                static_cast<float>(d_carrier_phase_step_rad), static_cast<float>(d_carrier_phase_rate_step_rad),
+                static_cast<float>(d_rem_code_phase_chips) * static_cast<float>(d_code_samples_per_chip),
+                static_cast<float>(d_code_phase_step_chips) * static_cast<float>(d_code_samples_per_chip),
+                static_cast<float>(d_code_phase_rate_step_chips) * static_cast<float>(d_code_samples_per_chip),
+                d_trk_parameters.vector_length);
+        }
+    else
+        {
+            d_multicorrelator_cpu.set_input_output_vectors(d_correlator_outs.data(), input_samples);
+            d_multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(
                 d_rem_carr_phase_rad,
                 static_cast<float>(d_carrier_phase_step_rad), static_cast<float>(d_carrier_phase_rate_step_rad),
                 static_cast<float>(d_rem_code_phase_chips) * static_cast<float>(d_code_samples_per_chip),
@@ -1224,6 +1221,7 @@ void kf_tracking::check_carrier_phase_coherent_initialization()
         {
             d_acc_carrier_phase_rad = -d_rem_carr_phase_rad;
             d_acc_carrier_phase_initialized = true;
+            d_carrier_phase_discontinuity = true;  // the carrier phase ambiguity starts again
         }
 }
 
@@ -1880,6 +1878,10 @@ int kf_tracking::general_work(int noutput_items __attribute__((unused)), gr_vect
                                         // UPDATE INTEGRATION TIME
                                         d_extend_correlation_symbols_count = 0;
                                         d_current_correlation_time_s = static_cast<float>(d_trk_parameters.extend_correlation_symbols) * static_cast<float>(d_code_period);
+                                        // the CN0 estimation buffer must not mix prompts from different integration times
+                                        d_cn0_estimation_counter = 0;
+                                        // keep the smoother initialization at the same data-time budget under the new update period
+                                        d_cn0_smoother.set_samples_for_initialization(d_trk_parameters.cn0_smoother_samples / std::max(1, static_cast<int>(d_current_correlation_time_s * 1000.0)));
                                         d_state = 3;  // next state is the extended correlator integrator
                                         LOG(INFO) << "Enabled " << d_trk_parameters.extend_correlation_symbols * static_cast<int32_t>(d_code_period * 1000.0) << " ms extended correlator in channel "
                                                   << d_channel
@@ -2019,6 +2021,10 @@ int kf_tracking::general_work(int noutput_items __attribute__((unused)), gr_vect
         {
             current_synchro_data.fs = static_cast<int64_t>(d_trk_parameters.fs_in);
             current_synchro_data.Tracking_sample_counter = d_sample_counter;
+            // report a restarted carrier phase accumulator on the first valid
+            // output that carries it
+            current_synchro_data.Flag_carrier_phase_continuous = !d_carrier_phase_discontinuity;
+            d_carrier_phase_discontinuity = false;
             *out[0] = std::move(current_synchro_data);
             return 1;
         }

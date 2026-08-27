@@ -20,6 +20,11 @@ if(ENABLE_ION)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ion_gsms.h)
 endif()
 
+if(ENABLE_BLADERF AND LIBBLADERF_FOUND)
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} bladerf_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} bladerf_source.h)
+endif()
+
 set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
     fifo_reader.cc
     unpack_byte_2bit_samples.cc
@@ -30,7 +35,7 @@ set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
     rtl_tcp_signal_source_c.cc
     unpack_2bit_samples.cc
     unpack_ntlab_2bit_samples.cc
-    unpack_spir_gss6450_samples.cc
+    unpack_gss6450_samples.cc
     labsat23_source.cc
     ${OPT_DRIVER_SOURCES}
 )
@@ -45,7 +50,7 @@ set(SIGNAL_SOURCE_GR_BLOCKS_HEADERS
     rtl_tcp_signal_source_c.h
     unpack_2bit_samples.h
     unpack_ntlab_2bit_samples.h
-    unpack_spir_gss6450_samples.h
+    unpack_gss6450_samples.h
     labsat23_source.h
     ${OPT_DRIVER_HEADERS}
 )
@@ -100,6 +105,13 @@ if(ENABLE_RAW_UDP AND PCAP_FOUND)
     target_link_libraries(signal_source_gr_blocks
         PUBLIC
             Pcap::pcap
+    )
+endif()
+
+if(ENABLE_BLADERF AND LIBBLADERF_FOUND)
+    target_link_libraries(signal_source_gr_blocks
+        PRIVATE
+            Bladerf::bladerf
     )
 endif()
 

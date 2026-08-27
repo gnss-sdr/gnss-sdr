@@ -832,7 +832,7 @@ TEST_F(DllPllTrackingAdapterGpsL1CaTest, ValidationOfResults)
 #endif
 
                                     arma::uvec initial_meas_point = arma::find(trk_timestamp_s >= (true_timestamp_s(0) + pull_in_offset_s), 1, "first");
-                                    if (!initial_meas_point.empty() and tracking_last_msg != 3)
+                                    if (!initial_meas_point.empty() && tracking_last_msg != 3)
                                         {
                                             trk_timestamp_s = trk_timestamp_s.subvec(initial_meas_point(0), trk_timestamp_s.size() - 1);
                                             trk_acc_carrier_phase_cycles = trk_acc_carrier_phase_cycles.subvec(initial_meas_point(0), trk_acc_carrier_phase_cycles.size() - 1);

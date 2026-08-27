@@ -32,19 +32,24 @@ import matplotlib.pyplot as plt
 
 def plotTracking(channelNr, trackResults, settings):
 
-    # ---------- CHANGE HERE:
-    fig_path = '/home/labnav/Desktop/TEST_IRENE/PLOTS/PlotTracking'
+    fig_path = settings.get('fig_path', 'plots/tracking')
+    output_format = settings.get('output_format', 'png')
 
     if not os.path.exists(fig_path):
         os.makedirs(fig_path)
 
     # Protection - if the list contains incorrect channel numbers
     if channelNr in list(range(1,settings["numberOfChannels"]+1)):
+        channel_ids = settings.get('channelIds')
+        if channel_ids is not None:
+            display_channel = channel_ids[channelNr - 1]
+        else:
+            display_channel = settings.get('firstChannel', 1) + channelNr - 1
 
         plt.figure(figsize=(1920 / 120, 1080 / 120))
         plt.clf()
-        plt.gcf().canvas.set_window_title(
-            f'Channel {channelNr} (PRN '
+        plt.gcf().canvas.manager.set_window_title(
+            f'Channel {display_channel} (PRN '
             f'{trackResults[channelNr-1]["PRN"][0]}) results')
         plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1,
                             hspace=0.4, wspace=0.4)
@@ -184,7 +189,11 @@ def plotTracking(channelNr, trackResults, settings):
 
         plt.tight_layout()
         plt.savefig(os.path.join(fig_path,
-                                 f'trk_dump_ch{channelNr}_PRN_'
+                                 f'trk_dump_ch{display_channel}_PRN_'
                                  f'{trackResults[channelNr - 1]["PRN"][-1]}'
-                                 f'.png'))
-        plt.show()
+                                 f'.{output_format}'))
+        # Close unless it will be shown; the caller triggers a single
+        # plt.show() at the end. Avoids repeated show()/close() cycles, which
+        # can crash interactive matplotlib backends (e.g. macOS) on close.
+        if not settings.get('show', True):
+            plt.close()

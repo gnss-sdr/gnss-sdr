@@ -93,7 +93,7 @@ pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_);
 class pcps_acquisition : public acquisition_impl_interface
 {
 public:
-    ~pcps_acquisition() override;
+    ~pcps_acquisition() noexcept override;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
@@ -185,6 +185,13 @@ private:
     void send_negative_acquisition(const AcquisitionResult& result);
     void send_positive_acquisition(const AcquisitionResult& result);
     void dump_results(const AcquisitionResult& result);
+    void ensure_dump_grid_allocated();
+    void copy_magnitude_grid_to_dump_grid();
+    bool should_dump_channel() const;
+    std::complex<float>* doppler_wipeoff_data(uint32_t doppler_index);
+    std::complex<float>* doppler_wipeoff_step_two_data(uint32_t doppler_index);
+    float* magnitude_grid_data(uint32_t doppler_index);
+    const float* magnitude_grid_data(uint32_t doppler_index) const;
     bool is_fdma();
     float get_threshold() const;
     AcquisitionResult first_vs_second_peak_statistic(uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
@@ -199,6 +206,8 @@ private:
     const uint32_t d_consumed_samples;
     const uint32_t d_fft_size;
     const uint32_t d_effective_fft_size;
+    const uint32_t d_magnitude_grid_stride;
+    const uint32_t d_doppler_wipeoffs_stride;
     const uint32_t d_num_doppler_bins;
     const uint32_t d_num_doppler_bins_step2;
     const uint32_t d_dump_channel;
@@ -229,16 +238,16 @@ private:
     int64_t d_dump_number;
     float d_input_power;
     float d_doppler_center_step_two;
-    volk_gnsssdr::vector<volk_gnsssdr::vector<float>> d_magnitude_grid;
+    volk_gnsssdr::vector<float> d_magnitude_grid;
     volk_gnsssdr::vector<float> d_tmp_buffer;
     volk_gnsssdr::vector<std::complex<float>> d_input_signal;
-    volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_grid_doppler_wipeoffs_step_two;
+    volk_gnsssdr::vector<std::complex<float>> d_grid_doppler_wipeoffs_step_two;
     std::unique_ptr<gnss_fft_complex_rev> d_ifft;
     arma::fmat d_grid;
     arma::fmat d_narrow_grid;
 
     // These are never accessed outside acquisition_core while acquisition is active
-    volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
+    volk_gnsssdr::vector<std::complex<float>> d_grid_doppler_wipeoffs;
     volk_gnsssdr::vector<std::complex<float>> d_fft_codes;
     volk_gnsssdr::vector<std::complex<float>> d_data_buffer;
     volk_gnsssdr::vector<lv_16sc_t> d_data_buffer_sc;

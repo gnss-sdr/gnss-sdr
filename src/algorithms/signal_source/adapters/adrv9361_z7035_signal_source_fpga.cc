@@ -90,7 +90,7 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
                                (configuration->property("Channels_L5.count", 0) > 0) ||
                                (configuration->property("Channels_5X.count", 0) > 0));
 
-    const uint32_t num_freq_bands = ((enable_rx1_band == true) and (enable_rx2_band == true)) ? 2 : 1;
+    const uint32_t num_freq_bands = ((enable_rx1_band == true) && (enable_rx2_band == true)) ? 2 : 1;
     if (freq0_ == 0)
         {
             // use ".freq0"

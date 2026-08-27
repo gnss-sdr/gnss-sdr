@@ -755,7 +755,7 @@ bool HybridObservablesTestFpga::acquire_signal()
             acquisition->stop_acquisition();  // reset the whole system including the sample counters
             acquisition->set_local_code();
 
-            if ((implementation == "GPS_L1_CA_DLL_PLL_Tracking_FPGA") or (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking_FPGA"))
+            if ((implementation == "GPS_L1_CA_DLL_PLL_Tracking_FPGA") || (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking_FPGA"))
                 {
                     // Skip the first TEST_OBS_SKIP_SAMPLES samples
                     args.skip_used_samples = 0;
@@ -2311,7 +2311,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     for (auto& n : measured_obs_vec)
         {
             index = arma::find(n.col(0) > 0.0, 1, "last");
-            if ((!index.empty()) and index(0) < (nepoch - 1))
+            if ((!index.empty()) && index(0) < (nepoch - 1))
                 {
                     n.shed_rows(index(0) + 1, nepoch - 1);
                 }
@@ -2326,7 +2326,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
         {
             index = arma::find(measured_obs_vec.at(n).col(0) >= (measured_obs_vec.at(n)(0, 0) + initial_transitory_s), 1, "first");
-            if ((!index.empty()) and (index(0) > 0))
+            if ((!index.empty()) && (index(0) > 0))
                 {
                     measured_obs_vec.at(n).shed_rows(0, index(0));
                 }
@@ -2337,7 +2337,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
 #endif
                 {
                     index = arma::find(measured_obs_vec.at(n).col(0) >= true_obs_vec.at(n)(0, 0), 1, "first");
-                    if ((!index.empty()) and (index(0) > 0))
+                    if ((!index.empty()) && (index(0) > 0))
                         {
                             measured_obs_vec.at(n).shed_rows(0, index(0));
                         }
@@ -2390,7 +2390,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                                                 }
                                         }
                                 }
-                            if (sat1_ch_id != -1 and sat2_ch_id != -1)
+                            if (sat1_ch_id != -1 && sat2_ch_id != -1)
                                 {
                                     // compute single differences for the duplicated satellite
 
@@ -2439,7 +2439,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
             arma::vec receiver_time_offset_ref_channel_s;
             arma::uvec index2;
             index2 = arma::find(true_obs_vec.at(min_pr_ch_id).col(0) >= measured_obs_vec.at(min_pr_ch_id).col(0)(0), 1, "first");
-            if ((!index2.empty()) and (index2(0) > 0))
+            if ((!index2.empty()) && (index2(0) > 0))
                 {
                     receiver_time_offset_ref_channel_s = (true_obs_vec.at(min_pr_ch_id).col(1)(index2(0)) - measured_obs_vec.at(min_pr_ch_id).col(4)(0)) / SPEED_OF_LIGHT_M_S;
                     std::cout << "Ref. channel initial Receiver time offset " << receiver_time_offset_ref_channel_s(0) * 1e3 << " [ms]\n";
@@ -2507,9 +2507,9 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                                     // Do not compare E5a with E5 RINEX due to the Doppler frequency discrepancy caused by the different center frequencies
                                     // E5a_fc=1176.45e6, E5b_fc=1207.14e6, E5_fc=1191.795e6;
 #if USE_GLOG_AND_GFLAGS
-                                    if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 or FLAGS_compare_with_5X)
+                                    if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 || FLAGS_compare_with_5X)
 #else
-                                    if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 or absl::GetFlag(FLAGS_compare_with_5X))
+                                    if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 || absl::GetFlag(FLAGS_compare_with_5X))
 #endif
                                         {
                                             check_results_carrier_phase_double_diff(true_obs_vec.at(n),

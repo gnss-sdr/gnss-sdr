@@ -38,6 +38,7 @@
 
 
 double var_uraeph(int ura);
+double var_sisaeph(int sisa);
 double var_urassr(int ura);
 void alm2pos(gtime_t time, const alm_t *alm, double *rs, double *dts);
 double eph2clk(gtime_t time, const eph_t *eph);
@@ -52,14 +53,19 @@ void geph2pos(gtime_t time, const geph_t *geph, double *rs, double *dts,
 double seph2clk(gtime_t time, const seph_t *seph);
 void seph2pos(gtime_t time, const seph_t *seph, double *rs, double *dts,
     double *var);
-eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav);
+/* Prefer B-CNAV1 and use DNAV only when no usable B-CNAV1 record exists. */
+const int BDS_EPH_SELECTION_CNAV1_PREFERRED = -2;
+/* bds_eph_sel: -1=any, 0=DNAV (code!=BDS_EPH_SOURCE_CNAV1),
+ * BDS_EPH_SELECTION_CNAV1_PREFERRED=B-CNAV1 then DNAV,
+ * BDS_EPH_SOURCE_CNAV1=B-CNAV1 only */
+eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav, int bds_eph_sel = -1);
 geph_t *selgeph(gtime_t time, int sat, int iode, const nav_t *nav);
 seph_t *selseph(gtime_t time, int sat, const nav_t *nav);
 int ephclk(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
-    double *dts);
+    double *dts, int bds_eph_sel = -1);
 // satellite position and clock by broadcast ephemeris
 int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
-    int iode, double *rs, double *dts, double *var, int *svh);
+    int iode, double *rs, double *dts, double *var, int *svh, int bds_eph_sel = -1);
 int satpos_sbas(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
     double *rs, double *dts, double *var, int *svh);
 int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
@@ -67,8 +73,12 @@ int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
 
 int satpos(gtime_t time, gtime_t teph, int sat, int ephopt,
     const nav_t *nav, double *rs, double *dts, double *var,
-    int *svh);
+    int *svh, int bds_eph_sel = -1);
 void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
+    int ephopt, double *rs, double *dts, double *var, int *svh);
+/* Relative same-signal processing may use a DNAV orbit/clock for B1C when
+ * B-CNAV1 is unavailable; absolute positioning remains CNAV1-only. */
+void satposs_relative(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
     int ephopt, double *rs, double *dts, double *var, int *svh);
 
 

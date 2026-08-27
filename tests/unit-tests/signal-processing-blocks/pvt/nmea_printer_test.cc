@@ -15,12 +15,16 @@
  */
 
 
+#include "gnss_obs_codes.h"
 #include "nmea_printer.h"
 #include "pvt_conf.h"
+#include "rtklib_rtkcmn.h"
 #include "rtklib_rtkpos.h"
+#include "rtklib_solution.h"
 #include "rtklib_solver.h"
 #include "signal_enabled_flags.h"
 #include <gtest/gtest.h>
+#include <array>
 #include <fstream>
 #include <string>
 
@@ -116,8 +120,9 @@ void NmeaPrinterTest::conf()
         min_elevation_to_fix_ambiguity,                                                    /* elevation mask of AR for rising satellite (deg) */
         0.0,                                                                               /* elevation mask to hold ambiguity (deg) */
         slip_threshold,                                                                    /* slip threshold of geometry-free phase (m) */
+        0.0,                                                                               /* slip threshold of doppler (m/s) (0:disabled) */
         30.0,                                                                              /* max difference of time (sec) */
-        threshold_reject_innovation,                                                       /* reject threshold of innovation (m) */
+        {threshold_reject_innovation, threshold_reject_innovation},                        /* reject threshold of innovation {phase, code} (m) */
         threshold_reject_gdop,                                                             /* reject threshold of gdop */
         {},                                                                                /* double baseline[2] baseline length constraint {const,sigma} (m) */
         {},                                                                                /* double ru[3]  rover position for fixed mode {x,y,z} (ecef) (m) */
@@ -136,10 +141,97 @@ void NmeaPrinterTest::conf()
         {{}, {{}, {}}, {{}, {}}, {}, {}},                                                  /*  exterr_t exterr   extended receiver error model */
         0,                                                                                 /* disable L2-AR */
         {},                                                                                /* char pppopt[256]   ppp option   "-GAP_RESION="  default gap to reset iono parameters (ep) */
-        true                                                                               /* enable Bancroft initialization for the first iteration of the PVT computation, useful in some geometries */
+        true,                                                                              /* enable Bancroft initialization for the first iteration of the PVT computation, useful in some geometries */
+        false,                                                                             /* estimate QZS-GPS inter-system bias */
+        0, 0, 0, 0, 0.0, 0.0                                                               /* demo5 AR management options: arfilter, minfixsats, minholdsats, mindropsats, varholdamb, armaxposvar (all off) */
     };
 
     rtkinit(&rtk, &rtklib_configuration_options);
+}
+
+std::string PrintGsv(const sol_t& sol, const std::array<ssat_t, MAXSAT>& ssat)
+{
+    std::array<unsigned char, 1024> buff{};
+    outnmea_gsv(buff.data(), &sol, ssat.data());
+    return std::string(reinterpret_cast<const char*>(buff.data()));
+}
+
+
+TEST_F(NmeaPrinterTest, GsvUsesStrongestNonL1SnrAndMatchingSignalId)
+{
+    sol_t sol{};
+    std::array<ssat_t, MAXSAT> ssat{};
+    const int galileo_sat = satno(SYS_GAL, 1);
+    ASSERT_GT(galileo_sat, 0);
+
+    sol.stat = SOLQ_FIX;
+    ssat[galileo_sat - 1].vs = 1;
+    ssat[galileo_sat - 1].azel[0] = 3.514475;
+    ssat[galileo_sat - 1].azel[1] = 0.644151;
+    ssat[galileo_sat - 1].snr[0] = 0;
+    ssat[galileo_sat - 1].code[0] = CODE_NONE;
+    ssat[galileo_sat - 1].snr[2] = 220;
+    ssat[galileo_sat - 1].code[2] = CODE_L7X;
+
+    EXPECT_EQ(PrintGsv(sol, ssat), "$GAGSV,1,1,01,01,37,201,55,,,,,,,,,,,,,2*41\r\n");
+}
+
+
+TEST_F(NmeaPrinterTest, GsvSplitsSatellitesBySelectedSignalId)
+{
+    sol_t sol{};
+    std::array<ssat_t, MAXSAT> ssat{};
+    const int gps_l1_sat = satno(SYS_GPS, 1);
+    const int gps_l5_sat = satno(SYS_GPS, 2);
+    ASSERT_GT(gps_l1_sat, 0);
+    ASSERT_GT(gps_l5_sat, 0);
+
+    sol.stat = SOLQ_FIX;
+    ssat[gps_l1_sat - 1].vs = 1;
+    ssat[gps_l1_sat - 1].azel[0] = 3.514475;
+    ssat[gps_l1_sat - 1].azel[1] = 0.644151;
+    ssat[gps_l1_sat - 1].snr[0] = 204;
+    ssat[gps_l1_sat - 1].code[0] = CODE_L1C;
+
+    ssat[gps_l5_sat - 1].vs = 1;
+    ssat[gps_l5_sat - 1].azel[0] = 2.968734;
+    ssat[gps_l5_sat - 1].azel[1] = 0.950019;
+    ssat[gps_l5_sat - 1].snr[0] = 0;
+    ssat[gps_l5_sat - 1].code[0] = CODE_NONE;
+    ssat[gps_l5_sat - 1].snr[2] = 220;
+    ssat[gps_l5_sat - 1].code[2] = CODE_L5X;
+
+    EXPECT_EQ(PrintGsv(sol, ssat),
+        "$GPGSV,1,1,01,01,37,201,51,,,,,,,,,,,,,1*57\r\n"
+        "$GPGSV,1,1,01,02,54,170,55,,,,,,,,,,,,,7*56\r\n");
+}
+
+
+TEST_F(NmeaPrinterTest, GsvReportsGpsL2AndL5Snr)
+{
+    sol_t sol{};
+    std::array<ssat_t, MAXSAT> ssat{};
+    const int gps_l2_sat = satno(SYS_GPS, 1);
+    const int gps_l5_sat = satno(SYS_GPS, 2);
+    ASSERT_GT(gps_l2_sat, 0);
+    ASSERT_GT(gps_l5_sat, 0);
+
+    sol.stat = SOLQ_FIX;
+    ssat[gps_l2_sat - 1].vs = 1;
+    ssat[gps_l2_sat - 1].azel[0] = 3.514475;
+    ssat[gps_l2_sat - 1].azel[1] = 0.644151;
+    ssat[gps_l2_sat - 1].snr[1] = 180;
+    ssat[gps_l2_sat - 1].code[1] = CODE_L2S;
+
+    ssat[gps_l5_sat - 1].vs = 1;
+    ssat[gps_l5_sat - 1].azel[0] = 2.968734;
+    ssat[gps_l5_sat - 1].azel[1] = 0.950019;
+    ssat[gps_l5_sat - 1].snr[2] = 220;
+    ssat[gps_l5_sat - 1].code[2] = CODE_L5X;
+
+    EXPECT_EQ(PrintGsv(sol, ssat),
+        "$GPGSV,1,1,01,01,37,201,45,,,,,,,,,,,,,5*56\r\n"
+        "$GPGSV,1,1,01,02,54,170,55,,,,,,,,,,,,,7*56\r\n");
 }
 
 
@@ -165,7 +257,30 @@ TEST_F(NmeaPrinterTest, PrintLine)
     pvt_solution->pvt_sol.rr[5] = 0.0;
     pvt_solution->pvt_sol.stat = 1;  // SOLQ_FIX
     pvt_solution->pvt_sol.time = gtime;
-
+    pvt_solution->pvt_ssat[0].vs = 1;
+    pvt_solution->pvt_ssat[0].azel[0] = 3.514475;
+    pvt_solution->pvt_ssat[0].azel[1] = 0.644151;
+    pvt_solution->pvt_ssat[0].vsat[0] = 48;
+    pvt_solution->pvt_ssat[0].snr[0] = 204;
+    pvt_solution->pvt_ssat[0].fix[0] = 48;
+    pvt_solution->pvt_ssat[0].slip[0] = 48;
+    pvt_solution->pvt_ssat[0].half[0] = 48;
+    pvt_solution->pvt_ssat[96].vs = 1;
+    pvt_solution->pvt_ssat[96].azel[0] = 0.808051;
+    pvt_solution->pvt_ssat[96].azel[1] = 1.489340;
+    pvt_solution->pvt_ssat[96].vsat[0] = 48;
+    pvt_solution->pvt_ssat[96].snr[0] = 203;
+    pvt_solution->pvt_ssat[96].fix[0] = 48;
+    pvt_solution->pvt_ssat[96].slip[0] = 48;
+    pvt_solution->pvt_ssat[96].half[0] = 48;
+    pvt_solution->pvt_ssat[97].vs = 1;
+    pvt_solution->pvt_ssat[97].azel[0] = 2.968734;
+    pvt_solution->pvt_ssat[97].azel[1] = 0.950019;
+    pvt_solution->pvt_ssat[97].vsat[0] = 48;
+    pvt_solution->pvt_ssat[97].snr[0] = 213;
+    pvt_solution->pvt_ssat[97].fix[0] = 48;
+    pvt_solution->pvt_ssat[97].slip[0] = 48;
+    pvt_solution->pvt_ssat[97].half[0] = 48;
     bool flag_nmea_output_file = true;
     ASSERT_NO_THROW({
         std::shared_ptr<Nmea_Printer> nmea_printer = std::make_shared<Nmea_Printer>(filename, flag_nmea_output_file, false, "");
@@ -175,6 +290,10 @@ TEST_F(NmeaPrinterTest, PrintLine)
     std::ifstream test_file(filename);
     std::string line;
     std::string GPRMC("$GPRMC");
+    std::string GPGSA("$GPGSA");
+    std::string GPGSV("$GPGSV");
+    std::string QZGSA("$QZGSA");
+    std::string QZGSV("$QZGSV");
     if (test_file.is_open())
         {
             while (getline(test_file, line))
@@ -183,6 +302,26 @@ TEST_F(NmeaPrinterTest, PrintLine)
                     if (found != std::string::npos)
                         {
                             EXPECT_EQ(line, "$GPRMC,225436.00,A,4916.4497617,N,12311.1202744,W,0.00,0.00,191194,0.0,E,D*21\r");
+                        }
+                    found = line.find(GPGSA);
+                    if (found != std::string::npos)
+                        {
+                            EXPECT_EQ(line, "$GPGSA,A,3,01,,,,,,,,,,,,0.0,0.0,0.0,1*2E\r");
+                        }
+                    found = line.find(GPGSV);
+                    if (found != std::string::npos)
+                        {
+                            EXPECT_EQ(line, "$GPGSV,1,1,01,01,37,201,51,,,,,,,,,,,,,1*57\r");
+                        }
+                    found = line.find(QZGSA);
+                    if (found != std::string::npos)
+                        {
+                            EXPECT_EQ(line, "$QZGSA,A,3,194,195,,,,,,,,,,,0.0,0.0,0.0,5*36\r");
+                        }
+                    found = line.find(QZGSV);
+                    if (found != std::string::npos)
+                        {
+                            EXPECT_EQ(line, "$QZGSV,1,1,02,194,85,046,51,195,54,170,53,,,,,,,,,1*71\r");
                         }
                 }
             test_file.close();

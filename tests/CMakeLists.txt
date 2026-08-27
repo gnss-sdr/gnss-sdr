@@ -414,6 +414,22 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         else()
             set(TOOLCHAIN_ARG_GNSS_SIM "")
         endif()
+        # Fix for Boost >= 1.92, which provides again a Boost::system target and
+        # thus clashes with the alias unconditionally defined by gnss-sim.
+        set(GNSS_SIM_PATCH_COMMAND "")
+        if(Boost_VERSION_STRING VERSION_GREATER 1.91.99)
+            find_program(Patch_EXECUTABLE NAME patch PATHS ENV PATH)
+            if(NOT Patch_EXECUTABLE)
+                message(FATAL_ERROR "The patch command is not found. It is required to build gnss-sim. Please check your OS documentation and install the patch command.")
+            endif()
+            set(GNSS_SIM_PATCH_COMMAND
+                ${Patch_EXECUTABLE} -p0 -i ${GNSSSDR_SOURCE_DIR}/utils/patches/gnss_sim_boost_system.patch
+            )
+        endif()
+        # Patch only once
+        if(EXISTS ${GNSSSDR_BINARY_DIR}/thirdparty/gnss-sim/CMakeLists.txt)
+            set(GNSS_SIM_PATCH_COMMAND "")
+        endif()
         ExternalProject_Add(gnss-sim
             GIT_REPOSITORY https://bitbucket.org/jarribas/gnss-simulator
             GIT_TAG ${GNSSSDR_GNSS_SIM_LOCAL_VERSION}
@@ -422,7 +438,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
             CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} ${CROSS_INSTALL_DIR} ${TOOLCHAIN_ARG_GNSS_SIM} -DBoost_DIR=${Boost_DIR}
             BUILD_COMMAND ${GNSS_SIM_BUILD_COMMAND}
             UPDATE_COMMAND ""
-            PATCH_COMMAND ""
+            PATCH_COMMAND ${GNSS_SIM_PATCH_COMMAND}
             INSTALL_COMMAND ""
         )
         if(ENABLE_INSTALL_TESTS)
@@ -704,6 +720,9 @@ if(ENABLE_UNIT_TESTING)
             system_testing_lib
             core_receiver
     )
+    # rtklib_tls_test.cc drives the crypto backend directly (test TLS server),
+    # so link it explicitly instead of relying on transitive propagation
+    link_to_crypto_dependencies(run_tests PRIVATE)
     if(ENABLE_GLOG_AND_GFLAGS)
         target_link_libraries(run_tests PRIVATE Gflags::gflags Glog::glog)
         target_compile_definitions(run_tests PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
@@ -1142,8 +1161,14 @@ endif()
 if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     set(GNURADIO_BLOCK_TEST_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/labsat23_source_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/unpack_2bit_samples_test.cc
     )
+    if(ENABLE_ION)
+        list(APPEND GNURADIO_BLOCK_TEST_SOURCES
+            ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/ion_gsms_chunk_data_test.cc
+        )
+    endif()
     if(USE_CMAKE_TARGET_SOURCES)
         add_executable(gnuradio_block_test)
         target_sources(gnuradio_block_test PRIVATE ${GNURADIO_BLOCK_TEST_SOURCES})
@@ -1161,6 +1186,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             GTest::GTest
             GTest::Main
             Volkgnsssdr::volkgnsssdr
+            signal_source_adapters
             signal_source_gr_blocks
             signal_source_libs
             core_receiver
@@ -1313,6 +1339,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     endif()
     set(TRKTEST_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/bit_synchronizer_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/tracking_loop_filter_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_real_codes_test.cc
@@ -1339,6 +1366,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             signal_source_gr_blocks
             signal_source_libs
             algorithms_libs
+            tracking_libs
             tracking_adapters
             signal_generator_gr_blocks
             core_receiver

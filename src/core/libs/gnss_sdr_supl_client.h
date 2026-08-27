@@ -39,6 +39,7 @@ extern "C"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
 #include "gps_utc_model.h"
+#include <cstdint>
 #include <fstream>
 #include <map>
 #include <string>
@@ -255,6 +256,9 @@ public:
     void print_assistance();
 
 private:
+    static bool is_gps_lnav_prn(uint32_t prn);
+    static bool is_qzss_lnav_prn(uint32_t prn);
+    static void restore_gps_lnav_ephemeris_metadata(Gps_Ephemeris& ephemeris);
     bool read_gal_almanac_from_gsa(const std::string& file_name);
     // assistance protocol structure
     supl_ctx_t ctx{};

@@ -2830,6 +2830,76 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_monitor_pvt.hdop = d_dop[2];
                     d_monitor_pvt.vdop = d_dop[3];
 
+                    // USED SATELLITES: per-satellite azimuth/elevation and which
+                    // signal(s) contributed to this fix. Signals are listed
+                    // individually (one entry per satellite per signal); a
+                    // satellite whose signals were combined (e.g. Galileo E1+E5a
+                    // iono-free combination -- see the "dual-frequency" branch of
+                    // prange() in rtklib_pntpos.cc) gets one entry per signal, all
+                    // flagged combined = true.
+                    d_monitor_pvt.used_satellites.clear();
+                    for (int sat_idx = 0; sat_idx < MAXSAT; sat_idx++)
+                        {
+                            if (!pvt_ssat[sat_idx].vs)
+                                {
+                                    continue;
+                                }
+                            int prn = 0;
+                            char sys_char = '?';
+                            switch (satsys(sat_idx + 1, &prn))
+                                {
+                                case SYS_GPS:
+                                    sys_char = 'G';
+                                    break;
+                                case SYS_GAL:
+                                    sys_char = 'E';
+                                    break;
+                                case SYS_GLO:
+                                    sys_char = 'R';
+                                    break;
+                                case SYS_BDS:
+                                    sys_char = 'C';
+                                    break;
+                                case SYS_SBS:
+                                    sys_char = 'S';
+                                    break;
+                                case SYS_QZS:
+                                    sys_char = 'J';
+                                    break;
+                                default:
+                                    break;
+                                }
+
+                            std::vector<const Gnss_Synchro *> contributing_signals;
+                            for (const auto &observable_pair : gnss_observables_map)
+                                {
+                                    const Gnss_Synchro &synchro = observable_pair.second;
+                                    if (synchro.System == sys_char && static_cast<int>(synchro.PRN) == prn)
+                                        {
+                                            contributing_signals.push_back(&synchro);
+                                        }
+                                }
+                            const bool combined = contributing_signals.size() > 1;
+                            // satazel() (rtklib_rtkcmn.cc) returns azimuth in [0, 2*pi); wrap to
+                            // (-180, 180] deg, the convention expected downstream (monitor sky plot).
+                            double az_deg = pvt_ssat[sat_idx].azel[0] * R2D;
+                            if (az_deg > 180.0)
+                                {
+                                    az_deg -= 360.0;
+                                }
+                            for (const Gnss_Synchro *synchro : contributing_signals)
+                                {
+                                    Monitor_Pvt::UsedSatelliteInfo info;
+                                    info.prn = static_cast<uint32_t>(prn);
+                                    info.system = sys_char;
+                                    info.signal = std::string(synchro->Signal, 2);
+                                    info.azimuth_deg = az_deg;
+                                    info.elevation_deg = pvt_ssat[sat_idx].azel[1] * R2D;
+                                    info.combined = combined;
+                                    d_monitor_pvt.used_satellites.push_back(info);
+                                }
+                        }
+
                     this->set_rx_vel({enuv[0], enuv[1], enuv[2]});
 
                     // ENU vel [m/s]

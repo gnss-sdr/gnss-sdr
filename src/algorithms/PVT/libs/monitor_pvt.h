@@ -18,8 +18,10 @@
 #define GNSS_SDR_MONITOR_PVT_H
 
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/vector.hpp>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 /** \addtogroup PVT
  * \{ */
@@ -33,6 +35,42 @@
 class Monitor_Pvt
 {
 public:
+    /*!
+     * \brief One satellite/signal that contributed to this fix, with its
+     * azimuth/elevation and whether it was combined with another signal of
+     * the same satellite (e.g. Galileo E1+E5a iono-free combination -- see
+     * the "dual-frequency" branch of prange() in rtklib_pntpos.cc). Signals
+     * are listed individually (one entry per satellite per signal), not
+     * merged, so a combined satellite appears as two entries both flagged
+     * combined = true.
+     */
+    class UsedSatelliteInfo
+    {
+    public:
+        uint32_t prn{};
+        char system{};  // 'G' GPS, 'E' Galileo, 'R' GLONASS, 'C' BeiDou, 'S' SBAS, 'J' QZSS
+        std::string signal;
+        double azimuth_deg{};
+        double elevation_deg{};
+        bool combined{};
+
+        template <class Archive>
+        void serialize(Archive& ar, const unsigned int version)
+        {
+            if (version)
+                {
+                };
+            ar& BOOST_SERIALIZATION_NVP(prn);
+            ar& BOOST_SERIALIZATION_NVP(system);
+            ar& BOOST_SERIALIZATION_NVP(signal);
+            ar& BOOST_SERIALIZATION_NVP(azimuth_deg);
+            ar& BOOST_SERIALIZATION_NVP(elevation_deg);
+            ar& BOOST_SERIALIZATION_NVP(combined);
+        }
+    };
+
+    std::vector<UsedSatelliteInfo> used_satellites;
+
     // TOW
     uint32_t TOW_at_current_symbol_ms;
     // WEEK
@@ -155,6 +193,7 @@ public:
 
         ar& BOOST_SERIALIZATION_NVP(cog);
         ar& BOOST_SERIALIZATION_NVP(geohash);
+        ar& BOOST_SERIALIZATION_NVP(used_satellites);
     }
 };
 

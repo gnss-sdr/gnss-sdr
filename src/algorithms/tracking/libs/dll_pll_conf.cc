@@ -60,6 +60,7 @@ void Dll_Pll_Conf::SetFromConfiguration(const ConfigurationInterface *configurat
     high_dyn = configuration->property(role + ".high_dyn", high_dyn);
     dump = configuration->property(role + ".dump", dump);
     dump_filename = configuration->property(role + ".dump_filename", dump_filename);
+    f_error_dump_filename = configuration->property(role + ".f_error_dump_filename", f_error_dump_filename);
     dump_mat = configuration->property(role + ".dump_mat", dump_mat);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", pll_bw_hz);
 #if USE_GLOG_AND_GFLAGS

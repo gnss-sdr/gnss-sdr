@@ -38,6 +38,7 @@ public:
     /* DLL/PLL tracking configuration */
     std::string item_type{"gr_complex"};
     std::string dump_filename{"./dll_pll_dump.dat"};
+    std::string f_error_dump_filename{"./f_error_dump.csv"};
     double fs_in{2000000.0};
     double carrier_lock_th{0.0};
     double bs_dominance_ratio{0.5};

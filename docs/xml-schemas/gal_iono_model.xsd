@@ -1,31 +1,32 @@
-<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           attributeFormDefault="unqualified" elementFormDefault="qualified">
   <!-- SPDX-License-Identifier: BSD-3-Clause -->
-  <!-- SPDX-FileCopyrightText: 2018-2021 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
+  <!-- SPDX-FileCopyrightText: 2018-2026 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
+  <xs:include schemaLocation="common.xsd"/>
+  <xs:complexType name="GalileoIonoType">
+    <xs:sequence>
+      <xs:element name="ai0" type="xs:double"/>
+      <xs:element name="ai1" type="xs:double"/>
+      <xs:element name="ai2" type="xs:double"/>
+      <xs:element name="tow" type="xs:int"/>
+      <xs:element name="WN" type="xs:int"/>
+      <xs:element name="Region1_flag" type="xs:boolean"/>
+      <xs:element name="Region2_flag" type="xs:boolean"/>
+      <xs:element name="Region3_flag" type="xs:boolean"/>
+      <xs:element name="Region4_flag" type="xs:boolean"/>
+      <xs:element name="Region5_flag" type="xs:boolean"/>
+      <!-- Added in Galileo_Iono archive version 1. -->
+      <xs:element name="valid" type="xs:boolean" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="boostObjectAttributes"/>
+  </xs:complexType>
   <xs:element name="boost_serialization">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="GNSS-SDR_gal_iono_model">
-          <xs:complexType>
-            <xs:sequence>
-              <xs:element type="xs:float" name="ai0"/>
-              <xs:element type="xs:float" name="ai1"/>
-              <xs:element type="xs:float" name="ai2"/>
-              <xs:element type="xs:int" name="tow"/>
-              <xs:element type="xs:short" name="WN"/>
-              <xs:element type="xs:byte" name="Region1_flag"/>
-              <xs:element type="xs:byte" name="Region2_flag"/>
-              <xs:element type="xs:byte" name="Region3_flag"/>
-              <xs:element type="xs:byte" name="Region4_flag"/>
-              <xs:element type="xs:byte" name="Region5_flag"/>
-            </xs:sequence>
-            <xs:attribute type="xs:byte" name="class_id"/>
-            <xs:attribute type="xs:byte" name="tracking_level"/>
-            <xs:attribute type="xs:byte" name="version"/>
-          </xs:complexType>
-        </xs:element>
+        <xs:element name="GNSS-SDR_gal_iono_model" type="GalileoIonoType"/>
       </xs:sequence>
-      <xs:attribute type="xs:string" name="signature"/>
-      <xs:attribute type="xs:byte" name="version"/>
+      <xs:attributeGroup ref="boostArchiveAttributes"/>
     </xs:complexType>
   </xs:element>
 </xs:schema>

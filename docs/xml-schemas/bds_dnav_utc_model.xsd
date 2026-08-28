@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           attributeFormDefault="unqualified" elementFormDefault="qualified">
+  <!-- SPDX-License-Identifier: BSD-3-Clause -->
+  <!-- SPDX-FileCopyrightText: 2026 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
+  <xs:include schemaLocation="common.xsd"/>
+  <xs:complexType name="BeidouDnavUtcType">
+    <xs:sequence>
+      <xs:element name="A1_UTC" type="xs:double"/>
+      <xs:element name="A0_UTC" type="xs:double"/>
+      <xs:element name="DeltaT_LS" type="xs:int"/>
+      <xs:element name="WN_LSF" type="xs:int"/>
+      <xs:element name="DN" type="xs:int"/>
+      <xs:element name="DeltaT_LSF" type="xs:double"/>
+      <xs:element name="A0_GPS" type="xs:double"/>
+      <xs:element name="A1_GPS" type="xs:double"/>
+      <xs:element name="A0_GAL" type="xs:double"/>
+      <xs:element name="A1_GAL" type="xs:double"/>
+      <xs:element name="A0_GLO" type="xs:double"/>
+      <xs:element name="A1_GLO" type="xs:double"/>
+      <xs:element name="valid" type="xs:boolean"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="boostObjectAttributes"/>
+  </xs:complexType>
+  <xs:element name="boost_serialization">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="GNSS-SDR_bds_dnav_utc_model" type="BeidouDnavUtcType"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="boostArchiveAttributes"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

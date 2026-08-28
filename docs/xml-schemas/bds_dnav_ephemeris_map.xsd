@@ -2,20 +2,20 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            attributeFormDefault="unqualified" elementFormDefault="qualified">
   <!-- SPDX-License-Identifier: BSD-3-Clause -->
-  <!-- SPDX-FileCopyrightText: 2018-2026 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
+  <!-- SPDX-FileCopyrightText: 2026 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
   <xs:include schemaLocation="common.xsd"/>
-  <xs:complexType name="GpsEphemerisType">
+  <xs:complexType name="BeidouDnavEphemerisType">
     <xs:complexContent>
       <xs:extension base="GnssEphemerisType">
         <xs:sequence>
-          <xs:element name="IODE_SF2" type="xs:int"/>
-          <xs:element name="IODE_SF3" type="xs:int"/>
-          <xs:element name="code_on_L2" type="xs:int"/>
-          <xs:element name="L2_P_data_flag" type="xs:boolean"/>
+          <xs:element name="AODE" type="xs:double"/>
           <xs:element name="SV_accuracy" type="xs:int"/>
           <xs:element name="SV_health" type="xs:int"/>
-          <xs:element name="TGD" type="xs:double"/>
-          <xs:element name="IODC" type="xs:int"/>
+          <xs:element name="AODC" type="xs:double"/>
+          <xs:element name="TGD1" type="xs:double"/>
+          <xs:element name="TGD2" type="xs:double"/>
+          <xs:element name="sig_type" type="xs:int"/>
+          <xs:element name="nav_type" type="xs:int"/>
           <xs:element name="AODO" type="xs:int"/>
           <xs:element name="fit_interval_flag" type="xs:boolean"/>
           <xs:element name="spare1" type="xs:double"/>
@@ -27,25 +27,25 @@
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
-  <xs:complexType name="GpsEphemerisMapItemType">
+  <xs:complexType name="BeidouDnavEphemerisMapItemType">
     <xs:sequence>
       <xs:element name="first" type="xs:int"/>
-      <xs:element name="second" type="GpsEphemerisType"/>
+      <xs:element name="second" type="BeidouDnavEphemerisType"/>
     </xs:sequence>
     <xs:attributeGroup ref="boostObjectAttributes"/>
   </xs:complexType>
-  <xs:complexType name="GpsEphemerisMapType">
+  <xs:complexType name="BeidouDnavEphemerisMapType">
     <xs:sequence>
       <xs:element name="count" type="xs:nonNegativeInteger"/>
       <xs:element name="item_version" type="xs:nonNegativeInteger"/>
-      <xs:element name="item" type="GpsEphemerisMapItemType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="item" type="BeidouDnavEphemerisMapItemType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
     <xs:attributeGroup ref="boostObjectAttributes"/>
   </xs:complexType>
   <xs:element name="boost_serialization">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="GNSS-SDR_ephemeris_map" type="GpsEphemerisMapType"/>
+        <xs:element name="GNSS-SDR_bds_dnav_ephemeris_map" type="BeidouDnavEphemerisMapType"/>
       </xs:sequence>
       <xs:attributeGroup ref="boostArchiveAttributes"/>
     </xs:complexType>

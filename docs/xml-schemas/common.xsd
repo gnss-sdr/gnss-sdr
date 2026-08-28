@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           attributeFormDefault="unqualified" elementFormDefault="qualified">
+  <!-- SPDX-License-Identifier: BSD-3-Clause -->
+  <!-- SPDX-FileCopyrightText: 2018-2026 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
+
+  <!-- Attributes written by boost::archive::xml_oarchive. Boost writes them
+       only for the first occurrence of some tracked objects, so they must be
+       optional on reusable value and container types. -->
+  <xs:attributeGroup name="boostObjectAttributes">
+    <xs:attribute name="class_id" type="xs:nonNegativeInteger" use="optional"/>
+    <xs:attribute name="tracking_level" type="xs:nonNegativeInteger" use="optional"/>
+    <xs:attribute name="version" type="xs:nonNegativeInteger" use="optional"/>
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="boostArchiveAttributes">
+    <xs:attribute name="signature" type="xs:string" use="required"/>
+    <xs:attribute name="version" type="xs:nonNegativeInteger" use="required"/>
+  </xs:attributeGroup>
+
+  <xs:complexType name="GnssEphemerisType">
+    <xs:sequence>
+      <xs:element name="PRN" type="xs:unsignedInt"/>
+      <xs:element name="M_0" type="xs:double"/>
+      <xs:element name="delta_n" type="xs:double"/>
+      <xs:element name="ecc" type="xs:double"/>
+      <xs:element name="sqrtA" type="xs:double"/>
+      <xs:element name="OMEGA_0" type="xs:double"/>
+      <xs:element name="i_0" type="xs:double"/>
+      <xs:element name="omega" type="xs:double"/>
+      <xs:element name="OMEGAdot" type="xs:double"/>
+      <xs:element name="idot" type="xs:double"/>
+      <xs:element name="Cuc" type="xs:double"/>
+      <xs:element name="Cus" type="xs:double"/>
+      <xs:element name="Crc" type="xs:double"/>
+      <xs:element name="Crs" type="xs:double"/>
+      <xs:element name="Cic" type="xs:double"/>
+      <xs:element name="Cis" type="xs:double"/>
+      <xs:element name="toe" type="xs:int"/>
+      <xs:element name="toc" type="xs:int"/>
+      <xs:element name="af0" type="xs:double"/>
+      <xs:element name="af1" type="xs:double"/>
+      <xs:element name="af2" type="xs:double"/>
+      <xs:element name="WN" type="xs:int"/>
+      <xs:element name="tow" type="xs:int"/>
+      <xs:element name="satClkDrift" type="xs:double"/>
+      <xs:element name="dtr" type="xs:double"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="boostObjectAttributes"/>
+  </xs:complexType>
+
+  <xs:complexType name="GnssAlmanacType">
+    <xs:sequence>
+      <xs:element name="PRN" type="xs:unsignedInt"/>
+      <xs:element name="delta_i" type="xs:double"/>
+      <xs:element name="toa" type="xs:int"/>
+      <xs:element name="WNa" type="xs:int"/>
+      <xs:element name="M_0" type="xs:double"/>
+      <xs:element name="ecc" type="xs:double"/>
+      <xs:element name="sqrtA" type="xs:double"/>
+      <xs:element name="OMEGA_0" type="xs:double"/>
+      <xs:element name="omega" type="xs:double"/>
+      <xs:element name="OMEGAdot" type="xs:double"/>
+      <xs:element name="af0" type="xs:double"/>
+      <xs:element name="af1" type="xs:double"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="boostObjectAttributes"/>
+  </xs:complexType>
+
+  <xs:complexType name="GpsIonoType">
+    <xs:sequence>
+      <xs:element name="alpha0" type="xs:double"/>
+      <xs:element name="alpha1" type="xs:double"/>
+      <xs:element name="alpha2" type="xs:double"/>
+      <xs:element name="alpha3" type="xs:double"/>
+      <xs:element name="beta0" type="xs:double"/>
+      <xs:element name="beta1" type="xs:double"/>
+      <xs:element name="beta2" type="xs:double"/>
+      <xs:element name="beta3" type="xs:double"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="boostObjectAttributes"/>
+  </xs:complexType>
+
+  <xs:complexType name="GpsUtcType">
+    <xs:sequence>
+      <xs:element name="A0" type="xs:double"/>
+      <xs:element name="A1" type="xs:double"/>
+      <xs:element name="A2" type="xs:double"/>
+      <xs:element name="tot" type="xs:int"/>
+      <xs:element name="WN_T" type="xs:int"/>
+      <xs:element name="DeltaT_LS" type="xs:int"/>
+      <xs:element name="WN_LSF" type="xs:int"/>
+      <xs:element name="DN" type="xs:int"/>
+      <xs:element name="DeltaT_LSF" type="xs:int"/>
+      <xs:element name="valid" type="xs:boolean"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="boostObjectAttributes"/>
+  </xs:complexType>
+</xs:schema>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           attributeFormDefault="unqualified" elementFormDefault="qualified">
+  <!-- SPDX-License-Identifier: BSD-3-Clause -->
+  <!-- SPDX-FileCopyrightText: 2026 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
+  <xs:include schemaLocation="common.xsd"/>
+
+  <xs:complexType name="BeidouDnavIonoGridPointType">
+    <xs:sequence>
+      <xs:element name="vertical_delay" type="xs:double"/>
+      <xs:element name="GIVEI" type="xs:int"/>
+      <xs:element name="monitored" type="xs:boolean"/>
+      <xs:element name="available" type="xs:boolean"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="boostObjectAttributes"/>
+  </xs:complexType>
+
+  <xs:complexType name="BeidouDnavIonoGridMapItemType">
+    <xs:sequence>
+      <xs:element name="first" type="xs:int"/>
+      <xs:element name="second" type="BeidouDnavIonoGridPointType"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="boostObjectAttributes"/>
+  </xs:complexType>
+
+  <xs:complexType name="BeidouDnavIonoGridMapType">
+    <xs:sequence>
+      <xs:element name="count" type="xs:nonNegativeInteger"/>
+      <xs:element name="item_version" type="xs:nonNegativeInteger"/>
+      <xs:element name="item" type="BeidouDnavIonoGridMapItemType"
+                  minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="boostObjectAttributes"/>
+  </xs:complexType>
+
+  <xs:complexType name="BeidouDnavIonoType">
+    <xs:choice>
+      <!-- Archive version 0 stored the inherited Klobuchar model directly. -->
+      <xs:sequence>
+        <xs:element name="alpha0" type="xs:double"/>
+        <xs:element name="alpha1" type="xs:double"/>
+        <xs:element name="alpha2" type="xs:double"/>
+        <xs:element name="alpha3" type="xs:double"/>
+        <xs:element name="beta0" type="xs:double"/>
+        <xs:element name="beta1" type="xs:double"/>
+        <xs:element name="beta2" type="xs:double"/>
+        <xs:element name="beta3" type="xs:double"/>
+      </xs:sequence>
+      <!-- Archive version 1 adds D2 grid corrections. -->
+      <xs:sequence>
+        <xs:element name="Gps_Iono" type="GpsIonoType"/>
+        <xs:element name="grid_points" type="BeidouDnavIonoGridMapType"/>
+        <xs:element name="grid_valid" type="xs:boolean"/>
+      </xs:sequence>
+    </xs:choice>
+    <xs:attributeGroup ref="boostObjectAttributes"/>
+  </xs:complexType>
+
+  <xs:element name="boost_serialization">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="GNSS-SDR_bds_dnav_iono_model" type="BeidouDnavIonoType"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="boostArchiveAttributes"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

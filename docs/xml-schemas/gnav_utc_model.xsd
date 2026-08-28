@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           attributeFormDefault="unqualified" elementFormDefault="qualified">
+  <!-- SPDX-License-Identifier: BSD-3-Clause -->
+  <!-- SPDX-FileCopyrightText: 2026 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
+  <xs:include schemaLocation="common.xsd"/>
+  <xs:complexType name="GlonassGnavUtcType">
+    <xs:sequence>
+      <xs:element name="valid" type="xs:boolean"/>
+      <xs:element name="d_tau_c" type="xs:double"/>
+      <xs:element name="d_tau_gps" type="xs:double"/>
+      <xs:element name="d_N_4" type="xs:double"/>
+      <xs:element name="d_N_A" type="xs:double"/>
+      <xs:element name="d_B1" type="xs:double"/>
+      <xs:element name="d_B2" type="xs:double"/>
+      <xs:element name="d_KP" type="xs:double"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="boostObjectAttributes"/>
+  </xs:complexType>
+  <xs:element name="boost_serialization">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element name="GNSS-SDR_gnav_utc_model" type="GlonassGnavUtcType"/>
+        <xs:element name="GNSS-SDR_glo_utc_model" type="GlonassGnavUtcType"/>
+      </xs:choice>
+      <xs:attributeGroup ref="boostArchiveAttributes"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

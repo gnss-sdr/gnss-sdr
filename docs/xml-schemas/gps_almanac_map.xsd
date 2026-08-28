@@ -1,56 +1,40 @@
-<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           attributeFormDefault="unqualified" elementFormDefault="qualified">
   <!-- SPDX-License-Identifier: BSD-3-Clause -->
-  <!-- SPDX-FileCopyrightText: 2018-2021 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
+  <!-- SPDX-FileCopyrightText: 2018-2026 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
+  <xs:include schemaLocation="common.xsd"/>
+  <xs:complexType name="GpsAlmanacType">
+    <xs:complexContent>
+      <xs:extension base="GnssAlmanacType">
+        <xs:sequence>
+          <xs:element name="SV_health" type="xs:int"/>
+          <xs:element name="AS_status" type="xs:int"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="GpsAlmanacMapItemType">
+    <xs:sequence>
+      <xs:element name="first" type="xs:int"/>
+      <xs:element name="second" type="GpsAlmanacType"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="boostObjectAttributes"/>
+  </xs:complexType>
+  <xs:complexType name="GpsAlmanacMapType">
+    <xs:sequence>
+      <xs:element name="count" type="xs:nonNegativeInteger"/>
+      <xs:element name="item_version" type="xs:nonNegativeInteger"/>
+      <xs:element name="item" type="GpsAlmanacMapItemType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="boostObjectAttributes"/>
+  </xs:complexType>
   <xs:element name="boost_serialization">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="GNSS-SDR_gps_almanac_map">
-          <xs:complexType>
-            <xs:sequence>
-              <xs:element type="xs:byte" name="count"/>
-              <xs:element type="xs:byte" name="item_version"/>
-              <xs:element name="item" maxOccurs="unbounded" minOccurs="0">
-                <xs:complexType>
-                  <xs:sequence>
-                    <xs:element type="xs:byte" name="first"/>
-                    <xs:element name="second">
-                      <xs:complexType>
-                        <xs:sequence>
-                          <xs:element type="xs:byte" name="PRN"/>
-                          <xs:element type="xs:float" name="delta_i"/>
-                          <xs:element type="xs:byte" name="toa"/>
-                          <xs:element type="xs:byte" name="WNa"/>
-                          <xs:element type="xs:float" name="M_0"/>
-                          <xs:element type="xs:float" name="ecc"/>
-                          <xs:element type="xs:float" name="sqrtA"/>
-                          <xs:element type="xs:float" name="OMEGA_0"/>
-                          <xs:element type="xs:float" name="omega"/>
-                          <xs:element type="xs:float" name="OMEGAdot"/>
-                          <xs:element type="xs:float" name="af0"/>
-                          <xs:element type="xs:float" name="af1"/>
-                          <xs:element type="xs:byte" name="SV_health"/>
-                          <xs:element type="xs:byte" name="AS_status"/>
-                        </xs:sequence>
-                        <xs:attribute type="xs:byte" name="class_id" use="optional"/>
-                        <xs:attribute type="xs:byte" name="tracking_level" use="optional"/>
-                        <xs:attribute type="xs:byte" name="version" use="optional"/>
-                      </xs:complexType>
-                    </xs:element>
-                  </xs:sequence>
-                  <xs:attribute type="xs:byte" name="class_id" use="optional"/>
-                  <xs:attribute type="xs:byte" name="tracking_level" use="optional"/>
-                  <xs:attribute type="xs:byte" name="version" use="optional"/>
-                </xs:complexType>
-              </xs:element>
-            </xs:sequence>
-            <xs:attribute type="xs:byte" name="class_id"/>
-            <xs:attribute type="xs:byte" name="tracking_level"/>
-            <xs:attribute type="xs:byte" name="version"/>
-          </xs:complexType>
-        </xs:element>
+        <xs:element name="GNSS-SDR_gps_almanac_map" type="GpsAlmanacMapType"/>
       </xs:sequence>
-      <xs:attribute type="xs:string" name="signature"/>
-      <xs:attribute type="xs:byte" name="version"/>
+      <xs:attributeGroup ref="boostArchiveAttributes"/>
     </xs:complexType>
   </xs:element>
 </xs:schema>

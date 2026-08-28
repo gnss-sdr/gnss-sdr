@@ -2,12 +2,12 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            attributeFormDefault="unqualified" elementFormDefault="qualified">
   <!-- SPDX-License-Identifier: BSD-3-Clause -->
-  <!-- SPDX-FileCopyrightText: 2018-2026 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
+  <!-- SPDX-FileCopyrightText: 2026 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
   <xs:include schemaLocation="common.xsd"/>
   <xs:element name="boost_serialization">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="GNSS-SDR_cnav_utc_model" type="GpsUtcType"/>
+        <xs:element name="GNSS-SDR_qzss_iono_model" type="GpsIonoType"/>
       </xs:sequence>
       <xs:attributeGroup ref="boostArchiveAttributes"/>
     </xs:complexType>

@@ -2,39 +2,42 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            attributeFormDefault="unqualified" elementFormDefault="qualified">
   <!-- SPDX-License-Identifier: BSD-3-Clause -->
-  <!-- SPDX-FileCopyrightText: 2018-2026 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
+  <!-- SPDX-FileCopyrightText: 2026 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
   <xs:include schemaLocation="common.xsd"/>
-  <xs:complexType name="GalileoAlmanacType">
+  <xs:complexType name="BeidouDnavAlmanacType">
     <xs:complexContent>
       <xs:extension base="GnssAlmanacType">
         <xs:sequence>
-          <xs:element name="IODa" type="xs:int"/>
-          <xs:element name="E5b_HS" type="xs:int"/>
-          <xs:element name="E1B_HS" type="xs:int"/>
-          <xs:element name="E5a_HS" type="xs:int"/>
+          <xs:element name="SV_health" type="xs:int"/>
+          <!-- Expanded-almanac metadata was added in archive version 1. -->
+          <xs:sequence minOccurs="0">
+            <xs:element name="AmEpID" type="xs:int"/>
+            <xs:element name="AmID" type="xs:int"/>
+            <xs:element name="expanded" type="xs:boolean"/>
+          </xs:sequence>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
-  <xs:complexType name="GalileoAlmanacMapItemType">
+  <xs:complexType name="BeidouDnavAlmanacMapItemType">
     <xs:sequence>
       <xs:element name="first" type="xs:int"/>
-      <xs:element name="second" type="GalileoAlmanacType"/>
+      <xs:element name="second" type="BeidouDnavAlmanacType"/>
     </xs:sequence>
     <xs:attributeGroup ref="boostObjectAttributes"/>
   </xs:complexType>
-  <xs:complexType name="GalileoAlmanacMapType">
+  <xs:complexType name="BeidouDnavAlmanacMapType">
     <xs:sequence>
       <xs:element name="count" type="xs:nonNegativeInteger"/>
       <xs:element name="item_version" type="xs:nonNegativeInteger"/>
-      <xs:element name="item" type="GalileoAlmanacMapItemType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="item" type="BeidouDnavAlmanacMapItemType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
     <xs:attributeGroup ref="boostObjectAttributes"/>
   </xs:complexType>
   <xs:element name="boost_serialization">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="GNSS-SDR_gal_almanac_map" type="GalileoAlmanacMapType"/>
+        <xs:element name="GNSS-SDR_bds_dnav_almanac_map" type="BeidouDnavAlmanacMapType"/>
       </xs:sequence>
       <xs:attributeGroup ref="boostArchiveAttributes"/>
     </xs:complexType>

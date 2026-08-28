@@ -92,6 +92,14 @@ public:
     // flag has no effect and the full configured Doppler grid is always searched.
     bool enable_doppler_narrowing{false};
 
+    // Accumulate through the full max_dwells before deciding accept/reject, instead
+    // of exiting as soon as any single dwell's (possibly still noisy, partially
+    // accumulated) grid crosses threshold -- a later dwell's fuller integration can
+    // reveal a different, genuinely stronger peak elsewhere in the grid that an early
+    // exit never gets the chance to compare against. Opt-in: off by default, enable
+    // per-implementation in the .conf (e.g. Acquisition_1B.full_grid_search = true).
+    bool full_grid_search{false};
+
     // Specific to some implementations
     bool acquire_pilot{false};
     bool acquire_iq{false};

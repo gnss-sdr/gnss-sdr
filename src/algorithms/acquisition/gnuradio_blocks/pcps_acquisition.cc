@@ -831,19 +831,47 @@ void pcps_acquisition::acquisition_core(uint64_t sample_count)
 
     if (!d_acq_parameters.bit_transition_flag)
         {
-            if (result.test_statistics > get_threshold())
+            if (d_acq_parameters.full_grid_search)
                 {
-                    handle_threshold_reached(result);
+                    // Search the entire acquisition grid (accumulate through the full max_dwells)
+                    // before deciding accept/reject, instead of exiting as soon as any single dwell's
+                    // (possibly still noisy, partially non-coherently accumulated) grid crosses
+                    // threshold -- a later dwell's fuller integration can reveal a different, genuinely
+                    // stronger peak elsewhere in the same grid that an early exit never gets the chance
+                    // to compare against.
+                    if (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)
+                        {
+                            if (result.test_statistics > get_threshold())
+                                {
+                                    handle_threshold_reached(result);
+                                }
+                            else
+                                {
+                                    handle_integration_done(result);
+                                }
+                        }
+                    else
+                        {
+                            d_buffer_count = 0;
+                            d_state = 1;
+                        }
                 }
             else
                 {
-                    d_buffer_count = 0;
-                    d_state = 1;
-                }
+                    if (result.test_statistics > get_threshold())
+                        {
+                            handle_threshold_reached(result);
+                        }
+                    else
+                        {
+                            d_buffer_count = 0;
+                            d_state = 1;
+                        }
 
-            if (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)
-                {
-                    handle_integration_done(result);
+                    if (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)
+                        {
+                            handle_integration_done(result);
+                        }
                 }
         }
     else

@@ -52,4 +52,19 @@ message MonitorPvt {
 
   uint32 galhas_status = 35;  // Galileo HAS status: 1- HAS messages decoded and applied, 0 - HAS not available
   string geohash = 36;        // Encoded geographic location. See https://en.wikipedia.org/wiki/Geohash
+
+  // One satellite/signal used in this fix, with its azimuth/elevation and
+  // whether it was combined with another signal of the same satellite (e.g.
+  // Galileo E1+E5a iono-free combination). Signals are listed individually,
+  // not merged: a combined satellite appears as two entries, both with
+  // combined = true.
+  message UsedSatellite {
+    uint32 prn = 1;
+    string system = 2;  // "G" GPS, "E" Galileo, "R" GLONASS, "C" BeiDou, "S" SBAS, "J" QZSS
+    string signal = 3;
+    double azimuth_deg = 4;
+    double elevation_deg = 5;
+    bool combined = 6;
+  }
+  repeated UsedSatellite used_satellites = 37;
 }

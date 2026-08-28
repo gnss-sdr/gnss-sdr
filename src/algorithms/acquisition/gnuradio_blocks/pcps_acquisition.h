@@ -153,6 +153,16 @@ public:
     void set_doppler_center(int32_t doppler_center);
 
     /*!
+     * \brief Set Doppler uncertainty for the grid search. It will refresh the Doppler grid.
+     * A doppler_uncertanty of 0 means the Doppler is exactly known (as when this
+     * acquisition is assisted by an already-tracked primary frequency): the search
+     * is restricted to a single Doppler bin centered on set_doppler_center(). Any
+     * other value restores the full configured Doppler search range.
+     * \param doppler_uncertanty - 0 to search a single bin, nonzero for the full range.
+     */
+    void set_doppler_uncertanty(uint32_t doppler_uncertanty);
+
+    /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.
      */
     int general_work(int noutput_items, gr_vector_int& ninput_items,
@@ -225,6 +235,10 @@ private:
     int32_t d_state;
     int32_t d_doppler_center;
     int32_t d_doppler_bias;
+    // Number of step-1 Doppler bins actually searched: equals d_num_doppler_bins,
+    // or 2 (known bin + reference bin) when set_doppler_uncertanty(0) narrows the
+    // search and d_acq_parameters.enable_doppler_narrowing is true.
+    uint32_t d_num_doppler_bins_active;
     uint32_t d_buffer_count;
     uint32_t d_channel;
     uint32_t d_resampler_latency_samples;

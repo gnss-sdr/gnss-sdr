@@ -103,6 +103,11 @@ public:
     void set_doppler_center(int doppler_center) override;
 
     /*!
+     * \brief Set Doppler uncertainty for the grid search
+     */
+    void set_doppler_uncertanty(unsigned int doppler_uncertanty) override;
+
+    /*!
      * \brief Returns the maximum peak of grid search
      */
     signed int mag() override;

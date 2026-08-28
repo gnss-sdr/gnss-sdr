@@ -221,9 +221,10 @@ void Channel::stop_channel()
 }
 
 
-void Channel::assist_acquisition_doppler(double Carrier_Doppler_hz)
+void Channel::assist_acquisition_doppler(double Carrier_Doppler_hz, uint32_t doppler_uncertanty)
 {
     acq_->set_doppler_center(static_cast<int>(Carrier_Doppler_hz));
+    acq_->set_doppler_uncertanty(doppler_uncertanty);
 }
 
 

@@ -2739,12 +2739,12 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         }
 
                     // compute Ground speed and COG
-                    double ground_speed_ms = 0.0;
                     std::array<double, 3> pos{};
                     std::array<double, 3> enuv{};
                     ecef2pos(pvt_sol.rr, pos.data());
                     ecef2enu(pos.data(), &pvt_sol.rr[3], enuv.data());
-                    this->set_speed_over_ground(norm_rtk(enuv.data(), 2));
+                    const double ground_speed_ms = norm_rtk(enuv.data(), 2);
+                    this->set_speed_over_ground(ground_speed_ms);
                     double new_cog = -9999.0;  // COG not estimated due to insufficient velocity
                     if (ground_speed_ms >= 1.0)
                         {

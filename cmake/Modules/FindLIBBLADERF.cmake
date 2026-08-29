@@ -22,6 +22,7 @@
 # LIBBLADERF_FOUND System has libbladeRF libs/headers
 # LIBBLADERF_LIBRARIES The libbladeRF libraries (bladeRF)
 # LIBBLADERF_INCLUDE_DIRS The location of libbladeRF headers
+# LIBBLADERF_VERSION The detected libbladeRF version
 #
 # Provides the following imported target:
 # Bladerf::bladerf
@@ -77,10 +78,60 @@ find_package_handle_standard_args(LIBBLADERF DEFAULT_MSG LIBBLADERF_LIBRARIES LI
 
 if(PC_LIBBLADERF_VERSION)
     set(LIBBLADERF_VERSION ${PC_LIBBLADERF_VERSION})
+elseif(LIBBLADERF_INCLUDE_DIRS)
+    set(_LIBBLADERF_VERSION_HEADER "${LIBBLADERF_INCLUDE_DIRS}/libbladeRF.h")
+    if(EXISTS "${_LIBBLADERF_VERSION_HEADER}")
+        file(STRINGS "${_LIBBLADERF_VERSION_HEADER}"
+            _LIBBLADERF_API_VERSION_LINE
+            REGEX "^#[ \t]*define[ \t]+LIBBLADERF_API_VERSION[ \t]+\\(?0[xX][0-9A-Fa-f]+\\)?"
+        )
+        if(_LIBBLADERF_API_VERSION_LINE MATCHES "0[xX]([0-9A-Fa-f])([0-9A-Fa-f])([0-9A-Fa-f])([0-9A-Fa-f])([0-9A-Fa-f])([0-9A-Fa-f])[0-9A-Fa-f][0-9A-Fa-f]")
+            # LIBBLADERF_API_VERSION encodes major, minor, patch, and reserved
+            # components in one byte each, starting with the most significant.
+            set(_LIBBLADERF_VERSION_HEX_DIGITS "0123456789ABCDEF")
+            foreach(_LIBBLADERF_VERSION_COMPONENT MAJOR MINOR PATCH)
+                if(_LIBBLADERF_VERSION_COMPONENT STREQUAL "MAJOR")
+                    set(_LIBBLADERF_VERSION_HIGH_NIBBLE "${CMAKE_MATCH_1}")
+                    set(_LIBBLADERF_VERSION_LOW_NIBBLE "${CMAKE_MATCH_2}")
+                elseif(_LIBBLADERF_VERSION_COMPONENT STREQUAL "MINOR")
+                    set(_LIBBLADERF_VERSION_HIGH_NIBBLE "${CMAKE_MATCH_3}")
+                    set(_LIBBLADERF_VERSION_LOW_NIBBLE "${CMAKE_MATCH_4}")
+                else()
+                    set(_LIBBLADERF_VERSION_HIGH_NIBBLE "${CMAKE_MATCH_5}")
+                    set(_LIBBLADERF_VERSION_LOW_NIBBLE "${CMAKE_MATCH_6}")
+                endif()
+                string(TOUPPER "${_LIBBLADERF_VERSION_HIGH_NIBBLE}"
+                    _LIBBLADERF_VERSION_HIGH_NIBBLE
+                )
+                string(TOUPPER "${_LIBBLADERF_VERSION_LOW_NIBBLE}"
+                    _LIBBLADERF_VERSION_LOW_NIBBLE
+                )
+                string(FIND "${_LIBBLADERF_VERSION_HEX_DIGITS}"
+                    "${_LIBBLADERF_VERSION_HIGH_NIBBLE}"
+                    _LIBBLADERF_VERSION_HIGH_NIBBLE
+                )
+                string(FIND "${_LIBBLADERF_VERSION_HEX_DIGITS}"
+                    "${_LIBBLADERF_VERSION_LOW_NIBBLE}"
+                    _LIBBLADERF_VERSION_LOW_NIBBLE
+                )
+                math(EXPR _LIBBLADERF_VERSION_${_LIBBLADERF_VERSION_COMPONENT}
+                    "${_LIBBLADERF_VERSION_HIGH_NIBBLE} * 16 + ${_LIBBLADERF_VERSION_LOW_NIBBLE}"
+                )
+            endforeach()
+            set(LIBBLADERF_VERSION
+                "${_LIBBLADERF_VERSION_MAJOR}.${_LIBBLADERF_VERSION_MINOR}.${_LIBBLADERF_VERSION_PATCH}"
+            )
+        endif()
+    endif()
 endif()
 
-if(LIBBLADERF_FOUND AND LIBBLADERF_VERSION AND DEFINED GNSSSDR_LIBBLADERF_MIN_VERSION)
-    if(LIBBLADERF_VERSION VERSION_LESS GNSSSDR_LIBBLADERF_MIN_VERSION)
+if(LIBBLADERF_FOUND AND DEFINED GNSSSDR_LIBBLADERF_MIN_VERSION)
+    if(NOT LIBBLADERF_VERSION)
+        message(STATUS "libbladeRF was found, but its version could not be determined. GNSS-SDR requires at least v${GNSSSDR_LIBBLADERF_MIN_VERSION}")
+        set(LIBBLADERF_FOUND FALSE)
+        unset(LIBBLADERF_LIBRARIES CACHE)
+        unset(LIBBLADERF_INCLUDE_DIRS CACHE)
+    elseif(LIBBLADERF_VERSION VERSION_LESS GNSSSDR_LIBBLADERF_MIN_VERSION)
         message(STATUS "libbladeRF v${LIBBLADERF_VERSION} was found, but GNSS-SDR requires at least v${GNSSSDR_LIBBLADERF_MIN_VERSION}. Please upgrade libbladeRF: https://github.com/Nuand/bladeRF")
         set(LIBBLADERF_FOUND FALSE)
         unset(LIBBLADERF_LIBRARIES CACHE)

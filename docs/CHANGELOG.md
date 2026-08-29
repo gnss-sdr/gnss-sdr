@@ -387,6 +387,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   epochs now fall on the same integer-millisecond grid as the observables, as
   they already did in configurations including GPS. RINEX files were not
   affected.
+- The PVT Monitor now reports per-signal details for satellites used in the
+  position solution, including PRN, constellation, signal, azimuth, elevation,
+  and whether multiple signals were combined. Contributed by @joebre.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

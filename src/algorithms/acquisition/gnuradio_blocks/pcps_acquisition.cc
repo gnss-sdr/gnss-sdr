@@ -143,6 +143,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_state(0),
       d_doppler_center(0),
       d_doppler_bias(0),
+      d_num_doppler_bins_active(d_num_doppler_bins),
       d_buffer_count(0),
       d_channel(0),
       d_resampler_latency_samples(conf_.resampler_latency_samples),
@@ -301,7 +302,18 @@ void pcps_acquisition::update_local_carrier(own::span<gr_complex> carrier_vector
 
 void pcps_acquisition::update_grid_doppler_wipeoffs()
 {
-    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+    if (d_num_doppler_bins_active < d_num_doppler_bins)
+        {
+            // Assisted acquisition: the Doppler is exactly known from an already-tracked
+            // primary frequency. Search just that bin, plus one reference bin offset by
+            // the full configured Doppler half-width -- the same separation the full grid
+            // search uses for its "opposite" bin -- so max_to_input_power_statistic can
+            // keep using it as a noise-only reference without any change to its logic.
+            update_local_carrier(own::span<gr_complex>(doppler_wipeoff_data(0), d_fft_size), static_cast<float>(d_doppler_bias + d_doppler_center));
+            update_local_carrier(own::span<gr_complex>(doppler_wipeoff_data(1), d_fft_size), static_cast<float>(d_doppler_bias + d_doppler_center + static_cast<int32_t>(d_doppler_max)));
+            return;
+        }
+    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins_active; doppler_index++)
         {
             const int32_t doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_center + d_doppler_step * doppler_index;
             update_local_carrier(own::span<gr_complex>(doppler_wipeoff_data(doppler_index), d_fft_size), static_cast<float>(d_doppler_bias + doppler));
@@ -447,7 +459,7 @@ void pcps_acquisition::copy_magnitude_grid_to_dump_grid()
 {
     ensure_dump_grid_allocated();
 
-    const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins;
+    const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins_active;
     auto& grid = d_step_two ? d_narrow_grid : d_grid;
 
     for (uint32_t doppler_index = 0; doppler_index < bin_count; doppler_index++)
@@ -510,7 +522,7 @@ pcps_acquisition::AcquisitionResult pcps_acquisition::max_to_input_power_statist
 
     if (!d_step_two)
         {
-            const auto index_opp = (index_doppler + d_num_doppler_bins / 2) % d_num_doppler_bins;
+            const auto index_opp = (index_doppler + num_doppler_bins / 2) % num_doppler_bins;
             const auto* magnitude_grid = magnitude_grid_data(index_opp);
             d_input_power = static_cast<float>(std::accumulate(magnitude_grid, magnitude_grid + d_effective_fft_size, static_cast<float>(0.0)) / d_effective_fft_size / 2.0 / d_num_noncoherent_integrations_counter);
             result.doppler = -static_cast<int32_t>(doppler_max) + d_doppler_center + doppler_step * static_cast<int32_t>(index_doppler);
@@ -607,7 +619,7 @@ pcps_acquisition::AcquisitionResult pcps_acquisition::first_vs_second_peak_stati
 
 void pcps_acquisition::doppler_grid(const gr_complex* in)
 {
-    const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins;
+    const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins_active;
     const auto* grid_doppler_wipeoffs = d_step_two ? d_grid_doppler_wipeoffs_step_two.data() : d_grid_doppler_wipeoffs.data();
 
     for (uint32_t doppler_index = 0; doppler_index < bin_count; doppler_index++)
@@ -645,10 +657,20 @@ void pcps_acquisition::doppler_grid(const gr_complex* in)
 
 pcps_acquisition::AcquisitionResult pcps_acquisition::compute_statistics()
 {
-    const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins;
-    const auto doppler_step = d_step_two ? d_acq_parameters.doppler_step2 : d_doppler_step;
-    const auto doppler_max = d_step_two ? static_cast<int32_t>(d_doppler_center_step_two - (static_cast<float>(bin_count) / 2.0) * doppler_step) : d_doppler_max;
+    const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins_active;
+    // Assisted acquisition (Doppler exactly known from an already-tracked primary
+    // frequency): bin 0 is the known Doppler and bin 1 is the reference bin offset
+    // by d_doppler_max (see update_grid_doppler_wipeoffs()). Passing doppler_max=0,
+    // doppler_step=d_doppler_max makes the generic "-doppler_max + center +
+    // doppler_step * index" decoding below map those two bins back to the right
+    // Doppler values, same formula as the full grid search uses.
+    const bool assisted = (!d_step_two) && (d_num_doppler_bins_active < d_num_doppler_bins);
+    const auto doppler_step = d_step_two ? d_acq_parameters.doppler_step2 : (assisted ? static_cast<int32_t>(d_doppler_max) : d_doppler_step);
+    const auto doppler_max = d_step_two ? static_cast<int32_t>(d_doppler_center_step_two - (static_cast<float>(bin_count) / 2.0) * doppler_step) : (assisted ? 0 : static_cast<int32_t>(d_doppler_max));
 
+    // The reference/"opposite" bin used by max_to_input_power_statistic as a
+    // noise-only estimate works the same way whether the grid has the full
+    // configured bin count or just the 2 bins built above for assisted mode.
     if (d_use_CFAR_algorithm_flag)
         {
             return max_to_input_power_statistic(bin_count, doppler_max, doppler_step);
@@ -836,6 +858,19 @@ void pcps_acquisition::set_doppler_center(int32_t doppler_center)
             DLOG(INFO) << " Doppler assistance for Channel: " << d_channel << " => Doppler: " << doppler_center << "[Hz]";
             d_doppler_center = doppler_center;
             update_grid_doppler_wipeoffs();
+        }
+}
+
+
+void pcps_acquisition::set_doppler_uncertanty(uint32_t doppler_uncertanty)
+{
+    gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
+    const uint32_t num_doppler_bins_active = (doppler_uncertanty == 0 && d_acq_parameters.enable_doppler_narrowing) ? 2U : d_num_doppler_bins;
+    if (num_doppler_bins_active != d_num_doppler_bins_active)
+        {
+            d_num_doppler_bins_active = num_doppler_bins_active;
+            update_grid_doppler_wipeoffs();
+            DLOG(INFO) << " Doppler uncertanty for Channel: " << d_channel << " => active Doppler bins: " << d_num_doppler_bins_active << ", Doppler center: " << d_doppler_center;
         }
 }
 

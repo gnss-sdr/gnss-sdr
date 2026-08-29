@@ -74,6 +74,11 @@ public:
     bool make_2_steps{false};
     bool use_automatic_resampler{false};
     bool enable_monitor_output{false};
+    // When Doppler is assisted (doppler_uncertanty == 0), collapse the search to
+    // the known bin + one reference bin instead of the full grid. Opt-in (new,
+    // still-experimental feature): off by default, enable per-implementation
+    // in the .conf (e.g. Acquisition_5X.enable_doppler_narrowing = true).
+    bool enable_doppler_narrowing{false};
 
     // Specific to some implementations
     bool acquire_pilot{false};

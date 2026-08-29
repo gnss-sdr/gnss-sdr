@@ -82,6 +82,7 @@ void Acq_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
         }
     make_2_steps = configuration->property(role + ".make_two_steps", make_2_steps);
     blocking_on_standby = configuration->property(role + ".blocking_on_standby", blocking_on_standby);
+    enable_doppler_narrowing = configuration->property(role + ".enable_doppler_narrowing", enable_doppler_narrowing);
 
     if (pfa <= 0.0)
         {

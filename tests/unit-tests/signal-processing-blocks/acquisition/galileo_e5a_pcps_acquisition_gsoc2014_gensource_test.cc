@@ -282,8 +282,12 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
     config->set_property("Acquisition_5X.Zero_padding", std::to_string(Zero_padding));
     config->set_property("Acquisition_5X.pfa", "0.003");
     config->set_property("Acquisition_5X.threshold", "0.0001");
+    config->set_property("Acquisition_5X.wide_doppler_max", "50000");
+    config->set_property("Acquisition_5X.wide_doppler_step", "250");
     config->set_property("Acquisition_5X.doppler_max", "10000");
     config->set_property("Acquisition_5X.doppler_step", "250");
+    config->set_property("Acquisition_5X.narrow_doppler_max", "50");
+    config->set_property("Acquisition_5X.narrow_doppler_step", "50");
     config->set_property("Acquisition_5X.bit_transition_flag", "false");
     config->set_property("Acquisition_5X.dump", "false");
     config->set_property("SignalSource.dump_filename", "./acquisition.dat");
@@ -635,6 +639,178 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
             acquisition->reset();
+            start_queue();
+
+            EXPECT_NO_THROW({
+                top_block->run();  // Start threads and wait
+            }) << "Failure running the top_block.";
+
+            stop_queue();
+
+            ch_thread.join();
+
+            if (i == 0)
+                {
+                    EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
+                    if (message == 1)
+                        {
+                            // std::cout << gnss_synchro.Acq_delay_samples << "acq delay'\n'";
+                            // std::cout << gnss_synchro.Acq_doppler_hz << "acq doppler'\n'";
+                            EXPECT_EQ(static_cast<unsigned int>(1), correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
+                        }
+                }
+            else if (i == 1)
+                {
+                    EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
+                }
+        }
+}
+
+
+TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, AssistanceNarrow)
+{
+    config_1();
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+    top_block = gr::make_top_block("Acquisition test");
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_5X", 1, 0);
+    auto msg_rx = GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(channel_internal_queue);
+
+    ASSERT_NO_THROW({
+        acquisition->set_channel(0);
+    }) << "Failure setting channel.";
+
+    ASSERT_NO_THROW({
+        acquisition->set_gnss_synchro(&gnss_synchro);
+    }) << "Failure setting gnss_synchro.";
+
+    ASSERT_NO_THROW({
+        acquisition->connect(top_block);
+    }) << "Failure connecting acquisition to the top_block.";
+
+    // USING THE SIGNAL GENERATOR
+
+    ASSERT_NO_THROW({
+        std::shared_ptr<GNSSBlockInterface> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue.get());
+        std::shared_ptr<GNSSBlockInterface> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1);
+        std::shared_ptr<GNSSBlockInterface> signal_source = std::make_shared<GenSignalSource>(signal_generator, filter, "SignalSource", queue.get());
+        filter->connect(top_block);
+        signal_source->connect(top_block);
+        top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
+        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+    }) << "Failure connecting the blocks of acquisition test.";
+
+    acquisition->reset();
+
+    // i = 0 --> satellite in acquisition is visible
+    // i = 1 --> satellite in acquisition is not visible
+    for (unsigned int i = 0; i < 1; i++)
+        {
+            init();
+
+            switch (i)
+                {
+                case 0:
+                    {
+                        gnss_synchro.PRN = 11;  // present
+                        break;
+                    }
+                case 1:
+                    {
+                        gnss_synchro.PRN = 19;  // not present
+                        break;
+                    }
+                }
+
+            acquisition->set_gnss_synchro(&gnss_synchro);
+            acquisition->set_local_code();
+            acquisition->reset();
+            acquisition->set_assistance(2820, 2);
+            start_queue();
+
+            EXPECT_NO_THROW({
+                top_block->run();  // Start threads and wait
+            }) << "Failure running the top_block.";
+
+            stop_queue();
+
+            ch_thread.join();
+
+            if (i == 0)
+                {
+                    EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
+                    if (message == 1)
+                        {
+                            // std::cout << gnss_synchro.Acq_delay_samples << "acq delay'\n'";
+                            // std::cout << gnss_synchro.Acq_doppler_hz << "acq doppler'\n'";
+                            EXPECT_EQ(static_cast<unsigned int>(1), correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
+                        }
+                }
+            else if (i == 1)
+                {
+                    EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
+                }
+        }
+}
+
+
+TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, AssistanceWide)
+{
+    config_1();
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+    top_block = gr::make_top_block("Acquisition test");
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_5X", 1, 0);
+    auto msg_rx = GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(channel_internal_queue);
+
+    ASSERT_NO_THROW({
+        acquisition->set_channel(0);
+    }) << "Failure setting channel.";
+
+    ASSERT_NO_THROW({
+        acquisition->set_gnss_synchro(&gnss_synchro);
+    }) << "Failure setting gnss_synchro.";
+
+    ASSERT_NO_THROW({
+        acquisition->connect(top_block);
+    }) << "Failure connecting acquisition to the top_block.";
+
+    // USING THE SIGNAL GENERATOR
+
+    ASSERT_NO_THROW({
+        std::shared_ptr<GNSSBlockInterface> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue.get());
+        std::shared_ptr<GNSSBlockInterface> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1);
+        std::shared_ptr<GNSSBlockInterface> signal_source = std::make_shared<GenSignalSource>(signal_generator, filter, "SignalSource", queue.get());
+        filter->connect(top_block);
+        signal_source->connect(top_block);
+        top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
+        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+    }) << "Failure connecting the blocks of acquisition test.";
+
+    acquisition->reset();
+
+    // i = 0 --> satellite in acquisition is visible
+    // i = 1 --> satellite in acquisition is not visible
+    for (unsigned int i = 0; i < 1; i++)
+        {
+            init();
+
+            switch (i)
+                {
+                case 0:
+                    {
+                        gnss_synchro.PRN = 11;  // present
+                        break;
+                    }
+                case 1:
+                    {
+                        gnss_synchro.PRN = 19;  // not present
+                        break;
+                    }
+                }
+
+            acquisition->set_gnss_synchro(&gnss_synchro);
+            acquisition->set_local_code();
+            acquisition->reset();
+            acquisition->set_assistance(47000, 0);
             start_queue();
 
             EXPECT_NO_THROW({

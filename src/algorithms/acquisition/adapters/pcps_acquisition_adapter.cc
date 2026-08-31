@@ -303,9 +303,9 @@ void PcpsAcquisitionAdapter::set_doppler_center(int doppler_center)
 }
 
 
-void PcpsAcquisitionAdapter::set_doppler_uncertanty(unsigned int doppler_uncertanty)
+void PcpsAcquisitionAdapter::set_doppler_uncertainty(unsigned int doppler_uncertainty)
 {
-    acquisition_->set_doppler_uncertanty(doppler_uncertanty);
+    acquisition_->set_doppler_uncertainty(doppler_uncertainty);
 }
 
 

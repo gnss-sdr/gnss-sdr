@@ -219,6 +219,7 @@ private:
 #include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_ambiguous_acquisition_gsoc_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_ambiguous_acquisition_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/pcps_acquisition_doppler_narrowing_test.cc"
 #include "unit-tests/signal-processing-blocks/filter/fir_filter_test.cc"
 #include "unit-tests/signal-processing-blocks/filter/notch_filter_lite_test.cc"
 #include "unit-tests/signal-processing-blocks/filter/notch_filter_test.cc"

@@ -154,13 +154,13 @@ public:
 
     /*!
      * \brief Set Doppler uncertainty for the grid search. It will refresh the Doppler grid.
-     * A doppler_uncertanty of 0 means the Doppler is exactly known (as when this
+     * A doppler_uncertainty of 0 means the Doppler is exactly known (as when this
      * acquisition is assisted by an already-tracked primary frequency): the search
      * is restricted to a single Doppler bin centered on set_doppler_center(). Any
      * other value restores the full configured Doppler search range.
-     * \param doppler_uncertanty - 0 to search a single bin, nonzero for the full range.
+     * \param doppler_uncertainty - 0 to search a single bin, nonzero for the full range.
      */
-    void set_doppler_uncertanty(uint32_t doppler_uncertanty);
+    void set_doppler_uncertainty(uint32_t doppler_uncertainty);
 
     /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.
@@ -204,8 +204,15 @@ private:
     const float* magnitude_grid_data(uint32_t doppler_index) const;
     bool is_fdma();
     float get_threshold() const;
-    AcquisitionResult first_vs_second_peak_statistic(uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
-    AcquisitionResult max_to_input_power_statistic(uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
+    // candidate_count: number of computed grid rows eligible to be selected as the
+    // acquisition result -- narrowed mode computes 2 rows (known bin + noise
+    // reference) but only bin 0 is a real candidate, so candidate_count is 1 there.
+    // max_to_input_power_statistic additionally takes num_doppler_bins (>=
+    // candidate_count), the full computed row count, for its CFAR "opposite bin"
+    // reference lookup -- first_vs_second_peak_statistic has no such reference
+    // concept, so it only needs candidate_count.
+    AcquisitionResult first_vs_second_peak_statistic(uint32_t candidate_count, int32_t doppler_max, int32_t doppler_step);
+    AcquisitionResult max_to_input_power_statistic(uint32_t num_doppler_bins, uint32_t candidate_count, int32_t doppler_max, int32_t doppler_step);
     void wait_if_active();
 
     const Acq_Conf d_acq_parameters;
@@ -222,6 +229,13 @@ private:
     const uint32_t d_num_doppler_bins_step2;
     const uint32_t d_dump_channel;
     const float d_threshold;
+    // Same PFA target as d_threshold, but calibrated for a single Doppler-bin's
+    // worth of code-phase hypotheses instead of the full grid's d_num_doppler_bins --
+    // reusing d_threshold in narrowed mode would under-detect, since compute_threshold()
+    // folds the candidate count into the false-alarm probability (e.g. a requested
+    // pfa=0.01 becomes far stricter than 0.01 once inflated by a ~80-bin full grid's
+    // worth of hypotheses that narrowed mode isn't actually searching).
+    const float d_threshold_narrowed;
     const float d_threshold_step_two;
     const bool d_cshort;
     const bool d_use_CFAR_algorithm_flag;
@@ -236,9 +250,18 @@ private:
     int32_t d_doppler_center;
     int32_t d_doppler_bias;
     // Number of step-1 Doppler bins actually searched: equals d_num_doppler_bins,
-    // or 2 (known bin + reference bin) when set_doppler_uncertanty(0) narrows the
-    // search and d_acq_parameters.enable_doppler_narrowing is true.
+    // or 2 (known bin + reference bin) when d_doppler_search_narrowed is true.
     uint32_t d_num_doppler_bins_active;
+    // Explicit narrowed-mode flag, set directly by set_doppler_uncertainty() --
+    // deliberately NOT inferred from "d_num_doppler_bins_active < d_num_doppler_bins",
+    // which breaks in two ways: (1) if d_num_doppler_bins == 1 (a valid full-grid
+    // config), forcing 2 active bins would write past the bin-count-sized grid
+    // allocations; (2) if d_num_doppler_bins == 2, an actually-narrowed request
+    // computes the same active count as the full grid, so the inferred comparison
+    // would silently miss it. set_doppler_uncertainty() only ever sets this true
+    // when d_num_doppler_bins > 1, so d_num_doppler_bins_active is always <=
+    // d_num_doppler_bins and existing allocations are never exceeded.
+    bool d_doppler_search_narrowed;
     uint32_t d_buffer_count;
     uint32_t d_channel;
     uint32_t d_resampler_latency_samples;

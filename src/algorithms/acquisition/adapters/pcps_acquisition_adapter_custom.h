@@ -81,6 +81,11 @@ public:
     void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override;
 
     /*!
+     * \brief Set Doppler center for the grid search
+     */
+    void set_assistance(int doppler_center, int32_t assist_level) override;
+
+    /*!
      * \brief Returns the maximum peak of grid search
      */
     signed int mag() override;

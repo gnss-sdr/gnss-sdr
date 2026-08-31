@@ -2102,6 +2102,11 @@ std::map<int, Beidou_Dnav_Almanac> rtklib_pvt_gs::get_beidou_dnav_almanac_map() 
     return d_internal_pvt_solver->beidou_dnav_almanac_map;
 }
 
+double rtklib_pvt_gs::get_clock_drift_ppm() const
+{
+    return d_user_pvt_solver->get_clock_drift_ppm();
+}
+
 
 void rtklib_pvt_gs::clear_ephemeris()
 {

@@ -58,6 +58,7 @@ public:
     virtual std::map<int, Gps_Almanac> get_gps_almanac() const = 0;
     virtual std::map<int, Galileo_Almanac> get_galileo_almanac() const = 0;
     virtual std::map<int, Beidou_Dnav_Almanac> get_beidou_dnav_almanac() const = 0;
+    virtual double get_clock_drift_ppm() const = 0;
 
     virtual bool get_latest_PVT(double* longitude_deg,
         double* latitude_deg,

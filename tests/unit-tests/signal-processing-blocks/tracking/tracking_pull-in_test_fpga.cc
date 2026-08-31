@@ -696,7 +696,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     acquisition->set_channel_fsm(channel_fsm_);
     acquisition->set_channel(0);
-    acquisition->set_doppler_center(0);
+    acquisition->set_assistance(0);
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds;
     start = std::chrono::system_clock::now();

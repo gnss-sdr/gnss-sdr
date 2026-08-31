@@ -409,10 +409,18 @@ Acquisition_1C.coherent_integration_time_ms=1
 Acquisition_1C.threshold=2.5
 ;#pfa: Acquisition false alarm probability. This option overrides the threshold option.
 Acquisition_1C.pfa=0.0001
-;#doppler_max: Maximum expected Doppler shift [Hz]
+;#wide_doppler_max: Maximum expected Doppler shift before clock drift compensation [Hz]
+Acquisition_1C.wide_doppler_max=5000
+;#wide_doppler_step: Doppler step in the grid search to use before clock drift compensation [Hz]
+Acquisition_1C.wide_doppler_step=250
+;#doppler_max: Maximum expected Doppler shift after clock drift compensation [Hz]
 Acquisition_1C.doppler_max=5000
-;#doppler_step: Doppler step in the grid search [Hz]
+;#doppler_step: Doppler step in the grid search to use after clock drift compensation [Hz]
 Acquisition_1C.doppler_step=250
+;#narrow_doppler_max: Maximum expected Doppler shift when acquisition assistance is available [Hz]
+Acquisition_1C.narrow_doppler_max=50
+;#narrow_doppler_step: Doppler step in the grid search to use when acquisition assistance is available [Hz]
+Acquisition_1C.narrow_doppler_step=50
 \endverbatim
 
 

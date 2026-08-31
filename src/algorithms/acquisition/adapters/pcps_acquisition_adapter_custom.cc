@@ -447,6 +447,12 @@ void PcpsAcquisitionAdapterCustom::set_channel_fsm(std::weak_ptr<ChannelFsm> cha
 }
 
 
+void PcpsAcquisitionAdapterCustom::set_assistance(int doppler_center, int32_t assist_level)
+{
+    acquisition_cc_->set_assistance(doppler_center, assist_level);
+}
+
+
 signed int PcpsAcquisitionAdapterCustom::mag()
 {
     if (is_type_gr_complex_)

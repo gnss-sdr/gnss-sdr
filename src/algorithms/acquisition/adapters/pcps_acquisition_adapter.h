@@ -105,7 +105,7 @@ public:
     /*!
      * \brief Set Doppler uncertainty for the grid search
      */
-    void set_doppler_uncertanty(unsigned int doppler_uncertanty) override;
+    void set_doppler_uncertainty(unsigned int doppler_uncertainty) override;
 
     /*!
      * \brief Returns the maximum peak of grid search

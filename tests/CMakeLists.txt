@@ -1254,6 +1254,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     set(ACQ_TEST_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/acquisition/pcps_acquisition_doppler_narrowing_test.cc
     )
     if(USE_CMAKE_TARGET_SOURCES)
         add_executable(acq_test)

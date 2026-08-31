@@ -74,10 +74,22 @@ public:
     bool make_2_steps{false};
     bool use_automatic_resampler{false};
     bool enable_monitor_output{false};
-    // When Doppler is assisted (doppler_uncertanty == 0), collapse the search to
-    // the known bin + one reference bin instead of the full grid. Opt-in (new,
-    // still-experimental feature): off by default, enable per-implementation
-    // in the .conf (e.g. Acquisition_5X.enable_doppler_narrowing = true).
+    // When Doppler is assisted (doppler_uncertainty == 0), collapse the search to
+    // the known bin + one reference bin instead of the full grid. Off by default;
+    // enable per-implementation in the .conf (e.g.
+    // Acquisition_5X.enable_doppler_narrowing = true).
+    //
+    // Applies to any acquisition implementation built on pcps_acquisition (the vast
+    // majority of them); FPGA-offloaded acquisitions use a separate implementation
+    // that never calls set_doppler_uncertainty(), so this has no effect there.
+    //
+    // Only takes effect when the caller also passes doppler_uncertainty == 0 to
+    // set_doppler_uncertainty() -- in practice, this means
+    // GNSS-SDR.assist_dual_frequency_acq must also be enabled and a Doppler
+    // projection from the satellite's already-tracked primary frequency must have
+    // succeeded (see GNSSFlowgraph::acquisition_manager()). With
+    // assist_dual_frequency_acq off, or when no projection is available yet, this
+    // flag has no effect and the full configured Doppler grid is always searched.
     bool enable_doppler_narrowing{false};
 
     // Specific to some implementations

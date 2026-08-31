@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2022 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+
+name: Build volk_gnsssdr on Android NDK
+
 on:
   push:
     paths:
@@ -11,55 +14,84 @@ on:
       - "CMakeLists.txt"
   workflow_dispatch:
 
-name: Build volk_gnsssdr on Android NDK
+permissions:
+  contents: read
+
+env:
+  ANDROID_HOME: ${{ github.workspace }}/android-sdk-linux
+  ANDROID_CMDLINE_TOOLS_VERSION: "15859902"
+  ANDROID_NDK_VERSION: "27.3.13750724"
+  ANDROID_API_LEVEL: "34"
+
 jobs:
   build:
-    name: Build on Android NDK ${{ matrix.arch.name }}
+    name: Build on Android NDK ${{ matrix.arch }}
 
     strategy:
       fail-fast: false
       matrix:
         arch:
-          - { name: armeabi-v7a, allow_fail: false }
-          - { name: arm64-v8a, allow_fail: false }
-          - { name: x86, allow_fail: false }
-          - { name: x86_64, allow_fail: false }
+          - armeabi-v7a
+          - arm64-v8a
+          - x86
+          - x86_64
 
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v7
-      - name: Update repositories
-        run: sudo apt update
+
       - name: Install dependencies
-        run: sudo apt install -y cmake python3-mako
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build python3-mako
 
       # Setup Java
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: "25"
 
-      # Setup Android SDK, and auto-accept licenses
-      - name: Install Android SDK
+      # Setup Android command-line tools
+      - name: Install Android command-line tools
         run: |
-          wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip && \
-          mkdir android-sdk-linux && unzip -qq android-sdk.zip -d android-sdk-linux && export ANDROID_HOME=./android-sdk-linux && echo y | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=android-sdk-linux --update && \
-          (echo y; echo y; echo y; echo y; echo y; echo y; echo y; echo y) | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=android-sdk-linux --licenses
+          archive="$RUNNER_TEMP/android-commandlinetools.zip"
+          extract_dir="$RUNNER_TEMP/android-commandlinetools"
 
-      # Call SDKManager to install the Android NDK
+          wget --quiet \
+            --output-document="$archive" \
+            "https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_CMDLINE_TOOLS_VERSION}_latest.zip"
+
+          mkdir -p "$extract_dir"
+          unzip -qq "$archive" -d "$extract_dir"
+
+          mkdir -p "$ANDROID_HOME/cmdline-tools/latest"
+          mv "$extract_dir/cmdline-tools/"* \
+            "$ANDROID_HOME/cmdline-tools/latest/"
+
+      # Install the Android NDK using the new Android CLI
       - name: Install Android NDK
-        run: $GITHUB_WORKSPACE/android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=$GITHUB_WORKSPACE/android-sdk-linux --install "ndk;27.2.12479018" --channel=3
-
-      # Setup build directory
-      - name: Setup ${{ matrix.arch.name }}
-        shell: bash
         run: |
-          cd $GITHUB_WORKSPACE/ && mkdir -p build && cd build && \
-          cmake -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/android-sdk-linux/ndk/27.2.12479018/build/cmake/android.toolchain.cmake -DANDROID_ABI=${{ matrix.arch.name }} -DANDROID_PLATFORM=android-34 ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/android" \
+            --sdk="$ANDROID_HOME" \
+            sdk install "ndk/${ANDROID_NDK_VERSION}"
+
+          test -f \
+            "$ANDROID_HOME/ndk/${ANDROID_NDK_VERSION}/build/cmake/android.toolchain.cmake"
+
+      # Configure
+      - name: Configure ${{ matrix.arch }}
+        run: |
+          cmake \
+            -S "$GITHUB_WORKSPACE/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr" \
+            -B "$GITHUB_WORKSPACE/build" \
+            -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="$ANDROID_HOME/ndk/${ANDROID_NDK_VERSION}/build/cmake/android.toolchain.cmake" \
+            -DANDROID_ABI="${{ matrix.arch }}" \
+            -DANDROID_PLATFORM="android-${ANDROID_API_LEVEL}" \
+            -DCMAKE_BUILD_TYPE=Release
 
       # Build
-      - name: Build ${{ matrix.arch.name }}
-        shell: bash
-        run: cd $GITHUB_WORKSPACE/build && make
-        continue-on-error: ${{ matrix.arch.allow_fail }}
+      - name: Build ${{ matrix.arch }}
+        run: |
+          cmake --build "$GITHUB_WORKSPACE/build" --parallel

@@ -241,6 +241,10 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
                 {
                     rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L1P);
                 }
+            else if (sig_ == "B2")
+                {
+                    rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L7I);
+                }
 
             break;
         case 'J':

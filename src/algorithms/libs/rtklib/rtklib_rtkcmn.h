@@ -126,6 +126,7 @@ int testsnr(int base, int freq, double el, double snr, const snrmask_t *mask);
 unsigned char obs2code(const char *obs, int *freq);
 char *code2obs(unsigned char code, int *freq);
 bool is_bds_b1c_code(unsigned char code);
+bool is_bds_b2b_code(unsigned char code);
 void setcodepri(int sys, int freq, const char *pri);
 int getcodepri(int sys, unsigned char code, const char *opt);
 unsigned int getbitu(const unsigned char *buff, int pos, int len);

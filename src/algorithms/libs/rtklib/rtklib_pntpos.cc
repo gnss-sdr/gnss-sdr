@@ -35,6 +35,7 @@
 
 #include "rtklib_pntpos.h"
 #include "Beidou_CNAV1.h"
+#include "Beidou_CNAV3.h"
 #include "beidou_bdgim.h"
 #include "gnss_frequencies.h"
 #include "rtklib_ephemeris.h"
@@ -186,8 +187,24 @@ double gettgd_bds_by_obs_code(int sat, const nav_t *nav, unsigned char obs_code)
             if (sys == SYS_BDS)
                 {
                     const int is_cnav1 = (nav->eph[i].code == BDS_EPH_SOURCE_CNAV1) ? 1 : 0;
-                    /* B1C obs ↔ CNAV1 eph; B1I/other ↔ DNAV eph */
-                    if (is_b1c_obs != is_cnav1)
+                    const int is_cnav3 = (nav->eph[i].code == BDS_EPH_SOURCE_CNAV3) ? 1 : 0;
+                    const int is_b2b_obs = is_bds_b2b_code(obs_code) ? 1 : 0;
+                    /* B1C obs ↔ CNAV1 eph; B2b obs ↔ CNAV3 eph; B1I/other ↔ DNAV eph */
+                    if (is_b1c_obs)
+                        {
+                            if (!is_cnav1)
+                                {
+                                    continue;
+                                }
+                        }
+                    else if (is_b2b_obs)
+                        {
+                            if (!is_cnav3)
+                                {
+                                    continue;
+                                }
+                        }
+                    else if (is_cnav1 || is_cnav3)
                         {
                             continue;
                         }
@@ -195,6 +212,10 @@ double gettgd_bds_by_obs_code(int sat, const nav_t *nav, unsigned char obs_code)
                     if (is_cnav1 && obs_code == CODE_L1D)
                         {
                             tgd_s += nav->eph[i].tgd[2];
+                        }
+                    if (is_cnav3 && is_b2b_obs)
+                        {
+                            tgd_s = nav->eph[i].tgd[1]; /* TGD_B2ap */
                         }
                     return SPEED_OF_LIGHT_M_S * tgd_s;
                 }

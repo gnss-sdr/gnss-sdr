@@ -664,6 +664,12 @@ bool is_bds_b1c_code(unsigned char code)
 }
 
 
+bool is_bds_b2b_code(unsigned char code)
+{
+    return code == CODE_L7I;
+}
+
+
 /* set code priority -----------------------------------------------------------
  * set code priority for multiple codes in a frequency
  * args   : int    sys     I     system (or of SYS_???)

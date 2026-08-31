@@ -20,6 +20,7 @@
 
 #include "kf_tracking.h"
 #include "Beidou_B1I.h"
+#include "Beidou_B2b.h"
 #include "Beidou_B3I.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
@@ -29,6 +30,7 @@
 #include "Galileo_E5b.h"
 #include "MATH_CONSTANTS.h"
 #include "beidou_b1i_signal_replica.h"
+#include "beidou_b2b_signal_replica.h"
 #include "beidou_b3i_signal_replica.h"
 #include "galileo_e1_signal_replica.h"
 #include "galileo_e5_signal_replica.h"
@@ -186,6 +188,7 @@ kf_tracking::kf_tracking(const Kf_Conf &conf_)
     map_signal_pretty_name["7X"] = "E5b";
     map_signal_pretty_name["L5"] = "L5";
     map_signal_pretty_name["B1"] = "B1I";
+    map_signal_pretty_name["B2"] = "B2b";
     map_signal_pretty_name["B3"] = "B3I";
 
     d_signal_pretty_name = map_signal_pretty_name[d_signal_type];
@@ -407,6 +410,23 @@ kf_tracking::kf_tracking(const Kf_Conf &conf_)
                     d_secondary_code_string = BEIDOU_B1I_SECONDARY_CODE_STR;
                     d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B1I_SECONDARY_CODE_LENGTH);
                     d_data_secondary_code_string = BEIDOU_B1I_SECONDARY_CODE_STR;
+                }
+            else if (d_signal_type == "B2")
+                {
+                    d_signal_carrier_freq = BEIDOU_B2B_FREQ_HZ;
+                    d_code_period = BEIDOU_B2B_CODE_PERIOD_S;
+                    d_code_chip_rate = BEIDOU_B2B_CODE_RATE_CPS;
+                    d_code_length_chips = static_cast<int32_t>(BEIDOU_B2B_CODE_LENGTH_CHIPS);
+                    d_symbols_per_bit = BEIDOU_B2B_SYMBOLS_PER_BIT;
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_secondary = false;
+                    d_trk_parameters.track_pilot = false;
+                    d_trk_parameters.slope = 1.0;
+                    d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
+                    d_trk_parameters.y_intercept = 1.0;
+                    d_secondary_code_length = 0;
+                    d_data_secondary_code_length = 0;
                 }
             else if (d_signal_type == "B3")
                 {
@@ -790,6 +810,10 @@ void kf_tracking::start_tracking()
                 }
         }
 
+    else if (d_systemName == "Beidou" && d_signal_type == "B2")
+        {
+            beidou_b2b_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
+        }
     else if (d_systemName == "Beidou" && d_signal_type == "B3")
         {
             beidou_b3i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);

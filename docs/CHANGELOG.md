@@ -194,6 +194,20 @@ All notable changes to GNSS-SDR will be documented in this file.
   sample configuration file is provided at
   `conf/File_input/Beidou/gnss-sdr_BDS_B1C_geb_if20k_fs18m_ibyte.conf`.
   Contributed by @OuWenhao16.
+- Added the BeiDou B2b RNSS receiver chain (public service B2b_I / B-CNAV3, not
+  PPP-B2b SSR), with signal identifier `B2`: PCPS acquisition
+  (`BEIDOU_B2B_PCPS_Acquisition`), DLL+PLL tracking
+  (`BEIDOU_B2B_DLL_PLL_Tracking`; BPSK(10), 1 ms code, no secondary code and no
+  pilot), and B-CNAV3 telemetry decoding (`BEIDOU_B2B_Telemetry_Decoder`). The
+  first cut takes the systematic 486 information bits after the 0xEB90 preamble
+  (CRC-24Q, message types 10 and 30) and does not yet implement 64-ary LDPC.
+  GEO satellites (PRN 59-63) can be acquired and tracked but are not used in
+  PVT.   Sample configuration files are provided at
+  `conf/File_input/Beidou/gnss-sdr_BDS_B2b_synthetic.conf`,
+  `conf/File_input/Beidou/gnss-sdr_BDS_B2b_gr_complex.conf`, and
+  `conf/File_input/Beidou/gnss-sdr_BDS_B2b_pvt.conf` (end-to-end SPP).
+  Tracking forwards 1 ms B2 symbols during pull-in so B-CNAV3 can lock on
+  short files. Contributed by Chandoss.
 - Added reception of SBAS L1 signals (EGNOS and WAAS, PRN 120-138), with signal
   identifier `S1`: PCPS acquisition (`SBAS_L1_PCPS_Acquisition`), DLL+PLL
   tracking (`SBAS_L1_DLL_PLL_Tracking`), and telemetry decoding

@@ -26,6 +26,7 @@ set(SYSTEM_PARAMETERS_SOURCES
     beidou_dnav_ephemeris.cc
     beidou_cnav1_navigation_message.cc
     beidou_cnav1_ldpc.cc
+    beidou_cnav3_navigation_message.cc
     beidou_bdgim.cc
     Beidou_B1C_codes.cc
     sbas_ephemeris.cc
@@ -107,7 +108,10 @@ set(SYSTEM_PARAMETERS_HEADERS
     beidou_cnav1_iono.h
     beidou_cnav1_utc_model.h
     beidou_bdgim.h
+    Beidou_B2b.h
     Beidou_B3I.h
+    Beidou_CNAV3.h
+    beidou_cnav3_navigation_message.h
     Beidou_DNAV.h
     MATH_CONSTANTS.h
     reed_solomon.h

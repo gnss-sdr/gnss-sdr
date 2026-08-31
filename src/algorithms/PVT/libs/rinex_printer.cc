@@ -106,6 +106,8 @@ std::string signal_flag_to_string(signal_flag flag)
             return "2G";
         case BDS_B1:
             return "B1";
+        case BDS_B2:
+            return "B2";
         case BDS_B3:
             return "B3";
         case BDS_B1C:
@@ -124,7 +126,7 @@ std::map<std::string, signal_flag> string_to_signal_flag_map()
 {
     std::map<std::string, signal_flag> convertion_map;
 
-    for (const auto flag : {GPS_1C, GPS_2S, GPS_L5, GAL_1B, GAL_E5a, GAL_E5b, GAL_E6, GLO_1G, GLO_2G, BDS_B1, BDS_B3, BDS_B1C, QZS_J1, QZS_J5})
+    for (const auto flag : {GPS_1C, GPS_2S, GPS_L5, GAL_1B, GAL_E5a, GAL_E5b, GAL_E6, GLO_1G, GLO_2G, BDS_B1, BDS_B2, BDS_B3, BDS_B1C, QZS_J1, QZS_J5})
         {
             convertion_map[signal_flag_to_string(flag)] = flag;
         }
@@ -144,7 +146,7 @@ std::map<char, std::set<signal_flag>> get_constel_signal_flags(const Signal_Enab
 {
     std::map<char, std::set<signal_flag>> constel_signal_flags;
 
-    for (const auto& it : std::map<char, std::set<signal_flag>>{{'G', {GPS_1C, GPS_2S, GPS_L5}}, {'E', {GAL_1B, GAL_E5a, GAL_E5b, GAL_E6}}, {'R', {GLO_1G, GLO_2G}}, {'C', {BDS_B1, BDS_B3, BDS_B1C}}, {'J', {QZS_J1, QZS_J5}}})
+    for (const auto& it : std::map<char, std::set<signal_flag>>{{'G', {GPS_1C, GPS_2S, GPS_L5}}, {'E', {GAL_1B, GAL_E5a, GAL_E5b, GAL_E6}}, {'R', {GLO_1G, GLO_2G}}, {'C', {BDS_B1, BDS_B2, BDS_B3, BDS_B1C}}, {'J', {QZS_J1, QZS_J5}}})
         {
             for (const auto flag : it.second)
                 {
@@ -481,6 +483,7 @@ std::map<std::string, std::string> getObservationCodes()
         {"BEIDOU_B1_I_RINEX4", "2I"},
         {"BEIDOU_B1_Q_RINEX4", "2Q"},
         {"BEIDOU_B1_IQ_RINEX4", "2X"},
+        {"BEIDOU_B2B_I", "7D"},
         {"BEIDOU_B3_I", "6I"},
         {"BEIDOU_B3_Q", "6Q"},
         {"BEIDOU_B3_IQ", "6X"},
@@ -2369,6 +2372,7 @@ void add_obs_sys_obs_type_beidou(std::fstream& out,
     const std::map<uint32_t, std::string> signal_to_code_map = {
         {BDS_B1, version == 4 ? "BEIDOU_B1_I_RINEX4" : "BEIDOU_B1_I"},
         {BDS_B1C, "BEIDOU_B1C_D"},
+        {BDS_B2, "BEIDOU_B2B_I"},
         {BDS_B3, "BEIDOU_B3_I"},
     };
 

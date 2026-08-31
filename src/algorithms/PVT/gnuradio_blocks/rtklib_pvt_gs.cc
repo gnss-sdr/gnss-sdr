@@ -2742,7 +2742,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             if (!d_osnma_strict && tmp_eph_iter_bds_cnav1 != d_internal_pvt_solver->beidou_cnav1_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_bds_cnav1->second.PRN;
-                                    if ((prn_aux == gnss_synchro.PRN) && (std::string(gnss_synchro.Signal, 2) == std::string("1D")))
+                                    if ((prn_aux == gnss_synchro.PRN) && (std::string(gnss_synchro.Signal, 2) == std::string("1D") || std::string(gnss_synchro.Signal, 2) == std::string("B2")))
                                         {
                                             store_valid_observable = true;
                                         }

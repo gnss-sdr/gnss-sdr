@@ -1706,8 +1706,12 @@ Acquisition_1C.item_type=gr_complex
 Acquisition_1C.coherent_integration_time_ms=1 ; Signal block duration for the acquisition signal detection [ms]
 Acquisition_1C.threshold=2.5 ; Acquisition threshold
 Acquisition_1C.pfa=0.001 ; Acquisition false alarm probability. This option overrides the threshold option.
-Acquisition_1C.doppler_max=5000 ; Maximum expected Doppler shift [Hz]
-Acquisition_1C.doppler_step=250 ; Doppler step in the grid search [Hz]
+Acquisition_1C.wide_doppler_max=5000 ; Maximum expected Doppler shift before clock drift compensation [Hz]
+Acquisition_1C.wide_doppler_step=250 ; Doppler step in the grid search clock drift compensation [Hz]
+Acquisition_1C.doppler_max=5000 ; Maximum expected Doppler shift after clock drift compensation [Hz]
+Acquisition_1C.doppler_step=250 ; Doppler step in the grid search to use after clock drift compensation [Hz]
+Acquisition_1C.narrow_doppler_max=50 ; Maximum expected Doppler shift when acquisition assistance is available [Hz]
+Acquisition_1C.narrow_doppler_step=50 ; Doppler step in the grid search to use when acquisition assistance is available[Hz]
 Acquisition_1C.dump=false ; Enables internal data file logging [true] or [false]
 Acquisition_1C.dump_filename=./acq_dump.dat ; Log path and filename
 ```

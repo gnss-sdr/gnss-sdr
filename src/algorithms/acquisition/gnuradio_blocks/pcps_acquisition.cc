@@ -131,6 +131,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_magnitude_grid_stride(aligned_row_stride<float>(d_effective_fft_size)),
       d_doppler_wipeoffs_stride(aligned_row_stride<gr_complex>(d_fft_size)),
       d_num_doppler_bins(static_cast<uint32_t>(std::ceil(static_cast<double>(2 * d_doppler_max) / static_cast<double>(d_doppler_step)))),
+      d_num_doppler_bins_step1_capacity(std::max(d_num_doppler_bins, 2U)),
       d_num_doppler_bins_step2(conf_.num_doppler_bins_step2),
       d_dump_channel(conf_.dump_channel),
       d_threshold(conf_.pfa > 0.0 ? compute_threshold(conf_.pfa, d_effective_fft_size, d_num_doppler_bins, conf_.bit_transition_flag ? 1 : conf_.max_dwells) : conf_.threshold),
@@ -157,12 +158,12 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_dump_number(0),
       d_input_power(0),
       d_doppler_center_step_two(0),
-      d_magnitude_grid(std::max(d_num_doppler_bins, d_num_doppler_bins_step2) * d_magnitude_grid_stride),
+      d_magnitude_grid(std::max(d_num_doppler_bins_step1_capacity, d_num_doppler_bins_step2) * d_magnitude_grid_stride),
       d_tmp_buffer(d_effective_fft_size),
       d_input_signal(d_fft_size),
       d_grid_doppler_wipeoffs_step_two(d_acq_parameters.make_2_steps ? d_num_doppler_bins_step2 * d_doppler_wipeoffs_stride : 0),
       d_ifft(gnss_fft_rev_make_unique(d_fft_size)),
-      d_grid_doppler_wipeoffs(d_num_doppler_bins * d_doppler_wipeoffs_stride),
+      d_grid_doppler_wipeoffs(d_num_doppler_bins_step1_capacity * d_doppler_wipeoffs_stride),
       d_fft_codes(d_fft_size),
       d_data_buffer(d_consumed_samples),
       d_fft_if(gnss_fft_fwd_make_unique(d_fft_size))
@@ -896,10 +897,7 @@ void pcps_acquisition::set_doppler_center(int32_t doppler_center)
 void pcps_acquisition::set_doppler_uncertainty(uint32_t doppler_uncertainty)
 {
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
-    // d_num_doppler_bins > 1 guard: a single-bin full grid is already as narrow as
-    // it can be, and forcing 2 active bins in that case would write past the
-    // bin-count-sized grid allocations (see d_doppler_search_narrowed's doc comment).
-    const bool narrow = (doppler_uncertainty == 0) && d_acq_parameters.enable_doppler_narrowing && (d_num_doppler_bins > 1);
+    const bool narrow = (doppler_uncertainty == 0) && d_acq_parameters.enable_doppler_narrowing;
     const uint32_t num_doppler_bins_active = narrow ? 2U : d_num_doppler_bins;
     if (narrow != d_doppler_search_narrowed || num_doppler_bins_active != d_num_doppler_bins_active)
         {

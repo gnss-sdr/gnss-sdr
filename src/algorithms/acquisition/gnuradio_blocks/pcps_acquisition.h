@@ -226,6 +226,9 @@ private:
     const uint32_t d_magnitude_grid_stride;
     const uint32_t d_doppler_wipeoffs_stride;
     const uint32_t d_num_doppler_bins;
+    // Narrowed acquisition always computes two rows (candidate + noise
+    // reference), even when the configured full grid contains only one bin.
+    const uint32_t d_num_doppler_bins_step1_capacity;
     const uint32_t d_num_doppler_bins_step2;
     const uint32_t d_dump_channel;
     const float d_threshold;
@@ -253,14 +256,10 @@ private:
     // or 2 (known bin + reference bin) when d_doppler_search_narrowed is true.
     uint32_t d_num_doppler_bins_active;
     // Explicit narrowed-mode flag, set directly by set_doppler_uncertainty() --
-    // deliberately NOT inferred from "d_num_doppler_bins_active < d_num_doppler_bins",
-    // which breaks in two ways: (1) if d_num_doppler_bins == 1 (a valid full-grid
-    // config), forcing 2 active bins would write past the bin-count-sized grid
-    // allocations; (2) if d_num_doppler_bins == 2, an actually-narrowed request
-    // computes the same active count as the full grid, so the inferred comparison
-    // would silently miss it. set_doppler_uncertainty() only ever sets this true
-    // when d_num_doppler_bins > 1, so d_num_doppler_bins_active is always <=
-    // d_num_doppler_bins and existing allocations are never exceeded.
+    // deliberately NOT inferred from "d_num_doppler_bins_active < d_num_doppler_bins".
+    // A narrowed request computes 2 rows regardless of whether the configured full
+    // grid has 1, 2, or more bins; d_num_doppler_bins_step1_capacity guarantees
+    // storage for both rows, while the explicit flag avoids the 2 == 2 ambiguity.
     bool d_doppler_search_narrowed;
     uint32_t d_buffer_count;
     uint32_t d_channel;

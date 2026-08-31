@@ -244,22 +244,32 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, NarrowingDisabled /*unuse
 TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, NarrowingEnabledOneBinGrid /*unused*/)
 {
     // doppler_step >= 2*doppler_max -> d_num_doppler_bins == 1. Regression test
-    // for the P1 fix: narrowing must NOT force a second active bin into a
-    // 1-row grid allocation (that was an out-of-bounds write). With the
-    // d_num_doppler_bins > 1 guard, narrowing silently stays off here and the
-    // block just runs its (degenerate, single-hypothesis) full grid -- centered
-    // so that its one bin lands exactly on the true Doppler, so a successful
-    // acquisition here also confirms the fallback behaves correctly, not just
-    // "didn't crash".
+    // for the one-bin assisted case: narrowed mode still needs two rows (the
+    // assisted candidate and its noise reference), so storage must not be sized
+    // only from the one-row full grid. The assisted candidate must remain exactly
+    // at the center supplied by the caller.
     init(/*doppler_max=*/5000, /*doppler_step=*/10000, /*enable_doppler_narrowing=*/true, /*use_cfar=*/false);
 
-    // The single full-grid bin sits at doppler_center - doppler_max; choose
-    // doppler_center so that bin lands exactly on the true Doppler.
-    const int doppler_center = static_cast<int>(kTrueDopplerHz) + 5000;
+    const int doppler_center = static_cast<int>(kTrueDopplerHz);
     const RunResult result = run_acquisition(top_block, config.get(), gnss_synchro, doppler_center, 0);
 
-    ASSERT_EQ(1, result.rx_message) << "Acquisition failure with a 1-bin full grid (narrowing should have stayed disabled, not crashed).";
-    EXPECT_LE(result.doppler_error_hz, 666) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";
+    ASSERT_EQ(1, result.rx_message) << "Acquisition failure with narrowed assistance over a 1-bin full grid.";
+    EXPECT_LE(result.doppler_error_hz, 1) << "Narrowed acquisition did not search the assisted Doppler center.";
+    EXPECT_LT(result.delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
+}
+
+
+TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, NarrowingEnabledOneBinGridCfar /*unused*/)
+{
+    // Exercise the same one-bin allocation edge through CFAR, which consumes the
+    // second narrowed row as its noise-power reference.
+    init(/*doppler_max=*/5000, /*doppler_step=*/10000, /*enable_doppler_narrowing=*/true, /*use_cfar=*/true);
+
+    const int doppler_center = static_cast<int>(kTrueDopplerHz);
+    const RunResult result = run_acquisition(top_block, config.get(), gnss_synchro, doppler_center, 0);
+
+    ASSERT_EQ(1, result.rx_message) << "CFAR acquisition failure with narrowed assistance over a 1-bin full grid.";
+    EXPECT_LE(result.doppler_error_hz, 1) << "CFAR narrowed acquisition did not search the assisted Doppler center.";
     EXPECT_LT(result.delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
 }
 

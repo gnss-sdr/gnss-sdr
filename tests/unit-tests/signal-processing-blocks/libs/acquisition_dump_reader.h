@@ -37,10 +37,15 @@ public:
         int channel = 0,
         int execution = 1);
 
-    Acquisition_Dump_Reader(const Acquisition_Dump_Reader& other) = default;                 //!< Copy constructor
-    Acquisition_Dump_Reader& operator=(const Acquisition_Dump_Reader& other) = default;      //!< Copy assignment operator
-    Acquisition_Dump_Reader(Acquisition_Dump_Reader&& other) noexcept = default;             //!< Move constructor
-    Acquisition_Dump_Reader& operator=(Acquisition_Dump_Reader&& other) noexcept = default;  //!< Move assignment operator
+    // Note: the defaulted move operations carry no explicit noexcept
+    // specification. A function defaulted on its first declaration must match
+    // the implicitly computed exception specification, and the move assignment
+    // of the std::string/std::vector members is not noexcept in older
+    // standard libraries (e.g. GCC 4.8 on Ubuntu 14.04).
+    Acquisition_Dump_Reader(const Acquisition_Dump_Reader& other) = default;             //!< Copy constructor
+    Acquisition_Dump_Reader& operator=(const Acquisition_Dump_Reader& other) = default;  //!< Copy assignment operator
+    Acquisition_Dump_Reader(Acquisition_Dump_Reader&& other) = default;                  //!< Move constructor
+    Acquisition_Dump_Reader& operator=(Acquisition_Dump_Reader&& other) = default;       //!< Move assignment operator
 
     bool read_binary_acq();
 

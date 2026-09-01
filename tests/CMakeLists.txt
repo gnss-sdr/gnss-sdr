@@ -1272,6 +1272,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             Gnuradio::analog
             GTest::GTest
             GTest::Main
+            Matio::matio
             Volkgnsssdr::volkgnsssdr
             signal_generator_gr_blocks
             signal_source_gr_blocks

@@ -101,6 +101,19 @@ All notable changes to GNSS-SDR will be documented in this file.
   to 572 ms (32% less time, 1.48x throughput). Results are mathematically
   equivalent to the previous implementation within normal floating-point
   behavior.
+- New configuration parameter `Acquisition_XX.enable_doppler_narrowing`
+  (default: `false`): when dual-frequency assistance provides an exactly-known
+  Doppler (`GNSS-SDR.assist_dual_frequency_acq=true` and the same satellite is
+  already tracked in the primary band), the PCPS acquisition searches a single
+  Doppler bin at the assisted center, plus one noise-reference bin, instead of
+  the full configured grid, and recalibrates the detection threshold to the
+  reduced hypothesis count when `pfa` is set. Acquisition `.mat` dumps now
+  always include two new `int32` variables, `doppler_center` and
+  `doppler_narrowed`. Narrowed dumps store a 2-column `acq_grid` encoded with
+  `doppler_max = 0` and `doppler_step` set to the configured `doppler_max`, so
+  the generic rule
+  `doppler(col) = -doppler_max + doppler_center + doppler_step * col` decodes
+  both full and narrowed grids. Contributed by @joebre.
 
 ### Improvements in Interoperability:
 

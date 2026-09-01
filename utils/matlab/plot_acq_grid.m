@@ -84,10 +84,20 @@ switch(signal_type)
         signal = '5C';
 end
 filename = [path file '_' system '_' signal '_ch_' num2str(channel) '_' num2str(execution) '_sat_' num2str(sat) '.mat'];
-load(filename);
+dump = load(filename);
+acq_grid = dump.acq_grid;
+doppler_step = dump.doppler_step;
+doppler_max = dump.doppler_max;
+input_power = dump.input_power;
+if isfield(dump, 'doppler_center')
+    doppler_center = dump.doppler_center;
+else
+    % Acquisition dumps written before doppler_center was added were centered at 0 Hz.
+    doppler_center = 0;
+end
 [n_fft, n_dop_bins] = size(acq_grid);
 [d_max, f_max] = find(acq_grid == max(max(acq_grid)));
-freq = (0 : n_dop_bins - 1) * double(doppler_step) - double(doppler_max);
+freq = double(doppler_center) + (0 : n_dop_bins - 1) * double(doppler_step) - double(doppler_max);
 delay = (0 : n_fft - 1) / n_fft * n_chips;
 
 
@@ -122,4 +132,4 @@ plot(delay, acq_grid(:, f_max)./normalization)
 xlim([min(delay) max(delay)])
 xlabel('Code delay (chips)')
 ylabel('Test statistics')
-title(['Doppler wipe-off = ' num2str((f_max - 1) * doppler_step - doppler_max) ' Hz'])
+title(['Doppler wipe-off = ' num2str(freq(f_max)) ' Hz'])

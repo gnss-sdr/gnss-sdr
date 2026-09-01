@@ -25,6 +25,7 @@
 
 #include "gnss_block_interface.h"
 #include "gnss_signal.h"
+#include <cstdint>
 
 /** \addtogroup Core
  * \{ */
@@ -51,7 +52,7 @@ public:
     virtual gr::basic_block_sptr get_right_block() = 0;
     virtual Gnss_Signal get_signal() = 0;
     virtual void start_acquisition() = 0;
-    virtual void assist_acquisition_doppler(double Carrier_Doppler_hz) = 0;
+    virtual void assist_acquisition_doppler(double Carrier_Doppler_hz, uint32_t doppler_uncertainty = 1) = 0;
     virtual void stop_channel() = 0;
     virtual void set_signal(const Gnss_Signal&) = 0;
 };

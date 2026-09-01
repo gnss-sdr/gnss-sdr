@@ -291,11 +291,20 @@ def acquisition_plans_for_args(args):
     ]
 
 
+def dump_scalar_value(data, key, default=None):
+    import numpy as np
+
+    value = data.get(key)
+    if value is None:
+        return default
+    return np.asarray(value[()]).reshape(-1)[0].item()
+
+
 def positive_acq_value(data):
     for key in ("positive_acq", "d_positive_acq"):
-        value = data.get(key)
+        value = dump_scalar_value(data, key)
         if value is not None:
-            return value[0]
+            return value
     return None
 
 
@@ -327,24 +336,55 @@ def matching_dump_prefixes(input_path):
     return sorted(prefixes)
 
 
-def configured_doppler_axis(doppler_max, doppler_step, n_dop_bins, file_path):
+def configured_doppler_axis(
+    doppler_max,
+    doppler_step,
+    n_dop_bins,
+    file_path,
+    doppler_center=0.0,
+    doppler_narrowed=False,
+):
     import numpy as np
 
     doppler_max = abs(float(doppler_max))
     doppler_step = abs(float(doppler_step))
+    doppler_center = float(doppler_center)
     if doppler_step == 0:
         raise ValueError(f"{file_path}: doppler_step must be non-zero")
 
-    freq = np.arange(-doppler_max, doppler_max + doppler_step / 2, doppler_step)
+    if doppler_narrowed:
+        if n_dop_bins != 2:
+            print(
+                f"Warning: {file_path.name}: narrowed acquisition metadata "
+                f"expects 2 Doppler bins, but acq_grid has {n_dop_bins} "
+                "columns. Plotting the available columns from the stored "
+                "center and step."
+            )
+        return (
+            doppler_center
+            - doppler_max
+            + np.arange(n_dop_bins) * doppler_step
+        )
+
+    freq = doppler_center + np.arange(
+        -doppler_max,
+        doppler_max + doppler_step / 2,
+        doppler_step,
+    )
     if len(freq) == n_dop_bins:
         return freq
 
-    legacy_freq = np.arange(n_dop_bins) * doppler_step - doppler_max
+    legacy_freq = (
+        doppler_center
+        + np.arange(n_dop_bins) * doppler_step
+        - doppler_max
+    )
     if len(freq) - 1 == n_dop_bins:
         print(
             f"Warning: {file_path.name}: acq_grid has {n_dop_bins} Doppler "
             f"bins, one fewer than the inclusive configured axis from "
-            f"{-doppler_max:g} Hz to {doppler_max:g} Hz in "
+            f"{doppler_center - doppler_max:g} Hz to "
+            f"{doppler_center + doppler_max:g} Hz in "
             f"{doppler_step:g} Hz steps. Plotting the available bins from "
             f"{legacy_freq[0]:g} Hz to {legacy_freq[-1]:g} Hz."
         )
@@ -352,11 +392,16 @@ def configured_doppler_axis(doppler_max, doppler_step, n_dop_bins, file_path):
 
     print(
         f"Warning: {file_path.name}: configured Doppler axis has {len(freq)} "
-        f"bins from {-doppler_max:g} Hz to {doppler_max:g} Hz in "
+        f"bins from {doppler_center - doppler_max:g} Hz to "
+        f"{doppler_center + doppler_max:g} Hz in "
         f"{doppler_step:g} Hz steps, but acq_grid has {n_dop_bins} columns. "
         "Plotting the available columns over the configured Doppler range."
     )
-    return np.linspace(-doppler_max, doppler_max, n_dop_bins)
+    return np.linspace(
+        doppler_center - doppler_max,
+        doppler_center + doppler_max,
+        n_dop_bins,
+    )
 
 
 def expected_doppler_bin_counts(doppler_max, doppler_step):
@@ -386,12 +431,17 @@ def read_acquisition_dump(file_path, n_chips, positive_only):
             if positive_acq != 1:
                 return None
 
-        doppler_step = data["doppler_step"][0]
-        doppler_max = data["doppler_max"][0]
+        doppler_step = dump_scalar_value(data, "doppler_step")
+        doppler_max = dump_scalar_value(data, "doppler_max")
+        doppler_center = dump_scalar_value(data, "doppler_center", 0.0)
+        doppler_narrowed = bool(
+            dump_scalar_value(data, "doppler_narrowed", 0)
+        )
         acq_grid = data["acq_grid"][:]
-        expected_doppler_bins = expected_doppler_bin_counts(
-            doppler_max,
-            doppler_step,
+        expected_doppler_bins = (
+            {2}
+            if doppler_narrowed
+            else expected_doppler_bin_counts(doppler_max, doppler_step)
         )
         if (
             acq_grid.shape[1] not in expected_doppler_bins
@@ -405,6 +455,8 @@ def read_acquisition_dump(file_path, n_chips, positive_only):
             doppler_step,
             n_dop_bins,
             file_path,
+            doppler_center,
+            doppler_narrowed,
         )
         d_max, f_max = np.unravel_index(np.argmax(acq_grid), acq_grid.shape)
         delay = np.arange(n_fft) / n_fft * n_chips

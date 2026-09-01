@@ -202,6 +202,8 @@ private:
 
     void set_channels_state();  // Initializes the channels state (start acquisition or keep standby)
                                 // using the configuration parameters (number of channels and max channels in acquisition)
+    //! On assistance, estimated_doppler is returned already projected to the
+    //! searched signal's carrier frequency (see project_doppler()).
     Gnss_Signal search_next_signal(const std::string& searched_signal,
         bool& is_primary_frequency,
         bool& assistance_available,
@@ -213,7 +215,7 @@ private:
     void print_help();
     void check_desktop_conf_in_fpga_env();
 
-    double project_doppler(const std::string& searched_signal, double primary_freq_doppler_hz);
+    double project_doppler(const std::string& searched_signal, const std::string& assist_signal, double assist_doppler_hz);
     bool is_multiband() const;
 
     std::vector<std::string> split_string(const std::string& s, char delim);

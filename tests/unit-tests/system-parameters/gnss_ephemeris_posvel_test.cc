@@ -143,11 +143,11 @@ TEST(GnssEphemerisPosVelTest, CNAV)
     e.l2c_phasing_flag = 0;
     e.alert_flag = 0;
     e.antispoofing_flag = 0;
-    auto dopplerL2 = e.predicted_doppler(590328., 0., 0., 0., 0., 0., 0., 2);
-    auto dopplerL5 = e.predicted_doppler(590328., 0., 0., 0., 0., 0., 0., 5);
+    auto dopplerL2 = e.predicted_doppler(590328., 60., 0., 0., 0., 0., 0., 2);
+    auto dopplerL5 = e.predicted_doppler(590328., 60., 0., 0., 0., 0., 0., 5);
     e.satellitePosition(590328.);
-    EXPECT_NEAR(-117.548462, dopplerL2, 1e-4);
-    EXPECT_NEAR(-112.650609, dopplerL5, 1e-4);
+    EXPECT_NEAR(711.584836, dopplerL2, 1e-4);
+    EXPECT_NEAR(681.935468, dopplerL5, 1e-4);
     EXPECT_NEAR(-14623772.544799, e.satpos_X, 1e-4);
     EXPECT_NEAR(7423769.471881, e.satpos_Y, 1e-4);
     EXPECT_NEAR(20862927.586354, e.satpos_Z, 1e-4);

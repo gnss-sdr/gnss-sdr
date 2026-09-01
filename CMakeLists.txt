@@ -168,6 +168,8 @@ option(ENABLE_GNSS_SIM_INSTALL "Enable the installation of gnss_sim on the fly" 
 
 option(ENABLE_CPUFEATURES "Make use of the cpu_features library" ON)
 
+option(ENABLE_GNSS_SDR_TUI "Build the GNSS-SDR Terminal User Interface (gnss-sdr-tui)" OFF)
+
 if(NOT (ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA))
     set(ENABLE_GNSS_SIM_INSTALL OFF)
 endif()
@@ -3443,6 +3445,7 @@ add_feature_info(ENABLE_INSTALL_TESTS ENABLE_INSTALL_TESTS "Install test binarie
 add_feature_info(ENABLE_BENCHMARKS ENABLE_BENCHMARKS "Enables building of code snippet benchmarks.")
 add_feature_info(ENABLE_EXTERNAL_MATHJAX ENABLE_EXTERNAL_MATHJAX "Use MathJax from an external CDN in HTML docs when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'.")
 add_feature_info(ENABLE_CPUFEATURES ENABLE_CPUFEATURES "Make use of the cpu_features library.")
+add_feature_info(ENABLE_GNSS_SDR_TUI ENABLE_GNSS_SDR_TUI "Build the GNSS-SDR Terminal User Interface (gnss-sdr-tui).")
 add_feature_info(ENABLE_GNSSSDR_ADHOC_CODESIGN ENABLE_GNSSSDR_ADHOC_CODESIGN "Ad-hoc sign local Darwin build-tree executables that must run after the build.")
 add_feature_info(Boost_USE_STATIC_LIBS Boost_USE_STATIC_LIBS "Use Boost static libraries.")
 

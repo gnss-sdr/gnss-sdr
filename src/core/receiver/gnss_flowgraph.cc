@@ -37,6 +37,7 @@
 #include "configuration_interface.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
+#include "gnss_frequencies.h"
 #include "gnss_satellite.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_synchro_monitor.h"
@@ -1706,29 +1707,19 @@ void GNSSFlowgraph::remove_signal(const Gnss_Signal& gs)
 
 
 // project Doppler from primary frequency to secondary frequency
-double GNSSFlowgraph::project_doppler(const std::string& searched_signal, double primary_freq_doppler_hz)
+double GNSSFlowgraph::project_doppler(const std::string& searched_signal, const std::string& assist_signal, double assist_doppler_hz)
 {
-    switch (mapStringValues_[searched_signal])
+    // The Doppler shift scales with the carrier frequency. For the GLONASS FDMA
+    // pair, the ratio of the base frequencies FREQ2_GLO/FREQ1_GLO equals the
+    // ratio of the per-slot spacings DFRQ2_GLO/DFRQ1_GLO (both are 7/9), so
+    // using the base frequencies is exact for every frequency slot.
+    const auto searched_freq = SIGNAL_FREQ_MAP.find(searched_signal);
+    const auto assist_freq = SIGNAL_FREQ_MAP.find(assist_signal);
+    if ((searched_freq == SIGNAL_FREQ_MAP.end()) || (assist_freq == SIGNAL_FREQ_MAP.end()))
         {
-        case evGPS_L5:
-        case evGAL_5X:
-            return (primary_freq_doppler_hz / FREQ1) * FREQ5;
-            break;
-        case evGAL_7X:
-            return (primary_freq_doppler_hz / FREQ1) * FREQ7;
-            break;
-        case evGPS_2S:
-            return (primary_freq_doppler_hz / FREQ1) * FREQ2;
-            break;
-        case evGAL_E6:
-            return (primary_freq_doppler_hz / FREQ1) * FREQ6;
-            break;
-        case evQZS_J5:
-            return (primary_freq_doppler_hz / FREQ1) * FREQ5;
-            break;
-        default:
-            return primary_freq_doppler_hz;
+            return assist_doppler_hz;
         }
+    return (assist_doppler_hz / assist_freq->second) * searched_freq->second;
 }
 
 
@@ -1781,9 +1772,10 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                        << ", Signal " << channels_[current_channel]->get_signal().get_signal_str();
                             if (assistance_available == true && configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_))
                                 {
-                                    // Doppler is exactly known from the already-tracked primary
-                                    // frequency: restrict the search to a single Doppler bin.
-                                    channels_[current_channel]->assist_acquisition_doppler(project_doppler(channels_[current_channel]->get_signal().get_signal_str(), estimated_doppler), 0);
+                                    // Doppler is exactly known from the already-tracked assisting
+                                    // frequency (search_next_signal() returns it already projected
+                                    // to this band): restrict the search to a single Doppler bin.
+                                    channels_[current_channel]->assist_acquisition_doppler(estimated_doppler, 0);
                                 }
                             else
                                 {
@@ -2294,6 +2286,13 @@ bool GNSSFlowgraph::is_multiband() const
                     multiband = true;
                 }
         }
+    if (configuration_->property("Channels_1D.count", 0) > 0)
+        {
+            if (configuration_->property("Channels_B3.count", 0) > 0)
+                {
+                    multiband = true;
+                }
+        }
     if (configuration_->property("Channels_J1.count", 0) > 0)
         {
             if (configuration_->property("Channels_J5.count", 0) > 0)
@@ -2316,7 +2315,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
     assistance_available = false;
     Gnss_Signal result{};
     bool found_signal = false;
-    std::string assist_signal = "";
+    std::vector<std::string> assist_signal_candidates;
     auto& available_signals = available_signals_map_.at(searched_signal);
 
     if (available_signals.empty())
@@ -2331,38 +2330,61 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
         {
         case evGPS_2S:
         case evGPS_L5:
-            assist_signal = "1C";
+            assist_signal_candidates = {"1C"};
             break;
 
         case evGAL_5X:
         case evGAL_7X:
         case evGAL_E6:
-            assist_signal = "1B";
+            assist_signal_candidates = {"1B"};
+            break;
+
+        case evGLO_2G:
+            assist_signal_candidates = {"1G"};
+            break;
+
+        case evBDS_B3:
+            // Prefer a satellite tracked on B1I; BeiDou-3 satellites also
+            // broadcast B1C, so fall back to a satellite tracked on B1C.
+            assist_signal_candidates = {"B1", "1D"};
             break;
 
         case evGPS_1C:
         case evGAL_1B:
         case evGLO_1G:
         case evBDS_B1:
+        case evBDS_B1C:
         case evQZS_J1:
+        case evSBAS_1C:
             is_primary_frequency = true;
             break;
 
         case evQZS_J5:
-            assist_signal = "J1";
+            assist_signal_candidates = {"J1"};
             break;
 
         default:
             break;
         }
 
-    if (!assist_signal.empty())
+    const bool any_assist_configured = std::any_of(assist_signal_candidates.begin(), assist_signal_candidates.end(),
+        [&](const std::string& assist_signal) { return configuration_->property("Channels_" + assist_signal + ".count", 0) > 0; });
+
+    if (any_assist_configured)
         {
-            if (configuration_->property("Channels_" + assist_signal + ".count", 0) > 0)
+            // 1. Get the current channel status map
+            const auto current_channels_status = channels_status_->get_current_status_map();
+            // 2. search the currently tracked primary signal satellites and assist the acquisition if the satellite is not tracked on the assisted signal
+            for (const auto& assist_signal : assist_signal_candidates)
                 {
-                    // 1. Get the current channel status map
-                    const auto current_channels_status = channels_status_->get_current_status_map();
-                    // 2. search the currently tracked primary signal satellites and assist the acquisition if the satellite is not tracked on the assisted signal
+                    if (found_signal)
+                        {
+                            break;
+                        }
+                    if (configuration_->property("Channels_" + assist_signal + ".count", 0) <= 0)
+                        {
+                            continue;
+                        }
                     for (const auto& current_status : current_channels_status)
                         {
                             if (std::string(current_status.second->Signal) == assist_signal)
@@ -2373,7 +2395,8 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
 
                                     if (it2 != available_signals.end())
                                         {
-                                            estimated_doppler = static_cast<float>(current_status.second->Carrier_Doppler_hz);
+                                            // Doppler observed on the assisting band, projected to the searched band
+                                            estimated_doppler = static_cast<float>(project_doppler(searched_signal, assist_signal, current_status.second->Carrier_Doppler_hz));
                                             RX_time = current_status.second->RX_time;
                                             result = *it2;
                                             available_signals.erase(it2);

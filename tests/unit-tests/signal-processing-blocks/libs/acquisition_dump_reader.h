@@ -37,10 +37,10 @@ public:
         int channel = 0,
         int execution = 1);
 
-    Acquisition_Dump_Reader(const Acquisition_Dump_Reader& other) = default;       //!< Copy constructor
-    Acquisition_Dump_Reader& operator=(const Acquisition_Dump_Reader& other);      //!< Copy assignment operator
-    Acquisition_Dump_Reader(Acquisition_Dump_Reader&& other) noexcept;             //!< Move constructor
-    Acquisition_Dump_Reader& operator=(Acquisition_Dump_Reader&& other) noexcept;  //!< Move assignment operator
+    Acquisition_Dump_Reader(const Acquisition_Dump_Reader& other) = default;                 //!< Copy constructor
+    Acquisition_Dump_Reader& operator=(const Acquisition_Dump_Reader& other) = default;      //!< Copy assignment operator
+    Acquisition_Dump_Reader(Acquisition_Dump_Reader&& other) noexcept = default;             //!< Move constructor
+    Acquisition_Dump_Reader& operator=(Acquisition_Dump_Reader&& other) noexcept = default;  //!< Move assignment operator
 
     bool read_binary_acq();
 
@@ -53,6 +53,8 @@ public:
     float input_power{};
     float threshold{};
     int positive_acq{};
+    int doppler_center{};     //!< Doppler grid center (Hz); 0 for dumps that predate this variable
+    bool doppler_narrowed{};  //!< true if the dump was written by an assisted (narrowed) acquisition: 2 columns, {center, center + doppler_max}
     unsigned int PRN{};
     unsigned int num_dwells{};
     uint64_t sample_counter{};

@@ -45,6 +45,7 @@ set(CORE_LIBS_HEADERS
     osnma_helper.h
     osnma_msg_receiver.h
     osnma_nav_data_manager.h
+    protobuf_cleanup_manager.h
     serdes_nav_message.h
     string_converter.h
 )

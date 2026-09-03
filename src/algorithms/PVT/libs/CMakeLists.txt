@@ -120,6 +120,7 @@ get_filename_component(PROTO_INCLUDE_HEADERS_DIR ${PROTO_HDRS} DIRECTORY)
 target_include_directories(pvt_libs
     PUBLIC
         ${GNSSSDR_SOURCE_DIR}/src/core/receiver
+        ${GNSSSDR_SOURCE_DIR}/src/core/libs
 )
 
 # Do not apply clang-tidy fixes to protobuf generated headers

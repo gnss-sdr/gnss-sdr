@@ -16,6 +16,7 @@
 
 #include "Beidou_DNAV.h"
 #include "GPS_CNAV.h"
+#include "gnss_sdr_filesystem.h"
 #include "pvt_conf.h"
 #include "rinex_printer.h"
 #include "rtklib_rtkcmn.h"
@@ -24,7 +25,10 @@
 #include "signal_enabled_flags.h"
 #include <gtest/gtest.h>
 #include <algorithm>
+#include <chrono>
+#include <cstdint>
 #include <fstream>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -38,9 +42,47 @@ protected:
         this->conf();
     }
     ~RinexPrinterTest() = default;
+    void SetUp() override;
+    void TearDown() override;
     void conf();
+
+    /*!
+     * Builds a Rinex_Printer whose files live in a directory private to that
+     * printer.
+     */
+    std::shared_ptr<Rinex_Printer> make_rinex_printer(uint32_t signal_enabled_flags, int version = 3);
+
     rtk_t rtk;
+
+private:
+    fs::path test_dir;
+    int printer_count = 0;
 };
+
+
+void RinexPrinterTest::SetUp()
+{
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const auto* test_info = ::testing::UnitTest::GetInstance()->current_test_info();
+    test_dir = fs::temp_directory_path() / ("rinex_printer_test_" + std::string(test_info->name()) + "_" + std::to_string(stamp));
+    fs::create_directories(test_dir);
+}
+
+
+void RinexPrinterTest::TearDown()
+{
+    errorlib::error_code ec;
+    fs::remove_all(test_dir, ec);
+}
+
+
+std::shared_ptr<Rinex_Printer> RinexPrinterTest::make_rinex_printer(uint32_t signal_enabled_flags, int version)
+{
+    const fs::path printer_dir = test_dir / std::to_string(++printer_count);
+    fs::create_directories(printer_dir);
+    return std::make_shared<Rinex_Printer>(signal_enabled_flags, version, printer_dir.string());
+}
+
 
 void RinexPrinterTest::conf()
 {
@@ -428,7 +470,7 @@ TEST_F(RinexPrinterTest, GpsUtcHeaderExpandsEightBitWeekFields)
     std::map<int, Gnss_Synchro> gnss_observables_map;
     gnss_observables_map[1] = gs;
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
+    auto rp = make_rinex_printer(signal_enabled_flags);
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 42.0, true);
 
     const std::string obsfile = rp->get_obsfilename();
@@ -444,9 +486,6 @@ TEST_F(RinexPrinterTest, GpsUtcHeaderExpandsEightBitWeekFields)
 
     const std::string leap_second_line = find_rinex_header_line(navfile, "LEAP SECONDS");
     EXPECT_NE(std::string::npos, leap_second_line.find(std::to_string(expected_wn_lsf)));
-
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -492,7 +531,7 @@ TEST_F(RinexPrinterTest, Rinex4GpsNavAndObs)
     std::map<int, Gnss_Synchro> gnss_observables_map;
     gnss_observables_map[1] = gs;
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
+    auto rp = make_rinex_printer(signal_enabled_flags, 4);
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 42.0, true);
 
     const std::string obsfile = rp->get_obsfilename();
@@ -526,9 +565,6 @@ TEST_F(RinexPrinterTest, Rinex4GpsNavAndObs)
     EXPECT_TRUE(find_line_containing(navfile, "D+0").empty());
     EXPECT_TRUE(find_line_containing(navfile, "D-0").empty());
     EXPECT_FALSE(find_line_containing(navfile, "e+0").empty());
-
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -571,7 +607,7 @@ TEST_F(RinexPrinterTest, ObservationRecordsReportLossOfLockIndicatorBits)
             pvt_solution->gps_ephemeris_map[prn] = eph;
         }
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 3);
+    auto rp = make_rinex_printer(signal_enabled_flags, 3);
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 42.0, true);
 
     const std::string obsfile = rp->get_obsfilename();
@@ -594,9 +630,6 @@ TEST_F(RinexPrinterTest, ObservationRecordsReportLossOfLockIndicatorBits)
     // applies to observations produced after polarity resolution
     EXPECT_EQ('1', phase_lli_of("G03"));
     EXPECT_EQ('1', phase_lli_of("G04"));
-
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -632,7 +665,7 @@ TEST_F(RinexPrinterTest, Rinex4GalileoNav)
     gs.PRN = 11;
     gnss_observables_map[11] = std::move(gs);
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
+    auto rp = make_rinex_printer(signal_enabled_flags, 4);
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
     const std::string obsfile = rp->get_obsfilename();
@@ -645,9 +678,6 @@ TEST_F(RinexPrinterTest, Rinex4GalileoNav)
 
     const std::string sto_line = find_line_containing(navfile, "GAUT");
     EXPECT_NE(std::string::npos, sto_line.find("UTCGAL"));
-
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -672,7 +702,7 @@ TEST_F(RinexPrinterTest, Rinex4GlonassNav)
     gs.PRN = 1;
     gnss_observables_map[1] = std::move(gs);
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
+    auto rp = make_rinex_printer(signal_enabled_flags, 4);
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
     const std::string obsfile = rp->get_obsfilename();
@@ -689,9 +719,6 @@ TEST_F(RinexPrinterTest, Rinex4GlonassNav)
     // The FDMA record has the SV / EPOCH / SV CLK line plus four broadcast
     // orbit lines (see RINEX 4.02 specification, Table A15)
     EXPECT_EQ(5, count_record_body_lines(navfile, "> EPH R01 FDMA"));
-
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -734,7 +761,7 @@ TEST_F(RinexPrinterTest, Rinex4GpsCnavNav)
     std::memcpy(static_cast<void*>(gs.Signal), "2S", 3);
     gnss_observables_map[1] = std::move(gs);
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
+    auto rp = make_rinex_printer(signal_enabled_flags, 4);
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 42.0, true);
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 43.0, false);
     pvt_solution->gps_cnav_eop.pm_x += CNAV_PM_X_LSB;
@@ -770,9 +797,6 @@ TEST_F(RinexPrinterTest, Rinex4GpsCnavNav)
     EXPECT_DOUBLE_EQ(-0.1759799122810, rinex_nav_field(eop_ut1_line, 1, 4));
     EXPECT_DOUBLE_EQ(-0.00007975101470947, rinex_nav_field(eop_ut1_line, 2, 4));
     EXPECT_DOUBLE_EQ(0.0, rinex_nav_field(eop_ut1_line, 3, 4));
-
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -789,7 +813,7 @@ TEST_F(RinexPrinterTest, Rinex3GpsCnavOnlyPromotesBothFilesToRinex4)
     pvt_solution->gps_cnav_ephemeris_map[1] = eph;
 
     const std::map<int, Gnss_Synchro> no_observations;
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 3);
+    auto rp = make_rinex_printer(signal_enabled_flags, 3);
     rp->print_rinex_annotation(pvt_solution.get(), no_observations, 42.0, false);
 
     const std::string obsfile = rp->get_obsfilename();
@@ -799,9 +823,6 @@ TEST_F(RinexPrinterTest, Rinex3GpsCnavOnlyPromotesBothFilesToRinex4)
     EXPECT_NE(std::string::npos, find_rinex_header_line(obsfile, "RINEX VERSION / TYPE").find("4.02"));
     EXPECT_NE(std::string::npos, find_rinex_header_line(navfile, "RINEX VERSION / TYPE").find("4.02"));
     EXPECT_FALSE(find_line_starting_with(navfile, "> EPH G01 CNAV").empty());
-
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -838,7 +859,7 @@ TEST_F(RinexPrinterTest, Rinex4QzssNav)
     std::memcpy(static_cast<void*>(gs.Signal), "J1", 3);
     gnss_observables_map[193] = std::move(gs);
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
+    auto rp = make_rinex_printer(signal_enabled_flags, 4);
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 42.0, true);
 
     const std::string obsfile = rp->get_obsfilename();
@@ -854,9 +875,6 @@ TEST_F(RinexPrinterTest, Rinex4QzssNav)
 
     const std::string leap_second_line = find_rinex_header_line(navfile, "LEAP SECONDS");
     EXPECT_NE(std::string::npos, leap_second_line.find("18"));
-
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -898,7 +916,7 @@ TEST_F(RinexPrinterTest, Rinex4QzssCnavNav)
     std::memcpy(static_cast<void*>(gs.Signal), "J5", 3);
     gnss_observables_map[193] = std::move(gs);
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
+    auto rp = make_rinex_printer(signal_enabled_flags, 4);
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 42.0, true);
 
     const std::string obsfile = rp->get_obsfilename();
@@ -920,9 +938,6 @@ TEST_F(RinexPrinterTest, Rinex4QzssCnavNav)
     const std::string eop_ut1_line = find_record_body_line(navfile, "> EOP J01 CNVX", 2);
     EXPECT_DOUBLE_EQ(172986.0, rinex_nav_field(eop_ut1_line, 0, 4));
     EXPECT_DOUBLE_EQ(-0.1754972934723, rinex_nav_field(eop_ut1_line, 1, 4));
-
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -939,7 +954,7 @@ TEST_F(RinexPrinterTest, Rinex3QzssCnavOnlyPromotesBothFilesToRinex4)
     pvt_solution->gps_cnav_ephemeris_map[193] = eph;
 
     const std::map<int, Gnss_Synchro> no_observations;
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 3);
+    auto rp = make_rinex_printer(signal_enabled_flags, 3);
     rp->print_rinex_annotation(pvt_solution.get(), no_observations, 42.0, false);
 
     const std::string obsfile = rp->get_obsfilename();
@@ -949,9 +964,6 @@ TEST_F(RinexPrinterTest, Rinex3QzssCnavOnlyPromotesBothFilesToRinex4)
     EXPECT_NE(std::string::npos, find_rinex_header_line(obsfile, "RINEX VERSION / TYPE").find("4.02"));
     EXPECT_NE(std::string::npos, find_rinex_header_line(navfile, "RINEX VERSION / TYPE").find("4.02"));
     EXPECT_FALSE(find_line_starting_with(navfile, "> EPH J01 CNAV").empty());
-
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -973,7 +985,7 @@ TEST_F(RinexPrinterTest, Rinex3GpsCnavObservationsUseLnavNavigationWhenAvailable
     pvt_solution->gps_cnav_ephemeris_map[1] = cnav_eph;
 
     const std::map<int, Gnss_Synchro> no_observations;
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 3);
+    auto rp = make_rinex_printer(signal_enabled_flags, 3);
     rp->print_rinex_annotation(pvt_solution.get(), no_observations, 42.0, false);
 
     const std::string obsfile = rp->get_obsfilename();
@@ -985,9 +997,6 @@ TEST_F(RinexPrinterTest, Rinex3GpsCnavObservationsUseLnavNavigationWhenAvailable
     EXPECT_NE(std::string::npos, find_rinex_header_line(obsfile, "SYS / # / OBS TYPES").find("C2S L2S D2S S2S"));
     EXPECT_FALSE(find_line_starting_with(navfile, "G01 ").empty());
     EXPECT_TRUE(find_line_starting_with(navfile, "> EPH G01 CNAV").empty());
-
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -1009,7 +1018,7 @@ TEST_F(RinexPrinterTest, Rinex4GpsWritesLnavAndCnavWhenBothAreAvailable)
     pvt_solution->gps_cnav_ephemeris_map[1] = cnav_eph;
 
     const std::map<int, Gnss_Synchro> no_observations;
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
+    auto rp = make_rinex_printer(signal_enabled_flags, 4);
     rp->print_rinex_annotation(pvt_solution.get(), no_observations, 42.0, false);
 
     const std::string obsfile = rp->get_obsfilename();
@@ -1018,9 +1027,6 @@ TEST_F(RinexPrinterTest, Rinex4GpsWritesLnavAndCnavWhenBothAreAvailable)
 
     EXPECT_FALSE(find_line_starting_with(navfile, "> EPH G01 LNAV").empty());
     EXPECT_FALSE(find_line_starting_with(navfile, "> EPH G01 CNAV").empty());
-
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -1043,7 +1049,7 @@ TEST_F(RinexPrinterTest, Rinex4ModelRecordsAreNavOnlyDeduplicatedAndRefreshable)
     pvt_solution->gps_utc_model.DeltaT_LS = 18;
 
     const std::map<int, Gnss_Synchro> no_observations;
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
+    auto rp = make_rinex_printer(signal_enabled_flags, 4);
     rp->print_rinex_annotation(pvt_solution.get(), no_observations, 42.0, false);
     rp->print_rinex_annotation(pvt_solution.get(), no_observations, 43.0, false);
 
@@ -1063,9 +1069,6 @@ TEST_F(RinexPrinterTest, Rinex4ModelRecordsAreNavOnlyDeduplicatedAndRefreshable)
     EXPECT_EQ(1, count_rinex_header_lines(obsfile, "LEAP SECONDS"));
     EXPECT_NE(std::string::npos, find_rinex_header_line(navfile, "LEAP SECONDS").find("19"));
     EXPECT_NE(std::string::npos, find_rinex_header_line(obsfile, "LEAP SECONDS").find("19"));
-
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -1102,7 +1105,7 @@ TEST_F(RinexPrinterTest, Rinex4GpsAndQzssLnavFieldsUseRinexSemantics)
     pvt_solution->gps_ephemeris_map[193] = qzss;
 
     const std::map<int, Gnss_Synchro> no_observations;
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
+    auto rp = make_rinex_printer(signal_enabled_flags, 4);
     rp->print_rinex_annotation(pvt_solution.get(), no_observations, 10030.0, false);
 
     const std::string obsfile = rp->get_obsfilename();
@@ -1130,9 +1133,6 @@ TEST_F(RinexPrinterTest, Rinex4GpsAndQzssLnavFieldsUseRinexSemantics)
     EXPECT_DOUBLE_EQ(1.0, rinex_nav_field(qzss_orbit5, 3, 4));
     EXPECT_DOUBLE_EQ(32.0, rinex_nav_field(qzss_orbit6, 0, 4));
     EXPECT_DOUBLE_EQ(1.0, rinex_nav_field(qzss_orbit7, 1, 4));
-
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -1177,7 +1177,7 @@ TEST_F(RinexPrinterTest, Rinex4GalileoFieldsPreserveSignalProvenanceAndPhysicalU
     pvt_solution->galileo_ephemeris_map[12] = fnav;
 
     const std::map<int, Gnss_Synchro> no_observations;
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
+    auto rp = make_rinex_printer(signal_enabled_flags, 4);
     rp->print_rinex_annotation(pvt_solution.get(), no_observations, 3700.0, false);
 
     const std::string obsfile = rp->get_obsfilename();
@@ -1204,9 +1204,6 @@ TEST_F(RinexPrinterTest, Rinex4GalileoFieldsPreserveSignalProvenanceAndPhysicalU
     EXPECT_DOUBLE_EQ(-1.0, rinex_nav_field(fnav_orbit6, 0, 4));
     EXPECT_DOUBLE_EQ(40.0, rinex_nav_field(fnav_orbit6, 1, 4));
     EXPECT_DOUBLE_EQ(0.0, rinex_nav_field(fnav_orbit6, 3, 4));
-
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -1223,7 +1220,7 @@ TEST_F(RinexPrinterTest, GalileoObsHeaderUsesContinuationLines)
     pvt_solution->galileo_ephemeris_map[11] = eph;
 
     const std::map<int, Gnss_Synchro> no_observations;
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
+    auto rp = make_rinex_printer(signal_enabled_flags, 4);
     rp->print_rinex_annotation(pvt_solution.get(), no_observations, 0.0, false);
 
     const std::string obsfile = rp->get_obsfilename();
@@ -1248,9 +1245,6 @@ TEST_F(RinexPrinterTest, GalileoObsHeaderUsesContinuationLines)
     EXPECT_NE(std::string::npos, observation_type_lines[0].find(" C6B"));
     EXPECT_EQ("      ", observation_type_lines[1].substr(0, 6));
     EXPECT_NE(std::string::npos, observation_type_lines[1].find(" L6B D6B S6B"));
-
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -1309,7 +1303,7 @@ TEST_F(RinexPrinterTest, Rinex4BeidouDnavAndObs)
     std::map<int, Gnss_Synchro> gnss_observables_map;
     gnss_observables_map[6] = gs;
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 4);
+    auto rp = make_rinex_printer(signal_enabled_flags, 4);
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 1000.0, true);
 
     const std::string obsfile = rp->get_obsfilename();
@@ -1348,9 +1342,6 @@ TEST_F(RinexPrinterTest, Rinex4BeidouDnavAndObs)
             EXPECT_EQ(expected_lsf_week, std::stoi(leap_second_line.substr(12, 6)));
             EXPECT_EQ(7, std::stoi(leap_second_line.substr(18, 6)));
         }
-
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -1378,7 +1369,7 @@ TEST_F(RinexPrinterTest, Rinex3BeidouModelsAreInsertedWhenValid)
     std::map<int, Gnss_Synchro> gnss_observables_map;
     gnss_observables_map[6] = gs;
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags, 3);
+    auto rp = make_rinex_printer(signal_enabled_flags, 3);
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 1000.0, true);
 
     pvt_solution->beidou_dnav_iono.valid = true;
@@ -1420,9 +1411,6 @@ TEST_F(RinexPrinterTest, Rinex3BeidouModelsAreInsertedWhenValid)
     ASSERT_GE(leap_second_line.size(), 24U);
     EXPECT_EQ(18, std::stoi(leap_second_line.substr(0, 6)));
     EXPECT_EQ(7, std::stoi(leap_second_line.substr(18, 6)));
-
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -1441,7 +1429,7 @@ TEST_F(RinexPrinterTest, GalileoObsHeader)
     gs.PRN = 1;
     gnss_observables_map[1] = std::move(gs);
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
+    auto rp = make_rinex_printer(signal_enabled_flags);
 
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
@@ -1472,10 +1460,8 @@ TEST_F(RinexPrinterTest, GalileoObsHeader)
     std::string expected_str("E    4 C1B L1B D1B S1B                                      SYS / # / OBS TYPES ");
     EXPECT_EQ(0, expected_str.compare(line_aux));
     fstr.close();
-    fs::remove(obsfile);
-    fs::remove(navfile);
 
-    auto rp2 = std::make_shared<Rinex_Printer>(GAL_1B | GAL_E5b);
+    auto rp2 = make_rinex_printer(GAL_1B | GAL_E5b);
 
     rp2->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
     obsfile = rp2->get_obsfilename();
@@ -1502,8 +1488,6 @@ TEST_F(RinexPrinterTest, GalileoObsHeader)
     std::string expected_str2("E    8 C1B L1B D1B S1B C7X L7X D7X S7X                      SYS / # / OBS TYPES ");
     EXPECT_EQ(0, expected_str2.compare(line_aux));
     fstr2.close();
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -1522,7 +1506,7 @@ TEST_F(RinexPrinterTest, GlonassObsHeader)
     gs.PRN = 1;
     gnss_observables_map[1] = std::move(gs);
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
+    auto rp = make_rinex_printer(signal_enabled_flags);
 
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
@@ -1555,8 +1539,6 @@ TEST_F(RinexPrinterTest, GlonassObsHeader)
     EXPECT_EQ(0, expected_str.compare(line_aux));
     EXPECT_EQ(0, expected_slot_frq.compare(line_slot_frq));
     fstr.close();
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -1584,7 +1566,7 @@ TEST_F(RinexPrinterTest, MixedObsHeader)
     gnss_observables_map[1] = gs;
     gnss_observables_map[2] = std::move(gs);
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
+    auto rp = make_rinex_printer(signal_enabled_flags);
 
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
@@ -1624,8 +1606,6 @@ TEST_F(RinexPrinterTest, MixedObsHeader)
     EXPECT_EQ(0, expected_str.compare(line_aux));
     EXPECT_EQ(0, expected_str2.compare(line_aux2));
     fstr.close();
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -1653,7 +1633,7 @@ TEST_F(RinexPrinterTest, MixedObsHeaderGpsGlo)
     gnss_observables_map[1] = gs;
     gnss_observables_map[2] = std::move(gs);
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
+    auto rp = make_rinex_printer(signal_enabled_flags);
 
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
@@ -1693,8 +1673,6 @@ TEST_F(RinexPrinterTest, MixedObsHeaderGpsGlo)
     EXPECT_EQ(0, expected_str.compare(line_aux));
     EXPECT_EQ(0, expected_str2.compare(line_aux2));
     fstr.close();
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -1741,7 +1719,7 @@ TEST_F(RinexPrinterTest, GalileoObsLog)
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
+    auto rp = make_rinex_printer(signal_enabled_flags);
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
     std::string obsfile = rp->get_obsfilename();
@@ -1757,9 +1735,6 @@ TEST_F(RinexPrinterTest, GalileoObsLog)
     std::string expected_sat("E22  22000000.000 7         3.724 7      1534.000 7        42.000               ");
     EXPECT_EQ(0, expected_epoch.compare(line_epoch));
     EXPECT_EQ(0, expected_sat.compare(line_sat));
-
-    fs::remove(obsfile);
-    fs::remove(navfile);
 }
 
 
@@ -1806,7 +1781,7 @@ TEST_F(RinexPrinterTest, GlonassObsLog)
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
+    auto rp = make_rinex_printer(signal_enabled_flags);
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
     std::string obsfile = rp->get_obsfilename();
@@ -1822,9 +1797,6 @@ TEST_F(RinexPrinterTest, GlonassObsLog)
     std::string expected_sat("R22  22000000.000 7         3.724 7      1534.000 7        42.000               ");
     EXPECT_EQ(0, expected_epoch.compare(line_epoch));
     EXPECT_EQ(0, expected_sat.compare(line_sat));
-
-    fs::remove(navfile);
-    fs::remove(obsfile);
 }
 
 
@@ -1886,7 +1858,7 @@ TEST_F(RinexPrinterTest, GpsObsLogDualBand)
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
+    auto rp = make_rinex_printer(signal_enabled_flags);
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
     std::string obsfile = rp->get_obsfilename();
@@ -1902,9 +1874,6 @@ TEST_F(RinexPrinterTest, GpsObsLogDualBand)
     std::string expected_sat("G08  22000002.100 6         7.226 6       321.000 6        39.000    22000000.000 7         3.724 7      1534.000 7        42.000  ");
     EXPECT_EQ(0, expected_epoch.compare(line_epoch));
     EXPECT_EQ(0, expected_sat.compare(line_sat));
-
-    fs::remove(navfile);
-    fs::remove(obsfile);
 }
 
 
@@ -1963,7 +1932,7 @@ TEST_F(RinexPrinterTest, GalileoObsLogDualBand)
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
+    auto rp = make_rinex_printer(signal_enabled_flags);
 
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
@@ -1980,9 +1949,6 @@ TEST_F(RinexPrinterTest, GalileoObsLogDualBand)
     std::string expected_sat("E08  22000002.100 6         7.226 6       321.000 6        39.000    22000000.000 7         3.724 7      1534.000 7        42.000  ");
     EXPECT_EQ(0, expected_epoch.compare(line_epoch));
     EXPECT_EQ(0, expected_sat.compare(line_sat));
-
-    fs::remove(navfile);
-    fs::remove(obsfile);
 }
 
 
@@ -2073,7 +2039,7 @@ TEST_F(RinexPrinterTest, MixedObsLog)
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(7, gs7));
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(8, gs8));
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
+    auto rp = make_rinex_printer(signal_enabled_flags);
 
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
@@ -2090,9 +2056,6 @@ TEST_F(RinexPrinterTest, MixedObsLog)
     std::string expected_sat("E16  22000000.000 7         0.127 7       -20.000 7        42.000    22000000.000 6         8.292 6      1534.000 6        41.000  ");
     EXPECT_EQ(0, expected_epoch.compare(line_epoch));
     EXPECT_EQ(0, expected_sat.compare(line_sat));
-
-    fs::remove(navfile);
-    fs::remove(obsfile);
 }
 
 
@@ -2183,7 +2146,7 @@ TEST_F(RinexPrinterTest, MixedObsLogGpsGlo)
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(7, gs7));
     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(8, gs8));
 
-    auto rp = std::make_shared<Rinex_Printer>(signal_enabled_flags);
+    auto rp = make_rinex_printer(signal_enabled_flags);
 
     rp->print_rinex_annotation(pvt_solution.get(), gnss_observables_map, 0.0, true);
 
@@ -2200,7 +2163,4 @@ TEST_F(RinexPrinterTest, MixedObsLogGpsGlo)
     std::string expected_sat("R16  22000000.000 6         8.292 6      1534.000 6        41.000    22000000.000 7         0.127 7       -20.000 7        42.000  ");
     EXPECT_EQ(0, expected_epoch.compare(line_epoch));
     EXPECT_EQ(0, expected_sat.compare(line_sat));
-
-    fs::remove(navfile);
-    fs::remove(obsfile);
 }

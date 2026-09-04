@@ -126,6 +126,15 @@ void gps_l2c_telemetry_decoder_gs::set_channel(int channel)
 
 void gps_l2c_telemetry_decoder_gs::reset()
 {
+    // Channels are reused (not recreated) across a stop/restart -- without
+    // this, the underlying libswiftcnav Viterbi/frame-sync decoder
+    // (d_cnav_decoder) is only ever initialized once, in the constructor,
+    // so a channel reacquiring after being stopped mid-track carries stale
+    // internal decoder state (two Viterbi decoders' path history, sync
+    // hypothesis) into the new tracking session instead of starting clean
+    // like a channel used for the first time does. Same issue as GPS L5,
+    // which shares this decoder.
+    cnav_msg_decoder_init(&d_cnav_decoder);
     d_last_valid_preamble = d_sample_counter;
     d_TOW_at_current_symbol = 0;
     d_sent_tlm_failed_msg = false;

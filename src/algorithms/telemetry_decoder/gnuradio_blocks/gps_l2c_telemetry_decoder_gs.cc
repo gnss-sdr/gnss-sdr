@@ -126,6 +126,7 @@ void gps_l2c_telemetry_decoder_gs::set_channel(int channel)
 
 void gps_l2c_telemetry_decoder_gs::reset()
 {
+    cnav_msg_decoder_init(&d_cnav_decoder);
     d_last_valid_preamble = d_sample_counter;
     d_TOW_at_current_symbol = 0;
     d_sent_tlm_failed_msg = false;

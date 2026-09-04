@@ -196,6 +196,17 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
     std::fill(d_magnitude_grid.begin(), d_magnitude_grid.end(), 0.0F);
 
     update_grid_doppler_wipeoffs();
+
+    // While idle (not actively searching), general_work() only drains its input to avoid
+    // stalling the upstream block, producing no output. Without a batching hint the TPB
+    // scheduler wakes this block's thread for every small burst of new input, which is
+    // pure scheduling overhead. Requiring a larger noutput_items granularity forces the
+    // scheduler to accumulate more input per wakeup, cutting call frequency without
+    // changing behavior (production while idle is still always 0 either way).
+    // One PRN code period at this signal's own decimated rate is the natural
+    // lower bound: the algorithm never does anything meaningful below that granularity.
+    const auto output_multiple_samples = std::max<uint32_t>(1U, static_cast<uint32_t>(std::lround(conf_.samples_per_ms)));
+    this->set_output_multiple(output_multiple_samples);
 }
 
 

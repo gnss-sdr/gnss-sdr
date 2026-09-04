@@ -149,6 +149,14 @@ public:
      */
     int32_t get_almanac_health(uint32_t prn) const;
 
+    /*!
+     * \brief Gets the raw 4-bit SV Configuration Code (IS-GPS-200, page 25
+     * of subframe 4) for a satellite PRN, or -1 if not yet decoded. Only
+     * the raw broadcast value is exposed here -- see GNSSFlowgraph for
+     * where its meaning is validated empirically before being trusted.
+     */
+    int32_t get_almanac_config_code(uint32_t prn) const;
+
     bool satellite_validation();
     bool almanac_validation() const;
 
@@ -164,6 +172,7 @@ private:
     void decode_qzss_almanac_epoch_health(const std::bitset<GPS_SUBFRAME_BITS>& subframe_bits);
 
     std::map<int32_t, int32_t> almanacHealth;  //!< Map that stores the health information stored in the almanac
+    std::map<int32_t, int32_t> almanacConfigCode;  //!< Map that stores the raw SV Configuration Code (page 25) per PRN
 
     std::map<int32_t, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs https://www.navcen.uscg.gov/?Do=constellationStatus
 

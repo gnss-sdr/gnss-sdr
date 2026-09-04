@@ -27,6 +27,7 @@
 #include <volk/volk.h>
 #include <algorithm>  // std::rotate, std::fill_n
 #include <array>
+#include <cmath>  // for ceil
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -392,8 +393,8 @@ bool pcps_acquisition_fine_doppler_cc::start()
 }
 
 
-int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
-    gr_vector_int &ninput_items __attribute__((unused)), gr_vector_const_void_star &input_items,
+int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items __attribute__((unused)),
+    gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
     /*!
@@ -416,7 +417,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
 
     if (!d_active)
         {
-            d_sample_counter += static_cast<uint64_t>(d_fft_size);  // sample counter
+            d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
             consume_each(ninput_items[0]);
             return 0;
         }
@@ -462,12 +463,12 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
         case 3:  // Fine doppler estimation
             samples_remaining = 10 * static_cast<int32_t>(d_acq_params.samples_per_ms) - d_n_samples_in_buffer;
 
-            if (samples_remaining > noutput_items)
+            if (samples_remaining > ninput_items[0])
                 {
-                    std::copy(in_aux, in_aux + noutput_items, &d_10_ms_buffer[d_n_samples_in_buffer]);
-                    d_n_samples_in_buffer += noutput_items;
-                    d_sample_counter += static_cast<uint64_t>(noutput_items);  // sample counter
-                    consume_each(noutput_items);
+                    std::copy(in_aux, in_aux + ninput_items[0], &d_10_ms_buffer[d_n_samples_in_buffer]);
+                    d_n_samples_in_buffer += ninput_items[0];
+                    d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
+                    consume_each(ninput_items[0]);
                 }
             else
                 {
@@ -477,7 +478,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                             d_sample_counter += static_cast<uint64_t>(samples_remaining);  // sample counter
                             consume_each(samples_remaining);
                         }
-                    estimate_Doppler();  // disabled in repo
+                    estimate_Doppler();
                     d_n_samples_in_buffer = 0;
                     d_state = 4;
                 }
@@ -504,8 +505,8 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             d_state = 0;
             if (!d_acq_params.blocking_on_standby)
                 {
-                    d_sample_counter += static_cast<uint64_t>(noutput_items);  // sample counter
-                    consume_each(noutput_items);
+                    d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
+                    consume_each(ninput_items[0]);
                 }
             // Copy and push current Gnss_Synchro to monitor queue
             if (d_acq_params.enable_monitor_output)
@@ -537,16 +538,16 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             d_state = 0;
             if (!d_acq_params.blocking_on_standby)
                 {
-                    d_sample_counter += static_cast<uint64_t>(noutput_items);  // sample counter
-                    consume_each(noutput_items);
+                    d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
+                    consume_each(ninput_items[0]);
                 }
             break;
         default:
             d_state = 0;
             if (!d_acq_params.blocking_on_standby)
                 {
-                    d_sample_counter += static_cast<uint64_t>(noutput_items);  // sample counter
-                    consume_each(noutput_items);
+                    d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
+                    consume_each(ninput_items[0]);
                 }
             break;
         }

@@ -171,7 +171,7 @@ private:
     void decode_gps_almanac_health_sf5(const std::bitset<GPS_SUBFRAME_BITS>& subframe_bits);
     void decode_qzss_almanac_epoch_health(const std::bitset<GPS_SUBFRAME_BITS>& subframe_bits);
 
-    std::map<int32_t, int32_t> almanacHealth;  //!< Map that stores the health information stored in the almanac
+    std::map<int32_t, int32_t> almanacHealth;      //!< Map that stores the health information stored in the almanac
     std::map<int32_t, int32_t> almanacConfigCode;  //!< Map that stores the raw SV Configuration Code (page 25) per PRN
 
     std::map<int32_t, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs https://www.navcen.uscg.gov/?Do=constellationStatus

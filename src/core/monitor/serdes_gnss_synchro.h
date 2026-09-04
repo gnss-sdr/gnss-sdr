@@ -20,6 +20,7 @@
 
 #include "gnss_synchro.h"
 #include "gnss_synchro.pb.h"  // file created by Protocol Buffers at compile time
+#include "protobuf_cleanup_manager.h"
 #include <array>
 #include <string>
 #include <utility>
@@ -37,11 +38,16 @@ public:
         // Verify that the version of the library that we linked against is
         // compatible with the version of the headers we compiled against.
         GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+        // This is a static instance of "protobuf resource cleaner" class,
+        // that would be destructed only once at the end of the program execution
+        // This prevents random crashes due to memory corruption
+        // And keeps memory leak checkers happy
+        volatile auto& protobuf_cleaner __attribute__((unused)) = protobuf_cleanup_manager::get();
     }
 
     ~Serdes_Gnss_Synchro()
     {
-        google::protobuf::ShutdownProtobufLibrary();
     }
 
     inline Serdes_Gnss_Synchro(const Serdes_Gnss_Synchro& other) noexcept  //!< Copy constructor

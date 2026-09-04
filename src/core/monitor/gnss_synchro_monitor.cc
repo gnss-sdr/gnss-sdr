@@ -68,27 +68,45 @@ int gnss_synchro_monitor::general_work(int noutput_items __attribute__((unused))
 {
     // Get the input buffer pointer
     const auto** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);
+    // Convert to a vector and write to the UDP sink
+    std::vector<Gnss_Synchro> stocks;
 
-    // Loop through each input stream channel
+    // Find maximum number of items across of all inputs
+    int n_items_max = 0;
     for (int channel_index = 0; channel_index < d_nchannels; channel_index++)
         {
-            // Loop through each item in each input stream channel
-            for (int item_index = 0; item_index < ninput_items[channel_index]; item_index++)
+            n_items_max = std::max(n_items_max, ninput_items[channel_index]);
+        }
+
+    // Loop through each item in each input stream channel
+    for (int item_index = 0; item_index < n_items_max; item_index++)
+        {
+            // Use the count variable to limit how many items are sent per channel
+            count++;
+            // Loop through each input stream channel
+            for (int channel_index = 0; channel_index < d_nchannels; channel_index++)
                 {
-                    // Use the count variable to limit how many items are sent per channel
-                    count++;
+                    if (item_index >= ninput_items[channel_index])
+                        {
+                            continue;
+                        }
                     if (count >= d_decimation_factor)
                         {
-                            // Convert to a vector and write to the UDP sink
-                            std::vector<Gnss_Synchro> stocks;
                             stocks.push_back(in[channel_index][item_index]);
-                            udp_sink_ptr->write_gnss_synchro(stocks);
-                            // Reset count variable
-                            count = 0;
-                            // Consume the number of items for the input stream channel
-                            consume(channel_index, ninput_items[channel_index]);
                         }
+                    // Consume the number of items for the input stream channel
+                    consume(channel_index, 1);
                 }
+            if (count >= d_decimation_factor)
+                {
+                    // Reset count variable
+                    count = 0;
+                }
+        }
+    // Do not send empty datagrams
+    if (!stocks.empty())
+        {
+            udp_sink_ptr->write_gnss_synchro(stocks);
         }
 
     // Not producing any outputs

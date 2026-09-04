@@ -20,6 +20,7 @@
 
 #include "monitor_pvt.h"
 #include "monitor_pvt.pb.h"  // file created by Protocol Buffers at compile time
+#include "protobuf_cleanup_manager.h"
 #include <memory>
 #include <string>
 #include <utility>
@@ -42,11 +43,16 @@ public:
         // Verify that the version of the library that we linked against is
         // compatible with the version of the headers we compiled against.
         GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+        // This is a static instance of "protobuf resource cleaner" class,
+        // that would be destructed only once at the end of the program execution
+        // This prevents random crashes due to memory corruption
+        // And keeps memory leak checkers happy
+        volatile auto& protobuf_cleaner __attribute__((unused)) = protobuf_cleanup_manager::get();
     }
 
     ~Serdes_Monitor_Pvt()
     {
-        // google::protobuf::ShutdownProtobufLibrary();
     }
 
     inline Serdes_Monitor_Pvt(const Serdes_Monitor_Pvt& other) noexcept : monitor_(other.monitor_)  //!< Copy constructor

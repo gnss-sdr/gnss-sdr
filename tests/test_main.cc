@@ -144,6 +144,7 @@ private:
 #include "unit-tests/arithmetic/magnitude_squared_test.cc"
 #include "unit-tests/arithmetic/multiply_test.cc"
 #include "unit-tests/arithmetic/preamble_correlator_test.cc"
+#include "unit-tests/control-plane/gnss_synchro_monitor_test.cc"
 #include "unit-tests/control-plane/in_memory_configuration_test.cc"
 #include "unit-tests/control-plane/protobuf_test.cc"
 #include "unit-tests/control-plane/string_converter_test.cc"

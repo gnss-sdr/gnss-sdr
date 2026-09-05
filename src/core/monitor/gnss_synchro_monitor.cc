@@ -68,9 +68,6 @@ int gnss_synchro_monitor::general_work(int noutput_items __attribute__((unused))
 {
     // Get the input buffer pointer
     const auto** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);
-    // Convert to a vector and write to the UDP sink
-    std::vector<Gnss_Synchro> stocks;
-
     // Find maximum number of items across of all inputs
     int n_items_max = 0;
     for (int channel_index = 0; channel_index < d_nchannels; channel_index++)
@@ -83,6 +80,8 @@ int gnss_synchro_monitor::general_work(int noutput_items __attribute__((unused))
         {
             // Use the count variable to limit how many items are sent per channel
             count++;
+            // Gnss_Synchro objects selected in this round, sent in a single datagram
+            std::vector<Gnss_Synchro> stocks;
             // Loop through each input stream channel
             for (int channel_index = 0; channel_index < d_nchannels; channel_index++)
                 {
@@ -101,12 +100,12 @@ int gnss_synchro_monitor::general_work(int noutput_items __attribute__((unused))
                 {
                     // Reset count variable
                     count = 0;
+                    // Do not send empty datagrams
+                    if (!stocks.empty())
+                        {
+                            udp_sink_ptr->write_gnss_synchro(stocks);
+                        }
                 }
-        }
-    // Do not send empty datagrams
-    if (!stocks.empty())
-        {
-            udp_sink_ptr->write_gnss_synchro(stocks);
         }
 
     // Not producing any outputs

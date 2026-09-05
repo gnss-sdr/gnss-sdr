@@ -329,6 +329,15 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Reliability:
 
+- Fixed the decimation logic of the `Monitor`, `AcquisitionMonitor` and
+  `TrackingMonitor` blocks: `decimation_factor` now selects every N-th epoch and
+  always consumes all the input items, instead of grouping `Gnss_Synchro`
+  objects into bursts and skipping others, and empty datagrams are no longer
+  sent. Fixed a use-after-free memory corruption caused by
+  `google::protobuf::ShutdownProtobufLibrary()` being called from the destructor
+  of `Serdes_Gnss_Synchro`, before the protobuf library was actually used; the
+  library is now shut down only once, at program exit. Added a unit test for the
+  monitor decimation. Contributed by @vladisslav2011.
 - Hardened the Galileo OSNMA protocol implementation, adding support for Chain
   Renewal, Chain Revocation, Public Key Renewal, Public Key Revocation, Merkle
   Tree Renewal, and OSNMA Alert Message events. Improved the management of OSNMA

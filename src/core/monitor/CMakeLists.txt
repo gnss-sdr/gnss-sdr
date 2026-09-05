@@ -48,6 +48,7 @@ target_link_libraries(core_monitor
         Gnuradio::runtime
         protobuf::libprotobuf
         core_system_parameters
+        core_libs
     PRIVATE
         Boost::serialization
 )
@@ -59,7 +60,6 @@ target_include_directories(core_monitor
         ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
     PRIVATE
         ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs  # for gnss_sdr_make_unique
-        ${GNSSSDR_SOURCE_DIR}/src/core/libs  # for protobuf_cleanup_manager
 )
 
 # Do not apply clang-tidy fixes to protobuf generated headers

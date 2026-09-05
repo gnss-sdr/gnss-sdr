@@ -63,12 +63,16 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>  // for fill_n
 #include <array>
+#include <atomic>
 #include <cmath>      // for fmod, round, floor
 #include <exception>  // for exception
 #include <iostream>   // for cout, cerr
 #include <map>
 #include <memory>
+#include <mutex>
 #include <numeric>
+#include <set>
+#include <sstream>
 #include <vector>
 
 #if USE_GLOG_AND_GFLAGS
@@ -135,6 +139,10 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
       d_channel(0),
       d_secondary_code_length(0U),
       d_data_secondary_code_length(0U),
+      d_f_error_num_bins(0U),
+      d_f_error_bin_index(0U),
+      d_f_error_accum_counter(0U),
+      d_f_error_center_doppler_hz(0.0),
       d_pull_in_transitory(true),
       d_corrected_doppler(false),
       d_interchange_iq(false),
@@ -2094,6 +2102,153 @@ int64_t dll_pll_veml_tracking::uint64diff(uint64_t first, uint64_t second)
 }
 
 
+double dll_pll_veml_tracking::f_error_bin_multiplier(uint32_t bin_index)
+{
+    // bin 0 -> 0; then alternating outward: +1, -1, +2, -2, +3, -3, ...
+    if (bin_index == 0)
+        {
+            return 0.0;
+        }
+    const uint32_t half_steps = (bin_index + 1) / 2;
+    const auto half = static_cast<double>(half_steps);
+    return (bin_index % 2 == 1) ? half : -half;
+}
+
+
+namespace
+{
+// Thread-safe CSV append writer for the state-5 diagnostic, shared across all
+// dll_pll_veml_tracking channel instances that dump to the same filename (the
+// header is written once per filename; a monotonic scan_id groups the bins of
+// each individual frequency-error-reduction scan for easy Octave post-processing,
+// e.g. rows = csvread(filename, 1, 0); scan = rows(rows(:,1) == some_id, :);).
+std::mutex g_f_error_dump_mutex;
+std::set<std::string> g_f_error_dump_initialized;
+std::atomic<uint64_t> g_f_error_scan_id{0};
+
+void dump_f_error_csv(const std::string &filename, uint64_t scan_id, uint32_t prn, char system, uint32_t channel,
+    double cn0_dBHz, double selected_doppler_hz, uint32_t selected_bin,
+    const std::vector<double> &doppler_hz, const std::vector<double> &power)
+{
+    std::lock_guard<std::mutex> lock(g_f_error_dump_mutex);
+    const bool need_header = g_f_error_dump_initialized.find(filename) == g_f_error_dump_initialized.end();
+    // Truncate on the first write of this filename in this process (so each run starts a fresh
+    // file instead of accumulating scans from previous runs); append for subsequent scans.
+    std::ofstream f(filename, need_header ? std::ios::trunc : std::ios::app);
+    if (!f.is_open())
+        {
+            return;
+        }
+    if (need_header)
+        {
+            // system_char is the ASCII code of Dll_Pll_Conf::system ('G' GPS, 'E' Galileo, 'R' Glonass, ...),
+            // kept numeric so the whole file stays csvread()-compatible; PRN numbers alone collide across systems.
+            f << "scan_id,prn,system_char,channel,cn0_dBHz,selected_doppler_hz,selected_bin,bin_index,doppler_hz,power\n";
+            g_f_error_dump_initialized.insert(filename);
+        }
+    for (size_t i = 0; i < doppler_hz.size(); i++)
+        {
+            f << scan_id << "," << prn << "," << static_cast<uint32_t>(system) << "," << channel << "," << cn0_dBHz << "," << selected_doppler_hz << ","
+              << selected_bin << "," << i << "," << doppler_hz[i] << "," << power[i] << "\n";
+        }
+}
+}  // namespace
+
+
+void dll_pll_veml_tracking::run_f_error_scan_step()
+{
+    // Doppler offsets tested around the pull-in estimate, centered at bin 0 and
+    // alternating outward: +0, +step, -step, +2*step, -2*step, +3*step, -3*step, ...
+    // d_f_error_num_bins (always odd) is set from d_trk_parameters.f_error_step_num.
+    // Called from state 5 (case 5) only -- this state is fully passive: only
+    // d_carrier_doppler_hz is driven here, neither run_dll_pll() runs during the
+    // scan, so code phase and the carrier loop filter's state stay exactly as
+    // pull-in left them for the whole scan.
+
+    // incoherent accumulation of the correlated power for the current Doppler bin
+    // (only the Prompt correlator matters here; state 5 never saves
+    // Early/Late/Very-Early/Very-Late, since the DLL discriminator never runs)
+    d_f_error_power[d_f_error_bin_index] += static_cast<double>(std::norm(*d_Prompt));
+    d_f_error_prompt_samples[d_f_error_bin_index][d_f_error_accum_counter] = *d_Prompt;
+    d_f_error_accum_counter++;
+
+    if (d_f_error_accum_counter == d_trk_parameters.f_error_accumulation)
+        {
+            d_f_error_accum_counter = 0U;
+            d_f_error_bin_index++;
+        }
+
+    if (d_f_error_bin_index < d_f_error_num_bins)
+        {
+            // prepare the carrier for the (possibly new) bin under test; no PLL/FLL filter update
+            d_carrier_doppler_hz = d_f_error_center_doppler_hz + f_error_bin_multiplier(d_f_error_bin_index) * d_trk_parameters.f_error_doppler_step;
+        }
+    else
+        {
+            // all bins tested: keep the Doppler offset that provided the highest incoherent accumulation.
+            // case 5 transitions to state 2 (normal run_dll_pll() tracking) right after this call
+            // returns; this function won't run again for this channel until the next pull-in.
+            uint32_t best_bin = 0U;
+            for (uint32_t i = 1U; i < d_f_error_num_bins; i++)
+                {
+                    if (d_f_error_power[i] > d_f_error_power[best_bin])
+                        {
+                            best_bin = i;
+                        }
+                }
+            d_carrier_doppler_hz = d_f_error_center_doppler_hz + f_error_bin_multiplier(best_bin) * d_trk_parameters.f_error_doppler_step;
+            d_f_error_selected_doppler_hz = d_carrier_doppler_hz;
+
+            // The carrier loop filter's internal state was seeded once in start_tracking(), from the raw
+            // acquisition Doppler (d_acq_carrier_doppler_hz), before this scan ever ran; the scan itself
+            // never touches the loop filter (run_dll_pll() isn't called until it's done). Without this,
+            // the first closed-loop epoch after the scan would compute its output from that stale,
+            // acquisition-anchored state and jump back near d_acq_carrier_doppler_hz before re-converging
+            // on its own -- discarding the scan's whole point. Re-seed it here with the winning estimate.
+            d_carrier_loop_filter.initialize(static_cast<float>(d_carrier_doppler_hz));
+
+            LOG(INFO) << "Frequency error reduction: selected Doppler offset " << f_error_bin_multiplier(best_bin) * d_trk_parameters.f_error_doppler_step
+                      << " Hz on channel " << d_channel << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
+
+            // CN0 estimate for the winning bin, from its own raw Prompt samples (same
+            // M2M4 estimator/coherent integration time as the state 2/3/4 CN0 estimation).
+            const float f_error_cn0_dB_hz = cn0_m2m4_estimator(d_f_error_prompt_samples[best_bin].data(),
+                static_cast<int>(d_trk_parameters.f_error_accumulation), static_cast<float>(d_code_period));
+
+            // per-bin tested Doppler [Hz] and accumulated correlation power, plus the winning bin,
+            // in increasing Doppler order (bin visiting order is 0, +step, -step, +2*step, -2*step, ...,
+            // which is not frequency-sorted) so the sinc-shaped envelope, if present, is directly
+            // visible in the dump -- see load_f_error_dump.m / plot_f_error_scan.m.
+            std::vector<uint32_t> bins_by_doppler(d_f_error_num_bins);
+            for (uint32_t i = 0U; i < d_f_error_num_bins; i++)
+                {
+                    bins_by_doppler[i] = i;
+                }
+            std::sort(bins_by_doppler.begin(), bins_by_doppler.end(),
+                [this](uint32_t a, uint32_t b) { return f_error_bin_multiplier(a) < f_error_bin_multiplier(b); });
+
+            std::vector<double> bin_doppler_vec(d_f_error_num_bins);
+            std::vector<double> bin_power_vec(d_f_error_num_bins);
+            for (uint32_t n = 0U; n < d_f_error_num_bins; n++)
+                {
+                    const uint32_t i = bins_by_doppler[n];
+                    bin_doppler_vec[n] = d_f_error_center_doppler_hz + f_error_bin_multiplier(i) * d_trk_parameters.f_error_doppler_step;
+                    bin_power_vec[n] = d_f_error_power[i];
+                }
+            // position of the winning bin within the Doppler-sorted arrays dumped above
+            const auto rank_it = std::find(bins_by_doppler.begin(), bins_by_doppler.end(), best_bin);
+            const auto best_bin_doppler_rank = static_cast<uint32_t>(std::distance(bins_by_doppler.begin(), rank_it));
+
+            if (!d_trk_parameters.f_error_dump_filename.empty())
+                {
+                    dump_f_error_csv(d_trk_parameters.f_error_dump_filename, g_f_error_scan_id.fetch_add(1),
+                        d_acquisition_gnss_synchro->PRN, d_trk_parameters.system, d_channel, f_error_cn0_dB_hz, d_carrier_doppler_hz,
+                        best_bin_doppler_rank, bin_doppler_vec, bin_power_vec);
+                }
+        }
+}
+
+
 int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
@@ -2164,7 +2319,21 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
 
                 const int32_t samples_offset = round(d_acq_code_phase_samples);
                 d_acc_carrier_phase_rad -= (d_carrier_phase_step_rad - d_cfo_phase_step_rad) * static_cast<double>(samples_offset);
-                d_state = 2;
+                if (d_trk_parameters.f_error_step_num != 0)
+                    {
+                        // enter the frequency error reduction scan, centered on the pull-in Doppler estimate
+                        d_state = 5;
+                        d_f_error_center_doppler_hz = d_carrier_doppler_hz;
+                        d_f_error_bin_index = 0U;
+                        d_f_error_accum_counter = 0U;
+                        d_f_error_num_bins = d_trk_parameters.f_error_step_num;
+                        d_f_error_power.assign(d_f_error_num_bins, 0.0);
+                        d_f_error_prompt_samples.assign(d_f_error_num_bins, std::vector<gr_complex>(d_trk_parameters.f_error_accumulation));
+                    }
+                else
+                    {
+                        d_state = 2;
+                    }
                 // d_sample_counter += samples_offset;  // count for the processed samples
                 d_cn0_smoother.reset();
                 d_carrier_lock_test_smoother.reset();
@@ -2453,6 +2622,20 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                             }
                     }
             }
+            break;
+        case 5:  // Frequency error reduction: passive Doppler bin scan, no filter updates
+            {
+                do_correlation_step(in);
+                run_f_error_scan_step();
+                if (d_f_error_bin_index >= d_f_error_num_bins)
+                    {
+                        // scan complete: run_f_error_scan_step() already left d_carrier_doppler_hz
+                        // on the winning bin and re-seeded the carrier loop filter with it.
+                        d_state = 2;
+                    }
+                update_tracking_vars();
+            }
+            break;
         }
 
     current_synchro_data.TOW_at_current_symbol_ms = d_tow_from_telemetry_ms;

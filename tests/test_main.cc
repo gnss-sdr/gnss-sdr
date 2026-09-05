@@ -192,6 +192,7 @@ private:
 #include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_real_codes_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/discriminator_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/frequency_error_reduction_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/galileo_e5a_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/galileo_e5b_dll_pll_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/tracking_loop_filter_test.cc"

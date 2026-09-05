@@ -184,6 +184,59 @@ const std::vector<std::pair<int32_t, int32_t>> DELTAT_LSF({{271, 8}});
 constexpr double DELTAT_LSF_LSB = 1;
 
 // Page 25 - Antispoofing, SV config and SV health (PRN 25 -32)
+//
+// SV Configuration Code (4 bits/SV, all 32 SVs) -- IS-GPS-200, Table 20-V/
+// 20.3.3.5.1.4. Bit positions below were never previously derived in this
+// codebase (marked "\TODO Read Anti-Spoofing, SV config" where page 25 is
+// decoded) -- reconstructed here from the page's known word-packing (4
+// codes in word 3's remaining 16 data bits after the 2-bit Data ID + 6-bit
+// SV ID, then 6 codes in each of words 4-7's 24 data bits, then the last 4
+// codes in word 8's first 16 data bits) and cross-checked against the
+// already-verified HEALTH_SV25..32 constants immediately below: every
+// derived boundary here lines up exactly with where those pre-existing,
+// working constants start (e.g. word 8's SV config codes end at bit 226,
+// then a 2-bit reserved gap, then HEALTH_SV25 correctly starts at 229; the
+// 6-bit gaps between HEALTH_SV29/SV30 and HEALTH_SV31 across word
+// boundaries are each word's 6 trailing parity bits, consistently skipped
+// by the same numbering both here and in the existing health constants).
+// The raw 4-bit *values*' mapping to satellite block (which values mean
+// IIA/IIR/IIR-M vs IIF/III) is intentionally NOT hardcoded here -- see
+// GNSSFlowgraph's use of get_almanac_config_code(), which validates the
+// decoded values empirically against Gnss_Satellite's own known-correct
+// block table before trusting them for anything.
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV1({{69, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV2({{73, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV3({{77, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV4({{81, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV5({{91, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV6({{95, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV7({{99, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV8({{103, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV9({{107, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV10({{111, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV11({{121, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV12({{125, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV13({{129, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV14({{133, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV15({{137, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV16({{141, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV17({{151, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV18({{155, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV19({{159, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV20({{163, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV21({{167, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV22({{171, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV23({{181, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV24({{185, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV25({{189, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV26({{193, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV27({{197, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV28({{201, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV29({{211, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV30({{215, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV31({{219, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV32({{223, 4}});
+
 const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV25({{229, 6}});
 const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV26({{241, 6}});
 const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV27({{247, 6}});

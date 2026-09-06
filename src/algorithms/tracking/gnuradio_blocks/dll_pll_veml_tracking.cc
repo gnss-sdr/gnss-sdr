@@ -1252,10 +1252,32 @@ dll_pll_veml_tracking::~dll_pll_veml_tracking()
 bool dll_pll_veml_tracking::acquire_secondary()
 {
     // ******* preamble correlation ********
+    // Differential (delta-phase) demodulation instead of an absolute sign detector: each bit
+    // is decided from the phase change between consecutive Prompt symbols rather than from the
+    // sign of the I arm, so this does not require the PLL to have reached absolute phase lock --
+    // only that phase drift between two consecutive symbols stays under +-90 deg, i.e. that the
+    // FLL/DLL has the frequency and code roughly right (see the d_pull_in_transitory clearing
+    // check in general_work(), which is the only precondition left). This lets bit/secondary-code
+    // sync start as soon as pull-in clears instead of waiting on d_carrier_lock_test.
+    //
+    // Re{s[i] * conj(s[i-1])} = |s[i]| * |s[i-1]| * cos(delta_phase): negative means |delta_phase|
+    // > 90 deg, i.e. the data bit flipped between symbol i-1 and i.
+    //
+    // The first bit is an arbitrary reference (there is no absolute phase to anchor it to); this
+    // reproduces the same +-180 deg polarity ambiguity the old sign detector had, resolved the
+    // same way below via the sign of corr_value / d_Flag_PLL_180_deg_phase_locked.
+    std::vector<bool> reconstructed_bit(d_secondary_code_length);
+    reconstructed_bit[0] = false;
+    for (uint32_t i = 1; i < d_secondary_code_length; i++)
+        {
+            const bool bit_flipped = (d_Prompt_circular_buffer[i] * std::conj(d_Prompt_circular_buffer[i - 1])).real() < 0.0;
+            reconstructed_bit[i] = (reconstructed_bit[i - 1] != bit_flipped);
+        }
+
     int32_t corr_value = 0;
     for (uint32_t i = 0; i < d_secondary_code_length; i++)
         {
-            if (d_Prompt_circular_buffer[i].real() < 0.0)  // symbols clipping
+            if (!reconstructed_bit[i])
                 {
                     if (d_secondary_code_string[i] == '0')
                         {
@@ -2308,6 +2330,18 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 const double delta_trk_to_acq_prn_start_samples = static_cast<double>(acq_trk_diff_samples) - d_acq_code_phase_samples;
 
                 d_code_freq_chips = d_code_chip_rate;
+                if (d_trk_parameters.carrier_aiding)
+                    {
+                        // Doppler-aid the code rate used to bridge the acquisition-to-tracking gap
+                        // (acq_trk_diff_samples above), same formula run_dll() uses every epoch. Without
+                        // this, the elapsed code phase over that gap is computed at the bare nominal chip
+                        // rate; since the gap itself varies attempt to attempt (scheduling/threading
+                        // jitter), the resulting *uncompensated* phase error -- doppler_hz * chip_rate /
+                        // carrier_freq * gap_seconds -- can reach a full chip or more at typical Doppler
+                        // and gap values, landing the very first correlation on an arbitrary, unpredictable
+                        // fractional-chip offset instead of the true code phase.
+                        d_code_freq_chips += d_carrier_doppler_hz * d_code_chip_rate / d_signal_carrier_freq;
+                    }
                 d_code_phase_step_chips = d_code_freq_chips / d_trk_parameters.fs_in;
                 d_code_phase_rate_step_chips = 0.0;
                 const double T_chip_mod_seconds = 1.0 / d_code_freq_chips;
@@ -2414,17 +2448,31 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                 if (d_secondary)
                                     {
                                         // ####### SECONDARY CODE LOCK #####
-                                        d_Prompt_circular_buffer.push_back(*d_Prompt);
-                                        if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
+                                        // acquire_secondary() demodulates each bit from the delta-phase between
+                                        // consecutive Prompt symbols rather than from the absolute I-arm sign (see its
+                                        // definition), but we still gate accumulation on d_carrier_lock_test here: A/B
+                                        // testing against removing this gate showed loss-of-lock regressions, so keep
+                                        // it restored -- only the sign detector -> delta-phase demodulator swap is in
+                                        // effect. If lock is lost mid-accumulation, restart the window rather than keep
+                                        // a half-clean/half-noisy buffer.
+                                        if (d_carrier_lock_test >= d_carrier_lock_threshold)
                                             {
-                                                next_state = acquire_secondary();
-                                                if (next_state)
+                                                d_Prompt_circular_buffer.push_back(*d_Prompt);
+                                                if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
                                                     {
-                                                        LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " secondary code locked in channel " << d_channel
-                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
-                                                        std::cout << d_systemName << " " << d_signal_pretty_name << " secondary code locked in channel " << d_channel
-                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                        next_state = acquire_secondary();
+                                                        if (next_state)
+                                                            {
+                                                                LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " secondary code locked in channel " << d_channel
+                                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                                std::cout << d_systemName << " " << d_signal_pretty_name << " secondary code locked in channel " << d_channel
+                                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                            }
                                                     }
+                                            }
+                                        else
+                                            {
+                                                d_Prompt_circular_buffer.clear();
                                             }
                                     }
                                 else if (d_symbols_per_bit > 1)  // Signal does not have secondary code. Search a bit transition by sign change
@@ -2462,17 +2510,26 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         if (!next_state)
                                             {
                                                 // ******* preamble correlation ********
-                                                d_Prompt_circular_buffer.push_back(*d_Prompt);
-                                                if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
+                                                // Same delta-phase acquire_secondary() and same restored phase-lock gate
+                                                // as the secondary-code branch above -- see the comment there.
+                                                if (d_carrier_lock_test >= d_carrier_lock_threshold)
                                                     {
-                                                        next_state = acquire_secondary();
-                                                        if (next_state)
+                                                        d_Prompt_circular_buffer.push_back(*d_Prompt);
+                                                        if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
                                                             {
-                                                                LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
-                                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
-                                                                std::cout << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
-                                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                                next_state = acquire_secondary();
+                                                                if (next_state)
+                                                                    {
+                                                                        LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
+                                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
+                                                                        std::cout << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
+                                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                                    }
                                                             }
+                                                    }
+                                                else
+                                                    {
+                                                        d_Prompt_circular_buffer.clear();
                                                     }
                                             }
                                     }

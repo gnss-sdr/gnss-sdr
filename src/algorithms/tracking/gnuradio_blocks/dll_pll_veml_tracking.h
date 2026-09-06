@@ -102,6 +102,7 @@ private:
     void configure_bit_synchronizer();
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
+    void log_time_to_fix_breakdown(const char *method);  // DIAGNOSTIC: phase lock vs. bit sync timing
     int64_t uint64diff(uint64_t first, uint64_t second);
     int32_t save_matfile() const;
 
@@ -253,6 +254,15 @@ private:
     bool d_wait_for_bit_edge{false};
     bool d_b1c_prelock_output_pending{false};
     bool d_carrier_phase_discontinuity{true};  // pending report of a new carrier phase ambiguity
+
+    // DIAGNOSTIC: time-to-fix breakdown (phase lock vs. bit/secondary-code sync), see
+    // general_work()'s pull_in_transitory-clearing check and the accumulation gates.
+    int64_t d_tracking_loop_started_sample{-1};  // nitems_read(0) when state first entered 2 (run_dll_pll() starts), -1 = not yet
+    int64_t d_phase_lock_first_sample{-1};       // nitems_read(0) at first carrier_lock_test >= threshold since then, -1 = not yet
+    int32_t d_bit_sync_reset_count{0};           // d_Prompt_circular_buffer resets due to lock drop, after first phase lock
+    int32_t d_acquire_secondary_attempts{0};     // acquire_secondary() calls since the buffer first filled, reset per tracking attempt
+    int64_t d_case2_cycle_count{0};              // case-2 epochs executed since tracking loop started, reset per tracking attempt
+    int32_t d_locked_branch_cycle_count{0};      // of those, how many took the "d_carrier_lock_test >= threshold" branch
 };
 
 

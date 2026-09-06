@@ -1249,6 +1249,51 @@ dll_pll_veml_tracking::~dll_pll_veml_tracking()
 }
 
 
+// DIAGNOSTIC: report, once bit/secondary-code sync completes, how much of the total delay
+// since the tracking loop first started running (state first entered 2, whether directly
+// from state 1 or via state 5's scan) was spent waiting for the first carrier phase lock vs.
+// spent in the bit-sync accumulation phase after that first lock (including any resets from
+// lock drops during that phase, counted separately in d_bit_sync_reset_count). Deliberately
+// NOT measured from when d_pull_in_transitory clears: that flag is gated by a fixed timer
+// (pull_in_time_s) unrelated to actual convergence, and run_dll_pll() runs continuously from
+// state 2's very first cycle regardless of it -- measuring from the timer would report near-0
+// "time to phase lock" for any channel that happened to already be locked before the timer
+// expired, silently hiding however long that actually took. method identifies which of the
+// three bit-sync completion paths (secondary_code / preamble_correlation / histogram) this
+// call came from. No-op if the tracking loop never started for this channel (should not
+// happen at a completion call site, but guards against a coding error rather than crashing).
+void dll_pll_veml_tracking::log_time_to_fix_breakdown(const char *method)
+{
+    if (d_tracking_loop_started_sample < 0)
+        {
+            return;
+        }
+    const auto now_sample = static_cast<int64_t>(this->nitems_read(0));
+    const double total_ms = 1000.0 * static_cast<double>(now_sample - d_tracking_loop_started_sample) / d_trk_parameters.fs_in;
+    std::ostringstream msg;
+    msg << "Time-to-fix breakdown (" << method << ") ch=" << d_channel << " "
+        << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN)
+        << " total_time_to_bit_sync_ms:" << total_ms;
+    if (d_phase_lock_first_sample >= 0)
+        {
+            const double phase_lock_ms = 1000.0 * static_cast<double>(d_phase_lock_first_sample - d_tracking_loop_started_sample) / d_trk_parameters.fs_in;
+            const double bit_sync_ms = total_ms - phase_lock_ms;
+            msg << " time_to_phase_lock_ms:" << phase_lock_ms
+                << " time_bit_sync_after_lock_ms:" << bit_sync_ms
+                << " bit_sync_lock_drops:" << d_bit_sync_reset_count
+                << " acquire_secondary_attempts:" << d_acquire_secondary_attempts
+                << " case2_cycles:" << d_case2_cycle_count
+                << " locked_branch_cycles:" << d_locked_branch_cycle_count;
+        }
+    else
+        {
+            msg << " time_to_phase_lock_ms:never_reached";
+        }
+    std::cout << msg.str() << '\n';
+    LOG(INFO) << msg.str();
+}
+
+
 bool dll_pll_veml_tracking::acquire_secondary()
 {
     // ******* preamble correlation ********
@@ -1344,6 +1389,15 @@ bool dll_pll_veml_tracking::cn0_and_tracking_lock_status(double coh_integration_
     d_CN0_SNV_dB_Hz = d_cn0_smoother.smooth(d_CN0_SNV_dB_Hz_raw);
     // Carrier lock indicator
     d_carrier_lock_test = d_carrier_lock_test_smoother.smooth(carrier_lock_detector(&d_P_accu, 1));
+    // DIAGNOSTIC: record the first time phase lock is reached since the tracking loop started,
+    // for the time-to-fix breakdown (phase lock vs. bit/secondary-code sync) reported once bit
+    // sync completes -- see d_tracking_loop_started_sample's declaration. Deliberately NOT
+    // gated on !d_pull_in_transitory: that flag is a fixed timer, but d_carrier_lock_test is
+    // computed (and can genuinely cross threshold) from the loop's very first cycle onward.
+    if (d_tracking_loop_started_sample >= 0 && d_phase_lock_first_sample < 0 && d_carrier_lock_test >= d_carrier_lock_threshold)
+        {
+            d_phase_lock_first_sample = static_cast<int64_t>(this->nitems_read(0));
+        }
     // Loss of lock detection
     if (!d_pull_in_transitory)
         {
@@ -2367,6 +2421,14 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 else
                     {
                         d_state = 2;
+                        // DIAGNOSTIC: tracking loop (run_dll_pll()) starts right here -- start the
+                        // time-to-fix breakdown clock now, not when d_pull_in_transitory later clears.
+                        d_tracking_loop_started_sample = static_cast<int64_t>(this->nitems_read(0));
+                        d_phase_lock_first_sample = -1;
+                        d_bit_sync_reset_count = 0;
+                        d_acquire_secondary_attempts = 0;
+                        d_case2_cycle_count = 0;
+                        d_locked_branch_cycle_count = 0;
                     }
                 // d_sample_counter += samples_offset;  // count for the processed samples
                 d_cn0_smoother.reset();
@@ -2382,6 +2444,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
             }
         case 2:  // Wide tracking and symbol synchronization
             {
+                d_case2_cycle_count++;  // DIAGNOSTIC: raw cadence check for the time-to-fix breakdown
                 do_correlation_step(in);
                 // Save single correlation step variables
                 if (d_veml)
@@ -2448,31 +2511,34 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                 if (d_secondary)
                                     {
                                         // ####### SECONDARY CODE LOCK #####
+                                        // EXPERIMENT: decoupled from d_carrier_lock_test (removed the gate).
                                         // acquire_secondary() demodulates each bit from the delta-phase between
-                                        // consecutive Prompt symbols rather than from the absolute I-arm sign (see its
-                                        // definition), but we still gate accumulation on d_carrier_lock_test here: A/B
-                                        // testing against removing this gate showed loss-of-lock regressions, so keep
-                                        // it restored -- only the sign detector -> delta-phase demodulator swap is in
-                                        // effect. If lock is lost mid-accumulation, restart the window rather than keep
-                                        // a half-clean/half-noisy buffer.
-                                        if (d_carrier_lock_test >= d_carrier_lock_threshold)
+                                        // consecutive Prompt symbols (see its definition) -- that only needs
+                                        // inter-symbol phase drift to stay under +-90 deg, which is a much looser
+                                        // requirement than d_carrier_lock_threshold's coarse cos(2*phi) phase-lock
+                                        // test. A prior attempt at this same removal (see
+                                        // gnss_sdr_bitsync_differential project memory) was reverted after showing
+                                        // loss-of-lock regressions -- but that was before the time-to-fix
+                                        // instrumentation below existed to actually measure the effect, and the
+                                        // regression may have been this same gate's own flakiness (bit_sync_lock_drops
+                                        // in the low hundreds/thousands, see log_time_to_fix_breakdown) rather than
+                                        // something the gate was protecting against. Re-testing with real numbers
+                                        // this time; d_bit_sync_reset_count now stays at 0 by construction, kept in
+                                        // the report only so the log format doesn't change shape between A/B runs.
+                                        d_locked_branch_cycle_count++;  // DIAGNOSTIC
+                                        d_Prompt_circular_buffer.push_back(*d_Prompt);
+                                        if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
                                             {
-                                                d_Prompt_circular_buffer.push_back(*d_Prompt);
-                                                if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
+                                                d_acquire_secondary_attempts++;
+                                                next_state = acquire_secondary();
+                                                if (next_state)
                                                     {
-                                                        next_state = acquire_secondary();
-                                                        if (next_state)
-                                                            {
-                                                                LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " secondary code locked in channel " << d_channel
-                                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
-                                                                std::cout << d_systemName << " " << d_signal_pretty_name << " secondary code locked in channel " << d_channel
-                                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
-                                                            }
+                                                        LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " secondary code locked in channel " << d_channel
+                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                        std::cout << d_systemName << " " << d_signal_pretty_name << " secondary code locked in channel " << d_channel
+                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                        log_time_to_fix_breakdown("secondary_code");
                                                     }
-                                            }
-                                        else
-                                            {
-                                                d_Prompt_circular_buffer.clear();
                                             }
                                     }
                                 else if (d_symbols_per_bit > 1)  // Signal does not have secondary code. Search a bit transition by sign change
@@ -2503,6 +2569,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                                                           << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
                                                                 std::cout << d_systemName << " " << d_signal_pretty_name << " histogram bit synchronization locked in channel " << d_channel
                                                                           << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                                log_time_to_fix_breakdown("histogram");
                                                             }
                                                     }
                                             }
@@ -2510,26 +2577,21 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         if (!next_state)
                                             {
                                                 // ******* preamble correlation ********
-                                                // Same delta-phase acquire_secondary() and same restored phase-lock gate
-                                                // as the secondary-code branch above -- see the comment there.
-                                                if (d_carrier_lock_test >= d_carrier_lock_threshold)
+                                                // EXPERIMENT: same decoupling from d_carrier_lock_test as the
+                                                // secondary-code branch above -- see the comment there.
+                                                d_Prompt_circular_buffer.push_back(*d_Prompt);
+                                                if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
                                                     {
-                                                        d_Prompt_circular_buffer.push_back(*d_Prompt);
-                                                        if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
+                                                        d_acquire_secondary_attempts++;
+                                                        next_state = acquire_secondary();
+                                                        if (next_state)
                                                             {
-                                                                next_state = acquire_secondary();
-                                                                if (next_state)
-                                                                    {
-                                                                        LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
-                                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
-                                                                        std::cout << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
-                                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
-                                                                    }
+                                                                LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
+                                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
+                                                                std::cout << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
+                                                                          << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                                log_time_to_fix_breakdown("preamble_correlation");
                                                             }
-                                                    }
-                                                else
-                                                    {
-                                                        d_Prompt_circular_buffer.clear();
                                                     }
                                             }
                                     }
@@ -2689,6 +2751,14 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                         // scan complete: run_f_error_scan_step() already left d_carrier_doppler_hz
                         // on the winning bin and re-seeded the carrier loop filter with it.
                         d_state = 2;
+                        // DIAGNOSTIC: tracking loop (run_dll_pll()) starts right here -- start the
+                        // time-to-fix breakdown clock now, not when d_pull_in_transitory later clears.
+                        d_tracking_loop_started_sample = static_cast<int64_t>(this->nitems_read(0));
+                        d_phase_lock_first_sample = -1;
+                        d_bit_sync_reset_count = 0;
+                        d_acquire_secondary_attempts = 0;
+                        d_case2_cycle_count = 0;
+                        d_locked_branch_cycle_count = 0;
                     }
                 update_tracking_vars();
             }

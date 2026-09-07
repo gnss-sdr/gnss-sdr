@@ -2837,13 +2837,27 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // iono-free combination -- see the "dual-frequency" branch of
                     // prange() in rtklib_pntpos.cc) gets one entry per signal, all
                     // flagged combined = true.
+                    //
+                    // rescode() (rtklib_pntpos.cc) computes azel via satazel()
+                    // *before* checking it against PVT.elevation_mask, and
+                    // pntpos() copies that azel into ssat[] unconditionally --
+                    // only ssat[].vs is gated by the mask. So a satellite that
+                    // is tracked and has a live observation this epoch, but
+                    // falls below PVT.elevation_mask (or was excluded by RAIM
+                    // FDE), still has a valid azel here; only vs is false.
+                    // Report it anyway with used = false instead of dropping
+                    // it, so an excluded satellite shows up in the monitor as
+                    // "not used" rather than as missing/no-az-el (which
+                    // otherwise looks identical to a tracking problem).
                     d_monitor_pvt.used_satellites.clear();
                     for (int sat_idx = 0; sat_idx < MAXSAT; sat_idx++)
                         {
-                            if (!pvt_ssat[sat_idx].vs)
+                            const bool has_azel = (pvt_ssat[sat_idx].azel[0] != 0.0) || (pvt_ssat[sat_idx].azel[1] != 0.0);
+                            if (!has_azel)
                                 {
                                     continue;
                                 }
+                            const bool used = pvt_ssat[sat_idx].vs != 0;
                             int prn = 0;
                             char sys_char = '?';
                             switch (satsys(sat_idx + 1, &prn))
@@ -2896,6 +2910,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     info.azimuth_deg = az_deg;
                                     info.elevation_deg = pvt_ssat[sat_idx].azel[1] * R2D;
                                     info.combined = combined;
+                                    info.used = used;
                                     d_monitor_pvt.used_satellites.push_back(info);
                                 }
                         }

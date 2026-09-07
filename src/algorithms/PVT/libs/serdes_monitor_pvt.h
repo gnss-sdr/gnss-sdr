@@ -129,6 +129,7 @@ public:
                 pb_sat->set_azimuth_deg(sat.azimuth_deg);
                 pb_sat->set_elevation_deg(sat.elevation_deg);
                 pb_sat->set_combined(sat.combined);
+                pb_sat->set_used(sat.used);
             }
 
         if (!monitor_.SerializeToString(&data))
@@ -188,6 +189,7 @@ public:
                 sat.azimuth_deg = pb_sat.azimuth_deg();
                 sat.elevation_deg = pb_sat.elevation_deg();
                 sat.combined = pb_sat.combined();
+                sat.used = pb_sat.used();
                 monitor.used_satellites.push_back(sat);
             }
 

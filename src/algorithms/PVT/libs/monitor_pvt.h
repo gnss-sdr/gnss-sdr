@@ -53,6 +53,12 @@ public:
         double azimuth_deg{};
         double elevation_deg{};
         bool combined{};
+        // false when this satellite/signal was tracked and had azimuth/elevation
+        // computed but was excluded from the fix itself (e.g. below
+        // PVT.elevation_mask, or by RAIM FDE) -- azimuth_deg/elevation_deg are
+        // still valid in that case, only the position solve ignored this
+        // observation.
+        bool used{true};
 
         template <class Archive>
         void serialize(Archive& ar, const unsigned int version)
@@ -66,6 +72,7 @@ public:
             ar& BOOST_SERIALIZATION_NVP(azimuth_deg);
             ar& BOOST_SERIALIZATION_NVP(elevation_deg);
             ar& BOOST_SERIALIZATION_NVP(combined);
+            ar& BOOST_SERIALIZATION_NVP(used);
         }
     };
 

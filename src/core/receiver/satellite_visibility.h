@@ -74,16 +74,20 @@ class PvtInterface;
  * passes nullptr; SatelliteVisibility's runtime recompute uses it to tell
  * "computed, not visible" apart from "can't tell" (see the class doc
  * comment below).
- * \param ephemeris_max_age_s / almanac_max_age_s maximum |current_time -
- * toe| / |current_time - toa|, in seconds, before that entry is treated as
- * stale -- i.e. as if the PRN had no ephemeris/almanac at all (falls through
- * to almanac if ephemeris is stale but almanac isn't; reverts to
- * "maybe visible" if both are, or neither exists). toe/toa are seconds-of-
+ * \param almanac_max_age_s maximum |current_time - toa|, in seconds, before
+ * an almanac entry is treated as stale -- i.e. as if the PRN had no almanac
+ * at all (reverts to "maybe visible" if ephemeris is also unusable or
+ * absent). Ephemeris staleness isn't a parameter here: it's checked against
+ * RTKLIB's own per-system MAXDTOE/MAXDTOE_GAL/MAXDTOE_BDS constants
+ * (rtklib.h) unconditionally, the same figures RTKLIB's own solver uses to
+ * decide an ephemeris is usable, rather than a second, independently
+ * configurable threshold that could disagree with them. toa is seconds-of-
  * week, so ages beyond roughly half a week (302400 s) can't be represented
- * unambiguously by this check alone -- keep both well under that. Default
- * (infinity) disables staleness checking entirely, matching this function's
- * behavior before ages were tracked; ControlThread::get_visible_sats() relies
- * on that default.
+ * unambiguously by this check alone -- keep it well under that. Default
+ * (infinity) disables almanac staleness checking entirely, matching this
+ * function's behavior before ages were tracked; ControlThread::
+ * get_visible_sats() relies on that default (ephemeris staleness checking
+ * against the RTKLIB constants applies there too, unconditionally).
  * \param seconds_until_next_expiry_out when non-null, set to the number of
  * receiver-time seconds from now until the *soonest* currently-classified
  * (visible or below-mask) satellite's data would cross its staleness
@@ -108,7 +112,6 @@ std::vector<std::pair<int, Gnss_Satellite>> compute_visible_satellites(
     const arma::vec& r_eb_e,
     double elevation_mask_deg,
     std::vector<std::pair<int, Gnss_Satellite>>* below_mask_out = nullptr,
-    double ephemeris_max_age_s = std::numeric_limits<double>::infinity(),
     double almanac_max_age_s = std::numeric_limits<double>::infinity(),
     double* seconds_until_next_expiry_out = nullptr,
     const std::set<std::pair<std::string, uint32_t>>* only_prns = nullptr);
@@ -153,11 +156,12 @@ std::vector<std::pair<int, Gnss_Satellite>> compute_visible_satellites(
  * since the last recompute; the receiver has moved more than
  * GNSS-SDR.visibility_recompute_position_threshold_m since the last
  * recompute; or the freshest data behind the current classification has
- * aged past GNSS-SDR.visibility_ephemeris_max_age_s /
- * _almanac_max_age_s (see compute_visible_satellites()'s age parameters --
- * expiry is enforced there, not just detected here, so an expired PRN
- * actually reverts to maybe-visible rather than staying classified off
- * stale data).
+ * aged past its staleness threshold -- RTKLIB's own per-system
+ * MAXDTOE/MAXDTOE_GAL/MAXDTOE_BDS constants for ephemeris,
+ * GNSS-SDR.visibility_almanac_max_age_s for almanac (see
+ * compute_visible_satellites()'s age parameters -- expiry is enforced
+ * there, not just detected here, so an expired PRN actually reverts to
+ * maybe-visible rather than staying classified off stale data).
  *
  * Disabled unless GNSS-SDR.enable_visibility_aware_search=true (the default);
  * Tick() is then a no-op and IsVisible()/IsExcluded() always return false,
@@ -212,9 +216,11 @@ private:
     // covers a moving receiver crossing enough ground that elevations could
     // have shifted meaningfully before the next periodic tick.
     double position_threshold_m_;
-    // GNSS-SDR.visibility_ephemeris_max_age_s / _almanac_max_age_s: see
-    // compute_visible_satellites()'s matching parameters.
-    double ephemeris_max_age_s_;
+    // GNSS-SDR.visibility_almanac_max_age_s: see compute_visible_satellites()'s
+    // matching parameter. Ephemeris staleness has no equivalent member here --
+    // it's checked against RTKLIB's own per-system MAXDTOE/MAXDTOE_GAL/
+    // MAXDTOE_BDS constants unconditionally, not a separately configurable
+    // value.
     double almanac_max_age_s_;
     bool have_agnss_reference_;
     double agnss_ref_lat_deg_;

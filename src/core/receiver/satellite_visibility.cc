@@ -67,7 +67,6 @@ std::vector<std::pair<int, Gnss_Satellite>> compute_visible_satellites(
     const arma::vec& r_eb_e,
     double elevation_mask_deg,
     std::vector<std::pair<int, Gnss_Satellite>>* below_mask_out,
-    double ephemeris_max_age_s,
     double almanac_max_age_s,
     double* seconds_until_next_expiry_out,
     const std::set<std::pair<std::string, uint32_t>>* only_prns)
@@ -115,11 +114,11 @@ std::vector<std::pair<int, Gnss_Satellite>> compute_visible_satellites(
                     continue;
                 }
             const double age = DataAgeS(now_tow, it.second.toe);
-            if (std::abs(age) > ephemeris_max_age_s)
+            if (std::abs(age) > MAXDTOE)
                 {
                     continue;  // stale -- treat as if no ephemeris exists; almanac may still classify it
                 }
-            note_freshness(age, ephemeris_max_age_s);
+            note_freshness(age, MAXDTOE);
             const eph_t rtklib_eph = eph_to_rtklib(it.second, ref_gps_week);
             std::array<double, 3> r_sat{};
             double clock_bias_s;
@@ -158,11 +157,11 @@ std::vector<std::pair<int, Gnss_Satellite>> compute_visible_satellites(
                     continue;
                 }
             const double age = DataAgeS(now_tow, it.second.toe);
-            if (std::abs(age) > ephemeris_max_age_s)
+            if (std::abs(age) > MAXDTOE_GAL)
                 {
                     continue;  // stale -- treat as if no ephemeris exists; almanac may still classify it
                 }
-            note_freshness(age, ephemeris_max_age_s);
+            note_freshness(age, MAXDTOE_GAL);
             const eph_t rtklib_eph = eph_to_rtklib(it.second);
             std::array<double, 3> r_sat{};
             double clock_bias_s;
@@ -202,11 +201,11 @@ std::vector<std::pair<int, Gnss_Satellite>> compute_visible_satellites(
                     continue;
                 }
             const double age = DataAgeS(now_tow, it.second.toe);
-            if (std::abs(age) > ephemeris_max_age_s)
+            if (std::abs(age) > MAXDTOE_BDS)
                 {
                     continue;  // stale -- treat as if no ephemeris exists; almanac may still classify it
                 }
-            note_freshness(age, ephemeris_max_age_s);
+            note_freshness(age, MAXDTOE_BDS);
             const eph_t rtklib_eph = eph_to_rtklib(it.second);
             std::array<double, 3> r_sat{};
             double clock_bias_s;
@@ -422,13 +421,11 @@ SatelliteVisibility::SatelliteVisibility(const std::shared_ptr<ConfigurationInte
       recompute_interval_s_(configuration->property("GNSS-SDR.visibility_recompute_interval_s", 120.0)),
       elevation_mask_deg_(configuration->property("GNSS-SDR.search_elevation_mask", 0.0)),
       position_threshold_m_(configuration->property("GNSS-SDR.visibility_recompute_position_threshold_m", 1000.0)),
-      // Half-window around toe/toa -- see compute_visible_satellites()'s
-      // matching parameters. Both must stay well under 302400 s (half a
-      // week) for the toe/toa-only staleness math to remain unambiguous;
-      // almanac_max_age_s in particular must not be pushed close to that
-      // limit. Defaults: ~2 h for ephemeris (typical GPS/Galileo fit-
-      // interval half-width), 3 days for almanac.
-      ephemeris_max_age_s_(configuration->property("GNSS-SDR.visibility_ephemeris_max_age_s", 7200.0)),
+      // Half-window around toa -- see compute_visible_satellites()'s
+      // matching parameter. Must stay well under 302400 s (half a week) for
+      // the toa-only staleness math to remain unambiguous. Default: 3 days.
+      // (Ephemeris staleness has no equivalent config parameter -- see
+      // almanac_max_age_s_'s doc comment.)
       almanac_max_age_s_(configuration->property("GNSS-SDR.visibility_almanac_max_age_s", 259200.0)),
       have_agnss_reference_(false),
       agnss_ref_lat_deg_(0.0),
@@ -690,7 +687,7 @@ bool SatelliteVisibility::Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, con
     std::vector<std::pair<int, Gnss_Satellite>> below_mask;
     double seconds_until_next_expiry = std::numeric_limits<double>::infinity();
     const auto elevations = compute_visible_satellites(pvt_ptr, gps_gtime, r_eb_e, elevation_mask_deg_,
-        &below_mask, ephemeris_max_age_s_, almanac_max_age_s_,
+        &below_mask, almanac_max_age_s_,
         needs_full_recompute ? &seconds_until_next_expiry : nullptr,
         needs_full_recompute ? nullptr : &changed_prns);
     // Only a full sweep sees every currently-classified satellite's

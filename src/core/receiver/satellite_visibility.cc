@@ -430,12 +430,6 @@ SatelliteVisibility::SatelliteVisibility(const std::shared_ptr<ConfigurationInte
       // interval half-width), 3 days for almanac.
       ephemeris_max_age_s_(configuration->property("GNSS-SDR.visibility_ephemeris_max_age_s", 7200.0)),
       almanac_max_age_s_(configuration->property("GNSS-SDR.visibility_almanac_max_age_s", 259200.0)),
-      // See reference_elevation_deg_'s doc comment. 20 deg is well beyond
-      // anything real orbital motion or legitimate almanac/ephemeris
-      // precision differences could produce between two readings of the
-      // same satellite, but comfortably below the 60+ deg swings actually
-      // observed from corrupted data.
-      sanity_check_threshold_deg_(configuration->property("GNSS-SDR.visibility_sanity_check_threshold_deg", 20.0)),
       have_agnss_reference_(false),
       agnss_ref_lat_deg_(0.0),
       agnss_ref_lon_deg_(0.0),
@@ -717,61 +711,43 @@ bool SatelliteVisibility::Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, con
     // (week-number resolution in alm_to_rtklib(), almanac freshness/
     // overwrite priority in update_almanac_if_fresher(), the ephemeris/
     // almanac map mutex), not by second-guessing a live reading here.
-    // reference_elevation_deg_ is diagnostic-only bookkeeping: it logs a
-    // warning when a reading jumps implausibly far from the last one seen
-    // for that PRN (real orbital motion can't do that, so it's a tripwire
-    // for a decoding regression), but never withholds or overrides the
-    // classification that raw reading produces.
+    // reference_elevation_deg_ is updated with every raw reading as it's
+    // accepted -- see its own doc comment for what it's actually for.
     std::vector<std::pair<int, Gnss_Satellite>> accepted_entries;
     accepted_entries.reserve(elevations.size() + below_mask.size());
     // Health-check failures from below_mask -- see the loop below. Always
     // excluded, unconditionally, regardless of elevation.
     std::vector<std::pair<int, Gnss_Satellite>> forced_excluded_entries;
     {
-        auto sanitize = [&](const std::pair<int, Gnss_Satellite>& entry) {
+        auto record_elevation = [&](const std::pair<int, Gnss_Satellite>& entry) {
             const auto key = std::make_pair(entry.second.get_system(), entry.second.get_PRN());
             const int raw = entry.first;
-            const auto ref_it = reference_elevation_deg_.find(key);
-            if (ref_it != reference_elevation_deg_.end())
-                {
-                    if (std::abs(static_cast<double>(raw) - ref_it->second) > sanity_check_threshold_deg_)
-                        {
-                            LOG(WARNING) << "[visibility] sanity check: " << entry.second << " elevation jumped from "
-                                         << ref_it->second << " to " << raw << " deg (> " << sanity_check_threshold_deg_
-                                         << " deg) -- unexpectedly large jump; check ephemeris/almanac decoding if this recurs";
-                        }
-                    ref_it->second = raw;
-                }
-            else
-                {
-                    reference_elevation_deg_.emplace(key, raw);
-                }
+            reference_elevation_deg_[key] = raw;
             accepted_entries.emplace_back(raw, entry.second);
         };
         for (const auto& entry : elevations)
             {
-                sanitize(entry);
+                record_elevation(entry);
             }
         for (const auto& entry : below_mask)
             {
+                reference_elevation_deg_[std::make_pair(entry.second.get_system(), entry.second.get_PRN())] = entry.first;
                 // A below_mask entry with a raw elevation *above* the mask
                 // can only mean one thing: it failed the broadcast health
                 // check in compute_visible_satellites(), not the elevation
                 // check (that path's condition is `El > mask && healthy`,
                 // so anything landing here with El > mask must have failed
                 // on health). This is a real, unconditional classification
-                // rule (a health flag is definitive, not a heuristic), not
-                // instrumentation -- route straight to forced-excluded,
-                // bypassing sanitize() so this elevation (perfectly valid,
-                // just health-gated) doesn't get folded into
-                // reference_elevation_deg_ and produce a spurious jump
-                // warning whenever the satellite's health flag clears.
+                // rule (a health flag is definitive, not a heuristic) --
+                // route straight to forced-excluded instead of the
+                // elevation-mask comparison the loop below applies to
+                // accepted_entries.
                 if (static_cast<double>(entry.first) > elevation_mask_deg_)
                     {
                         forced_excluded_entries.push_back(entry);
                         continue;
                     }
-                sanitize(entry);
+                accepted_entries.emplace_back(entry.first, entry.second);
             }
     }
 
@@ -859,8 +835,8 @@ bool SatelliteVisibility::Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, con
         // Built from the final, post-merge visible_/excluded_ rather than
         // accumulated during the classify loop above, so a targeted
         // recompute's report is just as complete as a full one: every
-        // entry's elevation comes from reference_elevation_deg_, which
-        // sanitize() just refreshed for whichever PRN(s) were actually
+        // entry's elevation comes from reference_elevation_deg_, which was
+        // just refreshed above for whichever PRN(s) were actually
         // recomputed this tick and still holds the last known value for
         // everyone else, untouched.
         auto elevation_for = [&](const std::pair<std::string, uint32_t>& key) -> int {

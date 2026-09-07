@@ -216,9 +216,6 @@ private:
     // compute_visible_satellites()'s matching parameters.
     double ephemeris_max_age_s_;
     double almanac_max_age_s_;
-    // GNSS-SDR.visibility_sanity_check_threshold_deg: see
-    // reference_elevation_deg_'s doc comment.
-    double sanity_check_threshold_deg_;
     bool have_agnss_reference_;
     double agnss_ref_lat_deg_;
     double agnss_ref_lon_deg_;
@@ -253,18 +250,17 @@ private:
     std::set<std::pair<std::string, uint32_t>> visible_;
     std::set<std::pair<std::string, uint32_t>> excluded_;  // elevation computable, at/below the mask
 
-    // Last elevation (deg) seen for each (system, PRN) -- diagnostic
-    // bookkeeping only, *not* part of classification. Classification always
-    // uses the raw, freshly computed elevation directly: decoding
-    // correctness is enforced at its actual sources (week-number
-    // resolution in alm_to_rtklib(), almanac freshness/overwrite priority
-    // in update_almanac_if_fresher(), the ephemeris/almanac map mutex
-    // against the cross-thread data race), not by second-guessing or
-    // withholding a live reading here -- this map exists purely to let
-    // Tick() log a warning (via sanity_check_threshold_deg_) when a
-    // reading jumps implausibly far from the last one seen for that PRN
-    // (real orbital motion can't do that), as a tripwire for a decoding
-    // regression, not a substitute for correct decoding.
+    // Last elevation (deg) seen for each (system, PRN) -- not part of
+    // classification (that always uses the raw, freshly computed elevation
+    // directly: decoding correctness is enforced at its actual sources --
+    // week-number resolution in alm_to_rtklib(), almanac freshness/
+    // overwrite priority in update_almanac_if_fresher(), the ephemeris/
+    // almanac map mutex against the cross-thread data race -- not by
+    // second-guessing or withholding a live reading here). Kept purely so
+    // Tick()'s diagnostic report can show every currently classified
+    // satellite's elevation even on a targeted recompute, which only
+    // freshly computes the satellite(s) whose data actually changed --
+    // this is where every other satellite's last-known value comes from.
     std::map<std::pair<std::string, uint32_t>, double> reference_elevation_deg_;
 
     bool last_fix_valid_;

@@ -75,7 +75,8 @@ std::vector<float> make_frame(const std::array<uint8_t, BEIDOU_CNAV2_INFO_BITS>&
     return symbols;
 }
 
-std::array<uint8_t, BEIDOU_CNAV2_INFO_BITS> make_info(uint32_t prn, int32_t mes_type, uint32_t sow_counts)
+std::array<uint8_t, BEIDOU_CNAV2_INFO_BITS> make_info(uint32_t prn, int32_t mes_type, uint32_t sow_counts,
+    uint32_t iode = 0, uint32_t iodc = 0, uint32_t toe_counts = 10, uint32_t toc_counts = 10)
 {
     std::array<uint8_t, BEIDOU_CNAV2_INFO_BITS> info{};
     write_unsigned_cnav2(info.data(), 0, 6, prn);
@@ -84,23 +85,27 @@ std::array<uint8_t, BEIDOU_CNAV2_INFO_BITS> make_info(uint32_t prn, int32_t mes_
     if (mes_type == BEIDOU_CNAV2_MSG_EPH1)
         {
             write_unsigned_cnav2(info.data(), 30, 13, 900);  // WN
-            write_unsigned_cnav2(info.data(), 61, 11, 10);   // toe = 3000 s
-            write_unsigned_cnav2(info.data(), 72, 2, 3);     // MEO
-            write_signed(info.data(), 74, 26, 512);          // deltaA = 1 m
-            write_signed(info.data(), 165, 33, 1);           // M0
-            write_unsigned_cnav2(info.data(), 198, 33, 1);   // e
+            write_unsigned_cnav2(info.data(), BEIDOU_CNAV2_MT10_IODE_BIT, BEIDOU_CNAV2_IODE_BITS, iode);
+            write_unsigned_cnav2(info.data(), 61, 11, toe_counts);
+            write_unsigned_cnav2(info.data(), 72, 2, 3);    // MEO
+            write_signed(info.data(), 74, 26, 512);         // deltaA = 1 m
+            write_signed(info.data(), 165, 33, 1);          // M0
+            write_unsigned_cnav2(info.data(), 198, 33, 1);  // e
         }
     else if (mes_type == BEIDOU_CNAV2_MSG_EPH2)
         {
             write_unsigned_cnav2(info.data(), 30, 2, 0);  // HS
-            write_signed(info.data(), 42, 33, 1);         // OMEGA0
+            write_unsigned_cnav2(info.data(), BEIDOU_CNAV2_MT11_IODE_BIT, BEIDOU_CNAV2_IODE_BITS, iode);
+            write_signed(info.data(), 42, 33, 1);  // OMEGA0
         }
     else if (mes_type == BEIDOU_CNAV2_MSG_CLK_IONO)
         {
-            write_unsigned_cnav2(info.data(), 42, 11, 10);  // toc = 3000 s
-            write_signed(info.data(), 53, 25, 1);           // af0
-            write_signed(info.data(), 121, 12, 2);          // TGD_B2ap
-            write_signed(info.data(), 133, 12, 3);          // ISC_B2ad
+            write_unsigned_cnav2(info.data(), 42, 11, toc_counts);
+            write_signed(info.data(), 53, 25, 1);  // af0
+            write_unsigned_cnav2(info.data(), 111, 2, (iodc >> 8) & 0x3U);
+            write_unsigned_cnav2(info.data(), 113, 8, iodc & 0xFFU);
+            write_signed(info.data(), 121, 12, 2);  // TGD_B2ap
+            write_signed(info.data(), 133, 12, 3);  // ISC_B2ad
         }
     const uint32_t crc = crc24q_cnav2(info.data(), BEIDOU_CNAV2_DATA_BITS);
     write_unsigned_cnav2(info.data(), BEIDOU_CNAV2_DATA_BITS, BEIDOU_CNAV2_CRC_BITS, crc);
@@ -120,11 +125,7 @@ TEST(BeidouCnav2NavigationMessageTest, AcceptsValidCrcAndPreamble)
     EXPECT_EQ(nav.last_sow(), 12345 * 3);
     EXPECT_EQ(nav.last_frame_prn(), 19U);
     EXPECT_FALSE(nav.have_new_ephemeris());
-    const auto eph = nav.get_ephemeris();
-    EXPECT_EQ(eph.WN, 900);
-    EXPECT_EQ(eph.toe, 3000);
-    EXPECT_EQ(eph.sat_type, 3);
-    EXPECT_NEAR(eph.A0, BEIDOU_CNAV1_A_REF_MEO + 512.0 * BEIDOU_CNAV1_DELTA_A_LSB, 1.0e-6);
+    EXPECT_EQ(nav.get_ephemeris().WN, 0);
 }
 
 
@@ -154,7 +155,11 @@ TEST(BeidouCnav2NavigationMessageTest, EmitsEphemerisAfterMt10Mt11Mt30)
     EXPECT_EQ(eph.PRN, 21U);
     EXPECT_EQ(eph.WN, 900);
     EXPECT_EQ(eph.toc, 3000);
+    EXPECT_EQ(eph.toe, 3000);
+    EXPECT_EQ(static_cast<int32_t>(eph.IODE), 0);
+    EXPECT_EQ(static_cast<int32_t>(eph.IODC), 0);
     EXPECT_EQ(eph.sig_type, BDS_EPH_SOURCE_CNAV2);
+    EXPECT_NEAR(eph.A0, BEIDOU_CNAV1_A_REF_MEO + 512.0 * BEIDOU_CNAV1_DELTA_A_LSB, 1.0e-6);
     EXPECT_NEAR(eph.TGD_B2ap, 2.0 * BEIDOU_CNAV1_TGD_LSB, 1.0e-20);
     EXPECT_NEAR(eph.ISC_B2ad, 3.0 * BEIDOU_CNAV1_ISC_LSB, 1.0e-20);
 }
@@ -197,5 +202,115 @@ TEST(BeidouCnav2NavigationMessageTest, DecodesConsecutiveMt10Mt11Mt30Frames)
                     nav.clear_flags();
                 }
         }
-    EXPECT_GE(eph_count, 8);
+    EXPECT_EQ(eph_count, 1);
+}
+
+
+TEST(BeidouCnav2NavigationMessageTest, RejectsFramePrnMismatch)
+{
+    const auto frame = make_frame(make_info(19, BEIDOU_CNAV2_MSG_EPH1, 1000));
+    Beidou_Cnav2_Navigation_Message nav;
+    EXPECT_FALSE(nav.decode_frame_symbols(frame.data(), static_cast<int32_t>(frame.size()), 21));
+    EXPECT_FALSE(nav.last_crc_ok());
+}
+
+
+TEST(BeidouCnav2NavigationMessageTest, ResetPreventsMixedPrnPublish)
+{
+    Beidou_Cnav2_Navigation_Message nav;
+    const auto mt10 = make_frame(make_info(19, BEIDOU_CNAV2_MSG_EPH1, 2000, 1, 1));
+    const auto mt11 = make_frame(make_info(19, BEIDOU_CNAV2_MSG_EPH2, 2001, 1, 1));
+    const auto mt30 = make_frame(make_info(19, BEIDOU_CNAV2_MSG_CLK_IONO, 2002, 1, 1));
+    ASSERT_TRUE(nav.decode_frame_symbols(mt10.data(), static_cast<int32_t>(mt10.size()), 19));
+    ASSERT_TRUE(nav.decode_frame_symbols(mt11.data(), static_cast<int32_t>(mt11.size()), 19));
+    ASSERT_TRUE(nav.decode_frame_symbols(mt30.data(), static_cast<int32_t>(mt30.size()), 19));
+    ASSERT_TRUE(nav.have_new_ephemeris());
+    EXPECT_EQ(nav.get_ephemeris().PRN, 19U);
+    nav.reset();
+    const auto mt11_new = make_frame(make_info(21, BEIDOU_CNAV2_MSG_EPH2, 3001, 1, 1));
+    ASSERT_TRUE(nav.decode_frame_symbols(mt11_new.data(), static_cast<int32_t>(mt11_new.size()), 21));
+    EXPECT_FALSE(nav.have_new_ephemeris());
+    EXPECT_EQ(nav.get_ephemeris().PRN, 0U);
+}
+
+
+TEST(BeidouCnav2NavigationMessageTest, NewMt10DoesNotPublishWithStaleClock)
+{
+    Beidou_Cnav2_Navigation_Message nav;
+    ASSERT_TRUE(nav.decode_frame_symbols(make_frame(make_info(21, BEIDOU_CNAV2_MSG_EPH1, 2000, 1, 1, 10, 10)).data(),
+        BEIDOU_CNAV2_FRAME_SYMBOLS, 21));
+    ASSERT_TRUE(nav.decode_frame_symbols(make_frame(make_info(21, BEIDOU_CNAV2_MSG_EPH2, 2001, 1, 1)).data(),
+        BEIDOU_CNAV2_FRAME_SYMBOLS, 21));
+    ASSERT_TRUE(nav.decode_frame_symbols(make_frame(make_info(21, BEIDOU_CNAV2_MSG_CLK_IONO, 2002, 1, 1, 10, 10)).data(),
+        BEIDOU_CNAV2_FRAME_SYMBOLS, 21));
+    ASSERT_TRUE(nav.have_new_ephemeris());
+    nav.clear_flags();
+    // New MT10 issue (IODE=2, toe=6000 s) must not publish against the old clock.
+    ASSERT_TRUE(nav.decode_frame_symbols(make_frame(make_info(21, BEIDOU_CNAV2_MSG_EPH1, 2100, 2, 2, 20, 10)).data(),
+        BEIDOU_CNAV2_FRAME_SYMBOLS, 21));
+    EXPECT_FALSE(nav.have_new_ephemeris());
+    EXPECT_EQ(nav.get_ephemeris().toe, 3000);
+    EXPECT_EQ(nav.get_ephemeris().toc, 3000);
+}
+
+
+TEST(BeidouCnav2NavigationMessageTest, DoesNotManufactureIodeFromIodc)
+{
+    Beidou_Cnav2_Navigation_Message nav;
+    ASSERT_TRUE(nav.decode_frame_symbols(make_frame(make_info(27, BEIDOU_CNAV2_MSG_EPH1, 2000, 7, 7)).data(),
+        BEIDOU_CNAV2_FRAME_SYMBOLS, 27));
+    ASSERT_TRUE(nav.decode_frame_symbols(make_frame(make_info(27, BEIDOU_CNAV2_MSG_EPH2, 2001, 7, 7)).data(),
+        BEIDOU_CNAV2_FRAME_SYMBOLS, 27));
+    ASSERT_TRUE(nav.decode_frame_symbols(make_frame(make_info(27, BEIDOU_CNAV2_MSG_CLK_IONO, 2002, 7, 263)).data(),
+        BEIDOU_CNAV2_FRAME_SYMBOLS, 27));
+    // IODC=263 (0x107), IODE=7 matches the 8 LSBs.
+    ASSERT_TRUE(nav.have_new_ephemeris());
+    EXPECT_EQ(static_cast<int32_t>(nav.get_ephemeris().IODE), 7);
+    EXPECT_EQ(static_cast<int32_t>(nav.get_ephemeris().IODC), 263);
+    nav.clear_flags();
+    ASSERT_TRUE(nav.decode_frame_symbols(make_frame(make_info(27, BEIDOU_CNAV2_MSG_CLK_IONO, 2003, 7, 8)).data(),
+        BEIDOU_CNAV2_FRAME_SYMBOLS, 27));
+    EXPECT_FALSE(nav.have_new_ephemeris());
+    EXPECT_EQ(static_cast<int32_t>(nav.get_ephemeris().IODC), 263);
+}
+
+
+TEST(BeidouCnav2NavigationMessageTest, UnrelatedMessageDoesNotRepublish)
+{
+    Beidou_Cnav2_Navigation_Message nav;
+    ASSERT_TRUE(nav.decode_frame_symbols(make_frame(make_info(30, BEIDOU_CNAV2_MSG_EPH1, 2000)).data(),
+        BEIDOU_CNAV2_FRAME_SYMBOLS, 30));
+    ASSERT_TRUE(nav.decode_frame_symbols(make_frame(make_info(30, BEIDOU_CNAV2_MSG_EPH2, 2001)).data(),
+        BEIDOU_CNAV2_FRAME_SYMBOLS, 30));
+    ASSERT_TRUE(nav.decode_frame_symbols(make_frame(make_info(30, BEIDOU_CNAV2_MSG_CLK_IONO, 2002)).data(),
+        BEIDOU_CNAV2_FRAME_SYMBOLS, 30));
+    ASSERT_TRUE(nav.have_new_ephemeris());
+    nav.clear_flags();
+    ASSERT_TRUE(nav.decode_frame_symbols(make_frame(make_info(30, 40, 2003)).data(),
+        BEIDOU_CNAV2_FRAME_SYMBOLS, 30));
+    EXPECT_FALSE(nav.have_new_ephemeris());
+}
+
+
+TEST(BeidouCnav2NavigationMessageTest, NewIssuePublishesAfterMatchingSet)
+{
+    Beidou_Cnav2_Navigation_Message nav;
+    ASSERT_TRUE(nav.decode_frame_symbols(make_frame(make_info(37, BEIDOU_CNAV2_MSG_EPH1, 2000, 1, 1, 10, 10)).data(),
+        BEIDOU_CNAV2_FRAME_SYMBOLS, 37));
+    ASSERT_TRUE(nav.decode_frame_symbols(make_frame(make_info(37, BEIDOU_CNAV2_MSG_EPH2, 2001, 1, 1)).data(),
+        BEIDOU_CNAV2_FRAME_SYMBOLS, 37));
+    ASSERT_TRUE(nav.decode_frame_symbols(make_frame(make_info(37, BEIDOU_CNAV2_MSG_CLK_IONO, 2002, 1, 1, 10, 10)).data(),
+        BEIDOU_CNAV2_FRAME_SYMBOLS, 37));
+    ASSERT_TRUE(nav.have_new_ephemeris());
+    nav.clear_flags();
+    ASSERT_TRUE(nav.decode_frame_symbols(make_frame(make_info(37, BEIDOU_CNAV2_MSG_EPH1, 2100, 2, 2, 20, 20)).data(),
+        BEIDOU_CNAV2_FRAME_SYMBOLS, 37));
+    ASSERT_TRUE(nav.decode_frame_symbols(make_frame(make_info(37, BEIDOU_CNAV2_MSG_EPH2, 2101, 2, 2)).data(),
+        BEIDOU_CNAV2_FRAME_SYMBOLS, 37));
+    ASSERT_TRUE(nav.decode_frame_symbols(make_frame(make_info(37, BEIDOU_CNAV2_MSG_CLK_IONO, 2102, 2, 2, 20, 20)).data(),
+        BEIDOU_CNAV2_FRAME_SYMBOLS, 37));
+    ASSERT_TRUE(nav.have_new_ephemeris());
+    EXPECT_EQ(nav.get_ephemeris().toe, 6000);
+    EXPECT_EQ(nav.get_ephemeris().toc, 6000);
+    EXPECT_EQ(static_cast<int32_t>(nav.get_ephemeris().IODE), 2);
 }

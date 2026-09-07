@@ -2310,8 +2310,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             }
                         if (sig_ == "5D")
                             {
-                                const auto cnav2_iter = beidou_cnav1_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                                if (cnav2_iter != beidou_cnav1_ephemeris_map.cend() &&
+                                const auto cnav2_iter = beidou_cnav2_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                                if (cnav2_iter != beidou_cnav2_ephemeris_map.cend() &&
                                     cnav2_iter->second.sig_type == BDS_EPH_SOURCE_CNAV2 &&
                                     cnav2_iter->second.sat_type != 1 &&
                                     cnav2_iter->second.hs == 0)
@@ -2643,9 +2643,12 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         {
                             d_nav_data.lam[d_obs_data[k].sat - 1][0] = SPEED_OF_LIGHT_M_S / FREQ1;
                         }
-                    else if (is_bds_b2a_code(c0))
+                    for (int band = 0; band < NFREQ; ++band)
                         {
-                            d_nav_data.lam[d_obs_data[k].sat - 1][0] = SPEED_OF_LIGHT_M_S / FREQ5;
+                            if (is_bds_b2a_code(d_obs_data[k].code[band]))
+                                {
+                                    d_nav_data.lam[d_obs_data[k].sat - 1][band] = SPEED_OF_LIGHT_M_S / FREQ5;
+                                }
                         }
                 }
             const int configured_positioning_mode = d_rtk.opt.mode;

@@ -223,12 +223,14 @@ All notable changes to GNSS-SDR will be documented in this file.
   information bits after the 0xE24DE8 preamble (CRC-24Q, message types 10, 11
   and 30) and does not yet implement 64-ary LDPC. GEO and BDS-2 satellites (PRN
   1-18 and 59-63) are not assigned B2a channels and are not used in PVT. B-CNAV2
-  ephemerides are stored with `sig_type = BDS_EPH_SOURCE_CNAV2` so B2a
-  observations are paired only with CNAV2 (not DNAV or B-CNAV1). B2a-only SPP
-  remaps `5D` onto RTKLIB slot 0 and overrides `lam[0]` to `c/FREQ5` because
-  RTKLIB BDS `satwavelen` frq2 is B3, not L5. RINEX 3 writes a D1-style stand-in
-  for CNAV; native CNAV records require RINEX 4. Sample configuration files are
-  provided at `conf/File_input/Beidou/gnss-sdr_BDS_B2a_file.conf` and
+  ephemerides are stored in a dedicated map keyed by PRN, independent of
+  B-CNAV1, and B2a observations are paired only with CNAV2 (not DNAV or
+  B-CNAV1). B2a-only SPP remaps `5D` onto RTKLIB slot 0. The B2a carrier
+  wavelength is set to `c/FREQ5` on whichever RTKLIB slot holds the `5D`
+  observation, because RTKLIB BDS `satwavelen` frq2 is B3, not L5. RINEX 4
+  writes CNV2 records with `ISC_B2ad`; RINEX 3 omits CNAV2 navigation records.
+  Sample configuration files are provided at
+  `conf/File_input/Beidou/gnss-sdr_BDS_B2a_file.conf` and
   `conf/File_input/Beidou/gnss-sdr_BDS_B2a_cu_l5_if20k_fs18m.conf`. Tracking
   forwards 1 ms B2a symbols during pull-in so B-CNAV2 can lock on short files. A
   CRC failure drops frame sync immediately so long recordings re-acquire the

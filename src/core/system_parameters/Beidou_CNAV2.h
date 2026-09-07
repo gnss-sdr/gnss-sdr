@@ -49,6 +49,11 @@ constexpr int32_t BEIDOU_CNAV2_MSG_CLK_EOP = 32;
 constexpr int32_t BEIDOU_CNAV2_MSG_CLK_UTC = 33;
 constexpr int32_t BEIDOU_CNAV2_MSG_CLK_DC = 34;
 
+// Broadcast IODE: 8 bits immediately before toe (MT10) / OMEGA0 (MT11).
+constexpr int32_t BEIDOU_CNAV2_MT10_IODE_BIT = 53;
+constexpr int32_t BEIDOU_CNAV2_MT11_IODE_BIT = 34;
+constexpr int32_t BEIDOU_CNAV2_IODE_BITS = 8;
+
 //! RTKLIB eph_t::code / Beidou_Cnav1_Ephemeris::sig_type for B-CNAV2.
 constexpr int32_t BDS_EPH_SOURCE_CNAV2 = 9;
 

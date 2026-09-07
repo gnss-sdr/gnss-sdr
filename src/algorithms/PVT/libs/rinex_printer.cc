@@ -2764,6 +2764,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
     const auto glonass_gnav_ephemeris_iter = pvt_solver->glonass_gnav_ephemeris_map.cbegin();
     const auto beidou_dnav_ephemeris_iter = pvt_solver->beidou_dnav_ephemeris_map.cbegin();
     const auto beidou_cnav1_ephemeris_iter = pvt_solver->beidou_cnav1_ephemeris_map.cbegin();
+    const auto beidou_cnav2_ephemeris_iter = pvt_solver->beidou_cnav2_ephemeris_map.cbegin();
 
     const bool has_gps_lnav_eph = !pvt_solver->gps_ephemeris_map.empty();
     const bool has_gps_cnav_eph = !pvt_solver->gps_cnav_ephemeris_map.empty();
@@ -2771,6 +2772,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
     const bool has_glonass_eph = !pvt_solver->glonass_gnav_ephemeris_map.empty();
     const bool has_beidou_dnav_eph = !pvt_solver->beidou_dnav_ephemeris_map.empty();
     const bool has_beidou_cnav1_eph = !pvt_solver->beidou_cnav1_ephemeris_map.empty();
+    const bool has_beidou_cnav2_eph = !pvt_solver->beidou_cnav2_ephemeris_map.empty();
 
     // We require at least one ephemeris for an active signal of a constellation
     // Note: this is currently required because ephemeris are used when creating the headers,
@@ -2793,7 +2795,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
         {
             return;
         }
-    if (d_flags.has_beidou && !has_beidou_dnav_eph && !has_beidou_cnav1_eph)
+    if (d_flags.has_beidou && !has_beidou_dnav_eph && !has_beidou_cnav1_eph && !has_beidou_cnav2_eph)
         {
             return;
         }
@@ -2833,6 +2835,10 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
             if (has_beidou_cnav1_eph)
                 {
                     system_time = Rinex_Printer::compute_BDS_time(beidou_cnav1_ephemeris_iter->second, rx_time);
+                }
+            else if (has_beidou_cnav2_eph)
+                {
+                    system_time = Rinex_Printer::compute_BDS_time(beidou_cnav2_ephemeris_iter->second, rx_time);
                 }
             else
                 {
@@ -3024,6 +3030,10 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
             if (has_beidou_cnav1_eph)
                 {
                     log_rinex_nav_bds_cnav1(pvt_solver->beidou_cnav1_ephemeris_map, pvt_solver->beidou_cnav1_page_data_map);
+                }
+            if (has_beidou_cnav2_eph)
+                {
+                    log_rinex_nav_bds_cnav2(pvt_solver->beidou_cnav2_ephemeris_map);
                 }
 
             d_rinex_header_written = true;
@@ -4064,6 +4074,54 @@ void Rinex_Printer::log_rinex_nav_bds_cnav1(const std::map<int32_t, Beidou_Cnav1
             const auto tow_d = static_cast<double>(eph.tow);
             const auto iodc_d = eph.IODC;
             out << get_nav_broadcast_orbit(&tow_d, &iodc_d, nullptr, nullptr, d_version) << '\n';
+        }
+}
+
+
+void Rinex_Printer::log_rinex_nav_bds_cnav2(const std::map<int32_t, Beidou_Cnav1_Ephemeris>& new_bds_eph)
+{
+    // RINEX 3 has no CNV2 record. Do not emit a CNV1 or D1 stand-in.
+    if (d_version != 4)
+        {
+            return;
+        }
+
+    auto& out = navFile;
+    const auto& sys_char = satelliteSystem.at("Beidou");
+
+    for (const auto& bds_ephemeris_iter : new_bds_eph)
+        {
+            const auto& eph = bds_ephemeris_iter.second;
+            const boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_BDS_time(eph, eph.toc);
+
+            // B-CNAV2 EPH record, RINEX 4.02 Table A25 (CNV2).
+            out << get_nav_record_header_line("EPH", sys_char, eph.PRN, "CNV2") << '\n';
+            out << get_nav_sv_epoch_svclk_line(p_utc_time, sys_char, eph.PRN, eph.af0, eph.af1, eph.af2, d_version) << '\n';
+
+            out << get_nav_broadcast_orbit(&eph.Adot, &eph.Crs, &eph.delta_n, &eph.M_0, d_version) << '\n';
+
+            const double sqrt_a0 = std::sqrt(eph.A0);
+            out << get_nav_broadcast_orbit(&eph.Cuc, &eph.ecc, &eph.Cus, &sqrt_a0, d_version) << '\n';
+
+            const auto toe_d = static_cast<double>(eph.toe);
+            out << get_nav_broadcast_orbit(&toe_d, &eph.Cic, &eph.OMEGA_0, &eph.Cis, d_version) << '\n';
+            out << get_nav_broadcast_orbit(&eph.i_0, &eph.Crc, &eph.omega, &eph.OMEGAdot, d_version) << '\n';
+
+            const auto sat_type_d = static_cast<double>(eph.sat_type);
+            const double* sat_type_p = (eph.sat_type > 0) ? &sat_type_d : nullptr;
+            out << get_nav_broadcast_orbit(&eph.idot, &eph.delta_ndot, sat_type_p, nullptr, d_version) << '\n';
+
+            // SISAI fields are not decoded in the B-CNAV2 first cut.
+            out << get_nav_broadcast_orbit(nullptr, nullptr, nullptr, nullptr, d_version) << '\n';
+
+            // -------- BROADCAST ORBIT - 7: ISC_B2ad, spare, TGD_B1Cp, TGD_B2ap
+            out << get_nav_broadcast_orbit(&eph.ISC_B2ad, nullptr, &eph.TGD_B1Cp, &eph.TGD_B2ap, d_version) << '\n';
+
+            const auto health_d = static_cast<double>(eph.hs);
+            out << get_nav_broadcast_orbit(nullptr, &health_d, nullptr, &eph.IODC, d_version) << '\n';
+
+            const auto ttm_d = static_cast<double>(eph.tow);
+            out << get_nav_broadcast_orbit(&ttm_d, nullptr, nullptr, &eph.IODE, d_version) << '\n';
         }
 }
 

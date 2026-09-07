@@ -16,6 +16,7 @@
 #include "Beidou_CNAV1.h"
 #include "Beidou_CNAV2.h"
 #include "MATH_CONSTANTS.h"
+#include "beidou_cnav1_ephemeris.h"
 #include "gnss_frequencies.h"
 #include "gnss_obs_codes.h"
 #include "gnss_synchro.h"
@@ -26,6 +27,7 @@
 #include "rtklib_rtkcmn.h"
 #include <gtest/gtest.h>
 #include <cstring>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -141,4 +143,36 @@ TEST(BeidouB2aPvtHelpersTest, InsertObsPlacesB2aOnSlot0WithCodeL5d)
     obs = insert_obs_to_rtklib(obs, b2a, 2188, k_band);
     EXPECT_EQ(obs.code[k_band], static_cast<unsigned char>(CODE_L5D));
     EXPECT_NEAR(obs.P[k_band], 2.3e7, 1.0e-3);
+}
+
+
+TEST(BeidouB2aPvtHelpersTest, InsertObsPlacesB2aOnSlot2WithCodeL5d)
+{
+    constexpr int k_band = 2;
+    Gnss_Synchro b2a = make_bds_b2a_synchro("5D", 27, 2.3e7);
+    obsd_t obs{};
+    obs = insert_obs_to_rtklib(obs, b2a, 2188, k_band);
+    EXPECT_EQ(obs.code[k_band], static_cast<unsigned char>(CODE_L5D));
+    EXPECT_EQ(obs.code[0], static_cast<unsigned char>(CODE_NONE));
+}
+
+
+TEST(BeidouB2aPvtHelpersTest, Cnav1AndCnav2MapsAreIndependent)
+{
+    std::map<int, Beidou_Cnav1_Ephemeris> cnav1;
+    std::map<int, Beidou_Cnav1_Ephemeris> cnav2;
+    Beidou_Cnav1_Ephemeris e1{};
+    e1.PRN = 27;
+    e1.sig_type = BDS_EPH_SOURCE_CNAV1;
+    e1.toe = 3000;
+    Beidou_Cnav1_Ephemeris e2{};
+    e2.PRN = 27;
+    e2.sig_type = BDS_EPH_SOURCE_CNAV2;
+    e2.toe = 6000;
+    cnav1[27] = e1;
+    cnav2[27] = e2;
+    EXPECT_EQ(cnav1[27].sig_type, BDS_EPH_SOURCE_CNAV1);
+    EXPECT_EQ(cnav2[27].sig_type, BDS_EPH_SOURCE_CNAV2);
+    EXPECT_EQ(cnav1[27].toe, 3000);
+    EXPECT_EQ(cnav2[27].toe, 6000);
 }

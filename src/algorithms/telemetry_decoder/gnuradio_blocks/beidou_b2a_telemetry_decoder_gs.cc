@@ -96,6 +96,11 @@ beidou_b2a_telemetry_decoder_gs::~beidou_b2a_telemetry_decoder_gs()
 
 void beidou_b2a_telemetry_decoder_gs::set_satellite(const Gnss_Satellite& satellite)
 {
+    if (d_satellite.get_system() != satellite.get_system() ||
+        d_satellite.get_PRN() != satellite.get_PRN())
+        {
+            reset();
+        }
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     d_nav_msg_packet.prn = static_cast<int32_t>(d_satellite.get_PRN());
 }
@@ -117,6 +122,8 @@ void beidou_b2a_telemetry_decoder_gs::reset()
     d_CRC_error_counter = 0;
     d_sample_counter = 0;
     d_preamble_index = 0;
+    d_TOW_at_current_symbol_ms = 0;
+    d_nav.reset();
 }
 
 

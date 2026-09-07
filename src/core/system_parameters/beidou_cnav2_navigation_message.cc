@@ -143,6 +143,10 @@ bool Beidou_Cnav2_Navigation_Message::decode_frame_symbols(const float* symbols,
         {
             return false;
         }
+    if (prn != 0U && frame_prn != prn)
+        {
+            return false;
+        }
     d_last_crc_ok = true;
     d_last_nav_bits.clear();
     d_last_nav_bits.reserve(static_cast<size_t>(BEIDOU_CNAV2_INFO_BITS));
@@ -155,17 +159,78 @@ bool Beidou_Cnav2_Navigation_Message::decode_frame_symbols(const float* symbols,
 }
 
 
+void Beidou_Cnav2_Navigation_Message::reset()
+{
+    d_published = {};
+    d_cand = {};
+    d_last_nav_bits.clear();
+    d_last_mes_type = -1;
+    d_last_sow = -1;
+    d_iode_mt10 = -1;
+    d_iode_mt11 = -1;
+    d_iodc = -1;
+    d_last_frame_prn = 0;
+    d_have_mt10 = false;
+    d_have_mt11 = false;
+    d_have_clk = false;
+    d_have_published = false;
+    d_flag_new_eph = false;
+    d_last_crc_ok = false;
+}
+
+
 void Beidou_Cnav2_Navigation_Message::parse_clock_common(const uint8_t* bits, int32_t toc_off)
 {
-    d_eph.toc = static_cast<int32_t>(read_unsigned(bits, toc_off, 11) * 300);
-    d_eph.af0 = static_cast<double>(read_signed(bits, toc_off + 11, 25)) * BEIDOU_CNAV1_AF0_LSB;
-    d_eph.af1 = static_cast<double>(read_signed(bits, toc_off + 36, 22)) * BEIDOU_CNAV1_AF1_LSB;
-    d_eph.af2 = static_cast<double>(read_signed(bits, toc_off + 58, 11)) * BEIDOU_CNAV1_AF2_LSB;
+    d_cand.toc = static_cast<int32_t>(read_unsigned(bits, toc_off, 11) * 300);
+    d_cand.af0 = static_cast<double>(read_signed(bits, toc_off + 11, 25)) * BEIDOU_CNAV1_AF0_LSB;
+    d_cand.af1 = static_cast<double>(read_signed(bits, toc_off + 36, 22)) * BEIDOU_CNAV1_AF1_LSB;
+    d_cand.af2 = static_cast<double>(read_signed(bits, toc_off + 58, 11)) * BEIDOU_CNAV1_AF2_LSB;
     const auto iodc_msb = static_cast<int32_t>(read_unsigned(bits, toc_off + 69, 2));
     const auto iodc_lsb = static_cast<int32_t>(read_unsigned(bits, toc_off + 71, 8));
-    d_eph.IODC = static_cast<double>((iodc_msb << 8) | iodc_lsb);
-    d_eph.IODE = d_eph.IODC;
+    d_iodc = (iodc_msb << 8) | iodc_lsb;
+    d_cand.IODC = static_cast<double>(d_iodc);
     d_have_clk = true;
+}
+
+
+bool Beidou_Cnav2_Navigation_Message::orbit_compatible() const
+{
+    return d_have_mt10 && d_have_mt11 && d_iode_mt10 == d_iode_mt11 && d_iode_mt10 >= 0;
+}
+
+
+bool Beidou_Cnav2_Navigation_Message::set_compatible() const
+{
+    if (!orbit_compatible() || !d_have_clk || d_iodc < 0)
+        {
+            return false;
+        }
+    return (d_iodc & 0xFF) == d_iode_mt10;
+}
+
+
+void Beidou_Cnav2_Navigation_Message::try_publish()
+{
+    if (!set_compatible() || d_cand.PRN >= 59 || d_cand.sat_type == 1 || d_cand.hs != 0)
+        {
+            return;
+        }
+    d_cand.IODE = static_cast<double>(d_iode_mt10);
+    d_cand.IODC = static_cast<double>(d_iodc);
+    d_cand.sig_type = BDS_EPH_SOURCE_CNAV2;
+    const bool is_new_set = !d_have_published ||
+                            d_published.PRN != d_cand.PRN ||
+                            d_published.IODE != d_cand.IODE ||
+                            d_published.IODC != d_cand.IODC ||
+                            d_published.toe != d_cand.toe ||
+                            d_published.toc != d_cand.toc;
+    if (!is_new_set)
+        {
+            return;
+        }
+    d_published = d_cand;
+    d_have_published = true;
+    d_flag_new_eph = true;
 }
 
 
@@ -175,49 +240,70 @@ void Beidou_Cnav2_Navigation_Message::parse_info_bits(const uint8_t* bits, uint3
     const auto mes_type = static_cast<int32_t>(read_unsigned(bits, 6, 6));
     d_last_mes_type = mes_type;
     d_last_sow = static_cast<int32_t>(read_unsigned(bits, 12, 18) * BEIDOU_CNAV2_SOW_LSB_S);
-    d_eph.PRN = channel_prn != 0 ? channel_prn : d_last_frame_prn;
-    d_eph.tow = d_last_sow;
-    d_eph.sig_type = BDS_EPH_SOURCE_CNAV2;
+    d_cand.PRN = channel_prn != 0 ? channel_prn : d_last_frame_prn;
+    d_cand.tow = d_last_sow;
+    d_cand.sig_type = BDS_EPH_SOURCE_CNAV2;
 
     if (mes_type == BEIDOU_CNAV2_MSG_EPH1)
         {
             // MATLAB include/ephemeris.m case 10, 1-based indices converted to 0-based.
-            d_eph.WN = static_cast<int32_t>(read_unsigned(bits, 30, 13));
-            d_eph.toe = static_cast<int32_t>(read_unsigned(bits, 61, 11) * 300);
+            d_cand.WN = static_cast<int32_t>(read_unsigned(bits, 30, 13));
+            d_cand.toe = static_cast<int32_t>(read_unsigned(bits, 61, 11) * 300);
             const auto sat_type = static_cast<uint32_t>(read_unsigned(bits, 72, 2));
-            d_eph.sat_type = static_cast<int32_t>(sat_type);
-            d_eph.nav_type = (sat_type == 1U) ? 0 : 1;
+            d_cand.sat_type = static_cast<int32_t>(sat_type);
+            d_cand.nav_type = (sat_type == 1U) ? 0 : 1;
             const double delta_a = static_cast<double>(read_signed(bits, 74, 26)) * BEIDOU_CNAV1_DELTA_A_LSB;
-            d_eph.A0 = a_ref_from_sat_type(sat_type) + delta_a;
-            d_eph.Adot = static_cast<double>(read_signed(bits, 100, 25)) * BEIDOU_CNAV1_A_DOT_LSB;
-            d_eph.delta_n = static_cast<double>(read_signed(bits, 125, 17)) * BEIDOU_CNAV1_DELTA_N0_LSB;
-            d_eph.delta_ndot = static_cast<double>(read_signed(bits, 142, 23)) * BEIDOU_CNAV1_DELTA_N0_DOT_LSB;
-            d_eph.M_0 = static_cast<double>(read_signed(bits, 165, 33)) * BEIDOU_CNAV1_M0_LSB;
-            d_eph.ecc = static_cast<double>(read_unsigned(bits, 198, 33)) * BEIDOU_CNAV1_E_LSB;
-            d_eph.omega = static_cast<double>(read_signed(bits, 231, 33)) * BEIDOU_CNAV1_OMEGA_LSB;
+            d_cand.A0 = a_ref_from_sat_type(sat_type) + delta_a;
+            d_cand.Adot = static_cast<double>(read_signed(bits, 100, 25)) * BEIDOU_CNAV1_A_DOT_LSB;
+            d_cand.delta_n = static_cast<double>(read_signed(bits, 125, 17)) * BEIDOU_CNAV1_DELTA_N0_LSB;
+            d_cand.delta_ndot = static_cast<double>(read_signed(bits, 142, 23)) * BEIDOU_CNAV1_DELTA_N0_DOT_LSB;
+            d_cand.M_0 = static_cast<double>(read_signed(bits, 165, 33)) * BEIDOU_CNAV1_M0_LSB;
+            d_cand.ecc = static_cast<double>(read_unsigned(bits, 198, 33)) * BEIDOU_CNAV1_E_LSB;
+            d_cand.omega = static_cast<double>(read_signed(bits, 231, 33)) * BEIDOU_CNAV1_OMEGA_LSB;
+            const auto iode = static_cast<int32_t>(read_unsigned(bits, BEIDOU_CNAV2_MT10_IODE_BIT, BEIDOU_CNAV2_IODE_BITS));
+            d_iode_mt10 = iode;
+            d_cand.IODE = static_cast<double>(iode);
             d_have_mt10 = true;
+            if (d_have_mt11 && d_iode_mt11 != iode)
+                {
+                    d_have_mt11 = false;
+                }
+            if (d_have_clk && (d_iodc & 0xFF) != iode)
+                {
+                    d_have_clk = false;
+                }
         }
     else if (mes_type == BEIDOU_CNAV2_MSG_EPH2)
         {
-            d_eph.hs = static_cast<int32_t>(read_unsigned(bits, 30, 2));
-            d_eph.OMEGA_0 = static_cast<double>(read_signed(bits, 42, 33)) * BEIDOU_CNAV1_OMEGA_LSB;
-            d_eph.i_0 = static_cast<double>(read_signed(bits, 75, 33)) * BEIDOU_CNAV1_I0_LSB;
-            d_eph.OMEGAdot = static_cast<double>(read_signed(bits, 108, 19)) * BEIDOU_CNAV1_OMEGADOT_LSB;
-            d_eph.idot = static_cast<double>(read_signed(bits, 127, 15)) * BEIDOU_CNAV1_IDOT_LSB;
-            d_eph.Cis = static_cast<double>(read_signed(bits, 142, 16)) * BEIDOU_CNAV1_CIS_LSB;
-            d_eph.Cic = static_cast<double>(read_signed(bits, 158, 16)) * BEIDOU_CNAV1_CIC_LSB;
-            d_eph.Crs = static_cast<double>(read_signed(bits, 174, 24)) * BEIDOU_CNAV1_CRS_LSB;
-            d_eph.Crc = static_cast<double>(read_signed(bits, 198, 24)) * BEIDOU_CNAV1_CRC_LSB;
-            d_eph.Cus = static_cast<double>(read_signed(bits, 222, 21)) * BEIDOU_CNAV1_CUS_LSB;
-            d_eph.Cuc = static_cast<double>(read_signed(bits, 243, 21)) * BEIDOU_CNAV1_CUC_LSB;
+            d_cand.hs = static_cast<int32_t>(read_unsigned(bits, 30, 2));
+            d_cand.OMEGA_0 = static_cast<double>(read_signed(bits, 42, 33)) * BEIDOU_CNAV1_OMEGA_LSB;
+            d_cand.i_0 = static_cast<double>(read_signed(bits, 75, 33)) * BEIDOU_CNAV1_I0_LSB;
+            d_cand.OMEGAdot = static_cast<double>(read_signed(bits, 108, 19)) * BEIDOU_CNAV1_OMEGADOT_LSB;
+            d_cand.idot = static_cast<double>(read_signed(bits, 127, 15)) * BEIDOU_CNAV1_IDOT_LSB;
+            d_cand.Cis = static_cast<double>(read_signed(bits, 142, 16)) * BEIDOU_CNAV1_CIS_LSB;
+            d_cand.Cic = static_cast<double>(read_signed(bits, 158, 16)) * BEIDOU_CNAV1_CIC_LSB;
+            d_cand.Crs = static_cast<double>(read_signed(bits, 174, 24)) * BEIDOU_CNAV1_CRS_LSB;
+            d_cand.Crc = static_cast<double>(read_signed(bits, 198, 24)) * BEIDOU_CNAV1_CRC_LSB;
+            d_cand.Cus = static_cast<double>(read_signed(bits, 222, 21)) * BEIDOU_CNAV1_CUS_LSB;
+            d_cand.Cuc = static_cast<double>(read_signed(bits, 243, 21)) * BEIDOU_CNAV1_CUC_LSB;
+            const auto iode = static_cast<int32_t>(read_unsigned(bits, BEIDOU_CNAV2_MT11_IODE_BIT, BEIDOU_CNAV2_IODE_BITS));
+            d_iode_mt11 = iode;
             d_have_mt11 = true;
+            if (d_have_mt10 && d_iode_mt10 != iode)
+                {
+                    d_have_mt10 = false;
+                }
+            if (d_have_clk && (d_iodc & 0xFF) != iode)
+                {
+                    d_have_clk = false;
+                }
         }
     else if (mes_type == BEIDOU_CNAV2_MSG_CLK_IONO)
         {
             parse_clock_common(bits, 42);
-            d_eph.TGD_B2ap = static_cast<double>(read_signed(bits, 121, 12)) * BEIDOU_CNAV1_TGD_LSB;
-            d_eph.ISC_B2ad = static_cast<double>(read_signed(bits, 133, 12)) * BEIDOU_CNAV1_ISC_LSB;
-            d_eph.TGD_B1Cp = static_cast<double>(read_signed(bits, 219, 12)) * BEIDOU_CNAV1_TGD_LSB;
+            d_cand.TGD_B2ap = static_cast<double>(read_signed(bits, 121, 12)) * BEIDOU_CNAV1_TGD_LSB;
+            d_cand.ISC_B2ad = static_cast<double>(read_signed(bits, 133, 12)) * BEIDOU_CNAV1_ISC_LSB;
+            d_cand.TGD_B1Cp = static_cast<double>(read_signed(bits, 219, 12)) * BEIDOU_CNAV1_TGD_LSB;
         }
     else if (mes_type == BEIDOU_CNAV2_MSG_CLK_ALM ||
              mes_type == BEIDOU_CNAV2_MSG_CLK_EOP ||
@@ -230,8 +316,5 @@ void Beidou_Cnav2_Navigation_Message::parse_info_bits(const uint8_t* bits, uint3
             parse_clock_common(bits, 64);
         }
 
-    if (d_have_mt10 && d_have_mt11 && d_have_clk && d_eph.PRN < 59 && d_eph.sat_type != 1 && d_eph.hs == 0)
-        {
-            d_flag_new_eph = true;
-        }
+    try_publish();
 }

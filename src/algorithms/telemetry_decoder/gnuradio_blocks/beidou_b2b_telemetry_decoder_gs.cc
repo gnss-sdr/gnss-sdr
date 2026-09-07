@@ -39,7 +39,8 @@
 
 namespace
 {
-constexpr int32_t CRC_ERROR_LIMIT = 8;
+// First CRC failure at the expected frame boundary drops sync immediately so
+// the next 1 ms samples resume a sliding preamble search.
 }  // namespace
 
 
@@ -232,12 +233,12 @@ int beidou_b2b_telemetry_decoder_gs::general_work(
                                 {
                                     d_Tlm_CRC_Stats->update_CRC_stats(false);
                                 }
-                            if (d_CRC_error_counter > CRC_ERROR_LIMIT)
-                                {
-                                    d_flag_frame_sync = false;
-                                    d_flag_valid_word = false;
-                                    d_CRC_error_counter = 0;
-                                }
+                            d_flag_frame_sync = false;
+                            d_flag_valid_word = false;
+                            d_CRC_error_counter = 0;
+                            std::cout << "B-CNAV3 frame sync lost ch " << d_channel
+                                      << " " << d_satellite << " (CRC fail, resume preamble search)\n";
+                            LOG(INFO) << "B-CNAV3 frame sync lost for satellite " << d_satellite;
                         }
                 }
         }

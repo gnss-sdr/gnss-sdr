@@ -45,6 +45,7 @@ In the L2 band:
 In the L5 band:
 
 - &#128752; Galileo E5b (centered at 1207.140 MHz) ✅
+- &#128752; BeiDou B2b (centered at 1207.140 MHz) ✅
 - &#128752; Galileo E5a (centered at 1176.450 MHz) ✅
 - &#128752; GPS L5 (centered at 1176.450 MHz) ✅
 - &#128752; QZSS L5, where available (centered at 1176.450 MHz) ✅
@@ -1594,6 +1595,7 @@ identifiers:
 | Glonass L1 C/A |       1G       |
 | Beidou B1I     |       B1       |
 | Beidou B1C     |       1D       |
+| Beidou B2b     |       B2       |
 | QZSS L1 C/A    |       J1       |
 | SBAS L1        |       S1       |
 | Galileo E6B    |       E6       |

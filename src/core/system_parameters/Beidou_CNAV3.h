@@ -1,6 +1,7 @@
 /*!
  * \file Beidou_CNAV3.h
- * \brief B-CNAV3 navigation message constants (BDS-SIS-ICD-B2b-1.0)
+ * \brief B-CNAV3 navigation message constants (BDS-SIS-ICD-B2b-1.0).
+ *        First cut skips 64-ary LDPC and uses the systematic 486 info bits.
  * \author Chandoss, 2026. huangchh37(at)mail2.sysu.edu.cn
  *
  * -----------------------------------------------------------------------------
@@ -31,7 +32,7 @@ constexpr int32_t BEIDOU_CNAV3_SYMBOL_RATE_SPS = 1000;
 constexpr int32_t BEIDOU_CNAV3_PREAMBLE_SYMBOLS = 16;
 constexpr int32_t BEIDOU_CNAV3_PRN_SYMBOLS = 6;
 constexpr int32_t BEIDOU_CNAV3_RESERVED_SYMBOLS = 6;
-constexpr int32_t BEIDOU_CNAV3_LDPC_SYMBOLS = 972;
+constexpr int32_t BEIDOU_CNAV3_LDPC_SYMBOLS = 972;  //!< encoded payload; LDPC not implemented yet
 constexpr int32_t BEIDOU_CNAV3_INFO_BITS = 486;
 constexpr int32_t BEIDOU_CNAV3_CRC_BITS = 24;
 constexpr int32_t BEIDOU_CNAV3_DATA_BITS = BEIDOU_CNAV3_INFO_BITS - BEIDOU_CNAV3_CRC_BITS;

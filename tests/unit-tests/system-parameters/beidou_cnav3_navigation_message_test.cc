@@ -133,3 +133,25 @@ TEST(BeidouCnav3NavigationMessageTest, GeoDoesNotEmitEphemeris)
     ASSERT_TRUE(nav.decode_frame_symbols(mt30.data(), static_cast<int32_t>(mt30.size()), 59));
     EXPECT_FALSE(nav.have_new_ephemeris());
 }
+
+
+TEST(BeidouCnav3NavigationMessageTest, DecodesConsecutiveMt10Mt30Frames)
+{
+    Beidou_Cnav3_Navigation_Message nav;
+    int eph_count = 0;
+    for (int k = 0; k < 12; k++)
+        {
+            const int32_t sow0 = 4000 + 2 * k;
+            const auto mt10 = make_frame(21, make_info(BEIDOU_CNAV3_MSG_EPH, static_cast<uint32_t>(sow0)));
+            const auto mt30 = make_frame(21, make_info(BEIDOU_CNAV3_MSG_CLK, static_cast<uint32_t>(sow0 + 1)));
+            ASSERT_TRUE(nav.decode_frame_symbols(mt10.data(), BEIDOU_CNAV3_FRAME_SYMBOLS, 21));
+            ASSERT_TRUE(nav.decode_frame_symbols(mt30.data(), BEIDOU_CNAV3_FRAME_SYMBOLS, 21));
+            if (nav.have_new_ephemeris())
+                {
+                    eph_count++;
+                    EXPECT_EQ(nav.get_ephemeris().sig_type, BDS_EPH_SOURCE_CNAV3);
+                    nav.clear_flags();
+                }
+        }
+    EXPECT_GE(eph_count, 12);
+}

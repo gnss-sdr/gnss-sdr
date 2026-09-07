@@ -1,6 +1,6 @@
 /*!
  * \file beidou_b2b_telemetry_decoder_gs.h
- * \brief BeiDou B2b B-CNAV3 telemetry decoder
+ * \brief BeiDou B2b B-CNAV3 telemetry decoder. First cut skips 64-ary LDPC.
  * \author Chandoss, 2026. huangchh37(at)mail2.sysu.edu.cn
  *
  * -----------------------------------------------------------------------------

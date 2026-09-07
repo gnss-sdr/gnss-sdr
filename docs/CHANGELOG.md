@@ -201,13 +201,17 @@ All notable changes to GNSS-SDR will be documented in this file.
   pilot), and B-CNAV3 telemetry decoding (`BEIDOU_B2B_Telemetry_Decoder`). The
   first cut takes the systematic 486 information bits after the 0xEB90 preamble
   (CRC-24Q, message types 10 and 30) and does not yet implement 64-ary LDPC.
-  GEO satellites (PRN 59-63) can be acquired and tracked but are not used in
-  PVT.   Sample configuration files are provided at
-  `conf/File_input/Beidou/gnss-sdr_BDS_B2b_synthetic.conf`,
-  `conf/File_input/Beidou/gnss-sdr_BDS_B2b_gr_complex.conf`, and
-  `conf/File_input/Beidou/gnss-sdr_BDS_B2b_pvt.conf` (end-to-end SPP).
+  BDS-2 satellites (PRN 1-18) are not assigned B2b channels. GEO satellites
+  (PRN 59-63) can be acquired and tracked but are not used in PVT. B2b-only SPP
+  remaps `B2` onto RTKLIB slot 0; dual-frequency B1+B2 is unchanged. B-CNAV3
+  ephemerides use `sig_type = BDS_EPH_SOURCE_CNAV3`. Sample configuration files
+  are provided at `conf/File_input/Beidou/gnss-sdr_BDS_B2b_synthetic.conf`,
+  `conf/File_input/Beidou/gnss-sdr_BDS_B2b_gr_complex.conf`,
+  `conf/File_input/Beidou/gnss-sdr_BDS_B2b_pvt.conf`, and
+  `conf/File_input/Beidou/gnss-sdr_BDS_B2b_cu_l5b_if20k_fs18m.conf`.
   Tracking forwards 1 ms B2 symbols during pull-in so B-CNAV3 can lock on
-  short files. Contributed by Chandoss.
+  short files. A CRC failure drops frame sync immediately so long recordings
+  re-acquire the preamble. Contributed by Chandoss.
 - Added reception of SBAS L1 signals (EGNOS and WAAS, PRN 120-138), with signal
   identifier `S1`: PCPS acquisition (`SBAS_L1_PCPS_Acquisition`), DLL+PLL
   tracking (`SBAS_L1_DLL_PLL_Tracking`), and telemetry decoding

@@ -15,6 +15,7 @@
  */
 
 #include "rtklib_pvt_gs.h"
+#include "Beidou_CNAV3.h"
 #include "Galileo_CNAV.h"
 #include "MATH_CONSTANTS.h"
 #include "an_packet_printer.h"
@@ -2742,7 +2743,12 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             if (!d_osnma_strict && tmp_eph_iter_bds_cnav1 != d_internal_pvt_solver->beidou_cnav1_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_bds_cnav1->second.PRN;
-                                    if ((prn_aux == gnss_synchro.PRN) && (std::string(gnss_synchro.Signal, 2) == std::string("1D") || std::string(gnss_synchro.Signal, 2) == std::string("B2")))
+                                    const int32_t eph_src = tmp_eph_iter_bds_cnav1->second.sig_type;
+                                    const std::string sig(gnss_synchro.Signal, 2);
+                                    // Same-PRN pairing: B1C↔CNAV1, B2b↔CNAV3.
+                                    if (prn_aux == gnss_synchro.PRN &&
+                                        ((sig == "1D" && eph_src == BDS_EPH_SOURCE_CNAV1) ||
+                                            (sig == "B2" && eph_src == BDS_EPH_SOURCE_CNAV3)))
                                         {
                                             store_valid_observable = true;
                                         }

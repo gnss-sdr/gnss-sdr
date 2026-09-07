@@ -117,6 +117,14 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Interoperability:
 
+- Added an opt-in `EVK1029_Signal_Source` for the SAPHYRION EVK1029, a dual-band
+  (E1/E5a) or triple-band (E1/E5a/E6) GNSS evaluation kit built around the
+  SY1009 RF front-end and SY1019 ADC/DSP space-grade ASICs. Reads the EVK1029
+  host application's raw capture files directly (a continuous, header-less
+  stream of OBA-encoded 4-bit samples, two per byte, 16 samples per
+  little-endian 64-bit word), without going through the generic
+  XML-metadata-driven `ION_GSMS_Signal_Source` path. Disabled by default; build
+  with `-DENABLE_EVK1029=ON` to enable it.
 - Added an opt-in RTK path fed by NTRIP corrections. The PVT block can now
   connect to an NTRIP caster, decode the RTCM 3 base position and base
   observations, and feed time-aligned reference data to its RTKLIB

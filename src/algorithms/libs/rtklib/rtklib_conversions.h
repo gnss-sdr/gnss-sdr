@@ -121,9 +121,13 @@ eph_t eph_to_rtklib(const Beidou_Cnav1_Ephemeris& bei_eph);
  * sensitive to each satellite's own tiny orbital-parameter differences,
  * producing an elevation nowhere near the true one for some satellites
  * while others happen to alias back close to correct by coincidence.
+ * Default (0) disables week resolution entirely -- WNa is used as-is,
+ * matching this function's behavior before ref_week was tracked, for
+ * callers with no reference week available (e.g. unit tests that only
+ * check fields unrelated to the resolved week).
  */
-alm_t alm_to_rtklib(const Gps_Almanac& gps_alm, int ref_week);
-alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm, int ref_week);
+alm_t alm_to_rtklib(const Gps_Almanac& gps_alm, int ref_week = 0);
+alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm, int ref_week = 0);
 alm_t alm_to_rtklib(const Beidou_Dnav_Almanac& bei_alm);
 
 /*!

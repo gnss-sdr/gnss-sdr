@@ -62,7 +62,7 @@ channel_status_msg_receiver::channel_status_msg_receiver() : gr::block("channel_
         boost::bind(&channel_status_msg_receiver::msg_handler_channel_status, this, _1));
 #endif
 #endif
-    d_pvt_status.RX_time = -1;  // to indicate that the PVT is not available
+    d_pvt_status.reset();  // to indicate that the PVT is not available
 }
 
 
@@ -95,8 +95,7 @@ void channel_status_msg_receiver::msg_handler_channel_status(const pmt::pmt_t& m
             else if (msg_type_hash_code == typeid(std::shared_ptr<Monitor_Pvt>).hash_code())
                 {
                     // ***************** Monitor_Pvt received ******************
-                    const auto monitor_pvt_obj = wht::any_cast<std::shared_ptr<Monitor_Pvt>>(pmt::any_ref(msg));
-                    d_pvt_status = *monitor_pvt_obj.get();
+                    d_pvt_status = wht::any_cast<std::shared_ptr<Monitor_Pvt>>(pmt::any_ref(msg));
 
                     // std::cout << "-------- \n" << '\n';
                     // std::cout << "PVT TOW: " << d_pvt_status->TOW_at_current_symbol_ms << '\n';
@@ -121,7 +120,7 @@ std::map<int, std::shared_ptr<Gnss_Synchro>> channel_status_msg_receiver::get_cu
 }
 
 
-Monitor_Pvt channel_status_msg_receiver::get_current_status_pvt()
+std::shared_ptr<Monitor_Pvt> channel_status_msg_receiver::get_current_status_pvt()
 {
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_channel_status function called by the scheduler
     return d_pvt_status;

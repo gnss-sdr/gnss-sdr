@@ -54,13 +54,13 @@ public:
     /*!
      * \brief return the current receiver PVT
      */
-    Monitor_Pvt get_current_status_pvt();
+    std::shared_ptr<Monitor_Pvt> get_current_status_pvt();
 
 private:
     friend channel_status_msg_receiver_sptr channel_status_msg_receiver_make();
     channel_status_msg_receiver();
     void msg_handler_channel_status(const pmt::pmt_t& msg);
-    Monitor_Pvt d_pvt_status{};
+    std::shared_ptr<Monitor_Pvt> d_pvt_status{};
     std::map<int, std::shared_ptr<Gnss_Synchro>> d_channel_status_map;
 };
 

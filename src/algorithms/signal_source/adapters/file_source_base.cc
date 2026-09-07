@@ -16,6 +16,7 @@
 
 #include "file_source_base.h"
 #include "Beidou_B1I.h"
+#include "Beidou_B2a.h"
 #include "Beidou_B3I.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
@@ -71,6 +72,7 @@ FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std:
     minimum_tail_s_ = std::max(configuration->property("Acquisition_7X.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
     minimum_tail_s_ = std::max(configuration->property("Acquisition_E6.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
     minimum_tail_s_ = std::max(configuration->property("Acquisition_B1.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Acquisition_5D.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
     minimum_tail_s_ = std::max(configuration->property("Acquisition_B3.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
     minimum_tail_s_ = std::max(configuration->property("Acquisition_1G.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
     minimum_tail_s_ = std::max(configuration->property("Acquisition_2G.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
@@ -83,6 +85,7 @@ FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std:
     minimum_tail_s_ = std::max(configuration->property("Tracking_7X.extend_correlation_symbols", 0.0) * GALILEO_E5B_CODE_PERIOD_S * 2.0, minimum_tail_s_);
     minimum_tail_s_ = std::max(configuration->property("Tracking_E6.extend_correlation_symbols", 0.0) * GALILEO_E6_CODE_PERIOD_S * 2.0, minimum_tail_s_);
     minimum_tail_s_ = std::max(configuration->property("Tracking_B1.extend_correlation_symbols", 0.0) * BEIDOU_B1I_CODE_PERIOD_S * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Tracking_5D.extend_correlation_symbols", 0.0) * BEIDOU_B2A_CODE_PERIOD_S * 2.0, minimum_tail_s_);
     minimum_tail_s_ = std::max(configuration->property("Tracking_B3.extend_correlation_symbols", 0.0) * BEIDOU_B3I_CODE_PERIOD_S * 2.0, minimum_tail_s_);
     minimum_tail_s_ = std::max(configuration->property("Tracking_1G.extend_correlation_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
     minimum_tail_s_ = std::max(configuration->property("Tracking_2G.extend_correlation_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);

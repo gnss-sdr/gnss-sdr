@@ -15,6 +15,7 @@
  */
 
 #include "rtklib_conversions.h"
+#include "Beidou_CNAV2.h"
 #include "Beidou_DNAV.h"             // for BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET
 #include "MATH_CONSTANTS.h"          // for GNSS_PI, TWO_PI
 #include "beidou_cnav1_ephemeris.h"  // for Beidou_Cnav1_Ephemeris
@@ -240,6 +241,10 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
             else if (sig_ == "1D")
                 {
                     rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L1P);
+                }
+            else if (sig_ == "5D")
+                {
+                    rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L5D);
                 }
 
             break;
@@ -757,10 +762,11 @@ eph_t eph_to_rtklib(const Beidou_Cnav1_Ephemeris& bei_eph)
     rtklib_sat.f0 = bei_eph.af0;
     rtklib_sat.f1 = bei_eph.af1;
     rtklib_sat.f2 = bei_eph.af2;
-    /* ICD §7.6 → gettgd(): tgd[0]=TGD_B1Cp, tgd[1]=TGD_B2ap, tgd[2]=ISC_B1Cd */
+    /* ICD §7.6 → gettgd(): tgd[0]=TGD_B1Cp, tgd[1]=TGD_B2ap;
+     * CNAV1 tgd[2]=ISC_B1Cd; CNAV2 tgd[2]=ISC_B2ad */
     rtklib_sat.tgd[0] = bei_eph.TGD_B1Cp;
     rtklib_sat.tgd[1] = bei_eph.TGD_B2ap;
-    rtklib_sat.tgd[2] = bei_eph.ISC_B1Cd;
+    rtklib_sat.tgd[2] = (bei_eph.sig_type == BDS_EPH_SOURCE_CNAV2) ? bei_eph.ISC_B2ad : bei_eph.ISC_B1Cd;
     rtklib_sat.toes = bei_eph.toe;
     rtklib_sat.toe = bdt2gpst(bdt2time(rtklib_sat.week, bei_eph.toe));
     rtklib_sat.toc = bdt2gpst(bdt2time(rtklib_sat.week, bei_eph.toc));

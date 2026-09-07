@@ -35,6 +35,7 @@
 
 #include "rtklib_pntpos.h"
 #include "Beidou_CNAV1.h"
+#include "Beidou_CNAV2.h"
 #include "beidou_bdgim.h"
 #include "gnss_frequencies.h"
 #include "rtklib_ephemeris.h"
@@ -162,6 +163,8 @@ double gettgd(int sat, const nav_t *nav)
  * BDS DNAV (eph.code!=BDS_EPH_SOURCE_CNAV1): tgd[0]=TGD1 (B1I vs B3I timing reference)
  * BDS CNAV1 (eph.code==BDS_EPH_SOURCE_CNAV1), stored by eph_to_rtklib(Beidou_Cnav1_Ephemeris):
  *   tgd[0]=TGD_B1Cp, tgd[1]=TGD_B2ap, tgd[2]=ISC_B1Cd  (ICD B1C §7.6)
+ * BDS CNAV2 (eph.code==BDS_EPH_SOURCE_CNAV2):
+ *   tgd[1]=TGD_B2ap, tgd[2]=ISC_B2ad  (ICD B2a). B2a data: TGD_B2ap+ISC_B2ad.
  * BDS user algorithm (applied in prange as PC = P - c·Δt_TGD):
  *   B1C pilot/combined CODE_L1P/L1X: (Δtsv)_B1Cp = Δtsv - TGD_B1Cp → (7-4)
  *   B1C data CODE_L1D: (Δtsv)_B1Cd = Δtsv - TGD_B1Cp - ISC_B1Cd   → (7-5)
@@ -186,8 +189,24 @@ double gettgd_bds_by_obs_code(int sat, const nav_t *nav, unsigned char obs_code)
             if (sys == SYS_BDS)
                 {
                     const int is_cnav1 = (nav->eph[i].code == BDS_EPH_SOURCE_CNAV1) ? 1 : 0;
-                    /* B1C obs ↔ CNAV1 eph; B1I/other ↔ DNAV eph */
-                    if (is_b1c_obs != is_cnav1)
+                    const int is_cnav2 = (nav->eph[i].code == BDS_EPH_SOURCE_CNAV2) ? 1 : 0;
+                    const int is_b2a_obs = is_bds_b2a_code(obs_code) ? 1 : 0;
+                    /* B1C obs ↔ CNAV1 eph; B2a obs ↔ CNAV2 eph; B1I/other ↔ DNAV eph */
+                    if (is_b1c_obs)
+                        {
+                            if (!is_cnav1)
+                                {
+                                    continue;
+                                }
+                        }
+                    else if (is_b2a_obs)
+                        {
+                            if (!is_cnav2)
+                                {
+                                    continue;
+                                }
+                        }
+                    else if (is_cnav1 || is_cnav2)
                         {
                             continue;
                         }
@@ -195,6 +214,14 @@ double gettgd_bds_by_obs_code(int sat, const nav_t *nav, unsigned char obs_code)
                     if (is_cnav1 && obs_code == CODE_L1D)
                         {
                             tgd_s += nav->eph[i].tgd[2];
+                        }
+                    if (is_cnav2 && is_b2a_obs)
+                        {
+                            tgd_s = nav->eph[i].tgd[1]; /* TGD_B2ap */
+                            if (obs_code == CODE_L5D)
+                                {
+                                    tgd_s += nav->eph[i].tgd[2]; /* ISC_B2ad */
+                                }
                         }
                     return SPEED_OF_LIGHT_M_S * tgd_s;
                 }
@@ -303,10 +330,17 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         {
             const bool b1c0 = is_bds_b1c_code(obs->code[0]);
             const bool b1c1 = is_bds_b1c_code(obs->code[1]);
+            const bool b2a0 = is_bds_b2a_code(obs->code[0]);
+            const bool b2a1 = is_bds_b2a_code(obs->code[1]);
             if (b1c0 || b1c1)
                 {
                     i = b1c0 ? 0 : 1;
                     j = i; /* B1C single-frequency */
+                }
+            else if (b2a0 || b2a1)
+                {
+                    i = b2a0 ? 0 : 1;
+                    j = i; /* B2a single-frequency */
                 }
             else if (obs->code[0] != CODE_NONE && obs->code[2] != CODE_NONE)
                 {

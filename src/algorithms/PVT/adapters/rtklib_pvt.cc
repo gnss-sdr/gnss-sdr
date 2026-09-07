@@ -345,7 +345,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {
             num_bands += 1;
         }
-    if (signal_enabled_flags.check_any_enabled(GAL_E5a, GPS_L5, QZS_J5))
+    if (signal_enabled_flags.check_any_enabled(GAL_E5a, GPS_L5, QZS_J5, BDS_B2A))
         {
             num_bands += 1;
         }
@@ -528,7 +528,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {
             nsys += SYS_GLO;
         }
-    if (signal_enabled_flags.check_any_enabled(BDS_B1, BDS_B3, BDS_B1C))
+    if (signal_enabled_flags.check_any_enabled(BDS_B1, BDS_B3, BDS_B1C, BDS_B2A))
         {
             nsys += SYS_BDS;
         }

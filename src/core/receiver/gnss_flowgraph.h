@@ -267,6 +267,7 @@ private:
         evGLO_2G,
         evBDS_B1,
         evBDS_B1C,
+        evBDS_B2A,
         evBDS_B3,
         evQZS_J1,
         evQZS_J5

@@ -215,6 +215,24 @@ All notable changes to GNSS-SDR will be documented in this file.
   sample configuration file is provided at
   `conf/File_input/Beidou/gnss-sdr_BDS_B1C_geb_if20k_fs18m_ibyte.conf`.
   Contributed by @OuWenhao16.
+- Added the BeiDou B2a RNSS receiver chain (B2a_I data / B-CNAV2), with signal
+  identifier `5D`: PCPS acquisition (`BEIDOU_B2A_PCPS_Acquisition`), DLL+PLL
+  tracking (`BEIDOU_B2A_DLL_PLL_Tracking`; BPSK(10), 1 ms primary code, data
+  component only), and B-CNAV2 telemetry decoding
+  (`BEIDOU_B2A_Telemetry_Decoder`). The first cut takes the systematic 288
+  information bits after the 0xE24DE8 preamble (CRC-24Q, message types 10, 11
+  and 30) and does not yet implement 64-ary LDPC. GEO and BDS-2 satellites (PRN
+  1-18 and 59-63) are not assigned B2a channels and are not used in PVT. B-CNAV2
+  ephemerides are stored with `sig_type = BDS_EPH_SOURCE_CNAV2` so B2a
+  observations are paired only with CNAV2 (not DNAV or B-CNAV1). B2a-only SPP
+  remaps `5D` onto RTKLIB slot 0 and overrides `lam[0]` to `c/FREQ5` because
+  RTKLIB BDS `satwavelen` frq2 is B3, not L5. RINEX 3 writes a D1-style stand-in
+  for CNAV; native CNAV records require RINEX 4. Sample configuration files are
+  provided at `conf/File_input/Beidou/gnss-sdr_BDS_B2a_file.conf` and
+  `conf/File_input/Beidou/gnss-sdr_BDS_B2a_cu_l5_if20k_fs18m.conf`. Tracking
+  forwards 1 ms B2a symbols during pull-in so B-CNAV2 can lock on short files. A
+  CRC failure drops frame sync immediately so long recordings re-acquire the
+  preamble. Contributed by huangchuhan.
 - Added reception of SBAS L1 signals (EGNOS and WAAS, PRN 120-138), with signal
   identifier `S1`: PCPS acquisition (`SBAS_L1_PCPS_Acquisition`), DLL+PLL
   tracking (`SBAS_L1_DLL_PLL_Tracking`), and telemetry decoding

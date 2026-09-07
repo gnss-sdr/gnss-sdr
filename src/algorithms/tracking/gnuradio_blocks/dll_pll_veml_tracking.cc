@@ -25,6 +25,7 @@
 #include "Beidou_B1C.h"
 #include "Beidou_B1C_codes.h"
 #include "Beidou_B1I.h"
+#include "Beidou_B2a.h"
 #include "Beidou_B3I.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
@@ -38,6 +39,7 @@
 #include "SBAS_L1.h"
 #include "beidou_b1c_signal_replica.h"
 #include "beidou_b1i_signal_replica.h"
+#include "beidou_b2a_signal_replica.h"
 #include "beidou_b3i_signal_replica.h"
 #include "galileo_e1_signal_replica.h"
 #include "galileo_e5_signal_replica.h"
@@ -186,6 +188,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
     map_signal_pretty_name["L5"] = "L5";
     map_signal_pretty_name["B1"] = "B1I";
     map_signal_pretty_name["1D"] = "B1C";
+    map_signal_pretty_name["5D"] = "B2a";
     map_signal_pretty_name["B3"] = "B3I";
     map_signal_pretty_name["E6"] = "E6";
     map_signal_pretty_name["J1"] = "L1 C/A";
@@ -434,6 +437,23 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     d_secondary_code_string = BEIDOU_B1I_SECONDARY_CODE_STR;
                     d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B1I_SECONDARY_CODE_LENGTH);
                     d_data_secondary_code_string = BEIDOU_B1I_SECONDARY_CODE_STR;
+                }
+            else if (d_signal_type == "5D")
+                {
+                    d_signal_carrier_freq = BEIDOU_B2A_FREQ_HZ;
+                    d_code_period = BEIDOU_B2A_CODE_PERIOD_S;
+                    d_code_chip_rate = BEIDOU_B2A_CODE_RATE_CPS;
+                    d_code_length_chips = static_cast<int32_t>(BEIDOU_B2A_CODE_LENGTH_CHIPS);
+                    d_symbols_per_bit = BEIDOU_B2A_SYMBOLS_PER_BIT;
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_secondary = false;
+                    d_trk_parameters.track_pilot = false;
+                    d_trk_parameters.slope = 1.0;
+                    d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
+                    d_trk_parameters.y_intercept = 1.0;
+                    d_secondary_code_length = 0;
+                    d_data_secondary_code_length = 0;
                 }
             else if (d_signal_type == "B3")
                 {
@@ -1045,6 +1065,11 @@ void dll_pll_veml_tracking::start_tracking()
                         d_tracking_code, Signal_, d_trk_parameters.qmboc,
                         d_acquisition_gnss_synchro->PRN, b1c_replica_fs, 0, false);
                 }
+        }
+
+    else if (d_systemName == "Beidou" && d_signal_type == "5D")
+        {
+            beidou_b2a_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
         }
 
     else if (d_systemName == "Beidou" && d_signal_type == "B3")
@@ -2238,6 +2263,23 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                 current_synchro_data.Flag_valid_symbol_output = false;
                                 d_b1c_prelock_output_pending = true;
                                 d_P_data_accu = gr_complex(0.0, 0.0);
+                            }
+
+                        // B2a: 1 ms = 1 NAV symbol (5-chip data secondary code is
+                        // wiped in the telemetry decoder). Default pull-in is 5 s,
+                        // which can leave a short file with only one frame.
+                        // Forward Prompt during wide tracking so B-CNAV2 can lock.
+                        if (d_systemName == "Beidou" && d_signal_type == "5D")
+                            {
+                                d_P_data_accu = *d_Prompt;
+                                current_synchro_data = *d_acquisition_gnss_synchro;
+                                assign_correlators_to_synchro(current_synchro_data);
+                                current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
+                                current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
+                                current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
+                                current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
+                                current_synchro_data.correlation_length_ms = d_correlation_length_ms;
+                                current_synchro_data.Flag_valid_symbol_output = true;
                             }
 
                         if (!d_pull_in_transitory)

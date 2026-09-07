@@ -32,8 +32,10 @@
 
 #include "rtklib_solver.h"
 #include "Beidou_CNAV1.h"
+#include "Beidou_CNAV2.h"
 #include "Beidou_DNAV.h"
 #include "Galileo_CNAV.h"
+#include "gnss_frequencies.h"
 #include "gnss_obs_codes.h"
 #include "gnss_sdr_filesystem.h"
 #include "matlab_writter_helper.h"
@@ -92,6 +94,7 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     d_rtklib_band_index["1B"] = 0;
     d_rtklib_band_index["B1"] = 0;
     d_rtklib_band_index["1D"] = 0;
+    d_rtklib_band_index["5D"] = 2;
     d_rtklib_band_index["B3"] = 2;
     d_rtklib_band_index["2G"] = 1;
     d_rtklib_band_index["2S"] = 1;
@@ -158,6 +161,16 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     if (flags.check_only_enabled(GPS_L5, GAL_E5b))
         {
             d_rtklib_band_index["L5"] = 0;
+            d_rtklib_freq_index[0] = 2;
+        }
+
+    // B2a-only SPP uses RTKLIB slot 0. Default "5D" mapping is slot 2
+    // (L1+L2+L5). RTKLIB BDS satwavelen frq2 is B3 (1268.52 MHz), not L5,
+    // so lam[0] is overridden to c/FREQ5 in get_PVT. This remap is gated on
+    // B2a-only: B1I/B1C/B3 present keeps the default dual-frequency map.
+    if (flags.check_only_enabled(BDS_B2A))
+        {
+            d_rtklib_band_index["5D"] = 0;
             d_rtklib_freq_index[0] = 2;
         }
 
@@ -2295,6 +2308,27 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         DLOG(INFO) << "No B-CNAV1 ephemeris data for SV " << gnss_observables_iter->second.PRN;
                                     }
                             }
+                        if (sig_ == "5D")
+                            {
+                                const auto cnav2_iter = beidou_cnav1_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                                if (cnav2_iter != beidou_cnav1_ephemeris_map.cend() &&
+                                    cnav2_iter->second.sig_type == BDS_EPH_SOURCE_CNAV2 &&
+                                    cnav2_iter->second.sat_type != 1 &&
+                                    cnav2_iter->second.hs == 0)
+                                    {
+                                        eph_data[valid_obs] = eph_to_rtklib(cnav2_iter->second);
+                                        obsd_t newobs{};
+                                        d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                            gnss_observables_iter->second,
+                                            cnav2_iter->second.WN + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
+                                            d_rtklib_band_index.at(sig_));
+                                        valid_obs++;
+                                    }
+                                else
+                                    {
+                                        DLOG(INFO) << "No B-CNAV2 ephemeris data for SV " << gnss_observables_iter->second.PRN;
+                                    }
+                            }
                         // BeiDou B3: merge with DNAV/B1I only
                         if (sig_ == "B3")
                             {
@@ -2608,6 +2642,10 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     if (is_bds_b1c_code(c0))
                         {
                             d_nav_data.lam[d_obs_data[k].sat - 1][0] = SPEED_OF_LIGHT_M_S / FREQ1;
+                        }
+                    else if (is_bds_b2a_code(c0))
+                        {
+                            d_nav_data.lam[d_obs_data[k].sat - 1][0] = SPEED_OF_LIGHT_M_S / FREQ5;
                         }
                 }
             const int configured_positioning_mode = d_rtk.opt.mode;

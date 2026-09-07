@@ -81,6 +81,7 @@
 #include <cstdint>
 #include <fstream>
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 
@@ -163,10 +164,24 @@ public:
     bool get_galileo_signal_health(uint32_t prn, const std::string& signal, uint32_t observation_tow, bool& healthy) const;
     std::map<int, Galileo_Ephemeris> get_galileo_ephemeris_map_for_pvt() const;
     bool select_galileo_ephemeris(uint32_t prn, const std::string& signal, uint32_t observation_tow,
-        Galileo_Ephemeris& ephemeris, bool& from_reduced_ced) const;
+        Galileo_Ephemeris& ephemeris, bool& from_reduced_ced);
 
     sol_t pvt_sol{};
     std::array<ssat_t, MAXSAT> pvt_ssat{};
+
+    // PRNs that have used the receiver's primary Galileo navigation service
+    // (see the constructor for how that's chosen) at least once. Once a PRN
+    // is in this set, select_galileo_ephemeris() never falls back to the
+    // other service for it again, even if the primary type's ephemeris is
+    // temporarily unusable -- the fallback exists purely to bootstrap
+    // Galileo availability at startup, before any given satellite's primary-
+    // service ephemeris has decoded yet, not as a general per-epoch
+    // failover. Without this, a satellite could bounce between services
+    // epoch to epoch (e.g. if the fallback type's ephemeris happens to sit
+    // right at its staleness cutoff), each bounce introducing a small
+    // clock/orbit discontinuity for that satellite even though both
+    // services are individually accurate.
+    std::set<uint32_t> d_galileo_primary_nav_locked_prns_;
 
     Galileo_Ephemeris_Store galileo_ephemeris_store;                   //!< Source-aware Galileo ephemeris storage
     std::map<int, Galileo_Ephemeris> galileo_ephemeris_map;            //!< Compatibility PVT view; source-aware storage is authoritative

@@ -106,8 +106,24 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph);
 
 eph_t eph_to_rtklib(const Beidou_Cnav1_Ephemeris& bei_eph);
 
-alm_t alm_to_rtklib(const Gps_Almanac& gps_alm);
-alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm);
+/*!
+ * \brief Converts almanac data to RTKLIB's alm_t format.
+ *
+ * \param ref_week current GPS week, used to resolve the almanac's own
+ * truncated week number (WNa -- 8 bits/mod-256 for GPS, 2 bits/mod-4 for
+ * Galileo, both far too short to be used as an absolute week on their own)
+ * to the closest full week to ref_week, the same way eph_to_rtklib()
+ * already does for ephemeris. Without this, alm.toa was built directly
+ * from the raw seconds-of-week value with no week at all (implicitly
+ * placing it just after the GPS epoch, decades off any real date) --
+ * self-consistent per satellite, so not obviously wrong, but propagating
+ * a Keplerian orbit forward by that many orbital periods is exquisitely
+ * sensitive to each satellite's own tiny orbital-parameter differences,
+ * producing an elevation nowhere near the true one for some satellites
+ * while others happen to alias back close to correct by coincidence.
+ */
+alm_t alm_to_rtklib(const Gps_Almanac& gps_alm, int ref_week);
+alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm, int ref_week);
 alm_t alm_to_rtklib(const Beidou_Dnav_Almanac& bei_alm);
 
 /*!

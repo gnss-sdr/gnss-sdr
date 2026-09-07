@@ -91,6 +91,13 @@ public:
     double af0{};       //!< Coefficient 0 of code phase offset model [s]
     double af1{};       //!< Coefficient 1 of code phase offset model [s/s]
 
+    //! True if this entry came from an AGNSS/SUPL bootstrap load at startup
+    //! rather than a live broadcast decode. Deliberately not part of
+    //! serialize() below -- it is a runtime-only provenance marker set by
+    //! the code that performs the startup load, not a field of the almanac
+    //! itself, and has no business round-tripping through a saved XML file.
+    bool from_startup_load{false};
+
 protected:
     char System{};  //!< Character ID of the GNSS system. 'G': GPS. 'E': Galileo. 'C': BeiDou. 'J': QZSS
 private:

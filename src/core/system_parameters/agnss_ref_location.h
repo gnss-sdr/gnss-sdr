@@ -19,6 +19,9 @@
 #define GNSS_SDR_AGNSS_REF_LOCATION_H
 
 #include <boost/serialization/nvp.hpp>
+#include <sstream>
+#include <string>
+#include <vector>
 
 /** \addtogroup Core
  * \{ */
@@ -61,6 +64,44 @@ public:
         archive& BOOST_SERIALIZATION_NVP(valid);
     }
 };
+
+
+/*!
+ * \brief Parses a "lat,lon" (or "lat lon") GNSS-SDR.AGNSS_ref_location string
+ * into an Agnss_Ref_Location. valid is false (and lat/lon left default) if
+ * ref_location_str is empty or doesn't contain a plausible WGS84 position.
+ * Shared by every caller that needs this parsing (ControlThread::init(),
+ * SatelliteVisibility) so the rule lives in exactly one place.
+ */
+inline Agnss_Ref_Location parse_agnss_ref_location(const std::string& ref_location_str)
+{
+    Agnss_Ref_Location result{};
+    if (ref_location_str.empty())
+        {
+            return result;
+        }
+    std::vector<double> vect;
+    std::stringstream ss(ref_location_str);
+    double d;
+    while (ss >> d)
+        {
+            vect.push_back(d);
+            if ((ss.peek() == ',') || (ss.peek() == ' '))
+                {
+                    ss.ignore();
+                }
+        }
+    if (vect.size() >= 2)
+        {
+            if ((vect[0] < 90.0) && (vect[0] > -90) && (vect[1] < 180.0) && (vect[1] > -180.0))
+                {
+                    result.lat = vect[0];
+                    result.lon = vect[1];
+                    result.valid = true;
+                }
+        }
+    return result;
+}
 
 
 /** \} */

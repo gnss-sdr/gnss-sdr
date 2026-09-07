@@ -55,6 +55,22 @@ const HAS_obs_corrections* find_has_obs_correction(const std::map<std::string, s
         }
     return nullptr;
 }
+
+// Resolves a truncated week number (week, known only mod cycle -- e.g. 8
+// bits/256 for GPS almanac WNa, 2 bits/4 for Galileo almanac WNa) to the
+// full week closest to ref_week. Same purpose as adjgpsweek() in
+// rtklib_rtkcmn.cc, generalized to an arbitrary cycle length instead of
+// being hardcoded to GPS ephemeris' 1024-week rollover. ref_week <= 0 means
+// no reference is available; returns week unresolved (ambiguous) in that
+// case, same as adjgpsweek()'s own convention.
+int resolve_truncated_week(int week, int ref_week, int cycle)
+{
+    if (ref_week <= 0)
+        {
+            return week;
+        }
+    return week + (ref_week - week + cycle / 2) / cycle * cycle;
+}
 }  // namespace
 
 
@@ -869,7 +885,7 @@ eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph)
 }
 
 
-alm_t alm_to_rtklib(const Gps_Almanac& gps_alm)
+alm_t alm_to_rtklib(const Gps_Almanac& gps_alm, int ref_week)
 {
     alm_t rtklib_alm;
 
@@ -880,11 +896,12 @@ alm_t alm_to_rtklib(const Gps_Almanac& gps_alm)
     rtklib_alm.sat = satno(gps_sys, gps_alm.PRN);
     rtklib_alm.svh = gps_alm.SV_health;
     rtklib_alm.svconf = gps_alm.AS_status;
-    rtklib_alm.week = gps_alm.WNa;
-    gtime_t toa;
-    toa.time = gps_alm.toa;
-    toa.sec = 0.0;
-    rtklib_alm.toa = toa;
+    // GPS almanac WNa is only 8 bits (mod 256) -- resolve against ref_week
+    // before using it, same as eph_to_rtklib() does for ephemeris via
+    // adjgpsweek(). See resolve_truncated_week()'s doc comment for why this
+    // matters: skipping it silently propagates from the wrong week.
+    rtklib_alm.week = resolve_truncated_week(gps_alm.WNa, ref_week, 256);
+    rtklib_alm.toa = gpst2time(rtklib_alm.week, static_cast<double>(gps_alm.toa));
     rtklib_alm.A = gps_alm.sqrtA * gps_alm.sqrtA;
     rtklib_alm.e = gps_alm.ecc;
     rtklib_alm.i0 = ((gps_alm.get_system() == 'J') ? gps_alm.delta_i : (gps_alm.delta_i + 0.3)) * GNSS_PI;
@@ -900,7 +917,7 @@ alm_t alm_to_rtklib(const Gps_Almanac& gps_alm)
 }
 
 
-alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm)
+alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm, int ref_week)
 {
     alm_t rtklib_alm;
 
@@ -909,11 +926,21 @@ alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm)
     rtklib_alm.sat = gal_alm.PRN + NSATGPS + NSATGLO;
     rtklib_alm.svh = gal_alm.E1B_HS;
     rtklib_alm.svconf = gal_alm.E1B_HS;
-    rtklib_alm.week = gal_alm.WNa;
-    gtime_t toa;
-    toa.time = gal_alm.toa;
-    toa.sec = 0.0;
-    rtklib_alm.toa = toa;
+    // Galileo almanac WNa is only 2 bits (mod 4 -- see WN_A_7_BIT/WN_A_9_BIT
+    // in Galileo_INAV.h, {bit_position, bit_width} = {.., 2}; NOT 4 bits/
+    // mod 16, that width belongs to IOD_a, a different field -- confirmed
+    // empirically 2026-09-03 by sweeping candidate weeks against real
+    // ephemeris-derived elevation for satellites with both data sources:
+    // only the mod-4 resolution produced an exact match, mod-16 candidates
+    // were off by up to 100+ deg) and GST-relative (same 1024-week GST/GPS
+    // offset galileo_eph_to_rtklib() applies for ephemeris via
+    // "gal_eph.WN + 1024") -- resolve mod 4 against the GST-equivalent
+    // reference week, then convert back to the GPS week scale gpst2time()
+    // expects. See resolve_truncated_week()'s doc comment for why skipping
+    // this matters.
+    const int ref_week_gst = (ref_week > 0) ? (ref_week - 1024) : ref_week;
+    rtklib_alm.week = resolve_truncated_week(gal_alm.WNa, ref_week_gst, 4) + 1024;
+    rtklib_alm.toa = gpst2time(rtklib_alm.week, static_cast<double>(gal_alm.toa));
     rtklib_alm.A = gal_alm.sqrtA * gal_alm.sqrtA;
     rtklib_alm.e = gal_alm.ecc;
     rtklib_alm.i0 = (gal_alm.delta_i + 56.0 / 180.0) * GNSS_PI;

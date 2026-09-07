@@ -171,6 +171,10 @@
 #include "ion_gsms_signal_source.h"
 #endif
 
+#if EVK1029_DRIVER
+#include "evk1029_signal_source.h"
+#endif
+
 using namespace std::string_literals;
 
 namespace
@@ -322,6 +326,12 @@ std::unique_ptr<SignalSourceInterface> get_signal_source_block(
         {
             return std::make_unique<LabsatSignalSource>(configuration, role, in_streams, out_streams, queue);
         }
+#if EVK1029_DRIVER
+    else if (implementation == "EVK1029_Signal_Source")
+        {
+            return std::make_unique<Evk1029SignalSource>(configuration, role, in_streams, out_streams, queue);
+        }
+#endif
 #if UHD_DRIVER
     else if (implementation == "UHD_Signal_Source")
         {

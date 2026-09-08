@@ -71,6 +71,14 @@ All notable changes to GNSS-SDR will be documented in this file.
   navigation-message source. XML persistence keeps the legacy
   `gal_ephemeris.xml` view and automatically adds `gal_inav_ephemeris.xml` and
   `gal_fnav_ephemeris.xml`; no configuration change is required.
+- Galileo E1 observations can now use the I/NAV ephemeris while F/NAV is still
+  being decoded in E1/E5a configurations, with the E1/E5b BGD applied to match
+  that clock model, and return to F/NAV once it is available. This removes the
+  cold-start delay in which Galileo could not contribute to PVT until F/NAV was
+  fully decoded on E5a. E1 can also use Reduced CED in the same situation. E5a,
+  E5b and E6 observations always keep the clock reference of their configured
+  service. The reverse fallback (E1 using F/NAV when I/NAV is stale) requires
+  `use_unhealthy_sats=true`, since F/NAV carries no E1B health information.
 - Fixed Galileo single-frequency broadcast group-delay corrections in SPP and
   PPP, selecting the E1/E5a or E1/E5b BGD from the active navigation service and
   applying the ICD frequency scaling to E5a and E5b observations.

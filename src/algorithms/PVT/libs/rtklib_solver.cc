@@ -102,11 +102,8 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
 
     const Signal_Enabled_Flags flags(d_signal_enabled_flags);
 
-    // The Galileo OS SIS ICD defines E1/E5b as the I/NAV service and E1/E5a
-    // as the F/NAV service. Select one service deterministically for the whole
-    // receiver so channel and message arrival order cannot change the clock
-    // model used by PVT. I/NAV has priority when E5b is enabled; otherwise an
-    // enabled E5a selects F/NAV. E1-only receivers use I/NAV.
+    // Prefer the ICD clock model for E1/E5b (I/NAV) or E1/E5a (F/NAV).
+    // E5b takes priority; E1-only receivers use I/NAV.
     if (flags.check_any_enabled(GAL_E5b))
         {
             d_galileo_nav_message_type_for_pvt = Galileo_Nav_Message_Type::INAV;
@@ -1423,10 +1420,12 @@ bool Rtklib_Solver::select_galileo_ephemeris(uint32_t prn, const std::string &si
             return false;
         }
 
+    // Prefer the primary service while its ephemeris is fresh.
     const Galileo_Ephemeris *full_ephemeris = galileo_ephemeris_store.find(
         static_cast<int>(prn), d_galileo_nav_message_type_for_pvt);
     const auto compatibility_ephemeris = galileo_ephemeris_map.find(static_cast<int>(prn));
-    if (full_ephemeris == nullptr && compatibility_ephemeris != galileo_ephemeris_map.cend() &&
+    if ((full_ephemeris == nullptr || !galileo_ephemeris_is_usable(*full_ephemeris, observation_tow)) &&
+        compatibility_ephemeris != galileo_ephemeris_map.cend() &&
         (compatibility_ephemeris->second.nav_message_type == Galileo_Nav_Message_Type::Unknown ||
             compatibility_ephemeris->second.nav_message_type == d_galileo_nav_message_type_for_pvt))
         {
@@ -1435,12 +1434,36 @@ bool Rtklib_Solver::select_galileo_ephemeris(uint32_t prn, const std::string &si
     if (full_ephemeris != nullptr && galileo_ephemeris_is_usable(*full_ephemeris, observation_tow))
         {
             ephemeris = *full_ephemeris;
+            if (ephemeris.nav_message_type == Galileo_Nav_Message_Type::Unknown)
+                {
+                    ephemeris.nav_message_type = d_galileo_nav_message_type_for_pvt;
+                }
             return true;
         }
 
-    // The ICD only defines Reduced CED use for the E1/E5b service.
-    if (d_galileo_nav_message_type_for_pvt != Galileo_Nav_Message_Type::INAV ||
-        (signal != "1B" && signal != "7X"))
+    // E1 can use either clock model with its matching BGD. Other signals
+    // must retain the primary service's clock reference.
+    if (signal == "1B")
+        {
+            const auto other_nav_message_type = (d_galileo_nav_message_type_for_pvt == Galileo_Nav_Message_Type::INAV)
+                                                    ? Galileo_Nav_Message_Type::FNAV
+                                                    : Galileo_Nav_Message_Type::INAV;
+            full_ephemeris = galileo_ephemeris_store.find(static_cast<int>(prn), other_nav_message_type);
+            if ((full_ephemeris == nullptr || !galileo_ephemeris_is_usable(*full_ephemeris, observation_tow)) &&
+                compatibility_ephemeris != galileo_ephemeris_map.cend() &&
+                compatibility_ephemeris->second.nav_message_type == other_nav_message_type)
+                {
+                    full_ephemeris = &compatibility_ephemeris->second;
+                }
+            if (full_ephemeris != nullptr && galileo_ephemeris_is_usable(*full_ephemeris, observation_tow))
+                {
+                    ephemeris = *full_ephemeris;
+                    return true;
+                }
+        }
+
+    // The ICD defines Reduced CED only for E1/E5b.
+    if (signal != "1B" && signal != "7X")
         {
             return false;
         }

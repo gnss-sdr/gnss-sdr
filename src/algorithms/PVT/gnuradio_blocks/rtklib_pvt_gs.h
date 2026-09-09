@@ -125,6 +125,11 @@ public:
     void clear_ephemeris();
 
     /*!
+     * \brief Clear ephemeris information only, leaving GPS/Galileo/BeiDou almanacs untouched
+     */
+    void clear_ephemeris_keep_almanac();
+
+    /*!
      * \brief Interpolates one observable between two epochs, in the carrier
      * polarity frame of the later epoch.
      *

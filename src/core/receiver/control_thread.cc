@@ -1025,14 +1025,23 @@ void ControlThread::apply_action(unsigned int what)
             break;
         case 13:
             LOG(INFO) << "Receiver action WARMSTART";
-            // delete all ephemeris and almanac information from maps (also the PVT map queue)
+            // Ephemeris isn't trusted yet (per the classic cold/warm/hot start table:
+            // almanac current, ephemeris unknown/stale) -- keep whatever almanac the
+            // receiver currently has in memory (it's already as fresh as it can be;
+            // no XML file on disk can be more current than live-demodulated data)
+            // and only drop ephemeris, so satellites still get elevation-classified/
+            // prioritized purely from almanac + assisted position/time and have to
+            // redemodulate their own ephemeris during acquisition/tracking. No XML
+            // reload here -- deliberately: reloading assistance data from a file
+            // risks *regressing* past whatever the receiver has already accumulated
+            // live since its last start (a fresher live almanac would otherwise get
+            // discarded in favor of a stale on-disk snapshot) -- see
+            // clear_ephemeris_keep_almanac()'s doc comment.
             pvt_ptr = flowgraph_->get_pvt();
-            pvt_ptr->clear_ephemeris();
-            // load the ephemeris and the almanac from XML files (receiver assistance)
-            read_assistance_from_XML();
+            pvt_ptr->clear_ephemeris_keep_almanac();
             // call here the function that computes the set of visible satellites and its elevation
             // for the date and time specified by the warm start command and the assisted position
-            get_visible_sats(cmd_interface_.get_utc_time(), cmd_interface_.get_LLH());
+            visible_satellites = get_visible_sats(cmd_interface_.get_utc_time(), cmd_interface_.get_LLH());
             // reorder the satellite queue to acquire first those visible satellites
             flowgraph_->priorize_satellites(visible_satellites);
             // start again the satellite acquisitions

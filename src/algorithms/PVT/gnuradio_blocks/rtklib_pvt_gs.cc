@@ -2127,6 +2127,24 @@ void rtklib_pvt_gs::clear_ephemeris()
 }
 
 
+void rtklib_pvt_gs::clear_ephemeris_keep_almanac()
+{
+    d_internal_pvt_solver->clear_gps_ephemerides();
+    d_internal_pvt_solver->galileo_ephemeris_map.clear();
+    d_internal_pvt_solver->galileo_ephemeris_store.clear();
+    d_internal_pvt_solver->galileo_reduced_ced_map.clear();
+    d_internal_pvt_solver->beidou_dnav_ephemeris_map.clear();
+    if (d_enable_rx_clock_correction == true)
+        {
+            d_user_pvt_solver->clear_gps_ephemerides();
+            d_user_pvt_solver->galileo_ephemeris_map.clear();
+            d_user_pvt_solver->galileo_ephemeris_store.clear();
+            d_user_pvt_solver->galileo_reduced_ced_map.clear();
+            d_user_pvt_solver->beidou_dnav_ephemeris_map.clear();
+        }
+}
+
+
 bool rtklib_pvt_gs::send_ttff_msg(double ttff) const
 {
     if (d_mq)

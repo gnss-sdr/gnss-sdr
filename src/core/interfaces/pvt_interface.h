@@ -52,6 +52,18 @@ class PvtInterface : public GNSSBlockInterface
 public:
     virtual void reset() = 0;
     virtual void clear_ephemeris() = 0;
+    // Ephemeris-only clear, leaving the almanac maps untouched -- used by a
+    // WARMSTART telecommand to drop trust in ephemeris while keeping whatever
+    // almanac the receiver currently has in memory, matching the classic
+    // cold/warm/hot start table (warm start: almanac current, ephemeris
+    // unknown/stale) instead of clear_ephemeris()'s wipe-everything behavior.
+    // Deliberately does NOT reload almanac from an XML file first -- the
+    // receiver's own in-memory almanac (from live demodulation, or from
+    // whatever assistance data it started with) is already at least as
+    // current as any file on disk could be, and reloading from a file risks
+    // regressing past it (discarding satellites/pages the receiver has
+    // accumulated live since its last start in favor of a stale snapshot).
+    virtual void clear_ephemeris_keep_almanac() = 0;
     virtual std::map<int, Gps_Ephemeris> get_gps_ephemeris() const = 0;
     virtual std::map<int, Galileo_Ephemeris> get_galileo_ephemeris() const = 0;
     virtual std::map<int, Beidou_Dnav_Ephemeris> get_beidou_dnav_ephemeris() const = 0;

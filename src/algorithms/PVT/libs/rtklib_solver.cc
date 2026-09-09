@@ -2849,7 +2849,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // it, so an excluded satellite shows up in the monitor as
                     // "not used" rather than as missing/no-az-el (which
                     // otherwise looks identical to a tracking problem).
-                    d_monitor_pvt.used_satellites.clear();
+                    d_monitor_pvt.tracked_satellites.clear();
                     for (int sat_idx = 0; sat_idx < MAXSAT; sat_idx++)
                         {
                             const bool has_azel = (pvt_ssat[sat_idx].azel[0] != 0.0) || (pvt_ssat[sat_idx].azel[1] != 0.0);
@@ -2903,7 +2903,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 }
                             for (const Gnss_Synchro *synchro : contributing_signals)
                                 {
-                                    Monitor_Pvt::UsedSatelliteInfo info;
+                                    Monitor_Pvt::TrackedSatelliteInfo info;
                                     info.prn = static_cast<uint32_t>(prn);
                                     info.system = sys_char;
                                     info.signal = std::string(synchro->Signal, 2);
@@ -2911,7 +2911,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     info.elevation_deg = pvt_ssat[sat_idx].azel[1] * R2D;
                                     info.combined = combined;
                                     info.used = used;
-                                    d_monitor_pvt.used_satellites.push_back(info);
+                                    d_monitor_pvt.tracked_satellites.push_back(info);
                                 }
                         }
 

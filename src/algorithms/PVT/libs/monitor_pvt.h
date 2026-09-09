@@ -36,15 +36,16 @@ class Monitor_Pvt
 {
 public:
     /*!
-     * \brief One satellite/signal that contributed to this fix, with its
-     * azimuth/elevation and whether it was combined with another signal of
-     * the same satellite (e.g. Galileo E1+E5a iono-free combination -- see
-     * the "dual-frequency" branch of prange() in rtklib_pntpos.cc). Signals
-     * are listed individually (one entry per satellite per signal), not
-     * merged, so a combined satellite appears as two entries both flagged
-     * combined = true.
+     * \brief One tracked satellite/signal, with its azimuth/elevation,
+     * whether it was combined with another signal of the same satellite
+     * (e.g. Galileo E1+E5a iono-free combination -- see the
+     * "dual-frequency" branch of prange() in rtklib_pntpos.cc), and whether
+     * it was actually used in this fix (see the `used` member below).
+     * Signals are listed individually (one entry per satellite per signal),
+     * not merged, so a combined satellite appears as two entries both
+     * flagged combined = true.
      */
-    class UsedSatelliteInfo
+    class TrackedSatelliteInfo
     {
     public:
         uint32_t prn{};
@@ -76,7 +77,7 @@ public:
         }
     };
 
-    std::vector<UsedSatelliteInfo> used_satellites;
+    std::vector<TrackedSatelliteInfo> tracked_satellites;
 
     // TOW
     uint32_t TOW_at_current_symbol_ms;
@@ -200,7 +201,7 @@ public:
 
         ar& BOOST_SERIALIZATION_NVP(cog);
         ar& BOOST_SERIALIZATION_NVP(geohash);
-        ar& BOOST_SERIALIZATION_NVP(used_satellites);
+        ar& BOOST_SERIALIZATION_NVP(tracked_satellites);
     }
 };
 

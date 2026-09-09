@@ -61,7 +61,7 @@ message MonitorPvt {
   // azimuth_deg/elevation_deg populated with used = false when it was
   // tracked and had az/el computed but excluded from the fix itself (e.g.
   // below PVT.elevation_mask, or by RAIM FDE).
-  message UsedSatellite {
+  message TrackedSatellite {
     uint32 prn = 1;
     string system = 2;  // "G" GPS, "E" Galileo, "R" GLONASS, "C" BeiDou, "S" SBAS, "J" QZSS
     string signal = 3;
@@ -70,5 +70,5 @@ message MonitorPvt {
     bool combined = 6;
     bool used = 7;
   }
-  repeated UsedSatellite used_satellites = 37;
+  repeated TrackedSatellite tracked_satellites = 37;
 }

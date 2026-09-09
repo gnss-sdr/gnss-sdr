@@ -120,9 +120,9 @@ public:
         monitor_.set_galhas_status(monitor->galhas_status);
         monitor_.set_geohash(monitor->geohash);
 
-        for (const auto& sat : monitor->used_satellites)
+        for (const auto& sat : monitor->tracked_satellites)
             {
-                gnss_sdr::MonitorPvt::UsedSatellite* pb_sat = monitor_.add_used_satellites();
+                gnss_sdr::MonitorPvt::TrackedSatellite* pb_sat = monitor_.add_tracked_satellites();
                 pb_sat->set_prn(sat.prn);
                 pb_sat->set_system(std::string(1, sat.system));
                 pb_sat->set_signal(sat.signal);
@@ -180,9 +180,9 @@ public:
         monitor.galhas_status = mon.galhas_status();
         monitor.geohash = mon.geohash();
 
-        for (const auto& pb_sat : mon.used_satellites())
+        for (const auto& pb_sat : mon.tracked_satellites())
             {
-                Monitor_Pvt::UsedSatelliteInfo sat;
+                Monitor_Pvt::TrackedSatelliteInfo sat;
                 sat.prn = pb_sat.prn();
                 sat.system = pb_sat.system().empty() ? '\0' : pb_sat.system()[0];
                 sat.signal = pb_sat.signal();
@@ -190,7 +190,7 @@ public:
                 sat.elevation_deg = pb_sat.elevation_deg();
                 sat.combined = pb_sat.combined();
                 sat.used = pb_sat.used();
-                monitor.used_satellites.push_back(sat);
+                monitor.tracked_satellites.push_back(sat);
             }
 
         return monitor;

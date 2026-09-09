@@ -166,7 +166,7 @@ TEST(GpsTgdIscTest, SingleFrequencyL5ScalesModeledIonoByGamma15)
 }
 
 
-TEST(GpsTgdIscTest, DualFrequencyL1L5UsesIscL1caOnGammaWeightedTerm)
+TEST(GpsTgdIscTest, IonoFreeL1L5UsesIscL1caOnGammaWeightedTerm)
 {
     nav_t nav{};
     eph_t eph{};
@@ -183,7 +183,9 @@ TEST(GpsTgdIscTest, DualFrequencyL1L5UsesIscL1caOnGammaWeightedTerm)
     obs.P[2] = 24000008.0;
     obs.code[0] = CODE_L1C;
     obs.code[2] = CODE_L5X;
-    options.ionoopt = IONOOPT_BRDC;
+    // Only the iono-free model combines bands; any other iono model uses L1
+    // alone (see DualFrequencyL1L2AppliesMinusTgdToL1Pseudorange)
+    options.ionoopt = IONOOPT_IFLC;
 
     const double azel[2] = {0.0, 1.0};
     double variance = 0.0;
@@ -238,8 +240,7 @@ TEST(SppVarerrTest, IonoFreeCombinationAmplifiesVarianceByUpstreamFactorNine)
 {
     // the ionosphere-free noise amplification is (f1^2/(f1^2-f2^2))^2 +
     // (f2^2/(f1^2-f2^2))^2, approximately 8.9 for GPS L1/L2, which upstream
-    // RTKLIB rounds to 3^2 = 9; rescode's dual-frequency fallback applies the
-    // same factor, so this pins the canonical value
+    // RTKLIB rounds to 3^2 = 9; this pins the canonical value
     prcopt_t opt{};
     opt.err[1] = 0.003;
     opt.err[2] = 0.003;

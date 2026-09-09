@@ -79,6 +79,16 @@ All notable changes to GNSS-SDR will be documented in this file.
   E5b and E6 observations always keep the clock reference of their configured
   service. The reverse fallback (E1 using F/NAV when I/NAV is stale) requires
   `use_unhealthy_sats=true`, since F/NAV carries no E1B health information.
+- The PVT iono model now decides the pseudorange model for every satellite of a
+  system: only `PVT.iono_model=Iono-Free-LC` combines two bands, and any other
+  model uses the first band alone with its TGD/BGD (second band alone only when
+  the first is missing). Previously a satellite with two bands in the record was
+  silently switched to the iono-free combination while single-band satellites of
+  the same system kept the single-frequency model, mixing two clock references
+  within one solve and folding the receiver's uncalibrated inter-band delay
+  (e.g. differing input-filter group delays) into the solution, which could make
+  the chi-square test reject every epoch. The ISC-aware GPS L1/L5 combination is
+  now applied in `Iono-Free-LC` mode.
 - Fixed Galileo single-frequency broadcast group-delay corrections in SPP and
   PPP, selecting the E1/E5a or E1/E5b BGD from the active navigation service and
   applying the ICD frequency scaling to E5a and E5b observations.

@@ -411,7 +411,10 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                     int tgd_index = 0;
                     if (sys == SYS_GAL)
                         {
-                            const unsigned char observation_code = obs->code[j] != CODE_NONE ? obs->code[j] : obs->code[i];
+                            /* the BGD belongs to the band the returned range is
+                               referenced to: the first band whenever it carries a
+                               measurement, the second band only when it is alone */
+                            const unsigned char observation_code = obs->code[i] != CODE_NONE ? obs->code[i] : obs->code[j];
                             tgd_index = galileo_bgd_index(observation_code, obs->sat, nav);
                             uses_galileo_bgd = tgd_index >= 0;
                         }
@@ -450,19 +453,37 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                     /* the DNAV clock is referenced to B3I: remove TGD1 from
                        the B1I pseudorange before combining (BDS SIS ICD) */
                     P1 -= P1_P2;
+                    PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
                 }
-            PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
+            else if ((sys == SYS_GPS || sys == SYS_QZS) && obs->code[j] == CODE_L5X)
+                {
+                    /* L1 C/A + L5 dual-frequency correction, IS-GPS-705 20.3.3.3.1.2.2:
+                       the gamma-weighted L1 term carries ISC_L1CA, not ISC_L5I5 */
+                    PC = (P2 + ISCl5i - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2;
+                }
+            else
+                {
+                    PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
+                }
             *iono_scale = 0.0;
         }
-    ////////////////////////////////////////////
     else
-        { /* single-frequency */
+        {
+            /* single-frequency: the iono model selected by the user applies to
+            every satellite of a system, so a second band present in the
+            record is never combined here (that is IONOOPT_IFLC's job). The
+            first band is used alone whenever it carries a measurement; the
+            second band is used alone only when the first one is missing.
+            Combining per satellite would mix two clock references within
+            one system as soon as any satellite lacks the second band, and
+            would also fold the receiver's uncalibrated inter-band delay
+            into the solution. */
             if (obs->code[i] == CODE_NONE && (i == j || obs->code[j] == CODE_NONE))
                 {
                     return 0.0;
                 }
 
-            if (obs->code[i] != CODE_NONE && (i == j || obs->code[j] == CODE_NONE))
+            if (obs->code[i] != CODE_NONE)
                 {
                     if (sys == SYS_BDS && (obs->code[i] == CODE_L6I || obs->code[i] == CODE_L6Q))
                         {
@@ -515,40 +536,6 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                                without dividing by (1.0 - gamma_) again. */
                             PC = P2 - gamma_ * P1_P2;
                         }
-                }
-            /* dual-frequency */
-            else if (sys == SYS_GPS || sys == SYS_QZS) /* L1 + L2 */
-                {
-                    if (obs->code[j] == CODE_L2S) /* L1 + L2 */
-                        {
-                            P1 += P1_C1; /* C1->P1 */
-                            /* L1 pseudorange with LNAV clock: (dtSV)_L1 = dtSV - TGD,
-                               see IS-GPS-200 20.3.3.3.3.2 */
-                            PC = P1 - P1_P2;
-                            // CNAV dual-frequency alternative (IS-GPS-200 30.3.3.3.1.1.2):
-                            // PC = (P2 + ISCl2 - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2;
-                        }
-                    else if (obs->code[j] == CODE_L5X) /* L1 + L5 */
-                        {
-                            P1 += P1_C1; /* C1->P1 */
-                            /* L1 C/A + L5 dual-frequency correction, IS-GPS-705 20.3.3.3.1.2.2:
-                               the gamma-weighted L1 term carries ISC_L1CA, not ISC_L5I5 */
-                            PC = (P2 + ISCl5i - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2;
-                            *iono_scale = 0.0;
-                        }
-                }
-            else if (sys == SYS_GAL || sys == SYS_GLO || sys == SYS_BDS) /* E1 + E5a / B1I + B3I */
-                {
-                    P1 += P1_C1;
-                    P2 += P2_C2;
-                    if (sys == SYS_BDS)
-                        {
-                            /* the DNAV clock is referenced to B3I: remove TGD1
-                               from the B1I pseudorange before combining */
-                            P1 -= P1_P2;
-                        }
-                    PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
-                    *iono_scale = 0.0;
                 }
         }
     if (opt->sateph == EPHOPT_SBAS)
@@ -852,12 +839,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
             (*ns)++;
 
             /* error variance */
-            double vmeasure = varerr(opt, &obs[i], azel[1 + i * 2], sys);
-            if (iono_scale == 0.0 && opt->ionoopt != IONOOPT_IFLC)
-                {
-                    /* same noise amplification varerr applies for IONOOPT_IFLC */
-                    vmeasure *= std::pow(3.0, 2.0);
-                }
+            const double vmeasure = varerr(opt, &obs[i], azel[1 + i * 2], sys);
             var[nv++] = vmeasure + vare[i] + vmeas + vion + vtrp;
 
             trace(4, "sat=%2d azel=%5.1f %4.1f res=%7.3f sig=%5.3f\n", obs[i].sat,

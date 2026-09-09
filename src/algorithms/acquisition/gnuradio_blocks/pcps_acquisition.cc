@@ -972,7 +972,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
         {
         case 0:
             {
-                if (d_step_two)
+                if (d_acq_parameters.aligned_step2 && d_step_two)
                     {
                         // Perform second step alignment to code boundary
                         // Calculate alignment taking into account possible runaway in non-blocking mode

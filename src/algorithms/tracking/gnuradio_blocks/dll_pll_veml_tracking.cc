@@ -63,12 +63,16 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>  // for fill_n
 #include <array>
+#include <atomic>
 #include <cmath>      // for fmod, round, floor
 #include <exception>  // for exception
 #include <iostream>   // for cout, cerr
 #include <map>
 #include <memory>
+#include <mutex>
 #include <numeric>
+#include <set>
+#include <sstream>
 #include <vector>
 
 #if USE_GLOG_AND_GFLAGS
@@ -135,6 +139,10 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
       d_channel(0),
       d_secondary_code_length(0U),
       d_data_secondary_code_length(0U),
+      d_f_error_num_bins(0U),
+      d_f_error_bin_index(0U),
+      d_f_error_accum_counter(0U),
+      d_f_error_center_doppler_hz(0.0),
       d_pull_in_transitory(true),
       d_corrected_doppler(false),
       d_interchange_iq(false),
@@ -1241,13 +1249,80 @@ dll_pll_veml_tracking::~dll_pll_veml_tracking()
 }
 
 
+// DIAGNOSTIC: report, once bit/secondary-code sync completes, how much of the total delay
+// since the tracking loop first started running (state first entered 2, whether directly
+// from state 1 or via state 5's scan) was spent waiting for the first carrier phase lock vs.
+// spent in the bit-sync accumulation phase after that first lock (including any resets from
+// lock drops during that phase, counted separately in d_bit_sync_reset_count). Deliberately
+// NOT measured from when d_pull_in_transitory clears: that flag is gated by a fixed timer
+// (pull_in_time_s) unrelated to actual convergence, and run_dll_pll() runs continuously from
+// state 2's very first cycle regardless of it -- measuring from the timer would report near-0
+// "time to phase lock" for any channel that happened to already be locked before the timer
+// expired, silently hiding however long that actually took. method identifies which of the
+// three bit-sync completion paths (secondary_code / preamble_correlation / histogram) this
+// call came from. No-op if the tracking loop never started for this channel (should not
+// happen at a completion call site, but guards against a coding error rather than crashing).
+void dll_pll_veml_tracking::log_time_to_fix_breakdown(const char *method)
+{
+    if (d_tracking_loop_started_sample < 0)
+        {
+            return;
+        }
+    const auto now_sample = static_cast<int64_t>(this->nitems_read(0));
+    const double total_ms = 1000.0 * static_cast<double>(now_sample - d_tracking_loop_started_sample) / d_trk_parameters.fs_in;
+    std::ostringstream msg;
+    msg << "Time-to-fix breakdown (" << method << ") ch=" << d_channel << " "
+        << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN)
+        << " total_time_to_bit_sync_ms:" << total_ms;
+    if (d_phase_lock_first_sample >= 0)
+        {
+            const double phase_lock_ms = 1000.0 * static_cast<double>(d_phase_lock_first_sample - d_tracking_loop_started_sample) / d_trk_parameters.fs_in;
+            const double bit_sync_ms = total_ms - phase_lock_ms;
+            msg << " time_to_phase_lock_ms:" << phase_lock_ms
+                << " time_bit_sync_after_lock_ms:" << bit_sync_ms
+                << " bit_sync_lock_drops:" << d_bit_sync_reset_count
+                << " acquire_secondary_attempts:" << d_acquire_secondary_attempts
+                << " case2_cycles:" << d_case2_cycle_count
+                << " locked_branch_cycles:" << d_locked_branch_cycle_count;
+        }
+    else
+        {
+            msg << " time_to_phase_lock_ms:never_reached";
+        }
+    std::cout << msg.str() << '\n';
+    LOG(INFO) << msg.str();
+}
+
+
 bool dll_pll_veml_tracking::acquire_secondary()
 {
     // ******* preamble correlation ********
+    // Differential (delta-phase) demodulation instead of an absolute sign detector: each bit
+    // is decided from the phase change between consecutive Prompt symbols rather than from the
+    // sign of the I arm, so this does not require the PLL to have reached absolute phase lock --
+    // only that phase drift between two consecutive symbols stays under +-90 deg, i.e. that the
+    // FLL/DLL has the frequency and code roughly right (see the d_pull_in_transitory clearing
+    // check in general_work(), which is the only precondition left). This lets bit/secondary-code
+    // sync start as soon as pull-in clears instead of waiting on d_carrier_lock_test.
+    //
+    // Re{s[i] * conj(s[i-1])} = |s[i]| * |s[i-1]| * cos(delta_phase): negative means |delta_phase|
+    // > 90 deg, i.e. the data bit flipped between symbol i-1 and i.
+    //
+    // The first bit is an arbitrary reference (there is no absolute phase to anchor it to); this
+    // reproduces the same +-180 deg polarity ambiguity the old sign detector had, resolved the
+    // same way below via the sign of corr_value / d_Flag_PLL_180_deg_phase_locked.
+    std::vector<bool> reconstructed_bit(d_secondary_code_length);
+    reconstructed_bit[0] = false;
+    for (uint32_t i = 1; i < d_secondary_code_length; i++)
+        {
+            const bool bit_flipped = (d_Prompt_circular_buffer[i] * std::conj(d_Prompt_circular_buffer[i - 1])).real() < 0.0;
+            reconstructed_bit[i] = (reconstructed_bit[i - 1] != bit_flipped);
+        }
+
     int32_t corr_value = 0;
     for (uint32_t i = 0; i < d_secondary_code_length; i++)
         {
-            if (d_Prompt_circular_buffer[i].real() < 0.0)  // symbols clipping
+            if (!reconstructed_bit[i])
                 {
                     if (d_secondary_code_string[i] == '0')
                         {
@@ -1314,6 +1389,15 @@ bool dll_pll_veml_tracking::cn0_and_tracking_lock_status(double coh_integration_
     d_CN0_SNV_dB_Hz = d_cn0_smoother.smooth(d_CN0_SNV_dB_Hz_raw);
     // Carrier lock indicator
     d_carrier_lock_test = d_carrier_lock_test_smoother.smooth(carrier_lock_detector(&d_P_accu, 1));
+    // DIAGNOSTIC: record the first time phase lock is reached since the tracking loop started,
+    // for the time-to-fix breakdown (phase lock vs. bit/secondary-code sync) reported once bit
+    // sync completes -- see d_tracking_loop_started_sample's declaration. Deliberately NOT
+    // gated on !d_pull_in_transitory: that flag is a fixed timer, but d_carrier_lock_test is
+    // computed (and can genuinely cross threshold) from the loop's very first cycle onward.
+    if (d_tracking_loop_started_sample >= 0 && d_phase_lock_first_sample < 0 && d_carrier_lock_test >= d_carrier_lock_threshold)
+        {
+            d_phase_lock_first_sample = static_cast<int64_t>(this->nitems_read(0));
+        }
     // Loss of lock detection
     if (!d_pull_in_transitory)
         {
@@ -2094,6 +2178,153 @@ int64_t dll_pll_veml_tracking::uint64diff(uint64_t first, uint64_t second)
 }
 
 
+double dll_pll_veml_tracking::f_error_bin_multiplier(uint32_t bin_index)
+{
+    // bin 0 -> 0; then alternating outward: +1, -1, +2, -2, +3, -3, ...
+    if (bin_index == 0)
+        {
+            return 0.0;
+        }
+    const uint32_t half_steps = (bin_index + 1) / 2;
+    const auto half = static_cast<double>(half_steps);
+    return (bin_index % 2 == 1) ? half : -half;
+}
+
+
+namespace
+{
+// Thread-safe CSV append writer for the state-5 diagnostic, shared across all
+// dll_pll_veml_tracking channel instances that dump to the same filename (the
+// header is written once per filename; a monotonic scan_id groups the bins of
+// each individual frequency-error-reduction scan for easy Octave post-processing,
+// e.g. rows = csvread(filename, 1, 0); scan = rows(rows(:,1) == some_id, :);).
+std::mutex g_f_error_dump_mutex;
+std::set<std::string> g_f_error_dump_initialized;
+std::atomic<uint64_t> g_f_error_scan_id{0};
+
+void dump_f_error_csv(const std::string &filename, uint64_t scan_id, uint32_t prn, char system, uint32_t channel,
+    double cn0_dBHz, double selected_doppler_hz, uint32_t selected_bin,
+    const std::vector<double> &doppler_hz, const std::vector<double> &power)
+{
+    std::lock_guard<std::mutex> lock(g_f_error_dump_mutex);
+    const bool need_header = g_f_error_dump_initialized.find(filename) == g_f_error_dump_initialized.end();
+    // Truncate on the first write of this filename in this process (so each run starts a fresh
+    // file instead of accumulating scans from previous runs); append for subsequent scans.
+    std::ofstream f(filename, need_header ? std::ios::trunc : std::ios::app);
+    if (!f.is_open())
+        {
+            return;
+        }
+    if (need_header)
+        {
+            // system_char is the ASCII code of Dll_Pll_Conf::system ('G' GPS, 'E' Galileo, 'R' Glonass, ...),
+            // kept numeric so the whole file stays csvread()-compatible; PRN numbers alone collide across systems.
+            f << "scan_id,prn,system_char,channel,cn0_dBHz,selected_doppler_hz,selected_bin,bin_index,doppler_hz,power\n";
+            g_f_error_dump_initialized.insert(filename);
+        }
+    for (size_t i = 0; i < doppler_hz.size(); i++)
+        {
+            f << scan_id << "," << prn << "," << static_cast<uint32_t>(system) << "," << channel << "," << cn0_dBHz << "," << selected_doppler_hz << ","
+              << selected_bin << "," << i << "," << doppler_hz[i] << "," << power[i] << "\n";
+        }
+}
+}  // namespace
+
+
+void dll_pll_veml_tracking::run_f_error_scan_step()
+{
+    // Doppler offsets tested around the pull-in estimate, centered at bin 0 and
+    // alternating outward: +0, +step, -step, +2*step, -2*step, +3*step, -3*step, ...
+    // d_f_error_num_bins (always odd) is set from d_trk_parameters.f_error_step_num.
+    // Called from state 5 (case 5) only -- this state is fully passive: only
+    // d_carrier_doppler_hz is driven here, neither run_dll_pll() runs during the
+    // scan, so code phase and the carrier loop filter's state stay exactly as
+    // pull-in left them for the whole scan.
+
+    // incoherent accumulation of the correlated power for the current Doppler bin
+    // (only the Prompt correlator matters here; state 5 never saves
+    // Early/Late/Very-Early/Very-Late, since the DLL discriminator never runs)
+    d_f_error_power[d_f_error_bin_index] += static_cast<double>(std::norm(*d_Prompt));
+    d_f_error_prompt_samples[d_f_error_bin_index][d_f_error_accum_counter] = *d_Prompt;
+    d_f_error_accum_counter++;
+
+    if (d_f_error_accum_counter == d_trk_parameters.f_error_accumulation)
+        {
+            d_f_error_accum_counter = 0U;
+            d_f_error_bin_index++;
+        }
+
+    if (d_f_error_bin_index < d_f_error_num_bins)
+        {
+            // prepare the carrier for the (possibly new) bin under test; no PLL/FLL filter update
+            d_carrier_doppler_hz = d_f_error_center_doppler_hz + f_error_bin_multiplier(d_f_error_bin_index) * d_trk_parameters.f_error_doppler_step;
+        }
+    else
+        {
+            // all bins tested: keep the Doppler offset that provided the highest incoherent accumulation.
+            // case 5 transitions to state 2 (normal run_dll_pll() tracking) right after this call
+            // returns; this function won't run again for this channel until the next pull-in.
+            uint32_t best_bin = 0U;
+            for (uint32_t i = 1U; i < d_f_error_num_bins; i++)
+                {
+                    if (d_f_error_power[i] > d_f_error_power[best_bin])
+                        {
+                            best_bin = i;
+                        }
+                }
+            d_carrier_doppler_hz = d_f_error_center_doppler_hz + f_error_bin_multiplier(best_bin) * d_trk_parameters.f_error_doppler_step;
+            d_f_error_selected_doppler_hz = d_carrier_doppler_hz;
+
+            // The carrier loop filter's internal state was seeded once in start_tracking(), from the raw
+            // acquisition Doppler (d_acq_carrier_doppler_hz), before this scan ever ran; the scan itself
+            // never touches the loop filter (run_dll_pll() isn't called until it's done). Without this,
+            // the first closed-loop epoch after the scan would compute its output from that stale,
+            // acquisition-anchored state and jump back near d_acq_carrier_doppler_hz before re-converging
+            // on its own -- discarding the scan's whole point. Re-seed it here with the winning estimate.
+            d_carrier_loop_filter.initialize(static_cast<float>(d_carrier_doppler_hz));
+
+            LOG(INFO) << "Frequency error reduction: selected Doppler offset " << f_error_bin_multiplier(best_bin) * d_trk_parameters.f_error_doppler_step
+                      << " Hz on channel " << d_channel << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
+
+            // CN0 estimate for the winning bin, from its own raw Prompt samples (same
+            // M2M4 estimator/coherent integration time as the state 2/3/4 CN0 estimation).
+            const float f_error_cn0_dB_hz = cn0_m2m4_estimator(d_f_error_prompt_samples[best_bin].data(),
+                static_cast<int>(d_trk_parameters.f_error_accumulation), static_cast<float>(d_code_period));
+
+            // per-bin tested Doppler [Hz] and accumulated correlation power, plus the winning bin,
+            // in increasing Doppler order (bin visiting order is 0, +step, -step, +2*step, -2*step, ...,
+            // which is not frequency-sorted) so the sinc-shaped envelope, if present, is directly
+            // visible in the dump -- see load_f_error_dump.m / plot_f_error_scan.m.
+            std::vector<uint32_t> bins_by_doppler(d_f_error_num_bins);
+            for (uint32_t i = 0U; i < d_f_error_num_bins; i++)
+                {
+                    bins_by_doppler[i] = i;
+                }
+            std::sort(bins_by_doppler.begin(), bins_by_doppler.end(),
+                [this](uint32_t a, uint32_t b) { return f_error_bin_multiplier(a) < f_error_bin_multiplier(b); });
+
+            std::vector<double> bin_doppler_vec(d_f_error_num_bins);
+            std::vector<double> bin_power_vec(d_f_error_num_bins);
+            for (uint32_t n = 0U; n < d_f_error_num_bins; n++)
+                {
+                    const uint32_t i = bins_by_doppler[n];
+                    bin_doppler_vec[n] = d_f_error_center_doppler_hz + f_error_bin_multiplier(i) * d_trk_parameters.f_error_doppler_step;
+                    bin_power_vec[n] = d_f_error_power[i];
+                }
+            // position of the winning bin within the Doppler-sorted arrays dumped above
+            const auto rank_it = std::find(bins_by_doppler.begin(), bins_by_doppler.end(), best_bin);
+            const auto best_bin_doppler_rank = static_cast<uint32_t>(std::distance(bins_by_doppler.begin(), rank_it));
+
+            if (!d_trk_parameters.f_error_dump_filename.empty())
+                {
+                    dump_f_error_csv(d_trk_parameters.f_error_dump_filename, g_f_error_scan_id.fetch_add(1),
+                        d_acquisition_gnss_synchro->PRN, d_trk_parameters.system, d_channel, f_error_cn0_dB_hz, d_carrier_doppler_hz,
+                        best_bin_doppler_rank, bin_doppler_vec, bin_power_vec);
+                }
+        }
+}
+
+
 int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
@@ -2153,6 +2384,18 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 const double delta_trk_to_acq_prn_start_samples = static_cast<double>(acq_trk_diff_samples) - d_acq_code_phase_samples;
 
                 d_code_freq_chips = d_code_chip_rate;
+                if (d_trk_parameters.carrier_aiding)
+                    {
+                        // Doppler-aid the code rate used to bridge the acquisition-to-tracking gap
+                        // (acq_trk_diff_samples above), same formula run_dll() uses every epoch. Without
+                        // this, the elapsed code phase over that gap is computed at the bare nominal chip
+                        // rate; since the gap itself varies attempt to attempt (scheduling/threading
+                        // jitter), the resulting *uncompensated* phase error -- doppler_hz * chip_rate /
+                        // carrier_freq * gap_seconds -- can reach a full chip or more at typical Doppler
+                        // and gap values, landing the very first correlation on an arbitrary, unpredictable
+                        // fractional-chip offset instead of the true code phase.
+                        d_code_freq_chips += d_carrier_doppler_hz * d_code_chip_rate / d_signal_carrier_freq;
+                    }
                 d_code_phase_step_chips = d_code_freq_chips / d_trk_parameters.fs_in;
                 d_code_phase_rate_step_chips = 0.0;
                 const double T_chip_mod_seconds = 1.0 / d_code_freq_chips;
@@ -2164,7 +2407,29 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
 
                 const int32_t samples_offset = round(d_acq_code_phase_samples);
                 d_acc_carrier_phase_rad -= (d_carrier_phase_step_rad - d_cfo_phase_step_rad) * static_cast<double>(samples_offset);
-                d_state = 2;
+                if (d_trk_parameters.f_error_step_num != 0)
+                    {
+                        // enter the frequency error reduction scan, centered on the pull-in Doppler estimate
+                        d_state = 5;
+                        d_f_error_center_doppler_hz = d_carrier_doppler_hz;
+                        d_f_error_bin_index = 0U;
+                        d_f_error_accum_counter = 0U;
+                        d_f_error_num_bins = d_trk_parameters.f_error_step_num;
+                        d_f_error_power.assign(d_f_error_num_bins, 0.0);
+                        d_f_error_prompt_samples.assign(d_f_error_num_bins, std::vector<gr_complex>(d_trk_parameters.f_error_accumulation));
+                    }
+                else
+                    {
+                        d_state = 2;
+                        // DIAGNOSTIC: tracking loop (run_dll_pll()) starts right here -- start the
+                        // time-to-fix breakdown clock now, not when d_pull_in_transitory later clears.
+                        d_tracking_loop_started_sample = static_cast<int64_t>(this->nitems_read(0));
+                        d_phase_lock_first_sample = -1;
+                        d_bit_sync_reset_count = 0;
+                        d_acquire_secondary_attempts = 0;
+                        d_case2_cycle_count = 0;
+                        d_locked_branch_cycle_count = 0;
+                    }
                 // d_sample_counter += samples_offset;  // count for the processed samples
                 d_cn0_smoother.reset();
                 d_carrier_lock_test_smoother.reset();
@@ -2179,6 +2444,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
             }
         case 2:  // Wide tracking and symbol synchronization
             {
+                d_case2_cycle_count++;  // DIAGNOSTIC: raw cadence check for the time-to-fix breakdown
                 do_correlation_step(in);
                 // Save single correlation step variables
                 if (d_veml)
@@ -2245,9 +2511,25 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                 if (d_secondary)
                                     {
                                         // ####### SECONDARY CODE LOCK #####
+                                        // EXPERIMENT: decoupled from d_carrier_lock_test (removed the gate).
+                                        // acquire_secondary() demodulates each bit from the delta-phase between
+                                        // consecutive Prompt symbols (see its definition) -- that only needs
+                                        // inter-symbol phase drift to stay under +-90 deg, which is a much looser
+                                        // requirement than d_carrier_lock_threshold's coarse cos(2*phi) phase-lock
+                                        // test. A prior attempt at this same removal (see
+                                        // gnss_sdr_bitsync_differential project memory) was reverted after showing
+                                        // loss-of-lock regressions -- but that was before the time-to-fix
+                                        // instrumentation below existed to actually measure the effect, and the
+                                        // regression may have been this same gate's own flakiness (bit_sync_lock_drops
+                                        // in the low hundreds/thousands, see log_time_to_fix_breakdown) rather than
+                                        // something the gate was protecting against. Re-testing with real numbers
+                                        // this time; d_bit_sync_reset_count now stays at 0 by construction, kept in
+                                        // the report only so the log format doesn't change shape between A/B runs.
+                                        d_locked_branch_cycle_count++;  // DIAGNOSTIC
                                         d_Prompt_circular_buffer.push_back(*d_Prompt);
                                         if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
                                             {
+                                                d_acquire_secondary_attempts++;
                                                 next_state = acquire_secondary();
                                                 if (next_state)
                                                     {
@@ -2255,6 +2537,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                                                   << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
                                                         std::cout << d_systemName << " " << d_signal_pretty_name << " secondary code locked in channel " << d_channel
                                                                   << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                        log_time_to_fix_breakdown("secondary_code");
                                                     }
                                             }
                                     }
@@ -2286,6 +2569,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                                                           << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
                                                                 std::cout << d_systemName << " " << d_signal_pretty_name << " histogram bit synchronization locked in channel " << d_channel
                                                                           << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                                log_time_to_fix_breakdown("histogram");
                                                             }
                                                     }
                                             }
@@ -2293,9 +2577,12 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         if (!next_state)
                                             {
                                                 // ******* preamble correlation ********
+                                                // EXPERIMENT: same decoupling from d_carrier_lock_test as the
+                                                // secondary-code branch above -- see the comment there.
                                                 d_Prompt_circular_buffer.push_back(*d_Prompt);
                                                 if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
                                                     {
+                                                        d_acquire_secondary_attempts++;
                                                         next_state = acquire_secondary();
                                                         if (next_state)
                                                             {
@@ -2303,6 +2590,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                                                           << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
                                                                 std::cout << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
                                                                           << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                                log_time_to_fix_breakdown("preamble_correlation");
                                                             }
                                                     }
                                             }
@@ -2453,6 +2741,28 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                             }
                     }
             }
+            break;
+        case 5:  // Frequency error reduction: passive Doppler bin scan, no filter updates
+            {
+                do_correlation_step(in);
+                run_f_error_scan_step();
+                if (d_f_error_bin_index >= d_f_error_num_bins)
+                    {
+                        // scan complete: run_f_error_scan_step() already left d_carrier_doppler_hz
+                        // on the winning bin and re-seeded the carrier loop filter with it.
+                        d_state = 2;
+                        // DIAGNOSTIC: tracking loop (run_dll_pll()) starts right here -- start the
+                        // time-to-fix breakdown clock now, not when d_pull_in_transitory later clears.
+                        d_tracking_loop_started_sample = static_cast<int64_t>(this->nitems_read(0));
+                        d_phase_lock_first_sample = -1;
+                        d_bit_sync_reset_count = 0;
+                        d_acquire_secondary_attempts = 0;
+                        d_case2_cycle_count = 0;
+                        d_locked_branch_cycle_count = 0;
+                    }
+                update_tracking_vars();
+            }
+            break;
         }
 
     current_synchro_data.TOW_at_current_symbol_ms = d_tow_from_telemetry_ms;

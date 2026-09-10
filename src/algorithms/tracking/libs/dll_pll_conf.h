@@ -50,6 +50,8 @@ public:
     float dll_bw_hz{2.0};
     float pll_bw_narrow_hz{5.0};
     float dll_bw_narrow_hz{0.75};
+    float pll_bw_step{0.0};
+    float dll_bw_step{0.0};
     float early_late_space_chips{0.25};
     float very_early_late_space_chips{0.5};
     float early_late_space_narrow_chips{0.15};

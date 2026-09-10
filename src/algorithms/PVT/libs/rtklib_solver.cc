@@ -2849,10 +2849,21 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // it, so an excluded satellite shows up in the monitor as
                     // "not used" rather than as missing/no-az-el (which
                     // otherwise looks identical to a tracking problem).
+                    //
+                    // std::isfinite() guards against corrupt ephemeris/almanac
+                    // (e.g. an out-of-range eccentricity) propagating NaN through
+                    // eph2pos()/alm2pos()/satazel() -- none of RTKLIB's own
+                    // internal sanity checks (A <= 0, Kepler iteration overflow,
+                    // geodist()'s Earth-radius check, the elevation mask) catch a
+                    // NaN, since ordinary numeric comparisons are vacuously false
+                    // against it. Without this, a NaN azel would actually pass
+                    // the old != 0.0 check (NaN != 0.0 is true) and get reported
+                    // into the monitor as a literal NaN azimuth/elevation.
                     d_monitor_pvt.tracked_satellites.clear();
                     for (int sat_idx = 0; sat_idx < MAXSAT; sat_idx++)
                         {
-                            const bool has_azel = (pvt_ssat[sat_idx].azel[0] != 0.0) || (pvt_ssat[sat_idx].azel[1] != 0.0);
+                            const bool has_azel = std::isfinite(pvt_ssat[sat_idx].azel[0]) && std::isfinite(pvt_ssat[sat_idx].azel[1]) &&
+                                                  ((pvt_ssat[sat_idx].azel[0] != 0.0) || (pvt_ssat[sat_idx].azel[1] != 0.0));
                             if (!has_azel)
                                 {
                                     continue;

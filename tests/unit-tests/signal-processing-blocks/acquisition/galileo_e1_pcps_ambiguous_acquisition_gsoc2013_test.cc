@@ -136,6 +136,7 @@ protected:
     void init();
     void config_1();
     void config_2();
+    void config_3();
     void start_queue();
     void wait_message();
     void process_message();
@@ -353,6 +354,97 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_2()
 }
 
 
+void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_3()
+{
+    gnss_synchro.Channel_ID = 0;
+    gnss_synchro.System = 'E';
+    std::string signal = "1C";
+    signal.copy(gnss_synchro.Signal, 2, 0);
+
+    integration_time_ms = 4;
+    fs_in = 4e6;
+
+    expected_delay_chips = 2046;
+    expected_doppler_hz = 350;
+    max_doppler_error_hz = 2 / (3 * integration_time_ms * 1e-3);
+    max_delay_error_chips = 0.50;
+
+    num_of_realizations = 25;
+
+    config = std::make_shared<InMemoryConfiguration>();
+
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(fs_in));
+
+    config->set_property("SignalSource.fs_hz", std::to_string(fs_in));
+
+    config->set_property("SignalSource.item_type", "gr_complex");
+
+    config->set_property("SignalSource.num_satellites", "4");
+
+    config->set_property("SignalSource.system_0", "E");
+    config->set_property("SignalSource.PRN_0", "10");
+    config->set_property("SignalSource.CN0_dB_0", "44");
+    config->set_property("SignalSource.doppler_Hz_0",
+        std::to_string(expected_doppler_hz));
+    config->set_property("SignalSource.delay_chips_0",
+        std::to_string(expected_delay_chips));
+
+    config->set_property("SignalSource.system_1", "E");
+    config->set_property("SignalSource.PRN_1", "15");
+    config->set_property("SignalSource.CN0_dB_1", "44");
+    config->set_property("SignalSource.doppler_Hz_1", "1000");
+    config->set_property("SignalSource.delay_chips_1", "100");
+
+    config->set_property("SignalSource.system_2", "E");
+    config->set_property("SignalSource.PRN_2", "21");
+    config->set_property("SignalSource.CN0_dB_2", "44");
+    config->set_property("SignalSource.doppler_Hz_2", "2000");
+    config->set_property("SignalSource.delay_chips_2", "200");
+
+    config->set_property("SignalSource.system_3", "E");
+    config->set_property("SignalSource.PRN_3", "22");
+    config->set_property("SignalSource.CN0_dB_3", "44");
+    config->set_property("SignalSource.doppler_Hz_3", "3000");
+    config->set_property("SignalSource.delay_chips_3", "300");
+
+    config->set_property("SignalSource.noise_flag", "true");
+    config->set_property("SignalSource.data_flag", "true");
+    config->set_property("SignalSource.BW_BB", "0.97");
+
+    config->set_property("InputFilter.implementation", "Fir_Filter");
+    config->set_property("InputFilter.input_item_type", "gr_complex");
+    config->set_property("InputFilter.output_item_type", "gr_complex");
+    config->set_property("InputFilter.taps_item_type", "float");
+    config->set_property("InputFilter.number_of_taps", "11");
+    config->set_property("InputFilter.number_of_bands", "2");
+    config->set_property("InputFilter.band1_begin", "0.0");
+    config->set_property("InputFilter.band1_end", "0.97");
+    config->set_property("InputFilter.band2_begin", "0.98");
+    config->set_property("InputFilter.band2_end", "1.0");
+    config->set_property("InputFilter.ampl1_begin", "1.0");
+    config->set_property("InputFilter.ampl1_end", "1.0");
+    config->set_property("InputFilter.ampl2_begin", "0.0");
+    config->set_property("InputFilter.ampl2_end", "0.0");
+    config->set_property("InputFilter.band1_error", "1.0");
+    config->set_property("InputFilter.band2_error", "1.0");
+    config->set_property("InputFilter.filter_type", "bandpass");
+    config->set_property("InputFilter.grid_density", "16");
+
+    config->set_property("Acquisition_1B.implementation", "Galileo_E1_PCPS_Ambiguous_Acquisition");
+    config->set_property("Acquisition_1B.item_type", "gr_complex");
+    config->set_property("Acquisition_1B.coherent_integration_time_ms",
+        std::to_string(integration_time_ms));
+    config->set_property("Acquisition_1B.max_dwells", "4");
+    config->set_property("Acquisition_1B.bit_transition_flag", "false");
+    config->set_property("Acquisition_1B.pfa", "0.0001");
+    config->set_property("Acquisition_1B.doppler_max", "5000");
+    config->set_property("Acquisition_1B.doppler_step", "250");
+    config->set_property("Acquisition_1B.dump", "false");
+    config->set_property("Acquisition_1B.second_doppler_step", "31");
+    config->set_property("Acquisition_1B.second_nbins", "9");
+}
+
+
 void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::start_queue()
 {
     stop = false;
@@ -390,7 +482,8 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::process_message()
             detection_counter++;
 
             // The term -5 is here to correct the additional delay introduced by the FIR filter
-            double delay_error_chips = std::abs(static_cast<double>(expected_delay_chips) - (static_cast<double>(gnss_synchro.Acq_delay_samples) - 5) * 1023.0 / (fs_in * 1e-3));
+            double delay_chips = std::fmod((gnss_synchro.Acq_samplestamp_samples + gnss_synchro.Acq_delay_samples - 5) * 1023. / (fs_in * 1e-3), 4092.);
+            double delay_error_chips = std::abs(static_cast<double>(expected_delay_chips) - delay_chips);
             double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
             mse_delay += std::pow(delay_error_chips, 2);
@@ -603,6 +696,78 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProbabi
                 {
                     std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << '\n';
                     std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds.\n";
+                }
+            ch_thread.join();
+        }
+}
+
+
+TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, SecondStepTest)
+{
+    for (unsigned int i = 0; i < 3; i++)
+        {
+            config_3();
+            if (i == 1)
+                {
+                    config->set_property("Acquisition_1B.make_two_steps", "true");
+                }
+            if (i == 2)
+                {
+                    config->set_property("Acquisition_1B.make_two_steps", "true");
+                    config->set_property("Acquisition_1B.aligned_step2", "false");
+                }
+            top_block = gr::make_top_block("Acquisition test");
+            queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+            acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_1B", 1, 0);
+            auto msg_rx = GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
+
+            ASSERT_NO_THROW({
+                acquisition->set_channel(1);
+            }) << "Failure setting channel.";
+
+            ASSERT_NO_THROW({
+                acquisition->set_gnss_synchro(&gnss_synchro);
+            }) << "Failure setting gnss_synchro.";
+
+            ASSERT_NO_THROW({
+                acquisition->connect(top_block);
+            }) << "Failure connecting acquisition to the top_block.";
+
+            ASSERT_NO_THROW({
+                std::shared_ptr<GNSSBlockInterface> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue.get());
+                std::shared_ptr<GNSSBlockInterface> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1);
+                std::shared_ptr<GNSSBlockInterface> signal_source = std::make_shared<GenSignalSource>(signal_generator, filter, "SignalSource", queue.get());
+                signal_source->connect(top_block);
+                top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
+                top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+            }) << "Failure connecting the blocks of acquisition test.";
+            init();
+            gnss_synchro.PRN = 10;  // This satellite is visible
+
+            acquisition->set_local_code();
+            acquisition->reset();
+            start_queue();
+
+            EXPECT_NO_THROW({
+                top_block->run();  // Start threads and wait
+            }) << "Failure running the top_block.";
+
+            stop_queue();
+
+            if (i == 0)
+                {
+                    EXPECT_LT(mse_delay, 1.);
+                    EXPECT_GT(mse_doppler, 5000.);
+                }
+            else if (i == 1)
+                {
+                    EXPECT_LT(mse_delay, 1.);
+                    EXPECT_LT(mse_doppler, 1000.);
+                }
+            else if (i == 2)
+                {
+                    EXPECT_LT(mse_delay, 1.);
+                    EXPECT_GT(mse_doppler, 1000.);
                 }
             ch_thread.join();
         }

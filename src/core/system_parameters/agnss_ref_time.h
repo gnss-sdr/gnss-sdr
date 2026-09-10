@@ -19,6 +19,8 @@
 #define GNSS_SDR_AGNSS_REF_TIME_H
 
 #include <boost/serialization/nvp.hpp>
+#include <ctime>
+#include <string>
 
 /** \addtogroup Core
  * \{ */
@@ -62,6 +64,57 @@ public:
         archive& BOOST_SERIALIZATION_NVP(valid);
     }
 };
+
+
+/*!
+ * \brief Parses a GNSS-SDR.AGNSS_ref_utc_time string ("DD/MM/YYYY HH:MM:SS"
+ * in UTC) into an Agnss_Ref_Time. An empty ref_time_str is an "educated
+ * guess" case, not an error: it returns the host's current wall-clock time,
+ * marked valid, matching what a genuinely live run with no fixed reference
+ * configured should use. malformed_year and malformed_format distinguish
+ * why a non-empty but unparseable string failed, matching the two distinct
+ * diagnostics ControlThread::init() has always printed; both are false when
+ * ref_time_str is empty or parses successfully. Shared by every caller that
+ * needs this parsing (ControlThread::init(), SatelliteVisibility) so the
+ * rule -- including the empty-string fallback -- lives in exactly one place.
+ */
+inline Agnss_Ref_Time parse_agnss_ref_utc_time(const std::string& ref_time_str, bool* malformed_year = nullptr, bool* malformed_format = nullptr)
+{
+    if (malformed_year != nullptr)
+        {
+            *malformed_year = false;
+        }
+    if (malformed_format != nullptr)
+        {
+            *malformed_format = false;
+        }
+    Agnss_Ref_Time result{};
+    if (ref_time_str.empty())
+        {
+            result.seconds = static_cast<double>(time(nullptr));
+            result.valid = true;
+            return result;
+        }
+    struct tm tm{};
+    if (strptime(ref_time_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) != nullptr)
+        {
+            const time_t parsed = timegm(&tm);
+            if (parsed > 0)
+                {
+                    result.seconds = static_cast<double>(parsed);
+                    result.valid = true;
+                }
+            else if (malformed_year != nullptr)
+                {
+                    *malformed_year = true;
+                }
+        }
+    else if (malformed_format != nullptr)
+        {
+            *malformed_format = true;
+        }
+    return result;
+}
 
 
 /** \} */

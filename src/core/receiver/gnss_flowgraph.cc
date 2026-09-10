@@ -122,6 +122,7 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)  // NOLINT(performance-unnecessary-value-param)
     : configuration_(std::move(configuration)),
       queue_(std::move(queue)),
+      satellite_visibility_(std::make_unique<SatelliteVisibility>(configuration_)),
       connected_(false),
       running_(false),
       multiband_(GNSSFlowgraph::is_multiband()),
@@ -1638,7 +1639,19 @@ int GNSSFlowgraph::assign_channels()
                     float estimated_doppler;
                     double RX_time;
                     bool is_primary_freq;
-                    channels_.at(i)->set_signal(search_next_signal(gnss_signal_str, is_primary_freq, assistance_available, estimated_doppler, RX_time));
+                    bool signal_available = true;
+                    const Gnss_Signal gnss_signal = search_next_signal(gnss_signal_str, is_primary_freq, assistance_available, estimated_doppler, RX_time, signal_available);
+                    if (signal_available)
+                        {
+                            channels_.at(i)->set_signal(gnss_signal);
+                        }
+                    else
+                        {
+                            // Shouldn't happen: the channel_count vs. max_sat_count
+                            // check earlier in this function already guarantees
+                            // enough PRNs exist for every channel being assigned here.
+                            LOG(WARNING) << "No satellite available to assign to channel " << i << " for signal " << gnss_signal_str;
+                        }
                 }
             else
                 {
@@ -1696,6 +1709,10 @@ void GNSSFlowgraph::push_back_signal(const Gnss_Signal& gs)
     auto& available_signals = available_signals_map_.at(gs.get_signal_str());
     available_signals.remove(gs);
     available_signals.push_back(gs);
+    // A new candidate just entered this signal's pool -- worth re-checking
+    // even if it was previously exhausted. See signals_with_nothing_searchable_'s
+    // doc comment.
+    signals_with_nothing_searchable_.erase(gs.get_signal_str());
 }
 
 
@@ -1749,13 +1766,24 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
 
                     if ((sat_ == 0) && (channels_state_[current_channel] == 0))
                         {
+                            bool signal_available = true;
                             gnss_signal = search_next_signal(channels_[current_channel]->get_signal().get_signal_str(),
                                 is_primary_freq,
                                 assistance_available,
                                 estimated_doppler,
-                                RX_time);
-                            channels_[current_channel]->set_signal(gnss_signal);
-                            start_acquisition = is_primary_freq || assistance_available || !configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_);
+                                RX_time,
+                                signal_available);
+                            if (signal_available)
+                                {
+                                    channels_[current_channel]->set_signal(gnss_signal);
+                                    start_acquisition = is_primary_freq || assistance_available || !configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_);
+                                }
+                            // else: no untracked/unassigned satellite left for this
+                            // signal right now -- leave the channel idle (saves the
+                            // CPU cost of a doomed acquisition attempt) instead of
+                            // crashing the receiver; acquisition_manager() re-checks
+                            // every idle tick and will pick it back up once a
+                            // satellite is requeued.
                         }
                     else
                         {
@@ -1797,8 +1825,21 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                             channels_[current_channel]->start_acquisition();
 #endif
                         }
-                    else
+                    else if (gnss_signal.get_satellite().get_PRN() != 0)
                         {
+                            // PRN 0 (default-constructed Gnss_Signal) means
+                            // search_next_signal() never actually picked
+                            // anything real this call -- signal_available was
+                            // false (pool exhausted, or an assisted signal
+                            // with no primary-frequency assist available
+                            // right now), so gnss_signal was never populated.
+                            // Pushing that back would call
+                            // push_back_signal()'s available_signals_map_.at("")
+                            // on the default-constructed empty signal string
+                            // and throw std::out_of_range, uncaught, taking
+                            // the whole receiver down. There's nothing real
+                            // here to push back -- the pool was never
+                            // touched in the first place.
                             push_back_signal(gnss_signal);
                             DLOG(INFO) << "Channel " << current_channel
                                        << " secondary frequency acquisition assistance not available in "
@@ -1871,7 +1912,20 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             break;
         case 1:
             gs = channels_[who]->get_signal();
+
+            // Acquisition success is a real RF detection, not just a
+            // predictive classification -- once it happens, let the channel
+            // proceed to tracking even if this satellite is (or has since
+            // become) classified excluded by the search mask. The mask
+            // exists to avoid wasting CPU searching for satellites unlikely
+            // to be in view; it has no business tearing down a signal
+            // that's demonstrably there. PVT.elevation_mask remains the
+            // real gate on whether this satellite's observations get used
+            // in the fix. Only the search layer (picking new acquisitions,
+            // and not retrying after a genuine loss of lock -- see case 2
+            // below) is scoped by visibility.
             DLOG(INFO) << "Channel " << who << " ACQ SUCCESS satellite " << gs.get_satellite();
+
             // If the satellite is in the list of available ones, remove it.
             remove_signal(gs);
 
@@ -1887,6 +1941,24 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         case 2:
             gs = channels_[who]->get_signal();
             DLOG(INFO) << "Channel " << who << " TRK FAILED satellite " << gs.get_satellite();
+            // This path (lock loss / cycle slip recovery) otherwise bypasses
+            // the search pool/visibility entirely: below, it blindly retries
+            // the very same satellite unconditionally. If that satellite has
+            // since been classified excluded, don't -- fall through to a
+            // normal search for a new target instead, same as if this
+            // channel had nothing assigned.
+            if (satellite_visibility_ && satellite_visibility_->enabled() && satellite_visibility_->IsExcluded(gs.get_satellite()))
+                {
+                    LOG(INFO) << "[visibility] channel " << who << ": not retrying " << gs.get_satellite()
+                              << " (" << gs.get_signal_str() << ") after tracking loss, now classified excluded";
+                    channels_state_[who] = 0;
+                    acquisition_manager(who);
+                    if (sat == 0)
+                        {
+                            push_back_signal(gs);
+                        }
+                    break;
+                }
             if (acq_channels_count_ < max_acq_channels_)
                 {
                     // try to acquire the same satellite
@@ -1923,13 +1995,38 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         case 10:  // request standby mode
             for (size_t n = 0; n < channels_.size(); n++)
                 {
-                    if (channels_state_[n] == 2 || channels_state_[n] == 3)  // channel in acquisition or in tracking
+                    if (channels_state_[n] == 1 || channels_state_[n] == 2 || channels_state_[n] == 3)  // channel assigned (not yet started), in acquisition, or in tracking
                         {
-                            // recover the satellite assigned
+                            // recover the satellite assigned. State 1 channels
+                            // (assigned by assign_channels() at connect() time,
+                            // budget-throttled by Channels.in_acquisition from
+                            // ever starting) matter here too: their assignment
+                            // predates any visibility classification -- without
+                            // discarding it, acquisition_manager() later reuses
+                            // that stale pick verbatim the moment a slot frees
+                            // up (its state==1 branch just re-issues whatever
+                            // signal the channel already holds, bypassing
+                            // search_next_signal()/pop_by_visibility() entirely),
+                            // silently holding a pool entry hostage to a pick
+                            // made before any real data existed.
                             Gnss_Signal gs_assigned = channels_[n]->get_signal();
-                            push_back_signal(gs_assigned);
+                            // PRN 0 is not a real satellite -- it's the
+                            // default-constructed Gnss_Signal a channel is
+                            // still holding if assign_channels() couldn't
+                            // give it a real one at connect() time (e.g. a
+                            // 5X channel whose primary-frequency assist
+                            // wasn't available yet, before any tracking
+                            // could possibly exist). Pushing that back would
+                            // inject a phantom entry into the pool.
+                            if (gs_assigned.get_satellite().get_PRN() != 0)
+                                {
+                                    push_back_signal(gs_assigned);
+                                }
 
-                            channels_[n]->stop_channel();  // stop the acquisition or tracking operation
+                            if (channels_state_[n] != 1)
+                                {
+                                    channels_[n]->stop_channel();  // stop the acquisition or tracking operation
+                                }
                             channels_state_[n] = 0;
                         }
                 }
@@ -1979,6 +2076,108 @@ void GNSSFlowgraph::priorize_satellites(const std::vector<std::pair<int, Gnss_Sa
                         }
                 }
         }
+}
+
+
+void GNSSFlowgraph::MaybeUpdateVisibility()
+{
+    if (!satellite_visibility_ || !satellite_visibility_->enabled())
+        {
+            return;
+        }
+    const auto pvt_ptr = get_pvt();
+    if (!pvt_ptr)
+        {
+            return;
+        }
+    std::lock_guard<std::mutex> lock(signal_list_mutex_);
+    const Monitor_Pvt fix_status = channels_status_->get_current_status_pvt();
+    if (satellite_visibility_->Tick(pvt_ptr, fix_status))
+        {
+            DLOG(INFO) << "Satellite visibility updated (visibility-aware search enabled)";
+            // Classification actually changed -- a signal previously
+            // exhausted (everything excluded) might not be anymore. See
+            // signals_with_nothing_searchable_'s doc comment.
+            signals_with_nothing_searchable_.clear();
+
+            // A channel already assigned but not yet started (state 1) may
+            // be holding a satellite that's only now become known to be
+            // excluded (elevation computed, at/below the mask) -- notably,
+            // assign_channels()'s very first picks at connect() time
+            // necessarily predate any classification at all (AGNSS
+            // assistance data isn't loaded into the PVT block until later,
+            // in ControlThread::assist_GNSS()), so an early channel can
+            // easily be sitting on a below-mask satellite with nothing
+            // having filtered it out yet. Left alone it would go on to
+            // start acquiring a satellite the mask says to skip. Requeue it
+            // so it's re-picked properly now that a real classification
+            // exists -- no work has been invested yet, so this is free.
+            //
+            // Deliberately NOT extended to state 2 (acquisition actively
+            // running): a search that's already started completes on its
+            // own regardless of a classification change mid-flight -- if it
+            // fails, it simply won't be re-picked next time since it's now
+            // excluded; if it succeeds, it becomes state 3 and is handled by
+            // the loop below. Interrupting a running search on
+            // reclassification would occasionally discard one that was
+            // about to succeed, based on a classification that (unlike
+            // confirmed tracking) can still be wrong.
+            const auto current_channels_status = channels_status_->get_current_status_map();
+            auto is_currently_tracked = [&](const Gnss_Signal& gs) {
+                const uint32_t prn = gs.get_satellite().get_PRN();
+                const std::string system_short = gs.get_satellite().get_system_short();
+                const char system_char = system_short.empty() ? '\0' : system_short[0];
+                for (const auto& cs : current_channels_status)
+                    {
+                        if (cs.second->PRN == prn && cs.second->System == system_char)
+                            {
+                                return true;
+                            }
+                    }
+                return false;
+            };
+            for (size_t n = 0; n < channels_.size(); n++)
+                {
+                    if (channels_state_[n] != 1)
+                        {
+                            continue;
+                        }
+                    const Gnss_Signal gs_assigned = channels_[n]->get_signal();
+                    if (gs_assigned.get_satellite().get_PRN() == 0)
+                        {
+                            continue;
+                        }
+                    if (!satellite_visibility_->IsExcluded(gs_assigned.get_satellite()) || is_currently_tracked(gs_assigned))
+                        {
+                            continue;
+                        }
+                    LOG(INFO) << "[visibility] channel " << n << ": requeuing " << gs_assigned.get_satellite()
+                              << " (" << gs_assigned.get_signal_str() << "), now classified excluded -- was assigned but not yet started";
+                    push_back_signal(gs_assigned);
+                    channels_state_[n] = 0;
+                }
+
+            // A channel already in confirmed tracking (state 3) is never
+            // torn down here, regardless of exclusion. The search mask
+            // exists to avoid wasting CPU acquiring satellites unlikely to
+            // be in view -- it is not a correctness gate, and a confirmed
+            // lock is stronger evidence than any predictive elevation
+            // classification (which can itself be wrong, e.g. a coarse
+            // almanac near the mask boundary, or a rising satellite still
+            // climbing toward it). PVT.elevation_mask remains the real gate
+            // on whether this satellite's observations get used in the fix.
+            // Once a genuine loss of lock happens, TRK FAILED handling
+            // (case 2 in apply_action) already keeps visibility from
+            // re-acquiring an excluded satellite -- that is where this
+            // classification takes effect for an already-tracked satellite,
+            // not by tearing down a good track.
+        }
+}
+
+
+bool GNSSFlowgraph::visibility_aware_search_enabled() const
+{
+    return satellite_visibility_ && satellite_visibility_->enabled();
 }
 
 
@@ -2309,10 +2508,12 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
     bool& is_primary_frequency,
     bool& assistance_available,
     float& estimated_doppler,
-    double& RX_time)
+    double& RX_time,
+    bool& signal_available)
 {
     is_primary_frequency = false;
     assistance_available = false;
+    signal_available = true;
     Gnss_Signal result{};
     bool found_signal = false;
     std::vector<std::string> assist_signal_candidates;
@@ -2320,10 +2521,23 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
 
     if (available_signals.empty())
         {
+            // Every PRN for this signal is already tracked or assigned to
+            // another channel. This is expected in steady state once enough
+            // satellites are being tracked (or, at startup, a genuine
+            // Channels_*.count vs. PRN-count misconfiguration -- that case is
+            // already caught earlier, with a clean error return, by
+            // assign_channels()'s own channel_count/max_sat_count check).
+            // Either way, crashing the whole receiver here is wrong: tell
+            // the caller nothing is available so it leaves this channel idle
+            // instead of starting a doomed acquisition; acquisition_manager()
+            // re-checks every idle tick, so the channel picks back up on its
+            // own as soon as a satellite is requeued (ACQ FAILED elsewhere,
+            // or tracking lost).
+            signal_available = false;
             const auto& entry = signal_mapping.at(searched_signal);
-            const auto& gnss_system_str = entry.first;
-            const auto& signal_pretty_str = entry.second;
-            throw std::runtime_error("More ACQUISITION channels than PRNs for signal " + gnss_system_str + " " + signal_pretty_str);
+            LOG(INFO) << "[visibility] No untracked/unassigned satellites currently available for signal "
+                      << entry.first << " " << entry.second << " -- channel stays idle";
+            return result;
         }
 
     switch (mapStringValues_[searched_signal])
@@ -2395,10 +2609,41 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
 
                                     if (it2 != available_signals.end())
                                         {
+                                            // "An already-tracked satellite is definitive proof of
+                                            // visibility" no longer holds unconditionally: a primary-
+                                            // frequency track can itself be below the mask/unhealthy
+                                            // during blind acquisition (no classification existed yet
+                                            // when it was picked), in which case MaybeUpdateVisibility()
+                                            // releases it once real ephemeris/almanac classifies it
+                                            // excluded. Without this check, this fast path keeps
+                                            // re-offering that same satellite for the secondary
+                                            // frequency off the channel-status snapshot (which can
+                                            // still show it as tracked for a moment after release),
+                                            // right back into the ACQ-SUCCESS exclusion guard above --
+                                            // a tight re-acquire/discard loop instead of the channel
+                                            // going idle like it should.
+                                            if (satellite_visibility_ && satellite_visibility_->enabled() &&
+                                                satellite_visibility_->IsExcluded(it2->get_satellite()))
+                                                {
+                                                    continue;
+                                                }
                                             // Doppler observed on the assisting band, projected to the searched band
                                             estimated_doppler = static_cast<float>(project_doppler(searched_signal, assist_signal, current_status.second->Carrier_Doppler_hz));
                                             RX_time = current_status.second->RX_time;
                                             result = *it2;
+                                            // Assist-signal fast path: picks a satellite already
+                                            // tracked on its primary frequency directly, bypassing
+                                            // pop_by_visibility() entirely (its own bucket/ratio
+                                            // logic doesn't apply -- an already-tracked, not-excluded
+                                            // satellite is definitive proof of visibility). Logged
+                                            // separately from "[visibility] signal ...: picked ..."
+                                            // since it's a different pick path -- otherwise a queue's
+                                            // remaining visible/mayvisible counts can jump between
+                                            // pop_by_visibility() log lines with no logged pick to
+                                            // explain it.
+                                            LOG(INFO) << "[visibility] signal " << searched_signal << ": picked "
+                                                      << result.get_satellite() << " via primary-frequency assist ("
+                                                      << assist_signal << " already tracked) -- bypasses visible/mayvisible bucket selection";
                                             available_signals.erase(it2);
                                             found_signal = true;
                                             assistance_available = true;
@@ -2411,9 +2656,204 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
 
     if (found_signal == false)
         {
-            result = available_signals.front();
-            available_signals.pop_front();
+            // Matches upstream gnss-sdr/gnss-sdr's acquisition_manager():
+            // with GNSS-SDR.assist_dual_frequency_acq on, a secondary/
+            // assisted signal's start_acquisition reduces to just
+            // assistance_available -- a pick made any way other than the
+            // assist fast path above is guaranteed not to start (pushed
+            // straight back by acquisition_manager() the moment it sees
+            // assistance_available == false). That's not a bug to work
+            // around here: it's upstream's actual intended behavior
+            // (verified directly against gnss-sdr/gnss-sdr's next branch).
+            // Skip the pointless pick-then-immediate-pushback churn: idle
+            // the channel instead, and let the assist block above pick it
+            // up for real as soon as its primary frequency is tracked.
+            if (!assist_signal_candidates.empty() && configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_))
+                {
+                    signal_available = false;
+                    constexpr double kNoAssistLogThrottleS = 5.0;
+                    const auto now = std::chrono::steady_clock::now();
+                    auto& last_logged = no_assist_log_throttle_[searched_signal];
+                    if (std::chrono::duration<double>(now - last_logged).count() >= kNoAssistLogThrottleS)
+                        {
+                            last_logged = now;
+                            std::string candidates_str;
+                            for (size_t i = 0; i < assist_signal_candidates.size(); i++)
+                                {
+                                    candidates_str += assist_signal_candidates[i];
+                                    if (i + 1 < assist_signal_candidates.size())
+                                        {
+                                            candidates_str += "/";
+                                        }
+                                }
+                            LOG(INFO) << "[visibility] signal " << searched_signal << ": no " << candidates_str
+                                      << "-tracked satellite currently available to assist -- channel stays idle (no wasted pick attempted)";
+                        }
+                    return result;
+                }
+            if (satellite_visibility_ && satellite_visibility_->enabled())
+                {
+                    bool picked = false;
+                    result = pop_by_visibility(available_signals, searched_signal, picked);
+                    if (!picked)
+                        {
+                            signal_available = false;
+                            return result;
+                        }
+                }
+            else
+                {
+                    result = available_signals.front();
+                    available_signals.pop_front();
+                }
         }
+
+    return result;
+}
+
+
+Gnss_Signal GNSSFlowgraph::pop_by_visibility(std::list<Gnss_Signal>& available_signals, const std::string& searched_signal, bool& picked)
+{
+    picked = false;
+
+    // Already determined nothing is searchable here, and nothing has
+    // invalidated that since (no push_back_signal() for this signal, no
+    // visibility reclassification) -- skip the full scan and the
+    // channels_status_ lock entirely. See signals_with_nothing_searchable_'s
+    // doc comment for why this matters: without it, an exhausted signal's
+    // pool gets this same expensive check redone on every idle tick for
+    // every idle channel, contending with the real-time DSP threads for no
+    // benefit.
+    if (signals_with_nothing_searchable_.count(searched_signal) > 0)
+        {
+            return Gnss_Signal{};
+        }
+
+    uint32_t& counter = visibility_pick_counter_[searched_signal];
+    const uint32_t ratio = satellite_visibility_->search_ratio();
+    const bool want_visible = counter < ratio;
+
+    // A satellite currently tracked on any of its other signals is
+    // definitive proof it's actually visible right now -- this overrides
+    // IsExcluded() below. Almanac (coarse, used for the initial optimistic
+    // classification that can get a satellite tracked in the first place)
+    // and ephemeris (precise, only decoded once tracking begins) can
+    // legitimately disagree right at the elevation mask boundary; without
+    // this override, a satellite could get excluded immediately after
+    // starting to track, permanently blocking its still-unassigned
+    // other-frequency entries even while it's demonstrably being received.
+    //
+    // channels_status_->get_current_status_map() is a mutex-locked copy of
+    // the whole channel status map, shared with the real-time tracking/
+    // observables threads that need the same lock to publish updates --
+    // fetch it lazily, only if the pool actually has an excluded entry that
+    // could benefit from the override, not unconditionally on every call.
+    // Once a signal's pool is fully exhausted (everything visible tracked,
+    // the rest excluded), pop_by_visibility() gets re-invoked on every idle
+    // tick for every idle channel with nothing new to find; paying for this
+    // lock/copy every single time was real, measured lock contention against
+    // the DSP threads, not just wasted CPU.
+    const bool any_excluded = std::any_of(available_signals.begin(), available_signals.end(),
+        [&](const Gnss_Signal& gs) { return satellite_visibility_->IsExcluded(gs.get_satellite()); });
+    std::map<int, std::shared_ptr<Gnss_Synchro>> current_channels_status;
+    if (any_excluded)
+        {
+            current_channels_status = channels_status_->get_current_status_map();
+        }
+    auto is_currently_tracked = [&](const Gnss_Signal& gs) {
+        const uint32_t prn = gs.get_satellite().get_PRN();
+        const std::string system_short = gs.get_satellite().get_system_short();
+        const char system_char = system_short.empty() ? '\0' : system_short[0];
+        for (const auto& cs : current_channels_status)
+            {
+                if (cs.second->PRN == prn && cs.second->System == system_char)
+                    {
+                        return true;
+                    }
+            }
+        return false;
+    };
+
+    // Excluded entries (elevation computable, at/below the mask) are never
+    // searchable, from either bucket -- unless the satellite is already
+    // confirmed tracked elsewhere (see above). Otherwise they stay queued
+    // (so they're picked back up automatically once visibility is
+    // recomputed and they're no longer excluded) but inert until then.
+    auto is_searchable = [&](const Gnss_Signal& gs) {
+        return !satellite_visibility_->IsExcluded(gs.get_satellite()) || is_currently_tracked(gs);
+    };
+    auto find_bucket = [&](bool visible) {
+        return std::find_if(available_signals.begin(), available_signals.end(),
+            [&](const Gnss_Signal& gs) { return is_searchable(gs) && satellite_visibility_->IsVisible(gs.get_satellite()) == visible; });
+    };
+
+    auto it = find_bucket(want_visible);
+    bool got_desired_bucket = (it != available_signals.end());
+    if (!got_desired_bucket)
+        {
+            // Desired bucket has nothing searchable queued for this signal
+            // right now -- fall back to the other searchable bucket instead
+            // of starving acquisition.
+            it = find_bucket(!want_visible);
+        }
+
+    size_t remaining_visible = 0;
+    size_t remaining_mayvisible = 0;
+    size_t remaining_excluded = 0;
+    for (const auto& gs : available_signals)
+        {
+            if (!is_searchable(gs))
+                {
+                    remaining_excluded++;
+                }
+            else if (satellite_visibility_->IsVisible(gs.get_satellite()))
+                {
+                    remaining_visible++;
+                }
+            else
+                {
+                    remaining_mayvisible++;
+                }
+        }
+
+    if (it == available_signals.end())
+        {
+            // Nothing searchable left for this signal -- every remaining
+            // queued entry (if any) is excluded (elevation known, not
+            // visible). Leave them queued and tell the caller to idle this
+            // channel instead of running a doomed acquisition; this is the
+            // actual CPU-saving exhaustion case once a complete almanac/
+            // ephemeris confirms everything else is below the elevation mask.
+            LOG(INFO) << "[visibility] signal " << searched_signal << ": nothing searchable ("
+                      << remaining_excluded << " excluded entries queued, elevation known and not visible) -- channel stays idle"
+                      << " (further checks skipped until this changes)";
+            signals_with_nothing_searchable_.insert(searched_signal);
+            return Gnss_Signal{};
+        }
+
+    picked = true;
+    const Gnss_Signal result = *it;
+    const bool picked_visible = satellite_visibility_->IsVisible(result.get_satellite());
+    available_signals.erase(it);
+    counter = (counter + 1) % (ratio + 1);
+    if (picked_visible)
+        {
+            remaining_visible = remaining_visible > 0 ? remaining_visible - 1 : 0;
+        }
+    else
+        {
+            remaining_mayvisible = remaining_mayvisible > 0 ? remaining_mayvisible - 1 : 0;
+        }
+
+    // Always-on diagnostic (LOG, not DLOG -- see satellite_visibility.cc for
+    // why). Shows exactly which bucket each new acquisition is actually
+    // drawn from and what's left queued afterwards -- the direct signal for
+    // "are channels still grinding through maybe-visible satellites".
+    LOG(INFO) << "[visibility] signal " << searched_signal << ": picked " << result.get_satellite()
+              << " from " << (picked_visible ? "VISIBLE" : "MAYVISIBLE") << " bucket"
+              << (got_desired_bucket ? "" : " (desired bucket was empty, fell back)")
+              << " -- queue now has " << remaining_visible << " visible, " << remaining_mayvisible
+              << " mayvisible, " << remaining_excluded << " excluded";
 
     return result;
 }

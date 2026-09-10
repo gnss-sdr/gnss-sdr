@@ -44,12 +44,10 @@
 #include "gps_ephemeris.h"                           // for Gps_Ephemeris
 #include "gps_iono.h"                                // for Gps_Iono
 #include "gps_utc_model.h"                           // for Gps_Utc_Model
-#include "gps_week_rollover.h"                       // for gps_ref_week_from_config
 #include "pvt_interface.h"                           // for PvtInterface
-#include "rtklib.h"                                  // for gtime_t, alm_t
-#include "rtklib_conversions.h"                      // for alm_to_rtklib
-#include "rtklib_ephemeris.h"                        // for alm2pos, eph2pos
+#include "rtklib.h"                                  // for gtime_t
 #include "rtklib_rtkcmn.h"                           // for utc2gpst
+#include "satellite_visibility.h"                    // for compute_visible_satellites
 #include <armadillo>                                 // for interaction with geofunctions
 #include <boost/interprocess/ipc/message_queue.hpp>  // for message_queue
 #include <boost/lexical_cast.hpp>                    // for bad_lexical_cast
@@ -171,11 +169,6 @@ ControlThread::ControlThread(std::shared_ptr<ConfigurationInterface> configurati
 void ControlThread::init()
 {
     telecommand_enabled_ = configuration_->property("GNSS-SDR.telecommand_enabled", false);
-    // OPTIONAL: approximate date of the signal capture, used to resolve the GPS
-    // mod-1024 week-number rollover when post-processing old gnss records
-    ref_gps_week_ = gps_ref_week_from_config(
-        configuration_->property("GNSS-SDR.observation_date", std::string("")),
-        configuration_->property("GNSS-SDR.pre_2009_file", false));
     // Instantiates a control queue, a GNSS flowgraph, and a control message factory
     control_queue_ = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     cmd_interface_.set_msg_queue(control_queue_);  // set also the queue pointer for the telecommand thread
@@ -209,64 +202,23 @@ void ControlThread::init()
     const std::string empty_string;
     const std::string ref_location_str = configuration_->property("GNSS-SDR.AGNSS_ref_location", empty_string);
     const std::string ref_time_str = configuration_->property("GNSS-SDR.AGNSS_ref_utc_time", empty_string);
-    if (ref_location_str != empty_string)
+
+    agnss_ref_location_ = parse_agnss_ref_location(ref_location_str);
+    if (!ref_location_str.empty() && !agnss_ref_location_.valid)
         {
-            std::vector<double> vect;
-            std::stringstream ss(ref_location_str);
-            double d;
-            while (ss >> d)
-                {
-                    vect.push_back(d);
-                    if ((ss.peek() == ',') || (ss.peek() == ' '))
-                        {
-                            ss.ignore();
-                        }
-                }
-            // fill agnss_ref_location_
-            if (vect.size() >= 2)
-                {
-                    if ((vect[0] < 90.0) && (vect[0] > -90) && (vect[1] < 180.0) && (vect[1] > -180.0))
-                        {
-                            agnss_ref_location_.lat = vect[0];
-                            agnss_ref_location_.lon = vect[1];
-                            agnss_ref_location_.valid = true;
-                        }
-                    else
-                        {
-                            std::cerr << "GNSS-SDR.AGNSS_ref_location=" << ref_location_str << " is not a valid position.\n";
-                            agnss_ref_location_.valid = false;
-                        }
-                }
+            std::cerr << "GNSS-SDR.AGNSS_ref_location=" << ref_location_str << " is not a valid position.\n";
         }
-    if (ref_time_str == empty_string)
+
+    bool malformed_year = false;
+    bool malformed_format = false;
+    agnss_ref_time_ = parse_agnss_ref_utc_time(ref_time_str, &malformed_year, &malformed_format);
+    if (malformed_year)
         {
-            // Make an educated guess
-            time_t rawtime;
-            time(&rawtime);
-            agnss_ref_time_.seconds = rawtime;
-            agnss_ref_time_.valid = true;
+            std::cerr << "GNSS-SDR.AGNSS_ref_utc_time=" << ref_time_str << " is not well-formed. Please use four digits for the year: DD/MM/YYYY HH:MM:SS\n";
         }
-    else
+    else if (malformed_format)
         {
-            // fill agnss_ref_time_
-            struct tm tm{};
-            if (strptime(ref_time_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) != nullptr)
-                {
-                    agnss_ref_time_.seconds = timegm(&tm);
-                    if (agnss_ref_time_.seconds > 0)
-                        {
-                            agnss_ref_time_.valid = true;
-                        }
-                    else
-                        {
-                            std::cerr << "GNSS-SDR.AGNSS_ref_utc_time=" << ref_time_str << " is not well-formed. Please use four digits for the year: DD/MM/YYYY HH:MM:SS\n";
-                        }
-                }
-            else
-                {
-                    std::cerr << "GNSS-SDR.AGNSS_ref_utc_time=" << ref_time_str << " is not well-formed. Should be DD/MM/YYYY HH:MM:SS in UTC\n";
-                    agnss_ref_time_.valid = false;
-                }
+            std::cerr << "GNSS-SDR.AGNSS_ref_utc_time=" << ref_time_str << " is not well-formed. Should be DD/MM/YYYY HH:MM:SS in UTC\n";
         }
 
     receiver_on_standby_ = false;
@@ -370,6 +322,25 @@ void ControlThread::event_dispatcher(bool &valid_event, pmt::pmt_t &msg)
                     flowgraph_->acquisition_manager(0);  // start acquisition of untracked satellites
                 }
         }
+
+    // Deliberately outside the else branch above (and so not gated on
+    // valid_event): the visibility-aware search's own churn through the
+    // "maybe visible" candidate pool -- picking, acquiring, failing,
+    // re-picking -- keeps pushing channel events onto control_queue_ fast
+    // enough that the 100 ms timed_wait_and_pop() above essentially never
+    // times out once that churn starts. If MaybeUpdateVisibility() only ran
+    // from the idle branch, it would starve for the rest of the run right
+    // when it matters most, since reclassifying satellites out of "maybe
+    // visible" is exactly what would reduce that churn. Calling it
+    // unconditionally here is safe: Tick()/DataChanged() already throttle
+    // the expensive recompute internally (kDataCheckEveryNTicks,
+    // interval_elapsed, etc.), so this just guarantees those checks
+    // actually get evaluated instead of depending on an idle window that
+    // may never occur.
+    if (receiver_on_standby_ == false)
+        {
+            flowgraph_->MaybeUpdateVisibility();  // no-op unless GNSS-SDR.enable_visibility_aware_search=true
+        }
 }
 
 
@@ -409,6 +380,8 @@ int ControlThread::run()
         }
     // Start the flowgraph
     flowgraph_->start();
+    // Set receiver in stdby mode
+    flowgraph_->apply_action(0, 10);
     if (flowgraph_->running())
         {
             LOG(INFO) << "Flowgraph started";
@@ -420,6 +393,18 @@ int ControlThread::run()
 
     // launch GNSS assistance process AFTER the flowgraph is running because the GNU Radio asynchronous queues must be already running to transport msgs
     assist_GNSS();
+    // No explicit MaybeUpdateVisibility() call here (deliberately -- an
+    // earlier version had one, which turned out to double up with
+    // assist_GNSS()'s own call below and log an identical recompute twice).
+    // When GNSS-SDR.AGNSS_ref_location IS configured, assist_GNSS() already
+    // hot-started internally (see its own MaybeUpdateVisibility() call right
+    // before its own apply_action(0, 12)) and channels are already assigned
+    // by the time we get here. When it's NOT configured, the very next
+    // idle tick (at most ~100 ms away, see the event_dispatcher() timeout
+    // branch) calls MaybeUpdateVisibility() itself, right alongside
+    // acquisition_manager() -- close enough to startup not to need a
+    // second explicit call here too.
+    flowgraph_->apply_action(0, 12);
 // start the keyboard_listener thread
 #if USE_GLOG_AND_GFLAGS
     if (FLAGS_keyboard)
@@ -599,6 +584,7 @@ bool ControlThread::read_assistance_from_XML()
                         {
                             std::cout << "From XML file: Read GPS almanac for satellite " << Gnss_Satellite("GPS", gps_alm_iter->second.PRN) << '\n';
                             const std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(gps_alm_iter->second);
+                            tmp_obj->from_startup_load = true;
                             flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                         }
                     ret = true;
@@ -663,6 +649,7 @@ bool ControlThread::read_assistance_from_XML()
                         {
                             std::cout << "From XML file: Read Galileo almanac for satellite " << Gnss_Satellite("Galileo", gal_alm_iter->second.PRN) << '\n';
                             const std::shared_ptr<Galileo_Almanac> tmp_obj = std::make_shared<Galileo_Almanac>(gal_alm_iter->second);
+                            tmp_obj->from_startup_load = true;
                             flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                         }
                     ret = true;
@@ -871,6 +858,7 @@ void ControlThread::assist_GNSS()
                                 {
                                     std::cout << "SUPL: Received almanac data for satellite " << Gnss_Satellite("GPS", gps_alm_iter->second.PRN) << '\n';
                                     const std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(gps_alm_iter->second);
+                                    tmp_obj->from_startup_load = true;
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
                             supl_client_ephemeris_.save_gps_almanac_xml("gps_almanac_map.xml", supl_client_ephemeris_.gps_almanac_map);
@@ -974,11 +962,28 @@ void ControlThread::assist_GNSS()
                     ref_rx_utc_time = static_cast<time_t>(agnss_ref_time_.seconds);
                 }
 
-            const std::vector<std::pair<int, Gnss_Satellite>> visible_sats = get_visible_sats(ref_rx_utc_time, ref_LLH);
             // Set the receiver in Standby mode
             flowgraph_->apply_action(0, 10);
-            // Give priority to visible satellites in the search list
-            flowgraph_->priorize_satellites(visible_sats);
+            // MaybeUpdateVisibility() supersedes get_visible_sats()/
+            // priorize_satellites() entirely when the feature is enabled --
+            // both would otherwise run back to back against the identical
+            // AGNSS reference time/position, redundantly recomputing (and
+            // re-printing) the same elevation pass twice for no reason. This
+            // is the actual first hot-start trigger when
+            // GNSS-SDR.AGNSS_ref_location is configured (as here); the
+            // ControlThread::run() call after assist_GNSS() returns is a
+            // no-op by the time control gets back there, since channels have
+            // already been assigned by the apply_action(0, 12) below.
+            if (flowgraph_->visibility_aware_search_enabled())
+                {
+                    flowgraph_->MaybeUpdateVisibility();
+                }
+            else
+                {
+                    // Give priority to visible satellites in the search list
+                    const std::vector<std::pair<int, Gnss_Satellite>> visible_sats = get_visible_sats(ref_rx_utc_time, ref_LLH);
+                    flowgraph_->priorize_satellites(visible_sats);
+                }
             // Hot Start
             flowgraph_->apply_action(0, 12);
         }
@@ -1017,9 +1022,24 @@ void ControlThread::apply_action(unsigned int what)
             break;
         case 12:
             LOG(INFO) << "Receiver action HOTSTART";
-            visible_satellites = get_visible_sats(cmd_interface_.get_utc_time(), cmd_interface_.get_LLH());
-            // reorder the satellite queue to acquire first those visible satellites
-            flowgraph_->priorize_satellites(visible_satellites);
+            // Same choice assist_GNSS() makes at initial start: when the
+            // visibility-aware search is enabled, MaybeUpdateVisibility()
+            // already supersedes the legacy one-shot reorder below -- take
+            // that path here too instead of always falling back to it,
+            // otherwise a TC hotstart would classify satellites differently
+            // (and reset the continuously-maintained visible/maybe-visible
+            // buckets) compared to how the receiver started up in the first
+            // place.
+            if (flowgraph_->visibility_aware_search_enabled())
+                {
+                    flowgraph_->MaybeUpdateVisibility();
+                }
+            else
+                {
+                    visible_satellites = get_visible_sats(cmd_interface_.get_utc_time(), cmd_interface_.get_LLH());
+                    // reorder the satellite queue to acquire first those visible satellites
+                    flowgraph_->priorize_satellites(visible_satellites);
+                }
             // start again the satellite acquisitions
             receiver_on_standby_ = false;
             break;
@@ -1060,13 +1080,6 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     utc_gtime.sec = 0.0;
     const gtime_t gps_gtime = utc2gpst(utc_gtime);
 
-    // 3. loop through all the available ephemeris or almanac and compute satellite positions and elevations
-    // store visible satellites in a vector of pairs <int,Gnss_Satellite> to associate an elevation to the each satellite
-    std::vector<std::pair<int, Gnss_Satellite>> available_satellites;
-    std::vector<unsigned int> visible_gps;
-    std::vector<unsigned int> visible_gal;
-    std::vector<unsigned int> visible_bds;
-    const std::shared_ptr<PvtInterface> pvt_ptr = flowgraph_->get_pvt();
     struct tm tstruct{};
     char buf[80];
     tstruct = *gmtime(&rx_utc_time);
@@ -1075,168 +1088,11 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     std::cout << "Get visible satellites at " << str_time
               << "UTC, assuming RX position " << LLH[0] << " [deg], " << LLH[1] << " [deg], " << LLH[2] << " [m]\n";
 
-    const std::map<int, Gps_Ephemeris> gps_eph_map = pvt_ptr->get_gps_ephemeris();
-    for (const auto &it : gps_eph_map)
-        {
-            const eph_t rtklib_eph = eph_to_rtklib(it.second, ref_gps_week_);
-            std::array<double, 3> r_sat{};
-            double clock_bias_s;
-            double sat_pos_variance_m2;
-            eph2pos(gps_gtime, &rtklib_eph, r_sat.data(), &clock_bias_s,
-                &sat_pos_variance_m2);
-            double Az;
-            double El;
-            double dist_m;
-            const arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
-            const arma::vec dx = r_sat_eb_e - r_eb_e;
-            topocent(&Az, &El, &dist_m, r_eb_e, dx);
-            // push sat
-            if (El > 0)
-                {
-                    std::cout << "Using GPS Ephemeris: Sat " << it.second.PRN << " Az: " << Az << " El: " << El << '\n';
-                    available_satellites.emplace_back(floor(El),
-                        (Gnss_Satellite(std::string("GPS"), it.second.PRN)));
-                    visible_gps.push_back(it.second.PRN);
-                }
-        }
-
-    const std::map<int, Galileo_Ephemeris> gal_eph_map = pvt_ptr->get_galileo_ephemeris();
-    for (const auto &it : gal_eph_map)
-        {
-            const eph_t rtklib_eph = eph_to_rtklib(it.second);
-            std::array<double, 3> r_sat{};
-            double clock_bias_s;
-            double sat_pos_variance_m2;
-            eph2pos(gps_gtime, &rtklib_eph, r_sat.data(), &clock_bias_s,
-                &sat_pos_variance_m2);
-            double Az;
-            double El;
-            double dist_m;
-            const arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
-            const arma::vec dx = r_sat_eb_e - r_eb_e;
-            topocent(&Az, &El, &dist_m, r_eb_e, dx);
-            // push sat
-            if (El > 0)
-                {
-                    std::cout << "Using Galileo Ephemeris: Sat " << it.second.PRN << " Az: " << Az << " El: " << El << '\n';
-                    available_satellites.emplace_back(floor(El),
-                        (Gnss_Satellite(std::string("Galileo"), it.second.PRN)));
-                    visible_gal.push_back(it.second.PRN);
-                }
-        }
-
-    const std::map<int, Beidou_Dnav_Ephemeris> bds_eph_map = pvt_ptr->get_beidou_dnav_ephemeris();
-    for (const auto &it : bds_eph_map)
-        {
-            const eph_t rtklib_eph = eph_to_rtklib(it.second);
-            std::array<double, 3> r_sat{};
-            double clock_bias_s;
-            double sat_pos_variance_m2;
-            eph2pos(gps_gtime, &rtklib_eph, r_sat.data(), &clock_bias_s,
-                &sat_pos_variance_m2);
-            double Az;
-            double El;
-            double dist_m;
-            const arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
-            const arma::vec dx = r_sat_eb_e - r_eb_e;
-            topocent(&Az, &El, &dist_m, r_eb_e, dx);
-            if (El > 0)
-                {
-                    std::cout << "Using BeiDou Ephemeris: Sat " << it.second.PRN << " Az: " << Az << " El: " << El << '\n';
-                    available_satellites.emplace_back(floor(El),
-                        (Gnss_Satellite(std::string("Beidou"), it.second.PRN)));
-                    visible_bds.push_back(it.second.PRN);
-                }
-        }
-
-    const std::map<int, Gps_Almanac> gps_alm_map = pvt_ptr->get_gps_almanac();
-    for (const auto &it : gps_alm_map)
-        {
-            const alm_t rtklib_alm = alm_to_rtklib(it.second);
-            std::array<double, 3> r_sat{};
-            double clock_bias_s;
-            gtime_t aux_gtime;
-            aux_gtime.time = fmod(utc2gpst(gps_gtime).time + 345600, 604800);
-            aux_gtime.sec = 0.0;
-            alm2pos(aux_gtime, &rtklib_alm, r_sat.data(), &clock_bias_s);
-            double Az;
-            double El;
-            double dist_m;
-            const arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
-            const arma::vec dx = r_sat_eb_e - r_eb_e;
-            topocent(&Az, &El, &dist_m, r_eb_e, dx);
-            // push sat
-            std::vector<unsigned int>::iterator it2;
-            if (El > 0)
-                {
-                    it2 = std::find(visible_gps.begin(), visible_gps.end(), it.second.PRN);
-                    if (it2 == visible_gps.end())
-                        {
-                            std::cout << "Using GPS Almanac:  Sat " << it.second.PRN << " Az: " << Az << " El: " << El << '\n';
-                            available_satellites.emplace_back(floor(El),
-                                (Gnss_Satellite(std::string("GPS"), it.second.PRN)));
-                        }
-                }
-        }
-
-    const std::map<int, Galileo_Almanac> gal_alm_map = pvt_ptr->get_galileo_almanac();
-    for (const auto &it : gal_alm_map)
-        {
-            const alm_t rtklib_alm = alm_to_rtklib(it.second);
-            std::array<double, 3> r_sat{};
-            double clock_bias_s;
-            gtime_t gal_gtime;
-            gal_gtime.time = fmod(utc2gpst(gps_gtime).time + 345600, 604800);
-            gal_gtime.sec = 0.0;
-            alm2pos(gal_gtime, &rtklib_alm, r_sat.data(), &clock_bias_s);
-            double Az;
-            double El;
-            double dist_m;
-            const arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
-            const arma::vec dx = r_sat_eb_e - r_eb_e;
-            topocent(&Az, &El, &dist_m, r_eb_e, dx);
-            // push sat
-            std::vector<unsigned int>::iterator it2;
-            if (El > 0)
-                {
-                    it2 = std::find(visible_gal.begin(), visible_gal.end(), it.second.PRN);
-                    if (it2 == visible_gal.end())
-                        {
-                            std::cout << "Using Galileo Almanac:  Sat " << it.second.PRN << " Az: " << Az << " El: " << El << '\n';
-                            available_satellites.emplace_back(floor(El),
-                                (Gnss_Satellite(std::string("Galileo"), it.second.PRN)));
-                        }
-                }
-        }
-
-    const std::map<int, Beidou_Dnav_Almanac> bds_alm_map = pvt_ptr->get_beidou_dnav_almanac();
-    for (const auto &it : bds_alm_map)
-        {
-            const alm_t rtklib_alm = alm_to_rtklib(it.second);
-            std::array<double, 3> r_sat{};
-            double clock_bias_s;
-            alm2pos(gps_gtime, &rtklib_alm, r_sat.data(), &clock_bias_s);
-            double Az;
-            double El;
-            double dist_m;
-            const arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
-            const arma::vec dx = r_sat_eb_e - r_eb_e;
-            topocent(&Az, &El, &dist_m, r_eb_e, dx);
-            if (El > 0 && std::find(visible_bds.begin(), visible_bds.end(), it.second.PRN) == visible_bds.end())
-                {
-                    std::cout << "Using BeiDou Almanac:  Sat " << it.second.PRN << " Az: " << Az << " El: " << El << '\n';
-                    available_satellites.emplace_back(floor(El),
-                        (Gnss_Satellite(std::string("Beidou"), it.second.PRN)));
-                }
-        }
-
-    // sort the visible satellites in ascending order of elevation
-    std::sort(available_satellites.begin(), available_satellites.end(), [](const std::pair<int, Gnss_Satellite> &a, const std::pair<int, Gnss_Satellite> &b) {  // use lambda. Cleaner and easier to read
-        return a.first < b.first;
-    });
-    // provide list starting from satellites with higher elevation
-    std::reverse(available_satellites.begin(), available_satellites.end());
-    return available_satellites;
+    // 3. Loop through all the available ephemeris/almanac and compute satellite
+    // elevations -- shared with SatelliteVisibility's runtime recompute, see
+    // satellite_visibility.h/.cc.
+    const double elevation_mask_deg = configuration_->property("GNSS-SDR.search_elevation_mask", 0.0);
+    return compute_visible_satellites(flowgraph_->get_pvt(), gps_gtime, r_eb_e, elevation_mask_deg);
 }
 
 

@@ -669,11 +669,6 @@ bool SatelliteVisibility::Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, con
         {
             return false;
         }
-    if (fix_valid)
-        {
-            last_recompute_rx_time_s_ = fix_status.RX_time;
-        }
-    last_recompute_r_eb_e_ = r_eb_e;
 
     // fix_became_valid/interval_elapsed/moved_significantly/expired can all
     // affect *every* satellite's elevation (receiver position or time moved,
@@ -684,6 +679,25 @@ bool SatelliteVisibility::Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, con
     // topocent for the whole constellation on every single ephemeris page
     // that happens to arrive during startup.
     const bool needs_full_recompute = fix_became_valid || interval_elapsed || moved_significantly || expired;
+
+    // Both of these gate a *full-sweep* trigger (interval_elapsed,
+    // moved_significantly) against drift since the last full sweep -- they
+    // must only advance when a full sweep actually just ran. Updating them
+    // on every qualifying Tick(), including a data_changed-only (targeted)
+    // one, would keep resetting both clocks before the interval/displacement
+    // threshold is ever reached whenever ephemeris/almanac data is arriving
+    // often enough (routine with a dozen+ tracked satellites) -- silently
+    // starving the periodic/position-triggered full recompute forever, even
+    // though a satellite could be rising above the horizon the whole time
+    // with no ephemeris/almanac change of its own to trigger a targeted one.
+    if (needs_full_recompute)
+        {
+            if (fix_valid)
+                {
+                    last_recompute_rx_time_s_ = fix_status.RX_time;
+                }
+            last_recompute_r_eb_e_ = r_eb_e;
+        }
 
     std::vector<std::pair<int, Gnss_Satellite>> below_mask;
     double seconds_until_next_expiry = std::numeric_limits<double>::infinity();

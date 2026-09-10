@@ -102,11 +102,8 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
 
     const Signal_Enabled_Flags flags(d_signal_enabled_flags);
 
-    // The Galileo OS SIS ICD defines E1/E5b as the I/NAV service and E1/E5a
-    // as the F/NAV service. Select one service deterministically for the whole
-    // receiver so channel and message arrival order cannot change the clock
-    // model used by PVT. I/NAV has priority when E5b is enabled; otherwise an
-    // enabled E5a selects F/NAV. E1-only receivers use I/NAV.
+    // Prefer the ICD clock model for E1/E5b (I/NAV) or E1/E5a (F/NAV).
+    // E5b takes priority; E1-only receivers use I/NAV.
     if (flags.check_any_enabled(GAL_E5b))
         {
             d_galileo_nav_message_type_for_pvt = Galileo_Nav_Message_Type::INAV;
@@ -1423,10 +1420,12 @@ bool Rtklib_Solver::select_galileo_ephemeris(uint32_t prn, const std::string &si
             return false;
         }
 
+    // Prefer the primary service while its ephemeris is fresh.
     const Galileo_Ephemeris *full_ephemeris = galileo_ephemeris_store.find(
         static_cast<int>(prn), d_galileo_nav_message_type_for_pvt);
     const auto compatibility_ephemeris = galileo_ephemeris_map.find(static_cast<int>(prn));
-    if (full_ephemeris == nullptr && compatibility_ephemeris != galileo_ephemeris_map.cend() &&
+    if ((full_ephemeris == nullptr || !galileo_ephemeris_is_usable(*full_ephemeris, observation_tow)) &&
+        compatibility_ephemeris != galileo_ephemeris_map.cend() &&
         (compatibility_ephemeris->second.nav_message_type == Galileo_Nav_Message_Type::Unknown ||
             compatibility_ephemeris->second.nav_message_type == d_galileo_nav_message_type_for_pvt))
         {
@@ -1435,12 +1434,36 @@ bool Rtklib_Solver::select_galileo_ephemeris(uint32_t prn, const std::string &si
     if (full_ephemeris != nullptr && galileo_ephemeris_is_usable(*full_ephemeris, observation_tow))
         {
             ephemeris = *full_ephemeris;
+            if (ephemeris.nav_message_type == Galileo_Nav_Message_Type::Unknown)
+                {
+                    ephemeris.nav_message_type = d_galileo_nav_message_type_for_pvt;
+                }
             return true;
         }
 
-    // The ICD only defines Reduced CED use for the E1/E5b service.
-    if (d_galileo_nav_message_type_for_pvt != Galileo_Nav_Message_Type::INAV ||
-        (signal != "1B" && signal != "7X"))
+    // E1 can use either clock model with its matching BGD. Other signals
+    // must retain the primary service's clock reference.
+    if (signal == "1B")
+        {
+            const auto other_nav_message_type = (d_galileo_nav_message_type_for_pvt == Galileo_Nav_Message_Type::INAV)
+                                                    ? Galileo_Nav_Message_Type::FNAV
+                                                    : Galileo_Nav_Message_Type::INAV;
+            full_ephemeris = galileo_ephemeris_store.find(static_cast<int>(prn), other_nav_message_type);
+            if ((full_ephemeris == nullptr || !galileo_ephemeris_is_usable(*full_ephemeris, observation_tow)) &&
+                compatibility_ephemeris != galileo_ephemeris_map.cend() &&
+                compatibility_ephemeris->second.nav_message_type == other_nav_message_type)
+                {
+                    full_ephemeris = &compatibility_ephemeris->second;
+                }
+            if (full_ephemeris != nullptr && galileo_ephemeris_is_usable(*full_ephemeris, observation_tow))
+                {
+                    ephemeris = *full_ephemeris;
+                    return true;
+                }
+        }
+
+    // The ICD defines Reduced CED only for E1/E5b.
+    if (signal != "1B" && signal != "7X")
         {
             return false;
         }
@@ -2837,13 +2860,38 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // iono-free combination -- see the "dual-frequency" branch of
                     // prange() in rtklib_pntpos.cc) gets one entry per signal, all
                     // flagged combined = true.
-                    d_monitor_pvt.used_satellites.clear();
+                    //
+                    // rescode() (rtklib_pntpos.cc) computes azel via satazel()
+                    // *before* checking it against PVT.elevation_mask, and
+                    // pntpos() copies that azel into ssat[] unconditionally --
+                    // only ssat[].vs is gated by the mask. So a satellite that
+                    // is tracked and has a live observation this epoch, but
+                    // falls below PVT.elevation_mask (or was excluded by RAIM
+                    // FDE), still has a valid azel here; only vs is false.
+                    // Report it anyway with used = false instead of dropping
+                    // it, so an excluded satellite shows up in the monitor as
+                    // "not used" rather than as missing/no-az-el (which
+                    // otherwise looks identical to a tracking problem).
+                    //
+                    // Deliberately NOT filtered for NaN here: a corrupt ephemeris/
+                    // almanac (e.g. an out-of-range eccentricity) can propagate NaN
+                    // through eph2pos()/alm2pos()/satazel(), and that NaN is reported
+                    // as-is rather than silently dropping the satellite from the
+                    // monitor -- consumers (gnss-sdr-CtrlApp) are expected to handle
+                    // a NaN azimuth_deg/elevation_deg explicitly (e.g. no sky plot
+                    // entry, "NaN" printed in the signal table) rather than have it
+                    // hidden here. What NaN must NOT do is influence the position fix
+                    // itself -- see rescode()'s prange() isfinite guard in
+                    // rtklib_pntpos.cc for where that's actually enforced.
+                    d_monitor_pvt.tracked_satellites.clear();
                     for (int sat_idx = 0; sat_idx < MAXSAT; sat_idx++)
                         {
-                            if (!pvt_ssat[sat_idx].vs)
+                            const bool has_azel = (pvt_ssat[sat_idx].azel[0] != 0.0) || (pvt_ssat[sat_idx].azel[1] != 0.0);
+                            if (!has_azel)
                                 {
                                     continue;
                                 }
+                            const bool used = pvt_ssat[sat_idx].vs != 0;
                             int prn = 0;
                             char sys_char = '?';
                             switch (satsys(sat_idx + 1, &prn))
@@ -2889,14 +2937,15 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 }
                             for (const Gnss_Synchro *synchro : contributing_signals)
                                 {
-                                    Monitor_Pvt::UsedSatelliteInfo info;
+                                    Monitor_Pvt::TrackedSatelliteInfo info;
                                     info.prn = static_cast<uint32_t>(prn);
                                     info.system = sys_char;
                                     info.signal = std::string(synchro->Signal, 2);
                                     info.azimuth_deg = az_deg;
                                     info.elevation_deg = pvt_ssat[sat_idx].azel[1] * R2D;
                                     info.combined = combined;
-                                    d_monitor_pvt.used_satellites.push_back(info);
+                                    info.used = used;
+                                    d_monitor_pvt.tracked_satellites.push_back(info);
                                 }
                         }
 

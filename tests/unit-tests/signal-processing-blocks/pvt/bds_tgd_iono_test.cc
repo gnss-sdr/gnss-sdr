@@ -128,7 +128,7 @@ TEST(BdsTgdIonoTest, SingleFrequencyB3IHasNoTgdAndDefersIonoScalingToRescode)
 }
 
 
-TEST(BdsTgdIonoTest, DualFrequencyB1IB3IRemovesTgd1BeforeCombining)
+TEST(BdsTgdIonoTest, DualFrequencyB1IB3IBroadcastModeUsesB1IAlone)
 {
     nav_t nav{};
     eph_t eph{};
@@ -152,14 +152,13 @@ TEST(BdsTgdIonoTest, DualFrequencyB1IB3IRemovesTgd1BeforeCombining)
     double iono_scale = -1.0;
     const double corrected_pseudorange = prange(&obs, &nav, azel, 0, &options, &variance, &iono_scale);
 
-    // The DNAV clock is referenced to B3I, so the iono-free combination must
-    // use the TGD1-corrected B1I pseudorange:
-    // PC = (gamma13*(P1 - c*TGD1) - P2) / (gamma13 - 1)
-    const double gamma13 = std::pow(B3I_WAVELENGTH_M / B1I_WAVELENGTH_M, 2.0);
-    const double p1_corr = obs.P[0] - SPEED_OF_LIGHT_M_S * TGD1_S;
-    const double expected = (gamma13 * p1_corr - obs.P[2]) / (gamma13 - 1.0);
+    // With a broadcast iono model the bands are never combined: the B1I
+    // single-frequency user algorithm applies, PC = P1 - c*TGD1, and the
+    // modeled iono delay is applied unscaled. The combination is reserved to
+    // IONOOPT_IFLC (next test).
+    const double expected = obs.P[0] - SPEED_OF_LIGHT_M_S * TGD1_S;
     EXPECT_NEAR(expected, corrected_pseudorange, 1.0e-6);
-    EXPECT_DOUBLE_EQ(0.0, iono_scale);
+    EXPECT_DOUBLE_EQ(1.0, iono_scale);
 }
 
 

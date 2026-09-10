@@ -169,6 +169,8 @@ private:
 #include "unit-tests/signal-processing-blocks/osnma/gnss_crypto_test.cc"
 #include "unit-tests/signal-processing-blocks/osnma/osnma_msg_receiver_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/bds_tgd_iono_test.cc"
+#include "unit-tests/signal-processing-blocks/pvt/galileo_e1_bgd_test.cc"
+#include "unit-tests/signal-processing-blocks/pvt/galileo_nav_fallback_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/geohash_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/gps_tgd_isc_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/nmea_printer_test.cc"

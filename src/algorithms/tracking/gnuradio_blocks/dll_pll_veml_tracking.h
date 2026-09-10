@@ -40,6 +40,7 @@
 #include <string>                             // for string
 #include <typeinfo>                           // for typeid
 #include <utility>                            // for pair
+#include <vector>                             // for vector
 
 /** \addtogroup Tracking
  * \{ */
@@ -73,6 +74,11 @@ public:
 
     void forecast(int noutput_items, gr_vector_int &ninput_items_required) override;
 
+    //! Doppler offset multiplier (in units of f_error_doppler_step) for the given
+    //! frequency-error-reduction bin index: bin 0 -> 0, then alternating outward
+    //! +1, -1, +2, -2, +3, -3, ...
+    static double f_error_bin_multiplier(uint32_t bin_index);
+
 private:
     friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
     explicit dll_pll_veml_tracking(const Dll_Pll_Conf &conf_);
@@ -80,6 +86,12 @@ private:
     void msg_handler_telemetry_to_trk(const pmt::pmt_t &msg);
     void do_correlation_step(const gr_complex *input_samples);
     void run_dll_pll();
+    // State 5: frequency-error-reduction Doppler-bin scan, run right after pull-in (state 1)
+    // and before wide tracking (state 2) -- see general_work()'s case 5. Fully passive: drives
+    // only d_carrier_doppler_hz from the swept test bin; run_dll_pll() never runs during the
+    // scan, so code phase and the carrier loop filter's state stay exactly as pull-in left
+    // them for the scan's whole duration.
+    void run_f_error_scan_step();
     void check_carrier_phase_coherent_initialization();
     void update_tracking_vars();
     void clear_tracking_vars();
@@ -90,6 +102,7 @@ private:
     void configure_bit_synchronizer();
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
+    void log_time_to_fix_breakdown(const char *method);  // DIAGNOSTIC: phase lock vs. bit sync timing
     int64_t uint64diff(uint64_t first, uint64_t second);
     int32_t save_matfile() const;
 
@@ -208,6 +221,24 @@ private:
     uint32_t d_secondary_code_length;
     uint32_t d_data_secondary_code_length;
 
+    // State 5: frequency error reduction (passive Doppler bin scan run right after pull-in).
+    // Bin count comes from d_trk_parameters.f_error_step_num (0 disables state 5 entirely).
+    uint32_t d_f_error_num_bins;
+    uint32_t d_f_error_bin_index;
+    uint32_t d_f_error_accum_counter;
+    double d_f_error_center_doppler_hz;
+    std::vector<double> d_f_error_power;
+    // Raw per-bin Prompt correlator samples (bin index -> f_error_accumulation samples),
+    // kept purely so cn0_m2m4_estimator() can report a CN0 estimate for the winning bin
+    // in the frequency-error-reduction diagnostics; not used for anything else.
+    std::vector<std::vector<gr_complex>> d_f_error_prompt_samples;
+    // Doppler the frequency-error-reduction scan selected at the end of its run (see
+    // run_f_error_scan_step()), kept separately from d_carrier_doppler_hz (which gets
+    // overwritten by the FLL/PLL every epoch afterward) so a subsequent loss-of-lock can
+    // report how far steady-state tracking has drifted from what the scan originally chose
+    // -- e.g. to check whether the loop settled on a false/sidelobe equilibrium.
+    double d_f_error_selected_doppler_hz = 0.0;
+
     bool d_pull_in_transitory;
     bool d_corrected_doppler;
     bool d_interchange_iq;
@@ -223,6 +254,15 @@ private:
     bool d_wait_for_bit_edge{false};
     bool d_b1c_prelock_output_pending{false};
     bool d_carrier_phase_discontinuity{true};  // pending report of a new carrier phase ambiguity
+
+    // DIAGNOSTIC: time-to-fix breakdown (phase lock vs. bit/secondary-code sync), see
+    // general_work()'s pull_in_transitory-clearing check and the accumulation gates.
+    int64_t d_tracking_loop_started_sample{-1};  // nitems_read(0) when state first entered 2 (run_dll_pll() starts), -1 = not yet
+    int64_t d_phase_lock_first_sample{-1};       // nitems_read(0) at first carrier_lock_test >= threshold since then, -1 = not yet
+    int32_t d_bit_sync_reset_count{0};           // d_Prompt_circular_buffer resets due to lock drop, after first phase lock
+    int32_t d_acquire_secondary_attempts{0};     // acquire_secondary() calls since the buffer first filled, reset per tracking attempt
+    int64_t d_case2_cycle_count{0};              // case-2 epochs executed since tracking loop started, reset per tracking attempt
+    int32_t d_locked_branch_cycle_count{0};      // of those, how many took the "d_carrier_lock_test >= threshold" branch
 };
 
 

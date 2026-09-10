@@ -38,6 +38,7 @@ public:
     /* DLL/PLL tracking configuration */
     std::string item_type{"gr_complex"};
     std::string dump_filename{"./dll_pll_dump.dat"};
+    std::string f_error_dump_filename{"./f_error_dump.csv"};
     double fs_in{2000000.0};
     double carrier_lock_th{0.0};
     double bs_dominance_ratio{0.5};
@@ -64,6 +65,9 @@ public:
     uint32_t bit_synchronization_time_limit_s{20U};
     uint32_t vector_length{0U};
     uint32_t smoother_length{10U};
+    uint32_t f_error_accumulation{20U};
+    uint32_t f_error_step_num{0U};
+    double f_error_doppler_step{250.0};
     int32_t fll_filter_order{1};
     int32_t pll_filter_order{3};
     int32_t dll_filter_order{2};

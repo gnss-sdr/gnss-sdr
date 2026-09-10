@@ -32,6 +32,7 @@
 
 #include "rtklib_ephemeris.h"
 #include "Beidou_CNAV1.h"
+#include "Beidou_CNAV2.h"
 #include "rtklib_preceph.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_sbas.h"
@@ -406,7 +407,10 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
             omge = GNSS_OMEGA_EARTH_DOT;
             break;
         }
-    const int is_bds_cnav1 = (sys == SYS_BDS && eph->code == BDS_EPH_SOURCE_CNAV1) ? 1 : 0;
+    const int is_bds_cnav = (sys == SYS_BDS &&
+                                (eph->code == BDS_EPH_SOURCE_CNAV1 || eph->code == BDS_EPH_SOURCE_CNAV2))
+                                ? 1
+                                : 0;
     Ak = eph->A + eph->Adot * tk;
     delta_na = eph->deln + 0.5 * eph->ndot * tk;
     na = sqrt(mu / (eph->A * eph->A * eph->A)) + delta_na;
@@ -439,8 +443,8 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     y = r * sin(u);
     cosi = cos(i);
 
-    /* BeiDou GEO 5° transform is DNAV-only (B1I ICD). B-CNAV1 Table 7-9 is MEO/IGSO only */
-    if (sys == SYS_BDS && !is_bds_cnav1 && (prn <= 5 || prn > 58))
+    /* BeiDou GEO 5° transform is DNAV-only (B1I ICD). B-CNAV1/CNAV2 skip it. */
+    if (sys == SYS_BDS && !is_bds_cnav && (prn <= 5 || prn > 58))
         {
             O = eph->OMG0 + eph->OMGd * tk - omge * eph->toes;
             sinO = sin(O);
@@ -763,9 +767,10 @@ void seph2pos(gtime_t time, const seph_t *seph, double *rs, double *dts,
 
 
 /* select ephemeris --------------------------------------------------------
- * bds_eph_sel: -1=any, 0=DNAV (eph.code!=BDS_EPH_SOURCE_CNAV1),
+ * bds_eph_sel: -1=any, 0=DNAV (eph.code not CNAV1/CNAV2),
  *              BDS_EPH_SELECTION_CNAV1_PREFERRED=B-CNAV1 then DNAV,
- *              BDS_EPH_SOURCE_CNAV1=B-CNAV1 only
+ *              BDS_EPH_SOURCE_CNAV1=B-CNAV1 only,
+ *              BDS_EPH_SOURCE_CNAV2=B-CNAV2 only
  *-----------------------------------------------------------------------------*/
 eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav, int bds_eph_sel)
 {
@@ -808,7 +813,12 @@ eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav, int bds_eph_sel
                 {
                     continue;
                 }
-            if (sys == SYS_BDS && bds_eph_sel == 0 && nav->eph[i].code == BDS_EPH_SOURCE_CNAV1)
+            if (sys == SYS_BDS && bds_eph_sel == BDS_EPH_SOURCE_CNAV2 && nav->eph[i].code != BDS_EPH_SOURCE_CNAV2)
+                {
+                    continue;
+                }
+            if (sys == SYS_BDS && bds_eph_sel == 0 &&
+                (nav->eph[i].code == BDS_EPH_SOURCE_CNAV1 || nav->eph[i].code == BDS_EPH_SOURCE_CNAV2))
                 {
                     continue;
                 }
@@ -1347,6 +1357,11 @@ static void satposs_impl(gtime_t teph, const obsd_t *obs, int n, const nav_t *na
                                     bds_eph_sel = allow_bds_dnav_for_b1c
                                                       ? BDS_EPH_SELECTION_CNAV1_PREFERRED
                                                       : BDS_EPH_SOURCE_CNAV1;
+                                    break;
+                                }
+                            if (is_bds_b2a_code(cj))
+                                {
+                                    bds_eph_sel = BDS_EPH_SOURCE_CNAV2;
                                     break;
                                 }
                         }

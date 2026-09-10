@@ -17,6 +17,7 @@
 #include "dll_pll_tracking_adapter.h"
 #include "Beidou_B1C.h"
 #include "Beidou_B1I.h"
+#include "Beidou_B2a.h"
 #include "Beidou_B3I.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
@@ -81,6 +82,8 @@ signal_info get_signal_info(signal_flag sig_flag)
             return {'C', {'B', '3', '\0'}, "BEIDOU B3I", BEIDOU_B3I_CODE_RATE_CPS, BEIDOU_B3I_CODE_LENGTH_CHIPS, 20, false, false};  // Does false, false make sense?
         case BDS_B1C:
             return {'C', {'1', 'D', '\0'}, "BeiDou B1C", BEIDOU_B1C_CODE_RATE_CPS, BEIDOU_B1C_CODE_LENGTH_CHIPS, 1, true, false};
+        case BDS_B2A:
+            return {'C', {'5', 'D', '\0'}, "BEIDOU B2a", BEIDOU_B2A_CODE_RATE_CPS, BEIDOU_B2A_CODE_LENGTH_CHIPS, 1, false, true};
         case QZS_J1:
             return {'J', {'J', '1', '\0'}, "QZSS L1 C/A", QZSS_L1_CHIP_RATE, QZSS_L1_CODE_LENGTH, 20, false, true};
         case QZS_J5:

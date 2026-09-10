@@ -22,6 +22,7 @@
 #include "gnss_flowgraph.h"
 #include "Beidou_B1C.h"
 #include "Beidou_B1I.h"
+#include "Beidou_B2a.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
@@ -94,6 +95,7 @@ const auto signal_mapping = std::unordered_map<std::string, std::pair<std::strin
     {"E6", {"Galileo", "E6"}},
     {"B1", {"Beidou", "B1"}},
     {"1D", {"Beidou", "B1C"}},
+    {"5D", {"Beidou", "B2a"}},
     {"B3", {"Beidou", "B3"}},
     {"1G", {"Glonass", "L1"}},
     {"2G", {"Glonass", "L2"}},
@@ -263,6 +265,7 @@ void GNSSFlowgraph::init()
     mapStringValues_["2G"] = evGLO_2G;
     mapStringValues_["B1"] = evBDS_B1;
     mapStringValues_["1D"] = evBDS_B1C;
+    mapStringValues_["5D"] = evBDS_B2A;
     mapStringValues_["B3"] = evBDS_B3;
     mapStringValues_["J1"] = evQZS_J1;
     mapStringValues_["J5"] = evQZS_J5;
@@ -1184,6 +1187,9 @@ int GNSSFlowgraph::connect_signal_conditioners_to_channels()
                                     break;
                                 case evBDS_B1C:
                                     acq_fs = BEIDOU_B1C_OPT_ACQ_FS_SPS;
+                                    break;
+                                case evBDS_B2A:
+                                    acq_fs = BEIDOU_B2A_OPT_ACQ_FS_SPS;
                                     break;
                                 case evGLO_1G:
                                 case evGLO_2G:
@@ -2191,6 +2197,13 @@ void GNSSFlowgraph::set_signals_list()
                                             continue;  // GEO satellites do not broadcast B1C (ICD section 3.1)
                                         }
                                 }
+                            if (signal_str == "5D")
+                                {
+                                    if ((prn >= 1U && prn <= 18U) || (prn >= 59U && prn <= 63U))
+                                        {
+                                            continue;  // GEO and BDS-2 do not broadcast B2a RNSS (ICD §2)
+                                        }
+                                }
                             if (signal_str == "J5" && prn > QZSS_L5_MAX_PRN)
                                 {
                                     // QZSS L1 C/B PRNs (203-206) do not transmit an L5 signal
@@ -2354,6 +2367,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
         case evGLO_1G:
         case evBDS_B1:
         case evBDS_B1C:
+        case evBDS_B2A:
         case evQZS_J1:
         case evSBAS_1C:
             is_primary_frequency = true;

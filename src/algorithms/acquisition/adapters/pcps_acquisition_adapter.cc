@@ -19,6 +19,7 @@
 #include "pcps_acquisition_adapter.h"
 #include "Beidou_B1C.h"
 #include "Beidou_B1I.h"
+#include "Beidou_B2a.h"
 #include "Beidou_B3I.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
@@ -32,6 +33,7 @@
 #include "acq_conf.h"
 #include "beidou_b1c_signal_replica.h"
 #include "beidou_b1i_signal_replica.h"
+#include "beidou_b2a_signal_replica.h"
 #include "beidou_b3i_signal_replica.h"
 #include "configuration_interface.h"
 #include "galileo_e1_signal_replica.h"
@@ -102,6 +104,8 @@ signal_info get_signal_info(signal_flag sig_flag)
             return {BEIDOU_B3I_CODE_RATE_CPS, BEIDOU_B3I_OPT_ACQ_FS_SPS, BEIDOU_B3I_CODE_LENGTH_CHIPS, BEIDOU_B3I_CODE_PERIOD_MS};
         case BDS_B1C:
             return {BEIDOU_B1C_CODE_RATE_CPS, BEIDOU_B1C_OPT_ACQ_FS_SPS, BEIDOU_B1C_CODE_LENGTH_CHIPS, BEIDOU_B1C_CODE_PERIOD_MS};
+        case BDS_B2A:
+            return {BEIDOU_B2A_CODE_RATE_CPS, BEIDOU_B2A_OPT_ACQ_FS_SPS, BEIDOU_B2A_CODE_LENGTH_CHIPS, BEIDOU_B2A_CODE_PERIOD_MS};
         case QZS_J1:
             return {QZSS_L1_CHIP_RATE, QZSS_L1_OPT_ACQ_FS_SPS, QZSS_L1_CODE_LENGTH, QZSS_L1_PERIOD_MS};
         case QZS_J5:
@@ -187,6 +191,9 @@ void code_gen_complex_sampled(signal_flag sig_flag, const Acq_Conf& conf, const 
                 const auto sig = conf.acquire_pilot ? std::array<char, 3>{'1', 'P', '\0'} : std::array<char, 3>{gnss_synchro.Signal[0], gnss_synchro.Signal[1], '\0'};
                 beidou_b1c_code_gen_complex_sampled(dest, sig, conf.qmboc, gnss_synchro.PRN, sampling_freq, 0, false);
             }
+            break;
+        case BDS_B2A:
+            beidou_b2a_code_gen_complex_sampled(dest, gnss_synchro.PRN, sampling_freq, 0);
             break;
         case QZS_J1:
             qzss_l1_code_gen_complex_sampled(dest, gnss_synchro.PRN, sampling_freq);

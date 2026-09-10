@@ -754,7 +754,18 @@ bool SatelliteVisibility::Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, con
                 // route straight to forced-excluded instead of the
                 // elevation-mask comparison the loop below applies to
                 // accepted_entries.
-                if (static_cast<double>(entry.first) > elevation_mask_deg_)
+                //
+                // entry.first is floor(El) (compute_visible_satellites()
+                // truncates to int for the diagnostic dump), so this must be
+                // `>=`, not `>`: a satellite that failed *only* on health at
+                // a raw elevation in [mask, mask+1) -- e.g. El=15.63 against
+                // a 15 deg mask -- floors to exactly `mask`, which `>` would
+                // wrongly treat as an elevation failure instead (verified
+                // 2026-09-10 against a live G11 El=15.63 misclassified
+                // excluded). `>=` is exact for every fractional El except El
+                // landing on the integer mask value to the bit -- a
+                // measure-zero case for a continuously-varying real angle.
+                if (static_cast<double>(entry.first) >= elevation_mask_deg_)
                     {
                         forced_excluded_entries.push_back(entry);
                         continue;
@@ -784,7 +795,13 @@ bool SatelliteVisibility::Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, con
     for (const auto& entry : accepted_entries)
         {
             const auto key = std::make_pair(entry.second.get_system(), entry.second.get_PRN());
-            if (static_cast<double>(entry.first) > elevation_mask_deg_)
+            // `>=`, not `>` -- see the matching comment on the below_mask
+            // loop above; entry.first is floor(El), so this must compensate
+            // for the same truncation-toward-mask bias or a satellite whose
+            // true elevation is in [mask, mask+1) gets wrongly excluded here
+            // despite compute_visible_satellites() having already correctly
+            // accepted it via the untruncated double.
+            if (static_cast<double>(entry.first) >= elevation_mask_deg_)
                 {
                     if (banned_.count(key) > 0)
                         {

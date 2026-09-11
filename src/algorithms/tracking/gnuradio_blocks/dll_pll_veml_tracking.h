@@ -80,6 +80,7 @@ public:
     static double f_error_bin_multiplier(uint32_t bin_index);
 
 private:
+    friend class DllPllTrackingFrequencyErrorTest;
     friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
     explicit dll_pll_veml_tracking(const Dll_Pll_Conf &conf_);
 
@@ -92,8 +93,10 @@ private:
     // scan, so code phase and the carrier loop filter's state stay exactly as pull-in left
     // them for the scan's whole duration.
     void run_f_error_scan_step();
+    void begin_wide_tracking(uint64_t sample_count);
+    uint64_t tracking_elapsed_seconds(uint64_t sample_count) const;
     void check_carrier_phase_coherent_initialization();
-    void update_tracking_vars();
+    void update_tracking_vars(bool estimate_rate = true);
     void clear_tracking_vars();
     void save_correlation_results();
     void log_data();
@@ -190,6 +193,7 @@ private:
 
     // uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
+    uint64_t d_tracking_time_start_sample{0};
     GnssTime d_last_timetag{};
     std::shared_ptr<TOW_to_trk> d_last_tow_received;
     uint64_t d_last_timetag_samplecounter;

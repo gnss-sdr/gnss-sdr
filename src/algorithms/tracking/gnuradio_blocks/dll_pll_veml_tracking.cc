@@ -154,6 +154,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
       d_Flag_PLL_180_deg_phase_locked(false),
       d_use_histogram_bit_sync(false)
 {
+    // Direct block construction can bypass SetFromConfiguration().
+    d_trk_parameters.f_error_accumulation = std::max(1U, d_trk_parameters.f_error_accumulation);
 #if GNURADIO_GREATER_THAN_38
     this->set_relative_rate(1, static_cast<uint64_t>(d_trk_parameters.vector_length));
 #else
@@ -879,6 +881,7 @@ void dll_pll_veml_tracking::start_tracking()
     d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
+    d_tracking_time_start_sample = d_acq_sample_stamp;
 
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = TWO_PI * d_carrier_doppler_hz / d_trk_parameters.fs_in;
@@ -1308,9 +1311,8 @@ bool dll_pll_veml_tracking::acquire_secondary()
     // Re{s[i] * conj(s[i-1])} = |s[i]| * |s[i-1]| * cos(delta_phase): negative means |delta_phase|
     // > 90 deg, i.e. the data bit flipped between symbol i-1 and i.
     //
-    // The first bit is an arbitrary reference (there is no absolute phase to anchor it to); this
-    // reproduces the same +-180 deg polarity ambiguity the old sign detector had, resolved the
-    // same way below via the sign of corr_value / d_Flag_PLL_180_deg_phase_locked.
+    // The first bit is an arbitrary reference. After synchronization, anchor the
+    // polarity flag to the last Prompt, closest in phase to the following symbols.
     std::vector<bool> reconstructed_bit(d_secondary_code_length);
     reconstructed_bit[0] = false;
     for (uint32_t i = 1; i < d_secondary_code_length; i++)
@@ -1356,14 +1358,10 @@ bool dll_pll_veml_tracking::acquire_secondary()
 
     if (abs(corr_value) >= lock_threshold)
         {
-            if (corr_value < 0)
-                {
-                    d_Flag_PLL_180_deg_phase_locked = true;
-                }
-            else
-                {
-                    d_Flag_PLL_180_deg_phase_locked = false;
-                }
+            const bool last_symbol_negative = d_Prompt_circular_buffer.back().real() < 0.0F;
+            const bool reconstructed_last_negative = !reconstructed_bit.back();
+            const bool invert_reconstruction = last_symbol_negative != reconstructed_last_negative;
+            d_Flag_PLL_180_deg_phase_locked = (corr_value < 0) != invert_reconstruction;
             return true;
         }
 
@@ -1633,8 +1631,16 @@ void dll_pll_veml_tracking::configure_bit_synchronizer()
 }
 
 
-void dll_pll_veml_tracking::update_tracking_vars()
+void dll_pll_veml_tracking::update_tracking_vars(bool estimate_rate)
 {
+    if (!estimate_rate)
+        {
+            // Deliberate scan bin changes are not physical carrier/code dynamics.
+            d_carr_ph_history.clear();
+            d_code_ph_history.clear();
+            d_carrier_phase_rate_step_rad = 0.0;
+            d_code_phase_rate_step_chips = 0.0;
+        }
     d_T_chip_seconds = 1.0 / d_code_freq_chips;
     d_T_prn_seconds = d_T_chip_seconds * static_cast<double>(d_code_length_chips);
 
@@ -1649,7 +1655,7 @@ void dll_pll_veml_tracking::update_tracking_vars()
     // carrier phase step (NCO phase increment per sample) [rads/sample]
     d_carrier_phase_step_rad = TWO_PI * (d_carrier_doppler_hz + d_cfo_frequency_hz) / d_trk_parameters.fs_in;
     // carrier phase rate step (NCO phase increment rate per sample) [rads/sample^2]
-    if (d_trk_parameters.high_dyn)
+    if (d_trk_parameters.high_dyn && estimate_rate)
         {
             d_carr_ph_history.push_back(std::pair<double, double>(d_carrier_phase_step_rad, static_cast<double>(d_current_prn_length_samples)));
             if (d_carr_ph_history.full())
@@ -1682,7 +1688,7 @@ void dll_pll_veml_tracking::update_tracking_vars()
     // ################### DLL COMMANDS #################################################
     // code phase step (Code resampler phase increment per sample) [chips/sample]
     d_code_phase_step_chips = d_code_freq_chips / d_trk_parameters.fs_in;
-    if (d_trk_parameters.high_dyn)
+    if (d_trk_parameters.high_dyn && estimate_rate)
         {
             d_code_ph_history.push_back(std::pair<double, double>(d_code_phase_step_chips, static_cast<double>(d_current_prn_length_samples)));
             if (d_code_ph_history.full())
@@ -2325,6 +2331,37 @@ void dll_pll_veml_tracking::run_f_error_scan_step()
 }
 
 
+void dll_pll_veml_tracking::begin_wide_tracking(uint64_t sample_count)
+{
+    if (d_state == 5)
+        {
+            // The passive scan must not consume the FLL pull-in or synchronization budget.
+            // Keep the acquisition timestamp unchanged for sample/code alignment.
+            d_tracking_time_start_sample = sample_count;
+            d_pull_in_transitory = true;
+            d_carrier_lock_fail_counter = 0;
+            d_code_lock_fail_counter = 0;
+        }
+    d_state = 2;
+    d_tracking_loop_started_sample = static_cast<int64_t>(sample_count);
+    d_phase_lock_first_sample = -1;
+    d_bit_sync_reset_count = 0;
+    d_acquire_secondary_attempts = 0;
+    d_case2_cycle_count = 0;
+    d_locked_branch_cycle_count = 0;
+}
+
+
+uint64_t dll_pll_veml_tracking::tracking_elapsed_seconds(uint64_t sample_count) const
+{
+    if (d_state == 5 || sample_count <= d_tracking_time_start_sample)
+        {
+            return 0;
+        }
+    return (sample_count - d_tracking_time_start_sample) / static_cast<uint64_t>(d_trk_parameters.fs_in);
+}
+
+
 int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
@@ -2339,7 +2376,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
 
     if (d_pull_in_transitory == true)
         {
-            if (d_trk_parameters.pull_in_time_s < (this->nitems_read(0) - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
+            if (d_trk_parameters.pull_in_time_s < tracking_elapsed_seconds(this->nitems_read(0)))
                 {
                     d_pull_in_transitory = false;
                     d_carrier_lock_fail_counter = 0;
@@ -2420,15 +2457,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     }
                 else
                     {
-                        d_state = 2;
-                        // DIAGNOSTIC: tracking loop (run_dll_pll()) starts right here -- start the
-                        // time-to-fix breakdown clock now, not when d_pull_in_transitory later clears.
-                        d_tracking_loop_started_sample = static_cast<int64_t>(this->nitems_read(0));
-                        d_phase_lock_first_sample = -1;
-                        d_bit_sync_reset_count = 0;
-                        d_acquire_secondary_attempts = 0;
-                        d_case2_cycle_count = 0;
-                        d_locked_branch_cycle_count = 0;
+                        begin_wide_tracking(this->nitems_read(0));
                     }
                 // d_sample_counter += samples_offset;  // count for the processed samples
                 d_cn0_smoother.reset();
@@ -2464,7 +2493,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
 
                 // fail-safe: check if the secondary code or bit synchronization has not succeeded in a limited time period
                 // if (d_trk_parameters.bit_synchronization_time_limit_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
-                if (d_trk_parameters.bit_synchronization_time_limit_s < (this->nitems_read(0) - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
+                if (d_trk_parameters.bit_synchronization_time_limit_s < tracking_elapsed_seconds(this->nitems_read(0)))
                     {
                         d_carrier_lock_fail_counter = 300000;  // force loss-of-lock condition
                         LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " tracking synchronization time limit reached in channel " << d_channel
@@ -2746,21 +2775,12 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
             {
                 do_correlation_step(in);
                 run_f_error_scan_step();
+                update_tracking_vars(false);
                 if (d_f_error_bin_index >= d_f_error_num_bins)
                     {
-                        // scan complete: run_f_error_scan_step() already left d_carrier_doppler_hz
-                        // on the winning bin and re-seeded the carrier loop filter with it.
-                        d_state = 2;
-                        // DIAGNOSTIC: tracking loop (run_dll_pll()) starts right here -- start the
-                        // time-to-fix breakdown clock now, not when d_pull_in_transitory later clears.
-                        d_tracking_loop_started_sample = static_cast<int64_t>(this->nitems_read(0));
-                        d_phase_lock_first_sample = -1;
-                        d_bit_sync_reset_count = 0;
-                        d_acquire_secondary_attempts = 0;
-                        d_case2_cycle_count = 0;
-                        d_locked_branch_cycle_count = 0;
+                        // Begin the tracking budget at the first sample after the scan.
+                        begin_wide_tracking(this->nitems_read(0) + static_cast<uint64_t>(d_current_prn_length_samples));
                     }
-                update_tracking_vars();
             }
             break;
         }

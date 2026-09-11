@@ -125,6 +125,11 @@ void Dll_Pll_Conf::SetFromConfiguration(const ConfigurationInterface *configurat
     fll_bw_hz = configuration->property(role + ".fll_bw_hz", fll_bw_hz);
     pull_in_time_s = configuration->property(role + ".pull_in_time_s", pull_in_time_s);
     f_error_accumulation = configuration->property(role + ".f_error_accumulation", f_error_accumulation);
+    if (f_error_accumulation == 0)
+        {
+            f_error_accumulation = 1;
+            LOG(WARNING) << "f_error_accumulation must be bigger than 0. It has been set to 1";
+        }
     f_error_step_num = configuration->property(role + ".f_error_step_num", f_error_step_num);
     if ((f_error_step_num != 0) && ((f_error_step_num % 2) == 0))
         {

@@ -54,11 +54,15 @@ public:
     virtual void set_channel(unsigned int channel_id) = 0;
     virtual void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) = 0;
     virtual void set_doppler_center(int /*doppler_center*/) {}
-    //! doppler_uncertainty == 0 restricts the Doppler search to a single bin
-    //! centered on set_doppler_center() (the Doppler is exactly known, as when
-    //! assisted by an already-tracked primary frequency); any other value
-    //! searches the full configured Doppler range.
-    virtual void set_doppler_uncertainty(unsigned int /*doppler_uncertainty*/) {}
+    //! Number of Doppler bins to search, centered on set_doppler_center().
+    //! doppler_num_bins == 0 searches the full configured Doppler range
+    //! (computed from doppler_max/doppler_step -- the one value a caller
+    //! can't supply directly, since that count is implementation-private);
+    //! any other value is the literal candidate bin count to search -- 1 for
+    //! an exactly-known Doppler (as when assisted by an already-tracked
+    //! primary frequency or a visibility-aware prediction), or any N in
+    //! between for a search with partial uncertainty.
+    virtual void set_doppler_num_bins(unsigned int /*doppler_num_bins*/) {}
     virtual void set_local_code() = 0;
     virtual signed int mag() = 0;
     virtual void reset() = 0;

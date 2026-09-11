@@ -223,6 +223,7 @@ public:
     }
 
     void clear_ephemeris() override;
+    void clear_ephemeris_keep_almanac() override;
     std::map<int, Gps_Ephemeris> get_gps_ephemeris() const override;
     std::map<int, Galileo_Ephemeris> get_galileo_ephemeris() const override;
     std::map<int, Beidou_Dnav_Ephemeris> get_beidou_dnav_ephemeris() const override;

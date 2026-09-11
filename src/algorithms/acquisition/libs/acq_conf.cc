@@ -82,7 +82,18 @@ void Acq_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
         }
     make_2_steps = configuration->property(role + ".make_two_steps", make_2_steps);
     blocking_on_standby = configuration->property(role + ".blocking_on_standby", blocking_on_standby);
-    enable_doppler_narrowing = configuration->property(role + ".enable_doppler_narrowing", enable_doppler_narrowing);
+    enable_assisted_doppler_narrowing = configuration->property(role + ".enable_assisted_doppler_narrowing", enable_assisted_doppler_narrowing);
+    doppler_narrowing_num_bins = configuration->property(role + ".doppler_narrowing_num_bins", doppler_narrowing_num_bins);
+    if ((doppler_narrowing_num_bins != 0) && ((doppler_narrowing_num_bins % 2) == 0))
+        {
+            // must be odd (a center bin plus a symmetric number of +/- steps)
+            doppler_narrowing_num_bins += 1;
+        }
+    if (doppler_narrowing_num_bins == 0)
+        {
+            doppler_narrowing_num_bins = 1;
+        }
+    reference_bin_min_sidelobes = configuration->property(role + ".reference_bin_min_sidelobes", reference_bin_min_sidelobes);
 
     if (pfa <= 0.0)
         {

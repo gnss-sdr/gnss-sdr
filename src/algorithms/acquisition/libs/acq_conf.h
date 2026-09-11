@@ -74,23 +74,39 @@ public:
     bool make_2_steps{false};
     bool use_automatic_resampler{false};
     bool enable_monitor_output{false};
-    // When Doppler is assisted (doppler_uncertainty == 0), collapse the search to
-    // the known bin + one reference bin instead of the full grid. Off by default;
-    // enable per-implementation in the .conf (e.g.
-    // Acquisition_5X.enable_doppler_narrowing = true).
-    //
-    // Applies to any acquisition implementation built on pcps_acquisition (the vast
-    // majority of them); FPGA-offloaded acquisitions use a separate implementation
-    // that never calls set_doppler_uncertainty(), so this has no effect there.
-    //
-    // Only takes effect when the caller also passes doppler_uncertainty == 0 to
-    // set_doppler_uncertainty() -- in practice, this means
-    // GNSS-SDR.assist_dual_frequency_acq must also be enabled and a Doppler
-    // projection from the satellite's already-tracked primary frequency must have
-    // succeeded (see GNSSFlowgraph::acquisition_manager()). With
-    // assist_dual_frequency_acq off, or when no projection is available yet, this
-    // flag has no effect and the full configured Doppler grid is always searched.
-    bool enable_doppler_narrowing{false};
+    // When Doppler is assisted (doppler_num_bins == 1), collapse the search to
+    // doppler_narrowing_num_bins candidate bins (plus one reference bin, see
+    // below) instead of the full grid. Opt-in (new, still-experimental feature):
+    // off by default, enable per-implementation in the .conf (e.g.
+    // Acquisition_5X.enable_assisted_doppler_narrowing = true).
+    bool enable_assisted_doppler_narrowing{false};
+    // How many candidate Doppler bins (spaced doppler_step apart, centered on
+    // the assisted Doppler estimate) the narrowed search above actually tests,
+    // to absorb residual assist error (receiver dynamics, clock drift
+    // uncertainty) instead of requiring the assist to be exact. Must be odd
+    // (a center bin plus a symmetric number of +/- steps); 1 (default) is the
+    // original assisted-search behavior -- exactly the assisted Doppler,
+    // no margin. Only takes effect together with enable_assisted_doppler_narrowing.
+    uint32_t doppler_narrowing_num_bins{1U};
+    // Target number of correlation sidelobes (in Doppler) the CFAR noise-floor
+    // reference bin should clear from the search grid's own candidate span, used
+    // only to decide WHETHER a plain full grid needs a dedicated extra reference
+    // row instead of reusing an in-grid candidate (see
+    // d_full_grid_reference_needs_extra_row in pcps_acquisition.h) -- never to
+    // place that row (or narrowed mode's own reference row) beyond the configured
+    // doppler_max. doppler_max is the receiver-validated edge of the search/filter
+    // passband the rest of the acquisition chain is designed for; searching beyond
+    // it to chase a theoretical sidelobe target risks sampling "noise" from a
+    // region the decimation/anti-alias response is no longer flat, corrupting the
+    // estimate instead of cleaning it up (this cost real satellites at hot start
+    // in an earlier version that did push beyond doppler_max -- see
+    // update_grid_doppler_wipeoffs()'s narrowed-branch comment). Sidelobe spacing
+    // is set by the coherent integration time (~1/sampled_ms), not by doppler_step
+    // or the bin count, so at a small enough grid or doppler_max, this target
+    // simply won't be met -- accepted, not something to fix by exceeding
+    // doppler_max. Only takes effect when use_CFAR_algorithm_flag is set (the
+    // non-CFAR peak-ratio statistic never uses a Doppler-domain reference).
+    uint32_t reference_bin_min_sidelobes{4U};
 
     // Specific to some implementations
     bool acquire_pilot{false};

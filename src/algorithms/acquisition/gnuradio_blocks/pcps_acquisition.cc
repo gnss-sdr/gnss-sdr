@@ -131,11 +131,18 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_magnitude_grid_stride(aligned_row_stride<float>(d_effective_fft_size)),
       d_doppler_wipeoffs_stride(aligned_row_stride<gr_complex>(d_fft_size)),
       d_num_doppler_bins(static_cast<uint32_t>(std::ceil(static_cast<double>(2 * d_doppler_max) / static_cast<double>(d_doppler_step)))),
-      d_num_doppler_bins_step1_capacity(std::max(d_num_doppler_bins, 2U)),
       d_num_doppler_bins_step2(conf_.num_doppler_bins_step2),
       d_dump_channel(conf_.dump_channel),
-      d_threshold(conf_.pfa > 0.0 ? compute_threshold(conf_.pfa, d_effective_fft_size, d_num_doppler_bins, conf_.bit_transition_flag ? 1 : conf_.max_dwells) : conf_.threshold),
-      d_threshold_narrowed(conf_.pfa > 0.0 ? compute_threshold(conf_.pfa, d_effective_fft_size, 1U, conf_.bit_transition_flag ? 1 : conf_.max_dwells) : conf_.threshold),
+      d_min_reference_separation_hz((static_cast<float>(conf_.reference_bin_min_sidelobes) + 0.5F) / (static_cast<float>(conf_.sampled_ms) / 1000.0F)),
+      // Inline, not via needs_extra_reference_row(candidate_bins) -- that
+      // helper reads d_use_CFAR_algorithm_flag, declared (so initialized)
+      // later in this same list; see its own doc comment in the header.
+      d_full_grid_reference_needs_extra_row(conf_.use_CFAR_algorithm_flag && (static_cast<float>(d_num_doppler_bins / 2) * static_cast<float>(d_doppler_step) < d_min_reference_separation_hz)),
+      // A full grid worth needing a dedicated reference row for is always
+      // > 1 candidate bin in practice (see d_num_reference_rows_active's doc
+      // comment for why the count differs at exactly 1 candidate) -- so this
+      // ceiling reserves 2 rows, not 1, whenever the row is needed at all.
+      d_num_doppler_bins_full_grid_active(d_num_doppler_bins + (d_full_grid_reference_needs_extra_row ? (d_num_doppler_bins > 1U ? 2U : 1U) : 0U)),
       d_threshold_step_two(conf_.pfa2 > 0.0 ? compute_threshold(conf_.pfa2, d_effective_fft_size, d_num_doppler_bins_step2, conf_.bit_transition_flag ? 1 : conf_.max_dwells) : conf_.threshold),
       d_cshort(conf_.it_size != sizeof(gr_complex)),
       d_use_CFAR_algorithm_flag(conf_.use_CFAR_algorithm_flag),
@@ -145,8 +152,9 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_state(0),
       d_doppler_center(0),
       d_doppler_bias(0),
-      d_num_doppler_bins_active(d_num_doppler_bins),
-      d_doppler_search_narrowed(false),
+      d_num_doppler_bins_active(d_num_doppler_bins_full_grid_active),
+      d_num_reference_rows_active(d_full_grid_reference_needs_extra_row ? (d_num_doppler_bins > 1U ? 2U : 1U) : 0U),
+      d_threshold_active(conf_.pfa > 0.0 ? compute_threshold(conf_.pfa, d_effective_fft_size, d_num_doppler_bins, conf_.bit_transition_flag ? 1 : conf_.max_dwells) : conf_.threshold),
       d_buffer_count(0),
       d_channel(0),
       d_resampler_latency_samples(conf_.resampler_latency_samples),
@@ -158,12 +166,12 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_dump_number(0),
       d_input_power(0),
       d_doppler_center_step_two(0),
-      d_magnitude_grid(std::max(d_num_doppler_bins_step1_capacity, d_num_doppler_bins_step2) * d_magnitude_grid_stride),
+      d_magnitude_grid(std::max(d_num_doppler_bins_full_grid_active, d_num_doppler_bins_step2) * d_magnitude_grid_stride),
       d_tmp_buffer(d_effective_fft_size),
       d_input_signal(d_fft_size),
       d_grid_doppler_wipeoffs_step_two(d_acq_parameters.make_2_steps ? d_num_doppler_bins_step2 * d_doppler_wipeoffs_stride : 0),
       d_ifft(gnss_fft_rev_make_unique(d_fft_size)),
-      d_grid_doppler_wipeoffs(d_num_doppler_bins_step1_capacity * d_doppler_wipeoffs_stride),
+      d_grid_doppler_wipeoffs(d_num_doppler_bins_full_grid_active * d_doppler_wipeoffs_stride),
       d_fft_codes(d_fft_size),
       d_data_buffer(d_consumed_samples),
       d_fft_if(gnss_fft_fwd_make_unique(d_fft_size))
@@ -199,12 +207,15 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
 
     // While idle (not actively searching), general_work() only drains its input to avoid
     // stalling the upstream block, producing no output. Without a batching hint the TPB
-    // scheduler wakes this block's thread for every small burst of new input, which is
-    // pure scheduling overhead. Requiring a larger noutput_items granularity forces the
+    // scheduler wakes this block's thread for every small burst of new input (observed:
+    // tens of thousands of calls/s, a few hundred/thousand samples each), which is pure
+    // scheduling overhead. Requiring a larger noutput_items granularity forces the
     // scheduler to accumulate more input per wakeup, cutting call frequency without
     // changing behavior (production while idle is still always 0 either way).
-    // One PRN code period at this signal's own decimated rate is the natural
-    // lower bound: the algorithm never does anything meaningful below that granularity.
+    // One PRN code period (1 ms) at this signal's own decimated rate is the natural
+    // lower bound: the algorithm never does anything meaningful below that granularity,
+    // so batching to it (instead of a fixed sample count) self-scales with fs_in/decimation
+    // across signals/configs instead of being tuned for one particular sample rate.
     const auto output_multiple_samples = std::max<uint32_t>(1U, static_cast<uint32_t>(std::lround(conf_.samples_per_ms)));
     this->set_output_multiple(output_multiple_samples);
 }
@@ -316,21 +327,57 @@ void pcps_acquisition::update_local_carrier(own::span<gr_complex> carrier_vector
 
 void pcps_acquisition::update_grid_doppler_wipeoffs()
 {
-    if (d_doppler_search_narrowed)
+    // Symmetric, centered placement: candidate index k decodes back to
+    // d_doppler_center + (k - half_span) * d_doppler_step -- rather than
+    // "-doppler_max + step*index", which biases every bin low by up to half a
+    // doppler_step and, at 1 candidate bin, misses d_doppler_center entirely
+    // (would test doppler_center - doppler_max instead). One shared loop for
+    // every degree of Doppler uncertainty -- the full grid, an assisted
+    // narrowed window, or an exactly-known single bin -- not a separate
+    // branch per case: they differ only in candidate_count, which
+    // set_doppler_num_bins() already resolved into d_num_doppler_bins_active/
+    // d_num_reference_rows_active.
+    const uint32_t candidate_count = d_num_doppler_bins_active - d_num_reference_rows_active;
+    const auto half_span = static_cast<int32_t>((candidate_count - 1U) / 2U);
+    for (uint32_t doppler_index = 0; doppler_index < candidate_count; doppler_index++)
         {
-            // Assisted acquisition: the Doppler is exactly known from an already-tracked
-            // primary frequency. Search just that bin, plus one reference bin offset by
-            // the full configured Doppler half-width -- the same separation the full grid
-            // search uses for its "opposite" bin -- so max_to_input_power_statistic can
-            // keep using it as a noise-only reference without any change to its logic.
-            update_local_carrier(own::span<gr_complex>(doppler_wipeoff_data(0), d_fft_size), static_cast<float>(d_doppler_bias + d_doppler_center));
-            update_local_carrier(own::span<gr_complex>(doppler_wipeoff_data(1), d_fft_size), static_cast<float>(d_doppler_bias + d_doppler_center + static_cast<int32_t>(d_doppler_max)));
-            return;
-        }
-    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins_active; doppler_index++)
-        {
-            const int32_t doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_center + d_doppler_step * doppler_index;
+            const int32_t doppler = d_doppler_center + (static_cast<int32_t>(doppler_index) - half_span) * static_cast<int32_t>(d_doppler_step);
             update_local_carrier(own::span<gr_complex>(doppler_wipeoff_data(doppler_index), d_fft_size), static_cast<float>(d_doppler_bias + doppler));
+        }
+    if (d_num_reference_rows_active > 0U)
+        {
+            // The in-grid wraparound max_to_input_power_statistic() would otherwise
+            // use (candidate_count/2 bins away) can't clear
+            // reference_bin_min_sidelobes at this candidate count and step (see
+            // needs_extra_reference_row()) -- add one or two dedicated extra
+            // reference rows instead, at exactly +/-doppler_max. NEVER pushed
+            // further out to try to clear reference_bin_min_sidelobes (an
+            // earlier version of this code did that, and it was wrong:
+            // doppler_max is the receiver-validated edge of the search/filter
+            // passband the rest of the acquisition chain is designed for, and a
+            // reference sample placed beyond it can land somewhere the
+            // decimation/anti-alias response is no longer flat, corrupting the
+            // noise estimate rather than cleaning it up -- confirmed live:
+            // pushing E5a's reference from 3740 Hz to a sidelobe-derived
+            // 4500 Hz cost real satellites at hot start). If doppler_max itself
+            // doesn't clear the floor, that's an accepted, pre-existing limit
+            // of this reference technique at a tight search -- not something to
+            // fix by searching outside the validated range.
+            //
+            // With more than one real candidate, both +doppler_max and
+            // -doppler_max are computed (candidate_count and candidate_count+1)
+            // so max_to_input_power_statistic() can pick whichever sits opposite
+            // the winning candidate's side of center -- a candidate riding near
+            // one edge of the search range never ends up right next to (or on
+            // top of) its own reference sample. With exactly one real candidate
+            // (always at offset 0 -- no side to be opposite of), a single row at
+            // +doppler_max is all d_num_reference_rows_active allocates; see its
+            // doc comment.
+            update_local_carrier(own::span<gr_complex>(doppler_wipeoff_data(candidate_count), d_fft_size), static_cast<float>(d_doppler_bias + d_doppler_center + static_cast<int32_t>(d_doppler_max)));
+            if (d_num_reference_rows_active > 1U)
+                {
+                    update_local_carrier(own::span<gr_complex>(doppler_wipeoff_data(candidate_count + 1U), d_fft_size), static_cast<float>(d_doppler_bias + d_doppler_center - static_cast<int32_t>(d_doppler_max)));
+                }
         }
 }
 
@@ -426,16 +473,25 @@ void pcps_acquisition::dump_results(const AcquisitionResult& result)
             std::array<size_t, 2> dims_1d{1, 1};
             std::array<size_t, 2> dims_2d{d_effective_fft_size, d_num_doppler_bins_active};
 
-            // In narrowed mode, acq_grid is only d_num_doppler_bins_active (2) columns
-            // wide -- column 0 is the known/aided Doppler, column 1 the noise-reference
-            // bin at +doppler_max from it. doppler_max/doppler_step are given the same
-            // {0, d_doppler_max} encoding compute_statistics() uses internally, so
-            // doppler(col) = -doppler_max + doppler_center + doppler_step*col still
-            // decodes both columns correctly; doppler_narrowed flags which encoding is
-            // in effect for offline post-processing.
-            const bool dump_narrowed = d_doppler_search_narrowed;
-            const int32_t dump_doppler_max = dump_narrowed ? 0 : static_cast<int32_t>(d_doppler_max);
-            const int32_t dump_doppler_step = dump_narrowed ? static_cast<int32_t>(d_doppler_max) : static_cast<int32_t>(d_doppler_step);
+            // acq_grid's candidate columns -- all of them for a plain full-grid
+            // search, or the first doppler_narrowing_num_bins of them when narrowed
+            // (the trailing column there is the noise-reference bin at
+            // doppler_center + d_doppler_max, not representable in this linear
+            // encoding) -- are placed symmetrically around doppler_center, matching
+            // compute_statistics(): column k decodes to
+            // doppler_center + (k - half_span)*d_doppler_step. Writing
+            // dump_doppler_max = half_span*d_doppler_step lets the standard
+            // "-doppler_max + doppler_center + doppler_step*col" formula do that
+            // mapping for offline post-processing tools; doppler_narrowed flags
+            // whether this was a narrowed/assisted search (fewer candidates than
+            // the full configured grid) -- NOT whether a trailing reference
+            // column is present, since a plain full grid can have one too (CFAR,
+            // wraparound too tight) without being a narrowed search.
+            const uint32_t dump_candidate_count = d_num_doppler_bins_active - d_num_reference_rows_active;
+            const bool dump_narrowed = dump_candidate_count < d_num_doppler_bins;
+            const int32_t dump_half_span = static_cast<int32_t>((dump_candidate_count - 1U) / 2U);
+            const int32_t dump_doppler_max = dump_half_span * static_cast<int32_t>(d_doppler_step);
+            const int32_t dump_doppler_step = static_cast<int32_t>(d_doppler_step);
 
             write_matlab_var<2>("acq_grid", d_grid.memptr(), matfp, dims_2d);
             write_matlab_var<1>("doppler_max", dump_doppler_max, matfp, dims_1d);
@@ -555,9 +611,49 @@ pcps_acquisition::AcquisitionResult pcps_acquisition::max_to_input_power_statist
 
     if (!d_step_two)
         {
-            const auto index_opp = (index_doppler + num_doppler_bins / 2) % num_doppler_bins;
-            const auto* magnitude_grid = magnitude_grid_data(index_opp);
-            d_input_power = static_cast<float>(std::accumulate(magnitude_grid, magnitude_grid + d_effective_fft_size, static_cast<float>(0.0)) / d_effective_fft_size / 2.0 / d_num_noncoherent_integrations_counter);
+            if (d_num_reference_rows_active > 0U)
+                {
+                    // Any candidate count whose natural wraparound distance couldn't
+                    // clear reference_bin_min_sidelobes (see needs_extra_reference_row())
+                    // -- from an exactly-known single bin up through a plain full grid
+                    // too small to clear it on its own -- has one or two fixed,
+                    // dedicated noise-only reference rows right after the candidate
+                    // bins (see update_grid_doppler_wipeoffs()), not the "opposite
+                    // side of the grid" the wraparound branch below uses -- with more
+                    // than one candidate bin, that generic wraparound would pick
+                    // whichever bin happens to sit halfway around from the winning
+                    // candidate, sometimes another *candidate* bin (or, at a small
+                    // enough grid, a bin still within the signal's own sidelobe
+                    // skirt), not a genuinely noise-only reference.
+                    //
+                    // With two reference rows (d_num_reference_rows_active > 1, i.e.
+                    // more than one real candidate), pick whichever of the two sits
+                    // opposite the winning candidate's side of center: a winner at or
+                    // beyond +doppler_max/2 or so would otherwise sit right next to
+                    // (or on top of) a reference fixed at +doppler_max, sampling its
+                    // own sidelobe skirt instead of genuine noise. winner_offset uses
+                    // the exact same "-doppler_max + doppler_step*index" mapping as
+                    // result.doppler below, so its sign matches which side of center
+                    // index_doppler actually decodes to.
+                    uint32_t reference_index = candidate_count;
+                    if (d_num_reference_rows_active > 1U)
+                        {
+                            const int32_t winner_offset = -doppler_max + doppler_step * static_cast<int32_t>(index_doppler);
+                            reference_index = (winner_offset >= 0) ? (candidate_count + 1U) : candidate_count;
+                        }
+                    const auto* magnitude_grid = magnitude_grid_data(reference_index);
+                    d_input_power = static_cast<float>(std::accumulate(magnitude_grid, magnitude_grid + d_effective_fft_size, static_cast<float>(0.0)) / d_effective_fft_size / 2.0 / d_num_noncoherent_integrations_counter);
+                }
+            else
+                {
+                    // Reached only when the wraparound distance (num_doppler_bins/2
+                    // bins) already clears reference_bin_min_sidelobes at this
+                    // candidate count (see needs_extra_reference_row()), so this
+                    // in-grid bin is a genuinely noise-only sample.
+                    const auto index_opp = (index_doppler + num_doppler_bins / 2) % num_doppler_bins;
+                    const auto* magnitude_grid = magnitude_grid_data(index_opp);
+                    d_input_power = static_cast<float>(std::accumulate(magnitude_grid, magnitude_grid + d_effective_fft_size, static_cast<float>(0.0)) / d_effective_fft_size / 2.0 / d_num_noncoherent_integrations_counter);
+                }
             result.doppler = -static_cast<int32_t>(doppler_max) + d_doppler_center + doppler_step * static_cast<int32_t>(index_doppler);
         }
     else
@@ -693,23 +789,22 @@ void pcps_acquisition::doppler_grid(const gr_complex* in)
 pcps_acquisition::AcquisitionResult pcps_acquisition::compute_statistics()
 {
     const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins_active;
-    // Assisted acquisition (Doppler exactly known from an already-tracked primary
-    // frequency): bin 0 is the known Doppler and bin 1 is the reference bin offset
-    // by d_doppler_max (see update_grid_doppler_wipeoffs()). Passing doppler_max=0,
-    // doppler_step=d_doppler_max makes the generic "-doppler_max + center +
-    // doppler_step * index" decoding below map those two bins back to the right
-    // Doppler values, same formula as the full grid search uses.
-    const bool assisted = (!d_step_two) && d_doppler_search_narrowed;
-    const auto doppler_step = d_step_two ? d_acq_parameters.doppler_step2 : (assisted ? static_cast<int32_t>(d_doppler_max) : d_doppler_step);
-    const auto doppler_max = d_step_two ? static_cast<int32_t>(d_doppler_center_step_two - (static_cast<float>(bin_count) / 2.0) * doppler_step) : (assisted ? 0 : static_cast<int32_t>(d_doppler_max));
-    // In assisted mode, bin_count computed rows exist (known bin + noise reference)
-    // but only bin 0 is a real Doppler candidate -- the reference bin must never be
-    // selected as the acquisition result (see the two statistic functions).
-    const auto candidate_count = assisted ? 1U : bin_count;
+    // Whenever reference rows are active (see needs_extra_reference_row()),
+    // bin_count computed rows exist (candidates + one or two noise references)
+    // but only the candidates are real Doppler candidates -- the reference
+    // rows must never be selected as the acquisition result (see the two
+    // statistic functions).
+    const auto candidate_count = d_step_two ? bin_count : (bin_count - d_num_reference_rows_active);
+    // Both assisted and plain full-grid search place their candidate_count bins
+    // symmetrically around doppler_center (see update_grid_doppler_wipeoffs()):
+    // candidate index k decodes back to center + (k - half_span) * doppler_step.
+    // Setting doppler_max_used = half_span * doppler_step lets the shared
+    // "-doppler_max + center + doppler_step * index" decoding below do that
+    // mapping for either case without duplicating it.
+    const auto half_span = static_cast<int32_t>((candidate_count - 1U) / 2U);
+    const auto doppler_step = d_step_two ? d_acq_parameters.doppler_step2 : d_doppler_step;
+    const auto doppler_max = d_step_two ? static_cast<int32_t>(d_doppler_center_step_two - (static_cast<float>(bin_count) / 2.0) * doppler_step) : half_span * static_cast<int32_t>(d_doppler_step);
 
-    // The reference/"opposite" bin used by max_to_input_power_statistic as a
-    // noise-only estimate works the same way whether the grid has the full
-    // configured bin count or just the 2 bins built above for assisted mode.
     if (d_use_CFAR_algorithm_flag)
         {
             return max_to_input_power_statistic(bin_count, candidate_count, doppler_max, doppler_step);
@@ -885,11 +980,30 @@ void pcps_acquisition::acquisition_core(uint64_t sample_count)
 
 float pcps_acquisition::get_threshold() const
 {
-    if (d_step_two)
+    return d_step_two ? d_threshold_step_two : d_threshold_active;
+}
+
+
+bool pcps_acquisition::needs_extra_reference_row(uint32_t candidate_bins) const
+{
+    if (candidate_bins < d_num_doppler_bins)
         {
-            return d_threshold_step_two;
+            // Narrowed/assisted search (fewer candidates than the full configured
+            // grid): the in-grid "opposite bin" wraparound distance shrinks along
+            // with candidate_bins and, at these small counts, essentially never
+            // clears d_min_reference_separation_hz -- always use a dedicated
+            // reference row here, same as today's narrowed mode assumed
+            // unconditionally, regardless of which statistic (CFAR or
+            // peak-ratio) is active. This keeps a narrowed dump self-describing
+            // either way, and lets first_vs_second_peak_statistic() exclude the
+            // reference bin from candidacy under peak-ratio too, not just CFAR.
+            return true;
         }
-    return d_doppler_search_narrowed ? d_threshold_narrowed : d_threshold;
+    // Full grid: only pay for a dedicated reference row when CFAR needs a
+    // genuinely noise-only sample and the in-grid wraparound can't supply one
+    // on its own -- first_vs_second_peak_statistic() has no such reference
+    // concept, so a full (non-narrowed) peak-ratio search never needs one.
+    return d_use_CFAR_algorithm_flag && (static_cast<float>(candidate_bins / 2) * static_cast<float>(d_doppler_step) < d_min_reference_separation_hz);
 }
 
 
@@ -905,17 +1019,49 @@ void pcps_acquisition::set_doppler_center(int32_t doppler_center)
 }
 
 
-void pcps_acquisition::set_doppler_uncertainty(uint32_t doppler_uncertainty)
+void pcps_acquisition::set_doppler_num_bins(uint32_t num_doppler_bins)
 {
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
-    const bool narrow = (doppler_uncertainty == 0) && d_acq_parameters.enable_doppler_narrowing;
-    const uint32_t num_doppler_bins_active = narrow ? 2U : d_num_doppler_bins;
-    if (narrow != d_doppler_search_narrowed || num_doppler_bins_active != d_num_doppler_bins_active)
+    // 0 is the only value a caller can't just supply directly -- the full
+    // grid's own candidate count is otherwise private to this class -- so it
+    // means "the full configured range" here, same as always.
+    uint32_t candidate_bins = (num_doppler_bins == 0U) ? d_num_doppler_bins : num_doppler_bins;
+    // An exactly-known Doppler (num_doppler_bins == 1, from a primary-
+    // frequency assist) can still be widened into a small safety-margin
+    // window: enable_assisted_doppler_narrowing exists because a caller's
+    // exact estimate doesn't always cover receiver dynamics/clock drift
+    // accrued since it was made. Tested against the caller's *original*
+    // request (num_doppler_bins == 1), not the resolved candidate_bins -- a
+    // full-grid request (the 0 sentinel) that happens to compute to a 1-bin
+    // grid is a different thing entirely and must never be widened.
+    // d_num_doppler_bins > doppler_narrowing_num_bins guard: a full grid no
+    // bigger than the configured window is already as narrow as it can be,
+    // and widening past it would write past the bin-count-sized grid
+    // allocations.
+    if (num_doppler_bins == 1U && d_acq_parameters.enable_assisted_doppler_narrowing && d_num_doppler_bins > d_acq_parameters.doppler_narrowing_num_bins)
         {
-            d_doppler_search_narrowed = narrow;
+            candidate_bins = d_acq_parameters.doppler_narrowing_num_bins;
+        }
+    candidate_bins = std::min(candidate_bins, d_num_doppler_bins);
+    // See d_num_reference_rows_active's doc comment: 2 dedicated rows
+    // (opposite-sign pair) whenever a reference is needed and there's more
+    // than one real candidate to be opposite of; 1 (the historical fixed
+    // +doppler_max placement) at exactly one real candidate, since it always
+    // sits at offset 0 -- no side for a second, mirrored row to usefully
+    // cover.
+    const uint32_t num_reference_rows = needs_extra_reference_row(candidate_bins) ? (candidate_bins > 1U ? 2U : 1U) : 0U;
+    const uint32_t num_doppler_bins_active = candidate_bins + num_reference_rows;
+    if (num_reference_rows != d_num_reference_rows_active || num_doppler_bins_active != d_num_doppler_bins_active)
+        {
+            d_num_reference_rows_active = num_reference_rows;
             d_num_doppler_bins_active = num_doppler_bins_active;
+            // See d_threshold_active's doc comment: recalibrated for whatever
+            // candidate count is active now, excluding the reference row
+            // itself (it's never a candidate result, so it isn't one of the
+            // hypotheses being tested for a false alarm either).
+            d_threshold_active = d_acq_parameters.pfa > 0.0 ? compute_threshold(d_acq_parameters.pfa, d_effective_fft_size, candidate_bins, d_acq_parameters.bit_transition_flag ? 1 : d_acq_parameters.max_dwells) : d_acq_parameters.threshold;
             update_grid_doppler_wipeoffs();
-            DLOG(INFO) << " Doppler uncertainty for Channel: " << d_channel << " => active Doppler bins: " << d_num_doppler_bins_active << ", Doppler center: " << d_doppler_center;
+            DLOG(INFO) << " Doppler bin count for Channel: " << d_channel << " => active Doppler bins: " << d_num_doppler_bins_active << ", Doppler center: " << d_doppler_center;
         }
 }
 

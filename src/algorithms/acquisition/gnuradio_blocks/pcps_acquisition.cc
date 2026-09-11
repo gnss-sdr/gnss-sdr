@@ -489,9 +489,9 @@ void pcps_acquisition::dump_results(const AcquisitionResult& result)
             // wraparound too tight) without being a narrowed search.
             const uint32_t dump_candidate_count = d_num_doppler_bins_active - d_num_reference_rows_active;
             const bool dump_narrowed = dump_candidate_count < d_num_doppler_bins;
-            const int32_t dump_half_span = static_cast<int32_t>((dump_candidate_count - 1U) / 2U);
+            const auto dump_half_span = static_cast<int32_t>((dump_candidate_count - 1U) / 2U);
             const int32_t dump_doppler_max = dump_half_span * static_cast<int32_t>(d_doppler_step);
-            const int32_t dump_doppler_step = static_cast<int32_t>(d_doppler_step);
+            const auto dump_doppler_step = static_cast<int32_t>(d_doppler_step);
 
             write_matlab_var<2>("acq_grid", d_grid.memptr(), matfp, dims_2d);
             write_matlab_var<1>("doppler_max", dump_doppler_max, matfp, dims_1d);

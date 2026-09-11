@@ -2103,6 +2103,12 @@ std::map<int, Beidou_Dnav_Almanac> rtklib_pvt_gs::get_beidou_dnav_almanac_map() 
 }
 
 
+std::map<int, Glonass_Gnav_Ephemeris> rtklib_pvt_gs::get_glonass_gnav_ephemeris_map() const
+{
+    return d_internal_pvt_solver->glonass_gnav_ephemeris_map;
+}
+
+
 void rtklib_pvt_gs::clear_ephemeris()
 {
     d_internal_pvt_solver->clear_gps_ephemerides();

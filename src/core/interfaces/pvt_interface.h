@@ -27,6 +27,7 @@
 #include "beidou_dnav_ephemeris.h"
 #include "galileo_almanac.h"
 #include "galileo_ephemeris.h"
+#include "glonass_gnav_ephemeris.h"
 #include "gnss_block_interface.h"
 #include "gps_almanac.h"
 #include "gps_ephemeris.h"
@@ -58,6 +59,7 @@ public:
     virtual std::map<int, Gps_Almanac> get_gps_almanac() const = 0;
     virtual std::map<int, Galileo_Almanac> get_galileo_almanac() const = 0;
     virtual std::map<int, Beidou_Dnav_Almanac> get_beidou_dnav_almanac() const = 0;
+    virtual std::map<int, Glonass_Gnav_Ephemeris> get_glonass_gnav_ephemeris() const = 0;
 
     virtual bool get_latest_PVT(double* longitude_deg,
         double* latitude_deg,

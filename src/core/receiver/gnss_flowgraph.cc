@@ -2490,6 +2490,109 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                                                 }
                                                         }
                                                 }
+                                            // BeiDou doesn't have a hardware-generation gap for B3
+                                            // either -- both BeiDou-2 and BeiDou-3 satellites
+                                            // broadcast it -- but SV_health (SatH1, the ICD's
+                                            // autonomous satellite health flag: 0 == normal
+                                            // ephemeris/signal) already exists in both the
+                                            // ephemeris and almanac decode and was never checked
+                                            // here. Prefer ephemeris (more current) over almanac;
+                                            // stay permissive if this satellite isn't in either
+                                            // map yet. Same failure mode as the Galileo case above
+                                            // if left unguarded.
+                                            if (mapStringValues_[searched_signal] == evBDS_B3)
+                                                {
+                                                    const auto pvt_ptr = get_pvt();
+                                                    if (pvt_ptr)
+                                                        {
+                                                            const int prn = static_cast<int>(it2->get_satellite().get_PRN());
+                                                            int32_t health = -1;
+                                                            const auto bds_eph_map = pvt_ptr->get_beidou_dnav_ephemeris();
+                                                            const auto eph_it = bds_eph_map.find(prn);
+                                                            if (eph_it != bds_eph_map.end())
+                                                                {
+                                                                    health = eph_it->second.SV_health;
+                                                                }
+                                                            else
+                                                                {
+                                                                    const auto bds_alm_map = pvt_ptr->get_beidou_dnav_almanac();
+                                                                    const auto alm_it = bds_alm_map.find(prn);
+                                                                    if (alm_it != bds_alm_map.end())
+                                                                        {
+                                                                            health = alm_it->second.SV_health;
+                                                                        }
+                                                                }
+                                                            if (health > 0)
+                                                                {
+                                                                    continue;
+                                                                }
+                                                        }
+                                                }
+                                            // GLONASS doesn't have a hardware-generation gap for L2
+                                            // either -- every satellite still in the operational
+                                            // constellation (GLONASS-M and later) broadcasts it --
+                                            // but the ephemeris's own Bn health flag (0 == healthy
+                                            // per the GLONASS ICD) already exists and was never
+                                            // checked here. No separate per-satellite almanac map
+                                            // is exposed (GLONASS almanac decode keeps a single
+                                            // shared object, not a per-slot map), so this only
+                                            // checks ephemeris; stays permissive if this satellite
+                                            // has none decoded yet.
+                                            if (mapStringValues_[searched_signal] == evGLO_2G)
+                                                {
+                                                    const auto pvt_ptr = get_pvt();
+                                                    if (pvt_ptr)
+                                                        {
+                                                            const int prn = static_cast<int>(it2->get_satellite().get_PRN());
+                                                            const auto glo_eph_map = pvt_ptr->get_glonass_gnav_ephemeris();
+                                                            const auto eph_it = glo_eph_map.find(prn);
+                                                            if (eph_it != glo_eph_map.end() && eph_it->second.d_B_n > 0)
+                                                                {
+                                                                    continue;
+                                                                }
+                                                        }
+                                                }
+                                            // QZSS shares GPS's LNAV decoder wholesale
+                                            // (TelemetryDecoder_J1 = GPS_L1_CA_Telemetry_Decoder),
+                                            // so its satellites land in the exact same
+                                            // Gps_Ephemeris/Gps_Almanac maps GPS uses (PRN-offset
+                                            // by 192, see QZSS_PRN_OFFSET) -- SV_health is already
+                                            // decoded there for free. Unlike the GPS case above,
+                                            // this is a plain health gate, not a hardware-
+                                            // capability one: every currently-operational QZSS
+                                            // satellite broadcasts L5, so there's no generation gap
+                                            // to check -- just whether this specific satellite is
+                                            // currently flagged unhealthy. Prefer ephemeris over
+                                            // almanac; stay permissive if neither has this
+                                            // satellite yet.
+                                            if (mapStringValues_[searched_signal] == evQZS_J5)
+                                                {
+                                                    const auto pvt_ptr = get_pvt();
+                                                    if (pvt_ptr)
+                                                        {
+                                                            const int prn = static_cast<int>(it2->get_satellite().get_PRN());
+                                                            int32_t health = -1;
+                                                            const auto gps_eph_map = pvt_ptr->get_gps_ephemeris();
+                                                            const auto eph_it = gps_eph_map.find(prn);
+                                                            if (eph_it != gps_eph_map.end())
+                                                                {
+                                                                    health = eph_it->second.SV_health;
+                                                                }
+                                                            else
+                                                                {
+                                                                    const auto gps_alm_map = pvt_ptr->get_gps_almanac();
+                                                                    const auto alm_it = gps_alm_map.find(prn);
+                                                                    if (alm_it != gps_alm_map.end())
+                                                                        {
+                                                                            health = alm_it->second.SV_health;
+                                                                        }
+                                                                }
+                                                            if (health > 0)
+                                                                {
+                                                                    continue;
+                                                                }
+                                                        }
+                                                }
                                             // Doppler observed on the assisting band, projected to the searched band
                                             estimated_doppler = static_cast<float>(project_doppler(searched_signal, assist_signal, current_status.second->Carrier_Doppler_hz));
                                             RX_time = current_status.second->RX_time;

@@ -57,6 +57,7 @@ class Galileo_HAS_data;
 class Galileo_Reduced_CED;
 class Geohash;
 class GeoJSON_Printer;
+class Glonass_Gnav_Ephemeris;
 class Gps_Almanac;
 class Gps_Ephemeris;
 class Gpx_Printer;
@@ -118,6 +119,11 @@ public:
      * \brief Get latest set of BeiDou DNAV almanac from PVT block
      */
     std::map<int, Beidou_Dnav_Almanac> get_beidou_dnav_almanac_map() const;
+
+    /*!
+     * \brief Get latest set of GLONASS GNAV ephemeris from PVT block
+     */
+    std::map<int, Glonass_Gnav_Ephemeris> get_glonass_gnav_ephemeris_map() const;
 
     /*!
      * \brief Clear all ephemeris information and the almanacs for GPS and Galileo

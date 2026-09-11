@@ -74,20 +74,6 @@ public:
     bool make_2_steps{false};
     bool use_automatic_resampler{false};
     bool enable_monitor_output{false};
-    // When Doppler is assisted (doppler_num_bins == 1), collapse the search to
-    // doppler_narrowing_num_bins candidate bins (plus one reference bin, see
-    // below) instead of the full grid. Opt-in (new, still-experimental feature):
-    // off by default, enable per-implementation in the .conf (e.g.
-    // Acquisition_5X.enable_assisted_doppler_narrowing = true).
-    bool enable_assisted_doppler_narrowing{false};
-    // How many candidate Doppler bins (spaced doppler_step apart, centered on
-    // the assisted Doppler estimate) the narrowed search above actually tests,
-    // to absorb residual assist error (receiver dynamics, clock drift
-    // uncertainty) instead of requiring the assist to be exact. Must be odd
-    // (a center bin plus a symmetric number of +/- steps); 1 (default) is the
-    // original assisted-search behavior -- exactly the assisted Doppler,
-    // no margin. Only takes effect together with enable_assisted_doppler_narrowing.
-    uint32_t doppler_narrowing_num_bins{1U};
     // Target number of correlation sidelobes (in Doppler) the CFAR noise-floor
     // reference bin should clear from the search grid's own candidate span, used
     // only to decide WHETHER a plain full grid needs a dedicated extra reference

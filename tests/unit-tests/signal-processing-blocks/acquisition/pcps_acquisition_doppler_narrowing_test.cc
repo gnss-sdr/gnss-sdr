@@ -1,7 +1,8 @@
 /*!
  * \file pcps_acquisition_doppler_narrowing_test.cc
- * \brief  Tests for Acq_Conf::enable_assisted_doppler_narrowing (assisted-acquisition
- * Doppler search narrowing) in pcps_acquisition, using the same GPS L1 C/A
+ * \brief  Tests for pcps_acquisition::set_doppler_num_bins() (the unified
+ * Doppler search bin-count API, covering both the full configured grid and
+ * any narrower/assisted candidate count), using the same GPS L1 C/A
  * signal/fixture pattern as gps_l1_ca_pcps_acquisition_test.cc.
  *
  * -----------------------------------------------------------------------------
@@ -135,7 +136,7 @@ protected:
     // full-grid Doppler bins pcps_acquisition computes
     // (d_num_doppler_bins == ceil(2*doppler_max/doppler_step)), since that bin
     // count is exactly what the reviewed bug depended on.
-    void init(unsigned int doppler_max, unsigned int doppler_step, bool enable_assisted_doppler_narrowing, bool use_cfar, unsigned int doppler_narrowing_num_bins = 1U);
+    void init(unsigned int doppler_max, unsigned int doppler_step, bool use_cfar);
 
     gr::top_block_sptr top_block;
     std::shared_ptr<InMemoryConfiguration> config;
@@ -143,7 +144,7 @@ protected:
 };
 
 
-void PcpsAcquisitionDopplerNarrowingTest::init(unsigned int doppler_max, unsigned int doppler_step, bool enable_assisted_doppler_narrowing, bool use_cfar, unsigned int doppler_narrowing_num_bins)
+void PcpsAcquisitionDopplerNarrowingTest::init(unsigned int doppler_max, unsigned int doppler_step, bool use_cfar)
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'G';
@@ -158,8 +159,6 @@ void PcpsAcquisitionDopplerNarrowingTest::init(unsigned int doppler_max, unsigne
     config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
     config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
     config->set_property("Acquisition_1C.repeat_satellite", "false");
-    config->set_property("Acquisition_1C.enable_assisted_doppler_narrowing", enable_assisted_doppler_narrowing ? "true" : "false");
-    config->set_property("Acquisition_1C.doppler_narrowing_num_bins", std::to_string(doppler_narrowing_num_bins));
     if (use_cfar)
         {
             // pfa > 0 both switches Acq_Conf::use_CFAR_algorithm_flag to true and
@@ -229,10 +228,10 @@ RunResult run_acquisition(gr::top_block_sptr &top_block, InMemoryConfiguration *
 
 TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, NarrowingDisabled /*unused*/)
 {
-    // enable_assisted_doppler_narrowing = false: a regular (unassisted, N == 0
-    // full-grid sentinel) request must still search the full configured
-    // Doppler grid, same as any Acquisition_<sig> not using assisted search.
-    init(/*doppler_max=*/5000, /*doppler_step=*/100, /*enable_assisted_doppler_narrowing=*/false, /*use_cfar=*/false);
+    // A regular (unassisted, N == 0 full-grid sentinel) request must search
+    // the full configured Doppler grid, same as any Acquisition_<sig> not
+    // using assisted search.
+    init(/*doppler_max=*/5000, /*doppler_step=*/100, /*use_cfar=*/false);
 
     const RunResult result = run_acquisition(top_block, config.get(), gnss_synchro, static_cast<int>(kTrueDopplerHz), 0);
 
@@ -244,21 +243,21 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, NarrowingDisabled /*unuse
 
 TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, NarrowingEnabledOneBinGrid /*unused*/)
 {
-    // doppler_step >= 2*doppler_max -> d_num_doppler_bins == 1. Regression test
-    // for the P1 fix: narrowing must NOT force a second active bin into a
-    // 1-row grid allocation (that was an out-of-bounds write). With the
-    // d_num_doppler_bins > 1 guard, narrowing silently stays off here and the
-    // block just runs its (degenerate, single-hypothesis) full grid. The single
-    // bin is placed exactly at doppler_center (update_grid_doppler_wipeoffs()'s
+    // doppler_step >= 2*doppler_max -> d_num_doppler_bins == 1, so an assisted
+    // request (N == 1) coincides exactly with the full grid's own size.
+    // Regression test for the P1 fix: this must NOT force a second active bin
+    // into a 1-row grid allocation (that was an out-of-bounds write) -- the
+    // block just runs its (degenerate, single-hypothesis) grid either way. The
+    // single bin is placed exactly at doppler_center (update_grid_doppler_wipeoffs()'s
     // symmetric half_span placement collapses to zero offset when there's only
     // one bin), so a successful acquisition here also confirms that centering,
     // not just "didn't crash".
-    init(/*doppler_max=*/5000, /*doppler_step=*/10000, /*enable_assisted_doppler_narrowing=*/true, /*use_cfar=*/false);
+    init(/*doppler_max=*/5000, /*doppler_step=*/10000, /*use_cfar=*/false);
 
     const int doppler_center = static_cast<int>(kTrueDopplerHz);
     const RunResult result = run_acquisition(top_block, config.get(), gnss_synchro, doppler_center, 1);
 
-    ASSERT_EQ(1, result.rx_message) << "Acquisition failure with a 1-bin full grid (narrowing should have stayed disabled, not crashed).";
+    ASSERT_EQ(1, result.rx_message) << "Acquisition failure with a 1-bin full grid.";
     EXPECT_LE(result.doppler_error_hz, 666) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";
     EXPECT_LT(result.delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
 }
@@ -267,15 +266,15 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, NarrowingEnabledOneBinGri
 TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, NarrowingEnabledTwoBinGrid /*unused*/)
 {
     // doppler_max=5000, doppler_step=6000 -> d_num_doppler_bins == 2, exactly
-    // matching narrowed mode's own active-bin count. Regression test for the
-    // other half of the P1 fix: the old code inferred "is this narrowed?" as
-    // active_bins < full_bins, which is false here (2 < 2) even though this
-    // *is* a narrowed request, so it silently fell back to a plain 2-bin full
-    // grid instead of {known center, center + doppler_max}. That fallback's
-    // nearest bin to the true Doppler is 1000 Hz off (a near-total phase
-    // cancellation over the 1 ms coherent window), while the correct assisted
-    // bin 0 lands exactly on it.
-    init(/*doppler_max=*/5000, /*doppler_step=*/6000, /*enable_assisted_doppler_narrowing=*/true, /*use_cfar=*/false);
+    // matching an assisted (N == 1 + 1 reference row) request's own active-bin
+    // count. Regression test for the other half of the P1 fix: the old code
+    // inferred "is this narrowed?" as active_bins < full_bins, which is false
+    // here (2 < 2) even though this *is* a narrowed (N == 1) request, so it
+    // silently fell back to a plain 2-bin full grid instead of {known center,
+    // center + doppler_max}. That fallback's nearest bin to the true Doppler
+    // is 1000 Hz off (a near-total phase cancellation over the 1 ms coherent
+    // window), while the correct assisted bin 0 lands exactly on it.
+    init(/*doppler_max=*/5000, /*doppler_step=*/6000, /*use_cfar=*/false);
 
     const RunResult result = run_acquisition(top_block, config.get(), gnss_synchro, static_cast<int>(kTrueDopplerHz), 1);
 
@@ -286,20 +285,20 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, NarrowingEnabledTwoBinGri
 
 TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, NarrowingWithMultipleCandidateBinsRecoversOffsetEstimate /*unused*/)
 {
-    // doppler_narrowing_num_bins = 5, doppler_step = 200: candidate bins span
-    // assisted_center + {-2,-1,0,+1,+2}*200 Hz, i.e. +/-400 Hz around the
-    // assisted estimate. Deliberately mis-center the assisted estimate by
-    // exactly -2 steps (-400 Hz) from the true Doppler, so the true value
-    // only exists at the *last* (k=4, +2 steps) candidate bin -- proving the
-    // extra candidate bins are actually searched, not just allocated.
+    // A literal N == 5 request, doppler_step = 200: candidate bins span
+    // center + {-2,-1,0,+1,+2}*200 Hz, i.e. +/-400 Hz around the requested
+    // center. Deliberately mis-center that request by exactly -2 steps
+    // (-400 Hz) from the true Doppler, so the true value only exists at the
+    // *last* (k=4, +2 steps) candidate bin -- proving the extra candidate
+    // bins are actually searched, not just allocated.
     constexpr unsigned int kDopplerStep = 200;
     constexpr unsigned int kNumBins = 5;
-    init(/*doppler_max=*/5000, /*doppler_step=*/kDopplerStep, /*enable_assisted_doppler_narrowing=*/true, /*use_cfar=*/false, /*doppler_narrowing_num_bins=*/kNumBins);
+    init(/*doppler_max=*/5000, /*doppler_step=*/kDopplerStep, /*use_cfar=*/false);
 
-    const int assisted_center = static_cast<int>(kTrueDopplerHz) - 2 * static_cast<int>(kDopplerStep);
-    const RunResult result = run_acquisition(top_block, config.get(), gnss_synchro, assisted_center, 1);
+    const int center = static_cast<int>(kTrueDopplerHz) - 2 * static_cast<int>(kDopplerStep);
+    const RunResult result = run_acquisition(top_block, config.get(), gnss_synchro, center, kNumBins);
 
-    ASSERT_EQ(1, result.rx_message) << "Acquisition failure: the true Doppler is 2 steps away from the assisted center, only reachable via the extra candidate bins.";
+    ASSERT_EQ(1, result.rx_message) << "Acquisition failure: the true Doppler is 2 steps away from the requested center, only reachable via the extra candidate bins.";
     EXPECT_LE(result.doppler_error_hz, 200) << "Doppler error indicates the wrong candidate bin (or the reference bin) was selected.";
 }
 
@@ -312,7 +311,7 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, CfarExcludesReferenceBinF
     // scanned every computed bin, so bin 1's strong real correlation could win
     // and get reported as if it were the trusted assisted center. With the
     // fix, only bin 0 (pure noise here) is ever a candidate.
-    init(/*doppler_max=*/5000, /*doppler_step=*/5000, /*enable_assisted_doppler_narrowing=*/true, /*use_cfar=*/true);
+    init(/*doppler_max=*/5000, /*doppler_step=*/5000, /*use_cfar=*/true);
 
     const int doppler_center = static_cast<int>(kTrueDopplerHz) - 5000;  // bin 0 = center (noise); bin 1 = center + 5000 = true Doppler
     const RunResult result = run_acquisition(top_block, config.get(), gnss_synchro, doppler_center, 1);
@@ -325,7 +324,7 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, PeakRatioExcludesReferenc
 {
     // Same construction as CfarExcludesReferenceBinFromCandidacy, exercising
     // the non-CFAR (first_vs_second_peak_statistic) path instead.
-    init(/*doppler_max=*/5000, /*doppler_step=*/5000, /*enable_assisted_doppler_narrowing=*/true, /*use_cfar=*/false);
+    init(/*doppler_max=*/5000, /*doppler_step=*/5000, /*use_cfar=*/false);
 
     const int doppler_center = static_cast<int>(kTrueDopplerHz) - 5000;
     const RunResult result = run_acquisition(top_block, config.get(), gnss_synchro, doppler_center, 1);
@@ -342,7 +341,7 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, FullToNarrowTransition /*
     // instance, then verify the final (full-grid) state still acquires
     // correctly -- regression coverage for the dump/grid-sizing fix (section 5)
     // interacting with d_num_reference_rows_active toggling.
-    init(/*doppler_max=*/5000, /*doppler_step=*/100, /*enable_assisted_doppler_narrowing=*/true, /*use_cfar=*/false);
+    init(/*doppler_max=*/5000, /*doppler_step=*/100, /*use_cfar=*/false);
 
     top_block = gr::make_top_block("Doppler narrowing transition test");
     auto acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_1C", "GPS_L1_CA_PCPS_Acquisition", 1, 0, GPS_1C);
@@ -389,7 +388,6 @@ double probe_doppler_hz_4ms_capture(std::shared_ptr<InMemoryConfiguration> &conf
     // second set_property() call for the same key is a silent no-op.
     config->supersede_property("Acquisition_1C.doppler_max", "10000");
     config->supersede_property("Acquisition_1C.doppler_step", "100");
-    config->supersede_property("Acquisition_1C.enable_assisted_doppler_narrowing", "false");
 
     auto acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_1C", "GPS_L1_CA_PCPS_Acquisition", 1, 0, GPS_1C);
     auto msg_rx = PcpsAcquisitionDopplerNarrowingTest_msg_rx_make();
@@ -424,7 +422,7 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, TwoStepAcquisitionWithNar
     // ValidationOfResultsMakeTwoStep in gps_l1_ca_pcps_acquisition_test.cc,
     // since two-step acquisition needs more samples than the 2 ms capture the
     // other tests in this file use provides.
-    init(/*doppler_max=*/5000, /*doppler_step=*/6000, /*enable_assisted_doppler_narrowing=*/true, /*use_cfar=*/false);
+    init(/*doppler_max=*/5000, /*doppler_step=*/6000, /*use_cfar=*/false);
     const auto assist_doppler_hz = probe_doppler_hz_4ms_capture(config, gnss_synchro);
 
     gnss_synchro = Gnss_Synchro();
@@ -433,7 +431,6 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, TwoStepAcquisitionWithNar
     // set_property() is fine for these).
     config->supersede_property("Acquisition_1C.doppler_max", "5000");
     config->supersede_property("Acquisition_1C.doppler_step", "6000");
-    config->supersede_property("Acquisition_1C.enable_assisted_doppler_narrowing", "true");
     config->set_property("Acquisition_1C.make_two_steps", "true");
     config->set_property("Acquisition_1C.second_nbins", "5");
     config->set_property("Acquisition_1C.second_doppler_step", "20");
@@ -478,12 +475,12 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, NarrowedDumpMetadata /*un
     // Regression test for the section 5 fix: a narrowed dump must describe
     // itself accurately (2 columns, an explicit doppler_narrowed flag) instead
     // of claiming the full grid's width/step while actually only having
-    // written 2 live columns. With a single candidate bin (doppler_narrowing_num_bins
-    // defaults to 1), half_span == 0, so dump_doppler_max == 0 and
-    // dump_doppler_step == the real per-bin step (here == doppler_max, since
-    // this test configures them equal) -- see NarrowedDumpMetadataMultipleCandidateBins
-    // below for a case where doppler_max and doppler_step differ.
-    init(/*doppler_max=*/5000, /*doppler_step=*/5000, /*enable_assisted_doppler_narrowing=*/true, /*use_cfar=*/false);
+    // written 2 live columns. With a single (literal N == 1) candidate bin,
+    // half_span == 0, so dump_doppler_max == 0 and dump_doppler_step == the
+    // real per-bin step (here == doppler_max, since this test configures them
+    // equal) -- see NarrowedDumpMetadataMultipleCandidateBins below for a case
+    // where doppler_max and doppler_step differ.
+    init(/*doppler_max=*/5000, /*doppler_step=*/5000, /*use_cfar=*/false);
     // supersede_property, not set_property: init() already called set_property
     // for "Acquisition_1C.dump" (InMemoryConfiguration::set_property() is a
     // std::map::insert, so a second set_property() with the same key is a
@@ -539,17 +536,17 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, NarrowedDumpMetadata /*un
 
 TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, NarrowedDumpMetadataMultipleCandidateBins /*unused*/)
 {
-    // Same as NarrowedDumpMetadata, but with doppler_max != doppler_step and
-    // doppler_narrowing_num_bins > 1, so a stale dump encoding (previously
-    // written assuming exactly 1 candidate bin) can't pass by numeric
-    // coincidence: half_span = (5-1)/2 = 2, so dump_doppler_max should be
-    // 2*200 = 400 Hz, and dump_doppler_step the real per-bin step (200 Hz),
-    // with 5+2 = 7 live columns (5 candidates + the opposite-sign reference
-    // pair -- more than one real candidate means both +/-doppler_max
-    // reference rows are computed, see d_num_reference_rows_active).
+    // Same as NarrowedDumpMetadata, but with doppler_max != doppler_step and a
+    // literal N == 5 request, so a stale dump encoding (previously written
+    // assuming exactly 1 candidate bin) can't pass by numeric coincidence:
+    // half_span = (5-1)/2 = 2, so dump_doppler_max should be 2*200 = 400 Hz,
+    // and dump_doppler_step the real per-bin step (200 Hz), with 5+2 = 7 live
+    // columns (5 candidates + the opposite-sign reference pair -- more than
+    // one real candidate means both +/-doppler_max reference rows are
+    // computed, see d_num_reference_rows_active).
     constexpr unsigned int kDopplerStep = 200;
     constexpr unsigned int kNumBins = 5;
-    init(/*doppler_max=*/5000, /*doppler_step=*/kDopplerStep, /*enable_assisted_doppler_narrowing=*/true, /*use_cfar=*/false, /*doppler_narrowing_num_bins=*/kNumBins);
+    init(/*doppler_max=*/5000, /*doppler_step=*/kDopplerStep, /*use_cfar=*/false);
     config->supersede_property("Acquisition_1C.dump", "true");
     config->supersede_property("Acquisition_1C.dump_filename", "./tmp-acq-narrow-dump-multi/acquisition");
     config->supersede_property("Acquisition_1C.dump_channel", "1");
@@ -562,7 +559,7 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, NarrowedDumpMetadataMulti
     fs::create_directory(data_str);
 
     const int doppler_center = static_cast<int>(kTrueDopplerHz);
-    const RunResult result = run_acquisition(top_block, config.get(), gnss_synchro, doppler_center, 1);
+    const RunResult result = run_acquisition(top_block, config.get(), gnss_synchro, doppler_center, kNumBins);
     ASSERT_EQ(1, result.rx_message) << "Acquisition failure while producing the narrowed multi-bin dump.";
 
     const std::string dump_filename = "./tmp-acq-narrow-dump-multi/acquisition_G_1C_ch_1_1_sat_1.mat";
@@ -571,7 +568,7 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, NarrowedDumpMetadataMulti
 
     matvar_t *grid_var = Mat_VarRead(matfp, "acq_grid");
     ASSERT_NE(grid_var, nullptr) << "acq_grid missing from narrowed multi-bin dump";
-    EXPECT_EQ(kNumBins + 2, grid_var->dims[1]) << "Narrowed acq_grid should be doppler_narrowing_num_bins + 2 columns wide (candidates plus the opposite-sign reference pair).";
+    EXPECT_EQ(kNumBins + 2, grid_var->dims[1]) << "Narrowed acq_grid should be kNumBins + 2 columns wide (candidates plus the opposite-sign reference pair).";
     Mat_VarFree(grid_var);
 
     matvar_t *doppler_max_var = Mat_VarRead(matfp, "doppler_max");
@@ -591,8 +588,8 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, NarrowedDumpMetadataMulti
 
 TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, FullGridSingleBinCfarUsesDedicatedReferenceRow /*unused*/)
 {
-    // Plain full grid (enable_assisted_doppler_narrowing left off), configured
-    // so doppler_step >= 2*doppler_max collapses it to exactly 1 bin, with CFAR
+    // Plain full grid (the N == 0 sentinel), configured so doppler_step >=
+    // 2*doppler_max collapses it to exactly 1 bin, with CFAR
     // enabled (pfa > 0, use_CFAR_algorithm_flag true). Regression coverage for
     // the sidelobe-floor fix: the generic "opposite bin" wraparound
     // (index_doppler + num_doppler_bins/2) % num_doppler_bins resolves to the
@@ -605,7 +602,7 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, FullGridSingleBinCfarUses
     // coverage of where that row lands), so CFAR detection still works, and
     // the single candidate bin, centered on doppler_center, lands on the true
     // Doppler.
-    init(/*doppler_max=*/250, /*doppler_step=*/500, /*enable_assisted_doppler_narrowing=*/false, /*use_cfar=*/true);
+    init(/*doppler_max=*/250, /*doppler_step=*/500, /*use_cfar=*/true);
 
     const RunResult result = run_acquisition(top_block, config.get(), gnss_synchro, static_cast<int>(kTrueDopplerHz), 0);
 
@@ -628,7 +625,7 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, FullGridReferenceRowClear
     // exactly the scenario this feature was built for: a grid too narrow for
     // the wraparound heuristic to be trusted, but not so narrow (N=52, not
     // N=1 or N=3) that the problem is obvious from the bin count alone.
-    init(/*doppler_max=*/3200, /*doppler_step=*/125, /*enable_assisted_doppler_narrowing=*/false, /*use_cfar=*/true);
+    init(/*doppler_max=*/3200, /*doppler_step=*/125, /*use_cfar=*/true);
     config->supersede_property("Acquisition_1C.dump", "true");
     config->supersede_property("Acquisition_1C.dump_filename", "./tmp-acq-full-grid-extra-row/acquisition");
     config->supersede_property("Acquisition_1C.dump_channel", "1");
@@ -687,7 +684,7 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, FullGridReferenceRowSelec
     // and picks the intended (opposite-side) row without misbehaving; it
     // would need a much stronger/pathological signal to actually flip
     // detection success/failure on a same-side vs. opposite-side reference.
-    init(/*doppler_max=*/3200, /*doppler_step=*/125, /*enable_assisted_doppler_narrowing=*/false, /*use_cfar=*/true);
+    init(/*doppler_max=*/3200, /*doppler_step=*/125, /*use_cfar=*/true);
 
     const int doppler_center = static_cast<int>(kTrueDopplerHz) - 3250;
     const RunResult result = run_acquisition(top_block, config.get(), gnss_synchro, doppler_center, 0);

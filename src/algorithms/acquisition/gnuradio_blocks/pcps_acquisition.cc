@@ -474,7 +474,7 @@ void pcps_acquisition::dump_results(const AcquisitionResult& result)
             std::array<size_t, 2> dims_2d{d_effective_fft_size, d_num_doppler_bins_active};
 
             // acq_grid's candidate columns -- all of them for a plain full-grid
-            // search, or the first doppler_narrowing_num_bins of them when narrowed
+            // search, or just the requested candidate count when narrowed
             // (the trailing column there is the noise-reference bin at
             // doppler_center + d_doppler_max, not representable in this linear
             // encoding) -- are placed symmetrically around doppler_center, matching
@@ -1024,24 +1024,12 @@ void pcps_acquisition::set_doppler_num_bins(uint32_t num_doppler_bins)
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
     // 0 is the only value a caller can't just supply directly -- the full
     // grid's own candidate count is otherwise private to this class -- so it
-    // means "the full configured range" here, same as always.
+    // means "the full configured range" here, same as always. Any other
+    // value is taken literally and unconditionally: an assisted, exactly-
+    // known Doppler (num_doppler_bins == 1) always searches exactly 1 bin,
+    // no config-driven widening -- a caller that wants a safety margin
+    // around its own estimate should just ask for that many bins directly.
     uint32_t candidate_bins = (num_doppler_bins == 0U) ? d_num_doppler_bins : num_doppler_bins;
-    // An exactly-known Doppler (num_doppler_bins == 1, from a primary-
-    // frequency assist) can still be widened into a small safety-margin
-    // window: enable_assisted_doppler_narrowing exists because a caller's
-    // exact estimate doesn't always cover receiver dynamics/clock drift
-    // accrued since it was made. Tested against the caller's *original*
-    // request (num_doppler_bins == 1), not the resolved candidate_bins -- a
-    // full-grid request (the 0 sentinel) that happens to compute to a 1-bin
-    // grid is a different thing entirely and must never be widened.
-    // d_num_doppler_bins > doppler_narrowing_num_bins guard: a full grid no
-    // bigger than the configured window is already as narrow as it can be,
-    // and widening past it would write past the bin-count-sized grid
-    // allocations.
-    if (num_doppler_bins == 1U && d_acq_parameters.enable_assisted_doppler_narrowing && d_num_doppler_bins > d_acq_parameters.doppler_narrowing_num_bins)
-        {
-            candidate_bins = d_acq_parameters.doppler_narrowing_num_bins;
-        }
     candidate_bins = std::min(candidate_bins, d_num_doppler_bins);
     // See d_num_reference_rows_active's doc comment: 2 dedicated rows
     // (opposite-sign pair) whenever a reference is needed and there's more

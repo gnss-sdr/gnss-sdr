@@ -926,6 +926,12 @@ std::map<int, Beidou_Dnav_Almanac> Rtklib_Pvt::get_beidou_dnav_almanac() const
 }
 
 
+std::map<int, Glonass_Gnav_Ephemeris> Rtklib_Pvt::get_glonass_gnav_ephemeris() const
+{
+    return pvt_->get_glonass_gnav_ephemeris_map();
+}
+
+
 void Rtklib_Pvt::connect(gr::top_block_sptr top_block)
 {
     if (top_block)

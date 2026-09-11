@@ -132,6 +132,46 @@ static const std::array<const LnavParameter*, 24>& gps_sf5_health_fields()
 }
 
 
+static const std::array<const LnavParameter*, 32>& gps_sf4_page25_sv_config_fields()
+{
+    static const std::array<const LnavParameter*, 32> fields = {
+        &SV_CONFIG_SV1,
+        &SV_CONFIG_SV2,
+        &SV_CONFIG_SV3,
+        &SV_CONFIG_SV4,
+        &SV_CONFIG_SV5,
+        &SV_CONFIG_SV6,
+        &SV_CONFIG_SV7,
+        &SV_CONFIG_SV8,
+        &SV_CONFIG_SV9,
+        &SV_CONFIG_SV10,
+        &SV_CONFIG_SV11,
+        &SV_CONFIG_SV12,
+        &SV_CONFIG_SV13,
+        &SV_CONFIG_SV14,
+        &SV_CONFIG_SV15,
+        &SV_CONFIG_SV16,
+        &SV_CONFIG_SV17,
+        &SV_CONFIG_SV18,
+        &SV_CONFIG_SV19,
+        &SV_CONFIG_SV20,
+        &SV_CONFIG_SV21,
+        &SV_CONFIG_SV22,
+        &SV_CONFIG_SV23,
+        &SV_CONFIG_SV24,
+        &SV_CONFIG_SV25,
+        &SV_CONFIG_SV26,
+        &SV_CONFIG_SV27,
+        &SV_CONFIG_SV28,
+        &SV_CONFIG_SV29,
+        &SV_CONFIG_SV30,
+        &SV_CONFIG_SV31,
+        &SV_CONFIG_SV32};
+
+    return fields;
+}
+
+
 void Gps_Navigation_Message::decode_lnav_almanac(const std::bitset<GPS_SUBFRAME_BITS>& subframe_bits, uint32_t prn, double eccentricity_ref, double inclination_ref)
 {
     a_M_0 = static_cast<double>(read_navigation_signed(subframe_bits, ALM_MZERO));
@@ -197,6 +237,12 @@ void Gps_Navigation_Message::decode_lnav_iono_utc(const std::bitset<GPS_SUBFRAME
 
 void Gps_Navigation_Message::decode_gps_almanac_health_sf4(const std::bitset<GPS_SUBFRAME_BITS>& subframe_bits)
 {
+    const auto& sv_config_fields = gps_sf4_page25_sv_config_fields();
+    for (uint32_t prn = 1; prn <= sv_config_fields.size(); ++prn)
+        {
+            almanacConfigCode[prn] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, *sv_config_fields[prn - 1]));
+        }
+
     almanacHealth[25] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV25));
     almanacHealth[26] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV26));
     almanacHealth[27] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV27));
@@ -653,6 +699,12 @@ Gps_Almanac Gps_Navigation_Message::get_almanac()
     almanac.OMEGAdot = a_OMEGAdot;
     almanac.af0 = a_af0;
     almanac.af1 = a_af1;
+    // Raw SV Configuration Code (page 25) -- -1 if this channel hasn't
+    // decoded page 25 yet. See GNSSFlowgraph for where the threshold on
+    // this value is applied (empirically validated: code>=11 means L5
+    // capable, code>=10 means L2C capable, across all 32 PRNs with zero
+    // exceptions against gnss-sdr's own block database).
+    almanac.AS_status = get_almanac_config_code(a_PRN);
     flag_almanac_valid = false;
     return almanac;
 }
@@ -703,6 +755,17 @@ int32_t Gps_Navigation_Message::get_almanac_health(uint32_t prn) const
             return 0;
         }
     return almanac_health->second;
+}
+
+
+int32_t Gps_Navigation_Message::get_almanac_config_code(uint32_t prn) const
+{
+    const auto config_code = almanacConfigCode.find(prn);
+    if (config_code == almanacConfigCode.cend())
+        {
+            return -1;
+        }
+    return config_code->second;
 }
 
 

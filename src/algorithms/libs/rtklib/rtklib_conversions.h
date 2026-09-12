@@ -33,6 +33,7 @@ class Beidou_Dnav_Almanac;
 class Beidou_Dnav_Ephemeris;
 class Galileo_Almanac;
 class Galileo_Ephemeris;
+class Glonass_Gnav_Almanac;
 class Glonass_Gnav_Ephemeris;
 class Glonass_Gnav_Utc_Model;
 class Gnss_Synchro;
@@ -107,24 +108,20 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph);
 eph_t eph_to_rtklib(const Beidou_Cnav1_Ephemeris& bei_eph);
 
 /*!
+ * \brief Absolute GPST epoch of a GLONASS almanac (N_4/N_A calendar day plus
+ * t_lambda_n_A, which is given in MSK = UTC+3).
+ * \return Zero gtime_t when the broadcast date is unavailable or invalid.
+ */
+gtime_t glonass_almanac_epoch(const Glonass_Gnav_Almanac& almanac);
+
+/*!
  * \brief Converts almanac data to RTKLIB's alm_t format.
  *
- * \param ref_week current GPS week, used to resolve the almanac's own
- * truncated week number (WNa -- 8 bits/mod-256 for GPS, 2 bits/mod-4 for
- * Galileo, both far too short to be used as an absolute week on their own)
- * to the closest full week to ref_week, the same way eph_to_rtklib()
- * already does for ephemeris. Without this, alm.toa was built directly
- * from the raw seconds-of-week value with no week at all (implicitly
- * placing it just after the GPS epoch, decades off any real date) --
- * self-consistent per satellite, so not obviously wrong, but propagating
- * a Keplerian orbit forward by that many orbital periods is exquisitely
- * sensitive to each satellite's own tiny orbital-parameter differences,
- * producing an elevation nowhere near the true one for some satellites
- * while others happen to alias back close to correct by coincidence.
- * Default (0) disables week resolution entirely -- WNa is used as-is,
- * matching this function's behavior before ref_week was tracked, for
- * callers with no reference week available (e.g. unit tests that only
- * check fields unrelated to the resolved week).
+ * \param ref_week Current GPS week, used to resolve the truncated almanac
+ * week (WNa: 8 bits for GPS, 2 bits for Galileo) to the closest full week so
+ * that alm.toa is an absolute epoch, as eph_to_rtklib() does for ephemeris.
+ * 0 (default) uses WNa as-is; only valid for callers that never propagate
+ * the orbit (e.g. unit tests checking unrelated fields).
  */
 alm_t alm_to_rtklib(const Gps_Almanac& gps_alm, int ref_week = 0);
 alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm, int ref_week = 0);

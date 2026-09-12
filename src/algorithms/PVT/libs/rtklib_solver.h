@@ -198,7 +198,8 @@ public:
     Qzss_CNAV_Utc_Model qzss_cnav_utc_model;
 
     Glonass_Gnav_Utc_Model glonass_gnav_utc_model;  //!< Map storing GLONASS GNAV UTC Model
-    Glonass_Gnav_Almanac glonass_gnav_almanac;      //!< Map storing GLONASS GNAV Almanac Model
+    std::map<int, Glonass_Gnav_Almanac> glonass_gnav_almanac_map;
+    Glonass_Gnav_Almanac glonass_gnav_almanac;  //!< Map storing GLONASS GNAV Almanac Model
 
     Beidou_Dnav_Utc_Model beidou_dnav_utc_model;
     Beidou_Dnav_Iono beidou_dnav_iono;
@@ -214,6 +215,7 @@ private:
     bool prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot& fixed_base,
         int& rover_observation_count,
         int& base_observation_count);
+    int merge_duplicated_rover_observations(int rover_observation_count);
     bool galileo_ephemeris_is_usable(const Galileo_Ephemeris& ephemeris, uint32_t observation_tow) const;
     void update_galileo_observation_wavelengths(const obsd_t& observation);
 
@@ -287,6 +289,7 @@ private:
     Rtklib_Fixed_Base_Status d_fixed_base_status = Rtklib_Fixed_Base_Status::NOT_REQUESTED;
     bool d_fixed_base_initialized = false;
     bool d_fixed_base_was_applied = false;
+    bool d_duplicated_rover_observations_logged = false;
     bool d_flag_dump_enabled;
     bool d_flag_dump_mat_enabled;
 };

@@ -162,23 +162,31 @@ public:
     void priorize_satellites(const std::vector<std::pair<int, Gnss_Satellite>>& visible_satellites);
 
     /*!
-     * \brief Re-evaluates satellite visibility if warranted (new fix, new
-     * ephemeris/almanac, or the recompute interval elapsed) and lets
-     * subsequent search_next_signal() calls favor currently-visible
-     * satellites. No-op unless GNSS-SDR.enable_visibility_aware_search=true.
-     * Called from ControlThread's idle-tick loop.
+     * \brief Re-evaluates satellite visibility when warranted (new fix, new
+     * ephemeris/almanac, or recompute interval elapsed) so that subsequent
+     * search_next_signal() calls favor visible satellites.
+     * No-op unless GNSS-SDR.enable_visibility_aware_search=true.
      */
     void MaybeUpdateVisibility();
 
     /*!
-     * \brief Whether GNSS-SDR.enable_visibility_aware_search is on. Lets
-     * callers (ControlThread::assist_GNSS()) skip the legacy
-     * get_visible_sats()/priorize_satellites() one-shot startup reorder when
-     * MaybeUpdateVisibility() already supersedes it -- otherwise both would
-     * run back to back against identical inputs, computing (and printing)
-     * the same elevation pass twice for no reason.
+     * \brief Whether GNSS-SDR.enable_visibility_aware_search is on, so callers can
+     * skip the legacy get_visible_sats()/priorize_satellites() startup reorder that
+     * MaybeUpdateVisibility() supersedes.
      */
     bool visibility_aware_search_enabled() const;
+
+    /*!
+     * \brief Stops any channel whose decoded satellite is already tracked, on the
+     * same signal, by another channel with higher C/N0. The stopped channel's
+     * assignment returns to the search pool and the channel is re-dispatched.
+     *
+     * GLONASS channels are assigned a frequency channel and only learn their
+     * orbital slot from the navigation message, so a false lock can be relabelled
+     * as a satellite another channel already tracks; duplicate observations of
+     * one satellite break the PVT solution.
+     */
+    void stop_duplicated_satellite_channels();
 
 #if ENABLE_FPGA
     void start_acquisition_helper();
@@ -235,17 +243,12 @@ private:
     void push_back_signal(const Gnss_Signal& gs);
     void remove_signal(const Gnss_Signal& gs);
 
-    // Visibility-aware replacement for available_signals.front()/pop_front()
-    // in search_next_signal(): picks the next visible or maybe-visible
-    // (unknown) entry (per SatelliteVisibility::search_ratio()) from the
-    // given signal's queue and erases it in place, preserving each bucket's
-    // relative FIFO order. Falls back to the other bucket if the chosen one
-    // is empty for this signal. Entries SatelliteVisibility::IsExcluded()
-    // are never picked, from either bucket -- they stay queued but inert
-    // until visibility is recomputed. Sets picked=false (and returns a
-    // default-constructed Gnss_Signal) if nothing searchable remains, i.e.
-    // every queued entry is excluded. Only called when
-    // satellite_visibility_->enabled().
+    // Visibility-aware replacement for available_signals.front()/pop_front() in
+    // search_next_signal(): erases and returns the next searchable entry from the
+    // visible or maybe-visible bucket selected by the search-ratio counter, falling
+    // back to the other bucket when the selected one is empty; FIFO order is kept
+    // within each bucket. Excluded entries are never picked but stay queued until
+    // the next visibility recompute. Sets picked=false when nothing is searchable.
     Gnss_Signal pop_by_visibility(std::list<Gnss_Signal>& available_signals, const std::string& searched_signal, bool& picked);
     void print_help();
     void check_desktop_conf_in_fpga_env();
@@ -290,24 +293,15 @@ private:
 
     std::unique_ptr<SatelliteVisibility> satellite_visibility_;
     std::unordered_map<std::string, uint32_t> visibility_pick_counter_;  // per signal_str, ratio-based visible/maybe-visible cycling
-    // Signals for which pop_by_visibility() last determined nothing is
-    // searchable (every queued entry excluded). acquisition_manager() calls
-    // search_next_signal() for every idle channel on every idle tick
-    // (~10 Hz), so once a signal's pool is exhausted this would otherwise
-    // redo the full exclusion scan -- including a mutex-locked copy of
-    // channels_status_'s whole map, contended with the real-time tracking/
-    // observables threads -- many times a second for no reason, since
-    // nothing changes between recomputes. Invalidated (entries erased) by
-    // push_back_signal() for that specific signal, and entirely by
-    // MaybeUpdateVisibility() whenever a Tick() actually changes
-    // classification -- see both for details.
+    // Signals whose pool pop_by_visibility() found fully excluded. Cached because
+    // acquisition_manager() re-queries every idle channel at ~10 Hz and each scan
+    // copies channels_status_ under a lock shared with the DSP threads. Invalidated
+    // per signal by push_back_signal(), and entirely when MaybeUpdateVisibility()
+    // changes the classification.
     std::set<std::string> signals_with_nothing_searchable_;
-    // Throttles the "no <assist_signal>-tracked satellite available" log in
-    // search_next_signal() to at most once every few seconds per signal --
-    // the underlying check itself is cheap (a config lookup, no pool scan),
-    // but acquisition_manager() re-evaluates every idle channel on every
-    // idle tick (~10 Hz), so logging it unconditionally floods the log for
-    // no diagnostic benefit once the condition is already known.
+    // Rate-limits the "no assist-tracked satellite available" log in
+    // search_next_signal(): the condition is re-evaluated for every idle channel at
+    // ~10 Hz and would otherwise flood the log.
     std::unordered_map<std::string, std::chrono::steady_clock::time_point> no_assist_log_throttle_;
 
     enum StringValue

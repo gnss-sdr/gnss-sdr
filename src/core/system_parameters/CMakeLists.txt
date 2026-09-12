@@ -30,6 +30,7 @@ set(SYSTEM_PARAMETERS_SOURCES
     Beidou_B1C_codes.cc
     sbas_ephemeris.cc
     gps_cnav_navigation_message.cc
+    glonass_gnav_almanac.cc
     glonass_gnav_ephemeris.cc
     glonass_gnav_utc_model.cc
     glonass_gnav_navigation_message.cc

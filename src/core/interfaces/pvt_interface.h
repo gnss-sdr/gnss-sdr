@@ -27,8 +27,12 @@
 #include "beidou_dnav_ephemeris.h"
 #include "galileo_almanac.h"
 #include "galileo_ephemeris.h"
+#include "glonass_gnav_almanac.h"
+#include "glonass_gnav_ephemeris.h"
+#include "glonass_gnav_utc_model.h"
 #include "gnss_block_interface.h"
 #include "gps_almanac.h"
+#include "gps_cnav_ephemeris.h"
 #include "gps_ephemeris.h"
 #include <map>
 
@@ -52,6 +56,10 @@ class PvtInterface : public GNSSBlockInterface
 public:
     virtual void reset() = 0;
     virtual void clear_ephemeris() = 0;
+    virtual std::map<int, Gps_CNAV_Ephemeris> get_gps_cnav_ephemeris() const = 0;
+    virtual std::map<int, Glonass_Gnav_Ephemeris> get_glonass_ephemeris() const = 0;
+    virtual std::map<int, Glonass_Gnav_Almanac> get_glonass_almanac() const = 0;
+    virtual Glonass_Gnav_Utc_Model get_glonass_utc_model() const = 0;
     virtual std::map<int, Gps_Ephemeris> get_gps_ephemeris() const = 0;
     virtual std::map<int, Galileo_Ephemeris> get_galileo_ephemeris() const = 0;
     virtual std::map<int, Beidou_Dnav_Ephemeris> get_beidou_dnav_ephemeris() const = 0;

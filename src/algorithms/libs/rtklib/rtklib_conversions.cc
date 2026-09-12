@@ -22,6 +22,7 @@
 #include "beidou_dnav_ephemeris.h"   // for Beidou_Dnav_Ephemeris
 #include "galileo_almanac.h"         // for Galileo_Almanac
 #include "galileo_ephemeris.h"       // for Galileo_Ephemeris
+#include "glonass_gnav_almanac.h"
 #include "glonass_gnav_ephemeris.h"  // for Glonass_Gnav_Ephemeris
 #include "glonass_gnav_utc_model.h"  // for Glonass_Gnav_Utc_Model
 #include "gnss_obs_codes.h"          // for CODE_L1C, CODE_L2S, CODE_L5X
@@ -56,13 +57,10 @@ const HAS_obs_corrections* find_has_obs_correction(const std::map<std::string, s
     return nullptr;
 }
 
-// Resolves a truncated week number (week, known only mod cycle -- e.g. 8
-// bits/256 for GPS almanac WNa, 2 bits/4 for Galileo almanac WNa) to the
-// full week closest to ref_week. Same purpose as adjgpsweek() in
-// rtklib_rtkcmn.cc, generalized to an arbitrary cycle length instead of
-// being hardcoded to GPS ephemeris' 1024-week rollover. ref_week <= 0 means
-// no reference is available; returns week unresolved (ambiguous) in that
-// case, same as adjgpsweek()'s own convention.
+// Resolves a week number known only mod `cycle` (256 for the 8-bit GPS
+// almanac WNa, 4 for the 2-bit Galileo WNa) to the full week closest to
+// ref_week; generalizes adjgpsweek(). ref_week <= 0 (no reference) returns
+// week unresolved.
 int resolve_truncated_week(int week, int ref_week, int cycle)
 {
     if (ref_week <= 0)
@@ -896,10 +894,8 @@ alm_t alm_to_rtklib(const Gps_Almanac& gps_alm, int ref_week)
     rtklib_alm.sat = satno(gps_sys, gps_alm.PRN);
     rtklib_alm.svh = gps_alm.SV_health;
     rtklib_alm.svconf = gps_alm.AS_status;
-    // GPS almanac WNa is only 8 bits (mod 256) -- resolve against ref_week
-    // before using it, same as eph_to_rtklib() does for ephemeris via
-    // adjgpsweek(). See resolve_truncated_week()'s doc comment for why this
-    // matters: skipping it silently propagates from the wrong week.
+    // WNa is 8 bits (mod 256): resolve against ref_week so that toa is an
+    // absolute epoch, as eph_to_rtklib() does via adjgpsweek().
     rtklib_alm.week = resolve_truncated_week(gps_alm.WNa, ref_week, 256);
     rtklib_alm.toa = gpst2time(rtklib_alm.week, static_cast<double>(gps_alm.toa));
     rtklib_alm.A = gps_alm.sqrtA * gps_alm.sqrtA;
@@ -926,18 +922,9 @@ alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm, int ref_week)
     rtklib_alm.sat = gal_alm.PRN + NSATGPS + NSATGLO;
     rtklib_alm.svh = gal_alm.E1B_HS;
     rtklib_alm.svconf = gal_alm.E1B_HS;
-    // Galileo almanac WNa is only 2 bits (mod 4 -- see WN_A_7_BIT/WN_A_9_BIT
-    // in Galileo_INAV.h, {bit_position, bit_width} = {.., 2}; NOT 4 bits/
-    // mod 16, that width belongs to IOD_a, a different field -- confirmed
-    // empirically 2026-09-03 by sweeping candidate weeks against real
-    // ephemeris-derived elevation for satellites with both data sources:
-    // only the mod-4 resolution produced an exact match, mod-16 candidates
-    // were off by up to 100+ deg) and GST-relative (same 1024-week GST/GPS
-    // offset galileo_eph_to_rtklib() applies for ephemeris via
-    // "gal_eph.WN + 1024") -- resolve mod 4 against the GST-equivalent
-    // reference week, then convert back to the GPS week scale gpst2time()
-    // expects. See resolve_truncated_week()'s doc comment for why skipping
-    // this matters.
+    // WNa is 2 bits (mod 4; WN_A_*_BIT in Galileo_INAV.h) and GST-relative:
+    // resolve against the GST reference week (GPS week - 1024), then convert
+    // back to the GPS week scale gpst2time() expects.
     const int ref_week_gst = (ref_week > 0) ? (ref_week - 1024) : ref_week;
     rtklib_alm.week = resolve_truncated_week(gal_alm.WNa, ref_week_gst, 4) + 1024;
     rtklib_alm.toa = gpst2time(rtklib_alm.week, static_cast<double>(gal_alm.toa));
@@ -978,4 +965,18 @@ alm_t alm_to_rtklib(const Beidou_Dnav_Almanac& bei_alm)
     rtklib_alm.toas = static_cast<double>(bei_alm.toa);
 
     return rtklib_alm;
+}
+
+
+gtime_t glonass_almanac_epoch(const Glonass_Gnav_Almanac& almanac)
+{
+    if (almanac.d_N_4 < 1 || almanac.d_N_4 > 31 || almanac.d_N_A < 1 || almanac.d_N_A > 1461 ||
+        !std::isfinite(almanac.d_t_lambda_n_A) || almanac.d_t_lambda_n_A < 0.0 || almanac.d_t_lambda_n_A >= 86400.0)
+        {
+            return gtime_t{};
+        }
+    const double epoch[6] = {1996.0 + 4.0 * (almanac.d_N_4 - 1), 1.0, 1.0, 0.0, 0.0, 0.0};
+    // N_4 counts four-year intervals from 1996, N_A the day within it;
+    // t_lambda_n_A is seconds of day in MSK (UTC+3), hence the -10800 s.
+    return utc2gpst(timeadd(epoch2time(epoch), (almanac.d_N_A - 1) * 86400.0 + almanac.d_t_lambda_n_A - 10800.0));
 }

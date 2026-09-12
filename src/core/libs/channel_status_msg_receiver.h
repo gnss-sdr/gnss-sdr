@@ -52,9 +52,23 @@ public:
     std::map<int, std::shared_ptr<Gnss_Synchro>> get_current_status_map();
 
     /*!
+     * \brief return the current status map of all locked channels, including
+     * those without a valid time reference yet (no valid pseudorange). Meant
+     * for the secondary-frequency acquisition assistance, which only needs the
+     * satellite and its Doppler.
+     */
+    std::map<int, std::shared_ptr<Gnss_Synchro>> get_current_tracking_map();
+
+    /*!
      * \brief return the current receiver PVT
      */
     Monitor_Pvt get_current_status_pvt();
+
+    /*!
+     * \brief forget the status of a channel that has been stopped, so that a
+     * stale entry is not reported until the channel delivers new observables
+     */
+    void clear_channel_status(int channel_id);
 
 private:
     friend channel_status_msg_receiver_sptr channel_status_msg_receiver_make();
@@ -62,6 +76,7 @@ private:
     void msg_handler_channel_status(const pmt::pmt_t& msg);
     Monitor_Pvt d_pvt_status{};
     std::map<int, std::shared_ptr<Gnss_Synchro>> d_channel_status_map;
+    std::map<int, std::shared_ptr<Gnss_Synchro>> d_channel_tracking_map;
 };
 
 

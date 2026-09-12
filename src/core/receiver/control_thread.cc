@@ -323,23 +323,17 @@ void ControlThread::event_dispatcher(bool &valid_event, pmt::pmt_t &msg)
                 }
         }
 
-    // Deliberately outside the else branch above (and so not gated on
-    // valid_event): the visibility-aware search's own churn through the
-    // "maybe visible" candidate pool -- picking, acquiring, failing,
-    // re-picking -- keeps pushing channel events onto control_queue_ fast
-    // enough that the 100 ms timed_wait_and_pop() above essentially never
-    // times out once that churn starts. If MaybeUpdateVisibility() only ran
-    // from the idle branch, it would starve for the rest of the run right
-    // when it matters most, since reclassifying satellites out of "maybe
-    // visible" is exactly what would reduce that churn. Calling it
-    // unconditionally here is safe: Tick()/DataChanged() already throttle
-    // the expensive recompute internally (kDataCheckEveryNTicks,
-    // interval_elapsed, etc.), so this just guarantees those checks
-    // actually get evaluated instead of depending on an idle window that
-    // may never occur.
+    // Run on every event, not only in the idle branch above: acquisition
+    // churn through the "maybe visible" pool (pick, acquire, fail, re-pick)
+    // keeps the 100 ms timed_wait_and_pop() from timing out, so the idle
+    // branch would starve exactly when reclassification is needed to reduce
+    // that churn. Safe unconditionally: Tick() throttles the recompute.
     if (receiver_on_standby_ == false)
         {
             flowgraph_->MaybeUpdateVisibility();  // no-op unless GNSS-SDR.enable_visibility_aware_search=true
+            // A duplicated satellite breaks every PVT solution until one of
+            // the two channels is stopped, so do not wait for an idle tick.
+            flowgraph_->stop_duplicated_satellite_channels();
         }
 }
 
@@ -380,8 +374,14 @@ int ControlThread::run()
         }
     // Start the flowgraph
     flowgraph_->start();
-    // Set receiver in stdby mode
-    flowgraph_->apply_action(0, 10);
+    if (flowgraph_->visibility_aware_search_enabled())
+        {
+            // Channel assignments made at connect() time predate any
+            // visibility classification: standby returns them to the search
+            // pool to be re-picked once the first classification exists. With
+            // the feature disabled, connect()-time acquisitions run untouched.
+            flowgraph_->apply_action(0, 10);
+        }
     if (flowgraph_->running())
         {
             LOG(INFO) << "Flowgraph started";
@@ -393,18 +393,10 @@ int ControlThread::run()
 
     // launch GNSS assistance process AFTER the flowgraph is running because the GNU Radio asynchronous queues must be already running to transport msgs
     assist_GNSS();
-    // No explicit MaybeUpdateVisibility() call here (deliberately -- an
-    // earlier version had one, which turned out to double up with
-    // assist_GNSS()'s own call below and log an identical recompute twice).
-    // When GNSS-SDR.AGNSS_ref_location IS configured, assist_GNSS() already
-    // hot-started internally (see its own MaybeUpdateVisibility() call right
-    // before its own apply_action(0, 12)) and channels are already assigned
-    // by the time we get here. When it's NOT configured, the very next
-    // idle tick (at most ~100 ms away, see the event_dispatcher() timeout
-    // branch) calls MaybeUpdateVisibility() itself, right alongside
-    // acquisition_manager() -- close enough to startup not to need a
-    // second explicit call here too.
-    flowgraph_->apply_action(0, 12);
+    // No MaybeUpdateVisibility() here: assist_GNSS() already ran the first
+    // classification if GNSS-SDR.AGNSS_ref_location is set, and
+    // event_dispatcher() runs it within ~100 ms otherwise; its idle-branch
+    // acquisition_manager() is what restarts acquisition on idle channels.
 // start the keyboard_listener thread
 #if USE_GLOG_AND_GFLAGS
     if (FLAGS_keyboard)
@@ -964,16 +956,11 @@ void ControlThread::assist_GNSS()
 
             // Set the receiver in Standby mode
             flowgraph_->apply_action(0, 10);
-            // MaybeUpdateVisibility() supersedes get_visible_sats()/
-            // priorize_satellites() entirely when the feature is enabled --
-            // both would otherwise run back to back against the identical
-            // AGNSS reference time/position, redundantly recomputing (and
-            // re-printing) the same elevation pass twice for no reason. This
-            // is the actual first hot-start trigger when
-            // GNSS-SDR.AGNSS_ref_location is configured (as here); the
-            // ControlThread::run() call after assist_GNSS() returns is a
-            // no-op by the time control gets back there, since channels have
-            // already been assigned by the apply_action(0, 12) below.
+            // With the visibility-aware search enabled, this is the first
+            // classification (from the AGNSS reference time/position) and it
+            // supersedes the legacy get_visible_sats()/priorize_satellites()
+            // pass, which would recompute the same elevations. Acquisition
+            // restarts at the next idle tick via acquisition_manager().
             if (flowgraph_->visibility_aware_search_enabled())
                 {
                     flowgraph_->MaybeUpdateVisibility();
@@ -984,8 +971,6 @@ void ControlThread::assist_GNSS()
                     const std::vector<std::pair<int, Gnss_Satellite>> visible_sats = get_visible_sats(ref_rx_utc_time, ref_LLH);
                     flowgraph_->priorize_satellites(visible_sats);
                 }
-            // Hot Start
-            flowgraph_->apply_action(0, 12);
         }
 }
 
@@ -1022,14 +1007,10 @@ void ControlThread::apply_action(unsigned int what)
             break;
         case 12:
             LOG(INFO) << "Receiver action HOTSTART";
-            // Same choice assist_GNSS() makes at initial start: when the
-            // visibility-aware search is enabled, MaybeUpdateVisibility()
-            // already supersedes the legacy one-shot reorder below -- take
-            // that path here too instead of always falling back to it,
-            // otherwise a TC hotstart would classify satellites differently
-            // (and reset the continuously-maintained visible/maybe-visible
-            // buckets) compared to how the receiver started up in the first
-            // place.
+            // Mirror assist_GNSS(): with the visibility-aware search enabled,
+            // MaybeUpdateVisibility() supersedes the legacy one-shot reorder,
+            // so a TC hotstart classifies satellites as startup did and keeps
+            // the continuously-maintained visibility buckets.
             if (flowgraph_->visibility_aware_search_enabled())
                 {
                     flowgraph_->MaybeUpdateVisibility();
@@ -1088,11 +1069,12 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     std::cout << "Get visible satellites at " << str_time
               << "UTC, assuming RX position " << LLH[0] << " [deg], " << LLH[1] << " [deg], " << LLH[2] << " [m]\n";
 
-    // 3. Loop through all the available ephemeris/almanac and compute satellite
-    // elevations -- shared with SatelliteVisibility's runtime recompute, see
-    // satellite_visibility.h/.cc.
+    // 3. Compute satellite elevations from all available ephemeris/almanac
+    // (shared with SatelliteVisibility's runtime recompute).
     const double elevation_mask_deg = configuration_->property("GNSS-SDR.search_elevation_mask", 0.0);
-    return compute_visible_satellites(flowgraph_->get_pvt(), gps_gtime, r_eb_e, elevation_mask_deg);
+    return compute_visible_satellites(flowgraph_->get_pvt(), gps_gtime, r_eb_e, elevation_mask_deg,
+        nullptr, std::numeric_limits<double>::infinity(), nullptr, nullptr,
+        configuration_->property("PVT.glonass_strict_health", true));
 }
 
 

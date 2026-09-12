@@ -91,11 +91,8 @@ public:
     double af0{};       //!< Coefficient 0 of code phase offset model [s]
     double af1{};       //!< Coefficient 1 of code phase offset model [s/s]
 
-    //! True if this entry came from an AGNSS/SUPL bootstrap load at startup
-    //! rather than a live broadcast decode. Deliberately not part of
-    //! serialize() below -- it is a runtime-only provenance marker set by
-    //! the code that performs the startup load, not a field of the almanac
-    //! itself, and has no business round-tripping through a saved XML file.
+    //! Loaded by the AGNSS/SUPL startup bootstrap rather than decoded from the
+    //! broadcast. Runtime-only provenance flag, intentionally not serialized.
     bool from_startup_load{false};
 
 protected:

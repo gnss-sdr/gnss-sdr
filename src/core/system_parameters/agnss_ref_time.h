@@ -67,16 +67,11 @@ public:
 
 
 /*!
- * \brief Parses a GNSS-SDR.AGNSS_ref_utc_time string ("DD/MM/YYYY HH:MM:SS"
- * in UTC) into an Agnss_Ref_Time. An empty ref_time_str is an "educated
- * guess" case, not an error: it returns the host's current wall-clock time,
- * marked valid, matching what a genuinely live run with no fixed reference
- * configured should use. malformed_year and malformed_format distinguish
- * why a non-empty but unparseable string failed, matching the two distinct
- * diagnostics ControlThread::init() has always printed; both are false when
- * ref_time_str is empty or parses successfully. Shared by every caller that
- * needs this parsing (ControlThread::init(), SatelliteVisibility) so the
- * rule -- including the empty-string fallback -- lives in exactly one place.
+ * \brief Parses GNSS-SDR.AGNSS_ref_utc_time ("DD/MM/YYYY HH:MM:SS", UTC).
+ * An empty string is not an error: the host's current time is returned, marked
+ * valid. malformed_year and malformed_format (both optional) tell why a
+ * non-empty string was rejected. Single parsing point for ControlThread and
+ * SatelliteVisibility.
  */
 inline Agnss_Ref_Time parse_agnss_ref_utc_time(const std::string& ref_time_str, bool* malformed_year = nullptr, bool* malformed_format = nullptr)
 {

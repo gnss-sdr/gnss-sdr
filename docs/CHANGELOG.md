@@ -132,6 +132,25 @@ All notable changes to GNSS-SDR will be documented in this file.
   the generic rule
   `doppler(col) = -doppler_max + doppler_center + doppler_step * col` decodes
   both full and narrowed grids. Contributed by @joebre.
+- Added an optional visibility-aware acquisition search, enabled with
+  `GNSS-SDR.enable_visibility_aware_search=true` (default `false`, which leaves
+  the existing search order untouched). Once a receiver position is available,
+  either from a fix or from `GNSS-SDR.AGNSS_ref_location`, satellites are
+  continuously classified as visible, excluded (elevation at or below
+  `GNSS-SDR.search_elevation_mask`, default 0 degrees, or flagged unhealthy), or
+  not yet known, using the freshest ephemeris or almanac decoded for GPS,
+  Galileo, BeiDou, GLONASS, and QZSS. Idle channels then favor visible
+  satellites over unknown ones, at the ratio given by
+  `GNSS-SDR.visible_vs_mayvisible_search_ratio` (default 3), and skip known
+  excluded ones, so less CPU is spent acquiring satellites that are below the
+  horizon. The classification is refreshed whenever new navigation data arrives,
+  when the receiver moves more than
+  `GNSS-SDR.visibility_recompute_position_threshold_m` (default 1000 m), every
+  `GNSS-SDR.visibility_recompute_interval_s` (default 120 s), and when almanac
+  data becomes older than `GNSS-SDR.visibility_almanac_max_age_s` (default 3
+  days). A satellite that is already being tracked is never released because of
+  this classification, and `PVT.elevation_mask` still decides which observations
+  enter the navigation solution. Contributed by @joebre.
 
 ### Improvements in Interoperability:
 
@@ -333,6 +352,14 @@ All notable changes to GNSS-SDR will be documented in this file.
   metadata in satellite status, and the NMEA printer emits the strongest
   available C/N0 with the corresponding NMEA signal identifier. Contributed by
   @vladisslav2011.
+- The custom output stream defined by `monitor_pvt.proto` now includes a
+  `tracked_satellites` list. Each entry reports one tracked signal (`system`,
+  `prn`, `signal`), its `azimuth_deg` and `elevation_deg`, whether it was
+  `combined` with another signal of the same satellite (e.g., the Galileo E1+E5a
+  ionosphere-free combination), and a `used` flag telling whether it contributed
+  to the reported fix. Satellites that were tracked but left out of the solution
+  (below `PVT.elevation_mask`, or excluded by RAIM) are listed with
+  `used = false`. Contributed by @joebre.
 
 ### Improvements in Maintainability:
 

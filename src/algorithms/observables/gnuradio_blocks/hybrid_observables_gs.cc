@@ -1067,12 +1067,10 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
             // ************ end time tags **************
             for (int32_t m = 0; m < ninput_items[n]; m++)
                 {
-                    if (d_conf.enable_monitor)
-                        {
-                            // Keep the latest tracking data so that channels without a
-                            // valid time reference can be reported through the Monitor
-                            d_last_trk_data[n] = in[n][m];
-                        }
+                    // Keep the latest tracking data so that channels without a valid
+                    // time reference can be reported through the Monitor and to the
+                    // flowgraph channel status (secondary-frequency acquisition assistance)
+                    d_last_trk_data[n] = in[n][m];
                     // Latch a restarted carrier phase accumulator reported by the
                     // tracking block: it is flagged on a single sample, which may
                     // not be the one the observation is interpolated from
@@ -1186,8 +1184,20 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                 {
                     for (uint32_t n = 0; n < d_nchannels_out; n++)
                         {
-                            const std::shared_ptr<Gnss_Synchro> gnss_synchro_sptr = std::make_shared<Gnss_Synchro>(epoch_data[n]);
-                            // publish valid gnss_synchro to the gnss_flowgraph channel status monitor
+                            std::shared_ptr<Gnss_Synchro> gnss_synchro_sptr = std::make_shared<Gnss_Synchro>(epoch_data[n]);
+                            if (!gnss_synchro_sptr->Flag_valid_pseudorange && has_fresh_trk_data(n, d_Rx_clock_buffer.front()))
+                                {
+                                    // Tracking-only status: the channel is locked but has no
+                                    // valid time reference yet. The flowgraph uses its Doppler
+                                    // to assist the acquisition of the same satellite on a
+                                    // secondary frequency. Never a valid observable.
+                                    gnss_synchro_sptr = std::make_shared<Gnss_Synchro>(d_last_trk_data[n]);
+                                    gnss_synchro_sptr->Flag_valid_pseudorange = false;
+                                    gnss_synchro_sptr->Flag_valid_word = false;
+                                    gnss_synchro_sptr->Flag_valid_acquisition = false;
+                                    gnss_synchro_sptr->Channel_ID = n;
+                                }
+                            // publish gnss_synchro to the gnss_flowgraph channel status monitor
                             this->message_port_pub(pmt::mp("status"), pmt::make_any(gnss_synchro_sptr));
                         }
                     d_T_status_report_timer_ms = 0;

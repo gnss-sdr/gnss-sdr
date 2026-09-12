@@ -67,11 +67,9 @@ public:
 
 
 /*!
- * \brief Parses a "lat,lon" (or "lat lon") GNSS-SDR.AGNSS_ref_location string
- * into an Agnss_Ref_Location. valid is false (and lat/lon left default) if
- * ref_location_str is empty or doesn't contain a plausible WGS84 position.
- * Shared by every caller that needs this parsing (ControlThread::init(),
- * SatelliteVisibility) so the rule lives in exactly one place.
+ * \brief Parses GNSS-SDR.AGNSS_ref_location ("lat,lon" or "lat lon", degrees).
+ * valid is false if the string is empty or not a plausible WGS84 position.
+ * Single parsing point for ControlThread and SatelliteVisibility.
  */
 inline Agnss_Ref_Location parse_agnss_ref_location(const std::string& ref_location_str)
 {

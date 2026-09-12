@@ -285,6 +285,7 @@ private:
     // These are never accessed outside acquisition_core while acquisition is active
     volk_gnsssdr::vector<std::complex<float>> d_grid_doppler_wipeoffs;
     volk_gnsssdr::vector<std::complex<float>> d_fft_codes;
+    volk_gnsssdr::vector<std::complex<float>> d_data_buffer;
     std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
 };
 

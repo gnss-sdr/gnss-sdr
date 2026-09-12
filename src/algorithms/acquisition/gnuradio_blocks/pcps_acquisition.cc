@@ -165,6 +165,9 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_ifft(gnss_fft_rev_make_unique(d_fft_size)),
       d_grid_doppler_wipeoffs(d_num_doppler_bins_step1_capacity * d_doppler_wipeoffs_stride),
       d_fft_codes(d_fft_size),
+      // Allocate the buffer only when we need it. Buffering may be skipped in case of blocking operation
+      // or when the number of non-coherent integrations is 1, as samples may be copied directly to d_input_signal
+      d_data_buffer((d_acq_parameters.blocking || d_acq_parameters.max_dwells == 1) ? 0 : d_samples_to_consume * d_acq_parameters.max_dwells),
       d_fft_if(gnss_fft_fwd_make_unique(d_fft_size))
 {
     this->message_port_register_out(pmt::mp("events"));
@@ -791,7 +794,15 @@ void pcps_acquisition::handle_integration_done(const AcquisitionResult& result)
 void pcps_acquisition::acquisition_core(uint64_t sample_count)
 {
     gr::thread::scoped_lock lk(d_setlock);
+    const bool is_buffering = !d_data_buffer.empty();
 
+    if (is_buffering)
+        {
+            const size_t offset = d_samples_to_consume * d_num_noncoherent_integrations_counter;
+            std::copy(d_data_buffer.data() + offset,
+                        d_data_buffer.data()  + offset + d_samples_to_consume,
+                        d_input_signal.data());
+        }
     d_num_noncoherent_integrations_counter++;
 
     DLOG(INFO) << "Channel: " << d_channel
@@ -840,8 +851,11 @@ void pcps_acquisition::acquisition_core(uint64_t sample_count)
                         }
                     else
                         {
-                            d_buffer_sample_count = 0;
-                            d_state = 1;
+                            if (d_acq_parameters.blocking)
+                                {
+                                    d_buffer_sample_count = 0;
+                                    d_state = 1;
+                                }
                         }
                 }
             else
@@ -852,8 +866,11 @@ void pcps_acquisition::acquisition_core(uint64_t sample_count)
                         }
                     else
                         {
-                            d_buffer_sample_count = 0;
-                            d_state = 1;
+                            if (d_acq_parameters.blocking)
+                                {
+                                    d_buffer_sample_count = 0;
+                                    d_state = 1;
+                                }
                         }
 
                     if (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)
@@ -963,9 +980,8 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
     gr::thread::scoped_lock lk(d_setlock);
     if (!d_active || d_worker_active)
         {
-            // do not consume samples while performing a non-coherent integration
-            const bool consume_samples = ((!d_active) || (d_worker_active && (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)));
-            if ((!d_acq_parameters.blocking_on_standby) && consume_samples)
+            // we can consume samples while performing a non-coherent integration as all required data is already buffered
+            if (!d_acq_parameters.blocking_on_standby)
                 {
                     d_sample_count += static_cast<uint64_t>(ninput_items[0]);
                     consume_each(ninput_items[0]);
@@ -988,25 +1004,32 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
             }
         case 1:
             {
-                const auto fit_in_buffer = (ninput_items[0] + d_buffer_sample_count) <= d_samples_to_consume;
-                const uint32_t samples_to_copy = fit_in_buffer ? ninput_items[0] : d_samples_to_consume - d_buffer_sample_count;
+                // Check if we are buffering (have allocated the buffer)
+                const bool is_buffering = !d_data_buffer.empty();
+                // Expected number of samples to copy
+                const auto buffer_size = is_buffering ? d_data_buffer.size() : d_samples_to_consume;
+                // Safety check, should always succeed
+                const auto fit_in_buffer = (ninput_items[0] + d_buffer_sample_count) <= buffer_size;
+                const uint32_t samples_to_copy = fit_in_buffer ? ninput_items[0] : buffer_size - d_buffer_sample_count;
+                // copy destination
+                gr_complex* buffer_ptr = d_acq_parameters.blocking ? d_input_signal.data() : d_data_buffer.data();
 
                 if (d_cshort)
                     {
                         const auto* in = reinterpret_cast<const lv_16sc_t*>(input_items[0]);  // Get the input samples pointer
-                        volk_gnsssdr_16ic_convert_32fc(d_input_signal.data() + d_buffer_sample_count, in, samples_to_copy);
+                        volk_gnsssdr_16ic_convert_32fc(buffer_ptr + d_buffer_sample_count, in, samples_to_copy);
                     }
                 else
                     {
                         const auto* in = reinterpret_cast<const gr_complex*>(input_items[0]);  // Get the input samples pointer
-                        std::copy(in, in + samples_to_copy, d_input_signal.begin() + d_buffer_sample_count);
+                        std::copy(in, in + samples_to_copy, buffer_ptr + d_buffer_sample_count);
                     }
 
                 d_buffer_sample_count += samples_to_copy;
                 d_sample_count += static_cast<uint64_t>(samples_to_copy);
                 consume_each(samples_to_copy);
 
-                if (d_buffer_sample_count == d_samples_to_consume)  // Buffer is full
+                if (d_buffer_sample_count == buffer_size)  // Buffer is full
                     {
                         d_state = 2;
                     }

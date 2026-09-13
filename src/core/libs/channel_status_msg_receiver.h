@@ -60,9 +60,9 @@ public:
     std::map<int, std::shared_ptr<Gnss_Synchro>> get_current_tracking_map();
 
     /*!
-     * \brief return the current receiver PVT
+     * \brief return the latest successful PVT and optionally elapsed sample time
      */
-    Monitor_Pvt get_current_status_pvt();
+    Monitor_Pvt get_current_status_pvt(double* receiver_time_s = nullptr);
 
     /*!
      * \brief forget the status of a channel that has been stopped, so that a
@@ -75,6 +75,7 @@ private:
     channel_status_msg_receiver();
     void msg_handler_channel_status(const pmt::pmt_t& msg);
     Monitor_Pvt d_pvt_status{};
+    double d_receiver_time_s{0.0};  // elapsed sample time, including epochs without a fix
     std::map<int, std::shared_ptr<Gnss_Synchro>> d_channel_status_map;
     std::map<int, std::shared_ptr<Gnss_Synchro>> d_channel_tracking_map;
 };

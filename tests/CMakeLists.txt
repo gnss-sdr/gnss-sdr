@@ -1072,6 +1072,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             channel_adapters
             core_receiver
             pvt_gr_blocks
+            obs_gr_blocks
             algorithms_libs
     )
     if(ENABLE_GLOG_AND_GFLAGS)

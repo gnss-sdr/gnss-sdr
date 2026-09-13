@@ -15,6 +15,7 @@
  */
 
 #include "satellite_visibility.h"
+#include "GLONASS_L1_L2_CA.h"    // for GLONASS_PRN
 #include "agnss_ref_location.h"  // for parse_agnss_ref_location
 #include "agnss_ref_time.h"      // for parse_agnss_ref_utc_time
 #include "configuration_interface.h"
@@ -25,16 +26,112 @@
 #include "rtklib_conversions.h"  // for alm_to_rtklib, eph_to_rtklib
 #include "rtklib_ephemeris.h"    // for alm2pos, eph2pos
 #include "rtklib_rtkcmn.h"       // for utc2gpst, gpst2time
-#if USE_GLOG_AND_GFLAGS
-#include <glog/logging.h>
-#else
-#include <absl/log/log.h>
-#endif
 #include <algorithm>
 #include <cmath>
 #include <ctime>
 #include <iomanip>
 #include <sstream>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
+
+namespace
+{
+// Keeps (search_ratio_ + 1) clear of uint32_t overflow in
+// GNSSFlowgraph::pop_by_visibility()'s counter modulo.
+constexpr uint32_t kMaxSearchRatio = 1000000U;
+
+// Tick() calls between DataChanged() runs, which copy every ephemeris/almanac map.
+constexpr int kDataCheckEveryNTicks = 20;
+}  // namespace
+
+
+SatelliteVisibility::SatelliteVisibility(const std::shared_ptr<ConfigurationInterface>& configuration)
+    : enabled_(configuration->property("GNSS-SDR.enable_visibility_aware_search", false)),
+      search_ratio_(std::min(configuration->property("GNSS-SDR.visible_vs_mayvisible_search_ratio", 3U), kMaxSearchRatio)),
+      // Satellites move negligibly over minutes; fast reaction comes from the
+      // event-driven triggers (data arrival, movement, expiry), not polling.
+      recompute_interval_s_(configuration->property("GNSS-SDR.visibility_recompute_interval_s", 120.0)),
+      elevation_mask_deg_(configuration->property("GNSS-SDR.search_elevation_mask", 0.0)),
+      position_threshold_m_(configuration->property("GNSS-SDR.visibility_recompute_position_threshold_m", 1000.0)),
+      // Maximum absolute age of the resolved almanac epoch. Default: 3 days.
+      almanac_max_age_s_(configuration->property("GNSS-SDR.visibility_almanac_max_age_s", 259200.0)),
+      glonass_strict_health_(configuration->property("PVT.glonass_strict_health", true)),
+      have_agnss_reference_(false),
+      agnss_ref_lat_deg_(0.0),
+      agnss_ref_lon_deg_(0.0),
+      agnss_ref_utc_time_(0),
+      last_recompute_rx_time_s_(-1.0e9),
+      last_recompute_r_eb_e_(arma::vec{0.0, 0.0, 0.0}),
+      next_expiry_deadline_rx_time_(std::numeric_limits<double>::infinity()),
+      ticks_since_data_check_(kDataCheckEveryNTicks),
+      last_fix_valid_(false),
+      first_data_check_(true)
+{
+    // Parsing shared with ControlThread::init(); an empty AGNSS_ref_utc_time
+    // means wall-clock time.
+    const Agnss_Ref_Location parsed_location = parse_agnss_ref_location(
+        configuration->property("GNSS-SDR.AGNSS_ref_location", std::string("")));
+    have_agnss_reference_ = parsed_location.valid;
+    agnss_ref_lat_deg_ = parsed_location.lat;
+    agnss_ref_lon_deg_ = parsed_location.lon;
+
+    const Agnss_Ref_Time parsed_time = parse_agnss_ref_utc_time(
+        configuration->property("GNSS-SDR.AGNSS_ref_utc_time", std::string("")));
+    // A non-empty malformed string also falls back to wall-clock time.
+    agnss_ref_utc_time_ = parsed_time.valid ? static_cast<time_t>(parsed_time.seconds) : std::time(nullptr);
+
+    // Same GNSS-SDR.<System>_banned_prns parsing as GNSSFlowgraph::set_signals_list().
+    for (const std::string system : {"GPS", "Galileo", "Beidou", "Glonass", "QZSS"})
+        {
+            const auto sv_banned = configuration->property("GNSS-SDR." + system + "_banned_prns", std::string(""));
+            if (sv_banned.empty())
+                {
+                    continue;
+                }
+            std::stringstream ss(sv_banned);
+            while (ss.good())
+                {
+                    std::string substr;
+                    std::getline(ss, substr, ',');
+                    try
+                        {
+                            banned_.emplace(system, static_cast<uint32_t>(std::stoi(substr)));
+                        }
+                    catch (const std::invalid_argument& ia)
+                        {
+                            LOG(WARNING) << "Invalid argument at GNSS-SDR." << system << "_banned_prns configuration parameter: " << ia.what();
+                        }
+                    catch (const std::out_of_range& oor)
+                        {
+                            LOG(WARNING) << "Out of range at GNSS-SDR." << system << "_banned_prns configuration parameter: " << oor.what();
+                        }
+                }
+        }
+
+    // Signal codes per system, as in gnss_block_factory.cc's signal_mapping.
+    static const std::map<std::string, std::vector<std::string>> system_signals{
+        {"GPS", {"1C", "2S", "L5"}},
+        {"Galileo", {"1B", "5X", "E6", "7X"}},
+        {"Beidou", {"B1", "1D", "B3"}},
+        {"Glonass", {"1G", "2G"}},
+        {"QZSS", {"J1", "J5"}}};
+    for (const auto& entry : system_signals)
+        {
+            for (const auto& signal : entry.second)
+                {
+                    if (configuration->property("Channels_" + signal + ".count", 0) > 0)
+                        {
+                            configured_systems_.insert(entry.first);
+                            break;
+                        }
+                }
+        }
+}
+
 
 std::vector<std::pair<int, Gnss_Satellite>> compute_visible_satellites(
     const std::shared_ptr<PvtInterface>& pvt_ptr,
@@ -464,101 +561,6 @@ std::vector<std::pair<int, Gnss_Satellite>> compute_visible_satellites(
 }
 
 
-namespace
-{
-// Keeps (search_ratio_ + 1) clear of uint32_t overflow in
-// GNSSFlowgraph::pop_by_visibility()'s counter modulo.
-constexpr uint32_t kMaxSearchRatio = 1000000U;
-
-// Tick() calls between DataChanged() runs, which copy every ephemeris/almanac map.
-constexpr int kDataCheckEveryNTicks = 20;
-}  // namespace
-
-
-SatelliteVisibility::SatelliteVisibility(const std::shared_ptr<ConfigurationInterface>& configuration)
-    : enabled_(configuration->property("GNSS-SDR.enable_visibility_aware_search", false)),
-      search_ratio_(std::min(configuration->property("GNSS-SDR.visible_vs_mayvisible_search_ratio", 3U), kMaxSearchRatio)),
-      // Satellites move negligibly over minutes; fast reaction comes from the
-      // event-driven triggers (data arrival, movement, expiry), not polling.
-      recompute_interval_s_(configuration->property("GNSS-SDR.visibility_recompute_interval_s", 120.0)),
-      elevation_mask_deg_(configuration->property("GNSS-SDR.search_elevation_mask", 0.0)),
-      position_threshold_m_(configuration->property("GNSS-SDR.visibility_recompute_position_threshold_m", 1000.0)),
-      // Maximum absolute age of the resolved almanac epoch. Default: 3 days.
-      almanac_max_age_s_(configuration->property("GNSS-SDR.visibility_almanac_max_age_s", 259200.0)),
-      glonass_strict_health_(configuration->property("PVT.glonass_strict_health", true)),
-      have_agnss_reference_(false),
-      agnss_ref_lat_deg_(0.0),
-      agnss_ref_lon_deg_(0.0),
-      agnss_ref_utc_time_(0),
-      last_fix_valid_(false),
-      first_data_check_(true),
-      last_recompute_rx_time_s_(-1.0e9),
-      last_recompute_r_eb_e_(arma::vec{0.0, 0.0, 0.0}),
-      next_expiry_deadline_rx_time_(std::numeric_limits<double>::infinity()),
-      ticks_since_data_check_(kDataCheckEveryNTicks)
-{
-    // Parsing shared with ControlThread::init(); an empty AGNSS_ref_utc_time
-    // means wall-clock time.
-    const Agnss_Ref_Location parsed_location = parse_agnss_ref_location(
-        configuration->property("GNSS-SDR.AGNSS_ref_location", std::string("")));
-    have_agnss_reference_ = parsed_location.valid;
-    agnss_ref_lat_deg_ = parsed_location.lat;
-    agnss_ref_lon_deg_ = parsed_location.lon;
-
-    const Agnss_Ref_Time parsed_time = parse_agnss_ref_utc_time(
-        configuration->property("GNSS-SDR.AGNSS_ref_utc_time", std::string("")));
-    // A non-empty malformed string also falls back to wall-clock time.
-    agnss_ref_utc_time_ = parsed_time.valid ? static_cast<time_t>(parsed_time.seconds) : std::time(nullptr);
-
-    // Same GNSS-SDR.<System>_banned_prns parsing as GNSSFlowgraph::set_signals_list().
-    for (const std::string system : {"GPS", "Galileo", "Beidou", "Glonass", "QZSS"})
-        {
-            const auto sv_banned = configuration->property("GNSS-SDR." + system + "_banned_prns", std::string(""));
-            if (sv_banned.empty())
-                {
-                    continue;
-                }
-            std::stringstream ss(sv_banned);
-            while (ss.good())
-                {
-                    std::string substr;
-                    std::getline(ss, substr, ',');
-                    try
-                        {
-                            banned_.emplace(system, static_cast<uint32_t>(std::stoi(substr)));
-                        }
-                    catch (const std::invalid_argument& ia)
-                        {
-                            LOG(WARNING) << "Invalid argument at GNSS-SDR." << system << "_banned_prns configuration parameter: " << ia.what();
-                        }
-                    catch (const std::out_of_range& oor)
-                        {
-                            LOG(WARNING) << "Out of range at GNSS-SDR." << system << "_banned_prns configuration parameter: " << oor.what();
-                        }
-                }
-        }
-
-    // Signal codes per system, as in gnss_block_factory.cc's signal_mapping.
-    static const std::map<std::string, std::vector<std::string>> system_signals{
-        {"GPS", {"1C", "2S", "L5"}},
-        {"Galileo", {"1B", "5X", "E6", "7X"}},
-        {"Beidou", {"B1", "1D", "B3"}},
-        {"Glonass", {"1G", "2G"}},
-        {"QZSS", {"J1", "J5"}}};
-    for (const auto& entry : system_signals)
-        {
-            for (const auto& signal : entry.second)
-                {
-                    if (configuration->property("Channels_" + signal + ".count", 0) > 0)
-                        {
-                            configured_systems_.insert(entry.first);
-                            break;
-                        }
-                }
-        }
-}
-
-
 bool SatelliteVisibility::DataChanged(const std::shared_ptr<PvtInterface>& pvt_ptr,
     std::set<std::pair<std::string, uint32_t>>* changed_prns_out)
 {
@@ -659,7 +661,8 @@ bool SatelliteVisibility::DataChanged(const std::shared_ptr<PvtInterface>& pvt_p
 }
 
 
-bool SatelliteVisibility::Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, const Monitor_Pvt& fix_status)
+bool SatelliteVisibility::Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, const Monitor_Pvt& fix_status,
+    double receiver_time_s)
 {
     if (!enabled_ || !pvt_ptr)
         {
@@ -678,6 +681,16 @@ bool SatelliteVisibility::Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, con
             LLH[1] = static_cast<float>(fix_status.longitude);
             LLH[2] = static_cast<float>(fix_status.height);
             gps_gtime = gpst2time(static_cast<int>(fix_status.week), fix_status.RX_time);
+            const double fix_time_s = static_cast<double>(gps_gtime.time) + gps_gtime.sec;
+            if (fix_became_valid || fix_time_s != last_fix_time_s_)
+                {
+                    last_fix_time_s_ = fix_time_s;
+                    last_fix_receiver_time_s_ = receiver_time_s;
+                }
+            // The status receiver retains the last successful fix during an
+            // outage. Keep its position, but advance its epoch with samples so
+            // rising satellites and expired navigation data can be reconsidered.
+            gps_gtime = timeadd(gps_gtime, std::max(0.0, receiver_time_s - last_fix_receiver_time_s_));
         }
     else if (have_agnss_reference_)
         {
@@ -689,7 +702,7 @@ bool SatelliteVisibility::Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, con
             // runs the host clock is unrelated to the samples' GNSS time.
             utc_gtime.time = agnss_ref_utc_time_;
             utc_gtime.sec = 0.0;
-            gps_gtime = utc2gpst(utc_gtime);
+            gps_gtime = timeadd(utc2gpst(utc_gtime), receiver_time_s);
         }
     else
         {
@@ -714,11 +727,11 @@ bool SatelliteVisibility::Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, con
 
     // Include the GPS week so cadence and expiry survive the TOW rollover.
     const double rx_time_s = static_cast<double>(gps_gtime.time) + gps_gtime.sec;
-    const bool interval_elapsed = fix_valid && ((rx_time_s - last_recompute_rx_time_s_) >= recompute_interval_s_);
+    const bool interval_elapsed = (rx_time_s - last_recompute_rx_time_s_) >= recompute_interval_s_;
 
     const bool moved_significantly = arma::norm(r_eb_e - last_recompute_r_eb_e_, 2) >= position_threshold_m_;
 
-    const bool expired = fix_valid && (rx_time_s >= next_expiry_deadline_rx_time_);
+    const bool expired = rx_time_s >= next_expiry_deadline_rx_time_;
 
     if (!fix_became_valid && !data_changed && !interval_elapsed && !moved_significantly && !expired)
         {
@@ -735,10 +748,7 @@ bool SatelliteVisibility::Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, con
     // triggers whenever data arrives faster than either threshold.
     if (needs_full_recompute)
         {
-            if (fix_valid)
-                {
-                    last_recompute_rx_time_s_ = rx_time_s;
-                }
+            last_recompute_rx_time_s_ = rx_time_s;
             last_recompute_r_eb_e_ = r_eb_e;
         }
 
@@ -752,7 +762,7 @@ bool SatelliteVisibility::Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, con
     // targeted sweep could push the deadline past the true soonest expiry.
     if (needs_full_recompute)
         {
-            next_expiry_deadline_rx_time_ = (fix_valid && std::isfinite(seconds_until_next_expiry))
+            next_expiry_deadline_rx_time_ = std::isfinite(seconds_until_next_expiry)
                                                 ? rx_time_s + seconds_until_next_expiry
                                                 : std::numeric_limits<double>::infinity();
         }
@@ -907,4 +917,51 @@ bool SatelliteVisibility::IsVisible(const Gnss_Satellite& sat) const
 bool SatelliteVisibility::IsExcluded(const Gnss_Satellite& sat) const
 {
     return excluded_.find(std::make_pair(sat.get_system(), sat.get_system() == "QZSS" ? qzss_l1cb_prn_to_nominal_prn(sat.get_PRN()) : sat.get_PRN())) != excluded_.end();
+}
+
+
+SatelliteVisibility::SearchVisibility SatelliteVisibility::GetSearchVisibility(const Gnss_Satellite& sat) const
+{
+    if (sat.get_system() != "Glonass")
+        {
+            return IsVisible(sat) ? SearchVisibility::Visible : (IsExcluded(sat) ? SearchVisibility::Excluded : SearchVisibility::Unknown);
+        }
+
+    const auto frequency = GLONASS_PRN.find(sat.get_PRN());
+    if (sat.get_PRN() == 0 || frequency == GLONASS_PRN.cend())
+        {
+            return SearchVisibility::Unknown;
+        }
+
+    // The pool keeps one representative per FDMA frequency, but acquisition
+    // can lock onto any slot using it. A missing partner's navigation data must
+    // therefore keep the frequency searchable even if the representative is
+    // below the mask or unhealthy.
+    bool all_excluded = true;
+    for (const auto& slot : GLONASS_PRN)
+        {
+            if (slot.first == 0 || slot.second != frequency->second)
+                {
+                    continue;
+                }
+            const auto key = std::make_pair(std::string("Glonass"), slot.first);
+            if (visible_.count(key) != 0)
+                {
+                    return SearchVisibility::Visible;
+                }
+            all_excluded = all_excluded && excluded_.count(key) != 0;
+        }
+    return all_excluded ? SearchVisibility::Excluded : SearchVisibility::Unknown;
+}
+
+
+bool SatelliteVisibility::IsSearchVisible(const Gnss_Satellite& sat) const
+{
+    return GetSearchVisibility(sat) == SearchVisibility::Visible;
+}
+
+
+bool SatelliteVisibility::IsSearchExcluded(const Gnss_Satellite& sat) const
+{
+    return GetSearchVisibility(sat) == SearchVisibility::Excluded;
 }

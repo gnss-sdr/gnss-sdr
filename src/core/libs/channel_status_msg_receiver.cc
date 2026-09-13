@@ -71,6 +71,11 @@ void channel_status_msg_receiver::msg_handler_channel_status(const pmt::pmt_t& m
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_channel_status function called by the scheduler
     try
         {
+            if (pmt::is_real(msg))
+                {
+                    d_receiver_time_s = pmt::to_double(msg);
+                    return;
+                }
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
             // ****************** Gnss_Synchro received ************************
             if (msg_type_hash_code == typeid(std::shared_ptr<Gnss_Synchro>).hash_code())
@@ -147,8 +152,12 @@ void channel_status_msg_receiver::clear_channel_status(int channel_id)
 }
 
 
-Monitor_Pvt channel_status_msg_receiver::get_current_status_pvt()
+Monitor_Pvt channel_status_msg_receiver::get_current_status_pvt(double* receiver_time_s)
 {
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_channel_status function called by the scheduler
+    if (receiver_time_s != nullptr)
+        {
+            *receiver_time_s = d_receiver_time_s;
+        }
     return d_pvt_status;
 }

@@ -14,7 +14,10 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "channel_status_msg_receiver.h"
 #include "geofunctions.h"
+#include "gnss_sdr_sample_counter.h"
+#include "hybrid_observables_gs.h"
 #include "in_memory_configuration.h"
 #include "monitor_pvt.h"
 #include "pvt_conf.h"
@@ -26,6 +29,7 @@
 #include "rtklib_rtksvr.h"
 #include "satellite_visibility.h"
 #include "sensor_data/sensor_data_source_configuration.h"
+#include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/null_source.h>
 #include <gtest/gtest.h>
 #include <chrono>
@@ -260,6 +264,114 @@ TEST_F(SatelliteVisibilityTest, ExpiryCrossesWeekRolloverWithoutPeriodicSweep)
 }
 
 
+TEST_F(SatelliteVisibilityTest, StaleFixReclassifiesRisingSatellite)
+{
+    SetGpsAlmanac(100000);
+    pvt->gps_alm.at(1).M_0 = -0.5;
+    const double initial_elevation = GpsElevation();
+    fix.RX_time += 21600.0;
+    const double later_elevation = GpsElevation();
+    fix.RX_time -= 21600.0;
+    ASSERT_LT(initial_elevation, 0.0);
+    ASSERT_GT(later_elevation, 0.0);
+    SatelliteVisibility visibility(configuration);
+    const Gnss_Satellite satellite("GPS", 1);
+    ASSERT_TRUE(visibility.Tick(pvt, fix, 0.0));
+    ASSERT_TRUE(visibility.IsExcluded(satellite));
+    // No new fix or navigation message arrives, only more samples.
+    EXPECT_TRUE(visibility.Tick(pvt, fix, 21600.0));
+    EXPECT_TRUE(visibility.IsVisible(satellite));
+    EXPECT_FALSE(visibility.IsExcluded(satellite));
+}
+
+
+TEST_F(SatelliteVisibilityTest, StaleFixExpiresAcrossWeekRollover)
+{
+    configuration->set_property("GNSS-SDR.visibility_recompute_interval_s", "1000000");
+    configuration->set_property("GNSS-SDR.visibility_almanac_max_age_s", "200");
+    SetGpsAlmanac(604700);
+    fix.RX_time = 604790.0;
+    SatelliteVisibility visibility(configuration);
+    const Gnss_Satellite satellite("GPS", 1);
+    ASSERT_TRUE(visibility.Tick(pvt, fix, 0.0));
+    EXPECT_TRUE(visibility.Tick(pvt, fix, 111.0));
+    EXPECT_FALSE(visibility.IsVisible(satellite));
+    EXPECT_FALSE(visibility.IsExcluded(satellite));
+}
+
+
+TEST_F(SatelliteVisibilityTest, FreshFixReanchorsSampleClock)
+{
+    configuration->set_property("GNSS-SDR.visibility_recompute_interval_s", "1000000");
+    configuration->set_property("GNSS-SDR.visibility_almanac_max_age_s", "200");
+    SetGpsAlmanac(100000);
+    SatelliteVisibility visibility(configuration);
+    const Gnss_Satellite satellite("GPS", 1);
+    ASSERT_TRUE(visibility.Tick(pvt, fix, 0.0));
+    fix.RX_time += 100.0;
+    visibility.Tick(pvt, fix, 100.0);
+    visibility.Tick(pvt, fix, 150.0);
+    EXPECT_TRUE(visibility.IsVisible(satellite) || visibility.IsExcluded(satellite));
+    EXPECT_TRUE(visibility.Tick(pvt, fix, 201.0));
+    EXPECT_FALSE(visibility.IsVisible(satellite));
+    EXPECT_FALSE(visibility.IsExcluded(satellite));
+}
+
+
+TEST_F(SatelliteVisibilityTest, AgnssReferenceExpiresWithoutFirstFix)
+{
+    configuration->set_property("GNSS-SDR.AGNSS_ref_location", "0,0");
+    configuration->set_property("GNSS-SDR.AGNSS_ref_utc_time", "01/01/2024 00:00:00");
+    configuration->set_property("GNSS-SDR.visibility_recompute_interval_s", "1000000");
+    configuration->set_property("GNSS-SDR.visibility_almanac_max_age_s", "200");
+    const double utc_epoch[6] = {2024, 1, 1, 0, 0, 0};
+    int week = 0;
+    const double tow = time2gpst(utc2gpst(epoch2time(utc_epoch)), &week);
+    fix.week = week;
+    SetGpsAlmanac(static_cast<int>(tow));
+    fix.RX_time = -1.0;
+    SatelliteVisibility visibility(configuration);
+    const Gnss_Satellite satellite("GPS", 1);
+    ASSERT_TRUE(visibility.Tick(pvt, fix, 0.0));
+    EXPECT_TRUE(visibility.Tick(pvt, fix, 201.0));
+    EXPECT_FALSE(visibility.IsVisible(satellite));
+    EXPECT_FALSE(visibility.IsExcluded(satellite));
+}
+
+
+TEST_F(SatelliteVisibilityTest, ObservablesReportSampleTimeWithoutTracking)
+{
+    Obs_Conf conf;
+    conf.nchannels_in = 2;
+    conf.nchannels_out = 1;
+    const auto observables = hybrid_observables_gs_make(conf);
+    const auto samples = gr::blocks::null_source::make(sizeof(gr_complex));
+    const auto tracking = gr::blocks::null_source::make(sizeof(Gnss_Synchro));
+    const auto counter = gnss_sdr_make_sample_counter(4000.0, 20, sizeof(gr_complex));
+    const auto sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
+    const auto status = channel_status_msg_receiver_make();
+    const auto flowgraph = gr::make_top_block("visibility_sample_clock_test");
+    flowgraph->connect(samples, 0, counter, 0);
+    flowgraph->connect(counter, 0, observables, 1);
+    flowgraph->connect(tracking, 0, observables, 0);
+    flowgraph->connect(observables, 0, sink, 0);
+    flowgraph->msg_connect(observables, pmt::mp("status"), status, pmt::mp("status"));
+    flowgraph->start();
+    double receiver_time_s = 0.0;
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    while (receiver_time_s < 2.0 && std::chrono::steady_clock::now() < deadline)
+        {
+            status->get_current_status_pvt(&receiver_time_s);
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+    flowgraph->stop();
+    flowgraph->wait();
+    EXPECT_GE(receiver_time_s, 2.0);
+    EXPECT_LT(status->get_current_status_pvt().RX_time, 0.0);
+    EXPECT_TRUE(status->get_current_tracking_map().empty());
+}
+
+
 TEST_F(SatelliteVisibilityTest, DisabledSearchDoesNotReadNavigationData)
 {
     auto disabled_configuration = std::make_shared<InMemoryConfiguration>();
@@ -467,6 +579,74 @@ TEST_F(SatelliteVisibilityTest, GlonassAlmanacHealthAgeAndMissingDate)
 }
 
 
+TEST_F(SatelliteVisibilityTest, GlonassSearchCombinesSlotsOnTheSameFrequency)
+{
+    Glonass_Gnav_Ephemeris ephemeris;
+    ephemeris.PRN = ephemeris.i_satellite_slot_number = 1;
+    ephemeris.d_yr = 2024;
+    ephemeris.d_N_T = 1;
+    ephemeris.d_t_b = ephemeris.d_t_k = 10800.0;
+    ephemeris.d_Xn = -25500.0;
+    ephemeris.d_VZn = 3.9;
+    pvt->glonass_ephemeris[1] = ephemeris;
+    const auto epoch = eph_to_rtklib(ephemeris, pvt->glo_utc).toe;
+    int week = 0;
+    fix.RX_time = time2gpst(epoch, &week);
+    fix.week = week;
+    SatelliteVisibility visibility(configuration);
+    const Gnss_Satellite representative("Glonass", 1);
+    const Gnss_Satellite partner("Glonass", 5);
+    auto update = [&]() {
+        for (int tick = 0; tick < 20; ++tick)
+            {
+                visibility.Tick(pvt, fix);
+            }
+    };
+
+    // Slot 1 is below the horizon, but missing data for slot 5 must leave
+    // their shared frequency searchable as unknown.
+    update();
+    EXPECT_TRUE(visibility.IsExcluded(representative));
+    EXPECT_FALSE(visibility.IsSearchExcluded(representative));
+    EXPECT_FALSE(visibility.IsSearchVisible(representative));
+
+    ephemeris.PRN = ephemeris.i_satellite_slot_number = 5;
+    ephemeris.d_Xn = 25500.0;
+    pvt->glonass_ephemeris[5] = ephemeris;
+    update();
+    EXPECT_TRUE(visibility.IsExcluded(representative));
+    EXPECT_TRUE(visibility.IsVisible(partner));
+    for (const auto& satellite : {representative, partner})
+        {
+            EXPECT_TRUE(visibility.IsSearchVisible(satellite));
+            EXPECT_FALSE(visibility.IsSearchExcluded(satellite));
+        }
+
+    // A visible slot on another frequency cannot keep this one eligible.
+    ephemeris.PRN = ephemeris.i_satellite_slot_number = 2;
+    pvt->glonass_ephemeris[2] = ephemeris;
+    pvt->glonass_ephemeris[5].d_B_n = 4;
+    update();
+    EXPECT_TRUE(visibility.IsVisible(Gnss_Satellite("Glonass", 2)));
+    for (const auto& satellite : {representative, partner})
+        {
+            EXPECT_FALSE(visibility.IsSearchVisible(satellite));
+            EXPECT_TRUE(visibility.IsSearchExcluded(satellite));
+        }
+
+    pvt->glonass_ephemeris.erase(5);
+    update();
+    EXPECT_FALSE(visibility.IsSearchExcluded(representative));
+    EXPECT_FALSE(visibility.IsSearchVisible(representative));
+
+    fix.RX_time += MAXDTOE_GLO + 1.0;
+    update();
+    EXPECT_FALSE(visibility.IsExcluded(representative));
+    EXPECT_FALSE(visibility.IsSearchExcluded(representative));
+    EXPECT_FALSE(visibility.IsSearchVisible(representative));
+}
+
+
 TEST_F(SatelliteVisibilityTest, GlonassEphemerisPrecedesAlmanacAndExpires)
 {
     Glonass_Gnav_Ephemeris ephemeris;
@@ -536,6 +716,8 @@ TEST_F(SatelliteVisibilityTest, QzssLnavCnavAlmanacAndAlias)
     EXPECT_TRUE(visibility.IsVisible(Gnss_Satellite("QZSS", 195)));
     EXPECT_TRUE(visibility.IsVisible(Gnss_Satellite("QZSS", 196)));
     EXPECT_TRUE(visibility.IsVisible(Gnss_Satellite("QZSS", 203)));  // alias of 196
+    EXPECT_TRUE(visibility.IsSearchVisible(Gnss_Satellite("QZSS", 203)));
+    EXPECT_FALSE(visibility.IsSearchExcluded(Gnss_Satellite("QZSS", 203)));
     EXPECT_EQ(3U, ClassifiedCount(gpst2time(fix.week, fix.RX_time)));
     EXPECT_EQ(0U, ClassifiedCount(gpst2time(fix.week + 1, fix.RX_time)));
     pvt->gps_eph[196].SV_health = 1;
@@ -544,4 +726,6 @@ TEST_F(SatelliteVisibilityTest, QzssLnavCnavAlmanacAndAlias)
             visibility.Tick(pvt, fix);
         }
     EXPECT_TRUE(visibility.IsExcluded(Gnss_Satellite("QZSS", 203)));
+    EXPECT_TRUE(visibility.IsSearchExcluded(Gnss_Satellite("QZSS", 203)));
+    EXPECT_FALSE(visibility.IsSearchVisible(Gnss_Satellite("QZSS", 203)));
 }

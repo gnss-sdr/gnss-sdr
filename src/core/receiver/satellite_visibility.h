@@ -125,21 +125,39 @@ public:
 
     /*!
      * \brief Re-evaluates visibility when one of the triggers listed in the
-     * class description fires. Uses the live fix when valid, else
+     * class description fires. Uses the latest fix position, else
      * GNSS-SDR.AGNSS_ref_location/AGNSS_ref_utc_time if configured, else
-     * does nothing.
+     * does nothing. Elapsed sample time advances the epoch between fixes
+     * and before the first fix, including during recorded-data playback.
      *
+     * \param receiver_time_s elapsed sample time, independent of valid fixes.
      * \returns true iff visible_/excluded_ membership changed, i.e. the
      * caller must rebuild its per-signal search queues.
      */
-    bool Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, const Monitor_Pvt& fix_status);
+    bool Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, const Monitor_Pvt& fix_status,
+        double receiver_time_s = 0.0);
 
     bool IsVisible(const Gnss_Satellite& sat) const;
     // Elevation computable and at/below the mask (or unhealthy). Not the
     // negation of IsVisible(): a satellite with no data is in neither set.
     bool IsExcluded(const Gnss_Satellite& sat) const;
 
+    // GLONASS acquisition searches an FDMA frequency shared by orbital slots:
+    // visible if any slot is visible, excluded only if every slot is excluded.
+    // Other constellations retain their per-satellite classification.
+    bool IsSearchVisible(const Gnss_Satellite& sat) const;
+    bool IsSearchExcluded(const Gnss_Satellite& sat) const;
+
 private:
+    enum class SearchVisibility
+    {
+        Unknown,
+        Visible,
+        Excluded
+    };
+
+    SearchVisibility GetSearchVisibility(const Gnss_Satellite& sat) const;
+
     // changed_prns_out, when non-null, receives every (system, PRN) added,
     // updated, or removed since the last check, so Tick() can recompute only
     // those. Left untouched on the first call, which forces a full recompute
@@ -167,7 +185,7 @@ private:
     double agnss_ref_lon_deg_;
 
     // GNSS-SDR.AGNSS_ref_utc_time, falling back to wall-clock time if unset.
-    // Query epoch for the no-fix fallback; in replay runs the wall clock is
+    // Initial epoch for the no-fix fallback; in replay runs the wall clock is
     // unrelated to the GNSS time in the samples, so configure it explicitly.
     time_t agnss_ref_utc_time_;
 
@@ -189,14 +207,15 @@ private:
     // mask and health decisions, never these rounded values.
     std::map<std::pair<std::string, uint32_t>, double> reference_elevation_deg_;
 
-    bool last_fix_valid_;
+    // Anchor the last successful fix to the elapsed sample clock. Repeated
+    // status snapshots must not reset this anchor during a solution outage.
+    double last_fix_time_s_{-1.0};
+    double last_fix_receiver_time_s_{0.0};
 
     // (system, "EPH"/"ALM"/"CNAV", PRN) -> (toe/toa as absolute seconds,
     // health). Catches a PRN's data being replaced, not only new PRNs.
     // first_data_check_ tells "never checked" from "checked, still empty".
     std::map<std::tuple<std::string, std::string, uint32_t>, std::pair<double, int32_t>> last_data_fingerprints_;
-
-    bool first_data_check_;
 
     // Absolute GPST seconds (gtime_t.time + sec) of the last full sweep:
     // monotonic across week rollover, and receiver time keeps the interval
@@ -217,6 +236,9 @@ private:
     // throttle so it scales with the tick rate. Seeded at the threshold so
     // the first Tick() checks immediately.
     int ticks_since_data_check_;
+
+    bool last_fix_valid_;
+    bool first_data_check_;
 };
 
 /** \} */

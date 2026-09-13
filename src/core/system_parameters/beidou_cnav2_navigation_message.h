@@ -44,7 +44,7 @@ public:
 
 private:
     void parse_info_bits(const uint8_t* bits, uint32_t channel_prn);
-    void parse_clock_common(const uint8_t* bits, int32_t toc_off);
+    void parse_clock_common(const uint8_t* bits, int32_t toc_off, int32_t iodc_off);
     void update_health(const uint8_t* bits);
     void try_publish();
     bool orbit_compatible() const;

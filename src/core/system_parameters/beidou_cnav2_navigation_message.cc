@@ -178,15 +178,13 @@ void Beidou_Cnav2_Navigation_Message::reset()
 }
 
 
-void Beidou_Cnav2_Navigation_Message::parse_clock_common(const uint8_t* bits, int32_t toc_off)
+void Beidou_Cnav2_Navigation_Message::parse_clock_common(const uint8_t* bits, int32_t toc_off, int32_t iodc_off)
 {
     d_cand.toc = static_cast<int32_t>(read_unsigned(bits, toc_off, 11) * 300);
     d_cand.af0 = static_cast<double>(read_signed(bits, toc_off + 11, 25)) * BEIDOU_CNAV1_AF0_LSB;
     d_cand.af1 = static_cast<double>(read_signed(bits, toc_off + 36, 22)) * BEIDOU_CNAV1_AF1_LSB;
     d_cand.af2 = static_cast<double>(read_signed(bits, toc_off + 58, 11)) * BEIDOU_CNAV1_AF2_LSB;
-    const auto iodc_msb = static_cast<int32_t>(read_unsigned(bits, toc_off + 69, 2));
-    const auto iodc_lsb = static_cast<int32_t>(read_unsigned(bits, toc_off + 71, 8));
-    d_iodc = (iodc_msb << 8) | iodc_lsb;
+    d_iodc = static_cast<int32_t>(read_unsigned(bits, iodc_off, 10));
     d_cand.IODC = static_cast<double>(d_iodc);
     d_have_clk = true;
 }
@@ -319,20 +317,24 @@ void Beidou_Cnav2_Navigation_Message::parse_info_bits(const uint8_t* bits, uint3
         }
     else if (mes_type == BEIDOU_CNAV2_MSG_CLK_IONO)
         {
-            parse_clock_common(bits, 42);
+            parse_clock_common(bits, 42, 111);
             d_cand.TGD_B2ap = static_cast<double>(read_signed(bits, 121, 12)) * BEIDOU_CNAV1_TGD_LSB;
             d_cand.ISC_B2ad = static_cast<double>(read_signed(bits, 133, 12)) * BEIDOU_CNAV1_ISC_LSB;
             d_cand.TGD_B1Cp = static_cast<double>(read_signed(bits, 219, 12)) * BEIDOU_CNAV1_TGD_LSB;
         }
     else if (mes_type == BEIDOU_CNAV2_MSG_CLK_ALM ||
-             mes_type == BEIDOU_CNAV2_MSG_CLK_EOP ||
-             mes_type == BEIDOU_CNAV2_MSG_CLK_UTC)
+             mes_type == BEIDOU_CNAV2_MSG_CLK_EOP)
         {
-            parse_clock_common(bits, 42);
+            parse_clock_common(bits, 42, 111);
+        }
+    else if (mes_type == BEIDOU_CNAV2_MSG_CLK_UTC)
+        {
+            // MT33 places IODC after BGTO and reduced almanac (B2a ICD Fig. 6-8).
+            parse_clock_common(bits, 42, 217);
         }
     else if (mes_type == BEIDOU_CNAV2_MSG_CLK_DC)
         {
-            parse_clock_common(bits, 64);
+            parse_clock_common(bits, 64, 133);
         }
 
     try_publish();

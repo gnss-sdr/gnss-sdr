@@ -151,7 +151,7 @@ public:
     /*!
      * \brief Print RINEX navigation records for BeiDou B-CNAV2 ephemerides.
      *
-     * RINEX 4 writes CNV2 records (Table A25) with ISC_B2ad on orbit line 7.
+     * RINEX 4 writes CNV2 records (Table A25) with ISC_B2ad in the second field of orbit line 7.
      * RINEX 3 has no CNV2 representation; records are omitted rather than
      * written as CNV1 or D1 stand-ins.
      */

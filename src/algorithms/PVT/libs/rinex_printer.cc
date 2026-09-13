@@ -4114,8 +4114,8 @@ void Rinex_Printer::log_rinex_nav_bds_cnav2(const std::map<int32_t, Beidou_Cnav1
             // SISAI fields are not decoded in the B-CNAV2 first cut.
             out << get_nav_broadcast_orbit(nullptr, nullptr, nullptr, nullptr, d_version) << '\n';
 
-            // -------- BROADCAST ORBIT - 7: ISC_B2ad, spare, TGD_B1Cp, TGD_B2ap
-            out << get_nav_broadcast_orbit(&eph.ISC_B2ad, nullptr, &eph.TGD_B1Cp, &eph.TGD_B2ap, d_version) << '\n';
+            // -------- BROADCAST ORBIT - 7: spare, ISC_B2ad, TGD_B1Cp, TGD_B2ap
+            out << get_nav_broadcast_orbit(nullptr, &eph.ISC_B2ad, &eph.TGD_B1Cp, &eph.TGD_B2ap, d_version) << '\n';
 
             const auto health_d = static_cast<double>(eph.hs);
             out << get_nav_broadcast_orbit(nullptr, &health_d, nullptr, &eph.IODC, d_version) << '\n';

@@ -299,6 +299,18 @@ void Glonass_Gnav_Navigation_Message::apply_kp_leap_second(int32_t leap_s)
 void Glonass_Gnav_Navigation_Message::update_almanac_satellite_info()
 {
     Glonass_Gnav_Almanac& alm = gnav_almanac[i_alm_satellite_slot_number - 1];
+    // Freeze the date with this record; later string-5 updates must not redate
+    // an older satellite's almanac. N4 describes the current four-year interval.
+    alm.d_N_A = static_cast<int32_t>(gnav_utc_model.d_N_A);
+    alm.d_N_4 = static_cast<int32_t>(gnav_utc_model.d_N_4);
+    if (alm.d_N_A - gnav_ephemeris.d_N_T > 730.0)
+        {
+            --alm.d_N_4;
+        }
+    else if (gnav_ephemeris.d_N_T - alm.d_N_A > 730.0)
+        {
+            ++alm.d_N_4;
+        }
     // H_n_A values 25..31 represent carrier frequency channels -7..-1, values
     // 0..13 map directly to channels 0..13, and values 14..24 are not used
     // (GLONASS ICD Table 4.10)

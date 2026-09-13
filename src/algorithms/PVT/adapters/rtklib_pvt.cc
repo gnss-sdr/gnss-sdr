@@ -955,3 +955,24 @@ gr::basic_block_sptr Rtklib_Pvt::get_right_block()
 {
     return nullptr;  // this is a sink, nothing downstream
 }
+
+
+std::map<int, Gps_CNAV_Ephemeris> Rtklib_Pvt::get_gps_cnav_ephemeris() const
+{
+    return pvt_->get_gps_cnav_ephemeris_map();
+}
+
+std::map<int, Glonass_Gnav_Ephemeris> Rtklib_Pvt::get_glonass_ephemeris() const
+{
+    return pvt_->get_glonass_ephemeris_map();
+}
+
+std::map<int, Glonass_Gnav_Almanac> Rtklib_Pvt::get_glonass_almanac() const
+{
+    return pvt_->get_glonass_almanac_map();
+}
+
+Glonass_Gnav_Utc_Model Rtklib_Pvt::get_glonass_utc_model() const
+{
+    return pvt_->get_glonass_utc_model();
+}

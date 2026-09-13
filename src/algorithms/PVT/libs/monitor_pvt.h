@@ -36,14 +36,11 @@ class Monitor_Pvt
 {
 public:
     /*!
-     * \brief One tracked satellite/signal, with its azimuth/elevation,
-     * whether it was combined with another signal of the same satellite
-     * (e.g. Galileo E1+E5a iono-free combination -- see the
-     * "dual-frequency" branch of prange() in rtklib_pntpos.cc), and whether
-     * it was actually used in this fix (see the `used` member below).
-     * Signals are listed individually (one entry per satellite per signal),
-     * not merged, so a combined satellite appears as two entries both
-     * flagged combined = true.
+     * \brief One tracked satellite/signal with its azimuth/elevation, whether
+     * it was combined with another signal of the same satellite (e.g. Galileo
+     * E1+E5a iono-free combination) and whether it was used in this fix.
+     * Signals are listed individually (one entry per satellite per signal):
+     * a combined satellite appears as two entries, both with combined = true.
      */
     class TrackedSatelliteInfo
     {
@@ -54,11 +51,8 @@ public:
         double azimuth_deg{};
         double elevation_deg{};
         bool combined{};
-        // false when this satellite/signal was tracked and had azimuth/elevation
-        // computed but was excluded from the fix itself (e.g. below
-        // PVT.elevation_mask, or by RAIM FDE) -- azimuth_deg/elevation_deg are
-        // still valid in that case, only the position solve ignored this
-        // observation.
+        // false when tracked (az/el valid) but excluded from the solve, e.g.
+        // below PVT.elevation_mask or by RAIM FDE.
         bool used{true};
 
         template <class Archive>

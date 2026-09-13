@@ -271,7 +271,10 @@ void alm2pos(gtime_t time, const alm_t *alm, double *rs, double *dts)
 
     trace(4, "alm2pos : time=%s sat=%2d\n", time_str(time, 3), alm->sat);
 
-    tk = timediffweekcrossover(time, alm->toa);
+    /* alm->toa is an absolute epoch and almanacs stay valid for weeks, so tk
+     * may legitimately exceed half a week: the week-crossover wrapper would
+     * propagate from the wrong epoch. */
+    tk = timediff(time, alm->toa);
 
     if (alm->A <= 0.0)
         {

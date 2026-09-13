@@ -32,9 +32,11 @@
 #include "gnss_signal.h"
 #include "osnma_msg_receiver.h"
 #include "pvt_interface.h"
+#include "satellite_visibility.h"
 #include <gnuradio/blocks/null_sink.h>  // for null_sink
 #include <gnuradio/runtime_types.h>     // for basic_block_sptr, top_block_sptr
 #include <pmt/pmt.h>                    // for pmt_t
+#include <chrono>                       // for steady_clock
 #include <list>                         // for list
 #include <map>                          // for map
 #include <memory>                       // for for shared_ptr, dynamic_pointer_cast
@@ -159,6 +161,33 @@ public:
      */
     void priorize_satellites(const std::vector<std::pair<int, Gnss_Satellite>>& visible_satellites);
 
+    /*!
+     * \brief Re-evaluates satellite visibility when warranted (new fix, new
+     * ephemeris/almanac, or recompute interval elapsed) so that subsequent
+     * search_next_signal() calls favor visible satellites.
+     * No-op unless GNSS-SDR.enable_visibility_aware_search=true.
+     */
+    void MaybeUpdateVisibility();
+
+    /*!
+     * \brief Whether GNSS-SDR.enable_visibility_aware_search is on, so callers can
+     * skip the legacy get_visible_sats()/priorize_satellites() startup reorder that
+     * MaybeUpdateVisibility() supersedes.
+     */
+    bool visibility_aware_search_enabled() const;
+
+    /*!
+     * \brief Stops any channel whose decoded satellite is already tracked, on the
+     * same signal, by another channel with higher C/N0. The stopped channel's
+     * assignment returns to the search pool and the channel is re-dispatched.
+     *
+     * GLONASS channels are assigned a frequency channel and only learn their
+     * orbital slot from the navigation message, so a false lock can be relabelled
+     * as a satellite another channel already tracks; duplicate observations of
+     * one satellite break the PVT solution.
+     */
+    void stop_duplicated_satellite_channels();
+
 #if ENABLE_FPGA
     void start_acquisition_helper();
 
@@ -208,10 +237,19 @@ private:
         bool& is_primary_frequency,
         bool& assistance_available,
         float& estimated_doppler,
-        double& RX_time);
+        double& RX_time,
+        bool& signal_available);
 
     void push_back_signal(const Gnss_Signal& gs);
     void remove_signal(const Gnss_Signal& gs);
+
+    // Visibility-aware replacement for available_signals.front()/pop_front() in
+    // search_next_signal(): erases and returns the next searchable entry from the
+    // visible or maybe-visible bucket selected by the search-ratio counter, falling
+    // back to the other bucket when the selected one is empty; FIFO order is kept
+    // within each bucket. Excluded entries are never picked but stay queued until
+    // the next visibility recompute. Sets picked=false when nothing is searchable.
+    Gnss_Signal pop_by_visibility(std::list<Gnss_Signal>& available_signals, const std::string& searched_signal, bool& picked);
     void print_help();
     void check_desktop_conf_in_fpga_env();
 
@@ -252,6 +290,19 @@ private:
     std::vector<unsigned int> channels_state_;  // 0 - Idle, 1 - Assigned, 2 - Acquisition, 3 - Tracking
 
     std::unordered_map<std::string, std::list<Gnss_Signal>> available_signals_map_;
+
+    std::unique_ptr<SatelliteVisibility> satellite_visibility_;
+    std::unordered_map<std::string, uint32_t> visibility_pick_counter_;  // per signal_str, ratio-based visible/maybe-visible cycling
+    // Signals whose pool pop_by_visibility() found fully excluded. Cached because
+    // acquisition_manager() re-queries every idle channel at ~10 Hz and each scan
+    // copies channels_status_ under a lock shared with the DSP threads. Invalidated
+    // per signal by push_back_signal(), and entirely when MaybeUpdateVisibility()
+    // changes the classification.
+    std::set<std::string> signals_with_nothing_searchable_;
+    // Rate-limits the "no assist-tracked satellite available" log in
+    // search_next_signal(): the condition is re-evaluated for every idle channel at
+    // ~10 Hz and would otherwise flood the log.
+    std::unordered_map<std::string, std::chrono::steady_clock::time_point> no_assist_log_throttle_;
 
     enum StringValue
     {

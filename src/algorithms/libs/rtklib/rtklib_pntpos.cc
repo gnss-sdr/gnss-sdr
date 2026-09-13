@@ -723,14 +723,9 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                     continue;
                 }
             double elaux = satazel(pos, e, azel + i * 2);
-            /* !isfinite(elaux): corrupt ephemeris/almanac (e.g. an out-of-range
-             * eccentricity) can propagate NaN through eph2pos()/alm2pos() into
-             * azel -- azel itself is intentionally left as computed (including
-             * NaN) for callers that report it (e.g. the monitor's per-satellite
-             * az/el), but a NaN elevation must not be allowed into the position
-             * solve below: elaux < opt->elmin is a no-op against NaN (every
-             * relational comparison against NaN is false), so it would
-             * otherwise fall through as if elmin had been satisfied. */
+            /* Reject NaN explicitly: every comparison with NaN is false, so a NaN
+             * elevation (corrupt ephemeris/almanac) would otherwise pass the
+             * mask. azel is left as computed for callers that report it. */
             if (elaux < opt->elmin || !std::isfinite(elaux))
                 {
                     trace(4, "satazel error. el = %lf , elmin = %lf\n", elaux, opt->elmin);
@@ -739,9 +734,8 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
             /* psudorange with code bias correction */
             double iono_scale = 1.0;
             P = prange(obs + i, nav, azel + i * 2, iter, opt, &vmeas, &iono_scale);
-            /* Same NaN concern as above, for prange()'s own corrections (iono/
-             * tropo/code bias) -- P == 0.0 is prange()'s own "no valid pseudorange"
-             * sentinel and doesn't catch NaN either. */
+            /* 0.0 is prange()'s "no valid pseudorange" sentinel; it does not
+             * catch a NaN from the iono/tropo/code-bias corrections. */
             if (P == 0.0 || !std::isfinite(P))
                 {
                     trace(4, "prange error\n");

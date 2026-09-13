@@ -184,6 +184,34 @@ rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
 }
 
 
+struct rtklib_pvt_gs::NavigationSnapshot
+{
+    // Type aliases keep the closing template brackets out of the member
+    // initializers: GCC 4.8 parses in-class initializers late and reads a
+    // ">>" there as a right shift.
+    using GpsCnavEphemerisMap = std::map<int, Gps_CNAV_Ephemeris>;
+    using GlonassEphemerisMap = std::map<int, Glonass_Gnav_Ephemeris>;
+    using GlonassAlmanacMap = std::map<int, Glonass_Gnav_Almanac>;
+    using GpsEphemerisMap = std::map<int, Gps_Ephemeris>;
+    using GpsAlmanacMap = std::map<int, Gps_Almanac>;
+    using GalileoEphemerisMap = std::map<int, Galileo_Ephemeris>;
+    using GalileoAlmanacMap = std::map<int, Galileo_Almanac>;
+    using BeidouEphemerisMap = std::map<int, Beidou_Dnav_Ephemeris>;
+    using BeidouAlmanacMap = std::map<int, Beidou_Dnav_Almanac>;
+
+    std::shared_ptr<const GpsCnavEphemerisMap> gps_cnav_ephemeris = std::make_shared<const GpsCnavEphemerisMap>();
+    std::shared_ptr<const GlonassEphemerisMap> glonass_ephemeris = std::make_shared<const GlonassEphemerisMap>();
+    std::shared_ptr<const GlonassAlmanacMap> glonass_almanac = std::make_shared<const GlonassAlmanacMap>();
+    Glonass_Gnav_Utc_Model glonass_utc_model;
+    std::shared_ptr<const GpsEphemerisMap> gps_ephemeris = std::make_shared<const GpsEphemerisMap>();
+    std::shared_ptr<const GpsAlmanacMap> gps_almanac = std::make_shared<const GpsAlmanacMap>();
+    std::shared_ptr<const GalileoEphemerisMap> galileo_ephemeris = std::make_shared<const GalileoEphemerisMap>();
+    std::shared_ptr<const GalileoAlmanacMap> galileo_almanac = std::make_shared<const GalileoAlmanacMap>();
+    std::shared_ptr<const BeidouEphemerisMap> beidou_ephemeris = std::make_shared<const BeidouEphemerisMap>();
+    std::shared_ptr<const BeidouAlmanacMap> beidou_almanac = std::make_shared<const BeidouAlmanacMap>();
+};
+
+
 rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,
     const rtk_t& rtk,
@@ -191,6 +219,8 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     : gr::sync_block("rtklib_pvt_gs",
           gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
           gr::io_signature::make(0, 0, 0)),
+      d_empty_navigation_snapshot(std::make_shared<const NavigationSnapshot>()),
+      d_navigation_snapshot(d_empty_navigation_snapshot),
       d_queue_name("gnss_sdr_ttff_message_queue"),
       d_dump_filename(conf_.dump_filename),
       d_geohash(std::make_unique<Geohash>()),
@@ -721,6 +751,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 
 rtklib_pvt_gs::~rtklib_pvt_gs()
 {
+    apply_pending_navigation_clear();
     DLOG(INFO) << "PVT block destructor called.";
     if (d_ntrip_client)
         {
@@ -1441,6 +1472,7 @@ rtklib_pvt_gs::~rtklib_pvt_gs()
 
 void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
 {
+    apply_pending_navigation_clear();
     try
         {
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
@@ -1838,9 +1870,11 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                     // ### GLONASS GNAV Almanac ###
                     const auto glonass_gnav_almanac = wht::any_cast<std::shared_ptr<Glonass_Gnav_Almanac>>(pmt::any_ref(msg));
                     d_internal_pvt_solver->glonass_gnav_almanac = *glonass_gnav_almanac;
+                    d_internal_pvt_solver->glonass_gnav_almanac_map[glonass_gnav_almanac->PRN] = *glonass_gnav_almanac;
                     if (d_enable_rx_clock_correction == true)
                         {
                             d_user_pvt_solver->glonass_gnav_almanac = *glonass_gnav_almanac;
+                            d_user_pvt_solver->glonass_gnav_almanac_map[glonass_gnav_almanac->PRN] = *glonass_gnav_almanac;
                         }
                     DLOG(INFO) << "New GLONASS GNAV Almanac has arrived"
                                << ", GLONASS GNAV Slot Number =" << glonass_gnav_almanac->d_n_A;
@@ -1983,6 +2017,47 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                 {
                     LOG(WARNING) << "msg_handler_telemetry unknown object type!";
                 }
+
+            if (msg_type_hash_code == d_gps_ephemeris_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::GpsEphemeris);
+                }
+            else if (msg_type_hash_code == d_gps_cnav_ephemeris_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::GpsCnavEphemeris);
+                }
+            else if (msg_type_hash_code == d_glonass_gnav_ephemeris_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::GlonassEphemeris);
+                }
+            else if (msg_type_hash_code == d_glonass_gnav_almanac_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::GlonassAlmanac);
+                }
+            else if (msg_type_hash_code == d_glonass_gnav_utc_model_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::GlonassUtcModel);
+                }
+            else if (msg_type_hash_code == d_gps_almanac_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::GpsAlmanac);
+                }
+            else if (msg_type_hash_code == d_galileo_ephemeris_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::GalileoEphemeris);
+                }
+            else if (msg_type_hash_code == d_galileo_almanac_sptr_type_hash_code || msg_type_hash_code == d_galileo_almanac_helper_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::GalileoAlmanac);
+                }
+            else if (msg_type_hash_code == d_beidou_dnav_ephemeris_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::BeidouEphemeris);
+                }
+            else if (msg_type_hash_code == d_beidou_dnav_almanac_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::BeidouAlmanac);
+                }
         }
     catch (const wht::bad_any_cast& e)
         {
@@ -2067,46 +2142,131 @@ void rtklib_pvt_gs::msg_handler_osnma(const pmt::pmt_t& msg)
 }
 
 
+std::shared_ptr<const rtklib_pvt_gs::NavigationSnapshot> rtklib_pvt_gs::navigation_snapshot() const
+{
+    std::lock_guard<std::mutex> lock(d_snapshot_mutex);
+    return d_navigation_snapshot;
+}
+
+
+void rtklib_pvt_gs::publish_navigation_snapshot(NavigationData data)
+{
+    const auto previous = navigation_snapshot();
+    auto updated = std::make_shared<NavigationSnapshot>(*previous);
+    switch (data)
+        {
+        case NavigationData::GpsCnavEphemeris:
+            updated->gps_cnav_ephemeris = std::make_shared<const NavigationSnapshot::GpsCnavEphemerisMap>(d_internal_pvt_solver->gps_cnav_ephemeris_map);
+            break;
+        case NavigationData::GlonassEphemeris:
+            updated->glonass_ephemeris = std::make_shared<const NavigationSnapshot::GlonassEphemerisMap>(d_internal_pvt_solver->glonass_gnav_ephemeris_map);
+            break;
+        case NavigationData::GlonassAlmanac:
+            updated->glonass_almanac = std::make_shared<const NavigationSnapshot::GlonassAlmanacMap>(d_internal_pvt_solver->glonass_gnav_almanac_map);
+            break;
+        case NavigationData::GlonassUtcModel:
+            updated->glonass_utc_model = d_internal_pvt_solver->glonass_gnav_utc_model;
+            break;
+        case NavigationData::GpsEphemeris:
+            updated->gps_ephemeris = std::make_shared<const NavigationSnapshot::GpsEphemerisMap>(d_internal_pvt_solver->gps_ephemeris_map);
+            break;
+        case NavigationData::GpsAlmanac:
+            updated->gps_almanac = std::make_shared<const NavigationSnapshot::GpsAlmanacMap>(d_internal_pvt_solver->gps_almanac_map);
+            break;
+        case NavigationData::GalileoEphemeris:
+            updated->galileo_ephemeris = std::make_shared<const NavigationSnapshot::GalileoEphemerisMap>(d_internal_pvt_solver->get_galileo_ephemeris_map_for_pvt());
+            break;
+        case NavigationData::GalileoAlmanac:
+            updated->galileo_almanac = std::make_shared<const NavigationSnapshot::GalileoAlmanacMap>(d_internal_pvt_solver->galileo_almanac_map);
+            break;
+        case NavigationData::BeidouEphemeris:
+            updated->beidou_ephemeris = std::make_shared<const NavigationSnapshot::BeidouEphemerisMap>(d_internal_pvt_solver->beidou_dnav_ephemeris_map);
+            break;
+        case NavigationData::BeidouAlmanac:
+            updated->beidou_almanac = std::make_shared<const NavigationSnapshot::BeidouAlmanacMap>(d_internal_pvt_solver->beidou_dnav_almanac_map);
+            break;
+        }
+    std::shared_ptr<const NavigationSnapshot> published = std::move(updated);
+    {
+        std::lock_guard<std::mutex> lock(d_snapshot_mutex);
+        // A concurrent clear must not be undone by a snapshot built before
+        // the worker has applied that clear to the solver maps.
+        if (d_navigation_generation.load(std::memory_order_relaxed) == d_applied_navigation_generation)
+            {
+                d_navigation_snapshot.swap(published);
+            }
+    }
+}
+
+
 std::map<int, Gps_Ephemeris> rtklib_pvt_gs::get_gps_ephemeris_map() const
 {
-    return d_internal_pvt_solver->gps_ephemeris_map;
+    const auto snapshot = navigation_snapshot();
+    return *snapshot->gps_ephemeris;
 }
 
 
 std::map<int, Gps_Almanac> rtklib_pvt_gs::get_gps_almanac_map() const
 {
-    return d_internal_pvt_solver->gps_almanac_map;
+    const auto snapshot = navigation_snapshot();
+    return *snapshot->gps_almanac;
 }
 
 
 std::map<int, Galileo_Ephemeris> rtklib_pvt_gs::get_galileo_ephemeris_map() const
 {
-    return d_internal_pvt_solver->get_galileo_ephemeris_map_for_pvt();
+    const auto snapshot = navigation_snapshot();
+    return *snapshot->galileo_ephemeris;
 }
 
 
 std::map<int, Galileo_Almanac> rtklib_pvt_gs::get_galileo_almanac_map() const
 {
-    return d_internal_pvt_solver->galileo_almanac_map;
+    const auto snapshot = navigation_snapshot();
+    return *snapshot->galileo_almanac;
 }
 
 
 std::map<int, Beidou_Dnav_Ephemeris> rtklib_pvt_gs::get_beidou_dnav_ephemeris_map() const
 {
-    return d_internal_pvt_solver->beidou_dnav_ephemeris_map;
+    const auto snapshot = navigation_snapshot();
+    return *snapshot->beidou_ephemeris;
 }
 
 
 std::map<int, Beidou_Dnav_Almanac> rtklib_pvt_gs::get_beidou_dnav_almanac_map() const
 {
-    return d_internal_pvt_solver->beidou_dnav_almanac_map;
+    const auto snapshot = navigation_snapshot();
+    return *snapshot->beidou_almanac;
 }
 
 
 void rtklib_pvt_gs::clear_ephemeris()
 {
+    auto previous = d_empty_navigation_snapshot;
+    {
+        std::lock_guard<std::mutex> lock(d_snapshot_mutex);
+        d_navigation_generation.fetch_add(1, std::memory_order_release);
+        d_navigation_snapshot.swap(previous);
+    }
+    // The worker owns the solvers. Invalidate readers immediately, but defer
+    // clearing mutable maps until it is between work/telemetry callbacks.
+}
+
+
+void rtklib_pvt_gs::apply_pending_navigation_clear()
+{
+    const uint32_t generation = d_navigation_generation.load(std::memory_order_acquire);
+    if (generation == d_applied_navigation_generation)
+        {
+            return;
+        }
     d_internal_pvt_solver->clear_gps_ephemerides();
     d_internal_pvt_solver->gps_almanac_map.clear();
+    d_internal_pvt_solver->gps_cnav_ephemeris_map.clear();
+    d_internal_pvt_solver->glonass_gnav_ephemeris_map.clear();
+    d_internal_pvt_solver->glonass_gnav_almanac_map.clear();
+    d_internal_pvt_solver->glonass_gnav_almanac = Glonass_Gnav_Almanac();
     d_internal_pvt_solver->galileo_ephemeris_map.clear();
     d_internal_pvt_solver->galileo_ephemeris_store.clear();
     d_internal_pvt_solver->galileo_reduced_ced_map.clear();
@@ -2117,6 +2277,10 @@ void rtklib_pvt_gs::clear_ephemeris()
         {
             d_user_pvt_solver->clear_gps_ephemerides();
             d_user_pvt_solver->gps_almanac_map.clear();
+            d_user_pvt_solver->gps_cnav_ephemeris_map.clear();
+            d_user_pvt_solver->glonass_gnav_ephemeris_map.clear();
+            d_user_pvt_solver->glonass_gnav_almanac_map.clear();
+            d_user_pvt_solver->glonass_gnav_almanac = Glonass_Gnav_Almanac();
             d_user_pvt_solver->galileo_ephemeris_map.clear();
             d_user_pvt_solver->galileo_ephemeris_store.clear();
             d_user_pvt_solver->galileo_reduced_ced_map.clear();
@@ -2124,6 +2288,7 @@ void rtklib_pvt_gs::clear_ephemeris()
             d_user_pvt_solver->beidou_dnav_ephemeris_map.clear();
             d_user_pvt_solver->beidou_dnav_almanac_map.clear();
         }
+    d_applied_navigation_generation = generation;
 }
 
 
@@ -2230,36 +2395,41 @@ bool rtklib_pvt_gs::get_latest_PVT(double* longitude_deg,
     double* course_over_ground_deg,
     time_t* UTC_time) const
 {
-    if (d_enable_rx_clock_correction == true)
+    LatestPvt snapshot;
+    {
+        std::lock_guard<std::mutex> lock(d_snapshot_mutex);
+        snapshot = d_latest_pvt;
+    }
+    if (!snapshot.valid)
         {
-            if (d_user_pvt_solver->is_valid_position())
-                {
-                    *latitude_deg = d_user_pvt_solver->get_latitude();
-                    *longitude_deg = d_user_pvt_solver->get_longitude();
-                    *height_m = d_user_pvt_solver->get_height();
-                    *ground_speed_kmh = d_user_pvt_solver->get_speed_over_ground() * 3600.0 / 1000.0;
-                    *course_over_ground_deg = d_user_pvt_solver->get_course_over_ground();
-                    *UTC_time = convert_to_time_t(d_user_pvt_solver->get_position_UTC_time());
-
-                    return true;
-                }
+            return false;
         }
-    else
+    *longitude_deg = snapshot.longitude_deg;
+    *latitude_deg = snapshot.latitude_deg;
+    *height_m = snapshot.height_m;
+    *ground_speed_kmh = snapshot.ground_speed_kmh;
+    *course_over_ground_deg = snapshot.course_over_ground_deg;
+    *UTC_time = snapshot.utc_time;
+    return true;
+}
+
+
+void rtklib_pvt_gs::publish_latest_pvt()
+{
+    LatestPvt snapshot;
+    const auto& solver = d_enable_rx_clock_correction ? d_user_pvt_solver : d_internal_pvt_solver;
+    snapshot.valid = solver->is_valid_position();
+    if (snapshot.valid)
         {
-            if (d_internal_pvt_solver->is_valid_position())
-                {
-                    *latitude_deg = d_internal_pvt_solver->get_latitude();
-                    *longitude_deg = d_internal_pvt_solver->get_longitude();
-                    *height_m = d_internal_pvt_solver->get_height();
-                    *ground_speed_kmh = d_internal_pvt_solver->get_speed_over_ground() * 3600.0 / 1000.0;
-                    *course_over_ground_deg = d_internal_pvt_solver->get_course_over_ground();
-                    *UTC_time = convert_to_time_t(d_internal_pvt_solver->get_position_UTC_time());
-
-                    return true;
-                }
+            snapshot.latitude_deg = solver->get_latitude();
+            snapshot.longitude_deg = solver->get_longitude();
+            snapshot.height_m = solver->get_height();
+            snapshot.ground_speed_kmh = solver->get_speed_over_ground() * 3.6;
+            snapshot.course_over_ground_deg = solver->get_course_over_ground();
+            snapshot.utc_time = convert_to_time_t(solver->get_position_UTC_time());
         }
-
-    return false;
+    std::lock_guard<std::mutex> lock(d_snapshot_mutex);
+    d_latest_pvt = snapshot;
 }
 
 
@@ -2574,6 +2744,8 @@ void rtklib_pvt_gs::report_solution_outage()
 int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
+    apply_pending_navigation_clear();
+    bool latest_pvt_updated = false;
     // *************** time tags ****************
     if (d_enable_rx_clock_correction == false)  // todo: currently only works if clock correction is disabled
         {
@@ -2842,6 +3014,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             dump_this_epoch = (rx_time_ms % d_output_rate_ms == 0);
                         }
                     // #### solve PVT and store the corrected observable set
+                    latest_pvt_updated = latest_pvt_updated || !d_enable_rx_clock_correction;
                     if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, d_observable_interval_ms / 1000.0, *d_sensor_data_aggregator, dump_this_epoch))
                         {
                             d_pvt_errors_counter = 0;  // Reset consecutive PVT error counter
@@ -3015,6 +3188,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         d_ntrip_max_correction_age_s);
                                     fixed_base = d_fixed_base_snapshot.get();
                                 }
+                            latest_pvt_updated = true;
                             flag_pvt_valid = d_user_pvt_solver->get_PVT(
                                 d_gnss_observables_map,
                                 d_output_rate_ms / 1000.0,
@@ -3302,5 +3476,36 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                 }
         }
 
+    if (latest_pvt_updated)
+        {
+            publish_latest_pvt();
+        }
     return noutput_items;
+}
+
+
+std::map<int, Gps_CNAV_Ephemeris> rtklib_pvt_gs::get_gps_cnav_ephemeris_map() const
+{
+    const auto snapshot = navigation_snapshot();
+    return *snapshot->gps_cnav_ephemeris;
+}
+
+
+std::map<int, Glonass_Gnav_Ephemeris> rtklib_pvt_gs::get_glonass_ephemeris_map() const
+{
+    const auto snapshot = navigation_snapshot();
+    return *snapshot->glonass_ephemeris;
+}
+
+
+std::map<int, Glonass_Gnav_Almanac> rtklib_pvt_gs::get_glonass_almanac_map() const
+{
+    const auto snapshot = navigation_snapshot();
+    return *snapshot->glonass_almanac;
+}
+
+
+Glonass_Gnav_Utc_Model rtklib_pvt_gs::get_glonass_utc_model() const
+{
+    return navigation_snapshot()->glonass_utc_model;
 }

@@ -147,6 +147,7 @@ private:
 #include "unit-tests/control-plane/gnss_synchro_monitor_test.cc"
 #include "unit-tests/control-plane/in_memory_configuration_test.cc"
 #include "unit-tests/control-plane/protobuf_test.cc"
+#include "unit-tests/control-plane/satellite_visibility_test.cc"
 #include "unit-tests/control-plane/string_converter_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_8ms_ambiguous_acquisition_gsoc2013_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_ambiguous_acquisition_gsoc2013_test.cc"

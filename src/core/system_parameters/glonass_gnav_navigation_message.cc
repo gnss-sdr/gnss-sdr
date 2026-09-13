@@ -515,7 +515,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
             i_alm_satellite_slot_number = static_cast<uint32_t>(read_navigation_unsigned(string_bits, N_A));
             d_frame_ID = get_frame_number(i_alm_satellite_slot_number);
             // Make sure a valid frame_ID or satellite slot number is returned
-            if (d_frame_ID == 0)
+            if (d_frame_ID == 0 || i_alm_satellite_slot_number == 0 || i_alm_satellite_slot_number > GLONASS_CA_NBR_SATS)
                 {
                     return 0;
                 }
@@ -534,7 +534,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
 
         case 7:
             // --- It is string 7 ----------------------------------------------
-            if (flag_almanac_str_6 == true)
+            if (flag_almanac_str_6 == true && i_alm_satellite_slot_number > 0 && i_alm_satellite_slot_number <= GLONASS_CA_NBR_SATS)
                 {
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_omega_n_A = static_cast<double>(read_navigation_signed(string_bits, OMEGA_N_A)) * TWO_N15 * GNSS_PI;
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_t_lambda_n_A = static_cast<double>(read_navigation_unsigned(string_bits, T_LAMBDA_N_A)) * TWO_N5;
@@ -560,7 +560,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
             i_alm_satellite_slot_number = static_cast<uint32_t>(read_navigation_unsigned(string_bits, N_A));
             d_frame_ID = get_frame_number(i_alm_satellite_slot_number);
             // Make sure a valid frame_ID or satellite slot number is returned
-            if (d_frame_ID == 0)
+            if (d_frame_ID == 0 || i_alm_satellite_slot_number == 0 || i_alm_satellite_slot_number > GLONASS_CA_NBR_SATS)
                 {
                     return 0;
                 }
@@ -579,7 +579,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
 
         case 9:
             // --- It is string 9 ----------------------------------------------
-            if (flag_almanac_str_8 == true)
+            if (flag_almanac_str_8 == true && i_alm_satellite_slot_number > 0 && i_alm_satellite_slot_number <= GLONASS_CA_NBR_SATS)
                 {
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_omega_n_A = static_cast<double>(read_navigation_signed(string_bits, OMEGA_N_A)) * TWO_N15 * GNSS_PI;
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_t_lambda_n_A = static_cast<double>(read_navigation_unsigned(string_bits, T_LAMBDA_N_A)) * TWO_N5;
@@ -600,7 +600,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
             i_alm_satellite_slot_number = static_cast<uint32_t>(read_navigation_unsigned(string_bits, N_A));
             d_frame_ID = get_frame_number(i_alm_satellite_slot_number);
             // Make sure a valid frame_ID or satellite slot number is returned
-            if (d_frame_ID == 0)
+            if (d_frame_ID == 0 || i_alm_satellite_slot_number == 0 || i_alm_satellite_slot_number > GLONASS_CA_NBR_SATS)
                 {
                     return 0;
                 }
@@ -619,7 +619,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
 
         case 11:
             // --- It is string 11 ---------------------------------------------
-            if (flag_almanac_str_10 == true)
+            if (flag_almanac_str_10 == true && i_alm_satellite_slot_number > 0 && i_alm_satellite_slot_number <= GLONASS_CA_NBR_SATS)
                 {
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_omega_n_A = static_cast<double>(read_navigation_signed(string_bits, OMEGA_N_A)) * TWO_N15 * GNSS_PI;
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_t_lambda_n_A = static_cast<double>(read_navigation_unsigned(string_bits, T_LAMBDA_N_A)) * TWO_N5;
@@ -640,7 +640,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
             i_alm_satellite_slot_number = static_cast<uint32_t>(read_navigation_unsigned(string_bits, N_A));
             d_frame_ID = get_frame_number(i_alm_satellite_slot_number);
             // Make sure a valid frame_ID or satellite slot number is returned
-            if (d_frame_ID == 0)
+            if (d_frame_ID == 0 || i_alm_satellite_slot_number == 0 || i_alm_satellite_slot_number > GLONASS_CA_NBR_SATS)
                 {
                     return 0;
                 }
@@ -658,7 +658,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
 
         case 13:
             // --- It is string 13 ---------------------------------------------
-            if (flag_almanac_str_12 == true)
+            if (flag_almanac_str_12 == true && i_alm_satellite_slot_number > 0 && i_alm_satellite_slot_number <= GLONASS_CA_NBR_SATS)
                 {
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_omega_n_A = static_cast<double>(read_navigation_signed(string_bits, OMEGA_N_A)) * TWO_N15 * GNSS_PI;
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_t_lambda_n_A = static_cast<double>(read_navigation_unsigned(string_bits, T_LAMBDA_N_A)) * TWO_N5;
@@ -693,7 +693,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
                     i_alm_satellite_slot_number = static_cast<uint32_t>(read_navigation_unsigned(string_bits, N_A));
                     // In frames 1-4, string 14 carries the almanac of a satellite
                     // assigned to the frame being received
-                    if (get_frame_number(i_alm_satellite_slot_number) != d_frame_ID)
+                    if (get_frame_number(i_alm_satellite_slot_number) != d_frame_ID || i_alm_satellite_slot_number == 0 || i_alm_satellite_slot_number > GLONASS_CA_NBR_SATS)
                         {
                             return 0;
                         }
@@ -711,7 +711,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
 
         case 15:
             // --- It is string 15 ----------------------------------------------
-            if (d_frame_ID >= 1 && d_frame_ID <= 4 && flag_almanac_str_14 == true)
+            if (d_frame_ID >= 1 && d_frame_ID <= 4 && flag_almanac_str_14 == true && i_alm_satellite_slot_number > 0 && i_alm_satellite_slot_number <= GLONASS_CA_NBR_SATS)
                 {
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_omega_n_A = static_cast<double>(read_navigation_signed(string_bits, OMEGA_N_A)) * TWO_N15 * GNSS_PI;
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_t_lambda_n_A = static_cast<double>(read_navigation_unsigned(string_bits, T_LAMBDA_N_A)) * TWO_N5;

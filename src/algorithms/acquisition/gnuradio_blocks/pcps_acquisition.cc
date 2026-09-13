@@ -308,21 +308,9 @@ bool pcps_acquisition::is_fdma()
 void pcps_acquisition::update_local_carrier(own::span<gr_complex> carrier_vector, float freq) const
 {
     const auto fs_in = d_acq_parameters.use_automatic_resampler ? d_acq_parameters.resampled_fs : d_acq_parameters.fs_in;
-    const double phase_step_rad = TWO_PI * static_cast<double>(freq) / static_cast<double>(fs_in);
-    const gr_complex phase_inc(static_cast<float>(std::cos(phase_step_rad)), static_cast<float>(-std::sin(phase_step_rad)));
-    gr_complex phase(1.0F, 0.0F);
-    auto* out = carrier_vector.data();
-    const auto num_samples = carrier_vector.size();
-    for (std::size_t i = 0; i < num_samples; i++)
-        {
-            out[i] = phase;
-            phase *= phase_inc;
-            if ((i & 511U) == 511U)
-                {
-                    // keep the rotator on the unit circle
-                    phase /= std::abs(phase);
-                }
-        }
+    const auto phase_step_rad = static_cast<float>(TWO_PI) * freq / static_cast<float>(fs_in);
+    std::array<float, 1> _phase{};
+    volk_gnsssdr_s32f_sincos_32fc(carrier_vector.data(), -phase_step_rad, _phase.data(), carrier_vector.size());
 }
 
 

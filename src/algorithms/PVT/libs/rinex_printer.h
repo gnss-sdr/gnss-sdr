@@ -149,6 +149,15 @@ public:
         const std::map<int32_t, Bds3_B1c_PageData>& bds_page_data);
 
     /*!
+     * \brief Print RINEX navigation records for BeiDou B-CNAV2 ephemerides.
+     *
+     * RINEX 4 writes CNV2 records (Table A25) with ISC_B2ad on orbit line 7.
+     * RINEX 3 has no CNV2 representation; records are omitted rather than
+     * written as CNV1 or D1 stand-ins.
+     */
+    void log_rinex_nav_bds_cnav2(const std::map<int32_t, Beidou_Cnav1_Ephemeris>& new_bds_eph);
+
+    /*!
      * \brief Returns true is the RINEX file headers are already written
      */
     inline bool is_rinex_header_written() const

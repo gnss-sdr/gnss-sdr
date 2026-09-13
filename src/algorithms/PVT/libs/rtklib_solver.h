@@ -177,6 +177,7 @@ public:
     std::map<int, Glonass_Gnav_Ephemeris> glonass_gnav_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephemeris
     std::map<int, Beidou_Dnav_Ephemeris> beidou_dnav_ephemeris_map;    //!< Map storing new BeiDou DNAV Ephmeris
     std::map<int, Beidou_Cnav1_Ephemeris> beidou_cnav1_ephemeris_map;  //!< Map storing BeiDou B-CNAV1 ephemeris
+    std::map<int, Beidou_Cnav1_Ephemeris> beidou_cnav2_ephemeris_map;  //!< Map storing BeiDou B-CNAV2 ephemeris
 
     Galileo_Utc_Model galileo_utc_model;
     Galileo_Iono galileo_iono;

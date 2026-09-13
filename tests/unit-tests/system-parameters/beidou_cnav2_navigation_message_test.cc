@@ -94,9 +94,9 @@ std::array<uint8_t, BEIDOU_CNAV2_INFO_BITS> make_info(uint32_t prn, int32_t mes_
         }
     else if (mes_type == BEIDOU_CNAV2_MSG_EPH2)
         {
-            write_unsigned_cnav2(info.data(), 30, 2, 0);  // HS
-            write_unsigned_cnav2(info.data(), BEIDOU_CNAV2_MT11_IODE_BIT, BEIDOU_CNAV2_IODE_BITS, iode);
-            write_signed(info.data(), 42, 33, 1);  // OMEGA0
+            write_unsigned_cnav2(info.data(), 30, 2, 0);   // HS
+            write_unsigned_cnav2(info.data(), 32, 10, 0);  // Integrity and SISMAI, not IODE.
+            write_signed(info.data(), 42, 33, 1);          // OMEGA0
         }
     else if (mes_type == BEIDOU_CNAV2_MSG_CLK_IONO)
         {
@@ -313,4 +313,87 @@ TEST(BeidouCnav2NavigationMessageTest, NewIssuePublishesAfterMatchingSet)
     EXPECT_EQ(nav.get_ephemeris().toe, 6000);
     EXPECT_EQ(nav.get_ephemeris().toc, 6000);
     EXPECT_EQ(static_cast<int32_t>(nav.get_ephemeris().IODE), 2);
+}
+
+
+TEST(BeidouCnav2NavigationMessageTest, RejectsNonconsecutiveOrbitPair)
+{
+    Beidou_Cnav2_Navigation_Message nav;
+    for (const auto& frame : {make_frame(make_info(21, 10, 100, 7, 7)),
+             make_frame(make_info(21, 11, 102, 7, 7)),
+             make_frame(make_info(21, 30, 103, 7, 7))})
+        {
+            ASSERT_TRUE(nav.decode_frame_symbols(frame.data(), BEIDOU_CNAV2_FRAME_SYMBOLS, 21));
+        }
+    EXPECT_FALSE(nav.have_new_ephemeris());
+}
+
+TEST(BeidouCnav2NavigationMessageTest, PairsOrbitAcrossWeekRollover)
+{
+    Beidou_Cnav2_Navigation_Message nav;
+    for (const auto& frame : {make_frame(make_info(21, 10, 201599, 7, 7)),
+             make_frame(make_info(21, 11, 0, 7, 7)),
+             make_frame(make_info(21, 30, 1, 7, 7))})
+        {
+            ASSERT_TRUE(nav.decode_frame_symbols(frame.data(), BEIDOU_CNAV2_FRAME_SYMBOLS, 21));
+        }
+    EXPECT_TRUE(nav.have_new_ephemeris());
+    EXPECT_EQ(nav.get_ephemeris().IODE, 7);
+}
+
+
+TEST(BeidouCnav2NavigationMessageTest, HealthUpdatesInvalidatePublishedOrbitWithoutACompleteNewPair)
+{
+    for (const int type : {11, 30, 31, 32, 33, 34, 40})
+        {
+            SCOPED_TRACE(type);
+            Beidou_Cnav2_Navigation_Message nav;
+            for (const auto& frame : {make_frame(make_info(21, 10, 100, 7, 7)),
+                     make_frame(make_info(21, 11, 101, 7, 7)),
+                     make_frame(make_info(21, 30, 102, 7, 7))})
+                {
+                    ASSERT_TRUE(nav.decode_frame_symbols(frame.data(), BEIDOU_CNAV2_FRAME_SYMBOLS, 21));
+                }
+            ASSERT_TRUE(nav.have_new_ephemeris());
+            // Leave a different orbit issue incomplete while health changes arrive.
+            auto frame = make_frame(make_info(21, 10, 103, 8, 8, 20));
+            ASSERT_TRUE(nav.decode_frame_symbols(frame.data(), BEIDOU_CNAV2_FRAME_SYMBOLS, 21));
+            for (const uint32_t health : {1U, 2U, 0U})
+                {
+                    auto bits = make_info(21, type, 105 + health, 8, 8);
+                    write_unsigned_cnav2(bits.data(), 30, 2, health);
+                    write_unsigned_cnav2(bits.data(), 264, 24, crc24q_cnav2(bits.data(), 264));
+                    frame = make_frame(bits);
+                    ASSERT_TRUE(nav.decode_frame_symbols(frame.data(), BEIDOU_CNAV2_FRAME_SYMBOLS, 21));
+                    EXPECT_TRUE(nav.have_new_ephemeris());
+                    EXPECT_EQ(nav.get_ephemeris().hs, health);
+                    EXPECT_EQ(nav.get_ephemeris().toe, 3000);
+                    EXPECT_EQ(nav.get_ephemeris().IODE, 7);
+                }
+        }
+}
+
+TEST(BeidouCnav2NavigationMessageTest, PublishesDelayChangesWithoutNewOrbitIssue)
+{
+    Beidou_Cnav2_Navigation_Message nav;
+    for (const auto& frame : {make_frame(make_info(21, 10, 100, 7, 7)),
+             make_frame(make_info(21, 11, 101, 7, 7)),
+             make_frame(make_info(21, 30, 102, 7, 7))})
+        {
+            ASSERT_TRUE(nav.decode_frame_symbols(frame.data(), BEIDOU_CNAV2_FRAME_SYMBOLS, 21));
+        }
+    auto bits = make_info(21, 30, 103, 7, 7);
+    write_signed(bits.data(), 121, 12, 10);
+    write_signed(bits.data(), 133, 12, 20);
+    write_signed(bits.data(), 219, 12, 30);
+    write_unsigned_cnav2(bits.data(), 264, 24, crc24q_cnav2(bits.data(), 264));
+    auto frame = make_frame(bits);
+    ASSERT_TRUE(nav.decode_frame_symbols(frame.data(), BEIDOU_CNAV2_FRAME_SYMBOLS, 21));
+    EXPECT_TRUE(nav.have_new_ephemeris());
+    EXPECT_DOUBLE_EQ(nav.get_ephemeris().TGD_B2ap, 10 * BEIDOU_CNAV1_TGD_LSB);
+    EXPECT_DOUBLE_EQ(nav.get_ephemeris().ISC_B2ad, 20 * BEIDOU_CNAV1_ISC_LSB);
+    EXPECT_DOUBLE_EQ(nav.get_ephemeris().TGD_B1Cp, 30 * BEIDOU_CNAV1_TGD_LSB);
+    EXPECT_EQ(nav.get_ephemeris().IODE, 7);
+    ASSERT_TRUE(nav.decode_frame_symbols(frame.data(), BEIDOU_CNAV2_FRAME_SYMBOLS, 21));
+    EXPECT_FALSE(nav.have_new_ephemeris());
 }

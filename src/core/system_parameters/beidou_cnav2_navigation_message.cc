@@ -167,7 +167,6 @@ void Beidou_Cnav2_Navigation_Message::reset()
     d_last_mes_type = -1;
     d_last_sow = -1;
     d_iode_mt10 = -1;
-    d_iode_mt11 = -1;
     d_iodc = -1;
     d_last_frame_prn = 0;
     d_have_mt10 = false;
@@ -195,7 +194,7 @@ void Beidou_Cnav2_Navigation_Message::parse_clock_common(const uint8_t* bits, in
 
 bool Beidou_Cnav2_Navigation_Message::orbit_compatible() const
 {
-    return d_have_mt10 && d_have_mt11 && d_iode_mt10 == d_iode_mt11 && d_iode_mt10 >= 0;
+    return d_have_mt10 && d_have_mt11 && d_iode_mt10 >= 0;
 }
 
 
@@ -206,6 +205,20 @@ bool Beidou_Cnav2_Navigation_Message::set_compatible() const
             return false;
         }
     return (d_iodc & 0xFF) == d_iode_mt10;
+}
+
+
+void Beidou_Cnav2_Navigation_Message::update_health(const uint8_t* bits)
+{
+    d_cand.hs = static_cast<int32_t>(read_unsigned(bits, 30, 2));
+    // Invalidate the record already held by PVT even while a new orbit is incomplete.
+    // Keep its orbit/clock fields together; health is independent of their issue.
+    if (d_have_published && d_published.PRN == d_cand.PRN && d_published.hs != d_cand.hs)
+        {
+            d_published.hs = d_cand.hs;
+            d_published.tow = d_last_sow;
+            d_flag_new_eph = true;
+        }
 }
 
 
@@ -223,7 +236,11 @@ void Beidou_Cnav2_Navigation_Message::try_publish()
                             d_published.IODE != d_cand.IODE ||
                             d_published.IODC != d_cand.IODC ||
                             d_published.toe != d_cand.toe ||
-                            d_published.toc != d_cand.toc;
+                            d_published.toc != d_cand.toc ||
+                            d_published.hs != d_cand.hs ||
+                            d_published.TGD_B1Cp != d_cand.TGD_B1Cp ||
+                            d_published.TGD_B2ap != d_cand.TGD_B2ap ||
+                            d_published.ISC_B2ad != d_cand.ISC_B2ad;
     if (!is_new_set)
         {
             return;
@@ -236,6 +253,8 @@ void Beidou_Cnav2_Navigation_Message::try_publish()
 
 void Beidou_Cnav2_Navigation_Message::parse_info_bits(const uint8_t* bits, uint32_t channel_prn)
 {
+    const int32_t previous_type = d_last_mes_type;
+    const int32_t previous_sow = d_last_sow;
     d_last_frame_prn = static_cast<uint32_t>(read_unsigned(bits, 0, 6));
     const auto mes_type = static_cast<int32_t>(read_unsigned(bits, 6, 6));
     d_last_mes_type = mes_type;
@@ -243,6 +262,13 @@ void Beidou_Cnav2_Navigation_Message::parse_info_bits(const uint8_t* bits, uint3
     d_cand.PRN = channel_prn != 0 ? channel_prn : d_last_frame_prn;
     d_cand.tow = d_last_sow;
     d_cand.sig_type = BDS_EPH_SOURCE_CNAV2;
+
+    if (mes_type == BEIDOU_CNAV2_MSG_EPH2 ||
+        (mes_type >= BEIDOU_CNAV2_MSG_CLK_IONO && mes_type <= BEIDOU_CNAV2_MSG_CLK_DC) ||
+        mes_type == BEIDOU_CNAV2_MSG_ALM)
+        {
+            update_health(bits);
+        }
 
     if (mes_type == BEIDOU_CNAV2_MSG_EPH1)
         {
@@ -264,10 +290,7 @@ void Beidou_Cnav2_Navigation_Message::parse_info_bits(const uint8_t* bits, uint3
             d_iode_mt10 = iode;
             d_cand.IODE = static_cast<double>(iode);
             d_have_mt10 = true;
-            if (d_have_mt11 && d_iode_mt11 != iode)
-                {
-                    d_have_mt11 = false;
-                }
+            d_have_mt11 = false;
             if (d_have_clk && (d_iodc & 0xFF) != iode)
                 {
                     d_have_clk = false;
@@ -275,7 +298,13 @@ void Beidou_Cnav2_Navigation_Message::parse_info_bits(const uint8_t* bits, uint3
         }
     else if (mes_type == BEIDOU_CNAV2_MSG_EPH2)
         {
-            d_cand.hs = static_cast<int32_t>(read_unsigned(bits, 30, 2));
+            // ICD section 6.2.3: MT10 and MT11 are broadcast consecutively.
+            // MT11 has no issue field; its integrity bits must not be used as IODE.
+            if (!d_have_mt10 || previous_type != BEIDOU_CNAV2_MSG_EPH1 ||
+                d_last_sow != (previous_sow + BEIDOU_CNAV2_FRAME_PERIOD_S) % 604800)
+                {
+                    return;
+                }
             d_cand.OMEGA_0 = static_cast<double>(read_signed(bits, 42, 33)) * BEIDOU_CNAV1_OMEGA_LSB;
             d_cand.i_0 = static_cast<double>(read_signed(bits, 75, 33)) * BEIDOU_CNAV1_I0_LSB;
             d_cand.OMEGAdot = static_cast<double>(read_signed(bits, 108, 19)) * BEIDOU_CNAV1_OMEGADOT_LSB;
@@ -286,17 +315,7 @@ void Beidou_Cnav2_Navigation_Message::parse_info_bits(const uint8_t* bits, uint3
             d_cand.Crc = static_cast<double>(read_signed(bits, 198, 24)) * BEIDOU_CNAV1_CRC_LSB;
             d_cand.Cus = static_cast<double>(read_signed(bits, 222, 21)) * BEIDOU_CNAV1_CUS_LSB;
             d_cand.Cuc = static_cast<double>(read_signed(bits, 243, 21)) * BEIDOU_CNAV1_CUC_LSB;
-            const auto iode = static_cast<int32_t>(read_unsigned(bits, BEIDOU_CNAV2_MT11_IODE_BIT, BEIDOU_CNAV2_IODE_BITS));
-            d_iode_mt11 = iode;
             d_have_mt11 = true;
-            if (d_have_mt10 && d_iode_mt10 != iode)
-                {
-                    d_have_mt10 = false;
-                }
-            if (d_have_clk && (d_iodc & 0xFF) != iode)
-                {
-                    d_have_clk = false;
-                }
         }
     else if (mes_type == BEIDOU_CNAV2_MSG_CLK_IONO)
         {

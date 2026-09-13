@@ -45,6 +45,7 @@ public:
 private:
     void parse_info_bits(const uint8_t* bits, uint32_t channel_prn);
     void parse_clock_common(const uint8_t* bits, int32_t toc_off);
+    void update_health(const uint8_t* bits);
     void try_publish();
     bool orbit_compatible() const;
     bool set_compatible() const;
@@ -55,7 +56,6 @@ private:
     int32_t d_last_mes_type{-1};
     int32_t d_last_sow{-1};
     int32_t d_iode_mt10{-1};
-    int32_t d_iode_mt11{-1};
     int32_t d_iodc{-1};
     uint32_t d_last_frame_prn{};
     bool d_have_mt10{false};

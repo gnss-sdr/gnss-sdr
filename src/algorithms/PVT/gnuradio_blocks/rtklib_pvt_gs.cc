@@ -1991,7 +1991,12 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                                 eph_it->second.toe != bds_cnav_eph->toe ||
                                                 eph_it->second.toc != bds_cnav_eph->toc ||
                                                 eph_it->second.IODE != bds_cnav_eph->IODE ||
-                                                eph_it->second.IODC != bds_cnav_eph->IODC;
+                                                eph_it->second.IODC != bds_cnav_eph->IODC ||
+                                                (is_cnav2 &&
+                                                    (eph_it->second.hs != bds_cnav_eph->hs ||
+                                                        eph_it->second.TGD_B1Cp != bds_cnav_eph->TGD_B1Cp ||
+                                                        eph_it->second.TGD_B2ap != bds_cnav_eph->TGD_B2ap ||
+                                                        eph_it->second.ISC_B2ad != bds_cnav_eph->ISC_B2ad));
                             if (is_new)
                                 {
                                     if (is_cnav2)

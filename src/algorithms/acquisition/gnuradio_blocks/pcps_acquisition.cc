@@ -187,11 +187,6 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
     //  d_acq_parameters.max_dwells = 1;  // Activation of d_acq_parameters.bit_transition_flag invalidates the value of d_acq_parameters.max_dwells
     // }
 
-    if (d_cshort)
-        {
-            d_data_buffer_sc = volk_gnsssdr::vector<lv_16sc_t>(d_samples_to_consume);
-        }
-
     std::fill(d_magnitude_grid.begin(), d_magnitude_grid.end(), 0.0F);
 
     if (d_fft_size > d_samples_to_consume)  // It will always contain zero padding, just write it once here
@@ -797,11 +792,6 @@ void pcps_acquisition::acquisition_core(uint64_t sample_count)
 {
     gr::thread::scoped_lock lk(d_setlock);
 
-    if (d_cshort)
-        {
-            volk_gnsssdr_16ic_convert_32fc(d_input_signal.data(), d_data_buffer_sc.data(), d_samples_to_consume);
-        }
-
     d_num_noncoherent_integrations_counter++;
 
     DLOG(INFO) << "Channel: " << d_channel
@@ -976,7 +966,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 if (d_cshort)
                     {
                         const auto* in = reinterpret_cast<const lv_16sc_t*>(input_items[0]);  // Get the input samples pointer
-                        std::copy(in, in + samples_to_copy, d_data_buffer_sc.begin() + d_buffer_sample_count);
+                        volk_gnsssdr_16ic_convert_32fc(d_input_signal.data() + d_buffer_sample_count, in, samples_to_copy);
                     }
                 else
                     {

@@ -75,6 +75,8 @@ void Dll_Pll_Conf::SetFromConfiguration(const ConfigurationInterface *configurat
 #endif
     pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", pll_bw_narrow_hz);
     dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", dll_bw_narrow_hz);
+    pll_bw_step = configuration->property(role + ".pll_bw_step", pll_bw_step);
+    dll_bw_step = configuration->property(role + ".dll_bw_step", dll_bw_step);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", dll_bw_hz);
 #if USE_GLOG_AND_GFLAGS
     if (FLAGS_dll_bw_hz != 0.0)

@@ -902,49 +902,71 @@ void pcps_acquisition::acquisition_core(uint64_t sample_count)
     gr::thread::scoped_lock lk(d_setlock);
     const bool is_buffering = !d_data_buffer.empty();
 
-    if (is_buffering)
+    do
         {
-            const size_t offset = d_samples_to_consume * d_num_noncoherent_integrations_counter;
-            std::copy(d_data_buffer.data() + offset,
-                        d_data_buffer.data()  + offset + d_samples_to_consume,
-                        d_input_signal.data());
-        }
-    d_num_noncoherent_integrations_counter++;
-
-    DLOG(INFO) << "Channel: " << d_channel
-               << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-               << " , sample stamp: " << sample_count
-               << ", threshold: " << get_threshold()
-               << ", doppler_max: " << d_doppler_max
-               << ", doppler_step: " << d_doppler_step
-               << ", use_CFAR_algorithm_flag: " << (d_use_CFAR_algorithm_flag ? "true" : "false");
-
-    lk.unlock();
-
-    // Doppler frequency grid loop, only access variables that doesn't need a lock
-    doppler_grid(d_input_signal.data());
-    if (should_dump_channel())
-        {
-            copy_magnitude_grid_to_dump_grid();
-        }
-    auto result = compute_statistics();
-    result.sample_count = sample_count;
-
-    lk.lock();
-
-    update_synchro(result);
-
-    if (!d_acq_parameters.bit_transition_flag)
-        {
-            if (d_acq_parameters.full_grid_search)
+            if (is_buffering)
                 {
-                    // Search the entire acquisition grid (accumulate through the full max_dwells)
-                    // before deciding accept/reject, instead of exiting as soon as any single dwell's
-                    // (possibly still noisy, partially non-coherently accumulated) grid crosses
-                    // threshold -- a later dwell's fuller integration can reveal a different, genuinely
-                    // stronger peak elsewhere in the same grid that an early exit never gets the chance
-                    // to compare against.
-                    if (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)
+                    const size_t offset = d_samples_to_consume * d_num_noncoherent_integrations_counter;
+                    std::copy(d_data_buffer.data() + offset,
+                        d_data_buffer.data() + offset + d_samples_to_consume,
+                        d_input_signal.data());
+                }
+            d_num_noncoherent_integrations_counter++;
+
+            DLOG(INFO) << "Channel: " << d_channel
+                       << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
+                       << " , sample stamp: " << sample_count
+                       << ", threshold: " << get_threshold()
+                       << ", doppler_max: " << d_doppler_max
+                       << ", doppler_step: " << d_doppler_step
+                       << ", use_CFAR_algorithm_flag: " << (d_use_CFAR_algorithm_flag ? "true" : "false");
+
+            lk.unlock();
+
+            // Doppler frequency grid loop, only access variables that doesn't need a lock
+            doppler_grid(d_input_signal.data());
+            if (should_dump_channel())
+                {
+                    copy_magnitude_grid_to_dump_grid();
+                }
+            auto result = compute_statistics();
+            result.sample_count = sample_count;
+
+            lk.lock();
+
+            update_synchro(result);
+
+            if (!d_acq_parameters.bit_transition_flag)
+                {
+                    if (d_acq_parameters.full_grid_search)
+                        {
+                            // Search the entire acquisition grid (accumulate through the full max_dwells)
+                            // before deciding accept/reject, instead of exiting as soon as any single dwell's
+                            // (possibly still noisy, partially non-coherently accumulated) grid crosses
+                            // threshold -- a later dwell's fuller integration can reveal a different, genuinely
+                            // stronger peak elsewhere in the same grid that an early exit never gets the chance
+                            // to compare against.
+                            if (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)
+                                {
+                                    if (result.test_statistics > get_threshold())
+                                        {
+                                            handle_threshold_reached(result);
+                                        }
+                                    else
+                                        {
+                                            handle_integration_done(result);
+                                        }
+                                }
+                            else
+                                {
+                                    if (d_acq_parameters.blocking)
+                                        {
+                                            d_buffer_sample_count = 0;
+                                            d_state = 1;
+                                        }
+                                }
+                        }
+                    else
                         {
                             if (result.test_statistics > get_threshold())
                                 {
@@ -952,15 +974,16 @@ void pcps_acquisition::acquisition_core(uint64_t sample_count)
                                 }
                             else
                                 {
-                                    handle_integration_done(result);
+                                    if (d_acq_parameters.blocking)
+                                        {
+                                            d_buffer_sample_count = 0;
+                                            d_state = 1;
+                                        }
                                 }
-                        }
-                    else
-                        {
-                            if (d_acq_parameters.blocking)
+
+                            if (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)
                                 {
-                                    d_buffer_sample_count = 0;
-                                    d_state = 1;
+                                    handle_integration_done(result);
                                 }
                         }
                 }
@@ -972,41 +995,21 @@ void pcps_acquisition::acquisition_core(uint64_t sample_count)
                         }
                     else
                         {
-                            if (d_acq_parameters.blocking)
-                                {
-                                    d_buffer_sample_count = 0;
-                                    d_state = 1;
-                                }
-                        }
-
-                    if (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)
-                        {
                             handle_integration_done(result);
                         }
                 }
-        }
-    else
-        {
-            if (result.test_statistics > get_threshold())
-                {
-                    handle_threshold_reached(result);
-                }
-            else
-                {
-                    handle_integration_done(result);
-                }
-        }
 
-    if ((d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells) || (result.positive_acq) || (d_acq_parameters.bit_transition_flag))
-        {
-            // Record results to file if required
-            if (should_dump_channel())
+            if ((d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells) || (result.positive_acq) || (d_acq_parameters.bit_transition_flag))
                 {
-                    pcps_acquisition::dump_results(result);
+                    // Record results to file if required
+                    if (should_dump_channel())
+                        {
+                            pcps_acquisition::dump_results(result);
+                        }
+                    break;
                 }
-            d_num_noncoherent_integrations_counter = 0U;
         }
-
+    while (d_state && !d_acq_parameters.blocking && d_num_noncoherent_integrations_counter < d_acq_parameters.max_dwells);
     d_worker_active = false;
 }
 
@@ -1106,6 +1109,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 d_gnss_synchro->Acq_doppler_step = 0U;
                 d_state = 1;
                 d_buffer_sample_count = 0U;
+                d_num_noncoherent_integrations_counter = 0U;
                 break;
             }
         case 1:

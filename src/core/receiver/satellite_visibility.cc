@@ -661,6 +661,24 @@ bool SatelliteVisibility::DataChanged(const std::shared_ptr<PvtInterface>& pvt_p
 }
 
 
+void SatelliteVisibility::SetCommandReference(time_t utc_time, const std::array<float, 3>& LLH,
+    const Monitor_Pvt& current_fix, double receiver_time_s)
+{
+    command_reference_utc_time_ = utc_time;
+    command_reference_llh_ = LLH;
+    command_reference_receiver_time_s_ = receiver_time_s;
+    command_previous_fix_time_s_ = -1.0;
+    if (current_fix.RX_time >= 0.0)
+        {
+            const auto epoch = gpst2time(static_cast<int>(current_fix.week), current_fix.RX_time);
+            command_previous_fix_time_s_ = static_cast<double>(epoch.time) + epoch.sec;
+        }
+    have_command_reference_ = true;
+    command_reference_changed_ = true;
+    ticks_since_data_check_ = kDataCheckEveryNTicks;
+}
+
+
 bool SatelliteVisibility::Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, const Monitor_Pvt& fix_status,
     double receiver_time_s)
 {
@@ -669,13 +687,28 @@ bool SatelliteVisibility::Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, con
             return false;
         }
 
-    const bool fix_valid = (fix_status.RX_time >= 0.0);
+    bool fix_valid = (fix_status.RX_time >= 0.0);
+    if (have_command_reference_ && fix_valid)
+        {
+            const auto epoch = gpst2time(static_cast<int>(fix_status.week), fix_status.RX_time);
+            // The status receiver keeps publishing the pre-command fix during
+            // an outage. Only a new PVT epoch may replace the supplied reference.
+            have_command_reference_ = (static_cast<double>(epoch.time) + epoch.sec == command_previous_fix_time_s_);
+        }
+    fix_valid = fix_valid && !have_command_reference_;
     const bool fix_became_valid = fix_valid && !last_fix_valid_;
     last_fix_valid_ = fix_valid;
 
     std::array<float, 3> LLH{};
     gtime_t gps_gtime{};
-    if (fix_valid)
+    if (have_command_reference_)
+        {
+            LLH = command_reference_llh_;
+            gtime_t utc_gtime{};
+            utc_gtime.time = command_reference_utc_time_;
+            gps_gtime = timeadd(utc2gpst(utc_gtime), std::max(0.0, receiver_time_s - command_reference_receiver_time_s_));
+        }
+    else if (fix_valid)
         {
             LLH[0] = static_cast<float>(fix_status.latitude);
             LLH[1] = static_cast<float>(fix_status.longitude);
@@ -733,7 +766,9 @@ bool SatelliteVisibility::Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, con
 
     const bool expired = rx_time_s >= next_expiry_deadline_rx_time_;
 
-    if (!fix_became_valid && !data_changed && !interval_elapsed && !moved_significantly && !expired)
+    const bool reference_changed = command_reference_changed_;
+    command_reference_changed_ = false;
+    if (!reference_changed && !fix_became_valid && !data_changed && !interval_elapsed && !moved_significantly && !expired)
         {
             return false;
         }
@@ -741,7 +776,7 @@ bool SatelliteVisibility::Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, con
     // Position/time/expiry triggers can change every satellite's elevation,
     // so they need a full sweep. data_changed alone only affects the PRNs in
     // changed_prns, so the recompute is scoped to them via only_prns.
-    const bool needs_full_recompute = fix_became_valid || interval_elapsed || moved_significantly || expired;
+    const bool needs_full_recompute = reference_changed || fix_became_valid || interval_elapsed || moved_significantly || expired;
 
     // Advance the full-sweep baselines only after a full sweep: resetting
     // them on targeted recomputes would starve the interval/displacement
@@ -877,13 +912,14 @@ bool SatelliteVisibility::Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, con
 
         std::ostringstream oss;
         oss << "[visibility] recompute (triggered by:"
+            << (reference_changed ? " command_reference_changed" : "")
             << (fix_became_valid ? " fix_became_valid" : "")
             << (data_changed ? " data_changed" : "")
             << (interval_elapsed ? " interval_elapsed" : "")
             << (moved_significantly ? " moved_significantly" : "")
             << (expired ? " data_expired" : "")
             << "; " << (needs_full_recompute ? "full" : "targeted (" + std::to_string(changed_prns.size()) + " sat)")
-            << "; fix " << (fix_valid ? "valid" : "not valid, using AGNSS_ref_location")
+            << "; fix " << (have_command_reference_ ? "using telecommand reference" : (fix_valid ? "valid" : "not valid, using AGNSS_ref_location"))
             << ", LLH " << LLH[0] << " deg, " << LLH[1] << " deg, " << LLH[2] << " m, GPS time " << gps_gtime.time
             << ", mask " << elevation_mask_deg_ << " deg)\n"
             << "VISIBLE (" << visible_entries.size() << "): ";

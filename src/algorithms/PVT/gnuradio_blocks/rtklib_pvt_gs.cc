@@ -2235,6 +2235,14 @@ void rtklib_pvt_gs::publish_navigation_snapshot(NavigationData data)
         case NavigationData::BeidouAlmanac:
             updated->beidou_almanac = std::make_shared<const NavigationSnapshot::BeidouAlmanacMap>(d_internal_pvt_solver->beidou_dnav_almanac_map);
             break;
+        case NavigationData::RetainedAlmanacs:
+            updated->gps_almanac = std::make_shared<const NavigationSnapshot::GpsAlmanacMap>(d_internal_pvt_solver->gps_almanac_map);
+            updated->galileo_almanac = std::make_shared<const NavigationSnapshot::GalileoAlmanacMap>(d_internal_pvt_solver->galileo_almanac_map);
+            updated->beidou_almanac = std::make_shared<const NavigationSnapshot::BeidouAlmanacMap>(d_internal_pvt_solver->beidou_dnav_almanac_map);
+            updated->glonass_almanac = std::make_shared<const NavigationSnapshot::GlonassAlmanacMap>(d_internal_pvt_solver->glonass_gnav_almanac_map);
+            // The GLONASS almanac date can come from its retained UTC model.
+            updated->glonass_utc_model = d_internal_pvt_solver->glonass_gnav_utc_model;
+            break;
         }
     std::shared_ptr<const NavigationSnapshot> published = std::move(updated);
     {
@@ -2291,54 +2299,105 @@ std::map<int, Beidou_Dnav_Almanac> rtklib_pvt_gs::get_beidou_dnav_almanac_map() 
 }
 
 
+namespace
+{
+void clear_navigation_maps(Rtklib_Solver& solver, bool keep_almanac)
+{
+    solver.clear_gps_ephemerides();
+    solver.gps_cnav_ephemeris_map.clear();
+    solver.glonass_gnav_ephemeris_map.clear();
+    solver.galileo_ephemeris_map.clear();
+    solver.galileo_ephemeris_store.clear();
+    solver.galileo_reduced_ced_map.clear();
+    solver.beidou_dnav_ephemeris_map.clear();
+    if (keep_almanac)
+        {
+            return;
+        }
+    solver.gps_almanac_map.clear();
+    solver.glonass_gnav_almanac_map.clear();
+    solver.glonass_gnav_almanac = Glonass_Gnav_Almanac();
+    solver.galileo_almanac_map.clear();
+    solver.beidou_dnav_almanac_map.clear();
+}
+}  // namespace
+
+
 void rtklib_pvt_gs::clear_ephemeris()
 {
-    auto previous = d_empty_navigation_snapshot;
+    request_navigation_clear(NavigationClear::All);
+}
+
+
+void rtklib_pvt_gs::clear_ephemeris_keep_almanac()
+{
+    request_navigation_clear(NavigationClear::EphemerisOnly);
+}
+
+
+void rtklib_pvt_gs::request_navigation_clear(NavigationClear kind)
+{
+    // The worker owns the solvers. Invalidate readers immediately, but defer
+    // clearing the mutable maps until it is between work/telemetry callbacks.
+    std::shared_ptr<const NavigationSnapshot> previous;
     {
         std::lock_guard<std::mutex> lock(d_snapshot_mutex);
+        std::shared_ptr<const NavigationSnapshot> replacement = d_empty_navigation_snapshot;
+        if (kind == NavigationClear::EphemerisOnly)
+            {
+                // Pointer copies only: the almanac maps stay shared with the
+                // current snapshot, the ephemeris entries point at the empty maps.
+                auto almanac_only = std::make_shared<NavigationSnapshot>(*d_navigation_snapshot);
+                almanac_only->gps_ephemeris = d_empty_navigation_snapshot->gps_ephemeris;
+                almanac_only->gps_cnav_ephemeris = d_empty_navigation_snapshot->gps_cnav_ephemeris;
+                almanac_only->glonass_ephemeris = d_empty_navigation_snapshot->glonass_ephemeris;
+                almanac_only->galileo_ephemeris = d_empty_navigation_snapshot->galileo_ephemeris;
+                almanac_only->beidou_ephemeris = d_empty_navigation_snapshot->beidou_ephemeris;
+                replacement = std::move(almanac_only);
+            }
+        // A full clear requested before the worker has applied an
+        // ephemeris-only one must not be downgraded by it.
+        if (kind == NavigationClear::All || d_pending_navigation_clear == NavigationClear::None)
+            {
+                d_pending_navigation_clear = kind;
+            }
         d_navigation_generation.fetch_add(1, std::memory_order_release);
-        d_navigation_snapshot.swap(previous);
+        previous = std::move(d_navigation_snapshot);
+        d_navigation_snapshot = std::move(replacement);
     }
-    // The worker owns the solvers. Invalidate readers immediately, but defer
-    // clearing mutable maps until it is between work/telemetry callbacks.
+    // The previous snapshot, and the maps only it referenced, die here, outside the lock.
 }
 
 
 void rtklib_pvt_gs::apply_pending_navigation_clear()
 {
-    const uint32_t generation = d_navigation_generation.load(std::memory_order_acquire);
-    if (generation == d_applied_navigation_generation)
+    if (d_navigation_generation.load(std::memory_order_acquire) == d_applied_navigation_generation)
         {
             return;
         }
-    d_internal_pvt_solver->clear_gps_ephemerides();
-    d_internal_pvt_solver->gps_almanac_map.clear();
-    d_internal_pvt_solver->gps_cnav_ephemeris_map.clear();
-    d_internal_pvt_solver->glonass_gnav_ephemeris_map.clear();
-    d_internal_pvt_solver->glonass_gnav_almanac_map.clear();
-    d_internal_pvt_solver->glonass_gnav_almanac = Glonass_Gnav_Almanac();
-    d_internal_pvt_solver->galileo_ephemeris_map.clear();
-    d_internal_pvt_solver->galileo_ephemeris_store.clear();
-    d_internal_pvt_solver->galileo_reduced_ced_map.clear();
-    d_internal_pvt_solver->galileo_almanac_map.clear();
-    d_internal_pvt_solver->beidou_dnav_ephemeris_map.clear();
-    d_internal_pvt_solver->beidou_dnav_almanac_map.clear();
+    uint32_t generation;
+    NavigationClear kind;
+    {
+        std::lock_guard<std::mutex> lock(d_snapshot_mutex);
+        generation = d_navigation_generation.load(std::memory_order_acquire);
+        kind = d_pending_navigation_clear;
+        d_pending_navigation_clear = NavigationClear::None;
+    }
+    const bool keep_almanac = (kind == NavigationClear::EphemerisOnly);
+    clear_navigation_maps(*d_internal_pvt_solver, keep_almanac);
     if (d_enable_rx_clock_correction == true)
         {
-            d_user_pvt_solver->clear_gps_ephemerides();
-            d_user_pvt_solver->gps_almanac_map.clear();
-            d_user_pvt_solver->gps_cnav_ephemeris_map.clear();
-            d_user_pvt_solver->glonass_gnav_ephemeris_map.clear();
-            d_user_pvt_solver->glonass_gnav_almanac_map.clear();
-            d_user_pvt_solver->glonass_gnav_almanac = Glonass_Gnav_Almanac();
-            d_user_pvt_solver->galileo_ephemeris_map.clear();
-            d_user_pvt_solver->galileo_ephemeris_store.clear();
-            d_user_pvt_solver->galileo_reduced_ced_map.clear();
-            d_user_pvt_solver->galileo_almanac_map.clear();
-            d_user_pvt_solver->beidou_dnav_ephemeris_map.clear();
-            d_user_pvt_solver->beidou_dnav_almanac_map.clear();
+            clear_navigation_maps(*d_user_pvt_solver, keep_almanac);
         }
     d_applied_navigation_generation = generation;
+    if (keep_almanac)
+        {
+            // An in-flight telemetry callback may have updated the retained
+            // solver maps but lost publication to the clear's generation guard.
+            // Republish them now; the same guard rejects this snapshot if a
+            // newer clear arrives while these maps are being copied.
+            publish_navigation_snapshot(NavigationData::RetainedAlmanacs);
+        }
 }
 
 

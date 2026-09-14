@@ -61,6 +61,7 @@ public:
     gr::basic_block_sptr get_right_block() override { return nullptr; }
     void reset() override {}
     void clear_ephemeris() override {}
+    void clear_ephemeris_keep_almanac() override {}
     std::map<int, Gps_Ephemeris> get_gps_ephemeris() const override
     {
         ++gps_reads;
@@ -155,13 +156,13 @@ protected:
         return visible.size() + excluded.size();
     }
 
-    double GpsElevation() const
+    double GpsElevation(double height_m = 0.0) const
     {
         const auto almanac = alm_to_rtklib(pvt->gps_alm.at(1), fix.week);
         double position[3];
         double clock_bias;
         alm2pos(gpst2time(fix.week, fix.RX_time), &almanac, position, &clock_bias);
-        const arma::vec receiver{6378137.0, 0.0, 0.0};
+        const arma::vec receiver{6378137.0 + height_m, 0.0, 0.0};
         const arma::vec satellite{position[0], position[1], position[2]};
         double azimuth;
         double elevation;
@@ -336,6 +337,91 @@ TEST_F(SatelliteVisibilityTest, AgnssReferenceExpiresWithoutFirstFix)
     EXPECT_TRUE(visibility.Tick(pvt, fix, 201.0));
     EXPECT_FALSE(visibility.IsVisible(satellite));
     EXPECT_FALSE(visibility.IsExcluded(satellite));
+}
+
+
+TEST_F(SatelliteVisibilityTest, CommandReferenceWorksWithoutFixAndAnchorsSampleClock)
+{
+    configuration->set_property("GNSS-SDR.visibility_recompute_interval_s", "1000000");
+    configuration->set_property("GNSS-SDR.visibility_almanac_max_age_s", "200");
+    SetGpsAlmanac(100000);
+    const time_t utc = gpst2utc(gpst2time(fix.week, fix.RX_time)).time;
+    fix.RX_time = -1.0;
+    SatelliteVisibility visibility(configuration);
+    const Gnss_Satellite satellite("GPS", 1);
+    EXPECT_FALSE(visibility.Tick(pvt, fix, 900000.0));
+    visibility.SetCommandReference(utc, {0.0F, 0.0F, 0.0F}, fix, 900000.0);
+    ASSERT_TRUE(visibility.Tick(pvt, fix, 900000.0));
+    EXPECT_TRUE(visibility.IsVisible(satellite) || visibility.IsExcluded(satellite));
+    visibility.Tick(pvt, fix, 900150.0);
+    EXPECT_TRUE(visibility.IsVisible(satellite) || visibility.IsExcluded(satellite));
+    EXPECT_TRUE(visibility.Tick(pvt, fix, 900201.0));
+    EXPECT_FALSE(visibility.IsVisible(satellite));
+    EXPECT_FALSE(visibility.IsExcluded(satellite));
+}
+
+
+TEST_F(SatelliteVisibilityTest, CommandReferenceOverridesConfiguredAssistance)
+{
+    configuration->set_property("GNSS-SDR.AGNSS_ref_location", "0,0");
+    configuration->set_property("GNSS-SDR.AGNSS_ref_utc_time", "01/01/2024 00:00:00");
+    SetGpsAlmanac(100000);
+    const time_t utc = gpst2utc(gpst2time(fix.week, fix.RX_time)).time;
+    fix.RX_time = -1.0;
+    SatelliteVisibility visibility(configuration);
+    const Gnss_Satellite satellite("GPS", 1);
+    visibility.Tick(pvt, fix, 100.0);
+    ASSERT_FALSE(visibility.IsVisible(satellite));
+    ASSERT_FALSE(visibility.IsExcluded(satellite));
+    visibility.SetCommandReference(utc, {0.0F, 0.0F, 0.0F}, fix, 100.0);
+    EXPECT_TRUE(visibility.Tick(pvt, fix, 100.0));
+    EXPECT_TRUE(visibility.IsVisible(satellite) || visibility.IsExcluded(satellite));
+}
+
+
+TEST_F(SatelliteVisibilityTest, CommandReferenceOverridesRetainedFixUntilNewEpoch)
+{
+    SetGpsAlmanac(100000);
+    pvt->gps_alm.at(1).M_0 = -0.5;
+    SatelliteVisibility visibility(configuration);
+    const Gnss_Satellite satellite("GPS", 1);
+    ASSERT_TRUE(visibility.Tick(pvt, fix, 100.0));
+    ASSERT_TRUE(visibility.IsExcluded(satellite));
+    const time_t utc = gpst2utc(gpst2time(fix.week, fix.RX_time + 21600.0)).time;
+    visibility.SetCommandReference(utc, {0.0F, 0.0F, 0.0F}, fix, 100.0);
+    ASSERT_TRUE(visibility.Tick(pvt, fix, 100.0));
+    ASSERT_TRUE(visibility.IsVisible(satellite));
+    // Even after another full sweep, the unchanged pre-command fix is ignored.
+    visibility.Tick(pvt, fix, 221.0);
+    EXPECT_TRUE(visibility.IsVisible(satellite));
+    fix.RX_time += 1.0;
+    EXPECT_TRUE(visibility.Tick(pvt, fix, 222.0));
+    EXPECT_TRUE(visibility.IsExcluded(satellite));
+    EXPECT_FALSE(visibility.IsVisible(satellite));
+}
+
+
+TEST_F(SatelliteVisibilityTest, CommandReferenceForcesPositionRefreshAndIncludesHeight)
+{
+    SetGpsAlmanac(100000);
+    const double ground_elevation = GpsElevation();
+    const double raised_elevation = GpsElevation(2000.0);
+    ASSERT_GT(ground_elevation, raised_elevation);
+    configuration->set_property("GNSS-SDR.search_elevation_mask", std::to_string((ground_elevation + raised_elevation) / 2.0));
+    configuration->set_property("GNSS-SDR.visibility_recompute_position_threshold_m", "1000000000");
+    configuration->set_property("GNSS-SDR.visibility_recompute_interval_s", "1000000");
+    SatelliteVisibility visibility(configuration);
+    const Gnss_Satellite satellite("GPS", 1);
+    ASSERT_TRUE(visibility.Tick(pvt, fix, 100.0));
+    ASSERT_TRUE(visibility.IsVisible(satellite));
+    const time_t utc = gpst2utc(gpst2time(fix.week, fix.RX_time)).time;
+    visibility.SetCommandReference(utc, {0.0F, 0.0F, 2000.0F}, fix, 100.0);
+    EXPECT_TRUE(visibility.Tick(pvt, fix, 100.0));
+    EXPECT_TRUE(visibility.IsExcluded(satellite));
+    // Repeated commands also force a refresh below the movement/time thresholds.
+    visibility.SetCommandReference(utc, {0.0F, 0.0F, 0.0F}, fix, 100.0);
+    EXPECT_TRUE(visibility.Tick(pvt, fix, 100.0));
+    EXPECT_TRUE(visibility.IsVisible(satellite));
 }
 
 

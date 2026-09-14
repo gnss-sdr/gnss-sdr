@@ -890,6 +890,12 @@ void Rtklib_Pvt::clear_ephemeris()
 }
 
 
+void Rtklib_Pvt::clear_ephemeris_keep_almanac()
+{
+    pvt_->clear_ephemeris_keep_almanac();
+}
+
+
 std::map<int, Gps_Ephemeris> Rtklib_Pvt::get_gps_ephemeris() const
 {
     return pvt_->get_gps_ephemeris_map();

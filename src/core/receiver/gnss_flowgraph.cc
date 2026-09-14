@@ -2054,6 +2054,22 @@ void GNSSFlowgraph::priorize_satellites(const std::vector<std::pair<int, Gnss_Sa
 }
 
 
+void GNSSFlowgraph::UpdateVisibilityReference(time_t utc_time, const std::array<float, 3>& LLH)
+{
+    if (!visibility_aware_search_enabled())
+        {
+            return;
+        }
+    {
+        std::lock_guard<std::mutex> lock(signal_list_mutex_);
+        double receiver_time_s = 0.0;
+        const Monitor_Pvt fix_status = channels_status_->get_current_status_pvt(&receiver_time_s);
+        satellite_visibility_->SetCommandReference(utc_time, LLH, fix_status, receiver_time_s);
+    }
+    MaybeUpdateVisibility();
+}
+
+
 void GNSSFlowgraph::MaybeUpdateVisibility()
 {
     if (!satellite_visibility_ || !satellite_visibility_->enabled())

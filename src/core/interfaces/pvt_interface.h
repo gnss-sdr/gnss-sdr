@@ -60,6 +60,11 @@ public:
     virtual std::map<int, Glonass_Gnav_Ephemeris> get_glonass_ephemeris() const = 0;
     virtual std::map<int, Glonass_Gnav_Almanac> get_glonass_almanac() const = 0;
     virtual Glonass_Gnav_Utc_Model get_glonass_utc_model() const = 0;
+    // Warm start: drops the ephemeris only and keeps the almanac already in
+    // memory (almanac current, ephemeris unknown or stale). Unlike a
+    // clear_ephemeris() followed by an XML reload, this cannot replace a live,
+    // fresher almanac with a stale snapshot from disk.
+    virtual void clear_ephemeris_keep_almanac() = 0;
     virtual std::map<int, Gps_Ephemeris> get_gps_ephemeris() const = 0;
     virtual std::map<int, Galileo_Ephemeris> get_galileo_ephemeris() const = 0;
     virtual std::map<int, Beidou_Dnav_Ephemeris> get_beidou_dnav_ephemeris() const = 0;

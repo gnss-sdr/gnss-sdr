@@ -1817,14 +1817,15 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                        << ", Signal " << channels_[current_channel]->get_signal().get_signal_str();
                             if (assistance_available == true && configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_))
                                 {
-                                    // Doppler is known from the tracked assisting band (already
-                                    // projected by search_next_signal()): search a single Doppler bin.
-                                    channels_[current_channel]->assist_acquisition_doppler(estimated_doppler, 0);
+                                    // Doppler is exactly known from the already-tracked assisting
+                                    // frequency (search_next_signal() returns it already projected
+                                    // to this band): restrict the search to a single Doppler bin.
+                                    channels_[current_channel]->assist_acquisition_doppler(estimated_doppler, 1);
                                 }
                             else
                                 {
                                     // set Doppler center to 0 Hz and search the full Doppler range
-                                    channels_[current_channel]->assist_acquisition_doppler(0, 1);
+                                    channels_[current_channel]->assist_acquisition_doppler(0, 0);
                                 }
 #if ENABLE_FPGA
                             if (enable_fpga_offloading_)

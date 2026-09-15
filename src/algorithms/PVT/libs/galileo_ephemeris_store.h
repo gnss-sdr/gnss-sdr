@@ -83,7 +83,28 @@ public:
         result.insert(secondary.cbegin(), secondary.cend());
         for (const auto& ephemeris : preferred)
             {
-                result[ephemeris.first] = ephemeris.second;
+                Galileo_Ephemeris merged = ephemeris.second;
+                // F/NAV never carries E1B_HS/E1B_DVS/E5b_HS/E5b_DVS (I/NAV-only),
+                // and vice versa for E5a_HS/E5a_DVS -- those default to "0 == OK"
+                // instead of the real value, so fill them in from the secondary
+                // source when available rather than leaving the default.
+                const auto secondary_it = secondary.find(ephemeris.first);
+                if (secondary_it != secondary.cend())
+                    {
+                        if (preferred_source == Galileo_Nav_Message_Type::FNAV)
+                            {
+                                merged.E1B_HS = secondary_it->second.E1B_HS;
+                                merged.E1B_DVS = secondary_it->second.E1B_DVS;
+                                merged.E5b_HS = secondary_it->second.E5b_HS;
+                                merged.E5b_DVS = secondary_it->second.E5b_DVS;
+                            }
+                        else
+                            {
+                                merged.E5a_HS = secondary_it->second.E5a_HS;
+                                merged.E5a_DVS = secondary_it->second.E5a_DVS;
+                            }
+                    }
+                result[ephemeris.first] = merged;
             }
         return result;
     }

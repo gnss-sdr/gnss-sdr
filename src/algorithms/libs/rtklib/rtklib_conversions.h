@@ -33,6 +33,7 @@ class Beidou_Dnav_Almanac;
 class Beidou_Dnav_Ephemeris;
 class Galileo_Almanac;
 class Galileo_Ephemeris;
+class Glonass_Gnav_Almanac;
 class Glonass_Gnav_Ephemeris;
 class Glonass_Gnav_Utc_Model;
 class Gnss_Synchro;
@@ -106,8 +107,24 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph);
 
 eph_t eph_to_rtklib(const Beidou_Cnav1_Ephemeris& bei_eph);
 
-alm_t alm_to_rtklib(const Gps_Almanac& gps_alm);
-alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm);
+/*!
+ * \brief Absolute GPST epoch of a GLONASS almanac (N_4/N_A calendar day plus
+ * t_lambda_n_A, which is given in MSK = UTC+3).
+ * \return Zero gtime_t when the broadcast date is unavailable or invalid.
+ */
+gtime_t glonass_almanac_epoch(const Glonass_Gnav_Almanac& almanac);
+
+/*!
+ * \brief Converts almanac data to RTKLIB's alm_t format.
+ *
+ * \param ref_week Current GPS week, used to resolve the truncated almanac
+ * week (WNa: 8 bits for GPS, 2 bits for Galileo) to the closest full week so
+ * that alm.toa is an absolute epoch, as eph_to_rtklib() does for ephemeris.
+ * 0 (default) uses WNa as-is; only valid for callers that never propagate
+ * the orbit (e.g. unit tests checking unrelated fields).
+ */
+alm_t alm_to_rtklib(const Gps_Almanac& gps_alm, int ref_week = 0);
+alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm, int ref_week = 0);
 alm_t alm_to_rtklib(const Beidou_Dnav_Almanac& bei_alm);
 
 /*!

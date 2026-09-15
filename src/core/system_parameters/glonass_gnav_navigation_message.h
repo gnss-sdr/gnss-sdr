@@ -195,6 +195,14 @@ private:
     uint32_t d_frame_ID{};
     uint32_t d_string_ID{};
     uint32_t i_alm_satellite_slot_number{};  // SV Orbit Slot Number
+    // Satellite slot number validated by an even almanac string (6/8/10/12/14)
+    // and consumed by its paired odd string (7/9/11/13/15). Kept per pair so a
+    // stale flag can never complete an almanac with a slot from another pair.
+    uint32_t d_alm_slot_str_6{};
+    uint32_t d_alm_slot_str_8{};
+    uint32_t d_alm_slot_str_10{};
+    uint32_t d_alm_slot_str_12{};
+    uint32_t d_alm_slot_str_14{};
 
     int32_t d_kp_announced_leap_s{};  // UTC correction announced by KP (+1 or -1 s), 0 if not armed
 

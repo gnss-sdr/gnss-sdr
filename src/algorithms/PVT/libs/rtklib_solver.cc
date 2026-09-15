@@ -32,8 +32,10 @@
 
 #include "rtklib_solver.h"
 #include "Beidou_CNAV1.h"
+#include "Beidou_CNAV2.h"
 #include "Beidou_DNAV.h"
 #include "Galileo_CNAV.h"
+#include "gnss_frequencies.h"
 #include "gnss_obs_codes.h"
 #include "gnss_sdr_filesystem.h"
 #include "matlab_writter_helper.h"
@@ -92,6 +94,7 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     d_rtklib_band_index["1B"] = 0;
     d_rtklib_band_index["B1"] = 0;
     d_rtklib_band_index["1D"] = 0;
+    d_rtklib_band_index["5D"] = 2;
     d_rtklib_band_index["B3"] = 2;
     d_rtklib_band_index["2G"] = 1;
     d_rtklib_band_index["2S"] = 1;
@@ -155,6 +158,16 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     if (flags.check_only_enabled(GPS_L5, GAL_E5b))
         {
             d_rtklib_band_index["L5"] = 0;
+            d_rtklib_freq_index[0] = 2;
+        }
+
+    // B2a-only SPP uses RTKLIB slot 0. Default "5D" mapping is slot 2
+    // (L1+L2+L5). RTKLIB BDS satwavelen frq2 is B3 (1268.52 MHz), not L5,
+    // so lam[0] is overridden to c/FREQ5 in get_PVT. This remap is gated on
+    // B2a-only: B1I/B1C/B3 present keeps the default dual-frequency map.
+    if (flags.check_only_enabled(BDS_B2A))
+        {
+            d_rtklib_band_index["5D"] = 0;
             d_rtklib_freq_index[0] = 2;
         }
 
@@ -1529,6 +1542,74 @@ void Rtklib_Solver::reset_relative_filter()
 }
 
 
+int Rtklib_Solver::merge_duplicated_rover_observations(int rover_observation_count)
+{
+    /* Two channels can deliver the same satellite on the same signal (e.g. a
+       GLONASS false lock labelled with a slot another channel already tracks).
+       rescode() only rejects duplicates that are adjacent, and an inconsistent
+       duplicate makes every solution fail validation. Keep, per frequency
+       slot, the entry with the highest C/N0; preserve the order of the rest. */
+    int out = 0;
+    bool merged_any = false;
+    for (int in = 0; in < rover_observation_count; ++in)
+        {
+            const obsd_t &source = d_obs_data[in];
+            int match = -1;
+            for (int k = 0; k < out && source.sat > 0; ++k)
+                {
+                    if (d_obs_data[k].sat == source.sat)
+                        {
+                            match = k;
+                            break;
+                        }
+                }
+            if (match < 0)
+                {
+                    if (out != in)
+                        {
+                            d_obs_data[out] = source;
+                        }
+                    ++out;
+                    continue;
+                }
+            obsd_t &destination = d_obs_data[match];
+            for (int frequency = 0; frequency < NFREQ + NEXOBS; ++frequency)
+                {
+                    const bool source_has_data = source.code[frequency] != CODE_NONE &&
+                                                 (source.P[frequency] != 0.0 || source.L[frequency] != 0.0);
+                    if (!source_has_data)
+                        {
+                            continue;
+                        }
+                    const bool destination_has_data = destination.code[frequency] != CODE_NONE &&
+                                                      (destination.P[frequency] != 0.0 || destination.L[frequency] != 0.0);
+                    if (destination_has_data && destination.SNR[frequency] >= source.SNR[frequency])
+                        {
+                            continue;
+                        }
+                    destination.P[frequency] = source.P[frequency];
+                    destination.L[frequency] = source.L[frequency];
+                    destination.D[frequency] = source.D[frequency];
+                    destination.SNR[frequency] = source.SNR[frequency];
+                    destination.LLI[frequency] = source.LLI[frequency];
+                    destination.code[frequency] = source.code[frequency];
+                }
+            merged_any = true;
+            if (!d_duplicated_rover_observations_logged)
+                {
+                    LOG(WARNING) << "Duplicated observation of satellite " << satno2id(source.sat)
+                                 << " received from two channels: keeping the measurement with the highest C/N0";
+                    d_duplicated_rover_observations_logged = true;
+                }
+        }
+    if (!merged_any)
+        {
+            d_duplicated_rover_observations_logged = false;
+        }
+    return out;
+}
+
+
 bool Rtklib_Solver::prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot &fixed_base,
     int &rover_observation_count,
     int &base_observation_count)
@@ -2318,6 +2399,27 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         DLOG(INFO) << "No B-CNAV1 ephemeris data for SV " << gnss_observables_iter->second.PRN;
                                     }
                             }
+                        if (sig_ == "5D")
+                            {
+                                const auto cnav2_iter = beidou_cnav2_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                                if (cnav2_iter != beidou_cnav2_ephemeris_map.cend() &&
+                                    cnav2_iter->second.sig_type == BDS_EPH_SOURCE_CNAV2 &&
+                                    cnav2_iter->second.sat_type != 1 &&
+                                    cnav2_iter->second.hs == 0)
+                                    {
+                                        eph_data[valid_obs] = eph_to_rtklib(cnav2_iter->second);
+                                        obsd_t newobs{};
+                                        d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                            gnss_observables_iter->second,
+                                            cnav2_iter->second.WN + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
+                                            d_rtklib_band_index.at(sig_));
+                                        valid_obs++;
+                                    }
+                                else
+                                    {
+                                        DLOG(INFO) << "No B-CNAV2 ephemeris data for SV " << gnss_observables_iter->second.PRN;
+                                    }
+                            }
                         // BeiDou B3: merge with DNAV/B1I only
                         if (sig_ == "B3")
                             {
@@ -2407,7 +2509,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     // ****** SOLVE PVT******************************************************
     // **********************************************************************
 
-    int rover_observation_count = valid_obs + glo_valid_obs;
+    int rover_observation_count = merge_duplicated_rover_observations(valid_obs + glo_valid_obs);
     int base_observation_count = 0;
     bool fixed_base_applied = false;
     if (fixed_base != nullptr)
@@ -2631,6 +2733,13 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     if (is_bds_b1c_code(c0))
                         {
                             d_nav_data.lam[d_obs_data[k].sat - 1][0] = SPEED_OF_LIGHT_M_S / FREQ1;
+                        }
+                    for (int band = 0; band < NFREQ; ++band)
+                        {
+                            if (is_bds_b2a_code(d_obs_data[k].code[band]))
+                                {
+                                    d_nav_data.lam[d_obs_data[k].sat - 1][band] = SPEED_OF_LIGHT_M_S / FREQ5;
+                                }
                         }
                 }
             const int configured_positioning_mode = d_rtk.opt.mode;
@@ -2861,28 +2970,15 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // prange() in rtklib_pntpos.cc) gets one entry per signal, all
                     // flagged combined = true.
                     //
-                    // rescode() (rtklib_pntpos.cc) computes azel via satazel()
-                    // *before* checking it against PVT.elevation_mask, and
-                    // pntpos() copies that azel into ssat[] unconditionally --
-                    // only ssat[].vs is gated by the mask. So a satellite that
-                    // is tracked and has a live observation this epoch, but
-                    // falls below PVT.elevation_mask (or was excluded by RAIM
-                    // FDE), still has a valid azel here; only vs is false.
-                    // Report it anyway with used = false instead of dropping
-                    // it, so an excluded satellite shows up in the monitor as
-                    // "not used" rather than as missing/no-az-el (which
-                    // otherwise looks identical to a tracking problem).
+                    // pntpos() fills ssat[].azel for every observation; only
+                    // ssat[].vs is gated by PVT.elevation_mask / RAIM FDE. A
+                    // tracked satellite excluded from the solve is therefore
+                    // reported with used = false rather than dropped, so the
+                    // monitor can tell "excluded" from "not tracked".
                     //
-                    // Deliberately NOT filtered for NaN here: a corrupt ephemeris/
-                    // almanac (e.g. an out-of-range eccentricity) can propagate NaN
-                    // through eph2pos()/alm2pos()/satazel(), and that NaN is reported
-                    // as-is rather than silently dropping the satellite from the
-                    // monitor -- consumers (gnss-sdr-CtrlApp) are expected to handle
-                    // a NaN azimuth_deg/elevation_deg explicitly (e.g. no sky plot
-                    // entry, "NaN" printed in the signal table) rather than have it
-                    // hidden here. What NaN must NOT do is influence the position fix
-                    // itself -- see rescode()'s prange() isfinite guard in
-                    // rtklib_pntpos.cc for where that's actually enforced.
+                    // NaN az/el (corrupt ephemeris/almanac) is deliberately
+                    // reported as-is for consumers to handle; rescode()
+                    // already keeps NaN out of the position solve.
                     d_monitor_pvt.tracked_satellites.clear();
                     for (int sat_idx = 0; sat_idx < MAXSAT; sat_idx++)
                         {

@@ -345,7 +345,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {
             num_bands += 1;
         }
-    if (signal_enabled_flags.check_any_enabled(GAL_E5a, GPS_L5, QZS_J5))
+    if (signal_enabled_flags.check_any_enabled(GAL_E5a, GPS_L5, QZS_J5, BDS_B2A))
         {
             num_bands += 1;
         }
@@ -528,7 +528,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {
             nsys += SYS_GLO;
         }
-    if (signal_enabled_flags.check_any_enabled(BDS_B1, BDS_B3, BDS_B1C))
+    if (signal_enabled_flags.check_any_enabled(BDS_B1, BDS_B3, BDS_B1C, BDS_B2A))
         {
             nsys += SYS_BDS;
         }
@@ -890,6 +890,12 @@ void Rtklib_Pvt::clear_ephemeris()
 }
 
 
+void Rtklib_Pvt::clear_ephemeris_keep_almanac()
+{
+    pvt_->clear_ephemeris_keep_almanac();
+}
+
+
 std::map<int, Gps_Ephemeris> Rtklib_Pvt::get_gps_ephemeris() const
 {
     return pvt_->get_gps_ephemeris_map();
@@ -954,4 +960,25 @@ gr::basic_block_sptr Rtklib_Pvt::get_left_block()
 gr::basic_block_sptr Rtklib_Pvt::get_right_block()
 {
     return nullptr;  // this is a sink, nothing downstream
+}
+
+
+std::map<int, Gps_CNAV_Ephemeris> Rtklib_Pvt::get_gps_cnav_ephemeris() const
+{
+    return pvt_->get_gps_cnav_ephemeris_map();
+}
+
+std::map<int, Glonass_Gnav_Ephemeris> Rtklib_Pvt::get_glonass_ephemeris() const
+{
+    return pvt_->get_glonass_ephemeris_map();
+}
+
+std::map<int, Glonass_Gnav_Almanac> Rtklib_Pvt::get_glonass_almanac() const
+{
+    return pvt_->get_glonass_almanac_map();
+}
+
+Glonass_Gnav_Utc_Model Rtklib_Pvt::get_glonass_utc_model() const
+{
+    return pvt_->get_glonass_utc_model();
 }

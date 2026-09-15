@@ -55,9 +55,10 @@ void seph2pos(gtime_t time, const seph_t *seph, double *rs, double *dts,
     double *var);
 /* Prefer B-CNAV1 and use DNAV only when no usable B-CNAV1 record exists. */
 const int BDS_EPH_SELECTION_CNAV1_PREFERRED = -2;
-/* bds_eph_sel: -1=any, 0=DNAV (code!=BDS_EPH_SOURCE_CNAV1),
+/* bds_eph_sel: -1=any, 0=DNAV (code not CNAV1/CNAV2),
  * BDS_EPH_SELECTION_CNAV1_PREFERRED=B-CNAV1 then DNAV,
- * BDS_EPH_SOURCE_CNAV1=B-CNAV1 only */
+ * BDS_EPH_SOURCE_CNAV1=B-CNAV1 only,
+ * BDS_EPH_SOURCE_CNAV2=B-CNAV2 only */
 eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav, int bds_eph_sel = -1);
 geph_t *selgeph(gtime_t time, int sat, int iode, const nav_t *nav);
 seph_t *selseph(gtime_t time, int sat, const nav_t *nav);

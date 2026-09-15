@@ -114,6 +114,8 @@ public:
 
     void set_resampler_latency(uint32_t latency_samples);
 
+    void forecast(int noutput_items, gr_vector_int& ninput_items_required) override;
+
     /*!
      * \brief Returns the maximum peak of grid search.
      */

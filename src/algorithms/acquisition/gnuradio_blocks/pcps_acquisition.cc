@@ -229,6 +229,16 @@ pcps_acquisition::~pcps_acquisition() noexcept
 }
 
 
+void pcps_acquisition::forecast(int noutput_items __attribute__((unused)), gr_vector_int& ninput_items_required)
+{
+    unsigned ninputs = ninput_items_required.size();
+    for (unsigned i = 0; i < ninputs; i++)
+        {
+            ninput_items_required[i] = d_data_buffer.empty() ? d_samples_to_consume : d_data_buffer.size();
+        }
+}
+
+
 void pcps_acquisition::set_active(bool active)
 {
     {
@@ -986,8 +996,13 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
             // we can consume samples while performing a non-coherent integration as all required data is already buffered
             if (!d_acq_parameters.blocking_on_standby)
                 {
-                    d_sample_count += static_cast<uint64_t>(ninput_items[0]);
-                    consume_each(ninput_items[0]);
+                    // Advance the input buffer reader by d_samples_to_consume to improve acquisition performance
+                    // in realtime configurations.
+                    // This should not result in misalignment as d_samples_to_consume is always a multiple of code size in samples
+                    // and input buffer is expected to have enough samples to fill a data buffer after forecast call
+                    auto n_consume = std::min(static_cast<uint32_t>(ninput_items[0]), d_samples_to_consume);
+                    d_sample_count += static_cast<uint64_t>(n_consume);
+                    consume_each(n_consume);
                 }
             return 0;
         }
@@ -1027,14 +1042,16 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 }
 
             d_buffer_sample_count += samples_to_copy;
-            d_sample_count += static_cast<uint64_t>(samples_to_copy);
-            consume_each(samples_to_copy);
+            // Advance the input buffer reader by d_samples_to_consume.
+            // See notes above.
+            auto n_consume = std::min(static_cast<uint32_t>(ninput_items[0]), d_samples_to_consume);
+            d_sample_count += static_cast<uint64_t>(n_consume);
+            consume_each(n_consume);
 
             if (d_buffer_sample_count == buffer_size)  // Buffer is full
                 {
                     d_state = 2;
                 }
-
         }
     if (d_state == 2)
         {

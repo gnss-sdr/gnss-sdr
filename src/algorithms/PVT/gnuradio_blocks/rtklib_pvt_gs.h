@@ -136,6 +136,13 @@ public:
     void clear_ephemeris();
 
     /*!
+     * \brief Clears the ephemeris entries of the published navigation snapshot
+     * now and the solver ephemeris maps at the worker's next work() or telemetry
+     * callback, leaving the GPS, Galileo, BeiDou and GLONASS almanacs untouched.
+     */
+    void clear_ephemeris_keep_almanac();
+
+    /*!
      * \brief Interpolates one observable between two epochs, in the carrier
      * polarity frame of the later epoch.
      *
@@ -233,7 +240,14 @@ private:
         GalileoEphemeris,
         GalileoAlmanac,
         BeidouEphemeris,
-        BeidouAlmanac
+        BeidouAlmanac,
+        RetainedAlmanacs
+    };
+    enum class NavigationClear : uint8_t
+    {
+        None,
+        EphemerisOnly,
+        All
     };
     struct NavigationSnapshot;
     struct LatestPvt
@@ -249,6 +263,7 @@ private:
 
     std::shared_ptr<const NavigationSnapshot> navigation_snapshot() const;
     void publish_navigation_snapshot(NavigationData data);
+    void request_navigation_clear(NavigationClear kind);
     void apply_pending_navigation_clear();
     void publish_latest_pvt();
 
@@ -259,7 +274,8 @@ private:
     std::shared_ptr<const NavigationSnapshot> d_navigation_snapshot;
     LatestPvt d_latest_pvt;
     std::atomic<uint32_t> d_navigation_generation{0};
-    uint32_t d_applied_navigation_generation = 0;  // GNU Radio worker only
+    NavigationClear d_pending_navigation_clear = NavigationClear::None;  // guarded by d_snapshot_mutex
+    uint32_t d_applied_navigation_generation = 0;                        // GNU Radio worker only
     std::shared_ptr<Rtklib_Solver> d_internal_pvt_solver;
     std::shared_ptr<Rtklib_Solver> d_user_pvt_solver;
 

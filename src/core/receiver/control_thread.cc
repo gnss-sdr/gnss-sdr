@@ -1026,16 +1026,25 @@ void ControlThread::apply_action(unsigned int what)
             break;
         case 13:
             LOG(INFO) << "Receiver action WARMSTART";
-            // delete all ephemeris and almanac information from maps (also the PVT map queue)
+            // Warm start: almanac current, ephemeris unknown or stale. Drop the
+            // ephemeris only and keep the almanac already in memory, which cannot
+            // be staler than the XML assistance files the receiver started from,
+            // so those are deliberately not reloaded here.
             pvt_ptr = flowgraph_->get_pvt();
-            pvt_ptr->clear_ephemeris();
-            // load the ephemeris and the almanac from XML files (receiver assistance)
-            read_assistance_from_XML();
-            // call here the function that computes the set of visible satellites and its elevation
-            // for the date and time specified by the warm start command and the assisted position
-            get_visible_sats(cmd_interface_.get_utc_time(), cmd_interface_.get_LLH());
-            // reorder the satellite queue to acquire first those visible satellites
-            flowgraph_->priorize_satellites(visible_satellites);
+            pvt_ptr->clear_ephemeris_keep_almanac();
+            // Keep the supplied position/time active in the visibility tracker
+            // until a new fix arrives, including on subsequent control ticks.
+            if (flowgraph_->visibility_aware_search_enabled())
+                {
+                    flowgraph_->UpdateVisibilityReference(cmd_interface_.get_utc_time(), cmd_interface_.get_LLH());
+                }
+            else
+                {
+                    // Compute the set of visible satellites for the date, time and
+                    // position given by the warm start command, and search them first
+                    visible_satellites = get_visible_sats(cmd_interface_.get_utc_time(), cmd_interface_.get_LLH());
+                    flowgraph_->priorize_satellites(visible_satellites);
+                }
             // start again the satellite acquisitions
             receiver_on_standby_ = false;
             break;

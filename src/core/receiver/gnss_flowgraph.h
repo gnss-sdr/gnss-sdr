@@ -36,7 +36,9 @@
 #include <gnuradio/blocks/null_sink.h>  // for null_sink
 #include <gnuradio/runtime_types.h>     // for basic_block_sptr, top_block_sptr
 #include <pmt/pmt.h>                    // for pmt_t
+#include <array>                        // for array
 #include <chrono>                       // for steady_clock
+#include <ctime>                        // for time_t
 #include <list>                         // for list
 #include <map>                          // for map
 #include <memory>                       // for for shared_ptr, dynamic_pointer_cast
@@ -168,6 +170,12 @@ public:
      * No-op unless GNSS-SDR.enable_visibility_aware_search=true.
      */
     void MaybeUpdateVisibility();
+
+    /*!
+     * \brief Sets the telecommand position/time reference and immediately
+     * refreshes visibility. Called by the control thread.
+     */
+    void UpdateVisibilityReference(time_t utc_time, const std::array<float, 3>& LLH);
 
     /*!
      * \brief Whether GNSS-SDR.enable_visibility_aware_search is on, so callers can

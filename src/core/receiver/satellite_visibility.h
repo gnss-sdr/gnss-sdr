@@ -20,6 +20,7 @@
 #include "gnss_satellite.h"
 #include "rtklib.h"  // for gtime_t
 #include <armadillo>
+#include <array>
 #include <cstdint>
 #include <ctime>
 #include <limits>
@@ -103,7 +104,8 @@ std::vector<std::pair<int, Gnss_Satellite>> compute_visible_satellites(
  * GNSSFlowgraph::pop_by_visibility(): almanac and ephemeris can disagree at
  * the mask boundary, and tracking is stronger evidence than either.
  *
- * Tick() recomputes when: the fix just became valid; any PRN's ephemeris/
+ * Tick() recomputes when: a telecommand reference was supplied; the fix just
+ * became valid; any PRN's ephemeris/
  * almanac fingerprint (toe/toa, health) changed; visibility_recompute_interval_s
  * of receiver time elapsed; the receiver moved more than
  * visibility_recompute_position_threshold_m; or the freshest classified data
@@ -124,8 +126,17 @@ public:
     uint32_t search_ratio() const { return search_ratio_; }
 
     /*!
+     * \brief Supplies a telecommand position and UTC epoch, anchored to the
+     * current sample clock. Forces the next Tick() to recompute and overrides
+     * the current fix/configured reference until a different PVT epoch arrives.
+     */
+    void SetCommandReference(time_t utc_time, const std::array<float, 3>& LLH,
+        const Monitor_Pvt& current_fix, double receiver_time_s);
+
+    /*!
      * \brief Re-evaluates visibility when one of the triggers listed in the
-     * class description fires. Uses the latest fix position, else
+     * class description fires. Uses an active telecommand reference, else
+     * the latest fix position, else
      * GNSS-SDR.AGNSS_ref_location/AGNSS_ref_utc_time if configured, else
      * does nothing. Elapsed sample time advances the epoch between fixes
      * and before the first fix, including during recorded-data playback.
@@ -188,6 +199,13 @@ private:
     // Initial epoch for the no-fix fallback; in replay runs the wall clock is
     // unrelated to the GNSS time in the samples, so configure it explicitly.
     time_t agnss_ref_utc_time_;
+
+    bool have_command_reference_{false};
+    std::array<float, 3> command_reference_llh_{};
+    time_t command_reference_utc_time_{0};
+    double command_reference_receiver_time_s_{0.0};
+    double command_previous_fix_time_s_{-1.0};
+    bool command_reference_changed_{false};
 
     // GNSS-SDR.<System>_banned_prns, parsed as in GNSSFlowgraph::set_signals_list().
     // A banned PRN is never classified visible, keeping the diagnostics

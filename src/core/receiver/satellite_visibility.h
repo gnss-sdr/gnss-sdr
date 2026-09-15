@@ -26,6 +26,7 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <tuple>
@@ -158,6 +159,22 @@ public:
     // Other constellations retain their per-satellite classification.
     bool IsSearchVisible(const Gnss_Satellite& sat) const;
     bool IsSearchExcluded(const Gnss_Satellite& sat) const;
+
+    // Predicted Doppler (Hz) for sat on the given signal (e.g. "1B", "5X",
+    // "L5", "7X"), for use as an acquisition search center. Geometric term
+    // from whichever of sat's ephemeris/almanac is usable (same freshness
+    // rules as compute_visible_satellites()), plus the receiver's live
+    // solved clock drift (fix_status.user_clk_drift_ppm) scaled to this
+    // signal's carrier. Only meaningful with a live PVT fix -- std::nullopt
+    // when disabled, no fix is currently valid, the signal isn't a
+    // recognized carrier, or neither ephemeris nor almanac is currently
+    // usable for sat. No AGNSS-reference fallback yet: that's deferred to a
+    // follow-up (needs the pre-fix clock/velocity uncertainty this signal's
+    // Doppler tolerance can't absorb from a single search bin -- see
+    // GNSS-SDR.clock_frequency_max_error_ppm / receiver_max_velocity_m_s in
+    // the follow-up PR).
+    std::optional<double> PredictedDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
+        const Monitor_Pvt& fix_status, const Gnss_Satellite& sat, const std::string& signal) const;
 
 private:
     enum class SearchVisibility

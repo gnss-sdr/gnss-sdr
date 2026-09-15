@@ -81,6 +81,7 @@ void Acq_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
             pfa2 = pfa;
         }
     make_2_steps = configuration->property(role + ".make_two_steps", make_2_steps);
+    aligned_step2 = configuration->property(role + ".aligned_step2", aligned_step2);
     blocking_on_standby = configuration->property(role + ".blocking_on_standby", blocking_on_standby);
     enable_doppler_narrowing = configuration->property(role + ".enable_doppler_narrowing", enable_doppler_narrowing);
 

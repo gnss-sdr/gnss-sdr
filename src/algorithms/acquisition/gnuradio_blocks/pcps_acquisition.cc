@@ -972,6 +972,26 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
         {
         case 0:
             {
+                if (d_acq_parameters.aligned_step2 && d_step_two)
+                    {
+                        // Perform second step alignment to code boundary
+                        // Calculate alignment taking into account possible runaway in non-blocking mode
+                        const auto samples_per_code = static_cast<int64_t>(d_acq_parameters.samples_per_code);
+                        int64_t n_skip = static_cast<int64_t>(std::floor(d_gnss_synchro->Acq_delay_samples / d_acq_parameters.resampler_ratio)) -
+                                         (d_sample_count - static_cast<int64_t>(std::floor(d_gnss_synchro->Acq_samplestamp_samples / d_acq_parameters.resampler_ratio))) % samples_per_code;
+                        // Make sure, that number of skipped samples is not negative
+                        n_skip = (n_skip + d_consumed_samples) % samples_per_code;
+                        if (n_skip > 0)
+                            {
+                                const int64_t n_consume = std::min(n_skip, static_cast<int64_t>(ninput_items[0]));
+                                DLOG(INFO) << "Performing second acquisition step alignment in Channel: " << d_channel << ". Remaining samples: " << n_skip
+                                           << " Acq_samplestamp_samples: " << d_gnss_synchro->Acq_samplestamp_samples
+                                           << " d_sample_count: " << d_sample_count;
+                                d_sample_count += n_consume;
+                                consume_each(n_consume);
+                                break;
+                            }
+                    }
                 // Restart acquisition variables
                 d_gnss_synchro->Acq_delay_samples = 0.0;
                 d_gnss_synchro->Acq_doppler_hz = 0.0;

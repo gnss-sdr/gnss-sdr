@@ -20,6 +20,7 @@
 #include "agnss_ref_time.h"      // for parse_agnss_ref_utc_time
 #include "configuration_interface.h"
 #include "geofunctions.h"
+#include "gnss_frequencies.h"  // for SIGNAL_FREQ_MAP
 #include "monitor_pvt.h"
 #include "pvt_interface.h"
 #include "qzss.h"
@@ -1000,4 +1001,115 @@ bool SatelliteVisibility::IsSearchVisible(const Gnss_Satellite& sat) const
 bool SatelliteVisibility::IsSearchExcluded(const Gnss_Satellite& sat) const
 {
     return GetSearchVisibility(sat) == SearchVisibility::Excluded;
+}
+
+
+std::optional<double> SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
+    const Monitor_Pvt& fix_status, const Gnss_Satellite& sat, const std::string& signal) const
+{
+    if (!enabled_ || !pvt_ptr || fix_status.RX_time < 0.0)
+        {
+            return std::nullopt;
+        }
+
+    // Gnss_Ephemeris::predicted_doppler()/Gnss_Almanac::predicted_doppler()'s
+    // own band codes, keyed by signal the same way SIGNAL_FREQ_MAP is.
+    static const std::map<std::string, int> kBandForSignal = {
+        {"1C", 1}, {"1B", 1}, {"1D", 1}, {"J1", 1}, {"B1", 1},
+        {"2S", 2}, {"B2", 2},
+        {"L5", 5}, {"5X", 5}, {"J5", 5},
+        {"E6", 6},
+        {"7X", 7},
+        {"B3", 3}};
+    const auto band_it = kBandForSignal.find(signal);
+    const auto freq_it = SIGNAL_FREQ_MAP.find(signal);
+    if (band_it == kBandForSignal.cend() || freq_it == SIGNAL_FREQ_MAP.cend())
+        {
+            return std::nullopt;
+        }
+    const int band = band_it->second;
+    const double carrier_freq_hz = freq_it->second;
+
+    const double lat_deg = fix_status.latitude;
+    const double lon_deg = fix_status.longitude;
+    const double h_m = fix_status.height;
+    const double ve_mps = fix_status.vel_e;
+    const double vn_mps = fix_status.vel_n;
+    const double vu_mps = fix_status.vel_u;
+    const gtime_t gps_gtime = gpst2time(static_cast<int>(fix_status.week), fix_status.RX_time);
+    const double rx_time_s = time2gpst(gps_gtime, nullptr);
+    int ref_gps_week = 0;
+    time2gpst(gps_gtime, &ref_gps_week);
+    const std::string system = sat.get_system();
+    const auto prn = static_cast<int>(sat.get_PRN());
+
+    std::optional<double> geometric_doppler_hz;
+    if (system == "GPS")
+        {
+            const auto eph_map = pvt_ptr->get_gps_ephemeris();
+            const auto eph_it = eph_map.find(prn);
+            if (eph_it != eph_map.cend() && std::abs(timediff(gps_gtime, eph_to_rtklib(eph_it->second, ref_gps_week).toe)) <= MAXDTOE)
+                {
+                    geometric_doppler_hz = eph_it->second.predicted_doppler(rx_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, band);
+                }
+            else
+                {
+                    const auto alm_map = pvt_ptr->get_gps_almanac();
+                    const auto alm_it = alm_map.find(prn);
+                    if (alm_it != alm_map.cend() && std::abs(timediff(gps_gtime, alm_to_rtklib(alm_it->second, ref_gps_week).toa)) <= almanac_max_age_s_)
+                        {
+                            geometric_doppler_hz = alm_it->second.predicted_doppler(rx_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, band);
+                        }
+                }
+        }
+    else if (system == "Galileo")
+        {
+            const auto eph_map = pvt_ptr->get_galileo_ephemeris();
+            const auto eph_it = eph_map.find(prn);
+            if (eph_it != eph_map.cend() && std::abs(timediff(gps_gtime, eph_to_rtklib(eph_it->second).toe)) <= MAXDTOE_GAL)
+                {
+                    geometric_doppler_hz = eph_it->second.predicted_doppler(rx_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, band);
+                }
+            else
+                {
+                    const auto alm_map = pvt_ptr->get_galileo_almanac();
+                    const auto alm_it = alm_map.find(prn);
+                    if (alm_it != alm_map.cend() && std::abs(timediff(gps_gtime, alm_to_rtklib(alm_it->second, ref_gps_week).toa)) <= almanac_max_age_s_)
+                        {
+                            geometric_doppler_hz = alm_it->second.predicted_doppler(rx_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, band);
+                        }
+                }
+        }
+    else if (system == "Beidou")
+        {
+            const auto eph_map = pvt_ptr->get_beidou_dnav_ephemeris();
+            const auto eph_it = eph_map.find(prn);
+            if (eph_it != eph_map.cend() && std::abs(timediff(gps_gtime, eph_to_rtklib(eph_it->second).toe)) <= MAXDTOE_BDS)
+                {
+                    geometric_doppler_hz = eph_it->second.predicted_doppler(rx_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, band);
+                }
+            else
+                {
+                    const auto alm_map = pvt_ptr->get_beidou_dnav_almanac();
+                    const auto alm_it = alm_map.find(prn);
+                    if (alm_it != alm_map.cend() && std::abs(timediff(gps_gtime, alm_to_rtklib(alm_it->second).toa)) <= almanac_max_age_s_)
+                        {
+                            geometric_doppler_hz = alm_it->second.predicted_doppler(rx_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, band);
+                        }
+                }
+        }
+
+    if (!geometric_doppler_hz.has_value())
+        {
+            return std::nullopt;
+        }
+
+    // Live PVT-solved clock drift, shared by every satellite's observed
+    // Doppler, on top of the per-satellite geometric term above.
+    // SUBTRACTED, not added -- empirically verified against
+    // project_doppler()'s dual-frequency projection (gnss_flowgraph.cc):
+    // geometric - clock_offset matched to within noise, geometric +
+    // clock_offset was off by 2x it.
+    const double clock_offset_hz = fix_status.user_clk_drift_ppm * 1.0e-6 * carrier_freq_hz;
+    return *geometric_doppler_hz - clock_offset_hz;
 }

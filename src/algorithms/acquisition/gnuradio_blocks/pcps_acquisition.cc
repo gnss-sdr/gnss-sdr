@@ -1098,73 +1098,67 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
             return 0;
         }
 
-    switch (d_state)
+    if (d_state == 0)
         {
-        case 0:
-            {
-                // Restart acquisition variables
-                d_gnss_synchro->Acq_delay_samples = 0.0;
-                d_gnss_synchro->Acq_doppler_hz = 0.0;
-                d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
-                d_gnss_synchro->Acq_doppler_step = 0U;
-                d_state = 1;
-                d_buffer_sample_count = 0U;
-                d_num_noncoherent_integrations_counter = 0U;
-                break;
-            }
-        case 1:
-            {
-                // Check if we are buffering (have allocated the buffer)
-                const bool is_buffering = !d_data_buffer.empty();
-                // Expected number of samples to copy
-                const auto buffer_size = is_buffering ? d_data_buffer.size() : d_samples_to_consume;
-                // Safety check, should always succeed
-                const auto fit_in_buffer = (ninput_items[0] + d_buffer_sample_count) <= buffer_size;
-                const uint32_t samples_to_copy = fit_in_buffer ? ninput_items[0] : buffer_size - d_buffer_sample_count;
-                // copy destination
-                gr_complex* buffer_ptr = d_acq_parameters.blocking ? d_input_signal.data() : d_data_buffer.data();
+            // Restart acquisition variables
+            d_gnss_synchro->Acq_delay_samples = 0.0;
+            d_gnss_synchro->Acq_doppler_hz = 0.0;
+            d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+            d_gnss_synchro->Acq_doppler_step = 0U;
+            d_state = 1;
+            d_buffer_sample_count = 0U;
+            d_num_noncoherent_integrations_counter = 0U;
+        }
+    if (d_state == 1)
+        {
+            // Check if we are buffering (have allocated the buffer)
+            const bool is_buffering = !d_data_buffer.empty();
+            // Expected number of samples to copy
+            const auto buffer_size = is_buffering ? d_data_buffer.size() : d_samples_to_consume;
+            // Safety check, should always succeed
+            const auto fit_in_buffer = (ninput_items[0] + d_buffer_sample_count) <= buffer_size;
+            const uint32_t samples_to_copy = fit_in_buffer ? ninput_items[0] : buffer_size - d_buffer_sample_count;
+            // copy destination
+            gr_complex* buffer_ptr = is_buffering ? d_data_buffer.data() : d_input_signal.data();
 
-                if (d_cshort)
-                    {
-                        const auto* in = reinterpret_cast<const lv_16sc_t*>(input_items[0]);  // Get the input samples pointer
-                        volk_gnsssdr_16ic_convert_32fc(buffer_ptr + d_buffer_sample_count, in, samples_to_copy);
-                    }
-                else
-                    {
-                        const auto* in = reinterpret_cast<const gr_complex*>(input_items[0]);  // Get the input samples pointer
-                        std::copy(in, in + samples_to_copy, buffer_ptr + d_buffer_sample_count);
-                    }
+            if (d_cshort)
+                {
+                    const auto* in = reinterpret_cast<const lv_16sc_t*>(input_items[0]);  // Get the input samples pointer
+                    volk_gnsssdr_16ic_convert_32fc(buffer_ptr + d_buffer_sample_count, in, samples_to_copy);
+                }
+            else
+                {
+                    const auto* in = reinterpret_cast<const gr_complex*>(input_items[0]);  // Get the input samples pointer
+                    std::copy(in, in + samples_to_copy, buffer_ptr + d_buffer_sample_count);
+                }
 
-                d_buffer_sample_count += samples_to_copy;
-                d_sample_count += static_cast<uint64_t>(samples_to_copy);
-                consume_each(samples_to_copy);
+            d_buffer_sample_count += samples_to_copy;
+            d_sample_count += static_cast<uint64_t>(samples_to_copy);
+            consume_each(samples_to_copy);
 
-                if (d_buffer_sample_count == buffer_size)  // Buffer is full
-                    {
-                        d_state = 2;
-                    }
+            if (d_buffer_sample_count == buffer_size)  // Buffer is full
+                {
+                    d_state = 2;
+                }
 
-                break;
-            }
-        case 2:
-            {
-                if (d_acq_parameters.blocking)
-                    {
-                        lk.unlock();
-                        acquisition_core(d_sample_count);
-                    }
-                else
-                    {
-                        lk.unlock();
-                        wait_if_active();
-                        lk.lock();
-                        d_worker = std::make_unique<gr::thread::thread>(&pcps_acquisition::acquisition_core, this, d_sample_count);
-                        d_worker_active = true;
-                    }
-                consume_each(0);
-                d_buffer_sample_count = 0U;
-                break;
-            }
+        }
+    if (d_state == 2)
+        {
+            if (d_acq_parameters.blocking)
+                {
+                    lk.unlock();
+                    acquisition_core(d_sample_count);
+                }
+            else
+                {
+                    lk.unlock();
+                    wait_if_active();
+                    lk.lock();
+                    d_worker = std::make_unique<gr::thread::thread>(&pcps_acquisition::acquisition_core, this, d_sample_count);
+                    d_worker_active = true;
+                }
+            consume_each(0);
+            d_buffer_sample_count = 0U;
         }
 
     // Send outputs to the monitor

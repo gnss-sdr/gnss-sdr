@@ -52,7 +52,19 @@ class Evk1029Source;
 
 using Evk1029Source_sptr = gnss_shared_ptr<Evk1029Source>;
 
-Evk1029Source_sptr evk1029_make_source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency);
+// file_offset_bytes: byte position in the raw capture to seek to before the
+// first read, letting a long capture be jumped straight to a "time of
+// interest" instead of always reprocessed from the start (see
+// Evk1029SignalSource.file_offset in the adapter, which converts a
+// requested offset in seconds -- since the sampling frequency is already
+// known there -- into this byte count). Rounded up to the next multiple of
+// 8 bytes (64 bits) here, matching the capture's native packing (16 OBA
+// samples per little-endian 64-bit word): this block itself only ever reads
+// byte-by-byte and would decode correctly from any byte offset, but seeking
+// to a non-word-aligned byte splits a 64-bit DMA word the real hardware
+// always transferred as one unit, which needlessly complicates comparing a
+// jumped-to run against a from-the-start one at the file/word level.
+Evk1029Source_sptr evk1029_make_source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t file_offset_bytes = 0);
 
 /*!
  * \brief Reads a continuous, header-less EVK1029 raw capture file and
@@ -65,8 +77,8 @@ public:
     ~Evk1029Source() override;
 
 private:
-    friend Evk1029Source_sptr evk1029_make_source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency);
-    Evk1029Source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency);
+    friend Evk1029Source_sptr evk1029_make_source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t file_offset_bytes);
+    Evk1029Source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t file_offset_bytes = 0);
 
     int work(int noutput_items,
         gr_vector_const_void_star& input_items,

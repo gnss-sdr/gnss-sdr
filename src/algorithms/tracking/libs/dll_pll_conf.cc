@@ -60,6 +60,7 @@ void Dll_Pll_Conf::SetFromConfiguration(const ConfigurationInterface *configurat
     high_dyn = configuration->property(role + ".high_dyn", high_dyn);
     dump = configuration->property(role + ".dump", dump);
     dump_filename = configuration->property(role + ".dump_filename", dump_filename);
+    f_error_dump_filename = configuration->property(role + ".f_error_dump_filename", f_error_dump_filename);
     dump_mat = configuration->property(role + ".dump_mat", dump_mat);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", pll_bw_hz);
 #if USE_GLOG_AND_GFLAGS
@@ -123,6 +124,14 @@ void Dll_Pll_Conf::SetFromConfiguration(const ConfigurationInterface *configurat
     enable_fll_steady_state = configuration->property(role + ".enable_fll_steady_state", enable_fll_steady_state);
     fll_bw_hz = configuration->property(role + ".fll_bw_hz", fll_bw_hz);
     pull_in_time_s = configuration->property(role + ".pull_in_time_s", pull_in_time_s);
+    f_error_accumulation = configuration->property(role + ".f_error_accumulation", f_error_accumulation);
+    f_error_step_num = configuration->property(role + ".f_error_step_num", f_error_step_num);
+    if ((f_error_step_num != 0) && ((f_error_step_num % 2) == 0))
+        {
+            // f_error_step_num must be odd (a center bin plus a symmetric number of +/- steps)
+            f_error_step_num += 1;
+        }
+    f_error_doppler_step = configuration->property(role + ".f_error_doppler_step", f_error_doppler_step);
     bit_synchronization_time_limit_s = configuration->property(role + ".bit_synchronization_time_limit_s", bit_synchronization_time_limit_s);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", early_late_space_chips);
     early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", early_late_space_narrow_chips);

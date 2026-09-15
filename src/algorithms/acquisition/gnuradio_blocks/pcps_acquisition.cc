@@ -207,16 +207,11 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
         }
 #endif
 
-    // While idle (not actively searching), general_work() only drains its input to avoid
-    // stalling the upstream block, producing no output. Without a batching hint the TPB
-    // scheduler wakes this block's thread for every small burst of new input, which is
-    // pure scheduling overhead. Requiring a larger noutput_items granularity forces the
-    // scheduler to accumulate more input per wakeup, cutting call frequency without
-    // changing behavior (production while idle is still always 0 either way).
-    // One PRN code period at this signal's own decimated rate is the natural
-    // lower bound: the algorithm never does anything meaningful below that granularity.
-    const auto output_multiple_samples = std::max<uint32_t>(1U, static_cast<uint32_t>(std::lround(conf_.samples_per_ms)));
-    this->set_output_multiple(output_multiple_samples);
+    // Give a hint to GNU Radio scheduler on how many samples we may want
+    // As pcps_acquisition is not inherited from gr::sync_block, This doesn't prevent us
+    // from producing exactly 1 sample (or even 0 samples) in the general_work
+    // Fixes CI freeze and retains performance improvement
+    this->set_output_multiple(std::max(d_samples_to_consume, static_cast<uint32_t>(d_data_buffer.size())));
 }
 
 
@@ -1092,8 +1087,13 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
             // we can consume samples while performing a non-coherent integration as all required data is already buffered
             if (!d_acq_parameters.blocking_on_standby)
                 {
-                    d_sample_count += static_cast<uint64_t>(ninput_items[0]);
-                    consume_each(ninput_items[0]);
+                    // Advance the input buffer reader by d_samples_to_consume to improve acquisition performance
+                    // in realtime configurations.
+                    // This should not result in misalignment as d_samples_to_consume is always a multiple of code size in samples
+                    // and input buffer is expected to have enough samples to fill a data buffer after set_output_multiple call
+                    auto n_consume = std::min(static_cast<uint32_t>(ninput_items[0]), d_samples_to_consume);
+                    d_sample_count += static_cast<uint64_t>(n_consume);
+                    consume_each(n_consume);
                 }
             return 0;
         }
@@ -1133,14 +1133,16 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 }
 
             d_buffer_sample_count += samples_to_copy;
-            d_sample_count += static_cast<uint64_t>(samples_to_copy);
-            consume_each(samples_to_copy);
+            // Advance the input buffer reader by d_samples_to_consume.
+            // See notes above.
+            auto n_consume = std::min(static_cast<uint32_t>(ninput_items[0]), d_samples_to_consume);
+            d_sample_count += static_cast<uint64_t>(n_consume);
+            consume_each(n_consume);
 
             if (d_buffer_sample_count == buffer_size)  // Buffer is full
                 {
                     d_state = 2;
                 }
-
         }
     if (d_state == 2)
         {

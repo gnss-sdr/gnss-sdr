@@ -125,8 +125,8 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_doppler_max(conf_.doppler_max),
       d_samplesPerChip(conf_.samples_per_chip),
       d_doppler_step(conf_.doppler_step),
-      d_consumed_samples(conf_.sampled_ms * conf_.samples_per_ms * (conf_.bit_transition_flag ? 2.0 : 1.0)),
-      d_fft_size(conf_.sampled_ms == conf_.ms_per_code ? d_consumed_samples : d_consumed_samples * 2),
+      d_samples_to_consume(conf_.sampled_ms * conf_.samples_per_ms * (conf_.bit_transition_flag ? 2.0 : 1.0)),
+      d_fft_size(conf_.sampled_ms == conf_.ms_per_code ? d_samples_to_consume : d_samples_to_consume * 2),
       d_effective_fft_size(conf_.bit_transition_flag ? (d_fft_size / 2) : d_fft_size),
       d_magnitude_grid_stride(aligned_row_stride<float>(d_effective_fft_size)),
       d_doppler_wipeoffs_stride(aligned_row_stride<gr_complex>(d_fft_size)),
@@ -147,7 +147,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_doppler_bias(0),
       d_num_doppler_bins_active(d_num_doppler_bins),
       d_doppler_search_narrowed(false),
-      d_buffer_count(0),
+      d_buffer_sample_count(0),
       d_channel(0),
       d_resampler_latency_samples(conf_.resampler_latency_samples),
       d_sample_count(0),
@@ -165,7 +165,6 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_ifft(gnss_fft_rev_make_unique(d_fft_size)),
       d_grid_doppler_wipeoffs(d_num_doppler_bins_step1_capacity * d_doppler_wipeoffs_stride),
       d_fft_codes(d_fft_size),
-      d_data_buffer(d_consumed_samples),
       d_fft_if(gnss_fft_fwd_make_unique(d_fft_size))
 {
     this->message_port_register_out(pmt::mp("events"));
@@ -188,12 +187,12 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
     //  d_acq_parameters.max_dwells = 1;  // Activation of d_acq_parameters.bit_transition_flag invalidates the value of d_acq_parameters.max_dwells
     // }
 
-    if (d_cshort)
-        {
-            d_data_buffer_sc = volk_gnsssdr::vector<lv_16sc_t>(d_consumed_samples);
-        }
-
     std::fill(d_magnitude_grid.begin(), d_magnitude_grid.end(), 0.0F);
+
+    if (d_fft_size > d_samples_to_consume)  // It will always contain zero padding, just write it once here
+        {
+            std::fill_n(d_input_signal.data() + d_samples_to_consume, d_fft_size - d_samples_to_consume, gr_complex(0.0, 0.0));
+        }
 
     update_grid_doppler_wipeoffs();
 
@@ -270,12 +269,12 @@ void pcps_acquisition::set_local_code(std::complex<float>* code)
         {
             if (d_acq_parameters.sampled_ms == d_acq_parameters.ms_per_code)
                 {
-                    std::copy(code, code + d_consumed_samples, d_fft_if->get_inbuf());
+                    std::copy(code, code + d_samples_to_consume, d_fft_if->get_inbuf());
                 }
             else
                 {
-                    std::fill_n(d_fft_if->get_inbuf(), d_fft_size - d_consumed_samples, gr_complex(0.0, 0.0));
-                    std::copy(code, code + d_consumed_samples, d_fft_if->get_inbuf() + d_consumed_samples);
+                    std::fill_n(d_fft_if->get_inbuf(), d_fft_size - d_samples_to_consume, gr_complex(0.0, 0.0));
+                    std::copy(code, code + d_samples_to_consume, d_fft_if->get_inbuf() + d_samples_to_consume);
                 }
         }
 
@@ -793,28 +792,6 @@ void pcps_acquisition::acquisition_core(uint64_t sample_count)
 {
     gr::thread::scoped_lock lk(d_setlock);
 
-    // Initialize acquisition algorithm
-    const gr_complex* in = nullptr;  // Get the input samples pointer
-    if (d_cshort)
-        {
-            volk_gnsssdr_16ic_convert_32fc(d_input_signal.data(), d_data_buffer_sc.data(), d_consumed_samples);
-            if (d_fft_size > d_consumed_samples)
-                {
-                    std::fill_n(d_input_signal.data() + d_consumed_samples, d_fft_size - d_consumed_samples, gr_complex(0.0, 0.0));
-                }
-            in = d_input_signal.data();
-        }
-    else if (d_fft_size == d_consumed_samples)
-        {
-            in = d_data_buffer.data();
-        }
-    else
-        {
-            std::copy(d_data_buffer.data(), d_data_buffer.data() + d_consumed_samples, d_input_signal.data());
-            std::fill_n(d_input_signal.data() + d_consumed_samples, d_fft_size - d_consumed_samples, gr_complex(0.0, 0.0));
-            in = d_input_signal.data();
-        }
-
     d_num_noncoherent_integrations_counter++;
 
     DLOG(INFO) << "Channel: " << d_channel
@@ -828,7 +805,7 @@ void pcps_acquisition::acquisition_core(uint64_t sample_count)
     lk.unlock();
 
     // Doppler frequency grid loop, only access variables that doesn't need a lock
-    doppler_grid(in);
+    doppler_grid(d_input_signal.data());
     if (should_dump_channel())
         {
             copy_magnitude_grid_to_dump_grid();
@@ -848,7 +825,7 @@ void pcps_acquisition::acquisition_core(uint64_t sample_count)
                 }
             else
                 {
-                    d_buffer_count = 0;
+                    d_buffer_sample_count = 0;
                     d_state = 1;
                 }
 
@@ -978,38 +955,38 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
                 d_gnss_synchro->Acq_doppler_step = 0U;
                 d_state = 1;
-                d_buffer_count = 0U;
+                d_buffer_sample_count = 0U;
                 break;
             }
         case 1:
             {
-                const auto fit_in_buffer = (ninput_items[0] + d_buffer_count) <= d_consumed_samples;
-                const uint32_t buff_increment = fit_in_buffer ? ninput_items[0] : d_consumed_samples - d_buffer_count;
+                const auto fit_in_buffer = (ninput_items[0] + d_buffer_sample_count) <= d_samples_to_consume;
+                const uint32_t samples_to_copy = fit_in_buffer ? ninput_items[0] : d_samples_to_consume - d_buffer_sample_count;
 
                 if (d_cshort)
                     {
                         const auto* in = reinterpret_cast<const lv_16sc_t*>(input_items[0]);  // Get the input samples pointer
-                        std::copy(in, in + buff_increment, d_data_buffer_sc.begin() + d_buffer_count);
+                        volk_gnsssdr_16ic_convert_32fc(d_input_signal.data() + d_buffer_sample_count, in, samples_to_copy);
                     }
                 else
                     {
                         const auto* in = reinterpret_cast<const gr_complex*>(input_items[0]);  // Get the input samples pointer
-                        std::copy(in, in + buff_increment, d_data_buffer.begin() + d_buffer_count);
+                        std::copy(in, in + samples_to_copy, d_input_signal.begin() + d_buffer_sample_count);
                     }
 
-                // If buffer will be full in next iteration
-                if (d_buffer_count >= d_consumed_samples)
+                d_buffer_sample_count += samples_to_copy;
+                d_sample_count += static_cast<uint64_t>(samples_to_copy);
+                consume_each(samples_to_copy);
+
+                if (d_buffer_sample_count == d_samples_to_consume)  // Buffer is full
                     {
                         d_state = 2;
                     }
-                d_buffer_count += buff_increment;
-                d_sample_count += static_cast<uint64_t>(buff_increment);
-                consume_each(buff_increment);
+
                 break;
             }
         case 2:
             {
-                // Copy the data to the core and let it know that new data is available
                 if (d_acq_parameters.blocking)
                     {
                         lk.unlock();
@@ -1024,7 +1001,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                         d_worker_active = true;
                     }
                 consume_each(0);
-                d_buffer_count = 0U;
+                d_buffer_sample_count = 0U;
                 break;
             }
         }

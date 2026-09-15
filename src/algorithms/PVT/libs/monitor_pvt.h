@@ -54,6 +54,9 @@ public:
         // false when tracked (az/el valid) but excluded from the solve, e.g.
         // below PVT.elevation_mask or by RAIM FDE.
         bool used{true};
+        // Broadcast health status, independent of `used` (which alone can't
+        // tell a monitor client *why* a satellite was excluded).
+        bool healthy{true};
 
         template <class Archive>
         void serialize(Archive& ar, const unsigned int version)
@@ -68,6 +71,7 @@ public:
             ar& BOOST_SERIALIZATION_NVP(elevation_deg);
             ar& BOOST_SERIALIZATION_NVP(combined);
             ar& BOOST_SERIALIZATION_NVP(used);
+            ar& BOOST_SERIALIZATION_NVP(healthy);
         }
     };
 

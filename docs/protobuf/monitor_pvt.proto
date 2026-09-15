@@ -69,6 +69,7 @@ message MonitorPvt {
     double elevation_deg = 5;
     bool combined = 6;
     bool used = 7;
+    bool healthy = 8;
   }
   repeated TrackedSatellite tracked_satellites = 37;
 }

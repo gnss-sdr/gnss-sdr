@@ -1965,19 +1965,20 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             // a different trigger (TRK FAILED here vs. ACQ FAILED there). A
             // no-op check when acquisition_max_retry_rate_hz is unset (the
             // default), since InAcquisitionCooldown() then always returns
-            // false. Paced on receiver time, not wall-clock -- see
-            // last_acquisition_attempt_rx_time_s_'s doc comment.
+            // false. Paced on sample-counter-derived receiver time, not
+            // wall-clock -- see last_acquisition_attempt_rx_time_s_'s doc
+            // comment.
             {
-                const Monitor_Pvt fix_status = channels_status_->get_current_status_pvt();
-                const bool rx_time_valid = (fix_status.RX_time >= 0.0);
-                if (acq_channels_count_ < max_acq_channels_ && !InAcquisitionCooldown(gs, rx_time_valid, fix_status.RX_time))
+                double receiver_time_s = 0.0;
+                channels_status_->get_current_status_pvt(&receiver_time_s);
+                if (acq_channels_count_ < max_acq_channels_ && !InAcquisitionCooldown(gs, receiver_time_s))
                     {
                         // try to acquire the same satellite
                         channels_state_[who] = 2;
                         acq_channels_count_++;
                         DLOG(INFO) << "Channel " << who << " Starting acquisition " << gs.get_satellite() << ", Signal " << gs.get_signal_str();
                         channels_[who]->set_signal(channels_[who]->get_signal());
-                        MarkAcquisitionAttempt(gs, rx_time_valid, fix_status.RX_time);
+                        MarkAcquisitionAttempt(gs, receiver_time_s);
 
 #if ENABLE_FPGA
                         if (enable_fpga_offloading_)
@@ -2548,18 +2549,22 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
     // named distinctly from this function's own RX_time output parameter
     // above, which is a different thing (the already-tracked companion
     // signal's RX_time, used for Doppler projection, not "now" for pacing).
-    // Skipped entirely (default RX_time -1.0 => never in cooldown) when the
-    // feature is disabled, to avoid paying for the mutex-locked fetch on
-    // every idle channel's every idle tick for no benefit -- same "only pay
-    // when the feature can actually use it" discipline as the other
-    // lazily-fetched state in this function/pop_by_visibility() below.
-    Monitor_Pvt cooldown_fix_status{};
-    cooldown_fix_status.RX_time = -1.0;
+    // Sample-counter-derived elapsed time (same source as
+    // SatelliteVisibility::Tick()'s receiver_time_s), not the PVT fix's own
+    // RX_time: rtklib_pvt_gs.cc only publishes a status message while
+    // is_valid_position() holds, so RX_time freezes at its last value once
+    // the fix is lost -- which would silently stop this cooldown from ever
+    // expiring during an outage. Skipped entirely (defaults to 0.0, same as
+    // before any samples have been processed) when the feature is
+    // disabled, to avoid paying for the mutex-locked fetch on every idle
+    // channel's every idle tick for no benefit -- same "only pay when the
+    // feature can actually use it" discipline as the other lazily-fetched
+    // state in this function/pop_by_visibility() below.
+    double cooldown_receiver_time_s = 0.0;
     if (acquisition_retry_min_interval_s_ > 0.0)
         {
-            cooldown_fix_status = channels_status_->get_current_status_pvt();
+            channels_status_->get_current_status_pvt(&cooldown_receiver_time_s);
         }
-    const bool cooldown_rx_time_valid = (cooldown_fix_status.RX_time >= 0.0);
 
     if (available_signals.empty())
         {
@@ -2674,7 +2679,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                             // the secondary genuinely isn't receivable) would otherwise
                                             // be re-offered just as fast. No-op when
                                             // acquisition_max_retry_rate_hz is unset (the default).
-                                            if (InAcquisitionCooldown(*it2, cooldown_rx_time_valid, cooldown_fix_status.RX_time))
+                                            if (InAcquisitionCooldown(*it2, cooldown_receiver_time_s))
                                                 {
                                                     continue;
                                                 }
@@ -2696,7 +2701,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                             available_signals.erase(it2);
                                             found_signal = true;
                                             assistance_available = true;
-                                            MarkAcquisitionAttempt(result, cooldown_rx_time_valid, cooldown_fix_status.RX_time);
+                                            MarkAcquisitionAttempt(result, cooldown_receiver_time_s);
                                             break;
                                         }
                                 }
@@ -2736,7 +2741,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
             if (satellite_visibility_ && satellite_visibility_->enabled())
                 {
                     bool picked = false;
-                    result = pop_by_visibility(available_signals, searched_signal, picked, cooldown_rx_time_valid, cooldown_fix_status.RX_time);
+                    result = pop_by_visibility(available_signals, searched_signal, picked, cooldown_receiver_time_s);
                     if (!picked)
                         {
                             signal_available = false;
@@ -2752,7 +2757,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                     // acquisition_retry_min_interval_s_ is 0 (the default),
                     // since InAcquisitionCooldown() then always returns false.
                     auto it = std::find_if(available_signals.begin(), available_signals.end(),
-                        [&](const Gnss_Signal& gs) { return !InAcquisitionCooldown(gs, cooldown_rx_time_valid, cooldown_fix_status.RX_time); });
+                        [&](const Gnss_Signal& gs) { return !InAcquisitionCooldown(gs, cooldown_receiver_time_s); });
                     if (it == available_signals.end())
                         {
                             signal_available = false;
@@ -2760,7 +2765,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                         }
                     result = *it;
                     available_signals.erase(it);
-                    MarkAcquisitionAttempt(result, cooldown_rx_time_valid, cooldown_fix_status.RX_time);
+                    MarkAcquisitionAttempt(result, cooldown_receiver_time_s);
                 }
         }
 
@@ -2778,13 +2783,9 @@ std::string acquisition_cooldown_key(const Gnss_Signal& gs)
 }  // namespace
 
 
-bool GNSSFlowgraph::InAcquisitionCooldown(const Gnss_Signal& gs, bool rx_time_valid, double rx_time_s) const
+bool GNSSFlowgraph::InAcquisitionCooldown(const Gnss_Signal& gs, double receiver_time_s) const
 {
-    // Not meaningful before the first fix (RX_time isn't ticking yet) --
-    // simply don't throttle during that bootstrap phase, same as
-    // SatelliteVisibility's own recompute cadence. No wall-clock fallback:
-    // see last_acquisition_attempt_rx_time_s_'s doc comment for why.
-    if (acquisition_retry_min_interval_s_ <= 0.0 || !rx_time_valid)
+    if (acquisition_retry_min_interval_s_ <= 0.0)
         {
             return false;
         }
@@ -2793,27 +2794,25 @@ bool GNSSFlowgraph::InAcquisitionCooldown(const Gnss_Signal& gs, bool rx_time_va
         {
             return false;
         }
-    const double elapsed_s = rx_time_s - it->second;
-    // A negative elapsed time means RX_time wrapped (start of a new GPS
-    // week) or otherwise moved backwards since the last attempt -- treat
-    // that as cooldown-expired (fail open) rather than risk misreading a
-    // rollover as "still within the last acquisition_retry_min_interval_s_",
-    // which could otherwise block a pick indefinitely.
+    const double elapsed_s = receiver_time_s - it->second;
+    // A negative elapsed time shouldn't happen (the sample-counter clock is
+    // monotonic for the life of the flowgraph), but fail open rather than
+    // risk blocking a pick indefinitely if it ever does.
     return elapsed_s >= 0.0 && elapsed_s < acquisition_retry_min_interval_s_;
 }
 
 
-void GNSSFlowgraph::MarkAcquisitionAttempt(const Gnss_Signal& gs, bool rx_time_valid, double rx_time_s)
+void GNSSFlowgraph::MarkAcquisitionAttempt(const Gnss_Signal& gs, double receiver_time_s)
 {
-    if (acquisition_retry_min_interval_s_ <= 0.0 || !rx_time_valid)
+    if (acquisition_retry_min_interval_s_ <= 0.0)
         {
             return;
         }
-    last_acquisition_attempt_rx_time_s_[acquisition_cooldown_key(gs)] = rx_time_s;
+    last_acquisition_attempt_rx_time_s_[acquisition_cooldown_key(gs)] = receiver_time_s;
 }
 
 
-Gnss_Signal GNSSFlowgraph::pop_by_visibility(std::list<Gnss_Signal>& available_signals, const std::string& searched_signal, bool& picked, bool cooldown_rx_time_valid, double cooldown_rx_time_s)
+Gnss_Signal GNSSFlowgraph::pop_by_visibility(std::list<Gnss_Signal>& available_signals, const std::string& searched_signal, bool& picked, double cooldown_receiver_time_s)
 {
     picked = false;
 
@@ -2861,7 +2860,7 @@ Gnss_Signal GNSSFlowgraph::pop_by_visibility(std::list<Gnss_Signal>& available_s
     };
     auto find_bucket = [&](bool visible) {
         return std::find_if(available_signals.begin(), available_signals.end(),
-            [&](const Gnss_Signal& gs) { return is_searchable(gs) && !InAcquisitionCooldown(gs, cooldown_rx_time_valid, cooldown_rx_time_s) && satellite_visibility_->IsSearchVisible(gs.get_satellite()) == visible; });
+            [&](const Gnss_Signal& gs) { return is_searchable(gs) && !InAcquisitionCooldown(gs, cooldown_receiver_time_s) && satellite_visibility_->IsSearchVisible(gs.get_satellite()) == visible; });
     };
 
     auto it = find_bucket(want_visible);
@@ -2926,7 +2925,7 @@ Gnss_Signal GNSSFlowgraph::pop_by_visibility(std::list<Gnss_Signal>& available_s
     const Gnss_Signal result = *it;
     const bool picked_visible = satellite_visibility_->IsSearchVisible(result.get_satellite());
     available_signals.erase(it);
-    MarkAcquisitionAttempt(result, cooldown_rx_time_valid, cooldown_rx_time_s);
+    MarkAcquisitionAttempt(result, cooldown_receiver_time_s);
     counter = (counter + 1) % (ratio + 1);
     if (picked_visible)
         {

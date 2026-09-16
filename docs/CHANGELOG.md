@@ -62,6 +62,15 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Availability:
 
+- Added `Acquisition_XX.full_grid_search` (default: `false`) for acquisition
+  implementations using the CPU PCPS block. When enabled, each search stage
+  accumulates all `max_dwells` non-coherent integrations before accepting or
+  rejecting the strongest peak. This also applies to both stages of
+  `make_two_steps` and to the reduced grid used by `enable_doppler_narrowing`.
+  The default preserves early acceptance; `max_dwells=1` is unchanged.
+  `bit_transition_flag=true` takes precedence and still uses a single
+  double-length dwell. Waiting for all dwells increases acquisition latency.
+  Contributed by @joebre.
 - Improved TOW rollover handling in Telemetry Decoder blocks.
 - Galileo F/NAV and I/NAV ephemerides are now retained independently instead of
   overwriting each other when they have the same PRN. PVT automatically uses the

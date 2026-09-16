@@ -2807,7 +2807,7 @@ ntrip_t *openntrip(const char *path, int type, char *msg)
         }
     std::snprintf(tpath, MAXSTRPATH, "%s:%s", addr, port);
     std::snprintf(ntrip->host, sizeof(ntrip->host), "%s", addr);
-    std::snprintf(ntrip->port, sizeof(ntrip->port), "%s", port);
+    std::snprintf(ntrip->port, sizeof(ntrip->port), "%.*s", static_cast<int>(sizeof(ntrip->port) - 1), port);
 
     /* ntrip access via proxy server */
     if (*proxyaddr)

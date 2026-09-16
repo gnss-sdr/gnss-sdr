@@ -97,6 +97,8 @@ option(ENABLE_ZMQ "Enable GNU Radio ZeroMQ Messaging, requires gr-zeromq" ON)
 
 option(ENABLE_ION "Enable ION GNSS-SDR Metadata Standard signal source" OFF)
 
+option(ENABLE_EVK1029 "Enable the use of the SAPHYRION EVK1029 signal source" OFF)
+
 # Performance analysis tools
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
 
@@ -3416,6 +3418,7 @@ add_feature_info(ENABLE_FLEXIBAND ENABLE_FLEXIBAND "Enables Flexiband_Signal_Sou
 add_feature_info(ENABLE_ARRAY ENABLE_ARRAY "Enables Raw_Array_Signal_Source and Array_Signal_Conditioner for using CTTC's antenna array. Requires gr-dbfcttc.")
 add_feature_info(ENABLE_ZMQ ENABLE_ZMQ "Enables ZMQ_Signal_Source for GNU Radio ZeroMQ messages. Requires gr-zeromq.")
 add_feature_info(ENABLE_ION ENABLE_ION "Enables ION_GSMS_Signal_Source for the ION Metadata Standard.")
+add_feature_info(ENABLE_EVK1029 ENABLE_EVK1029 "Enables EVK1029_Signal_Source for SAPHYRION EVK1029.")
 add_feature_info(ENABLE_GPERFTOOLS ENABLE_GPERFTOOLS "Enables performance analysis. Requires Gperftools.")
 add_feature_info(ENABLE_GPROF ENABLE_GPROF "Enables performance analysis with 'gprof'.")
 add_feature_info(ENABLE_CLANG_TIDY ENABLE_CLANG_TIDY "Runs clang-tidy along with the compiler. Requires Clang.")

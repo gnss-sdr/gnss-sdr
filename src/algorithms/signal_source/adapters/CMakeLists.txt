@@ -130,6 +130,11 @@ if(ENABLE_ION)
     list(APPEND OPT_DRIVER_HEADERS ion_gsms_signal_source.h)
 endif()
 
+if(ENABLE_EVK1029)
+    list(APPEND OPT_DRIVER_SOURCES evk1029_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS evk1029_signal_source.h)
+endif()
+
 set(SIGNAL_SOURCE_ADAPTER_SOURCES
     signal_source_base.cc
     file_source_base.cc

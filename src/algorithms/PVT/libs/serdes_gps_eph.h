@@ -20,6 +20,7 @@
 
 #include "gps_ephemeris.h"
 #include "gps_ephemeris.pb.h"  // file created by Protocol Buffers at compile time
+#include "protobuf_cleanup_manager.h"
 #include <memory>
 #include <string>
 #include <utility>
@@ -41,11 +42,10 @@ public:
         // Verify that the version of the library that we linked against is
         // compatible with the version of the headers we compiled against.
         GOOGLE_PROTOBUF_VERIFY_VERSION;
-    }
 
-    ~Serdes_Gps_Eph()
-    {
-        // google::protobuf::ShutdownProtobufLibrary();
+        // Make sure google::protobuf::ShutdownProtobufLibrary() is called only once,
+        // at the end of the program execution (see Protobuf_Cleanup_Manager)
+        Protobuf_Cleanup_Manager::get();
     }
 
     inline Serdes_Gps_Eph(const Serdes_Gps_Eph& other) noexcept : monitor_(other.monitor_)  //!< Copy constructor

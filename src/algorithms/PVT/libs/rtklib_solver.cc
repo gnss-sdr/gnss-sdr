@@ -32,8 +32,10 @@
 
 #include "rtklib_solver.h"
 #include "Beidou_CNAV1.h"
+#include "Beidou_CNAV2.h"
 #include "Beidou_DNAV.h"
 #include "Galileo_CNAV.h"
+#include "gnss_frequencies.h"
 #include "gnss_obs_codes.h"
 #include "gnss_sdr_filesystem.h"
 #include "matlab_writter_helper.h"
@@ -92,6 +94,7 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     d_rtklib_band_index["1B"] = 0;
     d_rtklib_band_index["B1"] = 0;
     d_rtklib_band_index["1D"] = 0;
+    d_rtklib_band_index["5D"] = 2;
     d_rtklib_band_index["B3"] = 2;
     d_rtklib_band_index["2G"] = 1;
     d_rtklib_band_index["2S"] = 1;
@@ -102,11 +105,8 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
 
     const Signal_Enabled_Flags flags(d_signal_enabled_flags);
 
-    // The Galileo OS SIS ICD defines E1/E5b as the I/NAV service and E1/E5a
-    // as the F/NAV service. Select one service deterministically for the whole
-    // receiver so channel and message arrival order cannot change the clock
-    // model used by PVT. I/NAV has priority when E5b is enabled; otherwise an
-    // enabled E5a selects F/NAV. E1-only receivers use I/NAV.
+    // Prefer the ICD clock model for E1/E5b (I/NAV) or E1/E5a (F/NAV).
+    // E5b takes priority; E1-only receivers use I/NAV.
     if (flags.check_any_enabled(GAL_E5b))
         {
             d_galileo_nav_message_type_for_pvt = Galileo_Nav_Message_Type::INAV;
@@ -158,6 +158,16 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     if (flags.check_only_enabled(GPS_L5, GAL_E5b))
         {
             d_rtklib_band_index["L5"] = 0;
+            d_rtklib_freq_index[0] = 2;
+        }
+
+    // B2a-only SPP uses RTKLIB slot 0. Default "5D" mapping is slot 2
+    // (L1+L2+L5). RTKLIB BDS satwavelen frq2 is B3 (1268.52 MHz), not L5,
+    // so lam[0] is overridden to c/FREQ5 in get_PVT. This remap is gated on
+    // B2a-only: B1I/B1C/B3 present keeps the default dual-frequency map.
+    if (flags.check_only_enabled(BDS_B2A))
+        {
+            d_rtklib_band_index["5D"] = 0;
             d_rtklib_freq_index[0] = 2;
         }
 
@@ -1423,10 +1433,12 @@ bool Rtklib_Solver::select_galileo_ephemeris(uint32_t prn, const std::string &si
             return false;
         }
 
+    // Prefer the primary service while its ephemeris is fresh.
     const Galileo_Ephemeris *full_ephemeris = galileo_ephemeris_store.find(
         static_cast<int>(prn), d_galileo_nav_message_type_for_pvt);
     const auto compatibility_ephemeris = galileo_ephemeris_map.find(static_cast<int>(prn));
-    if (full_ephemeris == nullptr && compatibility_ephemeris != galileo_ephemeris_map.cend() &&
+    if ((full_ephemeris == nullptr || !galileo_ephemeris_is_usable(*full_ephemeris, observation_tow)) &&
+        compatibility_ephemeris != galileo_ephemeris_map.cend() &&
         (compatibility_ephemeris->second.nav_message_type == Galileo_Nav_Message_Type::Unknown ||
             compatibility_ephemeris->second.nav_message_type == d_galileo_nav_message_type_for_pvt))
         {
@@ -1435,12 +1447,36 @@ bool Rtklib_Solver::select_galileo_ephemeris(uint32_t prn, const std::string &si
     if (full_ephemeris != nullptr && galileo_ephemeris_is_usable(*full_ephemeris, observation_tow))
         {
             ephemeris = *full_ephemeris;
+            if (ephemeris.nav_message_type == Galileo_Nav_Message_Type::Unknown)
+                {
+                    ephemeris.nav_message_type = d_galileo_nav_message_type_for_pvt;
+                }
             return true;
         }
 
-    // The ICD only defines Reduced CED use for the E1/E5b service.
-    if (d_galileo_nav_message_type_for_pvt != Galileo_Nav_Message_Type::INAV ||
-        (signal != "1B" && signal != "7X"))
+    // E1 can use either clock model with its matching BGD. Other signals
+    // must retain the primary service's clock reference.
+    if (signal == "1B")
+        {
+            const auto other_nav_message_type = (d_galileo_nav_message_type_for_pvt == Galileo_Nav_Message_Type::INAV)
+                                                    ? Galileo_Nav_Message_Type::FNAV
+                                                    : Galileo_Nav_Message_Type::INAV;
+            full_ephemeris = galileo_ephemeris_store.find(static_cast<int>(prn), other_nav_message_type);
+            if ((full_ephemeris == nullptr || !galileo_ephemeris_is_usable(*full_ephemeris, observation_tow)) &&
+                compatibility_ephemeris != galileo_ephemeris_map.cend() &&
+                compatibility_ephemeris->second.nav_message_type == other_nav_message_type)
+                {
+                    full_ephemeris = &compatibility_ephemeris->second;
+                }
+            if (full_ephemeris != nullptr && galileo_ephemeris_is_usable(*full_ephemeris, observation_tow))
+                {
+                    ephemeris = *full_ephemeris;
+                    return true;
+                }
+        }
+
+    // The ICD defines Reduced CED only for E1/E5b.
+    if (signal != "1B" && signal != "7X")
         {
             return false;
         }
@@ -1503,6 +1539,74 @@ void Rtklib_Solver::reset_relative_filter()
         {
             d_pvt_kf.reset_Kf();
         }
+}
+
+
+int Rtklib_Solver::merge_duplicated_rover_observations(int rover_observation_count)
+{
+    /* Two channels can deliver the same satellite on the same signal (e.g. a
+       GLONASS false lock labelled with a slot another channel already tracks).
+       rescode() only rejects duplicates that are adjacent, and an inconsistent
+       duplicate makes every solution fail validation. Keep, per frequency
+       slot, the entry with the highest C/N0; preserve the order of the rest. */
+    int out = 0;
+    bool merged_any = false;
+    for (int in = 0; in < rover_observation_count; ++in)
+        {
+            const obsd_t &source = d_obs_data[in];
+            int match = -1;
+            for (int k = 0; k < out && source.sat > 0; ++k)
+                {
+                    if (d_obs_data[k].sat == source.sat)
+                        {
+                            match = k;
+                            break;
+                        }
+                }
+            if (match < 0)
+                {
+                    if (out != in)
+                        {
+                            d_obs_data[out] = source;
+                        }
+                    ++out;
+                    continue;
+                }
+            obsd_t &destination = d_obs_data[match];
+            for (int frequency = 0; frequency < NFREQ + NEXOBS; ++frequency)
+                {
+                    const bool source_has_data = source.code[frequency] != CODE_NONE &&
+                                                 (source.P[frequency] != 0.0 || source.L[frequency] != 0.0);
+                    if (!source_has_data)
+                        {
+                            continue;
+                        }
+                    const bool destination_has_data = destination.code[frequency] != CODE_NONE &&
+                                                      (destination.P[frequency] != 0.0 || destination.L[frequency] != 0.0);
+                    if (destination_has_data && destination.SNR[frequency] >= source.SNR[frequency])
+                        {
+                            continue;
+                        }
+                    destination.P[frequency] = source.P[frequency];
+                    destination.L[frequency] = source.L[frequency];
+                    destination.D[frequency] = source.D[frequency];
+                    destination.SNR[frequency] = source.SNR[frequency];
+                    destination.LLI[frequency] = source.LLI[frequency];
+                    destination.code[frequency] = source.code[frequency];
+                }
+            merged_any = true;
+            if (!d_duplicated_rover_observations_logged)
+                {
+                    LOG(WARNING) << "Duplicated observation of satellite " << satno2id(source.sat)
+                                 << " received from two channels: keeping the measurement with the highest C/N0";
+                    d_duplicated_rover_observations_logged = true;
+                }
+        }
+    if (!merged_any)
+        {
+            d_duplicated_rover_observations_logged = false;
+        }
+    return out;
 }
 
 
@@ -2295,6 +2399,27 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         DLOG(INFO) << "No B-CNAV1 ephemeris data for SV " << gnss_observables_iter->second.PRN;
                                     }
                             }
+                        if (sig_ == "5D")
+                            {
+                                const auto cnav2_iter = beidou_cnav2_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                                if (cnav2_iter != beidou_cnav2_ephemeris_map.cend() &&
+                                    cnav2_iter->second.sig_type == BDS_EPH_SOURCE_CNAV2 &&
+                                    cnav2_iter->second.sat_type != 1 &&
+                                    cnav2_iter->second.hs == 0)
+                                    {
+                                        eph_data[valid_obs] = eph_to_rtklib(cnav2_iter->second);
+                                        obsd_t newobs{};
+                                        d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                            gnss_observables_iter->second,
+                                            cnav2_iter->second.WN + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
+                                            d_rtklib_band_index.at(sig_));
+                                        valid_obs++;
+                                    }
+                                else
+                                    {
+                                        DLOG(INFO) << "No B-CNAV2 ephemeris data for SV " << gnss_observables_iter->second.PRN;
+                                    }
+                            }
                         // BeiDou B3: merge with DNAV/B1I only
                         if (sig_ == "B3")
                             {
@@ -2384,7 +2509,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     // ****** SOLVE PVT******************************************************
     // **********************************************************************
 
-    int rover_observation_count = valid_obs + glo_valid_obs;
+    int rover_observation_count = merge_duplicated_rover_observations(valid_obs + glo_valid_obs);
     int base_observation_count = 0;
     bool fixed_base_applied = false;
     if (fixed_base != nullptr)
@@ -2608,6 +2733,13 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     if (is_bds_b1c_code(c0))
                         {
                             d_nav_data.lam[d_obs_data[k].sat - 1][0] = SPEED_OF_LIGHT_M_S / FREQ1;
+                        }
+                    for (int band = 0; band < NFREQ; ++band)
+                        {
+                            if (is_bds_b2a_code(d_obs_data[k].code[band]))
+                                {
+                                    d_nav_data.lam[d_obs_data[k].sat - 1][band] = SPEED_OF_LIGHT_M_S / FREQ5;
+                                }
                         }
                 }
             const int configured_positioning_mode = d_rtk.opt.mode;
@@ -2837,13 +2969,25 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // iono-free combination -- see the "dual-frequency" branch of
                     // prange() in rtklib_pntpos.cc) gets one entry per signal, all
                     // flagged combined = true.
-                    d_monitor_pvt.used_satellites.clear();
+                    //
+                    // pntpos() fills ssat[].azel for every observation; only
+                    // ssat[].vs is gated by PVT.elevation_mask / RAIM FDE. A
+                    // tracked satellite excluded from the solve is therefore
+                    // reported with used = false rather than dropped, so the
+                    // monitor can tell "excluded" from "not tracked".
+                    //
+                    // NaN az/el (corrupt ephemeris/almanac) is deliberately
+                    // reported as-is for consumers to handle; rescode()
+                    // already keeps NaN out of the position solve.
+                    d_monitor_pvt.tracked_satellites.clear();
                     for (int sat_idx = 0; sat_idx < MAXSAT; sat_idx++)
                         {
-                            if (!pvt_ssat[sat_idx].vs)
+                            const bool has_azel = (pvt_ssat[sat_idx].azel[0] != 0.0) || (pvt_ssat[sat_idx].azel[1] != 0.0);
+                            if (!has_azel)
                                 {
                                     continue;
                                 }
+                            const bool used = pvt_ssat[sat_idx].vs != 0;
                             int prn = 0;
                             char sys_char = '?';
                             switch (satsys(sat_idx + 1, &prn))
@@ -2889,14 +3033,15 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 }
                             for (const Gnss_Synchro *synchro : contributing_signals)
                                 {
-                                    Monitor_Pvt::UsedSatelliteInfo info;
+                                    Monitor_Pvt::TrackedSatelliteInfo info;
                                     info.prn = static_cast<uint32_t>(prn);
                                     info.system = sys_char;
                                     info.signal = std::string(synchro->Signal, 2);
                                     info.azimuth_deg = az_deg;
                                     info.elevation_deg = pvt_ssat[sat_idx].azel[1] * R2D;
                                     info.combined = combined;
-                                    d_monitor_pvt.used_satellites.push_back(info);
+                                    info.used = used;
+                                    d_monitor_pvt.tracked_satellites.push_back(info);
                                 }
                         }
 

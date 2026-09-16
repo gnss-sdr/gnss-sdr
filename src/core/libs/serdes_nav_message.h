@@ -20,6 +20,7 @@
 
 #include "nav_message.pb.h"  // file created by Protocol Buffers at compile time
 #include "nav_message_packet.h"
+#include "protobuf_cleanup_manager.h"
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -43,11 +44,10 @@ public:
         // Verify that the version of the library that we linked against is
         // compatible with the version of the headers we compiled against.
         GOOGLE_PROTOBUF_VERIFY_VERSION;
-    }
 
-    ~Serdes_Nav_Message()
-    {
-        // google::protobuf::ShutdownProtobufLibrary();
+        // Make sure google::protobuf::ShutdownProtobufLibrary() is called only once,
+        // at the end of the program execution (see Protobuf_Cleanup_Manager)
+        Protobuf_Cleanup_Manager::get();
     }
 
     inline Serdes_Nav_Message(const Serdes_Nav_Message& other) noexcept : navmsg_(other.navmsg_)  //!< Copy constructor

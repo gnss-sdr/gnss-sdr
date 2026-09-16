@@ -28,6 +28,7 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <exception>
 #include <sstream>
 
@@ -137,6 +138,13 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
                     d_CAF_vector_Q = std::vector<float>(d_num_doppler_bins);
                 }
         }
+
+    // While idle, general_work() only drains its input. Without a batching hint the
+    // scheduler wakes this block for every small burst of new input, which is pure
+    // scheduling overhead. Batching to one code period (1 ms) at this signal's own
+    // sample rate cuts the wakeup rate without changing behavior (see pcps_acquisition).
+    const auto output_multiple_samples = std::max<uint32_t>(1U, static_cast<uint32_t>(std::lround(conf.samples_per_ms)));
+    this->set_output_multiple(output_multiple_samples);
 }
 
 

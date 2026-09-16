@@ -11,6 +11,7 @@ set(GNSS_RECEIVER_SOURCES
     gnss_block_factory.cc
     gnss_flowgraph.cc
     in_memory_configuration.cc
+    satellite_visibility.cc
     tcp_cmd_interface.cc
 )
 
@@ -20,6 +21,7 @@ set(GNSS_RECEIVER_HEADERS
     gnss_block_factory.h
     gnss_flowgraph.h
     in_memory_configuration.h
+    satellite_visibility.h
     tcp_cmd_interface.h
     concurrent_map.h
     concurrent_queue.h
@@ -72,6 +74,10 @@ endif()
 
 if(ENABLE_ION)
     target_compile_definitions(core_receiver PRIVATE -DENABLE_ION_SOURCE=1)
+endif()
+
+if(ENABLE_EVK1029)
+    target_compile_definitions(core_receiver PRIVATE -DEVK1029_DRIVER=1)
 endif()
 
 if(GNURADIO_USES_STD_POINTERS)

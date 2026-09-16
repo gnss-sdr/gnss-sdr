@@ -116,6 +116,25 @@ All notable changes to GNSS-SDR will be documented in this file.
   `Tracking_1C.bs_transition_window_epochs` (default: 4),
   `Tracking_1C.bs_transition_confidence` (default: 0.6), and
   `Tracking_1C.bs_tentative_events_required` (default: 2).
+- Added an optional frequency-refinement scan to help tracking lock onto signals
+  whose initial Doppler estimate is displaced by a navigation-bit or
+  secondary-code transition during acquisition, particularly Galileo E1. Enable
+  it per signal with `Tracking_<Sig>.f_error_step_num` (default: 0, disabled).
+  This selects the number of Doppler bins around the acquisition estimate; even
+  nonzero values are rounded up to an odd count. `f_error_doppler_step` sets
+  their spacing (default: 250 Hz), and `f_error_accumulation` sets the code
+  periods accumulated per bin (default: 20; zero is replaced with one, with a
+  warning). The scan adds a startup delay of one code period per accumulation
+  per bin and supports `high_dyn=true`. The `pull_in_time_s` and
+  `bit_synchronization_time_limit_s` budgets start after the scan, allowing the
+  tracking loops their full settling time. Contributed by @joebre.
+- Added a CSV dump of the frequency-refinement scan: the tested Doppler
+  frequencies, their correlation power, and the selected frequency are written
+  to `Tracking_<Sig>.f_error_dump_filename` (default: `./f_error_dump.csv`). Set
+  the filename to an empty value to disable this output. Channels sharing a
+  filename write to the same file, with scan, satellite and channel identifiers;
+  the first scan overwrites any previous file, and later scans in the same
+  receiver run append their results.
 
 ### Improvements in Efficiency:
 

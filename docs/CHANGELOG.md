@@ -119,18 +119,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   per bin and supports `high_dyn=true`. The `pull_in_time_s` and
   `bit_synchronization_time_limit_s` budgets start after the scan, allowing the
   tracking loops their full settling time. Contributed by @joebre.
-- Added `Acquisition_<Sig>.full_grid_search` (default: `false`) for PCPS
-  acquisition. When enabled, the receiver uses all `max_dwells` integration
-  periods before accepting or rejecting a signal, giving a stronger peak time to
-  emerge from noise. This can improve peak selection at the cost of a longer
-  acquisition wait. It has no effect when `bit_transition_flag` is enabled.
-  Contributed by @joebre.
-- Added diagnostics to help investigate slow signal synchronization: console and
-  log messages report the time to carrier phase lock and bit/secondary-code
-  synchronization. Frequency-refinement scans also save the tested Doppler
-  frequencies, their correlation power, and the selected frequency to
-  `Tracking_<Sig>.f_error_dump_filename` (default: `./f_error_dump.csv`). Set
-  the filename to an empty value to disable this CSV output. Channels sharing a
+- Added a CSV dump of the frequency-refinement scan: the tested Doppler
+  frequencies, their correlation power, and the selected frequency are written
+  to `Tracking_<Sig>.f_error_dump_filename` (default: `./f_error_dump.csv`). Set
+  the filename to an empty value to disable this output. Channels sharing a
   filename write to the same file, with scan, satellite and channel identifiers;
   the first scan overwrites any previous file, and later scans in the same
   receiver run append their results.

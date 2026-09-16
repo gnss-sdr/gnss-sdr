@@ -1533,6 +1533,14 @@ bool Rtklib_Solver::select_galileo_ephemeris(uint32_t prn, const std::string &si
             return false;
         }
 
+    // Reduced CED carries no health/DVS bits of its own, so cross-check the
+    // almanac instead (unset almanac entry is not treated as unhealthy).
+    const auto alm_it = galileo_almanac_map.find(static_cast<int>(prn));
+    if (alm_it != galileo_almanac_map.cend() && alm_it->second.E1B_HS != 0)
+        {
+            return false;
+        }
+
     ephemeris = reduced_ced->second.compute_eph();
     from_reduced_ced = true;
     return true;

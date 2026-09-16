@@ -220,7 +220,7 @@ private:
     const float d_doppler_max;
     const uint32_t d_samplesPerChip;
     const uint32_t d_doppler_step;
-    const uint32_t d_consumed_samples;
+    const uint32_t d_samples_to_consume;
     const uint32_t d_fft_size;
     const uint32_t d_effective_fft_size;
     const uint32_t d_magnitude_grid_stride;
@@ -261,7 +261,7 @@ private:
     // grid has 1, 2, or more bins; d_num_doppler_bins_step1_capacity guarantees
     // storage for both rows, while the explicit flag avoids the 2 == 2 ambiguity.
     bool d_doppler_search_narrowed;
-    uint32_t d_buffer_count;
+    uint32_t d_buffer_sample_count;
     uint32_t d_channel;
     uint32_t d_resampler_latency_samples;
     uint64_t d_sample_count;
@@ -285,8 +285,6 @@ private:
     // These are never accessed outside acquisition_core while acquisition is active
     volk_gnsssdr::vector<std::complex<float>> d_grid_doppler_wipeoffs;
     volk_gnsssdr::vector<std::complex<float>> d_fft_codes;
-    volk_gnsssdr::vector<std::complex<float>> d_data_buffer;
-    volk_gnsssdr::vector<lv_16sc_t> d_data_buffer_sc;
     std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
 };
 

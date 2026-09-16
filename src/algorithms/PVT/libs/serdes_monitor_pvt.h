@@ -130,6 +130,7 @@ public:
                 pb_sat->set_elevation_deg(sat.elevation_deg);
                 pb_sat->set_combined(sat.combined);
                 pb_sat->set_used(sat.used);
+                pb_sat->set_healthy(sat.healthy);
             }
 
         if (!monitor_.SerializeToString(&data))
@@ -190,6 +191,7 @@ public:
                 sat.elevation_deg = pb_sat.elevation_deg();
                 sat.combined = pb_sat.combined();
                 sat.used = pb_sat.used();
+                sat.healthy = pb_sat.healthy();
                 monitor.tracked_satellites.push_back(sat);
             }
 

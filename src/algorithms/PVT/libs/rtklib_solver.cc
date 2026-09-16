@@ -3045,6 +3045,28 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     break;
                                 }
 
+                            // GPS health is per-satellite; falls back to the almanac
+                            // (broadcast by every satellite) for one with no ephemeris
+                            // decoded yet. Galileo health is per-signal, resolved below.
+                            // Other systems default to healthy=true.
+                            bool healthy = true;
+                            if (sys_char == 'G')
+                                {
+                                    const auto eph_it = gps_ephemeris_map.find(prn);
+                                    if (eph_it != gps_ephemeris_map.cend())
+                                        {
+                                            healthy = (eph_it->second.SV_health == 0);
+                                        }
+                                    else
+                                        {
+                                            const auto alm_it = gps_almanac_map.find(prn);
+                                            if (alm_it != gps_almanac_map.cend())
+                                                {
+                                                    healthy = (alm_it->second.SV_health == 0);
+                                                }
+                                        }
+                                }
+
                             std::vector<const Gnss_Synchro *> contributing_signals;
                             for (const auto &observable_pair : gnss_observables_map)
                                 {
@@ -3072,6 +3094,23 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     info.elevation_deg = pvt_ssat[sat_idx].azel[1] * R2D;
                                     info.combined = combined;
                                     info.used = used;
+                                    info.healthy = healthy;
+                                    if (sys_char == 'E')
+                                        {
+                                            bool galileo_healthy = false;
+                                            const auto observation_tow = static_cast<uint32_t>(synchro->interp_TOW_ms / 1000.0);
+                                            if (get_galileo_signal_health(static_cast<uint32_t>(prn), info.signal, observation_tow, galileo_healthy))
+                                                {
+                                                    info.healthy = galileo_healthy;
+                                                }
+                                            else
+                                                {
+                                                    // No ephemeris decoded for this signal's service yet -- fall
+                                                    // back to the almanac, broadcast by every satellite.
+                                                    const auto alm_it = galileo_almanac_map.find(prn);
+                                                    info.healthy = (alm_it == galileo_almanac_map.cend()) || (alm_it->second.E1B_HS == 0);
+                                                }
+                                        }
                                     d_monitor_pvt.tracked_satellites.push_back(info);
                                 }
                         }

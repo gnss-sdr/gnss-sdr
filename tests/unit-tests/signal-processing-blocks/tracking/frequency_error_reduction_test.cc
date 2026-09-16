@@ -211,7 +211,7 @@ protected:
     void check_timers(bool scan)
     {
         make_tracking();
-        const uint64_t fs = static_cast<uint64_t>(tracking->d_trk_parameters.fs_in);
+        const auto fs = static_cast<uint64_t>(tracking->d_trk_parameters.fs_in);
         const uint64_t acquisition_sample = synchro.Acq_samplestamp_samples;
         const uint64_t scan_end = acquisition_sample + 30 * fs;
         if (scan)

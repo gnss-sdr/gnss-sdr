@@ -57,6 +57,7 @@ class Glonass_Gnav_Almanac;
 class Glonass_Gnav_Utc_Model;
 class Beidou_Dnav_Almanac;
 class Beidou_Dnav_Ephemeris;
+class Beidou_Cnav1_Ephemeris;
 class Galileo_Almanac;
 class Galileo_Ephemeris;
 class Galileo_HAS_data;
@@ -123,6 +124,8 @@ public:
      * \brief Get latest set of BeiDou DNAV ephemeris from PVT block
      */
     std::map<int, Beidou_Dnav_Ephemeris> get_beidou_dnav_ephemeris_map() const;
+    std::map<int, Beidou_Cnav1_Ephemeris> get_beidou_cnav1_ephemeris_map() const;
+    std::map<int, Beidou_Cnav1_Ephemeris> get_beidou_cnav2_ephemeris_map() const;
 
     /*!
      * \brief Get latest set of BeiDou DNAV almanac from PVT block
@@ -240,6 +243,7 @@ private:
         GalileoEphemeris,
         GalileoAlmanac,
         BeidouEphemeris,
+        BeidouCnavEphemeris,
         BeidouAlmanac,
         RetainedAlmanacs
     };

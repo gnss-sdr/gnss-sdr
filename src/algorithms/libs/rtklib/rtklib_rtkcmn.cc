@@ -670,6 +670,46 @@ bool is_bds_b2a_code(unsigned char code)
 }
 
 
+/* Select the first measured band and prefer B2a as its IF partner. Without
+ * B2a, retain the B1C single-band and legacy B1I+B3I policies. */
+void bds_observation_slots(const obsd_t *obs, int *primary, int *secondary)
+{
+    *primary = 0;
+    *secondary = 0;
+    int b2a = -1;
+    bool found = false;
+    for (int band = 0; band < NFREQ; ++band)
+        {
+            if (obs->code[band] == CODE_NONE || obs->P[band] == 0.0)
+                {
+                    continue;
+                }
+            if (!found)
+                {
+                    *primary = band;
+                    *secondary = band;
+                    found = true;
+                }
+            else
+                {
+                    *secondary = band;
+                }
+            if (is_bds_b2a_code(obs->code[band]))
+                {
+                    b2a = band;
+                }
+        }
+    if (b2a >= 0 && b2a != *primary)
+        {
+            *secondary = b2a;
+        }
+    else if (b2a < 0 && is_bds_b1c_code(obs->code[*primary]))
+        {
+            *secondary = *primary;
+        }
+}
+
+
 /* set code priority -----------------------------------------------------------
  * set code priority for multiple codes in a frequency
  * args   : int    sys     I     system (or of SYS_???)

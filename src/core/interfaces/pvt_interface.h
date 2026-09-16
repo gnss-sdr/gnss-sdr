@@ -23,6 +23,7 @@
 #ifndef GNSS_SDR_PVT_INTERFACE_H
 #define GNSS_SDR_PVT_INTERFACE_H
 
+#include "beidou_cnav1_ephemeris.h"
 #include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
 #include "galileo_almanac.h"
@@ -68,6 +69,10 @@ public:
     virtual std::map<int, Gps_Ephemeris> get_gps_ephemeris() const = 0;
     virtual std::map<int, Galileo_Ephemeris> get_galileo_ephemeris() const = 0;
     virtual std::map<int, Beidou_Dnav_Ephemeris> get_beidou_dnav_ephemeris() const = 0;
+    // Optional navigation families: implementations without B-CNAV support
+    // retain the existing DNAV/almanac visibility path.
+    virtual std::map<int, Beidou_Cnav1_Ephemeris> get_beidou_cnav1_ephemeris() const { return {}; }
+    virtual std::map<int, Beidou_Cnav1_Ephemeris> get_beidou_cnav2_ephemeris() const { return {}; }
     virtual std::map<int, Gps_Almanac> get_gps_almanac() const = 0;
     virtual std::map<int, Galileo_Almanac> get_galileo_almanac() const = 0;
     virtual std::map<int, Beidou_Dnav_Almanac> get_beidou_dnav_almanac() const = 0;

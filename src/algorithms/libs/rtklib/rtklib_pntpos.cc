@@ -178,6 +178,10 @@ double gettgd_bds_by_obs_code(int sat, const nav_t *nav, unsigned char obs_code)
     int prn = 0;
     const int sys = satsys(sat, &prn);
     const int is_b1c_obs = is_bds_b1c_code(obs_code) ? 1 : 0;
+    if (sys == SYS_BDS && (obs_code == CODE_L6I || obs_code == CODE_L6Q))
+        {
+            return 0.0;  // B3I is the broadcast clock reference.
+        }
 
     for (i = 0; i < nav->n; i++)
         {
@@ -320,46 +324,14 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         }
 
     /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS;
-     * BDS: B1I(band0)+B3I(band2). B1C (CODE_L1D/L1P/L1X) is single-frequency on
-     * slot 0 under GNSS-SDR prefer-B1C XOR (never paired as IF with B1I). */
+     * BDS: select from the measured bands, preferring B2a as the IF partner. */
     if (sys == SYS_GAL || sys == SYS_SBS)
         {
             j = 2;
         }
     else if (sys == SYS_BDS)
         {
-            const bool b1c0 = is_bds_b1c_code(obs->code[0]);
-            const bool b1c1 = is_bds_b1c_code(obs->code[1]);
-            const bool b2a0 = is_bds_b2a_code(obs->code[0]);
-            const bool b2a1 = is_bds_b2a_code(obs->code[1]);
-            if (b1c0 || b1c1)
-                {
-                    i = b1c0 ? 0 : 1;
-                    j = i; /* B1C single-frequency */
-                }
-            else if (b2a0 || b2a1)
-                {
-                    i = b2a0 ? 0 : 1;
-                    j = i; /* B2a single-frequency */
-                }
-            else if (obs->code[0] != CODE_NONE && obs->code[2] != CODE_NONE)
-                {
-                    i = 0;
-                    j = 2; /* B1I + B3I */
-                }
-            else if (obs->code[0] != CODE_NONE)
-                {
-                    i = 0;
-                    j = 2; /* B1I-only: keep legacy pair indices for lam check */
-                }
-            else if (obs->code[2] != CODE_NONE)
-                {
-                    /* B3I-only: B3I is the DNAV timing reference, so use it
-                       directly without TGD. rescode() scales the broadcast
-                       ionosphere correction using this observation slot. */
-                    i = 2;
-                    j = 2;
-                }
+            bds_observation_slots(obs, &i, &j);
         }
     else if (sys == SYS_GPS || sys == SYS_GLO || sys == SYS_QZS)
         {
@@ -484,9 +456,11 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
             /* iono-free combination */
             if (sys == SYS_BDS)
                 {
-                    /* the DNAV clock is referenced to B3I: remove TGD1 from
-                       the B1I pseudorange before combining (BDS SIS ICD) */
+                    /* DNAV/B-CNAV clocks use B3I as their delay reference.
+                       Correct each signal with its own navigation-message bias
+                       before combining (BDS B2a SIS ICD, section 7.6). */
                     P1 -= P1_P2;
+                    P2 -= gettgd_bds_by_obs_code(obs->sat, nav, obs->code[j]);
                     PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
                 }
             else if ((sys == SYS_GPS || sys == SYS_QZS) && obs->code[j] == CODE_L5X)

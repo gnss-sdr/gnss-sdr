@@ -231,6 +231,8 @@ public:
     std::map<int, Gps_Ephemeris> get_gps_ephemeris() const override;
     std::map<int, Galileo_Ephemeris> get_galileo_ephemeris() const override;
     std::map<int, Beidou_Dnav_Ephemeris> get_beidou_dnav_ephemeris() const override;
+    std::map<int, Beidou_Cnav1_Ephemeris> get_beidou_cnav1_ephemeris() const override;
+    std::map<int, Beidou_Cnav1_Ephemeris> get_beidou_cnav2_ephemeris() const override;
     std::map<int, Gps_Almanac> get_gps_almanac() const override;
     std::map<int, Galileo_Almanac> get_galileo_almanac() const override;
     std::map<int, Beidou_Dnav_Almanac> get_beidou_dnav_almanac() const override;

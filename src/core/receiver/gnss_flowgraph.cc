@@ -2499,19 +2499,13 @@ bool GNSSFlowgraph::is_multiband() const
                     multiband = true;
                 }
         }
-    if (configuration_->property("Channels_B1.count", 0) > 0)
+    const bool has_bds_b1 = configuration_->property("Channels_B1.count", 0) > 0 ||
+                            configuration_->property("Channels_1D.count", 0) > 0;
+    const bool has_bds_b3 = configuration_->property("Channels_B3.count", 0) > 0;
+    const bool has_bds_b2a = configuration_->property("Channels_5D.count", 0) > 0;
+    if ((has_bds_b1 && (has_bds_b3 || has_bds_b2a)) || (has_bds_b3 && has_bds_b2a))
         {
-            if (configuration_->property("Channels_B3.count", 0) > 0)
-                {
-                    multiband = true;
-                }
-        }
-    if (configuration_->property("Channels_1D.count", 0) > 0)
-        {
-            if (configuration_->property("Channels_B3.count", 0) > 0)
-                {
-                    multiband = true;
-                }
+            multiband = true;
         }
     if (configuration_->property("Channels_J1.count", 0) > 0)
         {
@@ -2572,12 +2566,15 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
             assist_signal_candidates = {"B1", "1D"};
             break;
 
+        case evBDS_B2A:
+            assist_signal_candidates = {"B1", "1D", "B3"};
+            break;
+
         case evGPS_1C:
         case evGAL_1B:
         case evGLO_1G:
         case evBDS_B1:
         case evBDS_B1C:
-        case evBDS_B2A:
         case evQZS_J1:
         case evSBAS_1C:
             is_primary_frequency = true;
@@ -2593,6 +2590,15 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
 
     const bool any_assist_configured = std::any_of(assist_signal_candidates.begin(), assist_signal_candidates.end(),
         [&](const std::string& assist_signal) { return configuration_->property("Channels_" + assist_signal + ".count", 0) > 0; });
+
+    // A BeiDou band without an enabled assisting band must acquire on its
+    // own, even when another constellation makes the receiver multiband.
+    // In B3I+B2a, B3I starts first and then assists B2a.
+    if (!any_assist_configured && (searched_signal == "5D" || searched_signal == "B3"))
+        {
+            assist_signal_candidates.clear();
+            is_primary_frequency = true;
+        }
 
     if (any_assist_configured)
         {

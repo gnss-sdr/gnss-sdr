@@ -46,7 +46,9 @@ class PvtInterface;
  * almanac data in pvt_ptr (GPS, Galileo, BeiDou, GLONASS, QZSS) and returns
  * those strictly above elevation_mask_deg that broadcast a healthy status.
  * Ephemeris is preferred over almanac, so each satellite is classified by
- * exactly one data source. An unhealthy satellite (SV_health != 0; Galileo
+ * exactly one data source. BeiDou uses the fresh DNAV/CNAV1/CNAV2 orbit
+ * closest to the query epoch (ties: DNAV, CNAV1, CNAV2); B-CNAV is limited
+ * to IGSO/MEO satellite types. An unhealthy satellite (SV_health != 0; Galileo
  * E1B_HS != 0, since 1B initiates the search) is reported as below-mask, not
  * as "no data": it is known unusable whatever its geometry.
  *
@@ -230,10 +232,12 @@ private:
     double last_fix_time_s_{-1.0};
     double last_fix_receiver_time_s_{0.0};
 
-    // (system, "EPH"/"ALM"/"CNAV", PRN) -> (toe/toa as absolute seconds,
-    // health). Catches a PRN's data being replaced, not only new PRNs.
+    // (system, navigation family, PRN) -> (absolute toe/toa, health,
+    // IODE, IODC, satellite type, signal type). Extra fields are zero for
+    // legacy navigation families. Detect replacements as well as new PRNs.
     // first_data_check_ tells "never checked" from "checked, still empty".
-    std::map<std::tuple<std::string, std::string, uint32_t>, std::pair<double, int32_t>> last_data_fingerprints_;
+    using NavigationFingerprint = std::tuple<double, int32_t, uint32_t, uint32_t, int32_t, int32_t>;
+    std::map<std::tuple<std::string, std::string, uint32_t>, NavigationFingerprint> last_data_fingerprints_;
 
     // Absolute GPST seconds (gtime_t.time + sec) of the last full sweep:
     // monotonic across week rollover, and receiver time keeps the interval

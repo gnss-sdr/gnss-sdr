@@ -210,8 +210,7 @@ public:
     std::map<int, Bds3_B1c_PageData> beidou_cnav1_page_data_map;
 
 private:
-    friend class GalileoEphemerisSourceTest_E6SlotsFollowRtklibGalileoPolicy_Test;
-
+    void update_beidou_observation_wavelengths(const obsd_t& observation);
     bool save_matfile() const;
     bool prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot& fixed_base,
         int& rover_observation_count,
@@ -246,7 +245,7 @@ private:
 
     void reset_relative_filter();
 
-    std::array<obsd_t, MAXOBS * 2> d_obs_data{};
+    std::vector<obsd_t> d_obs_data = std::vector<obsd_t>(MAXOBS * 2);
     // per-epoch scratch of prepare_fixed_base_observations(); members so
     // their capacity is reused across epochs
     std::vector<obsd_t> d_fixed_base_rover_scratch;

@@ -198,6 +198,7 @@ struct rtklib_pvt_gs::NavigationSnapshot
     using GalileoEphemerisMap = std::map<int, Galileo_Ephemeris>;
     using GalileoAlmanacMap = std::map<int, Galileo_Almanac>;
     using BeidouEphemerisMap = std::map<int, Beidou_Dnav_Ephemeris>;
+    using BeidouCnavEphemerisMap = std::map<int, Beidou_Cnav1_Ephemeris>;
     using BeidouAlmanacMap = std::map<int, Beidou_Dnav_Almanac>;
 
     std::shared_ptr<const GpsCnavEphemerisMap> gps_cnav_ephemeris = std::make_shared<const GpsCnavEphemerisMap>();
@@ -209,6 +210,8 @@ struct rtklib_pvt_gs::NavigationSnapshot
     std::shared_ptr<const GalileoEphemerisMap> galileo_ephemeris = std::make_shared<const GalileoEphemerisMap>();
     std::shared_ptr<const GalileoAlmanacMap> galileo_almanac = std::make_shared<const GalileoAlmanacMap>();
     std::shared_ptr<const BeidouEphemerisMap> beidou_ephemeris = std::make_shared<const BeidouEphemerisMap>();
+    std::shared_ptr<const BeidouCnavEphemerisMap> beidou_cnav1_ephemeris = std::make_shared<const BeidouCnavEphemerisMap>();
+    std::shared_ptr<const BeidouCnavEphemerisMap> beidou_cnav2_ephemeris = std::make_shared<const BeidouCnavEphemerisMap>();
     std::shared_ptr<const BeidouAlmanacMap> beidou_almanac = std::make_shared<const BeidouAlmanacMap>();
 };
 
@@ -2104,6 +2107,11 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                 {
                     publish_navigation_snapshot(NavigationData::BeidouEphemeris);
                 }
+            else if (msg_type_hash_code == d_beidou_cnav1_ephemeris_sptr_type_hash_code ||
+                     msg_type_hash_code == d_beidou_cnav1_page_data_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::BeidouCnavEphemeris);
+                }
             else if (msg_type_hash_code == d_beidou_dnav_almanac_sptr_type_hash_code)
                 {
                     publish_navigation_snapshot(NavigationData::BeidouAlmanac);
@@ -2232,6 +2240,23 @@ void rtklib_pvt_gs::publish_navigation_snapshot(NavigationData data)
         case NavigationData::BeidouEphemeris:
             updated->beidou_ephemeris = std::make_shared<const NavigationSnapshot::BeidouEphemerisMap>(d_internal_pvt_solver->beidou_dnav_ephemeris_map);
             break;
+        case NavigationData::BeidouCnavEphemeris:
+            {
+                auto cnav1 = std::make_shared<NavigationSnapshot::BeidouCnavEphemerisMap>(d_internal_pvt_solver->beidou_cnav1_ephemeris_map);
+                // B-CNAV1 health may arrive on a later page without a new orbit.
+                // Use the same latest-page health as the PVT solver.
+                for (auto& entry : *cnav1)
+                    {
+                        const auto page = d_internal_pvt_solver->beidou_cnav1_page_data_map.find(entry.first);
+                        if (page != d_internal_pvt_solver->beidou_cnav1_page_data_map.cend())
+                            {
+                                entry.second.hs = page->second.common.hs;
+                            }
+                    }
+                updated->beidou_cnav1_ephemeris = std::move(cnav1);
+                updated->beidou_cnav2_ephemeris = std::make_shared<const NavigationSnapshot::BeidouCnavEphemerisMap>(d_internal_pvt_solver->beidou_cnav2_ephemeris_map);
+                break;
+            }
         case NavigationData::BeidouAlmanac:
             updated->beidou_almanac = std::make_shared<const NavigationSnapshot::BeidouAlmanacMap>(d_internal_pvt_solver->beidou_dnav_almanac_map);
             break;
@@ -2292,6 +2317,18 @@ std::map<int, Beidou_Dnav_Ephemeris> rtklib_pvt_gs::get_beidou_dnav_ephemeris_ma
 }
 
 
+std::map<int, Beidou_Cnav1_Ephemeris> rtklib_pvt_gs::get_beidou_cnav1_ephemeris_map() const
+{
+    return *navigation_snapshot()->beidou_cnav1_ephemeris;
+}
+
+
+std::map<int, Beidou_Cnav1_Ephemeris> rtklib_pvt_gs::get_beidou_cnav2_ephemeris_map() const
+{
+    return *navigation_snapshot()->beidou_cnav2_ephemeris;
+}
+
+
 std::map<int, Beidou_Dnav_Almanac> rtklib_pvt_gs::get_beidou_dnav_almanac_map() const
 {
     const auto snapshot = navigation_snapshot();
@@ -2310,6 +2347,9 @@ void clear_navigation_maps(Rtklib_Solver& solver, bool keep_almanac)
     solver.galileo_ephemeris_store.clear();
     solver.galileo_reduced_ced_map.clear();
     solver.beidou_dnav_ephemeris_map.clear();
+    solver.beidou_cnav1_ephemeris_map.clear();
+    solver.beidou_cnav2_ephemeris_map.clear();
+    solver.beidou_cnav1_page_data_map.clear();
     if (keep_almanac)
         {
             return;
@@ -2353,6 +2393,8 @@ void rtklib_pvt_gs::request_navigation_clear(NavigationClear kind)
                 almanac_only->glonass_ephemeris = d_empty_navigation_snapshot->glonass_ephemeris;
                 almanac_only->galileo_ephemeris = d_empty_navigation_snapshot->galileo_ephemeris;
                 almanac_only->beidou_ephemeris = d_empty_navigation_snapshot->beidou_ephemeris;
+                almanac_only->beidou_cnav1_ephemeris = d_empty_navigation_snapshot->beidou_cnav1_ephemeris;
+                almanac_only->beidou_cnav2_ephemeris = d_empty_navigation_snapshot->beidou_cnav2_ephemeris;
                 replacement = std::move(almanac_only);
             }
         // A full clear requested before the worker has applied an

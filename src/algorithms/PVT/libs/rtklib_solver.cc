@@ -161,14 +161,23 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
             d_rtklib_freq_index[0] = 2;
         }
 
-    // B2a-only SPP uses RTKLIB slot 0. Default "5D" mapping is slot 2
-    // (L1+L2+L5). RTKLIB BDS satwavelen frq2 is B3 (1268.52 MHz), not L5,
-    // so lam[0] is overridden to c/FREQ5 in get_PVT. This remap is gated on
-    // B2a-only: B1I/B1C/B3 present keeps the default dual-frequency map.
-    if (flags.check_only_enabled(BDS_B2A))
+    // Resolve BeiDou slots independently of the other constellations. B2a
+    // owns slot 2 in a frequency pair; B3I uses the remaining slot when a
+    // B1 signal is enabled, or the primary slot for B3I+B2a reception.
+    if (flags.check_any_enabled(BDS_B2A))
         {
-            d_rtklib_band_index["5D"] = 0;
-            d_rtklib_freq_index[0] = 2;
+            if (flags.check_any_enabled(BDS_B1, BDS_B1C))
+                {
+                    d_rtklib_band_index["B3"] = 1;
+                }
+            else if (flags.check_any_enabled(BDS_B3))
+                {
+                    d_rtklib_band_index["B3"] = 0;
+                }
+            else
+                {
+                    d_rtklib_band_index["5D"] = 0;
+                }
         }
 
     // In automatic I/NAV mode E5a observations are not admitted to PVT, so
@@ -1542,6 +1551,40 @@ void Rtklib_Solver::reset_relative_filter()
 }
 
 
+void Rtklib_Solver::update_beidou_observation_wavelengths(const obsd_t &observation)
+{
+    if (satsys(observation.sat, nullptr) != SYS_BDS)
+        {
+            return;
+        }
+    for (int band = 0; band < NFREQ; ++band)
+        {
+            const unsigned char code = observation.code[band];
+            double frequency = 0.0;
+            if (is_bds_b1c_code(code))
+                {
+                    frequency = FREQ1;
+                }
+            else if (is_bds_b2a_code(code))
+                {
+                    frequency = FREQ5;
+                }
+            else if (code == CODE_L6I || code == CODE_L6Q)
+                {
+                    frequency = FREQ3_BDS;
+                }
+            else if (code == CODE_L2I || code == CODE_L1I)
+                {
+                    frequency = FREQ1_BDS;
+                }
+            if (frequency > 0.0)
+                {
+                    d_nav_data.lam[observation.sat - 1][band] = SPEED_OF_LIGHT_M_S / frequency;
+                }
+        }
+}
+
+
 int Rtklib_Solver::merge_duplicated_rover_observations(int rover_observation_count)
 {
     /* Two channels can deliver the same satellite on the same signal (e.g. a
@@ -1573,6 +1616,7 @@ int Rtklib_Solver::merge_duplicated_rover_observations(int rover_observation_cou
                     continue;
                 }
             obsd_t &destination = d_obs_data[match];
+            bool overlapping_signal = false;
             for (int frequency = 0; frequency < NFREQ + NEXOBS; ++frequency)
                 {
                     const bool source_has_data = source.code[frequency] != CODE_NONE &&
@@ -1583,6 +1627,7 @@ int Rtklib_Solver::merge_duplicated_rover_observations(int rover_observation_cou
                         }
                     const bool destination_has_data = destination.code[frequency] != CODE_NONE &&
                                                       (destination.P[frequency] != 0.0 || destination.L[frequency] != 0.0);
+                    overlapping_signal = overlapping_signal || destination_has_data;
                     if (destination_has_data && destination.SNR[frequency] >= source.SNR[frequency])
                         {
                             continue;
@@ -1594,8 +1639,8 @@ int Rtklib_Solver::merge_duplicated_rover_observations(int rover_observation_cou
                     destination.LLI[frequency] = source.LLI[frequency];
                     destination.code[frequency] = source.code[frequency];
                 }
-            merged_any = true;
-            if (!d_duplicated_rover_observations_logged)
+            merged_any = merged_any || overlapping_signal;
+            if (overlapping_signal && !d_duplicated_rover_observations_logged)
                 {
                     LOG(WARNING) << "Duplicated observation of satellite " << satno2id(source.sat)
                                  << " received from two channels: keeping the measurement with the highest C/N0";
@@ -1946,8 +1991,10 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     d_fixed_base_age_s = 0.0;
     d_fixed_base_common_satellites = 0;
 
-    d_obs_data.fill({});
-    std::vector<eph_t> eph_data(MAXOBS);
+    // Before merging, a multi-band satellite contributes several channel
+    // records and ephemerides. MAXOBS limits satellites, not input channels.
+    d_obs_data.assign(std::max(static_cast<size_t>(MAXOBS * 2), gnss_observables_map.size()), obsd_t{});
+    std::vector<eph_t> eph_data(std::max(static_cast<size_t>(MAXOBS), gnss_observables_map.size()));
     std::vector<geph_t> geph_data(MAXOBS);
 
     for (gnss_observables_iter = gnss_observables_map.cbegin();
@@ -2722,25 +2769,9 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     update_galileo_observation_wavelengths(d_obs_data[i]);
                 }
 
-            /* B1C on slot 0: override lam[0] to FREQ1 (satwavelen frq0 is B1I). */
             for (int k = 0; k < nobs_total; k++)
                 {
-                    if (satsys(d_obs_data[k].sat, nullptr) != SYS_BDS)
-                        {
-                            continue;
-                        }
-                    const unsigned char c0 = d_obs_data[k].code[0];
-                    if (is_bds_b1c_code(c0))
-                        {
-                            d_nav_data.lam[d_obs_data[k].sat - 1][0] = SPEED_OF_LIGHT_M_S / FREQ1;
-                        }
-                    for (int band = 0; band < NFREQ; ++band)
-                        {
-                            if (is_bds_b2a_code(d_obs_data[k].code[band]))
-                                {
-                                    d_nav_data.lam[d_obs_data[k].sat - 1][band] = SPEED_OF_LIGHT_M_S / FREQ5;
-                                }
-                        }
+                    update_beidou_observation_wavelengths(d_obs_data[k]);
                 }
             const int configured_positioning_mode = d_rtk.opt.mode;
             if (use_single_fallback)

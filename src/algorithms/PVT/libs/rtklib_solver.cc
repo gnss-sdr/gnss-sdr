@@ -1419,6 +1419,121 @@ bool Rtklib_Solver::get_galileo_signal_health(uint32_t prn, const std::string &s
 }
 
 
+bool Rtklib_Solver::get_broadcast_signal_health(char system, uint32_t prn, const std::string &signal,
+    uint32_t observation_tow, bool &healthy) const
+{
+    const auto prn_key = static_cast<int>(prn);
+    switch (system)
+        {
+        case 'G':
+        case 'J':
+            {
+                // L2C and L5 health comes from the CNAV message that carries them:
+                // bits 52-54 of message type 10 are the L1, L2 and L5 signal health
+                // (0 = OK, IS-GPS-200 30.3.3.1.1.2).
+                if (signal == "2S" || signal == "L5" || signal == "J5")
+                    {
+                        const auto cnav_it = gps_cnav_ephemeris_map.find(prn_key);
+                        if (cnav_it != gps_cnav_ephemeris_map.cend())
+                            {
+                                const int32_t signal_bit = (signal == "2S") ? 0x2 : 0x1;
+                                healthy = ((cnav_it->second.signal_health & signal_bit) == 0);
+                                return true;
+                            }
+                    }
+                // L1 C/A: per-satellite SV health from LNAV subframe 1, falling back
+                // to the almanac (broadcast by every satellite) when no ephemeris has
+                // been decoded for this satellite yet.
+                const auto eph_it = gps_ephemeris_map.find(prn_key);
+                if (eph_it != gps_ephemeris_map.cend())
+                    {
+                        healthy = (eph_it->second.SV_health == 0);
+                        return true;
+                    }
+                const auto alm_it = gps_almanac_map.find(prn_key);
+                if (alm_it != gps_almanac_map.cend())
+                    {
+                        healthy = (alm_it->second.SV_health == 0);
+                        return true;
+                    }
+                return false;
+            }
+        case 'E':
+            {
+                if (get_galileo_signal_health(prn, signal, observation_tow, healthy))
+                    {
+                        return true;
+                    }
+                // No ephemeris decoded for this signal's service yet -- fall
+                // back to the almanac, broadcast by every satellite.
+                const auto alm_it = galileo_almanac_map.find(prn_key);
+                if (alm_it != galileo_almanac_map.cend())
+                    {
+                        healthy = (alm_it->second.E1B_HS == 0);
+                        return true;
+                    }
+                return false;
+            }
+        case 'R':
+            {
+                // Same predicate as the ephemeris handed to RTKLIB (see
+                // eph_to_rtklib()), so a GLONASS satellite excluded from the solve
+                // for health reasons is reported with used = false, healthy = false.
+                const auto eph_it = glonass_gnav_ephemeris_map.find(prn_key);
+                if (eph_it != glonass_gnav_ephemeris_map.cend())
+                    {
+                        healthy = glonass_gnav_is_healthy(eph_it->second, d_conf.glonass_strict_health);
+                        return true;
+                    }
+                return false;
+            }
+        case 'C':
+            {
+                if (signal == "1D")
+                    {
+                        // B1C: B-CNAV1 subframe 3 health status (HS, 0 = healthy). The
+                        // latest page data is preferred over the ephemeris record, as
+                        // when the ephemeris is handed to RTKLIB.
+                        const auto page_it = beidou_cnav1_page_data_map.find(prn_key);
+                        if (page_it != beidou_cnav1_page_data_map.cend())
+                            {
+                                healthy = (page_it->second.common.hs == 0);
+                                return true;
+                            }
+                        const auto cnav1_it = beidou_cnav1_ephemeris_map.find(prn_key);
+                        if (cnav1_it != beidou_cnav1_ephemeris_map.cend())
+                            {
+                                healthy = (cnav1_it->second.hs == 0);
+                                return true;
+                            }
+                        return false;
+                    }
+                if (signal == "5D")
+                    {
+                        // B2a: B-CNAV2 health status (HS, 0 = healthy)
+                        const auto cnav2_it = beidou_cnav2_ephemeris_map.find(prn_key);
+                        if (cnav2_it != beidou_cnav2_ephemeris_map.cend())
+                            {
+                                healthy = (cnav2_it->second.hs == 0);
+                                return true;
+                            }
+                        return false;
+                    }
+                // B1I / B3I: DNAV satellite health (SatH1, 0 = healthy)
+                const auto dnav_it = beidou_dnav_ephemeris_map.find(prn_key);
+                if (dnav_it != beidou_dnav_ephemeris_map.cend())
+                    {
+                        healthy = (dnav_it->second.SV_health == 0);
+                        return true;
+                    }
+                return false;
+            }
+        default:
+            return false;
+        }
+}
+
+
 std::map<int, Galileo_Ephemeris> Rtklib_Solver::get_galileo_ephemeris_map_for_pvt() const
 {
     auto result = galileo_ephemeris_store.combined_view(d_galileo_nav_message_type_for_pvt);
@@ -3045,28 +3160,6 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     break;
                                 }
 
-                            // GPS health is per-satellite; falls back to the almanac
-                            // (broadcast by every satellite) for one with no ephemeris
-                            // decoded yet. Galileo health is per-signal, resolved below.
-                            // Other systems default to healthy=true.
-                            bool healthy = true;
-                            if (sys_char == 'G')
-                                {
-                                    const auto eph_it = gps_ephemeris_map.find(prn);
-                                    if (eph_it != gps_ephemeris_map.cend())
-                                        {
-                                            healthy = (eph_it->second.SV_health == 0);
-                                        }
-                                    else
-                                        {
-                                            const auto alm_it = gps_almanac_map.find(prn);
-                                            if (alm_it != gps_almanac_map.cend())
-                                                {
-                                                    healthy = (alm_it->second.SV_health == 0);
-                                                }
-                                        }
-                                }
-
                             std::vector<const Gnss_Synchro *> contributing_signals;
                             for (const auto &observable_pair : gnss_observables_map)
                                 {
@@ -3094,22 +3187,14 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     info.elevation_deg = pvt_ssat[sat_idx].azel[1] * R2D;
                                     info.combined = combined;
                                     info.used = used;
-                                    info.healthy = healthy;
-                                    if (sys_char == 'E')
+                                    // Broadcast health of this signal, as reported by the
+                                    // navigation message that carries it (true when no health
+                                    // information is available). Independent of `used`.
+                                    const auto observation_tow = static_cast<uint32_t>(synchro->interp_TOW_ms / 1000.0);
+                                    bool healthy = true;
+                                    if (get_broadcast_signal_health(sys_char, static_cast<uint32_t>(prn), info.signal, observation_tow, healthy))
                                         {
-                                            bool galileo_healthy = false;
-                                            const auto observation_tow = static_cast<uint32_t>(synchro->interp_TOW_ms / 1000.0);
-                                            if (get_galileo_signal_health(static_cast<uint32_t>(prn), info.signal, observation_tow, galileo_healthy))
-                                                {
-                                                    info.healthy = galileo_healthy;
-                                                }
-                                            else
-                                                {
-                                                    // No ephemeris decoded for this signal's service yet -- fall
-                                                    // back to the almanac, broadcast by every satellite.
-                                                    const auto alm_it = galileo_almanac_map.find(prn);
-                                                    info.healthy = (alm_it == galileo_almanac_map.cend()) || (alm_it->second.E1B_HS == 0);
-                                                }
+                                            info.healthy = healthy;
                                         }
                                     d_monitor_pvt.tracked_satellites.push_back(info);
                                 }

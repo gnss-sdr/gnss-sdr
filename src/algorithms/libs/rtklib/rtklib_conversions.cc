@@ -402,22 +402,28 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
 }
 
 
+bool glonass_gnav_is_healthy(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, bool glonass_strict_health)
+{
+    // The ln flag (string 3) always marks a satellite malfunction. The MSB of
+    // the Bn word is a stricter health indicator that is only applied when
+    // glonass_strict_health is enabled
+    const bool bn_msb_unhealthy = glonass_strict_health && ((static_cast<int32_t>(glonass_gnav_eph.d_B_n) & 4) != 0);
+    return !(bn_msb_unhealthy || glonass_gnav_eph.d_l3rd_n);
+}
+
+
 geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glonass_Gnav_Utc_Model& gnav_clock_model, bool glonass_strict_health)
 {
     int week;
     double sec;
     int adj_week;
     geph_t rtklib_sat = {0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0, 0.0, 0.0};
-
-    // The ln flag (string 3) always marks a satellite malfunction. The MSB of
-    // the Bn word is a stricter health indicator that is only applied when
-    // glonass_strict_health is enabled
-    const bool bn_msb_unhealthy = glonass_strict_health && ((static_cast<int32_t>(glonass_gnav_eph.d_B_n) & 4) != 0);
+    const bool healthy = glonass_gnav_is_healthy(glonass_gnav_eph, glonass_strict_health);
 
     rtklib_sat.sat = satno(SYS_GLO, glonass_gnav_eph.i_satellite_slot_number);       /* satellite number */
     rtklib_sat.iode = static_cast<int>(std::lround(glonass_gnav_eph.d_t_b / 900.0)); /* IODE (tb interval index) */
     rtklib_sat.frq = glonass_gnav_eph.i_satellite_freq_channel;                      /* satellite frequency number */
-    rtklib_sat.svh = (bn_msb_unhealthy || glonass_gnav_eph.d_l3rd_n) ? 1 : 0;        /* satellite health from the ln flag (and optionally the Bn MSB) */
+    rtklib_sat.svh = healthy ? 0 : 1;                                                /* satellite health from the ln flag (and optionally the Bn MSB) */
     rtklib_sat.sva = static_cast<int>(glonass_gnav_eph.d_F_T);                       /* satellite accuracy*/
     rtklib_sat.age = static_cast<int>(glonass_gnav_eph.d_E_n);                       /* satellite age*/
     rtklib_sat.pos[0] = glonass_gnav_eph.d_Xn * 1000;                                /* satellite position (ecef) (m) */

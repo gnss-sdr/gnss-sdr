@@ -161,6 +161,17 @@ public:
     Galileo_Nav_Message_Type galileo_nav_message_type_for_pvt() const;
     bool is_galileo_signal_used_in_pvt(const std::string& signal) const;
     bool get_galileo_signal_health(uint32_t prn, const std::string& signal, uint32_t observation_tow, bool& healthy) const;
+    /*!
+     * \brief Broadcast health of one tracked signal, as reported by the navigation
+     * message that carries it: GPS/QZSS L1 C/A from the LNAV SV health (almanac
+     * when no ephemeris has been decoded yet), GPS/QZSS L2C and L5 from the CNAV
+     * per-signal health bits, Galileo per signal (see get_galileo_signal_health(),
+     * almanac E1B_HS when no ephemeris is available), GLONASS from the GNAV ln/Bn
+     * flags, BeiDou B1I/B3I from the DNAV SV health and B1C/B2a from the
+     * B-CNAV1/B-CNAV2 health status. Independent of PVT.use_unhealthy_sats.
+     * \return true if health information is available for that signal (healthy is then set)
+     */
+    bool get_broadcast_signal_health(char system, uint32_t prn, const std::string& signal, uint32_t observation_tow, bool& healthy) const;
     std::map<int, Galileo_Ephemeris> get_galileo_ephemeris_map_for_pvt() const;
     bool select_galileo_ephemeris(uint32_t prn, const std::string& signal, uint32_t observation_tow,
         Galileo_Ephemeris& ephemeris, bool& from_reduced_ced) const;

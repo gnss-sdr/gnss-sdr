@@ -371,7 +371,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   ionosphere-free combination), and a `used` flag telling whether it contributed
   to the reported fix. Satellites that were tracked but left out of the solution
   (below `PVT.elevation_mask`, or excluded by RAIM) are listed with
-  `used = false`. Contributed by @joebre.
+  `used = false`. Unhealthy satellites are listed with `healthy = false`.
+  Contributed by @joebre.
 
 ### Improvements in Maintainability:
 

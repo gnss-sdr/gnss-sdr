@@ -128,6 +128,15 @@ alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm, int ref_week = 0);
 alm_t alm_to_rtklib(const Beidou_Dnav_Almanac& bei_alm);
 
 /*!
+ * \brief Broadcast health of a GLONASS satellite according to its GNAV ephemeris
+ * \param glonass_gnav_eph GLONASS GNAV Ephemeris structure
+ * \param glonass_strict_health when true (default), the MSB of the Bn word also marks the
+ * satellite as unhealthy; when false, only the ln flag is used
+ * \return true if the satellite does not report a malfunction
+ */
+bool glonass_gnav_is_healthy(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, bool glonass_strict_health = true);
+
+/*!
  * \brief Transforms a Glonass_Gnav_Ephemeris to its RTKLIB counterpart
  * \param glonass_gnav_eph GLONASS GNAV Ephemeris structure
  * \param gnav_clock_model GLONASS GNAV UTC model (for the GLONASST to GPST conversion)

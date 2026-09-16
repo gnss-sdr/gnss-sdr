@@ -1464,15 +1464,32 @@ bool Rtklib_Solver::get_broadcast_signal_health(char system, uint32_t prn, const
                     {
                         return true;
                     }
-                // No ephemeris decoded for this signal's service yet -- fall
-                // back to the almanac, broadcast by every satellite.
+                // No usable ephemeris for this signal's service yet -- fall back
+                // to the almanac health status of the same signal. The I/NAV
+                // almanac carries E1B_HS and E5b_HS; E5a_HS only comes with the
+                // F/NAV almanac. E6 has no broadcast health status.
                 const auto alm_it = galileo_almanac_map.find(prn_key);
-                if (alm_it != galileo_almanac_map.cend())
+                if (alm_it == galileo_almanac_map.cend())
+                    {
+                        return false;
+                    }
+                if (signal == "1B")
                     {
                         healthy = (alm_it->second.E1B_HS == 0);
-                        return true;
                     }
-                return false;
+                else if (signal == "7X")
+                    {
+                        healthy = (alm_it->second.E5b_HS == 0);
+                    }
+                else if (signal == "5X")
+                    {
+                        healthy = (alm_it->second.E5a_HS == 0);
+                    }
+                else
+                    {
+                        return false;
+                    }
+                return true;
             }
         case 'R':
             {

@@ -166,7 +166,8 @@ public:
      * message that carries it: GPS/QZSS L1 C/A from the LNAV SV health (almanac
      * when no ephemeris has been decoded yet), GPS/QZSS L2C and L5 from the CNAV
      * per-signal health bits, Galileo per signal (see get_galileo_signal_health(),
-     * almanac E1B_HS when no ephemeris is available), GLONASS from the GNAV ln/Bn
+     * the almanac health status of the same signal when no ephemeris is available),
+     * GLONASS from the GNAV ln/Bn
      * flags, BeiDou B1I/B3I from the DNAV SV health and B1C/B2a from the
      * B-CNAV1/B-CNAV2 health status. Independent of PVT.use_unhealthy_sats.
      * \return true if health information is available for that signal (healthy is then set)

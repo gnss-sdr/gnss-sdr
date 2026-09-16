@@ -60,7 +60,8 @@ message MonitorPvt {
   // appears as two entries, both with combined = true. A satellite can have
   // azimuth_deg/elevation_deg populated with used = false when it was
   // tracked and had az/el computed but excluded from the fix itself (e.g.
-  // below PVT.elevation_mask, or by RAIM FDE).
+  // below PVT.elevation_mask, or by RAIM FDE). The healthy flag carries the
+  // broadcast health of the signal, independently of used.
   message TrackedSatellite {
     uint32 prn = 1;
     string system = 2;  // "G" GPS, "E" Galileo, "R" GLONASS, "C" BeiDou, "S" SBAS, "J" QZSS
@@ -69,6 +70,7 @@ message MonitorPvt {
     double elevation_deg = 5;
     bool combined = 6;
     bool used = 7;
+    bool healthy = 8;
   }
   repeated TrackedSatellite tracked_satellites = 37;
 }

@@ -71,6 +71,11 @@ void channel_status_msg_receiver::msg_handler_channel_status(const pmt::pmt_t& m
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_channel_status function called by the scheduler
     try
         {
+            if (pmt::is_real(msg))
+                {
+                    d_receiver_time_s = pmt::to_double(msg);
+                    return;
+                }
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
             // ****************** Gnss_Synchro received ************************
             if (msg_type_hash_code == typeid(std::shared_ptr<Gnss_Synchro>).hash_code())
@@ -83,6 +88,17 @@ void channel_status_msg_receiver::msg_handler_channel_status(const pmt::pmt_t& m
                     else
                         {
                             d_channel_status_map.erase(gnss_synchro_obj->Channel_ID);
+                        }
+                    // Tracking map: every locked channel, with or without a valid time
+                    // reference, for the secondary-frequency acquisition assistance
+                    if ((gnss_synchro_obj->Flag_valid_pseudorange == true) ||
+                        ((gnss_synchro_obj->Flag_valid_symbol_output == true) && (gnss_synchro_obj->PRN != 0)))
+                        {
+                            d_channel_tracking_map[gnss_synchro_obj->Channel_ID] = gnss_synchro_obj;
+                        }
+                    else
+                        {
+                            d_channel_tracking_map.erase(gnss_synchro_obj->Channel_ID);
                         }
 
                     // std::cout << "-------- \n" << '\n';
@@ -121,8 +137,27 @@ std::map<int, std::shared_ptr<Gnss_Synchro>> channel_status_msg_receiver::get_cu
 }
 
 
-Monitor_Pvt channel_status_msg_receiver::get_current_status_pvt()
+std::map<int, std::shared_ptr<Gnss_Synchro>> channel_status_msg_receiver::get_current_tracking_map()
 {
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_channel_status function called by the scheduler
+    return d_channel_tracking_map;
+}
+
+
+void channel_status_msg_receiver::clear_channel_status(int channel_id)
+{
+    gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_channel_status function called by the scheduler
+    d_channel_status_map.erase(channel_id);
+    d_channel_tracking_map.erase(channel_id);
+}
+
+
+Monitor_Pvt channel_status_msg_receiver::get_current_status_pvt(double* receiver_time_s)
+{
+    gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_channel_status function called by the scheduler
+    if (receiver_time_s != nullptr)
+        {
+            *receiver_time_s = d_receiver_time_s;
+        }
     return d_pvt_status;
 }

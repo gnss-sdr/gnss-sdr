@@ -96,8 +96,10 @@ int topocent(double *Az, double *El, double *D, const arma::vec &x, const arma::
 
     if (hor_dis < 1.0E-20)
         {
+            // Zenith or nadir: the azimuth is undefined, the elevation is
+            // +90 deg only if the vector points up.
             *Az = 0.0;
-            *El = 90.0;
+            *El = (U >= 0.0) ? 90.0 : -90.0;
         }
     else
         {

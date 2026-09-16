@@ -161,6 +161,18 @@ public:
     Galileo_Nav_Message_Type galileo_nav_message_type_for_pvt() const;
     bool is_galileo_signal_used_in_pvt(const std::string& signal) const;
     bool get_galileo_signal_health(uint32_t prn, const std::string& signal, uint32_t observation_tow, bool& healthy) const;
+    /*!
+     * \brief Broadcast health of one tracked signal, as reported by the navigation
+     * message that carries it: GPS/QZSS L1 C/A from the LNAV SV health (almanac
+     * when no ephemeris has been decoded yet), GPS/QZSS L2C and L5 from the CNAV
+     * per-signal health bits, Galileo per signal (see get_galileo_signal_health(),
+     * the almanac health status of the same signal when no ephemeris is available),
+     * GLONASS from the GNAV ln/Bn
+     * flags, BeiDou B1I/B3I from the DNAV SV health and B1C/B2a from the
+     * B-CNAV1/B-CNAV2 health status. Independent of PVT.use_unhealthy_sats.
+     * \return true if health information is available for that signal (healthy is then set)
+     */
+    bool get_broadcast_signal_health(char system, uint32_t prn, const std::string& signal, uint32_t observation_tow, bool& healthy) const;
     std::map<int, Galileo_Ephemeris> get_galileo_ephemeris_map_for_pvt() const;
     bool select_galileo_ephemeris(uint32_t prn, const std::string& signal, uint32_t observation_tow,
         Galileo_Ephemeris& ephemeris, bool& from_reduced_ced) const;
@@ -177,6 +189,7 @@ public:
     std::map<int, Glonass_Gnav_Ephemeris> glonass_gnav_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephemeris
     std::map<int, Beidou_Dnav_Ephemeris> beidou_dnav_ephemeris_map;    //!< Map storing new BeiDou DNAV Ephmeris
     std::map<int, Beidou_Cnav1_Ephemeris> beidou_cnav1_ephemeris_map;  //!< Map storing BeiDou B-CNAV1 ephemeris
+    std::map<int, Beidou_Cnav1_Ephemeris> beidou_cnav2_ephemeris_map;  //!< Map storing BeiDou B-CNAV2 ephemeris
 
     Galileo_Utc_Model galileo_utc_model;
     Galileo_Iono galileo_iono;
@@ -198,7 +211,8 @@ public:
     Qzss_CNAV_Utc_Model qzss_cnav_utc_model;
 
     Glonass_Gnav_Utc_Model glonass_gnav_utc_model;  //!< Map storing GLONASS GNAV UTC Model
-    Glonass_Gnav_Almanac glonass_gnav_almanac;      //!< Map storing GLONASS GNAV Almanac Model
+    std::map<int, Glonass_Gnav_Almanac> glonass_gnav_almanac_map;
+    Glonass_Gnav_Almanac glonass_gnav_almanac;  //!< Map storing GLONASS GNAV Almanac Model
 
     Beidou_Dnav_Utc_Model beidou_dnav_utc_model;
     Beidou_Dnav_Iono beidou_dnav_iono;
@@ -208,12 +222,12 @@ public:
     std::map<int, Bds3_B1c_PageData> beidou_cnav1_page_data_map;
 
 private:
-    friend class GalileoEphemerisSourceTest_E6SlotsFollowRtklibGalileoPolicy_Test;
-
+    void update_beidou_observation_wavelengths(const obsd_t& observation);
     bool save_matfile() const;
     bool prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot& fixed_base,
         int& rover_observation_count,
         int& base_observation_count);
+    int merge_duplicated_rover_observations(int rover_observation_count);
     bool galileo_ephemeris_is_usable(const Galileo_Ephemeris& ephemeris, uint32_t observation_tow) const;
     void update_galileo_observation_wavelengths(const obsd_t& observation);
 
@@ -243,7 +257,7 @@ private:
 
     void reset_relative_filter();
 
-    std::array<obsd_t, MAXOBS * 2> d_obs_data{};
+    std::vector<obsd_t> d_obs_data = std::vector<obsd_t>(MAXOBS * 2);
     // per-epoch scratch of prepare_fixed_base_observations(); members so
     // their capacity is reused across epochs
     std::vector<obsd_t> d_fixed_base_rover_scratch;
@@ -287,6 +301,7 @@ private:
     Rtklib_Fixed_Base_Status d_fixed_base_status = Rtklib_Fixed_Base_Status::NOT_REQUESTED;
     bool d_fixed_base_initialized = false;
     bool d_fixed_base_was_applied = false;
+    bool d_duplicated_rover_observations_logged = false;
     bool d_flag_dump_enabled;
     bool d_flag_dump_mat_enabled;
 };

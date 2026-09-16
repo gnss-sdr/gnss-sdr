@@ -31,6 +31,7 @@
 #include <gnuradio/sync_block.h>  // for sync_block
 #include <gnuradio/types.h>       // for gr_vector_const_void_star
 #include <pmt/pmt.h>              // for pmt_t
+#include <atomic>                 // for atomic
 #include <chrono>                 // for system_clock
 #include <cstddef>                // for size_t
 #include <cstdint>                // for int32_t
@@ -38,6 +39,7 @@
 #include <fstream>                // for std::fstream
 #include <map>                    // for map
 #include <memory>                 // for shared_ptr, unique_ptr
+#include <mutex>                  // for mutex
 #include <queue>                  // for std::queue
 #include <string>                 // for string
 #include <vector>                 // for vector
@@ -49,8 +51,13 @@
  * \{ */
 
 
+class Gps_CNAV_Ephemeris;
+class Glonass_Gnav_Ephemeris;
+class Glonass_Gnav_Almanac;
+class Glonass_Gnav_Utc_Model;
 class Beidou_Dnav_Almanac;
 class Beidou_Dnav_Ephemeris;
+class Beidou_Cnav1_Ephemeris;
 class Galileo_Almanac;
 class Galileo_Ephemeris;
 class Galileo_HAS_data;
@@ -92,6 +99,10 @@ public:
     /*!
      * \brief Get latest set of GPS ephemeris from PVT block
      */
+    std::map<int, Gps_CNAV_Ephemeris> get_gps_cnav_ephemeris_map() const;
+    std::map<int, Glonass_Gnav_Ephemeris> get_glonass_ephemeris_map() const;
+    std::map<int, Glonass_Gnav_Almanac> get_glonass_almanac_map() const;
+    Glonass_Gnav_Utc_Model get_glonass_utc_model() const;
     std::map<int, Gps_Ephemeris> get_gps_ephemeris_map() const;
 
     /*!
@@ -113,6 +124,8 @@ public:
      * \brief Get latest set of BeiDou DNAV ephemeris from PVT block
      */
     std::map<int, Beidou_Dnav_Ephemeris> get_beidou_dnav_ephemeris_map() const;
+    std::map<int, Beidou_Cnav1_Ephemeris> get_beidou_cnav1_ephemeris_map() const;
+    std::map<int, Beidou_Cnav1_Ephemeris> get_beidou_cnav2_ephemeris_map() const;
 
     /*!
      * \brief Get latest set of BeiDou DNAV almanac from PVT block
@@ -120,9 +133,17 @@ public:
     std::map<int, Beidou_Dnav_Almanac> get_beidou_dnav_almanac_map() const;
 
     /*!
-     * \brief Clear all ephemeris information and the almanacs for GPS and Galileo
+     * \brief Clears the published navigation snapshot now and the solver maps
+     * at the worker's next work() or telemetry callback.
      */
     void clear_ephemeris();
+
+    /*!
+     * \brief Clears the ephemeris entries of the published navigation snapshot
+     * now and the solver ephemeris maps at the worker's next work() or telemetry
+     * callback, leaving the GPS, Galileo, BeiDou and GLONASS almanacs untouched.
+     */
+    void clear_ephemeris_keep_almanac();
 
     /*!
      * \brief Interpolates one observable between two epochs, in the carrier
@@ -211,6 +232,54 @@ private:
 
     std::unique_ptr<SensorDataAggregator> d_sensor_data_aggregator;
 
+    enum class NavigationData
+    {
+        GpsCnavEphemeris,
+        GlonassEphemeris,
+        GlonassAlmanac,
+        GlonassUtcModel,
+        GpsEphemeris,
+        GpsAlmanac,
+        GalileoEphemeris,
+        GalileoAlmanac,
+        BeidouEphemeris,
+        BeidouCnavEphemeris,
+        BeidouAlmanac,
+        RetainedAlmanacs
+    };
+    enum class NavigationClear : uint8_t
+    {
+        None,
+        EphemerisOnly,
+        All
+    };
+    struct NavigationSnapshot;
+    struct LatestPvt
+    {
+        double longitude_deg = 0.0;
+        double latitude_deg = 0.0;
+        double height_m = 0.0;
+        double ground_speed_kmh = 0.0;
+        double course_over_ground_deg = 0.0;
+        time_t utc_time = 0;
+        bool valid = false;
+    };
+
+    std::shared_ptr<const NavigationSnapshot> navigation_snapshot() const;
+    void publish_navigation_snapshot(NavigationData data);
+    void request_navigation_clear(NavigationClear kind);
+    void apply_pending_navigation_clear();
+    void publish_latest_pvt();
+
+    // Only pointer exchanges and the small PVT value copy hold this mutex.
+    // Map construction, copying and destruction happen outside the lock.
+    mutable std::mutex d_snapshot_mutex;
+    const std::shared_ptr<const NavigationSnapshot> d_empty_navigation_snapshot;
+    std::shared_ptr<const NavigationSnapshot> d_navigation_snapshot;
+    LatestPvt d_latest_pvt;
+    std::atomic<uint32_t> d_navigation_generation{0};
+    NavigationClear d_pending_navigation_clear = NavigationClear::None;  // guarded by d_snapshot_mutex
+    uint32_t d_applied_navigation_generation = 0;                        // GNU Radio worker only
     std::shared_ptr<Rtklib_Solver> d_internal_pvt_solver;
     std::shared_ptr<Rtklib_Solver> d_user_pvt_solver;
 

@@ -224,8 +224,6 @@ private:
     bool stop_;
     bool restart_;
     bool telecommand_enabled_;
-
-    int32_t ref_gps_week_;  // reference GPS week to resolve the mod-1024 week rollover when post-processing old gnss records (0: use system clock)
 };
 
 

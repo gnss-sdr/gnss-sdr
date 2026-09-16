@@ -1051,6 +1051,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     set(FLOWGRAPH_TEST_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/gnss_flowgraph_test.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/satellite_visibility_test.cc
     )
     if(USE_CMAKE_TARGET_SOURCES)
         add_executable(flowgraph_test)
@@ -1070,6 +1071,8 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             input_filter_adapters
             channel_adapters
             core_receiver
+            pvt_gr_blocks
+            obs_gr_blocks
             algorithms_libs
     )
     if(ENABLE_GLOG_AND_GFLAGS)

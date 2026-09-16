@@ -199,16 +199,11 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
 
     update_grid_doppler_wipeoffs();
 
-    // While idle (not actively searching), general_work() only drains its input to avoid
-    // stalling the upstream block, producing no output. Without a batching hint the TPB
-    // scheduler wakes this block's thread for every small burst of new input, which is
-    // pure scheduling overhead. Requiring a larger noutput_items granularity forces the
-    // scheduler to accumulate more input per wakeup, cutting call frequency without
-    // changing behavior (production while idle is still always 0 either way).
-    // One PRN code period at this signal's own decimated rate is the natural
-    // lower bound: the algorithm never does anything meaningful below that granularity.
-    const auto output_multiple_samples = std::max<uint32_t>(1U, static_cast<uint32_t>(std::lround(conf_.samples_per_ms)));
-    this->set_output_multiple(output_multiple_samples);
+    // Give a hint to GNU Radio scheduler on how many samples we may want
+    // As pcps_acquisition is not inherited from gr::sync_block, This doesn't prevent us
+    // from producing exactly 1 sample (or even 0 samples) in the general_work
+    // Fixes CI freeze and retains performance improvement
+    this->set_output_multiple(std::max(d_samples_to_consume, static_cast<uint32_t>(d_data_buffer.size())));
 }
 
 

@@ -2307,7 +2307,7 @@ void dll_pll_veml_tracking::run_f_error_scan_step()
                     bins_by_doppler[i] = i;
                 }
             std::sort(bins_by_doppler.begin(), bins_by_doppler.end(),
-                [this](uint32_t a, uint32_t b) { return f_error_bin_multiplier(a) < f_error_bin_multiplier(b); });
+                [](uint32_t a, uint32_t b) { return f_error_bin_multiplier(a) < f_error_bin_multiplier(b); });
 
             std::vector<double> bin_doppler_vec(d_f_error_num_bins);
             std::vector<double> bin_power_vec(d_f_error_num_bins);

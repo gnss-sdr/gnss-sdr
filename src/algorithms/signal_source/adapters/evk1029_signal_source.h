@@ -8,17 +8,22 @@
  * (dedicated file reader + optional throttle + optional dump), updated
  * for the current EVK1029 capture format (see evk1029_source.h).
  *
- * Set role + ".RF_channels" to N > 1 (e.g. for a dual-band setup sharing a
- * single IF capture) to get N identical, sample-locked output streams from
- * ONE underlying Evk1029Source instance/read, instead of instantiating N
- * separate SignalSourceN blocks each reading the file independently -- the
- * latter has no shared clock forcing the two chains to progress at the same
- * rate, and can drift apart over a long run if their downstream processing
- * costs differ. In RF_channels > 1 mode, .enable_throttle_control is not
- * supported (a single throttle block can't sit across N ports); it is
- * ignored with a warning. Backpressure from the slower of the two
- * downstream chains naturally keeps both output ports of the shared block
- * in lockstep instead.
+ * Set role + ".RF_channels" to N > 1 (e.g. for a multi-band setup sharing a
+ * single IF capture) to get N independent readers of ONE underlying
+ * Evk1029Source instance/read, instead of instantiating N separate
+ * SignalSourceN blocks each reading the file independently -- the latter
+ * has no shared read position, so a long, slow file open/seek on one of
+ * them can leave it at a different point in the capture than the others.
+ * Evk1029Source itself only ever declares a single real output port (see
+ * its own header); gnss_flowgraph.cc's generic signal-source-to-conditioner
+ * wiring detects this (output_signature()->max_streams() == 1) and connects
+ * each of the N signal conditioners to that same port independently, using
+ * GNU Radio's native support for multiple readers on one producer port.
+ * Each reader then advances at its own pace -- one RF band's downstream
+ * chain running behind never blocks the others.
+ * In RF_channels > 1 mode, .enable_throttle_control is not supported (a
+ * single throttle block would itself need N independent readers wired the
+ * same way, not yet implemented); it is ignored with a warning.
  *
  * -----------------------------------------------------------------------------
  *

@@ -15,6 +15,7 @@
 
 #include "evk1029_signal_source.h"
 #include "configuration_interface.h"
+#include <cmath>
 #include <utility>
 
 #if USE_GLOG_AND_GFLAGS
@@ -46,6 +47,19 @@ Evk1029SignalSource::Evk1029SignalSource(
     const int64_t default_fs = configuration->property("GNSS-SDR.internal_fs_sps"s, int64_t(0));
     const int64_t fs = configuration->property(role + ".sampling_frequency"s, default_fs);
 
+    // Lets a long capture be jumped straight to a "time of interest" (e.g.
+    // to check effective signal strength at a specific point) instead of
+    // always reprocessed from the start. Expressed in seconds, not bytes --
+    // fs (the raw capture's own sample rate) is already known right here,
+    // so converting is trivial and saves the caller from hand-computing a
+    // byte count themselves. Two OBA samples are packed per byte, hence the
+    // /2; Evk1029Source rounds the resulting byte count up to the next
+    // 64-bit word boundary itself (see its header) before seeking.
+    const double file_offset_s = configuration->property(role + ".file_offset"s, 0.0);
+    const auto file_offset_bytes = (file_offset_s > 0.0 && fs > 0)
+                                       ? static_cast<uint64_t>(std::llround(file_offset_s * static_cast<double>(fs) / 2.0))
+                                       : uint64_t(0);
+
     if (rf_channels_ == 0)
         {
             rf_channels_ = 1;
@@ -54,15 +68,16 @@ Evk1029SignalSource::Evk1029SignalSource(
     if (enable_throttle_control_ && rf_channels_ > 1)
         {
             LOG(WARNING) << role << ".enable_throttle_control is not supported with RF_channels > 1 "
-                         << "(a single throttle can't sit across multiple shared-source output ports); ignoring it. "
-                         << "Backpressure from the slower downstream chain keeps the ports in lockstep instead.";
+                         << "(would need its own N-independent-readers wiring, same as Evk1029Source itself; "
+                         << "not yet implemented); ignoring it.";
             std::cout << role << ": enable_throttle_control ignored with RF_channels=" << rf_channels_ << "\n";
             enable_throttle_control_ = false;
         }
 
-    DLOG(INFO) << "EVK1029 Signal Source: filename=" << filename << ", fs=" << fs << ", item_size=" << item_size_ << ", RF_channels=" << rf_channels_;
+    DLOG(INFO) << "EVK1029 Signal Source: filename=" << filename << ", fs=" << fs << ", item_size=" << item_size_
+               << ", RF_channels=" << rf_channels_ << ", file_offset_s=" << file_offset_s;
 
-    evk1029_source_ = evk1029_make_source(filename, static_cast<int>(rf_channels_), queue, static_cast<double>(fs));
+    evk1029_source_ = evk1029_make_source(filename, static_cast<int>(rf_channels_), queue, static_cast<double>(fs), file_offset_bytes);
 
     if (enable_throttle_control_)
         {

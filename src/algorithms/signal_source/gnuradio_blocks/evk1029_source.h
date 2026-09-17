@@ -11,13 +11,23 @@
  * 4-bit OBA samples per byte (16 samples per 64-bit word, per the
  * capture's .sdrx metadata: quantization=4, packedbits=64, encoding=OBA).
  *
- * Supports emitting multiple identical output streams (one read, N copies)
- * from a single work() call, so that two RF bands fed from the same raw
- * capture (e.g. two Freq_Xlating_Fir_Filter instances tuned to different
- * IFs) can never drift apart sample-index-wise: GNU Radio computes
- * noutput_items as the minimum available space across all declared output
- * ports, so backpressure from whichever downstream chain is slower stalls
- * production for every output port together, not just its own.
+ * Exactly ONE real output port, always (n_streams_ is kept only for
+ * logging -- it no longer sizes the io_signature). Multiple RF bands
+ * sharing this same raw capture (e.g. several Freq_Xlating_Fir_Filter
+ * instances tuned to different IFs) each get their OWN connect() to this
+ * one port instead (see gnss_flowgraph.cc's signal-source-to-conditioner
+ * wiring, which already takes this path whenever output_signature()'s
+ * max_streams() == 1): GNU Radio's buffer model natively supports several
+ * independent readers on one producer port, each with its own read
+ * pointer, so a downstream chain that temporarily falls behind only
+ * delays *itself* -- it can't force every port's own production to stall
+ * together the way N separate, GNU-Radio-scheduler-coupled sync_block
+ * output ports would (a single slow port failing GNU Radio's "space
+ * available on every port" check before work() is even called stalls
+ * production on every port at once). An earlier version of this block
+ * used N separate ports and copied the same decoded output into each of
+ * them; besides the tighter coupling above, that meant N-1 extra full-
+ * buffer memcpy calls per work() call at up to the raw capture rate.
  *
  * -----------------------------------------------------------------------------
  *
@@ -52,12 +62,23 @@ class Evk1029Source;
 
 using Evk1029Source_sptr = gnss_shared_ptr<Evk1029Source>;
 
-Evk1029Source_sptr evk1029_make_source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency);
+// file_offset_bytes: byte position in the raw capture to seek to before the
+// first read, letting a long capture be jumped straight to a "time of
+// interest" instead of always reprocessed from the start (see
+// Evk1029SignalSource.file_offset in the adapter, which converts a
+// requested offset in seconds -- since the sampling frequency is already
+// known there -- into this byte count). Rounded up to the next multiple of
+// 8 bytes (64 bits) here, matching the capture's native packing (16 OBA
+// samples per little-endian 64-bit word): this block itself only ever reads
+// byte-by-byte and would decode correctly from any byte offset, but seeking
+// to a non-word-aligned byte splits a 64-bit DMA word the real hardware
+// always transferred as one unit, which needlessly complicates comparing a
+// jumped-to run against a from-the-start one at the file/word level.
+Evk1029Source_sptr evk1029_make_source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t file_offset_bytes = 0);
 
 /*!
  * \brief Reads a continuous, header-less EVK1029 raw capture file and
- * unpacks its OBA-encoded 4-bit samples (two per byte, low nibble first),
- * writing the identical result to every declared output port.
+ * unpacks its OBA-encoded 4-bit samples (two per byte, low nibble first).
  */
 class Evk1029Source : public gr::sync_block
 {
@@ -65,8 +86,8 @@ public:
     ~Evk1029Source() override;
 
 private:
-    friend Evk1029Source_sptr evk1029_make_source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency);
-    Evk1029Source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency);
+    friend Evk1029Source_sptr evk1029_make_source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t file_offset_bytes);
+    Evk1029Source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t file_offset_bytes = 0);
 
     int work(int noutput_items,
         gr_vector_const_void_star& input_items,

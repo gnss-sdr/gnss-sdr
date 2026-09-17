@@ -28,14 +28,14 @@ jobs:
           libgnutls-openssl-dev libmatio-dev googletest protobuf-compiler libprotobuf-dev \
           python3-mako liborc-0.4-dev
       - name: configure
-        run: cmake -S . -B build -GNinja
+        run: cmake -S . -B build -GNinja -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
       - name: build
         run: cmake --build build
       - name: check
         run: cmake --build build --target check && ./install/volk_gnsssdr_profile && ./install/run_tests
       - name: default position_test
         run: |
-          cmake -S . -B build -DENABLE_SYSTEM_TESTING_EXTRA=ON -DENABLE_UNIT_TESTING_EXTRA=OFF && \
+          cmake -S . -B build -DENABLE_SYSTEM_TESTING_EXTRA=ON -DENABLE_UNIT_TESTING_EXTRA=OFF -DCMAKE_COMPILE_WARNING_AS_ERROR=ON && \
           cmake --build build && ./install/position_test && ./install/run_tests --gtest_filter=Osnma*
 
   build-macos:
@@ -114,7 +114,8 @@ jobs:
       - name: Configure
         run: |
           cmake -S . -B build -GNinja \
-            -DPython3_EXECUTABLE="$GNURADIO_PYTHON"
+            -DPython3_EXECUTABLE="$GNURADIO_PYTHON" \
+            -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
       - name: Build
         run: cmake --build build
       - name: Check
@@ -128,7 +129,8 @@ jobs:
             -GNinja \
             -DPython3_EXECUTABLE="$GNURADIO_PYTHON" \
             -DENABLE_SYSTEM_TESTING_EXTRA=ON \
-            -DENABLE_UNIT_TESTING_EXTRA=OFF
+            -DENABLE_UNIT_TESTING_EXTRA=OFF \
+            -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
 
           cmake --build build
           ./install/position_test

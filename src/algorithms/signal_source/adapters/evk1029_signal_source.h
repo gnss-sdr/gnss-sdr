@@ -9,21 +9,18 @@
  * for the current EVK1029 capture format (see evk1029_source.h).
  *
  * Set role + ".RF_channels" to N > 1 (e.g. for a multi-band setup sharing a
- * single IF capture) to get N independent readers of ONE underlying
+ * single IF capture) to feed N Signal Conditioners from ONE underlying
  * Evk1029Source instance/read, instead of instantiating N separate
- * SignalSourceN blocks each reading the file independently -- the latter
- * has no shared read position, so a long, slow file open/seek on one of
- * them can leave it at a different point in the capture than the others.
- * Evk1029Source itself only ever declares a single real output port (see
- * its own header); gnss_flowgraph.cc's generic signal-source-to-conditioner
- * wiring detects this (output_signature()->max_streams() == 1) and connects
- * each of the N signal conditioners to that same port independently, using
- * GNU Radio's native support for multiple readers on one producer port.
- * Each reader then advances at its own pace -- one RF band's downstream
- * chain running behind never blocks the others.
- * In RF_channels > 1 mode, .enable_throttle_control is not supported (a
- * single throttle block would itself need N independent readers wired the
- * same way, not yet implemented); it is ignored with a warning.
+ * SignalSourceN blocks each reading the file independently. Evk1029Source
+ * has a single output port (see its own header); gnss_flowgraph.cc's
+ * generic signal-source-to-conditioner wiring detects this
+ * (output_signature()->max_streams() == 1) and connects each of the N
+ * Signal Conditioners to that same port, so all of them read the same
+ * sample stream and GNU Radio keeps them within one output buffer of each
+ * other. The optional throttle sits between the source and that shared
+ * port, so .enable_throttle_control works for any RF_channels value.
+ * Set role + ".seconds_to_skip" to start reading at a given time into the
+ * capture (converted to a byte position using the raw sampling frequency).
  *
  * -----------------------------------------------------------------------------
  *

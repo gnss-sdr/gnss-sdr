@@ -11,23 +11,20 @@
  * 4-bit OBA samples per byte (16 samples per 64-bit word, per the
  * capture's .sdrx metadata: quantization=4, packedbits=64, encoding=OBA).
  *
- * Exactly ONE real output port, always (n_streams_ is kept only for
- * logging -- it no longer sizes the io_signature). Multiple RF bands
- * sharing this same raw capture (e.g. several Freq_Xlating_Fir_Filter
- * instances tuned to different IFs) each get their OWN connect() to this
- * one port instead (see gnss_flowgraph.cc's signal-source-to-conditioner
- * wiring, which already takes this path whenever output_signature()'s
- * max_streams() == 1): GNU Radio's buffer model natively supports several
- * independent readers on one producer port, each with its own read
- * pointer, so a downstream chain that temporarily falls behind only
- * delays *itself* -- it can't force every port's own production to stall
- * together the way N separate, GNU-Radio-scheduler-coupled sync_block
- * output ports would (a single slow port failing GNU Radio's "space
- * available on every port" check before work() is even called stalls
- * production on every port at once). An earlier version of this block
- * used N separate ports and copied the same decoded output into each of
- * them; besides the tighter coupling above, that meant N-1 extra full-
- * buffer memcpy calls per work() call at up to the raw capture rate.
+ * The block has a single output port. Multiple RF bands sharing the same
+ * raw capture (e.g. several Freq_Xlating_Fir_Filter instances tuned to
+ * different IFs) are each connected to that one port (see the
+ * signal-source-to-conditioner wiring in gnss_flowgraph.cc, which takes
+ * this path whenever output_signature()->max_streams() == 1): GNU Radio
+ * supports several readers on one producer port, each with its own read
+ * pointer over the same buffer. The scheduler still throttles this block
+ * to the slowest of those readers (buffer::space_available() is bounded by
+ * the reader with the most unconsumed items), exactly as it would with one
+ * buffer per port, so the bands cannot drift apart by more than one output
+ * buffer. What the single port saves is the N-1 extra output buffers and
+ * the N-1 full-buffer memcpy calls per work() call, at up to the raw
+ * capture rate, that a port-per-band design needs in order to duplicate
+ * the same decoded samples.
  *
  * -----------------------------------------------------------------------------
  *
@@ -62,19 +59,18 @@ class Evk1029Source;
 
 using Evk1029Source_sptr = gnss_shared_ptr<Evk1029Source>;
 
-// file_offset_bytes: byte position in the raw capture to seek to before the
-// first read, letting a long capture be jumped straight to a "time of
-// interest" instead of always reprocessed from the start (see
-// Evk1029SignalSource.file_offset in the adapter, which converts a
-// requested offset in seconds -- since the sampling frequency is already
-// known there -- into this byte count). Rounded up to the next multiple of
-// 8 bytes (64 bits) here, matching the capture's native packing (16 OBA
-// samples per little-endian 64-bit word): this block itself only ever reads
-// byte-by-byte and would decode correctly from any byte offset, but seeking
-// to a non-word-aligned byte splits a 64-bit DMA word the real hardware
-// always transferred as one unit, which needlessly complicates comparing a
-// jumped-to run against a from-the-start one at the file/word level.
-Evk1029Source_sptr evk1029_make_source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t file_offset_bytes = 0);
+// bytes_to_skip: byte position in the raw capture at which reading starts,
+// so that a long capture can be jumped straight to a time of interest
+// instead of being processed from the beginning (the adapter derives it
+// from its .seconds_to_skip parameter and the raw sampling frequency).
+// Rounded up to the next multiple of 8 bytes (64 bits) here, matching the
+// capture's native packing (16 OBA samples per little-endian 64-bit word):
+// this block itself only ever reads byte-by-byte and would decode correctly
+// from any byte offset, but seeking to a non-word-aligned byte splits a
+// 64-bit DMA word the real hardware always transferred as one unit, which
+// needlessly complicates comparing a jumped-to run against a from-the-start
+// one at the file/word level.
+Evk1029Source_sptr evk1029_make_source(const std::string& filename, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t bytes_to_skip = 0);
 
 /*!
  * \brief Reads a continuous, header-less EVK1029 raw capture file and
@@ -86,8 +82,8 @@ public:
     ~Evk1029Source() override;
 
 private:
-    friend Evk1029Source_sptr evk1029_make_source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t file_offset_bytes);
-    Evk1029Source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t file_offset_bytes = 0);
+    friend Evk1029Source_sptr evk1029_make_source(const std::string& filename, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t bytes_to_skip);
+    Evk1029Source(const std::string& filename, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t bytes_to_skip = 0);
 
     int work(int noutput_items,
         gr_vector_const_void_star& input_items,
@@ -98,7 +94,6 @@ private:
     std::vector<uint8_t> buffer_;
     std::size_t buffer_valid_;  // number of valid bytes currently in buffer_
     std::size_t buffer_pos_;    // next unread byte offset within buffer_
-    int n_streams_;
 };
 
 

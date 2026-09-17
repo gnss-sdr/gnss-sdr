@@ -68,8 +68,8 @@ Evk1029SignalSource::Evk1029SignalSource(
     if (enable_throttle_control_ && rf_channels_ > 1)
         {
             LOG(WARNING) << role << ".enable_throttle_control is not supported with RF_channels > 1 "
-                         << "(a single throttle can't sit across multiple shared-source output ports); ignoring it. "
-                         << "Backpressure from the slower downstream chain keeps the ports in lockstep instead.";
+                         << "(would need its own N-independent-readers wiring, same as Evk1029Source itself; "
+                         << "not yet implemented); ignoring it.";
             std::cout << role << ": enable_throttle_control ignored with RF_channels=" << rf_channels_ << "\n";
             enable_throttle_control_ = false;
         }

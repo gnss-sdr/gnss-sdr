@@ -800,7 +800,7 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
                     free(v);
                     free(H);
                     free(var);
-                    msg = msg_aux;
+                    std::strncpy(msg, msg_aux, 127);
                     return stat;
                 }
         }
@@ -812,7 +812,7 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     free(v);
     free(H);
     free(var);
-    msg = msg_aux;
+    std::strncpy(msg, msg_aux, 127);
 
     return 0;
 }

@@ -19,7 +19,6 @@
 #include <gnuradio/io_signature.h>
 #include <algorithm>
 #include <cmath>
-#include <cstring>
 #include <iostream>
 
 #if USE_GLOG_AND_GFLAGS
@@ -62,21 +61,20 @@ int output_multiple_from_sampling_frequency(double sampling_frequency)
 }  // namespace
 
 
-Evk1029Source_sptr evk1029_make_source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency)
+Evk1029Source_sptr evk1029_make_source(const std::string& filename, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t bytes_to_skip)
 {
-    return Evk1029Source_sptr(new Evk1029Source(filename, n_streams, queue, sampling_frequency));
+    return Evk1029Source_sptr(new Evk1029Source(filename, queue, sampling_frequency, bytes_to_skip));
 }
 
 
-Evk1029Source::Evk1029Source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency)
+Evk1029Source::Evk1029Source(const std::string& filename, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t bytes_to_skip)
     : gr::sync_block("evk1029_source",
           gr::io_signature::make(0, 0, 0),
-          gr::io_signature::make(n_streams, n_streams, sizeof(int8_t))),
+          gr::io_signature::make(1, 1, sizeof(int8_t))),
       queue_(queue),
       buffer_(kReadChunkBytes),
       buffer_valid_(0),
-      buffer_pos_(0),
-      n_streams_(n_streams)
+      buffer_pos_(0)
 {
     // Keep the scheduler from calling work() with a tiny noutput_items; each
     // unit of work produces a pair of samples (one input byte -> 2 samples).
@@ -96,6 +94,28 @@ Evk1029Source::Evk1029Source(const std::string& filename, int n_streams, Concurr
         {
             std::cerr << "EVK1029_Source: failed to open file: " << filename << '\n';
             exit(1);
+        }
+
+    if (bytes_to_skip > 0)
+        {
+            // Round up to the next 64-bit (8-byte) word boundary -- see this
+            // parameter's doc comment in the header for why.
+            constexpr uint64_t kWordBytes = 8;
+            const uint64_t aligned_offset = ((bytes_to_skip + kWordBytes - 1) / kWordBytes) * kWordBytes;
+
+            binary_input_file_.seekg(0, std::ios::end);
+            const auto file_size = static_cast<uint64_t>(binary_input_file_.tellg());
+            if (aligned_offset >= file_size)
+                {
+                    std::cerr << "EVK1029_Source: seconds_to_skip lands at byte " << aligned_offset
+                              << " (rounded up to a 64-bit word), at or beyond the end of '" << filename
+                              << "' (" << file_size << " bytes) -- nothing to read.\n";
+                    exit(1);
+                }
+
+            binary_input_file_.seekg(static_cast<std::streamoff>(aligned_offset), std::ios::beg);
+            std::cout << "EVK1029_Source: skipping the first " << aligned_offset << " bytes of the capture (requested "
+                      << bytes_to_skip << ", rounded up to a 64-bit word boundary)" << std::endl;
         }
 }
 
@@ -159,14 +179,6 @@ int Evk1029Source::work(int noutput_items,
             std::cout << "EVK1029_Source: EOF\n";
             queue_->push(pmt::make_any(command_event_make(200, 0)));
             return this->WORK_DONE;
-        }
-
-    // All output ports carry an identical copy of the same unpacked samples
-    // (single read, single unpack, fanned out here) so that RF bands fed
-    // from different ports of this one block can never drift apart.
-    for (int p = 1; p < n_streams_; ++p)
-        {
-            std::memcpy(output_items[p], out, static_cast<std::size_t>(produced) * sizeof(int8_t));
         }
 
     return produced;

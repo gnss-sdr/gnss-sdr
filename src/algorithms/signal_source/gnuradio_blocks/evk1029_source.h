@@ -11,13 +11,20 @@
  * 4-bit OBA samples per byte (16 samples per 64-bit word, per the
  * capture's .sdrx metadata: quantization=4, packedbits=64, encoding=OBA).
  *
- * Supports emitting multiple identical output streams (one read, N copies)
- * from a single work() call, so that two RF bands fed from the same raw
- * capture (e.g. two Freq_Xlating_Fir_Filter instances tuned to different
- * IFs) can never drift apart sample-index-wise: GNU Radio computes
- * noutput_items as the minimum available space across all declared output
- * ports, so backpressure from whichever downstream chain is slower stalls
- * production for every output port together, not just its own.
+ * The block has a single output port. Multiple RF bands sharing the same
+ * raw capture (e.g. several Freq_Xlating_Fir_Filter instances tuned to
+ * different IFs) are each connected to that one port (see the
+ * signal-source-to-conditioner wiring in gnss_flowgraph.cc, which takes
+ * this path whenever output_signature()->max_streams() == 1): GNU Radio
+ * supports several readers on one producer port, each with its own read
+ * pointer over the same buffer. The scheduler still throttles this block
+ * to the slowest of those readers (buffer::space_available() is bounded by
+ * the reader with the most unconsumed items), exactly as it would with one
+ * buffer per port, so the bands cannot drift apart by more than one output
+ * buffer. What the single port saves is the N-1 extra output buffers and
+ * the N-1 full-buffer memcpy calls per work() call, at up to the raw
+ * capture rate, that a port-per-band design needs in order to duplicate
+ * the same decoded samples.
  *
  * -----------------------------------------------------------------------------
  *
@@ -52,12 +59,22 @@ class Evk1029Source;
 
 using Evk1029Source_sptr = gnss_shared_ptr<Evk1029Source>;
 
-Evk1029Source_sptr evk1029_make_source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency);
+// bytes_to_skip: byte position in the raw capture at which reading starts,
+// so that a long capture can be jumped straight to a time of interest
+// instead of being processed from the beginning (the adapter derives it
+// from its .seconds_to_skip parameter and the raw sampling frequency).
+// Rounded up to the next multiple of 8 bytes (64 bits) here, matching the
+// capture's native packing (16 OBA samples per little-endian 64-bit word):
+// this block itself only ever reads byte-by-byte and would decode correctly
+// from any byte offset, but seeking to a non-word-aligned byte splits a
+// 64-bit DMA word the real hardware always transferred as one unit, which
+// needlessly complicates comparing a jumped-to run against a from-the-start
+// one at the file/word level.
+Evk1029Source_sptr evk1029_make_source(const std::string& filename, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t bytes_to_skip = 0);
 
 /*!
  * \brief Reads a continuous, header-less EVK1029 raw capture file and
- * unpacks its OBA-encoded 4-bit samples (two per byte, low nibble first),
- * writing the identical result to every declared output port.
+ * unpacks its OBA-encoded 4-bit samples (two per byte, low nibble first).
  */
 class Evk1029Source : public gr::sync_block
 {
@@ -65,8 +82,8 @@ public:
     ~Evk1029Source() override;
 
 private:
-    friend Evk1029Source_sptr evk1029_make_source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency);
-    Evk1029Source(const std::string& filename, int n_streams, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency);
+    friend Evk1029Source_sptr evk1029_make_source(const std::string& filename, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t bytes_to_skip);
+    Evk1029Source(const std::string& filename, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t bytes_to_skip = 0);
 
     int work(int noutput_items,
         gr_vector_const_void_star& input_items,
@@ -77,7 +94,6 @@ private:
     std::vector<uint8_t> buffer_;
     std::size_t buffer_valid_;  // number of valid bytes currently in buffer_
     std::size_t buffer_pos_;    // next unread byte offset within buffer_
-    int n_streams_;
 };
 
 

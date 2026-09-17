@@ -8,17 +8,19 @@
  * (dedicated file reader + optional throttle + optional dump), updated
  * for the current EVK1029 capture format (see evk1029_source.h).
  *
- * Set role + ".RF_channels" to N > 1 (e.g. for a dual-band setup sharing a
- * single IF capture) to get N identical, sample-locked output streams from
- * ONE underlying Evk1029Source instance/read, instead of instantiating N
- * separate SignalSourceN blocks each reading the file independently -- the
- * latter has no shared clock forcing the two chains to progress at the same
- * rate, and can drift apart over a long run if their downstream processing
- * costs differ. In RF_channels > 1 mode, .enable_throttle_control is not
- * supported (a single throttle block can't sit across N ports); it is
- * ignored with a warning. Backpressure from the slower of the two
- * downstream chains naturally keeps both output ports of the shared block
- * in lockstep instead.
+ * Set role + ".RF_channels" to N > 1 (e.g. for a multi-band setup sharing a
+ * single IF capture) to feed N Signal Conditioners from ONE underlying
+ * Evk1029Source instance/read, instead of instantiating N separate
+ * SignalSourceN blocks each reading the file independently. Evk1029Source
+ * has a single output port (see its own header); gnss_flowgraph.cc's
+ * generic signal-source-to-conditioner wiring detects this
+ * (output_signature()->max_streams() == 1) and connects each of the N
+ * Signal Conditioners to that same port, so all of them read the same
+ * sample stream and GNU Radio keeps them within one output buffer of each
+ * other. The optional throttle sits between the source and that shared
+ * port, so .enable_throttle_control works for any RF_channels value.
+ * Set role + ".seconds_to_skip" to start reading at a given time into the
+ * capture (converted to a byte position using the raw sampling frequency).
  *
  * -----------------------------------------------------------------------------
  *

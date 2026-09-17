@@ -15,6 +15,7 @@
 
 #include "evk1029_signal_source.h"
 #include "configuration_interface.h"
+#include <cmath>
 #include <utility>
 
 #if USE_GLOG_AND_GFLAGS
@@ -41,28 +42,35 @@ Evk1029SignalSource::Evk1029SignalSource(
     const std::string filename = configuration->property(role + ".filename"s, "data.bin"s);
     // NOTE: this must be the RAW (pre-decimation) ADC sample rate of the capture
     // file (e.g. the .sdrx metadata's <freqbase>), NOT GNSS-SDR.internal_fs_sps
-    // (which is the decimated working rate downstream of InputFilter). It is
-    // only used to pace the throttle, when enabled.
+    // (which is the decimated working rate downstream of InputFilter). It paces
+    // the throttle (when enabled), sizes the block's scheduling quantum, and
+    // converts .seconds_to_skip into a position in the file.
     const int64_t default_fs = configuration->property("GNSS-SDR.internal_fs_sps"s, int64_t(0));
     const int64_t fs = configuration->property(role + ".sampling_frequency"s, default_fs);
+
+    const double seconds_to_skip = configuration->property(role + ".seconds_to_skip"s, 0.0);
+    uint64_t bytes_to_skip = 0;
+    if (seconds_to_skip > 0.0 && fs > 0)
+        {
+            bytes_to_skip = static_cast<uint64_t>(std::llround(seconds_to_skip * static_cast<double>(fs) / 2.0));
+            if (!configuration->is_present(role + ".sampling_frequency"s))
+                {
+                    LOG(WARNING) << role << ".seconds_to_skip is set but " << role << ".sampling_frequency is not: "
+                                 << "converting seconds into a file position with GNSS-SDR.internal_fs_sps=" << fs
+                                 << " Sps, which is wrong if the Input Filter decimates. Set " << role
+                                 << ".sampling_frequency to the raw ADC rate of the capture.";
+                }
+        }
 
     if (rf_channels_ == 0)
         {
             rf_channels_ = 1;
         }
 
-    if (enable_throttle_control_ && rf_channels_ > 1)
-        {
-            LOG(WARNING) << role << ".enable_throttle_control is not supported with RF_channels > 1 "
-                         << "(a single throttle can't sit across multiple shared-source output ports); ignoring it. "
-                         << "Backpressure from the slower downstream chain keeps the ports in lockstep instead.";
-            std::cout << role << ": enable_throttle_control ignored with RF_channels=" << rf_channels_ << "\n";
-            enable_throttle_control_ = false;
-        }
+    DLOG(INFO) << "EVK1029 Signal Source: filename=" << filename << ", fs=" << fs << ", item_size=" << item_size_
+               << ", RF_channels=" << rf_channels_ << ", seconds_to_skip=" << seconds_to_skip;
 
-    DLOG(INFO) << "EVK1029 Signal Source: filename=" << filename << ", fs=" << fs << ", item_size=" << item_size_ << ", RF_channels=" << rf_channels_;
-
-    evk1029_source_ = evk1029_make_source(filename, static_cast<int>(rf_channels_), queue, static_cast<double>(fs));
+    evk1029_source_ = evk1029_make_source(filename, queue, static_cast<double>(fs), bytes_to_skip);
 
     if (enable_throttle_control_)
         {

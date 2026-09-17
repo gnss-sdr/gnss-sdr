@@ -178,6 +178,7 @@ private:
     std::unique_ptr<Gnss_circular_deque<Gnss_Synchro>> d_gnss_synchro_history;  // Tracking observable history
 
     boost::circular_buffer<uint64_t> d_Rx_clock_buffer;  // time history
+    bool d_new_clock_tick;                               // set on every genuine clock-channel push, cleared once that tick's epoch has been computed -- avoids recomputing the same epoch on every general_work() call now that the clock channel is no longer mandatory for scheduling (see forecast())
 
     std::vector<std::queue<GnssTime>> d_SourceTagTimestamps;
     std::queue<GnssTime> d_TimeChannelTagTimestamps;

@@ -173,6 +173,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_signal_enabled_flags(conf_.signal_enabled_flags),
       d_observable_interval_ms(conf_.observable_interval_ms),
       d_pvt_errors_counter(0),
+      d_pvt_valid_ever(false),
       d_dump(conf_.dump),
       d_dump_mat(conf_.dump_mat && conf_.dump),
       d_rinex_output_enabled(conf_.rinex_output_enabled),
@@ -2145,6 +2146,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, d_observable_interval_ms / 1000.0, *d_sensor_data_aggregator))
                         {
                             d_pvt_errors_counter = 0;  // Reset consecutive PVT error counter
+                            d_pvt_valid_ever = true;  // arm the reset-on-error recovery from here
                             const double Rx_clock_offset_s = d_internal_pvt_solver->get_time_offset_s();
 
                             // **************** time tags ****************
@@ -2246,10 +2248,13 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             d_pvt_errors_counter++;
                             if (d_pvt_errors_counter >= 100)
                                 {
-                                    int command = 1;
-                                    this->message_port_pub(pmt::mp("pvt_to_observables"), pmt::make_any(command));
-                                    LOG(INFO) << "PVT: Number of consecutive position solver error reached, Sent reset to observables.";
                                     d_pvt_errors_counter = 0;
+                                    if (d_pvt_valid_ever)
+                                        {
+                                            int command = 1;
+                                            this->message_port_pub(pmt::mp("pvt_to_observables"), pmt::make_any(command));
+                                            LOG(INFO) << "PVT: Number of consecutive position solver error reached, Sent reset to observables.";
+                                        }
                                 }
                         }
 

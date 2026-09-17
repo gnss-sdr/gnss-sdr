@@ -265,6 +265,11 @@ private:
     const uint32_t d_signal_enabled_flags;
     const uint32_t d_observable_interval_ms;
     uint32_t d_pvt_errors_counter;
+    // True from the first valid solution onward. The "reset observables TOW"
+    // sanity check is recovery from a corrupted anchor; while the receiver
+    // has never fixed, a reset can only destroy the telemetry anchoring
+    // progress that a cold start needs to reach its first fix.
+    bool d_pvt_valid_ever;
 
     bool d_dump;
     const bool d_dump_mat;

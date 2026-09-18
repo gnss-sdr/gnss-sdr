@@ -137,6 +137,19 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
       enable_e6_has_rx_(false)
 {
     enable_fpga_offloading_ = configuration_->property("GNSS-SDR.enable_FPGA", false);
+    // Gates the broadcast-status checks below (GPS L5/L2C hardware-generation
+    // code, Galileo/BeiDou/GLONASS/QZSS secondary-signal health flags) that
+    // decide whether a satellite's secondary/tertiary signal is worth
+    // acquiring at all. Enabled by default -- without it, a satellite with
+    // no L5/L2C hardware or a broadcast-unhealthy secondary signal gets
+    // offered for acquisition indefinitely, immediately fails, and is
+    // re-offered on the very next idle tick with no backoff (observed live
+    // as a single acquisition thread pegged at ~50-100% CPU). Exists as an
+    // opt-out for setups that don't want acquisition decisions to depend on
+    // broadcast almanac/ephemeris content at all -- e.g. a spoofed L1 signal
+    // could carry a fabricated almanac marking an otherwise-healthy L2/L5
+    // signal unhealthy, which this gating would (as designed) honor.
+    enable_secondary_signal_status_gating_ = configuration_->property("GNSS-SDR.enable_secondary_signal_status_gating", true);
     init();
 }
 
@@ -2683,7 +2696,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                             // constellation's oldest tracked satellite (no L5/L2C
                                             // hardware) happened to be the one the receiver's own
                                             // primary-frequency tracking had settled on.
-                                            if (mapStringValues_[searched_signal] == evGPS_L5 || mapStringValues_[searched_signal] == evGPS_2S)
+                                            if (enable_secondary_signal_status_gating_ && (mapStringValues_[searched_signal] == evGPS_L5 || mapStringValues_[searched_signal] == evGPS_2S))
                                                 {
                                                     const auto pvt_ptr = get_pvt();
                                                     if (pvt_ptr)
@@ -2712,7 +2725,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                             // permissive. Same failure mode as the GPS case above
                                             // if left unguarded, just triggered by a health flag
                                             // instead of a hardware generation.
-                                            if (mapStringValues_[searched_signal] == evGAL_5X || mapStringValues_[searched_signal] == evGAL_7X)
+                                            if (enable_secondary_signal_status_gating_ && (mapStringValues_[searched_signal] == evGAL_5X || mapStringValues_[searched_signal] == evGAL_7X))
                                                 {
                                                     const auto pvt_ptr = get_pvt();
                                                     if (pvt_ptr)
@@ -2751,7 +2764,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                             // stay permissive if this satellite isn't in either
                                             // map yet. Same failure mode as the Galileo case above
                                             // if left unguarded.
-                                            if (mapStringValues_[searched_signal] == evBDS_B3)
+                                            if (enable_secondary_signal_status_gating_ && mapStringValues_[searched_signal] == evBDS_B3)
                                                 {
                                                     const auto pvt_ptr = get_pvt();
                                                     if (pvt_ptr)
@@ -2789,7 +2802,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                             // shared object, not a per-slot map), so this only
                                             // checks ephemeris; stays permissive if this satellite
                                             // has none decoded yet.
-                                            if (mapStringValues_[searched_signal] == evGLO_2G)
+                                            if (enable_secondary_signal_status_gating_ && mapStringValues_[searched_signal] == evGLO_2G)
                                                 {
                                                     const auto pvt_ptr = get_pvt();
                                                     if (pvt_ptr)
@@ -2816,7 +2829,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                             // currently flagged unhealthy. Prefer ephemeris over
                                             // almanac; stay permissive if neither has this
                                             // satellite yet.
-                                            if (mapStringValues_[searched_signal] == evQZS_J5)
+                                            if (enable_secondary_signal_status_gating_ && mapStringValues_[searched_signal] == evQZS_J5)
                                                 {
                                                     const auto pvt_ptr = get_pvt();
                                                     if (pvt_ptr)

@@ -353,6 +353,7 @@ private:
     bool enable_fpga_offloading_;
     bool enable_osnma_rx_;
     bool enable_e6_has_rx_;
+    bool enable_secondary_signal_status_gating_;
 };
 
 

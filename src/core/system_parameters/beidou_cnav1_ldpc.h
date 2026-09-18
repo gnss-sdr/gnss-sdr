@@ -17,9 +17,7 @@
 #ifndef GNSS_SDR_BEIDOU_CNAV1_LDPC_DECODER_H
 #define GNSS_SDR_BEIDOU_CNAV1_LDPC_DECODER_H
 
-#include <cstddef>
-#include <cstdint>
-#include <vector>
+#include "beidou_ldpc.h"
 
 /** \addtogroup Core
  * \{ */
@@ -34,8 +32,8 @@ constexpr int32_t BEIDOU_CNAV1_LDPC_N88 = 88;
 constexpr int32_t BEIDOU_CNAV1_LDPC_K88 = 44;
 constexpr int32_t BEIDOU_CNAV1_LDPC_M88 = 44;
 constexpr int32_t BEIDOU_CNAV1_LDPC_DC88 = 4;
-constexpr int32_t BEIDOU_CNAV1_LDPC_NM = 8;
-constexpr int32_t BEIDOU_CNAV1_LDPC_MAX_ITER = 15;
+constexpr int32_t BEIDOU_CNAV1_LDPC_NM = BEIDOU_LDPC_NM;
+constexpr int32_t BEIDOU_CNAV1_LDPC_MAX_ITER = BEIDOU_LDPC_MAX_ITER;
 
 /*
  * GF(2^6) LUTs follow BDS-SIS-ICD-B1C-1.0 Appendix mapping tables.
@@ -114,89 +112,12 @@ constexpr uint8_t BEIDOU_CNAV1_H44_88_ELEMENT[176] = {
     3, 55, 9, 44, 35, 61, 50, 15, 6, 1, 45, 45, 15, 6, 1, 1, 44, 30, 24, 6, 1, 45,
     15, 1, 44, 53, 24};
 
-
-constexpr uint8_t BEIDOU_CNAV1_GF64_EXP[64] = {
-    1, 2, 4, 8, 16, 32, 3, 6, 12, 24, 48, 35, 5, 10, 20, 40, 19, 38, 15, 30, 60, 59, 53,
-    41, 17, 34, 7, 14, 28, 56, 51, 37, 9, 18, 36, 11, 22, 44, 27, 54, 47, 29, 58, 55,
-    45, 25, 50, 39, 13, 26, 52, 43, 21, 42, 23, 46, 31, 62, 63, 61, 57, 49, 33, 1};
-
-
-constexpr int8_t BEIDOU_CNAV1_GF64_LOG[64] = {
-    0, 0, 1, 6, 2, 12, 7, 26, 3, 32, 13, 35, 8, 48, 27, 18, 4, 24, 33, 16, 14, 52, 36,
-    54, 9, 45, 49, 38, 28, 41, 19, 56, 5, 62, 25, 11, 34, 31, 17, 47, 15, 23, 53, 51,
-    37, 44, 55, 40, 10, 61, 46, 30, 50, 22, 39, 43, 29, 60, 42, 21, 20, 59, 57, 58};
-
 bool beidou_cnav1_ldpc_decode_200_100(const float* symbol_llr, int32_t num_bits, uint8_t* info_bits600);
 bool beidou_cnav1_ldpc_decode_88_44(const float* symbol_llr, int32_t num_bits, uint8_t* info_bits264);
 bool beidou_cnav1_ldpc_decode_200_100_codeword(const float* symbol_llr, int32_t num_bits, uint8_t* codeword_bits1200);
 bool beidou_cnav1_ldpc_decode_88_44_codeword(const float* symbol_llr, int32_t num_bits, uint8_t* codeword_bits528);
 
-namespace GaloisField64
-{
-constexpr uint8_t kZero = 0U;
-constexpr uint8_t kOrder = 63U;
-constexpr uint8_t kFieldSize = 64U;
-
-// LUT values come from BDS-SIS-ICD-B1C-1.0 Appendix GF(2^6) mapping rules.
-inline bool valid_symbol(uint8_t x)
-{
-    return x < kFieldSize;
-}
-
-
-inline uint8_t add(uint8_t a, uint8_t b)
-{
-    if (!valid_symbol(a) || !valid_symbol(b))
-        {
-            return kZero;
-        }
-    return static_cast<uint8_t>(a ^ b);
-}
-
-
-inline uint8_t mul(uint8_t a, uint8_t b)
-{
-    if (!valid_symbol(a) || !valid_symbol(b) || a == kZero || b == kZero)
-        {
-            return kZero;
-        }
-    const int32_t log_sum = static_cast<int32_t>(BEIDOU_CNAV1_GF64_LOG[a]) +
-                            static_cast<int32_t>(BEIDOU_CNAV1_GF64_LOG[b]);
-    return BEIDOU_CNAV1_GF64_EXP[log_sum % kOrder];
-}
-
-
-inline uint8_t inv(uint8_t a)
-{
-    if (!valid_symbol(a) || a == kZero)
-        {
-            return kZero;
-        }
-    const int32_t exponent = static_cast<int32_t>(kOrder) - static_cast<int32_t>(BEIDOU_CNAV1_GF64_LOG[a]);
-    return BEIDOU_CNAV1_GF64_EXP[exponent % kOrder];
-}
-}  // namespace GaloisField64
-
-
-struct BeidouCnav1LdpcGraph
-{
-    int32_t num_checks = 0;
-    int32_t num_variables = 0;
-    int32_t row_weight = 0;
-
-    // Check-node (CSR-like) adjacency: [check_offsets[i], check_offsets[i+1]).
-    std::vector<uint32_t> check_offsets;
-    std::vector<uint16_t> check_to_var;
-    std::vector<uint8_t> check_to_h;
-
-    // Variable-node (CSC-like) adjacency: [var_offsets[j], var_offsets[j+1]).
-    std::vector<uint32_t> var_offsets;
-    std::vector<uint16_t> var_to_check;
-    std::vector<uint32_t> var_to_edge;
-    std::vector<uint8_t> var_to_h;
-    std::vector<uint8_t> var_to_h_inv;
-};
-
+using BeidouCnav1LdpcGraph = BeidouLdpcGraph;
 
 bool beidou_cnav1_ldpc_init_graph(
     int32_t num_checks,

@@ -18,6 +18,8 @@
 #include "Beidou_CNAV1.h"
 #include "Beidou_CNAV2.h"
 #include "MATH_CONSTANTS.h"
+#include "beidou_cnav2_ldpc.h"
+#include <cmath>
 #include <cstdint>
 
 namespace
@@ -96,48 +98,59 @@ bool Beidou_Cnav2_Navigation_Message::decode_frame_symbols(const float* symbols,
             return false;
         }
 
-    std::array<int, BEIDOU_CNAV2_FRAME_SYMBOLS> hard{};
     int corr = 0;
     for (int32_t i = 0; i < BEIDOU_CNAV2_PREAMBLE_SYMBOLS; i++)
         {
-            // Positive NAV symbol → bit 0 (MATLAB +1); negative → bit 1.
-            const int s = (symbols[i] >= 0.0F) ? 0 : 1;
-            hard[static_cast<size_t>(i)] = s;
-            const int p = (PREAMBLE[i] == '1') ? 1 : 0;
-            corr += (s == p) ? 1 : -1;
-        }
-    const bool invert = corr < 0;
-    for (int32_t i = 0; i < BEIDOU_CNAV2_FRAME_SYMBOLS; i++)
-        {
-            int s = (symbols[i] >= 0.0F) ? 0 : 1;
-            if (invert)
-                {
-                    s ^= 1;
-                }
-            hard[static_cast<size_t>(i)] = s;
-        }
-    for (int32_t i = 0; i < BEIDOU_CNAV2_PREAMBLE_SYMBOLS; i++)
-        {
-            const int p = (PREAMBLE[i] == '1') ? 1 : 0;
-            if (hard[static_cast<size_t>(i)] != p)
+            if (!std::isfinite(symbols[i]))
                 {
                     return false;
                 }
+            // Positive NAV symbol is bit 0; negative is bit 1.
+            const bool bit = symbols[i] < 0.0F;
+            corr += (bit == (PREAMBLE[i] == '1')) ? 1 : -1;
         }
-
-    uint32_t frame_prn = 0;
-    for (int32_t i = 0; i < 6; i++)
+    if (std::abs(corr) != BEIDOU_CNAV2_PREAMBLE_SYMBOLS)
         {
-            frame_prn = (frame_prn << 1) | static_cast<uint32_t>(hard[static_cast<size_t>(BEIDOU_CNAV2_PREAMBLE_SYMBOLS + i)]);
+            return false;
         }
-    d_last_frame_prn = frame_prn;
 
-    // First cut: skip 64-ary LDPC. Take the first 288 systematic bits of the 576 encoded symbols.
+    // Resolve carrier polarity from the preamble and preserve soft magnitudes.
+    // The shared LDPC decoder uses the opposite sign: positive LLR favors bit 1.
+    const float polarity = corr < 0 ? 1.0F : -1.0F;
+    std::array<float, BEIDOU_CNAV2_LDPC_SYMBOLS> bit_llr{};
+    for (int32_t i = 0; i < BEIDOU_CNAV2_LDPC_SYMBOLS; i++)
+        {
+            bit_llr[static_cast<size_t>(i)] = polarity * symbols[BEIDOU_CNAV2_PREAMBLE_SYMBOLS + i];
+        }
+    // Tracking correlator gain is arbitrary. Keep relative soft reliability,
+    // but put it on the same nominal LLR scale as the shared decoder metrics.
+    double magnitude_sum = 0.0;
+    for (const float value : bit_llr)
+        {
+            if (!std::isfinite(value))
+                {
+                    return false;
+                }
+            magnitude_sum += std::abs(static_cast<double>(value));
+        }
+    if (magnitude_sum == 0.0)
+        {
+            return false;
+        }
+    const double scale = 4.0 * BEIDOU_CNAV2_LDPC_SYMBOLS / magnitude_sum;
+    for (auto& value : bit_llr)
+        {
+            value = static_cast<float>(value * scale);
+        }
     std::array<uint8_t, BEIDOU_CNAV2_INFO_BITS> info{};
-    for (int32_t i = 0; i < BEIDOU_CNAV2_INFO_BITS; i++)
+    if (!beidou_cnav2_ldpc_decode_96_48(bit_llr.data(), BEIDOU_CNAV2_LDPC_SYMBOLS, info.data()))
         {
-            info[static_cast<size_t>(i)] = static_cast<uint8_t>(hard[static_cast<size_t>(BEIDOU_CNAV2_PREAMBLE_SYMBOLS + i)]);
+            return false;
         }
+
+    // PRN is protected by LDPC too: use the corrected information bits.
+    const auto frame_prn = static_cast<uint32_t>(read_unsigned(info.data(), 0, 6));
+    d_last_frame_prn = frame_prn;
 
     if (!verify_crc24q(info.data(), BEIDOU_CNAV2_DATA_BITS))
         {

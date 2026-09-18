@@ -18,6 +18,7 @@
 #include "Beidou_B2a.h"
 #include "Beidou_DNAV.h"
 #include "beidou_cnav1_ephemeris.h"
+#include "display.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
 #include "tlm_crc_stats.h"
@@ -140,9 +141,9 @@ void beidou_b2a_telemetry_decoder_gs::publish_navigation(double cn0_db_hz)
             auto eph = std::make_shared<Beidou_Cnav1_Ephemeris>(d_nav.get_ephemeris());
             eph->PRN = d_satellite.get_PRN();
             message_port_pub(pmt::mp("telemetry"), pmt::make_any(eph));
-            std::cout << "New BeiDou B-CNAV2 ephemeris in channel " << d_channel
+            std::cout << TEXT_MAGENTA << "New BeiDou B-CNAV2 ephemeris in channel " << d_channel
                       << " from satellite " << d_satellite
-                      << " with CN0=" << std::setprecision(2) << cn0_db_hz << " dB-Hz\n";
+                      << " with CN0=" << std::setprecision(2) << cn0_db_hz << " dB-Hz" << TEXT_RESET << std::endl;
             LOG(INFO) << "New BeiDou B-CNAV2 ephemeris from PRN " << d_satellite.get_PRN();
         }
     if (d_enable_navdata_monitor && !d_nav.get_last_nav_bits().empty())
@@ -258,12 +259,11 @@ int beidou_b2a_telemetry_decoder_gs::general_work(
                             d_flag_valid_word = true;
                             d_preamble_index = d_sample_counter;
                             const int32_t sow = d_nav.last_sow();
-                            std::cout << "B-CNAV2 CRC ok ch " << d_channel
+                            LOG(INFO) << "B-CNAV2 CRC ok ch " << d_channel
                                       << " " << d_satellite
                                       << " MT" << d_nav.last_mes_type()
                                       << " SOW=" << sow
-                                      << " eph=" << (d_nav.have_new_ephemeris() ? "yes" : "no")
-                                      << '\n';
+                                      << " eph=" << (d_nav.have_new_ephemeris() ? "yes" : "no");
                             if (sow >= 0)
                                 {
                                     const double tow_gpst_s = static_cast<double>(sow) +
@@ -288,9 +288,9 @@ int beidou_b2a_telemetry_decoder_gs::general_work(
                             d_flag_frame_sync = false;
                             d_flag_valid_word = false;
                             d_CRC_error_counter = 0;
-                            std::cout << "B-CNAV2 frame sync lost ch " << d_channel
-                                      << " " << d_satellite << " (CRC fail, resume preamble search)\n";
-                            LOG(INFO) << "B-CNAV2 frame sync lost for satellite " << d_satellite;
+                            LOG(INFO) << "B-CNAV2 frame sync lost for satellite "
+                                      << d_satellite
+                                      << " (CRC fail, resume preamble search)";
                         }
                 }
         }

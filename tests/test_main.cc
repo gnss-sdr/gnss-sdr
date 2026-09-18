@@ -206,6 +206,7 @@ private:
 #include "unit-tests/system-parameters/beidou_bdgim_test.cc"
 #include "unit-tests/system-parameters/beidou_cnav1_ldpc_test.cc"
 #include "unit-tests/system-parameters/beidou_cnav1_navigation_message_test.cc"
+#include "unit-tests/system-parameters/beidou_cnav2_ldpc_test.cc"
 #include "unit-tests/system-parameters/beidou_cnav2_navigation_message_test.cc"
 #include "unit-tests/system-parameters/beidou_dnav_navigation_message_test.cc"
 #include "unit-tests/system-parameters/galileo_e1b_reed_solomon_test.cc"

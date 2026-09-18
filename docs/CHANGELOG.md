@@ -284,11 +284,15 @@ All notable changes to GNSS-SDR will be documented in this file.
   identifier `5D`: PCPS acquisition (`BEIDOU_B2A_PCPS_Acquisition`), DLL+PLL
   tracking (`BEIDOU_B2A_DLL_PLL_Tracking`; BPSK(10), 1 ms primary code, data
   component only), and B-CNAV2 telemetry decoding
-  (`BEIDOU_B2A_Telemetry_Decoder`). The first cut takes the systematic 288
-  information bits after the 0xE24DE8 preamble (CRC-24Q, message types 10, 11
-  and 30) and does not yet implement 64-ary LDPC. GEO and BDS-2 satellites (PRN
-  1-18 and 59-63) are not assigned B2a channels and are not used in PVT. Sample
-  configuration files are provided at
+  (`BEIDOU_B2A_Telemetry_Decoder`), including soft-decision 64-ary LDPC(96,48)
+  decoding of the 576 coded bits into 288 information bits before CRC-24Q and
+  PRN validation. The decoder reuses the B1C GF(64) arithmetic and fixed-path
+  decoder, with a full-alphabet sum-product fallback for B2a. Carrier polarity
+  and tracking gain are normalized before decoding. The PVT engine uses B-CNAV2
+  ephemeris, clock, and group-delay corrections (TGD_B2ap / ISC_B2ad), and RINEX
+  4.02 navigation files contain native CNV2 records. GEO and BDS-2 satellites
+  (PRN 1-18 and 59-63) are not assigned B2a channels and are not used in PVT.
+  Sample configuration files are provided at
   `conf/File_input/Beidou/gnss-sdr_BDS_B2a_file.conf` and
   `conf/File_input/Beidou/gnss-sdr_BDS_B2a_cu_l5_if20k_fs18m.conf`. Contributed
   by @huangchuhan.

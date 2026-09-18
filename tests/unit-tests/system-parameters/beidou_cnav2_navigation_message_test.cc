@@ -1,6 +1,6 @@
 /*!
  * \file beidou_cnav2_navigation_message_test.cc
- * \brief Unit tests for B-CNAV2 CRC and MT10/11/30 parsing (systematic bits)
+ * \brief Unit tests for B-CNAV2 CRC and LDPC and MT10/11/30 parsing
  * \author huangchuhan, 2026. huangchh37(at)mail2.sysu.edu.cn
  *
  * -----------------------------------------------------------------------------
@@ -16,9 +16,11 @@
 #include "Beidou_CNAV1.h"
 #include "Beidou_CNAV2.h"
 #include "beidou_cnav2_navigation_message.h"
+#include "beidou_cnav2_test_helpers.h"
 #include <gtest/gtest.h>
 #include <array>
 #include <cstdint>
+#include <limits>
 #include <vector>
 
 namespace
@@ -67,10 +69,11 @@ std::vector<float> make_frame(const std::array<uint8_t, BEIDOU_CNAV2_INFO_BITS>&
         {
             symbols[static_cast<size_t>(i)] = (preamble[i] == '1') ? -1.0F : 1.0F;
         }
-    for (int i = 0; i < BEIDOU_CNAV2_INFO_BITS; i++)
+    const auto codeword = BeidouCnav2Test::encode(info);
+    for (int i = 0; i < BEIDOU_CNAV2_LDPC_SYMBOLS; i++)
         {
             symbols[static_cast<size_t>(BEIDOU_CNAV2_PREAMBLE_SYMBOLS + i)] =
-                info[static_cast<size_t>(i)] ? -1.0F : 1.0F;
+                codeword[static_cast<size_t>(i)] ? -4.0F : 4.0F;
         }
     return symbols;
 }
@@ -396,4 +399,83 @@ TEST(BeidouCnav2NavigationMessageTest, PublishesDelayChangesWithoutNewOrbitIssue
     EXPECT_EQ(nav.get_ephemeris().IODE, 7);
     ASSERT_TRUE(nav.decode_frame_symbols(frame.data(), BEIDOU_CNAV2_FRAME_SYMBOLS, 21));
     EXPECT_FALSE(nav.have_new_ephemeris());
+}
+
+
+TEST(BeidouCnav2NavigationMessageTest, CorrectsPayloadAndPrnUnderEitherCarrierPolarity)
+{
+    const auto info = make_info(19, BEIDOU_CNAV2_MSG_EPH1, 12345);
+    std::string expected;
+    for (auto bit : info)
+        {
+            expected.push_back(bit ? '1' : '0');
+        }
+    for (float polarity : {1.0F, -1.0F})
+        {
+            auto frame = make_frame(info);
+            // PRN, message type, SOW, message data, CRC, and parity errors.
+            for (size_t bit : {0U, 11U, 20U, 130U, 280U, 300U, 575U})
+                {
+                    frame[BEIDOU_CNAV2_PREAMBLE_SYMBOLS + bit] *= -0.1F;
+                }
+            for (auto& symbol : frame)
+                {
+                    symbol *= polarity;
+                }
+            Beidou_Cnav2_Navigation_Message nav;
+            ASSERT_TRUE(nav.decode_frame_symbols(frame.data(), frame.size(), 19));
+            EXPECT_TRUE(nav.last_crc_ok());
+            EXPECT_EQ(nav.last_frame_prn(), 19U);
+            EXPECT_EQ(nav.last_mes_type(), BEIDOU_CNAV2_MSG_EPH1);
+            EXPECT_EQ(nav.last_sow(), 12345 * 3);
+            EXPECT_EQ(nav.get_last_nav_bits(), expected);
+        }
+}
+
+TEST(BeidouCnav2NavigationMessageTest, RejectsInvalidFrames)
+{
+    auto frame = make_frame(make_info(19, BEIDOU_CNAV2_MSG_EPH1, 1000));
+    Beidou_Cnav2_Navigation_Message nav;
+    EXPECT_FALSE(nav.decode_frame_symbols(nullptr, frame.size(), 19));
+    EXPECT_FALSE(nav.decode_frame_symbols(frame.data(), frame.size() - 1, 19));
+    frame[0] *= -1.0F;
+    EXPECT_FALSE(nav.decode_frame_symbols(frame.data(), frame.size(), 19));
+    frame[0] *= -1.0F;
+    frame.back() = std::numeric_limits<float>::quiet_NaN();
+    EXPECT_FALSE(nav.decode_frame_symbols(frame.data(), frame.size(), 19));
+    EXPECT_FALSE(nav.last_crc_ok());
+    EXPECT_FALSE(nav.have_new_ephemeris());
+}
+
+TEST(BeidouCnav2NavigationMessageTest, RejectsUncorrectablePayloadWithValidSystematicCrc)
+{
+    auto frame = make_frame(make_info(19, BEIDOU_CNAV2_MSG_EPH1, 1000));
+    // A good systematic CRC must not bypass a failed LDPC decode.
+    for (size_t i = BEIDOU_CNAV2_PREAMBLE_SYMBOLS + BEIDOU_CNAV2_INFO_BITS; i < frame.size(); i++)
+        {
+            frame[i] *= -1.0F;
+        }
+    Beidou_Cnav2_Navigation_Message nav;
+    EXPECT_FALSE(nav.decode_frame_symbols(frame.data(), frame.size(), 19));
+    EXPECT_FALSE(nav.last_crc_ok());
+    EXPECT_FALSE(nav.have_new_ephemeris());
+}
+
+
+TEST(BeidouCnav2NavigationMessageTest, SoftDecodingIsIndependentOfTrackingGain)
+{
+    for (const float gain : {0.001F, 1.0F, 1000000.0F})
+        {
+            SCOPED_TRACE(gain);
+            auto frame = make_frame(make_info(19, BEIDOU_CNAV2_MSG_EPH1, 12345));
+            frame[BEIDOU_CNAV2_PREAMBLE_SYMBOLS] *= -1.0F;
+            for (auto& symbol : frame)
+                {
+                    symbol *= gain;
+                }
+            Beidou_Cnav2_Navigation_Message nav;
+            ASSERT_TRUE(nav.decode_frame_symbols(frame.data(), frame.size(), 19));
+            EXPECT_EQ(nav.last_frame_prn(), 19U);
+            EXPECT_EQ(nav.last_sow(), 12345 * 3);
+        }
 }

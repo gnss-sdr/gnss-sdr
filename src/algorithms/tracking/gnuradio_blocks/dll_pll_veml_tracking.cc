@@ -2493,14 +2493,15 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                 current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                                 current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
                                 current_synchro_data.correlation_length_ms = d_correlation_length_ms;
-                                // Invalid until secondary lock (no BCH/LDPC yet).
+                                // Keep symbols invalid until secondary-code lock enables telemetry decoding.
                                 current_synchro_data.Flag_valid_symbol_output = false;
                                 d_b1c_prelock_output_pending = true;
                                 d_P_data_accu = gr_complex(0.0, 0.0);
                             }
 
-                        // B2a: 1 ms = 1 NAV symbol (5-chip data secondary code is
-                        // wiped in the telemetry decoder). Default pull-in is 5 s,
+                        // B2a: forward 1 ms primary-code epochs. Telemetry wipes the
+                        // 5-chip secondary code and combines five epochs per
+                        // 5 ms coded symbol. Default pull-in is 5 s,
                         // which can leave a short file with only one frame.
                         // Forward Prompt during wide tracking so B-CNAV2 can lock.
                         if (d_systemName == "Beidou" && d_signal_type == "5D")

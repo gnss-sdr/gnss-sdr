@@ -1,7 +1,6 @@
 /*!
  * \file beidou_cnav2_navigation_message.h
- * \brief B-CNAV2 frame parser (BDS-SIS-ICD-B2a-1.0). First cut skips 64-ary LDPC
- * and takes the systematic 288 information bits after the preamble.
+ * \brief B-CNAV2 frame parser (BDS-SIS-ICD-B2a-1.0).
  * \author huangchuhan, 2026. huangchh37(at)mail2.sysu.edu.cn
  *
  * -----------------------------------------------------------------------------

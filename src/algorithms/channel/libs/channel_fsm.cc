@@ -56,7 +56,7 @@ bool ChannelFsm::Event_stop_channel()
     switch (current_state)
         {
         case FSM_STATE_IDLE:
-            return true;
+            break;
         case FSM_STATE_ACQUISITION:
             stop_acquisition();
             break;

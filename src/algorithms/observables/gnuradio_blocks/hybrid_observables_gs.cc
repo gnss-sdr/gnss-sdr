@@ -98,7 +98,21 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
     // Send Channel status to gnss_flowgraph
     this->message_port_register_out(pmt::mp("status"));
 
-    d_gnss_synchro_history = std::make_unique<Gnss_circular_deque<Gnss_Synchro>>(1000, d_nchannels_out);
+    // interp_trk_obs() needs this per-channel history to reach back far
+    // enough to bracket d_Rx_clock_buffer.front() -- deliberately the OLDEST
+    // of the clock buffer's several most recent ticks (see its own comment
+    // just below), roughly (its capacity - 1) * d_T_rx_step_ms behind "now".
+    // A fixed entry COUNT covers a time span that shrinks as a channel's own
+    // valid-word rate grows: a slow channel's 1000 entries can span many
+    // seconds, but a channel producing them near its raw tracking rate can
+    // fill all 1000 in a couple of seconds, leaving a window shorter than
+    // that clock lag -- interp_trk_obs() can then never find a bracketing
+    // pair for that channel, so Flag_valid_pseudorange stays permanently
+    // false for it even though it is tracking and decoding correctly (PVT
+    // reports it as tracked but without a usable pseudorange). 5x headroom
+    // comfortably covers that case without being a meaningful memory cost
+    // (Gnss_Synchro is small; this capacity is per-channel).
+    d_gnss_synchro_history = std::make_unique<Gnss_circular_deque<Gnss_Synchro>>(5000, d_nchannels_out);
 
     d_Rx_clock_buffer.set_capacity(std::min(std::max(300U / d_T_rx_step_ms, 3U), 20U));
     d_Rx_clock_buffer.clear();

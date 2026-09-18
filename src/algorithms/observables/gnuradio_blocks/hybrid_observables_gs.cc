@@ -30,11 +30,13 @@
 #include <pmt/pmt.h>
 #include <algorithm>  // for std::min
 #include <array>
+#include <chrono>     // for std::chrono (idle-call throttle)
 #include <cmath>      // for round
 #include <cstdlib>    // for size_t, llabs
 #include <exception>  // for exception
 #include <iostream>   // for cerr, cout
 #include <limits>     // for numeric_limits
+#include <thread>     // for std::this_thread (idle-call throttle)
 #include <utility>    // for move
 
 #if USE_GLOG_AND_GFLAGS
@@ -68,6 +70,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
           gr::io_signature::make(conf_.nchannels_in, conf_.nchannels_in, sizeof(Gnss_Synchro)),
           gr::io_signature::make(conf_.nchannels_out, conf_.nchannels_out, sizeof(Gnss_Synchro))),
       d_conf(conf_),
+      d_new_clock_tick(false),
       d_dump_filename(conf_.dump_filename),
       d_smooth_filter_M(static_cast<double>(conf_.smoothing_factor)),
       d_T_rx_step_s(static_cast<double>(conf_.observable_interval_ms) / 1000.0),
@@ -545,8 +548,22 @@ void hybrid_observables_gs::forecast(int noutput_items __attribute__((unused)), 
         {
             ninput_items_required[n] = 0;
         }
-    // last input channel is the sample counter, triggered each ms
-    ninput_items_required[d_nchannels_in - 1] = 1;
+    // Last input channel is the sample counter, triggered each ms -- NOT made
+    // mandatory (left at 0, like every other port) on purpose. A signal
+    // source that lets several RF bands share one underlying sample buffer
+    // (multiple independent readers on one producer port -- GNU Radio's
+    // native support for this) can deadlock if this port is mandatory: a
+    // band whose downstream chain temporarily falls behind (e.g. a slower
+    // signal type) backpressures the shared writer, which starves every
+    // other band's reader too, including whichever feeds this clock
+    // channel -- and a mandatory port means general_work() can then never
+    // be called again to drain the very channel that's blocking the
+    // writer, deadlocking the whole receiver. general_work() already
+    // consumes every channel's available input unconditionally (see below)
+    // and only gates actual epoch computation on the clock buffer being
+    // full, so nothing is lost by letting the scheduler call it without a
+    // fresh clock tick.
+    ninput_items_required[d_nchannels_in - 1] = 0;
 }
 
 
@@ -992,6 +1009,29 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
     gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
+    // The clock (last) channel is no longer a mandatory input (see
+    // forecast()): every port, including it, can now report 0 available
+    // items and still have general_work() called, so this can be invoked
+    // with truly nothing to do on any port. GNU Radio's own scheduler does
+    // not throttle that case by itself here (output space is essentially
+    // always available), so without this the thread busy-spins at whatever
+    // rate the scheduler can manage. Sleep briefly whenever a call finds
+    // nothing new anywhere, so the receiver stays responsive (much faster
+    // than GNU Radio's own 250 ms self-recovering backoff) without pegging
+    // a CPU core.
+    bool any_new_input = ninput_items[d_nchannels_in - 1] > 0;
+    for (uint32_t n = 0; !any_new_input && n < d_nchannels_out; n++)
+        {
+            if (ninput_items[n] > 0)
+                {
+                    any_new_input = true;
+                }
+        }
+    if (!any_new_input)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+
     const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
 
@@ -1035,6 +1075,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
 
             // Consume one item from the clock channel (last of the input channels)
             consume(static_cast<int32_t>(d_nchannels_in) - 1, 1);
+            d_new_clock_tick = true;
         }
 
     // Push the tracking observables into buffers to allow the observable interpolation at the desired Rx clock
@@ -1105,8 +1146,9 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
             consume(n, ninput_items[n]);
         }
 
-    if (d_Rx_clock_buffer.size() == d_Rx_clock_buffer.capacity())
+    if (d_Rx_clock_buffer.size() == d_Rx_clock_buffer.capacity() && d_new_clock_tick)
         {
+            d_new_clock_tick = false;
             std::vector<Gnss_Synchro> epoch_data(d_nchannels_out);
             int32_t n_valid = 0;
             int32_t n_trk_only = 0;

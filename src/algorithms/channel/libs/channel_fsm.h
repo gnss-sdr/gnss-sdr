@@ -62,6 +62,14 @@ public:
     virtual bool Event_failed_acquisition_no_repeat();
 
 private:
+    enum fsm_state
+    {
+        FSM_STATE_IDLE = 0,
+        FSM_STATE_ACQUISITION,
+        FSM_STATE_TRACKING,
+        FSM_STATE_FAILED_NO_REPEAT,
+        FSM_STATE_TERMINATING
+    };
     void start_tracking();
     void stop_acquisition();
     void stop_tracking();
@@ -77,7 +85,7 @@ private:
     Concurrent_Queue<pmt::pmt_t>* queue_;
 
     uint32_t channel_;
-    uint32_t state_;
+    fsm_state state_;
 };
 
 

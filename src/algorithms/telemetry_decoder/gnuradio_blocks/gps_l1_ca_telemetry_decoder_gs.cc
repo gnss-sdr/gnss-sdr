@@ -73,6 +73,37 @@ namespace wht = std;
 #endif
 
 
+namespace
+{
+// A preamble-like bit pattern placed at the beginning of a word other than the
+// first one of a subframe (GPS satellites broadcast it in the reserved bits of
+// subframe 1, word 7) yields a window made of ten genuine words, so all of them
+// pass the parity check. IS-GPS-200 provides two invariants to tell such a
+// window from an actual subframe:
+//  - bits 23 and 24 of words 2 (HOW) and 10 are solved so that the last two
+//    parity bits of those words, D29 and D30, are always zero;
+//  - frames start at multiples of 30 s from the beginning of the week, so the
+//    TOW count of the HOW (start of the next subframe, in units of 6 s) and the
+//    subframe ID fulfill TOW_count mod 5 == subframe_ID mod 5.
+// QZSS LNAV follows the same rules.
+bool is_subframe_aligned(const std::array<char, GPS_SUBFRAME_LENGTH> &subframe)
+{
+    uint32_t how = 0;
+    uint32_t word_10 = 0;
+    std::memcpy(&how, &subframe[1 * GPS_WORD_LENGTH], sizeof(uint32_t));
+    std::memcpy(&word_10, &subframe[9 * GPS_WORD_LENGTH], sizeof(uint32_t));
+    // words are stored with D1 in bit 29 and D30 in bit 0
+    if ((how & 0x00000003U) != 0U || (word_10 & 0x00000003U) != 0U)
+        {
+            return false;
+        }
+    const uint32_t tow_count = (how >> 13U) & 0x0001FFFFU;
+    const uint32_t subframe_id = (how >> 8U) & 0x00000007U;
+    return (subframe_id >= 1U && subframe_id <= 5U && (tow_count % 5U) == (subframe_id % 5U));
+}
+}  // namespace
+
+
 gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(const Tlm_Conf &conf, L1LnavSystem system)
 {
     return gps_l1_ca_telemetry_decoder_gs_sptr(new gps_l1_ca_telemetry_decoder_gs(conf, system));
@@ -113,7 +144,9 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(const Tlm_Conf &c
       d_enable_navdata_monitor(conf.enable_navdata_monitor),
       d_dump_crc_stats(conf.dump_crc_stats),
       d_tow_to_trk(conf.tow_to_trk),
-      d_have_last_decoded_tow(false)  // rise alarm 120 segs without valid tlm
+      d_have_last_decoded_tow(false),  // rise alarm 120 segs without valid tlm
+      d_flag_frame_sync_confirmed(false),
+      d_flag_subframe_parity_ok(false)
 
 {
     configure_basic_outputs();
@@ -313,6 +346,17 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                 }
         }
 
+    // ten words passing the parity check are not enough to claim a subframe:
+    // a window that starts at a word-aligned false preamble passes it as well
+    d_flag_subframe_parity_ok = subframe_synchro_confirmation;
+    if (subframe_synchro_confirmation && !is_subframe_aligned(subframe))
+        {
+            LOG(INFO) << "Rejected " << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS")
+                      << " L1 NAV subframe candidate in channel " << d_channel
+                      << " due to inconsistent frame alignment at d_sample_counter=" << d_sample_counter;
+            subframe_synchro_confirmation = false;
+        }
+
     // decode subframe
     // NEW GPS SUBFRAME HAS ARRIVED!
     if (subframe_synchro_confirmation)
@@ -483,7 +527,6 @@ bool gps_l1_ca_telemetry_decoder_gs::is_tow_consistent(uint32_t decoded_tow_s)
 
     if (tow_error_s > TOW_CONTINUITY_TOLERANCE_S)
         {
-            d_have_last_decoded_tow = false;
             return false;
         }
 
@@ -504,6 +547,8 @@ void gps_l1_ca_telemetry_decoder_gs::reset()
     d_have_last_decoded_tow = false;
     d_last_decoded_tow_s = 0;
     d_last_decoded_tow_sample_counter = 0;
+    d_flag_frame_sync_confirmed = false;
+    d_flag_subframe_parity_ok = false;
     d_symbol_history.clear();
     d_stat = 0;
     DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
@@ -574,7 +619,8 @@ void gps_l1_ca_telemetry_decoder_gs::frame_synchronization(const Gnss_Synchro &c
                                                   << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS") << " L1 satellite " << this->d_satellite
                                                   << " at d_sample_counter=" << d_sample_counter;
                                     }
-                                d_stat = 1;  // preamble acquired
+                                d_stat = 1;                           // preamble acquired
+                                d_flag_frame_sync_confirmed = false;  // until the next subframe agrees
                             }
                     }
                 d_flag_TOW_set = false;
@@ -594,6 +640,7 @@ void gps_l1_ca_telemetry_decoder_gs::frame_synchronization(const Gnss_Synchro &c
                                 d_CRC_error_counter = 0;
                                 d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
                                 d_last_valid_preamble = d_sample_counter;
+                                d_flag_frame_sync_confirmed = true;  // its TOW follows the one of the previous subframe
                                 if (!d_flag_frame_sync)
                                     {
                                         d_flag_frame_sync = true;
@@ -603,10 +650,19 @@ void gps_l1_ca_telemetry_decoder_gs::frame_synchronization(const Gnss_Synchro &c
                         else
                             {
                                 d_CRC_error_counter++;
-                                if (d_CRC_error_counter > 2)
+                                const bool false_frame_sync = (!d_flag_frame_sync_confirmed && d_flag_subframe_parity_ok);
+                                if (false_frame_sync)
+                                    {
+                                        LOG(INFO) << "Frame synchronization in channel " << d_channel << " for "
+                                                  << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS") << " L1 satellite " << this->d_satellite
+                                                  << " was not confirmed by the next subframe, searching for the preamble again";
+                                    }
+                                if (false_frame_sync || d_CRC_error_counter > 2)
                                     {
                                         DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
                                         d_flag_frame_sync = false;
+                                        d_flag_frame_sync_confirmed = false;
+                                        d_have_last_decoded_tow = false;
                                         d_stat = 0;
                                         d_TOW_at_current_symbol_ms = 0;
                                         d_TOW_at_Preamble_ms = 0;

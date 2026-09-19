@@ -168,7 +168,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_fft_codes(d_fft_size),
       // Allocate the buffer only when we need it. Buffering may be skipped in case of blocking operation
       // or when the number of non-coherent integrations is 1, as samples may be copied directly to d_input_signal
-      d_data_buffer((d_acq_parameters.blocking || d_acq_parameters.max_dwells == 1) ? 0 : d_samples_to_consume * d_acq_parameters.max_dwells),
+      d_data_buffer_size((d_acq_parameters.blocking || d_acq_parameters.max_dwells == 1) ? 0 : d_samples_to_consume * d_acq_parameters.max_dwells),
       d_fft_if(gnss_fft_fwd_make_unique(d_fft_size))
 {
     this->message_port_register_out(pmt::mp("events"));
@@ -206,12 +206,13 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
             init_cuda_engine();
         }
 #endif
+    BufferPool<gr_complex>::reserve_buffers(d_data_buffer_size);
 
     // Give a hint to GNU Radio scheduler on how many samples we may want
     // As pcps_acquisition is not inherited from gr::sync_block, This doesn't prevent us
     // from producing exactly 1 sample (or even 0 samples) in the general_work
     // Fixes CI freeze and retains performance improvement
-    this->set_output_multiple(std::max(d_samples_to_consume, static_cast<uint32_t>(d_data_buffer.size())));
+    this->set_output_multiple(std::max(d_samples_to_consume, static_cast<uint32_t>(d_data_buffer_size)));
 }
 
 
@@ -852,6 +853,10 @@ void pcps_acquisition::update_synchro(const AcquisitionResult& result)
 void pcps_acquisition::handle_threshold_reached(AcquisitionResult& result)
 {
     d_state = 0;
+    if (!d_data_buffer.empty())
+        {
+            BufferPool<gr_complex>::release(std::move(d_data_buffer));
+        }
 
     if (d_acq_parameters.make_2_steps)
         {
@@ -881,6 +886,10 @@ void pcps_acquisition::handle_threshold_reached(AcquisitionResult& result)
 
 void pcps_acquisition::handle_integration_done(const AcquisitionResult& result)
 {
+    if (!d_data_buffer.empty())
+        {
+            BufferPool<gr_complex>::release(std::move(d_data_buffer));
+        }
     if (d_state != 0)
         {
             send_negative_acquisition(result);
@@ -1108,6 +1117,11 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
             d_state = 1;
             d_buffer_sample_count = 0U;
             d_num_noncoherent_integrations_counter = 0U;
+            if (d_data_buffer_size)
+                {
+                    d_data_buffer = BufferPool<gr_complex>::take();
+                    d_data_buffer.resize(d_data_buffer_size);
+                }
         }
     if (d_state == 1)
         {

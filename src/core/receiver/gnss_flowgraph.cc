@@ -32,6 +32,7 @@
 #include "Galileo_E5b.h"
 #include "Galileo_E6.h"
 #include "Galileo_OSNMA.h"
+#include "buffer_pool.h"
 #include "channel.h"
 #include "channel_fsm.h"
 #include "channel_interface.h"
@@ -260,6 +261,9 @@ void GNSSFlowgraph::init()
     auto channels = block_factory::GetChannels(configuration_.get(), queue_.get());
 
     channels_count_ = static_cast<int>(channels.size());
+    const int max_channels_in_acq = configuration_->property("Channels.in_acquisition", channels_count_);
+    // Resize buffer pool to hold shared buffers for all channels
+    BufferPool<gr_complex>::resize(max_channels_in_acq);
     for (int i = 0; i < channels_count_; i++)
         {
             std::shared_ptr<GNSSBlockInterface> chan_ = std::move(channels.at(i));

@@ -44,6 +44,7 @@
 #endif
 
 #include "acq_conf.h"
+#include "buffer_pool.h"
 #include "channel_fsm.h"
 #include "gnss_sdr_fft.h"
 #if CUDA_GPU_ACCEL
@@ -315,6 +316,7 @@ private:
     // These are never accessed outside acquisition_core while acquisition is active
     volk_gnsssdr::vector<std::complex<float>> d_grid_doppler_wipeoffs;
     volk_gnsssdr::vector<std::complex<float>> d_fft_codes;
+    size_t d_data_buffer_size;
     volk_gnsssdr::vector<std::complex<float>> d_data_buffer;
     std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
 #if CUDA_GPU_ACCEL

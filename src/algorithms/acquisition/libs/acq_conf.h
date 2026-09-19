@@ -72,6 +72,7 @@ public:
     bool blocking{true};
     bool blocking_on_standby{false};  // enable it only for unit testing to avoid sample consume on idle status
     bool make_2_steps{false};
+    bool aligned_step2{true};
     bool use_automatic_resampler{false};
     bool enable_monitor_output{false};
     // When Doppler is assisted (doppler_uncertainty == 0), collapse the search to

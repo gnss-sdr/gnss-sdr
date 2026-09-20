@@ -246,10 +246,8 @@ TEST_F(GpsL1CaPcpsAcquisitionCudaTest /*unused*/, SameEstimateAsCpuMakeTwoStep /
     ASSERT_NO_THROW({ cpu = run_once(false, true); }) << "Failure running the top_block with use_cuda=false.";
     ASSERT_NO_THROW({ gpu = run_once(true, true); }) << "Failure running the top_block with use_cuda=true.";
 
-    std::cout << "CPU  (two steps): Doppler=" << cpu.doppler_hz << " Hz, delay=" << cpu.delay_samples << " samples (" << cpu.elapsed_us << " us)
-";
-    std::cout << "CUDA (two steps): Doppler=" << gpu.doppler_hz << " Hz, delay=" << gpu.delay_samples << " samples (" << gpu.elapsed_us << " us)
-";
+    std::cout << "CPU  (two steps): Doppler=" << cpu.doppler_hz << " Hz, delay=" << cpu.delay_samples << " samples (" << cpu.elapsed_us << " us)\n";
+    std::cout << "CUDA (two steps): Doppler=" << gpu.doppler_hz << " Hz, delay=" << gpu.delay_samples << " samples (" << gpu.elapsed_us << " us)\n";
 
     ASSERT_EQ(1, cpu.message) << "CPU acquisition failure. Expected message: 1=ACQ SUCCESS.";
     ASSERT_EQ(1, gpu.message) << "CUDA acquisition failure. Expected message: 1=ACQ SUCCESS.";

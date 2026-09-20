@@ -119,15 +119,15 @@ protected:
         double elapsed_us{0.0};
     };
 
-    std::shared_ptr<InMemoryConfiguration> make_config(bool use_cuda) const;
-    Outcome run_once(bool use_cuda);
+    std::shared_ptr<InMemoryConfiguration> make_config(bool use_cuda, bool two_steps) const;
+    Outcome run_once(bool use_cuda, bool two_steps = false);
 
     unsigned int doppler_max{5000};
     unsigned int doppler_step{100};
 };
 
 
-std::shared_ptr<InMemoryConfiguration> GpsL1CaPcpsAcquisitionCudaTest::make_config(bool use_cuda) const
+std::shared_ptr<InMemoryConfiguration> GpsL1CaPcpsAcquisitionCudaTest::make_config(bool use_cuda, bool two_steps) const
 {
     auto config = std::make_shared<InMemoryConfiguration>();
     config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
@@ -140,14 +140,20 @@ std::shared_ptr<InMemoryConfiguration> GpsL1CaPcpsAcquisitionCudaTest::make_conf
     config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
     config->set_property("Acquisition_1C.repeat_satellite", "false");
     config->set_property("Acquisition_1C.use_cuda", use_cuda ? "true" : "false");
+    if (two_steps)
+        {
+            config->set_property("Acquisition_1C.make_two_steps", "true");
+            config->set_property("Acquisition_1C.second_nbins", "5");
+            config->set_property("Acquisition_1C.second_doppler_step", "20");
+        }
     return config;
 }
 
 
-GpsL1CaPcpsAcquisitionCudaTest::Outcome GpsL1CaPcpsAcquisitionCudaTest::run_once(bool use_cuda)
+GpsL1CaPcpsAcquisitionCudaTest::Outcome GpsL1CaPcpsAcquisitionCudaTest::run_once(bool use_cuda, bool two_steps)
 {
     Outcome out;
-    auto config = make_config(use_cuda);
+    auto config = make_config(use_cuda, two_steps);
     auto top_block = gr::make_top_block("Acquisition CUDA test");
 
     Gnss_Synchro gnss_synchro = Gnss_Synchro();
@@ -165,7 +171,8 @@ GpsL1CaPcpsAcquisitionCudaTest::Outcome GpsL1CaPcpsAcquisitionCudaTest::run_once
     acquisition->connect(top_block);
 
     std::string path = std::string(TEST_PATH);
-    std::string file = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
+    // The two-step search needs more than the 2 ms of the single-step capture
+    std::string file = path + (two_steps ? "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat" : "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat");
     gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file.c_str(), false);
     top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
     top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
@@ -187,7 +194,7 @@ GpsL1CaPcpsAcquisitionCudaTest::Outcome GpsL1CaPcpsAcquisitionCudaTest::run_once
 
 TEST_F(GpsL1CaPcpsAcquisitionCudaTest /*unused*/, Instantiate /*unused*/)
 {
-    auto config = make_config(true);
+    auto config = make_config(true, false);
     std::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 0);
 }
 
@@ -227,5 +234,25 @@ TEST_F(GpsL1CaPcpsAcquisitionCudaTest /*unused*/, SameEstimateAsCpu /*unused*/)
     ASSERT_EQ(1, cpu.message);
     // Same grid, same peak search: the estimates must coincide to the bin
     EXPECT_NEAR(cpu.doppler_hz, gpu.doppler_hz, static_cast<double>(doppler_step) / 2.0);
+    EXPECT_NEAR(cpu.delay_samples, gpu.delay_samples, 1.0);
+}
+
+
+TEST_F(GpsL1CaPcpsAcquisitionCudaTest /*unused*/, SameEstimateAsCpuMakeTwoStep /*unused*/)
+{
+    // Exercises the fine-Doppler (STEP2_GRID) path of the engine through the real block
+    Outcome cpu;
+    Outcome gpu;
+    ASSERT_NO_THROW({ cpu = run_once(false, true); }) << "Failure running the top_block with use_cuda=false.";
+    ASSERT_NO_THROW({ gpu = run_once(true, true); }) << "Failure running the top_block with use_cuda=true.";
+
+    std::cout << "CPU  (two steps): Doppler=" << cpu.doppler_hz << " Hz, delay=" << cpu.delay_samples << " samples (" << cpu.elapsed_us << " us)
+";
+    std::cout << "CUDA (two steps): Doppler=" << gpu.doppler_hz << " Hz, delay=" << gpu.delay_samples << " samples (" << gpu.elapsed_us << " us)
+";
+
+    ASSERT_EQ(1, cpu.message) << "CPU acquisition failure. Expected message: 1=ACQ SUCCESS.";
+    ASSERT_EQ(1, gpu.message) << "CUDA acquisition failure. Expected message: 1=ACQ SUCCESS.";
+    EXPECT_NEAR(cpu.doppler_hz, gpu.doppler_hz, 20.0);  // second_doppler_step
     EXPECT_NEAR(cpu.delay_samples, gpu.delay_samples, 1.0);
 }

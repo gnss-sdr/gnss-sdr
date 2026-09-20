@@ -93,6 +93,21 @@ void Acq_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
 
     enable_monitor_output = configuration->property("AcquisitionMonitor.enable_monitor", false);
 
+    // GPU offload of the search grid. A global GNSS-SDR.use_cuda_acquisition
+    // switch can be overridden per acquisition block with <role>.use_cuda
+    use_cuda = configuration->property("GNSS-SDR.use_cuda_acquisition", use_cuda);
+    use_cuda = configuration->property(role + ".use_cuda", use_cuda);
+    cuda_device = configuration->property("GNSS-SDR.cuda_device", cuda_device);
+    cuda_device = configuration->property(role + ".cuda_device", cuda_device);
+#if !CUDA_GPU_ACCEL
+    if (use_cuda)
+        {
+            LOG(WARNING) << "Parameter " << role << ".use_cuda is set but this build has no CUDA support "
+                         << "(configure with -DENABLE_CUDA=ON). Falling back to the CPU implementation.";
+            use_cuda = false;
+        }
+#endif
+
     SetDerivedParams();
 }
 

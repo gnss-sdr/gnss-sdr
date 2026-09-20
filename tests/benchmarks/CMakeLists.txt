@@ -117,6 +117,8 @@ add_benchmark(benchmark_crypto core_libs Boost::headers ${EXTRA_BENCHMARK_DEPEND
 add_benchmark(benchmark_detector core_system_parameters ${EXTRA_BENCHMARK_DEPENDENCIES})
 add_benchmark(benchmark_preamble core_system_parameters ${EXTRA_BENCHMARK_DEPENDENCIES})
 add_benchmark(benchmark_reed_solomon core_system_parameters ${EXTRA_BENCHMARK_DEPENDENCIES})
+# CPU baseline of the PCPS acquisition grid; adds the CUDA engine when ENABLE_CUDA=ON
+add_benchmark(benchmark_pcps_grid algorithms_libs acquisition_libs Gnuradio::fft Volk::volk Volkgnsssdr::volkgnsssdr ${EXTRA_BENCHMARK_DEPENDENCIES})
 
 if(has_std_plus_void)
     target_compile_definitions(benchmark_detector PRIVATE -DCOMPILER_HAS_STD_PLUS_VOID=1)

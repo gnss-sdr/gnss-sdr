@@ -40,6 +40,7 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <vector>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -196,6 +197,13 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
 
     update_grid_doppler_wipeoffs();
 
+#if CUDA_GPU_ACCEL
+    if (d_acq_parameters.use_cuda)
+        {
+            init_cuda_engine();
+        }
+#endif
+
     // While idle (not actively searching), general_work() only drains its input to avoid
     // stalling the upstream block, producing no output. Without a batching hint the TPB
     // scheduler wakes this block's thread for every small burst of new input, which is
@@ -207,6 +215,68 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
     const auto output_multiple_samples = std::max<uint32_t>(1U, static_cast<uint32_t>(std::lround(conf_.samples_per_ms)));
     this->set_output_multiple(output_multiple_samples);
 }
+
+
+#if CUDA_GPU_ACCEL
+void pcps_acquisition::init_cuda_engine()
+{
+    const uint32_t max_bins = std::max(d_num_doppler_bins_step1_capacity, d_num_doppler_bins_step2);
+    auto engine = std::make_unique<CudaPcpsEngine>(d_fft_size, d_effective_fft_size, max_bins, d_acq_parameters.cuda_device);
+    if (!engine->is_valid())
+        {
+            LOG(WARNING) << "CUDA acquisition engine could not be initialised (" << engine->last_error()
+                         << "). Falling back to the CPU implementation.";
+            return;
+        }
+    d_cuda_engine = std::move(engine);
+    LOG(INFO) << "PCPS acquisition grid will be computed on CUDA device " << d_cuda_engine->device_name()
+              << " (FFT size " << d_fft_size << ", up to " << max_bins << " Doppler bins, "
+              << d_cuda_engine->device_bytes() / 1024 << " KiB device memory)";
+    cuda_upload_wipeoffs(CudaPcpsEngine::MAIN_GRID);
+}
+
+
+void pcps_acquisition::cuda_upload_wipeoffs(CudaPcpsEngine::GridId grid)
+{
+    if (!d_cuda_engine)
+        {
+            return;
+        }
+    const bool step2 = (grid == CudaPcpsEngine::STEP2_GRID);
+    const uint32_t bins = step2 ? d_num_doppler_bins_step2 : d_num_doppler_bins_active;
+    if (bins == 0U || (step2 && d_grid_doppler_wipeoffs_step_two.empty()))
+        {
+            return;
+        }
+    std::vector<const std::complex<float>*> rows(bins);
+    for (uint32_t k = 0; k < bins; k++)
+        {
+            rows[k] = step2 ? doppler_wipeoff_step_two_data(k) : doppler_wipeoff_data(k);
+        }
+    if (!d_cuda_engine->set_doppler_wipeoffs(grid, rows.data(), bins))
+        {
+            LOG(WARNING) << "CUDA acquisition: failed to upload Doppler grid (" << d_cuda_engine->last_error()
+                         << "). Falling back to the CPU implementation.";
+            d_cuda_engine.reset();
+        }
+}
+
+
+bool pcps_acquisition::doppler_grid_cuda(const gr_complex* in)
+{
+    const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins_active;
+    const auto grid_id = d_step_two ? CudaPcpsEngine::STEP2_GRID : CudaPcpsEngine::MAIN_GRID;
+    const uint32_t offset = (d_acq_parameters.bit_transition_flag ? d_effective_fft_size : 0);
+    const bool accumulate = (d_num_noncoherent_integrations_counter != 1);
+
+    std::vector<float*> rows(bin_count);
+    for (uint32_t k = 0; k < bin_count; k++)
+        {
+            rows[k] = magnitude_grid_data(k);
+        }
+    return d_cuda_engine->compute_grid(in, grid_id, bin_count, offset, accumulate, rows.data());
+}
+#endif
 
 
 pcps_acquisition::~pcps_acquisition() noexcept
@@ -280,6 +350,14 @@ void pcps_acquisition::set_local_code(std::complex<float>* code)
 
     d_fft_if->execute();  // We need the FFT of local code
     volk_32fc_conjugate_32fc(d_fft_codes.data(), d_fft_if->get_outbuf(), d_fft_size);
+#if CUDA_GPU_ACCEL
+    if (d_cuda_engine && !d_cuda_engine->set_fft_codes(d_fft_codes.data()))
+        {
+            LOG(WARNING) << "CUDA acquisition: failed to upload local code (" << d_cuda_engine->last_error()
+                         << "). Falling back to the CPU implementation.";
+            d_cuda_engine.reset();
+        }
+#endif
 }
 
 
@@ -324,6 +402,9 @@ void pcps_acquisition::update_grid_doppler_wipeoffs()
             // keep using it as a noise-only reference without any change to its logic.
             update_local_carrier(own::span<gr_complex>(doppler_wipeoff_data(0), d_fft_size), static_cast<float>(d_doppler_bias + d_doppler_center));
             update_local_carrier(own::span<gr_complex>(doppler_wipeoff_data(1), d_fft_size), static_cast<float>(d_doppler_bias + d_doppler_center + static_cast<int32_t>(d_doppler_max)));
+#if CUDA_GPU_ACCEL
+            cuda_upload_wipeoffs(CudaPcpsEngine::MAIN_GRID);
+#endif
             return;
         }
     for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins_active; doppler_index++)
@@ -331,6 +412,9 @@ void pcps_acquisition::update_grid_doppler_wipeoffs()
             const int32_t doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_center + d_doppler_step * doppler_index;
             update_local_carrier(own::span<gr_complex>(doppler_wipeoff_data(doppler_index), d_fft_size), static_cast<float>(d_doppler_bias + doppler));
         }
+#if CUDA_GPU_ACCEL
+    cuda_upload_wipeoffs(CudaPcpsEngine::MAIN_GRID);
+#endif
 }
 
 
@@ -343,6 +427,9 @@ void pcps_acquisition::update_grid_doppler_wipeoffs_step2()
             // stage, so the FDMA frequency offset must be added back to the wipeoff
             update_local_carrier(own::span<gr_complex>(doppler_wipeoff_step_two_data(doppler_index), d_fft_size), static_cast<float>(d_doppler_bias) + d_doppler_center_step_two + doppler);
         }
+#if CUDA_GPU_ACCEL
+    cuda_upload_wipeoffs(CudaPcpsEngine::STEP2_GRID);
+#endif
 }
 
 
@@ -652,6 +739,24 @@ pcps_acquisition::AcquisitionResult pcps_acquisition::first_vs_second_peak_stati
 
 
 void pcps_acquisition::doppler_grid(const gr_complex* in)
+{
+#if CUDA_GPU_ACCEL
+    if (d_cuda_engine)
+        {
+            if (doppler_grid_cuda(in))
+                {
+                    return;
+                }
+            LOG(WARNING) << "CUDA acquisition failed in channel " << d_channel << " (" << d_cuda_engine->last_error()
+                         << "). Falling back to the CPU implementation.";
+            d_cuda_engine.reset();
+        }
+#endif
+    doppler_grid_cpu(in);
+}
+
+
+void pcps_acquisition::doppler_grid_cpu(const gr_complex* in)
 {
     const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins_active;
     const auto* grid_doppler_wipeoffs = d_step_two ? d_grid_doppler_wipeoffs_step_two.data() : d_grid_doppler_wipeoffs.data();

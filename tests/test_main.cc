@@ -252,6 +252,8 @@ private:
 #endif
 
 #if CUDA_BLOCKS_TEST
+#include "unit-tests/signal-processing-blocks/acquisition/cuda_pcps_engine_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_cuda_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/gpu_multicorrelator_test.cc"
 #endif
 

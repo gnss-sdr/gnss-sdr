@@ -48,8 +48,8 @@ struct GPU_Complex
     float i;
     CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex() {};
     CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex(float a, float b) : r(a), i(b) {}
-    CUDA_CALLABLE_MEMBER_DEVICE float magnitude2(void) { return r * r + i * i; }
-    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex operator*(const GPU_Complex& a)
+    CUDA_CALLABLE_MEMBER_DEVICE float magnitude2(void) const { return r * r + i * i; }
+    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex operator*(const GPU_Complex& a) const
     {
 #ifdef __CUDACC__
         return GPU_Complex(__fmul_rn(r, a.r) - __fmul_rn(i, a.i), __fmul_rn(i, a.r) + __fmul_rn(r, a.i));
@@ -57,7 +57,7 @@ struct GPU_Complex
         return GPU_Complex(r * a.r - i * a.i, i * a.r + r * a.i);
 #endif
     }
-    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex operator+(const GPU_Complex& a)
+    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex operator+(const GPU_Complex& a) const
     {
         return GPU_Complex(r + a.r, i + a.i);
     }
@@ -90,15 +90,15 @@ struct GPU_Complex_Short
     float r;
     float i;
     CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex_Short(short int a, short int b) : r(a), i(b) {}
-    CUDA_CALLABLE_MEMBER_DEVICE float magnitude2(void)
+    CUDA_CALLABLE_MEMBER_DEVICE float magnitude2(void) const
     {
         return r * r + i * i;
     }
-    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex_Short operator*(const GPU_Complex_Short& a)
+    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex_Short operator*(const GPU_Complex_Short& a) const
     {
         return GPU_Complex_Short(r * a.r - i * a.i, i * a.r + r * a.i);
     }
-    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex_Short operator+(const GPU_Complex_Short& a)
+    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex_Short operator+(const GPU_Complex_Short& a) const
     {
         return GPU_Complex_Short(r + a.r, i + a.i);
     }

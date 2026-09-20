@@ -91,6 +91,8 @@ inline unsigned int grid_for(unsigned int total, int multiprocessors)
 
 const char* cufft_error_string(cufftResult r)
 {
+    // Only codes present in every cuFFT release since 10.x: newer toolkits
+    // (cuFFT >= 12, CUDA 13) removed some of the older enumerators.
     switch (r)
         {
         case CUFFT_SUCCESS:
@@ -113,12 +115,8 @@ const char* cufft_error_string(cufftResult r)
             return "CUFFT_INVALID_SIZE";
         case CUFFT_UNALIGNED_DATA:
             return "CUFFT_UNALIGNED_DATA";
-        case CUFFT_INCOMPLETE_PARAMETER_LIST:
-            return "CUFFT_INCOMPLETE_PARAMETER_LIST";
         case CUFFT_INVALID_DEVICE:
             return "CUFFT_INVALID_DEVICE";
-        case CUFFT_PARSE_ERROR:
-            return "CUFFT_PARSE_ERROR";
         case CUFFT_NO_WORKSPACE:
             return "CUFFT_NO_WORKSPACE";
         case CUFFT_NOT_IMPLEMENTED:
@@ -126,7 +124,7 @@ const char* cufft_error_string(cufftResult r)
         case CUFFT_NOT_SUPPORTED:
             return "CUFFT_NOT_SUPPORTED";
         default:
-            return "CUFFT_UNKNOWN_ERROR";
+            return "CUFFT_ERROR (see cufft.h for the numeric code)";
         }
 }
 }  // namespace
@@ -175,7 +173,7 @@ struct CudaPcpsEngine::Impl
     bool fail(const char* what, cufftResult r)
     {
         std::ostringstream ss;
-        ss << what << ": " << cufft_error_string(r);
+        ss << what << ": " << cufft_error_string(r) << " [" << static_cast<int>(r) << "]";
         error = ss.str();
         return false;
     }

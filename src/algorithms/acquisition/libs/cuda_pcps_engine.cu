@@ -15,11 +15,11 @@
  */
 
 #include "cuda_pcps_engine.h"
-#include <cuda_runtime.h>
-#include <cufft.h>
 #include <algorithm>
 #include <array>
 #include <cstring>
+#include <cuda_runtime.h>
+#include <cufft.h>
 #include <sstream>
 
 
@@ -148,12 +148,12 @@ struct CudaPcpsEngine::Impl
 
     cudaStream_t stream{nullptr};
 
-    float2* d_in{nullptr};                                           // fft_size
-    float2* d_codes{nullptr};                                        // fft_size
+    float2* d_in{nullptr};                                                      // fft_size
+    float2* d_codes{nullptr};                                                   // fft_size
     std::array<float2*, CudaPcpsEngine::NUM_GRIDS> d_wipe{{nullptr, nullptr}};  // max_bins * fft_size each
     std::array<uint32_t, CudaPcpsEngine::NUM_GRIDS> wipe_bins{{0U, 0U}};        // bins uploaded per grid
-    float2* d_batch{nullptr};                                        // max_bins * fft_size (in-place FFT)
-    float* d_mag{nullptr};                                           // max_bins * effective_fft_size
+    float2* d_batch{nullptr};                                                   // max_bins * fft_size (in-place FFT)
+    float* d_mag{nullptr};                                                      // max_bins * effective_fft_size
 
     float2* h_in{nullptr};  // pinned staging, fft_size
     float* h_mag{nullptr};  // pinned staging, max_bins * effective_fft_size

@@ -68,6 +68,13 @@ $ cmake --build build -j$(nproc)
 $ sudo cmake --install build
 ```
 
+The same steps, plus dependency installation, tests and the benchmark, are
+scripted in [utils/scripts/jetson-build.sh](../utils/scripts/jetson-build.sh):
+
+```
+$ utils/scripts/jetson-build.sh --deps --tests --bench
+```
+
 The configure log should show:
 
 ```

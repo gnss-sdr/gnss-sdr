@@ -24,6 +24,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <ostream>
 #include <string>
 
@@ -61,10 +62,12 @@ public:
     }
     void Send(const absl::LogEntry& entry) override
     {
+        std::lock_guard<std::mutex> lock(logfile_mutex);
         logfile << entry.text_message_with_prefix_and_newline() << std::flush;
     }
 
 private:
+    std::mutex logfile_mutex;
     std::ofstream logfile;
 };
 

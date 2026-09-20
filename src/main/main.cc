@@ -40,6 +40,7 @@
 #include <fstream>                                     // for ofstream
 #include <iostream>                                    // for operator<<
 #include <memory>                                      // for unique_ptr
+#include <mutex>                                       // for lock_guard, mutex
 #include <ostream>                                     // for std::flush
 #include <string>                                      // for string
 
@@ -81,10 +82,12 @@ public:
     }
     void Send(const absl::LogEntry& entry) override
     {
+        std::lock_guard<std::mutex> lock(logfile_mutex);
         logfile << entry.text_message_with_prefix_and_newline() << std::flush;
     }
 
 private:
+    std::mutex logfile_mutex;
     std::ofstream logfile;
     std::string filename;
 };

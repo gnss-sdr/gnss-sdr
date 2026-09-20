@@ -41,6 +41,7 @@ if(ENABLE_CUDA)
         target_include_directories(gnss-sdr
             PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
         )
+        target_link_libraries(gnss-sdr PUBLIC CUDA::cudart)
     else()
         target_link_libraries(gnss-sdr
             PUBLIC ${CUDA_LIBRARIES}

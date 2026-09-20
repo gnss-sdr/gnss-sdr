@@ -94,6 +94,7 @@ if(ENABLE_CUDA)
         target_include_directories(tracking_adapters
             PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
         )
+        target_link_libraries(tracking_adapters PUBLIC CUDA::cudart)
     else()
         target_link_libraries(tracking_adapters
             PUBLIC ${CUDA_LIBRARIES}

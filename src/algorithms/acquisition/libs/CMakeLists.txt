@@ -15,6 +15,11 @@ if(ENABLE_FPGA)
     set(ACQUISITION_LIB_HEADERS ${ACQUISITION_LIB_HEADERS} fpga_acquisition.h)
 endif()
 
+if(ENABLE_CUDA)
+    set(ACQUISITION_LIB_SOURCES ${ACQUISITION_LIB_SOURCES} cuda_pcps_engine.cu)
+    set(ACQUISITION_LIB_HEADERS ${ACQUISITION_LIB_HEADERS} cuda_pcps_engine.h)
+endif()
+
 list(SORT ACQUISITION_LIB_HEADERS)
 list(SORT ACQUISITION_LIB_SOURCES)
 
@@ -68,6 +73,22 @@ if(ENABLE_FPGA)
     target_link_libraries(acquisition_libs
         PRIVATE
             core_libs
+    )
+endif()
+
+if(ENABLE_CUDA)
+    target_include_directories(acquisition_libs
+        PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+    )
+    target_link_libraries(acquisition_libs
+        PUBLIC
+            CUDA::cudart
+            CUDA::cufft
+    )
+    set_target_properties(acquisition_libs PROPERTIES
+        CUDA_SEPARABLE_COMPILATION ON
+        POSITION_INDEPENDENT_CODE ON
+        CUDA_RESOLVE_DEVICE_SYMBOLS ON
     )
 endif()
 

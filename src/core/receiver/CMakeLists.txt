@@ -163,6 +163,7 @@ if(ENABLE_CUDA)
         target_include_directories(core_receiver
             PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
         )
+        target_link_libraries(core_receiver PUBLIC CUDA::cudart)
     else()
         target_link_libraries(core_receiver
             PUBLIC ${CUDA_LIBRARIES}

@@ -134,7 +134,10 @@ CudaPcpsEngineTest.MatchesCpuReferenceLongCoherentIntegration
 GpsL1CaPcpsAcquisitionCudaTest.SameEstimateAsCpu
   CPU:  Doppler=1700 Hz, delay=523 samples
   CUDA: Doppler=1700 Hz, delay=523 samples
-[  PASSED  ] 10 tests.
+GpsL1CaPcpsAcquisitionCudaTest.SameEstimateAsCpuMakeTwoStep
+  CPU  (two steps): Doppler=1740 Hz, delay=911 samples
+  CUDA (two steps): Doppler=1740 Hz, delay=911 samples
+[  PASSED  ] 11 tests.
 ```
 
 The GPU grid matches the CPU grid to single-precision rounding (relative
@@ -145,7 +148,8 @@ on a real capture.
 sample (single dwell, non-coherent accumulation, bit-transition mode and 4 ms
 coherent integration). `GpsL1CaPcpsAcquisitionCudaTest.*` runs the full
 `GPS_L1_CA_PCPS_Acquisition` adapter on a real 4 Msps capture with
-`use_cuda=true` and checks it returns the same Doppler/delay as the CPU path.
+`use_cuda=true` and checks it returns the same Doppler/delay as the CPU path,
+with and without the two-step (fine Doppler) search.
 
 ## 4. Benchmark: GPU acquisition vs CPU baseline
 

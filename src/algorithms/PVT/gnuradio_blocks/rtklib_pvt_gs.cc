@@ -279,6 +279,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_observable_interval_ms(conf_.observable_interval_ms),
       d_ntrip_max_correction_age_s(conf_.ntrip_max_correction_age_s),
       d_pvt_errors_counter(0),
+      d_pvt_solver_errors_counter(0),
       d_last_fixed_base_status(-1),
       d_last_solution_status(SOLQ_NONE),
       d_dump(conf_.dump),
@@ -3181,6 +3182,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, d_observable_interval_ms / 1000.0, *d_sensor_data_aggregator, dump_this_epoch))
                         {
                             d_pvt_errors_counter = 0;  // Reset consecutive PVT error counter
+                            d_pvt_solver_errors_counter = 0;
                             const double Rx_clock_offset_s = d_internal_pvt_solver->get_time_offset_s();
                             if (d_ntrip_client)
                                 {
@@ -3313,13 +3315,21 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 {
                                     report_solution_outage();
                                 }
-                            // sanity check: If the PVT solver is getting 100 consecutive errors, send a reset command to observables block
-                            if (d_pvt_errors_counter >= 100)
+                            // sanity check: If the PVT solver is getting 100 consecutive errors, send a reset command to observables block.
+                            // Only the epochs in which the solver had what it takes to compute a solution and failed
+                            // are errors: the epochs without enough satellites tell nothing about the receiver time.
+                            // The command is sent once per outage: the receiver time would be set again from the
+                            // same channels, so repeating it cannot help if the first one did not (e.g., with a poor
+                            // geometry), and each one costs a gap in the observables of every channel
+                            if (d_internal_pvt_solver->solution_attempted() && d_pvt_solver_errors_counter < 100)
                                 {
-                                    int command = 1;
-                                    this->message_port_pub(pmt::mp("pvt_to_observables"), pmt::make_any(command));
-                                    LOG(INFO) << "PVT: Number of consecutive position solver error reached, Sent reset to observables.";
-                                    d_pvt_errors_counter = 0;
+                                    d_pvt_solver_errors_counter++;
+                                    if (d_pvt_solver_errors_counter == 100)
+                                        {
+                                            int command = 1;
+                                            this->message_port_pub(pmt::mp("pvt_to_observables"), pmt::make_any(command));
+                                            LOG(INFO) << "PVT: Number of consecutive position solver error reached, Sent reset to observables.";
+                                        }
                                 }
                         }
 

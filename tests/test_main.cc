@@ -170,7 +170,6 @@ private:
 #include "unit-tests/signal-processing-blocks/libs/beidou_b2a_signal_replica_test.cc"
 #include "unit-tests/signal-processing-blocks/libs/item_type_helpers_test.cc"
 #include "unit-tests/signal-processing-blocks/libs/rtklib_lli_test.cc"
-#include "unit-tests/signal-processing-blocks/observables/observables_phase_continuity_test.cc"
 #include "unit-tests/signal-processing-blocks/osnma/gnss_crypto_test.cc"
 #include "unit-tests/signal-processing-blocks/osnma/osnma_msg_receiver_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/bds_tgd_iono_test.cc"

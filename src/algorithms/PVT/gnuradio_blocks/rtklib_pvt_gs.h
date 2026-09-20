@@ -382,7 +382,8 @@ private:
     const uint32_t d_signal_enabled_flags;
     const uint32_t d_observable_interval_ms;
     const double d_ntrip_max_correction_age_s;
-    uint32_t d_pvt_errors_counter;
+    uint32_t d_pvt_errors_counter;         // consecutive epochs without a solution, whatever the reason
+    uint32_t d_pvt_solver_errors_counter;  // epochs in which the solver tried and failed since the last solution, up to 100
     int d_last_fixed_base_status;
     uint64_t d_ntrip_snapshot_generation = 0;
     int d_last_solution_status;

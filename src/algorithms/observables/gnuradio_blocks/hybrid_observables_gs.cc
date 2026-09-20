@@ -98,10 +98,12 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
     // Send Channel status to gnss_flowgraph
     this->message_port_register_out(pmt::mp("status"));
 
-    d_gnss_synchro_history = std::make_unique<Gnss_circular_deque<Gnss_Synchro>>(1000, d_nchannels_out);
-
     d_Rx_clock_buffer.set_capacity(std::min(std::max(300U / d_T_rx_step_ms, 3U), 20U));
     d_Rx_clock_buffer.clear();
+
+    constexpr uint32_t history_slack_ms = 1000U;
+    const auto history_ms = static_cast<uint32_t>(d_Rx_clock_buffer.capacity()) * d_T_rx_step_ms + history_slack_ms;
+    d_gnss_synchro_history = std::make_unique<Gnss_circular_deque<Gnss_Synchro>>(history_ms, d_nchannels_out);
 
     d_channel_last_pll_lock = std::vector<bool>(d_nchannels_out, false);
     d_channel_last_pseudorange_smooth = std::vector<double>(d_nchannels_out, 0.0);
@@ -241,24 +243,16 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
             if (pmt::any_ref(msg).type().hash_code() == d_double_type_hash_code)
                 {
                     const auto new_rx_clock_offset_s = wht::any_cast<double>(pmt::any_ref(msg));
-                    double old_tow_corrected = static_cast<double>(d_T_rx_TOW_ms) - new_rx_clock_offset_s * 1000.0;
-                    d_T_rx_TOW_ms = d_T_rx_TOW_ms - static_cast<int>(round(new_rx_clock_offset_s * 1000.0));
+                    const auto new_rx_clock_offset_ms = static_cast<int64_t>(llround(new_rx_clock_offset_s * 1000.0));
+                    const uint32_t old_tow_corrected_ms = align_rx_time_ms(static_cast<int64_t>(d_T_rx_TOW_ms) - new_rx_clock_offset_ms, 1U);
                     // align the receiver clock to integer multiple of d_T_rx_step_ms
-                    if (d_T_rx_TOW_ms % d_T_rx_step_ms)
-                        {
-                            d_T_rx_TOW_ms += d_T_rx_step_ms - d_T_rx_TOW_ms % d_T_rx_step_ms;
-                        }
-                    d_last_rx_clock_round20ms_error = static_cast<double>(d_T_rx_TOW_ms) - old_tow_corrected;
-                    // d_Rx_clock_buffer.clear();  // Clear all the elements in the buffer
+                    d_T_rx_TOW_ms = align_rx_time_ms(old_tow_corrected_ms, d_T_rx_step_ms);
+                    d_last_rx_clock_round20ms_error = static_cast<double>(tow_difference_ms(d_T_rx_TOW_ms, old_tow_corrected_ms)) + (new_rx_clock_offset_s * 1000.0 - static_cast<double>(new_rx_clock_offset_ms));
                     for (uint32_t n = 0; n < d_nchannels_out; n++)
                         {
                             d_gnss_synchro_history->clear(n);
                         }
-                    // the carrier phase continuity bookkeeping is deliberately kept:
-                    // realigning the receiver clock discards the interpolation history
-                    // but leaves the accumulated carrier phase of the channels untouched
-
-                    LOG(INFO) << "Corrected new RX Time offset: " << static_cast<int>(round(new_rx_clock_offset_s * 1000.0)) << "[ms]";
+                    LOG(INFO) << "Corrected new RX Time offset: " << new_rx_clock_offset_ms << "[ms]";
                 }
             if (pmt::any_ref(msg).type().hash_code() == d_int_type_hash_code)
                 {
@@ -434,15 +428,31 @@ double hybrid_observables_gs::compute_T_rx_s(const Gnss_Synchro &a) const
 
 bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, uint32_t ch, uint64_t rx_clock) const
 {
+    const auto history_size = static_cast<int32_t>(d_gnss_synchro_history->size(ch));
+    int32_t first_not_older = 0;
+    int32_t search_end = history_size;
+    while (first_not_older < search_end)
+        {
+            const int32_t mid = first_not_older + (search_end - first_not_older) / 2;
+            if (d_gnss_synchro_history->get(ch, mid).Tracking_sample_counter < rx_clock)
+                {
+                    first_not_older = mid + 1;
+                }
+            else
+                {
+                    search_end = mid;
+                }
+        }
+
     int32_t nearest_element = -1;
     int64_t old_abs_diff = std::numeric_limits<int64_t>::max();
-    for (uint32_t i = 0; i < d_gnss_synchro_history->size(ch); i++)
+    for (int32_t i = std::max(first_not_older - 1, 0); i < std::min(first_not_older + 1, history_size); i++)
         {
             const int64_t abs_diff = llabs(static_cast<int64_t>(rx_clock) - static_cast<int64_t>(d_gnss_synchro_history->get(ch, i).Tracking_sample_counter));
             if (old_abs_diff > abs_diff)
                 {
                     old_abs_diff = abs_diff;
-                    nearest_element = static_cast<int32_t>(i);
+                    nearest_element = i;
                 }
         }
 
@@ -478,6 +488,15 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, uint3
                                     t2_idx = nearest_element;
                                 }
 
+                            if (!tracking_samples_are_consecutive(
+                                    d_gnss_synchro_history->get(ch, t1_idx).RX_time,
+                                    d_gnss_synchro_history->get(ch, t1_idx).TOW_at_current_symbol_ms,
+                                    d_gnss_synchro_history->get(ch, t2_idx).RX_time,
+                                    d_gnss_synchro_history->get(ch, t2_idx).TOW_at_current_symbol_ms))
+                                {
+                                    return false;
+                                }
+
                             // 1st: copy the nearest gnss_synchro data for that channel
                             interpolated_obs = d_gnss_synchro_history->get(ch, nearest_element);
                             if (interpolated_obs.fs == 0LL)
@@ -506,34 +525,17 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, uint3
                             // CARRIER DOPPLER INTERPOLATION
                             interpolated_obs.Carrier_Doppler_hz = d_gnss_synchro_history->get(ch, t1_idx).Carrier_Doppler_hz + (d_gnss_synchro_history->get(ch, t2_idx).Carrier_Doppler_hz - d_gnss_synchro_history->get(ch, t1_idx).Carrier_Doppler_hz) * time_factor;
                             // TOW INTERPOLATION
-                            // check TOW rollover
-                            if ((d_gnss_synchro_history->get(ch, t2_idx).TOW_at_current_symbol_ms - d_gnss_synchro_history->get(ch, t1_idx).TOW_at_current_symbol_ms) > 0)
+                            // the TOW increment is unwrapped across the TOW rollover
+                            interpolated_obs.interp_TOW_ms = static_cast<double>(d_gnss_synchro_history->get(ch, t1_idx).TOW_at_current_symbol_ms) + static_cast<double>(tow_difference_ms(d_gnss_synchro_history->get(ch, t2_idx).TOW_at_current_symbol_ms, d_gnss_synchro_history->get(ch, t1_idx).TOW_at_current_symbol_ms)) * time_factor;
+                            if (interpolated_obs.interp_TOW_ms >= 604800000.0)
                                 {
-                                    interpolated_obs.interp_TOW_ms = static_cast<double>(d_gnss_synchro_history->get(ch, t1_idx).TOW_at_current_symbol_ms) + (static_cast<double>(d_gnss_synchro_history->get(ch, t2_idx).TOW_at_current_symbol_ms) - static_cast<double>(d_gnss_synchro_history->get(ch, t1_idx).TOW_at_current_symbol_ms)) * time_factor;
-                                }
-                            else
-                                {
-                                    // TOW rollover situation
-                                    interpolated_obs.interp_TOW_ms = static_cast<double>(d_gnss_synchro_history->get(ch, t1_idx).TOW_at_current_symbol_ms) + (static_cast<double>(d_gnss_synchro_history->get(ch, t2_idx).TOW_at_current_symbol_ms + 604800000) - static_cast<double>(d_gnss_synchro_history->get(ch, t1_idx).TOW_at_current_symbol_ms)) * time_factor;
+                                    interpolated_obs.interp_TOW_ms -= 604800000.0;
                                 }
 
-                            // LOG(INFO) << "Channel " << ch << " int idx: " << t1_idx << " TOW Int: " << interpolated_obs.interp_TOW_ms
-                            //           << " TOW p1 : " << d_gnss_synchro_history->get(ch, t1_idx).TOW_at_current_symbol_ms
-                            //           << " TOW p2: "
-                            //           << d_gnss_synchro_history->get(ch, t2_idx).TOW_at_current_symbol_ms
-                            //           << " t2-t1: "
-                            //           << d_gnss_synchro_history->get(ch, t2_idx).RX_time - d_gnss_synchro_history->get(ch, t1_idx).RX_time
-                            //           << " trx - t1: "
-                            //           << T_rx_s - d_gnss_synchro_history->get(ch, t1_idx).RX_time;
-                            // std::cout << "Rx samplestamp: " << T_rx_s << " Channel " << ch << " interp buff idx " << nearest_element
-                            //           << " ,diff: " << old_abs_diff << " samples (" << static_cast<double>(old_abs_diff) / static_cast<double>(d_gnss_synchro_history->get(ch, nearest_element).fs) << " s)\n";
                             return true;
                         }
                     return false;
                 }
-            // std::cout << "ALERT: Channel " << ch << " interp buff idx " << nearest_element
-            //           << " ,diff: " << old_abs_diff << " samples (" << static_cast<double>(old_abs_diff) / static_cast<double>(d_gnss_synchro_history->get(ch, nearest_element).fs) << " s)\n";
-            // usleep(1000);
         }
     return false;
 }
@@ -569,54 +571,12 @@ void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
     //    this will be the receiver time.
     // 2. If the TOW is set, it must be incremented by the desired receiver time step.
     //    the time step must match the observables timer block (connected to the las input channel)
+    // 3. A channel can report a wrong TOW (e.g., after a false frame synchronization
+    //    of its Telemetry Decoder), so the receiver time is set from the largest
+    //    group of channels agreeing on it, and set again if such a group
+    //    contradicts it: then the channels that set it were the wrong ones.
     const uint32_t week_ms = 604800000U;
-    const uint32_t half_week_ms = week_ms / 2U;
-    std::vector<Gnss_Synchro>::const_iterator it;
-    if (!d_T_rx_TOW_set)
-        {
-            uint32_t TOW_ref = 0U;
-            for (it = data.cbegin(); it != data.cend(); it++)
-                {
-                    if (it->Flag_valid_word)
-                        {
-                            const uint32_t tow_ms = it->TOW_at_current_symbol_ms % week_ms;
-                            if (!d_T_rx_TOW_set)
-                                {
-                                    TOW_ref = tow_ms;
-                                    d_T_rx_TOW_set = true;
-                                }
-                            else
-                                {
-                                    uint64_t tow_ref_unwrapped = TOW_ref;
-                                    uint64_t tow_unwrapped = tow_ms;
-                                    if ((TOW_ref > half_week_ms) && (tow_ms < half_week_ms))
-                                        {
-                                            tow_unwrapped += week_ms;
-                                        }
-                                    else if ((tow_ms > half_week_ms) && (TOW_ref < half_week_ms))
-                                        {
-                                            tow_ref_unwrapped += week_ms;
-                                        }
-                                    if (tow_unwrapped > tow_ref_unwrapped)
-                                        {
-                                            TOW_ref = static_cast<uint32_t>(tow_unwrapped % week_ms);
-                                        }
-                                }
-                        }
-                }
-            d_T_rx_TOW_ms = TOW_ref;
-            // align the receiver clock to integer multiple of d_T_rx_step_ms
-            if (d_T_rx_TOW_ms % d_T_rx_step_ms)
-                {
-                    d_T_rx_TOW_ms += d_T_rx_step_ms - d_T_rx_TOW_ms % d_T_rx_step_ms;
-                }
-            if (d_T_rx_TOW_ms >= week_ms)
-                {
-                    DLOG(INFO) << "TOW RX TIME rollover!";
-                    d_T_rx_TOW_ms = d_T_rx_TOW_ms % week_ms;
-                }
-        }
-    else
+    if (d_T_rx_TOW_set)
         {
             d_T_rx_TOW_ms += d_T_rx_step_ms;  // the tow time step increment must match the ref time channel step
             if (d_T_rx_TOW_ms >= week_ms)
@@ -624,7 +584,109 @@ void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
                     DLOG(INFO) << "TOW RX TIME rollover!";
                     d_T_rx_TOW_ms = d_T_rx_TOW_ms % week_ms;
                 }
+            if (rx_time_is_on_hold())
+                {
+                    d_T_rx_TOW_unconfirmed_ms += d_T_rx_step_ms;
+                }
         }
+
+    bool any_valid_tow = false;
+    bool rx_time_contradicted = false;
+    const int64_t max_rx_time_error_ms = MAX_RX_TIME_ERROR_MS + static_cast<int64_t>(d_T_rx_step_ms);
+    for (const auto &obs : data)
+        {
+            if (obs.Flag_valid_word)
+                {
+                    any_valid_tow = true;
+                    if (d_T_rx_TOW_set && llabs(tow_difference_ms(d_T_rx_TOW_ms, obs.TOW_at_current_symbol_ms % week_ms)) > max_rx_time_error_ms)
+                        {
+                            rx_time_contradicted = true;
+                        }
+                }
+        }
+
+    // nothing else to do while every channel is consistent with a receiver
+    // time that a group of channels has already agreed on
+    if (!any_valid_tow || (d_T_rx_TOW_set && d_T_rx_TOW_confirmed && !rx_time_contradicted))
+        {
+            d_T_rx_contradicted_ms = 0U;
+            return;
+        }
+
+    // a single channel cannot tell whether it is the receiver time or itself
+    // what is wrong, and neither can groups of the same size
+    std::vector<uint32_t> tow_ms;
+    tow_ms.reserve(data.size());
+    for (const auto &obs : data)
+        {
+            if (obs.Flag_valid_word)
+                {
+                    tow_ms.push_back(obs.TOW_at_current_symbol_ms % week_ms);
+                }
+        }
+    uint32_t consensus_tow_ms = 0U;
+    bool is_unique = false;
+    const uint32_t n_agreeing = find_tow_consensus(tow_ms, consensus_tow_ms, is_unique);
+    const bool is_group = (n_agreeing > 1) && is_unique;
+
+    if (!d_T_rx_TOW_set)
+        {
+            set_T_rx_TOW_ms(consensus_tow_ms);
+            d_T_rx_TOW_set = true;
+            d_T_rx_TOW_confirmed = is_group;
+            LOG(INFO) << "Receiver time set to TOW " << d_T_rx_TOW_ms << " ms, from "
+                      << n_agreeing << " of " << tow_ms.size() << " channels with a valid TOW";
+            return;
+        }
+
+    // a receiver time that no group ever agreed on was set by a single channel
+    // (or by one of several in disagreement), so it also yields to a channel
+    // that is alone: that is as much as a receiver with a single channel has
+    const bool is_challenger = is_group || (!d_T_rx_TOW_confirmed && tow_ms.size() == 1);
+    rx_time_contradicted = is_challenger && (llabs(tow_difference_ms(d_T_rx_TOW_ms, consensus_tow_ms)) > max_rx_time_error_ms);
+    if (!rx_time_contradicted)
+        {
+            d_T_rx_contradicted_ms = 0U;
+            d_T_rx_TOW_confirmed = d_T_rx_TOW_confirmed || is_group;
+            return;
+        }
+
+    // a group prevails at once over a receiver time that no group ever agreed
+    // on; otherwise, the contradiction is required to last
+    d_T_rx_contradicted_ms += d_T_rx_step_ms;
+    if ((is_group && !d_T_rx_TOW_confirmed) || (static_cast<double>(d_T_rx_contradicted_ms) >= RX_TIME_CONTRADICTION_TIME_S * 1000.0))
+        {
+            const uint32_t old_T_rx_TOW_ms = d_T_rx_TOW_ms;
+            set_T_rx_TOW_ms(consensus_tow_ms);
+            d_T_rx_TOW_confirmed = is_group;
+            LOG(WARNING) << "Receiver time changed from TOW " << old_T_rx_TOW_ms << " ms to TOW "
+                         << d_T_rx_TOW_ms << " ms: " << n_agreeing << " of " << tow_ms.size()
+                         << " channels with a valid TOW agree on a time that contradicts it";
+        }
+}
+
+
+bool hybrid_observables_gs::rx_time_is_on_hold() const
+{
+    // The first epoch with valid words rarely finds more than one channel ready:
+    // when the history is emptied, all of them are back within a telemetry
+    // symbol, but not in the same epoch. A receiver time that no group of
+    // channels has agreed on is not used until the rest had the chance to
+    // contradict it
+    return !d_T_rx_TOW_confirmed && (static_cast<double>(d_T_rx_TOW_unconfirmed_ms) < MAX_INTERPOLATION_INTERVAL_S * 1000.0);
+}
+
+
+void hybrid_observables_gs::set_T_rx_TOW_ms(uint32_t tow_ms)
+{
+    // align the receiver clock to integer multiple of d_T_rx_step_ms
+    d_T_rx_TOW_ms = align_rx_time_ms(tow_ms, d_T_rx_step_ms);
+    d_last_rx_clock_round20ms_error = 0.0;
+    d_T_rx_contradicted_ms = 0U;
+    d_T_rx_TOW_unconfirmed_ms = 0U;
+    // the pseudoranges of all the channels step with the receiver time, which
+    // the carrier phase does not follow: restart the carrier smoothing
+    std::fill(d_channel_last_pll_lock.begin(), d_channel_last_pll_lock.end(), false);
 }
 
 
@@ -635,16 +697,32 @@ void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data) con
     std::vector<Gnss_Synchro>::iterator it;
     const auto current_T_rx_TOW_ms = static_cast<double>(d_T_rx_TOW_ms);
     const double current_T_rx_TOW_s = current_T_rx_TOW_ms / 1000.0;
+    // the channels that update_TOW() takes as in agreement with the receiver time
+    // can be this far from it
+    const auto max_traveltime_ms = static_cast<double>(MAX_RX_TIME_ERROR_MS + MAX_TOW_SPREAD_MS + static_cast<int64_t>(d_T_rx_step_ms));
     for (it = data.begin(); it != data.end(); it++)
         {
             if (it->Flag_valid_word)
                 {
                     double traveltime_ms = current_T_rx_TOW_ms - it->interp_TOW_ms;
-                    if (fabs(traveltime_ms) > 302400)  // check TOW roll over
+                    // check TOW roll over: half a week, in ms
+                    if (traveltime_ms < -302400000.0)
                         {
                             traveltime_ms = 604800000.0 + current_T_rx_TOW_ms - it->interp_TOW_ms;
                         }
+                    else if (traveltime_ms > 302400000.0)
+                        {
+                            traveltime_ms = current_T_rx_TOW_ms - 604800000.0 - it->interp_TOW_ms;
+                        }
                     it->RX_time = current_T_rx_TOW_s;
+                    if (rx_time_is_on_hold() || fabs(traveltime_ms) > max_traveltime_ms)
+                        {
+                            // either the TOW of this channel or the receiver time is
+                            // wrong, or might be, which update_TOW() finds out from
+                            // the other channels: not a pseudorange in the meantime
+                            it->Flag_valid_pseudorange = false;
+                            continue;
+                        }
                     it->Pseudorange_m = traveltime_ms * SPEED_OF_LIGHT_M_MS;
                     it->Flag_valid_pseudorange = true;
                     // debug code
@@ -762,6 +840,121 @@ double hybrid_observables_gs::interpolate_carrier_phase(double phase_early_rads,
 }
 
 
+int64_t hybrid_observables_gs::tow_difference_ms(uint32_t tow_ms, uint32_t tow_ref_ms)
+{
+    constexpr int64_t week_ms = 604800000LL;
+    int64_t difference_ms = (static_cast<int64_t>(tow_ms) - static_cast<int64_t>(tow_ref_ms)) % week_ms;
+    if (difference_ms >= week_ms / 2)
+        {
+            difference_ms -= week_ms;
+        }
+    else if (difference_ms < -week_ms / 2)
+        {
+            difference_ms += week_ms;
+        }
+    return difference_ms;
+}
+
+
+uint32_t hybrid_observables_gs::align_rx_time_ms(int64_t tow_ms, uint32_t interval_ms)
+{
+    constexpr int64_t week_ms = 604800000LL;
+    const auto interval = static_cast<int64_t>(interval_ms);
+    tow_ms %= week_ms;
+    if (tow_ms < 0)
+        {
+            tow_ms += week_ms;
+        }
+    if (tow_ms % interval)
+        {
+            tow_ms += interval - tow_ms % interval;
+        }
+    return static_cast<uint32_t>(tow_ms % week_ms);
+}
+
+
+bool hybrid_observables_gs::tracking_samples_are_consecutive(double rx_time_early_s,
+    uint32_t tow_early_ms,
+    double rx_time_late_s,
+    uint32_t tow_late_ms)
+{
+    const double interval_s = rx_time_late_s - rx_time_early_s;
+    // written so that a NaN fails the test
+    if (!(interval_s > 0.0 && interval_s <= MAX_INTERPOLATION_INTERVAL_S))
+        {
+            return false;
+        }
+    const double tow_increment_error_ms = static_cast<double>(tow_difference_ms(tow_late_ms, tow_early_ms)) - interval_s * 1000.0;
+    return std::fabs(tow_increment_error_ms) <= MAX_TOW_INCREMENT_ERROR_MS;
+}
+
+
+uint32_t hybrid_observables_gs::find_tow_consensus(const std::vector<uint32_t> &tow_ms,
+    uint32_t &latest_tow_ms,
+    bool &is_unique)
+{
+    latest_tow_ms = 0U;
+    is_unique = false;
+    if (tow_ms.empty())
+        {
+            return 0U;
+        }
+
+    // work with offsets to one of the channels, which are free of TOW rollovers
+    // (the week becomes a line cut half a week away from that channel)
+    std::vector<int64_t> offset_ms;
+    offset_ms.reserve(tow_ms.size());
+    for (const auto tow : tow_ms)
+        {
+            offset_ms.push_back(tow_difference_ms(tow, tow_ms.front()));
+        }
+    std::sort(offset_ms.begin(), offset_ms.end());
+
+    // largest group of offsets within MAX_TOW_SPREAD_MS, the latest one if tied
+    size_t group_first = 0;
+    size_t group_last = 0;
+    size_t first = 0;
+    for (size_t last = 0; last < offset_ms.size(); last++)
+        {
+            while (offset_ms[last] - offset_ms[first] > MAX_TOW_SPREAD_MS)
+                {
+                    first++;
+                }
+            if (last - first >= group_last - group_first)
+                {
+                    group_first = first;
+                    group_last = last;
+                }
+        }
+    const size_t group_size = group_last - group_first + 1;
+
+    // any other group of that size ends before this one starts
+    is_unique = true;
+    first = 0;
+    for (size_t last = 0; last < group_first; last++)
+        {
+            while (offset_ms[last] - offset_ms[first] > MAX_TOW_SPREAD_MS)
+                {
+                    first++;
+                }
+            if (last - first + 1 == group_size)
+                {
+                    is_unique = false;
+                    break;
+                }
+        }
+
+    constexpr int64_t week_ms = 604800000LL;
+    int64_t latest_ms = (static_cast<int64_t>(tow_ms.front()) + offset_ms[group_last]) % week_ms;
+    if (latest_ms < 0)
+        {
+            latest_ms += week_ms;
+        }
+    latest_tow_ms = static_cast<uint32_t>(latest_ms);
+    return static_cast<uint32_t>(group_size);
+}
+
+
 void hybrid_observables_gs::detect_cycle_slips(std::vector<Gnss_Synchro> &data, uint64_t rx_clock)
 {
     constexpr double kCycleSlipThresholdCycles = 0.5;
@@ -861,7 +1054,11 @@ void hybrid_observables_gs::detect_cycle_slips(std::vector<Gnss_Synchro> &data, 
             const double previous_phase_cycles = prev_obs.Carrier_phase_rads / TWO_PI;
             const double delta_phase_cycles = current_phase_cycles - previous_phase_cycles;
 
-            const double residual = delta_phase_cycles + obs.Carrier_Doppler_hz * d_T_rx_step_s;
+            // the phase advances with the Doppler along the whole epoch: its final value
+            // alone leaves a term with the Doppler rate, different for each satellite,
+            // that grows with the square of the observables interval
+            const double mean_doppler_hz = 0.5 * (obs.Carrier_Doppler_hz + prev_obs.Carrier_Doppler_hz);
+            const double residual = delta_phase_cycles + mean_doppler_hz * d_T_rx_step_s;
             residuals.push_back(residual);
             channels.push_back(n);
         }

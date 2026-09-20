@@ -4,7 +4,7 @@
  *  data flow and structures
  * \authors <ul>
  *          <li> 2017-2019, Javier Arribas
- *          <li> 2017-2023, Carles Fernandez
+ *          <li> 2017-2026, Carles Fernandez
  *          <li> 2007-2013, T. Takasu
  *          </ul>
  *
@@ -23,7 +23,7 @@
  * -----------------------------------------------------------------------------
  * Copyright (C) 2007-2013, T. Takasu
  * Copyright (C) 2017-2019, Javier Arribas
- * Copyright (C) 2017-2023, Carles Fernandez
+ * Copyright (C) 2017-2026, Carles Fernandez
  * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
@@ -2122,6 +2122,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     d_fixed_base_status = fixed_base == nullptr ? Rtklib_Fixed_Base_Status::NOT_REQUESTED : Rtklib_Fixed_Base_Status::MISSING_OBSERVATIONS;
     d_fixed_base_age_s = 0.0;
     d_fixed_base_common_satellites = 0;
+    d_solution_attempted = false;
 
     // Before merging, a multi-band satellite contributes several channel
     // records and ephemerides. MAXOBS limits satellites, not input channels.
@@ -2716,6 +2717,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     if (rover_observation_count > 3)
         {
             int result = 0;
+            d_solution_attempted = true;
 
             const auto sbas_time_reference = std::find_if(
                 gnss_observables_map.cbegin(), gnss_observables_map.cend(),

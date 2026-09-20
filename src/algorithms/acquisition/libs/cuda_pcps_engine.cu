@@ -445,6 +445,53 @@ bool CudaPcpsEngine::set_doppler_wipeoffs(GridId grid, const std::complex<float>
                 }
         }
     p->wipe_bins[grid] = bins;
+
+    // Build the cuFFT plan and run the whole pipeline once on the current
+    // (zero) input. Plan creation and first kernel launches can take tens of
+    // milliseconds on Jetson; doing them here instead of on the first real
+    // dwell keeps acquisition latency deterministic when the block runs in
+    // non-blocking mode and samples flow past while the worker is busy.
+    if (!p->ensure_plan(grid, bins))
+        {
+            return false;
+        }
+    return run_pipeline(grid, bins, 0U, false);
+}
+
+
+bool CudaPcpsEngine::run_pipeline(int grid, uint32_t bins, uint32_t offset, bool accumulate)
+{
+    const uint32_t N = p->fft_size;
+    const uint32_t E = p->effective_fft_size;
+    const unsigned int total_c = bins * N;
+    const unsigned int total_m = bins * E;
+    cudaStream_t s = p->stream;
+
+    // Carrier wipe-off for every Doppler bin at once
+    k_wipeoff<<<grid_for(total_c, p->multiprocessors), THREADS_PER_BLOCK, 0, s>>>(p->d_in, p->d_wipe[grid], p->d_batch, N, total_c);
+    cudaError_t e = cudaGetLastError();
+    if (e != cudaSuccess) return p->fail("k_wipeoff", e);
+
+    // Batched forward FFT (in place)
+    cufftResult r = cufftExecC2C(p->plan[grid], reinterpret_cast<cufftComplex*>(p->d_batch), reinterpret_cast<cufftComplex*>(p->d_batch), CUFFT_FORWARD);
+    if (r != CUFFT_SUCCESS) return p->fail("cufftExecC2C(forward)", r);
+
+    // Multiply by conj(FFT(code))
+    k_mult_codes<<<grid_for(total_c, p->multiprocessors), THREADS_PER_BLOCK, 0, s>>>(p->d_batch, p->d_codes, N, total_c);
+    e = cudaGetLastError();
+    if (e != cudaSuccess) return p->fail("k_mult_codes", e);
+
+    // Batched inverse FFT (in place, unnormalised like FFTW/gr::fft)
+    r = cufftExecC2C(p->plan[grid], reinterpret_cast<cufftComplex*>(p->d_batch), reinterpret_cast<cufftComplex*>(p->d_batch), CUFFT_INVERSE);
+    if (r != CUFFT_SUCCESS) return p->fail("cufftExecC2C(inverse)", r);
+
+    // Squared magnitude (+ non-coherent accumulation) into the device grid
+    k_magnitude<<<grid_for(total_m, p->multiprocessors), THREADS_PER_BLOCK, 0, s>>>(p->d_batch, p->d_mag, N, E, offset, total_m, accumulate ? 1 : 0);
+    e = cudaGetLastError();
+    if (e != cudaSuccess) return p->fail("k_magnitude", e);
+
+    e = cudaStreamSynchronize(s);
+    if (e != cudaSuccess) return p->fail("cudaStreamSynchronize", e);
     return true;
 }
 
@@ -474,47 +521,27 @@ bool CudaPcpsEngine::compute_grid(const std::complex<float>* in, GridId grid, ui
 
     const uint32_t N = p->fft_size;
     const uint32_t E = p->effective_fft_size;
-    const unsigned int total_c = bins * N;
-    const unsigned int total_m = bins * E;
     const size_t in_bytes = static_cast<size_t>(N) * sizeof(float2);
-    const size_t mag_bytes = static_cast<size_t>(total_m) * sizeof(float);
+    const size_t mag_bytes = static_cast<size_t>(bins) * E * sizeof(float);
     cudaStream_t s = p->stream;
 
-    // 1. Input: pageable -> pinned staging -> device
+    // Input: pageable -> pinned staging -> device
     std::memcpy(p->h_in, in, in_bytes);
     cudaError_t e = cudaMemcpyAsync(p->d_in, p->h_in, in_bytes, cudaMemcpyHostToDevice, s);
     if (e != cudaSuccess) return p->fail("cudaMemcpyAsync(in)", e);
 
-    // 2. Carrier wipe-off for every Doppler bin at once
-    k_wipeoff<<<grid_for(total_c, p->multiprocessors), THREADS_PER_BLOCK, 0, s>>>(p->d_in, p->d_wipe[grid], p->d_batch, N, total_c);
-    e = cudaGetLastError();
-    if (e != cudaSuccess) return p->fail("k_wipeoff", e);
+    // Wipe-off, FFT, code multiply, IFFT, magnitude (synchronises the stream)
+    if (!run_pipeline(grid, bins, offset, accumulate))
+        {
+            return false;
+        }
 
-    // 3. Batched forward FFT (in place)
-    cufftResult r = cufftExecC2C(p->plan[grid], reinterpret_cast<cufftComplex*>(p->d_batch), reinterpret_cast<cufftComplex*>(p->d_batch), CUFFT_FORWARD);
-    if (r != CUFFT_SUCCESS) return p->fail("cufftExecC2C(forward)", r);
-
-    // 4. Multiply by conj(FFT(code))
-    k_mult_codes<<<grid_for(total_c, p->multiprocessors), THREADS_PER_BLOCK, 0, s>>>(p->d_batch, p->d_codes, N, total_c);
-    e = cudaGetLastError();
-    if (e != cudaSuccess) return p->fail("k_mult_codes", e);
-
-    // 5. Batched inverse FFT (in place, unnormalised like FFTW/gr::fft)
-    r = cufftExecC2C(p->plan[grid], reinterpret_cast<cufftComplex*>(p->d_batch), reinterpret_cast<cufftComplex*>(p->d_batch), CUFFT_INVERSE);
-    if (r != CUFFT_SUCCESS) return p->fail("cufftExecC2C(inverse)", r);
-
-    // 6. Squared magnitude (+ non-coherent accumulation) into the device grid
-    k_magnitude<<<grid_for(total_m, p->multiprocessors), THREADS_PER_BLOCK, 0, s>>>(p->d_batch, p->d_mag, N, E, offset, total_m, accumulate ? 1 : 0);
-    e = cudaGetLastError();
-    if (e != cudaSuccess) return p->fail("k_magnitude", e);
-
-    // 7. Device -> pinned staging, then wait
+    // Device -> pinned staging -> caller's per-bin rows
     e = cudaMemcpyAsync(p->h_mag, p->d_mag, mag_bytes, cudaMemcpyDeviceToHost, s);
     if (e != cudaSuccess) return p->fail("cudaMemcpyAsync(mag)", e);
     e = cudaStreamSynchronize(s);
     if (e != cudaSuccess) return p->fail("cudaStreamSynchronize", e);
 
-    // 8. Scatter rows into the caller's (separately allocated) buffers
     const size_t row_bytes = static_cast<size_t>(E) * sizeof(float);
     for (uint32_t k = 0; k < bins; k++)
         {

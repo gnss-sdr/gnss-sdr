@@ -121,6 +121,7 @@ public:
 private:
     struct Impl;
     std::unique_ptr<Impl> p;
+    bool run_pipeline(int grid, uint32_t bins, uint32_t offset, bool accumulate);
 };
 
 

@@ -172,7 +172,7 @@ bool cuda_multicorrelator::init_cuda_integrated_resampler(
             printf("maxThreadsPerBlock= %u \n", prop.maxThreadsPerBlock);
             printf("maxGridSize= %i \n", prop.maxGridSize[0]);
             printf("sharedMemPerBlock= %zu \n", prop.sharedMemPerBlock);
-            printf("deviceOverlap= %i \n", prop.deviceOverlap);
+            printf("asyncEngineCount= %i \n", prop.asyncEngineCount);
             printf("multiProcessorCount= %i \n", prop.multiProcessorCount);
         }
     else
@@ -189,7 +189,7 @@ bool cuda_multicorrelator::init_cuda_integrated_resampler(
             printf("maxThreadsPerBlock= %u \n", prop.maxThreadsPerBlock);
             printf("maxGridSize= %i \n", prop.maxGridSize[0]);
             printf("sharedMemPerBlock= %zu \n", prop.sharedMemPerBlock);
-            printf("deviceOverlap= %i \n", prop.deviceOverlap);
+            printf("asyncEngineCount= %i \n", prop.asyncEngineCount);
             printf("multiProcessorCount= %i \n", prop.multiProcessorCount);
         }
 

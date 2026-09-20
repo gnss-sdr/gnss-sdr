@@ -14,9 +14,9 @@ This guide covers building GNSS-SDR with `-DENABLE_CUDA=ON` on NVIDIA Jetson
 modules (Orin AGX / Orin NX / Orin Nano, and older Xavier / TX2 / Nano boards),
 what the CUDA build gives you, and how to measure it against the CPU baseline.
 
-It was written and verified on a Jetson Orin running JetPack 6 (L4T r36,
-Ubuntu 22.04, CUDA 12.x). Other JetPack releases differ only in package
-versions.
+It was written and verified on a Jetson Orin Nano Super Developer Kit running
+JetPack 7.2 (L4T r39, Ubuntu 24.04, CUDA 13.2, gcc 13). JetPack 6 (L4T r36,
+Ubuntu 22.04, CUDA 12.x) differs only in package versions.
 
 ## What the CUDA build enables
 
@@ -54,7 +54,8 @@ $ sudo apt-get install build-essential cmake git pkg-config libboost-dev \
        libuhd-dev gnuradio-dev gr-osmosdr protobuf-compiler python3-mako
 ```
 
-Check that CMake is at least 3.17 (`cmake --version`); JetPack 6 ships 3.22.
+Check that CMake is at least 3.17 (`cmake --version`); JetPack 6 ships 3.22
+and JetPack 7 ships 3.28.
 (CMake >= 3.24 is not required: on Jetson the build detects the SoC from the
 device tree and selects the right `sm_XX` automatically; see below.)
 
@@ -80,8 +81,11 @@ The configure log should show:
 ```
 -- NVIDIA CUDA GPU Acceleration will be enabled.
 --  Target CUDA architecture(s): 87
--- The CUDA compiler identification is NVIDIA 12.x. Standard: C++17.
+-- The CUDA compiler identification is NVIDIA 13.2.86. Standard: C++17.
 ```
+
+A full build with unit tests and benchmarks takes about 45 minutes on an Orin
+Nano at `-j4` and peaks around 4 GB of RAM.
 
 ### GPU architecture selection
 
@@ -113,8 +117,29 @@ Run the CUDA-specific unit tests (they are built into `run_tests` only when
 
 ```
 $ cd build
-$ ./src/tests/run_tests --gtest_filter='CudaPcpsEngineTest.*:GpsL1CaPcpsAcquisitionCudaTest.*:GpuMulticorrelatorTest.*'
+$ ./tests/run_tests --gtest_filter='CudaPcpsEngineTest.*:GpsL1CaPcpsAcquisitionCudaTest.*:GpuMulticorrelatorTest.*'
 ```
+
+Expected output (Orin Nano Super, JetPack 7.2):
+
+```
+CudaPcpsEngineTest.MatchesCpuReferenceSingleDwell
+  fft_size=4000 bins=40 dwells=1 max rel. error=2.7e-07 peak@(bin 27, idx 524)
+CudaPcpsEngineTest.MatchesCpuReferenceNonCoherentAccumulation
+  fft_size=4000 bins=40 dwells=4 max rel. error=2.0e-07
+CudaPcpsEngineTest.MatchesCpuReferenceBitTransitionMode
+  fft_size=8000 bins=40 dwells=1 max rel. error=2.0e-07
+CudaPcpsEngineTest.MatchesCpuReferenceLongCoherentIntegration
+  fft_size=16000 bins=100 dwells=1 max rel. error=4.1e-07
+GpsL1CaPcpsAcquisitionCudaTest.SameEstimateAsCpu
+  CPU:  Doppler=1700 Hz, delay=523 samples
+  CUDA: Doppler=1700 Hz, delay=523 samples
+[  PASSED  ] 10 tests.
+```
+
+The GPU grid matches the CPU grid to single-precision rounding (relative
+error a few 1e-7), and the full adapter returns the same acquisition estimate
+on a real capture.
 
 `CudaPcpsEngineTest.*` compares the GPU grid to a CPU reference sample by
 sample (single dwell, non-coherent accumulation, bit-transition mode and 4 ms
@@ -148,14 +173,49 @@ you do not want to build Google Benchmark.
 
 ### Reference results
 
-Measured on a Jetson AGX Orin (JetPack 6, `nvpmodel -m 0`, `jetson_clocks`),
-`fft_size` = samples per dwell, one channel:
+Measured on a Jetson Orin Nano Super Developer Kit (8 GB, 6-core Cortex-A78AE,
+1024-core Ampere GPU), JetPack 7.2 / CUDA 13.2, default `nvpmodel` 25 W mode
+with CPU/GPU frequency scaling left on (i.e. no `jetson_clocks`), board
+otherwise idle. Time is wall-clock per complete search grid; the GPU column
+includes the host-to-device copy of the input, the device-to-host copy of the
+magnitude grid, and the scatter into the acquisition block's per-bin buffers.
 
-<!-- JETSON_BENCHMARK_TABLE_START -->
-_Results are filled in from `benchmark_pcps_grid` on the target board; see the
-pull request description for the run that produced the numbers in the
-release._
-<!-- JETSON_BENCHMARK_TABLE_END -->
+| Samples per dwell (`fft_size`) | Doppler bins | CPU (µs) | GPU (µs) | Speed-up | GPU dwells/s |
+| -----------------------------: | -----------: | -------: | -------: | -------: | -----------: |
+|  2000 (2 Msps, 1 ms)           |           21 |      759 |      128 |     5.9× |         7814 |
+|  2000                          |           41 |     1483 |      188 |     7.9× |         5314 |
+|  2000                          |           81 |     2934 |      321 |     9.1× |         3113 |
+|  4000 (4 Msps, 1 ms)           |           21 |     1581 |      200 |     7.9× |         5006 |
+|  4000                          |           41 |     3085 |      336 |     9.2× |         2976 |
+|  4000                          |           81 |     6152 |      611 |    10.1× |         1636 |
+|  8000 (8 Msps, 1 ms)           |           21 |     3355 |      367 |     9.1× |         2727 |
+|  8000                          |           41 |     6695 |      661 |    10.1× |         1513 |
+|  8000                          |           81 |    13600 |     1180 |    11.5× |          847 |
+| 16000 (4 Msps, 4 ms)           |           21 |     7699 |      756 |    10.2× |         1324 |
+| 16000                          |           41 |    15091 |     1334 |    11.3× |          750 |
+| 16000                          |           81 |    29888 |     2883 |    10.4× |          347 |
+| 20000 (20 Msps, 1 ms)          |           21 |    11962 |      912 |    13.1× |         1097 |
+| 20000                          |           41 |    23445 |     1697 |    13.8× |          589 |
+| 20000                          |           81 |    46426 |     3097 |    15.0× |          323 |
+| 40000 (20 Msps, 2 ms)          |           21 |    26399 |     2231 |    11.8× |          448 |
+| 40000                          |           41 |    51341 |     4194 |    12.2× |          238 |
+| 40000                          |           81 |   101573 |     8023 |    12.7× |          125 |
+
+Reading the table: with the default GPS L1 configuration (4 Msps, 1 ms,
+±5 kHz at 250 Hz = 41 bins) one Orin Nano CPU core sustains ~320 dwells/s,
+the GPU ~3000 dwells/s. At 20 Msps the CPU falls below real time for a single
+channel with 81 bins (21 dwells/s of a 1 ms signal, i.e. 2% real time) while
+the GPU stays at 323 dwells/s. Note the CPU figures are for one core; with
+several channels in acquisition the CPU path scales with the cores you give it
+while the channels' GPU engines share one device, so the per-channel speed-up
+shrinks as `Channels.in_acquisition` grows. The numbers above are single-engine
+throughput; concurrent multi-channel GPU throughput has not been characterised.
+
+Run the sweep yourself with:
+
+```
+$ ./build/tests/benchmarks/benchmark_pcps_grid --benchmark_counters_tabular=true --benchmark_min_time=0.5s
+```
 
 ## 5. Run the receiver on the GPU
 

@@ -11,3 +11,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
     add_subdirectory(rinex-tools)
     add_subdirectory(rinex2assist)
 endif()
+
+if(ENABLE_GNSS_SDR_TUI)
+    add_subdirectory(gnss-sdr-tui)
+endif()

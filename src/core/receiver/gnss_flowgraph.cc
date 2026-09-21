@@ -137,6 +137,10 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
       enable_e6_has_rx_(false)
 {
     enable_fpga_offloading_ = configuration_->property("GNSS-SDR.enable_FPGA", false);
+    // Skip the assisted acquisition of secondary signals reported as not
+    // available (GPS SV configuration) or unhealthy by the broadcast data.
+    // Can be disabled so that acquisition does not rely on that data.
+    enable_secondary_signal_status_gating_ = configuration_->property("GNSS-SDR.enable_secondary_signal_status_gating", true);
     init();
 }
 
@@ -2651,6 +2655,139 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                                 satellite_visibility_->IsSearchExcluded(it2->get_satellite()))
                                                 {
                                                     continue;
+                                                }
+                                            // GPS: skip satellites whose SV configuration (three LSBs of
+                                            // AS_status, the MSB is the A-S flag; IS-GPS-200, 20.3.3.5.1.4)
+                                            // predates L2C (< IIR-M) or L5 (< IIF). Unknown values stay
+                                            // permissive. Without this, a satellite lacking the signal is
+                                            // retried without pause.
+                                            if (enable_secondary_signal_status_gating_ && (mapStringValues_[searched_signal] == evGPS_L5 || mapStringValues_[searched_signal] == evGPS_2S))
+                                                {
+                                                    const auto pvt_ptr = get_pvt();
+                                                    if (pvt_ptr)
+                                                        {
+                                                            const auto gps_almanac_map = pvt_ptr->get_gps_almanac();
+                                                            const auto alm_it = gps_almanac_map.find(static_cast<int>(it2->get_satellite().get_PRN()));
+                                                            if (alm_it != gps_almanac_map.end() && alm_it->second.AS_status > 0)
+                                                                {
+                                                                    const int32_t sv_config = alm_it->second.AS_status & GPS_SV_CONFIG_CODE_MASK;
+                                                                    const int32_t required_config = (mapStringValues_[searched_signal] == evGPS_L5) ? GPS_SV_CONFIG_BLOCK_IIF : GPS_SV_CONFIG_BLOCK_IIR_M;
+                                                                    if (sv_config != GPS_SV_CONFIG_UNKNOWN && sv_config < required_config)
+                                                                        {
+                                                                            continue;
+                                                                        }
+                                                                }
+                                                        }
+                                                }
+                                            // Galileo: skip E5b if flagged unhealthy in the I/NAV data
+                                            // received on E1B (ephemeris first, then almanac). E5a is not
+                                            // gated: E5a_HS is only broadcast in F/NAV on E5a itself, so a
+                                            // stale value could block a recovered satellite indefinitely.
+                                            if (enable_secondary_signal_status_gating_ && mapStringValues_[searched_signal] == evGAL_7X)
+                                                {
+                                                    const auto pvt_ptr = get_pvt();
+                                                    if (pvt_ptr)
+                                                        {
+                                                            const int prn = static_cast<int>(it2->get_satellite().get_PRN());
+                                                            int32_t health = -1;
+                                                            const auto gal_eph_map = pvt_ptr->get_galileo_ephemeris();
+                                                            const auto eph_it = gal_eph_map.find(prn);
+                                                            if (eph_it != gal_eph_map.end())
+                                                                {
+                                                                    health = eph_it->second.E5b_HS;
+                                                                }
+                                                            else
+                                                                {
+                                                                    const auto gal_alm_map = pvt_ptr->get_galileo_almanac();
+                                                                    const auto alm_it = gal_alm_map.find(prn);
+                                                                    if (alm_it != gal_alm_map.end())
+                                                                        {
+                                                                            health = alm_it->second.E5b_HS;
+                                                                        }
+                                                                }
+                                                            if (health > 0)
+                                                                {
+                                                                    continue;
+                                                                }
+                                                        }
+                                                }
+                                            // BeiDou: skip B3I if SV_health is not zero (ephemeris first,
+                                            // then almanac).
+                                            if (enable_secondary_signal_status_gating_ && mapStringValues_[searched_signal] == evBDS_B3)
+                                                {
+                                                    const auto pvt_ptr = get_pvt();
+                                                    if (pvt_ptr)
+                                                        {
+                                                            const int prn = static_cast<int>(it2->get_satellite().get_PRN());
+                                                            int32_t health = -1;
+                                                            const auto bds_eph_map = pvt_ptr->get_beidou_dnav_ephemeris();
+                                                            const auto eph_it = bds_eph_map.find(prn);
+                                                            if (eph_it != bds_eph_map.end())
+                                                                {
+                                                                    health = eph_it->second.SV_health;
+                                                                }
+                                                            else
+                                                                {
+                                                                    const auto bds_alm_map = pvt_ptr->get_beidou_dnav_almanac();
+                                                                    const auto alm_it = bds_alm_map.find(prn);
+                                                                    if (alm_it != bds_alm_map.end())
+                                                                        {
+                                                                            health = alm_it->second.SV_health;
+                                                                        }
+                                                                }
+                                                            if (health > 0)
+                                                                {
+                                                                    continue;
+                                                                }
+                                                        }
+                                                }
+                                            // GLONASS: skip L2 if the Bn health word of the ephemeris is
+                                            // not zero.
+                                            if (enable_secondary_signal_status_gating_ && mapStringValues_[searched_signal] == evGLO_2G)
+                                                {
+                                                    const auto pvt_ptr = get_pvt();
+                                                    if (pvt_ptr)
+                                                        {
+                                                            // Not *it2: the FDMA pool match can be another slot sharing
+                                                            // the frequency channel.
+                                                            const int prn = static_cast<int>(tracked_prn);
+                                                            const auto glo_eph_map = pvt_ptr->get_glonass_ephemeris();
+                                                            const auto eph_it = glo_eph_map.find(prn);
+                                                            if (eph_it != glo_eph_map.end() && eph_it->second.d_B_n > 0)
+                                                                {
+                                                                    continue;
+                                                                }
+                                                        }
+                                                }
+                                            // QZSS: skip L5 if SV_health is not zero (ephemeris first, then
+                                            // almanac). QZSS LNAV data is stored in the GPS maps.
+                                            if (enable_secondary_signal_status_gating_ && mapStringValues_[searched_signal] == evQZS_J5)
+                                                {
+                                                    const auto pvt_ptr = get_pvt();
+                                                    if (pvt_ptr)
+                                                        {
+                                                            const int prn = static_cast<int>(it2->get_satellite().get_PRN());
+                                                            int32_t health = -1;
+                                                            const auto gps_eph_map = pvt_ptr->get_gps_ephemeris();
+                                                            const auto eph_it = gps_eph_map.find(prn);
+                                                            if (eph_it != gps_eph_map.end())
+                                                                {
+                                                                    health = eph_it->second.SV_health;
+                                                                }
+                                                            else
+                                                                {
+                                                                    const auto gps_alm_map = pvt_ptr->get_gps_almanac();
+                                                                    const auto alm_it = gps_alm_map.find(prn);
+                                                                    if (alm_it != gps_alm_map.end())
+                                                                        {
+                                                                            health = alm_it->second.SV_health;
+                                                                        }
+                                                                }
+                                                            if (health > 0)
+                                                                {
+                                                                    continue;
+                                                                }
+                                                        }
                                                 }
                                             // Doppler observed on the assisting band, projected to the searched band
                                             estimated_doppler = static_cast<float>(project_doppler(searched_signal, assist_signal, current_status.second->Carrier_Doppler_hz));

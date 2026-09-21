@@ -64,6 +64,7 @@ class Galileo_HAS_data;
 class Galileo_Reduced_CED;
 class Geohash;
 class GeoJSON_Printer;
+class Glonass_Gnav_Ephemeris;
 class Gps_Almanac;
 class Gps_Ephemeris;
 class Gpx_Printer;

@@ -1705,10 +1705,18 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                 {
                     // ### GPS ALMANAC ###
                     const auto gps_almanac = wht::any_cast<std::shared_ptr<Gps_Almanac>>(pmt::any_ref(msg));
-                    d_internal_pvt_solver->gps_almanac_map[gps_almanac->PRN] = *gps_almanac;
+                    Gps_Almanac new_almanac = *gps_almanac;
+                    // AS_status comes from page 25 of subframe 4: a channel that has not
+                    // decoded it yet reports it as unknown (<= 0). Keep the stored value.
+                    const auto stored_almanac = d_internal_pvt_solver->gps_almanac_map.find(static_cast<int>(new_almanac.PRN));
+                    if ((new_almanac.AS_status <= 0) && (stored_almanac != d_internal_pvt_solver->gps_almanac_map.cend()) && (stored_almanac->second.AS_status > 0))
+                        {
+                            new_almanac.AS_status = stored_almanac->second.AS_status;
+                        }
+                    d_internal_pvt_solver->gps_almanac_map[new_almanac.PRN] = new_almanac;
                     if (d_enable_rx_clock_correction == true)
                         {
-                            d_user_pvt_solver->gps_almanac_map[gps_almanac->PRN] = *gps_almanac;
+                            d_user_pvt_solver->gps_almanac_map[new_almanac.PRN] = new_almanac;
                         }
                     DLOG(INFO) << "New GPS almanac record has arrived";
                 }

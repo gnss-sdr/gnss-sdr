@@ -257,7 +257,7 @@ private:
     // back to the other bucket when the selected one is empty; FIFO order is kept
     // within each bucket. Excluded entries are never picked but stay queued until
     // the next visibility recompute. Sets picked=false when nothing is searchable.
-    Gnss_Signal pop_by_visibility(std::list<Gnss_Signal>& available_signals, const std::string& searched_signal, bool& picked);
+    Gnss_Signal pop_by_visibility(std::list<Gnss_Signal>& available_signals, const std::string& searched_signal, bool& picked, double cooldown_receiver_time_s);
     void print_help();
     void check_desktop_conf_in_fpga_env();
 
@@ -311,6 +311,16 @@ private:
     // search_next_signal(): the condition is re-evaluated for every idle channel at
     // ~10 Hz and would otherwise flood the log.
     std::unordered_map<std::string, std::chrono::steady_clock::time_point> no_assist_log_throttle_;
+
+    // Acquisition retry cooldown per PRN and signal, set with
+    // GNSS-SDR.acquisition_max_retry_rate_hz (0 = disabled). Paced by the
+    // receiver time reported by the observables block, which keeps running
+    // without a PVT fix and follows the signal timeline in file replays.
+    // The map stores the receiver time of the last attempt.
+    double acquisition_retry_min_interval_s_;
+    std::unordered_map<std::string, double> last_acquisition_attempt_rx_time_s_;
+    bool InAcquisitionCooldown(const Gnss_Signal& gs, double receiver_time_s) const;
+    void MarkAcquisitionAttempt(const Gnss_Signal& gs, double receiver_time_s);
 
     enum StringValue
     {

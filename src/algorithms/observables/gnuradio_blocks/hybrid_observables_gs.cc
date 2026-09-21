@@ -1400,13 +1400,19 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                 {
                     out[n][0] = epoch_data[n];
                 }
-            // report channel status every second
+            // report the receiver time every 100 ms and the channel status every second
+            d_T_time_report_timer_ms += d_T_rx_step_ms;
             d_T_status_report_timer_ms += d_T_rx_step_ms;
-            if (d_T_status_report_timer_ms >= 1000)
+            const bool report_channel_status = (d_T_status_report_timer_ms >= 1000);
+            if (report_channel_status || (d_T_time_report_timer_ms >= 100))
                 {
-                    // Advance visibility's clock even with no tracking or PVT fix.
+                    // Advance the flowgraph's clock even with no tracking or PVT fix.
                     // Counting processed epochs also preserves recorded-data timing.
                     this->message_port_pub(pmt::mp("status"), pmt::from_double(static_cast<double>(d_epoch_counter) * d_T_rx_step_s));
+                    d_T_time_report_timer_ms = 0;
+                }
+            if (report_channel_status)
+                {
                     for (uint32_t n = 0; n < d_nchannels_out; n++)
                         {
                             std::shared_ptr<Gnss_Synchro> gnss_synchro_sptr = std::make_shared<Gnss_Synchro>(epoch_data[n]);

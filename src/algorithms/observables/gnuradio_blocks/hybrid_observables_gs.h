@@ -245,6 +245,7 @@ private:
     uint32_t d_T_rx_contradicted_ms{0};     // time that the channels have been contradicting the rx time
     uint32_t d_T_rx_TOW_unconfirmed_ms{0};  // time that the rx time has been running, if no group of channels agreed on it
     uint32_t d_T_status_report_timer_ms;
+    uint32_t d_T_time_report_timer_ms{0};
     uint32_t d_nchannels_in;
     uint32_t d_nchannels_out;
 

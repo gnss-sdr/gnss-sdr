@@ -22,7 +22,7 @@ Ubuntu 22.04, CUDA 12.x) differs only in package versions.
 
 | Block / feature                       | Selected with                                             | Notes                                                                                                                                                          |
 | ------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **GPU acquisition grid (all PCPS blocks)** | `Acquisition_XX.use_cuda=true` (or `GNSS-SDR.use_cuda_acquisition=true` globally) | The Doppler x code-phase search grid of every `*_PCPS_Acquisition` implementation is evaluated with batched cuFFTs. Peak search and statistics are unchanged, so results are identical to the CPU path. Falls back to the CPU automatically if the device cannot be initialised. |
+| **GPU acquisition grid (all PCPS blocks)** | `Acquisition_XX.use_cuda=true` (or `GNSS-SDR.use_cuda_acquisition=true` globally) | The Doppler x code-phase search grid of every `*_PCPS_Acquisition` implementation is evaluated with batched cuFFTs. Peak search and statistics are unchanged, so results are identical to the CPU path. Falls back to the CPU automatically if the device cannot be initialized. |
 | `GPS_L1_CA_DLL_PLL_Tracking_GPU`      | `Tracking_1C.implementation=GPS_L1_CA_DLL_PLL_Tracking_GPU` | Legacy CUDA multi-correlator tracking block (GPS L1 C/A only, experimental).                                                                                   |
 
 Optional per-block override for multi-GPU hosts: `Acquisition_XX.cuda_device=N`
@@ -154,8 +154,8 @@ with and without the two-step (fine Doppler) search.
 ## 4. Benchmark: GPU acquisition vs CPU baseline
 
 `benchmark_pcps_grid` (built with `-DENABLE_BENCHMARKS=ON`) times one complete
-PCPS search grid — carrier wipe-off, forward FFT, code multiplication, inverse
-FFT and squared magnitude for every Doppler bin — on the CPU (volk + FFTW via
+PCPS search grid (carrier wipe-off, forward FFT, code multiplication, inverse
+FFT and squared magnitude for every Doppler bin) on the CPU (volk + FFTW via
 `gr::fft`, the receiver's default) and on the GPU (`CudaPcpsEngine`, including
 host <-> device transfers), for a sweep of FFT sizes and Doppler bin counts:
 
@@ -213,7 +213,7 @@ the GPU stays at 323 dwells/s. Note the CPU figures are for one core; with
 several channels in acquisition the CPU path scales with the cores you give it
 while the channels' GPU engines share one device, so the per-channel speed-up
 shrinks as `Channels.in_acquisition` grows. The numbers above are single-engine
-throughput; concurrent multi-channel GPU throughput has not been characterised.
+throughput; concurrent multi-channel GPU throughput has not been characterized.
 
 Run the sweep yourself with:
 
@@ -243,7 +243,7 @@ the GPU path is active:
 PCPS acquisition grid will be computed on CUDA device Orin (FFT size 4000, up to 21 Doppler bins, ...)
 ```
 
-If the device cannot be initialised the block logs a `WARNING` and continues on
+If the device cannot be initialized the block logs a `WARNING` and continues on
 the CPU, so a configuration that enables `use_cuda` stays usable on a machine
 without a GPU (or built without `ENABLE_CUDA`).
 
@@ -272,7 +272,7 @@ Doppler range.
 
 ## 6. Notes on the implementation
 
-- `src/algorithms/acquisition/libs/cuda_pcps_engine.{h,cu}` — the engine. One
+- `src/algorithms/acquisition/libs/cuda_pcps_engine.{h,cu}` is the engine. One
   CUDA stream and one cuFFT batched plan per acquisition block (per channel),
   so channels acquiring concurrently overlap on the device. All Doppler bins are
   processed in a single batched forward/inverse FFT pair; three small kernels
@@ -294,6 +294,6 @@ Doppler range.
 | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | `No CMAKE_CUDA_COMPILER could be found`                                       | `nvcc` not on `PATH`; export `/usr/local/cuda/bin` or pass `-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc`.                                 |
 | `nvcc fatal : Unsupported gpu architecture 'compute_30'`                      | Stale build directory from an older GNSS-SDR; delete `build/` and reconfigure.                                                               |
-| `CUDA acquisition engine could not be initialised (... cudaErrorNoDevice ...)` | The process cannot see the GPU. Check `nvidia-smi`/`tegrastats`, and that the user is in the `video` group on Jetson.                        |
+| `CUDA acquisition engine could not be initialized (... cudaErrorNoDevice ...)` | The process cannot see the GPU. Check `nvidia-smi`/`tegrastats`, and that the user is in the `video` group on Jetson.                        |
 | `CUFFT_ALLOC_FAILED` for large FFTs                                           | Not enough GPU memory for `bins x fft_size`. Reduce `doppler_max`/increase `doppler_step`, or lower `coherent_integration_time_ms`.          |
 | `unsupported GNU version! gcc versions later than N are not supported`        | Host compiler newer than the toolkit supports; pass `-DCMAKE_CUDA_HOST_COMPILER=g++-N` (JetPack 6's gcc 11 is supported by CUDA 12).         |

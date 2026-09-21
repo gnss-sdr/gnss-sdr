@@ -434,7 +434,7 @@ bool CudaPcpsEngine::set_doppler_wipeoffs(GridId grid, const std::complex<float>
         }
     // Rows live in separate host allocations; copy them one by one. This is
     // only done when the Doppler grid changes (PRN change on FDMA, assisted
-    // Doppler centre, or the two-step refinement), not per dwell.
+    // Doppler center, or the two-step refinement), not per dwell.
     const size_t row_bytes = p->fft_size * sizeof(float2);
     for (uint32_t k = 0; k < bins; k++)
         {
@@ -481,7 +481,7 @@ bool CudaPcpsEngine::run_pipeline(int grid, uint32_t bins, uint32_t offset, bool
     e = cudaGetLastError();
     if (e != cudaSuccess) return p->fail("k_mult_codes", e);
 
-    // Batched inverse FFT (in place, unnormalised like FFTW/gr::fft)
+    // Batched inverse FFT (in place, unnormalized like FFTW/gr::fft)
     r = cufftExecC2C(p->plan[grid], reinterpret_cast<cufftComplex*>(p->d_batch), reinterpret_cast<cufftComplex*>(p->d_batch), CUFFT_INVERSE);
     if (r != CUFFT_SUCCESS) return p->fail("cufftExecC2C(inverse)", r);
 
@@ -530,7 +530,7 @@ bool CudaPcpsEngine::compute_grid(const std::complex<float>* in, GridId grid, ui
     cudaError_t e = cudaMemcpyAsync(p->d_in, p->h_in, in_bytes, cudaMemcpyHostToDevice, s);
     if (e != cudaSuccess) return p->fail("cudaMemcpyAsync(in)", e);
 
-    // Wipe-off, FFT, code multiply, IFFT, magnitude (synchronises the stream)
+    // Wipe-off, FFT, code multiply, IFFT, magnitude (synchronizes the stream)
     if (!run_pipeline(grid, bins, offset, accumulate))
         {
             return false;

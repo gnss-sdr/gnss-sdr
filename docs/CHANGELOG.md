@@ -184,7 +184,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   batched cuFFTs by setting `Acquisition_XX.use_cuda=true` (or
   `GNSS-SDR.use_cuda_acquisition=true`). Peak search and detection statistics
   are unchanged, so results match the CPU implementation; the block falls back
-  to the CPU if the device cannot be initialised. Added
+  to the CPU if the device cannot be initialized. Added
   `benchmark_pcps_grid` (CPU baseline vs. GPU) and unit tests checking the GPU
   grid against the CPU reference and running the full GPS L1 C/A adapter on a
   real capture.
@@ -435,7 +435,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   cross-compilation handling.
 - The CUDA build (`-DENABLE_CUDA=ON`) works again with current toolkits and on
   NVIDIA Jetson: removed the hardcoded `sm_30` (Kepler) architecture, which
-  CUDA >= 11 rejects; `CMAKE_CUDA_ARCHITECTURES` is now honoured and detected
+  CUDA >= 11 rejects; `CMAKE_CUDA_ARCHITECTURES` is now honored and detected
   automatically on Jetson (Orin -> 87, Xavier -> 72, TX2 -> 62, Nano -> 53) or
   set to `native` with CMake >= 3.24; the CUDA language standard follows the
   host C++ standard (C++17); imported `CUDA::cudart`/`CUDA::cufft` targets are
@@ -464,7 +464,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   steps active.
 - `GPS_L1_CA_DLL_PLL_Tracking_GPU`: fixed a cross-block data race in the CUDA
   multi-correlator kernel (the carrier wipe-off and the correlation were in the
-  same launch, synchronised only with `__syncthreads()`), fixed the
+  same launch, synchronized only with `__syncthreads()`), fixed the
   `cudaHostAlloc` flags (`cudaHostAllocMapped || cudaHostAllocWriteCombined`
   evaluated to `cudaHostAllocPortable`), stopped calling `cudaDeviceReset()`
   from a per-channel destructor (it tore down the context under the other

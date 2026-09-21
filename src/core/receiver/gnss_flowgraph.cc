@@ -142,9 +142,8 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
     // Can be disabled so that acquisition does not rely on that data.
     enable_secondary_signal_status_gating_ = configuration_->property("GNSS-SDR.enable_secondary_signal_status_gating", true);
     const double acquisition_max_retry_rate_hz = configuration_->property("GNSS-SDR.acquisition_max_retry_rate_hz", 0.0);
-    // The receiver time that paces the cooldown is reported by the observables
-    // block every 100 ms (or every observables interval, if longer), so higher
-    // rates act as that reporting rate.
+    // Paced by the receiver time reported by the observables block every
+    // 100 ms (or every epoch, if longer): higher rates act as that rate.
     acquisition_retry_min_interval_s_ = (acquisition_max_retry_rate_hz > 0.0) ? (1.0 / acquisition_max_retry_rate_hz) : 0.0;
     init();
 }
@@ -1962,19 +1961,8 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                         }
                     break;
                 }
-            // Same acquisition retry cooldown as the search-pool paths (see
-            // InAcquisitionCooldown()'s doc comment): this branch otherwise
-            // retries the very same satellite unconditionally on every
-            // tracking loss, and a marginal signal that locks then drops
-            // essentially instantly can cycle through this exact path
-            // hundreds of times per second, same failure mode as the
-            // search-pool churn this was originally written for -- just via
-            // a different trigger (TRK FAILED here vs. ACQ FAILED there). A
-            // no-op check when acquisition_max_retry_rate_hz is unset (the
-            // default), since InAcquisitionCooldown() then always returns
-            // false. Paced on sample-counter-derived receiver time, not
-            // wall-clock -- see last_acquisition_attempt_rx_time_s_'s doc
-            // comment.
+            // Retry the same satellite unless it is in acquisition cooldown (a
+            // signal that locks and drops at once would loop here).
             {
                 double receiver_time_s = 0.0;
                 channels_status_->get_current_status_pvt(&receiver_time_s);
@@ -2561,22 +2549,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
     std::vector<std::string> assist_signal_candidates;
     auto& available_signals = available_signals_map_.at(searched_signal);
 
-    // For the acquisition retry cooldown (InAcquisitionCooldown() /
-    // MarkAcquisitionAttempt(), used below and in pop_by_visibility()) --
-    // named distinctly from this function's own RX_time output parameter
-    // above, which is a different thing (the already-tracked companion
-    // signal's RX_time, used for Doppler projection, not "now" for pacing).
-    // Sample-counter-derived elapsed time (same source as
-    // SatelliteVisibility::Tick()'s receiver_time_s), not the PVT fix's own
-    // RX_time: rtklib_pvt_gs.cc only publishes a status message while
-    // is_valid_position() holds, so RX_time freezes at its last value once
-    // the fix is lost -- which would silently stop this cooldown from ever
-    // expiring during an outage. Skipped entirely (defaults to 0.0, same as
-    // before any samples have been processed) when the feature is
-    // disabled, to avoid paying for the mutex-locked fetch on every idle
-    // channel's every idle tick for no benefit -- same "only pay when the
-    // feature can actually use it" discipline as the other lazily-fetched
-    // state in this function/pop_by_visibility() below.
+    // Time for the acquisition retry cooldown, fetched only if enabled
     double cooldown_receiver_time_s = 0.0;
     if (acquisition_retry_min_interval_s_ > 0.0)
         {
@@ -2834,15 +2807,8 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                                                 }
                                                         }
                                                 }
-                                            // Same acquisition retry cooldown as pop_by_visibility()
-                                            // and the legacy pick path -- this fast path re-scans on
-                                            // every idle tick too, and a secondary-frequency attempt
-                                            // that fails immediately (e.g. the primary is tracked but
-                                            // the secondary genuinely isn't receivable) would otherwise
-                                            // be re-offered just as fast. No-op when
-                                            // acquisition_max_retry_rate_hz is unset (the default).
-                                            // Check the signal that will be acquired: with FDMA, *it2 can be
-                                            // another slot sharing the frequency channel (see result below).
+                                            // Acquisition retry cooldown, checked on the signal that will be
+                                            // acquired: with FDMA, *it2 can be another slot on the same channel.
                                             const bool other_glonass_slot = glonass_fdma && (it2->get_satellite().get_PRN() != tracked_prn);
                                             const Gnss_Signal cooldown_signal = other_glonass_slot ? Gnss_Signal(Gnss_Satellite(std::string("Glonass"), tracked_prn), searched_signal) : *it2;
                                             if (InAcquisitionCooldown(cooldown_signal, cooldown_receiver_time_s))
@@ -2916,12 +2882,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                 }
             else
                 {
-                    // Legacy (non-visibility-aware) path: same acquisition
-                    // retry cooldown as pop_by_visibility() above, applied by
-                    // skipping to the first non-throttled entry instead of
-                    // blindly taking front(). A no-op scan when
-                    // acquisition_retry_min_interval_s_ is 0 (the default),
-                    // since InAcquisitionCooldown() then always returns false.
+                    // Take the first entry that is not in acquisition cooldown
                     auto it = std::find_if(available_signals.begin(), available_signals.end(),
                         [&](const Gnss_Signal& gs) { return !InAcquisitionCooldown(gs, cooldown_receiver_time_s); });
                     if (it == available_signals.end())
@@ -2961,12 +2922,9 @@ bool GNSSFlowgraph::InAcquisitionCooldown(const Gnss_Signal& gs, double receiver
             return false;
         }
     const double elapsed_s = receiver_time_s - it->second;
-    // A negative elapsed time shouldn't happen (the sample-counter clock is
-    // monotonic for the life of the flowgraph), but fail open rather than
-    // risk blocking a pick indefinitely if it ever does.
-    // The clock advances in steps of 100 ms or more: without a tolerance,
-    // rounding would hold an interval that is a multiple of the step for one
-    // more step.
+    // The clock advances in steps: the tolerance avoids holding an interval
+    // that is a multiple of the step for one more step. Fail open if the
+    // elapsed time is negative.
     constexpr double tolerance_s = 1e-3;
     return elapsed_s >= 0.0 && (elapsed_s + tolerance_s) < acquisition_retry_min_interval_s_;
 }
@@ -3062,21 +3020,8 @@ Gnss_Signal GNSSFlowgraph::pop_by_visibility(std::list<Gnss_Signal>& available_s
 
     if (it == available_signals.end())
         {
-            // Nothing pickable right now. Two different reasons, and only one
-            // of them is safe to cache in signals_with_nothing_searchable_:
-            // if every entry is genuinely excluded (elevation known, not
-            // visible), nothing will change until a push_back_signal() or a
-            // visibility reclassification invalidates the cache, so it's
-            // safe (and, per that set's doc comment, important for CPU) to
-            // skip re-scanning on every idle tick. But if the only reason
-            // nothing was picked is that the remaining entries are
-            // acquisition-cooldown-throttled (see InAcquisitionCooldown()),
-            // that expires on its own with no other event to invalidate the
-            // cache -- caching here would wrongly leave the channel idle
-            // forever after the cooldown clears. So only cache true
-            // exhaustion, and stay silent (no log) on a cooldown-only miss to
-            // avoid flooding the log at idle-tick rate while several idle
-            // channels contend for one PRN that's mid-cooldown.
+            // Nothing can be picked now. Cache that only if every entry is excluded:
+            // a cooldown expires with no event to invalidate the cache.
             const bool any_searchable_at_all = std::any_of(available_signals.begin(), available_signals.end(), is_searchable);
             if (!any_searchable_at_all)
                 {

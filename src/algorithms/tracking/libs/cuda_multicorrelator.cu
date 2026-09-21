@@ -29,24 +29,17 @@
 
 #define ACCUM_N 128
 
-__global__ void Doppler_wippe_scalarProdGPUCPXxN_shifts_chips(
-    GPU_Complex *d_corr_out,
-    GPU_Complex *d_sig_in,
+// Stage 1: carrier wipe-off. Every block covers a grid-strided slice of the
+// input, so this MUST be a separate launch from the correlator below: a
+// __syncthreads() only orders threads within one block, and the correlator
+// reads the whole wiped vector from every block.
+__global__ void Doppler_wipeoff_kernel(
+    const GPU_Complex *d_sig_in,
     GPU_Complex *d_sig_wiped,
-    GPU_Complex *d_local_code_in,
-    float *d_shifts_chips,
-    int code_length_chips,
-    float code_phase_step_chips,
-    float rem_code_phase_chips,
-    int vectorN,
     int elementN,
     float rem_carrier_phase_in_rad,
     float phase_step_rad)
 {
-    //Accumulators cache
-    __shared__ GPU_Complex accumResult[ACCUM_N];
-
-    // CUDA version of floating point NCO and vector dot product integrated
     float sin;
     float cos;
     for (int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -56,8 +49,24 @@ __global__ void Doppler_wippe_scalarProdGPUCPXxN_shifts_chips(
             __sincosf(rem_carrier_phase_in_rad + i * phase_step_rad, &sin, &cos);
             d_sig_wiped[i] = d_sig_in[i] * GPU_Complex(cos, -sin);
         }
+}
 
-    __syncthreads();
+
+// Stage 2: multi-tap correlator with integrated local code resampler.
+__global__ void Doppler_wippe_scalarProdGPUCPXxN_shifts_chips(
+    GPU_Complex *d_corr_out,
+    const GPU_Complex *d_sig_wiped,
+    const GPU_Complex *d_local_code_in,
+    const float *d_shifts_chips,
+    int code_length_chips,
+    float code_phase_step_chips,
+    float rem_code_phase_chips,
+    int vectorN,
+    int elementN)
+{
+    //Accumulators cache
+    __shared__ GPU_Complex accumResult[ACCUM_N];
+
     ////////////////////////////////////////////////////////////////////////////
     // Cycle through every pair of vectors,
     // taking into account that vector counts can be different
@@ -162,8 +171,8 @@ bool cuda_multicorrelator::init_cuda_integrated_resampler(
             printf("L2 Cache size= %u \n", prop.l2CacheSize);
             printf("maxThreadsPerBlock= %u \n", prop.maxThreadsPerBlock);
             printf("maxGridSize= %i \n", prop.maxGridSize[0]);
-            printf("sharedMemPerBlock= %lu \n", prop.sharedMemPerBlock);
-            printf("deviceOverlap= %i \n", prop.deviceOverlap);
+            printf("sharedMemPerBlock= %zu \n", prop.sharedMemPerBlock);
+            printf("asyncEngineCount= %i \n", prop.asyncEngineCount);
             printf("multiProcessorCount= %i \n", prop.multiProcessorCount);
         }
     else
@@ -179,8 +188,8 @@ bool cuda_multicorrelator::init_cuda_integrated_resampler(
             printf("L2 Cache size= %u \n", prop.l2CacheSize);
             printf("maxThreadsPerBlock= %u \n", prop.maxThreadsPerBlock);
             printf("maxGridSize= %i \n", prop.maxGridSize[0]);
-            printf("sharedMemPerBlock= %lu \n", prop.sharedMemPerBlock);
-            printf("deviceOverlap= %i \n", prop.deviceOverlap);
+            printf("sharedMemPerBlock= %zu \n", prop.sharedMemPerBlock);
+            printf("asyncEngineCount= %i \n", prop.asyncEngineCount);
             printf("multiProcessorCount= %i \n", prop.multiProcessorCount);
         }
 
@@ -319,9 +328,17 @@ bool cuda_multicorrelator::Carrier_wipeoff_multicorrelator_resampler_cuda(
 
     //launch the multitap correlator with integrated local code resampler!
 
+    Doppler_wipeoff_kernel<<<blocksPerGrid, threadsPerBlock, 0, stream1>>>(
+        d_sig_in,
+        d_sig_doppler_wiped,
+        signal_length_samples,
+        rem_carrier_phase_in_rad,
+        phase_step_rad);
+    gpuErrchk(cudaPeekAtLastError());
+
+    // Same stream: the correlator starts only after the wipe-off has completed
     Doppler_wippe_scalarProdGPUCPXxN_shifts_chips<<<blocksPerGrid, threadsPerBlock, 0, stream1>>>(
         d_corr_out,
-        d_sig_in,
         d_sig_doppler_wiped,
         d_local_codes_in,
         d_shifts_chips,
@@ -329,9 +346,7 @@ bool cuda_multicorrelator::Carrier_wipeoff_multicorrelator_resampler_cuda(
         code_phase_step_chips,
         rem_code_phase_chips,
         n_correlators,
-        signal_length_samples,
-        rem_carrier_phase_in_rad,
-        phase_step_rad);
+        signal_length_samples);
 
     gpuErrchk(cudaPeekAtLastError());
     gpuErrchk(cudaStreamSynchronize(stream1));
@@ -355,28 +370,41 @@ cuda_multicorrelator::cuda_multicorrelator()
     d_shifts_samples = NULL;
     d_shifts_chips = NULL;
     d_corr_out = NULL;
+    d_sig_in_cpu = NULL;
+    d_corr_out_cpu = NULL;
+    stream1 = 0;
     threadsPerBlock = 0;
     blocksPerGrid = 0;
     d_code_length_chips = 0;
+    selected_gps_device = 0;
+    num_gpu_devices = 0;
+    selected_device = 0;
 }
 
 
 bool cuda_multicorrelator::free_cuda()
 {
-    // Free device global memory
-    if (d_sig_in != NULL) cudaFree(d_sig_in);
+    cudaSetDevice(selected_gps_device);
+    if (stream1 != 0) cudaStreamSynchronize(stream1);
+    // Free device global memory. d_sig_in and d_corr_out are device aliases of
+    // host-mapped buffers owned by the caller (see set_input_output_vectors), so
+    // they must NOT be released here: the caller frees them with cudaFreeHost().
     if (d_nco_in != NULL) cudaFree(d_nco_in);
     if (d_sig_doppler_wiped != NULL) cudaFree(d_sig_doppler_wiped);
     if (d_local_codes_in != NULL) cudaFree(d_local_codes_in);
-    if (d_corr_out != NULL) cudaFree(d_corr_out);
     if (d_shifts_samples != NULL) cudaFree(d_shifts_samples);
     if (d_shifts_chips != NULL) cudaFree(d_shifts_chips);
-    // Reset the device and exit
-    // cudaDeviceReset causes the driver to clean up all state. While
-    // not mandatory in normal operation, it is good practice.  It is also
-    // needed to ensure correct operation when the application is being
-    // profiled. Calling cudaDeviceReset causes all profile data to be
-    // flushed before the application exits
-    cudaDeviceReset();
+    d_sig_in = NULL;
+    d_corr_out = NULL;
+    d_nco_in = NULL;
+    d_sig_doppler_wiped = NULL;
+    d_local_codes_in = NULL;
+    d_shifts_samples = NULL;
+    d_shifts_chips = NULL;
+    if (stream1 != 0) cudaStreamDestroy(stream1);
+    stream1 = 0;
+    // Do NOT call cudaDeviceReset() here: this object is per-channel and a
+    // reset would tear down the context under every other channel that is
+    // still tracking. The process-wide reset is done once in main().
     return true;
 }

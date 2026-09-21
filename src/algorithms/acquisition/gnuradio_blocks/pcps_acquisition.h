@@ -46,6 +46,9 @@
 #include "acq_conf.h"
 #include "channel_fsm.h"
 #include "gnss_sdr_fft.h"
+#if CUDA_GPU_ACCEL
+#include "cuda_pcps_engine.h"
+#endif
 #include <armadillo>
 #include <gnuradio/block.h>
 #include <gnuradio/gr_complex.h>              // for gr_complex
@@ -186,6 +189,12 @@ private:
     void update_grid_doppler_wipeoffs();
     void update_grid_doppler_wipeoffs_step2();
     void doppler_grid(const gr_complex* in);
+    void doppler_grid_cpu(const gr_complex* in);
+#if CUDA_GPU_ACCEL
+    void init_cuda_engine();
+    void cuda_upload_wipeoffs(CudaPcpsEngine::GridId grid);
+    bool doppler_grid_cuda(const gr_complex* in);
+#endif
     AcquisitionResult compute_statistics();
     void update_synchro(const AcquisitionResult& result);
     void handle_threshold_reached(AcquisitionResult& result);
@@ -286,6 +295,9 @@ private:
     volk_gnsssdr::vector<std::complex<float>> d_grid_doppler_wipeoffs;
     volk_gnsssdr::vector<std::complex<float>> d_fft_codes;
     std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
+#if CUDA_GPU_ACCEL
+    std::unique_ptr<CudaPcpsEngine> d_cuda_engine;  // null => CPU path
+#endif
 };
 
 

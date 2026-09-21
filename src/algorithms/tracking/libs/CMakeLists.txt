@@ -43,7 +43,8 @@ set(TRACKING_LIB_HEADERS
 )
 
 if(ENABLE_CUDA)
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30; -O3; -use_fast_math -default-stream per-thread")
+    # Architecture selection is driven by CMAKE_CUDA_ARCHITECTURES (see the
+    # top-level CMakeLists.txt); do not hardcode -gencode flags here.
     if(CMAKE_VERSION VERSION_GREATER 3.11)
         set(TRACKING_LIB_SOURCES ${TRACKING_LIB_SOURCES} cuda_multicorrelator.cu)
         set(TRACKING_LIB_HEADERS ${TRACKING_LIB_HEADERS} cuda_multicorrelator.h)
@@ -104,6 +105,10 @@ if(ENABLE_CUDA)
     if(CMAKE_VERSION VERSION_GREATER 3.11)
         target_include_directories(tracking_libs
             PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+        )
+        target_link_libraries(tracking_libs PUBLIC CUDA::cudart)
+        target_compile_options(tracking_libs PRIVATE
+            $<$<COMPILE_LANGUAGE:CUDA>:--default-stream=per-thread>
         )
     else()
         target_link_libraries(tracking_libs

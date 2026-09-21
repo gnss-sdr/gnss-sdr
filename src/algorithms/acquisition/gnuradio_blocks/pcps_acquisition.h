@@ -179,24 +179,24 @@ private:
         uint32_t index_time{0};
         uint64_t sample_count{0};
         float test_statistics{0};
-        bool positive_acq{false};
+        float threshold{0};
     };
 
     void update_local_carrier(own::span<gr_complex> carrier_vector, float freq) const;
     void update_grid_doppler_wipeoffs();
     void update_grid_doppler_wipeoffs_step2();
-    void doppler_grid(const gr_complex* in);
-    AcquisitionResult compute_statistics();
-    void update_synchro(const AcquisitionResult& result);
-    void handle_threshold_reached(AcquisitionResult& result);
-    void handle_integration_done(const AcquisitionResult& result);
-    void acquisition_core(uint64_t sample_count);
-    void log_acquisition(const AcquisitionResult& result) const;
-    void send_negative_acquisition(const AcquisitionResult& result);
+    void doppler_grid(const gr_complex* in, uint32_t num_doppler_bins, const std::complex<float>* grid_doppler_wipeoffs);
+    AcquisitionResult compute_statistics(uint32_t num_doppler_bins, uint32_t candidate_count, int32_t doppler_max, int32_t doppler_step, bool step_two);
+    void update_synchro(const AcquisitionResult& result, float doppler_step);
+    void check_result(const AcquisitionResult& result, bool step_two);
+    bool acquisition_core(uint64_t sample_count, bool step_two);
+    void acquisition(uint64_t sample_count);
+    void log_acquisition(const AcquisitionResult& result, bool positive_acq);
     void send_positive_acquisition(const AcquisitionResult& result);
-    void dump_results(const AcquisitionResult& result);
+    void send_negative_acquisition(const AcquisitionResult& result);
+    void dump_results(const AcquisitionResult& result, bool positive_acq);
     void ensure_dump_grid_allocated();
-    void copy_magnitude_grid_to_dump_grid();
+    void copy_magnitude_grid_to_dump_grid(uint32_t num_doppler_bins, arma::fmat& grid);
     bool should_dump_channel() const;
     std::complex<float>* doppler_wipeoff_data(uint32_t doppler_index);
     std::complex<float>* doppler_wipeoff_step_two_data(uint32_t doppler_index);
@@ -211,8 +211,8 @@ private:
     // candidate_count), the full computed row count, for its CFAR "opposite bin"
     // reference lookup -- first_vs_second_peak_statistic has no such reference
     // concept, so it only needs candidate_count.
-    AcquisitionResult first_vs_second_peak_statistic(uint32_t candidate_count, int32_t doppler_max, int32_t doppler_step);
-    AcquisitionResult max_to_input_power_statistic(uint32_t num_doppler_bins, uint32_t candidate_count, int32_t doppler_max, int32_t doppler_step);
+    AcquisitionResult first_vs_second_peak_statistic(uint32_t candidate_count, int32_t doppler_max, int32_t doppler_step, bool step_two);
+    AcquisitionResult max_to_input_power_statistic(uint32_t num_doppler_bins, uint32_t candidate_count, int32_t doppler_max, int32_t doppler_step, bool step_two);
     void wait_if_active();
 
     const Acq_Conf d_acq_parameters;
@@ -269,7 +269,7 @@ private:
     bool d_active;
     bool d_worker_active;
 
-    // Only access these in acquisition_core and functions strictly called from acquisition_core
+    // Only access these in acquisition and functions strictly called from acquisition
     uint32_t d_num_noncoherent_integrations_counter;
     int64_t d_dump_number;
     float d_input_power;

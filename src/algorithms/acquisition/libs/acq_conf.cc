@@ -81,6 +81,7 @@ void Acq_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
             pfa2 = pfa;
         }
     make_2_steps = configuration->property(role + ".make_two_steps", make_2_steps);
+    use_same_samples_on_step_2 = configuration->property(role + ".use_same_samples_on_step_2", use_same_samples_on_step_2);
     blocking_on_standby = configuration->property(role + ".blocking_on_standby", blocking_on_standby);
     enable_doppler_narrowing = configuration->property(role + ".enable_doppler_narrowing", enable_doppler_narrowing);
     full_grid_search = configuration->property(role + ".full_grid_search", full_grid_search);

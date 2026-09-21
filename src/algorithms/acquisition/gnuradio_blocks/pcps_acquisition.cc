@@ -134,9 +134,9 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_num_doppler_bins_step1_capacity(std::max(d_num_doppler_bins, 2U)),
       d_num_doppler_bins_step2(conf_.num_doppler_bins_step2),
       d_dump_channel(conf_.dump_channel),
-      d_threshold(conf_.pfa > 0.0 ? compute_threshold(conf_.pfa, d_effective_fft_size, d_num_doppler_bins, conf_.bit_transition_flag ? 1 : conf_.max_dwells) : conf_.threshold),
-      d_threshold_narrowed(conf_.pfa > 0.0 ? compute_threshold(conf_.pfa, d_effective_fft_size, 1U, conf_.bit_transition_flag ? 1 : conf_.max_dwells) : conf_.threshold),
-      d_threshold_step_two(conf_.pfa2 > 0.0 ? compute_threshold(conf_.pfa2, d_effective_fft_size, d_num_doppler_bins_step2, conf_.bit_transition_flag ? 1 : conf_.max_dwells) : conf_.threshold),
+      d_threshold(conf_.pfa > 0.0 ? compute_threshold(conf_.pfa, d_effective_fft_size, d_num_doppler_bins, conf_.max_dwells) : conf_.threshold),
+      d_threshold_narrowed(conf_.pfa > 0.0 ? compute_threshold(conf_.pfa, d_effective_fft_size, 1U, conf_.max_dwells) : conf_.threshold),
+      d_threshold_step_two(conf_.pfa2 > 0.0 ? compute_threshold(conf_.pfa2, d_effective_fft_size, d_num_doppler_bins_step2, conf_.max_dwells) : conf_.threshold),
       d_cshort(conf_.it_size != sizeof(gr_complex)),
       d_use_CFAR_algorithm_flag(conf_.use_CFAR_algorithm_flag),
       d_dump(!d_dump_filename.empty()),
@@ -346,13 +346,13 @@ void pcps_acquisition::update_grid_doppler_wipeoffs_step2()
 }
 
 
-void pcps_acquisition::log_acquisition(const AcquisitionResult& result) const
+void pcps_acquisition::log_acquisition(const AcquisitionResult& result, bool positive_acq)
 {
-    DLOG(INFO) << (result.positive_acq ? "positive" : "negative") << " acquisition"
+    DLOG(INFO) << (positive_acq ? "positive" : "negative") << " acquisition"
                << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
                << ", sample_stamp " << result.sample_count
                << ", test statistics value " << result.test_statistics
-               << ", test statistics threshold " << get_threshold()
+               << ", test statistics threshold " << result.threshold
                << ", code phase " << d_gnss_synchro->Acq_delay_samples
                << ", doppler " << static_cast<double>(result.doppler)
                << ", input signal power " << d_input_power
@@ -362,7 +362,7 @@ void pcps_acquisition::log_acquisition(const AcquisitionResult& result) const
 
 void pcps_acquisition::send_positive_acquisition(const AcquisitionResult& result)
 {
-    log_acquisition(result);
+    log_acquisition(result, true);
 
     if (!d_channel_fsm.expired())
         {
@@ -383,20 +383,30 @@ void pcps_acquisition::send_positive_acquisition(const AcquisitionResult& result
         {
             d_monitor_queue.push(*d_gnss_synchro);
         }
+
+    if (should_dump_channel())
+        {
+            dump_results(result, true);
+        }
 }
 
 
 void pcps_acquisition::send_negative_acquisition(const AcquisitionResult& result)
 {
-    log_acquisition(result);
+    log_acquisition(result, false);
 
     // Declare negative acquisition using a message port
     // 0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
     this->message_port_pub(pmt::mp("events"), pmt::from_long(2));
+
+    if (should_dump_channel())
+        {
+            dump_results(result, false);
+        }
 }
 
 
-void pcps_acquisition::dump_results(const AcquisitionResult& result)
+void pcps_acquisition::dump_results(const AcquisitionResult& result, bool positive_acq)
 {
     ensure_dump_grid_allocated();
 
@@ -441,11 +451,11 @@ void pcps_acquisition::dump_results(const AcquisitionResult& result)
             write_matlab_var<1>("doppler_step", dump_doppler_step, matfp, dims_1d);
             write_matlab_var<1>("doppler_center", d_doppler_center, matfp, dims_1d);
             write_matlab_var<1>("doppler_narrowed", static_cast<int32_t>(dump_narrowed ? 1 : 0), matfp, dims_1d);
-            write_matlab_var<1>("positive_acq", static_cast<int32_t>(result.positive_acq ? 1 : 0), matfp, dims_1d);
+            write_matlab_var<1>("positive_acq", static_cast<int32_t>(positive_acq ? 1 : 0), matfp, dims_1d);
             write_matlab_var<1>("acq_doppler_hz", static_cast<float>(d_gnss_synchro->Acq_doppler_hz), matfp, dims_1d);
             write_matlab_var<1>("acq_delay_samples", static_cast<float>(d_gnss_synchro->Acq_delay_samples), matfp, dims_1d);
             write_matlab_var<1>("test_statistic", result.test_statistics, matfp, dims_1d);
-            write_matlab_var<1>("threshold", get_threshold(), matfp, dims_1d);
+            write_matlab_var<1>("threshold", result.threshold, matfp, dims_1d);
             write_matlab_var<1>("input_power", d_input_power, matfp, dims_1d);
             write_matlab_var<1>("sample_counter", result.sample_count, matfp, dims_1d);
             write_matlab_var<1>("PRN", d_gnss_synchro->PRN, matfp, dims_1d);
@@ -485,14 +495,11 @@ void pcps_acquisition::ensure_dump_grid_allocated()
 }
 
 
-void pcps_acquisition::copy_magnitude_grid_to_dump_grid()
+void pcps_acquisition::copy_magnitude_grid_to_dump_grid(uint32_t num_doppler_bins, arma::fmat& grid)
 {
     ensure_dump_grid_allocated();
 
-    const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins_active;
-    auto& grid = d_step_two ? d_narrow_grid : d_grid;
-
-    for (uint32_t doppler_index = 0; doppler_index < bin_count; doppler_index++)
+    for (uint32_t doppler_index = 0; doppler_index < num_doppler_bins; doppler_index++)
         {
             const auto* magnitude_grid = magnitude_grid_data(doppler_index);
             std::copy(magnitude_grid, magnitude_grid + d_effective_fft_size, grid.colptr(doppler_index));
@@ -530,7 +537,7 @@ const float* pcps_acquisition::magnitude_grid_data(uint32_t doppler_index) const
 }
 
 
-pcps_acquisition::AcquisitionResult pcps_acquisition::max_to_input_power_statistic(uint32_t num_doppler_bins, uint32_t candidate_count, int32_t doppler_max, int32_t doppler_step)
+pcps_acquisition::AcquisitionResult pcps_acquisition::max_to_input_power_statistic(uint32_t num_doppler_bins, uint32_t candidate_count, int32_t doppler_max, int32_t doppler_step, bool step_two)
 {
     AcquisitionResult result;
     float grid_maximum = 0.0;
@@ -552,7 +559,7 @@ pcps_acquisition::AcquisitionResult pcps_acquisition::max_to_input_power_statist
                 }
         }
 
-    if (!d_step_two)
+    if (!step_two)
         {
             const auto index_opp = (index_doppler + num_doppler_bins / 2) % num_doppler_bins;
             const auto* magnitude_grid = magnitude_grid_data(index_opp);
@@ -577,7 +584,7 @@ pcps_acquisition::AcquisitionResult pcps_acquisition::max_to_input_power_statist
 }
 
 
-pcps_acquisition::AcquisitionResult pcps_acquisition::first_vs_second_peak_statistic(uint32_t candidate_count, int32_t doppler_max, int32_t doppler_step)
+pcps_acquisition::AcquisitionResult pcps_acquisition::first_vs_second_peak_statistic(uint32_t candidate_count, int32_t doppler_max, int32_t doppler_step, bool step_two)
 {
     // Look for correlation peaks in the results
     // Find the highest peak and compare it to the second highest peak
@@ -603,7 +610,7 @@ pcps_acquisition::AcquisitionResult pcps_acquisition::first_vs_second_peak_stati
                 }
         }
 
-    if (!d_step_two)
+    if (!step_two)
         {
             result.doppler = -static_cast<int32_t>(doppler_max) + d_doppler_center + doppler_step * static_cast<int32_t>(index_doppler);
         }
@@ -651,12 +658,9 @@ pcps_acquisition::AcquisitionResult pcps_acquisition::first_vs_second_peak_stati
 }
 
 
-void pcps_acquisition::doppler_grid(const gr_complex* in)
+void pcps_acquisition::doppler_grid(const gr_complex* in, uint32_t num_doppler_bins, const std::complex<float>* grid_doppler_wipeoffs)
 {
-    const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins_active;
-    const auto* grid_doppler_wipeoffs = d_step_two ? d_grid_doppler_wipeoffs_step_two.data() : d_grid_doppler_wipeoffs.data();
-
-    for (uint32_t doppler_index = 0; doppler_index < bin_count; doppler_index++)
+    for (uint32_t doppler_index = 0; doppler_index < num_doppler_bins; doppler_index++)
         {
             auto* magnitude_grid = magnitude_grid_data(doppler_index);
             const auto* doppler_wipeoff = grid_doppler_wipeoffs + static_cast<size_t>(doppler_index) * d_doppler_wipeoffs_stride;
@@ -689,41 +693,27 @@ void pcps_acquisition::doppler_grid(const gr_complex* in)
 }
 
 
-pcps_acquisition::AcquisitionResult pcps_acquisition::compute_statistics()
+pcps_acquisition::AcquisitionResult pcps_acquisition::compute_statistics(uint32_t num_doppler_bins, uint32_t candidate_count, int32_t doppler_max, int32_t doppler_step, bool step_two)
 {
-    const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins_active;
-    // Assisted acquisition (Doppler exactly known from an already-tracked primary
-    // frequency): bin 0 is the known Doppler and bin 1 is the reference bin offset
-    // by d_doppler_max (see update_grid_doppler_wipeoffs()). Passing doppler_max=0,
-    // doppler_step=d_doppler_max makes the generic "-doppler_max + center +
-    // doppler_step * index" decoding below map those two bins back to the right
-    // Doppler values, same formula as the full grid search uses.
-    const bool assisted = (!d_step_two) && d_doppler_search_narrowed;
-    const auto doppler_step = d_step_two ? d_acq_parameters.doppler_step2 : (assisted ? static_cast<int32_t>(d_doppler_max) : d_doppler_step);
-    const auto doppler_max = d_step_two ? static_cast<int32_t>(d_doppler_center_step_two - (static_cast<float>(bin_count) / 2.0) * doppler_step) : (assisted ? 0 : static_cast<int32_t>(d_doppler_max));
-    // In assisted mode, bin_count computed rows exist (known bin + noise reference)
-    // but only bin 0 is a real Doppler candidate -- the reference bin must never be
-    // selected as the acquisition result (see the two statistic functions).
-    const auto candidate_count = assisted ? 1U : bin_count;
-
-    // The reference/"opposite" bin used by max_to_input_power_statistic as a
-    // noise-only estimate works the same way whether the grid has the full
-    // configured bin count or just the 2 bins built above for assisted mode.
     if (d_use_CFAR_algorithm_flag)
         {
-            return max_to_input_power_statistic(bin_count, candidate_count, doppler_max, doppler_step);
+            // The reference/"opposite" bin used by max_to_input_power_statistic as a
+            // noise-only estimate works the same way whether the grid has the full
+            // configured bin count or just the 2 bins built above for assisted mode.
+            return max_to_input_power_statistic(num_doppler_bins, candidate_count, doppler_max, doppler_step, step_two);
         }
     else
         {
-            return first_vs_second_peak_statistic(candidate_count, doppler_max, doppler_step);
+            return first_vs_second_peak_statistic(candidate_count, doppler_max, doppler_step, step_two);
         }
 }
 
 
-void pcps_acquisition::update_synchro(const AcquisitionResult& result)
+void pcps_acquisition::update_synchro(const AcquisitionResult& result, float doppler_step)
 {
     d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(result.index_time), d_acq_parameters.samples_per_code));
     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(result.doppler);
+    d_gnss_synchro->Acq_doppler_step = static_cast<uint32_t>(doppler_step);
 
     if (d_acq_parameters.use_automatic_resampler)
         {
@@ -737,164 +727,127 @@ void pcps_acquisition::update_synchro(const AcquisitionResult& result)
             d_gnss_synchro->Acq_samplestamp_samples = result.sample_count;
             d_gnss_synchro->fs = d_acq_parameters.fs_in;
         }
-
-    if (d_step_two)
-        {
-            d_gnss_synchro->Acq_doppler_step = d_acq_parameters.doppler_step2;
-        }
 }
 
 
-void pcps_acquisition::handle_threshold_reached(AcquisitionResult& result)
+void pcps_acquisition::check_result(const AcquisitionResult& result, bool step_two)
 {
-    d_state = 0;
+    const auto threshold_reached = result.test_statistics > result.threshold;
+    const auto last_dwell = d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells;
 
-    if (d_acq_parameters.make_2_steps)
+    // If 'full_grid_search', search the entire acquisition grid (accumulate through the full max_dwells)
+    // before deciding accept/reject, instead of exiting as soon as any single dwell's
+    // (possibly still noisy, partially non-coherently accumulated) grid crosses
+    // threshold -- a later dwell's fuller integration can reveal a different, genuinely
+    // stronger peak elsewhere in the same grid that an early exit never gets the chance
+    // to compare against.
+
+    if (threshold_reached && (!d_acq_parameters.full_grid_search || last_dwell))
         {
-            if (d_step_two)
+            d_state = 0;
+            d_num_noncoherent_integrations_counter = 0;
+
+            if (!d_acq_parameters.make_2_steps || step_two)  // Last step
                 {
-                    result.positive_acq = true;
                     send_positive_acquisition(result);
                     d_active = false;
                 }
-            else
+            else  // First out of two step
                 {
                     d_doppler_center_step_two = static_cast<float>(result.doppler);
                     update_grid_doppler_wipeoffs_step2();
-                    d_num_noncoherent_integrations_counter = 0;
                 }
-
-            d_step_two = !d_step_two;
+        }
+    else if (last_dwell)
+        {
+            send_negative_acquisition(result);
+            d_active = false;
+            d_state = 0;
+            d_num_noncoherent_integrations_counter = 0;
         }
     else
         {
-            result.positive_acq = true;
-            send_positive_acquisition(result);
-            d_active = false;
+            d_buffer_sample_count = 0;
+            d_state = 1;
         }
 }
 
 
-void pcps_acquisition::handle_integration_done(const AcquisitionResult& result)
-{
-    if (d_state != 0)
-        {
-            send_negative_acquisition(result);
-        }
-
-    d_active = false;
-    d_state = 0;
-    d_step_two = false;
-}
-
-
-void pcps_acquisition::acquisition_core(uint64_t sample_count)
+bool pcps_acquisition::acquisition_core(uint64_t sample_count, bool step_two)
 {
     gr::thread::scoped_lock lk(d_setlock);
 
-    d_num_noncoherent_integrations_counter++;
+    ++d_num_noncoherent_integrations_counter;
+
+    const auto threshold = step_two ? d_threshold_step_two : (d_doppler_search_narrowed ? d_threshold_narrowed : d_threshold);
+    const auto num_doppler_bins = step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins_active;
+
+    // Assisted acquisition (Doppler exactly known from an already-tracked primary
+    // frequency): bin 0 is the known Doppler and bin 1 is the reference bin offset
+    // by d_doppler_max (see update_grid_doppler_wipeoffs()). Passing doppler_max=0,
+    // doppler_step=d_doppler_max makes the generic "-doppler_max + center +
+    // doppler_step * index" decoding below map those two bins back to the right
+    // Doppler values, same formula as the full grid search uses.
+    const bool assisted = (!step_two) && d_doppler_search_narrowed;
+    const auto doppler_step = step_two ? d_acq_parameters.doppler_step2 : (assisted ? static_cast<int32_t>(d_doppler_max) : d_doppler_step);
+    const auto doppler_max = step_two ? static_cast<int32_t>(d_doppler_center_step_two - (static_cast<float>(num_doppler_bins) / 2.0) * doppler_step) : (assisted ? 0 : static_cast<int32_t>(d_doppler_max));
+
+    // In assisted mode, bin_count computed rows exist (known bin + noise reference)
+    // but only bin 0 is a real Doppler candidate -- the reference bin must never be
+    // selected as the acquisition result (see the two statistic functions).
+    const auto candidate_count = assisted ? 1U : num_doppler_bins;
 
     DLOG(INFO) << "Channel: " << d_channel
-               << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-               << " , sample stamp: " << sample_count
-               << ", threshold: " << get_threshold()
-               << ", doppler_max: " << d_doppler_max
-               << ", doppler_step: " << d_doppler_step
+               << ", doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
+               << ", sample stamp: " << sample_count
+               << ", threshold: " << threshold
+               << ", doppler_max: " << doppler_max
+               << ", doppler_step: " << doppler_step
                << ", use_CFAR_algorithm_flag: " << (d_use_CFAR_algorithm_flag ? "true" : "false");
 
     lk.unlock();
 
     // Doppler frequency grid loop, only access variables that doesn't need a lock
-    doppler_grid(d_input_signal.data());
+    const auto* grid_doppler_wipeoffs = step_two ? d_grid_doppler_wipeoffs_step_two.data() : d_grid_doppler_wipeoffs.data();
+    doppler_grid(d_input_signal.data(), num_doppler_bins, grid_doppler_wipeoffs);
+
     if (should_dump_channel())
         {
-            copy_magnitude_grid_to_dump_grid();
+            auto& grid = step_two ? d_narrow_grid : d_grid;
+            copy_magnitude_grid_to_dump_grid(num_doppler_bins, grid);
         }
-    auto result = compute_statistics();
+
+    auto result = compute_statistics(num_doppler_bins, candidate_count, doppler_max, doppler_step, step_two);
     result.sample_count = sample_count;
+    result.threshold = threshold;
 
     lk.lock();
 
-    update_synchro(result);
+    update_synchro(result, doppler_step);
+    check_result(result, step_two);
 
-    if (!d_acq_parameters.bit_transition_flag)
-        {
-            if (d_acq_parameters.full_grid_search)
-                {
-                    // Search the entire acquisition grid (accumulate through the full max_dwells)
-                    // before deciding accept/reject, instead of exiting as soon as any single dwell's
-                    // (possibly still noisy, partially non-coherently accumulated) grid crosses
-                    // threshold -- a later dwell's fuller integration can reveal a different, genuinely
-                    // stronger peak elsewhere in the same grid that an early exit never gets the chance
-                    // to compare against.
-                    if (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)
-                        {
-                            if (result.test_statistics > get_threshold())
-                                {
-                                    handle_threshold_reached(result);
-                                }
-                            else
-                                {
-                                    handle_integration_done(result);
-                                }
-                        }
-                    else
-                        {
-                            d_buffer_sample_count = 0;
-                            d_state = 1;
-                        }
-                }
-            else
-                {
-                    if (result.test_statistics > get_threshold())
-                        {
-                            handle_threshold_reached(result);
-                        }
-                    else
-                        {
-                            d_buffer_sample_count = 0;
-                            d_state = 1;
-                        }
-
-                    if (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)
-                        {
-                            handle_integration_done(result);
-                        }
-                }
-        }
-    else
-        {
-            if (result.test_statistics > get_threshold())
-                {
-                    handle_threshold_reached(result);
-                }
-            else
-                {
-                    handle_integration_done(result);
-                }
-        }
-
-    if ((d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells) || (result.positive_acq) || (d_acq_parameters.bit_transition_flag))
-        {
-            // Record results to file if required
-            if (should_dump_channel())
-                {
-                    pcps_acquisition::dump_results(result);
-                }
-            d_num_noncoherent_integrations_counter = 0U;
-        }
-
-    d_worker_active = false;
+    return d_active && d_state == 0;  // Need second step
 }
 
 
-float pcps_acquisition::get_threshold() const
+void pcps_acquisition::acquisition(uint64_t sample_count)
 {
-    if (d_step_two)
+    const auto step_two = acquisition_core(sample_count, d_step_two);
+
+    if (d_state == 0)  // Acquisition step done
         {
-            return d_threshold_step_two;
+            // For now does not work with non-coherent integration
+            if (step_two && d_acq_parameters.use_same_samples_on_step_2 && d_acq_parameters.max_dwells == 1)
+                {
+                    d_step_two = acquisition_core(sample_count, true);
+                }
+            else
+                {
+                    d_step_two = step_two;
+                }
         }
-    return d_doppler_search_narrowed ? d_threshold_narrowed : d_threshold;
+
+    d_worker_active = false;
 }
 
 
@@ -1018,14 +971,14 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 if (d_acq_parameters.blocking)
                     {
                         lk.unlock();
-                        acquisition_core(d_sample_count);
+                        acquisition(d_sample_count);
                     }
                 else
                     {
                         lk.unlock();
                         wait_if_active();
                         lk.lock();
-                        d_worker = std::make_unique<gr::thread::thread>(&pcps_acquisition::acquisition_core, this, d_sample_count);
+                        d_worker = std::make_unique<gr::thread::thread>(&pcps_acquisition::acquisition, this, d_sample_count);
                         d_worker_active = true;
                     }
                 consume_each(0);

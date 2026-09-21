@@ -20,10 +20,10 @@ Ubuntu 22.04, CUDA 12.x) differs only in package versions.
 
 ## What the CUDA build enables
 
-| Block / feature                       | Selected with                                             | Notes                                                                                                                                                          |
-| ------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Block / feature                            | Selected with                                                                     | Notes                                                                                                                                                                                                                                                                            |
+| ------------------------------------------ | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **GPU acquisition grid (all PCPS blocks)** | `Acquisition_XX.use_cuda=true` (or `GNSS-SDR.use_cuda_acquisition=true` globally) | The Doppler x code-phase search grid of every `*_PCPS_Acquisition` implementation is evaluated with batched cuFFTs. Peak search and statistics are unchanged, so results are identical to the CPU path. Falls back to the CPU automatically if the device cannot be initialized. |
-| `GPS_L1_CA_DLL_PLL_Tracking_GPU`      | `Tracking_1C.implementation=GPS_L1_CA_DLL_PLL_Tracking_GPU` | Legacy CUDA multi-correlator tracking block (GPS L1 C/A only, experimental).                                                                                   |
+| `GPS_L1_CA_DLL_PLL_Tracking_GPU`           | `Tracking_1C.implementation=GPS_L1_CA_DLL_PLL_Tracking_GPU`                       | Legacy CUDA multi-correlator tracking block (GPS L1 C/A only, experimental).                                                                                                                                                                                                     |
 
 Optional per-block override for multi-GPU hosts: `Acquisition_XX.cuda_device=N`
 (`GNSS-SDR.cuda_device=N` globally). Jetson has a single device, so leave it
@@ -54,10 +54,10 @@ $ sudo apt-get install build-essential cmake git pkg-config libboost-dev \
        libuhd-dev gnuradio-dev gr-osmosdr protobuf-compiler python3-mako
 ```
 
-Check that CMake is at least 3.17 (`cmake --version`); JetPack 6 ships 3.22
-and JetPack 7 ships 3.28.
-(CMake >= 3.24 is not required: on Jetson the build detects the SoC from the
-device tree and selects the right `sm_XX` automatically; see below.)
+Check that CMake is at least 3.17 (`cmake --version`); JetPack 6 ships 3.22 and
+JetPack 7 ships 3.28. (CMake >= 3.24 is not required: on Jetson the build
+detects the SoC from the device tree and selects the right `sm_XX`
+automatically; see below.)
 
 ## 2. Configure and build
 
@@ -92,9 +92,9 @@ Nano at `-j4` and peaks around 4 GB of RAM.
 `CMAKE_CUDA_ARCHITECTURES` is chosen as follows (first match wins):
 
 1. Whatever you pass on the command line, e.g. `-DCMAKE_CUDA_ARCHITECTURES=87`.
-2. On Jetson, from `/proc/device-tree/compatible`:
-   `tegra234` (Orin) -> 87, `tegra194` (Xavier) -> 72, `tegra186` (TX2) -> 62,
-   `tegra210` (Nano/TX1) -> 53.
+2. On Jetson, from `/proc/device-tree/compatible`: `tegra234` (Orin) -> 87,
+   `tegra194` (Xavier) -> 72, `tegra186` (TX2) -> 62, `tegra210` (Nano/TX1)
+   -> 53.
 3. `native` (CMake >= 3.24, any host).
 4. Otherwise nvcc's default.
 
@@ -107,8 +107,8 @@ To build a binary that runs on several Jetson generations, pass a list:
   `-j$(nproc)` on Orin Nano / Orin NX 8 GB when building the unit tests.
 - Put the board in max-performance mode before benchmarking:
   `sudo nvpmodel -m 0 && sudo jetson_clocks`.
-- `-DENABLE_UNIT_TESTING=OFF` roughly halves the build time if you only need
-  the receiver.
+- `-DENABLE_UNIT_TESTING=OFF` roughly halves the build time if you only need the
+  receiver.
 
 ## 3. Verify
 
@@ -140,13 +140,13 @@ GpsL1CaPcpsAcquisitionCudaTest.SameEstimateAsCpuMakeTwoStep
 [  PASSED  ] 11 tests.
 ```
 
-The GPU grid matches the CPU grid to single-precision rounding (relative
-error a few 1e-7), and the full adapter returns the same acquisition estimate
-on a real capture.
+The GPU grid matches the CPU grid to single-precision rounding (relative error a
+few 1e-7), and the full adapter returns the same acquisition estimate on a real
+capture.
 
-`CudaPcpsEngineTest.*` compares the GPU grid to a CPU reference sample by
-sample (single dwell, non-coherent accumulation, bit-transition mode and 4 ms
-coherent integration). `GpsL1CaPcpsAcquisitionCudaTest.*` runs the full
+`CudaPcpsEngineTest.*` compares the GPU grid to a CPU reference sample by sample
+(single dwell, non-coherent accumulation, bit-transition mode and 4 ms coherent
+integration). `GpsL1CaPcpsAcquisitionCudaTest.*` runs the full
 `GPS_L1_CA_PCPS_Acquisition` adapter on a real 4 Msps capture with
 `use_cuda=true` and checks it returns the same Doppler/delay as the CPU path,
 with and without the two-step (fine Doppler) search.
@@ -166,14 +166,14 @@ $ ./build/tests/benchmarks/benchmark_pcps_grid --benchmark_counters_tabular=true
 The CPU baseline runs single-threaded, which is how `pcps_acquisition` uses it
 (one acquisition worker thread per channel). Counters:
 
-- `dwells/s`: complete search grids per second. This is the figure that
-  bounds how many channels can acquire simultaneously in real time
+- `dwells/s`: complete search grids per second. This is the figure that bounds
+  how many channels can acquire simultaneously in real time
   (`Channels.in_acquisition`).
 - `grid_cells/s`: Doppler x code-phase hypotheses evaluated per second.
 
-The `MeasureExecutionTime` case of `CudaPcpsEngineTest` prints a quick
-one-line CPU/GPU comparison at the default 4 Msps / 1 ms / 40-bin geometry if
-you do not want to build Google Benchmark.
+The `MeasureExecutionTime` case of `CudaPcpsEngineTest` prints a quick one-line
+CPU/GPU comparison at the default 4 Msps / 1 ms / 40-bin geometry if you do not
+want to build Google Benchmark.
 
 ### Reference results
 
@@ -186,34 +186,34 @@ magnitude grid, and the scatter into the acquisition block's per-bin buffers.
 
 | Samples per dwell (`fft_size`) | Doppler bins | CPU (µs) | GPU (µs) | Speed-up | GPU dwells/s |
 | -----------------------------: | -----------: | -------: | -------: | -------: | -----------: |
-|  2000 (2 Msps, 1 ms)           |           21 |      759 |      128 |     5.9× |         7814 |
-|  2000                          |           41 |     1483 |      188 |     7.9× |         5314 |
-|  2000                          |           81 |     2934 |      321 |     9.1× |         3113 |
-|  4000 (4 Msps, 1 ms)           |           21 |     1581 |      200 |     7.9× |         5006 |
-|  4000                          |           41 |     3085 |      336 |     9.2× |         2976 |
-|  4000                          |           81 |     6152 |      611 |    10.1× |         1636 |
-|  8000 (8 Msps, 1 ms)           |           21 |     3355 |      367 |     9.1× |         2727 |
-|  8000                          |           41 |     6695 |      661 |    10.1× |         1513 |
-|  8000                          |           81 |    13600 |     1180 |    11.5× |          847 |
-| 16000 (4 Msps, 4 ms)           |           21 |     7699 |      756 |    10.2× |         1324 |
-| 16000                          |           41 |    15091 |     1334 |    11.3× |          750 |
-| 16000                          |           81 |    29888 |     2883 |    10.4× |          347 |
-| 20000 (20 Msps, 1 ms)          |           21 |    11962 |      912 |    13.1× |         1097 |
-| 20000                          |           41 |    23445 |     1697 |    13.8× |          589 |
-| 20000                          |           81 |    46426 |     3097 |    15.0× |          323 |
-| 40000 (20 Msps, 2 ms)          |           21 |    26399 |     2231 |    11.8× |          448 |
-| 40000                          |           41 |    51341 |     4194 |    12.2× |          238 |
-| 40000                          |           81 |   101573 |     8023 |    12.7× |          125 |
+|            2000 (2 Msps, 1 ms) |           21 |      759 |      128 |     5.9× |         7814 |
+|                           2000 |           41 |     1483 |      188 |     7.9× |         5314 |
+|                           2000 |           81 |     2934 |      321 |     9.1× |         3113 |
+|            4000 (4 Msps, 1 ms) |           21 |     1581 |      200 |     7.9× |         5006 |
+|                           4000 |           41 |     3085 |      336 |     9.2× |         2976 |
+|                           4000 |           81 |     6152 |      611 |    10.1× |         1636 |
+|            8000 (8 Msps, 1 ms) |           21 |     3355 |      367 |     9.1× |         2727 |
+|                           8000 |           41 |     6695 |      661 |    10.1× |         1513 |
+|                           8000 |           81 |    13600 |     1180 |    11.5× |          847 |
+|           16000 (4 Msps, 4 ms) |           21 |     7699 |      756 |    10.2× |         1324 |
+|                          16000 |           41 |    15091 |     1334 |    11.3× |          750 |
+|                          16000 |           81 |    29888 |     2883 |    10.4× |          347 |
+|          20000 (20 Msps, 1 ms) |           21 |    11962 |      912 |    13.1× |         1097 |
+|                          20000 |           41 |    23445 |     1697 |    13.8× |          589 |
+|                          20000 |           81 |    46426 |     3097 |    15.0× |          323 |
+|          40000 (20 Msps, 2 ms) |           21 |    26399 |     2231 |    11.8× |          448 |
+|                          40000 |           41 |    51341 |     4194 |    12.2× |          238 |
+|                          40000 |           81 |   101573 |     8023 |    12.7× |          125 |
 
-Reading the table: with the default GPS L1 configuration (4 Msps, 1 ms,
-±5 kHz at 250 Hz = 41 bins) one Orin Nano CPU core sustains ~320 dwells/s,
-the GPU ~3000 dwells/s. At 20 Msps the CPU falls below real time for a single
-channel with 81 bins (21 dwells/s of a 1 ms signal, i.e. 2% real time) while
-the GPU stays at 323 dwells/s. Note the CPU figures are for one core; with
-several channels in acquisition the CPU path scales with the cores you give it
-while the channels' GPU engines share one device, so the per-channel speed-up
-shrinks as `Channels.in_acquisition` grows. The numbers above are single-engine
-throughput; concurrent multi-channel GPU throughput has not been characterized.
+Reading the table: with the default GPS L1 configuration (4 Msps, 1 ms, ±5 kHz
+at 250 Hz = 41 bins) one Orin Nano CPU core sustains ~320 dwells/s, the GPU
+~3000 dwells/s. At 20 Msps the CPU falls below real time for a single channel
+with 81 bins (21 dwells/s of a 1 ms signal, i.e. 2% real time) while the GPU
+stays at 323 dwells/s. Note the CPU figures are for one core; with several
+channels in acquisition the CPU path scales with the cores you give it while the
+channels' GPU engines share one device, so the per-channel speed-up shrinks as
+`Channels.in_acquisition` grows. The numbers above are single-engine throughput;
+concurrent multi-channel GPU throughput has not been characterized.
 
 Run the sweep yourself with:
 
@@ -255,9 +255,10 @@ A ready-made example is
 The public
 [2013_04_04_GNSS_SIGNAL_at_CTTC_SPAIN](https://sourceforge.net/projects/gnss-sdr/files/data/2013_04_04_GNSS_SIGNAL_at_CTTC_SPAIN.tar.gz)
 capture (GPS L1, 4 Msps `ishort`, 100 s) run through
-`conf/File_input/GPS/gnss-sdr_GPS_L1_ishort.conf` with `SignalSource.samples=480000000`
-(60 s), `Channels.in_acquisition=4`, and `Acquisition_1C.use_cuda` set to
-`false` / `true`, on the Orin Nano Super (three runs each, `next` branch):
+`conf/File_input/GPS/gnss-sdr_GPS_L1_ishort.conf` with
+`SignalSource.samples=480000000` (60 s), `Channels.in_acquisition=4`, and
+`Acquisition_1C.use_cuda` set to `false` / `true`, on the Orin Nano Super (three
+runs each, `next` branch):
 
 | Acquisition | Time to first fix (receiver time) | PVT solutions in 60 s | Processing time for 60 s of signal |
 | ----------- | --------------------------------- | --------------------: | ---------------------------------: |
@@ -265,35 +266,35 @@ capture (GPS L1, 4 Msps `ishort`, 100 s) run through
 | CUDA        | 06:23:30.5 (3/3 runs)             |                    69 |                     10.1 to 10.7 s |
 
 Both give the same position (41.2748 N, 1.9877 E, ~74 m, the CTTC roof). The
-processing time is dominated by tracking on the CPU, so the GPU acquisition
-path mostly frees CPU time here rather than shortening the run; the benefit
-grows with the number of channels in acquisition, the sampling rate, and the
-Doppler range.
+processing time is dominated by tracking on the CPU, so the GPU acquisition path
+mostly frees CPU time here rather than shortening the run; the benefit grows
+with the number of channels in acquisition, the sampling rate, and the Doppler
+range.
 
 ## 6. Notes on the implementation
 
 - `src/algorithms/acquisition/libs/cuda_pcps_engine.{h,cu}` is the engine. One
-  CUDA stream and one cuFFT batched plan per acquisition block (per channel),
-  so channels acquiring concurrently overlap on the device. All Doppler bins are
-  processed in a single batched forward/inverse FFT pair; three small kernels
-  do the wipe-off, code multiplication and magnitude/accumulation. Non-coherent
+  CUDA stream and one cuFFT batched plan per acquisition block (per channel), so
+  channels acquiring concurrently overlap on the device. All Doppler bins are
+  processed in a single batched forward/inverse FFT pair; three small kernels do
+  the wipe-off, code multiplication and magnitude/accumulation. Non-coherent
   accumulation across dwells is kept on the device.
 - `pcps_acquisition::doppler_grid()` dispatches to the engine when present and
-  otherwise to the unchanged CPU loop (`doppler_grid_cpu()`); peak search,
-  CFAR statistics, two-step refinement, dumping and the monitor output all run
-  on the host as before.
-- The engine header contains no CUDA types, so it can be included from plain
-  C++ translation units. `CUDA_GPU_ACCEL=1` is defined project-wide when
+  otherwise to the unchanged CPU loop (`doppler_grid_cpu()`); peak search, CFAR
+  statistics, two-step refinement, dumping and the monitor output all run on the
+  host as before.
+- The engine header contains no CUDA types, so it can be included from plain C++
+  translation units. `CUDA_GPU_ACCEL=1` is defined project-wide when
   `ENABLE_CUDA=ON`.
-- Fixes to the existing CUDA tracking block that were needed to build and run
-  on JetPack 6 are listed in the [changelog](./CHANGELOG.md).
+- Fixes to the existing CUDA tracking block that were needed to build and run on
+  JetPack 6 are listed in the [changelog](./CHANGELOG.md).
 
 ## Troubleshooting
 
-| Symptom                                                                       | Cause / fix                                                                                                                                  |
-| ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `No CMAKE_CUDA_COMPILER could be found`                                       | `nvcc` not on `PATH`; export `/usr/local/cuda/bin` or pass `-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc`.                                 |
-| `nvcc fatal : Unsupported gpu architecture 'compute_30'`                      | Stale build directory from an older GNSS-SDR; delete `build/` and reconfigure.                                                               |
-| `CUDA acquisition engine could not be initialized (... cudaErrorNoDevice ...)` | The process cannot see the GPU. Check `nvidia-smi`/`tegrastats`, and that the user is in the `video` group on Jetson.                        |
-| `CUFFT_ALLOC_FAILED` for large FFTs                                           | Not enough GPU memory for `bins x fft_size`. Reduce `doppler_max`/increase `doppler_step`, or lower `coherent_integration_time_ms`.          |
-| `unsupported GNU version! gcc versions later than N are not supported`        | Host compiler newer than the toolkit supports; pass `-DCMAKE_CUDA_HOST_COMPILER=g++-N` (JetPack 6's gcc 11 is supported by CUDA 12).         |
+| Symptom                                                                        | Cause / fix                                                                                                                          |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `No CMAKE_CUDA_COMPILER could be found`                                        | `nvcc` not on `PATH`; export `/usr/local/cuda/bin` or pass `-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc`.                         |
+| `nvcc fatal : Unsupported gpu architecture 'compute_30'`                       | Stale build directory from an older GNSS-SDR; delete `build/` and reconfigure.                                                       |
+| `CUDA acquisition engine could not be initialized (... cudaErrorNoDevice ...)` | The process cannot see the GPU. Check `nvidia-smi`/`tegrastats`, and that the user is in the `video` group on Jetson.                |
+| `CUFFT_ALLOC_FAILED` for large FFTs                                            | Not enough GPU memory for `bins x fft_size`. Reduce `doppler_max`/increase `doppler_step`, or lower `coherent_integration_time_ms`.  |
+| `unsupported GNU version! gcc versions later than N are not supported`         | Host compiler newer than the toolkit supports; pass `-DCMAKE_CUDA_HOST_COMPILER=g++-N` (JetPack 6's gcc 11 is supported by CUDA 12). |

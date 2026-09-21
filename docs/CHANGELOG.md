@@ -184,10 +184,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   batched cuFFTs by setting `Acquisition_XX.use_cuda=true` (or
   `GNSS-SDR.use_cuda_acquisition=true`). Peak search and detection statistics
   are unchanged, so results match the CPU implementation; the block falls back
-  to the CPU if the device cannot be initialized. Added
-  `benchmark_pcps_grid` (CPU baseline vs. GPU) and unit tests checking the GPU
-  grid against the CPU reference and running the full GPS L1 C/A adapter on a
-  real capture.
+  to the CPU if the device cannot be initialized. Added `benchmark_pcps_grid`
+  (CPU baseline vs. GPU) and unit tests checking the GPU grid against the CPU
+  reference and running the full GPS L1 C/A adapter on a real capture.
 
 ### Improvements in Interoperability:
 
@@ -468,8 +467,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   `cudaHostAlloc` flags (`cudaHostAllocMapped || cudaHostAllocWriteCombined`
   evaluated to `cudaHostAllocPortable`), stopped calling `cudaDeviceReset()`
   from a per-channel destructor (it tore down the context under the other
-  channels), and stopped `cudaFree()`-ing device aliases of host-mapped
-  buffers.
+  channels), and stopped `cudaFree()`-ing device aliases of host-mapped buffers.
 
 ### Improvements in Usability:
 

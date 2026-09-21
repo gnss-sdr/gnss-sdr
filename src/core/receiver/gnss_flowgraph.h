@@ -257,7 +257,7 @@ private:
     // back to the other bucket when the selected one is empty; FIFO order is kept
     // within each bucket. Excluded entries are never picked but stay queued until
     // the next visibility recompute. Sets picked=false when nothing is searchable.
-    Gnss_Signal pop_by_visibility(std::list<Gnss_Signal>& available_signals, const std::string& searched_signal, bool& picked);
+    Gnss_Signal pop_by_visibility(std::list<Gnss_Signal>& available_signals, const std::string& searched_signal, bool& picked, double cooldown_receiver_time_s);
     void print_help();
     void check_desktop_conf_in_fpga_env();
 
@@ -311,6 +311,40 @@ private:
     // search_next_signal(): the condition is re-evaluated for every idle channel at
     // ~10 Hz and would otherwise flood the log.
     std::unordered_map<std::string, std::chrono::steady_clock::time_point> no_assist_log_throttle_;
+
+    // Per-PRN-and-signal acquisition retry cooldown. With few (or one)
+    // entries in a signal's visible bucket, a satellite that fails
+    // acquisition immediately (too weak to lock yet, right at the
+    // elevation mask, etc.) gets requeued by apply_action() case 0 and can
+    // be handed straight back out to the next idle channel on the very
+    // next idle tick -- with enough idle channels polling at ~10 Hz, the
+    // same PRN can be re-attempted hundreds of times per second for no
+    // benefit. GNSS-SDR.acquisition_max_retry_rate_hz (0 = disabled,
+    // preserving prior behavior) caps how often any single PRN+signal can
+    // be handed out for a fresh attempt.
+    //
+    // Paced on sample-counter-derived elapsed receiver time (same source as
+    // SatelliteVisibility::Tick()'s receiver_time_s), not wall-clock time --
+    // same reasoning as SatelliteVisibility's own recompute cadence: for
+    // an offline/replay run processing faster (or slower) than real time,
+    // wall-clock pacing would cap retries per second of *host* time, not
+    // per second of the signal's own timeline, making the configured rate
+    // mean something different every run depending on host load/speed.
+    // Deliberately not Monitor_Pvt::RX_time: rtklib_pvt_gs.cc only publishes
+    // a status message while is_valid_position() holds, so RX_time freezes
+    // at its last value once the fix is lost -- which would silently stop
+    // this cooldown from ever expiring during an outage. The sample-counter
+    // clock keeps advancing regardless of fix state, including before the
+    // first fix. Stores each PRN+signal's receiver time (seconds since the
+    // flowgraph started) at its last attempt; absent means never attempted.
+    // See InAcquisitionCooldown() / MarkAcquisitionAttempt() and their use
+    // in pop_by_visibility(), apply_action() case 2 (TRK FAILED
+    // same-satellite retry), the primary-frequency assist fast path, and
+    // search_next_signal()'s legacy (non-visibility-aware) pick path.
+    double acquisition_retry_min_interval_s_;
+    std::unordered_map<std::string, double> last_acquisition_attempt_rx_time_s_;
+    bool InAcquisitionCooldown(const Gnss_Signal& gs, double receiver_time_s) const;
+    void MarkAcquisitionAttempt(const Gnss_Signal& gs, double receiver_time_s);
 
     enum StringValue
     {

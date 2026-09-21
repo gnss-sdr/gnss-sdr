@@ -169,20 +169,13 @@ void bm_pcps_grid_cuda(benchmark::State& state)
 
 // fft_size x bins. 1 ms at 2/4/8/16/20 Msps, then 4 ms at 4 Msps (16000) and
 // 2 ms at 20 Msps (40000). Bins: +/-5 kHz at 500/250/125 Hz steps.
-static void grid_args(benchmark::internal::Benchmark* b)
-{
-    for (int fft_size : {2000, 4000, 8000, 16000, 20000, 40000})
-        {
-            for (int bins : {21, 41, 81})
-                {
-                    b->Args({fft_size, bins});
-                }
-        }
-}
+const std::vector<std::vector<int64_t>> grid_args{
+    {2000, 4000, 8000, 16000, 20000, 40000},
+    {21, 41, 81}};
 
-BENCHMARK(bm_pcps_grid_cpu)->Apply(grid_args)->Unit(benchmark::kMicrosecond)->UseRealTime();
+BENCHMARK(bm_pcps_grid_cpu)->ArgsProduct(grid_args)->Unit(benchmark::kMicrosecond)->UseRealTime();
 #if CUDA_GPU_ACCEL
-BENCHMARK(bm_pcps_grid_cuda)->Apply(grid_args)->Unit(benchmark::kMicrosecond)->UseRealTime();
+BENCHMARK(bm_pcps_grid_cuda)->ArgsProduct(grid_args)->Unit(benchmark::kMicrosecond)->UseRealTime();
 #endif
 
 BENCHMARK_MAIN();

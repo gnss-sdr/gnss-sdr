@@ -29,6 +29,7 @@
 #include <pmt/pmt.h>
 #include <chrono>
 #include <cmath>
+#include <cstdint>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -120,6 +121,7 @@ protected:
     };
 
     std::shared_ptr<InMemoryConfiguration> make_config(bool use_cuda, bool two_steps) const;
+    void check_backend(PcpsAcquisitionAdapter &acquisition, bool use_cuda, uint64_t expected_cuda_grids) const;
     Outcome run_once(bool use_cuda, bool two_steps = false);
 
     unsigned int doppler_max{5000};
@@ -134,6 +136,8 @@ std::shared_ptr<InMemoryConfiguration> GpsL1CaPcpsAcquisitionCudaTest::make_conf
     config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Acquisition");
     config->set_property("Acquisition_1C.item_type", "gr_complex");
     config->set_property("Acquisition_1C.coherent_integration_time_ms", "1");
+    config->set_property("Acquisition_1C.max_dwells", "1");
+    config->set_property("Acquisition_1C.blocking", "true");
     config->set_property("Acquisition_1C.dump", "false");
     config->set_property("Acquisition_1C.threshold", "0.001");
     config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
@@ -150,8 +154,19 @@ std::shared_ptr<InMemoryConfiguration> GpsL1CaPcpsAcquisitionCudaTest::make_conf
 }
 
 
+void GpsL1CaPcpsAcquisitionCudaTest::check_backend(PcpsAcquisitionAdapter &acquisition, bool use_cuda, uint64_t expected_cuda_grids) const
+{
+    const auto block = acquisition.get_right_block();
+    const auto *pcps = dynamic_cast<const pcps_acquisition *>(block.get());
+    ASSERT_NE(nullptr, pcps);
+    EXPECT_EQ(use_cuda, pcps->cuda_ready()) << "Unexpected acquisition backend (CUDA initialization or CPU fallback).";
+    EXPECT_EQ(expected_cuda_grids, pcps->cuda_grid_count()) << "Acquisition did not execute the expected number of CUDA grids.";
+}
+
+
 GpsL1CaPcpsAcquisitionCudaTest::Outcome GpsL1CaPcpsAcquisitionCudaTest::run_once(bool use_cuda, bool two_steps)
 {
+    SCOPED_TRACE(::testing::Message() << "use_cuda=" << use_cuda << ", two_steps=" << two_steps);
     Outcome out;
     auto config = make_config(use_cuda, two_steps);
     auto top_block = gr::make_top_block("Acquisition CUDA test");
@@ -178,11 +193,15 @@ GpsL1CaPcpsAcquisitionCudaTest::Outcome GpsL1CaPcpsAcquisitionCudaTest::run_once
     top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
 
     acquisition->set_local_code();
+    check_backend(*acquisition, use_cuda, 0);
     acquisition->reset();
 
     const auto start = std::chrono::steady_clock::now();
     top_block->run();
     const auto end = std::chrono::steady_clock::now();
+
+    acquisition->stop_acquisition();
+    check_backend(*acquisition, use_cuda, use_cuda ? (two_steps ? 2U : 1U) : 0U);
 
     out.message = msg_rx->rx_message;
     out.doppler_hz = gnss_synchro.Acq_doppler_hz;
@@ -196,6 +215,7 @@ TEST_F(GpsL1CaPcpsAcquisitionCudaTest /*unused*/, Instantiate /*unused*/)
 {
     auto config = make_config(true, false);
     auto acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_1C", "GPS_L1_CA_PCPS_Acquisition", 1, 0, GPS_1C);
+    check_backend(*acquisition, true, 0);
 }
 
 

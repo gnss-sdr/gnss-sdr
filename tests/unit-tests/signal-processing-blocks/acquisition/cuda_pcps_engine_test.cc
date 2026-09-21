@@ -218,13 +218,21 @@ void run_parity_case(const PcpsScenario& sc, uint32_t dwells)
     CudaPcpsEngine gpu(N, E, bins);
     ASSERT_TRUE(gpu.is_valid()) << gpu.last_error();
 
+    auto wipeoffs = cpu.wipeoffs();
+    auto fft_codes = cpu.fft_codes();
     std::vector<const std::complex<float>*> wipe_rows(bins);
     for (uint32_t k = 0; k < bins; k++)
         {
-            wipe_rows[k] = cpu.wipeoffs()[k].data();
+            wipe_rows[k] = wipeoffs[k].data();
         }
     ASSERT_TRUE(gpu.set_doppler_wipeoffs(CudaPcpsEngine::MAIN_GRID, wipe_rows.data(), bins)) << gpu.last_error();
-    ASSERT_TRUE(gpu.set_fft_codes(cpu.fft_codes().data())) << gpu.last_error();
+    // Uploads must finish before returning so host buffers can be reused.
+    for (auto& row : wipeoffs)
+        {
+            std::fill(row.begin(), row.end(), std::complex<float>(0.0F, 0.0F));
+        }
+    ASSERT_TRUE(gpu.set_fft_codes(fft_codes.data())) << gpu.last_error();
+    std::fill(fft_codes.begin(), fft_codes.end(), std::complex<float>(0.0F, 0.0F));
 
     std::vector<fvec> gpu_grid(bins, fvec(E));
     std::vector<float*> out_rows(bins);

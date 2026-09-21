@@ -745,6 +745,7 @@ void pcps_acquisition::doppler_grid(const gr_complex* in)
         {
             if (doppler_grid_cuda(in))
                 {
+                    ++d_cuda_grid_count;
                     return;
                 }
             LOG(WARNING) << "CUDA acquisition failed in channel " << d_channel << " (" << d_cuda_engine->last_error()

@@ -403,11 +403,17 @@ bool CudaPcpsEngine::set_fft_codes(const std::complex<float>* fft_codes)
             return false;
         }
     cudaSetDevice(p->device);
-    // Synchronous copy: the caller may reuse its buffer immediately.
-    const cudaError_t e = cudaMemcpy(p->d_codes, fft_codes, p->fft_size * sizeof(float2), cudaMemcpyHostToDevice);
+    // Order uploads with kernels on the nonblocking stream, then wait so the
+    // caller may reuse its host buffer immediately.
+    cudaError_t e = cudaMemcpyAsync(p->d_codes, fft_codes, p->fft_size * sizeof(float2), cudaMemcpyHostToDevice, p->stream);
     if (e != cudaSuccess)
         {
-            return p->fail("cudaMemcpy(codes)", e);
+            return p->fail("cudaMemcpyAsync(codes)", e);
+        }
+    e = cudaStreamSynchronize(p->stream);
+    if (e != cudaSuccess)
+        {
+            return p->fail("cudaStreamSynchronize(codes)", e);
         }
     return true;
 }
@@ -436,13 +442,25 @@ bool CudaPcpsEngine::set_doppler_wipeoffs(GridId grid, const std::complex<float>
     // only done when the Doppler grid changes (PRN change on FDMA, assisted
     // Doppler center, or the two-step refinement), not per dwell.
     const size_t row_bytes = p->fft_size * sizeof(float2);
+    cudaError_t upload_error = cudaSuccess;
     for (uint32_t k = 0; k < bins; k++)
         {
-            const cudaError_t e = cudaMemcpy(p->d_wipe[grid] + static_cast<size_t>(k) * p->fft_size, wipeoffs[k], row_bytes, cudaMemcpyHostToDevice);
-            if (e != cudaSuccess)
+            upload_error = cudaMemcpyAsync(p->d_wipe[grid] + static_cast<size_t>(k) * p->fft_size, wipeoffs[k], row_bytes, cudaMemcpyHostToDevice, p->stream);
+            if (upload_error != cudaSuccess)
                 {
-                    return p->fail("cudaMemcpy(wipeoffs)", e);
+                    break;
                 }
+        }
+    // Drain queued uploads even if a later row failed, before the caller can
+    // reuse its host buffers or plan creation can return an error.
+    const cudaError_t sync_error = cudaStreamSynchronize(p->stream);
+    if (upload_error != cudaSuccess)
+        {
+            return p->fail("cudaMemcpyAsync(wipeoffs)", upload_error);
+        }
+    if (sync_error != cudaSuccess)
+        {
+            return p->fail("cudaStreamSynchronize(wipeoffs)", sync_error);
         }
     p->wipe_bins[grid] = bins;
 

@@ -77,7 +77,7 @@ cmake --build "$BUILD_DIR" -j"$JOBS"
 
 if [[ $DO_TESTS -eq 1 ]]; then
     echo "== Running CUDA unit tests"
-    "$BUILD_DIR/src/tests/run_tests" \
+    "$BUILD_DIR/tests/run_tests" \
         --gtest_filter='CudaPcpsEngineTest.*:GpsL1CaPcpsAcquisitionCudaTest.*:GpuMulticorrelatorTest.*'
 fi
 

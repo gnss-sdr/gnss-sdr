@@ -86,11 +86,13 @@ public:
 
     /*!
      * \brief Upload conj(FFT(local code)), fft_size elements.
+     * The upload completes before returning; the caller may reuse fft_codes.
      */
     bool set_fft_codes(const std::complex<float>* fft_codes);
 
     /*!
      * \brief Upload the Doppler wipe-off carriers for one grid.
+     * Uploads complete before returning; the caller may reuse the host rows.
      * \param grid      MAIN_GRID or STEP2_GRID.
      * \param wipeoffs  Array of `bins` host pointers, each pointing at fft_size complex samples.
      * \param bins      Number of Doppler bins (<= max_doppler_bins).

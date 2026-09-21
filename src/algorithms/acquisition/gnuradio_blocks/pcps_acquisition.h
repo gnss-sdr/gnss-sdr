@@ -165,6 +165,27 @@ public:
      */
     void set_doppler_uncertainty(uint32_t doppler_uncertainty);
 
+    //! Whether the CUDA engine is available. Inspect only while acquisition is stopped.
+    inline bool cuda_ready() const
+    {
+#if CUDA_GPU_ACCEL
+        return d_cuda_engine != nullptr;
+#else
+        return false;
+#endif
+    }
+
+    //! Completed CUDA grids over the block's lifetime, excluding warm-up.
+    //! Inspect only while acquisition is stopped.
+    inline uint64_t cuda_grid_count() const
+    {
+#if CUDA_GPU_ACCEL
+        return d_cuda_grid_count;
+#else
+        return 0;
+#endif
+    }
+
     /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.
      */
@@ -297,6 +318,7 @@ private:
     std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
 #if CUDA_GPU_ACCEL
     std::unique_ptr<CudaPcpsEngine> d_cuda_engine;  // null => CPU path
+    uint64_t d_cuda_grid_count{0};
 #endif
 };
 

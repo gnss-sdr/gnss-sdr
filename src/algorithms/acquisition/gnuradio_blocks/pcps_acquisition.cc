@@ -289,7 +289,7 @@ bool pcps_acquisition::stop()
         {
             {
                 gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
-                d_buffer_sample_count = d_data_buffer_size;
+                d_active = false;
                 worker_cv.notify_one();
             }
             wait_if_active();
@@ -313,7 +313,6 @@ void pcps_acquisition::set_active(bool active)
         d_active = active;
         if (!active)
             {
-                d_buffer_sample_count = d_data_buffer_size;
                 worker_cv.notify_one();
             }
     }
@@ -931,6 +930,12 @@ void pcps_acquisition::acquisition_core(uint64_t sample_count)
                         {
                             worker_cv.wait(lk);
                         }
+                    // Handle termination request
+                    if (!d_active)
+                        {
+                            d_worker_active = false;
+                            return;
+                        }
                     std::copy(d_data_buffer.data() + offset,
                         d_data_buffer.data() + offset + d_samples_to_consume,
                         d_input_signal.data());
@@ -957,6 +962,13 @@ void pcps_acquisition::acquisition_core(uint64_t sample_count)
             result.sample_count = sample_count;
 
             lk.lock();
+
+            // Handle termination request
+            if (!d_active)
+                {
+                    d_worker_active = false;
+                    return;
+                }
 
             update_synchro(result);
 
@@ -1077,6 +1089,7 @@ void pcps_acquisition::set_doppler_uncertainty(uint32_t doppler_uncertainty)
 
 void pcps_acquisition::wait_if_active()
 {
+    gr::thread::scoped_lock lk(d_wait_mutex);
     std::unique_ptr<gr::thread::thread> worker;
 
     {
@@ -1237,14 +1250,21 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                     lk.unlock();
                     wait_if_active();
                     lk.lock();
-                    d_worker = std::make_unique<gr::thread::thread>(&pcps_acquisition::acquisition_core, this, d_sample_count);
-                    if (d_buffer_sample_count >= d_data_buffer_size)
+                    if (d_active)
                         {
-                            d_worker_active = true;
+                            d_worker = std::make_unique<gr::thread::thread>(&pcps_acquisition::acquisition_core, this, d_sample_count);
+                            if (d_buffer_sample_count >= d_data_buffer_size)
+                                {
+                                    d_worker_active = true;
+                                }
+                            else
+                                {
+                                    d_state = 2;
+                                }
                         }
                     else
                         {
-                            d_state = 2;
+                            d_state = 0;
                         }
                 }
         }

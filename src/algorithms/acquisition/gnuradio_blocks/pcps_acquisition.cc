@@ -224,7 +224,7 @@ void pcps_acquisition::init_cuda_engine()
     auto engine = std::make_unique<CudaPcpsEngine>(d_fft_size, d_effective_fft_size, max_bins, d_acq_parameters.cuda_device);
     if (!engine->is_valid())
         {
-            LOG(WARNING) << "CUDA acquisition engine could not be initialised (" << engine->last_error()
+            LOG(WARNING) << "CUDA acquisition engine could not be initialized (" << engine->last_error()
                          << "). Falling back to the CPU implementation.";
             return;
         }

@@ -191,7 +191,7 @@ GridPeak find_peak(const std::vector<fvec>& grid, uint32_t bins, uint32_t E)
     return p;
 }
 
-// Max |gpu - cpu| over the grid, normalised by the grid maximum
+// Max |gpu - cpu| over the grid, normalized by the grid maximum
 double max_relative_error(const std::vector<fvec>& a, const std::vector<fvec>& b, uint32_t bins, uint32_t E)
 {
     double max_abs = 0.0;

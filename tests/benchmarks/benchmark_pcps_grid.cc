@@ -8,7 +8,7 @@
  *   ./benchmark_pcps_grid --benchmark_counters_tabular=true
  *   ./benchmark_pcps_grid --benchmark_filter='cuda' --benchmark_repetitions=5
  *
- * The "grid_cells/s" counter is (fft_size x bins) per second, i.e. how many
+ * The "grid_cells/s" counter is (fft_size x bins) per second. It is the number of
  * code-phase x Doppler hypotheses are evaluated per second. "dwells/s" is the
  * number of complete search grids per second, which is the figure that decides
  * how many channels can be in acquisition at once in real time.

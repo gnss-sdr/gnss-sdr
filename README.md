@@ -721,7 +721,18 @@ $ sudo cmake --install build
 ```
 
 Of course, you will also need a GPU that
-[supports CUDA](https://developer.nvidia.com/cuda-gpus "CUDA GPUs").
+[supports CUDA](https://developer.nvidia.com/cuda-gpus "CUDA GPUs"). The target
+architecture is taken from `CMAKE_CUDA_ARCHITECTURES` if you set it (e.g.
+`-DCMAKE_CUDA_ARCHITECTURES=87` for Jetson Orin), detected from the device tree
+on NVIDIA Jetson modules, or `native` with CMake >= 3.24.
+
+With CUDA enabled, every PCPS acquisition block can evaluate its search grid on
+the GPU by setting `Acquisition_XX.use_cuda=true` (or
+`GNSS-SDR.use_cuda_acquisition=true` for all of them), and the experimental
+`GPS_L1_CA_DLL_PLL_Tracking_GPU` tracking block becomes available. See
+[docs/JETSON.md](./docs/JETSON.md) for a step-by-step guide on NVIDIA Jetson
+(Orin, Xavier, TX2, Nano), including how to run the unit tests and the
+CPU-vs-GPU acquisition benchmark.
 
 ## macOS
 
@@ -1712,6 +1723,7 @@ Acquisition_1C.doppler_max=5000 ; Maximum expected Doppler shift [Hz]
 Acquisition_1C.doppler_step=250 ; Doppler step in the grid search [Hz]
 Acquisition_1C.dump=false ; Enables internal data file logging [true] or [false]
 Acquisition_1C.dump_filename=./acq_dump.dat ; Log path and filename
+Acquisition_1C.use_cuda=false ; Evaluate the search grid on a CUDA GPU (requires -DENABLE_CUDA=ON)
 ```
 
 and, for Galileo E1B channels:

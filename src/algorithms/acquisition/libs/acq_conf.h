@@ -100,6 +100,10 @@ public:
     // per-implementation in the .conf (e.g. Acquisition_1B.full_grid_search = true).
     bool full_grid_search{false};
 
+    // Evaluate the PCPS grid on a CUDA GPU (requires ENABLE_CUDA at build time)
+    bool use_cuda{false};
+    int32_t cuda_device{-1};  // CUDA device ordinal, -1 = default device
+
     // Specific to some implementations
     bool acquire_pilot{false};
     bool acquire_iq{false};

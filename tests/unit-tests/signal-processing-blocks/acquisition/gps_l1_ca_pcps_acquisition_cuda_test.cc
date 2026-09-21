@@ -20,8 +20,8 @@
 #include "gnss_block_interface.h"
 #include "gnss_sdr_filesystem.h"
 #include "gnss_synchro.h"
-#include "gps_l1_ca_pcps_acquisition.h"
 #include "in_memory_configuration.h"
+#include "pcps_acquisition_adapter.h"
 #include "test_flags.h"
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/top_block.h>
@@ -163,7 +163,7 @@ GpsL1CaPcpsAcquisitionCudaTest::Outcome GpsL1CaPcpsAcquisitionCudaTest::run_once
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 1;
 
-    auto acquisition = gnss_make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 0);
+    auto acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_1C", "GPS_L1_CA_PCPS_Acquisition", 1, 0, GPS_1C);
     auto msg_rx = GpsL1CaPcpsAcquisitionCudaTest_msg_rx_make();
 
     acquisition->set_channel(1);
@@ -195,7 +195,7 @@ GpsL1CaPcpsAcquisitionCudaTest::Outcome GpsL1CaPcpsAcquisitionCudaTest::run_once
 TEST_F(GpsL1CaPcpsAcquisitionCudaTest /*unused*/, Instantiate /*unused*/)
 {
     auto config = make_config(true, false);
-    std::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 0);
+    auto acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_1C", "GPS_L1_CA_PCPS_Acquisition", 1, 0, GPS_1C);
 }
 
 

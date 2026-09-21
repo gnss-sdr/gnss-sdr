@@ -324,6 +324,7 @@ private:
     uint64_t d_cuda_grid_count{0};
 #endif
     gr::thread::condition_variable worker_cv;
+    gr::thread::mutex d_wait_mutex;
 };
 
 

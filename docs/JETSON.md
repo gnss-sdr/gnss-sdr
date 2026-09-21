@@ -257,12 +257,12 @@ The public
 capture (GPS L1, 4 Msps `ishort`, 100 s) run through
 `conf/File_input/GPS/gnss-sdr_GPS_L1_ishort.conf` with `SignalSource.samples=480000000`
 (60 s), `Channels.in_acquisition=4`, and `Acquisition_1C.use_cuda` set to
-`false` / `true`, on the Orin Nano Super (three runs each):
+`false` / `true`, on the Orin Nano Super (three runs each, `next` branch):
 
 | Acquisition | Time to first fix (receiver time) | PVT solutions in 60 s | Processing time for 60 s of signal |
 | ----------- | --------------------------------- | --------------------: | ---------------------------------: |
-| CPU         | 06:23:31.5 (3/3 runs)             |                    67 |                        12.2-12.4 s |
-| CUDA        | 06:23:31.5-32.0 (3/3 runs)        |                 66-67 |                        10.6-13.0 s |
+| CPU         | 06:23:30.5 (3/3 runs)             |                    69 |                     12.3 to 12.7 s |
+| CUDA        | 06:23:30.5 (3/3 runs)             |                    69 |                     10.1 to 10.7 s |
 
 Both give the same position (41.2748 N, 1.9877 E, ~74 m, the CTTC roof). The
 processing time is dominated by tracking on the CPU, so the GPU acquisition

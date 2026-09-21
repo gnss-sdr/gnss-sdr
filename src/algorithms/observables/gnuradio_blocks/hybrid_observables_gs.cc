@@ -26,6 +26,8 @@
 #include "gnss_synchro.h"
 #include "matlab_writter_helper.h"
 #include "sensor_data/sensor_identifier.h"
+#include <gnuradio/block_detail.h>
+#include <gnuradio/buffer.h>
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>
 #include <algorithm>  // for std::min
@@ -549,6 +551,24 @@ void hybrid_observables_gs::forecast(int noutput_items __attribute__((unused)), 
         }
     // last input channel is the sample counter, triggered each ms
     ninput_items_required[d_nchannels_in - 1] = 1;
+
+    // Drain channel backlogs even when the clock is stalled: the channels and
+    // clock can share an upstream buffer. Otherwise, backpressure from a channel
+    // can prevent the very clock item we are waiting for from being produced.
+    const auto block_detail = detail();
+    if (block_detail)
+        {
+            for (uint32_t n = 0; n < d_nchannels_out; n++)
+                {
+                    const auto input = block_detail->input(n);
+                    gr::thread::scoped_lock lock(*input->mutex());
+                    if (input->items_available() > 0)
+                        {
+                            ninput_items_required[d_nchannels_in - 1] = 0;
+                            break;
+                        }
+                }
+        }
 }
 
 
@@ -1300,6 +1320,11 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                         }
                 }
             consume(n, ninput_items[n]);
+        }
+
+    if (ninput_items[d_nchannels_in - 1] == 0)
+        {
+            return 0;
         }
 
     if (d_Rx_clock_buffer.size() == d_Rx_clock_buffer.capacity())

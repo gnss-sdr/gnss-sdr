@@ -137,18 +137,9 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
       enable_e6_has_rx_(false)
 {
     enable_fpga_offloading_ = configuration_->property("GNSS-SDR.enable_FPGA", false);
-    // Gates the broadcast-status checks below (GPS L5/L2C hardware-generation
-    // code, Galileo/BeiDou/GLONASS/QZSS secondary-signal health flags) that
-    // decide whether a satellite's secondary/tertiary signal is worth
-    // acquiring at all. Enabled by default -- without it, a satellite with
-    // no L5/L2C hardware or a broadcast-unhealthy secondary signal gets
-    // offered for acquisition indefinitely, immediately fails, and is
-    // re-offered on the very next idle tick with no backoff (observed live
-    // as a single acquisition thread pegged at ~50-100% CPU). Exists as an
-    // opt-out for setups that don't want acquisition decisions to depend on
-    // broadcast almanac/ephemeris content at all -- e.g. a spoofed L1 signal
-    // could carry a fabricated almanac marking an otherwise-healthy L2/L5
-    // signal unhealthy, which this gating would (as designed) honor.
+    // Skip the assisted acquisition of secondary signals reported as not
+    // available (GPS SV configuration) or unhealthy by the broadcast data.
+    // Can be disabled so that acquisition does not rely on that data.
     enable_secondary_signal_status_gating_ = configuration_->property("GNSS-SDR.enable_secondary_signal_status_gating", true);
     init();
 }
@@ -2665,43 +2656,11 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                                 {
                                                     continue;
                                                 }
-                                            // GPS L5/L2C are not broadcast by every satellite --
-                                            // gated here on the satellite's own broadcast SV
-                                            // Configuration Code (IS-GPS-200, almanac page 25),
-                                            // which was previously decoded nowhere in this
-                                            // codebase (Gps_Almanac::AS_status existed as a field
-                                            // but nothing ever populated it -- the page 25 decode
-                                            // itself was marked with a literal "\TODO Read Anti-
-                                            // Spoofing, SV config" where it's parsed). Empirically
-                                            // validated against gnss-sdr's own PRN->block table
-                                            // for all 32 PRNs: code>=11 <=> L5-capable, code>=10
-                                            // <=> L2C-capable, zero exceptions among satellites the
-                                            // table agreed with the live broadcast on -- and for
-                                            // the few it disagreed on, the live broadcast was
-                                            // right (confirmed live: PRN 21 successfully tracked
-                                            // L5 despite the static table listing a pre-L5 block --
-                                            // that table goes stale as satellites are replaced,
-                                            // the broadcast code doesn't). If this satellite's
-                                            // almanac hasn't decoded page 25 yet, AS_status is -1;
-                                            // treat 0 the same way (AGNSS-loaded almanac XML files
-                                            // saved before this field was ever decoded serialize
-                                            // it as 0, not -1, and no live satellite has ever been
-                                            // observed broadcasting 0). Stay permissive in both
-                                            // cases -- don't block without positive evidence.
-                                            //
-                                            // Without this, an older-generation satellite that
-                                            // happens to be the longest-continuously-tracked one
-                                            // on the primary frequency gets offered here forever:
-                                            // acquisition for a signal that physically doesn't
-                                            // exist fails near-instantly, and this same fast path
-                                            // re-offers the identical satellite on the very next
-                                            // idle tick, with no backoff -- observed live as a
-                                            // single pcps_acquisition thread sustaining ~50-100%
-                                            // CPU indefinitely (thousands of failed attempts/
-                                            // satellite over several minutes) whenever the
-                                            // constellation's oldest tracked satellite (no L5/L2C
-                                            // hardware) happened to be the one the receiver's own
-                                            // primary-frequency tracking had settled on.
+                                            // GPS: skip satellites whose SV configuration (three LSBs of
+                                            // AS_status, the MSB is the A-S flag; IS-GPS-200, 20.3.3.5.1.4)
+                                            // predates L2C (< IIR-M) or L5 (< IIF). Unknown values stay
+                                            // permissive. Without this, a satellite lacking the signal is
+                                            // retried without pause.
                                             if (enable_secondary_signal_status_gating_ && (mapStringValues_[searched_signal] == evGPS_L5 || mapStringValues_[searched_signal] == evGPS_2S))
                                                 {
                                                     const auto pvt_ptr = get_pvt();
@@ -2711,39 +2670,31 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                                             const auto alm_it = gps_almanac_map.find(static_cast<int>(it2->get_satellite().get_PRN()));
                                                             if (alm_it != gps_almanac_map.end() && alm_it->second.AS_status > 0)
                                                                 {
-                                                                    const int32_t required_code = (mapStringValues_[searched_signal] == evGPS_L5) ? 11 : 10;
-                                                                    if (alm_it->second.AS_status < required_code)
+                                                                    const int32_t sv_config = alm_it->second.AS_status & GPS_SV_CONFIG_CODE_MASK;
+                                                                    const int32_t required_config = (mapStringValues_[searched_signal] == evGPS_L5) ? GPS_SV_CONFIG_BLOCK_IIF : GPS_SV_CONFIG_BLOCK_IIR_M;
+                                                                    if (sv_config != GPS_SV_CONFIG_UNKNOWN && sv_config < required_config)
                                                                         {
                                                                             continue;
                                                                         }
                                                                 }
                                                         }
                                                 }
-                                            // Galileo doesn't have GPS's hardware-generation gap
-                                            // -- every current satellite (IOV and FOC alike)
-                                            // broadcasts the full E1/E5a/E5b/E6 signal set by
-                                            // design -- but a signal can still be *unhealthy*
-                                            // independent of E1B (payload fault, commissioning,
-                                            // maintenance), and that's exactly what E5a_HS/E5b_HS
-                                            // already report (0 == OK per the Galileo ICD).
-                                            // Prefer ephemeris (more current) over almanac; if
-                                            // this satellite isn't in either map yet, stay
-                                            // permissive. Same failure mode as the GPS case above
-                                            // if left unguarded, just triggered by a health flag
-                                            // instead of a hardware generation.
-                                            if (enable_secondary_signal_status_gating_ && (mapStringValues_[searched_signal] == evGAL_5X || mapStringValues_[searched_signal] == evGAL_7X))
+                                            // Galileo: skip E5b if flagged unhealthy in the I/NAV data
+                                            // received on E1B (ephemeris first, then almanac). E5a is not
+                                            // gated: E5a_HS is only broadcast in F/NAV on E5a itself, so a
+                                            // stale value could block a recovered satellite indefinitely.
+                                            if (enable_secondary_signal_status_gating_ && mapStringValues_[searched_signal] == evGAL_7X)
                                                 {
                                                     const auto pvt_ptr = get_pvt();
                                                     if (pvt_ptr)
                                                         {
                                                             const int prn = static_cast<int>(it2->get_satellite().get_PRN());
-                                                            const bool want_5x = (mapStringValues_[searched_signal] == evGAL_5X);
                                                             int32_t health = -1;
                                                             const auto gal_eph_map = pvt_ptr->get_galileo_ephemeris();
                                                             const auto eph_it = gal_eph_map.find(prn);
                                                             if (eph_it != gal_eph_map.end())
                                                                 {
-                                                                    health = want_5x ? eph_it->second.E5a_HS : eph_it->second.E5b_HS;
+                                                                    health = eph_it->second.E5b_HS;
                                                                 }
                                                             else
                                                                 {
@@ -2751,7 +2702,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                                                     const auto alm_it = gal_alm_map.find(prn);
                                                                     if (alm_it != gal_alm_map.end())
                                                                         {
-                                                                            health = want_5x ? alm_it->second.E5a_HS : alm_it->second.E5b_HS;
+                                                                            health = alm_it->second.E5b_HS;
                                                                         }
                                                                 }
                                                             if (health > 0)
@@ -2760,16 +2711,8 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                                                 }
                                                         }
                                                 }
-                                            // BeiDou doesn't have a hardware-generation gap for B3
-                                            // either -- both BeiDou-2 and BeiDou-3 satellites
-                                            // broadcast it -- but SV_health (SatH1, the ICD's
-                                            // autonomous satellite health flag: 0 == normal
-                                            // ephemeris/signal) already exists in both the
-                                            // ephemeris and almanac decode and was never checked
-                                            // here. Prefer ephemeris (more current) over almanac;
-                                            // stay permissive if this satellite isn't in either
-                                            // map yet. Same failure mode as the Galileo case above
-                                            // if left unguarded.
+                                            // BeiDou: skip B3I if SV_health is not zero (ephemeris first,
+                                            // then almanac).
                                             if (enable_secondary_signal_status_gating_ && mapStringValues_[searched_signal] == evBDS_B3)
                                                 {
                                                     const auto pvt_ptr = get_pvt();
@@ -2798,22 +2741,16 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                                                 }
                                                         }
                                                 }
-                                            // GLONASS doesn't have a hardware-generation gap for L2
-                                            // either -- every satellite still in the operational
-                                            // constellation (GLONASS-M and later) broadcasts it --
-                                            // but the ephemeris's own Bn health flag (0 == healthy
-                                            // per the GLONASS ICD) already exists and was never
-                                            // checked here. No separate per-satellite almanac map
-                                            // is exposed (GLONASS almanac decode keeps a single
-                                            // shared object, not a per-slot map), so this only
-                                            // checks ephemeris; stays permissive if this satellite
-                                            // has none decoded yet.
+                                            // GLONASS: skip L2 if the Bn health word of the ephemeris is
+                                            // not zero.
                                             if (enable_secondary_signal_status_gating_ && mapStringValues_[searched_signal] == evGLO_2G)
                                                 {
                                                     const auto pvt_ptr = get_pvt();
                                                     if (pvt_ptr)
                                                         {
-                                                            const int prn = static_cast<int>(it2->get_satellite().get_PRN());
+                                                            // Not *it2: the FDMA pool match can be another slot sharing
+                                                            // the frequency channel.
+                                                            const int prn = static_cast<int>(tracked_prn);
                                                             const auto glo_eph_map = pvt_ptr->get_glonass_ephemeris();
                                                             const auto eph_it = glo_eph_map.find(prn);
                                                             if (eph_it != glo_eph_map.end() && eph_it->second.d_B_n > 0)
@@ -2822,19 +2759,8 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                                                 }
                                                         }
                                                 }
-                                            // QZSS shares GPS's LNAV decoder wholesale
-                                            // (TelemetryDecoder_J1 = GPS_L1_CA_Telemetry_Decoder),
-                                            // so its satellites land in the exact same
-                                            // Gps_Ephemeris/Gps_Almanac maps GPS uses (PRN-offset
-                                            // by 192, see QZSS_PRN_OFFSET) -- SV_health is already
-                                            // decoded there for free. Unlike the GPS case above,
-                                            // this is a plain health gate, not a hardware-
-                                            // capability one: every currently-operational QZSS
-                                            // satellite broadcasts L5, so there's no generation gap
-                                            // to check -- just whether this specific satellite is
-                                            // currently flagged unhealthy. Prefer ephemeris over
-                                            // almanac; stay permissive if neither has this
-                                            // satellite yet.
+                                            // QZSS: skip L5 if SV_health is not zero (ephemeris first, then
+                                            // almanac). QZSS LNAV data is stored in the GPS maps.
                                             if (enable_secondary_signal_status_gating_ && mapStringValues_[searched_signal] == evQZS_J5)
                                                 {
                                                     const auto pvt_ptr = get_pvt();

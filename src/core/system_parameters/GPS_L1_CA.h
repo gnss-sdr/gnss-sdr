@@ -184,26 +184,15 @@ const std::vector<std::pair<int32_t, int32_t>> DELTAT_LSF({{271, 8}});
 constexpr double DELTAT_LSF_LSB = 1;
 
 // Page 25 - Antispoofing, SV config and SV health (PRN 25 -32)
-//
-// SV Configuration Code (4 bits/SV, all 32 SVs) -- IS-GPS-200, Table 20-V/
-// 20.3.3.5.1.4. Bit positions below were never previously derived in this
-// codebase (marked "\TODO Read Anti-Spoofing, SV config" where page 25 is
-// decoded) -- reconstructed here from the page's known word-packing (4
-// codes in word 3's remaining 16 data bits after the 2-bit Data ID + 6-bit
-// SV ID, then 6 codes in each of words 4-7's 24 data bits, then the last 4
-// codes in word 8's first 16 data bits) and cross-checked against the
-// already-verified HEALTH_SV25..32 constants immediately below: every
-// derived boundary here lines up exactly with where those pre-existing,
-// working constants start (e.g. word 8's SV config codes end at bit 226,
-// then a 2-bit reserved gap, then HEALTH_SV25 correctly starts at 229; the
-// 6-bit gaps between HEALTH_SV29/SV30 and HEALTH_SV31 across word
-// boundaries are each word's 6 trailing parity bits, consistently skipped
-// by the same numbering both here and in the existing health constants).
-// The raw 4-bit *values*' mapping to satellite block (which values mean
-// IIA/IIR/IIR-M vs IIF/III) is intentionally NOT hardcoded here -- see
-// GNSSFlowgraph's use of get_almanac_config_code(), which validates the
-// decoded values empirically against Gnss_Satellite's own known-correct
-// block table before trusting them for anything.
+// A-S flag and SV configuration, 4 bits per SV (IS-GPS-200, 20.3.3.5.1.4).
+// MSB: A-S flag (1 = ON). Three LSBs: SV configuration (000 = no info,
+// 001 = II/IIA/IIR, 010 = IIR-M, 011 = IIF, 100 = GPS III, others reserved).
+constexpr int32_t GPS_SV_CONFIG_AS_FLAG_MASK = 0x8;  //!< A-S flag (1 = ON)
+constexpr int32_t GPS_SV_CONFIG_CODE_MASK = 0x7;     //!< SV configuration
+constexpr int32_t GPS_SV_CONFIG_UNKNOWN = 0;         //!< 000: no information
+constexpr int32_t GPS_SV_CONFIG_BLOCK_IIR_M = 2;     //!< 010: first with L2C
+constexpr int32_t GPS_SV_CONFIG_BLOCK_IIF = 3;       //!< 011: first with L5
+
 const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV1({{69, 4}});
 const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV2({{73, 4}});
 const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV3({{77, 4}});

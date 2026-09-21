@@ -699,11 +699,7 @@ Gps_Almanac Gps_Navigation_Message::get_almanac()
     almanac.OMEGAdot = a_OMEGAdot;
     almanac.af0 = a_af0;
     almanac.af1 = a_af1;
-    // Raw SV Configuration Code (page 25) -- -1 if this channel hasn't
-    // decoded page 25 yet. See GNSSFlowgraph for where the threshold on
-    // this value is applied (empirically validated: code>=11 means L5
-    // capable, code>=10 means L2C capable, across all 32 PRNs with zero
-    // exceptions against gnss-sdr's own block database).
+    // A-S flag and SV configuration (page 25), -1 if not decoded yet
     almanac.AS_status = get_almanac_config_code(a_PRN);
     flag_almanac_valid = false;
     return almanac;

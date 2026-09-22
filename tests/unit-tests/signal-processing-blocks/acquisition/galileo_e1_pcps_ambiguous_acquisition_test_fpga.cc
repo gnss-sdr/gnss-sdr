@@ -1,8 +1,9 @@
 /*!
  * \file galileo_e1_pcps_acquisition_test_fpga.cc
- * \brief  This class implements an acquisition test Galileo FPGA acquisition
+ * \brief  This class implements an acquisition test for the
+ *         Galileo FPGA acquisition
  * \authors <ul>
- *          <li> Marc Majoral, 2019. mmajoral(at)cttc.cat
+ *          <li> Marc Majoral, 2019-2026. mmajoral(at)cttc.cat
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *          </ul>
  *
@@ -11,31 +12,38 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
  */
 
-#include "Galileo_E1.h"
-#include "acquisition_dump_reader.h"
-#include "concurrent_queue.h"
-#include "fpga_switch.h"
-#include "gnss_block_interface.h"
-#include "gnss_sdr_filesystem.h"
-#include "gnss_signal.h"
-#include "gnss_synchro.h"
-#include "in_memory_configuration.h"
-#include "pcps_acquisition_adapter_fpga.h"
-#include "test_flags.h"
-#include <boost/make_shared.hpp>
-#include <gtest/gtest.h>
-#include <pmt/pmt.h>
-#include <chrono>
-#include <cmath>    // for abs, pow, floor
-#include <fcntl.h>  // for O_WRONLY
-#include <pthread.h>
-#include <utility>
+#include "Galileo_E1.h"                     // Galileo E1 signal parameters
+#include "acquisition_interface.h"          // AcquisitionInterface
+#include "channel_fsm.h"                    // ChannelFsm
+#include "fpga_dma-proxy.h"                 // Fpga_DMA
+#include "fpga_switch.h"                    // Fpga_Switch
+#include "gnss_synchro.h"                   // Gnss_Synchro
+#include "in_memory_configuration.h"        // InMemoryConfiguration
+#include "pcps_acquisition_adapter_fpga.h"  // PcpsAcquisitionAdapterFpga
+#include "uio_fpga.h"                       // find_uio_dev_file_name
+#include <gtest/gtest.h>                    // GoogleTest
+#include <chrono>                           // clocks, durations, milliseconds
+#include <cmath>                            // std::abs
+#include <cstddef>                          // std::size_t
+#include <cstdint>                          // fixed-width integer types
+#include <cstring>                          // std::memcpy
+#include <fcntl.h>                          // open, O_RDWR, O_SYNC
+#include <fstream>                          // std::ifstream
+#include <iostream>                         // std::cout, std::endl
+#include <memory>                           // std::shared_ptr, std::make_shared
+#include <string>                           // std::string, std::to_string
+#include <string_view>                      // std::string_view
+#include <sys/mman.h>                       // mmap, munmap
+#include <thread>                           // std::thread, std::this_thread
+#include <unistd.h>                         // close, usleep
+#include <vector>                           // std::vector
+
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -49,211 +57,80 @@
 #include <gnuradio/analog/sig_source_c.h>
 #endif
 
-
-struct DMA_handler_args_galileo_e1_pcps_ambiguous_acq_test
-{
-    std::string file;
-    int32_t nsamples_tx;
-    int32_t skip_used_samples;
-    float scaling_factor;
-};
-
-struct acquisition_handler_args_galileo_e1_pcps_ambiguous_acq_test
-{
-    std::shared_ptr<AcquisitionInterface> acquisition;
-};
+class ChannelFsm_galileo_e1_pcps_ambiguous_acq_test;
 
 class GalileoE1PcpsAmbiguousAcquisitionTestFpga : public ::testing::Test
 {
-public:
-    bool acquire_signal();
-    std::string implementation = "GPS_L1_CA_DLL_PLL_Tracking_FPGA";
-    std::vector<Gnss_Synchro> gnss_synchro_vec;
-
-    const int32_t TEST_ACQ_SKIP_SAMPLES = 1024;
-    const int BASEBAND_SAMPLING_FREQ = 4000000;
-    const float MAX_SAMPLE_VALUE = 0.096257761120796;
-    const int DMA_BITS_PER_SAMPLE = 8;
-    const float DMA_SIGNAL_SCALING_FACTOR = (pow(2, DMA_BITS_PER_SAMPLE - 1) - 1) / MAX_SAMPLE_VALUE;
-
 protected:
+    // acquisition configuration
+    inline static constexpr int BASEBAND_SAMPLING_RATE_SPS = 12500000;
+    inline static constexpr int DOPPLER_MAX_HZ = 5000;
+    inline static constexpr int DOPPLER_STEP_HZ = 125;
+    inline static constexpr float ACQUISITION_THRESHOLD = 2.25f;
+    inline static constexpr int TOTAL_BLK_EXP = 12;
+    inline static constexpr std::string_view IMPLEMENTATION = "Galileo_E1_PCPS_Ambiguous_Acquisition_FPGA";
+
+    // acquisition expected results
+    inline static constexpr double EXPECTED_DELAY_SAMPLES = 42964;
+    inline static constexpr double EXPECTED_DOPPLER_HZ = 1625;
+
+    // Signal parameters
+    inline static constexpr int SV_ID = 1;
+    inline static constexpr int COHERENT_INTEGRATION_TIME_ms = 4;
+    inline static constexpr char SYSTEM = 'E';
+    inline static constexpr std::string_view SIGNAL = "1B";
+    inline static constexpr unsigned int NSAMPLES =
+        static_cast<unsigned int>(
+            (static_cast<std::uint64_t>(BASEBAND_SAMPLING_RATE_SPS) *
+                static_cast<std::uint64_t>(COHERENT_INTEGRATION_TIME_ms)) /
+            1000U);
+
+    // File to DMA control
+    inline static constexpr int COMPLEX_SAMPLE_SIZE_BYTES = sizeof(int8_t) * 2;  // interleaved byte
+    inline static constexpr int SAMPLE_BLOCK_SIZE_BYTES = 16384;
+    inline static constexpr std::string_view SIGNAL_FILE_PATH = "./signal_samples/Galileo_E1_ID_1_Fs_12.5Msps_10ms.dat";
+
+    // FPGA switch
+    inline static constexpr int POST_PROCESSING_MODE = 0;  // Select post-processing mode (read a signal from a recorded file)
+
+    // FPGA Dynamic bit selection
+    inline static constexpr int DYN_BIT_SEL_DEV_NUM = 0;  // device 0 is connected to the L1/E1 frequency-band path.
+    inline static constexpr size_t FPGA_PAGE_SIZE_BYTES = 0x1000;
+    inline static constexpr uint32_t DYN_BIT_SEL_SHIFT_OUT_BITS = 0;                             // No bit shift; select the least significant bits.
+    inline static constexpr std::string_view DYN_BIT_SEL_DEVICE_NAME = "dynamic_bits_selector";  // device name
+    inline static constexpr int SOBITS_REG_ADDR = 0;                                             // Shift out bits register address
+
     GalileoE1PcpsAmbiguousAcquisitionTestFpga();
     ~GalileoE1PcpsAmbiguousAcquisitionTestFpga() = default;
 
     void init();
 
+    void create_and_open_DMA(std::shared_ptr<Fpga_DMA> &dma_fpga);
+    void create_switch(std::shared_ptr<Fpga_Switch> &fpga_switch);
+    void open_and_map_dynamic_bit_selector(int &dyn_bit_sel_dev_descr, volatile unsigned *&d_map_base_dyn_bit_sel);
+    void create_acquisition(std::shared_ptr<AcquisitionInterface> &acquisition);
+
+    void configure_switch(std::shared_ptr<Fpga_Switch> &fpga_switch);
+    void configure_dynamic_bit_selector(volatile unsigned *&d_map_base_dyn_bit_sel);
+    void configure_acquisition(std::shared_ptr<AcquisitionInterface> &acquisition, Gnss_Synchro &tmp_gnss_synchro, std::shared_ptr<ChannelFsm_galileo_e1_pcps_ambiguous_acq_test> &channel_fsm_);
+
+    void run_DMA_process(std::shared_ptr<Fpga_DMA> &dma_fpga);
+    void run_acquisition_process(std::shared_ptr<AcquisitionInterface> acquisition);
+
+    void close_DMA(std::shared_ptr<Fpga_DMA> &dma_fpga);
+    void close_switch(std::shared_ptr<Fpga_Switch> &fpga_switch);
+    void unmap_and_close_dynamic_bit_selector(int &dyn_bit_sel_dev_descr, volatile unsigned *&d_map_base_dyn_bit_sel);
+    void release_acquisition(std::shared_ptr<AcquisitionInterface> &acquisition);
+
     std::shared_ptr<InMemoryConfiguration> config;
-
-    unsigned int doppler_max;
-    unsigned int doppler_step;
-    unsigned int nsamples_to_transfer;
 };
-
-
-GalileoE1PcpsAmbiguousAcquisitionTestFpga::GalileoE1PcpsAmbiguousAcquisitionTestFpga()
-{
-    config = std::make_shared<InMemoryConfiguration>();
-
-    doppler_max = 5000;
-    doppler_step = 100;
-    nsamples_to_transfer = 0;
-}
-
-
-void* handler_DMA_galileo_e1_pcps_ambiguous_acq_test(void* arguments)
-{
-    const int MAX_INPUT_SAMPLES_TOTAL = 16384;
-
-    auto* args = (struct DMA_handler_args_galileo_e1_pcps_ambiguous_acq_test*)arguments;
-
-    std::string Filename = args->file;  // input filename
-    int32_t skip_used_samples = args->skip_used_samples;
-    int32_t nsamples_tx = args->nsamples_tx;
-
-    std::vector<float> input_samples(MAX_INPUT_SAMPLES_TOTAL * 2);
-    std::vector<int8_t> input_samples_dma(MAX_INPUT_SAMPLES_TOTAL * 2 * 2);
-    bool file_completed = false;
-    int32_t nsamples_remaining;
-    int32_t nsamples_block_size;
-    unsigned int dma_index;
-
-    int tx_fd;  // DMA descriptor
-    std::ifstream infile;
-
-    infile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
-    try
-        {
-            infile.open(Filename, std::ios::binary);
-        }
-    catch (const std::ifstream::failure& e)
-        {
-            std::cerr << "Exception opening file " << Filename << '\n';
-            return nullptr;
-        }
-
-    // *************************************************************************
-    // Open DMA device
-    // *************************************************************************
-    tx_fd = open("/dev/loop_tx", O_WRONLY);
-    if (tx_fd < 0)
-        {
-            std::cout << "Cannot open loop device\n";
-            return nullptr;
-        }
-
-    // *************************************************************************
-    // Open input file
-    // *************************************************************************
-    uint32_t skip_samples = 0;  // static_cast<uint32_t>(FLAGS_skip_samples);
-
-    if (skip_samples + skip_used_samples > 0)
-        {
-            try
-                {
-                    infile.ignore((skip_samples + skip_used_samples) * 2);
-                }
-            catch (const std::ifstream::failure& e)
-                {
-                    std::cerr << "Exception reading file " << Filename << '\n';
-                }
-        }
-
-    nsamples_remaining = nsamples_tx;
-    nsamples_block_size = 0;
-
-    while (file_completed == false)
-        {
-            dma_index = 0;
-
-            if (nsamples_remaining > MAX_INPUT_SAMPLES_TOTAL)
-                {
-                    nsamples_block_size = MAX_INPUT_SAMPLES_TOTAL;
-                }
-            else
-                {
-                    nsamples_block_size = nsamples_remaining;
-                }
-
-            try
-                {
-                    // 2 bytes per complex sample
-                    infile.read(reinterpret_cast<char*>(input_samples.data()), nsamples_block_size * 2 * sizeof(float));
-                }
-            catch (const std::ifstream::failure& e)
-                {
-                    std::cerr << "Exception reading file " << Filename << '\n';
-                }
-
-            for (int index0 = 0; index0 < (nsamples_block_size * 2); index0 += 2)
-                {
-                    // channel 1 (queue 1) -> E5/L5
-                    input_samples_dma[dma_index] = static_cast<int8_t>(input_samples[index0] * args->scaling_factor);
-                    input_samples_dma[dma_index + 1] = static_cast<int8_t>(input_samples[index0 + 1] * args->scaling_factor);
-                    // channel 0 (queue 0) -> E1/L1
-                    input_samples_dma[dma_index + 2] = 0;
-                    input_samples_dma[dma_index + 3] = 0;
-
-                    dma_index += 4;
-                }
-
-            if (write(tx_fd, input_samples_dma.data(), nsamples_block_size * 2 * 2) != nsamples_block_size * 2 * 2)
-                {
-                    std::cerr << "Error: DMA could not send all the required samples \n";
-                }
-
-            // Throttle the DMA
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
-            nsamples_remaining -= nsamples_block_size;
-
-            if (nsamples_remaining == 0)
-                {
-                    file_completed = true;
-                }
-        }
-
-    try
-        {
-            infile.close();
-        }
-    catch (const std::ifstream::failure& e)
-        {
-            std::cerr << "Exception closing files " << Filename << '\n';
-        }
-
-    try
-        {
-            close(tx_fd);
-        }
-    catch (const std::ifstream::failure& e)
-        {
-            std::cerr << "Exception closing loop device \n";
-        }
-
-    return nullptr;
-}
-
-
-void* handler_acquisition_galileo_e1_pcps_ambiguous_acq_test(void* arguments)
-{
-    // the acquisition is a blocking function so we have to
-    // create a thread
-    auto* args = (struct acquisition_handler_args_galileo_e1_pcps_ambiguous_acq_test*)arguments;
-    args->acquisition->reset();
-    return nullptr;
-}
-
 
 // When using the FPGA the acquisition class calls the states
 // of the channel finite state machine directly. This is done
 // in order to reduce the latency of the receiver when going
 // from acquisition to tracking. In order to execute the
 // acquisition in the unit tests we need to create a derived
-// class of the channel finite state machine. Some of the states
-// of the channel state machine are modified here, in order to
-// simplify the instantiation of the acquisition class in the
-// unit test.
+// class of the channel finite state machine.
 class ChannelFsm_galileo_e1_pcps_ambiguous_acq_test : public ChannelFsm
 {
 public:
@@ -289,152 +166,439 @@ private:
     bool acquisition_successful{};
 };
 
-
-bool GalileoE1PcpsAmbiguousAcquisitionTestFpga::acquire_signal()
+GalileoE1PcpsAmbiguousAcquisitionTestFpga::GalileoE1PcpsAmbiguousAcquisitionTestFpga()
 {
-    pthread_t thread_DMA, thread_acquisition;
+    config = std::make_shared<InMemoryConfiguration>();
+}
 
-    // 1. Setup GNU Radio flowgraph (file_source -> Acquisition_10m)
-    int SV_ID = 1;  // initial sv id
+void GalileoE1PcpsAmbiguousAcquisitionTestFpga::run_acquisition_process(std::shared_ptr<AcquisitionInterface> acquisition)
+{
+    if (!acquisition)
+        {
+            FAIL() << "Null acquisition";
+        }
+    acquisition->reset();
+}
 
-    // fsm
-    std::shared_ptr<ChannelFsm_galileo_e1_pcps_ambiguous_acq_test> channel_fsm_;
-    channel_fsm_ = std::make_shared<ChannelFsm_galileo_e1_pcps_ambiguous_acq_test>();
-    bool acquisition_successful;
+void GalileoE1PcpsAmbiguousAcquisitionTestFpga::init()
+{
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(BASEBAND_SAMPLING_RATE_SPS));
+    config->set_property("Acquisition.threshold", std::to_string(ACQUISITION_THRESHOLD));
+    config->set_property("Acquisition.doppler_max", std::to_string(DOPPLER_MAX_HZ));
+    config->set_property("Acquisition.doppler_step", std::to_string(DOPPLER_STEP_HZ));
+    config->set_property("Acquisition.total_block_exp", std::to_string(TOTAL_BLK_EXP));
+}
 
-    // Satellite signal definition
-    Gnss_Synchro tmp_gnss_synchro;
-    tmp_gnss_synchro.Channel_ID = 0;
+void GalileoE1PcpsAmbiguousAcquisitionTestFpga::create_and_open_DMA(std::shared_ptr<Fpga_DMA> &dma_fpga)
+{
+    dma_fpga = std::make_shared<Fpga_DMA>();
+    if (dma_fpga->DMA_open())
+        {
+            FAIL() << "Cannot open loop device\n";
+        }
+}
 
-    std::shared_ptr<AcquisitionInterface> acquisition;
+void GalileoE1PcpsAmbiguousAcquisitionTestFpga::run_DMA_process(std::shared_ptr<Fpga_DMA> &dma_fpga)
+{
+    std::ifstream infile;
+    infile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
-    std::string signal;
-    struct DMA_handler_args_galileo_e1_pcps_ambiguous_acq_test args;
-    struct acquisition_handler_args_galileo_e1_pcps_ambiguous_acq_test args_acq;
+    // open the file
+    try
+        {
+            infile.open(std::string{SIGNAL_FILE_PATH}, std::ios::binary);
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            FAIL() << "Exception opening file " << SIGNAL_FILE_PATH;
+        }
 
-    // set the scaling factor
-    args.scaling_factor = DMA_SIGNAL_SCALING_FACTOR;
+    // rx signal vector
+    std::vector<int8_t> input_samples(SAMPLE_BLOCK_SIZE_BYTES);  // complex samples
 
-    std::string file = "data/Galileo_E1_ID_1_Fs_4Msps_8ms.dat";
-    args.file = std::move(file);  // DMA file configuration
+    // pointer to DMA buffer
+    int8_t *dma_buffer;
 
-    // instantiate the FPGA switch and set the
-    // switch position to DMA.
-    std::shared_ptr<Fpga_Switch> switch_fpga;
-    switch_fpga = std::make_shared<Fpga_Switch>();
-    switch_fpga->set_switch_position(0);  // set switch position to DMA
+    // Open DMA device
+    if (dma_fpga->DMA_open())
+        {
+            FAIL() << "Cannot open loop device\n";
+        }
+    dma_buffer = dma_fpga->get_buffer_address();
 
-    // create the correspondign acquisition block according to the desired tracking signal
-    tmp_gnss_synchro.System = 'E';
-    signal = "1B";
-    const char* str = signal.c_str();                                  // get a C style null terminated string
-    std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 2);  // copy string into synchro char array: 2 char + null
-    tmp_gnss_synchro.PRN = SV_ID;
-    acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition_FPGA", 0, 0, GAL_1B);
+    uint64_t nbytes_remaining = NSAMPLES * COMPLEX_SAMPLE_SIZE_BYTES;
+    uint32_t read_buffer_size = SAMPLE_BLOCK_SIZE_BYTES;
 
+    // run the DMA
+    bool run_DMA = true;
+    while (run_DMA)
+        {
+            // if (nbytes_remaining < read_buffer_size)
+            if (nbytes_remaining < SAMPLE_BLOCK_SIZE_BYTES)
+                {
+                    read_buffer_size = nbytes_remaining;
+                }
+            nbytes_remaining = nbytes_remaining - read_buffer_size;
+
+            // read file
+            try
+                {
+                    infile.read(reinterpret_cast<char *>(input_samples.data()), read_buffer_size);
+                }
+            catch (const std::ifstream::failure &e)
+                {
+                    FAIL() << "Exception reading file " << SIGNAL_FILE_PATH;
+                }
+
+            const std::streamsize bytes_read = infile.gcount();
+
+            if (bytes_read != static_cast<std::streamsize>(read_buffer_size))
+                {
+                    FAIL() << "Error reading " << SIGNAL_FILE_PATH
+                           << ": requested " << read_buffer_size
+                           << " bytes, but read only " << bytes_read << " bytes";
+                }
+
+            uint32_t dma_index = 0;
+
+            for (int index0 = 0; index0 < (bytes_read); index0 = index0 + 2)
+                {
+                    // no signal on the L5/E5a frequency band
+                    dma_buffer[dma_index] = 0;
+                    dma_buffer[dma_index + 1] = 0;
+                    // L1/E1 frequency band
+                    dma_buffer[dma_index + 2] = input_samples[index0];
+                    dma_buffer[dma_index + 1 + 2] = input_samples[index0 + 1];
+                    dma_index += 4;
+                }
+
+            if (bytes_read > 0)
+                {
+                    if (dma_fpga->DMA_write(bytes_read * 2))
+                        {
+                            FAIL() << "Error: DMA could not send all the required samples";
+                        }
+                    // Throttle the DMA
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                }
+
+            if (nbytes_remaining == 0)
+                {
+                    // the input file is completely processed. Stop the receiver.
+                    run_DMA = false;
+                }
+        }
+
+    if (dma_fpga->DMA_close())
+        {
+            FAIL() << "Error closing loop device ";
+        }
+
+    try
+        {
+            infile.close();
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            FAIL() << "Exception closing file " << SIGNAL_FILE_PATH;
+        }
+}
+
+void GalileoE1PcpsAmbiguousAcquisitionTestFpga::close_DMA(std::shared_ptr<Fpga_DMA> &dma_fpga)
+{
+    dma_fpga.reset();
+}
+
+void GalileoE1PcpsAmbiguousAcquisitionTestFpga::create_switch(std::shared_ptr<Fpga_Switch> &fpga_switch)
+{
+    fpga_switch = std::make_shared<Fpga_Switch>();
+}
+
+void GalileoE1PcpsAmbiguousAcquisitionTestFpga::configure_switch(std::shared_ptr<Fpga_Switch> &fpga_switch)
+{
+    fpga_switch->set_switch_position(POST_PROCESSING_MODE);  // set switch position to post-processing mode
+}
+
+void GalileoE1PcpsAmbiguousAcquisitionTestFpga::close_switch(std::shared_ptr<Fpga_Switch> &fpga_switch)
+{
+    fpga_switch.reset();
+}
+
+void GalileoE1PcpsAmbiguousAcquisitionTestFpga::open_and_map_dynamic_bit_selector(int &dyn_bit_sel_dev_descr, volatile unsigned *&d_map_base_dyn_bit_sel)
+{
+    // find the uio device file corresponding to the dynamic bit selector 0 module.
+    std::string device_name;
+    int dev_descr_freq_band_1;
+    if (find_uio_dev_file_name(device_name, std::string{DYN_BIT_SEL_DEVICE_NAME}, DYN_BIT_SEL_DEV_NUM) < 0)
+        {
+            FAIL() << "Cannot find the FPGA uio device file corresponding to device name " << DYN_BIT_SEL_DEVICE_NAME;
+        }
+
+    // dynamic bits selection corresponding to frequency band 1
+    if ((dyn_bit_sel_dev_descr = open(device_name.c_str(), O_RDWR | O_SYNC)) == -1)
+        {
+            FAIL() << "Cannot open deviceio" << device_name;
+        }
+    if (dyn_bit_sel_dev_descr == -1)
+        {
+            FAIL() << "Cannot open device " << device_name;
+        }
+
+    d_map_base_dyn_bit_sel = reinterpret_cast<volatile unsigned *>(mmap(nullptr, FPGA_PAGE_SIZE_BYTES,
+        PROT_READ | PROT_WRITE, MAP_SHARED, dyn_bit_sel_dev_descr, 0));
+
+    if (d_map_base_dyn_bit_sel == reinterpret_cast<void *>(-1))
+        {
+            FAIL() << "Cannot map the FPGA dynamic bit selection module";
+        }
+}
+
+void GalileoE1PcpsAmbiguousAcquisitionTestFpga::configure_dynamic_bit_selector(volatile unsigned *&d_map_base_dyn_bit_sel)
+{
+    // set the dynamic bit selection to shift the received signal by DYN_BIT_SEL_SHIFT_OUT_BITS bits
+    d_map_base_dyn_bit_sel[SOBITS_REG_ADDR] = DYN_BIT_SEL_SHIFT_OUT_BITS;
+}
+
+void GalileoE1PcpsAmbiguousAcquisitionTestFpga::unmap_and_close_dynamic_bit_selector(int &dyn_bit_sel_dev_descr, volatile unsigned *&d_map_base_dyn_bit_sel)
+{
+    // close device
+    auto *aux = const_cast<unsigned *>(d_map_base_dyn_bit_sel);
+    if (munmap(static_cast<void *>(aux), FPGA_PAGE_SIZE_BYTES) == -1)
+        {
+            FAIL() << "Failed to unmap memory uio\n";
+        }
+    close(dyn_bit_sel_dev_descr);
+}
+
+void GalileoE1PcpsAmbiguousAcquisitionTestFpga::create_acquisition(std::shared_ptr<AcquisitionInterface> &acquisition)
+{
+    acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", std::string{IMPLEMENTATION}, 0, 0, GAL_1B);
+}
+
+void GalileoE1PcpsAmbiguousAcquisitionTestFpga::configure_acquisition(std::shared_ptr<AcquisitionInterface> &acquisition, Gnss_Synchro &tmp_gnss_synchro, std::shared_ptr<ChannelFsm_galileo_e1_pcps_ambiguous_acq_test> &channel_fsm_)
+{
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     acquisition->set_channel_fsm(channel_fsm_);
     acquisition->set_channel(1);
     acquisition->set_doppler_center(0);
+    channel_fsm_->Event_clear_test_result();
+    acquisition->set_local_code();
+}
+void GalileoE1PcpsAmbiguousAcquisitionTestFpga::release_acquisition(std::shared_ptr<AcquisitionInterface> &acquisition)
+{
+    acquisition.reset();
+}
 
-    nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(BASEBAND_SAMPLING_FREQ) / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
+TEST_F(GalileoE1PcpsAmbiguousAcquisitionTestFpga, Instantiate)
+{
+    init();
 
+    // instantiate the DMA
+    std::shared_ptr<Fpga_DMA> dma_fpga;
+    create_and_open_DMA(dma_fpga);
+
+    // instantiate the switch
+    std::shared_ptr<Fpga_Switch> switch_fpga;
+    create_switch(switch_fpga);
+
+    // instantiate the dynamic bit selection
+    int dyn_bit_sel_dev_descr;
+    volatile unsigned *d_map_base_dyn_bit_sel;
+    open_and_map_dynamic_bit_selector(dyn_bit_sel_dev_descr, d_map_base_dyn_bit_sel);
+
+    // instantiate the acquisition IP
+    std::shared_ptr<AcquisitionInterface> acquisition;
+    create_acquisition(acquisition);
+
+    // close the DMA
+    close_DMA(dma_fpga);
+
+    // close the switch
+    close_switch(switch_fpga);
+
+    // close the dynamic bit selection
+    unmap_and_close_dynamic_bit_selector(dyn_bit_sel_dev_descr, d_map_base_dyn_bit_sel);
+
+    // close the acquisition IP
+    release_acquisition(acquisition);
+}
+
+TEST_F(GalileoE1PcpsAmbiguousAcquisitionTestFpga, ConnectAndRun)
+{
+    init();
+
+    // instantiate the DMA
+    std::shared_ptr<Fpga_DMA> dma_fpga;
+    create_and_open_DMA(dma_fpga);
+
+    // instantiate the switch
+    std::shared_ptr<Fpga_Switch> switch_fpga;
+    create_switch(switch_fpga);
+
+    // instantiate the dynamic bit selection
+    int dyn_bit_sel_dev_descr;
+    volatile unsigned *d_map_base_dyn_bit_sel;
+    open_and_map_dynamic_bit_selector(dyn_bit_sel_dev_descr, d_map_base_dyn_bit_sel);
+
+    // instantiate the acquisition IP
+    std::shared_ptr<AcquisitionInterface> acquisition;
+    create_acquisition(acquisition);
+
+    // configure the switch
+    configure_switch(switch_fpga);
+
+    // configure the dynamic bit selection
+    configure_dynamic_bit_selector(d_map_base_dyn_bit_sel);
+
+    // FSM
+    std::shared_ptr<ChannelFsm_galileo_e1_pcps_ambiguous_acq_test> channel_fsm_;
+    channel_fsm_ = std::make_shared<ChannelFsm_galileo_e1_pcps_ambiguous_acq_test>();
     channel_fsm_->Event_clear_test_result();
 
-    acquisition->stop_acquisition();  // reset the whole system including the sample counters
-    acquisition->set_local_code();
+    // Gnss_Synchro
+    Gnss_Synchro tmp_gnss_synchro;
+    tmp_gnss_synchro.Channel_ID = 0;
+    tmp_gnss_synchro.System = SYSTEM;
+    std::memcpy(static_cast<void *>(tmp_gnss_synchro.Signal), std::string{SIGNAL}.c_str(), 2);  // copy string into synchro char array: 2 char + null
+    tmp_gnss_synchro.PRN = SV_ID;
 
-    args.skip_used_samples = 0;
+    configure_acquisition(acquisition, tmp_gnss_synchro, channel_fsm_);
 
-    // Configure the DMA to send the required samples to perform an acquisition
-    args.nsamples_tx = nsamples_to_transfer;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
+    start = std::chrono::system_clock::now();
 
-    // run the acquisition. The acquisition must run in a separate thread because it is a blocking function
-    args_acq.acquisition = std::move(acquisition);
-
-    if (pthread_create(&thread_acquisition, nullptr, handler_acquisition_galileo_e1_pcps_ambiguous_acq_test, reinterpret_cast<void*>(&args_acq)) < 0)
-        {
-            std::cout << "ERROR cannot create acquisition Process\n";
-        }
+    std::thread thread_acquisition = std::thread([&] { run_acquisition_process(acquisition); });
 
     // wait to give time for the acquisition thread to set up the acquisition HW accelerator in the FPGA
     usleep(1000000);
 
     // create DMA child process
-    if (pthread_create(&thread_DMA, nullptr, handler_DMA_galileo_e1_pcps_ambiguous_acq_test, reinterpret_cast<void*>(&args)) < 0)
+    std::thread thread_file_to_dma = std::thread([&] { run_DMA_process(dma_fpga); });
+
+    // wait for the acquisition process to finish
+    if (thread_acquisition.joinable())
         {
-            std::cout << "ERROR cannot create DMA Process\n";
+            thread_acquisition.join();
         }
 
-    // wait until the acquisition is finished
-    pthread_join(thread_acquisition, nullptr);
-
-    // wait for the child DMA process to finish
-    pthread_join(thread_DMA, nullptr);
-
-    acquisition_successful = channel_fsm_->Event_check_test_result();
-
-    if (acquisition_successful)
+    // wait for the DMA process to finish
+    if (thread_file_to_dma.joinable())
         {
-            gnss_synchro_vec.push_back(tmp_gnss_synchro);
+            thread_file_to_dma.join();
         }
-
-    if (!gnss_synchro_vec.empty())
-        {
-            return true;
-        }
-    else
-        {
-            return false;
-        }
-}
-
-
-void GalileoE1PcpsAmbiguousAcquisitionTestFpga::init()
-{
-    config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
-    config->set_property("Acquisition.implementation", "Galileo_E1_PCPS_Ambiguous_Acquisition_FPGA");
-    config->set_property("Acquisition.threshold", "0.001");
-    config->set_property("Acquisition.doppler_max", std::to_string(doppler_max));
-    config->set_property("Acquisition.doppler_step", std::to_string(doppler_step));
-    config->set_property("Acquisition.repeat_satellite", "false");
-
-    // the test file is sampled @ 4MSPs only ,so we have to use the FPGA queue corresponding
-    // to the L5/E5a frequency band in order to avoid the L1/E1 factor :4 downsampling filter
-    config->set_property("Acquisition.downsampling_factor", "1");
-    config->set_property("Acquisition.select_queue_Fpga", "1");
-    config->set_property("Acquisition.total_block_exp", "14");
-}
-
-
-TEST_F(GalileoE1PcpsAmbiguousAcquisitionTestFpga, ValidationOfResults)
-{
-    struct DMA_handler_args_galileo_e1_pcps_ambiguous_acq_test args;
-
-    std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds(0);
-
-    double expected_delay_samples = 2920;  // 18250;
-    double expected_doppler_hz = -632;
-
-    init();
-
-    start = std::chrono::system_clock::now();
-
-    ASSERT_EQ(acquire_signal(), true);
 
     end = std::chrono::system_clock::now();
     elapsed_seconds = end - start;
 
-    uint32_t n = 0;  // there is only one channel
-    std::cout << "Acquired " << nsamples_to_transfer << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
+    // close the DMA
+    close_DMA(dma_fpga);
 
-    double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro_vec.at(n).Acq_delay_samples);
-    auto delay_error_chips = static_cast<float>(delay_error_samples * 1023 / 4000);
-    double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro_vec.at(n).Acq_doppler_hz);
+    // close the switch
+    close_switch(switch_fpga);
 
-    // the acquisition grid is not available when using the FPGA
+    // close the dynamic bit selection
+    unmap_and_close_dynamic_bit_selector(dyn_bit_sel_dev_descr, d_map_base_dyn_bit_sel);
 
-    EXPECT_LE(doppler_error_hz, 666) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";
-    EXPECT_LT(delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
+    // close the acquisition IP
+    release_acquisition(acquisition);
+
+    std::cout << "Processed " << NSAMPLES << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
+}
+
+TEST_F(GalileoE1PcpsAmbiguousAcquisitionTestFpga, ValidationOfResults)
+{
+    init();
+
+    // instantiate the DMA
+    std::shared_ptr<Fpga_DMA> dma_fpga;
+    create_and_open_DMA(dma_fpga);
+
+    // instantiate the switch
+    std::shared_ptr<Fpga_Switch> switch_fpga;
+    create_switch(switch_fpga);
+
+    // instantiate the dynamic bit selection
+    int dyn_bit_sel_dev_descr;
+    volatile unsigned *d_map_base_dyn_bit_sel;
+    open_and_map_dynamic_bit_selector(dyn_bit_sel_dev_descr, d_map_base_dyn_bit_sel);
+
+    // instantiate the acquisition IP
+    std::shared_ptr<AcquisitionInterface> acquisition;
+    create_acquisition(acquisition);
+
+    // configure the switch
+    configure_switch(switch_fpga);
+
+    // configure the dynamic bit selection
+    configure_dynamic_bit_selector(d_map_base_dyn_bit_sel);
+
+    // FSM
+    std::shared_ptr<ChannelFsm_galileo_e1_pcps_ambiguous_acq_test> channel_fsm_;
+    channel_fsm_ = std::make_shared<ChannelFsm_galileo_e1_pcps_ambiguous_acq_test>();
+    channel_fsm_->Event_clear_test_result();
+
+    // Gnss_Synchro
+    Gnss_Synchro tmp_gnss_synchro;
+    tmp_gnss_synchro.Channel_ID = 0;
+    tmp_gnss_synchro.System = SYSTEM;
+    std::memcpy(static_cast<void *>(tmp_gnss_synchro.Signal), std::string{SIGNAL}.c_str(), 2);  // copy string into synchro char array: 2 char + null
+    tmp_gnss_synchro.PRN = SV_ID;
+
+    configure_acquisition(acquisition, tmp_gnss_synchro, channel_fsm_);
+
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
+    start = std::chrono::system_clock::now();
+
+    std::thread thread_acquisition = std::thread([&] { run_acquisition_process(acquisition); });
+
+    // wait to give time for the acquisition thread to set up the acquisition HW accelerator in the FPGA
+    usleep(1000000);
+
+    // create DMA child process
+    std::thread thread_file_to_dma = std::thread([&] { run_DMA_process(dma_fpga); });
+
+    // wait for the acquisition process to finish
+    if (thread_acquisition.joinable())
+        {
+            thread_acquisition.join();
+        }
+
+    // wait for the DMA process to finish
+    if (thread_file_to_dma.joinable())
+        {
+            thread_file_to_dma.join();
+        }
+
+    end = std::chrono::system_clock::now();
+    elapsed_seconds = end - start;
+
+    bool acquisition_successful = channel_fsm_->Event_check_test_result();
+
+    // close the DMA
+    close_DMA(dma_fpga);
+
+    // close the switch
+    close_switch(switch_fpga);
+
+    // close the dynamic bit selection
+    unmap_and_close_dynamic_bit_selector(dyn_bit_sel_dev_descr, d_map_base_dyn_bit_sel);
+
+    // close the acquisition IP
+    release_acquisition(acquisition);
+
+    std::cout << "Processed " << NSAMPLES << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
+
+    ASSERT_EQ(true, acquisition_successful) << "Acquisition failure. Expected result: true=ACQ SUCCESS.";
+
+    std::cout << "Delay: " << tmp_gnss_synchro.Acq_delay_samples << '\n';
+    std::cout << "Doppler: " << tmp_gnss_synchro.Acq_doppler_hz << '\n';
+
+    double delay_error_samples = std::abs(EXPECTED_DELAY_SAMPLES - tmp_gnss_synchro.Acq_delay_samples);
+    auto delay_error_chips = static_cast<float>(delay_error_samples * (GALILEO_E1_CODE_CHIP_RATE_CPS / BASEBAND_SAMPLING_RATE_SPS));
+    double doppler_error_hz = std::abs(EXPECTED_DOPPLER_HZ - tmp_gnss_synchro.Acq_doppler_hz);
+
+    EXPECT_LE(doppler_error_hz, 166) << "Doppler error exceeds the expected value: 166 Hz = 2/(3*integration period)";
+    EXPECT_LT(delay_error_chips, 0.175) << "Delay error exceeds the expected value: 0.175 chips";
 }

@@ -99,6 +99,9 @@ public:
     // exit never gets the chance to compare against. Opt-in: off by default, enable
     // per-implementation in the .conf (e.g. Acquisition_1B.full_grid_search = true).
     bool full_grid_search{false};
+    // Optimize doppler grid step and limits to reduce number of forward FFT calculations
+    bool optimize_grid{false};
+    uint32_t opt_wipeoffs{0};
 
     // Evaluate the PCPS grid on a CUDA GPU (requires ENABLE_CUDA at build time)
     bool use_cuda{false};

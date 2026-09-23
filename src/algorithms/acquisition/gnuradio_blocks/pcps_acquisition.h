@@ -44,6 +44,7 @@
 #endif
 
 #include "acq_conf.h"
+#include "buffer_pool.h"
 #include "channel_fsm.h"
 #include "gnss_sdr_fft.h"
 #if CUDA_GPU_ACCEL
@@ -96,7 +97,7 @@ pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_);
 class pcps_acquisition : public acquisition_impl_interface
 {
 public:
-    ~pcps_acquisition() noexcept override;
+    bool stop() override;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
@@ -315,11 +316,15 @@ private:
     // These are never accessed outside acquisition_core while acquisition is active
     volk_gnsssdr::vector<std::complex<float>> d_grid_doppler_wipeoffs;
     volk_gnsssdr::vector<std::complex<float>> d_fft_codes;
+    size_t d_data_buffer_size;
+    volk_gnsssdr::vector<std::complex<float>> d_data_buffer;
     std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
 #if CUDA_GPU_ACCEL
     std::unique_ptr<CudaPcpsEngine> d_cuda_engine;  // null => CPU path
     uint64_t d_cuda_grid_count{0};
 #endif
+    gr::thread::condition_variable worker_cv;
+    gr::thread::mutex d_wait_mutex;
 };
 
 

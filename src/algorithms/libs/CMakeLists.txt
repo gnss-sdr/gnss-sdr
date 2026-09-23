@@ -74,6 +74,7 @@ set(GNSS_SPLIBS_HEADERS
     matlab_writter_helper.h
     qzss_signal_replica.h
     sbas_signal_replica.h
+    buffer_pool.h
 )
 
 set(GNSS_SPLIBS_HEADERS ${GNSS_SPLIBS_HEADERS}

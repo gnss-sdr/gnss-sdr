@@ -52,7 +52,9 @@ public:
     virtual gr::basic_block_sptr get_right_block() = 0;
     virtual Gnss_Signal get_signal() = 0;
     virtual void start_acquisition() = 0;
-    virtual void assist_acquisition_doppler(double Carrier_Doppler_hz, uint32_t doppler_uncertainty = 1) = 0;
+    // doppler_num_bins: number of Doppler bins to search, or 0 (the default)
+    // for the full configured range -- see AcquisitionInterface::set_doppler_num_bins().
+    virtual void assist_acquisition_doppler(double Carrier_Doppler_hz, uint32_t doppler_num_bins = 0) = 0;
     virtual void stop_channel() = 0;
     virtual void set_signal(const Gnss_Signal&) = 0;
 };

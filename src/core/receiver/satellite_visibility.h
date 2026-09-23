@@ -170,11 +170,10 @@ public:
     // returns true. Only meaningful with a live PVT fix -- returns false
     // (leaving doppler_hz untouched) when disabled, no fix is currently
     // valid, the signal isn't a recognized carrier, or neither ephemeris nor
-    // almanac is currently usable for sat. No AGNSS-reference fallback yet: that's deferred to a
-    // follow-up (needs the pre-fix clock/velocity uncertainty this signal's
-    // Doppler tolerance can't absorb from a single search bin -- see
-    // GNSS-SDR.clock_frequency_max_error_ppm / receiver_max_velocity_m_s in
-    // the follow-up PR).
+    // almanac is currently usable for sat. For GLONASS, sat stands for its
+    // FDMA frequency: the prediction uses the single visible slot on that
+    // frequency and its own carrier, and fails if no slot or more than one
+    // is visible.
     // Tick() must have observed this fix, at most one second ago on the
     // sample clock. Older or unanchored fixes require a full-grid search.
     bool PredictedDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
@@ -190,6 +189,16 @@ private:
     };
 
     SearchVisibility GetSearchVisibility(const Gnss_Satellite& sat) const;
+
+    // GLONASS part of PredictedDopplerHz(). Resolves which orbital slot
+    // sharing prn's FDMA frequency is visible and computes its geometric
+    // Doppler on band (1: L1, 2: L2) from the ephemeris, or else from the
+    // almanac, at the receiver's ECEF position and velocity. Also returns
+    // that slot's carrier frequency. False unless exactly one slot on the
+    // frequency is visible and it has usable navigation data.
+    bool GlonassGeometricDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
+        const gtime_t& gps_gtime, uint32_t prn, int band, const std::array<double, 3>& rx_pos_m,
+        const std::array<double, 3>& rx_vel_mps, double& geometric_doppler_hz, double& carrier_freq_hz) const;
 
     // changed_prns_out, when non-null, receives every (system, PRN) added,
     // updated, or removed since the last check, so Tick() can recompute only

@@ -17,6 +17,7 @@
 #include "satellite_visibility.h"
 #include "Beidou_CNAV2.h"
 #include "GLONASS_L1_L2_CA.h"    // for GLONASS_PRN
+#include "MATH_CONSTANTS.h"      // for D2R, SPEED_OF_LIGHT_M_S
 #include "agnss_ref_location.h"  // for parse_agnss_ref_location
 #include "agnss_ref_time.h"      // for parse_agnss_ref_utc_time
 #include "configuration_interface.h"
@@ -26,7 +27,7 @@
 #include "pvt_interface.h"
 #include "qzss.h"
 #include "rtklib_conversions.h"  // for alm_to_rtklib, eph_to_rtklib
-#include "rtklib_ephemeris.h"    // for alm2pos, eph2pos
+#include "rtklib_ephemeris.h"    // for alm2pos, eph2pos, glorbit
 #include "rtklib_rtkcmn.h"       // for utc2gpst, gpst2time
 #include <algorithm>
 #include <cmath>
@@ -52,6 +53,44 @@ constexpr int kDataCheckEveryNTicks = 20;
 // Permit the normal 500 ms PVT cadence, but do not retain a one-bin
 // velocity/clock estimate through a solution outage.
 constexpr double kMaxDopplerFixAgeS = 1.0;
+
+// Integration step of the GLONASS ephemeris orbit model, as in RTKLIB's
+// geph2pos().
+constexpr double kGlonassIntegrationStepS = 60.0;
+
+// Half-width of the central difference used to derive a GLONASS almanac
+// satellite velocity, which the ICD position-only algorithm does not provide.
+constexpr double kGlonassAlmanacVelocityHalfStepS = 0.5;
+
+
+// Same state propagation as RTKLIB's geph2pos(), keeping the velocity that
+// geph2pos() discards. Both are PZ-90 Earth-fixed.
+void glonass_ephemeris_pos_vel(const gtime_t& time, const geph_t& geph,
+    std::array<double, 3>& position_m, std::array<double, 3>& velocity_mps)
+{
+    double t = timediff(time, geph.toe);
+    std::array<double, 6> x{};
+    for (int i = 0; i < 3; i++)
+        {
+            x[i] = geph.pos[i];
+            x[i + 3] = geph.vel[i];
+        }
+    double tt = t < 0.0 ? -kGlonassIntegrationStepS : kGlonassIntegrationStepS;
+    while (std::fabs(t) > 1e-9)
+        {
+            if (std::fabs(t) < kGlonassIntegrationStepS)
+                {
+                    tt = t;
+                }
+            glorbit(tt, x.data(), geph.acc);
+            t -= tt;
+        }
+    for (int i = 0; i < 3; i++)
+        {
+            position_m[i] = x[i];
+            velocity_mps[i] = x[i + 3];
+        }
+}
 }  // namespace
 
 
@@ -1085,9 +1124,10 @@ bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>
 
     // Gnss_Ephemeris::predicted_doppler()/Gnss_Almanac::predicted_doppler()'s
     // own band codes, keyed by signal the same way SIGNAL_FREQ_MAP is.
+    // GLONASS uses them only to tell L1 from L2.
     static const std::map<std::string, int> kBandForSignal = {
-        {"1C", 1}, {"1B", 1}, {"1D", 1}, {"J1", 1}, {"B1", 1},
-        {"2S", 2}, {"B2", 2},
+        {"1C", 1}, {"1B", 1}, {"1D", 1}, {"J1", 1}, {"B1", 1}, {"1G", 1},
+        {"2S", 2}, {"B2", 2}, {"2G", 2},
         {"L5", 5}, {"5X", 5}, {"J5", 5},
         {"E6", 6},
         {"7X", 7},
@@ -1099,7 +1139,7 @@ bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>
             return false;
         }
     const int band = band_it->second;
-    const double carrier_freq_hz = freq_it->second;
+    double carrier_freq_hz = freq_it->second;
 
     const double lat_deg = fix_status.latitude;
     const double lon_deg = fix_status.longitude;
@@ -1177,6 +1217,25 @@ bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>
                             geometric_available = true;
                         }
                 }
+            if (geometric_available && signal == "1D")
+                {
+                    // The native BeiDou band-1 prediction is for B1I. B1C
+                    // shares the orbit, but its carrier scales the range rate
+                    // differently. Apply this before the receiver clock term,
+                    // which already uses the requested signal's frequency.
+                    geometric_doppler_hz *= carrier_freq_hz / FREQ1_BDS;
+                }
+        }
+    else if (system == "Glonass")
+        {
+            const std::array<double, 3> rx_llh{{lat_deg * D2R, lon_deg * D2R, h_m}};
+            const std::array<double, 3> rx_enu_vel{{ve_mps, vn_mps, vu_mps}};
+            std::array<double, 3> rx_pos{};
+            std::array<double, 3> rx_vel{};
+            pos2ecef(rx_llh.data(), rx_pos.data());
+            enu2ecef(rx_llh.data(), rx_enu_vel.data(), rx_vel.data());
+            geometric_available = GlonassGeometricDopplerHz(pvt_ptr, gps_gtime, static_cast<uint32_t>(prn), band,
+                rx_pos, rx_vel, geometric_doppler_hz, carrier_freq_hz);
         }
 
     if (!geometric_available)
@@ -1192,5 +1251,105 @@ bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>
     // clock_offset was off by 2x it.
     const double clock_offset_hz = fix_status.user_clk_drift_ppm * 1.0e-6 * carrier_freq_hz;
     doppler_hz = geometric_doppler_hz - clock_offset_hz;
+    return true;
+}
+
+
+bool SatelliteVisibility::GlonassGeometricDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
+    const gtime_t& gps_gtime, uint32_t prn, int band, const std::array<double, 3>& rx_pos_m,
+    const std::array<double, 3>& rx_vel_mps, double& geometric_doppler_hz, double& carrier_freq_hz) const
+{
+    const auto channel_it = GLONASS_PRN.find(prn);
+    if (prn == 0 || channel_it == GLONASS_PRN.cend() || (band != 1 && band != 2))
+        {
+            return false;
+        }
+
+    // Acquisition searches an FDMA frequency, which antipodal slots share
+    // (see GetSearchVisibility()), and the channel's PRN is only one of
+    // them. Predict for the slot that is actually visible. If none or
+    // several are, the Doppler cannot be pinned to a single bin.
+    uint32_t visible_slot = 0;
+    int visible_slots = 0;
+    for (const auto& slot : GLONASS_PRN)
+        {
+            if (slot.first != 0 && slot.second == channel_it->second &&
+                visible_.count(std::make_pair(std::string("Glonass"), slot.first)) != 0)
+                {
+                    visible_slot = slot.first;
+                    ++visible_slots;
+                }
+        }
+    if (visible_slots != 1)
+        {
+            return false;
+        }
+
+    std::array<double, 3> sat_pos{};
+    std::array<double, 3> sat_vel{};
+    bool state_available = false;
+    const auto eph_map = pvt_ptr->get_glonass_ephemeris();
+    const auto eph_it = eph_map.find(static_cast<int>(visible_slot));
+    if (eph_it != eph_map.cend() && eph_it->second.d_N_T >= 1.0 && eph_it->second.d_N_T <= 1461.0 && eph_it->second.d_yr >= 1996.0)
+        {
+            const auto geph = eph_to_rtklib(eph_it->second, pvt_ptr->get_glonass_utc_model(), glonass_strict_health_);
+            if (std::abs(timediff(gps_gtime, geph.toe)) <= MAXDTOE_GLO)
+                {
+                    glonass_ephemeris_pos_vel(gps_gtime, geph, sat_pos, sat_vel);
+                    state_available = true;
+                }
+        }
+    if (!state_available)
+        {
+            const auto alm_map = pvt_ptr->get_glonass_almanac();
+            const auto alm_it = alm_map.find(static_cast<int>(visible_slot));
+            if (alm_it != alm_map.cend())
+                {
+                    const auto epoch = glonass_almanac_epoch(alm_it->second);
+                    if (epoch.time != 0 && std::abs(timediff(gps_gtime, epoch)) <= almanac_max_age_s_)
+                        {
+                            // The almanac model runs on UTC(SU) elapsed time.
+                            const double elapsed_s = timediff(gpst2utc(gps_gtime), gpst2utc(epoch));
+                            std::array<double, 3> before{};
+                            std::array<double, 3> after{};
+                            if (alm_it->second.satellite_position(elapsed_s, sat_pos) &&
+                                alm_it->second.satellite_position(elapsed_s - kGlonassAlmanacVelocityHalfStepS, before) &&
+                                alm_it->second.satellite_position(elapsed_s + kGlonassAlmanacVelocityHalfStepS, after))
+                                {
+                                    for (int i = 0; i < 3; i++)
+                                        {
+                                            sat_vel[i] = (after[i] - before[i]) / (2.0 * kGlonassAlmanacVelocityHalfStepS);
+                                        }
+                                    state_available = true;
+                                }
+                        }
+                }
+        }
+    if (!state_available)
+        {
+            return false;
+        }
+
+    double range_m = 0.0;
+    double range_rate_mps = 0.0;
+    for (int i = 0; i < 3; i++)
+        {
+            const double los = sat_pos[i] - rx_pos_m[i];
+            range_m += los * los;
+            range_rate_mps += (sat_vel[i] - rx_vel_mps[i]) * los;
+        }
+    range_m = std::sqrt(range_m);
+    if (!std::isfinite(range_m) || range_m <= 0.0 || !std::isfinite(range_rate_mps))
+        {
+            return false;
+        }
+    range_rate_mps /= range_m;
+
+    // Each frequency channel k transmits on its own carrier. The acquisition
+    // block adds the same k offset (see pcps_acquisition::is_fdma()), so the
+    // Doppler it searches is relative to this carrier.
+    const int32_t k = channel_it->second;
+    carrier_freq_hz = (band == 1) ? (FREQ1_GLO + k * DFRQ1_GLO) : (FREQ2_GLO + k * DFRQ2_GLO);
+    geometric_doppler_hz = -range_rate_mps / SPEED_OF_LIGHT_M_S * carrier_freq_hz;
     return true;
 }

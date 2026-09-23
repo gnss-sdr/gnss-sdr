@@ -1835,7 +1835,8 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                     // No dual-frequency assist: fall back to a geometric Doppler
                                     // prediction from ephemeris/almanac (SatelliteVisibility), if
                                     // this is the primary signal of a satellite already classified
-                                    // visible and a live PVT fix currently exists. No-op (stays
+                                    // visible (for GLONASS, any slot on its FDMA frequency) and a
+                                    // live PVT fix currently exists. No-op (stays
                                     // false) unless visibility-aware search is enabled --
                                     // PredictedDopplerHz() itself requires a live fix for now; the
                                     // AGNSS-reference (no-fix) case is a follow-up.
@@ -1845,7 +1846,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                         {
                                             const auto pvt_ptr = get_pvt();
                                             const Gnss_Satellite& sat = channels_[current_channel]->get_signal().get_satellite();
-                                            if (pvt_ptr && satellite_visibility_->IsVisible(sat))
+                                            if (pvt_ptr && satellite_visibility_->IsSearchVisible(sat))
                                                 {
                                                     double receiver_time_s = 0.0;
                                                     const Monitor_Pvt fix_status = channels_status_->get_current_status_pvt(&receiver_time_s);

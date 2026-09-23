@@ -582,6 +582,11 @@ void pcps_acquisition::dump_results(const AcquisitionResult& result)
             write_matlab_var<1>("doppler_step", dump_doppler_step, matfp, dims_1d);
             write_matlab_var<1>("doppler_center", d_doppler_center, matfp, dims_1d);
             write_matlab_var<1>("doppler_narrowed", static_cast<int32_t>(dump_narrowed ? 1 : 0), matfp, dims_1d);
+            // Number of leading acq_grid columns that are real Doppler candidates.
+            // Any remaining trailing columns (0, 1 or 2) are noise-reference rows
+            // at doppler_center +/- the configured doppler_max, outside the linear
+            // Doppler axis above, and must be skipped by readers.
+            write_matlab_var<1>("doppler_num_candidates", static_cast<int32_t>(dump_candidate_count), matfp, dims_1d);
             write_matlab_var<1>("positive_acq", static_cast<int32_t>(result.positive_acq ? 1 : 0), matfp, dims_1d);
             write_matlab_var<1>("acq_doppler_hz", static_cast<float>(d_gnss_synchro->Acq_doppler_hz), matfp, dims_1d);
             write_matlab_var<1>("acq_delay_samples", static_cast<float>(d_gnss_synchro->Acq_delay_samples), matfp, dims_1d);

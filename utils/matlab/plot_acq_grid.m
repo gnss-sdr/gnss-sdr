@@ -95,16 +95,38 @@ else
     % Acquisition dumps written before doppler_center was added were centered at 0 Hz.
     doppler_center = 0;
 end
-[n_fft, n_dop_bins] = size(acq_grid);
-[d_max, f_max] = find(acq_grid == max(max(acq_grid)));
+[n_fft, n_columns] = size(acq_grid);
+if isfield(dump, 'doppler_num_candidates')
+    % The leading doppler_num_candidates columns are the Doppler candidates.
+    % Up to two trailing columns are noise-reference bins placed outside the
+    % Doppler axis, which are never acquisition candidates.
+    n_dop_bins = min(double(dump.doppler_num_candidates), n_columns);
+elseif isfield(dump, 'doppler_narrowed') && dump.doppler_narrowed
+    % Older narrowed dumps: one candidate plus one noise-reference column.
+    n_dop_bins = 1;
+else
+    n_dop_bins = n_columns;
+end
+acq_grid = acq_grid(:, 1 : n_dop_bins);
+[d_max, f_max] = find(acq_grid == max(max(acq_grid)), 1);
 freq = double(doppler_center) + (0 : n_dop_bins - 1) * double(doppler_step) - double(doppler_max);
 delay = (0 : n_fft - 1) / n_fft * n_chips;
+if n_dop_bins > 1
+    freq_limits = [min(freq) max(freq)];
+else
+    freq_limits = freq(1) + [-0.5 0.5] * max(abs(double(doppler_step)), 1);
+end
 
 
 %% Plot data
 %--- Acquisition grid (3D)
 figure(1)
-if(lite_view == false)
+if(n_dop_bins == 1)
+    % A single Doppler bin (narrowed search) cannot be drawn as a surface.
+    plot3(freq(1) * ones(size(delay)), delay, acq_grid(:, 1))
+    grid on
+    ylim([min(delay) max(delay)])
+elseif(lite_view == false)
     surf(freq, delay, acq_grid, 'FaceColor', 'interp', 'LineStyle', 'none')
     ylim([min(delay) max(delay)])
 else
@@ -114,15 +136,19 @@ else
     ylim([min(delay_interp) max(delay_interp)])
 end
 xlabel('Doppler shift (Hz)')
-xlim([min(freq) max(freq)])
+xlim(freq_limits)
 ylabel('Code delay (chips)')
 zlabel('Test Statistics')
 
 %--- Acquisition grid (2D)
 figure(2)
 subplot(2,1,1)
-plot(freq, acq_grid(d_max, :))
-xlim([min(freq) max(freq)])
+if n_dop_bins > 1
+    plot(freq, acq_grid(d_max, :))
+else
+    plot(freq, acq_grid(d_max, :), 'o')
+end
+xlim(freq_limits)
 xlabel('Doppler shift (Hz)')
 ylabel('Test statistics')
 title(['Fixed code delay to ' num2str((d_max - 1) / n_fft * n_chips) ' chips'])

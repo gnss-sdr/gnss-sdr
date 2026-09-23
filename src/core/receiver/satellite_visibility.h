@@ -200,6 +200,14 @@ private:
         const gtime_t& gps_gtime, uint32_t prn, int band, const std::array<double, 3>& rx_pos_m,
         const std::array<double, 3>& rx_vel_mps, double& geometric_doppler_hz, double& carrier_freq_hz) const;
 
+    // QZSS part of PredictedDopplerHz(). Computes the geometric Doppler on
+    // carrier_freq_hz from the LNAV or CNAV ephemeris, or else from the
+    // almanac, of the satellite transmitting prn (L1 C/B PRNs map to their
+    // nominal PRNs), at the receiver's ECEF position and velocity.
+    bool QzssGeometricDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
+        const gtime_t& gps_gtime, uint32_t prn, const std::array<double, 3>& rx_pos_m,
+        const std::array<double, 3>& rx_vel_mps, double carrier_freq_hz, double& geometric_doppler_hz) const;
+
     // changed_prns_out, when non-null, receives every (system, PRN) added,
     // updated, or removed since the last check, so Tick() can recompute only
     // those. Left untouched on the first call, which forces a full recompute

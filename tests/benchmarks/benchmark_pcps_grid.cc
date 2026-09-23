@@ -114,6 +114,83 @@ void bm_pcps_grid_cpu(benchmark::State& state)
 }
 
 
+// --------------------------------------------------------------------------
+// CPU optimized: same operation sequence as pcps_acquisition::doppler_grid_cpu() with optimize_grid=true
+// --------------------------------------------------------------------------
+void bm_pcps_grid_opt_cpu(benchmark::State& state)
+{
+    const auto fft_size = static_cast<uint32_t>(state.range(0));
+    const auto bins = static_cast<uint32_t>(state.range(1));
+    const double fs = 4.0e6;
+
+    auto fft_fwd = gnss_fft_fwd_make_unique(fft_size);
+    auto fft_rev = gnss_fft_rev_make_unique(fft_size);
+    const cvec in = random_cvec(fft_size, 1U);
+    const cvec fft_codes = random_cvec(fft_size, 2U);
+    const std::vector<cvec> wipeoffs = make_wipeoffs(fft_size, bins, fs);
+    std::vector<fvec> magnitude(bins, fvec(fft_size));
+
+    const int32_t fft_bin_spacing = std::round(fs / static_cast<double>(fft_size));
+    int32_t doppler_max = std::ceil(5000.F / static_cast<float>(fft_bin_spacing)) * fft_bin_spacing;
+    uint32_t opt_wipeoffs = 1;
+    double doppler_step = 10000. / static_cast<double>(bins);
+    while (fft_bin_spacing / opt_wipeoffs > static_cast<uint32_t>(doppler_step))
+        {
+            opt_wipeoffs++;
+        }
+    if (opt_wipeoffs > 1)
+        {
+            if (std::abs(static_cast<int64_t>(fft_bin_spacing / (opt_wipeoffs - 1)) - static_cast<int64_t>(doppler_step)) < std::abs(static_cast<int64_t>(fft_bin_spacing / opt_wipeoffs) - static_cast<int64_t>(doppler_step)))
+                {
+                    opt_wipeoffs--;
+                }
+        }
+    // Calculate new doppler_step
+    doppler_step = fft_bin_spacing / opt_wipeoffs;
+
+    for (auto _ : state)
+        {
+            for (uint32_t wipeoff_index = 0; wipeoff_index < opt_wipeoffs; wipeoff_index++)
+                {
+                    const auto* doppler_wipeoff = wipeoffs[wipeoff_index].data();
+                    volk_32fc_x2_multiply_32fc(fft_fwd->get_inbuf(), in.data(), doppler_wipeoff, fft_size);
+                    fft_fwd->execute();
+                    for (uint32_t doppler_index = wipeoff_index; doppler_index < bins; doppler_index += opt_wipeoffs)
+                        {
+                            int32_t bin_offset = -doppler_max / fft_bin_spacing + (doppler_index - wipeoff_index) / opt_wipeoffs;
+                            if (bin_offset < 0)
+                                {
+                                    // Negative bins, rotate right
+                                    // Multiply carrier wiped--off, Fourier transformed incoming signal with the local FFT'd code reference
+                                    volk_32fc_x2_multiply_32fc(fft_rev->get_inbuf() - bin_offset, fft_fwd->get_outbuf(), fft_codes.data() - bin_offset, fft_size + bin_offset);
+                                    // This may be omitted without significant loss of performance, but let it be
+                                    volk_32fc_x2_multiply_32fc(fft_rev->get_inbuf(), fft_fwd->get_outbuf() + fft_size + bin_offset, fft_codes.data(), -bin_offset);
+                                }
+                            else if (bin_offset > 0)
+                                {
+                                    // Positive bins, rotate left
+                                    // Multiply carrier wiped--off, Fourier transformed incoming signal with the local FFT'd code reference
+                                    volk_32fc_x2_multiply_32fc(fft_rev->get_inbuf(), fft_fwd->get_outbuf() + bin_offset, fft_codes.data(), fft_size - bin_offset);
+                                    // This may be omitted without significant loss of performance, but let it be
+                                    volk_32fc_x2_multiply_32fc(fft_rev->get_inbuf() + fft_size - bin_offset, fft_fwd->get_outbuf(), fft_codes.data() + fft_size - bin_offset, bin_offset);
+                                }
+                            else
+                                {
+                                    // Center bin, no rotation at all
+                                    // Multiply carrier wiped--off, Fourier transformed incoming signal with the local FFT'd code reference
+                                    volk_32fc_x2_multiply_32fc(fft_rev->get_inbuf(), fft_fwd->get_outbuf(), fft_codes.data(), fft_size);
+                                }
+                            fft_rev->execute();
+                            volk_32fc_magnitude_squared_32f(magnitude[doppler_index].data(), fft_rev->get_outbuf(), fft_size);
+                        }
+                }
+            benchmark::DoNotOptimize(magnitude[0].data());
+            benchmark::ClobberMemory();
+        }
+    set_counters(state, fft_size, bins);
+}
+
+
 #if CUDA_GPU_ACCEL
 // --------------------------------------------------------------------------
 // CUDA engine, including host<->device transfers (what the receiver sees)
@@ -174,6 +251,7 @@ const std::vector<std::vector<int64_t>> grid_args{
     {21, 41, 81}};
 
 BENCHMARK(bm_pcps_grid_cpu)->ArgsProduct(grid_args)->Unit(benchmark::kMicrosecond)->UseRealTime();
+BENCHMARK(bm_pcps_grid_opt_cpu)->ArgsProduct(grid_args)->Unit(benchmark::kMicrosecond)->UseRealTime();
 #if CUDA_GPU_ACCEL
 BENCHMARK(bm_pcps_grid_cuda)->ArgsProduct(grid_args)->Unit(benchmark::kMicrosecond)->UseRealTime();
 #endif

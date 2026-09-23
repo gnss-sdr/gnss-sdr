@@ -166,7 +166,9 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_ifft(gnss_fft_rev_make_unique(d_fft_size)),
       d_grid_doppler_wipeoffs(d_num_doppler_bins_step1_capacity * d_doppler_wipeoffs_stride),
       d_fft_codes(d_fft_size),
-      d_fft_if(gnss_fft_fwd_make_unique(d_fft_size))
+      d_fft_if(gnss_fft_fwd_make_unique(d_fft_size)),
+      d_optimize_grid(conf_.optimize_grid),
+      d_opt_wipeoffs(conf_.opt_wipeoffs)
 {
     this->message_port_register_out(pmt::mp("events"));
 
@@ -407,10 +409,23 @@ void pcps_acquisition::update_grid_doppler_wipeoffs()
 #endif
             return;
         }
-    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins_active; doppler_index++)
+    if (d_optimize_grid)
         {
-            const int32_t doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_center + d_doppler_step * doppler_index;
-            update_local_carrier(own::span<gr_complex>(doppler_wipeoff_data(doppler_index), d_fft_size), static_cast<float>(d_doppler_bias + doppler));
+            {
+                for (uint32_t doppler_index = 0; doppler_index < d_opt_wipeoffs; doppler_index++)
+                    {
+                        const int32_t doppler = d_doppler_center + d_doppler_step * doppler_index;
+                        update_local_carrier(own::span<gr_complex>(doppler_wipeoff_data(doppler_index), d_fft_size), static_cast<float>(d_doppler_bias + doppler));
+                    }
+            }
+        }
+    else
+        {
+            for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins_active; doppler_index++)
+                {
+                    const int32_t doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_center + d_doppler_step * doppler_index;
+                    update_local_carrier(own::span<gr_complex>(doppler_wipeoff_data(doppler_index), d_fft_size), static_cast<float>(d_doppler_bias + doppler));
+                }
         }
 #if CUDA_GPU_ACCEL
     cuda_upload_wipeoffs(CudaPcpsEngine::MAIN_GRID);
@@ -759,37 +774,105 @@ void pcps_acquisition::doppler_grid(const gr_complex* in)
 
 void pcps_acquisition::doppler_grid_cpu(const gr_complex* in)
 {
-    const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins_active;
-    const auto* grid_doppler_wipeoffs = d_step_two ? d_grid_doppler_wipeoffs_step_two.data() : d_grid_doppler_wipeoffs.data();
-
-    for (uint32_t doppler_index = 0; doppler_index < bin_count; doppler_index++)
+    // Reordering optimization works well only when the search range is large
+    if (d_optimize_grid && !d_step_two && !d_doppler_search_narrowed)
         {
-            auto* magnitude_grid = magnitude_grid_data(doppler_index);
-            const auto* doppler_wipeoff = grid_doppler_wipeoffs + static_cast<size_t>(doppler_index) * d_doppler_wipeoffs_stride;
+            const auto bin_count = d_num_doppler_bins_active;
+            const auto* grid_doppler_wipeoffs = d_grid_doppler_wipeoffs.data();
+            const double fs = d_acq_parameters.use_automatic_resampler ? d_acq_parameters.resampled_fs : d_acq_parameters.fs_in;
+            // We are not taking it here from acq_conf, so recalculate it for one more time
+            const uint32_t fft_bin_spacing = std::round(fs / static_cast<double>(d_fft_size));
 
-            // Remove Doppler
-            volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in, doppler_wipeoff, d_fft_size);
-
-            // Perform the FFT-based convolution  (parallel time search)
-            // Compute the FFT of the carrier wiped--off incoming signal
-            d_fft_if->execute();
-
-            // Multiply carrier wiped--off, Fourier transformed incoming signal with the local FFT'd code reference
-            volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(), d_fft_if->get_outbuf(), d_fft_codes.data(), d_fft_size);
-
-            // Compute the inverse FFT
-            d_ifft->execute();
-
-            // Compute squared magnitude (and accumulate in case of non-coherent integration)
-            const size_t offset = (d_acq_parameters.bit_transition_flag ? d_effective_fft_size : 0);
-            if (d_num_noncoherent_integrations_counter == 1)
+            for (uint32_t wipeoff_index = 0; wipeoff_index < d_opt_wipeoffs; wipeoff_index++)
                 {
-                    volk_32fc_magnitude_squared_32f(magnitude_grid, d_ifft->get_outbuf() + offset, d_effective_fft_size);
+                    const auto* doppler_wipeoff = grid_doppler_wipeoffs + static_cast<size_t>(wipeoff_index) * d_doppler_wipeoffs_stride;
+
+                    // Remove Doppler
+                    volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in, doppler_wipeoff, d_fft_size);
+
+                    // Perform the FFT-based convolution  (parallel time search)
+                    // Compute the FFT of the carrier wiped--off incoming signal
+                    d_fft_if->execute();
+
+                    // Perform reordering
+                    for (uint32_t doppler_index = wipeoff_index; doppler_index < bin_count; doppler_index += d_opt_wipeoffs)
+                        {
+                            auto* magnitude_grid = magnitude_grid_data(doppler_index);
+                            int32_t bin_offset = -std::llround(d_doppler_max) / fft_bin_spacing + (doppler_index - wipeoff_index) / d_opt_wipeoffs;
+                            if (bin_offset < 0)
+                                {
+                                    // Negative bins, rotate right
+                                    // Multiply carrier wiped--off, Fourier transformed incoming signal with the local FFT'd code reference
+                                    volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf() - bin_offset, d_fft_if->get_outbuf(), d_fft_codes.data() - bin_offset, d_fft_size + bin_offset);
+                                    // This may be omitted without significant loss of performance, but let it be
+                                    volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(), d_fft_if->get_outbuf() + d_fft_size + bin_offset, d_fft_codes.data(), -bin_offset);
+                                }
+                            else if (bin_offset > 0)
+                                {
+                                    // Positive bins, rotate left
+                                    // Multiply carrier wiped--off, Fourier transformed incoming signal with the local FFT'd code reference
+                                    volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(), d_fft_if->get_outbuf() + bin_offset, d_fft_codes.data(), d_fft_size - bin_offset);
+                                    // This may be omitted without significant loss of performance, but let it be
+                                    volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf() + d_fft_size - bin_offset, d_fft_if->get_outbuf(), d_fft_codes.data() + d_fft_size - bin_offset, bin_offset);
+                                }
+                            else
+                                {
+                                    // Center bin, no rotation at all
+                                    // Multiply carrier wiped--off, Fourier transformed incoming signal with the local FFT'd code reference
+                                    volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(), d_fft_if->get_outbuf(), d_fft_codes.data(), d_fft_size);
+                                }
+
+                            // Compute the inverse FFT
+                            d_ifft->execute();
+
+                            // Compute squared magnitude (and accumulate in case of non-coherent integration)
+                            const size_t offset = (d_acq_parameters.bit_transition_flag ? d_effective_fft_size : 0);
+                            if (d_num_noncoherent_integrations_counter == 1)
+                                {
+                                    volk_32fc_magnitude_squared_32f(magnitude_grid, d_ifft->get_outbuf() + offset, d_effective_fft_size);
+                                }
+                            else
+                                {
+                                    volk_32fc_magnitude_squared_32f(d_tmp_buffer.data(), d_ifft->get_outbuf() + offset, d_effective_fft_size);
+                                    volk_32f_x2_add_32f(magnitude_grid, magnitude_grid, d_tmp_buffer.data(), d_effective_fft_size);
+                                }
+                        }
                 }
-            else
+        }
+    else
+        {
+            const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins_active;
+            const auto* grid_doppler_wipeoffs = d_step_two ? d_grid_doppler_wipeoffs_step_two.data() : d_grid_doppler_wipeoffs.data();
+
+            for (uint32_t doppler_index = 0; doppler_index < bin_count; doppler_index++)
                 {
-                    volk_32fc_magnitude_squared_32f(d_tmp_buffer.data(), d_ifft->get_outbuf() + offset, d_effective_fft_size);
-                    volk_32f_x2_add_32f(magnitude_grid, magnitude_grid, d_tmp_buffer.data(), d_effective_fft_size);
+                    auto* magnitude_grid = magnitude_grid_data(doppler_index);
+                    const auto* doppler_wipeoff = grid_doppler_wipeoffs + static_cast<size_t>(doppler_index) * d_doppler_wipeoffs_stride;
+
+                    // Remove Doppler
+                    volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in, doppler_wipeoff, d_fft_size);
+
+                    // Perform the FFT-based convolution  (parallel time search)
+                    // Compute the FFT of the carrier wiped--off incoming signal
+                    d_fft_if->execute();
+
+                    // Multiply carrier wiped--off, Fourier transformed incoming signal with the local FFT'd code reference
+                    volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(), d_fft_if->get_outbuf(), d_fft_codes.data(), d_fft_size);
+
+                    // Compute the inverse FFT
+                    d_ifft->execute();
+
+                    // Compute squared magnitude (and accumulate in case of non-coherent integration)
+                    const size_t offset = (d_acq_parameters.bit_transition_flag ? d_effective_fft_size : 0);
+                    if (d_num_noncoherent_integrations_counter == 1)
+                        {
+                            volk_32fc_magnitude_squared_32f(magnitude_grid, d_ifft->get_outbuf() + offset, d_effective_fft_size);
+                        }
+                    else
+                        {
+                            volk_32fc_magnitude_squared_32f(d_tmp_buffer.data(), d_ifft->get_outbuf() + offset, d_effective_fft_size);
+                            volk_32f_x2_add_32f(magnitude_grid, magnitude_grid, d_tmp_buffer.data(), d_effective_fft_size);
+                        }
                 }
         }
 }

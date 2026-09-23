@@ -92,6 +92,7 @@ void Acq_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
         }
 
     enable_monitor_output = configuration->property("AcquisitionMonitor.enable_monitor", false);
+    optimize_grid = configuration->property(role + ".optimize_grid", false);
 
     // GPU offload of the search grid. A global GNSS-SDR.use_cuda_acquisition
     // switch can be overridden per acquisition block with <role>.use_cuda
@@ -109,6 +110,40 @@ void Acq_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
 #endif
 
     SetDerivedParams();
+
+    // Compute optimal Doppler grid parameters to reduce the number of operations
+    if (optimize_grid)
+        {
+            const double fs = use_automatic_resampler ? resampled_fs : fs_in;
+            const auto samples_to_consume = sampled_ms * samples_per_ms * (bit_transition_flag ? 2.0 : 1.0);
+            const auto fft_size = sampled_ms == ms_per_code ? samples_to_consume : samples_to_consume * 2;
+            const uint32_t fft_bin_spacing = std::round(fs / static_cast<double>(fft_size));
+            // Check if there will be any benefit from reordering
+            if (fft_bin_spacing < static_cast<uint32_t>(doppler_max))
+                {
+                    // Fit doppler_max to FFT bin separation interval
+                    doppler_max = std::ceil(doppler_max / static_cast<float>(fft_bin_spacing)) * fft_bin_spacing;
+                    // Calculate optimal number of doppler wipeoffs
+                    opt_wipeoffs = 1;
+                    while (fft_bin_spacing / opt_wipeoffs > static_cast<uint32_t>(doppler_step))
+                        {
+                            opt_wipeoffs++;
+                        }
+                    if (opt_wipeoffs > 1)
+                        {
+                            if (std::abs(static_cast<int64_t>(fft_bin_spacing / (opt_wipeoffs - 1)) - static_cast<int64_t>(doppler_step)) < std::abs(static_cast<int64_t>(fft_bin_spacing / opt_wipeoffs) - static_cast<int64_t>(doppler_step)))
+                                {
+                                    opt_wipeoffs--;
+                                }
+                        }
+                    // Calculate new doppler_step
+                    doppler_step = fft_bin_spacing / opt_wipeoffs;
+                }
+            else
+                {
+                    optimize_grid = false;
+                }
+        }
 }
 
 

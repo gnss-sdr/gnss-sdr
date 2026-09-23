@@ -320,6 +320,8 @@ private:
     std::unique_ptr<CudaPcpsEngine> d_cuda_engine;  // null => CPU path
     uint64_t d_cuda_grid_count{0};
 #endif
+    bool d_optimize_grid;
+    uint32_t d_opt_wipeoffs;
 };
 
 

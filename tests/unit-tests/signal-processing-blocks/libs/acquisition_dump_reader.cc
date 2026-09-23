@@ -74,12 +74,9 @@ bool Acquisition_Dump_Reader::read_binary_acq()
             return false;
         }
 
-    // Read the Doppler metadata before validating the grid dimensions: dumps
-    // written by an assisted (narrowed) acquisition carry two grid columns (the
-    // assisted candidate and its noise reference) encoded as doppler_max = 0,
-    // doppler_step = <configured doppler_max>, so the expected column count
-    // follows from the file's own metadata rather than from the full-grid
-    // parameters this reader was constructed with.
+    // Read the Doppler metadata before validating the grid dimensions: the
+    // expected column count follows from the file's own metadata rather than
+    // from the full-grid parameters this reader was constructed with.
     matvar_t* var2_ = Mat_VarRead(matfile, "doppler_max");
     if (var2_ == nullptr)
         {
@@ -109,14 +106,28 @@ bool Acquisition_Dump_Reader::read_binary_acq()
     int32_t narrowed_flag = 0;
     read_scalar_or(matfile, "doppler_narrowed", narrowed_flag, static_cast<int32_t>(0));
     doppler_narrowed = (narrowed_flag != 0);
+    // Number of leading acq_grid columns that are Doppler candidates. Up to two
+    // trailing columns are noise-reference bins outside the Doppler axis, which
+    // are skipped. Absent from older dumps: there, a narrowed dump holds one
+    // candidate plus one noise-reference column, and a full-grid dump has no
+    // reference columns.
+    int32_t num_candidates = 0;
+    read_scalar_or(matfile, "doppler_num_candidates", num_candidates, static_cast<int32_t>(0));
 
     if (d_doppler_step == 0)
         {
             d_doppler_step = 1;
         }
-    if (doppler_narrowed)
+    bool columns_ok = false;
+    if (num_candidates > 0)
         {
-            d_num_doppler_bins = 2U;
+            d_num_doppler_bins = static_cast<unsigned int>(num_candidates);
+            columns_ok = (var_->dims[1] >= d_num_doppler_bins) && (var_->dims[1] <= d_num_doppler_bins + 2U);
+        }
+    else if (doppler_narrowed)
+        {
+            d_num_doppler_bins = 1U;
+            columns_ok = (var_->dims[1] == 2U);
         }
     else
         {
@@ -130,18 +141,19 @@ bool Acquisition_Dump_Reader::read_binary_acq()
                 {
                     d_num_doppler_bins = bins_floor;
                 }
+            columns_ok = (var_->dims[1] == d_num_doppler_bins);
         }
 
-    if ((var_->dims[0] != d_samples_per_code) || (var_->dims[1] != d_num_doppler_bins))
+    if ((var_->dims[0] != d_samples_per_code) || !columns_ok)
         {
             std::cout << "Invalid Acquisition dump file: dimension matrix error\n";
             if (var_->dims[0] != d_samples_per_code)
                 {
                     std::cout << "Expected " << d_samples_per_code << " samples per code. Obtained " << var_->dims[0] << '\n';
                 }
-            if (var_->dims[1] != d_num_doppler_bins)
+            if (!columns_ok)
                 {
-                    std::cout << "Expected " << d_num_doppler_bins << " Doppler bins. Obtained " << var_->dims[1] << '\n';
+                    std::cout << "Expected " << d_num_doppler_bins << " Doppler candidate bins (plus up to 2 reference columns). Obtained " << var_->dims[1] << " columns\n";
                 }
             Mat_VarFree(var_);
             Mat_Close(matfile);
@@ -149,10 +161,10 @@ bool Acquisition_Dump_Reader::read_binary_acq()
         }
 
     // Rebuild the Doppler axis and the magnitude storage from the file's
-    // metadata. doppler(i) = -doppler_max + doppler_center + doppler_step * i
-    // is the same decoding pcps_acquisition::compute_statistics() uses, and it
-    // maps a narrowed dump's two columns to {doppler_center, doppler_center +
-    // configured doppler_max}.
+    // metadata, for the candidate columns only (acq_grid is column-major, so
+    // they are its first d_num_doppler_bins * d_samples_per_code values).
+    // doppler(i) = -doppler_max + doppler_center + doppler_step * i is the same
+    // decoding pcps_acquisition::compute_statistics() uses.
     doppler.clear();
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {

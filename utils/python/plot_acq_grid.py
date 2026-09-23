@@ -343,6 +343,7 @@ def configured_doppler_axis(
     file_path,
     doppler_center=0.0,
     doppler_narrowed=False,
+    exact=False,
 ):
     import numpy as np
 
@@ -352,14 +353,12 @@ def configured_doppler_axis(
     if doppler_step == 0:
         raise ValueError(f"{file_path}: doppler_step must be non-zero")
 
-    if doppler_narrowed:
-        if n_dop_bins != 2:
-            print(
-                f"Warning: {file_path.name}: narrowed acquisition metadata "
-                f"expects 2 Doppler bins, but acq_grid has {n_dop_bins} "
-                "columns. Plotting the available columns from the stored "
-                "center and step."
-            )
+    if exact or doppler_narrowed:
+        # Candidate column k decodes to
+        # doppler_center - doppler_max + k * doppler_step, the same rule
+        # pcps_acquisition uses. This is exact for dumps that store
+        # doppler_num_candidates, and for legacy narrowed dumps (a single
+        # candidate at doppler_center, stored with doppler_max = 0).
         return (
             doppler_center
             - doppler_max
@@ -437,19 +436,42 @@ def read_acquisition_dump(file_path, n_chips, positive_only):
         doppler_narrowed = bool(
             dump_scalar_value(data, "doppler_narrowed", 0)
         )
-        acq_grid = data["acq_grid"][:]
-        expected_doppler_bins = (
-            {2}
-            if doppler_narrowed
-            else expected_doppler_bin_counts(doppler_max, doppler_step)
+        # Dumps that store doppler_num_candidates may carry up to two
+        # trailing noise-reference columns after the candidate columns.
+        # Older narrowed dumps have exactly one candidate plus one reference
+        # column; older full-grid dumps have no reference columns.
+        doppler_num_candidates = dump_scalar_value(
+            data, "doppler_num_candidates"
         )
+        acq_grid = data["acq_grid"][:]
+        if doppler_num_candidates is not None:
+            doppler_num_candidates = int(doppler_num_candidates)
+            expected_doppler_bins = set(
+                range(doppler_num_candidates, doppler_num_candidates + 3)
+            )
+        elif doppler_narrowed:
+            expected_doppler_bins = {2}
+        else:
+            expected_doppler_bins = expected_doppler_bin_counts(
+                doppler_max, doppler_step
+            )
         if (
             acq_grid.shape[1] not in expected_doppler_bins
             and acq_grid.shape[0] in expected_doppler_bins
         ):
             acq_grid = acq_grid.T
 
-        n_fft, n_dop_bins = acq_grid.shape
+        n_fft, n_columns = acq_grid.shape
+        if doppler_num_candidates is not None:
+            n_dop_bins = max(1, min(doppler_num_candidates, n_columns))
+        elif doppler_narrowed:
+            n_dop_bins = 1
+        else:
+            n_dop_bins = n_columns
+        if n_dop_bins < n_columns:
+            # Noise-reference columns are not on the Doppler axis and are
+            # never acquisition candidates: leave them out of the plots.
+            acq_grid = acq_grid[:, :n_dop_bins]
         freq = configured_doppler_axis(
             doppler_max,
             doppler_step,
@@ -457,6 +479,7 @@ def read_acquisition_dump(file_path, n_chips, positive_only):
             file_path,
             doppler_center,
             doppler_narrowed,
+            exact=doppler_num_candidates is not None,
         )
         d_max, f_max = np.unravel_index(np.argmax(acq_grid), acq_grid.shape)
         delay = np.arange(n_fft) / n_fft * n_chips
@@ -570,9 +593,27 @@ def plot_dump(file_path, fig_path, image_name_root, n_chips, args, metadata=None
         metadata = parse_dump_name(file_path)
     plot_title = acquisition_plot_title(metadata) if metadata else str(file_path)
 
+    # A narrowed search can have a single candidate Doppler bin: no surface
+    # can be drawn over one Doppler value, so draw it as a code-delay line.
+    single_doppler_bin = len(freq) < 2
+    if single_doppler_bin:
+        half_step = max(abs(float(doppler_step)), 1.0) / 2
+        freq_limits = [freq[0] - half_step, freq[0] + half_step]
+    else:
+        freq_limits = [min(freq), max(freq)]
+
     fig = plt.figure()
     plt.gcf().canvas.manager.set_window_title(str(file_path))
-    if not args.lite_view:
+    if single_doppler_bin:
+        ax = fig.add_subplot(111, projection="3d")
+        ax.plot(
+            np.full(len(delay), freq[0]),
+            delay,
+            acq_grid[:, 0],
+            linewidth=0.8,
+        )
+        ax.set_ylim([min(delay), max(delay)])
+    elif not args.lite_view:
         ax = fig.add_subplot(111, projection="3d")
         x_axis, y_axis = np.meshgrid(freq, delay, indexing="xy")
         # rcount/ccount default to 50, which would silently decimate large
@@ -624,7 +665,7 @@ def plot_dump(file_path, fig_path, image_name_root, n_chips, args, metadata=None
         label="Peak",
     )
     ax.set_xlabel("Doppler shift (Hz)")
-    ax.set_xlim([min(freq), max(freq)])
+    ax.set_xlim(freq_limits)
     ax.set_ylabel("Code delay (chips)")
     ax.set_zlabel("Test Statistics")
     ax.set_title(plot_title)
@@ -637,9 +678,13 @@ def plot_dump(file_path, fig_path, image_name_root, n_chips, args, metadata=None
     fig2, axes = plt.subplots(2, 1, figsize=(8, 6))
     plt.gcf().canvas.manager.set_window_title(str(file_path))
     fig2.suptitle(plot_title)
-    axes[0].plot(freq, acq_grid[d_max, :])
+    axes[0].plot(
+        freq,
+        acq_grid[d_max, :],
+        marker="o" if single_doppler_bin else None,
+    )
     axes[0].axvline(peak_doppler, color="red", linestyle="--", linewidth=0.8)
-    axes[0].set_xlim([min(freq), max(freq)])
+    axes[0].set_xlim(freq_limits)
     axes[0].set_xlabel("Doppler shift (Hz)")
     axes[0].set_ylabel("Test statistics")
     axes[0].set_title(f"Doppler cut at code delay = {peak_delay:g} chips")

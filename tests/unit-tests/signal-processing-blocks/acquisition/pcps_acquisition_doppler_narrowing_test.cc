@@ -18,6 +18,7 @@
 
 
 #include "GPS_L1_CA.h"
+#include "acquisition_dump_reader.h"
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_filesystem.h"
@@ -29,6 +30,7 @@
 #include <gtest/gtest.h>
 #include <matio.h>
 #include <pmt/pmt.h>
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <cmath>
@@ -704,4 +706,63 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, NumBinsJustBelowFullGridS
     const RunResult result = run_acquisition(top_block, config.get(), gnss_synchro, 0, 9);
     ASSERT_EQ(1, result.rx_message) << "Acquisition failure with N = d_num_doppler_bins - 1.";
     EXPECT_LE(result.doppler_error_hz, 1000);
+}
+
+
+TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, DumpReaderSkipsReferenceColumns /*unused*/)
+{
+    // Dumps carry doppler_num_candidates so readers can tell the candidate
+    // columns from the trailing noise-reference columns. Covers a full grid
+    // with two reference columns (CFAR, doppler_max = 3200, step = 125: the
+    // wraparound distance is too small, 52 candidates + 2 references) and a
+    // narrowed N = 5 search (5 candidates + 2 references).
+    struct Case
+    {
+        unsigned int doppler_max;
+        unsigned int doppler_step;
+        int center;
+        unsigned int num_bins;
+        unsigned int expected_candidates;
+    };
+    const std::array<Case, 2> cases{{{3200, 125, 0, 0, 52}, {5000, 200, static_cast<int>(kTrueDopplerHz) - 400, 5, 5}}};
+    for (const auto &c : cases)
+        {
+            config = std::make_shared<InMemoryConfiguration>();
+            init(c.doppler_max, c.doppler_step, /*use_cfar=*/true);
+            const std::string data_str = "./tmp-acq-reader-dump";
+            if (fs::exists(data_str))
+                {
+                    fs::remove_all(data_str);
+                }
+            fs::create_directory(data_str);
+            config->supersede_property("Acquisition_1C.dump", "true");
+            config->supersede_property("Acquisition_1C.dump_filename", data_str + "/acquisition");
+            config->supersede_property("Acquisition_1C.dump_channel", "1");
+
+            const RunResult result = run_acquisition(top_block, config.get(), gnss_synchro, c.center, c.num_bins);
+            ASSERT_EQ(1, result.rx_message) << "Acquisition failure while producing the dump.";
+
+            Acquisition_Dump_Reader reader(data_str + "/acquisition_G_1C", 1, 1);
+            ASSERT_TRUE(reader.read_binary_acq()) << "Dump not readable by Acquisition_Dump_Reader";
+            ASSERT_EQ(c.expected_candidates, reader.doppler.size());
+            ASSERT_EQ(c.expected_candidates, reader.mag.size());
+            const int half_span = (static_cast<int>(c.expected_candidates) - 1) / 2;
+            EXPECT_EQ(c.center - half_span * static_cast<int>(c.doppler_step), reader.doppler.front());
+            EXPECT_EQ(static_cast<int>(c.doppler_step), reader.doppler[1] - reader.doppler[0]);
+
+            // The grid maximum must sit at the Doppler the acquisition reported.
+            size_t best_bin = 0;
+            float best_value = -1.0F;
+            for (size_t k = 0; k < reader.mag.size(); k++)
+                {
+                    const float value = *std::max_element(reader.mag[k].begin(), reader.mag[k].end());
+                    if (value > best_value)
+                        {
+                            best_value = value;
+                            best_bin = k;
+                        }
+                }
+            EXPECT_EQ(static_cast<int>(reader.acq_doppler_hz), reader.doppler[best_bin]);
+            fs::remove_all(data_str);
+        }
 }

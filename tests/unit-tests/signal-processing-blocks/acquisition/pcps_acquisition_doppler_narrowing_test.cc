@@ -360,8 +360,10 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, FullToNarrowTransition /*
     top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
 
     acquisition->set_local_code();
-    acquisition->set_doppler_center(static_cast<int>(kTrueDopplerHz));
+    acquisition->set_doppler_center(static_cast<int>(kTrueDopplerHz) + 10000);
     acquisition->set_doppler_num_bins(1);  // narrow
+    // Clear a stale assisted center as the tracking-loss retry does.
+    acquisition->set_doppler_center(0);
     acquisition->set_doppler_num_bins(0);  // back to full grid
     acquisition->reset();
 

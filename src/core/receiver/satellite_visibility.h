@@ -175,8 +175,10 @@ public:
     // Doppler tolerance can't absorb from a single search bin -- see
     // GNSS-SDR.clock_frequency_max_error_ppm / receiver_max_velocity_m_s in
     // the follow-up PR).
+    // Tick() must have observed this fix, at most one second ago on the
+    // sample clock. Older or unanchored fixes require a full-grid search.
     bool PredictedDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
-        const Monitor_Pvt& fix_status, const Gnss_Satellite& sat, const std::string& signal,
+        const Monitor_Pvt& fix_status, double receiver_time_s, const Gnss_Satellite& sat, const std::string& signal,
         double& doppler_hz) const;
 
 private:

@@ -180,8 +180,10 @@ void Gnss_Almanac::satellitePosVelComputation(double transmitTime, std::array<do
     // Time from ephemeris reference epoch
     const double tk = check_t(transmitTime - static_cast<double>(this->toa));
 
-    // Mean anomaly
-    const double M = this->M_0 * GNSS_PI + n * tk;
+    // BeiDou almanac angles are decoded in radians; GPS/Galileo/QZSS
+    // almanacs retain semicircles.
+    const double angle_scale = (this->System == 'C') ? 1.0 : GNSS_PI;
+    const double M = this->M_0 * angle_scale + n * tk;
 
     // Initial guess of eccentric anomaly
     double E = M;
@@ -213,7 +215,7 @@ void Gnss_Almanac::satellitePosVelComputation(double transmitTime, std::array<do
     const double nu = atan2(tmp_Y, tmp_X);
 
     // Compute angle phi (argument of Latitude)
-    const double phi = nu + this->omega * GNSS_PI;
+    const double phi = nu + this->omega * angle_scale;
 
     const double pkdot = sq1e2 * ekdot / OneMinusecosE;
 
@@ -231,6 +233,11 @@ void Gnss_Almanac::satellitePosVelComputation(double transmitTime, std::array<do
         {
             i = ((56.0 / 180.0) + this->delta_i) * GNSS_PI;
         }
+    else if (this->System == 'C')
+        {
+            const bool geo = (this->PRN >= 1 && this->PRN <= 5) || (this->PRN >= 59 && this->PRN <= 63);
+            i = this->delta_i + (geo ? 0.0 : 0.3 * GNSS_PI);
+        }
     else
         {
             i = ((this->System == 'J') ? this->delta_i : (0.3 + this->delta_i)) * GNSS_PI;
@@ -244,8 +251,8 @@ void Gnss_Almanac::satellitePosVelComputation(double transmitTime, std::array<do
     double Omega_dot;
     if (this->System == 'C')
         {
-            Omega_dot = this->OMEGAdot * GNSS_PI - BEIDOU_OMEGA_EARTH_DOT;
-            Omega = this->OMEGA_0 * GNSS_PI + Omega_dot * tk - BEIDOU_OMEGA_EARTH_DOT * static_cast<double>(this->toa);
+            Omega_dot = this->OMEGAdot - BEIDOU_OMEGA_EARTH_DOT;
+            Omega = this->OMEGA_0 + Omega_dot * tk - BEIDOU_OMEGA_EARTH_DOT * static_cast<double>(this->toa);
         }
     else
         {

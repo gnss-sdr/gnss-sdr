@@ -1847,8 +1847,9 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                             const Gnss_Satellite& sat = channels_[current_channel]->get_signal().get_satellite();
                                             if (pvt_ptr && satellite_visibility_->IsVisible(sat))
                                                 {
-                                                    const Monitor_Pvt fix_status = channels_status_->get_current_status_pvt();
-                                                    doppler_predicted = satellite_visibility_->PredictedDopplerHz(pvt_ptr, fix_status, sat, channels_[current_channel]->get_signal().get_signal_str(), predicted_doppler_hz);
+                                                    double receiver_time_s = 0.0;
+                                                    const Monitor_Pvt fix_status = channels_status_->get_current_status_pvt(&receiver_time_s);
+                                                    doppler_predicted = satellite_visibility_->PredictedDopplerHz(pvt_ptr, fix_status, receiver_time_s, sat, channels_[current_channel]->get_signal().get_signal_str(), predicted_doppler_hz);
                                                 }
                                         }
                                     if (doppler_predicted)
@@ -2000,6 +2001,9 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                         acq_channels_count_++;
                         DLOG(INFO) << "Channel " << who << " Starting acquisition " << gs.get_satellite() << ", Signal " << gs.get_signal_str();
                         channels_[who]->set_signal(channels_[who]->get_signal());
+                        // This retry bypasses acquisition_manager(). An assisted
+                        // center retained from before tracking may now be stale.
+                        channels_[who]->assist_acquisition_doppler(0, 0);
                         MarkAcquisitionAttempt(gs, receiver_time_s);
 
 #if ENABLE_FPGA

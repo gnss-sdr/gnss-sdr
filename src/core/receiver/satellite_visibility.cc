@@ -48,6 +48,10 @@ constexpr uint32_t kMaxSearchRatio = 1000000U;
 
 // Tick() calls between DataChanged() runs, which copy every ephemeris/almanac map.
 constexpr int kDataCheckEveryNTicks = 20;
+
+// Permit the normal 500 ms PVT cadence, but do not retain a one-bin
+// velocity/clock estimate through a solution outage.
+constexpr double kMaxDopplerFixAgeS = 1.0;
 }  // namespace
 
 
@@ -1060,10 +1064,21 @@ bool SatelliteVisibility::IsSearchExcluded(const Gnss_Satellite& sat) const
 
 
 bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
-    const Monitor_Pvt& fix_status, const Gnss_Satellite& sat, const std::string& signal,
+    const Monitor_Pvt& fix_status, double receiver_time_s, const Gnss_Satellite& sat, const std::string& signal,
     double& doppler_hz) const
 {
-    if (!enabled_ || !pvt_ptr || fix_status.RX_time < 0.0)
+    if (!enabled_ || !pvt_ptr || have_command_reference_ || !std::isfinite(fix_status.RX_time) || fix_status.RX_time < 0.0)
+        {
+            return false;
+        }
+
+    // Status retains the last successful solution during an outage. Use
+    // Tick's sample-clock anchor, which repeated snapshots do not refresh,
+    // to bound the age of the velocity and oscillator estimate for one bin.
+    const gtime_t gps_gtime = gpst2time(static_cast<int>(fix_status.week), fix_status.RX_time);
+    const double fix_time_s = static_cast<double>(gps_gtime.time) + gps_gtime.sec;
+    const double fix_age_s = receiver_time_s - last_fix_receiver_time_s_;
+    if (fix_time_s != last_fix_time_s_ || !std::isfinite(fix_age_s) || fix_age_s < 0.0 || fix_age_s > kMaxDopplerFixAgeS)
         {
             return false;
         }
@@ -1092,7 +1107,6 @@ bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>
     const double ve_mps = fix_status.vel_e;
     const double vn_mps = fix_status.vel_n;
     const double vu_mps = fix_status.vel_u;
-    const gtime_t gps_gtime = gpst2time(static_cast<int>(fix_status.week), fix_status.RX_time);
     const double rx_time_s = time2gpst(gps_gtime, nullptr);
     int ref_gps_week = 0;
     time2gpst(gps_gtime, &ref_gps_week);
@@ -1143,11 +1157,14 @@ bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>
         }
     else if (system == "Beidou")
         {
+            // The native BeiDou orbital elements use BDT toe/toa, while
+            // freshness checks above and in RTKLIB use GPST epochs.
+            const double bdt_time_s = time2bdt(gpst2bdt(gps_gtime), nullptr);
             const auto eph_map = pvt_ptr->get_beidou_dnav_ephemeris();
             const auto eph_it = eph_map.find(prn);
             if (eph_it != eph_map.cend() && std::abs(timediff(gps_gtime, eph_to_rtklib(eph_it->second).toe)) <= MAXDTOE_BDS)
                 {
-                    geometric_doppler_hz = eph_it->second.predicted_doppler(rx_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, band);
+                    geometric_doppler_hz = eph_it->second.predicted_doppler(bdt_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, band);
                     geometric_available = true;
                 }
             else
@@ -1156,7 +1173,7 @@ bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>
                     const auto alm_it = alm_map.find(prn);
                     if (alm_it != alm_map.cend() && std::abs(timediff(gps_gtime, alm_to_rtklib(alm_it->second).toa)) <= almanac_max_age_s_)
                         {
-                            geometric_doppler_hz = alm_it->second.predicted_doppler(rx_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, band);
+                            geometric_doppler_hz = alm_it->second.predicted_doppler(bdt_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, band);
                             geometric_available = true;
                         }
                 }

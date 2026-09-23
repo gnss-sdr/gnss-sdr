@@ -692,3 +692,16 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, FullGridReferenceRowSelec
     ASSERT_EQ(1, result.rx_message) << "Acquisition failure with the true signal at the outermost candidate -- opposite-sign reference selection should not be interfering.";
     EXPECT_LE(result.doppler_error_hz, 666) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";
 }
+
+
+TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, NumBinsJustBelowFullGridStaysInBounds /*unused*/)
+{
+    // doppler_max = 5000, doppler_step = 1000 -> d_num_doppler_bins = 10. With the
+    // peak-ratio statistic the full grid needs no reference rows, but a narrowed
+    // search of N = 9 candidates adds 2 (at +/-doppler_max), i.e. 11 rows: one
+    // more than the full grid. The grid buffers must be sized for that.
+    init(/*doppler_max=*/5000, /*doppler_step=*/1000, /*use_cfar=*/false);
+    const RunResult result = run_acquisition(top_block, config.get(), gnss_synchro, 0, 9);
+    ASSERT_EQ(1, result.rx_message) << "Acquisition failure with N = d_num_doppler_bins - 1.";
+    EXPECT_LE(result.doppler_error_hz, 1000);
+}

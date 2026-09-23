@@ -316,10 +316,14 @@ private:
     // always > 1 candidate bin in practice) when d_full_grid_reference_needs_extra_row
     // is true. This (not d_num_doppler_bins) is the full grid's row count -- both
     // the constructed value of d_num_doppler_bins_active and what
-    // set_doppler_num_bins(0) (the "full range" sentinel) restores it to -- and
-    // what d_magnitude_grid/d_grid_doppler_wipeoffs are sized to accommodate: the
-    // ceiling every set_doppler_num_bins() call must stay within.
+    // set_doppler_num_bins(0) (the "full range" sentinel) restores it to.
     const uint32_t d_num_doppler_bins_full_grid_active;
+    // Step-1 row capacity of d_magnitude_grid/d_grid_doppler_wipeoffs (and of the
+    // CUDA engine). A narrowed search of N < d_num_doppler_bins candidates adds up
+    // to 2 reference rows, so N = d_num_doppler_bins - 1 needs d_num_doppler_bins + 1
+    // rows even when the full grid itself needs none; d_num_doppler_bins + 2 covers
+    // every row count set_doppler_num_bins() can produce.
+    const uint32_t d_num_doppler_bins_capacity;
     const float d_threshold_step_two;
     const bool d_cshort;
     const bool d_use_CFAR_algorithm_flag;
@@ -336,9 +340,8 @@ private:
     // Number of step-1 Doppler grid rows actually searched right now: the
     // candidate bin count last passed to set_doppler_num_bins() (or the full
     // grid's candidate count, if it was called with the 0 sentinel), plus
-    // d_num_reference_rows_active. Always <= d_num_doppler_bins_full_grid_active
-    // -- set_doppler_num_bins() clamps to that ceiling -- so it never exceeds
-    // what d_magnitude_grid/d_grid_doppler_wipeoffs were allocated for.
+    // d_num_reference_rows_active. Always <= d_num_doppler_bins_capacity, the row
+    // count d_magnitude_grid/d_grid_doppler_wipeoffs are allocated for.
     uint32_t d_num_doppler_bins_active;
     // How many of d_num_doppler_bins_active's trailing rows are dedicated
     // noise-only reference rows (see needs_extra_reference_row()) rather than

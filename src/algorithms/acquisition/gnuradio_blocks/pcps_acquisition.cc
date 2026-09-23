@@ -144,6 +144,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       // comment for why the count differs at exactly 1 candidate) -- so this
       // ceiling reserves 2 rows, not 1, whenever the row is needed at all.
       d_num_doppler_bins_full_grid_active(d_num_doppler_bins + (d_full_grid_reference_needs_extra_row ? (d_num_doppler_bins > 1U ? 2U : 1U) : 0U)),
+      d_num_doppler_bins_capacity(d_num_doppler_bins + 2U),
       d_threshold_step_two(conf_.pfa2 > 0.0 ? compute_threshold(conf_.pfa2, d_effective_fft_size, d_num_doppler_bins_step2, conf_.bit_transition_flag ? 1 : conf_.max_dwells) : conf_.threshold),
       d_cshort(conf_.it_size != sizeof(gr_complex)),
       d_use_CFAR_algorithm_flag(conf_.use_CFAR_algorithm_flag),
@@ -167,12 +168,12 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_dump_number(0),
       d_input_power(0),
       d_doppler_center_step_two(0),
-      d_magnitude_grid(std::max(d_num_doppler_bins_full_grid_active, d_num_doppler_bins_step2) * d_magnitude_grid_stride),
+      d_magnitude_grid(std::max(d_num_doppler_bins_capacity, d_num_doppler_bins_step2) * d_magnitude_grid_stride),
       d_tmp_buffer(d_effective_fft_size),
       d_input_signal(d_fft_size),
       d_grid_doppler_wipeoffs_step_two(d_acq_parameters.make_2_steps ? d_num_doppler_bins_step2 * d_doppler_wipeoffs_stride : 0),
       d_ifft(gnss_fft_rev_make_unique(d_fft_size)),
-      d_grid_doppler_wipeoffs(d_num_doppler_bins_full_grid_active * d_doppler_wipeoffs_stride),
+      d_grid_doppler_wipeoffs(d_num_doppler_bins_capacity * d_doppler_wipeoffs_stride),
       d_fft_codes(d_fft_size),
       d_fft_if(gnss_fft_fwd_make_unique(d_fft_size))
 {
@@ -231,7 +232,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
 #if CUDA_GPU_ACCEL
 void pcps_acquisition::init_cuda_engine()
 {
-    const uint32_t max_bins = std::max(d_num_doppler_bins_full_grid_active, d_num_doppler_bins_step2);
+    const uint32_t max_bins = std::max(d_num_doppler_bins_capacity, d_num_doppler_bins_step2);
     auto engine = std::make_unique<CudaPcpsEngine>(d_fft_size, d_effective_fft_size, max_bins, d_acq_parameters.cuda_device);
     if (!engine->is_valid())
         {

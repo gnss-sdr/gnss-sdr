@@ -63,7 +63,6 @@
 #include <iterator>                  // for insert_iterator, inserter
 #include <map>                       // for std::map
 #include <memory>                    // for std::shared_ptr
-#include <optional>                  // for std::optional
 #include <set>                       // for set
 #include <sstream>                   // for std::stringstream
 #include <stdexcept>                 // for invalid_argument
@@ -1837,10 +1836,11 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                     // prediction from ephemeris/almanac (SatelliteVisibility), if
                                     // this is the primary signal of a satellite already classified
                                     // visible and a live PVT fix currently exists. No-op (stays
-                                    // nullopt) unless visibility-aware search is enabled --
+                                    // false) unless visibility-aware search is enabled --
                                     // PredictedDopplerHz() itself requires a live fix for now; the
                                     // AGNSS-reference (no-fix) case is a follow-up.
-                                    std::optional<double> predicted_doppler_hz;
+                                    bool doppler_predicted = false;
+                                    double predicted_doppler_hz = 0.0;
                                     if (is_primary_freq && satellite_visibility_ && satellite_visibility_->enabled())
                                         {
                                             const auto pvt_ptr = get_pvt();
@@ -1848,12 +1848,12 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                             if (pvt_ptr && satellite_visibility_->IsVisible(sat))
                                                 {
                                                     const Monitor_Pvt fix_status = channels_status_->get_current_status_pvt();
-                                                    predicted_doppler_hz = satellite_visibility_->PredictedDopplerHz(pvt_ptr, fix_status, sat, channels_[current_channel]->get_signal().get_signal_str());
+                                                    doppler_predicted = satellite_visibility_->PredictedDopplerHz(pvt_ptr, fix_status, sat, channels_[current_channel]->get_signal().get_signal_str(), predicted_doppler_hz);
                                                 }
                                         }
-                                    if (predicted_doppler_hz.has_value())
+                                    if (doppler_predicted)
                                         {
-                                            channels_[current_channel]->assist_acquisition_doppler(*predicted_doppler_hz, 1);
+                                            channels_[current_channel]->assist_acquisition_doppler(predicted_doppler_hz, 1);
                                         }
                                     else
                                         {

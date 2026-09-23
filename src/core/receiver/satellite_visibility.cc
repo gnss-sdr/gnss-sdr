@@ -1059,12 +1059,13 @@ bool SatelliteVisibility::IsSearchExcluded(const Gnss_Satellite& sat) const
 }
 
 
-std::optional<double> SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
-    const Monitor_Pvt& fix_status, const Gnss_Satellite& sat, const std::string& signal) const
+bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
+    const Monitor_Pvt& fix_status, const Gnss_Satellite& sat, const std::string& signal,
+    double& doppler_hz) const
 {
     if (!enabled_ || !pvt_ptr || fix_status.RX_time < 0.0)
         {
-            return std::nullopt;
+            return false;
         }
 
     // Gnss_Ephemeris::predicted_doppler()/Gnss_Almanac::predicted_doppler()'s
@@ -1080,7 +1081,7 @@ std::optional<double> SatelliteVisibility::PredictedDopplerHz(const std::shared_
     const auto freq_it = SIGNAL_FREQ_MAP.find(signal);
     if (band_it == kBandForSignal.cend() || freq_it == SIGNAL_FREQ_MAP.cend())
         {
-            return std::nullopt;
+            return false;
         }
     const int band = band_it->second;
     const double carrier_freq_hz = freq_it->second;
@@ -1098,7 +1099,8 @@ std::optional<double> SatelliteVisibility::PredictedDopplerHz(const std::shared_
     const std::string system = sat.get_system();
     const auto prn = static_cast<int>(sat.get_PRN());
 
-    std::optional<double> geometric_doppler_hz;
+    bool geometric_available = false;
+    double geometric_doppler_hz = 0.0;
     if (system == "GPS")
         {
             const auto eph_map = pvt_ptr->get_gps_ephemeris();
@@ -1106,6 +1108,7 @@ std::optional<double> SatelliteVisibility::PredictedDopplerHz(const std::shared_
             if (eph_it != eph_map.cend() && std::abs(timediff(gps_gtime, eph_to_rtklib(eph_it->second, ref_gps_week).toe)) <= MAXDTOE)
                 {
                     geometric_doppler_hz = eph_it->second.predicted_doppler(rx_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, band);
+                    geometric_available = true;
                 }
             else
                 {
@@ -1114,6 +1117,7 @@ std::optional<double> SatelliteVisibility::PredictedDopplerHz(const std::shared_
                     if (alm_it != alm_map.cend() && std::abs(timediff(gps_gtime, alm_to_rtklib(alm_it->second, ref_gps_week).toa)) <= almanac_max_age_s_)
                         {
                             geometric_doppler_hz = alm_it->second.predicted_doppler(rx_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, band);
+                            geometric_available = true;
                         }
                 }
         }
@@ -1124,6 +1128,7 @@ std::optional<double> SatelliteVisibility::PredictedDopplerHz(const std::shared_
             if (eph_it != eph_map.cend() && std::abs(timediff(gps_gtime, eph_to_rtklib(eph_it->second).toe)) <= MAXDTOE_GAL)
                 {
                     geometric_doppler_hz = eph_it->second.predicted_doppler(rx_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, band);
+                    geometric_available = true;
                 }
             else
                 {
@@ -1132,6 +1137,7 @@ std::optional<double> SatelliteVisibility::PredictedDopplerHz(const std::shared_
                     if (alm_it != alm_map.cend() && std::abs(timediff(gps_gtime, alm_to_rtklib(alm_it->second, ref_gps_week).toa)) <= almanac_max_age_s_)
                         {
                             geometric_doppler_hz = alm_it->second.predicted_doppler(rx_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, band);
+                            geometric_available = true;
                         }
                 }
         }
@@ -1142,6 +1148,7 @@ std::optional<double> SatelliteVisibility::PredictedDopplerHz(const std::shared_
             if (eph_it != eph_map.cend() && std::abs(timediff(gps_gtime, eph_to_rtklib(eph_it->second).toe)) <= MAXDTOE_BDS)
                 {
                     geometric_doppler_hz = eph_it->second.predicted_doppler(rx_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, band);
+                    geometric_available = true;
                 }
             else
                 {
@@ -1150,13 +1157,14 @@ std::optional<double> SatelliteVisibility::PredictedDopplerHz(const std::shared_
                     if (alm_it != alm_map.cend() && std::abs(timediff(gps_gtime, alm_to_rtklib(alm_it->second).toa)) <= almanac_max_age_s_)
                         {
                             geometric_doppler_hz = alm_it->second.predicted_doppler(rx_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, band);
+                            geometric_available = true;
                         }
                 }
         }
 
-    if (!geometric_doppler_hz.has_value())
+    if (!geometric_available)
         {
-            return std::nullopt;
+            return false;
         }
 
     // Live PVT-solved clock drift, shared by every satellite's observed
@@ -1166,5 +1174,6 @@ std::optional<double> SatelliteVisibility::PredictedDopplerHz(const std::shared_
     // geometric - clock_offset matched to within noise, geometric +
     // clock_offset was off by 2x it.
     const double clock_offset_hz = fix_status.user_clk_drift_ppm * 1.0e-6 * carrier_freq_hz;
-    return *geometric_doppler_hz - clock_offset_hz;
+    doppler_hz = geometric_doppler_hz - clock_offset_hz;
+    return true;
 }

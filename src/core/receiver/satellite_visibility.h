@@ -208,6 +208,14 @@ private:
         const gtime_t& gps_gtime, uint32_t prn, const std::array<double, 3>& rx_pos_m,
         const std::array<double, 3>& rx_vel_mps, double carrier_freq_hz, double& geometric_doppler_hz) const;
 
+    // BeiDou-3 part of PredictedDopplerHz(), used when no fresh D1/D2
+    // ephemeris is available. Computes the geometric Doppler on
+    // carrier_freq_hz from the CNAV1 or CNAV2 ephemeris of prn, at the
+    // receiver's ECEF position and velocity.
+    bool BeidouCnavGeometricDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
+        const gtime_t& gps_gtime, uint32_t prn, const std::array<double, 3>& rx_pos_m,
+        const std::array<double, 3>& rx_vel_mps, double carrier_freq_hz, double& geometric_doppler_hz) const;
+
     // changed_prns_out, when non-null, receives every (system, PRN) added,
     // updated, or removed since the last check, so Tick() can recompute only
     // those. Left untouched on the first call, which forces a full recompute

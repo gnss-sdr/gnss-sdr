@@ -1171,7 +1171,7 @@ bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>
     static const std::map<std::string, int> kBandForSignal = {
         {"1C", 1}, {"1B", 1}, {"1D", 1}, {"J1", 1}, {"B1", 1}, {"1G", 1},
         {"2S", 2}, {"B2", 2}, {"2G", 2},
-        {"L5", 5}, {"5X", 5}, {"J5", 5},
+        {"L5", 5}, {"5X", 5}, {"J5", 5}, {"5D", 5},
         {"E6", 6},
         {"7X", 7},
         {"B3", 3}};
@@ -1198,6 +1198,14 @@ bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>
 
     bool geometric_available = false;
     double geometric_doppler_hz = 0.0;
+    // Receiver ECEF state, for the orbit models evaluated here rather than
+    // by Gnss_Ephemeris/Gnss_Almanac::predicted_doppler().
+    const std::array<double, 3> rx_llh{{lat_deg * D2R, lon_deg * D2R, h_m}};
+    const std::array<double, 3> rx_enu_vel{{ve_mps, vn_mps, vu_mps}};
+    std::array<double, 3> rx_pos{};
+    std::array<double, 3> rx_vel{};
+    pos2ecef(rx_llh.data(), rx_pos.data());
+    enu2ecef(rx_llh.data(), rx_enu_vel.data(), rx_vel.data());
     if (system == "GPS")
         {
             const auto eph_map = pvt_ptr->get_gps_ephemeris();
@@ -1243,50 +1251,54 @@ bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>
             // The native BeiDou orbital elements use BDT toe/toa, while
             // freshness checks above and in RTKLIB use GPST epochs.
             const double bdt_time_s = time2bdt(gpst2bdt(gps_gtime), nullptr);
+            // D1/D2 models only know the B1I, B2I and B3I carriers. B1C and
+            // B2a share the orbit: predict on B1I and rescale below.
+            const bool rescale_from_b1i = (signal == "1D" || signal == "5D");
+            const int dnav_band = rescale_from_b1i ? 1 : band;
+            bool dnav_model = false;
             const auto eph_map = pvt_ptr->get_beidou_dnav_ephemeris();
             const auto eph_it = eph_map.find(prn);
             if (eph_it != eph_map.cend() && std::abs(timediff(gps_gtime, eph_to_rtklib(eph_it->second).toe)) <= MAXDTOE_BDS)
                 {
-                    geometric_doppler_hz = eph_it->second.predicted_doppler(bdt_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, band);
+                    geometric_doppler_hz = eph_it->second.predicted_doppler(bdt_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, dnav_band);
                     geometric_available = true;
+                    dnav_model = true;
                 }
             else
+                {
+                    // BeiDou-3 CNAV1/CNAV2 ephemerides, decoded from B1C/B2a,
+                    // are evaluated directly on the requested carrier.
+                    geometric_available = BeidouCnavGeometricDopplerHz(pvt_ptr, gps_gtime, static_cast<uint32_t>(prn),
+                        rx_pos, rx_vel, carrier_freq_hz, geometric_doppler_hz);
+                }
+            if (!geometric_available)
                 {
                     const auto alm_map = pvt_ptr->get_beidou_dnav_almanac();
                     const auto alm_it = alm_map.find(prn);
                     if (alm_it != alm_map.cend() && std::abs(timediff(gps_gtime, alm_to_rtklib(alm_it->second).toa)) <= almanac_max_age_s_)
                         {
-                            geometric_doppler_hz = alm_it->second.predicted_doppler(bdt_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, band);
+                            geometric_doppler_hz = alm_it->second.predicted_doppler(bdt_time_s, lat_deg, lon_deg, h_m, ve_mps, vn_mps, vu_mps, dnav_band);
                             geometric_available = true;
+                            dnav_model = true;
                         }
                 }
-            if (geometric_available && signal == "1D")
+            if (geometric_available && dnav_model && rescale_from_b1i)
                 {
-                    // The native BeiDou band-1 prediction is for B1I. B1C
-                    // shares the orbit, but its carrier scales the range rate
-                    // differently. Apply this before the receiver clock term,
-                    // which already uses the requested signal's frequency.
+                    // The range rate scales with the carrier. Apply this before
+                    // the receiver clock term, which already uses the requested
+                    // signal's frequency.
                     geometric_doppler_hz *= carrier_freq_hz / FREQ1_BDS;
                 }
         }
-    else if (system == "Glonass" || system == "QZSS")
+    else if (system == "Glonass")
         {
-            const std::array<double, 3> rx_llh{{lat_deg * D2R, lon_deg * D2R, h_m}};
-            const std::array<double, 3> rx_enu_vel{{ve_mps, vn_mps, vu_mps}};
-            std::array<double, 3> rx_pos{};
-            std::array<double, 3> rx_vel{};
-            pos2ecef(rx_llh.data(), rx_pos.data());
-            enu2ecef(rx_llh.data(), rx_enu_vel.data(), rx_vel.data());
-            if (system == "Glonass")
-                {
-                    geometric_available = GlonassGeometricDopplerHz(pvt_ptr, gps_gtime, static_cast<uint32_t>(prn), band,
-                        rx_pos, rx_vel, geometric_doppler_hz, carrier_freq_hz);
-                }
-            else
-                {
-                    geometric_available = QzssGeometricDopplerHz(pvt_ptr, gps_gtime, static_cast<uint32_t>(prn),
-                        rx_pos, rx_vel, carrier_freq_hz, geometric_doppler_hz);
-                }
+            geometric_available = GlonassGeometricDopplerHz(pvt_ptr, gps_gtime, static_cast<uint32_t>(prn), band,
+                rx_pos, rx_vel, geometric_doppler_hz, carrier_freq_hz);
+        }
+    else if (system == "QZSS")
+        {
+            geometric_available = QzssGeometricDopplerHz(pvt_ptr, gps_gtime, static_cast<uint32_t>(prn),
+                rx_pos, rx_vel, carrier_freq_hz, geometric_doppler_hz);
         }
 
     if (!geometric_available)
@@ -1456,5 +1468,58 @@ bool SatelliteVisibility::QzssGeometricDopplerHz(const std::shared_ptr<PvtInterf
                         }
                 }
         }
+    return state_available && range_rate_doppler_hz(sat_pos, sat_vel, rx_pos_m, rx_vel_mps, carrier_freq_hz, geometric_doppler_hz);
+}
+
+
+bool SatelliteVisibility::BeidouCnavGeometricDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
+    const gtime_t& gps_gtime, uint32_t prn, const std::array<double, 3>& rx_pos_m,
+    const std::array<double, 3>& rx_vel_mps, double carrier_freq_hz, double& geometric_doppler_hz) const
+{
+    // Same validity rules as compute_visible_satellites(): the CNAV1 or CNAV2
+    // record, of a BeiDou-3 MEO or IGSO satellite, whose toe is closest to
+    // the query epoch. Equal ages keep CNAV1.
+    bool have_eph = false;
+    eph_t rtklib_eph{};
+    const std::array<std::map<int, Beidou_Cnav1_Ephemeris>, 2> cnav_maps{
+        {pvt_ptr->get_beidou_cnav1_ephemeris(), pvt_ptr->get_beidou_cnav2_ephemeris()}};
+    for (size_t source = 0; source < cnav_maps.size(); ++source)
+        {
+            const auto it = cnav_maps[source].find(static_cast<int>(prn));
+            if (it == cnav_maps[source].cend() ||
+                it->second.sig_type != (source == 0 ? BDS_EPH_SOURCE_CNAV1 : BDS_EPH_SOURCE_CNAV2) ||
+                (it->second.sat_type != 2 && it->second.sat_type != 3))
+                {
+                    continue;
+                }
+            const eph_t candidate = eph_to_rtklib(it->second);
+            const double age = timediff(gps_gtime, candidate.toe);
+            if (!std::isfinite(age) || std::abs(age) > MAXDTOE_BDS ||
+                !std::isfinite(candidate.A) || candidate.A <= 0.0 ||
+                !std::isfinite(candidate.e) || candidate.e < 0.0 || candidate.e >= 1.0)
+                {
+                    continue;
+                }
+            if (!have_eph || std::abs(age) < std::abs(timediff(gps_gtime, rtklib_eph.toe)))
+                {
+                    rtklib_eph = candidate;
+                    have_eph = true;
+                }
+        }
+    if (!have_eph)
+        {
+            return false;
+        }
+
+    std::array<double, 3> sat_pos{};
+    std::array<double, 3> sat_vel{};
+    const bool state_available = position_and_velocity(
+        [&](double offset_s, std::array<double, 3>& position_m) {
+            double clock_bias_s;
+            double variance_m2;
+            eph2pos(timeadd(gps_gtime, offset_s), &rtklib_eph, position_m.data(), &clock_bias_s, &variance_m2);
+            return std::all_of(position_m.cbegin(), position_m.cend(), [](double value) { return std::isfinite(value); });
+        },
+        sat_pos, sat_vel);
     return state_available && range_rate_doppler_hz(sat_pos, sat_vel, rx_pos_m, rx_vel_mps, carrier_freq_hz, geometric_doppler_hz);
 }

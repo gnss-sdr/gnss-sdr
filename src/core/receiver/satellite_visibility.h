@@ -170,8 +170,9 @@ public:
     // returns true. Only meaningful with a live PVT fix -- returns false
     // (leaving doppler_hz untouched) when disabled, no fix is currently
     // valid, the signal isn't a recognized carrier, or neither ephemeris nor
-    // almanac is currently usable for sat. For GLONASS, sat stands for its
-    // FDMA frequency: the prediction uses the single visible slot on that
+    // almanac is currently usable for sat, or the prediction is non-finite.
+    // For GLONASS, sat stands for its FDMA frequency: the prediction uses
+    // the single visible slot on that
     // frequency and its own carrier, and fails if no slot or more than one
     // is visible.
     // Tick() must have observed this fix, at most one second ago on the
@@ -208,11 +209,10 @@ private:
         const gtime_t& gps_gtime, uint32_t prn, const std::array<double, 3>& rx_pos_m,
         const std::array<double, 3>& rx_vel_mps, double carrier_freq_hz, double& geometric_doppler_hz) const;
 
-    // BeiDou-3 part of PredictedDopplerHz(), used when no fresh D1/D2
-    // ephemeris is available. Computes the geometric Doppler on
-    // carrier_freq_hz from the CNAV1 or CNAV2 ephemeris of prn, at the
-    // receiver's ECEF position and velocity.
-    bool BeidouCnavGeometricDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
+    // BeiDou part of PredictedDopplerHz(): use the same validated DNAV,
+    // CNAV1, CNAV2 or fallback almanac orbit as visibility, evaluated on
+    // the requested carrier at the receiver's ECEF position and velocity.
+    bool BeidouGeometricDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
         const gtime_t& gps_gtime, uint32_t prn, const std::array<double, 3>& rx_pos_m,
         const std::array<double, 3>& rx_vel_mps, double carrier_freq_hz, double& geometric_doppler_hz) const;
 

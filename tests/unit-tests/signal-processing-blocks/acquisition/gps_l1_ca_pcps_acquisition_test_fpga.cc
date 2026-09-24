@@ -38,7 +38,6 @@
 #include <iostream>                         // std::cout, std::endl
 #include <memory>                           // std::shared_ptr, std::make_shared
 #include <string>                           // std::string, std::to_string
-#include <string_view>                      // std::string_view
 #include <sys/mman.h>                       // mmap, munmap
 #include <thread>                           // std::thread, std::this_thread
 #include <unistd.h>                         // close, usleep
@@ -63,42 +62,42 @@ class GpsL1CaPcpsAcquisitionTestFpga : public ::testing::Test
 {
 protected:
     // acquisition configuration
-    inline static constexpr int BASEBAND_SAMPLING_RATE_SPS = 12500000;
-    inline static constexpr int DOPPLER_MAX_HZ = 5000;
-    inline static constexpr int DOPPLER_STEP_HZ = 250;
-    inline static constexpr float ACQUISITION_THRESHOLD = 2.25f;
-    inline static constexpr int TOTAL_BLK_EXP = 10;
-    inline static constexpr std::string_view IMPLEMENTATION = "GPS_L1_CA_PCPS_Acquisition_FPGA";
+    static constexpr int BASEBAND_SAMPLING_RATE_SPS = 12500000;
+    static constexpr int DOPPLER_MAX_HZ = 5000;
+    static constexpr int DOPPLER_STEP_HZ = 250;
+    static constexpr float ACQUISITION_THRESHOLD = 2.25f;
+    static constexpr int TOTAL_BLK_EXP = 10;
+    static constexpr char IMPLEMENTATION[] = "GPS_L1_CA_PCPS_Acquisition_FPGA";
 
     // acquisition expected results
-    inline static constexpr double EXPECTED_DELAY_SAMPLES = 7576;
-    inline static constexpr double EXPECTED_DOPPLER_HZ = -3000;
+    static constexpr double EXPECTED_DELAY_SAMPLES = 7576;
+    static constexpr double EXPECTED_DOPPLER_HZ = -3000;
 
     // Signal parameters
-    inline static constexpr int SV_ID = 1;
-    inline static constexpr int COHERENT_INTEGRATION_TIME_ms = 1;
-    inline static constexpr char SYSTEM = 'G';
-    inline static constexpr std::string_view SIGNAL = "1C";
-    inline static constexpr unsigned int NSAMPLES =
+    static constexpr int SV_ID = 1;
+    static constexpr int COHERENT_INTEGRATION_TIME_ms = 1;
+    static constexpr char SYSTEM = 'G';
+    static constexpr char SIGNAL[] = "1C";
+    static constexpr unsigned int NSAMPLES =
         static_cast<unsigned int>(
             (static_cast<std::uint64_t>(BASEBAND_SAMPLING_RATE_SPS) *
                 static_cast<std::uint64_t>(COHERENT_INTEGRATION_TIME_ms)) /
             1000U);
 
     // File to DMA control
-    inline static constexpr int COMPLEX_SAMPLE_SIZE_BYTES = sizeof(int8_t) * 2;  // interleaved byte
-    inline static constexpr int SAMPLE_BLOCK_SIZE_BYTES = 16384;
-    inline static constexpr std::string_view SIGNAL_FILE_PATH = "./signal_samples/GPS_L1CA_ID_1_Fs_12.5Msps_10ms.dat";
+    static constexpr int COMPLEX_SAMPLE_SIZE_BYTES = sizeof(int8_t) * 2;  // interleaved byte
+    static constexpr int SAMPLE_BLOCK_SIZE_BYTES = 16384;
+    static constexpr char SIGNAL_FILE_PATH[] = "./signal_samples/GPS_L1CA_ID_1_Fs_12.5Msps_10ms.dat";
 
     // FPGA switch
-    inline static constexpr int POST_PROCESSING_MODE = 0;  // Select post-processing mode (read a signal from a recorded file)
+    static constexpr int POST_PROCESSING_MODE = 0;  // Select post-processing mode (read a signal from a recorded file)
 
     // FPGA Dynamic bit selection
-    inline static constexpr int DYN_BIT_SEL_DEV_NUM = 0;  // device 0 is connected to the L1/E1 frequency-band path.
-    inline static constexpr size_t FPGA_PAGE_SIZE_BYTES = 0x1000;
-    inline static constexpr uint32_t DYN_BIT_SEL_SHIFT_OUT_BITS = 0;                             // No bit shift; select the least significant bits.
-    inline static constexpr std::string_view DYN_BIT_SEL_DEVICE_NAME = "dynamic_bits_selector";  // device name
-    inline static constexpr int SOBITS_REG_ADDR = 0;                                             // Shift out bits register address
+    static constexpr int DYN_BIT_SEL_DEV_NUM = 0;  // device 0 is connected to the L1/E1 frequency-band path.
+    static constexpr size_t FPGA_PAGE_SIZE_BYTES = 0x1000;
+    static constexpr uint32_t DYN_BIT_SEL_SHIFT_OUT_BITS = 0;                   // No bit shift; select the least significant bits.
+    static constexpr char DYN_BIT_SEL_DEVICE_NAME[] = "dynamic_bits_selector";  // device name
+    static constexpr int SOBITS_REG_ADDR = 0;                                   // Shift out bits register address
 
     GpsL1CaPcpsAcquisitionTestFpga();
     ~GpsL1CaPcpsAcquisitionTestFpga() = default;
@@ -124,6 +123,32 @@ protected:
 
     std::shared_ptr<InMemoryConfiguration> config;
 };
+
+#if __cplusplus < 201703L
+// Storage for constexpr members that are odr-used before C++17.
+constexpr int GpsL1CaPcpsAcquisitionTestFpga::BASEBAND_SAMPLING_RATE_SPS;
+constexpr int GpsL1CaPcpsAcquisitionTestFpga::DOPPLER_MAX_HZ;
+constexpr int GpsL1CaPcpsAcquisitionTestFpga::DOPPLER_STEP_HZ;
+constexpr float GpsL1CaPcpsAcquisitionTestFpga::ACQUISITION_THRESHOLD;
+constexpr int GpsL1CaPcpsAcquisitionTestFpga::TOTAL_BLK_EXP;
+constexpr char GpsL1CaPcpsAcquisitionTestFpga::IMPLEMENTATION[];
+constexpr double GpsL1CaPcpsAcquisitionTestFpga::EXPECTED_DELAY_SAMPLES;
+constexpr double GpsL1CaPcpsAcquisitionTestFpga::EXPECTED_DOPPLER_HZ;
+constexpr int GpsL1CaPcpsAcquisitionTestFpga::SV_ID;
+constexpr int GpsL1CaPcpsAcquisitionTestFpga::COHERENT_INTEGRATION_TIME_ms;
+constexpr char GpsL1CaPcpsAcquisitionTestFpga::SYSTEM;
+constexpr char GpsL1CaPcpsAcquisitionTestFpga::SIGNAL[];
+constexpr unsigned int GpsL1CaPcpsAcquisitionTestFpga::NSAMPLES;
+constexpr int GpsL1CaPcpsAcquisitionTestFpga::COMPLEX_SAMPLE_SIZE_BYTES;
+constexpr int GpsL1CaPcpsAcquisitionTestFpga::SAMPLE_BLOCK_SIZE_BYTES;
+constexpr char GpsL1CaPcpsAcquisitionTestFpga::SIGNAL_FILE_PATH[];
+constexpr int GpsL1CaPcpsAcquisitionTestFpga::POST_PROCESSING_MODE;
+constexpr int GpsL1CaPcpsAcquisitionTestFpga::DYN_BIT_SEL_DEV_NUM;
+constexpr size_t GpsL1CaPcpsAcquisitionTestFpga::FPGA_PAGE_SIZE_BYTES;
+constexpr uint32_t GpsL1CaPcpsAcquisitionTestFpga::DYN_BIT_SEL_SHIFT_OUT_BITS;
+constexpr char GpsL1CaPcpsAcquisitionTestFpga::DYN_BIT_SEL_DEVICE_NAME[];
+constexpr int GpsL1CaPcpsAcquisitionTestFpga::SOBITS_REG_ADDR;
+#endif
 
 // When using the FPGA the acquisition class calls the states
 // of the channel finite state machine directly. This is done
@@ -328,7 +353,6 @@ void GpsL1CaPcpsAcquisitionTestFpga::open_and_map_dynamic_bit_selector(int &dyn_
 {
     // find the uio device file corresponding to the dynamic bit selector 0 module.
     std::string device_name;
-    int dev_descr_freq_band_1;
     if (find_uio_dev_file_name(device_name, std::string{DYN_BIT_SEL_DEVICE_NAME}, DYN_BIT_SEL_DEV_NUM) < 0)
         {
             FAIL() << "Cannot find the FPGA uio device file corresponding to device name " << DYN_BIT_SEL_DEVICE_NAME;

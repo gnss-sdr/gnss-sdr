@@ -25,7 +25,8 @@ if(ENABLE_FPGA)
     set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} fpga_dynamic_bit_selection.h)
 endif()
 
-if(ENABLE_DMA_PROXY)
+# FPGA acquisition unit tests also use the DMA helper without the signal source.
+if(ENABLE_DMA_PROXY OR (ENABLE_FPGA AND ENABLE_UNIT_TESTING))
     set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} fpga_dma-proxy.cc)
     set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} fpga_dma-proxy.h)
 endif()

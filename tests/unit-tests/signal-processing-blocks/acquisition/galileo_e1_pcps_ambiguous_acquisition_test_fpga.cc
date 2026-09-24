@@ -38,7 +38,6 @@
 #include <iostream>                         // std::cout, std::endl
 #include <memory>                           // std::shared_ptr, std::make_shared
 #include <string>                           // std::string, std::to_string
-#include <string_view>                      // std::string_view
 #include <sys/mman.h>                       // mmap, munmap
 #include <thread>                           // std::thread, std::this_thread
 #include <unistd.h>                         // close, usleep
@@ -63,42 +62,42 @@ class GalileoE1PcpsAmbiguousAcquisitionTestFpga : public ::testing::Test
 {
 protected:
     // acquisition configuration
-    inline static constexpr int BASEBAND_SAMPLING_RATE_SPS = 12500000;
-    inline static constexpr int DOPPLER_MAX_HZ = 5000;
-    inline static constexpr int DOPPLER_STEP_HZ = 125;
-    inline static constexpr float ACQUISITION_THRESHOLD = 2.25f;
-    inline static constexpr int TOTAL_BLK_EXP = 12;
-    inline static constexpr std::string_view IMPLEMENTATION = "Galileo_E1_PCPS_Ambiguous_Acquisition_FPGA";
+    static constexpr int BASEBAND_SAMPLING_RATE_SPS = 12500000;
+    static constexpr int DOPPLER_MAX_HZ = 5000;
+    static constexpr int DOPPLER_STEP_HZ = 125;
+    static constexpr float ACQUISITION_THRESHOLD = 2.25f;
+    static constexpr int TOTAL_BLK_EXP = 12;
+    static constexpr char IMPLEMENTATION[] = "Galileo_E1_PCPS_Ambiguous_Acquisition_FPGA";
 
     // acquisition expected results
-    inline static constexpr double EXPECTED_DELAY_SAMPLES = 42964;
-    inline static constexpr double EXPECTED_DOPPLER_HZ = 1625;
+    static constexpr double EXPECTED_DELAY_SAMPLES = 42964;
+    static constexpr double EXPECTED_DOPPLER_HZ = 1625;
 
     // Signal parameters
-    inline static constexpr int SV_ID = 1;
-    inline static constexpr int COHERENT_INTEGRATION_TIME_ms = 4;
-    inline static constexpr char SYSTEM = 'E';
-    inline static constexpr std::string_view SIGNAL = "1B";
-    inline static constexpr unsigned int NSAMPLES =
+    static constexpr int SV_ID = 1;
+    static constexpr int COHERENT_INTEGRATION_TIME_ms = 4;
+    static constexpr char SYSTEM = 'E';
+    static constexpr char SIGNAL[] = "1B";
+    static constexpr unsigned int NSAMPLES =
         static_cast<unsigned int>(
             (static_cast<std::uint64_t>(BASEBAND_SAMPLING_RATE_SPS) *
                 static_cast<std::uint64_t>(COHERENT_INTEGRATION_TIME_ms)) /
             1000U);
 
     // File to DMA control
-    inline static constexpr int COMPLEX_SAMPLE_SIZE_BYTES = sizeof(int8_t) * 2;  // interleaved byte
-    inline static constexpr int SAMPLE_BLOCK_SIZE_BYTES = 16384;
-    inline static constexpr std::string_view SIGNAL_FILE_PATH = "./signal_samples/Galileo_E1_ID_1_Fs_12.5Msps_10ms.dat";
+    static constexpr int COMPLEX_SAMPLE_SIZE_BYTES = sizeof(int8_t) * 2;  // interleaved byte
+    static constexpr int SAMPLE_BLOCK_SIZE_BYTES = 16384;
+    static constexpr char SIGNAL_FILE_PATH[] = "./signal_samples/Galileo_E1_ID_1_Fs_12.5Msps_10ms.dat";
 
     // FPGA switch
-    inline static constexpr int POST_PROCESSING_MODE = 0;  // Select post-processing mode (read a signal from a recorded file)
+    static constexpr int POST_PROCESSING_MODE = 0;  // Select post-processing mode (read a signal from a recorded file)
 
     // FPGA Dynamic bit selection
-    inline static constexpr int DYN_BIT_SEL_DEV_NUM = 0;  // device 0 is connected to the L1/E1 frequency-band path.
-    inline static constexpr size_t FPGA_PAGE_SIZE_BYTES = 0x1000;
-    inline static constexpr uint32_t DYN_BIT_SEL_SHIFT_OUT_BITS = 0;                             // No bit shift; select the least significant bits.
-    inline static constexpr std::string_view DYN_BIT_SEL_DEVICE_NAME = "dynamic_bits_selector";  // device name
-    inline static constexpr int SOBITS_REG_ADDR = 0;                                             // Shift out bits register address
+    static constexpr int DYN_BIT_SEL_DEV_NUM = 0;  // device 0 is connected to the L1/E1 frequency-band path.
+    static constexpr size_t FPGA_PAGE_SIZE_BYTES = 0x1000;
+    static constexpr uint32_t DYN_BIT_SEL_SHIFT_OUT_BITS = 0;                   // No bit shift; select the least significant bits.
+    static constexpr char DYN_BIT_SEL_DEVICE_NAME[] = "dynamic_bits_selector";  // device name
+    static constexpr int SOBITS_REG_ADDR = 0;                                   // Shift out bits register address
 
     GalileoE1PcpsAmbiguousAcquisitionTestFpga();
     ~GalileoE1PcpsAmbiguousAcquisitionTestFpga() = default;
@@ -124,6 +123,32 @@ protected:
 
     std::shared_ptr<InMemoryConfiguration> config;
 };
+
+#if __cplusplus < 201703L
+// Storage for constexpr members that are odr-used before C++17.
+constexpr int GalileoE1PcpsAmbiguousAcquisitionTestFpga::BASEBAND_SAMPLING_RATE_SPS;
+constexpr int GalileoE1PcpsAmbiguousAcquisitionTestFpga::DOPPLER_MAX_HZ;
+constexpr int GalileoE1PcpsAmbiguousAcquisitionTestFpga::DOPPLER_STEP_HZ;
+constexpr float GalileoE1PcpsAmbiguousAcquisitionTestFpga::ACQUISITION_THRESHOLD;
+constexpr int GalileoE1PcpsAmbiguousAcquisitionTestFpga::TOTAL_BLK_EXP;
+constexpr char GalileoE1PcpsAmbiguousAcquisitionTestFpga::IMPLEMENTATION[];
+constexpr double GalileoE1PcpsAmbiguousAcquisitionTestFpga::EXPECTED_DELAY_SAMPLES;
+constexpr double GalileoE1PcpsAmbiguousAcquisitionTestFpga::EXPECTED_DOPPLER_HZ;
+constexpr int GalileoE1PcpsAmbiguousAcquisitionTestFpga::SV_ID;
+constexpr int GalileoE1PcpsAmbiguousAcquisitionTestFpga::COHERENT_INTEGRATION_TIME_ms;
+constexpr char GalileoE1PcpsAmbiguousAcquisitionTestFpga::SYSTEM;
+constexpr char GalileoE1PcpsAmbiguousAcquisitionTestFpga::SIGNAL[];
+constexpr unsigned int GalileoE1PcpsAmbiguousAcquisitionTestFpga::NSAMPLES;
+constexpr int GalileoE1PcpsAmbiguousAcquisitionTestFpga::COMPLEX_SAMPLE_SIZE_BYTES;
+constexpr int GalileoE1PcpsAmbiguousAcquisitionTestFpga::SAMPLE_BLOCK_SIZE_BYTES;
+constexpr char GalileoE1PcpsAmbiguousAcquisitionTestFpga::SIGNAL_FILE_PATH[];
+constexpr int GalileoE1PcpsAmbiguousAcquisitionTestFpga::POST_PROCESSING_MODE;
+constexpr int GalileoE1PcpsAmbiguousAcquisitionTestFpga::DYN_BIT_SEL_DEV_NUM;
+constexpr size_t GalileoE1PcpsAmbiguousAcquisitionTestFpga::FPGA_PAGE_SIZE_BYTES;
+constexpr uint32_t GalileoE1PcpsAmbiguousAcquisitionTestFpga::DYN_BIT_SEL_SHIFT_OUT_BITS;
+constexpr char GalileoE1PcpsAmbiguousAcquisitionTestFpga::DYN_BIT_SEL_DEVICE_NAME[];
+constexpr int GalileoE1PcpsAmbiguousAcquisitionTestFpga::SOBITS_REG_ADDR;
+#endif
 
 // When using the FPGA the acquisition class calls the states
 // of the channel finite state machine directly. This is done
@@ -328,7 +353,6 @@ void GalileoE1PcpsAmbiguousAcquisitionTestFpga::open_and_map_dynamic_bit_selecto
 {
     // find the uio device file corresponding to the dynamic bit selector 0 module.
     std::string device_name;
-    int dev_descr_freq_band_1;
     if (find_uio_dev_file_name(device_name, std::string{DYN_BIT_SEL_DEVICE_NAME}, DYN_BIT_SEL_DEV_NUM) < 0)
         {
             FAIL() << "Cannot find the FPGA uio device file corresponding to device name " << DYN_BIT_SEL_DEVICE_NAME;

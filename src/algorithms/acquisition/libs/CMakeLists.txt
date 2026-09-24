@@ -86,7 +86,7 @@ if(ENABLE_CUDA)
             CUDA::cufft
     )
     set_target_properties(acquisition_libs PROPERTIES
-        CUDA_SEPARABLE_COMPILATION ON
+        CUDA_SEPARABLE_COMPILATION OFF
         POSITION_INDEPENDENT_CODE ON
         CUDA_RESOLVE_DEVICE_SYMBOLS ON
     )

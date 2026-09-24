@@ -119,7 +119,7 @@ if(ENABLE_CUDA)
         )
     endif()
     set_target_properties(tracking_libs PROPERTIES
-        CUDA_SEPARABLE_COMPILATION ON
+        CUDA_SEPARABLE_COMPILATION OFF
         POSITION_INDEPENDENT_CODE ON
         CUDA_RESOLVE_DEVICE_SYMBOLS ON
     )

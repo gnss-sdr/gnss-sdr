@@ -51,7 +51,7 @@ if(ENABLE_CUDA)
         )
     endif()
     set_target_properties(gnss-sdr PROPERTIES
-        CUDA_SEPARABLE_COMPILATION ON
+        CUDA_SEPARABLE_COMPILATION OFF
         POSITION_INDEPENDENT_CODE ON
     )
     target_compile_definitions(gnss-sdr PRIVATE -DCUDA_GPU_ACCEL=1)

@@ -65,7 +65,7 @@ std::vector<cvec> make_wipeoffs(uint32_t fft_size, uint32_t bins, double fs)
     for (uint32_t k = 0; k < bins; k++)
         {
             const double doppler = -5000.0 + 10000.0 * static_cast<double>(k) / static_cast<double>(bins);
-            const float step = static_cast<float>(TWO_PI_D * doppler / fs);
+            const auto step = static_cast<float>(TWO_PI_D * doppler / fs);
             std::array<float, 1> phase{};
             volk_gnsssdr_s32f_sincos_32fc(w[k].data(), -step, phase.data(), fft_size);
         }

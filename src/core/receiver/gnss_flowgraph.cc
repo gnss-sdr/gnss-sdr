@@ -1825,10 +1825,19 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                        << ", Signal " << channels_[current_channel]->get_signal().get_signal_str();
                             if (assistance_available == true && configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_))
                                 {
-                                    // Doppler is exactly known from the already-tracked assisting
-                                    // frequency (search_next_signal() returns it already projected
-                                    // to this band): restrict the search to a single Doppler bin.
-                                    channels_[current_channel]->assist_acquisition_doppler(estimated_doppler, 1);
+                                    // Doppler known from the tracked primary band (already projected to this
+                                    // band by search_next_signal()): search a single bin, unless
+                                    // <acq role>.dual_freq_assisted_doppler_narrowing=false forces a full
+                                    // Doppler search for this signal (or channel, via a per-channel role).
+                                    const std::string acq_role = block_factory::get_role_name(configuration_.get(), "Acquisition_", channels_[current_channel]->get_signal().get_signal_str(), static_cast<int>(current_channel));
+                                    if (configuration_->property(acq_role + ".dual_freq_assisted_doppler_narrowing", true))
+                                        {
+                                            channels_[current_channel]->assist_acquisition_doppler(estimated_doppler, 1);
+                                        }
+                                    else
+                                        {
+                                            channels_[current_channel]->assist_acquisition_doppler(0, 0);
+                                        }
                                 }
                             else
                                 {

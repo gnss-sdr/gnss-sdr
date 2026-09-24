@@ -69,6 +69,18 @@ std::unique_ptr<GNSSBlockInterface> GetBlock(const ConfigurationInterface* confi
     unsigned int out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue = nullptr);
 
+/*!
+ * \brief Returns the role name of a channel's block: role_prefix + signal +
+ * channel (e.g. "Acquisition_5X12") if that per-channel role has an
+ * .implementation property in the configuration, role_prefix + signal (e.g.
+ * "Acquisition_5X") otherwise. Use it to read a property of an already built
+ * channel block from the same role the block was instantiated with.
+ */
+std::string get_role_name(const ConfigurationInterface* configuration,
+    const std::string& role_prefix,
+    const std::string& signal,
+    int channel);
+
 std::unique_ptr<GNSSBlockInterface> GetChannel(
     const ConfigurationInterface* configuration,
     const std::string& signal,

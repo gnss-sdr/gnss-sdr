@@ -38,131 +38,121 @@ public:
     BufferPool& operator=(const BufferPool&) = delete;
     BufferPool& operator=(BufferPool&) = delete;
     BufferPool& operator=(BufferPool&&) = delete;
-    static volk_gnsssdr::vector<T> take()
-    {
-        BufferPool& self = get();
-        std::lock_guard<std::mutex> lock(self.d_mutex);
-        if (self.d_store.empty())
-            {
-                throw std::runtime_error("BufferPool<" + std::string(typeid(T).name()) + ">::take(): the pool is empty");
-            }
-        volk_gnsssdr::vector<T> rv = std::move(self.d_store.back());
-        self.d_store.pop_back();
-// debug
-#if 0
-        std::cout<<&self<<" take["<<self.d_store.size()<<"]: "<<(&rv)<<" s="<<rv.size()<<" d="<<rv.data()<<"\n";
-#endif
-        return rv;
-    }
-    static void release(volk_gnsssdr::vector<T>&& item)
-    {
-        BufferPool& self = get();
-        std::lock_guard<std::mutex> lock(self.d_mutex);
-// debug
-#if 0
-        std::cout<<&self<<" release["<<self.d_store.size()<<"]: "<<(&item)<<" s="<<item.size()<<" d="<<item.data()<<"\n";
-#endif
-        self.d_store.emplace_back(std::move(item));
-    }
-    static void resize(size_t n)
-    {
-        BufferPool& self = get();
-        std::lock_guard<std::mutex> lock(self.d_mutex);
-        self.d_store.resize(n);
-        if (self.d_buffer_capacity > self.d_buffer_size)
-            {
-                self.foreach_unsafe([&](volk_gnsssdr::vector<T>& buffer) {
-                    buffer.reserve(self.d_buffer_capacity);
-                });
-            }
-        if (self.d_buffer_size)
-            {
-                self.foreach_unsafe([&](volk_gnsssdr::vector<T>& buffer) {
-                    buffer.resize(self.d_buffer_size);
-                });
-            }
-    }
-    static void reserve(size_t n)
-    {
-        BufferPool& self = get();
-        std::lock_guard<std::mutex> lock(self.d_mutex);
-        self.d_store.reserve(n);
-    }
-    static size_t size()
-    {
-        BufferPool& self = get();
-        std::lock_guard<std::mutex> lock(self.d_mutex);
-        return self.d_store.size();
-    }
-    static void foreach (std::function<void(volk_gnsssdr::vector<T>&)> fn)
-    {
-        BufferPool& self = get();
-        std::lock_guard<std::mutex> lock(self.d_mutex);
-        self.foreach_unsafe(fn);
-    }
-    static void resize_buffers(size_t n)
-    {
-        BufferPool& self = get();
-        std::lock_guard<std::mutex> lock(self.d_mutex);
-        if (self.d_buffer_size == n)
-            {
-                return;
-            }
-        self.d_buffer_size = n;
-        self.d_buffer_capacity = std::max(self.d_buffer_capacity, self.d_buffer_size);
-        if (self.d_store.empty())
-            {
-                return;
-            }
-        self.foreach_unsafe([&](volk_gnsssdr::vector<T>& buffer) {
-            buffer.resize(n);
-        });
-    }
-    static void reserve_buffers(size_t n)
-    {
-        BufferPool& self = get();
-        std::lock_guard<std::mutex> lock(self.d_mutex);
-        if (self.d_buffer_capacity >= n)
-            {
-                return;
-            }
-        self.d_buffer_capacity = n;
-        if (self.d_store.empty())
-            {
-                return;
-            }
-        self.foreach_unsafe([&](volk_gnsssdr::vector<T>& buffer) {
-            buffer.reserve(n);
-        });
-    }
-    static size_t buffer_size()
-    {
-        BufferPool& self = get();
-        std::lock_guard<std::mutex> lock(self.d_mutex);
-        if (self.d_store.empty())
-            {
-                return 0;
-            }
-        return self.d_store[0].size();
-    }
-    static size_t buffer_capacity()
-    {
-        BufferPool& self = get();
-        std::lock_guard<std::mutex> lock(self.d_mutex);
-        if (self.d_store.empty())
-            {
-                return 0;
-            }
-        return self.d_store[0].capacity();
-    }
-
-private:
-    BufferPool() = default;
-    static BufferPool& get()
+    static BufferPool& instance()
     {
         static BufferPool inst{};
         return inst;
     }
+    volk_gnsssdr::vector<T> take()
+    {
+        std::lock_guard<std::mutex> lock(d_mutex);
+        if (d_store.empty())
+            {
+                throw std::runtime_error("BufferPool<" + std::string(typeid(T).name()) + ">::take(): the pool is empty");
+            }
+        volk_gnsssdr::vector<T> rv = std::move(d_store.back());
+        d_store.pop_back();
+// debug
+#if 0
+        std::cout<<(void*)this<<" take["<<d_store.size()<<"]: "<<(&rv)<<" s="<<rv.size()<<" d="<<rv.data()<<"\n";
+#endif
+        return rv;
+    }
+    void release(volk_gnsssdr::vector<T>&& item)
+    {
+        std::lock_guard<std::mutex> lock(d_mutex);
+// debug
+#if 0
+        std::cout<<(void*)this<<" release["<<d_store.size()<<"]: "<<(&item)<<" s="<<item.size()<<" d="<<item.data()<<"\n";
+#endif
+        d_store.emplace_back(std::move(item));
+    }
+    void resize(size_t n)
+    {
+        std::lock_guard<std::mutex> lock(d_mutex);
+        d_store.resize(n);
+        if (d_buffer_capacity > d_buffer_size)
+            {
+                foreach_unsafe([&](volk_gnsssdr::vector<T>& buffer) {
+                    buffer.reserve(d_buffer_capacity);
+                });
+            }
+        if (d_buffer_size)
+            {
+                foreach_unsafe([&](volk_gnsssdr::vector<T>& buffer) {
+                    buffer.resize(d_buffer_size);
+                });
+            }
+    }
+    void reserve(size_t n)
+    {
+        std::lock_guard<std::mutex> lock(d_mutex);
+        d_store.reserve(n);
+    }
+    size_t size()
+    {
+        std::lock_guard<std::mutex> lock(d_mutex);
+        return d_store.size();
+    }
+    void foreach (std::function<void(volk_gnsssdr::vector<T>&)> fn)
+    {
+        std::lock_guard<std::mutex> lock(d_mutex);
+        foreach_unsafe(fn);
+    }
+    void resize_buffers(size_t n)
+    {
+        std::lock_guard<std::mutex> lock(d_mutex);
+        if (d_buffer_size == n)
+            {
+                return;
+            }
+        d_buffer_size = n;
+        d_buffer_capacity = std::max(d_buffer_capacity, d_buffer_size);
+        if (d_store.empty())
+            {
+                return;
+            }
+        foreach_unsafe([&](volk_gnsssdr::vector<T>& buffer) {
+            buffer.resize(n);
+        });
+    }
+    void reserve_buffers(size_t n)
+    {
+        std::lock_guard<std::mutex> lock(d_mutex);
+        if (d_buffer_capacity >= n)
+            {
+                return;
+            }
+        d_buffer_capacity = n;
+        if (d_store.empty())
+            {
+                return;
+            }
+        foreach_unsafe([&](volk_gnsssdr::vector<T>& buffer) {
+            buffer.reserve(n);
+        });
+    }
+    size_t buffer_size()
+    {
+        std::lock_guard<std::mutex> lock(d_mutex);
+        if (d_store.empty())
+            {
+                return 0;
+            }
+        return d_store[0].size();
+    }
+    size_t buffer_capacity()
+    {
+        std::lock_guard<std::mutex> lock(d_mutex);
+        if (d_store.empty())
+            {
+                return 0;
+            }
+        return d_store[0].capacity();
+    }
+
+private:
+    BufferPool() = default;
     void foreach_unsafe(std::function<void(volk_gnsssdr::vector<T>&)> fn)
     {
         for (auto& it : d_store)

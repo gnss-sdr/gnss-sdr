@@ -206,7 +206,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
             init_cuda_engine();
         }
 #endif
-    BufferPool<gr_complex>::reserve_buffers(d_data_buffer_size);
+    BufferPool<gr_complex>::instance().reserve_buffers(d_data_buffer_size);
 
     // Give a hint to GNU Radio scheduler on how many samples we may want
     // As pcps_acquisition is not inherited from gr::sync_block, This doesn't prevent us
@@ -216,7 +216,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
     if (d_data_buffer_size)
         {
             set_history(d_data_buffer_size - d_samples_to_consume + 1);
-            BufferPool<gr_complex>::reserve_buffers(d_data_buffer_size);
+            BufferPool<gr_complex>::instance().reserve_buffers(d_data_buffer_size);
         }
 }
 
@@ -870,7 +870,7 @@ void pcps_acquisition::handle_threshold_reached(AcquisitionResult& result)
     d_state = 0;
     if (!d_data_buffer.empty())
         {
-            BufferPool<gr_complex>::release(std::move(d_data_buffer));
+            BufferPool<gr_complex>::instance().release(std::move(d_data_buffer));
         }
 
     if (d_acq_parameters.make_2_steps)
@@ -903,7 +903,7 @@ void pcps_acquisition::handle_integration_done(const AcquisitionResult& result)
 {
     if (!d_data_buffer.empty())
         {
-            BufferPool<gr_complex>::release(std::move(d_data_buffer));
+            BufferPool<gr_complex>::instance().release(std::move(d_data_buffer));
         }
     if (d_state != 0)
         {
@@ -1153,7 +1153,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
             d_num_noncoherent_integrations_counter = 0U;
             if (d_data_buffer_size)
                 {
-                    d_data_buffer = BufferPool<gr_complex>::take();
+                    d_data_buffer = BufferPool<gr_complex>::instance().take();
                     d_data_buffer.resize(d_data_buffer_size);
                 }
         }

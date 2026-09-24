@@ -173,7 +173,7 @@ if(ENABLE_CUDA)
         )
     endif()
     set_target_properties(core_receiver PROPERTIES
-        CUDA_SEPARABLE_COMPILATION ON
+        CUDA_SEPARABLE_COMPILATION OFF
         POSITION_INDEPENDENT_CODE ON
     )
     target_compile_definitions(core_receiver PRIVATE -DCUDA_GPU_ACCEL=1)

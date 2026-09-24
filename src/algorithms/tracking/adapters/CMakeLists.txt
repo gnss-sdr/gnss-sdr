@@ -104,7 +104,7 @@ if(ENABLE_CUDA)
         )
     endif()
     set_target_properties(tracking_adapters PROPERTIES
-        CUDA_SEPARABLE_COMPILATION ON
+        CUDA_SEPARABLE_COMPILATION OFF
         POSITION_INDEPENDENT_CODE ON
     )
 endif()

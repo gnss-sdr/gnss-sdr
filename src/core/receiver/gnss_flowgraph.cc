@@ -263,7 +263,7 @@ void GNSSFlowgraph::init()
     channels_count_ = static_cast<int>(channels.size());
     const int max_channels_in_acq = configuration_->property("Channels.in_acquisition", channels_count_);
     // Resize buffer pool to hold shared buffers for all channels
-    BufferPool<gr_complex>::resize(max_channels_in_acq);
+    BufferPool<gr_complex>::instance().resize(max_channels_in_acq);
     for (int i = 0; i < channels_count_; i++)
         {
             std::shared_ptr<GNSSBlockInterface> chan_ = std::move(channels.at(i));

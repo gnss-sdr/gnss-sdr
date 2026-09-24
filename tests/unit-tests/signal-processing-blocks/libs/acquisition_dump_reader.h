@@ -59,7 +59,7 @@ public:
     float threshold{};
     int positive_acq{};
     int doppler_center{};     //!< Doppler grid center (Hz); 0 for dumps that predate this variable
-    bool doppler_narrowed{};  //!< true if the dump was written by an assisted (narrowed) acquisition: 2 columns, {center, center + doppler_max}
+    bool doppler_narrowed{};  //!< true if the dump was written by a narrowed search (fewer candidate bins than the full configured grid)
     unsigned int PRN{};
     unsigned int num_dwells{};
     uint64_t sample_counter{};

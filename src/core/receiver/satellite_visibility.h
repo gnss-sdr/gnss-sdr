@@ -161,6 +161,26 @@ public:
     bool IsSearchVisible(const Gnss_Satellite& sat) const;
     bool IsSearchExcluded(const Gnss_Satellite& sat) const;
 
+    // Predicted Doppler (Hz) for sat on the given signal (e.g. "1B", "5X",
+    // "L5", "7X"), for use as an acquisition search center. Geometric term
+    // from whichever of sat's ephemeris/almanac is usable (same freshness
+    // rules as compute_visible_satellites()), plus the receiver's live
+    // solved clock drift (fix_status.user_clk_drift_ppm) scaled to this
+    // signal's carrier. On success, writes the prediction to doppler_hz and
+    // returns true. Only meaningful with a live PVT fix -- returns false
+    // (leaving doppler_hz untouched) when disabled, no fix is currently
+    // valid, the signal isn't a recognized carrier, or neither ephemeris nor
+    // almanac is currently usable for sat, or the prediction is non-finite.
+    // For GLONASS, sat stands for its FDMA frequency: the prediction uses
+    // the single visible slot on that
+    // frequency and its own carrier, and fails if no slot or more than one
+    // is visible.
+    // Tick() must have observed this fix, at most one second ago on the
+    // sample clock. Older or unanchored fixes require a full-grid search.
+    bool PredictedDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
+        const Monitor_Pvt& fix_status, double receiver_time_s, const Gnss_Satellite& sat, const std::string& signal,
+        double& doppler_hz) const;
+
 private:
     enum class SearchVisibility
     {
@@ -170,6 +190,31 @@ private:
     };
 
     SearchVisibility GetSearchVisibility(const Gnss_Satellite& sat) const;
+
+    // GLONASS part of PredictedDopplerHz(). Resolves which orbital slot
+    // sharing prn's FDMA frequency is visible and computes its geometric
+    // Doppler on band (1: L1, 2: L2) from the ephemeris, or else from the
+    // almanac, at the receiver's ECEF position and velocity. Also returns
+    // that slot's carrier frequency. False unless exactly one slot on the
+    // frequency is visible and it has usable navigation data.
+    bool GlonassGeometricDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
+        const gtime_t& gps_gtime, uint32_t prn, int band, const std::array<double, 3>& rx_pos_m,
+        const std::array<double, 3>& rx_vel_mps, double& geometric_doppler_hz, double& carrier_freq_hz) const;
+
+    // QZSS part of PredictedDopplerHz(). Computes the geometric Doppler on
+    // carrier_freq_hz from the LNAV or CNAV ephemeris, or else from the
+    // almanac, of the satellite transmitting prn (L1 C/B PRNs map to their
+    // nominal PRNs), at the receiver's ECEF position and velocity.
+    bool QzssGeometricDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
+        const gtime_t& gps_gtime, uint32_t prn, const std::array<double, 3>& rx_pos_m,
+        const std::array<double, 3>& rx_vel_mps, double carrier_freq_hz, double& geometric_doppler_hz) const;
+
+    // BeiDou part of PredictedDopplerHz(): use the same validated DNAV,
+    // CNAV1, CNAV2 or fallback almanac orbit as visibility, evaluated on
+    // the requested carrier at the receiver's ECEF position and velocity.
+    bool BeidouGeometricDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
+        const gtime_t& gps_gtime, uint32_t prn, const std::array<double, 3>& rx_pos_m,
+        const std::array<double, 3>& rx_vel_mps, double carrier_freq_hz, double& geometric_doppler_hz) const;
 
     // changed_prns_out, when non-null, receives every (system, PRN) added,
     // updated, or removed since the last check, so Tick() can recompute only

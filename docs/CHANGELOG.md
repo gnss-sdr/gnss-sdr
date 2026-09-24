@@ -66,11 +66,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   implementations using the CPU PCPS block. When enabled, each search stage
   accumulates all `max_dwells` non-coherent integrations before accepting or
   rejecting the strongest peak. This also applies to both stages of
-  `make_two_steps` and to the reduced grid used by `enable_doppler_narrowing`.
-  The default preserves early acceptance; `max_dwells=1` is unchanged.
-  `bit_transition_flag=true` takes precedence and still uses a single
-  double-length dwell. Waiting for all dwells increases acquisition latency.
-  Contributed by @joebre.
+  `make_two_steps` and to narrowed Doppler searches. The default preserves early
+  acceptance; `max_dwells=1` is unchanged. `bit_transition_flag=true` takes
+  precedence and still uses a single double-length dwell. Waiting for all dwells
+  increases acquisition latency. Contributed by @joebre.
 - Improved TOW rollover handling in Telemetry Decoder blocks.
 - Galileo F/NAV and I/NAV ephemerides are now retained independently instead of
   overwriting each other when they have the same PRN. PVT automatically uses the
@@ -147,19 +146,18 @@ All notable changes to GNSS-SDR will be documented in this file.
   to 572 ms (32% less time, 1.48x throughput). Results are mathematically
   equivalent to the previous implementation within normal floating-point
   behavior.
-- New configuration parameter `Acquisition_XX.enable_doppler_narrowing`
-  (default: `false`): when dual-frequency assistance provides an exactly-known
-  Doppler (`GNSS-SDR.assist_dual_frequency_acq=true` and the same satellite is
-  already tracked in the primary band), the PCPS acquisition searches a single
-  Doppler bin at the assisted center, plus one noise-reference bin, instead of
-  the full configured grid, and recalibrates the detection threshold to the
-  reduced hypothesis count when `pfa` is set. Acquisition `.mat` dumps now
-  always include two new `int32` variables, `doppler_center` and
-  `doppler_narrowed`. Narrowed dumps store a 2-column `acq_grid` encoded with
-  `doppler_max = 0` and `doppler_step` set to the configured `doppler_max`, so
-  the generic rule
-  `doppler(col) = -doppler_max + doppler_center + doppler_step * col` decodes
-  both full and narrowed grids. Contributed by @joebre.
+- When dual-frequency assistance provides the Doppler of a satellite already
+  tracked in the primary band (`GNSS-SDR.assist_dual_frequency_acq=true`), the
+  PCPS acquisition in the secondary band now searches a single Doppler bin
+  instead of the full grid, and recalibrates the `pfa`-based threshold to the
+  number of bins searched. New parameter
+  `Acquisition_XX.reference_bin_min_sidelobes` (default: `4`) sets the Doppler
+  separation, in correlation sidelobes, that decides whether a full-grid CFAR
+  search needs dedicated noise-reference bins. Acquisition `.mat` dumps include
+  `doppler_center`, `doppler_narrowed`, and `doppler_num_candidates`: the first
+  `doppler_num_candidates` columns of `acq_grid` are Doppler bins at
+  `doppler_center - doppler_max + doppler_step * col`, and any remaining columns
+  are noise-reference bins. Contributed by @joebre.
 - Added an optional visibility-aware acquisition search, enabled with
   `GNSS-SDR.enable_visibility_aware_search=true` (default `false`, which leaves
   the existing search order untouched). Once a receiver position is available,

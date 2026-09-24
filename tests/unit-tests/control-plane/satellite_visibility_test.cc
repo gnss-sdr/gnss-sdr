@@ -16,6 +16,7 @@
 
 #include "channel_status_msg_receiver.h"
 #include "geofunctions.h"
+#include "gnss_frequencies.h"
 #include "gnss_sdr_sample_counter.h"
 #include "hybrid_observables_gs.h"
 #include "in_memory_configuration.h"
@@ -32,6 +33,7 @@
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/null_source.h>
 #include <gtest/gtest.h>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <memory>
@@ -171,6 +173,34 @@ protected:
         return elevation;
     }
 
+    double AlmanacRangeRateDoppler(const alm_t& almanac, double carrier_hz) const
+    {
+        const double position[3] = {fix.latitude * D2R, fix.longitude * D2R, fix.height};
+        const double enu_velocity[3] = {fix.vel_e, fix.vel_n, fix.vel_u};
+        double receiver[3];
+        double velocity[3];
+        pos2ecef(position, receiver);
+        enu2ecef(position, enu_velocity, velocity);
+        const auto epoch = gpst2time(fix.week, fix.RX_time);
+        const double dt = 0.1;
+        double ranges[2]{};
+        for (int sample = 0; sample < 2; ++sample)
+            {
+                const double offset = sample == 0 ? -dt : dt;
+                double satellite[3];
+                double clock_bias;
+                alm2pos(timeadd(epoch, offset), &almanac, satellite, &clock_bias);
+                double squared_range = 0.0;
+                for (int axis = 0; axis < 3; ++axis)
+                    {
+                        const double delta = satellite[axis] - receiver[axis] - velocity[axis] * offset;
+                        squared_range += delta * delta;
+                    }
+                ranges[sample] = std::sqrt(squared_range);
+            }
+        return -(ranges[1] - ranges[0]) / (2.0 * dt) / SPEED_OF_LIGHT_M_S * carrier_hz - fix.user_clk_drift_ppm * 1.0e-6 * carrier_hz;
+    }
+
     std::shared_ptr<InMemoryConfiguration> configuration;
     std::shared_ptr<VisibilityTestPvt> pvt;
     Monitor_Pvt fix{};
@@ -283,6 +313,155 @@ TEST_F(SatelliteVisibilityTest, StaleFixReclassifiesRisingSatellite)
     EXPECT_TRUE(visibility.Tick(pvt, fix, 21600.0));
     EXPECT_TRUE(visibility.IsVisible(satellite));
     EXPECT_FALSE(visibility.IsExcluded(satellite));
+}
+
+
+TEST_F(SatelliteVisibilityTest, DopplerPredictionRejectsRetainedFix)
+{
+    SetGpsAlmanac(100000);
+    pvt->gps_alm.at(1).M_0 = -0.5;
+    SatelliteVisibility visibility(configuration);
+    const Gnss_Satellite satellite("GPS", 1);
+    double doppler = 123.0;
+    EXPECT_FALSE(visibility.PredictedDopplerHz(pvt, fix, 0.0, satellite, "1C", doppler));
+    EXPECT_DOUBLE_EQ(123.0, doppler);
+    visibility.Tick(pvt, fix, 0.0);
+    EXPECT_TRUE(visibility.PredictedDopplerHz(pvt, fix, 1.0, satellite, "1C", doppler));
+    doppler = 123.0;
+    // Expiry must work even before another visibility tick arrives.
+    EXPECT_FALSE(visibility.PredictedDopplerHz(pvt, fix, 1.1, satellite, "1C", doppler));
+    EXPECT_DOUBLE_EQ(123.0, doppler);
+    visibility.Tick(pvt, fix, 21600.0);
+    ASSERT_TRUE(visibility.IsVisible(satellite));
+    EXPECT_FALSE(visibility.PredictedDopplerHz(pvt, fix, 21600.0, satellite, "1C", doppler));
+    EXPECT_DOUBLE_EQ(123.0, doppler);
+    fix.RX_time += 21600.0;
+    visibility.Tick(pvt, fix, 21600.0);
+    EXPECT_TRUE(visibility.PredictedDopplerHz(pvt, fix, 21600.0, satellite, "1C", doppler));
+}
+
+
+TEST_F(SatelliteVisibilityTest, DopplerPredictionFreshnessCrossesWeekRollover)
+{
+    SetGpsAlmanac(604799);
+    fix.RX_time = 604799.5;
+    SatelliteVisibility visibility(configuration);
+    const Gnss_Satellite satellite("GPS", 1);
+    double doppler = 0.0;
+    visibility.Tick(pvt, fix, 20.0);
+    fix.RX_time = 0.0;
+    ++fix.week;
+    // A new epoch is not anchored until Tick observes it.
+    EXPECT_FALSE(visibility.PredictedDopplerHz(pvt, fix, 20.5, satellite, "1C", doppler));
+    visibility.Tick(pvt, fix, 20.5);
+    EXPECT_TRUE(visibility.PredictedDopplerHz(pvt, fix, 21.0, satellite, "1C", doppler));
+    visibility.Tick(pvt, fix, 21.6);
+    EXPECT_FALSE(visibility.PredictedDopplerHz(pvt, fix, 21.6, satellite, "1C", doppler));
+}
+
+
+TEST_F(SatelliteVisibilityTest, DopplerPredictionRejectsSupersededFix)
+{
+    SetGpsAlmanac(100000);
+    SatelliteVisibility visibility(configuration);
+    const Gnss_Satellite satellite("GPS", 1);
+    double doppler = 0.0;
+    visibility.Tick(pvt, fix, 0.0);
+    ASSERT_TRUE(visibility.PredictedDopplerHz(pvt, fix, 0.0, satellite, "1C", doppler));
+    const auto utc = gpst2utc(gpst2time(fix.week, fix.RX_time));
+    visibility.SetCommandReference(utc.time, std::array<float, 3>{{1.0F, 2.0F, 3.0F}}, fix, 0.0);
+    EXPECT_FALSE(visibility.PredictedDopplerHz(pvt, fix, 0.0, satellite, "1C", doppler));
+    fix.RX_time += 0.5;
+    visibility.Tick(pvt, fix, 0.5);
+    EXPECT_TRUE(visibility.PredictedDopplerHz(pvt, fix, 0.5, satellite, "1C", doppler));
+}
+
+
+TEST_F(SatelliteVisibilityTest, BeidouAlmanacDopplerMatchesRangeRate)
+{
+    SetConstellationData(100000);
+    pvt->bds_eph.clear();
+    fix.latitude = 40.0;
+    fix.longitude = 116.0;
+    fix.vel_e = 12.0;
+    fix.vel_n = -5.0;
+    fix.vel_u = 1.0;
+    fix.user_clk_drift_ppm = 0.15;
+    auto almanac = pvt->bds_alm.at(11);
+    almanac.M_0 = 0.7;
+    almanac.omega = 0.4;
+    almanac.OMEGA_0 = 1.2;
+    almanac.OMEGAdot = -8e-9;
+    almanac.delta_i = 0.01;
+    almanac.ecc = 0.01;
+    SatelliteVisibility visibility(configuration);
+    visibility.Tick(pvt, fix, 0.0);
+    // Cover MEO/IGSO and both GEO PRN ranges, whose reference inclination is zero.
+    for (const int prn : {3, 11, 60})
+        {
+            SCOPED_TRACE(prn);
+            almanac.PRN = prn;
+            almanac.sqrtA = prn == 11 ? 5282.0 : 6493.0;
+            pvt->bds_alm[prn] = almanac;
+            for (const std::string signal : {"B1", "B3"})
+                {
+                    SCOPED_TRACE(signal);
+                    double doppler = 0.0;
+                    ASSERT_TRUE(visibility.PredictedDopplerHz(pvt, fix, 0.0, Gnss_Satellite("Beidou", prn), signal, doppler));
+                    EXPECT_NEAR(AlmanacRangeRateDoppler(alm_to_rtklib(almanac), SIGNAL_FREQ_MAP.at(signal)), doppler, 0.01);
+                }
+        }
+}
+
+
+TEST_F(SatelliteVisibilityTest, GpsGalileoAlmanacDopplerMatchesRangeRate)
+{
+    SetConstellationData(100000);
+    SatelliteVisibility visibility(configuration);
+    visibility.Tick(pvt, fix, 0.0);
+    auto& gps = pvt->gps_alm.at(2);
+    gps.M_0 = 0.2;
+    gps.omega = 0.3;
+    gps.OMEGA_0 = 0.4;
+    gps.OMEGAdot = -2e-9;
+    auto& galileo = pvt->gal_alm.at(2);
+    galileo.M_0 = gps.M_0;
+    galileo.omega = gps.omega;
+    galileo.OMEGA_0 = gps.OMEGA_0;
+    galileo.OMEGAdot = gps.OMEGAdot;
+    double doppler = 0.0;
+    ASSERT_TRUE(visibility.PredictedDopplerHz(pvt, fix, 0.0, Gnss_Satellite("GPS", 2), "1C", doppler));
+    EXPECT_NEAR(AlmanacRangeRateDoppler(alm_to_rtklib(gps, fix.week), FREQ1), doppler, 0.01);
+    ASSERT_TRUE(visibility.PredictedDopplerHz(pvt, fix, 0.0, Gnss_Satellite("Galileo", 2), "1B", doppler));
+    EXPECT_NEAR(AlmanacRangeRateDoppler(alm_to_rtklib(galileo, fix.week), FREQ1), doppler, 0.01);
+}
+
+
+TEST_F(SatelliteVisibilityTest, BeidouEphemerisDopplerUsesBdtAcrossWeekRollover)
+{
+    SetConstellationData(604000);
+    fix.RX_time = 5.0;
+    ++fix.week;
+    auto& ephemeris = pvt->bds_eph.at(10);
+    ephemeris.M_0 = 0.7;
+    ephemeris.omega = 0.4;
+    ephemeris.OMEGA_0 = 1.2;
+    ephemeris.i_0 = 0.95;
+    ephemeris.OMEGAdot = -8e-9;
+    ephemeris.ecc = 0.01;
+    SatelliteVisibility visibility(configuration);
+    visibility.Tick(pvt, fix, 0.0);
+    double doppler = 0.0;
+    ASSERT_TRUE(visibility.PredictedDopplerHz(pvt, fix, 0.0, Gnss_Satellite("Beidou", 10), "B1", doppler));
+    // GPST Sunday +5 s is still BDT Saturday, at TOW 604791 s.
+    const double expected = ephemeris.predicted_doppler(604791.0, fix.latitude, fix.longitude, fix.height, 0.0, 0.0, 0.0, 1);
+    // RTKLIB positions now yield velocity by central difference; allow its
+    // sub-millihertz numerical error relative to the native analytic model.
+    constexpr double tolerance_hz = 1e-3;
+    EXPECT_NEAR(expected, doppler, tolerance_hz);
+    // Keep the tolerance well below the error caused by passing GPST as BDT.
+    const double wrong_time_doppler = ephemeris.predicted_doppler(fix.RX_time, fix.latitude, fix.longitude, fix.height, 0.0, 0.0, 0.0, 1);
+    EXPECT_GT(std::abs(expected - wrong_time_doppler), 100.0 * tolerance_hz);
 }
 
 

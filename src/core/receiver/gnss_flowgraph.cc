@@ -1825,14 +1825,43 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                        << ", Signal " << channels_[current_channel]->get_signal().get_signal_str();
                             if (assistance_available == true && configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_))
                                 {
-                                    // Doppler is known from the tracked assisting band (already
-                                    // projected by search_next_signal()): search a single Doppler bin.
-                                    channels_[current_channel]->assist_acquisition_doppler(estimated_doppler, 0);
+                                    // Doppler is exactly known from the already-tracked assisting
+                                    // frequency (search_next_signal() returns it already projected
+                                    // to this band): restrict the search to a single Doppler bin.
+                                    channels_[current_channel]->assist_acquisition_doppler(estimated_doppler, 1);
                                 }
                             else
                                 {
-                                    // set Doppler center to 0 Hz and search the full Doppler range
-                                    channels_[current_channel]->assist_acquisition_doppler(0, 1);
+                                    // No dual-frequency assist: fall back to a geometric Doppler
+                                    // prediction from ephemeris/almanac (SatelliteVisibility), if
+                                    // this is the primary signal of a satellite already classified
+                                    // visible (for GLONASS, any slot on its FDMA frequency) and a
+                                    // live PVT fix currently exists. No-op (stays
+                                    // false) unless visibility-aware search is enabled --
+                                    // PredictedDopplerHz() itself requires a live fix for now; the
+                                    // AGNSS-reference (no-fix) case is a follow-up.
+                                    bool doppler_predicted = false;
+                                    double predicted_doppler_hz = 0.0;
+                                    if (is_primary_freq && satellite_visibility_ && satellite_visibility_->enabled())
+                                        {
+                                            const auto pvt_ptr = get_pvt();
+                                            const Gnss_Satellite& sat = channels_[current_channel]->get_signal().get_satellite();
+                                            if (pvt_ptr && satellite_visibility_->IsSearchVisible(sat))
+                                                {
+                                                    double receiver_time_s = 0.0;
+                                                    const Monitor_Pvt fix_status = channels_status_->get_current_status_pvt(&receiver_time_s);
+                                                    doppler_predicted = satellite_visibility_->PredictedDopplerHz(pvt_ptr, fix_status, receiver_time_s, sat, channels_[current_channel]->get_signal().get_signal_str(), predicted_doppler_hz);
+                                                }
+                                        }
+                                    if (doppler_predicted)
+                                        {
+                                            channels_[current_channel]->assist_acquisition_doppler(predicted_doppler_hz, 1);
+                                        }
+                                    else
+                                        {
+                                            // set Doppler center to 0 Hz and search the full Doppler range
+                                            channels_[current_channel]->assist_acquisition_doppler(0, 0);
+                                        }
                                 }
 #if ENABLE_FPGA
                             if (enable_fpga_offloading_)
@@ -1973,6 +2002,9 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                         acq_channels_count_++;
                         DLOG(INFO) << "Channel " << who << " Starting acquisition " << gs.get_satellite() << ", Signal " << gs.get_signal_str();
                         channels_[who]->set_signal(channels_[who]->get_signal());
+                        // This retry bypasses acquisition_manager(). An assisted
+                        // center retained from before tracking may now be stale.
+                        channels_[who]->assist_acquisition_doppler(0, 0);
                         MarkAcquisitionAttempt(gs, receiver_time_s);
 
 #if ENABLE_FPGA

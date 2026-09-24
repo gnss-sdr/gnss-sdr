@@ -454,7 +454,14 @@ TEST_F(SatelliteVisibilityTest, BeidouEphemerisDopplerUsesBdtAcrossWeekRollover)
     double doppler = 0.0;
     ASSERT_TRUE(visibility.PredictedDopplerHz(pvt, fix, 0.0, Gnss_Satellite("Beidou", 10), "B1", doppler));
     // GPST Sunday +5 s is still BDT Saturday, at TOW 604791 s.
-    EXPECT_NEAR(ephemeris.predicted_doppler(604791.0, fix.latitude, fix.longitude, fix.height, 0.0, 0.0, 0.0, 1), doppler, 1e-9);
+    const double expected = ephemeris.predicted_doppler(604791.0, fix.latitude, fix.longitude, fix.height, 0.0, 0.0, 0.0, 1);
+    // RTKLIB positions now yield velocity by central difference; allow its
+    // sub-millihertz numerical error relative to the native analytic model.
+    constexpr double tolerance_hz = 1e-3;
+    EXPECT_NEAR(expected, doppler, tolerance_hz);
+    // Keep the tolerance well below the error caused by passing GPST as BDT.
+    const double wrong_time_doppler = ephemeris.predicted_doppler(fix.RX_time, fix.latitude, fix.longitude, fix.height, 0.0, 0.0, 0.0, 1);
+    EXPECT_GT(std::abs(expected - wrong_time_doppler), 100.0 * tolerance_hz);
 }
 
 

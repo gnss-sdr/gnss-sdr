@@ -141,9 +141,15 @@ void beidou_b2a_telemetry_decoder_gs::publish_navigation(double cn0_db_hz)
             auto eph = std::make_shared<Beidou_Cnav1_Ephemeris>(d_nav.get_ephemeris());
             eph->PRN = d_satellite.get_PRN();
             message_port_pub(pmt::mp("telemetry"), pmt::make_any(eph));
+#if __cplusplus == 201103L
+            const int default_precision = std::cout.precision();
+#else
+            const auto default_precision{std::cout.precision()};
+#endif
             std::cout << TEXT_MAGENTA << "New BeiDou B-CNAV2 ephemeris in channel " << d_channel
                       << " from satellite " << d_satellite
-                      << " with CN0=" << std::setprecision(2) << cn0_db_hz << " dB-Hz" << TEXT_RESET << std::endl;
+                      << " with CN0=" << std::setprecision(2) << cn0_db_hz << std::setprecision(default_precision)
+                      << " dB-Hz" << TEXT_RESET << std::endl;
             LOG(INFO) << "New BeiDou B-CNAV2 ephemeris from PRN " << d_satellite.get_PRN();
         }
     if (d_enable_navdata_monitor && !d_nav.get_last_nav_bits().empty())

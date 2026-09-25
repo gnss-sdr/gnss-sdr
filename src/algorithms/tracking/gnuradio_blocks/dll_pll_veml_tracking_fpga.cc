@@ -1,7 +1,7 @@
 /*!
  * \file dll_pll_veml_tracking_fpga.cc
  * \brief Implementation of a code DLL + carrier PLL tracking block using an FPGA
- * \author Marc Majoral, 2019. marc.majoral(at)cttc.es
+ * \author Marc Majoral, 2019-2026. marc.majoral(at)cttc.es
  * \author Javier Arribas, 2019. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
@@ -14,7 +14,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -26,8 +26,10 @@
 #include "GPS_L5.h"
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
+#include "Galileo_E6.h"
 #include "MATH_CONSTANTS.h"
 #include "fpga_multicorrelator.h"
+#include "galileo_e6_signal_replica.h"
 #include "gnss_satellite.h"
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_filesystem.h"
@@ -169,6 +171,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     map_signal_pretty_name["2G"] = "L2 C/A";
     map_signal_pretty_name["5X"] = "E5a";
     map_signal_pretty_name["L5"] = "L5";
+    map_signal_pretty_name["E6"] = "E6";
 
     d_signal_pretty_name = map_signal_pretty_name[d_signal_type];
 
@@ -323,6 +326,29 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                             d_secondary_code_length = static_cast<uint32_t>(GALILEO_E5A_I_SECONDARY_CODE_LENGTH);
                             d_secondary_code_string = GALILEO_E5A_I_SECONDARY_CODE;
                             d_signal_pretty_name = d_signal_pretty_name + "I";
+                        }
+                }
+            else if (d_signal_type == "E6")
+                {
+                    d_signal_carrier_freq = GALILEO_E6_FREQ_HZ;
+                    d_code_period = GALILEO_E6_CODE_PERIOD_S;
+                    d_code_chip_rate = GALILEO_E6_B_CODE_CHIP_RATE_CPS;
+                    // Galileo E6 has 1 trk symbol (4 ms) per tlm bit, no symbol integration required
+                    d_symbols_per_bit = 1;
+                    d_correlation_length_ms = GALILEO_E6_CODE_PERIOD_MS;
+                    d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
+                    d_trk_parameters.slope = 1.0;
+                    d_trk_parameters.y_intercept = 1.0;
+                    if (d_trk_parameters.track_pilot)
+                        {
+                            d_secondary = true;
+                            d_secondary_code_length = static_cast<uint32_t>(GALILEO_E6_C_SECONDARY_CODE_LENGTH_CHIPS);
+                            d_signal_pretty_name = d_signal_pretty_name + "C";
+                        }
+                    else
+                        {
+                            d_secondary = false;
+                            d_signal_pretty_name = d_signal_pretty_name + "B";
                         }
                 }
             else
@@ -1397,6 +1423,15 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
                                             d_multicorrelator_fpga->initialize_secondary_code(0, &d_secondary_code_string);
                                         }
                                 }
+                        }
+                }
+            else if (d_systemName == "Galileo" && d_signal_type == "E6")
+                {
+                    if (d_trk_parameters.track_pilot)
+                        {
+                            d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+
+                            d_secondary_code_string = galileo_e6_c_secondary_code(d_acquisition_gnss_synchro->PRN);
                         }
                 }
 

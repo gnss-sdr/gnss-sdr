@@ -19,6 +19,7 @@
 #include "Galileo_E6.h"
 #include "concurrent_queue.h"
 #include "fir_filter.h"
+#include "gen_signal_source.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"

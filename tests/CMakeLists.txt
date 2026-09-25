@@ -681,11 +681,24 @@ endif()
 # Unit testing
 ################################################################################
 if(ENABLE_UNIT_TESTING)
+    # The unit tests are #included into a few aggregate translation units
+    # (one per category) rather than into a single one, so that no single
+    # compilation unit becomes too large for the compiler.
+    set(RUN_TESTS_SOURCES
+        ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_core.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_system_parameters.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_acquisition.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_tracking.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_common_flags.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_pvt.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_osnma.cc
+    )
     if(USE_CMAKE_TARGET_SOURCES)
         add_executable(run_tests)
-        target_sources(run_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
+        target_sources(run_tests PRIVATE ${RUN_TESTS_SOURCES})
     else()
-        add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
+        add_executable(run_tests ${RUN_TESTS_SOURCES})
     endif()
 
     target_link_libraries(run_tests

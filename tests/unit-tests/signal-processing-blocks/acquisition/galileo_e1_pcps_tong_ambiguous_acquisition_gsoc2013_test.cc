@@ -16,6 +16,7 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "acquisition_interface.h"
 #include "concurrent_queue.h"
 #include "configuration_interface.h"
 #include "fir_filter.h"

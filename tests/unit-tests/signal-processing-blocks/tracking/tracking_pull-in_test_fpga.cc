@@ -25,6 +25,7 @@
 #include "Galileo_E5a.h"
 #include "acquisition_msg_rx.h"
 #include "concurrent_queue.h"
+#include "fpga_switch.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_filesystem.h"

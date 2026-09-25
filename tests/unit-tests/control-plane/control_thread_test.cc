@@ -22,6 +22,7 @@
 #include "concurrent_queue.h"
 #include "control_thread.h"
 #include "gnss_sdr_filesystem.h"
+#include "gnss_sdr_flags.h"
 #include "gnss_sdr_make_unique.h"
 #include "in_memory_configuration.h"
 #include <boost/exception/diagnostic_information.hpp>
@@ -48,6 +49,34 @@ class ControlThreadTest : public ::testing::Test
 {
 public:
     static int stop_receiver();
+
+protected:
+    // These tests do not exercise the keyboard listener. It blocks in
+    // std::cin.get() and ControlThread::run() only detaches it on exit, so
+    // when stdin is a terminal it outlives the test and leaves a thread
+    // behind, which breaks the death tests that run later in run_tests.
+    void SetUp() override
+    {
+#if USE_GLOG_AND_GFLAGS
+        keyboard_flag_ = FLAGS_keyboard;
+        FLAGS_keyboard = false;
+#else
+        keyboard_flag_ = absl::GetFlag(FLAGS_keyboard);
+        absl::SetFlag(&FLAGS_keyboard, false);
+#endif
+    }
+
+    void TearDown() override
+    {
+#if USE_GLOG_AND_GFLAGS
+        FLAGS_keyboard = keyboard_flag_;
+#else
+        absl::SetFlag(&FLAGS_keyboard, keyboard_flag_);
+#endif
+    }
+
+private:
+    bool keyboard_flag_ = true;
 };
 
 

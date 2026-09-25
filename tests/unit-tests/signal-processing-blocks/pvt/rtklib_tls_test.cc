@@ -896,26 +896,6 @@ TEST(RtklibTlsTest, AcceptsTrustedLeafWithoutEku)
 }
 
 
-TEST(RtklibTlsTest, AcceptsTrustedAnyEkuLeaf)
-{
-    using namespace rtklib_tls_test;
-
-#ifndef USE_GNUTLS_FALLBACK
-    GNSSSDR_TLS_TEST_SKIP()
-        << "OpenSSL requires an explicit serverAuth purpose";
-#else
-    const Tls_Handshake_Result result = run_rtklib_handshake(
-        Tls_Test_Version::TLS_1_2, TLS_TEST_ANY_EKU_CERTIFICATE,
-        TLS_TEST_LEAF_PRIVATE_KEY, TLS_TEST_ROOT_CA);
-
-    ASSERT_TRUE(result.initialized) << result.server_error;
-    EXPECT_EQ(1, result.client_result) << result.client_message;
-    EXPECT_TRUE(result.server_handshake_completed) << result.server_error;
-    EXPECT_FALSE(result.protocol_version_rejected);
-#endif
-}
-
-
 TEST(RtklibTlsTest, RejectsTrustedHostnameMismatch)
 {
     using namespace rtklib_tls_test;

@@ -360,8 +360,6 @@ void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::wait_message()
 
     while (!stop)
         {
-            acquisition->reset();
-
             start = std::chrono::system_clock::now();
 
             try
@@ -379,6 +377,11 @@ void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::wait_message()
             mean_acq_time_us += elapsed_seconds.count() * 1e6;
 
             process_message();
+
+            if (!stop)
+                {
+                    acquisition->reset();  // arm the next realization
+                }
         }
 }
 

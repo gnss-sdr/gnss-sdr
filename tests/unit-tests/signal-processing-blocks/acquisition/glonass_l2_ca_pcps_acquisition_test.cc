@@ -369,8 +369,6 @@ void GlonassL2CaPcpsAcquisitionTest::wait_message()
 
     while (!stop)
         {
-            acquisition->reset();
-
             gettimeofday(&tv, NULL);
             begin = tv.tv_sec * 1e6 + tv.tv_usec;
 
@@ -382,6 +380,11 @@ void GlonassL2CaPcpsAcquisitionTest::wait_message()
             mean_acq_time_us += (end - begin);
 
             process_message();
+
+            if (!stop)
+                {
+                    acquisition->reset();  // arm the next realization
+                }
         }
 }
 
@@ -593,6 +596,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResultsProbabilities)
 
             acquisition->set_local_code();
 
+            acquisition->reset();
             start_queue();
 
             EXPECT_NO_THROW({

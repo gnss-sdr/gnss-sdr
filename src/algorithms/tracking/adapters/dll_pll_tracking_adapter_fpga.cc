@@ -7,7 +7,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2025  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -20,10 +20,12 @@
 #include "GPS_L5.h"
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
+#include "Galileo_E6.h"
 #include "configuration_interface.h"
 #include "display.h"
 #include "galileo_e1_signal_replica.h"
 #include "galileo_e5_signal_replica.h"
+#include "galileo_e6_signal_replica.h"
 #include "gps_l2c_signal_replica.h"
 #include "gps_l5_signal_replica.h"
 #include "gps_sdr_signal_replica.h"
@@ -84,10 +86,11 @@ tracking_fpga_signal_info get_tracking_fpga_signal_info(signal_flag sig_flag)
             return {'E', {'1', 'B', '\0'}, "1B", GALILEO_E1_CODE_CHIP_RATE_CPS, GALILEO_E1_B_CODE_LENGTH_CHIPS, GALILEO_E1_NUMBER_OF_CODES, 2};
         case GAL_E5a:
             return {'E', {'5', 'X', '\0'}, "5X", GALILEO_E5A_CODE_CHIP_RATE_CPS, GALILEO_E5A_CODE_LENGTH_CHIPS, GALILEO_E5A_NUMBER_OF_CODES, 1};
+        case GAL_E6:
+            return {'E', {'E', '6', '\0'}, "E6", GALILEO_E6_B_CODE_CHIP_RATE_CPS, GALILEO_E6_B_CODE_LENGTH_CHIPS, GALILEO_E6_NUMBER_OF_CODES, 1};
         default:
             break;
         }
-
     return {};
 }
 
@@ -112,6 +115,7 @@ const std::map<std::string, std::string> DllPllTrackingAdapterFpga::signal_to_de
     {"L5", "multicorrelator_resampler_3_1_AXI"},
     {"1B", "multicorrelator_resampler_5_1_AXI"},
     {"5X", "multicorrelator_resampler_3_1_AXI"},
+    {"E6", "multicorrelator_resampler_3_1_AXI"},
 };
 
 const std::map<std::string, std::string> DllPllTrackingAdapterFpga::signal_to_alternative_device_ = {
@@ -265,6 +269,24 @@ void DllPllTrackingAdapterFpga::configure_signal_parameters(const ConfigurationI
                 }
             warn_narrow_bw("Galileo E5a", trk_params_);
             break;
+        case GAL_E6:
+            if (trk_params_.extend_correlation_symbols < 1)
+                {
+                    trk_params_.extend_correlation_symbols = 1;
+                    std::cout << TEXT_RED
+                              << "WARNING: Galileo E6. extend_correlation_symbols must be >= 1. "
+                              << "Set to 1 symbol (1 ms)." << TEXT_RESET << '\n';
+                }
+            else if (!trk_params_.track_pilot && trk_params_.extend_correlation_symbols > 1)
+                {
+                    trk_params_.extend_correlation_symbols = 1;
+                    std::cout << TEXT_RED
+                              << "WARNING: Galileo E6. Extended coherent integration is only supported "
+                              << "when tracking the pilot component. Set to 1 ms (1 symbol)."
+                              << TEXT_RESET << '\n';
+                }
+            warn_narrow_bw("Galileo E6", trk_params_);
+            break;
         default:
             break;
         }
@@ -321,7 +343,7 @@ void DllPllTrackingAdapterFpga::generate_prn_codes()
         volk_gnsssdr_malloc(code_samples * sig_info.num_prns * sizeof(int32_t),
             volk_gnsssdr_get_alignment()));
 
-    if (trk_params_.track_pilot && (sig_flag_ == GAL_1B || sig_flag_ == GAL_E5a || sig_flag_ == GPS_L5))
+    if (trk_params_.track_pilot && (sig_flag_ == GAL_1B || sig_flag_ == GAL_E5a || sig_flag_ == GPS_L5 || sig_flag_ == GAL_E6))
         {
             data_codes_ptr_ = static_cast<int32_t*>(
                 volk_gnsssdr_malloc(code_samples * sig_info.num_prns * sizeof(int32_t),
@@ -455,6 +477,37 @@ void DllPllTrackingAdapterFpga::generate_prn_codes()
                     }
             }
             break;
+        case GAL_E6:
+            {
+                volk_gnsssdr::vector<float> ca_codes_f(code_length_chips, 0.0F);
+                volk_gnsssdr::vector<float> data_codes_f(code_length_chips, 0.0F);
+                for (uint32_t prn = 1; prn <= sig_info.num_prns; prn++)
+                    {
+                        if (trk_params_.track_pilot)
+                            {
+                                galileo_e6_c_code_gen_float_primary(ca_codes_f, prn);
+                                galileo_e6_b_code_gen_float_primary(data_codes_f, prn);
+                            }
+                        else
+                            {
+                                galileo_e6_b_code_gen_float_primary(ca_codes_f, prn);
+                            }
+                        for (uint32_t s = 0; s < code_length_chips; s++)
+                            {
+                                int32_t pilot = (ca_codes_f[s] < 0) ? 0 : 1;
+                                pilot |= LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY;
+                                prn_codes_ptr_[code_length_chips * (prn - 1) + s] = pilot;
+
+                                if (trk_params_.track_pilot)
+                                    {
+                                        int32_t data = (data_codes_f[s] < 0) ? 0 : 1;
+                                        data |= LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY |
+                                                LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT;
+                                        data_codes_ptr_[code_length_chips * (prn - 1) + s] = data;
+                                    }
+                            }
+                    }
+            }
         default:
             break;
         }

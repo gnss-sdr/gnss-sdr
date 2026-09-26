@@ -560,6 +560,10 @@ std::unique_ptr<AcquisitionInterface> get_acq_block(
         {
             return std::make_unique<PcpsAcquisitionAdapterFpga>(configuration, role, implementation, in_streams, out_streams, GAL_E5b);
         }
+    else if (implementation == "Galileo_E6_PCPS_Acquisition_FPGA")
+        {
+            return std::make_unique<PcpsAcquisitionAdapterFpga>(configuration, role, implementation, in_streams, out_streams, GAL_E6);
+        }
 #endif
 
     return nullptr;
@@ -679,6 +683,10 @@ std::unique_ptr<TrackingInterface> get_trk_block(
     else if (implementation == "Galileo_E5a_DLL_PLL_Tracking_FPGA")
         {
             return std::make_unique<DllPllTrackingAdapterFpga>(configuration, role, implementation, in_streams, out_streams, GAL_E5a);
+        }
+    else if (implementation == "Galileo_E6_DLL_PLL_Tracking_FPGA")
+        {
+            return std::make_unique<DllPllTrackingAdapterFpga>(configuration, role, implementation, in_streams, out_streams, GAL_E6);
         }
 #endif
 

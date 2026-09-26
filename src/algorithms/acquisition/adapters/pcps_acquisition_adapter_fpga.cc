@@ -7,7 +7,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2025  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -21,9 +21,11 @@
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
 #include "Galileo_E5b.h"
+#include "Galileo_E6.h"
 #include "configuration_interface.h"
 #include "galileo_e1_signal_replica.h"
 #include "galileo_e5_signal_replica.h"
+#include "galileo_e6_signal_replica.h"
 #include "gnss_sdr_fft.h"
 #include "gnss_sdr_flags.h"
 #include "gps_l2c_signal_replica.h"
@@ -82,6 +84,8 @@ fpga_signal_info get_fpga_signal_info(signal_flag sig_flag)
             return {GALILEO_E5A_CODE_CHIP_RATE_CPS, GALILEO_E5A_CODE_LENGTH_CHIPS, 0, 13, ACQ_BUFF_1, GALILEO_E5A_NUMBER_OF_CODES};
         case GAL_E5b:
             return {GALILEO_E5B_CODE_CHIP_RATE_CPS, GALILEO_E5B_CODE_LENGTH_CHIPS, 0, 13, ACQ_BUFF_1, GALILEO_E5B_NUMBER_OF_CODES};
+        case GAL_E6:
+            return {GALILEO_E6_B_CODE_CHIP_RATE_CPS, GALILEO_E6_B_CODE_LENGTH_CHIPS, 0, 13, ACQ_BUFF_1, GALILEO_E6_NUMBER_OF_CODES};
         default:
             break;
         }
@@ -171,6 +175,10 @@ void generate_code(signal_flag sig_flag,
                         signal[1] = 'Q';
                     }
                 galileo_e5_b_code_gen_complex_sampled(code, prn, signal, acq_parameters.fs_in, 0);
+            }
+        case GAL_E6:
+            {
+                galileo_e6_b_code_gen_complex_sampled(code, prn, acq_parameters.fs_in, 0);
             }
             break;
         default:

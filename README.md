@@ -27,10 +27,10 @@ In the L1 band:
 - &#128752; GPS L1 C/A (centered at 1575.420 MHz) ✅
 - &#128752; Galileo E1b/c (centered at 1575.420 MHz) ✅
 - &#128752; BeiDou B1C (centered at 1575.420 MHz) ✅
-- &#128752; BeiDou B1I (centered at 1561.098 MHz) ✅
 - &#128752; QZSS L1 C/A and C/B, where available (centered at 1575.420 MHz) ✅
 - &#128752; SBAS L1 (EGNOS and WAAS, centered at 1575.420 MHz) — navigation
   message decoding only; SBAS satellites are not yet used as ranging sources
+- &#128752; BeiDou B1I (centered at 1561.098 MHz) ✅
 
 In the E6 band:
 
@@ -87,6 +87,7 @@ information about this open-source, software-defined GNSS receiver.
     - [Clone GNSS-SDR's Git repository](#clone-gnss-sdrs-git-repository)
     - [Build and install GNSS-SDR](#build-and-install-gnss-sdr)
       - [Build OSMOSDR support (OPTIONAL)](#build-osmosdr-support-optional)
+      - [Build BladeRF support (OPTIONAL)](#build-bladerf-support-optional)
       - [Build FMCOMMS2 based SDR Hardware support (OPTIONAL)](#build-fmcomms2-based-sdr-hardware-support-optional)
       - [Build OpenCL support (OPTIONAL)](#build-opencl-support-optional)
       - [Build CUDA support (OPTIONAL)](#build-cuda-support-optional)

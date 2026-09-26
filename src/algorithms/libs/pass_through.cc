@@ -41,6 +41,18 @@ Pass_Through::Pass_Through(const ConfigurationInterface* configuration,
 {
     const std::string default_item_type("gr_complex");
     item_type_ = configuration->property(role + ".item_type", default_item_type);
+    inverted_spectrum = configuration->property(role + ".inverted_spectrum", false);
+    const uint64_t max_source_buffer_samples = configuration->property("GNSS-SDR.max_source_buffer_samples", 0);
+    uint64_t chunk_size = configuration->property(role + ".chunk_size", 0);
+    if (max_source_buffer_samples > 0)
+        {
+            // Double buffer
+            chunk_size = std::min(max_source_buffer_samples / 2, chunk_size);
+        }
+    if (chunk_size > 0)
+        {
+            LOG(INFO) << "Setting Pass_Through chunk_size to " << chunk_size << "\n";
+        }
 
     if (item_type_ == "float")
         {
@@ -52,6 +64,10 @@ Pass_Through::Pass_Through(const ConfigurationInterface* configuration,
             if (inverted_spectrum)
                 {
                     conjugate_cc_ = make_conjugate_cc();
+                    if (chunk_size > 0)
+                        {
+                            conjugate_cc_->set_output_multiple(chunk_size);
+                        }
                 }
         }
     else if ((item_type_ == "short") || (item_type_ == "ishort"))
@@ -64,6 +80,10 @@ Pass_Through::Pass_Through(const ConfigurationInterface* configuration,
             if (inverted_spectrum)
                 {
                     conjugate_sc_ = make_conjugate_sc();
+                    if (chunk_size > 0)
+                        {
+                            conjugate_sc_->set_output_multiple(chunk_size);
+                        }
                 }
         }
     else if ((item_type_ == "byte") || (item_type_ == "ibyte"))
@@ -76,6 +96,10 @@ Pass_Through::Pass_Through(const ConfigurationInterface* configuration,
             if (inverted_spectrum)
                 {
                     conjugate_ic_ = make_conjugate_ic();
+                    if (chunk_size > 0)
+                        {
+                            conjugate_ic_->set_output_multiple(chunk_size);
+                        }
                 }
         }
     else
@@ -85,7 +109,10 @@ Pass_Through::Pass_Through(const ConfigurationInterface* configuration,
         }
 
     kludge_copy_ = gr::blocks::copy::make(item_size_);
-    const uint64_t max_source_buffer_samples = configuration->property("GNSS-SDR.max_source_buffer_samples", 0);
+    if (chunk_size > 0)
+        {
+            kludge_copy_->set_output_multiple(chunk_size);
+        }
     if (max_source_buffer_samples > 0)
         {
             kludge_copy_->set_max_output_buffer(max_source_buffer_samples);

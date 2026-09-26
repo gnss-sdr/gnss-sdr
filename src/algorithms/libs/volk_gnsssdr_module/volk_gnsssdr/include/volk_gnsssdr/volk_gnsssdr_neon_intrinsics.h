@@ -257,4 +257,31 @@ static inline float32x4_t _neon_accumulate_square_sum_f32(float32x4_t sq_acc,
 #endif
 }
 
+/* Float to int32 conversion rounding to nearest, ties to even.
+ * Same result as rintf() under the default rounding mode, and as
+ * _mm_cvtps_epi32() on x86, so NEON kernels match the GENERIC and SSE/AVX
+ * implementations bit-exactly when the input lies exactly halfway between two
+ * integers. Out-of-range inputs saturate to INT32_MIN / INT32_MAX. */
+static inline int32x4_t _vcvtnq_s32_f32(float32x4_t x)
+{
+#if defined(__aarch64__) || defined(__ARM_FEATURE_DIRECTED_ROUNDING)
+    return vcvtnq_s32_f32(x);
+#else
+    /* ARMv7 NEON only has truncating conversions.
+     * For |x| < 2^23, t = trunc(x) and frac = x - t are both exact, so the
+     * decision to step away from t involves no intermediate rounding
+     * (unlike the x + 0.5 approach, which is wrong at ties and for
+     * x = +-(0.5 - 2^-25)). For |x| >= 2^23, x is already an integer. */
+    const float32x4_t half = vdupq_n_f32(0.5f);
+    const int32x4_t t = vcvtq_s32_f32(x);
+    const float32x4_t frac = vsubq_f32(x, vcvtq_f32_s32(t));
+    const float32x4_t abs_frac = vabsq_f32(frac);
+    const uint32x4_t is_odd = vtstq_s32(t, vdupq_n_s32(1));
+    const uint32x4_t is_small = vcltq_f32(vabsq_f32(x), vdupq_n_f32(8388608.0f));
+    const uint32x4_t away = vandq_u32(is_small, vorrq_u32(vcgtq_f32(abs_frac, half), vandq_u32(vceqq_f32(abs_frac, half), is_odd)));
+    const int32x4_t step = vbslq_s32(vcltq_f32(frac, vdupq_n_f32(0.0f)), vdupq_n_s32(-1), vdupq_n_s32(1));
+    return vaddq_s32(t, vandq_s32(step, vreinterpretq_s32_u32(away)));
+#endif
+}
+
 #endif /* INCLUDED_VOLK_GNSSSDR_NEON_INTRINSICS_H_ */

@@ -632,6 +632,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3_reload(lv_16sc
 
 
 #ifdef LV_HAVE_NEON
+#include <volk_gnsssdr/volk_gnsssdr_neon_intrinsics.h>
 #include <arm_neon.h>
 
 static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t* phase_inc, lv_32fc_t* phase, unsigned int num_points)
@@ -669,11 +670,9 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon(lv_16sc_t* outVe
     float32x4_t _phase_real = vld1q_f32(__phase_real);
     float32x4_t _phase_imag = vld1q_f32(__phase_imag);
 
-    float32x4_t half = vdupq_n_f32(0.5f);
     int16x4x2_t tmp16;
     int32x4x2_t tmp32i;
     float32x4x2_t tmp32f, tmp_real, tmp_imag;
-    float32x4_t sign, PlusHalf, Round;
 
     if (neon_iters > 0)
         {
@@ -702,16 +701,8 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon(lv_16sc_t* outVe
                     tmp32f.val[1] = vaddq_f32(tmp_imag.val[0], tmp_imag.val[1]);
 
                     /* downcast results to int32 */
-                    /* in __aarch64__ we can do that with vcvtaq_s32_f32(ret1); vcvtaq_s32_f32(ret2); */
-                    sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(tmp32f.val[0]), 31)));
-                    PlusHalf = vaddq_f32(tmp32f.val[0], half);
-                    Round = vsubq_f32(PlusHalf, sign);
-                    tmp32i.val[0] = vcvtq_s32_f32(Round);
-
-                    sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(tmp32f.val[1]), 31)));
-                    PlusHalf = vaddq_f32(tmp32f.val[1], half);
-                    Round = vsubq_f32(PlusHalf, sign);
-                    tmp32i.val[1] = vcvtq_s32_f32(Round);
+                    tmp32i.val[0] = _vcvtnq_s32_f32(tmp32f.val[0]);
+                    tmp32i.val[1] = _vcvtnq_s32_f32(tmp32f.val[1]);
 
                     /* downcast results to int16 */
                     tmp16.val[0] = vqmovn_s32(tmp32i.val[0]);
@@ -768,6 +759,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon(lv_16sc_t* outVe
 
 
 #ifdef LV_HAVE_NEON
+#include <volk_gnsssdr/volk_gnsssdr_neon_intrinsics.h>
 #include <arm_neon.h>
 
 static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon_reload(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t* phase_inc, lv_32fc_t* phase, unsigned int num_points)
@@ -809,11 +801,9 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon_reload(lv_16sc_t
     float32x4_t _phase_real = vld1q_f32(__phase_real);
     float32x4_t _phase_imag = vld1q_f32(__phase_imag);
 
-    float32x4_t half = vdupq_n_f32(0.5f);
     int16x4x2_t tmp16;
     int32x4x2_t tmp32i;
     float32x4x2_t tmp32f, tmp_real, tmp_imag;
-    float32x4_t sign, PlusHalf, Round;
 
     if (neon_iters > 0)
         {
@@ -844,16 +834,8 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon_reload(lv_16sc_t
                             tmp32f.val[1] = vaddq_f32(tmp_imag.val[0], tmp_imag.val[1]);
 
                             /* downcast results to int32 */
-                            /* in __aarch64__ we can do that with vcvtaq_s32_f32(ret1); vcvtaq_s32_f32(ret2); */
-                            sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(tmp32f.val[0]), 31)));
-                            PlusHalf = vaddq_f32(tmp32f.val[0], half);
-                            Round = vsubq_f32(PlusHalf, sign);
-                            tmp32i.val[0] = vcvtq_s32_f32(Round);
-
-                            sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(tmp32f.val[1]), 31)));
-                            PlusHalf = vaddq_f32(tmp32f.val[1], half);
-                            Round = vsubq_f32(PlusHalf, sign);
-                            tmp32i.val[1] = vcvtq_s32_f32(Round);
+                            tmp32i.val[0] = _vcvtnq_s32_f32(tmp32f.val[0]);
+                            tmp32i.val[1] = _vcvtnq_s32_f32(tmp32f.val[1]);
 
                             /* downcast results to int16 */
                             tmp16.val[0] = vqmovn_s32(tmp32i.val[0]);
@@ -915,16 +897,8 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon_reload(lv_16sc_t
                     tmp32f.val[1] = vaddq_f32(tmp_imag.val[0], tmp_imag.val[1]);
 
                     /* downcast results to int32 */
-                    /* in __aarch64__ we can do that with vcvtaq_s32_f32(ret1); vcvtaq_s32_f32(ret2); */
-                    sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(tmp32f.val[0]), 31)));
-                    PlusHalf = vaddq_f32(tmp32f.val[0], half);
-                    Round = vsubq_f32(PlusHalf, sign);
-                    tmp32i.val[0] = vcvtq_s32_f32(Round);
-
-                    sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(tmp32f.val[1]), 31)));
-                    PlusHalf = vaddq_f32(tmp32f.val[1], half);
-                    Round = vsubq_f32(PlusHalf, sign);
-                    tmp32i.val[1] = vcvtq_s32_f32(Round);
+                    tmp32i.val[0] = _vcvtnq_s32_f32(tmp32f.val[0]);
+                    tmp32i.val[1] = _vcvtnq_s32_f32(tmp32f.val[1]);
 
                     /* downcast results to int16 */
                     tmp16.val[0] = vqmovn_s32(tmp32i.val[0]);

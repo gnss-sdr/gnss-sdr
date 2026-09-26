@@ -848,52 +848,28 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                                                     fail = icompare((uint64_t *)test_data[generic_offset][j], (uint64_t *)test_data[i][j], vlen * (both_sigs[j].is_complex ? 2 : 1), tol_i);
                                                 }
                                             break;
+                                        // ADDED BY GNSS-SDR
+                                        // type.size is the size of one (real or imaginary) component,
+                                        // so complex integer vectors are compared component by component
+                                        // with the component type (e.g., int16_t for 16ic), over 2 * vlen elements.
                                         case 4:
-                                            if (both_sigs[j].is_complex)  // ADDED BY GNSS_SDR
+                                            if (both_sigs[j].is_signed)
                                                 {
-                                                    if (both_sigs[j].is_signed)
-                                                        {
-                                                            fail = icompare((int16_t *)test_data[generic_offset][j], (int16_t *)test_data[i][j], vlen * (both_sigs[j].is_complex ? 2 : 1), tol_i);
-                                                        }
-                                                    else
-                                                        {
-                                                            fail = icompare((uint16_t *)test_data[generic_offset][j], (uint16_t *)test_data[i][j], vlen * (both_sigs[j].is_complex ? 2 : 1), tol_i);
-                                                        }
+                                                    fail = icompare((int32_t *)test_data[generic_offset][j], (int32_t *)test_data[i][j], vlen * (both_sigs[j].is_complex ? 2 : 1), tol_i);
                                                 }
                                             else
                                                 {
-                                                    if (both_sigs[j].is_signed)
-                                                        {
-                                                            fail = icompare((int32_t *)test_data[generic_offset][j], (int32_t *)test_data[i][j], vlen * (both_sigs[j].is_complex ? 2 : 1), tol_i);
-                                                        }
-                                                    else
-                                                        {
-                                                            fail = icompare((uint32_t *)test_data[generic_offset][j], (uint32_t *)test_data[i][j], vlen * (both_sigs[j].is_complex ? 2 : 1), tol_i);
-                                                        }
+                                                    fail = icompare((uint32_t *)test_data[generic_offset][j], (uint32_t *)test_data[i][j], vlen * (both_sigs[j].is_complex ? 2 : 1), tol_i);
                                                 }
                                             break;
                                         case 2:
-                                            if (both_sigs[j].is_complex)  // ADDED BY GNSS_SDR
+                                            if (both_sigs[j].is_signed)
                                                 {
-                                                    if (both_sigs[j].is_signed)
-                                                        {
-                                                            fail = icompare((int8_t *)test_data[generic_offset][j], (int8_t *)test_data[i][j], vlen * (both_sigs[j].is_complex ? 2 : 1), tol_i);
-                                                        }
-                                                    else
-                                                        {
-                                                            fail = icompare((uint8_t *)test_data[generic_offset][j], (uint8_t *)test_data[i][j], vlen * (both_sigs[j].is_complex ? 2 : 1), tol_i);
-                                                        }
+                                                    fail = icompare((int16_t *)test_data[generic_offset][j], (int16_t *)test_data[i][j], vlen * (both_sigs[j].is_complex ? 2 : 1), tol_i);
                                                 }
                                             else
                                                 {
-                                                    if (both_sigs[j].is_signed)
-                                                        {
-                                                            fail = icompare((int16_t *)test_data[generic_offset][j], (int16_t *)test_data[i][j], vlen * (both_sigs[j].is_complex ? 2 : 1), tol_i);  //
-                                                        }
-                                                    else
-                                                        {
-                                                            fail = icompare((uint16_t *)test_data[generic_offset][j], (uint16_t *)test_data[i][j], vlen * (both_sigs[j].is_complex ? 2 : 1), tol_i);
-                                                        }
+                                                    fail = icompare((uint16_t *)test_data[generic_offset][j], (uint16_t *)test_data[i][j], vlen * (both_sigs[j].is_complex ? 2 : 1), tol_i);
                                                 }
                                             break;
                                         case 1:

@@ -81,6 +81,7 @@ void Acq_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
             pfa2 = pfa;
         }
     make_2_steps = configuration->property(role + ".make_two_steps", make_2_steps);
+    aligned_step2 = configuration->property(role + ".aligned_step2", aligned_step2);
     blocking_on_standby = configuration->property(role + ".blocking_on_standby", blocking_on_standby);
     reference_bin_min_sidelobes = configuration->property(role + ".reference_bin_min_sidelobes", reference_bin_min_sidelobes);
     full_grid_search = configuration->property(role + ".full_grid_search", full_grid_search);

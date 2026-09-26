@@ -262,6 +262,12 @@ Acq_Conf get_acq_conf(
     acq_parameters.num_codes = acq_parameters.sampled_ms / ms_per_code;
     acq_parameters.code_length = static_cast<unsigned int>(round(acq_parameters.fs_in / (chip_rate / code_length_chips)));
     acq_parameters.vector_length = acq_parameters.code_length * acq_parameters.num_codes;
+    if (default_folding_factor)
+        {
+            // QuickSync folds folding_factor^2 chunks of code_length / folding_factor
+            // samples, so each input vector must hold folding_factor full code periods
+            acq_parameters.vector_length *= acq_parameters.folding_factor;
+        }
     acq_parameters.threshold = threshold_compute->calculate_threshold(acq_parameters);
 
     if (implementation == "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler")

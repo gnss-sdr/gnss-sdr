@@ -491,8 +491,6 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::wait_message()
 
     while (!stop)
         {
-            acquisition->reset();
-
             start = std::chrono::system_clock::now();
 
             channel_internal_queue.wait_and_pop(message);
@@ -503,6 +501,11 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::wait_message()
             mean_acq_time_us += elapsed_seconds.count() * 1e6;
 
             process_message();
+
+            if (!stop)
+                {
+                    acquisition->reset();  // arm the next realization
+                }
         }
 }
 

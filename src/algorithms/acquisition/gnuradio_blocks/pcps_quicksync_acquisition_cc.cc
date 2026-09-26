@@ -24,6 +24,8 @@
 #include <cmath>
 #include <exception>
 #include <sstream>
+#include <stdexcept>
+#include <string>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -73,6 +75,15 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(const Acq_Conf& con
       d_magnitude_folded(d_fft_size),
       d_possible_delay(d_folding_factor)
 {
+    // Each call to general_work() processes d_samples_per_code * d_folding_factor
+    // samples from a single input item, so the item must be at least that long
+    if (static_cast<int64_t>(d_vector_length) < static_cast<int64_t>(d_samples_per_code) * static_cast<int64_t>(d_folding_factor))
+        {
+            throw std::invalid_argument("pcps_quicksync_acquisition_cc: input vector length (" + std::to_string(d_vector_length) +
+                                        " samples) is shorter than folding_factor code periods (" +
+                                        std::to_string(static_cast<int64_t>(d_samples_per_code) * static_cast<int64_t>(d_folding_factor)) + " samples)");
+        }
+
     this->message_port_register_out(pmt::mp("events"));
 
     // Create the d_code vector, which would store the values of the code in its

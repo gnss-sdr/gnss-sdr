@@ -95,6 +95,7 @@ private:
     const bool d_enable_navdata_monitor;
     bool d_dump_crc_stats;
     const bool d_tow_to_trk;
+    const bool d_early_monitor;
 };
 
 

@@ -254,6 +254,7 @@ private:
     bool d_always_output_gs;
     bool d_dump;
     bool d_dump_mat;
+    bool d_early_monitor;
 };
 
 /** \} */

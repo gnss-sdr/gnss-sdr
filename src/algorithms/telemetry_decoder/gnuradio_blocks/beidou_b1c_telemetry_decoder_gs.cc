@@ -253,7 +253,8 @@ beidou_b1c_telemetry_decoder_gs::beidou_b1c_telemetry_decoder_gs(
       d_remove_dat(conf.remove_dat),
       d_enable_navdata_monitor(conf.enable_navdata_monitor),
       d_dump_crc_stats(conf.dump_crc_stats),
-      d_tow_to_trk(conf.tow_to_trk)
+      d_tow_to_trk(conf.tow_to_trk),
+      d_early_monitor(conf.early_monitor)
 {
     set_history(static_cast<unsigned int>(BEIDOU_CNAV1_FRAME_SYMBOLS));
     set_output_multiple(1);
@@ -641,10 +642,10 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
 
     consume_each(1);
 
-    if (d_flag_valid_word)
+    if (d_early_monitor || d_flag_valid_word)
         {
             current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
-            current_symbol.Flag_valid_word = true;
+            current_symbol.Flag_valid_word = d_flag_valid_word;
             if (d_dump)
                 {
                     try

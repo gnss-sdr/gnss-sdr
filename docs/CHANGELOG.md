@@ -531,6 +531,10 @@ All notable changes to GNSS-SDR will be documented in this file.
 - The PVT Monitor now reports per-signal details for satellites used in the
   position solution, including PRN, constellation, signal, azimuth, elevation,
   and whether multiple signals were combined. Contributed by @joebre.
+- Abseil logging now creates a unique timestamp/PID logfile for each run,
+  preserving previous logs across the receiver, calibration tool, and test
+  runners. On POSIX systems, an atomically updated relative symlink points to
+  the latest logfile.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

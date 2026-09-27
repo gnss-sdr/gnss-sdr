@@ -63,7 +63,6 @@
 #include <iostream>
 #include <map>
 #include <memory>
-#include <mutex>
 #include <stdexcept>  // for logic_error
 #include <string>
 #include <thread>
@@ -74,6 +73,7 @@
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #else
+#include "gnss_sdr_log_sink.h"
 #include <absl/flags/flag.h>
 #include <absl/flags/parse.h>
 #include <absl/flags/usage.h>
@@ -81,10 +81,6 @@
 #include <absl/log/globals.h>
 #include <absl/log/initialize.h>
 #include <absl/log/log.h>
-#include <absl/log/log_sink.h>
-#include <absl/log/log_sink_registry.h>
-
-
 #endif
 
 #if HAS_GENERIC_LAMBDA
@@ -107,80 +103,6 @@ using namespace google;
 #endif
 DECLARE_string(log_dir);
 #else
-class FrontEndCalLogSink : public absl::LogSink
-{
-public:
-    FrontEndCalLogSink()
-    {
-        if (!absl::GetFlag(FLAGS_log_dir).empty())
-            {
-                logfile.open(absl::GetFlag(FLAGS_log_dir) + "/front_end_cal.log");
-            }
-        else
-            {
-                logfile.open(GetTempDir() + "/front_end_cal.log");
-            }
-    }
-    void Send(const absl::LogEntry& entry) override
-    {
-        std::lock_guard<std::mutex> lock(logfile_mutex);
-        logfile << entry.text_message_with_prefix_and_newline() << std::flush;
-    }
-
-private:
-    std::mutex logfile_mutex;
-    std::ofstream logfile;
-};
-
-class FrontEndCalLogSinkGuard
-{
-public:
-    FrontEndCalLogSinkGuard() = default;
-    FrontEndCalLogSinkGuard(const FrontEndCalLogSinkGuard&) = delete;
-    FrontEndCalLogSinkGuard& operator=(const FrontEndCalLogSinkGuard&) = delete;
-    FrontEndCalLogSinkGuard(FrontEndCalLogSinkGuard&&) = delete;
-    FrontEndCalLogSinkGuard& operator=(FrontEndCalLogSinkGuard&&) = delete;
-    ~FrontEndCalLogSinkGuard() noexcept
-    {
-        Shutdown();
-    }
-
-    void Register()
-    {
-        log_sink.reset(new FrontEndCalLogSink);
-        absl::AddLogSink(log_sink.get());
-        registered = true;
-        absl::InitializeLog();
-    }
-
-    void Shutdown() noexcept
-    {
-        if (registered)
-            {
-                try
-                    {
-                        absl::FlushLogSinks();
-                    }
-                catch (...)
-                    {
-                    }
-                try
-                    {
-                        absl::RemoveLogSink(log_sink.get());
-                    }
-                catch (...)
-                    {
-                    }
-                registered = false;
-            }
-        log_sink.reset();
-    }
-
-private:
-    std::unique_ptr<FrontEndCalLogSink> log_sink;
-    bool registered = false;
-};
-
 std::string FrontEndCalVersionString() { return std::string(FRONT_END_CAL_VERSION) + "\n"; }
 #endif
 
@@ -369,7 +291,7 @@ try
     {
 #if USE_GLOG_AND_GFLAGS
 #else
-        FrontEndCalLogSinkGuard log_sink;
+        GnssSdrLogSinkGuard log_sink;
 #endif
 
         try
@@ -404,12 +326,13 @@ try
         google::InitGoogleLogging(argv[0]);
         if (FLAGS_log_dir.empty())
 #else
-        log_sink.Register();
+        absl::InitializeLog();
+        log_sink.Register(absl::GetFlag(FLAGS_log_dir), "front_end_cal");
         if (absl::GetFlag(FLAGS_log_dir).empty())
 #endif
             {
                 std::cout << "Logging will be done at "
-                          << "/tmp"
+                          << fs::temp_directory_path()
                           << '\n'
                           << "Use front-end-cal --log_dir=/path/to/log to change that."
                           << '\n';

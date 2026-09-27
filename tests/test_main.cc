@@ -19,81 +19,7 @@
 #include "unit_tests_common.h"
 
 #if !USE_GLOG_AND_GFLAGS
-class TestingLogSink : public absl::LogSink
-{
-public:
-    TestingLogSink()
-    {
-        if (!absl::GetFlag(FLAGS_log_dir).empty())
-            {
-                filename = std::string(absl::GetFlag(FLAGS_log_dir) + "/run_tests.log");
-            }
-        else
-            {
-                filename = std::string(GetTempDir() + "/run_tests.log");
-            }
-        logfile.open(filename);
-    }
-    void Send(const absl::LogEntry& entry) override
-    {
-        std::lock_guard<std::mutex> lock(logfile_mutex);
-        logfile << entry.text_message_with_prefix_and_newline() << std::flush;
-    }
-
-private:
-    std::mutex logfile_mutex;
-    std::ofstream logfile;
-    std::string filename;
-};
-
-class TestingLogSinkGuard
-{
-public:
-    TestingLogSinkGuard() = default;
-    TestingLogSinkGuard(const TestingLogSinkGuard&) = delete;
-    TestingLogSinkGuard& operator=(const TestingLogSinkGuard&) = delete;
-    TestingLogSinkGuard(TestingLogSinkGuard&&) = delete;
-    TestingLogSinkGuard& operator=(TestingLogSinkGuard&&) = delete;
-    ~TestingLogSinkGuard() noexcept
-    {
-        Shutdown();
-    }
-
-    void Register()
-    {
-        log_sink.reset(new TestingLogSink);
-        absl::AddLogSink(log_sink.get());
-        registered = true;
-        absl::InitializeLog();
-    }
-
-    void Shutdown() noexcept
-    {
-        if (registered)
-            {
-                try
-                    {
-                        absl::FlushLogSinks();
-                    }
-                catch (...)
-                    {
-                    }
-                try
-                    {
-                        absl::RemoveLogSink(log_sink.get());
-                    }
-                catch (...)
-                    {
-                    }
-                registered = false;
-            }
-        log_sink.reset();
-    }
-
-private:
-    std::unique_ptr<TestingLogSink> log_sink;
-    bool registered = false;
-};
+#include "gnss_sdr_log_sink.h"
 #endif
 
 // For GPS NAVIGATION (L1)
@@ -116,9 +42,10 @@ try
         gflags::ParseCommandLineFlags(&argc, &argv, true);
         google::InitGoogleLogging(argv[0]);
 #else
-        TestingLogSinkGuard log_sink;
+        GnssSdrLogSinkGuard log_sink;
         absl::ParseCommandLine(argc, argv);
-        log_sink.Register();
+        absl::InitializeLog();
+        log_sink.Register(absl::GetFlag(FLAGS_log_dir), "run_tests");
 #endif
         try
             {

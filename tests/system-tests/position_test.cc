@@ -47,7 +47,6 @@
 #include <fstream>
 #include <iomanip>
 #include <memory>
-#include <mutex>
 #include <numeric>
 #include <ostream>
 #include <string>
@@ -62,42 +61,17 @@ using namespace google;
 }
 #endif
 #else
+#include "gnss_sdr_log_sink.h"
 #include <absl/flags/parse.h>
 #include <absl/log/globals.h>
 #include <absl/log/initialize.h>
 #include <absl/log/log.h>
-#include <absl/log/log_sink.h>
-#include <absl/log/log_sink_registry.h>
 #endif
 
 #if USE_GLOG_AND_GFLAGS
 DEFINE_int32(num_channels, 11, "Number of channels");
 #else
 ABSL_FLAG(int32_t, num_channels, 11, "Number of channels");
-class PositionTestLogSink : public absl::LogSink
-{
-public:
-    PositionTestLogSink()
-    {
-        if (!absl::GetFlag(FLAGS_log_dir).empty())
-            {
-                logfile.open(absl::GetFlag(FLAGS_log_dir) + "/position_test.log");
-            }
-        else
-            {
-                logfile.open(GetTempDir() + "/position_test.log");
-            }
-    }
-    void Send(const absl::LogEntry& entry) override
-    {
-        std::lock_guard<std::mutex> lock(logfile_mutex);
-        logfile << entry.text_message_with_prefix_and_newline() << std::flush;
-    }
-
-private:
-    std::mutex logfile_mutex;
-    std::ofstream logfile;
-};
 #endif
 
 // For GPS NAVIGATION (L1)
@@ -1249,8 +1223,7 @@ int main(int argc, char** argv)
 #if USE_GLOG_AND_GFLAGS
     bool command_line_flags_initialized = false;
 #else
-    std::unique_ptr<PositionTestLogSink> log_sink;
-    bool log_sink_registered = false;
+    GnssSdrLogSinkGuard log_sink;
 #endif
 
     try
@@ -1270,10 +1243,8 @@ int main(int argc, char** argv)
             google::InitGoogleLogging(argv[0]);
 #else
             absl::ParseCommandLine(argc, argv);
-            log_sink.reset(new PositionTestLogSink);
-            absl::AddLogSink(log_sink.get());
-            log_sink_registered = true;
             absl::InitializeLog();
+            log_sink.Register(absl::GetFlag(FLAGS_log_dir), "position_test");
 #endif
 
             // Run the Tests
@@ -1311,20 +1282,7 @@ int main(int argc, char** argv)
                 }
         }
 #else
-    if (log_sink_registered)
-        {
-            try
-                {
-                    absl::FlushLogSinks();
-                    absl::RemoveLogSink(log_sink.get());
-                    log_sink_registered = false;
-                    log_sink.reset();
-                }
-            catch (...)
-                {
-                    std::cerr << "Unexpected exception while shutting down logging.\n";
-                }
-        }
+    log_sink.Shutdown();
 #endif
     return res;
 }

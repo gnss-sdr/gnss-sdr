@@ -37,10 +37,8 @@
 #include <boost/thread/exceptions.hpp>                 // for thread_resource_error
 #include <chrono>                                      // for time_point
 #include <exception>                                   // for exception
-#include <fstream>                                     // for ofstream
 #include <iostream>                                    // for operator<<
 #include <memory>                                      // for unique_ptr
-#include <mutex>                                       // for lock_guard, mutex
 #include <ostream>                                     // for std::flush
 #include <string>                                      // for string
 
@@ -54,6 +52,7 @@ using namespace google;
 }
 #endif
 #else
+#include "gnss_sdr_log_sink.h"
 #include <absl/flags/flag.h>
 #include <absl/flags/parse.h>
 #include <absl/flags/usage.h>
@@ -62,84 +61,7 @@ using namespace google;
 #include <absl/log/globals.h>
 #include <absl/log/initialize.h>
 #include <absl/log/log.h>
-#include <absl/log/log_sink.h>
-#include <absl/log/log_sink_registry.h>
 std::string GnssSdrVersionString() { return std::string("gnss-sdr version ") + std::string(GNSS_SDR_VERSION) + "\n"; }
-class GnssSdrLogSink : public absl::LogSink
-{
-public:
-    GnssSdrLogSink()
-    {
-        if (!absl::GetFlag(FLAGS_log_dir).empty())
-            {
-                filename = absl::GetFlag(FLAGS_log_dir) + "/gnss-sdr.log";
-            }
-        else
-            {
-                filename = GetTempDir() + "/gnss-sdr.log";
-            }
-        logfile.open(filename);
-    }
-    void Send(const absl::LogEntry& entry) override
-    {
-        std::lock_guard<std::mutex> lock(logfile_mutex);
-        logfile << entry.text_message_with_prefix_and_newline() << std::flush;
-    }
-
-private:
-    std::mutex logfile_mutex;
-    std::ofstream logfile;
-    std::string filename;
-};
-
-class GnssSdrLogSinkGuard
-{
-public:
-    GnssSdrLogSinkGuard() = default;
-    GnssSdrLogSinkGuard(const GnssSdrLogSinkGuard&) = delete;
-    GnssSdrLogSinkGuard& operator=(const GnssSdrLogSinkGuard&) = delete;
-    GnssSdrLogSinkGuard(GnssSdrLogSinkGuard&&) = delete;
-    GnssSdrLogSinkGuard& operator=(GnssSdrLogSinkGuard&&) = delete;
-    ~GnssSdrLogSinkGuard() noexcept
-    {
-        Shutdown();
-    }
-
-    void Register()
-    {
-        log_sink.reset(new GnssSdrLogSink);
-        absl::AddLogSink(log_sink.get());
-        registered = true;
-        absl::InitializeLog();
-    }
-
-    void Shutdown() noexcept
-    {
-        if (registered)
-            {
-                try
-                    {
-                        absl::FlushLogSinks();
-                    }
-                catch (...)
-                    {
-                    }
-                try
-                    {
-                        absl::RemoveLogSink(log_sink.get());
-                    }
-                catch (...)
-                    {
-                    }
-                registered = false;
-            }
-        log_sink.reset();
-    }
-
-private:
-    std::unique_ptr<GnssSdrLogSink> log_sink;
-    bool registered = false;
-};
 #endif
 
 #if CUDA_GPU_ACCEL
@@ -216,7 +138,8 @@ try
                 google::InitGoogleLogging(argv[0]);
                 if (FLAGS_log_dir.empty())
 #else
-                log_sink.Register();
+                absl::InitializeLog();
+                log_sink.Register(absl::GetFlag(FLAGS_log_dir), "gnss-sdr");
                 if (absl::GetFlag(FLAGS_log_dir).empty())
 #endif
                     {

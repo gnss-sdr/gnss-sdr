@@ -21,10 +21,8 @@
 #include "gnss_sdr_flags.h"
 #include "gps_acq_assist.h"
 #include <gtest/gtest.h>
-#include <fstream>
 #include <iostream>
 #include <memory>
-#include <mutex>
 #include <ostream>
 #include <string>
 
@@ -39,86 +37,12 @@ using namespace google;
 DECLARE_string(log_dir);
 #endif
 #else
+#include "gnss_sdr_log_sink.h"
 #include <absl/flags/flag.h>
 #include <absl/flags/parse.h>
 #include <absl/log/flags.h>
 #include <absl/log/initialize.h>
 #include <absl/log/log.h>
-#include <absl/log/log_sink.h>
-#include <absl/log/log_sink_registry.h>
-class TestLogSink : public absl::LogSink
-{
-public:
-    TestLogSink()
-    {
-        if (!absl::GetFlag(FLAGS_log_dir).empty())
-            {
-                logfile.open(absl::GetFlag(FLAGS_log_dir) + "/test.log");
-            }
-        else
-            {
-                logfile.open(GetTempDir() + "/test.log");
-            }
-    }
-    void Send(const absl::LogEntry& entry) override
-    {
-        std::lock_guard<std::mutex> lock(logfile_mutex);
-        logfile << entry.text_message_with_prefix_and_newline() << std::flush;
-    }
-
-private:
-    std::mutex logfile_mutex;
-    std::ofstream logfile;
-};
-
-class TestLogSinkGuard
-{
-public:
-    TestLogSinkGuard() = default;
-    TestLogSinkGuard(const TestLogSinkGuard&) = delete;
-    TestLogSinkGuard& operator=(const TestLogSinkGuard&) = delete;
-    TestLogSinkGuard(TestLogSinkGuard&&) = delete;
-    TestLogSinkGuard& operator=(TestLogSinkGuard&&) = delete;
-    ~TestLogSinkGuard() noexcept
-    {
-        Shutdown();
-    }
-
-    void Register()
-    {
-        log_sink.reset(new TestLogSink);
-        absl::AddLogSink(log_sink.get());
-        registered = true;
-        absl::InitializeLog();
-    }
-
-    void Shutdown() noexcept
-    {
-        if (registered)
-            {
-                try
-                    {
-                        absl::FlushLogSinks();
-                    }
-                catch (...)
-                    {
-                    }
-                try
-                    {
-                        absl::RemoveLogSink(log_sink.get());
-                    }
-                catch (...)
-                    {
-                    }
-                registered = false;
-            }
-        log_sink.reset();
-    }
-
-private:
-    std::unique_ptr<TestLogSink> log_sink;
-    bool registered = false;
-};
 #endif
 
 
@@ -140,7 +64,7 @@ try
             {
             }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
 #else
-        TestLogSinkGuard log_sink;
+        GnssSdrLogSinkGuard log_sink;
         absl::ParseCommandLine(argc, argv);
         try
             {
@@ -149,7 +73,8 @@ try
         catch (...)
             {
             }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
-        log_sink.Register();
+        absl::InitializeLog();
+        log_sink.Register(absl::GetFlag(FLAGS_log_dir), "test");
 #endif
         int res = 0;
         try

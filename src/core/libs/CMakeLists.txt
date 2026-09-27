@@ -206,3 +206,27 @@ set_property(TARGET core_libs
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<BUILD_INTERFACE:${GNSSSDR_SOURCE_DIR}/src/core/interfaces>
 )
+
+# Keep the file sink independent of receiver and signal-processing dependencies.
+# Older toolchains using glog do not build this C++17-only target.
+if(NOT ENABLE_GLOG_AND_GFLAGS)
+    add_library(gnss_sdr_log_sink STATIC gnss_sdr_log_sink.cc gnss_sdr_log_sink.h)
+    target_compile_features(gnss_sdr_log_sink PUBLIC cxx_std_17)
+    target_include_directories(gnss_sdr_log_sink
+        PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+        PRIVATE ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs
+    )
+    target_link_libraries(gnss_sdr_log_sink
+        PUBLIC absl::log_sink
+        PRIVATE absl::log_sink_registry absl::time Threads::Threads
+    )
+    if(FILESYSTEM_FOUND)
+        target_link_libraries(gnss_sdr_log_sink PRIVATE std::filesystem)
+        target_compile_definitions(gnss_sdr_log_sink PRIVATE HAS_STD_FILESYSTEM=1)
+        if(find_experimental)
+            target_compile_definitions(gnss_sdr_log_sink PRIVATE HAS_STD_FILESYSTEM_EXPERIMENTAL=1)
+        endif()
+    else()
+        target_link_libraries(gnss_sdr_log_sink PRIVATE Boost::filesystem $<$<BOOL:${NEED_BOOST_SYSTEM}>:Boost::system>)
+    endif()
+endif()

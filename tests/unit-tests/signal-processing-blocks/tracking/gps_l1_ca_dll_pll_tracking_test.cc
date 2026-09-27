@@ -679,7 +679,7 @@ TEST_F(DllPllTrackingAdapterGpsL1CaTest, ValidationOfResults)
                             std::cout << "Testing satellite PRN=" << test_satellite_PRN << '\n';
                             std::cout << "Initial Doppler [Hz]=" << true_obs_data.doppler_l1_hz << " Initial code delay [Chips]=" << true_obs_data.prn_delay_chips << '\n';
                             acq_doppler_hz = true_obs_data.doppler_l1_hz;
-                            acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_obs_data.prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * static_cast<double>(baseband_sampling_freq) * GPS_L1_CA_CODE_PERIOD_S;
+                            acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_obs_data.prn_delay_chips) / GPS_L1_CA_CODE_LENGTH_CHIPS * static_cast<double>(baseband_sampling_freq) * GPS_L1_CA_CODE_PERIOD_S;
                             // restart the epoch counter
                             true_obs_data.restart();
                         }

@@ -222,6 +222,9 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     double expected_delay_samples = 31874;
     double expected_doppler_hz = -9500;
     init();
+    // The signal in the test file sits at about -9.6 kHz, outside the default
+    // +/-5 kHz search range set in init(), so widen it for this test.
+    config->supersede_property("Acquisition_1G.doppler_max", "10000");
     std::shared_ptr<PcpsAcquisitionAdapter> acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_1G", "GLONASS_L1_CA_PCPS_Acquisition", 1, 0, GLO_1G);
     std::shared_ptr<FreqXlatingFirFilter> input_filter = std::make_shared<FreqXlatingFirFilter>(config.get(), "InputFilter", 1, 1);
     auto msg_rx = GlonassL1CaPcpsAcquisitionTest_msg_rx_make();

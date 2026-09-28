@@ -1112,21 +1112,9 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 }
             break;
         case 1:  // possible preamble lock
-            // Keep scanning every symbol for a full-correlation hit, exactly like case 0
-            // -- do NOT restrict the check to the single exact symbol the current anchor
-            // predicts. Confirmation requires two hits exactly one page period apart, but
-            // a hit that does NOT land one period after the current anchor is not treated
-            // as a failure of an already-correct anchor: it becomes the new anchor and the
-            // search keeps going. This matters because the anchor set by case 0 is only a
-            // single coincidental correlation hit (a real, if rare, false-positive rate
-            // even at high CN0) -- checking only symbol_counter == anchor + period forever
-            // meant a bad initial anchor could never self-correct, since every subsequent
-            // check looked at the wrong exact symbol (nowhere near the true 12-symbol
-            // preamble window) and would keep missing indefinitely, no matter how many
-            // periods passed, even with an otherwise perfectly-tracked, high-SNR signal.
-            // Comparing every new hit to the most recent one instead means a coincidental
-            // false-positive anchor is simply overwritten the next time a genuine
-            // periodic hit appears, rather than poisoning the search permanently.
+            // Keep the candidate until its expected confirmation point: payload
+            // symbols can also correlate with the preamble. If confirmation is
+            // missed, the next hit starts a new candidate.
             if (d_symbol_history.size() > d_required_symbols)
                 {
                     // See the lock rationale in case 0 above -- same race applies here.
@@ -1147,7 +1135,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                         {
                             if (d_symbol_counter == d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
                                 {
-                                    // Two genuine hits exactly one period apart: confirmed.
+                                    // Two hits exactly one period apart: attempt page decoding.
                                     DLOG(INFO) << "Starting page decoder for Galileo satellite " << this->d_satellite;
                                     d_preamble_index = d_symbol_counter;  // record the preamble sample stamp
                                     d_CRC_error_counter = 0;
@@ -1161,12 +1149,9 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                         }
                                     d_stat = 2;
                                 }
-                            else
+                            else if (d_symbol_counter > d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
                                 {
-                                    // A genuine hit, but not where the current anchor
-                                    // predicted -- the anchor itself may have been wrong.
-                                    // Replace it with this independently-found hit and
-                                    // keep watching for the next one to confirm against it.
+                                    // The previous candidate missed confirmation.
                                     d_preamble_index = d_symbol_counter;
                                 }
                         }

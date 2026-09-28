@@ -535,17 +535,21 @@ bool ControlThread::read_assistance_from_XML()
     std::cout << "Trying to read GNSS ephemeris from XML file(s)...\n";
 
     // GPS/QZSS UTC, iono and almanac data are broadcast system-wide parameters, not
-    // specific to the L1 C/A signal -- L5/L2C channels rely on the exact same almanac
+    // specific to the L1 C/A signal -- L5/L2C/J5 channels rely on the exact same almanac
     // (via the PRN-keyed map PVT and the visibility/Doppler-assist logic read from) for
-    // visibility classification and Doppler prediction just as much as L1 C/A does. Gating
-    // this whole block on Channels_1C/Channels_J1 alone meant an L5-or-L2C-only
-    // configuration never even attempted to load its almanac, UTC or iono files -- not
-    // because those files were missing or invalid, but because the code never asked for
-    // them. The L1 C/A LNAV ephemeris load stays inside this same block (L5/L2C use their
-    // own separately-gated CNAV ephemeris below); requesting it is harmless when no L1C
+    // visibility classification and Doppler prediction just as much as L1 C/A does. QZSS
+    // LNAV ephemerides and almanacs are stored in these same maps under their QZSS PRNs,
+    // and the L5 CNAV decoder does not provide almanacs, so for a J5-only configuration
+    // these XML files are the only almanac source. Gating this whole block on
+    // Channels_1C/Channels_J1 alone meant an L5, L2C or J5-only configuration never even
+    // attempted to load its almanac, UTC or iono files -- not because those files were
+    // missing or invalid, but because the code never asked for them. The L1 C/A LNAV
+    // ephemeris load stays inside this same block (L5/L2C/J5 use their own
+    // separately-gated CNAV ephemeris below); requesting it is harmless when no L1 C/A
     // channel exists to use it.
     if ((configuration_->property("Channels_1C.count", 0) > 0) || (configuration_->property("Channels_J1.count", 0) > 0) ||
-        (configuration_->property("Channels_2S.count", 0) > 0) || (configuration_->property("Channels_L5.count", 0) > 0))
+        (configuration_->property("Channels_2S.count", 0) > 0) || (configuration_->property("Channels_L5.count", 0) > 0) ||
+        (configuration_->property("Channels_J5.count", 0) > 0))
         {
             if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)
                 {
@@ -585,7 +589,8 @@ bool ControlThread::read_assistance_from_XML()
                         gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.cend();
                         gps_alm_iter++)
                         {
-                            std::cout << "From XML file: Read GPS almanac for satellite " << Gnss_Satellite("GPS", gps_alm_iter->second.PRN) << '\n';
+                            const std::string system = (gps_alm_iter->second.PRN >= MINPRNQZS && gps_alm_iter->second.PRN <= MAXPRNQZS) ? "QZSS" : "GPS";
+                            std::cout << "From XML file: Read " << system << " almanac for satellite " << Gnss_Satellite(system, gps_alm_iter->second.PRN) << '\n';
                             const std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(gps_alm_iter->second);
                             tmp_obj->from_startup_load = true;
                             flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
@@ -659,7 +664,10 @@ bool ControlThread::read_assistance_from_XML()
                 }
         }
 
-    if ((configuration_->property("Channels_2S.count", 0) > 0) || (configuration_->property("Channels_L5.count", 0) > 0))
+    // QZSS L5 CNAV ephemerides are stored in the same PRN-keyed CNAV map (and saved to
+    // the same XML file) as the GPS ones, so J5 channels need this block too.
+    if ((configuration_->property("Channels_2S.count", 0) > 0) || (configuration_->property("Channels_L5.count", 0) > 0) ||
+        (configuration_->property("Channels_J5.count", 0) > 0))
         {
             if (supl_client_ephemeris_.load_cnav_ephemeris_xml(eph_cnav_xml_filename) == true)
                 {
@@ -668,7 +676,8 @@ bool ControlThread::read_assistance_from_XML()
                         gps_cnav_eph_iter != supl_client_ephemeris_.gps_cnav_ephemeris_map.cend();
                         gps_cnav_eph_iter++)
                         {
-                            std::cout << "From XML file: Read CNAV ephemeris for satellite " << Gnss_Satellite("GPS", gps_cnav_eph_iter->second.PRN) << '\n';
+                            const std::string system = (gps_cnav_eph_iter->second.PRN >= MINPRNQZS && gps_cnav_eph_iter->second.PRN <= MAXPRNQZS) ? "QZSS" : "GPS";
+                            std::cout << "From XML file: Read CNAV ephemeris for satellite " << Gnss_Satellite(system, gps_cnav_eph_iter->second.PRN) << '\n';
                             const std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(gps_cnav_eph_iter->second);
                             flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                         }

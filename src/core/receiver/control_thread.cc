@@ -534,7 +534,18 @@ bool ControlThread::read_assistance_from_XML()
 
     std::cout << "Trying to read GNSS ephemeris from XML file(s)...\n";
 
-    if ((configuration_->property("Channels_1C.count", 0) > 0) || (configuration_->property("Channels_J1.count", 0) > 0))
+    // GPS/QZSS UTC, iono and almanac data are broadcast system-wide parameters, not
+    // specific to the L1 C/A signal -- L5/L2C channels rely on the exact same almanac
+    // (via the PRN-keyed map PVT and the visibility/Doppler-assist logic read from) for
+    // visibility classification and Doppler prediction just as much as L1 C/A does. Gating
+    // this whole block on Channels_1C/Channels_J1 alone meant an L5-or-L2C-only
+    // configuration never even attempted to load its almanac, UTC or iono files -- not
+    // because those files were missing or invalid, but because the code never asked for
+    // them. The L1 C/A LNAV ephemeris load stays inside this same block (L5/L2C use their
+    // own separately-gated CNAV ephemeris below); requesting it is harmless when no L1C
+    // channel exists to use it.
+    if ((configuration_->property("Channels_1C.count", 0) > 0) || (configuration_->property("Channels_J1.count", 0) > 0) ||
+        (configuration_->property("Channels_2S.count", 0) > 0) || (configuration_->property("Channels_L5.count", 0) > 0))
         {
             if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)
                 {

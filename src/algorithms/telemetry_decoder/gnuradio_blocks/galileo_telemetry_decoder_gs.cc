@@ -1015,7 +1015,15 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     d_band = current_symbol.Signal[0];
 
     // add new symbol to the symbol queue
-    d_symbol_history.push_back(current_symbol.Prompt_I);
+    {
+        // d_symbol_history is also cleared from reset()/set_satellite(), which can run
+        // on a different thread (ChannelFsm::start_acquisition() -> nav_->reset()) than
+        // this block's own scheduler thread that runs general_work() -- unsynchronized
+        // concurrent push_back()/clear() on the same boost::circular_buffer is undefined
+        // behavior, not just stale data.
+        gr::thread::scoped_lock lock(d_setlock);
+        d_symbol_history.push_back(current_symbol.Prompt_I);
+    }
 
     d_symbol_counter++;  // counter for the processed symbols
 
@@ -1076,6 +1084,13 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             // correlate with preamble
             if (d_symbol_history.size() > d_required_symbols)
                 {
+                    // d_stat and d_preamble_index are also written by reset()/set_satellite(),
+                    // which can run on a different thread (ChannelFsm::start_acquisition() ->
+                    // nav_->reset()) than this block's own scheduler thread. Without this lock,
+                    // a hot-start reset could race with an in-flight general_work() call.
+                    // Scoped narrowly to case 0/1 (case 2 already takes this same lock,
+                    // correctly, only around its own state mutations).
+                    gr::thread::scoped_lock lock(d_setlock);
                     // ******* preamble correlation ********
                     for (int32_t i = 0; i < d_samples_per_preamble; i++)
                         {
@@ -1097,9 +1112,25 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 }
             break;
         case 1:  // possible preamble lock
-            // correlate with preamble
+            // Keep scanning every symbol for a full-correlation hit, exactly like case 0
+            // -- do NOT restrict the check to the single exact symbol the current anchor
+            // predicts. Confirmation requires two hits exactly one page period apart, but
+            // a hit that does NOT land one period after the current anchor is not treated
+            // as a failure of an already-correct anchor: it becomes the new anchor and the
+            // search keeps going. This matters because the anchor set by case 0 is only a
+            // single coincidental correlation hit (a real, if rare, false-positive rate
+            // even at high CN0) -- checking only symbol_counter == anchor + period forever
+            // meant a bad initial anchor could never self-correct, since every subsequent
+            // check looked at the wrong exact symbol (nowhere near the true 12-symbol
+            // preamble window) and would keep missing indefinitely, no matter how many
+            // periods passed, even with an otherwise perfectly-tracked, high-SNR signal.
+            // Comparing every new hit to the most recent one instead means a coincidental
+            // false-positive anchor is simply overwritten the next time a genuine
+            // periodic hit appears, rather than poisoning the search permanently.
             if (d_symbol_history.size() > d_required_symbols)
                 {
+                    // See the lock rationale in case 0 above -- same race applies here.
+                    gr::thread::scoped_lock lock(d_setlock);
                     // ******* preamble correlation ********
                     for (int32_t i = 0; i < d_samples_per_preamble; i++)
                         {
@@ -1114,11 +1145,9 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                         }
                     if (std::abs(corr_value) >= d_samples_per_preamble)
                         {
-                            // check preamble separation
-                            const auto preamble_diff = static_cast<int32_t>(d_symbol_counter - d_preamble_index);
-                            if (std::abs(preamble_diff - d_preamble_period_symbols) == 0)
+                            if (d_symbol_counter == d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
                                 {
-                                    // try to decode frame
+                                    // Two genuine hits exactly one period apart: confirmed.
                                     DLOG(INFO) << "Starting page decoder for Galileo satellite " << this->d_satellite;
                                     d_preamble_index = d_symbol_counter;  // record the preamble sample stamp
                                     d_CRC_error_counter = 0;
@@ -1134,10 +1163,11 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 }
                             else
                                 {
-                                    if (preamble_diff > d_preamble_period_symbols)
-                                        {
-                                            d_stat = 0;  // start again
-                                        }
+                                    // A genuine hit, but not where the current anchor
+                                    // predicted -- the anchor itself may have been wrong.
+                                    // Replace it with this independently-found hit and
+                                    // keep watching for the next one to confirm against it.
+                                    d_preamble_index = d_symbol_counter;
                                 }
                         }
                 }

@@ -296,6 +296,7 @@ galileo_telemetry_decoder_gs::~galileo_telemetry_decoder_gs()
 
 void galileo_telemetry_decoder_gs::msg_handler_read_galileo_tow_map(const pmt::pmt_t &msg)
 {
+    gr::thread::scoped_lock lock(d_setlock);
     if (d_frame_type == 3)
         {
             try
@@ -923,21 +924,7 @@ void galileo_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite
 {
     gr::thread::scoped_lock lock(d_setlock);
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    d_last_valid_preamble = d_symbol_counter;
-    d_sent_tlm_failed_msg = false;
-    d_received_week = GALILEO_TOW_MAP_INVALID_WEEK;
-    d_received_tow_ms = GALILEO_TOW_MAP_INVALID_TOW_MS;
-    d_received_sample_counter = GALILEO_TOW_MAP_INVALID_SAMPLE_COUNTER;
-    d_TOW_week = GALILEO_TOW_MAP_INVALID_WEEK;
-    d_galileo_week = GALILEO_TOW_MAP_INVALID_WEEK;
-    d_galileo_week_valid = false;
-    d_E6_TOW_set = false;
-    d_valid_timetag = false;
-    d_first_eph_sent = false;
-    d_pending_reduced_ced = false;
-    d_inav_nav.init_PRN(d_satellite.get_PRN());
-    d_symbol_history.clear();
-    clear_galileo_tow_map_entry();
+    reset_decoder_state();
     DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
     DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
 }
@@ -946,7 +933,18 @@ void galileo_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite
 void galileo_telemetry_decoder_gs::reset()
 {
     gr::thread::scoped_lock lock(d_setlock);
+    reset_decoder_state();
+}
+
+
+void galileo_telemetry_decoder_gs::reset_decoder_state()
+{
     d_flag_frame_sync = false;
+    d_flag_preamble = false;
+    d_flag_PLL_180_deg_phase_locked = false;
+    d_flag_even_word_arrived = 0;
+    d_CRC_error_counter = 0;
+    d_preamble_index = d_symbol_counter;
     d_TOW_at_current_symbol_ms = 0;
     d_TOW_at_Preamble_ms = 0;
     d_TOW_week = GALILEO_TOW_MAP_INVALID_WEEK;
@@ -979,6 +977,7 @@ void galileo_telemetry_decoder_gs::reset()
 
 void galileo_telemetry_decoder_gs::set_channel(int32_t channel)
 {
+    gr::thread::scoped_lock lock(d_setlock);
     d_channel = channel;
     DLOG(INFO) << "Navigation channel set to " << channel;
 
@@ -989,7 +988,6 @@ void galileo_telemetry_decoder_gs::set_channel(int32_t channel)
 
 void galileo_telemetry_decoder_gs::check_tlm_separation()
 {
-    gr::thread::scoped_lock lock(d_setlock);
     if (d_sent_tlm_failed_msg == false)
         {
             if ((d_symbol_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
@@ -1006,6 +1004,10 @@ void galileo_telemetry_decoder_gs::check_tlm_separation()
 int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
+    // Reset and satellite changes must not interrupt a symbol's state update,
+    // including history access, page decoding, and publication of its results.
+    gr::thread::scoped_lock lock(d_setlock);
+
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
     const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
 
@@ -1097,7 +1099,9 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 }
             break;
         case 1:  // possible preamble lock
-            // correlate with preamble
+            // Keep the candidate until its expected confirmation point: payload
+            // symbols can also correlate with the preamble. If confirmation is
+            // missed, the next hit starts a new candidate.
             if (d_symbol_history.size() > d_required_symbols)
                 {
                     // ******* preamble correlation ********
@@ -1114,11 +1118,9 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                         }
                     if (std::abs(corr_value) >= d_samples_per_preamble)
                         {
-                            // check preamble separation
-                            const auto preamble_diff = static_cast<int32_t>(d_symbol_counter - d_preamble_index);
-                            if (std::abs(preamble_diff - d_preamble_period_symbols) == 0)
+                            if (d_symbol_counter == d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
                                 {
-                                    // try to decode frame
+                                    // Two hits exactly one period apart: attempt page decoding.
                                     DLOG(INFO) << "Starting page decoder for Galileo satellite " << this->d_satellite;
                                     d_preamble_index = d_symbol_counter;  // record the preamble sample stamp
                                     d_CRC_error_counter = 0;
@@ -1132,12 +1134,10 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                         }
                                     d_stat = 2;
                                 }
-                            else
+                            else if (d_symbol_counter > d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
                                 {
-                                    if (preamble_diff > d_preamble_period_symbols)
-                                        {
-                                            d_stat = 0;  // start again
-                                        }
+                                    // The previous candidate missed confirmation.
+                                    d_preamble_index = d_symbol_counter;
                                 }
                         }
                 }
@@ -1201,7 +1201,6 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                         {
                             d_CRC_error_counter = 0;
                             d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
-                            gr::thread::scoped_lock lock(d_setlock);
                             d_last_valid_preamble = d_symbol_counter;
                             if (!d_flag_frame_sync)
                                 {
@@ -1226,7 +1225,6 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                             if (d_CRC_error_counter > CRC_ERROR_LIMIT)
                                 {
                                     DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
-                                    gr::thread::scoped_lock lock(d_setlock);
                                     d_flag_frame_sync = false;
                                     d_stat = 0;
                                     d_TOW_at_current_symbol_ms = 0;

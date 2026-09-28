@@ -18,19 +18,28 @@
 
 #include "galileo_fnav_message.h"
 #include "galileo_inav_message.h"
+#include "galileo_telemetry_decoder_gs.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
+#include "gnss_synchro.h"
+#include "tlm_conf.h"
 #include "viterbi_decoder.h"
 #include <boost/crc.hpp>
 #include <boost/dynamic_bitset.hpp>
+#include <gnuradio/io_signature.h>
+#include <gnuradio/sync_block.h>
+#include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
 #include <algorithm>  // for copy
 #include <array>
+#include <atomic>
 #include <bitset>
 #include <chrono>
 #include <cstddef>
+#include <cstdint>
 #include <exception>
 #include <iterator>  // for std::back_inserter
 #include <string>
+#include <thread>
 #include <unistd.h>
 #include <utility>
 #include <vector>
@@ -38,6 +47,83 @@
 
 namespace
 {
+constexpr uint64_t FNAV_TEST_SAMPLES_PER_SYMBOL = 20;
+
+
+class GalileoFnavTestSource : public gr::sync_block
+{
+public:
+    explicit GalileoFnavTestSource(const std::vector<float>& symbols)
+        : gr::sync_block("galileo_fnav_test_source",
+              gr::io_signature::make(0, 0, 0),
+              gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+          d_symbols(symbols)
+    {
+    }
+
+    int work(int noutput_items, gr_vector_const_void_star&, gr_vector_void_star& output_items) override
+    {
+        if (d_offset == d_symbols.size())
+            {
+                return WORK_DONE;
+            }
+        auto* out = static_cast<Gnss_Synchro*>(output_items[0]);
+        const int count = static_cast<int>(std::min(static_cast<size_t>(noutput_items), d_symbols.size() - d_offset));
+        for (int i = 0; i < count; ++i)
+            {
+                out[i] = Gnss_Synchro{};
+                out[i].System = 'E';
+                out[i].Signal[0] = '5';
+                out[i].Signal[1] = 'X';
+                out[i].PRN = 1;
+                out[i].Prompt_I = d_symbols[d_offset++];
+                out[i].CN0_dB_hz = 50.0;
+                out[i].fs = 1000;
+                out[i].Tracking_sample_counter = d_offset * FNAV_TEST_SAMPLES_PER_SYMBOL;
+                out[i].Flag_valid_symbol_output = true;
+                out[i].correlation_length_ms = 20;
+            }
+        return count;
+    }
+
+private:
+    const std::vector<float> d_symbols;
+    size_t d_offset{0};
+};
+
+
+class GalileoFnavTestSink : public gr::sync_block
+{
+public:
+    GalileoFnavTestSink()
+        : gr::sync_block("galileo_fnav_test_sink",
+              gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+              gr::io_signature::make(0, 0, 0))
+    {
+    }
+
+    int work(int noutput_items, gr_vector_const_void_star& input_items, gr_vector_void_star&) override
+    {
+        const auto* in = static_cast<const Gnss_Synchro*>(input_items[0]);
+        if (d_first_symbol == 0 && noutput_items > 0)
+            {
+                d_first_symbol = in[0].Tracking_sample_counter / FNAV_TEST_SAMPLES_PER_SYMBOL;
+            }
+        return noutput_items;
+    }
+
+    // 1-based index of the first input symbol for which the decoder delivered
+    // a valid word, or 0 if it never did
+    uint64_t first_symbol() const
+    {
+        return d_first_symbol;
+    }
+
+private:
+    std::atomic<uint64_t> d_first_symbol{0};
+};
+
+
 using CRC_Galileo_INAV_test_type = boost::crc_optimal<24, 0x1864CFBU, 0x0, 0x0, false, false>;
 
 
@@ -278,6 +364,77 @@ public:
         return crc_ok;
     }
 
+    std::vector<float> fnav_frame() const
+    {
+        // FNAV FULLY ENCODED FRAME
+        return {-1, 1, -1, -1, 1, -1, 1, 1, 1, -1, -1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+            1, -1, -1, 1, -1, -1, 1, 1, 1, -1, 1, -1, 1, 1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1,
+            -1, 1, -1, 1, -1, 1, 1, -1, -1, 1, -1, 1, -1, 1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, 1, 1, -1, 1, -1, 1, -1,
+            -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1, 1, -1, 1, -1, 1, 1, -1, 1, -1, 1, 1, -1, 1, 1, 1, -1, -1, 1, 1, -1, -1, -1, -1,
+            -1, -1, -1, -1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, 1, 1, 1, -1, -1, -1, -1, -1, 1, 1,
+            -1, -1, -1, 1, -1, -1, -1, -1, -1, 1, -1, 1, 1, 1, 1, 1, -1, -1, 1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 1, -1, -1, -1,
+            -1, 1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, 1, 1, -1, -1, -1, -1, -1, 1, -1, -1, 1, 1, 1, 1, 1, 1, -1,
+            -1, 1, -1, 1, -1, -1, 1, -1, 1, -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1, -1, -1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1, -1, -1, -1, 1, 1, 1, -1, 1, -1, -1, 1, 1, 1, 1, 1, -1, -1, 1, 1, -1, -1, -1, 1, -1, 1, -1, 1, 1, -1,
+            1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, 1, 1, -1, -1, -1, -1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1,
+            -1, 1, -1, 1, -1, -1, -1, -1, -1, 1, -1, 1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, 1, -1, -1, -1, 1,
+            1, -1, 1, -1, -1, 1, 1, -1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, 1, 1, -1,
+            -1, 1, -1, -1, -1, -1, 1, -1, -1, -1, -1, 1, 1, 1, -1, 1, -1, 1, -1, 1, 1, -1, -1, 1, -1, -1, 1, -1, 1, 1, 1, 1, -1, -1, 1,
+            1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, 1, -1, -1, -1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1,
+            1, -1, 1, -1, -1, 1, 1, 1, -1, -1, 1, -1, 1, 1};
+    }
+
+    gnss_shared_ptr<GalileoFnavTestSink> run_fnav_decoder(const std::vector<float>& symbols,
+        galileo_telemetry_decoder_gs_sptr decoder = {}) const
+    {
+        if (!decoder)
+            {
+                Tlm_Conf conf;
+                decoder = galileo_make_telemetry_decoder_gs(conf, 2);
+                decoder->set_satellite(Gnss_Satellite("Galileo", 1));
+            }
+        gnss_shared_ptr<GalileoFnavTestSource> source(new GalileoFnavTestSource(symbols));
+        gnss_shared_ptr<GalileoFnavTestSink> sink(new GalileoFnavTestSink());
+        auto flowgraph = gr::make_top_block("galileo_fnav_sync_test");
+        flowgraph->connect(source, 0, decoder, 0);
+        flowgraph->connect(decoder, 0, sink, 0);
+        flowgraph->run();
+        return sink;
+    }
+
+    std::vector<float> fnav_symbols(int pages) const
+    {
+        const auto preamble = fnav_preamble();
+        const auto payload = fnav_frame();
+        std::vector<float> symbols;
+        for (int page = 0; page < pages; ++page)
+            {
+                symbols.insert(symbols.end(), preamble.begin(), preamble.end());
+                symbols.insert(symbols.end(), payload.begin(), payload.end());
+            }
+        return symbols;
+    }
+
+    uint64_t run_fnav(const std::vector<float>& symbols) const
+    {
+        return run_fnav_decoder(symbols)->nitems_read(0);
+    }
+
+    uint64_t first_valid_fnav_symbol(const std::vector<float>& symbols) const
+    {
+        return run_fnav_decoder(symbols)->first_symbol();
+    }
+
+    std::vector<float> fnav_preamble() const
+    {
+        std::vector<float> preamble;
+        for (int i = 0; i < GALILEO_FNAV_PREAMBLE_LENGTH_BITS; ++i)
+            {
+                preamble.push_back(GALILEO_FNAV_PREAMBLE[i] == '1' ? 1.0F : -1.0F);
+            }
+        return preamble;
+    }
+
     bool decode_FNAV_word(float* page_symbols, int32_t frame_length)
     {
         // 1. De-interleave
@@ -371,22 +528,7 @@ TEST_F(Galileo_FNAV_INAV_test, ValidationOfResults)
     std::chrono::duration<double> elapsed_seconds(0);
     start = std::chrono::system_clock::now();
     int repetitions = 10;
-    // FNAV FULLY ENCODED FRAME
-    float FNAV_frame[488] = {-1, 1, -1, -1, 1, -1, 1, 1, 1, -1, -1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        1, -1, -1, 1, -1, -1, 1, 1, 1, -1, 1, -1, 1, 1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1,
-        -1, 1, -1, 1, -1, 1, 1, -1, -1, 1, -1, 1, -1, 1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, 1, 1, -1, 1, -1, 1, -1,
-        -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1, 1, -1, 1, -1, 1, 1, -1, 1, -1, 1, 1, -1, 1, 1, 1, -1, -1, 1, 1, -1, -1, -1, -1,
-        -1, -1, -1, -1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, 1, 1, 1, -1, -1, -1, -1, -1, 1, 1,
-        -1, -1, -1, 1, -1, -1, -1, -1, -1, 1, -1, 1, 1, 1, 1, 1, -1, -1, 1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 1, -1, -1, -1,
-        -1, 1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, 1, 1, -1, -1, -1, -1, -1, 1, -1, -1, 1, 1, 1, 1, 1, 1, -1,
-        -1, 1, -1, 1, -1, -1, 1, -1, 1, -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, 1, 1, 1, -1, 1, -1, -1, 1, 1, 1, 1, 1, -1, -1, 1, 1, -1, -1, -1, 1, -1, 1, -1, 1, 1, -1,
-        1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, 1, 1, -1, -1, -1, -1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1,
-        -1, 1, -1, 1, -1, -1, -1, -1, -1, 1, -1, 1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, 1, -1, -1, -1, 1,
-        1, -1, 1, -1, -1, 1, 1, -1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, 1, 1, -1,
-        -1, 1, -1, -1, -1, -1, 1, -1, -1, -1, -1, 1, 1, 1, -1, 1, -1, 1, -1, 1, 1, -1, -1, 1, -1, -1, 1, -1, 1, 1, 1, 1, -1, -1, 1,
-        1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, 1, -1, -1, -1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1,
-        1, -1, 1, -1, -1, 1, 1, 1, -1, -1, 1, -1, 1, 1};
+    auto FNAV_frame = fnav_frame();
 
     ASSERT_NO_THROW({
         for (int n = 0; n < repetitions; n++)
@@ -439,6 +581,145 @@ TEST_F(Galileo_FNAV_INAV_test, ValidationOfResults)
     end = std::chrono::system_clock::now();
     elapsed_seconds = end - start;
     std::cout << "Galileo INAV/FNAV CRC and Viterbi decoder test completed in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
+}
+
+
+TEST_F(Galileo_FNAV_INAV_test, FrameSyncIgnoresPayloadPreambleMatches)
+{
+    const auto preamble = fnav_preamble();
+    auto payload = fnav_frame();
+    // Introduce a preamble-like pattern at symbol 100 of every page. The
+    // convolutional code still corrects these errors and the CRC must pass.
+    std::copy(preamble.begin(), preamble.end(), payload.begin() + 100 - GALILEO_FNAV_PREAMBLE_LENGTH_BITS);
+    ASSERT_TRUE(decode_FNAV_word(payload.data(), static_cast<int32_t>(payload.size())));
+    for (const float polarity : {1.0F, -1.0F})
+        {
+            SCOPED_TRACE(polarity);
+            std::vector<float> symbols;
+            for (int page = 0; page < 6; ++page)
+                {
+                    symbols.insert(symbols.end(), preamble.begin(), preamble.end());
+                    symbols.insert(symbols.end(), payload.begin(), payload.end());
+                }
+            for (auto& symbol : symbols)
+                {
+                    symbol *= polarity;
+                }
+            EXPECT_GT(run_fnav(symbols), 0U);
+        }
+}
+
+
+TEST_F(Galileo_FNAV_INAV_test, FrameSyncRecoversFromFalseInitialPreamble)
+{
+    const auto preamble = fnav_preamble();
+    const auto payload = fnav_frame();
+    std::vector<float> symbols(200, -1.0F);
+    std::copy(preamble.begin(), preamble.end(), symbols.begin());
+    for (int page = 0; page < 6; ++page)
+        {
+            symbols.insert(symbols.end(), preamble.begin(), preamble.end());
+            symbols.insert(symbols.end(), payload.begin(), payload.end());
+        }
+    EXPECT_GT(run_fnav(symbols), 0U);
+}
+
+
+TEST_F(Galileo_FNAV_INAV_test, FrameSyncBeatsTelemetryWatchdogAfterFalseCandidate)
+{
+    // Reception starts mid-page, and a payload pattern matching the preamble
+    // arrives before the first genuine preamble. The decoder must still deliver
+    // a valid word before its telemetry watchdog (d_max_symbols_without_valid_frame,
+    // five F/NAV pages) asks tracking to restart the channel. Keeping the first
+    // hit after the false candidate's missed confirmation point as the new
+    // candidate costs one extra page; discarding it costs two and trips the
+    // watchdog.
+    const auto watchdog_symbols = static_cast<uint64_t>(5 * GALILEO_FNAV_SYMBOLS_PER_PAGE);
+    const int32_t lead_in_symbols = 250;
+    const auto preamble = fnav_preamble();
+    const auto payload = fnav_frame();
+    std::vector<float> lead_in(payload.end() - lead_in_symbols, payload.end());
+    std::copy(preamble.begin(), preamble.end(), lead_in.begin());
+    for (const float polarity : {1.0F, -1.0F})
+        {
+            SCOPED_TRACE(polarity);
+            std::vector<float> symbols(lead_in);
+            for (int page = 0; page < 6; ++page)
+                {
+                    symbols.insert(symbols.end(), preamble.begin(), preamble.end());
+                    symbols.insert(symbols.end(), payload.begin(), payload.end());
+                }
+            for (auto& symbol : symbols)
+                {
+                    symbol *= polarity;
+                }
+            const uint64_t first_valid_symbol = first_valid_fnav_symbol(symbols);
+            EXPECT_GT(first_valid_symbol, 0U);
+            EXPECT_LE(first_valid_symbol, watchdog_symbols);
+        }
+}
+
+
+TEST_F(Galileo_FNAV_INAV_test, ResetAndSatelliteChangeRestartFrameSearch)
+{
+    const auto symbols = fnav_symbols(6);
+    // Stop with a candidate, a confirmed preamble, or a decoded page. Both
+    // entry points must discard the old history and time before resuming.
+    for (const size_t stop_symbol : {600U, 1100U, 1700U})
+        {
+            for (const bool change_satellite : {false, true})
+                {
+                    SCOPED_TRACE(stop_symbol);
+                    SCOPED_TRACE(change_satellite);
+                    Tlm_Conf conf;
+                    auto decoder = galileo_make_telemetry_decoder_gs(conf, 2);
+                    decoder->set_satellite(Gnss_Satellite("Galileo", 1));
+                    run_fnav_decoder(std::vector<float>(symbols.begin(), symbols.begin() + stop_symbol), decoder);
+                    if (change_satellite)
+                        {
+                            decoder->set_satellite(Gnss_Satellite("Galileo", 2));
+                        }
+                    else
+                        {
+                            decoder->reset();
+                        }
+                    const auto sink = run_fnav_decoder(symbols, decoder);
+                    // Buffer one page, confirm at the second preamble, and
+                    // decode at the third, with the preamble lookahead delay.
+                    EXPECT_EQ(sink->first_symbol(), static_cast<uint64_t>(3 * GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS + 1));
+                }
+        }
+}
+
+
+TEST_F(Galileo_FNAV_INAV_test, ConcurrentResetAndSatelliteChangeAllowRecovery)
+{
+    Tlm_Conf conf;
+    auto decoder = galileo_make_telemetry_decoder_gs(conf, 2);
+    decoder->set_satellite(Gnss_Satellite("Galileo", 1));
+    gnss_shared_ptr<GalileoFnavTestSource> source(new GalileoFnavTestSource(fnav_symbols(1000)));
+    gnss_shared_ptr<GalileoFnavTestSink> sink(new GalileoFnavTestSink());
+    auto flowgraph = gr::make_top_block("galileo_fnav_concurrent_reset_test");
+    flowgraph->connect(source, 0, decoder, 0);
+    flowgraph->connect(decoder, 0, sink, 0);
+    flowgraph->start();
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    while (sink->first_symbol() == 0 && std::chrono::steady_clock::now() < deadline)
+        {
+            std::this_thread::yield();
+        }
+    const bool started_decoding = sink->first_symbol() != 0;
+    for (int i = 0; i < 1000; ++i)
+        {
+            decoder->reset();
+            decoder->set_satellite(Gnss_Satellite("Galileo", 1 + i % 2));
+            std::this_thread::yield();
+        }
+    flowgraph->wait();
+    flowgraph->disconnect_all();
+    EXPECT_TRUE(started_decoding);
+    decoder->reset();
+    EXPECT_GT(run_fnav_decoder(fnav_symbols(6), decoder)->nitems_read(0), 0U);
 }
 
 

@@ -108,6 +108,8 @@ private:
     size_t item_size_;
 
     bool enable_DMA_;
+    bool rx1_enable_;
+    bool rx2_enable_;
     bool enable_dynamic_bit_selection_;
     bool repeat_;
 };

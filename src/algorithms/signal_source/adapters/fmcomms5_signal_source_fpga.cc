@@ -78,13 +78,7 @@ Fmcomms5SignalSourceFPGA::Fmcomms5SignalSourceFPGA(const ConfigurationInterface 
       rf_shutdown_(configuration->property(role + ".rf_shutdown", absl::GetFlag(FLAGS_rf_shutdown)))
 #endif
 {
-    const bool enable_rx1_band((configuration->property("Channels_1C.count", 0) > 0) ||
-                               (configuration->property("Channels_1B.count", 0) > 0));
-    const bool enable_rx2_band((configuration->property("Channels_L2.count", 0) > 0) ||
-                               (configuration->property("Channels_L5.count", 0) > 0) ||
-                               (configuration->property("Channels_5X.count", 0) > 0));
-
-    const uint32_t num_freq_bands = ((enable_rx1_band == true) && (enable_rx2_band == true)) ? 2 : 1;
+    const uint32_t num_freq_bands = ((rx1_enable_ == true) && (rx2_enable_ == true)) ? 2 : 1;
 
     switch_fpga = std::make_shared<Fpga_Switch>();
     switch_fpga->set_switch_position(switch_to_real_time_mode);
@@ -168,11 +162,11 @@ Fmcomms5SignalSourceFPGA::Fmcomms5SignalSourceFPGA(const ConfigurationInterface 
             LOG(WARNING) << "Invalid configuration value for bandwidth parameter. Set to bandwidth=" << default_bandwidth;
         }
 
-    if (enable_rx1_band)
+    if (rx1_enable_)
         {
             std::cout << "LO 0 frequency : " << freq0_ << " Hz\n";
         }
-    if (enable_rx2_band)
+    if (rx2_enable_)
         {
             std::cout << "LO 1 frequency : " << freq1_ << " Hz\n";
         }
@@ -211,7 +205,7 @@ Fmcomms5SignalSourceFPGA::Fmcomms5SignalSourceFPGA(const ConfigurationInterface 
     // dynamic bits selection
     if (enable_dynamic_bit_selection_)
         {
-            dynamic_bit_selection_fpga = std::make_shared<Fpga_dynamic_bit_selection>(enable_rx1_band, enable_rx2_band);
+            dynamic_bit_selection_fpga = std::make_shared<Fpga_dynamic_bit_selection>(rx1_enable_, rx2_enable_);
             thread_dynamic_bit_selection = std::thread([&] { run_dynamic_bit_selection_process(); });
         }
 

@@ -53,17 +53,13 @@ DMASignalSourceFPGA::DMASignalSourceFPGA(const ConfigurationInterface *configura
       out_stream_(out_stream),
       item_size_(sizeof(int8_t)),
       enable_DMA_(false),
+      rx1_enable_(configuration->property(role + ".rx1_enable", true)),
+      rx2_enable_(configuration->property(role + ".rx2_enable", true)),
       enable_dynamic_bit_selection_(configuration->property(role + ".enable_dynamic_bit_selection", true)),
       repeat_(configuration->property(role + ".repeat", false))
 {
     const double seconds_to_skip = configuration->property(role + ".seconds_to_skip", 0.0);
     const size_t header_size = configuration->property(role + ".header_size", 0);
-
-    const bool enable_rx1_band((configuration->property("Channels_1C.count", 0) > 0) ||
-                               (configuration->property("Channels_1B.count", 0) > 0));
-    const bool enable_rx2_band((configuration->property("Channels_L2.count", 0) > 0) ||
-                               (configuration->property("Channels_L5.count", 0) > 0) ||
-                               (configuration->property("Channels_5X.count", 0) > 0));
 
 #if USE_GLOG_AND_GFLAGS
     // override value with commandline flag, if present
@@ -91,13 +87,26 @@ DMASignalSourceFPGA::DMASignalSourceFPGA(const ConfigurationInterface *configura
             filename0_ = configuration->property(role + ".filename0", empty_string);
             filename1_ = configuration->property(role + ".filename1", empty_string);
         }
+
+    // configuration file check
+    const bool only_filename0_provided = !filename0_.empty() && filename1_.empty();
+    const bool both_filenames_provided = !filename0_.empty() && !filename1_.empty();
+    const bool one_freq_band_enabled = rx1_enable_ ^ rx2_enable_;
+    const bool both_freq_bands_enabled = rx1_enable_ && rx2_enable_;
+
+    if (!((only_filename0_provided && one_freq_band_enabled) ||
+            (both_filenames_provided && both_freq_bands_enabled)))
+        {
+            LOG(FATAL) << "Configuration error: invalid combination of input files and enabled frequency bands";
+        }
+
     // if only one input file is specified in the configuration file then:
     // if there is at least one channel assigned to frequency band 1 then the DMA transfers the samples to the L1 frequency band channels
     // otherwise the DMA transfers the samples to the L2/L5 frequency band channels
     // if more than one input file are specified then the DMA transfer the samples to both the L1 and the L2/L5 frequency channels.
     if (filename1_.empty())
         {
-            if (enable_rx1_band)
+            if (rx1_enable_)
                 {
                     dma_buff_offset_pos_ = 2;
                 }
@@ -204,7 +213,7 @@ DMASignalSourceFPGA::DMASignalSourceFPGA(const ConfigurationInterface *configura
     // dynamic bits selection
     if (enable_dynamic_bit_selection_)
         {
-            dynamic_bit_selection_fpga = std::make_shared<Fpga_dynamic_bit_selection>(enable_rx1_band, enable_rx2_band);
+            dynamic_bit_selection_fpga = std::make_shared<Fpga_dynamic_bit_selection>(rx1_enable_, rx2_enable_);
             thread_dynamic_bit_selection = std::thread([&] { run_dynamic_bit_selection_process(); });
         }
 

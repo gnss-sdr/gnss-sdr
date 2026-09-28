@@ -1844,14 +1844,29 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                     // No dual-frequency assist: fall back to a geometric Doppler
                                     // prediction from ephemeris/almanac (SatelliteVisibility), if
                                     // this is the primary signal of a satellite already classified
-                                    // visible (for GLONASS, any slot on its FDMA frequency) and a
-                                    // live PVT fix currently exists. No-op (stays
-                                    // false) unless visibility-aware search is enabled --
-                                    // PredictedDopplerHz() itself requires a live fix for now; the
-                                    // AGNSS-reference (no-fix) case is a follow-up.
+                                    // visible (for GLONASS, any slot on its FDMA frequency).
+                                    // No-op (stays false) unless visibility-aware search is enabled.
+                                    // With a live PVT fix, PredictedDopplerHz() narrows to a single
+                                    // bin; before one, it only predicts at all when
+                                    // GNSS-SDR.doppler_prediction_before_fix=true (default false),
+                                    // in which case PredictedDopplerUncertaintyHz() widens the
+                                    // search instead of trusting a single (zero-velocity, nominal
+                                    // clock offset) bin.
+                                    //
+                                    // For a SECONDARY signal, this same prediction is opt-in via
+                                    // <acq role>.alm_ephe_assisted_doppler_narrowing (default false,
+                                    // per this project's "new acquisition-narrowing behavior defaults
+                                    // off" convention) -- it's a genuinely different, less-proven
+                                    // Doppler source than the dual-frequency projection above, only
+                                    // reached here at all when that assist is unavailable or disabled
+                                    // (GNSS-SDR.assist_dual_frequency_acq=false), so it's kept opt-in
+                                    // rather than defaulted on.
                                     bool doppler_predicted = false;
                                     double predicted_doppler_hz = 0.0;
-                                    if (is_primary_freq && satellite_visibility_ && satellite_visibility_->enabled())
+                                    double doppler_uncertainty_hz = 0.0;
+                                    const std::string acq_role_alm_ephe = block_factory::get_role_name(configuration_.get(), "Acquisition_", channels_[current_channel]->get_signal().get_signal_str(), static_cast<int>(current_channel));
+                                    const bool alm_ephe_allowed_for_this_signal = is_primary_freq || configuration_->property(acq_role_alm_ephe + ".alm_ephe_assisted_doppler_narrowing", false);
+                                    if (alm_ephe_allowed_for_this_signal && satellite_visibility_ && satellite_visibility_->enabled())
                                         {
                                             const auto pvt_ptr = get_pvt();
                                             const Gnss_Satellite& sat = channels_[current_channel]->get_signal().get_satellite();
@@ -1859,12 +1874,38 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                                 {
                                                     double receiver_time_s = 0.0;
                                                     const Monitor_Pvt fix_status = channels_status_->get_current_status_pvt(&receiver_time_s);
-                                                    doppler_predicted = satellite_visibility_->PredictedDopplerHz(pvt_ptr, fix_status, receiver_time_s, sat, channels_[current_channel]->get_signal().get_signal_str(), predicted_doppler_hz);
+                                                    const std::string& signal_str = channels_[current_channel]->get_signal().get_signal_str();
+                                                    doppler_predicted = satellite_visibility_->PredictedDopplerHz(pvt_ptr, fix_status, receiver_time_s, sat, signal_str, predicted_doppler_hz);
+                                                    if (doppler_predicted)
+                                                        {
+                                                            doppler_uncertainty_hz = satellite_visibility_->PredictedDopplerUncertaintyHz(fix_status, signal_str);
+                                                        }
                                                 }
                                         }
                                     if (doppler_predicted)
                                         {
-                                            channels_[current_channel]->assist_acquisition_doppler(predicted_doppler_hz, 1);
+                                            // Before a fix, the prediction assumes zero receiver
+                                            // velocity and a nominal clock offset -- widen the search
+                                            // to cover doppler_uncertainty_hz around it instead of a
+                                            // single bin, using this channel's own configured
+                                            // doppler_step. Zero (e.g. once a fix exists) keeps the
+                                            // single-bin search.
+                                            uint32_t doppler_num_bins = 1;
+                                            if (doppler_uncertainty_hz > 0.0)
+                                                {
+                                                    const int32_t doppler_step = configuration_->property(acq_role_alm_ephe + ".doppler_step", 500);
+                                                    if (doppler_step > 0)
+                                                        {
+                                                            doppler_num_bins = 1U + 2U * static_cast<uint32_t>(std::ceil(doppler_uncertainty_hz / static_cast<double>(doppler_step)));
+                                                        }
+                                                }
+                                            LOG(INFO) << "[alm_ephe_doppler] " << (is_primary_freq ? "primary" : "secondary")
+                                                      << " signal " << channels_[current_channel]->get_signal().get_signal_str()
+                                                      << " channel " << current_channel
+                                                      << " satellite " << channels_[current_channel]->get_signal().get_satellite()
+                                                      << ": alm/ephe-predicted Doppler " << predicted_doppler_hz
+                                                      << " Hz +/- " << doppler_uncertainty_hz << " Hz, " << doppler_num_bins << " bin(s)";
+                                            channels_[current_channel]->assist_acquisition_doppler(predicted_doppler_hz, doppler_num_bins);
                                         }
                                     else
                                         {

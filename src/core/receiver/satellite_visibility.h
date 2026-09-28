@@ -167,19 +167,38 @@ public:
     // rules as compute_visible_satellites()), plus the receiver's live
     // solved clock drift (fix_status.user_clk_drift_ppm) scaled to this
     // signal's carrier. On success, writes the prediction to doppler_hz and
-    // returns true. Only meaningful with a live PVT fix -- returns false
-    // (leaving doppler_hz untouched) when disabled, no fix is currently
-    // valid, the signal isn't a recognized carrier, or neither ephemeris nor
-    // almanac is currently usable for sat, or the prediction is non-finite.
+    // returns true. With a live PVT fix, returns false (leaving doppler_hz
+    // untouched) when disabled, no fix is currently valid, the signal isn't
+    // a recognized carrier, or neither ephemeris nor almanac is currently
+    // usable for sat, or the prediction is non-finite.
     // For GLONASS, sat stands for its FDMA frequency: the prediction uses
     // the single visible slot on that
     // frequency and its own carrier, and fails if no slot or more than one
     // is visible.
     // Tick() must have observed this fix, at most one second ago on the
     // sample clock. Older or unanchored fixes require a full-grid search.
+    // Without a live fix, falls back to the AGNSS reference position (zero
+    // assumed velocity) and GNSS-SDR.clock_frequency_offset_ppm only when
+    // GNSS-SDR.doppler_prediction_before_fix=true (default false) and an
+    // AGNSS reference is configured -- otherwise behaves as if no
+    // prediction were available. See PredictedDopplerUncertaintyHz() for
+    // this path's search-widening companion.
     bool PredictedDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
         const Monitor_Pvt& fix_status, double receiver_time_s, const Gnss_Satellite& sat, const std::string& signal,
         double& doppler_hz) const;
+
+    // Half-width (Hz) of the uncertainty around PredictedDopplerHz() for
+    // this signal, to widen an acquisition search rather than trust a
+    // single bin. Zero whenever fix_status carries a live fix (position,
+    // velocity and clock offset are all solved, not assumed). Before that,
+    // PredictedDopplerHz() assumes zero receiver velocity and the nominal
+    // GNSS-SDR.clock_frequency_offset_ppm -- this returns the Doppler
+    // spread implied by GNSS-SDR.receiver_max_velocity_m_s and
+    // GNSS-SDR.clock_frequency_max_error_ppm instead, so the caller can
+    // size doppler_num_bins accordingly. Both default to 0.0 (no assumed
+    // margin), which callers should treat as "this signal wasn't given a
+    // velocity/clock uncertainty budget", not "the prediction is exact".
+    double PredictedDopplerUncertaintyHz(const Monitor_Pvt& fix_status, const std::string& signal) const;
 
 private:
     enum class SearchVisibility
@@ -246,6 +265,22 @@ private:
     // Initial epoch for the no-fix fallback; in replay runs the wall clock is
     // unrelated to the GNSS time in the samples, so configure it explicitly.
     time_t agnss_ref_utc_time_;
+
+    // GNSS-SDR.doppler_prediction_before_fix: opt-in (default false, per this
+    // project's "new acquisition-narrowing behavior defaults off" convention)
+    // for PredictedDopplerHz() to predict from the AGNSS reference position
+    // before a live fix exists, instead of requiring one.
+    bool doppler_prediction_before_fix_;
+
+    // Nominal local-oscillator offset (GNSS-SDR.clock_frequency_offset_ppm),
+    // its assumed worst-case error (GNSS-SDR.clock_frequency_max_error_ppm),
+    // and assumed receiver speed (GNSS-SDR.receiver_max_velocity_m_s), all
+    // used only by PredictedDopplerHz()'s/PredictedDopplerUncertaintyHz()'s
+    // pre-fix AGNSS-reference path above -- a live fix supplies its own
+    // clock/velocity solution and needs none of these.
+    double clock_frequency_offset_ppm_;
+    double clock_frequency_max_error_ppm_;
+    double receiver_max_velocity_m_s_;
 
     bool have_command_reference_{false};
     std::array<float, 3> command_reference_llh_{};

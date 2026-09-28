@@ -237,6 +237,10 @@ SatelliteVisibility::SatelliteVisibility(const std::shared_ptr<ConfigurationInte
       agnss_ref_lat_deg_(0.0),
       agnss_ref_lon_deg_(0.0),
       agnss_ref_utc_time_(0),
+      doppler_prediction_before_fix_(configuration->property("GNSS-SDR.doppler_prediction_before_fix", false)),
+      clock_frequency_offset_ppm_(configuration->property("GNSS-SDR.clock_frequency_offset_ppm", 0.0)),
+      clock_frequency_max_error_ppm_(configuration->property("GNSS-SDR.clock_frequency_max_error_ppm", 0.0)),
+      receiver_max_velocity_m_s_(configuration->property("GNSS-SDR.receiver_max_velocity_m_s", 0.0)),
       last_recompute_rx_time_s_(-1.0e9),
       last_recompute_r_eb_e_(arma::vec{0.0, 0.0, 0.0}),
       next_expiry_deadline_rx_time_(std::numeric_limits<double>::infinity()),
@@ -1186,20 +1190,61 @@ bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>
     const Monitor_Pvt& fix_status, double receiver_time_s, const Gnss_Satellite& sat, const std::string& signal,
     double& doppler_hz) const
 {
-    if (!enabled_ || !pvt_ptr || have_command_reference_ || !std::isfinite(fix_status.RX_time) || fix_status.RX_time < 0.0)
+    if (!enabled_ || !pvt_ptr || have_command_reference_)
         {
             return false;
         }
 
-    // Status retains the last successful solution during an outage. Use
-    // Tick's sample-clock anchor, which repeated snapshots do not refresh,
-    // to bound the age of the velocity and oscillator estimate for one bin.
-    const gtime_t gps_gtime = gpst2time(static_cast<int>(fix_status.week), fix_status.RX_time);
-    const double fix_time_s = static_cast<double>(gps_gtime.time) + gps_gtime.sec;
-    const double fix_age_s = receiver_time_s - last_fix_receiver_time_s_;
-    if (fix_time_s != last_fix_time_s_ || !std::isfinite(fix_age_s) || fix_age_s < 0.0 || fix_age_s > kMaxDopplerFixAgeS)
+    const bool fix_valid = (std::isfinite(fix_status.RX_time) && fix_status.RX_time >= 0.0);
+    if (!fix_valid && (!doppler_prediction_before_fix_ || !have_agnss_reference_))
         {
             return false;
+        }
+
+    gtime_t gps_gtime{};
+    double lat_deg = 0.0;
+    double lon_deg = 0.0;
+    double h_m = 0.0;
+    double ve_mps = 0.0;
+    double vn_mps = 0.0;
+    double vu_mps = 0.0;
+    double clock_drift_ppm = 0.0;
+    if (fix_valid)
+        {
+            // Status retains the last successful solution during an outage. Use
+            // Tick's sample-clock anchor, which repeated snapshots do not refresh,
+            // to bound the age of the velocity and oscillator estimate for one bin.
+            gps_gtime = gpst2time(static_cast<int>(fix_status.week), fix_status.RX_time);
+            const double fix_time_s = static_cast<double>(gps_gtime.time) + gps_gtime.sec;
+            const double fix_age_s = receiver_time_s - last_fix_receiver_time_s_;
+            if (fix_time_s != last_fix_time_s_ || !std::isfinite(fix_age_s) || fix_age_s < 0.0 || fix_age_s > kMaxDopplerFixAgeS)
+                {
+                    return false;
+                }
+            lat_deg = fix_status.latitude;
+            lon_deg = fix_status.longitude;
+            h_m = fix_status.height;
+            ve_mps = fix_status.vel_e;
+            vn_mps = fix_status.vel_n;
+            vu_mps = fix_status.vel_u;
+            clock_drift_ppm = fix_status.user_clk_drift_ppm;
+        }
+    else
+        {
+            // No live fix yet: predict from the AGNSS reference position (zero
+            // assumed velocity) and the configured nominal clock offset --
+            // same reference Tick() uses for its own no-fix visibility
+            // classification. Only reached when doppler_prediction_before_fix_
+            // and have_agnss_reference_ are both true (checked above). See
+            // PredictedDopplerUncertaintyHz() for this path's search-widening
+            // companion.
+            lat_deg = agnss_ref_lat_deg_;
+            lon_deg = agnss_ref_lon_deg_;
+            gtime_t utc_gtime{};
+            utc_gtime.time = agnss_ref_utc_time_;
+            utc_gtime.sec = 0.0;
+            gps_gtime = timeadd(utc2gpst(utc_gtime), receiver_time_s);
+            clock_drift_ppm = clock_frequency_offset_ppm_;
         }
 
     // Gnss_Ephemeris::predicted_doppler()/Gnss_Almanac::predicted_doppler()'s
@@ -1221,12 +1266,6 @@ bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>
     const int band = band_it->second;
     double carrier_freq_hz = freq_it->second;
 
-    const double lat_deg = fix_status.latitude;
-    const double lon_deg = fix_status.longitude;
-    const double h_m = fix_status.height;
-    const double ve_mps = fix_status.vel_e;
-    const double vn_mps = fix_status.vel_n;
-    const double vu_mps = fix_status.vel_u;
     const double rx_time_s = time2gpst(gps_gtime, nullptr);
     int ref_gps_week = 0;
     time2gpst(gps_gtime, &ref_gps_week);
@@ -1304,13 +1343,14 @@ bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>
             return false;
         }
 
-    // Live PVT-solved clock drift, shared by every satellite's observed
-    // Doppler, on top of the per-satellite geometric term above.
+    // Clock drift shared by every satellite's observed Doppler, on top of
+    // the per-satellite geometric term above: the live PVT-solved value with
+    // a fix, else the configured nominal clock_drift_ppm (see above).
     // SUBTRACTED, not added -- empirically verified against
     // project_doppler()'s dual-frequency projection (gnss_flowgraph.cc):
     // geometric - clock_offset matched to within noise, geometric +
     // clock_offset was off by 2x it.
-    const double clock_offset_hz = fix_status.user_clk_drift_ppm * 1.0e-6 * carrier_freq_hz;
+    const double clock_offset_hz = clock_drift_ppm * 1.0e-6 * carrier_freq_hz;
     const double prediction_hz = geometric_doppler_hz - clock_offset_hz;
     if (!std::isfinite(prediction_hz))
         {
@@ -1318,6 +1358,25 @@ bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>
         }
     doppler_hz = prediction_hz;
     return true;
+}
+
+
+double SatelliteVisibility::PredictedDopplerUncertaintyHz(const Monitor_Pvt& fix_status, const std::string& signal) const
+{
+    const bool fix_valid = (std::isfinite(fix_status.RX_time) && fix_status.RX_time >= 0.0);
+    if (fix_valid)
+        {
+            return 0.0;
+        }
+    const auto freq_it = SIGNAL_FREQ_MAP.find(signal);
+    if (freq_it == SIGNAL_FREQ_MAP.cend())
+        {
+            return 0.0;
+        }
+    const double carrier_freq_hz = freq_it->second;
+    const double clock_uncertainty_hz = clock_frequency_max_error_ppm_ * 1.0e-6 * carrier_freq_hz;
+    const double velocity_uncertainty_hz = (receiver_max_velocity_m_s_ / SPEED_OF_LIGHT_M_S) * carrier_freq_hz;
+    return clock_uncertainty_hz + velocity_uncertainty_hz;
 }
 
 

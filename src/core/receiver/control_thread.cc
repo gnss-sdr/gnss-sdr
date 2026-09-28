@@ -314,26 +314,32 @@ void ControlThread::event_dispatcher(bool &valid_event, pmt::pmt_t &msg)
                     DLOG(INFO) << "Control Queue: unknown object type!\n";
                 }
         }
-    else
-        {
-            if (receiver_on_standby_ == false)
-                {
-                    // perform non-priority tasks
-                    flowgraph_->acquisition_manager(0);  // start acquisition of untracked satellites
-                }
-        }
 
-    // Run on every event, not only in the idle branch above: acquisition
-    // churn through the "maybe visible" pool (pick, acquire, fail, re-pick)
-    // keeps the 100 ms timed_wait_and_pop() from timing out, so the idle
-    // branch would starve exactly when reclassification is needed to reduce
-    // that churn. Safe unconditionally: Tick() throttles the recompute.
+    // Run on every event, not only when idle below: acquisition churn
+    // through the "maybe visible" pool (pick, acquire, fail, re-pick) keeps
+    // the 100 ms timed_wait_and_pop() from timing out, so waiting for the
+    // idle branch would starve exactly when reclassification is needed to
+    // reduce that churn. Safe unconditionally: Tick() throttles the
+    // recompute.
+    // Must run BEFORE acquisition_manager() below: Tick() is the only place
+    // that stamps SatelliteVisibility's fix-freshness timestamp
+    // (last_fix_time_s_/last_fix_receiver_time_s_), which
+    // PredictedDopplerHz() checks against on every call. Calling
+    // acquisition_manager() first would always see that stamp one PVT epoch
+    // (~1s) behind the fix_status it just fetched, failing
+    // PredictedDopplerHz()'s freshness check on every attempt post-fix.
     if (receiver_on_standby_ == false)
         {
             flowgraph_->MaybeUpdateVisibility();  // no-op unless GNSS-SDR.enable_visibility_aware_search=true
             // A duplicated satellite breaks every PVT solution until one of
             // the two channels is stopped, so do not wait for an idle tick.
             flowgraph_->stop_duplicated_satellite_channels();
+        }
+
+    if (!valid_event && receiver_on_standby_ == false)
+        {
+            // perform non-priority tasks
+            flowgraph_->acquisition_manager(0);  // start acquisition of untracked satellites
         }
 }
 

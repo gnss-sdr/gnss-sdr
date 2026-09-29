@@ -40,6 +40,7 @@
 #include "gnss_block_interface.h"
 #include "gnss_frequencies.h"
 #include "gnss_satellite.h"
+#include "gnss_sdr_flags.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_synchro_monitor.h"
 #include "nav_message_monitor.h"
@@ -61,6 +62,7 @@
 #include <iomanip>                   // for std::setprecision
 #include <iostream>                  // for operator<<
 #include <iterator>                  // for insert_iterator, inserter
+#include <limits>                    // for numeric_limits
 #include <map>                       // for std::map
 #include <memory>                    // for std::shared_ptr
 #include <set>                       // for set
@@ -1748,10 +1750,8 @@ void GNSSFlowgraph::remove_signal(const Gnss_Signal& gs)
 // project Doppler from primary frequency to secondary frequency
 double GNSSFlowgraph::project_doppler(const std::string& searched_signal, const std::string& assist_signal, double assist_doppler_hz)
 {
-    // The Doppler shift scales with the carrier frequency. For the GLONASS FDMA
-    // pair, the ratio of the base frequencies FREQ2_GLO/FREQ1_GLO equals the
-    // ratio of the per-slot spacings DFRQ2_GLO/DFRQ1_GLO (both are 7/9), so
-    // using the base frequencies is exact for every frequency slot.
+    // GLONASS base frequencies and slot spacings both have an L2/L1 ratio of
+    // 7/9, so this scaling is exact for every FDMA slot.
     const auto searched_freq = SIGNAL_FREQ_MAP.find(searched_signal);
     const auto assist_freq = SIGNAL_FREQ_MAP.find(assist_signal);
     if ((searched_freq == SIGNAL_FREQ_MAP.end()) || (assist_freq == SIGNAL_FREQ_MAP.end()))
@@ -1759,6 +1759,57 @@ double GNSSFlowgraph::project_doppler(const std::string& searched_signal, const 
             return assist_doppler_hz;
         }
     return (assist_doppler_hz / assist_freq->second) * searched_freq->second;
+}
+
+
+uint32_t GNSSFlowgraph::doppler_bins_for_uncertainty(const std::string& acq_role, double uncertainty_hz) const
+{
+    if (!std::isfinite(uncertainty_hz) || uncertainty_hz < 0.0)
+        {
+            return 0;
+        }
+    int32_t doppler_max = configuration_->property(acq_role + ".doppler_max", 5000);
+    int32_t doppler_step = configuration_->property(acq_role + ".doppler_step", 500);
+#if USE_GLOG_AND_GFLAGS
+    const int32_t override_max = FLAGS_doppler_max;
+    const int32_t override_step = FLAGS_doppler_step;
+#else
+    const int32_t override_max = absl::GetFlag(FLAGS_doppler_max);
+    const int32_t override_step = absl::GetFlag(FLAGS_doppler_step);
+#endif
+    // Match PcpsAcquisitionAdapter's command-line overrides before sizing the grid.
+    if (override_max != 0)
+        {
+            doppler_max = override_max;
+        }
+    if (override_step != 0)
+        {
+            doppler_step = override_step;
+        }
+    if (doppler_max <= 0 || doppler_step <= 0)
+        {
+            return 0;
+        }
+    const double half_bins = std::ceil(uncertainty_hz / static_cast<double>(doppler_step));
+    if (half_bins > static_cast<double>((std::numeric_limits<uint32_t>::max() - 1U) / 2U))
+        {
+            return 0;
+        }
+    const uint32_t num_bins = 1U + 2U * static_cast<uint32_t>(half_bins);
+    // Same full-grid size as pcps_acquisition. The acquisition block caps larger
+    // requests at the full grid but keeps it centered on the prediction, which
+    // would search beyond +/-doppler_max. A window that is not narrower than the
+    // full grid gains nothing, so request the full search centered at 0 Hz.
+    // A single bin (live fix) is kept as before.
+    const auto full_grid_bins = static_cast<uint32_t>(std::ceil(2.0 * static_cast<double>(doppler_max) / static_cast<double>(doppler_step)));
+    if (num_bins > 1U && num_bins >= full_grid_bins)
+        {
+            DLOG(INFO) << "Doppler uncertainty " << uncertainty_hz << " Hz needs " << num_bins
+                       << " bins, not narrower than the full " << full_grid_bins << "-bin grid of "
+                       << acq_role << ": using the full search";
+            return 0;
+        }
+    return num_bins;
 }
 
 
@@ -1825,10 +1876,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                        << ", Signal " << channels_[current_channel]->get_signal().get_signal_str();
                             if (assistance_available == true && configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_))
                                 {
-                                    // Doppler known from the tracked primary band (already projected to this
-                                    // band by search_next_signal()): search a single bin, unless
-                                    // <acq role>.dual_freq_assisted_doppler_narrowing=false forces a full
-                                    // Doppler search for this signal (or channel, via a per-channel role).
+                                    // Use the projected primary-band Doppler; the role flag can retain a full search.
                                     const std::string acq_role = block_factory::get_role_name(configuration_.get(), "Acquisition_", channels_[current_channel]->get_signal().get_signal_str(), static_cast<int>(current_channel));
                                     if (configuration_->property(acq_role + ".dual_freq_assisted_doppler_narrowing", true))
                                         {
@@ -1841,17 +1889,15 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                 }
                             else
                                 {
-                                    // No dual-frequency assist: fall back to a geometric Doppler
-                                    // prediction from ephemeris/almanac (SatelliteVisibility), if
-                                    // this is the primary signal of a satellite already classified
-                                    // visible (for GLONASS, any slot on its FDMA frequency) and a
-                                    // live PVT fix currently exists. No-op (stays
-                                    // false) unless visibility-aware search is enabled --
-                                    // PredictedDopplerHz() itself requires a live fix for now; the
-                                    // AGNSS-reference (no-fix) case is a follow-up.
+                                    // Fall back to geometric Doppler for visible satellites. Secondary signals
+                                    // require opt-in; pre-fix predictions also require explicit uncertainty bounds.
                                     bool doppler_predicted = false;
                                     double predicted_doppler_hz = 0.0;
-                                    if (is_primary_freq && satellite_visibility_ && satellite_visibility_->enabled())
+                                    double doppler_uncertainty_hz = 0.0;
+                                    uint32_t doppler_num_bins = 0;
+                                    const std::string acq_role_alm_ephe = block_factory::get_role_name(configuration_.get(), "Acquisition_", channels_[current_channel]->get_signal().get_signal_str(), static_cast<int>(current_channel));
+                                    const bool alm_ephe_allowed_for_this_signal = is_primary_freq || configuration_->property(acq_role_alm_ephe + ".alm_ephe_assisted_doppler_narrowing", false);
+                                    if (alm_ephe_allowed_for_this_signal && satellite_visibility_ && satellite_visibility_->enabled())
                                         {
                                             const auto pvt_ptr = get_pvt();
                                             const Gnss_Satellite& sat = channels_[current_channel]->get_signal().get_satellite();
@@ -1859,12 +1905,28 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                                 {
                                                     double receiver_time_s = 0.0;
                                                     const Monitor_Pvt fix_status = channels_status_->get_current_status_pvt(&receiver_time_s);
-                                                    doppler_predicted = satellite_visibility_->PredictedDopplerHz(pvt_ptr, fix_status, receiver_time_s, sat, channels_[current_channel]->get_signal().get_signal_str(), predicted_doppler_hz);
+                                                    const std::string& signal_str = channels_[current_channel]->get_signal().get_signal_str();
+                                                    doppler_predicted = satellite_visibility_->PredictedDopplerHz(pvt_ptr, fix_status, receiver_time_s, sat, signal_str, predicted_doppler_hz);
+                                                    if (doppler_predicted)
+                                                        {
+                                                            doppler_uncertainty_hz = satellite_visibility_->PredictedDopplerUncertaintyHz(fix_status, signal_str);
+                                                        }
                                                 }
                                         }
                                     if (doppler_predicted)
                                         {
-                                            channels_[current_channel]->assist_acquisition_doppler(predicted_doppler_hz, 1);
+                                            doppler_num_bins = doppler_bins_for_uncertainty(acq_role_alm_ephe, doppler_uncertainty_hz);
+                                            doppler_predicted = doppler_num_bins != 0;
+                                        }
+                                    if (doppler_predicted)
+                                        {
+                                            LOG(INFO) << "[alm_ephe_doppler] " << (is_primary_freq ? "primary" : "secondary")
+                                                      << " signal " << channels_[current_channel]->get_signal().get_signal_str()
+                                                      << " channel " << current_channel
+                                                      << " satellite " << channels_[current_channel]->get_signal().get_satellite()
+                                                      << ": alm/ephe-predicted Doppler " << predicted_doppler_hz
+                                                      << " Hz +/- " << doppler_uncertainty_hz << " Hz, " << doppler_num_bins << " bin(s)";
+                                            channels_[current_channel]->assist_acquisition_doppler(predicted_doppler_hz, doppler_num_bins);
                                         }
                                     else
                                         {
@@ -2665,10 +2727,9 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
 
     if (any_assist_configured)
         {
-            // 1. Get the current channel tracking map: locked channels, with or without a
-            //    valid time reference. Doppler is available as soon as the primary
-            //    frequency is tracked, so the assisted search need not wait for the
-            //    navigation message to be decoded.
+            // 1. Get the current channel tracking map: locked channels, with or
+            //    without a valid time reference. Tracked Doppler is usable before
+            //    navigation-message decoding.
             const auto current_channels_status = channels_status_->get_current_tracking_map();
             // 2. search the currently tracked primary signal satellites and assist the acquisition if the satellite is not tracked on the assisted signal
             for (const auto& assist_signal : assist_signal_candidates)
@@ -2706,20 +2767,14 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
 
                                     if (it2 != available_signals.end())
                                         {
-                                            // Skip excluded satellites even if their primary frequency
-                                            // is reported as tracked: a blind connect()-time pick can
-                                            // sit below the mask, and the status snapshot may lag a
-                                            // channel that has already been stopped.
+                                            // A tracked-status snapshot may be stale or below the search mask.
                                             if (satellite_visibility_ && satellite_visibility_->enabled() &&
                                                 satellite_visibility_->IsSearchExcluded(it2->get_satellite()))
                                                 {
                                                     continue;
                                                 }
-                                            // GPS: skip satellites whose SV configuration (three LSBs of
-                                            // AS_status, the MSB is the A-S flag; IS-GPS-200, 20.3.3.5.1.4)
-                                            // predates L2C (< IIR-M) or L5 (< IIF). Unknown values stay
-                                            // permissive. Without this, a satellite lacking the signal is
-                                            // retried without pause.
+                                            // GPS SV configuration: AS_status bits 0-2 (IS-GPS-200, 20.3.3.5.1.4).
+                                            // Require IIR-M for L2C, IIF for L5; accept unknown configurations.
                                             if (enable_secondary_signal_status_gating_ && (mapStringValues_[searched_signal] == evGPS_L5 || mapStringValues_[searched_signal] == evGPS_2S))
                                                 {
                                                     const auto pvt_ptr = get_pvt();
@@ -2738,10 +2793,8 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                                                 }
                                                         }
                                                 }
-                                            // Galileo: skip E5b if flagged unhealthy in the I/NAV data
-                                            // received on E1B (ephemeris first, then almanac). E5a is not
-                                            // gated: E5a_HS is only broadcast in F/NAV on E5a itself, so a
-                                            // stale value could block a recovered satellite indefinitely.
+                                            // Gate E5b on I/NAV health. E5a health comes only from E5a F/NAV and
+                                            // may be stale before reacquisition, so it must not block the search.
                                             if (enable_secondary_signal_status_gating_ && mapStringValues_[searched_signal] == evGAL_7X)
                                                 {
                                                     const auto pvt_ptr = get_pvt();
@@ -2864,10 +2917,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                                 {
                                                     result = Gnss_Signal(Gnss_Satellite(std::string("Glonass"), tracked_prn), searched_signal);
                                                 }
-                                            // Assist fast path, bypassing pop_by_visibility() (a
-                                            // tracked, non-excluded satellite is proof of visibility).
-                                            // Logged separately so the queue counts in the
-                                            // pop_by_visibility() log lines remain explainable.
+                                            // Log this assisted pick separately: it bypasses pop_by_visibility().
                                             LOG(INFO) << "[visibility] signal " << searched_signal << ": picked "
                                                       << result.get_satellite() << " via primary-frequency assist ("
                                                       << assist_signal << " already tracked) -- bypasses visible/mayvisible bucket selection";
@@ -2884,10 +2934,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
 
     if (found_signal == false)
         {
-            // With GNSS-SDR.assist_dual_frequency_acq on, an assisted signal only starts
-            // acquisition when assistance_available is true, so any pick other than the
-            // fast path above would be pushed straight back by acquisition_manager().
-            // Idle the channel until its primary frequency is tracked.
+            // With dual-frequency assistance required, wait for a tracked primary band.
             if (!assist_signal_candidates.empty() && configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_))
                 {
                     signal_available = false;
@@ -2996,11 +3043,8 @@ Gnss_Signal GNSSFlowgraph::pop_by_visibility(std::list<Gnss_Signal>& available_s
     const uint32_t ratio = satellite_visibility_->search_ratio();
     const bool want_visible = counter < ratio;
 
-    // A satellite tracked on another signal is proof of visibility and overrides
-    // IsExcluded(): coarse almanac and precise ephemeris can disagree at the mask,
-    // and a freshly tracked satellite must not have its other-frequency entries
-    // blocked. get_current_status_map() copies the map under a lock shared with the
-    // DSP threads, so fetch it only when an excluded entry could use the override.
+    // Tracking on another band overrides exclusion at the elevation mask.
+    // Fetch the shared status map only when an excluded entry needs this check.
     const bool any_excluded = std::any_of(available_signals.begin(), available_signals.end(),
         [&](const Gnss_Signal& gs) { return satellite_visibility_->IsSearchExcluded(gs.get_satellite()); });
     std::map<int, std::shared_ptr<Gnss_Synchro>> current_channels_status;

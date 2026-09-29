@@ -2524,9 +2524,9 @@ void GNSSFlowgraph::set_signals_list()
                                 }
                             if (signal_str == "5D")
                                 {
-                                    if ((prn >= 1U && prn <= 18U) || (prn >= 59U && prn <= 63U))
+                                    if ((prn >= 1U && prn <= 5U) || (prn >= 59U && prn <= 63U))
                                         {
-                                            continue;  // GEO and BDS-2 do not broadcast B2a RNSS (ICD §2)
+                                            continue;  // GEO satellites do not broadcast B2a RNSS (ICD §2)
                                         }
                                 }
                             if (signal_str == "J5" && prn > QZSS_L5_MAX_PRN)

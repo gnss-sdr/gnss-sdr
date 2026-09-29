@@ -42,40 +42,22 @@ class PvtInterface;
  * \{ */
 
 /*!
- * \brief Computes the elevation of every satellite with usable ephemeris or
- * almanac data in pvt_ptr (GPS, Galileo, BeiDou, GLONASS, QZSS) and returns
- * those strictly above elevation_mask_deg that broadcast a healthy status.
- * Ephemeris is preferred over almanac, so each satellite is classified by
- * exactly one data source. BeiDou uses the fresh DNAV/CNAV1/CNAV2 orbit
- * closest to the query epoch (ties: DNAV, CNAV1, CNAV2); B-CNAV is limited
- * to IGSO/MEO satellite types. An unhealthy satellite (SV_health != 0; Galileo
- * E1B_HS != 0, since 1B initiates the search) is reported as below-mask, not
- * as "no data": it is known unusable whatever its geometry.
+ * \brief Return healthy GPS/Galileo/BeiDou/GLONASS/QZSS satellites above the mask.
+ * Prefer fresh ephemeris over almanac. BeiDou selects the closest orbit
+ * (ties: DNAV, CNAV1, CNAV2); B-CNAV supports IGSO/MEO only.
+ * Unhealthy satellites are excluded, not unknown; Galileo uses E1B health.
  *
- * Shared elevation core of ControlThread::get_visible_sats() and
- * SatelliteVisibility::Tick().
- *
- * \param gps_gtime query epoch (GPST). Its week also resolves the truncated
- * week fields (GPS ephemeris WN mod 1024, GPS/Galileo almanac WNa), so no
- * config-supplied reference week is needed.
+ * \param gps_gtime GPST query epoch; also resolves truncated navigation weeks.
  * \param r_eb_e receiver ECEF position (m).
- * \param elevation_mask_deg GNSS-SDR.search_elevation_mask (deg); distinct
- * from PVT.elevation_mask, which gates the solution, not the search order.
- * \param below_mask_out when non-null, receives every satellite whose
- * elevation was computable but at/below the mask (or unhealthy). Never
- * overlaps the returned list.
- * \param almanac_max_age_s max |gps_gtime - toa| (s) before an almanac entry
- * is ignored as stale. Ephemeris staleness is not configurable: RTKLIB's
- * per-system MAXDTOE* constants apply. Infinity disables the check.
- * \param seconds_until_next_expiry_out when non-null, set to the seconds
- * until the soonest classified entry crosses its staleness threshold;
- * +infinity if nothing was classified.
- * \param only_prns when non-null, restricts the computation to these
- * (system, PRN) pairs; valid only when nothing that affects the other
- * satellites (position, time) has changed.
- * \param glonass_strict_health if true, the Bn MSB also marks a GLONASS
- * ephemeris unhealthy (the ln flag always does).
- * \return (floor(El) in deg, satellite) pairs, sorted by descending elevation.
+ * \param elevation_mask_deg search mask (deg), independent of PVT.elevation_mask.
+ * \param below_mask_out optional output for satellites at/below the mask or unhealthy.
+ * \param almanac_max_age_s maximum absolute almanac age (s); infinity disables it.
+ * Ephemeris age limits use RTKLIB's per-system MAXDTOE* constants.
+ * \param seconds_until_next_expiry_out optional time to earliest classified-data expiry;
+ * infinity if nothing was classified.
+ * \param only_prns optional (system, PRN) filter; requires unchanged position/time.
+ * \param glonass_strict_health also reject the Bn MSB; ln always marks unhealthy.
+ * \return (floor(elevation) in degrees, satellite) pairs, highest elevation first.
  */
 std::vector<std::pair<int, Gnss_Satellite>> compute_visible_satellites(
     const std::shared_ptr<PvtInterface>& pvt_ptr,
@@ -90,34 +72,12 @@ std::vector<std::pair<int, Gnss_Satellite>> compute_visible_satellites(
 
 
 /*!
- * \brief Runtime classification of the searchable satellites, refreshed from
- * the control-thread tick, into two sets:
- *
- *   - visible_: elevation computable and above GNSS-SDR.search_elevation_mask,
- *     healthy, and not in GNSS-SDR.<System>_banned_prns. Searched first.
- *   - excluded_: elevation computable but at/below the mask (or unhealthy).
- *     Not searched while this holds, which is what lets a channel go idle
- *     once nothing plausible remains.
- *
- * Everything else is "maybe visible" (no usable data yet), searched at lower
- * priority per GNSS-SDR.visible_vs_mayvisible_search_ratio. The two sets are
- * disjoint by construction (one data source per satellite). A satellite
- * already tracked on another signal is exempt from exclusion in
- * GNSSFlowgraph::pop_by_visibility(): almanac and ephemeris can disagree at
- * the mask boundary, and tracking is stronger evidence than either.
- *
- * Tick() recomputes when: a telecommand reference was supplied; the fix just
- * became valid; any PRN's ephemeris/
- * almanac fingerprint (toe/toa, health) changed; visibility_recompute_interval_s
- * of receiver time elapsed; the receiver moved more than
- * visibility_recompute_position_threshold_m; or the freshest classified data
- * reached its staleness threshold (RTKLIB MAXDTOE* for ephemeris,
- * visibility_almanac_max_age_s for almanac). Expiry is enforced inside
- * compute_visible_satellites(), so an expired PRN reverts to maybe-visible.
- *
- * Inert unless GNSS-SDR.enable_visibility_aware_search=true (default false):
- * Tick() is a no-op and IsVisible()/IsExcluded() return false, so every
- * satellite is treated as maybe-visible.
+ * \brief Opt-in acquisition search classification: visible, excluded, or unknown.
+ * Healthy satellites above the search mask are preferred; unknowns are searched
+ * less often. Banned PRNs are omitted, and tracking can override exclusion.
+ * Tick() refreshes on reference, fix, navigation-data, position, interval, or
+ * expiry changes. Expired data returns satellites to the unknown pool.
+ * Disabled by default (GNSS-SDR.enable_visibility_aware_search).
  */
 class SatelliteVisibility
 {
@@ -136,16 +96,9 @@ public:
         const Monitor_Pvt& current_fix, double receiver_time_s);
 
     /*!
-     * \brief Re-evaluates visibility when one of the triggers listed in the
-     * class description fires. Uses an active telecommand reference, else
-     * the latest fix position, else
-     * GNSS-SDR.AGNSS_ref_location/AGNSS_ref_utc_time if configured, else
-     * does nothing. Elapsed sample time advances the epoch between fixes
-     * and before the first fix, including during recorded-data playback.
-     *
-     * \param receiver_time_s elapsed sample time, independent of valid fixes.
-     * \returns true iff visible_/excluded_ membership changed, i.e. the
-     * caller must rebuild its per-signal search queues.
+     * \brief Refresh visibility using telecommand, fix, then AGNSS reference priority.
+     * \param receiver_time_s elapsed sample time; advances epochs between fixes.
+     * \returns true when classification changes require rebuilding search queues.
      */
     bool Tick(const std::shared_ptr<PvtInterface>& pvt_ptr, const Monitor_Pvt& fix_status,
         double receiver_time_s = 0.0);
@@ -161,43 +114,19 @@ public:
     bool IsSearchVisible(const Gnss_Satellite& sat) const;
     bool IsSearchExcluded(const Gnss_Satellite& sat) const;
 
-    // Predicted Doppler (Hz) for sat on the given signal (e.g. "1B", "5X",
-    // "L5", "7X"), for use as an acquisition search center. Geometric term
-    // from whichever of sat's ephemeris/almanac is usable (same freshness
-    // rules as compute_visible_satellites()), plus the receiver's live
-    // solved clock drift (fix_status.user_clk_drift_ppm) scaled to this
-    // signal's carrier. On success, writes the prediction to doppler_hz and
-    // returns true. With a live PVT fix, returns false (leaving doppler_hz
-    // untouched) when disabled, no fix is currently valid, the signal isn't
-    // a recognized carrier, or neither ephemeris nor almanac is currently
-    // usable for sat, or the prediction is non-finite.
-    // For GLONASS, sat stands for its FDMA frequency: the prediction uses
-    // the single visible slot on that
-    // frequency and its own carrier, and fails if no slot or more than one
-    // is visible.
-    // Tick() must have observed this fix, at most one second ago on the
-    // sample clock. Older or unanchored fixes require a full-grid search.
-    // Without a live fix, falls back to the AGNSS reference position (zero
-    // assumed velocity) and GNSS-SDR.clock_frequency_offset_ppm only when
-    // GNSS-SDR.doppler_prediction_before_fix=true (default false) and an
-    // AGNSS reference is configured -- otherwise behaves as if no
-    // prediction were available. See PredictedDopplerUncertaintyHz() for
-    // this path's search-widening companion.
+    // Predict Doppler (Hz) from usable navigation data and receiver clock drift.
+    // Live fixes must be anchored by Tick() within one second of sample time.
+    // Pre-fix prediction requires opt-in, an AGNSS reference, and explicit bounds;
+    // it assumes zero velocity and GNSS-SDR.clock_frequency_offset_ppm.
+    // GLONASS requires exactly one visible slot on the searched FDMA frequency.
+    // Returns false without changing doppler_hz if prediction is unavailable.
     bool PredictedDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
         const Monitor_Pvt& fix_status, double receiver_time_s, const Gnss_Satellite& sat, const std::string& signal,
         double& doppler_hz) const;
 
-    // Half-width (Hz) of the uncertainty around PredictedDopplerHz() for
-    // this signal, to widen an acquisition search rather than trust a
-    // single bin. Zero whenever fix_status carries a live fix (position,
-    // velocity and clock offset are all solved, not assumed). Before that,
-    // PredictedDopplerHz() assumes zero receiver velocity and the nominal
-    // GNSS-SDR.clock_frequency_offset_ppm -- this returns the Doppler
-    // spread implied by GNSS-SDR.receiver_max_velocity_m_s and
-    // GNSS-SDR.clock_frequency_max_error_ppm instead, so the caller can
-    // size doppler_num_bins accordingly. Both default to 0.0 (no assumed
-    // margin), which callers should treat as "this signal wasn't given a
-    // velocity/clock uncertainty budget", not "the prediction is exact".
+    // Doppler uncertainty half-width (Hz): zero for a live fix, otherwise the
+    // configured clock-error and speed bounds projected onto this carrier.
+    // Missing/invalid bounds return infinity; explicit zero bounds are allowed.
     double PredictedDopplerUncertaintyHz(const Monitor_Pvt& fix_status, const std::string& signal) const;
 
 private:
@@ -210,20 +139,14 @@ private:
 
     SearchVisibility GetSearchVisibility(const Gnss_Satellite& sat) const;
 
-    // GLONASS part of PredictedDopplerHz(). Resolves which orbital slot
-    // sharing prn's FDMA frequency is visible and computes its geometric
-    // Doppler on band (1: L1, 2: L2) from the ephemeris, or else from the
-    // almanac, at the receiver's ECEF position and velocity. Also returns
-    // that slot's carrier frequency. False unless exactly one slot on the
-    // frequency is visible and it has usable navigation data.
+    // Predict for the sole visible slot on prn's FDMA frequency using ephemeris
+    // or almanac. Returns its carrier frequency; band is 1 (L1) or 2 (L2).
     bool GlonassGeometricDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
         const gtime_t& gps_gtime, uint32_t prn, int band, const std::array<double, 3>& rx_pos_m,
         const std::array<double, 3>& rx_vel_mps, double& geometric_doppler_hz, double& carrier_freq_hz) const;
 
-    // QZSS part of PredictedDopplerHz(). Computes the geometric Doppler on
-    // carrier_freq_hz from the LNAV or CNAV ephemeris, or else from the
-    // almanac, of the satellite transmitting prn (L1 C/B PRNs map to their
-    // nominal PRNs), at the receiver's ECEF position and velocity.
+    // QZSS geometric Doppler from LNAV, CNAV, or almanac, in that order.
+    // Maps L1 C/B PRNs to their nominal PRNs.
     bool QzssGeometricDopplerHz(const std::shared_ptr<PvtInterface>& pvt_ptr,
         const gtime_t& gps_gtime, uint32_t prn, const std::array<double, 3>& rx_pos_m,
         const std::array<double, 3>& rx_vel_mps, double carrier_freq_hz, double& geometric_doppler_hz) const;
@@ -235,10 +158,8 @@ private:
         const gtime_t& gps_gtime, uint32_t prn, const std::array<double, 3>& rx_pos_m,
         const std::array<double, 3>& rx_vel_mps, double carrier_freq_hz, double& geometric_doppler_hz) const;
 
-    // changed_prns_out, when non-null, receives every (system, PRN) added,
-    // updated, or removed since the last check, so Tick() can recompute only
-    // those. Left untouched on the first call, which forces a full recompute
-    // anyway.
+    // Reports added, changed, or removed PRNs for targeted recomputation.
+    // The first call leaves changed_prns_out untouched and forces a full sweep.
     bool DataChanged(const std::shared_ptr<PvtInterface>& pvt_ptr,
         std::set<std::pair<std::string, uint32_t>>* changed_prns_out = nullptr);
 
@@ -266,21 +187,15 @@ private:
     // unrelated to the GNSS time in the samples, so configure it explicitly.
     time_t agnss_ref_utc_time_;
 
-    // GNSS-SDR.doppler_prediction_before_fix: opt-in (default false, per this
-    // project's "new acquisition-narrowing behavior defaults off" convention)
-    // for PredictedDopplerHz() to predict from the AGNSS reference position
-    // before a live fix exists, instead of requiring one.
+    // Opt-in pre-fix prediction from the AGNSS reference (default false).
     bool doppler_prediction_before_fix_;
 
-    // Nominal local-oscillator offset (GNSS-SDR.clock_frequency_offset_ppm),
-    // its assumed worst-case error (GNSS-SDR.clock_frequency_max_error_ppm),
-    // and assumed receiver speed (GNSS-SDR.receiver_max_velocity_m_s), all
-    // used only by PredictedDopplerHz()'s/PredictedDopplerUncertaintyHz()'s
-    // pre-fix AGNSS-reference path above -- a live fix supplies its own
-    // clock/velocity solution and needs none of these.
+    // Pre-fix clock offset/error (ppm) and speed bound (m/s), from the matching
+    // GNSS-SDR configuration keys. Live fixes supply their own clock and velocity.
     double clock_frequency_offset_ppm_;
     double clock_frequency_max_error_ppm_;
     double receiver_max_velocity_m_s_;
+    bool have_doppler_uncertainty_budget_;
 
     bool have_command_reference_{false};
     std::array<float, 3> command_reference_llh_{};
@@ -312,10 +227,8 @@ private:
     double last_fix_time_s_{-1.0};
     double last_fix_receiver_time_s_{0.0};
 
-    // (system, navigation family, PRN) -> (absolute toe/toa, health,
-    // IODE, IODC, satellite type, signal type). Extra fields are zero for
-    // legacy navigation families. Detect replacements as well as new PRNs.
-    // first_data_check_ tells "never checked" from "checked, still empty".
+    // Per (system, navigation family, PRN): absolute toe/toa, health, IODE, IODC,
+    // satellite type, and signal type. Unused legacy fields are zero.
     using NavigationFingerprint = std::tuple<double, int32_t, uint32_t, uint32_t, int32_t, int32_t>;
     std::map<std::tuple<std::string, std::string, uint32_t>, NavigationFingerprint> last_data_fingerprints_;
 
@@ -333,10 +246,7 @@ private:
     // data has run; only full sweeps update it.
     double next_expiry_deadline_rx_time_;
 
-    // Runs DataChanged() (which copies every ephemeris/almanac map) only
-    // every kDataCheckEveryNTicks calls; a call count rather than a time
-    // throttle so it scales with the tick rate. Seeded at the threshold so
-    // the first Tick() checks immediately.
+    // Throttle navigation-map copies by tick count; check on the first Tick().
     int ticks_since_data_check_;
 
     bool last_fix_valid_;

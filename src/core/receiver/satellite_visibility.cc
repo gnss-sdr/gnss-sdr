@@ -139,10 +139,9 @@ bool beidou_almanac_position(const gtime_t& time, const alm_t& almanac,
 std::map<uint32_t, eph_t> select_beidou_ephemerides(const std::shared_ptr<PvtInterface>& pvt_ptr,
     const gtime_t& gps_gtime, const std::set<std::pair<std::string, uint32_t>>* only_prns)
 {
-    // Select the usable orbit closest to the query epoch. Equal-age records
-    // retain DNAV, then CNAV1, then CNAV2
-    // priority, independent of telemetry arrival order. Almanac remains the
-    // fallback when no fresh ephemeris is available.
+    // Use the fresh orbit closest to the query epoch. Equal-age records keep
+    // DNAV, then CNAV1, then CNAV2 priority, regardless of telemetry arrival
+    // order. Fall back to almanac when no fresh ephemeris exists.
     std::map<uint32_t, eph_t> bds_eph_map;
     const auto add_bds_ephemeris = [&](uint32_t prn, const eph_t& ephemeris) {
         if (only_prns != nullptr && only_prns->count(std::make_pair(std::string("Beidou"), prn)) == 0)
@@ -239,8 +238,12 @@ SatelliteVisibility::SatelliteVisibility(const std::shared_ptr<ConfigurationInte
       agnss_ref_utc_time_(0),
       doppler_prediction_before_fix_(configuration->property("GNSS-SDR.doppler_prediction_before_fix", false)),
       clock_frequency_offset_ppm_(configuration->property("GNSS-SDR.clock_frequency_offset_ppm", 0.0)),
-      clock_frequency_max_error_ppm_(configuration->property("GNSS-SDR.clock_frequency_max_error_ppm", 0.0)),
-      receiver_max_velocity_m_s_(configuration->property("GNSS-SDR.receiver_max_velocity_m_s", 0.0)),
+      clock_frequency_max_error_ppm_(configuration->property("GNSS-SDR.clock_frequency_max_error_ppm", std::numeric_limits<double>::quiet_NaN())),
+      receiver_max_velocity_m_s_(configuration->property("GNSS-SDR.receiver_max_velocity_m_s", std::numeric_limits<double>::quiet_NaN())),
+      have_doppler_uncertainty_budget_(configuration->is_present("GNSS-SDR.clock_frequency_max_error_ppm") &&
+                                       configuration->is_present("GNSS-SDR.receiver_max_velocity_m_s") &&
+                                       std::isfinite(clock_frequency_max_error_ppm_) && clock_frequency_max_error_ppm_ >= 0.0 &&
+                                       std::isfinite(receiver_max_velocity_m_s_) && receiver_max_velocity_m_s_ >= 0.0),
       last_recompute_rx_time_s_(-1.0e9),
       last_recompute_r_eb_e_(arma::vec{0.0, 0.0, 0.0}),
       next_expiry_deadline_rx_time_(std::numeric_limits<double>::infinity()),
@@ -1152,10 +1155,8 @@ SatelliteVisibility::SearchVisibility SatelliteVisibility::GetSearchVisibility(c
             return SearchVisibility::Unknown;
         }
 
-    // The pool keeps one representative per FDMA frequency, but acquisition
-    // can lock onto any slot using it. A missing partner's navigation data must
-    // therefore keep the frequency searchable even if the representative is
-    // below the mask or unhealthy.
+    // Keep an FDMA frequency searchable if any sharing slot lacks navigation
+    // data, even when its pool representative is excluded.
     bool all_excluded = true;
     for (const auto& slot : GLONASS_PRN)
         {
@@ -1196,7 +1197,7 @@ bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>
         }
 
     const bool fix_valid = (std::isfinite(fix_status.RX_time) && fix_status.RX_time >= 0.0);
-    if (!fix_valid && (!doppler_prediction_before_fix_ || !have_agnss_reference_))
+    if (!fix_valid && (!doppler_prediction_before_fix_ || !have_agnss_reference_ || !have_doppler_uncertainty_budget_))
         {
             return false;
         }
@@ -1231,13 +1232,10 @@ bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>
         }
     else
         {
-            // No live fix yet: predict from the AGNSS reference position (zero
-            // assumed velocity) and the configured nominal clock offset --
-            // same reference Tick() uses for its own no-fix visibility
-            // classification. Only reached when doppler_prediction_before_fix_
-            // and have_agnss_reference_ are both true (checked above). See
-            // PredictedDopplerUncertaintyHz() for this path's search-widening
-            // companion.
+            // No live fix: predict at the AGNSS reference that Tick() also uses
+            // (zero height), assuming zero velocity and a clock drift equal to
+            // GNSS-SDR.clock_frequency_offset_ppm. PredictedDopplerUncertaintyHz()
+            // gives the matching search half-width.
             lat_deg = agnss_ref_lat_deg_;
             lon_deg = agnss_ref_lon_deg_;
             gtime_t utc_gtime{};
@@ -1343,13 +1341,11 @@ bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>
             return false;
         }
 
-    // Clock drift shared by every satellite's observed Doppler, on top of
-    // the per-satellite geometric term above: the live PVT-solved value with
-    // a fix, else the configured nominal clock_drift_ppm (see above).
-    // SUBTRACTED, not added -- empirically verified against
-    // project_doppler()'s dual-frequency projection (gnss_flowgraph.cc):
-    // geometric - clock_offset matched to within noise, geometric +
-    // clock_offset was off by 2x it.
+    // Receiver clock drift, common to all satellites: the PVT-solved value with
+    // a live fix, else GNSS-SDR.clock_frequency_offset_ppm. It is SUBTRACTED,
+    // as verified empirically against the dual-frequency projection of
+    // project_doppler() (gnss_flowgraph.cc): geometric - clock_offset matched
+    // within noise, while geometric + clock_offset was off by 2 * clock_offset.
     const double clock_offset_hz = clock_drift_ppm * 1.0e-6 * carrier_freq_hz;
     const double prediction_hz = geometric_doppler_hz - clock_offset_hz;
     if (!std::isfinite(prediction_hz))
@@ -1367,6 +1363,10 @@ double SatelliteVisibility::PredictedDopplerUncertaintyHz(const Monitor_Pvt& fix
     if (fix_valid)
         {
             return 0.0;
+        }
+    if (!have_doppler_uncertainty_budget_)
+        {
+            return std::numeric_limits<double>::infinity();
         }
     const auto freq_it = SIGNAL_FREQ_MAP.find(signal);
     if (freq_it == SIGNAL_FREQ_MAP.cend())
@@ -1390,10 +1390,10 @@ bool SatelliteVisibility::GlonassGeometricDopplerHz(const std::shared_ptr<PvtInt
             return false;
         }
 
-    // Acquisition searches an FDMA frequency, which antipodal slots share
-    // (see GetSearchVisibility()), and the channel's PRN is only one of
-    // them. Predict for the slot that is actually visible. If none or
-    // several are, the Doppler cannot be pinned to a single bin.
+    // Antipodal slots share an FDMA frequency (see GetSearchVisibility()), and
+    // the channel's PRN is only one of them. Predict for the slot that is
+    // actually visible; if none or several are, the Doppler cannot be pinned to
+    // a single bin.
     uint32_t visible_slot = 0;
     int visible_slots = 0;
     for (const auto& slot : GLONASS_PRN)

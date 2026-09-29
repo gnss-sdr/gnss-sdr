@@ -177,6 +177,22 @@ All notable changes to GNSS-SDR will be documented in this file.
   days). A satellite that is already being tracked is never released because of
   this classification, and `PVT.elevation_mask` still decides which observations
   enter the navigation solution. Contributed by @joebre.
+- Added opt-in almanac/ephemeris Doppler prediction for secondary signals with
+  `Acquisition_<signal>.alm_ephe_assisted_doppler_narrowing=true` (default
+  `false`, also supported per channel). To acquire secondary signals without
+  waiting for a tracked primary band, set
+  `GNSS-SDR.assist_dual_frequency_acq=false`. Pre-fix prediction additionally
+  requires `GNSS-SDR.doppler_prediction_before_fix=true`, an
+  `AGNSS_ref_location` (and `AGNSS_ref_utc_time` for replay), and explicit,
+  finite, nonnegative values for both `GNSS-SDR.clock_frequency_max_error_ppm`
+  and `GNSS-SDR.receiver_max_velocity_m_s`. Missing or invalid bounds preserve
+  the full Doppler search; explicit zero bounds assert no uncertainty in that
+  component. The predicted center uses `GNSS-SDR.clock_frequency_offset_ppm`
+  (default 0) and zero receiver velocity before a fix. Search widening honors
+  `--doppler_max` and `--doppler_step` overrides, and falls back to the regular
+  full search centered at 0 Hz when the uncertainty window is not narrower than
+  the configured Doppler grid. Live-fix prediction refreshes its timestamp
+  before both idle and channel-event acquisition attempts.
 - New CUDA acquisition engine: with `-DENABLE_CUDA=ON`, any PCPS acquisition
   block can evaluate its Doppler x code-phase search grid on the GPU with
   batched cuFFTs by setting `Acquisition_XX.use_cuda=true` (or

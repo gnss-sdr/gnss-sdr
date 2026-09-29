@@ -276,6 +276,7 @@ void ControlThread::telecommand_listener()
 
 void ControlThread::event_dispatcher(bool &valid_event, pmt::pmt_t &msg)
 {
+    bool visibility_updated = false;
     if (valid_event)
         {
             processed_control_messages_++;
@@ -287,6 +288,9 @@ void ControlThread::event_dispatcher(bool &valid_event, pmt::pmt_t &msg)
                             const auto new_event = wht::any_cast<channel_event_sptr>(pmt::any_ref(msg));
                             DLOG(INFO) << "New channel event rx from ch id: " << new_event->channel_id
                                        << " what: " << new_event->event_type;
+                            // Channel events can start acquisition synchronously.
+                            flowgraph_->MaybeUpdateVisibility();
+                            visibility_updated = true;
                             flowgraph_->apply_action(new_event->channel_id, new_event->event_type);
                         }
                 }
@@ -315,22 +319,14 @@ void ControlThread::event_dispatcher(bool &valid_event, pmt::pmt_t &msg)
                 }
         }
 
-    // Run on every event, not only when idle below: acquisition churn
-    // through the "maybe visible" pool (pick, acquire, fail, re-pick) keeps
-    // the 100 ms timed_wait_and_pop() from timing out, so waiting for the
-    // idle branch would starve exactly when reclassification is needed to
-    // reduce that churn. Safe unconditionally: Tick() throttles the
-    // recompute.
-    // Must run BEFORE acquisition_manager() below: Tick() is the only place
-    // that stamps SatelliteVisibility's fix-freshness timestamp
-    // (last_fix_time_s_/last_fix_receiver_time_s_), which
-    // PredictedDopplerHz() checks against on every call. Calling
-    // acquisition_manager() first would always see that stamp one PVT epoch
-    // (~1s) behind the fix_status it just fetched, failing
-    // PredictedDopplerHz()'s freshness check on every attempt post-fix.
+    // Refresh on idle ticks and after commands too (including leaving standby).
+    // Channel events already refreshed before apply_action() could acquire.
     if (receiver_on_standby_ == false)
         {
-            flowgraph_->MaybeUpdateVisibility();  // no-op unless GNSS-SDR.enable_visibility_aware_search=true
+            if (!visibility_updated)
+                {
+                    flowgraph_->MaybeUpdateVisibility();
+                }
             // A duplicated satellite breaks every PVT solution until one of
             // the two channels is stopped, so do not wait for an idle tick.
             flowgraph_->stop_duplicated_satellite_channels();
@@ -382,10 +378,7 @@ int ControlThread::run()
     flowgraph_->start();
     if (flowgraph_->visibility_aware_search_enabled())
         {
-            // Channel assignments made at connect() time predate any
-            // visibility classification: standby returns them to the search
-            // pool to be re-picked once the first classification exists. With
-            // the feature disabled, connect()-time acquisitions run untouched.
+            // Requeue connect()-time assignments before the first visibility sweep.
             flowgraph_->apply_action(0, 10);
         }
     if (flowgraph_->running())
@@ -397,13 +390,11 @@ int ControlThread::run()
             return 0;
         }
 
-    // launch GNSS assistance process AFTER the flowgraph is running because the GNU Radio asynchronous queues must be already running to transport msgs
+    // Assistance messages require the running flowgraph.
     assist_GNSS();
-    // No MaybeUpdateVisibility() here: assist_GNSS() already ran the first
-    // classification if GNSS-SDR.AGNSS_ref_location is set, and
-    // event_dispatcher() runs it within ~100 ms otherwise; its idle-branch
-    // acquisition_manager() is what restarts acquisition on idle channels.
-// start the keyboard_listener thread
+    // assist_GNSS() classifies the AGNSS reference; event_dispatcher() handles
+    // later updates and restarts idle acquisition.
+    // Start the keyboard listener.
 #if USE_GLOG_AND_GFLAGS
     if (FLAGS_keyboard)
 #else
@@ -438,10 +429,7 @@ int ControlThread::run()
     flowgraph_->disconnect();
 
 #ifdef ENABLE_FPGA
-    // trigger a HW reset
-    // The HW reset causes any HW accelerator module that is waiting for more samples to complete its calculations
-    // to trigger an interrupt and finish its signal processing tasks immediately. In this way all SW threads that
-    // are waiting for interrupts in the HW can exit in a normal way.
+    // Reset hardware to release accelerator interrupts and waiting threads.
     flowgraph_->perform_hw_reset();
     fpga_helper_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
 #endif
@@ -540,19 +528,9 @@ bool ControlThread::read_assistance_from_XML()
 
     std::cout << "Trying to read GNSS ephemeris from XML file(s)...\n";
 
-    // GPS/QZSS UTC, iono and almanac data are broadcast system-wide parameters, not
-    // specific to the L1 C/A signal -- L5/L2C/J5 channels rely on the exact same almanac
-    // (via the PRN-keyed map PVT and the visibility/Doppler-assist logic read from) for
-    // visibility classification and Doppler prediction just as much as L1 C/A does. QZSS
-    // LNAV ephemerides and almanacs are stored in these same maps under their QZSS PRNs,
-    // and the L5 CNAV decoder does not provide almanacs, so for a J5-only configuration
-    // these XML files are the only almanac source. Gating this whole block on
-    // Channels_1C/Channels_J1 alone meant an L5, L2C or J5-only configuration never even
-    // attempted to load its almanac, UTC or iono files -- not because those files were
-    // missing or invalid, but because the code never asked for them. The L1 C/A LNAV
-    // ephemeris load stays inside this same block (L5/L2C/J5 use their own
-    // separately-gated CNAV ephemeris below); requesting it is harmless when no L1 C/A
-    // channel exists to use it.
+    // Load shared GPS/QZSS UTC, iono, and almanac data for all enabled bands.
+    // J5-only receivers need XML almanacs because L5 CNAV supplies none.
+    // L1 LNAV ephemeris loading is harmless without L1; CNAV is loaded below.
     if ((configuration_->property("Channels_1C.count", 0) > 0) || (configuration_->property("Channels_J1.count", 0) > 0) ||
         (configuration_->property("Channels_2S.count", 0) > 0) || (configuration_->property("Channels_L5.count", 0) > 0) ||
         (configuration_->property("Channels_J5.count", 0) > 0))
@@ -982,11 +960,7 @@ void ControlThread::assist_GNSS()
 
             // Set the receiver in Standby mode
             flowgraph_->apply_action(0, 10);
-            // With the visibility-aware search enabled, this is the first
-            // classification (from the AGNSS reference time/position) and it
-            // supersedes the legacy get_visible_sats()/priorize_satellites()
-            // pass, which would recompute the same elevations. Acquisition
-            // restarts at the next idle tick via acquisition_manager().
+            // Classify the AGNSS reference once; idle ticks restart acquisition.
             if (flowgraph_->visibility_aware_search_enabled())
                 {
                     flowgraph_->MaybeUpdateVisibility();
@@ -1033,10 +1007,7 @@ void ControlThread::apply_action(unsigned int what)
             break;
         case 12:
             LOG(INFO) << "Receiver action HOTSTART";
-            // Mirror assist_GNSS(): with the visibility-aware search enabled,
-            // MaybeUpdateVisibility() supersedes the legacy one-shot reorder,
-            // so a TC hotstart classifies satellites as startup did and keeps
-            // the continuously-maintained visibility buckets.
+            // Refresh visibility on hot start, as at initial startup.
             if (flowgraph_->visibility_aware_search_enabled())
                 {
                     flowgraph_->MaybeUpdateVisibility();
@@ -1052,10 +1023,7 @@ void ControlThread::apply_action(unsigned int what)
             break;
         case 13:
             LOG(INFO) << "Receiver action WARMSTART";
-            // Warm start: almanac current, ephemeris unknown or stale. Drop the
-            // ephemeris only and keep the almanac already in memory, which cannot
-            // be staler than the XML assistance files the receiver started from,
-            // so those are deliberately not reloaded here.
+            // Discard ephemerides but retain the current almanacs on warm start.
             pvt_ptr = flowgraph_->get_pvt();
             pvt_ptr->clear_ephemeris_keep_almanac();
             // Keep the supplied position/time active in the visibility tracker

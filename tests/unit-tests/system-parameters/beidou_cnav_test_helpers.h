@@ -1,6 +1,6 @@
 /*!
- * \file beidou_cnav2_test_helpers.h
- * \brief Independent B-CNAV2 reference encoder for tests
+ * \file beidou_cnav_test_helpers.h
+ * \brief Independent B-CNAV1/B-CNAV2 reference encoder for tests
  * \author Carles Fernandez-Prades, 2026. cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
@@ -13,15 +13,16 @@
  *
  * -----------------------------------------------------------------------------
  */
-#ifndef GNSS_SDR_BEIDOU_CNAV2_TEST_HELPERS_H
-#define GNSS_SDR_BEIDOU_CNAV2_TEST_HELPERS_H
+#ifndef GNSS_SDR_BEIDOU_CNAV_TEST_HELPERS_H
+#define GNSS_SDR_BEIDOU_CNAV_TEST_HELPERS_H
 
+#include "beidou_cnav1_ldpc.h"
 #include "beidou_cnav2_ldpc.h"
 #include <array>
 #include <stdexcept>
 #include <utility>
 
-namespace BeidouCnav2Test
+namespace BeidouCnavTest
 {
 // Polynomial arithmetic independent of the decoder's logarithm lookup tables.
 inline uint8_t multiply(uint8_t a, uint8_t b)
@@ -44,42 +45,62 @@ inline uint8_t multiply(uint8_t a, uint8_t b)
 }
 
 // Solve H2 * parity = H1 * information by Gaussian elimination over GF(64).
-inline std::array<uint8_t, 576> encode(const std::array<uint8_t, 288>& bits)
+template <int N>
+inline std::array<uint8_t, N> encode(const std::array<uint8_t, N / 2>& bits)
 {
-    std::array<uint8_t, 96> symbols{};
+    if (N != 1200 && N != 528 && N != 576)
+        {
+            throw std::runtime_error("Invalid B-CNAV1/B-CNAV2 encoded subframe size");
+        }
+    std::array<uint8_t, N / 6> symbols{};
     for (size_t i = 0; i < bits.size(); i++)
         {
             symbols[i / 6] = static_cast<uint8_t>((symbols[i / 6] << 1U) | bits[i]);
         }
-    std::array<std::array<uint8_t, 49>, 48> augmented{};
-    for (size_t row = 0; row < 48; row++)
+    std::array<std::array<uint8_t, N / 12 + 1>, N / 12> augmented{};
+    for (size_t row = 0; row < N / 12; row++)
         {
             for (size_t edge = 0; edge < 4; edge++)
                 {
                     // Each printed row contains four groups of four entries.
-                    const size_t offset = (row % 12) * 16 + (row / 12) * 4 + edge;
-                    const auto col = BEIDOU_CNAV2_H48_96_INDEX[offset];
-                    const auto h = BEIDOU_CNAV2_H48_96_ELEMENT[offset];
-                    if (col < 48)
+                    const size_t offset = (row % (N / 48)) * 16 + (row / (N / 48)) * 4 + edge;
+                    uint16_t col = 0;
+                    uint8_t h = 0;
+                    switch (N)
                         {
-                            augmented[row][48] ^= multiply(h, symbols[col]);
+                        case 1200:
+                            col = BEIDOU_CNAV1_H100_200_INDEX[offset];
+                            h = BEIDOU_CNAV1_H100_200_ELEMENT[offset];
+                            break;
+                        case 528:
+                            col = BEIDOU_CNAV1_H44_88_INDEX[offset];
+                            h = BEIDOU_CNAV1_H44_88_ELEMENT[offset];
+                            break;
+                        case 576:
+                            col = BEIDOU_CNAV2_H48_96_INDEX[offset];
+                            h = BEIDOU_CNAV2_H48_96_ELEMENT[offset];
+                            break;
+                        }
+                    if (col < N / 12)
+                        {
+                            augmented[row][N / 12] ^= multiply(h, symbols[col]);
                         }
                     else
                         {
-                            augmented[row][col - 48] = h;
+                            augmented[row][col - N / 12] = h;
                         }
                 }
         }
-    for (size_t col = 0; col < 48; col++)
+    for (size_t col = 0; col < N / 12; col++)
         {
             size_t pivot = col;
-            while (pivot < 48 && augmented[pivot][col] == 0)
+            while (pivot < N / 12 && augmented[pivot][col] == 0)
                 {
                     pivot++;
                 }
-            if (pivot == 48)
+            if (pivot == N / 12)
                 {
-                    throw std::runtime_error("Singular B-CNAV2 parity matrix");
+                    throw std::runtime_error("Singular B-CNAV1/B-CNAV2 parity matrix");
                 }
             std::swap(augmented[col], augmented[pivot]);
             uint8_t inverse = 1;
@@ -87,34 +108,34 @@ inline std::array<uint8_t, 576> encode(const std::array<uint8_t, 288>& bits)
                 {
                     inverse++;
                 }
-            for (size_t j = col; j <= 48; j++)
+            for (size_t j = col; j <= N / 12; j++)
                 {
                     augmented[col][j] = multiply(augmented[col][j], inverse);
                 }
-            for (size_t row = 0; row < 48; row++)
+            for (size_t row = 0; row < N / 12; row++)
                 {
                     if (row == col)
                         {
                             continue;
                         }
                     const auto factor = augmented[row][col];
-                    for (size_t j = col; j <= 48; j++)
+                    for (size_t j = col; j <= N / 12; j++)
                         {
                             augmented[row][j] ^= multiply(factor, augmented[col][j]);
                         }
                 }
         }
-    for (size_t row = 0; row < 48; row++)
+    for (size_t row = 0; row < N / 12; row++)
         {
-            symbols[48 + row] = augmented[row][48];
+            symbols[N / 12 + row] = augmented[row][N / 12];
         }
-    std::array<uint8_t, 576> codeword{};
+    std::array<uint8_t, N> codeword{};
     for (size_t bit = 0; bit < codeword.size(); bit++)
         {
             codeword[bit] = (symbols[bit / 6] >> (5 - bit % 6)) & 1U;
         }
     return codeword;
 }
-}  // namespace BeidouCnav2Test
+}  // namespace BeidouCnavTest
 
-#endif  // GNSS_SDR_BEIDOU_CNAV2_TEST_HELPERS_H
+#endif  // GNSS_SDR_BEIDOU_CNAV_TEST_HELPERS_H

@@ -15,6 +15,7 @@
  */
 #include "Beidou_CNAV1.h"
 #include "beidou_cnav1_navigation_message.h"
+#include "beidou_cnav_test_helpers.h"
 #include "rtklib_conversions.h"
 #include <gtest/gtest.h>
 #include <array>
@@ -288,7 +289,7 @@ TEST(BeidouCnav1NavigationMessageTest, MultiFrameSteadyStateKeepsConstantSohOffs
 TEST(BeidouCnav1NavigationMessageTest, RejectsEphemerisWhenIodeIodcMismatch)
 {
     // SF2 with IODC/IODE mismatch (ICD §7.4.3).
-    std::vector<uint8_t> sf2_bits(static_cast<size_t>(BEIDOU_CNAV1_SUBFRAME2_SYMBOLS), 0U);
+    std::array<uint8_t, BEIDOU_CNAV1_SF2_DATA_BITS> sf2_bits{0U};
     const int32_t iodc_offset = 13 + 8;
     const uint32_t iodc = 0x101U;  // low 8 = 0x01
     for (int32_t b = 0; b < 10; b++)
@@ -326,8 +327,8 @@ TEST(BeidouCnav1NavigationMessageTest, RejectsEphemerisWhenIodeIodcMismatch)
             sf2_bits[static_cast<size_t>(BEIDOU_CNAV1_SF2_DATA_BITS - BEIDOU_CNAV1_CRC_BITS + b)] =
                 static_cast<uint8_t>((crc >> static_cast<uint32_t>(23 - b)) & 1U);
         }
-
-    const auto sf2_llr = encode_bits_to_llr(sf2_bits);
+    const auto sf2_encoded = BeidouCnavTest::encode<BEIDOU_CNAV1_SUBFRAME2_SYMBOLS>(sf2_bits);
+    const auto sf2_llr = encode_bits_to_llr(std::vector<uint8_t>(sf2_encoded.begin(), sf2_encoded.end()));
     const auto sf3_llr = encode_bits_to_llr(std::vector<uint8_t>(BEIDOU_CNAV1_SUBFRAME3_SYMBOLS, 0U));
     std::vector<float> interleaved;
     deinterleave_like_icd(sf2_llr, sf3_llr, interleaved);

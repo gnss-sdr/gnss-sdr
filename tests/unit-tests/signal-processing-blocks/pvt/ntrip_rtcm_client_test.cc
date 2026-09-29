@@ -1701,6 +1701,32 @@ private:
     bool d_active = false;
 };
 
+constexpr std::uint64_t LOOPBACK_OBSERVATION_EPOCHS = 3;
+
+Ntrip_Rtcm_Snapshot wait_for_loopback_observation_epochs(
+    const Ntrip_Rtcm_Client& client, const gtime_t& rover_time,
+    std::chrono::milliseconds timeout)
+{
+    Ntrip_Rtcm_Snapshot snapshot;
+    const std::chrono::steady_clock::time_point deadline =
+        std::chrono::steady_clock::now() + timeout;
+    do
+        {
+            const bool all_epochs_decoded =
+                client.status().observation_epochs_decoded >=
+                LOOPBACK_OBSERVATION_EPOCHS;
+            snapshot = client.latest_snapshot(rover_time);
+            if (all_epochs_decoded && snapshot.has_base_position &&
+                snapshot.has_observations)
+                {
+                    break;
+                }
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    while (std::chrono::steady_clock::now() < deadline);
+    return snapshot;
+}
+
 }  // namespace ntrip_rtcm_client_test
 
 
@@ -2698,19 +2724,8 @@ TEST(NtripRtcmClientTest, AuthenticatedFragmentedStreamPublishesFixedBaseSnapsho
     client.update_rover_time(rover_time);
     ASSERT_TRUE(client.start());
 
-    Ntrip_Rtcm_Snapshot snapshot;
-    const std::chrono::steady_clock::time_point snapshot_deadline =
-        std::chrono::steady_clock::now() + std::chrono::milliseconds(2000);
-    do
-        {
-            snapshot = client.latest_snapshot(rover_time);
-            if (snapshot.has_base_position && snapshot.has_observations)
-                {
-                    break;
-                }
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        }
-    while (std::chrono::steady_clock::now() < snapshot_deadline);
+    const Ntrip_Rtcm_Snapshot snapshot = wait_for_loopback_observation_epochs(
+        client, rover_time, std::chrono::milliseconds(2000));
 
     const Ntrip_Rtcm_Client_Status streaming_status = client.status();
     const std::chrono::steady_clock::time_point stop_start =
@@ -2934,19 +2949,8 @@ TEST(NtripRtcmClientTest, NtripV2ChunkedStreamPublishesFixedBaseSnapshot)
     client.update_rover_time(rover_time);
     ASSERT_TRUE(client.start());
 
-    Ntrip_Rtcm_Snapshot snapshot;
-    const std::chrono::steady_clock::time_point snapshot_deadline =
-        std::chrono::steady_clock::now() + std::chrono::milliseconds(2000);
-    do
-        {
-            snapshot = client.latest_snapshot(rover_time);
-            if (snapshot.has_base_position && snapshot.has_observations)
-                {
-                    break;
-                }
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        }
-    while (std::chrono::steady_clock::now() < snapshot_deadline);
+    const Ntrip_Rtcm_Snapshot snapshot = wait_for_loopback_observation_epochs(
+        client, rover_time, std::chrono::milliseconds(2000));
 
     const Ntrip_Rtcm_Client_Status streaming_status = client.status();
     client.stop();

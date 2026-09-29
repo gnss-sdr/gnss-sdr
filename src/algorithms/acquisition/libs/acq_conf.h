@@ -74,32 +74,13 @@ public:
     bool make_2_steps{false};
     bool use_automatic_resampler{false};
     bool enable_monitor_output{false};
-    // Target number of correlation sidelobes (in Doppler) the CFAR noise-floor
-    // reference bin should clear from the search grid's own candidate span, used
-    // only to decide WHETHER a plain full grid needs a dedicated extra reference
-    // row instead of reusing an in-grid candidate (see
-    // d_full_grid_reference_needs_extra_row in pcps_acquisition.h) -- never to
-    // place that row (or narrowed mode's own reference row) beyond the configured
-    // doppler_max. doppler_max is the receiver-validated edge of the search/filter
-    // passband the rest of the acquisition chain is designed for; searching beyond
-    // it to chase a theoretical sidelobe target risks sampling "noise" from a
-    // region the decimation/anti-alias response is no longer flat, corrupting the
-    // estimate instead of cleaning it up (this cost real satellites at hot start
-    // in an earlier version that did push beyond doppler_max -- see
-    // update_grid_doppler_wipeoffs()'s narrowed-branch comment). Sidelobe spacing
-    // is set by the coherent integration time (~1/sampled_ms), not by doppler_step
-    // or the bin count, so at a small enough grid or doppler_max, this target
-    // simply won't be met -- accepted, not something to fix by exceeding
-    // doppler_max. Only takes effect when use_CFAR_algorithm_flag is set (the
-    // non-CFAR peak-ratio statistic never uses a Doppler-domain reference).
+    // CFAR reference separation target, in correlation sidelobes (~1/T Hz).
+    // Determines whether a full grid needs extra reference rows. References stay
+    // within doppler_max: the filter response beyond it can bias noise estimates.
     uint32_t reference_bin_min_sidelobes{4U};
 
-    // Accumulate through the full max_dwells before deciding accept/reject, instead
-    // of exiting as soon as any single dwell's (possibly still noisy, partially
-    // accumulated) grid crosses threshold -- a later dwell's fuller integration can
-    // reveal a different, genuinely stronger peak elsewhere in the grid that an early
-    // exit never gets the chance to compare against. Opt-in: off by default, enable
-    // per-implementation in the .conf (e.g. Acquisition_1B.full_grid_search = true).
+    // Opt-in accumulation through max_dwells before thresholding, allowing a
+    // later, stronger peak to win (Acquisition_<signal>.full_grid_search).
     bool full_grid_search{false};
 
     // Evaluate the PCPS grid on a CUDA GPU (requires ENABLE_CUDA at build time)

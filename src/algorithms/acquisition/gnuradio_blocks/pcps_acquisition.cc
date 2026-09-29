@@ -139,10 +139,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       // helper reads d_use_CFAR_algorithm_flag, declared (so initialized)
       // later in this same list; see its own doc comment in the header.
       d_full_grid_reference_needs_extra_row(conf_.use_CFAR_algorithm_flag && (static_cast<float>(d_num_doppler_bins / 2) * static_cast<float>(d_doppler_step) < d_min_reference_separation_hz)),
-      // A full grid worth needing a dedicated reference row for is always
-      // > 1 candidate bin in practice (see d_num_reference_rows_active's doc
-      // comment for why the count differs at exactly 1 candidate) -- so this
-      // ceiling reserves 2 rows, not 1, whenever the row is needed at all.
+      // Reserve two reference rows for a full grid that needs them.
       d_num_doppler_bins_full_grid_active(d_num_doppler_bins + (d_full_grid_reference_needs_extra_row ? (d_num_doppler_bins > 1U ? 2U : 1U) : 0U)),
       d_num_doppler_bins_capacity(d_num_doppler_bins + 2U),
       d_threshold_step_two(conf_.pfa2 > 0.0 ? compute_threshold(conf_.pfa2, d_effective_fft_size, d_num_doppler_bins_step2, conf_.bit_transition_flag ? 1 : conf_.max_dwells) : conf_.threshold),
@@ -213,17 +210,8 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
         }
 #endif
 
-    // While idle (not actively searching), general_work() only drains its input to avoid
-    // stalling the upstream block, producing no output. Without a batching hint the TPB
-    // scheduler wakes this block's thread for every small burst of new input (observed:
-    // tens of thousands of calls/s, a few hundred/thousand samples each), which is pure
-    // scheduling overhead. Requiring a larger noutput_items granularity forces the
-    // scheduler to accumulate more input per wakeup, cutting call frequency without
-    // changing behavior (production while idle is still always 0 either way).
-    // One PRN code period (1 ms) at this signal's own decimated rate is the natural
-    // lower bound: the algorithm never does anything meaningful below that granularity,
-    // so batching to it (instead of a fixed sample count) self-scales with fs_in/decimation
-    // across signals/configs instead of being tuned for one particular sample rate.
+    // Batch idle input by one millisecond at the decimated rate to reduce
+    // scheduler wakeups; idle acquisition produces no output.
     const auto output_multiple_samples = std::max<uint32_t>(1U, static_cast<uint32_t>(std::lround(conf_.samples_per_ms)));
     this->set_output_multiple(output_multiple_samples);
 }
@@ -405,16 +393,7 @@ void pcps_acquisition::update_local_carrier(own::span<gr_complex> carrier_vector
 
 void pcps_acquisition::update_grid_doppler_wipeoffs()
 {
-    // Symmetric, centered placement: candidate index k decodes back to
-    // d_doppler_center + (k - half_span) * d_doppler_step -- rather than
-    // "-doppler_max + step*index", which biases every bin low by up to half a
-    // doppler_step and, at 1 candidate bin, misses d_doppler_center entirely
-    // (would test doppler_center - doppler_max instead). One shared loop for
-    // every degree of Doppler uncertainty -- the full grid, an assisted
-    // narrowed window, or an exactly-known single bin -- not a separate
-    // branch per case: they differ only in candidate_count, which
-    // set_doppler_num_bins() already resolved into d_num_doppler_bins_active/
-    // d_num_reference_rows_active.
+    // Center all candidate grids on d_doppler_center, including single-bin searches.
     const uint32_t candidate_count = d_num_doppler_bins_active - d_num_reference_rows_active;
     const auto half_span = static_cast<int32_t>((candidate_count - 1U) / 2U);
     for (uint32_t doppler_index = 0; doppler_index < candidate_count; doppler_index++)
@@ -424,33 +403,9 @@ void pcps_acquisition::update_grid_doppler_wipeoffs()
         }
     if (d_num_reference_rows_active > 0U)
         {
-            // The in-grid wraparound max_to_input_power_statistic() would otherwise
-            // use (candidate_count/2 bins away) can't clear
-            // reference_bin_min_sidelobes at this candidate count and step (see
-            // needs_extra_reference_row()) -- add one or two dedicated extra
-            // reference rows instead, at exactly +/-doppler_max. NEVER pushed
-            // further out to try to clear reference_bin_min_sidelobes (an
-            // earlier version of this code did that, and it was wrong:
-            // doppler_max is the receiver-validated edge of the search/filter
-            // passband the rest of the acquisition chain is designed for, and a
-            // reference sample placed beyond it can land somewhere the
-            // decimation/anti-alias response is no longer flat, corrupting the
-            // noise estimate rather than cleaning it up -- confirmed live:
-            // pushing E5a's reference from 3740 Hz to a sidelobe-derived
-            // 4500 Hz cost real satellites at hot start). If doppler_max itself
-            // doesn't clear the floor, that's an accepted, pre-existing limit
-            // of this reference technique at a tight search -- not something to
-            // fix by searching outside the validated range.
-            //
-            // With more than one real candidate, both +doppler_max and
-            // -doppler_max are computed (candidate_count and candidate_count+1)
-            // so max_to_input_power_statistic() can pick whichever sits opposite
-            // the winning candidate's side of center -- a candidate riding near
-            // one edge of the search range never ends up right next to (or on
-            // top of) its own reference sample. With exactly one real candidate
-            // (always at offset 0 -- no side to be opposite of), a single row at
-            // +doppler_max is all d_num_reference_rows_active allocates; see its
-            // doc comment.
+            // Keep references at center +/- doppler_max; extending beyond the validated
+            // passband can bias noise estimates. Use both sides for multiple candidates
+            // so CFAR can select the reference opposite the winning peak.
             update_local_carrier(own::span<gr_complex>(doppler_wipeoff_data(candidate_count), d_fft_size), static_cast<float>(d_doppler_bias + d_doppler_center + static_cast<int32_t>(d_doppler_max)));
             if (d_num_reference_rows_active > 1U)
                 {
@@ -557,20 +512,8 @@ void pcps_acquisition::dump_results(const AcquisitionResult& result)
             std::array<size_t, 2> dims_1d{1, 1};
             std::array<size_t, 2> dims_2d{d_effective_fft_size, d_num_doppler_bins_active};
 
-            // acq_grid's candidate columns -- all of them for a plain full-grid
-            // search, or just the requested candidate count when narrowed
-            // (the trailing column there is the noise-reference bin at
-            // doppler_center + d_doppler_max, not representable in this linear
-            // encoding) -- are placed symmetrically around doppler_center, matching
-            // compute_statistics(): column k decodes to
-            // doppler_center + (k - half_span)*d_doppler_step. Writing
-            // dump_doppler_max = half_span*d_doppler_step lets the standard
-            // "-doppler_max + doppler_center + doppler_step*col" formula do that
-            // mapping for offline post-processing tools; doppler_narrowed flags
-            // whether this was a narrowed/assisted search (fewer candidates than
-            // the full configured grid) -- NOT whether a trailing reference
-            // column is present, since a plain full grid can have one too (CFAR,
-            // wraparound too tight) without being a narrowed search.
+            // Encode candidate k as center + (k - half_span) * step for dump readers.
+            // Narrowing describes the candidate count, independently of reference rows.
             const uint32_t dump_candidate_count = d_num_doppler_bins_active - d_num_reference_rows_active;
             const bool dump_narrowed = dump_candidate_count < d_num_doppler_bins;
             const auto dump_half_span = static_cast<int32_t>((dump_candidate_count - 1U) / 2U);
@@ -582,10 +525,8 @@ void pcps_acquisition::dump_results(const AcquisitionResult& result)
             write_matlab_var<1>("doppler_step", dump_doppler_step, matfp, dims_1d);
             write_matlab_var<1>("doppler_center", d_doppler_center, matfp, dims_1d);
             write_matlab_var<1>("doppler_narrowed", static_cast<int32_t>(dump_narrowed ? 1 : 0), matfp, dims_1d);
-            // Number of leading acq_grid columns that are real Doppler candidates.
-            // Any remaining trailing columns (0, 1 or 2) are noise-reference rows
-            // at doppler_center +/- the configured doppler_max, outside the linear
-            // Doppler axis above, and must be skipped by readers.
+            // Trailing columns are noise references at center +/- configured doppler_max;
+            // readers must exclude them from the linear candidate axis.
             write_matlab_var<1>("doppler_num_candidates", static_cast<int32_t>(dump_candidate_count), matfp, dims_1d);
             write_matlab_var<1>("positive_acq", static_cast<int32_t>(result.positive_acq ? 1 : 0), matfp, dims_1d);
             write_matlab_var<1>("acq_doppler_hz", static_cast<float>(d_gnss_synchro->Acq_doppler_hz), matfp, dims_1d);
@@ -614,10 +555,7 @@ void pcps_acquisition::dump_results(const AcquisitionResult& result)
 
 void pcps_acquisition::ensure_dump_grid_allocated()
 {
-    // Sized to the currently *active* bin count (2 when narrowed), not the full
-    // configured d_num_doppler_bins -- matches what copy_magnitude_grid_to_dump_grid()
-    // actually writes each cycle, and this size check doubles as the resize trigger
-    // whenever narrowed/full mode changes between dumps (either direction).
+    // Resize the dump grid when the active row count changes.
     if ((d_grid.n_rows != d_effective_fft_size) || (d_grid.n_cols != d_num_doppler_bins_active))
         {
             d_grid.zeros(d_effective_fft_size, d_num_doppler_bins_active);
@@ -702,28 +640,8 @@ pcps_acquisition::AcquisitionResult pcps_acquisition::max_to_input_power_statist
         {
             if (d_num_reference_rows_active > 0U)
                 {
-                    // Any candidate count whose natural wraparound distance couldn't
-                    // clear reference_bin_min_sidelobes (see needs_extra_reference_row())
-                    // -- from an exactly-known single bin up through a plain full grid
-                    // too small to clear it on its own -- has one or two fixed,
-                    // dedicated noise-only reference rows right after the candidate
-                    // bins (see update_grid_doppler_wipeoffs()), not the "opposite
-                    // side of the grid" the wraparound branch below uses -- with more
-                    // than one candidate bin, that generic wraparound would pick
-                    // whichever bin happens to sit halfway around from the winning
-                    // candidate, sometimes another *candidate* bin (or, at a small
-                    // enough grid, a bin still within the signal's own sidelobe
-                    // skirt), not a genuinely noise-only reference.
-                    //
-                    // With two reference rows (d_num_reference_rows_active > 1, i.e.
-                    // more than one real candidate), pick whichever of the two sits
-                    // opposite the winning candidate's side of center: a winner at or
-                    // beyond +doppler_max/2 or so would otherwise sit right next to
-                    // (or on top of) a reference fixed at +doppler_max, sampling its
-                    // own sidelobe skirt instead of genuine noise. winner_offset uses
-                    // the exact same "-doppler_max + doppler_step*index" mapping as
-                    // result.doppler below, so its sign matches which side of center
-                    // index_doppler actually decodes to.
+                    // Use a dedicated noise reference opposite the winning candidate to avoid
+                    // its sidelobes. Reference rows follow the candidate rows.
                     uint32_t reference_index = candidate_count;
                     if (d_num_reference_rows_active > 1U)
                         {
@@ -735,10 +653,7 @@ pcps_acquisition::AcquisitionResult pcps_acquisition::max_to_input_power_statist
                 }
             else
                 {
-                    // Reached only when the wraparound distance (num_doppler_bins/2
-                    // bins) already clears reference_bin_min_sidelobes at this
-                    // candidate count (see needs_extra_reference_row()), so this
-                    // in-grid bin is a genuinely noise-only sample.
+                    // The full-grid wraparound distance satisfies the reference-separation target.
                     const auto index_opp = (index_doppler + num_doppler_bins / 2) % num_doppler_bins;
                     const auto* magnitude_grid = magnitude_grid_data(index_opp);
                     d_input_power = static_cast<float>(std::accumulate(magnitude_grid, magnitude_grid + d_effective_fft_size, static_cast<float>(0.0)) / d_effective_fft_size / 2.0 / d_num_noncoherent_integrations_counter);
@@ -897,18 +812,9 @@ void pcps_acquisition::doppler_grid_cpu(const gr_complex* in)
 pcps_acquisition::AcquisitionResult pcps_acquisition::compute_statistics()
 {
     const auto bin_count = d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins_active;
-    // Whenever reference rows are active (see needs_extra_reference_row()),
-    // bin_count computed rows exist (candidates + one or two noise references)
-    // but only the candidates are real Doppler candidates -- the reference
-    // rows must never be selected as the acquisition result (see the two
-    // statistic functions).
+    // Reference rows contribute to statistics but cannot win acquisition.
     const auto candidate_count = d_step_two ? bin_count : (bin_count - d_num_reference_rows_active);
-    // Both assisted and plain full-grid search place their candidate_count bins
-    // symmetrically around doppler_center (see update_grid_doppler_wipeoffs()):
-    // candidate index k decodes back to center + (k - half_span) * doppler_step.
-    // Setting doppler_max_used = half_span * doppler_step lets the shared
-    // "-doppler_max + center + doppler_step * index" decoding below do that
-    // mapping for either case without duplicating it.
+    // Use the centered grid's half-span to decode candidate indices into Doppler.
     const auto half_span = static_cast<int32_t>((candidate_count - 1U) / 2U);
     const auto doppler_step = d_step_two ? d_acq_parameters.doppler_step2 : d_doppler_step;
     const auto doppler_max = d_step_two ? static_cast<int32_t>(d_doppler_center_step_two - (static_cast<float>(bin_count) / 2.0) * doppler_step) : half_span * static_cast<int32_t>(d_doppler_step);
@@ -1025,12 +931,7 @@ void pcps_acquisition::acquisition_core(uint64_t sample_count)
         {
             if (d_acq_parameters.full_grid_search)
                 {
-                    // Search the entire acquisition grid (accumulate through the full max_dwells)
-                    // before deciding accept/reject, instead of exiting as soon as any single dwell's
-                    // (possibly still noisy, partially non-coherently accumulated) grid crosses
-                    // threshold -- a later dwell's fuller integration can reveal a different, genuinely
-                    // stronger peak elsewhere in the same grid that an early exit never gets the chance
-                    // to compare against.
+                    // Accumulate all dwells before thresholding so a later, stronger peak can win.
                     if (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)
                         {
                             if (result.test_statistics > get_threshold())
@@ -1102,21 +1003,10 @@ bool pcps_acquisition::needs_extra_reference_row(uint32_t candidate_bins) const
 {
     if (candidate_bins < d_num_doppler_bins)
         {
-            // Narrowed/assisted search (fewer candidates than the full configured
-            // grid): the in-grid "opposite bin" wraparound distance shrinks along
-            // with candidate_bins and, at these small counts, essentially never
-            // clears d_min_reference_separation_hz -- always use a dedicated
-            // reference row here, same as today's narrowed mode assumed
-            // unconditionally, regardless of which statistic (CFAR or
-            // peak-ratio) is active. This keeps a narrowed dump self-describing
-            // either way, and lets first_vs_second_peak_statistic() exclude the
-            // reference bin from candidacy under peak-ratio too, not just CFAR.
+            // Narrowed grids always retain reference rows, including in peak-ratio mode.
             return true;
         }
-    // Full grid: only pay for a dedicated reference row when CFAR needs a
-    // genuinely noise-only sample and the in-grid wraparound can't supply one
-    // on its own -- first_vs_second_peak_statistic() has no such reference
-    // concept, so a full (non-narrowed) peak-ratio search never needs one.
+    // Full grids need extra references only for CFAR with insufficient wraparound separation.
     return d_use_CFAR_algorithm_flag && (static_cast<float>(candidate_bins / 2) * static_cast<float>(d_doppler_step) < d_min_reference_separation_hz);
 }
 
@@ -1136,31 +1026,17 @@ void pcps_acquisition::set_doppler_center(int32_t doppler_center)
 void pcps_acquisition::set_doppler_num_bins(uint32_t num_doppler_bins)
 {
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
-    // 0 is the only value a caller can't just supply directly -- the full
-    // grid's own candidate count is otherwise private to this class -- so it
-    // means "the full configured range" here, same as always. Any other
-    // value is taken literally and unconditionally: an assisted, exactly-
-    // known Doppler (num_doppler_bins == 1) always searches exactly 1 bin,
-    // no config-driven widening -- a caller that wants a safety margin
-    // around its own estimate should just ask for that many bins directly.
+    // Zero restores the full grid; positive counts request explicit search widths.
     uint32_t candidate_bins = (num_doppler_bins == 0U) ? d_num_doppler_bins : num_doppler_bins;
     candidate_bins = std::min(candidate_bins, d_num_doppler_bins);
-    // See d_num_reference_rows_active's doc comment: 2 dedicated rows
-    // (opposite-sign pair) whenever a reference is needed and there's more
-    // than one real candidate to be opposite of; 1 (the historical fixed
-    // +doppler_max placement) at exactly one real candidate, since it always
-    // sits at offset 0 -- no side for a second, mirrored row to usefully
-    // cover.
+    // One reference for a single candidate, otherwise a pair on opposite sides.
     const uint32_t num_reference_rows = needs_extra_reference_row(candidate_bins) ? (candidate_bins > 1U ? 2U : 1U) : 0U;
     const uint32_t num_doppler_bins_active = candidate_bins + num_reference_rows;
     if (num_reference_rows != d_num_reference_rows_active || num_doppler_bins_active != d_num_doppler_bins_active)
         {
             d_num_reference_rows_active = num_reference_rows;
             d_num_doppler_bins_active = num_doppler_bins_active;
-            // See d_threshold_active's doc comment: recalibrated for whatever
-            // candidate count is active now, excluding the reference row
-            // itself (it's never a candidate result, so it isn't one of the
-            // hypotheses being tested for a false alarm either).
+            // Recalibrate PFA for candidate bins only, excluding noise references.
             d_threshold_active = d_acq_parameters.pfa > 0.0 ? compute_threshold(d_acq_parameters.pfa, d_effective_fft_size, candidate_bins, d_acq_parameters.bit_transition_flag ? 1 : d_acq_parameters.max_dwells) : d_acq_parameters.threshold;
             update_grid_doppler_wipeoffs();
             DLOG(INFO) << " Doppler bin count for Channel: " << d_channel << " => active Doppler bins: " << d_num_doppler_bins_active << ", Doppler center: " << d_doppler_center;

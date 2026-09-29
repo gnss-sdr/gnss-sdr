@@ -2517,16 +2517,17 @@ void GNSSFlowgraph::set_signals_list()
                         {
                             if (signal_str == "1D")
                                 {
-                                    if ((prn >= 1U && prn <= 5U) || (prn >= 59U && prn <= 63U))
+                                    // The 2026-03-20 CSNO allocation adds B1C on GEO PRNs 1-4.
+                                    if (prn == 5U || (prn >= 59U && prn <= 63U))
                                         {
-                                            continue;  // GEO satellites do not broadcast B1C (ICD section 3.1)
+                                            continue;
                                         }
                                 }
                             if (signal_str == "5D")
                                 {
                                     if ((prn >= 1U && prn <= 5U) || (prn >= 59U && prn <= 63U))
                                         {
-                                            continue;  // GEO satellites do not broadcast B2a RNSS (ICD §2)
+                                            continue;  // GEO B2a decoding/PVT is not supported.
                                         }
                                 }
                             if (signal_str == "J5" && prn > QZSS_L5_MAX_PRN)

@@ -16,7 +16,7 @@
 #include "Beidou_CNAV1.h"
 #include "Beidou_CNAV2.h"
 #include "beidou_cnav2_navigation_message.h"
-#include "beidou_cnav2_test_helpers.h"
+#include "beidou_cnav_test_helpers.h"
 #include <gtest/gtest.h>
 #include <array>
 #include <cstdint>
@@ -69,7 +69,7 @@ std::vector<float> make_frame(const std::array<uint8_t, BEIDOU_CNAV2_INFO_BITS>&
         {
             symbols[static_cast<size_t>(i)] = (preamble[i] == '1') ? -1.0F : 1.0F;
         }
-    const auto codeword = BeidouCnav2Test::encode(info);
+    const auto codeword = BeidouCnavTest::encode<BEIDOU_CNAV2_LDPC_SYMBOLS>(info);
     for (int i = 0; i < BEIDOU_CNAV2_LDPC_SYMBOLS; i++)
         {
             symbols[static_cast<size_t>(BEIDOU_CNAV2_PREAMBLE_SYMBOLS + i)] =

@@ -16,9 +16,11 @@
 #include "Beidou_CNAV1.h"
 #include "Beidou_CNAV2.h"
 #include "beidou_cnav2_navigation_message.h"
-#include "beidou_cnav2_test_helpers.h"
+#include "beidou_cnav_test_helpers.h"
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstdint>
 #include <limits>
 #include <vector>
@@ -69,7 +71,7 @@ std::vector<float> make_frame(const std::array<uint8_t, BEIDOU_CNAV2_INFO_BITS>&
         {
             symbols[static_cast<size_t>(i)] = (preamble[i] == '1') ? -1.0F : 1.0F;
         }
-    const auto codeword = BeidouCnav2Test::encode(info);
+    const auto codeword = BeidouCnavTest::encode<BEIDOU_CNAV2_LDPC_SYMBOLS>(info);
     for (int i = 0; i < BEIDOU_CNAV2_LDPC_SYMBOLS; i++)
         {
             symbols[static_cast<size_t>(BEIDOU_CNAV2_PREAMBLE_SYMBOLS + i)] =
@@ -438,9 +440,15 @@ TEST(BeidouCnav2NavigationMessageTest, RejectsInvalidFrames)
     Beidou_Cnav2_Navigation_Message nav;
     EXPECT_FALSE(nav.decode_frame_symbols(nullptr, frame.size(), 19));
     EXPECT_FALSE(nav.decode_frame_symbols(frame.data(), frame.size() - 1, 19));
+    // A preamble symbol error no longer rejects the frame: the soft preamble
+    // only resolves polarity, and LDPC plus CRC validate the frame.
     frame[0] *= -1.0F;
-    EXPECT_FALSE(nav.decode_frame_symbols(frame.data(), frame.size(), 19));
+    EXPECT_TRUE(nav.decode_frame_symbols(frame.data(), frame.size(), 19));
     frame[0] *= -1.0F;
+    // A preamble that cannot resolve the carrier polarity is rejected.
+    auto no_preamble = frame;
+    std::fill_n(no_preamble.begin(), BEIDOU_CNAV2_PREAMBLE_SYMBOLS, 0.0F);
+    EXPECT_FALSE(nav.decode_frame_symbols(no_preamble.data(), no_preamble.size(), 19));
     frame.back() = std::numeric_limits<float>::quiet_NaN();
     EXPECT_FALSE(nav.decode_frame_symbols(frame.data(), frame.size(), 19));
     EXPECT_FALSE(nav.last_crc_ok());
@@ -477,5 +485,137 @@ TEST(BeidouCnav2NavigationMessageTest, SoftDecodingIsIndependentOfTrackingGain)
             ASSERT_TRUE(nav.decode_frame_symbols(frame.data(), frame.size(), 19));
             EXPECT_EQ(nav.last_frame_prn(), 19U);
             EXPECT_EQ(nav.last_sow(), 12345 * 3);
+        }
+}
+
+
+namespace
+{
+// Unit-amplitude 1 ms samples of one frame start: preamble spread by the data secondary code.
+std::vector<float> preamble_1ms(float polarity)
+{
+    const char* preamble = "111000100100110111101000";
+    const float secondary[5] = {1.0F, 1.0F, 1.0F, -1.0F, 1.0F};
+    std::vector<float> samples;
+    for (int i = 0; i < BEIDOU_CNAV2_PREAMBLE_SYMBOLS; i++)
+        {
+            const float symbol = (preamble[i] == '1') ? -1.0F : 1.0F;
+            for (const float chip : secondary)
+                {
+                    samples.push_back(polarity * symbol * chip);
+                }
+        }
+    return samples;
+}
+}  // namespace
+
+
+TEST(BeidouCnav2NavigationMessageTest, PreambleStatisticIsScaleAndPolarityIndependent)
+{
+    const double single = std::sqrt(static_cast<double>(BEIDOU_CNAV2_PREAMBLE_MS));
+    for (const float scale : {1.0e-3F, 1.0F, 1.0e3F})
+        {
+            auto positive = preamble_1ms(scale);
+            auto negative = preamble_1ms(-scale);
+            EXPECT_NEAR(Beidou_Cnav2_Navigation_Message::preamble_detection_statistic(positive.data()), single, 1e-6);
+            EXPECT_NEAR(Beidou_Cnav2_Navigation_Message::preamble_detection_statistic(negative.data()), single, 1e-6);
+            // Two frames with the same polarity combine coherently (+3 dB).
+            EXPECT_NEAR(Beidou_Cnav2_Navigation_Message::preamble_detection_statistic(positive.data(), positive.data()),
+                std::sqrt(2.0) * single, 1e-6);
+            // A polarity flip between frames falls back to the single-frame term.
+            EXPECT_NEAR(Beidou_Cnav2_Navigation_Message::preamble_detection_statistic(positive.data(), negative.data()), single, 1e-6);
+        }
+    const std::vector<float> zeros(static_cast<size_t>(BEIDOU_CNAV2_PREAMBLE_MS), 0.0F);
+    EXPECT_EQ(Beidou_Cnav2_Navigation_Message::preamble_detection_statistic(zeros.data()), 0.0);
+}
+
+
+TEST(BeidouCnav2NavigationMessageTest, PreambleStatisticDetectsWeakPreamblesWithRareFalseAlarms)
+{
+    // 1 ms samples at Eb/N0 = 2 dB for the rate-1/2 LDPC (5 ms symbol Es/N0 = -1 dB),
+    // where a hard-decision correlation almost never reaches its threshold.
+    const double sigma = BeidouCnavTest::rate_half_bpsk_sigma(2.0) * std::sqrt(5.0);
+    BeidouCnavTest::PortableGaussian gauss(2026U);
+    const auto clean = preamble_1ms(1.0F);
+    const int trials = 200;
+    int detections = 0;
+    int false_alarms = 0;
+    std::vector<float> current(clean.size());
+    std::vector<float> previous(clean.size());
+    for (int t = 0; t < trials; t++)
+        {
+            for (size_t i = 0; i < clean.size(); i++)
+                {
+                    current[i] = static_cast<float>(clean[i] + sigma * gauss());
+                    previous[i] = static_cast<float>(clean[i] + sigma * gauss());
+                }
+            if (Beidou_Cnav2_Navigation_Message::preamble_detection_statistic(current.data(), previous.data()) >= BEIDOU_CNAV2_PREAMBLE_DETECTION_THRESHOLD)
+                {
+                    detections++;
+                }
+            for (size_t i = 0; i < clean.size(); i++)
+                {
+                    current[i] = static_cast<float>(sigma * gauss());
+                    previous[i] = static_cast<float>(sigma * gauss());
+                }
+            if (Beidou_Cnav2_Navigation_Message::preamble_detection_statistic(current.data(), previous.data()) >= BEIDOU_CNAV2_PREAMBLE_DETECTION_THRESHOLD)
+                {
+                    false_alarms++;
+                }
+        }
+    EXPECT_GE(detections, 190);
+    EXPECT_EQ(false_alarms, 0);
+}
+
+
+TEST(BeidouCnav2NavigationMessageTest, DecodesFrameWithPreambleSymbolErrors)
+{
+    auto frame = make_frame(make_info(19, BEIDOU_CNAV2_MSG_EPH1, 1000));
+    // Weak sign errors on 5 of the 24 preamble symbols.
+    for (const int i : {0, 5, 10, 15, 20})
+        {
+            frame[static_cast<size_t>(i)] *= -0.2F;
+        }
+    Beidou_Cnav2_Navigation_Message nav;
+    EXPECT_TRUE(nav.decode_frame_symbols(frame.data(), BEIDOU_CNAV2_FRAME_SYMBOLS, 19));
+    // Inverted carrier polarity is resolved from the soft preamble correlation.
+    for (auto& value : frame)
+        {
+            value = -value;
+        }
+    EXPECT_TRUE(nav.decode_frame_symbols(frame.data(), BEIDOU_CNAV2_FRAME_SYMBOLS, 19));
+}
+
+
+TEST(BeidouCnav2NavigationMessageTest, DecodesNoisyFrameNearLdpcThreshold)
+{
+    // Symbol amplitude 4 everywhere, AWGN on every symbol at Eb/N0 = 3 dB.
+    auto frame = make_frame(make_info(19, BEIDOU_CNAV2_MSG_EPH1, 1000));
+    for (int i = 0; i < BEIDOU_CNAV2_PREAMBLE_SYMBOLS; i++)
+        {
+            frame[static_cast<size_t>(i)] *= 4.0F;
+        }
+    BeidouCnavTest::PortableGaussian gauss(1135U);
+    const double sigma = 4.0 * BeidouCnavTest::rate_half_bpsk_sigma(3.0);
+    int preamble_errors = 0;
+    for (int i = 0; i < BEIDOU_CNAV2_FRAME_SYMBOLS; i++)
+        {
+            const float clean = frame[static_cast<size_t>(i)];
+            frame[static_cast<size_t>(i)] = static_cast<float>(clean + sigma * gauss());
+            if (i < BEIDOU_CNAV2_PREAMBLE_SYMBOLS && ((clean >= 0.0F) != (frame[static_cast<size_t>(i)] >= 0.0F)))
+                {
+                    preamble_errors++;
+                }
+        }
+    ASSERT_GT(preamble_errors, 0);
+    for (const float scale : {1.0e-3F, 1.0F, 1.0e3F})
+        {
+            std::vector<float> scaled(frame);
+            for (auto& value : scaled)
+                {
+                    value *= scale;
+                }
+            Beidou_Cnav2_Navigation_Message nav;
+            EXPECT_TRUE(nav.decode_frame_symbols(scaled.data(), BEIDOU_CNAV2_FRAME_SYMBOLS, 19)) << "input scale " << scale;
         }
 }

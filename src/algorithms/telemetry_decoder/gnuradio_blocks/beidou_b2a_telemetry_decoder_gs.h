@@ -50,13 +50,12 @@ private:
     beidou_b2a_telemetry_decoder_gs(const Gnss_Satellite& satellite, const Tlm_Conf& conf);
     void publish_navigation(double cn0_db_hz);
     bool try_decode_frame();
-    int32_t preamble_correlation() const;
+    bool preamble_detected() const;
 
     Beidou_Cnav2_Navigation_Message d_nav;
     Nav_Message_Packet d_nav_msg_packet;
     Gnss_Satellite d_satellite;
     std::deque<float> d_symbol_history;
-    std::array<float, BEIDOU_CNAV2_PREAMBLE_MS> d_preamble_ms{};
     std::string d_dump_filename;
     std::ofstream d_dump_file;
     std::unique_ptr<Tlm_CRC_Stats> d_Tlm_CRC_Stats;

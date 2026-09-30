@@ -47,11 +47,20 @@ void append_bits_as_chars(std::string& out, const uint8_t* bits, int32_t n)
 }
 
 
+// Minimum normalized soft-correlation margin between the best and second-best
+// BCH codeword, (C1 - C2) / sum|y|. It keeps the rate of wrongly decoded SOH
+// words below that of hard-decision bounded-distance decoding at t = 11, while
+// rejecting fewer words (simulated over AWGN, Es/N0 from -3 to -1 dB).
+constexpr float BCH_MIN_SOFT_MARGIN = 0.1F;
+
+// ICD Table 7-2: SOH ranges from 0 to 3582 s in steps of 18 s.
+constexpr uint32_t BEIDOU_CNAV1_SOH_MAX = 3582U / BEIDOU_CNAV1_SOH_LSB_S;
+
+
 struct BchCodebook
 {
     int32_t n = 0;
     int32_t k = 0;
-    int32_t corr_threshold = 0;
     std::vector<int8_t> bipolar_codewords;
     std::vector<uint16_t> messages;
 };
@@ -94,13 +103,11 @@ std::vector<int8_t> encode_bch_hypothesis_bipolar(
 BchCodebook build_bch_codebook(
     int32_t n,
     int32_t k,
-    const std::vector<int32_t>& feedback_pos_1based,
-    int32_t corr_threshold)
+    const std::vector<int32_t>& feedback_pos_1based)
 {
     BchCodebook cb{};
     cb.n = n;
     cb.k = k;
-    cb.corr_threshold = corr_threshold;
     const uint32_t num_messages = 1U << static_cast<uint32_t>(k);
     cb.bipolar_codewords.resize(static_cast<size_t>(num_messages) * static_cast<size_t>(n));
     cb.messages.resize(num_messages);
@@ -115,27 +122,44 @@ BchCodebook build_bch_codebook(
 }
 
 
-bool decode_bch_codeword(const int32_t* in, int32_t* out_msg, const BchCodebook& cb)
+// Soft-decision maximum-likelihood decoding: pick the codeword with the largest
+// correlation with the soft symbols (positive values favor bit 1, i.e. bipolar -1).
+// With min_margin > 0, reject words whose best and second-best correlations are
+// closer than min_margin * sum|y|. The metric is independent of the input scale.
+bool decode_bch_soft(const float* in, int32_t* out_msg, const BchCodebook& cb, float min_margin)
 {
-    int32_t best_corr = std::numeric_limits<int32_t>::min();
+    double magnitude = 0.0;
+    for (int32_t j = 0; j < cb.n; j++)
+        {
+            magnitude += std::abs(static_cast<double>(in[j]));
+        }
+    if (!(magnitude > 0.0) || !std::isfinite(magnitude))
+        {
+            return false;
+        }
+    double best_corr = -std::numeric_limits<double>::max();
+    double second_corr = -std::numeric_limits<double>::max();
     uint16_t best_message = 0U;
     for (size_t i = 0; i < cb.messages.size(); i++)
         {
-            int32_t corr = 0;
+            double corr = 0.0;
             const auto* cw = cb.bipolar_codewords.data() + static_cast<ptrdiff_t>(i) * cb.n;
             for (int32_t j = 0; j < cb.n; j++)
                 {
-                    const int32_t bit = in[j] > 0 ? 1 : 0;
-                    const int32_t bipolar = (bit == 0) ? 1 : -1;
-                    corr += static_cast<int32_t>(cw[j]) * bipolar;
+                    corr -= static_cast<double>(cw[j]) * static_cast<double>(in[j]);
                 }
             if (corr > best_corr)
                 {
+                    second_corr = best_corr;
                     best_corr = corr;
                     best_message = cb.messages[i];
                 }
+            else if (corr > second_corr)
+                {
+                    second_corr = corr;
+                }
         }
-    if (best_corr < cb.corr_threshold)
+    if (best_corr - second_corr < static_cast<double>(min_margin) * magnitude)
         {
             return false;
         }
@@ -147,19 +171,31 @@ bool decode_bch_codeword(const int32_t* in, int32_t* out_msg, const BchCodebook&
 }
 
 
-static bool decode_bch_21_6(const int32_t* in, int32_t* out_msg)
+// PRN word. A wrong decode cannot pass an expected-PRN check, so the margin
+// test is only needed when the PRN is not known in advance.
+bool decode_bch_21_6(const float* in, int32_t* out_msg, bool prn_known)
 {
     static const std::vector<int32_t> feedback_pos = {2, 4, 5, 6};
-    static const BchCodebook cb = build_bch_codebook(21, 6, feedback_pos, 15);
-    return decode_bch_codeword(in, out_msg, cb);
+    static const BchCodebook cb = build_bch_codebook(21, 6, feedback_pos);
+    return decode_bch_soft(in, out_msg, cb, prn_known ? 0.0F : BCH_MIN_SOFT_MARGIN);
 }
 
 
-static bool decode_bch_51_8(const int32_t* in, int32_t* out_msg)
+// SOH word. It feeds the TOW directly, so always require the margin.
+bool decode_bch_51_8(const float* in, int32_t* out_msg)
 {
     static const std::vector<int32_t> feedback_pos = {1, 4, 5, 6, 7, 8};
-    static const BchCodebook cb = build_bch_codebook(51, 8, feedback_pos, 29);
-    return decode_bch_codeword(in, out_msg, cb);
+    static const BchCodebook cb = build_bch_codebook(51, 8, feedback_pos);
+    if (!decode_bch_soft(in, out_msg, cb, BCH_MIN_SOFT_MARGIN))
+        {
+            return false;
+        }
+    uint32_t soh = 0U;
+    for (int32_t bit = 0; bit < 8; bit++)
+        {
+            soh = (soh << 1U) | static_cast<uint32_t>(out_msg[bit] & 1);
+        }
+    return soh <= BEIDOU_CNAV1_SOH_MAX;
 }
 
 
@@ -613,26 +649,41 @@ bool Beidou_Cnav1_Navigation_Message::decode_frame(
             return false;
         }
 
+    // Soft symbols arrive with an arbitrary tracking correlator gain (and, from
+    // some telemetry paths, a heuristic pre-scaling). The LDPC decoder expects
+    // bit LLRs on a known scale, so normalize the mean magnitude to 4, as done
+    // for B-CNAV2. This matches 2|y|/sigma^2 near the decoding threshold.
+    constexpr double mean_llr_magnitude = 4.0;
+    double magnitude_sum = 0.0;
+    for (int32_t i = 0; i < BEIDOU_CNAV1_FRAME_SYMBOLS; i++)
+        {
+            if (!std::isfinite(symbols[i]))
+                {
+                    set_fail(0);
+                    return false;
+                }
+            magnitude_sum += std::abs(static_cast<double>(symbols[i]));
+        }
+    if (magnitude_sum <= 0.0)
+        {
+            set_fail(0);
+            return false;
+        }
+    const double llr_scale = mean_llr_magnitude * BEIDOU_CNAV1_FRAME_SYMBOLS / magnitude_sum;
     std::array<float, BEIDOU_CNAV1_FRAME_SYMBOLS> bit_llr{};
     for (int32_t i = 0; i < BEIDOU_CNAV1_FRAME_SYMBOLS; i++)
         {
-            bit_llr[i] = symbols[i];
-        }
-
-    std::array<int32_t, BEIDOU_CNAV1_SUBFRAME1_SYMBOLS> hard_bits{};
-    for (int32_t i = 0; i < BEIDOU_CNAV1_SUBFRAME1_SYMBOLS; i++)
-        {
-            hard_bits[i] = (symbols[i] >= 0.0F) ? 1 : 0;
+            bit_llr[i] = static_cast<float>(static_cast<double>(symbols[i]) * llr_scale);
         }
 
     int32_t prn_bits[6];
     int32_t soh_bits[8];
-    if (!decode_bch_21_6(hard_bits.data(), prn_bits))
+    if (!decode_bch_21_6(bit_llr.data(), prn_bits, expected_prn > 0))
         {
             set_fail(1);
             return false;
         }
-    if (!decode_bch_51_8(hard_bits.data() + 21, soh_bits))
+    if (!decode_bch_51_8(bit_llr.data() + 21, soh_bits))
         {
             set_fail(2);
             return false;
@@ -792,19 +843,13 @@ bool Beidou_Cnav1_Navigation_Message::probe_subframe1_prn(const float* symbols, 
             return false;
         }
 
-    std::array<int32_t, BEIDOU_CNAV1_SUBFRAME1_SYMBOLS> hard_bits{};
-    for (int32_t i = 0; i < BEIDOU_CNAV1_SUBFRAME1_SYMBOLS; i++)
-        {
-            hard_bits[i] = (symbols[i] >= 0.0F) ? 1 : 0;
-        }
-
     int32_t prn_bits[6];
     int32_t soh_bits[8];
-    if (!decode_bch_21_6(hard_bits.data(), prn_bits))
+    if (!decode_bch_21_6(symbols, prn_bits, expected_prn > 0))
         {
             return false;
         }
-    if (!decode_bch_51_8(hard_bits.data() + 21, soh_bits))
+    if (!decode_bch_51_8(symbols + 21, soh_bits))
         {
             return false;
         }

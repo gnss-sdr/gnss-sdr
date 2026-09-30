@@ -13,8 +13,9 @@
  *
  * -----------------------------------------------------------------------------
  */
+#include "Beidou_CNAV2.h"
 #include "beidou_cnav2_ldpc.h"
-#include "beidou_cnav2_test_helpers.h"
+#include "beidou_cnav_test_helpers.h"
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <array>
@@ -65,7 +66,7 @@ TEST(BeidouCnav2LdpcTest, ReferenceEncoderMatchesIcdExample)
     const auto codeword = cnav2_icd_bits();
     std::array<uint8_t, 288> info{};
     std::copy_n(codeword.begin(), info.size(), info.begin());
-    EXPECT_EQ(BeidouCnav2Test::encode(info), codeword);
+    EXPECT_EQ(BeidouCnavTest::encode<BEIDOU_CNAV2_LDPC_SYMBOLS>(info), codeword);
 }
 
 TEST(BeidouCnav2LdpcTest, IcdExampleSatisfiesEveryParityCheck)
@@ -85,7 +86,7 @@ TEST(BeidouCnav2LdpcTest, IcdExampleSatisfiesEveryParityCheck)
                         {
                             symbol = static_cast<uint8_t>((symbol << 1U) | bits[graph.check_to_var[e] * 6 + b]);
                         }
-                    syndrome ^= BeidouCnav2Test::multiply(graph.check_to_h[e], symbol);
+                    syndrome ^= BeidouCnavTest::multiply(graph.check_to_h[e], symbol);
                 }
             EXPECT_EQ(syndrome, 0U) << "check " << row;
         }

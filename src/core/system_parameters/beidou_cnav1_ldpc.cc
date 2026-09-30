@@ -75,23 +75,23 @@ const BeidouCnav1LdpcGraph& beidou_cnav1_ldpc_graph_88_44()
 
 bool beidou_cnav1_ldpc_decode_200_100(const float* symbol_llr, int32_t num_bits, uint8_t* info_bits600)
 {
-    return beidou_ldpc_decode(beidou_cnav1_ldpc_graph_200_100(), symbol_llr, num_bits, info_bits600, nullptr);
+    return beidou_ldpc_decode(beidou_cnav1_ldpc_graph_200_100(), symbol_llr, num_bits, info_bits600, nullptr, true);
 }
 
 
 bool beidou_cnav1_ldpc_decode_88_44(const float* symbol_llr, int32_t num_bits, uint8_t* info_bits264)
 {
-    return beidou_ldpc_decode(beidou_cnav1_ldpc_graph_88_44(), symbol_llr, num_bits, info_bits264, nullptr);
+    return beidou_ldpc_decode(beidou_cnav1_ldpc_graph_88_44(), symbol_llr, num_bits, info_bits264, nullptr, true);
 }
 
 
 bool beidou_cnav1_ldpc_decode_200_100_codeword(const float* symbol_llr, int32_t num_bits, uint8_t* codeword_bits1200)
 {
-    return beidou_ldpc_decode(beidou_cnav1_ldpc_graph_200_100(), symbol_llr, num_bits, nullptr, codeword_bits1200);
+    return beidou_ldpc_decode(beidou_cnav1_ldpc_graph_200_100(), symbol_llr, num_bits, nullptr, codeword_bits1200, true);
 }
 
 
 bool beidou_cnav1_ldpc_decode_88_44_codeword(const float* symbol_llr, int32_t num_bits, uint8_t* codeword_bits528)
 {
-    return beidou_ldpc_decode(beidou_cnav1_ldpc_graph_88_44(), symbol_llr, num_bits, nullptr, codeword_bits528);
+    return beidou_ldpc_decode(beidou_cnav1_ldpc_graph_88_44(), symbol_llr, num_bits, nullptr, codeword_bits528, true);
 }

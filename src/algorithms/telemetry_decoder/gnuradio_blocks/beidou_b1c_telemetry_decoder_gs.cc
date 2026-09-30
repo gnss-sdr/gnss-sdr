@@ -124,32 +124,6 @@ bool build_rotated_bpsk_frame_from_iq(
 }
 
 
-bool apply_llr_scale_and_decode(
-    std::vector<float>& frame,
-    Beidou_Cnav1_Navigation_Message& nav,
-    int32_t expected_prn,
-    float cn0_db_hz,
-    int32_t* fail_stage)
-{
-    const int32_t n = BEIDOU_CNAV1_FRAME_SYMBOLS;
-    double rms_acc = 0.0;
-    for (float sample : frame)
-        {
-            const auto v = static_cast<double>(sample);
-            rms_acc += v * v;
-        }
-    const double rms = std::sqrt(rms_acc / static_cast<double>(n)) + 1e-6;
-    const double cn0_linear = std::pow(10.0, static_cast<double>(cn0_db_hz) / 10.0);
-    const double snr_sym = std::max(cn0_linear * (BEIDOU_B1C_CODE_PERIOD_MS * 1e-3), 1e-4);
-    const double llr_scale = std::min(std::max(std::sqrt(snr_sym) / rms, 0.05), 50.0);
-    for (float& sample : frame)
-        {
-            sample = static_cast<float>(static_cast<double>(sample) * llr_scale);
-        }
-    return nav.decode_frame_symbols(frame.data(), BEIDOU_CNAV1_FRAME_SYMBOLS, expected_prn, fail_stage);
-}
-
-
 bool probe_frame_from_iq_window(
     const std::vector<float>& history_i,
     const std::vector<float>& history_q,
@@ -174,7 +148,6 @@ bool decode_frame_from_iq_window(
     int32_t expected_prn,
     int32_t start_offset,
     bool invert,
-    float cn0_db_hz,
     int32_t* fail_stage = nullptr)
 {
     std::vector<float> frame;
@@ -182,7 +155,8 @@ bool decode_frame_from_iq_window(
         {
             return false;
         }
-    return apply_llr_scale_and_decode(frame, nav, expected_prn, cn0_db_hz, fail_stage);
+    // LLR scaling is done in Beidou_Cnav1_Navigation_Message::decode_frame().
+    return nav.decode_frame_symbols(frame.data(), BEIDOU_CNAV1_FRAME_SYMBOLS, expected_prn, fail_stage);
 }
 
 
@@ -475,7 +449,6 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
                             // Exact secondary matches need no lag search; loose matches get a small span.
                             const int32_t local_offset_span =
                                 (sec_candidates.first >= 1799.0F) ? 0 : B1C_SCAN_OFFSET_SPAN_LOOSE;
-                            const auto cn0_db_hz = static_cast<float>(current_symbol.CN0_dB_hz);
                             int32_t full_decode_attempts = 0;
 
                             if (!candidate_offsets.empty())
@@ -506,7 +479,7 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
                                                             ++full_decode_attempts;
                                                             if (decode_frame_from_iq_window(
                                                                     history_i, history_q, d_nav, expected_prn_scan, start_offset, inv,
-                                                                    cn0_db_hz, &fail_stage))
+                                                                    &fail_stage))
                                                                 {
                                                                     frame_decoded = true;
                                                                     invert = inv;

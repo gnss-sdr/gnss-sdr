@@ -15,6 +15,7 @@
  */
 #include "Beidou_CNAV1.h"
 #include "beidou_cnav1_navigation_message.h"
+#include "beidou_cnav_test_helpers.h"
 #include "rtklib_conversions.h"
 #include <gtest/gtest.h>
 #include <array>
@@ -69,8 +70,8 @@ void append_bch_codeword(
     const auto encoded = encode_bch_lfsr_bipolar(msg_bits, n, k, feedback_pos_1based);
     for (const auto cw : encoded)
         {
-            // Map bipolar codeword to float symbols expected by the hard-decision BCH decoder.
-            frame.push_back(cw > 0 ? -1.0F : 1.0F);
+            // Bipolar +1 is bit 0; positive soft symbols favor bit 1. Same amplitude as SF2/SF3.
+            frame.push_back(cw > 0 ? -4.0F : 4.0F);
         }
 }
 
@@ -288,7 +289,7 @@ TEST(BeidouCnav1NavigationMessageTest, MultiFrameSteadyStateKeepsConstantSohOffs
 TEST(BeidouCnav1NavigationMessageTest, RejectsEphemerisWhenIodeIodcMismatch)
 {
     // SF2 with IODC/IODE mismatch (ICD §7.4.3).
-    std::vector<uint8_t> sf2_bits(static_cast<size_t>(BEIDOU_CNAV1_SUBFRAME2_SYMBOLS), 0U);
+    std::array<uint8_t, BEIDOU_CNAV1_SF2_DATA_BITS> sf2_bits{0U};
     const int32_t iodc_offset = 13 + 8;
     const uint32_t iodc = 0x101U;  // low 8 = 0x01
     for (int32_t b = 0; b < 10; b++)
@@ -326,8 +327,8 @@ TEST(BeidouCnav1NavigationMessageTest, RejectsEphemerisWhenIodeIodcMismatch)
             sf2_bits[static_cast<size_t>(BEIDOU_CNAV1_SF2_DATA_BITS - BEIDOU_CNAV1_CRC_BITS + b)] =
                 static_cast<uint8_t>((crc >> static_cast<uint32_t>(23 - b)) & 1U);
         }
-
-    const auto sf2_llr = encode_bits_to_llr(sf2_bits);
+    const auto sf2_encoded = BeidouCnavTest::encode<BEIDOU_CNAV1_SUBFRAME2_SYMBOLS>(sf2_bits);
+    const auto sf2_llr = encode_bits_to_llr(std::vector<uint8_t>(sf2_encoded.begin(), sf2_encoded.end()));
     const auto sf3_llr = encode_bits_to_llr(std::vector<uint8_t>(BEIDOU_CNAV1_SUBFRAME3_SYMBOLS, 0U));
     std::vector<float> interleaved;
     deinterleave_like_icd(sf2_llr, sf3_llr, interleaved);
@@ -340,4 +341,70 @@ TEST(BeidouCnav1NavigationMessageTest, RejectsEphemerisWhenIodeIodcMismatch)
     Beidou_Cnav1_Navigation_Message nav;
     ASSERT_TRUE(nav.decode_frame_symbols(frame.data(), BEIDOU_CNAV1_FRAME_SYMBOLS, 19));
     EXPECT_FALSE(nav.have_new_ephemeris());
+}
+
+TEST(BeidouCnav1NavigationMessageTest, DecodesNoisyFrameRegardlessOfInputScale)
+{
+    // Zero-payload frame (symbol amplitude 4) with AWGN on every symbol at Eb/N0 = 3.5 dB.
+    std::vector<float> frame = build_valid_zero_payload_frame(19U, 1U);
+    BeidouCnavTest::PortableGaussian gauss(1135U);
+    const double sigma = 4.0 * BeidouCnavTest::rate_half_bpsk_sigma(3.5);
+    int32_t hard_errors = 0;
+    for (int32_t i = 0; i < BEIDOU_CNAV1_FRAME_SYMBOLS; i++)
+        {
+            const float clean = frame[static_cast<size_t>(i)];
+            frame[static_cast<size_t>(i)] = static_cast<float>(clean + sigma * gauss());
+            if ((clean >= 0.0F) != (frame[static_cast<size_t>(i)] >= 0.0F))
+                {
+                    hard_errors++;
+                }
+        }
+    ASSERT_GT(hard_errors, 50);
+
+    // Tracking correlator gain is arbitrary: decoding must not depend on it.
+    for (const float scale : {1.0e-3F, 1.0F, 1.0e3F})
+        {
+            std::vector<float> scaled(frame);
+            for (auto& value : scaled)
+                {
+                    value *= scale;
+                }
+            Beidou_Cnav1_Navigation_Message nav;
+            EXPECT_TRUE(nav.decode_frame_symbols(scaled.data(), BEIDOU_CNAV1_FRAME_SYMBOLS, 19)) << "input scale " << scale;
+        }
+}
+
+TEST(BeidouCnav1NavigationMessageTest, SoftBchDecodingCorrectsBeyondHardDecisionRadius)
+{
+    // Weak sign errors: 4 in the BCH(21,6) PRN word and 12 in the BCH(51,8) SOH
+    // word, one more than each code's hard-decision radius (t = 3 and t = 11).
+    const uint32_t soh = 123U;
+    std::vector<float> frame = build_valid_zero_payload_frame(19U, soh);
+    for (const int32_t i : {0, 5, 10, 15})
+        {
+            frame[static_cast<size_t>(i)] *= -0.1F;
+        }
+    for (int32_t i = 0; i < 12; i++)
+        {
+            frame[static_cast<size_t>(21 + 4 * i)] *= -0.1F;
+        }
+
+    Beidou_Cnav1_Navigation_Message nav;
+    EXPECT_TRUE(nav.probe_subframe1_prn(frame.data(), BEIDOU_CNAV1_FRAME_SYMBOLS, 19));
+    ASSERT_TRUE(nav.decode_frame_symbols(frame.data(), BEIDOU_CNAV1_FRAME_SYMBOLS, 19));
+    // Zero SF2 payload: HOW = 0, so TOW is the SOH alone.
+    EXPECT_DOUBLE_EQ(nav.get_tow_s(), static_cast<double>(soh * BEIDOU_CNAV1_SOH_LSB_S));
+}
+
+TEST(BeidouCnav1NavigationMessageTest, RejectsSohOutsideIcdRange)
+{
+    // ICD Table 7-2: SOH is at most 3582 s, i.e. 199 in units of 18 s.
+    const std::vector<float> valid = build_valid_zero_payload_frame(19U, 199U);
+    const std::vector<float> invalid = build_valid_zero_payload_frame(19U, 200U);
+    Beidou_Cnav1_Navigation_Message nav;
+    EXPECT_TRUE(nav.decode_frame_symbols(valid.data(), BEIDOU_CNAV1_FRAME_SYMBOLS, 19));
+    int32_t fail_stage = -1;
+    EXPECT_FALSE(nav.decode_frame_symbols(invalid.data(), BEIDOU_CNAV1_FRAME_SYMBOLS, 19, &fail_stage));
+    EXPECT_EQ(fail_stage, 2);
+    EXPECT_FALSE(nav.probe_subframe1_prn(invalid.data(), BEIDOU_CNAV1_FRAME_SYMBOLS, 19));
 }

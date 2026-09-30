@@ -66,13 +66,13 @@ function scans = load_f_error_dump(filename)
     end
 
     if nargout == 0
-        printf('%6s %5s %4s %9s %14s %8s %6s\n', 'scan', 'PRN', 'ch', 'CN0[dBHz]', 'selDoppler[Hz]', 'nBins', '');
+        fprintf('%6s %5s %4s %9s %14s %8s %6s\n', 'scan', 'PRN', 'ch', 'CN0[dBHz]', 'selDoppler[Hz]', 'nBins', '');
         for i = 1:n
-            printf('%6d %5d %4d %9.2f %14.2f %8d\n', scans(i).scan_id, scans(i).prn, scans(i).channel, ...
+            fprintf('%6d %5d %4d %9.2f %14.2f %8d\n', scans(i).scan_id, scans(i).prn, scans(i).channel, ...
                 scans(i).cn0_dBHz, scans(i).selected_doppler_hz, numel(scans(i).doppler_hz));
         end
-        printf('\n%d scans loaded from %s\n', n, filename);
-        printf('PRNs present: %s\n', mat2str(unique([scans.prn])));
+        fprintf('\n%d scans loaded from %s\n', n, filename);
+        fprintf('PRNs present: %s\n', mat2str(unique([scans.prn])));
         clear scans;  % avoid echoing the struct array to the console when called as a script
     end
 end

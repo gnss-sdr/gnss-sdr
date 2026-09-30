@@ -44,7 +44,17 @@ function plot_all_f_error_scans(scans, Td, idxs, save_dir)
         % invisible figure, saveas()/print() falls back to the fltk renderer,
         % which then fails without a real X display. Leaving figures nominally
         % visible (but headlessly rendered via gnuplot) is what actually works.
-        graphics_toolkit('gnuplot');
+        % Use gnuplot only if it is available, and restore the caller's
+        % toolkit when this function returns (also on error). If gnuplot is
+        % not installed (or graphics_toolkit does not exist, as in MATLAB),
+        % keep the current toolkit.
+        try
+            prev_toolkit = graphics_toolkit();
+            graphics_toolkit('gnuplot');
+            restore_toolkit = onCleanup(@() graphics_toolkit(prev_toolkit));
+        catch
+            % keep the current graphics toolkit
+        end
         if ~exist(save_dir, 'dir')
             mkdir(save_dir);
         end
@@ -62,7 +72,6 @@ function plot_all_f_error_scans(scans, Td, idxs, save_dir)
     end
 
     if ~isempty(save_dir)
-        set(0, 'DefaultFigureVisible', 'on');
-        printf('Saved %d plots to %s\n', numel(idxs), save_dir);
+        fprintf('Saved %d plots to %s\n', numel(idxs), save_dir);
     end
 end

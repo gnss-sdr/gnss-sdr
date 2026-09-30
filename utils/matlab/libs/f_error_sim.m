@@ -14,15 +14,15 @@
 % simulated noisy correlator samples, for a given C/N0 and initial (pull-in)
 % frequency error, fixed to the Galileo E1 code period (Td = 4 ms). It also
 % reproduces the CN0 M2M4 estimator (lock_detectors.cc::cn0_m2m4_estimator)
-% applied to the winning bin's raw samples, matching the receiver's own
-% "Frequency error reduction: CN0 ..." diagnostic line.
+% applied to the winning bin's raw samples, matching the cn0_dBHz column of
+% the receiver's f_error_dump CSV (Tracking_<Sig>.f_error_dump=true).
 %
 % Usage:
 %   f_error_sim()                                     % all defaults
 %   f_error_sim(CN0_dBHz, f_error_step_num, f_error_accumulation, ...
 %               f_error_doppler_step, f_error_init_Hz, n_trials, seed)
 %
-%   f_error_sim(35, 9, 20, 62.5, 150)                 % typical EVK1029 fer.conf-like case
+%   f_error_sim(35, 9, 20, 62.5, 150)                 % 9 bins at 62.5 Hz, 150 Hz initial error
 %   f_error_sim(30, 5, 10, 125, -300, 5000, 2)
 %
 % What it prints:
@@ -33,8 +33,9 @@
 %
 % What it plots:
 %   1) One example trial's per-bin accumulated power vs. Doppler tested,
-%      with the true frequency marked -- the same data the receiver now logs
-%      in its "bin Doppler [Hz]" / "bin correlation power" diagnostic vectors.
+%      with the true frequency marked -- the same data the receiver writes to
+%      the doppler_hz / power columns of its f_error_dump CSV (there as
+%      absolute Doppler values rather than offsets from the pull-in estimate).
 %   2) Histogram of the residual Doppler error left after the scan, over all
 %      Monte Carlo trials.
 
@@ -61,8 +62,15 @@ function f_error_sim(CN0_dBHz, f_error_step_num, f_error_accumulation, f_error_d
     %% ------------------------------------------------------------------------
 
     if ~isempty(seed)
-        rand('state', seed);
-        randn('state', seed);
+        if exist('rng') ~= 0
+            % MATLAB, and Octave >= 7: seed the Mersenne Twister without
+            % switching MATLAB to its legacy generators
+            rng(seed, 'twister');
+        else
+            % Octave < 7 has no rng(); this is what rng(seed, 'twister') does there
+            rand('state', seed);
+            randn('state', seed);
+        end
     end
 
     Td = 4e-3;  % Galileo E1 code period [s] -- fixed per this script's scope
@@ -72,7 +80,7 @@ function f_error_sim(CN0_dBHz, f_error_step_num, f_error_accumulation, f_error_d
     f_error_step_num = max(1, round(f_error_step_num));
     if mod(f_error_step_num, 2) == 0
         f_error_step_num = f_error_step_num + 1;
-        printf('note: f_error_step_num rounded up to %d (must be odd)\n', f_error_step_num);
+        fprintf('note: f_error_step_num rounded up to %d (must be odd)\n', f_error_step_num);
     end
     num_bins = f_error_step_num;
 
@@ -98,19 +106,19 @@ function f_error_sim(CN0_dBHz, f_error_step_num, f_error_accumulation, f_error_d
     sinc0 = @(x) (x == 0) * 1 + (x ~= 0) .* (sin(x + (x == 0)) ./ (x + (x == 0)));
     A = sqrt(2 * 10^(CN0_dBHz / 10) * Td);  % correlator amplitude; SNR = 2*(C/N0)*Td, unit-variance complex noise per branch
 
-    printf('--- f_error_sim: CN0=%.1f dB-Hz, f_error_step_num=%d, f_error_accumulation=%d, f_error_doppler_step=%.2f Hz, f_error_init=%.1f Hz, Td=%.1f ms (Galileo E1) ---\n', ...
+    fprintf('--- f_error_sim: CN0=%.1f dB-Hz, f_error_step_num=%d, f_error_accumulation=%d, f_error_doppler_step=%.2f Hz, f_error_init=%.1f Hz, Td=%.1f ms (Galileo E1) ---\n', ...
            CN0_dBHz, num_bins, f_error_accumulation, f_error_doppler_step, f_error_init_Hz, Td * 1e3);
 
     % noiseless per-bin loss, for the printed table
     theta_bins = pi * bin_residual_error * Td;
     bin_loss_dB = 20 * log10(abs(sinc0(theta_bins)) + eps);
 
-    printf('\n bin   mult   Doppler[Hz]   residual[Hz]   sinc loss[dB]\n');
+    fprintf('\n bin   mult   Doppler[Hz]   residual[Hz]   sinc loss[dB]\n');
     [~, ideal_bin] = min(abs(bin_residual_error));
     for idx = 1:num_bins
         marker = '';
         if idx == ideal_bin, marker = '  <- closest to truth'; end
-        printf('  %2d   %+3d    %8.2f      %8.2f        %6.2f%s\n', ...
+        fprintf('  %2d   %+3d    %8.2f      %8.2f        %6.2f%s\n', ...
                idx - 1, bin_mult(idx), bin_doppler_offset(idx), bin_residual_error(idx), bin_loss_dB(idx), marker);
     end
 
@@ -145,11 +153,11 @@ function f_error_sim(CN0_dBHz, f_error_step_num, f_error_accumulation, f_error_d
 
     capture_prob = mean(winning_bin == ideal_bin);
 
-    printf('\nMonte Carlo results (%d trials):\n', n_trials);
-    printf('  Residual Doppler error after scan: mean=%.2f Hz, std=%.2f Hz, RMSE=%.2f Hz (initial error was %.1f Hz)\n', ...
+    fprintf('\nMonte Carlo results (%d trials):\n', n_trials);
+    fprintf('  Residual Doppler error after scan: mean=%.2f Hz, std=%.2f Hz, RMSE=%.2f Hz (initial error was %.1f Hz)\n', ...
            mean(residual_after), std(residual_after), sqrt(mean(residual_after .^ 2)), f_error_init_Hz);
-    printf('  Bin-capture probability (picked bin closest to truth, bin %d): %.1f%%\n', ideal_bin - 1, 100 * capture_prob);
-    printf('  CN0 estimate on winning bin: mean=%.2f dB-Hz, std=%.2f dB-Hz (true CN0=%.1f dB-Hz)\n', ...
+    fprintf('  Bin-capture probability (picked bin closest to truth, bin %d): %.1f%%\n', ideal_bin - 1, 100 * capture_prob);
+    fprintf('  CN0 estimate on winning bin: mean=%.2f dB-Hz, std=%.2f dB-Hz (true CN0=%.1f dB-Hz)\n', ...
            mean(cn0_est_dBHz), std(cn0_est_dBHz), CN0_dBHz);
 
     %% ------------------------------ Plots -------------------------------------
@@ -177,7 +185,7 @@ end
 function cn0_dBHz = cn0_m2m4(prompt_samples, coh_integration_time_s)
     % Octave port of lock_detectors.cc::cn0_m2m4_estimator(), applied to a
     % column vector of complex Prompt samples, for exact parity with the
-    % receiver's own state-5 CN0 diagnostic.
+    % cn0_dBHz column in the receiver's f_error_dump CSV.
     n = numel(prompt_samples);
     if n == 0 || coh_integration_time_s == 0
         cn0_dBHz = -100;
@@ -188,7 +196,14 @@ function cn0_dBHz = cn0_m2m4(prompt_samples, coh_integration_time_s)
     p2 = abs(prompt_samples) .^ 2;
     m2 = mean(p2);
     m4 = mean(p2 .^ 2);
-    aux = sqrt(2 * m2^2 - m4);
+    % std::sqrt() of a negative argument returns NaN in C++, but a complex
+    % value in Octave; map it to NaN explicitly so the fallback branch matches.
+    aux = 2 * m2^2 - m4;
+    if aux < 0
+        aux = NaN;
+    else
+        aux = sqrt(aux);
+    end
     if isnan(aux)
         denominator = m2 - Psig;
         if denominator == 0

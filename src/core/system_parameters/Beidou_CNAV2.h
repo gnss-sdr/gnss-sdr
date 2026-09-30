@@ -38,7 +38,7 @@ constexpr int32_t BEIDOU_CNAV2_CRC_BITS = 24;
 constexpr int32_t BEIDOU_CNAV2_DATA_BITS = BEIDOU_CNAV2_INFO_BITS - BEIDOU_CNAV2_CRC_BITS;
 constexpr int32_t BEIDOU_CNAV2_MES_TYPE_BITS = 6;
 constexpr int32_t BEIDOU_CNAV2_SOW_LSB_S = 3;
-constexpr int32_t BEIDOU_CNAV2_PREAMBLE_CORR_THRESHOLD = 115;
+constexpr double BEIDOU_CNAV2_PREAMBLE_DETECTION_THRESHOLD = 5.2;  //!< on the normalized soft preamble statistic, about |N(0,1)| on noise
 
 constexpr int32_t BEIDOU_CNAV2_MSG_EPH1 = 10;
 constexpr int32_t BEIDOU_CNAV2_MSG_EPH2 = 11;

@@ -19,6 +19,9 @@
 #include "beidou_cnav1_ldpc.h"
 #include "beidou_cnav2_ldpc.h"
 #include <array>
+#include <cmath>
+#include <cstdint>
+#include <random>
 #include <stdexcept>
 #include <utility>
 
@@ -135,6 +138,31 @@ inline std::array<uint8_t, N> encode(const std::array<uint8_t, N / 2>& bits)
             codeword[bit] = (symbols[bit / 6] >> (5 - bit % 6)) & 1U;
         }
     return codeword;
+}
+
+// Standard normal samples that are reproducible across standard libraries
+// (std::normal_distribution is implementation-defined; std::mt19937 is not).
+class PortableGaussian
+{
+public:
+    explicit PortableGaussian(uint32_t seed) : rng_(seed) {}
+    double operator()()
+    {
+        const double u1 = (static_cast<double>(rng_()) + 0.5) / 4294967296.0;
+        const double u2 = (static_cast<double>(rng_()) + 0.5) / 4294967296.0;
+        return std::sqrt(-2.0 * std::log(u1)) * std::cos(6.283185307179586 * u2);
+    }
+
+private:
+    std::mt19937 rng_;
+};
+
+
+// Noise standard deviation for unit-amplitude BPSK carrying a rate-1/2 code.
+inline double rate_half_bpsk_sigma(double ebn0_db)
+{
+    const double esn0 = std::pow(10.0, (ebn0_db - 10.0 * std::log10(2.0)) / 10.0);
+    return std::sqrt(1.0 / (2.0 * esn0));
 }
 }  // namespace BeidouCnavTest
 

@@ -13,6 +13,7 @@
  *
  * -----------------------------------------------------------------------------
  */
+#include "Beidou_CNAV2.h"
 #include "beidou_cnav2_ldpc.h"
 #include "beidou_cnav_test_helpers.h"
 #include <gtest/gtest.h>

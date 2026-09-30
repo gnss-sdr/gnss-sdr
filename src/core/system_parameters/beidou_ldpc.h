@@ -104,7 +104,7 @@ struct BeidouLdpcGraph
 
 
 // ICD tables are laid out in four bands of four entries per printed row.
-// Only row weight four is supported by the fixed-path check update.
+// Only row weight four is supported (ICD table layout).
 bool beidou_ldpc_init_graph(
     int32_t num_checks,
     int32_t num_variables,
@@ -118,8 +118,11 @@ bool beidou_ldpc_init_graph(
 // Positive bit LLRs favor 1. Bits within each GF(64) symbol are MSB first.
 // Supply at least one output: n-m information symbols or all n codeword symbols.
 // Outputs are written only after the parity checks pass; CRC validation is separate.
-// The optional full-alphabet retry adds up to 15 iterations after fixed-path failure.
-// Disabled by default to preserve the existing B-CNAV1 decoding behavior.
+// Bit LLRs should be calibrated (2|y|/sigma^2 for BPSK, as in the ICD Annex): the
+// EMS truncation offset is tuned for that scale and sum-product assumes it.
+// Decoding uses the Extended Min-Sum algorithm of the ICD Annex. The optional
+// full-alphabet sum-product retry adds up to BEIDOU_LDPC_MAX_ITER iterations
+// after an EMS failure.
 bool beidou_ldpc_decode(const BeidouLdpcGraph& graph, const float* bit_llr,
     int32_t num_bits, uint8_t* info_bits, uint8_t* codeword_bits, bool enable_sum_product = false);
 

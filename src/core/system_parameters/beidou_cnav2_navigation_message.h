@@ -41,6 +41,19 @@ public:
     uint32_t last_frame_prn() const { return d_last_frame_prn; }
     const std::string& get_last_nav_bits() const { return d_last_nav_bits; }
 
+    /*!
+     * \brief Soft preamble detection statistic on 1 ms prompt samples.
+     *
+     * current_1ms points to BEIDOU_CNAV2_PREAMBLE_MS samples at a candidate frame
+     * start, previous_1ms (optional) to the samples one frame (3 s) earlier.
+     * With C the correlation with the preamble spread by the data secondary code
+     * and E the sample energy, it returns max(|C1| / sqrt(E1), |C1 + C2| / sqrt(E1 + E2)).
+     * The result does not depend on the input scale and is about |N(0,1)| on
+     * noise. The single-frame term keeps detection working across a carrier
+     * polarity flip between the two frames.
+     */
+    static double preamble_detection_statistic(const float* current_1ms, const float* previous_1ms = nullptr);
+
 private:
     void parse_info_bits(const uint8_t* bits, uint32_t channel_prn);
     void parse_clock_common(const uint8_t* bits, int32_t toc_off, int32_t iodc_off);

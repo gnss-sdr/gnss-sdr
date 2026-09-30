@@ -15,10 +15,12 @@
  */
 
 #include "beidou_cnav2_navigation_message.h"
+#include "Beidou_B2a.h"
 #include "Beidou_CNAV1.h"
 #include "Beidou_CNAV2.h"
 #include "MATH_CONSTANTS.h"
 #include "beidou_cnav2_ldpc.h"
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 
@@ -98,25 +100,26 @@ bool Beidou_Cnav2_Navigation_Message::decode_frame_symbols(const float* symbols,
             return false;
         }
 
-    int corr = 0;
+    // Resolve carrier polarity from the soft preamble correlation. Positive NAV
+    // symbols are bit 0. No exact preamble match is required: frame alignment
+    // is validated by the LDPC parity checks and the CRC, and a hard 24/24
+    // match rejects most frames near the LDPC decoding threshold.
+    double corr = 0.0;
     for (int32_t i = 0; i < BEIDOU_CNAV2_PREAMBLE_SYMBOLS; i++)
         {
             if (!std::isfinite(symbols[i]))
                 {
                     return false;
                 }
-            // Positive NAV symbol is bit 0; negative is bit 1.
-            const bool bit = symbols[i] < 0.0F;
-            corr += (bit == (PREAMBLE[i] == '1')) ? 1 : -1;
+            corr += (PREAMBLE[i] == '1') ? -static_cast<double>(symbols[i]) : static_cast<double>(symbols[i]);
         }
-    if (std::abs(corr) != BEIDOU_CNAV2_PREAMBLE_SYMBOLS)
+    if (corr == 0.0)
         {
             return false;
         }
 
-    // Resolve carrier polarity from the preamble and preserve soft magnitudes.
     // The shared LDPC decoder uses the opposite sign: positive LLR favors bit 1.
-    const float polarity = corr < 0 ? 1.0F : -1.0F;
+    const float polarity = corr < 0.0 ? 1.0F : -1.0F;
     std::array<float, BEIDOU_CNAV2_LDPC_SYMBOLS> bit_llr{};
     for (int32_t i = 0; i < BEIDOU_CNAV2_LDPC_SYMBOLS; i++)
         {
@@ -169,6 +172,49 @@ bool Beidou_Cnav2_Navigation_Message::decode_frame_symbols(const float* symbols,
         }
     parse_info_bits(info.data(), prn);
     return true;
+}
+
+
+double Beidou_Cnav2_Navigation_Message::preamble_detection_statistic(const float* current_1ms, const float* previous_1ms)
+{
+    auto correlate = [](const float* samples, double& corr, double& energy) {
+        corr = 0.0;
+        energy = 0.0;
+        for (int32_t i = 0; i < BEIDOU_CNAV2_PREAMBLE_SYMBOLS; i++)
+            {
+                const double preamble_chip = (PREAMBLE[i] == '1') ? -1.0 : 1.0;
+                for (int32_t k = 0; k < BEIDOU_B2A_SECONDARY_CODE_LENGTH; k++)
+                    {
+                        const double chip = (BEIDOU_B2A_SECONDARY_CODE_STR[k] == '1') ? -preamble_chip : preamble_chip;
+                        const auto y = static_cast<double>(samples[i * BEIDOU_B2A_SECONDARY_CODE_LENGTH + k]);
+                        corr += chip * y;
+                        energy += y * y;
+                    }
+            }
+    };
+    if (current_1ms == nullptr)
+        {
+            return 0.0;
+        }
+    double corr = 0.0;
+    double energy = 0.0;
+    correlate(current_1ms, corr, energy);
+    if (!(energy > 0.0) || !std::isfinite(energy))
+        {
+            return 0.0;
+        }
+    double statistic = std::abs(corr) / std::sqrt(energy);
+    if (previous_1ms != nullptr)
+        {
+            double prev_corr = 0.0;
+            double prev_energy = 0.0;
+            correlate(previous_1ms, prev_corr, prev_energy);
+            if (std::isfinite(prev_energy))
+                {
+                    statistic = std::max(statistic, std::abs(corr + prev_corr) / std::sqrt(energy + prev_energy));
+                }
+        }
+    return statistic;
 }
 
 

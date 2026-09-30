@@ -27,22 +27,16 @@ namespace
 constexpr int32_t BITS_PER_SYMBOL = 6;
 constexpr int32_t Q = 64;
 constexpr int32_t NM = BEIDOU_LDPC_NM;
-constexpr int32_t FP_CANDIDATES = 8 + 2 * NM;
-constexpr float LLR_FALLBACK_GAP = 25.0F;
+// LLR assigned to field elements missing from a truncated C2V message is its
+// largest kept LLR plus this offset (ICD Annex, EMS variable node rule).
+// Tuned by simulation for bit LLRs on the 2|y|/sigma^2 scale (B-CNAV1
+// LDPC(200,100) over AWGN, 1.5 to 3 dB Eb/N0).
+constexpr float EMS_TRUNCATION_OFFSET = 2.0F;
 
 struct TruncMessage
 {
     std::array<uint8_t, NM> sym{};
     std::array<float, NM> llr{};
-};
-
-
-struct FixedPathCandidate
-{
-    FixedPathCandidate() = default;
-    FixedPathCandidate(uint8_t sym_, float llr_) : sym(sym_), llr(llr_) {}
-    uint8_t sym = 0;
-    float llr = std::numeric_limits<float>::max();
 };
 
 
@@ -57,50 +51,33 @@ uint8_t bits_to_symbol_msb_first(const float* bit_llr, int32_t bit_offset)
 }
 
 
-void normalize_message(TruncMessage& msg)
-{
-    const float min_llr = msg.llr[0];
-    for (int32_t i = 0; i < NM; i++)
-        {
-            msg.llr[i] -= min_llr;
-        }
-}
-
-
-float lookup_message_llr_var_domain(const TruncMessage& c2v_msg, uint8_t h_inv, uint8_t x_var)
-{
-    for (int32_t i = 0; i < NM; i++)
-        {
-            const uint8_t mapped = GaloisField64::mul(h_inv, c2v_msg.sym[i]);
-            if (mapped == x_var)
-                {
-                    return c2v_msg.llr[i];
-                }
-        }
-    return c2v_msg.llr[NM - 1] + LLR_FALLBACK_GAP;
-}
-
-
+// Keep the NM most reliable (smallest-LLR) distinct field elements of a
+// full-alphabet metric vector, in ascending order, with the first LLR at zero.
 void truncate_metric_vector(const std::array<float, Q>& metric, TruncMessage& out)
 {
-    std::array<bool, Q> used{};
-    for (int32_t kept = 0; kept < NM; kept++)
+    int32_t kept = 0;
+    for (int32_t x = 0; x < Q; x++)
         {
-            float best_llr = std::numeric_limits<float>::max();
-            int32_t best_sym = 0;
-            for (int32_t x = 0; x < Q; x++)
+            const float llr = metric[static_cast<size_t>(x)];
+            if (kept == NM && llr >= out.llr[NM - 1])
                 {
-                    if (!used[static_cast<size_t>(x)] && metric[static_cast<size_t>(x)] < best_llr)
-                        {
-                            best_llr = metric[static_cast<size_t>(x)];
-                            best_sym = x;
-                        }
+                    continue;
                 }
-            used[static_cast<size_t>(best_sym)] = true;
-            out.sym[kept] = static_cast<uint8_t>(best_sym);
-            out.llr[kept] = best_llr;
+            int32_t pos = (kept < NM) ? kept++ : NM - 1;
+            while (pos > 0 && out.llr[pos - 1] > llr)
+                {
+                    out.llr[pos] = out.llr[pos - 1];
+                    out.sym[pos] = out.sym[pos - 1];
+                    pos--;
+                }
+            out.llr[pos] = llr;
+            out.sym[pos] = static_cast<uint8_t>(x);
         }
-    normalize_message(out);
+    const float min_llr = out.llr[0];
+    for (auto& llr : out.llr)
+        {
+            llr -= min_llr;
+        }
 }
 
 
@@ -200,17 +177,20 @@ void initialize_channel_llr(
 }
 
 
+// Extended Min-Sum (ICD Annex, section 2.(1)).
+// V2C/C2V messages live in the edge domain y = h_ij * x_j, so a check node
+// only needs GF(64) additions of the incoming symbols.
 void initialize_v2c_messages(
     const BeidouLdpcGraph& graph,
     const std::vector<float>& channel_llr,
     std::vector<TruncMessage>& v2c)
 {
     const int32_t edge_count = graph.num_checks * graph.row_weight;
+    std::array<float, Q> mapped_metric{};
     for (int32_t edge = 0; edge < edge_count; edge++)
         {
             const uint16_t var = graph.check_to_var[static_cast<size_t>(edge)];
             const uint8_t h_ij = graph.check_to_h[static_cast<size_t>(edge)];
-            std::array<float, Q> mapped_metric{};
             for (int32_t x = 0; x < Q; x++)
                 {
                     const uint8_t y = GaloisField64::mul(h_ij, static_cast<uint8_t>(x));
@@ -222,243 +202,112 @@ void initialize_v2c_messages(
 }
 
 
-void variable_node_update(
-    const BeidouLdpcGraph& graph,
-    const std::vector<float>& channel_llr,
-    std::vector<TruncMessage>& v2c,
-    const std::vector<TruncMessage>& c2v,
-    std::vector<uint8_t>& hard_codeword)
+// Elementary check-node operation V = U (+) W: every pair (d, delta) proposes
+// the element Us[d] + Ws[delta] with LLR U[d] + W[delta]; keep the NM
+// smallest distinct elements. With NM = 8 the full NM x NM matrix is cheap,
+// so this is exact rather than a bubble-sort approximation.
+void ems_combine(const TruncMessage& u, const TruncMessage& w, TruncMessage& out)
 {
-    std::array<float, Q> posterior{};
-    std::array<float, Q> outgoing_metric{};
-
-    for (int32_t var = 0; var < graph.num_variables; var++)
+    std::array<float, Q> best{};
+    best.fill(std::numeric_limits<float>::max());
+    for (int32_t d = 0; d < NM; d++)
         {
-            const uint32_t begin = graph.var_offsets[static_cast<size_t>(var)];
-            const uint32_t end = graph.var_offsets[static_cast<size_t>(var) + 1];
-
-            for (int32_t x = 0; x < Q; x++)
+            for (int32_t delta = 0; delta < NM; delta++)
                 {
-                    float metric = channel_llr[static_cast<size_t>(var) * Q + static_cast<size_t>(x)];
-                    for (uint32_t p = begin; p < end; p++)
+                    const auto sym = static_cast<size_t>(u.sym[d] ^ w.sym[delta]);
+                    const float llr = u.llr[d] + w.llr[delta];
+                    if (llr < best[sym])
                         {
-                            const uint32_t edge = graph.var_to_edge[p];
-                            const uint8_t h_fj_inv = graph.var_to_h_inv[p];
-                            metric += lookup_message_llr_var_domain(c2v[edge], h_fj_inv, static_cast<uint8_t>(x));
+                            best[sym] = llr;
                         }
-                    posterior[static_cast<size_t>(x)] = metric;
-                }
-
-            int32_t hard_symbol = 0;
-            float best_hard_llr = posterior[0];
-            for (int32_t x = 1; x < Q; x++)
-                {
-                    if (posterior[static_cast<size_t>(x)] < best_hard_llr)
-                        {
-                            best_hard_llr = posterior[static_cast<size_t>(x)];
-                            hard_symbol = x;
-                        }
-                }
-            hard_codeword[static_cast<size_t>(var)] = static_cast<uint8_t>(hard_symbol);
-
-            for (uint32_t p = begin; p < end; p++)
-                {
-                    const uint32_t edge_out = graph.var_to_edge[p];
-                    const uint8_t h_ij = graph.var_to_h[p];
-                    for (int32_t y = 0; y < Q; y++)
-                        {
-                            outgoing_metric[static_cast<size_t>(y)] = std::numeric_limits<float>::max();
-                        }
-                    for (int32_t x = 0; x < Q; x++)
-                        {
-                            float metric = channel_llr[static_cast<size_t>(var) * Q + static_cast<size_t>(x)];
-                            for (uint32_t q = begin; q < end; q++)
-                                {
-                                    const uint32_t edge_in = graph.var_to_edge[q];
-                                    if (edge_in == edge_out)
-                                        {
-                                            continue;
-                                        }
-                                    const uint8_t h_fj_inv = graph.var_to_h_inv[q];
-                                    metric += lookup_message_llr_var_domain(c2v[edge_in], h_fj_inv, static_cast<uint8_t>(x));
-                                }
-                            const uint8_t y_out = GaloisField64::mul(h_ij, static_cast<uint8_t>(x));
-                            outgoing_metric[static_cast<size_t>(y_out)] = metric;
-                        }
-                    truncate_metric_vector(outgoing_metric, v2c[edge_out]);
                 }
         }
+    // Fixing delta = 0 already yields NM distinct elements, so NM finite entries exist.
+    truncate_metric_vector(best, out);
 }
 
 
-void build_fixed_path_candidates(
-    const std::array<TruncMessage, 4>& in,
-    std::array<FixedPathCandidate, FP_CANDIDATES>& cand)
-{
-    for (auto& c : cand)
-        {
-            c.sym = 0U;
-            c.llr = std::numeric_limits<float>::max();
-        }
-
-    const uint8_t s0 = in[0].sym[0];
-    const uint8_t s1 = in[1].sym[0];
-    const uint8_t s2 = in[2].sym[0];
-    const uint8_t s3 = in[3].sym[0];
-    const float r0 = in[0].llr[0];
-    const float r1 = in[1].llr[0];
-    const float r2 = in[2].llr[0];
-    const float r3 = in[3].llr[0];
-    const uint8_t base_sym = GaloisField64::add(GaloisField64::add(s0, s1), GaloisField64::add(s2, s3));
-    const float base_llr = r0 + r1 + r2 + r3;
-
-    int32_t idx = 0;
-    cand[idx++] = {base_sym, base_llr};
-
-    for (int32_t l = 0; l < 4; l++)
-        {
-            const uint8_t sym = GaloisField64::add(base_sym, GaloisField64::add(in[l].sym[0], in[l].sym[1]));
-            const float llr = base_llr - in[l].llr[0] + in[l].llr[1];
-            cand[idx++] = {sym, llr};
-        }
-
-    static const std::array<std::pair<int32_t, int32_t>, 6> pairs = {
-        std::pair<int32_t, int32_t>{0, 1},
-        {0, 2},
-        {0, 3},
-        {1, 2},
-        {1, 3},
-        {2, 3},
-    };
-    for (const auto& pair : pairs)
-        {
-            const int32_t a = pair.first;
-            const int32_t b = pair.second;
-            const uint8_t sym = GaloisField64::add(
-                base_sym,
-                GaloisField64::add(
-                    GaloisField64::add(in[a].sym[0], in[a].sym[1]),
-                    GaloisField64::add(in[b].sym[0], in[b].sym[1])));
-            const float llr = base_llr - in[a].llr[0] - in[b].llr[0] + in[a].llr[1] + in[b].llr[1];
-            cand[idx++] = {sym, llr};
-        }
-
-    for (int32_t rank = 2; rank < NM && idx < FP_CANDIDATES; rank++)
-        {
-            for (int32_t l = 0; l < 4 && idx < FP_CANDIDATES; l++)
-                {
-                    const uint8_t sym = GaloisField64::add(base_sym, GaloisField64::add(in[l].sym[0], in[l].sym[rank]));
-                    const float llr = base_llr - in[l].llr[0] + in[l].llr[rank];
-                    cand[idx++] = {sym, llr};
-                }
-        }
-}
-
-
-void fixed_path_check_update(
+// C2V_{i->j} = (+)_{j' in N(i), j' != j} V2C_{j'->i}, by forward-backward recursion.
+void ems_check_update(
     const BeidouLdpcGraph& graph,
     const std::vector<TruncMessage>& v2c,
     std::vector<TruncMessage>& c2v)
 {
-    std::array<int32_t, 4> edge_idx{};
-    std::array<int32_t, 4> order{};
-    std::array<TruncMessage, 4> in_sorted{};
-    std::array<FixedPathCandidate, FP_CANDIDATES> candidates{};
-    std::array<uint8_t, FP_CANDIDATES> T{};
-    std::array<uint8_t, FP_CANDIDATES> Tbar{};
-
+    const int32_t dc = graph.row_weight;
+    std::vector<TruncMessage> forward(static_cast<size_t>(dc));
+    std::vector<TruncMessage> backward(static_cast<size_t>(dc));
     for (int32_t check = 0; check < graph.num_checks; check++)
         {
             const uint32_t begin = graph.check_offsets[static_cast<size_t>(check)];
-            const uint32_t end = graph.check_offsets[static_cast<size_t>(check) + 1];
-            if (static_cast<int32_t>(end - begin) != 4)
+            forward[0] = v2c[begin];
+            for (int32_t l = 1; l < dc - 1; l++)
                 {
-                    continue;
+                    ems_combine(forward[static_cast<size_t>(l) - 1], v2c[begin + static_cast<uint32_t>(l)], forward[static_cast<size_t>(l)]);
                 }
-            for (int32_t l = 0; l < 4; l++)
+            backward[static_cast<size_t>(dc) - 1] = v2c[begin + static_cast<uint32_t>(dc) - 1];
+            for (int32_t l = dc - 2; l > 0; l--)
                 {
-                    edge_idx[l] = static_cast<int32_t>(begin) + l;
-                    order[l] = l;
+                    ems_combine(v2c[begin + static_cast<uint32_t>(l)], backward[static_cast<size_t>(l) + 1], backward[static_cast<size_t>(l)]);
                 }
-            std::sort(order.begin(), order.end(), [&](int32_t a, int32_t b) {
-                return v2c[static_cast<size_t>(edge_idx[a])].llr[1] < v2c[static_cast<size_t>(edge_idx[b])].llr[1];
-            });
-            for (int32_t l = 0; l < 4; l++)
+            c2v[begin] = backward[1];
+            c2v[begin + static_cast<uint32_t>(dc) - 1] = forward[static_cast<size_t>(dc) - 2];
+            for (int32_t l = 1; l < dc - 1; l++)
                 {
-                    in_sorted[l] = v2c[static_cast<size_t>(edge_idx[order[l]])];
+                    ems_combine(forward[static_cast<size_t>(l) - 1], backward[static_cast<size_t>(l) + 1], c2v[begin + static_cast<uint32_t>(l)]);
                 }
+        }
+}
 
-            build_fixed_path_candidates(in_sorted, candidates);
 
-            int32_t theta = 0;
-            int32_t beta = 1;
-            float min2 = in_sorted[0].llr[1];
-            float second2 = in_sorted[1].llr[1];
-            if (second2 < min2)
+// V2C_{j->i} = h_ij * (sum_{f != i} C2V_{f->j} * h_fj^-1 + L_j)_NM.
+// Elements missing from a truncated C2V get its largest LLR plus a fixed
+// offset. The hard decision uses the full a-posteriori metric.
+void ems_variable_update(
+    const BeidouLdpcGraph& graph,
+    const std::vector<float>& channel_llr,
+    const std::vector<TruncMessage>& c2v,
+    std::vector<TruncMessage>& v2c,
+    std::vector<uint8_t>& hard_codeword)
+{
+    std::vector<std::array<float, Q>> incoming;
+    std::array<float, Q> posterior{};
+    std::array<float, Q> outgoing{};
+    for (int32_t var = 0; var < graph.num_variables; var++)
+        {
+            const uint32_t begin = graph.var_offsets[static_cast<size_t>(var)];
+            const uint32_t end = graph.var_offsets[static_cast<size_t>(var) + 1];
+            incoming.resize(end - begin);
+            for (int32_t x = 0; x < Q; x++)
                 {
-                    std::swap(min2, second2);
-                    std::swap(theta, beta);
+                    posterior[static_cast<size_t>(x)] = channel_llr[static_cast<size_t>(var) * Q + static_cast<size_t>(x)];
                 }
-            for (int32_t l = 2; l < 4; l++)
+            for (uint32_t p = begin; p < end; p++)
                 {
-                    const float v = in_sorted[l].llr[1];
-                    if (v < min2)
+                    const TruncMessage& msg = c2v[graph.var_to_edge[p]];
+                    auto& in = incoming[p - begin];
+                    in.fill(msg.llr[NM - 1] + EMS_TRUNCATION_OFFSET);
+                    for (int32_t k = 0; k < NM; k++)
                         {
-                            second2 = min2;
-                            beta = theta;
-                            min2 = v;
-                            theta = l;
+                            const uint8_t x = GaloisField64::mul(graph.var_to_h_inv[p], msg.sym[k]);
+                            in[x] = std::min(in[x], msg.llr[k]);
                         }
-                    else if (v < second2)
+                    for (int32_t x = 0; x < Q; x++)
                         {
-                            second2 = v;
-                            beta = l;
+                            posterior[static_cast<size_t>(x)] += in[static_cast<size_t>(x)];
                         }
                 }
-            const int32_t ref_idx = NM / 2;
-            const float theta_ref = in_sorted[theta].llr[ref_idx];
-            const float beta_ref = in_sorted[beta].llr[ref_idx];
-            for (int32_t k = 0; k < FP_CANDIDATES; k++)
+            hard_codeword[static_cast<size_t>(var)] =
+                static_cast<uint8_t>(std::min_element(posterior.begin(), posterior.end()) - posterior.begin());
+            for (uint32_t p = begin; p < end; p++)
                 {
-                    T[k] = (candidates[k].llr <= theta_ref) ? 1U : 0U;
-                    Tbar[k] = (candidates[k].llr <= beta_ref) ? 1U : 0U;
-                }
-
-            for (int32_t l = 0; l < 4; l++)
-                {
-                    TruncMessage out{};
-                    int32_t filled = 0;
-                    for (int32_t k = 0; k < FP_CANDIDATES && filled < NM; k++)
+                    const auto& in = incoming[p - begin];
+                    const uint8_t h_ij = graph.var_to_h[p];
+                    for (int32_t x = 0; x < Q; x++)
                         {
-                            bool pass_gate = false;
-                            if (l == 0)
-                                {
-                                    pass_gate = (T[k] != 0U);
-                                }
-                            else if (l == theta)
-                                {
-                                    pass_gate = (Tbar[k] != 0U);
-                                }
-                            else
-                                {
-                                    pass_gate = (T[k] != 0U) || (Tbar[k] != 0U);
-                                }
-                            if (!pass_gate)
-                                {
-                                    continue;
-                                }
-                            out.sym[filled] = GaloisField64::add(in_sorted[l].sym[0], candidates[k].sym);
-                            out.llr[filled] = candidates[k].llr - in_sorted[l].llr[0];
-                            filled++;
+                            outgoing[GaloisField64::mul(h_ij, static_cast<uint8_t>(x))] =
+                                posterior[static_cast<size_t>(x)] - in[static_cast<size_t>(x)];
                         }
-                    while (filled < NM)
-                        {
-                            out.sym[filled] = out.sym[filled - 1];
-                            out.llr[filled] = out.llr[filled - 1] + 1.0F;
-                            filled++;
-                        }
-                    normalize_message(out);
-                    c2v[static_cast<size_t>(edge_idx[order[l]])] = out;
+                    truncate_metric_vector(outgoing, v2c[graph.var_to_edge[p]]);
                 }
         }
 }
@@ -504,7 +353,7 @@ void normalize_probability(ProbabilityMessage& message)
 
 
 // Full-alphabet sum-product retry for blocks that defeat the truncated
-// fixed-path decoder. Reuse the same graph, channel metrics and GF mapping.
+// EMS decoder. Reuse the same graph, channel metrics and GF mapping.
 bool sum_product_decode(const BeidouLdpcGraph& graph,
     const std::vector<float>& channel_llr, std::vector<uint8_t>& hard_codeword)
 {
@@ -699,10 +548,10 @@ bool decode_block(
     std::vector<TruncMessage> v2c(static_cast<size_t>(edge_count));
     std::vector<TruncMessage> c2v(static_cast<size_t>(edge_count));
     initialize_v2c_messages(graph, channel_llr, v2c);
-    c2v = v2c;
     for (int32_t iteration = 0; iteration < BEIDOU_LDPC_MAX_ITER; iteration++)
         {
-            variable_node_update(graph, channel_llr, v2c, c2v, hard_codeword);
+            ems_check_update(graph, v2c, c2v);
+            ems_variable_update(graph, channel_llr, c2v, v2c, hard_codeword);
             if (syndrome_is_zero(graph, hard_codeword))
                 {
                     if (info_bits != nullptr)
@@ -715,7 +564,6 @@ bool decode_block(
                         }
                     return true;
                 }
-            fixed_path_check_update(graph, v2c, c2v);
         }
 
     if (enable_sum_product && sum_product_decode(graph, channel_llr, hard_codeword))

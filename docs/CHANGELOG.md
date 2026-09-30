@@ -127,13 +127,18 @@ All notable changes to GNSS-SDR will be documented in this file.
   per bin and supports `high_dyn=true`. The `pull_in_time_s` and
   `bit_synchronization_time_limit_s` budgets start after the scan, allowing the
   tracking loops their full settling time. Contributed by @joebre.
-- Added a CSV dump of the frequency-refinement scan: the tested Doppler
+- Added an optional CSV dump of the frequency-refinement scan, enabled with
+  `Tracking_<Sig>.f_error_dump=true` (default: `false`). The tested Doppler
   frequencies, their correlation power, and the selected frequency are written
-  to `Tracking_<Sig>.f_error_dump_filename` (default: `./f_error_dump.csv`). Set
-  the filename to an empty value to disable this output. Channels sharing a
-  filename write to the same file, with scan, satellite and channel identifiers;
-  the first scan overwrites any previous file, and later scans in the same
-  receiver run append their results.
+  to `Tracking_<Sig>.f_error_dump_filename` (default: `./f_error_dump.csv`).
+  Channels sharing a filename write to the same file, with scan, satellite and
+  channel identifiers; the first scan overwrites any previous file, and later
+  scans in the same receiver run append their results. The Octave scripts
+  `load_f_error_dump.m`, `find_f_error_scans.m` and `plot_f_error_scan.m` (in
+  `utils/matlab/libs`) and `plot_all_f_error_scans.m` (in `utils/matlab`) load
+  and plot the dumped scans, and `utils/matlab/libs/f_error_sim.m` provides a
+  Monte Carlo simulation of the scan for sizing `f_error_step_num`,
+  `f_error_accumulation` and `f_error_doppler_step` without a live capture.
 
 ### Improvements in Efficiency:
 

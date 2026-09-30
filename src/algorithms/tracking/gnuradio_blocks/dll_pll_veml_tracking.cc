@@ -2292,7 +2292,7 @@ void dll_pll_veml_tracking::run_f_error_scan_step()
             const auto rank_it = std::find(bins_by_doppler.begin(), bins_by_doppler.end(), best_bin);
             const auto best_bin_doppler_rank = static_cast<uint32_t>(std::distance(bins_by_doppler.begin(), rank_it));
 
-            if (!d_trk_parameters.f_error_dump_filename.empty())
+            if (d_trk_parameters.f_error_dump && !d_trk_parameters.f_error_dump_filename.empty())
                 {
                     dump_f_error_csv(d_trk_parameters.f_error_dump_filename, g_f_error_scan_id.fetch_add(1),
                         d_acquisition_gnss_synchro->PRN, d_trk_parameters.system, d_channel, f_error_cn0_dB_hz, d_carrier_doppler_hz,

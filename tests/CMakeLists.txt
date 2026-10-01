@@ -1283,6 +1283,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
 
     target_link_libraries(acq_test
         PRIVATE
+            Boost::thread
             Gnuradio::runtime
             Gnuradio::blocks
             Gnuradio::filter
@@ -1301,9 +1302,6 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             algorithms_libs
             signal_processing_testing_lib
             core_receiver
-            # Keep Boost::thread after the libraries that use it: with --as-needed,
-            # GNU ld drops a shared library listed before its first user.
-            Boost::thread
     )
     if(ENABLE_GLOG_AND_GFLAGS)
         target_link_libraries(acq_test PRIVATE Gflags::gflags Glog::glog)

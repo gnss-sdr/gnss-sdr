@@ -738,7 +738,7 @@ CPU-vs-GPU acquisition benchmark.
 ## macOS
 
 GNSS-SDR can be built on macOS (or the former Mac OS X), starting from 10.9
-(Mavericks) and including 14 (Sonoma). If you still have not installed
+(Mavericks) and including 27 (Golden Gate). If you still have not installed
 [Xcode](https://developer.apple.com/xcode/ "Xcode"), do it now from the App
 Store (it's free). You will also need the Xcode Command Line Tools, which do not
 come by default in macOS versions older than Big Sur. If you are using an older

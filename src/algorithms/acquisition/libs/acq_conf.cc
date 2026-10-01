@@ -133,6 +133,24 @@ void Acq_Conf::ConfigureAutomaticResampler(double opt_freq)
 }
 
 
+uint64_t Acq_Conf::GetDwellSamplesTimes1000() const
+{
+    return static_cast<uint64_t>(sampled_ms) * (bit_transition_flag ? 2ULL : 1ULL) * static_cast<uint64_t>(resampled_fs);
+}
+
+
+uint32_t Acq_Conf::GetSamplesPerDwell() const
+{
+    return static_cast<uint32_t>(GetDwellSamplesTimes1000() / 1000ULL);
+}
+
+
+double Acq_Conf::GetDwellResidualSamples() const
+{
+    return static_cast<double>(GetDwellSamplesTimes1000() % 1000ULL) / 1000.0;
+}
+
+
 void Acq_Conf::SetDerivedParams()
 {
     samples_per_ms = static_cast<float>(resampled_fs) * 0.001F;

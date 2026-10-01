@@ -126,7 +126,8 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_doppler_max(conf_.doppler_max),
       d_samplesPerChip(conf_.samples_per_chip),
       d_doppler_step(conf_.doppler_step),
-      d_samples_to_consume(conf_.sampled_ms * conf_.samples_per_ms * (conf_.bit_transition_flag ? 2.0 : 1.0)),
+      d_samples_to_consume(conf_.GetSamplesPerDwell()),
+      d_dwell_residual_samples(conf_.GetDwellResidualSamples()),
       d_fft_size(conf_.sampled_ms == conf_.ms_per_code ? d_samples_to_consume : d_samples_to_consume * 2),
       d_effective_fft_size(conf_.bit_transition_flag ? (d_fft_size / 2) : d_fft_size),
       d_magnitude_grid_stride(aligned_row_stride<float>(d_effective_fft_size)),
@@ -155,6 +156,8 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_num_reference_rows_active(d_full_grid_reference_needs_extra_row ? (d_num_doppler_bins > 1U ? 2U : 1U) : 0U),
       d_threshold_active(conf_.pfa > 0.0 ? compute_threshold(conf_.pfa, d_effective_fft_size, d_num_doppler_bins, conf_.bit_transition_flag ? 1 : conf_.max_dwells) : conf_.threshold),
       d_buffer_sample_count(0),
+      d_dwell_residual_accum(0.0),
+      d_pending_skip_samples(0),
       d_channel(0),
       d_resampler_latency_samples(conf_.resampler_latency_samples),
       d_sample_count(0),
@@ -1103,10 +1106,23 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 d_gnss_synchro->Acq_doppler_step = 0U;
                 d_state = 1;
                 d_buffer_sample_count = 0U;
+                d_dwell_residual_accum = 0.0;
+                d_pending_skip_samples = 0U;
                 break;
             }
         case 1:
             {
+                if (d_pending_skip_samples > 0U)
+                    {
+                        // Discard (do not buffer) samples to keep consumption
+                        // aligned with the true dwell boundary; see below.
+                        const auto skip_now = std::min(d_pending_skip_samples, static_cast<uint32_t>(ninput_items[0]));
+                        d_sample_count += static_cast<uint64_t>(skip_now);
+                        consume_each(skip_now);
+                        d_pending_skip_samples -= skip_now;
+                        break;
+                    }
+
                 const auto fit_in_buffer = (ninput_items[0] + d_buffer_sample_count) <= d_samples_to_consume;
                 const uint32_t samples_to_copy = fit_in_buffer ? ninput_items[0] : d_samples_to_consume - d_buffer_sample_count;
 
@@ -1128,6 +1144,16 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 if (d_buffer_sample_count == d_samples_to_consume)  // Buffer is full
                     {
                         d_state = 2;
+                        // d_samples_to_consume samples are always short of a true
+                        // dwell by d_dwell_residual_samples; once that drift
+                        // reaches a full sample, skip one extra so it never
+                        // accumulates across dwells (DDA/Bresenham).
+                        d_dwell_residual_accum += d_dwell_residual_samples;
+                        if (d_dwell_residual_accum >= 1.0)
+                            {
+                                d_pending_skip_samples += 1U;
+                                d_dwell_residual_accum -= 1.0;
+                            }
                     }
 
                 break;

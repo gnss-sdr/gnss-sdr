@@ -1272,6 +1272,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/acquisition/pcps_acquisition_doppler_narrowing_test.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/acquisition/pcps_acquisition_fractional_dwell_test.cc
     )
     if(USE_CMAKE_TARGET_SOURCES)
         add_executable(acq_test)
@@ -1292,8 +1293,11 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             Matio::matio
             Volkgnsssdr::volkgnsssdr
             signal_generator_gr_blocks
+            signal_generator_adapters
             signal_source_gr_blocks
             signal_source_libs
+            signal_source_adapters
+            input_filter_adapters
             acquisition_adapters
             algorithms_libs
             signal_processing_testing_lib

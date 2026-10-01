@@ -2539,19 +2539,6 @@ void GNSSFlowgraph::set_signals_list()
                         }
                 }
         }
-
-    if (configuration_->property("Channels_SBAS.count", 0) > 0)
-        {
-            const std::string gnss_system_str = "SBAS";
-            const std::string signal_str = "1C";
-
-            auto& available_signals = available_signals_map_[signal_str];
-
-            for (const auto& prn : available_prn_map.at(gnss_system_str))
-                {
-                    available_signals.emplace_back(Gnss_Satellite(gnss_system_str, prn), signal_str);
-                }
-        }
 }
 
 

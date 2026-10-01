@@ -1272,6 +1272,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/acquisition/pcps_acquisition_doppler_narrowing_test.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/acquisition/pcps_acquisition_fractional_dwell_test.cc
     )
     if(USE_CMAKE_TARGET_SOURCES)
         add_executable(acq_test)
@@ -1280,9 +1281,15 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         add_executable(acq_test ${ACQ_TEST_SOURCES})
     endif()
 
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        # Some distros' packaged libgnuradio-runtime.so does not declare an
+        # explicit NEEDED entry for libboost_thread even though it uses its
+        # symbols; GNU ld's default --no-copy-dt-needed-entries then fails to
+        # resolve them at link time despite Boost::thread being linked below.
+        target_link_options(acq_test PRIVATE -Wl,--copy-dt-needed-entries)
+    endif()
     target_link_libraries(acq_test
         PRIVATE
-            Boost::thread
             Gnuradio::runtime
             Gnuradio::blocks
             Gnuradio::filter
@@ -1292,12 +1299,16 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             Matio::matio
             Volkgnsssdr::volkgnsssdr
             signal_generator_gr_blocks
+            signal_generator_adapters
             signal_source_gr_blocks
             signal_source_libs
+            signal_source_adapters
+            input_filter_adapters
             acquisition_adapters
             algorithms_libs
             signal_processing_testing_lib
             core_receiver
+            Boost::thread
     )
     if(ENABLE_GLOG_AND_GFLAGS)
         target_link_libraries(acq_test PRIVATE Gflags::gflags Glog::glog)

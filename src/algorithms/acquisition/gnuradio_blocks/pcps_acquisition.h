@@ -261,6 +261,8 @@ private:
     const uint32_t d_samplesPerChip;
     const uint32_t d_doppler_step;
     const uint32_t d_samples_to_consume;
+    // Exact (true) dwell length minus d_samples_to_consume, in [0, 1) samples.
+    const double d_dwell_residual_samples;
     const uint32_t d_fft_size;
     const uint32_t d_effective_fft_size;
     const uint32_t d_magnitude_grid_stride;
@@ -301,6 +303,10 @@ private:
     // Recompute when the candidate count changes to preserve the requested PFA.
     float d_threshold_active;
     uint32_t d_buffer_sample_count;
+    // DDA/Bresenham accumulator keeping stream consumption aligned with the
+    // true dwell boundary; see general_work() case 0/1.
+    double d_dwell_residual_accum;
+    uint32_t d_pending_skip_samples;
     uint32_t d_channel;
     uint32_t d_resampler_latency_samples;
     uint64_t d_sample_count;

@@ -1281,13 +1281,6 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         add_executable(acq_test ${ACQ_TEST_SOURCES})
     endif()
 
-    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-        # Some distros' packaged libgnuradio-runtime.so does not declare an
-        # explicit NEEDED entry for libboost_thread even though it uses its
-        # symbols; GNU ld's default --no-copy-dt-needed-entries then fails to
-        # resolve them at link time despite Boost::thread being linked below.
-        target_link_options(acq_test PRIVATE -Wl,--copy-dt-needed-entries)
-    endif()
     target_link_libraries(acq_test
         PRIVATE
             Gnuradio::runtime
@@ -1308,6 +1301,8 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             algorithms_libs
             signal_processing_testing_lib
             core_receiver
+            # Keep Boost::thread after the libraries that use it: with --as-needed,
+            # GNU ld drops a shared library listed before its first user.
             Boost::thread
     )
     if(ENABLE_GLOG_AND_GFLAGS)

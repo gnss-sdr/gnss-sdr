@@ -257,7 +257,7 @@ Acq_Conf get_acq_conf(const ConfigurationInterface* configuration, const std::st
         }
 #endif
 
-    acq_parameters.vector_length = std::floor(acq_parameters.sampled_ms * acq_parameters.samples_per_ms) * (acq_parameters.bit_transition_flag ? 2.0 : 1.0);
+    acq_parameters.vector_length = acq_parameters.GetSamplesPerDwell();
     acq_parameters.code_length = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters.resampled_fs) / (static_cast<double>(sig_info.chip_rate) / sig_info.code_length_chips)));
 
     return acq_parameters;

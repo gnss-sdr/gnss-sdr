@@ -37,6 +37,18 @@ public:
 
     void SetFromConfiguration(const ConfigurationInterface *configuration, const std::string &role, double chip_rate, double opt_freq);
 
+    /*!
+     * \brief Number of samples processed per dwell: floor(sampled_ms * resampled_fs / 1000),
+     * with the window doubled before flooring if bit_transition_flag is set.
+     * Computed with integer arithmetic, so it is exact for any resampled_fs.
+     */
+    uint32_t GetSamplesPerDwell() const;
+
+    /*!
+     * \brief Fraction of a sample per dwell dropped by GetSamplesPerDwell(), in [0, 1).
+     */
+    double GetDwellResidualSamples() const;
+
     /* PCPS Acquisition configuration */
     std::string item_type{"gr_complex"};
     std::string dump_filename;
@@ -102,6 +114,9 @@ public:
 
 private:
     void SetDerivedParams();
+
+    // True dwell length in samples, multiplied by 1000 (exact integer).
+    uint64_t GetDwellSamplesTimes1000() const;
 
     void ConfigureAutomaticResampler(double opt_freq);
 };

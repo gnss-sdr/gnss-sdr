@@ -150,6 +150,18 @@ protected:
     static constexpr double kMaxDopplerErrorHz = 2.0 / (3.0 * kCoherentIntegrationMs * 1e-3);
 };
 
+#if __cplusplus < 201703L
+// Before C++17, static constexpr data members are not implicitly inline, so
+// the ones odr-used by gtest (bound to const T& in EXPECT_*/ASSERT_* and in
+// their message streams) need an out-of-class definition to link.
+constexpr unsigned int PcpsAcquisitionFractionalDwellTest::kFsIn;
+constexpr unsigned int PcpsAcquisitionFractionalDwellTest::kCoherentIntegrationMs;
+constexpr unsigned int PcpsAcquisitionFractionalDwellTest::kMaxDwells;
+constexpr double PcpsAcquisitionFractionalDwellTest::kExpectedDopplerHz;
+constexpr double PcpsAcquisitionFractionalDwellTest::kExpectedDelayChips;
+constexpr double PcpsAcquisitionFractionalDwellTest::kMaxDopplerErrorHz;
+#endif
+
 
 TEST_F(PcpsAcquisitionFractionalDwellTest, NonIntegerSamplesPerCodeMultiDwellAcquires)
 {

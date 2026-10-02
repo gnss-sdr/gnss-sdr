@@ -1652,20 +1652,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         {
                             d_user_pvt_solver->gps_cnav_ephemeris_map[gps_cnav_ephemeris->PRN] = *gps_cnav_ephemeris;
                         }
-                    if (gps_cnav_ephemeris->signal_health != 0)
-                        {
-                            const std::string sat_sys = (MINPRNQZS <= gps_cnav_ephemeris->PRN && gps_cnav_ephemeris->PRN <= MAXPRNQZS) ? "QZSS" : "GPS";
-                            std::cout << "Satellite " << Gnss_Satellite(sat_sys, gps_cnav_ephemeris->PRN)
-                                      << " reports an unhealthy status in the CNAV message,";
-                            if (d_use_unhealthy_sats)
-                                {
-                                    std::cout << " use PVT solutions at your own risk.\n";
-                                }
-                            else
-                                {
-                                    std::cout << " not used for navigation.\n";
-                                }
-                        }
+                    // Not acted on as an exclusion criterion: this per-carrier bit is only
+                    // meaningful together with the SV's LNAV configuration code (IS-GPS-200N
+                    // 30.3.3.1.1.2), which this receiver does not track -- see
+                    // Rtklib_Solver::get_broadcast_signal_health().
                     DLOG(INFO) << "New GPS CNAV ephemeris record has arrived";
                 }
             else if (msg_type_hash_code == d_gps_cnav_iono_sptr_type_hash_code)

@@ -12,7 +12,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -63,21 +63,21 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
-    const std::string default_dump_filename = std::string("FPGA_buffer_monitor_dump.dat");
-    const std::string default_rf_port_select = std::string("A_BALANCED");
-    const std::string default_gain_mode = std::string("slow_attack");
-    const double default_tx_attenuation_db = -10.0;
-    const double default_manual_gain_rx1 = 64.0;
-    const double default_manual_gain_rx2 = 64.0;
-    const uint64_t default_bandwidth = 12500000;
+    const std::string DEFAULT_DUMP_FILENAME = std::string("FPGA_buffer_monitor_dump.dat");
+    const std::string DEFAULT_RF_PORT_SELECT = std::string("A_BALANCED");
+    const std::string DEFAULT_GAIN_MODE = std::string("slow_attack");
+    const double DEFAULT_TX_ATTENUATION_dB = -10.0;
+    const double DEFAULT_MANUAL_GAIN_RX1 = 64.0;
+    const double DEFAULT_MANUAL_GAIN_RX2 = 64.0;
+    const uint64_t DEFAULT_BANDWIDTH = 12500000;
 
     // perform dynamic bit selection every 500 ms by default
-    const uint32_t Gain_control_period_ms = 500;
+    const uint32_t GAIN_CONTROL_PERIOD_ms = 500;
     // check buffer overflow and perform buffer monitoring every 1s by default
-    const uint32_t buffer_monitor_period_ms = 1000;
+    const uint32_t BUFFER_MONITOR_PERIOD_ms = 1000;
     // buffer overflow and buffer monitoring initial delay
-    const uint32_t buffer_monitoring_initial_delay_ms = 2000;
-    const int32_t switch_to_real_time_mode = 2;
+    const uint32_t BUFFER_MONITOR_INITIAL_DELAY_ms = 2000;
+    const int32_t REAL_TIME_MODE = 2;
 
     void run_dynamic_bit_selection_process();
     void run_buffer_monitor_process();

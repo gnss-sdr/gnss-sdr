@@ -10,7 +10,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -63,18 +63,18 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
-    const std::string dyn_bit_sel_device_name = std::string("dynamic_bits_selector");  // Switch dhnamic bit selector device name
-    const std::string empty_string;
-    const uint64_t default_bandwidth = 12500000;
-    // perform dynamic bit selection every 500 ms by default
-    const uint32_t Gain_control_period_ms = 500;
-    // sample block size when running in post-processing mode
-    const int sample_block_size = 16384;
-    const int32_t switch_to_DMA = 0;
+    const std::string EMPTY_STRING;
+    const uint64_t DEFAULT_BANDWIDTH = 12500000;
+    const uint32_t GAIN_CONTROL_PERIOD_ms = 500;  // perform dynamic bit selection every 500 ms by default
+    const int32_t POST_PROCESSING_MODE = 0;
+    const uint32_t IQ_COMPONENTS_PER_SAMPLE = 2;
+    static constexpr uint32_t IQ_COMPONENTS_PER_DMA_FRAME = 4;  // Two signals, each with I and Q.
+
+    uint64_t get_available_items(const std::string &filename) const;
 
     void run_DMA_process(const std::string &filename0,
         const std::string &filename1,
-        uint64_t &samples_to_skip,
+        uint64_t &bytes_to_skip,
         size_t &item_size,
         int64_t &samples,
         bool &repeat,
@@ -99,7 +99,7 @@ private:
     std::string filename1_;
 
     uint64_t sample_rate_;
-    uint64_t samples_to_skip_;
+    uint64_t bytes_to_skip_;
     int64_t samples_;
     uint32_t num_input_files_;
     uint32_t dma_buff_offset_pos_;
@@ -108,6 +108,8 @@ private:
     size_t item_size_;
 
     bool enable_DMA_;
+    bool rx1_enable_;
+    bool rx2_enable_;
     bool enable_dynamic_bit_selection_;
     bool repeat_;
 };

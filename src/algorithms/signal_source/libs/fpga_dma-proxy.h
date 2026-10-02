@@ -9,7 +9,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2022  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -21,7 +21,7 @@
 #include <cstdint>  // for std::int8_t
 
 /*!
- * \brief Class that controls the switch DMA in the FPGA
+ * \brief Class that controls DMA transfers to the FPGA
  */
 class Fpga_DMA
 {
@@ -32,9 +32,12 @@ public:
     Fpga_DMA() = default;
 
     /*!
-     * \brief Default destructor.
+     * \brief Release any open DMA resources.
      */
-    ~Fpga_DMA() = default;
+    ~Fpga_DMA();
+
+    Fpga_DMA(const Fpga_DMA &) = delete;
+    Fpga_DMA &operator=(const Fpga_DMA &) = delete;
 
     /*!
      * \brief Open the DMA device driver.
@@ -44,7 +47,12 @@ public:
     /*!
      * \brief Obtain DMA buffer address.
      */
-    int8_t *get_buffer_address(void);  // NOLINT(readability-make-member-function-const)
+    int8_t *get_buffer_address() const;
+
+    /*!
+     * \brief Obtain DMA buffer size.
+     */
+    uint32_t get_buffer_size() const;
 
     /*!
      * \brief Transfer DMA data
@@ -54,7 +62,7 @@ public:
     /*!
      * \brief Close the DMA device driver
      */
-    int DMA_close(void) const;
+    int DMA_close(void);
 
 private:
     static const uint32_t DMA_MAX_BUFFER_SIZE = (128 * 1024); /* must match driver exactly */
@@ -81,6 +89,6 @@ private:
         int fd;
     };
 
-    channel tx_channel;
+    channel tx_channel{nullptr, -1};
 };
 #endif  // GNSS_SDR_FPGA_DMA_PROXY_H

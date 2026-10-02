@@ -13,7 +13,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2023  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -35,28 +35,38 @@
 Fpga_dynamic_bit_selection::Fpga_dynamic_bit_selection(bool enable_rx1_band, bool enable_rx2_band)
     : d_map_base_freq_band_1(nullptr),
       d_map_base_freq_band_2(nullptr),
-      d_dev_descr_freq_band_1(0),
-      d_dev_descr_freq_band_2(0),
-      d_shift_out_bits_freq_band_1(0),
-      d_shift_out_bits_freq_band_2(0),
+      d_dev_descr_freq_band_1(-1),
+      d_dev_descr_freq_band_2(-1),
+      d_shift_out_bits_freq_band_1(SHIFT_OUT_BITS_MAX_DEFAULT),
+      d_shift_out_bits_freq_band_2(SHIFT_OUT_BITS_MAX_DEFAULT),
+      d_shift_out_bit_max_band_1(SHIFT_OUT_BITS_MAX_DEFAULT),
+      d_shift_out_bit_max_band_2(SHIFT_OUT_BITS_MAX_DEFAULT),
       d_enable_rx1_band(enable_rx1_band),
       d_enable_rx2_band(enable_rx2_band)
 {
     if (d_enable_rx1_band)
         {
-            open_device(&d_map_base_freq_band_1, d_dev_descr_freq_band_1, 0);
-
-            // init bit selection corresponding to frequency band 1
-            d_shift_out_bits_freq_band_1 = shift_out_bits_default;
-            d_map_base_freq_band_1[0] = d_shift_out_bits_freq_band_1;
+            if (open_device(&d_map_base_freq_band_1, d_dev_descr_freq_band_1, SELECT_FREQ_BAND_1))
+                {
+                    // Read the maximum supported bit shift for frequency band 1
+                    initialize_device(d_map_base_freq_band_1, d_shift_out_bits_freq_band_1, d_shift_out_bit_max_band_1);
+                }
+            else
+                {
+                    LOG(FATAL) << "Cannot initialize dynamic bit selection in frequency band 1";
+                }
         }
     if (d_enable_rx2_band)
         {
-            open_device(&d_map_base_freq_band_2, d_dev_descr_freq_band_2, 1);
-
-            // init bit selection corresponding to frequency band 2
-            d_shift_out_bits_freq_band_2 = shift_out_bits_default;
-            d_map_base_freq_band_2[0] = d_shift_out_bits_freq_band_2;
+            if (open_device(&d_map_base_freq_band_2, d_dev_descr_freq_band_2, SELECT_FREQ_BAND_2))
+                {
+                    // Read the maximum supported bit shift for frequency band 2
+                    initialize_device(d_map_base_freq_band_2, d_shift_out_bits_freq_band_2, d_shift_out_bit_max_band_2);
+                }
+            else
+                {
+                    LOG(FATAL) << "Cannot initialize dynamic bit selection in frequency band 2";
+                }
         }
     DLOG(INFO) << "Dynamic bit selection FPGA class created";
 }
@@ -79,66 +89,86 @@ void Fpga_dynamic_bit_selection::bit_selection()
 {
     if (d_enable_rx1_band)
         {
-            bit_selection_per_rf_band(d_map_base_freq_band_1, d_shift_out_bits_freq_band_1);
+            bit_selection_per_rf_band(d_map_base_freq_band_1, d_shift_out_bits_freq_band_1, d_shift_out_bit_max_band_1);
         }
 
     if (d_enable_rx2_band)
         {
-            bit_selection_per_rf_band(d_map_base_freq_band_2, d_shift_out_bits_freq_band_2);
+            bit_selection_per_rf_band(d_map_base_freq_band_2, d_shift_out_bits_freq_band_2, d_shift_out_bit_max_band_2);
         }
 }
 
 
-void Fpga_dynamic_bit_selection::open_device(volatile unsigned **d_map_base, int &d_dev_descr, int freq_band)
+bool Fpga_dynamic_bit_selection::open_device(volatile unsigned **d_map_base, int &d_dev_descr, int freq_band)
 {
-    // find the uio device file corresponding to the dynamic bit selector 0 module.
+    // Find the UIO device for the selected frequency band.
     std::string device_name;
-    if (find_uio_dev_file_name(device_name, dyn_bit_sel_device_name, freq_band) < 0)
+    const int device_num = freq_band - 1;
+    if (find_uio_dev_file_name(device_name, DYN_BIT_SEL_DEV_NAME, device_num) < 0)
         {
-            std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name << '\n';
-            std::cout << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name << '\n';
-            return;
+            std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << DYN_BIT_SEL_DEV_NAME << " in frequency band " << freq_band << '\n';
+            return false;
         }
-    // dynamic bits selection corresponding to frequency band 1
+    // Open the dynamic bit selection device.
     if ((d_dev_descr = open(device_name.c_str(), O_RDWR | O_SYNC)) == -1)
         {
-            LOG(WARNING) << "Cannot open deviceio" << device_name;
-            std::cout << "Cannot open deviceio" << device_name << std::endl;
+            std::cerr << "Cannot open deviceio " << device_name << std::endl;
+            return false;
         }
-    *d_map_base = reinterpret_cast<volatile unsigned *>(mmap(nullptr, FPGA_PAGE_SIZE,
+    volatile void *map_base = reinterpret_cast<volatile unsigned *>(mmap(nullptr, FPGA_PAGE_SIZE,
         PROT_READ | PROT_WRITE, MAP_SHARED, d_dev_descr, 0));
 
-    if (*d_map_base == reinterpret_cast<void *>(-1))
+    if (map_base == MAP_FAILED)
         {
-            LOG(WARNING) << "Cannot map the FPGA dynamic bit selection module in frequency band 1 into tracking memory";
-            std::cout << "Could not map dynamic bit selection memory corresponding to frequency band 1.\n";
+            std::cerr << "Could not map dynamic bit selection memory corresponding to frequency band " << freq_band << ".\n";
+            close(d_dev_descr);
+            d_dev_descr = -1;
+            return false;
         }
+    *d_map_base = reinterpret_cast<volatile unsigned *>(map_base);
+
+    return true;
 }
 
+void Fpga_dynamic_bit_selection::initialize_device(volatile unsigned *d_map_base, uint32_t &shift_out_bits, uint32_t &shift_out_bit_max)
+{
+    // Read the IP core version
+    uint32_t IP_core_version = d_map_base[FPGA_IP_CORE_VERSION_REG_ADDR];
 
-void Fpga_dynamic_bit_selection::bit_selection_per_rf_band(volatile unsigned *d_map_base, uint32_t &shift_out_bits)
+    if (IP_core_version == FPGA_DYN_BIT_SEL_IP_VERSION_1_2)
+        {
+            // Read the maximum supported bit shift.
+            // Previous versions of the IP core are initialized to SHIFT_OUT_BITS_MAX_DEFAULT
+            shift_out_bit_max = static_cast<uint32_t>(d_map_base[MAX_BIT_SHIFT_REG_ADDR]);
+            shift_out_bits = shift_out_bit_max;
+        }
+    // Initialize dynamic bit selection to the maximum supported shift.
+    d_map_base[SOBITS_REG_ADDR] = shift_out_bits;
+}
+
+void Fpga_dynamic_bit_selection::bit_selection_per_rf_band(volatile unsigned *d_map_base, uint32_t &shift_out_bits, uint32_t shift_out_bit_max)
 {
     // estimated signal power
-    uint32_t rx_signal_power = d_map_base[1];
+    uint32_t rx_signal_power = d_map_base[SIGPOW_REG_ADDR];
 
     // dynamic bit selection
-    if (rx_signal_power > Power_Threshold_High)
+    if (rx_signal_power > POWER_THRESHOLD_HIGH)
         {
             if (shift_out_bits < shift_out_bit_max)
                 {
                     shift_out_bits = shift_out_bits + 1;
                 }
         }
-    else if (rx_signal_power < Power_Threshold_Low)
+    else if (rx_signal_power < POWER_THRESHOLD_LOW)
         {
-            if (shift_out_bits > shift_out_bits_min)
+            if (shift_out_bits > SHIFT_OUT_BITS_MIN)
                 {
                     shift_out_bits = shift_out_bits - 1;
                 }
         }
 
-    // update bit selection corresponding to frequency band 1
-    d_map_base[0] = shift_out_bits;
+    // Update bit selection for the selected frequency band.
+    d_map_base[SOBITS_REG_ADDR] = shift_out_bits;
 }
 
 

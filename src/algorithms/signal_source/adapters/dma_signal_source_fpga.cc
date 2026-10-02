@@ -10,7 +10,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -23,10 +23,12 @@
 #include "gnss_sdr_string_literals.h"
 #include <algorithm>  // for std::min
 #include <chrono>     // for std::chrono
+#include <cmath>      // for std::isfinite
 #include <fcntl.h>    // for open, O_WRONLY
 #include <fstream>    // for std::ifstream
 #include <iomanip>    // for std::setprecision
 #include <iostream>   // for std::cout
+#include <limits>     // for std::numeric_limits
 #include <vector>     // fr std::vector
 
 #if USE_GLOG_AND_GFLAGS
@@ -43,9 +45,9 @@ DMASignalSourceFPGA::DMASignalSourceFPGA(const ConfigurationInterface *configura
     Concurrent_Queue<pmt::pmt_t> *queue __attribute__((unused)))
     : SignalSourceBase(configuration, role, "DMA_Signal_Source_FPGA"s),
       queue_(queue),
-      filename0_(configuration->property(role + ".filename", empty_string)),
-      sample_rate_(configuration->property(role + ".sampling_frequency", default_bandwidth)),
-      samples_to_skip_(0),
+      filename0_(configuration->property(role + ".filename", EMPTY_STRING)),
+      sample_rate_(configuration->property(role + ".sampling_frequency", DEFAULT_BANDWIDTH)),
+      bytes_to_skip_(0),
       samples_(configuration->property(role + ".samples", static_cast<int64_t>(0))),
       num_input_files_(1),
       dma_buff_offset_pos_(0),
@@ -53,17 +55,13 @@ DMASignalSourceFPGA::DMASignalSourceFPGA(const ConfigurationInterface *configura
       out_stream_(out_stream),
       item_size_(sizeof(int8_t)),
       enable_DMA_(false),
+      rx1_enable_(configuration->property(role + ".rx1_enable", true)),
+      rx2_enable_(configuration->property(role + ".rx2_enable", true)),
       enable_dynamic_bit_selection_(configuration->property(role + ".enable_dynamic_bit_selection", true)),
       repeat_(configuration->property(role + ".repeat", false))
 {
     const double seconds_to_skip = configuration->property(role + ".seconds_to_skip", 0.0);
     const size_t header_size = configuration->property(role + ".header_size", 0);
-
-    const bool enable_rx1_band((configuration->property("Channels_1C.count", 0) > 0) ||
-                               (configuration->property("Channels_1B.count", 0) > 0));
-    const bool enable_rx2_band((configuration->property("Channels_L2.count", 0) > 0) ||
-                               (configuration->property("Channels_L5.count", 0) > 0) ||
-                               (configuration->property("Channels_5X.count", 0) > 0));
 
 #if USE_GLOG_AND_GFLAGS
     // override value with commandline flag, if present
@@ -85,102 +83,98 @@ DMASignalSourceFPGA::DMASignalSourceFPGA(const ConfigurationInterface *configura
             filename0_ = absl::GetFlag(FLAGS_s);
         }
 #endif
+
     if (filename0_.empty())
         {
-            num_input_files_ = 2;
-            filename0_ = configuration->property(role + ".filename0", empty_string);
-            filename1_ = configuration->property(role + ".filename1", empty_string);
-        }
-    // if only one input file is specified in the configuration file then:
-    // if there is at least one channel assigned to frequency band 1 then the DMA transfers the samples to the L1 frequency band channels
-    // otherwise the DMA transfers the samples to the L2/L5 frequency band channels
-    // if more than one input file are specified then the DMA transfer the samples to both the L1 and the L2/L5 frequency channels.
-    if (filename1_.empty())
-        {
-            if (enable_rx1_band)
-                {
-                    dma_buff_offset_pos_ = 2;
-                }
-        }
-    else
-        {
-            dma_buff_offset_pos_ = 2;
+            filename0_ = configuration->property(role + ".filename0", EMPTY_STRING);
         }
 
-    if (seconds_to_skip > 0)
+    filename1_ = configuration->property(role + ".filename1", EMPTY_STRING);
+
+    if ((!configuration->is_present(role + ".rx1_enable")) && (!configuration->is_present(role + ".rx2_enable")))
         {
-            samples_to_skip_ = static_cast<uint64_t>(seconds_to_skip * sample_rate_) * 2;
+            // If neither RX enable flag is specified, enable each RX with a nonempty input filename.
+            rx1_enable_ = !filename0_.empty();
+            rx2_enable_ = !filename1_.empty();
         }
-    if (header_size > 0)
+
+    // configuration file check
+    const bool only_filename0_provided = !filename0_.empty() && filename1_.empty();
+    const bool both_filenames_provided = !filename0_.empty() && !filename1_.empty();
+    const bool one_freq_band_enabled = rx1_enable_ != rx2_enable_;
+    const bool both_freq_bands_enabled = rx1_enable_ && rx2_enable_;
+
+    if (!((only_filename0_provided && one_freq_band_enabled) ||
+            (both_filenames_provided && both_freq_bands_enabled)))
         {
-            samples_to_skip_ += header_size;
+            LOG(FATAL) << "Configuration error: one input file requires exactly one enabled "
+                          "frequency band; two input files require both frequency bands enabled.";
         }
+
+    num_input_files_ = filename1_.empty() ? 1U : 2U;
+
+    // Set the DMA buffer offset.
+    if (rx1_enable_)
+        {
+            dma_buff_offset_pos_ = IQ_COMPONENTS_PER_SAMPLE;
+        }
+
+
+    CHECK(sample_rate_ > 0) << "Sampling frequency must be positive.";
+    CHECK(std::isfinite(seconds_to_skip) && seconds_to_skip >= 0)
+        << "Seconds to skip must be finite and nonnegative.";
+    CHECK(samples_ >= 0) << "Sample count must be nonnegative.";
+
+    const uint64_t bytes_per_sample = IQ_COMPONENTS_PER_SAMPLE * item_size_;
+    const long double samples_to_skip =
+        static_cast<long double>(seconds_to_skip) * sample_rate_;
+    // Leave room for the header and keep ignore()'s byte count representable.
+    CHECK(static_cast<long double>(header_size) <
+          static_cast<long double>(std::numeric_limits<std::streamsize>::max()))
+        << "Header size is too large.";
+    CHECK(samples_to_skip <
+          (static_cast<long double>(std::numeric_limits<std::streamsize>::max()) -
+              header_size) /
+              bytes_per_sample)
+        << "Requested skip is too large.";
+    bytes_to_skip_ = static_cast<uint64_t>(samples_to_skip) * bytes_per_sample +
+                     header_size;
 
     switch_fpga = std::make_shared<Fpga_Switch>();
-    switch_fpga->set_switch_position(switch_to_DMA);
+    switch_fpga->set_switch_position(POST_PROCESSING_MODE);
 
     enable_DMA_ = true;
 
-    if (samples_ == 0)  // read all file
+    // Validate both files before starting the DMA thread.
+    uint64_t available = get_available_items(filename0_);
+    if (num_input_files_ == 2)
         {
-            std::ifstream file(filename0_.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-            std::ifstream::pos_type size;
-
-            if (file.is_open())
-                {
-                    size = file.tellg();
-                    DLOG(INFO) << "Total samples in the file= " << floor(static_cast<double>(size) / static_cast<double>(item_size_));
-                }
-            else
-                {
-                    std::cerr << "SignalSource: Unable to open the samples file " << filename0_.c_str() << '\n';
-                    return;
-                }
-            std::streamsize ss = std::cout.precision();
-            std::cout << std::setprecision(16);
-            std::cout << "Processing file " << filename0_ << ", which contains " << static_cast<double>(size) << " [bytes]\n";
-            std::cout.precision(ss);
-
-            if (size > 0)
-                {
-                    const uint64_t bytes_to_skip = samples_to_skip_ * item_size_;
-                    const uint64_t bytes_to_process = static_cast<uint64_t>(size) - bytes_to_skip;
-                    samples_ = floor(static_cast<double>(bytes_to_process) / static_cast<double>(item_size_) - ceil(0.002 * static_cast<double>(sample_rate_)));  // process all the samples available in the file excluding at least the last 1 ms
-                }
-
-            if (!filename1_.empty())
-                {
-                    std::ifstream file(filename1_.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-                    std::ifstream::pos_type size;
-
-                    if (file.is_open())
-                        {
-                            size = file.tellg();
-                            DLOG(INFO) << "Total samples in the file= " << floor(static_cast<double>(size) / static_cast<double>(item_size_));
-                        }
-                    else
-                        {
-                            std::cerr << "SignalSource: Unable to open the samples file " << filename1_.c_str() << '\n';
-                            return;
-                        }
-                    std::streamsize ss = std::cout.precision();
-                    std::cout << std::setprecision(16);
-                    std::cout << "Processing file " << filename1_ << ", which contains " << static_cast<double>(size) << " [bytes]\n";
-                    std::cout.precision(ss);
-
-                    int64_t samples_rx2 = 0;
-                    if (size > 0)
-                        {
-                            const uint64_t bytes_to_skip = samples_to_skip_ * item_size_;
-                            const uint64_t bytes_to_process = static_cast<uint64_t>(size) - bytes_to_skip;
-                            samples_rx2 = floor(static_cast<double>(bytes_to_process) / static_cast<double>(item_size_) - ceil(0.002 * static_cast<double>(sample_rate_)));  // process all the samples available in the file excluding at least the last 1 ms
-                        }
-                    samples_ = std::min(samples_, samples_rx2);
-                }
+            available = std::min(available, get_available_items(filename1_));
         }
 
+    if (samples_ == 0)
+        {
+            // Preserve the existing tail margin: about 1 ms of interleaved I/Q.
+            const uint64_t tail_items = sample_rate_ / 500 +
+                                        (sample_rate_ % 500 != 0 ? 1 : 0);
+            CHECK(available > tail_items)
+                << "File does not contain enough samples to process.";
+            uint64_t items_to_process = available - tail_items;
+            items_to_process -= items_to_process % IQ_COMPONENTS_PER_SAMPLE;
+            CHECK(items_to_process <=
+                  static_cast<uint64_t>(std::numeric_limits<int64_t>::max()))
+                << "Input sample count is too large.";
+            samples_ = static_cast<int64_t>(items_to_process);
+        }
+    else
+        {
+            CHECK(static_cast<uint64_t>(samples_) <= available)
+                << "Requested sample count exceeds the available input data.";
+        }
+
+    CHECK(samples_ % IQ_COMPONENTS_PER_SAMPLE == 0) << "Sample count must contain complete I/Q pairs.";
     CHECK(samples_ > 0) << "File does not contain enough samples to process.";
-    double signal_duration_s = (static_cast<double>(samples_) * (1 / static_cast<double>(sample_rate_))) / 2.0;
+    double signal_duration_s = (static_cast<double>(samples_) * (1 / static_cast<double>(sample_rate_))) / static_cast<double>(IQ_COMPONENTS_PER_SAMPLE);
 
     DLOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
     std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]\n";
@@ -199,12 +193,11 @@ DMASignalSourceFPGA::DMASignalSourceFPGA(const ConfigurationInterface *configura
     DLOG(INFO) << "Item type " << std::string("ibyte");
     DLOG(INFO) << "Item size " << item_size_;
     DLOG(INFO) << "Repeat " << repeat_;
-    //        }
 
     // dynamic bits selection
     if (enable_dynamic_bit_selection_)
         {
-            dynamic_bit_selection_fpga = std::make_shared<Fpga_dynamic_bit_selection>(enable_rx1_band, enable_rx2_band);
+            dynamic_bit_selection_fpga = std::make_shared<Fpga_dynamic_bit_selection>(rx1_enable_, rx2_enable_);
             thread_dynamic_bit_selection = std::thread([&] { run_dynamic_bit_selection_process(); });
         }
 
@@ -246,18 +239,38 @@ DMASignalSourceFPGA::~DMASignalSourceFPGA()
         }
 }
 
+uint64_t DMASignalSourceFPGA::get_available_items(
+    const std::string &filename) const
+{
+    std::ifstream file(filename, std::ios::binary | std::ios::ate);
+    CHECK(file.is_open()) << "Cannot open input file: " << filename;
+
+    const auto position = file.tellg();
+    CHECK(position != std::ifstream::pos_type(-1))
+        << "Cannot determine input file size: " << filename;
+
+    const uint64_t file_size = static_cast<uint64_t>(position);
+    CHECK(bytes_to_skip_ <= file_size)
+        << "Requested skip of " << bytes_to_skip_
+        << " bytes exceeds file size of " << file_size
+        << " bytes: " << filename;
+
+    std::cout << "Processing file " << filename
+              << ", which contains " << file_size << " [bytes]\n";
+
+    return (file_size - bytes_to_skip_) / item_size_;
+}
 
 void DMASignalSourceFPGA::start()
 {
-    thread_file_to_dma = std::thread([&] { run_DMA_process(filename0_, filename1_, samples_to_skip_, item_size_, samples_, repeat_, dma_buff_offset_pos_, queue_); });
+    thread_file_to_dma = std::thread([&] { run_DMA_process(filename0_, filename1_, bytes_to_skip_, item_size_, samples_, repeat_, dma_buff_offset_pos_, queue_); });
 }
 
 
-void DMASignalSourceFPGA::run_DMA_process(const std::string &filename0_, const std::string &filename1_, uint64_t &samples_to_skip, size_t &item_size, int64_t &samples, bool &repeat, uint32_t &dma_buff_offset_pos, Concurrent_Queue<pmt::pmt_t> *queue)
+void DMASignalSourceFPGA::run_DMA_process(const std::string &filename0_, const std::string &filename1_, uint64_t &bytes_to_skip, size_t &item_size, int64_t &samples, bool &repeat, uint32_t &dma_buff_offset_pos, Concurrent_Queue<pmt::pmt_t> *queue)
 {
     std::ifstream infile1;
     infile1.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
 
     // FPGA DMA control
     dma_fpga = std::make_shared<Fpga_DMA>();
@@ -293,10 +306,9 @@ void DMASignalSourceFPGA::run_DMA_process(const std::string &filename0_, const s
         }
 
     // skip the initial samples if needed
-    uint64_t bytes_to_skeep = samples_to_skip * item_size;
     try
         {
-            infile1.ignore(bytes_to_skeep);
+            infile1.ignore(bytes_to_skip);
         }
     catch (const std::ifstream::failure &e)
         {
@@ -310,7 +322,7 @@ void DMASignalSourceFPGA::run_DMA_process(const std::string &filename0_, const s
         {
             try
                 {
-                    infile2.ignore(bytes_to_skeep);
+                    infile2.ignore(bytes_to_skip);
                 }
             catch (const std::ifstream::failure &e)
                 {
@@ -321,10 +333,8 @@ void DMASignalSourceFPGA::run_DMA_process(const std::string &filename0_, const s
                 }
         }
 
-    // rx signal vectors
-    std::vector<int8_t> input_samples(sample_block_size * 2);  // complex samples
-    // pointer to DMA buffer
     int8_t *dma_buffer;
+    uint32_t dma_buffer_size;
     int nread_elements = 0;  // num bytes read from the file corresponding to frequency band 1
     bool run_DMA = true;
 
@@ -337,22 +347,26 @@ void DMASignalSourceFPGA::run_DMA_process(const std::string &filename0_, const s
             return;
         }
     dma_buffer = dma_fpga->get_buffer_address();
+    dma_buffer_size = dma_fpga->get_buffer_size();
+    uint32_t sample_block_size = dma_buffer_size / IQ_COMPONENTS_PER_DMA_FRAME;
 
-    // if only one frequency band is used then clear the samples corresponding to the unused frequency band
+    std::vector<int8_t> input_samples(sample_block_size * IQ_COMPONENTS_PER_SAMPLE);
     uint32_t dma_index = 0;
+
+    // Clear every unused-band I/Q pair in the reusable DMA buffer.
     if (num_input_files_ == 1)
         {
-            // if only one file is enabled then clear the samples corresponding to the frequency band that is not used.
-            for (int index0 = 0; index0 < (nread_elements); index0 += 2)
+            for (uint32_t sample = 0; sample < sample_block_size; ++sample)
                 {
-                    dma_buffer[dma_index + (2 - dma_buff_offset_pos)] = 0;
-                    dma_buffer[dma_index + 1 + (2 - dma_buff_offset_pos)] = 0;
-                    dma_index += 4;
+                    const uint32_t unused_pos =
+                        sample * IQ_COMPONENTS_PER_DMA_FRAME + (IQ_COMPONENTS_PER_SAMPLE - dma_buff_offset_pos);
+                    dma_buffer[unused_pos] = 0;
+                    dma_buffer[unused_pos + 1] = 0;
                 }
         }
 
     uint64_t nbytes_remaining = samples * item_size;
-    uint32_t read_buffer_size = sample_block_size * 2;  // complex samples
+    uint32_t read_buffer_size = sample_block_size * IQ_COMPONENTS_PER_SAMPLE;  // complex samples
 
     // run the DMA
     while (run_DMA)
@@ -384,12 +398,11 @@ void DMASignalSourceFPGA::run_DMA_process(const std::string &filename0_, const s
                     nread_elements = infile1.gcount();
                 }
 
-            for (int index0 = 0; index0 < (nread_elements); index0 += 2)
+            for (int index0 = 0; index0 < (nread_elements); index0 += IQ_COMPONENTS_PER_SAMPLE)
                 {
-                    // dma_buff_offset_pos is 1 for the L1 band and 0 for the other bands
                     dma_buffer[dma_index + dma_buff_offset_pos] = input_samples[index0];
                     dma_buffer[dma_index + 1 + dma_buff_offset_pos] = input_samples[index0 + 1];
-                    dma_index += 4;
+                    dma_index += IQ_COMPONENTS_PER_DMA_FRAME;
                 }
 
             // read filename 1 (if enabled)
@@ -415,18 +428,17 @@ void DMASignalSourceFPGA::run_DMA_process(const std::string &filename0_, const s
                             nread_elements = infile2.gcount();
                         }
 
-                    for (int index0 = 0; index0 < (nread_elements); index0 += 2)
+                    for (int index0 = 0; index0 < (nread_elements); index0 += IQ_COMPONENTS_PER_SAMPLE)
                         {
-                            // filename2 is never the L1 band
                             dma_buffer[dma_index] = input_samples[index0];
                             dma_buffer[dma_index + 1] = input_samples[index0 + 1];
-                            dma_index += 4;
+                            dma_index += IQ_COMPONENTS_PER_DMA_FRAME;
                         }
                 }
 
             if (nread_elements > 0)
                 {
-                    if (dma_fpga->DMA_write(nread_elements * 2))
+                    if (dma_fpga->DMA_write((nread_elements / IQ_COMPONENTS_PER_SAMPLE) * IQ_COMPONENTS_PER_DMA_FRAME))
                         {
                             std::cerr << "Error: DMA could not send all the required samples\n";
                             break;
@@ -441,7 +453,7 @@ void DMASignalSourceFPGA::run_DMA_process(const std::string &filename0_, const s
                         {
                             // read the file again
                             nbytes_remaining = samples * item_size;
-                            read_buffer_size = sample_block_size * 2;
+                            read_buffer_size = sample_block_size * IQ_COMPONENTS_PER_SAMPLE;
                             try
                                 {
                                     infile1.seekg(0);
@@ -453,10 +465,9 @@ void DMASignalSourceFPGA::run_DMA_process(const std::string &filename0_, const s
                                 }
 
                             // skip the initial samples if needed
-                            uint64_t bytes_to_skeep = samples_to_skip * item_size;
                             try
                                 {
-                                    infile1.ignore(bytes_to_skeep);
+                                    infile1.ignore(bytes_to_skip);
                                 }
                             catch (const std::ifstream::failure &e)
                                 {
@@ -478,7 +489,7 @@ void DMASignalSourceFPGA::run_DMA_process(const std::string &filename0_, const s
 
                                     try
                                         {
-                                            infile2.ignore(bytes_to_skeep);
+                                            infile2.ignore(bytes_to_skip);
                                         }
                                     catch (const std::ifstream::failure &e)
                                         {
@@ -539,7 +550,7 @@ void DMASignalSourceFPGA::run_dynamic_bit_selection_process()
         {
             // setting the bit selection to the top bits
             dynamic_bit_selection_fpga->bit_selection();
-            std::this_thread::sleep_for(std::chrono::milliseconds(Gain_control_period_ms));
+            std::this_thread::sleep_for(std::chrono::milliseconds(GAIN_CONTROL_PERIOD_ms));
             std::unique_lock<std::mutex> lock_dyn_bit_sel(dynamic_bit_selection_mutex);
             if (enable_dynamic_bit_selection_ == false)
                 {

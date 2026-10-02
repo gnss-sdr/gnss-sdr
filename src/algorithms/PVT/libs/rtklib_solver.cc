@@ -1428,19 +1428,13 @@ bool Rtklib_Solver::get_broadcast_signal_health(char system, uint32_t prn, const
         case 'G':
         case 'J':
             {
-                // L2C and L5 health comes from the CNAV message that carries them:
-                // bits 52-54 of message type 10 are the L1, L2 and L5 signal health
-                // (0 = OK, IS-GPS-200 30.3.3.1.1.2).
-                if (signal == "2S" || signal == "L5" || signal == "J5")
-                    {
-                        const auto cnav_it = gps_cnav_ephemeris_map.find(prn_key);
-                        if (cnav_it != gps_cnav_ephemeris_map.cend())
-                            {
-                                const int32_t signal_bit = (signal == "2S") ? 0x2 : 0x1;
-                                healthy = ((cnav_it->second.signal_health & signal_bit) == 0);
-                                return true;
-                            }
-                    }
+                // CNAV message type 10's per-carrier L1/L2/L5 health bits
+                // (IS-GPS-200N 30.3.3.1.1.2) are only meaningful together with
+                // the SV's LNAV configuration code, which this receiver does not
+                // track; per that same paragraph, a receiver in that position
+                // "should assume that every signal is available on every SV".
+                // So L2C/L5/J5 fall through to the same SV-wide health source
+                // L1 C/A uses below, rather than being excluded by this bit.
                 // L1 C/A: per-satellite SV health from LNAV subframe 1, falling back
                 // to the almanac (broadcast by every satellite) when no ephemeris has
                 // been decoded for this satellite yet.

@@ -161,6 +161,10 @@ authors:
     email: ouwh@mail2.sysu.edu.cn
     family-names: Ou
     given-names: Wenhao
+  - alias: phillipvu
+    email: phillip.wu19@gmail.com
+    family-names: Vu
+    given-names: Phillip
 cff-version: "1.2.0"
 date-released: "2026-04-14"
 identifiers:

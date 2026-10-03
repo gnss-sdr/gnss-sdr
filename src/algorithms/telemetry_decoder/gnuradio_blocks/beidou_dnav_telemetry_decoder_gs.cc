@@ -88,7 +88,8 @@ beidou_dnav_telemetry_decoder_gs::beidou_dnav_telemetry_decoder_gs(const Tlm_Con
       d_remove_dat(conf.remove_dat),
       d_enable_navdata_monitor(conf.enable_navdata_monitor),
       d_dump_crc_stats(conf.dump_crc_stats),
-      d_tow_to_trk(conf.tow_to_trk)
+      d_tow_to_trk(conf.tow_to_trk),
+      d_early_monitor(conf.early_monitor)
 {
     configure_basic_outputs();
 
@@ -431,6 +432,14 @@ int beidou_dnav_telemetry_decoder_gs::general_work(int noutput_items __attribute
     Gnss_Synchro current_symbol{};  // structure to save the synchronization information and send the output object to the next block
     // 1. Copy the current tracking output
     current_symbol = in[0][0];
+
+    // Early monitor output
+    if (d_early_monitor && !current_symbol.Flag_valid_symbol_output)
+        {
+            consume_each(1);
+            *out[0] = std::move(current_symbol);
+            return 1;
+        }
     d_symbol_history.push_back(current_symbol.Prompt_I);  // add new symbol to the symbol queue
     d_sample_counter++;                                   // count for the processed samples
     consume_each(1);
@@ -630,7 +639,7 @@ int beidou_dnav_telemetry_decoder_gs::general_work(int noutput_items __attribute
                 }
         }
 
-    if (d_flag_valid_word == true)
+    if (current_symbol.Flag_valid_word || d_early_monitor)
         {
             current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             current_symbol.Flag_valid_word = d_flag_valid_word;

@@ -69,7 +69,8 @@ gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(const Tlm_Conf &conf)
       d_remove_dat(conf.remove_dat),
       d_enable_navdata_monitor(conf.enable_navdata_monitor),
       d_dump_crc_stats(conf.dump_crc_stats),
-      d_tow_to_trk(conf.tow_to_trk)  // rise alarm if 5 consecutive subframes have no valid CRC
+      d_tow_to_trk(conf.tow_to_trk),  // rise alarm if 5 consecutive subframes have no valid CRC
+      d_early_monitor(conf.early_monitor)
 
 {
     configure_basic_outputs();
@@ -146,6 +147,20 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     cnav_msg_t msg;
     uint32_t delay = 0;
 
+    // UPDATE GNSS SYNCHRO DATA
+    Gnss_Synchro current_synchro_data{};  // structure to save the synchronization information and send the output object to the next block
+
+    // 1. Copy the current tracking output
+    current_synchro_data = in[0];
+
+    // Early monitor output
+    if (d_early_monitor && !current_synchro_data.Flag_valid_symbol_output)
+        {
+            consume_each(1);
+            out[0] = std::move(current_synchro_data);
+            return 1;
+        }
+
     // add the symbol to the decoder
     const uint8_t symbol_clip = static_cast<uint8_t>(in[0].Prompt_I > 0) * 255;
     flag_new_cnav_frame = cnav_msg_decoder_add_symbol(&d_cnav_decoder, symbol_clip, &msg, &delay);
@@ -171,11 +186,6 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 }
         }
 
-    // UPDATE GNSS SYNCHRO DATA
-    Gnss_Synchro current_synchro_data{};  // structure to save the synchronization information and send the output object to the next block
-
-    // 1. Copy the current tracking output
-    current_synchro_data = in[0];
 
     // 2. Add the telemetry decoder information
     // check if new CNAV frame is available

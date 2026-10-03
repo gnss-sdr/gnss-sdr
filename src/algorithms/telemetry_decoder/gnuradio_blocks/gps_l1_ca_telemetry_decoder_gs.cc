@@ -146,7 +146,8 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(const Tlm_Conf &c
       d_tow_to_trk(conf.tow_to_trk),
       d_have_last_decoded_tow(false),  // rise alarm 120 segs without valid tlm
       d_flag_frame_sync_confirmed(false),
-      d_flag_subframe_parity_ok(false)
+      d_flag_subframe_parity_ok(false),
+      d_early_monitor(conf.early_monitor)
 
 {
     configure_basic_outputs();
@@ -693,6 +694,14 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
     Gnss_Synchro current_symbol{};
     // 1. Copy the current tracking output
     current_symbol = in[0][0];
+
+    // Early monitor output
+    if (d_early_monitor && !current_symbol.Flag_valid_symbol_output)
+        {
+            consume_each(1);
+            *out[0] = std::move(current_symbol);
+            return 1;
+        }
     if (d_symbol_history.empty())
         {
             // Tracking synchronizes the tlm bit boundaries by acquiring the preamble
@@ -756,7 +765,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                 }
         }
 
-    if (d_flag_TOW_set == true)
+    if (d_flag_TOW_set || d_early_monitor)
         {
             // Check validity of TOW estimation
             // int64_t estimation_error = d_TOW_at_current_symbol_ms - current_symbol.TOW_at_current_symbol_ms;

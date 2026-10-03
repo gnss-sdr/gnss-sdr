@@ -61,7 +61,10 @@ message MonitorPvt {
   // azimuth_deg/elevation_deg populated with used = false when it was
   // tracked and had az/el computed but excluded from the fix itself (e.g.
   // below PVT.elevation_mask, or by RAIM FDE). The healthy flag carries the
-  // broadcast health of the signal, independently of used.
+  // broadcast health of the signal, independently of used. Exception: GPS L5
+  // carries the LNAV SV health of the same satellite (as GPS L1 C/A does),
+  // because its CNAV L5 health bit is broadcast as unhealthy while the signal
+  // is pre-operational.
   message TrackedSatellite {
     uint32 prn = 1;
     string system = 2;  // "G" GPS, "E" Galileo, "R" GLONASS, "C" BeiDou, "S" SBAS, "J" QZSS

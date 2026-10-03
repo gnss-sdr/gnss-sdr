@@ -1652,10 +1652,18 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         {
                             d_user_pvt_solver->gps_cnav_ephemeris_map[gps_cnav_ephemeris->PRN] = *gps_cnav_ephemeris;
                         }
-                    // Not acted on as an exclusion criterion: this per-carrier bit is only
-                    // meaningful together with the SV's LNAV configuration code (IS-GPS-200N
-                    // 30.3.3.1.1.2), which this receiver does not track -- see
-                    // Rtklib_Solver::get_broadcast_signal_health().
+                    // The CNAV L1/L2/L5 health bits are not used to exclude observables
+                    // from the PVT solution (pre-operational GPS L5 is broadcast as
+                    // unhealthy), so they are only logged here. See
+                    // Rtklib_Solver::get_broadcast_signal_health() for how they are reported.
+                    if (gps_cnav_ephemeris->signal_health != 0)
+                        {
+                            const std::string sat_sys = (MINPRNQZS <= gps_cnav_ephemeris->PRN && gps_cnav_ephemeris->PRN <= MAXPRNQZS) ? "QZSS" : "GPS";
+                            LOG(INFO) << "CNAV signal health of " << Gnss_Satellite(sat_sys, gps_cnav_ephemeris->PRN)
+                                      << ": L1 " << ((gps_cnav_ephemeris->signal_health & 0x4) ? "bad" : "OK")
+                                      << ", L2 " << ((gps_cnav_ephemeris->signal_health & 0x2) ? "bad" : "OK")
+                                      << ", L5 " << ((gps_cnav_ephemeris->signal_health & 0x1) ? "bad" : "OK");
+                        }
                     DLOG(INFO) << "New GPS CNAV ephemeris record has arrived";
                 }
             else if (msg_type_hash_code == d_gps_cnav_iono_sptr_type_hash_code)

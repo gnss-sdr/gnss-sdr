@@ -1652,19 +1652,17 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         {
                             d_user_pvt_solver->gps_cnav_ephemeris_map[gps_cnav_ephemeris->PRN] = *gps_cnav_ephemeris;
                         }
+                    // The CNAV L1/L2/L5 health bits are not used to exclude observables
+                    // from the PVT solution (pre-operational GPS L5 is broadcast as
+                    // unhealthy), so they are only logged here. See
+                    // Rtklib_Solver::get_broadcast_signal_health() for how they are reported.
                     if (gps_cnav_ephemeris->signal_health != 0)
                         {
                             const std::string sat_sys = (MINPRNQZS <= gps_cnav_ephemeris->PRN && gps_cnav_ephemeris->PRN <= MAXPRNQZS) ? "QZSS" : "GPS";
-                            std::cout << "Satellite " << Gnss_Satellite(sat_sys, gps_cnav_ephemeris->PRN)
-                                      << " reports an unhealthy status in the CNAV message,";
-                            if (d_use_unhealthy_sats)
-                                {
-                                    std::cout << " use PVT solutions at your own risk.\n";
-                                }
-                            else
-                                {
-                                    std::cout << " not used for navigation.\n";
-                                }
+                            LOG(INFO) << "CNAV signal health of " << Gnss_Satellite(sat_sys, gps_cnav_ephemeris->PRN)
+                                      << ": L1 " << ((gps_cnav_ephemeris->signal_health & 0x4) ? "bad" : "OK")
+                                      << ", L2 " << ((gps_cnav_ephemeris->signal_health & 0x2) ? "bad" : "OK")
+                                      << ", L5 " << ((gps_cnav_ephemeris->signal_health & 0x1) ? "bad" : "OK");
                         }
                     DLOG(INFO) << "New GPS CNAV ephemeris record has arrived";
                 }

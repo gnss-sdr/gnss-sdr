@@ -175,8 +175,10 @@ public:
     /*!
      * \brief Broadcast health of one tracked signal, as reported by the navigation
      * message that carries it: GPS/QZSS L1 C/A from the LNAV SV health (almanac
-     * when no ephemeris has been decoded yet), GPS/QZSS L2C and L5 from the CNAV
-     * per-signal health bits, Galileo per signal (see get_galileo_signal_health(),
+     * when no ephemeris has been decoded yet), GPS L2C and QZSS L5 from the CNAV
+     * per-signal health bits, GPS L5 from the LNAV SV health of the same satellite
+     * (the CNAV L5 bit is broadcast as unhealthy while GPS L5 is pre-operational),
+     * Galileo per signal (see get_galileo_signal_health(),
      * the almanac health status of the same signal when no ephemeris is available),
      * GLONASS from the GNAV ln/Bn
      * flags, BeiDou B1I/B3I from the DNAV SV health and B1C/B2a from the

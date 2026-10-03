@@ -150,7 +150,7 @@ void Fpga_Acquisition::fpga_acquisition_test_register()
 void Fpga_Acquisition::read_ipcore_info(std::vector<std::pair<uint32_t, uint32_t>> &downsampling_filter_specs, uint32_t &max_FFT_size)
 {
     d_IP_core_version = d_map_base[FPGA_IP_CORE_VERSION_REG_ADDR];
-    if (d_IP_core_version == FPGA_ACQ_IP_VERSION_1)
+    if (d_IP_core_version >= FPGA_ACQ_IP_VERSION_1_1)
         {
             // FPGA acquisition IP core version FPGA_ACQ_IP_VERSION_1
             max_FFT_size = d_map_base[MAX_FFT_SIZE_REG_ADDR];

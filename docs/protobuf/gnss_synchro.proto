@@ -6,8 +6,11 @@ package gnss_sdr;
 
 /* GnssSynchro represents the processing measurements at a given time taken by a given processing channel */
 message GnssSynchro {
-  string system = 1;  // GNSS constellation: "G" for GPS, "R" for Glonass, "S" for SBAS, "E" for Galileo and "C" for Beidou.
-  string signal = 2;  // GNSS signal: "1C" for GPS L1 C/A, "1B" for Galileo E1b/c, "1G" for Glonass L1 C/A, "2S" for GPS L2 L2C(M), "2G" for Glonass L2 C/A, "L5" for GPS L5 and "5X" for Galileo E5a
+  string system = 1;  // GNSS constellation: "G" for GPS, "R" for Glonass, "S" for SBAS, "E" for Galileo, "C" for Beidou and "J" for QZSS.
+  string signal = 2;  // GNSS signal: "1C" for GPS L1 C/A, "1B" for Galileo E1b/c, "1G" for Glonass L1 C/A, "2S" for GPS L2 L2C(M),
+                      // "2G" for Glonass L2 C/A, "L5" for GPS L5, "5X" for Galileo E5a, "7X" for Galileo E5b, "E6" for Galileo E6B,
+                      // "B1" for Beidou B1I, "B3" for Beidou B3I, "1D" for Beidou B1C, "5D" for Beidou B2a, "J1" for QZSS L1 C/A,
+                      // "J5" for QZSS L5, and "S1" for SBAS L1.
 
   uint32 prn = 3;        // PRN number
   int32 channel_id = 4;  // Channel number

@@ -157,21 +157,11 @@ public:
 
     /*!
      * \brief Sets how many Doppler bins to search, centered on set_doppler_center().
-     * One unified mechanism for every degree of Doppler uncertainty: a regular,
-     * unassisted search and a primary-frequency-assisted single-bin search (the
-     * Doppler is exactly known, from an already-tracked primary frequency or a
-     * visibility-aware prediction) go through this same call, differing only in
-     * what num_doppler_bins they pass -- there is no separate "narrowed" code
-     * path. Refreshes the Doppler grid and, since the detection threshold is
-     * itself a function of how many bins are being searched (see
-     * compute_threshold()), recalculates it for the new bin count.
-     * \param num_doppler_bins - number of candidate Doppler bins to search, or 0
-     * to (re)search the full configured Doppler range (computed from
-     * doppler_max/doppler_step) -- the only case a caller can't just supply the
-     * bin count directly, since that full-grid count is otherwise private to
-     * this class. Any other value is the literal candidate bin count: 1 for an
-     * exactly-known Doppler, or any N in between to accommodate a search with
-     * partial uncertainty.
+     * Refreshes the Doppler grid and updates the detection threshold when the
+     * bin count changes, supporting both unassisted and assisted searches.
+     * \param num_doppler_bins - candidate bin count, capped at the full grid size.
+     * Use 0 for the full range defined by doppler_max and doppler_step, 1 for
+     * a known Doppler, or larger counts for partial uncertainty.
      */
     void set_doppler_num_bins(uint32_t num_doppler_bins);
 

@@ -124,7 +124,7 @@ public:
 
 private:
     // FPGA IP Core version
-    static const uint32_t FPGA_ACQ_IP_VERSION_1 = 0x0001;  // FPGA IP core version
+    static const uint32_t FPGA_ACQ_IP_VERSION_1_1 = 0x0001;  // FPGA IP core version 1.1
 
     // FPGA register addresses
 

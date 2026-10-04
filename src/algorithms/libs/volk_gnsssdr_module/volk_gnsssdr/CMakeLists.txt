@@ -209,7 +209,7 @@ message(STATUS "Build type set to ${CMAKE_BUILD_TYPE}.")
 
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_MINOR_VERSION 0)
-set(VERSION_INFO_MAINT_VERSION 21)
+set(VERSION_INFO_MAINT_VERSION 22)
 include(VolkGnsssdrVersion) # setup version info
 include(VolkGnsssdrFindPaths) # set VOLK_GNSSSDR_LIB_PATHS and VOLK_GNSSSDR_INCLUDE_PATHS
 

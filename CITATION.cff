@@ -25,6 +25,11 @@ authors:
     email: xavier.guerrero@cttc.es
     family-names: Guerrero
     given-names: Xavier
+  - affiliation: "The University of Alabama"
+    alias: minhaj6
+    email: mahmad12@crimson.ua.edu
+    family-names: Ahmad
+    given-names: "Minhaj Uddin"
   - alias: BigTurtle8
     email: mvala079@gmail.com
     family-names: Alagar
@@ -81,6 +86,11 @@ authors:
     email: piyush04111999@gmail.com
     family-names: Gupta
     given-names: Piyush
+  - affiliation: "Sun Yat-sen University (SYSU)"
+    alias: HuangChuhan-SYSU
+    email: huangchh37@mail2.sysu.edu.cn
+    family-names: Huang
+    given-names: Chuhan
   - alias: glamountain
     email: gerald@gece.neu.edu
     family-names: LaMountain
@@ -166,7 +176,7 @@ authors:
     family-names: Vu
     given-names: Phillip
 cff-version: "1.2.0"
-date-released: "2026-04-14"
+date-released: "2026-10-04"
 identifiers:
   - description: "The concept DOI of the work. This is a DOI always pointing to the latest stable release."
     type: doi
@@ -374,4 +384,4 @@ repository-code: "https://github.com/gnss-sdr/gnss-sdr"
 title: GNSS-SDR
 type: software
 url: "https://gnss-sdr.org"
-version: "0.0.21"
+version: "0.0.22"

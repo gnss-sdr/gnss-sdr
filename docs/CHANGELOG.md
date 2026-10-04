@@ -12,10 +12,13 @@ SPDX-FileCopyrightText: 2011-2026 Carles Fernandez-Prades <carles.fernandez@cttc
 
 All notable changes to GNSS-SDR will be documented in this file.
 
-## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+## [GNSS-SDR v0.0.22](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.22) - 2026-10-04
 
 ### Improvements in Accuracy:
 
+- Added real-time kinematic (RTK) positioning using RTCM 3 corrections received
+  from NTRIP casters, enabling centimeter-level relative positioning under
+  suitable observing conditions.
 - Fixed the sign of the group-delay correction applied to GPS and QZSS L1+L2C
   dual-band observations in the SPP solver when a single-frequency ionospheric
   model is used: the L1 C/A pseudorange is now corrected as `P1 - c*TGD`, as
@@ -56,9 +59,6 @@ All notable changes to GNSS-SDR will be documented in this file.
   telemetry-resolved phase polarity. RINEX observation files report them with
   standard loss-of-lock indicator values, and the optional carrier smoothing
   filter restarts instead of smoothing across the jump.
-- Added real-time kinematic (RTK) positioning using RTCM 3 corrections received
-  from NTRIP casters, enabling centimeter-level relative positioning under
-  suitable observing conditions.
 
 ### Improvements in Availability:
 
@@ -146,11 +146,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   the pilot correlators and the data prompt in one multicorrelator pass. The
   data prompt now reuses the same carrier wipe-off as the pilot correlators
   instead of invoking a separate one-tap correlator, while non-pilot tracking
-  keeps the previous correlation path. In a Release build of the Galileo E1
-  workload, the median time to process 40 million samples decreased from 844 ms
-  to 572 ms (32% less time, 1.48x throughput). Results are mathematically
-  equivalent to the previous implementation within normal floating-point
-  behavior.
+  keeps the previous correlation path.
 - When dual-frequency assistance provides the Doppler of a satellite already
   tracked in the primary band (`GNSS-SDR.assist_dual_frequency_acq=true`), the
   PCPS acquisition in the secondary band now searches a single Doppler bin
@@ -206,17 +202,62 @@ All notable changes to GNSS-SDR will be documented in this file.
   to the CPU if the device cannot be initialized. Added `benchmark_pcps_grid`
   (CPU baseline vs. GPU) and unit tests checking the GPU grid against the CPU
   reference and running the full GPS L1 C/A adapter on a real capture.
+  Contributed by @phillipvu.
 
 ### Improvements in Interoperability:
 
-- Added an opt-in `EVK1029_Signal_Source` for the SAPHYRION EVK1029, a dual-band
-  (E1/E5a) or triple-band (E1/E5a/E6) GNSS evaluation kit built around the
-  SY1009 RF front-end and SY1019 ADC/DSP space-grade ASICs. Reads the EVK1029
-  host application's raw capture files directly (a continuous, header-less
-  stream of OBA-encoded 4-bit samples, two per byte, 16 samples per
-  little-endian 64-bit word), without going through the generic
-  XML-metadata-driven `ION_GSMS_Signal_Source` path. Disabled by default; build
-  with `-DENABLE_EVK1029=ON` to enable it.
+- Added the BeiDou B1C receiver chain, with signal identifier `1D`: acquisition
+  (`BEIDOU_B1C_PCPS_Ambiguous_Acquisition`, with optional QMBOC local replica),
+  tracking (`BEIDOU_B1C_DLL_PLL_VEML_Tracking`, tracking the pilot component by
+  default), and B-CNAV1 telemetry decoding (`BEIDOU_B1C_Telemetry_Decoder`,
+  including LDPC decoding of subframes 2 and 3 and BCH decoding of subframe 1).
+  The PVT engine uses the B-CNAV1 ephemeris, clock, and group-delay corrections
+  (TGD_B1Cp / ISC_B1Cd), implements the BDGIM ionospheric model broadcast in
+  B-CNAV1, and supports both B1C-only and mixed B1I+B1C configurations, keeping
+  DNAV and B-CNAV1 ephemerides isolated and preferring B1C over B1I when both
+  signals are available from the same satellite. B-CNAV1 ephemerides are also
+  written to RINEX navigation files (native CNV1 records in RINEX 4.02, D1-style
+  stand-in records in RINEX 3.02) and to the XML assistance-data storage. A
+  sample configuration file is provided at
+  `conf/File_input/Beidou/gnss-sdr_BDS_B1C_geb_if20k_fs18m_ibyte.conf`.
+  Contributed by @OuWenhao16.
+- Added the BeiDou B2a RNSS receiver chain (B2a_I data / B-CNAV2), with signal
+  identifier `5D`: PCPS acquisition (`BEIDOU_B2A_PCPS_Acquisition`), DLL+PLL
+  tracking (`BEIDOU_B2A_DLL_PLL_Tracking`; BPSK(10), 1 ms primary code, data
+  component only), and B-CNAV2 telemetry decoding
+  (`BEIDOU_B2A_Telemetry_Decoder`), including soft-decision 64-ary LDPC(96,48)
+  decoding of the 576 coded bits into 288 information bits before CRC-24Q and
+  PRN validation. The decoder reuses the B1C GF(64) arithmetic and fixed-path
+  decoder, with a full-alphabet sum-product fallback for B2a. Carrier polarity
+  and tracking gain are normalized before decoding. The PVT engine uses B-CNAV2
+  ephemeris, clock, and group-delay corrections (TGD_B2ap / ISC_B2ad), and RINEX
+  4.02 navigation files contain native CNV2 records. GEO and BDS-2 satellites
+  (PRN 1-18 and 59-63) are not assigned B2a channels and are not used in PVT.
+  Sample configuration files are provided at
+  `conf/File_input/Beidou/gnss-sdr_BDS_B2a_file.conf` and
+  `conf/File_input/Beidou/gnss-sdr_BDS_B2a_cu_l5_if20k_fs18m.conf`. Contributed
+  by @huangchuhan.
+- Added support for the QZSS L1 C/B signal (PRNs 203-206), broadcast by
+  satellites configured to transmit it in place of L1 C/A. Observables and
+  ephemerides from L1 C/B PRNs are attributed to the PRN of the satellite's
+  nominal PNT signals in PVT and output products, following the RINEX 4.00
+  convention. Contributed by @vladisslav2011.
+- Added reception of SBAS L1 signals (EGNOS and WAAS, PRN 120-138), with signal
+  identifier `S1`: PCPS acquisition (`SBAS_L1_PCPS_Acquisition`), DLL+PLL
+  tracking (`SBAS_L1_DLL_PLL_Tracking`), and telemetry decoding
+  (`SBAS_L1_Telemetry_Decoder`) with Viterbi FEC decoding, CRC-24Q verification,
+  and message-type reporting. Decoded frames carry traceback-corrected reception
+  timestamps and can be dumped to per-PRN text files in an EMS-like layout with
+  `TelemetryDecoder_S1.dump=true`. SBAS satellites are not used as ranging
+  sources yet. A sample configuration file is provided at
+  `conf/File_input/SBAS/gnss-sdr_SBAS_EGNOS_rx.conf`. Contributed by
+  @kalmancito.
+- Added support for RINEX 4.02 output, activated by setting
+  `PVT.rinex_version=4` in the configuration file (or with the
+  `-RINEX_version=4.02` command-line flag). Observation files are generated in
+  the 4.02 version format, and navigation files make use of the data record
+  structure introduced in RINEX 4.00. The default behavior when
+  `PVT.rinex_version` is not set remains unchanged (RINEX 3.02).
 - Added an opt-in RTK path fed by NTRIP corrections. The PVT block can now
   connect to an NTRIP caster, decode the RTCM 3 base position and base
   observations, and feed time-aligned reference data to its RTKLIB
@@ -243,6 +284,16 @@ All notable changes to GNSS-SDR will be documented in this file.
   sentence (`PVT.ntrip_send_gga`, enabled by default, with the cadence set by
   `PVT.ntrip_gga_period_ms`, 10 s by default), starting as soon as the receiver
   produces its first position solution.
+- The ionospheric Klobuchar coefficients and the UTC(NICT) offset parameters
+  broadcast by QZSS satellites, both in the L1 C/A LNAV message and in the L5
+  CNAV message, are now stored separately from the GPS ones instead of
+  overwriting them. This enables the QZUT / QZSS ION RINEX 4 data records (with
+  the compulsory `WIDE` subtype for the CNVX Klobuchar set, broadcast in CNAV
+  Message Type 30), prevents QZSS-sourced parameters from being mislabeled as
+  GPS corrections in mixed GPS + QZSS configurations, feeds the QZSS slots of
+  the RTKLIB navigation structure, and adds `qzss_utc_model.xml`,
+  `qzss_iono.xml`, `qzss_cnav_utc_model.xml`, and `qzss_cnav_iono.xml` to the
+  XML storage output.
 - QZSS ambiguities are now resolved in their own group instead of jointly with
   GPS, avoiding integer fixes across the GPS-QZSS inter-system bias, and the
   RTCM 3 decoder accepts the final RTCM 3.3 BeiDou ephemeris message type 1042
@@ -292,63 +343,6 @@ All notable changes to GNSS-SDR will be documented in this file.
   mixed GPS+QZSS epochs, which degrades availability under limited sky
   visibility; enable it only in open-sky scenarios with six or more satellites
   in view.
-- Added the BeiDou B1C receiver chain, with signal identifier `1D`: acquisition
-  (`BEIDOU_B1C_PCPS_Ambiguous_Acquisition`, with optional QMBOC local replica),
-  tracking (`BEIDOU_B1C_DLL_PLL_VEML_Tracking`, tracking the pilot component by
-  default), and B-CNAV1 telemetry decoding (`BEIDOU_B1C_Telemetry_Decoder`,
-  including LDPC decoding of subframes 2 and 3 and BCH decoding of subframe 1).
-  The PVT engine uses the B-CNAV1 ephemeris, clock, and group-delay corrections
-  (TGD_B1Cp / ISC_B1Cd), implements the BDGIM ionospheric model broadcast in
-  B-CNAV1, and supports both B1C-only and mixed B1I+B1C configurations, keeping
-  DNAV and B-CNAV1 ephemerides isolated and preferring B1C over B1I when both
-  signals are available from the same satellite. B-CNAV1 ephemerides are also
-  written to RINEX navigation files (native CNV1 records in RINEX 4.02, D1-style
-  stand-in records in RINEX 3.02) and to the XML assistance-data storage. A
-  sample configuration file is provided at
-  `conf/File_input/Beidou/gnss-sdr_BDS_B1C_geb_if20k_fs18m_ibyte.conf`.
-  Contributed by @OuWenhao16.
-- Added the BeiDou B2a RNSS receiver chain (B2a_I data / B-CNAV2), with signal
-  identifier `5D`: PCPS acquisition (`BEIDOU_B2A_PCPS_Acquisition`), DLL+PLL
-  tracking (`BEIDOU_B2A_DLL_PLL_Tracking`; BPSK(10), 1 ms primary code, data
-  component only), and B-CNAV2 telemetry decoding
-  (`BEIDOU_B2A_Telemetry_Decoder`), including soft-decision 64-ary LDPC(96,48)
-  decoding of the 576 coded bits into 288 information bits before CRC-24Q and
-  PRN validation. The decoder reuses the B1C GF(64) arithmetic and fixed-path
-  decoder, with a full-alphabet sum-product fallback for B2a. Carrier polarity
-  and tracking gain are normalized before decoding. The PVT engine uses B-CNAV2
-  ephemeris, clock, and group-delay corrections (TGD_B2ap / ISC_B2ad), and RINEX
-  4.02 navigation files contain native CNV2 records. GEO and BDS-2 satellites
-  (PRN 1-18 and 59-63) are not assigned B2a channels and are not used in PVT.
-  Sample configuration files are provided at
-  `conf/File_input/Beidou/gnss-sdr_BDS_B2a_file.conf` and
-  `conf/File_input/Beidou/gnss-sdr_BDS_B2a_cu_l5_if20k_fs18m.conf`. Contributed
-  by @huangchuhan.
-- Added reception of SBAS L1 signals (EGNOS and WAAS, PRN 120-138), with signal
-  identifier `S1`: PCPS acquisition (`SBAS_L1_PCPS_Acquisition`), DLL+PLL
-  tracking (`SBAS_L1_DLL_PLL_Tracking`), and telemetry decoding
-  (`SBAS_L1_Telemetry_Decoder`) with Viterbi FEC decoding, CRC-24Q verification,
-  and message-type reporting. Decoded frames carry traceback-corrected reception
-  timestamps and can be dumped to per-PRN text files in an EMS-like layout with
-  `TelemetryDecoder_S1.dump=true`. SBAS satellites are not used as ranging
-  sources yet. A sample configuration file is provided at
-  `conf/File_input/SBAS/gnss-sdr_SBAS_EGNOS_rx.conf`. Contributed by
-  @kalmancito.
-- Added support for RINEX 4.02 output, activated by setting
-  `PVT.rinex_version=4` in the configuration file (or with the
-  `-RINEX_version=4.02` command-line flag). Observation files are generated in
-  the 4.02 version format, and navigation files make use of the data record
-  structure introduced in RINEX 4.00. The default behavior when
-  `PVT.rinex_version` is not set remains unchanged (RINEX 3.02).
-- The ionospheric Klobuchar coefficients and the UTC(NICT) offset parameters
-  broadcast by QZSS satellites, both in the L1 C/A LNAV message and in the L5
-  CNAV message, are now stored separately from the GPS ones instead of
-  overwriting them. This enables the QZUT / QZSS ION RINEX 4 data records (with
-  the compulsory `WIDE` subtype for the CNVX Klobuchar set, broadcast in CNAV
-  Message Type 30), prevents QZSS-sourced parameters from being mislabeled as
-  GPS corrections in mixed GPS + QZSS configurations, feeds the QZSS slots of
-  the RTKLIB navigation structure, and adds `qzss_utc_model.xml`,
-  `qzss_iono.xml`, `qzss_cnav_utc_model.xml`, and `qzss_cnav_iono.xml` to the
-  XML storage output.
 - Added a `Bladerf_Signal_Source` for interoperability with Nuand's bladeRF
   front-ends (bladeRF x40, x115, and bladeRF 2.0 Micro xA4/xA9), streaming RX
   samples directly through `libbladeRF` (requires the `-DENABLE_BLADERF=ON`
@@ -366,9 +360,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   out-of-tree module. It requires the `-DENABLE_POCKETSDR=ON` building flag.
   Check the
   [Signal Source documentation](https://gnss-sdr.org/docs/sp-blocks/signal-source/#implementation-pocket_sdr_signal_source).
+  Contributed by @minhaj6.
 - Improved support for Keysight (formerly Spirent) GSS6450/GSS6425 format sample
   files. The Signal Source implementation is now named
-  [`GSS6450_File_Signal_Source`](https://gnss-sdr.org/docs/docs/sp-blocks/signal-source/#implementation-gss6450_file_signal_source),
+  [`GSS6450_File_Signal_Source`](https://gnss-sdr.org/docs/sp-blocks/signal-source/#implementation-gss6450_file_signal_source),
   while retaining `Spir_GSS6450_File_Signal_Source` as a backward-compatible
   alias. It can auto-detect `.gns` file layout information, unpack 2-, 4-, 8-,
   and 16-bit samples, and expose multi-channel recordings as independent RF
@@ -385,6 +380,14 @@ All notable changes to GNSS-SDR will be documented in this file.
   Wideband recordings, including more robust header parsing, corrected 2-bit
   sample decoding, multi-channel output handling, and unit-test coverage for the
   supported layouts.
+- Added an opt-in `EVK1029_Signal_Source` for the SAPHYRION EVK1029, a dual-band
+  (E1/E5a) or triple-band (E1/E5a/E6) GNSS evaluation kit built around the
+  SY1009 RF front-end and SY1019 ADC/DSP space-grade ASICs. Reads the EVK1029
+  host application's raw capture files directly (a continuous, header-less
+  stream of OBA-encoded 4-bit samples, two per byte, 16 samples per
+  little-endian 64-bit word), without going through the generic
+  XML-metadata-driven `ION_GSMS_Signal_Source` path. Disabled by default; build
+  with `-DENABLE_EVK1029=ON` to enable it.
 - Improved Galileo HAS robustness and ICD compliance, including stricter MT1
   validation, correct cache/Do-Not-Use handling, TOW fallback for E6 HAS pages,
   preserved mask/IOD correction context, and corrected HAS application in
@@ -395,11 +398,6 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Improved validation of GPS/QZSS CNAV Clock, Ephemeris, Integrity (CEI)
   dataset.
 - Implemented QZSS LNAV almanac/auxiliary pages decoding.
-- Added support for the QZSS L1 C/B signal (PRNs 203-206), broadcast by
-  satellites configured to transmit it in place of L1 C/A. Observables and
-  ephemerides from L1 C/B PRNs are attributed to the PRN of the satellite's
-  nominal PNT signals in PVT and output products, following the RINEX 4.00
-  convention. Contributed by @vladisslav2011.
 - Hardened BeiDou DNAV and Glonass GNAV decoding.
 - Completed BeiDou D1/D2 DNAV decoding, including almanac, time, integrity,
   differential-correction, and ionospheric-grid data, with BeiDou almanacs wired
@@ -438,7 +436,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Refactored main Acquisition, Tracking, and Telemetry Decoder adapters,
   simplifying interfaces and improving consistency across processing chains.
   This reduces code duplication, enhances maintainability, and eases the
-  integration of new GNSS signals.
+  integration of new GNSS signals. Contributed by @MathieuFavreau.
 - Merged the GLONASS L1 and L2 C/A telemetry decoder blocks, as well as the
   BeiDou B1I and B3I ones, which were almost identical since each pair of
   signals broadcasts the same navigation message (GNAV and DNAV, respectively),
@@ -457,20 +455,13 @@ All notable changes to GNSS-SDR will be documented in this file.
   automatically on Jetson (Orin -> 87, Xavier -> 72, TX2 -> 62, Nano -> 53) or
   set to `native` with CMake >= 3.24; the CUDA language standard follows the
   host C++ standard (C++17); imported `CUDA::cudart`/`CUDA::cufft` targets are
-  linked explicitly; `-Wno-psabi` is no longer passed to `nvcc`.
+  linked explicitly; `-Wno-psabi` is no longer passed to `nvcc`. Contributed by
+  @phillipvu.
 - Added `docs/JETSON.md`, a build/verify/benchmark guide for NVIDIA Jetson.
+  Contributed by @phillipvu.
 
 ### Improvements in Reliability:
 
-- Fixed the decimation logic of the `Monitor`, `AcquisitionMonitor` and
-  `TrackingMonitor` blocks: `decimation_factor` now selects every N-th epoch and
-  always consumes all the input items, instead of grouping `Gnss_Synchro`
-  objects into bursts and skipping others, and empty datagrams are no longer
-  sent. Fixed a use-after-free memory corruption caused by
-  `google::protobuf::ShutdownProtobufLibrary()` being called from the destructor
-  of `Serdes_Gnss_Synchro`, before the protobuf library was actually used; the
-  library is now shut down only once, at program exit. Added a unit test for the
-  monitor decimation. Contributed by @vladisslav2011.
 - Hardened the Galileo OSNMA protocol implementation, adding support for Chain
   Renewal, Chain Revocation, Public Key Renewal, Public Key Revocation, Merkle
   Tree Renewal, and OSNMA Alert Message events. Improved the management of OSNMA
@@ -480,6 +471,15 @@ All notable changes to GNSS-SDR will be documented in this file.
   wall-clock GST alignment check for OSNMA tag processing, enabling replay of
   previously captured Galileo signals while keeping all other OSNMA verification
   steps active.
+- Fixed the decimation logic of the `Monitor`, `AcquisitionMonitor` and
+  `TrackingMonitor` blocks: `decimation_factor` now selects every N-th epoch and
+  always consumes all the input items, instead of grouping `Gnss_Synchro`
+  objects into bursts and skipping others, and empty datagrams are no longer
+  sent. Fixed a use-after-free memory corruption caused by
+  `google::protobuf::ShutdownProtobufLibrary()` being called from the destructor
+  of `Serdes_Gnss_Synchro`, before the protobuf library was actually used; the
+  library is now shut down only once, at program exit. Added a unit test for the
+  monitor decimation. Contributed by @vladisslav2011.
 - `GPS_L1_CA_DLL_PLL_Tracking_GPU`: fixed a cross-block data race in the CUDA
   multi-correlator kernel (the carrier wipe-off and the correlation were in the
   same launch, synchronized only with `__syncthreads()`), fixed the
@@ -490,6 +490,27 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Usability:
 
+- The PVT Monitor now reports per-signal details for satellites used in the
+  position solution, including PRN, constellation, signal, azimuth, elevation,
+  and whether multiple signals were combined. Contributed by @joebre.
+- The Monitor (`Monitor.enable_monitor=true`) now also reports channels that are
+  tracking a signal but do not have a valid time reference yet, filling their
+  entries with the latest raw tracking data (C/N0, Doppler, carrier phase) while
+  keeping their observable validity flags unset. This makes the Monitor usable
+  in Galileo E6-only configurations, where the time of week cannot be obtained
+  from HAS pages, as well as during the initial seconds of operation, before the
+  telemetry decoders attain synchronization.
+- Added Galileo System Time (GST) annotations to HAS outputs when GST is decoded
+  from an I/NAV channel, enabling the HAS Time of Hour (TOH) to be associated
+  with an absolute UTC timestamp.
+- Galileo E6 observables are now generated by default, making them available in
+  RINEX files and other receiver outputs when E6 channels are configured. Since
+  Galileo E6 HAS pages do not broadcast the time of week, the receiver
+  configuration must also include other Galileo channels providing the time
+  reference for the E6 observables, either E1 or E5b (I/NAV), or E5a (F/NAV).
+  Their generation can be disabled by setting `Observables.enable_E6=false`.
+  This setting is now independent of `PVT.use_e6_for_pvt`, which keeps
+  controlling whether E6 observables are used in the PVT solution.
 - The console now reports the RTKLIB solution status. The `First position fix`
   and periodic `Position at` lines are tagged with `[RTK FIXED]`, `[RTK FLOAT]`,
   `[DGNSS]`, `[SBAS]` or `[PPP]` (color-coded), and status transitions are
@@ -514,24 +535,6 @@ All notable changes to GNSS-SDR will be documented in this file.
   deprecated: it keeps working exactly as before, but the receiver prints a
   notice suggesting `GNSS-SDR.observation_date` instead, and it is ignored if
   the new parameter is also set.
-- Added Galileo System Time (GST) annotations to HAS outputs when GST is decoded
-  from an I/NAV channel, enabling the HAS Time of Hour (TOH) to be associated
-  with an absolute UTC timestamp.
-- Galileo E6 observables are now generated by default, making them available in
-  RINEX files and other receiver outputs when E6 channels are configured. Since
-  Galileo E6 HAS pages do not broadcast the time of week, the receiver
-  configuration must also include other Galileo channels providing the time
-  reference for the E6 observables, either E1 or E5b (I/NAV), or E5a (F/NAV).
-  Their generation can be disabled by setting `Observables.enable_E6=false`.
-  This setting is now independent of `PVT.use_e6_for_pvt`, which keeps
-  controlling whether E6 observables are used in the PVT solution.
-- The Monitor (`Monitor.enable_monitor=true`) now also reports channels that are
-  tracking a signal but do not have a valid time reference yet, filling their
-  entries with the latest raw tracking data (C/N0, Doppler, carrier phase) while
-  keeping their observable validity flags unset. This makes the Monitor usable
-  in Galileo E6-only configurations, where the time of week cannot be obtained
-  from HAS pages, as well as during the initial seconds of operation, before the
-  telemetry decoders attain synchronization.
 - Reworked the Python plotting utilities under `utils/python` (acquisition,
   tracking, telemetry, observables, and PVT diagnostics). Each script now
   exposes a command-line interface (run with `--help`) and can be executed from
@@ -540,7 +543,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   takes the value of the corresponding block's `dump_filename` configuration
   parameter directly, reconstructing the dump file names the same way the
   receiver does. A new `utils/python/README.md` documents all the utilities and
-  their options.
+  their options. Includes fixes to the acquisition grid and tracking dump
+  readers and plotters contributed by @minhaj6.
 - Fixed the time tags of position solutions reported in the terminal and in
   NMEA, KML, GPX, and GeoJSON outputs for configurations without GPS channels
   (e.g., Galileo-only receivers): the reported epoch was shifted by the residual
@@ -549,9 +553,6 @@ All notable changes to GNSS-SDR will be documented in this file.
   epochs now fall on the same integer-millisecond grid as the observables, as
   they already did in configurations including GPS. RINEX files were not
   affected.
-- The PVT Monitor now reports per-signal details for satellites used in the
-  position solution, including PRN, constellation, signal, azimuth, elevation,
-  and whether multiple signals were combined. Contributed by @joebre.
 - Abseil logging now creates a unique timestamp/PID logfile for each run,
   preserving previous logs across the receiver, calibration tool, and test
   runners. On POSIX systems, an atomically updated relative symlink points to

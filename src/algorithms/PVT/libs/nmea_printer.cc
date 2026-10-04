@@ -72,7 +72,7 @@ Nmea_Printer::Nmea_Printer(const std::string& filename,
                     nmea_base_path = p.string();
                 }
 
-            if ((nmea_base_path != ".") and (d_flag_nmea_output_file == true))
+            if ((nmea_base_path != ".") && (d_flag_nmea_output_file == true))
                 {
                     std::cout << "NMEA files will be stored at " << nmea_base_path << std::endl;
                 }
@@ -110,14 +110,15 @@ Nmea_Printer::Nmea_Printer(const std::string& filename,
 }
 
 
-Nmea_Printer::~Nmea_Printer()
+Nmea_Printer::~Nmea_Printer() noexcept
 {
     DLOG(INFO) << "NMEA printer destructor called.";
-    const auto pos = nmea_file_descriptor.tellp();
+    std::ofstream::pos_type pos = -1;
     try
         {
             if (nmea_file_descriptor.is_open())
                 {
+                    pos = nmea_file_descriptor.tellp();
                     nmea_file_descriptor.close();
                 }
         }
@@ -131,10 +132,17 @@ Nmea_Printer::~Nmea_Printer()
         }
     if (pos == 0)
         {
-            errorlib::error_code ec;
-            if (!fs::remove(fs::path(nmea_filename), ec))
+            try
                 {
-                    std::cerr << "Problem removing NMEA temporary file: " << nmea_filename << std::endl;
+                    errorlib::error_code ec;
+                    if (!fs::remove(fs::path(nmea_filename), ec))
+                        {
+                            std::cerr << "Problem removing NMEA temporary file: " << nmea_filename << std::endl;
+                        }
+                }
+            catch (const std::exception& e)
+                {
+                    std::cerr << e.what() << std::endl;
                 }
         }
     try
@@ -144,6 +152,10 @@ Nmea_Printer::~Nmea_Printer()
     catch (const std::exception& e)
         {
             std::cerr << e.what() << std::endl;
+        }
+    catch (...)
+        {
+            std::cerr << "Unknown exception while closing NMEA serial port." << std::endl;
         }
 }
 

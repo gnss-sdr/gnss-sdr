@@ -66,6 +66,7 @@ target_link_libraries(acquisition_gr_blocks
         Volk::volk
         Volkgnsssdr::volkgnsssdr
     PRIVATE
+        Boost::thread
         Matio::matio
 )
 

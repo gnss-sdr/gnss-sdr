@@ -55,6 +55,7 @@ Galileo_Almanac Galileo_Almanac_Helper::get_almanac(int i) const
             galileo_almanac.OMEGAdot = this->Omega_dot_8;
             galileo_almanac.af0 = this->af0_9;
             galileo_almanac.af1 = this->af1_9;
+            galileo_almanac.E5b_HS = this->E5b_HS_9;
             galileo_almanac.E1B_HS = this->E1B_HS_9;
             galileo_almanac.E5a_HS = this->E5a_HS_9;
             break;

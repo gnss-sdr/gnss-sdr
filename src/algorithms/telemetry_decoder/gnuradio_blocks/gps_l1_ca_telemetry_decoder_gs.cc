@@ -20,21 +20,26 @@
  */
 
 #include "gps_l1_ca_telemetry_decoder_gs.h"
+#include "dump_logger_helper.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
-#include "gps_ephemeris.h"         // for Gps_Ephemeris
-#include "gps_iono.h"              // for Gps_Iono
-#include "gps_utc_model.h"         // for Gps_Utc_Model
+#include "gnss_synchro.h"
+#include "gnss_time.h"       // for timetags produced by Tracking
+#include "gps_ephemeris.h"   // for Gps_Ephemeris
+#include "gps_iono.h"        // for Gps_Iono
+#include "gps_utc_model.h"   // for Gps_Utc_Model
+#include "qzss_iono.h"       // for Qzss_Iono
+#include "qzss_utc_model.h"  // for Qzss_Utc_Model
+#include "tlm_conf.h"
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
 #include "tow_to_trk.h"
+#include "tow_utils.h"      // for gnss_tow helpers
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
 #include <algorithm>        // for min
 #include <bitset>           // for bitset
 #include <cmath>            // for round
-#include <cstddef>          // for size_t
 #include <cstring>          // for memcpy
-#include <exception>        // for exception
 #include <iomanip>          // for setprecision
 #include <iostream>         // for cout
 #include <vector>
@@ -68,48 +73,81 @@ namespace wht = std;
 #endif
 
 
-gps_l1_ca_telemetry_decoder_gs_sptr
-gps_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf, L1LnavSystem system)
+namespace
 {
-    return gps_l1_ca_telemetry_decoder_gs_sptr(new gps_l1_ca_telemetry_decoder_gs(satellite, conf, system));
+// A preamble-like bit pattern placed at the beginning of a word other than the
+// first one of a subframe (GPS satellites broadcast it in the reserved bits of
+// subframe 1, word 7) yields a window made of ten genuine words, so all of them
+// pass the parity check. IS-GPS-200 provides two invariants to tell such a
+// window from an actual subframe:
+//  - bits 23 and 24 of words 2 (HOW) and 10 are solved so that the last two
+//    parity bits of those words, D29 and D30, are always zero;
+//  - frames start at multiples of 30 s from the beginning of the week, so the
+//    TOW count of the HOW (start of the next subframe, in units of 6 s) and the
+//    subframe ID fulfill TOW_count mod 5 == subframe_ID mod 5.
+// QZSS LNAV follows the same rules.
+bool is_subframe_aligned(const std::array<char, GPS_SUBFRAME_LENGTH> &subframe)
+{
+    uint32_t how = 0;
+    uint32_t word_10 = 0;
+    std::memcpy(&how, &subframe[1 * GPS_WORD_LENGTH], sizeof(uint32_t));
+    std::memcpy(&word_10, &subframe[9 * GPS_WORD_LENGTH], sizeof(uint32_t));
+    // words are stored with D1 in bit 29 and D30 in bit 0
+    if ((how & 0x00000003U) != 0U || (word_10 & 0x00000003U) != 0U)
+        {
+            return false;
+        }
+    const uint32_t tow_count = (how >> 13U) & 0x0001FFFFU;
+    const uint32_t subframe_id = (how >> 8U) & 0x00000007U;
+    return (subframe_id >= 1U && subframe_id <= 5U && (tow_count % 5U) == (subframe_id % 5U));
+}
+}  // namespace
+
+
+gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(const Tlm_Conf &conf, L1LnavSystem system)
+{
+    return gps_l1_ca_telemetry_decoder_gs_sptr(new gps_l1_ca_telemetry_decoder_gs(conf, system));
 }
 
 
-gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
-    const Gnss_Satellite &satellite,
-    const Tlm_Conf &conf,
-    L1LnavSystem system) : telemetry_impl_interface("gps_navigation_gs",
-                               gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                               gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
-                           d_system(system),
-                           d_dump_filename(conf.dump_filename),
-                           d_sample_counter(0ULL),
-                           d_preamble_index(0ULL),
-                           d_last_valid_preamble(0),
-                           d_bits_per_preamble(GPS_CA_PREAMBLE_LENGTH_BITS),
-                           d_samples_per_preamble(GPS_CA_PREAMBLE_LENGTH_BITS),
-                           d_preamble_period_symbols(GPS_SUBFRAME_BITS),
-                           d_CRC_error_counter(0),
-                           d_channel(0),
-                           d_required_symbols(GPS_SUBFRAME_BITS),
-                           d_prev_GPS_frame_4bytes(0),
-                           d_stat(0),
-                           d_TOW_at_Preamble_ms(0),
-                           d_TOW_at_current_symbol_ms(0),
-                           d_last_decoded_tow_s(0),
-                           d_last_decoded_tow_sample_counter(0),
-                           d_flag_frame_sync(false),
-                           d_flag_preamble(false),
-                           d_sent_tlm_failed_msg(false),
-                           d_flag_PLL_180_deg_phase_locked(false),
-                           d_flag_TOW_set(false),
-                           d_dump(conf.dump),
-                           d_dump_mat(conf.dump_mat),
-                           d_remove_dat(conf.remove_dat),
-                           d_enable_navdata_monitor(conf.enable_navdata_monitor),
-                           d_dump_crc_stats(conf.dump_crc_stats),
-                           d_tow_to_trk(conf.tow_to_trk),
-                           d_have_last_decoded_tow(false)
+gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(const Tlm_Conf &conf,
+    L1LnavSystem system)
+    : telemetry_impl_interface("gps_navigation_gs",
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+      d_system(system),
+      d_dump_filename(conf.dump_filename),
+      d_sample_counter(0ULL),
+      d_preamble_index(0ULL),
+      d_last_valid_preamble(0),
+      d_bits_per_preamble(GPS_CA_PREAMBLE_LENGTH_BITS),
+      d_samples_per_preamble(GPS_CA_PREAMBLE_LENGTH_BITS),
+      d_preamble_period_symbols(GPS_SUBFRAME_BITS),
+      d_CRC_error_counter(0),
+      d_channel(0),
+      d_required_symbols(GPS_SUBFRAME_BITS),
+      d_prev_GPS_frame_4bytes(0),
+      d_max_symbols_without_valid_frame(d_required_symbols * 20),
+      d_stat(0),
+      d_TOW_at_Preamble_ms(0),
+      d_TOW_at_current_symbol_ms(0),
+      d_last_decoded_tow_s(0),
+      d_last_decoded_tow_sample_counter(0),
+      d_flag_frame_sync(false),
+      d_flag_preamble(false),
+      d_sent_tlm_failed_msg(false),
+      d_flag_PLL_180_deg_phase_locked(false),
+      d_flag_TOW_set(false),
+      d_dump(conf.dump),
+      d_dump_mat(conf.dump_mat),
+      d_remove_dat(conf.remove_dat),
+      d_enable_navdata_monitor(conf.enable_navdata_monitor),
+      d_dump_crc_stats(conf.dump_crc_stats),
+      d_tow_to_trk(conf.tow_to_trk),
+      d_have_last_decoded_tow(false),  // rise alarm 120 segs without valid tlm
+      d_flag_frame_sync_confirmed(false),
+      d_flag_subframe_parity_ok(false)
+
 {
     configure_basic_outputs();
 
@@ -137,12 +175,10 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
                     d_nav_msg_packet.signal = std::string("J1");
                 }
         }
-    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "Initializing " << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS") << " L1 TELEMETRY DECODER";
 
     // set the preamble
     // preamble bits to sampled symbols
-    d_max_symbols_without_valid_frame = d_required_symbols * 20;  // rise alarm 120 segs without valid tlm
     int32_t n = 0;
     for (int32_t i = 0; i < d_bits_per_preamble; i++)
         {
@@ -179,37 +215,7 @@ gps_l1_ca_telemetry_decoder_gs::~gps_l1_ca_telemetry_decoder_gs()
     DLOG(INFO) << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS")
                << " L1 C/A Telemetry decoder block (channel "
                << d_channel << ") destructor called.";
-    size_t pos = 0;
-    if (d_dump_file.is_open() == true)
-        {
-            pos = d_dump_file.tellp();
-            try
-                {
-                    d_dump_file.close();
-                }
-            catch (const std::exception &ex)
-                {
-                    LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
-                }
-            if (pos == 0)
-                {
-                    if (!tlm_remove_file(d_dump_filename))
-                        {
-                            LOG(WARNING) << "Error deleting temporary file";
-                        }
-                }
-        }
-    if (d_dump && (pos != 0) && d_dump_mat)
-        {
-            save_tlm_matfile(d_dump_filename);
-            if (d_remove_dat)
-                {
-                    if (!tlm_remove_file(d_dump_filename))
-                        {
-                            LOG(WARNING) << "Error deleting temporary file";
-                        }
-                }
-        }
+    tlm_cleanup_and_save_files(d_dump_file, d_dump_filename, d_dump, d_dump_mat, d_remove_dat);
 }
 
 
@@ -340,6 +346,17 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                 }
         }
 
+    // ten words passing the parity check are not enough to claim a subframe:
+    // a window that starts at a word-aligned false preamble passes it as well
+    d_flag_subframe_parity_ok = subframe_synchro_confirmation;
+    if (subframe_synchro_confirmation && !is_subframe_aligned(subframe))
+        {
+            LOG(INFO) << "Rejected " << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS")
+                      << " L1 NAV subframe candidate in channel " << d_channel
+                      << " due to inconsistent frame alignment at d_sample_counter=" << d_sample_counter;
+            subframe_synchro_confirmation = false;
+        }
+
     // decode subframe
     // NEW GPS SUBFRAME HAS ARRIVED!
     if (subframe_synchro_confirmation)
@@ -365,7 +382,6 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                 {
                     const auto decoded_tow_s = static_cast<uint32_t>(d_nav->get_TOW());
                     const bool is_tow_consistent_result = is_tow_consistent(decoded_tow_s);
-                    bool received_subframe_ok = false;
                     if (!is_tow_consistent_result)
                         {
                             LOG(INFO) << "Rejected " << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS")
@@ -382,7 +398,6 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                     // get ephemeris object for this SV (mandatory)
                                     const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(d_nav->get_ephemeris());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                                    received_subframe_ok = true;
                                 }
                             break;
                         case 2:
@@ -391,7 +406,6 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                     // get ephemeris object for this SV (mandatory)
                                     const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(d_nav->get_ephemeris());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                                    received_subframe_ok = true;
                                 }
                             break;
                         case 3:  // we have a new set of ephemeris data for the current SV
@@ -400,55 +414,91 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                     // get ephemeris object for this SV (mandatory)
                                     const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(d_nav->get_ephemeris());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                                    received_subframe_ok = true;
                                 }
                             break;
                         case 4:  // Possible IONOSPHERE and UTC model update (page 18)
                             if (d_nav->get_flag_iono_valid() == true)
                                 {
-                                    const std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(d_nav->get_iono());
-                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                                    received_subframe_ok = true;
+                                    if (d_system == L1LnavSystem::QZSS)
+                                        {
+                                            // QZSS broadcasts its own Klobuchar coefficients; keep them
+                                            // separate from the GPS ones
+                                            const std::shared_ptr<Qzss_Iono> tmp_obj = std::make_shared<Qzss_Iono>(d_nav->get_iono());
+                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                        }
+                                    else
+                                        {
+                                            const std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(d_nav->get_iono());
+                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                        }
                                 }
                             if (d_nav->get_flag_utc_model_valid() == true)
                                 {
-                                    const std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(d_nav->get_utc_model());
-                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                                    received_subframe_ok = true;
+                                    if (d_system == L1LnavSystem::QZSS)
+                                        {
+                                            // The QZSS UTC offset refers to UTC(NICT), not to UTC(USNO)
+                                            const std::shared_ptr<Qzss_Utc_Model> tmp_obj = std::make_shared<Qzss_Utc_Model>(d_nav->get_utc_model());
+                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                        }
+                                    else
+                                        {
+                                            const std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(d_nav->get_utc_model());
+                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                        }
                                 }
                             if (d_nav->almanac_validation() == true)
                                 {
                                     const std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(d_nav->get_almanac());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                                    received_subframe_ok = true;
                                 }
                             break;
                         case 5:
+                            if (d_nav->get_flag_iono_valid() == true)
+                                {
+                                    if (d_system == L1LnavSystem::QZSS)
+                                        {
+                                            // QZSS broadcasts its own Klobuchar coefficients; keep them
+                                            // separate from the GPS ones
+                                            const std::shared_ptr<Qzss_Iono> tmp_obj = std::make_shared<Qzss_Iono>(d_nav->get_iono());
+                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                        }
+                                    else
+                                        {
+                                            const std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(d_nav->get_iono());
+                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                        }
+                                }
+                            if (d_nav->get_flag_utc_model_valid() == true)
+                                {
+                                    if (d_system == L1LnavSystem::QZSS)
+                                        {
+                                            // The QZSS UTC offset refers to UTC(NICT), not to UTC(USNO)
+                                            const std::shared_ptr<Qzss_Utc_Model> tmp_obj = std::make_shared<Qzss_Utc_Model>(d_nav->get_utc_model());
+                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                        }
+                                    else
+                                        {
+                                            const std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(d_nav->get_utc_model());
+                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                        }
+                                }
                             if (d_nav->almanac_validation() == true)
                                 {
                                     const std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(d_nav->get_almanac());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                                    received_subframe_ok = true;
                                 }
                             break;
                         default:
                             break;
                         }
-                    if (received_subframe_ok)
-                        {
-#if __cplusplus == 201103L
-                            const int default_precision = std::cout.precision();
-#else
-                            const auto default_precision{std::cout.precision()};
-#endif
-                            std::cout << "New " << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS") << " NAV message received in channel " << this->d_channel << ": "
-                                      << "subframe "
-                                      << subframe_ID << " from satellite "
-                                      << Gnss_Satellite(std::string((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS"), d_nav->get_satellite_PRN())
-                                      << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
-                                      << " dB-Hz" << std::endl;
-                            return true;
-                        }
+                    const auto default_precision = std::cout.precision();
+                    std::cout << "New " << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS") << " NAV message received in channel " << this->d_channel << ": "
+                              << "subframe "
+                              << subframe_ID << " from satellite "
+                              << Gnss_Satellite(std::string((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS"), d_nav->get_satellite_PRN())
+                              << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
+                              << " dB-Hz" << std::endl;
+                    return true;
                 }
         }
     return false;
@@ -477,7 +527,6 @@ bool gps_l1_ca_telemetry_decoder_gs::is_tow_consistent(uint32_t decoded_tow_s)
 
     if (tow_error_s > TOW_CONTINUITY_TOLERANCE_S)
         {
-            d_have_last_decoded_tow = false;
             return false;
         }
 
@@ -493,9 +542,13 @@ void gps_l1_ca_telemetry_decoder_gs::reset()
     d_last_valid_preamble = d_sample_counter;
     d_sent_tlm_failed_msg = false;
     d_flag_TOW_set = false;
+    d_TOW_at_current_symbol_ms = 0;
+    d_TOW_at_Preamble_ms = 0;
     d_have_last_decoded_tow = false;
     d_last_decoded_tow_s = 0;
     d_last_decoded_tow_sample_counter = 0;
+    d_flag_frame_sync_confirmed = false;
+    d_flag_subframe_parity_ok = false;
     d_symbol_history.clear();
     d_stat = 0;
     DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
@@ -566,7 +619,8 @@ void gps_l1_ca_telemetry_decoder_gs::frame_synchronization(const Gnss_Synchro &c
                                                   << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS") << " L1 satellite " << this->d_satellite
                                                   << " at d_sample_counter=" << d_sample_counter;
                                     }
-                                d_stat = 1;  // preamble acquired
+                                d_stat = 1;                           // preamble acquired
+                                d_flag_frame_sync_confirmed = false;  // until the next subframe agrees
                             }
                     }
                 d_flag_TOW_set = false;
@@ -586,6 +640,7 @@ void gps_l1_ca_telemetry_decoder_gs::frame_synchronization(const Gnss_Synchro &c
                                 d_CRC_error_counter = 0;
                                 d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
                                 d_last_valid_preamble = d_sample_counter;
+                                d_flag_frame_sync_confirmed = true;  // its TOW follows the one of the previous subframe
                                 if (!d_flag_frame_sync)
                                     {
                                         d_flag_frame_sync = true;
@@ -595,10 +650,19 @@ void gps_l1_ca_telemetry_decoder_gs::frame_synchronization(const Gnss_Synchro &c
                         else
                             {
                                 d_CRC_error_counter++;
-                                if (d_CRC_error_counter > 2)
+                                const bool false_frame_sync = (!d_flag_frame_sync_confirmed && d_flag_subframe_parity_ok);
+                                if (false_frame_sync)
+                                    {
+                                        LOG(INFO) << "Frame synchronization in channel " << d_channel << " for "
+                                                  << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS") << " L1 satellite " << this->d_satellite
+                                                  << " was not confirmed by the next subframe, searching for the preamble again";
+                                    }
+                                if (false_frame_sync || d_CRC_error_counter > 2)
                                     {
                                         DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
                                         d_flag_frame_sync = false;
+                                        d_flag_frame_sync_confirmed = false;
+                                        d_have_last_decoded_tow = false;
                                         d_stat = 0;
                                         d_TOW_at_current_symbol_ms = 0;
                                         d_TOW_at_Preamble_ms = 0;
@@ -663,23 +727,32 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
     // 2. Add the telemetry decoder information
     if (d_flag_preamble == true)
         {
-            if (!(d_nav->get_TOW() == 0))
+            // check TOW update consistency
+            const uint32_t last_TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
+            d_TOW_at_current_symbol_ms = gnss_tow::wrap_ms(static_cast<int64_t>(d_nav->get_TOW() * 1000.0));
+            d_TOW_at_Preamble_ms = d_TOW_at_current_symbol_ms;
+
+            const uint32_t tow_update_error_ms = gnss_tow::circular_error_ms(d_TOW_at_current_symbol_ms, last_TOW_at_current_symbol_ms);
+            if (last_TOW_at_current_symbol_ms != 0 && tow_update_error_ms > GPS_L1_CA_BIT_PERIOD_MS)
                 {
-                    d_TOW_at_current_symbol_ms = static_cast<uint32_t>(d_nav->get_TOW() * 1000.0);
-                    d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav->get_TOW() * 1000.0);
-                    d_flag_TOW_set = true;
+                    LOG(INFO) << "Warning: " << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS")
+                              << " L1 TOW update in ch " << d_channel
+                              << " does not match the TLM TOW counter " << tow_update_error_ms << " ms";
+                    // Distrust both the decoded and the propagated TOW until the
+                    // next subframe provides a fresh value
+                    d_TOW_at_current_symbol_ms = 0;
+                    d_flag_TOW_set = false;
                 }
             else
                 {
-                    DLOG(INFO) << "Received " << ((d_system == L1LnavSystem::GPS) ? "GPS" : "QZSS")
-                               << " L1 TOW equal to zero at sat " << d_nav->get_satellite_PRN();
+                    d_flag_TOW_set = true;
                 }
         }
     else
         {
             if (d_flag_TOW_set == true)
                 {
-                    d_TOW_at_current_symbol_ms += GPS_L1_CA_BIT_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms = gnss_tow::add_ms(d_TOW_at_current_symbol_ms, GPS_L1_CA_BIT_PERIOD_MS);
                 }
         }
 
@@ -742,19 +815,11 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                     // MULTIPLEXED FILE RECORDING - Record results to file
                     try
                         {
-                            double tmp_double;
-                            uint64_t tmp_ulong_int;
-                            int32_t tmp_int;
-                            tmp_double = static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0;
-                            d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                            tmp_ulong_int = current_symbol.Tracking_sample_counter;
-                            d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(uint64_t));
-                            tmp_double = static_cast<double>(d_TOW_at_Preamble_ms) / 1000.0;
-                            d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                            tmp_int = (current_symbol.Prompt_I > 0.0 ? 1 : -1);
-                            d_dump_file.write(reinterpret_cast<char *>(&tmp_int), sizeof(int32_t));
-                            tmp_int = static_cast<int32_t>(current_symbol.PRN);
-                            d_dump_file.write(reinterpret_cast<char *>(&tmp_int), sizeof(int32_t));
+                            write_value(d_dump_file, static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0);
+                            write_value(d_dump_file, current_symbol.Tracking_sample_counter);
+                            write_value(d_dump_file, static_cast<double>(d_TOW_at_Preamble_ms) / 1000.0);
+                            write_value(d_dump_file, current_symbol.Prompt_I > 0.0 ? 1 : -1);
+                            write_value(d_dump_file, static_cast<int32_t>(current_symbol.PRN));
                         }
                     catch (const std::ofstream::failure &e)
                         {
@@ -765,12 +830,12 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
             // SEND TOW TO THE TRACKING BLOCK
             if (d_tow_to_trk)
                 {
-                    const std::shared_ptr<TOW_to_trk> tmp_tow_obj = std::make_shared<TOW_to_trk>(TOW_to_trk(
+                    const std::shared_ptr<TOW_to_trk> tmp_tow_obj = std::make_shared<TOW_to_trk>(
                         ((d_system == L1LnavSystem::GPS) ? std::string("1C") : std::string("J1")),
                         d_channel,
                         d_TOW_at_current_symbol_ms,
                         current_symbol.Tracking_sample_counter,
-                        d_nav->get_GPS_week(), d_nav->get_satellite_PRN()));
+                        d_nav->get_GPS_week(), d_nav->get_satellite_PRN());
                     this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(tmp_tow_obj));
                 }
 

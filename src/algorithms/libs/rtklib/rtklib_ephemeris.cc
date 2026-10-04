@@ -31,9 +31,12 @@
  */
 
 #include "rtklib_ephemeris.h"
+#include "Beidou_CNAV1.h"
+#include "Beidou_CNAV2.h"
 #include "rtklib_preceph.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_sbas.h"
+#include <cmath>
 #include <vector>
 
 /* constants -----------------------------------------------------------------*/
@@ -73,6 +76,151 @@ double var_uraeph(int ura)
         2.4, 3.4, 4.85, 6.85, 9.65, 13.65, 24.0, 48.0, 96.0, 192.0, 384.0, 768.0, 1536.0,
         3072.0, 6144.0};
     return ura < 0 || 14 < ura ? std::pow(6144.0, 2.0) : std::pow(ura_value[ura], 2.0);
+}
+
+
+/* variance by galileo sisa ephemeris (OS SIS ICD, table 91) ----------------*/
+double var_sisaeph(int sisa)
+{
+    double sisa_m;
+    if (sisa == -1)
+        {
+            // Reduced CED does not contain SISA. Retain RTKLIB's default
+            // broadcast-ephemeris accuracy when no index was supplied.
+            sisa_m = 2.4;
+        }
+    else if (sisa < 0 || sisa > 125)
+        {
+            // Spare values and NAPA (255) provide no usable accuracy prediction.
+            sisa_m = 6144.0;
+        }
+    else if (sisa <= 49)
+        {
+            sisa_m = static_cast<double>(sisa) * 0.01;
+        }
+    else if (sisa <= 74)
+        {
+            sisa_m = 0.50 + static_cast<double>(sisa - 50) * 0.02;
+        }
+    else if (sisa <= 99)
+        {
+            sisa_m = 1.00 + static_cast<double>(sisa - 75) * 0.04;
+        }
+    else
+        {
+            sisa_m = 2.00 + static_cast<double>(sisa - 100) * 0.16;
+        }
+    return std::pow(sisa_m, 2.0);
+}
+
+
+static double cnav_ura_upper_bound_m(int ura_index)
+{
+    switch (ura_index)
+        {
+        case -15:
+            return 0.01;
+        case -14:
+            return 0.02;
+        case -13:
+            return 0.03;
+        case -12:
+            return 0.04;
+        case -11:
+            return 0.06;
+        case -10:
+            return 0.08;
+        case -9:
+            return 0.11;
+        case -8:
+            return 0.15;
+        case -7:
+            return 0.21;
+        case -6:
+            return 0.30;
+        case -5:
+            return 0.43;
+        case -4:
+            return 0.60;
+        case -3:
+            return 0.85;
+        case -2:
+            return 1.20;
+        case -1:
+            return 1.70;
+        case 0:
+            return 2.40;
+        case 1:
+            return 3.40;
+        case 2:
+            return 4.85;
+        case 3:
+            return 6.85;
+        case 4:
+            return 9.65;
+        case 5:
+            return 13.65;
+        case 6:
+            return 24.0;
+        case 7:
+            return 48.0;
+        case 8:
+            return 96.0;
+        case 9:
+            return 192.0;
+        case 10:
+            return 384.0;
+        case 11:
+            return 768.0;
+        case 12:
+            return 1536.0;
+        case 13:
+            return 3072.0;
+        case 14:
+            return 6144.0;
+        default:
+            return 6144.0;
+        }
+}
+
+
+static double cnav_uraeph(gtime_t time, const eph_t *eph)
+{
+    if (eph->cnav_uraed == 15 || eph->cnav_uraed == -16 ||
+        eph->cnav_uraned0 == 15 || eph->cnav_uraned0 == -16)
+        {
+            return 6144.0;
+        }
+
+    double ned_ura_m = cnav_ura_upper_bound_m(eph->cnav_uraned0);
+    int top_week = eph->week;
+    if (eph->cnav_wnop >= 0)
+        {
+            top_week = (eph->week & ~0xFF) | (eph->cnav_wnop & 0xFF);
+            if (top_week - eph->week > 128)
+                {
+                    top_week -= 256;
+                }
+            else if (eph->week - top_week > 128)
+                {
+                    top_week += 256;
+                }
+        }
+
+    double dt = timediffweekcrossover(time, gpst2time(top_week, eph->cnav_top));
+    if (dt < 0.0)
+        {
+            dt = 0.0;
+        }
+    ned_ura_m += std::pow(2.0, -(14 + eph->cnav_uraned1)) * dt;
+    if (dt > 93600.0)
+        {
+            const double dt_second_order = dt - 93600.0;
+            ned_ura_m += std::pow(2.0, -(28 + eph->cnav_uraned2)) * dt_second_order * dt_second_order;
+        }
+
+    const double composite_ura_m = std::hypot(cnav_ura_upper_bound_m(eph->cnav_uraed), ned_ura_m);
+    return std::isfinite(composite_ura_m) ? composite_ura_m : 6144.0;
 }
 
 
@@ -124,7 +272,10 @@ void alm2pos(gtime_t time, const alm_t *alm, double *rs, double *dts)
 
     trace(4, "alm2pos : time=%s sat=%2d\n", time_str(time, 3), alm->sat);
 
-    tk = timediffweekcrossover(time, alm->toa);
+    /* alm->toa is an absolute epoch and almanacs stay valid for weeks, so tk
+     * may legitimately exceed half a week: the week-crossover wrapper would
+     * propagate from the wrong epoch. */
+    tk = timediff(time, alm->toa);
 
     if (alm->A <= 0.0)
         {
@@ -204,6 +355,9 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     double *var)
 {
     double tk;
+    double Ak;
+    double na;
+    double delta_na;
     double M;
     double E;
     double Ek;
@@ -256,7 +410,14 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
             omge = GNSS_OMEGA_EARTH_DOT;
             break;
         }
-    M = eph->M0 + (sqrt(mu / (eph->A * eph->A * eph->A)) + eph->deln) * tk;
+    const int is_bds_cnav = (sys == SYS_BDS &&
+                                (eph->code == BDS_EPH_SOURCE_CNAV1 || eph->code == BDS_EPH_SOURCE_CNAV2))
+                                ? 1
+                                : 0;
+    Ak = eph->A + eph->Adot * tk;
+    delta_na = eph->deln + 0.5 * eph->ndot * tk;
+    na = sqrt(mu / (eph->A * eph->A * eph->A)) + delta_na;
+    M = eph->M0 + na * tk;
 
     for (n = 0, E = M, Ek = 0.0; fabs(E - Ek) > RTOL_KEPLER && n < MAX_ITER_KEPLER; n++)
         {
@@ -274,7 +435,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     trace(4, "kepler: sat=%2d e=%8.5f n=%2d del=%10.3e\n", eph->sat, eph->e, n, E - Ek);
 
     u = atan2(sqrt(1.0 - eph->e * eph->e) * sinE, cosE - eph->e) + eph->omg;
-    r = eph->A * (1.0 - eph->e * cosE);
+    r = Ak * (1.0 - eph->e * cosE);
     i = eph->i0 + eph->idot * tk;
     sin2u = sin(2.0 * u);
     cos2u = cos(2.0 * u);
@@ -285,8 +446,8 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     y = r * sin(u);
     cosi = cos(i);
 
-    /* beidou geo satellite (ref [9]) */
-    if (sys == SYS_BDS && (prn <= 5 || prn > 58))
+    /* BeiDou GEO 5° transform is DNAV-only (B1I ICD). B-CNAV1/CNAV2 skip it. */
+    if (sys == SYS_BDS && !is_bds_cnav && (prn <= 5 || prn > 58))
         {
             O = eph->OMG0 + eph->OMGd * tk - omge * eph->toes;
             sinO = sin(O);
@@ -379,7 +540,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
                         {
                             for (int col = 0; col < 3; col++)
                                 {
-                                    rotated_corrections[row] = R[row][col] * corrections[col];
+                                    rotated_corrections[row] += R[row][col] * corrections[col];
                                 }
                         }
 
@@ -406,7 +567,18 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
         }
 
     /* position and clock error variance */
-    *var = var_uraeph(eph->sva);
+    if (eph->cnav_ura_valid)
+        {
+            *var = std::pow(cnav_uraeph(time, eph), 2.0);
+        }
+    else if (satsys(eph->sat, nullptr) == SYS_GAL)
+        {
+            *var = var_sisaeph(eph->sva);
+        }
+    else
+        {
+            *var = var_uraeph(eph->sva);
+        }
 }
 
 
@@ -597,18 +769,27 @@ void seph2pos(gtime_t time, const seph_t *seph, double *rs, double *dts,
 }
 
 
-/* select ephemeris --------------------------------------------------------*/
-eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav)
+/* select ephemeris --------------------------------------------------------
+ * bds_eph_sel: -1=any, 0=DNAV (eph.code not CNAV1/CNAV2),
+ *              BDS_EPH_SELECTION_CNAV1_PREFERRED=B-CNAV1 then DNAV,
+ *              BDS_EPH_SOURCE_CNAV1=B-CNAV1 only,
+ *              BDS_EPH_SOURCE_CNAV2=B-CNAV2 only
+ *-----------------------------------------------------------------------------*/
+eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav, int bds_eph_sel)
 {
     double t;
     double tmax;
     double tmin;
     int i;
     int j = -1;
+    int selected_source_priority = -1;
+    const int sys = satsys(sat, nullptr);
+    const bool prefer_bds_cnav1 =
+        sys == SYS_BDS && bds_eph_sel == BDS_EPH_SELECTION_CNAV1_PREFERRED;
 
-    trace(4, "seleph  : time=%s sat=%2d iode=%d\n", time_str(time, 3), sat, iode);
+    trace(4, "seleph  : time=%s sat=%2d iode=%d bds_sel=%d\n", time_str(time, 3), sat, iode, bds_eph_sel);
 
-    switch (satsys(sat, nullptr))
+    switch (sys)
         {
         case SYS_QZS:
             tmax = MAXDTOE_QZS + 1.0;
@@ -631,6 +812,19 @@ eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav)
                 {
                     continue;
                 }
+            if (sys == SYS_BDS && bds_eph_sel == BDS_EPH_SOURCE_CNAV1 && nav->eph[i].code != BDS_EPH_SOURCE_CNAV1)
+                {
+                    continue;
+                }
+            if (sys == SYS_BDS && bds_eph_sel == BDS_EPH_SOURCE_CNAV2 && nav->eph[i].code != BDS_EPH_SOURCE_CNAV2)
+                {
+                    continue;
+                }
+            if (sys == SYS_BDS && bds_eph_sel == 0 &&
+                (nav->eph[i].code == BDS_EPH_SOURCE_CNAV1 || nav->eph[i].code == BDS_EPH_SOURCE_CNAV2))
+                {
+                    continue;
+                }
             if (iode >= 0 && nav->eph[i].iode != iode)
                 {
                     continue;
@@ -641,15 +835,27 @@ eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav)
                 }
             if (iode >= 0)
                 {
-                    return nav->eph + i;
+                    if (!prefer_bds_cnav1 || nav->eph[i].code == BDS_EPH_SOURCE_CNAV1)
+                        {
+                            return nav->eph + i;
+                        }
+                    if (j < 0)
+                        {
+                            j = i; /* retain a DNAV fallback while looking for B-CNAV1 */
+                        }
+                    continue;
                 }
-            if (t <= tmin)
+            const int source_priority =
+                prefer_bds_cnav1 && nav->eph[i].code == BDS_EPH_SOURCE_CNAV1 ? 1 : 0;
+            if (source_priority > selected_source_priority ||
+                (source_priority == selected_source_priority && t <= tmin))
                 {
                     j = i;
                     tmin = t;
+                    selected_source_priority = source_priority;
                 } /* toe closest to time */
         }
-    if (iode >= 0 || j < 0)
+    if (j < 0)
         {
             trace(3, "no broadcast ephemeris: %s sat=%2d iode=%3d\n", time_str(time, 0),
                 sat, iode);
@@ -742,20 +948,20 @@ seph_t *selseph(gtime_t time, int sat, const nav_t *nav)
 
 /* satellite clock with broadcast ephemeris ----------------------------------*/
 int ephclk(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
-    double *dts)
+    double *dts, int bds_eph_sel)
 {
     eph_t *eph;
     geph_t *geph;
     seph_t *seph;
     int sys;
 
-    trace(4, "ephclk  : time=%s sat=%2d\n", time_str(time, 3), sat);
+    trace(4, "ephclk  : time=%s sat=%2d bds_sel=%d\n", time_str(time, 3), sat, bds_eph_sel);
 
     sys = satsys(sat, nullptr);
 
     if (sys == SYS_GPS || sys == SYS_GAL || sys == SYS_QZS || sys == SYS_BDS)
         {
-            if (!(eph = seleph(teph, sat, -1, nav)))
+            if (!(eph = seleph(teph, sat, -1, nav, bds_eph_sel)))
                 {
                     return 0;
                 }
@@ -788,7 +994,7 @@ int ephclk(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
 
 /* satellite position and clock by broadcast ephemeris -----------------------*/
 int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
-    int iode, double *rs, double *dts, double *var, int *svh)
+    int iode, double *rs, double *dts, double *var, int *svh, int bds_eph_sel)
 {
     eph_t *eph;
     geph_t *geph;
@@ -799,7 +1005,7 @@ int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
     int i;
     int sys;
 
-    trace(4, "ephpos  : time=%s sat=%2d iode=%d\n", time_str(time, 3), sat, iode);
+    trace(4, "ephpos  : time=%s sat=%2d iode=%d bds_sel=%d\n", time_str(time, 3), sat, iode, bds_eph_sel);
 
     sys = satsys(sat, nullptr);
 
@@ -807,7 +1013,7 @@ int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
 
     if (sys == SYS_GPS || sys == SYS_GAL || sys == SYS_QZS || sys == SYS_BDS)
         {
-            if (!(eph = seleph(teph, sat, iode, nav)))
+            if (!(eph = seleph(teph, sat, iode, nav, bds_eph_sel)))
                 {
                     return 0;
                 }
@@ -1054,16 +1260,16 @@ int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
  *-----------------------------------------------------------------------------*/
 int satpos(gtime_t time, gtime_t teph, int sat, int ephopt,
     const nav_t *nav, double *rs, double *dts, double *var,
-    int *svh)
+    int *svh, int bds_eph_sel)
 {
-    trace(4, "satpos  : time=%s sat=%2d ephopt=%d\n", time_str(time, 3), sat, ephopt);
+    trace(4, "satpos  : time=%s sat=%2d ephopt=%d bds_sel=%d\n", time_str(time, 3), sat, ephopt, bds_eph_sel);
 
     *svh = 0;
 
     switch (ephopt)
         {
         case EPHOPT_BRDC:
-            return ephpos(time, teph, sat, nav, -1, rs, dts, var, svh);
+            return ephpos(time, teph, sat, nav, -1, rs, dts, var, svh, bds_eph_sel);
         case EPHOPT_SBAS:
             return satpos_sbas(time, teph, sat, nav, rs, dts, var, svh);
         case EPHOPT_SSRAPC:
@@ -1099,6 +1305,8 @@ int satpos(gtime_t time, gtime_t teph, int sat, int ephopt,
  *          double *dts      O   satellite clocks
  *          double *var      O   sat position and clock error variances (m^2)
  *          int    *svh      O   sat health flag (-1:correction not available)
+ *          bool allow_bds_dnav_for_b1c I permit DNAV orbit/clock fallback for
+ *                                      relative same-signal processing
  * return : none
  * notes  : rs [(0:2)+i*6]= obs[i] sat position {x,y,z} (m)
  *          rs [(3:5)+i*6]= obs[i] sat velocity {vx,vy,vz} (m/s)
@@ -1112,8 +1320,9 @@ int satpos(gtime_t time, gtime_t teph, int sat, int ephopt,
  *          any pseudorange and broadcast ephemeris are always needed to get
  *          signal transmission time
  *-----------------------------------------------------------------------------*/
-void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
-    int ephopt, double *rs, double *dts, double *var, int *svh)
+static void satposs_impl(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
+    int ephopt, double *rs, double *dts, double *var, int *svh,
+    bool allow_bds_dnav_for_b1c)
 {
     std::vector<gtime_t> time(MAXOBS);
     double dt;
@@ -1136,6 +1345,31 @@ void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
             var[i] = 0.0;
             svh[i] = 0;
 
+            /* Relative same-signal B1C may use a DNAV orbit/clock fallback;
+               absolute B1C remains CNAV1-only because the DNAV clock lacks
+               the B1C TGD/ISC relationship. Other BDS signals are DNAV-only. */
+            int bds_eph_sel = -1;
+            if (satsys(obs[i].sat, nullptr) == SYS_BDS)
+                {
+                    bds_eph_sel = 0;
+                    for (j = 0; j < NFREQ; j++)
+                        {
+                            const unsigned char cj = obs[i].code[j];
+                            if (is_bds_b1c_code(cj))
+                                {
+                                    bds_eph_sel = allow_bds_dnav_for_b1c
+                                                      ? BDS_EPH_SELECTION_CNAV1_PREFERRED
+                                                      : BDS_EPH_SOURCE_CNAV1;
+                                    break;
+                                }
+                            if (is_bds_b2a_code(cj))
+                                {
+                                    bds_eph_sel = BDS_EPH_SOURCE_CNAV2;
+                                    break;
+                                }
+                        }
+                }
+
             /* search any pseudorange */
             for (j = 0, pr = 0.0; j < NFREQ; j++)
                 {
@@ -1154,7 +1388,7 @@ void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
             time[i] = timeadd(obs[i].time, -pr / SPEED_OF_LIGHT_M_S);
 
             /* satellite clock bias by broadcast ephemeris */
-            if (!ephclk(time[i], teph, obs[i].sat, nav, &dt))
+            if (!ephclk(time[i], teph, obs[i].sat, nav, &dt, bds_eph_sel))
                 {
                     trace(3, "no broadcast clock %s sat=%2d\n", time_str(time[i], 3), obs[i].sat);
                     continue;
@@ -1163,7 +1397,7 @@ void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
 
             /* satellite position and clock at transmission time */
             if (!satpos(time[i], teph, obs[i].sat, ephopt, nav, rs + i * 6, dts + i * 2, var + i,
-                    svh + i))
+                    svh + i, bds_eph_sel))
                 {
                     trace(3, "no ephemeris %s sat=%2d\n", time_str(time[i], 3), obs[i].sat);
                     continue;
@@ -1171,7 +1405,7 @@ void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
             /* if no precise clock available, use broadcast clock instead */
             if (dts[i * 2] == 0.0)
                 {
-                    if (!ephclk(time[i], teph, obs[i].sat, nav, dts + i * 2))
+                    if (!ephclk(time[i], teph, obs[i].sat, nav, dts + i * 2, bds_eph_sel))
                         {
                             continue;
                         }
@@ -1185,4 +1419,18 @@ void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
                 time_str(time[i], 6), obs[i].sat, rs[i * 6], rs[1 + i * 6], rs[2 + i * 6],
                 dts[i * 2] * 1e9, var[i], svh[i]);
         }
+}
+
+
+void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
+    int ephopt, double *rs, double *dts, double *var, int *svh)
+{
+    satposs_impl(teph, obs, n, nav, ephopt, rs, dts, var, svh, false);
+}
+
+
+void satposs_relative(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
+    int ephopt, double *rs, double *dts, double *var, int *svh)
+{
+    satposs_impl(teph, obs, n, nav, ephopt, rs, dts, var, svh, true);
 }

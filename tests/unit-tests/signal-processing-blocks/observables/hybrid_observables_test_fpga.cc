@@ -25,21 +25,17 @@
 #include "Galileo_E5a.h"
 #include "acquisition_msg_rx.h"
 #include "fpga_switch.h"
-#include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
-#include "galileo_e5a_pcps_acquisition_fpga.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
 #include "gnss_sdr_fpga_sample_counter.h"
 #include "gnss_synchro.h"
 #include "gnuplot_i.h"
-#include "gps_l1_ca_dll_pll_tracking_fpga.h"
-#include "gps_l1_ca_pcps_acquisition_fpga.h"
-#include "gps_l5i_pcps_acquisition_fpga.h"
 #include "hybrid_observables.h"
 #include "in_memory_configuration.h"
 #include "observable_tests_flags.h"
 #include "observables_dump_reader.h"
+#include "pcps_acquisition_adapter_fpga.h"
 #include "signal_generator_flags.h"
 #include "telemetry_decoder_interface.h"
 #include "test_flags.h"
@@ -207,7 +203,16 @@ void HybridObservablesTest_tlm_msg_rx_Fpga::msg_handler_channel_events(const pmt
 HybridObservablesTest_tlm_msg_rx_Fpga::HybridObservablesTest_tlm_msg_rx_Fpga() : gr::block("HybridObservablesTest_tlm_msg_rx_Fpga", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
-    this->set_msg_handler(pmt::mp("events"), boost::bind(&HybridObservablesTest_tlm_msg_rx_Fpga::msg_handler_channel_events, this, boost::placeholders::_1));
+    this->set_msg_handler(pmt::mp("events"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto&& PH1) { msg_handler_channel_events(std::forward<decltype(PH1)>(PH1)); });
+#else
+#if USE_BOOST_BIND_PLACEHOLDERS
+        boost::bind(&HybridObservablesTest_tlm_msg_rx_Fpga::msg_handler_channel_events, this, boost::placeholders::_1));
+#else
+        boost::bind(&HybridObservablesTest_tlm_msg_rx_Fpga::msg_handler_channel_events, this, _1));
+#endif
+#endif
     rx_message = 0;
 }
 
@@ -281,7 +286,6 @@ public:
 
     HybridObservablesTestFpga()
     {
-        factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
     }
@@ -301,7 +305,6 @@ public:
         bool high_dyn);
 
     gr::top_block_sptr top_block;
-    std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro_master;
     std::vector<Gnss_Synchro> gnss_synchro_vec;
@@ -650,7 +653,7 @@ bool HybridObservablesTestFpga::acquire_signal()
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "GPS L1 CA";
-            acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", "GPS_L1_CA_PCPS_Acquisition_FPGA", 0, 0, GPS_1C);
 
             args.freq_band = 0;  // frequency band on which the DMA has to transfer the samples
         }
@@ -662,7 +665,7 @@ bool HybridObservablesTestFpga::acquire_signal()
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "Galileo E1B";
-            acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition_FPGA", 0, 0, GAL_1B);
 
             args.freq_band = 0;  // frequency band on which the DMA has to transfer the samples
         }
@@ -674,7 +677,7 @@ bool HybridObservablesTestFpga::acquire_signal()
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "Galileo E5a";
-            acquisition = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", "Galileo_E5a_Pcps_Acquisition_FPGA", 0, 0, GAL_E5a);
 
             args.freq_band = 1;  // frequency band on which the DMA has to transfer the samples
         }
@@ -686,7 +689,7 @@ bool HybridObservablesTestFpga::acquire_signal()
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "GPS L5I";
-            acquisition = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", "GPS_L5i_PCPS_Acquisition_FPGA", 0, 0, GPS_L5);
 
             args.freq_band = 1;  // frequency band on which the DMA has to transfer the samples
         }
@@ -752,7 +755,7 @@ bool HybridObservablesTestFpga::acquire_signal()
             acquisition->stop_acquisition();  // reset the whole system including the sample counters
             acquisition->set_local_code();
 
-            if ((implementation == "GPS_L1_CA_DLL_PLL_Tracking_FPGA") or (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking_FPGA"))
+            if ((implementation == "GPS_L1_CA_DLL_PLL_Tracking_FPGA") || (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking_FPGA"))
                 {
                     // Skip the first TEST_OBS_SKIP_SAMPLES samples
                     args.skip_used_samples = 0;
@@ -2004,7 +2007,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
 
                     std::cout << "Initial Doppler [Hz]=" << true_reader_vec.back()->doppler_l1_hz << " Initial code delay [Chips]="
                               << true_reader_vec.back()->prn_delay_chips << '\n';
-                    n.Acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_reader_vec.back()->prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD_S;
+                    n.Acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_reader_vec.back()->prn_delay_chips) / GPS_L1_CA_CODE_LENGTH_CHIPS * baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD_S;
                     n.Acq_doppler_hz = true_reader_vec.back()->doppler_l1_hz;
                     n.Acq_samplestamp_samples = 0;
                 }
@@ -2029,22 +2032,22 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     // reset the HW to clear the sample counters: the acquisition constructor generates a reset
     if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_FPGA")
         {
-            acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", "GPS_L1_CA_PCPS_Acquisition_FPGA", 0, 0, GPS_1C);
             args.freq_band = 0;
         }
     else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking_FPGA")
         {
-            acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition_FPGA", 0, 0, GAL_1B);
             args.freq_band = 0;
         }
     else if (implementation == "Galileo_E5a_DLL_PLL_Tracking_FPGA")
         {
-            acquisition = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", "Galileo_E5a_Pcps_Acquisition_FPGA", 0, 0, GAL_E5a);
             args.freq_band = 1;
         }
     else if (implementation == "GPS_L5_DLL_PLL_Tracking_FPGA")
         {
-            acquisition = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            acquisition = std::make_shared<PcpsAcquisitionAdapterFpga>(config.get(), "Acquisition", "GPS_L5i_PCPS_Acquisition_FPGA", 0, 0, GPS_L5);
             args.freq_band = 1;
         }
     else
@@ -2065,9 +2068,9 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
             gnss_synchro_vec.at(n).Channel_ID = n;
 
             // create the tracking channels and create the telemetry decoders
-            std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config.get(), "Tracking", 1, 1);
+            std::shared_ptr<GNSSBlockInterface> trk_ = block_factory::GetBlock(config.get(), "Tracking", 1, 1);
             tracking_ch_vec.push_back(std::dynamic_pointer_cast<TrackingInterface>(trk_));
-            std::shared_ptr<GNSSBlockInterface> tlm_ = factory->GetBlock(config.get(), "TelemetryDecoder", 1, 1);
+            std::shared_ptr<GNSSBlockInterface> tlm_ = block_factory::GetBlock(config.get(), "TelemetryDecoder", 1, 1);
             tlm_ch_vec.push_back(std::dynamic_pointer_cast<TelemetryDecoderInterface>(tlm_));
 
             // create null sinks for observables output
@@ -2308,7 +2311,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     for (auto& n : measured_obs_vec)
         {
             index = arma::find(n.col(0) > 0.0, 1, "last");
-            if ((!index.empty()) and index(0) < (nepoch - 1))
+            if ((!index.empty()) && index(0) < (nepoch - 1))
                 {
                     n.shed_rows(index(0) + 1, nepoch - 1);
                 }
@@ -2323,7 +2326,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
         {
             index = arma::find(measured_obs_vec.at(n).col(0) >= (measured_obs_vec.at(n)(0, 0) + initial_transitory_s), 1, "first");
-            if ((!index.empty()) and (index(0) > 0))
+            if ((!index.empty()) && (index(0) > 0))
                 {
                     measured_obs_vec.at(n).shed_rows(0, index(0));
                 }
@@ -2334,7 +2337,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
 #endif
                 {
                     index = arma::find(measured_obs_vec.at(n).col(0) >= true_obs_vec.at(n)(0, 0), 1, "first");
-                    if ((!index.empty()) and (index(0) > 0))
+                    if ((!index.empty()) && (index(0) > 0))
                         {
                             measured_obs_vec.at(n).shed_rows(0, index(0));
                         }
@@ -2387,7 +2390,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                                                 }
                                         }
                                 }
-                            if (sat1_ch_id != -1 and sat2_ch_id != -1)
+                            if (sat1_ch_id != -1 && sat2_ch_id != -1)
                                 {
                                     // compute single differences for the duplicated satellite
 
@@ -2436,7 +2439,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
             arma::vec receiver_time_offset_ref_channel_s;
             arma::uvec index2;
             index2 = arma::find(true_obs_vec.at(min_pr_ch_id).col(0) >= measured_obs_vec.at(min_pr_ch_id).col(0)(0), 1, "first");
-            if ((!index2.empty()) and (index2(0) > 0))
+            if ((!index2.empty()) && (index2(0) > 0))
                 {
                     receiver_time_offset_ref_channel_s = (true_obs_vec.at(min_pr_ch_id).col(1)(index2(0)) - measured_obs_vec.at(min_pr_ch_id).col(4)(0)) / SPEED_OF_LIGHT_M_S;
                     std::cout << "Ref. channel initial Receiver time offset " << receiver_time_offset_ref_channel_s(0) * 1e3 << " [ms]\n";
@@ -2504,9 +2507,9 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                                     // Do not compare E5a with E5 RINEX due to the Doppler frequency discrepancy caused by the different center frequencies
                                     // E5a_fc=1176.45e6, E5b_fc=1207.14e6, E5_fc=1191.795e6;
 #if USE_GLOG_AND_GFLAGS
-                                    if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 or FLAGS_compare_with_5X)
+                                    if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 || FLAGS_compare_with_5X)
 #else
-                                    if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 or absl::GetFlag(FLAGS_compare_with_5X))
+                                    if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 || absl::GetFlag(FLAGS_compare_with_5X))
 #endif
                                         {
                                             check_results_carrier_phase_double_diff(true_obs_vec.at(n),

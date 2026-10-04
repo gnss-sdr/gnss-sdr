@@ -38,7 +38,7 @@ class Has_Simple_Printer
 {
 public:
     explicit Has_Simple_Printer(const std::string& base_path = std::string("."), const std::string& filename = std::string("HAS_Messages"), bool time_tag_name = true);
-    ~Has_Simple_Printer();
+    ~Has_Simple_Printer() noexcept;
     bool print_message(const Galileo_HAS_data* const has_data);
 
 private:

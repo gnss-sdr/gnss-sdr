@@ -24,6 +24,7 @@
 #include "gnss_block_interface.h"
 #include <gnuradio/block.h>
 #include <pmt/pmt.h>
+#include <bitset>
 #include <cstddef>
 #include <cstdint>
 #include <fstream>
@@ -77,13 +78,25 @@ private:
         bool digital_io_enabled,
         double seconds_to_skip);
 
+    static std::vector<double> generate_mapping(int qua);
+    static void write_samples_from_bitset(const std::bitset<64> &bs, int bit_offset, int qua, gr_complex &out);
+    static void write_samples_ls4(uint64_t data_index, int out_index, int sample_count, int32_t qua, std::vector<uint64_t> &data, gr_complex *out_samples);
+    static void read_file_register_to_local_endian(std::ifstream &binary_input_file, uint64_t &read_register);
+    static bool are_equal_ignore_nonpositive(const std::vector<int32_t> &values);
+    static uint8_t as_u8(char value);
+    static uint16_t read_le_u16(const char *data);
+    static uint32_t read_le_u32(const char *data);
+
     std::string generate_filename();
 
     int parse_header();
     int read_ls3w_ini(const std::string &filename);
     int number_of_samples_per_ls3w_register() const;
+    int configure_ls4_output_parameters();
 
-    void decode_samples_one_channel(int16_t input_short, gr_complex *out, int type);
+    void decode_samples_one_channel(uint16_t input_word, gr_complex *out, int type);
+    void decode_samples_two_channels(uint16_t input_word, std::vector<gr_complex *> &out, std::size_t output_pointer) const;
+    void decode_samples_three_channels(uint32_t input_word, std::vector<gr_complex *> &out, std::size_t output_pointer) const;
     void decode_ls3w_register(uint64_t input, std::vector<gr_complex *> &out, std::size_t output_pointer) const;
     int parse_ls23_data(int noutput_items, std::vector<gr_complex *> out);
     int parse_ls3w_data(int noutput_items, std::vector<gr_complex *> out);
@@ -101,11 +114,11 @@ private:
     uint8_t d_bits_per_sample;
     bool d_header_parsed;
 
-    // Data members for Labsat 3 Wideband
+    // Data members for Labsat 3 Wideband and Labsat 4
     std::string d_ls3w_OSC;
     std::vector<int> d_ls3w_selected_channel_offset;
     int64_t d_ls3w_SMP{};
-    int32_t d_ls3w_QUA{};
+    int32_t d_sample_quantization_bits{};
     int32_t d_ls3w_CHN{};
     int32_t d_ls3w_SFT{};
     int d_ls3w_spare_bits{};

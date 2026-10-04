@@ -51,7 +51,7 @@ public:
     friend bool operator==(const Gnss_Satellite& /*sat1*/, const Gnss_Satellite& /*sat2*/);  //!< operator== for comparison
     friend std::ostream& operator<<(std::ostream& /*out*/, const Gnss_Satellite& /*sat*/);   //!< operator<< for pretty printing
 
-    void update_PRN(uint32_t PRN);                                      //!< Updates the PRN Number when information is decoded, only applies to GLONASS GNAV messages
+    void update_PRN(uint32_t PRN);                                      //!< Updates the PRN Number (and the corresponding block) when the slot number is decoded, only applies to GLONASS GNAV messages
     uint32_t get_PRN() const;                                           //!< Gets satellite's PRN
     int32_t get_rf_link() const;                                        //!< Gets the satellite's rf link
     std::string get_system() const;                                     //!< Gets the satellite system {"GPS", "Glonass", "SBAS", "Galileo", "Beidou", "QZSS"}
@@ -60,8 +60,6 @@ public:
     std::string what_block(const std::string& system_, uint32_t PRN_);  //!< Gets the block of a given satellite
 
 private:
-    const std::set<std::string> system_set = {"GPS", "Glonass", "SBAS", "Galileo", "Beidou", "QZSS"};
-    const std::map<std::string, std::string> satelliteSystem = {{"GPS", "G"}, {"Glonass", "R"}, {"SBAS", "S"}, {"Galileo", "E"}, {"Beidou", "C"}, {"QZSS", "J"}};
     void set_system(const std::string& system);  // Sets the satellite system {"GPS", "Glonass", "SBAS", "Galileo", "Beidou", "QZSS"}.
     void set_PRN(uint32_t PRN);                  // Sets satellite's PRN
     void set_block(const std::string& system_, uint32_t PRN_);

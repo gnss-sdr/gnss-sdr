@@ -21,8 +21,8 @@
 #include "gnss_sdr_flags.h"
 #include "gps_acq_assist.h"
 #include <gtest/gtest.h>
-#include <fstream>
 #include <iostream>
+#include <memory>
 #include <ostream>
 #include <string>
 
@@ -37,35 +37,12 @@ using namespace google;
 DECLARE_string(log_dir);
 #endif
 #else
+#include "gnss_sdr_log_sink.h"
 #include <absl/flags/flag.h>
 #include <absl/flags/parse.h>
 #include <absl/log/flags.h>
 #include <absl/log/initialize.h>
 #include <absl/log/log.h>
-#include <absl/log/log_sink.h>
-#include <absl/log/log_sink_registry.h>
-class TestLogSink : public absl::LogSink
-{
-public:
-    TestLogSink()
-    {
-        if (!absl::GetFlag(FLAGS_log_dir).empty())
-            {
-                logfile.open(absl::GetFlag(FLAGS_log_dir) + "/test.log");
-            }
-        else
-            {
-                logfile.open(GetTempDir() + "/test.log");
-            }
-    }
-    void Send(const absl::LogEntry &entry) override
-    {
-        logfile << entry.text_message_with_prefix_and_newline() << std::flush;
-    }
-
-private:
-    std::ofstream logfile;
-};
 #endif
 
 
@@ -74,43 +51,54 @@ Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 
-int main(int argc, char **argv)
-{
+int main(int argc, char** argv)
+try
+    {
 #if USE_GLOG_AND_GFLAGS
-    try
-        {
-            testing::InitGoogleTest(&argc, argv);
-            gflags::ParseCommandLineFlags(&argc, &argv, true);
-        }
-    catch (...)
-        {
-        }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
+        try
+            {
+                testing::InitGoogleTest(&argc, argv);
+                gflags::ParseCommandLineFlags(&argc, &argv, true);
+            }
+        catch (...)
+            {
+            }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
 #else
-    absl::ParseCommandLine(argc, argv);
-    try
-        {
-            testing::InitGoogleTest(&argc, argv);
-        }
-    catch (...)
-        {
-        }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
-    absl::LogSink *testLogSink = new TestLogSink;
-    absl::AddLogSink(testLogSink);
-    absl::InitializeLog();
+        GnssSdrLogSinkGuard log_sink;
+        absl::ParseCommandLine(argc, argv);
+        try
+            {
+                testing::InitGoogleTest(&argc, argv);
+            }
+        catch (...)
+            {
+            }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
+        absl::InitializeLog();
+        log_sink.Register(absl::GetFlag(FLAGS_log_dir), "test");
 #endif
-    int res = 0;
-    try
-        {
-            res = RUN_ALL_TESTS();
-        }
-    catch (...)
-        {
-            LOG(WARNING) << "Unexpected catch";
-        }
+        int res = 0;
+        try
+            {
+                res = RUN_ALL_TESTS();
+            }
+        catch (...)
+            {
+                LOG(WARNING) << "Unexpected catch";
+            }
 #if USE_GLOG_AND_GFLAGS
-    gflags::ShutDownCommandLineFlags();
+        gflags::ShutDownCommandLineFlags();
 #else
-    absl::FlushLogSinks();
+        log_sink.Shutdown();
 #endif
-    return res;
-}
+        return res;
+    }
+catch (const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+        return 1;
+    }
+catch (...)
+    {
+        std::cerr << "Unexpected error\n";
+        return 1;
+    }

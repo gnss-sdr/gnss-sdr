@@ -71,7 +71,7 @@ const int CODES_QZS[] = {
 
 
 const int CODES_BDS[] = {
-    CODE_L1I, CODE_L1Q, CODE_L1X, CODE_L7I, CODE_L7Q, CODE_L7X, CODE_L6I, CODE_L6Q,
+    CODE_L2I, CODE_L2Q, CODE_L2X, CODE_L7I, CODE_L7Q, CODE_L7X, CODE_L6I, CODE_L6Q,
     CODE_L6X};
 
 
@@ -129,7 +129,7 @@ int decode_type1012(rtcm_t *rtcm);
 
 int decode_type1013(rtcm_t *rtcm);
 
-int decode_type1019(rtcm_t *rtcm, bool pre_2009_file = false);
+int decode_type1019(rtcm_t *rtcm, int ref_week = 0);
 
 int decode_type1020(rtcm_t *rtcm);
 
@@ -167,7 +167,7 @@ int decode_type1038(rtcm_t *rtcm);
 
 int decode_type1039(rtcm_t *rtcm);
 
-int decode_type1044(rtcm_t *rtcm, bool pre_2009_file = false);
+int decode_type1044(rtcm_t *rtcm, int ref_week = 0);
 
 int decode_type1045(rtcm_t *rtcm);
 

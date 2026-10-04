@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           attributeFormDefault="unqualified" elementFormDefault="qualified">
+  <!-- SPDX-License-Identifier: BSD-3-Clause -->
+  <!-- SPDX-FileCopyrightText: 2026 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
+  <xs:include schemaLocation="common.xsd"/>
+  <xs:complexType name="GlonassGnavEphemerisType">
+    <xs:sequence>
+      <xs:element name="i_satellite_freq_channel" type="xs:int"/>
+      <xs:element name="PRN" type="xs:unsignedInt"/>
+      <xs:element name="i_satellite_slot_number" type="xs:unsignedInt"/>
+      <xs:element name="d_m" type="xs:double"/>
+      <xs:element name="d_t_k" type="xs:double"/>
+      <xs:element name="d_t_b" type="xs:double"/>
+      <xs:element name="d_M" type="xs:double"/>
+      <xs:element name="d_gamma_n" type="xs:double"/>
+      <xs:element name="d_tau_n" type="xs:double"/>
+      <xs:element name="d_Xn" type="xs:double"/>
+      <xs:element name="d_Yn" type="xs:double"/>
+      <xs:element name="d_Zn" type="xs:double"/>
+      <xs:element name="d_VXn" type="xs:double"/>
+      <xs:element name="d_VYn" type="xs:double"/>
+      <xs:element name="d_VZn" type="xs:double"/>
+      <xs:element name="d_AXn" type="xs:double"/>
+      <xs:element name="d_AYn" type="xs:double"/>
+      <xs:element name="d_AZn" type="xs:double"/>
+      <xs:element name="d_B_n" type="xs:double"/>
+      <xs:element name="d_P" type="xs:double"/>
+      <xs:element name="d_N_T" type="xs:double"/>
+      <xs:element name="d_F_T" type="xs:double"/>
+      <xs:element name="d_n" type="xs:double"/>
+      <xs:element name="d_Delta_tau_n" type="xs:double"/>
+      <xs:element name="d_E_n" type="xs:double"/>
+      <xs:element name="d_P_1" type="xs:double"/>
+      <xs:element name="d_P_2" type="xs:boolean"/>
+      <xs:element name="d_P_3" type="xs:boolean"/>
+      <xs:element name="d_P_4" type="xs:boolean"/>
+      <xs:element name="d_l3rd_n" type="xs:boolean"/>
+      <xs:element name="d_l5th_n" type="xs:boolean"/>
+      <xs:element name="d_kp_leap_correction_s" type="xs:double" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="boostObjectAttributes"/>
+  </xs:complexType>
+  <xs:complexType name="GlonassGnavEphemerisMapItemType">
+    <xs:sequence>
+      <xs:element name="first" type="xs:int"/>
+      <xs:element name="second" type="GlonassGnavEphemerisType"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="boostObjectAttributes"/>
+  </xs:complexType>
+  <xs:complexType name="GlonassGnavEphemerisMapType">
+    <xs:sequence>
+      <xs:element name="count" type="xs:nonNegativeInteger"/>
+      <xs:element name="item_version" type="xs:nonNegativeInteger"/>
+      <xs:element name="item" type="GlonassGnavEphemerisMapItemType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="boostObjectAttributes"/>
+  </xs:complexType>
+  <xs:element name="boost_serialization">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="GNSS-SDR_gnav_ephemeris_map" type="GlonassGnavEphemerisMapType"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="boostArchiveAttributes"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

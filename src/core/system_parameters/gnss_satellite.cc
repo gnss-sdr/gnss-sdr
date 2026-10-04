@@ -15,6 +15,9 @@
  */
 
 #include "gnss_satellite.h"
+#include "GLONASS_L1_L2_CA.h"
+#include "SBAS_L1.h"
+#include <stdexcept>
 #include <utility>
 
 #if USE_GLOG_AND_GFLAGS
@@ -22,6 +25,50 @@
 #else
 #include <absl/log/log.h>
 #endif
+
+
+static bool is_known_system(const std::string& system)
+{
+    static constexpr const char* valid_systems[] = {"GPS", "Glonass", "SBAS", "Galileo", "Beidou", "QZSS"};
+    for (const auto* valid_system : valid_systems)
+        {
+            if (system == valid_system)
+                {
+                    return true;
+                }
+        }
+    return false;
+}
+
+
+static const char* satellite_system_short_name(const std::string& system)
+{
+    if (system == "GPS")
+        {
+            return "G";
+        }
+    if (system == "Glonass")
+        {
+            return "R";
+        }
+    if (system == "SBAS")
+        {
+            return "S";
+        }
+    if (system == "Galileo")
+        {
+            return "E";
+        }
+    if (system == "Beidou")
+        {
+            return "C";
+        }
+    if (system == "QZSS")
+        {
+            return "J";
+        }
+    throw std::out_of_range("Satellite system is not defined");
+}
 
 
 Gnss_Satellite::Gnss_Satellite(const std::string& system_, uint32_t PRN_)
@@ -159,9 +206,7 @@ Gnss_Satellite& Gnss_Satellite::operator=(Gnss_Satellite&& other) noexcept
 void Gnss_Satellite::set_system(const std::string& system_)
 {
     // Set the satellite system {"GPS", "Glonass", "SBAS", "Galileo", "Beidou", "QZSS"}
-    auto it = system_set.find(system_);
-
-    if (it != system_set.cend())
+    if (is_known_system(system_))
         {
             system = system_;
         }
@@ -178,21 +223,15 @@ void Gnss_Satellite::update_PRN(uint32_t PRN_)
     if (system != "Glonass")
         {
             DLOG(INFO) << "Trying to update PRN for not GLONASS system";
-            PRN = 0;
+            return;
         }
-    else
+    if (PRN_ < 1 || GLONASS_PRN.find(PRN_) == GLONASS_PRN.cend())
         {
-            if (PRN_ < 1 or PRN_ > 24)
-                {
-                    DLOG(INFO) << "This PRN is not defined";
-                    // Adjusting for PRN 26, now used in
-                    PRN = PRN_;
-                }
-            else
-                {
-                    PRN = PRN_;
-                }
+            DLOG(INFO) << "This GLONASS slot number is not defined";
+            return;
         }
+    PRN = PRN_;
+    set_block(system, PRN_);
 }
 
 
@@ -206,7 +245,7 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     if (system == "GPS")
         {
-            if (PRN_ < 1 or PRN_ > 32)
+            if (PRN_ < 1 || PRN_ > 32)
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
@@ -218,9 +257,9 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     else if (system == "Glonass")
         {
-            if (PRN_ < 1 or PRN_ > 24)
+            if (PRN_ == 0 || GLONASS_PRN.find(PRN_) == GLONASS_PRN.cend())
                 {
-                    DLOG(INFO) << "This PRN is not defined";
+                    DLOG(INFO) << "This GLONASS slot/frequency channel is not configured";
                     PRN = 0;
                 }
             else
@@ -230,24 +269,23 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     else if (system == "SBAS")
         {
-            if ((PRN_ == 120)      // EGNOS Test Platform.Inmarsat 3-F2 (Atlantic Ocean Region-East)
-                || (PRN_ == 123)   // EGNOS Operational Platform. Astra 5B
-                || (PRN_ == 131)   // WAAS Eutelsat 117 West B
-                || (PRN_ == 135)   // WAAS Galaxy 15
-                || (PRN_ == 136)   // EGNOS Operational Platform. SES-5 (a.k.a. Sirius 5 or Astra 4B)
-                || (PRN_ == 138))  // WAAS Anik F1R
-                {
-                    PRN = PRN_;
-                }
-            else
+            // SBAS PRN assignments (RTCA DO-229, Table A-1) are reassigned between
+            // satellites over time, so no specific PRN-to-satellite mapping is
+            // hardcoded here. Any PRN within the supported range is accepted;
+            // see SBAS_L1_PRN_MIN/SBAS_L1_PRN_MAX for the currently supported range.
+            if (PRN_ < SBAS_L1_PRN_MIN || PRN_ > SBAS_L1_PRN_MAX)
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
                 }
+            else
+                {
+                    PRN = PRN_;
+                }
         }
     else if (system == "Galileo")
         {
-            if (PRN_ < 1 or PRN_ > 36)
+            if (PRN_ < 1 || PRN_ > 36)
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
@@ -259,7 +297,7 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     else if (system == "Beidou")
         {
-            if (PRN_ < 1 or PRN_ > 63)
+            if (PRN_ < 1 || PRN_ > 63)
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
@@ -271,7 +309,7 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     else if (system == "QZSS")
         {
-            if (PRN_ < 193 or PRN_ > 201)
+            if (PRN_ < 193 || PRN_ > 206)
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
@@ -323,7 +361,7 @@ std::string Gnss_Satellite::get_system() const
 std::string Gnss_Satellite::get_system_short() const
 {
     // Get the satellite system {"G", "R", "S", "E", "C", "J"}
-    return satelliteSystem.at(system);
+    return satellite_system_short_name(system);
 }
 
 
@@ -446,135 +484,19 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
 
     if (system_ == "Glonass")
         {
-            // Info from http://www.sdcm.ru/smglo/grupglo?version=eng&site=extern
-            // See also https://www.glonass-iac.ru/en/GLONASS/
-            switch (PRN_)
+            const auto freq_channel = GLONASS_PRN.find(PRN_);
+            if (freq_channel != GLONASS_PRN.cend())
                 {
-                case 1:
-                    block_ = std::string("1");  // Plane 1
-                    rf_link = 1;
-                    break;
-                case 2:
-                    block_ = std::string("-4");  // Plane 1
-                    rf_link = -4;
-                    break;
-                case 3:
-                    block_ = std::string("5");  // Plane 1
-                    rf_link = 5;
-                    break;
-                case 4:
-                    block_ = std::string("6");  // Plane 1
-                    rf_link = 6;
-                    break;
-                case 5:
-                    block_ = std::string("1");  // Plane 1
-                    rf_link = 1;
-                    break;
-                case 6:
-                    block_ = std::string("-4");  // Plane 1
-                    rf_link = -4;
-                    break;
-                case 7:
-                    block_ = std::string("5");  // Plane 1
-                    rf_link = 5;
-                    break;
-                case 8:
-                    block_ = std::string("6");  // Plane 1
-                    rf_link = 6;
-                    break;
-                case 9:
-                    block_ = std::string("-2");  // Plane 2
-                    rf_link = -2;
-                    break;
-                case 10:
-                    block_ = std::string("-7");  // Plane 2
-                    rf_link = -7;
-                    break;
-                case 11:
-                    block_ = std::string("0");  // Plane 2
-                    rf_link = 0;
-                    break;
-                case 12:
-                    block_ = std::string("-1");  // Plane 2
-                    rf_link = -1;
-                    break;
-                case 13:
-                    block_ = std::string("-2");  // Plane 2
-                    rf_link = -2;
-                    break;
-                case 14:
-                    block_ = std::string("-7");  // Plane 2
-                    rf_link = -7;
-                    break;
-                case 15:
-                    block_ = std::string("0");  // Plane 2
-                    rf_link = 0;
-                    break;
-                case 16:
-                    block_ = std::string("-1");  // Plane 2
-                    rf_link = -1;
-                    break;
-                case 17:
-                    block_ = std::string("4");  // Plane 3
-                    rf_link = 4;
-                    break;
-                case 18:
-                    block_ = std::string("-3");  // Plane 3
-                    rf_link = -3;
-                    break;
-                case 19:
-                    block_ = std::string("3");  // Plane 3
-                    rf_link = 3;
-                    break;
-                case 20:
-                    block_ = std::string("2");  // Plane 3
-                    rf_link = 2;
-                    break;
-                case 21:
-                    block_ = std::string("4");  // Plane 3
-                    rf_link = 4;
-                    break;
-                case 22:
-                    block_ = std::string("-3");  // Plane 3
-                    rf_link = -3;
-                    break;
-                case 23:
-                    block_ = std::string("3");  // Plane 3
-                    rf_link = 3;
-                    break;
-                case 24:
-                    block_ = std::string("2");  // Plane 3
-                    rf_link = 2;
-                    break;
-                default:
-                    block_ = std::string("Unknown");
+                    rf_link = freq_channel->second;
+                    block_ = std::to_string(freq_channel->second);
                 }
         }
     if (system_ == "SBAS")
         {
-            switch (PRN_)
-                {
-                case 120:
-                    block_ = std::string("EGNOS Test Platform");  // Inmarsat 3-F2 (Atlantic Ocean Region-East)
-                    break;
-                case 123:
-                    block_ = std::string("EGNOS");  // EGNOS Operational Platform. Astra 5B
-                    break;
-                case 131:                          // NOLINT(bugprone-branch-clone)
-                    block_ = std::string("WAAS");  // WAAS Eutelsat 117 West B
-                    break;
-                case 135:
-                    block_ = std::string("WAAS");  // WAAS Galaxy 15
-                    break;
-                case 136:
-                    block_ = std::string("EGNOS");  // EGNOS Operational Platform. SES-5 (a.k.a. Sirius 5 or Astra 4B)
-                    break;
-                case 138:
-                    block_ = std::string("WAAS");  // WAAS Anik F1R
-                    break;
-                default:
-                    block_ = std::string("Unknown");
-                }
+            // Which augmentation service (EGNOS, WAAS, GAGAN, ...) owns a given PRN
+            // changes over time as satellites are reassigned, so no per-PRN service
+            // name is hardcoded here to avoid publishing stale information.
+            block_ = std::string("SBAS");
         }
     if (system_ == "Galileo")
         {
@@ -659,6 +581,9 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                 case 27:
                     block_ = std::string("FOC-FM17");  // Galileo Full Operational Capability (FOC) satellite FM17 / GSAT0217, launched on Dec. 12, 2017.
                     break;
+                case 28:
+                    block_ = std::string("FOC-FM33");  // Galileo Full Operational Capability (FOC) satellite FM33 / GSAT0233, launched on Dec. 17, 2025.
+                    break;
                 case 29:
                     block_ = std::string("FOC-FM25");  // Galileo Full Operational Capability (FOC) satellite FM25 / GSAT0225, launched on Apr. 28, 2024.
                     break;
@@ -667,6 +592,9 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                     break;
                 case 31:
                     block_ = std::string("FOC-FM18");  // Galileo Full Operational Capability (FOC) satellite FM18 / GSAT0218, launched on Dec. 12, 2017.
+                    break;
+                case 32:
+                    block_ = std::string("FOC-FM34");  // Galileo Full Operational Capability (FOC) satellite FM34 / GSAT0234, launched on Dec. 17, 2025.
                     break;
                 case 33:
                     block_ = std::string("FOC-FM22");  // Galileo Full Operational Capability (FOC) satellite FM22 / GSAT0222, launched on Jul. 25, 2018.
@@ -683,148 +611,125 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
         }
     if (system_ == "Beidou")
         {
-            // Check https://en.wikipedia.org/wiki/List_of_BeiDou_satellites
+            // Post-upgrade allocation announced by CSNO on 2026-03-20:
+            // http://www.beidou.gov.cn/yw/xwzx/202603/t20260320_29266.html
+            // These display labels describe that allocation, not historical recordings.
+            // Signal processing must not infer orbit type or signal availability from them.
             switch (PRN_)
                 {
                 case 1:
-                    block_ = std::string("BeiDou-2 GEO01*");  // GEO 140.0°E; launched 2010/01/16 (Retired)
+                    block_ = std::string("BeiDou-3 GEO04");  // Former PRN 62; GEO 140.0 E
                     break;
                 case 2:
-                    block_ = std::string("BeiDou-2 GEO06");  // GEO 80°E; launched 2012/10/25
+                    block_ = std::string("BeiDou-3 GEO02");  // Former PRN 60; GEO 80 E
                     break;
                 case 3:
-                    block_ = std::string("BeiDou-2 GEO07");  // GEO 110.5°E; launched 2016/06/12
+                    block_ = std::string("BeiDou-3 GEO03");  // Former PRN 61; GEO 110.5 E
                     break;
                 case 4:
-                    block_ = std::string("BeiDou-2 GEO04");  // GEO 160.0°E; launched 2010/10/31
-                    break;
-                case 5:
-                    block_ = std::string("BeiDou-2 GEO05");  // GEO 58.75°E; launched 2012/02/24
+                    block_ = std::string("BeiDou-3 GEO01");  // Former PRN 59; GEO 160 E
                     break;
                 case 6:
-                    block_ = std::string("BeiDou-2 IGSO01");  // 55° inclination IGSO 118°E; launched 2010/07/31
+                    block_ = std::string("BeiDou-3 IGSO01");  // Former PRN 38
                     break;
                 case 7:
-                    block_ = std::string("BeiDou-2 IGSO02");  // 55° inclination IGSO 118°E; launched 2010/12/17
+                    block_ = std::string("BeiDou-3 IGSO02");  // Former PRN 39
                     break;
                 case 8:
-                    block_ = std::string("BeiDou-2 IGSO03");  // 55° inclination IGSO 118°E; launched 2011/04/09
+                    block_ = std::string("BeiDou-3 IGSO03");  // Former PRN 40
                     break;
                 case 9:
-                    block_ = std::string("BeiDou-2 IGSO04");  // 55° inclination IGSO 95°E; launched 2011/07/27
+                    block_ = std::string("BeiDou-2 IGSO06");  // Former PRN 13
                     break;
                 case 10:
-                    block_ = std::string("BeiDou-2 IGSO05");  // 55° inclination IGSO 118°E; launched 2011/12/01
+                    block_ = std::string("BeiDou-2 IGSO07");  // Former PRN 16
                     break;
                 case 11:
-                    block_ = std::string("BeiDou-2 MEO03*");  // Slot A07; launched 2012/04/29 (Retired)
+                    block_ = std::string("BeiDou-3 MEO25");  // Former PRN 47
                     break;
                 case 12:
-                    block_ = std::string("BeiDou-2 MEO04*");  // Slot A08; launched 2012/04/29 (Retired)
+                    block_ = std::string("BeiDou-3 MEO26");  // Former PRN 48
                     break;
                 case 13:
-                    block_ = std::string("BeiDou-2 IGSO06");  // launched 2016/03/30
+                    block_ = std::string("BeiDou-3 MEO27");  // Former PRN 49; PRN 13 now identifies a MEO satellite
                     break;
                 case 14:
-                    block_ = std::string("BeiDou-2 MEO06*");  // launched 2012/09/19 (Retired)
-                    break;
-                case 16:
-                    block_ = std::string("BeiDou-2 IGSO07");  // launched 2018/07/10
-                    break;
-                case 18:
-                    block_ = std::string("BeiDou-3 GEOG8");  // launched 2019/05/17
+                    block_ = std::string("BeiDou-3 MEO28");  // Former PRN 50
                     break;
                 case 19:
-                    block_ = std::string("BeiDou-3 MEO01");  // Slot B07; launched 2017/11/05
+                    block_ = std::string("BeiDou-3 MEO01");
                     break;
                 case 20:
-                    block_ = std::string("BeiDou-3 MEO02");  // Slot B05; launched 2017/11/05
+                    block_ = std::string("BeiDou-3 MEO02");
                     break;
                 case 21:
-                    block_ = std::string("BeiDou-3 MEO03");  // Slot B0?; launched 2018/02/12
+                    block_ = std::string("BeiDou-3 MEO03");
                     break;
                 case 22:
-                    block_ = std::string("BeiDou-3 MEO04");  // Slot B06; launched 2018/02/12
+                    block_ = std::string("BeiDou-3 MEO04");
                     break;
                 case 23:
-                    block_ = std::string("BeiDou-3 MEO05");  // Slot C07; launched 2018/07/29
+                    block_ = std::string("BeiDou-3 MEO05");
                     break;
                 case 24:
-                    block_ = std::string("BeiDou-3 MEO06");  // Slot C01; launched 2018/07/29
+                    block_ = std::string("BeiDou-3 MEO06");
                     break;
                 case 25:
-                    block_ = std::string("BeiDou-3 MEO11");  // Slot C08; launched 2018/08/24
+                    block_ = std::string("BeiDou-3 MEO11");
                     break;
                 case 26:
-                    block_ = std::string("BeiDou-3 MEO12");  // Slot C02; launched 2018/08/24
+                    block_ = std::string("BeiDou-3 MEO12");
                     break;
                 case 27:
-                    block_ = std::string("BeiDou-3 3M3");  // Slot A04; launched 2018/01/11
+                    block_ = std::string("BeiDou-3 MEO07");
                     break;
                 case 28:
-                    block_ = std::string("BeiDou-3 3M4");  // Slot A05; launched 2018/01/11
+                    block_ = std::string("BeiDou-3 MEO08");
                     break;
                 case 29:
-                    block_ = std::string("BeiDou-3 3M7");  // Slot A02; launched 2018/03/29
+                    block_ = std::string("BeiDou-3 MEO09");
                     break;
                 case 30:
-                    block_ = std::string("BeiDou-3 3M8");  // Slot A03; launched 2018/03/29
+                    block_ = std::string("BeiDou-3 MEO10");
+                    break;
+                case 31:
+                    block_ = std::string("BeiDou-3 MEO22");  // Former PRN 44
                     break;
                 case 32:
-                    block_ = std::string("BeiDou-3 MEO13");  // Slot B01; launched 2018/09/19
+                    block_ = std::string("BeiDou-3 MEO13");
                     break;
                 case 33:
-                    block_ = std::string("BeiDou-3 MEO14");  // Slot B03; launched 2018/09/19
+                    block_ = std::string("BeiDou-3 MEO14");
                     break;
                 case 34:
-                    block_ = std::string("BeiDou-3 MEO15");  // Slot B03; launched 2018/10/15
+                    block_ = std::string("BeiDou-3 MEO15");
                     break;
                 case 35:
-                    block_ = std::string("BeiDou-3 MEO16");  // Slot B03; launched 2018/10/15
+                    block_ = std::string("BeiDou-3 MEO16");
                     break;
                 case 36:
-                    block_ = std::string("BeiDou-3 MEO17");  // Slot B03; launched 2018/11/18
+                    block_ = std::string("BeiDou-3 MEO17");
                     break;
                 case 37:
-                    block_ = std::string("BeiDou-3 MEO18");  // Slot B03; launched 2018/11/18
+                    block_ = std::string("BeiDou-3 MEO18");
                     break;
                 case 38:
-                    block_ = std::string("BeiDou-3 IGSOI1");  // launched 2019/04/20
+                    block_ = std::string("BeiDou-3 MEO21");  // Former PRN 43
                     break;
                 case 39:
-                    block_ = std::string("BeiDou-3 IGSOI2");  // launched 2019/04/20
+                    block_ = std::string("BeiDou-3 MEO23");  // Former PRN 45
                     break;
                 case 40:
-                    block_ = std::string("BeiDou-3 IGSOI3");  // launched 2019/11/04
+                    block_ = std::string("BeiDou-3 MEO24");  // Former PRN 46
                     break;
                 case 41:
-                    block_ = std::string("BeiDou-3 MEO19");  // Slot B02, launched 2019/12/16
+                    block_ = std::string("BeiDou-3 MEO19");
                     break;
                 case 42:
-                    block_ = std::string("BeiDou-3 MEO20");  // Slot B04, launched 2019/12/16
-                    break;
-                case 43:
-                    block_ = std::string("BeiDou-3 MEO21");  // Slot A06, launched 2019/11/23
-                    break;
-                case 44:
-                    block_ = std::string("BeiDou-3 MEO22");  // Slot A08, launched 2019/11/23
-                    break;
-                case 45:
-                    block_ = std::string("BeiDou-3 MEO23");  // Slot C03, launched 2019/09/22
-                    break;
-                case 46:
-                    block_ = std::string("BeiDou-3 MEO24");  // Slot C05, launched 2019/09/22
-                    break;
-                case 59:
-                    block_ = std::string("BeiDou-3 GEOG1");  // launched 2018/11/01
-                    break;
-                case 60:
-                    block_ = std::string("BeiDou-3 GEOG2");  // launched 2020/03/20
-                    break;
-                case 61:
-                    block_ = std::string("BeiDou-3 GEOG3");  // launched 2020/06/2023
+                    block_ = std::string("BeiDou-3 MEO20");
                     break;
                 default:
+                    // PRNs 5 and 15-18 are reserved; 43-63 are not in this allocation.
                     block_ = std::string("Unknown");
                 }
         }

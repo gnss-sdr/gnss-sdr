@@ -29,7 +29,7 @@ TEST(Serdes_Monitor_Pvt_Test, Simpletest)
     std::string serialized_data = serdes.createProtobuffer(monitor.get());
 
     gnss_sdr::MonitorPvt mon;
-    mon.ParseFromString(serialized_data);
+    ASSERT_TRUE(mon.ParseFromString(serialized_data));
     double read_latitude = mon.latitude();
     EXPECT_NEAR(true_latitude, read_latitude, 0.000001);
 }
@@ -40,12 +40,14 @@ TEST(Serdes_Monitor_Pvt_Test, GalileoEphemerisSerdes)
     auto eph = std::make_shared<Galileo_Ephemeris>();
     int true_tow = 12345;
     eph->tow = true_tow;
+    eph->nav_message_type = Galileo_Nav_Message_Type::FNAV;
+    eph->nav_message_source = Galileo_Nav_Message_Source::E5a;
 
     Serdes_Galileo_Eph gal_serdes = Serdes_Galileo_Eph();
     std::string serialized_data = gal_serdes.createProtobuffer(std::move(eph));
 
     gnss_sdr::GalileoEphemeris ephgal;
-    ephgal.ParseFromString(serialized_data);
+    ASSERT_TRUE(ephgal.ParseFromString(serialized_data));
 
     double true_delta_n = 0.33;
     ephgal.set_delta_n(true_delta_n);
@@ -61,4 +63,6 @@ TEST(Serdes_Monitor_Pvt_Test, GalileoEphemerisSerdes)
     int read2_tow = eph2.tow;
     EXPECT_EQ(true_tow, read2_tow);
     EXPECT_NEAR(true_delta_n, read2_delta_n, 0.000001);
+    EXPECT_EQ(Galileo_Nav_Message_Type::FNAV, eph2.nav_message_type);
+    EXPECT_EQ(Galileo_Nav_Message_Source::E5a, eph2.nav_message_source);
 }

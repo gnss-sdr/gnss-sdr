@@ -23,6 +23,12 @@
 #include <iostream>
 #include <vector>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
+
 
 int save_tlm_matfile(const std::string &dumpfile)
 {
@@ -120,4 +126,40 @@ bool tlm_remove_file(const std::string &file_to_remove)
 {
     errorlib::error_code ec;
     return fs::remove(fs::path(file_to_remove), ec);
+}
+
+
+void tlm_cleanup_and_save_files(std::ofstream &dump_file, const std::string &dump_filename, bool dump, bool dump_mat, bool remove_dat)
+{
+    size_t pos = 0;
+    if (dump_file.is_open() == true)
+        {
+            pos = dump_file.tellp();
+            try
+                {
+                    dump_file.close();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Exception closing dump file " << ex.what();
+                }
+            if (pos == 0)
+                {
+                    if (!tlm_remove_file(dump_filename))
+                        {
+                            LOG(WARNING) << "Error deleting temporary file";
+                        }
+                }
+        }
+    if (dump && (pos != 0) && dump_mat)
+        {
+            save_tlm_matfile(dump_filename);
+            if (remove_dat)
+                {
+                    if (!tlm_remove_file(dump_filename))
+                        {
+                            LOG(WARNING) << "Error deleting temporary file";
+                        }
+                }
+        }
 }

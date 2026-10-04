@@ -4,13 +4,16 @@
 # SPDX-FileCopyrightText: 2021 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
-cmake_minimum_required(VERSION 3.9...4.3)
+cmake_minimum_required(VERSION 3.9...4.4)
 project(nav-msg-listener CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 
 set(NAVLISTENER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}) # allows this to be a sub-project
 set(NAVLISTENER_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
+
+# Standard GNU installation directories (this tool can be built standalone)
+include(GNUInstallDirs)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     # Workaround for Macports
@@ -53,7 +56,7 @@ else()
 endif()
 
 find_package(Protobuf REQUIRED)
-if(${Protobuf_VERSION} VERSION_LESS "3.0.0")
+if("${Protobuf_VERSION}" VERSION_LESS "3.0.0")
     message(FATAL_ERROR "Fatal error: Protocol Buffers >= v3.0.0 required.")
 endif()
 
@@ -85,7 +88,7 @@ add_executable(nav_msg_listener ${NAVLISTENER_SOURCE_DIR}/main.cc)
 target_link_libraries(nav_msg_listener PUBLIC navmsg_lib)
 
 install(TARGETS nav_msg_listener
-    RUNTIME DESTINATION bin
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     COMPONENT "nav_msg_listener"
 )
 

@@ -18,6 +18,7 @@
 #ifndef GNSS_SDR_GALILEO_HAS_PAGE_H
 #define GNSS_SDR_GALILEO_HAS_PAGE_H
 
+#include "Galileo_CNAV.h"  // for GALILEO_HAS_INVALID_TOW, GALILEO_HAS_INVALID_WEEK
 #include <cstdint>
 #include <string>
 
@@ -37,9 +38,10 @@ class Galileo_HAS_page
 public:
     Galileo_HAS_page() = default;
 
-    std::string has_message_string;  //!< HAS message content
-    uint64_t time_stamp{};           //!< HAS page time stamp, in [s]
-    uint32_t tow{};                  //!< HAS page time of week, in [s]
+    std::string has_message_string;           //!< HAS message content
+    uint64_t time_stamp{};                    //!< HAS page time stamp, in [s]
+    uint32_t week{GALILEO_HAS_INVALID_WEEK};  //!< HAS page Galileo week number
+    uint32_t tow{GALILEO_HAS_INVALID_TOW};    //!< HAS page time of week, in [s]
 
     // HAS page header
     uint8_t has_status{};       //!< HAS status

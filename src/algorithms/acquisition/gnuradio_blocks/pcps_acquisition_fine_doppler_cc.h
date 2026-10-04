@@ -163,6 +163,7 @@ private:
     float compute_CAF();
     void reset_grid();
     void update_carrier_wipeoff();
+    void update_fine_doppler_freq_bins();
     bool start() override;
 
     arma::fmat grid_;
@@ -185,6 +186,10 @@ private:
     int d_well_count;
     int d_n_samples_in_buffer;
     const int d_fft_size;
+    const int d_fine_doppler_zero_padding_factor;
+    const int d_fine_doppler_prn_replicas;
+    const int d_fine_doppler_signal_samples;
+    const int d_fine_doppler_fft_size;
     int d_gnuradio_forecast_samples;
     unsigned int d_channel;
     unsigned int d_dump_channel;
@@ -195,12 +200,16 @@ private:
     std::weak_ptr<ChannelFsm> d_channel_fsm;
     std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
     std::unique_ptr<gnss_fft_complex_rev> d_ifft;
+    std::unique_ptr<gnss_fft_complex_fwd> d_fine_doppler_fft;
 
     volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
     volk_gnsssdr::vector<volk_gnsssdr::vector<float>> d_grid_data;
     volk_gnsssdr::vector<gr_complex> d_fft_codes;
     volk_gnsssdr::vector<gr_complex> d_10_ms_buffer;
     volk_gnsssdr::vector<float> d_magnitude;
+    volk_gnsssdr::vector<gr_complex> d_fine_doppler_code_replica;
+    volk_gnsssdr::vector<float> d_fine_doppler_magnitude;
+    volk_gnsssdr::vector<float> d_fine_doppler_freq_bins;
 };
 
 

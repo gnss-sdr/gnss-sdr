@@ -91,14 +91,16 @@ if(USE_CPU_FEATURES)
 else()
     set(VOLK_GNSSSSDR_ARCHS_XML_FILE "archs_old.xml")
 endif()
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/gen)
 configure_file(${PROJECT_SOURCE_DIR}/gen/volk_gnsssdr_arch_defs.py.in
-    ${PROJECT_SOURCE_DIR}/gen/volk_gnsssdr_arch_defs.py
+    ${PROJECT_BINARY_DIR}/gen/volk_gnsssdr_arch_defs.py
     @ONLY
 )
 
 execute_process(
     COMMAND ${PYTHON_EXECUTABLE} ${PYTHON_DASH_B}
     ${PROJECT_SOURCE_DIR}/gen/volk_gnsssdr_compile_utils.py
+    --generated-python-dir ${PROJECT_BINARY_DIR}/gen
     --mode "arch_flags" --compiler "${COMPILER_NAME}"
     OUTPUT_VARIABLE arch_flag_lines OUTPUT_STRIP_TRAILING_WHITESPACE
 )
@@ -320,6 +322,7 @@ message(STATUS "Available architectures: ${available_archs}")
 execute_process(
     COMMAND ${PYTHON_EXECUTABLE} ${PYTHON_DASH_B}
     ${PROJECT_SOURCE_DIR}/gen/volk_gnsssdr_compile_utils.py
+    --generated-python-dir ${PROJECT_BINARY_DIR}/gen
     --mode "machines" --archs "${available_archs}"
     OUTPUT_VARIABLE available_machines OUTPUT_STRIP_TRAILING_WHITESPACE
 )
@@ -359,6 +362,8 @@ else()
 endif()
 list(SORT xml_files)
 file(GLOB py_files ${PROJECT_SOURCE_DIR}/gen/*.py)
+list(REMOVE_ITEM py_files ${PROJECT_SOURCE_DIR}/gen/volk_gnsssdr_arch_defs.py)
+list(APPEND py_files ${PROJECT_BINARY_DIR}/gen/volk_gnsssdr_arch_defs.py)
 list(SORT py_files)
 file(GLOB h_files ${PROJECT_SOURCE_DIR}/kernels/volk_gnsssdr/*.h)
 list(SORT h_files)
@@ -370,6 +375,7 @@ macro(gen_template tmpl output)
         DEPENDS ${xml_files} ${py_files} ${h_files} ${tmpl}
         COMMAND ${PYTHON_EXECUTABLE} ${PYTHON_DASH_B}
         ${PROJECT_SOURCE_DIR}/gen/volk_gnsssdr_tmpl_utils.py
+        --generated-python-dir ${PROJECT_BINARY_DIR}/gen
         --input ${tmpl} --output ${output} ${ARGN}
     )
 endmacro()
@@ -429,6 +435,7 @@ foreach(machine_name ${available_machines})
     execute_process(
         COMMAND ${PYTHON_EXECUTABLE} ${PYTHON_DASH_B}
         ${PROJECT_SOURCE_DIR}/gen/volk_gnsssdr_compile_utils.py
+        --generated-python-dir ${PROJECT_BINARY_DIR}/gen
         --mode "machine_flags" --machine "${machine_name}" --compiler "${COMPILER_NAME}"
         OUTPUT_VARIABLE ${machine_name}_flags OUTPUT_STRIP_TRAILING_WHITESPACE
     )

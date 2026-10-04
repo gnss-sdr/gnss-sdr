@@ -12,6 +12,7 @@ set(SYSTEM_PARAMETERS_SOURCES
     gnss_signal.cc
     gps_navigation_message.cc
     gps_ephemeris.cc
+    gps_week_rollover.cc
     galileo_utc_model.cc
     galileo_ephemeris.cc
     galileo_almanac_helper.cc
@@ -23,8 +24,16 @@ set(SYSTEM_PARAMETERS_SOURCES
     galileo_reduced_ced.cc
     beidou_dnav_navigation_message.cc
     beidou_dnav_ephemeris.cc
+    beidou_cnav1_navigation_message.cc
+    beidou_cnav1_ldpc.cc
+    beidou_cnav2_navigation_message.cc
+    beidou_cnav2_ldpc.cc
+    beidou_ldpc.cc
+    beidou_bdgim.cc
+    Beidou_B1C_codes.cc
     sbas_ephemeris.cc
     gps_cnav_navigation_message.cc
+    glonass_gnav_almanac.cc
     glonass_gnav_ephemeris.cc
     glonass_gnav_utc_model.cc
     glonass_gnav_navigation_message.cc
@@ -43,6 +52,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     gps_iono.h
     gps_almanac.h
     gps_utc_model.h
+    gps_week_rollover.h
     gps_acq_assist.h
     agnss_ref_time.h
     agnss_ref_location.h
@@ -61,7 +71,9 @@ set(SYSTEM_PARAMETERS_HEADERS
     galileo_ism.h
     galileo_reduced_ced.h
     sbas_ephemeris.h
+    sbas_raw_message.h
     gps_cnav_ephemeris.h
+    gps_cnav_eop.h
     gps_cnav_navigation_message.h
     gps_cnav_iono.h
     gps_cnav_utc_model.h
@@ -70,6 +82,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     glonass_gnav_utc_model.h
     glonass_gnav_navigation_message.h
     beidou_dnav_navigation_message.h
+    beidou_dnav_differential_corrections.h
     beidou_dnav_ephemeris.h
     beidou_dnav_iono.h
     beidou_dnav_almanac.h
@@ -88,7 +101,22 @@ set(SYSTEM_PARAMETERS_HEADERS
     GPS_L2C.h
     GPS_L5.h
     Beidou_B1I.h
+    Beidou_B1C.h
+    Beidou_B1C_codes.h
+    Beidou_B1C_prn.h
+    Beidou_CNAV1.h
+    beidou_cnav1_ldpc.h
+    beidou_cnav1_ephemeris.h
+    beidou_cnav1_navigation_message.h
+    beidou_cnav1_iono.h
+    beidou_cnav1_utc_model.h
+    beidou_cnav2_navigation_message.h
+    beidou_cnav2_ldpc.h
+    beidou_ldpc.h
+    beidou_bdgim.h
+    Beidou_B2a.h
     Beidou_B3I.h
+    Beidou_CNAV2.h
     Beidou_DNAV.h
     MATH_CONSTANTS.h
     reed_solomon.h
@@ -98,6 +126,12 @@ set(SYSTEM_PARAMETERS_HEADERS
     osnma_dsm_reader.h
     tow_to_trk.h
     qzss.h
+    qzss_cnav_eop.h
+    qzss_cnav_iono.h
+    qzss_cnav_utc_model.h
+    qzss_iono.h
+    qzss_utc_model.h
+    signal_flag.h
 )
 
 list(SORT SYSTEM_PARAMETERS_HEADERS)

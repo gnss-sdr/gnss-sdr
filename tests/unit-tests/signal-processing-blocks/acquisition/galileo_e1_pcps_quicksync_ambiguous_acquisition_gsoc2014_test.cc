@@ -17,8 +17,8 @@
  */
 
 
+#include "acquisition_interface.h"
 #include "fir_filter.h"
-#include "galileo_e1_pcps_quicksync_ambiguous_acquisition.h"
 #include "gen_signal_source.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
@@ -31,6 +31,7 @@
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/top_block.h>
+#include <gtest/gtest.h>
 #include <pmt/pmt.h>
 #include <chrono>
 #include <cstdint>
@@ -39,20 +40,24 @@
 #include <stdexcept>
 #include <thread>
 #include <utility>
+
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
 #else
 #include <absl/log/log.h>
 #endif
+
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind/bind.hpp>
 #endif
+
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
+
 #if PMT_USES_BOOST_ANY
 namespace wht = boost;
 #else
@@ -138,7 +143,6 @@ class GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test : public ::testing:
 protected:
     GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test()
     {
-        factory = std::make_shared<GNSSBlockFactory>();
         item_size = sizeof(gr_complex);
         stop = false;
         message = 0;
@@ -159,8 +163,7 @@ protected:
     Concurrent_Queue<int> channel_internal_queue;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
-    std::shared_ptr<GalileoE1PcpsQuickSyncAmbiguousAcquisition> acquisition;
-    std::shared_ptr<GNSSBlockFactory> factory;
+    std::unique_ptr<AcquisitionInterface> acquisition;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
@@ -499,8 +502,6 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::wait_message()
 
     while (!stop)
         {
-            acquisition->reset();
-
             begin = std::chrono::system_clock::now();
 
             channel_internal_queue.wait_and_pop(message);
@@ -511,6 +512,11 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::wait_message()
             mean_acq_time_us += elapsed_seconds.count() * 1e6;
 
             process_message();
+
+            if (!stop)
+                {
+                    acquisition->reset();  // arm the next realization
+                }
         }
 }
 
@@ -575,8 +581,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::stop_queue()
 TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, Instantiate)
 {
     config_1();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
-    acquisition = std::dynamic_pointer_cast<GalileoE1PcpsQuickSyncAmbiguousAcquisition>(acq_);
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_1B", 1, 0);
 }
 
 
@@ -591,8 +596,7 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ConnectAndRun)
 
     config_1();
 
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
-    acquisition = std::dynamic_pointer_cast<GalileoE1PcpsQuickSyncAmbiguousAcquisition>(acq_);
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_1B", 1, 0);
     auto msg_rx = GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -626,8 +630,7 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
     top_block = gr::make_top_block("Acquisition test");
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
 
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
-    acquisition = std::dynamic_pointer_cast<GalileoE1PcpsQuickSyncAmbiguousAcquisition>(acq_);
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_1B", 1, 0);
     auto msg_rx = GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -702,8 +705,7 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
 //     top_block = gr::make_top_block("Acquisition test");
 //     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
 
-//     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
-//     acquisition = std::dynamic_pointer_cast<GalileoE1PcpsQuickSyncAmbiguousAcquisition>(acq_);
+//     acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_1B", 1, 0);
 //     auto msg_rx = GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx_make(channel_internal_queue);
 
 //     ASSERT_NO_THROW({
@@ -775,8 +777,7 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
     top_block = gr::make_top_block("Acquisition test");
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
 
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
-    acquisition = std::dynamic_pointer_cast<GalileoE1PcpsQuickSyncAmbiguousAcquisition>(acq_);
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition_1B", 1, 0);
     auto msg_rx = GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({

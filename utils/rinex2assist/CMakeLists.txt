@@ -4,6 +4,8 @@
 # SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
+include(XcodeRemoveWarningDuplicates)
+
 if(NOT GNSSTK_FOUND AND NOT ENABLE_OWN_GNSSTK)
     find_package(GNSSTK)
 endif()
@@ -47,9 +49,9 @@ if(CMAKE_VERSION VERSION_LESS 3.5)
         set_property(TARGET Boost::serialization PROPERTY
             INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
         set_property(TARGET Boost::serialization PROPERTY
-            INTERFACE_LINK_LIBRARIES ${Boost_SERIALIZARION_LIBRARIES})
+            INTERFACE_LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARIES})
         set_property(TARGET Boost::serialization PROPERTY
-            IMPORTED_LOCATION ${Boost_SERIALIZARION_LIBRARIES})
+            IMPORTED_LOCATION ${Boost_SERIALIZATION_LIBRARIES})
     endif()
 endif()
 
@@ -85,6 +87,7 @@ if(TARGET Boost::iostreams AND TARGET Boost::serialization)
             ${GNSSTK_LIBRARY}
             Threads::Threads
             core_system_parameters
+            algorithms_libs
     )
 
     if(ENABLE_GLOG_AND_GFLAGS)
@@ -112,12 +115,12 @@ if(TARGET Boost::iostreams AND TARGET Boost::serialization)
         target_compile_definitions(rinex2assist PRIVATE -DGNSSTK_OLDER_THAN_9=1)
     endif()
 
-    if(NOT UNCOMPRESS_EXECUTABLE-NOTFOUND)
+    if(UNCOMPRESS_EXECUTABLE)
         target_compile_definitions(rinex2assist PRIVATE -DUNCOMPRESS_EXECUTABLE="${UNCOMPRESS_EXECUTABLE}")
     else()
         target_compile_definitions(rinex2assist PRIVATE -DUNCOMPRESS_EXECUTABLE="")
     endif()
-
+    xcode_remove_warning_duplicates(rinex2assist)
     if(NOT GNSSTK_FOUND OR ENABLE_OWN_GNSSTK)
         add_dependencies(rinex2assist gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION})
     endif()
@@ -132,7 +135,7 @@ if(TARGET Boost::iostreams AND TARGET Boost::serialization)
     )
 
     install(TARGETS rinex2assist
-        RUNTIME DESTINATION bin
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         COMPONENT "rinex2assist"
     )
 else()
@@ -140,9 +143,9 @@ else()
     message(STATUS " The rinex2assist utility tool will not be built.")
     if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
         message(STATUS " You can install the Boost Iostreams library by doing:")
-        if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+        if("${LINUX_DISTRIBUTION}" MATCHES "Fedora" OR "${LINUX_DISTRIBUTION}" MATCHES "Red Hat")
             message(STATUS " sudo yum install boost-iostreams")
-        elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+        elseif("${LINUX_DISTRIBUTION}" MATCHES "openSUSE")
             message(STATUS " sudo zypper install libboost_iostreams-devel")
         else()
             message(STATUS " sudo apt install libboost-iostreams-dev")

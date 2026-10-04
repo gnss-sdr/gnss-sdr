@@ -27,6 +27,7 @@
 #include "concurrent_queue.h"
 #include "gnss_sdr_valve.h"
 #include <gnuradio/blocks/null_sink.h>
+#include <gtest/gtest.h>
 #include <pmt/pmt.h>
 
 TEST(ValveTest, CheckEventSentAfter100Samples)
@@ -51,4 +52,28 @@ TEST(ValveTest, CheckEventSentAfter100Samples)
 
     bool expected1 = true;
     EXPECT_EQ(expected1, queue->timed_wait_and_pop(msg, 100));
+}
+
+
+TEST(ValveTest, DefaultValveHasOneStream)
+{
+    auto queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+    auto valve = gnss_sdr_make_valve(sizeof(float), 100, queue.get());
+
+    EXPECT_EQ(1, valve->input_signature()->min_streams());
+    EXPECT_EQ(1, valve->input_signature()->max_streams());
+    EXPECT_EQ(1, valve->output_signature()->min_streams());
+    EXPECT_EQ(1, valve->output_signature()->max_streams());
+}
+
+
+TEST(ValveTest, ExplicitValveStreamCountIsHonored)
+{
+    auto queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+    auto valve = gnss_sdr_make_valve(sizeof(float), 100, queue.get(), true, 3);
+
+    EXPECT_EQ(3, valve->input_signature()->min_streams());
+    EXPECT_EQ(3, valve->input_signature()->max_streams());
+    EXPECT_EQ(3, valve->output_signature()->min_streams());
+    EXPECT_EQ(3, valve->output_signature()->max_streams());
 }

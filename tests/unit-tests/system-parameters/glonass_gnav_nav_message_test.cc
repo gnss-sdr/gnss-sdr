@@ -62,6 +62,67 @@ TEST(GlonassGnavNavigationMessageTest, CRCTestFailure)
 
 
 /*!
+ * \brief Testing the data verification algorithm of GLONASS ICD Edition 5.1
+ * Section 4.7 against every possible single bit error within a string
+ * \test Errors in data bits (9-85) must be corrected in place, errors in check
+ * bits beta1-beta7 (bits 1-7) leave the data field intact and are accepted
+ * without correction, and an error in beta8 (bit 8, C1...C7 = 0 with
+ * C_Sigma = 1) is indistinguishable from multiple errors and must be rejected
+ */
+TEST(GlonassGnavNavigationMessageTest, CRCTestSingleBitErrors)
+{
+    const std::bitset<GLONASS_GNAV_STRING_BITS> valid_bits(std::string("0010100100001100000000000000000000000000110011110001100000000000000001100100011000000"));
+    auto gnav_nav_message = Glonass_Gnav_Navigation_Message();
+
+    for (size_t i = 0; i < GLONASS_GNAV_STRING_BITS; i++)
+        {
+            std::bitset<GLONASS_GNAV_STRING_BITS> corrupted_bits = valid_bits;
+            corrupted_bits.flip(i);
+
+            const bool test_result = gnav_nav_message.CRC_test(corrupted_bits);
+
+            if (i == 7)
+                {
+                    EXPECT_FALSE(test_result) << "flipped bit " << i + 1;
+                }
+            else if (i < 7)
+                {
+                    EXPECT_TRUE(test_result) << "flipped bit " << i + 1;
+                    EXPECT_EQ(corrupted_bits >> 8, valid_bits >> 8) << "flipped bit " << i + 1;
+                }
+            else
+                {
+                    EXPECT_TRUE(test_result) << "flipped bit " << i + 1;
+                    EXPECT_EQ(corrupted_bits, valid_bits) << "flipped bit " << i + 1;
+                }
+        }
+}
+
+
+/*!
+ * \brief Testing the data verification algorithm of GLONASS ICD Edition 5.1
+ * Section 4.7 against every possible double bit error within a string
+ * \test The Hamming code must detect and reject all double bit errors
+ */
+TEST(GlonassGnavNavigationMessageTest, CRCTestDoubleBitErrors)
+{
+    const std::bitset<GLONASS_GNAV_STRING_BITS> valid_bits(std::string("0010100100001100000000000000000000000000110011110001100000000000000001100100011000000"));
+    auto gnav_nav_message = Glonass_Gnav_Navigation_Message();
+
+    for (size_t i = 0; i < GLONASS_GNAV_STRING_BITS - 1; i++)
+        {
+            for (size_t j = i + 1; j < GLONASS_GNAV_STRING_BITS; j++)
+                {
+                    std::bitset<GLONASS_GNAV_STRING_BITS> corrupted_bits = valid_bits;
+                    corrupted_bits.flip(i);
+                    corrupted_bits.flip(j);
+                    EXPECT_FALSE(gnav_nav_message.CRC_test(corrupted_bits)) << "flipped bits " << i + 1 << " and " << j + 1;
+                }
+        }
+}
+
+
+/*!
  * \brief Testing string decoding for GLONASS GNAV messages
  * \test The provided string (str1.....str15) was generated with a version of
  * MATLAB GNSS-SDR that the author coded to perform proper decoding of GLONASS
@@ -249,3 +310,138 @@ std::string str12("0110010101001100000011110110100110100100010100001000111110000
 std::string str13("0110111011100100111110100001000110100010011101001011111110100100101010011010001101001");
 std::string str14("0111010101010000000100011000011110100110111100001110110100001000001111001101010000101");
 std::string str15("0111101110101010001110101010100111101100001101001011111111100010101010011001010011101");
+
+
+/*!
+ * \brief Testing satellite identification fields filled in by the second
+ * almanac string of the pair (string 7 for satellite slot 6, whose H_n_A
+ * value of 28 represents carrier frequency channel -4)
+ */
+TEST(GlonassGnavNavigationMessageTest, String7SetsAlmanacSatelliteInfo)
+{
+    Glonass_Gnav_Navigation_Message gnav_nav_message;
+
+    gnav_nav_message.string_decoder(str6);
+    gnav_nav_message.string_decoder(str7);
+
+    Glonass_Gnav_Almanac gnav_almanac = gnav_nav_message.get_almanac(6);
+    EXPECT_EQ(gnav_almanac.i_satellite_slot_number, 6U);
+    EXPECT_EQ(gnav_almanac.PRN, 6U);
+    EXPECT_EQ(gnav_almanac.i_satellite_freq_channel, -4);
+}
+
+
+/*!
+ * \brief In frames 1-4, string 14 carries almanac data (here for satellite
+ * slot 10, in frame 2). The frame is known from the almanac slot number
+ * decoded in a previous string of the same frame
+ */
+TEST(GlonassGnavNavigationMessageTest, String14AlmanacDecoder)
+{
+    Glonass_Gnav_Navigation_Message gnav_nav_message;
+
+    gnav_nav_message.string_decoder(str6);   // almanac slot 6 identifies frame 2
+    gnav_nav_message.string_decoder(str14);  // almanac for slot 10, also in frame 2
+
+    EXPECT_DOUBLE_EQ(gnav_nav_message.get_almanac(10).d_n_A, 10.0);
+}
+
+
+/*!
+ * \brief Until the frame being received is identified, string 14 content is
+ * ambiguous (in frame 5 it carries the B1/B2 UTC parameters instead of
+ * almanac data), so it must not be decoded as almanac
+ */
+TEST(GlonassGnavNavigationMessageTest, String14RequiresKnownFrame)
+{
+    Glonass_Gnav_Navigation_Message gnav_nav_message;
+
+    gnav_nav_message.string_decoder(str14);
+
+    EXPECT_DOUBLE_EQ(gnav_nav_message.get_almanac(10).d_n_A, 0.0);
+}
+
+
+/*!
+ * \brief KP announces a UTC leap second correction at the end of the current
+ * quarter: 01 = +1 s, 11 = -1 s (GLONASS ICD Edition 5.1, Table 4.12)
+ */
+TEST(GlonassGnavNavigationMessageTest, KpAnnouncedLeapSecondMapping)
+{
+    Glonass_Gnav_Utc_Model gnav_utc_model;
+
+    gnav_utc_model.d_KP = 0.0;
+    EXPECT_EQ(gnav_utc_model.announced_leap_second(), 0);
+    gnav_utc_model.d_KP = 1.0;
+    EXPECT_EQ(gnav_utc_model.announced_leap_second(), 1);
+    gnav_utc_model.d_KP = 2.0;
+    EXPECT_EQ(gnav_utc_model.announced_leap_second(), 0);
+    gnav_utc_model.d_KP = 3.0;
+    EXPECT_EQ(gnav_utc_model.announced_leap_second(), -1);
+}
+
+
+// Synthetic strings (with valid Hamming code bits) for a scenario where KP
+// announces a +1 s UTC leap second at the end of a quarter. GLONASS day 913
+// of four-year interval 8 is 2026-07-01, which starts at 2026-06-30 21:00
+// UTC; the announced leap second event is at 2026-07-01 00:00:00 UTC
+std::string str1_kp_a("0000100000001001111000000000000000000000000000000000000000000000000000000000000011000");   // tk = 02:30:00 (UTC 2026-06-30 23:30)
+std::string str1_kp_b("0000100000001100101100000000000000000000000000000000000000000000000000000000000011000");   // tk = 03:11:00 (UTC 2026-07-01 00:11)
+std::string str1_kp_c("0000100000001101111000000000000000000000000000000000000000000000000000000000011011111");   // tk = 03:30:00 (UTC 2026-07-01 00:30)
+std::string str4_kp("0010000000000000000000000000000000000000000000000000000000001110010001101100001011101");     // N_T = 913, n = 22
+std::string str5_kp("0010101110010001000000000000000000000000000000000010000000000000000000000000001100000");     // N_A = 913, N_4 = 8 -> year 2026
+std::string str6_kp_f5("0011000010110000000000000000000000000000000000000000000000000000000000000000001001100");  // almanac slot 22 identifies frame 5
+std::string str14_kp1("0111000000000000000000000001000000000000000000000000000000000000000000000000011101000");   // KP = 01 (+1 s)
+
+
+/*!
+ * \brief A leap second announced by KP before the end of the quarter is
+ * applied to the GLONASS to GPS time conversion once the event epoch is
+ * reached, so the TOW remains correct even if the event is not yet in the
+ * receiver's leap second table
+ */
+TEST(GlonassGnavNavigationMessageTest, KpLeapSecondAppliedAfterQuarterEnd)
+{
+    Glonass_Gnav_Navigation_Message gnav_nav_message;
+
+    gnav_nav_message.string_decoder(str1_kp_a);  // tk = 02:30:00 GLONASS
+    gnav_nav_message.set_flag_ephemeris_str_2(true);
+    gnav_nav_message.set_flag_ephemeris_str_3(true);
+    gnav_nav_message.string_decoder(str4_kp);
+    gnav_nav_message.string_decoder(str5_kp);  // computes the TOW
+    const double tow_before = gnav_nav_message.get_ephemeris().d_TOW;
+    gnav_nav_message.string_decoder(str6_kp_f5);
+    gnav_nav_message.string_decoder(str14_kp1);
+
+    // The correction is announced but the event has not occurred yet
+    EXPECT_DOUBLE_EQ(gnav_nav_message.get_utc_model().d_KP, 1.0);
+    EXPECT_DOUBLE_EQ(gnav_nav_message.get_ephemeris().d_kp_leap_correction_s, 0.0);
+
+    gnav_nav_message.string_decoder(str1_kp_b);  // tk = 03:11:00, past the event
+    gnav_nav_message.string_decoder(str5_kp);    // recomputes the TOW
+
+    EXPECT_DOUBLE_EQ(gnav_nav_message.get_ephemeris().d_kp_leap_correction_s, 1.0);
+    // 2460 s elapsed between the two TOW computations, plus the leap second
+    EXPECT_DOUBLE_EQ(gnav_nav_message.get_ephemeris().d_TOW - tow_before, 2461.0);
+}
+
+
+/*!
+ * \brief If KP still announces a correction right after a quarter boundary
+ * (broadcast not updated yet), the leap second has just been applied to UTC,
+ * and the receiver must account for it immediately
+ */
+TEST(GlonassGnavNavigationMessageTest, KpLeapSecondAppliedRightAfterBoundary)
+{
+    Glonass_Gnav_Navigation_Message gnav_nav_message;
+
+    gnav_nav_message.string_decoder(str1_kp_c);  // tk = 03:30:00 (UTC 00:30, 30 min after the boundary)
+    gnav_nav_message.set_flag_ephemeris_str_2(true);
+    gnav_nav_message.set_flag_ephemeris_str_3(true);
+    gnav_nav_message.string_decoder(str4_kp);
+    gnav_nav_message.string_decoder(str5_kp);
+    gnav_nav_message.string_decoder(str6_kp_f5);
+    gnav_nav_message.string_decoder(str14_kp1);
+
+    EXPECT_DOUBLE_EQ(gnav_nav_message.get_ephemeris().d_kp_leap_correction_s, 1.0);
+}

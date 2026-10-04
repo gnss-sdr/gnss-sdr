@@ -42,21 +42,27 @@
 import math
 import os.path
 import webbrowser
+from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
-import folium
 
 
-def plot_position(navSolutions):
+def plot_position(navSolutions, fig_path='plots/pvt', show=True,
+                  open_maps=False, output_format='png'):
+    try:
+        import folium
+    except ModuleNotFoundError as exc:
+        raise SystemExit(
+            "plot_position requires folium. Re-run with --no-position to skip "
+            "map generation."
+        ) from exc
 
-    # ---------- CHANGE HERE:
-    fig_path = '/home/labnav/Desktop/TEST_IRENE/PLOTS/PlotPosition/'
-    fig_path_maps = fig_path + 'maps/'
+    fig_path = os.fspath(fig_path)
+    fig_path_maps = os.path.join(fig_path, 'maps')
     filename_map = 'mapPlotPosition.html'
-    filename_map_t = 'mapTerrainPotPosition.html'
 
     if not os.path.exists(fig_path_maps):
-        os.mkdir(fig_path_maps)
+        os.makedirs(fig_path_maps)
 
     # Statics Positions:
     m_lat = sum(navSolutions['latitude']) / len(navSolutions['latitude'])
@@ -95,8 +101,11 @@ def plot_position(navSolutions):
                       icon=folium.Icon(color='red')).add_to(m)
     """
 
-    m.save(fig_path_maps + filename_map)
-    webbrowser.open(fig_path_maps + filename_map)
+    map_path = os.path.join(fig_path_maps, filename_map)
+    m.save(map_path)
+    if open_maps:
+        # webbrowser needs a URL; pass an absolute file:// URI, not a bare path.
+        webbrowser.open(Path(map_path).resolve().as_uri())
 
     # Optional: with terrain ->
     """    
@@ -117,7 +126,7 @@ def plot_position(navSolutions):
 
     plt.figure(figsize=(1920 / 120, 1080 / 120))
     plt.clf()
-    plt.suptitle(f'Plot file PVT process data results')
+    plt.suptitle('Plot file PVT process data results')
 
     # Latitude and Longitude
     plt.subplot(1, 2, 1)
@@ -149,16 +158,20 @@ def plot_position(navSolutions):
     ax.set_title('Positions x-y-z')
 
     plt.tight_layout()
-    plt.savefig(os.path.join(fig_path, f'PVT_ProcessDataResults.png'))
-    plt.show()
+    plt.savefig(os.path.join(fig_path, f'PVT_ProcessDataResults.{output_format}'))
+    # Close unless it will be shown; the caller triggers a single plt.show()
+    # at the end. Avoids repeated show()/close() cycles, which can crash
+    # interactive matplotlib backends (e.g. macOS) on window close.
+    if not show:
+        plt.close()
 
 
-def plot_oneVStime(navSolutions, name):
+def plot_oneVStime(navSolutions, name, fig_path='plots/pvt', show=True,
+                   output_format='png'):
 
-    # ---------- CHANGE HERE:
-    fig_path = '/home/labnav/Desktop/TEST_IRENE/PLOTS/PlotPosition/'
+    fig_path = os.fspath(fig_path)
     if not os.path.exists(fig_path):
-        os.mkdir(fig_path)
+        os.makedirs(fig_path)
 
     time = []
     for i in range(len(navSolutions['TransmitTime'])):
@@ -175,8 +188,12 @@ def plot_oneVStime(navSolutions, name):
     plt.ticklabel_format(style='plain', axis='both', useOffset=False)
 
     plt.tight_layout()
-    plt.savefig(os.path.join(fig_path, f'{name}VSTime.png'))
-    plt.show()
+    plt.savefig(os.path.join(fig_path, f'{name}VSTime.{output_format}'))
+    # Close unless it will be shown; the caller triggers a single plt.show()
+    # at the end. Avoids repeated show()/close() cycles, which can crash
+    # interactive matplotlib backends (e.g. macOS) on window close.
+    if not show:
+        plt.close()
 
 def calcularCEFP(percentil, navSolutions, m_lat, m_long):
 

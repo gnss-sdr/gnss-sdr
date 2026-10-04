@@ -33,7 +33,7 @@ SensorDataSource::SensorDataSource(
       item_size_(io_signature->sizeof_stream_item(0)),
       items_per_sample_(configuration.get_items_per_sample())
 {
-    if (not configuration.validate())
+    if (!configuration.validate())
         {
             DLOG(ERROR) << "Failed to validate sensor data configuration";
             throw std::runtime_error("Failed to validate sensor data configuration");
@@ -77,7 +77,7 @@ SensorDataSource::SensorDataSource(
         }
 
     // Validate IO signature
-    if (io_signature->min_streams() != 1 and io_signature->max_streams() != 1)
+    if (io_signature->min_streams() != 1 && io_signature->max_streams() != 1)
         {
             std::cout << "ERROR: This block only supports adding data to a single stream." << "\n";
         }

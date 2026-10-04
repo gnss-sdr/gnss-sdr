@@ -46,6 +46,7 @@ constexpr unsigned char MSA = 8;
 constexpr unsigned char TCA = 9;
 constexpr unsigned char OGA = 10;
 constexpr unsigned char FP = 11;
+constexpr unsigned char UNKNOWN = 255;
 
 }  // namespace StreamEncodings
 
@@ -99,7 +100,7 @@ inline StreamEncoding encoding_from_string(const std::string& str)
         {
             return StreamEncodings::FP;
         }
-    return 0;
+    return StreamEncodings::UNKNOWN;
 }
 
 template <typename T>

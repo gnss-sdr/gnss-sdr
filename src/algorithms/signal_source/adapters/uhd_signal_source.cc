@@ -118,7 +118,7 @@ UhdSignalSource::UhdSignalSource(const ConfigurationInterface* configuration,
                     samples_.push_back(configuration->property(role + ".samples" + std::to_string(i), 0));
                     bool dump_source = configuration->property(role + ".dump" + std::to_string(i), false);
                     dump_.push_back(dump_source);
-                    std::string dump_source_filename = configuration->property(role + ".dump_filename" + std::to_string(i), std::to_string(i) + "_"s + default_dump_file);
+                    std::string dump_source_filename = configuration->property(role + ".dump_filename" + std::to_string(i), "./data/signal_source"s + std::to_string(i) + ".dat"s);
                     dump_filename_.push_back(dump_source_filename);
                     if (dump_source)
                         {

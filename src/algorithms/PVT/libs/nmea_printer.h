@@ -52,7 +52,7 @@ public:
     /*!
      * \brief Default destructor.
      */
-    ~Nmea_Printer();
+    ~Nmea_Printer() noexcept;
 
     /*!
      * \brief Print NMEA PVT and satellite info to the initialized device

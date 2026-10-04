@@ -48,7 +48,10 @@ endif()
 
 # links to the appropriate library and defines
 # USE_GNUTLS_FALLBACK, USE_OPENSSL_3, or USE_OPENSSL_111 accordingly.
-link_to_crypto_dependencies(core_libs_supl)
+# PUBLIC scope (the default) is required here: the public header supl.h
+# includes the backend headers under those macros, so every consumer must
+# see the same defines and include directories.
+link_to_crypto_dependencies(core_libs_supl PUBLIC)
 
 target_include_directories(core_libs_supl
     PUBLIC

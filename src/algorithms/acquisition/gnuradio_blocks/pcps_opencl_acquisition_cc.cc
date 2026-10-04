@@ -55,6 +55,39 @@
 #include <absl/log/log.h>
 #endif
 
+// Built-in copy of the math kernels, used when the kernel file given to
+// init_opencl_environment() is not found next to the executable.
+static const char *math_kernel_source = R"CL(
+#define MUL_RE(a,b) (a.x*b.x - a.y*b.y)
+#define MUL_IM(a,b) (a.x*b.y + a.y*b.x)
+#define SUM_RE(a,b) (a.x + b.x)
+#define SUM_IM(a,b) (a.y + b.y)
+
+__kernel void add_vectors(__global const float2* src1, __global const float2* src2, __global float2* dest)
+{
+    int gid = get_global_id(0);
+    dest[gid] = (float2)(SUM_RE(src1[gid],src2[gid]),SUM_IM(src1[gid],src2[gid]));
+}
+
+__kernel void mult_vectors(__global const float2* src1, __global const float2* src2, __global float2* dest)
+{
+    int gid = get_global_id(0);
+    dest[gid] = (float2)(MUL_RE(src1[gid],src2[gid]),MUL_IM(src1[gid],src2[gid]));
+}
+
+__kernel void conj_vector(__global const float2* src, __global float2* dest)
+{
+    int gid = get_global_id(0);
+    dest[gid] = ((float2)(1,-1)) * src[gid];
+}
+
+__kernel void magnitude_squared(__global const float2* src, __global float* dest)
+{
+    int gid = get_global_id(0);
+    dest[gid] = src[gid].x*src[gid].x + src[gid].y*src[gid].y;
+}
+)CL";
+
 
 pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(const Acq_Conf &conf, uint32_t max_dwells)
 {
@@ -214,6 +247,11 @@ int pcps_opencl_acquisition_cc::init_opencl_environment(const std::string &kerne
     std::string kernel_code(std::istreambuf_iterator<char>(kernel_file),
         (std::istreambuf_iterator<char>()));
     kernel_file.close();
+    if (kernel_code.empty())
+        {
+            // Kernel file not found: fall back to the built-in copy
+            kernel_code = math_kernel_source;
+        }
 
     cl::Program::Sources sources;
 
@@ -307,6 +345,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
     float magt = 0.0;
     float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
     uint64_t samplestamp = d_sample_counter_buffer[d_well_count];
+    const gr_complex *in = d_in_buffer[d_well_count].data();
 
     d_input_power = 0.0;
     d_mag = 0.0;
@@ -321,7 +360,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
                << ", doppler_step: " << d_acq_params.doppler_step;
 
     // 1- Compute the input signal power estimation
-    volk_32fc_magnitude_squared_32f(d_magnitude.data(), d_in_buffer[d_well_count].data(), d_fft_size);
+    volk_32fc_magnitude_squared_32f(d_magnitude.data(), in, d_fft_size);
     volk_32f_accumulator_s32f(&d_input_power, d_magnitude.data(), d_fft_size);
     d_input_power /= static_cast<float>(d_fft_size);
 
@@ -331,7 +370,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
             // doppler search steps
             doppler = -d_acq_params.doppler_max + d_acq_params.doppler_step * doppler_index;
 
-            volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), d_in_buffer[d_well_count].data(),
+            volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,
                 d_grid_doppler_wipeoffs[doppler_index].data(), d_fft_size);
 
             // 3- Perform the FFT-based convolution  (parallel time search)
@@ -431,12 +470,13 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
     float magt = 0.0;
     float fft_normalization_factor = (static_cast<float>(d_fft_size_pow2) * static_cast<float>(d_fft_size));  // This works, but I am not sure why.
     uint64_t samplestamp = d_sample_counter_buffer[d_well_count];
+    const gr_complex *in = d_in_buffer[d_well_count].data();
 
     d_input_power = 0.0;
     d_mag = 0.0;
 
     // write input vector in buffer of OpenCL device
-    d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_in, CL_TRUE, 0, sizeof(gr_complex) * d_fft_size, d_in_buffer[d_well_count].data());
+    d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_in, CL_TRUE, 0, sizeof(gr_complex) * d_fft_size, in);
 
     d_well_count++;
 
@@ -455,7 +495,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
                << ", doppler_step: " << d_acq_params.doppler_step;
 
     // 1- Compute the input signal power estimation
-    volk_32fc_magnitude_squared_32f(d_magnitude.data(), d_in_buffer[d_well_count].data(), d_fft_size);
+    volk_32fc_magnitude_squared_32f(d_magnitude.data(), in, d_fft_size);
     volk_32f_accumulator_s32f(&d_input_power, d_magnitude.data(), d_fft_size);
     d_input_power /= static_cast<float>(d_fft_size);
 

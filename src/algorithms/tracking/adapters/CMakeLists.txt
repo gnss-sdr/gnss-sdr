@@ -18,65 +18,29 @@ endif()
 if(ENABLE_FPGA)
     set(OPT_TRACKING_ADAPTERS_SOURCES
         ${OPT_TRACKING_ADAPTERS_SOURCES}
-        base_dll_pll_tracking_fpga.cc
-        gps_l1_ca_dll_pll_tracking_fpga.cc
-        gps_l2_m_dll_pll_tracking_fpga.cc
-        galileo_e1_dll_pll_veml_tracking_fpga.cc
-        galileo_e5a_dll_pll_tracking_fpga.cc
-        gps_l5_dll_pll_tracking_fpga.cc
+        dll_pll_tracking_adapter_fpga.cc
     )
     set(OPT_TRACKING_ADAPTERS_HEADERS
         ${OPT_TRACKING_ADAPTERS_HEADERS}
-        base_dll_pll_tracking_fpga.h
-        gps_l1_ca_dll_pll_tracking_fpga.h
-        gps_l2_m_dll_pll_tracking_fpga.h
-        galileo_e1_dll_pll_veml_tracking_fpga.h
-        galileo_e5a_dll_pll_tracking_fpga.h
-        gps_l5_dll_pll_tracking_fpga.h
+        dll_pll_tracking_adapter_fpga.h
     )
 endif()
 
 set(TRACKING_ADAPTER_SOURCES
-    base_dll_pll_tracking.cc
-    beidou_b1i_dll_pll_tracking.cc
-    beidou_b3i_dll_pll_tracking.cc
-    galileo_e1_dll_pll_veml_tracking.cc
-    galileo_e5a_dll_pll_tracking.cc
-    galileo_e5b_dll_pll_tracking.cc
-    galileo_e6_dll_pll_tracking.cc
-    glonass_l1_ca_dll_pll_tracking.cc
-    glonass_l2_ca_dll_pll_tracking.cc
-    gps_l1_ca_dll_pll_tracking.cc
-    gps_l2_m_dll_pll_tracking.cc
-    gps_l5_dll_pll_tracking.cc
+    dll_pll_tracking_adapter.cc
     galileo_e1_tcp_connector_tracking.cc
     gps_l1_ca_tcp_connector_tracking.cc
     gps_l1_ca_gaussian_tracking.cc
     gps_l1_ca_kf_tracking.cc
-    qzss_l1_dll_pll_tracking.cc
-    qzss_l5_dll_pll_tracking.cc
     ${OPT_TRACKING_ADAPTERS_SOURCES}
 )
 
 set(TRACKING_ADAPTER_HEADERS
-    base_dll_pll_tracking.h
-    beidou_b1i_dll_pll_tracking.h
-    beidou_b3i_dll_pll_tracking.h
-    galileo_e1_dll_pll_veml_tracking.h
-    galileo_e5a_dll_pll_tracking.h
-    galileo_e5b_dll_pll_tracking.h
-    galileo_e6_dll_pll_tracking.h
-    glonass_l1_ca_dll_pll_tracking.h
-    glonass_l2_ca_dll_pll_tracking.h
-    gps_l1_ca_dll_pll_tracking.h
-    gps_l2_m_dll_pll_tracking.h
-    gps_l5_dll_pll_tracking.h
+    dll_pll_tracking_adapter.h
     galileo_e1_tcp_connector_tracking.h
     gps_l1_ca_tcp_connector_tracking.h
     gps_l1_ca_gaussian_tracking.h
     gps_l1_ca_kf_tracking.h
-    qzss_l1_dll_pll_tracking.h
-    qzss_l5_dll_pll_tracking.h
     ${OPT_TRACKING_ADAPTERS_HEADERS}
 )
 
@@ -130,6 +94,7 @@ if(ENABLE_CUDA)
         target_include_directories(tracking_adapters
             PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
         )
+        target_link_libraries(tracking_adapters PUBLIC CUDA::cudart)
     else()
         target_link_libraries(tracking_adapters
             PUBLIC ${CUDA_LIBRARIES}
@@ -139,7 +104,7 @@ if(ENABLE_CUDA)
         )
     endif()
     set_target_properties(tracking_adapters PROPERTIES
-        CUDA_SEPARABLE_COMPILATION ON
+        CUDA_SEPARABLE_COMPILATION OFF
         POSITION_INDEPENDENT_CODE ON
     )
 endif()

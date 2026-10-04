@@ -60,6 +60,8 @@ void Dll_Pll_Conf::SetFromConfiguration(const ConfigurationInterface *configurat
     high_dyn = configuration->property(role + ".high_dyn", high_dyn);
     dump = configuration->property(role + ".dump", dump);
     dump_filename = configuration->property(role + ".dump_filename", dump_filename);
+    f_error_dump = configuration->property(role + ".f_error_dump", f_error_dump);
+    f_error_dump_filename = configuration->property(role + ".f_error_dump_filename", f_error_dump_filename);
     dump_mat = configuration->property(role + ".dump_mat", dump_mat);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", pll_bw_hz);
 #if USE_GLOG_AND_GFLAGS
@@ -123,6 +125,19 @@ void Dll_Pll_Conf::SetFromConfiguration(const ConfigurationInterface *configurat
     enable_fll_steady_state = configuration->property(role + ".enable_fll_steady_state", enable_fll_steady_state);
     fll_bw_hz = configuration->property(role + ".fll_bw_hz", fll_bw_hz);
     pull_in_time_s = configuration->property(role + ".pull_in_time_s", pull_in_time_s);
+    f_error_accumulation = configuration->property(role + ".f_error_accumulation", f_error_accumulation);
+    if (f_error_accumulation == 0)
+        {
+            f_error_accumulation = 1;
+            LOG(WARNING) << "f_error_accumulation must be bigger than 0. It has been set to 1";
+        }
+    f_error_step_num = configuration->property(role + ".f_error_step_num", f_error_step_num);
+    if ((f_error_step_num != 0) && ((f_error_step_num % 2) == 0))
+        {
+            // f_error_step_num must be odd (a center bin plus a symmetric number of +/- steps)
+            f_error_step_num += 1;
+        }
+    f_error_doppler_step = configuration->property(role + ".f_error_doppler_step", f_error_doppler_step);
     bit_synchronization_time_limit_s = configuration->property(role + ".bit_synchronization_time_limit_s", bit_synchronization_time_limit_s);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", early_late_space_chips);
     early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", early_late_space_narrow_chips);
@@ -151,8 +166,19 @@ void Dll_Pll_Conf::SetFromConfiguration(const ConfigurationInterface *configurat
     tow_to_trk = configuration->property("GNSS-SDR.tow_to_trk", false);
 
     bs_dominance_ratio = configuration->property(role + ".bs_dominance_ratio", bs_dominance_ratio);
+    bs_runner_up_margin = configuration->property(role + ".bs_runner_up_margin", bs_runner_up_margin);
+    bs_transition_confidence = configuration->property(role + ".bs_transition_confidence", bs_transition_confidence);
     bs_min_prompt_mag = configuration->property(role + ".bs_min_prompt_mag", bs_min_prompt_mag);
     bs_stable_best_required = configuration->property(role + ".bs_stable_best_required", bs_stable_best_required);
     bs_min_events_for_lock = configuration->property(role + ".bs_min_events_for_lock", bs_min_events_for_lock);
+    bs_transition_window_epochs = configuration->property(role + ".bs_transition_window_epochs", bs_transition_window_epochs);
+    bs_tentative_events_required = configuration->property(role + ".bs_tentative_events_required", bs_tentative_events_required);
     bs_use_phase_dot_detector = configuration->property(role + ".bs_use_phase_dot_detector", bs_use_phase_dot_detector);
+
+    qmboc = configuration->property(role + ".qmboc", qmboc);
+    b1c_prompt_use_data_q = configuration->property(role + ".b1c_prompt_use_data_q", b1c_prompt_use_data_q);
+    b1c_prompt_normalize_power = configuration->property(role + ".b1c_prompt_normalize_power", b1c_prompt_normalize_power);
+    b1c_data_prompt_scale = configuration->property(role + ".b1c_data_prompt_scale", b1c_data_prompt_scale);
+    b1c_pilot_prompt_scale = configuration->property(role + ".b1c_pilot_prompt_scale", b1c_pilot_prompt_scale);
+    b1c_secondary_lock_ratio = configuration->property(role + ".b1c_secondary_lock_ratio", b1c_secondary_lock_ratio);
 }

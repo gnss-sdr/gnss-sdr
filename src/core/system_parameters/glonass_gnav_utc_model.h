@@ -50,12 +50,31 @@ public:
     double d_N_A{};      //!< Calendar day number within the four-year period beginning since the leap year for Almanac data [days]
     double d_B1{};       //!< Coefficient  to  determine DeltaUT1 [s]
     double d_B2{};       //!< Coefficient  to  determine DeltaUT1 [s/msd]
+    double d_KP{};       //!< Notification of forthcoming leap second correction of UTC (GLONASS ICD Table 4.12) [dimensionless]
 
     /*!
      * \brief Computes the Coordinated Universal Time (UTC) and
      * returns it in [s] (GLONASS ICD (Edition 5.1) Section 3.3.3 GLONASS Time)
      */
     double utc_time(double glonass_time_corrected) const;
+
+    /*!
+     * \brief Returns the UTC leap second correction announced by the KP word
+     * for the end of the current quarter: +1 s, -1 s, or 0 if no correction
+     * is planned (GLONASS ICD Edition 5.1, Table 4.12)
+     */
+    inline int32_t announced_leap_second() const
+    {
+        if (static_cast<int32_t>(d_KP) == 1)
+            {
+                return 1;
+            }
+        if (static_cast<int32_t>(d_KP) == 3)
+            {
+                return -1;
+            }
+        return 0;
+    }
 
     template <class Archive>
     /*!
@@ -74,6 +93,7 @@ public:
         archive& BOOST_SERIALIZATION_NVP(d_N_A);
         archive& BOOST_SERIALIZATION_NVP(d_B1);
         archive& BOOST_SERIALIZATION_NVP(d_B2);
+        archive& BOOST_SERIALIZATION_NVP(d_KP);
     }
 };
 

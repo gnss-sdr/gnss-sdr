@@ -46,59 +46,66 @@ class TelemetryDecoderInterface;
 /*!
  * \brief Class that produces all kinds of GNSS blocks
  */
-class GNSSBlockFactory
+
+namespace block_factory
 {
-public:
-    GNSSBlockFactory() = default;
-    ~GNSSBlockFactory() = default;
 
-    std::unique_ptr<SignalSourceInterface> GetSignalSource(const ConfigurationInterface* configuration,
-        Concurrent_Queue<pmt::pmt_t>* queue, int ID = -1) const;
+std::unique_ptr<SignalSourceInterface> GetSignalSource(const ConfigurationInterface* configuration, Concurrent_Queue<pmt::pmt_t>* queue, int ID = -1);
 
-    std::unique_ptr<GNSSBlockInterface> GetSignalConditioner(const ConfigurationInterface* configuration, int ID = -1) const;
+std::unique_ptr<GNSSBlockInterface> GetSignalConditioner(const ConfigurationInterface* configuration, int ID = -1);
 
-    std::vector<std::unique_ptr<GNSSBlockInterface>> GetChannels(const ConfigurationInterface* configuration,
-        Concurrent_Queue<pmt::pmt_t>* queue) const;
+std::vector<std::unique_ptr<GNSSBlockInterface>> GetChannels(const ConfigurationInterface* configuration, Concurrent_Queue<pmt::pmt_t>* queue);
 
-    std::unique_ptr<GNSSBlockInterface> GetObservables(const ConfigurationInterface* configuration) const;
+std::unique_ptr<GNSSBlockInterface> GetObservables(const ConfigurationInterface* configuration);
 
-    std::unique_ptr<GNSSBlockInterface> GetPVT(const ConfigurationInterface* configuration) const;
+std::unique_ptr<GNSSBlockInterface> GetPVT(const ConfigurationInterface* configuration);
 
-    /*!
-     * \brief Returns the block with the required role implementation and its configuration parameters
-     */
-    std::unique_ptr<GNSSBlockInterface> GetBlock(const ConfigurationInterface* configuration,
-        const std::string& role,
-        unsigned int in_streams,
-        unsigned int out_streams,
-        Concurrent_Queue<pmt::pmt_t>* queue = nullptr) const;
+/*!
+ * \brief Returns the block with the required role implementation and its configuration parameters
+ */
+std::unique_ptr<GNSSBlockInterface> GetBlock(const ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams,
+    Concurrent_Queue<pmt::pmt_t>* queue = nullptr);
 
-private:
-    std::unique_ptr<GNSSBlockInterface> GetChannel(
-        const ConfigurationInterface* configuration,
-        const std::string& signal,
-        int channel,
-        Concurrent_Queue<pmt::pmt_t>* queue) const;
+/*!
+ * \brief Returns the role name of a channel's block: role_prefix + signal +
+ * channel (e.g. "Acquisition_5X12") if that per-channel role has an
+ * .implementation property in the configuration, role_prefix + signal (e.g.
+ * "Acquisition_5X") otherwise. Use it to read a property of an already built
+ * channel block from the same role the block was instantiated with.
+ */
+std::string get_role_name(const ConfigurationInterface* configuration,
+    const std::string& role_prefix,
+    const std::string& signal,
+    int channel);
 
-    std::unique_ptr<AcquisitionInterface> GetAcqBlock(
-        const ConfigurationInterface* configuration,
-        const std::string& role,
-        unsigned int in_streams,
-        unsigned int out_streams) const;
+std::unique_ptr<GNSSBlockInterface> GetChannel(
+    const ConfigurationInterface* configuration,
+    const std::string& signal,
+    int channel,
+    Concurrent_Queue<pmt::pmt_t>* queue);
 
-    std::unique_ptr<TrackingInterface> GetTrkBlock(
-        const ConfigurationInterface* configuration,
-        const std::string& role,
-        unsigned int in_streams,
-        unsigned int out_streams) const;
+std::unique_ptr<AcquisitionInterface> GetAcqBlock(
+    const ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams);
 
-    std::unique_ptr<TelemetryDecoderInterface> GetTlmBlock(
-        const ConfigurationInterface* configuration,
-        const std::string& role,
-        unsigned int in_streams,
-        unsigned int out_streams) const;
-};
+std::unique_ptr<TrackingInterface> GetTrkBlock(
+    const ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams);
 
+std::unique_ptr<TelemetryDecoderInterface> GetTlmBlock(
+    const ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams);
+
+};  // namespace block_factory
 
 /** \} */
 /** \} */

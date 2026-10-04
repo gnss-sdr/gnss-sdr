@@ -3,7 +3,7 @@
  * \brief VOLK_GNSSSDR kernel: Computes the sine and cosine of a vector of floats.
  * \authors <ul>
  *          <li> Julien Pommier, 2007
- *          <li> Carles Fernandez-Prades, 2016. cfernandez(at)cttc.es
+ *          <li> Carles Fernandez-Prades, 2016-2026. cfernandez(at)cttc.es
  *          </ul>
  *
  * VOLK_GNSSSDR kernel that computes the sine and cosine of a vector of floats.
@@ -24,8 +24,11 @@
  *
  * VOLK_GNSSSDR kernel that computes the sine and cosine with a fixed
  * phase increment \p phase_inc per sample, providing the output in a complex vector (cosine, sine).
- * WARNING: it is not IEEE compliant, but the max absolute error on sines is 2^-24 on the range [-8192, 8192].
- *          To be safe, keep initial phase + phase_inc * num_points within that range.
+ * The phase is accumulated in 32-bit fixed point (2^32 units per turn), so it
+ * wraps modulo 2*pi exactly and its resolution does not depend on the initial
+ * phase, the phase increment or the number of points. The phase increment is
+ * quantized to 2*pi/2^32 rad. The sine and cosine are not IEEE compliant: the
+ * maximum absolute error is about 2^-24 per sample.
  *
  * <b>Dispatcher Prototype</b>
  * \code
@@ -39,7 +42,7 @@
  *
  * \b Outputs
  * \li out:            Vector of the form lv_32fc_t out[n] = lv_cmake(cos(in[n]), sin(in[n]))
- * \li phase:          Pointer to a float containing the final phase, in radians.
+ * \li phase:          Pointer to a float containing the final phase, in radians, wrapped into [-pi, pi).
  *
  * Adapted from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h, original code from Julien Pommier
  * Based on algorithms from the cephes library https://www.netlib.org/cephes/
@@ -52,6 +55,32 @@
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 #include <math.h>
+#include <stdint.h>
+
+/* Phase representation used by all the implementations: unsigned 32-bit
+ * fixed point with 2^32 units per turn (2*pi rad). The accumulation of the
+ * phase increment wraps modulo 2*pi with the integer arithmetic and does not
+ * lose resolution regardless of the number of samples. A single-precision
+ * accumulator does: with a large frequency offset (e.g., the carrier offsets
+ * of GLONASS FDMA channels) the accumulated phase reached 1e5 rad over a
+ * 20 ms block, its resolution dropped to 0.01-0.06 rad, and the phase
+ * increment was effectively rounded, shifting the frequency of the generated
+ * carrier by hundreds of Hz. The phase increment is quantized to 2*pi/2^32 rad
+ * (1.5e-9 rad, i.e., 1.4 mHz at 6 Msps). */
+#define VOLK_GNSSSDR_SINCOS_RAD_TO_FIXED (4294967296.0 / 6.283185307179586)
+#define VOLK_GNSSSDR_SINCOS_INT32_TO_RAD (3.14159265358979323846f / 2147483648.0f)
+
+static inline uint32_t volk_gnsssdr_sincos_rad_to_fixed(float rad)
+{
+    /* the 64-bit intermediate keeps the value modulo 2^32 exact for |rad| < 2^31 */
+    return (uint32_t)llround((double)rad * VOLK_GNSSSDR_SINCOS_RAD_TO_FIXED);
+}
+
+static inline float volk_gnsssdr_sincos_fixed_to_rad(uint32_t fixed)
+{
+    /* reinterpreting the phase as a signed integer maps it into [-pi, pi) */
+    return (float)((int32_t)fixed) * VOLK_GNSSSDR_SINCOS_INT32_TO_RAD;
+}
 
 
 #ifdef LV_HAVE_SSE2
@@ -63,11 +92,12 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_a_sse2(lv_32fc_t *out, const fl
 
     const unsigned int sse_iters = num_points / 4;
     unsigned int number = 0;
-    float _phase = (*phase);
+    uint32_t _phase = volk_gnsssdr_sincos_rad_to_fixed(*phase);
+    const uint32_t _phase_inc = volk_gnsssdr_sincos_rad_to_fixed(phase_inc);
 
-    __m128 sine, cosine, aux, x, four_phases_reg;
+    __m128 sine, cosine, aux, x;
     __m128 xmm1, xmm2, xmm3 = _mm_setzero_ps(), sign_bit_sin, y;
-    __m128i emm0, emm2, emm4;
+    __m128i emm0, emm2, emm4, four_phases_reg;
 
     /* declare some SSE constants */
     static const int _ps_inv_sign_mask[4] = {~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000};
@@ -90,15 +120,21 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_a_sse2(lv_32fc_t *out, const fl
     static const float _ps_sincof_p2[4] = {-1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1};
     static const float _ps_0p5[4] = {0.5f, 0.5f, 0.5f, 0.5f};
     static const float _ps_1[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+    __VOLK_ATTR_ALIGNED(16)
+    static const float _ps_int32_to_rad[4] = {VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD};
 
-    float four_phases[4] = {_phase, _phase + phase_inc, _phase + 2 * phase_inc, _phase + 3 * phase_inc};
-    float four_phases_inc[4] = {4 * phase_inc, 4 * phase_inc, 4 * phase_inc, 4 * phase_inc};
-    four_phases_reg = _mm_load_ps(four_phases);
-    const __m128 four_phases_inc_reg = _mm_load_ps(four_phases_inc);
+    /* fixed-point phases (2^32 units per turn): the integer accumulation wraps modulo 2*pi */
+    __VOLK_ATTR_ALIGNED(16)
+    uint32_t four_phases[4] = {_phase, _phase + _phase_inc, _phase + 2 * _phase_inc, _phase + 3 * _phase_inc};
+    __VOLK_ATTR_ALIGNED(16)
+    uint32_t four_phases_inc[4] = {4 * _phase_inc, 4 * _phase_inc, 4 * _phase_inc, 4 * _phase_inc};
+    four_phases_reg = _mm_load_si128((__m128i *)four_phases);
+    const __m128i four_phases_inc_reg = _mm_load_si128((__m128i *)four_phases_inc);
 
     for (; number < sse_iters; number++)
         {
-            x = four_phases_reg;
+            /* phase in [-pi, pi) */
+            x = _mm_mul_ps(_mm_cvtepi32_ps(four_phases_reg), *(__m128 *)_ps_int32_to_rad);
 
             sign_bit_sin = x;
             /* take the absolute value */
@@ -194,16 +230,17 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_a_sse2(lv_32fc_t *out, const fl
             _mm_store_ps((float *)bPtr, aux);
             bPtr += 2;
 
-            four_phases_reg = _mm_add_ps(four_phases_reg, four_phases_inc_reg);
+            four_phases_reg = _mm_add_epi32(four_phases_reg, four_phases_inc_reg);
         }
 
-    _phase = _phase + phase_inc * (sse_iters * 4);
+    _phase = (uint32_t)_mm_cvtsi128_si32(four_phases_reg);
     for (number = sse_iters * 4; number < num_points; number++)
         {
-            *bPtr++ = lv_cmake((float)cosf((_phase)), (float)sinf((_phase)));
-            _phase += phase_inc;
+            const float x_tail = volk_gnsssdr_sincos_fixed_to_rad(_phase);
+            *bPtr++ = lv_cmake((float)cosf(x_tail), (float)sinf(x_tail));
+            _phase += _phase_inc;
         }
-    (*phase) = _phase;
+    (*phase) = volk_gnsssdr_sincos_fixed_to_rad(_phase);
 }
 
 #endif /* LV_HAVE_SSE2  */
@@ -219,11 +256,12 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_u_sse2(lv_32fc_t *out, const fl
     const unsigned int sse_iters = num_points / 4;
     unsigned int number = 0;
 
-    float _phase = (*phase);
+    uint32_t _phase = volk_gnsssdr_sincos_rad_to_fixed(*phase);
+    const uint32_t _phase_inc = volk_gnsssdr_sincos_rad_to_fixed(phase_inc);
 
-    __m128 sine, cosine, aux, x, four_phases_reg;
+    __m128 sine, cosine, aux, x;
     __m128 xmm1, xmm2, xmm3 = _mm_setzero_ps(), sign_bit_sin, y;
-    __m128i emm0, emm2, emm4;
+    __m128i emm0, emm2, emm4, four_phases_reg;
 
     /* declare some SSE constants */
     __VOLK_ATTR_ALIGNED(16)
@@ -264,17 +302,21 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_u_sse2(lv_32fc_t *out, const fl
     static const float _ps_0p5[4] = {0.5f, 0.5f, 0.5f, 0.5f};
     __VOLK_ATTR_ALIGNED(16)
     static const float _ps_1[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+    __VOLK_ATTR_ALIGNED(16)
+    static const float _ps_int32_to_rad[4] = {VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD};
 
+    /* fixed-point phases (2^32 units per turn): the integer accumulation wraps modulo 2*pi */
     __VOLK_ATTR_ALIGNED(16)
-    float four_phases[4] = {_phase, _phase + phase_inc, _phase + 2 * phase_inc, _phase + 3 * phase_inc};
+    uint32_t four_phases[4] = {_phase, _phase + _phase_inc, _phase + 2 * _phase_inc, _phase + 3 * _phase_inc};
     __VOLK_ATTR_ALIGNED(16)
-    float four_phases_inc[4] = {4 * phase_inc, 4 * phase_inc, 4 * phase_inc, 4 * phase_inc};
-    four_phases_reg = _mm_load_ps(four_phases);
-    const __m128 four_phases_inc_reg = _mm_load_ps(four_phases_inc);
+    uint32_t four_phases_inc[4] = {4 * _phase_inc, 4 * _phase_inc, 4 * _phase_inc, 4 * _phase_inc};
+    four_phases_reg = _mm_load_si128((__m128i *)four_phases);
+    const __m128i four_phases_inc_reg = _mm_load_si128((__m128i *)four_phases_inc);
 
     for (; number < sse_iters; number++)
         {
-            x = four_phases_reg;
+            /* phase in [-pi, pi) */
+            x = _mm_mul_ps(_mm_cvtepi32_ps(four_phases_reg), *(__m128 *)_ps_int32_to_rad);
 
             sign_bit_sin = x;
             /* take the absolute value */
@@ -370,16 +412,17 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_u_sse2(lv_32fc_t *out, const fl
             _mm_storeu_ps((float *)bPtr, aux);
             bPtr += 2;
 
-            four_phases_reg = _mm_add_ps(four_phases_reg, four_phases_inc_reg);
+            four_phases_reg = _mm_add_epi32(four_phases_reg, four_phases_inc_reg);
         }
 
-    _phase = _phase + phase_inc * (sse_iters * 4);
+    _phase = (uint32_t)_mm_cvtsi128_si32(four_phases_reg);
     for (number = sse_iters * 4; number < num_points; number++)
         {
-            *bPtr++ = lv_cmake((float)cosf(_phase), (float)sinf(_phase));
-            _phase += phase_inc;
+            const float x_tail = volk_gnsssdr_sincos_fixed_to_rad(_phase);
+            *bPtr++ = lv_cmake((float)cosf(x_tail), (float)sinf(x_tail));
+            _phase += _phase_inc;
         }
-    (*phase) = _phase;
+    (*phase) = volk_gnsssdr_sincos_fixed_to_rad(_phase);
 }
 
 #endif /* LV_HAVE_SSE2  */
@@ -389,14 +432,16 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_u_sse2(lv_32fc_t *out, const fl
 
 static inline void volk_gnsssdr_s32f_sincos_32fc_generic(lv_32fc_t *out, const float phase_inc, float *phase, unsigned int num_points)
 {
-    float _phase = (*phase);
+    uint32_t _phase = volk_gnsssdr_sincos_rad_to_fixed(*phase);
+    const uint32_t _phase_inc = volk_gnsssdr_sincos_rad_to_fixed(phase_inc);
     unsigned int i;
     for (i = 0; i < num_points; i++)
         {
-            *out++ = lv_cmake((float)cosf(_phase), (float)sinf(_phase));
-            _phase += phase_inc;
+            const float x = volk_gnsssdr_sincos_fixed_to_rad(_phase);
+            *out++ = lv_cmake((float)cosf(x), (float)sinf(x));
+            _phase += _phase_inc;
         }
-    (*phase) = _phase;
+    (*phase) = volk_gnsssdr_sincos_fixed_to_rad(_phase);
 }
 
 #endif /* LV_HAVE_GENERIC  */
@@ -407,23 +452,18 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_generic(lv_32fc_t *out, const f
 #include <stdint.h>
 static inline void volk_gnsssdr_s32f_sincos_32fc_generic_fxpt(lv_32fc_t *out, const float phase_inc, float *phase, unsigned int num_points)
 {
-    float _in, s, c;
+    float s, c;
     unsigned int i;
-    int32_t x, sin_index, cos_index, d;
-    const float PI = 3.14159265358979323846;
-    const float TWO_TO_THE_31_DIV_PI = 2147483648.0 / PI;
-    const float TWO_PI = PI * 2;
+    int32_t x, sin_index, cos_index;
     const int32_t bitlength = 32;
     const int32_t Nbits = 10;
     const int32_t diffbits = bitlength - Nbits;
     uint32_t ux;
-    float _phase = (*phase);
+    uint32_t _phase = volk_gnsssdr_sincos_rad_to_fixed(*phase);
+    const uint32_t _phase_inc = volk_gnsssdr_sincos_rad_to_fixed(phase_inc);
     for (i = 0; i < num_points; i++)
         {
-            _in = _phase;
-            d = (int32_t)floor(_in / TWO_PI + 0.5);
-            _in -= d * TWO_PI;
-            x = (int32_t)((float)_in * TWO_TO_THE_31_DIV_PI);
+            x = (int32_t)_phase;
 
             ux = x;
             sin_index = ux >> diffbits;
@@ -434,9 +474,9 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_generic_fxpt(lv_32fc_t *out, co
             c = sine_table_10bits[cos_index][0] * (ux >> 1) + sine_table_10bits[cos_index][1];
 
             *out++ = lv_cmake((float)c, (float)s);
-            _phase += phase_inc;
+            _phase += _phase_inc;
         }
-    (*phase) = _phase;
+    (*phase) = volk_gnsssdr_sincos_fixed_to_rad(_phase);
 }
 
 #endif /* LV_HAVE_GENERIC  */
@@ -452,11 +492,12 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_a_avx2(lv_32fc_t *out, const fl
     const unsigned int avx_iters = num_points / 8;
     unsigned int number = 0;
 
-    float _phase = (*phase);
+    uint32_t _phase = volk_gnsssdr_sincos_rad_to_fixed(*phase);
+    const uint32_t _phase_inc = volk_gnsssdr_sincos_rad_to_fixed(phase_inc);
 
-    __m256 sine, cosine, x, eight_phases_reg;
+    __m256 sine, cosine, x;
     __m256 xmm1, xmm2, xmm3 = _mm256_setzero_ps(), sign_bit_sin, y;
-    __m256i emm0, emm2, emm4;
+    __m256i emm0, emm2, emm4, eight_phases_reg;
     __m128 aux, c1, s1;
 
     /* declare some AXX2 constants */
@@ -498,17 +539,21 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_a_avx2(lv_32fc_t *out, const fl
     static const float _ps_0p5[8] = {0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f};
     __VOLK_ATTR_ALIGNED(32)
     static const float _ps_1[8] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
+    __VOLK_ATTR_ALIGNED(32)
+    static const float _ps_int32_to_rad[8] = {VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD};
 
+    /* fixed-point phases (2^32 units per turn): the integer accumulation wraps modulo 2*pi */
     __VOLK_ATTR_ALIGNED(32)
-    float eight_phases[8] = {_phase, _phase + phase_inc, _phase + 2 * phase_inc, _phase + 3 * phase_inc, _phase + 4 * phase_inc, _phase + 5 * phase_inc, _phase + 6 * phase_inc, _phase + 7 * phase_inc};
+    uint32_t eight_phases[8] = {_phase, _phase + _phase_inc, _phase + 2 * _phase_inc, _phase + 3 * _phase_inc, _phase + 4 * _phase_inc, _phase + 5 * _phase_inc, _phase + 6 * _phase_inc, _phase + 7 * _phase_inc};
     __VOLK_ATTR_ALIGNED(32)
-    float eight_phases_inc[8] = {8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc};
-    eight_phases_reg = _mm256_load_ps(eight_phases);
-    const __m256 eight_phases_inc_reg = _mm256_load_ps(eight_phases_inc);
+    uint32_t eight_phases_inc[8] = {8 * _phase_inc, 8 * _phase_inc, 8 * _phase_inc, 8 * _phase_inc, 8 * _phase_inc, 8 * _phase_inc, 8 * _phase_inc, 8 * _phase_inc};
+    eight_phases_reg = _mm256_load_si256((__m256i *)eight_phases);
+    const __m256i eight_phases_inc_reg = _mm256_load_si256((__m256i *)eight_phases_inc);
 
     for (; number < avx_iters; number++)
         {
-            x = eight_phases_reg;
+            /* phase in [-pi, pi) */
+            x = _mm256_mul_ps(_mm256_cvtepi32_ps(eight_phases_reg), *(__m256 *)_ps_int32_to_rad);
 
             sign_bit_sin = x;
             /* take the absolute value */
@@ -614,16 +659,17 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_a_avx2(lv_32fc_t *out, const fl
             _mm_store_ps((float *)bPtr, aux);
             bPtr += 2;
 
-            eight_phases_reg = _mm256_add_ps(eight_phases_reg, eight_phases_inc_reg);
+            eight_phases_reg = _mm256_add_epi32(eight_phases_reg, eight_phases_inc_reg);
         }
 
-    _phase = _phase + phase_inc * (avx_iters * 8);
+    _phase = (uint32_t)_mm_cvtsi128_si32(_mm256_castsi256_si128(eight_phases_reg));
     for (number = avx_iters * 8; number < num_points; number++)
         {
-            out[number] = lv_cmake((float)cosf(_phase), (float)sinf(_phase));
-            _phase += phase_inc;
+            const float x_tail = volk_gnsssdr_sincos_fixed_to_rad(_phase);
+            out[number] = lv_cmake((float)cosf(x_tail), (float)sinf(x_tail));
+            _phase += _phase_inc;
         }
-    (*phase) = _phase;
+    (*phase) = volk_gnsssdr_sincos_fixed_to_rad(_phase);
 }
 
 #endif /* LV_HAVE_AVX2  */
@@ -639,11 +685,12 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_u_avx2(lv_32fc_t *out, const fl
     const unsigned int avx_iters = num_points / 8;
     unsigned int number = 0;
 
-    float _phase = (*phase);
+    uint32_t _phase = volk_gnsssdr_sincos_rad_to_fixed(*phase);
+    const uint32_t _phase_inc = volk_gnsssdr_sincos_rad_to_fixed(phase_inc);
 
-    __m256 sine, cosine, x, eight_phases_reg;
+    __m256 sine, cosine, x;
     __m256 xmm1, xmm2, xmm3 = _mm256_setzero_ps(), sign_bit_sin, y;
-    __m256i emm0, emm2, emm4;
+    __m256i emm0, emm2, emm4, eight_phases_reg;
     __m128 aux, c1, s1;
 
     /* declare some AXX2 constants */
@@ -685,17 +732,21 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_u_avx2(lv_32fc_t *out, const fl
     static const float _ps_0p5[8] = {0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f};
     __VOLK_ATTR_ALIGNED(32)
     static const float _ps_1[8] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
+    __VOLK_ATTR_ALIGNED(32)
+    static const float _ps_int32_to_rad[8] = {VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD, VOLK_GNSSSDR_SINCOS_INT32_TO_RAD};
 
+    /* fixed-point phases (2^32 units per turn): the integer accumulation wraps modulo 2*pi */
     __VOLK_ATTR_ALIGNED(32)
-    float eight_phases[8] = {_phase, _phase + phase_inc, _phase + 2 * phase_inc, _phase + 3 * phase_inc, _phase + 4 * phase_inc, _phase + 5 * phase_inc, _phase + 6 * phase_inc, _phase + 7 * phase_inc};
+    uint32_t eight_phases[8] = {_phase, _phase + _phase_inc, _phase + 2 * _phase_inc, _phase + 3 * _phase_inc, _phase + 4 * _phase_inc, _phase + 5 * _phase_inc, _phase + 6 * _phase_inc, _phase + 7 * _phase_inc};
     __VOLK_ATTR_ALIGNED(32)
-    float eight_phases_inc[8] = {8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc};
-    eight_phases_reg = _mm256_load_ps(eight_phases);
-    const __m256 eight_phases_inc_reg = _mm256_load_ps(eight_phases_inc);
+    uint32_t eight_phases_inc[8] = {8 * _phase_inc, 8 * _phase_inc, 8 * _phase_inc, 8 * _phase_inc, 8 * _phase_inc, 8 * _phase_inc, 8 * _phase_inc, 8 * _phase_inc};
+    eight_phases_reg = _mm256_load_si256((__m256i *)eight_phases);
+    const __m256i eight_phases_inc_reg = _mm256_load_si256((__m256i *)eight_phases_inc);
 
     for (; number < avx_iters; number++)
         {
-            x = eight_phases_reg;
+            /* phase in [-pi, pi) */
+            x = _mm256_mul_ps(_mm256_cvtepi32_ps(eight_phases_reg), *(__m256 *)_ps_int32_to_rad);
 
             sign_bit_sin = x;
             /* take the absolute value */
@@ -801,16 +852,17 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_u_avx2(lv_32fc_t *out, const fl
             _mm_storeu_ps((float *)bPtr, aux);
             bPtr += 2;
 
-            eight_phases_reg = _mm256_add_ps(eight_phases_reg, eight_phases_inc_reg);
+            eight_phases_reg = _mm256_add_epi32(eight_phases_reg, eight_phases_inc_reg);
         }
 
-    _phase = _phase + phase_inc * (avx_iters * 8);
+    _phase = (uint32_t)_mm_cvtsi128_si32(_mm256_castsi256_si128(eight_phases_reg));
     for (number = avx_iters * 8; number < num_points; number++)
         {
-            out[number] = lv_cmake((float)cosf(_phase), (float)sinf(_phase));
-            _phase += phase_inc;
+            const float x_tail = volk_gnsssdr_sincos_fixed_to_rad(_phase);
+            out[number] = lv_cmake((float)cosf(x_tail), (float)sinf(x_tail));
+            _phase += _phase_inc;
         }
-    (*phase) = _phase;
+    (*phase) = volk_gnsssdr_sincos_fixed_to_rad(_phase);
 }
 
 #endif /* LV_HAVE_AVX2  */
@@ -823,16 +875,18 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_neon(lv_32fc_t *out, const floa
 {
     lv_32fc_t *bPtr = out;
     const unsigned int neon_iters = num_points / 4;
-    float _phase = (*phase);
+    uint32_t _phase = volk_gnsssdr_sincos_rad_to_fixed(*phase);
+    const uint32_t _phase_inc = volk_gnsssdr_sincos_rad_to_fixed(phase_inc);
 
+    /* fixed-point phases (2^32 units per turn): the integer accumulation wraps modulo 2*pi */
     __VOLK_ATTR_ALIGNED(16)
-    float32_t four_phases[4] = {_phase, _phase + phase_inc, _phase + 2 * phase_inc, _phase + 3 * phase_inc};
-    float four_inc = 4 * phase_inc;
+    uint32_t four_phases[4] = {_phase, _phase + _phase_inc, _phase + 2 * _phase_inc, _phase + 3 * _phase_inc};
+    const uint32_t four_inc = 4 * _phase_inc;
     __VOLK_ATTR_ALIGNED(16)
-    float32_t four_phases_inc[4] = {four_inc, four_inc, four_inc, four_inc};
+    uint32_t four_phases_inc[4] = {four_inc, four_inc, four_inc, four_inc};
 
-    float32x4_t four_phases_reg = vld1q_f32(four_phases);
-    float32x4_t four_phases_inc_reg = vld1q_f32(four_phases_inc);
+    uint32x4_t four_phases_reg = vld1q_u32(four_phases);
+    const uint32x4_t four_phases_inc_reg = vld1q_u32(four_phases_inc);
 
     const float32_t c_minus_cephes_DP1 = -0.78515625;
     const float32_t c_minus_cephes_DP2 = -2.4187564849853515625e-4;
@@ -844,6 +898,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_neon(lv_32fc_t *out, const floa
     const float32_t c_coscof_p1 = -1.388731625493765E-003;
     const float32_t c_coscof_p2 = 4.166664568298827E-002;
     const float32_t c_cephes_FOPI = 1.27323954473516;
+    const float32_t c_int32_to_rad = VOLK_GNSSSDR_SINCOS_INT32_TO_RAD;
 
     unsigned int number = 0;
 
@@ -854,7 +909,8 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_neon(lv_32fc_t *out, const floa
 
     for (; number < neon_iters; number++)
         {
-            x = four_phases_reg;
+            /* phase in [-pi, pi) */
+            x = vmulq_n_f32(vcvtq_f32_s32(vreinterpretq_s32_u32(four_phases_reg)), c_int32_to_rad);
 
             sign_mask_sin = vcltq_f32(x, vdupq_n_f32(0));
             x = vabsq_f32(x);
@@ -918,16 +974,17 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_neon(lv_32fc_t *out, const floa
             vst2q_f32((float32_t *)bPtr, result);
             bPtr += 4;
 
-            four_phases_reg = vaddq_f32(four_phases_reg, four_phases_inc_reg);
+            four_phases_reg = vaddq_u32(four_phases_reg, four_phases_inc_reg);
         }
 
-    _phase = _phase + phase_inc * (neon_iters * 4);
+    _phase = vgetq_lane_u32(four_phases_reg, 0);
     for (number = neon_iters * 4; number < num_points; number++)
         {
-            *bPtr++ = lv_cmake((float)cosf(_phase), (float)sinf(_phase));
-            _phase += phase_inc;
+            const float x_tail = volk_gnsssdr_sincos_fixed_to_rad(_phase);
+            *bPtr++ = lv_cmake((float)cosf(x_tail), (float)sinf(x_tail));
+            _phase += _phase_inc;
         }
-    (*phase) = _phase;
+    (*phase) = volk_gnsssdr_sincos_fixed_to_rad(_phase);
 }
 
 #endif /* LV_HAVE_NEON  */
@@ -950,11 +1007,14 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_rvv(lv_32fc_t *out, const float
     const float c_coscof_p1 = -1.388731625493765E-003;
     const float c_coscof_p2 = 4.166664568298827E-002;
     const float c_cephes_FOPI = 1.27323954473516;
+    const float c_int32_to_rad = VOLK_GNSSSDR_SINCOS_INT32_TO_RAD;
 
     size_t n = num_points;
 
-    // Initialize other pointers for consistency
-    float *phasePtr = phase;
+    // Fixed-point phase (2^32 units per turn): the integer accumulation
+    // wraps modulo 2*pi and does not lose resolution
+    uint32_t phase_fixed = volk_gnsssdr_sincos_rad_to_fixed(*phase);
+    const uint32_t phase_inc_fixed = volk_gnsssdr_sincos_rad_to_fixed(phase_inc);
 
     // Initialize pointers to keep track as stripmine
     float *outPtr = (float *)out;
@@ -964,18 +1024,12 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_rvv(lv_32fc_t *out, const float
             // Record how many elements will actually be processed
             vl = __riscv_vsetvl_e32m4(n);
 
-            // Splat phase
-            vfloat32m4_t phaseVal = __riscv_vfmv_v_f_f32m4(*phasePtr, vl);
-
-            // Splat phaseInc
-            vfloat32m4_t phaseIncVal = __riscv_vfmv_v_f_f32m4(phase_inc, vl);
-
-            // iterFloat[i] = (float) i
+            // phaseFixed[i] = phaseFixed + i * phaseIncFixed (mod 2^32)
             vuint32m4_t iterVal = __riscv_vid_v_u32m4(vl);
-            vfloat32m4_t iterFloatVal = __riscv_vfcvt_f_xu_v_f32m4(iterVal, vl);
+            vuint32m4_t phaseFixedVal = __riscv_vmacc_vx_u32m4(__riscv_vmv_v_x_u32m4(phase_fixed, vl), phase_inc_fixed, iterVal, vl);
 
-            // phase[i] = +( iterFloat[i] * phaseInc[i] ) + phase[i]
-            phaseVal = __riscv_vfmacc_vv_f32m4(phaseVal, iterFloatVal, phaseIncVal, vl);
+            // phase[i] = (float)(int32)phaseFixed[i] * (pi / 2^31), in [-pi, pi)
+            vfloat32m4_t phaseVal = __riscv_vfmul_vf_f32m4(__riscv_vfcvt_f_x_v_f32m4(__riscv_vreinterpret_v_u32m4_i32m4(phaseFixedVal), vl), c_int32_to_rad, vl);
 
             // Save initial signs
             // signMask[i] = phase[i] < 0
@@ -1062,12 +1116,8 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_rvv(lv_32fc_t *out, const float
             vfloat32m4x2_t outVal = __riscv_vcreate_v_f32m4x2(outRealVal, outImagVal);
             __riscv_vsseg2e32_v_f32m4x2(outPtr, outVal, vl);
 
-            // Store phase[vl - 1]
-            phaseVal = __riscv_vslidedown_vx_f32m4(phaseVal, vl - 1, vl);
-            *phasePtr = __riscv_vfmv_f_s_f32m4_f32(phaseVal);
-
-            // Account for increment after last calculation
-            *phasePtr += phase_inc;
+            // Carry the phase to the next chunk (mod 2^32)
+            phase_fixed += (uint32_t)vl * phase_inc_fixed;
 
             // In looping, decrement the number of
             // elements left and increment the pointers
@@ -1075,6 +1125,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_rvv(lv_32fc_t *out, const float
             // taking into account how the output `vl`
             // complex numbers are stored as 2 `float`s
         }
+    (*phase) = volk_gnsssdr_sincos_fixed_to_rad(phase_fixed);
 }
 
 #endif /* LV_HAVE_RVV */

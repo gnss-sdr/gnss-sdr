@@ -39,8 +39,8 @@ import os
 
 def plotNavigation(navSolutions, settings, plot_skyplot=0):
 
-    # ---------- CHANGE HERE:
-    fig_path = '/home/labnav/Desktop/TEST_IRENE/PLOTS/PlotNavigation'
+    fig_path = settings.get('fig_path', 'plots/pvt')
+    output_format = settings.get('output_format', 'png')
 
     if not os.path.exists(fig_path):
         os.makedirs(fig_path)
@@ -67,9 +67,9 @@ def plotNavigation(navSolutions, settings, plot_skyplot=0):
         else:
             # Compute the mean error for static receiver
             ref_coord = {
-                'E_UTM': settings.truePosition['E_UTM'],
-                'N_UTM': settings.truePosition['N_UTM'],
-                'U_UTM': settings.truePosition['U_UTM']
+                'E_UTM': settings['true_position']['E_UTM'],
+                'N_UTM': settings['true_position']['N_UTM'],
+                'U_UTM': settings['true_position']['U_UTM']
             }
 
             mean_position = {
@@ -96,9 +96,15 @@ def plotNavigation(navSolutions, settings, plot_skyplot=0):
         ax3 = plt.subplot(4, 2, (6, 8), projection='3d')
 
         #  (ax1) Coordinate differences in UTM system from reference point
-        ax1.plot(np.vstack([navSolutions['E_UTM'] - ref_coord['E_UTM'],
-                            navSolutions['N_UTM'] - ref_coord['N_UTM'],
-                            navSolutions['U_UTM'] - ref_coord['U_UTM']]).T)
+        # Coerce to arrays so the offset works whether the reference is a
+        # float (from --true-position) or a NumPy mean of the solutions.
+        e_utm = np.asarray(navSolutions['E_UTM'], dtype=float)
+        n_utm = np.asarray(navSolutions['N_UTM'], dtype=float)
+        u_utm = np.asarray(navSolutions['U_UTM'], dtype=float)
+        d_east = e_utm - ref_coord['E_UTM']
+        d_north = n_utm - ref_coord['N_UTM']
+        d_up = u_utm - ref_coord['U_UTM']
+        ax1.plot(np.vstack([d_east, d_north, d_up]).T)
         ax1.set_title('Coordinates variations in UTM system', fontweight='bold')
         ax1.legend(['E_UTM', 'N_UTM', 'U_UTM'])
         ax1.set_xlabel(f"Measurement period: {settings['navSolPeriod']} ms")
@@ -106,19 +112,18 @@ def plotNavigation(navSolutions, settings, plot_skyplot=0):
         ax1.grid(True)
         ax1.axis('tight')
 
-        # (ax2) Satellite sky plot
-        if plot_skyplot: #todo posicion de los satelites
-            skyPlot(ax2, navSolutions['channel']['az'],
-                    navSolutions['channel']['el'],
-                    navSolutions['channel']['PRN'][:, 0])
-            ax2.set_title(f'Sky plot (mean PDOP: '
-                          f'{np.nanmean(navSolutions["DOP"][1, :]):.1f})',
-                          fontweight='bold')
+        # (ax2) Reserved for a satellite sky plot, which cannot be drawn from a
+        # PVT dump (it has no per-satellite azimuth/elevation). Hide the empty
+        # panel; use utils/skyplot/skyplot.py to plot a skyplot from a RINEX
+        # navigation file.
+        ax2.axis('off')
+        if plot_skyplot:
+            print("Warning: the sky plot panel is not available from a PVT "
+                  "dump (no azimuth/elevation data). Use "
+                  "utils/skyplot/skyplot.py instead.")
 
         # (ax3) Position plot in UTM system
-        ax3.scatter(navSolutions['E_UTM'] - ref_coord['E_UTM'],
-                    navSolutions['N_UTM'] - ref_coord['N_UTM'],
-                    navSolutions['U_UTM'] - ref_coord['U_UTM'], marker='+')
+        ax3.scatter(d_east, d_north, d_up, marker='+')
         ax3.scatter([0], [0], [0], color='r', marker='+', linewidth=1.5)
         ax3.view_init(0, 90)
         ax3.set_box_aspect([1, 1, 1])
@@ -130,5 +135,9 @@ def plotNavigation(navSolutions, settings, plot_skyplot=0):
         ax3.set_zlabel('Upping (m)')
 
         plt.tight_layout()
-        plt.savefig(os.path.join(fig_path, 'measures_UTM.png'))
-        plt.show()
+        plt.savefig(os.path.join(fig_path, f'measures_UTM.{output_format}'))
+        # Close unless it will be shown; the caller triggers a single
+        # plt.show() at the end. Avoids repeated show()/close() cycles, which
+        # can crash interactive matplotlib backends (e.g. macOS) on close.
+        if not settings.get('show', True):
+            plt.close()

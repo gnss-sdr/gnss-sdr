@@ -16,8 +16,7 @@
 
 
 #include "galileo_tow_map.h"
-#include <limits>    // for std::numeric_limits
-#include <memory>    // for std::shared
+#include <memory>    // for std::shared_ptr
 #include <typeinfo>  // for typeid
 
 #if USE_GLOG_AND_GFLAGS
@@ -65,7 +64,7 @@ galileo_tow_map::galileo_tow_map() : gr::block("galileo_tow_map", gr::io_signatu
 
     for (uint32_t prn = 0; prn < 37; prn++)
         {
-            d_galileo_tow[prn] = std::pair<uint32_t, uint64_t>(std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint64_t>::max());
+            d_galileo_tow[prn] = GalileoTowMapEntry{};
         }
 }
 
@@ -76,23 +75,22 @@ void galileo_tow_map::msg_handler_galileo_tow_map(const pmt::pmt_t& msg)
     try
         {
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
-            if (msg_type_hash_code == typeid(std::shared_ptr<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>).hash_code())
+            if (msg_type_hash_code == typeid(std::shared_ptr<GalileoTowMapMessage>).hash_code())
                 {
-                    const auto received_tow_map = wht::any_cast<std::shared_ptr<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>>(pmt::any_ref(msg));
+                    const auto received_tow_map = wht::any_cast<std::shared_ptr<GalileoTowMapMessage>>(pmt::any_ref(msg));
                     const uint32_t received_prn = received_tow_map->first;
-                    const uint32_t received_tow = received_tow_map->second.first;
-                    const uint64_t received_sample_counter = received_tow_map->second.second;
+                    const GalileoTowMapEntry received_entry = received_tow_map->second;
 
                     d_galileo_tow.erase(received_prn);
-                    if (received_tow < 604800000)  // received TOW is in ms
+                    if (received_entry.week != GALILEO_TOW_MAP_INVALID_WEEK && received_entry.tow_ms < GALILEO_TOW_MAP_WEEK_MS)  // received TOW is in ms
                         {
-                            d_galileo_tow[received_prn] = std::pair<uint32_t, uint64_t>(received_tow, received_sample_counter);
+                            d_galileo_tow[received_prn] = received_entry;
                         }
                     else
                         {
-                            d_galileo_tow[received_prn] = std::pair<uint32_t, uint64_t>(std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint64_t>::max());
+                            d_galileo_tow[received_prn] = GalileoTowMapEntry{};
                         }
-                    const std::shared_ptr<std::map<uint32_t, std::pair<uint32_t, uint64_t>>> tmp_obj = std::make_shared<std::map<uint32_t, std::pair<uint32_t, uint64_t>>>(d_galileo_tow);
+                    const std::shared_ptr<GalileoTowMap> tmp_obj = std::make_shared<GalileoTowMap>(d_galileo_tow);
                     this->message_port_pub(pmt::mp("TOW_to_TLM"), pmt::make_any(tmp_obj));
                 }
         }

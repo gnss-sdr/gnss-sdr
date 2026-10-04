@@ -20,8 +20,10 @@
 #include "Galileo_CNAV.h"
 #include "galileo_has_data.h"
 #include "gnss_sdr_filesystem.h"
+#include "rtklib_rtkcmn.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <algorithm>  // for std::find, std::count
+#include <array>      // for std::array
 #include <bitset>     // for std::bitset
 #include <cstdint>    // for uint8_t, ...
 #include <ctime>      // for tm
@@ -125,7 +127,7 @@ Has_Simple_Printer::Has_Simple_Printer(const std::string& base_path,
 }
 
 
-Has_Simple_Printer::~Has_Simple_Printer()
+Has_Simple_Printer::~Has_Simple_Printer() noexcept
 {
     DLOG(INFO) << "HAS Message printer destructor called.";
     try
@@ -136,12 +138,27 @@ Has_Simple_Printer::~Has_Simple_Printer()
         {
             std::cerr << e.what() << '\n';
         }
+    catch (...)
+        {
+            LOG(INFO) << "Unknown exception closing HAS Message file.";
+        }
     if (!d_data_printed)
         {
-            errorlib::error_code ec;
-            if (!fs::remove(fs::path(d_has_filename), ec))
+            try
                 {
-                    LOG(INFO) << "Error deleting temporary HAS Message file.";
+                    errorlib::error_code ec;
+                    if (!fs::remove(fs::path(d_has_filename), ec))
+                        {
+                            LOG(INFO) << "Error deleting temporary HAS Message file.";
+                        }
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(INFO) << "Exception deleting temporary HAS Message file: " << e.what();
+                }
+            catch (...)
+                {
+                    LOG(INFO) << "Unknown exception deleting temporary HAS Message file.";
                 }
         }
 }
@@ -151,7 +168,11 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
 {
     std::lock_guard<std::mutex> guard(d_mutex);
 
-    d_data_printed = true;
+    if (has_data == nullptr)
+        {
+            return false;
+        }
+
     std::string indent = "    ";
 
     if (d_has_file.is_open())
@@ -181,6 +202,34 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
             d_has_file << indent << "MT1 Header\n";
             d_has_file << indent << "----------\n";
             d_has_file << indent << indent << "TOH [s]:             " << static_cast<float>(has_data->header.toh) << '\n';
+            if (has_data->week != GALILEO_HAS_INVALID_WEEK && has_data->tow < GALILEO_HAS_SECONDS_PER_WEEK)
+                {
+                    const uint32_t time_of_message_s = has_data->get_time_of_message_s();
+                    const uint32_t message_age_s =
+                        (has_data->tow + GALILEO_HAS_SECONDS_PER_WEEK - time_of_message_s) % GALILEO_HAS_SECONDS_PER_WEEK;
+                    const bool tow_toh_consistent =
+                        (has_data->header.toh < GALILEO_HAS_SECONDS_PER_HOUR) && (message_age_s < GALILEO_HAS_SECONDS_PER_HOUR);
+                    if (tow_toh_consistent)
+                        {
+                            uint32_t week_at_toh = has_data->week;
+                            if (time_of_message_s > has_data->tow && week_at_toh > 0)
+                                {
+                                    week_at_toh--;  // the TOH belongs to the previous week
+                                }
+                            const gtime_t gst_time = gst2time(static_cast<int>(week_at_toh), static_cast<double>(time_of_message_s));
+                            std::array<char, 32> utc_str{};
+                            time2str(gpst2utc(gst_time), utc_str.data(), 0);
+                            d_has_file << indent << indent << "GST:                 WN=" << week_at_toh << ", TOW=" << time_of_message_s << " [s] (" << utc_str.data() << " UTC)\n";
+                        }
+                    else
+                        {
+                            d_has_file << indent << indent << "GST:                 unavailable (TOH inconsistent)\n";
+                        }
+                }
+            else
+                {
+                    d_has_file << indent << indent << "GST:                 unavailable\n";
+                }
             d_has_file << indent << indent << "Mask flag:           " << static_cast<float>(has_data->header.mask_flag) << '\n';
             d_has_file << indent << indent << "Orbit Corr. Flag:    " << static_cast<float>(has_data->header.orbit_correction_flag) << '\n';
             d_has_file << indent << indent << "Clock Full-set Flag: " << static_cast<float>(has_data->header.clock_fullset_flag) << '\n';
@@ -279,17 +328,25 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     int Nsat_sub = 0;
                     for (uint8_t k = 0; k < has_data->Nsys_sub; k++)
                         {
+                            if (k >= has_data->gnss_id_clock_subset.size())
+                                {
+                                    continue;
+                                }
                             auto it = std::find(has_data->gnss_id_mask.begin(), has_data->gnss_id_mask.end(), has_data->gnss_id_clock_subset[k]);
                             if (it != has_data->gnss_id_mask.end())
                                 {
-                                    int index = it - has_data->gnss_id_mask.begin();
-                                    std::string sat_mask = print_vector_binary(std::vector<uint64_t>(1, has_data->satellite_mask[index]), HAS_MSG_SATELLITE_MASK_LENGTH);
-                                    int number_sats_satellite_mask = std::count(sat_mask.begin(), sat_mask.end(), '1');
-                                    uint64_t mask_value = has_data->satellite_submask[index];
+                                    const auto index = static_cast<size_t>(it - has_data->gnss_id_mask.begin());
+                                    if ((index >= has_data->satellite_mask.size()) || (k >= has_data->satellite_submask.size()))
+                                        {
+                                            continue;
+                                        }
+                                    const std::bitset<HAS_MSG_SATELLITE_MASK_LENGTH> satellite_mask_bits(has_data->satellite_mask[index]);
+                                    const auto number_sats_satellite_mask = static_cast<size_t>(satellite_mask_bits.count());
+                                    uint64_t mask_value = has_data->satellite_submask[k];
                                     // convert value into string
                                     std::string binary("");
                                     uint64_t mask = 1;
-                                    for (int i = 0; i < number_sats_satellite_mask - 1; i++)
+                                    for (size_t i = 0; i < number_sats_satellite_mask; i++)
                                         {
                                             if ((mask & mask_value) >= 1)
                                                 {
@@ -336,7 +393,9 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                 }
 
             d_has_file << "\n\n";
-            return true;
+            const bool message_printed = d_has_file.good();
+            d_data_printed = d_data_printed || message_printed;
+            return message_printed;
         }
     return false;
 }
@@ -405,7 +464,7 @@ std::string Has_Simple_Printer::print_matrix(const std::vector<std::vector<T>>& 
                         {
                             ss << filler;
                         }
-                    for (size_t col = 0; col < mat[0].size(); col++)
+                    for (size_t col = 0; col < mat[row].size(); col++)
                         {
                             if (scale_factor == 1)
                                 {

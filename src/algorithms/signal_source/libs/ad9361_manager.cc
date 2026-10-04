@@ -352,7 +352,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
             std::cout << "Option filter_source=Design is not available in this version of libad9361. Set to filter_source=Off\n";
             filter_source_ = std::string("Off");
         }
-    if (Fpass_ != 0.0 or Fstop_ != 0.0)
+    if (Fpass_ != 0.0 || Fstop_ != 0.0)
         {
             Fpass_ = 0.0;
             Fstop_ = 0.0;
@@ -496,7 +496,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
                     ad9361_fmcomms5_multichip_sync(ctx, FIXUP_INTERFACE_TIMING | CHECK_SAMPLE_RATES);
                 }
         }
-    if (!rx1_enable_ and !rx2_enable_)
+    if (!rx1_enable_ && !rx2_enable_)
         {
             std::cout << "WARNING: No Rx channels enabled.\n";
         }
@@ -587,7 +587,7 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
             std::cout << "Option filter_source=Design is not available in this version. Set to filter_source=Off\n";
             filter_source_ = std::string("Off");
         }
-    if (Fpass_ != 0.0 or Fstop_ != 0.0)
+    if (Fpass_ != 0.0 || Fstop_ != 0.0)
         {
             Fpass_ = 0.0;
             Fstop_ = 0.0;
@@ -659,7 +659,7 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
         {
             iio_channel_enable(rx_chan1);
         }
-    if (!rx1_enable_ and !rx2_enable_)
+    if (!rx1_enable_ && !rx2_enable_)
         {
             std::cout << "WARNING: No Rx channels enabled.\n";
         }

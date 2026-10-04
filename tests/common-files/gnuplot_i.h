@@ -65,7 +65,7 @@ ABSL_FLAG(bool, show_plots, true, "Show plots on screen. Disable for non-interac
 #include <unistd.h>  // for access(), mkstemp()
 #define GP_MAX_TMP_FILES 1024
 #else
-#error unsupported or unknown operating system
+#error unsupported || unknown operating system
 #endif
 
 // declare classes in global namespace

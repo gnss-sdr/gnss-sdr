@@ -42,7 +42,7 @@ SensorDataSourceConfiguration::SensorDataSourceConfiguration(const Configuration
 
 bool SensorDataSourceConfiguration::validate() const
 {
-    return validate_files() and validate_sensors();
+    return validate_files() && validate_sensors();
 }
 
 
@@ -54,7 +54,7 @@ bool SensorDataSourceConfiguration::is_enabled() const
 
 bool SensorDataSourceConfiguration::is_sensor_provided(SensorIdentifier::value_type sensor_id) const
 {
-    if (not enabled_)
+    if (!enabled_)
         {
             return false;
         }
@@ -141,7 +141,7 @@ void SensorDataSourceConfiguration::configure_sensors(const ConfigurationInterfa
 
             // Configure sensor data type, default to same data type as previous sensor
             SensorDataType::value_type data_type = SensorDataType::F32;
-            if (id > 0 and not configuration->is_present(role + ".type"))
+            if (id > 0 && !configuration->is_present(role + ".type"))
                 {
                     data_type = sensors_[id - 1].type;
                 }
@@ -152,7 +152,7 @@ void SensorDataSourceConfiguration::configure_sensors(const ConfigurationInterfa
 
             // Configure offset, default to previous sensor offset plus previous sensor size
             uint64_t offset = 0UL;
-            if (id > 0 and not configuration->is_present(role + ".offset"))
+            if (id > 0 && !configuration->is_present(role + ".offset"))
                 {
                     offset = sensors_[id - 1].offset + SensorDataType::get_size(sensors_[id - 1].type);
                 }
@@ -163,7 +163,7 @@ void SensorDataSourceConfiguration::configure_sensors(const ConfigurationInterfa
 
             // Configure file_id, default to previous sensor file_id
             uint64_t file_id = 0UL;
-            if (id > 0 and not configuration->is_present(role + ".file"))
+            if (id > 0 && !configuration->is_present(role + ".file"))
                 {
                     file_id = sensors_[id - 1].file_id;
                 }
@@ -192,7 +192,7 @@ bool SensorDataSourceConfiguration::validate_files() const
     for (const auto& file : files_)
         {
             std::ifstream test_file{file.second.filename};
-            if (not test_file.good())
+            if (!test_file.good())
                 {
                     DLOG(ERROR) << "Failed to open file '" << file.second.filename << "'";
                     ok = false;

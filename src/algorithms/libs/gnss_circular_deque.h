@@ -109,7 +109,7 @@ template <class T>
 void Gnss_circular_deque<T>::reset(unsigned int max_size, unsigned int nchann)
 {
     d_data.clear();
-    if (max_size > 0 and nchann > 0)
+    if (max_size > 0 && nchann > 0)
         {
             for (unsigned int i = 0; i < nchann; i++)
                 {

@@ -60,12 +60,14 @@ const prcopt_t PRCOPT_DEFAULT = {            /* defaults processing options */
     {1e-4, 1e-3, 1e-4, 1e-1, 1e-2, 0.0},     /* prn[] */
     5E-12,                                   /* sclkstab */
     {3.0, 0.9999, 0.25, 0.1, 0.05, 0, 0, 0}, /* thresar */
-    0.0, 0.0, 0.05,                          /* elmaskar, almaskhold, thresslip */
-    30.0, 30.0, 30.0,                        /* maxtdif, maxinno, maxgdop */
+    0.0, 0.0, 0.05, 0.0,                     /* elmaskar, almaskhold, thresslip, thresdop */
+    30.0, {30.0, 30.0}, 30.0,                /* maxtdif, maxinno{phase,code}, maxgdop */
     {}, {}, {},                              /* baseline, ru, rb */
     {"", ""},                                /* anttype */
     {}, {}, {},                              /* antdel, pcv, exsats */
-    0, 0, 0, {"", ""}, {}, 0, {{}, {}}, {{}, {{}, {}}, {{}, {}}, {}, {}}, 0, {}, true};
+    0, 0, 0, {"", ""}, {}, 0, {{}, {}}, {{}, {{}, {}}, {{}, {}}, {}, {}}, 0, {}, true,
+    false,                 /* estqzsisb */
+    0, 0, 0, 0, 0.0, 0.0}; /* arfilter, minfixsats, minholdsats, mindropsats, varholdamb, armaxposvar */
 
 
 void writesolhead(stream_t *stream, const solopt_t *solopt);

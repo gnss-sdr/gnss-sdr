@@ -120,6 +120,7 @@ int ifmeas(const obsd_t *obs, const nav_t *nav, const double *azel,
     double phw, double *meas, double *var);
 
 double gettgd_ppp(int sat, const nav_t *nav);
+double gettgd_ppp(int sat, const nav_t *nav, int tgd_index);
 
 int corr_ion(gtime_t time, const nav_t *nav, int sat, const double *pos,
     const double *azel, int ionoopt, double *ion, double *var,

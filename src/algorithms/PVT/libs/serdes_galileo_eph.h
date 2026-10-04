@@ -20,6 +20,7 @@
 
 #include "galileo_ephemeris.h"
 #include "galileo_ephemeris.pb.h"  // file created by Protocol Buffers at compile time
+#include "protobuf_cleanup_manager.h"
 #include <memory>
 #include <string>
 #include <utility>
@@ -42,11 +43,10 @@ public:
         // Verify that the version of the library that we linked against is
         // compatible with the version of the headers we compiled against.
         GOOGLE_PROTOBUF_VERIFY_VERSION;
-    }
 
-    ~Serdes_Galileo_Eph()
-    {
-        // google::protobuf::ShutdownProtobufLibrary();
+        // Make sure google::protobuf::ShutdownProtobufLibrary() is called only once,
+        // at the end of the program execution (see Protobuf_Cleanup_Manager)
+        Protobuf_Cleanup_Manager::get();
     }
 
     inline Serdes_Galileo_Eph(const Serdes_Galileo_Eph& other) noexcept : monitor_(other.monitor_)  //!< Copy constructor
@@ -114,8 +114,13 @@ public:
         monitor_.set_e1b_dvs(monitor->E1B_DVS);
         monitor_.set_bgd_e1e5a(monitor->BGD_E1E5a);
         monitor_.set_bgd_e1e5b(monitor->BGD_E1E5b);
+        monitor_.set_nav_message_type(static_cast<gnss_sdr::GalileoEphemeris_NavMessageType>(monitor->nav_message_type));
+        monitor_.set_nav_message_source(static_cast<gnss_sdr::GalileoEphemeris_NavMessageSource>(monitor->nav_message_source));
 
-        monitor_.SerializeToString(&data);
+        if (!monitor_.SerializeToString(&data))
+            {
+                return {};
+            }
         return data;
     }
 
@@ -161,6 +166,16 @@ public:
         monitor.E1B_DVS = mon.e1b_dvs();
         monitor.BGD_E1E5a = mon.bgd_e1e5a();
         monitor.BGD_E1E5b = mon.bgd_e1e5b();
+        const auto nav_message_type = static_cast<uint32_t>(mon.nav_message_type());
+        if (nav_message_type <= static_cast<uint32_t>(Galileo_Nav_Message_Type::FNAV))
+            {
+                monitor.nav_message_type = static_cast<Galileo_Nav_Message_Type>(nav_message_type);
+            }
+        const auto nav_message_source = static_cast<uint32_t>(mon.nav_message_source());
+        if (nav_message_source <= static_cast<uint32_t>(Galileo_Nav_Message_Source::E5b))
+            {
+                monitor.nav_message_source = static_cast<Galileo_Nav_Message_Source>(nav_message_source);
+            }
 
         return monitor;
     }

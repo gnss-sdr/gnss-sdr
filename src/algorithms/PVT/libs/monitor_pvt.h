@@ -18,8 +18,10 @@
 #define GNSS_SDR_MONITOR_PVT_H
 
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/vector.hpp>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 /** \addtogroup PVT
  * \{ */
@@ -33,6 +35,48 @@
 class Monitor_Pvt
 {
 public:
+    /*!
+     * \brief One tracked satellite/signal with its azimuth/elevation, whether
+     * it was combined with another signal of the same satellite (e.g. Galileo
+     * E1+E5a iono-free combination) and whether it was used in this fix.
+     * Signals are listed individually (one entry per satellite per signal):
+     * a combined satellite appears as two entries, both with combined = true.
+     */
+    class TrackedSatelliteInfo
+    {
+    public:
+        uint32_t prn{};
+        char system{};  // 'G' GPS, 'E' Galileo, 'R' GLONASS, 'C' BeiDou, 'S' SBAS, 'J' QZSS
+        std::string signal;
+        double azimuth_deg{};
+        double elevation_deg{};
+        bool combined{};
+        // false when tracked (az/el valid) but excluded from the solve, e.g.
+        // below PVT.elevation_mask or by RAIM FDE.
+        bool used{true};
+        // Broadcast health status, independent of `used` (which alone can't
+        // tell a monitor client *why* a satellite was excluded).
+        bool healthy{true};
+
+        template <class Archive>
+        void serialize(Archive& ar, const unsigned int version)
+        {
+            if (version)
+                {
+                };
+            ar& BOOST_SERIALIZATION_NVP(prn);
+            ar& BOOST_SERIALIZATION_NVP(system);
+            ar& BOOST_SERIALIZATION_NVP(signal);
+            ar& BOOST_SERIALIZATION_NVP(azimuth_deg);
+            ar& BOOST_SERIALIZATION_NVP(elevation_deg);
+            ar& BOOST_SERIALIZATION_NVP(combined);
+            ar& BOOST_SERIALIZATION_NVP(used);
+            ar& BOOST_SERIALIZATION_NVP(healthy);
+        }
+    };
+
+    std::vector<TrackedSatelliteInfo> tracked_satellites;
+
     // TOW
     uint32_t TOW_at_current_symbol_ms;
     // WEEK
@@ -155,6 +199,7 @@ public:
 
         ar& BOOST_SERIALIZATION_NVP(cog);
         ar& BOOST_SERIALIZATION_NVP(geohash);
+        ar& BOOST_SERIALIZATION_NVP(tracked_satellites);
     }
 };
 

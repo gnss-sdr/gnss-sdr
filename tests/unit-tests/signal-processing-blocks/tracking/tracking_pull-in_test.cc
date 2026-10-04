@@ -21,20 +21,14 @@
 #include "GPS_L5.h"
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
+#include "acquisition_interface.h"
 #include "acquisition_msg_rx.h"
 #include "concurrent_queue.h"
-#include "galileo_e1_pcps_ambiguous_acquisition.h"
-#include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
-#include "galileo_e5a_pcps_acquisition.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_valve.h"
 #include "gnuplot_i.h"
-#include "gps_l1_ca_pcps_acquisition.h"
-#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
-#include "gps_l2_m_pcps_acquisition.h"
-#include "gps_l5i_pcps_acquisition.h"
 #include "in_memory_configuration.h"
 #include "signal_generator_flags.h"
 #include "test_flags.h"
@@ -54,6 +48,7 @@
 #include <pmt/pmt.h>
 #include <chrono>
 #include <cstdint>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -201,7 +196,6 @@ public:
 
     TrackingPullInTest()
     {
-        factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
         gnss_synchro = Gnss_Synchro();
@@ -224,7 +218,6 @@ public:
 
     bool acquire_signal(int SV_ID);
 
-    std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
@@ -361,7 +354,7 @@ void TrackingPullInTest::configure_receiver(
             config->set_property("Tracking.early_late_space_chips", "0.5");
             config->set_property("Tracking.track_pilot", "true");
         }
-    else if (implementation == "Galileo_E5a_DLL_PLL_Tracking" or implementation == "Galileo_E5a_DLL_PLL_Tracking_b")
+    else if (implementation == "Galileo_E5a_DLL_PLL_Tracking" || implementation == "Galileo_E5a_DLL_PLL_Tracking_b")
         {
             gnss_synchro.System = 'E';
             std::string signal = "5X";
@@ -432,7 +425,8 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
     config->set_property("Acquisition.dump", "false");
     config->set_property("Acquisition.dump_filename", "./data/acquisition.dat");
 
-    std::shared_ptr<AcquisitionInterface> acquisition;
+    std::unique_ptr<AcquisitionInterface> acquisition;
+    std::string acquisition_implementation;
 
     std::string System_and_Signal;
     std::string signal;
@@ -450,8 +444,7 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
 #else
             config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
 #endif
-            // acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFineDoppler>(config.get(), "Acquisition", 1, 0);
-            acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
+            acquisition_implementation = "GPS_L1_CA_PCPS_Acquisition";
         }
     else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking")
         {
@@ -466,7 +459,7 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
 #else
             config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
 #endif
-            acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisition>(config.get(), "Acquisition", 1, 0);
+            acquisition_implementation = "Galileo_E1_PCPS_Ambiguous_Acquisition";
         }
     else if (implementation == "GPS_L2_M_DLL_PLL_Tracking")
         {
@@ -481,7 +474,7 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
 #else
             config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
 #endif
-            acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
+            acquisition_implementation = "GPS_L2_M_PCPS_Acquisition";
         }
     else if (implementation == "Galileo_E5a_DLL_PLL_Tracking_b")
         {
@@ -500,7 +493,7 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             config->set_property("Acquisition.CAF_window_hz", "0");  // **Only for E5a** Resolves doppler ambiguity averaging the specified BW in the winner code delay. If set to 0 CAF filter is deactivated. Recommended value 3000 Hz
             config->set_property("Acquisition.Zero_padding", "0");   // **Only for E5a** Avoids power loss and doppler ambiguity in bit transitions by correlating one code with twice the input data length, ensuring that at least one full code is present without transitions. If set to 1 it is ON, if set to 0 it is OFF.
             config->set_property("Acquisition.bit_transition_flag", "false");
-            acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition", 1, 0);
+            acquisition_implementation = "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF";
         }
 
     else if (implementation == "Galileo_E5a_DLL_PLL_Tracking")
@@ -516,7 +509,7 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
 #else
             config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
 #endif
-            acquisition = std::make_shared<GalileoE5aPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
+            acquisition_implementation = "Galileo_E5a_Pcps_Acquisition";
         }
     else if (implementation == "GPS_L5_DLL_PLL_Tracking")
         {
@@ -531,11 +524,19 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
 #else
             config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
 #endif
-            acquisition = std::make_shared<GpsL5iPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
+            acquisition_implementation = "GPS_L5i_PCPS_Acquisition";
         }
     else
         {
             std::cout << "The test can not run with the selected tracking implementation\n ";
+            throw(std::exception());
+        }
+
+    config->set_property("Acquisition.implementation", acquisition_implementation);
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition", 1, 0);
+    if (!acquisition)
+        {
+            std::cout << "The test can not instantiate " << acquisition_implementation << "\n";
             throw(std::exception());
         }
 
@@ -903,7 +904,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
             std::cout << "Testing satellite PRN=" << test_satellite_PRN << '\n';
             std::cout << "True Initial Doppler " << true_obs_data.doppler_l1_hz << " [Hz], true Initial code delay [Chips]=" << true_obs_data.prn_delay_chips << "[Chips]\n";
             true_acq_doppler_hz = true_obs_data.doppler_l1_hz;
-            true_acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_obs_data.prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * static_cast<double>(baseband_sampling_freq) * GPS_L1_CA_CODE_PERIOD_S;
+            true_acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_obs_data.prn_delay_chips) / GPS_L1_CA_CODE_LENGTH_CHIPS * static_cast<double>(baseband_sampling_freq) * GPS_L1_CA_CODE_PERIOD_S;
             acq_samplestamp_samples = 0;
         }
     else
@@ -952,7 +953,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
 
                             // create flowgraph
                             auto top_block_trk = gr::make_top_block("Tracking test");
-                            std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config.get(), "Tracking", 1, 1);
+                            std::shared_ptr<GNSSBlockInterface> trk_ = block_factory::GetBlock(config.get(), "Tracking", 1, 1);
                             std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
                             auto msg_rx = TrackingPullInTest_msg_rx_make();
 
@@ -1061,9 +1062,9 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
 // ***** STEP 7: Plot results *****
 // ********************************
 #if USE_GLOG_AND_GFLAGS
-                            if (FLAGS_plot_detail_level >= 2 and FLAGS_show_plots)
+                            if (FLAGS_plot_detail_level >= 2 && FLAGS_show_plots)
 #else
-                            if (absl::GetFlag(FLAGS_plot_detail_level) >= 2 and absl::GetFlag(FLAGS_show_plots))
+                            if (absl::GetFlag(FLAGS_plot_detail_level) >= 2 && absl::GetFlag(FLAGS_show_plots))
 #endif
                                 {
                                     // load the measured values
@@ -1131,7 +1132,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
 #if USE_GLOG_AND_GFLAGS
                                                     auto decimate = static_cast<unsigned int>(FLAGS_plot_decimate);
 
-                                                    if (FLAGS_plot_detail_level >= 2 and FLAGS_show_plots)
+                                                    if (FLAGS_plot_detail_level >= 2 && FLAGS_show_plots)
                                                         {
                                                             Gnuplot g1("linespoints");
                                                             g1.showonscreen();  // window output
@@ -1146,7 +1147,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
 #else
                                                     auto decimate = static_cast<unsigned int>(absl::GetFlag(FLAGS_plot_decimate));
 
-                                                    if (absl::GetFlag(FLAGS_plot_detail_level) >= 2 and absl::GetFlag(FLAGS_show_plots))
+                                                    if (absl::GetFlag(FLAGS_plot_detail_level) >= 2 && absl::GetFlag(FLAGS_show_plots))
                                                         {
                                                             Gnuplot g1("linespoints");
                                                             g1.showonscreen();  // window output

@@ -37,6 +37,18 @@ public:
 
     void SetFromConfiguration(const ConfigurationInterface *configuration, const std::string &role, double chip_rate, double opt_freq);
 
+    /*!
+     * \brief Number of samples processed per dwell: floor(sampled_ms * resampled_fs / 1000),
+     * with the window doubled before flooring if bit_transition_flag is set.
+     * Computed with integer arithmetic, so it is exact for any resampled_fs.
+     */
+    uint32_t GetSamplesPerDwell() const;
+
+    /*!
+     * \brief Fraction of a sample per dwell dropped by GetSamplesPerDwell(), in [0, 1).
+     */
+    double GetDwellResidualSamples() const;
+
     /* PCPS Acquisition configuration */
     std::string item_type{"gr_complex"};
     std::string dump_filename;
@@ -74,6 +86,26 @@ public:
     bool make_2_steps{false};
     bool use_automatic_resampler{false};
     bool enable_monitor_output{false};
+    // CFAR reference separation target, in correlation sidelobes (~1/T Hz).
+    // Determines whether a full grid needs extra reference rows. References stay
+    // within doppler_max: the filter response beyond it can bias noise estimates.
+    uint32_t reference_bin_min_sidelobes{4U};
+
+    // Opt-in accumulation through max_dwells before thresholding, allowing a
+    // later, stronger peak to win (Acquisition_<signal>.full_grid_search).
+    bool full_grid_search{false};
+
+    // Evaluate the PCPS grid on a CUDA GPU (requires ENABLE_CUDA at build time)
+    bool use_cuda{false};
+    int32_t cuda_device{-1};  // CUDA device ordinal, -1 = default device
+
+    // Specific to some implementations
+    bool acquire_pilot{false};
+    bool acquire_iq{false};
+    bool cboc{false};
+    bool qmboc{false};
+    int zero_padding{0};
+    uint32_t folding_factor{0};
 
     // Not part of the configuration interface
     uint32_t num_codes{0};
@@ -82,6 +114,9 @@ public:
 
 private:
     void SetDerivedParams();
+
+    // True dwell length in samples, multiplied by 1000 (exact integer).
+    uint64_t GetDwellSamplesTimes1000() const;
 
     void ConfigureAutomaticResampler(double opt_freq);
 };

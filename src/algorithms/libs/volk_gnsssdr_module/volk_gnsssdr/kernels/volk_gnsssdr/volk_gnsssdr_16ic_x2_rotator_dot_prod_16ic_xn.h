@@ -1287,6 +1287,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_avx2_reload(l
 
 
 #ifdef LV_HAVE_NEON
+#include <volk_gnsssdr/volk_gnsssdr_neon_intrinsics.h>
 #include <arm_neon.h>
 
 static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const lv_16sc_t** in_a, int num_a_vectors, unsigned int num_points)
@@ -1306,11 +1307,15 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
     if (neon_iters > 0)
         {
             lv_16sc_t dotProduct = lv_cmake(0, 0);
-            float arg_phase0 = cargf(*phase);
-            float arg_phase_inc = cargf(phase_inc);
-            float phase_est;
+            // Phase arguments are kept in double precision: the regenerated phase
+            // must stay close to the one obtained by the sequential float rotation
+            // of the GENERIC implementation, and a float phase_est (hundreds of
+            // radians after a few thousand samples) loses too much resolution.
+            const double arg_phase0 = atan2((double)lv_cimag(*phase), (double)lv_creal(*phase));
+            const double arg_phase_inc = atan2((double)lv_cimag(phase_inc), (double)lv_creal(phase_inc));
+            double phase_est;
 
-            lv_32fc_t ___phase4 = phase_inc * phase_inc * phase_inc * phase_inc;
+            const lv_32fc_t ___phase4 = lv_cmake((float)cos(4.0 * arg_phase_inc), (float)sin(4.0 * arg_phase_inc));
             __VOLK_ATTR_ALIGNED(16)
             float32_t __phase4_real[4] = {lv_creal(___phase4), lv_creal(___phase4), lv_creal(___phase4), lv_creal(___phase4)};
             __VOLK_ATTR_ALIGNED(16)
@@ -1334,12 +1339,10 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
             int16x4x2_t a_val, b_val, c_val;
             __VOLK_ATTR_ALIGNED(16)
             lv_16sc_t dotProductVector[4];
-            float32x4_t half = vdupq_n_f32(0.5f);
             int16x4x2_t tmp16;
             int32x4x2_t tmp32i;
 
             float32x4x2_t tmp32f, tmp32_real, tmp32_imag;
-            float32x4_t sign, PlusHalf, Round;
 
             int16x4x2_t* accumulator = (int16x4x2_t*)volk_gnsssdr_malloc(num_a_vectors * sizeof(int16x4x2_t), volk_gnsssdr_get_alignment());
 
@@ -1374,16 +1377,8 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
                     tmp32f.val[1] = vaddq_f32(tmp32_imag.val[0], tmp32_imag.val[1]);
 
                     /* downcast results to int32 */
-                    /* in __aarch64__ we can do that with vcvtaq_s32_f32(ret1); vcvtaq_s32_f32(ret2); */
-                    sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(tmp32f.val[0]), 31)));
-                    PlusHalf = vaddq_f32(tmp32f.val[0], half);
-                    Round = vsubq_f32(PlusHalf, sign);
-                    tmp32i.val[0] = vcvtq_s32_f32(Round);
-
-                    sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(tmp32f.val[1]), 31)));
-                    PlusHalf = vaddq_f32(tmp32f.val[1], half);
-                    Round = vsubq_f32(PlusHalf, sign);
-                    tmp32i.val[1] = vcvtq_s32_f32(Round);
+                    tmp32i.val[0] = _vcvtnq_s32_f32(tmp32f.val[0]);
+                    tmp32i.val[1] = _vcvtnq_s32_f32(tmp32f.val[1]);
 
                     /* downcast results to int16 */
                     tmp16.val[0] = vqmovn_s32(tmp32i.val[0]);
@@ -1423,12 +1418,12 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
                     // Regenerate phase
                     if ((number % 256) == 0)
                         {
-                            phase_est = arg_phase0 + (number + 1) * 4 * arg_phase_inc;
+                            phase_est = arg_phase0 + (double)((number + 1) * 4) * arg_phase_inc;
 
-                            *phase = lv_cmake(cos(phase_est), sin(phase_est));
-                            phase2 = (lv_32fc_t)(*phase) * phase_inc;
-                            phase3 = phase2 * phase_inc;
-                            phase4 = phase3 * phase_inc;
+                            *phase = lv_cmake((float)cos(phase_est), (float)sin(phase_est));
+                            phase2 = lv_cmake((float)cos(phase_est + arg_phase_inc), (float)sin(phase_est + arg_phase_inc));
+                            phase3 = lv_cmake((float)cos(phase_est + 2.0 * arg_phase_inc), (float)sin(phase_est + 2.0 * arg_phase_inc));
+                            phase4 = lv_cmake((float)cos(phase_est + 3.0 * arg_phase_inc), (float)sin(phase_est + 3.0 * arg_phase_inc));
 
                             __VOLK_ATTR_ALIGNED(16)
                             float32_t ____phase_real[4] = {lv_creal((*phase)), lv_creal(phase2), lv_creal(phase3), lv_creal(phase4)};
@@ -1496,11 +1491,15 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon_vma(lv_16s
     if (neon_iters > 0)
         {
             lv_16sc_t dotProduct = lv_cmake(0, 0);
-            float arg_phase0 = cargf(*phase);
-            float arg_phase_inc = cargf(phase_inc);
-            float phase_est;
+            // Phase arguments are kept in double precision: the regenerated phase
+            // must stay close to the one obtained by the sequential float rotation
+            // of the GENERIC implementation, and a float phase_est (hundreds of
+            // radians after a few thousand samples) loses too much resolution.
+            const double arg_phase0 = atan2((double)lv_cimag(*phase), (double)lv_creal(*phase));
+            const double arg_phase_inc = atan2((double)lv_cimag(phase_inc), (double)lv_creal(phase_inc));
+            double phase_est;
             // printf("arg phase0: %f", arg_phase0);
-            lv_32fc_t ___phase4 = phase_inc * phase_inc * phase_inc * phase_inc;
+            const lv_32fc_t ___phase4 = lv_cmake((float)cos(4.0 * arg_phase_inc), (float)sin(4.0 * arg_phase_inc));
             __VOLK_ATTR_ALIGNED(16)
             float32_t __phase4_real[4] = {lv_creal(___phase4), lv_creal(___phase4), lv_creal(___phase4), lv_creal(___phase4)};
             __VOLK_ATTR_ALIGNED(16)
@@ -1524,12 +1523,9 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon_vma(lv_16s
             int16x4x2_t a_val, b_val;
             __VOLK_ATTR_ALIGNED(16)
             lv_16sc_t dotProductVector[4];
-            float32x4_t half = vdupq_n_f32(0.5f);
             int16x4x2_t tmp16;
             int32x4x2_t tmp32i;
-
             float32x4x2_t tmp32f, tmp32_real, tmp32_imag;
-            float32x4_t sign, PlusHalf, Round;
 
             int16x4x2_t* accumulator = (int16x4x2_t*)volk_gnsssdr_malloc(num_a_vectors * sizeof(int16x4x2_t), volk_gnsssdr_get_alignment());
 
@@ -1564,16 +1560,8 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon_vma(lv_16s
                     tmp32f.val[1] = vaddq_f32(tmp32_imag.val[0], tmp32_imag.val[1]);
 
                     /* downcast results to int32 */
-                    /* in __aarch64__ we can do that with vcvtaq_s32_f32(ret1); vcvtaq_s32_f32(ret2); */
-                    sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(tmp32f.val[0]), 31)));
-                    PlusHalf = vaddq_f32(tmp32f.val[0], half);
-                    Round = vsubq_f32(PlusHalf, sign);
-                    tmp32i.val[0] = vcvtq_s32_f32(Round);
-
-                    sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(tmp32f.val[1]), 31)));
-                    PlusHalf = vaddq_f32(tmp32f.val[1], half);
-                    Round = vsubq_f32(PlusHalf, sign);
-                    tmp32i.val[1] = vcvtq_s32_f32(Round);
+                    tmp32i.val[0] = _vcvtnq_s32_f32(tmp32f.val[0]);
+                    tmp32i.val[1] = _vcvtnq_s32_f32(tmp32f.val[1]);
 
                     /* downcast results to int16 */
                     tmp16.val[0] = vqmovn_s32(tmp32i.val[0]);
@@ -1592,13 +1580,13 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon_vma(lv_16s
                     if ((number % 256) == 0)
                         {
                             // printf("computed phase: %f\n", cos(cargf(lv_cmake(_phase_real[0],_phase_imag[0]))));
-                            phase_est = arg_phase0 + (number + 1) * 4 * arg_phase_inc;
+                            phase_est = arg_phase0 + (double)((number + 1) * 4) * arg_phase_inc;
                             // printf("Estimated phase: %f\n\n", cos(phase_est));
 
-                            *phase = lv_cmake(cos(phase_est), sin(phase_est));
-                            phase2 = (lv_32fc_t)(*phase) * phase_inc;
-                            phase3 = phase2 * phase_inc;
-                            phase4 = phase3 * phase_inc;
+                            *phase = lv_cmake((float)cos(phase_est), (float)sin(phase_est));
+                            phase2 = lv_cmake((float)cos(phase_est + arg_phase_inc), (float)sin(phase_est + arg_phase_inc));
+                            phase3 = lv_cmake((float)cos(phase_est + 2.0 * arg_phase_inc), (float)sin(phase_est + 2.0 * arg_phase_inc));
+                            phase4 = lv_cmake((float)cos(phase_est + 3.0 * arg_phase_inc), (float)sin(phase_est + 3.0 * arg_phase_inc));
 
                             __VOLK_ATTR_ALIGNED(16)
                             float32_t ____phase_real[4] = {lv_creal((*phase)), lv_creal(phase2), lv_creal(phase3), lv_creal(phase4)};
@@ -1693,11 +1681,15 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon_optvma(lv_
     if (neon_iters > 0)
         {
             lv_16sc_t dotProduct = lv_cmake(0, 0);
-            float arg_phase0 = cargf(*phase);
-            float arg_phase_inc = cargf(phase_inc);
-            float phase_est;
+            // Phase arguments are kept in double precision: the regenerated phase
+            // must stay close to the one obtained by the sequential float rotation
+            // of the GENERIC implementation, and a float phase_est (hundreds of
+            // radians after a few thousand samples) loses too much resolution.
+            const double arg_phase0 = atan2((double)lv_cimag(*phase), (double)lv_creal(*phase));
+            const double arg_phase_inc = atan2((double)lv_cimag(phase_inc), (double)lv_creal(phase_inc));
+            double phase_est;
 
-            lv_32fc_t ___phase4 = phase_inc * phase_inc * phase_inc * phase_inc;
+            const lv_32fc_t ___phase4 = lv_cmake((float)cos(4.0 * arg_phase_inc), (float)sin(4.0 * arg_phase_inc));
             __VOLK_ATTR_ALIGNED(16)
             float32_t __phase4_real[4] = {lv_creal(___phase4), lv_creal(___phase4), lv_creal(___phase4), lv_creal(___phase4)};
             __VOLK_ATTR_ALIGNED(16)
@@ -1721,11 +1713,9 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon_optvma(lv_
             int16x4x2_t a_val, b_val;
             __VOLK_ATTR_ALIGNED(16)
             lv_16sc_t dotProductVector[4];
-            float32x4_t half = vdupq_n_f32(0.5f);
             int32x4x2_t tmp32i;
 
             float32x4x2_t tmp32f, tmp32_real, tmp32_imag;
-            float32x4_t sign, PlusHalf, Round;
 
             int16x4x2_t* accumulator1 = (int16x4x2_t*)volk_gnsssdr_malloc(num_a_vectors * sizeof(int16x4x2_t), volk_gnsssdr_get_alignment());
             int16x4x2_t* accumulator2 = (int16x4x2_t*)volk_gnsssdr_malloc(num_a_vectors * sizeof(int16x4x2_t), volk_gnsssdr_get_alignment());
@@ -1763,16 +1753,8 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon_optvma(lv_
                     tmp32f.val[1] = vaddq_f32(tmp32_imag.val[0], tmp32_imag.val[1]);
 
                     /* downcast results to int32 */
-                    /* in __aarch64__ we can do that with vcvtaq_s32_f32(ret1); vcvtaq_s32_f32(ret2); */
-                    sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(tmp32f.val[0]), 31)));
-                    PlusHalf = vaddq_f32(tmp32f.val[0], half);
-                    Round = vsubq_f32(PlusHalf, sign);
-                    tmp32i.val[0] = vcvtq_s32_f32(Round);
-
-                    sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(tmp32f.val[1]), 31)));
-                    PlusHalf = vaddq_f32(tmp32f.val[1], half);
-                    Round = vsubq_f32(PlusHalf, sign);
-                    tmp32i.val[1] = vcvtq_s32_f32(Round);
+                    tmp32i.val[0] = _vcvtnq_s32_f32(tmp32f.val[0]);
+                    tmp32i.val[1] = _vcvtnq_s32_f32(tmp32f.val[1]);
 
                     /* downcast results to int16 */
                     b_val.val[0] = vqmovn_s32(tmp32i.val[0]);
@@ -1791,13 +1773,13 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon_optvma(lv_
                     if ((number % 256) == 0)
                         {
                             // printf("computed phase: %f\n", cos(cargf(lv_cmake(_phase_real[0],_phase_imag[0]))));
-                            phase_est = arg_phase0 + (number + 1) * 4 * arg_phase_inc;
+                            phase_est = arg_phase0 + (double)((number + 1) * 4) * arg_phase_inc;
                             // printf("Estimated phase: %f\n\n", cos(phase_est));
 
-                            *phase = lv_cmake(cos(phase_est), sin(phase_est));
-                            phase2 = (lv_32fc_t)(*phase) * phase_inc;
-                            phase3 = phase2 * phase_inc;
-                            phase4 = phase3 * phase_inc;
+                            *phase = lv_cmake((float)cos(phase_est), (float)sin(phase_est));
+                            phase2 = lv_cmake((float)cos(phase_est + arg_phase_inc), (float)sin(phase_est + arg_phase_inc));
+                            phase3 = lv_cmake((float)cos(phase_est + 2.0 * arg_phase_inc), (float)sin(phase_est + 2.0 * arg_phase_inc));
+                            phase4 = lv_cmake((float)cos(phase_est + 3.0 * arg_phase_inc), (float)sin(phase_est + 3.0 * arg_phase_inc));
 
                             __VOLK_ATTR_ALIGNED(16)
                             float32_t ____phase_real[4] = {lv_creal((*phase)), lv_creal(phase2), lv_creal(phase3), lv_creal(phase4)};

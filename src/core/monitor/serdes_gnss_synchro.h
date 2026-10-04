@@ -20,6 +20,7 @@
 
 #include "gnss_synchro.h"
 #include "gnss_synchro.pb.h"  // file created by Protocol Buffers at compile time
+#include "protobuf_cleanup_manager.h"
 #include <array>
 #include <string>
 #include <utility>
@@ -37,11 +38,10 @@ public:
         // Verify that the version of the library that we linked against is
         // compatible with the version of the headers we compiled against.
         GOOGLE_PROTOBUF_VERIFY_VERSION;
-    }
 
-    ~Serdes_Gnss_Synchro()
-    {
-        google::protobuf::ShutdownProtobufLibrary();
+        // Make sure google::protobuf::ShutdownProtobufLibrary() is called only once,
+        // at the end of the program execution (see Protobuf_Cleanup_Manager)
+        Protobuf_Cleanup_Manager::get();
     }
 
     inline Serdes_Gnss_Synchro(const Serdes_Gnss_Synchro& other) noexcept  //!< Copy constructor
@@ -114,9 +114,14 @@ public:
                 obs->set_flag_valid_pseudorange(gs.Flag_valid_pseudorange);
                 obs->set_flag_pll_180_deg_phase_locked(gs.Flag_PLL_180_deg_phase_locked);
                 obs->set_flag_cycle_slip(gs.Flag_cycle_slip);
+                obs->set_flag_carrier_phase_discontinuity(!gs.Flag_carrier_phase_continuous);
+                obs->set_flag_half_cycle_slip(gs.Flag_half_cycle_slip);
                 obs->set_interp_tow_ms(gs.interp_TOW_ms);
             }
-        observables.SerializeToString(&data);
+        if (!observables.SerializeToString(&data))
+            {
+                return {};
+            }
         return data;
     }
 
@@ -160,6 +165,8 @@ public:
                 gs.Flag_valid_pseudorange = gs_read.flag_valid_pseudorange();
                 gs.Flag_PLL_180_deg_phase_locked = gs_read.flag_pll_180_deg_phase_locked();
                 gs.Flag_cycle_slip = gs_read.flag_cycle_slip();
+                gs.Flag_carrier_phase_continuous = !gs_read.flag_carrier_phase_discontinuity();
+                gs.Flag_half_cycle_slip = gs_read.flag_half_cycle_slip();
                 gs.interp_TOW_ms = gs_read.interp_tow_ms();
 
                 vgs.push_back(gs);

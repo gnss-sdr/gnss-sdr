@@ -15,8 +15,14 @@
  */
 
 #include "rtklib_pvt_gs.h"
+#include "Beidou_CNAV2.h"
+#include "Galileo_CNAV.h"
 #include "MATH_CONSTANTS.h"
 #include "an_packet_printer.h"
+#include "beidou_cnav1_ephemeris.h"
+#include "beidou_cnav1_iono.h"
+#include "beidou_cnav1_navigation_message.h"
+#include "beidou_cnav1_utc_model.h"
 #include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
 #include "beidou_dnav_iono.h"
@@ -27,6 +33,7 @@
 #include "galileo_ephemeris.h"
 #include "galileo_has_data.h"
 #include "galileo_iono.h"
+#include "galileo_reduced_ced.h"
 #include "galileo_utc_model.h"
 #include "geohash.h"
 #include "geojson_printer.h"
@@ -39,6 +46,7 @@
 #include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_make_unique.h"
 #include "gps_almanac.h"
+#include "gps_cnav_eop.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
 #include "gps_cnav_utc_model.h"
@@ -52,12 +60,20 @@
 #include "monitor_pvt.h"
 #include "monitor_pvt_udp_sink.h"
 #include "nmea_printer.h"
+#include "ntrip_rtcm_client.h"
 #include "osnma_data.h"
 #include "pvt_conf.h"
+#include "qzss.h"
+#include "qzss_cnav_eop.h"
+#include "qzss_cnav_iono.h"
+#include "qzss_cnav_utc_model.h"
+#include "qzss_iono.h"
+#include "qzss_utc_model.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_solver.h"
+#include "sbas_raw_message.h"
 #include "signal_enabled_flags.h"
 #include "trackingcmd.h"
 #include <boost/archive/xml_iarchive.hpp>  // for xml_iarchive
@@ -113,6 +129,50 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
+namespace
+{
+/* console tag for the RTKLIB solution status; empty for single-point and
+   no-solution so that the default output is unchanged */
+std::string solution_status_tag(int solution_status)
+{
+    switch (solution_status)
+        {
+        case SOLQ_FIX:
+            return " [RTK FIXED]";
+        case SOLQ_FLOAT:
+            return " [RTK FLOAT]";
+        case SOLQ_SBAS:
+            return " [SBAS]";
+        case SOLQ_DGPS:
+            return " [DGNSS]";
+        case SOLQ_PPP:
+            return " [PPP]";
+        default:
+            return "";
+        }
+}
+
+
+const std::string& solution_status_color(int solution_status)
+{
+    switch (solution_status)
+        {
+        case SOLQ_FIX:
+            return TEXT_BOLD_GREEN;
+        case SOLQ_FLOAT:
+        case SOLQ_DGPS:
+            return TEXT_BOLD_YELLOW;
+        case SOLQ_SBAS:
+            return TEXT_BOLD_CYAN;
+        case SOLQ_PPP:
+            return TEXT_BOLD_MAGENTA;
+        default:
+            return TEXT_RESET;
+        }
+}
+}  // namespace
+
+
 rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,
     const rtk_t& rtk,
@@ -125,6 +185,37 @@ rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
 }
 
 
+struct rtklib_pvt_gs::NavigationSnapshot
+{
+    // Type aliases keep the closing template brackets out of the member
+    // initializers: GCC 4.8 parses in-class initializers late and reads a
+    // ">>" there as a right shift.
+    using GpsCnavEphemerisMap = std::map<int, Gps_CNAV_Ephemeris>;
+    using GlonassEphemerisMap = std::map<int, Glonass_Gnav_Ephemeris>;
+    using GlonassAlmanacMap = std::map<int, Glonass_Gnav_Almanac>;
+    using GpsEphemerisMap = std::map<int, Gps_Ephemeris>;
+    using GpsAlmanacMap = std::map<int, Gps_Almanac>;
+    using GalileoEphemerisMap = std::map<int, Galileo_Ephemeris>;
+    using GalileoAlmanacMap = std::map<int, Galileo_Almanac>;
+    using BeidouEphemerisMap = std::map<int, Beidou_Dnav_Ephemeris>;
+    using BeidouCnavEphemerisMap = std::map<int, Beidou_Cnav1_Ephemeris>;
+    using BeidouAlmanacMap = std::map<int, Beidou_Dnav_Almanac>;
+
+    std::shared_ptr<const GpsCnavEphemerisMap> gps_cnav_ephemeris = std::make_shared<const GpsCnavEphemerisMap>();
+    std::shared_ptr<const GlonassEphemerisMap> glonass_ephemeris = std::make_shared<const GlonassEphemerisMap>();
+    std::shared_ptr<const GlonassAlmanacMap> glonass_almanac = std::make_shared<const GlonassAlmanacMap>();
+    Glonass_Gnav_Utc_Model glonass_utc_model;
+    std::shared_ptr<const GpsEphemerisMap> gps_ephemeris = std::make_shared<const GpsEphemerisMap>();
+    std::shared_ptr<const GpsAlmanacMap> gps_almanac = std::make_shared<const GpsAlmanacMap>();
+    std::shared_ptr<const GalileoEphemerisMap> galileo_ephemeris = std::make_shared<const GalileoEphemerisMap>();
+    std::shared_ptr<const GalileoAlmanacMap> galileo_almanac = std::make_shared<const GalileoAlmanacMap>();
+    std::shared_ptr<const BeidouEphemerisMap> beidou_ephemeris = std::make_shared<const BeidouEphemerisMap>();
+    std::shared_ptr<const BeidouCnavEphemerisMap> beidou_cnav1_ephemeris = std::make_shared<const BeidouCnavEphemerisMap>();
+    std::shared_ptr<const BeidouCnavEphemerisMap> beidou_cnav2_ephemeris = std::make_shared<const BeidouCnavEphemerisMap>();
+    std::shared_ptr<const BeidouAlmanacMap> beidou_almanac = std::make_shared<const BeidouAlmanacMap>();
+};
+
+
 rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,
     const rtk_t& rtk,
@@ -132,6 +223,8 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     : gr::sync_block("rtklib_pvt_gs",
           gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
           gr::io_signature::make(0, 0, 0)),
+      d_empty_navigation_snapshot(std::make_shared<const NavigationSnapshot>()),
+      d_navigation_snapshot(d_empty_navigation_snapshot),
       d_queue_name("gnss_sdr_ttff_message_queue"),
       d_dump_filename(conf_.dump_filename),
       d_geohash(std::make_unique<Geohash>()),
@@ -139,10 +232,17 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_gps_iono_sptr_type_hash_code(typeid(std::shared_ptr<Gps_Iono>).hash_code()),
       d_gps_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Gps_Utc_Model>).hash_code()),
       d_gps_cnav_ephemeris_sptr_type_hash_code(typeid(std::shared_ptr<Gps_CNAV_Ephemeris>).hash_code()),
+      d_gps_cnav_eop_sptr_type_hash_code(typeid(std::shared_ptr<Gps_CNAV_Eop>).hash_code()),
       d_gps_cnav_iono_sptr_type_hash_code(typeid(std::shared_ptr<Gps_CNAV_Iono>).hash_code()),
       d_gps_cnav_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Gps_CNAV_Utc_Model>).hash_code()),
       d_gps_almanac_sptr_type_hash_code(typeid(std::shared_ptr<Gps_Almanac>).hash_code()),
+      d_qzss_iono_sptr_type_hash_code(typeid(std::shared_ptr<Qzss_Iono>).hash_code()),
+      d_qzss_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Qzss_Utc_Model>).hash_code()),
+      d_qzss_cnav_eop_sptr_type_hash_code(typeid(std::shared_ptr<Qzss_CNAV_Eop>).hash_code()),
+      d_qzss_cnav_iono_sptr_type_hash_code(typeid(std::shared_ptr<Qzss_CNAV_Iono>).hash_code()),
+      d_qzss_cnav_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Qzss_CNAV_Utc_Model>).hash_code()),
       d_galileo_ephemeris_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_Ephemeris>).hash_code()),
+      d_galileo_reduced_ced_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_Reduced_CED>).hash_code()),
       d_galileo_iono_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_Iono>).hash_code()),
       d_galileo_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_Utc_Model>).hash_code()),
       d_galileo_almanac_helper_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_Almanac_Helper>).hash_code()),
@@ -154,6 +254,11 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_beidou_dnav_iono_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Dnav_Iono>).hash_code()),
       d_beidou_dnav_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Dnav_Utc_Model>).hash_code()),
       d_beidou_dnav_almanac_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Dnav_Almanac>).hash_code()),
+      d_beidou_cnav1_ephemeris_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Cnav1_Ephemeris>).hash_code()),
+      d_beidou_cnav1_iono_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Cnav1_Iono>).hash_code()),
+      d_beidou_cnav1_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Cnav1_Utc_Model>).hash_code()),
+      d_beidou_cnav1_page_data_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Cnav1_PageData_Message>).hash_code()),
+      d_sbas_raw_message_sptr_type_hash_code(typeid(std::shared_ptr<Sbas_Raw_Message>).hash_code()),
       d_galileo_has_data_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_HAS_data>).hash_code()),
       d_rinex_version(conf_.rinex_version),
       d_rx_time(0.0),
@@ -172,7 +277,11 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_nchannels(nchannels),
       d_signal_enabled_flags(conf_.signal_enabled_flags),
       d_observable_interval_ms(conf_.observable_interval_ms),
+      d_ntrip_max_correction_age_s(conf_.ntrip_max_correction_age_s),
       d_pvt_errors_counter(0),
+      d_pvt_solver_errors_counter(0),
+      d_last_fixed_base_status(-1),
+      d_last_solution_status(SOLQ_NONE),
       d_dump(conf_.dump),
       d_dump_mat(conf_.dump_mat && conf_.dump),
       d_rinex_output_enabled(conf_.rinex_output_enabled),
@@ -184,13 +293,21 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_flag_monitor_pvt_enabled(conf_.monitor_enabled),
       d_flag_monitor_ephemeris_enabled(conf_.monitor_ephemeris_enabled),
       d_show_local_time_zone(conf_.show_local_time_zone),
-      d_enable_rx_clock_correction(conf_.enable_rx_clock_correction),
+      d_enable_rx_clock_correction(conf_.enable_rx_clock_correction || conf_.ntrip_client_enabled),
+      d_ntrip_client_enabled(conf_.ntrip_client_enabled),
       d_an_printer_enabled(conf_.an_output_enabled),
       d_log_timetag(conf_.log_source_timetag),
       d_use_has_corrections(conf_.use_has_corrections),
       d_use_unhealthy_sats(conf_.use_unhealthy_sats),
       d_osnma_strict(conf_.osnma_strict)
 {
+    if (conf_.ntrip_client_enabled && !conf_.enable_rx_clock_correction)
+        {
+            // do not override an explicit user setting silently: the timetag
+            // processing path only runs when the clock correction is disabled
+            std::cout << "Warning: PVT.enable_rx_clock_correction=false is overridden because the NTRIP client requires the receiver clock correction\n";
+            LOG(WARNING) << "PVT.enable_rx_clock_correction=false overridden: the NTRIP client requires the receiver clock correction, so source-timetag processing is disabled";
+        }
     // Send feedback message to observables block with the receiver clock offset
     this->message_port_register_out(pmt::mp("pvt_to_observables"));
     // Experimental: VLT commands from PVT to tracking channels
@@ -412,7 +529,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     // initialize RINEX printer
     if (d_rinex_output_enabled)
         {
-            d_rp = std::make_unique<Rinex_Printer>(d_signal_enabled_flags, d_rinex_version, conf_.rinex_output_path, conf_.rinex_name, conf_.pre_2009_file);
+            d_rp = std::make_unique<Rinex_Printer>(d_signal_enabled_flags, d_rinex_version, conf_.rinex_output_path, conf_.rinex_name, conf_.ref_gps_week);
         }
     else
         {
@@ -576,24 +693,37 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             // setup two PVT solvers: internal solver for rx clock and user solver
             // user PVT solver
             d_user_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, conf_, dump_ls_pvt_filename, d_signal_enabled_flags, d_dump, d_dump_mat);
-            d_user_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
+            d_user_pvt_solver->set_ref_gps_week(conf_.ref_gps_week);
 
             // internal PVT solver, mainly used to estimate the receiver clock
             rtk_t internal_rtk = rtk;
             internal_rtk.opt.mode = PMODE_SINGLE;  // use single positioning mode in internal PVT solver
             d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(internal_rtk, conf_, dump_ls_pvt_filename, d_signal_enabled_flags, false, false);
-            d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
+            d_internal_pvt_solver->set_ref_gps_week(conf_.ref_gps_week);
         }
     else
         {
             // only one solver, customized by the user options
             d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, conf_, dump_ls_pvt_filename, d_signal_enabled_flags, d_dump, d_dump_mat);
-            d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
+            d_internal_pvt_solver->set_ref_gps_week(conf_.ref_gps_week);
             d_user_pvt_solver = d_internal_pvt_solver;
         }
 
     // set the RTKLIB trace (debug) level
     tracelevel(conf_.rtk_trace_level);
+
+    if (d_ntrip_client_enabled)
+        {
+            // the configuration's Secure_String credentials wipe themselves
+            // when this local copy dies, on the throwing paths included
+            const Ntrip_Rtcm_Client_Config ntrip_config = make_ntrip_rtcm_client_config(conf_);
+            d_ntrip_client = std::make_unique<Ntrip_Rtcm_Client>(ntrip_config);
+            const bool ntrip_started = d_ntrip_client->start();
+            if (!ntrip_started)
+                {
+                    throw std::runtime_error("Unable to start the NTRIP RTCM client");
+                }
+        }
 
     // timetag
     if (d_log_timetag)
@@ -626,7 +756,12 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 
 rtklib_pvt_gs::~rtklib_pvt_gs()
 {
+    apply_pending_navigation_clear();
     DLOG(INFO) << "PVT block destructor called.";
+    if (d_ntrip_client)
+        {
+            d_ntrip_client->stop();
+        }
     if (d_mq)
         {
             boost::interprocess::message_queue::remove(d_queue_name.c_str());
@@ -687,40 +822,38 @@ rtklib_pvt_gs::~rtklib_pvt_gs()
                             LOG(INFO) << "Failed to save GPS L1 CA Ephemeris, map is empty";
                         }
 
-                    // save Galileo E1 ephemeris to XML file
-                    file_name = d_xml_base_path + "gal_ephemeris.xml";
-                    if (d_internal_pvt_solver->galileo_ephemeris_map.empty() == false)
-                        {
-                            std::ofstream ofs;
-                            try
-                                {
-                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                                    boost::archive::xml_oarchive xml(ofs);
-                                    // Annotate as full GPS week number
-                                    for (auto& gal_eph_iter : d_internal_pvt_solver->galileo_ephemeris_map)
-                                        {
-                                            gal_eph_iter.second.WN += 1024;
-                                        }
-                                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_ephemeris_map", d_internal_pvt_solver->galileo_ephemeris_map);
-                                    LOG(INFO) << "Saved Galileo E1 Ephemeris map data";
-                                }
-                            catch (const boost::archive::archive_exception& e)
-                                {
-                                    LOG(WARNING) << e.what();
-                                }
-                            catch (const std::ofstream::failure& e)
-                                {
-                                    LOG(WARNING) << "Problem opening output XML file";
-                                }
-                            catch (const std::exception& e)
-                                {
-                                    LOG(WARNING) << e.what();
-                                }
-                        }
-                    else
-                        {
-                            LOG(INFO) << "Failed to save Galileo E1 Ephemeris, map is empty";
-                        }
+                    // Keep the legacy file as a deterministic PVT view and
+                    // persist both navigation families in companion files.
+                    // Copies are used so serializing the full GPS week does
+                    // not mutate live receiver state.
+                    const auto save_galileo_ephemeris_map = [](const std::string& output_file,
+                                                                const std::map<int, Galileo_Ephemeris>& source_map) {
+                        if (source_map.empty())
+                            {
+                                return;
+                            }
+                        auto serialized_map = source_map;
+                        for (auto& ephemeris : serialized_map)
+                            {
+                                ephemeris.second.WN += 1024;
+                            }
+                        try
+                            {
+                                std::ofstream ofs(output_file.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                boost::archive::xml_oarchive xml(ofs);
+                                xml << boost::serialization::make_nvp("GNSS-SDR_gal_ephemeris_map", serialized_map);
+                            }
+                        catch (const std::exception& e)
+                            {
+                                LOG(WARNING) << e.what() << " File: " << output_file;
+                            }
+                    };
+                    save_galileo_ephemeris_map(d_xml_base_path + "gal_ephemeris.xml",
+                        d_internal_pvt_solver->get_galileo_ephemeris_map_for_pvt());
+                    save_galileo_ephemeris_map(d_xml_base_path + "gal_inav_ephemeris.xml",
+                        d_internal_pvt_solver->galileo_ephemeris_store.inav());
+                    save_galileo_ephemeris_map(d_xml_base_path + "gal_fnav_ephemeris.xml",
+                        d_internal_pvt_solver->galileo_ephemeris_store.fnav());
 
                     // save GLONASS GNAV ephemeris to XML file
                     file_name = d_xml_base_path + "eph_GLONASS_GNAV.xml";
@@ -870,6 +1003,126 @@ rtklib_pvt_gs::~rtklib_pvt_gs()
                     else
                         {
                             LOG(INFO) << "Failed to save GPS CNAV ionospheric model parameters, not valid data";
+                        }
+
+                    // Save QZSS UTC model parameters
+                    file_name = d_xml_base_path + "qzss_utc_model.xml";
+                    if (d_internal_pvt_solver->qzss_utc_model.valid)
+                        {
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_qzss_utc_model", d_internal_pvt_solver->qzss_utc_model);
+                                    LOG(INFO) << "Saved QZSS UTC model parameters";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                        }
+                    else
+                        {
+                            LOG(INFO) << "Failed to save QZSS UTC model parameters, not valid data";
+                        }
+
+                    // Save QZSS iono parameters
+                    file_name = d_xml_base_path + "qzss_iono.xml";
+                    if (d_internal_pvt_solver->qzss_iono.valid == true)
+                        {
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_qzss_iono_model", d_internal_pvt_solver->qzss_iono);
+                                    LOG(INFO) << "Saved QZSS ionospheric model parameters";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                        }
+                    else
+                        {
+                            LOG(INFO) << "Failed to save QZSS ionospheric model parameters, not valid data";
+                        }
+
+                    // Save QZSS CNAV UTC model parameters
+                    file_name = d_xml_base_path + "qzss_cnav_utc_model.xml";
+                    if (d_internal_pvt_solver->qzss_cnav_utc_model.valid)
+                        {
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_qzss_cnav_utc_model", d_internal_pvt_solver->qzss_cnav_utc_model);
+                                    LOG(INFO) << "Saved QZSS CNAV UTC model parameters";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                        }
+                    else
+                        {
+                            LOG(INFO) << "Failed to save QZSS CNAV UTC model parameters, not valid data";
+                        }
+
+                    // Save QZSS CNAV iono parameters
+                    file_name = d_xml_base_path + "qzss_cnav_iono.xml";
+                    if (d_internal_pvt_solver->qzss_cnav_iono.valid == true)
+                        {
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_qzss_cnav_iono_model", d_internal_pvt_solver->qzss_cnav_iono);
+                                    LOG(INFO) << "Saved QZSS CNAV ionospheric model parameters";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                        }
+                    else
+                        {
+                            LOG(INFO) << "Failed to save QZSS CNAV ionospheric model parameters, not valid data";
                         }
 
                     // Save Galileo iono parameters
@@ -1171,6 +1424,61 @@ rtklib_pvt_gs::~rtklib_pvt_gs()
                         {
                             LOG(INFO) << "Failed to save BeiDou DNAV UTC model parameters, not valid data";
                         }
+
+                    // save BeiDou B-CNAV1 ephemeris to XML file
+                    file_name = d_xml_base_path + "bds_cnav1_ephemeris.xml";
+                    if (d_internal_pvt_solver->beidou_cnav1_ephemeris_map.empty() == false)
+                        {
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_bds_cnav1_ephemeris_map", d_internal_pvt_solver->beidou_cnav1_ephemeris_map);
+                                    LOG(INFO) << "Saved BeiDou B-CNAV1 Ephemeris map data";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                        }
+                    else
+                        {
+                            LOG(INFO) << "Failed to save BeiDou B-CNAV1 Ephemeris, map is empty";
+                        }
+
+                    file_name = d_xml_base_path + "bds_cnav2_ephemeris.xml";
+                    if (d_internal_pvt_solver->beidou_cnav2_ephemeris_map.empty() == false)
+                        {
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_bds_cnav2_ephemeris_map", d_internal_pvt_solver->beidou_cnav2_ephemeris_map);
+                                    LOG(INFO) << "Saved BeiDou B-CNAV2 Ephemeris map data";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                        }
                 }
 
             if (d_log_timetag_file.is_open())
@@ -1194,6 +1502,7 @@ rtklib_pvt_gs::~rtklib_pvt_gs()
 
 void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
 {
+    apply_pending_navigation_clear();
     try
         {
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
@@ -1202,6 +1511,9 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                 {
                     // ### GPS EPHEMERIS ###
                     const auto gps_eph = wht::any_cast<std::shared_ptr<Gps_Ephemeris>>(pmt::any_ref(msg));
+                    // Ephemeris decoded from QZSS L1 C/B (PRN 203-206) belongs to the satellite
+                    // identified by the PRN of its nominal PNT signals (RINEX 4.00, Table 6)
+                    gps_eph->PRN = qzss_l1cb_prn_to_nominal_prn(gps_eph->PRN);
                     DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
                                << gps_eph->PRN << " (Block "
                                << gps_eph->satelliteBlock[gps_eph->PRN] << ")"
@@ -1224,10 +1536,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     d_rp->log_rinex_nav_gps_nav({{gps_eph->PRN, *gps_eph}});  // New record!
                                 }
                         }
-                    d_internal_pvt_solver->gps_ephemeris_map[gps_eph->PRN] = *gps_eph;
+                    d_internal_pvt_solver->store_gps_ephemeris(*gps_eph);
                     if (d_enable_rx_clock_correction == true)
                         {
-                            d_user_pvt_solver->gps_ephemeris_map[gps_eph->PRN] = *gps_eph;
+                            d_user_pvt_solver->store_gps_ephemeris(*gps_eph);
                         }
                     if (gps_eph->SV_health != 0)
                         {
@@ -1266,6 +1578,61 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     DLOG(INFO) << "New UTC record has arrived";
                 }
+            else if (msg_type_hash_code == d_qzss_iono_sptr_type_hash_code)
+                {
+                    // ### QZSS IONO ###
+                    const auto qzss_iono = wht::any_cast<std::shared_ptr<Qzss_Iono>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->qzss_iono = *qzss_iono;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->qzss_iono = *qzss_iono;
+                        }
+                    DLOG(INFO) << "New QZSS IONO record has arrived";
+                }
+            else if (msg_type_hash_code == d_qzss_utc_model_sptr_type_hash_code)
+                {
+                    // ### QZSS UTC MODEL ###
+                    const auto qzss_utc_model = wht::any_cast<std::shared_ptr<Qzss_Utc_Model>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->qzss_utc_model = *qzss_utc_model;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->qzss_utc_model = *qzss_utc_model;
+                        }
+                    DLOG(INFO) << "New QZSS UTC record has arrived";
+                }
+            else if (msg_type_hash_code == d_qzss_cnav_iono_sptr_type_hash_code)
+                {
+                    // ### QZSS CNAV IONO ###
+                    const auto qzss_cnav_iono = wht::any_cast<std::shared_ptr<Qzss_CNAV_Iono>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->qzss_cnav_iono = *qzss_cnav_iono;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->qzss_cnav_iono = *qzss_cnav_iono;
+                        }
+                    DLOG(INFO) << "New QZSS CNAV IONO record has arrived";
+                }
+            else if (msg_type_hash_code == d_qzss_cnav_eop_sptr_type_hash_code)
+                {
+                    // ### QZSS CNAV EARTH ORIENTATION PARAMETERS ###
+                    const auto qzss_cnav_eop = wht::any_cast<std::shared_ptr<Qzss_CNAV_Eop>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->qzss_cnav_eop = *qzss_cnav_eop;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->qzss_cnav_eop = *qzss_cnav_eop;
+                        }
+                    DLOG(INFO) << "New QZSS CNAV EOP record has arrived";
+                }
+            else if (msg_type_hash_code == d_qzss_cnav_utc_model_sptr_type_hash_code)
+                {
+                    // ### QZSS CNAV UTC MODEL ###
+                    const auto qzss_cnav_utc_model = wht::any_cast<std::shared_ptr<Qzss_CNAV_Utc_Model>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->qzss_cnav_utc_model = *qzss_cnav_utc_model;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->qzss_cnav_utc_model = *qzss_cnav_utc_model;
+                        }
+                    DLOG(INFO) << "New QZSS CNAV UTC record has arrived";
+                }
             else if (msg_type_hash_code == d_gps_cnav_ephemeris_sptr_type_hash_code)
                 {
                     // ### GPS CNAV message ###
@@ -1285,19 +1652,17 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         {
                             d_user_pvt_solver->gps_cnav_ephemeris_map[gps_cnav_ephemeris->PRN] = *gps_cnav_ephemeris;
                         }
+                    // The CNAV L1/L2/L5 health bits are not used to exclude observables
+                    // from the PVT solution (pre-operational GPS L5 is broadcast as
+                    // unhealthy), so they are only logged here. See
+                    // Rtklib_Solver::get_broadcast_signal_health() for how they are reported.
                     if (gps_cnav_ephemeris->signal_health != 0)
                         {
                             const std::string sat_sys = (MINPRNQZS <= gps_cnav_ephemeris->PRN && gps_cnav_ephemeris->PRN <= MAXPRNQZS) ? "QZSS" : "GPS";
-                            std::cout << "Satellite " << Gnss_Satellite(sat_sys, gps_cnav_ephemeris->PRN)
-                                      << " reports an unhealthy status in the CNAV message,";
-                            if (d_use_unhealthy_sats)
-                                {
-                                    std::cout << " use PVT solutions at your own risk.\n";
-                                }
-                            else
-                                {
-                                    std::cout << " not used for navigation.\n";
-                                }
+                            LOG(INFO) << "CNAV signal health of " << Gnss_Satellite(sat_sys, gps_cnav_ephemeris->PRN)
+                                      << ": L1 " << ((gps_cnav_ephemeris->signal_health & 0x4) ? "bad" : "OK")
+                                      << ", L2 " << ((gps_cnav_ephemeris->signal_health & 0x2) ? "bad" : "OK")
+                                      << ", L5 " << ((gps_cnav_ephemeris->signal_health & 0x1) ? "bad" : "OK");
                         }
                     DLOG(INFO) << "New GPS CNAV ephemeris record has arrived";
                 }
@@ -1311,6 +1676,17 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                             d_user_pvt_solver->gps_cnav_iono = *gps_cnav_iono;
                         }
                     DLOG(INFO) << "New CNAV IONO record has arrived";
+                }
+            else if (msg_type_hash_code == d_gps_cnav_eop_sptr_type_hash_code)
+                {
+                    // ### GPS CNAV EARTH ORIENTATION PARAMETERS ###
+                    const auto gps_cnav_eop = wht::any_cast<std::shared_ptr<Gps_CNAV_Eop>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->gps_cnav_eop = *gps_cnav_eop;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->gps_cnav_eop = *gps_cnav_eop;
+                        }
+                    DLOG(INFO) << "New GPS CNAV EOP record has arrived";
                 }
             else if (msg_type_hash_code == d_gps_cnav_utc_model_sptr_type_hash_code)
                 {
@@ -1327,10 +1703,18 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                 {
                     // ### GPS ALMANAC ###
                     const auto gps_almanac = wht::any_cast<std::shared_ptr<Gps_Almanac>>(pmt::any_ref(msg));
-                    d_internal_pvt_solver->gps_almanac_map[gps_almanac->PRN] = *gps_almanac;
+                    Gps_Almanac new_almanac = *gps_almanac;
+                    // AS_status comes from page 25 of subframe 4: a channel that has not
+                    // decoded it yet reports it as unknown (<= 0). Keep the stored value.
+                    const auto stored_almanac = d_internal_pvt_solver->gps_almanac_map.find(static_cast<int>(new_almanac.PRN));
+                    if ((new_almanac.AS_status <= 0) && (stored_almanac != d_internal_pvt_solver->gps_almanac_map.cend()) && (stored_almanac->second.AS_status > 0))
+                        {
+                            new_almanac.AS_status = stored_almanac->second.AS_status;
+                        }
+                    d_internal_pvt_solver->gps_almanac_map[new_almanac.PRN] = new_almanac;
                     if (d_enable_rx_clock_correction == true)
                         {
-                            d_user_pvt_solver->gps_almanac_map[gps_almanac->PRN] = *gps_almanac;
+                            d_user_pvt_solver->gps_almanac_map[new_almanac.PRN] = new_almanac;
                         }
                     DLOG(INFO) << "New GPS almanac record has arrived";
                 }
@@ -1339,7 +1723,14 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
             else if (msg_type_hash_code == d_galileo_ephemeris_sptr_type_hash_code)
                 {
                     // ### Galileo EPHEMERIS ###
-                    const auto galileo_eph = wht::any_cast<std::shared_ptr<Galileo_Ephemeris>>(pmt::any_ref(msg));
+                    auto galileo_eph = wht::any_cast<std::shared_ptr<Galileo_Ephemeris>>(pmt::any_ref(msg));
+                    if (galileo_eph->nav_message_type == Galileo_Nav_Message_Type::Unknown)
+                        {
+                            galileo_eph = std::make_shared<Galileo_Ephemeris>(*galileo_eph);
+                            galileo_eph->nav_message_type = d_internal_pvt_solver->galileo_nav_message_type_for_pvt();
+                            LOG(WARNING) << "Galileo ephemeris for PRN " << galileo_eph->PRN
+                                         << " has no navigation-message provenance; assigning the receiver's automatic PVT source";
+                        }
                     // insert new ephemeris record
                     DLOG(INFO) << "Galileo New Ephemeris record inserted in global map with TOW =" << galileo_eph->tow
                                << ", GALILEO Week Number =" << galileo_eph->WN
@@ -1353,21 +1744,28 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                     // update/insert new ephemeris record to the global ephemeris map
                     if (d_rinex_output_enabled && d_rp->is_rinex_header_written())  // The header is already written, we can now log the navigation message data
                         {
-                            const auto eph_it = d_internal_pvt_solver->galileo_ephemeris_map.find(galileo_eph->PRN);
+                            const auto& source_map = d_internal_pvt_solver->galileo_ephemeris_store.by_source(galileo_eph->nav_message_type);
+                            const auto eph_it = source_map.find(galileo_eph->PRN);
 
-                            if ((eph_it == d_internal_pvt_solver->galileo_ephemeris_map.cend() || eph_it->second.toe != galileo_eph->toe) && galileo_eph->WN != 0 && galileo_eph->PRN <= 36)
+                            if ((eph_it == source_map.cend() || eph_it->second.toe != galileo_eph->toe ||
+                                    eph_it->second.IOD_ephemeris != galileo_eph->IOD_ephemeris) &&
+                                galileo_eph->WN != 0 && galileo_eph->PRN <= 36)
                                 {
                                     d_rp->log_rinex_nav_gal_nav({{galileo_eph->PRN, *galileo_eph}});  // New record!
                                 }
                         }
-                    d_internal_pvt_solver->galileo_ephemeris_map[galileo_eph->PRN] = *galileo_eph;
+                    d_internal_pvt_solver->store_galileo_ephemeris(*galileo_eph);
                     if (d_enable_rx_clock_correction == true)
                         {
-                            d_user_pvt_solver->galileo_ephemeris_map[galileo_eph->PRN] = *galileo_eph;
+                            d_user_pvt_solver->store_galileo_ephemeris(*galileo_eph);
                         }
-                    if (((galileo_eph->E1B_HS != 0) || (galileo_eph->E1B_DVS == true)) ||
-                        ((galileo_eph->E5a_HS != 0) || (galileo_eph->E5a_DVS == true)) ||
-                        ((galileo_eph->E5b_HS != 0) || (galileo_eph->E5b_DVS == true)))
+                    const bool reports_unhealthy =
+                        (galileo_eph->nav_message_type == Galileo_Nav_Message_Type::FNAV &&
+                            ((galileo_eph->E5a_HS != 0) || galileo_eph->E5a_DVS)) ||
+                        (galileo_eph->nav_message_type == Galileo_Nav_Message_Type::INAV &&
+                            (((galileo_eph->E1B_HS != 0) || galileo_eph->E1B_DVS) ||
+                                ((galileo_eph->E5b_HS != 0) || galileo_eph->E5b_DVS)));
+                    if (reports_unhealthy)
                         {
                             std::cout << TEXT_RED << "Satellite " << Gnss_Satellite(std::string("Galileo"), galileo_eph->PRN)
                                       << " reports an unhealthy status,";
@@ -1379,6 +1777,22 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                 {
                                     std::cout << " not used for navigation" << TEXT_RESET << '\n';
                                 }
+                        }
+                }
+            else if (msg_type_hash_code == d_galileo_reduced_ced_sptr_type_hash_code)
+                {
+                    // Reduced CED remains separate from full Galileo ephemerides so it cannot
+                    // enter RINEX, RTCM, HAS, or IOD-based OSNMA processing.
+                    const auto reduced_ced = wht::any_cast<std::shared_ptr<Galileo_Reduced_CED>>(pmt::any_ref(msg));
+                    if (reduced_ced->PRN >= 1U && reduced_ced->PRN <= 36U)
+                        {
+                            d_internal_pvt_solver->galileo_reduced_ced_map[reduced_ced->PRN] = *reduced_ced;
+                            if (d_enable_rx_clock_correction == true)
+                                {
+                                    d_user_pvt_solver->galileo_reduced_ced_map[reduced_ced->PRN] = *reduced_ced;
+                                }
+                            DLOG(INFO) << "Galileo Reduced CED stored for PRN " << reduced_ced->PRN
+                                       << " at WN=" << reduced_ced->WN << ", TOW=" << reduced_ced->TOTRedCED;
                         }
                 }
             else if (msg_type_hash_code == d_galileo_iono_sptr_type_hash_code)
@@ -1492,9 +1906,11 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                     // ### GLONASS GNAV Almanac ###
                     const auto glonass_gnav_almanac = wht::any_cast<std::shared_ptr<Glonass_Gnav_Almanac>>(pmt::any_ref(msg));
                     d_internal_pvt_solver->glonass_gnav_almanac = *glonass_gnav_almanac;
+                    d_internal_pvt_solver->glonass_gnav_almanac_map[glonass_gnav_almanac->PRN] = *glonass_gnav_almanac;
                     if (d_enable_rx_clock_correction == true)
                         {
                             d_user_pvt_solver->glonass_gnav_almanac = *glonass_gnav_almanac;
+                            d_user_pvt_solver->glonass_gnav_almanac_map[glonass_gnav_almanac->PRN] = *glonass_gnav_almanac;
                         }
                     DLOG(INFO) << "New GLONASS GNAV Almanac has arrived"
                                << ", GLONASS GNAV Slot Number =" << glonass_gnav_almanac->d_n_A;
@@ -1572,9 +1988,140 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     DLOG(INFO) << "New BeiDou DNAV almanac record has arrived";
                 }
+            else if (msg_type_hash_code == d_beidou_cnav1_ephemeris_sptr_type_hash_code)
+                {
+                    const auto bds_cnav_eph = wht::any_cast<std::shared_ptr<Beidou_Cnav1_Ephemeris>>(pmt::any_ref(msg));
+                    const bool is_cnav2 = bds_cnav_eph->sig_type == BDS_EPH_SOURCE_CNAV2;
+                    auto& eph_map = is_cnav2 ? d_internal_pvt_solver->beidou_cnav2_ephemeris_map
+                                             : d_internal_pvt_solver->beidou_cnav1_ephemeris_map;
+                    if (d_rinex_output_enabled && d_rp->is_rinex_header_written())
+                        {
+                            const auto eph_it = eph_map.find(bds_cnav_eph->PRN);
+                            const bool is_new = eph_it == eph_map.cend() ||
+                                                eph_it->second.toe != bds_cnav_eph->toe ||
+                                                eph_it->second.toc != bds_cnav_eph->toc ||
+                                                eph_it->second.IODE != bds_cnav_eph->IODE ||
+                                                eph_it->second.IODC != bds_cnav_eph->IODC ||
+                                                (is_cnav2 &&
+                                                    (eph_it->second.hs != bds_cnav_eph->hs ||
+                                                        eph_it->second.TGD_B1Cp != bds_cnav_eph->TGD_B1Cp ||
+                                                        eph_it->second.TGD_B2ap != bds_cnav_eph->TGD_B2ap ||
+                                                        eph_it->second.ISC_B2ad != bds_cnav_eph->ISC_B2ad));
+                            if (is_new)
+                                {
+                                    if (is_cnav2)
+                                        {
+                                            d_rp->log_rinex_nav_bds_cnav2({{bds_cnav_eph->PRN, *bds_cnav_eph}});
+                                        }
+                                    else
+                                        {
+                                            d_rp->log_rinex_nav_bds_cnav1({{bds_cnav_eph->PRN, *bds_cnav_eph}}, d_internal_pvt_solver->beidou_cnav1_page_data_map);
+                                        }
+                                }
+                        }
+                    eph_map[bds_cnav_eph->PRN] = *bds_cnav_eph;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            auto& user_map = is_cnav2 ? d_user_pvt_solver->beidou_cnav2_ephemeris_map
+                                                      : d_user_pvt_solver->beidou_cnav1_ephemeris_map;
+                            user_map[bds_cnav_eph->PRN] = *bds_cnav_eph;
+                        }
+                    DLOG(INFO) << (is_cnav2 ? "New BeiDou B-CNAV2 ephemeris record has arrived from SAT ID "
+                                            : "New BeiDou B-CNAV1 ephemeris record has arrived from SAT ID ")
+                               << bds_cnav_eph->PRN;
+                }
+            else if (msg_type_hash_code == d_beidou_cnav1_iono_sptr_type_hash_code)
+                {
+                    const auto bds_cnav1_iono = wht::any_cast<std::shared_ptr<Beidou_Cnav1_Iono>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->beidou_cnav1_iono = *bds_cnav1_iono;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->beidou_cnav1_iono = *bds_cnav1_iono;
+                        }
+                    DLOG(INFO) << "New BeiDou B-CNAV1 IONO record has arrived";
+                }
+            else if (msg_type_hash_code == d_beidou_cnav1_utc_model_sptr_type_hash_code)
+                {
+                    const auto bds_cnav1_utc = wht::any_cast<std::shared_ptr<Beidou_Cnav1_Utc_Model>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->beidou_cnav1_utc_model = *bds_cnav1_utc;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->beidou_cnav1_utc_model = *bds_cnav1_utc;
+                        }
+                    DLOG(INFO) << "New BeiDou B-CNAV1 UTC record has arrived";
+                }
+            else if (msg_type_hash_code == d_beidou_cnav1_page_data_sptr_type_hash_code)
+                {
+                    const auto bds_cnav1_page = wht::any_cast<std::shared_ptr<Beidou_Cnav1_PageData_Message>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->beidou_cnav1_page_data_map[bds_cnav1_page->PRN] = bds_cnav1_page->page_data;
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->beidou_cnav1_page_data_map[bds_cnav1_page->PRN] = bds_cnav1_page->page_data;
+                        }
+                    DLOG(INFO) << "New BeiDou B-CNAV1 page data record has arrived from SAT ID " << bds_cnav1_page->PRN
+                               << " PageID=" << bds_cnav1_page->page_data.common.page_id;
+                }
+            else if (msg_type_hash_code == d_sbas_raw_message_sptr_type_hash_code)
+                {
+                    const auto sbas_message = wht::any_cast<std::shared_ptr<Sbas_Raw_Message>>(pmt::any_ref(msg));
+                    d_internal_pvt_solver->store_sbas_message(*sbas_message);
+                    if (d_enable_rx_clock_correction == true)
+                        {
+                            d_user_pvt_solver->store_sbas_message(*sbas_message);
+                        }
+                    DLOG(INFO) << "SBAS MT" << sbas_message->message_type()
+                               << " from PRN " << sbas_message->prn()
+                               << " forwarded to the RTKLIB correction engine";
+                }
             else
                 {
                     LOG(WARNING) << "msg_handler_telemetry unknown object type!";
+                }
+
+            if (msg_type_hash_code == d_gps_ephemeris_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::GpsEphemeris);
+                }
+            else if (msg_type_hash_code == d_gps_cnav_ephemeris_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::GpsCnavEphemeris);
+                }
+            else if (msg_type_hash_code == d_glonass_gnav_ephemeris_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::GlonassEphemeris);
+                }
+            else if (msg_type_hash_code == d_glonass_gnav_almanac_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::GlonassAlmanac);
+                }
+            else if (msg_type_hash_code == d_glonass_gnav_utc_model_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::GlonassUtcModel);
+                }
+            else if (msg_type_hash_code == d_gps_almanac_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::GpsAlmanac);
+                }
+            else if (msg_type_hash_code == d_galileo_ephemeris_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::GalileoEphemeris);
+                }
+            else if (msg_type_hash_code == d_galileo_almanac_sptr_type_hash_code || msg_type_hash_code == d_galileo_almanac_helper_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::GalileoAlmanac);
+                }
+            else if (msg_type_hash_code == d_beidou_dnav_ephemeris_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::BeidouEphemeris);
+                }
+            else if (msg_type_hash_code == d_beidou_cnav1_ephemeris_sptr_type_hash_code ||
+                     msg_type_hash_code == d_beidou_cnav1_page_data_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::BeidouCnavEphemeris);
+                }
+            else if (msg_type_hash_code == d_beidou_dnav_almanac_sptr_type_hash_code)
+                {
+                    publish_navigation_snapshot(NavigationData::BeidouAlmanac);
                 }
         }
     catch (const wht::bad_any_cast& e)
@@ -1592,7 +2139,17 @@ void rtklib_pvt_gs::msg_handler_has_data(const pmt::pmt_t& msg)
             if (msg_type_hash_code == d_galileo_has_data_sptr_type_hash_code)
                 {
                     const auto has_data = wht::any_cast<std::shared_ptr<Galileo_HAS_data>>(pmt::any_ref(msg));
-                    if (d_use_has_corrections && (has_data->has_status == 1))  // operational mode
+                    const bool has_valid_gst =
+                        has_data->week != GALILEO_HAS_INVALID_WEEK && has_data->tow < GALILEO_HAS_SECONDS_PER_WEEK;
+                    if (d_use_has_corrections && (has_data->has_status == 3))  // do not use HAS
+                        {
+                            d_internal_pvt_solver->clear_has_corrections();
+                            if (d_enable_rx_clock_correction == true)
+                                {
+                                    d_user_pvt_solver->clear_has_corrections();
+                                }
+                        }
+                    else if (d_use_has_corrections && (has_data->has_status == 1) && has_valid_gst)  // operational mode
                         {
                             d_internal_pvt_solver->store_has_data(*has_data);
                             if (d_enable_rx_clock_correction == true)
@@ -1604,7 +2161,7 @@ void rtklib_pvt_gs::msg_handler_has_data(const pmt::pmt_t& msg)
                         {
                             d_has_simple_printer->print_message(has_data.get());
                         }
-                    if (d_rtcm_printer && has_data->tow <= 604800)
+                    if (d_rtcm_printer && has_valid_gst)
                         {
                             d_rtcm_printer->Print_IGM_Messages(*has_data.get());
                         }
@@ -1629,7 +2186,18 @@ void rtklib_pvt_gs::msg_handler_osnma(const pmt::pmt_t& msg)
             if (msg_type_hash_code == typeid(std::shared_ptr<OSNMA_NavData>).hash_code())
                 {
                     const auto osnma_data = wht::any_cast<std::shared_ptr<OSNMA_NavData>>(pmt::any_ref(msg));
-                    d_auth_nav_data_map[osnma_data->get_prn_d()].insert(osnma_data->get_IOD_nav());
+                    if (!osnma_data->get_ephemeris_data().empty())
+                        {
+                            auto auth_wn = osnma_data->get_wn_sf0();
+                            auto auth_tow = osnma_data->get_tow_sf0();
+                            if (auth_wn == 0 && auth_tow == 0 &&
+                                (osnma_data->get_last_received_WN() != 0 || osnma_data->get_last_received_TOW() != 0))
+                                {
+                                    auth_wn = osnma_data->get_last_received_WN();
+                                    auth_tow = osnma_data->get_last_received_TOW();
+                                }
+                            d_auth_nav_data_map[osnma_data->get_prn_d()][osnma_data->get_IOD_nav()] = osnma::galileo_gst_seconds(auth_wn, auth_tow);
+                        }
                 }
         }
     catch (const wht::bad_any_cast& e)
@@ -1639,58 +2207,245 @@ void rtklib_pvt_gs::msg_handler_osnma(const pmt::pmt_t& msg)
 }
 
 
+std::shared_ptr<const rtklib_pvt_gs::NavigationSnapshot> rtklib_pvt_gs::navigation_snapshot() const
+{
+    std::lock_guard<std::mutex> lock(d_snapshot_mutex);
+    return d_navigation_snapshot;
+}
+
+
+void rtklib_pvt_gs::publish_navigation_snapshot(NavigationData data)
+{
+    const auto previous = navigation_snapshot();
+    auto updated = std::make_shared<NavigationSnapshot>(*previous);
+    switch (data)
+        {
+        case NavigationData::GpsCnavEphemeris:
+            updated->gps_cnav_ephemeris = std::make_shared<const NavigationSnapshot::GpsCnavEphemerisMap>(d_internal_pvt_solver->gps_cnav_ephemeris_map);
+            break;
+        case NavigationData::GlonassEphemeris:
+            updated->glonass_ephemeris = std::make_shared<const NavigationSnapshot::GlonassEphemerisMap>(d_internal_pvt_solver->glonass_gnav_ephemeris_map);
+            break;
+        case NavigationData::GlonassAlmanac:
+            updated->glonass_almanac = std::make_shared<const NavigationSnapshot::GlonassAlmanacMap>(d_internal_pvt_solver->glonass_gnav_almanac_map);
+            break;
+        case NavigationData::GlonassUtcModel:
+            updated->glonass_utc_model = d_internal_pvt_solver->glonass_gnav_utc_model;
+            break;
+        case NavigationData::GpsEphemeris:
+            updated->gps_ephemeris = std::make_shared<const NavigationSnapshot::GpsEphemerisMap>(d_internal_pvt_solver->gps_ephemeris_map);
+            break;
+        case NavigationData::GpsAlmanac:
+            updated->gps_almanac = std::make_shared<const NavigationSnapshot::GpsAlmanacMap>(d_internal_pvt_solver->gps_almanac_map);
+            break;
+        case NavigationData::GalileoEphemeris:
+            updated->galileo_ephemeris = std::make_shared<const NavigationSnapshot::GalileoEphemerisMap>(d_internal_pvt_solver->get_galileo_ephemeris_map_for_pvt());
+            break;
+        case NavigationData::GalileoAlmanac:
+            updated->galileo_almanac = std::make_shared<const NavigationSnapshot::GalileoAlmanacMap>(d_internal_pvt_solver->galileo_almanac_map);
+            break;
+        case NavigationData::BeidouEphemeris:
+            updated->beidou_ephemeris = std::make_shared<const NavigationSnapshot::BeidouEphemerisMap>(d_internal_pvt_solver->beidou_dnav_ephemeris_map);
+            break;
+        case NavigationData::BeidouCnavEphemeris:
+            {
+                auto cnav1 = std::make_shared<NavigationSnapshot::BeidouCnavEphemerisMap>(d_internal_pvt_solver->beidou_cnav1_ephemeris_map);
+                // B-CNAV1 health may arrive on a later page without a new orbit.
+                // Use the same latest-page health as the PVT solver.
+                for (auto& entry : *cnav1)
+                    {
+                        const auto page = d_internal_pvt_solver->beidou_cnav1_page_data_map.find(entry.first);
+                        if (page != d_internal_pvt_solver->beidou_cnav1_page_data_map.cend())
+                            {
+                                entry.second.hs = page->second.common.hs;
+                            }
+                    }
+                updated->beidou_cnav1_ephemeris = std::move(cnav1);
+                updated->beidou_cnav2_ephemeris = std::make_shared<const NavigationSnapshot::BeidouCnavEphemerisMap>(d_internal_pvt_solver->beidou_cnav2_ephemeris_map);
+                break;
+            }
+        case NavigationData::BeidouAlmanac:
+            updated->beidou_almanac = std::make_shared<const NavigationSnapshot::BeidouAlmanacMap>(d_internal_pvt_solver->beidou_dnav_almanac_map);
+            break;
+        case NavigationData::RetainedAlmanacs:
+            updated->gps_almanac = std::make_shared<const NavigationSnapshot::GpsAlmanacMap>(d_internal_pvt_solver->gps_almanac_map);
+            updated->galileo_almanac = std::make_shared<const NavigationSnapshot::GalileoAlmanacMap>(d_internal_pvt_solver->galileo_almanac_map);
+            updated->beidou_almanac = std::make_shared<const NavigationSnapshot::BeidouAlmanacMap>(d_internal_pvt_solver->beidou_dnav_almanac_map);
+            updated->glonass_almanac = std::make_shared<const NavigationSnapshot::GlonassAlmanacMap>(d_internal_pvt_solver->glonass_gnav_almanac_map);
+            // The GLONASS almanac date can come from its retained UTC model.
+            updated->glonass_utc_model = d_internal_pvt_solver->glonass_gnav_utc_model;
+            break;
+        }
+    std::shared_ptr<const NavigationSnapshot> published = std::move(updated);
+    {
+        std::lock_guard<std::mutex> lock(d_snapshot_mutex);
+        // A concurrent clear must not be undone by a snapshot built before
+        // the worker has applied that clear to the solver maps.
+        if (d_navigation_generation.load(std::memory_order_relaxed) == d_applied_navigation_generation)
+            {
+                d_navigation_snapshot.swap(published);
+            }
+    }
+}
+
+
 std::map<int, Gps_Ephemeris> rtklib_pvt_gs::get_gps_ephemeris_map() const
 {
-    return d_internal_pvt_solver->gps_ephemeris_map;
+    const auto snapshot = navigation_snapshot();
+    return *snapshot->gps_ephemeris;
 }
 
 
 std::map<int, Gps_Almanac> rtklib_pvt_gs::get_gps_almanac_map() const
 {
-    return d_internal_pvt_solver->gps_almanac_map;
+    const auto snapshot = navigation_snapshot();
+    return *snapshot->gps_almanac;
 }
 
 
 std::map<int, Galileo_Ephemeris> rtklib_pvt_gs::get_galileo_ephemeris_map() const
 {
-    return d_internal_pvt_solver->galileo_ephemeris_map;
+    const auto snapshot = navigation_snapshot();
+    return *snapshot->galileo_ephemeris;
 }
 
 
 std::map<int, Galileo_Almanac> rtklib_pvt_gs::get_galileo_almanac_map() const
 {
-    return d_internal_pvt_solver->galileo_almanac_map;
+    const auto snapshot = navigation_snapshot();
+    return *snapshot->galileo_almanac;
 }
 
 
 std::map<int, Beidou_Dnav_Ephemeris> rtklib_pvt_gs::get_beidou_dnav_ephemeris_map() const
 {
-    return d_internal_pvt_solver->beidou_dnav_ephemeris_map;
+    const auto snapshot = navigation_snapshot();
+    return *snapshot->beidou_ephemeris;
+}
+
+
+std::map<int, Beidou_Cnav1_Ephemeris> rtklib_pvt_gs::get_beidou_cnav1_ephemeris_map() const
+{
+    return *navigation_snapshot()->beidou_cnav1_ephemeris;
+}
+
+
+std::map<int, Beidou_Cnav1_Ephemeris> rtklib_pvt_gs::get_beidou_cnav2_ephemeris_map() const
+{
+    return *navigation_snapshot()->beidou_cnav2_ephemeris;
 }
 
 
 std::map<int, Beidou_Dnav_Almanac> rtklib_pvt_gs::get_beidou_dnav_almanac_map() const
 {
-    return d_internal_pvt_solver->beidou_dnav_almanac_map;
+    const auto snapshot = navigation_snapshot();
+    return *snapshot->beidou_almanac;
 }
+
+
+namespace
+{
+void clear_navigation_maps(Rtklib_Solver& solver, bool keep_almanac)
+{
+    solver.clear_gps_ephemerides();
+    solver.gps_cnav_ephemeris_map.clear();
+    solver.glonass_gnav_ephemeris_map.clear();
+    solver.galileo_ephemeris_map.clear();
+    solver.galileo_ephemeris_store.clear();
+    solver.galileo_reduced_ced_map.clear();
+    solver.beidou_dnav_ephemeris_map.clear();
+    solver.beidou_cnav1_ephemeris_map.clear();
+    solver.beidou_cnav2_ephemeris_map.clear();
+    solver.beidou_cnav1_page_data_map.clear();
+    if (keep_almanac)
+        {
+            return;
+        }
+    solver.gps_almanac_map.clear();
+    solver.glonass_gnav_almanac_map.clear();
+    solver.glonass_gnav_almanac = Glonass_Gnav_Almanac();
+    solver.galileo_almanac_map.clear();
+    solver.beidou_dnav_almanac_map.clear();
+}
+}  // namespace
 
 
 void rtklib_pvt_gs::clear_ephemeris()
 {
-    d_internal_pvt_solver->gps_ephemeris_map.clear();
-    d_internal_pvt_solver->gps_almanac_map.clear();
-    d_internal_pvt_solver->galileo_ephemeris_map.clear();
-    d_internal_pvt_solver->galileo_almanac_map.clear();
-    d_internal_pvt_solver->beidou_dnav_ephemeris_map.clear();
-    d_internal_pvt_solver->beidou_dnav_almanac_map.clear();
+    request_navigation_clear(NavigationClear::All);
+}
+
+
+void rtklib_pvt_gs::clear_ephemeris_keep_almanac()
+{
+    request_navigation_clear(NavigationClear::EphemerisOnly);
+}
+
+
+void rtklib_pvt_gs::request_navigation_clear(NavigationClear kind)
+{
+    // The worker owns the solvers. Invalidate readers immediately, but defer
+    // clearing the mutable maps until it is between work/telemetry callbacks.
+    std::shared_ptr<const NavigationSnapshot> previous;
+    {
+        std::lock_guard<std::mutex> lock(d_snapshot_mutex);
+        std::shared_ptr<const NavigationSnapshot> replacement = d_empty_navigation_snapshot;
+        if (kind == NavigationClear::EphemerisOnly)
+            {
+                // Pointer copies only: the almanac maps stay shared with the
+                // current snapshot, the ephemeris entries point at the empty maps.
+                auto almanac_only = std::make_shared<NavigationSnapshot>(*d_navigation_snapshot);
+                almanac_only->gps_ephemeris = d_empty_navigation_snapshot->gps_ephemeris;
+                almanac_only->gps_cnav_ephemeris = d_empty_navigation_snapshot->gps_cnav_ephemeris;
+                almanac_only->glonass_ephemeris = d_empty_navigation_snapshot->glonass_ephemeris;
+                almanac_only->galileo_ephemeris = d_empty_navigation_snapshot->galileo_ephemeris;
+                almanac_only->beidou_ephemeris = d_empty_navigation_snapshot->beidou_ephemeris;
+                almanac_only->beidou_cnav1_ephemeris = d_empty_navigation_snapshot->beidou_cnav1_ephemeris;
+                almanac_only->beidou_cnav2_ephemeris = d_empty_navigation_snapshot->beidou_cnav2_ephemeris;
+                replacement = std::move(almanac_only);
+            }
+        // A full clear requested before the worker has applied an
+        // ephemeris-only one must not be downgraded by it.
+        if (kind == NavigationClear::All || d_pending_navigation_clear == NavigationClear::None)
+            {
+                d_pending_navigation_clear = kind;
+            }
+        d_navigation_generation.fetch_add(1, std::memory_order_release);
+        previous = std::move(d_navigation_snapshot);
+        d_navigation_snapshot = std::move(replacement);
+    }
+    // The previous snapshot, and the maps only it referenced, die here, outside the lock.
+}
+
+
+void rtklib_pvt_gs::apply_pending_navigation_clear()
+{
+    if (d_navigation_generation.load(std::memory_order_acquire) == d_applied_navigation_generation)
+        {
+            return;
+        }
+    uint32_t generation;
+    NavigationClear kind;
+    {
+        std::lock_guard<std::mutex> lock(d_snapshot_mutex);
+        generation = d_navigation_generation.load(std::memory_order_acquire);
+        kind = d_pending_navigation_clear;
+        d_pending_navigation_clear = NavigationClear::None;
+    }
+    const bool keep_almanac = (kind == NavigationClear::EphemerisOnly);
+    clear_navigation_maps(*d_internal_pvt_solver, keep_almanac);
     if (d_enable_rx_clock_correction == true)
         {
-            d_user_pvt_solver->gps_ephemeris_map.clear();
-            d_user_pvt_solver->gps_almanac_map.clear();
-            d_user_pvt_solver->galileo_ephemeris_map.clear();
-            d_user_pvt_solver->galileo_almanac_map.clear();
-            d_user_pvt_solver->beidou_dnav_ephemeris_map.clear();
-            d_user_pvt_solver->beidou_dnav_almanac_map.clear();
+            clear_navigation_maps(*d_user_pvt_solver, keep_almanac);
+        }
+    d_applied_navigation_generation = generation;
+    if (keep_almanac)
+        {
+            // An in-flight telemetry callback may have updated the retained
+            // solver maps but lost publication to the clear's generation guard.
+            // Republish them now; the same guard rejects this snapshot if a
+            // newer clear arrives while these maps are being copied.
+            publish_navigation_snapshot(NavigationData::RetainedAlmanacs);
         }
 }
 
@@ -1798,36 +2553,41 @@ bool rtklib_pvt_gs::get_latest_PVT(double* longitude_deg,
     double* course_over_ground_deg,
     time_t* UTC_time) const
 {
-    if (d_enable_rx_clock_correction == true)
+    LatestPvt snapshot;
+    {
+        std::lock_guard<std::mutex> lock(d_snapshot_mutex);
+        snapshot = d_latest_pvt;
+    }
+    if (!snapshot.valid)
         {
-            if (d_user_pvt_solver->is_valid_position())
-                {
-                    *latitude_deg = d_user_pvt_solver->get_latitude();
-                    *longitude_deg = d_user_pvt_solver->get_longitude();
-                    *height_m = d_user_pvt_solver->get_height();
-                    *ground_speed_kmh = d_user_pvt_solver->get_speed_over_ground() * 3600.0 / 1000.0;
-                    *course_over_ground_deg = d_user_pvt_solver->get_course_over_ground();
-                    *UTC_time = convert_to_time_t(d_user_pvt_solver->get_position_UTC_time());
-
-                    return true;
-                }
+            return false;
         }
-    else
+    *longitude_deg = snapshot.longitude_deg;
+    *latitude_deg = snapshot.latitude_deg;
+    *height_m = snapshot.height_m;
+    *ground_speed_kmh = snapshot.ground_speed_kmh;
+    *course_over_ground_deg = snapshot.course_over_ground_deg;
+    *UTC_time = snapshot.utc_time;
+    return true;
+}
+
+
+void rtklib_pvt_gs::publish_latest_pvt()
+{
+    LatestPvt snapshot;
+    const auto& solver = d_enable_rx_clock_correction ? d_user_pvt_solver : d_internal_pvt_solver;
+    snapshot.valid = solver->is_valid_position();
+    if (snapshot.valid)
         {
-            if (d_internal_pvt_solver->is_valid_position())
-                {
-                    *latitude_deg = d_internal_pvt_solver->get_latitude();
-                    *longitude_deg = d_internal_pvt_solver->get_longitude();
-                    *height_m = d_internal_pvt_solver->get_height();
-                    *ground_speed_kmh = d_internal_pvt_solver->get_speed_over_ground() * 3600.0 / 1000.0;
-                    *course_over_ground_deg = d_internal_pvt_solver->get_course_over_ground();
-                    *UTC_time = convert_to_time_t(d_internal_pvt_solver->get_position_UTC_time());
-
-                    return true;
-                }
+            snapshot.latitude_deg = solver->get_latitude();
+            snapshot.longitude_deg = solver->get_longitude();
+            snapshot.height_m = solver->get_height();
+            snapshot.ground_speed_kmh = solver->get_speed_over_ground() * 3.6;
+            snapshot.course_over_ground_deg = solver->get_course_over_ground();
+            snapshot.utc_time = convert_to_time_t(solver->get_position_UTC_time());
         }
-
-    return false;
+    std::lock_guard<std::mutex> lock(d_snapshot_mutex);
+    d_latest_pvt = snapshot;
 }
 
 
@@ -1851,12 +2611,47 @@ void rtklib_pvt_gs::apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observabl
 }
 
 
+Gnss_Synchro rtklib_pvt_gs::interpolate_observable(const Gnss_Synchro& early,
+    const Gnss_Synchro& late,
+    double time_factor,
+    double rx_time_s)
+{
+    Gnss_Synchro interpolated = early;
+    interpolated.RX_time = rx_time_s;
+    interpolated.Pseudorange_m += (late.Pseudorange_m - early.Pseudorange_m) * time_factor;
+    interpolated.Carrier_Doppler_hz += (late.Carrier_Doppler_hz - early.Carrier_Doppler_hz) * time_factor;
+    // interpolate the carrier phase in the late epoch's polarity frame: the
+    // telemetry decoder adds pi to the reported phase while the PLL is locked
+    // at 180 degrees, so when the resolution toggles between the two epochs
+    // the raw phases differ by pi on top of the true motion (twin of
+    // hybrid_observables_gs::interpolate_carrier_phase, kept local because
+    // the PVT block does not link the observables block)
+    double early_phase_rads = early.Carrier_phase_rads;
+    const bool polarity_changed =
+        early.Flag_PLL_180_deg_phase_locked != late.Flag_PLL_180_deg_phase_locked;
+    if (polarity_changed)
+        {
+            early_phase_rads += late.Flag_PLL_180_deg_phase_locked ? (TWO_PI / 2.0) : -(TWO_PI / 2.0);
+        }
+    interpolated.Carrier_phase_rads = early_phase_rads +
+                                      (late.Carrier_phase_rads - early_phase_rads) * time_factor;
+    interpolated.Flag_PLL_180_deg_phase_locked = late.Flag_PLL_180_deg_phase_locked;
+    // the half-cycle step lands on this output, and a slip on either endpoint
+    // belongs to it too
+    interpolated.Flag_cycle_slip = early.Flag_cycle_slip || late.Flag_cycle_slip;
+    interpolated.Flag_half_cycle_slip = early.Flag_half_cycle_slip ||
+                                        late.Flag_half_cycle_slip || polarity_changed;
+    return interpolated;
+}
+
+
 std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(const std::map<int, Gnss_Synchro>& observables_map_t0,
     const std::map<int, Gnss_Synchro>& observables_map_t1,
     double rx_time_s)
 {
     std::map<int, Gnss_Synchro> interp_observables_map;
     // Linear interpolation: y(t) = y(t0) + (y(t1) - y(t0)) * (t - t0) / (t1 - t0)
+    constexpr double GPS_WEEK_SECONDS = 604800.0;
 
     // check TOW rollover
     double time_factor;
@@ -1870,8 +2665,8 @@ std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(const std::ma
     else
         {
             // TOW rollover situation
-            time_factor = (604800000.0 + rx_time_s - observables_map_t0.cbegin()->second.RX_time) /
-                          (604800000.0 + observables_map_t1.cbegin()->second.RX_time -
+            time_factor = (GPS_WEEK_SECONDS + rx_time_s - observables_map_t0.cbegin()->second.RX_time) /
+                          (GPS_WEEK_SECONDS + observables_map_t1.cbegin()->second.RX_time -
                               observables_map_t0.cbegin()->second.RX_time);
         }
 
@@ -1884,11 +2679,24 @@ std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(const std::ma
                 {
                     if (observables_map_t1.at(observables_iter->first).PRN == observables_iter->second.PRN)
                         {
-                            interp_observables_map.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
-                            interp_observables_map.at(observables_iter->first).RX_time = rx_time_s;  // interpolation point
-                            interp_observables_map.at(observables_iter->first).Pseudorange_m += (observables_map_t1.at(observables_iter->first).Pseudorange_m - observables_iter->second.Pseudorange_m) * time_factor;
-                            interp_observables_map.at(observables_iter->first).Carrier_phase_rads += (observables_map_t1.at(observables_iter->first).Carrier_phase_rads - observables_iter->second.Carrier_phase_rads) * time_factor;
-                            interp_observables_map.at(observables_iter->first).Carrier_Doppler_hz += (observables_map_t1.at(observables_iter->first).Carrier_Doppler_hz - observables_iter->second.Carrier_Doppler_hz) * time_factor;
+                            Gnss_Synchro interpolated = interpolate_observable(observables_iter->second,
+                                observables_map_t1.at(observables_iter->first),
+                                time_factor, rx_time_s);
+                            // consume the slip flags latched from the epochs
+                            // that streamed through t1 since the last output
+                            auto& pending_slip = d_interp_pending_cycle_slip[observables_iter->first];
+                            if (pending_slip)
+                                {
+                                    interpolated.Flag_cycle_slip = true;
+                                    pending_slip = false;
+                                }
+                            auto& pending_half = d_interp_pending_half_cycle_slip[observables_iter->first];
+                            if (pending_half)
+                                {
+                                    interpolated.Flag_half_cycle_slip = true;
+                                    pending_half = false;
+                                }
+                            interp_observables_map.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, interpolated));
                         }
                 }
             catch (const std::out_of_range& oor)
@@ -1937,9 +2745,165 @@ void rtklib_pvt_gs::update_HAS_corrections()
 }
 
 
+void rtklib_pvt_gs::report_fixed_base_status()
+{
+    if (!d_ntrip_client)
+        {
+            return;
+        }
+    const Rtklib_Fixed_Base_Status status = d_user_pvt_solver->get_fixed_base_status();
+    const int status_value = static_cast<int>(status);
+    if (status_value == d_last_fixed_base_status || status == Rtklib_Fixed_Base_Status::NOT_REQUESTED)
+        {
+            return;
+        }
+    d_last_fixed_base_status = status_value;
+
+    switch (status)
+        {
+        case Rtklib_Fixed_Base_Status::APPLIED:
+            LOG(INFO) << "NTRIP fixed-base observations applied: age="
+                      << d_user_pvt_solver->get_fixed_base_age_s() << " s, common satellites="
+                      << d_user_pvt_solver->get_fixed_base_common_satellites();
+            break;
+        case Rtklib_Fixed_Base_Status::SOLVER_FALLBACK:
+            LOG(WARNING) << "NTRIP fixed-base data were available, but RTKLIB returned the configured single-point fallback";
+            break;
+        case Rtklib_Fixed_Base_Status::SOLVER_FAILURE:
+            LOG(WARNING) << "NTRIP fixed-base data were available, but RTKLIB could not produce a position solution";
+            break;
+        case Rtklib_Fixed_Base_Status::MISSING_OBSERVATIONS:
+            LOG(WARNING) << "NTRIP RTK waiting for a usable base observation epoch";
+            break;
+        case Rtklib_Fixed_Base_Status::MISSING_POSITION:
+            LOG(WARNING) << "NTRIP RTK waiting for an RTCM 1005 or 1006 base position";
+            break;
+        case Rtklib_Fixed_Base_Status::STALE:
+            LOG(WARNING) << "NTRIP base observations are stale: age="
+                         << d_user_pvt_solver->get_fixed_base_age_s() << " s";
+            break;
+        case Rtklib_Fixed_Base_Status::INVALID_POSITION:
+            LOG(WARNING) << "NTRIP base position is invalid";
+            break;
+        case Rtklib_Fixed_Base_Status::INSUFFICIENT_COMMON_SATELLITES:
+            /* the count spans every RTK constellation; the threshold is the
+               solver's, not this display layer's */
+            LOG(WARNING) << "NTRIP RTK has fewer than " << Rtklib_Solver::NTRIP_MIN_COMMON_SATELLITES
+                         << " common satellites: "
+                         << d_user_pvt_solver->get_fixed_base_common_satellites();
+            break;
+        case Rtklib_Fixed_Base_Status::NOT_REQUESTED:
+        default:
+            break;
+        }
+}
+
+
+void rtklib_pvt_gs::report_solution_status()
+{
+    /* the solver already demotes broadcast-products PPP to SOLQ_SINGLE, so
+       pvt_sol.stat is the effective status for every output */
+    const int status = d_user_pvt_solver->pvt_sol.stat;
+    if (status == d_last_solution_status)
+        {
+            return;
+        }
+    const int previous_status = d_last_solution_status;
+    d_last_solution_status = status;
+    /* announce only transitions involving a differential, SBAS or PPP state;
+       plain single-point operation keeps the classic console output */
+    if (solution_status_tag(previous_status).empty() && solution_status_tag(status).empty())
+        {
+            return;
+        }
+    std::ostringstream report;
+    switch (status)
+        {
+        case SOLQ_FIX:
+            report << "RTK ambiguities fixed (AR ratio " << std::fixed << std::setprecision(1)
+                   << d_user_pvt_solver->pvt_sol.ratio << ", threshold "
+                   << d_user_pvt_solver->pvt_sol.thres << ")";
+            break;
+        case SOLQ_FLOAT:
+            if (previous_status == SOLQ_FIX)
+                {
+                    report << "RTK fix lost: float solution (AR ratio " << std::fixed
+                           << std::setprecision(1) << d_user_pvt_solver->pvt_sol.ratio << ")";
+                }
+            else
+                {
+                    report << "RTK float solution";
+                }
+            break;
+        case SOLQ_DGPS:
+            report << "RTK degraded to code differential (DGNSS)";
+            break;
+        case SOLQ_SBAS:
+            report << "SBAS-corrected solution";
+            break;
+        case SOLQ_PPP:
+            report << "PPP solution";
+            break;
+        default:
+            /* fell back to single-point (or lost the solution) from a labeled state */
+            if (previous_status == SOLQ_SBAS)
+                {
+                    report << "SBAS corrections lost: single-point solution";
+                }
+            else if (previous_status == SOLQ_PPP)
+                {
+                    report << "PPP lost: single-point solution";
+                }
+            else
+                {
+                    report << "RTK lost: single-point solution";
+                }
+            break;
+        }
+    const std::string& color = solution_status_tag(status).empty() ? TEXT_BOLD_YELLOW : solution_status_color(status);
+    std::cout << color << report.str() << TEXT_RESET << std::endl;
+    LOG(INFO) << "Solution status change: " << report.str();
+}
+
+
+void rtklib_pvt_gs::report_solution_outage()
+{
+    /* a failed solve from a labeled state must be announced and must clear
+       d_last_solution_status: otherwise an outage that recovers into the same
+       status (e.g. FIXED -> outage -> FIXED) would print nothing at all */
+    const int previous_status = d_last_solution_status;
+    if (previous_status == SOLQ_NONE)
+        {
+            return;
+        }
+    d_last_solution_status = SOLQ_NONE;
+    if (solution_status_tag(previous_status).empty())
+        {
+            return; /* plain single-point operation keeps the classic output */
+        }
+    std::ostringstream report;
+    if (previous_status == SOLQ_SBAS)
+        {
+            report << "SBAS corrections lost: no PVT solution";
+        }
+    else if (previous_status == SOLQ_PPP)
+        {
+            report << "PPP lost: no PVT solution";
+        }
+    else
+        {
+            report << "RTK lost: no PVT solution";
+        }
+    std::cout << TEXT_BOLD_YELLOW << report.str() << TEXT_RESET << std::endl;
+    LOG(INFO) << "Solution status change: " << report.str();
+}
+
+
 int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
+    apply_pending_navigation_clear();
+    bool latest_pvt_updated = false;
     // *************** time tags ****************
     if (d_enable_rx_clock_correction == false)  // todo: currently only works if clock correction is disabled
         {
@@ -1989,56 +2953,103 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
             // ############ 1. READ PSEUDORANGES ####
             for (uint32_t i = 0; i < d_nchannels; i++)
                 {
-                    if (in[i][epoch].Flag_valid_pseudorange)
+                    Gnss_Synchro gnss_synchro = in[i][epoch];
+                    if (gnss_synchro.System == 'J')
                         {
-                            const auto tmp_eph_iter_gps = d_internal_pvt_solver->gps_ephemeris_map.find(in[i][epoch].PRN);
-                            const auto tmp_eph_iter_gal = d_internal_pvt_solver->galileo_ephemeris_map.find(in[i][epoch].PRN);
-                            const auto tmp_eph_iter_cnav = d_internal_pvt_solver->gps_cnav_ephemeris_map.find(in[i][epoch].PRN);
-                            const auto tmp_eph_iter_glo_gnav = d_internal_pvt_solver->glonass_gnav_ephemeris_map.find(in[i][epoch].PRN);
-                            const auto tmp_eph_iter_bds_dnav = d_internal_pvt_solver->beidou_dnav_ephemeris_map.find(in[i][epoch].PRN);
+                            // QZSS L1 C/B is broadcast with a dedicated PRN (203-206), but the
+                            // transmitting satellite is identified by the PRN of its nominal PNT
+                            // signals (RINEX 4.00, Table 6: QZSS PRN to RINEX Satellite Identifier)
+                            gnss_synchro.PRN = qzss_l1cb_prn_to_nominal_prn(gnss_synchro.PRN);
+                        }
+                    if (gnss_synchro.Flag_valid_pseudorange)
+                        {
+                            const auto tmp_eph_iter_gps = d_internal_pvt_solver->gps_ephemeris_map.find(gnss_synchro.PRN);
+                            const auto tmp_eph_iter_gal = d_internal_pvt_solver->galileo_ephemeris_map.find(gnss_synchro.PRN);
+                            const auto tmp_eph_iter_cnav = d_internal_pvt_solver->gps_cnav_ephemeris_map.find(gnss_synchro.PRN);
+                            const auto tmp_eph_iter_glo_gnav = d_internal_pvt_solver->glonass_gnav_ephemeris_map.find(gnss_synchro.PRN);
+                            const auto tmp_eph_iter_bds_dnav = d_internal_pvt_solver->beidou_dnav_ephemeris_map.find(gnss_synchro.PRN);
+                            const auto tmp_eph_iter_bds_cnav1 = d_internal_pvt_solver->beidou_cnav1_ephemeris_map.find(gnss_synchro.PRN);
+                            const auto tmp_eph_iter_bds_cnav2 = d_internal_pvt_solver->beidou_cnav2_ephemeris_map.find(gnss_synchro.PRN);
 
                             bool store_valid_observable = false;
 
                             if (!d_osnma_strict && tmp_eph_iter_gps != d_internal_pvt_solver->gps_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_gps->second.PRN;
-                                    if ((prn_aux == in[i][epoch].PRN) &&
-                                        ((std::string(in[i][epoch].Signal, 2) == std::string("1C")) || (std::string(in[i][epoch].Signal, 2) == std::string("J1"))) &&
+                                    if ((prn_aux == gnss_synchro.PRN) &&
+                                        ((std::string(gnss_synchro.Signal, 2) == std::string("1C")) || (std::string(gnss_synchro.Signal, 2) == std::string("J1"))) &&
                                         (d_use_unhealthy_sats || (tmp_eph_iter_gps->second.SV_health == 0)))
                                         {
                                             store_valid_observable = true;
                                         }
                                 }
-                            if (tmp_eph_iter_gal != d_internal_pvt_solver->galileo_ephemeris_map.cend())
+                            Galileo_Ephemeris selected_galileo_ephemeris;
+                            bool selected_from_reduced_ced = false;
+                            const std::string galileo_signal(gnss_synchro.Signal, 2);
+                            const auto galileo_observation_tow = static_cast<uint32_t>(gnss_synchro.interp_TOW_ms / 1000.0);
+                            if (d_internal_pvt_solver->select_galileo_ephemeris(gnss_synchro.PRN,
+                                    galileo_signal, galileo_observation_tow,
+                                    selected_galileo_ephemeris, selected_from_reduced_ced))
                                 {
-                                    const uint32_t prn_aux = tmp_eph_iter_gal->second.PRN;
-                                    if ((prn_aux == in[i][epoch].PRN) &&
-                                        (((std::string(in[i][epoch].Signal, 2) == std::string("1B")) && (d_use_unhealthy_sats || ((tmp_eph_iter_gal->second.E1B_DVS == false) && (tmp_eph_iter_gal->second.E1B_HS == 0)))) ||
-                                            ((std::string(in[i][epoch].Signal, 2) == std::string("5X")) && (d_use_unhealthy_sats || ((tmp_eph_iter_gal->second.E5a_DVS == false) && (tmp_eph_iter_gal->second.E5a_HS == 0)))) ||
-                                            ((std::string(in[i][epoch].Signal, 2) == std::string("7X")) && (d_use_unhealthy_sats || ((tmp_eph_iter_gal->second.E5b_DVS == false) && (tmp_eph_iter_gal->second.E5b_HS == 0))))))
+                                    bool signal_is_healthy = false;
+                                    bool signal_health_available = false;
+                                    if (selected_from_reduced_ced)
                                         {
-                                            if (d_osnma_strict && ((std::string(in[i][epoch].Signal, 2) == std::string("1B")) || ((std::string(in[i][epoch].Signal, 2) == std::string("7X")))))
+                                            signal_health_available = galileo_signal == "1B" || galileo_signal == "7X";
+                                            signal_is_healthy =
+                                                (galileo_signal == "1B" && !selected_galileo_ephemeris.E1B_DVS && selected_galileo_ephemeris.E1B_HS == 0) ||
+                                                (galileo_signal == "7X" && !selected_galileo_ephemeris.E5b_DVS && selected_galileo_ephemeris.E5b_HS == 0);
+                                        }
+                                    else
+                                        {
+                                            signal_health_available = d_internal_pvt_solver->get_galileo_signal_health(
+                                                gnss_synchro.PRN, galileo_signal, galileo_observation_tow, signal_is_healthy);
+                                        }
+                                    signal_is_healthy = d_use_unhealthy_sats || (signal_health_available && signal_is_healthy);
+                                    if (signal_is_healthy && !selected_from_reduced_ced && d_osnma_strict &&
+                                        selected_galileo_ephemeris.nav_message_type == Galileo_Nav_Message_Type::INAV)
+                                        {
+                                            // Pick up only recently authenticated full-precision navigation data.
+                                            const auto eph_gst = osnma::galileo_gst_seconds(osnma::galileo_week_to_uint(selected_galileo_ephemeris.WN),
+                                                osnma::galileo_tow_to_uint(selected_galileo_ephemeris.tow));
+                                            auto IOD_nav_list = d_auth_nav_data_map.find(selected_galileo_ephemeris.PRN);
+                                            if (IOD_nav_list != d_auth_nav_data_map.cend())
                                                 {
-                                                    // Pick up only authenticated satellites
-                                                    auto IOD_nav_list = d_auth_nav_data_map.find(tmp_eph_iter_gal->second.PRN);
-                                                    if (IOD_nav_list != d_auth_nav_data_map.cend())
+                                                    for (auto auth_it = IOD_nav_list->second.begin(); auth_it != IOD_nav_list->second.end();)
                                                         {
-                                                            if (IOD_nav_list->second.find(tmp_eph_iter_gal->second.IOD_nav) != IOD_nav_list->second.cend())
+                                                            if (osnma::auth_gst_is_stale(auth_it->second, eph_gst))
                                                                 {
-                                                                    store_valid_observable = true;
+                                                                    auth_it = IOD_nav_list->second.erase(auth_it);
+                                                                }
+                                                            else
+                                                                {
+                                                                    ++auth_it;
                                                                 }
                                                         }
+
+                                                    const auto IOD_nav = static_cast<uint32_t>(selected_galileo_ephemeris.IOD_nav);
+                                                    const auto auth_it = IOD_nav_list->second.find(IOD_nav);
+                                                    if (auth_it != IOD_nav_list->second.cend() &&
+                                                        osnma::auth_gst_matches_nav_data(auth_it->second, eph_gst))
+                                                        {
+                                                            store_valid_observable = true;
+                                                        }
+
+                                                    if (IOD_nav_list->second.empty())
+                                                        {
+                                                            d_auth_nav_data_map.erase(IOD_nav_list);
+                                                        }
                                                 }
-                                            else
-                                                {
-                                                    store_valid_observable = true;
-                                                }
+                                        }
+                                    else if (signal_is_healthy && !d_osnma_strict)
+                                        {
+                                            store_valid_observable = true;
                                         }
                                 }
                             if (!d_osnma_strict && tmp_eph_iter_cnav != d_internal_pvt_solver->gps_cnav_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_cnav->second.PRN;
-                                    if ((prn_aux == in[i][epoch].PRN) && (((std::string(in[i][epoch].Signal, 2) == std::string("2S")) || (std::string(in[i][epoch].Signal, 2) == std::string("L5")) || (std::string(in[i][epoch].Signal, 2) == std::string("J5")))))
+                                    if ((prn_aux == gnss_synchro.PRN) && (((std::string(gnss_synchro.Signal, 2) == std::string("2S")) || (std::string(gnss_synchro.Signal, 2) == std::string("L5")) || (std::string(gnss_synchro.Signal, 2) == std::string("J5")))))
                                         {
                                             store_valid_observable = true;
                                         }
@@ -2046,7 +3057,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             if (!d_osnma_strict && tmp_eph_iter_glo_gnav != d_internal_pvt_solver->glonass_gnav_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_glo_gnav->second.PRN;
-                                    if ((prn_aux == in[i][epoch].PRN) && ((std::string(in[i][epoch].Signal, 2) == std::string("1G")) || (std::string(in[i][epoch].Signal, 2) == std::string("2G"))))
+                                    if ((prn_aux == gnss_synchro.PRN) && ((std::string(gnss_synchro.Signal, 2) == std::string("1G")) || (std::string(gnss_synchro.Signal, 2) == std::string("2G"))))
                                         {
                                             store_valid_observable = true;
                                         }
@@ -2054,12 +3065,31 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             if (!d_osnma_strict && tmp_eph_iter_bds_dnav != d_internal_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_bds_dnav->second.PRN;
-                                    if ((prn_aux == in[i][epoch].PRN) && (((std::string(in[i][epoch].Signal, 2) == std::string("B1")) || (std::string(in[i][epoch].Signal, 2) == std::string("B3"))) && (d_use_unhealthy_sats || (tmp_eph_iter_bds_dnav->second.SV_health == 0))))
+                                    if ((prn_aux == gnss_synchro.PRN) && (((std::string(gnss_synchro.Signal, 2) == std::string("B1")) || (std::string(gnss_synchro.Signal, 2) == std::string("B3"))) && (d_use_unhealthy_sats || (tmp_eph_iter_bds_dnav->second.SV_health == 0))))
                                         {
                                             store_valid_observable = true;
                                         }
                                 }
-                            if (std::string(in[i][epoch].Signal, 2) == std::string("E6"))
+                            if (!d_osnma_strict && tmp_eph_iter_bds_cnav1 != d_internal_pvt_solver->beidou_cnav1_ephemeris_map.cend())
+                                {
+                                    const uint32_t prn_aux = tmp_eph_iter_bds_cnav1->second.PRN;
+                                    const std::string sig(gnss_synchro.Signal, 2);
+                                    if (prn_aux == gnss_synchro.PRN && sig == "1D")
+                                        {
+                                            store_valid_observable = true;
+                                        }
+                                }
+                            if (!d_osnma_strict && tmp_eph_iter_bds_cnav2 != d_internal_pvt_solver->beidou_cnav2_ephemeris_map.cend())
+                                {
+                                    const auto& cnav2 = tmp_eph_iter_bds_cnav2->second;
+                                    const std::string sig(gnss_synchro.Signal, 2);
+                                    if (cnav2.PRN == gnss_synchro.PRN && sig == "5D" &&
+                                        cnav2.sat_type != 1 && cnav2.hs == 0)
+                                        {
+                                            store_valid_observable = true;
+                                        }
+                                }
+                            if (std::string(gnss_synchro.Signal, 2) == std::string("E6"))
                                 {
                                     if (d_osnma_strict)
                                         {
@@ -2074,40 +3104,43 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             if (store_valid_observable)
                                 {
                                     // store valid observables in a map.
-                                    d_gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(i, in[i][epoch]));
+                                    d_gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(i, gnss_synchro));
                                 }
 
                             if (d_rtcm_enabled)
                                 {
                                     try
                                         {
-                                            if (d_internal_pvt_solver->gps_ephemeris_map.empty() == false)
+                                            // Keep track of locking time. The ephemeris maps are keyed by
+                                            // PRN only, so gate on the observable's system to avoid
+                                            // cross-constellation PRN collisions (e.g., a BeiDou C19
+                                            // observable touching the GPS G19 lock-time slot).
+                                            switch (gnss_synchro.System)
                                                 {
+                                                case 'G':
                                                     if (tmp_eph_iter_gps != d_internal_pvt_solver->gps_ephemeris_map.cend())
                                                         {
-                                                            d_rtcm_printer->lock_time(d_internal_pvt_solver->gps_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
+                                                            d_rtcm_printer->lock_time(tmp_eph_iter_gps->second, gnss_synchro.RX_time, gnss_synchro);
                                                         }
-                                                }
-                                            if (d_internal_pvt_solver->galileo_ephemeris_map.empty() == false)
-                                                {
-                                                    if (tmp_eph_iter_gal != d_internal_pvt_solver->galileo_ephemeris_map.cend())
-                                                        {
-                                                            d_rtcm_printer->lock_time(d_internal_pvt_solver->galileo_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
-                                                        }
-                                                }
-                                            if (d_internal_pvt_solver->gps_cnav_ephemeris_map.empty() == false)
-                                                {
                                                     if (tmp_eph_iter_cnav != d_internal_pvt_solver->gps_cnav_ephemeris_map.cend())
                                                         {
-                                                            d_rtcm_printer->lock_time(d_internal_pvt_solver->gps_cnav_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
+                                                            d_rtcm_printer->lock_time(tmp_eph_iter_cnav->second, gnss_synchro.RX_time, gnss_synchro);
                                                         }
-                                                }
-                                            if (d_internal_pvt_solver->glonass_gnav_ephemeris_map.empty() == false)
-                                                {
+                                                    break;
+                                                case 'E':
+                                                    if (tmp_eph_iter_gal != d_internal_pvt_solver->galileo_ephemeris_map.cend())
+                                                        {
+                                                            d_rtcm_printer->lock_time(tmp_eph_iter_gal->second, gnss_synchro.RX_time, gnss_synchro);
+                                                        }
+                                                    break;
+                                                case 'R':
                                                     if (tmp_eph_iter_glo_gnav != d_internal_pvt_solver->glonass_gnav_ephemeris_map.cend())
                                                         {
-                                                            d_rtcm_printer->lock_time(d_internal_pvt_solver->glonass_gnav_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
+                                                            d_rtcm_printer->lock_time(tmp_eph_iter_glo_gnav->second, gnss_synchro.RX_time, gnss_synchro);
                                                         }
+                                                    break;
+                                                default:
+                                                    break;
                                                 }
                                         }
                                     catch (const boost::exception& ex)
@@ -2141,11 +3174,26 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     // LOG(INFO) << "diff raw obs time: " << d_gnss_observables_map.cbegin()->second.RX_time * 1000.0 - old_time_debug;
                     // old_time_debug = d_gnss_observables_map.cbegin()->second.RX_time * 1000.0;
                     uint32_t current_RX_time_ms = 0;
+                    // If the Rx clock correction is disabled, d_internal_pvt_solver and d_user_pvt_solver
+                    // are the same object and this is its only get_PVT call, executed at the observables
+                    // rate; restrict dumping to epochs aligned with the configured output rate
+                    bool dump_this_epoch = false;
+                    if (d_enable_rx_clock_correction == false)
+                        {
+                            const auto rx_time_ms = static_cast<uint32_t>(d_gnss_observables_map.cbegin()->second.RX_time * 1000.0);
+                            dump_this_epoch = (rx_time_ms % d_output_rate_ms == 0);
+                        }
                     // #### solve PVT and store the corrected observable set
-                    if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, d_observable_interval_ms / 1000.0, *d_sensor_data_aggregator))
+                    latest_pvt_updated = latest_pvt_updated || !d_enable_rx_clock_correction;
+                    if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, d_observable_interval_ms / 1000.0, *d_sensor_data_aggregator, dump_this_epoch))
                         {
                             d_pvt_errors_counter = 0;  // Reset consecutive PVT error counter
+                            d_pvt_solver_errors_counter = 0;
                             const double Rx_clock_offset_s = d_internal_pvt_solver->get_time_offset_s();
+                            if (d_ntrip_client)
+                                {
+                                    d_ntrip_client->update_rover_position(d_internal_pvt_solver->get_rx_pos(), d_internal_pvt_solver->pvt_sol.time);
+                                }
 
                             // **************** time tags ****************
                             if (d_enable_rx_clock_correction == false)  // todo: currently only works if clock correction is disabled (computed clock offset is applied here)
@@ -2163,7 +3211,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                     delta_rxtime_to_tag_ms = d_rx_time * 1000.0 - current_tag.rx_time;
                                                     d_TimeChannelTagTimestamps.pop();
                                                 }
-                                            while (fabs(delta_rxtime_to_tag_ms) >= 100 and !d_TimeChannelTagTimestamps.empty());
+                                            while (fabs(delta_rxtime_to_tag_ms) >= 100 && !d_TimeChannelTagTimestamps.empty());
 
                                             // 2. If both timestamps (relative to the receiver's start) are closer than 100 ms (the granularituy of the PVT)
                                             if (fabs(delta_rxtime_to_tag_ms) <= 100)  // [ms]
@@ -2202,6 +3250,21 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             d_gnss_observables_map_t0 = d_gnss_observables_map_t1;
                                             apply_rx_clock_offset(d_gnss_observables_map, Rx_clock_offset_s);
                                             d_gnss_observables_map_t1 = d_gnss_observables_map;
+                                            // latch the slip flags of every epoch entering t1: with
+                                            // output_rate_ms > observable_interval_ms most epochs are
+                                            // never sampled by interpolate_observables, and a flag
+                                            // riding one of them would otherwise vanish
+                                            for (const auto& observable : d_gnss_observables_map_t1)
+                                                {
+                                                    if (observable.second.Flag_cycle_slip)
+                                                        {
+                                                            d_interp_pending_cycle_slip[observable.first] = true;
+                                                        }
+                                                    if (observable.second.Flag_half_cycle_slip)
+                                                        {
+                                                            d_interp_pending_half_cycle_slip[observable.first] = true;
+                                                        }
+                                                }
 
                                             // ### select the rx_time and interpolate observables at that time
                                             if (!d_gnss_observables_map_t0.empty() && !d_gnss_observables_map_t1.empty())
@@ -2242,25 +3305,85 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                         }
                     else
                         {
-                            // sanity check: If the PVT solver is getting 100 consecutive errors, send a reset command to observables block
                             d_pvt_errors_counter++;
-                            if (d_pvt_errors_counter >= 100)
+                            // the status banners track the output-rate solution stream while
+                            // this solver runs at the observables rate: announce an outage
+                            // only once a whole output period has elapsed without a solution,
+                            // so a single-epoch transient between two valid outputs does not
+                            // flap the console with lost/recovered pairs
+                            uint32_t failed_epochs_per_output =
+                                static_cast<uint32_t>(d_output_rate_ms) / d_observable_interval_ms;
+                            if (failed_epochs_per_output == 0)
                                 {
-                                    int command = 1;
-                                    this->message_port_pub(pmt::mp("pvt_to_observables"), pmt::make_any(command));
-                                    LOG(INFO) << "PVT: Number of consecutive position solver error reached, Sent reset to observables.";
-                                    d_pvt_errors_counter = 0;
+                                    failed_epochs_per_output = 1;
+                                }
+                            if (d_pvt_errors_counter >= failed_epochs_per_output)
+                                {
+                                    report_solution_outage();
+                                }
+                            // sanity check: If the PVT solver is getting 100 consecutive errors, send a reset command to observables block.
+                            // Only the epochs in which the solver had what it takes to compute a solution and failed
+                            // are errors: the epochs without enough satellites tell nothing about the receiver time.
+                            // The command is sent once per outage: the receiver time would be set again from the
+                            // same channels, so repeating it cannot help if the first one did not (e.g., with a poor
+                            // geometry), and each one costs a gap in the observables of every channel
+                            if (d_internal_pvt_solver->solution_attempted() && d_pvt_solver_errors_counter < 100)
+                                {
+                                    d_pvt_solver_errors_counter++;
+                                    if (d_pvt_solver_errors_counter == 100)
+                                        {
+                                            int command = 1;
+                                            this->message_port_pub(pmt::mp("pvt_to_observables"), pmt::make_any(command));
+                                            LOG(INFO) << "PVT: Number of consecutive position solver error reached, Sent reset to observables.";
+                                        }
                                 }
                         }
 
-                    // compute on the fly PVT solution
-                    if (flag_compute_pvt_output == true)
+                    // compute on the fly PVT solution at the output rate, on the clock-corrected
+                    // and interpolated observables. If the Rx clock correction is disabled, the user
+                    // solver is the same object as the internal one and already holds this epoch's
+                    // solution (flag_pvt_valid was set above), so solving again would feed the same
+                    // epoch twice to the solver and duplicate the dump record
+                    if (flag_compute_pvt_output == true && d_enable_rx_clock_correction == true)
                         {
-                            flag_pvt_valid = d_user_pvt_solver->get_PVT(d_gnss_observables_map, d_output_rate_ms / 1000.0, *d_sensor_data_aggregator);
+                            const Ntrip_Rtcm_Snapshot* fixed_base = nullptr;
+                            if (d_ntrip_client)
+                                {
+                                    /* deep-copy the snapshot only when the client's data
+                                       actually changed; base epochs arrive at ~1 Hz while
+                                       this path runs at the output rate */
+                                    const uint64_t snapshot_generation = d_ntrip_client->snapshot_generation();
+                                    if (!d_fixed_base_snapshot || snapshot_generation != d_ntrip_snapshot_generation)
+                                        {
+                                            d_fixed_base_snapshot.reset(new Ntrip_Rtcm_Snapshot(
+                                                d_ntrip_client->latest_snapshot(d_internal_pvt_solver->pvt_sol.time)));
+                                            d_ntrip_snapshot_generation = snapshot_generation;
+                                        }
+                                    // the generation covers the received data, not the passage
+                                    // of rover time: the cached copy's age/freshness must track
+                                    // every epoch, or a stalled base stream would stay 'fresh'
+                                    d_fixed_base_snapshot->refresh_age(
+                                        d_internal_pvt_solver->pvt_sol.time,
+                                        d_ntrip_max_correction_age_s);
+                                    fixed_base = d_fixed_base_snapshot.get();
+                                }
+                            latest_pvt_updated = true;
+                            flag_pvt_valid = d_user_pvt_solver->get_PVT(
+                                d_gnss_observables_map,
+                                d_output_rate_ms / 1000.0,
+                                *d_sensor_data_aggregator,
+                                true,
+                                fixed_base);
+                            report_fixed_base_status();
+                            if (!flag_pvt_valid)
+                                {
+                                    report_solution_outage();
+                                }
                         }
 
                     if (flag_pvt_valid == true)
                         {
+                            report_solution_status();
                             // experimental VTL tests
                             // send tracking command
                             //                            const std::shared_ptr<TrackingCmd> trk_cmd_test = std::make_shared<TrackingCmd>(TrackingCmd());
@@ -2273,7 +3396,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             initialize_and_apply_carrier_phase_offset();
 
                             const double Rx_clock_offset_s = d_user_pvt_solver->get_time_offset_s();
-                            if (d_enable_rx_clock_correction == true and fabs(Rx_clock_offset_s) > 0.000001)  // 1us !!
+                            if (d_enable_rx_clock_correction == true && fabs(Rx_clock_offset_s) > 0.000001)  // 1us !!
                                 {
                                     LOG(INFO) << "Warning: Rx clock offset at interpolated RX time: " << Rx_clock_offset_s * 1000.0 << "[ms]"
                                               << " at RX time: " << static_cast<uint32_t>(d_rx_time * 1000.0) << " [ms]";
@@ -2371,7 +3494,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             ss << " is Lat = " << d_user_pvt_solver->get_latitude()
                                                << " [deg], Long = " << d_user_pvt_solver->get_longitude()
                                                << " [deg], Height = " << d_user_pvt_solver->get_height()
-                                               << " [m], with GDOP = " << d_user_pvt_solver->get_gdop();
+                                               << " [m], with GDOP = " << d_user_pvt_solver->get_gdop()
+                                               << solution_status_tag(d_user_pvt_solver->pvt_sol.stat);
                                             std::cout << ss.str() << std::endl;
                                             d_end = std::chrono::system_clock::now();
                                             std::chrono::duration<double> elapsed_seconds = d_end - d_start;
@@ -2470,13 +3594,16 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             std::cout.setf(std::ios::fixed, std::ios::floatfield);
                             auto* facet = new boost::posix_time::time_facet("%Y-%b-%d %H:%M:%S.%f %z");
                             std::cout.imbue(std::locale(std::cout.getloc(), facet));
+                            const int solq = d_user_pvt_solver->pvt_sol.stat;
+                            const std::string solq_tag = solution_status_tag(solq);
+                            const std::string solq_txt = solq_tag.empty() ? "" : solution_status_color(solq) + solq_tag;
                             std::cout
                                 << TEXT_BOLD_GREEN
                                 << "Position at " << time_solution << UTC_solution_str
                                 << " using " << d_user_pvt_solver->get_num_valid_observations() << " observations is Lat = "
                                 << std::fixed << std::setprecision(6) << d_user_pvt_solver->get_latitude()
                                 << " [deg], Long = " << d_user_pvt_solver->get_longitude() << " [deg], Height = "
-                                << std::fixed << std::setprecision(2) << d_user_pvt_solver->get_height() << std::setprecision(ss) << " [m]" << TEXT_RESET << std::endl;
+                                << std::fixed << std::setprecision(2) << d_user_pvt_solver->get_height() << std::setprecision(ss) << " [m]" << solq_txt << TEXT_RESET << std::endl;
                             DLOG(INFO) << "RX clock offset: " << d_user_pvt_solver->get_time_offset_s() << "[s]";
 
                             std::cout
@@ -2528,5 +3655,36 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                 }
         }
 
+    if (latest_pvt_updated)
+        {
+            publish_latest_pvt();
+        }
     return noutput_items;
+}
+
+
+std::map<int, Gps_CNAV_Ephemeris> rtklib_pvt_gs::get_gps_cnav_ephemeris_map() const
+{
+    const auto snapshot = navigation_snapshot();
+    return *snapshot->gps_cnav_ephemeris;
+}
+
+
+std::map<int, Glonass_Gnav_Ephemeris> rtklib_pvt_gs::get_glonass_ephemeris_map() const
+{
+    const auto snapshot = navigation_snapshot();
+    return *snapshot->glonass_ephemeris;
+}
+
+
+std::map<int, Glonass_Gnav_Almanac> rtklib_pvt_gs::get_glonass_almanac_map() const
+{
+    const auto snapshot = navigation_snapshot();
+    return *snapshot->glonass_almanac;
+}
+
+
+Glonass_Gnav_Utc_Model rtklib_pvt_gs::get_glonass_utc_model() const
+{
+    return navigation_snapshot()->glonass_utc_model;
 }

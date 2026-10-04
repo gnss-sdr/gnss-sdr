@@ -20,8 +20,10 @@
 
 double Glonass_Gnav_Utc_Model::utc_time(double glonass_time_corrected) const
 {
-    // GLONASS Time is relative to UTC Moscow, so we simply add its time difference
-    double t_utc = glonass_time_corrected + 3.0 * 3600.0 + d_tau_c;
+    // GLONASS Time runs 3 hours ahead of UTC(SU): tUTC + 3h = tGLO + tau_c
+    // (GLONASS ICD Edition 5.1, Section 4.5). The result may be negative,
+    // meaning the UTC epoch falls in the previous day
+    double t_utc = glonass_time_corrected - 3.0 * 3600.0 + d_tau_c;
 
     return t_utc;
 }

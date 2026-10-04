@@ -402,14 +402,14 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), FLAGS_cn0_samples);
 
                     // Loss of lock detection
-                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
+                    if (d_carrier_lock_test < d_carrier_lock_threshold || d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
 #else
                     d_CN0_SNV_dB_Hz = cn0_m2m4_estimator(d_Prompt_buffer.data(), absl::GetFlag(FLAGS_cn0_samples), GALILEO_E1_CODE_PERIOD_S);
 
                     // Carrier lock indicator
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), absl::GetFlag(FLAGS_cn0_samples));
 
-                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < absl::GetFlag(FLAGS_cn0_min))
+                    if (d_carrier_lock_test < d_carrier_lock_threshold || d_CN0_SNV_dB_Hz < absl::GetFlag(FLAGS_cn0_min))
 #endif
                         {
                             d_carrier_lock_fail_counter++;

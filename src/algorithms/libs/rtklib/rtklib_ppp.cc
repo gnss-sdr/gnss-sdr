@@ -34,6 +34,7 @@
 #include "rtklib_ephemeris.h"
 #include "rtklib_ionex.h"
 #include "rtklib_lambda.h"
+#include "rtklib_pntpos.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_sbas.h"
 #include "rtklib_tides.h"
@@ -917,7 +918,7 @@ double varerr(int sat __attribute__((unused)), int sys, double el, int type, con
                 {
                     fact *= opt->eratio[0];
                 }
-            fact *= sys == SYS_GLO ? EFACT_GLO : (sys == SYS_SBS ? EFACT_SBS : EFACT_GPS);
+            fact *= sysefact(sys);
             if (opt->ionoopt == IONOOPT_IFLC)
                 {
                     fact *= 3.0;
@@ -968,7 +969,12 @@ int ifmeas(const obsd_t *obs, const nav_t *nav, const double *azel,
             j = 2;
         }
 
-    if (NFREQ < 2 || lam[i] == 0.0 || lam[j] == 0.0)
+    if (satsys(obs->sat, nullptr) == SYS_BDS)
+        {
+            bds_observation_slots(obs, &i, &j);
+        }
+
+    if (NFREQ < 2 || i == j || lam[i] == 0.0 || lam[j] == 0.0 || lam[i] == lam[j])
         {
             return 0;
         }
@@ -1010,6 +1016,11 @@ int ifmeas(const obsd_t *obs, const nav_t *nav, const double *azel,
         {
             P2 += P2_C2; /* C2->P2 */
         }
+    if (satsys(obs->sat, nullptr) == SYS_BDS)
+        {
+            P1 -= gettgd_bds_by_obs_code(obs->sat, nav, obs->code[i]);
+            P2 -= gettgd_bds_by_obs_code(obs->sat, nav, obs->code[j]);
+        }
     meas[1] = c1 * P1 + c2 * P2;
     var[1] = std::pow(ERR_CBIAS, 2.0);
 
@@ -1040,8 +1051,13 @@ int ifmeas(const obsd_t *obs, const nav_t *nav, const double *azel,
 
 
 /* get tgd parameter (m) -----------------------------------------------------*/
-double gettgd_ppp(int sat, const nav_t *nav)
+double gettgd_ppp(int sat, const nav_t *nav, int tgd_index)
 {
+    if (tgd_index < 0 || tgd_index >= 4)
+        {
+            return 0.0;
+        }
+
     int i;
     for (i = 0; i < nav->n; i++)
         {
@@ -1049,9 +1065,15 @@ double gettgd_ppp(int sat, const nav_t *nav)
                 {
                     continue;
                 }
-            return SPEED_OF_LIGHT_M_S * nav->eph[i].tgd[0];
+            return SPEED_OF_LIGHT_M_S * nav->eph[i].tgd[tgd_index];
         }
     return 0.0;
+}
+
+
+double gettgd_ppp(int sat, const nav_t *nav)
+{
+    return gettgd_ppp(sat, nav, 0);
 }
 
 
@@ -1137,9 +1159,15 @@ int corrmeas(const obsd_t *obs, const nav_t *nav, const double *pos,
     gamma = std::pow(lam[1] / lam[0], 2.0); /* f1^2/f2^2 */
     P1_P2 = nav->cbias[obs->sat - 1][0];
     P1_C1 = nav->cbias[obs->sat - 1][1];
-    if (P1_P2 == 0.0 && (satsys(obs->sat, nullptr) & (SYS_GPS | SYS_GAL | SYS_QZS)))
+    const int sys = satsys(obs->sat, nullptr);
+    if (P1_P2 == 0.0 && (sys & (SYS_GPS | SYS_GAL | SYS_QZS)))
         {
-            P1_P2 = (1.0 - gamma) * gettgd_ppp(obs->sat, nav);
+            int tgd_index = 0;
+            if (sys == SYS_GAL)
+                {
+                    tgd_index = galileo_bgd_index(obs->code[0], obs->sat, nav);
+                }
+            P1_P2 = (1.0 - gamma) * gettgd_ppp(obs->sat, nav, tgd_index);
         }
     if (obs->code[0] == CODE_L1C)
         {
@@ -1177,17 +1205,24 @@ int corrmeas(const obsd_t *obs, const nav_t *nav, const double *pos,
 }
 
 
-/* L1/L2 geometry-free phase measurement -------------------------------------*/
+/* geometry-free phase measurement ------------------------------------------*/
 double gfmeas(const obsd_t *obs, const nav_t *nav)
 {
     const double *lam = nav->lam[obs->sat - 1];
+    int i = 0;
+    int j = 1;
 
-    if (lam[0] == 0.0 || lam[1] == 0.0 || obs->L[0] == 0.0 || obs->L[1] == 0.0)
+    if (satsys(obs->sat, nullptr) == SYS_BDS)
+        {
+            bds_observation_slots(obs, &i, &j);
+        }
+
+    if (i == j || lam[i] == 0.0 || lam[j] == 0.0 || obs->L[i] == 0.0 || obs->L[j] == 0.0)
         {
             return 0.0;
         }
 
-    return lam[0] * obs->L[0] - lam[1] * obs->L[1];
+    return lam[i] * obs->L[i] - lam[j] * obs->L[j];
 }
 
 
@@ -1306,7 +1341,8 @@ void detslp_ll(rtk_t *rtk, const obsd_t *obs, int n)
 
     for (i = 0; i < n && i < MAXOBS; i++)
         {
-            for (j = 0; j < rtk->opt.nf; j++)
+            // Dual-frequency measurements can occupy slots 0 and 2.
+            for (j = 0; j < NFREQ; j++)
                 {
                     if (obs[i].L[j] == 0.0 || !(obs[i].LLI[j] & 3))
                         {
@@ -1348,7 +1384,7 @@ void detslp_gf(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
                     trace(3, "detslip_gf: slip detected sat=%2d gf=%8.3f->%8.3f\n",
                         obs[i].sat, g0, g1);
 
-                    for (j = 0; j < rtk->opt.nf; j++)
+                    for (j = 0; j < NFREQ; j++)
                         {
                             rtk->ssat[obs[i].sat - 1].slip[j] |= 1;
                         }
@@ -1363,6 +1399,7 @@ void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     double meas[2];
     double var[2];
     std::vector<double> bias(MAXOBS, 0.0);
+    std::vector<bool> slip(MAXOBS, false);
     double offset = 0.0;
     double pos[3] = {0};
     int i;
@@ -1375,7 +1412,7 @@ void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 
     for (i = 0; i < MAXSAT; i++)
         {
-            for (j = 0; j < rtk->opt.nf; j++)
+            for (j = 0; j < NFREQ; j++)
                 {
                     rtk->ssat[i].slip[j] = 0;
                 }
@@ -1412,8 +1449,14 @@ void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
                     trace(2, "%s: sat=%2d correction break\n", time_str(obs[i].time, 0), sat);
                 }
             bias[i] = meas[0] - meas[1];
-            if (rtk->x[j] == 0.0 ||
-                rtk->ssat[sat - 1].slip[0] || rtk->ssat[sat - 1].slip[1])
+            int primary = 0;
+            int secondary = 1;
+            if (rtk->opt.ionoopt == IONOOPT_IFLC && satsys(sat, nullptr) == SYS_BDS)
+                {
+                    bds_observation_slots(obs + i, &primary, &secondary);
+                }
+            slip[i] = brk || rtk->ssat[sat - 1].slip[primary] || rtk->ssat[sat - 1].slip[secondary];
+            if (rtk->x[j] == 0.0 || slip[i])
                 {
                     continue;
                 }
@@ -1441,8 +1484,7 @@ void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 
             rtk->P[j + j * rtk->nx] += std::pow(rtk->opt.prn[0], 2.0) * fabs(rtk->tt);
 
-            if (rtk->x[j] != 0.0 &&
-                !rtk->ssat[sat - 1].slip[0] && !rtk->ssat[sat - 1].slip[1])
+            if (rtk->x[j] != 0.0 && !slip[i])
                 {
                     continue;
                 }
@@ -1719,12 +1761,12 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
                             rtk->ssat[sat - 1].resp[0] = v[nv];
                         }
 
-                        /* test innovation */
+                        /* test innovation, with separate thresholds for phase (j=0) and code (j=1) */
 #if 0
-                    if (opt->maxinno>0.0 && fabs(v[nv])>opt->maxinno)
+                    if (opt->maxinno[j]>0.0 && fabs(v[nv])>opt->maxinno[j])
                         {
 #else
-                    if (opt->maxinno > 0.0 && fabs(v[nv]) > opt->maxinno && sys != SYS_GLO)
+                    if (opt->maxinno[j] > 0.0 && fabs(v[nv]) > opt->maxinno[j] && sys != SYS_GLO)
                         {
 #endif
                             trace(2, "ppp outlier rejected %s sat=%2d type=%d v=%.3f\n",
@@ -1883,7 +1925,9 @@ void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
             rtk->sol.dtr[1] = rtk->x[IC_PPP(1, opt)] - rtk->x[IC_PPP(0, opt)];
             for (i = 0; i < n && i < MAXOBS; i++)
                 {
-                    rtk->ssat[obs[i].sat - 1].snr[0] = MIN_PPP(obs[i].SNR[0], obs[i].SNR[1]);
+                    const int ppp_snr_index = obs[i].SNR[0] <= obs[i].SNR[1] ? 0 : 1;
+                    rtk->ssat[obs[i].sat - 1].snr[0] = obs[i].SNR[ppp_snr_index];
+                    rtk->ssat[obs[i].sat - 1].code[0] = obs[i].code[ppp_snr_index];
                 }
             for (i = 0; i < MAXSAT; i++)
                 {

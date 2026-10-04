@@ -52,13 +52,22 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
+constexpr int16_t HAS_CODE_BIAS_UNAVAILABLE_RAW = -1024;
+constexpr int16_t HAS_PHASE_BIAS_UNAVAILABLE_RAW = -1024;
+
 galileo_e6_has_msg_receiver_sptr galileo_e6_has_msg_receiver_make()
 {
     return galileo_e6_has_msg_receiver_sptr(new galileo_e6_has_msg_receiver());
 }
 
 
-galileo_e6_has_msg_receiver::galileo_e6_has_msg_receiver() : gr::block("galileo_e6_has_msg_receiver", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+galileo_e6_has_msg_receiver::galileo_e6_has_msg_receiver()
+    : gr::block("galileo_e6_has_msg_receiver",
+          gr::io_signature::make(0, 0, 0),
+          gr::io_signature::make(0, 0, 0)),
+      d_last_valid_tow_timestamp(std::numeric_limits<uint64_t>::max()),
+      d_last_valid_week(GALILEO_HAS_INVALID_WEEK),
+      d_last_valid_tow(GALILEO_HAS_INVALID_TOW)
 {
     // register Gal E6 HAS input message port from telemetry blocks
     this->message_port_register_in(pmt::mp("E6_HAS_from_TLM"));
@@ -89,7 +98,6 @@ galileo_e6_has_msg_receiver::galileo_e6_has_msg_receiver() : gr::block("galileo_
     d_printed_timestamps = std::vector<uint64_t>(HAS_MSG_NUMBER_MESSAGE_IDS, std::numeric_limits<uint64_t>::max());
     d_printed_mids = std::vector<bool>(HAS_MSG_NUMBER_MESSAGE_IDS);
 
-
     // Reserve memory to store masks
     d_nsat_in_mask_id = std::vector<int>(HAS_MSG_NUMBER_MASK_IDS);
     d_gnss_id_in_mask = std::vector<std::vector<uint8_t>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<uint8_t>(HAS_MSG_NUMBER_GNSS_IDS));
@@ -99,6 +107,7 @@ galileo_e6_has_msg_receiver::galileo_e6_has_msg_receiver() : gr::block("galileo_
     d_cell_mask = std::vector<std::vector<std::vector<std::vector<bool>>>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<std::vector<std::vector<bool>>>(HAS_MSG_NUMBER_GNSS_IDS, std::vector<std::vector<bool>>(HAS_MSG_NUMBER_SATELLITE_IDS, std::vector<bool>(HAS_MSG_NUMBER_SIGNAL_MASKS))));
     d_nsys_in_mask = std::vector<uint8_t>(HAS_MSG_NUMBER_MASK_IDS);
     d_nav_message_mask = std::vector<std::vector<uint8_t>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<uint8_t>(HAS_MSG_NUMBER_GNSS_IDS));
+    d_mask_timestamps = std::vector<uint64_t>(HAS_MSG_NUMBER_MASK_IDS, std::numeric_limits<uint64_t>::max());
 
     // Initialize values for d_nav_msg_packet
     d_nav_msg_packet.system = std::string("E");
@@ -116,8 +125,9 @@ void galileo_e6_has_msg_receiver::set_enable_navdata_monitor(bool enable)
 
 std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::process_test_page(const pmt::pmt_t& msg)
 {
-    int64_t timestamp = std::numeric_limits<uint64_t>::max();
-    uint32_t tow = std::numeric_limits<uint32_t>::max();
+    uint64_t timestamp = std::numeric_limits<uint64_t>::max();
+    uint32_t week = GALILEO_HAS_INVALID_WEEK;
+    uint32_t tow = GALILEO_HAS_INVALID_TOW;
     try
         {
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
@@ -133,11 +143,10 @@ std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::process_test_page
                     d_current_has_status = HAS_data_page->has_status;
                     d_current_message_id = HAS_data_page->message_id;
                     timestamp = HAS_data_page->time_stamp;
-                    tow = HAS_data_page->tow;
-                    if (d_printed_mids[d_current_message_id] == false)
-                        {
-                            process_HAS_page(*HAS_data_page.get());
-                        }
+                    update_TOW_cache(*HAS_data_page);
+                    tow = get_TOW_for_page(*HAS_data_page);
+                    week = get_week_for_page(*HAS_data_page, tow);
+                    process_HAS_page(*HAS_data_page.get());
                 }
             else
                 {
@@ -152,14 +161,7 @@ std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::process_test_page
     //  Return the resulting decoded HAS data (if available)
     if (d_new_message == true)
         {
-            d_HAS_data.has_status = d_current_has_status;
-            d_HAS_data.message_id = d_current_message_id;
-            d_HAS_data.tow = tow;
-            auto has_data_ptr = std::make_shared<Galileo_HAS_data>(d_HAS_data);
-            d_new_message = false;
-            d_printed_mids[d_current_message_id] = true;
-            d_printed_timestamps[d_current_message_id] = timestamp;
-            return has_data_ptr;
+            return get_ready_HAS_data(week, tow, timestamp);
         }
     return nullptr;
 }
@@ -168,8 +170,9 @@ std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::process_test_page
 void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& msg)
 {
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_galileo_e6_has function called by the scheduler
-    int64_t timestamp = std::numeric_limits<uint64_t>::max();
-    uint32_t tow = std::numeric_limits<uint32_t>::max();
+    uint64_t timestamp = std::numeric_limits<uint64_t>::max();
+    uint32_t week = GALILEO_HAS_INVALID_WEEK;
+    uint32_t tow = GALILEO_HAS_INVALID_TOW;
     try
         {
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
@@ -185,11 +188,10 @@ void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& m
                     d_current_has_status = HAS_data_page->has_status;
                     d_current_message_id = HAS_data_page->message_id;
                     timestamp = HAS_data_page->time_stamp;
-                    tow = HAS_data_page->tow;
-                    if (d_printed_mids[d_current_message_id] == false)
-                        {
-                            process_HAS_page(*HAS_data_page.get());
-                        }
+                    update_TOW_cache(*HAS_data_page);
+                    tow = get_TOW_for_page(*HAS_data_page);
+                    week = get_week_for_page(*HAS_data_page, tow);
+                    process_HAS_page(*HAS_data_page.get());
                 }
             else
                 {
@@ -204,55 +206,82 @@ void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& m
     //  Send the resulting decoded HAS data (if available) to PVT
     if (d_new_message == true)
         {
-            d_HAS_data.has_status = d_current_has_status;
-            d_HAS_data.message_id = d_current_message_id;
-            d_HAS_data.tow = tow;
-            d_printed_mids[d_current_message_id] = true;
-            d_printed_timestamps[d_current_message_id] = timestamp;
-            auto has_data_ptr = std::make_shared<Galileo_HAS_data>(d_HAS_data);
-            this->message_port_pub(pmt::mp("E6_HAS_to_PVT"), pmt::make_any(has_data_ptr));
-            d_new_message = false;
-            DLOG(INFO) << "HAS message sent to the PVT block through the E6_HAS_to_PVT async message port";
+            const auto has_data_ptr = get_ready_HAS_data(week, tow, timestamp);
+            if (has_data_ptr != nullptr)
+                {
+                    this->message_port_pub(pmt::mp("E6_HAS_to_PVT"), pmt::make_any(has_data_ptr));
+                    DLOG(INFO) << "HAS message sent to the PVT block through the E6_HAS_to_PVT async message port";
+                }
         }
 }
 
 
 void galileo_e6_has_msg_receiver::process_HAS_page(const Galileo_HAS_page& has_page)
 {
+    d_new_message = false;
+    if (has_page.has_status == 3)  // Do not use HAS
+        {
+            const uint32_t tow = get_TOW_for_page(has_page);
+            clear_HAS_state();
+            d_HAS_data.has_status = has_page.has_status;
+            d_HAS_data.message_id = has_page.message_id;
+            d_HAS_data.week = get_week_for_page(has_page, tow);
+            d_HAS_data.tow = tow;
+            d_new_message = true;
+            return;
+        }
+
+    if (has_page.message_id >= HAS_MSG_NUMBER_MESSAGE_IDS || has_page.message_size == 0 || has_page.message_size > GALILEO_CNAV_INFORMATION_VECTOR_LENGTH)
+        {
+            return;
+        }
+    bool valid_mt1_page = false;
     if (has_page.has_status == 0 || has_page.has_status == 1)
         {
             std::string page_string(has_page.has_message_string);
+            if (page_string.size() != GALILEO_CNAV_MESSAGE_BITS_PER_PAGE)
+                {
+                    LOG(WARNING) << "Ignoring Galileo HAS page with invalid encoded page length "
+                                 << page_string.size() << " bits";
+                    return;
+                }
             if (has_page.message_page_id != 0)  // PID=0 is reserved, ignore it
                 {
                     if (has_page.message_type == 1)  // contains satellite corrections
                         {
                             delete_outdated_data(has_page);
-                            if (has_page.message_id < HAS_MSG_NUMBER_MESSAGE_IDS)  // MID range is from 0 to 31
+                            if (d_printed_mids[has_page.message_id])
                                 {
-                                    if (std::find(d_received_pids[has_page.message_id].begin(), d_received_pids[has_page.message_id].end(), has_page.message_page_id) == d_received_pids[has_page.message_id].end())
+                                    return;
+                                }
+                            valid_mt1_page = true;
+                            if (std::find(d_received_pids[has_page.message_id].begin(), d_received_pids[has_page.message_id].end(), has_page.message_page_id) == d_received_pids[has_page.message_id].end())
+                                {
+                                    // New pid! Annotate it.
+                                    d_received_pids[has_page.message_id].push_back(has_page.message_page_id);
+                                    d_received_timestamps[has_page.message_id].push_back(has_page.time_stamp);
+                                    for (int k = 0; k < GALILEO_CNAV_OCTETS_IN_SUBPAGE; k++)
                                         {
-                                            // New pid! Annotate it.
-                                            d_received_pids[has_page.message_id].push_back(has_page.message_page_id);
-                                            d_received_timestamps[has_page.message_id].push_back(has_page.time_stamp);
-                                            for (int k = 0; k < GALILEO_CNAV_OCTETS_IN_SUBPAGE; k++)
-                                                {
-                                                    constexpr int bits_in_octet = 8;
-                                                    std::string bits8 = page_string.substr(k * bits_in_octet, bits_in_octet);
-                                                    std::bitset<bits_in_octet> bs(bits8);
-                                                    d_C_matrix[has_page.message_id][has_page.message_page_id - 1][k] = static_cast<uint8_t>(bs.to_ulong());
-                                                }
+                                            constexpr int bits_in_octet = 8;
+                                            std::string bits8 = page_string.substr(k * bits_in_octet, bits_in_octet);
+                                            std::bitset<bits_in_octet> bs(bits8);
+                                            d_C_matrix[has_page.message_id][has_page.message_page_id - 1][k] = static_cast<uint8_t>(bs.to_ulong());
                                         }
                                 }
                         }
                 }
         }
 
+    if (!valid_mt1_page)
+        {
+            return;
+        }
+
     // If we have received for this message ID a number of pages equal to the message size
-    d_new_message = false;
     if (d_received_pids[has_page.message_id].size() == has_page.message_size)
         {
             // Try to decode the message
-            int res = decode_message_type1(has_page.message_id, has_page.message_size);
+            int res = decode_message_type1(has_page.message_id, has_page.message_size, has_page.time_stamp);
 
             if (res == 0)
                 {
@@ -266,6 +295,201 @@ void galileo_e6_has_msg_receiver::process_HAS_page(const Galileo_HAS_page& has_p
                         }
                 }
         }
+}
+
+
+void galileo_e6_has_msg_receiver::clear_HAS_state()
+{
+    DLOG(INFO) << "Clearing Galileo HAS cached state";
+
+    d_HAS_data = Galileo_HAS_data();
+    d_new_message = false;
+
+    d_C_matrix = std::vector<std::vector<std::vector<uint8_t>>>(
+        GALILEO_CNAV_INFORMATION_VECTOR_LENGTH,
+        std::vector<std::vector<uint8_t>>(
+            GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK,
+            std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE)));
+    d_M_matrix = std::vector<std::vector<uint8_t>>(
+        GALILEO_CNAV_INFORMATION_VECTOR_LENGTH,
+        std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE));
+    d_received_pids = std::vector<std::vector<uint8_t>>(HAS_MSG_NUMBER_MESSAGE_IDS, std::vector<uint8_t>());
+    d_received_timestamps = std::vector<std::vector<uint64_t>>(HAS_MSG_NUMBER_MESSAGE_IDS, std::vector<uint64_t>());
+    d_printed_timestamps = std::vector<uint64_t>(HAS_MSG_NUMBER_MESSAGE_IDS, std::numeric_limits<uint64_t>::max());
+    d_printed_mids = std::vector<bool>(HAS_MSG_NUMBER_MESSAGE_IDS);
+
+    d_nsat_in_mask_id = std::vector<int>(HAS_MSG_NUMBER_MASK_IDS);
+    d_gnss_id_in_mask = std::vector<std::vector<uint8_t>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<uint8_t>(HAS_MSG_NUMBER_GNSS_IDS));
+    d_satellite_mask = std::vector<std::vector<uint64_t>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<uint64_t>(HAS_MSG_NUMBER_GNSS_IDS));
+    d_signal_mask = std::vector<std::vector<uint16_t>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<uint16_t>(HAS_MSG_NUMBER_GNSS_IDS));
+    d_cell_mask_availability_flag = std::vector<std::vector<bool>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<bool>(HAS_MSG_NUMBER_GNSS_IDS));
+    d_cell_mask = std::vector<std::vector<std::vector<std::vector<bool>>>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<std::vector<std::vector<bool>>>(HAS_MSG_NUMBER_GNSS_IDS, std::vector<std::vector<bool>>(HAS_MSG_NUMBER_SATELLITE_IDS, std::vector<bool>(HAS_MSG_NUMBER_SIGNAL_MASKS))));
+    d_nsys_in_mask = std::vector<uint8_t>(HAS_MSG_NUMBER_MASK_IDS);
+    d_nav_message_mask = std::vector<std::vector<uint8_t>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<uint8_t>(HAS_MSG_NUMBER_GNSS_IDS));
+    d_mask_timestamps = std::vector<uint64_t>(HAS_MSG_NUMBER_MASK_IDS, std::numeric_limits<uint64_t>::max());
+
+    d_iod_ref_map.clear();
+    d_iod_ref_timestamps.clear();
+}
+
+
+void galileo_e6_has_msg_receiver::clear_mask_data(uint8_t mask_id)
+{
+    d_nsat_in_mask_id[mask_id] = 0;
+    d_gnss_id_in_mask[mask_id] = std::vector<uint8_t>(HAS_MSG_NUMBER_GNSS_IDS);
+    d_satellite_mask[mask_id] = std::vector<uint64_t>(HAS_MSG_NUMBER_GNSS_IDS);
+    d_signal_mask[mask_id] = std::vector<uint16_t>(HAS_MSG_NUMBER_GNSS_IDS);
+    d_cell_mask_availability_flag[mask_id] = std::vector<bool>(HAS_MSG_NUMBER_GNSS_IDS);
+    d_cell_mask[mask_id] = std::vector<std::vector<std::vector<bool>>>(HAS_MSG_NUMBER_GNSS_IDS, std::vector<std::vector<bool>>(HAS_MSG_NUMBER_SATELLITE_IDS, std::vector<bool>(HAS_MSG_NUMBER_SIGNAL_MASKS)));
+    d_nsys_in_mask[mask_id] = 0;
+    d_nav_message_mask[mask_id] = std::vector<uint8_t>(HAS_MSG_NUMBER_GNSS_IDS);
+    d_mask_timestamps[mask_id] = std::numeric_limits<uint64_t>::max();
+
+    for (auto it = d_iod_ref_map.begin(); it != d_iod_ref_map.end();)
+        {
+            if (it->first.second == mask_id)
+                {
+                    d_iod_ref_timestamps.erase(it->first);
+                    it = d_iod_ref_map.erase(it);
+                }
+            else
+                {
+                    ++it;
+                }
+        }
+}
+
+
+bool galileo_e6_has_msg_receiver::is_cache_timestamp_valid(uint64_t cache_timestamp, uint64_t current_timestamp) const
+{
+    if (cache_timestamp == std::numeric_limits<uint64_t>::max())
+        {
+            return false;
+        }
+    if (current_timestamp == std::numeric_limits<uint64_t>::max())
+        {
+            return true;
+        }
+    if (current_timestamp < cache_timestamp)
+        {
+            return false;
+        }
+    return (current_timestamp - cache_timestamp) <= MAX_SECONDS_REMEMBERING_MASK_IOD;
+}
+
+
+void galileo_e6_has_msg_receiver::update_TOW_cache(const Galileo_HAS_page& has_page)
+{
+    if ((has_page.tow < GALILEO_HAS_SECONDS_PER_WEEK) &&
+        (has_page.time_stamp != std::numeric_limits<uint64_t>::max()))
+        {
+            d_last_valid_tow = has_page.tow;
+            d_last_valid_tow_timestamp = has_page.time_stamp;
+            d_last_valid_week = has_page.week;
+        }
+}
+
+
+std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::get_ready_HAS_data(uint32_t week, uint32_t tow, uint64_t time_stamp)
+{
+    if (d_current_has_status != 3 && (week == GALILEO_HAS_INVALID_WEEK || tow >= GALILEO_HAS_SECONDS_PER_WEEK))
+        {
+            LOG(INFO) << "Publishing decoded Galileo HAS message ID "
+                      << static_cast<int>(d_current_message_id)
+                      << " without GST for reporting only";
+        }
+
+    d_HAS_data.has_status = d_current_has_status;
+    d_HAS_data.message_id = d_current_message_id;
+    d_HAS_data.week = week;
+    d_HAS_data.tow = tow;
+    d_printed_mids[d_current_message_id] = true;
+    d_printed_timestamps[d_current_message_id] = time_stamp;
+    auto has_data_ptr = std::make_shared<Galileo_HAS_data>(d_HAS_data);
+    d_new_message = false;
+    return has_data_ptr;
+}
+
+
+uint32_t galileo_e6_has_msg_receiver::get_week_for_page(const Galileo_HAS_page& has_page, uint32_t tow) const
+{
+    if (has_page.week != GALILEO_HAS_INVALID_WEEK && has_page.tow < GALILEO_HAS_SECONDS_PER_WEEK)
+        {
+            return has_page.week;
+        }
+
+    if ((tow >= GALILEO_HAS_SECONDS_PER_WEEK) ||
+        (d_last_valid_week == GALILEO_HAS_INVALID_WEEK) ||
+        (has_page.time_stamp == std::numeric_limits<uint64_t>::max()) ||
+        (d_last_valid_tow_timestamp == std::numeric_limits<uint64_t>::max()))
+        {
+            return GALILEO_HAS_INVALID_WEEK;
+        }
+
+    const bool current_after_reference = has_page.time_stamp >= d_last_valid_tow_timestamp;
+    const uint64_t elapsed_s = current_after_reference ? has_page.time_stamp - d_last_valid_tow_timestamp : d_last_valid_tow_timestamp - has_page.time_stamp;
+    if (elapsed_s > MAX_SECONDS_REMEMBERING_MID)
+        {
+            return GALILEO_HAS_INVALID_WEEK;
+        }
+
+    const int64_t signed_elapsed_s = current_after_reference ? static_cast<int64_t>(elapsed_s) : -static_cast<int64_t>(elapsed_s);
+    const int64_t reference_abs_s =
+        static_cast<int64_t>(d_last_valid_week) * static_cast<int64_t>(GALILEO_HAS_SECONDS_PER_WEEK) + static_cast<int64_t>(d_last_valid_tow);
+    const int64_t page_abs_s = reference_abs_s + signed_elapsed_s;
+    if (page_abs_s < 0)
+        {
+            return GALILEO_HAS_INVALID_WEEK;
+        }
+    return static_cast<uint32_t>(page_abs_s / static_cast<int64_t>(GALILEO_HAS_SECONDS_PER_WEEK));
+}
+
+
+uint32_t galileo_e6_has_msg_receiver::get_TOW_for_page(const Galileo_HAS_page& has_page) const
+{
+    if (has_page.tow < GALILEO_HAS_SECONDS_PER_WEEK)
+        {
+            return has_page.tow;
+        }
+
+    if ((d_last_valid_tow >= GALILEO_HAS_SECONDS_PER_WEEK) ||
+        (has_page.time_stamp == std::numeric_limits<uint64_t>::max()) ||
+        (d_last_valid_tow_timestamp == std::numeric_limits<uint64_t>::max()))
+        {
+            return GALILEO_HAS_INVALID_TOW;
+        }
+
+    const bool current_after_reference = has_page.time_stamp >= d_last_valid_tow_timestamp;
+    const uint64_t elapsed_s = current_after_reference ? has_page.time_stamp - d_last_valid_tow_timestamp : d_last_valid_tow_timestamp - has_page.time_stamp;
+    if (elapsed_s > MAX_SECONDS_REMEMBERING_MID)
+        {
+            return GALILEO_HAS_INVALID_TOW;
+        }
+
+    const auto elapsed_week_s = static_cast<uint32_t>(elapsed_s % GALILEO_HAS_SECONDS_PER_WEEK);
+    if (current_after_reference)
+        {
+            return (d_last_valid_tow + elapsed_week_s) % GALILEO_HAS_SECONDS_PER_WEEK;
+        }
+
+    if (elapsed_week_s <= d_last_valid_tow)
+        {
+            return d_last_valid_tow - elapsed_week_s;
+        }
+
+    return GALILEO_HAS_SECONDS_PER_WEEK - (elapsed_week_s - d_last_valid_tow);
+}
+
+
+bool galileo_e6_has_msg_receiver::is_supported_gnss_id(uint8_t gnss_id) const
+{
+    return gnss_id == HAS_MSG_GPS_SYSTEM || gnss_id == HAS_MSG_GALILEO_SYSTEM;
+}
+
+
+bool galileo_e6_has_msg_receiver::is_validity_interval_index_valid(uint8_t validity_interval_index) const
+{
+    return HAS_VALIDITY_INTERVALS.find(validity_interval_index) != HAS_VALIDITY_INTERVALS.cend();
 }
 
 
@@ -288,7 +512,9 @@ void galileo_e6_has_msg_receiver::delete_outdated_data(const Galileo_HAS_page& h
                     DLOG(INFO) << "Deleting data for message ID " << i << " because it is too old: " << oldest_time_stamp << " vs " << current_time_stamp;
                     d_received_pids[i].clear();
                     d_received_timestamps[i].clear();
-                    d_C_matrix[i] = {GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE)};
+                    d_C_matrix[i] = std::vector<std::vector<uint8_t>>(
+                        GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK,
+                        std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE));
                 }
         }
     for (size_t mid = 0; mid < HAS_MSG_NUMBER_MESSAGE_IDS; mid++)
@@ -302,7 +528,7 @@ void galileo_e6_has_msg_receiver::delete_outdated_data(const Galileo_HAS_page& h
 }
 
 
-int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_t message_size)
+int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_t message_size, uint64_t time_stamp)
 {
     DLOG(INFO) << "Start decoding of a HAS message";
     constexpr int32_t max_erasure_positions = GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK - GALILEO_CNAV_INFORMATION_VECTOR_LENGTH;  // 223 Maximum erasure positions ( = number of parity symbols in a block)
@@ -340,7 +566,10 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
             msg += ss.str();
             LOG(ERROR) << msg;
             d_received_pids[message_id].clear();
-            d_C_matrix[message_id] = {GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE)};
+            d_received_timestamps[message_id].clear();
+            d_C_matrix[message_id] = std::vector<std::vector<uint8_t>>(
+                GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK,
+                std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE));
             return -1;
         }
 
@@ -364,7 +593,12 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
 
             if (result < 0)
                 {
-                    DLOG(ERROR) << "Decoding of HAS page failed";
+                    DLOG(WARNING) << "Decoding of HAS page failed";
+                    d_received_pids[message_id].clear();
+                    d_received_timestamps[message_id].clear();
+                    d_C_matrix[message_id] = std::vector<std::vector<uint8_t>>(
+                        GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK,
+                        std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE));
                     return -1;
                 }
 
@@ -406,18 +640,23 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
         }
 
     // reset data for next decoding
-    d_C_matrix[message_id] = std::vector<std::vector<uint8_t>>(GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE));
+    d_C_matrix[message_id] = std::vector<std::vector<uint8_t>>(
+        GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK,
+        std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE));
     d_received_pids[message_id].clear();
+    d_received_timestamps[message_id].clear();
 
     // Trigger HAS message content reading and fill the d_HAS_data object
     d_HAS_data = Galileo_HAS_data();
-    d_HAS_data.tow = std::numeric_limits<uint32_t>::max();  // Unknown
 
     read_MT1_header(decoded_message_type_1.substr(0, GALILEO_CNAV_MT1_HEADER_BITS));
 
     try
         {
-            read_MT1_body(std::string(decoded_message_type_1.begin() + GALILEO_CNAV_MT1_HEADER_BITS, decoded_message_type_1.end()));
+            if (!read_MT1_body(std::string(decoded_message_type_1.begin() + GALILEO_CNAV_MT1_HEADER_BITS, decoded_message_type_1.end()), time_stamp))
+                {
+                    return -1;
+                }
         }
     catch (const std::out_of_range& oor)
         {
@@ -472,50 +711,137 @@ void galileo_e6_has_msg_receiver::read_MT1_header(const std::string& message_hea
 }
 
 
-void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
+bool galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body, uint64_t time_stamp)
 {
     // HAS SIS ICD v1.0 Table 17: MT1 Message Body
     auto message = std::string(message_body);
+    const auto clear_current_mask_if_defined = [this]() {
+        if (d_HAS_data.header.mask_flag)
+            {
+                clear_mask_data(d_HAS_data.header.mask_id);
+            }
+    };
+    const auto read_bits = [&message, &clear_current_mask_if_defined](size_t bits, const std::string& field_name, std::string& field_bits) -> bool {
+        if (message.size() < bits)
+            {
+                LOG(WARNING) << "HAS MT1 body too short while reading " << field_name << ": expected "
+                             << bits << " bits, available " << message.size() << " bits";
+                clear_current_mask_if_defined();
+                return false;
+            }
+        field_bits = message.substr(0, bits);
+        message.erase(0, bits);
+        return true;
+    };
+    const auto signal_mask_has_reserved_bits = [](uint8_t gnss_id, uint16_t signal_mask) -> bool {
+        for (uint8_t signal_index = 0; signal_index < HAS_MSG_NUMBER_SIGNAL_MASKS; signal_index++)
+            {
+                const bool signal_is_present = (signal_mask & (1U << (HAS_MSG_NUMBER_SIGNAL_MASKS - signal_index - 1))) != 0;
+                bool reserved_signal = false;
+                if (gnss_id == HAS_MSG_GPS_SYSTEM)
+                    {
+                        reserved_signal = signal_index == 1 || signal_index == 2 || signal_index == 10 || signal_index == 14 || signal_index == 15;
+                    }
+                else if (gnss_id == HAS_MSG_GALILEO_SYSTEM)
+                    {
+                        reserved_signal = signal_index == 15;
+                    }
+                if (signal_is_present && reserved_signal)
+                    {
+                        return true;
+                    }
+            }
+        return false;
+    };
     int Nsat = 0;
     bool have_mask = false;
+    std::string bits;
 
     if (d_HAS_data.header.mask_flag)
         {
             // read mask
-            d_HAS_data.Nsys = read_has_message_body_uint8(message.substr(0, HAS_MSG_NSYS_LENGTH));
+            if (!read_bits(HAS_MSG_NSYS_LENGTH, "Nsys", bits))
+                {
+                    return false;
+                }
+            d_HAS_data.Nsys = read_has_message_body_uint8(bits);
             d_nsys_in_mask[d_HAS_data.header.mask_id] = d_HAS_data.Nsys;
+            if (d_HAS_data.Nsys == 0)
+                {
+                    LOG(WARNING) << "HAS MT1 Mask block contains reserved Nsys value 0";
+                    clear_mask_data(d_HAS_data.header.mask_id);
+                    return false;
+                }
             if (d_HAS_data.Nsys != 0)
                 {
-                    message = std::string(message.begin() + HAS_MSG_NSYS_LENGTH, message.end());
                     d_HAS_data.gnss_id_mask = std::vector<uint8_t>(d_HAS_data.Nsys);
                     d_HAS_data.cell_mask = std::vector<std::vector<std::vector<bool>>>(d_HAS_data.Nsys, std::vector<std::vector<bool>>(HAS_MSG_NUMBER_SATELLITE_IDS, std::vector<bool>(HAS_MSG_NUMBER_SIGNAL_MASKS)));
                     d_HAS_data.cell_mask_availability_flag = std::vector<bool>(d_HAS_data.Nsys);
                     d_HAS_data.nav_message = std::vector<uint8_t>(d_HAS_data.Nsys);
                     d_HAS_data.satellite_mask = std::vector<uint64_t>(d_HAS_data.Nsys);
                     d_HAS_data.signal_mask = std::vector<uint16_t>(d_HAS_data.Nsys);
+                    std::vector<bool> gnss_id_present(HAS_MSG_NUMBER_GNSS_IDS);
 
                     for (uint8_t i = 0; i < d_HAS_data.Nsys; i++)
                         {
-                            d_HAS_data.gnss_id_mask[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_ID_MASK_LENGTH));
+                            if (!read_bits(HAS_MSG_ID_MASK_LENGTH, "GNSS ID", bits))
+                                {
+                                    return false;
+                                }
+                            d_HAS_data.gnss_id_mask[i] = read_has_message_body_uint8(bits);
+                            if (!is_supported_gnss_id(d_HAS_data.gnss_id_mask[i]))
+                                {
+                                    LOG(WARNING) << "HAS MT1 Mask block contains unsupported or reserved GNSS ID " << std::to_string(d_HAS_data.gnss_id_mask[i]);
+                                    clear_mask_data(d_HAS_data.header.mask_id);
+                                    return false;
+                                }
+                            if (gnss_id_present[d_HAS_data.gnss_id_mask[i]])
+                                {
+                                    LOG(WARNING) << "HAS MT1 Mask block contains duplicate GNSS ID " << std::to_string(d_HAS_data.gnss_id_mask[i]);
+                                    clear_mask_data(d_HAS_data.header.mask_id);
+                                    return false;
+                                }
+                            gnss_id_present[d_HAS_data.gnss_id_mask[i]] = true;
                             d_gnss_id_in_mask[d_HAS_data.header.mask_id][i] = d_HAS_data.gnss_id_mask[i];
-                            message = std::string(message.begin() + HAS_MSG_ID_MASK_LENGTH, message.end());
 
-                            std::string msg = message.substr(0, HAS_MSG_SATELLITE_MASK_LENGTH);
+                            std::string msg;
+                            if (!read_bits(HAS_MSG_SATELLITE_MASK_LENGTH, "Satellite Mask", msg))
+                                {
+                                    return false;
+                                }
                             d_HAS_data.satellite_mask[i] = read_has_message_body_uint64(msg);
                             d_satellite_mask[d_HAS_data.header.mask_id][i] = d_HAS_data.satellite_mask[i];
                             int ones_in_satellite_mask = std::count(msg.begin(), msg.end(), '1');
+                            if (ones_in_satellite_mask == 0)
+                                {
+                                    // an empty per-system cell mask would be indexed out of bounds in the bias blocks
+                                    LOG(WARNING) << "HAS MT1 Mask block contains an empty Satellite Mask for GNSS ID " << std::to_string(d_HAS_data.gnss_id_mask[i]);
+                                    clear_mask_data(d_HAS_data.header.mask_id);
+                                    return false;
+                                }
                             Nsat += ones_in_satellite_mask;
-                            message = std::string(message.begin() + HAS_MSG_SATELLITE_MASK_LENGTH, message.end());
 
-                            msg = message.substr(0, HAS_MSG_SIGNAL_MASK_LENGTH);
+                            if (!read_bits(HAS_MSG_SIGNAL_MASK_LENGTH, "Signal Mask", msg))
+                                {
+                                    return false;
+                                }
                             d_HAS_data.signal_mask[i] = read_has_message_body_uint16(msg);
+                            if (signal_mask_has_reserved_bits(d_HAS_data.gnss_id_mask[i], d_HAS_data.signal_mask[i]))
+                                {
+                                    LOG(WARNING) << "HAS MT1 Mask block contains reserved Signal Mask bits for GNSS ID " << std::to_string(d_HAS_data.gnss_id_mask[i]);
+                                    clear_mask_data(d_HAS_data.header.mask_id);
+                                    return false;
+                                }
                             d_signal_mask[d_HAS_data.header.mask_id][i] = d_HAS_data.signal_mask[i];
                             int ones_in_signal_mask = std::count(msg.begin(), msg.end(), '1');
-                            message = std::string(message.begin() + HAS_MSG_SIGNAL_MASK_LENGTH, message.end());
 
                             d_HAS_data.cell_mask[i] = std::vector<std::vector<bool>>(ones_in_satellite_mask, std::vector<bool>(ones_in_signal_mask, false));
 
-                            if (message.substr(0, 1) == "1")
+                            if (!read_bits(1, "Cell Mask Availability Flag", bits))
+                                {
+                                    return false;
+                                }
+                            if (bits == "1")
                                 {
                                     d_HAS_data.cell_mask_availability_flag[i] = true;
                                 }
@@ -524,30 +850,45 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                                     d_HAS_data.cell_mask_availability_flag[i] = false;
                                 }
                             d_cell_mask_availability_flag[d_HAS_data.header.mask_id][i] = d_HAS_data.cell_mask_availability_flag[i];
-                            message = std::string(message.begin() + 1, message.end());
 
                             if (d_HAS_data.cell_mask_availability_flag[i] == true)
                                 {
                                     int size_cell = ones_in_satellite_mask * ones_in_signal_mask;
+                                    if (!read_bits(size_cell, "Cell Mask", msg))
+                                        {
+                                            return false;
+                                        }
                                     int pos = 0;
                                     for (int s = 0; s < ones_in_satellite_mask; s++)
                                         {
                                             for (int sig = 0; sig < ones_in_signal_mask; sig++)
                                                 {
-                                                    d_HAS_data.cell_mask[i][s][sig] = (message[pos] == '1' ? true : false);
+                                                    d_HAS_data.cell_mask[i][s][sig] = (msg[pos] == '1' ? true : false);
                                                     pos++;
                                                 }
                                         }
-                                    message = std::string(message.begin() + size_cell, message.end());
                                 }
 
-                            d_HAS_data.nav_message[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_NAV_MESSAGE_LENGTH));
+                            if (!read_bits(HAS_MSG_NAV_MESSAGE_LENGTH, "Navigation Message", bits))
+                                {
+                                    return false;
+                                }
+                            d_HAS_data.nav_message[i] = read_has_message_body_uint8(bits);
+                            if (d_HAS_data.nav_message[i] != 0)
+                                {
+                                    LOG(WARNING) << "HAS MT1 Mask block contains reserved Navigation Message Index " << std::to_string(d_HAS_data.nav_message[i]);
+                                    clear_mask_data(d_HAS_data.header.mask_id);
+                                    return false;
+                                }
                             d_nav_message_mask[d_HAS_data.header.mask_id][i] = d_HAS_data.nav_message[i];
-                            message = std::string(message.begin() + HAS_MSG_NAV_MESSAGE_LENGTH, message.end());
                         }
                     d_nsat_in_mask_id[d_HAS_data.header.mask_id] = Nsat;
                     d_cell_mask[d_HAS_data.header.mask_id] = d_HAS_data.cell_mask;
-                    message = std::string(message.begin() + HAS_MSG_MASK_RESERVED_LENGTH, message.end());
+                    d_mask_timestamps[d_HAS_data.header.mask_id] = time_stamp;
+                    if (!read_bits(HAS_MSG_MASK_RESERVED_LENGTH, "Mask reserved bits", bits))
+                        {
+                            return false;
+                        }
                 }
             if (Nsat != 0)
                 {
@@ -565,20 +906,29 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
             Nsat = d_nsat_in_mask_id[d_HAS_data.header.mask_id];
             if (Nsat != 0)
                 {
-                    d_HAS_data.Nsys = d_nsys_in_mask[d_HAS_data.header.mask_id];
-                    std::copy(d_gnss_id_in_mask[d_HAS_data.header.mask_id].begin(), d_gnss_id_in_mask[d_HAS_data.header.mask_id].begin() + d_HAS_data.Nsys, std::back_inserter(d_HAS_data.gnss_id_mask));
-                    std::copy(d_satellite_mask[d_HAS_data.header.mask_id].begin(), d_satellite_mask[d_HAS_data.header.mask_id].begin() + d_HAS_data.Nsys, std::back_inserter(d_HAS_data.satellite_mask));
-                    std::copy(d_signal_mask[d_HAS_data.header.mask_id].begin(), d_signal_mask[d_HAS_data.header.mask_id].begin() + d_HAS_data.Nsys, std::back_inserter(d_HAS_data.signal_mask));
-                    std::copy(d_cell_mask_availability_flag[d_HAS_data.header.mask_id].begin(), d_cell_mask_availability_flag[d_HAS_data.header.mask_id].begin() + d_HAS_data.Nsys, std::back_inserter(d_HAS_data.cell_mask_availability_flag));
-                    d_HAS_data.cell_mask = d_cell_mask[d_HAS_data.header.mask_id];
-                    std::copy(d_nav_message_mask[d_HAS_data.header.mask_id].begin(), d_nav_message_mask[d_HAS_data.header.mask_id].begin() + d_HAS_data.Nsys, std::back_inserter(d_HAS_data.nav_message));
+                    if (is_cache_timestamp_valid(d_mask_timestamps[d_HAS_data.header.mask_id], time_stamp))
+                        {
+                            d_HAS_data.Nsys = d_nsys_in_mask[d_HAS_data.header.mask_id];
+                            std::copy(d_gnss_id_in_mask[d_HAS_data.header.mask_id].begin(), d_gnss_id_in_mask[d_HAS_data.header.mask_id].begin() + d_HAS_data.Nsys, std::back_inserter(d_HAS_data.gnss_id_mask));
+                            std::copy(d_satellite_mask[d_HAS_data.header.mask_id].begin(), d_satellite_mask[d_HAS_data.header.mask_id].begin() + d_HAS_data.Nsys, std::back_inserter(d_HAS_data.satellite_mask));
+                            std::copy(d_signal_mask[d_HAS_data.header.mask_id].begin(), d_signal_mask[d_HAS_data.header.mask_id].begin() + d_HAS_data.Nsys, std::back_inserter(d_HAS_data.signal_mask));
+                            std::copy(d_cell_mask_availability_flag[d_HAS_data.header.mask_id].begin(), d_cell_mask_availability_flag[d_HAS_data.header.mask_id].begin() + d_HAS_data.Nsys, std::back_inserter(d_HAS_data.cell_mask_availability_flag));
+                            d_HAS_data.cell_mask = d_cell_mask[d_HAS_data.header.mask_id];
+                            std::copy(d_nav_message_mask[d_HAS_data.header.mask_id].begin(), d_nav_message_mask[d_HAS_data.header.mask_id].begin() + d_HAS_data.Nsys, std::back_inserter(d_HAS_data.nav_message));
 
-                    have_mask = true;
+                            have_mask = true;
 
-                    DLOG(INFO) << "Nsys: " << static_cast<float>(d_HAS_data.Nsys);
-                    DLOG(INFO) << debug_print_vector("GNSS ID", d_HAS_data.gnss_id_mask);
-                    DLOG(INFO) << debug_print_vector("cell_mask_availability_flag", d_HAS_data.cell_mask_availability_flag);
-                    DLOG(INFO) << debug_print_vector("nav_message", d_HAS_data.nav_message);
+                            DLOG(INFO) << "Nsys: " << static_cast<float>(d_HAS_data.Nsys);
+                            DLOG(INFO) << debug_print_vector("GNSS ID", d_HAS_data.gnss_id_mask);
+                            DLOG(INFO) << debug_print_vector("cell_mask_availability_flag", d_HAS_data.cell_mask_availability_flag);
+                            DLOG(INFO) << debug_print_vector("nav_message", d_HAS_data.nav_message);
+                        }
+                    else
+                        {
+                            DLOG(INFO) << "Discarding stale Galileo HAS mask ID " << static_cast<float>(d_HAS_data.header.mask_id);
+                            clear_mask_data(d_HAS_data.header.mask_id);
+                            Nsat = 0;
+                        }
                 }
         }
 
@@ -586,14 +936,26 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
     if (d_HAS_data.header.toh > HAS_MSG_NUMBER_MAX_TOH)
         {
             have_mask = false;
-            d_nsat_in_mask_id[d_HAS_data.header.mask_id] = 0;
+            clear_mask_data(d_HAS_data.header.mask_id);
         }
 
     if (d_HAS_data.header.orbit_correction_flag && have_mask)
         {
             // read orbit corrections
-            d_HAS_data.validity_interval_index_orbit_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
-            message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
+            if (!read_bits(HAS_MSG_VALIDITY_INDEX_LENGTH, "Orbit Corrections Validity Interval Index", bits))
+                {
+                    return false;
+                }
+            d_HAS_data.validity_interval_index_orbit_corrections = read_has_message_body_uint8(bits);
+            if (!is_validity_interval_index_valid(d_HAS_data.validity_interval_index_orbit_corrections))
+                {
+                    LOG(WARNING) << "Orbit Corrections block contains reserved Validity Interval Index " << std::to_string(d_HAS_data.validity_interval_index_orbit_corrections);
+                    if (d_HAS_data.header.mask_flag)
+                        {
+                            clear_mask_data(d_HAS_data.header.mask_id);
+                        }
+                    return false;
+                }
             d_HAS_data.gnss_iod = std::vector<uint16_t>(Nsat);
             d_HAS_data.delta_radial = std::vector<int16_t>(Nsat);
             d_HAS_data.delta_in_track = std::vector<int16_t>(Nsat);
@@ -602,13 +964,19 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                 {
                     if (d_HAS_data.get_gnss_id(i) == HAS_MSG_GPS_SYSTEM)
                         {
-                            d_HAS_data.gnss_iod[i] = read_has_message_body_uint16(message.substr(0, HAS_MSG_IOD_GPS_LENGTH));
-                            message = std::string(message.begin() + HAS_MSG_IOD_GPS_LENGTH, message.end());
+                            if (!read_bits(HAS_MSG_IOD_GPS_LENGTH, "GPS IOD", bits))
+                                {
+                                    return false;
+                                }
+                            d_HAS_data.gnss_iod[i] = read_has_message_body_uint16(bits);
                         }
                     else if (d_HAS_data.get_gnss_id(i) == HAS_MSG_GALILEO_SYSTEM)
                         {
-                            d_HAS_data.gnss_iod[i] = read_has_message_body_uint16(message.substr(0, HAS_MSG_IOD_GAL_LENGTH));
-                            message = std::string(message.begin() + HAS_MSG_IOD_GAL_LENGTH, message.end());
+                            if (!read_bits(HAS_MSG_IOD_GAL_LENGTH, "Galileo IOD", bits))
+                                {
+                                    return false;
+                                }
+                            d_HAS_data.gnss_iod[i] = read_has_message_body_uint16(bits);
                         }
                     else if (d_HAS_data.get_gnss_id(i) == HAS_MSG_WRONG_SYSTEM)
                         {
@@ -624,47 +992,103 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
 
                     if (have_mask)
                         {
-                            d_HAS_data.delta_radial[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_RADIAL_LENGTH));
-                            message = std::string(message.begin() + HAS_MSG_DELTA_RADIAL_LENGTH, message.end());
+                            if (!read_bits(HAS_MSG_DELTA_RADIAL_LENGTH, "Delta Radial", bits))
+                                {
+                                    return false;
+                                }
+                            d_HAS_data.delta_radial[i] = read_has_message_body_int16(bits);
 
-                            d_HAS_data.delta_in_track[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_IN_TRACK_LENGTH));
-                            message = std::string(message.begin() + HAS_MSG_DELTA_IN_TRACK_LENGTH, message.end());
+                            if (!read_bits(HAS_MSG_DELTA_IN_TRACK_LENGTH, "Delta In-Track", bits))
+                                {
+                                    return false;
+                                }
+                            d_HAS_data.delta_in_track[i] = read_has_message_body_int16(bits);
 
-                            d_HAS_data.delta_cross_track[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_CROSS_TRACK_LENGTH));
-                            message = std::string(message.begin() + HAS_MSG_DELTA_CROSS_TRACK_LENGTH, message.end());
+                            if (!read_bits(HAS_MSG_DELTA_CROSS_TRACK_LENGTH, "Delta Cross-Track", bits))
+                                {
+                                    return false;
+                                }
+                            d_HAS_data.delta_cross_track[i] = read_has_message_body_int16(bits);
                         }
                 }
 
-            d_iod_ref_map[std::make_pair(d_HAS_data.header.iod_set_id, d_HAS_data.header.mask_id)] = d_HAS_data.gnss_iod;
+            if (have_mask)
+                {
+                    const auto iod_ref_key = std::make_pair(d_HAS_data.header.iod_set_id, d_HAS_data.header.mask_id);
+                    d_iod_ref_map[iod_ref_key] = d_HAS_data.gnss_iod;
+                    d_iod_ref_timestamps[iod_ref_key] = time_stamp;
+                }
             DLOG(INFO) << debug_print_vector("gnss_iod", d_HAS_data.gnss_iod);
             DLOG(INFO) << debug_print_vector("delta_radial", d_HAS_data.delta_radial);
             DLOG(INFO) << debug_print_vector("delta_in_track", d_HAS_data.delta_in_track);
             DLOG(INFO) << debug_print_vector("delta_cross_track", d_HAS_data.delta_cross_track);
         }
 
+    const bool has_corrections_without_orbit = !d_HAS_data.header.orbit_correction_flag &&
+                                               (d_HAS_data.header.clock_fullset_flag || d_HAS_data.header.clock_subset_flag ||
+                                                   d_HAS_data.header.code_bias_flag || d_HAS_data.header.phase_bias_flag);
+    if (has_corrections_without_orbit && have_mask)
+        {
+            const auto iod_ref_key = std::make_pair(d_HAS_data.header.iod_set_id, d_HAS_data.header.mask_id);
+            auto ref_it = d_iod_ref_map.find(iod_ref_key);
+            auto ref_timestamp_it = d_iod_ref_timestamps.find(iod_ref_key);
+            if (ref_it != d_iod_ref_map.end() && ref_timestamp_it != d_iod_ref_timestamps.end() && is_cache_timestamp_valid(ref_timestamp_it->second, time_stamp))
+                {
+                    d_HAS_data.gnss_iod = ref_it->second;
+                }
+            else
+                {
+                    LOG(WARNING) << "MT1 corrections refer to unavailable or stale Reference IODs for Mask ID "
+                                 << std::to_string(d_HAS_data.header.mask_id)
+                                 << " and IOD Set ID " << std::to_string(d_HAS_data.header.iod_set_id);
+                    have_mask = false;
+                    if (ref_it != d_iod_ref_map.end())
+                        {
+                            d_iod_ref_map.erase(ref_it);
+                        }
+                    if (ref_timestamp_it != d_iod_ref_timestamps.end())
+                        {
+                            d_iod_ref_timestamps.erase(ref_timestamp_it);
+                        }
+                }
+        }
+
     if (d_HAS_data.header.clock_fullset_flag && have_mask)
         {
             // read clock full-set corrections
-            d_HAS_data.validity_interval_index_clock_fullset_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
-            message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
+            if (!read_bits(HAS_MSG_VALIDITY_INDEX_LENGTH, "Clock Full-Set Corrections Validity Interval Index", bits))
+                {
+                    return false;
+                }
+            d_HAS_data.validity_interval_index_clock_fullset_corrections = read_has_message_body_uint8(bits);
+            if (!is_validity_interval_index_valid(d_HAS_data.validity_interval_index_clock_fullset_corrections))
+                {
+                    LOG(WARNING) << "Clock Full-Set Corrections block contains reserved Validity Interval Index " << std::to_string(d_HAS_data.validity_interval_index_clock_fullset_corrections);
+                    if (d_HAS_data.header.mask_flag)
+                        {
+                            clear_mask_data(d_HAS_data.header.mask_id);
+                        }
+                    return false;
+                }
 
             d_HAS_data.delta_clock_multiplier = std::vector<uint8_t>(d_HAS_data.Nsys);
             for (uint8_t i = 0; i < d_HAS_data.Nsys; i++)
                 {
-                    d_HAS_data.delta_clock_multiplier[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_DELTA_CLOCK_MULTIPLIER_LENGTH)) + 1;  // b00 means x1, b01 means x2, etc
-                    message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_MULTIPLIER_LENGTH, message.end());
+                    if (!read_bits(HAS_MSG_DELTA_CLOCK_MULTIPLIER_LENGTH, "Delta Clock Multiplier", bits))
+                        {
+                            return false;
+                        }
+                    d_HAS_data.delta_clock_multiplier[i] = read_has_message_body_uint8(bits) + 1;  // b00 means x1, b01 means x2, etc
                 }
 
             d_HAS_data.delta_clock_correction = std::vector<int16_t>(Nsat);
             for (int i = 0; i < Nsat; i++)
                 {
-                    d_HAS_data.delta_clock_correction[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_CLOCK_CORRECTION_LENGTH));
-                    message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_CORRECTION_LENGTH, message.end());
-                }
-            auto ref_it = d_iod_ref_map.find(std::make_pair(d_HAS_data.header.iod_set_id, d_HAS_data.header.mask_id));
-            if (ref_it != d_iod_ref_map.end())
-                {
-                    d_HAS_data.gnss_iod = ref_it->second;
+                    if (!read_bits(HAS_MSG_DELTA_CLOCK_CORRECTION_LENGTH, "Delta Clock Correction", bits))
+                        {
+                            return false;
+                        }
+                    d_HAS_data.delta_clock_correction[i] = read_has_message_body_int16(bits);
                 }
 
             DLOG(INFO) << debug_print_vector("delta_clock_multiplier", d_HAS_data.delta_clock_multiplier);
@@ -674,71 +1098,91 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
     if (d_HAS_data.header.clock_subset_flag && have_mask)
         {
             // read clock subset corrections
-            d_HAS_data.validity_interval_index_clock_subset_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
-            message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
+            if (!read_bits(HAS_MSG_VALIDITY_INDEX_LENGTH, "Clock Subset Corrections Validity Interval Index", bits))
+                {
+                    return false;
+                }
+            d_HAS_data.validity_interval_index_clock_subset_corrections = read_has_message_body_uint8(bits);
+            if (!is_validity_interval_index_valid(d_HAS_data.validity_interval_index_clock_subset_corrections))
+                {
+                    LOG(WARNING) << "Clock Subset Corrections block contains reserved Validity Interval Index " << std::to_string(d_HAS_data.validity_interval_index_clock_subset_corrections);
+                    if (d_HAS_data.header.mask_flag)
+                        {
+                            clear_mask_data(d_HAS_data.header.mask_id);
+                        }
+                    return false;
+                }
 
-            d_HAS_data.Nsys_sub = read_has_message_body_uint8(message.substr(0, HAS_MSG_NSYS_SUB_LENGTH));
-            message = std::string(message.begin() + HAS_MSG_NSYS_SUB_LENGTH, message.end());
+            if (!read_bits(HAS_MSG_NSYS_SUB_LENGTH, "Nsys_sub", bits))
+                {
+                    return false;
+                }
+            d_HAS_data.Nsys_sub = read_has_message_body_uint8(bits);
 
             if (d_HAS_data.Nsys_sub == 0)
                 {
                     // wrong data format, aborting
                     have_mask = false;
-                    d_nsat_in_mask_id[d_HAS_data.header.mask_id] = 0;
+                    clear_mask_data(d_HAS_data.header.mask_id);
                 }
 
-            d_HAS_data.gnss_id_clock_subset = std::vector<uint8_t>(d_HAS_data.Nsys_sub);
-            d_HAS_data.delta_clock_multiplier_clock_subset = std::vector<uint8_t>(d_HAS_data.Nsys_sub);
-            d_HAS_data.satellite_submask = std::vector<uint64_t>(d_HAS_data.Nsys_sub);
-            d_HAS_data.delta_clock_correction_clock_subset = std::vector<std::vector<int16_t>>(d_HAS_data.Nsys_sub, std::vector<int16_t>());
-
-            const std::string str_one("1");
-            const std::string str_zero("0");
-            for (uint8_t i = 0; i < d_HAS_data.Nsys_sub; i++)
+            if (have_mask)
                 {
-                    d_HAS_data.gnss_id_clock_subset[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_ID_CLOCK_SUBSET_LENGTH));
-                    message = std::string(message.begin() + HAS_MSG_ID_CLOCK_SUBSET_LENGTH, message.end());
+                    d_HAS_data.gnss_id_clock_subset = std::vector<uint8_t>(d_HAS_data.Nsys_sub);
+                    d_HAS_data.delta_clock_multiplier_clock_subset = std::vector<uint8_t>(d_HAS_data.Nsys_sub);
+                    d_HAS_data.satellite_submask = std::vector<uint64_t>(d_HAS_data.Nsys_sub);
+                    d_HAS_data.delta_clock_correction_clock_subset = std::vector<std::vector<int16_t>>(d_HAS_data.Nsys_sub, std::vector<int16_t>());
 
-                    uint8_t clock_multiplier = read_has_message_body_uint8(message.substr(0, HAS_MSG_DELTA_CLOCK_MULTIPLIER_SUBSET_LENGTH));
-                    d_HAS_data.delta_clock_multiplier_clock_subset[i] = clock_multiplier + 1;  // b00 means x1, b01 means x2, etc
-                    message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_MULTIPLIER_SUBSET_LENGTH, message.end());
-
-                    // find the satellite mask corresponding to this GNSS ID
-                    auto it = std::find(d_HAS_data.gnss_id_mask.begin(), d_HAS_data.gnss_id_mask.end(), d_HAS_data.gnss_id_clock_subset[i]);
-                    int index = it - d_HAS_data.gnss_id_mask.begin();
-                    uint64_t satellite_mask = d_HAS_data.satellite_mask[index];
-
-                    // count satellites in the mask
-                    std::bitset<HAS_MSG_SATELLITE_MASK_LENGTH> satellite_mask_bits(satellite_mask);
-                    int number_sats_this_gnss_id = satellite_mask_bits.count();
-
-                    d_HAS_data.satellite_submask[i] = read_has_message_body_uint64(message.substr(0, number_sats_this_gnss_id));
-                    message = std::string(message.begin() + number_sats_this_gnss_id, message.end());
-
-                    // Count ones in satellite submask
-                    std::string binary("");
-                    uint64_t aux = 1;
-                    uint64_t mask_value = d_HAS_data.satellite_submask[i];
-                    for (int k = 0; k < number_sats_this_gnss_id - 1; k++)
+                    for (uint8_t i = 0; i < d_HAS_data.Nsys_sub; i++)
                         {
-                            if ((aux & mask_value) >= 1)
+                            if (!read_bits(HAS_MSG_ID_CLOCK_SUBSET_LENGTH, "Clock Subset GNSS ID", bits))
                                 {
-                                    binary.insert(0, str_one);
+                                    return false;
                                 }
-                            else
-                                {
-                                    binary.insert(0, str_zero);
-                                }
-                            aux <<= 1;
-                        }
-                    int Nsat_sub = std::count(binary.begin(), binary.end(), '1');
-                    d_HAS_data.delta_clock_correction_clock_subset[i].reserve(Nsat_sub);
+                            d_HAS_data.gnss_id_clock_subset[i] = read_has_message_body_uint8(bits);
 
-                    // Read Nsat_sub values of delta_clock_correction_clock_subset
-                    for (int j = 0; j < Nsat_sub; j++)
-                        {
-                            d_HAS_data.delta_clock_correction_clock_subset[i][j] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_CLOCK_CORRECTION_SUBSET_LENGTH));
-                            message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_CORRECTION_SUBSET_LENGTH, message.end());
+                            if (!read_bits(HAS_MSG_DELTA_CLOCK_MULTIPLIER_SUBSET_LENGTH, "Clock Subset Delta Clock Multiplier", bits))
+                                {
+                                    return false;
+                                }
+                            uint8_t clock_multiplier = read_has_message_body_uint8(bits);
+                            d_HAS_data.delta_clock_multiplier_clock_subset[i] = clock_multiplier + 1;  // b00 means x1, b01 means x2, etc
+
+                            // find the satellite mask corresponding to this GNSS ID
+                            auto it = std::find(d_HAS_data.gnss_id_mask.begin(), d_HAS_data.gnss_id_mask.end(), d_HAS_data.gnss_id_clock_subset[i]);
+                            if (it == d_HAS_data.gnss_id_mask.end())
+                                {
+                                    LOG(WARNING) << "Clock Subset Corrections block refers to a GNSS ID that is not present in the mask: " << std::to_string(d_HAS_data.gnss_id_clock_subset[i]);
+                                    have_mask = false;
+                                    clear_mask_data(d_HAS_data.header.mask_id);
+                                    break;
+                                }
+                            int index = it - d_HAS_data.gnss_id_mask.begin();
+                            uint64_t satellite_mask = d_HAS_data.satellite_mask[index];
+
+                            // SatMsub length is Nsat, the number of satellites marked in SatM for this GNSS.
+                            std::bitset<HAS_MSG_SATELLITE_MASK_LENGTH> satellite_mask_bits(satellite_mask);
+                            const auto number_sats_this_gnss_id = static_cast<size_t>(satellite_mask_bits.count());
+
+                            std::string satellite_submask_bits;
+                            if (!read_bits(number_sats_this_gnss_id, "Satellite Subset Mask", satellite_submask_bits))
+                                {
+                                    return false;
+                                }
+                            d_HAS_data.satellite_submask[i] = read_has_message_body_uint64(satellite_submask_bits);
+
+                            const auto Nsat_sub = static_cast<size_t>(std::count(satellite_submask_bits.cbegin(), satellite_submask_bits.cend(), '1'));
+                            d_HAS_data.delta_clock_correction_clock_subset[i].resize(Nsat_sub);
+
+                            // Read Nsat_sub values of delta_clock_correction_clock_subset
+                            for (size_t j = 0; j < Nsat_sub; j++)
+                                {
+                                    if (!read_bits(HAS_MSG_DELTA_CLOCK_CORRECTION_SUBSET_LENGTH, "Clock Subset Delta Clock Correction", bits))
+                                        {
+                                            return false;
+                                        }
+                                    d_HAS_data.delta_clock_correction_clock_subset[i][j] = read_has_message_body_int16(bits);
+                                }
                         }
                 }
 
@@ -752,8 +1196,20 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
     if (d_HAS_data.header.code_bias_flag && have_mask)
         {
             // read code bias
-            d_HAS_data.validity_interval_index_code_bias_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
-            message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
+            if (!read_bits(HAS_MSG_VALIDITY_INDEX_LENGTH, "Code Bias Validity Interval Index", bits))
+                {
+                    return false;
+                }
+            d_HAS_data.validity_interval_index_code_bias_corrections = read_has_message_body_uint8(bits);
+            if (!is_validity_interval_index_valid(d_HAS_data.validity_interval_index_code_bias_corrections))
+                {
+                    LOG(WARNING) << "Code Bias block contains reserved Validity Interval Index " << std::to_string(d_HAS_data.validity_interval_index_code_bias_corrections);
+                    if (d_HAS_data.header.mask_flag)
+                        {
+                            clear_mask_data(d_HAS_data.header.mask_id);
+                        }
+                    return false;
+                }
 
             std::vector<uint64_t> number_sats(d_HAS_data.Nsys);
             std::vector<uint64_t> number_codes(d_HAS_data.Nsys);
@@ -798,7 +1254,7 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                     number_codes[sys] = number_signals_this_gnss_id;
                 }
 
-            d_HAS_data.code_bias = std::vector<std::vector<int16_t>>(Nsat, std::vector<int16_t>(max_signals));
+            d_HAS_data.code_bias = std::vector<std::vector<int16_t>>(Nsat, std::vector<int16_t>(max_signals, HAS_CODE_BIAS_UNAVAILABLE_RAW));
 
             int sat = 0;
             for (int sys = 0; sys < d_HAS_data.Nsys; sys++)
@@ -809,8 +1265,11 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                                 {
                                     if ((d_HAS_data.cell_mask_availability_flag[sys] == false) || ((d_HAS_data.cell_mask_availability_flag[sys] == true) && (d_HAS_data.cell_mask[sys][s][c])))
                                         {
-                                            d_HAS_data.code_bias[sat][c] = read_has_message_body_int16(message.substr(0, HAS_MSG_CODE_BIAS_LENGTH));
-                                            message = std::string(message.begin() + HAS_MSG_CODE_BIAS_LENGTH, message.end());
+                                            if (!read_bits(HAS_MSG_CODE_BIAS_LENGTH, "Code Bias", bits))
+                                                {
+                                                    return false;
+                                                }
+                                            d_HAS_data.code_bias[sat][c] = read_has_message_body_int16(bits);
                                         }
                                 }
                             sat += 1;
@@ -823,8 +1282,20 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
     if (d_HAS_data.header.phase_bias_flag && have_mask)
         {
             // read phase bias
-            d_HAS_data.validity_interval_index_phase_bias_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
-            message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
+            if (!read_bits(HAS_MSG_VALIDITY_INDEX_LENGTH, "Phase Bias Validity Interval Index", bits))
+                {
+                    return false;
+                }
+            d_HAS_data.validity_interval_index_phase_bias_corrections = read_has_message_body_uint8(bits);
+            if (!is_validity_interval_index_valid(d_HAS_data.validity_interval_index_phase_bias_corrections))
+                {
+                    LOG(WARNING) << "Phase Bias block contains reserved Validity Interval Index " << std::to_string(d_HAS_data.validity_interval_index_phase_bias_corrections);
+                    if (d_HAS_data.header.mask_flag)
+                        {
+                            clear_mask_data(d_HAS_data.header.mask_id);
+                        }
+                    return false;
+                }
 
             std::vector<uint64_t> number_sats(d_HAS_data.Nsys);
             std::vector<uint64_t> number_phases(d_HAS_data.Nsys);
@@ -869,7 +1340,7 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                     number_phases[sys] = number_signals_this_gnss_id;
                 }
 
-            d_HAS_data.phase_bias = std::vector<std::vector<int16_t>>(Nsat, std::vector<int16_t>(max_signals));
+            d_HAS_data.phase_bias = std::vector<std::vector<int16_t>>(Nsat, std::vector<int16_t>(max_signals, HAS_PHASE_BIAS_UNAVAILABLE_RAW));
             d_HAS_data.phase_discontinuity_indicator = std::vector<std::vector<uint8_t>>(Nsat, std::vector<uint8_t>(max_signals));
 
             int sat = 0;
@@ -881,11 +1352,17 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                                 {
                                     if ((d_HAS_data.cell_mask_availability_flag[sys] == false) || ((d_HAS_data.cell_mask_availability_flag[sys] == true) && (d_HAS_data.cell_mask[sys][s][p])))
                                         {
-                                            d_HAS_data.phase_bias[sat][p] = read_has_message_body_int16(message.substr(0, HAS_MSG_PHASE_BIAS_LENGTH));
-                                            message = std::string(message.begin() + HAS_MSG_PHASE_BIAS_LENGTH, message.end());
+                                            if (!read_bits(HAS_MSG_PHASE_BIAS_LENGTH, "Phase Bias", bits))
+                                                {
+                                                    return false;
+                                                }
+                                            d_HAS_data.phase_bias[sat][p] = read_has_message_body_int16(bits);
 
-                                            d_HAS_data.phase_discontinuity_indicator[sat][p] = read_has_message_body_uint8(message.substr(0, HAS_MSG_PHASE_DISCONTINUITY_INDICATOR_LENGTH));
-                                            message = std::string(message.begin() + HAS_MSG_PHASE_DISCONTINUITY_INDICATOR_LENGTH, message.end());
+                                            if (!read_bits(HAS_MSG_PHASE_DISCONTINUITY_INDICATOR_LENGTH, "Phase Discontinuity Indicator", bits))
+                                                {
+                                                    return false;
+                                                }
+                                            d_HAS_data.phase_discontinuity_indicator[sat][p] = read_has_message_body_uint8(bits);
                                         }
                                 }
                             sat += 1;
@@ -895,6 +1372,7 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
             DLOG(INFO) << debug_print_matrix("phase bias", d_HAS_data.phase_bias);
             DLOG(INFO) << debug_print_matrix("phase discontinuity indicator", d_HAS_data.phase_discontinuity_indicator);
         }
+    return have_mask;
 }
 
 
@@ -975,9 +1453,10 @@ uint16_t galileo_e6_has_msg_receiver::read_has_message_body_uint16(const std::st
 
 int16_t galileo_e6_has_msg_receiver::read_has_message_body_int16(const std::string& bits) const
 {
-    if (bits.empty() || bits.length() > 16)
+    const size_t len = bits.length();
+    if (bits.empty() || len > 16)
         {
-            LOG(WARNING) << "Invalid binary string length for int16_t: " << bits.length();
+            LOG(WARNING) << "Invalid binary string length for int16_t: " << len;
             return 0;
         }
 
@@ -992,10 +1471,10 @@ int16_t galileo_e6_has_msg_receiver::read_has_message_body_int16(const std::stri
             value = static_cast<uint16_t>((value << 1) | (c - '0'));
         }
 
-    // If sign bit is set, sign-extend to 16-bit
-    if (bits[0] == '1')
+    // If sign bit is set, sign-extend to 16-bit using unsigned arithmetic.
+    if (bits[0] == '1' && len < 16)
         {
-            return static_cast<int16_t>(value | (0xFFFF << bits.length()));
+            value = static_cast<uint16_t>(value | static_cast<uint16_t>(0xFFFFU << len));
         }
     return static_cast<int16_t>(value);
 }

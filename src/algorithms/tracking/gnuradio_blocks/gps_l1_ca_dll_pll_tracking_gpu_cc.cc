@@ -97,12 +97,12 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
     // pinned memory mode - use special function to get OS-pinned memory
     d_n_correlator_taps = 3;  // Early, Prompt, and Late
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    cudaHostAlloc(reinterpret_cast<void **>(&d_ca_code), (static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex)), cudaHostAllocMapped || cudaHostAllocWriteCombined);
+    cudaHostAlloc(reinterpret_cast<void **>(&d_ca_code), (static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex)), cudaHostAllocMapped);
     // Get space for the resampled early / prompt / late local replicas
-    cudaHostAlloc(reinterpret_cast<void **>(&d_local_code_shift_chips), d_n_correlator_taps * sizeof(float), cudaHostAllocMapped || cudaHostAllocWriteCombined);
-    cudaHostAlloc(reinterpret_cast<void **>(&in_gpu), 2 * d_vector_length * sizeof(gr_complex), cudaHostAllocMapped || cudaHostAllocWriteCombined);
+    cudaHostAlloc(reinterpret_cast<void **>(&d_local_code_shift_chips), d_n_correlator_taps * sizeof(float), cudaHostAllocMapped);
+    cudaHostAlloc(reinterpret_cast<void **>(&in_gpu), 2 * d_vector_length * sizeof(gr_complex), cudaHostAllocMapped);
     // correlator outputs (scalar)
-    cudaHostAlloc(reinterpret_cast<void **>(&d_correlator_outs), sizeof(gr_complex) * d_n_correlator_taps, cudaHostAllocMapped || cudaHostAllocWriteCombined);
+    cudaHostAlloc(reinterpret_cast<void **>(&d_correlator_outs), sizeof(gr_complex) * d_n_correlator_taps, cudaHostAllocMapped);
 
     // Set TAPs delay values [chips]
     d_local_code_shift_chips[0] = -d_early_late_spc_chips;
@@ -456,11 +456,11 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                     // Carrier lock indicator
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), FLAGS_cn0_samples);
                     // Loss of lock detection
-                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
+                    if (d_carrier_lock_test < d_carrier_lock_threshold || d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
 #else
                     d_CN0_SNV_dB_Hz = cn0_m2m4_estimator(d_Prompt_buffer.data(), absl::GetFlag(FLAGS_cn0_samples), GPS_L1_CA_CODE_PERIOD_S);
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), absl::GetFlag(FLAGS_cn0_samples));
-                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < absl::GetFlag(FLAGS_cn0_min))
+                    if (d_carrier_lock_test < d_carrier_lock_threshold || d_CN0_SNV_dB_Hz < absl::GetFlag(FLAGS_cn0_min))
 #endif
                         {
                             d_carrier_lock_fail_counter++;

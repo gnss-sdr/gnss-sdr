@@ -26,8 +26,11 @@ In the L1 band:
 - &#128752; GLONASS L1 C/A (centered at 1602.000 MHz) ✅
 - &#128752; GPS L1 C/A (centered at 1575.420 MHz) ✅
 - &#128752; Galileo E1b/c (centered at 1575.420 MHz) ✅
+- &#128752; BeiDou B1C (centered at 1575.420 MHz) ✅
+- &#128752; QZSS L1 C/A and C/B, where available (centered at 1575.420 MHz) ✅
+- &#128752; SBAS L1 (EGNOS and WAAS, centered at 1575.420 MHz) — navigation
+  message decoding only; SBAS satellites are not yet used as ranging sources
 - &#128752; BeiDou B1I (centered at 1561.098 MHz) ✅
-- &#128752; QZSS L1 C/A, where available (centered at 1575.420 MHz) ✅
 
 In the E6 band:
 
@@ -44,6 +47,7 @@ In the L5 band:
 - &#128752; Galileo E5b (centered at 1207.140 MHz) ✅
 - &#128752; Galileo E5a (centered at 1176.450 MHz) ✅
 - &#128752; GPS L5 (centered at 1176.450 MHz) ✅
+- &#128752; BeiDou B2a (centered at 1176.450 MHz) ✅
 - &#128752; QZSS L5, where available (centered at 1176.450 MHz) ✅
 
 GNSS-SDR provides interfaces for a wide range of radio frequency front-ends and
@@ -83,6 +87,7 @@ information about this open-source, software-defined GNSS receiver.
     - [Clone GNSS-SDR's Git repository](#clone-gnss-sdrs-git-repository)
     - [Build and install GNSS-SDR](#build-and-install-gnss-sdr)
       - [Build OSMOSDR support (OPTIONAL)](#build-osmosdr-support-optional)
+      - [Build BladeRF support (OPTIONAL)](#build-bladerf-support-optional)
       - [Build FMCOMMS2 based SDR Hardware support (OPTIONAL)](#build-fmcomms2-based-sdr-hardware-support-optional)
       - [Build OpenCL support (OPTIONAL)](#build-opencl-support-optional)
       - [Build CUDA support (OPTIONAL)](#build-cuda-support-optional)
@@ -110,6 +115,7 @@ information about this open-source, software-defined GNSS receiver.
       - [Decoding of the navigation message](#decoding-of-the-navigation-message)
     - [Observables](#observables)
     - [Computation of Position, Velocity, and Time](#computation-of-position-velocity-and-time)
+      - [Dual-band RTK through NTRIP](#dual-band-rtk-through-ntrip)
 - [About the software license](#about-the-software-license)
 - [Publications and Credits](#publications-and-credits)
 - [Ok, now what?](#ok-now-what)
@@ -167,7 +173,7 @@ dependencies with:
 
 ```
 $ sudo apt install build-essential cmake git gnuradio-dev gr-limesdr gr-osmosdr \
-       libabsl-dev libad9361-dev libarmadillo-dev libblas-dev \
+       libabsl-dev libad9361-dev libarmadillo-dev libbladerf-dev libblas-dev \
        libboost-chrono-dev libboost-date-time-dev libboost-dev \
        libboost-filesystem-dev libboost-serialization-dev libboost-thread-dev \
        libcpu-features-dev libgtest-dev libiio-dev liblapack-dev libmatio-dev \
@@ -179,7 +185,7 @@ On older versions:
 
 ```
 $ sudo apt install build-essential cmake git gnuradio-dev gr-limesdr gr-osmosdr \
-       libad9361-dev libarmadillo-dev libblas-dev \
+       libad9361-dev libarmadillo-dev libbladerf-dev libblas-dev \
        libboost-chrono-dev libboost-date-time-dev libboost-dev \
        libboost-filesystem-dev libboost-serialization-dev libboost-system-dev \
        libboost-thread-dev \
@@ -313,9 +319,9 @@ $ sudo apt install libblas-dev liblapack-dev       # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel         # For Fedora/RHEL
 $ sudo zypper install lapack-devel blas-devel      # For OpenSUSE
 $ sudo pacman -S blas lapack                       # For Arch Linux
-$ wget https://sourceforge.net/projects/arma/files/armadillo-15.2.2.tar.xz
-$ tar xvfz armadillo-15.2.2.tar.xz
-$ cd armadillo-15.2.2
+$ wget https://sourceforge.net/projects/arma/files/armadillo-15.6.0.tar.xz
+$ tar xvfz armadillo-15.6.0.tar.xz
+$ cd armadillo-15.6.0
 $ cmake .
 $ make
 $ sudo make install
@@ -331,9 +337,9 @@ BLAS, LAPACK, and ATLAS).
 #### Install [Gflags](https://github.com/gflags/gflags "Gflags' Homepage"), a commandline flags processing module for C++
 
 ```
-$ wget https://github.com/gflags/gflags/archive/v2.3.0.tar.gz
-$ tar xvfz v2.3.0.tar.gz
-$ cd gflags-2.3.0
+$ wget https://github.com/gflags/gflags/archive/v2.3.1.tar.gz
+$ tar xvfz v2.3.1.tar.gz
+$ cd gflags-2.3.1
 $ cmake -S . -B building -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF
 $ cmake --build building
 $ sudo cmake --install building
@@ -372,11 +378,16 @@ $ sudo pacman -S openssl                  # For Arch Linux
 
 #### Install [Matio](https://github.com/tbeu/matio "Matio's Homepage"), MATLAB MAT file I/O library
 
+Requires [zlib](https://zlib.net/) and
+[HDF5](https://www.hdfgroup.org/solutions/hdf5/). For Debian and derivatives,
+`sudo apt install libhdf5-dev` should work fine.
+
 ```
-$ wget https://github.com/tbeu/matio/releases/download/v1.5.30/matio-1.5.30.tar.gz
-$ tar xvfz matio-1.5.30.tar.gz
-$ cd matio-1.5.30
-$ ./configure
+$ wget https://github.com/tbeu/matio/releases/download/v1.6.0/matio-1.6.0.tar.gz
+$ tar xvfz matio-1.6.0.tar.gz
+$ cd matio-1.6.0
+$ ./autogen.sh
+$ ./configure --enable-mat73=yes --with-default-file-ver=7.3  ; you might also need --with-hdf5=DIR
 $ make
 $ sudo make install
 $ sudo ldconfig
@@ -402,9 +413,9 @@ For more options, please check the
 #### Install [Pugixml](https://pugixml.org/ "Pugixml's Homepage"), a light-weight C++ XML processing library
 
 ```
-$ wget https://github.com/zeux/pugixml/releases/download/v1.15/pugixml-1.15.tar.gz
-$ tar xvfz pugixml-1.15.tar.gz
-$ cd pugixml-1.15
+$ wget https://github.com/zeux/pugixml/releases/download/v1.16/pugixml-1.16.tar.gz
+$ tar xvfz pugixml-1.16.tar.gz
+$ cd pugixml-1.16
 $ mkdir build && cd build
 $ cmake ..
 $ make
@@ -415,8 +426,8 @@ $ sudo ldconfig
 #### Download [GoogleTest](https://github.com/google/googletest "Googletest Homepage")
 
 ```
-$ wget https://github.com/google/googletest/archive/refs/tags/v1.17.0.zip
-$ unzip v1.17.0.zip
+$ wget https://github.com/google/googletest/archive/refs/tags/v1.18.0.zip
+$ unzip v1.18.0.zip
 ```
 
 Please **DO NOT build or install** Google Test. Every user needs to compile
@@ -440,10 +451,10 @@ downloaded resides. Just type in your terminal (or add it to your
 `$HOME/.bashrc` file for a permanent solution) the following line:
 
 ```
-export GTEST_DIR=/home/username/googletest-1.17.0
+export GTEST_DIR=/home/username/googletest-1.18.0
 ```
 
-changing `/home/username/googletest-1.17.0` by the actual path where you
+changing `/home/username/googletest-1.18.0` by the actual path where you
 unpacked Google Test. If the CMake script does not find that folder, or the
 environment variable is not defined, or the source code is not installed by a
 package, then it will download a fresh copy of the Google Test source code and
@@ -600,6 +611,36 @@ $ sudo cmake --install build
 (in order to disable the `Osmosdr_Signal_Source` compilation, you can pass
 `-DENABLE_OSMOSDR=OFF` to cmake and build GNSS-SDR again).
 
+#### Build BladeRF support (OPTIONAL)
+
+GNSS-SDR can talk to Nuand's [bladeRF](https://www.nuand.com/) front-ends
+(bladeRF x40, x115, and bladeRF 2.0 Micro xA4/xA9) directly through
+`libbladeRF`, without going through OsmoSDR. This requires `libbladeRF` v2.6.0
+or newer (needed for reliable bladeRF 2.0 Micro support); older packaged
+versions (e.g., the one currently in Ubuntu's `universe` repository) are
+rejected at `cmake` configuration time with a message asking you to upgrade.
+Install the library and headers (e.g., on Debian / Ubuntu,
+`sudo apt install libbladerf-dev`, then check its version with
+`pkg-config --modversion libbladeRF`; if it is older than 2.6.0, build
+`libbladeRF` from source instead -- see
+[Nuand's bladeRF repository](https://github.com/Nuand/bladeRF)), then configure
+GNSS-SDR to build the `Bladerf_Signal_Source` by:
+
+```
+$ cmake -S . -B build -DENABLE_BLADERF=ON
+$ cmake --build build
+$ sudo cmake --install build
+```
+
+(in order to disable the `Bladerf_Signal_Source` compilation, you can pass
+`-DENABLE_BLADERF=OFF` to cmake and build GNSS-SDR again). A sample
+configuration file is provided at
+[conf/RealTime_input/gnss-sdr_GPS_L1_bladeRF_native.conf](./conf/RealTime_input/gnss-sdr_GPS_L1_bladeRF_native.conf).
+Note that, unlike the `Osmosdr_Signal_Source` path, `libbladeRF` exposes a
+single overall RX gain instead of separate LNA / VGA1 / VGA2 stages, and only
+single-channel (SISO) reception is currently supported (bladeRF 2.0 Micro xA9's
+second RX channel is not yet exposed).
+
 #### Build FMCOMMS2 based SDR Hardware support (OPTIONAL)
 
 Install the [libiio](https://github.com/analogdevicesinc/libiio.git) (>=v0.11),
@@ -681,12 +722,23 @@ $ sudo cmake --install build
 ```
 
 Of course, you will also need a GPU that
-[supports CUDA](https://developer.nvidia.com/cuda-gpus "CUDA GPUs").
+[supports CUDA](https://developer.nvidia.com/cuda-gpus "CUDA GPUs"). The target
+architecture is taken from `CMAKE_CUDA_ARCHITECTURES` if you set it (e.g.
+`-DCMAKE_CUDA_ARCHITECTURES=87` for Jetson Orin), detected from the device tree
+on NVIDIA Jetson modules, or `native` with CMake >= 3.24.
+
+With CUDA enabled, every PCPS acquisition block can evaluate its search grid on
+the GPU by setting `Acquisition_XX.use_cuda=true` (or
+`GNSS-SDR.use_cuda_acquisition=true` for all of them), and the experimental
+`GPS_L1_CA_DLL_PLL_Tracking_GPU` tracking block becomes available. See
+[docs/JETSON.md](./docs/JETSON.md) for a step-by-step guide on NVIDIA Jetson
+(Orin, Xavier, TX2, Nano), including how to run the unit tests and the
+CPU-vs-GPU acquisition benchmark.
 
 ## macOS
 
 GNSS-SDR can be built on macOS (or the former Mac OS X), starting from 10.9
-(Mavericks) and including 14 (Sonoma). If you still have not installed
+(Mavericks) and including 27 (Golden Gate). If you still have not installed
 [Xcode](https://developer.apple.com/xcode/ "Xcode"), do it now from the App
 Store (it's free). You will also need the Xcode Command Line Tools, which do not
 come by default in macOS versions older than Big Sur. If you are using an older
@@ -1554,7 +1606,10 @@ identifiers:
 | Galileo E1b/c  |       1B       |
 | Glonass L1 C/A |       1G       |
 | Beidou B1I     |       B1       |
+| Beidou B1C     |       1D       |
+| Beidou B2a     |       5D       |
 | QZSS L1 C/A    |       J1       |
+| SBAS L1        |       S1       |
 | Galileo E6B    |       E6       |
 | Beidou B3I     |       B3       |
 | GPS L2 L2C(M)  |       2S       |
@@ -1638,12 +1693,10 @@ can be continuously improved without having any impact neither on the algorithm
 interface nor the general acquisition interface.
 
 Check
-[GpsL1CaPcpsAcquisition](./src/algorithms/acquisition/adapters/gps_l1_ca_pcps_acquisition.h)
-and
-[GalileoE1PcpsAmbiguousAcquisition](./src/algorithms/acquisition/adapters/galileo_e1_pcps_ambiguous_acquisition.h)
-for examples of adapters from a Parallel Code Phase Search (PCPS) acquisition
-block, and
-[pcps_acquisition_cc](./src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_cc.h)
+[PcpsAcquisitionAdapter](./src/algorithms/acquisition/adapters/pcps_acquisition_adapter.h)
+for an example of an adapter from a Parallel Code Phase Search (PCPS)
+acquisition block to AcquisitionInterface, and
+[pcps_acquisition](./src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition.h)
 for an example of a block implementation. The source code of all the available
 acquisition algorithms is located at:
 
@@ -1661,27 +1714,28 @@ receiver channel, as well as their parameters, in the configuration file. For a
 GPS L1 C/A receiver:
 
 ```
-;######### ACQUISITION GLOBAL CONFIG ############
+;######### ACQUISITION GPS L1 CONFIG ############
 Acquisition_1C.implementation=GPS_L1_CA_PCPS_Acquisition ; Acquisition algorithm selection for this channel
 Acquisition_1C.item_type=gr_complex
 Acquisition_1C.coherent_integration_time_ms=1 ; Signal block duration for the acquisition signal detection [ms]
 Acquisition_1C.threshold=2.5 ; Acquisition threshold
-Acquisition_1C.pfa=0.01 ; Acquisition false alarm probability. This option overrides the threshold option.
-Acquisition_1C.doppler_max=10000 ; Maximum expected Doppler shift [Hz]
-Acquisition_1C.doppler_step=500 ; Doppler step in the grid search [Hz]
+Acquisition_1C.pfa=0.001 ; Acquisition false alarm probability. This option overrides the threshold option.
+Acquisition_1C.doppler_max=5000 ; Maximum expected Doppler shift [Hz]
+Acquisition_1C.doppler_step=250 ; Doppler step in the grid search [Hz]
 Acquisition_1C.dump=false ; Enables internal data file logging [true] or [false]
 Acquisition_1C.dump_filename=./acq_dump.dat ; Log path and filename
+Acquisition_1C.use_cuda=false ; Evaluate the search grid on a CUDA GPU (requires -DENABLE_CUDA=ON)
 ```
 
 and, for Galileo E1B channels:
 
 ```
-;######### GALILEO ACQUISITION CONFIG ############
+;######### ACQUISITION GALILEO E1 CONFIG ############
 Acquisition_1B.implementation=Galileo_E1_PCPS_Ambiguous_Acquisition
 Acquisition_1B.item_type=gr_complex
 Acquisition_1B.coherent_integration_time_ms=4
 Acquisition_1B.pfa=0.008
-Acquisition_1B.doppler_max=15000
+Acquisition_1B.doppler_max=5000
 Acquisition_1B.doppler_step=125
 Acquisition_1B.dump=false
 Acquisition_1B.dump_filename=./acq_dump.dat
@@ -1702,11 +1756,9 @@ Again, a class hierarchy consisting of a
 [TrackingInterface](./src/core/interfaces/tracking_interface.h) class and
 subclasses implementing algorithms provides a way of testing different
 approaches, with full access to their parameters. Check
-[GpsL1CaDllPllTracking](./src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_tracking.h)
-or
-[GalileoE1DllPllVemlTracking](./src/algorithms/tracking/adapters/galileo_e1_dll_pll_veml_tracking.h)
-for examples of adapters, and
-[Gps_L1_Ca_Dll_Pll_Tracking_cc](./src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_cc.h)
+[DllPllTrackingAdapter](./src/algorithms/tracking/adapters/dll_pll_tracking_adapter.h)
+for an example of adapter, and
+[dll_pll_veml_tracking](./src/algorithms/tracking/gnuradio_blocks/dll_pll_veml_tracking.h)
 for an example of a signal processing block implementation. There are also
 available some useful classes and functions for signal tracking; take a look at
 [cpu_multicorrelator.h](./src/algorithms/tracking/libs/cpu_multicorrelator.h),
@@ -1780,12 +1832,12 @@ is managed by a finite state machine.
 
 The common interface is
 [TelemetryDecoderInterface](./src/core/interfaces/telemetry_decoder_interface.h).
-Check
-[GpsL1CaTelemetryDecoder](./src/algorithms/telemetry_decoder/adapters/gps_l1_ca_telemetry_decoder.h)
-for an example of the GPS L1 NAV message decoding adapter, and
-[gps_l1_ca_telemetry_decoder_cc](./src/algorithms/telemetry_decoder/gnuradio_blocks/gps_l1_ca_telemetry_decoder_cc.h)
-for an actual implementation of a signal processing block. Configuration
-example:
+Telemetry decoder adapters are provided through
+[TelemetryDecoderAdapter](./src/algorithms/telemetry_decoder/adapters/telemetry_decoder_adapter.h),
+which wraps the corresponding GNU Radio telemetry decoder block. Check
+[gps_l1_ca_telemetry_decoder_gs](./src/algorithms/telemetry_decoder/gnuradio_blocks/gps_l1_ca_telemetry_decoder_gs.h)
+for an actual implementation of a GPS L1 NAV message decoding block.
+Configuration example:
 
 ```
 ;######### TELEMETRY DECODER CONFIG ############
@@ -1840,15 +1892,17 @@ More documentation at the
 
 ### Computation of Position, Velocity, and Time
 
-Although data processing for obtaining high-accuracy PVT solutions is out of the
-scope of GNSS-SDR, we provide a module that can compute position fixes (stored
-in GIS-friendly formats such as [GeoJSON](https://tools.ietf.org/html/rfc7946),
+GNSS-SDR provides a module that can compute standalone position fixes and an
+opt-in NTRIP-corrected RTK solution for dual-band GPS (L1 C/A + L2C or L1 C/A +
+L5), Galileo (E1 + E5a), and combined GPS+Galileo receivers. Results can be
+stored in GIS-friendly formats such as
+[GeoJSON](https://tools.ietf.org/html/rfc7946),
 [GPX](https://www.topografix.com/gpx.asp), and
 [KML](https://www.opengeospatial.org/standards/kml), or transmitted via serial
-port as [NMEA 0183](https://en.wikipedia.org/wiki/NMEA_0183) messages), and
-leaves room for more sophisticated positioning methods by storing observables
-and navigation data in [RINEX](https://en.wikipedia.org/wiki/RINEX) files (v2.11
-or v3.02), and generating
+port as [NMEA 0183](https://en.wikipedia.org/wiki/NMEA_0183) messages. The
+module can also store observables and navigation data in
+[RINEX](https://en.wikipedia.org/wiki/RINEX) files (v2.11, v3.02, or v4.02), and
+generate
 [RTCM](https://www.rtcm.org/ "Radio Technical Commission for Maritime Services")
 3.2 messages that can be disseminated through the Internet in real-time.
 
@@ -1860,15 +1914,18 @@ Configuration example:
 ;######### PVT CONFIG ############
 PVT.implementation=RTKLIB_PVT
 PVT.positioning_mode=Single      ; options: Single, Static, Kinematic, PPP_Static, PPP_Kinematic
-PVT.iono_model=Broadcast         ; options: OFF, Broadcast
-PVT.trop_model=Saastamoinen      ; options: OFF, Saastamoinen
+PVT.satellite_ephemeris=Broadcast ; options: Broadcast, SBAS
+PVT.sbas_satellite=0             ; 0: first SBAS GEO received, or select PRN 120-138
+PVT.iono_model=Broadcast         ; options: OFF, Broadcast, SBAS, Iono-Free-LC, Estimate_STEC, IONEX
+PVT.trop_model=Saastamoinen      ; options: OFF, Saastamoinen, SBAS, Estimate_ZTD, Estimate_ZTD_Grad
 PVT.rinex_version=2              ; options: 2 or 3
 PVT.output_rate_ms=100           ; Period in [ms] between two PVT outputs
 PVT.display_rate_ms=500          ; Position console print (std::out) interval [ms].
 PVT.nmea_dump_filename=./gnss_sdr_pvt.nmea ; NMEA log path and filename
 PVT.flag_nmea_tty_port=false     ; Enables the NMEA log to a serial TTY port
 PVT.nmea_dump_devname=/dev/pts/4 ; serial device descriptor for NMEA logging
-PVT.flag_rtcm_server=true        ; Enables or disables a TCP/IP server dispatching RTCM messages
+PVT.flag_rtcm_server=true        ; Enables an outbound raw TCP server dispatching generated RTCM messages
+PVT.ntrip_client_enabled=false   ; Enables inbound RTCM corrections from an NTRIP caster (physical base or VRS)
 PVT.flag_rtcm_tty_port=false     ; Enables the RTCM log to a serial TTY port
 PVT.rtcm_dump_devname=/dev/pts/1 ; serial device descriptor for RTCM logging
 PVT.rtcm_tcp_port=2101
@@ -1877,6 +1934,116 @@ PVT.rtcm_MT1045_rate_ms=5000
 PVT.rtcm_MT1097_rate_ms=1000
 PVT.rtcm_MT1077_rate_ms=1000
 ```
+
+#### Dual-band RTK through NTRIP
+
+The `RTKLIB_PVT` implementation can obtain base-station corrections from an
+NTRIP caster. This feature is opt-in: `PVT.ntrip_client_enabled` defaults to
+`false`, and no caster connection is attempted while it is disabled. The
+receiver may run, per constellation and freely combined, GPS L1 C/A (`1C`) alone
+or together with one of L2C (`2S`) or L5 (`L5`), Galileo E1 (`1B`) alone or
+together with E5a (`5X`), and BeiDou B1C (`1D`, single-frequency); a second band
+without its first band, both GPS second bands at once, and other signals are
+rejected. Single-band sets run single-frequency RTK, which is viable on the
+short effective baselines of VRS services and benefits from combining
+constellations. `PVT.navigation_system` must match the enabled constellations
+exactly (`1` GPS, `8` Galileo, `32` BeiDou, or their sum), and the number of
+frequency slots is derived from the channel set (1 for single-band sets; 2 with
+GPS L2C; 3 whenever L5 or E5a is involved, since both occupy the third RTKLIB
+slot). GPS L5 and Galileo E5a share the same center frequency, and BeiDou B1C
+shares the GPS L1 / Galileo E1 center, so the combined GPS L1+L5 / Galileo
+E1+E5a dual-frequency receiver needs only two RF channels, and a
+single-frequency GPS+Galileo+BeiDou receiver needs one. Select `Static` for a
+stationary rover or `Kinematic` for a moving rover; other positioning modes are
+rejected when the NTRIP client is enabled.
+
+An NTRIP-corrected rover configuration can include:
+
+```
+Channels_1C.count=8
+Channels_2S.count=8
+
+PVT.implementation=RTKLIB_PVT
+PVT.positioning_mode=Kinematic
+
+PVT.ntrip_client_enabled=true
+PVT.ntrip_caster_address=caster.example.org
+PVT.ntrip_caster_port=2101
+PVT.ntrip_mountpoint=EXAMPLE_MOUNTPOINT
+PVT.ntrip_username=example_user
+PVT.ntrip_password=
+PVT.ntrip_password_env=GNSS_SDR_NTRIP_PASSWORD
+PVT.ntrip_version=2
+PVT.ntrip_tls_enabled=false
+PVT.ntrip_inactivity_timeout_ms=10000
+PVT.ntrip_reconnect_interval_ms=10000
+PVT.ntrip_max_correction_age_s=5.0
+PVT.ntrip_station_id=0
+PVT.ntrip_fallback_to_single=true
+PVT.ntrip_send_gga=true
+PVT.ntrip_gga_period_ms=10000
+```
+
+The caster address, mountpoint, username, password, and password-environment
+variable name default to empty strings; the remaining defaults are those shown
+above, except that `PVT.ntrip_client_enabled` defaults to `false`. Set either
+`PVT.ntrip_password` or `PVT.ntrip_password_env`, never both. The latter names
+an environment variable from which GNSS-SDR reads the password and avoids
+placing the password in the configuration file. Station ID `0` accepts any
+station; otherwise, set the expected RTCM station ID. Setting
+`PVT.ntrip_reconnect_interval_ms=0` disables operational reconnect attempts; the
+one immediate v2-to-v1 compatibility retry still runs and is not counted as an
+automatic reconnect.
+
+The correction stream must provide an RTCM 3 base position message 1005 or 1006
+and observation messages carrying at least each satellite's first band: for GPS,
+L1 (with L2 or L5 when available) as messages 1002 or 1004 or as MSM4 through
+MSM7 (1074 through 1077); for Galileo, E1 (with E5a when available) as MSM4
+through MSM7 (1094 through 1097); for BeiDou, B1C as MSM4 through MSM7 (1124
+through 1127), where the decoder prefers B1C over B1I when the base broadcasts
+both in the shared first slot. Base satellites providing only the first band
+contribute single-band double differences; the second band of the receiver's
+pair is used whenever both sides supply it. Corrections older than
+`PVT.ntrip_max_correction_age_s` are not used. Enabling this client forces a
+separate internal single-point solver for receiver-clock correction,
+independently of the RTK solver. With `PVT.ntrip_fallback_to_single=true`, the
+receiver reports an explicitly labeled `SOLQ_SINGLE` solution while corrections
+are unavailable, incomplete, or stale; it does not label that fallback as an RTK
+solution.
+
+This client sends an NTRIP version 2 HTTP/1.1 request by default and accepts a
+legacy v1 reply on that connection. If the fully-sent v2 exchange closes or
+times out before receiving any response bytes, or returns HTTP 400, 501, or 505,
+it opens one fresh connection and retries using the v1 HTTP/1.0 request. Once
+selected, v1 is retained for operational reconnects until the client is stopped
+and started again. DNS, TCP, TLS, and partial-write failures before the request
+is sent do not trigger a downgrade; `PVT.ntrip_version=1` forces v1 from the
+first connection. Setting `PVT.ntrip_tls_enabled=true` encrypts both attempts
+with TLS 1.2 or newer and validates the caster certificate against the system CA
+store and its host name. Without TLS, Basic authentication only encodes
+credentials; it does not encrypt them, so use a trusted network or a suitable
+secure tunnel. Prefer `PVT.ntrip_password_env` over a password stored in a file.
+VRS and nearest-station mountpoints that require rover GGA reports are
+supported: with `PVT.ntrip_send_gga=true` (the default), the client periodically
+sends an NMEA GGA sentence derived from the receiver's current position
+estimate, every `PVT.ntrip_gga_period_ms` (10 s by default). No GGA is sent
+before the receiver produces its first position solution; the single-point
+bootstrap fix is enough for the caster to start serving the virtual station. Set
+`PVT.ntrip_send_gga=false` if the rover position must not be reported to the
+caster; physical-base mountpoints work either way.
+
+`PVT.flag_rtcm_server` is unrelated to the NTRIP correction client. It controls
+an outbound raw TCP server for RTCM messages generated by GNSS-SDR; it neither
+connects to a caster nor supplies corrections to the RTK solver. The outbound
+server and inbound NTRIP client can be enabled independently.
+
+For legacy SBAS/EGNOS L1 positioning, use GPS L1 observation channels together
+with at least one SBAS L1 telemetry channel, and set
+`PVT.satellite_ephemeris=SBAS`, `PVT.iono_model=SBAS`, and
+`PVT.trop_model=SBAS`. EGNOS currently augments GPS L1; RTKLIB excludes a
+satellite when the selected SBAS stream has no valid correction for it. This
+path provides non-safety-critical Open Service positioning and does not compute
+protection levels or implement a Safety-of-Life receiver.
 
 **Notes on the output formats:**
 
@@ -1961,17 +2128,18 @@ PVT.rinex_version=2
   Services - Version 3_ (February 1, 2013), which can be
   [purchased online](https://ssl29.pair.com/dmarkle/puborder.php?show=3 "RTCM Online Publication Order Form").
   By default, the generated RTCM binary messages are dumped into a text file in
-  hexadecimal format. However, GNSS-SDR is equipped with a TCP/IP server, acting
-  as an NTRIP source that can feed an NTRIP server. NTRIP (Networked Transport
-  of RTCM via Internet Protocol) is an open standard protocol that can be freely
-  downloaded from
+  hexadecimal format. GNSS-SDR can also expose those generated messages through
+  an outbound raw TCP server. This output can be forwarded to an NTRIP caster by
+  a separate tool, but the server is not itself an NTRIP caster client. NTRIP
+  (Networked Transport of RTCM via Internet Protocol) is an open standard
+  protocol that can be freely downloaded from
   [BKG](https://igs.bkg.bund.de/root_ftp/NTRIP/documentation/NtripDocumentation.pdf "Networked Transport of RTCM via Internet Protocol (Ntrip) Version 1.0"),
   and it is designed for disseminating differential correction data (_e.g._ in
   the RTCM-104 format) or other kinds of GNSS streaming data to stationary or
-  mobile users over the Internet. The TCP/IP server can be enabled by setting
-  `PVT.flag_rtcm_server=true` in the configuration file, and will be active
-  during the execution of the software receiver. By default, the server will
-  operate on port 2101 (which is the recommended port for RTCM services
+  mobile users over the Internet. The outbound TCP/IP server can be enabled by
+  setting `PVT.flag_rtcm_server=true` in the configuration file, and will be
+  active during the execution of the software receiver. By default, the server
+  will operate on port 2101 (which is the recommended port for RTCM services
   according to the Internet Assigned Numbers Authority,
   [IANA](https://www.iana.org/assignments/service-names-port-numbers/ "Service Name and Transport Protocol Port Number Registry")),
   and will identify the Reference Station with ID=1234. This behavior can be
@@ -1982,6 +2150,9 @@ PVT.flag_rtcm_server=true
 PVT.rtcm_tcp_port=2102
 PVT.rtcm_station_id=1111
 ```
+
+This outbound server is independent of the inbound NTRIP correction client
+configured with `PVT.ntrip_client_enabled`.
 
 **Important note:**
 

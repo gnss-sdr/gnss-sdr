@@ -29,3 +29,4 @@
 .settings
 .vs/
 .vscode/
+*.pyc

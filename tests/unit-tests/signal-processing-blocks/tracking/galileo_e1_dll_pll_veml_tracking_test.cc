@@ -1,7 +1,7 @@
 /*!
  * \file galileo_e1_dll_pll_veml_tracking_test.cc
- * \brief  This class implements a tracking test for GalileoE1DllPllVemlTracking
- *  class based on some input parameters.
+ * \brief  This class implements a tracking test for DllPllTrackingAdapter
+ *  configured for Galileo E1 based on some input parameters.
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  *
@@ -18,12 +18,12 @@
 
 
 #include "concurrent_queue.h"
-#include "galileo_e1_dll_pll_veml_tracking.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
 #include "in_memory_configuration.h"
+#include "tracking_interface.h"
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
@@ -37,13 +37,12 @@
 #include <gnuradio/analog/sig_source_c.h>
 #endif
 
-class GalileoE1DllPllVemlTrackingInternalTest : public ::testing::Test
+class DllPllTrackingAdapterGalileoE1Test : public ::testing::Test
 {
 protected:
-    GalileoE1DllPllVemlTrackingInternalTest()
+    DllPllTrackingAdapterGalileoE1Test()
         : item_size(sizeof(gr_complex))
     {
-        factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
     }
 
@@ -51,7 +50,6 @@ protected:
 
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
-    std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
@@ -60,7 +58,7 @@ protected:
 };
 
 
-void GalileoE1DllPllVemlTrackingInternalTest::init()
+void DllPllTrackingAdapterGalileoE1Test::init()
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'E';
@@ -80,15 +78,15 @@ void GalileoE1DllPllVemlTrackingInternalTest::init()
 }
 
 
-TEST_F(GalileoE1DllPllVemlTrackingInternalTest, Instantiate)
+TEST_F(DllPllTrackingAdapterGalileoE1Test, Instantiate)
 {
     init();
-    auto tracking = factory->GetBlock(config.get(), "Tracking_1B", 1, 1);
+    auto tracking = block_factory::GetBlock(config.get(), "Tracking_1B", 1, 1);
     EXPECT_STREQ("Galileo_E1_DLL_PLL_VEML_Tracking", tracking->implementation().c_str());
 }
 
 
-TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ConnectAndRun)
+TEST_F(DllPllTrackingAdapterGalileoE1Test, ConnectAndRun)
 {
     int fs_in = 8000000;
     int nsamples = 40000000;
@@ -100,8 +98,8 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ConnectAndRun)
     top_block = gr::make_top_block("Tracking test");
 
     // Example using smart pointers and the block factory
-    std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config.get(), "Tracking_1B", 1, 1);
-    std::shared_ptr<GalileoE1DllPllVemlTracking> tracking = std::dynamic_pointer_cast<GalileoE1DllPllVemlTracking>(trk_);
+    std::shared_ptr<GNSSBlockInterface> trk_ = block_factory::GetBlock(config.get(), "Tracking_1B", 1, 1);
+    std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
 
     ASSERT_NO_THROW({
         tracking->set_channel(gnss_synchro.Channel_ID);
@@ -134,7 +132,7 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ConnectAndRun)
 }
 
 
-TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ValidationOfResults)
+TEST_F(DllPllTrackingAdapterGalileoE1Test, ValidationOfResults)
 {
     std::chrono::time_point<std::chrono::system_clock> start;
     std::chrono::time_point<std::chrono::system_clock> end;
@@ -148,7 +146,7 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ValidationOfResults)
     top_block = gr::make_top_block("Tracking test");
 
     // Example using smart pointers and the block factory
-    std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config.get(), "Tracking_1B", 1, 1);
+    std::shared_ptr<GNSSBlockInterface> trk_ = block_factory::GetBlock(config.get(), "Tracking_1B", 1, 1);
     std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
 
     // gnss_synchro.Acq_delay_samples = 1753; // 4 Msps

@@ -67,14 +67,29 @@ public:
         return FNAV_TOW_1;
     }
 
+    inline int32_t get_WN1() const
+    {
+        return FNAV_WN_1;
+    }
+
     inline int32_t get_TOW2() const
     {
         return FNAV_TOW_2;
     }
 
+    inline int32_t get_WN2() const
+    {
+        return FNAV_WN_2;
+    }
+
     inline int32_t get_TOW3() const
     {
         return FNAV_TOW_3;
+    }
+
+    inline int32_t get_WN3() const
+    {
+        return FNAV_WN_3;
     }
 
     inline int32_t get_TOW4() const
@@ -264,12 +279,14 @@ private:
     bool flag_ephemeris_3{};    // Flag indicating that ephemeris 3/3 (word 4) have been received
 
     bool flag_iono_and_GST{};  // Flag indicating that ionospheric and GST parameters (word 1) have been received
+    bool flag_iono_model_valid{};
     bool flag_TOW_1{};
     bool flag_TOW_2{};
     bool flag_TOW_3{};
     bool flag_TOW_4{};
-    bool flag_TOW_set{};    // it is true when page 1,2,3 or 4 arrives
-    bool flag_utc_model{};  // Flag indicating that utc model parameters (word 4) have been received
+    bool flag_TOW_set{};          // it is true when page 1,2,3 or 4 arrives
+    bool flag_utc_model_valid{};  // Flag indicating that UTC model parameters (word 4) have been received
+    bool flag_new_utc_model{};    // Flag indicating that a newly decoded UTC model is pending publication
 
     bool flag_all_almanac{};  // Flag indicating that all Almanac data have been received
     bool flag_almanac_1{};    // Flag indicating that almanac 1/2 (word 5) have been received

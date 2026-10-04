@@ -52,17 +52,36 @@ uint32_t Osnma_Helper::compute_gst(tm& input)
 }
 
 
-uint32_t Osnma_Helper::compute_gst_now()
+uint32_t Osnma_Helper::compute_gst_now() const
 {
-    time_t now = time(nullptr);
-    struct tm local_tm = *std::localtime(&now);
-    struct tm utc_tm = *std::gmtime(&now);
-    auto timezone_offset = std::mktime(&utc_tm) - std::mktime(&local_tm);
-    auto epoch_time_point = std::chrono::system_clock::from_time_t(std::mktime(&GST_START_EPOCH) - timezone_offset) + std::chrono::seconds(13);
-    auto duration_sec = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - epoch_time_point);
-    const uint32_t sec_in_week = 604800;
-    const uint32_t week_number = duration_sec.count() / sec_in_week;
-    const uint32_t time_of_week = duration_sec.count() % sec_in_week;
+    constexpr int64_t seconds_per_week = 604800;
+
+    // Unix timestamp of 1999-08-22 00:00:00 UTC.
+    // GST week 0 starts at 1999-08-22 00:00:00 GST.
+    constexpr int64_t gst_epoch_unix_utc_s = 935280000;
+
+    // Current GST - UTC offset, in seconds.
+    // This must be updated if a future
+    // leap second changes the GNSS-UTC offset.
+    constexpr int64_t gst_minus_utc_s = 18;
+
+    const std::time_t now = std::time(nullptr);
+    if (now == static_cast<std::time_t>(-1))
+        {
+            return compute_gst(0, 0);
+        }
+
+    const int64_t gst_seconds =
+        static_cast<int64_t>(now) - gst_epoch_unix_utc_s + gst_minus_utc_s;
+
+    if (gst_seconds < 0)
+        {
+            return compute_gst(0, 0);
+        }
+
+    const auto week_number = static_cast<uint32_t>(gst_seconds / seconds_per_week);
+    const auto time_of_week = static_cast<uint32_t>(gst_seconds % seconds_per_week);
+
     return compute_gst(week_number, time_of_week);
 }
 
@@ -124,6 +143,8 @@ std::string Osnma_Helper::verification_status_str(int status) const
             return "FAIL";
         case 2:
             return "UNVERIFIED";
+        case 3:
+            return "AUTHENTICATED_DONT_USE";
         default:
             return "UNKNOWN";
         }

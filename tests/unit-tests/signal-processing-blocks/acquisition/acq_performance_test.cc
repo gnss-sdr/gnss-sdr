@@ -17,31 +17,28 @@
 
 #include "GPS_L1_CA.h"
 #include "acquisition_dump_reader.h"
+#include "acquisition_interface.h"
+#include "configuration_interface.h"
 #include "display.h"
 #include "file_configuration.h"
-#include "galileo_e1_pcps_ambiguous_acquisition.h"
-#include "galileo_e5a_pcps_acquisition.h"
-#include "glonass_l1_ca_pcps_acquisition.h"
-#include "glonass_l2_ca_pcps_acquisition.h"
+#include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_valve.h"
 #include "gnuplot_i.h"
-#include "gps_l1_ca_pcps_acquisition.h"
-#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
-#include "gps_l2_m_pcps_acquisition.h"
-#include "gps_l5i_pcps_acquisition.h"
 #include "in_memory_configuration.h"
 #include "signal_generator_flags.h"
 #include "test_flags.h"
 #include "tracking_true_obs_reader.h"
 #include "true_observables_reader.h"
+#include <armadillo>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/skiphead.h>
 #include <gnuradio/top_block.h>
 #include <pmt/pmt.h>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <thread>
 #include <utility>
@@ -488,7 +485,7 @@ protected:
 
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
-    std::shared_ptr<AcquisitionInterface> acquisition;
+    std::unique_ptr<AcquisitionInterface> acquisition;
     std::shared_ptr<InMemoryConfiguration> config;
     std::shared_ptr<FileConfiguration> config_f;
     Gnss_Synchro gnss_synchro;
@@ -811,44 +808,18 @@ int AcquisitionPerformanceTest::run_receiver()
     gnss_synchro = Gnss_Synchro();
     init();
 
-    int nsamples = floor(config->property("GNSS-SDR.internal_fs_sps", 2000000) * generated_signal_duration_s);
+    const ConfigurationInterface* configuration = config.get();
+    if (configuration == nullptr)
+        {
+            configuration = config_f.get();
+        }
+    int nsamples = floor(configuration->property("GNSS-SDR.internal_fs_sps", 2000000) * generated_signal_duration_s);
     auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue.get());
-    if (implementation == "GPS_L1_CA_PCPS_Acquisition")
+    acquisition = block_factory::GetAcqBlock(configuration, "Acquisition", 1, 0);
+    if (!acquisition)
         {
-            acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
-        }
-    else if (implementation == "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler")
-        {
-            acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFineDoppler>(config.get(), "Acquisition", 1, 0);
-        }
-    else if (implementation == "Galileo_E1_PCPS_Ambiguous_Acquisition")
-        {
-            acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisition>(config.get(), "Acquisition", 1, 0);
-        }
-    else if (implementation == "GLONASS_L1_CA_PCPS_Acquisition")
-        {
-            acquisition = std::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
-        }
-    else if (implementation == "GLONASS_L2_CA_PCPS_Acquisition")
-        {
-            acquisition = std::make_shared<GlonassL2CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
-        }
-    else if (implementation == "GPS_L2_M_PCPS_Acquisition")
-        {
-            acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
-        }
-    else if (implementation == "Galileo_E5a_Pcps_Acquisition")
-        {
-            acquisition = std::make_shared<GalileoE5aPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
-        }
-    else if (implementation == "GPS_L5i_PCPS_Acquisition")
-        {
-            acquisition = std::make_shared<GpsL5iPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
-        }
-    else
-        {
-            bool aux = false;
-            EXPECT_EQ(true, aux);
+            ADD_FAILURE() << "Unknown acquisition implementation: " << implementation;
+            return -1;
         }
 
     acquisition->set_gnss_synchro(&gnss_synchro);

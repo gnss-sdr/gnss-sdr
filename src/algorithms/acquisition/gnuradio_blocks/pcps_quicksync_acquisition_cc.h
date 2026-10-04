@@ -183,8 +183,10 @@ private:
     std::vector<std::vector<gr_complex>> d_grid_doppler_wipeoffs;
     std::vector<gr_complex> d_code;
     std::vector<gr_complex> d_fft_codes;
-    std::vector<gr_complex> d_signal_folded;
     std::vector<gr_complex> d_code_folded;
+    std::vector<gr_complex> d_in_temp;
+    std::vector<gr_complex> d_in_1code;
+    std::vector<gr_complex> d_corr_output;
     std::vector<float> d_magnitude;
     std::vector<float> d_corr_output_f;
     std::vector<float> d_magnitude_folded;

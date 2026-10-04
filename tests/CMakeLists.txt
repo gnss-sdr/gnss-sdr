@@ -15,6 +15,43 @@ if(CMAKE_VERSION VERSION_LESS "3.5")
     include(CMakeParseArguments)
 endif()
 
+function(gnsssdr_copy_target_to_local_install target)
+    if(NOT TARGET ${target})
+        message(FATAL_ERROR
+            "gnsssdr_copy_target_to_local_install called for unknown target: ${target}"
+        )
+    endif()
+
+    if(ENABLE_GNSSSDR_ADHOC_CODESIGN)
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory
+                ${LOCAL_INSTALL_BASE_DIR}/install
+            COMMAND ${CMAKE_COMMAND} -E copy
+                "$<TARGET_FILE:${target}>"
+                "${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:${target}>.tmp"
+            COMMAND ${CODESIGN_EXECUTABLE}
+                --force
+                --sign -
+                "${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:${target}>.tmp"
+            COMMAND ${CMAKE_COMMAND} -E remove -f
+                "${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:${target}>"
+            COMMAND ${CMAKE_COMMAND} -E rename
+                "${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:${target}>.tmp"
+                "${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:${target}>"
+            VERBATIM
+        )
+    else()
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory
+                ${LOCAL_INSTALL_BASE_DIR}/install
+            COMMAND ${CMAKE_COMMAND} -E copy
+                "$<TARGET_FILE:${target}>"
+                "${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:${target}>"
+            VERBATIM
+        )
+    endif()
+endfunction()
+
 # Helper to fetch optional test data with integrity checking and optional uncompressing
 #
 # Arguments:
@@ -99,7 +136,7 @@ if(NOT GOOGLETEST_FOUND)
     )
     if(CMAKE_VERSION VERSION_GREATER 3.12 AND NOT CMAKE_CROSSCOMPILING)
         # Parallel building of gtest causes problems in some environments (e.g. Macports buildings)
-        set(GTEST_BUILD_COMMAND ${GTEST_BUILD_COMMAND} "--parallel 1")
+        set(GTEST_BUILD_COMMAND ${GTEST_BUILD_COMMAND} "--parallel" "1")
     endif()
     if(CMAKE_GENERATOR STREQUAL Xcode)
         set(GTEST_BUILD_COMMAND "xcodebuild" "-configuration" $<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:Debug> "-target" "gtest_main")
@@ -128,15 +165,15 @@ if(NOT GOOGLETEST_FOUND)
         )
     else()
         set(GOOGLETEST_BUILD_BYPRODUCTS
-            ${GNSSSDR_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
-            ${GNSSSDR_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${GNSSSDR_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${GNSSSDR_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
         )
 
         if((CMAKE_BUILD_TYPE STREQUAL Debug) OR (CMAKE_BUILD_TYPE STREQUAL NoOptWithASM) OR
             (CMAKE_BUILD_TYPE STREQUAL Coverage) OR (CMAKE_BUILD_TYPE STREQUAL ASAN))  # Workaround for Ninja generator
             set(GOOGLETEST_BUILD_BYPRODUCTS
-                ${GNSSSDR_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${DEBUG_DECORATION}${CMAKE_STATIC_LIBRARY_SUFFIX}
-                ${GNSSSDR_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${DEBUG_DECORATION}${CMAKE_STATIC_LIBRARY_SUFFIX}
+                ${GNSSSDR_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${DEBUG_DECORATION}${CMAKE_STATIC_LIBRARY_SUFFIX}
+                ${GNSSSDR_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${DEBUG_DECORATION}${CMAKE_STATIC_LIBRARY_SUFFIX}
             )
         endif()
         ExternalProject_Add(gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
@@ -171,20 +208,20 @@ if(NOT GOOGLETEST_FOUND)
             MAP_IMPORTED_CONFIG_O2WITHASM RelWithDebInfo
             MAP_IMPORTED_CONFIG_O3WITHASM RelWithDebInfo
             MAP_IMPORTED_CONFIG_ASAN Debug
-            IMPORTED_LOCATION_NONE ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
-            IMPORTED_LOCATION_DEBUG ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
-            IMPORTED_LOCATION_RELEASE ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
-            IMPORTED_LOCATION_RELWITHDEBINFO ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
-            IMPORTED_LOCATION_MINSIZEREL ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+            IMPORTED_LOCATION_NONE ${binary_dir}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+            IMPORTED_LOCATION_DEBUG ${binary_dir}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+            IMPORTED_LOCATION_RELEASE ${binary_dir}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+            IMPORTED_LOCATION_RELWITHDEBINFO ${binary_dir}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+            IMPORTED_LOCATION_MINSIZEREL ${binary_dir}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
             INTERFACE_INCLUDE_DIRECTORIES ${GNSSSDR_BINARY_DIR}/thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/googletest/include
             INTERFACE_LINK_LIBRARIES ${binary_dir}/lib/gtest$<$<CONFIG:Debug>:${DEBUG_DECORATION}>${CMAKE_STATIC_LIBRARY_SUFFIX}
         )
         if((CMAKE_GENERATOR STREQUAL Xcode) OR MSVC)
             set_target_properties(GTest::GTest PROPERTIES
-                IMPORTED_LOCATION_DEBUG ${binary_dir}/lib/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${DEBUG_DECORATION}${CMAKE_STATIC_LIBRARY_SUFFIX}
-                IMPORTED_LOCATION_RELEASE ${binary_dir}/lib/Release/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
-                IMPORTED_LOCATION_RELWITHDEBINFO ${binary_dir}/lib/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
-                IMPORTED_LOCATION_MINSIZEREL ${binary_dir}/lib/MinSizeRel/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+                IMPORTED_LOCATION_DEBUG ${binary_dir}/lib/Debug/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${DEBUG_DECORATION}${CMAKE_STATIC_LIBRARY_SUFFIX}
+                IMPORTED_LOCATION_RELEASE ${binary_dir}/lib/Release/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+                IMPORTED_LOCATION_RELWITHDEBINFO ${binary_dir}/lib/RelWithDebInfo/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+                IMPORTED_LOCATION_MINSIZEREL ${binary_dir}/lib/MinSizeRel/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
                 INTERFACE_LINK_LIBRARIES ${binary_dir}/lib/$<$<CONFIG:Debug>:Debug/>$<$<CONFIG:Release>:Release/>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo/>$<$<CONFIG:MinSizeRel>:MinSizeRel/>gtest$<$<CONFIG:Debug>:${DEBUG_DECORATION}>${CMAKE_STATIC_LIBRARY_SUFFIX}
             )
         endif()
@@ -203,21 +240,21 @@ if(NOT GOOGLETEST_FOUND)
             MAP_IMPORTED_CONFIG_O2WITHASM RelWithDebInfo
             MAP_IMPORTED_CONFIG_O3WITHASM RelWithDebInfo
             MAP_IMPORTED_CONFIG_ASAN Debug
-            IMPORTED_LOCATION_NONE ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
-            IMPORTED_LOCATION_DEBUG ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${DEBUG_DECORATION}${CMAKE_STATIC_LIBRARY_SUFFIX}
-            IMPORTED_LOCATION_RELEASE ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
-            IMPORTED_LOCATION_RELWITHDEBINFO ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
-            IMPORTED_LOCATION_MINSIZEREL ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+            IMPORTED_LOCATION_NONE ${binary_dir}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+            IMPORTED_LOCATION_DEBUG ${binary_dir}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${DEBUG_DECORATION}${CMAKE_STATIC_LIBRARY_SUFFIX}
+            IMPORTED_LOCATION_RELEASE ${binary_dir}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+            IMPORTED_LOCATION_RELWITHDEBINFO ${binary_dir}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+            IMPORTED_LOCATION_MINSIZEREL ${binary_dir}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
             INTERFACE_INCLUDE_DIRECTORIES ${GNSSSDR_BINARY_DIR}/thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/googletest/include
-            INTERFACE_LINK_LIBRARIES ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main$<$<CONFIG:Debug>:${DEBUG_DECORATION}>${CMAKE_STATIC_LIBRARY_SUFFIX}
+            INTERFACE_LINK_LIBRARIES ${binary_dir}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main$<$<CONFIG:Debug>:${DEBUG_DECORATION}>${CMAKE_STATIC_LIBRARY_SUFFIX}
         )
         if((CMAKE_GENERATOR STREQUAL Xcode) OR MSVC)
             set_target_properties(GTest::Main PROPERTIES
-                IMPORTED_LOCATION_DEBUG ${binary_dir}/lib/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${DEBUG_DECORATION}${CMAKE_STATIC_LIBRARY_SUFFIX}
-                IMPORTED_LOCATION_RELEASE ${binary_dir}/lib/Release/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
-                IMPORTED_LOCATION_RELWITHDEBINFO ${binary_dir}/lib/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
-                IMPORTED_LOCATION_MINSIZEREL ${binary_dir}/lib/MinSizeRel/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
-                INTERFACE_LINK_LIBRARIES ${binary_dir}/lib/$<$<CONFIG:Debug>:Debug/>$<$<CONFIG:Release>:Release/>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo/>$<$<CONFIG:MinSizeRel>:MinSizeRel/>${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main$<$<CONFIG:Debug>:${DEBUG_DECORATION}>${CMAKE_STATIC_LIBRARY_SUFFIX}
+                IMPORTED_LOCATION_DEBUG ${binary_dir}/lib/Debug/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${DEBUG_DECORATION}${CMAKE_STATIC_LIBRARY_SUFFIX}
+                IMPORTED_LOCATION_RELEASE ${binary_dir}/lib/Release/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+                IMPORTED_LOCATION_RELWITHDEBINFO ${binary_dir}/lib/RelWithDebInfo/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+                IMPORTED_LOCATION_MINSIZEREL ${binary_dir}/lib/MinSizeRel/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+                INTERFACE_LINK_LIBRARIES ${binary_dir}/lib/$<$<CONFIG:Debug>:Debug/>$<$<CONFIG:Release>:Release/>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo/>$<$<CONFIG:MinSizeRel>:MinSizeRel/>${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main$<$<CONFIG:Debug>:${DEBUG_DECORATION}>${CMAKE_STATIC_LIBRARY_SUFFIX}
             )
         endif()
     endif()
@@ -239,18 +276,18 @@ else()
             add_dependencies(GTest::GTest gtest)
             set_target_properties(GTest::GTest PROPERTIES
                 IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-                IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+                IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
                 INTERFACE_INCLUDE_DIRECTORIES ${GTEST_INCLUDE_DIRS}
-                INTERFACE_LINK_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+                INTERFACE_LINK_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
             )
             if((CMAKE_GENERATOR STREQUAL Xcode) OR MSVC)
                 set_target_properties(GTest::GTest PROPERTIES
                     IMPORTED_CONFIGURATIONS "Debug;Release;RelWithDebInfo;MinSizeRel"
-                    IMPORTED_LOCATION_DEBUG ${CMAKE_CURRENT_BINARY_DIR}/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
-                    IMPORTED_LOCATION_RELEASE ${CMAKE_CURRENT_BINARY_DIR}/Release/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
-                    IMPORTED_LOCATION_RELWITHDEBINFO ${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
-                    IMPORTED_LOCATION_MINSIZEREL ${CMAKE_CURRENT_BINARY_DIR}/MinSizeRel/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
-                    INTERFACE_LINK_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/$<$<CONFIG:Debug>:Debug/>$<$<CONFIG:Release>:Release/>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo/>$<$<CONFIG:MinSizeRel>:MinSizeRel/>${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    IMPORTED_LOCATION_DEBUG ${CMAKE_CURRENT_BINARY_DIR}/Debug/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    IMPORTED_LOCATION_RELEASE ${CMAKE_CURRENT_BINARY_DIR}/Release/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    IMPORTED_LOCATION_RELWITHDEBINFO ${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    IMPORTED_LOCATION_MINSIZEREL ${CMAKE_CURRENT_BINARY_DIR}/MinSizeRel/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    INTERFACE_LINK_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/$<$<CONFIG:Debug>:Debug/>$<$<CONFIG:Release>:Release/>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo/>$<$<CONFIG:MinSizeRel>:MinSizeRel/>${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
                 )
             endif()
             set_target_properties(GTest::GTest PROPERTIES
@@ -262,18 +299,18 @@ else()
             add_dependencies(GTest::Main gtest_main)
             set_target_properties(GTest::Main PROPERTIES
                 IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-                IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+                IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
                 INTERFACE_INCLUDE_DIRECTORIES ${GTEST_INCLUDE_DIRS}
-                INTERFACE_LINK_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+                INTERFACE_LINK_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
             )
             if((CMAKE_GENERATOR STREQUAL Xcode) OR MSVC)
                 set_target_properties(GTest::Main PROPERTIES
                     IMPORTED_CONFIGURATIONS "Debug;Release;RelWithDebInfo;MinSizeRel"
-                    IMPORTED_LOCATION_DEBUG ${CMAKE_CURRENT_BINARY_DIR}/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
-                    IMPORTED_LOCATION_RELEASE ${CMAKE_CURRENT_BINARY_DIR}/Release/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
-                    IMPORTED_LOCATION_RELWITHDEBINFO ${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
-                    IMPORTED_LOCATION_MINSIZEREL ${CMAKE_CURRENT_BINARY_DIR}/MinSizeRel/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
-                    INTERFACE_LINK_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/$<$<CONFIG:Debug>:Debug/>$<$<CONFIG:Release>:Release/>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo/>$<$<CONFIG:MinSizeRel>:MinSizeRel/>${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    IMPORTED_LOCATION_DEBUG ${CMAKE_CURRENT_BINARY_DIR}/Debug/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    IMPORTED_LOCATION_RELEASE ${CMAKE_CURRENT_BINARY_DIR}/Release/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    IMPORTED_LOCATION_RELWITHDEBINFO ${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    IMPORTED_LOCATION_MINSIZEREL ${CMAKE_CURRENT_BINARY_DIR}/MinSizeRel/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    INTERFACE_LINK_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/$<$<CONFIG:Debug>:Debug/>$<$<CONFIG:Release>:Release/>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo/>$<$<CONFIG:MinSizeRel>:MinSizeRel/>${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
                 )
             endif()
         endif()
@@ -377,6 +414,22 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         else()
             set(TOOLCHAIN_ARG_GNSS_SIM "")
         endif()
+        # Fix for Boost >= 1.92, which provides again a Boost::system target and
+        # thus clashes with the alias unconditionally defined by gnss-sim.
+        set(GNSS_SIM_PATCH_COMMAND "")
+        if(Boost_VERSION_STRING VERSION_GREATER 1.91.99)
+            find_program(Patch_EXECUTABLE NAME patch PATHS ENV PATH)
+            if(NOT Patch_EXECUTABLE)
+                message(FATAL_ERROR "The patch command is not found. It is required to build gnss-sim. Please check your OS documentation and install the patch command.")
+            endif()
+            set(GNSS_SIM_PATCH_COMMAND
+                ${Patch_EXECUTABLE} -p0 -i ${GNSSSDR_SOURCE_DIR}/utils/patches/gnss_sim_boost_system.patch
+            )
+        endif()
+        # Patch only once
+        if(EXISTS ${GNSSSDR_BINARY_DIR}/thirdparty/gnss-sim/CMakeLists.txt)
+            set(GNSS_SIM_PATCH_COMMAND "")
+        endif()
         ExternalProject_Add(gnss-sim
             GIT_REPOSITORY https://bitbucket.org/jarribas/gnss-simulator
             GIT_TAG ${GNSSSDR_GNSS_SIM_LOCAL_VERSION}
@@ -385,17 +438,17 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
             CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} ${CROSS_INSTALL_DIR} ${TOOLCHAIN_ARG_GNSS_SIM} -DBoost_DIR=${Boost_DIR}
             BUILD_COMMAND ${GNSS_SIM_BUILD_COMMAND}
             UPDATE_COMMAND ""
-            PATCH_COMMAND ""
+            PATCH_COMMAND ${GNSS_SIM_PATCH_COMMAND}
             INSTALL_COMMAND ""
         )
         if(ENABLE_INSTALL_TESTS)
-            install(PROGRAMS ${GNSSSDR_BINARY_DIR}/gnss-sim/gnss_sim DESTINATION bin)
-            install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/gnss-sim/brdc3540.14n DESTINATION share/gnss-sim)
-            install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/gnss-sim/circle.csv DESTINATION share/gnss-sim)
-            set(SW_GENERATOR_BIN ${CMAKE_INSTALL_PREFIX}/bin/gnss_sim)
+            install(PROGRAMS ${GNSSSDR_BINARY_DIR}/gnss-sim/gnss_sim DESTINATION ${CMAKE_INSTALL_BINDIR})
+            install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/gnss-sim/brdc3540.14n DESTINATION ${CMAKE_INSTALL_DATADIR}/gnss-sim)
+            install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/gnss-sim/circle.csv DESTINATION ${CMAKE_INSTALL_DATADIR}/gnss-sim)
+            set(SW_GENERATOR_BIN ${CMAKE_INSTALL_FULL_BINDIR}/gnss_sim)
             add_definitions(-DSW_GENERATOR_BIN="${SW_GENERATOR_BIN}")
-            add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_INSTALL_PREFIX}/share/gnss-sim/brdc3540.14n")
-            add_definitions(-DDEFAULT_POSITION_FILE="${CMAKE_INSTALL_PREFIX}/share/gnss-sim/circle.csv")
+            add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_INSTALL_FULL_DATADIR}/gnss-sim/brdc3540.14n")
+            add_definitions(-DDEFAULT_POSITION_FILE="${CMAKE_INSTALL_FULL_DATADIR}/gnss-sim/circle.csv")
         else()
             set(SW_GENERATOR_BIN ${GNSSSDR_BINARY_DIR}/gnss-sim/gnss_sim)
             if(CMAKE_GENERATOR STREQUAL Xcode)
@@ -497,7 +550,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
                         -DCMAKE_C_EXTENSIONS=ON
                         "${GNSSTK_FLAGS}"
                     BUILD_COMMAND ${GNSSTK_BUILD_COMMAND} ${GNSSTK_PARALLEL_BUILD}
-                    BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gnsstk${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gnsstk${CMAKE_STATIC_LIBRARY_SUFFIX}
                     UPDATE_COMMAND ""
                 )
             else()
@@ -517,13 +570,13 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
                         -DCMAKE_C_STANDARD=11
                         -DCMAKE_C_EXTENSIONS=ON
                     BUILD_COMMAND ${GNSSTK_BUILD_COMMAND} ${GNSSTK_PARALLEL_BUILD}
-                    BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gnsstk${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gnsstk${CMAKE_STATIC_LIBRARY_SUFFIX}
                     UPDATE_COMMAND ""
                 )
             endif()
         endif()
         set(GNSSTK_INCLUDE_DIRS ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/include CACHE PATH "Local GNSSTK headers")
-        set(GNSSTK_LIBRARY ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gnsstk${CMAKE_STATIC_LIBRARY_SUFFIX})
+        set(GNSSTK_LIBRARY ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gnsstk${CMAKE_STATIC_LIBRARY_SUFFIX})
         set(GNSSTK_BINDIR ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/bin/)
         add_definitions(-DGNSSTK_BINDIR="${GNSSTK_BINDIR}")
         add_library(Gnsstk::gnsstk STATIC IMPORTED)
@@ -598,22 +651,22 @@ if(ENABLE_UNIT_TESTING_EXTRA)
     )
     message(STATUS "Done.")
     if(ENABLE_INSTALL_TESTS)
-        install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat DESTINATION share/gnss-sdr/signal_samples)
-        install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat DESTINATION share/gnss-sdr/signal_samples)
-        install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat DESTINATION share/gnss-sdr/signal_samples)
-        install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat DESTINATION share/gnss-sdr/signal_samples)
+        install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat DESTINATION ${CMAKE_INSTALL_DATADIR}/gnss-sdr/signal_samples)
+        install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat DESTINATION ${CMAKE_INSTALL_DATADIR}/gnss-sdr/signal_samples)
+        install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat DESTINATION ${CMAKE_INSTALL_DATADIR}/gnss-sdr/signal_samples)
+        install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/BdsB3IStr01_fs50e6_if0_4ms.dat DESTINATION ${CMAKE_INSTALL_DATADIR}/gnss-sdr/signal_samples)
     endif()
 endif()
 
 if(NOT ENABLE_PACKAGING)
     if(ENABLE_INSTALL_TESTS)
-        install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat DESTINATION share/gnss-sdr/signal_samples)
-        install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat DESTINATION share/gnss-sdr/signal_samples)
-        install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat DESTINATION share/gnss-sdr/signal_samples)
-        install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/NT1065_GLONASS_L1_20160831_fs6625e6_if0e3_4ms.bin DESTINATION share/gnss-sdr/signal_samples)
-        install(FILES ${GNSSSDR_SOURCE_DIR}/tests/data/rtklib_test/obs_test1.xml DESTINATION share/gnss-sdr/data/rtklib_test)
-        install(FILES ${GNSSSDR_SOURCE_DIR}/tests/data/rtklib_test/eph_GPS_L1CA_test1.xml DESTINATION share/gnss-sdr/data/rtklib_test)
-        add_definitions(-DTEST_PATH="${CMAKE_INSTALL_PREFIX}/share/gnss-sdr/")
+        install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat DESTINATION ${CMAKE_INSTALL_DATADIR}/gnss-sdr/signal_samples)
+        install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat DESTINATION ${CMAKE_INSTALL_DATADIR}/gnss-sdr/signal_samples)
+        install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat DESTINATION ${CMAKE_INSTALL_DATADIR}/gnss-sdr/signal_samples)
+        install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/NT1065_GLONASS_L1_20160831_fs6625e6_if0e3_4ms.bin DESTINATION ${CMAKE_INSTALL_DATADIR}/gnss-sdr/signal_samples)
+        install(FILES ${GNSSSDR_SOURCE_DIR}/tests/data/rtklib_test/obs_test1.xml DESTINATION ${CMAKE_INSTALL_DATADIR}/gnss-sdr/data/rtklib_test)
+        install(FILES ${GNSSSDR_SOURCE_DIR}/tests/data/rtklib_test/eph_GPS_L1CA_test1.xml DESTINATION ${CMAKE_INSTALL_DATADIR}/gnss-sdr/data/rtklib_test)
+        add_definitions(-DTEST_PATH="${CMAKE_INSTALL_FULL_DATADIR}/gnss-sdr/")
     else()
         file(COPY ${GNSSSDR_SOURCE_DIR}/tests/data/rtklib_test/obs_test1.xml DESTINATION ${GNSSSDR_BINARY_DIR}/thirdparty/data/rtklib_test)
         file(COPY ${GNSSSDR_SOURCE_DIR}/tests/data/rtklib_test/eph_GPS_L1CA_test1.xml DESTINATION ${GNSSSDR_BINARY_DIR}/thirdparty/data/rtklib_test)
@@ -628,11 +681,24 @@ endif()
 # Unit testing
 ################################################################################
 if(ENABLE_UNIT_TESTING)
+    # The unit tests are #included into a few aggregate translation units
+    # (one per category) rather than into a single one, so that no single
+    # compilation unit becomes too large for the compiler.
+    set(RUN_TESTS_SOURCES
+        ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_core.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_system_parameters.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_acquisition.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_tracking.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_common_flags.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_pvt.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_osnma.cc
+    )
     if(USE_CMAKE_TARGET_SOURCES)
         add_executable(run_tests)
-        target_sources(run_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
+        target_sources(run_tests PRIVATE ${RUN_TESTS_SOURCES})
     else()
-        add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
+        add_executable(run_tests ${RUN_TESTS_SOURCES})
     endif()
 
     target_link_libraries(run_tests
@@ -667,11 +733,15 @@ if(ENABLE_UNIT_TESTING)
             system_testing_lib
             core_receiver
     )
+    # rtklib_tls_test.cc drives the crypto backend directly (test TLS server),
+    # so link it explicitly instead of relying on transitive propagation
+    link_to_crypto_dependencies(run_tests PRIVATE)
     if(ENABLE_GLOG_AND_GFLAGS)
         target_link_libraries(run_tests PRIVATE Gflags::gflags Glog::glog)
         target_compile_definitions(run_tests PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
     else()
-        target_link_libraries(run_tests PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
+        target_link_libraries(run_tests PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize gnss_sdr_log_sink)
+        target_sources(run_tests PRIVATE unit-tests/control-plane/gnss_sdr_log_sink_test.cc)
         target_link_libraries(run_tests INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
     endif()
     target_include_directories(run_tests
@@ -709,12 +779,9 @@ if(ENABLE_UNIT_TESTING)
         if(EXISTS ${LOCAL_INSTALL_BASE_DIR}/install/run_tests)
             file(REMOVE ${LOCAL_INSTALL_BASE_DIR}/install/run_tests)
         endif()
-        install(TARGETS run_tests RUNTIME DESTINATION bin COMPONENT "run_tests")
+        install(TARGETS run_tests RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT "run_tests")
     else()
-        add_custom_command(TARGET run_tests POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:run_tests>
-            ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:run_tests>
-        )
+        gnsssdr_copy_target_to_local_install(run_tests)
     endif()
     if(ENABLE_GPERFTOOLS)
         if(GPERFTOOLS_FOUND)
@@ -823,7 +890,7 @@ if(ENABLE_FPGA)
         target_link_libraries(gps_l1_ca_dll_pll_tracking_test_fpga PRIVATE Gflags::gflags Glog::glog)
         target_compile_definitions(gps_l1_ca_dll_pll_tracking_test_fpga PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
     else()
-        target_link_libraries(gps_l1_ca_dll_pll_tracking_test_fpga PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
+        target_link_libraries(gps_l1_ca_dll_pll_tracking_test_fpga PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize gnss_sdr_log_sink)
         target_link_libraries(gps_l1_ca_dll_pll_tracking_test_fpga INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
     endif()
     target_include_directories(gps_l1_ca_dll_pll_tracking_test_fpga
@@ -831,7 +898,7 @@ if(ENABLE_FPGA)
     )
     xcode_remove_warning_duplicates(gps_l1_ca_dll_pll_tracking_test_fpga)
     install(TARGETS gps_l1_ca_dll_pll_tracking_test_fpga
-        RUNTIME DESTINATION bin
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         COMPONENT "fpga-test"
     )
 endif()
@@ -882,12 +949,12 @@ function(add_system_test executable)
         if(EXISTS ${LOCAL_INSTALL_BASE_DIR}/install/${executable})
             file(REMOVE ${LOCAL_INSTALL_BASE_DIR}/install/${executable})
         endif()
-        install(TARGETS ${executable} RUNTIME DESTINATION bin COMPONENT "${executable}_test")
-    else()
-        add_custom_command(TARGET ${executable} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${executable}>
-            ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:${executable}>
+        install(TARGETS ${executable}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            COMPONENT "${executable}_test"
         )
+    else()
+        gnsssdr_copy_target_to_local_install(${executable})
     endif()
 
     xcode_remove_warning_duplicates(${executable})
@@ -950,7 +1017,7 @@ if(ENABLE_SYSTEM_TESTING)
         if(ENABLE_GLOG_AND_GFLAGS)
             set(OPT_LIBS_ ${OPT_LIBS_} Gflags::gflags Glog::glog)
         else()
-            set(OPT_LIBS_ ${OPT_LIBS_} absl::flags_parse absl::log absl::log_initialize absl::log_sink absl::log_sink_registry)
+            set(OPT_LIBS_ ${OPT_LIBS_} absl::flags_parse absl::log absl::log_initialize gnss_sdr_log_sink)
         endif()
         add_system_test(position_test
             CMAKE_ARGS -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
@@ -998,6 +1065,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     set(FLOWGRAPH_TEST_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/gnss_flowgraph_test.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/satellite_visibility_test.cc
     )
     if(USE_CMAKE_TARGET_SOURCES)
         add_executable(flowgraph_test)
@@ -1017,13 +1085,15 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             input_filter_adapters
             channel_adapters
             core_receiver
+            pvt_gr_blocks
+            obs_gr_blocks
             algorithms_libs
     )
     if(ENABLE_GLOG_AND_GFLAGS)
         target_link_libraries(flowgraph_test PRIVATE Gflags::gflags Glog::glog)
         target_compile_definitions(flowgraph_test PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
     else()
-        target_link_libraries(flowgraph_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
+        target_link_libraries(flowgraph_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize gnss_sdr_log_sink)
         target_link_libraries(flowgraph_test INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
     endif()
 
@@ -1082,7 +1152,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         target_link_libraries(gnss_block_test PRIVATE Gflags::gflags Glog::glog)
         target_compile_definitions(gnss_block_test PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
     else()
-        target_link_libraries(gnss_block_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
+        target_link_libraries(gnss_block_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize gnss_sdr_log_sink)
         target_link_libraries(gnss_block_test INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
     endif()
 
@@ -1108,8 +1178,14 @@ endif()
 if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     set(GNURADIO_BLOCK_TEST_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/labsat23_source_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/unpack_2bit_samples_test.cc
     )
+    if(ENABLE_ION)
+        list(APPEND GNURADIO_BLOCK_TEST_SOURCES
+            ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/ion_gsms_chunk_data_test.cc
+        )
+    endif()
     if(USE_CMAKE_TARGET_SOURCES)
         add_executable(gnuradio_block_test)
         target_sources(gnuradio_block_test PRIVATE ${GNURADIO_BLOCK_TEST_SOURCES})
@@ -1127,6 +1203,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             GTest::GTest
             GTest::Main
             Volkgnsssdr::volkgnsssdr
+            signal_source_adapters
             signal_source_gr_blocks
             signal_source_libs
             core_receiver
@@ -1136,7 +1213,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         target_link_libraries(gnuradio_block_test PRIVATE Gflags::gflags Glog::glog)
         target_compile_definitions(gnuradio_block_test PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
     else()
-        target_link_libraries(gnuradio_block_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
+        target_link_libraries(gnuradio_block_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize gnss_sdr_log_sink)
         target_link_libraries(gnuradio_block_test INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
     endif()
 
@@ -1173,7 +1250,7 @@ if(ENABLE_GLOG_AND_GFLAGS)
     target_link_libraries(matio_test PRIVATE Gflags::gflags Glog::glog)
     target_compile_definitions(matio_test PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
 else()
-    target_link_libraries(matio_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
+    target_link_libraries(matio_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize gnss_sdr_log_sink)
     target_link_libraries(matio_test INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
 endif()
 
@@ -1194,6 +1271,8 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     set(ACQ_TEST_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/acquisition/pcps_acquisition_doppler_narrowing_test.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/acquisition/pcps_acquisition_fractional_dwell_test.cc
     )
     if(USE_CMAKE_TARGET_SOURCES)
         add_executable(acq_test)
@@ -1211,10 +1290,14 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             Gnuradio::analog
             GTest::GTest
             GTest::Main
+            Matio::matio
             Volkgnsssdr::volkgnsssdr
             signal_generator_gr_blocks
+            signal_generator_adapters
             signal_source_gr_blocks
             signal_source_libs
+            signal_source_adapters
+            input_filter_adapters
             acquisition_adapters
             algorithms_libs
             signal_processing_testing_lib
@@ -1224,7 +1307,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         target_link_libraries(acq_test PRIVATE Gflags::gflags Glog::glog)
         target_compile_definitions(acq_test PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
     else()
-        target_link_libraries(acq_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
+        target_link_libraries(acq_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize gnss_sdr_log_sink)
         target_link_libraries(acq_test INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
     endif()
     target_include_directories(acq_test
@@ -1279,8 +1362,10 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     endif()
     set(TRKTEST_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/bit_synchronizer_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/tracking_loop_filter_test.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/frequency_error_reduction_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_real_codes_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/bayesian_estimation_test.cc
         ${NONLINEAR_SOURCES}
@@ -1305,6 +1390,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             signal_source_gr_blocks
             signal_source_libs
             algorithms_libs
+            tracking_libs
             tracking_adapters
             signal_generator_gr_blocks
             core_receiver
@@ -1313,7 +1399,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         target_link_libraries(trk_test PRIVATE Gflags::gflags Glog::glog)
         target_compile_definitions(trk_test PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
     else()
-        target_link_libraries(trk_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
+        target_link_libraries(trk_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize gnss_sdr_log_sink)
         target_link_libraries(trk_test INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
     endif()
     if(USE_GENERIC_LAMBDAS)
@@ -1378,7 +1464,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         target_link_libraries(control_thread_test PRIVATE Gflags::gflags Glog::glog)
         target_compile_definitions(control_thread_test PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
     else()
-        target_link_libraries(control_thread_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
+        target_link_libraries(control_thread_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize gnss_sdr_log_sink)
         target_link_libraries(control_thread_test INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
     endif()
 

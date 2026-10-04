@@ -113,7 +113,7 @@ int Gnss_Sdr_Timestamp::work(int noutput_items,
             std::memcpy(output_items[ch], input_items[ch], noutput_items * input_signature()->sizeof_stream_item(ch));
             int64_t diff_samplecount = uint64diff(this->nitems_written(ch), d_next_timetag_samplecount * d_items_to_samples);
             // std::cout << "diff_samplecount: " << diff_samplecount << ", noutput_items: " << noutput_items << "\n";
-            if (diff_samplecount <= noutput_items and std::labs(diff_samplecount) <= noutput_items)
+            if (diff_samplecount <= noutput_items && std::labs(diff_samplecount) <= noutput_items)
                 {
                     const std::shared_ptr<GnssTime> tmp_obj = std::make_shared<GnssTime>(GnssTime());
                     tmp_obj->tow_ms = next_timetag.tow_ms + static_cast<int>(d_integer_ms_offset);

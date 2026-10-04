@@ -91,8 +91,12 @@ public:
     double af0{};       //!< Coefficient 0 of code phase offset model [s]
     double af1{};       //!< Coefficient 1 of code phase offset model [s/s]
 
+    //! Loaded by the AGNSS/SUPL startup bootstrap rather than decoded from the
+    //! broadcast. Runtime-only provenance flag, intentionally not serialized.
+    bool from_startup_load{false};
+
 protected:
-    char System{};  //!< Character ID of the GNSS system. 'G': GPS. 'E': Galileo. 'C': BeiDou
+    char System{};  //!< Character ID of the GNSS system. 'G': GPS. 'E': Galileo. 'C': BeiDou. 'J': QZSS
 private:
     double check_t(double time) const;
 };

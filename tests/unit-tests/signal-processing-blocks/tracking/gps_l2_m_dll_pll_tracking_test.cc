@@ -18,10 +18,10 @@
 
 
 #include "concurrent_queue.h"
+#include "dll_pll_tracking_adapter.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
-#include "gps_l2_m_dll_pll_tracking.h"
 #include "in_memory_configuration.h"
 #include "tracking_interface.h"
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -163,7 +163,7 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
     init();
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Tracking test");
-    std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL2MDllPllTracking>(config.get(), "Tracking_2S", 1, 1);
+    std::shared_ptr<TrackingInterface> tracking = std::make_shared<DllPllTrackingAdapter>(config.get(), "Tracking_2S", "GPS_L2_M_DLL_PLL_Tracking", 1, 1, GPS_2S);
     auto msg_rx = GpsL2MDllPllTrackingTest_msg_rx_make();
 
     gnss_synchro.Acq_delay_samples = 1;

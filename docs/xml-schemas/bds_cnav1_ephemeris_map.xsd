@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           attributeFormDefault="unqualified" elementFormDefault="qualified">
+  <!-- SPDX-License-Identifier: BSD-3-Clause -->
+  <!-- SPDX-FileCopyrightText: 2026 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
+  <xs:include schemaLocation="common.xsd"/>
+  <xs:complexType name="BeidouCnav1EphemerisType">
+    <xs:sequence>
+      <xs:element name="PRN" type="xs:unsignedInt"/>
+      <xs:element name="M_0" type="xs:double"/>
+      <xs:element name="delta_n" type="xs:double"/>
+      <xs:element name="delta_ndot" type="xs:double"/>
+      <xs:element name="ecc" type="xs:double"/>
+      <xs:element name="A0" type="xs:double"/>
+      <xs:element name="Adot" type="xs:double"/>
+      <xs:element name="OMEGA_0" type="xs:double"/>
+      <xs:element name="i_0" type="xs:double"/>
+      <xs:element name="omega" type="xs:double"/>
+      <xs:element name="OMEGAdot" type="xs:double"/>
+      <xs:element name="idot" type="xs:double"/>
+      <xs:element name="Cuc" type="xs:double"/>
+      <xs:element name="Cus" type="xs:double"/>
+      <xs:element name="Crc" type="xs:double"/>
+      <xs:element name="Crs" type="xs:double"/>
+      <xs:element name="Cic" type="xs:double"/>
+      <xs:element name="Cis" type="xs:double"/>
+      <xs:element name="toe" type="xs:int"/>
+      <xs:element name="toc" type="xs:int"/>
+      <xs:element name="af0" type="xs:double"/>
+      <xs:element name="af1" type="xs:double"/>
+      <xs:element name="af2" type="xs:double"/>
+      <xs:element name="WN" type="xs:int"/>
+      <xs:element name="tow" type="xs:int"/>
+      <xs:element name="TGD_B1Cp" type="xs:double"/>
+      <xs:element name="TGD_B2ap" type="xs:double"/>
+      <xs:element name="ISC_B1Cd" type="xs:double"/>
+      <xs:element name="IODC" type="xs:double"/>
+      <xs:element name="IODE" type="xs:double"/>
+      <xs:element name="hs" type="xs:int"/>
+      <xs:element name="sig_type" type="xs:int"/>
+      <xs:element name="nav_type" type="xs:int"/>
+      <xs:element name="sat_type" type="xs:int"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="boostObjectAttributes"/>
+  </xs:complexType>
+  <xs:complexType name="BeidouCnav1EphemerisMapItemType">
+    <xs:sequence>
+      <xs:element name="first" type="xs:int"/>
+      <xs:element name="second" type="BeidouCnav1EphemerisType"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="boostObjectAttributes"/>
+  </xs:complexType>
+  <xs:complexType name="BeidouCnav1EphemerisMapType">
+    <xs:sequence>
+      <xs:element name="count" type="xs:nonNegativeInteger"/>
+      <xs:element name="item_version" type="xs:nonNegativeInteger"/>
+      <xs:element name="item" type="BeidouCnav1EphemerisMapItemType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="boostObjectAttributes"/>
+  </xs:complexType>
+  <xs:element name="boost_serialization">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="GNSS-SDR_bds_cnav1_ephemeris_map" type="BeidouCnav1EphemerisMapType"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="boostArchiveAttributes"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

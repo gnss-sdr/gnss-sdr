@@ -32,10 +32,13 @@ namespace own = gsl_lite;
 /** \addtogroup Algorithm_libs algorithms_libs
  * \{ */
 
-//! Generates complex QZSS L1 C/A code for the desired SV ID, and sampled to specific sampling frequency
+//! Returns true if the given QZSS PRN broadcasts the BOC(1,1)-modulated L1 C/B signal (IS-QZSS-PNT-006)
+bool qzss_l1_code_is_boc(uint32_t prn);
+
+//! Generates complex QZSS L1 C/A(B) code for the desired SV ID, and sampled to specific sampling frequency
 void qzss_l1_code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int32_t sampling_freq);
 
-//! Generates real QZSS L1 C/A code for the desired SV ID
+//! Generates real QZSS L1 C/A(B) code for the desired SV ID (QZSS_L1_SAMPLES_PER_CHIP samples per chip)
 void qzss_l1_code_gen_float(own::span<float> dest, uint32_t prn);
 
 //! Generates complex QZSS L5I code for the desired SV ID, and sampled to specific sampling frequency

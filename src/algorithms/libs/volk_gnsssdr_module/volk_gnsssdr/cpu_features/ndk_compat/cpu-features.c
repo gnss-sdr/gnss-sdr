@@ -31,7 +31,11 @@ static uint32_t g_cpuIdArm;
 
 static void set_cpu_mask_bit(uint32_t index, uint32_t* cpu_mask)
 {
-    *cpu_mask |= 1UL << index;
+    // cpu_mask is a 32-bit mask; a larger index would shift past its width
+    // (shifting by >= the operand width is undefined behavior). The range path
+    // in parse_cpu_mask bounds indices the same way.
+    if (index >= 32) return;
+    *cpu_mask |= (uint32_t)1 << index;
 }
 
 // Examples of valid inputs: "31", "4-31"
@@ -117,7 +121,7 @@ static void android_cpuInit(void)
         }
 #if defined(CPU_FEATURES_ARCH_ARM)
     ArmInfo info = GetArmInfo();
-    if (info.architecture == 7) g_cpuFeatures |= ANDROID_CPU_ARM_FEATURE_ARMv7;
+    if (info.architecture >= 7) g_cpuFeatures |= ANDROID_CPU_ARM_FEATURE_ARMv7;
     if (info.features.vfpv3) g_cpuFeatures |= ANDROID_CPU_ARM_FEATURE_VFPv3;
     if (info.features.neon)
         {

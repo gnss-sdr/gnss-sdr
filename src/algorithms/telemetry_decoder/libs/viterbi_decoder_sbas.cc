@@ -101,6 +101,15 @@ float Viterbi_Decoder_Sbas::decode_continuous(const double sym[],
 
     // do add compare select
     do_acs(sym, nbits_requested);
+    // Keep accumulating trellis history until a complete traceback is
+    // available. do_traceback() can clamp the requested depth, but
+    // do_tb_and_decode() expects that same depth to be present and advances
+    // its deque iterators by traceback_depth.
+    if (traceback_depth > static_cast<int>(d_trellis_paths.size()))
+        {
+            nbits_decoded = 0;
+            return d_indicator_metric;
+        }
     // the ML sequence in the newest part of the trellis can not be decoded
     // since it depends on the future values -> traceback, but don't decode
     const int state = do_traceback(traceback_depth);

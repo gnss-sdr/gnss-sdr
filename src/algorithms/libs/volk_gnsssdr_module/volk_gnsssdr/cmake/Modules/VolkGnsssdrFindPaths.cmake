@@ -12,14 +12,22 @@ if(NOT CMAKE_INSTALL_LIBDIR)
     include(GNUInstallDirs)
 endif()
 
-set(VOLK_GNSSSDR_LIB_PATHS
+set(VOLK_GNSSSDR_LIB_PATHS)
+
+if(CMAKE_LIBRARY_ARCHITECTURE)
+    list(APPEND VOLK_GNSSSDR_LIB_PATHS
+        "/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}"
+        "/usr/local/lib/${CMAKE_LIBRARY_ARCHITECTURE}"
+    )
+endif()
+
+list(APPEND VOLK_GNSSSDR_LIB_PATHS
     /usr/lib
     /usr/lib64
     /usr/lib/aarch64-linux-gnu
     /usr/lib/alpha-linux-gnu
     /usr/lib/arm-linux-gnueabi
     /usr/lib/arm-linux-gnueabihf
-    /usr/lib/hppa-linux-gnu
     /usr/lib/hppa-linux-gnu
     /usr/lib/i386-gnu
     /usr/lib/i386-kfreebsd-gnu
@@ -44,20 +52,26 @@ set(VOLK_GNSSSDR_LIB_PATHS
     /usr/local/lib64
     /usr/local/lib/i386
     ${CMAKE_INSTALL_FULL_LIBDIR}
-    ${CMAKE_SYSTEM_PREFIX_PATH}/${CMAKE_INSTALL_LIBDIR}
     ${CMAKE_INSTALL_PREFIX}/lib
     ${CMAKE_INSTALL_PREFIX}/lib64
 )
+
+foreach(_volk_gnsssdr_prefix ${CMAKE_SYSTEM_PREFIX_PATH})
+    list(APPEND VOLK_GNSSSDR_LIB_PATHS "${_volk_gnsssdr_prefix}/${CMAKE_INSTALL_LIBDIR}")
+endforeach()
 
 set(VOLK_GNSSSDR_INCLUDE_PATHS
     /usr/include
     /usr/local/include
     ${CMAKE_INSTALL_FULL_INCLUDEDIR}
-    ${CMAKE_SYSTEM_PREFIX_PATH}/include
     ${CMAKE_INSTALL_PREFIX}/include
 )
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+foreach(_volk_gnsssdr_prefix ${CMAKE_SYSTEM_PREFIX_PATH})
+    list(APPEND VOLK_GNSSSDR_INCLUDE_PATHS "${_volk_gnsssdr_prefix}/include")
+endforeach()
+
+if("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
     if(NOT MACOS_PACKAGES_PREFIX)
         include(DetectMacOSPackaging)
     endif()

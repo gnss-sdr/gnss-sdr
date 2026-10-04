@@ -79,6 +79,11 @@ public:
         has_page.tow = tow;
     }
 
+    inline void set_week(uint32_t week)
+    {
+        has_page.week = week;
+    }
+
 private:
     uint8_t read_has_page_header_parameter(const std::bitset<GALILEO_CNAV_PAGE_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
     bool CRC_test(const std::bitset<GALILEO_CNAV_BITS_FOR_CRC>& bits, uint32_t checksum) const;

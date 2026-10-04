@@ -66,11 +66,6 @@ Imported Targets
 Variables
 *********
 
-.. variable:: CXX_FILESYSTEM_IS_EXPERIMENTAL
-
-    Set to ``TRUE`` when the :find-component:`fs.Experimental` version of C++
-    filesystem library was found, otherwise ``FALSE``.
-
 .. variable:: CXX_FILESYSTEM_HAVE_FS
 
     Set to ``TRUE`` when a filesystem header was found.
@@ -119,21 +114,30 @@ if(FILESYSTEM_FIND_QUIETLY)
     set(CMAKE_REQUIRED_QUIET ${FILESYSTEM_FIND_QUIETLY})
 endif()
 
+if(DEFINED CMAKE_CXX_STANDARD)
+    set(_FILESYSTEM_OLD_CMAKE_CXX_STANDARD_DEFINED TRUE)
+    set(_FILESYSTEM_OLD_CMAKE_CXX_STANDARD "${CMAKE_CXX_STANDARD}")
+else()
+    set(_FILESYSTEM_OLD_CMAKE_CXX_STANDARD_DEFINED FALSE)
+endif()
 set(CMAKE_CXX_STANDARD 17)
+set(_filesystem_required_flag "")
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "8.0.0"))
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.99")
-        set(UNDEFINED_BEHAVIOR_WITHOUT_LINKING TRUE)
+    set(_filesystem_required_flag "-std=c++17")
+elseif((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.99"))
+    set(_filesystem_required_flag "-std=c++17")
+elseif((CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11"))
+    set(_filesystem_required_flag "-std=c++17")
+elseif(MSVC AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "18"))
+    set(_filesystem_required_flag "/std:c++17")
+endif()
+
+if(_filesystem_required_flag)
+    if(CMAKE_REQUIRED_FLAGS)
+        set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${_filesystem_required_flag}")
+    else()
+        set(CMAKE_REQUIRED_FLAGS "${_filesystem_required_flag}")
     endif()
-    set(CMAKE_REQUIRED_FLAGS "-std=c++17")
-endif()
-if((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.99"))
-    set(CMAKE_REQUIRED_FLAGS "-std=c++17")
-endif()
-if((CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11"))
-    set(CMAKE_REQUIRED_FLAGS "-std=c++17")
-endif()
-if(MSVC AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "18"))
-    set(CMAKE_REQUIRED_FLAGS "/std:c++17")
 endif()
 
 # Normalize and check the component list we were given
@@ -215,7 +219,6 @@ if(CXX_FILESYSTEM_HAVE_FS)
 
     if(NOT CXX_FILESYSTEM_NO_LINK_NEEDED)
         set(prev_libraries ${CMAKE_REQUIRED_LIBRARIES})
-        set(CMAKE_REQUIRED_FLAGS "-std=c++17")
         # Add the libstdc++ flag
         set(CMAKE_REQUIRED_LIBRARIES ${prev_libraries} -lstdc++fs)
         check_cxx_source_compiles("${code}" CXX_FILESYSTEM_STDCPPFS_NEEDED)
@@ -247,8 +250,10 @@ if(CXX_FILESYSTEM_HAVE_FS)
     endif()
 endif()
 
-if(NOT ${_found})
-    set(CMAKE_CXX_STANDARD 11)
+if(_FILESYSTEM_OLD_CMAKE_CXX_STANDARD_DEFINED)
+    set(CMAKE_CXX_STANDARD "${_FILESYSTEM_OLD_CMAKE_CXX_STANDARD}")
+else()
+    unset(CMAKE_CXX_STANDARD)
 endif()
 
 cmake_pop_check_state()
@@ -261,3 +266,6 @@ find_package_handle_standard_args(FILESYSTEM DEFAULT_MSG FILESYSTEM_FOUND)
 if(FILESYSTEM_FIND_REQUIRED AND NOT FILESYSTEM_FOUND)
     message(FATAL_ERROR "Cannot compile a simple program using std::filesystem")
 endif()
+
+unset(_FILESYSTEM_OLD_CMAKE_CXX_STANDARD_DEFINED)
+unset(_FILESYSTEM_OLD_CMAKE_CXX_STANDARD)

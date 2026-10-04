@@ -21,6 +21,8 @@
 #define GNSS_SDR_GLONASS_ALMANAC_H
 
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/version.hpp>
+#include <array>
 #include <cstdint>
 
 /** \addtogroup Core
@@ -41,6 +43,12 @@ public:
      * Default constructor
      */
     Glonass_Gnav_Almanac() = default;
+
+    int32_t d_N_A{};  //!< Almanac reference day within its four-year interval (zero if unknown).
+    int32_t d_N_4{};  //!< Four-year interval containing d_N_A, numbered from 1996.
+
+    //! Compute ECEF position in metres, elapsed_s after the reference ascending node (ICD A.3.2).
+    bool satellite_position(double elapsed_s, std::array<double, 3>& position_m) const;
 
     double d_n_A{};              //!< Conventional number of satellite within GLONASS space segment [dimensionless]
     double d_H_n_A{};            //!< Carrier frequency number of navigation RF signal transmitted by d_nA satellite as table 4.10 (0-31) [dimensionless]
@@ -90,8 +98,18 @@ public:
         archive& BOOST_SERIALIZATION_NVP(d_tau_n_A);
         archive& BOOST_SERIALIZATION_NVP(d_C_n);
         archive& BOOST_SERIALIZATION_NVP(d_l_n);
+        if (version > 0)
+            {
+                archive& BOOST_SERIALIZATION_NVP(d_N_A);
+                archive& BOOST_SERIALIZATION_NVP(d_N_4);
+            }
     }
+
+private:
+    static std::array<double, 6> perturbations(double a, double inclination, double l, double h, double longitude, double nt);
 };
+
+BOOST_CLASS_VERSION(Glonass_Gnav_Almanac, 1)
 
 
 /** \} */

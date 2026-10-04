@@ -23,11 +23,11 @@ if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
 endif()
 
-if(NOT GNSSSDR_LIB_PATHS)
+if(NOT DEFINED GNSSSDR_LIB_PATHS)
     include(GnsssdrFindPaths)
 endif()
 
-pkg_check_modules(PC_LOG4CPP log4cpp QUIET)
+pkg_check_modules(PC_LOG4CPP QUIET log4cpp)
 
 if(LOG4CPP_INCLUDE_DIR)
   # Already in cache, be silent

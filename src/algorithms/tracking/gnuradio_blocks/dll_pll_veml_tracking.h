@@ -40,6 +40,7 @@
 #include <string>                             // for string
 #include <typeinfo>                           // for typeid
 #include <utility>                            // for pair
+#include <vector>                             // for vector
 
 /** \addtogroup Tracking
  * \{ */
@@ -73,18 +74,34 @@ public:
 
     void forecast(int noutput_items, gr_vector_int &ninput_items_required) override;
 
+    //! Doppler offset multiplier (in units of f_error_doppler_step) for the given
+    //! frequency-error-reduction bin index: bin 0 -> 0, then alternating outward
+    //! +1, -1, +2, -2, +3, -3, ...
+    static double f_error_bin_multiplier(uint32_t bin_index);
+
 private:
+    friend class DllPllTrackingFrequencyErrorTest;
     friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
     explicit dll_pll_veml_tracking(const Dll_Pll_Conf &conf_);
 
     void msg_handler_telemetry_to_trk(const pmt::pmt_t &msg);
     void do_correlation_step(const gr_complex *input_samples);
     void run_dll_pll();
+    // State 5: frequency-error-reduction Doppler-bin scan, run right after pull-in (state 1)
+    // and before wide tracking (state 2) -- see general_work()'s case 5. Fully passive: drives
+    // only d_carrier_doppler_hz from the swept test bin; run_dll_pll() never runs during the
+    // scan, so code phase and the carrier loop filter's state stay exactly as pull-in left
+    // them for the scan's whole duration.
+    void run_f_error_scan_step();
+    void begin_wide_tracking(uint64_t sample_count);
+    uint64_t tracking_elapsed_seconds(uint64_t sample_count) const;
     void check_carrier_phase_coherent_initialization();
-    void update_tracking_vars();
+    void update_tracking_vars(bool estimate_rate = true);
     void clear_tracking_vars();
     void save_correlation_results();
     void log_data();
+    void map_correlator_to_iq(const gr_complex &c, float &out_i, float &out_q) const;
+    void assign_correlators_to_synchro(Gnss_Synchro &synchro) const;
     void configure_bit_synchronizer();
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
@@ -92,7 +109,6 @@ private:
     int32_t save_matfile() const;
 
     Cpu_Multicorrelator_Real_Codes d_multicorrelator_cpu;
-    Cpu_Multicorrelator_Real_Codes d_correlator_data_cpu;  // for data channel
 
     Dll_Pll_Conf d_trk_parameters;
 
@@ -134,6 +150,7 @@ private:
     double d_code_error_filt_chips;
     double d_code_freq_chips;
     double d_cfo_frequency_hz;
+    double d_cfo_phase_step_rad;
     double d_carrier_doppler_hz;
     double d_acc_carrier_phase_rad;
     double d_rem_code_phase_chips;
@@ -175,6 +192,7 @@ private:
 
     // uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
+    uint64_t d_tracking_time_start_sample{0};
     GnssTime d_last_timetag{};
     std::shared_ptr<TOW_to_trk> d_last_tow_received;
     uint64_t d_last_timetag_samplecounter;
@@ -206,6 +224,24 @@ private:
     uint32_t d_secondary_code_length;
     uint32_t d_data_secondary_code_length;
 
+    // State 5: frequency error reduction (passive Doppler bin scan run right after pull-in).
+    // Bin count comes from d_trk_parameters.f_error_step_num (0 disables state 5 entirely).
+    uint32_t d_f_error_num_bins;
+    uint32_t d_f_error_bin_index;
+    uint32_t d_f_error_accum_counter;
+    double d_f_error_center_doppler_hz;
+    std::vector<double> d_f_error_power;
+    // Raw per-bin Prompt correlator samples (bin index -> f_error_accumulation samples),
+    // kept purely so cn0_m2m4_estimator() can report a CN0 estimate for the winning bin
+    // in the frequency-error-reduction diagnostics; not used for anything else.
+    std::vector<std::vector<gr_complex>> d_f_error_prompt_samples;
+    // Doppler the frequency-error-reduction scan selected at the end of its run (see
+    // run_f_error_scan_step()), kept separately from d_carrier_doppler_hz (which gets
+    // overwritten by the FLL/PLL every epoch afterward) so a subsequent loss-of-lock can
+    // report how far steady-state tracking has drifted from what the scan originally chose
+    // -- e.g. to check whether the loop settled on a false/sidelobe equilibrium.
+    double d_f_error_selected_doppler_hz = 0.0;
+
     bool d_pull_in_transitory;
     bool d_corrected_doppler;
     bool d_interchange_iq;
@@ -219,6 +255,8 @@ private:
     bool d_Flag_PLL_180_deg_phase_locked;
     bool d_use_histogram_bit_sync;
     bool d_wait_for_bit_edge{false};
+    bool d_b1c_prelock_output_pending{false};
+    bool d_carrier_phase_discontinuity{true};  // pending report of a new carrier phase ambiguity
 };
 
 

@@ -69,6 +69,7 @@ constexpr int32_t GPS_SUBFRAME_BITS = 300;                                      
 constexpr int32_t GPS_SUBFRAME_SECONDS = 6;                                                                                     //!< Subframe duration [seconds]
 constexpr int32_t GPS_SUBFRAME_MS = 6000;                                                                                       //!< Subframe duration [seconds]
 constexpr int32_t GPS_WORD_BITS = 30;                                                                                           //!< Number of bits per word in the NAV message [bits]
+constexpr int32_t GPS_LNAV_DATA_ID = 1;                                                                                         //!< IS-GPS-200N LNAV Data ID number 2, encoded as binary 01.
 constexpr char GPS_CA_PREAMBLE[9] = "10001011";
 constexpr char GPS_CA_PREAMBLE_SYMBOLS_STR[161] = "1111111111111111111100000000000000000000000000000000000000000000000000000000000011111111111111111111000000000000000000001111111111111111111111111111111111111111";
 
@@ -119,8 +120,8 @@ const std::vector<std::pair<int32_t, int32_t>> SQRT_A({{227, 8}, {241, 24}});
 constexpr double SQRT_A_LSB = TWO_N19;
 const std::vector<std::pair<int32_t, int32_t>> T_OE({{271, 16}});
 constexpr int32_t T_OE_LSB = static_cast<int32_t>(TWO_P4);
-const std::vector<std::pair<int32_t, int32_t>> FIT_INTERVAL_FLAG({{271, 1}});
-const std::vector<std::pair<int32_t, int32_t>> AODO({{272, 5}});
+const std::vector<std::pair<int32_t, int32_t>> FIT_INTERVAL_FLAG({{287, 1}});
+const std::vector<std::pair<int32_t, int32_t>> AODO({{288, 5}});
 constexpr int32_t AODO_LSB = 900;
 
 // SUBFRAME 3
@@ -183,6 +184,48 @@ const std::vector<std::pair<int32_t, int32_t>> DELTAT_LSF({{271, 8}});
 constexpr double DELTAT_LSF_LSB = 1;
 
 // Page 25 - Antispoofing, SV config and SV health (PRN 25 -32)
+// A-S flag and SV configuration, 4 bits per SV (IS-GPS-200, 20.3.3.5.1.4).
+// MSB: A-S flag (1 = ON). Three LSBs: SV configuration (000 = no info,
+// 001 = II/IIA/IIR, 010 = IIR-M, 011 = IIF, 100 = GPS III, others reserved).
+constexpr int32_t GPS_SV_CONFIG_AS_FLAG_MASK = 0x8;  //!< A-S flag (1 = ON)
+constexpr int32_t GPS_SV_CONFIG_CODE_MASK = 0x7;     //!< SV configuration
+constexpr int32_t GPS_SV_CONFIG_UNKNOWN = 0;         //!< 000: no information
+constexpr int32_t GPS_SV_CONFIG_BLOCK_IIR_M = 2;     //!< 010: first with L2C
+constexpr int32_t GPS_SV_CONFIG_BLOCK_IIF = 3;       //!< 011: first with L5
+
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV1({{69, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV2({{73, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV3({{77, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV4({{81, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV5({{91, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV6({{95, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV7({{99, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV8({{103, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV9({{107, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV10({{111, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV11({{121, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV12({{125, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV13({{129, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV14({{133, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV15({{137, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV16({{141, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV17({{151, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV18({{155, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV19({{159, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV20({{163, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV21({{167, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV22({{171, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV23({{181, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV24({{185, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV25({{189, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV26({{193, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV27({{197, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV28({{201, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV29({{211, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV30({{215, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV31({{219, 4}});
+const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV32({{223, 4}});
+
 const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV25({{229, 6}});
 const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV26({{241, 6}});
 const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV27({{247, 6}});

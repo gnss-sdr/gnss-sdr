@@ -19,6 +19,8 @@
 #define GNSS_SDR_AGNSS_REF_TIME_H
 
 #include <boost/serialization/nvp.hpp>
+#include <ctime>
+#include <string>
 
 /** \addtogroup Core
  * \{ */
@@ -62,6 +64,52 @@ public:
         archive& BOOST_SERIALIZATION_NVP(valid);
     }
 };
+
+
+/*!
+ * \brief Parses GNSS-SDR.AGNSS_ref_utc_time ("DD/MM/YYYY HH:MM:SS", UTC).
+ * An empty string is not an error: the host's current time is returned, marked
+ * valid. malformed_year and malformed_format (both optional) tell why a
+ * non-empty string was rejected. Single parsing point for ControlThread and
+ * SatelliteVisibility.
+ */
+inline Agnss_Ref_Time parse_agnss_ref_utc_time(const std::string& ref_time_str, bool* malformed_year = nullptr, bool* malformed_format = nullptr)
+{
+    if (malformed_year != nullptr)
+        {
+            *malformed_year = false;
+        }
+    if (malformed_format != nullptr)
+        {
+            *malformed_format = false;
+        }
+    Agnss_Ref_Time result{};
+    if (ref_time_str.empty())
+        {
+            result.seconds = static_cast<double>(time(nullptr));
+            result.valid = true;
+            return result;
+        }
+    struct tm tm{};
+    if (strptime(ref_time_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) != nullptr)
+        {
+            const time_t parsed = timegm(&tm);
+            if (parsed > 0)
+                {
+                    result.seconds = static_cast<double>(parsed);
+                    result.valid = true;
+                }
+            else if (malformed_year != nullptr)
+                {
+                    *malformed_year = true;
+                }
+        }
+    else if (malformed_format != nullptr)
+        {
+            *malformed_format = true;
+        }
+    return result;
+}
 
 
 /** \} */

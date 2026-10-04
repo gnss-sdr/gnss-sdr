@@ -25,7 +25,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
-#include <limits>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -95,6 +94,17 @@ std::shared_ptr<Galileo_HAS_page> HasDecoderTester::generate_has_page(const std:
             gh->has_message_string = bits.substr(24, 424);
         }
     gh->time_stamp = rx_time;
+    if (rx_time >= 0)
+        {
+            const auto rx_time_s = static_cast<uint64_t>(rx_time);
+            gh->week = static_cast<uint32_t>(rx_time_s / GALILEO_HAS_SECONDS_PER_WEEK);
+            gh->tow = static_cast<uint32_t>(rx_time_s % GALILEO_HAS_SECONDS_PER_WEEK);
+        }
+    else
+        {
+            gh->week = GALILEO_HAS_INVALID_WEEK;
+            gh->tow = GALILEO_HAS_INVALID_TOW;
+        }
 
     std::bitset<2> b_has_status(bits.substr(0, 2));
     gh->has_status = b_has_status.to_ulong();
@@ -176,7 +186,7 @@ public:
                     "07AC8553C81674CA989EE3B762BFE9F7113F9458A5FD2749D0B685A4F49012532088C872254C881194C7641762A7B9495A02BCD6686CE17F",
                     "07AC987E7D3A9854AA56BCCD7170CB6939966DA4F2199A0C6C5F9CAB5B24539786CCB299DA69DE4EEE9698EEDD2D7BD409565C27674B4268",
                     "07ACAB286D5CA9F01FEC5F5105132F0A41EFCFB5E970C06395B3FE72C3D3B476BADF27DC9CA50ED9EC997AB8BED648DF1424EE56FFAD35B1"};
-                rx_time = {690883223, 690883223, 690883223, 690883223, 690883223, 690883224, 690883224, 690883224, 690883224, 690883224, 690883224, 690883224};
+                rx_time = {690883223, 690883223, 690883223, 690883223, 690883223, 690883224, 690883224, 690883224, 690883224, 690883224, 690883224, 690883224, 690883224};
                 known_test_data = true;
                 return true;
             }
@@ -229,6 +239,7 @@ TEST(HAS_Test, Decoder)
     auto pages = read_pages.get_pages();
     auto rx_time = read_pages.get_time();
     bool known_data = read_pages.is_known_data();
+    bool decoded_message_seen = false;
     int init = 0;
     if (!known_data)
         {
@@ -250,7 +261,8 @@ TEST(HAS_Test, Decoder)
                 }
         }
 
-    for (size_t p = init; p < read_pages.get_number_pages() - 1; p++)
+    const size_t number_pages = known_data ? read_pages.get_number_pages() : read_pages.get_number_pages() - 1;
+    for (size_t p = init; p < number_pages; p++)
         {
             auto has_page = has_tester->generate_has_page(pages[p], rx_time[p]);
             if (!has_page->has_message_string.empty())  // if not dummy
@@ -258,9 +270,11 @@ TEST(HAS_Test, Decoder)
                     auto has_message = gal_e6_has_rx_->process_test_page(pmt::make_any(has_page));
                     if (has_message != nullptr)
                         {
+                            decoded_message_seen = true;
                             if (known_data)
                                 {
                                     EXPECT_EQ(has_message->header.toh, 0);
+                                    EXPECT_LT(has_message->tow, GALILEO_HAS_SECONDS_PER_WEEK);
                                     EXPECT_EQ(has_message->header.mask_flag, true);
                                     EXPECT_EQ(has_message->header.orbit_correction_flag, true);
                                     EXPECT_EQ(has_message->header.clock_fullset_flag, false);
@@ -369,9 +383,9 @@ TEST(HAS_Test, Decoder)
                                             EXPECT_EQ(has_message->phase_discontinuity_indicator[has_message->get_PRNs_in_mask(0).size() + i][2], phase_discontinuity_indicator_expected_gal[i]);
                                             EXPECT_EQ(has_message->phase_discontinuity_indicator[has_message->get_PRNs_in_mask(0).size() + i][3], phase_discontinuity_indicator_expected_gal[i]);
                                         }
-                                    EXPECT_FLOAT_EQ(has_message->get_code_bias_m("L1 C/A", 10), -2.64 * HAS_MSG_CODE_BIAS_SCALE_FACTOR);
+                                    EXPECT_FLOAT_EQ(has_message->get_code_bias_m("L1 C/A", 10), -2.64);
                                     EXPECT_FLOAT_EQ(has_message->get_code_bias_m("L1 C/A", 11), 0.0);
-                                    EXPECT_FLOAT_EQ(has_message->get_code_bias_m("E1-C", 36), -1.98 * HAS_MSG_CODE_BIAS_SCALE_FACTOR);
+                                    EXPECT_FLOAT_EQ(has_message->get_code_bias_m("E1-C", 36), -1.98);
                                     EXPECT_FLOAT_EQ(has_message->get_code_bias_m("E1-C", 37), 0.0);
                                 }
                             else
@@ -381,4 +395,39 @@ TEST(HAS_Test, Decoder)
                         }
                 }
         }
+    if (known_data)
+        {
+            EXPECT_TRUE(decoded_message_seen);
+        }
+}
+
+
+TEST(HAS_Test, DecoderPublishesDecodedDataWithoutTow)
+{
+    Read_Encoded_Pages read_pages{};
+    EXPECT_TRUE(read_pages.read_data(""));
+    auto gal_e6_has_rx_ = galileo_e6_has_msg_receiver_make();
+    auto has_tester = HasDecoderTester_make();
+
+    auto pages = read_pages.get_pages();
+    auto rx_time = read_pages.get_time();
+    bool decoded_message_seen = false;
+
+    for (size_t p = 0; p < read_pages.get_number_pages(); p++)
+        {
+            auto has_page = has_tester->generate_has_page(pages[p], rx_time[p]);
+            has_page->week = GALILEO_HAS_INVALID_WEEK;
+            has_page->tow = GALILEO_HAS_INVALID_TOW;
+            if (!has_page->has_message_string.empty())  // if not dummy
+                {
+                    auto has_message = gal_e6_has_rx_->process_test_page(pmt::make_any(has_page));
+                    decoded_message_seen = decoded_message_seen || (has_message != nullptr);
+                    if (has_message != nullptr)
+                        {
+                            EXPECT_EQ(has_message->week, GALILEO_HAS_INVALID_WEEK);
+                            EXPECT_GE(has_message->tow, GALILEO_HAS_SECONDS_PER_WEEK);
+                        }
+                }
+        }
+    EXPECT_TRUE(decoded_message_seen);
 }

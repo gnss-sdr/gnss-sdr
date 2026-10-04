@@ -70,7 +70,7 @@ if(ENABLE_GLOG_AND_GFLAGS)
     target_link_libraries(front-end-cal PRIVATE Glog::glog)
     target_compile_definitions(front-end-cal PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
 else()
-    target_link_libraries(front-end-cal PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize absl::log_sink absl::log_sink_registry)
+    target_link_libraries(front-end-cal PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize gnss_sdr_log_sink)
 endif()
 
 if(GNURADIO_USES_STD_POINTERS)
@@ -135,7 +135,7 @@ add_custom_command(TARGET front-end-cal POST_BUILD
 )
 
 install(TARGETS front-end-cal
-    RUNTIME DESTINATION bin
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     COMPONENT "front-end-cal"
 )
 
@@ -143,9 +143,9 @@ find_program(GZIP gzip
     ${GNSSSDR_BIN_PATHS}
 )
 
-if(NOT GZIP_NOTFOUND)
+if(GZIP)
     execute_process(COMMAND gzip -9 -c ${GNSSSDR_SOURCE_DIR}/docs/manpage/front-end-cal-manpage
         WORKING_DIRECTORY ${GNSSSDR_BINARY_DIR} OUTPUT_FILE "${GNSSSDR_BINARY_DIR}/front-end-cal.1.gz"
     )
-    install(FILES ${GNSSSDR_BINARY_DIR}/front-end-cal.1.gz DESTINATION share/man/man1)
+    install(FILES ${GNSSSDR_BINARY_DIR}/front-end-cal.1.gz DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
 endif()

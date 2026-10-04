@@ -19,6 +19,7 @@
 
 #include <array>
 #include <cstdint>
+#include <limits>
 #include <vector>
 
 /** \addtogroup Telemetry_Decoder
@@ -44,10 +45,10 @@ public:
     Viterbi_Decoder(int32_t KK, int32_t nn, int32_t LL, const std::array<int32_t, 2>& g);
 
     /*!
-     * \brief Uses the Viterbi algorithm to perform hard-decision decoding of a convolutional code.
-     * \param[out] output_u_int    Hard decisions on the data bits
-     * \param[in] input_c The received signal in LLR-form. For BPSK, must be in form r = 2*a*y/(sigma^2).
-     *
+     * \brief Uses the Viterbi algorithm to perform soft-decision decoding
+     *        of a convolutional code.
+     * \param[out] output_u_int Hard decisions on the decoded data bits.
+     * \param[in] input_c Soft input metrics.
      */
     void decode(std::vector<int32_t>& output_u_int, const std::vector<float>& input_c);
 
@@ -57,6 +58,11 @@ public:
     void reset();
 
 private:
+    static float neg_inf() noexcept
+    {
+        return -std::numeric_limits<float>::infinity();
+    }
+
     /*
      * Function that creates the transit and output vectors
      */
@@ -115,7 +121,6 @@ private:
     std::vector<int32_t> d_state0;
     std::vector<int32_t> d_state1;
 
-    float d_MAXLOG = 1e7;  // Define infinity
     int32_t d_KK{};
     int32_t d_nn{};
     int32_t d_LL{};

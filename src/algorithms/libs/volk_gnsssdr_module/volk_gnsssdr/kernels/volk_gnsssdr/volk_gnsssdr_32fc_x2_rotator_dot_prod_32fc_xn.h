@@ -180,8 +180,15 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_sse3(lv_32fc_
 
     __VOLK_ATTR_ALIGNED(16)
     lv_32fc_t two_phase_inc[2];
-    two_phase_inc[0] = phase_inc * phase_inc;
-    two_phase_inc[1] = phase_inc * phase_inc;
+    // Phase arguments in double precision. Any float representation of
+    // phase_inc^2 carries an angle error of a few 1e-8 rad, which the rotator
+    // accumulates linearly along the vector (normalization cannot remove it),
+    // so the rotator is periodically regenerated from these arguments.
+    const double arg_phase0 = atan2((double)lv_cimag(*phase), (double)lv_creal(*phase));
+    const double arg_phase_inc = atan2((double)lv_cimag(phase_inc), (double)lv_creal(phase_inc));
+    double phase_est;
+    two_phase_inc[0] = lv_cmake((float)cos(2.0 * arg_phase_inc), (float)sin(2.0 * arg_phase_inc));
+    two_phase_inc[1] = two_phase_inc[0];
     two_phase_inc_reg = _mm_load_ps((float*)two_phase_inc);
     __VOLK_ATTR_ALIGNED(16)
     lv_32fc_t two_phase_acc[2];
@@ -226,11 +233,10 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_sse3(lv_32fc_
             // Regenerate phase
             if ((number % 128) == 0)
                 {
-                    tmp1 = _mm_mul_ps(two_phase_acc_reg, two_phase_acc_reg);
-                    tmp2 = _mm_hadd_ps(tmp1, tmp1);
-                    tmp1 = _mm_shuffle_ps(tmp2, tmp2, 0xD8);
-                    tmp2 = _mm_sqrt_ps(tmp1);
-                    two_phase_acc_reg = _mm_div_ps(two_phase_acc_reg, tmp2);
+                    phase_est = arg_phase0 + (double)((number + 1) * 2) * arg_phase_inc;
+                    two_phase_acc[0] = lv_cmake((float)cos(phase_est), (float)sin(phase_est));
+                    two_phase_acc[1] = lv_cmake((float)cos(phase_est + arg_phase_inc), (float)sin(phase_est + arg_phase_inc));
+                    two_phase_acc_reg = _mm_load_ps((float*)two_phase_acc);
                 }
         }
 
@@ -292,8 +298,15 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_sse3(lv_32fc_
 
     __VOLK_ATTR_ALIGNED(16)
     lv_32fc_t two_phase_inc[2];
-    two_phase_inc[0] = phase_inc * phase_inc;
-    two_phase_inc[1] = phase_inc * phase_inc;
+    // Phase arguments in double precision. Any float representation of
+    // phase_inc^2 carries an angle error of a few 1e-8 rad, which the rotator
+    // accumulates linearly along the vector (normalization cannot remove it),
+    // so the rotator is periodically regenerated from these arguments.
+    const double arg_phase0 = atan2((double)lv_cimag(*phase), (double)lv_creal(*phase));
+    const double arg_phase_inc = atan2((double)lv_cimag(phase_inc), (double)lv_creal(phase_inc));
+    double phase_est;
+    two_phase_inc[0] = lv_cmake((float)cos(2.0 * arg_phase_inc), (float)sin(2.0 * arg_phase_inc));
+    two_phase_inc[1] = two_phase_inc[0];
     two_phase_inc_reg = _mm_load_ps((float*)two_phase_inc);
     __VOLK_ATTR_ALIGNED(16)
     lv_32fc_t two_phase_acc[2];
@@ -338,11 +351,10 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_sse3(lv_32fc_
             // Regenerate phase
             if ((number % 128) == 0)
                 {
-                    tmp1 = _mm_mul_ps(two_phase_acc_reg, two_phase_acc_reg);
-                    tmp2 = _mm_hadd_ps(tmp1, tmp1);
-                    tmp1 = _mm_shuffle_ps(tmp2, tmp2, 0xD8);
-                    tmp2 = _mm_sqrt_ps(tmp1);
-                    two_phase_acc_reg = _mm_div_ps(two_phase_acc_reg, tmp2);
+                    phase_est = arg_phase0 + (double)((number + 1) * 2) * arg_phase_inc;
+                    two_phase_acc[0] = lv_cmake((float)cos(phase_est), (float)sin(phase_est));
+                    two_phase_acc[1] = lv_cmake((float)cos(phase_est + arg_phase_inc), (float)sin(phase_est + arg_phase_inc));
+                    two_phase_acc_reg = _mm_load_ps((float*)two_phase_acc);
                 }
         }
 
@@ -408,7 +420,14 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_t
     lv_32fc_t four_phase_inc[4];
     const lv_32fc_t phase_inc2 = phase_inc * phase_inc;
     const lv_32fc_t phase_inc3 = phase_inc2 * phase_inc;
-    const lv_32fc_t phase_inc4 = phase_inc3 * phase_inc;
+    // Phase arguments in double precision. Any float representation of
+    // phase_inc^4 carries an angle error of a few 1e-8 rad, which the rotator
+    // accumulates linearly along the vector (normalization cannot remove it),
+    // so the rotator is periodically regenerated from these arguments.
+    const double arg_phase0 = atan2((double)lv_cimag(_phase), (double)lv_creal(_phase));
+    const double arg_phase_inc = atan2((double)lv_cimag(phase_inc), (double)lv_creal(phase_inc));
+    double phase_est;
+    const lv_32fc_t phase_inc4 = lv_cmake((float)cos(4.0 * arg_phase_inc), (float)sin(4.0 * arg_phase_inc));
     four_phase_inc[0] = phase_inc4;
     four_phase_inc[1] = phase_inc4;
     four_phase_inc[2] = phase_inc4;
@@ -460,11 +479,12 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_t
             // Regenerate phase
             if ((number % 128) == 0)
                 {
-                    tmp1 = _mm256_mul_ps(four_phase_acc_reg, four_phase_acc_reg);
-                    tmp2 = _mm256_hadd_ps(tmp1, tmp1);
-                    tmp1 = _mm256_shuffle_ps(tmp2, tmp2, 0xD8);
-                    tmp2 = _mm256_sqrt_ps(tmp1);
-                    four_phase_acc_reg = _mm256_div_ps(four_phase_acc_reg, tmp2);
+                    phase_est = arg_phase0 + (double)((number + 1) * 4) * arg_phase_inc;
+                    for (n = 0; n < 4; ++n)
+                        {
+                            four_phase_acc[n] = lv_cmake((float)cos(phase_est + (double)n * arg_phase_inc), (float)sin(phase_est + (double)n * arg_phase_inc));
+                        }
+                    four_phase_acc_reg = _mm256_load_ps((float*)four_phase_acc);
                 }
         }
 
@@ -537,7 +557,14 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_t
     lv_32fc_t four_phase_inc[4];
     const lv_32fc_t phase_inc2 = phase_inc * phase_inc;
     const lv_32fc_t phase_inc3 = phase_inc2 * phase_inc;
-    const lv_32fc_t phase_inc4 = phase_inc3 * phase_inc;
+    // Phase arguments in double precision. Any float representation of
+    // phase_inc^4 carries an angle error of a few 1e-8 rad, which the rotator
+    // accumulates linearly along the vector (normalization cannot remove it),
+    // so the rotator is periodically regenerated from these arguments.
+    const double arg_phase0 = atan2((double)lv_cimag(_phase), (double)lv_creal(_phase));
+    const double arg_phase_inc = atan2((double)lv_cimag(phase_inc), (double)lv_creal(phase_inc));
+    double phase_est;
+    const lv_32fc_t phase_inc4 = lv_cmake((float)cos(4.0 * arg_phase_inc), (float)sin(4.0 * arg_phase_inc));
     four_phase_inc[0] = phase_inc4;
     four_phase_inc[1] = phase_inc4;
     four_phase_inc[2] = phase_inc4;
@@ -589,11 +616,12 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_t
             // Regenerate phase
             if ((number % 128) == 0)
                 {
-                    tmp1 = _mm256_mul_ps(four_phase_acc_reg, four_phase_acc_reg);
-                    tmp2 = _mm256_hadd_ps(tmp1, tmp1);
-                    tmp1 = _mm256_shuffle_ps(tmp2, tmp2, 0xD8);
-                    tmp2 = _mm256_sqrt_ps(tmp1);
-                    four_phase_acc_reg = _mm256_div_ps(four_phase_acc_reg, tmp2);
+                    phase_est = arg_phase0 + (double)((number + 1) * 4) * arg_phase_inc;
+                    for (n = 0; n < 4; ++n)
+                        {
+                            four_phase_acc[n] = lv_cmake((float)cos(phase_est + (double)n * arg_phase_inc), (float)sin(phase_est + (double)n * arg_phase_inc));
+                        }
+                    four_phase_acc_reg = _mm256_load_ps((float*)four_phase_acc);
                 }
         }
 
@@ -653,11 +681,15 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_neon(lv_32fc_t*
     if (neon_iters > 0)
         {
             lv_32fc_t dotProduct = lv_cmake(0.0f, 0.0f);
-            float32_t arg_phase0 = cargf(_phase);
-            float32_t arg_phase_inc = cargf(phase_inc);
-            float32_t phase_est;
+            // Phase arguments are kept in double precision: the regenerated phase
+            // must stay close to the one obtained by the sequential float rotation
+            // of the GENERIC implementation, and a float phase_est (hundreds of
+            // radians after a few thousand samples) loses too much resolution.
+            const double arg_phase0 = atan2((double)lv_cimag(_phase), (double)lv_creal(_phase));
+            const double arg_phase_inc = atan2((double)lv_cimag(phase_inc), (double)lv_creal(phase_inc));
+            double phase_est;
 
-            lv_32fc_t ___phase4 = phase_inc * phase_inc * phase_inc * phase_inc;
+            const lv_32fc_t ___phase4 = lv_cmake((float)cos(4.0 * arg_phase_inc), (float)sin(4.0 * arg_phase_inc));
             __VOLK_ATTR_ALIGNED(16)
             float32_t __phase4_real[4] = {lv_creal(___phase4), lv_creal(___phase4), lv_creal(___phase4), lv_creal(___phase4)};
             __VOLK_ATTR_ALIGNED(16)
@@ -722,12 +754,12 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_neon(lv_32fc_t*
                     // Regenerate phase
                     if ((number % 128) == 0)
                         {
-                            phase_est = arg_phase0 + (number + 1) * 4 * arg_phase_inc;
+                            phase_est = arg_phase0 + (double)((number + 1) * 4) * arg_phase_inc;
 
-                            _phase = lv_cmake(cos(phase_est), sin(phase_est));
-                            phase2 = _phase * phase_inc;
-                            phase3 = phase2 * phase_inc;
-                            phase4 = phase3 * phase_inc;
+                            _phase = lv_cmake((float)cos(phase_est), (float)sin(phase_est));
+                            phase2 = lv_cmake((float)cos(phase_est + arg_phase_inc), (float)sin(phase_est + arg_phase_inc));
+                            phase3 = lv_cmake((float)cos(phase_est + 2.0 * arg_phase_inc), (float)sin(phase_est + 2.0 * arg_phase_inc));
+                            phase4 = lv_cmake((float)cos(phase_est + 3.0 * arg_phase_inc), (float)sin(phase_est + 3.0 * arg_phase_inc));
 
                             __VOLK_ATTR_ALIGNED(16)
                             float32_t ____phase_real[4] = {lv_creal((_phase)), lv_creal(phase2), lv_creal(phase3), lv_creal(phase4)};

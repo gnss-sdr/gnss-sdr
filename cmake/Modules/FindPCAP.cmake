@@ -27,11 +27,11 @@ if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
 endif()
 
-if(NOT GNSSSDR_LIB_PATHS)
+if(NOT DEFINED GNSSSDR_LIB_PATHS)
     include(GnsssdrFindPaths)
 endif()
 
-pkg_check_modules(PC_PCAP libpcap QUIET)
+pkg_check_modules(PC_PCAP QUIET libpcap)
 
 if(NOT PCAP_ROOT)
     set(PCAP_ROOT_USER_PROVIDED /usr)

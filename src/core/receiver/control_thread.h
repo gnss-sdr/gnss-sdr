@@ -31,6 +31,7 @@
 #include <pmt/pmt.h>
 #include <array>     // for array
 #include <cstddef>   // for size_t
+#include <cstdint>   // for int32_t
 #include <memory>    // for shared_ptr
 #include <string>    // for string
 #include <thread>    // for std::thread
@@ -223,7 +224,6 @@ private:
     bool stop_;
     bool restart_;
     bool telecommand_enabled_;
-    bool pre_2009_file_;  // to override the system time to postprocess old gnss records and avoid wrong week rollover
 };
 
 

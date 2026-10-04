@@ -20,6 +20,7 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <array>
+#include <cstdint>
 
 /** \addtogroup PVT
  * \{ */
@@ -53,7 +54,7 @@ public:
     double get_speed_over_ground() const;    //!< Get RX speed over ground [m/s]
     double get_course_over_ground() const;   //!< Get RX course over ground [deg]
     int get_num_valid_observations() const;  //!< Get the number of valid pseudorange observations (valid satellites)
-    bool is_pre_2009() const;
+    int32_t get_ref_gps_week() const;        //!< Get the reference GPS week used to resolve the mod-1024 week rollover (0 if unset)
     bool is_valid_position() const;
 
     void set_rx_pos(const std::array<double, 3> &pos);  //!< Set position: X, Y, Z in Cartesian ECEF coordinates [m]
@@ -64,8 +65,8 @@ public:
     void set_speed_over_ground(double speed_m_s);      //!< Set RX speed over ground [m/s]
     void set_course_over_ground(double cog_deg);       //!< Set RX course over ground [deg]
     void set_valid_position(bool is_valid);
-    void set_num_valid_observations(int num);    //!< Set the number of valid pseudorange observations (valid satellites)
-    void set_pre_2009_file(bool pre_2009_file);  //!< Flag for the week rollover computation in post processing mode for signals older than 2009
+    void set_num_valid_observations(int num);  //!< Set the number of valid pseudorange observations (valid satellites)
+    void set_ref_gps_week(int32_t ref_week);   //!< Set the reference GPS week (e.g., derived from the date of signal capture) used to resolve the mod-1024 week rollover in post-processing mode
 
 private:
     /*
@@ -99,7 +100,8 @@ private:
 
     int d_valid_observations{0};  // Number of valid observations in this epoch
 
-    bool d_pre_2009_file{false};  // Flag to correct week rollover in post processing mode for signals older than 2009
+    int32_t d_ref_gps_week{0};  // Reference GPS week to correct the mod-1024 week rollover in post-processing mode (0: use system clock)
+
     bool d_valid_position{false};
 };
 

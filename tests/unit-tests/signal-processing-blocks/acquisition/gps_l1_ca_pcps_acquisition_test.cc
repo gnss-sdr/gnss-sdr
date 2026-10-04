@@ -25,8 +25,8 @@
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
 #include "gnuplot_i.h"
-#include "gps_l1_ca_pcps_acquisition.h"
 #include "in_memory_configuration.h"
+#include "pcps_acquisition_adapter.h"
 #include "test_flags.h"
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
@@ -254,7 +254,7 @@ void GpsL1CaPcpsAcquisitionTest::plot_grid() const
 
 TEST_F(GpsL1CaPcpsAcquisitionTest /*unused*/, Instantiate /*unused*/)
 {
-    std::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 0);
+    auto acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_1C", "GPS_L1_CA_PCPS_Acquisition", 1, 0, GPS_1C);
 }
 
 
@@ -269,7 +269,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest /*unused*/, ConnectAndRun /*unused*/)
 
     top_block = gr::make_top_block("Acquisition test");
     init();
-    gnss_shared_ptr<GpsL1CaPcpsAcquisition> acquisition = gnss_make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 0);
+    auto acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_1C", "GPS_L1_CA_PCPS_Acquisition", 1, 0, GPS_1C);
     gnss_shared_ptr<GpsL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW({
@@ -318,7 +318,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest /*unused*/, ValidationOfResults /*unused*/)
             fs::create_directory(data_str);
         }
 
-    auto acquisition = gnss_make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 0);
+    auto acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_1C", "GPS_L1_CA_PCPS_Acquisition", 1, 0, GPS_1C);
     auto msg_rx = GpsL1CaPcpsAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW({
@@ -401,7 +401,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest /*unused*/, ValidationOfResultsMakeTwoStep /*u
             fs::create_directory(data_str);
         }
 
-    auto acquisition = gnss_make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 0);
+    auto acquisition = std::make_shared<PcpsAcquisitionAdapter>(config.get(), "Acquisition_1C", "GPS_L1_CA_PCPS_Acquisition", 1, 0, GPS_1C);
     auto msg_rx = GpsL1CaPcpsAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW({

@@ -21,22 +21,15 @@
 #include "GPS_L5.h"
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
+#include "acquisition_interface.h"
 #include "acquisition_msg_rx.h"
-#include "galileo_e1_pcps_ambiguous_acquisition.h"
-#include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
-#include "galileo_e5a_pcps_acquisition.h"
-#include "glonass_l1_ca_pcps_acquisition.h"
-#include "glonass_l2_ca_pcps_acquisition.h"
+#include "dll_pll_tracking_adapter.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
 #include "gnss_sdr_sample_counter.h"
 #include "gnss_synchro.h"
 #include "gnuplot_i.h"
-#include "gps_l1_ca_dll_pll_tracking.h"
-#include "gps_l1_ca_pcps_acquisition.h"
-#include "gps_l2_m_pcps_acquisition.h"
-#include "gps_l5i_pcps_acquisition.h"
 #include "hybrid_observables.h"
 #include "in_memory_configuration.h"
 #include "observable_tests_flags.h"
@@ -64,6 +57,7 @@
 #include <cmath>
 #include <exception>
 #include <iomanip>
+#include <memory>
 #include <unistd.h>
 #include <utility>
 #if GNSSTK_USES_GPSTK_NAMESPACE
@@ -310,7 +304,6 @@ public:
 
     HybridObservablesTest()
     {
-        factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
         mapStringValues_["1C"] = evGPS_1C;
@@ -336,7 +329,6 @@ public:
         uint32_t smoother_length,
         bool high_dyn);
 
-    std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro_master;
     std::vector<Gnss_Synchro> gnss_synchro_vec;
@@ -434,7 +426,8 @@ bool HybridObservablesTest::acquire_signal()
     config->set_property("Acquisition.dump", "false");
     config->set_property("Acquisition.dump_filename", "./data/acquisition.dat");
 
-    std::shared_ptr<AcquisitionInterface> acquisition;
+    std::unique_ptr<AcquisitionInterface> acquisition;
+    std::string acquisition_implementation;
 
     std::string System_and_Signal;
     std::string signal;
@@ -452,7 +445,7 @@ bool HybridObservablesTest::acquire_signal()
 #else
             config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
 #endif
-            acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
+            acquisition_implementation = "GPS_L1_CA_PCPS_Acquisition";
         }
     else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking")
         {
@@ -467,7 +460,7 @@ bool HybridObservablesTest::acquire_signal()
 #else
             config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
 #endif
-            acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisition>(config.get(), "Acquisition", 1, 0);
+            acquisition_implementation = "Galileo_E1_PCPS_Ambiguous_Acquisition";
         }
     else if (implementation == "GPS_L2_M_DLL_PLL_Tracking")
         {
@@ -482,7 +475,7 @@ bool HybridObservablesTest::acquire_signal()
 #else
             config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
 #endif
-            acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
+            acquisition_implementation = "GPS_L2_M_PCPS_Acquisition";
         }
     else if (implementation == "Galileo_E5a_DLL_PLL_Tracking_b")
         {
@@ -501,7 +494,7 @@ bool HybridObservablesTest::acquire_signal()
             config->set_property("Acquisition.CAF_window_hz", "0");  // **Only for E5a** Resolves doppler ambiguity averaging the specified BW in the winner code delay. If set to 0 CAF filter is deactivated. Recommended value 3000 Hz
             config->set_property("Acquisition.Zero_padding", "0");   // **Only for E5a** Avoids power loss and doppler ambiguity in bit transitions by correlating one code with twice the input data length, ensuring that at least one full code is present without transitions. If set to 1 it is ON, if set to 0 it is OFF.
             config->set_property("Acquisition.bit_transition_flag", "false");
-            acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition", 1, 0);
+            acquisition_implementation = "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF";
         }
 
     else if (implementation == "Galileo_E5a_DLL_PLL_Tracking")
@@ -517,7 +510,7 @@ bool HybridObservablesTest::acquire_signal()
 #else
             config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
 #endif
-            acquisition = std::make_shared<GalileoE5aPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
+            acquisition_implementation = "Galileo_E5a_Pcps_Acquisition";
         }
     else if (implementation == "GPS_L5_DLL_PLL_Tracking")
         {
@@ -532,7 +525,7 @@ bool HybridObservablesTest::acquire_signal()
 #else
             config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
 #endif
-            acquisition = std::make_shared<GpsL5iPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
+            acquisition_implementation = "GPS_L5i_PCPS_Acquisition";
         }
     else
         {
@@ -545,6 +538,14 @@ bool HybridObservablesTest::acquire_signal()
 #else
     config->set_property("Acquisition.threshold", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_threshold)));
 #endif
+
+    config->set_property("Acquisition.implementation", acquisition_implementation);
+    acquisition = block_factory::GetAcqBlock(config.get(), "Acquisition", 1, 0);
+    if (!acquisition)
+        {
+            std::cout << "The test can not instantiate " << acquisition_implementation << "\n";
+            throw(std::exception());
+        }
 
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     acquisition->set_channel(0);
@@ -844,7 +845,7 @@ void HybridObservablesTest::configure_receiver(
 
             config->set_property("TelemetryDecoder.implementation", "GPS_L2C_Telemetry_Decoder");
         }
-    else if (implementation == "Galileo_E5a_DLL_PLL_Tracking" or implementation == "Galileo_E5a_DLL_PLL_Tracking_b")
+    else if (implementation == "Galileo_E5a_DLL_PLL_Tracking" || implementation == "Galileo_E5a_DLL_PLL_Tracking_b")
         {
             gnss_synchro_master.System = 'E';
             std::string signal = "5X";
@@ -1943,7 +1944,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 
                     std::cout << "Initial Doppler [Hz]=" << true_reader_vec.back()->doppler_l1_hz << " Initial code delay [Chips]="
                               << true_reader_vec.back()->prn_delay_chips << '\n';
-                    n.Acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_reader_vec.back()->prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD_S;
+                    n.Acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_reader_vec.back()->prn_delay_chips) / GPS_L1_CA_CODE_LENGTH_CHIPS * baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD_S;
                     n.Acq_doppler_hz = true_reader_vec.back()->doppler_l1_hz;
                     n.Acq_samplestamp_samples = 0;
                 }
@@ -1968,9 +1969,9 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 
             // create the tracking channels and create the telemetry decoders
 
-            std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config.get(), "Tracking", 1, 1);
+            std::shared_ptr<GNSSBlockInterface> trk_ = block_factory::GetBlock(config.get(), "Tracking", 1, 1);
             tracking_ch_vec.push_back(std::dynamic_pointer_cast<TrackingInterface>(trk_));
-            std::shared_ptr<GNSSBlockInterface> tlm_ = factory->GetBlock(config.get(), "TelemetryDecoder", 1, 1);
+            std::shared_ptr<GNSSBlockInterface> tlm_ = block_factory::GetBlock(config.get(), "TelemetryDecoder", 1, 1);
             tlm_ch_vec.push_back(std::dynamic_pointer_cast<TelemetryDecoderInterface>(tlm_));
 
             // create null sinks for observables output
@@ -2177,7 +2178,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     for (auto& n : measured_obs_vec)
         {
             index = arma::find(n.col(0) > 0.0, 1, "last");
-            if ((!index.empty()) and index(0) < (nepoch - 1))
+            if ((!index.empty()) && index(0) < (nepoch - 1))
                 {
                     n.shed_rows(index(0) + 1, nepoch - 1);
                 }
@@ -2192,7 +2193,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
         {
             index = arma::find(measured_obs_vec.at(n).col(0) >= (measured_obs_vec.at(n)(0, 0) + initial_transitory_s), 1, "first");
-            if ((!index.empty()) and (index(0) > 0))
+            if ((!index.empty()) && (index(0) > 0))
                 {
                     measured_obs_vec.at(n).shed_rows(0, index(0));
                 }
@@ -2203,7 +2204,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 #endif
                 {
                     index = arma::find(measured_obs_vec.at(n).col(0) >= true_obs_vec.at(n)(0, 0), 1, "first");
-                    if ((!index.empty()) and (index(0) > 0))
+                    if ((!index.empty()) && (index(0) > 0))
                         {
                             measured_obs_vec.at(n).shed_rows(0, index(0));
                         }
@@ -2257,7 +2258,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                                                 }
                                         }
                                 }
-                            if (sat1_ch_id != -1 and sat2_ch_id != -1)
+                            if (sat1_ch_id != -1 && sat2_ch_id != -1)
                                 {
                                     // compute single differences for the duplicated satellite
                                     check_results_duplicated_satellite(
@@ -2305,7 +2306,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
             arma::vec receiver_time_offset_ref_channel_s;
             arma::uvec index2;
             index2 = arma::find(true_obs_vec.at(min_pr_ch_id).col(0) >= measured_obs_vec.at(min_pr_ch_id).col(0)(0), 1, "first");
-            if ((!index2.empty()) and (index2(0) > 0))
+            if ((!index2.empty()) && (index2(0) > 0))
                 {
                     receiver_time_offset_ref_channel_s = (true_obs_vec.at(min_pr_ch_id).col(1)(index2(0)) - measured_obs_vec.at(min_pr_ch_id).col(4)(0)) / SPEED_OF_LIGHT_M_S;
                     std::cout << "Ref. channel initial Receiver time offset " << receiver_time_offset_ref_channel_s(0) * 1e3 << " [ms]\n";
@@ -2373,9 +2374,9 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 // Do not compare E5a with E5 RINEX due to the Doppler frequency discrepancy caused by the different center frequencies
 // E5a_fc=1176.45e6, E5b_fc=1207.14e6, E5_fc=1191.795e6;
 #if USE_GLOG_AND_GFLAGS
-                                    if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 or FLAGS_compare_with_5X)
+                                    if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 || FLAGS_compare_with_5X)
 #else
-                                    if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 or absl::GetFlag(FLAGS_compare_with_5X))
+                                    if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 || absl::GetFlag(FLAGS_compare_with_5X))
 #endif
                                         {
                                             check_results_carrier_phase_double_diff(true_obs_vec.at(n),

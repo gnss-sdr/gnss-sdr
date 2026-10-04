@@ -12,6 +12,25 @@ import os
 import re
 import sys
 import argparse
+
+sys.dont_write_bytecode = True
+
+def extract_generated_python_dir(args):
+    option = '--generated-python-dir'
+    if option in args:
+        option_index = args.index(option)
+        if option_index + 1 < len(args):
+            return args[option_index + 1]
+    option_prefix = option + '='
+    for arg in args:
+        if arg.startswith(option_prefix):
+            return arg[len(option_prefix):]
+    return os.environ.get('VOLK_GNSSSDR_GENERATED_PYTHON_DIR')
+
+generated_python_dir = extract_generated_python_dir(sys.argv[1:])
+if generated_python_dir:
+    sys.path.insert(0, generated_python_dir)
+
 import volk_gnsssdr_arch_defs
 import volk_gnsssdr_machine_defs
 import volk_gnsssdr_kernel_defs
@@ -37,6 +56,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--input', type=str)
     parser.add_argument('--output', type=str)
+    parser.add_argument('--generated-python-dir', type=str)
     args, extras = parser.parse_known_args()
 
     output = __parse_tmpl(open(args.input).read(), args=extras)

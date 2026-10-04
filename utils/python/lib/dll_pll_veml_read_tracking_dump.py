@@ -6,12 +6,16 @@
  Opens GNSS-SDR tracking binary log file .dat and returns the contents
 
  Irene Pérez Riega, 2023. iperrie@inta.es
+ Minhaj Uddin Ahmad, 2026. mahmad12@crimson.ua.edu
 
       Args:
         filename: path to file .dat with the raw data
 
       Return:
         GNSS_tracking: A dictionary with the processed data in lists
+
+ Run directly to dump a .dat file's records as CSV (for debugging):
+   python dll_pll_veml_read_tracking_dump.py -i track_ch0.dat [-o out.csv]
 
  -----------------------------------------------------------------------------
 
@@ -25,198 +29,106 @@
 """
 
 import struct
-import sys
+
+# Binary layout of one tracking dump record, matching the writer in
+# src/algorithms/tracking/gnuradio_blocks/dll_pll_veml_tracking.cc
+#
+# Fields are written back-to-back.
+# '<' selects little-endian / standard sizes / no alignment padding.
+_RECORD_FORMAT = '<' + (
+    'f'    # VE  -> Magnitude of the Very Early correlator.
+    'f'    # E   -> Magnitude of the Early correlator.
+    'f'    # P   -> Magnitude of the Prompt correlator.
+    'f'    # L   -> Magnitude of the Late correlator.
+    'f'    # VL  -> Magnitude of the Very Late correlator.
+    'f'    # prompt_I -> Prompt correlator, In-phase component.
+    'f'    # prompt_Q -> Prompt correlator, Quadrature component.
+    'Q'    # PRN_start_sample -> Sample counter from tracking start.
+    'f'    # acc_carrier_phase_rad -> Accumulated carrier phase, in rad.
+    'f'    # carrier_doppler_hz -> Doppler shift, in Hz.
+    'f'    # carrier_doppler_rate_hz_s -> Doppler rate, in Hz/s.
+    'f'    # code_freq_hz -> Code frequency, in chips/s.
+    'f'    # code_freq_rate_hz_s -> Code frequency rate, in chips/s^2.
+    'f'    # carr_error -> Raw carrier error at the PLL output, in Hz.
+    'f'    # carr_nco -> Carrier error at the output of the PLL filter, in Hz.
+    'f'    # code_error -> Raw code error at the DLL output, in chips.
+    'f'    # code_nco -> Code error at the output of the DLL filter, in chips.
+    'f'    # CN0_SNV_dB_Hz -> C/N0 estimation, in dB-Hz.
+    'f'    # carrier_lock_test -> Output of the carrier lock test.
+    'f'    # var1 -> aux variable.
+    'd'    # var2 -> aux variable.
+    'I'    # PRN -> Satellite ID.
+    'Q'    # TOW_ms -> Time of week, in ms.
+    'I'    # WN -> Week number.
+)
+
+_FIELD_NAMES = [
+    'VE', 'E', 'P', 'L', 'VL', 'prompt_I', 'prompt_Q', 'PRN_start_sample',
+    'acc_carrier_phase_rad', 'carrier_doppler_hz', 'carrier_doppler_rate_hz_s',
+    'code_freq_hz', 'code_freq_rate_hz_s', 'carr_error', 'carr_nco',
+    'code_error', 'code_nco', 'CN0_SNV_dB_Hz', 'carrier_lock_test',
+    'var1', 'var2', 'PRN', 'TOW_ms', 'WN',
+]
 
 
 def dll_pll_veml_read_tracking_dump (filename):
 
-    v1 = []
-    v2 = []
-    v3 = []
-    v4 = []
-    v5 = []
-    v6 = []
-    v7 = []
-    v8 = []
-    v9 = []
-    v10= []
-    v11 = []
-    v12 = []
-    v13 = []
-    v14 = []
-    v15 = []
-    v16 = []
-    v17 = []
-    v18 = []
-    v19 = []
-    v20 = []
-    v21 = []
-    v22 = []
-    GNSS_tracking = {}
+    record_size = struct.calcsize(_RECORD_FORMAT)
+    columns = [[] for _ in _FIELD_NAMES]
 
-    bytes_shift = 0
-
-    if sys.maxsize > 2 ** 36:  # 64 bits computer
-        float_size_bytes = 4
-        unsigned_long_int_size_bytes = 8
-        double_size_bytes = 8
-        unsigned_int_size_bytes = 4
-
-    else: # 32 bits
-        float_size_bytes = 4
-        unsigned_long_int_size_bytes = 4
-        double_size_bytes = 8
-        unsigned_int_size_bytes = 4
-
-    f = open(filename, 'rb')
-    if f is None:
-        return None
-    else:
+    with open(filename, 'rb') as f:
         while True:
-            f.seek(bytes_shift, 0)
-            # VE -> Magnitude of the Very Early correlator.
-            v1.append(struct.unpack('f', f.read(float_size_bytes))[0])
-            bytes_shift += float_size_bytes
-            f.seek(bytes_shift, 0)
-            # E -> Magnitude of the Early correlator.
-            v2.append(struct.unpack('f', f.read(float_size_bytes))[0])
-            bytes_shift += float_size_bytes
-            f.seek(bytes_shift, 0)
-            # P -> Magnitude of the Prompt correlator.
-            v3.append(struct.unpack('f', f.read(float_size_bytes))[0])
-            bytes_shift += float_size_bytes
-            f.seek(bytes_shift, 0)
-            # L -> Magnitude of the Late correlator.
-            v4.append(struct.unpack('f', f.read(float_size_bytes))[0])
-            bytes_shift += float_size_bytes
-            f.seek(bytes_shift, 0)
-            # VL -> Magnitude of the Very Late correlator.
-            v5.append(struct.unpack('f', f.read(float_size_bytes))[0])
-            bytes_shift += float_size_bytes
-            f.seek(bytes_shift, 0)
-            # promp_I -> Value of the Prompt correlator in the In-phase
-            # component.
-            v6.append(struct.unpack('f', f.read(float_size_bytes))[0])
-            bytes_shift += float_size_bytes
-            f.seek(bytes_shift, 0)
-            # promp_Q -> Value of the Prompt correlator in the Quadrature
-            # component.
-            v7.append(struct.unpack('f',
-                                    f.read(float_size_bytes))[0])
-            bytes_shift += float_size_bytes
-            f.seek(bytes_shift, 0)
-            # PRN_start_sample -> Sample counter from tracking start.
-            if unsigned_long_int_size_bytes == 8:
-                v8.append(struct.unpack(
-                    'Q', f.read(unsigned_long_int_size_bytes))[0])
-                bytes_shift += unsigned_long_int_size_bytes
-            else:
-                v8.append(struct.unpack('I',
-                                        f.read(unsigned_int_size_bytes))[0])
-                bytes_shift += unsigned_int_size_bytes
-            f.seek(bytes_shift, 0)
-            # acc_carrier_phase_rad - > Accumulated carrier phase, in rad.
-            v9.append(struct.unpack('f', f.read(float_size_bytes))[0])
-            bytes_shift += float_size_bytes
-            f.seek(bytes_shift, 0)
-            # carrier doppler hz -> Doppler shift, in Hz.
-            v10.append(struct.unpack('f',
-                                     f.read(float_size_bytes))[0])
-            bytes_shift += float_size_bytes
-            f.seek(bytes_shift, 0)
-            # carrier doppler rate hz s -> Doppler rate, in Hz/s.
-            v11.append(struct.unpack('f',
-                                     f.read(float_size_bytes))[0])
-            bytes_shift += float_size_bytes
-            f.seek(bytes_shift, 0)
-            # code freq hz -> Code frequency, in chips/s.
-            v12.append(struct.unpack('f',
-                                     f.read(float_size_bytes))[0])
-            bytes_shift += float_size_bytes
-            f.seek(bytes_shift, 0)
-            # code_freq_rate_hz_s -> Code frequency rate, in chips/s².
-            v13.append(struct.unpack('f',
-                                     f.read(float_size_bytes))[0])
-            bytes_shift += float_size_bytes
-            f.seek(bytes_shift, 0)
-            # carr_error -> Raw carrier error (unfiltered) at the PLL
-            # output, in Hz.
-            v14.append(struct.unpack('f',
-                                     f.read(float_size_bytes))[0])
-            bytes_shift += float_size_bytes
-            f.seek(bytes_shift, 0)
-            # carr_nco -> Carrier error at the output of the PLL
-            # filter, in Hz.
-            v15.append(struct.unpack('f',
-                                     f.read(float_size_bytes))[0])
-            bytes_shift += float_size_bytes
-            f.seek(bytes_shift, 0)
-            # code error -> Raw code error (unfiltered) at the DLL
-            # output, in chips.
-            v16.append(struct.unpack('f',
-                                     f.read(float_size_bytes))[0])
-            bytes_shift += float_size_bytes
-            f.seek(bytes_shift, 0)
-            # code nco -> Code error at the output of the DLL
-            # filter, in chips.
-            v17.append(struct.unpack('f',
-                                     f.read(float_size_bytes))[0])
-            bytes_shift += float_size_bytes
-            f.seek(bytes_shift, 0)
-            # CN0_SNV_dB_Hz -> C/N0 estimation, in dB-Hz.
-            v18.append(struct.unpack('f',
-                                     f.read(float_size_bytes))[0])
-            bytes_shift += float_size_bytes
-            f.seek(bytes_shift, 0)
-            # carrier lock test -> Output of the carrier lock test.
-            v19.append(struct.unpack('f',
-                                     f.read(float_size_bytes))[0])
-            bytes_shift += float_size_bytes
-            f.seek(bytes_shift, 0)
-            # var 1 -> not used ?
-            v20.append(struct.unpack('f',
-                                     f.read(float_size_bytes))[0])
-            bytes_shift += float_size_bytes
-            f.seek(bytes_shift, 0)
-            # var 2 -> not used ?
-            v21.append(struct.unpack('d',
-                                     f.read(double_size_bytes))[0])
-            bytes_shift += double_size_bytes
-            f.seek(bytes_shift, 0)
-            # PRN ->  Satellite ID.
-            v22.append(struct.unpack('I',
-                                     f.read(unsigned_int_size_bytes))[0])
-            bytes_shift += unsigned_int_size_bytes
-            f.seek(bytes_shift, 0)
-
-            # Check file
-            linea = f.readline()
-            if not linea:
+            record = f.read(record_size)
+            if len(record) < record_size:
+                # Clean end of file (or a trailing partial record).
                 break
+            for column, value in zip(columns, struct.unpack(_RECORD_FORMAT,
+                                                             record)):
+                column.append(value)
 
-        f.close()
+    return dict(zip(_FIELD_NAMES, columns))
 
-        GNSS_tracking['VE'] = v1
-        GNSS_tracking['E'] = v2
-        GNSS_tracking['P'] = v3
-        GNSS_tracking['L'] = v4
-        GNSS_tracking['VL'] = v5
-        GNSS_tracking['prompt_I'] = v6
-        GNSS_tracking['prompt_Q'] = v7
-        GNSS_tracking['PRN_start_sample'] = v8
-        GNSS_tracking['acc_carrier_phase_rad'] = v9
-        GNSS_tracking['carrier_doppler_hz'] = v10
-        GNSS_tracking['carrier_doppler_rate_hz_s'] = v11
-        GNSS_tracking['code_freq_hz'] = v12
-        GNSS_tracking['code_freq_rate_hz_s'] = v13
-        GNSS_tracking['carr_error'] = v14
-        GNSS_tracking['carr_nco'] = v15
-        GNSS_tracking['code_error'] = v16
-        GNSS_tracking['code_nco'] = v17
-        GNSS_tracking['CN0_SNV_dB_Hz'] = v18
-        GNSS_tracking['carrier_lock_test'] = v19
-        GNSS_tracking['var1'] = v20
-        GNSS_tracking['var2'] = v21
-        GNSS_tracking['PRN'] = v22
 
-    return GNSS_tracking
+if __name__ == "__main__":
+    import argparse
+    import csv
+    import sys
+    from pathlib import Path
+
+    parser = argparse.ArgumentParser(
+        description="Read a DLL/PLL VEML tracking .dat dump and write its "
+                    "records as CSV (one row per record) for debugging."
+    )
+    parser.add_argument(
+        "-i", "--input-file",
+        type=Path,
+        required=True,
+        help="Tracking .dat dump file to read.",
+    )
+    parser.add_argument(
+        "-o", "--output-file",
+        type=Path,
+        help="CSV file to write (default: stdout).",
+    )
+    parser.add_argument(
+        "-n", "--limit",
+        type=int,
+        default=None,
+        help="Write only the first N records (default: all).",
+    )
+    args = parser.parse_args()
+
+    dump = dll_pll_veml_read_tracking_dump(args.input_file)
+    rows = zip(*(dump[name] for name in _FIELD_NAMES))
+    if args.limit is not None:
+        rows = (row for i, row in enumerate(rows) if i < args.limit)
+
+    out = open(args.output_file, "w", newline="") if args.output_file else sys.stdout
+    try:
+        writer = csv.writer(out)
+        writer.writerow(_FIELD_NAMES)
+        writer.writerows(rows)
+    finally:
+        if out is not sys.stdout:
+            out.close()
+    

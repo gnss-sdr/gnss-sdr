@@ -17,26 +17,10 @@
 #ifndef GNSS_SDR_SIGNAL_ENABLED_FLAGS_H
 #define GNSS_SDR_SIGNAL_ENABLED_FLAGS_H
 
+#include "signal_flag.h"
 #include <cstdint>
 
 class ConfigurationInterface;
-
-enum signal_flag : uint32_t
-{
-    GPS_1C = 0x1 << 0,
-    GPS_2S = 0x1 << 1,
-    GPS_L5 = 0x1 << 2,
-    GAL_1B = 0x1 << 3,
-    GAL_E5a = 0x1 << 4,
-    GAL_E5b = 0x1 << 5,
-    GAL_E6 = 0x1 << 6,
-    GLO_1G = 0x1 << 7,
-    GLO_2G = 0x1 << 8,
-    BDS_B1 = 0x1 << 9,
-    BDS_B3 = 0x1 << 10,
-    QZS_J1 = 0x1 << 11,
-    QZS_J5 = 0x1 << 12
-};
 
 class Signal_Enabled_Flags
 {

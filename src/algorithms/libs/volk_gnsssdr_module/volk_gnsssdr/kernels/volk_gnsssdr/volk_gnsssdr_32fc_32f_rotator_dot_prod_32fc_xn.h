@@ -203,11 +203,12 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_
     z2 = _mm256_load_ps((float*)(phase_vec + 8));
     z3 = _mm256_load_ps((float*)(phase_vec + 12));
 
-    lv_32fc_t dz = phase_inc;
-    dz *= dz;
-    dz *= dz;
-    dz *= dz;
-    dz *= dz;  // dz = phase_inc^16;
+    // dz = phase_inc^16, computed from the argument of phase_inc in double
+    // precision. Four float squarings leave an angle error of a few 1e-8 rad in
+    // dz, which the rotator accumulates linearly along the whole vector (~2e-5
+    // rad after 8111 samples in the QA test). Normalization cannot remove it.
+    const double arg_phase_inc = atan2((double)lv_cimag(phase_inc), (double)lv_creal(phase_inc));
+    const lv_32fc_t dz = lv_cmake((float)cos(16.0 * arg_phase_inc), (float)sin(16.0 * arg_phase_inc));
 
     for (vec_ind = 0; vec_ind < 4; ++vec_ind)
         {
@@ -370,11 +371,12 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_
     z2 = _mm256_load_ps((float*)(phase_vec + 8));
     z3 = _mm256_load_ps((float*)(phase_vec + 12));
 
-    lv_32fc_t dz = phase_inc;
-    dz *= dz;
-    dz *= dz;
-    dz *= dz;
-    dz *= dz;  // dz = phase_inc^16;
+    // dz = phase_inc^16, computed from the argument of phase_inc in double
+    // precision. Four float squarings leave an angle error of a few 1e-8 rad in
+    // dz, which the rotator accumulates linearly along the whole vector (~2e-5
+    // rad after 8111 samples in the QA test). Normalization cannot remove it.
+    const double arg_phase_inc = atan2((double)lv_cimag(phase_inc), (double)lv_creal(phase_inc));
+    const lv_32fc_t dz = lv_cmake((float)cos(16.0 * arg_phase_inc), (float)sin(16.0 * arg_phase_inc));
 
     for (vec_ind = 0; vec_ind < 4; ++vec_ind)
         {

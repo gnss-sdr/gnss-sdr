@@ -99,6 +99,7 @@ if(ENABLE_CUDA)
         target_include_directories(tracking_gr_blocks
             PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
         )
+        target_link_libraries(tracking_gr_blocks PUBLIC CUDA::cudart)
     else()
         target_link_libraries(tracking_gr_blocks
             PUBLIC cuda_correlator_lib
@@ -108,7 +109,7 @@ if(ENABLE_CUDA)
         )
     endif()
     set_target_properties(tracking_gr_blocks PROPERTIES
-        CUDA_SEPARABLE_COMPILATION ON
+        CUDA_SEPARABLE_COMPILATION OFF
         POSITION_INDEPENDENT_CODE ON
     )
 endif()

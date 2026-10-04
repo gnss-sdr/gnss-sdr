@@ -360,6 +360,7 @@ static inline void volk_gnsssdr_32fc_convert_8ic_a_sse2(lv_8sc_t* outputVector, 
 
 
 #ifdef LV_HAVE_NEON
+#include <volk_gnsssdr/volk_gnsssdr_neon_intrinsics.h>
 #include <arm_neon.h>
 
 static inline void volk_gnsssdr_32fc_convert_8ic_neon(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
@@ -376,9 +377,7 @@ static inline void volk_gnsssdr_32fc_convert_8ic_neon(lv_8sc_t* outputVector, co
     const float32x4_t min_val = vmovq_n_f32(min_val_f);
     const float32x4_t max_val = vmovq_n_f32(max_val_f);
 
-    const float32x4_t half = vdupq_n_f32(0.5f);
-
-    float32x4_t sign, PlusHalf, Round, ret1, a;
+    float32x4_t ret1, a;
     int32x4_t toint_a;
     int16x4_t intInputVal1, intInputVal2;
     int16x8_t pack16_8_1;
@@ -391,20 +390,14 @@ static inline void volk_gnsssdr_32fc_convert_8ic_neon(lv_8sc_t* outputVector, co
             inputVectorPtr += 4;
             a = vmulq_f32(a, max_val);
             ret1 = vmaxq_f32(vminq_f32(a, max_val), min_val);
-            sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(ret1), 31)));
-            PlusHalf = vaddq_f32(ret1, half);
-            Round = vsubq_f32(PlusHalf, sign);
-            toint_a = vcvtq_s32_f32(Round);
+            toint_a = _vcvtnq_s32_f32(ret1);
             intInputVal1 = vqmovn_s32(toint_a);
 
             a = vld1q_f32((const float32_t*)inputVectorPtr);
             inputVectorPtr += 4;
             a = vmulq_f32(a, max_val);
             ret1 = vmaxq_f32(vminq_f32(a, max_val), min_val);
-            sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(ret1), 31)));
-            PlusHalf = vaddq_f32(ret1, half);
-            Round = vsubq_f32(PlusHalf, sign);
-            toint_a = vcvtq_s32_f32(Round);
+            toint_a = _vcvtnq_s32_f32(ret1);
             intInputVal2 = vqmovn_s32(toint_a);
 
             pack16_8_1 = vcombine_s16(intInputVal1, intInputVal2);
@@ -414,20 +407,14 @@ static inline void volk_gnsssdr_32fc_convert_8ic_neon(lv_8sc_t* outputVector, co
             inputVectorPtr += 4;
             a = vmulq_f32(a, max_val);
             ret1 = vmaxq_f32(vminq_f32(a, max_val), min_val);
-            sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(ret1), 31)));
-            PlusHalf = vaddq_f32(ret1, half);
-            Round = vsubq_f32(PlusHalf, sign);
-            toint_a = vcvtq_s32_f32(Round);
+            toint_a = _vcvtnq_s32_f32(ret1);
             intInputVal1 = vqmovn_s32(toint_a);
 
             a = vld1q_f32((const float32_t*)inputVectorPtr);
             inputVectorPtr += 4;
             a = vmulq_f32(a, max_val);
             ret1 = vmaxq_f32(vminq_f32(a, max_val), min_val);
-            sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(ret1), 31)));
-            PlusHalf = vaddq_f32(ret1, half);
-            Round = vsubq_f32(PlusHalf, sign);
-            toint_a = vcvtq_s32_f32(Round);
+            toint_a = _vcvtnq_s32_f32(ret1);
             intInputVal2 = vqmovn_s32(toint_a);
 
             pack16_8_1 = vcombine_s16(intInputVal1, intInputVal2);

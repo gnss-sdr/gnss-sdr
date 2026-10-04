@@ -16,7 +16,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2026  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -48,19 +48,19 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
     const std::string &role, unsigned int in_stream, unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t> *queue __attribute__((unused)))
     : SignalSourceBase(configuration, role, "ADRV9361_Z7035_Signal_Source_FPGA"s),
-      gain_mode_rx1_(configuration->property(role + ".gain_mode_rx1", default_gain_mode)),
-      gain_mode_rx2_(configuration->property(role + ".gain_mode_rx2", default_gain_mode)),
-      rf_port_select_(configuration->property(role + ".rf_port_select", default_rf_port_select)),
+      gain_mode_rx1_(configuration->property(role + ".gain_mode_rx1", DEFAULT_GAIN_MODE)),
+      gain_mode_rx2_(configuration->property(role + ".gain_mode_rx2", DEFAULT_GAIN_MODE)),
+      rf_port_select_(configuration->property(role + ".rf_port_select", DEFAULT_RF_PORT_SELECT)),
       filter_source_(configuration->property(role + ".filter_source", std::string("Off"))),
       filter_filename_(configuration->property(role + ".filter_filename", filter_file_)),
-      rf_gain_rx1_(configuration->property(role + ".gain_rx1", default_manual_gain_rx1)),
-      rf_gain_rx2_(configuration->property(role + ".gain_rx2", default_manual_gain_rx2)),
+      rf_gain_rx1_(configuration->property(role + ".gain_rx1", DEFAULT_MANUAL_GAIN_RX1)),
+      rf_gain_rx2_(configuration->property(role + ".gain_rx2", DEFAULT_MANUAL_GAIN_RX2)),
       scale_dds_dbfs_(configuration->property(role + ".scale_dds_dbfs", -3.0)),
       phase_dds_deg_(configuration->property(role + ".phase_dds_deg", 0.0)),
-      tx_attenuation_db_(configuration->property(role + ".tx_attenuation_db", default_tx_attenuation_db)),
+      tx_attenuation_db_(configuration->property(role + ".tx_attenuation_db", DEFAULT_TX_ATTENUATION_dB)),
       freq0_(configuration->property(role + ".freq", GPS_L5_FREQ_HZ)),
-      sample_rate_(configuration->property(role + ".sampling_frequency", default_bandwidth)),
-      bandwidth_(configuration->property(role + ".bandwidth", default_bandwidth)),
+      sample_rate_(configuration->property(role + ".sampling_frequency", DEFAULT_BANDWIDTH)),
+      bandwidth_(configuration->property(role + ".bandwidth", DEFAULT_BANDWIDTH)),
       freq_dds_tx_hz_(configuration->property(role + ".freq_dds_tx_hz", uint64_t(10000))),
       freq_rf_tx_hz_(configuration->property(role + ".freq_rf_tx_hz", static_cast<uint64_t>(GPS_L1_FREQ_HZ - GPS_L5_FREQ_HZ - freq_dds_tx_hz_))),
       tx_bandwidth_(configuration->property(role + ".tx_bandwidth", static_cast<uint64_t>(500000))),
@@ -84,23 +84,17 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
       rf_shutdown_(configuration->property(role + ".rf_shutdown", absl::GetFlag(FLAGS_rf_shutdown)))
 #endif
 {
-    const bool enable_rx1_band((configuration->property("Channels_1C.count", 0) > 0) ||
-                               (configuration->property("Channels_1B.count", 0) > 0));
-    const bool enable_rx2_band((configuration->property("Channels_L2.count", 0) > 0) ||
-                               (configuration->property("Channels_L5.count", 0) > 0) ||
-                               (configuration->property("Channels_5X.count", 0) > 0));
+    CHECK(rx1_enable_ || rx2_enable_) << "At least one RX channel must be enabled.";
+    CHECK(sample_rate_ > 0) << "Sampling frequency must be positive.";
 
-    const uint32_t num_freq_bands = ((enable_rx1_band == true) and (enable_rx2_band == true)) ? 2 : 1;
+    std::cout << "Sample rate: " << sample_rate_ << " Sps\n";
+
+    const uint32_t num_freq_bands = (rx1_enable_ && rx2_enable_) ? 2 : 1;
     if (freq0_ == 0)
         {
             // use ".freq0"
             freq0_ = configuration->property(role + ".freq0", static_cast<uint64_t>(GPS_L1_FREQ_HZ));
         }
-
-    switch_fpga = std::make_shared<Fpga_Switch>();
-    switch_fpga->set_switch_position(switch_to_real_time_mode);
-
-    std::cout << "Sample rate: " << sample_rate_ << " Sps\n";
 
     // some basic checks
     if ((rf_port_select_ != "A_BALANCED") && (rf_port_select_ != "B_BALANCED") && (rf_port_select_ != "A_N") && (rf_port_select_ != "B_N") && (rf_port_select_ != "B_P") && (rf_port_select_ != "C_N") && (rf_port_select_ != "C_P") && (rf_port_select_ != "TX_MONITOR1") && (rf_port_select_ != "TX_MONITOR2") && (rf_port_select_ != "TX_MONITOR1_2"))
@@ -108,9 +102,9 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
             std::cout << "Configuration parameter rf_port_select should take one of these values:\n";
             std::cout << " A_BALANCED, B_BALANCED, A_N, B_N, B_P, C_N, C_P, TX_MONITOR1, TX_MONITOR2, TX_MONITOR1_2\n";
             std::cout << "Error: provided value rf_port_select=" << rf_port_select_ << " is not among valid values\n";
-            std::cout << " This parameter has been set to its default value rf_port_select=" << default_rf_port_select << '\n';
-            rf_port_select_ = default_rf_port_select;
-            LOG(WARNING) << "Invalid configuration value for rf_port_select parameter. Set to rf_port_select=" << default_rf_port_select;
+            std::cout << " This parameter has been set to its default value rf_port_select=" << DEFAULT_RF_PORT_SELECT << '\n';
+            rf_port_select_ = DEFAULT_RF_PORT_SELECT;
+            LOG(WARNING) << "Invalid configuration value for rf_port_select parameter. Set to rf_port_select=" << DEFAULT_RF_PORT_SELECT;
         }
 
     if ((gain_mode_rx1_ != "manual") && (gain_mode_rx1_ != "slow_attack") && (gain_mode_rx1_ != "fast_attack") && (gain_mode_rx1_ != "hybrid"))
@@ -118,9 +112,9 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
             std::cout << "Configuration parameter gain_mode_rx1 should take one of these values:\n";
             std::cout << " manual, slow_attack, fast_attack, hybrid\n";
             std::cout << "Error: provided value gain_mode_rx1=" << gain_mode_rx1_ << " is not among valid values\n";
-            std::cout << " This parameter has been set to its default value gain_mode_rx1=" << default_gain_mode << '\n';
-            gain_mode_rx1_ = default_gain_mode;
-            LOG(WARNING) << "Invalid configuration value for gain_mode_rx1 parameter. Set to gain_mode_rx1=" << default_gain_mode;
+            std::cout << " This parameter has been set to its default value gain_mode_rx1=" << DEFAULT_GAIN_MODE << '\n';
+            gain_mode_rx1_ = DEFAULT_GAIN_MODE;
+            LOG(WARNING) << "Invalid configuration value for gain_mode_rx1 parameter. Set to gain_mode_rx1=" << DEFAULT_GAIN_MODE;
         }
 
     if ((gain_mode_rx2_ != "manual") && (gain_mode_rx2_ != "slow_attack") && (gain_mode_rx2_ != "fast_attack") && (gain_mode_rx2_ != "hybrid"))
@@ -128,9 +122,9 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
             std::cout << "Configuration parameter gain_mode_rx2 should take one of these values:\n";
             std::cout << " manual, slow_attack, fast_attack, hybrid\n";
             std::cout << "Error: provided value gain_mode_rx2=" << gain_mode_rx2_ << " is not among valid values\n";
-            std::cout << " This parameter has been set to its default value gain_mode_rx2=" << default_gain_mode << '\n';
-            gain_mode_rx2_ = default_gain_mode;
-            LOG(WARNING) << "Invalid configuration value for gain_mode_rx2 parameter. Set to gain_mode_rx2=" << default_gain_mode;
+            std::cout << " This parameter has been set to its default value gain_mode_rx2=" << DEFAULT_GAIN_MODE << '\n';
+            gain_mode_rx2_ = DEFAULT_GAIN_MODE;
+            LOG(WARNING) << "Invalid configuration value for gain_mode_rx2 parameter. Set to gain_mode_rx2=" << DEFAULT_GAIN_MODE;
         }
 
     if (gain_mode_rx1_ == "manual")
@@ -139,9 +133,9 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
                 {
                     std::cout << "Configuration parameter rf_gain_rx1 should take values between -1.0 and 73 dB\n";
                     std::cout << "Error: provided value rf_gain_rx1=" << rf_gain_rx1_ << " is not among valid values\n";
-                    std::cout << " This parameter has been set to its default value rf_gain_rx1=" << default_manual_gain_rx1 << '\n';
-                    rf_gain_rx1_ = default_manual_gain_rx1;
-                    LOG(WARNING) << "Invalid configuration value for rf_gain_rx1 parameter. Set to rf_gain_rx1=" << default_manual_gain_rx1;
+                    std::cout << " This parameter has been set to its default value rf_gain_rx1=" << DEFAULT_MANUAL_GAIN_RX1 << '\n';
+                    rf_gain_rx1_ = DEFAULT_MANUAL_GAIN_RX1;
+                    LOG(WARNING) << "Invalid configuration value for rf_gain_rx1 parameter. Set to rf_gain_rx1=" << DEFAULT_MANUAL_GAIN_RX1;
                 }
         }
 
@@ -151,9 +145,9 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
                 {
                     std::cout << "Configuration parameter rf_gain_rx2 should take values between -1.0 and 73 dB\n";
                     std::cout << "Error: provided value rf_gain_rx2=" << rf_gain_rx2_ << " is not among valid values\n";
-                    std::cout << " This parameter has been set to its default value rf_gain_rx2=" << default_manual_gain_rx2 << '\n';
-                    rf_gain_rx2_ = default_manual_gain_rx2;
-                    LOG(WARNING) << "Invalid configuration value for rf_gain_rx2 parameter. Set to rf_gain_rx2=" << default_manual_gain_rx2;
+                    std::cout << " This parameter has been set to its default value rf_gain_rx2=" << DEFAULT_MANUAL_GAIN_RX2 << '\n';
+                    rf_gain_rx2_ = DEFAULT_MANUAL_GAIN_RX2;
+                    LOG(WARNING) << "Invalid configuration value for rf_gain_rx2 parameter. Set to rf_gain_rx2=" << DEFAULT_MANUAL_GAIN_RX2;
                 }
         }
 
@@ -174,12 +168,15 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
         {
             std::cout << "Configuration parameter bandwidth should take values between 200000 and 56000000 Hz\n";
             std::cout << "Error: provided value bandwidth=" << bandwidth_ << " is not among valid values\n";
-            std::cout << " This parameter has been set to its default value bandwidth=" << default_bandwidth << '\n';
-            bandwidth_ = default_bandwidth;
-            LOG(WARNING) << "Invalid configuration value for bandwidth parameter. Set to bandwidth=" << default_bandwidth;
+            std::cout << " This parameter has been set to its default value bandwidth=" << DEFAULT_BANDWIDTH << '\n';
+            bandwidth_ = DEFAULT_BANDWIDTH;
+            LOG(WARNING) << "Invalid configuration value for bandwidth parameter. Set to bandwidth=" << DEFAULT_BANDWIDTH;
         }
 
     std::cout << "LO frequency : " << freq0_ << " Hz\n";
+
+    switch_fpga = std::make_shared<Fpga_Switch>();
+    switch_fpga->set_switch_position(REAL_TIME_MODE);
 
     uint64_t freq1 = 0;  // The local oscillator frequency of the ADRV9361-B is not used when using the ADRV9361-Z7035 board.
 
@@ -224,9 +221,9 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
                 {
                     std::cout << "Configuration parameter tx_attenuation_db should take values between 0.0 and -89.95 in 0.25 dB steps\n";
                     std::cout << "Error: provided value tx_attenuation_db=" << tx_attenuation_db_ << " is not among valid values\n";
-                    std::cout << " This parameter has been set to its default value tx_attenuation_db=" << default_tx_attenuation_db << '\n';
-                    tx_attenuation_db_ = default_tx_attenuation_db;
-                    LOG(WARNING) << "Invalid configuration value for tx_attenuation_db parameter. Set to tx_attenuation_db=" << default_tx_attenuation_db;
+                    std::cout << " This parameter has been set to its default value tx_attenuation_db=" << DEFAULT_TX_ATTENUATION_dB << '\n';
+                    tx_attenuation_db_ = DEFAULT_TX_ATTENUATION_dB;
+                    LOG(WARNING) << "Invalid configuration value for tx_attenuation_db parameter. Set to tx_attenuation_db=" << DEFAULT_TX_ATTENUATION_dB;
                 }
             try
                 {
@@ -245,7 +242,7 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
                 }
         }
 
-    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+    std::string dump_filename = configuration->property(role + ".dump_filename", DEFAULT_DUMP_FILENAME);
 
     buffer_monitor_fpga = std::make_shared<Fpga_buffer_monitor>(num_freq_bands, dump_, dump_filename);
     thread_buffer_monitor = std::thread([&] { run_buffer_monitor_process(); });
@@ -253,7 +250,7 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
     // dynamic bits selection
     if (enable_dynamic_bit_selection_)
         {
-            dynamic_bit_selection_fpga = std::make_shared<Fpga_dynamic_bit_selection>(enable_rx1_band, enable_rx2_band);
+            dynamic_bit_selection_fpga = std::make_shared<Fpga_dynamic_bit_selection>(rx1_enable_, rx2_enable_);
             thread_dynamic_bit_selection = std::thread([&] { run_dynamic_bit_selection_process(); });
         }
 
@@ -339,7 +336,7 @@ void Adrv9361z7035SignalSourceFPGA::run_dynamic_bit_selection_process()
         {
             // setting the bit selection to the top bits
             dynamic_bit_selection_fpga->bit_selection();
-            std::this_thread::sleep_for(std::chrono::milliseconds(Gain_control_period_ms));
+            std::this_thread::sleep_for(std::chrono::milliseconds(GAIN_CONTROL_PERIOD_ms));
             std::lock_guard<std::mutex> lock(dynamic_bit_selection_mutex);
             if (enable_dynamic_bit_selection_ == false)
                 {
@@ -353,7 +350,7 @@ void Adrv9361z7035SignalSourceFPGA::run_buffer_monitor_process()
 {
     bool enable_ovf_check_buffer_monitor_active = true;
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(buffer_monitoring_initial_delay_ms));
+    std::this_thread::sleep_for(std::chrono::milliseconds(BUFFER_MONITOR_INITIAL_DELAY_ms));
 
     while (enable_ovf_check_buffer_monitor_active)
         {
@@ -362,10 +359,9 @@ void Adrv9361z7035SignalSourceFPGA::run_buffer_monitor_process()
                     // If a buffer overflow is detected, the receiver may not function correctly.
                     // This compromises system reliability and can lead to undefined behavior.
                     // To prevent further issues, execution is halted.
-                    LOG(ERROR) << "Buffer Overflow Detected – Execution Halted";
-                    exit(1);
+                    LOG(FATAL) << "Buffer Overflow Detected – Execution Halted";
                 }
-            std::this_thread::sleep_for(std::chrono::milliseconds(buffer_monitor_period_ms));
+            std::this_thread::sleep_for(std::chrono::milliseconds(BUFFER_MONITOR_PERIOD_ms));
             std::lock_guard<std::mutex> lock(buffer_monitor_mutex);
             if (enable_ovf_check_buffer_monitor_active_ == false)
                 {

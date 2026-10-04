@@ -25,6 +25,7 @@
 #endif
 #include "concurrent_queue.h"
 #include "gnss_sdr_valve.h"
+#include "in_memory_configuration.h"
 #include "mmse_resampler_conditioner.h"
 #include <gnuradio/blocks/null_sink.h>
 

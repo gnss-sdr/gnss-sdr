@@ -81,7 +81,7 @@ MAX2771EVKITSignalSourceFPGA::MAX2771EVKITSignalSourceFPGA(const ConfigurationIn
             LOG(WARNING) << "Invalid configuration value for " << freq_name << " parameter. Set to " << freq_name << " = " << GPS_L1_FREQ_HZ;
             freq0_ = GPS_L1_FREQ_HZ;
         }
-    if (freq1_ != GPS_L1_FREQ_HZ and freq1_ != GPS_L2_FREQ_HZ and freq1_ != GPS_L5_FREQ_HZ)
+    if (freq1_ != GPS_L1_FREQ_HZ && freq1_ != GPS_L2_FREQ_HZ && freq1_ != GPS_L5_FREQ_HZ)
         {
             std::cout << "Configuration parameter freq1 should take values " << GPS_L1_FREQ_HZ << ", " << GPS_L2_FREQ_HZ << ", or " << GPS_L5_FREQ_HZ << "\n";
             std::cout << "Error: provided value freq1 = " << freq1_ << " is not among valid values\n";
@@ -89,7 +89,7 @@ MAX2771EVKITSignalSourceFPGA::MAX2771EVKITSignalSourceFPGA(const ConfigurationIn
             LOG(WARNING) << "Invalid configuration value for freq1 parameter. Set to freq1 = " << GPS_L5_FREQ_HZ;
             freq1_ = GPS_L5_FREQ_HZ;
         }
-    if (sample_rate_ != 4092000 and sample_rate_ != 8184000 and sample_rate_ != 16368000 and sample_rate_ != 32736000)
+    if (sample_rate_ != 4092000 && sample_rate_ != 8184000 && sample_rate_ != 16368000 && sample_rate_ != 32736000)
         {
             std::cout << "Configuration parameter sampling_frequency should take values 4092000, 8184000, 16368000, or 32736000\n";
             std::cout << "Error: provided value sampling_frequency = " << sample_rate_ << " is not among valid values\n";
@@ -97,7 +97,7 @@ MAX2771EVKITSignalSourceFPGA::MAX2771EVKITSignalSourceFPGA(const ConfigurationIn
             LOG(WARNING) << "Invalid configuration value for sampling_frequency parameter. Set to sampling_frequency = " << DEFAULT_SAMPLING_RATE;
             sample_rate_ = DEFAULT_SAMPLING_RATE;
         }
-    if (bandwidth_ != 2500000 and bandwidth_ != 4200000 and bandwidth_ != 8700000 and bandwidth_ != 16400000 and bandwidth_ != 23400000 and bandwidth_ != 36000000)
+    if (bandwidth_ != 2500000 && bandwidth_ != 4200000 && bandwidth_ != 8700000 && bandwidth_ != 16400000 && bandwidth_ != 23400000 && bandwidth_ != 36000000)
         {
             std::cout << "Configuration parameter bandwidth can only take the following values: 2500000, 4200000, 8700000, 16400000, 23400000, and 36000000 Hz\n";
             std::cout << "Error: provided value bandwidth = " << bandwidth_ << " is not among valid values\n";
@@ -105,7 +105,7 @@ MAX2771EVKITSignalSourceFPGA::MAX2771EVKITSignalSourceFPGA(const ConfigurationIn
             LOG(WARNING) << "Invalid configuration value for bandwidth parameter. Set to bandwidth = " << DEFAULT_BANDWIDTH;
             bandwidth_ = DEFAULT_BANDWIDTH;
         }
-    if (filter_order_ != 3 and filter_order_ != 5)
+    if (filter_order_ != 3 && filter_order_ != 5)
         {
             std::cout << "Configuration parameter filter_order should take values 3 or 5\n";
             std::cout << "Error: provided value filter_order = " << filter_order_ << " is not among valid values\n";

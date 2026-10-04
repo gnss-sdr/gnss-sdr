@@ -8,7 +8,7 @@
 ########################################################################
 # Project setup
 ########################################################################
-cmake_minimum_required(VERSION 2.8.12...4.3)
+cmake_minimum_required(VERSION 2.8.12...4.4)
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose build type: None Debug Release RelWithDebInfo MinSizeRel")
 project(volk_gnsssdr)
 enable_language(CXX)
@@ -58,6 +58,9 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         endif()
     else()
         message(WARNING "\nCannot determine the version of the compiler selected to build VOLK-GNSSSDR (${APPLE_STR}Clang : ${CMAKE_CXX_COMPILER}). This build may or not work. We highly recommend using Apple Clang version ${APPLECLANG_MIN_VERSION} or more recent, or Clang version ${CLANG_MIN_VERSION} or more recent.")
+    endif()
+    if(NOT CMAKE_VERSION VERSION_LESS 3.28)
+        set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
     endif()
 endif()
 
@@ -206,7 +209,7 @@ message(STATUS "Build type set to ${CMAKE_BUILD_TYPE}.")
 
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_MINOR_VERSION 0)
-set(VERSION_INFO_MAINT_VERSION 21)
+set(VERSION_INFO_MAINT_VERSION 22)
 include(VolkGnsssdrVersion) # setup version info
 include(VolkGnsssdrFindPaths) # set VOLK_GNSSSDR_LIB_PATHS and VOLK_GNSSSDR_INCLUDE_PATHS
 
@@ -300,11 +303,14 @@ if(CMAKE_VERSION VERSION_GREATER 3.0 AND VOLK_CPU_FEATURES)
                 set(ENABLE_INSTALL_AUX ${ENABLE_INSTALL})
             endif()
             set(ENABLE_INSTALL ON)
-            set(AUX_CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+            set(AUX_CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
             add_subdirectory(cpu_features)
-            unset(CMAKE_INSTALL_PREFIX CACHE)
-            set(CMAKE_INSTALL_PREFIX ${AUX_CMAKE_INSTALL_PREFIX})
-            unset(AUX_CMAKE_INSTALL_PREFIX CACHE)
+            set(CMAKE_INSTALL_PREFIX
+                "${AUX_CMAKE_INSTALL_PREFIX}"
+                CACHE PATH "Install path prefix, prepended onto install directories."
+                FORCE
+            )
+            unset(AUX_CMAKE_INSTALL_PREFIX)
             unset(ENABLE_INSTALL)
             if(ENABLE_INSTALL_AUX)
                 set(ENABLE_INSTALL ${ENABLE_INSTALL_AUX})
@@ -530,7 +536,7 @@ install(
 )
 
 install(EXPORT VOLK_GNSSSDR-export FILE VolkGnsssdrTargets.cmake
-    NAMESPACE VolkGnsssdr:: DESTINATION ${CMAKE_MODULES_DIR}/volk_gnsssdr
+    NAMESPACE Volkgnsssdr:: DESTINATION ${CMAKE_MODULES_DIR}/volk_gnsssdr
 )
 
 ########################################################################

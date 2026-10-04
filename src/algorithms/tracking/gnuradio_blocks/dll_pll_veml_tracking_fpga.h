@@ -238,6 +238,7 @@ private:
     bool d_corrected_doppler;
     bool d_interchange_iq;
     bool d_acc_carrier_phase_initialized;
+    bool d_carrier_phase_discontinuity{true};  // pending report of a new carrier phase ambiguity
     bool d_worker_is_done;
     bool d_extended_correlation_in_fpga;
     bool d_current_extended_correlation_in_fpga;

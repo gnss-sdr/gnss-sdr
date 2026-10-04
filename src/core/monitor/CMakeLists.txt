@@ -48,6 +48,7 @@ target_link_libraries(core_monitor
         Gnuradio::runtime
         protobuf::libprotobuf
         core_system_parameters
+        core_libs
     PRIVATE
         Boost::serialization
 )

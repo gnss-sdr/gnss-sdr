@@ -200,13 +200,13 @@ void Pvt_Solution::set_num_valid_observations(int num)
 }
 
 
-void Pvt_Solution::set_pre_2009_file(bool pre_2009_file)
+void Pvt_Solution::set_ref_gps_week(int32_t ref_week)
 {
-    d_pre_2009_file = pre_2009_file;
+    d_ref_gps_week = ref_week;
 }
 
 
-bool Pvt_Solution::is_pre_2009() const
+int32_t Pvt_Solution::get_ref_gps_week() const
 {
-    return d_pre_2009_file;
+    return d_ref_gps_week;
 }

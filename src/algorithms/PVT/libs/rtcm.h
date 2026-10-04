@@ -70,7 +70,8 @@ using b_io_context = boost::asio::io_service;
  * defined in the RTCM 3.2 Standard, plus some utilities to handle messages.
  *
  * Generation of the following Message Types:
- *   1001, 1002, 1003, 1004, 1005, 1006, 1008, 1019, 1020, 1029, 1045
+ *   1001, 1002, 1003, 1004, 1005, 1006, 1008, 1019, 1020, 1029, 1045,
+ *   1057, 1058, 1059, 1060
  *
  * Decoding of the following Message Types:
  *   1019, 1045
@@ -98,7 +99,7 @@ class Rtcm
 {
 public:
     explicit Rtcm(uint16_t port = 2101);  //!< Default constructor that sets TCP port of the RTCM message server and RTCM Station ID. 2101 is the standard RTCM port according to the Internet Assigned Numbers Authority (IANA). See https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml
-    ~Rtcm();
+    ~Rtcm() noexcept;
 
     /*!
      * \brief Prints message type 1001 (L1-Only GPS RTK Observables)
@@ -344,6 +345,26 @@ public:
         bool more_messages);
 
     /*!
+     * \brief Prints message type 1057 (SSR GPS Orbit Correction)
+     */
+    std::string print_MT1057(const Galileo_HAS_data& has_data, bool ssr_multiple_msg_indicator = false);
+
+    /*!
+     * \brief Prints message type 1058 (SSR GPS Clock Correction)
+     */
+    std::string print_MT1058(const Galileo_HAS_data& has_data, bool use_clock_subset = false, bool ssr_multiple_msg_indicator = false);
+
+    /*!
+     * \brief Prints message type 1059 (SSR GPS Satellite Code Bias)
+     */
+    std::string print_MT1059(const Galileo_HAS_data& has_data, bool ssr_multiple_msg_indicator = false);
+
+    /*!
+     * \brief Prints message type 1060 (SSR GPS Combined Orbit and Clock Correction)
+     */
+    std::string print_MT1060(const Galileo_HAS_data& has_data, bool ssr_multiple_msg_indicator = false);
+
+    /*!
      * \brief Prints messages of type IGM01 (SSR Orbit Correction)
      */
     std::vector<std::string> print_IGM01(const Galileo_HAS_data& has_data);
@@ -351,7 +372,7 @@ public:
     /*!
      * \brief Prints messages of type IGM02 (SSR Clock Correction)
      */
-    std::vector<std::string> print_IGM02(const Galileo_HAS_data& has_data);
+    std::vector<std::string> print_IGM02(const Galileo_HAS_data& has_data, bool use_clock_subset = false);
 
     /*!
      * \brief Prints messages of type IGM03 (SSR Combined Orbit and Clock Correction)
@@ -502,11 +523,21 @@ private:
     std::string get_MSM_5_content_signal_data(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& ephCNAV, const Galileo_Ephemeris& ephFNAV, const Glonass_Gnav_Ephemeris& ephGNAV, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
     std::string get_MSM_6_content_signal_data(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& ephCNAV, const Galileo_Ephemeris& ephFNAV, const Glonass_Gnav_Ephemeris& ephGNAV, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
     std::string get_MSM_7_content_signal_data(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& ephCNAV, const Galileo_Ephemeris& ephFNAV, const Glonass_Gnav_Ephemeris& ephGNAV, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
+    bool check_MSM_size_limits(uint32_t msg_number, const std::map<int32_t, Gnss_Synchro>& observables);
+
+    std::string get_MT1057_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
+    std::string get_MT1057_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
+    std::string get_MT1058_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator, bool use_clock_subset = false);
+    std::string get_MT1058_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index, bool use_clock_subset = false);
+    std::string get_MT1059_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
+    std::string get_MT1059_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
+    std::string get_MT1060_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
+    std::string get_MT1060_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
 
     std::string get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
     std::string get_IGM01_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
-    std::string get_IGM02_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
-    std::string get_IGM02_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
+    std::string get_IGM02_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator, bool use_clock_subset = false);
+    std::string get_IGM02_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index, bool use_clock_subset = false);
     std::string get_IGM03_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
     std::string get_IGM03_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
     std::string get_IGM05_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
@@ -515,6 +546,37 @@ private:
     //
     // Utilities
     //
+    static bool get_has_data_gps_index(const Galileo_HAS_data& has_data, uint8_t& nsys);
+    static uint8_t get_MT1057_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys);
+    static uint8_t get_MT1059_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys);
+    static bool get_MT1059_tracking_mode_id(const std::string& signal, uint8_t& tracking_mode_id);
+    static uint8_t get_MT1060_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys);
+    static bool get_IGM05_tracking_mode_id(uint8_t gnss_id, const std::string& signal, uint8_t& tracking_mode_id);
+    static uint8_t get_IGM02_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys, bool use_clock_subset);
+    static uint8_t get_IGM05_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys);
+    static uint8_t get_iod_ssr(uint8_t has_iod_set_id);
+    static uint8_t get_gnss_iod_lsb(uint16_t gnss_iod);
+    static uint32_t get_msm_message_number(char system, uint32_t msm_type);
+    static uint32_t get_MSM_satellite_data_bits(uint32_t msm_type);
+    static uint32_t get_MSM_signal_data_bits(uint32_t msm_type);
+    static uint32_t get_msm_signal_id(const Gnss_Synchro& gnss_synchro);
+    static std::vector<std::pair<int32_t, Gnss_Synchro>> get_ordered_msm_signal_cells(const std::map<int32_t, Gnss_Synchro>& observables);
+    static bool get_msm_signal_wavelength(const Gnss_Synchro& gnss_synchro, double& lambda);
+    static double get_reconstructed_glonass_l1_pseudorange_m(const Gnss_Synchro& gnss_synchro);
+    static bool get_msm_glonass_frequency_channel_number(const Gnss_Synchro& gnss_synchro, uint32_t& frequency_channel_number);
+    static std::bitset<4> get_msm_extended_satellite_info(const Gnss_Synchro& gnss_synchro);
+    static char get_msm_message_system(uint32_t msg_number);
+    static char get_msm_observable_system(const std::map<int32_t, Gnss_Synchro>& observables);
+    static char get_msm_ephemeris_system(const Gps_Ephemeris& gps_eph,
+        const Gps_CNAV_Ephemeris& gps_cnav_eph,
+        const Galileo_Ephemeris& gal_eph,
+        const Glonass_Gnav_Ephemeris& glo_gnav_eph);
+    static uint32_t get_msm_message_number_from_inputs(uint32_t msm_type,
+        const Gps_Ephemeris& gps_eph,
+        const Gps_CNAV_Ephemeris& gps_cnav_eph,
+        const Galileo_Ephemeris& gal_eph,
+        const Glonass_Gnav_Ephemeris& glo_gnav_eph,
+        const std::map<int32_t, Gnss_Synchro>& observables);
     static std::map<std::string, int> galileo_signal_map;
     static std::map<std::string, int> gps_signal_map;
     std::vector<std::pair<int32_t, Gnss_Synchro>> sort_by_signal(const std::vector<std::pair<int32_t, Gnss_Synchro>>& synchro_map) const;
@@ -532,7 +594,7 @@ private:
     uint32_t lock_time_indicator(uint32_t lock_time_period_s);
     uint32_t msm_lock_time_indicator(uint32_t lock_time_period_s);
     uint32_t msm_extended_lock_time_indicator(uint32_t lock_time_period_s);
-    // SSR utilities
+    static uint32_t clamp_rounded_uint(double value, uint32_t max_value);
     uint8_t ssr_update_interval(uint16_t validity_seconds) const;
 
     //
@@ -716,11 +778,11 @@ private:
             boost::asio::async_read(socket_,
                 boost::asio::buffer(read_msg_.data(), Rtcm_Message::header_length),
                 [this, self](boost::system::error_code ec, std::size_t /*length*/) {
-                    if (!ec and read_msg_.decode_header())
+                    if (!ec && read_msg_.decode_header())
                         {
                             do_read_message_body();
                         }
-                    else if (!ec and !read_msg_.decode_header())
+                    else if (!ec && !read_msg_.decode_header())
                         {
                             client_says += read_msg_.data();
                             bool first = true;
@@ -1535,6 +1597,9 @@ private:
 
     std::bitset<2> DF412;
     int32_t set_DF412(uint32_t external_clock_indicator);
+
+    std::bitset<3> DF416;
+    int32_t set_DF416(double obs_time);
 
     std::bitset<1> DF417;
     int32_t set_DF417(bool using_divergence_free_smoothing);

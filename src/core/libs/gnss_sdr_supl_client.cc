@@ -20,6 +20,7 @@
 #include "gnss_sdr_supl_client.h"
 #include "GPS_L1_CA.h"
 #include "MATH_CONSTANTS.h"
+#include "gnss_satellite.h"
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/serialization/map.hpp>
@@ -36,11 +37,47 @@
 #include <absl/log/log.h>
 #endif
 
+namespace
+{
+constexpr uint32_t GPS_LNAV_MIN_PRN = 1U;
+constexpr uint32_t GPS_LNAV_MAX_PRN = 32U;
+constexpr uint32_t QZSS_LNAV_MIN_PRN = 193U;
+constexpr uint32_t QZSS_LNAV_MAX_PRN = 206U;
+}  // namespace
+
 Gnss_Sdr_Supl_Client::Gnss_Sdr_Supl_Client()
     : server_port(0), request(0), mcc(0), mns(0), lac(0), ci(0)
 {
     supl_ctx_new(&ctx);
     assist = supl_assist_t();
+}
+
+
+bool Gnss_Sdr_Supl_Client::is_gps_lnav_prn(uint32_t prn)
+{
+    return prn >= GPS_LNAV_MIN_PRN && prn <= GPS_LNAV_MAX_PRN;
+}
+
+
+bool Gnss_Sdr_Supl_Client::is_qzss_lnav_prn(uint32_t prn)
+{
+    return prn >= QZSS_LNAV_MIN_PRN && prn <= QZSS_LNAV_MAX_PRN;
+}
+
+
+void Gnss_Sdr_Supl_Client::restore_gps_lnav_ephemeris_metadata(Gps_Ephemeris& ephemeris)
+{
+    const bool is_qzss = is_qzss_lnav_prn(ephemeris.PRN);
+    const std::string system = is_qzss ? "QZSS" : "GPS";
+    const uint32_t first_prn = is_qzss ? QZSS_LNAV_MIN_PRN : GPS_LNAV_MIN_PRN;
+    const uint32_t last_prn = is_qzss ? QZSS_LNAV_MAX_PRN : GPS_LNAV_MAX_PRN;
+
+    ephemeris.set_system(is_qzss ? 'J' : 'G');
+    Gnss_Satellite satellite;
+    for (uint32_t prn = first_prn; prn <= last_prn; ++prn)
+        {
+            ephemeris.satelliteBlock[prn] = satellite.what_block(system, prn);
+        }
 }
 
 
@@ -373,20 +410,54 @@ void Gnss_Sdr_Supl_Client::read_supl_data()
 
 bool Gnss_Sdr_Supl_Client::load_ephemeris_xml(const std::string& file_name)
 {
+    gps_ephemeris_map.clear();
+    std::map<int, Gps_Ephemeris> loaded_ephemeris_map;
     std::ifstream ifs;
     try
         {
             ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            if (!ifs.is_open())
+                {
+                    LOG(WARNING) << "Failed to open ephemeris XML file: " << file_name;
+                    return false;
+                }
             boost::archive::xml_iarchive xml(ifs);
-            gps_ephemeris_map.clear();
-            xml >> boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", this->gps_ephemeris_map);
-            LOG(INFO) << "Loaded Ephemeris map data with " << this->gps_ephemeris_map.size() << " satellites";
+            xml >> boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", loaded_ephemeris_map);
         }
-    catch (std::exception& e)
+    catch (const std::exception& e)
         {
-            LOG(WARNING) << e.what() << "File: " << file_name;
+            LOG(WARNING) << e.what() << ". File: " << file_name;
             return false;
         }
+
+    size_t rejected_records = 0;
+    for (auto& item : loaded_ephemeris_map)
+        {
+            const int map_key = item.first;
+            Gps_Ephemeris& ephemeris = item.second;
+            const bool key_matches_prn = map_key >= 0 && static_cast<uint32_t>(map_key) == ephemeris.PRN;
+            const bool valid_prn = is_gps_lnav_prn(ephemeris.PRN) || is_qzss_lnav_prn(ephemeris.PRN);
+
+            if (!key_matches_prn || !valid_prn)
+                {
+                    LOG(WARNING) << "Rejected malformed GPS/QZSS LNAV ephemeris from " << file_name
+                                 << ": map key=" << map_key << ", PRN=" << ephemeris.PRN;
+                    ++rejected_records;
+                    continue;
+                }
+
+            restore_gps_lnav_ephemeris_metadata(ephemeris);
+            gps_ephemeris_map.emplace(map_key, std::move(ephemeris));
+        }
+
+    if (gps_ephemeris_map.empty())
+        {
+            LOG(WARNING) << "No valid GPS/QZSS LNAV ephemeris records found in " << file_name;
+            return false;
+        }
+
+    LOG(INFO) << "Loaded Ephemeris map data with " << gps_ephemeris_map.size() << " satellites"
+              << (rejected_records == 0 ? "" : ", rejected " + std::to_string(rejected_records) + " malformed record(s)");
     return true;
 }
 

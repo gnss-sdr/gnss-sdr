@@ -542,7 +542,7 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
             no_errors = false;
         }
 
-    if (enable_ch1 == true and enable_ch0 == true and freq_ != freq_2ch)
+    if (enable_ch1 == true && enable_ch0 == true && freq_ != freq_2ch)
         {
             std::cout << "Two channels enabled with different frequencies, enabling the external RF transverter board:\n";
             long long int lo_freq_hz = 0;

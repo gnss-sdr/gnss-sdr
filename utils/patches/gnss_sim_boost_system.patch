@@ -1,0 +1,16 @@
+SPDX-License-Identifier: GPL-3.0-or-later
+SPDX-FileCopyrightText: 2026 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+--- CMakeLists.txt  2026-08-15 09:00:00.000000000 +0200
++++ CMakeLists.txt  2026-08-15 09:05:00.000000000 +0200
+@@ -190,8 +190,9 @@
+         endif()
+     endif()
+ endif()
+-# Fix for Boost >= 1.89
+-if(Boost_VERSION_STRING VERSION_GREATER 1.88.99)
++# Fix for Boost >= 1.89 (Boost::system is header-only and b2 stopped installing
++# its CMake config; Boost >= 1.92 installs it again as an INTERFACE target)
++if(Boost_VERSION_STRING VERSION_GREATER 1.88.99 AND NOT TARGET Boost::system)
+     add_library(Boost::system ALIAS Boost::headers)
+ endif()
+

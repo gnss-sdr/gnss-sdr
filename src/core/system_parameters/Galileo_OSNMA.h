@@ -132,7 +132,7 @@ const std::unordered_map<uint8_t, uint16_t> OSNMA_TABLE_10 = {
     {11, 0},
     {12, 0},
     {13, 0},
-    {15, 0},
+    {14, 0},
     {15, 0}};  // key: ks, value: lk_bits
 
 const std::unordered_map<uint8_t, uint8_t> OSNMA_TABLE_11 = {
@@ -159,8 +159,8 @@ const std::unordered_map<std::string, uint16_t> OSNMA_TABLE_15 = {
     {std::string("ECDSA P-521"), 1056}};  // key: ECDSA Curve and hash function, value: {l_ds_bits}
 
 const std::string PEMFILE_DEFAULT("./OSNMA_PublicKey.pem");
-const std::string CRTFILE_DEFAULT("./OSNMA_PublicKey_20240115100000_newPKID_1.crt");
-const std::string MERKLEFILE_DEFAULT("./OSNMA_MerkleTree_20240115100000_newPKID_1.xml");
+const std::string CRTFILE_DEFAULT("./OSNMA_PublicKey.crt");
+const std::string MERKLEFILE_DEFAULT("./OSNMA_MerkleTree.xml");
 const std::string KROOTFILE_DEFAULT("./OSNMA_DSM_KROOT_NMAHeader.bin");
 
 class Mack_lookup

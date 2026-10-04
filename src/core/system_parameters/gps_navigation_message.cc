@@ -19,10 +19,13 @@
 
 #include "gps_navigation_message.h"
 #include "gnss_satellite.h"
+#include <array>
 #include <cmath>     // for fmod, abs, floor
 #include <cstring>   // for memcpy
 #include <iostream>  // for operator<<, cout
 #include <limits>    // for std::numeric_limits
+
+using LnavParameter = std::vector<std::pair<int32_t, int32_t>>;
 
 
 Gps_Navigation_Message::Gps_Navigation_Message(LnavSystem system)
@@ -33,7 +36,7 @@ Gps_Navigation_Message::Gps_Navigation_Message(LnavSystem system)
     const std::string sys_str = (d_system == LnavSystem::GPS) ? "GPS" : "QZSS";
 
     uint32_t prn_min = (d_system == LnavSystem::GPS) ? 1 : 193;
-    uint32_t prn_max = (d_system == LnavSystem::GPS) ? 32 : 202;
+    uint32_t prn_max = (d_system == LnavSystem::GPS) ? 32 : 206;
 
     for (uint32_t i = prn_min; i <= prn_max; ++i)
         {
@@ -46,6 +49,238 @@ Gps_Navigation_Message::Gps_Navigation_Message(LnavSystem system)
 void Gps_Navigation_Message::print_gps_word_bytes(uint32_t GPS_word) const
 {
     std::cout << " Word =" << std::bitset<32>(GPS_word) << '\n';
+}
+
+
+static uint32_t qzss_prn_from_lnav_sv_id(int32_t sv_id)
+{
+    if (sv_id < 1 || sv_id > 10)
+        {
+            return 0U;
+        }
+
+    return static_cast<uint32_t>(sv_id) + QZSS_PRN_OFFSET;
+}
+
+
+static bool qzss_is_qzo(uint32_t prn)
+{
+    return prn >= 194U && prn <= 197U;
+}
+
+
+static double qzss_almanac_eccentricity_ref(uint32_t prn)
+{
+    return qzss_is_qzo(prn) ? QZSS_QZO_ECCENTRICITY_REF : 0.0;
+}
+
+
+static double qzss_almanac_inclination_ref(uint32_t prn)
+{
+    return qzss_is_qzo(prn) ? QZSS_QZO_INCLINATION_REF : 0.0;
+}
+
+
+static int32_t expand_lnav_8bit_week(int32_t week, int32_t reference_week)
+{
+    constexpr int32_t LNAV_UTC_WEEK_MODULUS = 256;
+    constexpr int32_t LNAV_UTC_WEEK_HALF_MODULUS = LNAV_UTC_WEEK_MODULUS / 2;
+
+    int32_t expanded_week = week;
+    while ((expanded_week - reference_week) < -LNAV_UTC_WEEK_HALF_MODULUS)
+        {
+            expanded_week += LNAV_UTC_WEEK_MODULUS;
+        }
+    while ((expanded_week - reference_week) > LNAV_UTC_WEEK_HALF_MODULUS - 1)
+        {
+            expanded_week -= LNAV_UTC_WEEK_MODULUS;
+        }
+
+    return expanded_week;
+}
+
+
+static const std::array<const LnavParameter*, 24>& gps_sf5_health_fields()
+{
+    static const std::array<const LnavParameter*, 24> fields = {
+        &HEALTH_SV1,
+        &HEALTH_SV2,
+        &HEALTH_SV3,
+        &HEALTH_SV4,
+        &HEALTH_SV5,
+        &HEALTH_SV6,
+        &HEALTH_SV7,
+        &HEALTH_SV8,
+        &HEALTH_SV9,
+        &HEALTH_SV10,
+        &HEALTH_SV11,
+        &HEALTH_SV12,
+        &HEALTH_SV13,
+        &HEALTH_SV14,
+        &HEALTH_SV15,
+        &HEALTH_SV16,
+        &HEALTH_SV17,
+        &HEALTH_SV18,
+        &HEALTH_SV19,
+        &HEALTH_SV20,
+        &HEALTH_SV21,
+        &HEALTH_SV22,
+        &HEALTH_SV23,
+        &HEALTH_SV24};
+
+    return fields;
+}
+
+
+static const std::array<const LnavParameter*, 32>& gps_sf4_page25_sv_config_fields()
+{
+    static const std::array<const LnavParameter*, 32> fields = {
+        &SV_CONFIG_SV1,
+        &SV_CONFIG_SV2,
+        &SV_CONFIG_SV3,
+        &SV_CONFIG_SV4,
+        &SV_CONFIG_SV5,
+        &SV_CONFIG_SV6,
+        &SV_CONFIG_SV7,
+        &SV_CONFIG_SV8,
+        &SV_CONFIG_SV9,
+        &SV_CONFIG_SV10,
+        &SV_CONFIG_SV11,
+        &SV_CONFIG_SV12,
+        &SV_CONFIG_SV13,
+        &SV_CONFIG_SV14,
+        &SV_CONFIG_SV15,
+        &SV_CONFIG_SV16,
+        &SV_CONFIG_SV17,
+        &SV_CONFIG_SV18,
+        &SV_CONFIG_SV19,
+        &SV_CONFIG_SV20,
+        &SV_CONFIG_SV21,
+        &SV_CONFIG_SV22,
+        &SV_CONFIG_SV23,
+        &SV_CONFIG_SV24,
+        &SV_CONFIG_SV25,
+        &SV_CONFIG_SV26,
+        &SV_CONFIG_SV27,
+        &SV_CONFIG_SV28,
+        &SV_CONFIG_SV29,
+        &SV_CONFIG_SV30,
+        &SV_CONFIG_SV31,
+        &SV_CONFIG_SV32};
+
+    return fields;
+}
+
+
+void Gps_Navigation_Message::decode_lnav_almanac(const std::bitset<GPS_SUBFRAME_BITS>& subframe_bits, uint32_t prn, double eccentricity_ref, double inclination_ref)
+{
+    a_M_0 = static_cast<double>(read_navigation_signed(subframe_bits, ALM_MZERO));
+    a_M_0 = a_M_0 * ALM_MZERO_LSB;
+    a_ecc = static_cast<double>(read_navigation_unsigned(subframe_bits, ALM_ECC));
+    a_ecc = a_ecc * ALM_ECC_LSB + eccentricity_ref;
+    a_sqrtA = static_cast<double>(read_navigation_unsigned(subframe_bits, ALM_SQUAREA));
+    a_sqrtA = a_sqrtA * ALM_SQUAREA_LSB;
+    a_OMEGA_0 = static_cast<double>(read_navigation_signed(subframe_bits, ALM_OMEGAZERO));
+    a_OMEGA_0 = a_OMEGA_0 * ALM_OMEGAZERO_LSB;
+    a_omega = static_cast<double>(read_navigation_signed(subframe_bits, ALM_OMEGA));
+    a_omega = a_omega * ALM_OMEGA_LSB;
+    a_OMEGAdot = static_cast<double>(read_navigation_signed(subframe_bits, ALM_OMEGADOT));
+    a_OMEGAdot = a_OMEGAdot * ALM_OMEGADOT_LSB;
+    a_delta_i = static_cast<double>(read_navigation_signed(subframe_bits, ALM_DELTAI));
+    a_delta_i = a_delta_i * ALM_DELTAI_LSB + inclination_ref;
+    a_af0 = static_cast<double>(read_navigation_signed(subframe_bits, ALM_AF0));
+    a_af0 = a_af0 * ALM_AF0_LSB;
+    a_af1 = static_cast<double>(read_navigation_signed(subframe_bits, ALM_AF1));
+    a_af1 = a_af1 * ALM_AF1_LSB;
+    a_PRN = prn;
+    i_Toa = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, ALM_TOA));
+    i_Toa = i_Toa * ALM_TOA_LSB;
+    SV_Health = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, ALM_SVHEALTH));
+
+    flag_almanac_valid = true;
+}
+
+
+void Gps_Navigation_Message::decode_lnav_iono_utc(const std::bitset<GPS_SUBFRAME_BITS>& subframe_bits)
+{
+    d_alpha0 = static_cast<double>(read_navigation_signed(subframe_bits, ALPHA_0));
+    d_alpha0 = d_alpha0 * ALPHA_0_LSB;
+    d_alpha1 = static_cast<double>(read_navigation_signed(subframe_bits, ALPHA_1));
+    d_alpha1 = d_alpha1 * ALPHA_1_LSB;
+    d_alpha2 = static_cast<double>(read_navigation_signed(subframe_bits, ALPHA_2));
+    d_alpha2 = d_alpha2 * ALPHA_2_LSB;
+    d_alpha3 = static_cast<double>(read_navigation_signed(subframe_bits, ALPHA_3));
+    d_alpha3 = d_alpha3 * ALPHA_3_LSB;
+    d_beta0 = static_cast<double>(read_navigation_signed(subframe_bits, BETA_0));
+    d_beta0 = d_beta0 * BETA_0_LSB;
+    d_beta1 = static_cast<double>(read_navigation_signed(subframe_bits, BETA_1));
+    d_beta1 = d_beta1 * BETA_1_LSB;
+    d_beta2 = static_cast<double>(read_navigation_signed(subframe_bits, BETA_2));
+    d_beta2 = d_beta2 * BETA_2_LSB;
+    d_beta3 = static_cast<double>(read_navigation_signed(subframe_bits, BETA_3));
+    d_beta3 = d_beta3 * BETA_3_LSB;
+    d_A1 = static_cast<double>(read_navigation_signed(subframe_bits, A_1));
+    d_A1 = d_A1 * A_1_LSB;
+    d_A0 = static_cast<double>(read_navigation_signed(subframe_bits, A_0));
+    d_A0 = d_A0 * A_0_LSB;
+    d_t_OT = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, T_OT));
+    d_t_OT = d_t_OT * T_OT_LSB;
+    i_WN_T = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, WN_T));
+    d_DeltaT_LS = static_cast<int32_t>(read_navigation_signed(subframe_bits, DELTAT_LS));
+    i_WN_LSF = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, WN_LSF));
+    i_DN = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, DN));
+    d_DeltaT_LSF = static_cast<int32_t>(read_navigation_signed(subframe_bits, DELTAT_LSF));
+    flag_iono_valid = true;
+    flag_utc_model_valid = true;
+}
+
+
+void Gps_Navigation_Message::decode_gps_almanac_health_sf4(const std::bitset<GPS_SUBFRAME_BITS>& subframe_bits)
+{
+    const auto& sv_config_fields = gps_sf4_page25_sv_config_fields();
+    for (uint32_t prn = 1; prn <= sv_config_fields.size(); ++prn)
+        {
+            almanacConfigCode[prn] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, *sv_config_fields[prn - 1]));
+        }
+
+    almanacHealth[25] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV25));
+    almanacHealth[26] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV26));
+    almanacHealth[27] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV27));
+    almanacHealth[28] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV28));
+    almanacHealth[29] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV29));
+    almanacHealth[30] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV30));
+    almanacHealth[31] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV31));
+    almanacHealth[32] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV32));
+}
+
+
+void Gps_Navigation_Message::decode_gps_almanac_health_sf5(const std::bitset<GPS_SUBFRAME_BITS>& subframe_bits)
+{
+    i_Toa = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, T_OA));
+    i_Toa = i_Toa * T_OA_LSB;
+    i_WN_A = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, WN_A));
+    flag_almanac_week_valid = true;
+
+    const auto& health_fields = gps_sf5_health_fields();
+    for (uint32_t prn = 1; prn <= health_fields.size(); ++prn)
+        {
+            almanacHealth[prn] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, *health_fields[prn - 1]));
+        }
+}
+
+
+void Gps_Navigation_Message::decode_qzss_almanac_epoch_health(const std::bitset<GPS_SUBFRAME_BITS>& subframe_bits)
+{
+    i_Toa = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, T_OA));
+    i_Toa = i_Toa * T_OA_LSB;
+    i_WN_A = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, WN_A));
+    flag_almanac_week_valid = true;
+
+    const auto& health_fields = gps_sf5_health_fields();
+    for (int32_t sv_id = 1; sv_id <= 10; ++sv_id)
+        {
+            almanacHealth[qzss_prn_from_lnav_sv_id(sv_id)] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, *health_fields[sv_id - 1]));
+        }
 }
 
 
@@ -212,91 +447,57 @@ int32_t Gps_Navigation_Message::subframe_decoder(const char* subframe)
             b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
             SV_data_ID = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, SV_DATA_ID));
             SV_page = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, SV_PAGE));
-            if (SV_page > 24 && SV_page < 33)  // Page 4 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200M)
+            if (d_system == LnavSystem::QZSS)
                 {
-                    if (SV_data_ID != 0)
+                    if (SV_data_ID == QZSS_LNAV_DATA_ID)
                         {
-                            a_M_0 = static_cast<double>(read_navigation_signed(subframe_bits, ALM_MZERO));
-                            a_M_0 = a_M_0 * ALM_MZERO_LSB;
-                            a_ecc = static_cast<double>(read_navigation_unsigned(subframe_bits, ALM_ECC));
-                            a_ecc = a_ecc * ALM_ECC_LSB;
-                            a_sqrtA = static_cast<double>(read_navigation_unsigned(subframe_bits, ALM_SQUAREA));
-                            a_sqrtA = a_sqrtA * ALM_SQUAREA_LSB;
-                            a_OMEGA_0 = static_cast<double>(read_navigation_signed(subframe_bits, ALM_OMEGAZERO));
-                            a_OMEGA_0 = a_OMEGA_0 * ALM_OMEGAZERO_LSB;
-                            a_omega = static_cast<double>(read_navigation_signed(subframe_bits, ALM_OMEGA));
-                            a_omega = a_omega * ALM_OMEGA_LSB;
-                            a_OMEGAdot = static_cast<double>(read_navigation_signed(subframe_bits, ALM_OMEGADOT));
-                            a_OMEGAdot = a_OMEGAdot * ALM_OMEGADOT_LSB;
-                            a_delta_i = static_cast<double>(read_navigation_signed(subframe_bits, ALM_DELTAI));
-                            a_delta_i = a_delta_i * ALM_DELTAI_LSB;
-                            a_af0 = static_cast<double>(read_navigation_signed(subframe_bits, ALM_AF0));
-                            a_af0 = a_af0 * ALM_AF0_LSB;
-                            a_af1 = static_cast<double>(read_navigation_signed(subframe_bits, ALM_AF1));
-                            a_af1 = a_af1 * ALM_AF1_LSB;
-                            a_PRN = SV_page;
-                            i_Toa = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, ALM_TOA));
-                            i_Toa = i_Toa * ALM_TOA_LSB;
-
-                            flag_almanac_valid = true;
+                            const uint32_t qzss_prn = qzss_prn_from_lnav_sv_id(SV_page);
+                            if (qzss_prn != 0U)
+                                {
+                                    decode_lnav_almanac(subframe_bits, qzss_prn, qzss_almanac_eccentricity_ref(qzss_prn), qzss_almanac_inclination_ref(qzss_prn));
+                                }
+                            else if (SV_page == QZSS_ALMANAC_EPOCH_HEALTH_SV_ID)
+                                {
+                                    decode_qzss_almanac_epoch_health(subframe_bits);
+                                }
+                            else if (SV_page == QZSS_IONO_UTC_WIDE_AREA_SV_ID || SV_page == QZSS_IONO_UTC_JAPAN_AREA_SV_ID)
+                                {
+                                    decode_lnav_iono_utc(subframe_bits);
+                                }
                         }
                 }
+            else
+                {
+                    if (SV_data_ID != GPS_LNAV_DATA_ID)
+                        {
+                            break;
+                        }
 
-            if (SV_page == 52)  // Page 13 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200M)
-                {
-                    //! \TODO read Estimated Range Deviation (ERD) values
-                }
+                    if (SV_page > 24 && SV_page < 33)  // Page 4 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200M)
+                        {
+                            decode_lnav_almanac(subframe_bits, static_cast<uint32_t>(SV_page), 0.0, 0.0);
+                        }
 
-            if (SV_page == 56)  // Page 18 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200M)
-                {
-                    // Page 18 - Ionospheric and UTC data
-                    d_alpha0 = static_cast<double>(read_navigation_signed(subframe_bits, ALPHA_0));
-                    d_alpha0 = d_alpha0 * ALPHA_0_LSB;
-                    d_alpha1 = static_cast<double>(read_navigation_signed(subframe_bits, ALPHA_1));
-                    d_alpha1 = d_alpha1 * ALPHA_1_LSB;
-                    d_alpha2 = static_cast<double>(read_navigation_signed(subframe_bits, ALPHA_2));
-                    d_alpha2 = d_alpha2 * ALPHA_2_LSB;
-                    d_alpha3 = static_cast<double>(read_navigation_signed(subframe_bits, ALPHA_3));
-                    d_alpha3 = d_alpha3 * ALPHA_3_LSB;
-                    d_beta0 = static_cast<double>(read_navigation_signed(subframe_bits, BETA_0));
-                    d_beta0 = d_beta0 * BETA_0_LSB;
-                    d_beta1 = static_cast<double>(read_navigation_signed(subframe_bits, BETA_1));
-                    d_beta1 = d_beta1 * BETA_1_LSB;
-                    d_beta2 = static_cast<double>(read_navigation_signed(subframe_bits, BETA_2));
-                    d_beta2 = d_beta2 * BETA_2_LSB;
-                    d_beta3 = static_cast<double>(read_navigation_signed(subframe_bits, BETA_3));
-                    d_beta3 = d_beta3 * BETA_3_LSB;
-                    d_A1 = static_cast<double>(read_navigation_signed(subframe_bits, A_1));
-                    d_A1 = d_A1 * A_1_LSB;
-                    d_A0 = static_cast<double>(read_navigation_signed(subframe_bits, A_0));
-                    d_A0 = d_A0 * A_0_LSB;
-                    d_t_OT = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, T_OT));
-                    d_t_OT = d_t_OT * T_OT_LSB;
-                    i_WN_T = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, WN_T));
-                    d_DeltaT_LS = static_cast<int32_t>(read_navigation_signed(subframe_bits, DELTAT_LS));
-                    i_WN_LSF = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, WN_LSF));
-                    i_DN = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, DN));  // Right-justified ?
-                    d_DeltaT_LSF = static_cast<int32_t>(read_navigation_signed(subframe_bits, DELTAT_LSF));
-                    flag_iono_valid = true;
-                    flag_utc_model_valid = true;
-                }
-            if (SV_page == 57)
-                {
-                    // Reserved
-                }
+                    if (SV_page == 52)  // Page 13 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200M)
+                        {
+                            //! \TODO read Estimated Range Deviation (ERD) values
+                        }
 
-            if (SV_page == 63)  // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200M)
-                {
-                    // Page 25 Anti-Spoofing, SV config and almanac health (PRN: 25-32)
-                    //! \TODO Read Anti-Spoofing, SV config
-                    almanacHealth[25] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV25));
-                    almanacHealth[26] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV26));
-                    almanacHealth[27] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV27));
-                    almanacHealth[28] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV28));
-                    almanacHealth[29] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV29));
-                    almanacHealth[30] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV30));
-                    almanacHealth[31] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV31));
-                    almanacHealth[32] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV32));
+                    if (SV_page == 56)  // Page 18 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200M)
+                        {
+                            decode_lnav_iono_utc(subframe_bits);
+                        }
+                    if (SV_page == 57)
+                        {
+                            // Reserved
+                        }
+
+                    if (SV_page == 63)  // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200M)
+                        {
+                            // Page 25 Anti-Spoofing, SV config and almanac health (PRN: 25-32)
+                            //! \TODO Read Anti-Spoofing, SV config
+                            decode_gps_almanac_health_sf4(subframe_bits);
+                        }
                 }
             break;
 
@@ -311,65 +512,40 @@ int32_t Gps_Navigation_Message::subframe_decoder(const char* subframe)
             b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
             SV_data_ID_5 = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, SV_DATA_ID));
             SV_page_5 = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, SV_PAGE));
-            if ((SV_page_5 > 0) && (SV_page_5 < 25))
+            if (d_system == LnavSystem::QZSS)
                 {
-                    if (SV_data_ID_5 != 0)
+                    if (SV_data_ID_5 == QZSS_LNAV_DATA_ID)
                         {
-                            a_M_0 = static_cast<double>(read_navigation_signed(subframe_bits, ALM_MZERO));
-                            a_M_0 = a_M_0 * ALM_MZERO_LSB;
-                            a_ecc = static_cast<double>(read_navigation_unsigned(subframe_bits, ALM_ECC));
-                            a_ecc = a_ecc * ALM_ECC_LSB;
-                            a_sqrtA = static_cast<double>(read_navigation_unsigned(subframe_bits, ALM_SQUAREA));
-                            a_sqrtA = a_sqrtA * ALM_SQUAREA_LSB;
-                            a_OMEGA_0 = static_cast<double>(read_navigation_signed(subframe_bits, ALM_OMEGAZERO));
-                            a_OMEGA_0 = a_OMEGA_0 * ALM_OMEGAZERO_LSB;
-                            a_omega = static_cast<double>(read_navigation_signed(subframe_bits, ALM_OMEGA));
-                            a_omega = a_omega * ALM_OMEGA_LSB;
-                            a_OMEGAdot = static_cast<double>(read_navigation_signed(subframe_bits, ALM_OMEGADOT));
-                            a_OMEGAdot = a_OMEGAdot * ALM_OMEGADOT_LSB;
-                            a_delta_i = static_cast<double>(read_navigation_signed(subframe_bits, ALM_DELTAI));
-                            a_delta_i = a_delta_i * ALM_DELTAI_LSB;
-                            a_af0 = static_cast<double>(read_navigation_signed(subframe_bits, ALM_AF0));
-                            a_af0 = a_af0 * ALM_AF0_LSB;
-                            a_af1 = static_cast<double>(read_navigation_signed(subframe_bits, ALM_AF1));
-                            a_af1 = a_af1 * ALM_AF1_LSB;
-                            a_PRN = SV_page_5;
-                            i_Toa = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, ALM_TOA));
-                            i_Toa = i_Toa * ALM_TOA_LSB;
-                            SV_Health = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, ALM_SVHEALTH));
-                            flag_almanac_valid = true;
+                            const uint32_t qzss_prn = qzss_prn_from_lnav_sv_id(SV_page_5);
+                            if (qzss_prn != 0U)
+                                {
+                                    decode_lnav_almanac(subframe_bits, qzss_prn, qzss_almanac_eccentricity_ref(qzss_prn), qzss_almanac_inclination_ref(qzss_prn));
+                                }
+                            else if (SV_page_5 == QZSS_ALMANAC_EPOCH_HEALTH_SV_ID)
+                                {
+                                    decode_qzss_almanac_epoch_health(subframe_bits);
+                                }
+                            else if (SV_page_5 == QZSS_IONO_UTC_WIDE_AREA_SV_ID || SV_page_5 == QZSS_IONO_UTC_JAPAN_AREA_SV_ID)
+                                {
+                                    decode_lnav_iono_utc(subframe_bits);
+                                }
                         }
                 }
-            if (SV_page_5 == 51)  // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200M)
+            else
                 {
-                    i_Toa = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, T_OA));
-                    i_Toa = i_Toa * T_OA_LSB;
-                    i_WN_A = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, WN_A));
-                    flag_almanac_week_valid = true;
-                    almanacHealth[1] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV1));
-                    almanacHealth[2] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV2));
-                    almanacHealth[3] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV3));
-                    almanacHealth[4] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV4));
-                    almanacHealth[5] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV5));
-                    almanacHealth[6] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV6));
-                    almanacHealth[7] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV7));
-                    almanacHealth[8] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV8));
-                    almanacHealth[9] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV9));
-                    almanacHealth[10] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV10));
-                    almanacHealth[11] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV11));
-                    almanacHealth[12] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV12));
-                    almanacHealth[13] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV13));
-                    almanacHealth[14] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV14));
-                    almanacHealth[15] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV15));
-                    almanacHealth[16] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV16));
-                    almanacHealth[17] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV17));
-                    almanacHealth[18] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV18));
-                    almanacHealth[19] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV19));
-                    almanacHealth[20] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV20));
-                    almanacHealth[21] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV21));
-                    almanacHealth[22] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV22));
-                    almanacHealth[23] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV23));
-                    almanacHealth[24] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV24));
+                    if (SV_data_ID_5 != GPS_LNAV_DATA_ID)
+                        {
+                            break;
+                        }
+
+                    if ((SV_page_5 > 0) && (SV_page_5 < 25))
+                        {
+                            decode_lnav_almanac(subframe_bits, static_cast<uint32_t>(SV_page_5), 0.0, 0.0);
+                        }
+                    if (SV_page_5 == 51)  // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200M)
+                        {
+                            decode_gps_almanac_health_sf5(subframe_bits);
+                        }
                 }
             break;
 
@@ -385,10 +561,12 @@ double Gps_Navigation_Message::utc_time(double gpstime_corrected) const
 {
     double t_utc;
     double t_utc_daytime;
-    double Delta_t_UTC = d_DeltaT_LS + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - i_WN_T)));
+    const int32_t utc_reference_week = expand_lnav_8bit_week(i_WN_T, i_GPS_week);
+    const int32_t leap_second_event_week = expand_lnav_8bit_week(i_WN_LSF, i_GPS_week);
+    double Delta_t_UTC = d_DeltaT_LS + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - utc_reference_week)));
 
     // Determine if the effectivity time of the leap second event is in the past
-    const int32_t weeksToLeapSecondEvent = i_WN_LSF - i_GPS_week;
+    const int32_t weeksToLeapSecondEvent = leap_second_event_week - i_GPS_week;
 
     if ((weeksToLeapSecondEvent) >= 0)  // is not in the past
         {
@@ -425,7 +603,7 @@ double Gps_Navigation_Message::utc_time(double gpstime_corrected) const
                         }
                     if ((gpstime_corrected - secondOfLeapSecondEvent) > 21600)
                         {
-                            Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - i_WN_T)));
+                            Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - utc_reference_week)));
                             t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
                         }
                 }
@@ -437,7 +615,7 @@ double Gps_Navigation_Message::utc_time(double gpstime_corrected) const
              * WNLSF and DN values, is in the "past" (relative to the user's current time),
              * and the user's current time does not fall in the time span as given above
              * in 20.3.3.5.2.4b,*/
-            Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - i_WN_T)));
+            Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - utc_reference_week)));
             t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
         }
 
@@ -490,8 +668,9 @@ Gps_Ephemeris Gps_Navigation_Message::get_ephemeris() const
     ephemeris.antispoofing_flag = b_antispoofing_flag;
     if (d_system == LnavSystem::QZSS)
         {
+            ephemeris.set_system('J');
             auto gnss_sat = Gnss_Satellite();
-            for (uint32_t i = 193; i < 203; i++)
+            for (uint32_t i = 193; i < 207; i++)
                 {
                     ephemeris.satelliteBlock[i] = gnss_sat.what_block("QZSS", i);
                 }
@@ -503,6 +682,10 @@ Gps_Ephemeris Gps_Navigation_Message::get_ephemeris() const
 Gps_Almanac Gps_Navigation_Message::get_almanac()
 {
     Gps_Almanac almanac;
+    if (d_system == LnavSystem::QZSS)
+        {
+            almanac.set_system('J');
+        }
     almanac.SV_health = SV_Health;
     almanac.PRN = a_PRN;
     almanac.delta_i = a_delta_i;
@@ -516,6 +699,8 @@ Gps_Almanac Gps_Navigation_Message::get_almanac()
     almanac.OMEGAdot = a_OMEGAdot;
     almanac.af0 = a_af0;
     almanac.af1 = a_af1;
+    // A-S flag and SV configuration (page 25), -1 if not decoded yet
+    almanac.AS_status = get_almanac_config_code(a_PRN);
     flag_almanac_valid = false;
     return almanac;
 }
@@ -558,6 +743,28 @@ Gps_Utc_Model Gps_Navigation_Message::get_utc_model()
 }
 
 
+int32_t Gps_Navigation_Message::get_almanac_health(uint32_t prn) const
+{
+    const auto almanac_health = almanacHealth.find(prn);
+    if (almanac_health == almanacHealth.cend())
+        {
+            return 0;
+        }
+    return almanac_health->second;
+}
+
+
+int32_t Gps_Navigation_Message::get_almanac_config_code(uint32_t prn) const
+{
+    const auto config_code = almanacConfigCode.find(prn);
+    if (config_code == almanacConfigCode.cend())
+        {
+            return -1;
+        }
+    return config_code->second;
+}
+
+
 bool Gps_Navigation_Message::satellite_validation()
 {
     bool flag_data_valid = false;
@@ -580,5 +787,5 @@ bool Gps_Navigation_Message::satellite_validation()
 
 bool Gps_Navigation_Message::almanac_validation() const
 {
-    return flag_almanac_valid && (i_WN_A > 0);
+    return flag_almanac_valid && flag_almanac_week_valid;
 }

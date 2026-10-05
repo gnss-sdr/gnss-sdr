@@ -272,6 +272,12 @@ private:
 
     std::vector<std::shared_ptr<SignalSourceInterface>> sig_source_;
     std::vector<std::shared_ptr<GNSSBlockInterface>> sig_conditioner_;
+    // Indexed like sig_conditioner_: which sig_source_ index and RF_channel feed
+    // this conditioner, so a fully bypassed one can still be routed around
+    // (channels connect directly to the source) without depending on which
+    // signal source implementation it is. Populated by
+    // connect_signal_sources_to_signal_conditioners().
+    std::vector<std::pair<int, int>> sig_conditioner_source_and_rf_channel_;
     std::vector<std::shared_ptr<ChannelInterface>> channels_;
     std::shared_ptr<GNSSBlockInterface> observables_;
     std::shared_ptr<GNSSBlockInterface> pvt_;

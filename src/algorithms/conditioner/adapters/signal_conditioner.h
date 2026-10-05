@@ -63,6 +63,15 @@ public:
     inline std::shared_ptr<GNSSBlockInterface> input_filter() { return in_filt_; }
     inline std::shared_ptr<GNSSBlockInterface> resampler() { return res_; }
 
+    //! True when all three stages are Bypass, i.e. this conditioner has
+    //! nothing left to do; the caller is then responsible for connecting
+    //! around it entirely instead of calling connect()/get_left_block()/
+    //! get_right_block().
+    inline bool fully_bypassed()
+    {
+        return data_type_adapt_->implementation() == "Bypass" && in_filt_->implementation() == "Bypass" && res_->implementation() == "Bypass";
+    }
+
 private:
     std::shared_ptr<GNSSBlockInterface> data_type_adapt_;
     std::shared_ptr<GNSSBlockInterface> in_filt_;

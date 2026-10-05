@@ -15,6 +15,7 @@
 
 #include "evk1029_signal_source.h"
 #include "configuration_interface.h"
+#include <gnuradio/filter/firdes.h>
 #include <cmath>
 #include <utility>
 
@@ -37,7 +38,8 @@ Evk1029SignalSource::Evk1029SignalSource(
       dump_(configuration->property(role + ".dump"s, false)),
       item_size_(sizeof(int8_t)),
       rf_channels_(static_cast<unsigned int>(getRfChannels())),
-      enable_throttle_control_(configuration->property(role + ".enable_throttle_control"s, false))
+      enable_throttle_control_(configuration->property(role + ".enable_throttle_control"s, false)),
+      enable_freq_xlating_(configuration->property(role + ".enable_freq_xlating"s, false))
 {
     const std::string filename = configuration->property(role + ".filename"s, "data.bin"s);
     // NOTE: this must be the RAW (pre-decimation) ADC sample rate of the capture
@@ -70,7 +72,34 @@ Evk1029SignalSource::Evk1029SignalSource(
     DLOG(INFO) << "EVK1029 Signal Source: filename=" << filename << ", fs=" << fs << ", item_size=" << item_size_
                << ", RF_channels=" << rf_channels_ << ", seconds_to_skip=" << seconds_to_skip;
 
-    evk1029_source_ = evk1029_make_source(filename, queue, static_cast<double>(fs), bytes_to_skip);
+    std::vector<Evk1029FreqXlatingBand> freq_xlating_bands;
+    if (enable_freq_xlating_)
+        {
+            if (enable_throttle_control_)
+                {
+                    LOG(ERROR) << role << ": enable_throttle_control is not supported together with enable_freq_xlating; ignoring enable_throttle_control";
+                    enable_throttle_control_ = false;
+                }
+            for (unsigned int i = 0; i < rf_channels_; i++)
+                {
+                    const std::string band = role + ".band"s + std::to_string(i) + "_"s;
+                    const double intermediate_freq = configuration->property(band + "IF"s, 0.0);
+                    const int decimation_factor = configuration->property(band + "decimation_factor"s, 1);
+                    const double default_bw = (static_cast<double>(fs) / decimation_factor) / 2;
+                    const double bw = configuration->property(band + "bw"s, default_bw);
+                    const double default_tw = bw / 10.0;
+                    const double tw = configuration->property(band + "tw"s, default_tw);
+                    Evk1029FreqXlatingBand cfg;
+                    cfg.decimation_factor = decimation_factor;
+                    cfg.center_freq = intermediate_freq;
+                    cfg.taps = gr::filter::firdes::low_pass(1.0, static_cast<double>(fs), bw, tw);
+                    LOG(INFO) << role << ": band " << i << " freq-xlating, IF=" << intermediate_freq
+                              << " decimation=" << decimation_factor << " taps=" << cfg.taps.size();
+                    freq_xlating_bands.push_back(std::move(cfg));
+                }
+        }
+
+    evk1029_source_ = evk1029_make_source(filename, queue, static_cast<double>(fs), bytes_to_skip, freq_xlating_bands);
 
     if (enable_throttle_control_)
         {

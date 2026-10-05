@@ -216,6 +216,7 @@ target_link_libraries(signal_source_adapters
     PUBLIC
         Boost::headers
         Gnuradio::blocks
+        Gnuradio::filter
         signal_source_gr_blocks
     PRIVATE
         algorithms_libs

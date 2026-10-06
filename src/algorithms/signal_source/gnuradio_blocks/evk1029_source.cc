@@ -133,13 +133,15 @@ Evk1029Source::Evk1029Source(const std::string& filename, Concurrent_Queue<pmt::
                     b.composite_fir[i] = band.taps[i] * std::exp(gr_complex(0, static_cast<float>(i) * fwT0));
                 }
             std::reverse(b.composite_fir.begin(), b.composite_fir.end());  // match gr::filter::kernel::fir_filter::set_taps()'s internal reversal
+            b.history_offset = history_len_ - (b.composite_fir.size() - 1);
             b.phase_incr = std::exp(gr_complex(0, -fwT0 * static_cast<float>(band.decimation_factor)));
             const float group_delay_phase = -fwT0 * static_cast<float>(band.taps.size() - 1) / 2.0F;
             b.phase = std::exp(gr_complex(0, group_delay_phase));
             b.samples_since_phase_renorm = 0;
             bands_.push_back(std::move(b));
         }
-    decoded_.resize(history_len_);  // leading history_len_ entries start at 0; harmless until the first real samples overwrite them via decode
+    decoded_.resize(history_len_);    // leading history_len_ entries start at 0; harmless until the first real samples overwrite them via decode
+    converted_.resize(history_len_);  // same; carried-forward float history starts at 0.0F to match
 
     binary_input_file_.open(filename.c_str(), std::ios::in | std::ios::binary);
     if (binary_input_file_.is_open())
@@ -287,17 +289,19 @@ int Evk1029Source::work(int noutput_items,
         {
             converted_.resize(history_len_ + decoded_available);
         }
-    volk_8i_s32f_convert_32f(converted_.data(), decoded_.data(), 1.0F / 256.0F, history_len_ + decoded_available);
+    // Only the newly decoded portion needs converting; converted_[0,
+    // history_len_) is already valid, carried forward from the last call
+    // (see below) exactly like decoded_'s own history.
+    volk_8i_s32f_convert_32f(converted_.data() + history_len_, decoded_.data() + history_len_, 1.0F / 256.0F, decoded_available);
 
     for (std::size_t b = 0; b < bands_.size(); b++)
         {
             Band& band = bands_[b];
             auto* out = reinterpret_cast<gr_complex*>(output_items[b]);
             const std::size_t ntaps = band.composite_fir.size();
-            const std::size_t band_offset = history_len_ - (ntaps - 1);  // aligns this band's own (possibly shorter) history window
             for (int i = 0; i < usable_noutput_items; i++)
                 {
-                    volk_32fc_32f_dot_prod_32fc(&out[i], band.composite_fir.data(), converted_.data() + band_offset + static_cast<std::size_t>(i) * decimation, ntaps);
+                    volk_32fc_32f_dot_prod_32fc(&out[i], band.composite_fir.data(), converted_.data() + band.history_offset + static_cast<std::size_t>(i) * decimation, ntaps);
                 }
             volk_32fc_s32fc_x2_rotator2_32fc(out, out, &band.phase_incr, &band.phase, usable_noutput_items);
             band.samples_since_phase_renorm += usable_noutput_items;
@@ -308,10 +312,11 @@ int Evk1029Source::work(int noutput_items,
                 }
         }
 
-    // Carry the last history_len_ decoded samples forward for the next call.
+    // Carry the last history_len_ decoded/converted samples forward for the next call.
     if (history_len_ > 0)
         {
             std::copy(decoded_.begin() + static_cast<std::ptrdiff_t>(decoded_available), decoded_.begin() + static_cast<std::ptrdiff_t>(decoded_available + history_len_), decoded_.begin());
+            std::copy(converted_.begin() + static_cast<std::ptrdiff_t>(decoded_available), converted_.begin() + static_cast<std::ptrdiff_t>(decoded_available + history_len_), converted_.begin());
         }
 
     return usable_noutput_items;

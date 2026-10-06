@@ -27,6 +27,58 @@
 
 using namespace std::string_literals;
 
+namespace
+{
+gr::fft::window::win_type parse_window_type(const std::string& role, const std::string& name)
+{
+    if (name == "hamming")
+        {
+            return gr::fft::window::win_type::WIN_HAMMING;
+        }
+    if (name == "hann")
+        {
+            return gr::fft::window::win_type::WIN_HANN;
+        }
+    if (name == "blackman")
+        {
+            return gr::fft::window::win_type::WIN_BLACKMAN;
+        }
+    if (name == "blackman_harris")
+        {
+            return gr::fft::window::win_type::WIN_BLACKMAN_HARRIS;
+        }
+    if (name == "rectangular")
+        {
+            return gr::fft::window::win_type::WIN_RECTANGULAR;
+        }
+    if (name == "kaiser")
+        {
+            return gr::fft::window::win_type::WIN_KAISER;
+        }
+    LOG(WARNING) << role << ": unknown window type '" << name << "', falling back to hamming";
+    return gr::fft::window::win_type::WIN_HAMMING;
+}
+
+// Kaiser's own empirical formula (1974) relating a target stopband
+// attenuation to the window beta that actually achieves it. GNU Radio's
+// firdes::low_pass_2() does NOT derive beta from attenuation_dB itself --
+// attenuation_dB there only sizes the tap count, while beta independently
+// sets the real window shape -- so this block computes a consistent beta
+// unless the user overrides it explicitly.
+double kaiser_beta_from_attenuation(double attenuation_dB)
+{
+    if (attenuation_dB > 50.0)
+        {
+            return 0.1102 * (attenuation_dB - 8.7);
+        }
+    if (attenuation_dB >= 21.0)
+        {
+            return 0.5842 * std::pow(attenuation_dB - 21.0, 0.4) + 0.07886 * (attenuation_dB - 21.0);
+        }
+    return 0.0;
+}
+}  // namespace
+
 Evk1029SignalSource::Evk1029SignalSource(
     const ConfigurationInterface* configuration,
     const std::string& role,
@@ -89,12 +141,25 @@ Evk1029SignalSource::Evk1029SignalSource(
                     const double bw = configuration->property(band + "bw"s, default_bw);
                     const double default_tw = bw / 10.0;
                     const double tw = configuration->property(band + "tw"s, default_tw);
+                    const std::string window_name = configuration->property(band + "window"s, "hamming"s);
+                    const gr::fft::window::win_type window = parse_window_type(role, window_name);
                     Evk1029FreqXlatingBand cfg;
                     cfg.decimation_factor = decimation_factor;
                     cfg.center_freq = intermediate_freq;
-                    cfg.taps = gr::filter::firdes::low_pass(1.0, static_cast<double>(fs), bw, tw);
+                    if (configuration->is_present(band + "attenuation_dB"s))
+                        {
+                            const double attenuation_dB = configuration->property(band + "attenuation_dB"s, 53.0);
+                            const double default_kaiser_beta = kaiser_beta_from_attenuation(attenuation_dB);
+                            const double kaiser_beta = configuration->property(band + "kaiser_beta"s, default_kaiser_beta);
+                            cfg.taps = gr::filter::firdes::low_pass_2(1.0, static_cast<double>(fs), bw, tw, attenuation_dB, window, kaiser_beta);
+                        }
+                    else
+                        {
+                            const double kaiser_beta = configuration->property(band + "kaiser_beta"s, 6.76);
+                            cfg.taps = gr::filter::firdes::low_pass(1.0, static_cast<double>(fs), bw, tw, window, kaiser_beta);
+                        }
                     LOG(INFO) << role << ": band " << i << " freq-xlating, IF=" << intermediate_freq
-                              << " decimation=" << decimation_factor << " taps=" << cfg.taps.size();
+                              << " decimation=" << decimation_factor << " window=" << window_name << " taps=" << cfg.taps.size();
                     freq_xlating_bands.push_back(std::move(cfg));
                 }
         }

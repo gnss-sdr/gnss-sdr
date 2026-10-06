@@ -236,9 +236,20 @@ std::size_t Evk1029Source::decode_into_buffer(std::size_t decoded_needed)
                         }
                 }
 
-            const uint8_t byte = buffer_[buffer_pos_++];
-            std::memcpy(&decoded_[history_len_ + produced], &kObaDecodeLut[byte], sizeof(uint16_t));
-            produced += 2;
+            // Decode as many bytes as fit both what's left in buffer_ and what's
+            // still needed, in one tight pass -- avoids re-checking the buffer
+            // bound on every single byte like a naive one-byte-at-a-time loop would.
+            const std::size_t bytes_wanted = (decoded_needed - produced) / 2;
+            const std::size_t bytes_available = buffer_valid_ - buffer_pos_;
+            const std::size_t bytes_to_decode = std::min(bytes_wanted, bytes_available);
+            int8_t* dst = &decoded_[history_len_ + produced];
+            const uint8_t* src = &buffer_[buffer_pos_];
+            for (std::size_t i = 0; i < bytes_to_decode; i++)
+                {
+                    std::memcpy(dst + i * 2, &kObaDecodeLut[src[i]], sizeof(uint16_t));
+                }
+            buffer_pos_ += bytes_to_decode;
+            produced += bytes_to_decode * 2;
         }
     return produced;
 }

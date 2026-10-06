@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <complex>
 #include <cstdint>
 #include <cstring>
 #include <iostream>
@@ -152,6 +153,21 @@ Evk1029Source::Evk1029Source(const std::string& filename, Concurrent_Queue<pmt::
                 }
             std::reverse(b.composite_fir.begin(), b.composite_fir.end());  // match gr::filter::kernel::fir_filter::set_taps()'s internal reversal
             b.history_offset = history_len_ - (b.composite_fir.size() - 1);
+#if CUDA_GPU_ACCEL
+            if (band.use_cuda)
+                {
+                    auto engine = std::make_unique<CudaDdcEngine>();
+                    if (engine->is_valid() && engine->set_taps(reinterpret_cast<const std::complex<float>*>(b.composite_fir.data()), static_cast<int>(b.composite_fir.size())))
+                        {
+                            std::cout << "EVK1029_Source: band using CUDA device " << engine->device_name() << '\n';
+                            b.cuda_engine = std::move(engine);
+                        }
+                    else
+                        {
+                            std::cerr << "EVK1029_Source: CUDA DDC engine unavailable (" << engine->last_error() << "), falling back to CPU for this band\n";
+                        }
+                }
+#endif
             b.phase_incr = std::exp(gr_complex(0, -fwT0 * static_cast<float>(band.decimation_factor)));
             const float group_delay_phase = -fwT0 * static_cast<float>(band.taps.size() - 1) / 2.0F;
             b.phase = std::exp(gr_complex(0, group_delay_phase));
@@ -294,10 +310,29 @@ void Evk1029Source::process_band(std::size_t b, int usable_noutput_items, gr_com
     Band& band = bands_[b];
     const std::size_t ntaps = band.composite_fir.size();
     const int decimation = this->decimation();
-    for (int i = 0; i < usable_noutput_items; i++)
+
+    bool computed_on_gpu = false;
+#if CUDA_GPU_ACCEL
+    if (band.cuda_engine)
         {
-            volk_32fc_32f_dot_prod_32fc(&out[i], band.composite_fir.data(), converted_.data() + band.history_offset + static_cast<std::size_t>(i) * decimation, ntaps);
+            const int n_data = (usable_noutput_items - 1) * decimation + static_cast<int>(ntaps);
+            computed_on_gpu = band.cuda_engine->compute(converted_.data() + band.history_offset, n_data, decimation,
+                reinterpret_cast<std::complex<float>*>(out), usable_noutput_items);
+            if (!computed_on_gpu)
+                {
+                    std::cerr << "EVK1029_Source: CUDA DDC compute failed (" << band.cuda_engine->last_error() << "), falling back to CPU\n";
+                    band.cuda_engine.reset();  // stay on CPU for every subsequent call too
+                }
         }
+#endif
+    if (!computed_on_gpu)
+        {
+            for (int i = 0; i < usable_noutput_items; i++)
+                {
+                    volk_32fc_32f_dot_prod_32fc(&out[i], band.composite_fir.data(), converted_.data() + band.history_offset + static_cast<std::size_t>(i) * decimation, ntaps);
+                }
+        }
+
     volk_32fc_s32fc_x2_rotator2_32fc(out, out, &band.phase_incr, &band.phase, usable_noutput_items);
     band.samples_since_phase_renorm += usable_noutput_items;
     if (band.samples_since_phase_renorm > 4096)

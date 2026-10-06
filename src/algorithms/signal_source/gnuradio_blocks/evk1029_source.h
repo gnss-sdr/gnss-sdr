@@ -38,6 +38,9 @@
 #include <string>
 #include <thread>
 #include <vector>
+#if CUDA_GPU_ACCEL
+#include "cuda_ddc_engine.h"
+#endif
 
 /** \addtogroup Signal_Source
  * \{ */
@@ -55,6 +58,7 @@ struct Evk1029FreqXlatingBand
     int decimation_factor;
     double center_freq;
     std::vector<float> taps;  // real low-pass prototype, e.g. from firdes::low_pass
+    bool use_cuda = false;    // only takes effect when built with -DENABLE_CUDA=ON; see evk1029_source.cc
 };
 
 // bytes_to_skip is rounded up to the next 64-bit word, matching the
@@ -147,6 +151,9 @@ private:
     {
         volk::vector<gr_complex> composite_fir;  // frequency-shifted, reversed to match fir_filter's convention
         std::size_t history_offset;              // history_len_ - (composite_fir.size() - 1), precomputed once
+#if CUDA_GPU_ACCEL
+        std::unique_ptr<CudaDdcEngine> cuda_engine;  // null => CPU path (construction or a prior compute() failed)
+#endif
         gr_complex phase;
         gr_complex phase_incr;
         int samples_since_phase_renorm;

@@ -146,6 +146,7 @@ Evk1029SignalSource::Evk1029SignalSource(
                     Evk1029FreqXlatingBand cfg;
                     cfg.decimation_factor = decimation_factor;
                     cfg.center_freq = intermediate_freq;
+                    cfg.use_cuda = configuration->property(band + "cuda"s, false);
                     if (configuration->is_present(band + "attenuation_dB"s))
                         {
                             const double attenuation_dB = configuration->property(band + "attenuation_dB"s, 53.0);

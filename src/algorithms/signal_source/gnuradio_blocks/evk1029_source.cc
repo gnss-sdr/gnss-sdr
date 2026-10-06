@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <cstring>
 #include <iostream>
+#include <thread>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -143,6 +144,16 @@ Evk1029Source::Evk1029Source(const std::string& filename, Concurrent_Queue<pmt::
     decoded_.resize(history_len_);    // leading history_len_ entries start at 0; harmless until the first real samples overwrite them via decode
     converted_.resize(history_len_);  // same; carried-forward float history starts at 0.0F to match
 
+    // One persistent worker per band beyond the first, parallelizing the
+    // per-band FIR work across cores within a single work() call -- band 0
+    // runs on work()'s own calling (GNU Radio scheduler) thread instead.
+    for (std::size_t b = 1; b < bands_.size(); b++)
+        {
+            workers_.push_back(std::make_unique<BandWorker>());
+            BandWorker* w = workers_.back().get();
+            w->thread = std::thread(&Evk1029Source::worker_loop, this, b, w);
+        }
+
     binary_input_file_.open(filename.c_str(), std::ios::in | std::ios::binary);
     if (binary_input_file_.is_open())
         {
@@ -180,6 +191,16 @@ Evk1029Source::Evk1029Source(const std::string& filename, Concurrent_Queue<pmt::
 
 Evk1029Source::~Evk1029Source()
 {
+    for (auto& w : workers_)
+        {
+            {
+                std::lock_guard<std::mutex> lock(w->mutex);
+                w->stop = true;
+            }
+            w->cv.notify_all();
+            w->thread.join();
+        }
+
     try
         {
             if (binary_input_file_.is_open())
@@ -220,6 +241,50 @@ std::size_t Evk1029Source::decode_into_buffer(std::size_t decoded_needed)
             produced += 2;
         }
     return produced;
+}
+
+
+void Evk1029Source::process_band(std::size_t b, int usable_noutput_items, gr_complex* out)
+{
+    Band& band = bands_[b];
+    const std::size_t ntaps = band.composite_fir.size();
+    const int decimation = this->decimation();
+    for (int i = 0; i < usable_noutput_items; i++)
+        {
+            volk_32fc_32f_dot_prod_32fc(&out[i], band.composite_fir.data(), converted_.data() + band.history_offset + static_cast<std::size_t>(i) * decimation, ntaps);
+        }
+    volk_32fc_s32fc_x2_rotator2_32fc(out, out, &band.phase_incr, &band.phase, usable_noutput_items);
+    band.samples_since_phase_renorm += usable_noutput_items;
+    if (band.samples_since_phase_renorm > 4096)
+        {
+            band.phase /= std::abs(band.phase);
+            band.samples_since_phase_renorm = 0;
+        }
+}
+
+
+void Evk1029Source::worker_loop(std::size_t band_index, BandWorker* w)
+{
+    while (true)
+        {
+            std::unique_lock<std::mutex> lock(w->mutex);
+            w->cv.wait(lock, [w] { return w->has_work || w->stop; });
+            if (w->stop)
+                {
+                    return;
+                }
+            const int items = w->usable_noutput_items;
+            gr_complex* out = w->out;
+            lock.unlock();
+
+            process_band(band_index, items, out);
+
+            lock.lock();
+            w->has_work = false;
+            w->finished = true;
+            lock.unlock();
+            w->cv.notify_all();
+        }
 }
 
 
@@ -294,22 +359,30 @@ int Evk1029Source::work(int noutput_items,
     // (see below) exactly like decoded_'s own history.
     volk_8i_s32f_convert_32f(converted_.data() + history_len_, decoded_.data() + history_len_, 1.0F / 256.0F, decoded_available);
 
-    for (std::size_t b = 0; b < bands_.size(); b++)
+    // Hand each band beyond the first to its persistent worker (parallel
+    // FIR work across cores, no extra GNU Radio blocks/ports involved),
+    // then process band 0 on this call's own thread while they run.
+    for (std::size_t b = 1; b < bands_.size(); b++)
         {
-            Band& band = bands_[b];
-            auto* out = reinterpret_cast<gr_complex*>(output_items[b]);
-            const std::size_t ntaps = band.composite_fir.size();
-            for (int i = 0; i < usable_noutput_items; i++)
-                {
-                    volk_32fc_32f_dot_prod_32fc(&out[i], band.composite_fir.data(), converted_.data() + band.history_offset + static_cast<std::size_t>(i) * decimation, ntaps);
-                }
-            volk_32fc_s32fc_x2_rotator2_32fc(out, out, &band.phase_incr, &band.phase, usable_noutput_items);
-            band.samples_since_phase_renorm += usable_noutput_items;
-            if (band.samples_since_phase_renorm > 4096)
-                {
-                    band.phase /= std::abs(band.phase);
-                    band.samples_since_phase_renorm = 0;
-                }
+            BandWorker* w = workers_[b - 1].get();
+            {
+                std::lock_guard<std::mutex> lock(w->mutex);
+                w->usable_noutput_items = usable_noutput_items;
+                w->out = reinterpret_cast<gr_complex*>(output_items[b]);
+                w->finished = false;
+                w->has_work = true;
+            }
+            w->cv.notify_all();
+        }
+    if (!bands_.empty())
+        {
+            process_band(0, usable_noutput_items, reinterpret_cast<gr_complex*>(output_items[0]));
+        }
+    for (std::size_t b = 1; b < bands_.size(); b++)
+        {
+            BandWorker* w = workers_[b - 1].get();
+            std::unique_lock<std::mutex> lock(w->mutex);
+            w->cv.wait(lock, [w] { return w->finished; });
         }
 
     // Carry the last history_len_ decoded/converted samples forward for the next call.

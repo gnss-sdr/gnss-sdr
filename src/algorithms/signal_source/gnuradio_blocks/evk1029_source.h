@@ -30,9 +30,13 @@
 #include <gnuradio/sync_decimator.h>
 #include <pmt/pmt.h>
 #include <volk/volk_alloc.hh>
+#include <condition_variable>
 #include <cstdint>
 #include <fstream>
+#include <memory>
+#include <mutex>
 #include <string>
+#include <thread>
 #include <vector>
 
 /** \addtogroup Signal_Source
@@ -81,6 +85,28 @@ private:
     // Decodes up to decoded_needed samples into decoded_[history_len_...];
     // returns the count actually produced (< decoded_needed at EOF).
     std::size_t decode_into_buffer(std::size_t decoded_needed);
+
+    // Computes band bands_[b]'s output (FIR dot product + rotate) for
+    // usable_noutput_items samples into out. Safe to run concurrently for
+    // different b: only touches output_items[b] and bands_[b]'s own state.
+    void process_band(std::size_t b, int usable_noutput_items, gr_complex* out);
+
+    // One persistent worker per band beyond the first (that one runs on
+    // work()'s own calling thread instead), parked on a condition variable
+    // between calls rather than spawned/joined per call.
+    struct BandWorker
+    {
+        std::thread thread;
+        std::mutex mutex;
+        std::condition_variable cv;
+        bool has_work = false;  // set by work(), cleared by the worker once it starts
+        bool finished = false;  // set by the worker when done, cleared by work()
+        bool stop = false;      // set by the destructor to end the worker's loop
+        int usable_noutput_items = 0;
+        gr_complex* out = nullptr;
+    };
+    void worker_loop(std::size_t band_index, BandWorker* w);
+    std::vector<std::unique_ptr<BandWorker>> workers_;
 
     std::ifstream binary_input_file_;
     Concurrent_Queue<pmt::pmt_t>* queue_;

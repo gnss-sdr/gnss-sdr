@@ -93,6 +93,7 @@ private:
     struct Band
     {
         volk::vector<gr_complex> composite_fir;  // frequency-shifted, reversed to match fir_filter's convention
+        std::size_t history_offset;              // history_len_ - (composite_fir.size() - 1), precomputed once
         gr_complex phase;
         gr_complex phase_incr;
         int samples_since_phase_renorm;

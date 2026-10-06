@@ -27,6 +27,10 @@
 #include <iostream>
 #include <thread>
 
+#if defined(__linux__) || defined(__APPLE__)
+#include <pthread.h>
+#endif
+
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
 #else
@@ -85,6 +89,19 @@ std::array<uint16_t, 256> make_oba_decode_lut()
     return lut;
 }
 const std::array<uint16_t, 256> kObaDecodeLut = make_oba_decode_lut();
+
+// Linux and macOS's pthread_setname_np() take different arguments (the
+// macOS one can only target the calling thread), so this only ever names
+// the thread it's called from -- each BandWorker's own thread calls this
+// on itself at the top of worker_loop().
+void name_current_thread(const std::string& name)
+{
+#if defined(__linux__)
+    pthread_setname_np(pthread_self(), name.c_str());
+#elif defined(__APPLE__)
+    pthread_setname_np(name.c_str());
+#endif
+}
 }  // namespace
 
 
@@ -276,6 +293,7 @@ void Evk1029Source::process_band(std::size_t b, int usable_noutput_items, gr_com
 
 void Evk1029Source::worker_loop(std::size_t band_index, BandWorker* w)
 {
+    name_current_thread("evk1029_wrk" + std::to_string(band_index));
     while (true)
         {
             std::unique_lock<std::mutex> lock(w->mutex);

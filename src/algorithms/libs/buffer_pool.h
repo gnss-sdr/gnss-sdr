@@ -48,6 +48,10 @@ public:
         std::lock_guard<std::mutex> lock(d_mutex);
         if (d_store.empty())
             {
+                if (!d_initialized)
+                    {
+                        return volk_gnsssdr::vector<T>();
+                    }
                 throw std::runtime_error("BufferPool<" + std::string(typeid(T).name()) + ">::take(): the pool is empty");
             }
         volk_gnsssdr::vector<T> rv = std::move(d_store.back());
@@ -83,6 +87,7 @@ public:
                     buffer.resize(d_buffer_size);
                 });
             }
+        d_initialized = true;
     }
     void reserve(size_t n)
     {
@@ -163,6 +168,7 @@ private:
     std::vector<volk_gnsssdr::vector<T>> d_store{};
     size_t d_buffer_size{};
     size_t d_buffer_capacity{};
+    bool d_initialized{};
     std::mutex d_mutex{};
 };
 

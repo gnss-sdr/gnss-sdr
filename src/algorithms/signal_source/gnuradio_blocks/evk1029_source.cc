@@ -160,15 +160,23 @@ Evk1029Source::Evk1029Source(const std::string& filename, Concurrent_Queue<pmt::
         }
     decoded_.resize(history_len_);    // leading history_len_ entries start at 0; harmless until the first real samples overwrite them via decode
     converted_.resize(history_len_);  // same; carried-forward float history starts at 0.0F to match
+    decoded_b_.resize(history_len_);
+    converted_b_.resize(history_len_);
 
-    // One persistent worker per band beyond the first, parallelizing the
-    // per-band FIR work across cores within a single work() call -- band 0
-    // runs on work()'s own calling (GNU Radio scheduler) thread instead.
-    for (std::size_t b = 1; b < bands_.size(); b++)
+    // TEST variant: one persistent worker per band, including band 0 --
+    // work()'s own calling thread now only decodes/dispatches/waits.
+    for (std::size_t b = 0; b < bands_.size(); b++)
         {
             workers_.push_back(std::make_unique<BandWorker>());
             BandWorker* w = workers_.back().get();
             w->thread = std::thread(&Evk1029Source::worker_loop, this, b, w);
+        }
+
+    // Decode-ahead worker (see DecodeWorker's doc comment).
+    if (!bands_.empty())
+        {
+            decode_worker_ = std::make_unique<DecodeWorker>();
+            decode_worker_->thread = std::thread(&Evk1029Source::decode_worker_loop, this);
         }
 
     binary_input_file_.open(filename.c_str(), std::ios::in | std::ios::binary);
@@ -217,6 +225,15 @@ Evk1029Source::~Evk1029Source()
             w->cv.notify_all();
             w->thread.join();
         }
+    if (decode_worker_)
+        {
+            {
+                std::lock_guard<std::mutex> lock(decode_worker_->mutex);
+                decode_worker_->stop = true;
+            }
+            decode_worker_->cv.notify_all();
+            decode_worker_->thread.join();
+        }
 
     try
         {
@@ -236,9 +253,9 @@ Evk1029Source::~Evk1029Source()
 }
 
 
-std::size_t Evk1029Source::decode_into_buffer(std::size_t decoded_needed)
+std::size_t Evk1029Source::decode_into_buffer(std::size_t decoded_needed, std::vector<int8_t>& target, std::size_t start_offset)
 {
-    std::size_t produced = 0;
+    std::size_t produced = start_offset;
     while (produced + 1 < decoded_needed)
         {
             if (buffer_pos_ >= buffer_valid_)
@@ -259,7 +276,7 @@ std::size_t Evk1029Source::decode_into_buffer(std::size_t decoded_needed)
             const std::size_t bytes_wanted = (decoded_needed - produced) / 2;
             const std::size_t bytes_available = buffer_valid_ - buffer_pos_;
             const std::size_t bytes_to_decode = std::min(bytes_wanted, bytes_available);
-            int8_t* dst = &decoded_[history_len_ + produced];
+            int8_t* dst = &target[history_len_ + produced];
             const uint8_t* src = &buffer_[buffer_pos_];
             for (std::size_t i = 0; i < bytes_to_decode; i++)
                 {
@@ -317,6 +334,50 @@ void Evk1029Source::worker_loop(std::size_t band_index, BandWorker* w)
 }
 
 
+void Evk1029Source::decode_worker_loop()
+{
+    name_current_thread("evk1029_dec");
+    while (true)
+        {
+            std::unique_lock<std::mutex> lock(decode_worker_->mutex);
+            decode_worker_->cv.wait(lock, [this] { return decode_worker_->has_work || decode_worker_->stop; });
+            if (decode_worker_->stop)
+                {
+                    return;
+                }
+            const std::size_t decoded_needed = decode_worker_->decoded_needed;
+            const std::size_t start_offset = decode_worker_->start_offset;
+            std::vector<int8_t>* target_decoded = decode_worker_->target_decoded;
+            volk::vector<float>* target_converted = decode_worker_->target_converted;
+            lock.unlock();
+
+            if (target_decoded->size() < history_len_ + decoded_needed)
+                {
+                    target_decoded->resize(history_len_ + decoded_needed);
+                }
+            const std::size_t produced = decode_into_buffer(decoded_needed, *target_decoded, start_offset);
+            if (target_converted->size() < history_len_ + produced)
+                {
+                    target_converted->resize(history_len_ + produced);
+                }
+            // Only the portion beyond start_offset is newly decoded -- the
+            // rest (carried-forward history + leftover) already has valid,
+            // previously-converted floats.
+            if (produced > start_offset)
+                {
+                    volk_8i_s32f_convert_32f(target_converted->data() + history_len_ + start_offset, target_decoded->data() + history_len_ + start_offset, 1.0F / 256.0F, produced - start_offset);
+                }
+
+            lock.lock();
+            decode_worker_->produced = produced;
+            decode_worker_->has_work = false;
+            decode_worker_->finished = true;
+            lock.unlock();
+            decode_worker_->cv.notify_all();
+        }
+}
+
+
 int Evk1029Source::work(int noutput_items,
     gr_vector_const_void_star& input_items __attribute__((unused)),
     gr_vector_void_star& output_items)
@@ -359,13 +420,76 @@ int Evk1029Source::work(int noutput_items,
 
     // Freq-xlating mode: noutput_items is post-decimation complex samples,
     // identical across every band (they share one declared decimation).
+    //
+    // decoded_/converted_ are always "this call's" buffers; decoded_b_/
+    // converted_b_ are their ping-pong partner, prefetched by decode_worker_
+    // during the PREVIOUS call's FIR work (kicked off below) so this call
+    // usually just waits (near-instant) and swaps buffer identities instead
+    // of decoding+converting on its own critical path. The prefetch predicts
+    // "same size as this call"; noutput_items jitters slightly in practice,
+    // so a mismatch is never just discarded -- undershoot is topped up
+    // synchronously, overshoot's unused tail is carried forward as
+    // "leftover" into the next buffer, same as FIR history already is.
     const int decimation = this->decimation();
     const std::size_t decoded_needed = static_cast<std::size_t>(noutput_items) * static_cast<std::size_t>(decimation);
-    if (decoded_.size() < history_len_ + decoded_needed)
+    std::size_t decoded_available;
+    std::size_t leftover = 0;  // samples already decoded/converted beyond decoded_available, carried forward below
+
+    if (first_call_)
         {
-            decoded_.resize(history_len_ + decoded_needed);  // only grows; stays at its high-water mark otherwise
+            if (decoded_.size() < history_len_ + decoded_needed)
+                {
+                    decoded_.resize(history_len_ + decoded_needed);
+                }
+            decoded_available = decode_into_buffer(decoded_needed, decoded_);
+            if (converted_.size() < history_len_ + decoded_available)
+                {
+                    converted_.resize(history_len_ + decoded_available);
+                }
+            volk_8i_s32f_convert_32f(converted_.data() + history_len_, decoded_.data() + history_len_, 1.0F / 256.0F, decoded_available);
+            first_call_ = false;
         }
-    const std::size_t decoded_available = decode_into_buffer(decoded_needed);  // may be < decoded_needed on EOF
+    else if (!decode_worker_has_pending_result_)
+        {
+            // No prefetch was started last time -- that means EOF was already
+            // hit then (see below), so there's nothing more to give.
+            decoded_available = 0;
+        }
+    else
+        {
+            std::unique_lock<std::mutex> lock(decode_worker_->mutex);
+            decode_worker_->cv.wait(lock, [this] { return decode_worker_->finished; });
+            std::size_t produced = decode_worker_->produced;
+            lock.unlock();
+            decode_worker_has_pending_result_ = false;
+
+            if (produced < decoded_needed && !eof_)
+                {
+                    // Prediction (same size as the previous call) undershot --
+                    // should be rare given stable noutput_items; top up
+                    // synchronously rather than returning a short batch.
+                    if (decoded_b_.size() < history_len_ + decoded_needed)
+                        {
+                            decoded_b_.resize(history_len_ + decoded_needed);
+                        }
+                    const std::size_t new_produced = decode_into_buffer(decoded_needed, decoded_b_, produced);
+                    if (converted_b_.size() < history_len_ + new_produced)
+                        {
+                            converted_b_.resize(history_len_ + new_produced);
+                        }
+                    volk_8i_s32f_convert_32f(converted_b_.data() + history_len_ + produced, decoded_b_.data() + history_len_ + produced, 1.0F / 256.0F, new_produced - produced);
+                    produced = new_produced;
+                }
+            decoded_available = std::min(produced, decoded_needed);
+            if (produced > decoded_needed)
+                {
+                    leftover = produced - decoded_needed;  // carried forward below, not discarded
+                }
+
+            std::swap(decoded_, decoded_b_);
+            std::swap(converted_, converted_b_);
+        }
+
     const int usable_noutput_items = static_cast<int>(decoded_available / static_cast<std::size_t>(decimation));
 
     if (usable_noutput_items == 0)
@@ -379,21 +503,46 @@ int Evk1029Source::work(int noutput_items,
             return 0;
         }
 
-    if (converted_.size() < history_len_ + decoded_available)
+    // Kick off decode-ahead for the NEXT call into decoded_b_/converted_b_
+    // (the now-free buffer), to overlap with this call's FIR work below.
+    // Carries forward history_len_ + leftover samples: the usual FIR-history
+    // tail, immediately followed by any samples decoded_ had beyond what
+    // this call actually consumed (unused overshoot from the prediction),
+    // so nothing decoded is ever thrown away.
+    if (!eof_)
         {
-            converted_.resize(history_len_ + decoded_available);
+            const std::size_t carry_len = history_len_ + leftover;
+            if (carry_len > 0)
+                {
+                    if (decoded_b_.size() < carry_len)
+                        {
+                            decoded_b_.resize(carry_len);
+                        }
+                    if (converted_b_.size() < carry_len)
+                        {
+                            converted_b_.resize(carry_len);
+                        }
+                    std::copy(decoded_.begin() + static_cast<std::ptrdiff_t>(decoded_available), decoded_.begin() + static_cast<std::ptrdiff_t>(decoded_available + carry_len), decoded_b_.begin());
+                    std::copy(converted_.begin() + static_cast<std::ptrdiff_t>(decoded_available), converted_.begin() + static_cast<std::ptrdiff_t>(decoded_available + carry_len), converted_b_.begin());
+                }
+            {
+                std::lock_guard<std::mutex> lock(decode_worker_->mutex);
+                decode_worker_->decoded_needed = std::max(decoded_needed, leftover);  // predict same size as this call
+                decode_worker_->start_offset = leftover;
+                decode_worker_->target_decoded = &decoded_b_;
+                decode_worker_->target_converted = &converted_b_;
+                decode_worker_->finished = false;
+                decode_worker_->has_work = true;
+            }
+            decode_worker_->cv.notify_all();
+            decode_worker_has_pending_result_ = true;
         }
-    // Only the newly decoded portion needs converting; converted_[0,
-    // history_len_) is already valid, carried forward from the last call
-    // (see below) exactly like decoded_'s own history.
-    volk_8i_s32f_convert_32f(converted_.data() + history_len_, decoded_.data() + history_len_, 1.0F / 256.0F, decoded_available);
 
-    // Hand each band beyond the first to its persistent worker (parallel
-    // FIR work across cores, no extra GNU Radio blocks/ports involved),
-    // then process band 0 on this call's own thread while they run.
-    for (std::size_t b = 1; b < bands_.size(); b++)
+    // TEST variant: hand every band, including band 0, to its own
+    // persistent worker -- this call's own thread only dispatches and waits.
+    for (std::size_t b = 0; b < bands_.size(); b++)
         {
-            BandWorker* w = workers_[b - 1].get();
+            BandWorker* w = workers_[b].get();
             {
                 std::lock_guard<std::mutex> lock(w->mutex);
                 w->usable_noutput_items = usable_noutput_items;
@@ -403,22 +552,11 @@ int Evk1029Source::work(int noutput_items,
             }
             w->cv.notify_all();
         }
-    if (!bands_.empty())
+    for (std::size_t b = 0; b < bands_.size(); b++)
         {
-            process_band(0, usable_noutput_items, reinterpret_cast<gr_complex*>(output_items[0]));
-        }
-    for (std::size_t b = 1; b < bands_.size(); b++)
-        {
-            BandWorker* w = workers_[b - 1].get();
+            BandWorker* w = workers_[b].get();
             std::unique_lock<std::mutex> lock(w->mutex);
             w->cv.wait(lock, [w] { return w->finished; });
-        }
-
-    // Carry the last history_len_ decoded/converted samples forward for the next call.
-    if (history_len_ > 0)
-        {
-            std::copy(decoded_.begin() + static_cast<std::ptrdiff_t>(decoded_available), decoded_.begin() + static_cast<std::ptrdiff_t>(decoded_available + history_len_), decoded_.begin());
-            std::copy(converted_.begin() + static_cast<std::ptrdiff_t>(decoded_available), converted_.begin() + static_cast<std::ptrdiff_t>(decoded_available + history_len_), converted_.begin());
         }
 
     return usable_noutput_items;

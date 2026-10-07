@@ -82,9 +82,36 @@ private:
         gr_vector_const_void_star& input_items,
         gr_vector_void_star& output_items) override;
 
-    // Decodes up to decoded_needed samples into decoded_[history_len_...];
-    // returns the count actually produced (< decoded_needed at EOF).
-    std::size_t decode_into_buffer(std::size_t decoded_needed);
+    // Decodes up to decoded_needed samples into target[start_offset...];
+    // returns the total valid count (>= start_offset, < decoded_needed at EOF).
+    std::size_t decode_into_buffer(std::size_t decoded_needed, std::vector<int8_t>& target, std::size_t start_offset = 0);
+
+    // Ping-pong decode-ahead: a persistent thread decodes+converts the NEXT
+    // chunk into whichever of decoded_/decoded_b_ isn't the active one,
+    // concurrently with this call's FIR work -- so by the time the
+    // following work() call runs, decode+convert for it is usually already
+    // done, taking that serial cost off the critical path. See work()'s
+    // doc comment for the full protocol (bootstrap, steady state, EOF).
+    struct DecodeWorker
+    {
+        std::thread thread;
+        std::mutex mutex;
+        std::condition_variable cv;
+        bool has_work = false;
+        bool finished = true;
+        bool stop = false;
+        std::size_t decoded_needed = 0;
+        std::size_t start_offset = 0;  // target already has this many valid samples (carried-forward leftover + history)
+        std::vector<int8_t>* target_decoded = nullptr;
+        volk::vector<float>* target_converted = nullptr;
+        std::size_t produced = 0;
+    };
+    void decode_worker_loop();
+    std::unique_ptr<DecodeWorker> decode_worker_;
+    std::vector<int8_t> decoded_b_;    // decoded_'s ping-pong partner
+    volk::vector<float> converted_b_;  // converted_'s ping-pong partner
+    bool first_call_ = true;
+    bool decode_worker_has_pending_result_ = false;  // false only once EOF means no further prefetch was started
 
     // Computes band bands_[b]'s output (FIR dot product + rotate) for
     // usable_noutput_items samples into out. Safe to run concurrently for

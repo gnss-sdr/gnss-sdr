@@ -194,7 +194,18 @@ void code_gen_complex_sampled(signal_flag sig_flag, const Acq_Conf& conf, const 
             }
             break;
         case BDS_B2A:
-            beidou_b2a_code_gen_complex_sampled(dest, gnss_synchro.PRN, sampling_freq, 0);
+            if (conf.acquire_iq)
+                {
+                    beidou_b2a_iq_code_gen_complex_sampled(dest, gnss_synchro.PRN, sampling_freq, 0);
+                }
+            else if (conf.acquire_pilot)
+                {
+                    beidou_b2a_pilot_code_gen_complex_sampled(dest, gnss_synchro.PRN, sampling_freq, 0);
+                }
+            else
+                {
+                    beidou_b2a_data_code_gen_complex_sampled(dest, gnss_synchro.PRN, sampling_freq, 0);
+                }
             break;
         case QZS_J1:
             qzss_l1_code_gen_complex_sampled(dest, gnss_synchro.PRN, sampling_freq);
@@ -236,6 +247,12 @@ Acq_Conf get_acq_conf(const ConfigurationInterface* configuration, const std::st
         {
             acq_parameters.acquire_pilot = configuration->property(role + ".acquire_pilot", true);
             acq_parameters.qmboc = configuration->property(role + ".qmboc", true);
+        }
+
+    if (sig_flag == BDS_B2A)
+        {
+            acq_parameters.acquire_pilot = configuration->property(role + ".acquire_pilot", true);
+            acq_parameters.acquire_iq = configuration->property(role + ".acquire_iq", acq_parameters.acquire_iq);
         }
 
 #if USE_GLOG_AND_GFLAGS

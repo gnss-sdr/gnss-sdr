@@ -812,7 +812,7 @@ void kf_tracking::start_tracking()
 
     else if (d_systemName == "Beidou" && d_signal_type == "5D")
         {
-            beidou_b2a_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
+            beidou_b2a_data_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
         }
 
     else if (d_systemName == "Beidou" && d_signal_type == "B3")

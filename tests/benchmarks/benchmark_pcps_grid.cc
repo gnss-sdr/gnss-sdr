@@ -35,6 +35,7 @@
 #include <cstdint>
 #include <memory>
 #include <random>
+#include <string>
 #include <vector>
 #if CUDA_GPU_ACCEL
 #include "cuda_pcps_engine.h"
@@ -177,6 +178,7 @@ struct MultiChannelFixture
     cvec fft_codes;
     std::vector<cvec> wipeoffs;
     std::string error;
+    bool ready = false;
 
     bool setup(uint32_t fft_size, uint32_t bins, int channels)
     {
@@ -209,6 +211,7 @@ struct MultiChannelFixture
                         return false;
                     }
             }
+        ready = true;
         return true;
     }
 };
@@ -233,6 +236,13 @@ void bm_pcps_grid_cuda_channels(benchmark::State& state)
     const int c = state.thread_index();
     for (auto _ : state)
         {
+            // Threads other than 0 only learn about a setup failure here, after
+            // the start barrier releases them.
+            if (!fixture.ready)
+                {
+                    state.SkipWithError("multi-channel setup failed");
+                    break;
+                }
             if (!fixture.engines[c]->compute_grid(fixture.in.data(), CudaPcpsEngine::MAIN_GRID, bins, 0, false, fixture.out_rows[c].data()))
                 {
                     state.SkipWithError(fixture.engines[c]->last_error().c_str());

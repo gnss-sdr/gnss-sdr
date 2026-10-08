@@ -82,7 +82,8 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
       d_T_rx_TOW_set(false),
       d_always_output_gs(conf_.always_output_gs),
       d_dump(conf_.dump),
-      d_dump_mat(conf_.dump_mat && d_dump)
+      d_dump_mat(conf_.dump_mat && d_dump),
+      d_early_monitor(conf_.early_monitor)
 {
     // PVT input message port
     this->message_port_register_in(pmt::mp("pvt_to_observables"));
@@ -262,6 +263,10 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
                     switch (command_from_pvt)
                         {
                         case 1:  // reset TOW
+                            if (d_early_monitor)
+                                {
+                                    break;
+                                }
                             d_T_rx_TOW_ms = 0;
                             d_last_rx_clock_round20ms_error = 0;
                             d_T_rx_TOW_set = false;
@@ -1296,7 +1301,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                             d_channel_phase_discontinuity_pending[n] = true;
                         }
                     // Push the valid tracking Gnss_Synchros to their corresponding deque
-                    if (in[n][m].Flag_valid_word)
+                    if ((in[n][m].Flag_valid_symbol_output && d_early_monitor) || in[n][m].Flag_valid_word)
                         {
                             if (std::string(in[n][m].Signal, 2) == std::string("E6"))
                                 {
@@ -1347,10 +1352,13 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                                     interpolated_gnss_synchro = d_last_trk_data[n];
                                     n_trk_only++;
                                 }
-                            interpolated_gnss_synchro.Flag_valid_pseudorange = false;
-                            interpolated_gnss_synchro.Flag_valid_word = false;
-                            interpolated_gnss_synchro.Flag_valid_acquisition = false;
-                            interpolated_gnss_synchro.fs = 0;
+                            if (!d_early_monitor)
+                                {
+                                    interpolated_gnss_synchro.Flag_valid_pseudorange = false;
+                                    interpolated_gnss_synchro.Flag_valid_word = false;
+                                    interpolated_gnss_synchro.Flag_valid_acquisition = false;
+                                    interpolated_gnss_synchro.fs = 0;
+                                }
                             interpolated_gnss_synchro.Channel_ID = n;
                         }
                     else

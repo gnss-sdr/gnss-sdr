@@ -154,7 +154,9 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
       d_dump_mat(d_trk_parameters.dump_mat && d_dump),
       d_acc_carrier_phase_initialized(false),
       d_Flag_PLL_180_deg_phase_locked(false),
-      d_use_histogram_bit_sync(false)
+      d_use_histogram_bit_sync(false),
+      d_early_monitor(conf_.early_monitor),
+      d_beidou_b1c(false)
 {
     // Direct block construction can bypass SetFromConfiguration().
     d_trk_parameters.f_error_accumulation = std::max(1U, d_trk_parameters.f_error_accumulation);
@@ -509,6 +511,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                             d_secondary = false;
                             d_signal_pretty_name = d_signal_pretty_name + "D";
                         }
+                    d_beidou_b1c = true;
                 }
             else
                 {
@@ -2482,10 +2485,13 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                         log_data();
 
                         // Prefill telemetry history with 10 ms B1C symbols before secondary lock.
-                        if (d_systemName == "Beidou" && d_signal_type == "1D" && d_trk_parameters.track_pilot &&
-                            !d_pull_in_transitory && d_current_data_symbol == 0)
+                        //
+                        if ((d_beidou_b1c && d_trk_parameters.track_pilot &&
+                                !d_pull_in_transitory && d_current_data_symbol == 0) ||
+                            d_early_monitor)
                             {
-                                d_P_data_accu = d_Prompt_Data[0];
+                                d_P_data_accu = d_beidou_b1c ? d_Prompt_Data[0] : *d_Prompt;
+
                                 current_synchro_data = *d_acquisition_gnss_synchro;
                                 assign_correlators_to_synchro(current_synchro_data);
                                 current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;

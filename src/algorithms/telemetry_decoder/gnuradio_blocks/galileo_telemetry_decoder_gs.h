@@ -168,6 +168,7 @@ private:
     const bool d_there_are_e6_channels;
     const bool d_use_ced;
     const bool d_tow_to_trk;
+    const bool d_early_monitor;
 };
 
 

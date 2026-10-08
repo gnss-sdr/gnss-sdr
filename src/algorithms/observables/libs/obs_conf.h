@@ -43,6 +43,7 @@ public:
     bool dump_mat{false};
     bool enable_E6{true};
     bool enable_monitor{false};
+    bool early_monitor{true};
 };
 
 /** \} */

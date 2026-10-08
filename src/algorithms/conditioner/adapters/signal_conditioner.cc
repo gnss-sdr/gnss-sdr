@@ -61,6 +61,13 @@ void SignalConditioner::connect(gr::top_block_sptr top_block)
     in_filt_->connect(top_block);
     res_->connect(top_block);
 
+    if (fully_bypassed())
+        {
+            // All three stages are Bypass: nothing to wire between them.
+            connected_ = true;
+            return;
+        }
+
     if (in_filt_->item_size() == 0)
         {
             throw std::invalid_argument("itemsize mismatch: Invalid input/output data type configuration for the InputFilter");
@@ -98,10 +105,13 @@ void SignalConditioner::disconnect(gr::top_block_sptr top_block)
             return;
         }
 
-    top_block->disconnect(data_type_adapt_->get_right_block(), 0,
-        in_filt_->get_left_block(), 0);
-    top_block->disconnect(in_filt_->get_right_block(), 0,
-        res_->get_left_block(), 0);
+    if (!fully_bypassed())
+        {
+            top_block->disconnect(data_type_adapt_->get_right_block(), 0,
+                in_filt_->get_left_block(), 0);
+            top_block->disconnect(in_filt_->get_right_block(), 0,
+                res_->get_left_block(), 0);
+        }
 
     data_type_adapt_->disconnect(top_block);
     in_filt_->disconnect(top_block);
@@ -113,11 +123,11 @@ void SignalConditioner::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr SignalConditioner::get_left_block()
 {
-    return data_type_adapt_->get_left_block();
+    return fully_bypassed() ? nullptr : data_type_adapt_->get_left_block();
 }
 
 
 gr::basic_block_sptr SignalConditioner::get_right_block()
 {
-    return res_->get_right_block();
+    return fully_bypassed() ? nullptr : res_->get_right_block();
 }

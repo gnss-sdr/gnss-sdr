@@ -35,6 +35,7 @@
 #include <cstdint>
 #include <memory>
 #include <random>
+#include <string>
 #include <vector>
 #if CUDA_GPU_ACCEL
 #include "cuda_pcps_engine.h"
@@ -163,6 +164,107 @@ void bm_pcps_grid_cuda(benchmark::State& state)
     set_counters(state, fft_size, bins);
     state.SetLabel(gpu.device_name());
 }
+
+// --------------------------------------------------------------------------
+// Concurrent channels: one engine (and one CUDA stream) per thread, as the
+// receiver does when several channels are in acquisition at the same time.
+// --------------------------------------------------------------------------
+struct MultiChannelFixture
+{
+    std::vector<std::unique_ptr<CudaPcpsEngine>> engines;
+    std::vector<std::vector<fvec>> magnitude;
+    std::vector<std::vector<float*>> out_rows;
+    cvec in;
+    cvec fft_codes;
+    std::vector<cvec> wipeoffs;
+    std::string error;
+    bool ready = false;
+
+    bool setup(uint32_t fft_size, uint32_t bins, int channels)
+    {
+        const double fs = 4.0e6;
+        in = random_cvec(fft_size, 1U);
+        fft_codes = random_cvec(fft_size, 2U);
+        wipeoffs = make_wipeoffs(fft_size, bins, fs);
+        std::vector<const std::complex<float>*> wipe_rows(bins);
+        for (uint32_t k = 0; k < bins; k++) wipe_rows[k] = wipeoffs[k].data();
+
+        engines.resize(channels);
+        magnitude.resize(channels);
+        out_rows.resize(channels);
+        for (int c = 0; c < channels; c++)
+            {
+                engines[c] = std::make_unique<CudaPcpsEngine>(fft_size, fft_size, bins);
+                if (!engines[c]->is_valid())
+                    {
+                        error = engines[c]->last_error();
+                        return false;
+                    }
+                magnitude[c].assign(bins, fvec(fft_size));
+                out_rows[c].resize(bins);
+                for (uint32_t k = 0; k < bins; k++) out_rows[c][k] = magnitude[c][k].data();
+                if (!engines[c]->set_doppler_wipeoffs(CudaPcpsEngine::MAIN_GRID, wipe_rows.data(), bins) ||
+                    !engines[c]->set_fft_codes(fft_codes.data()) ||
+                    !engines[c]->compute_grid(in.data(), CudaPcpsEngine::MAIN_GRID, bins, 0, false, out_rows[c].data()))
+                    {
+                        error = engines[c]->last_error();
+                        return false;
+                    }
+            }
+        ready = true;
+        return true;
+    }
+};
+
+void bm_pcps_grid_cuda_channels(benchmark::State& state)
+{
+    const auto fft_size = static_cast<uint32_t>(state.range(0));
+    const auto bins = static_cast<uint32_t>(state.range(1));
+    const int channels = state.threads();
+    static MultiChannelFixture fixture;
+
+    if (state.thread_index() == 0)
+        {
+            fixture = MultiChannelFixture();
+            if (!fixture.setup(fft_size, bins, channels))
+                {
+                    state.SkipWithError(fixture.error.c_str());
+                    return;
+                }
+        }
+
+    const int c = state.thread_index();
+    for (auto _ : state)
+        {
+            // Threads other than 0 only learn about a setup failure here, after
+            // the start barrier releases them.
+            if (!fixture.ready)
+                {
+                    state.SkipWithError("multi-channel setup failed");
+                    break;
+                }
+            if (!fixture.engines[c]->compute_grid(fixture.in.data(), CudaPcpsEngine::MAIN_GRID, bins, 0, false, fixture.out_rows[c].data()))
+                {
+                    state.SkipWithError(fixture.engines[c]->last_error().c_str());
+                    break;
+                }
+            benchmark::DoNotOptimize(fixture.magnitude[c][0].data());
+        }
+    // Counter values are summed across threads, and the rate counters are fed
+    // the iteration count already totaled over threads. kAvgThreads therefore
+    // turns an iteration-invariant rate into the aggregate device rate, and
+    // scaling the value by 1/channels turns it into the per-channel rate.
+    const double per_channel = 1.0 / static_cast<double>(channels);
+    state.counters["fft_size"] = benchmark::Counter(fft_size, benchmark::Counter::kAvgThreads);
+    state.counters["bins"] = benchmark::Counter(bins, benchmark::Counter::kAvgThreads);
+    state.counters["channels"] = benchmark::Counter(channels, benchmark::Counter::kAvgThreads);
+    state.counters["dwells/s/ch"] = benchmark::Counter(per_channel,
+        benchmark::Counter::kIsIterationInvariantRate | benchmark::Counter::kAvgThreads);
+    state.counters["dwells/s_all_ch"] = benchmark::Counter(1,
+        benchmark::Counter::kIsIterationInvariantRate | benchmark::Counter::kAvgThreads);
+    state.counters["grid_cells/s_all_ch"] = benchmark::Counter(static_cast<double>(fft_size) * bins,
+        benchmark::Counter::kIsIterationInvariantRate | benchmark::Counter::kAvgThreads);
+}
 #endif
 }  // namespace
 
@@ -176,6 +278,14 @@ const std::vector<std::vector<int64_t>> grid_args{
 BENCHMARK(bm_pcps_grid_cpu)->ArgsProduct(grid_args)->Unit(benchmark::kMicrosecond)->UseRealTime();
 #if CUDA_GPU_ACCEL
 BENCHMARK(bm_pcps_grid_cuda)->ArgsProduct(grid_args)->Unit(benchmark::kMicrosecond)->UseRealTime();
+#endif
+
+#if CUDA_GPU_ACCEL
+BENCHMARK(bm_pcps_grid_cuda_channels)
+    ->ArgsProduct({{4000, 8000, 20000}, {41}})
+    ->ThreadRange(1, 8)
+    ->Unit(benchmark::kMicrosecond)
+    ->UseRealTime();
 #endif
 
 BENCHMARK_MAIN();

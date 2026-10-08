@@ -3194,7 +3194,37 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             contributing_signals.push_back(&synchro);
                                         }
                                 }
-                            const bool combined = contributing_signals.size() > 1;
+                            // Multiple signals tracked for this satellite isn't enough on its
+                            // own: the solver only actually builds an iono-free combination out
+                            // of them when ionoopt is IONOOPT_IFLC (PVT.iono_model=Iono-Free-LC).
+                            // With any other iono_model, each tracked signal of this satellite
+                            // is used as its own independent observation in the LSQ solve, not
+                            // combined -- reporting combined=true then would be misleading.
+                            //
+                            // For Galileo, prange()'s IFLC branch (rtklib_pntpos.cc) always
+                            // combines whatever occupies rtklib band-index slots 0 and 2 (i=0,
+                            // j=2, hardcoded there for SYS_GAL) -- normally 1B+5X/7X, but 1B+E6
+                            // when E5 isn't selected for PVT, see this class's constructor,
+                            // where E6 is assigned slot 2 only in that case (slot 1 otherwise,
+                            // alongside an actual 5X/7X pair). A signal in neither slot is never
+                            // part of the combination, regardless of ionoopt.
+                            const auto is_galileo_combinable_slot = [this](const std::string &sig) {
+                                const auto it = d_rtklib_band_index.find(sig);
+                                return it != d_rtklib_band_index.cend() && (it->second == 0 || it->second == 2);
+                            };
+                            std::size_t combinable_signal_count = contributing_signals.size();
+                            if (sys_char == 'E')
+                                {
+                                    combinable_signal_count = 0;
+                                    for (const Gnss_Synchro *synchro : contributing_signals)
+                                        {
+                                            if (is_galileo_combinable_slot(std::string(synchro->Signal, 2)))
+                                                {
+                                                    combinable_signal_count++;
+                                                }
+                                        }
+                                }
+                            const bool combined = combinable_signal_count > 1 && d_rtk.opt.ionoopt == IONOOPT_IFLC;
                             // satazel() (rtklib_rtkcmn.cc) returns azimuth in [0, 2*pi); wrap to
                             // (-180, 180] deg, the convention expected downstream (monitor sky plot).
                             double az_deg = pvt_ssat[sat_idx].azel[0] * R2D;
@@ -3210,8 +3240,16 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     info.signal = std::string(synchro->Signal, 2);
                                     info.azimuth_deg = az_deg;
                                     info.elevation_deg = pvt_ssat[sat_idx].azel[1] * R2D;
-                                    info.combined = combined;
-                                    info.used = used;
+                                    const bool signal_is_combinable = (sys_char != 'E') || is_galileo_combinable_slot(info.signal);
+                                    info.combined = combined && signal_is_combinable;
+                                    // used reflects whether THIS signal was actually eligible to
+                                    // be handed to the solver, not just whether the satellite's
+                                    // overall fix used it: is_galileo_signal_used_in_pvt()
+                                    // independently excludes E6 when PVT.use_e6_for_pvt=false
+                                    // (and, for the other Galileo signals, gates on the selected
+                                    // nav message type), regardless of the satellite-level flag.
+                                    const bool signal_eligible = (sys_char != 'E') || is_galileo_signal_used_in_pvt(info.signal);
+                                    info.used = used && signal_eligible;
                                     // Broadcast health of this signal, as reported by the
                                     // navigation message that carries it (true when no health
                                     // information is available). Independent of `used`.

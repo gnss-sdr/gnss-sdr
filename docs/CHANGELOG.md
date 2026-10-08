@@ -14,6 +14,8 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [GNSS-SDR v0.0.22](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.22) - 2026-10-04
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23182959.svg)](https://doi.org/10.5281/zenodo.23182959)
+
 ### Improvements in Accuracy:
 
 - Added real-time kinematic (RTK) positioning using RTCM 3 corrections received
@@ -564,6 +566,8 @@ https://gnss-sdr.org/design-forces/
 &nbsp;
 
 ## [GNSS-SDR v0.0.21](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.21) - 2026-04-14
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19564827.svg)](https://doi.org/10.5281/zenodo.19564827)
 
 ### Improvements in Availability:
 

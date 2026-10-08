@@ -437,7 +437,7 @@ jobs:
           set -uo pipefail
           echo "🔍 Checking for lines with >512 characters ..."
           FLAG_FILE=$(mktemp) > "$FLAG_FILE"
-          find . \( -name "*.c" -o -name "*.cpp" -o -name "*.cc" -o -name "*.h" -o -name "*.hpp" -o -name "*.py" -o -name "*.txt" -o -name "*.sh" -o -name "*.proto" -o -name "*.yml" \) -print0 \
+          find . \( -name "*.c" -o -name "*.cpp" -o -name "*.cc" -o -name "*.h" -o -name "*.hpp" -o -name "*.py" -o -name "*.txt" -o -name "*.sh" -o -name "*.proto" -o -name "*.yml" -o -name "*.dox" \) -print0 \
             | while IFS= read -r -d '' file; do
               awk -v fname="$file" 'length($0) > 512 {
                 gsub(/^\.\/?/, "", fname)

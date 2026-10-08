@@ -45,6 +45,7 @@
 #include "gnss_synchro_monitor.h"
 #include "nav_message_monitor.h"
 #include "qzss.h"
+#include "signal_conditioner.h"
 #include "signal_source_interface.h"
 #include <boost/lexical_cast.hpp>    // for boost::lexical_cast
 #include <boost/tokenizer.hpp>       // for boost::tokenizer
@@ -989,8 +990,30 @@ int GNSSFlowgraph::connect_sample_counter()
                 }
 
             const int observable_interval_ms = configuration_->property("GNSS-SDR.observable_interval_ms", 20);
-            ch_out_sample_counter_ = gnss_sdr_make_sample_counter(fs, observable_interval_ms, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
-            top_block_->connect(sig_conditioner_.at(0)->get_right_block(), 0, ch_out_sample_counter_, 0);
+            gr::basic_block_sptr sample_counter_source = sig_conditioner_.at(0)->get_right_block();
+            int sample_counter_source_port = 0;
+            auto conditioner0_as_signal_conditioner = std::dynamic_pointer_cast<SignalConditioner>(sig_conditioner_.at(0));
+            if (conditioner0_as_signal_conditioner && conditioner0_as_signal_conditioner->fully_bypassed() &&
+                !sig_conditioner_source_and_rf_channel_.empty())
+                {
+                    const auto& [source_idx, rf_channel] = sig_conditioner_source_and_rf_channel_.at(0);
+                    auto& src = sig_source_.at(source_idx);
+                    if (src->get_right_block()->output_signature()->max_streams() > 1 || src->get_right_block()->output_signature()->max_streams() == -1)
+                        {
+                            sample_counter_source = src->get_right_block();
+                            sample_counter_source_port = rf_channel;
+                        }
+                    else if (rf_channel == 0 || !src->get_right_block(rf_channel))
+                        {
+                            sample_counter_source = src->get_right_block();
+                        }
+                    else
+                        {
+                            sample_counter_source = src->get_right_block(rf_channel);
+                        }
+                }
+            ch_out_sample_counter_ = gnss_sdr_make_sample_counter(fs, observable_interval_ms, sample_counter_source->output_signature()->sizeof_stream_item(0));
+            top_block_->connect(sample_counter_source, sample_counter_source_port, ch_out_sample_counter_, 0);
             top_block_->connect(ch_out_sample_counter_, 0, observables_->get_left_block(), channels_count_);  // extra port for the sample counter pulse
         }
     catch (const std::exception& e)
@@ -1076,6 +1099,21 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
 
                             for (auto j = 0U; j < RF_Channels; ++j)
                                 {
+                                    if (sig_conditioner_source_and_rf_channel_.size() <= signal_conditioner_ID)
+                                        {
+                                            sig_conditioner_source_and_rf_channel_.resize(signal_conditioner_ID + 1);
+                                        }
+                                    sig_conditioner_source_and_rf_channel_.at(signal_conditioner_ID) = {i, static_cast<int>(j)};
+
+                                    auto conditioner_as_signal_conditioner = std::dynamic_pointer_cast<SignalConditioner>(sig_conditioner_.at(signal_conditioner_ID));
+                                    if (conditioner_as_signal_conditioner && conditioner_as_signal_conditioner->fully_bypassed())
+                                        {
+                                            // Nothing to wire: this conditioner's three stages are all Bypass.
+                                            // Channels connect directly to the signal source instead -- see
+                                            // sig_conditioner_source_and_rf_channel_.
+                                            signal_conditioner_ID++;
+                                            continue;
+                                        }
                                     // Connect the multichannel signal source to multiple signal conditioners
                                     // GNURADIO max_streams=-1 means infinite ports!
                                     size_t output_size = src->get_right_block()->output_signature()->sizeof_stream_item(0);
@@ -1163,6 +1201,34 @@ int GNSSFlowgraph::connect_signal_conditioners_to_channels()
                 {
                     LOG(WARNING) << e.what();
                 }
+
+            // Normally the signal conditioner's own output (port 0); when its three stages
+            // are all Bypass, connect directly to the signal source's output for this RF
+            // channel instead, same as any signal source already exposes it for the normal
+            // source-to-conditioner wiring (see sig_conditioner_source_and_rf_channel_).
+            gr::basic_block_sptr effective_right_block = sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block();
+            int effective_right_port = 0;
+            auto conditioner_as_signal_conditioner = std::dynamic_pointer_cast<SignalConditioner>(sig_conditioner_.at(selected_signal_conditioner_ID));
+            if (conditioner_as_signal_conditioner && conditioner_as_signal_conditioner->fully_bypassed() &&
+                sig_conditioner_source_and_rf_channel_.size() > static_cast<size_t>(selected_signal_conditioner_ID))
+                {
+                    const auto& [source_idx, rf_channel] = sig_conditioner_source_and_rf_channel_.at(selected_signal_conditioner_ID);
+                    auto& src = sig_source_.at(source_idx);
+                    if (src->get_right_block()->output_signature()->max_streams() > 1 || src->get_right_block()->output_signature()->max_streams() == -1)
+                        {
+                            effective_right_block = src->get_right_block();
+                            effective_right_port = rf_channel;
+                        }
+                    else if (rf_channel == 0 || !src->get_right_block(rf_channel))
+                        {
+                            effective_right_block = src->get_right_block();
+                        }
+                    else
+                        {
+                            effective_right_block = src->get_right_block(rf_channel);
+                        }
+                }
+
             try
                 {
                     // Enable automatic resampler for the acquisition, if required
@@ -1248,7 +1314,7 @@ int GNSSFlowgraph::connect_signal_conditioners_to_channels()
                                             ret = acq_resamplers_.insert(std::pair<std::string, gr::basic_block_sptr>(map_key, fir_filter_ccf_));
                                             if (ret.second == true)
                                                 {
-                                                    top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                                                    top_block_->connect(effective_right_block, effective_right_port,
                                                         acq_resamplers_.at(map_key), 0);
                                                     LOG(INFO) << "Created "
                                                               << channels_.at(i)->get_signal().get_signal_str()
@@ -1271,23 +1337,23 @@ int GNSSFlowgraph::connect_signal_conditioners_to_channels()
                                         {
                                             LOG(INFO) << "Disabled acquisition resampler because the input sampling frequency is too low";
                                             // resampler not required!
-                                            top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                                            top_block_->connect(effective_right_block, effective_right_port,
                                                 channels_.at(i)->get_left_block_acq(), 0);
                                         }
                                 }
                             else
                                 {
                                     LOG(INFO) << "Disabled acquisition resampler because the input sampling frequency is too low";
-                                    top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                                    top_block_->connect(effective_right_block, effective_right_port,
                                         channels_.at(i)->get_left_block_acq(), 0);
                                 }
                         }
                     else
                         {
-                            top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                            top_block_->connect(effective_right_block, effective_right_port,
                                 channels_.at(i)->get_left_block_acq(), 0);
                         }
-                    top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                    top_block_->connect(effective_right_block, effective_right_port,
                         channels_.at(i)->get_left_block_trk(), 0);
                 }
             catch (const std::exception& e)

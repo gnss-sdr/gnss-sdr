@@ -235,6 +235,9 @@ private:
     int assign_channels();
     void check_signal_conditioners();
 
+    // A conditioner's effective output {block, port} -- its own when not fully bypassed.
+    std::pair<gr::basic_block_sptr, int> resolve_conditioner_output(int conditioner_id) const;
+
     void set_signals_list();
     void keep_one_glonass_slot_per_frequency(std::set<unsigned int>& available_prns);
 

@@ -990,28 +990,7 @@ int GNSSFlowgraph::connect_sample_counter()
                 }
 
             const int observable_interval_ms = configuration_->property("GNSS-SDR.observable_interval_ms", 20);
-            gr::basic_block_sptr sample_counter_source = sig_conditioner_.at(0)->get_right_block();
-            int sample_counter_source_port = 0;
-            auto conditioner0_as_signal_conditioner = std::dynamic_pointer_cast<SignalConditioner>(sig_conditioner_.at(0));
-            if (conditioner0_as_signal_conditioner && conditioner0_as_signal_conditioner->fully_bypassed() &&
-                !sig_conditioner_source_and_rf_channel_.empty())
-                {
-                    const auto& [source_idx, rf_channel] = sig_conditioner_source_and_rf_channel_.at(0);
-                    auto& src = sig_source_.at(source_idx);
-                    if (src->get_right_block()->output_signature()->max_streams() > 1 || src->get_right_block()->output_signature()->max_streams() == -1)
-                        {
-                            sample_counter_source = src->get_right_block();
-                            sample_counter_source_port = rf_channel;
-                        }
-                    else if (rf_channel == 0 || !src->get_right_block(rf_channel))
-                        {
-                            sample_counter_source = src->get_right_block();
-                        }
-                    else
-                        {
-                            sample_counter_source = src->get_right_block(rf_channel);
-                        }
-                }
+            const auto [sample_counter_source, sample_counter_source_port] = resolve_conditioner_output(0);
             ch_out_sample_counter_ = gnss_sdr_make_sample_counter(fs, observable_interval_ms, sample_counter_source->output_signature()->sizeof_stream_item(0));
             top_block_->connect(sample_counter_source, sample_counter_source_port, ch_out_sample_counter_, 0);
             top_block_->connect(ch_out_sample_counter_, 0, observables_->get_left_block(), channels_count_);  // extra port for the sample counter pulse
@@ -1202,32 +1181,7 @@ int GNSSFlowgraph::connect_signal_conditioners_to_channels()
                     LOG(WARNING) << e.what();
                 }
 
-            // Normally the signal conditioner's own output (port 0); when its three stages
-            // are all Bypass, connect directly to the signal source's output for this RF
-            // channel instead, same as any signal source already exposes it for the normal
-            // source-to-conditioner wiring (see sig_conditioner_source_and_rf_channel_).
-            gr::basic_block_sptr effective_right_block = sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block();
-            int effective_right_port = 0;
-            auto conditioner_as_signal_conditioner = std::dynamic_pointer_cast<SignalConditioner>(sig_conditioner_.at(selected_signal_conditioner_ID));
-            if (conditioner_as_signal_conditioner && conditioner_as_signal_conditioner->fully_bypassed() &&
-                sig_conditioner_source_and_rf_channel_.size() > static_cast<size_t>(selected_signal_conditioner_ID))
-                {
-                    const auto& [source_idx, rf_channel] = sig_conditioner_source_and_rf_channel_.at(selected_signal_conditioner_ID);
-                    auto& src = sig_source_.at(source_idx);
-                    if (src->get_right_block()->output_signature()->max_streams() > 1 || src->get_right_block()->output_signature()->max_streams() == -1)
-                        {
-                            effective_right_block = src->get_right_block();
-                            effective_right_port = rf_channel;
-                        }
-                    else if (rf_channel == 0 || !src->get_right_block(rf_channel))
-                        {
-                            effective_right_block = src->get_right_block();
-                        }
-                    else
-                        {
-                            effective_right_block = src->get_right_block(rf_channel);
-                        }
-                }
+            const auto [effective_right_block, effective_right_port] = resolve_conditioner_output(selected_signal_conditioner_ID);
 
             try
                 {
@@ -1628,6 +1582,34 @@ int GNSSFlowgraph::connect_gal_e6_has()
 }
 
 
+std::pair<gr::basic_block_sptr, int> GNSSFlowgraph::resolve_conditioner_output(int conditioner_id) const
+{
+    gr::basic_block_sptr right_block = sig_conditioner_.at(conditioner_id)->get_right_block();
+    int right_port = 0;
+    auto as_signal_conditioner = std::dynamic_pointer_cast<SignalConditioner>(sig_conditioner_.at(conditioner_id));
+    if (as_signal_conditioner && as_signal_conditioner->fully_bypassed() &&
+        sig_conditioner_source_and_rf_channel_.size() > static_cast<size_t>(conditioner_id))
+        {
+            const auto& [source_idx, rf_channel] = sig_conditioner_source_and_rf_channel_.at(conditioner_id);
+            const auto& src = sig_source_.at(source_idx);
+            if (src->get_right_block()->output_signature()->max_streams() > 1 || src->get_right_block()->output_signature()->max_streams() == -1)
+                {
+                    right_block = src->get_right_block();
+                    right_port = rf_channel;
+                }
+            else if (rf_channel == 0 || !src->get_right_block(rf_channel))
+                {
+                    right_block = src->get_right_block();
+                }
+            else
+                {
+                    right_block = src->get_right_block(rf_channel);
+                }
+        }
+    return {right_block, right_port};
+}
+
+
 void GNSSFlowgraph::check_signal_conditioners()
 {
     // check for unconnected signal conditioners and connect null_sinks
@@ -1636,8 +1618,14 @@ void GNSSFlowgraph::check_signal_conditioners()
         {
             if (signal_conditioner_connected_.at(n) == false)
                 {
-                    null_sinks_.push_back(gr::blocks::null_sink::make(sizeof(gr_complex)));
-                    top_block_->connect(sig_conditioner_.at(n)->get_right_block(), 0,
+                    const auto [right_block, right_port] = resolve_conditioner_output(static_cast<int>(n));
+                    if (!right_block)
+                        {
+                            LOG(WARNING) << "Signal conditioner " << n << " has no resolvable output, skipping its null sink";
+                            continue;
+                        }
+                    null_sinks_.push_back(gr::blocks::null_sink::make(right_block->output_signature()->sizeof_stream_item(0)));
+                    top_block_->connect(right_block, right_port,
                         null_sinks_.back(), 0);
                     LOG(INFO) << "Null sink connected to signal conditioner " << n << " due to lack of connection to any channel\n";
                 }

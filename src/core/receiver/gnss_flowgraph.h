@@ -235,6 +235,9 @@ private:
     int assign_channels();
     void check_signal_conditioners();
 
+    // A conditioner's effective output {block, port} -- its own when not fully bypassed.
+    std::pair<gr::basic_block_sptr, int> resolve_conditioner_output(int conditioner_id) const;
+
     void set_signals_list();
     void keep_one_glonass_slot_per_frequency(std::set<unsigned int>& available_prns);
 
@@ -272,6 +275,8 @@ private:
 
     std::vector<std::shared_ptr<SignalSourceInterface>> sig_source_;
     std::vector<std::shared_ptr<GNSSBlockInterface>> sig_conditioner_;
+    // Indexed like sig_conditioner_: which sig_source_ index/RF_channel feeds it.
+    std::vector<std::pair<int, int>> sig_conditioner_source_and_rf_channel_;
     std::vector<std::shared_ptr<ChannelInterface>> channels_;
     std::shared_ptr<GNSSBlockInterface> observables_;
     std::shared_ptr<GNSSBlockInterface> pvt_;

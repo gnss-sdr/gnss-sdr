@@ -39,11 +39,12 @@
 class SignalConditioner : public GNSSBlockInterface
 {
 public:
-    //! Constructor
+    //! Constructor. bypassed is set by the factory, not inferred from the stages.
     SignalConditioner(std::shared_ptr<GNSSBlockInterface> data_type_adapt,
         std::shared_ptr<GNSSBlockInterface> in_filt,
         std::shared_ptr<GNSSBlockInterface> res,
-        std::string role);
+        std::string role,
+        bool bypassed = false);
 
     //! Destructor
     ~SignalConditioner() = default;
@@ -63,12 +64,19 @@ public:
     inline std::shared_ptr<GNSSBlockInterface> input_filter() { return in_filt_; }
     inline std::shared_ptr<GNSSBlockInterface> resampler() { return res_; }
 
+    //! True when this conditioner has nothing to do.
+    inline bool fully_bypassed()
+    {
+        return bypassed_;
+    }
+
 private:
     std::shared_ptr<GNSSBlockInterface> data_type_adapt_;
     std::shared_ptr<GNSSBlockInterface> in_filt_;
     std::shared_ptr<GNSSBlockInterface> res_;
     std::string role_;
     bool connected_;
+    bool bypassed_;
 };
 
 

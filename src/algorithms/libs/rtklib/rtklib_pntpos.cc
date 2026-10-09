@@ -323,27 +323,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
             return 0.0;
         }
 
-    /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS;
-     * BDS: select from the measured bands, preferring B2a as the IF partner. */
-    if (sys == SYS_GAL || sys == SYS_SBS)
-        {
-            j = 2;
-        }
-    else if (sys == SYS_BDS)
-        {
-            bds_observation_slots(obs, &i, &j);
-        }
-    else if (sys == SYS_GPS || sys == SYS_GLO || sys == SYS_QZS)
-        {
-            if (obs->code[1] != CODE_NONE)
-                {
-                    j = 1;
-                }
-            else if (obs->code[2] != CODE_NONE)
-                {
-                    j = 2;
-                }
-        }
+    prange_band_pair(obs, &i, &j);
 
     if (lam[i] == 0.0 || lam[j] == 0.0)
         {

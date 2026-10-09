@@ -3151,9 +3151,10 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // reported as-is for consumers to handle; rescode()
                     // already keeps NaN out of the position solve.
                     //
-                    // combined/used below come from prange_band_pair() on d_obs_data's own record, not from configuration.
+                    // combined/used below come from d_obs_data's own record, not from configuration.
+                    // Bounded to rover_observation_count to skip any base-station entries past it.
                     std::map<int, std::size_t> sat_to_obs_index;
-                    for (std::size_t obs_idx = 0; obs_idx < d_obs_data.size(); obs_idx++)
+                    for (std::size_t obs_idx = 0; obs_idx < static_cast<std::size_t>(rover_observation_count); obs_idx++)
                         {
                             if (d_obs_data[obs_idx].sat != 0)
                                 {

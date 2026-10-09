@@ -1087,9 +1087,7 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
                                     auto conditioner_as_signal_conditioner = std::dynamic_pointer_cast<SignalConditioner>(sig_conditioner_.at(signal_conditioner_ID));
                                     if (conditioner_as_signal_conditioner && conditioner_as_signal_conditioner->fully_bypassed())
                                         {
-                                            // Nothing to wire: this conditioner's three stages are all Bypass.
-                                            // Channels connect directly to the signal source instead -- see
-                                            // sig_conditioner_source_and_rf_channel_.
+                                            // Nothing to wire; see resolve_conditioner_output().
                                             signal_conditioner_ID++;
                                             continue;
                                         }

@@ -1059,10 +1059,10 @@ std::unique_ptr<GNSSBlockInterface> GetSignalConditioner(
             LOG(INFO) << "Getting " << role_conditioner << " with Bypass implementation";
 
             return std::make_unique<SignalConditioner>(
-                std::make_unique<Pass_Through>(configuration, role_datatypeadapter, 1, 1, "Bypass"),
-                std::make_unique<Pass_Through>(configuration, role_inputfilter, 1, 1, "Bypass"),
-                std::make_unique<Pass_Through>(configuration, role_resampler, 1, 1, "Bypass"),
-                role_conditioner);
+                std::make_unique<Pass_Through>(configuration, role_datatypeadapter, 1, 1),
+                std::make_unique<Pass_Through>(configuration, role_inputfilter, 1, 1),
+                std::make_unique<Pass_Through>(configuration, role_resampler, 1, 1),
+                role_conditioner, true);
         }
 
     LOG(INFO) << "Getting " << role_conditioner << " with " << role_datatypeadapter << " implementation: "

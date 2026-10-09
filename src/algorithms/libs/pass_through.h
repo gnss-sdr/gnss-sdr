@@ -37,14 +37,7 @@
 class ConfigurationInterface;
 
 /*!
- * \brief This class implements a block that connects input and output (does nothing).
- *
- * Normally selected via implementation="Pass_Through" and always wired as a
- * real block. SignalConditioner.implementation="Bypass" instead constructs
- * its three stages as Pass_Through with default_implementation_name="Bypass"
- * (not user-settable directly on a single stage): functionally identical,
- * but SignalConditioner then skips wiring any of them into the graph at all
- * -- see signal_conditioner.cc.
+ * \brief This class implements a block that connects input and output (does nothing)
  */
 class Pass_Through : public GNSSBlockInterface
 {
@@ -52,8 +45,7 @@ public:
     Pass_Through(const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_stream,
-        unsigned int out_stream,
-        const std::string& default_implementation_name = "Pass_Through");
+        unsigned int out_stream);
 
     ~Pass_Through() = default;
 
@@ -62,10 +54,10 @@ public:
         return role_;
     }
 
-    //! Returns "Pass_Through" or "Bypass", whichever this role was configured with
+    //! Returns "Pass_Through"
     inline std::string implementation() override
     {
-        return implementation_name_;
+        return "Pass_Through";
     }
 
     inline std::string item_type() const
@@ -90,7 +82,6 @@ private:
     conjugate_ic_sptr conjugate_ic_;
     std::string item_type_;
     std::string role_;
-    std::string implementation_name_;
     size_t item_size_;
     unsigned int in_streams_;
     unsigned int out_streams_;

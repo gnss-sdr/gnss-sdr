@@ -1056,6 +1056,19 @@ std::unique_ptr<GNSSBlockInterface> GetSignalConditioner(
                                  << "parameter should be either not set or set to Bypass.\n"
                                  << role_resampler << " configuration parameters will be ignored.";
                 }
+            if (configuration->property("GNSS-SDR.max_source_buffer_samples", uint64_t(0)) > 0)
+                {
+                    LOG(WARNING) << "Configuration warning: GNSS-SDR.max_source_buffer_samples has no effect on "
+                                 << role_conditioner << " while it is Bypass (there is no copy block left to apply it to).";
+                }
+            for (const auto& bypassed_role : {role_datatypeadapter, role_inputfilter, role_resampler})
+                {
+                    if (configuration->property(bypassed_role + ".inverted_spectrum", false))
+                        {
+                            LOG(WARNING) << "Configuration warning: " << bypassed_role << ".inverted_spectrum is ignored while "
+                                         << role_conditioner << " is Bypass.";
+                        }
+                }
             LOG(INFO) << "Getting " << role_conditioner << " with Bypass implementation";
 
             return std::make_unique<SignalConditioner>(

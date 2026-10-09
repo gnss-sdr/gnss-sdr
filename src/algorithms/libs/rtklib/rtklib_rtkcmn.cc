@@ -710,6 +710,34 @@ void bds_observation_slots(const obsd_t *obs, int *primary, int *secondary)
 }
 
 
+/* Band pair prange() reads for this satellite, by system. */
+void prange_band_pair(const obsd_t *obs, int *i, int *j)
+{
+    *i = 0;
+    *j = 1;
+    const int sys = satsys(obs->sat, nullptr);
+    if (sys == SYS_GAL || sys == SYS_SBS)
+        {
+            *j = 2;
+        }
+    else if (sys == SYS_BDS)
+        {
+            bds_observation_slots(obs, i, j);
+        }
+    else if (sys == SYS_GPS || sys == SYS_GLO || sys == SYS_QZS)
+        {
+            if (obs->code[1] != CODE_NONE)
+                {
+                    *j = 1;
+                }
+            else if (obs->code[2] != CODE_NONE)
+                {
+                    *j = 2;
+                }
+        }
+}
+
+
 /* set code priority -----------------------------------------------------------
  * set code priority for multiple codes in a frequency
  * args   : int    sys     I     system (or of SYS_???)

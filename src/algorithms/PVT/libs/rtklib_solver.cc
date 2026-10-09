@@ -3150,6 +3150,16 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // NaN az/el (corrupt ephemeris/almanac) is deliberately
                     // reported as-is for consumers to handle; rescode()
                     // already keeps NaN out of the position solve.
+                    //
+                    // combined/used below come from prange_band_pair() on d_obs_data's own record, not from configuration.
+                    std::map<int, std::size_t> sat_to_obs_index;
+                    for (std::size_t obs_idx = 0; obs_idx < d_obs_data.size(); obs_idx++)
+                        {
+                            if (d_obs_data[obs_idx].sat != 0)
+                                {
+                                    sat_to_obs_index[d_obs_data[obs_idx].sat] = obs_idx;
+                                }
+                        }
                     d_monitor_pvt.tracked_satellites.clear();
                     for (int sat_idx = 0; sat_idx < MAXSAT; sat_idx++)
                         {
@@ -3194,50 +3204,21 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             contributing_signals.push_back(&synchro);
                                         }
                                 }
-                            // Multiple signals tracked for this satellite isn't enough on its
-                            // own: the solver only actually builds an iono-free combination out
-                            // of them when ionoopt is IONOOPT_IFLC (PVT.iono_model=Iono-Free-LC).
-                            // With any other iono_model, prange()'s single-frequency branch
-                            // (rtklib_pntpos.cc) still picks only ONE band per satellite -- slot i
-                            // if it carries a measurement, slot j otherwise -- so a second tracked
-                            // signal on the other slot never reaches the solve at all, and must be
-                            // reported used=false rather than treated as its own observation.
-                            //
-                            // For Galileo, prange() always reads rtklib band-index slots 0 and 2
-                            // (i=0, j=2, hardcoded there for SYS_GAL), regardless of ionoopt --
-                            // normally 1B+5X/7X, but 1B+E6 when E5 isn't selected for PVT, see this
-                            // class's constructor, where E6 is assigned slot 2 only in that case
-                            // (slot 1 otherwise, alongside an actual 5X/7X pair). A signal in
-                            // neither slot is never read by prange() at all.
-                            const auto is_galileo_combinable_slot = [this](const std::string &sig) {
-                                const auto it = d_rtklib_band_index.find(sig);
-                                return it != d_rtklib_band_index.cend() && (it->second == 0 || it->second == 2);
-                            };
-                            std::size_t combinable_signal_count = contributing_signals.size();
-                            // Slot prange() reads this epoch under non-IFLC: 0 if tracked, else 2.
-                            int galileo_picked_slot = 0;
-                            if (sys_char == 'E')
+                            // Band pair prange() itself reads for this satellite this epoch.
+                            int prange_i = 0;
+                            int prange_j = 1;
+                            bool both_bands_present = false;
+                            int picked_slot = -1;
+                            const auto obs_it = sat_to_obs_index.find(sat_idx + 1);
+                            const bool have_obs_record = obs_it != sat_to_obs_index.cend();
+                            if (have_obs_record)
                                 {
-                                    combinable_signal_count = 0;
-                                    bool slot0_present = false;
-                                    for (const Gnss_Synchro *synchro : contributing_signals)
-                                        {
-                                            const auto it = d_rtklib_band_index.find(std::string(synchro->Signal, 2));
-                                            if (it != d_rtklib_band_index.cend())
-                                                {
-                                                    if (it->second == 0 || it->second == 2)
-                                                        {
-                                                            combinable_signal_count++;
-                                                        }
-                                                    if (it->second == 0)
-                                                        {
-                                                            slot0_present = true;
-                                                        }
-                                                }
-                                        }
-                                    galileo_picked_slot = slot0_present ? 0 : 2;
+                                    const obsd_t &obs_record = d_obs_data[obs_it->second];
+                                    prange_band_pair(&obs_record, &prange_i, &prange_j);
+                                    both_bands_present = prange_i != prange_j &&
+                                                         obs_record.P[prange_i] != 0.0 && obs_record.P[prange_j] != 0.0;
+                                    picked_slot = obs_record.code[prange_i] != CODE_NONE ? prange_i : prange_j;
                                 }
-                            const bool combined = combinable_signal_count > 1 && d_rtk.opt.ionoopt == IONOOPT_IFLC;
                             // satazel() (rtklib_rtkcmn.cc) returns azimuth in [0, 2*pi); wrap to
                             // (-180, 180] deg, the convention expected downstream (monitor sky plot).
                             double az_deg = pvt_ssat[sat_idx].azel[0] * R2D;
@@ -3253,23 +3234,21 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     info.signal = std::string(synchro->Signal, 2);
                                     info.azimuth_deg = az_deg;
                                     info.elevation_deg = pvt_ssat[sat_idx].azel[1] * R2D;
-                                    const bool signal_is_combinable = (sys_char != 'E') || is_galileo_combinable_slot(info.signal);
-                                    info.combined = combined && signal_is_combinable;
-                                    // used reflects whether THIS signal was actually eligible to
-                                    // be handed to the solver, not just whether the satellite's
-                                    // overall fix used it: is_galileo_signal_used_in_pvt()
-                                    // independently excludes E6 when PVT.use_e6_for_pvt=false
-                                    // (and, for the other Galileo signals, gates on the selected
-                                    // nav message type), regardless of the satellite-level flag.
+                                    // Extra gate alongside the slot check: excludes E6/nav-type per config.
                                     const bool signal_eligible = (sys_char != 'E') || is_galileo_signal_used_in_pvt(info.signal);
-                                    // Non-IFLC: only the picked slot's signal reaches the solve.
-                                    bool signal_in_solve = true;
-                                    if (sys_char == 'E' && d_rtk.opt.ionoopt != IONOOPT_IFLC)
+                                    const auto band_it = d_rtklib_band_index.find(info.signal);
+                                    const int signal_slot = band_it != d_rtklib_band_index.cend() ? band_it->second : -1;
+                                    if (d_rtk.opt.ionoopt == IONOOPT_IFLC)
                                         {
-                                            const auto it = d_rtklib_band_index.find(info.signal);
-                                            signal_in_solve = it != d_rtklib_band_index.cend() && it->second == galileo_picked_slot;
+                                            info.combined = used && signal_eligible && have_obs_record && both_bands_present &&
+                                                            (signal_slot == prange_i || signal_slot == prange_j);
+                                            info.used = info.combined;
                                         }
-                                    info.used = used && signal_eligible && signal_in_solve;
+                                    else
+                                        {
+                                            info.combined = false;
+                                            info.used = used && signal_eligible && have_obs_record && signal_slot == picked_slot;
+                                        }
                                     // Broadcast health of this signal, as reported by the
                                     // navigation message that carries it (true when no health
                                     // information is available). Independent of `used`.

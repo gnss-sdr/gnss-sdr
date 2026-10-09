@@ -33,10 +33,8 @@
 Pass_Through::Pass_Through(const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams,
-    const std::string& default_implementation_name)
+    unsigned int out_streams)
     : role_(role),
-      implementation_name_(configuration->property(role + ".implementation", default_implementation_name)),
       in_streams_(in_streams),
       out_streams_(out_streams),
       inverted_spectrum(configuration->property(role + ".inverted_spectrum", false))

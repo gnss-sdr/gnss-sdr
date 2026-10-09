@@ -1181,6 +1181,17 @@ int GNSSFlowgraph::connect_signal_conditioners_to_channels()
 
             const auto [effective_right_block, effective_right_port] = resolve_conditioner_output(selected_signal_conditioner_ID);
 
+            const size_t effective_output_size = effective_right_block->output_signature()->sizeof_stream_item(0);
+            const size_t channel_input_size = channels_.at(i)->get_left_block_trk()->input_signature()->sizeof_stream_item(0);
+            if (effective_output_size != channel_input_size)
+                {
+                    help_hint_ += " * Signal conditioner " + std::to_string(selected_signal_conditioner_ID) + " (possibly Bypass) has an effective output item size of ";
+                    help_hint_ += std::to_string(effective_output_size) + " bytes, but channel " + std::to_string(i) + " expects " + std::to_string(channel_input_size) + " bytes.\n";
+                    help_hint_ += "   Output ports must be connected to input ports with the same item size.\n";
+                    top_block_->disconnect_all();
+                    return 1;
+                }
+
             try
                 {
                     // Enable automatic resampler for the acquisition, if required

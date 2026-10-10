@@ -1339,7 +1339,7 @@ void GNSSFlowgraph::connect_conditioner_output(size_t conditioner_id, StreamEndp
             const size_t item_size = upstream.block->output_signature()->sizeof_stream_item(upstream.port);
             const auto batcher = make_stream_batcher(item_size, plan.batch_items, plan.max_buffer_items,
                 plan.max_latency_ms, conditioner_deadlines_);
-            batcher->set_min_output_buffer(static_cast<long>(plan.min_buffer_items));
+            batcher->set_min_output_buffer(static_cast<long>(plan.min_buffer_items));  // NOLINT(google-runtime-int)
             top_block_->connect(upstream.block, upstream.port, batcher, 0);
             upstream.block = batcher;
             upstream.port = 0;
@@ -2038,7 +2038,7 @@ uint32_t GNSSFlowgraph::doppler_bins_for_uncertainty(const std::string& acq_role
             return 0;
         }
     const double half_bins = std::ceil(uncertainty_hz / static_cast<double>(doppler_step));
-    if (half_bins > static_cast<double>((std::numeric_limits<uint32_t>::max() - 1U) / 2U))
+    if (half_bins > (std::numeric_limits<uint32_t>::max() - 1U) / 2.0)
         {
             return 0;
         }

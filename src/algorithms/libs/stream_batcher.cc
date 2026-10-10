@@ -76,17 +76,17 @@ stream_batcher::stream_batcher(size_t item_size, uint64_t batch_items, uint64_t 
 
     // A target size, not a hard output_multiple: a long-code consumer may need
     // more input while leaving less than one batch of free output space.
-    set_min_output_buffer(static_cast<long>(2 * batch_items_));
+    set_min_output_buffer(static_cast<long>(2 * batch_items_));  // NOLINT(google-runtime-int)
     if (max_buffer_items > 0)
         {
-            set_max_output_buffer(static_cast<long>(max_buffer_items));
+            set_max_output_buffer(static_cast<long>(max_buffer_items));  // NOLINT(google-runtime-int)
         }
     // Consumption can precede publication by a batch. Publish each tag only
     // with its corresponding output item, retaining the original 1:1 offset.
     set_tag_propagation_policy(TPP_DONT);
     const auto port = pmt::mp("batch_deadline");
     message_port_register_in(port);
-    set_msg_handler(port, [this](pmt::pmt_t message) { deadline_expired(std::move(message)); });
+    set_msg_handler(port, [this](const pmt::pmt_t& message) { deadline_expired(message); });
     deadline_id_ = deadlines_->add([this, port](uint64_t generation) {
         this->_post(port, pmt::from_uint64(generation));
     });

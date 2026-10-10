@@ -96,7 +96,7 @@ ConditionerSchedulingPolicy::Plan ConditionerSchedulingPolicy::select(
     if (!plan.automatic)
         {
             const auto samples = std::ceil(request.sample_rate * duration / 1000.0);
-            if (!std::isfinite(samples) || samples < 1.0 || samples > std::numeric_limits<int>::max() / 2)
+            if (!std::isfinite(samples) || samples < 1.0 || samples > std::numeric_limits<int>::max() / 2.0)
                 {
                     throw std::invalid_argument(role + ".batch_size_ms exceeds the supported sample count");
                 }

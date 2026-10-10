@@ -74,11 +74,23 @@ jobs:
           fi
 
           PYTHON_PREFIX="$(brew --prefix "$PYTHON_FORMULA")"
-          PYTHON_EXECUTABLE="$PYTHON_PREFIX/bin/python3"
 
-          if [ ! -x "$PYTHON_EXECUTABLE" ]; then
-            echo "Could not execute $PYTHON_EXECUTABLE"
-            ls -la "$PYTHON_PREFIX/bin"
+          # Homebrew's python@X.Y only ships the versioned python3.X in bin/;
+          # the unversioned python3 symlink lives in libexec/bin.
+          PYTHON_EXECUTABLE=""
+          for candidate in \
+            "$PYTHON_PREFIX/bin/python${PYTHON_FORMULA#python@}" \
+            "$PYTHON_PREFIX/libexec/bin/python3" \
+            "$PYTHON_PREFIX/bin/python3"; do
+            if [ -x "$candidate" ]; then
+              PYTHON_EXECUTABLE="$candidate"
+              break
+            fi
+          done
+
+          if [ -z "$PYTHON_EXECUTABLE" ]; then
+            echo "Could not find a Python executable in $PYTHON_PREFIX"
+            ls -la "$PYTHON_PREFIX/bin" "$PYTHON_PREFIX/libexec/bin"
             exit 1
           fi
 
@@ -175,11 +187,23 @@ jobs:
           fi
 
           PYTHON_PREFIX="$(brew --prefix "$PYTHON_FORMULA")"
-          PYTHON_EXECUTABLE="$PYTHON_PREFIX/bin/python3"
 
-          if [ ! -x "$PYTHON_EXECUTABLE" ]; then
-            echo "Could not execute $PYTHON_EXECUTABLE"
-            ls -la "$PYTHON_PREFIX/bin"
+          # Homebrew's python@X.Y only ships the versioned python3.X in bin/;
+          # the unversioned python3 symlink lives in libexec/bin.
+          PYTHON_EXECUTABLE=""
+          for candidate in \
+            "$PYTHON_PREFIX/bin/python${PYTHON_FORMULA#python@}" \
+            "$PYTHON_PREFIX/libexec/bin/python3" \
+            "$PYTHON_PREFIX/bin/python3"; do
+            if [ -x "$candidate" ]; then
+              PYTHON_EXECUTABLE="$candidate"
+              break
+            fi
+          done
+
+          if [ -z "$PYTHON_EXECUTABLE" ]; then
+            echo "Could not find a Python executable in $PYTHON_PREFIX"
+            ls -la "$PYTHON_PREFIX/bin" "$PYTHON_PREFIX/libexec/bin"
             exit 1
           fi
 

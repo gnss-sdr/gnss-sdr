@@ -63,7 +63,7 @@ ConditionerSchedulingPolicy::Plan ConditionerSchedulingPolicy::select(
         {
             throw std::invalid_argument("GNSS-SDR.observable_interval_ms must be a positive integer no larger than INT_MAX");
         }
-    plan.max_latency_ms = std::max(duration, std::min(STREAM_BATCHER_MAX_LATENCY_MS, observable_ms));
+    plan.max_latency_ms = std::max(duration, std::min(STREAM_BATCHER_DEFAULT_LATENCY_MS, observable_ms));
     if (configuration.is_present(role + ".max_batch_latency_ms"))
         {
             plan.max_latency_ms = number(trim(configuration.property(role + ".max_batch_latency_ms", std::string())), role + ".max_batch_latency_ms");

@@ -38,7 +38,7 @@ class StreamBatcherDeadline;
 using stream_batcher_sptr = gnss_shared_ptr<stream_batcher>;
 
 stream_batcher_sptr make_stream_batcher(size_t item_size, uint64_t batch_items, uint64_t max_buffer_items,
-    double max_latency_ms = STREAM_BATCHER_MAX_LATENCY_MS, std::shared_ptr<StreamBatcherDeadline> deadlines = {});
+    double max_latency_ms = STREAM_BATCHER_DEFAULT_LATENCY_MS, std::shared_ptr<StreamBatcherDeadline> deadlines = {});
 
 class stream_batcher : public gr::block
 {
@@ -59,7 +59,7 @@ private:
     bool input_finished(bool require_empty = false) const;
     void collect_tags(size_t count);
     void publish_tags(size_t count);
-    void deadline_expired(pmt::pmt_t message);
+    void deadline_expired(const pmt::pmt_t& message);
 
     std::vector<uint8_t> pending_;
     std::deque<gr::tag_t> tags_;

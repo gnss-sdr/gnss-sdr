@@ -515,8 +515,8 @@ void GNSSFlowgraph::connect_block(GNSSBlockInterface& block)
 }
 
 
-void GNSSFlowgraph::connect_message(gr::basic_block_sptr source, pmt::pmt_t source_port,
-    gr::basic_block_sptr destination, pmt::pmt_t destination_port)
+void GNSSFlowgraph::connect_message(const gr::basic_block_sptr& source, const pmt::pmt_t& source_port,
+    const gr::basic_block_sptr& destination, const pmt::pmt_t& destination_port)
 {
     message_connections_.push_back({source, source_port, destination, destination_port});
     try

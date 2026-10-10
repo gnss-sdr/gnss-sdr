@@ -22,7 +22,12 @@
 /** \addtogroup Algorithm_libs algorithms_libs
  * \{ */
 
+//! Hard ceiling for fixed batch durations and staging deadlines.
 constexpr double STREAM_BATCHER_MAX_LATENCY_MS = 20.0;
+
+//! Default staging deadline: long enough to amortize reader fan-out, short
+//! enough not to slow down the acquisition search cadence of idle channels.
+constexpr double STREAM_BATCHER_DEFAULT_LATENCY_MS = 10.0;
 
 /** \} */
 /** \} */

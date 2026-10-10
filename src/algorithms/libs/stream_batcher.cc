@@ -86,7 +86,7 @@ stream_batcher::stream_batcher(size_t item_size, uint64_t batch_items, uint64_t 
     set_tag_propagation_policy(TPP_DONT);
     const auto port = pmt::mp("batch_deadline");
     message_port_register_in(port);
-    set_msg_handler(port, [this](pmt::pmt_t message) { deadline_expired(message); });
+    set_msg_handler(port, [this](pmt::pmt_t message) { deadline_expired(std::move(message)); });
     deadline_id_ = deadlines_->add([this, port](uint64_t generation) {
         this->_post(port, pmt::from_uint64(generation));
     });
@@ -118,7 +118,7 @@ bool stream_batcher::stop()
 }
 
 
-void stream_batcher::deadline_expired(pmt::pmt_t message)
+void stream_batcher::deadline_expired(const pmt::pmt_t& message)
 {
     deadlines_->acknowledge(deadline_id_);
     if (pmt::is_uint64(message) && pmt::to_uint64(message) == generation_ && filled_ > 0)
@@ -141,7 +141,7 @@ bool stream_batcher::input_finished(bool require_empty) const
 }
 
 
-void stream_batcher::forecast(int, gr_vector_int& ninput_items_required)
+void stream_batcher::forecast(int /*noutput_items*/, gr_vector_int& ninput_items_required)
 {
     // Requiring even one input item at EOF would let the scheduler terminate
     // this block before its staged tail has been published.

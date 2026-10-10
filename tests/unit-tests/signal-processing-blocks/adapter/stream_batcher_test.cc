@@ -55,7 +55,7 @@ public:
           paced_(paced)
     {
     }
-    int work(int noutput, gr_vector_const_void_star&, gr_vector_void_star& output) override
+    int work(int noutput, gr_vector_const_void_star& /*input_items*/, gr_vector_void_star& output) override
     {
         const int offset = static_cast<int>(nitems_written(0));
         if (offset == length_)
@@ -96,7 +96,7 @@ public:
         sent_ = 0;
         return true;
     }
-    int work(int count, gr_vector_const_void_star&, gr_vector_void_star& output) override
+    int work(int count, gr_vector_const_void_star& /*input_items*/, gr_vector_void_star& output) override
     {
         const auto offset = nitems_written(0);
         if (sent_ >= 17)
@@ -119,7 +119,7 @@ class ObservedTestSink : public gr::sync_block
 public:
     ObservedTestSink()
         : gr::sync_block("observed_sink", gr::io_signature::make(1, 1, sizeof(int)), gr::io_signature::make(0, 0, 0)) {}
-    int work(int count, gr_vector_const_void_star& input, gr_vector_void_star&) override
+    int work(int count, gr_vector_const_void_star& input, gr_vector_void_star& /*output_items*/) override
     {
         const auto* items = static_cast<const int*>(input[0]);
         samples.insert(samples.end(), items, items + count);
@@ -141,8 +141,8 @@ public:
         : gr::block("window_test_sink", gr::io_signature::make(1, 1, sizeof(int)), gr::io_signature::make(0, 0, 0)), window_(window)
     {
     }
-    void forecast(int, gr_vector_int& required) override { required[0] = window_; }
-    int general_work(int, gr_vector_int& available, gr_vector_const_void_star& input, gr_vector_void_star&) override
+    void forecast(int /*noutput_items*/, gr_vector_int& required) override { required[0] = window_; }
+    int general_work(int /*noutput_items*/, gr_vector_int& available, gr_vector_const_void_star& input, gr_vector_void_star& /*output_items*/) override
     {
         const auto* in = static_cast<const int*>(input[0]);
         const int count = std::min(window_, available[0]);
@@ -405,7 +405,8 @@ TEST_F(StreamBatcherTest, RestartAfterPartialBatch)
 {
     auto top = gr::make_top_block("batch_restart");
     auto source = gnss_make_shared<ChunkedTestSource>(2000, 1, true);
-    auto batcher = make_stream_batcher(sizeof(int), 1024, 0);
+    // The deadline must outlast the first, interrupted run.
+    auto batcher = make_stream_batcher(sizeof(int), 1024, 0, 20.0);
     auto sink = gr::blocks::vector_sink_i::make();
     top->connect(source, 0, batcher, 0);
     top->connect(batcher, 0, sink, 0);

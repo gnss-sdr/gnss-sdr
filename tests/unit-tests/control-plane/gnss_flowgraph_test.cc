@@ -340,7 +340,7 @@ TEST_F(ConditionedFlowgraphTest, DefaultPlanningNeedsNoConfigurationEdits)
     const auto plan = graph.conditioner_scheduling_plans()[0];
     EXPECT_TRUE(plan.automatic);
     EXPECT_EQ(3U, plan.readers);  // Acquisition, tracking, and sample counter.
-    EXPECT_EQ(40000U, plan.batch_items);
+    EXPECT_EQ(20000U, plan.batch_items);
     EXPECT_TRUE(plan.remove_identity);
     graph.disconnect();
 }
@@ -369,7 +369,7 @@ TEST_F(ConditionedFlowgraphTest, PacedSourcesUseTheSamePortableDefault)
     GNSSFlowgraph graph(config, std::make_shared<Concurrent_Queue<pmt::pmt_t>>());
     graph.connect();
     ASSERT_TRUE(graph.connected());
-    EXPECT_EQ(65536U, graph.conditioner_scheduling_plans().at(0).batch_items);
+    EXPECT_EQ(40000U, graph.conditioner_scheduling_plans().at(0).batch_items);
     graph.start();
     ASSERT_TRUE(graph.running());
     graph.stop();
@@ -441,7 +441,7 @@ TEST_F(ConditionedFlowgraphTest, AutomaticPlanningSupportsMultipleRfStreams)
         {
             EXPECT_TRUE(plan.automatic);
             EXPECT_TRUE(plan.remove_identity);
-            EXPECT_EQ(65536U, plan.batch_items);
+            EXPECT_EQ(40000U, plan.batch_items);
         }
     EXPECT_EQ(3U, graph.conditioner_scheduling_plans()[0].readers);
     EXPECT_EQ(2U, graph.conditioner_scheduling_plans()[1].readers);

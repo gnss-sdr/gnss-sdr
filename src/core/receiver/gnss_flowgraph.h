@@ -228,8 +228,8 @@ private:
     void plan_signal_conditioners();
     void clear_stream_connections();
     void connect_block(GNSSBlockInterface& block);
-    void connect_message(gr::basic_block_sptr source, pmt::pmt_t source_port,
-        gr::basic_block_sptr destination, pmt::pmt_t destination_port);
+    void connect_message(const gr::basic_block_sptr& source, const pmt::pmt_t& source_port,
+        const gr::basic_block_sptr& destination, const pmt::pmt_t& destination_port);
     struct MessageConnection
     {
         gr::basic_block_sptr source;

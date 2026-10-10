@@ -49,7 +49,7 @@ public:
         uint64_t max_buffer_items = 0;
         uint64_t min_buffer_items = 0;
         size_t readers = 0;
-        double max_latency_ms = STREAM_BATCHER_MAX_LATENCY_MS;
+        double max_latency_ms = STREAM_BATCHER_DEFAULT_LATENCY_MS;
         bool remove_identity = false;
         bool automatic = true;
         std::string reason;

@@ -513,8 +513,8 @@ TEST(ConditionerSchedulingPolicyTest, AutomaticCopyReplacementAndSafeFallbacks)
     auto plan = ConditionerSchedulingPolicy::select(config, "SignalConditioner", request);
     EXPECT_TRUE(plan.automatic);
     EXPECT_TRUE(plan.remove_identity);
-    EXPECT_EQ(50000U, plan.batch_items);
-    EXPECT_EQ(20.0, plan.max_latency_ms);
+    EXPECT_EQ(25000U, plan.batch_items);
+    EXPECT_EQ(10.0, plan.max_latency_ms);
     request.identity_stages = 0;
     EXPECT_EQ(0U, ConditionerSchedulingPolicy::select(config, "SignalConditioner", request).batch_items);
     request.identity_stages = 1;
@@ -529,7 +529,7 @@ TEST(ConditionerSchedulingPolicyTest, AutomaticCopyReplacementAndSafeFallbacks)
     for (size_t readers : {2U, 25U, 41U, 1000U})
         {
             request.readers = readers;
-            EXPECT_EQ(50000U, ConditionerSchedulingPolicy::select(config, "SignalConditioner", request).batch_items);
+            EXPECT_EQ(25000U, ConditionerSchedulingPolicy::select(config, "SignalConditioner", request).batch_items);
         }
 }
 
@@ -542,10 +542,10 @@ TEST(ConditionerSchedulingPolicyTest, LimitsAndExplicitOverrides)
     request.item_size = 8;
     request.readers = 25;
     request.identity_stages = 3;
-    config.supersede_property("GNSS-SDR.observable_interval_ms", "4");
+    config.supersede_property("GNSS-SDR.observable_interval_ms", "2");
     auto plan = ConditionerSchedulingPolicy::select(config, "SignalConditioner", request);
-    EXPECT_EQ(10000U, plan.batch_items);
-    EXPECT_EQ(4.0, plan.max_latency_ms);
+    EXPECT_EQ(5000U, plan.batch_items);
+    EXPECT_EQ(2.0, plan.max_latency_ms);
     config.supersede_property("GNSS-SDR.max_source_buffer_samples", "4096");
     EXPECT_EQ(2048U, ConditionerSchedulingPolicy::select(config, "SignalConditioner", request).batch_items);
     config.supersede_property("SignalConditioner.batch_size_ms", "1");
@@ -593,11 +593,11 @@ TEST(ConditionerSchedulingPolicyTest, ConsumerWindowsConstrainAutomaticSelection
     request.identity_stages = 1;
     request.minimum_input_items = 50000;
     auto plan = ConditionerSchedulingPolicy::select(config, "SignalConditioner", request);
-    EXPECT_EQ(50000U, plan.batch_items);
-    EXPECT_EQ(100000U, plan.min_buffer_items);
+    EXPECT_EQ(25000U, plan.batch_items);
+    EXPECT_EQ(50001U, plan.min_buffer_items);
     request.minimum_input_items = 140000;
     plan = ConditionerSchedulingPolicy::select(config, "SignalConditioner", request);
-    EXPECT_EQ(50000U, plan.batch_items);
+    EXPECT_EQ(25000U, plan.batch_items);
     EXPECT_EQ(140001U, plan.min_buffer_items);
     config.supersede_property("GNSS-SDR.max_source_buffer_samples", "131072");
     EXPECT_EQ(0U, ConditionerSchedulingPolicy::select(config, "SignalConditioner", request).batch_items);
@@ -633,6 +633,8 @@ TEST(ConditionerSchedulingPolicyTest, PartialPublicationFitsAConsumerWindowLarge
 TEST(ConditionerSchedulingPolicyTest, MemoryBudgetUsesBytesAcrossSampleFormats)
 {
     InMemoryConfiguration config;
+    // Reach the byte budget for every item size, including single bytes.
+    config.supersede_property("SignalConditioner.max_batch_latency_ms", "20");
     ConditionerSchedulingPolicy::Request request;
     request.sample_rate = 100000000;
     request.readers = 64;
@@ -678,7 +680,7 @@ TEST(ConditionerSchedulingPolicyTest, RejectsLongDeadlinesAndFixedBatches)
     request.identity_stages = 1;
     // An enlarged observable interval must not enlarge the staging ceiling.
     config.supersede_property("GNSS-SDR.observable_interval_ms", "1000");
-    EXPECT_EQ(20.0, ConditionerSchedulingPolicy::select(config, "SignalConditioner0", request).max_latency_ms);
+    EXPECT_EQ(10.0, ConditionerSchedulingPolicy::select(config, "SignalConditioner0", request).max_latency_ms);
     config.supersede_property("SignalConditioner0.max_batch_latency_ms", "20");
     EXPECT_EQ(50000U, ConditionerSchedulingPolicy::select(config, "SignalConditioner0", request).batch_items);
     for (const auto* delay : {"20.001", "40", "511", "60000"})

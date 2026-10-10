@@ -168,7 +168,7 @@ bool beidou_b2a_telemetry_decoder_gs::preamble_detected() const
     std::array<float, BEIDOU_CNAV2_PREAMBLE_MS> current{};
     std::array<float, BEIDOU_CNAV2_PREAMBLE_MS> previous{};
     std::copy_n(d_symbol_history.end() - BEIDOU_CNAV2_FRAME_MS, BEIDOU_CNAV2_PREAMBLE_MS, current.begin());
-    const bool have_previous = d_symbol_history.size() >= static_cast<size_t>(2 * BEIDOU_CNAV2_FRAME_MS);
+    const bool have_previous = d_symbol_history.size() >= 2U * static_cast<size_t>(BEIDOU_CNAV2_FRAME_MS);
     if (have_previous)
         {
             std::copy_n(d_symbol_history.end() - 2 * BEIDOU_CNAV2_FRAME_MS, BEIDOU_CNAV2_PREAMBLE_MS, previous.begin());
@@ -222,7 +222,7 @@ int beidou_b2a_telemetry_decoder_gs::general_work(
         {
             d_sample_counter++;
             d_symbol_history.push_back(static_cast<float>(current.Prompt_I));
-            if (d_symbol_history.size() > static_cast<size_t>(BEIDOU_CNAV2_FRAME_MS * 2))
+            if (d_symbol_history.size() > 2U * static_cast<size_t>(BEIDOU_CNAV2_FRAME_MS))
                 {
                     d_symbol_history.pop_front();
                 }

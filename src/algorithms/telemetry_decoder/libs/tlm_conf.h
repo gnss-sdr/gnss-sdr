@@ -46,6 +46,7 @@ public:
     bool there_are_e6_channels{false};
     bool use_ced{false};
     bool tow_to_trk{false};
+    bool early_monitor{true};  // early tracking monitor output in on by default
 };
 
 

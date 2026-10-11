@@ -51,6 +51,7 @@ HybridObservables::HybridObservables(const ConfigurationInterface* configuration
     conf.always_output_gs = configuration->property("PVT.an_output_enabled", conf.always_output_gs) || configuration->property(role + ".always_output_gs", conf.always_output_gs);
     conf.enable_E6 = configuration->property(role + ".enable_E6", conf.enable_E6);
     conf.enable_monitor = configuration->property("Monitor.enable_monitor", conf.enable_monitor);
+    conf.early_monitor = configuration->property("Monitor.early", conf.early_monitor);
 
 #if USE_GLOG_AND_GFLAGS
     if (FLAGS_carrier_smoothing_factor == DEFAULT_CARRIER_SMOOTHING_FACTOR)

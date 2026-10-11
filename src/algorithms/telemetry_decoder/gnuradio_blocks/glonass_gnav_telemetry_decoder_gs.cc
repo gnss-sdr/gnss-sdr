@@ -73,7 +73,8 @@ glonass_gnav_telemetry_decoder_gs::glonass_gnav_telemetry_decoder_gs(const Tlm_C
       d_remove_dat(conf.remove_dat),
       d_enable_navdata_monitor(conf.enable_navdata_monitor),
       d_dump_crc_stats(conf.dump_crc_stats),
-      d_tow_to_trk(conf.tow_to_trk)
+      d_tow_to_trk(conf.tow_to_trk),
+      d_early_monitor(conf.early_monitor)
 {
     configure_basic_outputs();
 
@@ -266,6 +267,14 @@ int glonass_gnav_telemetry_decoder_gs::general_work(int noutput_items __attribut
 
     // 1. Copy the current tracking output
     current_symbol = in[0][0];
+    // Early monitor output
+    if (d_early_monitor && !current_symbol.Flag_valid_symbol_output)
+        {
+            consume_each(1);  // one by one
+            *out[0] = std::move(current_symbol);
+            return 1;
+        }
+
     d_symbol_history.push_back(current_symbol);  // add new symbol to the symbol queue
     d_sample_counter++;                          // count for the processed samples
     consume_each(1);

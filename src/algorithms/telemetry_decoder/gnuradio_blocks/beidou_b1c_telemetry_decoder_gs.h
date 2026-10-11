@@ -75,6 +75,7 @@ private:
     bool d_prev_valid_symbol_output{false};
     bool d_await_post_lock_frame_decode{false};
     uint32_t d_post_lock_valid_symbols{0U};
+    const bool d_early_monitor;
 };
 
 #endif

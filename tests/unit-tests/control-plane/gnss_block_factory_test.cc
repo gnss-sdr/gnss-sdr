@@ -441,7 +441,7 @@ TEST(GNSSBlockFactoryTest, BypassHasNoProcessingBlocks)
     InMemoryConfiguration config;
     config.supersede_property("SignalConditioner.implementation", "Bypass");
     auto conditioner = block_factory::GetSignalConditioner(&config);
-    ASSERT_TRUE(conditioner);
+    ASSERT_TRUE(conditioner != nullptr);
     EXPECT_TRUE(conditioner->is_identity());
     EXPECT_FALSE(conditioner->get_left_block());
     EXPECT_FALSE(conditioner->get_right_block());
@@ -467,12 +467,12 @@ TEST(GNSSBlockFactoryTest, FactoryRetainsPassThroughUntilPlanning)
     config.supersede_property("SignalConditioner.implementation", "Pass_Through");
     config.supersede_property("SignalConditioner.batch_size_ms", "10");
     auto conditioner = block_factory::GetSignalConditioner(&config);
-    EXPECT_TRUE(conditioner->get_right_block());
+    EXPECT_TRUE(conditioner->get_right_block().get() != nullptr);
     EXPECT_TRUE(conditioner->is_identity());
     EXPECT_EQ(sizeof(gr_complex), conditioner->item_size());
     config.supersede_property("SignalConditioner.inverted_spectrum", "true");
     conditioner = block_factory::GetSignalConditioner(&config);
-    EXPECT_TRUE(conditioner->get_right_block());
+    EXPECT_TRUE(conditioner->get_right_block().get() != nullptr);
     EXPECT_FALSE(conditioner->is_identity());
 }
 
@@ -488,14 +488,14 @@ TEST(GNSSBlockFactoryTest, FactoryRetainsStagesRegardlessOfSchedulingOverrides)
                     config.supersede_property("SignalConditioner.batch_size_ms", duration);
                     config.supersede_property("SignalConditioner.remove_pass_through", remove);
                     auto conditioner = block_factory::GetSignalConditioner(&config);
-                    ASSERT_TRUE(conditioner);
-                    EXPECT_TRUE(conditioner->get_left_block());
-                    EXPECT_TRUE(conditioner->get_right_block());
+                    ASSERT_TRUE(conditioner != nullptr);
+                    EXPECT_TRUE(conditioner->get_left_block().get() != nullptr);
+                    EXPECT_TRUE(conditioner->get_right_block().get() != nullptr);
                     EXPECT_NE(conditioner->get_left_block(), conditioner->get_right_block());
                     config.supersede_property("SignalConditioner.implementation", "Pass_Through");
                     conditioner = block_factory::GetSignalConditioner(&config);
-                    ASSERT_TRUE(conditioner);
-                    EXPECT_TRUE(conditioner->get_right_block());
+                    ASSERT_TRUE(conditioner != nullptr);
+                    EXPECT_TRUE(conditioner->get_right_block().get() != nullptr);
                     EXPECT_TRUE(conditioner->is_identity());
                 }
         }

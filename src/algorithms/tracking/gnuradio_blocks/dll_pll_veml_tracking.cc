@@ -166,6 +166,9 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
 
+    // Make sure that GNU Radio scheduler will always be able to satisfy our request from forecast()
+    set_history(d_trk_parameters.vector_length + 1);
+
     // Telemetry bit synchronization message port input
     this->message_port_register_out(pmt::mp("events"));
 
@@ -2331,7 +2334,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     gr::thread::scoped_lock l(d_setlock);
-    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);
+    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]) + history() - 1;
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
     current_synchro_data.Flag_valid_symbol_output = false;
@@ -2373,7 +2376,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
         case 0:  // Standby - Consume samples at full throttle, do nothing
             {
                 // d_sample_counter += static_cast<uint64_t>(ninput_items[0]);
-                consume_each(ninput_items[0]);
+                consume_each(ninput_items[0] - history() + 1);
                 return 0;
                 break;
             }

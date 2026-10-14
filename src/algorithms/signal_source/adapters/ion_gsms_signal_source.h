@@ -57,6 +57,7 @@ protected:
     gr::basic_block_sptr get_right_block() override;
     gr::basic_block_sptr get_right_block(int RF_channel) override;
     size_t getRfChannels() const override;
+    bool is_real_time() const override { return false; }
 
     inline size_t item_size() override
     {

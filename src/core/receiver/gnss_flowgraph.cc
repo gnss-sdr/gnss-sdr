@@ -968,6 +968,16 @@ void GNSSFlowgraph::plan_signal_conditioners()
                     readers[id].insert(channels_[i]->get_left_block_acq().get());
                 }
         }
+    // Conditioners follow the RF streams of the sources, in order.
+    std::vector<bool> real_time;
+    for (const auto& source : sig_source_)
+        {
+            if (source)
+                {
+                    const size_t streams = source->implementation() == "Raw_Array_Signal_Source" ? 1 : source->getRfChannels();
+                    real_time.insert(real_time.end(), streams, source->is_real_time());
+                }
+        }
     conditioner_plans_.clear();
     for (size_t id = 0; id < sig_conditioner_.size(); ++id)
         {
@@ -1000,6 +1010,7 @@ void GNSSFlowgraph::plan_signal_conditioners()
                     if (!stream_block || stream_block->input_signature()->max_streams() != 1)
                         {
                             request.eligible = false;
+                            request.windows_known = false;
                             continue;
                         }
                     gr_vector_int required(1, 0);
@@ -1011,6 +1022,9 @@ void GNSSFlowgraph::plan_signal_conditioners()
                     request.minimum_input_items = std::max(request.minimum_input_items,
                         std::max(static_cast<uint64_t>(required[0]), static_cast<uint64_t>(stream_block->history())));
                 }
+            request.channel_input_items = request.minimum_input_items;
+            request.feeds_clock = id == 0;
+            request.real_time = id >= real_time.size() || real_time[id];
             if (id == 0)
                 {
                     const auto interval = configuration_->property("GNSS-SDR.observable_interval_ms", 20);
@@ -1031,8 +1045,19 @@ void GNSSFlowgraph::plan_signal_conditioners()
                     std::shared_ptr<GNSSBlockInterface> stage(std::move(block));
                     block = std::make_unique<SignalConditioner>(stage, stage->role(), true);
                 }
+            const double buffer_ms = fs > 0.0 ? 1000.0 * static_cast<double>(plan.min_buffer_items) / fs : 0.0;
             LOG(INFO) << block->role() << ": " << plan.reason << "; readers=" << plan.readers
-                      << ", batch=" << plan.batch_items << ", max staging latency=" << plan.max_latency_ms << " ms";
+                      << ", batch=" << plan.batch_items << " samples, batch deadline=" << plan.max_latency_ms
+                      << " ms, largest reader window=" << plan.reader_window_items << " samples, output buffer="
+                      << plan.min_buffer_items << " samples (" << buffer_ms << " ms), alignment budget="
+                      << plan.alignment_budget_ms << " ms" << (request.real_time ? "" : ", unthrottled replay");
+            if (plan.buffer_over_budget)
+                {
+                    LOG(WARNING) << block->role() << ".output_buffer_ms asks for more than the " << plan.alignment_budget_ms
+                                 << " ms of signal that channels can lag the receiver clock with a margin when"
+                                 << " GNSS-SDR.observable_interval_ms=" << configuration_->property("GNSS-SDR.observable_interval_ms", 20)
+                                 << ": observables of the slowest channels can be lost while the receiver is behind";
+                }
             conditioner_plans_.push_back(std::move(plan));
         }
 }
@@ -1337,16 +1362,36 @@ void GNSSFlowgraph::connect_conditioner_output(size_t conditioner_id, StreamEndp
                     conditioner_deadlines_ = std::make_shared<StreamBatcherDeadline>();
                 }
             const size_t item_size = upstream.block->output_signature()->sizeof_stream_item(upstream.port);
-            const auto batcher = make_stream_batcher(item_size, plan.batch_items, plan.max_buffer_items,
+            const auto batcher = make_stream_batcher(item_size, plan.batch_items, plan.reader_window_items,
                 plan.max_latency_ms, conditioner_deadlines_);
-            batcher->set_min_output_buffer(static_cast<long>(plan.min_buffer_items));  // NOLINT(google-runtime-int)
+            batcher->set_min_output_buffer(0, static_cast<long>(plan.min_buffer_items));  // NOLINT(google-runtime-int)
             top_block_->connect(upstream.block, upstream.port, batcher, 0);
             upstream.block = batcher;
             upstream.port = 0;
         }
-    else if (!right && configuration_->property("GNSS-SDR.max_source_buffer_samples", uint64_t(0)) > 0)
+    else
         {
-            LOG(WARNING) << role << ": bypass without batching has no conditioner buffer on which to apply GNSS-SDR.max_source_buffer_samples";
+            if (!right && configuration_->property("GNSS-SDR.max_source_buffer_samples", uint64_t(0)) > 0)
+                {
+                    LOG(WARNING) << role << ": bypass without batching has no conditioner buffer on which to apply GNSS-SDR.max_source_buffer_samples";
+                }
+            // Without a batching block the last conditioning block feeds the
+            // channels. Source blocks keep the buffer their driver asked for.
+            auto* last = right ? dynamic_cast<gr::block*>(right.get()) : nullptr;
+            if (last != nullptr && plan.max_buffer_items == 0)
+                {
+                    // GNU Radio up to 3.9 records the allocated buffer size as
+                    // a maximum, which cancels the minimum on a later start.
+                    last->set_max_output_buffer(0, -1);
+                }
+            if (last != nullptr && last->max_output_buffer(0) <= 0)
+                {
+                    last->set_min_output_buffer(0, plan.min_buffer_items > 0 ? static_cast<long>(plan.min_buffer_items) : -1);  // NOLINT(google-runtime-int)
+                }
+            else if (plan.min_buffer_items > 0)
+                {
+                    LOG(INFO) << role << ": no conditioning block can hold the planned output buffer; GNU Radio sizes it";
+                }
         }
     conditioned_outputs_.at(conditioner_id) = upstream;
 }

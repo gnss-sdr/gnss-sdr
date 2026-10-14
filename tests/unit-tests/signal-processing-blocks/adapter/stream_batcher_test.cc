@@ -134,6 +134,77 @@ public:
     std::vector<gr::tag_t> tags;
 };
 
+// Records how many items each scheduler call offers.
+class ProbeTestSink : public gr::sync_block
+{
+public:
+    ProbeTestSink()
+        : gr::sync_block("probe_sink", gr::io_signature::make(1, 1, sizeof(int)), gr::io_signature::make(0, 0, 0)) {}
+    int work(int count, gr_vector_const_void_star& input, gr_vector_void_star& /*output_items*/) override
+    {
+        const auto* items = static_cast<const int*>(input[0]);
+        for (int i = 0; i < count; ++i)
+            {
+                valid = valid && items[i] == received.load() + i;
+            }
+        calls.push_back(count);
+        received.fetch_add(count);
+        return count;
+    }
+    std::atomic<int> received{0};
+    std::vector<int> calls;
+    bool valid = true;
+};
+
+// Consumes a fixed step per call, as a tracking block does with a code period.
+class SteppedTestSink : public gr::block
+{
+public:
+    explicit SteppedTestSink(int step)
+        : gr::block("stepped_test_sink", gr::io_signature::make(1, 1, sizeof(int)), gr::io_signature::make(0, 0, 0)), step_(step)
+    {
+    }
+    void forecast(int /*noutput_items*/, gr_vector_int& required) override { required[0] = step_; }
+    int general_work(int /*noutput_items*/, gr_vector_int& /*available*/, gr_vector_const_void_star& /*input*/, gr_vector_void_star& /*output_items*/) override
+    {
+        std::this_thread::sleep_for(std::chrono::microseconds(20));
+        received_ += step_;
+        consume_each(step_);
+        return 0;
+    }
+    int received_ = 0;
+
+private:
+    int step_;
+};
+
+// Stays inside its first call until released, as an acquisition block searching
+// a grid does for a while, then reads everything.
+class BusyTestSink : public gr::sync_block
+{
+public:
+    BusyTestSink()
+        : gr::sync_block("busy_test_sink", gr::io_signature::make(1, 1, sizeof(int)), gr::io_signature::make(0, 0, 0)) {}
+    int work(int count, gr_vector_const_void_star& /*input*/, gr_vector_void_star& /*output_items*/) override
+    {
+        if (received.load() == 0)
+            {
+                busy.store(true);
+                const auto limit = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+                while (!release.load() && std::chrono::steady_clock::now() < limit)
+                    {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                    }
+                busy.store(false);
+            }
+        received.fetch_add(count);
+        return count;
+    }
+    std::atomic<int> received{0};
+    std::atomic<bool> busy{false};
+    std::atomic<bool> release{false};
+};
+
 class WindowTestSink : public gr::block
 {
 public:
@@ -168,6 +239,10 @@ protected:
     bool run(const gr::top_block_sptr& top)
     {
         top->start();
+        return finish(top);
+    }
+    bool finish(const gr::top_block_sptr& top)
+    {
         auto done = std::async(std::launch::async, [top]() { top->wait(); });
         const bool completed = done.wait_for(std::chrono::seconds(5)) == std::future_status::ready;
         if (!completed)
@@ -181,7 +256,7 @@ protected:
     {
         auto top = gr::make_top_block("batch_test");
         auto source = gnss_make_shared<ChunkedTestSource>(length, chunk, paced);
-        auto batcher = make_stream_batcher(sizeof(int), batch, 0);
+        auto batcher = make_stream_batcher(sizeof(int), batch);
         auto sink = gr::blocks::vector_sink_i::make();
         top->connect(source, 0, batcher, 0);
         top->connect(batcher, 0, sink, 0);
@@ -214,7 +289,7 @@ TEST_F(StreamBatcherTest, FiniteTailsAndTags)
 }
 
 
-TEST_F(StreamBatcherTest, StagedTailAfterUpstreamFinishes)
+TEST_F(StreamBatcherTest, PartialBatchAfterUpstreamFinishes)
 {
     for (int i = 0; i < 10; ++i)
         {
@@ -225,15 +300,85 @@ TEST_F(StreamBatcherTest, StagedTailAfterUpstreamFinishes)
 
 TEST_F(StreamBatcherTest, ConsumerWindowLargerThanBatch)
 {
+    // A reader waiting for its window and a writer waiting for room for a
+    // batch must not block each other: the buffer holds both, in whole batches.
+    const int batch = 16384;
+    const int window = 24001;
+    const int capacity = batch * (1 + (window + batch - 1) / batch);
     auto top = gr::make_top_block("batch_backpressure");
-    auto source = gnss_make_shared<ChunkedTestSource>(3500 * 8, 79, false);
-    auto batcher = make_stream_batcher(sizeof(int), 1024, 4096);
-    auto sink = gnss_make_shared<WindowTestSink>(3500);
+    auto source = gnss_make_shared<ChunkedTestSource>(window * 8, 79, false);
+    auto batcher = make_stream_batcher(sizeof(int), batch, window);
+    batcher->set_min_output_buffer(0, capacity);
+    auto sink = gnss_make_shared<WindowTestSink>(window);
     top->connect(source, 0, batcher, 0);
     top->connect(batcher, 0, sink, 0);
+    // A second start must get the same buffer, and so whole batches, again.
+    for (int pass = 0; pass < 2; ++pass)
+        {
+            sink->received_ = 0;
+            ASSERT_TRUE(run(top));
+            EXPECT_EQ(window * 8, sink->received_);
+            EXPECT_TRUE(sink->valid_);
+            EXPECT_EQ(batch, batcher->output_multiple());
+        }
+}
+
+
+TEST_F(StreamBatcherTest, WholeBatchesWhenAReaderFallsBehind)
+{
+    const int batch = 1024;
+    const int length = 64 * batch + 37;
+    auto top = gr::make_top_block("batch_hold");
+    auto source = gnss_make_shared<ChunkedTestSource>(length, 113, false);
+    auto batcher = make_stream_batcher(sizeof(int), batch, 64, 20.0);
+    auto slow = gnss_make_shared<SteppedTestSink>(64);
+    auto probe = gnss_make_shared<ProbeTestSink>();
+    top->connect(source, 0, batcher, 0);
+    top->connect(batcher, 0, slow, 0);
+    top->connect(batcher, 0, probe, 0);
     ASSERT_TRUE(run(top));
-    EXPECT_EQ(3500 * 8, sink->received_);
-    EXPECT_TRUE(sink->valid_);
+    EXPECT_EQ(length, probe->received.load());
+    EXPECT_TRUE(probe->valid);
+    EXPECT_EQ(length - 37, slow->received_);
+    // The slow reader frees 64 items at a time. Nothing shorter than a batch
+    // is published for that reason: only the tail and, if this test is ever
+    // descheduled for the whole deadline, a partial batch.
+    int fragments = 0;
+    for (const int count : probe->calls)
+        {
+            fragments += count < batch ? 1 : 0;
+        }
+    EXPECT_LE(fragments, 3);
+}
+
+
+TEST_F(StreamBatcherTest, ReaderBusyInsideWorkDoesNotStopPublication)
+{
+    const int batch = 1024;
+    const int capacity = 24 * batch;
+    auto top = gr::make_top_block("batch_busy_reader");
+    auto source = gnss_make_shared<ChunkedTestSource>(64 * batch, 8192, false);
+    auto batcher = make_stream_batcher(sizeof(int), batch, 1);
+    batcher->set_min_output_buffer(0, capacity);
+    auto busy = gnss_make_shared<BusyTestSink>();
+    auto probe = gnss_make_shared<ProbeTestSink>();
+    top->connect(source, 0, batcher, 0);
+    top->connect(batcher, 0, busy, 0);
+    top->connect(batcher, 0, probe, 0);
+    top->start();
+    // While one reader computes, the others receive what the buffer can hold.
+    const auto limit = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    while (std::chrono::steady_clock::now() < limit && (!busy->busy.load() || probe->received.load() < capacity - 2 * batch))
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+    const int run_ahead = probe->received.load();
+    busy->release.store(true);
+    ASSERT_TRUE(finish(top));
+    EXPECT_GE(run_ahead, capacity - 2 * batch);
+    EXPECT_EQ(64 * batch, probe->received.load());
+    EXPECT_EQ(64 * batch, busy->received.load());
+    EXPECT_TRUE(probe->valid);
 }
 
 
@@ -241,7 +386,8 @@ TEST_F(StreamBatcherTest, ManyReadersAndSmallWorkAllowance)
 {
     auto top = gr::make_top_block("batch_fanout");
     auto source = gnss_make_shared<ChunkedTestSource>(65537, 113, false);
-    auto batcher = make_stream_batcher(sizeof(int), 1024, 4096);
+    auto batcher = make_stream_batcher(sizeof(int), 1024);
+    // Less than a batch per call: the block must settle for that, not spin.
     batcher->set_max_noutput_items(97);
     top->connect(source, 0, batcher, 0);
     std::vector<gr::blocks::vector_sink_i::sptr> sinks;
@@ -282,11 +428,11 @@ TEST_F(StreamBatcherTest, RejectsInvalidSizes)
     EXPECT_THROW(make_stream_batcher(std::numeric_limits<size_t>::max(), 1024, 0), std::invalid_argument);
     EXPECT_THROW(make_stream_batcher(sizeof(int), 0, 0), std::invalid_argument);
     EXPECT_THROW(make_stream_batcher(sizeof(int), std::numeric_limits<uint64_t>::max(), 0), std::invalid_argument);
-    EXPECT_THROW(make_stream_batcher(sizeof(int), 1024, 1), std::invalid_argument);
     EXPECT_THROW(make_stream_batcher(sizeof(int), 1024, std::numeric_limits<uint64_t>::max()), std::invalid_argument);
     auto batcher = make_stream_batcher(sizeof(int), 1024, 512);
-    EXPECT_EQ(256U, batcher->batch_items());
-    EXPECT_EQ(1, batcher->output_multiple());
+    EXPECT_EQ(1024U, batcher->batch_items());
+    // GNU Radio sizes the buffers around the block from its output multiple.
+    EXPECT_EQ(1024, batcher->output_multiple());
 }
 
 
@@ -307,20 +453,22 @@ TEST_F(StreamBatcherTest, StopDuringAccumulation)
 }
 
 
-TEST_F(StreamBatcherTest, SmallBuffers)
+TEST_F(StreamBatcherTest, ReaderWindowsThatLeaveNoRoomForABatch)
 {
-    for (uint64_t capacity : {2, 128, 512, 4096})
+    // The default buffer for these items holds 16384 of them. With a reader
+    // that waits for nearly all of it, the block publishes less than a batch
+    // at a time rather than wait for room that never comes.
+    for (int window : {15361, 16000, 16383})
         {
             auto top = gr::make_top_block("batch_small_buffer");
-            auto source = gnss_make_shared<ChunkedTestSource>(4097, 13, false);
-            auto batcher = make_stream_batcher(sizeof(int), 1024, capacity);
-            auto sink = gr::blocks::vector_sink_i::make();
+            auto source = gnss_make_shared<ChunkedTestSource>(4 * window, 13, false);
+            auto batcher = make_stream_batcher(sizeof(int), 1024, window);
+            auto sink = gnss_make_shared<WindowTestSink>(window);
             top->connect(source, 0, batcher, 0);
             top->connect(batcher, 0, sink, 0);
             ASSERT_TRUE(run(top));
-            std::vector<int> expected(4097);
-            std::iota(expected.begin(), expected.end(), 0);
-            EXPECT_EQ(expected, sink->data());
+            EXPECT_EQ(4 * window, sink->received_);
+            EXPECT_TRUE(sink->valid_);
         }
 }
 
@@ -466,7 +614,6 @@ TEST_F(StreamBatcherTest, DeadlinePublishesWithoutFurtherInputOrEof)
         {
             auto source = gnss_make_shared<StalledTestSource>();
             auto batcher = make_stream_batcher(sizeof(int), 1024, 0, 5.0, service);
-            batcher->set_max_noutput_items(3);
             auto sink = gnss_make_shared<ObservedTestSink>();
             top->connect(source, 0, batcher, 0);
             top->connect(batcher, 0, sink, 0);

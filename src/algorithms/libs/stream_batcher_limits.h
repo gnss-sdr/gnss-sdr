@@ -17,17 +17,55 @@
 #ifndef GNSS_SDR_STREAM_BATCHER_LIMITS_H
 #define GNSS_SDR_STREAM_BATCHER_LIMITS_H
 
+#include <algorithm>
+#include <cstdint>
+
 /** \addtogroup Algorithms_Library
  * \{ */
 /** \addtogroup Algorithm_libs algorithms_libs
  * \{ */
 
-//! Hard ceiling for fixed batch durations and staging deadlines.
+//! Hard ceiling for fixed batch durations and batch deadlines.
 constexpr double STREAM_BATCHER_MAX_LATENCY_MS = 20.0;
 
-//! Default staging deadline: long enough to amortize reader fan-out, short
+//! Default batch deadline: long enough to amortize reader fan-out, short
 //! enough not to slow down the acquisition search cadence of idle channels.
 constexpr double STREAM_BATCHER_DEFAULT_LATENCY_MS = 10.0;
+
+//! Largest automatic batch, in bytes. GNU Radio allocates twice this much in
+//! front of a batching block.
+constexpr uint64_t STREAM_BATCHER_AUTO_BATCH_BYTES = 512U * 1024U;
+
+//! Largest automatic buffer of a conditioned stream, in bytes. It stays below
+//! 16 MiB, where the shared memory segments that GNU Radio maps twice start to
+//! exceed the default limits of old kernels.
+constexpr uint64_t CONDITIONED_STREAM_AUTO_BUFFER_BYTES = 8U * 1024U * 1024U;
+
+//! Longest telemetry symbol, in ms: a channel reports once per symbol.
+constexpr uint32_t CONDITIONED_STREAM_SYMBOL_MS = 20U;
+
+//! Signal time left for tracking data to reach the observables block, in ms,
+//! when the slowest channel is a full buffer behind the receiver clock.
+constexpr uint32_t CONDITIONED_STREAM_GUARD_MS = 60U;
+
+/*!
+ * \brief Receiver clock ticks kept by the observables block. An epoch is
+ * computed when it is this many ticks old, less one.
+ */
+inline uint32_t observables_clock_ticks(uint32_t observable_interval_ms)
+{
+    return std::min(std::max(300U / std::max(observable_interval_ms, 1U), 3U), 20U);
+}
+
+/*!
+ * \brief Age of an epoch, in ms of signal, when the observables block computes
+ * it. A channel whose samples are processed later than this after they reach
+ * the receiver clock has no observable for that epoch.
+ */
+inline uint32_t observables_clock_delay_ms(uint32_t observable_interval_ms)
+{
+    return (observables_clock_ticks(observable_interval_ms) - 1U) * observable_interval_ms;
+}
 
 /** \} */
 /** \} */

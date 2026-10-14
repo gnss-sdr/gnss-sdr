@@ -16,6 +16,7 @@
  */
 
 #include "fifo_reader.h"
+#include <algorithm>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -61,6 +62,10 @@ int FifoReader::work(int noutput_items,
         {
             LOG(ERROR) << "FifoReader connected to too many outputs";
         }
+
+    // The reads below wait for every item they are asked for. Ask for what a
+    // default stream buffer offers, however large the buffer after this block.
+    noutput_items = std::min(noutput_items, 4096);
 
     // read samples out
     size_t items_retrieved = 0;

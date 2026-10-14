@@ -55,6 +55,7 @@ public:
     inline std::string implementation() override { return "Signal Source"; }
     inline size_t item_size() override { return 0; }
     inline size_t getRfChannels() const final { return 0; }
+    bool is_real_time() const override { return false; }
 
     inline std::shared_ptr<GNSSBlockInterface> signal_generator() const { return signal_generator_; }
 

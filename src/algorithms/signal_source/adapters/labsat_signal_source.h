@@ -56,6 +56,7 @@ public:
     }
 
     size_t getRfChannels() const override;
+    bool is_real_time() const override { return enable_throttle_control_; }
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;
     gr::basic_block_sptr get_left_block() override;

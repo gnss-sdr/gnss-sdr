@@ -87,6 +87,9 @@ public:
     //! Whether to repeat reading after end-of-file
     bool repeat() const;
 
+    //! Whether the replay is paced at the sampling frequency
+    bool is_real_time() const override { return enable_throttle_control_; }
+
     //! The sampling frequency of the source file
     int64_t sampling_frequency() const;
 

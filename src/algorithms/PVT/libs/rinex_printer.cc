@@ -1836,6 +1836,19 @@ std::string get_obs_epoch_record_lines(const boost::posix_time::ptime& system_ti
 
 void add_obs_sat_record_line(const Gnss_Synchro& synchro, std::string& line, bool padding = true)
 {
+    if (!synchro.Flag_valid_pseudorange)
+        {
+            // No valid observation for this signal (e.g. not currently
+            // tracked/locked for this satellite): RINEX requires a fully
+            // blank field, not a formatted zero value.
+            line += std::string(4 * 16, ' ');
+            if (padding && line.size() < 80)
+                {
+                    line += std::string(80 - line.size(), ' ');
+                }
+            return;
+        }
+
     const int32_t ssi = signal_strength(synchro.CN0_dB_hz);
     const char lli = synchro.Flag_cycle_slip ? '1' : ' ';
     // bit 0: loss of lock or cycle slip; a half-cycle re-resolution is a

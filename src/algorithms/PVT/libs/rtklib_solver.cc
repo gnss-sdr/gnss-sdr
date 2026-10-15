@@ -3150,6 +3150,17 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // NaN az/el (corrupt ephemeris/almanac) is deliberately
                     // reported as-is for consumers to handle; rescode()
                     // already keeps NaN out of the position solve.
+                    //
+                    // combined/used below come from d_obs_data's own record, not from configuration.
+                    // Bounded to rover_observation_count to skip any base-station entries past it.
+                    std::map<int, std::size_t> sat_to_obs_index;
+                    for (std::size_t obs_idx = 0; obs_idx < static_cast<std::size_t>(rover_observation_count); obs_idx++)
+                        {
+                            if (d_obs_data[obs_idx].sat != 0)
+                                {
+                                    sat_to_obs_index[d_obs_data[obs_idx].sat] = obs_idx;
+                                }
+                        }
                     d_monitor_pvt.tracked_satellites.clear();
                     for (int sat_idx = 0; sat_idx < MAXSAT; sat_idx++)
                         {
@@ -3194,7 +3205,21 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             contributing_signals.push_back(&synchro);
                                         }
                                 }
-                            const bool combined = contributing_signals.size() > 1;
+                            // Band pair prange() itself reads for this satellite this epoch.
+                            int prange_i = 0;
+                            int prange_j = 1;
+                            bool both_bands_present = false;
+                            int picked_slot = -1;
+                            const auto obs_it = sat_to_obs_index.find(sat_idx + 1);
+                            const bool have_obs_record = obs_it != sat_to_obs_index.cend();
+                            if (have_obs_record)
+                                {
+                                    const obsd_t &obs_record = d_obs_data[obs_it->second];
+                                    prange_band_pair(&obs_record, &prange_i, &prange_j);
+                                    both_bands_present = prange_i != prange_j &&
+                                                         obs_record.P[prange_i] != 0.0 && obs_record.P[prange_j] != 0.0;
+                                    picked_slot = obs_record.code[prange_i] != CODE_NONE ? prange_i : prange_j;
+                                }
                             // satazel() (rtklib_rtkcmn.cc) returns azimuth in [0, 2*pi); wrap to
                             // (-180, 180] deg, the convention expected downstream (monitor sky plot).
                             double az_deg = pvt_ssat[sat_idx].azel[0] * R2D;
@@ -3210,8 +3235,21 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     info.signal = std::string(synchro->Signal, 2);
                                     info.azimuth_deg = az_deg;
                                     info.elevation_deg = pvt_ssat[sat_idx].azel[1] * R2D;
-                                    info.combined = combined;
-                                    info.used = used;
+                                    // Extra gate alongside the slot check: excludes E6/nav-type per config.
+                                    const bool signal_eligible = (sys_char != 'E') || is_galileo_signal_used_in_pvt(info.signal);
+                                    const auto band_it = d_rtklib_band_index.find(info.signal);
+                                    const int signal_slot = band_it != d_rtklib_band_index.cend() ? band_it->second : -1;
+                                    if (d_rtk.opt.ionoopt == IONOOPT_IFLC)
+                                        {
+                                            info.combined = used && signal_eligible && have_obs_record && both_bands_present &&
+                                                            (signal_slot == prange_i || signal_slot == prange_j);
+                                            info.used = info.combined;
+                                        }
+                                    else
+                                        {
+                                            info.combined = false;
+                                            info.used = used && signal_eligible && have_obs_record && signal_slot == picked_slot;
+                                        }
                                     // Broadcast health of this signal, as reported by the
                                     // navigation message that carries it (true when no health
                                     // information is available). Independent of `used`.

@@ -140,7 +140,6 @@ private:
         int32_t bandwidth{0};
         int32_t bw_div{0};
         int32_t buff_size{0};
-        int32_t number_sample_per_output{0};
         uint64_t data_index{0};
         std::vector<uint64_t> data{};
 

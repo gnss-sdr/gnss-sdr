@@ -146,13 +146,16 @@ labsat23_source::labsat23_source(
 
                                     if (channel.buff_size > 0)
                                         {
-                                            const auto samples_to_skip = static_cast<int64_t>(seconds_to_skip * (static_cast<double>(d_ls3w_SMP) / channel.bw_div));
+                                            // Same full-rate sample count for every channel, so that all of them skip the same number of buffers
+                                            const auto samples_to_skip = static_cast<int64_t>(seconds_to_skip * static_cast<double>(d_ls3w_SMP)) / channel.bw_div;
                                             const auto bytes_to_skip = (samples_to_skip * bits_per_sample) / CHAR_BIT;
                                             const auto buffers_to_skip = bytes_to_skip / channel.buff_size;
                                             const auto bytes_to_seek = buffers_to_skip * channel.buff_size;
                                             const auto bytes_to_read = bytes_to_skip - bytes_to_seek;
                                             total_bytes_to_seek += bytes_to_seek;
-                                            channel.data_index = (bytes_to_read / sizeof(uint64_t));  // Can be set before read is called
+                                            // Start at a register group boundary (12-bit samples span groups of three registers)
+                                            const auto registers_to_skip = static_cast<uint64_t>(bytes_to_read) / sizeof(uint64_t);
+                                            channel.data_index = registers_to_skip - registers_to_skip % d_number_register_per_output;  // Can be set before read is called
                                         }
                                 }
 
@@ -1007,23 +1010,23 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
                     return -1;
                 }
 
-            std::vector<int32_t> bandwidths = {d_ls4_BW_MAX};
             std::vector<int32_t> relative_buff_sizes;
 
             for (const auto &channel_map_it : d_channel_map)
                 {
                     const auto &channel = channel_map_it.second;
-                    bandwidths.emplace_back(channel.bandwidth * channel.bw_div + d_ls4_BW_MAX % channel.bw_div);
+
+                    // Every channel stored in the file needs its bandwidth divider to locate the data
+                    if (channel.buff_size > 0 && channel.bw_div <= 0)
+                        {
+                            std::cerr << "\nConfiguration error: RF channel " << channel.identifier << " has a buffer but no valid bandwidth divider.\n";
+                            std::cerr << "Exiting the program.\n";
+                            return -1;
+                        }
+
                     relative_buff_sizes.emplace_back(channel.buff_size * channel.bw_div);
                 }
 
-            // LS4 bandwidths may be different between channels!
-            //     if (!are_equal_ignore_nonpositive(bandwidths))
-            //     {
-            //         std::cerr << "\nConfiguration error: Bandwidth configuration is invalid.\n";
-            //         std::cerr << "Exiting the program.\n";
-            //         return -1;
-            //     }
             if (!are_equal_ignore_nonpositive(relative_buff_sizes))
                 {
                     std::cerr << "\nConfiguration error: Buffer size configuration is invalid.\n";
@@ -1036,7 +1039,17 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
 
             for (const auto channel_id : d_channel_selector_config)
                 {
-                    selected_bw_divs.push_back(d_channel_map.at(channel_id).bw_div);
+                    const auto &channel = d_channel_map.at(channel_id);
+
+                    // Selected channels need a buffer made of whole groups of output samples
+                    if (channel.buff_size <= 0 || channel.buff_size % (sizeof(uint64_t) * d_number_register_per_output) != 0)
+                        {
+                            std::cerr << "\nConfiguration error: RF channel " << channel.identifier << " is selected but its buffer size is not valid.\n";
+                            std::cerr << "Exiting the program.\n";
+                            return -1;
+                        }
+
+                    selected_bw_divs.push_back(channel.bw_div);
                 }
 
             if (!are_equal_ignore_nonpositive(selected_bw_divs))
@@ -1046,19 +1059,6 @@ int labsat23_source::read_ls3w_ini(const std::string &filename)
                             std::cerr << "\nConfiguration error: Selecting multiple channels with different bandwidths is not supported.\n";
                             std::cerr << "Exiting the program.\n";
                             return -1;
-                        }
-                }
-
-            const auto selected_bw_div = static_cast<double>(selected_bw_divs[0]);
-
-            for (auto &channel_map_it : d_channel_map)
-                {
-                    auto &channel = channel_map_it.second;
-
-                    if (channel.buff_size > 0)
-                        {
-                            // This ensures we increment the indices correctly when all channels do not have the same bandwidth
-                            channel.number_sample_per_output = d_number_register_per_output * (selected_bw_div / channel.bw_div);
                         }
                 }
         }
@@ -1470,21 +1470,32 @@ int labsat23_source::parse_ls4_data(int noutput_items, std::vector<gr_complex *>
 
             for (int j = 0; j < registers_to_read; j++)
                 {
-                    uint64_t total_data_index = 0;
+                    // Read the next frame when the selected channels have consumed their buffers
+                    // (selected channels share the same bandwidth, hence the same buffer size)
+                    bool reload_needed = (d_read_index == 0);  // no frame loaded yet
 
-                    for (const auto &channel_map_it : d_channel_map)
+                    for (const auto selected_channel : d_channel_selector_config)
                         {
-                            const auto &channel = channel_map_it.second;
-                            total_data_index += channel.data_index;
+                            const auto &channel = d_channel_map.at(selected_channel);
+                            if (channel.data_index >= channel.data.size())
+                                {
+                                    reload_needed = true;
+                                    break;
+                                }
                         }
 
-                    if (total_data_index >= d_read_index)
+                    if (reload_needed)
                         {
                             if (!read_ls4_data())
                                 {
                                     std::cout << "End of file reached, LabSat source stop.\n";
                                     d_queue->push(pmt::make_any(command_event_make(200, 0)));
                                     return -1;
+                                }
+
+                            for (auto &channel_map_it : d_channel_map)
+                                {
+                                    channel_map_it.second.data_index = 0;
                                 }
                         }
 
@@ -1497,13 +1508,10 @@ int labsat23_source::parse_ls4_data(int noutput_items, std::vector<gr_complex *>
 
                     output_index += d_number_sample_per_output;
 
+                    // Advance each channel once, since the selector may repeat a channel (indices of unselected channels are not used)
                     for (auto &channel_map_it : d_channel_map)
                         {
-                            auto &channel = channel_map_it.second;
-                            if (channel.buff_size > 0)
-                                {
-                                    channel.data_index += channel.number_sample_per_output;
-                                }
+                            channel_map_it.second.data_index += d_number_register_per_output;
                         }
                 }
 

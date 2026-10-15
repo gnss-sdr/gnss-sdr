@@ -12,6 +12,24 @@ SPDX-FileCopyrightText: 2011-2026 Carles Fernandez-Prades <carles.fernandez@cttc
 
 All notable changes to GNSS-SDR will be documented in this file.
 
+## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+
+### Improvements in Interoperability:
+
+- Fixed `Labsat_Signal_Source` for LabSat 4 (`.LS4`) recordings whose RF
+  channels have different bandwidths (different `BW_DIV` values). Hardened the
+  parsing of LabSat 4 (`.LS4`) `.ini` files. The source now exits with a
+  configuration error, instead of crashing or reading out of bounds, when a
+  channel stored in the file lacks its `BW_DIV_x` value, or when a selected
+  channel lacks a valid `BUF_SIZE_x` (which, with 12-bit quantization, must be a
+  multiple of 24 bytes). Also, `seconds_to_skip` no longer lands in the middle
+  of a frame when channels have bandwidth dividers that are not powers of two.
+
+See the definitions of concepts and metrics at
+https://gnss-sdr.org/design-forces/
+
+&nbsp;
+
 ## [GNSS-SDR v0.0.22](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.22) - 2026-10-04
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23182959.svg)](https://doi.org/10.5281/zenodo.23182959)

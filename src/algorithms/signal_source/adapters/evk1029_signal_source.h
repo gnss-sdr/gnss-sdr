@@ -43,6 +43,7 @@
 #include <gnuradio/blocks/throttle.h>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 class ConfigurationInterface;
 
@@ -88,6 +89,7 @@ private:
     unsigned int rf_channels_;
 
     bool enable_throttle_control_;
+    bool enable_freq_xlating_;
 };
 
 

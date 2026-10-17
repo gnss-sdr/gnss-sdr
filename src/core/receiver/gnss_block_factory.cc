@@ -1033,6 +1033,51 @@ std::unique_ptr<GNSSBlockInterface> GetSignalConditioner(
             return std::make_unique<Pass_Through>(configuration, role_conditioner, 1, 1);
         }
 
+    if (signal_conditioner == "Bypass")
+        {
+            if (!data_type_adapter.empty() && (data_type_adapter != "Bypass"))
+                {
+                    LOG(WARNING) << "Configuration warning: if " << role_conditioner << impl_prop << "\n"
+                                 << "is set to Bypass, then the " << role_datatypeadapter << impl_prop << "\n"
+                                 << "parameter should be either not set or set to Bypass.\n"
+                                 << role_datatypeadapter << " configuration parameters will be ignored.";
+                }
+            if (!input_filter.empty() && (input_filter != "Bypass"))
+                {
+                    LOG(WARNING) << "Configuration warning: if " << role_conditioner << impl_prop << "\n"
+                                 << "is set to Bypass, then the " << role_inputfilter << impl_prop << "\n"
+                                 << "parameter should be either not set or set to Bypass.\n"
+                                 << role_inputfilter << " configuration parameters will be ignored.";
+                }
+            if (!resampler.empty() && (resampler != "Bypass"))
+                {
+                    LOG(WARNING) << "Configuration warning: if " << role_conditioner << impl_prop << "\n"
+                                 << "is set to Bypass, then the " << role_resampler << impl_prop << "\n"
+                                 << "parameter should be either not set or set to Bypass.\n"
+                                 << role_resampler << " configuration parameters will be ignored.";
+                }
+            if (configuration->property("GNSS-SDR.max_source_buffer_samples", uint64_t(0)) > 0)
+                {
+                    LOG(WARNING) << "Configuration warning: GNSS-SDR.max_source_buffer_samples has no effect on "
+                                 << role_conditioner << " while it is Bypass (there is no copy block left to apply it to).";
+                }
+            for (const auto& bypassed_role : {role_datatypeadapter, role_inputfilter, role_resampler})
+                {
+                    if (configuration->property(bypassed_role + ".inverted_spectrum", false))
+                        {
+                            LOG(WARNING) << "Configuration warning: " << bypassed_role << ".inverted_spectrum is ignored while "
+                                         << role_conditioner << " is Bypass.";
+                        }
+                }
+            LOG(INFO) << "Getting " << role_conditioner << " with Bypass implementation";
+
+            return std::make_unique<SignalConditioner>(
+                std::make_unique<Pass_Through>(configuration, role_datatypeadapter, 1, 1),
+                std::make_unique<Pass_Through>(configuration, role_inputfilter, 1, 1),
+                std::make_unique<Pass_Through>(configuration, role_resampler, 1, 1),
+                role_conditioner, true);
+        }
+
     LOG(INFO) << "Getting " << role_conditioner << " with " << role_datatypeadapter << " implementation: "
               << data_type_adapter << ", " << role_inputfilter << " implementation: "
               << input_filter << ", and " << role_resampler << " implementation: "

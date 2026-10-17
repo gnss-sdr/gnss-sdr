@@ -25,8 +25,10 @@
 /** \addtogroup Algorithm_libs algorithms_libs
  * \{ */
 
-//! Hard ceiling for fixed batch durations and batch deadlines.
-constexpr double STREAM_BATCHER_MAX_LATENCY_MS = 20.0;
+//! Hard ceiling for fixed batch durations and batch deadlines (one hour). It
+//! only keeps the timer arithmetic finite: the limit for a configuration comes
+//! from the observables timing budget and STREAM_BATCHER_MAX_BATCH_BYTES.
+constexpr double STREAM_BATCHER_MAX_LATENCY_MS = 3600000.0;
 
 //! Default batch deadline: long enough to amortize reader fan-out, short
 //! enough not to slow down the acquisition search cadence of idle channels.
@@ -35,6 +37,11 @@ constexpr double STREAM_BATCHER_DEFAULT_LATENCY_MS = 10.0;
 //! Largest automatic batch, in bytes. GNU Radio allocates twice this much in
 //! front of a batching block.
 constexpr uint64_t STREAM_BATCHER_AUTO_BATCH_BYTES = 512U * 1024U;
+
+//! Largest configured batch, in bytes. GNU Radio allocates two batches on each
+//! side of a batching block, which keeps each of those buffers within the
+//! limit of the automatic buffer of a conditioned stream.
+constexpr uint64_t STREAM_BATCHER_MAX_BATCH_BYTES = 4U * 1024U * 1024U;
 
 //! Largest automatic buffer of a conditioned stream, in bytes. It stays below
 //! 16 MiB, where the shared memory segments that GNU Radio maps twice start to

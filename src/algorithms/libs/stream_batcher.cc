@@ -25,6 +25,7 @@
 #include <cstring>
 #include <limits>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
 #if GNURADIO_HAS_BUFFER_READER_H
@@ -43,7 +44,8 @@ stream_batcher_sptr make_stream_batcher(size_t item_size, uint64_t batch_items, 
 {
     if (!std::isfinite(max_latency_ms) || max_latency_ms <= 0.0 || max_latency_ms > STREAM_BATCHER_MAX_LATENCY_MS)
         {
-            throw std::invalid_argument("SignalConditioner maximum batching latency must be in (0, 20] ms");
+            throw std::invalid_argument("SignalConditioner maximum batching latency must be positive and not above " +
+                                        std::to_string(static_cast<int64_t>(STREAM_BATCHER_MAX_LATENCY_MS)) + " ms");
         }
     // GNU Radio allocates at least two batches on each side of this block.
     const auto max_items = static_cast<uint64_t>(std::numeric_limits<int>::max());

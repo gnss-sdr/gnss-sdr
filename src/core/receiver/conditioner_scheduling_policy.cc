@@ -57,7 +57,7 @@ ConditionerSchedulingPolicy::Plan ConditionerSchedulingPolicy::select(
     const double duration = plan.automatic ? 0.0 : number(text, role + ".batch_size_ms");
     if (duration > STREAM_BATCHER_MAX_LATENCY_MS)
         {
-            throw std::invalid_argument(role + ".batch_size_ms must be auto or in [0, 20] ms");
+            throw std::invalid_argument(role + ".batch_size_ms must be auto or not above " + std::to_string(static_cast<int64_t>(STREAM_BATCHER_MAX_LATENCY_MS)) + " ms");
         }
     const double observable_ms = number(trim(configuration.property("GNSS-SDR.observable_interval_ms", std::string("20"))), "GNSS-SDR.observable_interval_ms");
     if (observable_ms <= 0.0 || observable_ms > std::numeric_limits<int>::max() || std::floor(observable_ms) != observable_ms)
@@ -71,7 +71,8 @@ ConditionerSchedulingPolicy::Plan ConditionerSchedulingPolicy::select(
         }
     if (plan.max_latency_ms <= 0.0 || plan.max_latency_ms > STREAM_BATCHER_MAX_LATENCY_MS || duration > plan.max_latency_ms)
         {
-            throw std::invalid_argument(role + ".max_batch_latency_ms must be in (0, 20] and not smaller than the fixed batch duration");
+            throw std::invalid_argument(role + ".max_batch_latency_ms must be positive, not above " + std::to_string(static_cast<int64_t>(STREAM_BATCHER_MAX_LATENCY_MS)) +
+                                        " ms, and not smaller than the fixed batch duration");
         }
     const bool forced_removal = configuration.is_present(role + ".remove_pass_through");
     plan.remove_identity = configuration.property(role + ".remove_pass_through", duration > 0.0);
@@ -104,12 +105,8 @@ ConditionerSchedulingPolicy::Plan ConditionerSchedulingPolicy::select(
     const bool known_rate = std::isfinite(request.sample_rate) && request.sample_rate > 0.0 && request.item_size > 0;
     // GNU Radio up to 3.9 addresses a stream buffer with a signed int.
     const uint64_t addressable_items = known_rate ? static_cast<uint64_t>(std::numeric_limits<int>::max() / 2) / request.item_size : 0;
-    const auto set_buffer = [&](Plan& result) {
-        if (!known_rate)
-            {
-                return;
-            }
-        const uint64_t batch = result.batch_items;
+    // Requires a known rate.
+    const auto budget_for = [&](uint64_t batch) {
         double budget_ms = delay_ms - std::ceil(1000.0 * static_cast<double>(request.channel_input_items) / request.sample_rate) -
                            CONDITIONED_STREAM_SYMBOL_MS - CONDITIONED_STREAM_GUARD_MS;
         if (!request.feeds_clock)
@@ -120,7 +117,15 @@ ConditionerSchedulingPolicy::Plan ConditionerSchedulingPolicy::select(
                 const double queued = 2.0 * static_cast<double>(batch) + 3.0 * 65536.0 / static_cast<double>(request.item_size);
                 budget_ms -= std::ceil(1000.0 * queued / request.sample_rate);
             }
-        result.alignment_budget_ms = std::max(budget_ms, 0.0);
+        return std::max(budget_ms, 0.0);
+    };
+    const auto set_buffer = [&](Plan& result) {
+        if (!known_rate)
+            {
+                return;
+            }
+        const uint64_t batch = result.batch_items;
+        result.alignment_budget_ms = budget_for(batch);
         result.buffer_over_budget = explicit_depth_ms > result.alignment_budget_ms;
         // An unthrottled replay has no pace to keep: there the receiver waits
         // for its slowest reader, as it always did, unless told otherwise.
@@ -147,6 +152,26 @@ ConditionerSchedulingPolicy::Plan ConditionerSchedulingPolicy::select(
     // offers at most half a buffer per call. In whole batches:
     const auto capacity = [&request](uint64_t batch) {
         return batch * std::max<uint64_t>(2, 1 + (request.minimum_input_items + batch - 1) / batch);
+    };
+    // A configured batch may be as long as the automatic one. Beyond that, the
+    // buffer it needs must not hold more signal than channels can trail the
+    // receiver clock by, and the batches that GNU Radio allocates on each side
+    // of the batching block must fit the memory limit. Requires a known rate.
+    const auto check_configured_batch = [&](uint64_t batch, const std::string& key) {
+        const double automatic_items = std::ceil(request.sample_rate * std::min(STREAM_BATCHER_DEFAULT_LATENCY_MS, observable_ms) / 1000.0);
+        const double buffer_ms = 1000.0 * static_cast<double>(capacity(batch)) / request.sample_rate;
+        const double budget_ms = budget_for(batch);
+        if (static_cast<double>(batch) > automatic_items && buffer_ms > budget_ms)
+            {
+                throw std::invalid_argument(role + key + " needs a buffer of " + std::to_string(static_cast<int64_t>(std::ceil(buffer_ms))) +
+                                            " ms (whole batches, with room for one on top of the largest reader window), more than the " +
+                                            std::to_string(static_cast<int64_t>(budget_ms)) + " ms that channels can trail the receiver clock when GNSS-SDR.observable_interval_ms=" +
+                                            std::to_string(static_cast<int64_t>(observable_ms)));
+            }
+        if (batch > STREAM_BATCHER_MAX_BATCH_BYTES / request.item_size)
+            {
+                throw std::invalid_argument(role + key + " asks for batches larger than " + std::to_string(STREAM_BATCHER_MAX_BATCH_BYTES) + " bytes");
+            }
     };
 
     if (!plan.automatic && duration == 0.0)
@@ -194,6 +219,7 @@ ConditionerSchedulingPolicy::Plan ConditionerSchedulingPolicy::select(
                 {
                     throw std::invalid_argument(role + ": max_source_buffer_samples is too small for a batch plus consumer forecast/history requirements");
                 }
+            check_configured_batch(plan.batch_items, ".batch_size_ms");
             set_buffer(plan);
             plan.reason = "explicit batch target";
             return plan;
@@ -236,6 +262,10 @@ ConditionerSchedulingPolicy::Plan ConditionerSchedulingPolicy::select(
             plan.reason = "latency or memory budget cannot coalesce multiple samples";
             set_buffer(plan);
             return plan;
+        }
+    if (configuration.is_present(role + ".max_batch_latency_ms"))
+        {
+            check_configured_batch(ceiling, ".max_batch_latency_ms");
         }
     // Consumer progress does not depend on the batch size. In particular a
     // long integration or sample-counter window can exceed two batches.

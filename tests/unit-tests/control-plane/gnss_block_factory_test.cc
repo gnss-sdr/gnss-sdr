@@ -744,7 +744,7 @@ TEST(ConditionerSchedulingPolicyTest, TinyAndExtremeRequestsCannotOverflowAutoma
 }
 
 
-TEST(ConditionerSchedulingPolicyTest, RejectsLongDeadlinesAndFixedBatches)
+TEST(ConditionerSchedulingPolicyTest, BoundsConfiguredBatchesByObservablesBudgetAndMemory)
 {
     InMemoryConfiguration config;
     ConditionerSchedulingPolicy::Request request;
@@ -752,23 +752,42 @@ TEST(ConditionerSchedulingPolicyTest, RejectsLongDeadlinesAndFixedBatches)
     request.item_size = 8;
     request.readers = 25;
     request.identity_stages = 1;
-    // An enlarged observable interval must not enlarge the batch ceiling.
+    // An enlarged observable interval must not enlarge the automatic batch.
     config.supersede_property("GNSS-SDR.observable_interval_ms", "1000");
     EXPECT_EQ(10.0, ConditionerSchedulingPolicy::select(config, "SignalConditioner0", request).max_latency_ms);
     config.supersede_property("SignalConditioner0.max_batch_latency_ms", "20");
     EXPECT_EQ(50000U, ConditionerSchedulingPolicy::select(config, "SignalConditioner0", request).batch_items);
-    for (const auto* delay : {"20.001", "40", "511", "60000"})
+    // Longer deadlines fit the 1920 ms budget; the automatic batch keeps its byte limit.
+    for (const auto* delay : {"40", "511", "60000"})
         {
             config.supersede_property("SignalConditioner0.max_batch_latency_ms", delay);
-            EXPECT_THROW(ConditionerSchedulingPolicy::select(config, "SignalConditioner0", request), std::invalid_argument);
+            EXPECT_EQ(65536U, ConditionerSchedulingPolicy::select(config, "SignalConditioner0", request).batch_items);
         }
-    config.supersede_property("SignalConditioner0.max_batch_latency_ms", "20");
-    for (const auto* duration : {"20.001", "40", "511", "60000"})
+    config.supersede_property("SignalConditioner0.max_batch_latency_ms", "3600001");
+    EXPECT_THROW(ConditionerSchedulingPolicy::select(config, "SignalConditioner0", request), std::invalid_argument);
+    // A fixed batch within that budget, but not beyond the memory limit.
+    config.supersede_property("SignalConditioner.batch_size_ms", "40");
+    EXPECT_EQ(100000U, ConditionerSchedulingPolicy::select(config, "SignalConditioner", request).batch_items);
+    for (const auto* duration : {"511", "60000", "3600001"})
         {
             config.supersede_property("SignalConditioner.batch_size_ms", duration);
-            // No explicit deadline: the fixed duration must not raise its default.
             EXPECT_THROW(ConditionerSchedulingPolicy::select(config, "SignalConditioner", request), std::invalid_argument);
-            config.supersede_property("SignalConditioner0.batch_size_ms", duration);
-            EXPECT_THROW(ConditionerSchedulingPolicy::select(config, "SignalConditioner0", request), std::invalid_argument);
         }
+    // 280 ms of observables delay, less a symbol and the guard: a buffer of two
+    // 90 ms batches fits, one of two 110 ms batches does not.
+    config.supersede_property("GNSS-SDR.observable_interval_ms", "20");
+    config.supersede_property("SignalConditioner.batch_size_ms", "90");
+    EXPECT_EQ(225000U, ConditionerSchedulingPolicy::select(config, "SignalConditioner", request).batch_items);
+    config.supersede_property("SignalConditioner.batch_size_ms", "110");
+    EXPECT_THROW(ConditionerSchedulingPolicy::select(config, "SignalConditioner", request), std::invalid_argument);
+    // With no budget left, a configured batch can still be as long as the automatic one.
+    config.supersede_property("GNSS-SDR.observable_interval_ms", "2");
+    config.supersede_property("SignalConditioner.batch_size_ms", "2");
+    EXPECT_EQ(5000U, ConditionerSchedulingPolicy::select(config, "SignalConditioner", request).batch_items);
+    config.supersede_property("SignalConditioner.batch_size_ms", "3");
+    EXPECT_THROW(ConditionerSchedulingPolicy::select(config, "SignalConditioner", request), std::invalid_argument);
+    config.supersede_property("SignalConditioner0.max_batch_latency_ms", "2");
+    EXPECT_EQ(5000U, ConditionerSchedulingPolicy::select(config, "SignalConditioner0", request).batch_items);
+    config.supersede_property("SignalConditioner0.max_batch_latency_ms", "3");
+    EXPECT_THROW(ConditionerSchedulingPolicy::select(config, "SignalConditioner0", request), std::invalid_argument);
 }

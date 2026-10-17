@@ -664,8 +664,12 @@ TEST_F(StreamBatcherTest, DeadlineCancellationAndDestruction)
 
 TEST_F(StreamBatcherTest, RejectsInvalidDeadline)
 {
-    EXPECT_NO_THROW(make_stream_batcher(sizeof(int), 1024, 0, 20.0));
-    for (double delay : {0.0, -1.0, 20.001, 40.0, 511.0, 60000.0, std::numeric_limits<double>::infinity(), std::numeric_limits<double>::quiet_NaN()})
+    // The configuration bounds long deadlines; the block only keeps them finite.
+    for (double delay : {20.0, 40.0, 511.0, 60000.0})
+        {
+            EXPECT_NO_THROW(make_stream_batcher(sizeof(int), 1024, 0, delay));
+        }
+    for (double delay : {0.0, -1.0, STREAM_BATCHER_MAX_LATENCY_MS + 1.0, std::numeric_limits<double>::infinity(), std::numeric_limits<double>::quiet_NaN()})
         {
             EXPECT_THROW(make_stream_batcher(sizeof(int), 1024, 0, delay), std::invalid_argument);
         }

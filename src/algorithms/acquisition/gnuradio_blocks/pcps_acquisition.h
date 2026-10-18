@@ -96,7 +96,7 @@ pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_);
 class pcps_acquisition : public acquisition_impl_interface
 {
 public:
-    ~pcps_acquisition() noexcept override;
+    bool stop() override;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
@@ -244,6 +244,8 @@ private:
     AcquisitionResult first_vs_second_peak_statistic(uint32_t candidate_count, int32_t doppler_max, int32_t doppler_step);
     AcquisitionResult max_to_input_power_statistic(uint32_t num_doppler_bins, uint32_t candidate_count, int32_t doppler_max, int32_t doppler_step);
     void wait_if_active();
+    // Frees the window buffer. Call with d_setlock held.
+    void release_data_buffer();
 
     const Acq_Conf d_acq_parameters;
     const std::string d_dump_filename;
@@ -293,6 +295,9 @@ private:
     // Recompute when the candidate count changes to preserve the requested PFA.
     float d_threshold_active;
     uint32_t d_buffer_sample_count;
+    // Integration window of a non-blocking search with max_dwells > 1. Allocated
+    // while the channel is in acquisition, empty otherwise.
+    volk_gnsssdr::vector<std::complex<float>> d_data_buffer;
     // DDA/Bresenham accumulator keeping stream consumption aligned with the
     // true dwell boundary; see general_work() case 0/1.
     double d_dwell_residual_accum;
@@ -320,11 +325,15 @@ private:
     // These are never accessed outside acquisition_core while acquisition is active
     volk_gnsssdr::vector<std::complex<float>> d_grid_doppler_wipeoffs;
     volk_gnsssdr::vector<std::complex<float>> d_fft_codes;
+    // Window length; nonzero only for non-blocking searches with max_dwells > 1
+    const size_t d_data_buffer_size;
     std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
 #if CUDA_GPU_ACCEL
     std::unique_ptr<CudaPcpsEngine> d_cuda_engine;  // null => CPU path
     uint64_t d_cuda_grid_count{0};
 #endif
+    gr::thread::condition_variable worker_cv;
+    gr::thread::mutex d_wait_mutex;
 };
 
 

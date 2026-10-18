@@ -159,9 +159,16 @@ void stream_batcher::deadline_expired(const pmt::pmt_t& message)
     deadlines_->acknowledge(deadline_id_);
     if (armed_ && pmt::is_uint64(message) && pmt::to_uint64(message) == generation_)
         {
-            // GNU Radio 3.7 handles messages without leaving the wait for
-            // input: there the partial batch goes out with the next arrival.
             flush_ = true;
+            // GNU Radio 3.7 dispatches messages inside its input wait. A
+            // notification alone does not make it reevaluate the forecast.
+            const auto state = detail();
+            if (state)
+                {
+                    gr::thread::scoped_lock lock(state->d_tpb.mutex);
+                    state->d_tpb.input_changed = true;
+                    state->d_tpb.input_cond.notify_one();
+                }
         }
 }
 

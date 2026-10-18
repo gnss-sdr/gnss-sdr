@@ -956,6 +956,11 @@ void GNSSFlowgraph::plan_signal_conditioners()
     std::vector<std::set<std::string>> shared_resamplers(sig_conditioner_.size());
     for (size_t i = 0; i < channels_.size(); ++i)
         {
+            if (channels_[i] == nullptr)
+                {
+                    // connect_channels() reports construction errors and unwinds connections.
+                    continue;
+                }
             const auto id = conditioner_id_for_channel(i);
             readers[id].insert(channels_[i]->get_left_block_trk().get());
             const auto signal = channels_[i]->get_signal().get_signal_str();

@@ -620,14 +620,17 @@ TEST_F(StreamBatcherTest, DeadlinePublishesWithoutFurtherInputOrEof)
             sinks.push_back(sink);
         }
     top->start();
-    const auto limit = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+    // Allow scheduler jitter, but do not accept the legacy 250 ms input poll.
+    const auto limit = std::chrono::steady_clock::now() + std::chrono::milliseconds(200);
     while (std::chrono::steady_clock::now() < limit &&
            std::any_of(sinks.begin(), sinks.end(), [](const gnss_shared_ptr<ObservedTestSink>& sink) { return sink->received.load() != 17; }))
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(2));
         }
+    const bool published_before_limit = std::all_of(sinks.begin(), sinks.end(), [](const gnss_shared_ptr<ObservedTestSink>& sink) { return sink->received.load() == 17; });
     top->stop();
     top->wait();
+    EXPECT_TRUE(published_before_limit);
     std::vector<int> expected(17);
     std::iota(expected.begin(), expected.end(), 0);
     for (const auto& sink : sinks)

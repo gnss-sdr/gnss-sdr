@@ -20,7 +20,15 @@ All notable changes to GNSS-SDR will be documented in this file.
   sample batching and redundant pass-through removal, reducing channel
   scheduling overhead without configuration changes. Preserves samples and
   stream tags, flushes partial batches on deadlines or EOF, and improves
-  flowgraph connection cleanup.
+  flowgraph connection cleanup. The new `SignalConditioner.batch_size_ms`,
+  `SignalConditioner.max_batch_latency_ms`,
+  `SignalConditioner.remove_pass_through` and
+  `SignalConditioner.output_buffer_ms` parameters override the automatic
+  choices, and the new
+  [`Bypass`](https://gnss-sdr.org/docs/sp-blocks/signal-conditioner/#implementation-bypass)
+  Signal Conditioner implementation connects the channels directly to the signal
+  source. See the
+  [Signal Conditioner documentation](https://gnss-sdr.org/docs/sp-blocks/signal-conditioner/#batching-and-buffering).
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

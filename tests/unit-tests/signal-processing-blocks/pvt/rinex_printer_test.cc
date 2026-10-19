@@ -1709,6 +1709,11 @@ TEST_F(RinexPrinterTest, GalileoObsLog)
     gs3.PRN = 10;
     gs4.PRN = 22;
 
+    gs1.Flag_valid_pseudorange = true;
+    gs2.Flag_valid_pseudorange = true;
+    gs3.Flag_valid_pseudorange = true;
+    gs4.Flag_valid_pseudorange = true;
+
     gs4.Pseudorange_m = 22000000;
     gs4.Carrier_phase_rads = 23.4;
     gs4.Carrier_Doppler_hz = 1534;
@@ -1770,6 +1775,11 @@ TEST_F(RinexPrinterTest, GlonassObsLog)
     gs2.PRN = 8;
     gs3.PRN = 10;
     gs4.PRN = 22;
+
+    gs1.Flag_valid_pseudorange = true;
+    gs2.Flag_valid_pseudorange = true;
+    gs3.Flag_valid_pseudorange = true;
+    gs4.Flag_valid_pseudorange = true;
 
     gs4.Pseudorange_m = 22000000;
     gs4.Carrier_phase_rads = 23.4;
@@ -1837,6 +1847,11 @@ TEST_F(RinexPrinterTest, GpsObsLogDualBand)
     gs2.PRN = 8;
     gs3.PRN = 7;
     gs4.PRN = 8;
+
+    gs1.Flag_valid_pseudorange = true;
+    gs2.Flag_valid_pseudorange = true;
+    gs3.Flag_valid_pseudorange = true;
+    gs4.Flag_valid_pseudorange = true;
 
     gs2.Pseudorange_m = 22000002.1;
     gs2.Carrier_phase_rads = 45.4;
@@ -1911,6 +1926,11 @@ TEST_F(RinexPrinterTest, GalileoObsLogDualBand)
     gs2.PRN = 8;
     gs3.PRN = 3;
     gs4.PRN = 8;
+
+    gs1.Flag_valid_pseudorange = true;
+    gs2.Flag_valid_pseudorange = true;
+    gs3.Flag_valid_pseudorange = true;
+    gs4.Flag_valid_pseudorange = true;
 
     gs2.Pseudorange_m = 22000002.1;
     gs2.Carrier_phase_rads = 45.4;
@@ -2009,6 +2029,15 @@ TEST_F(RinexPrinterTest, MixedObsLog)
     gs6.PRN = 16;
     gs7.PRN = 14;
     gs8.PRN = 16;
+
+    gs1.Flag_valid_pseudorange = true;
+    gs2.Flag_valid_pseudorange = true;
+    gs3.Flag_valid_pseudorange = true;
+    gs4.Flag_valid_pseudorange = true;
+    gs5.Flag_valid_pseudorange = true;
+    gs6.Flag_valid_pseudorange = true;
+    gs7.Flag_valid_pseudorange = true;
+    gs8.Flag_valid_pseudorange = true;
 
     gs2.Pseudorange_m = 22000002.1;
     gs2.Carrier_phase_rads = 45.4;
@@ -2116,6 +2145,15 @@ TEST_F(RinexPrinterTest, MixedObsLogGpsGlo)
     gs6.PRN = 16;
     gs7.PRN = 14;
     gs8.PRN = 16;
+
+    gs1.Flag_valid_pseudorange = true;
+    gs2.Flag_valid_pseudorange = true;
+    gs3.Flag_valid_pseudorange = true;
+    gs4.Flag_valid_pseudorange = true;
+    gs5.Flag_valid_pseudorange = true;
+    gs6.Flag_valid_pseudorange = true;
+    gs7.Flag_valid_pseudorange = true;
+    gs8.Flag_valid_pseudorange = true;
 
     gs2.Pseudorange_m = 22000002.1;
     gs2.Carrier_phase_rads = 45.4;

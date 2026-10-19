@@ -1839,8 +1839,8 @@ void add_obs_sat_record_line(const Gnss_Synchro& synchro, std::string& line, boo
     if (!synchro.Flag_valid_pseudorange)
         {
             // No valid observation for this signal (e.g. not currently
-            // tracked/locked for this satellite): RINEX requires a fully
-            // blank field, not a formatted zero value.
+            // tracked for this satellite). RINEX allows 0.0 or blanks, but
+            // a formatted zero carries an SSI and reads as a real observation.
             line += std::string(4 * 16, ' ');
             if (padding && line.size() < 80)
                 {

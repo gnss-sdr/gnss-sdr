@@ -36,6 +36,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   all signals acquired over one code period without `bit_transition_flag`.
   Setting the new `Acquisition_XX.refine_doppler` parameter to `false` (default:
   `true`) disables it.
+- GPS L2C acquisition (`GPS_L2_M_PCPS_Acquisition`) now correlates with the CM
+  code with the CL slots zeroed, the same replica that tracking already uses,
+  instead of holding each CM chip across the CL slot. The CL half of the signal
+  no longer adds noise to the correlation.
 
 ### Improvements in Efficiency:
 

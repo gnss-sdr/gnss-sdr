@@ -128,7 +128,8 @@ void code_gen_complex_sampled(signal_flag sig_flag, const Acq_Conf& conf, const 
             gps_l1_ca_code_gen_complex_sampled(dest, gnss_synchro.PRN, sampling_freq, 0);
             break;
         case GPS_2S:
-            gps_l2c_m_code_gen_complex_sampled(dest, gnss_synchro.PRN, sampling_freq);
+            // CM chips with the CL slots zeroed, so the CL half of the signal does not add noise
+            gps_l2c_m_code_gen_complex_sampled(dest, gnss_synchro.PRN, sampling_freq, true);
             break;
         case GPS_L5:
             gps_l5i_code_gen_complex_sampled(dest, gnss_synchro.PRN, sampling_freq);

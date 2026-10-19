@@ -129,7 +129,7 @@ void gps_l2c_m_code_gen_complex_sampled(
 
     const auto samplesPerCode = static_cast<int32_t>(
         static_cast<double>(sampling_freq) /
-        (static_cast<double>(1.0F / tc_used) / static_cast<double>(chips_per_epoch)));
+        (GPS_L2_M_CODE_RATE_CPS / static_cast<double>(codeLength)));
 
     const int32_t nSamples =
         std::min<int32_t>(static_cast<int32_t>(dest.size()), samplesPerCode);

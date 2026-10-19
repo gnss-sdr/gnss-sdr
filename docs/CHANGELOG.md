@@ -29,6 +29,16 @@ All notable changes to GNSS-SDR will be documented in this file.
   Signal Conditioner implementation connects the channels directly to the signal
   source. See the
   [Signal Conditioner documentation](https://gnss-sdr.org/docs/sp-blocks/signal-conditioner/#batching-and-buffering).
+- `EVK1029_Signal_Source` can now translate, filter, and decimate each band
+  inside the source block (`enable_freq_xlating=true`), emitting one baseband
+  `gr_complex` output per band and running each band's filter on its own worker
+  thread, while decoding the next chunk of the capture in parallel. Combined
+  with `Bypass` Signal Conditioners, this removes the per-band
+  `Freq_Xlating_Fir_Filter` blocks. Each band is configured with `band<n>_IF`,
+  `band<n>_decimation_factor` (the same for all bands), `band<n>_bw`,
+  `band<n>_tw`, `band<n>_window`, `band<n>_attenuation_dB`, and
+  `band<n>_kaiser_beta`. Bands with filters of different lengths are aligned to
+  the same group delay, so they do not bias pseudoranges between bands.
 
 ### Improvements in Interoperability:
 

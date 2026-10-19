@@ -38,7 +38,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   `band<n>_decimation_factor` (the same for all bands), `band<n>_bw`,
   `band<n>_tw`, `band<n>_window`, `band<n>_attenuation_dB`, and
   `band<n>_kaiser_beta`. Bands with filters of different lengths are aligned to
-  the same group delay, so they do not bias pseudoranges between bands.
+  the same group delay, so they do not bias pseudoranges between bands. When
+  built with `-DENABLE_CUDA=ON`, `band<n>_cuda=true` computes that band's filter
+  on an NVIDIA GPU, falling back to the CPU if no device is available or a GPU
+  call fails. Contributed by @joebre.
 
 ### Improvements in Interoperability:
 

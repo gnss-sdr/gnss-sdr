@@ -30,6 +30,7 @@
 #include <limits>
 #include <numeric>
 #include <thread>
+#include <utility>
 
 #ifdef GR_GREATER_38
 #include <gnuradio/blocks/vector_sink.h>
@@ -395,7 +396,7 @@ TEST_F(StreamBatcherTest, ManyReadersAndSmallWorkAllowance)
         {
             auto sink = gr::blocks::vector_sink_i::make();
             top->connect(batcher, 0, sink, 0);
-            sinks.push_back(sink);
+            sinks.push_back(std::move(sink));
         }
     ASSERT_TRUE(run(top));
     std::vector<int> expected(65537);
@@ -447,7 +448,7 @@ TEST_F(StreamBatcherTest, StopDuringAccumulation)
     top->start();
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     top->stop();
-    auto done = std::async(std::launch::async, [top]() { top->wait(); });
+    auto done = std::async(std::launch::async, [](const gr::top_block_sptr& graph) { graph->wait(); }, std::move(top));
     EXPECT_EQ(std::future_status::ready, done.wait_for(std::chrono::seconds(2)));
     done.get();
 }
@@ -519,7 +520,10 @@ TEST_F(StreamBatcherTest, AllConditionerStageCombinationsPreserveInversion)
                 }
             auto conditioner = block_factory::GetSignalConditioner(&config);
             auto* adapter = dynamic_cast<SignalConditioner*>(conditioner.get());
-            ASSERT_NE(nullptr, adapter);
+            if (adapter == nullptr)
+                {
+                    FAIL() << "GetSignalConditioner did not return a SignalConditioner";
+                }
             adapter->set_remove_identity(true);
             auto top = gr::make_top_block("conditioner_chain_test");
             std::vector<gr_complex> samples(1025, gr_complex(0.25F, -0.75F));
@@ -544,7 +548,7 @@ TEST_F(StreamBatcherTest, AllConditionerStageCombinationsPreserveInversion)
                 }
             EXPECT_EQ(samples, sink->data()) << mask;
             conditioner->disconnect(top);
-            conditioner->disconnect(top);
+            conditioner->disconnect(std::move(top));
         }
 }
 
@@ -583,7 +587,10 @@ TEST_F(StreamBatcherTest, ConversionRemainsWhenCopiesAreRemoved)
     config.set_property("DataTypeAdapter.inverted_spectrum", "true");
     auto conditioner = block_factory::GetSignalConditioner(&config);
     auto* adapter = dynamic_cast<SignalConditioner*>(conditioner.get());
-    ASSERT_NE(nullptr, adapter);
+    if (adapter == nullptr)
+        {
+            FAIL() << "GetSignalConditioner did not return a SignalConditioner";
+        }
     adapter->set_remove_identity(true);
     ASSERT_FALSE(conditioner->is_identity());
     std::vector<int16_t> input(2050);
@@ -617,7 +624,7 @@ TEST_F(StreamBatcherTest, DeadlinePublishesWithoutFurtherInputOrEof)
             auto sink = gnss_make_shared<ObservedTestSink>();
             top->connect(source, 0, batcher, 0);
             top->connect(batcher, 0, sink, 0);
-            sinks.push_back(sink);
+            sinks.push_back(std::move(sink));
         }
     top->start();
     // Allow scheduler jitter, but do not accept the legacy 250 ms input poll.

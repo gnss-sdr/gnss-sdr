@@ -1438,7 +1438,7 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
                             StreamEndpoint upstream;
                             upstream.block = sig_conditioner_.at(i)->get_right_block();
                             // The array conditioner is already wired above.
-                            connect_conditioner_output(static_cast<size_t>(i), upstream);
+                            connect_conditioner_output(static_cast<size_t>(i), std::move(upstream));
                             signal_conditioner_ID++;
                         }
                     else
@@ -1468,7 +1468,7 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
                                             // A single output may intentionally feed several
                                             // conditioners (for example, different subbands).
                                         }
-                                    connect_conditioner_output(signal_conditioner_ID, upstream);
+                                    connect_conditioner_output(signal_conditioner_ID, std::move(upstream));
                                     signal_conditioner_ID++;
                                 }
                         }

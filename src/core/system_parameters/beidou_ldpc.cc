@@ -20,6 +20,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <utility>
 #include <vector>
 
 namespace
@@ -529,7 +530,7 @@ bool decode_block(
     std::vector<uint8_t> hard_symbol;
     std::vector<float> channel_llr;
     initialize_channel_llr(bit_llr, n, hard_symbol, channel_llr);
-    hard_codeword = hard_symbol;
+    hard_codeword = std::move(hard_symbol);
 
     if (syndrome_is_zero(graph, hard_codeword))
         {

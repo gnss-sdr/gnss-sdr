@@ -337,7 +337,7 @@ TEST_F(ConditionedFlowgraphTest, DefaultPlanningNeedsNoConfigurationEdits)
     graph.connect();
     ASSERT_TRUE(graph.connected());
     ASSERT_EQ(1U, graph.conditioner_scheduling_plans().size());
-    const auto plan = graph.conditioner_scheduling_plans()[0];
+    const auto& plan = graph.conditioner_scheduling_plans()[0];
     EXPECT_TRUE(plan.automatic);
     EXPECT_EQ(3U, plan.readers);  // Acquisition, tracking, and sample counter.
     EXPECT_EQ(20000U, plan.batch_items);

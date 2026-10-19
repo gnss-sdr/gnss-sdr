@@ -78,9 +78,9 @@ std::deque<bool> make_l5i_xa()
 std::deque<bool> make_l5i_xb()
 {
     std::deque<bool> xb = {true, true, true, true, true, true, true, true, true, true, true, true, true};
-    std::deque<bool> y(GPS_L5I_CODE_LENGTH_CHIPS, false);
+    std::deque<bool> y(GPS_L5_XB_CODE_LENGTH_CHIPS, false);
 
-    for (int32_t i = 0; i < GPS_L5I_CODE_LENGTH_CHIPS; i++)
+    for (int32_t i = 0; i < GPS_L5_XB_CODE_LENGTH_CHIPS; i++)
         {
             y[i] = xb[12];
             xb = l5i_xb_shift(xb);
@@ -106,9 +106,9 @@ std::deque<bool> make_l5q_xa()
 std::deque<bool> make_l5q_xb()
 {
     std::deque<bool> xb = {true, true, true, true, true, true, true, true, true, true, true, true, true};
-    std::deque<bool> y(GPS_L5Q_CODE_LENGTH_CHIPS, false);
+    std::deque<bool> y(GPS_L5_XB_CODE_LENGTH_CHIPS, false);
 
-    for (int32_t i = 0; i < GPS_L5Q_CODE_LENGTH_CHIPS; i++)
+    for (int32_t i = 0; i < GPS_L5_XB_CODE_LENGTH_CHIPS; i++)
         {
             y[i] = xb[12];
             xb = l5q_xb_shift(xb);
@@ -127,7 +127,7 @@ void make_l5i(own::span<int32_t> dest, int32_t prn)
 
     for (int32_t n = 0; n < GPS_L5I_CODE_LENGTH_CHIPS; n++)
         {
-            xb_shift[n] = xb[(xb_offset + n) % GPS_L5I_CODE_LENGTH_CHIPS];
+            xb_shift[n] = xb[(xb_offset + n) % GPS_L5_XB_CODE_LENGTH_CHIPS];
         }
 
     for (int32_t n = 0; n < GPS_L5I_CODE_LENGTH_CHIPS; n++)
@@ -147,7 +147,7 @@ void make_l5q(own::span<int32_t> dest, int32_t prn)
 
     for (int32_t n = 0; n < GPS_L5Q_CODE_LENGTH_CHIPS; n++)
         {
-            xb_shift[n] = xb[(xb_offset + n) % GPS_L5Q_CODE_LENGTH_CHIPS];
+            xb_shift[n] = xb[(xb_offset + n) % GPS_L5_XB_CODE_LENGTH_CHIPS];
         }
 
     for (int32_t n = 0; n < GPS_L5Q_CODE_LENGTH_CHIPS; n++)

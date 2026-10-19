@@ -168,6 +168,7 @@ constexpr int32_t GPS_L5I_NH_CODE_LENGTH = 10;
 constexpr int32_t GPS_L5I_NH_CODE[10] = {0, 0, 0, 0, 1, 1, 0, 1, 0, 1};
 constexpr int32_t GPS_L5Q_NH_CODE_LENGTH = 20;
 constexpr int32_t GPS_L5Q_NH_CODE[20] = {0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0};
+constexpr int32_t GPS_L5_XB_CODE_LENGTH_CHIPS = 8191;
 constexpr char GPS_L5I_NH_CODE_STR[11] = "0000110101";
 constexpr char GPS_L5Q_NH_CODE_STR[21] = "00000100110101001110";
 

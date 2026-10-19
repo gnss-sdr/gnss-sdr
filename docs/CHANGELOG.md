@@ -14,6 +14,16 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Availability:
+
+- Fixed the GPS L5 I5 and Q5 local code replicas. The XB sequence was wrapped
+  modulo the 10230-chip code length instead of its natural 8191-chip period
+  (IS-GPS-705J, Section 3.3.2.2), so the last chips of every code (as many as
+  its XB code advance) were taken from the wrong XB phase. Depending on the PRN,
+  this cost between 0.2 and 13.5 dB (about 5 dB on average) of correlation gain
+  in acquisition and tracking, also in FPGA-offloaded receivers. Reported by
+  @ObvMamut.
+
 ### Improvements in Efficiency:
 
 - Improved Signal Conditioner scheduling with portable, configuration-aware

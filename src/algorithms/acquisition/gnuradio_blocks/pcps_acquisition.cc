@@ -168,6 +168,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_cshort(conf_.it_size != sizeof(gr_complex)),
       d_use_CFAR_algorithm_flag(conf_.use_CFAR_algorithm_flag),
       d_dump(!d_dump_filename.empty()),
+      d_refine_doppler(conf_.refine_doppler && !conf_.bit_transition_flag && conf_.sampled_ms == conf_.ms_per_code),
       d_worker(nullptr),
       d_gnss_synchro(nullptr),
       d_state(0),
@@ -192,10 +193,13 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_magnitude_grid(std::max(d_num_doppler_bins_capacity, d_num_doppler_bins_step2) * d_magnitude_grid_stride),
       d_tmp_buffer(d_effective_fft_size),
       d_input_signal(d_fft_size),
+      d_refine_dwells(d_refine_doppler ? static_cast<size_t>(std::max(1U, conf_.max_dwells)) * d_samples_to_consume : 0),
+      d_refine_wipeoff(d_refine_doppler ? d_samples_to_consume : 0),
       d_grid_doppler_wipeoffs_step_two(d_acq_parameters.make_2_steps ? d_num_doppler_bins_step2 * d_doppler_wipeoffs_stride : 0),
       d_ifft(gnss_fft_rev_make_unique(d_fft_size)),
       d_grid_doppler_wipeoffs(d_num_doppler_bins_capacity * d_doppler_wipeoffs_stride),
       d_fft_codes(d_fft_size),
+      d_local_code(d_refine_doppler ? d_samples_to_consume : 0),
       // Allocate the buffer only when we need it. Buffering may be skipped in case of blocking operation
       // or when the number of non-coherent integrations is 1, as samples may be copied directly to d_input_signal
       // The window includes the samples skipped between dwells to stay aligned with the true dwell boundary.
@@ -402,6 +406,10 @@ void pcps_acquisition::set_local_code(std::complex<float>* code)
             if (d_acq_parameters.sampled_ms == d_acq_parameters.ms_per_code)
                 {
                     std::copy(code, code + d_samples_to_consume, d_fft_if->get_inbuf());
+                    if (d_refine_doppler)
+                        {
+                            std::copy(code, code + d_samples_to_consume, d_local_code.data());
+                        }
                 }
             else
                 {
@@ -926,6 +934,7 @@ void pcps_acquisition::handle_threshold_reached(AcquisitionResult& result)
             if (d_step_two)
                 {
                     result.positive_acq = true;
+                    refine_doppler(result);
                     send_positive_acquisition(result);
                     d_active = false;
                     release_data_buffer();  // the channel goes to tracking
@@ -942,10 +951,74 @@ void pcps_acquisition::handle_threshold_reached(AcquisitionResult& result)
     else
         {
             result.positive_acq = true;
+            refine_doppler(result);
             send_positive_acquisition(result);
             d_active = false;
             release_data_buffer();  // the channel goes to tracking
         }
+}
+
+
+void pcps_acquisition::refine_doppler(AcquisitionResult& result)
+{
+    // The search window is not aligned with the code epoch, so a secondary-code or data
+    // sign transition at the epoch inside it (60 % of the windows for the GPS L5 I5 NH10
+    // code) splits the correlation peak away from the true Doppler, up to +-0.74/T for a
+    // transition at mid window. The code phase is still right, and each side of the epoch
+    // is free of transitions: correlate both sides with the aligned replica, combine them
+    // under both sign hypotheses, and add the dwells non-coherently.
+    if (!d_refine_doppler)
+        {
+            return;
+        }
+    const uint32_t n = d_samples_to_consume;
+    const uint32_t k = result.index_time % n;  // code epoch inside the window
+    const uint32_t num_dwells = std::min(d_num_noncoherent_integrations_counter, std::max(1U, d_acq_parameters.max_dwells));
+
+    // despread each dwell in place: input[i] * conj(code[(i - k) mod n])
+    for (uint32_t dwell = 0; dwell < num_dwells; dwell++)
+        {
+            auto* window = d_refine_dwells.data() + static_cast<size_t>(dwell) * n;
+            volk_32fc_x2_multiply_conjugate_32fc(window, window, d_local_code.data() + (n - k), k);
+            volk_32fc_x2_multiply_conjugate_32fc(window + k, window + k, d_local_code.data(), n - k);
+        }
+
+    // candidates: half the grid step (at most 1/(4T)), over the main lobe (+-1/T) around the grid peak
+    const auto fs = static_cast<float>(d_acq_parameters.use_automatic_resampler ? d_acq_parameters.resampled_fs : d_acq_parameters.fs_in);
+    const float inv_t_hz = fs / static_cast<float>(n);
+    const float step_hz = std::min((d_step_two ? d_acq_parameters.doppler_step2 : static_cast<float>(d_doppler_step)) / 2.0F, inv_t_hz / 4.0F);
+    const auto half_span = static_cast<int32_t>(std::ceil(inv_t_hz / step_hz));
+    float best_doppler = static_cast<float>(result.doppler);
+    float best_power = -1.0F;
+    for (int32_t i = -half_span; i <= half_span; i++)
+        {
+            const float doppler = static_cast<float>(result.doppler) + static_cast<float>(i) * step_hz;
+            update_local_carrier(own::span<gr_complex>(d_refine_wipeoff.data(), n), static_cast<float>(d_doppler_bias) + doppler);
+            float power = 0.0F;
+            for (uint32_t dwell = 0; dwell < num_dwells; dwell++)
+                {
+                    const auto* window = d_refine_dwells.data() + static_cast<size_t>(dwell) * n;
+                    gr_complex before{};
+                    gr_complex after{};
+                    volk_32fc_x2_dot_prod_32fc(&before, window, d_refine_wipeoff.data(), k);
+                    volk_32fc_x2_dot_prod_32fc(&after, window + k, d_refine_wipeoff.data() + k, n - k);
+                    power += std::max(std::norm(after + before), std::norm(after - before));
+                }
+            if (power > best_power)
+                {
+                    best_power = power;
+                    best_doppler = doppler;
+                }
+        }
+
+    if (std::fabs(best_doppler - static_cast<float>(result.doppler)) > static_cast<float>(d_doppler_step))
+        {
+            LOG(INFO) << "Acquisition Doppler refined from " << result.doppler << " Hz to " << best_doppler
+                      << " Hz in channel " << d_channel << " for satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
+                      << " (sign transition at the code epoch, sample " << k << " of " << n << ", " << num_dwells << " dwell(s))";
+        }
+    result.doppler = static_cast<int32_t>(std::lround(best_doppler));
+    d_gnss_synchro->Acq_doppler_hz = static_cast<double>(best_doppler);
 }
 
 
@@ -1004,6 +1077,12 @@ void pcps_acquisition::acquisition_core(uint64_t sample_count)
 
             // Doppler frequency grid loop, only access variables that doesn't need a lock
             doppler_grid(d_input_signal.data());
+            if (d_refine_doppler && d_num_noncoherent_integrations_counter <= std::max(1U, d_acq_parameters.max_dwells))
+                {
+                    // keep this dwell for refine_doppler()
+                    std::copy_n(d_input_signal.data(), d_samples_to_consume,
+                        d_refine_dwells.data() + static_cast<size_t>(d_num_noncoherent_integrations_counter - 1) * d_samples_to_consume);
+                }
             if (should_dump_channel())
                 {
                     copy_magnitude_grid_to_dump_grid();

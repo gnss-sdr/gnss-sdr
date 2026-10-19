@@ -95,6 +95,12 @@ public:
     // later, stronger peak to win (Acquisition_<signal>.full_grid_search).
     bool full_grid_search{false};
 
+    // Re-estimate the Doppler of a positive one-code-period search on its own
+    // dwells, split at the detected code epoch, so that a secondary-code or data
+    // sign transition inside the window cannot bias it
+    // (Acquisition_<signal>.refine_doppler).
+    bool refine_doppler{true};
+
     // Evaluate the PCPS grid on a CUDA GPU (requires ENABLE_CUDA at build time)
     bool use_cuda{false};
     int32_t cuda_device{-1};  // CUDA device ordinal, -1 = default device

@@ -224,6 +224,7 @@ private:
     AcquisitionResult compute_statistics();
     void update_synchro(const AcquisitionResult& result);
     void handle_threshold_reached(AcquisitionResult& result);
+    void refine_doppler(AcquisitionResult& result);
     void handle_integration_done(const AcquisitionResult& result);
     void acquisition_core(uint64_t sample_count);
     void log_acquisition(const AcquisitionResult& result) const;
@@ -276,6 +277,8 @@ private:
     const bool d_cshort;
     const bool d_use_CFAR_algorithm_flag;
     const bool d_dump;
+    // refine_doppler requested and applicable: one code period, no bit transition search
+    const bool d_refine_doppler;
 
     // Need lock to access these
     std::weak_ptr<ChannelFsm> d_channel_fsm;
@@ -317,6 +320,10 @@ private:
     volk_gnsssdr::vector<float> d_magnitude_grid;
     volk_gnsssdr::vector<float> d_tmp_buffer;
     volk_gnsssdr::vector<std::complex<float>> d_input_signal;
+    // Doppler refinement: the windows of the current search, one per dwell, and
+    // a carrier scratch (both empty unless d_refine_doppler)
+    volk_gnsssdr::vector<std::complex<float>> d_refine_dwells;
+    volk_gnsssdr::vector<std::complex<float>> d_refine_wipeoff;
     volk_gnsssdr::vector<std::complex<float>> d_grid_doppler_wipeoffs_step_two;
     std::unique_ptr<gnss_fft_complex_rev> d_ifft;
     arma::fmat d_grid;
@@ -325,6 +332,8 @@ private:
     // These are never accessed outside acquisition_core while acquisition is active
     volk_gnsssdr::vector<std::complex<float>> d_grid_doppler_wipeoffs;
     volk_gnsssdr::vector<std::complex<float>> d_fft_codes;
+    // Time-domain local code, one code period (empty unless d_refine_doppler)
+    volk_gnsssdr::vector<std::complex<float>> d_local_code;
     // Window length; nonzero only for non-blocking searches with max_dwells > 1
     const size_t d_data_buffer_size;
     std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;

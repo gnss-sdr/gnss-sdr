@@ -740,6 +740,8 @@ TEST_F(PcpsAcquisitionDopplerNarrowingTest /*unused*/, DumpReaderSkipsReferenceC
             config->supersede_property("Acquisition_1C.dump", "true");
             config->supersede_property("Acquisition_1C.dump_filename", data_str + "/acquisition");
             config->supersede_property("Acquisition_1C.dump_channel", "1");
+            // The grid axis is checked against the reported Doppler below, so report the grid peak
+            config->supersede_property("Acquisition_1C.refine_doppler", "false");
 
             const RunResult result = run_acquisition(top_block, config.get(), gnss_synchro, c.center, c.num_bins);
             ASSERT_EQ(1, result.rx_message) << "Acquisition failure while producing the dump.";

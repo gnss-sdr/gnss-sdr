@@ -84,6 +84,7 @@ void Acq_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     blocking_on_standby = configuration->property(role + ".blocking_on_standby", blocking_on_standby);
     reference_bin_min_sidelobes = configuration->property(role + ".reference_bin_min_sidelobes", reference_bin_min_sidelobes);
     full_grid_search = configuration->property(role + ".full_grid_search", full_grid_search);
+    refine_doppler = configuration->property(role + ".refine_doppler", refine_doppler);
 
     if (pfa <= 0.0)
         {

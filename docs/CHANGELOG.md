@@ -23,6 +23,19 @@ All notable changes to GNSS-SDR will be documented in this file.
   this cost between 0.2 and 13.5 dB (about 5 dB on average) of correlation gain
   in acquisition and tracking, also in FPGA-offloaded receivers. Reported by
   @ObvMamut.
+- Fixed a Doppler bias in the PCPS acquisition when a secondary-code or data
+  sign transition falls inside the one-code-period search window. The
+  correlation peak split up to ±0.74/T away from the true Doppler, so about 40 %
+  of the GPS L5 acquisitions (the I5 NH10 code changes sign at 6 of every 10
+  code epochs) started tracking 250–900 Hz off. Tracking then either held a
+  Costas false lock at ±500 Hz, never achieved secondary-code synchronization
+  and dropped the satellite after `bit_synchronization_time_limit_s`, or lost
+  lock a few seconds after `pull_in_time_s`. Positive acquisitions now
+  re-estimate the Doppler on their own dwells, split at the detected code epoch
+  and combined under both sign hypotheses, at negligible cost. This applies to
+  all signals acquired over one code period without `bit_transition_flag`.
+  Setting the new `Acquisition_XX.refine_doppler` parameter to `false` (default:
+  `true`) disables it.
 
 ### Improvements in Efficiency:
 

@@ -1,7 +1,8 @@
 /*!
  * \file frequency_error_reduction_test.cc
  * \brief  This file implements tests for the tracking frequency-error
- * reduction mechanism and bit/secondary-code synchronization.
+ * reduction mechanism, bit/secondary-code synchronization, and the forced
+ * loss-of-lock fail-safes.
  *
  * -----------------------------------------------------------------------------
  *
@@ -23,6 +24,7 @@
 #include <gnuradio/blocks/null_source.h>
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
+#include <pmt/pmt.h>
 #include <algorithm>
 #include <cmath>
 #include <memory>
@@ -281,6 +283,63 @@ protected:
         EXPECT_DOUBLE_EQ(0.0, tracking->d_carrier_phase_rate_step_rad);
     }
 
+    // A carrier lock fail limit of 1000000 is not reached within these tests,
+    // so only a forced loss of lock can drop the channel. It is also above the
+    // values (200000 and 300000) the fail-safes used to write into the carrier
+    // lock fail counter to force a loss of lock.
+    void make_tracking_with_high_lock_fail_limit()
+    {
+        Dll_Pll_Conf params;
+        params.fs_in = 2000000.0;
+        params.vector_length = 2000U;
+        params.f_error_step_num = 0;
+        params.f_error_dump_filename.clear();
+        // The pull-in transitory freezes the lock fail counters and postpones
+        // bit synchronization.
+        params.pull_in_time_s = 10U;
+        params.bit_synchronization_time_limit_s = 1U;
+        params.max_carrier_lock_fail = 1000000;
+        synchro = Gnss_Synchro();
+        synchro.PRN = 1;
+        synchro.System = params.system;
+        synchro.Signal[0] = params.signal[0];
+        synchro.Signal[1] = params.signal[1];
+        tracking = dll_pll_veml_make_tracking(params);
+        tracking->set_gnss_synchro(&synchro);
+        tracking->start_tracking();
+    }
+
+    void check_telemetry_fault()
+    {
+        make_tracking_with_high_lock_fail_limit();
+        const int bad_telemetry = 1;
+        tracking->msg_handler_telemetry_to_trk(pmt::make_any(bad_telemetry));
+        // The lock status is evaluated once the C/N0 estimation buffer is full.
+        for (int32_t i = 0; i < tracking->d_trk_parameters.cn0_samples; ++i)
+            {
+                ASSERT_TRUE(tracking->cn0_and_tracking_lock_status(0.001));
+            }
+        EXPECT_FALSE(tracking->cn0_and_tracking_lock_status(0.001));
+        // The forced loss of lock is declared only once.
+        EXPECT_TRUE(tracking->cn0_and_tracking_lock_status(0.001));
+    }
+
+    void check_synchronization_time_limit()
+    {
+        make_tracking_with_high_lock_fail_limit();
+        auto top_block = gr::make_top_block("Synchronization time limit");
+        auto source = gr::blocks::null_source::make(sizeof(gr_complex));
+        // 3 s of signal: the 1 s synchronization time limit is exceeded after 2 s.
+        auto head = gr::blocks::head::make(sizeof(gr_complex), 3ULL * static_cast<uint64_t>(tracking->d_trk_parameters.fs_in));
+        auto sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
+        top_block->connect(source, 0, head, 0);
+        top_block->connect(head, 0, tracking, 0);
+        top_block->connect(tracking, 0, sink, 0);
+        top_block->run();
+
+        EXPECT_EQ(0, tracking->d_state);  // loss of lock declared
+    }
+
     Gnss_Synchro synchro;
     dll_pll_veml_tracking_sptr tracking;
 };
@@ -331,4 +390,16 @@ TEST_F(DllPllTrackingFrequencyErrorTest, DisabledScanPreservesAcquisitionTimeOri
 TEST_F(DllPllTrackingFrequencyErrorTest, LongL2cScanRetainsFllPullIn)
 {
     run_long_scan();
+}
+
+
+TEST_F(DllPllTrackingFrequencyErrorTest, TelemetryFaultForcesLossOfLock)
+{
+    check_telemetry_fault();
+}
+
+
+TEST_F(DllPllTrackingFrequencyErrorTest, SynchronizationTimeLimitForcesLossOfLock)
+{
+    check_synchronization_time_limit();
 }

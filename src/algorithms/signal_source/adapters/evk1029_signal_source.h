@@ -22,6 +22,14 @@
  * Set role + ".seconds_to_skip" to start reading at a given time into the
  * capture (converted to a byte position using the raw sampling frequency).
  *
+ * With role + ".enable_freq_xlating" = true, Evk1029Source itself translates,
+ * filters and decimates each band (role + ".band<n>_*" parameters, n <
+ * RF_channels) and exposes one gr_complex output port per band, which the
+ * flowgraph wires to Signal Conditioner n. Pair it with Bypass Signal
+ * Conditioners to connect the channels straight to those ports. All bands
+ * share one decimation factor, and the throttle is not available in this
+ * mode. With .dump, each band is written to its own file (suffix _ch<n>).
+ *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
@@ -43,6 +51,7 @@
 #include <gnuradio/blocks/throttle.h>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 class ConfigurationInterface;
 
@@ -80,7 +89,7 @@ public:
 private:
     Evk1029Source_sptr evk1029_source_;
     gr::blocks::throttle::sptr throttle_;
-    gr::blocks::file_sink::sptr file_sink_;
+    std::vector<gr::blocks::file_sink::sptr> file_sinks_;
 
     std::string dump_filename_;
     bool dump_;
@@ -89,6 +98,7 @@ private:
     unsigned int rf_channels_;
 
     bool enable_throttle_control_;
+    bool enable_freq_xlating_;
 };
 
 

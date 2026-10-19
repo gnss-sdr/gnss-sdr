@@ -224,6 +224,10 @@ target_link_libraries(signal_source_adapters
         Volk::volk
 )
 
+if(ENABLE_EVK1029)
+    target_link_libraries(signal_source_adapters PRIVATE Gnuradio::filter)
+endif()
+
 if(ENABLE_GLOG_AND_GFLAGS)
     target_link_libraries(signal_source_adapters PRIVATE Glog::glog)
     target_compile_definitions(signal_source_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)

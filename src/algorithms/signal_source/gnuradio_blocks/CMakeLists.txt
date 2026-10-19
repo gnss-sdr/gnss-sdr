@@ -106,6 +106,19 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
+if(ENABLE_EVK1029)
+    target_link_libraries(signal_source_gr_blocks
+        PUBLIC
+            Volkgnsssdr::volkgnsssdr
+        PRIVATE
+            Volk::volk
+    )
+    # volk_32fc_s32fc_x2_rotator2_32fc was introduced in VOLK 2.5
+    if(VOLK_VERSION AND (VOLK_VERSION VERSION_LESS "2.5"))
+        target_compile_definitions(signal_source_gr_blocks PRIVATE -DVOLK_LACKS_ROTATOR2=1)
+    endif()
+endif()
+
 if(ENABLE_RAW_UDP AND PCAP_FOUND)
     target_link_libraries(signal_source_gr_blocks
         PUBLIC

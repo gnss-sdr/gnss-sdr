@@ -26,6 +26,7 @@
 #include "gnss_synchro.h"
 #include "matlab_writter_helper.h"
 #include "sensor_data/sensor_identifier.h"
+#include "stream_batcher_limits.h"  // for observables_clock_ticks
 #include <gnuradio/block_detail.h>
 #include <gnuradio/buffer.h>
 #include <gnuradio/io_signature.h>
@@ -100,7 +101,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
     // Send Channel status to gnss_flowgraph
     this->message_port_register_out(pmt::mp("status"));
 
-    d_Rx_clock_buffer.set_capacity(std::min(std::max(300U / d_T_rx_step_ms, 3U), 20U));
+    d_Rx_clock_buffer.set_capacity(observables_clock_ticks(d_T_rx_step_ms));
     d_Rx_clock_buffer.clear();
 
     constexpr uint32_t history_slack_ms = 1000U;

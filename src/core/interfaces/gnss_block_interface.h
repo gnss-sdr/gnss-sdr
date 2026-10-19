@@ -72,6 +72,8 @@ public:
     virtual std::string role() = 0;
     virtual std::string implementation() = 0;
     virtual size_t item_size() = 0;
+    //! True only for a stream identity with no processing or side effects.
+    virtual bool is_identity() const { return false; }
     virtual void connect(gr::top_block_sptr top_block) = 0;
     virtual void disconnect(gr::top_block_sptr top_block) = 0;
 

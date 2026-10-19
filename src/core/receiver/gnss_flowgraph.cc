@@ -45,7 +45,10 @@
 #include "gnss_synchro_monitor.h"
 #include "nav_message_monitor.h"
 #include "qzss.h"
+#include "signal_conditioner.h"
 #include "signal_source_interface.h"
+#include "stream_batcher.h"
+#include "stream_batcher_deadline.h"
 #include <boost/lexical_cast.hpp>    // for boost::lexical_cast
 #include <boost/tokenizer.hpp>       // for boost::tokenizer
 #include <gnuradio/basic_block.h>    // for basic_block
@@ -473,6 +476,7 @@ void GNSSFlowgraph::connect()
         {
             if (connect_fpga_flowgraph() != 0)
                 {
+                    clear_stream_connections();
                     std::cerr << "Unable to connect flowgraph with FPGA off-loading\n";
                     print_help();
                     return;
@@ -482,6 +486,7 @@ void GNSSFlowgraph::connect()
         {
             if (connect_desktop_flowgraph() != 0)
                 {
+                    clear_stream_connections();
                     std::cerr << "Unable to connect flowgraph\n";
                     print_help();
                     return;
@@ -490,6 +495,7 @@ void GNSSFlowgraph::connect()
 #else
     if (connect_desktop_flowgraph() != 0)
         {
+            clear_stream_connections();
             std::cerr << "Unable to connect flowgraph\n";
             print_help();
             return;
@@ -502,6 +508,65 @@ void GNSSFlowgraph::connect()
 }
 
 
+void GNSSFlowgraph::connect_block(GNSSBlockInterface& block)
+{
+    connected_blocks_.push_back(&block);
+    block.connect(top_block_);
+}
+
+
+void GNSSFlowgraph::connect_message(const gr::basic_block_sptr& source, const pmt::pmt_t& source_port,
+    const gr::basic_block_sptr& destination, const pmt::pmt_t& destination_port)
+{
+    message_connections_.push_back({source, source_port, destination, destination_port});
+    try
+        {
+            top_block_->msg_connect(source, source_port, destination, destination_port);
+        }
+    catch (...)
+        {
+            message_connections_.pop_back();
+            throw;
+        }
+}
+
+
+void GNSSFlowgraph::clear_stream_connections()
+{
+    // Stream disconnect_all does not replace adapter-specific teardown or
+    // explicit message disconnection. Unwind in reverse connection order.
+    for (auto edge = message_connections_.rbegin(); edge != message_connections_.rend(); ++edge)
+        {
+            try
+                {
+                    top_block_->msg_disconnect(edge->source, edge->source_port, edge->destination, edge->destination_port);
+                }
+            catch (const std::exception& error)
+                {
+                    LOG(WARNING) << "Disconnecting message edge: " << error.what();
+                }
+        }
+    message_connections_.clear();
+    for (auto block = connected_blocks_.rbegin(); block != connected_blocks_.rend(); ++block)
+        {
+            try
+                {
+                    (*block)->disconnect(top_block_);
+                }
+            catch (const std::exception& error)
+                {
+                    LOG(WARNING) << "Disconnecting " << (*block)->role() << ": " << error.what();
+                }
+        }
+    connected_blocks_.clear();
+    top_block_->disconnect_all();
+    acq_resamplers_.clear();
+    null_sinks_.clear();
+    conditioned_outputs_.clear();
+    std::fill(signal_conditioner_connected_.begin(), signal_conditioner_connected_.end(), false);
+}
+
+
 void GNSSFlowgraph::disconnect()
 {
     LOG(INFO) << "Disconnecting flowgraph";
@@ -511,10 +576,14 @@ void GNSSFlowgraph::disconnect()
             LOG(INFO) << "Flowgraph was not connected";
             return;
         }
+    if (running_)
+        {
+            stop();
+        }
     connected_ = false;
     try
         {
-            top_block_->disconnect_all();
+            clear_stream_connections();
         }
     catch (const std::exception& e)
         {
@@ -764,12 +833,12 @@ int GNSSFlowgraph::connect_signal_sources()
                 {
                     try
                         {
-                            sig_source_.at(i)->connect(top_block_);
+                            connect_block(*sig_source_.at(i));
                         }
                     catch (const std::exception& e)
                         {
                             LOG(ERROR) << "Can't connect signal source block " << i << " internally: " << e.what();
-                            top_block_->disconnect_all();
+                            clear_stream_connections();
                             return 1;
                         }
                 }
@@ -777,7 +846,7 @@ int GNSSFlowgraph::connect_signal_sources()
                 {
                     help_hint_ += " * Check implementation name for SignalSource" + (i == 0 ? " " : (std::to_string(i) + " ")) + "block\n";
                     help_hint_ += "   Signal Source blocks documentation at https://gnss-sdr.org/docs/sp-blocks/signal-source/\n";
-                    top_block_->disconnect_all();
+                    clear_stream_connections();
                     return 1;
                 }
         }
@@ -786,11 +855,225 @@ int GNSSFlowgraph::connect_signal_sources()
 }
 
 
+double GNSSFlowgraph::acquisition_rate_for_signal(const std::string& signal) const
+{
+    const double fs = configuration_->property("GNSS-SDR.internal_fs_sps", 0.0);
+    double acq_fs = fs;
+    const auto type = mapStringValues_.find(signal);
+    if (type == mapStringValues_.end())
+        {
+            return fs;
+        }
+    switch (type->second)
+        {
+        case evGPS_1C:
+            acq_fs = GPS_L1_CA_OPT_ACQ_FS_SPS;
+            break;
+        case evGPS_2S:
+            acq_fs = GPS_L2C_OPT_ACQ_FS_SPS;
+            break;
+        case evGPS_L5:
+            acq_fs = GPS_L5_OPT_ACQ_FS_SPS;
+            break;
+        case evSBAS_1C:
+            acq_fs = GPS_L1_CA_OPT_ACQ_FS_SPS;
+            break;
+        case evGAL_1B:
+            acq_fs = GALILEO_E1_OPT_ACQ_FS_SPS;
+            break;
+        case evGAL_5X:
+            acq_fs = GALILEO_E5A_OPT_ACQ_FS_SPS;
+            break;
+        case evGAL_7X:
+            acq_fs = GALILEO_E5B_OPT_ACQ_FS_SPS;
+            break;
+        case evGAL_E6:
+            acq_fs = GALILEO_E6_OPT_ACQ_FS_SPS;
+            break;
+        case evBDS_B1:
+            acq_fs = BEIDOU_B1I_OPT_ACQ_FS_SPS;
+            break;
+        case evBDS_B1C:
+            acq_fs = BEIDOU_B1C_OPT_ACQ_FS_SPS;
+            break;
+        case evBDS_B2A:
+            acq_fs = BEIDOU_B2A_OPT_ACQ_FS_SPS;
+            break;
+        case evGLO_1G:
+        case evGLO_2G:
+        case evBDS_B3:
+            acq_fs = fs;
+            break;
+        case evQZS_J1:
+            acq_fs = QZSS_L1_OPT_ACQ_FS_SPS;
+            break;
+        case evQZS_J5:
+            acq_fs = QZSS_L5_OPT_ACQ_FS_SPS;
+            break;
+        default:
+            break;
+        }
+
+    return acq_fs;
+}
+
+
+unsigned int GNSSFlowgraph::acquisition_decimation_for_signal(const std::string& signal) const
+{
+    const auto fs = configuration_->property("GNSS-SDR.internal_fs_sps", uint32_t(0));
+    const double target = acquisition_rate_for_signal(signal);
+    if (target <= 0.0 || target >= fs)
+        {
+            return 1;
+        }
+    auto decimation = static_cast<unsigned int>(std::floor(fs / target));
+    while (decimation > 1 && fs % decimation != 0)
+        {
+            --decimation;
+        }
+    return decimation;
+}
+
+
+size_t GNSSFlowgraph::conditioner_id_for_channel(size_t channel) const
+{
+    const auto& signal = channels_.at(channel)->get_signal().get_signal_str();
+    const int group = configuration_->property("Channels_" + signal + ".RF_channel_ID", 0);
+    const int selected = configuration_->property("Channel" + std::to_string(channel) + ".RF_channel_ID", group);
+    if (selected < 0 || static_cast<size_t>(selected) >= sig_conditioner_.size())
+        {
+            throw std::invalid_argument("Channel" + std::to_string(channel) + ".RF_channel_ID is outside the configured conditioners");
+        }
+    return static_cast<size_t>(selected);
+}
+
+
+void GNSSFlowgraph::plan_signal_conditioners()
+{
+    const double fs = configuration_->property("GNSS-SDR.internal_fs_sps", 0.0);
+    const bool resample = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
+    std::vector<std::set<gr::basic_block*>> readers(sig_conditioner_.size());
+    std::vector<std::set<std::string>> shared_resamplers(sig_conditioner_.size());
+    for (size_t i = 0; i < channels_.size(); ++i)
+        {
+            if (channels_[i] == nullptr)
+                {
+                    // connect_channels() reports construction errors and unwinds connections.
+                    continue;
+                }
+            const auto id = conditioner_id_for_channel(i);
+            readers[id].insert(channels_[i]->get_left_block_trk().get());
+            const auto signal = channels_[i]->get_signal().get_signal_str();
+            if (resample && acquisition_decimation_for_signal(signal) > 1)
+                {
+                    shared_resamplers[id].insert(signal);
+                }
+            else
+                {
+                    readers[id].insert(channels_[i]->get_left_block_acq().get());
+                }
+        }
+    // Conditioners follow the RF streams of the sources, in order.
+    std::vector<bool> real_time;
+    for (const auto& source : sig_source_)
+        {
+            if (source)
+                {
+                    const size_t streams = source->implementation() == "Raw_Array_Signal_Source" ? 1 : source->getRfChannels();
+                    real_time.insert(real_time.end(), streams, source->is_real_time());
+                }
+        }
+    conditioner_plans_.clear();
+    for (size_t id = 0; id < sig_conditioner_.size(); ++id)
+        {
+            auto& block = sig_conditioner_[id];
+            if (!block)
+                {
+                    throw std::invalid_argument("SignalConditioner implementation does not exist");
+                }
+            auto* conditioner = dynamic_cast<SignalConditioner*>(block.get());
+            ConditionerSchedulingPolicy::Request request;
+            request.sample_rate = fs;
+            const auto right = block->get_right_block();
+            request.item_size = right ? right->output_signature()->sizeof_stream_item(0) : block->item_size();
+            // Bypass has no declared format; channels provide the expected size.
+            if (request.item_size == 0 && !readers[id].empty())
+                {
+                    request.item_size = (*readers[id].begin())->input_signature()->sizeof_stream_item(0);
+                }
+            if (request.item_size == 0)
+                {
+                    request.item_size = sizeof(gr_complex);
+                }
+            request.identity_stages = conditioner ? conditioner->identity_stage_count() : (block->is_identity() ? 1 : 0);
+            request.eligible = block->is_identity() || (conditioner && conditioner->ends_with_identity());
+            const size_t channel_readers = readers[id].size() + shared_resamplers[id].size();
+            request.readers = channel_readers + (id == 0 ? 1 : 0) + (channel_readers == 0 ? 1 : 0);
+            for (auto* reader : readers[id])
+                {
+                    auto* stream_block = dynamic_cast<gr::block*>(reader);
+                    if (!stream_block || stream_block->input_signature()->max_streams() != 1)
+                        {
+                            request.eligible = false;
+                            request.windows_known = false;
+                            continue;
+                        }
+                    gr_vector_int required(1, 0);
+                    stream_block->forecast(std::max(1, stream_block->output_multiple()), required);
+                    if (required[0] < 0)
+                        {
+                            throw std::invalid_argument("Consumer returned a negative forecast");
+                        }
+                    request.minimum_input_items = std::max(request.minimum_input_items,
+                        std::max(static_cast<uint64_t>(required[0]), static_cast<uint64_t>(stream_block->history())));
+                }
+            request.channel_input_items = request.minimum_input_items;
+            request.feeds_clock = id == 0;
+            request.real_time = id >= real_time.size() || real_time[id];
+            if (id == 0)
+                {
+                    const auto interval = configuration_->property("GNSS-SDR.observable_interval_ms", 20);
+                    const double pulse_items = std::ceil(fs * interval / 1000.0);
+                    if (!std::isfinite(pulse_items) || pulse_items < 1.0 || pulse_items > std::numeric_limits<int>::max())
+                        {
+                            throw std::invalid_argument("Sample-counter interval exceeds supported buffering");
+                        }
+                    request.minimum_input_items = std::max(request.minimum_input_items, static_cast<uint64_t>(pulse_items));
+                }
+            auto plan = ConditionerSchedulingPolicy::select(*configuration_, block->role(), request);
+            if (conditioner)
+                {
+                    conditioner->set_remove_identity(plan.remove_identity);
+                }
+            else if (plan.remove_identity && block->is_identity())
+                {
+                    std::shared_ptr<GNSSBlockInterface> stage(std::move(block));
+                    block = std::make_unique<SignalConditioner>(stage, stage->role(), true);
+                }
+            const double buffer_ms = fs > 0.0 ? 1000.0 * static_cast<double>(plan.min_buffer_items) / fs : 0.0;
+            LOG(INFO) << block->role() << ": " << plan.reason << "; readers=" << plan.readers
+                      << ", batch=" << plan.batch_items << " samples, batch deadline=" << plan.max_latency_ms
+                      << " ms, largest reader window=" << plan.reader_window_items << " samples, output buffer="
+                      << plan.min_buffer_items << " samples (" << buffer_ms << " ms), alignment budget="
+                      << plan.alignment_budget_ms << " ms" << (request.real_time ? "" : ", unthrottled replay");
+            if (plan.buffer_over_budget)
+                {
+                    LOG(WARNING) << block->role() << ".output_buffer_ms asks for more than the " << plan.alignment_budget_ms
+                                 << " ms of signal that channels can lag the receiver clock with a margin when"
+                                 << " GNSS-SDR.observable_interval_ms=" << configuration_->property("GNSS-SDR.observable_interval_ms", 20)
+                                 << ": observables of the slowest channels can be lost while the receiver is behind";
+                }
+            conditioner_plans_.push_back(std::move(plan));
+        }
+}
+
+
 int GNSSFlowgraph::connect_signal_conditioners()
 {
     int error = 1;  // this should be bool (true)
     try
         {
+            plan_signal_conditioners();
             for (auto& sig : sig_conditioner_)
                 {
                     if (sig == nullptr)
@@ -799,7 +1082,7 @@ int GNSSFlowgraph::connect_signal_conditioners()
                             help_hint_ += "   Check the Signal Conditioner documentation at https://gnss-sdr.org/docs/sp-blocks/signal-conditioner/\n";
                             return error;
                         }
-                    sig->connect(top_block_);
+                    connect_block(*sig);
                 }
             DLOG(INFO) << "Signal Conditioner blocks successfully connected to the top_block";
             error = 0;  // false
@@ -807,7 +1090,7 @@ int GNSSFlowgraph::connect_signal_conditioners()
     catch (const std::exception& e)
         {
             LOG(ERROR) << "Can't connect signal conditioner block internally: " << e.what();
-            top_block_->disconnect_all();
+            clear_stream_connections();
             std::string reported_error(e.what());
             if (std::string::npos != reported_error.find(std::string("itemsize mismatch")))
                 {
@@ -865,7 +1148,7 @@ int GNSSFlowgraph::connect_channels()
             help_hint_ += " * No channels have been assigned, check your configuration file.\n";
             help_hint_ += "   At least one of the Channels_XX.count must be > 0.\n";
             help_hint_ += "   Channels documentation at https://gnss-sdr.org/docs/sp-blocks/channels/\n";
-            top_block_->disconnect_all();
+            clear_stream_connections();
             return 1;
         }
     for (int i = 0; i < channels_count_; i++)
@@ -874,12 +1157,12 @@ int GNSSFlowgraph::connect_channels()
                 {
                     try
                         {
-                            channels_.at(i)->connect(top_block_);
+                            connect_block(*channels_.at(i));
                         }
                     catch (const std::exception& e)
                         {
                             LOG(ERROR) << "Can't connect channel " << i << " internally: " << e.what();
-                            top_block_->disconnect_all();
+                            clear_stream_connections();
                             return 1;
                         }
                 }
@@ -890,7 +1173,7 @@ int GNSSFlowgraph::connect_channels()
                     help_hint_ += "   Acquisition blocks documentation at https://gnss-sdr.org/docs/sp-blocks/acquisition/\n";
                     help_hint_ += "   Tracking blocks documentation at https://gnss-sdr.org/docs/sp-blocks/tracking/\n";
                     help_hint_ += "   Telemetry Decoder blocks documentation at https://gnss-sdr.org/docs/sp-blocks/telemetry-decoder/\n";
-                    top_block_->disconnect_all();
+                    clear_stream_connections();
                     return 1;
                 }
         }
@@ -905,17 +1188,17 @@ int GNSSFlowgraph::connect_observables()
         {
             help_hint_ += " * Check implementation name for the Observables block\n";
             help_hint_ += "   Observables block documentation at https://gnss-sdr.org/docs/sp-blocks/observables/\n";
-            top_block_->disconnect_all();
+            clear_stream_connections();
             return 1;
         }
     try
         {
-            observables_->connect(top_block_);
+            connect_block(*observables_);
         }
     catch (const std::exception& e)
         {
             LOG(ERROR) << "Can't connect observables block internally: " << e.what();
-            top_block_->disconnect_all();
+            clear_stream_connections();
             return 1;
         }
     DLOG(INFO) << "Observables block successfully connected to the top_block";
@@ -929,17 +1212,17 @@ int GNSSFlowgraph::connect_pvt()
         {
             help_hint_ += " * Check implementation name for the PVT block\n";
             help_hint_ += "   PVT block documentation at https://gnss-sdr.org/docs/sp-blocks/pvt/\n";
-            top_block_->disconnect_all();
+            clear_stream_connections();
             return 1;
         }
     try
         {
-            pvt_->connect(top_block_);
+            connect_block(*pvt_);
         }
     catch (const std::exception& e)
         {
             LOG(ERROR) << "Can't connect PVT block internally: " << e.what();
-            top_block_->disconnect_all();
+            clear_stream_connections();
             return 1;
         }
     DLOG(INFO) << "PVT block successfully connected to the top_block";
@@ -956,18 +1239,18 @@ int GNSSFlowgraph::connect_galileo_tow_map()
                     const std::string sig = channels_.at(i)->get_signal().get_signal_str();
                     if (is_galileo_tow_source(sig))
                         {
-                            top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("TOW_from_TLM"), galileo_tow_map_, pmt::mp("TOW_from_TLM"));
+                            connect_message(channels_.at(i)->get_right_block(), pmt::mp("TOW_from_TLM"), galileo_tow_map_, pmt::mp("TOW_from_TLM"));
                         }
                     if (is_galileo_tow_consumer(sig))
                         {
-                            top_block_->msg_connect(galileo_tow_map_, pmt::mp("TOW_to_TLM"), channels_.at(i)->get_right_block(), pmt::mp("TOW_to_TLM"));
+                            connect_message(galileo_tow_map_, pmt::mp("TOW_to_TLM"), channels_.at(i)->get_right_block(), pmt::mp("TOW_to_TLM"));
                         }
                 }
         }
     catch (const std::exception& e)
         {
             LOG(ERROR) << "Can't connect The Galileo TOW map internally: " << e.what();
-            top_block_->disconnect_all();
+            clear_stream_connections();
             return 1;
         }
     return 0;
@@ -989,14 +1272,14 @@ int GNSSFlowgraph::connect_sample_counter()
                 }
 
             const int observable_interval_ms = configuration_->property("GNSS-SDR.observable_interval_ms", 20);
-            ch_out_sample_counter_ = gnss_sdr_make_sample_counter(fs, observable_interval_ms, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
-            top_block_->connect(sig_conditioner_.at(0)->get_right_block(), 0, ch_out_sample_counter_, 0);
+            ch_out_sample_counter_ = gnss_sdr_make_sample_counter(fs, observable_interval_ms, conditioned_outputs_.at(0).block->output_signature()->sizeof_stream_item(conditioned_outputs_.at(0).port));
+            top_block_->connect(conditioned_outputs_.at(0).block, conditioned_outputs_.at(0).port, ch_out_sample_counter_, 0);
             top_block_->connect(ch_out_sample_counter_, 0, observables_->get_left_block(), channels_count_);  // extra port for the sample counter pulse
         }
     catch (const std::exception& e)
         {
             LOG(ERROR) << "Can't connect sample counter: " << e.what();
-            top_block_->disconnect_all();
+            clear_stream_connections();
             return 1;
         }
     DLOG(INFO) << "sample counter successfully connected to Signal Conditioner and Observables blocks";
@@ -1033,7 +1316,7 @@ int GNSSFlowgraph::connect_fpga_sample_counter()
                 {
                     LOG(ERROR) << reported_error;
                 }
-            top_block_->disconnect_all();
+            clear_stream_connections();
             return 1;
         }
     LOG(INFO) << "FPGA sample counter successfully connected";
@@ -1042,15 +1325,93 @@ int GNSSFlowgraph::connect_fpga_sample_counter()
 #endif
 
 
+void GNSSFlowgraph::connect_conditioner_output(size_t conditioner_id, StreamEndpoint upstream)
+{
+    auto& conditioner = sig_conditioner_.at(conditioner_id);
+    const auto left = conditioner->get_left_block();
+    const auto right = conditioner->get_right_block();
+    if (!upstream.block)
+        {
+            throw std::invalid_argument("SignalSource has no stream endpoint");
+        }
+    if (right)
+        {
+            if (upstream.block != right)
+                {
+                    const auto output_size = upstream.block->output_signature()->sizeof_stream_item(upstream.port);
+                    if (!left || output_size != left->input_signature()->sizeof_stream_item(0))
+                        {
+                            throw std::invalid_argument("itemsize mismatch: SignalSource and SignalConditioner input");
+                        }
+                    top_block_->connect(upstream.block, upstream.port, left, 0);
+                }
+            upstream.block = right;
+            upstream.port = 0;
+        }
+    else if (!conditioner->is_identity())
+        {
+            throw std::invalid_argument("SignalConditioner has no stream endpoint");
+        }
+
+    if (!right && conditioner->item_size() != 0 &&
+        conditioner->item_size() != static_cast<size_t>(upstream.block->output_signature()->sizeof_stream_item(upstream.port)))
+        {
+            throw std::invalid_argument("itemsize mismatch: SignalSource and removed Pass_Through stage");
+        }
+    const std::string role = conditioner->role();
+    const auto& plan = conditioner_plans_.at(conditioner_id);
+    if (plan.batch_items > 0)
+        {
+            if (!conditioner_deadlines_)
+                {
+                    conditioner_deadlines_ = std::make_shared<StreamBatcherDeadline>();
+                }
+            const size_t item_size = upstream.block->output_signature()->sizeof_stream_item(upstream.port);
+            const auto batcher = make_stream_batcher(item_size, plan.batch_items, plan.reader_window_items,
+                plan.max_latency_ms, conditioner_deadlines_);
+            batcher->set_min_output_buffer(0, static_cast<long>(plan.min_buffer_items));  // NOLINT(google-runtime-int)
+            top_block_->connect(upstream.block, upstream.port, batcher, 0);
+            upstream.block = batcher;
+            upstream.port = 0;
+        }
+    else
+        {
+            if (!right && configuration_->property("GNSS-SDR.max_source_buffer_samples", uint64_t(0)) > 0)
+                {
+                    LOG(WARNING) << role << ": bypass without batching has no conditioner buffer on which to apply GNSS-SDR.max_source_buffer_samples";
+                }
+            // Without a batching block the last conditioning block feeds the
+            // channels. Source blocks keep the buffer their driver asked for.
+            auto* last = right ? dynamic_cast<gr::block*>(right.get()) : nullptr;
+            if (last != nullptr && plan.max_buffer_items == 0)
+                {
+                    // GNU Radio up to 3.9 records the allocated buffer size as
+                    // a maximum, which cancels the minimum on a later start.
+                    last->set_max_output_buffer(0, -1);
+                }
+            if (last != nullptr && last->max_output_buffer(0) <= 0)
+                {
+                    last->set_min_output_buffer(0, plan.min_buffer_items > 0 ? static_cast<long>(plan.min_buffer_items) : -1);  // NOLINT(google-runtime-int)
+                }
+            else if (plan.min_buffer_items > 0)
+                {
+                    LOG(INFO) << role << ": no conditioning block can hold the planned output buffer; GNU Radio sizes it";
+                }
+        }
+    conditioned_outputs_.at(conditioner_id) = upstream;
+}
+
+
 int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
 {
     if (enable_fpga_offloading_)
         {
             help_hint_ += " * The global configuration parameter GNSS-SDR.enable_FPGA is set to true,\n";
             help_hint_ += "   but gnss-sdr was not compiled with the -DENABLE_FPGA=ON building option.\n";
-            top_block_->disconnect_all();
+            clear_stream_connections();
             return 1;
         }
+    conditioned_outputs_.assign(sig_conditioner_.size(), StreamEndpoint());
     unsigned int signal_conditioner_ID = 0;
     for (int i = 0; i < sources_count_; i++)
         {
@@ -1063,12 +1424,22 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
                     if (src->implementation() == "Raw_Array_Signal_Source")
                         {
                             // Multichannel Array
+                            if (!sig_conditioner_.at(i)->get_left_block() ||
+                                sig_conditioner_.at(i)->implementation() != "Array_Signal_Conditioner")
+                                {
+                                    throw std::invalid_argument("Raw_Array_Signal_Source requires Array_Signal_Conditioner");
+                                }
                             std::cout << "ARRAY MODE\n";
                             for (int j = 0; j < GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS; j++)
                                 {
                                     std::cout << "connecting ch " << j << '\n';
                                     top_block_->connect(src->get_right_block(), j, sig_conditioner_.at(i)->get_left_block(), j);
                                 }
+                            StreamEndpoint upstream;
+                            upstream.block = sig_conditioner_.at(i)->get_right_block();
+                            // The array conditioner is already wired above.
+                            connect_conditioner_output(static_cast<size_t>(i), upstream);
+                            signal_conditioner_ID++;
                         }
                     else
                         {
@@ -1076,45 +1447,28 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
 
                             for (auto j = 0U; j < RF_Channels; ++j)
                                 {
-                                    // Connect the multichannel signal source to multiple signal conditioners
-                                    // GNURADIO max_streams=-1 means infinite ports!
-                                    size_t output_size = src->get_right_block()->output_signature()->sizeof_stream_item(0);
-                                    size_t input_size = sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->sizeof_stream_item(0);
-                                    // Check configuration inconsistencies
-                                    if (output_size != input_size)
+                                    StreamEndpoint upstream;
+                                    upstream.block = src->get_right_block();
+                                    if (!upstream.block)
                                         {
-                                            help_hint_ += " * The Signal Source implementation " + src->implementation() + " has an output with a ";
-                                            help_hint_ += src->role() + ".item_size of " + std::to_string(output_size);
-                                            help_hint_ += " bytes, but it is connected to the Signal Conditioner implementation ";
-                                            help_hint_ += sig_conditioner_.at(signal_conditioner_ID)->implementation() + " with input item size of " + std::to_string(input_size) + " bytes.\n";
-                                            help_hint_ += "   Output ports must be connected to input ports with the same item size.\n";
-                                            top_block_->disconnect_all();
-                                            return 1;
+                                            throw std::invalid_argument("SignalSource has no stream endpoint");
                                         }
-
-                                    if (src->get_right_block()->output_signature()->max_streams() > 1 || src->get_right_block()->output_signature()->max_streams() == -1)
+                                    if (upstream.block->output_signature()->max_streams() > 1 ||
+                                        upstream.block->output_signature()->max_streams() == -1)
                                         {
-                                            if (sig_conditioner_.size() > signal_conditioner_ID)
-                                                {
-                                                    LOG(INFO) << "connecting sig_source_ " << i << " stream " << j << " to conditioner " << signal_conditioner_ID;
-                                                    top_block_->connect(src->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-                                                }
+                                            upstream.port = static_cast<int>(j);
                                         }
-                                    else
+                                    else if (j > 0)
                                         {
-                                            if (j == 0 || !src->get_right_block(j))
+                                            const auto rf_output = src->get_right_block(j);
+                                            if (rf_output)
                                                 {
-                                                    // RF_channel 0 backward compatibility with single channel sources
-                                                    LOG(INFO) << "connecting sig_source_ " << i << " stream " << 0 << " to conditioner " << signal_conditioner_ID;
-                                                    top_block_->connect(src->get_right_block(), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+                                                    upstream.block = rf_output;
                                                 }
-                                            else
-                                                {
-                                                    // Multiple channel sources using multiple output blocks of single channel (requires RF_channel selector in call)
-                                                    LOG(INFO) << "connecting sig_source_ " << i << " stream " << j << " to conditioner " << signal_conditioner_ID;
-                                                    top_block_->connect(src->get_right_block(j), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-                                                }
+                                            // A single output may intentionally feed several
+                                            // conditioners (for example, different subbands).
                                         }
+                                    connect_conditioner_output(signal_conditioner_ID, upstream);
                                     signal_conditioner_ID++;
                                 }
                         }
@@ -1136,7 +1490,7 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
                             help_hint_ += " * The SignalSource output item size and the SignalConditioner input item size are mismatched\n";
                             help_hint_ += "   Reported error: " + reported_error + '\n';
                         }
-                    top_block_->disconnect_all();
+                    clear_stream_connections();
                     return 1;
                 }
         }
@@ -1156,82 +1510,25 @@ int GNSSFlowgraph::connect_signal_conditioners_to_channels()
 
             try
                 {
-                    selected_signal_conditioner_ID = configuration_->property("Channels_" + channels_.at(i)->get_signal().get_signal_str() + ".RF_channel_ID", 0);
-                    selected_signal_conditioner_ID = configuration_->property("Channel" + std::to_string(i) + ".RF_channel_ID", selected_signal_conditioner_ID);
-                }
-            catch (const std::exception& e)
-                {
-                    LOG(WARNING) << e.what();
-                }
-            try
-                {
+                    selected_signal_conditioner_ID = static_cast<int>(conditioner_id_for_channel(i));
+                    const auto& endpoint = conditioned_outputs_.at(selected_signal_conditioner_ID);
+                    const auto output_size = endpoint.block->output_signature()->sizeof_stream_item(endpoint.port);
+                    if (output_size != channels_.at(i)->get_left_block_trk()->input_signature()->sizeof_stream_item(0))
+                        {
+                            throw std::invalid_argument("itemsize mismatch: conditioned stream and tracking channel");
+                        }
                     // Enable automatic resampler for the acquisition, if required
                     if (use_acq_resampler == true)
                         {
                             // create acquisition resamplers if required
-                            double resampler_ratio = 1.0;
                             double acq_fs = fs;
-                            // find the signal associated to this channel
-                            switch (mapStringValues_[channels_.at(i)->get_signal().get_signal_str()])
-                                {
-                                case evGPS_1C:
-                                    acq_fs = GPS_L1_CA_OPT_ACQ_FS_SPS;
-                                    break;
-                                case evGPS_2S:
-                                    acq_fs = GPS_L2C_OPT_ACQ_FS_SPS;
-                                    break;
-                                case evGPS_L5:
-                                    acq_fs = GPS_L5_OPT_ACQ_FS_SPS;
-                                    break;
-                                case evSBAS_1C:
-                                    acq_fs = GPS_L1_CA_OPT_ACQ_FS_SPS;
-                                    break;
-                                case evGAL_1B:
-                                    acq_fs = GALILEO_E1_OPT_ACQ_FS_SPS;
-                                    break;
-                                case evGAL_5X:
-                                    acq_fs = GALILEO_E5A_OPT_ACQ_FS_SPS;
-                                    break;
-                                case evGAL_7X:
-                                    acq_fs = GALILEO_E5B_OPT_ACQ_FS_SPS;
-                                    break;
-                                case evGAL_E6:
-                                    acq_fs = GALILEO_E6_OPT_ACQ_FS_SPS;
-                                    break;
-                                case evBDS_B1:
-                                    acq_fs = BEIDOU_B1I_OPT_ACQ_FS_SPS;
-                                    break;
-                                case evBDS_B1C:
-                                    acq_fs = BEIDOU_B1C_OPT_ACQ_FS_SPS;
-                                    break;
-                                case evBDS_B2A:
-                                    acq_fs = BEIDOU_B2A_OPT_ACQ_FS_SPS;
-                                    break;
-                                case evGLO_1G:
-                                case evGLO_2G:
-                                case evBDS_B3:
-                                    acq_fs = fs;
-                                    break;
-                                case evQZS_J1:
-                                    acq_fs = QZSS_L1_OPT_ACQ_FS_SPS;
-                                    break;
-                                case evQZS_J5:
-                                    acq_fs = QZSS_L5_OPT_ACQ_FS_SPS;
-                                    break;
-                                default:
-                                    break;
-                                }
+                            acq_fs = acquisition_rate_for_signal(channels_.at(i)->get_signal().get_signal_str());
 
                             if (acq_fs < fs)
                                 {
                                     // check if the resampler is already created for the channel system/signal and for the specific RF Channel
                                     const std::string map_key = channels_.at(i)->get_signal().get_signal_str() + std::to_string(selected_signal_conditioner_ID);
-                                    resampler_ratio = static_cast<double>(fs) / acq_fs;
-                                    int decimation = floor(resampler_ratio);
-                                    while (fs % decimation > 0)
-                                        {
-                                            decimation--;
-                                        };
+                                    const auto decimation = acquisition_decimation_for_signal(channels_.at(i)->get_signal().get_signal_str());
                                     const double acq_fs_decimated = static_cast<double>(fs) / static_cast<double>(decimation);
 
                                     if (decimation > 1)
@@ -1248,7 +1545,7 @@ int GNSSFlowgraph::connect_signal_conditioners_to_channels()
                                             ret = acq_resamplers_.insert(std::pair<std::string, gr::basic_block_sptr>(map_key, fir_filter_ccf_));
                                             if (ret.second == true)
                                                 {
-                                                    top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                                                    top_block_->connect(conditioned_outputs_.at(selected_signal_conditioner_ID).block, conditioned_outputs_.at(selected_signal_conditioner_ID).port,
                                                         acq_resamplers_.at(map_key), 0);
                                                     LOG(INFO) << "Created "
                                                               << channels_.at(i)->get_signal().get_signal_str()
@@ -1271,29 +1568,29 @@ int GNSSFlowgraph::connect_signal_conditioners_to_channels()
                                         {
                                             LOG(INFO) << "Disabled acquisition resampler because the input sampling frequency is too low";
                                             // resampler not required!
-                                            top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                                            top_block_->connect(conditioned_outputs_.at(selected_signal_conditioner_ID).block, conditioned_outputs_.at(selected_signal_conditioner_ID).port,
                                                 channels_.at(i)->get_left_block_acq(), 0);
                                         }
                                 }
                             else
                                 {
                                     LOG(INFO) << "Disabled acquisition resampler because the input sampling frequency is too low";
-                                    top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                                    top_block_->connect(conditioned_outputs_.at(selected_signal_conditioner_ID).block, conditioned_outputs_.at(selected_signal_conditioner_ID).port,
                                         channels_.at(i)->get_left_block_acq(), 0);
                                 }
                         }
                     else
                         {
-                            top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                            top_block_->connect(conditioned_outputs_.at(selected_signal_conditioner_ID).block, conditioned_outputs_.at(selected_signal_conditioner_ID).port,
                                 channels_.at(i)->get_left_block_acq(), 0);
                         }
-                    top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                    top_block_->connect(conditioned_outputs_.at(selected_signal_conditioner_ID).block, conditioned_outputs_.at(selected_signal_conditioner_ID).port,
                         channels_.at(i)->get_left_block_trk(), 0);
                 }
             catch (const std::exception& e)
                 {
                     LOG(ERROR) << "Can't connect signal conditioner " << selected_signal_conditioner_ID << " to channel " << i << ": " << e.what();
-                    top_block_->disconnect_all();
+                    clear_stream_connections();
                     return 1;
                 }
 
@@ -1316,7 +1613,7 @@ int GNSSFlowgraph::connect_channels_to_observables()
             catch (const std::exception& e)
                 {
                     LOG(ERROR) << "Can't connect channel " << i << " to observables: " << e.what();
-                    top_block_->disconnect_all();
+                    clear_stream_connections();
                     return 1;
                 }
         }
@@ -1333,7 +1630,7 @@ int GNSSFlowgraph::connect_observables_to_pvt()
             for (int i = 0; i < channels_count_; i++)
                 {
                     top_block_->connect(observables_->get_right_block(), i, pvt_->get_left_block(), i);
-                    top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("telemetry"), pvt_->get_left_block(), pmt::mp("telemetry"));
+                    connect_message(channels_.at(i)->get_right_block(), pmt::mp("telemetry"), pvt_->get_left_block(), pmt::mp("telemetry"));
                     // experimental Vector Tracking Loop (VTL) messages from PVT to Tracking blocks
                     // not supported by all tracking algorithms
                     pmt::pmt_t ports_in = channels_.at(i)->get_left_block_trk()->message_ports_in();
@@ -1342,21 +1639,21 @@ int GNSSFlowgraph::connect_observables_to_pvt()
                             // std::cout << "pmt: " << pmt::symbol_to_string(pmt::vector_ref(ports_in, n)) << "\n";
                             if (pmt::symbol_to_string(pmt::vector_ref(ports_in, n)) == "pvt_to_trk")
                                 {
-                                    top_block_->msg_connect(pvt_->get_left_block(), pmt::mp("pvt_to_trk"), channels_.at(i)->get_left_block_trk(), pmt::mp("pvt_to_trk"));
+                                    connect_message(pvt_->get_left_block(), pmt::mp("pvt_to_trk"), channels_.at(i)->get_left_block_trk(), pmt::mp("pvt_to_trk"));
                                     LOG(INFO) << "pvt_to_trk message port connected in " << channels_.at(i)->implementation();
                                 }
                         }
                 }
 
-            top_block_->msg_connect(observables_->get_right_block(), pmt::mp("status"), channels_status_, pmt::mp("status"));
+            connect_message(observables_->get_right_block(), pmt::mp("status"), channels_status_, pmt::mp("status"));
 
-            top_block_->msg_connect(pvt_->get_left_block(), pmt::mp("pvt_to_observables"), observables_->get_right_block(), pmt::mp("pvt_to_observables"));
-            top_block_->msg_connect(pvt_->get_left_block(), pmt::mp("status"), channels_status_, pmt::mp("status"));
+            connect_message(pvt_->get_left_block(), pmt::mp("pvt_to_observables"), observables_->get_right_block(), pmt::mp("pvt_to_observables"));
+            connect_message(pvt_->get_left_block(), pmt::mp("status"), channels_status_, pmt::mp("status"));
         }
     catch (const std::exception& e)
         {
             LOG(ERROR) << "Can't connect observables to PVT: " << e.what();
-            top_block_->disconnect_all();
+            clear_stream_connections();
             return 1;
         }
     DLOG(INFO) << "Observables successfully connected to the PVT block";
@@ -1376,7 +1673,7 @@ int GNSSFlowgraph::connect_gnss_synchro_monitor()
     catch (const std::exception& e)
         {
             LOG(ERROR) << "Can't connect observables to Monitor block: " << e.what();
-            top_block_->disconnect_all();
+            clear_stream_connections();
             return 1;
         }
     DLOG(INFO) << "gnss_synchro_monitor successfully connected to Observables block";
@@ -1396,7 +1693,7 @@ int GNSSFlowgraph::connect_acquisition_monitor()
     catch (const std::exception& e)
         {
             LOG(ERROR) << "Can't connect acquisition intermediate outputs to Monitor block: " << e.what();
-            top_block_->disconnect_all();
+            clear_stream_connections();
             return 1;
         }
     DLOG(INFO) << "acquisition_monitor successfully connected to Channel blocks";
@@ -1416,7 +1713,7 @@ int GNSSFlowgraph::connect_tracking_monitor()
     catch (const std::exception& e)
         {
             LOG(ERROR) << "Can't connect tracking outputs to Monitor block: " << e.what();
-            top_block_->disconnect_all();
+            clear_stream_connections();
             return 1;
         }
     DLOG(INFO) << "tracking_monitor successfully connected to Channel blocks";
@@ -1430,18 +1727,18 @@ int GNSSFlowgraph::connect_navdata_monitor()
         {
             for (int i = 0; i < channels_count_; i++)
                 {
-                    top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
+                    connect_message(channels_.at(i)->get_right_block(), pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
                 }
             if (enable_e6_has_rx_)
                 {
                     gal_e6_has_rx_->set_enable_navdata_monitor(true);
-                    top_block_->msg_connect(gal_e6_has_rx_, pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
+                    connect_message(gal_e6_has_rx_, pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
                 }
         }
     catch (const std::exception& e)
         {
             LOG(ERROR) << "Can't connect TlM outputs to Monitor block: " << e.what();
-            top_block_->disconnect_all();
+            clear_stream_connections();
             return 1;
         }
     DLOG(INFO) << "navdata monitor successfully connected to Channel blocks";
@@ -1501,7 +1798,7 @@ int GNSSFlowgraph::connect_osnma()
                     switch (mapStringValues_[gnss_signal])
                         {
                         case evGAL_1B:
-                            top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("OSNMA_from_TLM"), osnma_rx_, pmt::mp("OSNMA_from_TLM"));
+                            connect_message(channels_.at(i)->get_right_block(), pmt::mp("OSNMA_from_TLM"), osnma_rx_, pmt::mp("OSNMA_from_TLM"));
                             gal_e1_channels = true;
                             break;
 
@@ -1512,13 +1809,13 @@ int GNSSFlowgraph::connect_osnma()
 
             if (gal_e1_channels == true)
                 {
-                    top_block_->msg_connect(osnma_rx_, pmt::mp("OSNMA_to_PVT"), pvt_->get_left_block(), pmt::mp("OSNMA_to_PVT"));
+                    connect_message(osnma_rx_, pmt::mp("OSNMA_to_PVT"), pvt_->get_left_block(), pmt::mp("OSNMA_to_PVT"));
                 }
         }
     catch (const std::exception& e)
         {
             LOG(ERROR) << "Can't connect Galileo OSNMA msg ports: " << e.what();
-            top_block_->disconnect_all();
+            clear_stream_connections();
             return 1;
         }
     DLOG(INFO) << "Galileo OSNMA message ports connected";
@@ -1537,7 +1834,7 @@ int GNSSFlowgraph::connect_gal_e6_has()
                     switch (mapStringValues_[gnss_signal])
                         {
                         case evGAL_E6:
-                            top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("E6_HAS_from_TLM"), gal_e6_has_rx_, pmt::mp("E6_HAS_from_TLM"));
+                            connect_message(channels_.at(i)->get_right_block(), pmt::mp("E6_HAS_from_TLM"), gal_e6_has_rx_, pmt::mp("E6_HAS_from_TLM"));
                             gal_e6_channels = true;
                             break;
 
@@ -1548,13 +1845,13 @@ int GNSSFlowgraph::connect_gal_e6_has()
 
             if (gal_e6_channels == true)
                 {
-                    top_block_->msg_connect(gal_e6_has_rx_, pmt::mp("E6_HAS_to_PVT"), pvt_->get_left_block(), pmt::mp("E6_HAS_to_PVT"));
+                    connect_message(gal_e6_has_rx_, pmt::mp("E6_HAS_to_PVT"), pvt_->get_left_block(), pmt::mp("E6_HAS_to_PVT"));
                 }
         }
     catch (const std::exception& e)
         {
             LOG(ERROR) << "Can't connect Galileo E6 HAS msg ports: " << e.what();
-            top_block_->disconnect_all();
+            clear_stream_connections();
             return 1;
         }
     DLOG(INFO) << "Galileo E6 HAS message ports connected";
@@ -1570,8 +1867,8 @@ void GNSSFlowgraph::check_signal_conditioners()
         {
             if (signal_conditioner_connected_.at(n) == false)
                 {
-                    null_sinks_.push_back(gr::blocks::null_sink::make(sizeof(gr_complex)));
-                    top_block_->connect(sig_conditioner_.at(n)->get_right_block(), 0,
+                    null_sinks_.push_back(gr::blocks::null_sink::make(conditioned_outputs_.at(n).block->output_signature()->sizeof_stream_item(conditioned_outputs_.at(n).port)));
+                    top_block_->connect(conditioned_outputs_.at(n).block, conditioned_outputs_.at(n).port,
                         null_sinks_.back(), 0);
                     LOG(INFO) << "Null sink connected to signal conditioner " << n << " due to lack of connection to any channel\n";
                 }
@@ -1636,7 +1933,7 @@ int GNSSFlowgraph::assign_channels()
                     help_hint_ += " satellites is " + std::to_string(max_sat_count) + ".\n";
                     help_hint_ += " Please set " + channel_count_option + "=";
                     help_hint_ += std::to_string(max_sat_count - 1) + " or lower in your configuration file.\n";
-                    top_block_->disconnect_all();
+                    clear_stream_connections();
                     return 1;
                 }
         }
@@ -1791,7 +2088,7 @@ uint32_t GNSSFlowgraph::doppler_bins_for_uncertainty(const std::string& acq_role
             return 0;
         }
     const double half_bins = std::ceil(uncertainty_hz / static_cast<double>(doppler_step));
-    if (half_bins > static_cast<double>((std::numeric_limits<uint32_t>::max() - 1U) / 2U))
+    if (half_bins > (std::numeric_limits<uint32_t>::max() - 1U) / 2.0)
         {
             return 0;
         }

@@ -74,6 +74,7 @@ public:
     void disconnect(gr::top_block_sptr top_block) override;
     gr::basic_block_sptr get_left_block() override;
     gr::basic_block_sptr get_right_block() override;
+    bool is_identity() const override { return !inverted_spectrum; }
 
 private:
     gr::blocks::copy::sptr kludge_copy_;

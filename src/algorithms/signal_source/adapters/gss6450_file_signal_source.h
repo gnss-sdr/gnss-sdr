@@ -66,6 +66,7 @@ public:
     gr::basic_block_sptr get_right_block(int RF_channel) override;
     gr::basic_block_sptr get_right_block() override;
     size_t getRfChannels() const override;
+    bool is_real_time() const override { return enable_throttle_control_; }
 
     inline std::string filename() const
     {

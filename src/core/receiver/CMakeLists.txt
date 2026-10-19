@@ -6,6 +6,7 @@
 
 
 set(GNSS_RECEIVER_SOURCES
+    conditioner_scheduling_policy.cc
     control_thread.cc
     file_configuration.cc
     gnss_block_factory.cc
@@ -16,6 +17,7 @@ set(GNSS_RECEIVER_SOURCES
 )
 
 set(GNSS_RECEIVER_HEADERS
+    conditioner_scheduling_policy.h
     control_thread.h
     file_configuration.h
     gnss_block_factory.h

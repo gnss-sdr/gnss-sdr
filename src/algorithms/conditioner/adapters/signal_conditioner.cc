@@ -19,22 +19,94 @@
 #include <stdexcept>
 #include <utility>
 
-#if USE_GLOG_AND_GFLAGS
-#include <glog/logging.h>
-#else
-#include <absl/log/log.h>
-#endif
+SignalConditioner::SignalConditioner(std::string role, size_t input_item_size)
+    : role_(std::move(role)), input_item_size_(input_item_size), connected_(false)
+{
+}
 
-// Constructor
+
 SignalConditioner::SignalConditioner(std::shared_ptr<GNSSBlockInterface> data_type_adapt,
     std::shared_ptr<GNSSBlockInterface> in_filt,
     std::shared_ptr<GNSSBlockInterface> res,
-    std::string role) : data_type_adapt_(std::move(data_type_adapt)),
-                        in_filt_(std::move(in_filt)),
-                        res_(std::move(res)),
-                        role_(std::move(role)),
-                        connected_(false)
+    std::string role, bool remove_identity)
+    : data_type_adapt_(std::move(data_type_adapt)),
+      in_filt_(std::move(in_filt)),
+      res_(std::move(res)),
+      role_(std::move(role)),
+      connected_(false)
 {
+    if (!data_type_adapt_ || !in_filt_ || !res_)
+        {
+            throw std::invalid_argument("DataTypeAdapter, InputFilter and Resampler implementations must be defined");
+        }
+    // Validate even stages that will be removed: optimization must not hide a
+    // misconfigured sample format at an intermediate boundary.
+    const std::vector<std::shared_ptr<GNSSBlockInterface>> configured{data_type_adapt_, in_filt_, res_};
+    for (size_t i = 0; i < configured.size(); ++i)
+        {
+            if (configured[i]->item_size() == 0)
+                {
+                    throw std::invalid_argument("itemsize mismatch: invalid SignalConditioner stage");
+                }
+            if (i > 0 && configured[i - 1]->get_right_block()->output_signature()->sizeof_stream_item(0) !=
+                             configured[i]->get_left_block()->input_signature()->sizeof_stream_item(0))
+                {
+                    throw std::invalid_argument("itemsize mismatch: incompatible SignalConditioner stages");
+                }
+            if (!remove_identity || !configured[i]->is_identity())
+                {
+                    stages_.push_back(configured[i]);
+                }
+        }
+}
+
+
+SignalConditioner::SignalConditioner(std::shared_ptr<GNSSBlockInterface> stage, std::string role, bool remove_identity)
+    : data_type_adapt_(std::move(stage)), role_(std::move(role)), connected_(false)
+{
+    if (!data_type_adapt_)
+        {
+            throw std::invalid_argument("Missing SignalConditioner stage");
+        }
+    set_remove_identity(remove_identity);
+}
+
+
+bool SignalConditioner::ends_with_identity() const
+{
+    const auto stage = res_ ? res_ : (in_filt_ ? in_filt_ : data_type_adapt_);
+    return stage && stage->is_identity();
+}
+
+
+void SignalConditioner::set_remove_identity(bool remove_identity)
+{
+    if (connected_)
+        {
+            throw std::logic_error("Cannot change SignalConditioner topology while connected");
+        }
+    stages_.clear();
+    for (const auto& stage : {data_type_adapt_, in_filt_, res_})
+        {
+            if (stage && (!remove_identity || !stage->is_identity()))
+                {
+                    stages_.push_back(stage);
+                }
+        }
+}
+
+
+size_t SignalConditioner::identity_stage_count() const
+{
+    size_t count = 0;
+    for (const auto& stage : {data_type_adapt_, in_filt_, res_})
+        {
+            if (stage && stage->is_identity())
+                {
+                    ++count;
+                }
+        }
+    return count;
 }
 
 
@@ -42,51 +114,37 @@ void SignalConditioner::connect(gr::top_block_sptr top_block)
 {
     if (connected_)
         {
-            LOG(WARNING) << "Signal conditioner already connected internally";
             return;
         }
-    if (data_type_adapt_ == nullptr)
+    size_t connected_stages = 0;
+    size_t connected_edges = 0;
+    try
         {
-            throw std::invalid_argument("DataTypeAdapter implementation not defined");
+            for (const auto& stage : stages_)
+                {
+                    stage->connect(top_block);
+                    ++connected_stages;
+                }
+            for (size_t i = 1; i < stages_.size(); ++i)
+                {
+                    top_block->connect(stages_[i - 1]->get_right_block(), 0, stages_[i]->get_left_block(), 0);
+                    ++connected_edges;
+                }
+            connected_ = true;
         }
-    if (in_filt_ == nullptr)
+    catch (...)
         {
-            throw std::invalid_argument("InputFilter implementation not defined");
+            while (connected_edges > 0)
+                {
+                    const size_t i = connected_edges--;
+                    top_block->disconnect(stages_[i - 1]->get_right_block(), 0, stages_[i]->get_left_block(), 0);
+                }
+            while (connected_stages > 0)
+                {
+                    stages_[--connected_stages]->disconnect(top_block);
+                }
+            throw;
         }
-    if (res_ == nullptr)
-        {
-            throw std::invalid_argument("Resampler implementation not defined");
-        }
-    data_type_adapt_->connect(top_block);
-    in_filt_->connect(top_block);
-    res_->connect(top_block);
-
-    if (in_filt_->item_size() == 0)
-        {
-            throw std::invalid_argument("itemsize mismatch: Invalid input/output data type configuration for the InputFilter");
-        }
-
-    const size_t data_type_adapter_output_size = data_type_adapt_->get_right_block()->output_signature()->sizeof_stream_item(0);
-    const size_t input_filter_input_size = in_filt_->get_left_block()->input_signature()->sizeof_stream_item(0);
-    const size_t input_filter_output_size = in_filt_->get_right_block()->output_signature()->sizeof_stream_item(0);
-    const size_t resampler_input_size = res_->get_left_block()->input_signature()->sizeof_stream_item(0);
-
-    if (data_type_adapter_output_size != input_filter_input_size)
-        {
-            throw std::invalid_argument("itemsize mismatch: Invalid input/output data type configuration for the DataTypeAdapter/InputFilter connection");
-        }
-
-    if (input_filter_output_size != resampler_input_size)
-        {
-            throw std::invalid_argument("itemsize mismatch: Invalid input/output data type configuration for the Input Filter/Resampler connection");
-        }
-
-    top_block->connect(data_type_adapt_->get_right_block(), 0, in_filt_->get_left_block(), 0);
-    DLOG(INFO) << "data_type_adapter -> input_filter";
-
-    top_block->connect(in_filt_->get_right_block(), 0, res_->get_left_block(), 0);
-    DLOG(INFO) << "input_filter -> resampler";
-    connected_ = true;
 }
 
 
@@ -94,30 +152,27 @@ void SignalConditioner::disconnect(gr::top_block_sptr top_block)
 {
     if (!connected_)
         {
-            LOG(WARNING) << "Signal conditioner already disconnected internally";
             return;
         }
-
-    top_block->disconnect(data_type_adapt_->get_right_block(), 0,
-        in_filt_->get_left_block(), 0);
-    top_block->disconnect(in_filt_->get_right_block(), 0,
-        res_->get_left_block(), 0);
-
-    data_type_adapt_->disconnect(top_block);
-    in_filt_->disconnect(top_block);
-    res_->disconnect(std::move(top_block));
-
+    for (size_t i = stages_.size(); i > 1; --i)
+        {
+            top_block->disconnect(stages_[i - 2]->get_right_block(), 0, stages_[i - 1]->get_left_block(), 0);
+        }
+    for (auto stage = stages_.rbegin(); stage != stages_.rend(); ++stage)
+        {
+            (*stage)->disconnect(top_block);
+        }
     connected_ = false;
 }
 
 
 gr::basic_block_sptr SignalConditioner::get_left_block()
 {
-    return data_type_adapt_->get_left_block();
+    return stages_.empty() ? gr::basic_block_sptr() : stages_.front()->get_left_block();
 }
 
 
 gr::basic_block_sptr SignalConditioner::get_right_block()
 {
-    return res_->get_right_block();
+    return stages_.empty() ? gr::basic_block_sptr() : stages_.back()->get_right_block();
 }

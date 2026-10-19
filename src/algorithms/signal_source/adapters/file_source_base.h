@@ -56,7 +56,7 @@ class ConfigurationInterface;
 //!
 //!   .seconds_to_skip - number of seconds of lead-in data to skip over (default 0)
 //!
-//!   .enable_throttle_control - whether to stop reading if the upstream buffer is full (default false)
+//!   .enable_throttle_control - pace replay at sampling_frequency (default false)
 //!
 //!   .repeat   - whether to rewind and continue at end of file (default false)
 //!
@@ -86,6 +86,9 @@ public:
 
     //! Whether to repeat reading after end-of-file
     bool repeat() const;
+
+    //! Whether the replay is paced at the sampling frequency
+    bool is_real_time() const override { return enable_throttle_control_; }
 
     //! The sampling frequency of the source file
     int64_t sampling_frequency() const;

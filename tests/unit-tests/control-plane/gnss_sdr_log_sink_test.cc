@@ -55,7 +55,7 @@ protected:
     static std::string Read(const fs::path& path)
     {
         std::ifstream file(path.string(), std::ios::binary);
-        return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+        return {std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
     }
 
     // Compare the exact bytes supplied by Abseil, without assuming a timezone

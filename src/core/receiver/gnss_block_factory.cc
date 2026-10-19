@@ -1005,6 +1005,26 @@ std::unique_ptr<GNSSBlockInterface> GetSignalConditioner(
     const std::string input_filter = configuration->property(role_inputfilter + impl_prop, ""s);
     const std::string resampler = configuration->property(role_resampler + impl_prop, ""s);
 
+    if (signal_conditioner == "Bypass")
+        {
+            for (const auto& role : {role_conditioner, role_datatypeadapter, role_inputfilter, role_resampler})
+                {
+                    if (configuration->property(role + ".inverted_spectrum", false))
+                        {
+                            throw std::invalid_argument(role + ".inverted_spectrum cannot be used with SignalConditioner Bypass");
+                        }
+                }
+            for (const auto& role : {role_datatypeadapter, role_inputfilter, role_resampler})
+                {
+                    const auto implementation = configuration->property(role + impl_prop, ""s);
+                    if (!implementation.empty() && implementation != "Pass_Through")
+                        {
+                            throw std::invalid_argument(role + ".implementation conflicts with SignalConditioner Bypass");
+                        }
+                }
+            return std::make_unique<SignalConditioner>(role_conditioner);
+        }
+
     if (signal_conditioner == "Pass_Through")
         {
             if (!data_type_adapter.empty() && (data_type_adapter != "Pass_Through"))
@@ -1054,7 +1074,6 @@ std::unique_ptr<GNSSBlockInterface> GetSignalConditioner(
             return nullptr;
         }
 
-    // single-antenna version
     return std::make_unique<SignalConditioner>(
         GetBlock(configuration, role_datatypeadapter, 1, 1),
         GetBlock(configuration, role_inputfilter, 1, 1),

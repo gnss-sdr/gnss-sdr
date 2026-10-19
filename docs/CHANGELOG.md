@@ -14,6 +14,22 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Efficiency:
+
+- Improved Signal Conditioner scheduling with portable, configuration-aware
+  sample batching and redundant pass-through removal, reducing channel
+  scheduling overhead without configuration changes. Preserves samples and
+  stream tags, flushes partial batches on deadlines or EOF, and improves
+  flowgraph connection cleanup. The new `SignalConditioner.batch_size_ms`,
+  `SignalConditioner.max_batch_latency_ms`,
+  `SignalConditioner.remove_pass_through` and
+  `SignalConditioner.output_buffer_ms` parameters override the automatic
+  choices, and the new
+  [`Bypass`](https://gnss-sdr.org/docs/sp-blocks/signal-conditioner/#implementation-bypass)
+  Signal Conditioner implementation connects the channels directly to the signal
+  source. See the
+  [Signal Conditioner documentation](https://gnss-sdr.org/docs/sp-blocks/signal-conditioner/#batching-and-buffering).
+
 ### Improvements in Interoperability:
 
 - Fixed `Labsat_Signal_Source` for LabSat 4 (`.LS4`) recordings whose RF

@@ -988,7 +988,7 @@ void pcps_acquisition::refine_doppler(AcquisitionResult& result)
     const float inv_t_hz = fs / static_cast<float>(n);
     const float step_hz = std::min((d_step_two ? d_acq_parameters.doppler_step2 : static_cast<float>(d_doppler_step)) / 2.0F, inv_t_hz / 4.0F);
     const auto half_span = static_cast<int32_t>(std::ceil(inv_t_hz / step_hz));
-    float best_doppler = static_cast<float>(result.doppler);
+    auto best_doppler = static_cast<float>(result.doppler);
     float best_power = -1.0F;
     for (int32_t i = -half_span; i <= half_span; i++)
         {

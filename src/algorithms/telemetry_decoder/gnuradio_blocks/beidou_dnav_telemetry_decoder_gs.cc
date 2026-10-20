@@ -668,5 +668,9 @@ int beidou_dnav_telemetry_decoder_gs::general_work(int noutput_items __attribute
             *out[0] = std::move(current_symbol);
             return 1;
         }
-    return 0;
+    // No valid TOW yet: forward the tracking data flagged as not valid for
+    // pseudorange computation, so that the Monitor and the channel status see it
+    current_symbol.Flag_valid_word = false;
+    *out[0] = std::move(current_symbol);
+    return 1;
 }

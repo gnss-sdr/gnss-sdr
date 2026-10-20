@@ -1351,7 +1351,6 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                             interpolated_gnss_synchro.Flag_valid_pseudorange = false;
                             interpolated_gnss_synchro.Flag_valid_word = false;
                             interpolated_gnss_synchro.Flag_valid_acquisition = false;
-                            interpolated_gnss_synchro.fs = 0;
                             interpolated_gnss_synchro.Channel_ID = n;
                         }
                     else

@@ -81,6 +81,17 @@ All notable changes to GNSS-SDR will be documented in this file.
   multiple of 24 bytes). Also, `seconds_to_skip` no longer lands in the middle
   of a frame when channels have bandwidth dividers that are not powers of two.
 
+### Improvements in Usability:
+
+- Fixed the Monitor (`Monitor.enable_monitor=true`) for channels without a valid
+  time of week. The GPS L1 C/A, GPS L5, Galileo, BeiDou B1I/B3I, and BeiDou B1C
+  telemetry decoders produced no output until they decoded the time of week, so
+  Galileo E6-only configurations sent nothing to the Monitor. All telemetry
+  decoders now forward every symbol, flagging those without a valid time of
+  week, so that channels are reported as soon as tracking locks. This also lets
+  the secondary-band acquisition assistance start once the primary-band signal
+  is locked, instead of after its time of week is decoded.
+
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/
 

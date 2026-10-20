@@ -1569,5 +1569,10 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             *out[0] = std::move(current_symbol);
             return 1;
         }
-    return 0;
+    // No valid TOW yet (e.g., Galileo E6 without a TOW source): forward the tracking
+    // data flagged as not valid for pseudorange computation, so that the Monitor
+    // and the channel status see it
+    current_symbol.Flag_valid_word = false;
+    *out[0] = std::move(current_symbol);
+    return 1;
 }

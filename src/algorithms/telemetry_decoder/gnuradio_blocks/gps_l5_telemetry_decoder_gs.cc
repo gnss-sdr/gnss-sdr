@@ -397,5 +397,9 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
             out[0] = std::move(current_synchro_data);
             return 1;
         }
-    return 0;
+    // No valid TOW yet: forward the tracking data flagged as not valid for
+    // pseudorange computation, so that the Monitor and the channel status see it
+    current_synchro_data.Flag_valid_word = false;
+    out[0] = std::move(current_synchro_data);
+    return 1;
 }

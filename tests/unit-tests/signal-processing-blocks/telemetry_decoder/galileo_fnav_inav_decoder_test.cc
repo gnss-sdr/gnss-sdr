@@ -105,9 +105,13 @@ public:
     int work(int noutput_items, gr_vector_const_void_star& input_items, gr_vector_void_star&) override
     {
         const auto* in = static_cast<const Gnss_Synchro*>(input_items[0]);
-        if (d_first_symbol == 0 && noutput_items > 0)
+        // the decoder also forwards the symbols that precede a valid word
+        for (int i = 0; i < noutput_items && d_first_symbol == 0; i++)
             {
-                d_first_symbol = in[0].Tracking_sample_counter / FNAV_TEST_SAMPLES_PER_SYMBOL;
+                if (in[i].Flag_valid_word)
+                    {
+                        d_first_symbol = in[i].Tracking_sample_counter / FNAV_TEST_SAMPLES_PER_SYMBOL;
+                    }
             }
         return noutput_items;
     }

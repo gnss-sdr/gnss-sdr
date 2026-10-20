@@ -680,8 +680,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
                 top_block->run();  // Start threads and wait
             }) << "Failure running the top_block.";
 
-            stop_queue();
-
             if (i == 0)
                 {
                     EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
@@ -826,8 +824,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
             EXPECT_NO_THROW({
                 top_block->run();  // Start threads and wait
             }) << "Failure running the top_block.";
-
-            stop_queue();
 
             if (i == 0)
                 {

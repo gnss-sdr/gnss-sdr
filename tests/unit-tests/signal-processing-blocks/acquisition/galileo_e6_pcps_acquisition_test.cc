@@ -416,8 +416,6 @@ TEST_F(GalileoE6PcpsAcquisitionTest, ValidationOfResults)
                 top_block->run();  // Start threads and wait
             }) << "Failure running the top_block.";
 
-            stop_queue();
-
             ch_thread.join();
 
             if (i == 0)

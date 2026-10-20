@@ -656,8 +656,6 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
                 top_block->run();  // Start threads and wait
             }) << "Failure running the top_block.";
 
-            stop_queue();
-
             if (i == 0)
                 {
                     EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
@@ -811,8 +809,6 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
             EXPECT_NO_THROW({
                 top_block->run();  // Start threads and wait
             }) << "Failure running the top_block.";
-
-            stop_queue();
 
             if (i == 0)
                 {

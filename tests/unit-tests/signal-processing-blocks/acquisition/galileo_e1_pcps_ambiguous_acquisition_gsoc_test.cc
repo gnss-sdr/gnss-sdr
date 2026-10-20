@@ -35,7 +35,6 @@
 #include "gnss_signal.h"
 #include "gnss_synchro.h"
 #include "in_memory_configuration.h"
-#include <boost/exception/diagnostic_information.hpp>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
@@ -137,7 +136,7 @@ GalileoE1PcpsAmbiguousAcquisitionGSoCTest_msg_rx::~GalileoE1PcpsAmbiguousAcquisi
 class GalileoE1PcpsAmbiguousAcquisitionGSoCTest : public ::testing::Test
 {
 protected:
-    GalileoE1PcpsAmbiguousAcquisitionGSoCTest() : item_size(sizeof(gr_complex)), stop(false), message(0)
+    GalileoE1PcpsAmbiguousAcquisitionGSoCTest() : item_size(sizeof(gr_complex))
     {
         config = std::make_shared<InMemoryConfiguration>();
     }
@@ -145,9 +144,6 @@ protected:
     ~GalileoE1PcpsAmbiguousAcquisitionGSoCTest() = default;
 
     void init();
-    void start_queue();
-    void wait_message();
-    void stop_queue();
 
     Concurrent_Queue<int> channel_internal_queue;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
@@ -155,9 +151,6 @@ protected:
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
-    bool stop;
-    int message;
-    std::thread ch_thread;
 };
 
 
@@ -180,35 +173,6 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::init()
     config->set_property("Acquisition_1B.doppler_step", "250");
     config->set_property("Acquisition_1B.repeat_satellite", "false");
     config->set_property("Acquisition_1B.cboc", "true");
-}
-
-
-void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::start_queue()
-{
-    ch_thread = std::thread(&GalileoE1PcpsAmbiguousAcquisitionGSoCTest::wait_message, this);
-}
-
-
-void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::wait_message()
-{
-    while (!stop)
-        {
-            try
-                {
-                    channel_internal_queue.wait_and_pop(message);
-                    stop_queue();
-                }
-            catch (const boost::exception& e)
-                {
-                    DLOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
-                }
-        }
-}
-
-
-void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::stop_queue()
-{
-    stop = true;
 }
 
 
@@ -286,7 +250,6 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
     }) << "Failure connecting the blocks of acquisition test.";
 
     ASSERT_NO_THROW({
-        start_queue();
         acquisition->set_local_code();
         acquisition->reset();
     }) << "Failure starting acquisition";
@@ -298,12 +261,11 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
 
-    stop_queue();
-
     uint64_t nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout << "Acquired " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 
-    EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 0=ACQ STOP.";
-
-    ch_thread.join();
+    // run() joins the msg_rx thread, so the acquisition result is already queued
+    int message = 0;
+    EXPECT_TRUE(channel_internal_queue.try_pop(message)) << "No acquisition message received.";
+    EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
 }

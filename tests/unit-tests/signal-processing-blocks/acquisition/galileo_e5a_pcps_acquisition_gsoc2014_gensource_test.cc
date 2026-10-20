@@ -645,8 +645,6 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
                 top_block->run();  // Start threads and wait
             }) << "Failure running the top_block.";
 
-            stop_queue();
-
             ch_thread.join();
 
             if (i == 0)

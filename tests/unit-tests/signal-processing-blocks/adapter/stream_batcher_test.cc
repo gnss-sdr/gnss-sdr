@@ -115,6 +115,49 @@ private:
     int sent_ = 0;
 };
 
+// Sends a partial stream and then stalls, without EOF, in its first run, and
+// the whole stream in later runs.
+class RestartTestSource : public gr::sync_block
+{
+public:
+    RestartTestSource(int partial, int length)
+        : gr::sync_block("restart_test_source", gr::io_signature::make(0, 0, 0), gr::io_signature::make(1, 1, sizeof(int))),
+          partial_(partial),
+          length_(length)
+    {
+    }
+    bool start() override
+    {
+        ++runs_;
+        sent.store(0);
+        return true;
+    }
+    int work(int count, gr_vector_const_void_star& /*input_items*/, gr_vector_void_star& output) override
+    {
+        const int offset = sent.load();
+        if (offset == length_)
+            {
+                return WORK_DONE;
+            }
+        const int limit = runs_ == 1 ? partial_ : length_;
+        if (offset == limit)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                return 0;
+            }
+        count = std::min(count, limit - offset);
+        std::iota(static_cast<int*>(output[0]), static_cast<int*>(output[0]) + count, offset);
+        sent.store(offset + count);
+        return count;
+    }
+    std::atomic<int> sent{0};
+
+private:
+    int partial_;
+    int length_;
+    int runs_ = 0;
+};
+
 class ObservedTestSink : public gr::sync_block
 {
 public:
@@ -555,27 +598,32 @@ TEST_F(StreamBatcherTest, AllConditionerStageCombinationsPreserveInversion)
 
 TEST_F(StreamBatcherTest, RestartAfterPartialBatch)
 {
+    const int partial = 100;
+    const int length = 2000;
     auto top = gr::make_top_block("batch_restart");
-    auto source = gnss_make_shared<ChunkedTestSource>(2000, 1, true);
-    // The deadline must outlast the first, interrupted run.
-    auto batcher = make_stream_batcher(sizeof(int), 1024, 0, 20.0);
+    auto source = gnss_make_shared<RestartTestSource>(partial, length);
+    // Neither a whole batch, nor EOF, nor the deadline can publish the items of
+    // the first run, however late the test stops it.
+    auto batcher = make_stream_batcher(sizeof(int), 1024, 0, STREAM_BATCHER_MAX_LATENCY_MS);
     auto sink = gr::blocks::vector_sink_i::make();
     top->connect(source, 0, batcher, 0);
     top->connect(batcher, 0, sink, 0);
     top->start();
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    const auto limit = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    while (source->sent.load() < partial && std::chrono::steady_clock::now() < limit)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
     top->stop();
     top->wait();
+    ASSERT_EQ(partial, source->sent.load());
+    EXPECT_TRUE(sink->data().empty());
+    // The restart gets new buffers: the pending partial batch is dropped, and
+    // the whole stream, tail included, is published in order.
     ASSERT_TRUE(run(top));
-    const auto data = sink->data();
-    ASSERT_FALSE(data.empty());
-    for (size_t i = 1; i < data.size(); ++i)
-        {
-            EXPECT_EQ(data[i - 1] + 1, data[i]);
-        }
-    EXPECT_EQ(0, data.front());
-    EXPECT_EQ(1999, data.back());
-    EXPECT_EQ(2000U, data.size());
+    std::vector<int> expected(length);
+    std::iota(expected.begin(), expected.end(), 0);
+    EXPECT_EQ(expected, sink->data());
 }
 
 

@@ -58,6 +58,14 @@ if(ENABLE_CUDA AND ENABLE_EVK1029)
     set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} cuda_ddc_engine.h)
 endif()
 
+# Transport-agnostic raw-byte source for EVK1029_Signal_Source -- a recorded
+# file, or (Linux only: shm_open/mmap/futex) a live shared-memory stream from
+# EVK1029_CtrlApp. See EVK1029_shared_memory_input_spec(2).md.
+if(ENABLE_EVK1029)
+    set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} file_stream_reader.cc shared_memory_stream_reader.cc)
+    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} raw_stream_reader.h file_stream_reader.h shared_memory_stream_reader.h shm_ring.h)
+endif()
+
 set(SIGNAL_SOURCE_LIB_SOURCES
     rtl_tcp_commands.cc
     rtl_tcp_dongle_info.cc

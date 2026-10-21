@@ -20,7 +20,13 @@
  * other. The optional throttle sits between the source and that shared
  * port, so .enable_throttle_control works for any RF_channels value.
  * Set role + ".seconds_to_skip" to start reading at a given time into the
- * capture (converted to a byte position using the raw sampling frequency).
+ * capture (converted to a byte position using the raw sampling frequency);
+ * only meaningful in (and only applied in) file mode.
+ *
+ * Set role + ".input" to "file" (default) or "shared_memory" to read the raw
+ * EVK1029 byte stream live from EVK1029_CtrlApp instead of a recorded file --
+ * see raw_stream_reader.h. role + ".shm_name" names the ring (default
+ * "/evk1029_stream").
  *
  * With role + ".enable_freq_xlating" = true, Evk1029Source itself translates,
  * filters and decimates each band (role + ".band<n>_*" parameters, n <

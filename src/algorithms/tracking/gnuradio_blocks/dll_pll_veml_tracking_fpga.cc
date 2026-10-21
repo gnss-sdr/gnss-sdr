@@ -519,7 +519,7 @@ void dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk(const pmt::pmt_t &
                         {
                             DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
                             gr::thread::scoped_lock lock(d_setlock);
-                            d_carrier_lock_fail_counter = 200000;  // force loss-of-lock condition
+                            d_force_loss_of_lock = true;
                         }
                 }
         }
@@ -685,15 +685,17 @@ bool dll_pll_veml_tracking_fpga::cn0_and_tracking_lock_status(double coh_integra
                         }
                 }
         }
-    if (d_carrier_lock_fail_counter > d_trk_parameters.max_carrier_lock_fail || d_code_lock_fail_counter > d_trk_parameters.max_code_lock_fail)
+    if (d_force_loss_of_lock || d_carrier_lock_fail_counter > d_trk_parameters.max_carrier_lock_fail || d_code_lock_fail_counter > d_trk_parameters.max_code_lock_fail)
         {
             std::cout << "Loss of lock in channel " << d_channel << ", satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << " !\n";
             LOG(INFO) << "Loss of lock in channel " << d_channel << ", satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN)
                       << " (carrier_lock_fail_counter:" << d_carrier_lock_fail_counter
-                      << " code_lock_fail_counter : " << d_code_lock_fail_counter << ")";
+                      << " code_lock_fail_counter : " << d_code_lock_fail_counter
+                      << (d_force_loss_of_lock ? " forced" : "") << ")";
             this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
             d_carrier_lock_fail_counter = 0;
             d_code_lock_fail_counter = 0;
+            d_force_loss_of_lock = false;
             d_multicorrelator_fpga->unlock_channel();
             return false;
         }
@@ -1439,6 +1441,7 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 
             d_carrier_lock_fail_counter = 0;
             d_code_lock_fail_counter = 0;
+            d_force_loss_of_lock = false;
             d_rem_code_phase_samples = 0.0;
             d_rem_carr_phase_rad = 0.0;
             d_rem_code_phase_chips = 0.0;
@@ -1638,7 +1641,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         // fail-safe: check if the secondary code or bit synchronization has not succeeded in a limited time period
                         if (d_trk_parameters.bit_synchronization_time_limit_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
                             {
-                                d_carrier_lock_fail_counter = 300000;  // force loss-of-lock condition
+                                d_force_loss_of_lock = true;
                                 LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " tracking synchronization time limit reached in channel " << d_channel
                                           << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
                             }

@@ -247,6 +247,7 @@ private:
     bool d_Flag_PLL_180_deg_phase_locked;
     bool d_use_histogram_bit_sync;
     bool d_wait_for_bit_edge{false};
+    bool d_force_loss_of_lock{false};  // declare loss of lock at the next lock check, whatever the lock fail counters
 };
 
 

@@ -108,19 +108,20 @@ void name_current_thread(const std::string& name)
 }  // namespace
 
 
-Evk1029Source_sptr evk1029_make_source(const std::string& filename, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t bytes_to_skip,
+Evk1029Source_sptr evk1029_make_source(std::unique_ptr<RawStreamReader> reader, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency,
     const std::vector<Evk1029FreqXlatingBand>& freq_xlating_bands)
 {
-    return Evk1029Source_sptr(new Evk1029Source(filename, queue, sampling_frequency, bytes_to_skip, freq_xlating_bands));
+    return Evk1029Source_sptr(new Evk1029Source(std::move(reader), queue, sampling_frequency, freq_xlating_bands));
 }
 
 
-Evk1029Source::Evk1029Source(const std::string& filename, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t bytes_to_skip,
+Evk1029Source::Evk1029Source(std::unique_ptr<RawStreamReader> reader, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency,
     const std::vector<Evk1029FreqXlatingBand>& freq_xlating_bands)
     : gr::sync_decimator("evk1029_source",
           gr::io_signature::make(0, 0, 0),
           freq_xlating_bands.empty() ? gr::io_signature::make(1, 1, sizeof(int8_t)) : gr::io_signature::make(static_cast<int>(freq_xlating_bands.size()), static_cast<int>(freq_xlating_bands.size()), sizeof(gr_complex)),
           freq_xlating_bands.empty() ? 1 : freq_xlating_bands.front().decimation_factor),
+      reader_(std::move(reader)),
       queue_(queue),
       buffer_(kReadChunkBytes),
       buffer_valid_(0),
@@ -200,39 +201,6 @@ Evk1029Source::Evk1029Source(const std::string& filename, Concurrent_Queue<pmt::
     decoded_b_.resize(history_len_);
     converted_b_.resize(history_len_);
 
-    binary_input_file_.open(filename.c_str(), std::ios::in | std::ios::binary);
-    if (binary_input_file_.is_open())
-        {
-            std::cout << "EVK1029_Source: file '" << filename << "' successfully opened.\n";
-        }
-    else
-        {
-            std::cerr << "EVK1029_Source: failed to open file: " << filename << '\n';
-            exit(1);
-        }
-
-    if (bytes_to_skip > 0)
-        {
-            // Round up to the next 64-bit (8-byte) word boundary -- see this
-            // parameter's doc comment in the header for why.
-            constexpr uint64_t kWordBytes = 8;
-            const uint64_t aligned_offset = ((bytes_to_skip + kWordBytes - 1) / kWordBytes) * kWordBytes;
-
-            binary_input_file_.seekg(0, std::ios::end);
-            const auto file_size = static_cast<uint64_t>(binary_input_file_.tellg());
-            if (aligned_offset >= file_size)
-                {
-                    std::cerr << "EVK1029_Source: seconds_to_skip lands at byte " << aligned_offset
-                              << " (rounded up to a 64-bit word), at or beyond the end of '" << filename
-                              << "' (" << file_size << " bytes) -- nothing to read.\n";
-                    exit(1);
-                }
-
-            binary_input_file_.seekg(static_cast<std::streamoff>(aligned_offset), std::ios::beg);
-            std::cout << "EVK1029_Source: skipping the first " << aligned_offset << " bytes of the capture (requested "
-                      << bytes_to_skip << ", rounded up to a 64-bit word boundary)" << std::endl;
-        }
-
     // One persistent FIR worker per band: work()'s own calling thread only
     // dispatches and waits.
     for (std::size_t b = 0; b < bands_.size(); b++)
@@ -264,28 +232,18 @@ Evk1029Source::~Evk1029Source()
         }
     if (decode_worker_)
         {
+            // reader_->read() can block indefinitely on a live stream;
+            // wake it first so the join() below can actually complete.
+            if (reader_)
+                {
+                    reader_->request_stop();
+                }
             {
                 std::lock_guard<std::mutex> lock(decode_worker_->mutex);
                 decode_worker_->stop = true;
             }
             decode_worker_->cv.notify_all();
             decode_worker_->thread.join();
-        }
-
-    try
-        {
-            if (binary_input_file_.is_open())
-                {
-                    binary_input_file_.close();
-                }
-        }
-    catch (const std::ifstream::failure& e)
-        {
-            std::cerr << "EVK1029_Source: problem closing input file.\n";
-        }
-    catch (const std::exception& e)
-        {
-            std::cerr << e.what() << '\n';
         }
 }
 
@@ -297,8 +255,7 @@ std::size_t Evk1029Source::decode_into_buffer(std::size_t decoded_needed, std::v
         {
             if (buffer_pos_ >= buffer_valid_)
                 {
-                    binary_input_file_.read(reinterpret_cast<char*>(buffer_.data()), static_cast<std::streamsize>(buffer_.size()));
-                    buffer_valid_ = static_cast<std::size_t>(binary_input_file_.gcount());
+                    buffer_valid_ = reader_->read(buffer_.data(), buffer_.size());
                     buffer_pos_ = 0;
                     if (buffer_valid_ == 0)
                         {
@@ -453,8 +410,7 @@ int Evk1029Source::work(int noutput_items,
                 {
                     if (buffer_pos_ >= buffer_valid_)
                         {
-                            binary_input_file_.read(reinterpret_cast<char*>(buffer_.data()), static_cast<std::streamsize>(buffer_.size()));
-                            buffer_valid_ = static_cast<std::size_t>(binary_input_file_.gcount());
+                            buffer_valid_ = reader_->read(buffer_.data(), buffer_.size());
                             buffer_pos_ = 0;
                             if (buffer_valid_ == 0)
                                 {

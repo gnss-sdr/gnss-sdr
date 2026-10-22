@@ -91,6 +91,11 @@ All notable changes to GNSS-SDR will be documented in this file.
   week, so that channels are reported as soon as tracking locks. This also lets
   the secondary-band acquisition assistance start once the primary-band signal
   is locked, instead of after its time of week is decoded.
+- `EVK1029_Signal_Source` can now read directly from a live shared-memory stream
+  published by EVK1029_CtrlApp, instead of only a recorded capture file. Set
+  `EVK1029_Signal_Source.input=shared_memory` and, optionally,
+  `EVK1029_Signal_Source.shm_name` (default `/evk1029_stream`). Linux only.
+  Contributed by @joebre.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

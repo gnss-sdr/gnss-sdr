@@ -58,6 +58,16 @@ if(ENABLE_CUDA AND ENABLE_EVK1029)
     set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} cuda_ddc_engine.h)
 endif()
 
+# Recorded-file reader on all platforms; shm_ring.h's live reader is Linux only (needs shm_open/mmap/<linux/futex.h>).
+if(ENABLE_EVK1029)
+    set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} file_stream_reader.cc)
+    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} raw_stream_reader.h file_stream_reader.h)
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} shared_memory_stream_reader.cc)
+        set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} shared_memory_stream_reader.h shm_ring.h)
+    endif()
+endif()
+
 set(SIGNAL_SOURCE_LIB_SOURCES
     rtl_tcp_commands.cc
     rtl_tcp_dongle_info.cc
@@ -159,6 +169,14 @@ endif()
 set_property(TARGET signal_source_libs APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
+
+# shm_open()/shm_unlink() live in librt on glibc < 2.34, same as core_receiver.
+if(ENABLE_EVK1029 AND CMAKE_SYSTEM_NAME STREQUAL "Linux" AND NOT HAVE_SHM_OPEN)
+    find_library(LIBRT_LIBRARY rt)
+    if(LIBRT_LIBRARY)
+        target_link_libraries(signal_source_libs PRIVATE ${LIBRT_LIBRARY})
+    endif()
+endif()
 
 if(ENABLE_CUDA AND ENABLE_EVK1029)
     target_include_directories(signal_source_libs

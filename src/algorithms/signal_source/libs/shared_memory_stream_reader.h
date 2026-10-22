@@ -1,7 +1,7 @@
 /*!
  * \file shared_memory_stream_reader.h
  * \brief RawStreamReader backed by the live shared-memory ring EVK1029_CtrlApp
- * publishes (see shm_ring.h / EVK1029_shared_memory_input_spec(2).md).
+ * publishes (see shm_ring.h for the wire protocol).
  *
  * -----------------------------------------------------------------------------
  *
@@ -35,7 +35,8 @@ class SharedMemoryStreamReader : public RawStreamReader
 public:
     // Retries for up to connect_timeout_seconds if the producer (EVK1029_CtrlApp)
     // hasn't created the ring yet -- a late-starting producer is recoverable.
-    explicit SharedMemoryStreamReader(const std::string& shm_name, double connect_timeout_seconds = 30.0);
+    // stop_on_overflow: stop (as EOF) on a reported overflow instead of just logging it (see read()).
+    explicit SharedMemoryStreamReader(const std::string& shm_name, double connect_timeout_seconds = 30.0, bool stop_on_overflow = false);
     ~SharedMemoryStreamReader() override;
 
     std::size_t read(uint8_t* destination, std::size_t requested_bytes) override;
@@ -46,6 +47,10 @@ private:
     std::vector<uint8_t> pending_;  // the current SHM block, not yet fully consumed by read() calls
     std::size_t pending_pos_ = 0;
     std::atomic<bool> stop_requested_{false};
+    bool stop_on_overflow_ = false;
+
+    // overflow_event_count as of the last check; initialized post-attach, not 0 (see read()).
+    uint64_t last_seen_overflow_count_ = 0;
 };
 
 

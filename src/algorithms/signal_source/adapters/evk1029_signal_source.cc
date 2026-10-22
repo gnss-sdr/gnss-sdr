@@ -16,7 +16,10 @@
 #include "evk1029_signal_source.h"
 #include "configuration_interface.h"
 #include "file_stream_reader.h"
+#include "gnss_sdr_make_unique.h"
+#ifdef EVK1029_SHM_INPUT
 #include "shared_memory_stream_reader.h"
+#endif
 #include <gnuradio/filter/firdes.h>
 #include <cmath>
 #include <memory>
@@ -133,9 +136,16 @@ Evk1029SignalSource::Evk1029SignalSource(
     const bool shared_memory_input = (input_mode == "shared_memory"s);
     if (!shared_memory_input && input_mode != "file"s)
         {
-            LOG(WARNING) << role << ".input='" << input_mode << "' is not 'file' or 'shared_memory', defaulting to 'file'";
+            throw std::invalid_argument(role + ".input='" + input_mode + "' is not 'file' or 'shared_memory'");
         }
+#ifndef EVK1029_SHM_INPUT
+    if (shared_memory_input)
+        {
+            throw std::invalid_argument(role + ".input='shared_memory' requires Linux (shm_open/mmap/futex); this build was configured without it");
+        }
+#endif
     const std::string shm_name = configuration->property(role + ".shm_name"s, "/evk1029_stream"s);
+    const bool shm_stop_on_buffer_overflow = configuration->property(role + ".shm_stop_on_buffer_overflow"s, false);
 
     const double seconds_to_skip = configuration->property(role + ".seconds_to_skip"s, 0.0);
     uint64_t bytes_to_skip = 0;
@@ -159,6 +169,13 @@ Evk1029SignalSource::Evk1029SignalSource(
     if (rf_channels_ == 0)
         {
             rf_channels_ = 1;
+        }
+
+    if (shared_memory_input && enable_throttle_control_)
+        {
+            LOG(WARNING) << role << ": enable_throttle_control has no meaning in shared_memory mode (the live "
+                         << "producer already paces the data); ignoring it.";
+            enable_throttle_control_ = false;
         }
 
     DLOG(INFO) << "EVK1029 Signal Source: input=" << input_mode << " ("
@@ -222,7 +239,9 @@ Evk1029SignalSource::Evk1029SignalSource(
     std::unique_ptr<RawStreamReader> reader;
     if (shared_memory_input)
         {
-            reader = std::make_unique<SharedMemoryStreamReader>(shm_name);
+#ifdef EVK1029_SHM_INPUT
+            reader = std::make_unique<SharedMemoryStreamReader>(shm_name, 30.0, shm_stop_on_buffer_overflow);
+#endif
         }
     else
         {

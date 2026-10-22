@@ -26,7 +26,11 @@
  * Set role + ".input" to "file" (default) or "shared_memory" to read the raw
  * EVK1029 byte stream live from EVK1029_CtrlApp instead of a recorded file --
  * see raw_stream_reader.h. role + ".shm_name" names the ring (default
- * "/evk1029_stream").
+ * "/evk1029_stream"). A slow consumer blocks the producer (see shm_ring.h)
+ * rather than losing data there; a real overflow, reported by
+ * EVK1029_CtrlApp's IF_TO_AXIS flag as an event count, is logged by default
+ * or stops the stream if role + ".shm_stop_on_buffer_overflow" = true
+ * (default false).
  *
  * With role + ".enable_freq_xlating" = true, Evk1029Source itself translates,
  * filters and decimates each band (role + ".band<n>_*" parameters, n <

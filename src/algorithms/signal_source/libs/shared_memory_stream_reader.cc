@@ -22,9 +22,16 @@
 #include <iostream>
 #include <thread>
 
-SharedMemoryStreamReader::SharedMemoryStreamReader(const std::string& shm_name, double connect_timeout_seconds)
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
+
+SharedMemoryStreamReader::SharedMemoryStreamReader(const std::string& shm_name, double connect_timeout_seconds, bool stop_on_overflow)
+    : stop_on_overflow_(stop_on_overflow)
 {
-    std::cout << "EVK1029_Source: waiting for shared-memory producer on '" << shm_name << "' ...\n";
+    LOG(INFO) << "EVK1029_Source: waiting for shared-memory producer on '" << shm_name << "' ...";
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::duration<double>(connect_timeout_seconds);
     auto last_log = std::chrono::steady_clock::now();
     while (!shm_ring::Attach(ring_, shm_name))
@@ -40,13 +47,15 @@ SharedMemoryStreamReader::SharedMemoryStreamReader(const std::string& shm_name, 
             const auto now = std::chrono::steady_clock::now();
             if (std::chrono::duration<double>(now - last_log).count() >= 2.0)
                 {
-                    std::cout << "EVK1029_Source: still waiting for shared-memory producer on '" << shm_name << "' ...\n";
+                    LOG(WARNING) << "EVK1029_Source: still waiting for shared-memory producer on '" << shm_name << "' ...";
                     last_log = now;
                 }
         }
-    std::cout << "EVK1029_Source: attached to shared-memory stream '" << shm_name
+    LOG(INFO) << "EVK1029_Source: attached to shared-memory stream '" << shm_name
               << "' (block_size=" << ring_.header->block_size
-              << ", block_count=" << ring_.header->block_count << ")\n";
+              << ", block_count=" << ring_.header->block_count << ")";
+    // Only count overflows from here on -- one from before this attach isn't our discontinuity.
+    last_seen_overflow_count_ = ring_.header->overflow_event_count.load(std::memory_order_relaxed);
 }
 
 
@@ -63,7 +72,12 @@ SharedMemoryStreamReader::~SharedMemoryStreamReader()
 
 void SharedMemoryStreamReader::request_stop()
 {
+    // The flag alone won't wake a ReadBlock() already asleep in FUTEX_WAIT.
     stop_requested_.store(true, std::memory_order_release);
+    if (ring_.header)
+        {
+            shm_ring::FutexWakeAll(ring_.header->data_event);
+        }
 }
 
 
@@ -76,6 +90,22 @@ std::size_t SharedMemoryStreamReader::read(uint8_t* destination, std::size_t req
             if (!shm_ring::ReadBlock(ring_, pending_, &stop_requested_))
                 {
                     return 0;  // producer ended the stream, or we were asked to stop -- both mean EOF here
+                }
+
+            // No byte count is available (the hardware only has a sticky overflow bit), so this can't be zero-filled.
+            const uint64_t overflow_now = ring_.header->overflow_event_count.load(std::memory_order_relaxed);
+            if (overflow_now != last_seen_overflow_count_)
+                {
+                    const uint64_t new_events = overflow_now - last_seen_overflow_count_;
+                    last_seen_overflow_count_ = overflow_now;
+                    if (stop_on_overflow_)
+                        {
+                            LOG(ERROR) << "EVK1029_Source: " << new_events
+                                       << " IF_TO_AXIS hardware overflow(s) reported; stopping (shm_stop_on_buffer_overflow=true)";
+                            return 0;
+                        }
+                    LOG(WARNING) << "EVK1029_Source: " << new_events
+                                 << " IF_TO_AXIS hardware overflow(s) reported; sample count will jump in place";
                 }
         }
 

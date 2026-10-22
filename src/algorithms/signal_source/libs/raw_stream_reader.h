@@ -1,10 +1,10 @@
 /*!
  * \file raw_stream_reader.h
- * \brief Transport-agnostic source of raw EVK1029 bytes -- see
- * EVK1029_shared_memory_input_spec(2).md. Evk1029Source's existing OBA-
- * decode/FIR/CUDA pipeline reads through this interface instead of knowing
- * whether the bytes come from a recorded file (FileStreamReader) or a live
- * shared-memory stream (SharedMemoryStreamReader).
+ * \brief Transport-agnostic source of raw EVK1029 bytes. Evk1029Source's
+ * existing OBA-decode/FIR/CUDA pipeline reads through this interface instead
+ * of knowing whether the bytes come from a recorded file (FileStreamReader)
+ * or a live shared-memory stream (SharedMemoryStreamReader, Linux only --
+ * see shm_ring.h for its wire protocol).
  *
  * -----------------------------------------------------------------------------
  *

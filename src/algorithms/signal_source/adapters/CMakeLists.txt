@@ -226,6 +226,9 @@ target_link_libraries(signal_source_adapters
 
 if(ENABLE_EVK1029)
     target_link_libraries(signal_source_adapters PRIVATE Gnuradio::filter)
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        target_compile_definitions(signal_source_adapters PRIVATE -DEVK1029_SHM_INPUT=1)
+    endif()
 endif()
 
 if(ENABLE_GLOG_AND_GFLAGS)

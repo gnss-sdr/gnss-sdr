@@ -2,8 +2,7 @@
  * \file shm_ring.h
  * \brief Single-Producer/Single-Consumer shared-memory ring carrying the raw
  * EVK1029 byte stream between EVK1029_CtrlApp (producer) and this consumer
- * (SharedMemoryStreamReader) -- see EVK1029_shared_memory_input_spec(2).md
- * for the overall design this implements.
+ * (SharedMemoryStreamReader).
  *
  * Verbatim copy of EVK1029_CtrlApp's own evk1029/shm_ring.hpp: the two repos
  * build separately, but both mmap the same region, so the struct layout and
@@ -56,7 +55,7 @@ namespace shm_ring
 {
 
 constexpr uint32_t kMagic = 0x45563130u;         // "EV10"
-constexpr uint32_t kVersion = 2u;                // v2: added data_waiters/space_waiters (see file comment)
+constexpr uint32_t kVersion = 3u;                // v3: added overflow_event_count (see Header)
 constexpr std::size_t kHeaderRegionSize = 4096;  // one page; data blocks start right after
 
 // Producer-owned stream lifecycle (Header::state); a temporarily empty ring
@@ -88,6 +87,9 @@ struct alignas(64) Header
 
     std::atomic<uint64_t> bytes_written{0};
     std::atomic<uint64_t> bytes_read{0};
+
+    // Event count (not bytes -- see SharedMemoryStreamReader::read()) from EVK1029_CtrlApp's IF_TO_AXIS overflow flag.
+    std::atomic<uint64_t> overflow_event_count{0};
 };
 static_assert(sizeof(Header) <= kHeaderRegionSize, "Header grew past its reserved page");
 
@@ -112,7 +114,7 @@ inline uint8_t* BlockPtr(void* base, uint32_t index, uint32_t block_size)
            static_cast<std::size_t>(index) * static_cast<std::size_t>(block_size);
 }
 
-inline long RawFutex(std::atomic<uint32_t>* word, int op, uint32_t val)
+inline int64_t RawFutex(std::atomic<uint32_t>* word, int op, uint32_t val)
 {
     return syscall(SYS_futex, reinterpret_cast<uint32_t*>(word), op, val, nullptr, nullptr, 0);
 }
@@ -141,7 +143,9 @@ inline void WaitOn(std::atomic<uint32_t>& word, uint32_t expected, std::atomic<u
 inline void WakeIfWaiting(std::atomic<uint32_t>& word, const std::atomic<uint32_t>& waiters)
 {
     if (waiters.load(std::memory_order_acquire) > 0)
-        FutexWakeAll(word);
+        {
+            FutexWakeAll(word);
+        }
 }
 
 // ---- Producer (creator) side ----------------------------------------------
@@ -155,7 +159,9 @@ inline bool Create(MappedRing& ring, const std::string& name, uint32_t payload_b
     shm_unlink(name.c_str());  // best-effort: drop a stale segment left by a previous crash
     const int fd = shm_open(name.c_str(), O_CREAT | O_EXCL | O_RDWR, 0600);
     if (fd < 0)
-        return false;
+        {
+            return false;
+        }
 
     if (ftruncate(fd, static_cast<off_t>(total)) != 0)
         {
@@ -194,7 +200,9 @@ inline bool Attach(MappedRing& ring, const std::string& name)
 {
     const int fd = shm_open(name.c_str(), O_RDWR, 0600);
     if (fd < 0)
-        return false;
+        {
+            return false;
+        }
 
     struct stat st{};
     if (fstat(fd, &st) != 0 || st.st_size <= 0)
@@ -238,11 +246,17 @@ inline bool Attach(MappedRing& ring, const std::string& name)
 inline void Destroy(MappedRing& ring)
 {
     if (ring.base)
-        munmap(ring.base, ring.size);
+        {
+            munmap(ring.base, ring.size);
+        }
     if (ring.fd >= 0)
-        close(ring.fd);
+        {
+            close(ring.fd);
+        }
     if (ring.owner && !ring.name.empty())
-        shm_unlink(ring.name.c_str());
+        {
+            shm_unlink(ring.name.c_str());
+        }
     ring = MappedRing{};
 }
 
@@ -256,7 +270,7 @@ inline void SignalShutdown(MappedRing& ring, StreamState finalState)
     FutexWakeAll(h.data_event);
 }
 
-// Blocks while full; abortFlag lets a caller break out (e.g. a gone consumer).
+// Blocks while full; abortFlag lets a caller break out (e.g. a gone consumer). Unused on GNSS-SDR's side (consumer only).
 inline bool WriteBlock(MappedRing& ring, const uint8_t* data, std::size_t len, const std::atomic<bool>* abortFlag)
 {
     Header& h = *ring.header;
@@ -266,17 +280,23 @@ inline bool WriteBlock(MappedRing& ring, const uint8_t* data, std::size_t len, c
     for (;;)
         {
             if (abortFlag && abortFlag->load(std::memory_order_acquire))
-                return false;
+                {
+                    return false;
+                }
 
             const uint64_t w = h.write_seq.load(std::memory_order_relaxed);
             const uint64_t r = h.read_seq.load(std::memory_order_acquire);
             if (w - r < h.block_count)
-                break;
+                {
+                    break;
+                }
 
             const uint32_t expected = h.space_event.load(std::memory_order_acquire);
             // Re-check after snapshotting to close the lost-wakeup race.
             if (h.write_seq.load(std::memory_order_relaxed) - h.read_seq.load(std::memory_order_acquire) < h.block_count)
-                break;
+                {
+                    break;
+                }
             WaitOn(h.space_event, expected, h.space_waiters);
         }
 
@@ -294,7 +314,7 @@ inline bool WriteBlock(MappedRing& ring, const uint8_t* data, std::size_t len, c
 }
 
 // Blocks while empty and the stream hasn't ended; false once empty AND
-// Stopped/EndOfStream or abortFlag.
+// Stopped/EndOfStream/Error, on a corrupted length prefix, or on abortFlag.
 inline bool ReadBlock(MappedRing& ring, std::vector<uint8_t>& out, const std::atomic<bool>* abortFlag = nullptr)
 {
     Header& h = *ring.header;
@@ -303,17 +323,25 @@ inline bool ReadBlock(MappedRing& ring, std::vector<uint8_t>& out, const std::at
             const uint64_t w = h.write_seq.load(std::memory_order_acquire);
             const uint64_t r = h.read_seq.load(std::memory_order_relaxed);
             if (w != r)
-                break;
+                {
+                    break;
+                }
 
             const auto state = static_cast<StreamState>(h.state.load(std::memory_order_acquire));
-            if (state == StreamState::Stopped || state == StreamState::EndOfStream)
-                return false;
+            if (state == StreamState::Stopped || state == StreamState::EndOfStream || state == StreamState::Error)
+                {
+                    return false;
+                }
             if (abortFlag && abortFlag->load(std::memory_order_acquire))
-                return false;
+                {
+                    return false;
+                }
 
             const uint32_t expected = h.data_event.load(std::memory_order_acquire);
             if (h.write_seq.load(std::memory_order_acquire) != h.read_seq.load(std::memory_order_relaxed))
-                break;
+                {
+                    break;
+                }
             WaitOn(h.data_event, expected, h.data_waiters);
         }
 
@@ -322,6 +350,12 @@ inline bool ReadBlock(MappedRing& ring, std::vector<uint8_t>& out, const std::at
     const uint8_t* blk = BlockPtr(ring.base, index, h.block_size);
     uint64_t len = 0;
     std::memcpy(&len, blk, sizeof(uint64_t));
+    const uint64_t payloadCap = h.block_size - sizeof(uint64_t);
+    if (len > payloadCap)
+        {
+            // Corrupted/mismatched producer -- would read past the block.
+            return false;
+        }
     out.resize(static_cast<std::size_t>(len));
     std::memcpy(out.data(), blk + sizeof(uint64_t), static_cast<std::size_t>(len));
 

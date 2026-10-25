@@ -81,6 +81,15 @@ All notable changes to GNSS-SDR will be documented in this file.
   multiple of 24 bytes). Also, `seconds_to_skip` no longer lands in the middle
   of a frame when channels have bandwidth dividers that are not powers of two.
 
+### Improvements in Reliability:
+
+- The SUPL client now verifies the server certificate and DNS name or IP address
+  with OpenSSL and GnuTLS. It rejects assistance data that exceeds the
+  fixed-size acquisition, almanac, or ephemeris arrays, including across
+  multiple responses, and discards partial assistance on failure. SUPL framing
+  and malformed RRLP payload handling have also been hardened. Reported by Harry
+  Burgess of Countersight.
+
 ### Improvements in Usability:
 
 - Fixed the Monitor (`Monitor.enable_monitor=true`) for channels without a valid

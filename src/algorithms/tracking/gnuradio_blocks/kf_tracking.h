@@ -235,6 +235,7 @@ private:
     bool d_acc_carrier_phase_initialized;
     bool d_carrier_phase_discontinuity{true};  // pending report of a new carrier phase ambiguity
     bool d_enable_extended_integration;
+    bool d_force_loss_of_lock{false};  // declare loss of lock at the next lock check, whatever the lock fail counters
 };
 
 #endif  // GNSS_SDR_KF_TRACKING_H

@@ -653,7 +653,7 @@ void kf_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
                         {
                             DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
                             gr::thread::scoped_lock lock(d_setlock);
-                            d_carrier_lock_fail_counter = 200000;  // force loss-of-lock condition
+                            d_force_loss_of_lock = true;
                         }
                 }
         }
@@ -866,6 +866,7 @@ void kf_tracking::start_tracking()
 
     d_carrier_lock_fail_counter = 0;
     d_code_lock_fail_counter = 0;
+    d_force_loss_of_lock = false;
     d_rem_code_phase_samples = 0.0;
     d_rem_carr_phase_rad = 0.0;
     d_rem_code_phase_chips = 0.0;
@@ -1126,12 +1127,13 @@ bool kf_tracking::cn0_and_tracking_lock_status(double coh_integration_time_s)
                         }
                 }
         }
-    if (d_carrier_lock_fail_counter > d_trk_parameters.max_carrier_lock_fail || d_code_lock_fail_counter > d_trk_parameters.max_code_lock_fail)
+    if (d_force_loss_of_lock || d_carrier_lock_fail_counter > d_trk_parameters.max_carrier_lock_fail || d_code_lock_fail_counter > d_trk_parameters.max_code_lock_fail)
         {
             std::cout << "Loss of lock in channel " << d_channel << "!\n";
             LOG(INFO) << "Loss of lock in channel " << d_channel
                       << " (carrier_lock_fail_counter:" << d_carrier_lock_fail_counter
-                      << " code_lock_fail_counter : " << d_code_lock_fail_counter << ")";
+                      << " code_lock_fail_counter : " << d_code_lock_fail_counter
+                      << (d_force_loss_of_lock ? " forced" : "") << ")";
             if (d_det.enabled())
                 {
                     // raised by general_work(), without the lock held
@@ -1143,6 +1145,7 @@ bool kf_tracking::cn0_and_tracking_lock_status(double coh_integration_time_s)
                 }
             d_carrier_lock_fail_counter = 0;
             d_code_lock_fail_counter = 0;
+            d_force_loss_of_lock = false;
             return false;
         }
     return true;
@@ -1788,7 +1791,7 @@ int kf_tracking::process_input(int noutput_items __attribute__((unused)), gr_vec
     if (d_det.fault_due(d_sample_counter, d_channel) && d_state != 0)
         {
             DLOG(INFO) << "Telemetry fault applied in ch " << this->d_channel;
-            d_carrier_lock_fail_counter = 200000;  // force loss-of-lock condition
+            d_force_loss_of_lock = true;
         }
 
     if (d_pull_in_transitory == true)
@@ -1873,7 +1876,7 @@ int kf_tracking::process_input(int noutput_items __attribute__((unused)), gr_vec
                 // fail-safe: check if the secondary code or bit synchronization has not succeeded in a limited time period
                 if (d_trk_parameters.bit_synchronization_time_limit_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
                     {
-                        d_carrier_lock_fail_counter = 300000;  // force loss-of-lock condition
+                        d_force_loss_of_lock = true;
                         LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " tracking synchronization time limit reached in channel " << d_channel
                                   << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
                     }

@@ -93,14 +93,12 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Reliability:
 
-<<<<<<< HEAD
 - The SUPL client now verifies the server certificate and DNS name or IP address
   with OpenSSL and GnuTLS. It rejects assistance data that exceeds the
   fixed-size acquisition, almanac, or ephemeris arrays, including across
   multiple responses, and discards partial assistance on failure. SUPL framing
   and malformed RRLP payload handling have also been hardened. Reported by Harry
   Burgess of Countersight.
-=======
 - Fixed a heap buffer overflow in `Galileo_E1_PCPS_8ms_Ambiguous_Acquisition`.
   The block always correlates with two local replicas that span two code
   periods, but its coherent integration time defaulted to one code period (4
@@ -116,6 +114,14 @@ All notable changes to GNSS-SDR will be documented in this file.
   the worker thread that processes its dwells: a new search could start while
   the previous one was still being processed, and a stopped search could still
   report a result.
+- Fixed the fail-safes of the DLL/PLL VEML (CPU and FPGA) and KF tracking
+  implementations that force a loss of lock: the bit or secondary code
+  synchronization time limit (`Tracking_XX.bit_synchronization_time_limit_s`)
+  and the telemetry fault sent by the telemetry decoders when they stop finding
+  valid frames. They no longer dropped the channel when
+  `Tracking_XX.max_carrier_lock_fail` was set above 300000 or 200000,
+  respectively, so a false lock that the carrier lock test did not drop kept its
+  channel until the end of the run.
 
 ### Improvements in Reproducibility:
 
@@ -164,7 +170,6 @@ All notable changes to GNSS-SDR will be documented in this file.
   `GNSS-SDR.tow_to_trk=true`, the DLL/PLL VEML tracking blocks do not compute
   the TOW and week number, since the telemetry messages would reach them at a
   timing-dependent sample.
->>>>>>> deterministic
 
 ### Improvements in Usability:
 

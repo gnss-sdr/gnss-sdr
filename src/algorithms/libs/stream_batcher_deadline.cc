@@ -44,6 +44,10 @@ public:
         changed_.notify_one();
         worker_.join();
     }
+    Impl(const Impl&) = delete;
+    Impl& operator=(const Impl&) = delete;
+    Impl(Impl&&) = delete;
+    Impl& operator=(Impl&&) = delete;
 
     std::mutex mutex_;
     std::condition_variable changed_;

@@ -21,6 +21,7 @@
 #include "display.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
+#include "telemetry_message_stamp.h"
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
 #include "tow_to_trk.h"
@@ -134,7 +135,7 @@ void beidou_b2a_telemetry_decoder_gs::publish_navigation(double cn0_db_hz)
         {
             auto eph = std::make_shared<Beidou_Cnav1_Ephemeris>(d_nav.get_ephemeris());
             eph->PRN = d_satellite.get_PRN();
-            message_port_pub(pmt::mp("telemetry"), pmt::make_any(eph));
+            message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(eph), d_channel));
 #if __cplusplus == 201103L
             const int default_precision = std::cout.precision();
 #else
@@ -214,6 +215,8 @@ int beidou_b2a_telemetry_decoder_gs::general_work(
     const auto* in = reinterpret_cast<const Gnss_Synchro*>(input_items[0]);
     auto* out = reinterpret_cast<Gnss_Synchro*>(output_items[0]);
     Gnss_Synchro current = in[0];
+    // Navigation data sent to the PVT is stamped with this symbol
+    const TelemetryWorkScope symbol_stamp(this, current.Tracking_sample_counter);
     current.PRN = d_satellite.get_PRN();
     current.Flag_valid_word = false;
     bool frame_decoded = false;

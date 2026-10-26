@@ -69,6 +69,16 @@ All notable changes to GNSS-SDR will be documented in this file.
   built with `-DENABLE_CUDA=ON`, `band<n>_cuda=true` computes that band's filter
   on an NVIDIA GPU, falling back to the CPU if no device is available or a GPU
   call fails. Contributed by @joebre.
+- `ION_GSMS_Signal_Source` resolves the decoding parameters of each stream once
+  instead of for every chunk, which removes string comparisons and memory
+  allocations from the per-sample path, and decodes one-byte chunks through a
+  256-entry lookup table. The decoded samples are unchanged. A four-band 2-bit
+  capture at 53 Msps now runs about 15 times faster, as fast as with
+  `NTLab_File_Signal_Source`. The source also asks the scheduler for room for at
+  least one whole chunk cycle. Before, when it was offered less (for instance,
+  one item for complex streams, or fewer than the 20 samples of a 5-byte IFEN
+  chunk), it produced nothing and GNU Radio polled it again only after 250 ms,
+  which could stall a file replay for seconds.
 
 ### Improvements in Interoperability:
 
@@ -83,12 +93,78 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Reliability:
 
+<<<<<<< HEAD
 - The SUPL client now verifies the server certificate and DNS name or IP address
   with OpenSSL and GnuTLS. It rejects assistance data that exceeds the
   fixed-size acquisition, almanac, or ephemeris arrays, including across
   multiple responses, and discards partial assistance on failure. SUPL framing
   and malformed RRLP payload handling have also been hardened. Reported by Harry
   Burgess of Countersight.
+=======
+- Fixed a heap buffer overflow in `Galileo_E1_PCPS_8ms_Ambiguous_Acquisition`.
+  The block always correlates with two local replicas that span two code
+  periods, but its coherent integration time defaulted to one code period (4
+  ms), so every local code load read and wrote 4 ms of samples beyond the end of
+  its buffers. This corrupted the heap and randomly crashed the receiver at
+  startup, during processing, or at exit. The coherent integration time of this
+  implementation is now always 8 ms.
+- Fixed `GPS_L1_CA_PCPS_OpenCl_Acquisition` with more than one dwell
+  (`Acquisition_1C.max_dwells` greater than 1, or
+  `Acquisition_1C.bit_transition_flag=true`). The block read its second and
+  later dwells from input ports that do not exist, which crashed the receiver
+  right after the first search started. Also fixed races between the block and
+  the worker thread that processes its dwells: a new search could start while
+  the previous one was still being processed, and a stopped search could still
+  report a result.
+
+### Improvements in Reproducibility:
+
+- Added a deterministic processing mode for recorded signals
+  (`GNSS-SDR.deterministic=true`, default: `false`). Processing the same file
+  twice was not repeatable, even with `Acquisition_XX.blocking=true`: the
+  control thread started acquisitions, assigned satellites and applied channel
+  events at whatever sample each block had reached, and the observables and PVT
+  blocks applied each other's messages (navigation data, receiver clock
+  corrections) whenever they arrived. Thread timing then changed the
+  satellite-to-channel assignment, the first sample of every search and pull-in,
+  the epoch of the first fix, and the end of the outputs. In this mode, events
+  and messages carry the sample at which they happened, the control thread
+  handles channel events in sample order, and every action they cause takes
+  effect at a sample that depends only on those stamps. Channel actions take
+  effect a fixed lookahead later (`GNSS-SDR.deterministic_lookahead_ms`,
+  default: 100 ms), and a gate at the output of the Signal Conditioner keeps the
+  stream from running further ahead. Maintenance tasks run every
+  `GNSS-SDR.deterministic_tick_ms` (default: 100 ms) of signal instead of every
+  100 ms of wall-clock time, and the receiver stops only when the whole input
+  has gone through the PVT. Tracking, telemetry, observables and PVT dumps, and
+  RINEX, NMEA, KML, GPX and GeoJSON files, are then bit-identical from run to
+  run (except for the creation time written in the RINEX, KML and GPX headers),
+  whatever the CPU load, with `Acquisition_XX.blocking` set to either value, as
+  long as the machine, its FFTW wisdom (GNU Radio plans its FFTs with
+  `FFTW_MEASURE`) and its VOLK configuration do not change. The mode supports
+  all the acquisition implementations except the assisted and FPGA ones; the
+  DLL/PLL VEML, KF and Gaussian tracking implementations; and the signal sources
+  that read files, throttled or not (including LabSat, EVK1029 and ION GNSS SDR
+  metadata recordings). It refuses radio front ends and network or named-pipe
+  (`Fifo_Signal_Source`) inputs, whose samples could be lost while the stream is
+  held back, FPGA offloading, visibility-aware search, GNSS assistance, an
+  explicit `GNSS-SDR.assist_dual_frequency_acq=true`,
+  `GNSS-SDR.osnma_mode=strict`, Galileo HAS corrections
+  (`PVT.use_has_corrections=true`, the default with Galileo E6 channels) and
+  NTRIP corrections (`PVT.ntrip_client_enabled=true`), whose effects the PVT
+  applies when the messages arrive, Galileo E6 channels together with Galileo
+  E1, E5a or E5b channels, whose time of week reaches the E6 telemetry decoders
+  when it arrives, `Acquisition_XX.blocking_on_standby=true`, a lookahead that
+  is not positive, a control tick below 1 ms, and lookaheads that leave the
+  observables block no margin (220 ms with the default
+  `GNSS-SDR.observable_interval_ms`). Multiband configurations do not use
+  dual-frequency acquisition assistance in this mode, and the receiver does not
+  stop channels that track a satellite already tracked in another channel, since
+  both decisions depend on the live tracking status. With
+  `GNSS-SDR.tow_to_trk=true`, the DLL/PLL VEML tracking blocks do not compute
+  the TOW and week number, since the telemetry messages would reach them at a
+  timing-dependent sample.
+>>>>>>> deterministic
 
 ### Improvements in Usability:
 

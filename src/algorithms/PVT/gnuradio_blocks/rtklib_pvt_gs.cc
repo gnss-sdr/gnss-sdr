@@ -91,6 +91,7 @@
 #include <fstream>                      // for ofstream
 #include <iomanip>                      // for put_time, setprecision
 #include <iostream>                     // for operator<<
+#include <iterator>                     // for make_move_iterator
 #include <locale>                       // for locale
 #include <sstream>                      // for ostringstream
 #include <stdexcept>                    // for length_error
@@ -314,6 +315,9 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     this->message_port_register_out(pmt::mp("pvt_to_trk"));
     // Send PVT status to gnss_flowgraph
     this->message_port_register_out(pmt::mp("status"));
+
+    // Telemetry data and PVT messages carry sample stamps (GNSS-SDR.deterministic=true)
+    d_deterministic = DeterministicClock::instance().enabled();
 
     // GPS Ephemeris data message port in
     this->message_port_register_in(pmt::mp("telemetry"));
@@ -1502,6 +1506,20 @@ rtklib_pvt_gs::~rtklib_pvt_gs()
 
 void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
 {
+    if (d_deterministic && pmt::is_pair(msg) && pmt::is_pair(pmt::car(msg)))
+        {
+            // ((sample stamp . channel) . message), from a telemetry decoder
+            const pmt::pmt_t key = pmt::car(msg);
+            const uint64_t stamp = pmt::is_uint64(pmt::car(key)) ? pmt::to_uint64(pmt::car(key)) : NO_SAMPLE_STAMP;
+            if (stamp == NO_SAMPLE_STAMP)
+                {
+                    LOG(WARNING) << "Telemetry message without a sample stamp in deterministic processing";
+                    msg_handler_telemetry(pmt::cdr(msg));
+                    return;
+                }
+            d_det_telemetry.push_back(StampedTelemetry{stamp, pmt::to_long(pmt::cdr(key)), pmt::cdr(msg)});
+            return;
+        }
     apply_pending_navigation_clear();
     try
         {
@@ -2899,9 +2917,54 @@ void rtklib_pvt_gs::report_solution_outage()
 }
 
 
+void rtklib_pvt_gs::apply_deterministic_telemetry(uint64_t epoch_sample)
+{
+    // Due messages in stamp order, then channel order. The messages of a
+    // channel keep the order in which its decoder sent them.
+    const auto due_end = std::stable_partition(d_det_telemetry.begin(), d_det_telemetry.end(),
+        [epoch_sample](const StampedTelemetry& m) { return m.stamp <= epoch_sample; });
+    if (due_end == d_det_telemetry.begin())
+        {
+            return;
+        }
+    std::vector<StampedTelemetry> due(std::make_move_iterator(d_det_telemetry.begin()), std::make_move_iterator(due_end));
+    d_det_telemetry.erase(d_det_telemetry.begin(), due_end);
+    std::stable_sort(due.begin(), due.end(), [](const StampedTelemetry& a, const StampedTelemetry& b) {
+        return a.stamp != b.stamp ? a.stamp < b.stamp : a.channel < b.channel;
+    });
+    for (const auto& m : due)
+        {
+            msg_handler_telemetry(m.msg);
+        }
+}
+
+
+pmt::pmt_t rtklib_pvt_gs::stamp_observables_message(const pmt::pmt_t& msg) const
+{
+    if (!d_deterministic || d_det_epoch_sample == NO_SAMPLE_STAMP)
+        {
+            return msg;
+        }
+    // The observables block applies it at a fixed delay after this epoch
+    return pmt::cons(pmt::from_uint64(d_det_epoch_sample), msg);
+}
+
+
 int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
+    if (d_deterministic)
+        {
+            // GNU Radio dispatches messages only between calls: take the
+            // navigation messages queued since then, which may be due at
+            // the epochs of this call
+            const pmt::pmt_t port = pmt::mp("telemetry");
+            pmt::pmt_t msg;
+            while ((msg = delete_head_nowait(port)))
+                {
+                    msg_handler_telemetry(msg);
+                }
+        }
     apply_pending_navigation_clear();
     bool latest_pvt_updated = false;
     // *************** time tags ****************
@@ -2937,6 +3000,19 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
     this->get_tags_in_range(sensor_tags, 0, this->nitems_read(0), this->nitems_read(0) + noutput_items, d_sensor_data_aggregator->SENSOR_DATA_TAG);
     d_sensor_data_aggregator->update(sensor_tags);
 
+    // Sample stamps of the epochs, set by the observables block
+    std::vector<uint64_t> epoch_samples;
+    if (d_deterministic)
+        {
+            epoch_samples.assign(noutput_items, NO_SAMPLE_STAMP);
+            std::vector<gr::tag_t> epoch_tags;
+            this->get_tags_in_range(epoch_tags, 0, this->nitems_read(0), this->nitems_read(0) + noutput_items, pmt::mp("deterministic_epoch"));
+            for (const auto& tag : epoch_tags)
+                {
+                    epoch_samples[tag.offset - this->nitems_read(0)] = pmt::to_uint64(tag.value);
+                }
+        }
+
     for (int32_t epoch = 0; epoch < noutput_items; epoch++)
         {
             bool flag_display_pvt = false;
@@ -2947,6 +3023,15 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
             bool flag_write_RTCM_MSM_output = false;
             bool flag_write_RINEX_obs_output = false;
             d_local_counter_ms += static_cast<uint64_t>(d_observable_interval_ms);
+
+            if (d_deterministic)
+                {
+                    d_det_epoch_sample = epoch_samples[epoch];
+                    if (d_det_epoch_sample != NO_SAMPLE_STAMP)
+                        {
+                            apply_deterministic_telemetry(d_det_epoch_sample);
+                        }
+                }
 
             d_gnss_observables_map.clear();
             const auto** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);  // Get the input buffer pointer
@@ -3238,7 +3323,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                     // check if the message was just sent to not duplicate it while it is being applied
                                     if ((d_local_counter_ms - d_timestamp_rx_clock_offset_correction_msg_ms) > 1000)
                                         {
-                                            this->message_port_pub(pmt::mp("pvt_to_observables"), pmt::make_any(Rx_clock_offset_s));
+                                            this->message_port_pub(pmt::mp("pvt_to_observables"), stamp_observables_message(pmt::make_any(Rx_clock_offset_s)));
                                             d_timestamp_rx_clock_offset_correction_msg_ms = d_local_counter_ms;
                                             LOG(INFO) << "PVT: Sent clock offset correction to observables: " << Rx_clock_offset_s << "[s]";
                                         }
@@ -3333,7 +3418,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                     if (d_pvt_solver_errors_counter == 100)
                                         {
                                             int command = 1;
-                                            this->message_port_pub(pmt::mp("pvt_to_observables"), pmt::make_any(command));
+                                            this->message_port_pub(pmt::mp("pvt_to_observables"), stamp_observables_message(pmt::make_any(command)));
                                             LOG(INFO) << "PVT: Number of consecutive position solver error reached, Sent reset to observables.";
                                         }
                                 }

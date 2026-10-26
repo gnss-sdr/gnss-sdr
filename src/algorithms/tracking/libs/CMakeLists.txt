@@ -7,6 +7,7 @@
 
 set(TRACKING_LIB_SOURCES
     cpu_multicorrelator.cc
+    deterministic_tracking.cc
     cpu_multicorrelator_real_codes.cc
     cpu_multicorrelator_16sc.cc
     lock_detectors.cc
@@ -25,6 +26,7 @@ set(TRACKING_LIB_SOURCES
 
 set(TRACKING_LIB_HEADERS
     cpu_multicorrelator.h
+    deterministic_tracking.h
     cpu_multicorrelator_real_codes.h
     cpu_multicorrelator_16sc.h
     lock_detectors.h
@@ -93,6 +95,14 @@ target_link_libraries(tracking_libs
         gnss_sdr_flags
         Gnuradio::runtime
 )
+
+# buffer_reader moved out of buffer.h in newer GNU Radio releases.
+find_path(GNURADIO_BUFFER_READER_INCLUDE_DIR gnuradio/buffer_reader.h
+    HINTS ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+)
+if(GNURADIO_BUFFER_READER_INCLUDE_DIR)
+    target_compile_definitions(tracking_libs PRIVATE GNURADIO_HAS_BUFFER_READER_H=1)
+endif()
 
 if(ENABLE_GLOG_AND_GFLAGS)
     target_link_libraries(tracking_libs PRIVATE Glog::glog)

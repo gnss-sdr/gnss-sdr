@@ -60,6 +60,14 @@ public:
      */
     virtual bool is_real_time() const { return true; }
 
+    /*!
+     * \brief True if the source can wait for the blocks that read it without
+     * losing samples, as a replay of a recording, throttled or not. False if
+     * samples are lost when the receiver does not keep up, as with a radio
+     * front end.
+     */
+    virtual bool can_wait() const { return !is_real_time(); }
+
 protected:
     SignalSourceInterface()
     {

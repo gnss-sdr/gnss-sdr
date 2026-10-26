@@ -29,6 +29,7 @@ set(TELEMETRY_DECODER_GR_BLOCKS_HEADERS
     beidou_dnav_telemetry_decoder_gs.h
     beidou_b1c_telemetry_decoder_gs.h
     beidou_b2a_telemetry_decoder_gs.h
+    telemetry_message_stamp.h
 )
 
 list(SORT TELEMETRY_DECODER_GR_BLOCKS_HEADERS)

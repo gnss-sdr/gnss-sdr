@@ -17,6 +17,7 @@
 
 #include "gps_l2c_telemetry_decoder_gs.h"
 #include "GPS_L2C.h"  // for GPS_L2_CNAV_DATA_PAGE_BITS, GPS_L...
+#include "deterministic_clock.h"
 #include "display.h"
 #include "dump_logger_helper.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
@@ -25,6 +26,7 @@
 #include "gps_cnav_ephemeris.h"  // for Gps_CNAV_Ephemeris
 #include "gps_cnav_iono.h"       // for Gps_CNAV_Iono
 #include "gps_cnav_utc_model.h"  // for Gps_CNAV_Utc_Model
+#include "telemetry_message_stamp.h"
 #include "tlm_conf.h"
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
@@ -141,6 +143,8 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     // get pointers on in- and output gnss-synchro objects
     auto *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);            // Get the output buffer pointer
     const auto *in = reinterpret_cast<const Gnss_Synchro *>(input_items[0]);  // Get the input buffer pointer
+    // Navigation data sent to the PVT is stamped with this symbol
+    const TelemetryWorkScope symbol_stamp(this, in[0].Tracking_sample_counter);
 
     bool flag_new_cnav_frame = false;
     cnav_msg_t msg;
@@ -166,7 +170,15 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
                 {
                     const int message = 1;  // bad telemetry
-                    this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
+                    if (DeterministicClock::instance().enabled())
+                        {
+                            // Record before releasing progress; tracking reads this in its work call
+                            DeterministicClock::instance().report_telemetry_fault(d_channel, in[0].Tracking_sample_counter);
+                        }
+                    else
+                        {
+                            this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
+                        }
                     d_sent_tlm_failed_msg = true;
                 }
         }
@@ -208,7 +220,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 {
                     // get ephemeris object for this SV
                     const std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(d_CNAV_Message.get_ephemeris());
-                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                    this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                     const auto default_precision = std::cout.precision();
                     std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel
                               << ": ephemeris from satellite " << d_satellite
@@ -218,7 +230,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             if (d_CNAV_Message.have_new_eop() == true)
                 {
                     const std::shared_ptr<Gps_CNAV_Eop> tmp_obj = std::make_shared<Gps_CNAV_Eop>(d_CNAV_Message.get_eop());
-                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                    this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                     const auto default_precision = std::cout.precision();
                     std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel
                               << ": Earth orientation parameters from satellite " << d_satellite
@@ -228,7 +240,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             if (d_CNAV_Message.have_new_iono() == true)
                 {
                     const std::shared_ptr<Gps_CNAV_Iono> tmp_obj = std::make_shared<Gps_CNAV_Iono>(d_CNAV_Message.get_iono());
-                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                    this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                     const auto default_precision = std::cout.precision();
                     std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel
                               << ": iono model parameters from satellite " << d_satellite
@@ -239,7 +251,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             if (d_CNAV_Message.have_new_utc_model() == true)
                 {
                     const std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(d_CNAV_Message.get_utc_model());
-                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                    this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                     const auto default_precision = std::cout.precision();
                     std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel
                               << ": UTC model parameters from satellite " << d_satellite

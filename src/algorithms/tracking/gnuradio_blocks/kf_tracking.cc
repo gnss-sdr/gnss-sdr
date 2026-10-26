@@ -138,6 +138,9 @@ kf_tracking::kf_tracking(const Kf_Conf &conf_)
       d_dump_mat(d_trk_parameters.dump_mat && d_dump),
       d_acc_carrier_phase_initialized(false)
 {
+    // Inputs needed beyond the progress (GNSS-SDR.deterministic=true): see forecast()
+    d_det.require_span(2 * static_cast<uint64_t>(d_trk_parameters.vector_length));
+
 #if GNURADIO_GREATER_THAN_38
     this->set_relative_rate(1, static_cast<uint64_t>(d_trk_parameters.vector_length));
 #else
@@ -632,6 +635,15 @@ void kf_tracking::forecast(int noutput_items,
 
 void kf_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
 {
+    {
+        // Telemetry fault stamped with the sample of the offending symbol
+        // (GNSS-SDR.deterministic=true). It takes effect a lookahead later.
+        gr::thread::scoped_lock lock(d_setlock);
+        if (d_det.take_fault(msg, d_sample_counter, d_state != 0, d_channel))
+            {
+                return;
+            }
+    }
     try
         {
             if (pmt::any_ref(msg).type().hash_code() == d_int_type_hash_code)
@@ -681,6 +693,7 @@ void kf_tracking::start_tracking()
     d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
+    d_det.start(d_acq_sample_stamp);  // GNSS-SDR.deterministic=true
 
     d_carrier_doppler_kf_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = TWO_PI * d_carrier_doppler_kf_hz / d_trk_parameters.fs_in;
@@ -1119,7 +1132,15 @@ bool kf_tracking::cn0_and_tracking_lock_status(double coh_integration_time_s)
             LOG(INFO) << "Loss of lock in channel " << d_channel
                       << " (carrier_lock_fail_counter:" << d_carrier_lock_fail_counter
                       << " code_lock_fail_counter : " << d_code_lock_fail_counter << ")";
-            this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
+            if (d_det.enabled())
+                {
+                    // raised by general_work(), without the lock held
+                    d_det.raise_loss(d_sample_counter);
+                }
+            else
+                {
+                    this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
+                }
             d_carrier_lock_fail_counter = 0;
             d_code_lock_fail_counter = 0;
             return false;
@@ -1741,7 +1762,21 @@ void kf_tracking::stop_tracking()
 }
 
 
-int kf_tracking::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
+int kf_tracking::general_work(int noutput_items, gr_vector_int &ninput_items,
+    gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
+{
+    const int produced = process_input(noutput_items, ninput_items, input_items, output_items);
+    if (d_det.enabled())
+        {
+            // The event reaches the control queue before the progress passes its stamp
+            d_det.dispatch(d_channel, [this](int event) { this->message_port_pub(pmt::mp("events"), pmt::from_long(event)); });
+            d_det.publish(d_sample_counter);
+        }
+    return produced;
+}
+
+
+int kf_tracking::process_input(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     gr::thread::scoped_lock l(d_setlock);
@@ -1749,6 +1784,12 @@ int kf_tracking::general_work(int noutput_items __attribute__((unused)), gr_vect
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
     current_synchro_data.Flag_valid_symbol_output = false;
+
+    if (d_det.fault_due(d_sample_counter, d_channel) && d_state != 0)
+        {
+            DLOG(INFO) << "Telemetry fault applied in ch " << this->d_channel;
+            d_carrier_lock_fail_counter = 200000;  // force loss-of-lock condition
+        }
 
     if (d_pull_in_transitory == true)
         {
@@ -1770,6 +1811,15 @@ int kf_tracking::general_work(int noutput_items __attribute__((unused)), gr_vect
             }
         case 1:  // Pull-in
             {
+                const uint64_t det_skip = d_det.samples_to_pull_in(d_sample_counter, d_channel);
+                if (det_skip > 0)
+                    {
+                        // GNSS-SDR.deterministic=true: pull in at the stamped sample
+                        const auto n_consume = static_cast<int>(std::min<uint64_t>(det_skip, static_cast<uint64_t>(ninput_items[0])));
+                        d_sample_counter += static_cast<uint64_t>(n_consume);
+                        consume_each(n_consume);
+                        return 0;
+                    }
                 // Signal alignment (skip samples until the incoming signal is aligned with local replica)
                 const int64_t acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);
                 const double acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / d_trk_parameters.fs_in;
@@ -2050,6 +2100,7 @@ int kf_tracking::general_work(int noutput_items __attribute__((unused)), gr_vect
             // output that carries it
             current_synchro_data.Flag_carrier_phase_continuous = !d_carrier_phase_discontinuity;
             d_carrier_phase_discontinuity = false;
+            d_det.record_output(this->nitems_written(0), current_synchro_data.Tracking_sample_counter);
             *out[0] = std::move(current_synchro_data);
             return 1;
         }

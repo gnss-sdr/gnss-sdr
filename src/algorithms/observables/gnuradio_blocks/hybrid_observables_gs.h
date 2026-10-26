@@ -20,16 +20,20 @@
 #ifndef GNSS_SDR_HYBRID_OBSERVABLES_GS_H
 #define GNSS_SDR_HYBRID_OBSERVABLES_GS_H
 
+#include "deterministic_clock.h"
 #include "gnss_block_interface.h"
 #include "gnss_time.h"  // for timetags produced by Tracking
 #include "obs_conf.h"
 #include <boost/circular_buffer.hpp>  // for boost::circular_buffer
 #include <gnuradio/block.h>           // for block
 #include <gnuradio/types.h>           // for gr_vector_int
+#include <atomic>                     // for std::atomic
 #include <cstddef>                    // for size_t
 #include <cstdint>                    // for int32_t
+#include <deque>                      // for std::deque
 #include <fstream>                    // for std::ofstream
 #include <memory>                     // for std::shared, std:unique_ptr
+#include <mutex>                      // for std::mutex
 #include <queue>                      // for std::queue
 #include <string>                     // for std::string
 #include <typeinfo>                   // for typeid
@@ -192,6 +196,15 @@ private:
         bool& is_unique);
 
     void msg_handler_pvt_to_observables(const pmt::pmt_t& msg);
+    void apply_pvt_message(const pmt::pmt_t& msg);
+    void add_trk_obs(uint32_t n, const Gnss_Synchro& trk);
+    // GNSS-SDR.deterministic=true: channel data and PVT messages take effect
+    // at the epoch given by their sample stamps, not when they arrive
+    void prepare_deterministic_epoch(uint64_t rx_clock);
+    void finish_deterministic_epoch(bool produced);
+    uint64_t deterministic_pvt_delay_samples() const;
+    uint64_t deterministic_downstream_bound();
+    void deterministic_forecast(gr_vector_int& ninput_items_required);
     double compute_T_rx_s(const Gnss_Synchro& a) const;
     bool interp_trk_obs(Gnss_Synchro& interpolated_obs, uint32_t ch, uint64_t rx_clock) const;
     bool has_fresh_trk_data(uint32_t ch, uint64_t rx_clock) const;
@@ -254,6 +267,16 @@ private:
     bool d_always_output_gs;
     bool d_dump;
     bool d_dump_mat;
+
+    // GNSS-SDR.deterministic=true only (null producer otherwise)
+    std::shared_ptr<DeterministicProducer> d_det_producer;
+    std::vector<std::deque<Gnss_Synchro>> d_det_pending_trk;         // channel data not taken into account yet
+    std::deque<std::pair<uint64_t, pmt::pmt_t>> d_det_pvt_messages;  // (effective sample, message)
+    std::deque<std::pair<uint64_t, uint64_t>> d_det_output_stamps;   // (output item, epoch sample) not read by the PVT yet
+    std::mutex d_det_stamps_mutex;
+    std::atomic<uint64_t> d_det_next_epoch{0};  // sample of the next epoch to compute
+    uint64_t d_det_margin_samples{0};           // channel data beyond an epoch taken into account before computing it
+    uint64_t d_det_epoch_age_samples{0};        // age of the receiver clock sample when its epoch is computed
 };
 
 /** \} */

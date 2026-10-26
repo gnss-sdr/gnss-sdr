@@ -17,6 +17,7 @@ set(CORE_LIBS_SOURCES
     gnss_crypto.cc
     gnss_sdr_sample_counter.cc
     gnss_sdr_supl_client.cc
+    horizon_gate.cc
     ini.cc
     INIReader.cc
     nav_message_monitor.cc
@@ -36,6 +37,7 @@ set(CORE_LIBS_HEADERS
     gnss_crypto.h
     gnss_sdr_sample_counter.h
     gnss_sdr_supl_client.h
+    horizon_gate.h
     ini.h
     INIReader.h
     nav_message_monitor.h
@@ -108,6 +110,14 @@ target_link_libraries(core_libs
         $<$<BOOL:${NEED_BOOST_SYSTEM}>:Boost::system>
         Pugixml::pugixml
 )
+
+# buffer_reader moved out of buffer.h in newer GNU Radio releases.
+find_path(GNURADIO_BUFFER_READER_INCLUDE_DIR gnuradio/buffer_reader.h
+    HINTS ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+)
+if(GNURADIO_BUFFER_READER_INCLUDE_DIR)
+    target_compile_definitions(core_libs PRIVATE GNURADIO_HAS_BUFFER_READER_H=1)
+endif()
 
 if(ENABLE_GLOG_AND_GFLAGS)
     target_link_libraries(core_libs PRIVATE Gflags::gflags Glog::glog)

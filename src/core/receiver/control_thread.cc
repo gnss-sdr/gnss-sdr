@@ -25,6 +25,7 @@
 #include "control_thread.h"
 #include "concurrent_map.h"
 #include "configuration_interface.h"
+#include "deterministic_clock.h"
 #include "file_configuration.h"
 #include "galileo_almanac.h"
 #include "galileo_ephemeris.h"
@@ -63,7 +64,9 @@
 #include <limits>                                    // for numeric_limits
 #include <map>                                       // for map
 #include <pthread.h>                                 // for pthread_cancel
+#include <queue>                                     // for priority_queue
 #include <stdexcept>                                 // for invalid_argument
+#include <tuple>                                     // for tie
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -296,22 +299,7 @@ void ControlThread::event_dispatcher(bool &valid_event, pmt::pmt_t &msg)
                 }
             else if (msg_type_hash_code == command_event_type_hash_code_)
                 {
-                    const auto new_event = wht::any_cast<command_event_sptr>(pmt::any_ref(msg));
-                    DLOG(INFO) << "New command event rx from ch id: " << new_event->command_id
-                               << " what: " << new_event->event_type;
-
-                    if (new_event->command_id == 200)
-                        {
-                            apply_action(new_event->event_type);
-                        }
-                    else
-                        {
-                            if (new_event->command_id == 300)  // some TC commands require also actions from control_thread
-                                {
-                                    apply_action(new_event->event_type);
-                                }
-                            flowgraph_->apply_action(new_event->command_id, new_event->event_type);
-                        }
+                    dispatch_command_event(msg);
                 }
             else
                 {
@@ -336,6 +324,120 @@ void ControlThread::event_dispatcher(bool &valid_event, pmt::pmt_t &msg)
         {
             // perform non-priority tasks
             flowgraph_->acquisition_manager(0);  // start acquisition of untracked satellites
+        }
+}
+
+
+void ControlThread::dispatch_command_event(const pmt::pmt_t &msg)
+{
+    const auto new_event = wht::any_cast<command_event_sptr>(pmt::any_ref(msg));
+    DLOG(INFO) << "New command event rx from ch id: " << new_event->command_id
+               << " what: " << new_event->event_type;
+
+    if (new_event->command_id == 200)
+        {
+            apply_action(new_event->event_type);
+        }
+    else
+        {
+            if (new_event->command_id == 300)  // some TC commands require also actions from control_thread
+                {
+                    apply_action(new_event->event_type);
+                }
+            flowgraph_->apply_action(new_event->command_id, new_event->event_type);
+        }
+}
+
+
+void ControlThread::run_deterministic_loop()
+{
+    struct StampedEvent
+    {
+        uint64_t stamp;
+        int channel;
+        int type;
+    };
+    const auto later = [](const StampedEvent &a, const StampedEvent &b) {
+        return std::tie(a.stamp, a.channel, a.type) > std::tie(b.stamp, b.channel, b.type);
+    };
+    std::priority_queue<StampedEvent, std::vector<StampedEvent>, decltype(later)> pending(later);
+    auto &clock = DeterministicClock::instance();
+    const uint64_t tick = clock.tick();
+    const uint64_t lookahead = clock.lookahead();
+    // Releasing the stream in quanta spares scheduler wakeups. The lookahead
+    // covers 1.25 times the largest input span of a producer (see
+    // DeterministicClock::require_span()), so one quantum less still does.
+    const uint64_t quantum = std::max<uint64_t>(1, lookahead / 8);
+    uint64_t next_tick = tick;
+    uint64_t handled = 0;  // every event stamped below this has been handled
+    pmt::pmt_t msg;
+    bool have_msg = false;
+    while (flowgraph_->running() && !stop_)
+        {
+            // Read the progress first: events stamped below it are queued by now
+            const uint64_t progress = clock.min_progress();
+            while (have_msg || control_queue_->try_pop(msg))
+                {
+                    have_msg = false;
+                    processed_control_messages_++;
+                    const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
+                    if (msg_type_hash_code == channel_event_type_hash_code_)
+                        {
+                            const auto new_event = wht::any_cast<channel_event_sptr>(pmt::any_ref(msg));
+                            if (new_event->sample_stamp == NO_SAMPLE_STAMP || new_event->sample_stamp < handled)
+                                {
+                                    LOG(ERROR) << "Deterministic processing received event " << new_event->event_type << " from channel "
+                                               << new_event->channel_id << " stamped " << new_event->sample_stamp << ", below " << handled;
+                                }
+                            pending.push(StampedEvent{new_event->sample_stamp == NO_SAMPLE_STAMP ? handled : new_event->sample_stamp,
+                                new_event->channel_id, new_event->event_type});
+                        }
+                    else if (msg_type_hash_code == command_event_type_hash_code_)
+                        {
+                            dispatch_command_event(msg);
+                        }
+                    else
+                        {
+                            DLOG(INFO) << "Control Queue: unknown object type!\n";
+                        }
+                }
+            if (stop_ || progress == NO_SAMPLE_STAMP)
+                {
+                    break;
+                }
+            // Handle events and ticks stamped below the progress, in stamp
+            // order. An event goes before a tick with the same stamp.
+            while (!receiver_on_standby_)
+                {
+                    const uint64_t next_event = pending.empty() ? NO_SAMPLE_STAMP : pending.top().stamp;
+                    if (next_tick < progress && next_tick < next_event)
+                        {
+                            const DeterministicClock::Scope cause(next_tick);
+                            flowgraph_->acquisition_manager(0);  // start acquisition of untracked satellites
+                            next_tick += tick;
+                        }
+                    else if (next_event < progress)
+                        {
+                            const StampedEvent event = pending.top();
+                            pending.pop();
+                            DLOG(INFO) << "Deterministic event from ch id: " << event.channel << " what: " << event.type << " at sample " << event.stamp;
+                            const DeterministicClock::Scope cause(event.stamp);
+                            flowgraph_->apply_action(event.channel, event.type);
+                        }
+                    else
+                        {
+                            break;
+                        }
+                }
+            handled = progress;
+            const uint64_t horizon = progress + lookahead;
+            clock.advance_horizon(horizon - horizon % quantum);
+            if (flowgraph_->data_path_done())
+                {
+                    LOG(INFO) << "Deterministic processing: the PVT block has processed the whole input";
+                    break;
+                }
+            have_msg = control_queue_->timed_wait_and_pop(msg, 1);
         }
 }
 
@@ -415,8 +517,12 @@ int ControlThread::run()
         flowgraph_);
 #endif
     // Main loop to read and process the control messages
+    if (flowgraph_->deterministic())
+        {
+            run_deterministic_loop();
+        }
     pmt::pmt_t msg;
-    while (flowgraph_->running() && !stop_)
+    while (flowgraph_->running() && !stop_ && !flowgraph_->deterministic())
         {
             // read event messages, triggered by event signaling with a 100 ms timeout to perform low priority receiver management tasks
             bool valid_event = control_queue_->timed_wait_and_pop(msg, 100);

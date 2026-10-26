@@ -36,6 +36,7 @@
 #include "channel_fsm.h"
 #include "channel_interface.h"
 #include "configuration_interface.h"
+#include "deterministic_clock.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_frequencies.h"
@@ -43,7 +44,9 @@
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_synchro_monitor.h"
+#include "horizon_gate.h"
 #include "nav_message_monitor.h"
+#include "pcps_acquisition_adapter.h"
 #include "qzss.h"
 #include "signal_conditioner.h"
 #include "signal_source_interface.h"
@@ -52,6 +55,8 @@
 #include <boost/lexical_cast.hpp>    // for boost::lexical_cast
 #include <boost/tokenizer.hpp>       // for boost::tokenizer
 #include <gnuradio/basic_block.h>    // for basic_block
+#include <gnuradio/block.h>          // for block
+#include <gnuradio/block_detail.h>   // for block_detail
 #include <gnuradio/filter/firdes.h>  // for gr::filter::firdes
 #include <gnuradio/io_signature.h>   // for io_signature
 #include <gnuradio/top_block.h>      // for top_block, make_top_block
@@ -139,7 +144,8 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
       running_(false),
       multiband_(GNSSFlowgraph::is_multiband()),
       enable_osnma_rx_(false),
-      enable_e6_has_rx_(false)
+      enable_e6_has_rx_(false),
+      deterministic_(configuration_->property("GNSS-SDR.deterministic", false))
 {
     enable_fpga_offloading_ = configuration_->property("GNSS-SDR.enable_FPGA", false);
     // Skip the assisted acquisition of secondary signals reported as not
@@ -150,6 +156,16 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
     // Paced by the receiver time reported by the observables block every
     // 100 ms (or every epoch, if longer): higher rates act as that rate.
     acquisition_retry_min_interval_s_ = (acquisition_max_retry_rate_hz > 0.0) ? (1.0 / acquisition_max_retry_rate_hz) : 0.0;
+    if (deterministic_)
+        {
+            // Before the blocks are created, so that they register with it
+            const double fs = configuration_->property("GNSS-SDR.internal_fs_sps", 0.0);
+            const double lookahead_ms = configuration_->property("GNSS-SDR.deterministic_lookahead_ms", 100.0);
+            const double tick_ms = configuration_->property("GNSS-SDR.deterministic_tick_ms", 100.0);
+            DeterministicClock::instance().enable(fs,
+                static_cast<uint64_t>(std::max(0.0, std::ceil(lookahead_ms * fs / 1000.0))),
+                static_cast<uint64_t>(std::max(0.0, std::ceil(tick_ms * fs / 1000.0))));
+        }
     init();
 }
 
@@ -160,6 +176,10 @@ GNSSFlowgraph::~GNSSFlowgraph()
     if (connected_)
         {
             GNSSFlowgraph::disconnect();
+        }
+    if (deterministic_)
+        {
+            DeterministicClock::instance().disable();
         }
 }
 
@@ -433,6 +453,11 @@ void GNSSFlowgraph::start()
 
 void GNSSFlowgraph::stop()
 {
+    if (deterministic_)
+        {
+            // Do not hold the stream while the blocks stop
+            DeterministicClock::instance().open_horizon();
+        }
     for (const auto& chan : channels_)
         {
             chan->stop_channel();  // stop the acquisition or tracking operation
@@ -468,6 +493,13 @@ void GNSSFlowgraph::connect()
     if (connected_)
         {
             LOG(WARNING) << "flowgraph already connected";
+            return;
+        }
+
+    if (deterministic_ && !deterministic_configuration_is_supported())
+        {
+            std::cerr << "Unable to connect flowgraph\n";
+            print_help();
             return;
         }
 
@@ -1360,7 +1392,21 @@ void GNSSFlowgraph::connect_conditioner_output(size_t conditioner_id, StreamEndp
         }
     const std::string role = conditioner->role();
     const auto& plan = conditioner_plans_.at(conditioner_id);
-    if (plan.batch_items > 0)
+    if (deterministic_)
+        {
+            // Readers never see a sample beyond the deterministic horizon. The
+            // released samples that some reader has not consumed yet span at
+            // most one lookahead.
+            const size_t item_size = upstream.block->output_signature()->sizeof_stream_item(upstream.port);
+            const uint64_t lookahead = DeterministicClock::instance().lookahead();
+            // Same quantum as the horizon, see ControlThread::run_deterministic_loop()
+            const auto gate = make_horizon_gate(item_size, std::max<uint64_t>(1, lookahead / 8));
+            gate->set_min_output_buffer(0, static_cast<long>(std::max<uint64_t>(plan.min_buffer_items, lookahead + lookahead / 2)));  // NOLINT(google-runtime-int)
+            top_block_->connect(upstream.block, upstream.port, gate, 0);
+            upstream.block = gate;
+            upstream.port = 0;
+        }
+    else if (plan.batch_items > 0)
         {
             if (!conditioner_deadlines_)
                 {
@@ -2152,7 +2198,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                             if (signal_available)
                                 {
                                     channels_[current_channel]->set_signal(gnss_signal);
-                                    start_acquisition = is_primary_freq || assistance_available || !configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_);
+                                    start_acquisition = is_primary_freq || assistance_available || !assist_dual_frequency_acq();
                                 }
                             // else: nothing searchable for this signal now. Leave the channel
                             // idle instead of starting a doomed acquisition; acquisition_manager()
@@ -2171,7 +2217,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                             DLOG(INFO) << "Channel " << current_channel
                                        << " Starting acquisition " << channels_[current_channel]->get_signal().get_satellite()
                                        << ", Signal " << channels_[current_channel]->get_signal().get_signal_str();
-                            if (assistance_available == true && configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_))
+                            if (assistance_available == true && assist_dual_frequency_acq())
                                 {
                                     // Use the projected primary-band Doppler; the role flag can retain a full search.
                                     const std::string acq_role = block_factory::get_role_name(configuration_.get(), "Acquisition_", channels_[current_channel]->get_signal().get_signal_str(), static_cast<int>(current_channel));
@@ -2361,8 +2407,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             // Retry the same satellite unless it is in acquisition cooldown (a
             // signal that locks and drops at once would loop here).
             {
-                double receiver_time_s = 0.0;
-                channels_status_->get_current_status_pvt(&receiver_time_s);
+                const double receiver_time_s = control_receiver_time_s();
                 if (acq_channels_count_ < max_acq_channels_ && !InAcquisitionCooldown(gs, receiver_time_s))
                     {
                         // try to acquire the same satellite
@@ -2546,6 +2591,203 @@ void GNSSFlowgraph::MaybeUpdateVisibility()
 bool GNSSFlowgraph::visibility_aware_search_enabled() const
 {
     return satellite_visibility_ && satellite_visibility_->enabled();
+}
+
+
+bool GNSSFlowgraph::data_path_done() const
+{
+    if (!pvt_)
+        {
+            return false;
+        }
+    const auto* pvt_block = dynamic_cast<gr::block*>(pvt_->get_left_block().get());
+    if (pvt_block == nullptr)
+        {
+            return false;
+        }
+    const auto state = pvt_block->detail();
+    return state && state->done();
+}
+
+
+bool GNSSFlowgraph::deterministic_configuration_is_supported()
+{
+    // Features that read live receiver state, or depend on wall-clock time
+    std::vector<std::string> unsupported;
+    if (enable_fpga_offloading_)
+        {
+            unsupported.emplace_back("GNSS-SDR.enable_FPGA=true");
+        }
+    if (configuration_->property("GNSS-SDR.internal_fs_sps", 0.0) <= 0.0)
+        {
+            unsupported.emplace_back("an unset GNSS-SDR.internal_fs_sps");
+        }
+    if (configuration_->property("GNSS-SDR.use_acquisition_resampler", false))
+        {
+            // Only the PCPS acquisition converts its sample counts to the stream
+            // rate, which needs the decimation of the resampler that
+            // connect_signal_conditioners_to_channels() puts in front of it.
+            int other_acquisitions = 0;
+            std::set<std::string> mismatched_signals;
+            for (const auto& channel_interface : channels_)
+                {
+                    const auto channel = std::dynamic_pointer_cast<Channel>(channel_interface);
+                    if (!channel)
+                        {
+                            continue;
+                        }
+                    const auto signal = channel->get_signal().get_signal_str();
+                    const auto decimation = acquisition_decimation_for_signal(signal);
+                    const auto pcps = std::dynamic_pointer_cast<PcpsAcquisitionAdapter>(channel->acquisition());
+                    if (!pcps)
+                        {
+                            other_acquisitions += decimation > 1 ? 1 : 0;
+                        }
+                    else if (pcps->resampler_decimation() != decimation)
+                        {
+                            mismatched_signals.insert(signal);
+                        }
+                }
+            if (other_acquisitions > 0)
+                {
+                    unsupported.emplace_back("GNSS-SDR.use_acquisition_resampler=true in " + std::to_string(other_acquisitions) + " channel(s) with an acquisition implementation other than PCPS");
+                }
+            for (const auto& signal : mismatched_signals)
+                {
+                    unsupported.emplace_back("GNSS-SDR.use_acquisition_resampler=true for signal " + signal + ", whose acquisition expects a decimation other than that of its resampler");
+                }
+        }
+    if (visibility_aware_search_enabled())
+        {
+            unsupported.emplace_back("GNSS-SDR.enable_visibility_aware_search=true");
+        }
+    if (configuration_->property("GNSS-SDR.SUPL_gps_enabled", false) || configuration_->property("GNSS-SDR.AGNSS_XML_enabled", false))
+        {
+            unsupported.emplace_back("GNSS assistance (GNSS-SDR.SUPL_gps_enabled or GNSS-SDR.AGNSS_XML_enabled)");
+        }
+    if (configuration_->property("GNSS-SDR.assist_dual_frequency_acq", false))
+        {
+            unsupported.emplace_back("GNSS-SDR.assist_dual_frequency_acq=true");
+        }
+    // The PVT applies authentication results, HAS corrections and NTRIP
+    // corrections when they arrive, not at a stamped epoch
+    if (enable_osnma_rx_ && configuration_->property("GNSS-SDR.osnma_mode", std::string("")) == "strict")
+        {
+            unsupported.emplace_back("GNSS-SDR.osnma_mode=strict");
+        }
+    if (enable_e6_has_rx_ && configuration_->property("PVT.use_has_corrections", true))
+        {
+            unsupported.emplace_back("Galileo HAS corrections (PVT.use_has_corrections=true, the default with Galileo E6 channels)");
+        }
+    if (configuration_->property("PVT.ntrip_client_enabled", false))
+        {
+            unsupported.emplace_back("NTRIP corrections (PVT.ntrip_client_enabled=true)");
+        }
+    // The E6 telemetry decoders take the time of week of the E1, E5a or E5b
+    // decoders from the Galileo TOW map when it arrives
+    bool galileo_tow_source = false;
+    std::set<std::string> standby_roles;
+    for (int ch = 0; ch < channels_count_; ch++)
+        {
+            if (!channels_.at(ch))
+                {
+                    continue;
+                }
+            const auto signal = channels_.at(ch)->get_signal().get_signal_str();
+            galileo_tow_source = galileo_tow_source || is_galileo_tow_source(signal);
+            // An idle search that does not consume holds the stream back forever
+            const auto acq_role = block_factory::get_role_name(configuration_.get(), "Acquisition_", signal, ch);
+            if (configuration_->property(acq_role + ".blocking_on_standby", false))
+                {
+                    standby_roles.insert(acq_role);
+                }
+        }
+    if (enable_e6_has_rx_ && galileo_tow_source)
+        {
+            unsupported.emplace_back("Galileo E6 channels together with Galileo E1, E5a or E5b channels (Galileo TOW map)");
+        }
+    for (const auto& role : standby_roles)
+        {
+            unsupported.emplace_back(role + ".blocking_on_standby=true");
+        }
+    if (!(configuration_->property("GNSS-SDR.deterministic_lookahead_ms", 100.0) > 0.0))
+        {
+            unsupported.emplace_back("a GNSS-SDR.deterministic_lookahead_ms that is not positive");
+        }
+    if (!(configuration_->property("GNSS-SDR.deterministic_tick_ms", 100.0) >= 1.0))
+        {
+            // Maintenance would run at nearly every sample
+            unsupported.emplace_back("a GNSS-SDR.deterministic_tick_ms below 1 ms");
+        }
+    for (const auto& source : sig_source_)
+        {
+            if (source && !source->can_wait())
+                {
+                    // Holding the stream back would drop samples
+                    unsupported.emplace_back(source->role() + ": a real-time signal source");
+                }
+        }
+    const auto& clock = DeterministicClock::instance();
+    // The observables block computes an epoch one epoch age after its clock
+    // sample. By then, the stream must have released the channel data up to
+    // just after the epoch, so the lookahead must leave room for it.
+    const auto observable_interval_ms = configuration_->property("GNSS-SDR.observable_interval_ms", 20U);
+    const double lookahead_ms = 1000.0 * static_cast<double>(clock.lookahead()) / clock.sampling_rate();
+    const double max_lookahead_ms = static_cast<double>(observables_clock_delay_ms(observable_interval_ms)) - DETERMINISTIC_OBSERVABLES_MARGIN_MS - DETERMINISTIC_SYMBOL_MARGIN_MS;
+    if (clock.sampling_rate() > 0.0 && lookahead_ms > max_lookahead_ms)
+        {
+            unsupported.emplace_back("a lookahead of " + std::to_string(lookahead_ms) + " ms (GNSS-SDR.deterministic_lookahead_ms, or the input span of a channel) above " +
+                                     std::to_string(max_lookahead_ms) + " ms with GNSS-SDR.observable_interval_ms=" + std::to_string(observable_interval_ms));
+        }
+    const auto acquisitions = static_cast<int>(clock.count_producers(DeterministicProducer::Kind::Acquisition));
+    if (acquisitions != channels_count_)
+        {
+            unsupported.emplace_back(std::to_string(channels_count_ - acquisitions) + " channel(s) with an acquisition implementation that does not support it (assisted, FPGA)");
+        }
+    const auto trackings = static_cast<int>(clock.count_producers(DeterministicProducer::Kind::Tracking));
+    if (trackings != channels_count_)
+        {
+            unsupported.emplace_back(std::to_string(channels_count_ - trackings) + " channel(s) with a tracking implementation that does not support it (TCP connector, GPU, FPGA)");
+        }
+    if (!unsupported.empty())
+        {
+            help_hint_ += " * GNSS-SDR.deterministic=true does not support:\n";
+            for (const auto& item : unsupported)
+                {
+                    help_hint_ += "   - " + item + "\n";
+                }
+            return false;
+        }
+    if (configuration_->property("GNSS-SDR.telecommand_enabled", false))
+        {
+            LOG(WARNING) << "Telecommands are applied when they arrive: they make deterministic processing depend on their timing";
+        }
+    LOG(INFO) << "Deterministic processing: lookahead of " << clock.lookahead() << " samples ("
+              << 1000.0 * static_cast<double>(clock.lookahead()) / clock.sampling_rate() << " ms), control tick of "
+              << clock.tick() << " samples";
+    return true;
+}
+
+
+bool GNSSFlowgraph::assist_dual_frequency_acq() const
+{
+    // Deterministic processing does not read the live tracking status
+    return !deterministic_ && configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_);
+}
+
+
+double GNSSFlowgraph::control_receiver_time_s() const
+{
+    if (deterministic_)
+        {
+            // Time of the event being handled
+            const uint64_t stamp = DeterministicClock::scope_stamp();
+            const double fs = DeterministicClock::instance().sampling_rate();
+            return (stamp == NO_SAMPLE_STAMP || fs <= 0.0) ? 0.0 : static_cast<double>(stamp) / fs;
+        }
+    double receiver_time_s = 0.0;
+    channels_status_->get_current_status_pvt(&receiver_time_s);
+    return receiver_time_s;
 }
 
 
@@ -2941,7 +3183,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
     double cooldown_receiver_time_s = 0.0;
     if (acquisition_retry_min_interval_s_ > 0.0)
         {
-            channels_status_->get_current_status_pvt(&cooldown_receiver_time_s);
+            cooldown_receiver_time_s = control_receiver_time_s();
         }
 
     if (available_signals.empty())
@@ -2998,8 +3240,9 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
             break;
         }
 
-    const bool any_assist_configured = std::any_of(assist_signal_candidates.begin(), assist_signal_candidates.end(),
-        [&](const std::string& assist_signal) { return configuration_->property("Channels_" + assist_signal + ".count", 0) > 0; });
+    // Deterministic processing does not read the live tracking status
+    const bool any_assist_configured = !deterministic_ && std::any_of(assist_signal_candidates.begin(), assist_signal_candidates.end(),
+                                                              [&](const std::string& assist_signal) { return configuration_->property("Channels_" + assist_signal + ".count", 0) > 0; });
 
     // A BeiDou band without an enabled assisting band must acquire on its
     // own, even when another constellation makes the receiver multiband.
@@ -3220,7 +3463,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
     if (found_signal == false)
         {
             // With dual-frequency assistance required, wait for a tracked primary band.
-            if (!assist_signal_candidates.empty() && configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_))
+            if (!assist_signal_candidates.empty() && assist_dual_frequency_acq())
                 {
                     signal_available = false;
                     constexpr double kNoAssistLogThrottleS = 5.0;

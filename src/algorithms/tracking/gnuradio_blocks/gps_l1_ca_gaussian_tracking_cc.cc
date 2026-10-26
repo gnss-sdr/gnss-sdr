@@ -141,6 +141,9 @@ Gps_L1_Ca_Gaussian_Tracking_cc::Gps_L1_Ca_Gaussian_Tracking_cc(
       d_dump_filename(dump_filename)
 
 {
+    // Inputs needed beyond the progress (GNSS-SDR.deterministic=true): see forecast()
+    d_det.require_span(2 * static_cast<uint64_t>(d_vector_length));
+
     // Telemetry bit synchronization message port input
     this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     this->message_port_register_out(pmt::mp("events"));
@@ -253,6 +256,7 @@ void Gps_L1_Ca_Gaussian_Tracking_cc::start_tracking()
     d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
+    d_det.start(d_acq_sample_stamp);  // GNSS-SDR.deterministic=true
     d_acq_carrier_doppler_step_hz = static_cast<double>(d_acquisition_gnss_synchro->Acq_doppler_step);
 
     // Correct Kalman filter covariance according to acq doppler step size (3 sigma)
@@ -264,7 +268,9 @@ void Gps_L1_Ca_Gaussian_Tracking_cc::start_tracking()
 
     int64_t acq_trk_diff_samples;
     double acq_trk_diff_seconds;
-    acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);  // -d_vector_length;
+    // With GNSS-SDR.deterministic=true, the pull-in takes place at a stamped sample
+    const uint64_t pull_in_sample = d_det.enabled() ? d_det.pull_in_sample() : d_sample_counter;
+    acq_trk_diff_samples = static_cast<int64_t>(pull_in_sample) - static_cast<int64_t>(d_acq_sample_stamp);  // -d_vector_length;
     DLOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples;
     acq_trk_diff_seconds = static_cast<float>(acq_trk_diff_samples) / static_cast<float>(d_fs_in);
     // Doppler effect Fd = (C / (C + Vr)) * F
@@ -539,7 +545,21 @@ void Gps_L1_Ca_Gaussian_Tracking_cc::set_gnss_synchro(Gnss_Synchro *p_gnss_synch
 }
 
 
-int Gps_L1_Ca_Gaussian_Tracking_cc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+int Gps_L1_Ca_Gaussian_Tracking_cc::general_work(int noutput_items, gr_vector_int &ninput_items,
+    gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
+{
+    const int produced = process_input(noutput_items, ninput_items, input_items, output_items);
+    if (d_det.enabled())
+        {
+            // The event reaches the control queue before the progress passes its stamp
+            d_det.dispatch(d_channel, [this](int event) { this->message_port_pub(pmt::mp("events"), pmt::from_long(event)); });
+            d_det.publish(d_sample_counter);
+        }
+    return produced;
+}
+
+
+int Gps_L1_Ca_Gaussian_Tracking_cc::process_input(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // process vars
@@ -562,6 +582,15 @@ int Gps_L1_Ca_Gaussian_Tracking_cc::general_work(int noutput_items __attribute__
             // Receiver signal alignment
             if (d_pull_in == true)
                 {
+                    const uint64_t det_skip = d_det.samples_to_pull_in(d_sample_counter, d_channel);
+                    if (det_skip > 0)
+                        {
+                            // GNSS-SDR.deterministic=true: pull in at the stamped sample
+                            const auto n_consume = static_cast<int>(std::min<uint64_t>(det_skip, static_cast<uint64_t>(ninput_items[0])));
+                            d_sample_counter += static_cast<uint64_t>(n_consume);
+                            consume_each(n_consume);
+                            return 0;
+                        }
                     // Signal alignment (skip samples until the incoming signal is aligned with local replica)
                     uint64_t acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
                     double acq_trk_shif_correction_samples = static_cast<double>(d_current_prn_length_samples) - std::fmod(static_cast<double>(acq_to_trk_delay_samples), static_cast<double>(d_current_prn_length_samples));
@@ -579,6 +608,7 @@ int Gps_L1_Ca_Gaussian_Tracking_cc::general_work(int noutput_items __attribute__
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                     current_synchro_data.fs = d_fs_in;
                     current_synchro_data.correlation_length_ms = 1;
+                    d_det.record_output(this->nitems_written(0), d_sample_counter);
                     *out[0] = std::move(current_synchro_data);
                     // Kalman filter initialization reset
                     kf_P_x = kf_P_x_ini;
@@ -741,7 +771,15 @@ int Gps_L1_Ca_Gaussian_Tracking_cc::general_work(int noutput_items __attribute__
                         {
                             std::cout << "Loss of lock in channel " << d_channel << "!\n";
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
-                            this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
+                            if (d_det.enabled())
+                                {
+                                    // raised by general_work(), without the lock held
+                                    d_det.raise_loss(d_sample_counter);
+                                }
+                            else
+                                {
+                                    this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
+                                }
                             d_carrier_lock_fail_counter = 0;
                             d_enable_tracking = false;
                             loss_of_lock = true;
@@ -774,6 +812,7 @@ int Gps_L1_Ca_Gaussian_Tracking_cc::general_work(int noutput_items __attribute__
 
     // assign the GNU Radio block output data
     current_synchro_data.fs = d_fs_in;
+    d_det.record_output(this->nitems_written(0), current_synchro_data.Tracking_sample_counter);
     *out[0] = std::move(current_synchro_data);
 
     if (d_dump)

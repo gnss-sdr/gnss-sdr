@@ -44,7 +44,7 @@ _RECORD_FORMAT = '<' + (
     'f'    # prompt_I -> Prompt correlator, In-phase component.
     'f'    # prompt_Q -> Prompt correlator, Quadrature component.
     'Q'    # PRN_start_sample -> Sample counter from tracking start.
-    'f'    # acc_carrier_phase_rad -> Accumulated carrier phase, in rad.
+    'd'    # acc_carrier_phase_rad -> Accumulated carrier phase, in rad.
     'f'    # carrier_doppler_hz -> Doppler shift, in Hz.
     'f'    # carrier_doppler_rate_hz_s -> Doppler rate, in Hz/s.
     'f'    # code_freq_hz -> Code frequency, in chips/s.

@@ -45,7 +45,7 @@ public:
     uint64_t PRN_start_sample_count;
 
     // accumulated carrier phase
-    float acc_carrier_phase_rad;
+    double acc_carrier_phase_rad;
 
     // carrier and code frequency
     float carrier_doppler_hz;

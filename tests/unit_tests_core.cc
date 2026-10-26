@@ -42,10 +42,12 @@
 #include "unit-tests/signal-processing-blocks/libs/beidou_b2a_signal_replica_test.cc"
 #include "unit-tests/signal-processing-blocks/libs/item_type_helpers_test.cc"
 #include "unit-tests/signal-processing-blocks/libs/rtklib_lli_test.cc"
+#include "unit-tests/signal-processing-blocks/observables/deterministic_observables_test.cc"
 #include "unit-tests/signal-processing-blocks/resampler/direct_resampler_conditioner_cc_test.cc"
 #include "unit-tests/signal-processing-blocks/resampler/mmse_resampler_test.cc"
 #include "unit-tests/signal-processing-blocks/sources/gnss_sdr_valve_test.cc"
 #include "unit-tests/signal-processing-blocks/sources/unpack_2bit_samples_test.cc"
+#include "unit-tests/signal-processing-blocks/telemetry_decoder/deterministic_telemetry_fault_test.cc"
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/galileo_fnav_inav_decoder_test.cc"
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/sbas_l1_telemetry_decoder_test.cc"
 

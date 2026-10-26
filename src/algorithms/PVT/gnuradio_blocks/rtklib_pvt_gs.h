@@ -17,6 +17,7 @@
 #ifndef GNSS_SDR_RTKLIB_PVT_GS_H
 #define GNSS_SDR_RTKLIB_PVT_GS_H
 
+#include "deterministic_clock.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_synchro.h"
@@ -189,6 +190,17 @@ private:
     void log_source_timetag_info(double RX_time_ns, double TAG_time_ns);
 
     void msg_handler_telemetry(const pmt::pmt_t& msg);
+
+    // GNSS-SDR.deterministic=true: telemetry data stamped with the sample of
+    // the symbol that carried it, applied at the first epoch past that sample
+    struct StampedTelemetry
+    {
+        uint64_t stamp;
+        int64_t channel;
+        pmt::pmt_t msg;
+    };
+    void apply_deterministic_telemetry(uint64_t epoch_sample);
+    pmt::pmt_t stamp_observables_message(const pmt::pmt_t& msg) const;
 
     void msg_handler_has_data(const pmt::pmt_t& msg);
 
@@ -410,6 +422,10 @@ private:
     const bool d_use_has_corrections;
     const bool d_use_unhealthy_sats;
     const bool d_osnma_strict;
+
+    std::vector<StampedTelemetry> d_det_telemetry;
+    uint64_t d_det_epoch_sample{NO_SAMPLE_STAMP};
+    bool d_deterministic{false};
 };
 
 

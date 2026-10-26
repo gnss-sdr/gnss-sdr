@@ -26,6 +26,7 @@
 #endif
 
 #include "cpu_multicorrelator_real_codes.h"
+#include "deterministic_tracking.h"
 #include "exponential_smoother.h"
 #include "gnss_block_interface.h"
 #include "gnss_time.h"  // for timetags produced by File_Timestamp_Signal_Source
@@ -73,6 +74,8 @@ public:
     void forecast(int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
+    int process_input(int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
     friend kf_tracking_sptr kf_make_tracking(const Kf_Conf &conf_);
     explicit kf_tracking(const Kf_Conf &conf_);
 
@@ -197,6 +200,7 @@ private:
     double d_beta;
 
     uint64_t d_sample_counter;
+    DeterministicTracking d_det{this};  // GNSS-SDR.deterministic=true
     uint64_t d_acq_sample_stamp;
 
     float *d_prompt_data_shift;

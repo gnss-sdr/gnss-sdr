@@ -19,6 +19,7 @@
 
 #include "gnss_sdr_valve.h"
 #include "command_event.h"
+#include "deterministic_clock.h"
 #include <gnuradio/io_signature.h>  // for io_signature
 #include <algorithm>                // for min
 #include <cstring>                  // for memcpy
@@ -88,7 +89,11 @@ int Gnss_Sdr_Valve::work(int noutput_items,
             if (d_ncopied_items >= d_nitems)
                 {
                     LOG(INFO) << "Stopping receiver, " << d_ncopied_items << " samples processed";
-                    d_queue->push(pmt::make_any(command_event_make(200, 0)));
+                    if (!DeterministicClock::instance().enabled())
+                        {
+                            d_queue->push(pmt::make_any(command_event_make(200, 0)));
+                        }
+                    // else the receiver stops once the samples have gone through the flowgraph
                     if (d_stop_flowgraph)
                         {
                             return -1;  // Done!

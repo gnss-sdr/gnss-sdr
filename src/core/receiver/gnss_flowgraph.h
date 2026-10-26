@@ -200,6 +200,21 @@ public:
      */
     void stop_duplicated_satellite_channels();
 
+    /*!
+     * \brief Whether GNSS-SDR.deterministic=true: events are handled in
+     * sample-stamp order, see DeterministicClock.
+     */
+    bool deterministic() const
+    {
+        return deterministic_;
+    }
+
+    /*!
+     * \brief Whether the PVT block has processed its whole input, after the
+     * signal source has finished.
+     */
+    bool data_path_done() const;
+
 #if ENABLE_FPGA
     void start_acquisition_helper();
 
@@ -208,6 +223,9 @@ public:
 
 private:
     uint32_t doppler_bins_for_uncertainty(const std::string& acq_role, double uncertainty_hz) const;
+    bool deterministic_configuration_is_supported();
+    bool assist_dual_frequency_acq() const;
+    double control_receiver_time_s() const;
     void init();  // Populates the SV PRN list available for acquisition and tracking
     int connect_desktop_flowgraph();
 
@@ -386,6 +404,7 @@ private:
     bool enable_osnma_rx_;
     bool enable_e6_has_rx_;
     bool enable_secondary_signal_status_gating_;
+    bool deterministic_;
 };
 
 

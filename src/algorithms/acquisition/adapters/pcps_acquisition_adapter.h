@@ -129,6 +129,12 @@ public:
     void set_resampler_latency(uint32_t latency_samples) override;
 
     /*!
+     * \brief Decimation of the stream that the acquisition expects to read:
+     * the resampler ratio with GNSS-SDR.use_acquisition_resampler=true, else 1
+     */
+    unsigned int resampler_decimation() const;
+
+    /*!
      * \brief Sets local code
      */
     void set_local_code() override;

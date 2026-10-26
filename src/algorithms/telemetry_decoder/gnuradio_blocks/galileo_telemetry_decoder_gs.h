@@ -73,7 +73,7 @@ private:
 
     // Callers must hold d_setlock while resetting or checking decoder state.
     void reset_decoder_state();
-    void check_tlm_separation();
+    void check_tlm_separation(uint64_t sample_stamp);
 
     void msg_handler_read_galileo_tow_map(const pmt::pmt_t &msg);
     void clear_galileo_tow_map_entry();

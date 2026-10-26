@@ -17,7 +17,6 @@
 
 #include "ion_gsms_chunk_data.h"
 #include <algorithm>
-#include <array>
 #include <cstring>
 #include <limits>
 #include <stdexcept>
@@ -29,10 +28,51 @@
 #endif
 
 
+IONGSMSChunkData::stream_metadata_t::stream_metadata_t(
+    const GnssMetadata::Lump& lump,
+    const GnssMetadata::IonStream& stream,
+    GnssMetadata::StreamEncoding stream_encoding_,
+    int output_index_,
+    std::size_t output_item_offset_,
+    std::size_t output_item_size_)
+    : stream_encoding(stream_encoding_),
+      format(stream.Format()),
+      alignment(stream.Alignment()),
+      output_index(output_index_),
+      output_item_offset(output_item_offset_),
+      output_item_size(output_item_size_),
+      packed_bits(stream.Packedbits())
+{
+    if (output_index == -1)
+        {
+            // Skipped streams only need their packed size
+            return;
+        }
+
+    padding_bits = stream_padding_bits(stream);
+    if (padding_bits > 0 && alignment == GnssMetadata::IonStream::Undefined)
+        {
+            throw std::runtime_error("ION_GSMS_Signal_Source stream has packed padding bits but no alignment metadata");
+        }
+    if (stream.Quantization() == 0 || stream.Quantization() > 64)
+        {
+            throw std::runtime_error("ION_GSMS_Signal_Source unsupported sample quantization");
+        }
+    rate_factor = stream.RateFactor();
+    sample_bitsize = static_cast<uint8_t>(stream.Quantization());
+    output_item_bits = stream_output_item_bits(stream);
+    is_complex = stream_is_complex(format);
+    reversed = samples_are_reversed(stream.Shift(), lump.Shift());
+}
+
+
 IONGSMSChunkData::IONGSMSChunkData(const GnssMetadata::Chunk& chunk, const std::vector<std::string>& stream_ids, std::size_t output_stream_offset)
     : chunk_(chunk),
       sizeword_(chunk_.SizeWord()),
       countwords_(chunk_.CountWords()),
+      head_padding_(chunk_.Padding() == GnssMetadata::Chunk::Head),
+      read_lsb_first_(chunk_.Shift() == GnssMetadata::Chunk::Right),
+      swap_endianness_(source_endianness_is_different(chunk_.Endian())),
       output_stream_offset_(output_stream_offset)
 {
     // Instantiate the Allocator functor
@@ -109,6 +149,63 @@ IONGSMSChunkData::IONGSMSChunkData(const GnssMetadata::Chunk& chunk, const std::
         }
 
     padding_bitsize_ = total_bitsize - pattern_bitsize;
+
+    build_byte_lut();
+}
+
+
+void IONGSMSChunkData::build_byte_lut()
+{
+    if (sizeword_ * countwords_ != 1 || output_stream_indices_.empty())
+        {
+            return;
+        }
+
+    byte_lut_output_offset_.assign(output_stream_count_, 0);
+    byte_lut_row_size_ = 0;
+    for (std::size_t i = 0; i < output_stream_count_; ++i)
+        {
+            if (output_stream_item_rate_[i] > 0 && output_stream_item_size_[i] != sizeof(int8_t))
+                {
+                    byte_lut_output_offset_.clear();
+                    byte_lut_row_size_ = 0;
+                    return;
+                }
+            byte_lut_output_offset_[i] = byte_lut_row_size_;
+            byte_lut_row_size_ += output_stream_item_rate_[i];
+        }
+
+    // Run the generic decoder once for every possible chunk value
+    byte_lut_.assign(256 * byte_lut_row_size_, 0);
+    gr_vector_void_star outputs(output_stream_offset_ + output_stream_count_, nullptr);
+    std::vector<int> output_items(outputs.size(), 0);
+    auto* chunk_byte = static_cast<uint8_t*>(buffer_);
+    for (std::size_t value = 0; value < 256; ++value)
+        {
+            *chunk_byte = static_cast<uint8_t>(value);
+            for (std::size_t i = 0; i < output_stream_count_; ++i)
+                {
+                    // An output without items in this chunk may point one past the end
+                    outputs[output_stream_offset_ + i] = byte_lut_.data() + value * byte_lut_row_size_ + byte_lut_output_offset_[i];
+                }
+            unpack_words<uint8_t>(outputs, output_items);
+        }
+}
+
+
+void IONGSMSChunkData::write_from_byte_lut(gr_vector_void_star& outputs, std::vector<int>& output_items) const
+{
+    const int8_t* row = byte_lut_.data() + static_cast<const uint8_t*>(buffer_)[0] * byte_lut_row_size_;
+    for (int output_index : output_stream_indices_)
+        {
+            const auto relative_output_index = static_cast<std::size_t>(output_index) - output_stream_offset_;
+            const auto item_count = output_stream_item_rate_[relative_output_index];
+            const int8_t* items = row + byte_lut_output_offset_[relative_output_index];
+            auto* out = static_cast<int8_t*>(outputs[output_index]);
+            std::copy(items, items + item_count, out);
+            outputs[output_index] = out + item_count;
+            output_items[output_index] += static_cast<int>(item_count);
+        }
 }
 
 
@@ -167,7 +264,6 @@ bool IONGSMSChunkData::source_endianness_is_different(const GnssMetadata::Chunk:
 
 std::size_t IONGSMSChunkData::read_from_buffer(uint8_t* buffer, std::size_t offset)
 {
-    memset(buffer_, 0, sizeword_ * countwords_);
     memcpy(buffer_, &buffer[offset], sizeword_ * countwords_);
     return sizeword_ * countwords_;
 }
@@ -175,6 +271,12 @@ std::size_t IONGSMSChunkData::read_from_buffer(uint8_t* buffer, std::size_t offs
 
 void IONGSMSChunkData::write_to_output(gr_vector_void_star& outputs, std::vector<int>& output_items)
 {
+    if (!byte_lut_.empty())
+        {
+            write_from_byte_lut(outputs, output_items);
+            return;
+        }
+
     switch (sizeword_)
         {
         case 1:
@@ -218,7 +320,7 @@ template <typename WT>
 void IONGSMSChunkData::unpack_words(gr_vector_void_star& outputs, std::vector<int>& output_items)
 {
     WT* data = static_cast<WT*>(buffer_);
-    if (source_endianness_is_different(chunk_.Endian()))
+    if (swap_endianness_)
         {
             for (std::size_t i = 0; i < countwords_; ++i)
                 {
@@ -226,37 +328,36 @@ void IONGSMSChunkData::unpack_words(gr_vector_void_star& outputs, std::vector<in
                 }
         }
 
-    IONGSMSChunkUnpackingCtx<WT> ctx{data, countwords_, chunk_.Shift() == GnssMetadata::Chunk::Right};
+    IONGSMSChunkUnpackingCtx<WT> ctx{data, countwords_, read_lsb_first_};
 
     // Head padding
-    if (padding_bitsize_ > 0 && chunk_.Padding() == GnssMetadata::Chunk::Head)
+    if (padding_bitsize_ > 0 && head_padding_)
         {
             ctx.shift_padding(padding_bitsize_);
         }
 
-    const auto initial_output_items = output_items;
-
     // Samples
-    for (const auto& [lump, stream, encoding, output_index, output_item_offset, output_item_size] : streams_)
+    for (const auto& stream : streams_)
         {
-            if (output_index == -1)
+            if (stream.output_index == -1)
                 {
                     // skip stream
-                    ctx.shift_padding(stream.Packedbits());
+                    ctx.shift_padding(stream.packed_bits);
                 }
             else
                 {
-                    void* output = static_cast<char*>(outputs[output_index]) +
-                                   output_item_offset * output_item_size;
-                    output_items[output_index] += write_stream_samples(ctx, lump, stream, encoding, &output);
+                    void* output = static_cast<char*>(outputs[stream.output_index]) +
+                                   stream.output_item_offset * stream.output_item_size;
+                    output_items[stream.output_index] += write_stream_samples(ctx, stream, &output);
                 }
         }
 
+    // Each chunk writes exactly output_stream_item_rate_ items to each of its outputs
     for (int output_index : output_stream_indices_)
         {
             const auto relative_output_index = static_cast<std::size_t>(output_index) - output_stream_offset_;
-            const auto items_written = output_items[output_index] - initial_output_items[output_index];
-            outputs[output_index] = static_cast<char*>(outputs[output_index]) + items_written * output_stream_item_size_[relative_output_index];
+            outputs[output_index] = static_cast<char*>(outputs[output_index]) +
+                                    output_stream_item_rate_[relative_output_index] * output_stream_item_size_[relative_output_index];
         }
 }
 
@@ -264,51 +365,42 @@ void IONGSMSChunkData::unpack_words(gr_vector_void_star& outputs, std::vector<in
 template <typename WT>
 std::size_t IONGSMSChunkData::write_stream_samples(
     IONGSMSChunkUnpackingCtx<WT>& ctx,
-    const GnssMetadata::Lump& lump,
-    const GnssMetadata::IonStream& stream,
-    const GnssMetadata::StreamEncoding stream_encoding,
+    const stream_metadata_t& stream,
     void** out)
 {
-    const std::size_t padding_bits = stream_padding_bits(stream);
-    if (padding_bits > 0 && stream.Alignment() == GnssMetadata::IonStream::Undefined)
+    if (stream.padding_bits > 0 && stream.alignment == GnssMetadata::IonStream::Right)
         {
-            throw std::runtime_error("ION_GSMS_Signal_Source stream has packed padding bits but no alignment metadata");
-        }
-
-    if (padding_bits > 0 && stream.Alignment() == GnssMetadata::IonStream::Right)
-        {
-            ctx.shift_padding(padding_bits);
+            ctx.shift_padding(stream.padding_bits);
         }
 
     std::size_t items_written = 0;
-    if (stream_encoding == GnssMetadata::StreamEncodings::FP)
+    if (stream.stream_encoding == GnssMetadata::StreamEncodings::FP)
         {
-            items_written = write_fp32_samples(ctx, lump.Shift(), stream, out);
+            items_written = write_fp32_samples(ctx, stream, out);
         }
     else
         {
-            const auto sample_bitsize = stream_output_item_bits(stream);
-            if (sample_bitsize <= 8)
+            if (stream.output_item_bits <= 8)
                 {
-                    items_written = write_n_samples<WT, int8_t>(ctx, lump.Shift(), stream, stream_encoding, reinterpret_cast<int8_t**>(out));
+                    items_written = write_n_samples<WT, int8_t>(ctx, stream, reinterpret_cast<int8_t**>(out));
                 }
-            else if (sample_bitsize <= 16)
+            else if (stream.output_item_bits <= 16)
                 {
-                    items_written = write_n_samples<WT, int16_t>(ctx, lump.Shift(), stream, stream_encoding, reinterpret_cast<int16_t**>(out));
+                    items_written = write_n_samples<WT, int16_t>(ctx, stream, reinterpret_cast<int16_t**>(out));
                 }
-            else if (sample_bitsize <= 32)
+            else if (stream.output_item_bits <= 32)
                 {
-                    items_written = write_n_samples<WT, int32_t>(ctx, lump.Shift(), stream, stream_encoding, reinterpret_cast<int32_t**>(out));
+                    items_written = write_n_samples<WT, int32_t>(ctx, stream, reinterpret_cast<int32_t**>(out));
                 }
-            else if (sample_bitsize <= 64)
+            else if (stream.output_item_bits <= 64)
                 {
-                    items_written = write_n_samples<WT, int64_t>(ctx, lump.Shift(), stream, stream_encoding, reinterpret_cast<int64_t**>(out));
+                    items_written = write_n_samples<WT, int64_t>(ctx, stream, reinterpret_cast<int64_t**>(out));
                 }
         }
 
-    if (padding_bits > 0 && stream.Alignment() == GnssMetadata::IonStream::Left)
+    if (stream.padding_bits > 0 && stream.alignment == GnssMetadata::IonStream::Left)
         {
-            ctx.shift_padding(padding_bits);
+            ctx.shift_padding(stream.padding_bits);
         }
 
     return items_written;
@@ -318,29 +410,26 @@ std::size_t IONGSMSChunkData::write_stream_samples(
 template <typename WT, typename OT>
 std::size_t IONGSMSChunkData::write_n_samples(
     IONGSMSChunkUnpackingCtx<WT>& ctx,
-    GnssMetadata::Lump::LumpShift lump_shift,
-    const GnssMetadata::IonStream& stream,
-    GnssMetadata::StreamEncoding stream_encoding,
+    const stream_metadata_t& stream,
     OT** out)
 {
-    const auto sample_bitsize = static_cast<uint8_t>(stream.Quantization());
-    const auto items_per_sample = stream_is_complex(stream.Format()) ? 2U : 1U;
-    std::vector<std::array<OT, 2>> samples;
-    samples.reserve(stream.RateFactor());
+    const std::size_t sample_count = stream.rate_factor;
+    const std::size_t items_per_sample = stream.is_complex ? 2U : 1U;
+    auto* sample_out = static_cast<OT*>(*out);
 
-    for (std::size_t i = 0; i < stream.RateFactor(); ++i)
+    // Samples are read in packing order and written straight to their chronological position
+    for (std::size_t i = 0; i < sample_count; ++i)
         {
-            std::array<OT, 2> sample{};
-            const auto first = decode_sample<OT>(sample_bitsize, ctx.read_bits(sample_bitsize), stream_encoding);
-            if (!stream_is_complex(stream.Format()))
+            OT* sample = sample_out + (stream.reversed ? sample_count - 1 - i : i) * items_per_sample;
+            const auto first = decode_sample<OT>(stream.sample_bitsize, ctx.read_bits(stream.sample_bitsize), stream.stream_encoding);
+            if (!stream.is_complex)
                 {
-                    sample[0] = (stream.Format() == GnssMetadata::IonStream::IFn) ? static_cast<OT>(-first) : first;
-                    samples.push_back(sample);
+                    sample[0] = (stream.format == GnssMetadata::IonStream::IFn) ? static_cast<OT>(-first) : first;
                     continue;
                 }
 
-            const auto second = decode_sample<OT>(sample_bitsize, ctx.read_bits(sample_bitsize), stream_encoding);
-            switch (stream.Format())
+            const auto second = decode_sample<OT>(stream.sample_bitsize, ctx.read_bits(stream.sample_bitsize), stream.stream_encoding);
+            switch (stream.format)
                 {
                 case GnssMetadata::IonStream::IQ:
                 case GnssMetadata::IonStream::Int8IQ:
@@ -379,111 +468,52 @@ std::size_t IONGSMSChunkData::write_n_samples(
                 default:
                     throw std::runtime_error("ION_GSMS_Signal_Source unsupported complex stream format");
                 }
-            samples.push_back(sample);
         }
 
-    const bool reverse_samples = samples_are_reversed(stream.Shift(), lump_shift);
-    auto* sample_out = static_cast<OT*>(*out);
-    if (reverse_samples)
-        {
-            for (auto it = samples.rbegin(); it != samples.rend(); ++it)
-                {
-                    for (std::size_t i = 0; i < items_per_sample; ++i)
-                        {
-                            *sample_out++ = (*it)[i];
-                        }
-                }
-        }
-    else
-        {
-            for (const auto& sample : samples)
-                {
-                    for (std::size_t i = 0; i < items_per_sample; ++i)
-                        {
-                            *sample_out++ = sample[i];
-                        }
-                }
-        }
-
-    *out = sample_out;
-    return samples.size() * items_per_sample;
+    *out = sample_out + sample_count * items_per_sample;
+    return sample_count * items_per_sample;
 }
 
 
 template <typename WT>
 std::size_t IONGSMSChunkData::write_fp32_samples(
     IONGSMSChunkUnpackingCtx<WT>& ctx,
-    const GnssMetadata::Lump::LumpShift lump_shift,
-    const GnssMetadata::IonStream& stream,
+    const stream_metadata_t& stream,
     void** out)
 {
-    if (stream.Quantization() != 32)
+    if (stream.sample_bitsize != 32)
         {
             throw std::runtime_error("ION_GSMS_Signal_Source only supports FP32 stream encoding");
         }
 
-    const bool reverse_samples = samples_are_reversed(stream.Shift(), lump_shift);
-    if (!stream_is_complex(stream.Format()))
+    const std::size_t sample_count = stream.rate_factor;
+    if (!stream.is_complex)
         {
-            std::vector<float> samples;
-            samples.reserve(stream.RateFactor());
-            for (std::size_t i = 0; i < stream.RateFactor(); ++i)
+            auto* sample_out = static_cast<float*>(*out);
+            for (std::size_t i = 0; i < sample_count; ++i)
                 {
                     auto sample = read_fp32_sample(ctx);
-                    if (stream.Format() == GnssMetadata::IonStream::IFn)
+                    if (stream.format == GnssMetadata::IonStream::IFn)
                         {
                             sample = -sample;
                         }
-                    samples.push_back(sample);
+                    sample_out[stream.reversed ? sample_count - 1 - i : i] = sample;
                 }
 
-            auto* sample_out = static_cast<float*>(*out);
-            if (reverse_samples)
-                {
-                    for (auto it = samples.rbegin(); it != samples.rend(); ++it)
-                        {
-                            *sample_out++ = *it;
-                        }
-                }
-            else
-                {
-                    for (const auto sample : samples)
-                        {
-                            *sample_out++ = sample;
-                        }
-                }
-
-            *out = sample_out;
-            return samples.size();
-        }
-
-    std::vector<gr_complex> samples;
-    samples.reserve(stream.RateFactor());
-    for (std::size_t i = 0; i < stream.RateFactor(); ++i)
-        {
-            const auto first = read_fp32_sample(ctx);
-            const auto second = read_fp32_sample(ctx);
-            samples.push_back(complex_sample_from_format(stream.Format(), first, second));
+            *out = sample_out + sample_count;
+            return sample_count;
         }
 
     auto* sample_out = static_cast<gr_complex*>(*out);
-    if (reverse_samples)
+    for (std::size_t i = 0; i < sample_count; ++i)
         {
-            for (auto it = samples.rbegin(); it != samples.rend(); ++it)
-                {
-                    *sample_out++ = *it;
-                }
-        }
-    else
-        {
-            for (const auto& sample : samples)
-                {
-                    *sample_out++ = sample;
-                }
+            const auto first = read_fp32_sample(ctx);
+            const auto second = read_fp32_sample(ctx);
+            sample_out[stream.reversed ? sample_count - 1 - i : i] = complex_sample_from_format(stream.format, first, second);
         }
 
-    *out = sample_out;
-    return samples.size();
+    *out = sample_out + sample_count;
+    return sample_count;
 }
 
 

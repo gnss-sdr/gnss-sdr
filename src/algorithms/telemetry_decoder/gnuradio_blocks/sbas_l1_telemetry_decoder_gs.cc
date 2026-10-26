@@ -20,6 +20,7 @@
 #include "SBAS_L1.h"
 #include "gnss_synchro.h"
 #include "sbas_raw_message.h"
+#include "telemetry_message_stamp.h"
 #include "viterbi_decoder_sbas.h"
 #include <gnuradio/thread/thread.h>  // for scoped_lock
 #include <pmt/pmt_sugar.h>           // for mp
@@ -567,6 +568,8 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     Gnss_Synchro current_symbol{};  // structure to save the synchronization information and send the output object to the next block
     // 1. Copy the current tracking output
     current_symbol = in[0];
+    // Navigation data sent to the PVT is stamped with this symbol
+    const TelemetryWorkScope symbol_stamp(this, current_symbol.Tracking_sample_counter);
     // copy correlation samples into samples vector
     d_sample_buf.push_back(current_symbol.Prompt_I);  // add new symbol to the symbol queue
 
@@ -682,7 +685,7 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                         message_sample_stamp,
                         static_cast<uint32_t>(d_satellite.get_PRN()),
                         valid_msg.second);
-                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(sbas_raw_message));
+                    this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(sbas_raw_message), d_channel));
 #if __cplusplus == 201103L
                     const int default_precision = std::cout.precision();
 #else

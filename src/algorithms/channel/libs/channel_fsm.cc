@@ -18,6 +18,7 @@
 
 #include "channel_fsm.h"
 #include "channel_event.h"
+#include "deterministic_clock.h"
 #include <utility>
 
 #if USE_GLOG_AND_GFLAGS
@@ -212,17 +213,17 @@ void ChannelFsm::start_acquisition()
 void ChannelFsm::start_tracking()
 {
     trk_->start_tracking();
-    queue_->push(pmt::make_any(channel_event_make(channel_, 1)));
+    queue_->push(pmt::make_any(channel_event_make(channel_, 1, DeterministicClock::scope_stamp())));
 }
 
 
 void ChannelFsm::request_satellite()
 {
-    queue_->push(pmt::make_any(channel_event_make(channel_, 0)));
+    queue_->push(pmt::make_any(channel_event_make(channel_, 0, DeterministicClock::scope_stamp())));
 }
 
 
 void ChannelFsm::notify_stop_tracking()
 {
-    queue_->push(pmt::make_any(channel_event_make(channel_, 2)));
+    queue_->push(pmt::make_any(channel_event_make(channel_, 2, DeterministicClock::scope_stamp())));
 }

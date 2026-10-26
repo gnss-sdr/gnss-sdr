@@ -27,10 +27,10 @@ target_link_libraries(obs_gr_blocks
     PUBLIC
         Boost::headers
         Gnuradio::blocks
+        core_system_parameters
         observables_libs
     PRIVATE
         algorithms_libs
-        core_system_parameters
         Matio::matio
         Gnuradio::pmt
 )

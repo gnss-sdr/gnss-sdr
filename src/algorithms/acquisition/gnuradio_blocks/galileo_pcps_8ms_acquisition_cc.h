@@ -21,6 +21,7 @@
 #include "acq_conf.h"
 #include "acquisition_impl_interface.h"
 #include "channel_fsm.h"
+#include "deterministic_acquisition.h"
 #include "gnss_sdr_fft.h"
 #include "gnss_synchro.h"
 #include <gnuradio/block.h>
@@ -92,6 +93,13 @@ public:
                 d_state = 0;
             }
 
+        if (active)
+            {
+                // GNSS-SDR.deterministic=true: a lookahead after the event that
+                // caused it. Before d_active, so that general_work() never sees
+                // an active search without its stamped start
+                d_det.activate(d_sample_counter, d_channel);
+            }
         d_active = active;
     }
 
@@ -120,6 +128,9 @@ public:
         gr_vector_void_star& output_items) override;
 
 private:
+    int process_input(int noutput_items, gr_vector_int& ninput_items,
+        gr_vector_const_void_star& input_items,
+        gr_vector_void_star& output_items);
     friend galileo_pcps_8ms_acquisition_cc_sptr
     galileo_pcps_8ms_make_acquisition_cc(const Acq_Conf& conf);
 
@@ -149,6 +160,7 @@ private:
     uint32_t d_code_phase;
 
     bool d_active;
+    DeterministicAcquisition d_det;  // GNSS-SDR.deterministic=true
 
     std::weak_ptr<ChannelFsm> d_channel_fsm;
     std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;

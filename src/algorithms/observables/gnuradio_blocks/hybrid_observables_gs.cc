@@ -122,6 +122,21 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
 
     set_tag_propagation_policy(TPP_DONT);  // no tag propagation, the time tag will be adjusted and regenerated in work()
 
+    auto &deterministic_clock = DeterministicClock::instance();
+    if (deterministic_clock.enabled())
+        {
+            const double fs = deterministic_clock.sampling_rate();
+            const auto age_ms = observables_clock_delay_ms(d_T_rx_step_ms);
+            d_det_margin_samples = static_cast<uint64_t>(std::ceil(DETERMINISTIC_OBSERVABLES_MARGIN_MS * fs / 1000.0));
+            // Channels are constructed later and may increase the lookahead.
+            // Cache only the epoch age; use the final lookahead at run time.
+            d_det_epoch_age_samples = static_cast<uint64_t>(std::ceil(age_ms * fs / 1000.0));
+            d_det_pending_trk = std::vector<std::deque<Gnss_Synchro>>(d_nchannels_out);
+            d_det_producer = deterministic_clock.register_producer(DeterministicProducer::Kind::Observables);
+            d_det_producer->set_progress(NO_SAMPLE_STAMP);
+            d_det_producer->set_bound([this]() { return deterministic_downstream_bound(); });
+        }
+
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump)
         {
@@ -171,6 +186,10 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
 
 hybrid_observables_gs::~hybrid_observables_gs() noexcept
 {
+    if (d_det_producer)
+        {
+            d_det_producer->set_bound(nullptr);
+        }
     DLOG(INFO) << "Observables block destructor called.";
     if (d_dump_file.is_open())
         {
@@ -241,6 +260,18 @@ hybrid_observables_gs::~hybrid_observables_gs() noexcept
 void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg)
 {
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
+    if (d_det_producer && pmt::is_pair(msg) && pmt::is_uint64(pmt::car(msg)))
+        {
+            // Stamped with the sample of the PVT epoch that sent it
+            d_det_pvt_messages.emplace_back(pmt::to_uint64(pmt::car(msg)) + deterministic_pvt_delay_samples(), pmt::cdr(msg));
+            return;
+        }
+    apply_pvt_message(msg);
+}
+
+
+void hybrid_observables_gs::apply_pvt_message(const pmt::pmt_t &msg)
+{
     try
         {
             if (pmt::any_ref(msg).type().hash_code() == d_double_type_hash_code)
@@ -546,6 +577,11 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, uint3
 
 void hybrid_observables_gs::forecast(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
 {
+    if (d_det_producer)
+        {
+            deterministic_forecast(ninput_items_required);
+            return;
+        }
     for (int32_t n = 0; n < static_cast<int32_t>(d_nchannels_in) - 1; n++)
         {
             ninput_items_required[n] = 0;
@@ -1206,6 +1242,184 @@ void hybrid_observables_gs::propagate_sensor_data(const std::vector<Gnss_Synchro
 }
 
 
+void hybrid_observables_gs::add_trk_obs(uint32_t n, const Gnss_Synchro &trk)
+{
+    // Keep the latest tracking data so that channels without a valid
+    // time reference can be reported through the Monitor and to the
+    // flowgraph channel status (secondary-frequency acquisition assistance)
+    d_last_trk_data[n] = trk;
+    // Latch a restarted carrier phase accumulator reported by the
+    // tracking block: it is flagged on a single sample, which may
+    // not be the one the observation is interpolated from
+    if (!trk.Flag_carrier_phase_continuous)
+        {
+            d_channel_phase_discontinuity_pending[n] = true;
+        }
+    // Push the valid tracking Gnss_Synchros to their corresponding deque
+    if (trk.Flag_valid_word)
+        {
+            if (std::string(trk.Signal, 2) == std::string("E6"))
+                {
+                    if (d_conf.enable_E6 == false)
+                        {
+                            return;
+                        }
+                }
+            if (d_gnss_synchro_history->size(n) > 0)
+                {
+                    // Check if the last Gnss_Synchro comes from the same satellite as the previous ones
+                    if (d_gnss_synchro_history->front(n).PRN != trk.PRN)
+                        {
+                            d_gnss_synchro_history->clear(n);
+                            d_channel_has_previous_observation[n] = false;
+                            // LOG(INFO) << "Channel " << d_gnss_synchro_history->front(n).Channel_ID << " changed satellite to PRN " << trk.PRN;
+                        }
+                }
+            d_gnss_synchro_history->push_back(n, trk);
+            d_gnss_synchro_history->back(n).RX_time = compute_T_rx_s(trk);
+        }
+}
+
+
+void hybrid_observables_gs::prepare_deterministic_epoch(uint64_t rx_clock)
+{
+    // PVT messages, in the order the PVT sent them
+    while (!d_det_pvt_messages.empty() && d_det_pvt_messages.front().first <= rx_clock)
+        {
+            apply_pvt_message(d_det_pvt_messages.front().second);
+            d_det_pvt_messages.pop_front();
+        }
+    // Channel data up to just after the epoch, so that the interpolation has
+    // its samples and history changes take effect at the same epoch every run
+    const uint64_t limit = rx_clock + d_det_margin_samples;
+    for (uint32_t n = 0; n < d_nchannels_out; n++)
+        {
+            auto &pending = d_det_pending_trk[n];
+            while (!pending.empty() && pending.front().Tracking_sample_counter <= limit)
+                {
+                    add_trk_obs(n, pending.front());
+                    pending.pop_front();
+                }
+        }
+}
+
+
+uint64_t hybrid_observables_gs::deterministic_pvt_delay_samples() const
+{
+    // The PVT reads an epoch one epoch age after its clock sample. Leave a
+    // lookahead for the stream and another for scheduling and horizon rounding.
+    return d_det_epoch_age_samples + 2 * DeterministicClock::instance().lookahead();
+}
+
+
+void hybrid_observables_gs::finish_deterministic_epoch(bool produced)
+{
+    const uint64_t rx_clock = d_Rx_clock_buffer.empty() ? 0 : d_Rx_clock_buffer.front();
+    if (produced)
+        {
+            // The PVT applies telemetry data and stamps its messages by epoch sample.
+            add_item_tag(0, this->nitems_written(0), pmt::mp("deterministic_epoch"), pmt::from_uint64(rx_clock));
+        }
+    std::lock_guard<std::mutex> lock(d_det_stamps_mutex);
+    if (produced)
+        {
+            d_det_output_stamps.emplace_back(this->nitems_written(0), rx_clock);
+        }
+    if (d_Rx_clock_buffer.size() == d_Rx_clock_buffer.capacity())
+        {
+            // Publish the PVT's pending stamp before advancing the next epoch,
+            // also advancing when an epoch produces no valid observations.
+            d_det_next_epoch = d_Rx_clock_buffer[1];
+        }
+}
+
+
+uint64_t hybrid_observables_gs::deterministic_downstream_bound()
+{
+    const auto state = detail();
+    if (!state || state->noutputs() < 1)
+        {
+            return NO_SAMPLE_STAMP;
+        }
+    const auto output = state->output(0);
+    if (!output)
+        {
+            return NO_SAMPLE_STAMP;
+        }
+    uint64_t consumed = NO_SAMPLE_STAMP;
+    {
+        gr::thread::scoped_lock lock(*output->mutex());
+        for (size_t r = 0; r < output->nreaders(); r++)
+            {
+                consumed = std::min(consumed, output->reader(r)->nitems_read());
+            }
+    }
+    // The oldest epoch that the PVT has not finished, or the next one to
+    // compute if this block lags behind: a message that the PVT sends for it
+    // takes effect one delay later, so the stream may run up to there
+    uint64_t epoch;
+    {
+        std::lock_guard<std::mutex> lock(d_det_stamps_mutex);
+        epoch = d_det_next_epoch;
+        while (!d_det_output_stamps.empty() && d_det_output_stamps.front().first < consumed)
+            {
+                d_det_output_stamps.pop_front();
+            }
+        if (!d_det_output_stamps.empty())
+            {
+                epoch = std::min(epoch, d_det_output_stamps.front().second);
+            }
+    }
+    const uint64_t lookahead = DeterministicClock::instance().lookahead();
+    const uint64_t reach = epoch + deterministic_pvt_delay_samples();
+    return reach > lookahead ? reach - lookahead : 0;
+}
+
+
+void hybrid_observables_gs::deterministic_forecast(gr_vector_int &ninput_items_required)
+{
+    for (uint32_t n = 0; n < d_nchannels_out; n++)
+        {
+            ninput_items_required[n] = 0;
+        }
+    ninput_items_required[d_nchannels_in - 1] = 1;
+    const auto state = detail();
+    if (!state)
+        {
+            return;
+        }
+    int32_t waiting_channel = -1;
+    for (uint32_t n = 0; n < d_nchannels_out; n++)
+        {
+            const auto input = state->input(n);
+            gr::thread::scoped_lock lock(*input->mutex());
+            if (input->items_available() > 0)
+                {
+                    // Drain channel backlogs even when the clock is stalled
+                    ninput_items_required[d_nchannels_in - 1] = 0;
+                    return;
+                }
+            if (waiting_channel < 0 && !input->done())
+                {
+                    waiting_channel = static_cast<int32_t>(n);
+                }
+        }
+    const auto clock = state->input(d_nchannels_in - 1);
+    bool clock_finished = false;
+    {
+        gr::thread::scoped_lock lock(*clock->mutex());
+        clock_finished = clock->done() && clock->items_available() == 0;
+    }
+    if (clock_finished && waiting_channel >= 0)
+        {
+            // Wait for the channels that are still running instead of ending
+            // here, so that they process their whole input
+            ninput_items_required[d_nchannels_in - 1] = 0;
+            ninput_items_required[waiting_channel] = 1;
+        }
+}
+
+
 int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)),
     gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
@@ -1213,11 +1427,28 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
     const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
 
+    if (d_det_producer)
+        {
+            // GNU Radio dispatches messages only between calls: take the PVT
+            // messages queued since then, which may be due at this epoch
+            const pmt::pmt_t port = pmt::mp("pvt_to_observables");
+            pmt::pmt_t msg;
+            while ((msg = delete_head_nowait(port)))
+                {
+                    msg_handler_pvt_to_observables(msg);
+                }
+        }
+
     // Push receiver clock into history buffer (connected to the last of the input channels)
     // The clock buffer gives time to the channels to compute the tracking observables
     if (ninput_items[d_nchannels_in - 1] > 0)
         {
             d_Rx_clock_buffer.push_back(in[d_nchannels_in - 1][0].Tracking_sample_counter);
+            if (d_det_producer)
+                {
+                    // The next epoch to compute, until this call computes it
+                    d_det_next_epoch = d_Rx_clock_buffer.front();
+                }
 
             std::vector<gr::tag_t> tags_vec;
             // Propagate sensor data tags
@@ -1285,39 +1516,14 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
             // ************ end time tags **************
             for (int32_t m = 0; m < ninput_items[n]; m++)
                 {
-                    // Keep the latest tracking data so that channels without a valid
-                    // time reference can be reported through the Monitor and to the
-                    // flowgraph channel status (secondary-frequency acquisition assistance)
-                    d_last_trk_data[n] = in[n][m];
-                    // Latch a restarted carrier phase accumulator reported by the
-                    // tracking block: it is flagged on a single sample, which may
-                    // not be the one the observation is interpolated from
-                    if (!in[n][m].Flag_carrier_phase_continuous)
+                    if (d_det_producer)
                         {
-                            d_channel_phase_discontinuity_pending[n] = true;
+                            // taken into account when its epoch is computed
+                            d_det_pending_trk[n].push_back(in[n][m]);
                         }
-                    // Push the valid tracking Gnss_Synchros to their corresponding deque
-                    if (in[n][m].Flag_valid_word)
+                    else
                         {
-                            if (std::string(in[n][m].Signal, 2) == std::string("E6"))
-                                {
-                                    if (d_conf.enable_E6 == false)
-                                        {
-                                            continue;
-                                        }
-                                }
-                            if (d_gnss_synchro_history->size(n) > 0)
-                                {
-                                    // Check if the last Gnss_Synchro comes from the same satellite as the previous ones
-                                    if (d_gnss_synchro_history->front(n).PRN != in[n][m].PRN)
-                                        {
-                                            d_gnss_synchro_history->clear(n);
-                                            d_channel_has_previous_observation[n] = false;
-                                            // LOG(INFO) << "Channel " << d_gnss_synchro_history->front(n).Channel_ID << " changed satellite to PRN " << in[n][m].PRN;
-                                        }
-                                }
-                            d_gnss_synchro_history->push_back(n, in[n][m]);
-                            d_gnss_synchro_history->back(n).RX_time = compute_T_rx_s(in[n][m]);
+                            add_trk_obs(n, in[n][m]);
                         }
                 }
             consume(n, ninput_items[n]);
@@ -1330,6 +1536,10 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
 
     if (d_Rx_clock_buffer.size() == d_Rx_clock_buffer.capacity())
         {
+            if (d_det_producer)
+                {
+                    prepare_deterministic_epoch(d_Rx_clock_buffer.front());
+                }
             std::vector<Gnss_Synchro> epoch_data(d_nchannels_out);
             int32_t n_valid = 0;
             int32_t n_trk_only = 0;
@@ -1469,6 +1679,10 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                 {
                     // LOG(INFO) << "OBS: diff time: " << out[0][0].RX_time * 1000.0 - old_time_debug;
                     // old_time_debug = out[0][0].RX_time * 1000.0;
+                    if (d_det_producer)
+                        {
+                            finish_deterministic_epoch(true);
+                        }
                     return 1;
                 }
         }
@@ -1479,7 +1693,15 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                 {
                     out[n][0] = empty_gs;
                 }
+            if (d_det_producer)
+                {
+                    finish_deterministic_epoch(true);
+                }
             return 1;
+        }
+    if (d_det_producer)
+        {
+            finish_deterministic_epoch(false);
         }
     return 0;
 }

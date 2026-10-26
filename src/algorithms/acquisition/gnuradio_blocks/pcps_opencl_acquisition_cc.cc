@@ -118,6 +118,11 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(const Acq_Conf &conf, uin
       d_fft_codes(d_fft_size_pow2),
       d_zero_vector(d_fft_size_pow2 - d_fft_size, 0.0)
 {
+    // A search needs its dwells beyond its first sample (GNSS-SDR.deterministic=true)
+    d_det.require_span(static_cast<uint64_t>(d_fft_size) * std::max(1U, d_max_dwells));
+    // Filled while an acquisition core reads it: never reallocated
+    d_sample_counter_buffer.reserve(d_max_dwells);
+
     this->message_port_register_out(pmt::mp("events"));
 
     d_opencl = init_opencl_environment("math_kernel.cl");
@@ -255,7 +260,7 @@ int pcps_opencl_acquisition_cc::init_opencl_environment(const std::string &kerne
 
     cl::Program::Sources sources;
 
-    sources.push_back({kernel_code.c_str(), kernel_code.length()});
+    sources.emplace_back(kernel_code.c_str(), kernel_code.length());
 
     cl::Program program(context, sources);
     if (program.build(device) != CL_SUCCESS)
@@ -432,33 +437,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
                 }
         }
 
-    if (!d_acq_params.bit_transition_flag)
-        {
-            if (d_test_statistics > d_acq_params.threshold)
-                {
-                    d_state = 2;  // Positive acquisition
-                }
-            else if (d_well_count == d_max_dwells)
-                {
-                    d_state = 3;  // Negative acquisition
-                }
-        }
-    else
-        {
-            if (d_well_count == d_max_dwells)  // d_max_dwells = 2
-                {
-                    if (d_test_statistics > d_acq_params.threshold)
-                        {
-                            d_state = 2;  // Positive acquisition
-                        }
-                    else
-                        {
-                            d_state = 3;  // Negative acquisition
-                        }
-                }
-        }
-
-    d_core_working = false;
+    conclude_dwell(samplestamp);
 }
 
 
@@ -599,33 +578,87 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
     //    end = tv.tv_sec *1e6 + tv.tv_usec;
     //    std::cout << "Acq time = " << (end-begin) << " us\n";
 
+    conclude_dwell(samplestamp);
+}
+
+
+void pcps_opencl_acquisition_cc::conclude_dwell(uint64_t samplestamp)
+{
+    int result = 1;  // keep searching
     if (!d_acq_params.bit_transition_flag)
         {
             if (d_test_statistics > d_acq_params.threshold)
                 {
-                    d_state = 2;  // Positive acquisition
+                    result = 2;  // Positive acquisition
                 }
             else if (d_well_count == d_max_dwells)
                 {
-                    d_state = 3;  // Negative acquisition
+                    result = 3;  // Negative acquisition
                 }
         }
     else
         {
             if (d_well_count == d_max_dwells)  // d_max_dwells = 2
                 {
-                    if (d_test_statistics > d_acq_params.threshold)
-                        {
-                            d_state = 2;  // Positive acquisition
-                        }
-                    else
-                        {
-                            d_state = 3;  // Negative acquisition
-                        }
+                    result = d_test_statistics > d_acq_params.threshold ? 2 : 3;  // Positive or negative acquisition
                 }
         }
 
+    bool concluded = false;
+    if (result != 1)
+        {
+            std::lock_guard<std::mutex> lock(d_state_mutex);
+            if (d_state == 1)  // not stopped meanwhile
+                {
+                    if (d_det.enabled())
+                        {
+                            // GNSS-SDR.deterministic=true: stamped with the end of the dwell that decided it
+                            d_det.raise(result == 2 ? DeterministicClock::ACQ_POSITIVE : DeterministicClock::ACQ_NEGATIVE, samplestamp);
+                        }
+                    d_state = result;
+                    d_active = false;
+                    concluded = true;
+                }
+        }
+    if (concluded && d_det.enabled())
+        {
+            // Released here: the stream may be held back until the result is
+            // out, so general_work() may not run again before
+            d_det.dispatch(d_channel, [this](int event) { this->message_port_pub(pmt::mp("events"), pmt::from_long(event)); });
+            std::lock_guard<std::mutex> lock(d_state_mutex);
+            d_det.publish(d_sample_counter, d_active, d_channel);
+        }
+}
+
+
+void pcps_opencl_acquisition_cc::run_acquisition_cores()
+{
+    // Processes the buffered dwells in order, until a decision or until it
+    // runs out of them (then general_work() starts it again for the next one)
+    do
+        {
+            if (d_opencl == 0)
+                {  // Use OpenCL implementation
+                    acquisition_core_opencl();
+                }
+            else
+                {  // Use Volk implementation
+                    acquisition_core_volk();
+                }
+        }
+    while (next_dwell_ready());
+}
+
+
+bool pcps_opencl_acquisition_cc::next_dwell_ready()
+{
+    std::lock_guard<std::mutex> lock(d_state_mutex);
+    if (d_state == 1 && d_well_count < d_in_dwell_count)
+        {
+            return true;
+        }
     d_core_working = false;
+    return false;
 }
 
 
@@ -633,12 +666,46 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
     gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
+    const int produced = process_input(noutput_items, ninput_items, input_items, output_items);
+    if (d_det.enabled())
+        {
+            // GNSS-SDR.deterministic=true: results reach the control queue
+            // before the progress passes their stamp
+            d_det.dispatch(d_channel, [this](int event) { this->message_port_pub(pmt::mp("events"), pmt::from_long(event)); });
+            std::lock_guard<std::mutex> lock(d_state_mutex);
+            d_det.publish(d_sample_counter, d_active, d_channel);
+        }
+    return produced;
+}
+
+
+int pcps_opencl_acquisition_cc::process_input(int noutput_items,
+    gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
+    gr_vector_void_star &output_items)
+{
     int acquisition_message = -1;  // 0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
-    switch (d_state)
+
+    if (d_det.enabled() && d_state == 1 && d_in_dwell_count == 0)
+        {
+            // GNSS-SDR.deterministic=true: the first dwell starts at its stamped sample
+            int n_items = 0;
+            if (!d_det.ready_to_start(d_sample_counter, 0, d_fft_size, ninput_items[0], n_items, d_channel))
+                {
+                    d_sample_counter += static_cast<uint64_t>(d_fft_size) * static_cast<uint64_t>(n_items);
+                    consume_each(n_items);
+                    return 0;
+                }
+        }
+
+    // GNSS-SDR.deterministic=true: a requested search keeps the input for its
+    // first dwell, which starts at its stamped sample
+    bool keep_input = false;
+    switch (d_state.load())  // C++11 cannot switch on std::atomic
         {
         case 0:
             {
-                if (d_active)
+                // A new search waits for the core of the previous one
+                if (d_active && !d_core_working)
                     {
                         // restart acquisition variables
                         d_gnss_synchro->Acq_delay_samples = 0.0;
@@ -654,8 +721,11 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
 
                         d_state = 1;
                     }
-
-                d_sample_counter += static_cast<uint64_t>(d_fft_size) * ninput_items[0];  // sample counter
+                keep_input = d_det.enabled() && d_active;
+                if (!keep_input)
+                    {
+                        d_sample_counter += static_cast<uint64_t>(d_fft_size) * ninput_items[0];  // sample counter
+                    }
 
                 break;
             }
@@ -670,10 +740,11 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                         uint32_t num_dwells = std::min(static_cast<int>(d_max_dwells - d_in_dwell_count), ninput_items[0]);
                         for (uint32_t i = 0; i < num_dwells; i++)
                             {
-                                const auto *in = reinterpret_cast<const gr_complex *>(input_items[i]);
-                                std::copy(in, in + d_fft_size, d_in_buffer[d_in_dwell_count++].data());
+                                const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]) + static_cast<size_t>(i) * d_fft_size;
+                                std::copy(in, in + d_fft_size, d_in_buffer[d_in_dwell_count].data());
                                 d_sample_counter += static_cast<uint64_t>(d_fft_size);
                                 d_sample_counter_buffer.push_back(d_sample_counter);
+                                d_in_dwell_count++;  // complete: an acquisition core may process it
                             }
 
                         if (ninput_items[0] > static_cast<int>(num_dwells))
@@ -697,18 +768,15 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                 //      moment by the external thread (may have changed since checked in the switch()).
                 //      If the external thread has already declared positive (d_state=2) or negative
                 //      (d_state=3) acquisition, we don't have to process next block!!
-                if ((d_well_count < d_in_dwell_count) && !d_core_working && d_state == 1)
-                    {
-                        d_core_working = true;
-                        if (d_opencl == 0)
-                            {  // Use OpenCL implementation
-                                boost::thread(&pcps_opencl_acquisition_cc::acquisition_core_opencl, this);
-                            }
-                        else
-                            {  // Use Volk implementation
-                                boost::thread(&pcps_opencl_acquisition_cc::acquisition_core_volk, this);
-                            }
-                    }
+                {
+                    // A running core checks for the next dwell under the same lock
+                    std::lock_guard<std::mutex> lock(d_state_mutex);
+                    if (!d_core_working && (d_well_count < d_in_dwell_count) && d_state == 1)
+                        {
+                            d_core_working = true;
+                            boost::thread(&pcps_opencl_acquisition_cc::run_acquisition_cores, this);
+                        }
+                }
 
                 break;
             }
@@ -726,13 +794,20 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                 DLOG(INFO) << "magnitude " << d_mag;
                 DLOG(INFO) << "input signal power " << d_input_power;
 
-                d_active = false;
-                d_state = 0;
+                d_state = 0;  // the acquisition core has set d_active = false
 
-                d_sample_counter += static_cast<uint64_t>(d_fft_size) * ninput_items[0];  // sample counter
+                // A new search may already be requested (e.g., the channel repeats a failed one)
+                keep_input = d_det.enabled() && d_active;
+                if (!keep_input)
+                    {
+                        d_sample_counter += static_cast<uint64_t>(d_fft_size) * ninput_items[0];  // sample counter
+                    }
 
                 acquisition_message = 1;
-                this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
+                if (!d_det.enabled())  // else raised by the acquisition core
+                    {
+                        this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
+                    }
                 LOG(INFO) << "Successful acquisition in channel " << d_channel
                           << " for satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
 
@@ -762,19 +837,29 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                 DLOG(INFO) << "magnitude " << d_mag;
                 DLOG(INFO) << "input signal power " << d_input_power;
 
-                d_active = false;
-                d_state = 0;
+                d_state = 0;  // the acquisition core has set d_active = false
 
-                d_sample_counter += static_cast<uint64_t>(d_fft_size) * ninput_items[0];  // sample counter
+                // A new search may already be requested (e.g., the channel repeats a failed one)
+                keep_input = d_det.enabled() && d_active;
+                if (!keep_input)
+                    {
+                        d_sample_counter += static_cast<uint64_t>(d_fft_size) * ninput_items[0];  // sample counter
+                    }
 
                 acquisition_message = 2;
-                this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
+                if (!d_det.enabled())  // else raised by the acquisition core
+                    {
+                        this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
+                    }
 
                 break;
             }
         }
 
-    consume_each(ninput_items[0]);
+    if (!keep_input)
+        {
+            consume_each(ninput_items[0]);
+        }
 
     return noutput_items;
 }

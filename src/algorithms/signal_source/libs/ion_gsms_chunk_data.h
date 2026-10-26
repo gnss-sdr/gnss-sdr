@@ -136,30 +136,55 @@ public:
     static std::size_t stream_output_item_rate(const GnssMetadata::IonStream& stream);
 
 private:
+    // Decoding parameters of one stream, resolved once at construction so that
+    // the per-chunk path neither queries the metadata objects nor allocates.
+    struct stream_metadata_t
+    {
+        GnssMetadata::StreamEncoding stream_encoding;
+        GnssMetadata::IonStream::SampleFormat format;
+        GnssMetadata::IonStream::StreamAlignment alignment;
+        int output_index = -1;
+        std::size_t output_item_offset = 0;
+        std::size_t output_item_size = 0;
+        std::size_t packed_bits = 0;
+        std::size_t padding_bits = 0;
+        std::size_t rate_factor = 0;
+        uint8_t sample_bitsize = 0;
+        uint8_t output_item_bits = 0;
+        bool is_complex = false;
+        bool reversed = false;
+
+        stream_metadata_t(
+            const GnssMetadata::Lump& lump,
+            const GnssMetadata::IonStream& stream,
+            GnssMetadata::StreamEncoding stream_encoding_,
+            int output_index_ = -1,
+            std::size_t output_item_offset_ = 0,
+            std::size_t output_item_size_ = 0);
+    };
+
     template <typename WT>
     void unpack_words(gr_vector_void_star& outputs, std::vector<int>& output_items);
 
+    void build_byte_lut();
+    void write_from_byte_lut(gr_vector_void_star& outputs, std::vector<int>& output_items) const;
+
     template <typename WT>
-    std::size_t write_stream_samples(
+    static std::size_t write_stream_samples(
         IONGSMSChunkUnpackingCtx<WT>& ctx,
-        const GnssMetadata::Lump& lump,
-        const GnssMetadata::IonStream& stream,
-        GnssMetadata::StreamEncoding stream_encoding,
+        const stream_metadata_t& stream,
         void** out);
 
     template <typename WT, typename OT>
-    std::size_t write_n_samples(
+    static std::size_t write_n_samples(
         IONGSMSChunkUnpackingCtx<WT>& ctx,
-        GnssMetadata::Lump::LumpShift lump_shift,
-        const GnssMetadata::IonStream& stream,
-        GnssMetadata::StreamEncoding stream_encoding,
+        const stream_metadata_t& stream,
         OT** out);
 
     template <typename WT>
-    std::size_t write_fp32_samples(
+    static std::size_t write_fp32_samples(
         IONGSMSChunkUnpackingCtx<WT>& ctx,
-        GnssMetadata::Lump::LumpShift lump_shift,
-        const GnssMetadata::IonStream& stream,
+        const stream_metadata_t& stream,
         void** out);
 
     template <typename Sample>
@@ -184,37 +209,21 @@ private:
     std::size_t sizeword_;
     std::size_t countwords_;
     std::size_t padding_bitsize_;
+    bool head_padding_;
+    bool read_lsb_first_;
+    bool swap_endianness_;
     std::size_t output_stream_offset_;
     std::size_t output_stream_count_;
     std::vector<std::size_t> output_stream_item_size_;
     std::vector<std::size_t> output_stream_item_rate_;
-
-    struct stream_metadata_t
-    {
-        const GnssMetadata::Lump& lump;
-        const GnssMetadata::IonStream& stream;
-        GnssMetadata::StreamEncoding stream_encoding;
-        int output_index = -1;
-        std::size_t output_item_offset = 0;
-        std::size_t output_item_size = 0;
-
-        stream_metadata_t(
-            const GnssMetadata::Lump& lump_,
-            const GnssMetadata::IonStream& stream_,
-            GnssMetadata::StreamEncoding stream_encoding_,
-            int output_index_ = -1,
-            std::size_t output_item_offset_ = 0,
-            std::size_t output_item_size_ = 0) : lump(lump_),
-                                                 stream(stream_),
-                                                 stream_encoding(stream_encoding_),
-                                                 output_index(output_index_),
-                                                 output_item_offset(output_item_offset_),
-                                                 output_item_size(output_item_size_)
-        {
-        }
-    };
     std::vector<stream_metadata_t> streams_;
     std::vector<int> output_stream_indices_;
+
+    // One-byte chunks with 8-bit outputs are decoded once for each of their
+    // 256 values; a row holds the items of all outputs, concatenated.
+    std::vector<int8_t> byte_lut_;
+    std::vector<std::size_t> byte_lut_output_offset_;
+    std::size_t byte_lut_row_size_ = 0;
 
     void* buffer_ = nullptr;
 };

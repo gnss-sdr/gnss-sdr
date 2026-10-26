@@ -32,6 +32,7 @@
 
 #include "bayesian_estimation.h"
 #include "cpu_multicorrelator_real_codes.h"
+#include "deterministic_tracking.h"
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
@@ -86,6 +87,8 @@ public:
     void forecast(int noutput_items, gr_vector_int& ninput_items_required);
 
 private:
+    int process_input(int noutput_items, gr_vector_int& ninput_items,
+        gr_vector_const_void_star& input_items, gr_vector_void_star& output_items);
     friend gps_l1_ca_gaussian_tracking_cc_sptr
     gps_l1_ca_gaussian_make_tracking_cc(uint32_t order,
         int64_t fs_in,
@@ -193,6 +196,7 @@ private:
 
     // processing samples counters
     uint64_t d_sample_counter;
+    DeterministicTracking d_det{this};  // GNSS-SDR.deterministic=true
     uint64_t d_acq_sample_stamp;
 
     // CN0 estimation and lock detector

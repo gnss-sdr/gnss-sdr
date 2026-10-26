@@ -16,6 +16,7 @@
 
 #include "evk1029_source.h"
 #include "command_event.h"
+#include "deterministic_clock.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include <gnuradio/io_signature.h>
 #include <gnuradio/math.h>
@@ -72,7 +73,7 @@ std::size_t max_history(const std::vector<Evk1029FreqXlatingBand>& bands)
     std::size_t m = 0;
     for (const auto& b : bands)
         {
-            m = std::max(m, b.taps.size() > 0 ? b.taps.size() - 1 : 0);
+            m = std::max(m, !b.taps.empty() ? b.taps.size() - 1 : 0);
         }
     return m;
 }
@@ -156,7 +157,7 @@ Evk1029Source::Evk1029Source(const std::string& filename, Concurrent_Queue<pmt::
         {
             Band b;
             b.composite_fir.resize(band.taps.size());
-            const float fwT0 = static_cast<float>(2.0 * GR_M_PI * band.center_freq / sampling_frequency);
+            const auto fwT0 = static_cast<float>(2.0 * GR_M_PI * band.center_freq / sampling_frequency);
             for (std::size_t i = 0; i < band.taps.size(); i++)
                 {
                     b.composite_fir[i] = band.taps[i] * std::exp(gr_complex(0, static_cast<float>(i) * fwT0));
@@ -471,7 +472,11 @@ int Evk1029Source::work(int noutput_items,
             if (eof && produced == 0)
                 {
                     std::cout << "EVK1029_Source: EOF\n";
-                    queue_->push(pmt::make_any(command_event_make(200, 0)));
+                    if (!DeterministicClock::instance().enabled())
+                        {
+                            // otherwise the receiver stops once the samples have gone through the flowgraph
+                            queue_->push(pmt::make_any(command_event_make(200, 0)));
+                        }
                     return this->WORK_DONE;
                 }
 
@@ -557,7 +562,11 @@ int Evk1029Source::work(int noutput_items,
             if (eof_)
                 {
                     std::cout << "EVK1029_Source: EOF\n";
-                    queue_->push(pmt::make_any(command_event_make(200, 0)));
+                    if (!DeterministicClock::instance().enabled())
+                        {
+                            // otherwise the receiver stops once the samples have gone through the flowgraph
+                            queue_->push(pmt::make_any(command_event_make(200, 0)));
+                        }
                     return this->WORK_DONE;
                 }
             return 0;

@@ -21,6 +21,7 @@
 
 #include "bit_synchronizer.h"
 #include "cpu_multicorrelator_real_codes.h"
+#include "deterministic_tracking.h"
 #include "dll_pll_conf.h"
 #include "exponential_smoother.h"
 #include "gnss_block_interface.h"
@@ -85,6 +86,8 @@ private:
     explicit dll_pll_veml_tracking(const Dll_Pll_Conf &conf_);
 
     void msg_handler_telemetry_to_trk(const pmt::pmt_t &msg);
+    int process_input(int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
     void do_correlation_step(const gr_complex *input_samples);
     void run_dll_pll();
     // State 5: frequency-error-reduction Doppler-bin scan, run right after pull-in (state 1)
@@ -257,6 +260,8 @@ private:
     bool d_wait_for_bit_edge{false};
     bool d_b1c_prelock_output_pending{false};
     bool d_carrier_phase_discontinuity{true};  // pending report of a new carrier phase ambiguity
+
+    DeterministicTracking d_det{this};  // GNSS-SDR.deterministic=true
 };
 
 

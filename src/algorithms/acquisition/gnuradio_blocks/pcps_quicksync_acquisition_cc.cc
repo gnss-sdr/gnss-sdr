@@ -75,6 +75,9 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(const Acq_Conf& con
       d_magnitude_folded(d_fft_size),
       d_possible_delay(d_folding_factor)
 {
+    // A search needs its dwells beyond its first sample (GNSS-SDR.deterministic=true)
+    d_det.require_span(static_cast<uint64_t>(d_vector_length) * std::max(1U, d_max_dwells));
+
     // Each call to general_work() processes d_samples_per_code * d_folding_factor
     // samples from a single input item, so the item must be at least that long
     if (static_cast<int64_t>(d_vector_length) < static_cast<int64_t>(d_samples_per_code) * static_cast<int64_t>(d_folding_factor))
@@ -156,6 +159,23 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
     gr_vector_int& ninput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items)
 {
+    d_det.begin_call(d_sample_counter);
+    const int produced = process_input(noutput_items, ninput_items, input_items, output_items);
+    if (d_det.enabled())
+        {
+            // GNSS-SDR.deterministic=true: results reach the control queue
+            // before the progress passes their stamp
+            d_det.dispatch(d_channel, [this](int event) { this->message_port_pub(pmt::mp("events"), pmt::from_long(event)); });
+            d_det.publish(d_sample_counter, d_active, d_channel);
+        }
+    return produced;
+}
+
+
+int pcps_quicksync_acquisition_cc::process_input(int noutput_items,
+    gr_vector_int& ninput_items, gr_vector_const_void_star& input_items,
+    gr_vector_void_star& output_items)
+{
     /*
      * By J.Arribas, L.Esteve and M.Molina
      * Acquisition strategy (Kay Borre book + CFAR threshold):
@@ -174,6 +194,18 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
             d_sample_counter += static_cast<uint64_t>(d_vector_length) * ninput_items[0];  // sample counter
             consume_each(ninput_items[0]);
             return 0;
+        }
+
+    if (d_det.enabled() && d_state == 0)
+        {
+            // GNSS-SDR.deterministic=true: the search starts at its stamped sample
+            int n_items = 0;
+            if (!d_det.ready_to_start(d_sample_counter, 0, d_vector_length, ninput_items[0], n_items, d_channel))
+                {
+                    d_sample_counter += static_cast<uint64_t>(d_vector_length) * static_cast<uint64_t>(n_items);
+                    consume_each(n_items);
+                    return 0;
+                }
         }
 
     switch (d_state)
@@ -417,7 +449,14 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 consume_each(ninput_items[0]);
 
                 acquisition_message = 1;
-                this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
+                if (d_det.enabled())
+                    {
+                        d_det.raise(acquisition_message);
+                    }
+                else
+                    {
+                        this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
+                    }
                 LOG(INFO) << "Successful acquisition in channel " << d_channel
                           << " for satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
                 // DLOG(INFO) << "END CASE 2";
@@ -462,7 +501,14 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 consume_each(ninput_items[0]);
 
                 acquisition_message = 2;
-                this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
+                if (d_det.enabled())
+                    {
+                        d_det.raise(acquisition_message);
+                    }
+                else
+                    {
+                        this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
+                    }
                 // DLOG(INFO) << "END CASE 3";
                 break;
             }

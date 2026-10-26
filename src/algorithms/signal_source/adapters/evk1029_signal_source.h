@@ -85,6 +85,7 @@ public:
     void disconnect(gr::top_block_sptr top_block) override;
     gr::basic_block_sptr get_right_block() override;
     bool is_real_time() const override { return enable_throttle_control_; }
+    bool can_wait() const override { return true; }  // a throttle waits too
 
 private:
     Evk1029Source_sptr evk1029_source_;

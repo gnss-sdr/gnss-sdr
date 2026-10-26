@@ -16,13 +16,14 @@
 
 #include "channel_event.h"
 
-channel_event_sptr channel_event_make(int channel_id, int event_type)
+channel_event_sptr channel_event_make(int channel_id, int event_type, uint64_t sample_stamp)
 {
-    return channel_event_sptr(new Channel_Event(channel_id, event_type));
+    return channel_event_sptr(new Channel_Event(channel_id, event_type, sample_stamp));
 }
 
-Channel_Event::Channel_Event(int channel_id_, int event_type_)
+Channel_Event::Channel_Event(int channel_id_, int event_type_, uint64_t sample_stamp_)
     : channel_id(channel_id_),
-      event_type(event_type_)
+      event_type(event_type_),
+      sample_stamp(sample_stamp_)
 {
 }

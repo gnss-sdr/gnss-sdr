@@ -181,6 +181,7 @@ Acq_Conf get_acq_conf(
 
     std::unique_ptr<ThresholdComputeInterface> threshold_compute;
     boost::optional<uint32_t> default_folding_factor;
+    boost::optional<uint32_t> required_sampled_ms;
     uint32_t max_sampled_ms = std::numeric_limits<uint32_t>::max();
 
     if (implementation == "GPS_L1_CA_PCPS_QuickSync_Acquisition")
@@ -209,6 +210,12 @@ Acq_Conf get_acq_conf(
                     max_sampled_ms = 3;
                 }
         }
+    else if (implementation == "Galileo_E1_PCPS_8ms_Ambiguous_Acquisition")
+        {
+            // The block correlates with two local replicas spanning two code
+            // periods (++ and +-), so its input must be exactly 8 ms long
+            required_sampled_ms = 2 * ms_per_code;
+        }
 
     if (default_folding_factor)
         {
@@ -228,8 +235,8 @@ Acq_Conf get_acq_conf(
         }
 
     acq_parameters.ms_per_code = ms_per_code;
-    acq_parameters.sampled_ms = ms_per_code;               // Set as default value
-    acq_parameters.dump_filename = default_dump_filename;  // Set as default value
+    acq_parameters.sampled_ms = required_sampled_ms ? *required_sampled_ms : ms_per_code;  // Set as default value
+    acq_parameters.dump_filename = default_dump_filename;                                  // Set as default value
     acq_parameters.SetFromConfiguration(configuration, role, chip_rate, opt_freq);
 
 #if USE_GLOG_AND_GFLAGS
@@ -257,6 +264,13 @@ Acq_Conf get_acq_conf(
             acq_parameters.sampled_ms = max_sampled_ms;
             DLOG(INFO) << "Coherent integration time should be " << max_sampled_ms << " ms or less. Changing to " << max_sampled_ms << "ms ";
             std::cout << "Too high coherent integration time. Changing to " << max_sampled_ms << "ms\n";
+        }
+
+    if (required_sampled_ms && acq_parameters.sampled_ms != *required_sampled_ms)
+        {
+            LOG(WARNING) << implementation << " requires " << role << ".coherent_integration_time_ms="
+                         << *required_sampled_ms << ". Changing to " << *required_sampled_ms << " ms";
+            acq_parameters.sampled_ms = *required_sampled_ms;
         }
 
     acq_parameters.num_codes = acq_parameters.sampled_ms / ms_per_code;

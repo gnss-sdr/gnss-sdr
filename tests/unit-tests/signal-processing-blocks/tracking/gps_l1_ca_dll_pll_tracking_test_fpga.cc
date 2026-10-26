@@ -612,7 +612,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
         }
 
     // load the measured values
-    Tracking_Dump_Reader trk_dump;
+    Tracking_Dump_Reader trk_dump(Tracking_Dump_Layout::DLL_PLL_VEML_FPGA);
     ASSERT_NO_THROW(
         {
             if (trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")) == false)

@@ -22,9 +22,21 @@
 #include <string>
 #include <vector>
 
+/*!
+ * \brief Record layout of a tracking dump file, which depends on the block
+ * that wrote it.
+ */
+enum class Tracking_Dump_Layout
+{
+    DLL_PLL_VEML,       //!< dll_pll_veml_tracking: ends with PRN, TOW and WN (112 bytes)
+    DLL_PLL_VEML_FPGA,  //!< dll_pll_veml_tracking_fpga and kf_tracking: ends with PRN (100 bytes)
+    GPS_L1_CA_GAUSSIAN  //!< gps_l1_ca_gaussian_tracking_cc: no code frequency rate, ends with PRN (100 bytes)
+};
+
 class Tracking_Dump_Reader
 {
 public:
+    explicit Tracking_Dump_Reader(Tracking_Dump_Layout layout = Tracking_Dump_Layout::DLL_PLL_VEML);
     ~Tracking_Dump_Reader();
     bool read_binary_obs();
     bool restart();
@@ -51,10 +63,11 @@ public:
     float carrier_doppler_hz;
     float carrier_doppler_rate_hz_s;
     float code_freq_chips;
-    float code_freq_rate_chips;
+    float code_freq_rate_chips{};  // not in GPS_L1_CA_GAUSSIAN dumps
 
     // PLL commands
     float carr_error_hz;
+    float carr_noise_sigma2{};  // only in GPS_L1_CA_GAUSSIAN dumps
     float carr_error_filt_hz;
 
     // DLL commands
@@ -70,12 +83,13 @@ public:
     double aux2;
 
     unsigned int PRN;
-    uint64_t TOW_ms;
-    int32_t WN;
+    uint64_t TOW_ms{};  // only in DLL_PLL_VEML dumps
+    int32_t WN{};       // only in DLL_PLL_VEML dumps
 
 private:
     std::string d_dump_filename;
     std::ifstream d_dump_file;
+    Tracking_Dump_Layout d_layout;
 };
 
 #endif  // GNSS_SDR_TRACKING_DUMP_READER_H

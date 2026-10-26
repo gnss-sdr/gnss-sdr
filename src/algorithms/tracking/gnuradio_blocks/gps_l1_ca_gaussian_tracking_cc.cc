@@ -387,8 +387,8 @@ int32_t Gps_L1_Ca_Gaussian_Tracking_cc::save_matfile()
 {
     // READ DUMP FILE
     std::ifstream::pos_type size;
-    int32_t number_of_double_vars = 1;
-    int32_t number_of_float_vars = 19;
+    int32_t number_of_double_vars = 2;
+    int32_t number_of_float_vars = 18;
     int32_t epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
                                sizeof(float) * number_of_float_vars + sizeof(uint32_t);
     std::ifstream dump_file;
@@ -422,7 +422,7 @@ int32_t Gps_L1_Ca_Gaussian_Tracking_cc::save_matfile()
     auto Prompt_I = std::vector<float>(num_epoch);
     auto Prompt_Q = std::vector<float>(num_epoch);
     auto PRN_start_sample_count = std::vector<uint64_t>(num_epoch);
-    auto acc_carrier_phase_rad = std::vector<float>(num_epoch);
+    auto acc_carrier_phase_rad = std::vector<double>(num_epoch);
     auto carrier_doppler_hz = std::vector<float>(num_epoch);
     auto carrier_dopplerrate_hz2 = std::vector<float>(num_epoch);
     auto code_freq_chips = std::vector<float>(num_epoch);
@@ -451,7 +451,7 @@ int32_t Gps_L1_Ca_Gaussian_Tracking_cc::save_matfile()
                             dump_file.read(reinterpret_cast<char *>(&Prompt_I[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&Prompt_Q[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&PRN_start_sample_count[i]), sizeof(uint64_t));
-                            dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&carrier_doppler_hz[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&carrier_dopplerrate_hz2[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&code_freq_chips[i]), sizeof(float));
@@ -492,7 +492,7 @@ int32_t Gps_L1_Ca_Gaussian_Tracking_cc::save_matfile()
             write_matlab_var<2, float>("Prompt_I", Prompt_I.data(), matfp, dims);
             write_matlab_var<2, float>("Prompt_Q", Prompt_Q.data(), matfp, dims);
             write_matlab_var<2, uint64_t>("PRN_start_sample_count", PRN_start_sample_count.data(), matfp, dims);
-            write_matlab_var<2, float>("acc_carrier_phase_rad", acc_carrier_phase_rad.data(), matfp, dims);
+            write_matlab_var<2, double>("acc_carrier_phase_rad", acc_carrier_phase_rad.data(), matfp, dims);
             write_matlab_var<2, float>("carrier_doppler_hz", carrier_doppler_hz.data(), matfp, dims);
             write_matlab_var<2, float>("carrier_dopplerrate_hz2", carrier_dopplerrate_hz2.data(), matfp, dims);
             write_matlab_var<2, float>("code_freq_chips", code_freq_chips.data(), matfp, dims);
@@ -845,9 +845,9 @@ int Gps_L1_Ca_Gaussian_Tracking_cc::process_input(int noutput_items __attribute_
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_Q), sizeof(float));
                     // PRN start sample stamp
                     d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(uint64_t));
-                    // accumulated carrier phase
-                    tmp_float = static_cast<float>(d_acc_carrier_phase_rad);
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    // accumulated carrier phase (double, since it grows without bound)
+                    tmp_double = d_acc_carrier_phase_rad;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     // carrier and code frequency
                     tmp_float = static_cast<float>(d_carrier_doppler_hz);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));

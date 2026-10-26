@@ -139,7 +139,7 @@ private:
     // tracking vars
     double d_code_freq_chips;
     float d_carrier_doppler_hz;
-    float d_acc_carrier_phase_rad;
+    double d_acc_carrier_phase_rad;
     float d_acc_code_phase_secs;
     float d_code_phase_samples;
     size_t d_port_ch0;

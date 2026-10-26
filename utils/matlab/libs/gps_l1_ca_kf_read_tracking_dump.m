@@ -18,9 +18,9 @@ function [GNSS_tracking] = gps_l1_ca_kf_read_tracking_dump (filename, count)
 
 m = nargchk (1,2,nargin);
 
-num_float_vars = 19;
+num_float_vars = 18;
 num_unsigned_long_int_vars = 1;
-num_double_vars = 1;
+num_double_vars = 2;
 num_unsigned_int_vars = 1;
 
 if(~isempty(strfind(computer('arch'), '64')))
@@ -75,9 +75,9 @@ else
     fseek(f,bytes_shift,'bof'); % move to next interleaved float
     v8 = fread (f, count, 'long', skip_bytes_each_read - unsigned_long_int_size_bytes);
     bytes_shift = bytes_shift + unsigned_long_int_size_bytes;
-    fseek(f,bytes_shift,'bof'); % move to next float
-    v9 = fread (f, count, 'float', skip_bytes_each_read - float_size_bytes);
-    bytes_shift = bytes_shift + float_size_bytes;
+    fseek(f,bytes_shift,'bof'); % move to next double
+    v9 = fread (f, count, 'double', skip_bytes_each_read - double_size_bytes);
+    bytes_shift = bytes_shift + double_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next float
     v10 = fread (f, count, 'float', skip_bytes_each_read - float_size_bytes);
     bytes_shift = bytes_shift + float_size_bytes;

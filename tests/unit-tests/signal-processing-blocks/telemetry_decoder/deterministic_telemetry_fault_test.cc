@@ -265,13 +265,12 @@ public:
             {
                 _post(d_pause_port, pmt::PMT_T);
             }
-        if (nitems_read(0) == 100)
-            {
-                d_tracking.record_output(nitems_written(0), 100);
-                static_cast<uint8_t*>(output[0])[0] = 0;
-                return 1;
-            }
-        return 0;
+        // One symbol per call, stamped with the sample it reaches. A call
+        // without output would wait, in GNU Radio >= 3.10, until the decoder
+        // that holds a symbol leaves its work call (output blocked callback).
+        d_tracking.record_output(nitems_written(0), nitems_read(0));
+        static_cast<uint8_t*>(output[0])[0] = 0;
+        return 1;
     }
 
 private:
@@ -292,9 +291,16 @@ public:
 
     int general_work(int, gr_vector_int&, gr_vector_const_void_star&, gr_vector_void_star&) override
     {
+        // One symbol per call. The tracking block stamps symbol k with
+        // sample 10 * (k + 1); the fault is raised by the one at sample 100.
+        const uint64_t stamp = 10 * (nitems_read(0) + 1);
         {
-            const TelemetryWorkScope scope(this, 100);
+            const TelemetryWorkScope scope(this, stamp);
             consume_each(1);
+            if (stamp != 100)
+                {
+                    return 0;
+                }
             std::unique_lock<std::mutex> lock(d_state.mutex);
             d_state.condition.wait_for(lock, std::chrono::seconds(5), [this] { return d_state.paused; });
             DeterministicClock::instance().report_telemetry_fault(0, 100);

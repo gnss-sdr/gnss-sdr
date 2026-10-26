@@ -181,7 +181,7 @@ Acq_Conf get_acq_conf(
 
     std::unique_ptr<ThresholdComputeInterface> threshold_compute;
     boost::optional<uint32_t> default_folding_factor;
-    boost::optional<uint32_t> required_sampled_ms;
+    uint32_t required_sampled_ms = 0;  // 0: any coherent integration time
     uint32_t max_sampled_ms = std::numeric_limits<uint32_t>::max();
 
     if (implementation == "GPS_L1_CA_PCPS_QuickSync_Acquisition")
@@ -235,8 +235,8 @@ Acq_Conf get_acq_conf(
         }
 
     acq_parameters.ms_per_code = ms_per_code;
-    acq_parameters.sampled_ms = required_sampled_ms ? *required_sampled_ms : ms_per_code;  // Set as default value
-    acq_parameters.dump_filename = default_dump_filename;                                  // Set as default value
+    acq_parameters.sampled_ms = required_sampled_ms != 0 ? required_sampled_ms : ms_per_code;  // Set as default value
+    acq_parameters.dump_filename = default_dump_filename;                                      // Set as default value
     acq_parameters.SetFromConfiguration(configuration, role, chip_rate, opt_freq);
 
 #if USE_GLOG_AND_GFLAGS
@@ -266,11 +266,11 @@ Acq_Conf get_acq_conf(
             std::cout << "Too high coherent integration time. Changing to " << max_sampled_ms << "ms\n";
         }
 
-    if (required_sampled_ms && acq_parameters.sampled_ms != *required_sampled_ms)
+    if (required_sampled_ms != 0 && acq_parameters.sampled_ms != required_sampled_ms)
         {
             LOG(WARNING) << implementation << " requires " << role << ".coherent_integration_time_ms="
-                         << *required_sampled_ms << ". Changing to " << *required_sampled_ms << " ms";
-            acq_parameters.sampled_ms = *required_sampled_ms;
+                         << required_sampled_ms << ". Changing to " << required_sampled_ms << " ms";
+            acq_parameters.sampled_ms = required_sampled_ms;
         }
 
     acq_parameters.num_codes = acq_parameters.sampled_ms / ms_per_code;
